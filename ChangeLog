@@ -1,3 +1,11 @@
+2005-10-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/24297
+	* Makefile.tpl (do-[+make-target+], do-check, install,
+	stage[+id+]-bubble, [+compare-target+]): Ensure $$r and $$s
+	are set before recursing.
+	* Makefile.in: Regenerate.
+
 2005-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/18939

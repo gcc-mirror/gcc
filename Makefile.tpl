@@ -769,7 +769,9 @@ all-target: [+
 .PHONY: do-[+make_target+]
 do-[+make_target+]:
 	@$(unstage)
-	@$(MAKE) $(RECURSE_FLAGS_TO_PASS) [+make_target+]-host \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) [+make_target+]-host \
 	  [+make_target+]-target
 	@$(stage)
 
@@ -866,7 +868,9 @@ check-target: [+
 
 do-check:
 	@$(unstage)
-	@$(MAKE) $(RECURSE_FLAGS_TO_PASS) check-host check-target
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) check-host check-target
 	@$(stage)
 
 # Automated reporting of test results.
@@ -895,7 +899,9 @@ mail-report-with-warnings.log: warning.log
 .PHONY: install uninstall
 install:
 	@$(unstage)
-	@$(MAKE) $(RECURSE_FLAGS_TO_PASS) installdirs install-host install-target
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) installdirs install-host install-target
 	@$(stage)
 
 .PHONY: install-host-nogcc
@@ -1534,7 +1540,9 @@ stage[+id+]-end::
 .PHONY: stage[+id+]-bubble
 stage[+id+]-bubble:: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +][+IF lean +]
 	@bootstrap_lean@-rm -rf stage[+lean+]-* ; $(STAMP) stage[+lean+]-lean[+ ENDIF lean +]
-	@if test -f stage[+id+]-lean [+
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	if test -f stage[+id+]-lean [+
 	  IF prev +]|| test -f stage[+prev+]-lean [+ ENDIF prev +] ; then \
 	  echo Skipping rebuild of stage[+id+] ; \
 	else \
@@ -1550,13 +1558,13 @@ do-clean: clean-stage[+id+]
 @if gcc-bootstrap
 [+ IF compare-target +]
 [+compare-target+]:
-	@if test -f stage[+prev+]-lean; then \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	if test -f stage[+prev+]-lean; then \
 	  echo Cannot compare object files as stage [+prev+] was deleted. ; \
 	  exit 0 ; \
 	fi; \
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	rm -f .bad_compare ; \
 	cd stage[+id+]-gcc; \
 	files=`find . -name "*$(objext)" -print` ; \
