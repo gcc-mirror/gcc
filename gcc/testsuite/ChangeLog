@@ -1,3 +1,7 @@
+2005-10-22  David Ayers  <d.ayers@inode.at>
+
+	* obj-c++.dg/except-1.mm: Simplify.
+
 2005-10-21  David Ayers  <d.ayers@inode.at>
 
 	* obj-c++.dg/except-1.mm: Generalize for both Objective-C runtimes.
