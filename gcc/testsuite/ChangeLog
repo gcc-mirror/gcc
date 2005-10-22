@@ -1,5 +1,8 @@
 2005-10-22  Hans-Peter Nilsson  <hp@axis.com>
 
+	* gcc.dg/tree-ssa/20040204-1.c: Adjust XFAIL for CRIS and MMIX.
+	* gcc.dg/tree-ssa/loop-1.c: Adjust "call foo"-scanning for CRIS.
+
 	* gcc.dg/weak/typeof-2.c: Adjust for CRIS keeping baz3 in a register.
 
 2005-10-22  Erik Edelmann  <eedelman@gcc.gnu.org>
