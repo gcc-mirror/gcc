@@ -33,7 +33,6 @@ Boston, MA 02110-1301, USA.  */
    feenableexcept function in fenv.h to set individual exceptions
    (there's nothing to do that in C99).  */
 
-#define __USE_GNU
 #ifdef HAVE_FENV_H
 #include <fenv.h>
 #endif
