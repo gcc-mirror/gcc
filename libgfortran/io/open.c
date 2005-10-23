@@ -415,7 +415,7 @@ already_open (gfc_unit * u, unit_flags * flags)
   /* If the file is connected to something else, close it and open a
      new unit.  */
 
-  if (!compare_file_filename (u->s, ioparm.file, ioparm.file_len))
+  if (!compare_file_filename (u, ioparm.file, ioparm.file_len))
     {
       if (close_unit (u))
 	{

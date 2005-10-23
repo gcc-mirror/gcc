@@ -450,7 +450,7 @@ internal_proto(output_stream);
 extern stream *error_stream (void);
 internal_proto(error_stream);
 
-extern int compare_file_filename (stream *, const char *, int);
+extern int compare_file_filename (gfc_unit *, const char *, int);
 internal_proto(compare_file_filename);
 
 extern gfc_unit *find_file (void);

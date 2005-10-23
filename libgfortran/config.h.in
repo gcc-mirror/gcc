@@ -600,6 +600,9 @@
 /* Define if target can unlink open files. */
 #undef HAVE_UNLINK_OPEN_FILE
 
+/* Define if target has a reliable stat. */
+#undef HAVE_WORKING_STAT
+
 /* libm includes y0 */
 #undef HAVE_Y0
 

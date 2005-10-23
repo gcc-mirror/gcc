@@ -19353,6 +19353,82 @@ _ACEOF
 
 fi
 
+# Check whether the system has a working stat()
+
+  echo "$as_me:$LINENO: checking whether the target stat is reliable" >&5
+echo $ECHO_N "checking whether the target stat is reliable... $ECHO_C" >&6
+if test "${have_working_stat+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+  if test "$cross_compiling" = yes; then
+
+case "${target}" in
+  *mingw*) have_working_stat=no ;;
+  *) have_working_stat=yes;;
+esac
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+int main ()
+{
+  FILE *f, *g;
+  struct stat st1, st2;
+
+  f = fopen ("foo", "w");
+  g = fopen ("bar", "w");
+  if (stat ("foo", &st1) != 0 || stat ("bar", &st2))
+    return 1;
+  if (st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino)
+    return 1;
+  fclose(f);
+  fclose(g);
+  return 0;
+}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  have_working_stat=yes
+else
+  echo "$as_me: program exited with status $ac_status" >&5
+echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+( exit $ac_status )
+have_working_stat=no
+fi
+rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+fi
+echo "$as_me:$LINENO: result: $have_working_stat" >&5
+echo "${ECHO_T}$have_working_stat" >&6
+if test x"$have_working_stat" = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_WORKING_STAT 1
+_ACEOF
+
+fi
+
 # Fallback in case isfinite is not available.
 echo "$as_me:$LINENO: checking for finite in -lm" >&5
 echo $ECHO_N "checking for finite in -lm... $ECHO_C" >&6

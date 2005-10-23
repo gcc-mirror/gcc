@@ -1287,10 +1287,13 @@ init_error_stream (void)
  * filename. */
 
 int
-compare_file_filename (stream * s, const char *name, int len)
+compare_file_filename (gfc_unit *u, const char *name, int len)
 {
   char path[PATH_MAX + 1];
-  struct stat st1, st2;
+  struct stat st1;
+#ifdef HAVE_WORKING_STAT
+  struct stat st2;
+#endif
 
   if (unpack_filename (path, name, len))
     return 0;			/* Can't be the same */
@@ -1301,9 +1304,14 @@ compare_file_filename (stream * s, const char *name, int len)
   if (stat (path, &st1) < 0)
     return 0;
 
-  fstat (((unix_stream *) s)->fd, &st2);
-
+#ifdef HAVE_WORKING_STAT
+  fstat (((unix_stream *) (u->s))->fd, &st2);
   return (st1.st_dev == st2.st_dev) && (st1.st_ino == st2.st_ino);
+#else
+  if (len != u->file_len)
+    return 0;
+  return (memcmp(path, u->file, len) == 0);
+#endif
 }
 
 
@@ -1312,15 +1320,22 @@ compare_file_filename (stream * s, const char *name, int len)
 static gfc_unit *
 find_file0 (gfc_unit * u, struct stat *st1)
 {
+#ifdef HAVE_WORKING_STAT
   struct stat st2;
+#endif
   gfc_unit *v;
 
   if (u == NULL)
     return NULL;
 
+#ifdef HAVE_WORKING_STAT
   if (fstat (((unix_stream *) u->s)->fd, &st2) >= 0 &&
       st1->st_dev == st2.st_dev && st1->st_ino == st2.st_ino)
     return u;
+#else
+  if (compare_string(u->file_len, u->file, ioparm.file_len, ioparm.file) == 0)
+    return u;
+#endif
 
   v = find_file0 (u->left, st1);
   if (v != NULL)

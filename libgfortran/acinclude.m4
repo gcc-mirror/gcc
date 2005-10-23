@@ -349,3 +349,38 @@ esac])]
 if test x"$have_broken_fpclassify" = xyes; then
   AC_DEFINE(HAVE_BROKEN_FPCLASSIFY, 1, [Define if fpclassify is broken.])
 fi])
+
+dnl Check whether the st_ino and st_dev stat fields taken together uniquely
+dnl identify the file within the system. This is should be true for POSIX
+dnl systems; it is known to be false on mingw32.
+AC_DEFUN([LIBGFOR_CHECK_WORKING_STAT], [
+  AC_CACHE_CHECK([whether the target stat is reliable],
+                  have_working_stat, [
+  AC_TRY_RUN([
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+int main ()
+{ 
+  FILE *f, *g;
+  struct stat st1, st2;
+
+  f = fopen ("foo", "w");
+  g = fopen ("bar", "w");
+  if (stat ("foo", &st1) != 0 || stat ("bar", &st2))
+    return 1;
+  if (st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino)
+    return 1;
+  fclose(f);
+  fclose(g);
+  return 0;
+}], have_working_stat=yes, have_working_stat=no, [
+case "${target}" in
+  *mingw*) have_working_stat=no ;;
+  *) have_working_stat=yes;;
+esac])])
+if test x"$have_working_stat" = xyes; then
+  AC_DEFINE(HAVE_WORKING_STAT, 1, [Define if target has a reliable stat.])
+fi])

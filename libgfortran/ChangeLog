@@ -1,5 +1,20 @@
 2005-10-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR libfortran/23272
+	* acinclude.m4 (LIBGFOR_CHECK_WORKING_STAT): New check.
+	* configure.ac: Use LIBGFOR_CHECK_WORKING_STAT.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* io/unix.c (compare_file_filename): Add fallback case for
+	systems without working stat.
+	* io/open.c (already_open): Correct call to
+	compare_file_filename.
+	* io/io.h: Correct proto for compare_file_filename.
+
+2005-10-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	* runtime/fpu.c: Add _GNU_SOURCE definition.
 	* config/fpu-glibc.h: Remove __USE_GNU definition.
 
