@@ -1,3 +1,7 @@
+2005-10-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/attr-alias-3.c: XFAIL on AIX.
+
 2005-10-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18022
