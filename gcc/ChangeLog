@@ -1,3 +1,8 @@
+2005-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/24435
+	 * c-common.c (constant_string_class_name): Add documentation.
+
 2005-10-23  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/23832
