@@ -1,3 +1,8 @@
+2005-10-23  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18911
+	* g++.dg/init/array16.C: Skip for mmix-*-*.
+
 2005-10-23  Asher Langton  <langton2@llnl.gov>
 
 	* gfortran.dg/byte_1.f90: New test.
