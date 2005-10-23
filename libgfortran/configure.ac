@@ -337,6 +337,9 @@ LIBGFOR_CHECK_FOR_BROKEN_ISNAN
 # Check for a fpclassify macro that works on long doubles.
 LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY
 
+# Check whether the system has a working stat()
+LIBGFOR_CHECK_WORKING_STAT
+
 # Fallback in case isfinite is not available.
 AC_CHECK_LIB([m],[finite],[AC_DEFINE([HAVE_FINITE],[1],[libm includes finite])])
 
