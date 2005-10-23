@@ -1,3 +1,8 @@
+2005-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR fortran/23635
+	* gfortran.dg/ichar_1.f90: Add tests for derived types.
+
 2005-10-23  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/23843

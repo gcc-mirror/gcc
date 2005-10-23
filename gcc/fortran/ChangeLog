@@ -1,3 +1,11 @@
+2005-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR fortran/23635
+	* check.c (gfc_check_ichar_iachar): Move the code around so
+	that the check on the length is after check for
+	references.     
+
+
 2005-10-23  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/23843

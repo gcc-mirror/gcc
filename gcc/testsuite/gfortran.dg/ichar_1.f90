@@ -14,6 +14,14 @@ subroutine test (c)
 end subroutine
 
 program ichar_1
+   type derivedtype
+      character(len=4) :: addr
+   end type derivedtype
+
+   type derivedtype1
+      character(len=1) :: addr
+   end type derivedtype1
+
    integer i
    integer, parameter :: j = 2
    character(len=8) :: c = 'abcd'
@@ -21,6 +29,8 @@ program ichar_1
    character(len=1) :: g2(2,2)
    character*1, parameter :: s1 = 'e'
    character*2, parameter :: s2 = 'ef'
+   type(derivedtype) :: dt
+   type(derivedtype1) :: dt1
 
    if (ichar(c(3:3)) /= 97) call abort
    if (ichar(c(:1)) /= 97) call abort
@@ -45,6 +55,15 @@ program ichar_1
 
    if (ichar(c(3:3)) /= 97) call abort
    i = ichar(c)      ! { dg-error "must be of length one" "" }
+   
+   i = ichar(dt%addr(1:1))
+   i = ichar(dt%addr) ! { dg-error "must be of length one" "" }
+   i = ichar(dt%addr(1:2)) ! { dg-error "must be of length one" "" }
+   i = ichar(dt%addr(1:)) ! { dg-error "must be of length one" "" }
+   
+   i = ichar(dt1%addr(1:1))
+   i = ichar(dt1%addr)
+
 
    call test(g1(1))
 end program ichar_1

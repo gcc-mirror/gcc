@@ -929,16 +929,7 @@ gfc_check_ichar_iachar (gfc_expr * c)
   if (type_check (c, 0, BT_CHARACTER) == FAILURE)
     return FAILURE;
 
-  /* Check that the argument is length one.  Non-constant lengths
-     can't be checked here, so assume thay are ok.  */
-  if (c->ts.cl && c->ts.cl->length)
-    {
-      /* If we already have a length for this expression then use it.  */
-      if (c->ts.cl->length->expr_type != EXPR_CONSTANT)
-	return SUCCESS;
-      i = mpz_get_si (c->ts.cl->length->value.integer);
-    }
-  else if (c->expr_type == EXPR_VARIABLE || c->expr_type == EXPR_SUBSTRING)
+  if (c->expr_type == EXPR_VARIABLE || c->expr_type == EXPR_SUBSTRING)
     {
       gfc_expr *start;
       gfc_expr *end;
@@ -952,18 +943,32 @@ gfc_check_ichar_iachar (gfc_expr * c)
       gcc_assert (ref == NULL || ref->type == REF_SUBSTRING);
 
       if (!ref)
-	return SUCCESS;
+	{
+          /* Check that the argument is length one.  Non-constant lengths
+	     can't be checked here, so assume thay are ok.  */
+	  if (c->ts.cl && c->ts.cl->length)
+	    {
+	      /* If we already have a length for this expression then use it.  */
+	      if (c->ts.cl->length->expr_type != EXPR_CONSTANT)
+		return SUCCESS;
+	      i = mpz_get_si (c->ts.cl->length->value.integer);
+	    }
+	  else 
+	    return SUCCESS;
+	}
+      else
+	{
+	  start = ref->u.ss.start;
+	  end = ref->u.ss.end;
 
-      start = ref->u.ss.start;
-      end = ref->u.ss.end;
+	  gcc_assert (start);
+	  if (end == NULL || end->expr_type != EXPR_CONSTANT
+	      || start->expr_type != EXPR_CONSTANT)
+	    return SUCCESS;
 
-      gcc_assert (start);
-      if (end == NULL || end->expr_type != EXPR_CONSTANT
-	  || start->expr_type != EXPR_CONSTANT)
-	return SUCCESS;
-
-      i = mpz_get_si (end->value.integer) + 1
-	  - mpz_get_si (start->value.integer);
+	  i = mpz_get_si (end->value.integer) + 1
+	      - mpz_get_si (start->value.integer);
+	}
     }
   else
     return SUCCESS;
