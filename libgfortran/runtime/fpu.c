@@ -1,3 +1,8 @@
+/* This is needed for fpu-glibc.h, before all other includes */
+#ifdef HAVE_FENV_H
+#define _GNU_SOURCE
+#endif
+
 #include "libgfortran.h"
 
 /* We include the platform-dependent code.  */
