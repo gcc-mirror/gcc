@@ -1,5 +1,12 @@
 2005-10-23  Erik Edelmann  <erik.edelmann@iki.fi>
 
+	PR fortran/23843
+	* resolve.c (derived_inaccessible): New function.
+	(resolve_transfer): Use it to check for private
+	components.
+
+2005-10-23  Erik Edelmann  <erik.edelmann@iki.fi>
+
 	* trans-expr.c (gfc_trans_arrayfunc_assign): Check value
 	of attr.elemental for specific function instead of generic name.
 
