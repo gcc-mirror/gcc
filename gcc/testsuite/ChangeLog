@@ -1,5 +1,9 @@
 2005-10-23  Erik Edelmann  <erik.edelmann@iki.fi>
 
+	* gfortran.dg/generic_4.f90: New test.
+
+2005-10-23  Erik Edelmann  <erik.edelmann@iki.fi>
+
 	PR fortran/19929
 	* gfortran.dg/der_ptr_component_1.f90: New test.
 

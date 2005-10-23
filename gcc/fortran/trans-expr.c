@@ -2193,7 +2193,8 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
     return NULL;
 
   /* Elemental functions don't need a temporary anyway.  */
-  if (expr2->symtree->n.sym->attr.elemental)
+  if (expr2->value.function.esym != NULL 
+      && expr2->value.function.esym->attr.elemental)
     return NULL;
 
   /* Check that no component references appear during an array
