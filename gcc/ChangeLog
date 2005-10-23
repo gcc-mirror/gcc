@@ -1,3 +1,9 @@
+2005-10-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR ada/23957
+	* except.c (output_function_exception_table): Call
+	assemble_external_libcall if we need a personality function.
+
 2005-10-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/24460

@@ -3516,13 +3516,15 @@ output_function_exception_table (void)
   int have_tt_data;
   int tt_format_size = 0;
 
+  if (eh_personality_libfunc)
+    assemble_external_libcall (eh_personality_libfunc);
+
   /* Not all functions need anything.  */
   if (! cfun->uses_eh_lsda)
     return;
 
 #ifdef TARGET_UNWIND_INFO
   /* TODO: Move this into target file.  */
-  assemble_external_libcall (eh_personality_libfunc);
   fputs ("\t.personality\t", asm_out_file);
   output_addr_const (asm_out_file, eh_personality_libfunc);
   fputs ("\n\t.handlerdata\n", asm_out_file);
