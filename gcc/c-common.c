@@ -340,7 +340,7 @@ int flag_gen_declaration;
 
 int print_struct_values;
 
-/* ???.  Undocumented.  */
+/* Tells the compiler what is the constant string class for Objc.  */
 
 const char *constant_string_class_name;
 
