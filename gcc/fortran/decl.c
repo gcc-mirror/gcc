@@ -1386,6 +1386,24 @@ match_type_spec (gfc_typespec * ts, int implicit_flag)
 
   gfc_clear_ts (ts);
 
+  if (gfc_match (" byte") == MATCH_YES)
+    {
+      if (gfc_notify_std(GFC_STD_GNU, "Extension: BYTE type at %C") 
+	  == FAILURE)
+	return MATCH_ERROR;
+
+      if (gfc_validate_kind (BT_INTEGER, 1, true) < 0)
+	{
+	  gfc_error ("BYTE type used at %C "
+		     "is not available on the target machine");
+	  return MATCH_ERROR;
+	}
+      
+      ts->type = BT_INTEGER;
+      ts->kind = 1;
+      return MATCH_YES;
+    }
+
   if (gfc_match (" integer") == MATCH_YES)
     {
       ts->type = BT_INTEGER;
