@@ -3091,7 +3091,8 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 	      /* Record this insn.  */
 	      if (--peep2_current < 0)
 		peep2_current = MAX_INSNS_PER_PEEP2;
-	      if (peep2_current_count < MAX_INSNS_PER_PEEP2)
+	      if (peep2_current_count < MAX_INSNS_PER_PEEP2
+		  && peep2_insn_data[peep2_current].insn == NULL_RTX)
 		peep2_current_count++;
 	      peep2_insn_data[peep2_current].insn = insn;
 	      propagate_one_insn (pbi, insn);
@@ -3253,7 +3254,8 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 			{
 			  if (--i < 0)
 			    i = MAX_INSNS_PER_PEEP2;
-			  if (peep2_current_count < MAX_INSNS_PER_PEEP2)
+			  if (peep2_current_count < MAX_INSNS_PER_PEEP2
+			      && peep2_insn_data[i].insn == NULL_RTX)
 			    peep2_current_count++;
 			  peep2_insn_data[i].insn = x;
 			  propagate_one_insn (pbi, x);
