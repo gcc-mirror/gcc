@@ -1,3 +1,19 @@
+2005-10-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/18022
+	* trans-expr.c (gfc_trans_arrayfunc_assign): Return NULL
+	if there is a component ref during an array ref to force
+	use of temporary in assignment.
+
+	PR fortran/24311
+	PR fortran/24384
+	* fortran/iresolve.c (check_charlen_present): New function to
+	add a charlen to the typespec, in the case of constant
+	expressions.
+	(gfc_resolve_merge, gfc_resolve_spread): Call.the above.
+	(gfc_resolve_spread): Make calls to library functions that
+	handle the case of the spread intrinsic with a scalar source.
+
 2005-10-22  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/24426

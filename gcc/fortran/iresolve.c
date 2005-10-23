@@ -59,6 +59,21 @@ gfc_get_string (const char *format, ...)
   return IDENTIFIER_POINTER (ident);
 }
 
+/* MERGE and SPREAD need to have source charlen's present for passing
+   to the result expression.  */
+static void
+check_charlen_present (gfc_expr *source)
+{
+  if (source->expr_type == EXPR_CONSTANT && source->ts.cl == NULL)
+    {
+      source->ts.cl = gfc_get_charlen ();
+      source->ts.cl->next = gfc_current_ns->cl_list;
+      gfc_current_ns->cl_list = source->ts.cl;
+      source->ts.cl->length = gfc_int_expr (source->value.character.length);
+      source->rank = 0;
+    }
+}
+
 /********************** Resolution functions **********************/
 
 
@@ -996,6 +1011,9 @@ gfc_resolve_merge (gfc_expr * f, gfc_expr * tsource,
 		   gfc_expr * fsource ATTRIBUTE_UNUSED,
 		   gfc_expr * mask ATTRIBUTE_UNUSED)
 {
+  if (tsource->ts.type == BT_CHARACTER)
+    check_charlen_present (tsource);
+
   f->ts = tsource->ts;
   f->value.function.name =
     gfc_get_string ("__merge_%c%d", gfc_type_letter (tsource->ts.type),
@@ -1395,11 +1413,19 @@ gfc_resolve_spread (gfc_expr * f, gfc_expr * source,
 		    gfc_expr * dim,
 		    gfc_expr * ncopies)
 {
+  if (source->ts.type == BT_CHARACTER)
+    check_charlen_present (source);
+
   f->ts = source->ts;
   f->rank = source->rank + 1;
-  f->value.function.name = (source->ts.type == BT_CHARACTER
-			    ? PREFIX("spread_char")
-			    : PREFIX("spread"));
+  if (source->rank == 0)
+    f->value.function.name = (source->ts.type == BT_CHARACTER
+			      ? PREFIX("spread_char_scalar")
+			      : PREFIX("spread_scalar"));
+  else
+    f->value.function.name = (source->ts.type == BT_CHARACTER
+			      ? PREFIX("spread_char")
+			      : PREFIX("spread"));
 
   gfc_resolve_dim_arg (dim);
   gfc_resolve_index (ncopies, 1);

@@ -176,6 +176,49 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
     }
 }
 
+/* This version of spread_internal treats the special case of a scalar
+   source.  This is much simpler than the more general case above.  */
+
+static void
+spread_internal_scalar (gfc_array_char *ret, const char *source,
+			const index_type *along, const index_type *pncopies,
+			index_type size)
+{
+  int n;
+  int ncopies = *pncopies;
+  char * dest;
+
+  if (GFC_DESCRIPTOR_RANK (ret) != 1)
+    runtime_error ("incorrect destination rank in spread()");
+
+  if (*along > 1)
+    runtime_error ("dim outside of rank in spread()");
+
+  if (ret->data == NULL)
+    {
+      ret->data = internal_malloc_size (ncopies * size);
+      ret->offset = 0;
+      ret->dim[0].stride = 1;
+      ret->dim[0].lbound = 0;
+      ret->dim[0].ubound = ncopies - 1;
+    }
+  else
+    {
+      if (ret->dim[0].stride == 0)
+	ret->dim[0].stride = 1;
+
+      if (ncopies - 1 > (ret->dim[0].ubound - ret->dim[0].lbound)
+			   / ret->dim[0].stride)
+	runtime_error ("dim too large in spread()");
+    }
+
+  for (n = 0; n < ncopies; n++)
+    {
+      dest = (char*)(ret->data + n*size*ret->dim[0].stride);
+      memcpy (dest , source, size);
+    }
+}
+
 extern void spread (gfc_array_char *, const gfc_array_char *,
 		    const index_type *, const index_type *);
 export_proto(spread);
@@ -200,3 +243,37 @@ spread_char (gfc_array_char *ret,
 {
   spread_internal (ret, source, along, pncopies, source_length);
 }
+
+/* The following are the prototypes for the versions of spread with a
+   scalar source.  */
+
+extern void spread_scalar (gfc_array_char *, const char *,
+			   const index_type *, const index_type *);
+export_proto(spread_scalar);
+
+void
+spread_scalar (gfc_array_char *ret, const char *source,
+	       const index_type *along, const index_type *pncopies)
+{
+  if (!ret->dtype)
+    runtime_error ("return array missing descriptor in spread()");
+  spread_internal_scalar (ret, source, along, pncopies, GFC_DESCRIPTOR_SIZE (ret));
+}
+
+
+extern void spread_char_scalar (gfc_array_char *, GFC_INTEGER_4,
+				const char *, const index_type *,
+				const index_type *, GFC_INTEGER_4);
+export_proto(spread_char_scalar);
+
+void
+spread_char_scalar (gfc_array_char *ret,
+		    GFC_INTEGER_4 ret_length __attribute__((unused)),
+		    const char *source, const index_type *along,
+		    const index_type *pncopies, GFC_INTEGER_4 source_length)
+{
+  if (!ret->dtype)
+    runtime_error ("return array missing descriptor in spread()");
+  spread_internal_scalar (ret, source, along, pncopies, source_length);
+}
+
