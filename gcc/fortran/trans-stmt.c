@@ -3256,7 +3256,7 @@ gfc_trans_deallocate (gfc_code * code)
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
 
-      if (expr->symtree->n.sym->attr.dimension)
+      if (expr->rank)
 	tmp = gfc_array_deallocate (se.expr, pstat);
       else
 	{

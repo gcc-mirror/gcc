@@ -1,4 +1,11 @@
 2005-10-23  Erik Edelmann  <erik.edelmann@iki.fi>
+
+	PR fortran/19929
+	* trans-stmt.c (gfc_trans_deallocate): Check if the
+	object to be deallocated is an array by looking at
+	expr->rank instead of expr->symtree->n.sym->attr.dimension.
+
+2005-10-23  Erik Edelmann  <erik.edelmann@iki.fi>
 	
 	PR fortran/15975
 	* resolve.c (resolve_symbol): Don't assign default
