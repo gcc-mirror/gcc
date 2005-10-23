@@ -1,3 +1,8 @@
+2005-10-23  Asher Langton  <langton2@llnl.gov>
+
+	* gfortran.dg/byte_1.f90: New test.
+	* gfortran.dg/byte_2.f90: New test.
+
 2005-10-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/attr-alias-3.c: XFAIL on AIX.
@@ -5,13 +10,13 @@
 2005-10-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18022
-	gfortran.dg/assign_func_dtcomp_1.f90: New test.
+	* gfortran.dg/assign_func_dtcomp_1.f90: New test.
 
 	PR fortran/24311
-	gfortran.dg/merge_char_const.f90: New test.
+	* gfortran.dg/merge_char_const.f90: New test.
 
 	PR fortran/24384
-	gfortran.dg/spread_scalar_source.f90: New test.
+	* gfortran.dg/spread_scalar_source.f90: New test.
 
 2005-10-22  Hans-Peter Nilsson  <hp@axis.com>
 
