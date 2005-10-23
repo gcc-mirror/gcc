@@ -4382,7 +4382,8 @@ resolve_symbol (gfc_symbol * sym)
 	}
 
       /* Assign default initializer.  */
-      if (sym->ts.type == BT_DERIVED && !(sym->value || whynot))
+      if (sym->ts.type == BT_DERIVED && !(sym->value || whynot)
+          && !sym->attr.pointer)
 	sym->value = gfc_default_initializer (&sym->ts);
       break;
 
