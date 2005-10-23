@@ -2185,6 +2185,8 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 {
   gfc_se se;
   gfc_ss *ss;
+  gfc_ref * ref;
+  bool seen_array_ref;
 
   /* The caller has already checked rank>0 and expr_type == EXPR_FUNCTION.  */
   if (expr2->value.function.isym && !gfc_is_intrinsic_libcall (expr2))
@@ -2193,6 +2195,18 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   /* Elemental functions don't need a temporary anyway.  */
   if (expr2->symtree->n.sym->attr.elemental)
     return NULL;
+
+  /* Check that no component references appear during an array
+     reference.  This is needed because we do not have the means to
+     span any arbitrary stride with an array descriptor.  */
+  seen_array_ref = false;
+  for (ref = expr1->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY)
+	seen_array_ref= true;
+      else if (ref->type == REF_COMPONENT && seen_array_ref)
+	return NULL;
+    }
 
   /* Check for a dependency.  */
   if (gfc_check_fncall_dependency (expr1, expr2))
