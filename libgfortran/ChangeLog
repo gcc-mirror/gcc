@@ -1,3 +1,10 @@
+2005-10-23  Jerry DeLisle  <jvdelisle@verizon.net>
+
+        PR libgfortran/24489
+        * io/transfer.c (read_block): Change the order of execution to not read
+        past end-of-record.
+        (read_block_direct): Same change.
+
 2005-10-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/23272

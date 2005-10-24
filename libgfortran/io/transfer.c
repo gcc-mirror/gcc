@@ -248,10 +248,6 @@ read_block (int *length)
   char *source;
   int nread;
 
-  if (current_unit->flags.form == FORM_FORMATTED &&
-      current_unit->flags.access == ACCESS_SEQUENTIAL)
-    return read_sf (length);	/* Special case.  */
-
   if (current_unit->bytes_left < *length)
     {
       if (current_unit->flags.pad == PAD_NO)
@@ -262,6 +258,10 @@ read_block (int *length)
 
       *length = current_unit->bytes_left;
     }
+    
+  if (current_unit->flags.form == FORM_FORMATTED &&
+      current_unit->flags.access == ACCESS_SEQUENTIAL)
+    return read_sf (length);	/* Special case.  */
 
   current_unit->bytes_left -= *length;
 
@@ -295,15 +295,6 @@ read_block_direct (void * buf, size_t * nbytes)
   void *data;
   size_t nread;
 
-  if (current_unit->flags.form == FORM_FORMATTED &&
-      current_unit->flags.access == ACCESS_SEQUENTIAL)
-    {
-      length = (int*) nbytes;
-      data = read_sf (length);	/* Special case.  */
-      memcpy (buf, data, (size_t) *length);
-      return;
-    }
-
   if (current_unit->bytes_left < *nbytes)
     {
       if (current_unit->flags.pad == PAD_NO)
@@ -313,6 +304,15 @@ read_block_direct (void * buf, size_t * nbytes)
 	}
 
       *nbytes = current_unit->bytes_left;
+    }
+
+  if (current_unit->flags.form == FORM_FORMATTED &&
+      current_unit->flags.access == ACCESS_SEQUENTIAL)
+    {
+      length = (int*) nbytes;
+      data = read_sf (length);	/* Special case.  */
+      memcpy (buf, data, (size_t) *length);
+      return;
     }
 
   current_unit->bytes_left -= *nbytes;
