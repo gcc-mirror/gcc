@@ -92,7 +92,7 @@ Boston, MA 02110-1301, USA.  */
       %{static:-static}}"
 
 /* glibc's profiling functions don't need gcc to allocate counters.  */
-#define NO_PROFILE_COUNTERS 1
+#define NO_DEFERRED_PROFILE_COUNTERS 1
 
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to

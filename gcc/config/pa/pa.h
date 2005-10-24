@@ -769,6 +769,11 @@ void hppa_profile_hook (int label_no);
 /* The profile counter if emitted must come before the prologue.  */
 #define PROFILE_BEFORE_PROLOGUE 1
 
+/* We never want final.c to emit profile counters.  When profile
+   counters are required, we have to defer emitting them to the end
+   of the current file.  */
+#define NO_PROFILE_COUNTERS 1
+
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.

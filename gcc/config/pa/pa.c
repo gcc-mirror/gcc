@@ -137,6 +137,7 @@ static void pa_linux_file_start (void) ATTRIBUTE_UNUSED;
 static void pa_hpux64_gas_file_start (void) ATTRIBUTE_UNUSED;
 static void pa_hpux64_hpas_file_start (void) ATTRIBUTE_UNUSED;
 static void output_deferred_plabels (void);
+static void output_deferred_profile_counters (void) ATTRIBUTE_UNUSED;
 #ifdef ASM_OUTPUT_EXTERNAL_REAL
 static void pa_hpux_file_end (void);
 #endif
@@ -4141,6 +4142,40 @@ hppa_pic_save_rtx (void)
   return get_hard_reg_initial_val (word_mode, PIC_OFFSET_TABLE_REGNUM);
 }
 
+#ifndef NO_DEFERRED_PROFILE_COUNTERS
+#define NO_DEFERRED_PROFILE_COUNTERS 0
+#endif
+
+/* Define heap vector type for funcdef numbers.  */
+DEF_VEC_I(int);
+DEF_VEC_ALLOC_I(int,heap);
+
+/* Vector of funcdef numbers.  */
+static VEC(int,heap) *funcdef_nos;
+
+/* Output deferred profile counters.  */
+static void
+output_deferred_profile_counters (void)
+{
+  unsigned int i;
+  int align, n;
+
+  if (VEC_empty (int, funcdef_nos))
+   return;
+
+  data_section ();
+  align = MIN (BIGGEST_ALIGNMENT, LONG_TYPE_SIZE);
+  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+
+  for (i = 0; VEC_iterate (int, funcdef_nos, i, n); i++)
+    {
+      targetm.asm_out.internal_label (asm_out_file, "LP", n);
+      assemble_integer (const0_rtx, LONG_TYPE_SIZE / BITS_PER_UNIT, align, 1);
+    }
+
+  VEC_free (int, heap, funcdef_nos);
+}
+
 void
 hppa_profile_hook (int label_no)
 {
@@ -4175,11 +4210,12 @@ hppa_profile_hook (int label_no)
   emit_insn (gen_load_offset_label_address (gen_rtx_REG (SImode, 25), 
 					    reg, begin_label_rtx, label_rtx));
 
-#ifndef NO_PROFILE_COUNTERS
+#if !NO_DEFERRED_PROFILE_COUNTERS
   {
     rtx count_label_rtx, addr, r24;
     char count_label_name[16];
 
+    VEC_safe_push (int, heap, funcdef_nos, label_no);
     ASM_GENERATE_INTERNAL_LABEL (count_label_name, "LP", label_no);
     count_label_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (count_label_name));
 
@@ -9157,6 +9193,9 @@ pa_hpux_file_end (void)
 {
   unsigned int i;
   extern_symbol *p;
+
+  if (!NO_DEFERRED_PROFILE_COUNTERS)
+    output_deferred_profile_counters ();
 
   output_deferred_plabels ();
 
