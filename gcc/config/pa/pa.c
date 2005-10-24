@@ -3326,25 +3326,9 @@ store_reg_modify (int base, int reg, HOST_WIDE_INT mod)
       RTX_FRAME_RELATED_P (insn) = 1;
 
       /* RTX_FRAME_RELATED_P must be set on each frame related set
-	 in a parallel with more than one element.  Don't set
-	 RTX_FRAME_RELATED_P in the first set if reg is temporary
-	 register 1. The effect of this operation is recorded in
-	 the initial copy.  */
-      if (reg != 1)
-	{
-	  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 0)) = 1;
-	  RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
-	}
-      else
-	{
-	  /* The first element of a PARALLEL is always processed if it is
-	     a SET.  Thus, we need an expression list for this case.  */
-	  REG_NOTES (insn)
-	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-		gen_rtx_SET (VOIDmode, basereg,
-			     gen_rtx_PLUS (word_mode, basereg, delta)),
-                REG_NOTES (insn));
-	}
+	 in a parallel with more than one element.  */
+      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 0)) = 1;
+      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
     }
 }
 
@@ -3578,17 +3562,7 @@ hppa_expand_prologue (void)
 	     frames.  */
 	  insn = emit_move_insn (tmpreg, frame_pointer_rtx);
 	  if (DO_FRAME_NOTES)
-	    {
-	      /* We need to record the frame pointer save here since the
-	         new frame pointer is set in the following insn.  */
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      REG_NOTES (insn)
-		= gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-		    gen_rtx_SET (VOIDmode,
-				 gen_rtx_MEM (word_mode, stack_pointer_rtx),
-			         frame_pointer_rtx),
-		    REG_NOTES (insn));
-	    }
+	    RTX_FRAME_RELATED_P (insn) = 1;
 
 	  insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
 	  if (DO_FRAME_NOTES)
