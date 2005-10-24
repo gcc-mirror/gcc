@@ -63,6 +63,5 @@ int gfc_check_do_variable (gfc_symtree *);
 try gfc_find_state (gfc_compile_state);
 gfc_state_data *gfc_enclosing_unit (gfc_compile_state *);
 const char *gfc_ascii_statement (gfc_statement);
-const char *gfc_state_name (gfc_compile_state);
 
 #endif  /* GFC_PARSE_H  */

@@ -2419,11 +2419,57 @@ gfc_match_entry (void)
     return m;
 
   state = gfc_current_state ();
-  if (state != COMP_SUBROUTINE
-      && state != COMP_FUNCTION)
+  if (state != COMP_SUBROUTINE && state != COMP_FUNCTION)
     {
-      gfc_error ("ENTRY statement at %C cannot appear within %s",
-		 gfc_state_name (gfc_current_state ()));
+      switch (state)
+	{
+	  case COMP_PROGRAM:
+	    gfc_error ("ENTRY statement at %C cannot appear within a PROGRAM");
+	    break;
+	  case COMP_MODULE:
+	    gfc_error ("ENTRY statement at %C cannot appear within a MODULE");
+	    break;
+	  case COMP_BLOCK_DATA:
+	    gfc_error
+	      ("ENTRY statement at %C cannot appear within a BLOCK DATA");
+	    break;
+	  case COMP_INTERFACE:
+	    gfc_error
+	      ("ENTRY statement at %C cannot appear within an INTERFACE");
+	    break;
+	  case COMP_DERIVED:
+	    gfc_error
+	      ("ENTRY statement at %C cannot appear "
+	       "within a DERIVED TYPE block");
+	    break;
+	  case COMP_IF:
+	    gfc_error
+	      ("ENTRY statement at %C cannot appear within an IF-THEN block");
+	    break;
+	  case COMP_DO:
+	    gfc_error
+	      ("ENTRY statement at %C cannot appear within a DO block");
+	    break;
+	  case COMP_SELECT:
+	    gfc_error
+	      ("ENTRY statement at %C cannot appear within a SELECT block");
+	    break;
+	  case COMP_FORALL:
+	    gfc_error
+	      ("ENTRY statement at %C cannot appear within a FORALL block");
+	    break;
+	  case COMP_WHERE:
+	    gfc_error
+	      ("ENTRY statement at %C cannot appear within a WHERE block");
+	    break;
+	  case COMP_CONTAINS:
+	    gfc_error
+	      ("ENTRY statement at %C cannot appear "
+	       "within a contained subprogram");
+	    break;
+	  default:
+	    gfc_internal_error ("gfc_match_entry(): Bad state");
+	}
       return MATCH_ERROR;
     }
 

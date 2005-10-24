@@ -1,3 +1,27 @@
+2005-10-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/15586
+	* arith.c (gfc_arith_error): Change message to include locus.
+	(check_result, eval_intrinsic, gfc_int2int, gfc_real2real,
+	gfc_real2complex, gfc_complex2real, gfc_complex2complex): Use
+	the new gfc_arith_error.
+	(arith_error): Rewrite full error messages instead of building
+	them from pieces.
+	* check.c (must_be): Removed.
+	(type_check, numeric_check, int_or_real_check, real_or_complex_check,
+	kind_check, double_check, logical_array_check, array_check,
+	scalar_check, same_type_check, rank_check, kind_value_check,
+	variable_check, gfc_check_allocated, gfc_check_associated,
+	gfc_check_cmplx, gfc_check_dcmplx, gfc_check_dot_product,
+	gfc_check_index, gfc_check_kind, gfc_check_matmul, gfc_check_null,
+	gfc_check_pack, gfc_check_precision, gfc_check_present,
+	gfc_check_spread): Rewrite full error messages instead of
+	building them from pieces.
+	* decl.c (gfc_match_entry): Rewrite full error messages instead
+	of building them from pieces.
+	* parse.c (gfc_state_name): Remove.
+	* parse.h: Remove prototype for gfc_state_name.
+
 2005-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/23635

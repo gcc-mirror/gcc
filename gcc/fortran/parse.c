@@ -959,63 +959,6 @@ gfc_ascii_statement (gfc_statement st)
 }
 
 
-/* Return the name of a compile state.  */
-
-const char *
-gfc_state_name (gfc_compile_state state)
-{
-  const char *p;
-
-  switch (state)
-    {
-    case COMP_PROGRAM:
-      p = _("a PROGRAM");
-      break;
-    case COMP_MODULE:
-      p = _("a MODULE");
-      break;
-    case COMP_SUBROUTINE:
-      p = _("a SUBROUTINE");
-      break;
-    case COMP_FUNCTION:
-      p = _("a FUNCTION");
-      break;
-    case COMP_BLOCK_DATA:
-      p = _("a BLOCK DATA");
-      break;
-    case COMP_INTERFACE:
-      p = _("an INTERFACE");
-      break;
-    case COMP_DERIVED:
-      p = _("a DERIVED TYPE block");
-      break;
-    case COMP_IF:
-      p = _("an IF-THEN block");
-      break;
-    case COMP_DO:
-      p = _("a DO block");
-      break;
-    case COMP_SELECT:
-      p = _("a SELECT block");
-      break;
-    case COMP_FORALL:
-      p = _("a FORALL block");
-      break;
-    case COMP_WHERE:
-      p = _("a WHERE block");
-      break;
-    case COMP_CONTAINS:
-      p = _("a contained subprogram");
-      break;
-
-    default:
-      gfc_internal_error ("gfc_state_name(): Bad state");
-    }
-
-  return p;
-}
-
-
 /* Do whatever is necessary to accept the last statement.  */
 
 static void
