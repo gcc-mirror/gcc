@@ -3271,10 +3271,11 @@ gfc_match_save (void)
     {
       if (gfc_current_ns->seen_save)
 	{
-	  gfc_error ("Blanket SAVE statement at %C follows previous "
-		     "SAVE statement");
-
-	  return MATCH_ERROR;
+	  if (gfc_notify_std (GFC_STD_LEGACY, 
+			      "Blanket SAVE statement at %C follows previous "
+			      "SAVE statement")
+	      == FAILURE)
+	    return MATCH_ERROR;
 	}
 
       gfc_current_ns->save_all = gfc_current_ns->seen_save = 1;
@@ -3283,8 +3284,10 @@ gfc_match_save (void)
 
   if (gfc_current_ns->save_all)
     {
-      gfc_error ("SAVE statement at %C follows blanket SAVE statement");
-      return MATCH_ERROR;
+      if (gfc_notify_std (GFC_STD_LEGACY, 
+			  "SAVE statement at %C follows blanket SAVE statement")
+	  == FAILURE)
+	return MATCH_ERROR;
     }
 
   gfc_match (" ::");

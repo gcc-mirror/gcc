@@ -681,8 +681,11 @@ gfc_add_save (symbol_attribute * attr, const char *name, locus * where)
 
   if (attr->save)
     {
-      duplicate_attr ("SAVE", where);
-      return FAILURE;
+	if (gfc_notify_std (GFC_STD_LEGACY, 
+			    "Duplicate SAVE attribute specified at %L",
+			    where) 
+	    == FAILURE)
+	  return FAILURE;
     }
 
   attr->save = 1;
