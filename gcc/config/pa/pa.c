@@ -127,7 +127,6 @@ static bool pa_scalar_mode_supported_p (enum machine_mode);
 static bool pa_commutative_p (rtx x, int outer_code);
 static void copy_fp_args (rtx) ATTRIBUTE_UNUSED;
 static int length_fp_args (rtx) ATTRIBUTE_UNUSED;
-static struct deferred_plabel *get_plabel (rtx) ATTRIBUTE_UNUSED;
 static inline void pa_file_start_level (void) ATTRIBUTE_UNUSED;
 static inline void pa_file_start_space (int) ATTRIBUTE_UNUSED;
 static inline void pa_file_start_file (int) ATTRIBUTE_UNUSED;
@@ -5224,8 +5223,11 @@ pa_hpux64_hpas_file_start (void)
 }
 #undef aputs
 
-static struct deferred_plabel *
-get_plabel (rtx symbol)
+/* Search the deferred plabel list for SYMBOL and return its internal
+   label.  If an entry for SYMBOL is not found, a new entry is created.  */
+
+rtx
+get_deferred_plabel (rtx symbol)
 {
   const char *fname = XSTR (symbol, 0);
   size_t i;
@@ -5263,7 +5265,7 @@ get_plabel (rtx symbol)
 	mark_referenced (id);
     }
 
-  return &deferred_plabels[i];
+  return deferred_plabels[i].internal_label;
 }
 
 static void
@@ -7103,9 +7105,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 	  /* ??? As far as I can tell, the HP linker doesn't support the
 	     long pc-relative sequence described in the 64-bit runtime
 	     architecture.  So, we use a slightly longer indirect call.  */
-	  struct deferred_plabel *p = get_plabel (call_dest);
-
-	  xoperands[0] = p->internal_label;
+	  xoperands[0] = get_deferred_plabel (call_dest);
 	  xoperands[1] = gen_label_rtx ();
 
 	  /* If this isn't a sibcall, we put the load of %r27 into the
@@ -7232,9 +7232,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 		     essentially an inline implementation of $$dyncall.
 		     We don't actually try to call $$dyncall as this is
 		     as difficult as calling the function itself.  */
-		  struct deferred_plabel *p = get_plabel (call_dest);
-
-		  xoperands[0] = p->internal_label;
+		  xoperands[0] = get_deferred_plabel (call_dest);
 		  xoperands[1] = gen_label_rtx ();
 
 		  /* Since the call is indirect, FP arguments in registers

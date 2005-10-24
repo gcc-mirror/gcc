@@ -132,6 +132,7 @@ extern enum direction function_arg_padding (enum machine_mode, tree);
 extern int non_hard_reg_operand (rtx, enum machine_mode);
 extern int eq_neq_comparison_operator (rtx, enum machine_mode);
 extern int insn_refs_are_delayed (rtx);
+extern rtx get_deferred_plabel (rtx);
 #endif /* RTX_CODE */
 
 /* Prototype function used in macro CONST_OK_FOR_LETTER_P.  */
