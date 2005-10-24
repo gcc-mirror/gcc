@@ -119,7 +119,8 @@ by type.  Explanations are in the following sections.
 -fdollar-ok  -fimplicit-none  -fmax-identifier-length @gol
 -std=@var{std} -fd-lines-as-code -fd-lines-as-comments @gol
 -ffixed-line-length-@var{n}  -ffixed-line-length-none @gol
--fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 }
+-fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 @gol
+-fcray-pointer }
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -264,6 +265,11 @@ Specify the maximum allowed identifier length. Typical values are
 Specify that no implicit typing is allowed, unless overridden by explicit
 @samp{IMPLICIT} statements.  This is the equivalent of adding
 @samp{implicit none} to the start of every procedure.
+
+@cindex -fcray-pointer option
+@cindex options, -fcray-pointer
+@item -fcray-pointer
+Enables the Cray pointer extension, which provides a C-like pointer.
 
 @cindex -std=@var{std} option
 @cindex option, -std=@var{std}

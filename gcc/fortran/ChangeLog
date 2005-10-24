@@ -1,5 +1,68 @@
 2005-10-24  Asher Langton  <langton2@llnl.gov>
 
+	PR fortran/17031
+	PR fortran/22282
+	* check.c (gfc_check_loc) : New function
+	* decl.c (variable_decl): New variables cp_as and sym. Added a	  
+	check for variables that have already been declared as Cray
+	Pointers, so we can get the necessary attributes without adding
+	a new symbol.
+	(attr_decl1): Added code to catch pointee symbols and "fix"
+	their array specs.
+	(cray_pointer_decl): New method.
+	(gfc_match_pointer): Added Cray pointer parsing code.
+	(gfc_mod_pointee_as): New method.
+	* expr.c (gfc_check_assign): added a check to catch vector-type
+	assignments to pointees with an unspecified final dimension.
+	* gfortran.h: (GFC_ISYM_LOC): New.
+	(symbol_attribute): Added cray_pointer and cray_pointee bits.
+	(gfc_array_spec): Added cray_pointee and cp_was_assumed bools.
+	(gfc_symbol): Added gfc_symbol *cp_pointer.
+	(gfc_option): Added flag_cray_pointer.
+	(gfc_add_cray_pointee): Declare.
+	(gfc_add_cray_pointer ): Declare.
+	(gfc_mod_pointee_as): Declare.
+	* intrinsic.c (add_functions): Add code for loc() intrinsic.
+	* intrinsic.h (gfc_check_loc): Declare.
+	(gfc_resolve_loc): Declare.
+	* iresolve.c (gfc_resolve_loc): New.
+	* lang.opt: Added fcray-pointer flag.
+	* options.c (gfc_init_options): Intialized
+	gfc_match_option.flag_cray_pointer.
+	(gfc_handle_option): Deal with -fcray-pointer.
+	* parse.c:(resolve_equivalence): Added code prohibiting Cray
+	pointees in equivalence statements.
+	* resolve.c (resolve_array_ref): Added code to prevent bounds
+	checking for Cray Pointee arrays.
+	(resolve_equivalence): Prohibited pointees in equivalence
+	statements.
+	* symbol.c (check_conflict): Added Cray pointer/pointee	 
+	attribute checking.
+	(gfc_add_cray_pointer): New
+	(gfc_add_cray_pointee): New
+	(gfc_copy_attr): New code for Cray pointers and pointees
+	* trans-array.c (gfc_trans_auto_array_allocation): Added code to
+	prevent space from being allocated for pointees.
+	(gfc_conv_array_parameter): Added code to catch pointees and    
+	correctly set their base address.
+	* trans-decl.c (gfc_finish_var_decl): Added code to prevent     
+	pointee declarations from making it to the back end.
+	(gfc_create_module_variable): Same.
+	* trans-expr.c (gfc_conv_variable): added code to detect and
+	translate pointees.
+	(gfc_conv_cray_pointee): New.
+	* trans-intrinsic.c (gfc_conv_intrinsic_loc): New.
+	(gfc_conv_intrinsic_function): added entry point for loc		
+	translation.
+	* trans.h (gfc_conv_cray_pointee): Declare.
+
+	* gfortran.texi: Added section on Cray pointers, removed Cray
+	pointers from list of proposed extensions
+	* intrinsic.texi: Added documentation for loc intrinsic.
+	* invoke.texi: Documented -fcray-pointer flag
+
+2005-10-24  Asher Langton  <langton2@llnl.gov>
+
 	* decl.c (gfc_match_save): Changed duplicate SAVE errors to
 	warnings in the absence of strict standard conformance
 	* symbol.c (gfc_add_save): Same.

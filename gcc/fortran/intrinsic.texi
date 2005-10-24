@@ -87,6 +87,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{EXPONENT}:      EXPONENT,  Exponent function
 * @code{FLOOR}:         FLOOR,     Integer floor function
 * @code{FNUM}:          FNUM,      File number function
+* @code{LOC}:           LOC,       Returns the address of a variable
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
 * @code{REAL}:          REAL,      Convert to real type 
@@ -2724,7 +2725,43 @@ end program test_fnum
 @end smallexample
 @end table
 
+@node LOC
+@section @code{LOC} --- Returns the address of a variable
+@findex @code{LOC} intrinsic
+@cindex loc
 
+@table @asis
+@item @emph{Description}:
+@code{LOC(X)} returns the address of @var{X} as an integer.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+inquiry function
+
+@item @emph{Syntax}:
+@code{I = LOC(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab Variable of any type.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER(n)}, where @code{n} is the
+size (in bytes) of a memory address on the target machine.
+
+@item @emph{Example}:
+@smallexample
+program test_loc
+  integer :: i
+  real :: r
+  i = loc(r)
+  print *, i
+end program test_loc
+@end smallexample
+@end table
 
 @node LOG
 @section @code{LOG} --- Logarithm function

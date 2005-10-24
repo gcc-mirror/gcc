@@ -1841,6 +1841,16 @@ gfc_check_assign (gfc_expr * lvalue, gfc_expr * rvalue, int conform)
        return FAILURE;
      }
 
+   if (sym->attr.cray_pointee
+       && lvalue->ref != NULL
+       && lvalue->ref->u.ar.type != AR_ELEMENT
+       && lvalue->ref->u.ar.as->cp_was_assumed)
+     {
+       gfc_error ("Vector assignment to assumed-size Cray Pointee at %L"
+		  " is illegal.", &lvalue->where);
+       return FAILURE;
+     }
+
   /* This is possibly a typo: x = f() instead of x => f()  */
   if (gfc_option.warn_surprising 
       && rvalue->expr_type == EXPR_FUNCTION

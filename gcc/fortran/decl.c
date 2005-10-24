@@ -912,13 +912,16 @@ variable_decl (int elem)
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_expr *initializer, *char_len;
   gfc_array_spec *as;
+  gfc_array_spec *cp_as; /* Extra copy for Cray Pointees.  */
   gfc_charlen *cl;
   locus var_locus;
   match m;
   try t;
+  gfc_symbol *sym;
 
   initializer = NULL;
   as = NULL;
+  cp_as = NULL;
 
   /* When we get here, we've just matched a list of attributes and
      maybe a type and a double colon.  The next thing we expect to see
@@ -931,7 +934,9 @@ variable_decl (int elem)
 
   /* Now we could see the optional array spec. or character length.  */
   m = gfc_match_array_spec (&as);
-  if (m == MATCH_ERROR)
+  if (gfc_option.flag_cray_pointer && m == MATCH_YES)
+    cp_as = gfc_copy_array_spec (as);
+  else if (m == MATCH_ERROR)
     goto cleanup;
   if (m == MATCH_NO)
     as = gfc_copy_array_spec (current_as);
@@ -972,6 +977,49 @@ variable_decl (int elem)
 	}
     }
 
+  /*  If this symbol has already shown up in a Cray Pointer declaration,
+      then we want to set the type & bail out. */
+  if (gfc_option.flag_cray_pointer)
+    {
+      gfc_find_symbol (name, gfc_current_ns, 1, &sym);
+      if (sym != NULL && sym->attr.cray_pointee)
+	{
+	  sym->ts.type = current_ts.type;
+	  sym->ts.kind = current_ts.kind;
+	  sym->ts.cl = cl;
+	  sym->ts.derived = current_ts.derived;
+	  m = MATCH_YES;
+	
+	  /* Check to see if we have an array specification.  */
+	  if (cp_as != NULL)
+	    {
+	      if (sym->as != NULL)
+		{
+		  gfc_error ("Duplicate array spec for Cray pointee at %C.");
+		  gfc_free_array_spec (cp_as);
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+	      else
+		{
+		  if (gfc_set_array_spec (sym, cp_as, &var_locus) == FAILURE)
+		    gfc_internal_error ("Couldn't set pointee array spec.");
+	      
+		  /* Fix the array spec.  */
+		  m = gfc_mod_pointee_as (sym->as);  
+		  if (m == MATCH_ERROR)
+		    goto cleanup;
+		}
+	    }     
+	  goto cleanup;
+	}
+      else
+	{
+	  gfc_free_array_spec (cp_as);
+	}
+    }
+  
+    
   /* OK, we've successfully matched the declaration.  Now put the
      symbol in the current namespace, because it might be used in the
      optional initialization expression for this symbol, e.g. this is
@@ -2875,6 +2923,14 @@ attr_decl1 (void)
       m = MATCH_ERROR;
       goto cleanup;
     }
+    
+  if (sym->attr.cray_pointee && sym->as != NULL)
+    {
+      /* Fix the array spec.  */
+      m = gfc_mod_pointee_as (sym->as);   	
+      if (m == MATCH_ERROR)
+	goto cleanup;
+    }
 
   if ((current_attr.external || current_attr.intrinsic)
       && sym->attr.flavor != FL_PROCEDURE
@@ -2925,6 +2981,157 @@ attr_decl (void)
     }
 
   return m;
+}
+
+
+/* This routine matches Cray Pointer declarations of the form:
+   pointer ( <pointer>, <pointee> )
+   or
+   pointer ( <pointer1>, <pointee1> ), ( <pointer2>, <pointee2> ), ...   
+   The pointer, if already declared, should be an integer.  Otherwise, we 
+   set it as BT_INTEGER with kind gfc_index_integer_kind.  The pointee may
+   be either a scalar, or an array declaration.  No space is allocated for
+   the pointee.  For the statement 
+   pointer (ipt, ar(10))
+   any subsequent uses of ar will be translated (in C-notation) as
+   ar(i) => ((<type> *) ipt)(i)   
+   By the time the code is translated into GENERIC, the pointee will
+   have disappeared from the code entirely. */
+
+static match
+cray_pointer_decl (void)
+{
+  match m;
+  gfc_array_spec *as;
+  gfc_symbol *cptr; /* Pointer symbol.  */
+  gfc_symbol *cpte; /* Pointee symbol.  */
+  locus var_locus;
+  bool done = false;
+
+  while (!done)
+    {
+      if (gfc_match_char ('(') != MATCH_YES)
+	{
+	  gfc_error ("Expected '(' at %C");
+	  return MATCH_ERROR;   
+	}
+ 
+      /* Match pointer.  */
+      var_locus = gfc_current_locus;
+      gfc_clear_attr (&current_attr);
+      gfc_add_cray_pointer (&current_attr, &var_locus);
+      current_ts.type = BT_INTEGER;
+      current_ts.kind = gfc_index_integer_kind;
+
+      m = gfc_match_symbol (&cptr, 0);  
+      if (m != MATCH_YES)
+	{
+	  gfc_error ("Expected variable name at %C");
+	  return m;
+	}
+  
+      if (gfc_add_cray_pointer (&cptr->attr, &var_locus) == FAILURE)
+	return MATCH_ERROR;
+
+      gfc_set_sym_referenced (cptr);      
+
+      if (cptr->ts.type == BT_UNKNOWN) /* Override the type, if necessary.  */
+	{
+	  cptr->ts.type = BT_INTEGER;
+	  cptr->ts.kind = gfc_index_integer_kind; 
+	}
+      else if (cptr->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("Cray pointer at %C must be an integer.");
+	  return MATCH_ERROR;
+	}
+      else if (cptr->ts.kind < gfc_index_integer_kind)
+	gfc_warning ("Cray pointer at %C has %d bytes of precision;"
+		     " memory addresses require %d bytes.",
+		     cptr->ts.kind,
+		     gfc_index_integer_kind);
+
+      if (gfc_match_char (',') != MATCH_YES)
+	{
+	  gfc_error ("Expected \",\" at %C");
+	  return MATCH_ERROR;    
+	}
+
+      /* Match Pointee.  */  
+      var_locus = gfc_current_locus;
+      gfc_clear_attr (&current_attr);
+      gfc_add_cray_pointee (&current_attr, &var_locus);
+      current_ts.type = BT_UNKNOWN;
+      current_ts.kind = 0;
+
+      m = gfc_match_symbol (&cpte, 0);
+      if (m != MATCH_YES)
+	{
+	  gfc_error ("Expected variable name at %C");
+	  return m;
+	}
+       
+      /* Check for an optional array spec.  */
+      m = gfc_match_array_spec (&as);
+      if (m == MATCH_ERROR)
+	{
+	  gfc_free_array_spec (as);
+	  return m;
+	}
+      else if (m == MATCH_NO)
+	{
+	  gfc_free_array_spec (as);
+	  as = NULL;
+	}   
+
+      if (gfc_add_cray_pointee (&cpte->attr, &var_locus) == FAILURE)
+	return MATCH_ERROR;
+
+      gfc_set_sym_referenced (cpte);
+
+      if (cpte->as == NULL)
+	{
+	  if (gfc_set_array_spec (cpte, as, &var_locus) == FAILURE)
+	    gfc_internal_error ("Couldn't set Cray pointee array spec.");
+	}
+      else if (as != NULL)
+	{
+	  gfc_error ("Duplicate array spec for Cray pointee at %C.");
+	  gfc_free_array_spec (as);
+	  return MATCH_ERROR;
+	}
+      
+      as = NULL;
+    
+      if (cpte->as != NULL)
+	{
+	  /* Fix array spec.  */
+	  m = gfc_mod_pointee_as (cpte->as);
+	  if (m == MATCH_ERROR)
+	    return m;
+	} 
+   
+      /* Point the Pointee at the Pointer.  */
+      cpte->cp_pointer=cptr;
+
+      if (gfc_match_char (')') != MATCH_YES)
+	{
+	  gfc_error ("Expected \")\" at %C");
+	  return MATCH_ERROR;    
+	}
+      m = gfc_match_char (',');
+      if (m != MATCH_YES)
+	done = true; /* Stop searching for more declarations.  */
+
+    }
+  
+  if (m == MATCH_ERROR /* Failed when trying to find ',' above.  */
+      || gfc_match_eos () != MATCH_YES)
+    {
+      gfc_error ("Expected \",\" or end of statement at %C");
+      return MATCH_ERROR;
+    }
+  return MATCH_YES;
 }
 
 
@@ -2981,11 +3188,24 @@ gfc_match_optional (void)
 match
 gfc_match_pointer (void)
 {
-
-  gfc_clear_attr (&current_attr);
-  gfc_add_pointer (&current_attr, NULL);
-
-  return attr_decl ();
+  gfc_gobble_whitespace ();
+  if (gfc_peek_char () == '(')
+    {
+      if (!gfc_option.flag_cray_pointer)
+	{
+	  gfc_error ("Cray pointer declaration at %C requires -fcray-pointer"
+		     " flag.");
+	  return MATCH_ERROR;
+	}
+      return cray_pointer_decl ();
+    }
+  else
+    {
+      gfc_clear_attr (&current_attr);
+      gfc_add_pointer (&current_attr, NULL);
+    
+      return attr_decl ();
+    }
 }
 
 
@@ -3491,5 +3711,31 @@ loop:
 
   gfc_new_block = sym;
 
+  return MATCH_YES;
+}
+
+
+/* Cray Pointees can be declared as: 
+      pointer (ipt, a (n,m,...,*)) 
+   By default, this is treated as an AS_ASSUMED_SIZE array.  We'll
+   cheat and set a constant bound of 1 for the last dimension, if this
+   is the case. Since there is no bounds-checking for Cray Pointees,
+   this will be okay.  */
+
+try
+gfc_mod_pointee_as (gfc_array_spec *as)
+{
+  as->cray_pointee = true; /* This will be useful to know later.  */
+  if (as->type == AS_ASSUMED_SIZE)
+    {
+      as->type = AS_EXPLICIT;
+      as->upper[as->rank - 1] = gfc_int_expr (1);
+      as->cp_was_assumed = true;
+    }
+  else if (as->type == AS_ASSUMED_SHAPE)
+    {
+      gfc_error ("Cray Pointee at %C cannot be assumed shape array");
+      return MATCH_ERROR;
+    }
   return MATCH_YES;
 }

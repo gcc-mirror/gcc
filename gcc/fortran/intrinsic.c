@@ -2098,6 +2098,13 @@ add_functions (void)
 	     bck, BT_LOGICAL, dl, OPTIONAL);
 
   make_generic ("verify", GFC_ISYM_VERIFY, GFC_STD_F95);
+    
+  add_sym_1 ("loc", 0, 1, BT_INTEGER, ii, GFC_STD_GNU,
+	    gfc_check_loc, NULL, gfc_resolve_loc,
+	    ar, BT_UNKNOWN, 0, REQUIRED);
+		
+  make_generic ("loc", GFC_ISYM_LOC, GFC_STD_GNU);
+
 }
 
 

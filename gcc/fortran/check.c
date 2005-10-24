@@ -1211,6 +1211,12 @@ gfc_check_link_sub (gfc_expr * path1, gfc_expr * path2, gfc_expr * status)
   return SUCCESS;
 }
 
+try
+gfc_check_loc (gfc_expr *expr)
+{
+  return variable_check (expr, 0);
+}
+
 
 try
 gfc_check_symlnk (gfc_expr * path1, gfc_expr * path2)
