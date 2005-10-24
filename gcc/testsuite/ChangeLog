@@ -1,3 +1,8 @@
+2005-10-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24416
+	gfortran.dg/namelist_char_only.f90: New test.
+
 2005-10-24  Asher Langton  <langton2@llnl.gov>
 
 	PR fortran/17031
