@@ -1,3 +1,9 @@
+2005-10-24  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/24255
+	* profile.c (branch_prob): Look from end to start through a
+	basic block when looking for a locus.
+
 2005-10-24  Richard Henderson  <rth@redhat.com>
 
 	* pa.c (store_reg_modify): Set RTX_FRAME_RELATED_P on each set in
@@ -83,7 +89,7 @@
 
 2005-10-20  Steven Bosscher  <stevenb@suse.de>
 
-	PR tree-optimization/24225
+	PR tree-optimization/24307
 	* tree-cfg.c (tree_find_edge_insert_loc): Handle naked RETURN_EXPR.
 
 2005-10-20  Alexandre Oliva  <aoliva@redhat.com>

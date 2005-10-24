@@ -806,13 +806,27 @@ branch_prob (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  tree last = last_stmt (bb);
+	  block_stmt_iterator bsi;
+	  tree last = NULL;
+
+	  /* It may happen that there are compiler generated statements
+	     without a locus at all.  Go through the basic block from the
+	     last to the first statement looking for a locus.  */
+	  for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_prev (&bsi))
+	    {
+	      last = bsi_stmt (bsi);
+	      if (EXPR_LOCUS (last))
+		break;
+	    }
+
 	  /* Edge with goto locus might get wrong coverage info unless
 	     it is the only edge out of BB.   
 	     Don't do that when the locuses match, so 
 	     if (blah) goto something;
 	     is not computed twice.  */
-	  if (e->goto_locus && !single_succ_p (bb)
+	  if (last && EXPR_LOCUS (last)
+	      && e->goto_locus
+	      && !single_succ_p (bb)
 #ifdef USE_MAPPED_LOCATION
 	      && (LOCATION_FILE (e->goto_locus)
 	          != LOCATION_FILE (EXPR_LOCATION  (last))
@@ -820,8 +834,7 @@ branch_prob (void)
 		      != LOCATION_LINE (EXPR_LOCATION  (last)))))
 #else
 	      && (e->goto_locus->file != EXPR_LOCUS (last)->file
-		  || (e->goto_locus->line
-		      != EXPR_LOCUS (last)->line)))
+		  || (e->goto_locus->line != EXPR_LOCUS (last)->line)))
 #endif
 	    {
 	      basic_block new = split_edge (e);

@@ -1,3 +1,7 @@
+2005-10-24  Steven Bosscher  <stevenb@suse.de>
+
+	* gcc.dg/pr24225.c: New test.
+
 2005-10-24  Asher Langton  <langton2@llnl.gov>
 
 	* gfortran.dg/dup_save_1.f90: New test.
