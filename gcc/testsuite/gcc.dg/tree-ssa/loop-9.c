@@ -21,4 +21,4 @@ void foo (int *p)
     }
 }
 
-/* { dg-final { scan-assembler-times "lea" 0 { target i?86-*-* x86_64-*-* } } } */
+/* { dg-final { scan-assembler-times "lea\\t" 0 { target i?86-*-* x86_64-*-* } } } */
