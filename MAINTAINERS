@@ -182,7 +182,7 @@ middle-end		Roger Sayle		roger@eyesopen.com
 middle-end		Ian Lance Taylor	ian@airs.com
 tree-ssa		Diego Novillo		dnovillo@redhat.com
 tree-ssa		Andrew MacLeod		amacleod@redhat.com
-PRE, points-to		Daniel Berlin		dberlin@dberlin.org
+PRE			Daniel Berlin		dberlin@dberlin.org
 code sinking		Daniel Berlin		dberlin@dberlin.org
 mudflap			Frank Ch. Eigler	fche@redhat.com
 tree browser/unparser	Sebastian Pop		pop@cri.ensmp.fr
@@ -191,6 +191,8 @@ scev, data dependence	Sebastian Pop		pop@cri.ensmp.fr
 linear loop transforms	Daniel Berlin		dberlin@dberlin.org
 profile feedback	Jan Hubicka		jh@suse.cz
 type-safe vectors	Nathan Sidwell		nathan@codesourcery.com
+alias analysis		Daniel Berlin		dberlin@dberlin.org
+alias analysis		Diego Novillo		dnovillo@redhat.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
