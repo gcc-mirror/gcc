@@ -1,3 +1,15 @@
+2005-10-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24450
+	* config/locale/generic/time_members.h (__timepunct<>::
+	__timepunct(__c_locale, const char*, size_t)): Avoid leaking
+	memory if new throws inside _M_initialize_timepunct.
+	* config/locale/gnu/time_members.h (__timepunct<>::
+	__timepunct(__c_locale, const char*, size_t)): Likewise.
+	* config/locale/gnu/message_members.h (messages<>::
+	messages(__c_locale, const char*, size_t)): Rearrange to
+	avoid memory leaks.
+
 2005-10-17  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	PR libstdc++/24244
