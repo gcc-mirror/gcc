@@ -1,3 +1,8 @@
+2005-10-23  Jerry DeLisle  <jvdelisle@verizon.net>
+
+        PR libgfortran/24489
+        * gfortran.dg/pr24489.f90: New test.
+
 2005-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/23635
