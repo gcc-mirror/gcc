@@ -1,3 +1,9 @@
+2005-10-24  Wil Mahan  <wmahan@gmail.com>
+
+	PR java/23617
+	* zextract.c (read_zip_archive): Fix out of memory error when
+	reading jar files with zip-style comments.
+
 2005-10-14  Nathan Sidwell  <nathan@codesourcery.com>
 	    Wil Mahan <wmahan@gmail.com>
 

@@ -1,7 +1,7 @@
 /* Handle a .class file embedded in a .zip archive.
    This extracts a member from a .zip file, but does not handle
    uncompression (since that is not needed for classes.zip).
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -287,6 +287,25 @@ read_zip_archive (ZipFile *zipf)
     return -1;
   if (read (zipf->fd, buffer, ECREC_SIZE+4) != ECREC_SIZE+4)
     return -2;
+  if (buffer[0] != 'P'
+      || strncmp ((const char *) &buffer[1], END_CENTRAL_SIG, 3))
+    {
+      /* We could not find the end-central-header signature, probably
+	 because a zipfile comment is present. Scan backwards until we
+	 find the signature. */
+      if (lseek (zipf->fd, (long)(-ECREC_SIZE), SEEK_END) <= 0)
+	return -2;
+      while (buffer[0] != 'P'
+	     || strncmp ((const char *) &buffer[1], END_CENTRAL_SIG, 3))
+	{
+	  if (lseek (zipf->fd, -5, SEEK_CUR) < 0)
+	    return -2;
+	  if (read (zipf->fd, buffer, 4) != 4)
+	    return -2;
+	}
+      if (read (zipf->fd, buffer + 4, ECREC_SIZE) != ECREC_SIZE)
+	return -2;
+    }
   zipf->count = makeword((const uch *) &buffer[TOTAL_ENTRIES_CENTRAL_DIR]);
   zipf->dir_size = makelong((const uch *) &buffer[SIZE_CENTRAL_DIRECTORY]);
 #define ALLOC xmalloc
