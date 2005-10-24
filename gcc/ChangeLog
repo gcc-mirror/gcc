@@ -1,4 +1,15 @@
-2005-10-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+2005-10-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-linux.h (NO_PROFILE_COUNTERS): Delete define.
+	(NO_DEFERRED_PROFILE_COUNTERS): Define.
+	* pa.h (NO_PROFILE_COUNTERS): Define.
+	* pa.c (NO_DEFERRED_PROFILE_COUNTERS): Define if not defined.
+	(funcdef_nos): New vector to hold label numbers of deferred profile
+	counters.
+	(output_deferred_profile_counters): New function.
+	(hppa_profile_hook): Push label number onto funcdef_nos.
+	(pa_hpux_file_end): Call output_deferred_profile_counters if
+	NO_DEFERRED_PROFILE_COUNTERS is false.
 
 	* pa-protos.h (get_deferred_plabel): New prototype.
 	* pa.c (get_plabel): Rename to get_deferred_plabel.  Return plabel.
