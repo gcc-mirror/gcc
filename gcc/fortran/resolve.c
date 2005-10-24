@@ -2583,17 +2583,49 @@ resolve_deallocate_expr (gfc_expr * e)
 }
 
 
+/* Given the expression node e for an allocatable/pointer of derived type to be
+   allocated, get the expression node to be initialized afterwards (needed for
+   derived types with default initializers).  */
+
+static gfc_expr *
+expr_to_initialize (gfc_expr * e)
+{
+  gfc_expr *result;
+  gfc_ref *ref;
+  int i;
+
+  result = gfc_copy_expr (e);
+
+  /* Change the last array reference from AR_ELEMENT to AR_FULL.  */
+  for (ref = result->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->next == NULL)
+      {
+        ref->u.ar.type = AR_FULL;
+
+        for (i = 0; i < ref->u.ar.dimen; i++)
+          ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i] = NULL;
+
+        result->rank = ref->u.ar.dimen; 
+        break;
+      }
+
+  return result;
+}
+
+
 /* Resolve the expression in an ALLOCATE statement, doing the additional
    checks to see whether the expression is OK or not.  The expression must
    have a trailing array reference that gives the size of the array.  */
 
 static try
-resolve_allocate_expr (gfc_expr * e)
+resolve_allocate_expr (gfc_expr * e, gfc_code * code)
 {
   int i, pointer, allocatable, dimension;
   symbol_attribute attr;
   gfc_ref *ref, *ref2;
   gfc_array_ref *ar;
+  gfc_code *init_st;
+  gfc_expr *init_e;
 
   if (gfc_resolve_expr (e) == FAILURE)
     return FAILURE;
@@ -2646,6 +2678,19 @@ resolve_allocate_expr (gfc_expr * e)
       gfc_error ("Expression in ALLOCATE statement at %L must be "
 		 "ALLOCATABLE or a POINTER", &e->where);
       return FAILURE;
+    }
+
+  /* Add default initializer for those derived types that need them.  */
+  if (e->ts.type == BT_DERIVED && (init_e = gfc_default_initializer (&e->ts)))
+    {
+        init_st = gfc_get_code ();
+        init_st->loc = code->loc;
+        init_st->op = EXEC_ASSIGN;
+        init_st->expr = expr_to_initialize (e);
+        init_st->expr2 = init_e;
+
+        init_st->next = code->next;
+        code->next = init_st;
     }
 
   if (pointer && dimension == 0)
@@ -3996,7 +4041,7 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 		       "of type INTEGER", &code->expr->where);
 
 	  for (a = code->ext.alloc_list; a; a = a->next)
-	    resolve_allocate_expr (a->expr);
+	    resolve_allocate_expr (a->expr, code);
 
 	  break;
 

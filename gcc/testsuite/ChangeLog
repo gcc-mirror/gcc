@@ -1,3 +1,8 @@
+2005-10-24  Erik Edelmann  <erik.edelmann@iki.fi>
+
+	PR fortran/21625
+	* gfortran.dg/derived_init_1.f90: New.
+
 2005-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/23635

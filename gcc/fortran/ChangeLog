@@ -1,3 +1,13 @@
+2005-10-24  Erik Edelmann  <erik.edelmann@iki.fi>
+
+	PR fortran/21625
+	* resolve.c (expr_to_initialize): New function.
+	(resolve_allocate_expr): Take current statement as new
+	argument. Add default initializers to variables of
+	derived types, if they need it.  (resolve_code):
+	Provide current statement as argument to
+	resolve_allocate_expr().
+
 2005-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/23635
