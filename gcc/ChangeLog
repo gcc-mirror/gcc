@@ -1,3 +1,9 @@
+2005-10-24  Richard Henderson  <rth@redhat.com>
+
+	* pa.c (store_reg_modify): Set RTX_FRAME_RELATED_P on each set in
+	parallel.
+	(hppa_expand_prologue): Likewise.
+
 2005-10-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-linux.h (NO_PROFILE_COUNTERS): Delete define.
