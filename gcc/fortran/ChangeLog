@@ -1,3 +1,9 @@
+2005-10-24  Asher Langton  <langton2@llnl.gov>
+
+	* decl.c (gfc_match_save): Changed duplicate SAVE errors to
+	warnings in the absence of strict standard conformance
+	* symbol.c (gfc_add_save): Same.
+
 2005-10-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/15586

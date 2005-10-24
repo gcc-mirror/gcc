@@ -1,3 +1,8 @@
+2005-10-24  Asher Langton  <langton2@llnl.gov>
+
+	* gfortran.dg/dup_save_1.f90: New test.
+	* gfortran.dg/dup_save_2.f90: New test.
+
 2005-10-24  Paul Brook  <paul@codesourcery.com>
 
 	PR 24107
@@ -6,8 +11,8 @@
 
 2005-10-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
-        PR libgfortran/24489
-        * gfortran.dg/pr24489.f90: New test.
+	PR libgfortran/24489
+	* gfortran.dg/pr24489.f90: New test.
 
 2005-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
