@@ -1,3 +1,9 @@
+2005-10-24  Paul Brook  <paul@codesourcery.com>
+
+	PR 24107
+	* gcc.dg/20050922-1.c: Provide definition of uint32_t without using
+	stdint.h.
+
 2005-10-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
         PR libgfortran/24489
