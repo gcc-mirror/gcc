@@ -1,6 +1,11 @@
 2005-10-24  Steven Bosscher  <stevenb@suse.de>
 
-	PR tree-optimization/24255
+	* contrib.texi: Add the names of the LLNL folks who donated
+	Cray pointer support for gfortran.
+
+2005-10-24  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/24225
 	* profile.c (branch_prob): Look from end to start through a
 	basic block when looking for a locus.
 

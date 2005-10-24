@@ -469,6 +469,10 @@ Charles LaBrec contributed the support for the Integrated Solutions
 68020 system.
 
 @item
+Asher Langton and Mike Kumbera for contributing Cray pointer support
+to gfortran, and for other gfortran improvements.
+
+@item
 Jeff Law for his direction via the steering committee, coordinating the
 entire egcs project and GCC 2.95, rolling out snapshots and releases,
 handling merges from GCC2, reviewing tons of patches that might have
