@@ -1,3 +1,8 @@
+2005-10-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Explain
+	peculiarity of GOT/TOC section usage.
+
 2005-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/24435
