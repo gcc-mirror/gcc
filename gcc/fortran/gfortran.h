@@ -360,6 +360,7 @@ enum gfc_generic_isym_id
   GFC_ISYM_LLE,
   GFC_ISYM_LLT,
   GFC_ISYM_LOG,
+  GFC_ISYM_LOC,
   GFC_ISYM_LOG10,
   GFC_ISYM_LOGICAL,
   GFC_ISYM_MATMUL,
@@ -476,6 +477,9 @@ typedef struct
   ENUM_BITFIELD (ifsrc) if_source:2;
 
   ENUM_BITFIELD (procedure_type) proc:3;
+  
+  /* Special attributes for Cray pointers, pointees.  */
+  unsigned cray_pointer:1, cray_pointee:1;    
 
 }
 symbol_attribute;
@@ -573,6 +577,13 @@ typedef struct
   int rank;	/* A rank of zero means that a variable is a scalar.  */
   array_type type;
   struct gfc_expr *lower[GFC_MAX_DIMENSIONS], *upper[GFC_MAX_DIMENSIONS];
+
+  /* These two fields are used with the Cray Pointer extension.  */
+  bool cray_pointee; /* True iff this spec belongs to a cray pointee.  */
+  bool cp_was_assumed; /* AS_ASSUMED_SIZE cp arrays are converted to
+			AS_EXPLICIT, but we want to remember that we
+			did this.  */
+
 }
 gfc_array_spec;
 
@@ -716,6 +727,9 @@ typedef struct gfc_symbol
   gfc_array_spec *as;
   struct gfc_symbol *result;	/* function result symbol */
   gfc_component *components;	/* Derived type components */
+
+  /* Defined only for Cray pointees; points to their pointer.  */
+  struct gfc_symbol *cp_pointer;
 
   struct gfc_symbol *common_next;	/* Links for COMMON syms */
 
@@ -1458,6 +1472,7 @@ typedef struct
   int flag_f2c;
   int flag_automatic;
   int flag_backslash;
+  int flag_cray_pointer;
   int flag_d_lines;
 
   int q_kind;
@@ -1642,6 +1657,9 @@ try gfc_add_external (symbol_attribute *, locus *);
 try gfc_add_intrinsic (symbol_attribute *, locus *);
 try gfc_add_optional (symbol_attribute *, locus *);
 try gfc_add_pointer (symbol_attribute *, locus *);
+try gfc_add_cray_pointer (symbol_attribute *, locus *);
+try gfc_add_cray_pointee (symbol_attribute *, locus *);
+try gfc_mod_pointee_as (gfc_array_spec *as);
 try gfc_add_result (symbol_attribute *, const char *, locus *);
 try gfc_add_save (symbol_attribute *, const char *, locus *);
 try gfc_add_saved_common (symbol_attribute *, locus *);

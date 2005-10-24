@@ -2013,7 +2013,7 @@ resolve_array_ref (gfc_array_ref * ar)
 	  }
     }
 
-  if (compare_spec_to_ref (ar) == FAILURE)
+  if (!ar->as->cray_pointee && compare_spec_to_ref (ar) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -5175,6 +5175,14 @@ resolve_equivalence (gfc_equiv *eq)
 		     "object in the pure procedure '%s'",
 		     sym->name, &e->where, sym->ns->proc_name->name);
           break;
+        }
+ 
+     /* Shall not be a Cray pointee.  */
+      if (sym->attr.cray_pointee)
+        {
+          gfc_error ("Cray Pointee '%s' at %L cannot be an EQUIVALENCE "
+		     "object", sym->name, &e->where);
+          continue;
         }
 
       /* Shall not be a named constant.  */      

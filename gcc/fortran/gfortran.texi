@@ -491,9 +491,6 @@ Flag to generate @code{Makefile} info.
 Automatically extend single precision constants to double.
 
 @item
-Cray pointers (this was high on the @command{g77} wishlist).
-
-@item
 Compile code that conserves memory by dynamically allocating common and
 module storage either on stack or heap.
 
@@ -633,6 +630,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 * Unary operators::
 * Implicitly interconvert LOGICAL and INTEGER::
 * Hollerith constants support::
+* Cray pointers::
 @end menu
 
 @node Old-style kind specifications
@@ -842,6 +840,143 @@ integer*4 a
 a = 8H12345678 ! The Hollerith constant is too long. It will be truncated.
 a = 0H         ! At least one character needed.
 @end smallexample
+
+@node Cray pointers
+@section Cray pointers
+@cindex Cray pointers
+
+Cray pointers are part of a non-standard extension that provides a
+C-like pointer in Fortran.  This is accomplished through a pair of
+variables: an integer "pointer" that holds a memory address, and a
+"pointee" that is used to dereference the pointer.
+
+Pointer/pointee pairs are declared in statements of the form:
+@smallexample
+        pointer ( <pointer> , <pointee> )
+@end smallexample
+or,
+@smallexample
+        pointer ( <pointer1> , <pointee1> ), ( <pointer2> , <pointee2> ), ...
+@end smallexample
+The pointer is an integer that is intended to hold a memory address.
+The pointee may be an array or scalar.  A pointee can be an assumed
+size array -- that is, the last dimension may be left unspecified by
+using a '*' in place of a value -- but a pointee cannot be an assumed
+shape array.  No space is allocated for the pointee.
+
+The pointee may have its type declared before or after the pointer
+statement, and its array specification (if any) may be declared
+before, during, or after the pointer statement.  The pointer may be
+declared as an integer prior to the pointer statement.  However, some
+machines have default integer sizes that are different than the size
+of a pointer, and so the following code is not portable:
+@smallexample
+        integer ipt
+        pointer (ipt, iarr)
+@end smallexample
+If a pointer is declared with a kind that is too small, the compiler
+will issue a warning; the resulting binary will probably not work
+correctly, because the memory addresses stored in the pointers may be
+truncated.  It is safer to omit the first line of the above example;
+if explicit declaration of ipt's type is omitted, then the compiler
+will ensure that ipt is an integer variable large enough to hold a
+pointer.
+
+Pointer arithmetic is valid with Cray pointers, but it is not the same
+as C pointer arithmetic.  Cray pointers are just ordinary integers, so
+the user is responsible for determining how many bytes to add to a
+pointer in order to increment it.  Consider the following example:
+@smallexample
+        real target(10)
+        real pointee(10)
+        pointer (ipt, pointee)
+        ipt = loc (target)
+        ipt = ipt + 1       
+@end smallexample
+The last statement does not set ipt to the address of
+@code{target(1)}, as one familiar with C pointer arithmetic might
+expect.  Adding 1 to ipt just adds one byte to the address stored in
+ipt.
+
+Any expression involving the pointee will be translated to use the
+value stored in the pointer as the base address.  This translation is
+done in the front end, and so the pointees are not present in the
+GENERIC tree that is handed off to the backend.  One disadvantage of
+this is that pointees will not appear in gdb when debugging a Fortran
+program that uses Cray pointers.
+
+To get the address of elements, this extension provides an intrinsic
+function loc(), loc() is essentially the C '&' operator, except the
+address is cast to an integer type:
+@smallexample
+        real ar(10)
+        pointer(ipt, arpte(10))
+        real arpte
+        ipt = loc(ar)  ! Makes arpte is an alias for ar
+        arpte(1) = 1.0 ! Sets ar(1) to 1.0
+@end smallexample
+The pointer can also be set by a call to a malloc-type
+function.  There is no malloc intrinsic implemented as part of the
+Cray pointer extension, but it might be a useful future addition to
+@command{gfortran}.  Even without an intrinsic malloc function,
+dynamic memory allocation can be combined with Cray pointers by
+calling a short C function:
+@smallexample
+mymalloc.c:
+
+        void mymalloc_(void **ptr, int *nbytes)
+        @{
+            *ptr = malloc(*nbytes);
+            return;
+        @}
+
+caller.f:
+
+        program caller
+        integer ipinfo;
+        real*4 data
+        pointer (ipdata, data(1024))
+        call mymalloc(ipdata,4*1024)
+        end
+@end smallexample
+Cray pointees often are used to alias an existing variable.  For
+example:
+@smallexample
+        integer target(10)
+        integer iarr(10)
+        pointer (ipt, iarr)
+        ipt = loc(target)
+@end smallexample
+As long as ipt remains unchanged, iarr is now an alias for target.
+The optimizer, however, will not detect this aliasing, so it is unsafe
+to use iarr and target simultaneously.  Using a pointee in any way
+that violates the Fortran aliasing rules or assumptions is illegal.
+It is the user's responsibility to avoid doing this; the compiler
+works under the assumption that no such aliasing occurs.
+
+Cray pointers will work correctly when there is no aliasing (i.e.,
+when they're used to access a dynamically allocated block of memory),
+and also in any routine where a pointee is used, but any variable with
+which it shares storage is not used.  Code that violates these rules
+may not run as the user intends.  This is not a bug in the optimizer;
+any code that violates the aliasing rules is illegal.  (Note that this
+is not unique to gfortran; any Fortran compiler that supports Cray
+pointers will ``incorrectly'' optimize code with illegal aliasing.)
+
+There are a number of restrictions on the attributes that can be
+applied to Cray pointers and pointees.  Pointees may not have the
+attributes ALLOCATABLE, INTENT, OPTIONAL, DUMMY, TARGET, EXTERNAL,
+INTRINSIC, or POINTER.  Pointers may not have the attributes
+DIMENSION, POINTER, TARGET, ALLOCATABLE, EXTERNAL, or INTRINSIC.
+Pointees may not occur in more than one pointer statement.  A pointee
+cannot be a pointer.  Pointees cannot occur in equivalence, common, or
+data statements.
+
+A pointer may be modified during the course of a program, and this
+will change the location to which the pointee refers.  However, when
+pointees are passed as arguments, they are treated as ordinary
+variables in the invoked function.  Subsequent changes to the pointer
+will not change the base address of the array that was passed.
 
 @include intrinsic.texi
 @c ---------------------------------------------------------------------

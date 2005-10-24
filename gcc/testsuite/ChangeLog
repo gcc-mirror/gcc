@@ -1,3 +1,13 @@
+2005-10-24  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/17031
+	PR fortran/22282
+	* gfortran.dg/cray_pointers_1.f90: New test.
+	* gfortran.dg/cray_pointers_2.f90: New test.
+	* gfortran.dg/cray_pointers_3.f90: New test.
+	* gfortran.dg/loc_1.f90: New test.
+	* gfortran.dg/loc_2.f90: New test.
+
 2005-10-24  Steven Bosscher  <stevenb@suse.de>
 
 	* gcc.dg/pr24225.c: New test.

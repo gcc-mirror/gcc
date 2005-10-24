@@ -871,6 +871,15 @@ gfc_resolve_link (gfc_expr * f, gfc_expr * p1 ATTRIBUTE_UNUSED,
 
 
 void
+gfc_resolve_loc (gfc_expr *f, gfc_expr *x)
+{
+  f->ts.type= BT_INTEGER;
+  f->ts.kind = gfc_index_integer_kind;
+  f->value.function.name = gfc_get_string ("__loc_%d", x->ts.kind);
+}
+
+
+void
 gfc_resolve_log (gfc_expr * f, gfc_expr * x)
 {
   f->ts = x->ts;

@@ -3240,6 +3240,15 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
 
   size = gfc_trans_array_bounds (type, sym, &offset, &block);
 
+  /* Don't actually allocate space for Cray Pointees.  */
+  if (sym->attr.cray_pointee)
+    {
+      if (TREE_CODE (GFC_TYPE_ARRAY_OFFSET (type)) == VAR_DECL)
+	gfc_add_modify_expr (&block, GFC_TYPE_ARRAY_OFFSET (type), offset);
+      gfc_add_expr_to_block (&block, fnbody);
+      return gfc_finish_block (&block);
+    }
+
   /* The size is the number of elements in the array, so multiply by the
      size of an element to get the total size.  */
   tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
@@ -4074,7 +4083,13 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
        && expr->ref->u.ar.type == AR_FULL && g77)
     {
       sym = expr->symtree->n.sym;
-      tmp = gfc_get_symbol_decl (sym);
+
+      /* Check to see if we're dealing with a Cray Pointee.  */
+      if (sym->attr.cray_pointee)
+	tmp = gfc_conv_cray_pointee (sym);
+      else
+	tmp = gfc_get_symbol_decl (sym);
+      
       if (sym->ts.type == BT_CHARACTER)
 	se->string_length = sym->ts.cl->backend_decl;
       if (!sym->attr.pointer && sym->as->type != AS_ASSUMED_SHAPE 
@@ -4625,4 +4640,3 @@ gfc_walk_expr (gfc_expr * expr)
   res = gfc_walk_subexpr (gfc_ss_terminator, expr);
   return gfc_reverse_ss (res);
 }
-

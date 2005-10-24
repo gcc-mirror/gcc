@@ -121,6 +121,10 @@ funderscoring
 Fortran
 Append underscores to externally visible names
 
+fcray-pointer
+Fortran
+Use the Cray Pointer extension
+
 fsecond-underscore
 Fortran
 Append a second underscore if the name already contains an underscore

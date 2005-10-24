@@ -316,7 +316,11 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
     {
       tree se_expr = NULL_TREE;
 
-      se->expr = gfc_get_symbol_decl (sym);
+      /* Handle Cray Pointees.  */
+      if (sym->attr.cray_pointee)
+	se->expr = gfc_conv_cray_pointee (sym);
+      else
+	se->expr = gfc_get_symbol_decl (sym);
 
       /* Special case for assigning the return value of a function.
 	 Self recursive functions must have an explicit return value.  */

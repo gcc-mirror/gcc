@@ -263,7 +263,8 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
     *public = "PUBLIC", *optional = "OPTIONAL", *entry = "ENTRY",
     *function = "FUNCTION", *subroutine = "SUBROUTINE",
     *dimension = "DIMENSION", *in_equivalence = "EQUIVALENCE",
-    *use_assoc = "USE ASSOCIATED";
+    *use_assoc = "USE ASSOCIATED", *cray_pointer = "CRAY POINTER",
+    *cray_pointee = "CRAY POINTEE";
 
   const char *a1, *a2;
 
@@ -342,6 +343,31 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (entry, result);
 
   conf (function, subroutine);
+
+  /* Cray pointer/pointee conflicts.  */
+  conf (cray_pointer, cray_pointee);
+  conf (cray_pointer, dimension);
+  conf (cray_pointer, pointer);
+  conf (cray_pointer, target);
+  conf (cray_pointer, allocatable);
+  conf (cray_pointer, external);
+  conf (cray_pointer, intrinsic);
+  conf (cray_pointer, in_namelist);
+  conf (cray_pointer, function);
+  conf (cray_pointer, subroutine);
+  conf (cray_pointer, entry);
+
+  conf (cray_pointee, allocatable);
+  conf (cray_pointee, intent);
+  conf (cray_pointee, optional);
+  conf (cray_pointee, dummy);
+  conf (cray_pointee, target);
+  conf (cray_pointee, external);
+  conf (cray_pointee, intrinsic);
+  conf (cray_pointee, pointer);
+  conf (cray_pointee, function);
+  conf (cray_pointee, subroutine);
+  conf (cray_pointee, entry);
 
   a1 = gfc_code2string (flavors, attr->flavor);
 
@@ -648,6 +674,37 @@ gfc_add_pointer (symbol_attribute * attr, locus * where)
     return FAILURE;
 
   attr->pointer = 1;
+  return check_conflict (attr, NULL, where);
+}
+
+
+try
+gfc_add_cray_pointer (symbol_attribute * attr, locus * where)
+{
+
+  if (check_used (attr, NULL, where) || check_done (attr, where))
+    return FAILURE;
+
+  attr->cray_pointer = 1;
+  return check_conflict (attr, NULL, where);
+}
+
+
+try
+gfc_add_cray_pointee (symbol_attribute * attr, locus * where)
+{
+
+  if (check_used (attr, NULL, where) || check_done (attr, where))
+    return FAILURE;
+
+  if (attr->cray_pointee)
+    {
+      gfc_error ("Cray Pointee at %L appears in multiple pointer()"
+		 " statements.", where);
+      return FAILURE;
+    }
+
+  attr->cray_pointee = 1;
   return check_conflict (attr, NULL, where);
 }
 
@@ -1149,6 +1206,11 @@ gfc_copy_attr (symbol_attribute * dest, symbol_attribute * src, locus * where)
   if (gfc_missing_attr (dest, where) == FAILURE)
     goto fail;
 
+  if (src->cray_pointer && gfc_add_cray_pointer (dest, where) == FAILURE)
+    goto fail;
+  if (src->cray_pointee && gfc_add_cray_pointee (dest, where) == FAILURE)
+    goto fail;    
+  
   /* The subroutines that set these bits also cause flavors to be set,
      and that has already happened in the original, so don't let it
      happen again.  */

@@ -416,6 +416,11 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
      This is the equivalent of the TARGET variables.
      We also need to set this if the variable is passed by reference in a
      CALL statement.  */
+
+  /* We don't want real declarations for Cray Pointees.  */
+  if (sym->attr.cray_pointee)
+    return;
+
   if (sym->attr.target)
     TREE_ADDRESSABLE (decl) = 1;
   /* If it wasn't used we wouldn't be getting it.  */
@@ -2251,6 +2256,10 @@ gfc_create_module_variable (gfc_symbol * sym)
   /* Create the decl.  */
   decl = gfc_get_symbol_decl (sym);
 
+  /* Don't create a "real" declaration for a Cray Pointee.  */
+  if (sym->attr.cray_pointee)
+    return;
+
   /* Create the variable.  */
   pushdecl (decl);
   rest_of_decl_compilation (decl, 1, 0);
@@ -2670,6 +2679,38 @@ gfc_generate_block_data (gfc_namespace * ns)
 
   pushdecl (decl);
   rest_of_decl_compilation (decl, 1, 0);
+}
+
+/* gfc_conv_cray_pointee takes a sym with attribute cray_pointee and
+   swaps in the backend_decl of its corresponding pointer.  There are
+   2 cases; one for variable size arrays, and one for everything else,
+   because variable-sized arrays require one fewer level of
+   indirection.  */
+
+tree
+gfc_conv_cray_pointee(gfc_symbol *sym)
+{
+  tree decl = gfc_get_symbol_decl (sym->cp_pointer);
+
+  /* Parameters need to be dereferenced.  */
+  if (sym->cp_pointer->attr.dummy) 
+    decl = gfc_build_indirect_ref (decl);
+
+  /* Check to see if we're dealing with a variable-sized array.  */
+  if (sym->attr.dimension
+      && TREE_CODE (TREE_TYPE (sym->backend_decl)) == POINTER_TYPE) 
+    {  
+      /* These decls will be derefenced later, so we don't dereference
+	 them here.  */
+      decl = convert (TREE_TYPE (sym->backend_decl), decl);
+    }
+  else
+    {
+      decl = convert (build_pointer_type (TREE_TYPE (sym->backend_decl)),
+		      decl);
+      decl = gfc_build_indirect_ref (decl);
+    }
+  return decl;
 }
 
 #include "gt-fortran-trans-decl.h"

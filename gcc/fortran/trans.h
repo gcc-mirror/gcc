@@ -406,6 +406,9 @@ void gfc_generate_block_data (gfc_namespace *);
 /* Output a decl for a module variable.  */
 void gfc_generate_module_vars (gfc_namespace *);
 
+/* Translate the declaration for a Cray Pointee.  */
+tree gfc_conv_cray_pointee (gfc_symbol *sym);
+
 /* Get and set the current location.  */
 void gfc_set_backend_locus (locus *);
 void gfc_get_backend_locus (locus *);
