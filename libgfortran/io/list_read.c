@@ -2341,13 +2341,14 @@ find_nml_name:
         }
 
    }
-
+  free_saved ();
   return;
 
   /* All namelist error calls return from here */
 
 nml_err_ret:
 
+  free_saved ();
   generate_error (ERROR_READ_VALUE , nml_err_msg);
   return;
 }

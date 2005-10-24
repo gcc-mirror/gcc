@@ -1,3 +1,9 @@
+2005-10-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24416
+	* libgfortran/io/list_read.c (namelist_read): Exit with call to
+	free_saved () so that character strings do not accumulate.
+
 2005-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* runtime/string.c (find_option): Change 3rd argument to
