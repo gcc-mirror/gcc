@@ -1,3 +1,10 @@
+2005-10-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-protos.h (get_deferred_plabel): New prototype.
+	* pa.c (get_plabel): Rename to get_deferred_plabel.  Return plabel.
+	Make global.
+	(output_call): Adjust calls.
+
 2005-10-24  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Explain
