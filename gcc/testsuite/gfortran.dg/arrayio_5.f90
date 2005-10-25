@@ -1,6 +1,7 @@
 ! { dg-do run }
 ! PR 21875 : Test formatted input/output to/from character arrays.
 ! This test checks the error checking for end of file condition.
+! Contributed by Jerry DeLisle <jvdelisle@verizon.net>.
 program arrayio_5
   implicit none
   integer        :: i,ierr

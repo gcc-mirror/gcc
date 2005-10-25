@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! PR 21875 : Test formatted input/output to/from character arrays.
-! This test deliberately exceeds the record length in a write and
-! verifies the error message.
+! This test deliberately exceeds the record length in a write and verifies
+! the error message.  Contributed by Jerry DeLisle <jvdelisle@verizon.net>.
       program arrayio_3
       implicit none
       integer        :: i(6),j,ierr
