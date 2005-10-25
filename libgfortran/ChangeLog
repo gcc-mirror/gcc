@@ -1,3 +1,22 @@
+2005-10-24  Jerry DeLisle  <jvdelisle@verizon.net>
+
+        PR libgfortran/24224
+        * libgfortran.h: Remove array stride error code.
+        * runtime/error.c: Remove array stride error.
+        * io/io.h: Change name of 'nml_loop_spec' to 'array_loop_spec' to be
+        generic.  Add pointer to array_loop_spec and rank to gfc_unit
+        structure.
+        * io/list_read.c: Revise nml_loop_spec references to array_loop_spec.
+        * io/transfer.c (init_loop_spec): New function to initialize
+        an array_loop_spec.
+        (next_array_record): New function to return the index to the next array
+        record by incrementing through the array_loop_spec. 
+        (next_record_r): Use new function.
+        (next_record_w): Use new function.
+        (finalize_transfer): Free memory allocated for array_loop_spec.
+        * io/unit.c (get_array_unit_len): Delete this function. Use new
+        function init_loop_spec to initialize the array_loop_spec.  
+
 2005-10-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24416

@@ -258,7 +258,7 @@ read_block (int *length)
 
       *length = current_unit->bytes_left;
     }
-    
+
   if (current_unit->flags.form == FORM_FORMATTED &&
       current_unit->flags.access == ACCESS_SEQUENTIAL)
     return read_sf (length);	/* Special case.  */
@@ -1450,6 +1450,60 @@ data_transfer_init (int read_flag)
     formatted_transfer (0, NULL, 0, 1);
 }
 
+/* Initialize an array_loop_spec given the array descriptor.  The function
+   returns the index of the last element of the array.  */
+   
+gfc_offset
+init_loop_spec (gfc_array_char *desc, array_loop_spec *ls)
+{
+  int rank = GFC_DESCRIPTOR_RANK(desc);
+  int i;
+  gfc_offset index; 
+
+  index = 1;
+  for (i=0; i<rank; i++)
+    {
+      ls[i].idx = 1;
+      ls[i].start = desc->dim[i].lbound;
+      ls[i].end = desc->dim[i].ubound;
+      ls[i].step = desc->dim[i].stride;
+      
+      index += (desc->dim[i].ubound - desc->dim[i].lbound)
+                      * desc->dim[i].stride;
+    }
+  return index;
+}
+
+/* Determine the index to the next record in an internal unit array by
+   by incrementing through the array_loop_spec.  TODO:  Implement handling
+   negative strides. */
+   
+gfc_offset
+next_array_record ( array_loop_spec * ls )
+{
+  int i, carry;
+  gfc_offset index;
+  
+  carry = 1;
+  index = 0;
+  
+  for (i = 0; i < current_unit->rank; i++)
+    {
+      if (carry)
+        {
+          ls[i].idx++;
+          if (ls[i].idx > ls[i].end)
+            {
+              ls[i].idx = ls[i].start;
+              carry = 1;
+            }
+          else
+            carry = 0;
+        }
+      index = index + (ls[i].idx - 1) * ls[i].step;
+    }
+  return index;
+}
 
 /* Space to the next record for read mode.  If the file is not
    seekable, we read MAX_READ chunks until we get to the right
@@ -1460,8 +1514,8 @@ data_transfer_init (int read_flag)
 static void
 next_record_r (void)
 {
-  int rlength, length, bytes_left;
-  gfc_offset new;
+  gfc_offset new, record;
+  int bytes_left, rlength, length;
   char *p;
 
   switch (current_mode ())
@@ -1516,11 +1570,27 @@ next_record_r (void)
 
       if (is_internal_unit())
 	{
-	  bytes_left = (int) current_unit->bytes_left;
-	  p = salloc_r (current_unit->s, &bytes_left);
-	  if (p != NULL)
+	  if (is_array_io())
+	  {
+            record =  next_array_record (current_unit->ls);   
+                 
+            /* Now seek to this record.  */
+            record = record * current_unit->recl;
+            if (sseek (current_unit->s, record) == FAILURE)
+              {
+                generate_error (ERROR_OS, NULL);
+                break;
+              }
 	    current_unit->bytes_left = current_unit->recl;
-	  break;
+          }
+        else  
+          {
+	    bytes_left = (int) current_unit->bytes_left;
+	    p = salloc_r (current_unit->s, &bytes_left);
+	    if (p != NULL)
+	      current_unit->bytes_left = current_unit->recl;
+	  } 
+	break;
 	}
       else do
 	{
@@ -1553,8 +1623,8 @@ next_record_r (void)
 static void
 next_record_w (void)
 {
-  gfc_offset c, m;
-  int length, bytes_left;
+  gfc_offset c, m, record;
+  int bytes_left, length;
   char *p;
 
   /* Zero counters for X- and T-editing.  */
@@ -1633,6 +1703,18 @@ next_record_w (void)
 		  return;
 		}
               memset(p, ' ', bytes_left);
+              
+              /* Now that the current record has been padded out,
+                 determine where the next record in the array is. */
+                 
+              record =  next_array_record (current_unit->ls);   
+               
+              /* Now seek to this record */
+              record = record * current_unit->recl;
+              
+              if (sseek (current_unit->s, record) == FAILURE)
+                goto io_error;
+                
               current_unit->bytes_left = current_unit->recl;
 	    }
 	  else
@@ -1672,7 +1754,6 @@ next_record_w (void)
     }
 }
 
-
 /* Position to the next record, which means moving to the end of the
    current record.  This can happen under several different
    conditions.  If the done flag is not set, we get ready to process
@@ -1711,7 +1792,7 @@ next_record (int done)
 
 /* Finalize the current data transfer.  For a nonadvancing transfer,
    this means advancing to the next record.  For internal units close the
-   steam associated with the unit.  */
+   stream associated with the unit.  */
 
 static void
 finalize_transfer (void)
@@ -1766,7 +1847,11 @@ finalize_transfer (void)
   sfree (current_unit->s);
 
   if (is_internal_unit ())
-    sclose (current_unit->s);
+    {
+      if (is_array_io() && current_unit->ls != NULL)
+        free_mem (current_unit->ls);
+      sclose (current_unit->s);
+    }
 }
 
 
@@ -1957,8 +2042,8 @@ st_set_nml_var (void * var_addr, char * var_name, GFC_INTEGER_4 len,
     {
       nml->dim = (descriptor_dimension*)
 		   get_mem (nml->var_rank * sizeof (descriptor_dimension));
-      nml->ls = (nml_loop_spec*)
-		  get_mem (nml->var_rank * sizeof (nml_loop_spec));
+      nml->ls = (array_loop_spec*)
+		  get_mem (nml->var_rank * sizeof (array_loop_spec));
     }
   else
     {
