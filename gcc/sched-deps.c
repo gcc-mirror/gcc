@@ -469,12 +469,12 @@ flush_pending_lists (struct deps *deps, rtx insn, int for_read,
 {
   if (for_write)
     {
-      add_dependence_list_and_free (insn, &deps->pending_read_insns, 0,
+      add_dependence_list_and_free (insn, &deps->pending_read_insns, 1,
 				    REG_DEP_ANTI);
       free_EXPR_LIST_list (&deps->pending_read_mems);
     }
 
-  add_dependence_list_and_free (insn, &deps->pending_write_insns, 0,
+  add_dependence_list_and_free (insn, &deps->pending_write_insns, 1,
 				for_read ? REG_DEP_ANTI : REG_DEP_OUTPUT);
   free_EXPR_LIST_list (&deps->pending_write_mems);
   deps->pending_lists_length = 0;
