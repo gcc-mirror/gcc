@@ -1,3 +1,8 @@
+2005-10-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 39.
+	* docs/html/ext/howto.html: Adjust.
+
 2005-10-21  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24450
