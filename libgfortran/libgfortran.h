@@ -392,7 +392,6 @@ typedef enum
   ERROR_BAD_US,
   ERROR_READ_VALUE,
   ERROR_READ_OVERFLOW,
-  ERROR_ARRAY_STRIDE,
   ERROR_LAST			/* Not a real error, the last error # + 1.  */
 }
 error_codes;
