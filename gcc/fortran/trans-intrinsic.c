@@ -2189,7 +2189,7 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
   arg1se.descriptor_only = 1;
   gfc_conv_expr_descriptor (&arg1se, arg1->expr, ss1);
 
-  tmp = gfc_conv_descriptor_data (arg1se.expr);
+  tmp = gfc_conv_descriptor_data_get (arg1se.expr);
   tmp = build2 (NE_EXPR, boolean_type_node, tmp,
 		fold_convert (TREE_TYPE (tmp), null_pointer_node));
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), tmp);
@@ -2235,7 +2235,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           /* A pointer to an array.  */
           arg1se.descriptor_only = 1;
           gfc_conv_expr_lhs (&arg1se, arg1->expr);
-          tmp2 = gfc_conv_descriptor_data (arg1se.expr);
+          tmp2 = gfc_conv_descriptor_data_get (arg1se.expr);
         }
       tmp = build2 (NE_EXPR, boolean_type_node, tmp2,
 		    fold_convert (TREE_TYPE (tmp2), null_pointer_node));

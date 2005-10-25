@@ -59,6 +59,7 @@ tree gfc_charlen_type_node;
 
 static GTY(()) tree gfc_desc_dim_type;
 static GTY(()) tree gfc_max_array_element_size;
+static GTY(()) tree gfc_array_descriptor_base[GFC_MAX_DIMENSIONS];
 
 /* Arrays for all integral and real kinds.  We'll fill this in at runtime
    after the target has a chance to process command-line options.  */
@@ -692,7 +693,7 @@ gfc_get_element_type (tree type)
   else
     {
       gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-      element = TREE_TYPE (TYPE_FIELDS (type));
+      element = GFC_TYPE_ARRAY_DATAPTR_TYPE (type);
 
       gcc_assert (TREE_CODE (element) == POINTER_TYPE);
       element = TREE_TYPE (element);
@@ -1099,6 +1100,61 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
   return type;
 }
 
+/* Return or create the base type for an array descriptor.  */
+
+static tree
+gfc_get_array_descriptor_base (int dimen)
+{
+  tree fat_type, fieldlist, decl, arraytype;
+  char name[16 + GFC_RANK_DIGITS + 1];
+
+  gcc_assert (dimen >= 1 && dimen <= GFC_MAX_DIMENSIONS);
+  if (gfc_array_descriptor_base[dimen - 1])
+    return gfc_array_descriptor_base[dimen - 1];
+
+  /* Build the type node.  */
+  fat_type = make_node (RECORD_TYPE);
+
+  sprintf (name, "array_descriptor" GFC_RANK_PRINTF_FORMAT, dimen);
+  TYPE_NAME (fat_type) = get_identifier (name);
+
+  /* Add the data member as the first element of the descriptor.  */
+  decl = build_decl (FIELD_DECL, get_identifier ("data"), ptr_type_node);
+
+  DECL_CONTEXT (decl) = fat_type;
+  fieldlist = decl;
+
+  /* Add the base component.  */
+  decl = build_decl (FIELD_DECL, get_identifier ("offset"),
+		     gfc_array_index_type);
+  DECL_CONTEXT (decl) = fat_type;
+  fieldlist = chainon (fieldlist, decl);
+
+  /* Add the dtype component.  */
+  decl = build_decl (FIELD_DECL, get_identifier ("dtype"),
+		     gfc_array_index_type);
+  DECL_CONTEXT (decl) = fat_type;
+  fieldlist = chainon (fieldlist, decl);
+
+  /* Build the array type for the stride and bound components.  */
+  arraytype =
+    build_array_type (gfc_get_desc_dim_type (),
+		      build_range_type (gfc_array_index_type,
+					gfc_index_zero_node,
+					gfc_rank_cst[dimen - 1]));
+
+  decl = build_decl (FIELD_DECL, get_identifier ("dim"), arraytype);
+  DECL_CONTEXT (decl) = fat_type;
+  fieldlist = chainon (fieldlist, decl);
+
+  /* Finish off the type.  */
+  TYPE_FIELDS (fat_type) = fieldlist;
+
+  gfc_finish_type (fat_type);
+
+  gfc_array_descriptor_base[dimen - 1] = fat_type;
+  return fat_type;
+}
 
 /* Build an array (descriptor) type with given bounds.  */
 
@@ -1106,25 +1162,13 @@ tree
 gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 			   tree * ubound, int packed)
 {
-  tree fat_type, fat_pointer_type;
-  tree fieldlist;
-  tree arraytype;
-  tree decl;
-  int n;
   char name[8 + GFC_RANK_DIGITS + GFC_MAX_SYMBOL_LEN];
+  tree fat_type, base_type, arraytype, lower, upper, stride, tmp;
   const char *typename;
-  tree lower;
-  tree upper;
-  tree stride;
-  tree tmp;
+  int n;
 
-  /* Build the type node.  */
-  fat_type = make_node (RECORD_TYPE);
-  GFC_DESCRIPTOR_TYPE_P (fat_type) = 1;
-  TYPE_LANG_SPECIFIC (fat_type) = (struct lang_type *)
-    ggc_alloc_cleared (sizeof (struct lang_type));
-  GFC_TYPE_ARRAY_RANK (fat_type) = dimen;
-  GFC_TYPE_ARRAY_DTYPE (fat_type) = NULL_TREE;
+  base_type = gfc_get_array_descriptor_base (dimen);
+  fat_type = build_variant_type_copy (base_type);
 
   tmp = TYPE_NAME (etype);
   if (tmp && TREE_CODE (tmp) == TYPE_DECL)
@@ -1133,20 +1177,22 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
     typename = IDENTIFIER_POINTER (tmp);
   else
     typename = "unknown";
-
   sprintf (name, "array" GFC_RANK_PRINTF_FORMAT "_%.*s", dimen,
 	   GFC_MAX_SYMBOL_LEN, typename);
   TYPE_NAME (fat_type) = get_identifier (name);
-  TYPE_PACKED (fat_type) = 0;
 
-  fat_pointer_type = build_pointer_type (fat_type);
+  GFC_DESCRIPTOR_TYPE_P (fat_type) = 1;
+  TYPE_LANG_SPECIFIC (fat_type) = (struct lang_type *)
+    ggc_alloc_cleared (sizeof (struct lang_type));
+
+  GFC_TYPE_ARRAY_RANK (fat_type) = dimen;
+  GFC_TYPE_ARRAY_DTYPE (fat_type) = NULL_TREE;
 
   /* Build an array descriptor record type.  */
   if (packed != 0)
     stride = gfc_index_one_node;
   else
     stride = NULL_TREE;
-
   for (n = 0; n < dimen; n++)
     {
       GFC_TYPE_ARRAY_STRIDE (fat_type, n) = stride;
@@ -1187,6 +1233,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 	stride = NULL_TREE;
     }
   GFC_TYPE_ARRAY_SIZE (fat_type) = stride;
+
   /* TODO: known offsets for descriptors.  */
   GFC_TYPE_ARRAY_OFFSET (fat_type) = NULL_TREE;
 
@@ -1196,42 +1243,6 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
     build_array_type (etype, gfc_array_range_type);
   arraytype = build_pointer_type (arraytype);
   GFC_TYPE_ARRAY_DATAPTR_TYPE (fat_type) = arraytype;
-
-  /* The pointer to the array data.  */
-  decl = build_decl (FIELD_DECL, get_identifier ("data"), arraytype);
-
-  DECL_CONTEXT (decl) = fat_type;
-  /* Add the data member as the first element of the descriptor.  */
-  fieldlist = decl;
-
-  /* Add the base component.  */
-  decl = build_decl (FIELD_DECL, get_identifier ("offset"),
-		     gfc_array_index_type);
-  DECL_CONTEXT (decl) = fat_type;
-  fieldlist = chainon (fieldlist, decl);
-
-  /* Add the dtype component.  */
-  decl = build_decl (FIELD_DECL, get_identifier ("dtype"),
-		     gfc_array_index_type);
-  DECL_CONTEXT (decl) = fat_type;
-  fieldlist = chainon (fieldlist, decl);
-
-  /* Build the array type for the stride and bound components.  */
-  arraytype =
-    build_array_type (gfc_get_desc_dim_type (),
-		      build_range_type (gfc_array_index_type,
-					gfc_index_zero_node,
-					gfc_rank_cst[dimen - 1]));
-
-  decl = build_decl (FIELD_DECL, get_identifier ("dim"), arraytype);
-  DECL_CONTEXT (decl) = fat_type;
-  DECL_INITIAL (decl) = NULL_TREE;
-  fieldlist = chainon (fieldlist, decl);
-
-  /* Finish off the type.  */
-  TYPE_FIELDS (fat_type) = fieldlist;
-
-  gfc_finish_type (fat_type);
 
   return fat_type;
 }

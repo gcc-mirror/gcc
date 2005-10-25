@@ -134,22 +134,60 @@ gfc_array_dataptr_type (tree desc)
 #define LBOUND_SUBFIELD 1
 #define UBOUND_SUBFIELD 2
 
+/* This provides READ-ONLY access to the data field.  The field itself
+   doesn't have the proper type.  */
+
 tree
-gfc_conv_descriptor_data (tree desc)
+gfc_conv_descriptor_data_get (tree desc)
 {
-  tree field;
-  tree type;
+  tree field, type, t;
 
   type = TREE_TYPE (desc);
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   field = TYPE_FIELDS (type);
   gcc_assert (DATA_FIELD == 0);
-  gcc_assert (field != NULL_TREE
-	  && TREE_CODE (TREE_TYPE (field)) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (TREE_TYPE (field))) == ARRAY_TYPE);
 
-  return build3 (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
+  t = build3 (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
+  t = fold_convert (GFC_TYPE_ARRAY_DATAPTR_TYPE (type), t);
+
+  return t;
+}
+
+/* This provides WRITE access to the data field.  */
+
+void
+gfc_conv_descriptor_data_set (stmtblock_t *block, tree desc, tree value)
+{
+  tree field, type, t;
+
+  type = TREE_TYPE (desc);
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+
+  field = TYPE_FIELDS (type);
+  gcc_assert (DATA_FIELD == 0);
+
+  t = build3 (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
+  gfc_add_modify_expr (block, t, fold_convert (TREE_TYPE (field), value));
+}
+
+
+/* This provides address access to the data field.  This should only be
+   used by array allocation, passing this on to the runtime.  */
+
+tree
+gfc_conv_descriptor_data_addr (tree desc)
+{
+  tree field, type, t;
+
+  type = TREE_TYPE (desc);
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+
+  field = TYPE_FIELDS (type);
+  gcc_assert (DATA_FIELD == 0);
+
+  t = build3 (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
+  return gfc_build_addr_expr (NULL, t);
 }
 
 tree
@@ -407,18 +445,14 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
   tree tmp;
   tree args;
   tree desc;
-  tree data;
   bool onstack;
 
   desc = info->descriptor;
-  data = gfc_conv_descriptor_data (desc);
+  info->offset = gfc_index_zero_node;
   if (size == NULL_TREE)
     {
       /* A callee allocated array.  */
-      gfc_add_modify_expr (&loop->pre, data, convert (TREE_TYPE (data), 
-                                                      gfc_index_zero_node));
-      info->data = data;
-      info->offset = gfc_index_zero_node;
+      gfc_conv_descriptor_data_set (&loop->pre, desc, null_pointer_node);
       onstack = FALSE;
     }
   else
@@ -436,11 +470,8 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
 	  tmp = build_array_type (gfc_get_element_type (TREE_TYPE (desc)),
 				  tmp);
 	  tmp = gfc_create_var (tmp, "A");
-	  tmp = gfc_build_addr_expr (TREE_TYPE (data), tmp);
-	  gfc_add_modify_expr (&loop->pre, data, tmp);
-	  info->data = data;
-	  info->offset = gfc_index_zero_node;
-
+	  tmp = gfc_build_addr_expr (NULL, tmp);
+	  gfc_conv_descriptor_data_set (&loop->pre, desc, tmp);
 	}
       else
 	{
@@ -454,13 +485,11 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
 	  else
 	    gcc_unreachable ();
 	  tmp = gfc_build_function_call (tmp, args);
-	  tmp = convert (TREE_TYPE (data), tmp);
-	  gfc_add_modify_expr (&loop->pre, data, tmp);
-
-	  info->data = data;
-	  info->offset = gfc_index_zero_node;
+	  tmp = gfc_evaluate_now (tmp, &loop->pre);
+	  gfc_conv_descriptor_data_set (&loop->pre, desc, tmp);
 	}
     }
+  info->data = gfc_conv_descriptor_data_get (desc);
 
   /* The offset is zero because we create temporaries with a zero
      lower bound.  */
@@ -470,7 +499,8 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
   if (!onstack)
     {
       /* Free the temporary.  */
-      tmp = convert (pvoid_type_node, info->data);
+      tmp = gfc_conv_descriptor_data_get (desc);
+      tmp = fold_convert (pvoid_type_node, tmp);
       tmp = gfc_chainon_list (NULL_TREE, tmp);
       tmp = gfc_build_function_call (gfor_fndecl_internal_free, tmp);
       gfc_add_expr_to_block (&loop->post, tmp);
@@ -1308,7 +1338,7 @@ gfc_conv_array_data (tree descriptor)
         }
     }
   else
-    return gfc_conv_descriptor_data (descriptor);
+    return gfc_conv_descriptor_data_get (descriptor);
 }
 
 
@@ -2749,9 +2779,8 @@ gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
 			      lower, upper, &se->pre);
 
   /* Allocate memory to store the data.  */
-  tmp = gfc_conv_descriptor_data (se->expr);
-  pointer = gfc_build_addr_expr (NULL, tmp);
-  pointer = gfc_evaluate_now (pointer, &se->pre);
+  tmp = gfc_conv_descriptor_data_addr (se->expr);
+  pointer = gfc_evaluate_now (tmp, &se->pre);
 
   if (TYPE_PRECISION (gfc_array_index_type) == 32)
     allocate = gfor_fndecl_allocate;
@@ -2766,8 +2795,6 @@ gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
   tmp = gfc_build_function_call (allocate, tmp);
   gfc_add_expr_to_block (&se->pre, tmp);
 
-  pointer = gfc_conv_descriptor_data (se->expr);
-  
   tmp = gfc_conv_descriptor_offset (se->expr);
   gfc_add_modify_expr (&se->pre, tmp, offset);
 }
@@ -2786,10 +2813,8 @@ gfc_array_deallocate (tree descriptor, tree pstat)
 
   gfc_start_block (&block);
   /* Get a pointer to the data.  */
-  tmp = gfc_conv_descriptor_data (descriptor);
-  tmp = gfc_build_addr_expr (NULL, tmp);
-  var = gfc_create_var (TREE_TYPE (tmp), "ptr");
-  gfc_add_modify_expr (&block, var, tmp);
+  tmp = gfc_conv_descriptor_data_addr (descriptor);
+  var = gfc_evaluate_now (tmp, &block);
 
   /* Parameter is the address of the data component.  */
   tmp = gfc_chainon_list (NULL_TREE, var);
@@ -3253,7 +3278,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
   /* This is for the case where the array data is used directly without
      calling the repack function.  */
   if (no_repack || partial != NULL_TREE)
-    stmt_packed = gfc_conv_descriptor_data (dumdesc);
+    stmt_packed = gfc_conv_descriptor_data_get (dumdesc);
   else
     stmt_packed = NULL_TREE;
 
@@ -3420,7 +3445,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
 	
       /* Only do the cleanup if the array was repacked.  */
       tmp = gfc_build_indirect_ref (dumdesc);
-      tmp = gfc_conv_descriptor_data (tmp);
+      tmp = gfc_conv_descriptor_data_get (tmp);
       tmp = build2 (NE_EXPR, boolean_type_node, tmp, tmpdesc);
       stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
 
@@ -3843,10 +3868,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       tmp = gfc_build_indirect_ref (tmp);
       tmp = gfc_build_array_ref (tmp, offset);
       offset = gfc_build_addr_expr (gfc_array_dataptr_type (desc), tmp);
-
-      tmp = gfc_conv_descriptor_data (parm);
-      gfc_add_modify_expr (&loop.pre, tmp,
-			   fold_convert (TREE_TYPE (tmp), offset));
+      gfc_conv_descriptor_data_set (&loop.pre, parm, offset);
 
       if (se->direct_byref)
 	{
@@ -4013,9 +4035,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   /* NULLIFY the data pointer.  */
-  tmp = gfc_conv_descriptor_data (descriptor);
-  gfc_add_modify_expr (&fnblock, tmp,
-		       convert (TREE_TYPE (tmp), integer_zero_node));
+  gfc_conv_descriptor_data_set (&fnblock, descriptor, null_pointer_node);
 
   gfc_add_expr_to_block (&fnblock, body);
 
@@ -4028,7 +4048,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
       /* Deallocate if still allocated at the end of the procedure.  */
       deallocate = gfc_array_deallocate (descriptor, null_pointer_node);
 
-      tmp = gfc_conv_descriptor_data (descriptor);
+      tmp = gfc_conv_descriptor_data_get (descriptor);
       tmp = build2 (NE_EXPR, boolean_type_node, tmp, 
 		    build_int_cst (TREE_TYPE (tmp), 0));
       tmp = build3_v (COND_EXPR, tmp, deallocate, build_empty_stmt ());

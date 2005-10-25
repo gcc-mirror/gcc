@@ -96,7 +96,9 @@ tree gfc_conv_array_lbound (tree, int);
 tree gfc_conv_array_ubound (tree, int);
 
 /* Build expressions for accessing components of an array descriptor.  */
-tree gfc_conv_descriptor_data (tree);
+tree gfc_conv_descriptor_data_get (tree);
+void gfc_conv_descriptor_data_set (stmtblock_t *, tree, tree);
+tree gfc_conv_descriptor_data_addr (tree);
 tree gfc_conv_descriptor_offset (tree);
 tree gfc_conv_descriptor_dtype (tree);
 tree gfc_conv_descriptor_stride (tree, tree);

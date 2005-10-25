@@ -1368,7 +1368,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		{
 		  /* Check the data pointer hasn't been modified.  This would
 		     happen in a function returning a pointer.  */
-		  tmp = gfc_conv_descriptor_data (info->descriptor);
+		  tmp = gfc_conv_descriptor_data_get (info->descriptor);
 		  tmp = build2 (NE_EXPR, boolean_type_node, tmp, info->data);
 		  gfc_trans_runtime_check (tmp, gfc_strconst_fault, &se->pre);
 		}
@@ -1731,12 +1731,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 	{
 	  /* Array pointer.  */
 	  if (expr->expr_type == EXPR_NULL)
-	    {
-	      dest = gfc_conv_descriptor_data (dest);
-	      tmp = fold_convert (TREE_TYPE (se.expr),
-				  null_pointer_node);
-	      gfc_add_modify_expr (&block, dest, tmp);
-	    }
+	    gfc_conv_descriptor_data_set (&block, dest, null_pointer_node);
 	  else
 	    {
 	      rss = gfc_walk_expr (expr);
@@ -2092,11 +2087,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       gfc_conv_expr_descriptor (&lse, expr1, lss);
       /* Implement Nullify.  */
       if (expr2->expr_type == EXPR_NULL)
-        {
-          lse.expr = gfc_conv_descriptor_data (lse.expr);
-          rse.expr = fold_convert (TREE_TYPE (lse.expr), null_pointer_node);
-          gfc_add_modify_expr (&block, lse.expr, rse.expr);
-        }
+	gfc_conv_descriptor_data_set (&block, lse.expr, null_pointer_node);
       else
         {
           lse.direct_byref = 1;
