@@ -5177,14 +5177,6 @@ resolve_equivalence (gfc_equiv *eq)
           break;
         }
  
-     /* Shall not be a Cray pointee.  */
-      if (sym->attr.cray_pointee)
-        {
-          gfc_error ("Cray Pointee '%s' at %L cannot be an EQUIVALENCE "
-		     "object", sym->name, &e->where);
-          continue;
-        }
-
       /* Shall not be a named constant.  */      
       if (e->expr_type == EXPR_CONSTANT)
         {

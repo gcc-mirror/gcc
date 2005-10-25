@@ -1,3 +1,26 @@
+2005-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans.h (gfc_conv_cray_pointee): Remove.
+	* trans-expr.c (gfc_conv_variable): Revert 2005-10-24 change.
+	* trans-array.c (gfc_conv_array_parameter): Likewise.
+	* trans-decl.c (gfc_conv_cray_pointee): Remove.
+	(gfc_finish_cray_pointee): New function.
+	(gfc_finish_var_decl): Use it.  Don't return early for Cray
+	pointees.
+	(gfc_create_module_variable): Revert 2005-10-24 change.
+	* decl.c (cray_pointer_decl): Update comment.
+	* gfortran.texi: Don't mention Cray pointees aren't visible in the
+	debugger.
+
+	* symbol.c (check_conflict): Add conflict between cray_pointee
+	and in_common resp. in_equivalence.
+	* resolve.c (resolve_equivalence): Revert 2005-10-24 change.
+
+	* module.c (ab_attribute): Add AB_CRAY_POINTER and AB_CRAY_POINTEE.
+	(attr_bits): Likewise.
+	(mio_symbol_attribute): Save and restore cray_pointe{r,e} attributes.
+	(mio_symbol): For cray_pointee write/read cp_pointer reference.
+
 2005-10-25  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/22290
@@ -14,8 +37,8 @@
 
 	PR fortran/17031
 	PR fortran/22282
-	* check.c (gfc_check_loc) : New function
-	* decl.c (variable_decl): New variables cp_as and sym. Added a	  
+	* check.c (gfc_check_loc): New function.
+	* decl.c (variable_decl): New variables cp_as and sym.  Added a
 	check for variables that have already been declared as Cray
 	Pointers, so we can get the necessary attributes without adding
 	a new symbol.
@@ -24,7 +47,7 @@
 	(cray_pointer_decl): New method.
 	(gfc_match_pointer): Added Cray pointer parsing code.
 	(gfc_mod_pointee_as): New method.
-	* expr.c (gfc_check_assign): added a check to catch vector-type
+	* expr.c (gfc_check_assign): Added a check to catch vector-type
 	assignments to pointees with an unspecified final dimension.
 	* gfortran.h: (GFC_ISYM_LOC): New.
 	(symbol_attribute): Added cray_pointer and cray_pointee bits.
@@ -39,7 +62,7 @@
 	(gfc_resolve_loc): Declare.
 	* iresolve.c (gfc_resolve_loc): New.
 	* lang.opt: Added fcray-pointer flag.
-	* options.c (gfc_init_options): Intialized
+	* options.c (gfc_init_options): Initialized.
 	gfc_match_option.flag_cray_pointer.
 	(gfc_handle_option): Deal with -fcray-pointer.
 	* parse.c:(resolve_equivalence): Added code prohibiting Cray
@@ -48,30 +71,30 @@
 	checking for Cray Pointee arrays.
 	(resolve_equivalence): Prohibited pointees in equivalence
 	statements.
-	* symbol.c (check_conflict): Added Cray pointer/pointee	 
+	* symbol.c (check_conflict): Added Cray pointer/pointee
 	attribute checking.
-	(gfc_add_cray_pointer): New
-	(gfc_add_cray_pointee): New
-	(gfc_copy_attr): New code for Cray pointers and pointees
+	(gfc_add_cray_pointer): New.
+	(gfc_add_cray_pointee): New.
+	(gfc_copy_attr): New code for Cray pointers and pointees.
 	* trans-array.c (gfc_trans_auto_array_allocation): Added code to
 	prevent space from being allocated for pointees.
-	(gfc_conv_array_parameter): Added code to catch pointees and    
+	(gfc_conv_array_parameter): Added code to catch pointees and
 	correctly set their base address.
-	* trans-decl.c (gfc_finish_var_decl): Added code to prevent     
+	* trans-decl.c (gfc_finish_var_decl): Added code to prevent
 	pointee declarations from making it to the back end.
 	(gfc_create_module_variable): Same.
-	* trans-expr.c (gfc_conv_variable): added code to detect and
+	* trans-expr.c (gfc_conv_variable): Added code to detect and
 	translate pointees.
 	(gfc_conv_cray_pointee): New.
 	* trans-intrinsic.c (gfc_conv_intrinsic_loc): New.
-	(gfc_conv_intrinsic_function): added entry point for loc		
+	(gfc_conv_intrinsic_function): Added entry point for loc
 	translation.
 	* trans.h (gfc_conv_cray_pointee): Declare.
 
 	* gfortran.texi: Added section on Cray pointers, removed Cray
-	pointers from list of proposed extensions
+	pointers from list of proposed extensions.
 	* intrinsic.texi: Added documentation for loc intrinsic.
-	* invoke.texi: Documented -fcray-pointer flag
+	* invoke.texi: Documented -fcray-pointer flag.
 
 2005-10-24  Asher Langton  <langton2@llnl.gov>
 
@@ -109,7 +132,7 @@
 	* check.c (gfc_check_ichar_iachar): Move the code around so
 	that the check on the length is after check for
 	references.
-	
+
 2005-10-23  Asher Langton  <langton2@llnl.gov>
 
 	* decl.c (match_type_spec): Add a BYTE type as an extension.
@@ -145,7 +168,7 @@
 
 	PR fortran/21625
 	* resolve.c (expr_to_initialize): New function.
-	(resolve_allocate_expr): Take current statement as new 
+	(resolve_allocate_expr): Take current statement as new
 	argument. Add default initializers to variables of
 	derived types, if they need it.
 	(resolve_code): Provide current statement as argument to
@@ -414,8 +437,8 @@
 2005-09-21  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/19929
-	* trans-stmt.c (gfc_trans_deallocate): Check if the 
-	object to be deallocated is an array by looking at 
+	* trans-stmt.c (gfc_trans_deallocate): Check if the
+	object to be deallocated is an array by looking at
 	expr->rank instead of expr->symtree->n.sym->attr.dimension.
 
 2005-09-20  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
@@ -510,7 +533,7 @@
 	to store the character (array) and the character length for an internal
 	unit.
 	* fortran/trans-io (build_dt): Use the new function set_internal_unit.
-	
+
 2005-09-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/19358
@@ -966,7 +989,7 @@
 
 2005-08-07   Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
-	PR fortran/22390 
+	PR fortran/22390
 	* dump-parse-tree.c (gfc_show_code_node): Add case for FLUSH.
 	* gfortran.h: Add enums for FLUSH.
 	* io.c (gfc_free_filepos,match_file_element,match_filepos): Modify
@@ -1143,7 +1166,7 @@
 	Don't clear maskindexes here.
 
 2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* trans-decl.c (create_function_arglist): DECL_ARG_TYPE_AS_WRITTEN
 	is removed.
 
@@ -1374,7 +1397,7 @@
 	(gfc_return_by_reference): Always look at sym, never at sym->result.
 
 2005-06-11  Steven G. Kargl  <kargls@comcast.net>
-	
+
 	PR fortran/17792
 	PR fortran/21375
 	* trans-array.c (gfc_array_deallocate): pstat is new argument
@@ -1404,7 +1427,7 @@
 
 	PR fortran/19195
 	* trans.c (gfc_get_backend_locus): Remove unnecessary adjustment,
-	remove FIXME comment. 
+	remove FIXME comment.
 
 2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
@@ -1522,7 +1545,7 @@
 
 2005-05-29  Janne Blomqvist  <jblomqvi@vipunen.hut.fi>
 	    Steven G. Kargl  <kargls@comcast.net>
-  
+
 	fortran/PR20846
 	* io.c (gfc_match_inquire): Implement constraints on UNIT and FILE usage.
 
@@ -1565,7 +1588,7 @@
 2005-05-18  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21127
-	* fortran/iresolve.c (gfc_resolve_reshape): Add 
+	* fortran/iresolve.c (gfc_resolve_reshape): Add
 	gfc_type_letter (BT_COMPLEX) for complex to
 	to resolved function name.
 
@@ -1628,11 +1651,11 @@
 	Jerry DeLisle  <jvdelisle@verizon.net>
 
 	PR fortran/17432
-	* trans-stmt.c (gfc_trans_label_assign): fix pointer type, to 
+	* trans-stmt.c (gfc_trans_label_assign): fix pointer type, to
 	resolve ICE on assign of format label.
 	* trans-io.c (set_string): add fold-convert to properly
 	handle assigned format label in write.
- 
+
 2005-05-13  Paul Brook  <paul@codesourcery.com>
 
 	* trans-stmt.c (gfc_trans_forall_1): Fix comment typo.
@@ -1664,7 +1687,7 @@
 	* options.c (gfc-init_options): Set default calling convention
 	to -fno-f2c.  Mark -fsecond-underscore unset.
 	(gfc_post_options): Set -fsecond-underscore if not explicitly set
-	by user.	
+	by user.
 	(handle_options): Set gfc_option.flag_f2c according to requested
 	calling	convention.
 	* trans-decl.c (gfc_get_extern_function_decl): Use special f2c
@@ -1744,7 +1767,7 @@
 
 	* gfortran.h (gfc_namespace): Add seen_implicit_none field,
 	Tobias forgot this in previous commit.
-	
+
 2005-04-29  Paul Brook   <paul@codesourcery.com>
 
 	* trans-expr.c (gfc_conv_expr_present): Fix broken assert.  Update
@@ -1831,11 +1854,11 @@
 	declaration for	st_set_nml_var and st_set_nml_var_dim. Remove
 	declarations of old namelist functions.
 	(build_dt): Simplified call to transfer_namelist_element.
-	(nml_get_addr_expr): Generates address expression for start of 
+	(nml_get_addr_expr): Generates address expression for start of
 	object data. New function.
-	(nml_full_name): Qualified name for derived type components. New 
+	(nml_full_name): Qualified name for derived type components. New
 	function.
-	(transfer_namelist_element): Modified for calls to new functions 
+	(transfer_namelist_element): Modified for calls to new functions
 	and improved derived type handling.
 
 2005-04-17  Richard Guenther  <rguenth@gcc.gnu.org>
@@ -1921,7 +1944,7 @@
 
 2005-04-06  Steven G. Kargl  <kargls@comcast.net>
 
-	* invoke.texi: Remove documentation of -std=f90 
+	* invoke.texi: Remove documentation of -std=f90
 
 2005-04-06  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
@@ -1969,7 +1992,7 @@
 	* gfortran.h (option_t): Change d8, i8, r8 to flag_default_double,
 	flag_default_integer, flag_default_real
 	* invoke.texi: Update documentation
-	* lang.opt: Remove d8, i8, r8 definitions; Add fdefault-double-8   
+	* lang.opt: Remove d8, i8, r8 definitions; Add fdefault-double-8
 	fdefault-integer-8, and fdefault-real-8 definitions.
 	* options.c (gfc_init_options): Set option defaults
 	(gfc_handle_option): Handle command line options.
@@ -2417,7 +2440,7 @@
 	gfc_match_null, match_type_spec, match_attr_spec,
 	gfc_match_formal_arglist, match_result, gfc_match_function_decl):
 	Update callers to match.
-	(gfc_match_entry) : Likewise, fix comment typo.
+	(gfc_match_entry): Likewise, fix comment typo.
 	(gfc_match_subroutine, attr_decl1, gfc_add_dimension,
 	access_attr_decl, do_parm, gfc_match_save, gfc_match_modproc,
 	gfc_match_derived_decl): Update callers.
@@ -2568,7 +2591,7 @@
 	unsigned issue.  Use build_int_cst instead of converting
 	integer_zero_node.  Remove unnecessary conversion.
 
-	* trans-types.c (gfc_get_character_type_len): : Use
+	* trans-types.c (gfc_get_character_type_len): Use
 	gfc_charlen_type_node as basic type for the range field.
 
 	* trans-intrinsic.c (build_fixbound_expr,

@@ -4083,13 +4083,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
        && expr->ref->u.ar.type == AR_FULL && g77)
     {
       sym = expr->symtree->n.sym;
+      tmp = gfc_get_symbol_decl (sym);
 
-      /* Check to see if we're dealing with a Cray Pointee.  */
-      if (sym->attr.cray_pointee)
-	tmp = gfc_conv_cray_pointee (sym);
-      else
-	tmp = gfc_get_symbol_decl (sym);
-      
       if (sym->ts.type == BT_CHARACTER)
 	se->string_length = sym->ts.cl->backend_decl;
       if (!sym->attr.pointer && sym->as->type != AS_ASSUMED_SHAPE 
