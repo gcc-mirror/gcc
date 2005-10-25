@@ -1,7 +1,11 @@
 2005-10-24  Jerry DeLisle  <jvdelisle@verizon.net>
 
         PR libgfortran/24224
+        * gfortran.dg/arrayio_1.f90: Update attribution.
+        * gfortran.dg/arrayio_2.f90: Update attribution.
+        * gfortran.dg/arrayio_3.f90: Update attribution.
         * gfortran.dg/arrayio_4.f90: Update test conditions.
+        * gfortran.dg/arrayio_5.f90: Update attribution.
         * gfortran.dg/arrayio_6.f90: New test.
         * gfortran.dg/arrayio_7.f90: New test.
 
