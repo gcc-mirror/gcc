@@ -1431,7 +1431,8 @@ typedef enum
   AB_POINTER, AB_SAVE, AB_TARGET, AB_DUMMY, AB_RESULT,
   AB_DATA, AB_IN_NAMELIST, AB_IN_COMMON, 
   AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE, AB_ELEMENTAL, AB_PURE,
-  AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT
+  AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT, AB_CRAY_POINTER,
+  AB_CRAY_POINTEE
 }
 ab_attribute;
 
@@ -1458,6 +1459,8 @@ static const mstring attr_bits[] =
     minit ("RECURSIVE", AB_RECURSIVE),
     minit ("GENERIC", AB_GENERIC),
     minit ("ALWAYS_EXPLICIT", AB_ALWAYS_EXPLICIT),
+    minit ("CRAY_POINTER", AB_CRAY_POINTER),
+    minit ("CRAY_POINTEE", AB_CRAY_POINTEE),
     minit (NULL, -1)
 };
 
@@ -1542,6 +1545,10 @@ mio_symbol_attribute (symbol_attribute * attr)
 	MIO_NAME(ab_attribute) (AB_RECURSIVE, attr_bits);
       if (attr->always_explicit)
         MIO_NAME(ab_attribute) (AB_ALWAYS_EXPLICIT, attr_bits);
+      if (attr->cray_pointer)
+	MIO_NAME(ab_attribute) (AB_CRAY_POINTER, attr_bits);
+      if (attr->cray_pointee)
+	MIO_NAME(ab_attribute) (AB_CRAY_POINTEE, attr_bits);
 
       mio_rparen ();
 
@@ -1622,6 +1629,12 @@ mio_symbol_attribute (symbol_attribute * attr)
             case AB_ALWAYS_EXPLICIT:
               attr->always_explicit = 1;
               break;
+	    case AB_CRAY_POINTER:
+	      attr->cray_pointer = 1;
+	      break;
+	    case AB_CRAY_POINTEE:
+	      attr->cray_pointee = 1;
+	      break;
 	    }
 	}
     }
@@ -2814,6 +2827,9 @@ mio_symbol (gfc_symbol * sym)
   mio_array_spec (&sym->as);
 
   mio_symbol_ref (&sym->result);
+
+  if (sym->attr.cray_pointee)
+    mio_symbol_ref (&sym->cp_pointer);
 
   /* Note that components are always saved, even if they are supposed
      to be private.  Component access is checked during searching.  */

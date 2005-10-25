@@ -2995,8 +2995,7 @@ attr_decl (void)
    pointer (ipt, ar(10))
    any subsequent uses of ar will be translated (in C-notation) as
    ar(i) => ((<type> *) ipt)(i)   
-   By the time the code is translated into GENERIC, the pointee will
-   have disappeared from the code entirely. */
+   After gimplification, pointee variable will disappear in the code.  */
 
 static match
 cray_pointer_decl (void)
@@ -3112,7 +3111,7 @@ cray_pointer_decl (void)
 	} 
    
       /* Point the Pointee at the Pointer.  */
-      cpte->cp_pointer=cptr;
+      cpte->cp_pointer = cptr;
 
       if (gfc_match_char (')') != MATCH_YES)
 	{

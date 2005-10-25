@@ -899,11 +899,7 @@ expect.  Adding 1 to ipt just adds one byte to the address stored in
 ipt.
 
 Any expression involving the pointee will be translated to use the
-value stored in the pointer as the base address.  This translation is
-done in the front end, and so the pointees are not present in the
-GENERIC tree that is handed off to the backend.  One disadvantage of
-this is that pointees will not appear in gdb when debugging a Fortran
-program that uses Cray pointers.
+value stored in the pointer as the base address.
 
 To get the address of elements, this extension provides an intrinsic
 function loc(), loc() is essentially the C '&' operator, except the
