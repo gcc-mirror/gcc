@@ -1,3 +1,8 @@
+2005-10-24  James E. Wilson  <wilson@specifix.com>
+
+	* sched-deps.c (flush_pending_lists): Pass 1 not 0 in first two
+	add_dependence_list_and_free calls.
+
 2005-10-24  Steven Bosscher  <stevenb@suse.de>
 
 	* contrib.texi: Add the names of the LLNL folks who donated
