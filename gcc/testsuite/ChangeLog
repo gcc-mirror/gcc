@@ -1,3 +1,9 @@
+2005-10-25  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/22290
+	* gfortran.dg/assign_5.f90: New test.
+	* gfortran.dg/assign_6.f: New test.
+
 2005-10-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24416

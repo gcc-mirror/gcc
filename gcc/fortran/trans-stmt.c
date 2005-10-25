@@ -91,6 +91,9 @@ gfc_conv_label_variable (gfc_se * se, gfc_expr * expr)
   /* Deals with variable in common block. Get the field declaration.  */
   if (TREE_CODE (se->expr) == COMPONENT_REF)
     se->expr = TREE_OPERAND (se->expr, 1);
+  /* Deals with dummy argument. Get the parameter declaration.  */
+  else if (TREE_CODE (se->expr) == INDIRECT_REF)
+    se->expr = TREE_OPERAND (se->expr, 0);
 }
 
 /* Translate a label assignment statement.  */
