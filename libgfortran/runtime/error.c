@@ -427,10 +427,6 @@ translate_error (int code)
       p = "Numeric overflow on read";
       break;
 
-    case ERROR_ARRAY_STRIDE:
-      p = "Array unit stride must be 1";
-      break;
-
     default:
       p = "Unknown error code";
       break;

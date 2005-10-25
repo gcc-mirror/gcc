@@ -1469,7 +1469,7 @@ calls:
       static void nml_untouch_nodes (void)
       static namelist_info * find_nml_node (char * var_name)
       static int nml_parse_qualifier(descriptor_dimension * ad,
-				     nml_loop_spec * ls, int rank)
+				     array_loop_spec * ls, int rank)
       static void nml_touch_nodes (namelist_info * nl)
       static int nml_read_obj (namelist_info * nl, index_type offset)
 calls:
@@ -1500,7 +1500,7 @@ static index_type chigh;
 
 static try
 nml_parse_qualifier(descriptor_dimension * ad,
-		    nml_loop_spec * ls, int rank)
+		    array_loop_spec * ls, int rank)
 {
   int dim;
   int indx;
@@ -2222,7 +2222,7 @@ get_name:
   if (c == '(' && nl->type == GFC_DTYPE_CHARACTER)
     {
       descriptor_dimension chd[1] = { {1, clow, nl->string_length} };
-      nml_loop_spec ind[1] = { {1, clow, nl->string_length, 1} };
+      array_loop_spec ind[1] = { {1, clow, nl->string_length, 1} };
 
       if (nml_parse_qualifier (chd, ind, 1) == FAILURE)
 	{
