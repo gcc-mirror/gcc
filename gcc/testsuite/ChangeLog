@@ -1,3 +1,10 @@
+2005-10-24  Jerry DeLisle  <jvdelisle@verizon.net>
+
+        PR libgfortran/24224
+        * gfortran.dg/arrayio_4.f90: Update test conditions.
+        * gfortran.dg/arrayio_6.f90: New test.
+        * gfortran.dg/arrayio_7.f90: New test.
+
 2005-10-24  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/loop-9.c: Prevent matching "leave".

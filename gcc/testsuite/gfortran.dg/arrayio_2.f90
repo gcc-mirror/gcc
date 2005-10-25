@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! PR 21875 : Test formatted input/output to/from character arrays.
 ! This test ckecks proper positioning and padding with trailing blanks
-! after write operations
+! after write operations.  Contributed by Paul Thomas.
      program arrayio_2
      implicit none
      integer :: i=2

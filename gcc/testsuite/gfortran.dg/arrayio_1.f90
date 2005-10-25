@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! PR 21875 : Test formatted input/output to/from character arrays.
+! Contributed by Jerry DeLisle <jvdelisle@verizon.net>.
       program arrayio_1
       implicit none
       integer         :: i(6),j,k
