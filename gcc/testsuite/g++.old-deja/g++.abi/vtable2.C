@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-require-alias "" }
 // { dg-options "-fno-strict-aliasing" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 

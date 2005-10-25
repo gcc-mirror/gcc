@@ -1,3 +1,9 @@
+2005-10-25  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/24295, PR testsuite/24477
+	* g++.old-deja/g++.abi/vtable2.C: Require alias for now.  Will be
+	removed when weakref hits the tree.
+
 2005-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/cray_pointers_4.f90: New test.
