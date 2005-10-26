@@ -4339,6 +4339,24 @@ resolve_symbol (gfc_symbol * sym)
         }
     }
 
+  /* If a derived type symbol has reached this point, without its
+     type being declared, we have an error.  Notice that most
+     conditions that produce undefined derived types have already
+     been dealt with.  However, the likes of:
+     implicit type(t) (t) ..... call foo (t) will get us here if
+     the type is not declared in the scope of the implicit
+     statement. Change the type to BT_UNKNOWN, both because it is so
+     and to prevent an ICE.  */
+  if (sym->ts.type == BT_DERIVED
+	&& sym->ts.derived->components == NULL)
+    {
+      gfc_error ("The derived type '%s' at %L is of type '%s', "
+		 "which has not been defined.", sym->name,
+		  &sym->declared_at, sym->ts.derived->name);
+      sym->ts.type = BT_UNKNOWN;
+      return;
+    }
+
   /* Ensure that derived type components of a public derived type
      are not of a private type.  */
   if (sym->attr.flavor == FL_DERIVED

@@ -1,3 +1,9 @@
+2005-10-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24158
+	gfortran.dg/derived_recursion.f90: New test.
+	gfortran.dg/implicit_actual.f90: New test.
+
 2005-10-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/24295, PR testsuite/24477
