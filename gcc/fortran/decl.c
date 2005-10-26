@@ -2075,17 +2075,21 @@ gfc_match_data_decl (void)
       if (current_attr.pointer && gfc_current_state () == COMP_DERIVED)
 	goto ok;
 
-      if (gfc_find_symbol (current_ts.derived->name,
-			   current_ts.derived->ns->parent, 1, &sym) == 0)
+      gfc_find_symbol (current_ts.derived->name,
+			 current_ts.derived->ns->parent, 1, &sym);
+
+      /* Any symbol that we find had better be a type definition
+         which has its components defined.  */
+      if (sym != NULL && sym->attr.flavor == FL_DERIVED
+	    && current_ts.derived->components != NULL)
 	goto ok;
 
-      /* Hope that an ambiguous symbol is itself masked by a type definition.  */
-      if (sym != NULL && sym->attr.flavor == FL_DERIVED)
-	goto ok;
-
-      gfc_error ("Derived type at %C has not been previously defined");
-      m = MATCH_ERROR;
-      goto cleanup;
+      /* Now we have an error, which we signal, and then fix up
+	 because the knock-on is plain and simple confusing.  */
+      gfc_error_now ("Derived type at %C has not been previously defined "
+		 "and so cannot appear in a derived type definition.");
+      current_attr.pointer = 1;
+      goto ok;
     }
 
 ok:

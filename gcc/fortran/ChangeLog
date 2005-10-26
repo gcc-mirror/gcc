@@ -1,3 +1,12 @@
+2005-10-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24158
+	* decl.c (gfc_match_data_decl): Correct broken bit of code
+	that prevents undefined derived types from being used as
+	components of another derived type.
+	* resolve.c (resolve_symbol): Add backstop error when derived
+	type variables arrive here with a type that has no components.
+
 2005-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans.h (gfc_conv_cray_pointee): Remove.
