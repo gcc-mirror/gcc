@@ -1369,11 +1369,6 @@ assemble_start_function (tree decl, const char *fnname)
   /* Standard thing is just output label for the function.  */
   ASM_OUTPUT_LABEL (asm_out_file, fnname);
 #endif /* ASM_DECLARE_FUNCTION_NAME */
-
-  /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  Don't do this if the current
-     function is a thunk, because we don't have a CFG in that case.  */
-  if (!current_function_is_thunk)
-    insert_section_boundary_note ();
 }
 
 /* Output assembler code associated with defining the size of the
@@ -1383,6 +1378,9 @@ void
 assemble_end_function (tree decl, const char *fnname)
 {
 #ifdef ASM_DECLARE_FUNCTION_SIZE
+  /* We could have switched section in the middle of the function.  */
+  if (flag_reorder_blocks_and_partition)
+    function_section (decl);
   ASM_DECLARE_FUNCTION_SIZE (asm_out_file, fnname, decl);
 #endif
   if (! CONSTANT_POOL_BEFORE_FUNCTION)

@@ -1945,7 +1945,7 @@ reorder_basic_blocks (unsigned int flags)
    encountering this note will make the compiler switch between the
    hot and cold text sections.  */
 
-void
+static void
 insert_section_boundary_note (void)
 {
   basic_block bb;
@@ -2231,6 +2231,9 @@ rest_of_handle_reorder_blocks (void)
   if (changed && HAVE_conditional_execution)
     update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
                       PROP_DEATH_NOTES);
+
+  /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  */
+  insert_section_boundary_note ();
 }
 
 struct tree_opt_pass pass_reorder_blocks =

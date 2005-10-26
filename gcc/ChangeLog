@@ -1,3 +1,21 @@
+2005-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Caroline Tice  <ctice@apple.com>
+
+	PR rtl-optimization/24460
+	* dwarf2out.c (have_switched_text_sections): New boolean variable.
+	(dwarf2out_switch_text_section): Set it to true instead of
+	incrementing separate_line_info_table_in_use.
+	(output_loc_list): Additionally test have_switched_text_sections.
+	(output_ranges): Likewise.
+	(dwarf2out_finish): Likewise.
+	* varasm.c (assemble_start_function): Do not call
+	insert_section_boundary_note.
+	(assemble_end_function): If flag_reorder_blocks_and_partition,
+	switch to the function's section before emitting the .size directive.
+	* bb-reorder.c (insert_section_boundary_note): Staticify.
+	(rest_of_handle_reorder_blocks): Call insert_section_boundary_note.
+	* output.h (insert_section_boundary_note): Delete.
+
 2005-10-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/23103

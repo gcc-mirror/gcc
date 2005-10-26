@@ -588,10 +588,6 @@ extern bool default_valid_pointer_mode (enum machine_mode);
 
 extern int default_address_cost (rtx);
 
-/* When performing hot/cold basic block partitioning, insert note in
-   instruction stream indicating boundary between hot and cold sections.  */
-extern void insert_section_boundary_note (void);
-
 /* dbxout helper functions */
 #if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO
 
