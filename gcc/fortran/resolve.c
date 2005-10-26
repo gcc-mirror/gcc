@@ -4181,8 +4181,7 @@ resolve_symbol (gfc_symbol * sym)
   /* Zero if we are checking a formal namespace.  */
   static int formal_ns_flag = 1;
   int formal_ns_save, check_constant, mp_flag;
-  int i;
-  const char *whynot;
+  int i, flag;
   gfc_namelist *nl;
   gfc_symtree * symtree;
   gfc_symtree * this_symtree;
@@ -4463,17 +4462,10 @@ resolve_symbol (gfc_symbol * sym)
     {
     case FL_VARIABLE:
       /* Can the sybol have an initializer?  */
-      whynot = NULL;
-      if (sym->attr.allocatable)
-	whynot = _("Allocatable");
-      else if (sym->attr.external)
-	whynot = _("External");
-      else if (sym->attr.dummy)
-	whynot = _("Dummy");
-      else if (sym->attr.intrinsic)
-	whynot = _("Intrinsic");
-      else if (sym->attr.result)
-	whynot = _("Function Result");
+      flag = 0;
+      if (sym->attr.allocatable || sym->attr.external || sym->attr.dummy
+	  || sym->attr.intrinsic || sym->attr.result)
+	flag = 1;
       else if (sym->attr.dimension && !sym->attr.pointer)
 	{
 	  /* Don't allow initialization of automatic arrays.  */
@@ -4484,22 +4476,38 @@ resolve_symbol (gfc_symbol * sym)
 		  || sym->as->upper[i] == NULL
 		  || sym->as->upper[i]->expr_type != EXPR_CONSTANT)
 		{
-		  whynot = _("Automatic array");
+		  flag = 1;
 		  break;
 		}
 	    }
 	}
 
       /* Reject illegal initializers.  */
-      if (sym->value && whynot)
+      if (sym->value && flag)
 	{
-	  gfc_error ("%s '%s' at %L cannot have an initializer",
-		     whynot, sym->name, &sym->declared_at);
+	  if (sym->attr.allocatable)
+	    gfc_error ("Allocatable '%s' at %L cannot have an initializer",
+		       sym->name, &sym->declared_at);
+	  else if (sym->attr.external)
+	    gfc_error ("External '%s' at %L cannot have an initializer",
+		       sym->name, &sym->declared_at);
+	  else if (sym->attr.dummy)
+	    gfc_error ("Dummy '%s' at %L cannot have an initializer",
+		       sym->name, &sym->declared_at);
+	  else if (sym->attr.intrinsic)
+	    gfc_error ("Intrinsic '%s' at %L cannot have an initializer",
+		       sym->name, &sym->declared_at);
+	  else if (sym->attr.result)
+	    gfc_error ("Function result '%s' at %L cannot have an initializer",
+		       sym->name, &sym->declared_at);
+	  else
+	    gfc_error ("Automatic array '%s' at %L cannot have an initializer",
+		       sym->name, &sym->declared_at);
 	  return;
 	}
 
       /* Assign default initializer.  */
-      if (sym->ts.type == BT_DERIVED && !(sym->value || whynot)
+      if (sym->ts.type == BT_DERIVED && !(sym->value || flag)
           && !sym->attr.pointer)
 	sym->value = gfc_default_initializer (&sym->ts);
       break;
