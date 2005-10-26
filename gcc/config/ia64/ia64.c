@@ -8802,9 +8802,27 @@ ia64_vector_mode_supported_p (enum machine_mode mode)
     }
 }
 
+/* Implement the FUNCTION_PROFILER macro.  */
+
 void
 ia64_output_function_profiler (FILE *file, int labelno)
 {
+  bool indirect_call;
+
+  /* If the function needs a static chain and the static chain
+     register is r15, we use an indirect call so as to bypass
+     the PLT stub in case the executable is dynamically linked,
+     because the stub clobbers r15 as per 5.3.6 of the psABI.
+     We don't need to do that in non canonical PIC mode.  */
+
+  if (cfun->static_chain_decl && !TARGET_NO_PIC && !TARGET_AUTO_PIC)
+    {
+      gcc_assert (STATIC_CHAIN_REGNUM == 15);
+      indirect_call = true;
+    }
+  else
+    indirect_call = false;
+
   if (TARGET_GNU_AS)
     fputs ("\t.prologue 4, r40\n", file);
   else
@@ -8812,7 +8830,7 @@ ia64_output_function_profiler (FILE *file, int labelno)
   fputs ("\talloc out0 = ar.pfs, 8, 0, 4, 0\n", file);
 
   if (NO_PROFILE_COUNTERS)
-    fputs ("\tmov out3 = r0\n\t;;\n", file);
+    fputs ("\tmov out3 = r0\n", file);
   else
     {
       char buf[20];
@@ -8824,16 +8842,30 @@ ia64_output_function_profiler (FILE *file, int labelno)
 	fputs ("\taddl out3 = @ltoff(", file);
       assemble_name (file, buf);
       if (TARGET_AUTO_PIC)
-	fputs (")\n\t;;\n", file);
+	fputs (")\n", file);
       else
-	fputs ("), r1\n\t;;\n", file);
+	fputs ("), r1\n", file);
     }
+
+  if (indirect_call)
+    fputs ("\taddl r14 = @ltoff(@fptr(_mcount)), r1\n", file);
+  fputs ("\t;;\n", file);
 
   fputs ("\t.save rp, r42\n", file);
   fputs ("\tmov out2 = b0\n", file);
+  if (indirect_call)
+    fputs ("\tld8 r14 = [r14]\n\t;;\n", file);
   fputs ("\t.body\n", file);
   fputs ("\tmov out1 = r1\n", file);
-  fputs ("\tbr.call.sptk.many b0 = _mcount\n\t;;\n", file);
+  if (indirect_call)
+    {
+      fputs ("\tld8 r16 = [r14], 8\n\t;;\n", file);
+      fputs ("\tmov b6 = r16\n", file);
+      fputs ("\tld8 r1 = [r14]\n", file);
+      fputs ("\tbr.call.sptk.many b0 = b6\n\t;;\n", file);
+    }
+  else
+    fputs ("\tbr.call.sptk.many b0 = _mcount\n\t;;\n", file);
 }
 
 static GTY(()) rtx mcount_func_rtx;
