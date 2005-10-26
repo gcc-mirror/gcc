@@ -1,3 +1,9 @@
+2005-10-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/15586
+	* resolve.c (resolve_symbol): Remove the use of whynot, so that
+	error messages are not built from pieces.
+
 2005-10-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24158
