@@ -1,3 +1,10 @@
+2005-10-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+        PR c/23103
+	* c-format.c (check_format_types): Use
+	lang_hooks.types_compatible_p
+	instead of pointer equality when comparing types.
+
 2005-10-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR driver/24473

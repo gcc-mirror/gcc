@@ -2137,7 +2137,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
 			  || cur_type == unsigned_char_type_node);
 
       /* Check the type of the "real" argument, if there's a type we want.  */
-      if (wanted_type == cur_type)
+      if (lang_hooks.types_compatible_p (wanted_type, cur_type))
 	continue;
       /* If we want 'void *', allow any pointer type.
 	 (Anything else would already have got a warning.)
