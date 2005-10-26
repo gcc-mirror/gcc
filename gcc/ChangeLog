@@ -1,3 +1,9 @@
+2005-10-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/23103
+	* c-format.c (check_format_types): Use lang_hooks.types_compatible_p
+	instead of pointer equality when comparing types.
+
 2005-10-24  James E. Wilson  <wilson@specifix.com>
 
 	* sched-deps.c (flush_pending_lists): Pass 1 not 0 in first two
