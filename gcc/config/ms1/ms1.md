@@ -68,33 +68,65 @@
 		 [(eq_attr "type" "arith") (nil) (nil)])
 
 
-;; Issue 64382
-;; This pattern implements the decrement and branch non-zero instruction
-;; which can be used by gcc loop optimizer under certain conditions.
-;; For an example of it being used try compiling the gcc test case
-;; gcc.c-torture/execute/921213-1.c with optimizations enabled.
-
-;; XXX - FIXME - TARGET_MUL is used as a condition since it is set when the
-;; target is the MS1-16-003, which is the only Morpho CPU which currently
-;; implements this instruction.  Strictly speaking we ought to define a
-;; new command line switch to enable/disable the DBNZ instruction or else
-;; change this pattern so that it explicitly checks for an MS1-16-003
-;; architecture.
-
 (define_insn "decrement_and_branch_until_zero"
-  [(parallel [(set (pc)
-	           (if_then_else
-	              (ne (match_operand:SI 0 "register_operand" "+r") (const_int 0))
-	              (label_ref (match_operand 1 "" ""))
-	              (pc)))
-              (set (match_dup 0)
-	           (plus:SI (match_dup 0) (const_int -1)))
-	     ])
-  ]
-  "TARGET_MUL"
+   [(set (pc)
+	 (if_then_else
+	  (ne (match_operand:SI 0 "nonimmediate_operand" "+r,*m")
+	      (const_int 0))
+	  (label_ref (match_operand 1 "" ""))
+	  (pc)))
+    (set (match_dup 0)
+	 (plus:SI (match_dup 0)
+		  (const_int -1)))
+    (clobber (match_scratch:SI 2 "=X,r"))]
+  "TARGET_MS1_16_003"
+  "@
+   dbnz\t%0, %l1%#
+   #"
+  [(set_attr "length" "4,16")]
+)
+
+;; Same as above, but without the clobber. The peephole below will
+;; match this pattern.
+(define_insn "*decrement_and_branch_until_zero_no_clobber"
+   [(set (pc)
+	 (if_then_else
+	  (ne (match_operand:SI 0 "register_operand" "+r")
+	      (const_int 0))
+	  (label_ref (match_operand 1 "" ""))
+	  (pc)))
+    (set (match_dup 0)
+	 (plus:SI (match_dup 0)
+		  (const_int -1)))]
+  "TARGET_MS1_16_003"
   "dbnz\t%0, %l1%#"
   [(set_attr "length" "4")]
 )
+
+;; Split the above to handle the case where operand 0 is in memory
+;; (a register that couldn't get a hard register).
+(define_split
+  [(set (pc)
+	(if_then_else
+	  (ne (match_operand:SI 0 "memory_operand" "")
+	      (const_int 0))
+	  (label_ref (match_operand 1 "" ""))
+	  (pc)))
+    (set (match_dup 0)
+	 (plus:SI (match_dup 0)
+		  (const_int -1)))
+    (clobber (match_scratch:SI 2 ""))]
+  "TARGET_MS1_16_003"
+  [(set (match_dup 2) (match_dup 0))
+   (set (match_dup 2) (plus:SI (match_dup 2) (const_int -1)))
+   (set (match_dup 0) (match_dup 2))
+   (set (pc)
+	(if_then_else
+	 (ne (match_dup 2)
+	     (const_int 0))
+	 (label_ref (match_dup 1))
+	 (pc)))]
+  "")
 
 ;; This peephole is defined in the vain hope that it might actually trigger one
 ;; day, although I have yet to find a test case that matches it.  The normal
@@ -111,7 +143,7 @@
 		(label_ref (match_operand 2 "" ""))
 		(pc)))
    ]
-  "TARGET_MUL"
+  "TARGET_MS1_16_003"
   [(parallel [(set (pc)
 	           (if_then_else
 	              (ne (match_dup 0) (const_int 0))

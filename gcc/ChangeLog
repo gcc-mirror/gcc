@@ -1,3 +1,16 @@
+2005-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/ms1/ms1.h (TARGET_MS1_64_001): New.
+        (TARGET_MS1_16_002): New.
+        (TARGET_MS1_16_003): New.
+
+        * config/ms1/ms1.md ("decrement_and_branch_until_zero"): Rewrite.
+        ("*decrement_and_branch_until_zero_no_clobber"): New.
+        Add corresponding splitter for decrement_and_branch_until_zero
+        instruction.
+        Key all decrement_and_branch_until_zero patterns off of
+        TARGET_MS1_16_003.
+
 2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24362
