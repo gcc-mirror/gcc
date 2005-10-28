@@ -5722,7 +5722,6 @@ grokfndecl (tree ctype,
 	  newtype =  build_function_type (integer_type_node,
 			  		  oldtypeargs);
 	  TREE_TYPE (decl) = newtype;
-	  TREE_TYPE (TREE_TYPE (decl)) = integer_type_node;
 	}
       inlinep = 0;
       publicp = 1;

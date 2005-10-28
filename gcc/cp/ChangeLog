@@ -1,5 +1,12 @@
 2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* decl.c (grokfndecl): Remove the setting
+	of the return type of the function type
+	of main after erroring about must returning
+	int.
+
+2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR C++/23229
 	* decl.c (grokfndecl): Create a new function type
 	after erroring out about main not returning int.
