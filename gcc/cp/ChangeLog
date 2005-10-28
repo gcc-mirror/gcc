@@ -1,3 +1,9 @@
+2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/23229
+	* decl.c (grokfndecl): Create a new function type
+	after erroring out about main not returning int.
+
 2005-10-28  Josh Conner  <jconner@apple.com>
 
 	PR c++/22153
