@@ -1,3 +1,9 @@
+2005-10-28  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24559
+	* include/c_std/std_cwchar.h (wcspbrk): Adjust signature.
+	* testsuite/21_strings/c_strings/wchar_t/24559.cc: New.
+
 2005-10-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 39.
