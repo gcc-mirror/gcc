@@ -1,10 +1,18 @@
 #! /bin/sh
 #
-# Update a local CVS tree from the GCC repository, with an emphasis
+# Update a local Subversion tree from the GCC repository, with an emphasis
 # on treating generated files correctly, so that autoconf, gperf et
 # al are not required for the ``end'' user.
 #
-# By default all command-line options are passed to `cvs update` in
+# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation
+# Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
+#
+# This script is Free Software, and it can be copied, distributed and
+# modified as defined in the GNU General Public License.  A copy of
+# its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
+#
+#
+# By default all command-line options are passed to `svn update` in
 # addition to $UPDATE_OPTIONS (defined below). If the first parameter
 # reads --nostdflags, $UPDATE_OPTIONS as well as this parameter itself
 # are omitted.
@@ -12,7 +20,7 @@
 # If the first parameter reads --patch, the second parameter is considered
 # a patch file.
 #
-# If the first parameter is --touch, no cvs operation will be performed,
+# If the first parameter is --touch, no svn operation will be performed,
 # only generated files that appear to be out of date in the local tree
 # will be touched.
 #
@@ -24,30 +32,16 @@
 #
 # Examples:
 #
-# contrib/gcc_update -r gcc_latest_snapshot
-# contrib/gcc_update -A
-# contrib/gcc_update --nostdflags -P -r gcc-2_95-branch gcc/testsuite
+# contrib/gcc_update -r 8712
 # contrib/gcc_update --patch some-patch
 # contrib/gcc_update --touch
 # contrib/gcc_update --list
-#
-#
-# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation
-# Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
-#
-# This script is Free Software, and it can be copied, distributed and
-# modified as defined in the GNU General Public License.  A copy of
-# its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
 
 
-# CVS command
-GCC_CVS=${GCC_CVS-${CVS-cvs}}
-# Default options used when updating via CVS.
-UPDATE_OPTIONS=-Pd
-# Use -P to prune empty directories.
-# Use -d to create any directories that exist in the repository but not
-#           locally.
-# Use -A to reset any sticky tags, dates, or `-k' options.
+# SVN command
+GCC_SVN=${GCC_SVN-${SVN-svn}}
+# Default options used when updating via SVN (none).
+UPDATE_OPTIONS=""
 
 ######## Anything below shouldn't be changed by regular users.
 
@@ -214,9 +208,9 @@ p
 
 esac
 
-# Check whether this indeed looks like a local CVS tree.
-if [ ! -d CVS ]; then
-    echo "This does not seem to be a GCC CVS tree!"
+# Check whether this indeed looks like a local SVN tree.
+if [ ! -d .svn ]; then
+    echo "This does not seem to be a GCC SVN tree!"
     exit
 fi
 
@@ -227,11 +221,11 @@ else
     set -- $UPDATE_OPTIONS ${1+"$@"}
 fi
 
-chat "Updating CVS tree"
-$GCC_CVS -q ${silent+-Q} update -r gcc-3_4-branch ${1+"$@"}
+chat "Updating SVN tree"
+$GCC_SVN --non-interactive -q update ${1+"$@"}
 if [ $? -ne 0 ]; then
     (touch_files_reexec)
-    echo "CVS update of full tree failed." >&2
+    echo "SVN update of full tree failed." >&2
     exit 1
 fi
 
