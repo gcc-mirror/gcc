@@ -23,10 +23,9 @@ BRANCHES=`$SVN ls $SVNROOT/branches \
 	  | sed -e 's/\///' \
           | egrep 'gcc-[0-9]+_[0-9]+-branch$' \
           | egrep -v $IGNORE_BRANCHES`
-
 # Always update the mainline.
 BRANCHES="${BRANCHES} ${ADD_BRANCHES}"
-BRANCHES="HEAD"
+
 # ARGS is passed to 'cvs co'
 CURR_DATE=`/bin/date +"%Y%m%d"`
 
@@ -66,8 +65,6 @@ for BRANCH in $BRANCHES; do
     dirname=`basename $file`
     file=`basename $file`
     file="$dirname/$file"
-    echo "$file"
-    exit 0;
     if test -f $file; then 
       /bin/sed  <$file >$file.new -e \
   "s/\(.*\"[^ ]*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" 
@@ -80,6 +77,7 @@ for BRANCH in $BRANCHES; do
       fi
     fi
   done
+  
   for file in $cppdefine_FILES; do
     dirname=`basename $file`
     file=`basename $file`
@@ -112,7 +110,7 @@ for BRANCH in $BRANCHES; do
       fi
     fi
   done
-  echo "$COMMIT_FILES"  
+
   if test -n "$COMMIT_FILES"; then
     for i in $COMMIT_FILES; do
     echo "Attempting to commit $i"
