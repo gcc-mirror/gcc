@@ -558,6 +558,7 @@ extract_component (block_stmt_iterator *bsi, tree t, bool imagpart_p,
       return TREE_OPERAND (t, imagpart_p);
 
     case VAR_DECL:
+    case RESULT_DECL:
     case PARM_DECL:
     case INDIRECT_REF:
     case COMPONENT_REF:
