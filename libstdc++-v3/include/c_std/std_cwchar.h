@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -211,7 +211,7 @@ namespace std
   using ::wcspbrk;
 
   inline wchar_t*
-  wcspbrk(wchar_t* __s1, wchar_t* __s2)
+  wcspbrk(wchar_t* __s1, const wchar_t* __s2)
   { return wcspbrk(const_cast<const wchar_t*>(__s1), __s2); }
 
   using ::wcsrchr;
