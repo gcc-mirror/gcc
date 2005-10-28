@@ -4,12 +4,14 @@
 #
 # File:   gcc_build
 # Author: Mark Mitchell
-# Date:   07/10/2000
+# Date:   2000-07-10
+#
+# Adapted to Subversion by Ben Elliston <bje@au.ibm.com>, 2005-07-14.
 #
 # Contents:
 #   Script to automatically download and build GCC.
 #
-# Copyright (c) 2000, 2001, 2003 Free Software Foundation.
+# Copyright (c) 2000, 2001, 2003, 2005 Free Software Foundation.
 #
 # This file is part of GCC.
 #
@@ -33,9 +35,6 @@
 ########################################################################
 # Notes
 ########################################################################
-
-# If you are using password-based CVS, you must manually log in, and
-# not log out from, the CVS server before running this script.
 
 # You can set the following variables in the environment.  They 
 # have no corresponding command-line options because they should
@@ -86,44 +85,28 @@ changedir() {
 	error "Could not change directory to $1"
 }
 
-# Set up CVS environment variables
-
-cvs_setup() {
-    CVSROOT=":${CVS_PROTOCOL}:${CVS_USERNAME}@"
-    CVSROOT="${CVSROOT}${CVS_SERVER}:${CVS_REPOSITORY}"
-    export CVSROOT
-}
-
 # Checkout a fresh copy of the GCC build tree.
 
 checkout_gcc() {
-    # Tell CVS where to find everything.
-    cvs_setup
-
     # If the destination already exists, don't risk destroying it.
     test -e ${DESTINATION} && \
 	error "${DESTINATION} already exists"
 
-    # CVS doesn't allow an absolute path for the destination directory.
-    DESTINATION_PARENT=`dirname ${DESTINATION}`
-    test -d ${DESTINATION_PARENT} || \
-	error "${DESTINATION_PARENT} is not a directory"
-    changedir ${DESTINATION_PARENT}
-
     # Checkout the tree
-    $GCC_CVS -z 9 co -d `basename ${DESTINATION}` gcc || \
+    test -n "${SVN_USERNAME}" && SVN_USERNAME="${SVN_USERNAME}@"
+    SVNROOT="${SVN_PROTOCOL}://${SVN_USERNAME}${SVN_SERVER}${SVN_REPOSITORY}"
+
+    $GCC_SVN co $SVNROOT ${DESTINATION} || \
 	error "Could not check out GCC"
 }
 
 # Update GCC.
 
 update_gcc() {
-    # Tell CVS where to find everything
-    cvs_setup
-
     # If the destination does not already exist, complain.
     test -d ${DESTINATION} || \
-	error "{$DESTINATION} does not exist"
+	error "${DESTINATION} does not exist"
+
     # Enter the destination directory.
     changedir ${DESTINATION}
 
@@ -189,7 +172,7 @@ export_gcc() {
     # Build a tarball of the source directory.
     tar czf ${TARFILE} \
 	--exclude=${OBJDIR} \
-	--exclude=CVS \
+	--exclude=.svn \
 	--exclude='.#*' \
 	--exclude='*~' \
 	`basename ${DESTINATION}`
@@ -210,16 +193,17 @@ install_gcc() {
 # Initialization
 ########################################################################
 
-# CVS command
-GCC_CVS=${GCC_CVS-${CVS-cvs}}
-# The CVS server containing the GCC repository.
-CVS_SERVER="gcc.gnu.org"
+# SVN command
+GCC_SVN=${GCC_SVN-${SVN-svn}}
+# The SVN server containing the GCC repository.
+SVN_SERVER="dberlin.org"
 # The path to the repository on that server.
-CVS_REPOSITORY="/cvs/gcc"
-# The CVS protocol to use.
-CVS_PROTOCOL="pserver"
+SVN_REPOSITORY="/trunk"
+# The SVN protocol to use.
+SVN_PROTOCOL="svn"
 # The username to use when connecting to the server.
-CVS_USERNAME="anoncvs"
+# An empty string means anonymous.
+SVN_USERNAME=""
 
 # The directory where the checked out GCC will be placed.
 DESTINATION="${HOME}/dev/gcc"
@@ -252,6 +236,9 @@ UPDATE=0
 # Main Program
 ########################################################################
 
+# Issue usage if no parameters are given.
+test $# -eq 0 && usage
+
 # Parse the options.
 while getopts "c:d:m:o:p:t:u:x:" ARG; do
     case $ARG in
@@ -259,10 +246,10 @@ while getopts "c:d:m:o:p:t:u:x:" ARG; do
     d)    DESTINATION="${OPTARG}";;
     m)    MAKE_BOOTSTRAP_OPTIONS="${OPTARG}";;
     o)    OBJDIR="${OPTARG}";;
-    p)    CVS_PROTOCOL="${OPTARG}";;
+    p)    SVN_PROTOCOL="${OPTARG}";;
     t)    TARFILE="${OPTARG}";;
     x)    MAKE_CHECK_OPTIONS="${OPTARG}";;
-    u)    CVS_USERNAME="${OPTARG}";;
+    u)    SVN_USERNAME="${OPTARG}";;
     \?)   usage;;
     esac
 done
