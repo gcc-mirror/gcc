@@ -1,21 +1,36 @@
+2005-10-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* acinclude.m4 (LIBGFOR_CHECK_FPSETMASK): New check.
+	* configure.ac: Check for floatingpoint.h, fptrap.h and float.h
+	headers. Use LIBGFOR_CHECK_FPSETMASK. Check for fp_trap and
+	fp_enable functions.
+	* configure.host: Add case for systems with fpsetmask and systems
+	with fp_trap/fp_enable.
+	* config/fpu-sysv.h: New file, FPU code using fpsetmask.
+	* config/fpu-aix.h: New file, FPU code for AIX using fp_trap and
+	fp_enable.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2005-10-24  Jerry DeLisle  <jvdelisle@verizon.net>
 
-        PR libgfortran/24224
-        * libgfortran.h: Remove array stride error code.
-        * runtime/error.c: Remove array stride error.
-        * io/io.h: Change name of 'nml_loop_spec' to 'array_loop_spec' to be
-        generic.  Add pointer to array_loop_spec and rank to gfc_unit
-        structure.
-        * io/list_read.c: Revise nml_loop_spec references to array_loop_spec.
-        * io/transfer.c (init_loop_spec): New function to initialize
-        an array_loop_spec.
-        (next_array_record): New function to return the index to the next array
-        record by incrementing through the array_loop_spec. 
-        (next_record_r): Use new function.
-        (next_record_w): Use new function.
-        (finalize_transfer): Free memory allocated for array_loop_spec.
-        * io/unit.c (get_array_unit_len): Delete this function. Use new
-        function init_loop_spec to initialize the array_loop_spec.  
+	PR libgfortran/24224
+	* libgfortran.h: Remove array stride error code.
+	* runtime/error.c: Remove array stride error.
+	* io/io.h: Change name of 'nml_loop_spec' to 'array_loop_spec' to be
+	generic.  Add pointer to array_loop_spec and rank to gfc_unit
+	structure.
+	* io/list_read.c: Revise nml_loop_spec references to array_loop_spec.
+	* io/transfer.c (init_loop_spec): New function to initialize
+	an array_loop_spec.
+	(next_array_record): New function to return the index to the next array
+	record by incrementing through the array_loop_spec. 
+	(next_record_r): Use new function.
+	(next_record_w): Use new function.
+	(finalize_transfer): Free memory allocated for array_loop_spec.
+	* io/unit.c (get_array_unit_len): Delete this function. Use new
+	function init_loop_spec to initialize the array_loop_spec.  
 
 2005-10-24  Paul Thomas  <pault@gcc.gnu.org>
 
