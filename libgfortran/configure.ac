@@ -158,7 +158,8 @@ AC_TYPE_OFF_T
 AC_STDC_HEADERS
 AC_HAVE_HEADERS(stdlib.h stdio.h string.h stddef.h math.h unistd.h signal.h)
 AC_CHECK_HEADERS(time.h sys/params.h sys/time.h sys/times.h sys/resource.h)
-AC_CHECK_HEADERS(sys/mman.h sys/types.h sys/stat.h ieeefp.h fenv.h)
+AC_CHECK_HEADERS(sys/mman.h sys/types.h sys/stat.h floatingpoint.h ieeefp.h)
+AC_CHECK_HEADERS(fenv.h fptrap.h float.h)
 AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists])])
 
 AC_CHECK_MEMBERS([struct stat.st_blksize])
@@ -345,6 +346,13 @@ AC_CHECK_LIB([m],[finite],[AC_DEFINE([HAVE_FINITE],[1],[libm includes finite])])
 
 # Check for GNU libc feenableexcept
 AC_CHECK_LIB([m],[feenableexcept],[have_feenableexcept=yes AC_DEFINE([HAVE_FEENABLEEXCEPT],[1],[libm includes feenableexcept])])
+
+# Check for SysV fpsetmask
+LIBGFOR_CHECK_FPSETMASK
+
+# Check for AIX fp_trap and fp_enable
+AC_CHECK_FUNC([fp_trap],[have_fp_trap=yes AC_DEFINE([HAVE_FP_TRAP],[1],[fp_trap is present])])
+AC_CHECK_FUNC([fp_enable],[have_fp_enable=yes AC_DEFINE([HAVE_FP_ENABLE],[1],[fp_enable is present])])
 
 # Runs configure.host to set up necessary host-dependent shell variables.
 # We then display a message about it, and propagate them through the

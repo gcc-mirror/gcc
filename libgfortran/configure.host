@@ -18,7 +18,7 @@
 
 
 # DEFAULTS
-fpu_host=fpu-generic
+fpu_host='fpu-generic'
 
 # HOST-SPECIFIC OVERRIDES
 case "${host_cpu}" in
@@ -29,4 +29,12 @@ esac
 # CONFIGURATION-SPECIFIC OVERRIDES
 if test "x${have_feenableexcept}" = "xyes"; then
   fpu_host='fpu-glibc'
+fi
+
+if test "x${have_fpsetmask}" = "xyes"; then
+  fpu_host='fpu-sysv'
+fi
+
+if test "x${have_fp_enable}" = "xyes" && test "x${have_fp_trap}" = "xyes"; then
+  fpu_host='fpu-aix'
 fi

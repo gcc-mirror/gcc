@@ -294,6 +294,12 @@
 /* libm includes finite */
 #undef HAVE_FINITE
 
+/* Define to 1 if you have the <floatingpoint.h> header file. */
+#undef HAVE_FLOATINGPOINT_H
+
+/* Define to 1 if you have the <float.h> header file. */
+#undef HAVE_FLOAT_H
+
 /* libm includes floor */
 #undef HAVE_FLOOR
 
@@ -302,6 +308,18 @@
 
 /* libm includes floorl */
 #undef HAVE_FLOORL
+
+/* Define if you have fpsetmask. */
+#undef HAVE_FPSETMASK
+
+/* Define to 1 if you have the <fptrap.h> header file. */
+#undef HAVE_FPTRAP_H
+
+/* fp_enable is present */
+#undef HAVE_FP_ENABLE
+
+/* fp_trap is present */
+#undef HAVE_FP_TRAP
 
 /* libm includes frexp */
 #undef HAVE_FREXP

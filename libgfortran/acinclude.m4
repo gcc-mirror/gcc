@@ -384,3 +384,20 @@ esac])])
 if test x"$have_working_stat" = xyes; then
   AC_DEFINE(HAVE_WORKING_STAT, 1, [Define if target has a reliable stat.])
 fi])
+
+dnl Checks for fpsetmask function.
+AC_DEFUN([LIBGFOR_CHECK_FPSETMASK], [
+  AC_CACHE_CHECK([whether fpsetmask is present], have_fpsetmask, [
+    AC_TRY_LINK([
+#if HAVE_FLOATINGPOINT_H
+# include <floatingpoint.h>
+#endif /* HAVE_FLOATINGPOINT_H */
+#if HAVE_IEEEFP_H
+# include <ieeefp.h>
+#endif /* HAVE_IEEEFP_H */],[fpsetmask(0);],
+    eval "have_fpsetmask=yes", eval "have_fpsetmask=no")
+  ])
+  if test x"$have_fpsetmask" = xyes; then
+    AC_DEFINE(HAVE_FPSETMASK, 1, [Define if you have fpsetmask.])
+  fi
+])
