@@ -1,4 +1,13 @@
-2005-10-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2005-10-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* Makefile.am (intrinsics): Add signal.c.
+	* Makefile.in: Regenerate.
+	* configure.ac: Checks for signal and alarm.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* intrinsics/signal.c: New file for SIGNAL and ALARM intrinsics.
+
+2005-10-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* acinclude.m4 (LIBGFOR_CHECK_FPSETMASK): New check.
 	* configure.ac: Check for floatingpoint.h, fptrap.h and float.h

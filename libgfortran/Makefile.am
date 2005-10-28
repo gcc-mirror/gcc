@@ -66,6 +66,7 @@ intrinsics/link.c \
 intrinsics/mvbits.c \
 intrinsics/pack_generic.c \
 intrinsics/perror.c \
+intrinsics/signal.c \
 intrinsics/size.c \
 intrinsics/sleep.c \
 intrinsics/spread_generic.c \
