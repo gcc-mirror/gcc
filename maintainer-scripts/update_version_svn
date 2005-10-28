@@ -50,11 +50,11 @@ for BRANCH in $BRANCHES; do
   # in changes.
   if test "$BRANCH" = HEAD; then 
     for i in $FILES; do
-      ${SVN} co -N ${SVNROOT}/trunk/`dirname $i` `basename $i`
+      ${SVN} -q co -N ${SVNROOT}/trunk/`dirname $i` `basename $i`
     done
   else
     for i in $FILES; do
-      ${SVN} co -N ${SVNROOT}/branches/${BRANCH}/`dirname $i` `basename $i`
+      ${SVN} -q co -N ${SVNROOT}/branches/${BRANCH}/`dirname $i` `basename $i`
     done
   fi
 
