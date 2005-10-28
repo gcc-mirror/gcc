@@ -7,6 +7,8 @@
 # Usage: newcvsroot <newroot> <modulename> <toplevel directory>
 
 if [ $# != 3 ]; then
+    echo "Note to svn users: use svn switch --relocate instead."
+    echo
     echo "usage: `basename $0` <newroot> <modulename> <toplevel directory>"
     exit 1
 fi

@@ -1,3 +1,10 @@
+2005-10-28  Daniel Berlin  <dberlin@dberlin.org>
+	    Ben Elliston <bje@au1.ibm.com>
+	
+	* gcc_update: Update for svn.
+	* newcvsroot: Ditto.
+	* gcc_build: Ditto.
+
 2005-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* texi2pod.pl: Substitue for @value even when part of @include. 
