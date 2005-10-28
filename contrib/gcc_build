@@ -111,7 +111,7 @@ update_gcc() {
     changedir ${DESTINATION}
 
     # Update the tree
-    ./contrib/gcc_update -d || \
+    ./contrib/gcc_update || \
 	error "Could not update GCC"
 }
 
