@@ -86,6 +86,10 @@ march=MS1-16-003:exit-16-003.o%s} \
     }						\
   while (0)
 
+#define TARGET_MS1_64_001 (ms1_cpu == PROCESSOR_MS1_64_001)
+#define TARGET_MS1_16_002 (ms1_cpu == PROCESSOR_MS1_16_002)
+#define TARGET_MS1_16_003 (ms1_cpu == PROCESSOR_MS1_16_003)
+
 #define TARGET_VERSION  fprintf (stderr, " (ms1)");
 
 #define OVERRIDE_OPTIONS ms1_override_options ()
