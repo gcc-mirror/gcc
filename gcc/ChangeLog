@@ -1,3 +1,9 @@
+2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/24362
+	* tree-complex.c (extract_component): Treat RESULT_DECL
+	like the rest of the decls.
+
 2005-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/ia64.c (ia64_output_function_profiler): Emit an
