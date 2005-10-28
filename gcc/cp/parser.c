@@ -13240,8 +13240,13 @@ cp_parser_member_declaration (cp_parser* parser)
   /* Check for a template-declaration.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
     {
-      /* Parse the template-declaration.  */
-      cp_parser_template_declaration (parser, /*member_p=*/true);
+      /* An explicit specialization here is an error condition, and we
+	 expect the specialization handler to detect and report this.  */
+      if (cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_LESS
+	  && cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_GREATER)
+	cp_parser_explicit_specialization (parser);
+      else
+	cp_parser_template_declaration (parser, /*member_p=*/true);
 
       return;
     }

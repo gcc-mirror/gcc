@@ -7,5 +7,5 @@
 
 struct foo { 
         template<typename T> void bar (T &t) {}
-        template<> void bar<double>(double &t) {} // { dg-error "explicit|non-namespace|member" }
+        template<> void bar<double>(double &t) {} // { dg-error "non-namespace|template|function" }
 };
