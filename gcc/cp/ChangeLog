@@ -1,3 +1,11 @@
+2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/23426
+	* decl.c (start_decl): Check that the decl is an
+	error_mark_node before getting the type.
+	Remove the check for the decl's type being an
+	error_mark_node.  
+
 2005-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24260
