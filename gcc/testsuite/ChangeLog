@@ -1,3 +1,9 @@
+2005-10-28  Josh Conner  <jconner@apple.com>
+
+	PR c++/22153
+	* g++.dg/template/crash38.C: New test.
+	* g++.dg/parse/explicit1.C: Change expected errors.
+
 2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/23426
