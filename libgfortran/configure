@@ -7519,7 +7519,9 @@ done
 
 
 
-for ac_func in sleep time ttyname
+
+
+for ac_func in sleep time ttyname signal alarm
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $ac_func" >&5

@@ -41,6 +41,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{ADJUSTR}:       ADJUSTR,   Right adjust a string
 * @code{AIMAG}:         AIMAG,     Imaginary part of complex number
 * @code{AINT}:          AINT,      Truncate to a whole number
+* @code{ALARM}:         ALARM,     Set an alarm clock
 * @code{ALL}:           ALL,       Determine if all values are true
 * @code{ALLOCATED}:     ALLOCATED, Status of allocatable entity
 * @code{ANINT}:         ANINT,     Nearest whole number
@@ -91,9 +92,10 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
 * @code{REAL}:          REAL,      Convert to real type 
-* @code{SQRT}:          SQRT,      Square-root function
+* @code{SIGNAL}:        SIGNAL,    Signal handling subroutine (or function)
 * @code{SIN}:           SIN,       Sine function
 * @code{SINH}:          SINH,      Hyperbolic sine function
+* @code{SQRT}:          SQRT,      Square-root function
 * @code{TAN}:           TAN,       Tangent function
 * @code{TANH}:          TANH,      Hyperbolic tangent function
 @end menu
@@ -508,6 +510,57 @@ end program test_aint
 @item Name           @tab Argument         @tab Return type      @tab Option
 @item @code{DINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab f95, gnu
 @end multitable
+@end table
+
+
+
+@node ALARM
+@section @code{ALARM} --- Execute a routine after a given delay
+@findex @code{ALARM} intrinsic
+@cindex 
+
+@table @asis
+@item @emph{Description}:
+@code{ALARM(SECONDS [, STATUS])} causes external subroutine @var{HANDLER}
+to be executed after a delay of @var{SECONDS} by using @code{alarm(1)} to
+set up a signal and @code{signal(2)} to catch it. If @var{STATUS} is
+supplied, it will be returned with the number of seconds remaining until
+any previously scheduled alarm was due to be delivered, or zero if there
+was no previously scheduled alarm.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@code{CALL ALARM(SECONDS, HANDLER)} 
+@code{CALL ALARM(SECONDS, HANDLER, STATUS)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{SECONDS} @tab The type of the argument shall be a scalar
+@code{INTEGER}. It is @code{INTENT(IN)}.
+@item @var{HANDLER} @tab Signal handler (@code{INTEGER FUNCTION} or
+@code{SUBROUTINE}) or dummy/global @code{INTEGER} scalar.
+@code{INTEGER}. It is @code{INTENT(IN)}.
+@item @var{STATUS}  @tab (Optional) @var{STATUS} shall be a scalar
+@code{INTEGER} variable. It is @code{INTENT(OUT)}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program test_alarm
+  external handler_print
+  integer i
+  call alarm (3, handler_print, i)
+  print *, i
+  call sleep(10)
+end program test_alarm
+@end smallexample
+This will cause the external routine @var{handler_print} to be called
+after 3 seconds.
 @end table
 
 
@@ -2923,6 +2976,65 @@ program test_real
   end program test_real
 @end smallexample
 @end table
+
+
+
+@node SIGNAL
+@section @code{SIGNAL} --- Signal handling subroutine (or function)
+@findex @code{SIGNAL} intrinsic
+@cindex SIGNAL subroutine 
+
+@table @asis
+@item @emph{Description}:
+@code{SIGNAL(NUMBER, HANDLER [, STATUS])} causes external subroutine
+@var{HANDLER} to be executed with a single integer argument when signal
+@var{NUMBER} occurs.  If @var{HANDLER} is an integer, it can be used to
+turn off handling of signal @var{NUMBER} or revert to its default
+action.  See @code{signal(2)}.
+
+If @code{SIGNAL} is called as a subroutine and the @var{STATUS} argument
+is supplied, it is set to the value returned by @code{signal(2)}.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+subroutine, non-elemental function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .30 .80
+@item @code{CALL ALARM(NUMBER, HANDLER)}
+@item @code{CALL ALARM(NUMBER, HANDLER, STATUS)}
+@item @code{STATUS = ALARM(NUMBER, HANDLER)}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{NUMBER} @tab shall be a scalar integer, with @code{INTENT(IN)}
+@item @var{HANDLER}@tab Signal handler (@code{INTEGER FUNCTION} or
+@code{SUBROUTINE}) or dummy/global @code{INTEGER} scalar.
+@code{INTEGER}. It is @code{INTENT(IN)}.
+@item @var{STATUS} @tab (Optional) @var{STATUS} shall be a scalar
+integer. It has @code{INTENT(OUT)}.
+@end multitable
+
+@item @emph{Return value}:
+The @code{SIGNAL} functions returns the value returned by @code{signal(2)}.
+
+@item @emph{Example}:
+@smallexample
+program test_signal
+  intrinsic signal
+  external handler_print
+
+  call signal (12, handler_print)
+  call signal (10, 1)
+
+  call sleep (30)
+end program test_signal
+@end smallexample
+@end table
+
 
 
 @node SIN

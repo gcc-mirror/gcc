@@ -2430,6 +2430,40 @@ gfc_check_irand (gfc_expr * x)
   return SUCCESS;
 }
 
+
+try
+gfc_check_alarm_sub (gfc_expr * seconds, gfc_expr * handler, gfc_expr * status)
+{
+  if (scalar_check (seconds, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (seconds, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (handler->ts.type != BT_INTEGER && handler->ts.type != BT_PROCEDURE)
+    {
+      gfc_error (
+	"'%s' argument of '%s' intrinsic at %L must be INTEGER or PROCEDURE",
+	gfc_current_intrinsic_arg[1], gfc_current_intrinsic, &handler->where);
+      return FAILURE;
+    }
+
+  if (handler->ts.type == BT_INTEGER && scalar_check (handler, 1) == FAILURE)
+    return FAILURE;
+
+  if (status == NULL)
+    return SUCCESS;
+
+  if (scalar_check (status, 2) == FAILURE)
+    return FAILURE;
+
+  if (type_check (status, 2, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
 try
 gfc_check_rand (gfc_expr * x)
 {
@@ -2715,6 +2749,63 @@ gfc_check_unlink_sub (gfc_expr * name, gfc_expr * status)
     return FAILURE;
 
   if (type_check (status, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_signal (gfc_expr * number, gfc_expr * handler)
+{
+  if (scalar_check (number, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (number, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (handler->ts.type != BT_INTEGER && handler->ts.type != BT_PROCEDURE)
+    {
+      gfc_error (
+	"'%s' argument of '%s' intrinsic at %L must be INTEGER or PROCEDURE",
+	gfc_current_intrinsic_arg[1], gfc_current_intrinsic, &handler->where);
+      return FAILURE;
+    }
+
+  if (handler->ts.type == BT_INTEGER && scalar_check (handler, 1) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_signal_sub (gfc_expr * number, gfc_expr * handler, gfc_expr * status)
+{
+  if (scalar_check (number, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (number, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (handler->ts.type != BT_INTEGER && handler->ts.type != BT_PROCEDURE)
+    {
+      gfc_error (
+	"'%s' argument of '%s' intrinsic at %L must be INTEGER or PROCEDURE",
+	gfc_current_intrinsic_arg[1], gfc_current_intrinsic, &handler->where);
+      return FAILURE;
+    }
+
+  if (handler->ts.type == BT_INTEGER && scalar_check (handler, 1) == FAILURE)
+    return FAILURE;
+
+  if (status == NULL)
+    return SUCCESS;
+
+  if (type_check (status, 2, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (status, 2) == FAILURE)
     return FAILURE;
 
   return SUCCESS;

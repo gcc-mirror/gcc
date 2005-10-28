@@ -21,6 +21,9 @@
 /* libm includes acosl */
 #undef HAVE_ACOSL
 
+/* Define to 1 if you have the `alarm' function. */
+#undef HAVE_ALARM
+
 /* libm includes asin */
 #undef HAVE_ASIN
 
@@ -473,6 +476,9 @@
 
 /* libm includes scalbnl */
 #undef HAVE_SCALBNL
+
+/* Define to 1 if you have the `signal' function. */
+#undef HAVE_SIGNAL
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H

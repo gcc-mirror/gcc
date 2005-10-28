@@ -169,13 +169,14 @@ am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	date_and_time.lo env.lo erf.lo eoshift0.lo eoshift2.lo \
 	etime.lo exit.lo flush.lo fnum.lo gerror.lo getcwd.lo \
 	getlog.lo getXid.lo hyper.lo hostnm.lo kill.lo ierrno.lo \
-	ishftc.lo link.lo mvbits.lo pack_generic.lo perror.lo size.lo \
-	sleep.lo spread_generic.lo string_intrinsics.lo system.lo \
-	rand.lo random.lo rename.lo reshape_generic.lo \
-	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
-	stat.lo symlnk.lo system_clock.lo time.lo transpose_generic.lo \
-	tty.lo umask.lo unlink.lo unpack_generic.lo in_pack_generic.lo \
-	in_unpack_generic.lo normalize.lo
+	ishftc.lo link.lo mvbits.lo pack_generic.lo perror.lo \
+	signal.lo size.lo sleep.lo spread_generic.lo \
+	string_intrinsics.lo system.lo rand.lo random.lo rename.lo \
+	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
+	selected_real_kind.lo stat.lo symlnk.lo system_clock.lo \
+	time.lo transpose_generic.lo tty.lo umask.lo unlink.lo \
+	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
+	normalize.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
@@ -406,6 +407,7 @@ intrinsics/link.c \
 intrinsics/mvbits.c \
 intrinsics/pack_generic.c \
 intrinsics/perror.c \
+intrinsics/signal.c \
 intrinsics/size.c \
 intrinsics/sleep.c \
 intrinsics/spread_generic.c \
@@ -2297,6 +2299,9 @@ pack_generic.lo: intrinsics/pack_generic.c
 
 perror.lo: intrinsics/perror.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o perror.lo `test -f 'intrinsics/perror.c' || echo '$(srcdir)/'`intrinsics/perror.c
+
+signal.lo: intrinsics/signal.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o signal.lo `test -f 'intrinsics/signal.c' || echo '$(srcdir)/'`intrinsics/signal.c
 
 size.lo: intrinsics/size.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o size.lo `test -f 'intrinsics/size.c' || echo '$(srcdir)/'`intrinsics/size.c

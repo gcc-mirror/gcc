@@ -1,3 +1,19 @@
+2005-10-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* check.c (gfc_check_alarm_sub, gfc_check_signal,
+	gfc_check_signal_sub): New functions.
+	* gfortran.h (gfc_generic_isym_id): Add GFC_ISYM_SIGNAL.
+	* intrinsic.c (add_functions): Add signal intrinsic.
+	(add_subroutines): Add signal and alarm intrinsics.
+	* intrinsic.texi: Document the new intrinsics.
+	* iresolve.c (gfc_resolve_signal, gfc_resolve_alarm_sub,
+	gfc_resolve_signal_sub): New functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Add case
+	for GFC_ISYM_SIGNAL.
+	* intrinsic.h: Add prototypes for gfc_check_alarm_sub,
+	gfc_check_signal, gfc_check_signal_sub, gfc_resolve_signal,
+	gfc_resolve_alarm_sub, gfc_resolve_signal_sub.
+
 2005-10-28  Steven Bosscher  <stevenb@suse.de>
 
 	PR fortran/24545
