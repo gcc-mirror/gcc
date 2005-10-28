@@ -295,7 +295,7 @@ gfc_match_end_interface (void)
       /* Comparing the symbol node names is OK because only use-associated
          symbols can be renamed.  */
       if (type != current_interface.type
-	  || strcmp (current_interface.sym->name, name) != 0)
+	  || strcmp (current_interface.uop->name, name) != 0)
 	{
 	  gfc_error ("Expecting 'END INTERFACE OPERATOR (.%s.)' at %C",
 		     current_interface.sym->name);
