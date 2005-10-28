@@ -5716,7 +5716,12 @@ grokfndecl (tree ctype,
       if (!same_type_p (TREE_TYPE (TREE_TYPE (decl)),
 			integer_type_node))
 	{
+	  tree oldtypeargs = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	  tree newtype;
 	  error ("%<::main%> must return %<int%>");
+	  newtype =  build_function_type (integer_type_node,
+			  		  oldtypeargs);
+	  TREE_TYPE (decl) = newtype;
 	  TREE_TYPE (TREE_TYPE (decl)) = integer_type_node;
 	}
       inlinep = 0;

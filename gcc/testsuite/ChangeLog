@@ -1,3 +1,8 @@
+2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/23229
+	* g++.dg/warn/main-2.C: New test.
+
 2005-10-28  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/24545
