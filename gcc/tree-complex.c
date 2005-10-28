@@ -59,6 +59,7 @@ extract_component (block_stmt_iterator *bsi, tree t, bool imagpart_p)
       break;
 
     case VAR_DECL:
+    case RESULT_DECL:
     case PARM_DECL:
       ret = build1 ((imagpart_p ? IMAGPART_EXPR : REALPART_EXPR),
 		    inner_type, t);
