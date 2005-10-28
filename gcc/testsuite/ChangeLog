@@ -1,3 +1,8 @@
+2005-10-28  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/24545
+	* gfortran.dg/interface_2.f90: new test.
+
 2005-10-28  Josh Conner  <jconner@apple.com>
 
 	PR c++/22153

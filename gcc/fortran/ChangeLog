@@ -1,3 +1,9 @@
+2005-10-28  Steven Bosscher  <stevenb@suse.de>
+
+	PR fortran/24545
+	* interface.c (gfc_match_end_interface): Fix typo in 
+	INTERFACE_USER_OP case.
+
 2005-10-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/15586
