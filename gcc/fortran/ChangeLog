@@ -1,3 +1,7 @@
+2005-20-28  Steven Bosscher  <stevenb@suse.de>
+
+	* interface.c (gfc_match_end_interface): Finish the previous patch.
+
 2005-10-28  Steven Bosscher  <stevenb@suse.de>
 
 	PR fortran/24545
