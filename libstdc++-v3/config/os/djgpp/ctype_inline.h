@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,7 @@
   bool
   ctype<char>::
   is(mask __m, char __c) const 
-  { return _M_table[static_cast<unsigned char>(__c + 1)] & __m; }
+  { return _M_table[static_cast<unsigned char>(__c)] & __m; }
 
   const char*
   ctype<char>::
@@ -52,7 +52,8 @@
   ctype<char>::
   scan_is(mask __m, const char* __low, const char* __high) const
   {
-    while (__low < __high && !this->is(__m, *__low))
+    while (__low < __high 
+	   && !(_M_table[static_cast<unsigned char>(*__low)] & __m))
       ++__low;
     return __low;
   }
@@ -61,7 +62,8 @@
   ctype<char>::
   scan_not(mask __m, const char* __low, const char* __high) const
   {
-    while (__low < __high && this->is(__m, *__low) != 0)
+    while (__low < __high 
+	   && (_M_table[static_cast<unsigned char>(*__low)] & __m) != 0)
       ++__low;
     return __low;
   }

@@ -1,3 +1,9 @@
+2005-10-29  Carey Evans  <carey.evans@gmail.com>
+
+	PR libstdc++/22087
+	* config/os/djgpp/ctype_inline.h: Fix.
+	* config/os/djgpp/ctype_noninline.h: Likewise.
+
 2005-10-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24559
