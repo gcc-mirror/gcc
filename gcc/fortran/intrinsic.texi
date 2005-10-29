@@ -517,7 +517,6 @@ end program test_aint
 @node ALARM
 @section @code{ALARM} --- Execute a routine after a given delay
 @findex @code{ALARM} intrinsic
-@cindex 
 
 @table @asis
 @item @emph{Description}:
