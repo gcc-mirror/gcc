@@ -1,3 +1,7 @@
+2005-10-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/nested-func-4.c: Require profiling -pg.
+
 2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/23229

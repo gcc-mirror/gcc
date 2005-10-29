@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-pg" } */
+/* { dg-require-profiling "-pg" } */
 
 extern void abort(void);
 
