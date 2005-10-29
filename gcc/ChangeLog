@@ -1,3 +1,12 @@
+2005-10-30  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/23070
+	* config/rs6000/rs6000.c (function_arg): For ABI_V4 calls to
+	stdarg functions, set/clear the fp marker even when no variable
+	args are passed.
+	* config/rs6000/sysv4.h (SUBTARGET_SWITCHES): Describe
+	-mprototype and -mno-prototype.
+
 2005-10-21  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/24465
