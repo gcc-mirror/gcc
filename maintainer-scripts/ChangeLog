@@ -1,5 +1,9 @@
 2005-10-26  Daniel Berlin  <dberlin@dberlin.org>
 
+	* update_web_docs_svn: Use -q to quiet svn.
+
+2005-10-26  Daniel Berlin  <dberlin@dberlin.org>
+
 	* crontab: Update to reflect reality
 
 2005-10-01  Mark Mitchell  <mark@codesourcery.com>
