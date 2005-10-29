@@ -87,7 +87,7 @@ if [ "$RELEASE" = "trunk" ]; then
   svn ls -R $SVNROOT/$RELEASE/gcc | grep "\.texi$" |fgrep -v -f/home/gccadmin/scripts/doc_exclude > FILES
   # SVN export doesn't function like CVS, in that it doesn't create an entire empty path structure
   # Thus, it's easiest to just export the entire tree
-  svn export $SVNROOT/$RELEASE gcc
+  svn -q export $SVNROOT/$RELEASE gcc
 #  # Checkout all the texi files.
 #  for i in `cat FILES`; do
 #    svn -q export $SVNROOT/$RELEASE/gcc/$i
@@ -102,7 +102,7 @@ else
   svn ls -R $SVNROOT/tags/$RELEASE/gcc | grep "\.texi$" |fgrep -v -f/home/gccadmin/scripts/doc_exclude > FILES
   # SVN export doesn't function like CVS, in that it doesn't create an entire empty path structure
   # Thus, it's easiest to just export the entire tree
-  svn export $SVNROOT/tags/$RELEASE gcc
+  svn -q export $SVNROOT/tags/$RELEASE gcc
 #  # Checkout all the texi files.
 #  for i in `cat FILES`; do
 #    svn -q export $SVNROOT/tags/$RELEASE/gcc/$i
