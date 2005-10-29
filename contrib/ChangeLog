@@ -1,5 +1,10 @@
 2005-10-28  Andrew Pinski  <pinskia@gcc.gnu.org>
 
+	* gcc_update: When svn update is called and
+	--silent is used, pass -q.
+
+2005-10-28  Andrew Pinski  <pinskia@gcc.gnu.org>
+
 	* gcc_update: Remove the -q from svn invocation.
 
 2005-10-28  Andrew Pinski  <pinskia@gcc.gnu.org>
