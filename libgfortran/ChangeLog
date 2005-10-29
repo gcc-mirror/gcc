@@ -1,4 +1,12 @@
+2005-10-29  Mike Stump  <mrs@apple.com>
+
+	* Makefile.am (kinds.h): Remove target, if command fails.
+	(selected_int_kind.inc): Likewise.
+	(selected_real_kind.inc): Likewise.
+	* Makefile.in: Regenerate.
+
 2005-10-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	
 
 	* Makefile.am (intrinsics): Add signal.c.
 	* Makefile.in: Regenerate.
@@ -34,12 +42,12 @@
 	* io/transfer.c (init_loop_spec): New function to initialize
 	an array_loop_spec.
 	(next_array_record): New function to return the index to the next array
-	record by incrementing through the array_loop_spec. 
+	record by incrementing through the array_loop_spec.
 	(next_record_r): Use new function.
 	(next_record_w): Use new function.
 	(finalize_transfer): Free memory allocated for array_loop_spec.
 	* io/unit.c (get_array_unit_len): Delete this function. Use new
-	function init_loop_spec to initialize the array_loop_spec.  
+	function init_loop_spec to initialize the array_loop_spec.
 
 2005-10-24  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -150,7 +158,7 @@
 
 	PR libgfortran/24313
 	*  c99_functions.c (csqrtf, csqrt): Fix choice of branch cut.  Note
-	csqrt{f} were imported from glibc, and this bug is still present 
+	csqrt{f} were imported from glibc, and this bug is still present
 	there. glibc PR is 1146.
 
 2005-10-07  Janne Blomqvist <jblomqvi@cc.hut.fi>
@@ -189,7 +197,7 @@
         * io/unix.c (mem_alloc_w_at): Remove call to generate_error end-of-file.
         * io/write.c (write_float): Add checks for NULL pointer returns from
         write_block calls. (write_integer): Same.
-        
+
 2005-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* runtime/memory.c (allocate_size): Malloc 1 byte if size == 0.
