@@ -298,7 +298,7 @@ gfc_match_end_interface (void)
 	  || strcmp (current_interface.uop->name, name) != 0)
 	{
 	  gfc_error ("Expecting 'END INTERFACE OPERATOR (.%s.)' at %C",
-		     current_interface.sym->name);
+		     current_interface.uop->name);
 	  m = MATCH_ERROR;
 	}
 
