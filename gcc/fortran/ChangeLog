@@ -1,3 +1,7 @@
+2005-10-29  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* intrinsic.texi: Remove empty @cindex line.
+
 2005-10-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* check.c (gfc_check_alarm_sub, gfc_check_signal,
