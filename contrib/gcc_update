@@ -243,7 +243,7 @@ fi
 
 chat "Updating SVN tree"
 
-$GCC_SVN --non-interactive update ${1+"$@"}
+$GCC_SVN ${silent+-q}  --non-interactive update ${1+"$@"}
 if [ $? -ne 0 ]; then
     (touch_files_reexec)
     echo "SVN update of full tree failed." >&2
