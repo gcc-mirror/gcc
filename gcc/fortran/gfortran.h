@@ -214,7 +214,7 @@ typedef enum
   ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE, ST_WHERE_BLOCK, ST_WHERE, ST_WRITE,
   ST_ASSIGNMENT, ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE,
   ST_SIMPLE_IF, ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT,
-  ST_NONE
+  ST_ENUM, ST_ENUMERATOR, ST_END_ENUM, ST_NONE
 }
 gfc_statement;
 
@@ -1484,6 +1484,7 @@ typedef struct
   int warn_std;
   int allow_std;
   int warn_nonstd_intrinsics;
+  int fshort_enums;
 }
 gfc_option_t;
 
@@ -1626,6 +1627,8 @@ void gfc_get_errors (int *, int *);
 /* arith.c */
 void gfc_arith_init_1 (void);
 void gfc_arith_done_1 (void);
+gfc_expr *gfc_enum_initializer (gfc_expr *, locus);
+arith gfc_check_integer_range (mpz_t p, int kind);
 
 /* trans-types.c */
 int gfc_validate_kind (bt, int, bool);

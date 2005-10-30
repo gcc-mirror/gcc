@@ -189,4 +189,8 @@ std=legacy
 Fortran
 Accept extensions to support legacy code
 
+fshort-enums
+Fortran
+Use the narrowest integer type possible for enumeration types
+
 ; This comment is to ensure we retain the blank line above.

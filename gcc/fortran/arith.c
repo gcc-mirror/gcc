@@ -339,7 +339,7 @@ gfc_arith_done_1 (void)
    the range of the kind.  Returns ARITH_OK, ARITH_ASYMMETRIC or
    ARITH_OVERFLOW.  */
 
-static arith
+arith
 gfc_check_integer_range (mpz_t p, int kind)
 {
   arith result;
@@ -2402,6 +2402,50 @@ gfc_hollerith2logical (gfc_expr * src, int kind)
 
   result->value.character.string[kind] = '\0'; /* For debugger */
   result->value.character.length = kind;
+
+  return result;
+}
+
+/* Returns an initializer whose value is one higher than the value of the
+   LAST_INITIALIZER argument.  If that is argument is NULL, the
+   initializers value will be set to zero.  The initializer's kind
+   will be set to gfc_c_int_kind.
+
+   If -fshort-enums is given, the appropriate kind will be selected
+   later after all enumerators have been parsed.  A warning is issued
+   here if an initializer exceeds gfc_c_int_kind.  */
+
+gfc_expr *
+gfc_enum_initializer (gfc_expr *last_initializer, locus where)
+{
+  gfc_expr *result;
+
+  result = gfc_get_expr ();
+  result->expr_type = EXPR_CONSTANT;
+  result->ts.type = BT_INTEGER;
+  result->ts.kind = gfc_c_int_kind;
+  result->where = where;
+
+  mpz_init (result->value.integer);
+
+  if (last_initializer != NULL)
+    {
+      mpz_add_ui (result->value.integer, last_initializer->value.integer, 1);
+      result->where = last_initializer->where;
+
+      if (gfc_check_integer_range (result->value.integer,
+             gfc_c_int_kind) != ARITH_OK)
+        {
+          gfc_error ("Enumerator exceeds the C integer type at %C");
+          return NULL;
+        }
+    }
+  else
+    {
+      /* Control comes here, if it's the very first enumerator and no
+         initializer has been given.  It will be initialized to ZERO (0). */
+      mpz_set_si (result->value.integer, 0);
+    }
 
   return result;
 }

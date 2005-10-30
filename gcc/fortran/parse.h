@@ -30,7 +30,7 @@ typedef enum
 {
   COMP_NONE, COMP_PROGRAM, COMP_MODULE, COMP_SUBROUTINE, COMP_FUNCTION,
   COMP_BLOCK_DATA, COMP_INTERFACE, COMP_DERIVED, COMP_IF, COMP_DO,
-  COMP_SELECT, COMP_FORALL, COMP_WHERE, COMP_CONTAINS
+  COMP_SELECT, COMP_FORALL, COMP_WHERE, COMP_CONTAINS, COMP_ENUM
 }
 gfc_compile_state;
 
@@ -63,5 +63,8 @@ int gfc_check_do_variable (gfc_symtree *);
 try gfc_find_state (gfc_compile_state);
 gfc_state_data *gfc_enclosing_unit (gfc_compile_state *);
 const char *gfc_ascii_statement (gfc_statement);
+match gfc_match_enum (void);
+match gfc_match_enumerator_def (void);
+void gfc_free_enum_history (void);
 
 #endif  /* GFC_PARSE_H  */

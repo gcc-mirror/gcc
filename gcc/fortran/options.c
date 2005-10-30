@@ -32,6 +32,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-inline.h"
 
 #include "gfortran.h"
+#include "target.h"
 
 gfc_option_t gfc_option;
 
@@ -89,6 +90,9 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
     | GFC_STD_F2003 | GFC_STD_LEGACY;
 
   gfc_option.warn_nonstd_intrinsics = 0;
+
+  /* -fshort-enums can be default on some targets.  */
+  gfc_option.fshort_enums = targetm.default_short_enums ();
 
   return CL_Fortran;
 }
@@ -516,6 +520,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Wnonstd_intrinsics:
       gfc_option.warn_nonstd_intrinsics = 1;
+      break;
+
+    case OPT_fshort_enums:
+      gfc_option.fshort_enums = 1;
       break;
     }
 
