@@ -1,3 +1,8 @@
+2005-10-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_intval): Correct handling of DFmode
+	constants for hosts with long != 32 bits.
+
 2005-10-28  Andreas Krebbel <krebbel1@de.ibm.com>
 
 	PR middle-end/24093

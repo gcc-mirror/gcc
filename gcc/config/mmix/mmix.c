@@ -2705,19 +2705,13 @@ mmix_intval (rtx x)
 
 	  REAL_VALUE_TO_TARGET_DOUBLE (value, bits);
 
-	  if (sizeof (long) < sizeof (HOST_WIDEST_INT))
-	    {
-	      retval = (unsigned long) bits[1] / 2;
-	      retval *= 2;
-	      retval |= (unsigned long) bits[1] & 1;
-	      retval
-		|= (unsigned HOST_WIDEST_INT) bits[0]
-		  << (sizeof (bits[0]) * 8);
-	    }
-	  else
-	    retval = (unsigned long) bits[1];
-
-	  return retval;
+	  /* The double cast is necessary to avoid getting the long
+	     sign-extended to unsigned long long(!) when they're of
+	     different size (usually 32-bit hosts).  */
+	  return
+	    ((unsigned HOST_WIDEST_INT) (unsigned long) bits[0]
+	     << (unsigned HOST_WIDEST_INT) 32U)
+	    | (unsigned HOST_WIDEST_INT) (unsigned long) bits[1];
 	}
       else if (GET_MODE (x) == SFmode)
 	{
