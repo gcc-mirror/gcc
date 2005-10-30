@@ -1,3 +1,9 @@
+2005-10-30  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.texi: Move license stuff to back.  Add information
+	on ENUM and ENUMERATOR.
+	* invoke.texi: Document -fshort-enums.
+
 2005-10-30  Gaurav Gautam  <gauravga@noida.hcltech.com>
 	    Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 

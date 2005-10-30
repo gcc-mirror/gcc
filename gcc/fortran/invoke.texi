@@ -146,7 +146,7 @@ by type.  Explanations are in the following sections.
 @gccoptlist{
 -fno-automatic -ff2c -fno-underscoring  -fsecond-underscore @gol
 -fbounds-check  -fmax-stack-var-size=@var{n} @gol
--fpackderived  -frepack-arrays}
+-fpackderived  -frepack-arrays  -fshort-enums}
 @end table
 
 @menu
@@ -752,6 +752,13 @@ a contiguous block at runtime.
 This should result in faster accesses to the array.  However it can introduce
 significant overhead to the function call, especially  when the passed data
 is discontiguous.
+
+@cindex -fshort-enums
+@item -fshort-enums
+This option is provided for interoperability with C code that was
+compiled with the @command{-fshort-enums} option.  It will make
+@command{gfortran} choose the smallest @code{INTEGER} kind a given
+enumerator set will fit in, and give all its enumerators this kind.
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,

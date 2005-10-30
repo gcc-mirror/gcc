@@ -98,7 +98,7 @@ Boston, MA 02110-1301, USA@*
 @contents
 @page
 
-@node Top, Copying,, (DIR)
+@node Top
 @top Introduction
 @cindex Introduction
 
@@ -118,11 +118,6 @@ not accurately reflect the status of the most recent @command{gfortran}.
 @comment  better formatting.
 @comment
 @menu
-* Copying::              GNU General Public License says
-                         how you can copy and share GNU Fortran.
-* GNU Free Documentation License::
-		         How you can copy and share this manual.
-* Funding::              How to help assure continued work for free software.
 * Getting Started::      What you should know about @command{gfortran}.
 * GFORTRAN and GCC::     You can compile Fortran, C, or other programs.
 * GFORTRAN and G77::     Why we chose to start from scratch.
@@ -132,32 +127,13 @@ not accurately reflect the status of the most recent @command{gfortran}.
 * Standards::	         Standards supported by @command{gfortran}
 * Extensions::           Language extensions implemented by @command{gfortran}
 * Intrinsic Procedures:: Intrinsic procedures supported by @command{gfortran}
+* Copying::              GNU General Public License says
+                         how you can copy and share GNU Fortran.
+* GNU Free Documentation License::
+		         How you can copy and share this manual.
+* Funding::              How to help assure continued work for free software.
 * Index::                Index of this documentation.
 @end menu
-
-
-
-@c ---------------------------------------------------------------------
-@c GNU General Public License
-@c ---------------------------------------------------------------------
-
-@include gpl.texi
-
-
-
-@c ---------------------------------------------------------------------
-@c GNU Free Documentation License
-@c ---------------------------------------------------------------------
-
-@include fdl.texi
-
-
-
-@c ---------------------------------------------------------------------
-@c Funding Free Software
-@c ---------------------------------------------------------------------
-
-@include funding.texi
 
 
 
@@ -973,7 +949,10 @@ pointees are passed as arguments, they are treated as ordinary
 variables in the invoked function.  Subsequent changes to the pointer
 will not change the base address of the array that was passed.
 
+@c ---------------------------------------------------------------------
 @include intrinsic.texi
+@c ---------------------------------------------------------------------
+
 @c ---------------------------------------------------------------------
 @c Contributing
 @c ---------------------------------------------------------------------
@@ -1119,16 +1098,52 @@ Intrinsics @code{command_argument_count}, @code{get_command},
 @code{get_command_argument}, and @code{get_environment_variable}.
 
 @item 
+@cindex Array constructors
+@cindex @code{[...]}
 Array constructors using square brackets. That is, @code{[...]} rather
 than @code{(/.../)}.
 
-@item 
+@item
+@cindex @code{FLUSH} statement
 @code{FLUSH} statement.
 
 @item
+@cindex @code{IOMSG=} specifier
 @code{IOMSG=} specifier for I/O statements.
+
+@item
+@cindex @code{ENUM} statement
+@cindex @code{ENUMERATOR} statement
+@cindex @command{-fshort-enums}
+Support for the declaration of enumeration constants via the
+@code{ENUM} and @code{ENUMERATOR} statements.  Interoperability with
+@command{gcc} is guaranteed also for the case where the
+@command{-fshort-enums} command line option is given.
+
 @end itemize
 
+
+@c ---------------------------------------------------------------------
+@c GNU General Public License
+@c ---------------------------------------------------------------------
+
+@include gpl.texi
+
+
+
+@c ---------------------------------------------------------------------
+@c GNU Free Documentation License
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
+
+
+
+@c ---------------------------------------------------------------------
+@c Funding Free Software
+@c ---------------------------------------------------------------------
+
+@include funding.texi
 
 @c ---------------------------------------------------------------------
 @c Index
