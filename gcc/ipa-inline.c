@@ -650,7 +650,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
      function.  At this place we should probably walk the function and
      inline clones and compensate the counts accordingly.  This probably
      doesn't matter much in practice.  */
-  return true;
+  return n > 0;
 }
 
 /* Set inline_failed for all callers of given function to REASON.  */
