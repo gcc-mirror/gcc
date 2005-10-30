@@ -228,6 +228,23 @@ is_preconnected (stream * s)
     return 0;
 }
 
+/* If the stream corresponds to a preconnected unit, we flush the
+   corresponding C stream.  This is bugware for mixed C-Fortran codes
+   where the C code doesn't flush I/O before returning.  */
+void
+flush_if_preconnected (stream * s)
+{
+  int fd;
+
+  fd = ((unix_stream *) s)->fd;
+  if (fd == STDIN_FILENO)
+    fflush (stdin);
+  else if (fd == STDOUT_FILENO)
+    fflush (stdout);
+  else if (fd == STDERR_FILENO)
+    fflush (stderr);
+}
+
 
 /* Reset a stream after reading/writing. Assumes that the buffers have
    been flushed.  */
