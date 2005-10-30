@@ -1,3 +1,8 @@
+2005-10-28  Andreas Krebbel <krebbel1@de.ibm.com>
+
+	PR middle-end/24093
+	* ipa-inline.c (craph_decide_recursive_inlining): Fix return value.
+
 2005-10-28  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/ms1/ms1.h (TARGET_MS1_64_001): New.
