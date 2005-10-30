@@ -994,6 +994,7 @@ ideas and significant help to the gfortran project
 @item François-Xavier Coudert
 @item Steve Kargl
 @item Jerry Delisle
+@item Janne Blomqvist
 @item Erik Edelmann
 @item Thomas Koenig
 @item Asher Langton
