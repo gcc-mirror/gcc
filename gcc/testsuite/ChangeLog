@@ -1,5 +1,10 @@
 2005-10-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	* lib/gfortran.exp (gfortran_target_compile): Call
+	dg-additional-files-options.
+
+2005-10-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/20179
 	* gfortran.dg/mixed_io_1.f90: New test.
 	* gfortran.dg/mixed_io_1.c: New file.

@@ -188,6 +188,7 @@ proc gfortran_target_compile { source dest type options } {
     lappend options "compiler=$GFORTRAN_UNDER_TEST";
 
     set options [concat "$ALWAYS_GFORTRANFLAGS" $options];
+    set options [dg-additional-files-options $options $source]
 
     return [target_compile $source $dest $type $options]
 }
