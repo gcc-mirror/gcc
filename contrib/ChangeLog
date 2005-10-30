@@ -1,3 +1,8 @@
+2005-10-30  Steven Bosscher  <stevenb@suse.de>
+
+	* gcc_build: Use gcc.gnu.org as the default server.  Set up
+	SVN_REPOSITORY correctly.  Add support for checking out branches.
+
 2005-10-28  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	* gcc_update: When svn update is called and
