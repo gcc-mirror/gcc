@@ -1186,6 +1186,9 @@ data_transfer_init (int read_flag)
       && current_unit->last_record == 0 && !is_preconnected(current_unit->s))
         struncate(current_unit->s);
 
+  /* Bugware for badly written mixed C-Fortran I/O.  */
+  flush_if_preconnected(current_unit->s);
+
   current_unit->mode = g.mode;
 
   /* Set the initial value of flags.  */
