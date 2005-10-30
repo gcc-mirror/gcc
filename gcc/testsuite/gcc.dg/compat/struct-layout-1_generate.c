@@ -696,6 +696,7 @@ switchfiles (int fields)
   fprintf (outfile, "\
 /* { dg-options \"-I%s\" } */\n\
 /* { dg-options \"-I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
+/* { dg-options \"-I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1.h\"\n\
 \n\
 #define TX(n, type, attrs, fields, ops) extern void test##n (void);\n\
@@ -713,7 +714,7 @@ int main (void)\n\
       abort ();\n\
     }\n\
   exit (0);\n\
-}\n", srcdir, srcdir, filecnt, filecnt);
+}\n", srcdir, srcdir, srcdir, filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_x.c", filecnt);
   outfile = fopen (destbuf, "w");
@@ -722,10 +723,11 @@ int main (void)\n\
   fprintf (outfile, "\
 /* { dg-options \"-w -I%s\" } */\n\
 /* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
+/* { dg-options \"-I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1_x1.h\"\n\
 #include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_x2.h\"\n\
-#include \"t%03d_test.h\"\n", srcdir, srcdir, filecnt, filecnt);
+#include \"t%03d_test.h\"\n", srcdir, srcdir, srcdir, filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_y.c", filecnt);
   outfile = fopen (destbuf, "w");
@@ -734,10 +736,11 @@ int main (void)\n\
   fprintf (outfile, "\
 /* { dg-options \"-w -I%s\" } */\n\
 /* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
+/* { dg-options \"-I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1_y1.h\"\n\
 #include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_y2.h\"\n\
-#include \"t%03d_test.h\"\n", srcdir, srcdir, filecnt, filecnt);
+#include \"t%03d_test.h\"\n", srcdir, srcdir, srcdir, filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_test.h", filecnt);
   outfile = fopen (destbuf, "w");

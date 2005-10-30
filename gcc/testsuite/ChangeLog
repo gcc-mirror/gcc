@@ -1,3 +1,9 @@
+2005-10-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18482
+	* gcc.dg/compat/struct-layout-1_generate.c (switchfiles, main):
+	For mmix-*-*, pass with dg-options an additional -mno-base-addresses.
+
 2005-10-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20179
