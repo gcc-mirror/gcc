@@ -1,3 +1,10 @@
+2005-10-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* Makefile.am: Add intrinsics/malloc.c file.
+	* Makefile.in: Regenerate.
+	* intrinsics/malloc.c: New file, with implementations for free
+	and malloc library functions.
+
 2005-10-29  Mike Stump  <mrs@apple.com>
 
 	* Makefile.am (kinds.h): Remove target, if command fails.

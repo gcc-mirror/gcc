@@ -63,6 +63,7 @@ intrinsics/kill.c \
 intrinsics/ierrno.c \
 intrinsics/ishftc.c \
 intrinsics/link.c \
+intrinsics/malloc.c \
 intrinsics/mvbits.c \
 intrinsics/pack_generic.c \
 intrinsics/perror.c \

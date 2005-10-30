@@ -169,8 +169,8 @@ am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	date_and_time.lo env.lo erf.lo eoshift0.lo eoshift2.lo \
 	etime.lo exit.lo flush.lo fnum.lo gerror.lo getcwd.lo \
 	getlog.lo getXid.lo hyper.lo hostnm.lo kill.lo ierrno.lo \
-	ishftc.lo link.lo mvbits.lo pack_generic.lo perror.lo \
-	signal.lo size.lo sleep.lo spread_generic.lo \
+	ishftc.lo link.lo malloc.lo mvbits.lo pack_generic.lo \
+	perror.lo signal.lo size.lo sleep.lo spread_generic.lo \
 	string_intrinsics.lo system.lo rand.lo random.lo rename.lo \
 	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
 	selected_real_kind.lo stat.lo symlnk.lo system_clock.lo \
@@ -404,6 +404,7 @@ intrinsics/kill.c \
 intrinsics/ierrno.c \
 intrinsics/ishftc.c \
 intrinsics/link.c \
+intrinsics/malloc.c \
 intrinsics/mvbits.c \
 intrinsics/pack_generic.c \
 intrinsics/perror.c \
@@ -2290,6 +2291,9 @@ ishftc.lo: intrinsics/ishftc.c
 
 link.lo: intrinsics/link.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o link.lo `test -f 'intrinsics/link.c' || echo '$(srcdir)/'`intrinsics/link.c
+
+malloc.lo: intrinsics/malloc.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o malloc.lo `test -f 'intrinsics/malloc.c' || echo '$(srcdir)/'`intrinsics/malloc.c
 
 mvbits.lo: intrinsics/mvbits.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mvbits.lo `test -f 'intrinsics/mvbits.c' || echo '$(srcdir)/'`intrinsics/mvbits.c

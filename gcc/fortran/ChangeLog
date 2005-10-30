@@ -1,3 +1,17 @@
+2005-10-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* check.c (gfc_check_malloc, gfc_check_free): New functions.
+	* gfortran.h (gfc_generic_isym_id): Add GFC_ISYM_MALLOC.
+	* intrinsic.c (add_functions): Add symbols for MALLOC function.
+	(add_subroutines): Add symbol for FREE subroutine.
+	* intrinsic.h: Prototypes for gfc_check_malloc, gfc_check_free,
+	gfc_resolve_malloc and gfc_resolve_free.
+	* intrinsic.texi: Add doc for FREE and MALLOC intrinsics.
+	* iresolve.c (gfc_resolve_malloc, gfc_resolve_free): New
+	functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Add case for
+	GFC_ISYM_MALLOC.
+
 2005-10-30  Steven Bosscher  <stevenb@suse.de>
 
 	* gfortran.texi: Update contributors.

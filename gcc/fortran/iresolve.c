@@ -912,6 +912,24 @@ gfc_resolve_logical (gfc_expr * f, gfc_expr * a, gfc_expr * kind)
 
 
 void
+gfc_resolve_malloc (gfc_expr * f, gfc_expr * size)
+{
+  if (size->ts.kind < gfc_index_integer_kind)
+    {
+      gfc_typespec ts;
+
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_index_integer_kind;
+      gfc_convert_type_warn (size, &ts, 2, 0);
+    }
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_index_integer_kind;
+  f->value.function.name = gfc_get_string (PREFIX("malloc"));
+}
+
+
+void
 gfc_resolve_matmul (gfc_expr * f, gfc_expr * a, gfc_expr * b)
 {
   gfc_expr temp;
@@ -2076,6 +2094,22 @@ gfc_resolve_flush (gfc_code * c)
 
   name = gfc_get_string (PREFIX("flush_i%d"), ts.kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_free (gfc_code * c)
+{
+  gfc_typespec ts;
+  gfc_expr *n;
+
+  ts.type = BT_INTEGER;
+  ts.kind = gfc_index_integer_kind;
+  n = c->ext.actual->expr;
+  if (n->ts.kind != ts.kind)
+    gfc_convert_type (n, &ts, 2);
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (PREFIX("free"));
 }
 
 
