@@ -505,6 +505,9 @@ internal_proto(is_seekable);
 extern int is_preconnected (stream *);
 internal_proto(is_preconnected);
 
+extern void flush_if_preconnected (stream *);
+internal_proto(flush_if_preconnected);
+
 extern void empty_internal_buffer(stream *);
 internal_proto(empty_internal_buffer);
 
