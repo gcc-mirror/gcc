@@ -88,9 +88,11 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{EXPONENT}:      EXPONENT,  Exponent function
 * @code{FLOOR}:         FLOOR,     Integer floor function
 * @code{FNUM}:          FNUM,      File number function
+* @code{FREE}:          FREE,      Memory de-allocation subroutine
 * @code{LOC}:           LOC,       Returns the address of a variable
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
+* @code{MALLOC}:        MALLOC,    Dynamic memory allocation function
 * @code{REAL}:          REAL,      Convert to real type 
 * @code{SIGNAL}:        SIGNAL,    Signal handling subroutine (or function)
 * @code{SIN}:           SIN,       Sine function
@@ -1757,7 +1759,7 @@ subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be @code{REAL} with intent out.
+@item @var{X} @tab The type shall be @code{REAL} with @code{INTENT(OUT)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -2697,6 +2699,41 @@ end program test_exponent
 @end table
 
 
+@node FREE
+@section @code{FREE} --- Frees memory
+@findex @code{FREE} intrinsic
+@cindex FREE
+
+@table @asis
+@item @emph{Description}:
+Frees memory previously allocated by @code{MALLOC()}. The @code{FREE}
+intrinsic is an extension intended to be used with Cray pointers, and is
+provided in @command{gfortran} to allow user to compile legacy code. For
+new code using Fortran 95 pointers, the memory de-allocation intrinsic is
+@code{DEALLOCATE}.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@code{FREE(PTR)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{PTR} @tab The type shall be @code{INTEGER}. It represents the
+location of the memory that should be de-allocated.
+@end multitable
+
+@item @emph{Return value}:
+None
+
+@item @emph{Example}:
+See @code{MALLOC} for an example.
+@end table
+
 
 @node FLOOR
 @section @code{FLOOR} --- Integer floor function
@@ -2915,6 +2952,68 @@ end program test_log10
 @item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab f95, gnu
 @item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
 @end multitable
+@end table
+
+
+@node MALLOC
+@section @code{MALLOC} --- Allocate dynamic memory
+@findex @code{MALLOC} intrinsic
+@cindex MALLOC
+
+@table @asis
+@item @emph{Description}:
+@code{MALLOC(SIZE)} allocates @var{SIZE} bytes of dynamic memory and
+returns the address of the allocated memory. The @code{MALLOC} intrinsic
+is an extension intended to be used with Cray pointers, and is provided
+in @command{gfortran} to allow user to compile legacy code. For new code
+using Fortran 95 pointers, the memory allocation intrinsic is
+@code{ALLOCATE}.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+non-elemental function
+
+@item @emph{Syntax}:
+@code{PTR = MALLOC(SIZE)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{SIZE} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER(K)}, with @var{K} such that
+variables of type @code{INTEGER(K)} have the same size as
+C pointers (@code{sizeof(void *)}).
+
+@item @emph{Example}:
+The following example demonstrates the use of @code{MALLOC} and
+@code{FREE} with Cray pointers. This example is intended to run on
+32-bit systems, where the default integer kind is suitable to store
+pointers; on 64-bit systems, ptr_x would need to be declared as
+@code{integer(kind=8)}.
+
+@smallexample
+program test_malloc
+  integer i
+  integer ptr_x
+  real*8 x(*), z
+  pointer(ptr_x,x)
+
+  ptr_x = malloc(20*8)
+  do i = 1, 20
+    x(i) = sqrt(1.0d0 / i)
+  end do
+  z = 0
+  do i = 1, 20
+    z = z + x(i)
+    print *, z
+  end do
+  call free(ptr_x)
+end program test_malloc
+@end smallexample
 @end table
 
 

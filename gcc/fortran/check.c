@@ -1362,6 +1362,18 @@ gfc_check_min_max_double (gfc_actual_arglist * arg)
 
 /* End of min/max family.  */
 
+try
+gfc_check_malloc (gfc_expr * size)
+{
+  if (type_check (size, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (size, 0) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
 
 try
 gfc_check_matmul (gfc_expr * matrix_a, gfc_expr * matrix_b)
@@ -2614,6 +2626,19 @@ gfc_check_flush (gfc_expr * unit)
     return FAILURE;
 
   if (scalar_check (unit, 0) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_free (gfc_expr * i)
+{
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (i, 0) == FAILURE)
     return FAILURE;
 
   return SUCCESS;

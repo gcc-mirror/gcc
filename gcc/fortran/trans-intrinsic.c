@@ -3096,6 +3096,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_IRAND:
     case GFC_ISYM_ISATTY:
     case GFC_ISYM_LINK:
+    case GFC_ISYM_MALLOC:
     case GFC_ISYM_MATMUL:
     case GFC_ISYM_RAND:
     case GFC_ISYM_RENAME:

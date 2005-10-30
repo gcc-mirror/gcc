@@ -1606,6 +1606,11 @@ add_functions (void)
 
   make_generic ("logical", GFC_ISYM_LOGICAL, GFC_STD_F95);
 
+  add_sym_1 ("malloc", 0, 1, BT_INTEGER, ii, GFC_STD_GNU, gfc_check_malloc,
+	     NULL, gfc_resolve_malloc, a, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("malloc", GFC_ISYM_MALLOC, GFC_STD_GNU);
+
   add_sym_2 ("matmul", 0, 1, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_matmul, NULL, gfc_resolve_matmul,
 	     ma, BT_REAL, dr, REQUIRED, mb, BT_REAL, dr, REQUIRED);
@@ -2131,12 +2136,13 @@ add_subroutines (void)
     *trim_name = "trim_name", *ut = "unit", *han = "handler",
     *sec = "seconds";
 
-  int di, dr, dc, dl;
+  int di, dr, dc, dl, ii;
 
   di = gfc_default_integer_kind;
   dr = gfc_default_real_kind;
   dc = gfc_default_character_kind;
   dl = gfc_default_logical_kind;
+  ii = gfc_index_integer_kind;
 
   add_sym_0s ("abort", 1, GFC_STD_GNU, NULL);
 
@@ -2243,6 +2249,9 @@ add_subroutines (void)
   add_sym_1s ("flush", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_flush, NULL, gfc_resolve_flush,
 	      c, BT_INTEGER, di, OPTIONAL);
+
+  add_sym_1s ("free", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU, gfc_check_free,
+	      NULL, gfc_resolve_free, c, BT_INTEGER, ii, REQUIRED);
 
   add_sym_2s ("hostnm", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
           gfc_check_hostnm_sub, NULL, gfc_resolve_hostnm_sub,
