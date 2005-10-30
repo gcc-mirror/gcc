@@ -403,7 +403,12 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
   /* For character variables, also get the length.  */
   if (sym->ts.type == BT_CHARACTER)
     {
-      se->string_length = sym->ts.cl->backend_decl;
+      /* If the character length of an entry isn't set, get the length from
+         the master function instead.  */
+      if (sym->attr.entry && !sym->ts.cl->backend_decl)
+        se->string_length = sym->ns->proc_name->ts.cl->backend_decl;
+      else
+        se->string_length = sym->ts.cl->backend_decl;
       gcc_assert (se->string_length);
     }
 

@@ -1,3 +1,13 @@
+2005-10-30  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/18883
+	* trans-decl.c (gfc_finish_var_decl): Add decl to the
+	current function, rather than the parent.  Make
+	assertion accept fake result variables.
+	* trans-expr.c (gfc_conv_variable): If the character
+	length of an ENTRY isn't set, get the length from
+	the master function instead.
+
 2005-10-30  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.texi:  Remove reservations about I/O usability.  Document
