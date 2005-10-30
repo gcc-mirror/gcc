@@ -1,3 +1,8 @@
+2005-10-30  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/24172
+	* tree-inline.c (copy_body_r): Unshare the substituted value first.
+
 2005-10-30  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_intval): Correct handling of DFmode
