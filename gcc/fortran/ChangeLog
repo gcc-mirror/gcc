@@ -1,3 +1,11 @@
+2005-10-31  Andreas Schwab  <schwab@suse.de>
+
+	* Make-lang.in (GFORTRAN_TARGET_INSTALL_NAME): Define.
+	(GFORTRAN_CROSS_NAME): Remove.
+	(fortran.install-common): Correctly install a cross compiler.
+	(fortran.uninstall): Use GFORTRAN_TARGET_INSTALL_NAME instead of
+	GFORTRAN_CROSS_NAME.
+
 2005-10-30  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	* gfortran.texi: Update contributors.
