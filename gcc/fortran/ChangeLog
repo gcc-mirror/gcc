@@ -1,3 +1,37 @@
+2005-10-30  Gaurav Gautam  <gauravga@noida.hcltech.com>
+	    Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* arith.c (gfc_enum_initializer): New function.
+	(gfc_check_integer_range): Made extern.
+	* decl.c (enumerator_history): New typedef.
+	(last_initializer, enum_history, max_enum): New variables.
+	(create_enum_history, gfc_free_enum_history): New functions.
+	(add_init_expr_to_sym): Call create_enum_history if parsing ENUM.
+	(variable_decl): Modified to parse enumerator definition.
+	(match_attr_spec): Add PARAMETER attribute to ENUMERATORs.
+	(gfc_match_data_decl): Issues error, if match_type_spec do not
+	return desired return values.
+	(set_enum_kind, gfc_match_enum, gfc_match_enumerator_def): New
+	functions.
+	(gfc_match_end): Deal with END ENUM.
+	* gfortran.h (gfc_statement): ST_ENUM, ST_ENUMERATOR, ST_END_ENUM
+	added.
+	(symbol_attribute): Bit field for enumerator added.
+	(gfc_options): Add fshort_enums.
+	(gfc_enum_initializer, gfc_check_integer_range): Add prototypes.
+	* options.c: Include target.h
+	(gfc_init_options): Initialize fshort_enums.
+	(gfc_handle_option): Deal with fshort_enums.
+	* parse.c (decode_statement): Match ENUM and ENUMERATOR statement.
+	(gfc_ascii_statement): Deal with the enumerator statements.
+	(parse_enum): New function to parse enum construct.
+	(parse_spec): Added case ST_ENUM.
+	* parse.h (gfc_compile_state): COMP_ENUM added.
+	(gfc_match_enum, gfc_match_enumerator_def, gfc_free_enum_history):
+	Prototype added.
+	* symbol.c (gfc_copy_attr): Copy enumeration attribute.
+	* lang.opt (fshort-enums): Option added.
+
 2005-10-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* check.c (gfc_check_malloc, gfc_check_free): New functions.

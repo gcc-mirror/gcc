@@ -43,6 +43,30 @@ static symbol_attribute current_attr;
 static gfc_array_spec *current_as;
 static int colon_seen;
 
+/* Initializer of the previous enumerator.  */
+
+static gfc_expr *last_initializer;
+
+/* History of all the enumerators is maintained, so that
+   kind values of all the enumerators could be updated depending
+   upon the maximum initialized value.  */
+
+typedef struct enumerator_history
+{
+  gfc_symbol *sym;
+  gfc_expr *initializer;
+  struct enumerator_history *next;
+}
+enumerator_history;
+
+/* Header of enum history chain.  */
+
+static enumerator_history *enum_history = NULL;
+
+/* Pointer of enum history node containing largest initializer.  */
+
+static enumerator_history *max_enum = NULL;
+
 /* gfc_new_block points to the symbol of a newly matched block.  */
 
 gfc_symbol *gfc_new_block;
@@ -677,6 +701,63 @@ gfc_set_constant_character_len (int len, gfc_expr * expr)
     }
 }
 
+
+/* Function to create and update the enumumerator history 
+   using the information passed as arguments.
+   Pointer "max_enum" is also updated, to point to 
+   enum history node containing largest initializer.  
+
+   SYM points to the symbol node of enumerator.
+   INIT points to its enumerator value.   */
+
+static void 
+create_enum_history(gfc_symbol *sym, gfc_expr *init)
+{
+  enumerator_history *new_enum_history;
+  gcc_assert (sym != NULL && init != NULL);
+
+  new_enum_history = gfc_getmem (sizeof (enumerator_history));
+
+  new_enum_history->sym = sym;
+  new_enum_history->initializer = init;
+  new_enum_history->next = NULL;
+
+  if (enum_history == NULL)
+    {
+      enum_history = new_enum_history;
+      max_enum = enum_history;
+    }
+  else
+    {
+      new_enum_history->next = enum_history;
+      enum_history = new_enum_history;
+
+      if (mpz_cmp (max_enum->initializer->value.integer, 
+		   new_enum_history->initializer->value.integer) < 0)
+        max_enum = new_enum_history;
+    }
+}
+
+
+/* Function to free enum kind history.  */ 
+
+void 
+gfc_free_enum_history(void)
+{
+  enumerator_history *current = enum_history;  
+  enumerator_history *next;  
+
+  while (current != NULL)
+    {
+      next = current->next;
+      gfc_free (current);
+      current = next;
+    }
+  max_enum = NULL;
+  enum_history = NULL;
+}
+
+
 /* Function called by variable_decl() that adds an initialization
    expression to a symbol.  */
 
@@ -784,6 +865,10 @@ add_init_expr_to_sym (const char *name, gfc_expr ** initp,
       sym->value = init;
       *initp = NULL;
     }
+
+  /* Maintain enumerator history.  */
+  if (gfc_current_state () == COMP_ENUM)
+    create_enum_history (sym, init);
 
   return SUCCESS;
 }
@@ -918,10 +1003,12 @@ variable_decl (int elem)
   match m;
   try t;
   gfc_symbol *sym;
+  locus old_locus;
 
   initializer = NULL;
   as = NULL;
   cp_as = NULL;
+  old_locus = gfc_current_locus;
 
   /* When we get here, we've just matched a list of attributes and
      maybe a type and a double colon.  The next thing we expect to see
@@ -938,8 +1025,17 @@ variable_decl (int elem)
     cp_as = gfc_copy_array_spec (as);
   else if (m == MATCH_ERROR)
     goto cleanup;
+
   if (m == MATCH_NO)
     as = gfc_copy_array_spec (current_as);
+  else if (gfc_current_state () == COMP_ENUM)
+    {
+      gfc_error ("Enumerator cannot be array at %C");
+      gfc_free_enum_history ();
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
 
   char_len = NULL;
   cl = NULL;
@@ -1133,6 +1229,30 @@ variable_decl (int elem)
 	  if (m != MATCH_YES)
 	    goto cleanup;
 	}
+    }
+
+  /* Check if we are parsing an enumeration and if the current enumerator
+     variable has an initializer or not. If it does not have an
+     initializer, the initialization value of the previous enumerator 
+     (stored in last_initializer) is incremented by 1 and is used to
+     initialize the current enumerator.  */
+  if (gfc_current_state () == COMP_ENUM)
+    {
+      if (initializer == NULL)
+        initializer = gfc_enum_initializer (last_initializer, old_locus);
+ 
+      if (initializer == NULL || initializer->ts.type != BT_INTEGER)
+        {
+          gfc_error("ENUMERATOR %L not initialized with integer expression",
+		    &var_locus);
+          m = MATCH_ERROR; 
+          gfc_free_enum_history ();
+          goto cleanup;
+        }
+
+      /* Store this current initializer, for the next enumerator
+	 variable to be parsed.  */
+      last_initializer = initializer;
     }
 
   /* Add the initializer.  Note that it is fine if initializer is
@@ -1837,6 +1957,12 @@ match_attr_spec (void)
       d = (decl_types) gfc_match_strings (decls);
       if (d == DECL_NONE || d == DECL_COLON)
 	break;
+       
+      if (gfc_current_state () == COMP_ENUM)
+        {
+          gfc_error ("Enumerator cannot have attributes %C");
+          return MATCH_ERROR;
+        }
 
       seen[d]++;
       seen_at[d] = gfc_current_locus;
@@ -1854,6 +1980,18 @@ match_attr_spec (void)
 	  if (m == MATCH_ERROR)
 	    goto cleanup;
 	}
+    }
+
+  /* If we are parsing an enumeration and have enusured that no other
+     attributes are present we can now set the parameter attribute.  */
+  if (gfc_current_state () == COMP_ENUM)
+    {
+      t = gfc_add_flavor (&current_attr, FL_PARAMETER, NULL, NULL);
+      if (t == FAILURE)
+        {
+          m = MATCH_ERROR;
+          goto cleanup;
+        }
     }
 
   /* No double colon, so assume that we've been looking at something
@@ -2678,6 +2816,40 @@ contained_procedure (void)
   return 0;
 }
 
+/* Set the kind of each enumerator.  The kind is selected such that it is 
+   interoperable with the corresponding C enumeration type, making
+   sure that -fshort-enums is honored.  */
+
+static void
+set_enum_kind(void)
+{
+  enumerator_history *current_history = NULL;
+  int kind;
+  int i;
+
+  if (max_enum == NULL || enum_history == NULL)
+    return;
+
+  if (!gfc_option.fshort_enums)
+    return; 
+  
+  i = 0;
+  do
+    {
+      kind = gfc_integer_kinds[i++].kind;
+    }
+  while (kind < gfc_c_int_kind 
+	 && gfc_check_integer_range (max_enum->initializer->value.integer,
+				     kind) != ARITH_OK);
+
+  current_history = enum_history;
+  while (current_history != NULL)
+    {
+      current_history->sym->ts.kind = kind;
+      current_history = current_history->next;
+    }
+}
+
 /* Match any of the various end-block statements.  Returns the type of
    END to the caller.  The END INTERFACE, END IF, END DO and END
    SELECT statements cannot be replaced by a single END statement.  */
@@ -2781,6 +2953,15 @@ gfc_match_end (gfc_statement * st)
       *st = ST_END_WHERE;
       target = " where";
       eos_ok = 0;
+      break;
+
+    case COMP_ENUM:
+      *st = ST_END_ENUM;
+      target = " enum";
+      eos_ok = 0;
+      last_initializer = NULL;
+      set_enum_kind ();
+      gfc_free_enum_history ();
       break;
 
     default:
@@ -3742,3 +3923,87 @@ gfc_mod_pointee_as (gfc_array_spec *as)
     }
   return MATCH_YES;
 }
+
+
+/* Match the enum definition statement, here we are trying to match 
+   the first line of enum definition statement.  
+   Returns MATCH_YES if match is found.  */
+
+match
+gfc_match_enum (void)
+{
+  match m;
+  
+  m = gfc_match_eos ();
+  if (m != MATCH_YES)
+    return m;
+
+  if (gfc_notify_std (GFC_STD_F2003, 
+		      "New in Fortran 2003: ENUM AND ENUMERATOR at %C")
+      == FAILURE)
+    return MATCH_ERROR;
+
+  return MATCH_YES;
+}
+
+
+/* Match the enumerator definition statement. */
+
+match
+gfc_match_enumerator_def (void)
+{
+  match m;
+  int elem; 
+  
+  gfc_clear_ts (&current_ts);
+  
+  m = gfc_match (" enumerator");
+  if (m != MATCH_YES)
+    return m;
+  
+  if (gfc_current_state () != COMP_ENUM)
+    {
+      gfc_error ("ENUM definition statement expected before %C");
+      gfc_free_enum_history ();
+      return MATCH_ERROR;
+    }
+
+  (&current_ts)->type = BT_INTEGER;
+  (&current_ts)->kind = gfc_c_int_kind;
+  
+  m = match_attr_spec ();
+  if (m == MATCH_ERROR)
+    {
+      m = MATCH_NO;
+      goto cleanup;
+    }
+
+  elem = 1;
+  for (;;)
+    {
+      m = variable_decl (elem++);
+      if (m == MATCH_ERROR)
+	goto cleanup;
+      if (m == MATCH_NO)
+	break;
+
+      if (gfc_match_eos () == MATCH_YES)
+	goto cleanup;
+      if (gfc_match_char (',') != MATCH_YES)
+	break;
+    }
+
+  if (gfc_current_state () == COMP_ENUM)
+    {
+      gfc_free_enum_history ();
+      gfc_error ("Syntax error in ENUMERATOR definition at %C");
+      m = MATCH_ERROR;
+    }
+
+cleanup:
+  gfc_free_array_spec (current_as);
+  current_as = NULL;
+  return m;
+
+}
+

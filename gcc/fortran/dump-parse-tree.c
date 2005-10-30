@@ -756,7 +756,9 @@ show_symtree (gfc_symtree * st)
   gfc_status ("symtree: %s  Ambig %d", st->name, st->ambiguous);
 
   if (st->n.sym->ns != gfc_current_ns)
-    gfc_status (" from namespace %s", st->n.sym->ns->proc_name->name);
+    /* Do nothing
+       gfc_status (" from namespace %s", st->n.sym->ns->proc_name->name); */
+    ;
   else
     gfc_show_symbol (st->n.sym);
 }

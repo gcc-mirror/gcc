@@ -132,6 +132,7 @@ decode_statement (void)
   match (NULL, gfc_match_st_function, ST_STATEMENT_FUNCTION);
 
   match (NULL, gfc_match_data_decl, ST_DATA_DECL);
+  match (NULL, gfc_match_enumerator_def, ST_ENUMERATOR);
 
   /* Try to match a subroutine statement, which has the same optional
      prefixes that functions can have.  */
@@ -205,6 +206,7 @@ decode_statement (void)
       match ("else", gfc_match_else, ST_ELSE);
       match ("else where", gfc_match_elsewhere, ST_ELSEWHERE);
       match ("else if", gfc_match_elseif, ST_ELSEIF);
+      match ("enum , bind ( c )", gfc_match_enum, ST_ENUM);
 
       if (gfc_match_end (&st) == MATCH_YES)
 	return st;
@@ -951,6 +953,15 @@ gfc_ascii_statement (gfc_statement st)
     case ST_LABEL_ASSIGNMENT:
       p = "LABEL ASSIGNMENT";
       break;
+    case ST_ENUM:
+      p = "ENUM DEFINITION";
+      break;
+    case ST_ENUMERATOR:
+      p = "ENUMERATOR DEFINITION";
+      break;
+    case ST_END_ENUM:
+      p = "END ENUM";
+      break;
     default:
       gfc_internal_error ("gfc_ascii_statement(): Bad statement code");
     }
@@ -1335,6 +1346,56 @@ parse_derived (void)
 
 
 
+/* Parse an ENUM.  */
+ 
+static void
+parse_enum (void)
+{
+  int error_flag;
+  gfc_statement st;
+  int compiling_enum;
+  gfc_state_data s;
+  int seen_enumerator = 0;
+
+  error_flag = 0;
+
+  push_state (&s, COMP_ENUM, gfc_new_block);
+
+  compiling_enum = 1;
+
+  while (compiling_enum)
+    {
+      st = next_statement ();
+      switch (st)
+        {
+        case ST_NONE:
+          unexpected_eof ();
+          break;
+
+        case ST_ENUMERATOR:
+	  seen_enumerator = 1;
+          accept_statement (st);
+          break;
+
+        case ST_END_ENUM:
+          compiling_enum = 0;
+	  if (!seen_enumerator)
+            {
+              gfc_error ("ENUM declaration at %C has no ENUMERATORS");
+	      error_flag = 1;
+            }
+          accept_statement (st);
+          break;
+
+        default:
+          gfc_free_enum_history ();
+          unexpected_statement (st);
+          break;
+        }
+    }
+  pop_state ();
+}
+
 /* Parse an interface.  We must be able to deal with the possibility
    of recursive interfaces.  The parse_spec() subroutine is mutually
    recursive with parse_interface().  */
@@ -1537,6 +1598,12 @@ loop:
 	}
 
       accept_statement (st);
+      st = next_statement ();
+      goto loop;
+
+    case ST_ENUM:
+      accept_statement (st);
+      parse_enum();
       st = next_statement ();
       goto loop;
 

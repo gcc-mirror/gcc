@@ -1,3 +1,20 @@
+2005-10-30  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/enum_10.f90, gfortran.dg/enum_10.c: New test.
+
+2005-10-30  Gaurav Gautam  <gauravga@noida.hcltech.com>
+
+	* gfortran.dg/enum_1.f90, gfortran.dg/enum_2.f90,
+	gfortran.dg/enum_3.f90, gfortran.dg/enum_4.f90,
+	gfortran.dg/enum_5.f90, gfortran.dg/enum_6.f90,
+	gfortran.dg/enum_7.f90, gfortran.dg/enum_8.f90,
+	gfortran.dg/enum_9.f90,
+	gfortran.fortran-torture/compile/enum_1.f90,
+	gfortran.fortran-torture/execute/enum_1.f90,
+	gfortran.fortran-torture/execute/enum_2.f90,
+	gfortran.fortran-torture/execute/enum_3.f90,
+	gfortran.fortran-torture/execute/enum_4.f90: New tests.
+
 2005-10-30  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18482
