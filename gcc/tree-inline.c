@@ -639,6 +639,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
 	  if (n)
 	    {
+	      tree new;
 	      /* If we happen to get an ADDR_EXPR in n->value, strip
 	         it manually here as we'll eventually get ADDR_EXPRs
 		 which lie about their types pointed to.  In this case
@@ -646,13 +647,14 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 		 but we absolutely rely on that.  As fold_indirect_ref
 	         does other useful transformations, try that first, though.  */
 	      tree type = TREE_TYPE (TREE_TYPE ((tree)n->value));
-	      *tp = fold_indirect_ref_1 (type, (tree)n->value);
+	      new = unshare_expr ((tree)n->value);
+	      *tp = fold_indirect_ref_1 (type, new);
 	      if (! *tp)
 	        {
-		  if (TREE_CODE ((tree)n->value) == ADDR_EXPR)
-		    *tp = TREE_OPERAND ((tree)n->value, 0);
+		  if (TREE_CODE (new) == ADDR_EXPR)
+		    *tp = TREE_OPERAND (new, 0);
 	          else
-	            *tp = build1 (INDIRECT_REF, type, (tree)n->value);
+	            *tp = build1 (INDIRECT_REF, type, new);
 		}
 	      *walk_subtrees = 0;
 	      return NULL;

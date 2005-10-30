@@ -1,3 +1,7 @@
+2005-10-30  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/tree-ssa/pr24172.C: New testcase.
+
 2005-10-30  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/enum_10.f90, gfortran.dg/enum_10.c: New test.
