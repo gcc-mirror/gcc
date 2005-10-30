@@ -1,3 +1,25 @@
+2005-10-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/20213
+	* include/c_std/std_csignal.h: Adjust comment as per 17.4.1.2/4.
+	* include/c_std/std_cstdlib.h: Likewise.
+	* include/c_std/std_cstdio.h: Likewise.
+	* include/c_std/std_cstdarg.h: Likewise.
+	* include/c_std/std_cctype.h: Likewise.
+	* include/c_std/std_cerrno.h: Likewise.
+	* include/c_std/std_cmath.h: Likewise.
+	* include/c_std/std_ciso646.h: Likewise.
+	* include/c_std/std_ctime.h: Likewise.
+	* include/c_std/std_clocale.h: Likewise.
+	* include/c_std/std_climits.h: Likewise.
+	* include/c_std/std_cassert.h: Likewise.
+	* include/c_std/std_csetjmp.h: Likewise.
+	* include/c_std/std_cwchar.h: Likewise.
+	* include/c_std/std_cfloat.h: Likewise.
+	* include/c_std/std_cstring.h: Likewise.
+	* include/c_std/std_cstddef.h: Likewise.
+	* include/c_std/std_cwctype.h: Likewise.
+
 2005-10-29  Carey Evans  <carey.evans@gmail.com>
 
 	PR libstdc++/22087

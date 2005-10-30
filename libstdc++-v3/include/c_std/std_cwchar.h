@@ -38,7 +38,8 @@
  *
  *  This is the C++ version of the Standard C Library header @c wchar.h,
  *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std.
+ *  contained in the namespace @c std (except for names which are defined
+ *  as macros in C).
  */
 
 #ifndef _GLIBCXX_CWCHAR
