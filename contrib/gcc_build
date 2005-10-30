@@ -62,6 +62,7 @@ gcc_build        [-c configure_options]
 		 [-d destination_directory]
 		 [-m make_boot_options]
 		 [-o objdir]
+		 [-b branch_name]
 		 [-u username]
 		 [-p protocol]
 		 [-t tarfile]
@@ -94,7 +95,7 @@ checkout_gcc() {
 
     # Checkout the tree
     test -n "${SVN_USERNAME}" && SVN_USERNAME="${SVN_USERNAME}@"
-    SVNROOT="${SVN_PROTOCOL}://${SVN_USERNAME}${SVN_SERVER}${SVN_REPOSITORY}"
+    SVNROOT="${SVN_PROTOCOL}://${SVN_USERNAME}${SVN_SERVER}${SVN_REPOSITORY}${SVN_BRANCH}"
 
     $GCC_SVN co $SVNROOT ${DESTINATION} || \
 	error "Could not check out GCC"
@@ -196,9 +197,11 @@ install_gcc() {
 # SVN command
 GCC_SVN=${GCC_SVN-${SVN-svn}}
 # The SVN server containing the GCC repository.
-SVN_SERVER="dberlin.org"
+SVN_SERVER="gcc.gnu.org"
 # The path to the repository on that server.
-SVN_REPOSITORY="/trunk"
+SVN_REPOSITORY="/svn/gcc/"
+# The branch to check out from that server.
+SVN_BRANCH="trunk"
 # The SVN protocol to use.
 SVN_PROTOCOL="svn"
 # The username to use when connecting to the server.
@@ -240,7 +243,7 @@ UPDATE=0
 test $# -eq 0 && usage
 
 # Parse the options.
-while getopts "c:d:m:o:p:t:u:x:" ARG; do
+while getopts "c:d:m:o:p:t:b:u:x:" ARG; do
     case $ARG in
     c)    CONFIGURE_OPTIONS="${OPTARG}";;
     d)    DESTINATION="${OPTARG}";;
@@ -249,6 +252,7 @@ while getopts "c:d:m:o:p:t:u:x:" ARG; do
     p)    SVN_PROTOCOL="${OPTARG}";;
     t)    TARFILE="${OPTARG}";;
     x)    MAKE_CHECK_OPTIONS="${OPTARG}";;
+    b)    SVN_BRANCH="${OPTARG}";;
     u)    SVN_USERNAME="${OPTARG}";;
     \?)   usage;;
     esac
@@ -274,6 +278,15 @@ done
 # Check the arguments for sanity.
 if [ ${CHECKOUT} -ne 0 ] && [ ${UPDATE} -ne 0 ]; then
     error "Cannot checkout and update simultaneously"
+fi
+
+if [ ${CHECKOUT} -eq 0 ] && test -n "${SVN_BRANCH}"; then
+    error "Branch argument only makes sense when doing a checkout"
+fi
+
+# Validate the branch name.
+if test "${SVN_BRANCH}" != "trunk"; then
+    SVN_BRANCH="branches/${SVN_BRANCH}";
 fi
 
 # Checkout the tree.
