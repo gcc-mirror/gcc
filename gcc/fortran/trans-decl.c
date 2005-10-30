@@ -469,7 +469,8 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
      function scope.  */
   if (current_function_decl != NULL_TREE)
     {
-      if (sym->ns->proc_name->backend_decl == current_function_decl)
+      if (sym->ns->proc_name->backend_decl == current_function_decl
+          || sym->result == sym)
 	gfc_add_decl_to_function (decl);
       else
 	gfc_add_decl_to_parent_function (decl);
@@ -487,7 +488,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   else if (sym->module && !sym->attr.result && !sym->attr.dummy)
     {
       /* TODO: Don't set sym->module for result or dummy variables.  */
-      gcc_assert (current_function_decl == NULL_TREE);
+      gcc_assert (current_function_decl == NULL_TREE || sym->result == sym);
       /* This is the declaration of a module variable.  */
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
