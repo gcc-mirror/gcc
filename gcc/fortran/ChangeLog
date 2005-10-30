@@ -1,3 +1,8 @@
+2005-10-30  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.texi:  Remove reservations about I/O usability.  Document
+	that array intrinsics mostly work.
+
 2005-10-30  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.texi: Move license stuff to back.  Add information

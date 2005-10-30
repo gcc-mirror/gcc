@@ -420,29 +420,10 @@ whether to use inline code (good for small arrays as no function call
 overhead occurs) or generate function calls (good for large arrays as it
 allows use of hand-optimized assembly routines, SIMD instructions, etc.)
 
-The IO library is still under development.  The following features should be
-usable for real programs:
+The IO library is in a mostly usable state.  Unformatted I/O for
+@code{REAL(KIND=10)} variables is currently not recommended.
 
-@itemize @minus
-@item List directed
-@item Unformatted sequential
-@end itemize
-
-Usable with bugs:
-
-@itemize @minus
-@item Formatted sequential ('T' edit descriptor, and others)
-@end itemize
-
-Not recommended:
-
-@itemize @minus
-@item Unformatted direct access
-@item Formatted direct access
-@end itemize
-
-Many Fortran programs only use a small subset of the available IO
-capabilities, so your mileage may vary.
+Array intrinsics mostly work.
 
 @node Proposed Extensions
 @section Proposed Extensions
