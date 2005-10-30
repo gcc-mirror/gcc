@@ -1,3 +1,7 @@
+2005-10-30  Steven Bosscher  <stevenb@suse.de>
+
+	* gfortran.texi: Update contributors.
+
 2005-10-29  Steven Bosscher  <stevenb@suse.de>
 
 	* interface.c: Fix previous checkin (an incomplete patch

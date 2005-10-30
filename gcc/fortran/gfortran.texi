@@ -75,13 +75,12 @@ Boston, MA 02110-1301 USA
 @insertcopying
 @end ifinfo
 
-Contributed by Steven Bosscher (@email{s.bosscher@@gcc.gnu.org}).
 
 @setchapternewpage odd
 @titlepage
 @title Using GNU Fortran 95
 @sp 2
-@center Steven Bosscher
+@center The gfortran team
 @page
 @vskip 0pt plus 1filll
 For the @value{version-GCC} Version*
@@ -1031,6 +1030,13 @@ ideas and significant help to the gfortran project
 @item Paul Brook
 @item Feng Wang
 @item Bud Davis
+@item Paul Thomas
+@item François-Xavier Coudert
+@item Steve Kargl
+@item Jerry Delisle
+@item Erik Edelmann
+@item Thomas Koenig
+@item Asher Langton
 @end itemize
 
 The following people have contributed bug reports,
@@ -1045,7 +1051,7 @@ and much needed feedback and encouragement for the
 @end itemize
 
 Many other individuals have helped debug,
-test and improve @command{gfortran} over the past two years,
+test and improve @command{gfortran} over the past few years,
 and we welcome you to do the same!
 If you already have done so,
 and you would like to see your name listed in the
