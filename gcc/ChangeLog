@@ -1,3 +1,9 @@
+2005-10-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23492
+	* tree-inline.c (setup_one_parameter): If the init_stmt
+	is NULL, don't insert the statement.
+
 2005-10-30  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/24172

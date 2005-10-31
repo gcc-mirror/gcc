@@ -1159,7 +1159,8 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
 	  && (!is_gimple_cast (rhs)
 	      || !is_gimple_val (TREE_OPERAND (rhs, 0))))
 	gimplify_stmt (&init_stmt);
-      bsi_insert_after (&bsi, init_stmt, BSI_NEW_STMT);
+      if (init_stmt)
+        bsi_insert_after (&bsi, init_stmt, BSI_NEW_STMT);
     }
 }
 
