@@ -6016,7 +6016,18 @@ legitimize_pic_address (rtx orig, rtx reg)
     }
   else
     {
-      if (GET_CODE (addr) == CONST)
+      if (GET_CODE (addr) == CONST_INT
+	  && !x86_64_immediate_operand (addr, VOIDmode))
+	{
+	  if (reg)
+	    {
+	      emit_move_insn (reg, addr);
+	      new = reg;
+	    }
+	  else
+	    new = force_reg (Pmode, addr);
+	}
+      else if (GET_CODE (addr) == CONST)
 	{
 	  addr = XEXP (addr, 0);
 

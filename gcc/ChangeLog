@@ -1,5 +1,8 @@
 2005-10-31  Jan Hubicka  <jh@suse.cz>
 
+	PR target/20928
+	* i386.c (legitimize_pic_address): Deal with large immediates.
+
 	PR profile/20815
 	* coverage.c (coverage_checksum_string): Fix code to stip random seeds
 	from symbol names while computing checkup.

@@ -1,3 +1,8 @@
+2005-10-31  Jan Hubicka  <jh@suse.cz>
+
+	PR target/20928
+	* gcc.c-torture/compile/pr20928.c: New test.
+
 2005-10-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23492
