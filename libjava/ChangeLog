@@ -1,3 +1,12 @@
+2005-10-31  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/14358, libgcj/24552:
+	* gnu/gcj/convert/IOConverter.java: Regenerate aliases.  Add
+	aliases for 'euc_jp' and 'eucjp'.
+	* scripts/encodings.pl: Recognize 'none', not 'NONE'.  Include
+	canonical names in output.
+	(%map): Added UnicodeLittle and UnicodeBig.
+
 2005-10-17  Andrew Haley  <aph@redhat.com>
 
 	* Merge from Classpath head:
