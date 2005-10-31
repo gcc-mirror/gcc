@@ -1,5 +1,8 @@
 2005-10-31  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/24093
+	* cgraph.c (cgraph_clone_edge, cgraph_clone_node): Watch negative
+
 	PR target/20928
 	* i386.c (legitimize_pic_address): Deal with large immediates.
 
