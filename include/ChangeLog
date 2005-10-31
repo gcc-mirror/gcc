@@ -1,3 +1,9 @@
+2005-10-31  Mark Kettenis  <kettenis@gnu.org>
+
+	* floatformat.h (enum floatformat_byteorders): Add
+	floatformat_vax.
+	(floatformat_vax_aingle, floatformat_vax_double): Declare.
+
 2005-09-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* libiberty.h (expandargv): New function.
