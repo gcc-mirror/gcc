@@ -134,6 +134,7 @@ free_saved (void)
     free_mem (saved_string);
 
   saved_string = NULL;
+  saved_used = 0;
 }
 
 
