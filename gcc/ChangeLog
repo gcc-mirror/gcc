@@ -1,5 +1,9 @@
 2005-10-31  Jan Hubicka  <jh@suse.cz>
 
+	PR profile/20815
+	* coverage.c (coverage_checksum_string): Fix code to stip random seeds
+	from symbol names while computing checkup.
+
 	PR profile/24487
 	* predict.c (predict_loops): Do not estimate more than
 	MAX_PRED_LOOP_ITERATIONS in PRED_LOOP_ITERATIONS heuristic.
