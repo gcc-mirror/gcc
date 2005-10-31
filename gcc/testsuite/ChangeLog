@@ -1,3 +1,8 @@
+2005-10-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23492
+	* gcc.c-torture/compile/zero-strct-5.c: New test.
+
 2005-10-31  Jerry DeLisle  <jvdelisle@verizon.net>
 
         PR libgfortran/24584
