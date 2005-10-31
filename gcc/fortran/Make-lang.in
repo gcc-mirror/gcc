@@ -42,9 +42,7 @@
 
 # Actual name to use when installing a native compiler.
 GFORTRAN_INSTALL_NAME := $(shell echo gfortran|sed '$(program_transform_name)')
-
-# Actual name to use when installing a cross-compiler.
-GFORTRAN_CROSS_NAME := $(shell echo gfortran|sed '$(program_transform_cross_name)')
+GFORTRAN_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gfortran|sed '$(program_transform_name)')
 
 #^L
 
@@ -186,18 +184,15 @@ f95.install-normal:
 # and also as either gfortran (if native) or $(tooldir)/bin/gfortran.
 f95.install-common: installdirs
 	-if [ -f f951$(exeext) ] ; then \
+	  rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) gfortran$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	  chmod a+x $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
 	  if [ -f gfortran-cross$(exeext) ] ; then \
-	    rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) gfortran-cross$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
-	    chmod a+x $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
 	    if [ -d $(DESTDIR)$(gcc_tooldir)/bin/. ] ; then \
 	      rm -f $(DESTDIR)$(gcc_tooldir)/bin/gfortran$(exeext); \
 	      $(INSTALL_PROGRAM) gfortran-cross$(exeext) $(DESTDIR)$(gcc_tooldir)/bin/gfortran$(exeext); \
 	    else true; fi; \
 	  else \
-	    rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) gfortran$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
-	    chmod a+x $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
 	    rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
 	    $(LN) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
 	  fi ; \
@@ -220,7 +215,7 @@ f95.uninstall:
 	else : ; fi; \
 	rm -rf $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
 	rm -rf $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext); \
-	rm -rf $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
+	rm -rf $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
 	rm -rf $(DESTDIR)$(infodir)/gfortran.info*
 
 #
