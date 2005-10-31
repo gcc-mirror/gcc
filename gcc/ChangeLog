@@ -1,3 +1,9 @@
+2005-10-25  James E. Wilson  <wilson@specifix.com>
+
+	PR rtl-optimization/17356
+	*  cfgrtl.c (purge_dead_edges): Undo last change.  In EDGE_EH code,
+	add check for CALL_INSN if EDGE_ABRNOMAL_CALL true.
+
 2005-10-31  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/24093
