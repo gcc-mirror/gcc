@@ -2434,7 +2434,9 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 
 	    if (temp)
 	      {
-		if (class != MODE_INT)
+		if (class != MODE_INT
+		    || !TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+					       GET_MODE_BITSIZE (wider_mode)))
 		  {
 		    if (target == 0)
 		      target = gen_reg_rtx (mode);

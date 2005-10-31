@@ -1,3 +1,7 @@
+2005-10-31  J"orn Rennecke <joern.rennecke@st.com>
+
+	* optabs.c (expand_unop): Take TRULY_NOOP_TRUNCATION into account.
+
 2005-10-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23492
