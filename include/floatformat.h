@@ -29,25 +29,26 @@ Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA. 
    (i.e. BITS_BIG_ENDIAN type numbering), and specify which bits each field
    contains with the *_start and *_len fields.  */
 
-/* What is the order of the bytes. */
+/* What is the order of the bytes?  */
 
 enum floatformat_byteorders {
-
   /* Standard little endian byte order.
      EX: 1.2345678e10 => 00 00 80 c5 e0 fe 06 42 */
-
   floatformat_little,
 
   /* Standard big endian byte order.
      EX: 1.2345678e10 => 42 06 fe e0 c5 80 00 00 */
-
   floatformat_big,
 
   /* Little endian byte order but big endian word order.
      EX: 1.2345678e10 => e0 fe 06 42 00 00 80 c5 */
+  floatformat_littlebyte_bigword,
 
-  floatformat_littlebyte_bigword
-
+  /* VAX byte order.  Little endian byte order with 16-bit words.  The
+     following example is an illustration of the byte order only; VAX
+     doesn't have a fully IEEE compliant floating-point format.
+     EX: 1.2345678e10 => 80 c5 00 00 06 42 e0 fe */
+  floatformat_vax
 };
 
 enum floatformat_intbit { floatformat_intbit_yes, floatformat_intbit_no };
@@ -96,6 +97,12 @@ extern const struct floatformat floatformat_ieee_double_little;
 /* floatformat for ARM IEEE double, little endian bytes and big endian words */
 
 extern const struct floatformat floatformat_ieee_double_littlebyte_bigword;
+
+/* floatformats for VAX.  */
+
+extern const struct floatformat floatformat_vax_f;
+extern const struct floatformat floatformat_vax_d;
+extern const struct floatformat floatformat_vax_g;
 
 /* floatformats for various extendeds.  */
 
