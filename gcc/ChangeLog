@@ -1,3 +1,8 @@
+2005-10-31  Andrew MacLeod  <amacleod@redhat.com>
+	
+	PR tree-optimization/19097
+	* tree-ssa-operands.c (correct_use_link): Don't look for modified stmts.
+
 2005-10-31  J"orn Rennecke <joern.rennecke@st.com>
 
 	* optabs.c (expand_unop): Take TRULY_NOOP_TRUNCATION into account.

@@ -311,27 +311,12 @@ correct_use_link (use_operand_p ptr, tree stmt)
   prev = ptr->prev;
   if (prev)
     {
-      bool stmt_mod = true;
-      /* Find the first element which isn't a SAFE iterator, is in a different
-	 stmt, and is not a modified stmt.  That node is in the correct list,
-	 see if we are too.  */
-
-      while (stmt_mod)
-	{
-	  while (prev->stmt == stmt || prev->stmt == NULL)
-	    prev = prev->prev;
-	  if (prev->use == NULL)
-	    stmt_mod = false;
-	  else
-	    if ((stmt_mod = stmt_modified_p (prev->stmt)))
-	      prev = prev->prev;
-	}
+      /* Find the root element, making sure we skip any safe iterators.  */
+      while (prev->use != NULL || prev->stmt == NULL)
+	prev = prev->prev;
 
       /* Get the ssa_name of the list the node is in.  */
-      if (prev->use == NULL)
-	root = prev->stmt;
-      else
-	root = *(prev->use);
+      root = prev->stmt;
       /* If it's the right list, simply return.  */
       if (root == *(ptr->use))
 	return;
