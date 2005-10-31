@@ -1159,6 +1159,9 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
 	  && (!is_gimple_cast (rhs)
 	      || !is_gimple_val (TREE_OPERAND (rhs, 0))))
 	gimplify_stmt (&init_stmt);
+
+      /* If VAR represents a zero-sized variable, it's possible that the
+	 assignment statment may result in no gimple statements.  */
       if (init_stmt)
         bsi_insert_after (&bsi, init_stmt, BSI_NEW_STMT);
     }
