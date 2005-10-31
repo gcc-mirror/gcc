@@ -1,3 +1,10 @@
+2005-10-31  Jan Hubicka  <jh@suse.cz>
+
+	PR profile/24487
+	* predict.c (predict_loops): Do not estimate more than
+	MAX_PRED_LOOP_ITERATIONS in PRED_LOOP_ITERATIONS heuristic.
+	* predict.def (MAX_PRED_LOOP_ITERATIONS): Define.
+
 2005-10-31  Andrew MacLeod  <amacleod@redhat.com>
 	
 	PR tree-optimization/19097
