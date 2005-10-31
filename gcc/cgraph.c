@@ -895,7 +895,11 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 
   new->inline_failed = e->inline_failed;
   if (update_original)
-    e->count -= new->count;
+    {
+      e->count -= new->count;
+      if (e->count < 0)
+	e->count = 0;
+    }
   return new;
 }
 
@@ -931,7 +935,11 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int loop_nest,
   else
     count_scale = 0;
   if (update_original)
-    n->count -= count;
+    {
+      n->count -= count;
+      if (n->count < 0)
+	n->count = 0;
+    }
 
   for (e = n->callees;e; e=e->next_callee)
     cgraph_clone_edge (e, new, e->call_stmt, count_scale, loop_nest,
