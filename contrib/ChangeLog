@@ -1,3 +1,7 @@
+2005-11-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc_update: Include revision number in LAST_UPDATED.
+
 2005-10-28  Daniel Berlin  <dberlin@dberlin.org>
 	    Ben Elliston <bje@au1.ibm.com>
 	
