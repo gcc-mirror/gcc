@@ -1,5 +1,11 @@
 2005-11-01  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/24404
+	* resolve.c (resolve_symbol): Output symbol names in more error
+	messages, clarify error message.
+
+2005-11-01  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* dump-parse-tree.c (show_symtree): Revert change unintentionally
 	committed in r106246.
 
