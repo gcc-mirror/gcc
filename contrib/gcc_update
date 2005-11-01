@@ -231,6 +231,6 @@ fi
 
 {
   date
-  TZ=UTC date
+  echo "`TZ=UTC date` (revision `svnversion .`)"
 } > LAST_UPDATED
 touch_files_reexec
