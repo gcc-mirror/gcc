@@ -1,3 +1,8 @@
+2005-11-01  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* dump-parse-tree.c (show_symtree): Revert change unintentionally
+	committed in r106246.
+
 2005-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/21565
