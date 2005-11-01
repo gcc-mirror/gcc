@@ -1,3 +1,7 @@
+2005-11-01  Bob Wilson  <bob.wilson@acm.org>
+
+	* gcc.dg/intmax_t-1.c: Disable for xtensa-*-elf*.
+
 2005-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/21565
