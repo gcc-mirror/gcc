@@ -1,3 +1,11 @@
+2005-11-01  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24595
+	* include/tr1/boost_shared_ptr.h (shared_ptr<>::get_deleter):
+	Move out of shared_ptr.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/misc/24595.cc:
+	New.
+
 2005-10-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24559
