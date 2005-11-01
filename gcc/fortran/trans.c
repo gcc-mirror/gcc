@@ -652,30 +652,6 @@ gfc_generate_code (gfc_namespace * ns)
       return;
     }
 
-  /* Main program subroutine.  */
-  if (!ns->proc_name)
-    {
-      gfc_symbol *main_program;
-      symbol_attribute attr;
-
-      /* Lots of things get upset if a subroutine doesn't have a symbol, so we
-         make one now.  Hopefully we've set all the required fields.  */
-      gfc_get_symbol ("MAIN__", ns, &main_program);
-      gfc_clear_attr (&attr);
-      attr.flavor = FL_PROCEDURE;
-      attr.proc = PROC_UNKNOWN;
-      attr.subroutine = 1;
-      attr.access = ACCESS_PUBLIC;
-      attr.is_main_program = 1;
-      main_program->attr = attr;
-
-      /* Set the location to the first line of code.  */
-      if (ns->code)
-	main_program->declared_at = ns->code->loc;
-      ns->proc_name = main_program;
-      gfc_commit_symbols ();
-    }
-
   gfc_generate_function_code (ns);
 }
 

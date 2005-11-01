@@ -1,3 +1,13 @@
+2005-11-01  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/24245
+	* trans.c (gfc_generate_code): Move code to create a main
+	program symbol from here ...
+	* parse.c (main_program_symbol): ... to this new
+	function, setting the locus from gfc_current_locus
+	instead of ns->code->loc.
+	(gfc_parse_file):  Call main_program_symbol for main programs.
+
 2005-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/21565
