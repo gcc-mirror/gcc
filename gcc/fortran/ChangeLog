@@ -1,3 +1,23 @@
+2005-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/21565
+	* symbol.c (check_conflict): An object cannot be in a namelist and in
+	block data.
+
+	PR fortran/18737
+	* resolve.c (resolve_symbol): Set the error flag to
+	gfc_set_default_type, in the case of an external symbol, so that
+	an error message is emitted if IMPLICIT NONE is set.
+
+	PR fortran/14994
+	* gfortran.h (gfc_generic_isym_id): Add GFC_ISYM_SECNDS to enum.
+	* check.c (gfc_check_secnds): New function.
+	* intrinsic.c (add_functions): Add call to secnds.
+	* iresolve.c (gfc_resolve_secnds): New function.
+	* trans-intrinsic (gfc_conv_intrinsic_function): Add call to
+	secnds via case GFC_ISYM_SECNDS.
+	* intrinsic.texi: Add documentation for secnds.
+
 2005-10-31  Andreas Schwab  <schwab@suse.de>
 
 	* Make-lang.in (GFORTRAN_TARGET_INSTALL_NAME): Define.

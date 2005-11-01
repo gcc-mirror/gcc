@@ -305,3 +305,57 @@ date_and_time (char *__date, char *__time, char *__zone,
       fstrcpy (__date, DATE_LEN, date, DATE_LEN);
     }
 }
+
+
+/* SECNDS (X) - Non-standard
+
+   Description: Returns the system time of day, or elapsed time, as a GFC_REAL_4
+   in seconds.
+
+   Class: Non-elemental subroutine.
+
+   Arguments:
+
+   X must be REAL(4) and the result is of the same type.  The accuracy is system
+   dependent.
+
+   Usage:
+
+	T = SECNDS (X)
+
+   yields the time in elapsed seconds since X.  If X is 0.0, T is the time in
+   seconds since midnight. Note that a time that spans midnight but is less than
+   24hours will be calculated correctly.  */
+
+extern GFC_REAL_4 secnds (GFC_REAL_4 *);
+export_proto(secnds);
+
+GFC_REAL_4
+secnds (GFC_REAL_4 *x)
+{
+  GFC_INTEGER_4 values[VALUES_SIZE];
+  GFC_REAL_4 temp1, temp2;
+
+  /* Make the INTEGER*4 array for passing to date_and_time.  */
+  gfc_array_i4 *avalues = internal_malloc_size (sizeof (gfc_array_i4));
+  avalues->data = &values[0];
+  GFC_DESCRIPTOR_DTYPE (avalues) = ((GFC_DTYPE_REAL << GFC_DTYPE_TYPE_SHIFT)
+				        & GFC_DTYPE_TYPE_MASK) +
+				    (4 << GFC_DTYPE_SIZE_SHIFT);
+
+  avalues->dim[0].ubound = 7;
+  avalues->dim[0].lbound = 0;
+  avalues->dim[0].stride = 1;
+
+  date_and_time (NULL, NULL, NULL, avalues, 0, 0, 0);
+
+  free_mem (avalues);
+
+  temp1 = 3600.0 * (GFC_REAL_4)values[4] +
+	    60.0 * (GFC_REAL_4)values[5] +
+		   (GFC_REAL_4)values[6] +
+	   0.001 * (GFC_REAL_4)values[7];
+  temp2 = fmod (*x, 86400.0);
+  temp2 = (temp1 - temp2 > 0.0) ? temp2 : (temp2 - 86400.0);
+  return temp1 - temp2;
+}

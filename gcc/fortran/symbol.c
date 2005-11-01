@@ -283,6 +283,8 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
     {
       a1 = NULL;
 
+      if (attr->in_namelist)
+	a1 = in_namelist;
       if (attr->allocatable)
 	a1 = allocatable;
       if (attr->external)

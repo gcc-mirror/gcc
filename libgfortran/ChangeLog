@@ -1,3 +1,9 @@
+2005-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/14994
+	* libgfortran/intrinsics/date_and_time.c: Add interface to
+	the functions date_and_time for the intrinsic function secnds.
+
 2005-10-31  Jerry DeLisle  <jvdelisle@verizon.net>
 
         PR libgfortran/24584
