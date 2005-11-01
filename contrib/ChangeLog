@@ -1,3 +1,7 @@
+2005-11-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc_update: Include revision number in LAST_UPDATED.
+
 2005-10-30  Steven Bosscher  <stevenb@suse.de>
 
 	* gcc_build: Use gcc.gnu.org as the default server.  Set up
