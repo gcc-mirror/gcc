@@ -5,12 +5,12 @@
 	integer a, f1, e1
 	f1 = 15 + a
 	return
-	entry e1
+	entry e1()
 	e1 = 42
 	end function
 	function f2 ()
 	real f2, e2
-	entry e2
+	entry e2()
 	e2 = 45
 	end function
 
