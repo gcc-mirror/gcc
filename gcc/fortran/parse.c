@@ -970,6 +970,28 @@ gfc_ascii_statement (gfc_statement st)
 }
 
 
+/* Create a symbol for the main program and assign it to ns->proc_name.  */
+ 
+static void 
+main_program_symbol (gfc_namespace * ns)
+{
+  gfc_symbol *main_program;
+  symbol_attribute attr;
+
+  gfc_get_symbol ("MAIN__", ns, &main_program);
+  gfc_clear_attr (&attr);
+  attr.flavor = FL_PROCEDURE;
+  attr.proc = PROC_UNKNOWN;
+  attr.subroutine = 1;
+  attr.access = ACCESS_PUBLIC;
+  attr.is_main_program = 1;
+  main_program->attr = attr;
+  main_program->declared_at = gfc_current_locus;
+  ns->proc_name = main_program;
+  gfc_commit_symbols ();
+}
+
+
 /* Do whatever is necessary to accept the last statement.  */
 
 static void
@@ -2590,6 +2612,7 @@ loop:
       prog_locus = gfc_current_locus;
 
       push_state (&s, COMP_PROGRAM, gfc_new_block);
+      main_program_symbol(gfc_current_ns);
       accept_statement (st);
       add_global_program ();
       parse_progunit (ST_NONE);
@@ -2631,6 +2654,7 @@ loop:
       prog_locus = gfc_current_locus;
 
       push_state (&s, COMP_PROGRAM, gfc_new_block);
+      main_program_symbol(gfc_current_ns);
       parse_progunit (st);
       break;
     }
