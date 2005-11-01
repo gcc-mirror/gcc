@@ -1,3 +1,9 @@
+2005-11-01  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (TRAMPOLINE_TEMPLATE): Add a byte of padding.
+	(TRAMPOLINE_SIZE): Round up to 60.
+	* config/xtensa/lib2funcs.S (TRAMPOLINE_SIZE): Likewise.
+
 2005-10-31  James E. Wilson  <wilson@specifix.com>
 
 	PR debug/24444
@@ -6405,7 +6411,7 @@
 	* gcc.c (main): Compare language[0] with '*' when iterating over
 	the infiles.
 
-2005-07-13  Adrian Strae½tling  <straetling@de.ibm.com>
+2005-07-13  Adrian StraeÂ½tling  <straetling@de.ibm.com>
 
 	* config/s390/s390.c: (s390_cc_modes_compatible): Move before
 	"s390_emit_compare".  Add handling of CCZ1mode.
@@ -6418,7 +6424,7 @@
 	Use CCZ1mode instead of CCZmode.
 	* config/s390/s390-modes.def: Add CCZ1mode.  Comment new mode.
 
-2006-07-13  Adrian Strae½tling  <straetling@de.ibm.com>
+2006-07-13  Adrian StraeÂ½tling  <straetling@de.ibm.com>
 
 	* config/s390/s390.md: ("cmpstrsi", "*cmpstr<mode>"): New
 	pattern.
