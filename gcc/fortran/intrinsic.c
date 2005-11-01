@@ -1829,6 +1829,13 @@ add_functions (void)
 
   make_generic ("second", GFC_ISYM_SECOND, GFC_STD_GNU);
 
+  /* Added for G77 compatibility.  */
+  add_sym_1 ("secnds", 0, 1, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_secnds, NULL, gfc_resolve_secnds,
+	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("secnds", GFC_ISYM_SECNDS, GFC_STD_GNU);
+
   add_sym_1 ("selected_int_kind", 0, 1, BT_INTEGER, di,  GFC_STD_F95,
 	     gfc_check_selected_int_kind, gfc_simplify_selected_int_kind, NULL,
 	     r, BT_INTEGER, di, REQUIRED);

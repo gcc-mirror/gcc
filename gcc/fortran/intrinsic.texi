@@ -89,6 +89,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{FNUM}:          FNUM,      File number function
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
+* @code{SECNDS}:        SECNDS,    Time function
 * @code{SQRT}:          SQRT,      Square-root function
 * @code{SIN}:           SIN,       Sine function
 * @code{SINH}:          SINH,      Hyperbolic sine function
@@ -2818,6 +2819,54 @@ end program test_log10
 @item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab f95, gnu
 @item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
 @end multitable
+@end table
+
+
+
+
+@node SECNDS
+@section @code{SECNDS} --- Time subroutine
+@findex @code{SECNDS} intrinsic
+@cindex SECNDS
+
+@table @asis
+@item @emph{Description}:
+@code{SECNDS(X)} gets the time in seconds from the real-time system clock.
+@var{X} is a reference time, also in seconds. If this is zero, the time in
+seconds from midnight is returned. This function is non-standard and its
+use is discouraged.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+function
+
+@item @emph{Syntax}:
+@code{T = SECNDS (X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item Name        @tab Type
+@item @var{T}     @tab REAL(4)
+@item @var{X}     @tab REAL(4)
+@end multitable
+
+@item @emph{Return value}:
+None
+
+@item @emph{Example}:
+@smallexample
+program test_secnds
+    real(4) :: t1, t2
+    print *, secnds (0.0)   ! seconds since midnight
+    t1 = secnds (0.0)       ! reference time
+    do i = 1, 10000000      ! do something
+    end do
+    t2 = secnds (t1)        ! elapsed time
+    print *, "Something took ", t2, " seconds."
+end program test_secnds
+@end smallexample
 @end table
 
 

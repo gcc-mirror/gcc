@@ -1,3 +1,14 @@
+2005-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/21565
+	gfortran.dg/namelist_blockdata.f90: New test.
+
+	PR fortran/18737
+	gfortran.dg/external_implicit_none.f90: New test.
+
+	PR fortran/14994
+	* gfortran.dg/secnds.f: New test.
+
 2005-10-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* lib/gfortran.exp (gfortran_target_compile): Call

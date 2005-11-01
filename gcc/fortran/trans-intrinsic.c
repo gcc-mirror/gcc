@@ -3001,6 +3001,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_MATMUL:
     case GFC_ISYM_RAND:
     case GFC_ISYM_RENAME:
+    case GFC_ISYM_SECNDS:
     case GFC_ISYM_SECOND:
     case GFC_ISYM_STAT:
     case GFC_ISYM_SYMLNK:
