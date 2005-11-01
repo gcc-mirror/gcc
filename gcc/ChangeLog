@@ -1,3 +1,8 @@
+2005-11-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Do not add extra
+	costs for MULT inside PLUS or MINUS.
+
 2005-11-01  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (TRAMPOLINE_TEMPLATE): Add a byte of padding.
