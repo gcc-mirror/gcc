@@ -4238,8 +4238,10 @@ resolve_symbol (gfc_symbol * sym)
 
       if (sym->attr.flavor == FL_PROCEDURE && sym->attr.function)
 	{
+	  /* The specific case of an external procedure should emit an error
+	     in the case that there is no implicit type.  */
 	  if (!mp_flag)
-	    gfc_set_default_type (sym, 0, NULL);
+	    gfc_set_default_type (sym, sym->attr.external, NULL);
 	  else
 	    {
               /* Result may be in another namespace.  */

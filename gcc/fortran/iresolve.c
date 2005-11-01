@@ -1367,6 +1367,15 @@ gfc_resolve_scan (gfc_expr * f, gfc_expr * string,
 
 
 void
+gfc_resolve_secnds (gfc_expr * t1, gfc_expr * t0)
+{
+  t1->ts = t0->ts;
+  t1->value.function.name =
+    gfc_get_string (PREFIX("secnds"));
+}
+
+
+void
 gfc_resolve_set_exponent (gfc_expr * f, gfc_expr * x, gfc_expr * i)
 {
   f->ts = x->ts;

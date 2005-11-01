@@ -94,6 +94,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
 * @code{MALLOC}:        MALLOC,    Dynamic memory allocation function
 * @code{REAL}:          REAL,      Convert to real type 
+* @code{SECNDS}:        SECNDS,    Time function
 * @code{SIGNAL}:        SIGNAL,    Signal handling subroutine (or function)
 * @code{SIN}:           SIN,       Sine function
 * @code{SINH}:          SINH,      Hyperbolic sine function
@@ -3130,6 +3131,54 @@ program test_signal
 
   call sleep (30)
 end program test_signal
+@end smallexample
+@end table
+
+
+
+
+@node SECNDS
+@section @code{SECNDS} --- Time subroutine
+@findex @code{SECNDS} intrinsic
+@cindex SECNDS
+
+@table @asis
+@item @emph{Description}:
+@code{SECNDS(X)} gets the time in seconds from the real-time system clock.
+@var{X} is a reference time, also in seconds. If this is zero, the time in
+seconds from midnight is returned. This function is non-standard and its
+use is discouraged.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+function
+
+@item @emph{Syntax}:
+@code{T = SECNDS (X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item Name        @tab Type
+@item @var{T}     @tab REAL(4)
+@item @var{X}     @tab REAL(4)
+@end multitable
+
+@item @emph{Return value}:
+None
+
+@item @emph{Example}:
+@smallexample
+program test_secnds
+    real(4) :: t1, t2
+    print *, secnds (0.0)   ! seconds since midnight
+    t1 = secnds (0.0)       ! reference time
+    do i = 1, 10000000      ! do something
+    end do
+    t2 = secnds (t1)        ! elapsed time
+    print *, "Something took ", t2, " seconds."
+end program test_secnds
 @end smallexample
 @end table
 
