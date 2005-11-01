@@ -831,11 +831,13 @@ typedef struct xtensa_args
     /* jump to the instruction following the entry */			\
     fprintf (STREAM, "\taddi\ta8, a8, 3\n");				\
     fprintf (STREAM, "\tjx\ta8\n");					\
+    fprintf (STREAM, "\t.byte\t0\n");					\
     fprintf (STREAM, "\t.end no-transform\n");				\
   } while (0)
 
-/* Size in bytes of the trampoline, as an integer.  */
-#define TRAMPOLINE_SIZE 59
+/* Size in bytes of the trampoline, as an integer.  Make sure this is
+   a multiple of TRAMPOLINE_ALIGNMENT to avoid -Wpadded warnings.  */
+#define TRAMPOLINE_SIZE 60
 
 /* Alignment required for trampolines, in bits.  */
 #define TRAMPOLINE_ALIGNMENT (32)

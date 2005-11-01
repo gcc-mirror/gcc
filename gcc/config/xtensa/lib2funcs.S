@@ -151,7 +151,7 @@ __xtensa_nonlocal_goto:
    make sure that the modified instructions are loaded into the instruction
    fetch buffer.  */
 
-#define TRAMPOLINE_SIZE 59
+#define TRAMPOLINE_SIZE 60
 
 	.text
 	.align	4
