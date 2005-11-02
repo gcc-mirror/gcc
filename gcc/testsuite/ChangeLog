@@ -1,3 +1,8 @@
+2005-11-02  Josh Conner  <jconner@apple.com>
+
+	* g++.dg/crash38.C: moved into proper directory...
+	* g++.dg/template/crash42.C: ...here
+
 2005-10-28  Josh Conner  <jconner@apple.com>
 
 	PR c++/22153
