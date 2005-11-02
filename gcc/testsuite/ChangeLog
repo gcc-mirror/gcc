@@ -1,3 +1,8 @@
+2005-11-02  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.fortran-torture/execute/entry_9.f90: Revert previous
+	change (r106358).
+
 2005-11-01  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/24008

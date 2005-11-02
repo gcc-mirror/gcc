@@ -2603,6 +2603,7 @@ gfc_match_entry (void)
   gfc_compile_state state;
   match m;
   gfc_entry_list *el;
+  locus old_loc;
 
   m = gfc_match_name (name);
   if (m != MATCH_YES)
@@ -2690,8 +2691,26 @@ gfc_match_entry (void)
     }
   else
     {
-      /* An entry in a function.  */
-      m = gfc_match_formal_arglist (entry, 0, 0);
+      /* An entry in a function.
+         We need to take special care because writing
+            ENTRY f()
+         as
+            ENTRY f
+         is allowed, whereas
+            ENTRY f() RESULT (r)
+         can't be written as
+            ENTRY f RESULT (r).  */
+      old_loc = gfc_current_locus;
+      if (gfc_match_eos () == MATCH_YES)
+	{
+	  gfc_current_locus = old_loc;
+	  /* Match the empty argument list, and add the interface to
+	     the symbol.  */
+	  m = gfc_match_formal_arglist (entry, 0, 1);
+	}
+      else
+	m = gfc_match_formal_arglist (entry, 0, 0);
+
       if (m != MATCH_YES)
 	return MATCH_ERROR;
 
