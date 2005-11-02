@@ -4406,7 +4406,7 @@ tree_int_cst_msb (tree t)
 
 /* Return an indication of the sign of the integer constant T.
    The return value is -1 if T < 0, 0 if T == 0, and 1 if T > 0.
-   Note that -1 will never be returned it T's type is unsigned.  */
+   Note that -1 will never be returned if T's type is unsigned.  */
 
 int
 tree_int_cst_sgn (tree t)
