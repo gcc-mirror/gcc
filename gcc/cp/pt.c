@@ -11577,10 +11577,9 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
 	  init = tsubst_expr (DECL_INITIAL (code_pattern), 
 			      args,
 			      tf_error | tf_warning, NULL_TREE);
-	  DECL_INITIAL (d) = NULL_TREE;
-	  finish_static_data_member_decl (d, init, 
-					  /*asmspec_tree=*/NULL_TREE,
-					  LOOKUP_ONLYCONVERTING);
+	  DECL_INITIAL (d) = init;
+	  cp_finish_decl (d, init, /*asmspec_tree=*/NULL_TREE,
+			  LOOKUP_ONLYCONVERTING);
 	  pop_nested_class ();
 	  pop_nested_namespace (ns);
 	}

@@ -1,3 +1,8 @@
+2005-11-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24569
+	* g++.dg/debug/static1.C: New test.
+
 2005-11-02  Josh Conner  <jconner@apple.com>
 
 	* g++.dg/crash38.C: moved into proper directory...
