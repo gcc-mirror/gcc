@@ -1,5 +1,10 @@
 2005-11-02  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	PR target/24615
+	* gcc.dg/pr24615.c: New test.
+
+2005-11-02  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	PR target/24600
 	* gcc.dg/pr24600.c: New test.
 
