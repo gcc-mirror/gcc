@@ -1,3 +1,8 @@
+2005-11-02  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/lib/libjava.exp (libjava_find_lib): Add dylib to the shared
+	library extensions.
+
 2005-10-12  Andrew Haley  <aph@redhat.com>
 
 	PR java/24251
