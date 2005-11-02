@@ -1487,7 +1487,7 @@ void
 get_aligned_mem (rtx ref, rtx *paligned_mem, rtx *pbitnum)
 {
   rtx base;
-  HOST_WIDE_INT offset = 0;
+  HOST_WIDE_INT disp, offset;
 
   gcc_assert (GET_CODE (ref) == MEM);
 
@@ -1495,23 +1495,34 @@ get_aligned_mem (rtx ref, rtx *paligned_mem, rtx *pbitnum)
       && ! memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
     {
       base = find_replacement (&XEXP (ref, 0));
-
       gcc_assert (memory_address_p (GET_MODE (ref), base));
     }
   else
     base = XEXP (ref, 0);
 
   if (GET_CODE (base) == PLUS)
-    offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
-
-  *paligned_mem
-    = widen_memory_access (ref, SImode, (offset & ~3) - offset);
-
-  if (WORDS_BIG_ENDIAN)
-    *pbitnum = GEN_INT (32 - (GET_MODE_BITSIZE (GET_MODE (ref))
-			      + (offset & 3) * 8));
+    disp = INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
   else
-    *pbitnum = GEN_INT ((offset & 3) * 8);
+    disp = 0;
+
+  /* Find the byte offset within an aligned word.  If the memory itself is
+     claimed to be aligned, believe it.  Otherwise, aligned_memory_operand
+     will have examined the base register and determined it is aligned, and
+     thus displacements from it are naturally alignable.  */
+  if (MEM_ALIGN (ref) >= 32)
+    offset = 0;
+  else
+    offset = disp & 3;
+
+  /* Access the entire aligned word.  */
+  *paligned_mem = widen_memory_access (ref, SImode, -offset);
+
+  /* Convert the byte offset within the word to a bit offset.  */
+  if (WORDS_BIG_ENDIAN)
+    offset = 32 - (GET_MODE_BITSIZE (GET_MODE (ref)) + offset * 8);
+  else
+    offset *= 8;
+  *pbitnum = GEN_INT (offset);
 }
 
 /* Similar, but just get the address.  Handle the two reload cases.
