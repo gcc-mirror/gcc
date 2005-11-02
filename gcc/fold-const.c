@@ -4014,7 +4014,8 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
     }
 
   value = const_binop (MINUS_EXPR, high, low, 0);
-  if (value != 0 && TREE_OVERFLOW (value) && ! TYPE_UNSIGNED (etype))
+  if (value != 0 && (!flag_wrapv || TREE_OVERFLOW (value))
+      && ! TYPE_UNSIGNED (etype))
     {
       tree utype, minv, maxv;
 
@@ -4025,6 +4026,11 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 	case INTEGER_TYPE:
 	case ENUMERAL_TYPE:
 	case CHAR_TYPE:
+	  /* There is no requirement that LOW be within the range of ETYPE
+	     if the latter is a subtype.  It must, however, be within the base
+	     type of ETYPE.  So be sure we do the subtraction in that type.  */
+	  if (TREE_TYPE (etype))
+	    etype = TREE_TYPE (etype);
 	  utype = lang_hooks.types.unsigned_type (etype);
 	  maxv = fold_convert (utype, TYPE_MAX_VALUE (etype));
 	  maxv = range_binop (PLUS_EXPR, NULL_TREE, maxv, 1,
