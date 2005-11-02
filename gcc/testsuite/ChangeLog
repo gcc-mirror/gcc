@@ -1,3 +1,10 @@
+2005-11-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/target-supports.exp (check_effective_default_packed): New proc.
+	* g++.dg/ext/packed3.C, g++.dg/ext/packed8.C, g++.dg/other/crash-4.C:
+	Gate expected errors on target ! default_packed.
+	* g++.dg/ext/packed4.C: Gate on target ! default_packed.
+
 2005-11-02  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.fortran-torture/execute/entry_9.f90: Revert previous

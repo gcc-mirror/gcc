@@ -19,7 +19,7 @@ struct  __attribute__ ((packed)) Packed
 
 void Foo (Packed &p)
 {
-  Ref (p.i); // { dg-error "cannot bind packed field" "" }
+  Ref (p.i); // { dg-error "cannot bind packed field" "" { target { ! default_packed } } }
   Ref (p.u.i);
-  Ref (p.u); // { dg-error "cannot bind packed field" "" }
+  Ref (p.u); // { dg-error "cannot bind packed field" "" { target { ! default_packed } } }
 }

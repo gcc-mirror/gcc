@@ -19,6 +19,6 @@ class B
 
 public:
   B() {}
-  A GetA() { return a; } // { dg-error "" }
+  A GetA() { return a; } // { dg-error "" "" { target { ! default_packed } } }
 };
 
