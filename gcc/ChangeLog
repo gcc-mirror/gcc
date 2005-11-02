@@ -1,3 +1,9 @@
+2005-11-01  Richard Henderson  <rth@redhat.com>
+
+	PR 21518
+	* loop.c (scan_loop): Do not propagate computations to a hard
+	register destination with SMALL_REGISTER_CLASSES.
+
 2005-11-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_rtx_costs): Do not add extra
