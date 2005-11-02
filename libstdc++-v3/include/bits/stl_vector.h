@@ -742,7 +742,11 @@ namespace _GLIBCXX_STD
        */
       void
       clear()
-      { erase(begin(), end()); }
+      {
+	std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
+		      _M_get_Tp_allocator());
+	this->_M_impl._M_finish = this->_M_impl._M_start;
+      }
 
     protected:
       /**
