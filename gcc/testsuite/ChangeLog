@@ -1,3 +1,12 @@
+2005-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR fortran/18157
+        * gfortran.fortran-torture/compile/defined_type_1.f90: New test.
+	* gfortran.fortran-torture/compile/defined_type_2.f90: New
+	test.
+	* gfortran.fortran-torture/compile/defined_type_3.f90:
+	New test.
+
 2005-11-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24569

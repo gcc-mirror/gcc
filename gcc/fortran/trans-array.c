@@ -2379,10 +2379,13 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 
   if (nDepend == 1)
     {
+      tree base_type = gfc_typenode_for_spec (&dest->expr->ts);
+      if (GFC_ARRAY_TYPE_P (base_type)
+	  || GFC_DESCRIPTOR_TYPE_P (base_type))
+	base_type = gfc_get_element_type (base_type);
       loop->temp_ss = gfc_get_ss ();
       loop->temp_ss->type = GFC_SS_TEMP;
-      loop->temp_ss->data.temp.type =
-	gfc_get_element_type (TREE_TYPE (dest->data.info.descriptor));
+      loop->temp_ss->data.temp.type = base_type;
       loop->temp_ss->string_length = dest->string_length;
       loop->temp_ss->data.temp.dimen = loop->dimen;
       loop->temp_ss->next = gfc_ss_terminator;

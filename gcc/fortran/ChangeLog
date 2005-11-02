@@ -1,3 +1,13 @@
+2005-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR fortran/18157
+	* trans-array.c (gfc_conv_resolve_dependencies): Use the correct
+	type for the temporary array.
+	* trans-expr.c (gfc_trans_assignment): Pass lss
+	instead of lss_section
+	to gfc_conv_resolve_dependencies to get the
+	correct type.
+
 2005-11-01  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/24245
