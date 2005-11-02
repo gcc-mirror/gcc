@@ -4363,7 +4363,13 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	 underlying type here.  */
       scope = non_reference (scope);
       /* The type of the POSTFIX_EXPRESSION must be complete.  */
-      scope = complete_type_or_else (scope, NULL_TREE);
+      if (scope == unknown_type_node)
+	{
+	  error ("%qE does not have class type", postfix_expression);
+	  scope = NULL_TREE;
+	}
+      else
+	scope = complete_type_or_else (scope, NULL_TREE);
       /* Let the name lookup machinery know that we are processing a
 	 class member access expression.  */
       parser->context->object_type = scope;

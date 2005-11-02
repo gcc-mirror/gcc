@@ -1,5 +1,9 @@
 2005-11-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/24560
+	* parser.c (cp_parser_postfix_dot_deref_expression): Improve error
+	message for use of overloaded functions on LHS of "." operator.
+
 	PR c++/19253
 	* parser.c (cp_parser_postfix_expression): Use
 	cp_parser_elaborated_type_specifier to handle typename-types in
