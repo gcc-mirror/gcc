@@ -3961,55 +3961,12 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 
     case RID_TYPENAME:
       {
-	bool template_p = false;
-	tree id;
 	tree type;
-	tree scope;
-
-	/* Consume the `typename' token.  */
-	cp_lexer_consume_token (parser->lexer);
-
-	/* Look for the optional `::' operator.  */
-	cp_parser_global_scope_opt (parser,
-				    /*current_scope_valid_p=*/false);
-	/* Look for the nested-name-specifier.  In case of error here,
-	   consume the trailing id to avoid subsequent error messages
-	   for usual cases.  */
-	scope = cp_parser_nested_name_specifier (parser,
-						 /*typename_keyword_p=*/true,
-						 /*check_dependency_p=*/true,
-						 /*type_p=*/true,
-						 /*is_declaration=*/true);
-
-	/* Look for the optional `template' keyword.  */
-	template_p = cp_parser_optional_template_keyword (parser);
-	/* We don't know whether we're looking at a template-id or an
-	   identifier.  */
-	cp_parser_parse_tentatively (parser);
-	/* Try a template-id.  */
-	id = cp_parser_template_id (parser, template_p,
-				    /*check_dependency_p=*/true,
-				    /*is_declaration=*/true);
-	/* If that didn't work, try an identifier.  */
-	if (!cp_parser_parse_definitely (parser))
-	  id = cp_parser_identifier (parser);
-
-	/* Don't process id if nested name specifier is invalid.  */
-	if (!scope || scope == error_mark_node)
-	  return error_mark_node;
-	/* If we look up a template-id in a non-dependent qualifying
-	   scope, there's no need to create a dependent type.  */
-	if (TREE_CODE (id) == TYPE_DECL
-	    && (!TYPE_P (scope)
-	        || !dependent_type_p (parser->scope)))
-	  type = TREE_TYPE (id);
-	/* Create a TYPENAME_TYPE to represent the type to which the
-	   functional cast is being performed.  */
-	else
-	  type = make_typename_type (parser->scope, id,
-				     typename_type,
-				     /*complain=*/1);
-
+	/* The syntax permitted here is the same permitted for an
+	   elaborated-type-specifier.  */
+	type = cp_parser_elaborated_type_specifier (parser,
+						    /*is_friend=*/false,
+						    /*is_declaration=*/false);
 	postfix_expression = cp_parser_functional_cast (parser, type);
       }
       break;
@@ -15498,11 +15455,8 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
 		 "a template argument list");
 	}
     }
-  else if (!cp_lexer_next_token_is (parser->lexer, CPP_GREATER))
-    error ("missing %<>%> to terminate the template argument list");
   else
-    /* It's what we want, a '>'; consume it.  */
-    cp_lexer_consume_token (parser->lexer);
+    cp_parser_skip_until_found (parser, CPP_GREATER, "`>'");
   /* The `>' token might be a greater-than operator again now.  */
   parser->greater_than_is_operator_p
     = saved_greater_than_is_operator_p;

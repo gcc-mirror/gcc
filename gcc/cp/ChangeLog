@@ -1,5 +1,12 @@
 2005-11-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/19253
+	* parser.c (cp_parser_postfix_expression): Use
+	cp_parser_elaborated_type_specifier to handle typename-types in
+	functional casts.
+	(cp_parser_enclosed_argument_list): Skip ahead to the end of the
+	template argument list if the closing ">" is not found.
+
 	PR c++/24569
 	* pt.c (instantiate_decl): Use cp_finish_decl, not
 	finish_static_data_member_decl. 

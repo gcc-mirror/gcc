@@ -4,6 +4,8 @@
 // PR 23797:ICE
 // Origin:  Volker Reichelt <reichelt@gcc.gnu.org>
 
+// { dg-options "-fpermissive -w" }
+
 struct A { typedef int X; };
 
 int i = typename A::X();
