@@ -15,12 +15,12 @@ struct a
   a(const a&);
 };
 struct b
-{ // { dg-error "cannot bind packed field" }
+{ // { dg-error "cannot bind packed field" "" { target { ! default_packed } } }
   char c;
   a aa __attribute__((packed));
 };
 struct c
 {
   b bb;
-  c(const b& __a): bb(__a) {} // { dg-error "synthesized" }
+  c(const b& __a): bb(__a) {} // { dg-error "synthesized" "" { target { ! default_packed } } }
 };
