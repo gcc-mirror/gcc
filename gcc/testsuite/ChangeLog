@@ -1,5 +1,10 @@
 2005-11-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/24560
+	* g++.dg/parse/dot1.C: New test.
+
+2005-11-02  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/19253
 	* g++.dg/parse/typename8.C: Compile with -w -fpermissive.
 	* g++.dg/parse/typename9.C: New test.
