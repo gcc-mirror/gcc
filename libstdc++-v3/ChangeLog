@@ -1,3 +1,13 @@
+2005-11-02  Thomas Kho  <tkho@ucla.edu>
+
+	PR libstdc++/23425
+	* include/bits/stl_vector.h (vector<>::clear): Open code
+	in terms of _Destroy.
+
+2005-11-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/vector.tcc (vector<>::_M_fill_assign): Qualify fill_n.
+
 2005-11-01  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24595

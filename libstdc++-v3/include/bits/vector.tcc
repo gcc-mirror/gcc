@@ -184,7 +184,7 @@ namespace _GLIBCXX_STD
 	  this->_M_impl._M_finish += __n - size();
 	}
       else
-        erase(fill_n(begin(), __n, __val), end());
+        erase(std::fill_n(begin(), __n, __val), end());
     }
 
   template<typename _Tp, typename _Alloc>
