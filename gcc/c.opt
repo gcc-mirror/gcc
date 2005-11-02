@@ -774,6 +774,9 @@ C ObjC C++ ObjC++ Joined Separate
 lang-asm
 C Undocumented
 
+lang-fortran
+C Undocumented
+
 lang-objc
 C ObjC C++ ObjC++ Undocumented
 

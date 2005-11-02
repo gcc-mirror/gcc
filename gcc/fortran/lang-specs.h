@@ -11,7 +11,7 @@ This file is licensed under the GPL.  */
 {".fpp", "@f77-cpp-input", 0, 0, 0},
 {".FPP", "@f77-cpp-input", 0, 0, 0},
 {"@f77-cpp-input",
-  "cc1 -E -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
+  "cc1 -E -lang-fortran -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
       %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E: -o %|.f |\n\
     f951 %|.f %{!ffree-form:-ffixed-form} %(cc1_options) %{J*} %{I*}\
@@ -19,7 +19,7 @@ This file is licensed under the GPL.  */
 {".F90", "@f95-cpp-input", 0, 0, 0},
 {".F95", "@f95-cpp-input", 0, 0, 0},
 {"@f95-cpp-input",
-  "cc1 -E -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
+  "cc1 -E -lang-fortran -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
       %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E: -o %|.f95 |\n\
     f951 %|.f95 %(cc1_options) %{J*} %{I*}\

@@ -1,3 +1,13 @@
+2005-11-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/18452
+	* gcc/c.opt: Add a -lang-fortran option.
+	* gcc/c-opts.c: Add a lang_fortran flag.
+	(c_common_init_options): Handling the -lang-fortran option.
+	(c_common_handle_option): Add a case for Fortran options in
+	preprocessing. Remove cases for -ffixed-form and
+	-ffixed-line-length. Add a case for -lang-fortran.
+
 2005-11-01  Richard Henderson  <rth@redhat.com>
 
 	PR 21518
