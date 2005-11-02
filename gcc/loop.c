@@ -1266,12 +1266,13 @@ scan_loop (struct loop *loop, int flags)
 		{
 		  struct movable *m;
 		  int regno = REGNO (SET_DEST (set));
+		  rtx user, user_set;
 
-		  /* A potential lossage is where we have a case where two insns
-		     can be combined as long as they are both in the loop, but
-		     we move one of them outside the loop.  For large loops,
-		     this can lose.  The most common case of this is the address
-		     of a function being called.
+		  /* A potential lossage is where we have a case where two
+		     insns can be combined as long as they are both in the
+		     loop, but we move one of them outside the loop.  For
+		     large loops, this can lose.  The most common case of
+		     this is the address of a function being called.
 
 		     Therefore, if this register is marked as being used
 		     exactly once if we are in a loop with calls
@@ -1279,41 +1280,44 @@ scan_loop (struct loop *loop, int flags)
 		     this register with the source of this SET.  If we can,
 		     delete this insn.
 
-		     Don't do this if P has a REG_RETVAL note or if we have
-		     SMALL_REGISTER_CLASSES and SET_SRC is a hard register.  */
+		     Don't do this if:
+		      (1) P has a REG_RETVAL note or
+		      (2) if we have SMALL_REGISTER_CLASSES and
+			(a) SET_SRC is a hard register or
+			(b) the destination of the user is a hard register.  */
 
 		  if (loop_info->has_call
-		      && regs->array[regno].single_usage != 0
-		      && regs->array[regno].single_usage != const0_rtx
+		      && regno >= FIRST_PSEUDO_REGISTER 
+		      && (user = regs->array[regno].single_usage) != NULL
+		      && user != const0_rtx
 		      && REGNO_FIRST_UID (regno) == INSN_UID (p)
-		      && (REGNO_LAST_UID (regno)
-			  == INSN_UID (regs->array[regno].single_usage))
+		      && REGNO_LAST_UID (regno) == INSN_UID (user)
 		      && regs->array[regno].set_in_loop == 1
 		      && GET_CODE (SET_SRC (set)) != ASM_OPERANDS
 		      && ! side_effects_p (SET_SRC (set))
 		      && ! find_reg_note (p, REG_RETVAL, NULL_RTX)
-		      && (! SMALL_REGISTER_CLASSES
-			  || (! (REG_P (SET_SRC (set))
-				 && (REGNO (SET_SRC (set))
-				     < FIRST_PSEUDO_REGISTER))))
-		      && regno >= FIRST_PSEUDO_REGISTER 
+		      && (!SMALL_REGISTER_CLASSES
+			  || !REG_P (SET_SRC (set))
+			  || !HARD_REGISTER_P (SET_SRC (set)))
+		      && (!SMALL_REGISTER_CLASSES
+			  || !NONJUMP_INSN_P (user)
+			  || !(user_set = single_set (user))
+			  || !REG_P (SET_DEST (user_set))
+			  || !HARD_REGISTER_P (SET_DEST (user_set)))
 		      /* This test is not redundant; SET_SRC (set) might be
 			 a call-clobbered register and the life of REGNO
 			 might span a call.  */
-		      && ! modified_between_p (SET_SRC (set), p,
-					       regs->array[regno].single_usage)
-		      && no_labels_between_p (p,
-					      regs->array[regno].single_usage)
-		      && validate_replace_rtx (SET_DEST (set), SET_SRC (set),
-					       regs->array[regno].single_usage))
+		      && ! modified_between_p (SET_SRC (set), p, user)
+		      && no_labels_between_p (p, user)
+		      && validate_replace_rtx (SET_DEST (set),
+					       SET_SRC (set), user))
 		    {
 		      /* Replace any usage in a REG_EQUAL note.  Must copy
 			 the new source, so that we don't get rtx sharing
 			 between the SET_SOURCE and REG_NOTES of insn p.  */
-		      REG_NOTES (regs->array[regno].single_usage)
-			= (replace_rtx
-			   (REG_NOTES (regs->array[regno].single_usage),
-			    SET_DEST (set), copy_rtx (SET_SRC (set))));
+		      REG_NOTES (user)
+			= replace_rtx (REG_NOTES (user), SET_DEST (set),
+				       copy_rtx (SET_SRC (set)));
 
 		      delete_insn (p);
 		      for (i = 0; i < LOOP_REGNO_NREGS (regno, SET_DEST (set));
