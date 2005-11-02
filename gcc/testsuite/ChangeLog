@@ -1,5 +1,9 @@
 2005-11-02  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/18338
+	* gcc.dg/bitfld-4.c, g++.dg/abi/bitfield4.C: Gate on
+	pcc_bitfield_type_matters || default_packed.
+
 	* lib/target-supports.exp
 	(check_effective_target_pcc_bitfield_type_matters): New proc.
 	* gcc.dg/bitfld-3.c: Gate on target pcc_bitfield_type_matters.

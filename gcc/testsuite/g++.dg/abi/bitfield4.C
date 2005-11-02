@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { pcc_bitfield_type_matters || default_packed } } } */
 
 /* Check bitfields and non-bitfields are aligned & sized similarly.
 
