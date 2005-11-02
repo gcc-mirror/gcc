@@ -1,3 +1,10 @@
+2005-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR 22429
+	* fold-const.c (build_range_check): Use unsigned when signed
+	overflow is undefined also.  If etype is subtype, make sure that
+	the subtraction is in the supertype.
+
 2005-11-02  Richard Henderson  <rth@redhat.com>
 
 	PR target/24178
