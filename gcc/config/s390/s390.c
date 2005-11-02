@@ -1721,6 +1721,58 @@ s390_decompose_address (rtx addr, struct s390_address *out)
   return true;
 }
 
+/* Decompose a RTL expression OP for a shift count into its components,
+   and return the base register in BASE and the offset in OFFSET.
+
+   If BITS is non-zero, the expression is used in a context where only
+   that number to low-order bits is significant.  We then allow OP to
+   contain and outer AND that does not affect significant bits.  If BITS
+   is zero, we allow OP to contain any outer AND with a constant.
+
+   Return true if OP is a valid shift count, false if not.  */
+
+bool
+s390_decompose_shift_count (rtx op, rtx *base, HOST_WIDE_INT *offset, int bits)
+{
+  HOST_WIDE_INT off = 0;
+
+  /* Drop outer ANDs.  */
+  if (GET_CODE (op) == AND && GET_CODE (XEXP (op, 1)) == CONST_INT)
+    {
+      HOST_WIDE_INT mask = ((HOST_WIDE_INT)1 << bits) - 1;
+      if ((INTVAL (XEXP (op, 1)) & mask) != mask)
+	return false;
+
+      op = XEXP (op, 0);
+    }
+
+  /* We can have an integer constant, an address register,
+     or a sum of the two.  */
+  if (GET_CODE (op) == CONST_INT)
+    {
+      off = INTVAL (op);
+      op = NULL_RTX;
+    }
+  if (op && GET_CODE (op) == PLUS && GET_CODE (XEXP (op, 1)) == CONST_INT)
+    {
+      off = INTVAL (XEXP (op, 1));
+      op = XEXP (op, 0);
+    }
+  while (op && GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  if (op && GET_CODE (op) != REG)
+    return false;
+
+  if (offset)
+    *offset = off;
+  if (base)
+    *base = op;
+
+   return true;
+}
+
+
 /* Return true if CODE is a valid address without index.  */
 
 bool
@@ -1851,7 +1903,11 @@ s390_extra_constraint_str (rtx op, int c, const char * str)
       break;
 
     case 'Y':
-      return shift_count_operand (op, VOIDmode);
+      /* Simply check for the basic form of a shift count.  Reload will
+	 take care of making sure we have a proper base register.  */
+      if (!s390_decompose_shift_count (op, NULL, NULL, 0))
+	return 0;
+      break;
 
     default:
       return 0;
@@ -3978,46 +4034,25 @@ s390_delegitimize_address (rtx orig_x)
 static void
 print_shift_count_operand (FILE *file, rtx op)
 {
-  HOST_WIDE_INT offset = 0;
+  HOST_WIDE_INT offset;
+  rtx base;
 
-  /* Shift count operands are always truncated to the 6 least significant bits and
-     the setmem padding byte to the least 8 significant bits.  Hence we can drop
-     pointless ANDs.  */
-  if (GET_CODE (op) == AND && GET_CODE (XEXP (op, 1)) == CONST_INT)
-    {
-      if ((INTVAL (XEXP (op, 1)) & 63) != 63)
-	gcc_unreachable ();
-
-      op = XEXP (op, 0);
-    }
-
-  /* We can have an integer constant, an address register,
-     or a sum of the two.  */
-  if (GET_CODE (op) == CONST_INT)
-    {
-      offset = INTVAL (op);
-      op = NULL_RTX;
-    }
-  if (op && GET_CODE (op) == PLUS && GET_CODE (XEXP (op, 1)) == CONST_INT)
-    {
-      offset = INTVAL (XEXP (op, 1));
-      op = XEXP (op, 0);
-    }
-  while (op && GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
+  /* Extract base register and offset.  */
+  if (!s390_decompose_shift_count (op, &base, &offset, 0))
+    gcc_unreachable ();
 
   /* Sanity check.  */
-  if (op)
+  if (base)
     {
-      gcc_assert (GET_CODE (op) == REG);
-      gcc_assert (REGNO (op) < FIRST_PSEUDO_REGISTER);
-      gcc_assert (REGNO_REG_CLASS (REGNO (op)) == ADDR_REGS);
+      gcc_assert (GET_CODE (base) == REG);
+      gcc_assert (REGNO (base) < FIRST_PSEUDO_REGISTER);
+      gcc_assert (REGNO_REG_CLASS (REGNO (base)) == ADDR_REGS);
     }
 
   /* Offsets are constricted to twelve bits.  */
   fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset & ((1 << 12) - 1));
-  if (op)
-    fprintf (file, "(%s)", reg_names[REGNO (op)]);
+  if (base)
+    fprintf (file, "(%s)", reg_names[REGNO (base)]);
 }
 
 /* See 'get_some_local_dynamic_name'.  */

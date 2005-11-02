@@ -1,5 +1,15 @@
 2005-11-02  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	PR target/24615
+	* config/s390/s390-protos.h (s390_decompose_shift_count): Declare.
+	* config/s390/s390.c (s390_decompose_shift_count): New function.
+	(s390_extra_constraint_str) ['Y']: Use s390_decompose_shift_count.
+	(print_shift_count_operand): Use s390_decompose_shift_count.
+	* config/s390/predicates.md ("setmem_operand", "shift_count_operand"):
+	Use s390_decompose_shift_count.  Do not accept any non-base hard regs.
+
+2005-11-02  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	PR target/24600
 	* loop.c (loop_givs_rescan): Use force_operand to expand
 	complex GIVs.
