@@ -1,3 +1,8 @@
+2005-11-02  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* decl.c (gfc_match_entry): Function entries don't need an argument
+	list if there's no RESULT clause.
+
 2005-11-01  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/24008
