@@ -242,7 +242,7 @@ proc libjava_init { args } {
 proc libjava_find_lib {dir name} {
     global base_dir
     set gp [get_multilibs]
-    foreach extension {so dll a} {
+    foreach extension {so dll dylib a} {
 	foreach sub {.libs _libs} {
 	    if {$gp != ""} {
 		if {[file exists $gp/$dir/$sub/lib${name}.${extension}]} then {
