@@ -1,3 +1,9 @@
+2005-11-02  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/24600
+	* loop.c (loop_givs_rescan): Use force_operand to expand
+	complex GIVs.
+
 2005-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR 22429

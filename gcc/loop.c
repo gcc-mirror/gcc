@@ -5497,9 +5497,16 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 	  /* Not replaceable; emit an insn to set the original
 	     giv reg from the reduced giv.  */
 	  else if (REG_P (*v->location))
-	    loop_insn_emit_before (loop, 0, v->insn,
-				   gen_move_insn (*v->location,
-						  v->new_reg));
+	    {
+	      rtx tem;
+	      start_sequence ();
+	      tem = force_operand (v->new_reg, *v->location);
+	      if (tem != *v->location)
+		emit_move_insn (*v->location, tem);
+	      tem = get_insns ();
+	      end_sequence ();
+	      loop_insn_emit_before (loop, 0, v->insn, tem);
+	    }
 	  else if (GET_CODE (*v->location) == PLUS
 		   && REG_P (XEXP (*v->location, 0))
 		   && CONSTANT_P (XEXP (*v->location, 1)))
