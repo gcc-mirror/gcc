@@ -1,3 +1,9 @@
+2005-11-01  Richard Henderson  <rth@redhat.com>
+
+	PR 21518
+	* loop.c (scan_loop): Do not propagate computations to a hard
+	register destination with SMALL_REGISTER_CLASSES.
+
 2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24362
@@ -6,7 +12,7 @@
 
 2005-10-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
-        PR c/23103
+	PR c/23103
 	* c-format.c (check_format_types): Use
 	lang_hooks.types_compatible_p
 	instead of pointer equality when comparing types.
@@ -62,29 +68,29 @@
 
 2005-10-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR #19672
-        * dojump.c (do_jump): Handle TRUTH_AND_EXPR and TRUTH_OR_EXPR here.
+	PR #19672
+	* dojump.c (do_jump): Handle TRUTH_AND_EXPR and TRUTH_OR_EXPR here.
 
 2005-10-18  Richard Henderson  <rth@redhat.com>
 
-        PR target/24428
-        * config/i386/i386.c (legitimate_constant_p): Check
-        SYMBOL_REF_TLS_MODEL directly.  Don't fallthru to SYMBOL_REF
-        if LABEL_REF.
-        (legitimate_pic_operand_p): Test SYMBOL_REF_TLS_MODEL directly.
-        (legitimate_pic_address_disp_p): Reorg CONST checking to make
-        sure SYMBOL_REF_TLS_MODEL is tested.  Test SYMBOL_REF_TLS_MODEL
-        directly.
-        (print_operand_address): Likewise.
-        * config/i386/predicates.md (x86_64_immediate_operand): Test
-        SYMBOL_REF_TLS_MODEL properly inside CONST.
-        (x86_64_zext_immediate_operand): Likewise.
-        (global_dynamic_symbolic_operand, local_dynamic_symbolic_operand,
-        initial_exec_symbolic_operand, local_exec_symbolic_operand): Remove.
-        * config/i386/i386-protos.h: Remove predicates.md entries.
+	PR target/24428
+	* config/i386/i386.c (legitimate_constant_p): Check
+	SYMBOL_REF_TLS_MODEL directly.  Don't fallthru to SYMBOL_REF
+	if LABEL_REF.
+	(legitimate_pic_operand_p): Test SYMBOL_REF_TLS_MODEL directly.
+	(legitimate_pic_address_disp_p): Reorg CONST checking to make
+	sure SYMBOL_REF_TLS_MODEL is tested.  Test SYMBOL_REF_TLS_MODEL
+	directly.
+	(print_operand_address): Likewise.
+	* config/i386/predicates.md (x86_64_immediate_operand): Test
+	SYMBOL_REF_TLS_MODEL properly inside CONST.
+	(x86_64_zext_immediate_operand): Likewise.
+	(global_dynamic_symbolic_operand, local_dynamic_symbolic_operand,
+	initial_exec_symbolic_operand, local_exec_symbolic_operand): Remove.
+	* config/i386/i386-protos.h: Remove predicates.md entries.
 
 2005-10-17  Alexey Starovoytov  <alexey.starovoytov@sun.com>
-            Ian Lance Taylor <ian@airs.com>
+	    Ian Lance Taylor <ian@airs.com>
 
 	PR middle-end/23522
 	* fold-const.c (fold_widened_comparison): Do not allow range based
@@ -202,8 +208,8 @@
 
 2005-10-06  Richard Henderson  <rth@redhat.com>
 
-        PR debug/24070
-        * dwarf2out.c (dwarf2out_start_source_file): Print the result
+	PR debug/24070
+	* dwarf2out.c (dwarf2out_start_source_file): Print the result
 	of maybe_emit_file.
 
 2005-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -219,13 +225,13 @@
 
 2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR tree-optimization/21419
-        PR tree-optimization/24146
-        PR tree-optimization/24151
+	PR tree-optimization/21419
+	PR tree-optimization/24146
+	PR tree-optimization/24151
 
-        * c-typeck.c (readonly_error): Handle USE being lv_asm.
-        (build_asm_expr): Call it if outputs are read-only.
-        * gimplify.c (gimplify_asm_expr): Remove former fix to PR 21419.
+	* c-typeck.c (readonly_error): Handle USE being lv_asm.
+	(build_asm_expr): Call it if outputs are read-only.
+	* gimplify.c (gimplify_asm_expr): Remove former fix to PR 21419.
 
 2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -264,13 +270,13 @@
 
 2005-10-03  Richard Henderson  <rth@redhat.com>
 
-        PR 24135
-        * tree-nested.c (convert_nl_goto_reference): Lookup a translation
-        before creating a new one.
+	PR 24135
+	* tree-nested.c (convert_nl_goto_reference): Lookup a translation
+	before creating a new one.
 
 2005-10-02  Matthias Klose  <doko@debian.org>
 
-        * doc/invoke.texi: Fix typo and speling error.
+	* doc/invoke.texi: Fix typo and speling error.
 
 2005-09-30  Paolo Bonzini  <bonzini@gnu.org>
 	
@@ -309,8 +315,8 @@
 2005-09-19  Richard Henderson  <rth@redhat.com>
 
 	PR 23941
-        * real.c (exact_real_truncate): Return false if the format cannot
-        represent the number as a normal.
+	* real.c (exact_real_truncate): Return false if the format cannot
+	represent the number as a normal.
 
 2005-09-16  Fariborz Jahanian <fjahanian@apple.com>
 
