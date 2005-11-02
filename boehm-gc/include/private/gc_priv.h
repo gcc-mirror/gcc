@@ -760,17 +760,9 @@ struct hblk {
 # ifdef LARGE_CONFIG
 #   define MAX_ROOT_SETS 4096
 # else
-#   ifdef PCR
-#     define MAX_ROOT_SETS 1024
-#   else
-#     if defined(MSWIN32) || defined(MSWINCE)
-#	define MAX_ROOT_SETS 1024
-	    /* Under NT, we add only written pages, which can result 	*/
-	    /* in many small root sets.					*/
-#     else
-#       define MAX_ROOT_SETS 256
-#     endif
-#   endif
+    /* GCJ LOCAL: MAX_ROOT_SETS increased to permit more shared */
+    /* libraries to be loaded.                                  */ 
+#   define MAX_ROOT_SETS 1024
 # endif
 
 # define MAX_EXCLUSIONS (MAX_ROOT_SETS/4)
