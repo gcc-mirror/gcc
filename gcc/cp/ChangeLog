@@ -1,3 +1,9 @@
+2005-11-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24569
+	* pt.c (instantiate_decl): Use cp_finish_decl, not
+	finish_static_data_member_decl. 
+
 2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* decl.c (grokfndecl): Remove the setting
