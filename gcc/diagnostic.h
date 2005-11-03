@@ -184,6 +184,10 @@ extern void diagnostic_report_diagnostic (diagnostic_context *,
 #ifdef ATTRIBUTE_GCC_DIAG
 extern void diagnostic_set_info (diagnostic_info *, const char *, va_list *,
 				 location_t, diagnostic_t) ATTRIBUTE_GCC_DIAG(2,0);
+extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
+					    va_list *, location_t,
+					    diagnostic_t)
+     ATTRIBUTE_GCC_DIAG(2,0);
 #endif
 extern char *diagnostic_build_prefix (diagnostic_info *);
 

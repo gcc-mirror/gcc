@@ -1277,8 +1277,14 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "unknown escape sequence '\\%c'", (int) c);
       else
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "unknown escape sequence: '\\%03o'", (int) c);
+	{
+	  /* diagnostic.c does not support "%03o".  When it does, this
+	     code can use %03o directly in the diagnostic again.  */
+	  char buf[32];
+	  sprintf(buf, "%03o", (int) c);
+	  cpp_error (pfile, CPP_DL_PEDWARN,
+		     "unknown escape sequence: '\\%s'", buf);
+	}
     }
 
   /* Now convert what we have to the execution character set.  */

@@ -1,5 +1,10 @@
 2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c++/17964
+	* g++.dg/cpp/string-1.C: New test.
+
+2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* gcc.target/powerpc: New directory.
 	* gcc.target/powerpc/powerpc.exp: New file.
 	* gcc.dg/20020118-1.c, gcc.dg/20030218-1.c, gcc.dg/20030505.c,
