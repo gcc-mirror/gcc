@@ -1,3 +1,9 @@
+2005-11-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/23585
+	* rtlanal.c (rtx_addr_can_trap_p_1) <PLUS>: Return 0 for an address
+	that can't trap plus a constant integer, if the mode has zero size.
+
 2005-11-02  Richard Henderson  <rth@redhat.com>
 
 	PR target/24178
