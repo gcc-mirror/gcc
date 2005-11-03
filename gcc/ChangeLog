@@ -1,3 +1,9 @@
+2005-11-03  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/24483
+	* tree-ssa-loop-ivopts.c (aff_combination_add_elt): Move rest
+	field to elts if possible.
+
 2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23155
