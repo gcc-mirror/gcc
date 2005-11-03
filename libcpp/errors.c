@@ -140,20 +140,25 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
   
   va_start (ap, msgid);
 
-  if (CPP_OPTION (pfile, traditional))
-    {
-      if (pfile->state.in_directive)
-	src_loc = pfile->directive_line;
-      else
-	src_loc = pfile->line_table->highest_line;
-    }
+  if (CPP_OPTION (pfile, client_diagnostic))
+    pfile->cb.error (pfile, level, _(msgid), ap);
   else
     {
-      src_loc = pfile->cur_token[-1].src_loc;
-    }
+      if (CPP_OPTION (pfile, traditional))
+	{
+	  if (pfile->state.in_directive)
+	    src_loc = pfile->directive_line;
+	  else
+	    src_loc = pfile->line_table->highest_line;
+	}
+      else
+	{
+	  src_loc = pfile->cur_token[-1].src_loc;
+	}
 
-  if (_cpp_begin_message (pfile, level, src_loc, 0))
-    v_message (msgid, ap);
+      if (_cpp_begin_message (pfile, level, src_loc, 0))
+	v_message (msgid, ap);
+    }
 
   va_end (ap);
 }

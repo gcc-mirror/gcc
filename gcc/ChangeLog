@@ -1,3 +1,10 @@
+2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/17964
+	* diagnostic.c (diagnostic_set_info_translated): New function.
+	(diagnostic_set_info): Use it.  Add comment.
+	* diagnostic.h (diagnostic_set_info_translated): Declare.
+
 2005-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2asm.c (dw2_force_const_mem): Add new parameter 'public'.

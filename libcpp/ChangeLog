@@ -1,3 +1,11 @@
+2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/17964
+	* include/cpplib.h (struct cpp_options): Add client_diagnostic.
+	(struct cpp_callbacks): Add error.
+	* errors.c (cpp_error): If client_diagnostic, use error callback.
+	* charset.c (convert_escape): Don't use %03o in diagnostic.
+
 2005-10-21  James E Wilson  <wilson@specifix.com>
 
 	PR preprocessor/15220
