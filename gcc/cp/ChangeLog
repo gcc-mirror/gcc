@@ -1,3 +1,8 @@
+2005-11-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21627
+	* pt.c (register_specialization): Update inline flags on clones.y
+
 2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/24582

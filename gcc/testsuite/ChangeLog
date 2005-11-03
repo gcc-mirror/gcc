@@ -1,3 +1,8 @@
+2005-11-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21627
+	* g++.dg/warn/inline2.C: New test.
+
 2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23155 
