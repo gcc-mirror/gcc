@@ -323,11 +323,32 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
 	{
 	  int prec = TYPE_PRECISION (t);
 	  t = c_common_type_for_mode (TYPE_MODE (t), TYPE_UNSIGNED (t));
-	  pp_c_type_specifier (pp, t);
-	  if (TYPE_PRECISION (t) != prec)
+	  if (TYPE_NAME (t))
 	    {
-	      pp_string (pp, ":");
+	      pp_c_type_specifier (pp, t);
+	      if (TYPE_PRECISION (t) != prec)
+		{
+		  pp_string (pp, ":");
+		  pp_decimal_int (pp, prec);
+		}
+	    }
+	  else
+	    {
+	      switch (code)
+		{
+		case INTEGER_TYPE:
+		  pp_string (pp, (TYPE_UNSIGNED (t)
+				  ? "<unnamed-unsigned:"
+				  : "<unnamed-signed:"));
+		  break;
+		case REAL_TYPE:
+		  pp_string (pp, "<unnamed-float:");
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
 	      pp_decimal_int (pp, prec);
+	      pp_string (pp, ">");
 	    }
 	}
       break;
