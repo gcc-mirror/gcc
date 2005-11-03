@@ -3281,13 +3281,13 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 	  error ("operands to ?: have different types");
 	  result = error_mark_node;
 	}
-      else if (conv2 && !conv2->bad_p)
+      else if (conv2 && (!conv2->bad_p || !conv3))
 	{
 	  arg2 = convert_like (conv2, arg2);
 	  arg2 = convert_from_reference (arg2);
 	  arg2_type = TREE_TYPE (arg2);
 	}
-      else if (conv3 && !conv3->bad_p)
+      else if (conv3 && (!conv3->bad_p || !conv2))
 	{
 	  arg3 = convert_like (conv3, arg3);
 	  arg3 = convert_from_reference (arg3);
