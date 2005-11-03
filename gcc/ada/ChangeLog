@@ -1,3 +1,9 @@
+2005-11-03  James E Wilson  <wilson@specifix.com>
+
+	PR ada/23427
+        * trans.c (gnat_to_gnu): Use TYPE_SIZE_UNIT not TYPE_SIZE in
+        TREE_OVERFLOW check.
+
 2005-09-21  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/22418
