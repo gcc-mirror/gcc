@@ -255,29 +255,34 @@ namespace __gnu_cxx
 	      {
 		_CharT __tmp_data[_S_local_capacity + 1];
 		traits_type::copy(__tmp_data, __rcs._M_local_data,
-				  __rcs._M_length() + 1);
+				  _S_local_capacity + 1);
 		traits_type::copy(__rcs._M_local_data, _M_local_data,
-				  _M_length() + 1);
+				  _S_local_capacity + 1);
 		traits_type::copy(_M_local_data, __tmp_data,
-				  __rcs._M_length() + 1);
+				  _S_local_capacity + 1);
 	      }
 	    else if (__rcs._M_length())
 	      {
 		traits_type::copy(_M_local_data, __rcs._M_local_data,
-				  __rcs._M_length() + 1);
-		traits_type::assign(__rcs._M_local_data[0], _CharT());
+				  _S_local_capacity + 1);
+		_M_length(__rcs._M_length());
+		__rcs._M_set_length(0);
+		return;
 	      }
 	    else if (_M_length())
 	      {
 		traits_type::copy(__rcs._M_local_data, _M_local_data,
-				  _M_length() + 1);
-		traits_type::assign(_M_local_data[0], _CharT());
+				  _S_local_capacity + 1);
+		__rcs._M_length(_M_length());
+		_M_set_length(0);
+		return;
 	      }
 	  }
 	else
 	  {
 	    const size_type __tmp_capacity = __rcs._M_allocated_capacity;
-	    _S_copy(__rcs._M_local_data, _M_local_data, _M_length() + 1);
+	    traits_type::copy(__rcs._M_local_data, _M_local_data,
+			      _S_local_capacity + 1);
 	    _M_data(__rcs._M_data());
 	    __rcs._M_data(__rcs._M_local_data);
 	    _M_capacity(__tmp_capacity);
@@ -287,8 +292,8 @@ namespace __gnu_cxx
 	  const size_type __tmp_capacity = _M_allocated_capacity;
 	  if (__rcs._M_is_local())
 	    {
-	      _S_copy(_M_local_data, __rcs._M_local_data,
-		      __rcs._M_length() + 1);
+	      traits_type::copy(_M_local_data, __rcs._M_local_data,
+				_S_local_capacity + 1);
 	      __rcs._M_data(_M_data());
 	      _M_data(_M_local_data);
 	    }
