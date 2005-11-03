@@ -2109,7 +2109,8 @@ declare_local_label (tree id)
 static int
 decl_jump_unsafe (tree decl)
 {
-  if (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl))
+  if (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl)
+      || TREE_TYPE (decl) == error_mark_node)
     return 0;
 
   if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))

@@ -1,3 +1,8 @@
+2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/24582
+	* g++.dg/init/switch1.C: New test.
+
 2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/24329
