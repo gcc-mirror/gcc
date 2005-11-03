@@ -1,3 +1,9 @@
+2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/24329
+	* c-pretty-print.c (pp_c_type_specifier): Do not recurse if
+	c_common_type_for_mode returns an unnamed type.
+
 2005-11-02  Richard Henderson  <rth@redhat.com>
 
 	PR target/9350
