@@ -3463,6 +3463,7 @@ static void
 output_ttype (tree type, int tt_format, int tt_format_size)
 {
   rtx value;
+  bool public = true;
 
   if (type == NULL_TREE)
     value = const0_rtx;
@@ -3485,6 +3486,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
 	      node = cgraph_varpool_node (type);
 	      if (node)
 		cgraph_varpool_mark_needed_node (node);
+	      public = TREE_PUBLIC (type);
 	    }
 	}
       else if (TREE_CODE (type) != INTEGER_CST)
@@ -3499,7 +3501,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
     assemble_integer (value, tt_format_size,
 		      tt_format_size * BITS_PER_UNIT, 1);
   else
-    dw2_asm_output_encoded_addr_rtx (tt_format, value, NULL);
+    dw2_asm_output_encoded_addr_rtx (tt_format, value, public, NULL);
 }
 
 void

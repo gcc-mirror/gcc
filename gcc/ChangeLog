@@ -1,3 +1,18 @@
+2005-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2asm.c (dw2_force_const_mem): Add new parameter 'public'.
+	On USE_LINKONCE_INDIRECT platforms, build a DECL_ONE_ONLY indirect
+	reference only if 'public' is true.
+	(dw2_output_indirect_constant_1): On USE_LINKONCE_INDIRECT platforms,
+	emit the .hidden directive only if the indirect reference is public.
+	(dw2_asm_output_encoded_addr_rtx): Add new parameter 'public'.
+	Pass it to dw2_force_const_mem.
+	* dwarf2asm.h (dw2_asm_output_encoded_addr_rtx): New param 'public'.
+	* dwarf2out.c (output_cfi): Adjust calls to above function.
+	(output_call_frame_info): Likewise.
+	* except.c (output_ttype): Pass TREE_PUBLIC of the type_info object
+	as 'public' argument to dw2_asm_output_encoded_addr_rtx.
+
 2005-11-03  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/24483
