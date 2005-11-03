@@ -683,7 +683,7 @@ dw2_asm_output_delta_sleb128 (const char *lab1 ATTRIBUTE_UNUSED,
 }
 #endif /* 0 */
 
-static rtx dw2_force_const_mem (rtx);
+static rtx dw2_force_const_mem (rtx, bool);
 static int dw2_output_indirect_constant_1 (splay_tree_node, void *);
 
 static GTY((param1_is (char *), param2_is (tree))) splay_tree indirect_pool;
@@ -699,10 +699,11 @@ static GTY(()) int dw2_const_labelno;
 /* Put X, a SYMBOL_REF, in memory.  Return a SYMBOL_REF to the allocated
    memory.  Differs from force_const_mem in that a single pool is used for
    the entire unit of translation, and the memory is not guaranteed to be
-   "near" the function in any interesting sense.  */
+   "near" the function in any interesting sense.  PUBLIC controls whether
+   the symbol can be shared across the entire application (or DSO).  */
 
 static rtx
-dw2_force_const_mem (rtx x)
+dw2_force_const_mem (rtx x, bool public)
 {
   splay_tree_node node;
   const char *str;
@@ -721,7 +722,7 @@ dw2_force_const_mem (rtx x)
     {
       tree id;
 
-      if (USE_LINKONCE_INDIRECT)
+      if (public && USE_LINKONCE_INDIRECT)
 	{
 	  char *ref_name = alloca (strlen (str) + sizeof "DW.ref.");
 
@@ -768,12 +769,14 @@ dw2_output_indirect_constant_1 (splay_tree_node node,
 {
   const char *sym;
   rtx sym_ref;
+  tree decl;
 
   sym = (const char *) node->key;
+  decl = (tree) node->value;
   sym_ref = gen_rtx_SYMBOL_REF (Pmode, sym);
-  if (USE_LINKONCE_INDIRECT)
+  if (TREE_PUBLIC (decl) && USE_LINKONCE_INDIRECT)
     fprintf (asm_out_file, "\t.hidden %sDW.ref.%s\n", user_label_prefix, sym);
-  assemble_variable ((tree) node->value, 1, 1, 1);
+  assemble_variable (decl, 1, 1, 1);
   assemble_integer (sym_ref, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
   return 0;
@@ -788,10 +791,12 @@ dw2_output_indirect_constants (void)
     splay_tree_foreach (indirect_pool, dw2_output_indirect_constant_1, NULL);
 }
 
-/* Like dw2_asm_output_addr_rtx, but encode the pointer as directed.  */
+/* Like dw2_asm_output_addr_rtx, but encode the pointer as directed.
+   If PUBLIC is set and the encoding is DW_EH_PE_indirect, the indirect
+   reference is shared across the entire application (or DSO).  */
 
 void
-dw2_asm_output_encoded_addr_rtx (int encoding, rtx addr,
+dw2_asm_output_encoded_addr_rtx (int encoding, rtx addr, bool public,
 				 const char *comment, ...)
 {
   int size;
@@ -830,9 +835,9 @@ dw2_asm_output_encoded_addr_rtx (int encoding, rtx addr,
 	  /* It is very tempting to use force_const_mem so that we share data
 	     with the normal constant pool.  However, we've already emitted
 	     the constant pool for this function.  Moreover, we'd like to
-	     share these constants across the entire unit of translation,
-	     or better, across the entire application (or DSO).  */
-	  addr = dw2_force_const_mem (addr);
+	     share these constants across the entire unit of translation and
+	     even, if possible, across the entire application (or DSO).  */
+	  addr = dw2_force_const_mem (addr, public);
 	  encoding &= ~DW_EH_PE_indirect;
 	  goto restart;
 	}
