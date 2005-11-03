@@ -1,3 +1,42 @@
+2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.target/powerpc: New directory.
+	* gcc.target/powerpc/powerpc.exp: New file.
+	* gcc.dg/20020118-1.c, gcc.dg/20030218-1.c, gcc.dg/20030505.c,
+	gcc.dg/20040121-1.c, gcc.dg/20040622-1.c, gcc.dg/20041111-1.c,
+	gcc.dg/20050603-1.c, gcc.dg/20050603-3.c, gcc.dg/20050830-1.c,
+	gcc.dg/980827-1.c, gcc.dg/altivec-1.c, gcc.dg/altivec-10.c,
+	gcc.dg/altivec-11.c, gcc.dg/altivec-12.c, gcc.dg/altivec-13.c,
+	gcc.dg/altivec-14.c, gcc.dg/altivec-15.c, gcc.dg/altivec-16.c,
+	gcc.dg/altivec-17.c, gcc.dg/altivec-18.c, gcc.dg/altivec-19.c,
+	gcc.dg/altivec-2.c, gcc.dg/altivec-20.c, gcc.dg/altivec-21.c,
+	gcc.dg/altivec-22.c, gcc.dg/altivec-3.c, gcc.dg/altivec-4.c,
+	gcc.dg/altivec-5.c, gcc.dg/altivec-6.c, gcc.dg/altivec-7.c,
+	gcc.dg/altivec-8.c, gcc.dg/altivec-9.c, gcc.dg/altivec-pr22085.c,
+	gcc.dg/altivec-types-1.c, gcc.dg/altivec-types-2.c,
+	gcc.dg/altivec-types-3.c, gcc.dg/altivec-types-4.c,
+	gcc.dg/altivec-varargs-1.c, gcc.dg/altivec-vec-merge.c,
+	gcc.dg/altivec_check.h, gcc.dg/compress-float-ppc-pic.c,
+	gcc.dg/compress-float-ppc.c, gcc.dg/darwin-abi-1.c,
+	gcc.dg/darwin-abi-2.c, gcc.dg/darwin-bool-1.c,
+	gcc.dg/darwin-bool-2.c, gcc.dg/darwin-longdouble.c,
+	gcc.dg/darwin-longlong.c, gcc.dg/darwin-misaligned.c,
+	gcc.dg/doloop-1.c, gcc.dg/macho-lo-sum.c, gcc.dg/ppc-and-1.c,
+	gcc.dg/ppc-bitfield1.c, gcc.dg/ppc-compare-1.c, gcc.dg/ppc-eabi.c,
+	gcc.dg/ppc-fmadd-1.c, gcc.dg/ppc-fmadd-2.c, gcc.dg/ppc-fmadd-3.c,
+	gcc.dg/ppc-fsel-1.c, gcc.dg/ppc-fsel-2.c, gcc.dg/ppc-fsel-3.c,
+	gcc.dg/ppc-ldstruct.c, gcc.dg/ppc-mov-1.c, gcc.dg/ppc-sdata-1.c,
+	gcc.dg/ppc-sdata-2.c, gcc.dg/ppc-spe.c, gcc.dg/ppc-spe64-1.c,
+	gcc.dg/ppc-stackalign-1.c, gcc.dg/ppc-stfiwx.c,
+	gcc.dg/ppc-vector-memcpy.c, gcc.dg/ppc-vector-memset.c,
+	gcc.dg/ppc64-abi-1.c, gcc.dg/ppc64-abi-2.c, gcc.dg/ppc64-abi-3.c,
+	gcc.dg/ppc64-toc.c, gcc.dg/pr16155.c, gcc.dg/pr16286.c,
+	gcc.dg/pr18096-1.c, gcc.dg/rs6000-fpint-2.c,
+	gcc.dg/rs6000-fpint.c, gcc.dg/rs6000-ldouble-1.c,
+	gcc.dg/rs6000-ldouble-2.c, gcc.dg/rs6000-power2-1.c,
+	gcc.dg/rs6000-power2-2.c, gcc.dg/spe1.c,
+	gcc.dg/stabs-attrib-vect-darwin.c: Move to gcc.target/powerpc.
+
 2005-11-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21627
