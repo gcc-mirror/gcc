@@ -1,3 +1,9 @@
+2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23155
+	* gimplifier.c (gimplify_expr): Create a temporary for lvalue
+	CONSTRUCTOR.
+
 2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/24329

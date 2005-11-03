@@ -4005,8 +4005,17 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	      *expr_p = NULL_TREE;
 	    }
-
-	  ret = GS_ALL_DONE;
+	  /* C99 code may assign to an array in a constructed
+	     structure or union, and this has undefined behavior only
+	     on execution, so create a temporary if an lvalue is
+	     required.  */
+	  else if (fallback == fb_lvalue)
+	    {
+	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
+	      lang_hooks.mark_addressable (*expr_p);
+	    }
+	  else
+	    ret = GS_ALL_DONE;
 	  break;
 
 	  /* The following are special cases that are not handled by the
