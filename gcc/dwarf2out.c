@@ -1271,6 +1271,30 @@ clobbers_queued_reg_save (rtx insn)
   return false;
 }
 
+/* Entry point for saving the first register into the second.  */
+
+void
+dwarf2out_reg_save_reg (const char *label, rtx reg, rtx sreg)
+{
+  size_t i;
+  unsigned int regno, sregno;
+
+  for (i = 0; i < num_regs_saved_in_regs; i++)
+    if (REGNO (regs_saved_in_regs[i].orig_reg) == REGNO (reg))
+      break;
+  if (i == num_regs_saved_in_regs)
+    {
+      gcc_assert (i != ARRAY_SIZE (regs_saved_in_regs));
+      num_regs_saved_in_regs++;
+    }
+  regs_saved_in_regs[i].orig_reg = reg;
+  regs_saved_in_regs[i].saved_in_reg = sreg;
+
+  regno = DWARF_FRAME_REGNUM (REGNO (reg));
+  sregno = DWARF_FRAME_REGNUM (REGNO (sreg));
+  reg_save (label, regno, sregno, 0);
+}
+
 /* What register, if any, is currently saved in REG?  */
 
 static rtx
@@ -1659,7 +1683,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	case UNSPEC_VOLATILE:
 	  gcc_assert (targetm.dwarf_handle_frame_unspec);
 	  targetm.dwarf_handle_frame_unspec (label, expr, XINT (src, 1));
-	  break;
+	  return;
 
 	default:
 	  gcc_unreachable ();

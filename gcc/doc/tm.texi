@@ -1033,18 +1033,6 @@ macro must evaluate to a value equal to or larger than
 @code{STACK_BOUNDARY}.
 @end defmac
 
-@defmac FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
-A C expression that evaluates true if @code{PREFERRED_STACK_BOUNDARY} is
-not guaranteed by the runtime and we should emit code to align the stack
-at the beginning of @code{main}.
-
-@cindex @code{PUSH_ROUNDING}, interaction with @code{PREFERRED_STACK_BOUNDARY}
-If @code{PUSH_ROUNDING} is not defined, the stack will always be aligned
-to the specified boundary.  If @code{PUSH_ROUNDING} is defined and specifies
-a less strict alignment than @code{PREFERRED_STACK_BOUNDARY}, the stack may
-be momentarily unaligned while pushing arguments.
-@end defmac
-
 @defmac FUNCTION_BOUNDARY
 Alignment required for a function entry point, in bits.
 @end defmac
