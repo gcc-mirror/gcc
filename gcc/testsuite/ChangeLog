@@ -1,5 +1,8 @@
 2005-11-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/22434
+	* g++.dg/expr/cond8.C: New test.
+
 	PR c++/24560
 	* g++.dg/parse/dot1.C: New test.
 
