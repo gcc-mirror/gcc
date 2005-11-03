@@ -2761,6 +2761,15 @@ aff_combination_add_elt (struct affine_tree_combination *comb, tree elt,
 	comb->n--;
 	comb->coefs[i] = comb->coefs[comb->n];
 	comb->elts[i] = comb->elts[comb->n];
+
+	if (comb->rest)
+	  {
+	    gcc_assert (comb->n == MAX_AFF_ELTS - 1);
+	    comb->coefs[comb->n] = 1;
+	    comb->elts[comb->n] = comb->rest;
+	    comb->rest = NULL_TREE;
+	    comb->n++;
+	  }
 	return;
       }
   if (comb->n < MAX_AFF_ELTS)
@@ -2793,7 +2802,7 @@ aff_combination_add (struct affine_tree_combination *comb1,
   unsigned i;
 
   comb1->offset = (comb1->offset + comb2->offset) & comb1->mask;
-  for (i = 0; i < comb2-> n; i++)
+  for (i = 0; i < comb2->n; i++)
     aff_combination_add_elt (comb1, comb2->elts[i], comb2->coefs[i]);
   if (comb2->rest)
     aff_combination_add_elt (comb1, comb2->rest, 1);
