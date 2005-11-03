@@ -1,3 +1,9 @@
+2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/24589
+	* gimplify.c (gimplify_expr) <case CONSTRUCTOR>: Add the
+	expressions to a statement list instead of gimplifying them.
+
 2005-11-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/23585
