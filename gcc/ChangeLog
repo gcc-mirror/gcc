@@ -1,3 +1,36 @@
+2005-11-02  Richard Henderson  <rth@redhat.com>
+
+	PR target/9350
+	PR target/24374
+	* dwarf2out.c (dwarf2out_reg_save_reg): New.
+	(dwarf2out_frame_debug_expr): Return after dwarf_handle_frame_unspec.
+	* function.c (assign_parms): Use calls.internal_arg_pointer.
+	(expand_main_function): Remove FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
+	code.
+	* target-def.h (TARGET_INTERNAL_ARG_POINTER): New.
+	(TARGET_CALLS): Add it.
+	* target.h (struct gcc_target): Add calls.internal_arg_pointer.
+	* targhooks.c (default_internal_arg_pointer): New.
+	* targhooks.h (default_internal_arg_pointer): Declare.
+	* tree.h (dwarf2out_reg_save_reg): Declare.
+	* doc/tm.texi (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN): Remove.
+	* config/i386/i386.c (dbx_register_map): Add return column.
+	(dbx64_register_map, svr4_dbx_register_map): Likewise.
+	(TARGET_INTERNAL_ARG_POINTER, ix86_internal_arg_pointer): New.
+	(TARGET_DWARF_HANDLE_FRAME_UNSPEC, ix86_dwarf_handle_frame_unspec): New.
+	(ix86_function_ok_for_sibcall): Disable if force_align_arg_pointer.
+	(ix86_save_reg): Save force_align_arg_pointer.
+	(ix86_emit_save_regs): Make regno unsigned.
+	(ix86_emit_save_regs_using_mov): Likewise.
+	(ix86_expand_prologue): Handle force_align_arg_pointer.
+	(ix86_expand_epilogue): Likewise.
+	* config/i386/i386.h: (dbx_register_map): Update.
+	(dbx64_register_map, svr4_dbx_register_map): Update.
+	(struct machine_function): Add force_align_arg_pointer.
+	* config/i386/i386.md (UNSPEC_REG_SAVE, UNSPEC_DEF_CFA): New.
+	(UNSPEC_TP, UNSPEC_TLS_GD, UNSPEC_TLS_LD_BASE): Renumber.
+	(TARGET_PUSH_MEMORY peepholes): Disable if RTX_FRAME_RELATED_P.
+
 2005-11-02  Jan Hubicka  <jh@suse.cz>
 
 	PR target/23303

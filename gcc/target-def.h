@@ -445,6 +445,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_ARG_PARTIAL_BYTES hook_int_CUMULATIVE_ARGS_mode_tree_bool_0
 
 #define TARGET_FUNCTION_VALUE default_function_value
+#define TARGET_INTERNAL_ARG_POINTER default_internal_arg_pointer
 
 #define TARGET_CALLS {						\
    TARGET_PROMOTE_FUNCTION_ARGS,				\
@@ -463,7 +464,8 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
    TARGET_CALLEE_COPIES,					\
    TARGET_ARG_PARTIAL_BYTES,					\
    TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN,			\
-   TARGET_FUNCTION_VALUE					\
+   TARGET_FUNCTION_VALUE,					\
+   TARGET_INTERNAL_ARG_POINTER					\
    }
 
 #ifndef TARGET_UNWIND_TABLES_DEFAULT

@@ -613,6 +613,10 @@ struct gcc_target
        specified by FN_DECL_OR_TYPE with a return type of RET_TYPE.  */
     rtx (*function_value) (tree ret_type, tree fn_decl_or_type,
 			   bool outgoing);
+
+    /* Return an rtx for the argument pointer incoming to the
+       current function.  */
+    rtx (*internal_arg_pointer) (void);
   } calls;
 
   /* Return the diagnostic message string if conversion from FROMTYPE

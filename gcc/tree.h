@@ -4119,6 +4119,10 @@ extern void dwarf2out_return_save (const char *, HOST_WIDE_INT);
 
 extern void dwarf2out_return_reg (const char *, unsigned);
 
+/* Entry point for saving the first register into the second.  */
+
+extern void dwarf2out_reg_save_reg (const char *, rtx, rtx);
+
 /* In tree-inline.c  */
 
 /* The type of a set of already-visited pointers.  Functions for creating

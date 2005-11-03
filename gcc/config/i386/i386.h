@@ -2263,6 +2263,7 @@ struct machine_function GTY(())
 {
   struct stack_local_entry *stack_locals;
   const char *some_ld_name;
+  rtx force_align_arg_pointer;
   int save_varrargs_registers;
   int accesses_prev_frame;
   int optimize_mode_switching[MAX_386_ENTITIES];
