@@ -1,5 +1,11 @@
 2005-11-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/22434
+	* call.c (build_conditional_expr): Do bad conversions, if there's
+	no other choice.
+
+2005-11-02  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/24560
 	* parser.c (cp_parser_postfix_dot_deref_expression): Improve error
 	message for use of overloaded functions on LHS of "." operator.
