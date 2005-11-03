@@ -239,6 +239,11 @@ struct variable_info
   /* Vector of complex constraints for this node.  Complex
      constraints are those involving dereferences.  */
   VEC(constraint_t,heap) *complex;
+  
+  /* Variable id this was collapsed to due to type unsafety.
+     This should be unused completely after build_constraint_graph, or
+     something is broken.  */
+  struct variable_info *collapsed_to;
 };
 typedef struct variable_info *varinfo_t;
 
@@ -258,9 +263,21 @@ static VEC(varinfo_t,heap) *varmap;
 /* Return the varmap element N */
 
 static inline varinfo_t
-get_varinfo(unsigned int n)
+get_varinfo (unsigned int n)
 {
   return VEC_index(varinfo_t, varmap, n);
+}
+
+/* Return the varmap element N, following the collapsed_to link.  */
+
+static inline varinfo_t
+get_varinfo_fc (unsigned int n)
+{
+  varinfo_t v = VEC_index(varinfo_t, varmap, n);
+
+  if (v->collapsed_to)
+    return v->collapsed_to;
+  return v;
 }
 
 /* Variable that represents the unknown pointer.  */
@@ -316,6 +333,7 @@ new_var_info (tree t, unsigned int id, const char *name, unsigned int node)
   bitmap_clear (ret->variables);
   ret->complex = NULL;
   ret->next = NULL;
+  ret->collapsed_to = NULL;
   return ret;
 }
 
@@ -429,7 +447,7 @@ dump_constraint (FILE *file, constraint_t c)
     fprintf (file, "&");
   else if (c->lhs.type == DEREF)
     fprintf (file, "*");  
-  fprintf (file, "%s", get_varinfo (c->lhs.var)->name);
+  fprintf (file, "%s", get_varinfo_fc (c->lhs.var)->name);
   if (c->lhs.offset != 0)
     fprintf (file, " + " HOST_WIDE_INT_PRINT_DEC, c->lhs.offset);
   fprintf (file, " = ");
@@ -437,7 +455,7 @@ dump_constraint (FILE *file, constraint_t c)
     fprintf (file, "&");
   else if (c->rhs.type == DEREF)
     fprintf (file, "*");
-  fprintf (file, "%s", get_varinfo (c->rhs.var)->name);
+  fprintf (file, "%s", get_varinfo_fc (c->rhs.var)->name);
   if (c->rhs.offset != 0)
     fprintf (file, " + " HOST_WIDE_INT_PRINT_DEC, c->rhs.offset);
   fprintf (file, "\n");
@@ -982,33 +1000,36 @@ build_constraint_graph (void)
     {
       struct constraint_expr lhs = c->lhs;
       struct constraint_expr rhs = c->rhs;
+      unsigned int lhsvar = get_varinfo_fc (lhs.var)->id;
+      unsigned int rhsvar = get_varinfo_fc (rhs.var)->id;
+
       if (lhs.type == DEREF)
 	{
 	  /* *x = y or *x = &y (complex) */
-	  if (rhs.type == ADDRESSOF || rhs.var > anything_id)
-	    insert_into_complex (lhs.var, c);
+	  if (rhs.type == ADDRESSOF || rhsvar > anything_id)
+	    insert_into_complex (lhsvar, c);
 	}
       else if (rhs.type == DEREF)
 	{
 	  /* !special var= *y */
-	  if (!(get_varinfo (lhs.var)->is_special_var))
-	    insert_into_complex (rhs.var, c);
+	  if (!(get_varinfo (lhsvar)->is_special_var))
+	    insert_into_complex (rhsvar, c);
 	}
       else if (rhs.type == ADDRESSOF)
 	{
 	  /* x = &y */
-	  bitmap_set_bit (get_varinfo (lhs.var)->solution, rhs.var);
+	  bitmap_set_bit (get_varinfo (lhsvar)->solution, rhsvar);
 	}
-      else if (lhs.var > anything_id)
+      else if (lhsvar > anything_id)
 	{
 	  /* Ignore 0 weighted self edges, as they can't possibly contribute
 	     anything */
-	  if (lhs.var != rhs.var || rhs.offset != 0 || lhs.offset != 0)
+	  if (lhsvar != rhsvar || rhs.offset != 0 || lhs.offset != 0)
 	    {
 	      
 	      struct constraint_edge edge;
-	      edge.src = lhs.var;
-	      edge.dest = rhs.var;
+	      edge.src = lhsvar;
+	      edge.dest = rhsvar;
 	      /* x = y (simple) */
 	      add_graph_edge (graph, edge);
 	      bitmap_set_bit (get_graph_weights (graph, edge),
@@ -2300,9 +2321,12 @@ get_constraint_for (tree t, bool *need_anyoffset)
    For each field of the lhs variable (lhsfield)
      For each field of the rhs variable at lhsfield.offset (rhsfield)
        add the constraint lhsfield = rhsfield
-*/
 
-static void
+   If we fail due to some kind of type unsafety or other thing we
+   can't handle, return false.  We expect the caller to collapse the
+   variable in that case.  */
+
+static bool
 do_simple_structure_copy (const struct constraint_expr lhs,
 			  const struct constraint_expr rhs,
 			  const unsigned HOST_WIDE_INT size)
@@ -2322,9 +2346,12 @@ do_simple_structure_copy (const struct constraint_expr lhs,
       q = get_varinfo (temprhs.var);
       fieldoffset = p->offset - pstart;
       q = first_vi_for_offset (q, q->offset + fieldoffset);
+      if (!q)
+	return false;
       temprhs.var = q->id;
       process_constraint (new_constraint (templhs, temprhs));
     }
+  return true;
 }
 
 
@@ -2406,6 +2433,32 @@ do_lhs_deref_structure_copy (const struct constraint_expr lhs,
     }
 }
 
+/* Sometimes, frontends like to give us bad type information.  This
+   function will collapse all the fields from VAR to the end of VAR,
+   into VAR, so that we treat those fields as a single variable. 
+   We return the variable they were collapsed into.  */
+
+static unsigned int
+collapse_rest_of_var (unsigned int var)
+{
+  varinfo_t currvar = get_varinfo (var);
+  varinfo_t field;
+
+  for (field = currvar->next; field; field = field->next)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Type safety: Collapsing var %s into %s\n", 
+		 field->name, currvar->name);
+      
+      gcc_assert (!field->collapsed_to);
+      field->collapsed_to = currvar;
+    }
+
+  currvar->next = NULL;
+  currvar->size = currvar->fullsize - currvar->offset;
+  
+  return currvar->id;
+}
 
 /* Handle aggregate copies by expanding into copies of the respective
    fields of the structures.  */
@@ -2492,7 +2545,18 @@ do_structure_copy (tree lhsop, tree rhsop)
 
   
       if (rhs.type == SCALAR && lhs.type == SCALAR)  
-	do_simple_structure_copy (lhs, rhs, MIN (lhssize, rhssize));
+	{
+	  if (!do_simple_structure_copy (lhs, rhs, MIN (lhssize, rhssize)))
+	    {	      
+	      lhs.var = collapse_rest_of_var (lhs.var);
+	      rhs.var = collapse_rest_of_var (rhs.var);
+	      lhs.offset = 0;
+	      rhs.offset = 0;
+	      lhs.type = SCALAR;
+	      rhs.type = SCALAR;
+	      process_constraint (new_constraint (lhs, rhs));
+	    }
+	}
       else if (lhs.type != DEREF && rhs.type == DEREF)
 	do_rhs_deref_structure_copy (lhs, rhs, MIN (lhssize, rhssize));
       else if (lhs.type == DEREF && rhs.type != DEREF)
