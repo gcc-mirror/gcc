@@ -8142,7 +8142,12 @@ fold (tree expr)
 
 	  if (INTEGRAL_TYPE_P (type)
 	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
-	      && TREE_CODE (arg2) == INTEGER_CST)
+	      && TREE_CODE (arg2) == INTEGER_CST
+	      /* ???  We somehow can end up here with
+		  (unsigned int)1 == 1 ? 1U : 2U
+		 for which we won't make any progress but recurse
+		 indefinitely.  Just stop here in this case.  */
+	      && TREE_CODE (arg1) != INTEGER_CST)
 	    switch (comp_code)
 	      {
 	      case EQ_EXPR:

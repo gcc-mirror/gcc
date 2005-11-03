@@ -1,3 +1,9 @@
+2005-11-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/24470
+	* fold-const.c (fold): Avoid running in circles if we
+	got some un-folded subtree.
+
 2005-10-30  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/23070
