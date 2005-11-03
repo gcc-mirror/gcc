@@ -1,3 +1,8 @@
+2005-11-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/24620
+	* gcc.dg/pr24620.c: New test.
+	
 2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/24329
