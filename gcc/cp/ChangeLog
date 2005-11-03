@@ -1,3 +1,9 @@
+2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/24582
+	* decl.c (declare_local_label): Return 0 for variables
+	with error_mark_node as their types.
+
 2005-11-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22434

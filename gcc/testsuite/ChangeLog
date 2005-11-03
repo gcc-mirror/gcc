@@ -1,3 +1,8 @@
+2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/24582
+	* g++.dg/init/switch1.C: New test.
+
 2005-11-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/delay-slot-1.c: New test.
