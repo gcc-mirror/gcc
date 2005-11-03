@@ -1,3 +1,19 @@
+2005-11-03  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/24351
+
+	* tree-ssa-structalias.c (struct variable_info): Add
+	collapsed_into.
+	(get_varinfo_fc): New function to follow collapsing.
+	(new_var_info): Set collapsed_to to NULL.
+	(dump_constraint): Follow collapsing.
+	(build_constraint_graph): Handle collapsing.
+	(do_simple_structure_copy): Return false if something bad
+	happened.
+	(collapse_rest_of_var): New function.
+	(do_structure_copy): Collapse if do_simple_structure_copy returns
+	false.
+	
 2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24589
