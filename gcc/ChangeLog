@@ -1,3 +1,9 @@
+2005-11-02  Richard Henderson  <rth@redhat.com>
+
+	PR target/24178
+	* config/alpha/alpha.c (get_aligned_mem): Honor alignment given
+	by MEM_ALIGN.
+
 2005-11-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/18452
