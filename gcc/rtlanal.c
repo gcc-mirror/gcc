@@ -267,7 +267,9 @@ rtx_addr_can_trap_p_1 (rtx x, enum machine_mode mode, bool unaligned_mems)
 	{
 	  HOST_WIDE_INT offset;
 
-	  if (!STRICT_ALIGNMENT || !unaligned_mems)
+	  if (!STRICT_ALIGNMENT
+	      || !unaligned_mems
+	      || GET_MODE_SIZE (mode) == 0)
 	    return 0;
 
 	  offset = INTVAL (XEXP (x, 1));

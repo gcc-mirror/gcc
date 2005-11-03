@@ -1,3 +1,7 @@
+2005-11-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/delay-slot-1.c: New test.
+
 2005-11-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/24620
