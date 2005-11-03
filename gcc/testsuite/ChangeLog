@@ -1,5 +1,13 @@
 2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR middle-end/23155 
+	* g++.dg/ext/c99struct1.C: New test.
+	* gcc.dg/union-cast-1.c: New test.
+	* gcc.dg/union-cast-2.c: New test.
+	* gcc.dg/union-cast-3.c: New test.
+
+2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/24589
 	* gcc.c-torture/execute/zero-struct-2.c: New test.
 
