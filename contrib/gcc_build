@@ -201,7 +201,8 @@ SVN_SERVER="gcc.gnu.org"
 # The path to the repository on that server.
 SVN_REPOSITORY="/svn/gcc/"
 # The branch to check out from that server.
-SVN_BRANCH="trunk"
+# Defaults to trunk if no branch is defined with -b.
+SVN_BRANCH=""
 # The SVN protocol to use.
 SVN_PROTOCOL="svn"
 # The username to use when connecting to the server.
@@ -285,7 +286,9 @@ if [ ${CHECKOUT} -eq 0 ] && test -n "${SVN_BRANCH}"; then
 fi
 
 # Validate the branch name.
-if test "${SVN_BRANCH}" != "trunk"; then
+if test -n "${SVN_BRANCH}"; then
+    SVN_BRANCH="trunk";
+else
     SVN_BRANCH="branches/${SVN_BRANCH}";
 fi
 
