@@ -8,7 +8,9 @@
 	'ISO_8859-1:1987' => '8859_1',
 	'UTF-8' => 'UTF8',
 	'Shift_JIS' => 'SJIS',
-	'Extended_UNIX_Code_Packed_Format_for_Japanese' => 'EUCJIS'
+	'Extended_UNIX_Code_Packed_Format_for_Japanese' => 'EUCJIS',
+	'UTF16-LE' => 'UnicodeLittle',
+	'UTF16-BE' => 'UnicodeBig' 
 	);
 
 if ($ARGV[0] eq '')
@@ -23,6 +25,12 @@ if ($ARGV[0] eq '')
 else
 {
     $file = $ARGV[0];
+}
+
+# Include canonical names in the output.
+foreach $key (keys %map)
+{
+    $output{lc ($key)} = $map{$key};
 }
 
 open (INPUT, "< $file") || die "couldn't open $file: $!";
@@ -50,17 +58,22 @@ while (<INPUT>)
 	$current = $map{$name};
 	if ($current)
 	{
-	    print "    hash.put (\"$lower\", \"$current\");\n";
+	    $output{$lower} = $current;
 	}
     }
     elsif ($type eq 'Alias:')
     {
 	# The IANA list has some ugliness.
-	if ($name ne '' && $name ne 'NONE' && $current)
+	if ($name ne '' && $lower ne 'none' && $current)
 	{
-	    print "    hash.put (\"$lower\", \"$current\");\n";
+	    $output{$lower} = $current;
 	}
     }
 }
 
 close (INPUT);
+
+foreach $key (sort keys %output)
+{
+    print "    hash.put (\"$key\", \"$output{$key}\");\n";
+}
