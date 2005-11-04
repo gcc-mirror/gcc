@@ -1,3 +1,17 @@
+2005-11-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c: Include params.h
+	(optimization_options): Set max-grow-copy-bb-insns default to 16.
+	(bdesc_2arg): Delete vpkuhss and vpkuwss.
+	* config/rs6000/altivec.md (UNSPEC_VPKUHSS): Delete.
+	(UNSPEC_VPKUWSS): Delete.
+	(altivec_vpkuhss): Delete.
+	(altivec_vpkuwss): Delete.
+	* config/rs6000/rs6000.md (plus_eqsi): Remove optimize_size from
+	final condition.
+	(neg_eq0<mode>): Remove final condition.
+	(neg_eq<mode>): Remove condition and split-condition.
+
 2005-11-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (output_toc): Make "offset" HOST_WIDE_INT.
