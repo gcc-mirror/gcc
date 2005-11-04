@@ -1,3 +1,11 @@
+2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR preprocessor/22042
+	* macro.c (_cpp_builtin_macro_text): Lower the needed max
+	buffer size.
+	(cpp_quote_string): Don't octalify non printable
+	charactors.
+
 2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c++/17964
