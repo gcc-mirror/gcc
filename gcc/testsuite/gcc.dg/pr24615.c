@@ -1,5 +1,5 @@
 
-/* { dg-do compile } */
+/* { dg-do compile { target fpic } } */
 /* { dg-options "-Os -fPIC" } */
 
 void *memset (void *, int, __SIZE_TYPE__);
