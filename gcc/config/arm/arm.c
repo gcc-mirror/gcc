@@ -817,8 +817,11 @@ arm_init_libfuncs (void)
      routines.  */
   set_optab_libfunc (sdiv_optab, DImode, "__aeabi_ldivmod");
   set_optab_libfunc (udiv_optab, DImode, "__aeabi_uldivmod");
-  set_optab_libfunc (sdiv_optab, SImode, "__aeabi_idivmod");
-  set_optab_libfunc (udiv_optab, SImode, "__aeabi_uidivmod");
+
+  /* For SImode division the ABI provides div-without-mod routines,
+     which are faster.  */
+  set_optab_libfunc (sdiv_optab, SImode, "__aeabi_idiv");
+  set_optab_libfunc (udiv_optab, SImode, "__aeabi_uidiv");
 
   /* We don't have mod libcalls.  Fortunately gcc knows how to use the
      divmod libcalls instead.  */
