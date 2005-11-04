@@ -1,3 +1,8 @@
+2005-11-04  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/17964
+	* g++.dg/cpp/string-1.C: New test.
+
 2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR preprocessor/22042

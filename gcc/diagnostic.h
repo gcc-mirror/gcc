@@ -176,6 +176,9 @@ extern void diagnostic_report_diagnostic (diagnostic_context *,
 					  diagnostic_info *);
 extern void diagnostic_set_info (diagnostic_info *, const char *, va_list *,
 				 location_t, diagnostic_t);
+extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
+					    va_list *, location_t,
+					    diagnostic_t);
 extern char *diagnostic_build_prefix (diagnostic_info *);
 
 /* Pure text formatting support functions.  */

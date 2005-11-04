@@ -1,3 +1,10 @@
+2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/17964
+	* diagnostic.c (diagnostic_set_info_translated): New function.
+	(diagnostic_set_info): Use it.  Add comment.
+	* diagnostic.h (diagnostic_set_info_translated): Declare.
+
 2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23155

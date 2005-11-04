@@ -2435,3 +2435,36 @@ cp_pedwarn_at (const char *gmsgid, ...)
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
+
+/* Callback from cpp_error for PFILE to print diagnostics arising from
+   interpreting strings.  The diagnostic is of type LEVEL; MSG is the
+   translated message and AP the arguments.  */
+
+void
+cp_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
+	      const char *msg, va_list *ap)
+{
+  diagnostic_info diagnostic;
+  diagnostic_t dlevel;
+  switch (level)
+    {
+    case CPP_DL_WARNING:
+    case CPP_DL_WARNING_SYSHDR:
+      dlevel = DK_WARNING;
+      break;
+    case CPP_DL_PEDWARN:
+      dlevel = pedantic_error_kind ();
+      break;
+    case CPP_DL_ERROR:
+      dlevel = DK_ERROR;
+      break;
+    case CPP_DL_ICE:
+      dlevel = DK_ICE;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  diagnostic_set_info_translated (&diagnostic, msg, ap,
+				  input_location, dlevel);
+  report_diagnostic (&diagnostic);
+}

@@ -1,3 +1,11 @@
+2005-11-04  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/17964
+	* error.c (cp_cpp_error): New function.
+	* cp-tree.h (cp_cpp_error): Declare.
+	* parser.c (cp_lexer_new_main): Set CPP option client_diagnostic
+	and error callback after lexing.
+
 2005-11-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21627

@@ -4420,6 +4420,9 @@ extern void cp_genericize			(tree);
 #else
 #define ATTRIBUTE_GCC_CXXDIAG(m, n) ATTRIBUTE_NONNULL(m)
 #endif
+extern void cp_cpp_error			(cpp_reader *, int,
+						 const char *, va_list *)
+     ATTRIBUTE_GCC_CXXDIAG(3,0);
 
 extern void cp_error_at		(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1, 2);
 extern void cp_warning_at	(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1, 2);

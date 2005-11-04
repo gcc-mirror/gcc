@@ -110,16 +110,28 @@ diagnostic_initialize (diagnostic_context *context)
   context->lock = 0;
 }
 
+/* Initialize DIAGNOSTIC, where the message MSG has already been
+   translated.  */
+void
+diagnostic_set_info_translated (diagnostic_info *diagnostic, const char *msg,
+				va_list *args, location_t location,
+				diagnostic_t kind)
+{
+  diagnostic->message.err_no = errno;
+  diagnostic->message.args_ptr = args;
+  diagnostic->message.format_spec = msg;
+  diagnostic->location = location;
+  diagnostic->kind = kind;
+}
+
+/* Initialize DIAGNOSTIC, where the message GMSGID has not yet been
+   translated.  */
 void
 diagnostic_set_info (diagnostic_info *diagnostic, const char *gmsgid,
 		     va_list *args, location_t location,
 		     diagnostic_t kind)
 {
-  diagnostic->message.err_no = errno;
-  diagnostic->message.args_ptr = args;
-  diagnostic->message.format_spec = _(gmsgid);
-  diagnostic->location = location;
-  diagnostic->kind = kind;
+  diagnostic_set_info_translated (diagnostic, _(gmsgid), args, location, kind);
 }
 
 /* Return a malloc'd string describing a location.  The caller is
