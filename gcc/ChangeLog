@@ -1,4 +1,51 @@
 2005-11-04  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Paul Brook  <paul@codesourcery.com>
+	    Phil Blundell  <pb@reciva.com>
+
+	* configure.ac: Add test for ARM TLS support.
+	* configure: Regenerated.
+	* config/arm/arm-protos.h (legitimize_tls_address)
+	(arm_tls_referenced_p, tls_mentioned_p)
+	(arm_output_addr_const_extra): New prototypes.
+	(thumb_legitimize_pic_address): Delete.
+	* config/arm/arm.c: Include "gt-arm.h".
+	(enum tls_reloc): New.
+	(arm_cannot_copy_insn_p, arm_tls_symbol_p, load_tls_operand)
+	(pcrel_constant_p, get_tls_get_addr, arm_load_tp)
+	(arm_call_tls_get_addr, legitimize_tls_address)
+	(arm_tls_referenced_p, arm_tls_operand_p_1, tls_mentioned_p)
+	(arm_init_tls_builtins, arm_emit_tls_decoration)
+	(arm_output_addr_const_extra): New functions.
+	(TARGET_CANNOT_COPY_INSN_P, TARGET_CANNOT_FORCE_CONST_MEM)
+	(TARGET_HAVE_TLS): Define.
+	(target_thread_pointer): New.
+	(arm_override_options): Handle -mtp=.
+	(legitimize_pic_address): Ignore UNSPECs.
+	(arm_legitimate_address_p, thumb_legitimate_address_p): Handle PC
+	relative symbols.
+	(arm_legitimize_address, thumb_legitimize_address): Handle TLS.
+	(tls_get_addr_libfunc): New variable.
+	(symbol_mentioned_p, label_mentioned_p): Ignore UNSPEC_TLS.
+	(arm_init_builtins): Call arm_init_tls_builtins.
+	(arm_expand_builtin): Handle ARM_BUILTIN_THREAD_POINTER.
+	(arm_encode_section_info): Call default_encode_section_info.
+	* config/arm/arm.h (TARGET_HARD_TP, TARGET_SOFT_TP): Define.
+	(enum arm_tp_type): New.
+	(target_thread_pointer): Add declaration.
+	(LEGITIMATE_CONSTANT_P): Handle TLS.
+	(LEGITIMATE_PIC_OPERAND_P): Handle TLS.
+	(OUTPUT_ADDR_CONST_EXTRA): Call arm_output_addr_const_extra.
+	(enum arm_builtins): Add ARM_BUILTIN_THREAD_POINTER.
+	* config/arm/arm.md: Add UNSPEC_TLS.
+	(movsi): Handle TLS.
+	(pic_add_dot_plus_four, pic_add_dot_plus_eight): Allow for
+	non-PIC.
+	(tls_load_dot_plus_eight): New insn and a peephole to create it.
+	(load_tp_hard, load_tp_soft): New insns.
+	* arm.opt: Add -mtp=.
+	* doc/invoke.texi (ARM Options): Document -mtp.
+
+2005-11-04  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/lib1funcs.asm: Don't include "libunwind.S".
 	* config/arm/libunwind.S: Include "lib1funcs.asm".

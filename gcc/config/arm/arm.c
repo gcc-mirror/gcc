@@ -188,6 +188,9 @@ static bool arm_cxx_use_aeabi_atexit (void);
 static void arm_init_libfuncs (void);
 static bool arm_handle_option (size_t, const char *, int);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
+static bool arm_cannot_copy_insn_p (rtx);
+static bool arm_tls_symbol_p (rtx x);
+
 
 /* Initialize the GCC target structure.  */
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -353,6 +356,17 @@ static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 #define TARGET_ARM_EABI_UNWINDER true
 #endif /* TARGET_UNWIND_INFO */
 
+#undef  TARGET_CANNOT_COPY_INSN_P
+#define TARGET_CANNOT_COPY_INSN_P arm_cannot_copy_insn_p
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS true
+#endif
+
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM arm_tls_referenced_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Obstack for minipool constant handling.  */
@@ -390,6 +404,9 @@ enum float_abi_type arm_float_abi;
 /* Which ABI to use.  */
 enum arm_abi_type arm_abi;
 
+/* Which thread pointer model to use.  */
+enum arm_tp_type target_thread_pointer = TP_AUTO;
+
 /* Used to parse -mstructure_size_boundary command line option.  */
 int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 
@@ -415,6 +432,7 @@ static int thumb_call_reg_needed;
 #define FL_VFPV2      (1 << 13)       /* Vector Floating Point V2.  */
 #define FL_WBUF	      (1 << 14)	      /* Schedule for write buffer ops.
 					 Note: ARM6 & 7 derivatives only.  */
+#define FL_ARCH6K     (1 << 15)       /* Architecture rel 6 K extensions.  */
 
 #define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
 
@@ -430,9 +448,9 @@ static int thumb_call_reg_needed;
 #define FL_FOR_ARCH5TEJ	FL_FOR_ARCH5TE
 #define FL_FOR_ARCH6	(FL_FOR_ARCH5TE | FL_ARCH6)
 #define FL_FOR_ARCH6J	FL_FOR_ARCH6
-#define FL_FOR_ARCH6K	FL_FOR_ARCH6
+#define FL_FOR_ARCH6K	(FL_FOR_ARCH6 | FL_ARCH6K)
 #define FL_FOR_ARCH6Z	FL_FOR_ARCH6
-#define FL_FOR_ARCH6ZK	FL_FOR_ARCH6
+#define FL_FOR_ARCH6ZK	FL_FOR_ARCH6K
 
 /* The bits in this mask specify which
    instructions we are allowed to generate.  */
@@ -462,6 +480,9 @@ int arm_arch5e = 0;
 
 /* Nonzero if this chip supports the ARM Architecture 6 extensions.  */
 int arm_arch6 = 0;
+
+/* Nonzero if this chip supports the ARM 6K extensions.  */
+int arm_arch6k = 0;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 int arm_ld_sched = 0;
@@ -675,6 +696,16 @@ static const struct abi_name arm_all_abis[] =
   {"aapcs",   ARM_ABI_AAPCS},
   {"iwmmxt",  ARM_ABI_IWMMXT},
   {"aapcs-linux",   ARM_ABI_AAPCS_LINUX}
+};
+
+/* Supported TLS relocations.  */
+
+enum tls_reloc {
+  TLS_GD32,
+  TLS_LDM32,
+  TLS_LDO32,
+  TLS_IE32,
+  TLS_LE32
 };
 
 /* Return the number of bits set in VALUE.  */
@@ -1065,6 +1096,7 @@ arm_override_options (void)
   arm_arch5 = (insn_flags & FL_ARCH5) != 0;
   arm_arch5e = (insn_flags & FL_ARCH5E) != 0;
   arm_arch6 = (insn_flags & FL_ARCH6) != 0;
+  arm_arch6k = (insn_flags & FL_ARCH6K) != 0;
   arm_arch_xscale = (insn_flags & FL_XSCALE) != 0;
   arm_arch_cirrus = (insn_flags & FL_CIRRUS) != 0;
 
@@ -1193,6 +1225,30 @@ arm_override_options (void)
        || arm_fpu_tune == FPUTYPE_FPA_EMU3)
       && (tune_flags & FL_MODE32) == 0)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
+
+  if (target_thread_switch)
+    {
+      if (strcmp (target_thread_switch, "soft") == 0)
+	target_thread_pointer = TP_SOFT;
+      else if (strcmp (target_thread_switch, "auto") == 0)
+	target_thread_pointer = TP_AUTO;
+      else if (strcmp (target_thread_switch, "cp15") == 0)
+	target_thread_pointer = TP_CP15;
+      else
+	error ("invalid thread pointer option: -mtp=%s", target_thread_switch);
+    }
+
+  /* Use the cp15 method if it is available.  */
+  if (target_thread_pointer == TP_AUTO)
+    {
+      if (arm_arch6k && !TARGET_THUMB)
+	target_thread_pointer = TP_CP15;
+      else
+	target_thread_pointer = TP_SOFT;
+    }
+
+  if (TARGET_HARD_TP && TARGET_THUMB)
+    error ("can not use -mtp=cp15 with -mthumb");
 
   /* Override the default structure alignment for AAPCS ABI.  */
   if (TARGET_AAPCS_BASED)
@@ -3182,6 +3238,10 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  && XEXP (XEXP (orig, 0), 0) == pic_offset_table_rtx)
 	return orig;
 
+      if (GET_CODE (XEXP (orig, 0)) == UNSPEC
+	  && XINT (XEXP (orig, 0), 1) == UNSPEC_TLS)
+	return orig;
+
       if (reg == 0)
 	{
 	  gcc_assert (!no_new_pseudos);
@@ -3355,6 +3415,19 @@ arm_address_register_rtx_p (rtx x, int strict_p)
 	  || regno == ARG_POINTER_REGNUM);
 }
 
+/* Return TRUE if this rtx is the difference of a symbol and a label,
+   and will reduce to a PC-relative relocation in the object file.
+   Expressions like this can be left alone when generating PIC, rather
+   than forced through the GOT.  */
+static int
+pcrel_constant_p (rtx x)
+{
+  if (GET_CODE (x) == MINUS)
+    return symbol_mentioned_p (XEXP (x, 0)) && label_mentioned_p (XEXP (x, 1));
+
+  return FALSE;
+}
+
 /* Return nonzero if X is a valid ARM state address operand.  */
 int
 arm_legitimate_address_p (enum machine_mode mode, rtx x, RTX_CODE outer,
@@ -3433,7 +3506,8 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, RTX_CODE outer,
 	   && code == SYMBOL_REF
 	   && CONSTANT_POOL_ADDRESS_P (x)
 	   && ! (flag_pic
-		 && symbol_mentioned_p (get_pool_constant (x))))
+		 && symbol_mentioned_p (get_pool_constant (x))
+		 && ! pcrel_constant_p (get_pool_constant (x))))
     return 1;
 
   return 0;
@@ -3658,8 +3732,9 @@ thumb_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 	   && GET_MODE_SIZE (mode) == 4
 	   && GET_CODE (x) == SYMBOL_REF
 	   && CONSTANT_POOL_ADDRESS_P (x)
-	   && !(flag_pic
-		&& symbol_mentioned_p (get_pool_constant (x))))
+	   && ! (flag_pic
+		 && symbol_mentioned_p (get_pool_constant (x))
+		 && ! pcrel_constant_p (get_pool_constant (x))))
     return 1;
 
   return 0;
@@ -3685,11 +3760,163 @@ thumb_legitimate_offset_p (enum machine_mode mode, HOST_WIDE_INT val)
     }
 }
 
+/* Build the SYMBOL_REF for __tls_get_addr.  */
+
+static GTY(()) rtx tls_get_addr_libfunc;
+
+static rtx
+get_tls_get_addr (void)
+{
+  if (!tls_get_addr_libfunc)
+    tls_get_addr_libfunc = init_one_libfunc ("__tls_get_addr");
+  return tls_get_addr_libfunc;
+}
+
+static rtx
+arm_load_tp (rtx target)
+{
+  if (!target)
+    target = gen_reg_rtx (SImode);
+
+  if (TARGET_HARD_TP)
+    {
+      /* Can return in any reg.  */
+      emit_insn (gen_load_tp_hard (target));
+    }
+  else
+    {
+      /* Always returned in r0.  Immediately copy the result into a pseudo,
+	 otherwise other uses of r0 (e.g. setting up function arguments) may
+	 clobber the value.  */
+
+      rtx tmp;
+
+      emit_insn (gen_load_tp_soft ());
+
+      tmp = gen_rtx_REG (SImode, 0);
+      emit_move_insn (target, tmp);
+    }
+  return target;
+}
+
+static rtx
+load_tls_operand (rtx x, rtx reg)
+{
+  rtx tmp;
+
+  if (reg == NULL_RTX)
+    reg = gen_reg_rtx (SImode);
+
+  tmp = gen_rtx_CONST (SImode, x);
+
+  emit_move_insn (reg, tmp);
+
+  return reg;
+}
+
+static rtx
+arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
+{
+  rtx insns, label, sum;
+
+  start_sequence ();
+
+  label = gen_label_rtx ();
+  sum = gen_rtx_UNSPEC (Pmode,
+			gen_rtvec (4, x, GEN_INT (reloc),
+				   gen_rtx_LABEL_REF (Pmode, label),
+				   GEN_INT (TARGET_ARM ? 8 : 4)),
+			UNSPEC_TLS);
+  reg = load_tls_operand (sum, reg);
+
+  if (TARGET_ARM)
+    emit_insn (gen_pic_add_dot_plus_eight (reg, label));
+  else
+    emit_insn (gen_pic_add_dot_plus_four (reg, label));
+
+  *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX, LCT_PURE, /* LCT_CONST?  */
+				     Pmode, 1, reg, Pmode);
+
+  insns = get_insns ();
+  end_sequence ();
+
+  return insns;
+}
+
+rtx
+legitimize_tls_address (rtx x, rtx reg)
+{
+  rtx dest, tp, label, sum, insns, ret, eqv, addend;
+  unsigned int model = SYMBOL_REF_TLS_MODEL (x);
+
+  switch (model)
+    {
+    case TLS_MODEL_GLOBAL_DYNAMIC:
+      insns = arm_call_tls_get_addr (x, reg, &ret, TLS_GD32);
+      dest = gen_reg_rtx (Pmode);
+      emit_libcall_block (insns, dest, ret, x);
+      return dest;
+
+    case TLS_MODEL_LOCAL_DYNAMIC:
+      insns = arm_call_tls_get_addr (x, reg, &ret, TLS_LDM32);
+
+      /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+	 share the LDM result with other LD model accesses.  */
+      eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const1_rtx),
+			    UNSPEC_TLS);
+      dest = gen_reg_rtx (Pmode);
+      emit_libcall_block (insns, dest, ret, x);
+
+      /* Load the addend.  */
+      addend = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, x, GEN_INT (TLS_LDO32)),
+			       UNSPEC_TLS);
+      addend = force_reg (SImode, gen_rtx_CONST (SImode, addend));
+      return gen_rtx_PLUS (Pmode, dest, addend);
+
+    case TLS_MODEL_INITIAL_EXEC:
+      label = gen_label_rtx ();
+      sum = gen_rtx_UNSPEC (Pmode,
+			    gen_rtvec (4, x, GEN_INT (TLS_IE32),
+				       gen_rtx_LABEL_REF (Pmode, label),
+				       GEN_INT (TARGET_ARM ? 8 : 4)),
+			    UNSPEC_TLS);
+      reg = load_tls_operand (sum, reg);
+
+      if (TARGET_ARM)
+	emit_insn (gen_tls_load_dot_plus_eight (reg, reg, label));
+      else
+	{
+	  emit_insn (gen_pic_add_dot_plus_four (reg, label));
+	  emit_move_insn (reg, gen_const_mem (SImode, reg));
+	}
+
+      tp = arm_load_tp (NULL_RTX);
+
+      return gen_rtx_PLUS (Pmode, tp, reg);
+
+    case TLS_MODEL_LOCAL_EXEC:
+      tp = arm_load_tp (NULL_RTX);
+
+      reg = gen_rtx_UNSPEC (Pmode,
+			    gen_rtvec (2, x, GEN_INT (TLS_LE32)),
+			    UNSPEC_TLS);
+      reg = force_reg (SImode, gen_rtx_CONST (SImode, reg));
+
+      return gen_rtx_PLUS (Pmode, tp, reg);
+
+    default:
+      abort ();
+    }
+}
+
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.  */
 rtx
 arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 {
+  if (arm_tls_symbol_p (x))
+    return legitimize_tls_address (x, NULL_RTX);
+
   if (GET_CODE (x) == PLUS)
     {
       rtx xop0 = XEXP (x, 0);
@@ -3803,6 +4030,9 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 rtx
 thumb_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 {
+  if (arm_tls_symbol_p (x))
+    return legitimize_tls_address (x, NULL_RTX);
+
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && (INTVAL (XEXP (x, 1)) >= 32 * GET_MODE_SIZE (mode)
@@ -3906,6 +4136,50 @@ thumb_legitimize_reload_address (rtx *x_p,
     }
 
   return NULL;
+}
+
+/* Test for various thread-local symbols.  */
+
+/* Return TRUE if X is a thread-local symbol.  */
+
+static bool
+arm_tls_symbol_p (rtx x)
+{
+  if (! TARGET_HAVE_TLS)
+    return false;
+
+  if (GET_CODE (x) != SYMBOL_REF)
+    return false;
+
+  return SYMBOL_REF_TLS_MODEL (x) != 0;
+}
+
+/* Helper for arm_tls_referenced_p.  */
+
+static int
+arm_tls_operand_p_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
+{
+  if (GET_CODE (*x) == SYMBOL_REF)
+    return SYMBOL_REF_TLS_MODEL (*x) != 0;
+
+  /* Don't recurse into UNSPEC_TLS looking for TLS symbols; these are
+     TLS offsets, not real symbol references.  */
+  if (GET_CODE (*x) == UNSPEC
+      && XINT (*x, 1) == UNSPEC_TLS)
+    return -1;
+
+  return 0;
+}
+
+/* Return TRUE if X contains any TLS symbol references.  */
+
+bool
+arm_tls_referenced_p (rtx x)
+{
+  if (! TARGET_HAVE_TLS)
+    return false;
+
+  return for_each_rtx (&x, arm_tls_operand_p_1, NULL);
 }
 
 #define REG_OR_SUBREG_REG(X)						\
@@ -5278,6 +5552,11 @@ symbol_mentioned_p (rtx x)
   if (GET_CODE (x) == SYMBOL_REF)
     return 1;
 
+  /* UNSPEC_TLS entries for a symbol include the SYMBOL_REF, but they
+     are constant offsets, not symbols.  */
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLS)
+    return 0;
+
   fmt = GET_RTX_FORMAT (GET_CODE (x));
 
   for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
@@ -5307,6 +5586,11 @@ label_mentioned_p (rtx x)
   if (GET_CODE (x) == LABEL_REF)
     return 1;
 
+  /* UNSPEC_TLS entries for a symbol include a LABEL_REF for the referencing
+     instruction, but they are constant offsets, not symbols.  */
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLS)
+    return 0;
+
   fmt = GET_RTX_FORMAT (GET_CODE (x));
   for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
     {
@@ -5323,6 +5607,48 @@ label_mentioned_p (rtx x)
     }
 
   return 0;
+}
+
+int
+tls_mentioned_p (rtx x)
+{
+  switch (GET_CODE (x))
+    {
+    case CONST:
+      return tls_mentioned_p (XEXP (x, 0));
+
+    case UNSPEC:
+      if (XINT (x, 1) == UNSPEC_TLS)
+	return 1;
+
+    default:
+      return 0;
+    }
+}
+
+/* Must not copy a SET whose source operand is PC-relative.  */
+
+static bool
+arm_cannot_copy_insn_p (rtx insn)
+{
+  rtx pat = PATTERN (insn);
+
+  if (GET_CODE (pat) == PARALLEL
+      && GET_CODE (XVECEXP (pat, 0, 0)) == SET)
+    {
+      rtx rhs = SET_SRC (XVECEXP (pat, 0, 0));
+
+      if (GET_CODE (rhs) == UNSPEC
+	  && XINT (rhs, 1) == UNSPEC_PIC_BASE)
+	return TRUE;
+
+      if (GET_CODE (rhs) == MEM
+	  && GET_CODE (XEXP (rhs, 0)) == UNSPEC
+	  && XINT (XEXP (rhs, 0), 1) == UNSPEC_PIC_BASE)
+	return TRUE;
+    }
+
+  return FALSE;
 }
 
 enum rtx_code
@@ -5811,7 +6137,6 @@ emit_stm_seq (rtx *operands, int nops)
   output_asm_insn (buf, operands);
   return "";
 }
-
 
 /* Routines for use in generating RTL.  */
 
@@ -12119,8 +12444,23 @@ arm_init_iwmmxt_builtins (void)
 }
 
 static void
+arm_init_tls_builtins (void)
+{
+  tree ftype;
+  tree nothrow = tree_cons (get_identifier ("nothrow"), NULL, NULL);
+  tree const_nothrow = tree_cons (get_identifier ("const"), NULL, nothrow);
+
+  ftype = build_function_type (ptr_type_node, void_list_node);
+  lang_hooks.builtin_function ("__builtin_thread_pointer", ftype,
+			       ARM_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
+			       NULL, const_nothrow);
+}
+
+static void
 arm_init_builtins (void)
 {
+  arm_init_tls_builtins ();
+
   if (TARGET_REALLY_IWMMXT)
     arm_init_iwmmxt_builtins ();
 }
@@ -12424,6 +12764,9 @@ arm_expand_builtin (tree exp,
       target = gen_reg_rtx (DImode);
       emit_insn (gen_iwmmxt_clrdi (target));
       return target;
+
+    case ARM_BUILTIN_THREAD_POINTER:
+      return arm_load_tp (target);
 
     default:
       break;
@@ -14224,6 +14567,8 @@ arm_encode_section_info (tree decl, rtx rtl, int first)
       else if (! TREE_PUBLIC (decl))
         arm_encode_call_attribute (decl, SHORT_CALL_FLAG_CHAR);
     }
+
+  default_encode_section_info (decl, rtl, first);
 }
 #endif /* !ARM_PE */
 
@@ -15025,3 +15370,66 @@ arm_output_fn_unwind (FILE * f, bool prologue)
   else
     fputs ("\t.fnend\n", f);
 }
+
+static bool
+arm_emit_tls_decoration (FILE *fp, rtx x)
+{
+  enum tls_reloc reloc;
+  rtx val;
+
+  val = XVECEXP (x, 0, 0);
+  reloc = INTVAL (XVECEXP (x, 0, 1));
+
+  output_addr_const (fp, val);
+
+  switch (reloc)
+    {
+    case TLS_GD32:
+      fputs ("(tlsgd)", fp);
+      break;
+    case TLS_LDM32:
+      fputs ("(tlsldm)", fp);
+      break;
+    case TLS_LDO32:
+      fputs ("(tlsldo)", fp);
+      break;
+    case TLS_IE32:
+      fputs ("(gottpoff)", fp);
+      break;
+    case TLS_LE32:
+      fputs ("(tpoff)", fp);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (reloc)
+    {
+    case TLS_GD32:
+    case TLS_LDM32:
+    case TLS_IE32:
+      fputs (" + (. - ", fp);
+      output_addr_const (fp, XVECEXP (x, 0, 2));
+      fputs (" - ", fp);
+      output_addr_const (fp, XVECEXP (x, 0, 3));
+      fputc (')', fp);
+      break;
+    default:
+      break;
+    }
+
+  return TRUE;
+}
+
+bool
+arm_output_addr_const_extra (FILE *fp, rtx x)
+{
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLS)
+    return arm_emit_tls_decoration (fp, x);
+  else if (GET_CODE (x) == CONST_VECTOR)
+    return arm_emit_vector_const (fp, x);
+
+  return FALSE;
+}
+
+#include "gt-arm.h"
