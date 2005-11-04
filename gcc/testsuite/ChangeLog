@@ -1,3 +1,8 @@
+2005-11-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/23424
+	* gcc.dg/torture/pr23424-1.c: New test.
+
 2005-11-04  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/20000609-1.c, gcc.target/i386/20000614-1.c,
