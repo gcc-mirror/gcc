@@ -1405,7 +1405,7 @@ gfc_match_stopcode (gfc_statement st)
   gfc_expr *e;
   match m;
 
-  stop_code = 0;
+  stop_code = -1;
   e = NULL;
 
   if (gfc_match_eos () != MATCH_YES)
