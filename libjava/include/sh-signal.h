@@ -42,7 +42,7 @@ typedef struct _sig_ucontext {
 #define MAKE_THROW_FRAME(_exception)					\
 do									\
   {									\
-    volatile struct sigcontext *_sc = &_uc->uc_mcontext;		\ 
+    volatile struct sigcontext *_sc = &_uc->uc_mcontext;		\
     _sc->sc_pc += 4;							\
   }									\
 while (0)
@@ -50,7 +50,7 @@ while (0)
 #define MAKE_THROW_FRAME(_exception)					\
 do									\
   {									\
-    volatile struct sigcontext *_sc = &_uc->uc_mcontext;		\ 
+    volatile struct sigcontext *_sc = &_uc->uc_mcontext;		\
     _sc->sc_pc += 2;							\
   }									\
 while (0)
