@@ -70,6 +70,9 @@ static bool deps_seen;
 /* If -v seen.  */
 static bool verbose;
 
+/* If -lang-fortran seen.  */
+static bool lang_fortran = false;
+
 /* Dependency output file.  */
 static const char *deps_file;
 
@@ -237,6 +240,15 @@ c_common_init_options (unsigned int argc, const char **argv)
 	    result |= CL_C | CL_ObjC | CL_CXX | CL_ObjCXX;
 	    break;
 	  }
+
+#ifdef CL_Fortran
+      for (i = 1; i < argc; i++)
+	if (! strcmp (argv[i], "-lang-fortran"))
+	{
+	    result |= CL_Fortran;
+	    break;
+	}
+#endif
     }
 
   return result;
@@ -258,6 +270,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     default:
       if (cl_options[code].flags & (CL_C | CL_CXX | CL_ObjC | CL_ObjCXX))
 	break;
+#ifdef CL_Fortran
+      if (lang_fortran && (cl_options[code].flags & (CL_Fortran)))
+	break;
+#endif
       result = 0;
       break;
 
@@ -651,13 +667,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->extended_identifiers = value;
       break;
 
-    case OPT_ffixed_form:
-    case OPT_ffixed_line_length_:
-      /* Fortran front end options ignored when preprocessing only.  */
-      if (!flag_preprocess_only)
-        result = 0;
-      break;
-
     case OPT_ffor_scope:
       flag_new_for_scope = value;
       break;
@@ -831,6 +840,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_lang_asm:
       cpp_set_lang (parse_in, CLK_ASM);
       cpp_opts->dollars_in_ident = false;
+      break;
+
+    case OPT_lang_fortran:
+      lang_fortran = true;
       break;
 
     case OPT_lang_objc:
