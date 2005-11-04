@@ -352,6 +352,59 @@ proc check_named_sections_available { } {
     return $answer
 }
 
+# Return 1 if we can statically link libgfortran, 0 otherwise.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_static_libgfortran { } {
+    global et_static_libgfortran
+    global et_static_libgfortran_target_name
+    global tool
+
+    if { ![info exists et_static_libgfortran_target_name] } {
+       set et_static_libgfortran_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_static_libgfortran_target_name } {
+       verbose "check_effective_target_static_libgfortran: `$et_static_libgfortran_target_name' `$current_target'" 2
+       set et_static_libgfortran_target_name $current_target
+       if [info exists et_static_libgfortran_saved] {
+           verbose "check_effective_target_static_libgfortran: removing cached result" 2
+           unset et_static_libgfortran_saved
+       }
+    }
+
+    if [info exists et_static_libgfortran_saved] {
+       verbose "check_effective_target_static_libgfortran returning saved $et_static_libgfortran_saved" 2
+    } else {
+       set et_static_libgfortran_saved 0
+
+       # Set up, compile, and execute a test program using static linking.
+       # Include the current process ID in the file names to prevent
+       # conflicts with invocations for multiple testsuites.
+       set src static[pid].f
+        set exe static[pid].x
+
+       set f [open $src "w"]
+       puts $f "      print *, 'test'"
+       puts $f "      end"
+       close $f
+
+       verbose "check_effective_target_static_libgfortran compiling testfile $src" 2
+       set lines [${tool}_target_compile $src $exe executable "-static"]
+       file delete $src
+
+       if [string match "" $lines] then {
+           # No error message, compilation succeeded.
+           set et_static_libgfortran_saved 1
+       }
+    }
+
+    return $et_static_libgfortran_saved
+}
+
 # Return 1 if the target supports executing AltiVec instructions, 0
 # otherwise.  Cache the result.
 
