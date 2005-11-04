@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -2235,6 +2235,19 @@ foo:	.long	25
 	tls_first_major=2
 	tls_first_minor=15
 	tls_as_opt=--fatal-warnings
+	;;
+  arm*-*-*)
+    conftest_s='
+	.section ".tdata","awT",%progbits
+foo:	.long	25
+	.text
+.word foo(gottpoff)
+.word foo(tpoff)
+.word foo(tlsgd)
+.word foo(tlsldm)
+.word foo(tlsldo)'
+	tls_first_major=2
+	tls_first_minor=17
 	;;
   i[34567]86-*-*)
     conftest_s='

@@ -134,6 +134,10 @@ mthumb-interwork
 Target Report Mask(INTERWORK)
 Support calls between Thumb and ARM instruction sets
 
+mtp=
+Target RejectNegative Joined Var(target_thread_switch)
+Specify how to access the thread pointer
+
 mtpcs-frame
 Target Report Mask(TPCS_FRAME)
 Thumb: Generate (non-leaf) stack frames even if not needed

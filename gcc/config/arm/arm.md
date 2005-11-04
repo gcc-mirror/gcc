@@ -90,6 +90,7 @@
    (UNSPEC_CLRDI    17) ; Used by the intrinsic form of the iWMMXt CLRDI instruction.
    (UNSPEC_WMADDS   18) ; Used by the intrinsic form of the iWMMXt WMADDS instruction.
    (UNSPEC_WMADDU   19) ; Used by the intrinsic form of the iWMMXt WMADDU instruction.
+   (UNSPEC_TLS      20) ; A symbol that has been treated properly for TLS usage.
   ]
 )
 
@@ -4280,13 +4281,37 @@
 	    operands[1] = force_reg (SImode, operands[1]);
         }
     }
-    
-  if (flag_pic
-      && (CONSTANT_P (operands[1])
-	 || symbol_mentioned_p (operands[1])
-	 || label_mentioned_p (operands[1])))
-    operands[1] = legitimize_pic_address (operands[1], SImode,
-					  (no_new_pseudos ? operands[0] : 0));
+
+  /* Recognize the case where operand[1] is a reference to thread-local
+     data and load its address to a register.  */
+  if (arm_tls_referenced_p (operands[1]))
+    {
+      rtx tmp = operands[1];
+      rtx addend = NULL;
+
+      if (GET_CODE (tmp) == CONST && GET_CODE (XEXP (tmp, 0)) == PLUS)
+        {
+          addend = XEXP (XEXP (tmp, 0), 1);
+          tmp = XEXP (XEXP (tmp, 0), 0);
+        }
+
+      gcc_assert (GET_CODE (tmp) == SYMBOL_REF);
+      gcc_assert (SYMBOL_REF_TLS_MODEL (tmp) != 0);
+
+      tmp = legitimize_tls_address (tmp, no_new_pseudos ? operands[0] : 0);
+      if (addend)
+        {
+          tmp = gen_rtx_PLUS (SImode, tmp, addend);
+          tmp = force_operand (tmp, operands[0]);
+        }
+      operands[1] = tmp;
+    }
+  else if (flag_pic
+	   && (CONSTANT_P (operands[1])
+	       || symbol_mentioned_p (operands[1])
+	       || label_mentioned_p (operands[1])))
+      operands[1] = legitimize_pic_address (operands[1], SImode,
+					    (no_new_pseudos ? operands[0] : 0));
   "
 )
 
@@ -4444,7 +4469,7 @@
 			     (const (plus:SI (pc) (const_int 4))))]
 		   UNSPEC_PIC_BASE))
    (use (label_ref (match_operand 1 "" "")))]
-  "TARGET_THUMB && flag_pic"
+  "TARGET_THUMB"
   "*
   (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
 			     CODE_LABEL_NUMBER (operands[1]));
@@ -4459,13 +4484,48 @@
 			     (const (plus:SI (pc) (const_int 8))))]
 		   UNSPEC_PIC_BASE))
    (use (label_ref (match_operand 1 "" "")))]
-  "TARGET_ARM && flag_pic"
+  "TARGET_ARM"
   "*
     (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
 			       CODE_LABEL_NUMBER (operands[1]));
     return \"add%?\\t%0, %|pc, %0\";
   "
   [(set_attr "predicable" "yes")]
+)
+
+(define_insn "tls_load_dot_plus_eight"
+  [(set (match_operand:SI 0 "register_operand" "+r")
+	(mem:SI (unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "r")
+				     (const (plus:SI (pc) (const_int 8))))]
+			   UNSPEC_PIC_BASE)))
+   (use (label_ref (match_operand 2 "" "")))]
+  "TARGET_ARM"
+  "*
+    (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
+			       CODE_LABEL_NUMBER (operands[2]));
+    return \"ldr%?\\t%0, [%|pc, %1]\t\t@ tls_load_dot_plus_eight\";
+  "
+  [(set_attr "predicable" "yes")]
+)
+
+;; PIC references to local variables can generate pic_add_dot_plus_eight
+;; followed by a load.  These sequences can be crunched down to
+;; tls_load_dot_plus_eight by a peephole.
+
+(define_peephole2
+  [(parallel [(set (match_operand:SI 0 "register_operand" "")
+		   (unspec:SI [(plus:SI (match_dup 0)
+			     	 	(const (plus:SI (pc) (const_int 8))))]
+			      UNSPEC_PIC_BASE))
+   	      (use (label_ref (match_operand 1 "" "")))])
+   (set (match_operand:SI 2 "register_operand" "") (mem:SI (match_dup 0)))]
+  "TARGET_ARM && peep2_reg_dead_p (2, operands[0])"
+  [(parallel [(set (match_operand:SI 2 "register_operand" "+r")
+		   (mem:SI (unspec:SI [(plus:SI (match_dup 0)
+						(const (plus:SI (pc) (const_int 8))))]
+				      UNSPEC_PIC_BASE)))
+   	      (use (label_ref (match_operand 1 "" "")))])]
+  ""
 )
 
 (define_expand "builtin_setjmp_receiver"
@@ -10078,6 +10138,28 @@
     thumb_set_return_address (operands[0], operands[1]);
     DONE;
   }"
+)
+
+
+;; TLS support
+
+(define_insn "load_tp_hard"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(const_int 0)] UNSPEC_TLS))]
+  "TARGET_HARD_TP"
+  "mrc%?\\tp15, 0, %0, c13, c0, 3\\t@ load_tp_hard"
+  [(set_attr "predicable" "yes")]
+)
+
+;; Doesn't clobber R1-R3.  Must use r0 for the first operand.
+(define_insn "load_tp_soft"
+  [(set (reg:SI 0) (unspec:SI [(const_int 0)] UNSPEC_TLS))
+   (clobber (reg:SI LR_REGNUM))
+   (clobber (reg:SI IP_REGNUM))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_SOFT_TP"
+  "bl\\t__aeabi_read_tp\\t@ load_tp_soft"
+  [(set_attr "conds" "clob")]
 )
 
 ;; Load the FPA co-processor patterns

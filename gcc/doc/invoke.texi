@@ -412,7 +412,8 @@ Objective-C and Objective-C++ Dialects}.
 -mpoke-function-name @gol
 -mthumb  -marm @gol
 -mtpcs-frame  -mtpcs-leaf-frame @gol
--mcaller-super-interworking  -mcallee-super-interworking}
+-mcaller-super-interworking  -mcallee-super-interworking @gol
+-mtp=@var{name}}
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -msize  -minit-stack=@var{n}  -mno-interrupts @gol
@@ -7455,6 +7456,15 @@ Allows calls via function pointers (including virtual functions) to
 execute correctly regardless of whether the target code has been
 compiled for interworking or not.  There is a small overhead in the cost
 of executing a function pointer if this option is enabled.
+
+@item -mtp=@var{name}
+@opindex mtp
+Specify the access model for the thread local storage pointer.  The valid
+models are @option{soft}, which generates calls to @code{__aeabi_read_tp},
+@option{cp15}, which fetches the thread pointer from @code{cp15} directly
+(supported in the arm6k architecture), and @option{auto}, which uses the
+best available method for the selected processor.  The default setting is
+@option{auto}.
 
 @end table
 
