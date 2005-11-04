@@ -1,3 +1,12 @@
+2005-11-04  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/14358, libgcj/24552:
+	* gnu/gcj/convert/IOConverter.java: Regenerate aliases.  Add
+	aliases for 'euc_jp' and 'eucjp'.
+	* scripts/encodings.pl: Recognize 'none', not 'NONE'.  Include
+	canonical names in output.
+	(%map): Added UnicodeLittle and UnicodeBig.
+
 2005-11-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* include/sh-signal.h (MAKE_THROW_FRAME): Remove trailing whitespace.
