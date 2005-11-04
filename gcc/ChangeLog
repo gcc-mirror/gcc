@@ -1,4 +1,4 @@
-2005-10-04  Jeff Law  <law@redhat.com>
+2005-11-04  Jeff Law  <law@redhat.com>
 
 	PR/21883
 	* doc/invoke.texi: Document max-jump-thread-duplication-stmts PARAM.
