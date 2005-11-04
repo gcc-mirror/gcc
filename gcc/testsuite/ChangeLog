@@ -1,3 +1,8 @@
+2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR preprocessor/22042
+	* gcc.dg/cpp/strify4.c: New test.
+
 2005-11-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21627

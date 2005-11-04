@@ -139,7 +139,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 
 	name = map->to_file;
 	len = strlen (name);
-	buf = _cpp_unaligned_alloc (pfile, len * 4 + 3);
+	buf = _cpp_unaligned_alloc (pfile, len * 2 + 3);
 	result = buf;
 	*buf = '"';
 	buf = cpp_quote_string (buf + 1, (const unsigned char *) name, len);
@@ -292,9 +292,8 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
 }
 
 /* Copies SRC, of length LEN, to DEST, adding backslashes before all
-   backslashes and double quotes.  Non-printable characters are
-   converted to octal.  DEST must be of sufficient size.  Returns
-   a pointer to the end of the string.  */
+   backslashes and double quotes. DEST must be of sufficient size.
+   Returns a pointer to the end of the string.  */
 uchar *
 cpp_quote_string (uchar *dest, const uchar *src, unsigned int len)
 {
@@ -308,15 +307,7 @@ cpp_quote_string (uchar *dest, const uchar *src, unsigned int len)
 	  *dest++ = c;
 	}
       else
-	{
-	  if (ISPRINT (c))
-	    *dest++ = c;
-	  else
-	    {
-	      sprintf ((char *) dest, "\\%03o", c);
-	      dest += 4;
-	    }
-	}
+	  *dest++ = c;
     }
 
   return dest;
