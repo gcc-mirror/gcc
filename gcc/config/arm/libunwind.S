@@ -1,5 +1,5 @@
 /* Support functions for the unwinder.
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
@@ -26,7 +26,9 @@
    the Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.  */
 
-#ifdef L_unwind
+#ifndef __symbian__
+
+#include "lib1funcs.asm"
 
 .macro UNPREFIX name
 	.global SYM (\name)
@@ -113,4 +115,4 @@ ARM_FUNC_START gnu_Unwind_Save_VFP
 UNWIND_WRAPPER _Unwind_RaiseException
 UNWIND_WRAPPER _Unwind_Resume
 
-#endif  /* L_unwind */
+#endif  /* __symbian__ */
