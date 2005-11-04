@@ -1,6 +1,6 @@
 16  0 * * * sh /home/gccadmin/scripts/update_version_svn
 50  0 * * * sh /home/gccadmin/scripts/update_web_docs_svn
 55  0 * * * sh /home/gccadmin/scripts/update_web_docs_libstdcxx_svn
-32 22 * * 2 sh /home/gccadmin/scripts/gcc_release -s 3.4:gcc-3_4-branch -l -d /sourceware/snapshot-tmp/gcc all
-32 22 * * 4 sh /home/gccadmin/scripts/gcc_release -s 4.0:gcc-4_0-branch -l -d /sourceware/snapshot-tmp/gcc all
-43 17 * * 6 sh /home/gccadmin/scripts/gcc_release -s 4.1:HEAD           -l -d /sourceware/snapshot-tmp/gcc all
+32 22 * * 2 sh /home/gccadmin/scripts/gcc_release -s 3.4:/branches/gcc-3_4-branch -l -d /sourceware/snapshot-tmp/gcc all
+32 22 * * 4 sh /home/gccadmin/scripts/gcc_release -s 4.0:/branches/gcc-4_0-branch -l -d /sourceware/snapshot-tmp/gcc all
+43 17 * * 6 sh /home/gccadmin/scripts/gcc_release -s 4.1:/trunk           -l -d /sourceware/snapshot-tmp/gcc all
