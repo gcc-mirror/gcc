@@ -1,3 +1,12 @@
+2005-11-04  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/lib1funcs.asm: Don't include "libunwind.S".
+	* config/arm/libunwind.S: Include "lib1funcs.asm".
+	* config/arm/t-bpabi (LIB1ASMFUNCS): Remove _unwind.
+	(LIB2ADDEH): Add libunwind.S.
+	(LIB2ADDEHDEP): Add lib1funcs.asm.
+	* mklibgcc.in: Handle asm files in libgcc_eh.a.
+
 2005-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/18452

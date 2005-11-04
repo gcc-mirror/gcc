@@ -510,36 +510,55 @@ for ml in $MULTILIBS; do
 
   # If we don't have libgcc_eh.a, only LIB2ADDEH matters.  If we do, only
   # LIB2ADDEHSTATIC and LIB2ADDEHSHARED matter.  (Usually all three are
-  # identical.)  We do _not_ handle assembly files in this context.
+  # identical.)
 
   if [ "$libgcc_eh_a" ]; then
     for file in $LIB2ADDEHSTATIC; do
-      case $file in
-        *.c) ;;
-	*)   echo "Unhandled extension: $file">&2; exit 1 ;;
-       esac
-
-      name=`echo $file | sed -e 's/[.]c$//'`
+      name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//'`
       oname=`echo $name | sed -e 's,.*/,,'`
       out="libgcc/${dir}/${oname}${objext}"
 
-      echo $out: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
-      echo "	$gcc_compile" $flags '$(vis_hide)' -fexceptions -c $file -o $out
+      case $file in
+        *.c)
+	  echo $out: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
+	  echo "	$gcc_compile" $flags -fexceptions '$(vis_hide)' -c $file -o $out
+	  ;;
+	*.asm | *.S)
+	  # We have to compile it twice in order to establish the list
+	  # of symbols to be marked hidden.
+	  outV="libgcc/${dir}/${oname}.vis"
+	  outT="libgcc/${dir}/${oname}_t${objext}"
+	  echo ${outT}: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
+	  echo "	$gcc_compile" $flags -xassembler-with-cpp \
+		  -c $file -o ${outT}
+	  echo $out: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep $outV
+	  echo "	$gcc_compile" $flags -xassembler-with-cpp \
+		  -include $outV -c $file -o $out
+	  echo "${outV}: ${outT}; \$(gen-hide-list)"
+	  ;;
+	*)   echo "Unhandled extension: $file">&2; exit 1 ;;
+      esac
+
       echo $libgcc_eh_a: $out
     done
 
     for file in $LIB2ADDEHSHARED; do
-      case $file in
-        *.c) ;;
-	*)   echo "Unhandled extension: $file">&2; exit 1 ;;
-       esac
-
-      name=`echo $file | sed -e 's/[.]c$//'`
+      name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//'`
       oname=`echo $name | sed -e 's,.*/,,'`
       outS="libgcc/${dir}/${oname}_s${objext}"
 
-      echo $outS: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
-      echo "	$gcc_s_compile" $flags -fexceptions -c $file -o $outS
+      case $file in
+        *.c)
+	  echo $outS: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
+	  echo "	$gcc_s_compile" $flags -fexceptions -c $file -o $outS
+	  ;;
+	*.asm | *.S)
+	  echo $outS: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
+	  echo "	$gcc_s_compile" $flags -xassembler-with-cpp -c $file -o $outS
+	  ;;
+	*)   echo "Unhandled extension: $file">&2; exit 1 ;;
+      esac
+
       echo $libgcc_s_so: $outS
       if [ "$SHLIB_MKMAP" ]; then
 	echo libgcc/${dir}/libgcc.map: $outS
@@ -561,22 +580,28 @@ for ml in $MULTILIBS; do
 
   else # no libgcc_eh.a
     for file in $LIB2ADDEH; do
-      case $file in
-        *.c) ;;
-	*)   echo "Unhandled extension: $file">&2; exit 1 ;;
-       esac
-
-      name=`echo $file | sed -e 's/[.]c$//'`
+      name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//'`
       oname=`echo $name | sed -e 's,.*/,,'`
       out="libgcc/${dir}/${oname}${objext}"
 
-      echo $out: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
-      echo "	$gcc_compile" $flags -fexceptions '$(vis_hide)' -c $file -o $out
+      case $file in
+        *.c)
+	  echo $out: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
+	  echo "	$gcc_compile" $flags '$(vis_hide)' -fexceptions -c $file -o $out
+	  ;;
+	*.asm | *.S)
+	  echo $out: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
+	  echo "	$gcc_compile" $flags -xassembler-with-cpp \
+		  -c $file -o $out
+	  ;;
+	*)   echo "Unhandled extension: $file">&2; exit 1 ;;
+      esac
+
       echo $libgcc_a: $out
     done
   fi
 
-  # Again, this does not handle assembly.
+  # We do _not_ handle assembly files in this context.
   if [ "$LIBUNWIND" ]; then
     for file in $LIBUNWIND; do
       case $file in
