@@ -2865,7 +2865,6 @@ find_func_aliases (tree t, struct alias_info *ai)
 	     containing pointers, dereferences, and call expressions.  */
 	  if (POINTER_TYPE_P (TREE_TYPE (lhsop))
 	      || AGGREGATE_TYPE_P (TREE_TYPE (lhsop))
-	      || ref_contains_indirect_ref (lhsop)
 	      || TREE_CODE (rhsop) == CALL_EXPR)
 	    {
 	      lhs = get_constraint_for (lhsop, NULL);
