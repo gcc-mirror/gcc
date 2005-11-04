@@ -1143,6 +1143,7 @@ _cpp_pop_file_buffer (cpp_reader *pfile, _cpp_file *file)
     {
       free ((void *) file->buffer);
       file->buffer = NULL;
+      file->buffer_valid = false;
     }
 }
 
