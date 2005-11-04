@@ -79,10 +79,13 @@
 
 ;; The caller needs to use :SI.
 (define_predicate "cris_bdap_sign_extend_operand"
-  (and (match_code "sign_extend")
-       (and (match_test "MEM_P (XEXP (op, 0))")
-	    (match_test "cris_simple_address_operand (XEXP (XEXP (op, 0), 0),
-						      Pmode)"))))
+; Disabled until <URL:http://gcc.gnu.org/ml/gcc-patches/2005-10/msg01376.html>
+; or <URL:http://gcc.gnu.org/ml/gcc-patches/2005-10/msg00940.html> is committed.
+  (match_test "0"))
+;  (and (match_code "sign_extend")
+;       (and (match_test "MEM_P (XEXP (op, 0))")
+;	    (match_test "cris_simple_address_operand (XEXP (XEXP (op, 0), 0),
+;						      Pmode)"))))
 
 ;; FIXME: Should not have to test for 1.
 (define_predicate "cris_scale_int_operand"
