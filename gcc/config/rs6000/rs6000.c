@@ -15588,7 +15588,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
   const char *name = buf;
   const char *real_name;
   rtx base = x;
-  int offset = 0;
+  HOST_WIDE_INT offset = 0;
 
   gcc_assert (!TARGET_NO_TOC);
 
@@ -15855,9 +15855,9 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
       fprintf (file, "\t.tc %s", real_name);
 
       if (offset < 0)
-	fprintf (file, ".N%d", - offset);
+	fprintf (file, ".N" HOST_WIDE_INT_PRINT_UNSIGNED, - offset);
       else if (offset)
-	fprintf (file, ".P%d", offset);
+	fprintf (file, ".P" HOST_WIDE_INT_PRINT_UNSIGNED, offset);
 
       fputs ("[TC],", file);
     }
@@ -15872,9 +15872,9 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
     {
       RS6000_OUTPUT_BASENAME (file, name);
       if (offset < 0)
-	fprintf (file, "%d", offset);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset);
       else if (offset > 0)
-	fprintf (file, "+%d", offset);
+	fprintf (file, "+" HOST_WIDE_INT_PRINT_DEC, offset);
     }
   else
     output_addr_const (file, x);
