@@ -1,4 +1,4 @@
-/* { dg-do compile */
+/* { dg-do compile } */
 /* { dg-options "-O3 -fpic" } */
 
 /* The web pass was creating unrecognisable pic_load_dot_plus_four insns
