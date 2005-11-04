@@ -118,8 +118,7 @@ build_sources() {
   if [ ${FINAL} -ne 0 ]; then
     inform "Updating ChangeLogs and version files"
 
-    ${CVS} co -d "`basename ${SOURCE_DIRECTORY}`" \
-           -r ${CVSBRANCH} gcc || \
+    ${SVN} -q co "${SVNROOT}/${SVNBRANCH}" "`basename ${SOURCE_DIRECTORY}`" ||\
            error "Could not check out release sources"
     for x in `find ${SOURCE_DIRECTORY} -name ChangeLog`; do
       # Update this ChangeLog file only if it does not yet contain the
@@ -135,7 +134,7 @@ EOF
         mv ${x}.new ${x} || \
             error "Could not update ${x}"
         (changedir `dirname ${x}` && \
-            ${CVS} ci -m 'Mark ChangeLog' `basename ${x}`) || \
+            ${SVN} -q ci -m 'Mark ChangeLog' `basename ${x}`) || \
             error "Could not commit ${x}"
       fi
     done
@@ -147,7 +146,7 @@ EOF
       error "Release number ${RELEASE} does not match BASE-VER"
       (changedir ${SOURCE_DIRECTORY}/gcc && \
        : > DEV-PHASE && \
-       ${CVS} ci -m 'Mark as release' DEV-PHASE) || \
+       ${SVN} -q ci -m 'Mark as release' DEV-PHASE) || \
       error "Could not update DEV-PHASE"
     else
       for x in gcc/version.c; do 
@@ -155,7 +154,7 @@ EOF
         (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
             sed -e 's|version_string\[\] = \".*\"|version_string\[\] = \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
 	    mv ${y}.new ${y} && \
-            ${CVS} ci -m 'Update version' ${y}) || \
+            ${SVN} -q ci -m 'Update version' ${y}) || \
 	    error "Could not update ${x}"
       done
     fi
@@ -170,41 +169,41 @@ EOF
   EXPORTDATE=""
   if [ -n "${TAG}" ]; then
     inform "Tagging sources as ${TAG}"
-    EXPORTTAG="-r${TAG}"
+    EXPORTTAG="${TAG}"
     # Try to check out a file using ${TAG}.  If the command succeeds,
     # then the sources have already been tagged.  We don't want to 
     # overwrite an existing tag, so we don't want to use the "-F"
     # option to "cvs rtag" below.  So, if the tag already exists,
     # issue an error message; the release manager can manually remove
     # the tag if appropriate.
-    if ${CVS} export -d "`basename ${SOURCE_DIRECTORY}`" \
-      "${EXPORTTAG}" gcc/ChangeLog; then
+    echo "${SVN} ls ${SVNROOT}/${EXPORTTAG}/ChangeLog" 
+    if ${SVN} ls "${SVNROOT}/${EXPORTTAG}/ChangeLog"; then 
       error "Tag ${TAG} already exists"
     fi
-    ${CVS} rtag -r ${CVSBRANCH} ${TAG} gcc || \
-      error "Could not tag sources"
+    echo "Would execute ${SVN} cp ${SVNROOT}/${SVNBRANCH} ${SVNROOT}/${TAG}"
+    #${SVN} -m "Tagging source as ${TAG}" cp "${SVNROOT}/${SVNBRANCH}" "${SVNROOT}/${TAG}" || \
+    #  error "Could not tag sources"
+    EXPORTTAG="${SVNBRANCH}"
   else
-    if [ ${CVSBRANCH} != "HEAD" ]; then
-      EXPORTTAG="-r${CVSBRANCH}"
+    if [ ${SVNBRANCH} != "/trunk" ]; then
+      EXPORTTAG="/branches/${SVNBRANCH}"
       # It does not work to use both "-r" and "-D" with
       # "cvs export" so EXPORTDATE is not set here.
     else
       # HEAD is the default branch, no need to specify it.
       EXPORTTAG=""
-      EXPORTDATE="-D`date -u +"%Y-%m-%d %H:%M"` UTC"
+      EXPORTDATE="-D{`date --iso-8601=minutes`}"
     fi
   fi
 
   # Export the current sources.
-  inform "Retrieving sources (cvs export ${EXPORTTAG} ${EXPORTDATE} gcc)"
+  inform "Retrieving sources (svn export ${EXPORTTAG} ${EXPORTDATE} gcc)"
 
   if [ -z "${EXPORTTAG}" ]; then
-    ${CVS} export -d "`basename ${SOURCE_DIRECTORY}`" \
-       "${EXPORTDATE}" gcc || \
+    ${SVN} -q export ${EXPORTDATE} "${SVNROOT}/trunk" "`basename ${SOURCE_DIRECTORY}`" ||\
       error "Could not retrieve sources"
   elif [ -z "${EXPORTDATE}" ]; then
-    ${CVS} export -d "`basename ${SOURCE_DIRECTORY}`" \
-       "${EXPORTTAG}" gcc || \
+    ${SVN} -q export "${SVNROOT}/${EXPORTTAG}" "`basename ${SOURCE_DIRECTORY}`/" ||\
       error "Could not retrieve sources"
   else
     error "Cannot specify -r and -D at the same time"
@@ -214,7 +213,7 @@ EOF
   # the LAST_UPDATED file containing the CVS tag/date used.
   changedir "gcc-${RELEASE}"
   contrib/gcc_update --touch
-  echo "Obtained from CVS: ${EXPORTTAG} ${EXPORTDATE}" > LAST_UPDATED
+  echo "Obtained from SVN: ${EXPORTTAG} ${EXPORTDATE}" > LAST_UPDATED
 
   # Obtain some documentation files from the wwwdocs module.
   inform "Retrieving HTML documentation"
@@ -237,7 +236,7 @@ EOF
   done
 
   # For a prerelease or real release, we need to generate additional
-  # files not present in CVS.
+  # files not present in SVN.
   changedir "${SOURCE_DIRECTORY}"
   if [ $SNAPSHOT -ne 1 ]; then
     # Generate the documentation.
@@ -462,7 +461,7 @@ announce_snapshot() {
   ftp://gcc.gnu.org/pub/gcc/snapshots/"${RELEASE}"/
 and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
-This snapshot has been generated from the GCC "${BRANCH}" CVS branch
+This snapshot has been generated from the GCC "${BRANCH}" SVN branch
 with the following options: "${EXPORTTAG} ${EXPORTDATE}"
 
 You'll find:
@@ -486,8 +485,8 @@ for testing purposes.</p>
 we highly recommend you join the GCC developers list.  Details for
 how to sign up can be found on the GCC project home page.</p>
 
-<p>This snapshot has been generated from the GCC "${BRANCH}" CVS branch
-with the following options: <code>"${EXPORTTAG} ${EXPORTDATE}"</code></p>
+<p>This snapshot has been generated from the GCC "${BRANCH}" SVN branch
+with the following options: <code>"svn://gcc.gnu.org/svn/gcc/${EXPORTTAG} ${EXPORTDATE}"</code></p>
 
 <table>" > ${SNAPSHOT_INDEX}
        
@@ -545,14 +544,13 @@ Last modified "${TEXT_DATE}"
 DATE=`date "+%Y%m%d"`
 LONG_DATE=`date "+%Y-%m-%d"`
 
+SVN=${SVN:-/usr/bin/svn}
 # The CVS server containing the GCC repository.
-CVS_SERVER="gcc.gnu.org"
+SVN_SERVER="gcc.gnu.org"
 # The path to the repository on that server.
-CVS_REPOSITORY="/cvs/gcc"
-# The CVS protocol to use.
-CVS_PROTOCOL="ext"
+SVN_REPOSITORY="/svn/gcc"
 # The username to use when connecting to the server.
-CVS_USERNAME="${USER}"
+SVN_USERNAME="${USER}"
 
 # The machine to which files will be uploaded.
 GCC_HOSTNAME="gcc.gnu.org"
@@ -581,7 +579,7 @@ BRANCH=""
 
 # The name of the branch from which the release should be made, as used
 # for our version control system.
-CVSBRANCH=""
+SVNBRANCH=""
 
 # The tag to apply to the sources used for the release.
 TAG=""
@@ -649,11 +647,11 @@ while getopts "d:fr:u:t:p:s:l" ARG; do
     d)    DESTINATION="${OPTARG}";;
     r)    RELEASE="${OPTARG}";;
     t)    TAG="${OPTARG}";;
-    u)    CVS_USERNAME="${OPTARG}";;
+    u)    SVN_USERNAME="${OPTARG}";;
     f)    FINAL=1;;
     s)    SNAPSHOT=1
           BRANCH=${OPTARG%:*}
-          CVSBRANCH=${OPTARG#*:}
+          SVNBRANCH=${OPTARG#*:}
           ;;
     l)    LOCAL=1
 	  SCP=cp
@@ -687,7 +685,7 @@ while [ $# -ne 0 ]; do
 done
 
 # Perform consistency checking.
-if [ ${LOCAL} -eq 0 ] && [ -z ${CVS_USERNAME} ]; then
+if [ ${LOCAL} -eq 0 ] && [ -z ${SVN_USERNAME} ]; then
   error "No username specified"
 fi
 
@@ -718,7 +716,7 @@ if [ $SNAPSHOT -eq 0 ]; then
 
   # Compute the name of the branch, which is based solely on the major
   # and minor release numbers.
-  CVSBRANCH="gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
+  SVNBRANCH="branches/gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
 
   # If this is not a final release, set various parameters acordingly.
   if [ ${FINAL} -ne 1 ]; then
@@ -730,8 +728,8 @@ if [ $SNAPSHOT -eq 0 ]; then
 else
   RELEASE=${BRANCH}-${DATE}
   FTP_PATH="${FTP_PATH}/snapshots/${RELEASE}"
-  if [ ${CVSBRANCH} != "HEAD" ]; then
-    TAG=gcc-ss-`echo ${RELEASE} | tr '.' '_'`
+  if [ ${SVNBRANCH} != "HEAD" ]; then
+    TAG=tags/gcc-ss-`echo ${RELEASE} | tr '.' '_'`
   fi
 
   # If diffs are requested when building locally on gcc.gnu.org, we (usually)
@@ -757,13 +755,14 @@ JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
 OBJECTIVEC_DIRS=`adjust_dirs ${OBJECTIVEC_DIRS}`
 TESTSUITE_DIRS=`adjust_dirs ${TESTSUITE_DIRS}`
 
-# Set up CVSROOT.
+# Set up SVNROOT.
 if [ $LOCAL -eq 0 ]; then
-    CVSROOT=":${CVS_PROTOCOL}:${CVS_USERNAME}@"
-    CVSROOT="${CVSROOT}${CVS_SERVER}:${CVS_REPOSITORY}"
+    SVNROOT="svn://${SVN_USERNAME}@${SVN_SERVER}${SVN_REPOSITORY}"
 else
-    CVSROOT="${CVS_REPOSITORY}"
+    SVNROOT="file:///svn/gcc"
+    CVSROOT="/cvs/gcc"
 fi
+export SVNROOT
 export CVSROOT
 
 ########################################################################
@@ -803,7 +802,6 @@ if [ $MODE_GZIP -ne 0 ]; then
 fi
 
 # Upload them to the FTP server.
-
 if [ $MODE_UPLOAD -ne 0 ]; then
   upload_files
 
