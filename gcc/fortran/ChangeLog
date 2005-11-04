@@ -1,3 +1,8 @@
+2005-11-04  Steven G. Kargl <kargls@comcast.net>
+
+	PR fortran/24636
+	* match.c (gfc_match_stopcode):  Set stop_code = -1.
+
 2005-11-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/18452
