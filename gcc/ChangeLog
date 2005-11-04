@@ -1,3 +1,11 @@
+2005-11-04 Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_load_pic_register): Pass extra reg to
+	gen_pic_add_dot_plus_four and gen_pic_add_dot_plus_eight.
+	(arm_call_tls_get_addr, legitimize_tls_address): Likewise.
+	* config/arm/arm.md: Use match_operand in peephole input templates
+	and match_dup in peephole output templates.
+
 2005-11-04  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/arm.c (arm_init_libfuncs): Use __aeabi_idiv and

@@ -4464,31 +4464,31 @@
 )
 
 (define_insn "pic_add_dot_plus_four"
-  [(set (match_operand:SI 0 "register_operand" "+r")
-	(unspec:SI [(plus:SI (match_dup 0)
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "0")
 			     (const (plus:SI (pc) (const_int 4))))]
 		   UNSPEC_PIC_BASE))
-   (use (label_ref (match_operand 1 "" "")))]
+   (use (label_ref (match_operand 2 "" "")))]
   "TARGET_THUMB"
   "*
   (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-			     CODE_LABEL_NUMBER (operands[1]));
+			     CODE_LABEL_NUMBER (operands[2]));
   return \"add\\t%0, %|pc\";
   "
   [(set_attr "length" "2")]
 )
 
 (define_insn "pic_add_dot_plus_eight"
-  [(set (match_operand:SI 0 "register_operand" "+r")
-	(unspec:SI [(plus:SI (match_dup 0)
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "r")
 			     (const (plus:SI (pc) (const_int 8))))]
 		   UNSPEC_PIC_BASE))
-   (use (label_ref (match_operand 1 "" "")))]
+   (use (label_ref (match_operand 2 "" "")))]
   "TARGET_ARM"
   "*
     (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-			       CODE_LABEL_NUMBER (operands[1]));
-    return \"add%?\\t%0, %|pc, %0\";
+			       CODE_LABEL_NUMBER (operands[2]));
+    return \"add%?\\t%0, %|pc, %1\";
   "
   [(set_attr "predicable" "yes")]
 )
@@ -4514,17 +4514,17 @@
 
 (define_peephole2
   [(parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (unspec:SI [(plus:SI (match_dup 0)
+		   (unspec:SI [(plus:SI (match_operand:SI 3 "register_operand" "")
 			     	 	(const (plus:SI (pc) (const_int 8))))]
 			      UNSPEC_PIC_BASE))
    	      (use (label_ref (match_operand 1 "" "")))])
    (set (match_operand:SI 2 "register_operand" "") (mem:SI (match_dup 0)))]
   "TARGET_ARM && peep2_reg_dead_p (2, operands[0])"
-  [(parallel [(set (match_operand:SI 2 "register_operand" "+r")
-		   (mem:SI (unspec:SI [(plus:SI (match_dup 0)
+  [(parallel [(set (match_dup 2)
+		   (mem:SI (unspec:SI [(plus:SI (match_dup 3)
 						(const (plus:SI (pc) (const_int 8))))]
 				      UNSPEC_PIC_BASE)))
-   	      (use (label_ref (match_operand 1 "" "")))])]
+   	      (use (label_ref (match_dup 1)))])]
   ""
 )
 

@@ -3373,7 +3373,8 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
   if (TARGET_ARM)
     {
       emit_insn (gen_pic_load_addr_arm (pic_offset_table_rtx, pic_rtx));
-      emit_insn (gen_pic_add_dot_plus_eight (pic_offset_table_rtx, l1));
+      emit_insn (gen_pic_add_dot_plus_eight (pic_offset_table_rtx,
+					     pic_offset_table_rtx, l1));
     }
   else
     {
@@ -3388,7 +3389,8 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 	}
       else
 	emit_insn (gen_pic_load_addr_thumb (pic_offset_table_rtx, pic_rtx));
-      emit_insn (gen_pic_add_dot_plus_four (pic_offset_table_rtx, l1));
+      emit_insn (gen_pic_add_dot_plus_four (pic_offset_table_rtx,
+					    pic_offset_table_rtx, l1));
     }
 
   /* Need to emit this whether or not we obey regdecls,
@@ -3833,9 +3835,9 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
   reg = load_tls_operand (sum, reg);
 
   if (TARGET_ARM)
-    emit_insn (gen_pic_add_dot_plus_eight (reg, label));
+    emit_insn (gen_pic_add_dot_plus_eight (reg, reg, label));
   else
-    emit_insn (gen_pic_add_dot_plus_four (reg, label));
+    emit_insn (gen_pic_add_dot_plus_four (reg, reg, label));
 
   *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX, LCT_PURE, /* LCT_CONST?  */
 				     Pmode, 1, reg, Pmode);
@@ -3889,7 +3891,7 @@ legitimize_tls_address (rtx x, rtx reg)
 	emit_insn (gen_tls_load_dot_plus_eight (reg, reg, label));
       else
 	{
-	  emit_insn (gen_pic_add_dot_plus_four (reg, label));
+	  emit_insn (gen_pic_add_dot_plus_four (reg, reg, label));
 	  emit_move_insn (reg, gen_const_mem (SImode, reg));
 	}
 
