@@ -2334,7 +2334,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 
 void
 cp_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
-	      const char *msg, va_list ap)
+	      const char *msg, va_list *ap)
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;
@@ -2356,7 +2356,7 @@ cp_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
     default:
       gcc_unreachable ();
     }
-  diagnostic_set_info_translated (&diagnostic, msg, &ap,
+  diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  input_location, dlevel);
   report_diagnostic (&diagnostic);
 }

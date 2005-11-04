@@ -141,7 +141,7 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
   va_start (ap, msgid);
 
   if (CPP_OPTION (pfile, client_diagnostic))
-    pfile->cb.error (pfile, level, _(msgid), ap);
+    pfile->cb.error (pfile, level, _(msgid), &ap);
   else
     {
       if (CPP_OPTION (pfile, traditional))
