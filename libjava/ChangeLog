@@ -1,3 +1,7 @@
+2005-11-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* include/sh-signal.h (MAKE_THROW_FRAME): Remove trailing whitespace.
+
 2005-11-02  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/lib/libjava.exp (libjava_find_lib): Add dylib to the shared
