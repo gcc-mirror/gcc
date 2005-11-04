@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "i386-cpuid.h"
+#include "../../gcc.dg/i386-cpuid.h"
 
 #ifndef NOINLINE
 #define NOINLINE __attribute__ ((noinline))

@@ -2,7 +2,7 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -msse2" } */
 #include <emmintrin.h>
-#include "i386-cpuid.h"
+#include "../../gcc.dg/i386-cpuid.h"
 
 extern void abort (void);
 
