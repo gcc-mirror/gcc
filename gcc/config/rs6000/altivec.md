@@ -57,9 +57,7 @@
    (UNSPEC_VPKUHUM       93)
    (UNSPEC_VPKUWUM       94)
    (UNSPEC_VPKPX         95)
-   (UNSPEC_VPKUHSS       96)
    (UNSPEC_VPKSHSS       97)
-   (UNSPEC_VPKUWSS       98)
    (UNSPEC_VPKSWSS       99)
    (UNSPEC_VPKUHUS      100)
    (UNSPEC_VPKSHUS      101)
@@ -1105,16 +1103,6 @@
   "vpkpx %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
-(define_insn "altivec_vpkuhss"
-  [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v")
-                       (match_operand:V8HI 2 "register_operand" "v")]
-		      UNSPEC_VPKUHSS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
-  "TARGET_ALTIVEC"
-  "vpkuhss %0,%1,%2"
-  [(set_attr "type" "vecperm")])
-
 (define_insn "altivec_vpkshss"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
         (unspec:V16QI [(match_operand:V8HI 1 "register_operand" "v")
@@ -1123,16 +1111,6 @@
    (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vpkshss %0,%1,%2"
-  [(set_attr "type" "vecperm")])
-
-(define_insn "altivec_vpkuwss"
-  [(set (match_operand:V8HI 0 "register_operand" "=v")
-        (unspec:V8HI [(match_operand:V4SI 1 "register_operand" "v")
-                      (match_operand:V4SI 2 "register_operand" "v")]
-		     UNSPEC_VPKUWSS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
-  "TARGET_ALTIVEC"
-  "vpkuwss %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vpkswss"
