@@ -1,3 +1,13 @@
+2005-10-04  Jeff Law  <law@redhat.com>
+
+	PR/21883
+	* doc/invoke.texi: Document max-jump-thread-duplication-stmts PARAM.
+	* tree-ssa-dom.c: Include params.h.
+	(thread_across_edge): If there are too many statements in the
+	target block, then do not thread through it.
+	* Makefile.in (tree-ssa-dom.o): Depend on $(PARAMS_H).
+	* params.def (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS): New PARAM.
+
 2005-11-03  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 24627

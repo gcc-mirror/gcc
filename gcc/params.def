@@ -506,6 +506,24 @@ DEFPARAM (PARAM_SSP_BUFFER_SIZE,
 	  "The lower bound for a buffer to be considered for stack smashing protection",
 	  8, 1, 0)
 
+/* When we thread through a block we have to make copies of the
+   statements within the block.  Clearly for large blocks the code
+   duplication is bad.
+
+   PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS specifies the maximum number
+   of statements and PHI nodes allowed in a block which is going to
+   be duplicated for thread jumping purposes.
+
+   Some simple analysis showed that more than 99% of the jump
+   threading opportunities are for blocks with less than 15
+   statements.  So we can get the benefits of jump threading
+   without excessive code bloat for pathological cases with the
+   throttle set at 15 statements.  */
+DEFPARAM (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS,
+	  "max-jump-thread-duplication-stmts",
+          "Maximum number of statements allowed in a block that needs to be duplicated when threading jumps",
+	  15, 0, 0)
+   
 /*
 Local variables:
 mode:c
