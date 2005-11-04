@@ -1,3 +1,8 @@
+2005-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/18452
+	* lang-specs.h: Pass -lang-fortran to the preprocessor.
+
 2005-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/18157
