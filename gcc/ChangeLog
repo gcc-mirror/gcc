@@ -1,3 +1,9 @@
+2005-11-03  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 24627
+	* tree-ssa-dce.c (pass_dce, pass_dce_loop, pass_cd_dce): Use
+	TODO_update_ssa instead of TODO_update_ssa_no_phi.
+
 2005-11-04  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR/18595
