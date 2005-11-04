@@ -1,3 +1,9 @@
+2005-11-04  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/22487
+	* init.c (build_vec_init): Build comparison of matching
+	types.
+
 2005-11-03  Josh Conner  <jconner@apple.com>
 
 	PR c++/19989
