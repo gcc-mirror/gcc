@@ -1982,7 +1982,8 @@ loop_closed_phi_def (tree var)
 /* Analyze all the parameters of the chrec that were left under a symbolic form,
    with respect to LOOP.  CHREC is the chrec to instantiate.  CACHE is the cache
    of already instantiated values.  FLAGS modify the way chrecs are
-   instantiated.  */
+   instantiated.  SIZE_EXPR is used for computing the size of the expression to
+   be instantiated, and to stop if it exceeds some limit.  */
 
 /* Values for FLAGS.  */
 enum
@@ -1995,11 +1996,16 @@ enum
 };
   
 static tree
-instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache)
+instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache,
+			  int size_expr)
 {
   tree res, op0, op1, op2;
   basic_block def_bb;
   struct loop *def_loop;
+
+  /* Give up if the expression is larger than the MAX that we allow.  */
+  if (size_expr++ > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+    return chrec_dont_know;
 
   if (automatically_generated_chrec_p (chrec)
       || is_gimple_min_invariant (chrec))
@@ -2068,7 +2074,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 	}
 
       else if (res != chrec_dont_know)
-	res = instantiate_parameters_1 (loop, res, flags, cache);
+	res = instantiate_parameters_1 (loop, res, flags, cache, size_expr);
 
       bitmap_clear_bit (already_instantiated, SSA_NAME_VERSION (chrec));
 
@@ -2078,12 +2084,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 
     case POLYNOMIAL_CHREC:
       op0 = instantiate_parameters_1 (loop, CHREC_LEFT (chrec),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, CHREC_RIGHT (chrec),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2094,12 +2100,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 
     case PLUS_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2110,12 +2116,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 
     case MINUS_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2126,12 +2132,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 
     case MULT_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2144,7 +2150,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2174,17 +2180,17 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
     {
     case 3:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
       op2 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 2),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op2 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2198,12 +2204,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 
     case 2:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op1 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2214,7 +2220,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
 	    
     case 1:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      flags, cache);
+				      flags, cache, size_expr);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
       if (op0 == TREE_OPERAND (chrec, 0))
@@ -2252,7 +2258,8 @@ instantiate_parameters (struct loop *loop,
       fprintf (dump_file, ")\n");
     }
  
-  res = instantiate_parameters_1 (loop, chrec, INSERT_SUPERLOOP_CHRECS, cache);
+  res = instantiate_parameters_1 (loop, chrec, INSERT_SUPERLOOP_CHRECS, cache,
+				  0);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2275,7 +2282,7 @@ static tree
 resolve_mixers (struct loop *loop, tree chrec)
 {
   htab_t cache = htab_create (10, hash_scev_info, eq_scev_info, del_scev_info);
-  tree ret = instantiate_parameters_1 (loop, chrec, FOLD_CONVERSIONS, cache);
+  tree ret = instantiate_parameters_1 (loop, chrec, FOLD_CONVERSIONS, cache, 0);
   htab_delete (cache);
   return ret;
 }

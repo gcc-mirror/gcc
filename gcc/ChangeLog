@@ -1,3 +1,11 @@
+2005-11-04  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR/18595
+	* tree-scalar-evolution.c (instantiate_parameters_1,
+	instantiate_parameters, resolve_mixers): Compute the size of an
+	expression to be instantiated and give up the instantiation if the
+	size exceeds PARAM_SCEV_MAX_EXPR_SIZE.
+
 2005-11-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (ref_contains_indirect_ref): Rename to
