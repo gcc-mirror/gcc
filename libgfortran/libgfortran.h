@@ -434,6 +434,9 @@ iexport_data_proto(filename);
 
 /* main.c */
 
+extern void stupid_function_name_for_static_linking (void);
+internal_proto(stupid_function_name_for_static_linking);
+
 extern void library_start (void);
 internal_proto(library_start);
 
