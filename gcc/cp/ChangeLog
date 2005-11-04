@@ -1,3 +1,10 @@
+2005-11-03  Josh Conner  <jconner@apple.com>
+
+	PR c++/19989
+	pt.c (tsubst): Accept zero-length array if tf_error is set
+	in complain flags.  Change error message for negative-
+	length array.
+
 2005-11-04  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c++/17964

@@ -7004,25 +7004,24 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	max = tsubst_template_arg (omax, args, complain, in_decl);
 	max = fold_decl_constant_value (max);
 
-	if (integer_zerop (omax))
-	  {
-	    /* Still allow an explicit array of size zero.  */
-	    if (pedantic)
-	      pedwarn ("creating array with size zero");
-	  }
-	else if (integer_zerop (max) 
-		 || (TREE_CODE (max) == INTEGER_CST 
-		     && INT_CST_LT (max, integer_zero_node)))
-	  {
-	    /* [temp.deduct]
+	/* [temp.deduct]
 
-	       Type deduction may fail for any of the following
-	       reasons:  
+	   Type deduction may fail for any of the following
+	   reasons:
 
-		 Attempting to create an array with a size that is
-		 zero or negative.  */
+	     Attempting to create an array with a size that is
+	     zero or negative.  */
+	if (integer_zerop (max) && !(complain & tf_error))
+	  /* We must fail if performing argument deduction (as
+	     indicated by the state of complain), so that
+	     another substitution can be found.  */
+	  return error_mark_node;
+
+	else if (TREE_CODE (max) == INTEGER_CST
+		 && INT_CST_LT (max, integer_zero_node))
+	  {
 	    if (complain & tf_error)
-	      error ("creating array with size zero (%qE)", max);
+	      error ("creating array with negative size (%qE)", max);
 
 	    return error_mark_node;
 	  }
