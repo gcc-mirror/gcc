@@ -1,3 +1,9 @@
+2005-11-04  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Make error take
+	va_list* parameter.
+	* errors.c (cpp_error): Update call to callback.
+
 2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR preprocessor/22042
