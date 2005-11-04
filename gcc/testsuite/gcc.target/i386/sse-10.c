@@ -2,7 +2,7 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O1 -msse2 -mfpmath=sse -mno-accumulate-outgoing-args -fno-omit-frame-pointer" } */
 
-#include "i386-cpuid.h"
+#include "../../gcc.dg/i386-cpuid.h"
 
 typedef _Complex double complex_16;
 

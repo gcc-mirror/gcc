@@ -4,7 +4,7 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -msse2 -mfpmath=sse" } */
 #include <assert.h>
-#include "i386-cpuid.h"
+#include "../../gcc.dg/i386-cpuid.h"
 
 static float xs (void)
 {

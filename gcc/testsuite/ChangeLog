@@ -1,3 +1,76 @@
+2005-11-04  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/20000609-1.c, gcc.target/i386/20000614-1.c,
+	gcc.target/i386/20000614-2.c, gcc.target/i386/20000720-1.c,
+	gcc.target/i386/20000807-1.c, gcc.target/i386/20000904-1.c,
+	gcc.target/i386/20001127-1.c, gcc.target/i386/20010202-1.c,
+	gcc.target/i386/20010520-1.c, gcc.target/i386/20011009-1.c,
+	gcc.target/i386/20011029-2.c, gcc.target/i386/20011107-1.c,
+	gcc.target/i386/20011119-1.c, gcc.target/i386/20020201-3.c,
+	gcc.target/i386/20020218-1.c, gcc.target/i386/20020224-1.c,
+	gcc.target/i386/20020426-1.c, gcc.target/i386/20020523-1.c,
+	gcc.target/i386/20020523-2.c, gcc.target/i386/20020531-1.c,
+	gcc.target/i386/20020616-1.c, gcc.target/i386/20020729-1.c,
+	gcc.target/i386/20030217-1.c, gcc.target/i386/20030926-1.c,
+	gcc.target/i386/20040112-1.c, gcc.target/i386/20050113-1.c,
+	gcc.target/i386/980211-1.c, gcc.target/i386/980226-1.c,
+	gcc.target/i386/980414-1.c, gcc.target/i386/980520-1.c,
+	gcc.target/i386/980709-1.c, gcc.target/i386/990117-1.c,
+	gcc.target/i386/990130-1.c, gcc.target/i386/990213-2.c,
+	gcc.target/i386/990214-1.c, gcc.target/i386/990424-1.c,
+	gcc.target/i386/990524-1.c, gcc.target/i386/991129-1.c,
+	gcc.target/i386/991209-1.c, gcc.target/i386/991214-1.c,
+	gcc.target/i386/991230-1.c, gcc.target/i386/pr12092-1.c,
+	gcc.target/i386/pr14289-1.c, gcc.target/i386/pr18614-1.c,
+	gcc.target/i386/pr19236-1.c, gcc.target/i386/pr20204.c,
+	gcc.target/i386/pr23943.c, gcc.target/i386/pr9771-1.c:
+	Move from gcc.dg/.
+	* gcc.target/i386/387-1.c, gcc.target/i386/387-2.c,
+	gcc.target/i386/387-3.c, gcc.target/i386/387-4.c,
+	gcc.target/i386/387-5.c, gcc.target/i386/387-6.c,
+	gcc.target/i386/387-7.c, gcc.target/i386/387-8.c,
+	gcc.target/i386/3dnow-1.c, gcc.target/i386/3dnow-2.c,
+	gcc.target/i386/3dnowA-1.c, gcc.target/i386/3dnowA-2.c,
+	gcc.target/i386/asm-2.c, gcc.target/i386/asm-3.c,
+	gcc.target/i386/asm-4.c, gcc.target/i386/bitfield1.c,
+	gcc.target/i386/bitfield2.c, gcc.target/i386/bitfield3.c,
+	gcc.target/i386/cadd.c, gcc.target/i386/call-1.c,
+	gcc.target/i386/clobbers.c, gcc.target/i386/cmov1.c,
+	gcc.target/i386/cmov2.c, gcc.target/i386/cmov3.c,
+	gcc.target/i386/cmov4.c, gcc.target/i386/cmov5.c,
+	gcc.target/i386/cvt-1.c, gcc.target/i386/fastcall-1.c,
+	gcc.target/i386/fpcvt-1.c, gcc.target/i386/fpcvt-2.c,
+	gcc.target/i386/fpcvt-3.c, gcc.target/i386/fpcvt-4.c,
+	gcc.target/i386/lea.c, gcc.target/i386/local.c,
+	gcc.target/i386/local2.c, gcc.target/i386/loop-1.c,
+	gcc.target/i386/loop-2.c, gcc.target/i386/loop-3.c,
+	gcc.target/i386/memset-1.c, gcc.target/i386/mmx-1.c,
+	gcc.target/i386/mmx-2.c, gcc.target/i386/mmx-3.c,
+	gcc.target/i386/mmx-4.c, gcc.target/i386/mmx-5.c,
+	gcc.target/i386/mmx-6.c, gcc.target/i386/mul.c,
+	gcc.target/i386/pentium4-not-mull.c, gcc.target/i386/pic-1.c,
+	gcc.target/i386/regparm.c, gcc.target/i386/rotate-1.c,
+	gcc.target/i386/sibcall-5.c, gcc.target/i386/signbit-1.c,
+	gcc.target/i386/signbit-2.c, gcc.target/i386/signbit-3.c,
+	gcc.target/i386/sse-10.c, gcc.target/i386/sse-11.c,
+	gcc.target/i386/sse-12.c, gcc.target/i386/sse-5.c,
+	gcc.target/i386/sse-6.c, gcc.target/i386/sse-7.c,
+	gcc.target/i386/sse-8.c, gcc.target/i386/sse-9.c,
+	gcc.target/i386/sse-vect-types.c, gcc.target/i386/ssefn-1.c,
+	gcc.target/i386/ssefn-2.c, gcc.target/i386/ssefn-3.c,
+	gcc.target/i386/ssefn-4.c, gcc.target/i386/ssefp-1.c,
+	gcc.target/i386/ssefp-2.c, gcc.target/i386/ssetype-1.c,
+	gcc.target/i386/ssetype-2.c, gcc.target/i386/ssetype-3.c,
+	gcc.target/i386/ssetype-4.c, gcc.target/i386/ssetype-5.c,
+	gcc.target/i386/unroll-1.c, gcc.target/i386/volatile-1.c,
+	gcc.target/i386/xorps.c:  Move from gcc.dg/i386-*.
+	* gcc.target/i386/pr23376.c: Move from gcc.target/x86_64/pr23376.c.
+	* gcc.target/i386/asm-5.c: Move from gcc.dg/asm-1.c.
+	* gcc.target/i386/sse-13.c: Move from gcc.dg/i386-sse-1.c.
+	* gcc.target/i386/sse-14.c: Move from gcc.dg/i386-sse-2.c.
+	* gcc.target/i386/sse-15.c: Move from gcc.dg/i386-sse-3.c.
+	* gcc.target/i386/sse-16.c: Move from gcc.dg/i386-sse-4.c.
+
 2005-11-04  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 24627
