@@ -42,6 +42,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
+#include "params.h"
 
 /* This file implements optimizations on the dominator tree.  */
 
@@ -608,6 +609,9 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
   block_stmt_iterator bsi;
   tree stmt = NULL;
   tree phi;
+  int stmt_count = 0;
+  int max_stmt_count;
+
 
   /* If E->dest does not end with a conditional, then there is
      nothing to do.  */
@@ -637,6 +641,11 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
       tree src = PHI_ARG_DEF_FROM_EDGE (phi, e);
       tree dst = PHI_RESULT (phi);
 
+      /* Do not include virtual PHIs in our statement count as
+	 they never generate code.  */
+      if (is_gimple_reg (dst))
+	stmt_count++;
+
       /* If the desired argument is not the same as this PHI's result 
 	 and it is set by a PHI in E->dest, then we can not thread
 	 through E->dest.  */
@@ -664,6 +673,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
      Failure to simplify into the form above merely means that the
      statement provides no equivalences to help simplify later
      statements.  This does not prevent threading through E->dest.  */
+  max_stmt_count = PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS);
   for (bsi = bsi_start (e->dest); ! bsi_end_p (bsi); bsi_next (&bsi))
     {
       tree cached_lhs = NULL;
@@ -673,6 +683,12 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
       /* Ignore empty statements and labels.  */
       if (IS_EMPTY_STMT (stmt) || TREE_CODE (stmt) == LABEL_EXPR)
 	continue;
+
+      /* If duplicating this block is going to cause too much code
+	 expansion, then do not thread through this block.  */
+      stmt_count++;
+      if (stmt_count > max_stmt_count)
+	return;
 
       /* Safely handle threading across loop backedges.  This is
 	 over conservative, but still allows us to capture the

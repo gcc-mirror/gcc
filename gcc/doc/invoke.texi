@@ -6085,6 +6085,9 @@ ratio is 3.
 The minimum size of buffers (i.e. arrays) that will receive stack smashing
 protection when @option{-fstack-protection} is used.
 
+@item max-jump-thread-duplication-stmts
+Maximum number of statements allowed in a block that needs to be
+duplicated when threading jumps.
 @end table
 @end table
 
