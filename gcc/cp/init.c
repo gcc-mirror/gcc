@@ -2613,8 +2613,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       for_stmt = begin_for_stmt ();
       finish_for_init_stmt (for_stmt);
-      finish_for_cond (build2 (NE_EXPR, boolean_type_node,
-			       iterator, integer_minus_one_node),
+      finish_for_cond (build2 (NE_EXPR, boolean_type_node, iterator,
+			       build_int_cst (TREE_TYPE (iterator), -1)),
 		       for_stmt);
       finish_for_expr (build_unary_op (PREDECREMENT_EXPR, iterator, 0),
 		       for_stmt);
