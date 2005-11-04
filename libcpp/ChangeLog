@@ -1,3 +1,8 @@
+2005-11-03  James E Wilson  <wilson@specifix.com>
+
+	PR preprocessor/24202
+	* files.c (_cpp_pop_file_buffer): Set buffer_valid to false.
+
 2005-11-04  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_callbacks): Make error take
