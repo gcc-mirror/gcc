@@ -1,3 +1,7 @@
+2005-11-04 Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/tls/opt-10.c: New test.
+
 2005-11-04  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/format/unnamed-1.c: Add -msse for x86 compilation to
