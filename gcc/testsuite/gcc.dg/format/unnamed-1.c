@@ -2,6 +2,8 @@
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
 /* { dg-options "-Wformat" } */
+/* { dg-options "-Wformat -msse" { target { i?86-*-* && ilp32 } } } */
+/* { dg-options "-Wformat -msse" { target { x86_64-*-* && ilp32 } } } */
 
 #include "format.h"
 
@@ -18,5 +20,5 @@ f (TItype x)
 {
   printf("%d", x); /* { dg-warning "expects type" } */
   printf("%d", 141592653589793238462643383279502884197169399375105820974944); /* { dg-warning "expects type" } */
-  /* { dg-warning "unsigned only|too large" "constant" { target *-*-* } 20 } */
+  /* { dg-warning "unsigned only|too large" "constant" { target *-*-* } 22 } */
 }

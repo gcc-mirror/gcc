@@ -1,3 +1,8 @@
+2005-11-04  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/format/unnamed-1.c: Add -msse for x86 compilation to
+	avoid extra warnings.
+
 2005-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/22298
@@ -75,7 +80,7 @@
 
 2005-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	PR middle-end/23155 
+	PR middle-end/23155
 	* g++.dg/ext/c99struct1.C: New test.
 	* gcc.dg/union-cast-1.c: New test.
 	* gcc.dg/union-cast-2.c: New test.
@@ -99,7 +104,7 @@
 
 	PR target/24620
 	* gcc.dg/pr24620.c: New test.
-	
+
 2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/24329
@@ -646,16 +651,16 @@
 
 	PR c++/23694
 	* g++.dg/parse/friend5.C: New test.
-	
+
 	PR c++/23307
 	* g++.dg/template/crash38.C: New test.
-	
+
 	PR c++/22352
 	* g++.dg/template/friend38.C: New test.
-	
+
 	PR c++/22405
 	* g++.dg/template/crash39.C: New test.
-	
+
 2005-10-13  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/debug/dwarf2/dwarf-char1.c,
@@ -805,7 +810,7 @@
 2005-10-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24139
-	* g++.dg/template/spec27.C: New test. 
+	* g++.dg/template/spec27.C: New test.
 
 	PR c++/24275
 	* g++.dg/template/static19.C: New test.
@@ -874,7 +879,7 @@
 
 	PR Debug/23205
 	* g++.dg/other/PR23205.C: New.
-	
+
 2005-10-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/23602
@@ -927,7 +932,7 @@
 2005-10-04  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/i386-sse-vect-types.c: New.
-	
+
 2005-10-04  Ian Lance Taylor  <ian@airs.com>
 
 	PR preprocessor/13726
@@ -1075,14 +1080,14 @@
 	PR c++/16782
 	* g++.dg/parse/qualified4.C: New test.
 	* g++.old-deja/g++.law/static-mem5.C: Use -w -fpermissive.
-	* g++.old-deja/g++.mike/p8154.C: Likewise. 
+	* g++.old-deja/g++.mike/p8154.C: Likewise.
 
 2005-09-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22147
 	* g++.dg/template/friend37.C: New test.
 	* g++.dg/parse/crash28.C: Adjust error markers.
-	
+
 2005-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/18518
@@ -1092,7 +1097,7 @@
 
 	PR tree-optimization/23625
 	* gcc.dg/pr23625.c: New test.
-	
+
 2005-09-27  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.target/i386/pr22585.c: Run on 32-bit x86 only.
@@ -1261,7 +1266,7 @@
 
 	* gcc.dg/vect/vect-95.c: Use aligned arrays instead of arrays to
 	aligned type.
-	* gcc.dg/vect/Os-vect-95.c: Likewise. 
+	* gcc.dg/vect/Os-vect-95.c: Likewise.
 
 	* gcc.dg/vect/vect-41.c: Test removed.
 	* gcc.dg/vect/vect-47.c: Test removed.
@@ -1269,7 +1274,7 @@
 	* gcc.dg/vect/vect-59.c: Test removed.
 
 2005-09-20  Dorit Nuzman  <dorit@il.ibm.com>
-        
+
 	* gcc.dg/vect/pr16105.c: Replace "aligned types" with regular types.
 	No longer vectorizable on vect_no_align targets.
 	* gcc.dg/vect/pr20122.c: Likewise.
@@ -1426,10 +1431,10 @@
 2005-09-13  Bastian Blank <waldi@debian.org>
 
 	PR c++/16171
-	* g++.dg/abi/mangle26.C: New test. 
-	* g++.dg/abi/mangle27.C: New test. 
-	* g++.dg/abi/mangle28.C: New test. 
-	* g++.dg/abi/mangle29.C: New test. 
+	* g++.dg/abi/mangle26.C: New test.
+	* g++.dg/abi/mangle27.C: New test.
+	* g++.dg/abi/mangle28.C: New test.
+	* g++.dg/abi/mangle29.C: New test.
 
 	PR c++/23839
 	* g++.dg/parse/register1.C: New test.
@@ -1493,7 +1498,7 @@
 2005-09-12  Josh Conner  <jconner@apple.com>
 
 	PR middle-end/23237
-	* gcc.c-torture/compile/pr23237.c: New test. 
+	* gcc.c-torture/compile/pr23237.c: New test.
 
 2005-09-11  Richard Henderson  <rth@redhat.com>
 
@@ -1511,7 +1516,7 @@
 
 2005-09-09  David Daney <ddaney@avtrex.com>
 
-	* gcc.c-torture/execute/20010124-1.c:  Removed and split into two new 
+	* gcc.c-torture/execute/20010124-1.c:  Removed and split into two new
 	files which are ...
 	* gcc.c-torture/execute/builtins/20010124-1: ... here and ...
 	* gcc.c-torture/execute/builtins/20010124-1-lib.c: ... here.
@@ -1582,7 +1587,7 @@
 	* gfortran.dg/common_equivalence_2.f: New.
 	* gfortran.dg/common_equivalence_3.f: New.
 	* gfortran.dg/contained_equivalence_1.f90: New.
-	* gfortran.dg/module_blank_common.f90: New. 
+	* gfortran.dg/module_blank_common.f90: New.
 	* gfortran.dg/module_commons_1.f90: New.
 	* gfortran.dg/module_equivalence_1.f90: New.
 	* gfortran.dg/nested_modules_1.f90: New.
@@ -1634,7 +1639,7 @@
 
 	PR libfortran/23760
 	* gfortran.dg/g77/1832.f: Remove long string in write statement
-	to allow the test to pass on correct list directed output with 
+	to allow the test to pass on correct list directed output with
 	prepended space.
 
 2005-09-07  James E Wilson  <wilson@specifix.com>
@@ -1797,7 +1802,7 @@
 2005-09-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* gcc.dg/Wredundant-decls-2.c: New test to check that
-	-Wredundant-decls does not issue warning for a variable 
+	-Wredundant-decls does not issue warning for a variable
 	definition following a declaration.
 
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
