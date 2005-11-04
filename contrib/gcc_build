@@ -287,9 +287,9 @@ fi
 
 # Validate the branch name.
 if test -n "${SVN_BRANCH}"; then
-    SVN_BRANCH="trunk";
-else
     SVN_BRANCH="branches/${SVN_BRANCH}";
+else
+    SVN_BRANCH="trunk";
 fi
 
 # Checkout the tree.
