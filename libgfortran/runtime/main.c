@@ -35,6 +35,14 @@ Boston, MA 02110-1301, USA.  */
 
 #include "libgfortran.h"
 
+/* Stupid function to be sure the constructor is always linked in, even
+   in the case of static linking.  See PR libfortran/22298 for details.  */
+void
+stupid_function_name_for_static_linking (void)
+{
+  return;
+}
+
 /* This is the offset (in bytes) required to cast from logical(8)* to
    logical(4)*. and still get the same result.  Will be 0 for little-endian
    machines and 4 for big-endian machines.  */

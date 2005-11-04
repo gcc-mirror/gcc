@@ -1,3 +1,13 @@
+2005-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/22298
+	* runtime/main.c (stupid_function_name_for_static_linking): New
+	function.
+	* runtime/error.c (internal_error): Call
+	stupid_function_name_for_static_linking.
+	* libgfortran.h: Add prototype for
+	stupid_function_name_for_static_linking.
+
 2005-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/14994
@@ -6,8 +16,8 @@
 
 2005-10-31  Jerry DeLisle  <jvdelisle@verizon.net>
 
-        PR libgfortran/24584
-        * io/list_read.c (free_saved): Set saved_used to zero.
+	PR libgfortran/24584
+	* io/list_read.c (free_saved): Set saved_used to zero.
 
 2005-10-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
