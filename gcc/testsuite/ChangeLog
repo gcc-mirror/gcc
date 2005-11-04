@@ -1,3 +1,8 @@
+2005-11-04  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 24627
+	* gcc.dg/tree-ssa/pr24627.c: New test.
+
 2005-11-04 Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/tls/opt-10.c: New test.
