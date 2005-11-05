@@ -5935,6 +5935,13 @@ given basic block needs to have to be considered hot.
 Select fraction of the maximal frequency of executions of basic block in
 function given basic block needs to have to be considered hot
 
+@item max-predicted-iterations
+The maximum number of loop iterations we predict statically.  This is useful
+in cases where function contain single loop with known bound and other loop
+with unknown.  We predict the known number of iterations correctly, while
+the unknown nummber of iterations average to roughly 10.  This means that the
+loop without bounds would appear artifically cold relative to the other one.
+
 @item tracer-dynamic-coverage
 @itemx tracer-dynamic-coverage-feedback
 
@@ -5971,6 +5978,9 @@ order to make tracer effective.
 @item max-cse-path-length
 
 Maximum number of basic blocks on path that cse considers.  The default is 10.
+
+@item max-cse-insns
+The maximum instructions CSE process before flushing. The default is 1000.
 
 @item global-var-threshold
 
@@ -6032,6 +6042,10 @@ value is 100.
 The maximum number of memory locations cselib should take into acount.
 Increasing values mean more aggressive optimization, making the compile time
 increase with probably slightly better performance.  The default value is 500.
+
+@item max-flow-memory-location
+Similar as @option{max-cselib-memory-location} but for dataflow liveness.
+The default value is 100.
 
 @item reorder-blocks-duplicate
 @itemx reorder-blocks-duplicate-feedback

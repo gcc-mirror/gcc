@@ -1,5 +1,17 @@
 2005-11-05  Jan Hubicka  <jh@suse.cz>
 
+	PR rtl-optimization/23490
+	* doc/invoke.texi (max-predicted-iterations, max-cse-insns,
+	max-flow-memory-location): Document.
+	* flow.c: Include params.h
+	(MAX_MEM_SET_LIST_LEN): Kill.
+	(add_to_mem_set_list): Use new param.
+	* cse.c (cse_basic_block): Replace 1000 by new param.
+	* params.def (PARAM_MAX_PREDICTED_ITERATIONS, PARAM_MAX_CSE_INSNS,
+	PARAM_MAX_FLOW_MEMORY_LOCATIONS): New.
+	* predict.c (predict_loops): Use new param.
+	* predict.def (MAX_PRED_LOOP_ITERATIONS): Remove.
+
 	* ipa-inline.c (cgraph_decide_inlining_of_small_function, 
 	cgraph_decide_inlining, cgraph_decide_inlining_incrementally):
 	Do not hold memory returned by cgraph_node_name across other call.

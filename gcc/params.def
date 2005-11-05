@@ -309,6 +309,22 @@ DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 	 "hot-bb-frequency-fraction",
 	 "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot",
 	 1000, 0, 0)
+
+/* For guessed profiles, the loops having unknown number of iterations
+   are predicted to iterate relatively few (10) times at average.
+   For functions containing one loop with large known number of iterations
+   and other loops having unbounded loops we would end up predicting all
+   the other loops cold that is not usually the case.  So we need to artifically
+   flatten the profile.  
+
+   We need to cut the maximal predicted iterations to large enought iterations
+   so the loop appears important, but safely within HOT_BB_COUNT_FRACTION
+   range.  */
+
+DEFPARAM(PARAM_MAX_PREDICTED_ITERATIONS,
+	 "max-predicted-iterations",
+	 "The maximum number of loop iterations we predict statically",
+	 100, 0, 0)
 DEFPARAM(TRACER_DYNAMIC_COVERAGE_FEEDBACK,
 	 "tracer-dynamic-coverage-feedback",
 	 "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available",
@@ -363,6 +379,10 @@ DEFPARAM(PARAM_MAX_CSE_PATH_LENGTH,
 	 "max-cse-path-length",
 	 "The maximum length of path considered in cse",
 	 10, 0, 0)
+DEFPARAM(PARAM_MAX_CSE_INSNS,
+	 "max-flow-memory-locations",
+	 "The maximum instructions CSE process before flushing",
+	 1000, 0, 0)
 
 /* The cost of expression in loop invariant motion that is considered
    expensive.  */
@@ -417,6 +437,10 @@ DEFPARAM(PARAM_MAX_CSELIB_MEMORY_LOCATIONS,
 	 "max-cselib-memory-locations",
 	 "The maximum memory locations recorded by cselib",
 	 500, 0, 0)
+DEFPARAM(PARAM_MAX_FLOW_MEMORY_LOCATIONS,
+	 "max-flow-memory-locations",
+	 "The maximum memory locations recorded by flow",
+	 100, 0, 0)
 
 #ifdef ENABLE_GC_ALWAYS_COLLECT
 # define GGC_MIN_EXPAND_DEFAULT 0
