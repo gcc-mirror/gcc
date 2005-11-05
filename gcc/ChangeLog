@@ -1,3 +1,9 @@
+2005-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_decide_inlining_of_small_function, 
+	cgraph_decide_inlining, cgraph_decide_inlining_incrementally):
+	Do not hold memory returned by cgraph_node_name across other call.
+
 2005-11-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/23424
