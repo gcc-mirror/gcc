@@ -1,3 +1,16 @@
+2005-11-05  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (n_dregs_to_save, n_pregs_to_save,
+	expand_prologue_reg_save, expand_epilogue_reg_restore): New argument
+	IS_INTHANDLER; all callers changed.
+	(n_regs_saved_by_prologue): Take interrupt handler attributes into
+	account.
+	(do_link, do_unlink): New argument ALL; all callers changed.
+	(expand_interrupt_handler_prologue, expand_interrupt_handler_epilogue):
+	If function isn't leaf, save and restore all registers.
+	(bfin_function_ok_for_sibcall): Only true if not an interrupt or
+	exception handler.
+
 2005-11-05  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/23490
