@@ -702,7 +702,7 @@ gfc_set_constant_character_len (int len, gfc_expr * expr)
 }
 
 
-/* Function to create and update the enumumerator history 
+/* Function to create and update the enumerator history 
    using the information passed as arguments.
    Pointer "max_enum" is also updated, to point to 
    enum history node containing largest initializer.  
@@ -1982,7 +1982,7 @@ match_attr_spec (void)
 	}
     }
 
-  /* If we are parsing an enumeration and have enusured that no other
+  /* If we are parsing an enumeration and have ensured that no other
      attributes are present we can now set the parameter attribute.  */
   if (gfc_current_state () == COMP_ENUM)
     {

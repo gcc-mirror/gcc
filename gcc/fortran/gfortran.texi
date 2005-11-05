@@ -780,7 +780,7 @@ are stored as byte strings, one character per byte.
 @command{gfortran} supports Hollerith constants. They can be used as the right
 hands in the @code{DATA} statement and @code{ASSIGN} statement, also as the
 arguments. The left hands can be of Integer, Real, Complex and Logical type.
-The constant will be padded or trancated to fit the size of left hand.
+The constant will be padded or truncated to fit the size of left hand.
 
 Valid Hollerith constants examples:
 @smallexample

@@ -372,7 +372,7 @@ gfc_finish_cray_pointee (tree decl, gfc_symbol *sym)
   if (sym->attr.dimension
       && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE) 
     {  
-      /* These decls will be derefenced later, so we don't dereference
+      /* These decls will be dereferenced later, so we don't dereference
 	 them here.  */
       value = convert (TREE_TYPE (decl), ptr_decl);
     }
