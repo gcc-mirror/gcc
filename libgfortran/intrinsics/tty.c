@@ -31,6 +31,7 @@ Boston, MA 02110-1301, USA.  */
 #include "config.h"
 #include "libgfortran.h"
 #include "../io/io.h"
+
 #include <string.h>
 
 /* LOGICAL FUNCTION ISATTY(UNIT)
@@ -94,4 +95,29 @@ ttynam_sub (int *unit, char * name, gfc_charlen_type name_len)
 	    name[i++] = *(n++);
 	}
     }
+}
+
+
+extern void ttynam (char **, gfc_charlen_type *, int);
+export_proto(ttynam);
+
+void
+ttynam (char ** name, gfc_charlen_type * name_len, int unit)
+{
+  gfc_unit *u;
+
+  u = find_unit (unit);
+  if (u != NULL)
+    {
+      *name = stream_ttyname (u->s);
+      if (*name != NULL)
+	{
+	  *name_len = strlen (*name);
+	  *name = strdup (*name);
+	  return;
+	}
+    }
+
+  *name_len = 0;
+  *name = NULL;
 }

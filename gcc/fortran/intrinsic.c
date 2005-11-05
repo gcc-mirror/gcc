@@ -2084,6 +2084,12 @@ add_functions (void)
 
   make_generic ("trim", GFC_ISYM_TRIM, GFC_STD_F95);
 
+  add_sym_1 ("ttynam", 0, 1, BT_CHARACTER, 0, GFC_STD_GNU,
+              gfc_check_ttynam, NULL, gfc_resolve_ttynam,
+	      ut, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("ttynam", GFC_ISYM_TTYNAM, GFC_STD_GNU);
+
   add_sym_2 ("ubound", 0, 1, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_ubound, gfc_simplify_ubound, gfc_resolve_ubound,
 	     ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL);

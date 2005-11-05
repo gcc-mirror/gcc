@@ -87,6 +87,7 @@ tree gfor_fndecl_select_string;
 tree gfor_fndecl_runtime_error;
 tree gfor_fndecl_set_fpe;
 tree gfor_fndecl_set_std;
+tree gfor_fndecl_ttynam;
 tree gfor_fndecl_in_pack;
 tree gfor_fndecl_in_unpack;
 tree gfor_fndecl_associated;
@@ -1780,6 +1781,7 @@ gfc_build_intrinsic_function_decls (void)
   tree gfc_complex8_type_node = gfc_get_complex_type (8);
   tree gfc_complex10_type_node = gfc_get_complex_type (10);
   tree gfc_complex16_type_node = gfc_get_complex_type (16);
+  tree gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
 
   /* String functions.  */
   gfor_fndecl_copy_string =
@@ -1848,6 +1850,14 @@ gfc_build_intrinsic_function_decls (void)
                                      gfc_charlen_type_node,
                                      pchar_type_node,
                                      gfc_int4_type_node);
+
+  gfor_fndecl_ttynam =
+    gfc_build_library_function_decl (get_identifier (PREFIX("ttynam")),
+                                     void_type_node,
+                                     3,
+                                     pchar_type_node,
+                                     gfc_charlen_type_node,
+                                     gfc_c_int_type_node);
 
   gfor_fndecl_adjustl =
     gfc_build_library_function_decl (get_identifier (PREFIX("adjustl")),
