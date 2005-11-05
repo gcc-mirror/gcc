@@ -1,3 +1,29 @@
+2005-11-05  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* lambda-code.c (lambda_transform_legal_p): Use DDR_NUM_DIST_VECTS
+	for testing whether the data_dependence_relation contains distance
+	vectors.  Iterate over all distance vectors of the ddr.
+	* lambda.h: Define a vec of lambda_vector pointers.
+	* tree-data-ref.c (dump_data_dependence_relation,
+	dump_data_dependence_direction): Iterate over all distance and
+	direction vectors of the ddr.
+	(initialize_data_dependence_relation): Initialize DDR_DIR_VECTS and
+	DDR_DIST_VECTS.
+	(build_classic_dist_vector, build_classic_dir_vector): Push a set
+	of distance/direction vectors instead of a single one.
+	* tree-data-ref.h (dir_vects, dist_vects): Replace dir/dist 
+	lambda_vectors with a vec of lambda_vectors.
+	(DDR_DIR_VECT, DDR_DIST_VECT): Redefined as operations on vec.
+	(DDR_DIR_VECTS, DDR_DIST_VECTS, DDR_NUM_DIR_VECTS,
+	DDR_NUM_DIST_VECTS): New.
+	* tree-loop-linear.c (gather_interchange_stats): Test for the
+	existence of distance vectors only after having checked that there
+	is a dependence.  Iterate over all distance vectors of the ddr.
+	(linear_transform_loops): Use dump_data_dependence_relation.
+	* tree-vect-analyze.c (vect_analyze_data_ref_dependence): Test for
+	distance vectors using DDR_NUM_DIST_VECTS.  Iterate over all the
+	distance vectors of the ddr.
+
 2005-11-05  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (n_dregs_to_save, n_pregs_to_save,

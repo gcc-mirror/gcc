@@ -570,9 +570,9 @@ static bool
 vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
                                   loop_vec_info loop_vinfo)
 {
+  unsigned int i;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  int dist = 0;
   unsigned int loop_depth = 0;
   struct loop *loop_nest = loop;
   struct data_reference *dra = DDR_A (ddr);
@@ -596,7 +596,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       return true;
     }
 
-  if (!DDR_DIST_VECT (ddr))
+  if (DDR_NUM_DIST_VECTS (ddr) == 0)
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
         {
@@ -614,48 +614,54 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       loop_nest = loop_nest->outer;
       loop_depth++;
     }
-         
-  dist = DDR_DIST_VECT (ddr)[loop_depth];
-  if (vect_print_dump_info (REPORT_DR_DETAILS))
-    fprintf (vect_dump, "dependence distance  = %d.",dist);
 
-  /* Same loop iteration.  */
-  if (dist % vectorization_factor == 0)
+  for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
     {
-      /* Two references with distance zero have the same alignment.  */
-      VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a), drb);
-      VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_b), dra);
-      if (vect_print_dump_info (REPORT_ALIGNMENT))
-        fprintf (vect_dump, "accesses have the same alignment.");
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
-        {
-          fprintf (vect_dump, "dependence distance modulo vf == 0 between ");
-          print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-          fprintf (vect_dump, " and ");
-          print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
-        }
-      return false;
-    }    
+      int dist = DDR_DIST_VECT (ddr, i)[loop_depth];
 
-  if (abs (dist) >= vectorization_factor)
-    {
-      /* Dependence distance does not create dependence, as far as vectorization
-         is concerned, in this case.  */
       if (vect_print_dump_info (REPORT_DR_DETAILS))
-        fprintf (vect_dump, "dependence distance >= VF.");
-       return false;
+	fprintf (vect_dump, "dependence distance  = %d.", dist);
+
+      /* Same loop iteration.  */
+      if (dist % vectorization_factor == 0)
+	{
+	  /* Two references with distance zero have the same alignment.  */
+	  VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a), drb);
+	  VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_b), dra);
+	  if (vect_print_dump_info (REPORT_ALIGNMENT))
+	    fprintf (vect_dump, "accesses have the same alignment.");
+	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	    {
+	      fprintf (vect_dump, "dependence distance modulo vf == 0 between ");
+	      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
+	      fprintf (vect_dump, " and ");
+	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	    }
+	  continue;
+	}
+
+      if (abs (dist) >= vectorization_factor)
+	{
+	  /* Dependence distance does not create dependence, as far as vectorization
+	     is concerned, in this case.  */
+	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	    fprintf (vect_dump, "dependence distance >= VF.");
+	  continue;
+	}
+
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+	{
+	  fprintf (vect_dump,
+		   "not vectorized: possible dependence between data-refs ");
+	  print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
+	  fprintf (vect_dump, " and ");
+	  print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	}
+
+      return true;
     }
-  
-  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-    {
-      fprintf (vect_dump,
-        "not vectorized: possible dependence between data-refs ");
-      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-      fprintf (vect_dump, " and ");
-      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
-    }
-        
-  return true;
+
+  return false;
 }
 
 

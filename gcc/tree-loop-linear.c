@@ -98,7 +98,7 @@ gather_interchange_stats (varray_type dependence_relations,
 			  unsigned int *nb_deps_not_carried_by_loop, 
 			  unsigned int *access_strides)
 {
-  unsigned int i;
+  unsigned int i, j;
 
   *dependence_steps = 0;
   *nb_deps_not_carried_by_loop = 0;
@@ -106,7 +106,6 @@ gather_interchange_stats (varray_type dependence_relations,
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (dependence_relations); i++)
     {
-      int dist;
       struct data_dependence_relation *ddr = 
 	(struct data_dependence_relation *) 
 	VARRAY_GENERIC_PTR (dependence_relations, i);
@@ -114,21 +113,24 @@ gather_interchange_stats (varray_type dependence_relations,
       /* If we don't know anything about this dependence, or the distance
 	 vector is NULL, or there is no dependence, then there is no reuse of
 	 data.  */
-
-      if (DDR_DIST_VECT (ddr) == NULL
-	  || DDR_ARE_DEPENDENT (ddr) == chrec_dont_know
-	  || DDR_ARE_DEPENDENT (ddr) == chrec_known)
+      if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know
+	  || DDR_ARE_DEPENDENT (ddr) == chrec_known
+	  || DDR_NUM_DIST_VECTS (ddr) == 0)
 	continue;
-      
 
-      
-      dist = DDR_DIST_VECT (ddr)[loop->depth - first_loop->depth];
-      if (dist == 0)
-	(*nb_deps_not_carried_by_loop) += 1;
-      else if (dist < 0)
-	(*dependence_steps) += -dist;
-      else
-	(*dependence_steps) += dist;
+      for (j = 0; j < DDR_NUM_DIST_VECTS (ddr); j++)
+	{
+	  int dist = DDR_DIST_VECT (ddr, j)[loop->depth - first_loop->depth];
+
+	  if (dist == 0)
+	    (*nb_deps_not_carried_by_loop) += 1;
+
+	  else if (dist < 0)
+	    (*dependence_steps) += -dist;
+
+	  else
+	    (*dependence_steps) += dist;
+	}
     }
 
   /* Compute the access strides.  */
@@ -307,16 +309,7 @@ linear_transform_loops (struct loops *loops)
 		VARRAY_GENERIC_PTR (dependence_relations, j);
 
 	      if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
-		{
-		  fprintf (dump_file, "DISTANCE_V (");
-		  print_lambda_vector (dump_file, DDR_DIST_VECT (ddr), 
-				       DDR_SIZE_VECT (ddr));
-		  fprintf (dump_file, ")\n");
-		  fprintf (dump_file, "DIRECTION_V (");
-		  print_lambda_vector (dump_file, DDR_DIR_VECT (ddr), 
-				       DDR_SIZE_VECT (ddr));
-		  fprintf (dump_file, ")\n");
-		}
+		dump_data_dependence_relation (dump_file, ddr);
 	    }
 	  fprintf (dump_file, "\n\n");
 	}

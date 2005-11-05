@@ -2591,7 +2591,7 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
 			  int nb_loops,
 			  varray_type dependence_relations)
 {
-  unsigned int i;
+  unsigned int i, j;
   lambda_vector distres;
   struct data_dependence_relation *ddr;
 
@@ -2628,15 +2628,18 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
 	  
       /* If the dependence could not be captured by a distance vector,
 	 conservatively answer that the transform is not valid.  */
-      if (DDR_DIST_VECT (ddr) == NULL)
+      if (DDR_NUM_DIST_VECTS (ddr) == 0)
 	return false;
 
       /* Compute trans.dist_vect */
-      lambda_matrix_vector_mult (LTM_MATRIX (trans), nb_loops, nb_loops, 
-				 DDR_DIST_VECT (ddr), distres);
+      for (j = 0; j < DDR_NUM_DIST_VECTS (ddr); j++)
+	{
+	  lambda_matrix_vector_mult (LTM_MATRIX (trans), nb_loops, nb_loops, 
+				     DDR_DIST_VECT (ddr, j), distres);
 
-      if (!lambda_vector_lexico_pos (distres, nb_loops))
-	return false;
+	  if (!lambda_vector_lexico_pos (distres, nb_loops))
+	    return false;
+	}
     }
   return true;
 }

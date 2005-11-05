@@ -30,6 +30,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    integers.  */
 typedef int *lambda_vector;
 
+DEF_VEC_P(lambda_vector);
+DEF_VEC_ALLOC_P(lambda_vector,heap);
+
 /* An integer matrix.  A matrix consists of m vectors of length n (IE
    all vectors are the same length).  */
 typedef lambda_vector *lambda_matrix;
