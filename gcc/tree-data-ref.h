@@ -217,14 +217,15 @@ struct data_dependence_relation
      the data_dependence_relation.  */
   varray_type subscripts;
 
-  /* The size of the direction/distance vectors.  */
+  /* The size of the direction/distance vectors: the depth of the
+     analyzed loop nest.  */
   int size_vect;
 
   /* The classic direction vector.  */
-  lambda_vector dir_vect;
+  VEC(lambda_vector,heap) *dir_vects;
 
   /* The classic distance vector.  */
-  lambda_vector dist_vect;
+  VEC(lambda_vector,heap) *dist_vects;
 };
 
 #define DDR_A(DDR) DDR->a
@@ -237,8 +238,17 @@ struct data_dependence_relation
 #define DDR_SUBSCRIPT(DDR, I) VARRAY_GENERIC_PTR (DDR_SUBSCRIPTS (DDR), I)
 #define DDR_NUM_SUBSCRIPTS(DDR) VARRAY_ACTIVE_SIZE (DDR_SUBSCRIPTS (DDR))
 #define DDR_SIZE_VECT(DDR) DDR->size_vect
-#define DDR_DIR_VECT(DDR) DDR->dir_vect
-#define DDR_DIST_VECT(DDR) DDR->dist_vect
+
+#define DDR_DIST_VECTS(DDR) ((DDR)->dist_vects)
+#define DDR_DIR_VECTS(DDR) ((DDR)->dir_vects)
+#define DDR_NUM_DIST_VECTS(DDR) \
+  (VEC_length (lambda_vector, DDR_DIST_VECTS (DDR)))
+#define DDR_NUM_DIR_VECTS(DDR) \
+  (VEC_length (lambda_vector, DDR_DIR_VECTS (DDR)))
+#define DDR_DIR_VECT(DDR, I) \
+  VEC_index (lambda_vector, DDR_DIR_VECTS (DDR), I)
+#define DDR_DIST_VECT(DDR, I) \
+  VEC_index (lambda_vector, DDR_DIST_VECTS (DDR), I)
 
 
 

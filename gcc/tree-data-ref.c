@@ -626,6 +626,7 @@ dump_data_dependence_relation (FILE *outf,
   else if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
     {
       unsigned int i;
+
       for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
 	{
 	  fprintf (outf, "  access_fn_A: ");
@@ -634,15 +635,19 @@ dump_data_dependence_relation (FILE *outf,
 	  print_generic_stmt (outf, DR_ACCESS_FN (drb, i), 0);
 	  dump_subscript (outf, DDR_SUBSCRIPT (ddr, i));
 	}
-      if (DDR_DIST_VECT (ddr))
+
+      for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
 	{
-	  fprintf (outf, "  distance_vect: ");
-	  print_lambda_vector (outf, DDR_DIST_VECT (ddr), DDR_SIZE_VECT (ddr));
+	  fprintf (outf, "  distance_vector: ");
+	  print_lambda_vector (outf, DDR_DIST_VECT (ddr, i),
+			       DDR_SIZE_VECT (ddr));
 	}
-      if (DDR_DIR_VECT (ddr))
+
+      for (i = 0; i < DDR_NUM_DIR_VECTS (ddr); i++)
 	{
-	  fprintf (outf, "  direction_vect: ");
-	  print_lambda_vector (outf, DDR_DIR_VECT (ddr), DDR_SIZE_VECT (ddr));
+	  fprintf (outf, "  direction_vector: ");
+	  print_lambda_vector (outf, DDR_DIR_VECT (ddr, i),
+			       DDR_SIZE_VECT (ddr));
 	}
     }
 
@@ -700,7 +705,7 @@ dump_data_dependence_direction (FILE *file,
 void 
 dump_dist_dir_vectors (FILE *file, varray_type ddrs)
 {
-  unsigned int i;
+  unsigned int i, j;
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (ddrs); i++)
     {
@@ -710,12 +715,21 @@ dump_dist_dir_vectors (FILE *file, varray_type ddrs)
       if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE
 	  && DDR_AFFINE_P (ddr))
 	{
-	  fprintf (file, "DISTANCE_V (");
-	  print_lambda_vector (file, DDR_DIST_VECT (ddr), DDR_SIZE_VECT (ddr));
-	  fprintf (file, ")\n");
-	  fprintf (file, "DIRECTION_V (");
-	  print_lambda_vector (file, DDR_DIR_VECT (ddr), DDR_SIZE_VECT (ddr));
-	  fprintf (file, ")\n");
+	  for (j = 0; j < DDR_NUM_DIST_VECTS (ddr); j++)
+	    {
+	      fprintf (file, "DISTANCE_V (");
+	      print_lambda_vector (file, DDR_DIST_VECT (ddr, j),
+				   DDR_SIZE_VECT (ddr));
+	      fprintf (file, ")\n");
+	    }
+
+	  for (j = 0; j < DDR_NUM_DIR_VECTS (ddr); j++)
+	    {
+	      fprintf (file, "DIRECTION_V (");
+	      print_lambda_vector (file, DDR_DIR_VECT (ddr, j),
+				   DDR_SIZE_VECT (ddr));
+	      fprintf (file, ")\n");
+	    }
 	}
     }
   fprintf (file, "\n\n");
@@ -1999,9 +2013,9 @@ initialize_data_dependence_relation (struct data_reference *a,
   DDR_ARE_DEPENDENT (res) = NULL_TREE;
   DDR_SUBSCRIPTS_VECTOR_INIT (res, DR_NUM_DIMENSIONS (a));
   DDR_SIZE_VECT (res) = 0;
-  DDR_DIST_VECT (res) = NULL;
-  DDR_DIR_VECT (res) = NULL;
-      
+  DDR_DIR_VECTS (res) = NULL;
+  DDR_DIST_VECTS (res) = NULL;
+
   for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
     {
       struct subscript *subscript;
@@ -3088,7 +3102,9 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
 {
   unsigned i;
   lambda_vector dist_v, init_v;
+  bool init_b = false;
   
+  DDR_SIZE_VECT (ddr) = nb_loops;
   dist_v = lambda_vector_new (nb_loops);
   init_v = lambda_vector_new (nb_loops);
   lambda_vector_clear (dist_v, nb_loops);
@@ -3186,9 +3202,38 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
 
 	  dist_v[loop_depth] = dist;
 	  init_v[loop_depth] = 1;
+	  init_b = true;
 	}
     }
-  
+
+  /* Save the distance vector if we initialized one.  */
+  if (init_b)
+    {
+      lambda_vector save_v;
+
+      /* Verify a basic constraint: classic distance vectors should always
+	 be lexicographically positive.  */
+      if (!lambda_vector_lexico_pos (dist_v, DDR_SIZE_VECT (ddr)))
+	{
+	  if (DDR_SIZE_VECT (ddr) == 1)
+	    /* This one is simple to fix, and can be fixed.
+	       Multidimensional arrays cannot be fixed that simply.  */
+	    lambda_vector_negate (dist_v, dist_v, DDR_SIZE_VECT (ddr));
+	  else
+	    /* This is not valid: we need the delta test for properly
+	       fixing all this.  */
+	    return false;
+	}
+
+      save_v = lambda_vector_new (DDR_SIZE_VECT (ddr));
+      lambda_vector_copy (dist_v, save_v, DDR_SIZE_VECT (ddr));
+      VEC_safe_push (lambda_vector, heap, DDR_DIST_VECTS (ddr), save_v);
+
+      /* There is nothing more to do when there are no outer loops.  */
+      if (DDR_SIZE_VECT (ddr) == 1)
+	goto classic_dist_done;
+    }
+
   /* There is a distance of 1 on all the outer loops: 
      
      Example: there is a dependence of distance 1 on loop_1 for the array A.
@@ -3206,59 +3251,63 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
     
     /* Get the common ancestor loop.  */
     lca = find_common_loop (loop_a, loop_b); 
-    
-    lca_depth = lca->depth;
-    lca_depth -= first_loop_depth;
+    lca_depth = lca->depth - first_loop_depth;
+
     gcc_assert (lca_depth >= 0);
     gcc_assert (lca_depth < nb_loops);
-
+    
     /* For each outer loop where init_v is not set, the accesses are
        in dependence of distance 1 in the loop.  */
-    if (lca != loop_a
-	&& lca != loop_b
-	&& init_v[lca_depth] == 0)
-      dist_v[lca_depth] = 1;
-    
-    lca = lca->outer;
-    
-    if (lca)
+    while (lca->depth != 0)
       {
-	lca_depth = lca->depth - first_loop_depth;
-	while (lca->depth != 0)
+	/* If we're considering just a sub-nest, then don't record
+	   any information on the outer loops.  */
+	if (lca_depth < 0)
+	  break;
+
+	gcc_assert (lca_depth < nb_loops);
+
+	/* If we haven't yet determined a distance for this outer
+	   loop, push a new distance vector composed of the previous
+	   distance, and a distance of 1 for this outer loop.
+	   Example:
+
+	   | loop_1
+	   |   loop_2
+	   |     A[10]
+	   |   endloop_2
+	   | endloop_1
+
+	   Saved vectors are of the form (dist_in_1, dist_in_2).
+	   First, we save (0, 1), then we have to save (1, 0).  */
+	if (init_v[lca_depth] == 0)
 	  {
-	    /* If we're considering just a sub-nest, then don't record
-	       any information on the outer loops.  */
-	    if (lca_depth < 0)
-	      break;
+	    lambda_vector save_v = lambda_vector_new (DDR_SIZE_VECT (ddr));
 
-	    gcc_assert (lca_depth < nb_loops);
-
-	    if (init_v[lca_depth] == 0)
-	      dist_v[lca_depth] = 1;
-	    lca = lca->outer;
-	    lca_depth = lca->depth - first_loop_depth;
-	  
+	    lambda_vector_copy (dist_v, save_v, DDR_SIZE_VECT (ddr));
+	    save_v[lca_depth] = 1;
+	    VEC_safe_push (lambda_vector, heap, DDR_DIST_VECTS (ddr), save_v);
 	  }
+
+	lca = lca->outer;
+	lca_depth = lca->depth - first_loop_depth;
       }
   }
-  
-  DDR_DIST_VECT (ddr) = dist_v;
-  DDR_SIZE_VECT (ddr) = nb_loops;
 
-  /* Verify a basic constraint: classic distance vectors should always
-     be lexicographically positive.  */
-  if (!lambda_vector_lexico_pos (DDR_DIST_VECT (ddr),
-				 DDR_SIZE_VECT (ddr)))
+ classic_dist_done:;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      if (DDR_SIZE_VECT (ddr) == 1)
-	/* This one is simple to fix, and can be fixed.
-	   Multidimensional arrays cannot be fixed that simply.  */
-	lambda_vector_negate (DDR_DIST_VECT (ddr), DDR_DIST_VECT (ddr),
-			      DDR_SIZE_VECT (ddr));
-      else
-	/* This is not valid: we need the delta test for properly
-	   fixing all this.  */
-	return false;
+      fprintf (dump_file, "(build_classic_dist_vector\n");
+
+      for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
+	{
+	  fprintf (dump_file, "  dist_vector = (");
+	  print_lambda_vector (dump_file, DDR_DIST_VECT (ddr, i),
+			       DDR_SIZE_VECT (ddr));
+	  fprintf (dump_file, "  )\n");
+	}
+      fprintf (dump_file, ")\n");
     }
 
   return true;
@@ -3280,11 +3329,14 @@ build_classic_dir_vector (struct data_dependence_relation *ddr,
 {
   unsigned i;
   lambda_vector dir_v, init_v;
+  bool init_b = false;
   
   dir_v = lambda_vector_new (nb_loops);
   init_v = lambda_vector_new (nb_loops);
   lambda_vector_clear (dir_v, nb_loops);
   lambda_vector_clear (init_v, nb_loops);
+
+  DDR_SIZE_VECT (ddr) = nb_loops;
   
   if (DDR_ARE_DEPENDENT (ddr) != NULL_TREE)
     return true;
@@ -3388,9 +3440,19 @@ build_classic_dir_vector (struct data_dependence_relation *ddr,
 	  
 	  dir_v[loop_depth] = dir;
 	  init_v[loop_depth] = 1;
+	  init_b = true;
 	}
     }
-  
+
+  /* Save the direction vector if we initialized one.  */
+  if (init_b)
+    {
+      lambda_vector save_v = lambda_vector_new (DDR_SIZE_VECT (ddr));
+
+      lambda_vector_copy (dir_v, save_v, DDR_SIZE_VECT (ddr));
+      VEC_safe_push (lambda_vector, heap, DDR_DIR_VECTS (ddr), save_v);
+    }
+
   /* There is a distance of 1 on all the outer loops: 
      
      Example: there is a dependence of distance 1 on loop_1 for the array A.
@@ -3413,37 +3475,30 @@ build_classic_dir_vector (struct data_dependence_relation *ddr,
     gcc_assert (lca_depth >= 0);
     gcc_assert (lca_depth < nb_loops);
 
-    /* For each outer loop where init_v is not set, the accesses are
-       in dependence of distance 1 in the loop.  */
-    if (lca != loop_a
-	&& lca != loop_b
-	&& init_v[lca_depth] == 0)
-      dir_v[lca_depth] = dir_positive;
-    
-    lca = lca->outer;
-    if (lca)
+    while (lca->depth != 0)
       {
-	lca_depth = lca->depth - first_loop_depth;
-	while (lca->depth != 0)
+	/* If we're considering just a sub-nest, then don't record
+	   any information on the outer loops.  */
+	if (lca_depth < 0)
+	  break;
+
+	gcc_assert (lca_depth < nb_loops);
+
+	if (init_v[lca_depth] == 0)
 	  {
-	    /* If we're considering just a sub-nest, then don't record
-	       any information on the outer loops.  */
-	    if (lca_depth < 0)
-	      break;
+	    lambda_vector save_v = lambda_vector_new (DDR_SIZE_VECT (ddr));
 
-	    gcc_assert (lca_depth < nb_loops);
-
-	    if (init_v[lca_depth] == 0)
-	      dir_v[lca_depth] = dir_positive;
-	    lca = lca->outer;
-	    lca_depth = lca->depth - first_loop_depth;
-	   
+	    lambda_vector_copy (dir_v, save_v, DDR_SIZE_VECT (ddr));
+	    save_v[lca_depth] = dir_positive;
+	    VEC_safe_push (lambda_vector, heap, DDR_DIR_VECTS (ddr), save_v);
 	  }
+
+	lca = lca->outer;
+	lca_depth = lca->depth - first_loop_depth;
+	   
       }
   }
-  
-  DDR_DIR_VECT (ddr) = dir_v;
-  DDR_SIZE_VECT (ddr) = nb_loops;
+
   return true;
 }
 
