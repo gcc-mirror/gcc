@@ -2320,7 +2320,7 @@ get_priority_info (int priority)
 	((!DECL_HAS_INIT_PRIORITY_P (decl) || DECL_INIT_PRIORITY (decl) == 0) \
 	 ? DEFAULT_INIT_PRIORITY : DECL_INIT_PRIORITY (decl))
 
-/* Wether a DECL needs a guard to protect it against multiple
+/* Whether a DECL needs a guard to protect it against multiple
    initialization.  */
 
 #define NEEDS_GUARD_P(decl) (TREE_PUBLIC (decl) && (DECL_COMMON (decl)      \

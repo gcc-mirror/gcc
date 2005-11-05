@@ -1858,7 +1858,7 @@ check_template_keyword (tree decl)
      DR 228 removed the restriction that the template be a member
      template.  
      
-     DR 96, if accepted would add the further restriction that explcit
+     DR 96, if accepted would add the further restriction that explicit
      template arguments must be provided if the template keyword is
      used, but, as of 2005-10-16, that DR is still in "drafting".  If
      this DR is accepted, then the semantic checks here can be
