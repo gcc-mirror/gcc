@@ -1879,7 +1879,7 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
   /* CHECKME: check for !flag_finite_math_only too?  */
   if (SCALAR_FLOAT_TYPE_P (type) && !flag_unsafe_math_optimizations)
     {
-      /* Changing the order of operations changes the sematics.  */
+      /* Changing the order of operations changes the semantics.  */
       if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: unsafe fp math optimization: ");
@@ -1889,7 +1889,7 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
     }
   else if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type) && flag_trapv)
     {
-      /* Changing the order of operations changes the sematics.  */
+      /* Changing the order of operations changes the semantics.  */
       if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: unsafe int math optimization: ");

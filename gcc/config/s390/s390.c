@@ -3879,7 +3879,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
   int bitsize = INTVAL (op1);
   int bitpos = INTVAL (op2);
 
-  /* We need byte alignement.  */
+  /* We need byte alignment.  */
   if (bitsize % BITS_PER_UNIT)
     return false;
 

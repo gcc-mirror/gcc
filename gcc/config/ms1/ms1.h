@@ -42,7 +42,7 @@ extern enum processor_type ms1_cpu;
 #undef  ASM_SPEC
 #define ASM_SPEC "%{march=ms1-16-002: -march=ms1-16-002} %{march=ms1-16-003: -march=ms1-16-003} %{!march=*: -march=ms1-16-002}"
 
-/* A string to pass to at the end of the comman given to the linker.  */
+/* A string to pass to at the end of the command given to the linker.  */
 #undef  LIB_SPEC
 #define LIB_SPEC "--start-group -lc -lsim --end-group \
 %{msim: ; \

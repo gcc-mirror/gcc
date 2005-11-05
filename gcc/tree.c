@@ -3584,7 +3584,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
      any damage.  */
   if (is_attribute_p ("dllimport", name))
     {
-      /* Honor any target-specific overides. */ 
+      /* Honor any target-specific overrides. */ 
       if (!targetm.valid_dllimport_attribute_p (node))
 	*no_add_attrs = true;
 

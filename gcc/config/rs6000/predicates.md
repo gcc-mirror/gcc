@@ -55,7 +55,7 @@
        (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 31")))
 
 ;; Return 1 if op is a signed 8-bit constant integer.
-;; Integer multiplcation complete more quickly
+;; Integer multiplication complete more quickly
 (define_predicate "s8bit_cint_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= -128 && INTVAL (op) <= 127")))

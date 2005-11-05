@@ -1036,7 +1036,7 @@ op_iter_next_tree (ssa_op_iter *ptr)
 
 
 /* This functions clears the iterator PTR, and marks it done.  This is normally
-   used to prevent warnings in the compile about might be uninitailzied
+   used to prevent warnings in the compile about might be uninitialized
    components.  */
 
 static inline void
