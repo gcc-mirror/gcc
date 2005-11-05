@@ -5,7 +5,7 @@
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-march=pentium3 -msse -ffast-math -O2" } */
 
-#include "i386-cpuid.h"
+#include "../../gcc.dg/i386-cpuid.h"
 extern void abort (void);
 extern void exit (int);
 
