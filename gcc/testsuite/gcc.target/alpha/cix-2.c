@@ -2,4 +2,4 @@
 /* { dg-do link { target alpha*-*-* } } */
 /* { dg-options "-mcpu=ev67 -O2" } */
 
-#include "alpha-cix-1.c"
+#include "cix-1.c"
