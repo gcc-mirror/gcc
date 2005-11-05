@@ -1,3 +1,21 @@
+2005-11-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/22203
+	* include/bits/c++config: Include cpu_defines.h.
+	* include/Makefile.am: Add cpu_defines.h to host_headers.
+	* configure.host: Add cpu_defines_dir.
+	* configure.ac: Use it.
+	* config/cpu/powerpc/cpu_defines.h: New.
+	* config/cpu/generic/cpu_defines.h: Likewise.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.	
+	* testsuite/Makefile.in: Likewise.
+
 2005-11-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/sso_string_base.h (__sso_string_base<>::_M_swap):

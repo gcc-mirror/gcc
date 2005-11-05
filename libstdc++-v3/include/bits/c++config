@@ -34,6 +34,9 @@
 // Pick up any OS-specific definitions.
 #include <bits/os_defines.h>
 
+// Pick up any CPU-specific definitions.
+#include <bits/cpu_defines.h>
+
 // Debug mode support. Debug mode basic_string is not allowed to be
 // associated with std, because of locale and exception link
 // dependence.
