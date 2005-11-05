@@ -1,5 +1,10 @@
 2005-11-05  Paolo Carlini  <pcarlini@suse.de>
 
+	* configure.host: Add | rs6000 to the cpu_defines_dir switch,
+	consistently with the try_cpu one.
+
+2005-11-05  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/22203
 	* include/bits/c++config: Include cpu_defines.h.
 	* include/Makefile.am: Add cpu_defines.h to host_headers.
