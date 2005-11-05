@@ -1,3 +1,17 @@
+2005-11-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsic.c (add_functions): Add function version of TTYNAM.
+	* intrinsic.h: Add prototypes for gfc_check_ttynam and
+	gfc_resolve_ttynam.
+	* gfortran.h: Add case for GFC_ISYM_TTYNAM.
+	* iresolve.c (gfc_resolve_ttynam): New function.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Add a tree
+	for function call to library ttynam.
+	* check.c (gfc_check_ttynam): New function.
+	* trans-intrinsic.c (gfc_conv_intrinsic_ttynam): New function.
+	(): Call gfc_conv_intrinsic_ttynam.
+	* trans.h: Add prototype for gfor_fndecl_ttynam.
+
 2005-11-04  Steven G. Kargl <kargls@comcast.net>
 
 	PR fortran/24636

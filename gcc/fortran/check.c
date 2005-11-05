@@ -2133,6 +2133,19 @@ gfc_check_trim (gfc_expr * x)
 }
 
 
+try
+gfc_check_ttynam (gfc_expr * unit)
+{
+  if (scalar_check (unit, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (unit, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
 /* Common check function for the half a dozen intrinsics that have a
    single real argument.  */
 

@@ -1,3 +1,7 @@
+2005-11-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/tty.c (ttynam): New function.
+
 2005-11-04  Steven G. Kargl <kargls@comcast.net>
 
 	PR fortran/24636

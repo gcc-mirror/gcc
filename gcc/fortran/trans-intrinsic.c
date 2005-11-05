@@ -976,6 +976,44 @@ gfc_conv_intrinsic_char (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Return a character string containing the tty name.  */
+
+static void
+gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
+{
+  tree var;
+  tree len;
+  tree tmp;
+  tree arglist;
+  tree type;
+  tree cond;
+  tree gfc_int4_type_node = gfc_get_int_type (4);
+
+  type = build_pointer_type (gfc_character1_type_node);
+  var = gfc_create_var (type, "pstr");
+  len = gfc_create_var (gfc_int4_type_node, "len");
+
+  tmp = gfc_conv_intrinsic_function_args (se, expr);
+  arglist = gfc_chainon_list (NULL_TREE, gfc_build_addr_expr (NULL, var));
+  arglist = gfc_chainon_list (arglist, gfc_build_addr_expr (NULL, len));
+  arglist = chainon (arglist, tmp);
+
+  tmp = gfc_build_function_call (gfor_fndecl_ttynam, arglist);
+  gfc_add_expr_to_block (&se->pre, tmp);
+
+  /* Free the temporary afterwards, if necessary.  */
+  cond = build2 (GT_EXPR, boolean_type_node, len,
+		 build_int_cst (TREE_TYPE (len), 0));
+  arglist = gfc_chainon_list (NULL_TREE, var);
+  tmp = gfc_build_function_call (gfor_fndecl_internal_free, arglist);
+  tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
+  gfc_add_expr_to_block (&se->post, tmp);
+
+  se->expr = var;
+  se->string_length = len;
+}
+
+
 /* Get the minimum/maximum value of all the parameters.
     minmax (a1, a2, a3, ...)
     {
@@ -2977,6 +3015,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_TRANSFER:
       gfc_conv_intrinsic_transfer (se, expr);
+      break;
+
+    case GFC_ISYM_TTYNAM:
+      gfc_conv_intrinsic_ttynam (se, expr);
       break;
 
     case GFC_ISYM_UBOUND:

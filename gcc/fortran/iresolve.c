@@ -1600,6 +1600,28 @@ gfc_resolve_unlink (gfc_expr * f, gfc_expr * n ATTRIBUTE_UNUSED)
   f->value.function.name = gfc_get_string (PREFIX("unlink"));
 }
 
+
+void
+gfc_resolve_ttynam (gfc_expr * f, gfc_expr * unit)
+{
+  gfc_typespec ts;
+  
+  f->ts.type = BT_CHARACTER;
+  f->ts.kind = gfc_default_character_kind;
+
+  if (unit->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (unit, &ts, 2);
+    }
+
+  f->value.function.name = gfc_get_string (PREFIX("ttynam"));
+}
+
+
 void
 gfc_resolve_unpack (gfc_expr * f, gfc_expr * vector, gfc_expr * mask,
 		    gfc_expr * field ATTRIBUTE_UNUSED)
