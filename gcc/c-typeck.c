@@ -917,7 +917,7 @@ alloc_tagged_tu_seen_cache (tree t1, tree t2)
        struct a *next;
      };
      If we are comparing this against a similar struct in another TU,
-     and did not assume they were compatiable, we end up with an infinite
+     and did not assume they were compatible, we end up with an infinite
      loop.  */
   tu->val = 1;
   return tu;

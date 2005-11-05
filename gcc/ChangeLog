@@ -1,3 +1,12 @@
+2005-11-05  Kazu Hirata  <kazu@codesourcery.com>
+
+	* c-typeck.c, config/i386/netware.h, config/m32c/cond.md,
+	config/ms1/ms1.h, config/rs6000/predicates.md,
+	config/s390/s390.c, params.def, postreload-gcse.c,
+	tree-flow-inline.h, tree-ssa-operands.c, tree-vectorizer.c,
+	tree-vrp.c, tree.c: Fix comment typos.
+	* doc/invoke.texi: Fix typos.
+
 2005-11-05  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* lambda-code.c (lambda_transform_legal_p): Use DDR_NUM_DIST_VECTS

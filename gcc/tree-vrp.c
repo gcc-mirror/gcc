@@ -904,7 +904,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
      anything dominated by 'if (i_5 < 5)' will be optimized away.
      Note, due to the wa in which simulation proceeds, the statement
      i_7 = ASSERT_EXPR <...> we would never be visited because the
-     conditiona 'if (i_5 < 5)' always evaluates to false.  However,
+     conditional 'if (i_5 < 5)' always evaluates to false.  However,
      this extra check does not hurt and may protect against future
      changes to VRP that may get into a situation similar to the
      NULL pointer dereference example.

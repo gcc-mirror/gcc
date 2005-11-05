@@ -5939,8 +5939,8 @@ function given basic block needs to have to be considered hot
 The maximum number of loop iterations we predict statically.  This is useful
 in cases where function contain single loop with known bound and other loop
 with unknown.  We predict the known number of iterations correctly, while
-the unknown nummber of iterations average to roughly 10.  This means that the
-loop without bounds would appear artifically cold relative to the other one.
+the unknown number of iterations average to roughly 10.  This means that the
+loop without bounds would appear artificially cold relative to the other one.
 
 @item tracer-dynamic-coverage
 @itemx tracer-dynamic-coverage-feedback

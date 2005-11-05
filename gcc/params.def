@@ -314,7 +314,7 @@ DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
    are predicted to iterate relatively few (10) times at average.
    For functions containing one loop with large known number of iterations
    and other loops having unbounded loops we would end up predicting all
-   the other loops cold that is not usually the case.  So we need to artifically
+   the other loops cold that is not usually the case.  So we need to artificially
    flatten the profile.  
 
    We need to cut the maximal predicted iterations to large enought iterations

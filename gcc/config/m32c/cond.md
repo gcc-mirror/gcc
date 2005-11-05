@@ -28,7 +28,7 @@
 ; so instead we invert the conditional and jump around a regular jump.
 
 ; Note that we can, at some point in the future, add code to omit the
-; "cmp" portion of the insn if the preceeding insn happened to set the
+; "cmp" portion of the insn if the preceding insn happened to set the
 ; right flags already.  For example, a mov followed by a "cmp *,0" is
 ; redundant; the move already set the Z flag.
 

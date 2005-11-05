@@ -156,7 +156,7 @@ static maydef_optype_p free_maydefs = NULL;
 static mustdef_optype_p free_mustdefs = NULL;
 
 
-/* Return the DECL_UID of the base varaiable of T.  */
+/* Return the DECL_UID of the base variable of T.  */
 
 static inline unsigned
 get_name_decl (tree t)

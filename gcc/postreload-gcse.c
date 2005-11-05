@@ -1095,7 +1095,7 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
 	}
       else
 	{
-	  /* Adding a load on a critical edge will cuase a split.  */
+	  /* Adding a load on a critical edge will cause a split.  */
 	  if (EDGE_CRITICAL_P (pred))
 	    critical_edge_split = true;
 	  not_ok_count += pred->count;
