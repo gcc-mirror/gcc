@@ -2965,9 +2965,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-# Add -Wall if we are using GCC.
+# Add -Wall -fno-repack-arrays -fno-underscoring if we are using GCC.
 if test "x$GCC" = "xyes"; then
-  AM_FCFLAGS="-Wall"
+  AM_FCFLAGS="-Wall -fno-repack-arrays -fno-underscoring"
   ## We like to use C99 routines when available.  This makes sure that
   ## __STDC_VERSION__ is set such that libc includes make them available.
   AM_CFLAGS="-std=gnu99 -Wall -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wextra -Wwrite-strings"
@@ -4418,7 +4418,6 @@ exec 5>>./config.log
 #AC_MSG_NOTICE([====== Finished libtool configuration]) ; sleep 10
 
 # We need gfortran to compile parts of the library
-# We can't use AC_PROG_FC because it expects a fully working gfortran.
 #AC_PROG_FC(gfortran)
 FC="$GFORTRAN"
 ac_ext=${FC_SRCEXT-f}
@@ -4513,7 +4512,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:4516:" \
+echo "$as_me:4515:" \
      "checking for Fortran compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -4656,7 +4655,6 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-FCFLAGS="$FCFLAGS -Wall -fno-repack-arrays -fno-underscoring"
 
 # extra LD Flags which are required for targets
 case "${host}" in
