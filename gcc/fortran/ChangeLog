@@ -1,3 +1,8 @@
+2005-11-05  Kazu Hirata  <kazu@codesourcery.com>
+
+	* decl.c, trans-decl.c: Fix comment typos.
+	* gfortran.texi: Fix a typo.
+
 2005-11-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsic.c (add_functions): Add function version of TTYNAM.
