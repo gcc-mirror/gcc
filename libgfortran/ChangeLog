@@ -1,3 +1,8 @@
+2005-11-05  Richard Guenther  <rguenther@suse.de>
+
+	* configure.ac: Use AM_FCFLAGS for extra flags, not FCFLAGS.
+	* configure: Regenerate.
+
 2005-11-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/tty.c (ttynam): New function.
