@@ -39,6 +39,9 @@
 #   atomic_word_dir        location of atomic_word.h
 #                          defaults to generic.
 #
+#   cpu_defines_dir        location of cpu_defines.h
+#                          defaults to generic.
+#
 # It possibly modifies the following variables:
 #
 #   OPT_LDFLAGS            extra flags to pass when linking the library, of
@@ -64,6 +67,7 @@
 c_model=c_std
 c_compatibility=no
 atomic_word_dir=cpu/generic
+cpu_defines_dir=cpu/generic
 
 # HOST-SPECIFIC OVERRIDES
 # Set any CPU-dependent bits.
@@ -120,6 +124,14 @@ case "${host_cpu}" in
     ;;
   sparc* | ultrasparc)
     atomic_word_dir=cpu/sparc
+    ;;
+esac
+
+# Set specific CPU overrides for cpu_defines_dir. Most can just use generic.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+case "${host_cpu}" in
+  powerpc*)
+    cpu_defines_dir=cpu/powerpc
     ;;
 esac
 

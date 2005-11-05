@@ -618,7 +618,8 @@ host_headers = \
 	${host_srcdir}/ctype_noninline.h \
 	${host_srcdir}/os_defines.h \
 	${glibcxx_srcdir}/$(ATOMIC_WORD_SRCDIR)/atomic_word.h \
-	${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h
+	${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h \
+	${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h	
 
 # Non-installed host_header files.
 COMPATIBILITY_H = config/abi/compatibility.h

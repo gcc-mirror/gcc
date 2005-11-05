@@ -284,10 +284,12 @@ GLIBCXX_CONFIGURE_TESTSUITE
 # Propagate the target-specific source directories through the build chain.
 ATOMICITY_SRCDIR=config/${atomicity_dir}
 ATOMIC_WORD_SRCDIR=config/${atomic_word_dir}
+CPU_DEFINES_SRCDIR=config/${cpu_defines_dir}
 OS_INC_SRCDIR=config/${os_include_dir}
 ABI_TWEAKS_SRCDIR=config/${abi_tweaks_dir}
 AC_SUBST(ATOMICITY_SRCDIR)
 AC_SUBST(ATOMIC_WORD_SRCDIR)
+AC_SUBST(CPU_DEFINES_SRCDIR)
 AC_SUBST(ABI_TWEAKS_SRCDIR)
 AC_SUBST(OS_INC_SRCDIR)
 
