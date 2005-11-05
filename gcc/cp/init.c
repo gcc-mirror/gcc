@@ -1604,7 +1604,7 @@ constant_value_1 (tree decl, bool integral_p)
 	      : (!TREE_CONSTANT (init)
 		 /* Do not return an aggregate constant (of which
 		    string literals are a special case), as we do not
-		    want to make inadvertant copies of such entities,
+		    want to make inadvertent copies of such entities,
 		    and we must be sure that their addresses are the
 		    same everywhere.  */
 		 || TREE_CODE (init) == CONSTRUCTOR
