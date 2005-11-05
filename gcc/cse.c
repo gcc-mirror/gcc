@@ -6890,7 +6890,7 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch)
 
 	 ??? This is a real kludge and needs to be done some other way.
 	 Perhaps for 2.9.  */
-      if (code != NOTE && num_insns++ > 1000)
+      if (code != NOTE && num_insns++ > PARAM_VALUE (PARAM_MAX_CSE_INSNS))
 	{
 	  flush_hash_table ();
 	  num_insns = 0;
