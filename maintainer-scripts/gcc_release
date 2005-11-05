@@ -160,7 +160,7 @@ EOF
     fi
 
     # Make sure we tag the sources for a final release.
-    TAG="gcc_`echo ${RELEASE} | tr . _`_release"
+    TAG="tags/gcc_`echo ${RELEASE} | tr . _`_release"
 
     rm -rf ${SOURCE_DIRECTORY}
   fi
@@ -180,10 +180,9 @@ EOF
     if ${SVN} ls "${SVNROOT}/${EXPORTTAG}/ChangeLog"; then 
       error "Tag ${TAG} already exists"
     fi
-    echo "Would execute ${SVN} cp ${SVNROOT}/${SVNBRANCH} ${SVNROOT}/${TAG}"
-    #${SVN} -m "Tagging source as ${TAG}" cp "${SVNROOT}/${SVNBRANCH}" "${SVNROOT}/${TAG}" || \
+    ${SVN} -m "Tagging source as ${TAG}" cp "${SVNROOT}/${SVNBRANCH}" "${SVNROOT}/${TAG}" || \
     #  error "Could not tag sources"
-    EXPORTTAG="${SVNBRANCH}"
+    #EXPORTTAG="${SVNBRANCH}"
   else
     if [ ${SVNBRANCH} != "/trunk" ]; then
       EXPORTTAG="/branches/${SVNBRANCH}"
@@ -202,9 +201,11 @@ EOF
   if [ -z "${EXPORTTAG}" ]; then
     ${SVN} -q export ${EXPORTDATE} "${SVNROOT}/trunk" "`basename ${SOURCE_DIRECTORY}`" ||\
       error "Could not retrieve sources"
+    SVNREV = `${SVN} info ${EXPORTDATE} "${SVNROOT}/trunk"|grep "Revision:"|awk '{print $2}'`
   elif [ -z "${EXPORTDATE}" ]; then
     ${SVN} -q export "${SVNROOT}/${EXPORTTAG}" "`basename ${SOURCE_DIRECTORY}`/" ||\
       error "Could not retrieve sources"
+    SVNREV = `${SVN} info "${SVNROOT}/${EXPORTTAG}"|grep "Revision:"|awk '{print $2}'`
   else
     error "Cannot specify -r and -D at the same time"
   fi
@@ -462,7 +463,7 @@ announce_snapshot() {
 and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
 This snapshot has been generated from the GCC "${BRANCH}" SVN branch
-with the following options: "${EXPORTTAG} ${EXPORTDATE}"
+with the following options: "svn://gcc.gnu.org/svn/gcc/${SVNBRANCH} revision ${SVNREV}"
 
 You'll find:
 " > ${SNAPSHOT_README}
@@ -486,7 +487,7 @@ we highly recommend you join the GCC developers list.  Details for
 how to sign up can be found on the GCC project home page.</p>
 
 <p>This snapshot has been generated from the GCC "${BRANCH}" SVN branch
-with the following options: <code>"svn://gcc.gnu.org/svn/gcc/${EXPORTTAG} ${EXPORTDATE}"</code></p>
+with the following options: <code>"svn://gcc.gnu.org/svn/gcc/${SVNBRANCH} revision ${SVNREV}"</code></p>
 
 <table>" > ${SNAPSHOT_INDEX}
        
@@ -728,9 +729,9 @@ if [ $SNAPSHOT -eq 0 ]; then
 else
   RELEASE=${BRANCH}-${DATE}
   FTP_PATH="${FTP_PATH}/snapshots/${RELEASE}"
-  if [ ${SVNBRANCH} != "HEAD" ]; then
-    TAG=tags/gcc-ss-`echo ${RELEASE} | tr '.' '_'`
-  fi
+#  if [ ${SVNBRANCH} != "/trunk" ]; then
+#    TAG=tags/gcc-ss-`echo ${RELEASE} | tr '.' '_'`
+#  fi
 
   # If diffs are requested when building locally on gcc.gnu.org, we (usually)
   # know what the last snapshot date was and take the corresponding tarballs,
