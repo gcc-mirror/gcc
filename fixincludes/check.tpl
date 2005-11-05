@@ -144,7 +144,7 @@ echo $exitok`
 cd $TESTBASE
 
 find * -type f -print | \
-fgrep -v 'CVS/' > ${TESTDIR}/LIST
+fgrep -v '.svn/' > ${TESTDIR}/LIST
 
 exitok=`
 exec < ${TESTDIR}/LIST
