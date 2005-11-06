@@ -1,3 +1,8 @@
+2005-11-05  Ian Lance Taylor  <ian@airs.com>
+
+	PR target/22432
+	* gcc.target/i386/pr22432.c: New test.
+
 2005-11-05  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/alpha/asm-1.c: Move from gcc.dg/asm-5.c.
