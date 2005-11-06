@@ -1,3 +1,14 @@
+2005-11-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21308
+	* class.c (sizeof_biggest_empty_class): New variable.
+	(record_subobject_offsets): Don't record offsets past biggest
+	empty class for data members.  Replace vbases_p parameter with
+	is_data_member parameter.
+	(build_base_field): Adjust call.
+	(layout_class_type): Likewise.  Maintain
+	sizeof_biggest_empty_class.
+	
 2005-11-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl2.c, init.c, typeck.c: Fix comment typos.
