@@ -181,40 +181,31 @@ EOF
       error "Tag ${TAG} already exists"
     fi
     ${SVN} -m "Tagging source as ${TAG}" cp "${SVNROOT}/${SVNBRANCH}" "${SVNROOT}/${TAG}" || \
-    #  error "Could not tag sources"
-    #EXPORTTAG="${SVNBRANCH}"
+      error "Could not tag sources"
   else
     if [ ${SVNBRANCH} != "/trunk" ]; then
       EXPORTTAG="/branches/${SVNBRANCH}"
       # It does not work to use both "-r" and "-D" with
       # "cvs export" so EXPORTDATE is not set here.
+      SVNREV=`${SVN} info "${SVNROOT}/${EXPORTTAG}"|grep "Revision:"|awk '{print $2}'`
     else
-      # HEAD is the default branch, no need to specify it.
       EXPORTTAG=""
       EXPORTDATE="-D{`date --iso-8601=minutes`}"
+      SVNREV=`${SVN} info ${EXPORTDATE} "${SVNROOT}/trunk"|grep "Revision:"|awk '{print $2}'`
     fi
   fi
 
   # Export the current sources.
-  inform "Retrieving sources (svn export ${EXPORTTAG} ${EXPORTDATE} gcc)"
+  inform "Retrieving sources (svn export -r ${SVNREV} ${SVNROOT}/${SVNBRANCH}/gcc)"
 
-  if [ -z "${EXPORTTAG}" ]; then
-    ${SVN} -q export ${EXPORTDATE} "${SVNROOT}/trunk" "`basename ${SOURCE_DIRECTORY}`" ||\
-      error "Could not retrieve sources"
-    SVNREV = `${SVN} info ${EXPORTDATE} "${SVNROOT}/trunk"|grep "Revision:"|awk '{print $2}'`
-  elif [ -z "${EXPORTDATE}" ]; then
-    ${SVN} -q export "${SVNROOT}/${EXPORTTAG}" "`basename ${SOURCE_DIRECTORY}`/" ||\
-      error "Could not retrieve sources"
-    SVNREV = `${SVN} info "${SVNROOT}/${EXPORTTAG}"|grep "Revision:"|awk '{print $2}'`
-  else
-    error "Cannot specify -r and -D at the same time"
-  fi
+  ${SVN} -q export -r${SVNREV} "${SVNROOT}/${SVNBRANCH}" "`basename ${SOURCE_DIRECTORY}`" ||\
+    error "Could not retrieve sources"
 
   # Run gcc_update on them to set up the timestamps nicely, and (re)write
   # the LAST_UPDATED file containing the CVS tag/date used.
   changedir "gcc-${RELEASE}"
   contrib/gcc_update --touch
-  echo "Obtained from SVN: ${EXPORTTAG} ${EXPORTDATE}" > LAST_UPDATED
+  echo "Obtained from SVN: Revision ${SVNREV}" > LAST_UPDATED
 
   # Obtain some documentation files from the wwwdocs module.
   inform "Retrieving HTML documentation"
@@ -758,7 +749,8 @@ TESTSUITE_DIRS=`adjust_dirs ${TESTSUITE_DIRS}`
 
 # Set up SVNROOT.
 if [ $LOCAL -eq 0 ]; then
-    SVNROOT="svn://${SVN_USERNAME}@${SVN_SERVER}${SVN_REPOSITORY}"
+    SVNROOT="svn+ssh://${SVN_USERNAME}@${SVN_SERVER}${SVN_REPOSITORY}"
+    CVSROOT=":ext:${SVN_USERNAME}@gcc.gnu.org/cvs/gcc"
 else
     SVNROOT="file:///svn/gcc"
     CVSROOT="/cvs/gcc"
