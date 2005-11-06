@@ -252,6 +252,9 @@
 /* libm includes ctanl */
 #undef HAVE_CTANL
 
+/* Define to 1 if you have the `ctime' function. */
+#undef HAVE_CTIME
+
 /* libm includes erf */
 #undef HAVE_ERF
 

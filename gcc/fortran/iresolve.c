@@ -441,6 +441,28 @@ gfc_resolve_cshift (gfc_expr * f, gfc_expr * array,
 
 
 void
+gfc_resolve_ctime (gfc_expr * f, gfc_expr * time)
+{
+  gfc_typespec ts;
+  
+  f->ts.type = BT_CHARACTER;
+  f->ts.kind = gfc_default_character_kind;
+
+  /* ctime TIME argument is a INTEGER(KIND=8), says the doc */
+  if (time->ts.kind != 8)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = 8;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (time, &ts, 2);
+    }
+
+  f->value.function.name = gfc_get_string (PREFIX("ctime"));
+}
+
+
+void
 gfc_resolve_dble (gfc_expr * f, gfc_expr * a)
 {
   f->ts.type = BT_REAL;
@@ -557,6 +579,15 @@ gfc_resolve_exponent (gfc_expr * f, gfc_expr * x)
   f->ts.kind = gfc_default_integer_kind;
 
   f->value.function.name = gfc_get_string ("__exponent_%d", x->ts.kind);
+}
+
+
+void
+gfc_resolve_fdate (gfc_expr * f)
+{
+  f->ts.type = BT_CHARACTER;
+  f->ts.kind = gfc_default_character_kind;
+  f->value.function.name = gfc_get_string (PREFIX("fdate"));
 }
 
 
@@ -2141,6 +2172,32 @@ gfc_resolve_free (gfc_code * c)
     gfc_convert_type (n, &ts, 2);
 
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (PREFIX("free"));
+}
+
+
+void
+gfc_resolve_ctime_sub (gfc_code * c)
+{
+  gfc_typespec ts;
+  
+  /* ctime TIME argument is a INTEGER(KIND=8), says the doc */
+  if (c->ext.actual->expr->ts.kind != 8)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = 8;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (c->ext.actual->expr, &ts, 2);
+    }
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (PREFIX("ctime_sub"));
+}
+
+
+void
+gfc_resolve_fdate_sub (gfc_code * c)
+{
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (PREFIX ("fdate_sub"));
 }
 
 
