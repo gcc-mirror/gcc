@@ -1,3 +1,38 @@
+2005-11-06  Janne Blomqvist <jb@gcc.gnu.org>
+
+	PR fortran/24174
+	PR fortran/24305
+	* io/io.h: Add argument to prototypes, add prototypes for
+	size_from_*_kind functions.
+	* io/list_read.c (read_complex): Add size argument, use
+	it. 
+	(list_formatted_read): Add size argument, cleanup.
+	(list_formatted_read_scalar): Add size argument.
+	(nml_read_obj): Fix for padding.
+	* io/transfer.c: Add argument to transfer function pointer.
+	(unformatted_read): Add size argument.
+	(unformatted_write): Likewise.
+	(formatted_transfer_scalar): Fix for padding with complex(10).
+	(formatted_transfer): Add size argument, cleanup.
+	(transfer_integer): Add size argument to transfer call.
+	(transfer_real): Likewise.
+	(transfer_logical): Likewise.
+	(transfer_character): Likewise.
+	(transfer_complex): Likewise.
+	(transfer_array): New kind argument, use it.
+	(data_transfer_init): Add size argument to formatted_transfer
+	call.
+	(iolength_transfer): Add size argument, cleanup.
+	* io/write.c (write_complex): Add size argument, fix for padding
+	with complex(10).
+	(list_formatted_write): Add size argument, cleanup.
+	(list_formatted_write_scalar): Add size argument, use it.
+	(nml_write_obj): Fix for size vs. kind issue.
+	* io/size_from_kind.c: New file.
+	* Makefile.am: Add io/size_from_kind.c.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2005-11-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/ctime.c: New file.

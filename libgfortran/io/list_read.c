@@ -958,7 +958,7 @@ parse_real (void *buffer, int length)
    what it is right away.  */
 
 static void
-read_complex (int length)
+read_complex (int kind, size_t size)
 {
   char message[100];
   char c;
@@ -982,7 +982,7 @@ read_complex (int length)
     }
 
   eat_spaces ();
-  if (parse_real (value, length))
+  if (parse_real (value, kind))
     return;
 
 eol_1:
@@ -1004,7 +1004,7 @@ eol_2:
   else
     unget_char (c);
 
-  if (parse_real (value + length, length))
+  if (parse_real (value + size / 2, kind))
     return;
 
   eat_spaces ();
@@ -1287,7 +1287,7 @@ check_type (bt type, int len)
    greater than one, we copy the data item multiple times.  */
 
 static void
-list_formatted_read_scalar (bt type, void *p, int len)
+list_formatted_read_scalar (bt type, void *p, int kind, size_t size)
 {
   char c;
   int m;
@@ -1326,7 +1326,7 @@ list_formatted_read_scalar (bt type, void *p, int len)
 
       if (repeat_count > 0)
 	{
-	  if (check_type (type, len))
+	  if (check_type (type, kind))
 	    return;
 	  goto set_value;
 	}
@@ -1348,26 +1348,26 @@ list_formatted_read_scalar (bt type, void *p, int len)
   switch (type)
     {
     case BT_INTEGER:
-      read_integer (len);
+      read_integer (kind);
       break;
     case BT_LOGICAL:
-      read_logical (len);
+      read_logical (kind);
       break;
     case BT_CHARACTER:
-      read_character (len);
+      read_character (kind);
       break;
     case BT_REAL:
-      read_real (len);
+      read_real (kind);
       break;
     case BT_COMPLEX:
-      read_complex (len);
+      read_complex (kind, size);
       break;
     default:
       internal_error ("Bad type for list read");
     }
 
   if (saved_type != BT_CHARACTER && saved_type != BT_NULL)
-    saved_length = len;
+    saved_length = size;
 
   if (ioparm.library_return != LIBRARY_OK)
     return;
@@ -1376,27 +1376,24 @@ list_formatted_read_scalar (bt type, void *p, int len)
   switch (saved_type)
     {
     case BT_COMPLEX:
-      len = 2 * len;
-      /* Fall through.  */
-
     case BT_INTEGER:
     case BT_REAL:
     case BT_LOGICAL:
-      memcpy (p, value, len);
+      memcpy (p, value, size);
       break;
 
     case BT_CHARACTER:
       if (saved_string)
        {
-          m = (len < saved_used) ? len : saved_used;
+          m = ((int) size < saved_used) ? (int) size : saved_used;
           memcpy (p, saved_string, m);
        }
       else
 	/* Just delimiters encountered, nothing to copy but SPACE.  */
         m = 0;
 
-      if (m < len)
-	memset (((char *) p) + m, ' ', len - m);
+      if (m < (int) size)
+	memset (((char *) p) + m, ' ', size - m);
       break;
 
     case BT_NULL:
@@ -1409,24 +1406,18 @@ list_formatted_read_scalar (bt type, void *p, int len)
 
 
 void
-list_formatted_read  (bt type, void *p, int len, size_t nelems)
+list_formatted_read  (bt type, void *p, int kind, size_t size, size_t nelems)
 {
   size_t elem;
-  int size;
   char *tmp;
 
   tmp = (char *) p;
-
-  if (type == BT_COMPLEX)
-    size = 2 * len;
-  else
-    size = len;
 
   /* Big loop over all the elements.  */
   for (elem = 0; elem < nelems; elem++)
     {
       g.item_count++;
-      list_formatted_read_scalar (type, tmp + size*elem, len);
+      list_formatted_read_scalar (type, tmp + size*elem, kind, size);
     }
 }
 
@@ -1862,12 +1853,15 @@ nml_read_obj (namelist_info * nl, index_type offset)
 
     case GFC_DTYPE_INTEGER:
     case GFC_DTYPE_LOGICAL:
-    case GFC_DTYPE_REAL:
       dlen = len;
       break;
 
+    case GFC_DTYPE_REAL:
+      dlen = size_from_real_kind (len);
+      break;
+
     case GFC_DTYPE_COMPLEX:
-      dlen = 2* len;
+      dlen = size_from_complex_kind (len);
       break;
 
     case GFC_DTYPE_CHARACTER:
@@ -1927,7 +1921,7 @@ nml_read_obj (namelist_info * nl, index_type offset)
               break;
 
 	  case GFC_DTYPE_COMPLEX:
-              read_complex (len);
+              read_complex (len, dlen);
               break;
 
 	  case GFC_DTYPE_DERIVED:

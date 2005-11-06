@@ -159,10 +159,12 @@ gfc_build_io_library_fndecls (void)
 {
   tree gfc_int4_type_node;
   tree gfc_pint4_type_node;
+  tree gfc_c_int_type_node;
   tree ioparm_type;
 
   gfc_int4_type_node = gfc_get_int_type (4);
   gfc_pint4_type_node = build_pointer_type (gfc_int4_type_node);
+  gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
 
   /* Build the st_parameter structure.  Information associated with I/O
      calls are transferred here.  This must match the one defined in the
@@ -271,7 +273,8 @@ gfc_build_io_library_fndecls (void)
   iocall_x_array =
     gfc_build_library_function_decl (get_identifier
 				     (PREFIX("transfer_array")),
-				     void_type_node, 2, pvoid_type_node,
+				     void_type_node, 3, pvoid_type_node,
+				     gfc_c_int_type_node,
 				     gfc_charlen_type_node);
 
   /* Library entry points */
@@ -1597,14 +1600,17 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 static void
 transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 {
-  tree args, tmp, charlen_arg;
+  tree args, tmp, charlen_arg, kind_arg;
 
   if (ts->type == BT_CHARACTER)
     charlen_arg = se->string_length;
   else
     charlen_arg = build_int_cstu (NULL_TREE, 0);
 
+  kind_arg = build_int_cst (NULL_TREE, ts->kind);
+
   args = gfc_chainon_list (NULL_TREE, addr_expr);
+  args = gfc_chainon_list (args, kind_arg);
   args = gfc_chainon_list (args, charlen_arg);
   tmp = gfc_build_function_call (iocall_x_array, args);
   gfc_add_expr_to_block (&se->pre, tmp);

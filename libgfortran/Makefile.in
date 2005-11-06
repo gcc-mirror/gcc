@@ -162,8 +162,8 @@ am__objects_31 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_26) $(am__objects_27) $(am__objects_28) \
 	$(am__objects_29) $(am__objects_30)
 am__objects_32 = close.lo file_pos.lo format.lo inquire.lo \
-	list_read.lo lock.lo open.lo read.lo transfer.lo unit.lo \
-	unix.lo write.lo
+	list_read.lo lock.lo open.lo read.lo size_from_kind.lo \
+	transfer.lo unit.lo unix.lo write.lo
 am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	c99_functions.lo chdir.lo cpu_time.lo cshift0.lo ctime.lo \
 	date_and_time.lo env.lo erf.lo eoshift0.lo eoshift2.lo \
@@ -368,6 +368,7 @@ io/list_read.c \
 io/lock.c \
 io/open.c \
 io/read.c \
+io/size_from_kind.c \
 io/transfer.c \
 io/unit.c \
 io/unix.c \
@@ -2199,6 +2200,9 @@ open.lo: io/open.c
 
 read.lo: io/read.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o read.lo `test -f 'io/read.c' || echo '$(srcdir)/'`io/read.c
+
+size_from_kind.lo: io/size_from_kind.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o size_from_kind.lo `test -f 'io/size_from_kind.c' || echo '$(srcdir)/'`io/size_from_kind.c
 
 transfer.lo: io/transfer.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transfer.lo `test -f 'io/transfer.c' || echo '$(srcdir)/'`io/transfer.c

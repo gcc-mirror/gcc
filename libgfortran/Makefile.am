@@ -27,6 +27,7 @@ io/list_read.c \
 io/lock.c \
 io/open.c \
 io/read.c \
+io/size_from_kind.c \
 io/transfer.c \
 io/unit.c \
 io/unix.c \
