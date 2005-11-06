@@ -103,6 +103,9 @@ typedef int (*subobject_offset_fn) (tree, tree, splay_tree);
 static int current_class_stack_size;
 static class_stack_node_t current_class_stack;
 
+/* The size of the largest empty class seen in this translation unit.  */
+static GTY (()) tree sizeof_biggest_empty_class;
+
 /* An array of all local classes present in this translation unit, in
    declaration order.  */
 VEC(tree,gc) *local_classes;
@@ -192,7 +195,7 @@ static int record_subobject_offset (tree, tree, splay_tree);
 static int check_subobject_offset (tree, tree, splay_tree);
 static int walk_subobject_offsets (tree, subobject_offset_fn,
 				   tree, splay_tree, tree, int);
-static void record_subobject_offsets (tree, tree, splay_tree, int);
+static void record_subobject_offsets (tree, tree, splay_tree, bool);
 static int layout_conflict_p (tree, tree, splay_tree, int);
 static int splay_tree_compare_integer_csts (splay_tree_key k1,
 					    splay_tree_key k2);
@@ -3284,17 +3287,35 @@ walk_subobject_offsets (tree type,
 }
 
 /* Record all of the empty subobjects of TYPE (located at OFFSET) in
-   OFFSETS.  If VBASES_P is nonzero, virtual bases of TYPE are
-   examined.  */
+   OFFSETS.  If IS_DATA_MEMBER is true, then a non-static data member
+   is being placed at OFFSET; otherwise, it is a base class that is
+   being placed at OFFSET.  */
 
 static void
 record_subobject_offsets (tree type,
 			  tree offset,
 			  splay_tree offsets,
-			  int vbases_p)
+			  bool is_data_member)
 {
+  tree max_offset;
+  /* If recording subobjects for a non-static data member, do not need
+     to record offsets beyond the size of the biggest empty class.
+     Additional data members will go at the end of the class.
+     Additional base classes will go either at offset zero (if empty,
+     in which case they cannot overlap with offsets past the size of
+     the biggest empty class) or at the end of the class.  
+
+     However, if we are placing an empty class, then we must record
+     all offsets, as either the empty class is at offset zero (where
+     other empty classes might later be placed) or at the end of the
+     class (where other objects might then be placed, so other empty
+     subobjects might later overlap).  */
+  if (is_data_member)
+    max_offset = sizeof_biggest_empty_class;
+  else
+    max_offset = NULL_TREE;
   walk_subobject_offsets (type, record_subobject_offset, offset,
-			  offsets, /*max_offset=*/NULL_TREE, vbases_p);
+			  offsets, max_offset, is_data_member);
 }
 
 /* Returns nonzero if any of the empty subobjects of TYPE (located at
@@ -3553,7 +3574,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	{
 	  if (atend)
 	    CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
-	  /* The check above (used in G++ 3.2) is insufficient  because
+	  /* The check above (used in G++ 3.2) is insufficient because
 	     an empty class placed at offset zero might itself have an
 	     empty base at a nonzero offset.  */
 	  else if (walk_subobject_offsets (basetype,
@@ -3587,7 +3608,7 @@ build_base_field (record_layout_info rli, tree binfo,
   record_subobject_offsets (binfo,
 			    BINFO_OFFSET (binfo),
 			    offsets,
-			    /*vbases_p=*/0);
+			    /*is_data_member=*/false);
 
   return next_field;
 }
@@ -4649,7 +4670,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	record_subobject_offsets (TREE_TYPE (field),
 				  byte_position(field),
 				  empty_base_offsets,
-				  /*vbases_p=*/1);
+				  /*is_data_member=*/true);
 
       /* If a bit-field does not immediately follow another bit-field,
 	 and yet it starts in the middle of a byte, we have failed to
@@ -4827,6 +4848,10 @@ layout_class_type (tree t, tree *virtuals_p)
 
   /* Clean up.  */
   splay_tree_delete (empty_base_offsets);
+
+  if (CLASSTYPE_EMPTY_P (t)
+      && tree_int_cst_lt (sizeof_biggest_empty_class, TYPE_SIZE (t)))
+    sizeof_biggest_empty_class = TYPE_SIZE (t);
 }
 
 /* Determine the "key method" for the class type indicated by TYPE,
@@ -5308,6 +5333,7 @@ init_class_processing (void)
   current_class_stack
     = xmalloc (current_class_stack_size * sizeof (struct class_stack_node));
   local_classes = VEC_alloc (tree, gc, 8);
+  sizeof_biggest_empty_class = size_zero_node;
 
   ridpointers[(int) RID_PUBLIC] = access_public_node;
   ridpointers[(int) RID_PRIVATE] = access_private_node;
