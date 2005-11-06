@@ -1,3 +1,11 @@
+2005-11-06  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc_release: Further update for SVN.  Don't set EXPORTTAG or
+	EXPORTDATE; always determine SVNREV the same way.  Correct message
+	about what sources are being retrived.  Include branch information
+	in LAST_UPDATED.
+	* crontab: Don't include initial / in branch name.
+
 2005-11-05  Daniel Berlin  <dberlin@dberlin.org>
 
 	* gcc_release:  Always determine revision number from date or tag,

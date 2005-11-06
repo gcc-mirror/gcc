@@ -65,19 +65,19 @@ inform() {
 usage() {
 cat <<EOF
 gcc_release -r release [-f] [further options]
-gcc_release -s name:cvsbranch [further options]
+gcc_release -s name:svnbranch [further options]
 
 Options:
 
   -r release           Version of the form X.Y or X.Y.Z.
-  -s name:cvsbranch    Create a snapshot, not a real release.
+  -s name:svnbranch    Create a snapshot, not a real release.
 
   -d destination       Local working directory where we will build the release
                        (default=${HOME}).
   -f                   Create a final release (and update ChangeLogs,...).
   -l                   Indicate that we are running on gcc.gnu.org.
   -p previous-tarball  Location of a previous tarball (to generate diff files).
-  -t tag               Tag to mark the release in CVS.
+  -t tag               Tag to mark the release in SVN.
   -u username          Username for upload operations.
 EOF
     exit 1
@@ -166,46 +166,32 @@ EOF
   fi
 
   # Tag the sources.
-  EXPORTDATE=""
   if [ -n "${TAG}" ]; then
     inform "Tagging sources as ${TAG}"
-    EXPORTTAG="${TAG}"
-    # Try to check out a file using ${TAG}.  If the command succeeds,
-    # then the sources have already been tagged.  We don't want to 
-    # overwrite an existing tag, so we don't want to use the "-F"
-    # option to "cvs rtag" below.  So, if the tag already exists,
-    # issue an error message; the release manager can manually remove
-    # the tag if appropriate.
-    echo "${SVN} ls ${SVNROOT}/${EXPORTTAG}/ChangeLog" 
-    if ${SVN} ls "${SVNROOT}/${EXPORTTAG}/ChangeLog"; then 
+    # We don't want to overwrite an existing tag.  So, if the tag
+    # already exists, issue an error message; the release manager can
+    # manually remove the tag if appropriate.
+    echo "${SVN} ls ${SVNROOT}/${TAG}/ChangeLog" 
+    if ${SVN} ls "${SVNROOT}/${TAG}/ChangeLog"; then 
       error "Tag ${TAG} already exists"
     fi
     ${SVN} -m "Tagging source as ${TAG}" cp "${SVNROOT}/${SVNBRANCH}" "${SVNROOT}/${TAG}" || \
       error "Could not tag sources"
-  else
-    if [ ${SVNBRANCH} != "/trunk" ]; then
-      EXPORTTAG="/branches/${SVNBRANCH}"
-      # It does not work to use both "-r" and "-D" with
-      # "cvs export" so EXPORTDATE is not set here.
-      SVNREV=`${SVN} info "${SVNROOT}/${EXPORTTAG}"|grep "Revision:"|awk '{print $2}'`
-    else
-      EXPORTTAG=""
-      EXPORTDATE="-D{`date --iso-8601=minutes`}"
-      SVNREV=`${SVN} info ${EXPORTDATE} "${SVNROOT}/trunk"|grep "Revision:"|awk '{print $2}'`
-    fi
+    SVNBRANCH=${TAG}
   fi
+  SVNREV=`${SVN} info "${SVNROOT}/${SVNBRANCH}"|awk '/Revision:/ {print $2}'`
 
   # Export the current sources.
-  inform "Retrieving sources (svn export -r ${SVNREV} ${SVNROOT}/${SVNBRANCH}/gcc)"
+  inform "Retrieving sources (svn export -r ${SVNREV} ${SVNROOT}/${SVNBRANCH})"
 
   ${SVN} -q export -r${SVNREV} "${SVNROOT}/${SVNBRANCH}" "`basename ${SOURCE_DIRECTORY}`" ||\
     error "Could not retrieve sources"
 
   # Run gcc_update on them to set up the timestamps nicely, and (re)write
-  # the LAST_UPDATED file containing the CVS tag/date used.
+  # the LAST_UPDATED file containing the SVN tag/revision used.
   changedir "gcc-${RELEASE}"
   contrib/gcc_update --touch
-  echo "Obtained from SVN: Revision ${SVNREV}" > LAST_UPDATED
+  echo "Obtained from SVN: ${SVNBRANCH} revision ${SVNREV}" > LAST_UPDATED
 
   # Obtain some documentation files from the wwwdocs module.
   inform "Retrieving HTML documentation"
@@ -720,9 +706,6 @@ if [ $SNAPSHOT -eq 0 ]; then
 else
   RELEASE=${BRANCH}-${DATE}
   FTP_PATH="${FTP_PATH}/snapshots/${RELEASE}"
-#  if [ ${SVNBRANCH} != "/trunk" ]; then
-#    TAG=tags/gcc-ss-`echo ${RELEASE} | tr '.' '_'`
-#  fi
 
   # If diffs are requested when building locally on gcc.gnu.org, we (usually)
   # know what the last snapshot date was and take the corresponding tarballs,
