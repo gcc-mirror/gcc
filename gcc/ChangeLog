@@ -1,3 +1,9 @@
+2005-11-05  Ian Lance Taylor  <ian@airs.com>
+
+	PR target/22432
+	* combine.c (apply_distributive_law): Don't distribute across a
+	vector mode subreg.
+
 2005-11-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* c-typeck.c, config/i386/netware.h, config/m32c/cond.md,
