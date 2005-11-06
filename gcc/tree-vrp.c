@@ -632,6 +632,81 @@ range_includes_zero_p (value_range_t *vr)
 }
 
 
+/* When extracting ranges from X_i = ASSERT_EXPR <Y_j, pred>, we will
+   initially consider X_i and Y_j equivalent, so the equivalence set
+   of Y_j is added to the equivalence set of X_i.  However, it is
+   possible to have a chain of ASSERT_EXPRs whose predicates are
+   actually incompatible.  This is usually the result of nesting of
+   contradictory if-then-else statements.  For instance, in PR 24670:
+
+   	count_4 has range [-INF, 63]
+
+   	if (count_4 != 0)
+	  {
+	    count_19 = ASSERT_EXPR <count_4, count_4 != 0>
+	    if (count_19 > 63)
+	      {
+	        count_18 = ASSERT_EXPR <count_19, count_19 > 63>
+		if (count_18 <= 63)
+		  ...
+	      }
+	  }
+
+   Notice that 'if (count_19 > 63)' is trivially false and will be
+   folded out at the end.  However, during propagation, the flowgraph
+   is not cleaned up and so, VRP will evaluate predicates more
+   predicates than necessary, so it must support these
+   inconsistencies.  The problem here is that because of the chaining
+   of ASSERT_EXPRs, the equivalency set for count_18 includes count_4.
+   Since count_4 has an incompatible range, we ICE when evaluating the
+   ranges in the equivalency set.  So, we need to remove count_4 from
+   it.  */
+
+static void
+fix_equivalence_set (value_range_t *vr_p)
+{
+  bitmap_iterator bi;
+  unsigned i;
+  bitmap e = vr_p->equiv;
+  bitmap to_remove = BITMAP_ALLOC (NULL);
+
+  /* Only detect inconsistencies on numeric ranges.  */
+  if (vr_p->type == VR_VARYING
+      || vr_p->type == VR_UNDEFINED
+      || symbolic_range_p (vr_p))
+    return;
+
+  EXECUTE_IF_SET_IN_BITMAP (e, 0, i, bi)
+    {
+      value_range_t *equiv_vr = vr_value[i];
+
+      if (equiv_vr->type == VR_VARYING
+	  || equiv_vr->type == VR_UNDEFINED
+	  || symbolic_range_p (equiv_vr))
+	continue;
+
+      if (equiv_vr->type == VR_RANGE
+	  && vr_p->type == VR_RANGE
+	  && !value_ranges_intersect_p (vr_p, equiv_vr))
+	bitmap_set_bit (to_remove, i);
+      else if ((equiv_vr->type == VR_RANGE && vr_p->type == VR_ANTI_RANGE)
+	       || (equiv_vr->type == VR_ANTI_RANGE && vr_p->type == VR_RANGE))
+	{
+	  /* A range and an anti-range have an empty intersection if
+	     their end points are the same.  FIXME,
+	     value_ranges_intersect_p should handle this
+	     automatically.  */
+	  if (compare_values (equiv_vr->min, vr_p->min) == 0
+	      && compare_values (equiv_vr->max, vr_p->max) == 0)
+	    bitmap_set_bit (to_remove, i);
+	}
+    }
+
+  bitmap_and_compl_into (vr_p->equiv, to_remove);
+  BITMAP_FREE (to_remove);
+}
+
+
 /* Extract value range information from an ASSERT_EXPR EXPR and store
    it in *VR_P.  */
 
@@ -747,7 +822,11 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	}
     }
 
-  /* The new range has the same set of equivalences of VAR's range.  */
+  /* Initially, the new range has the same set of equivalences of
+     VAR's range.  This will be revised before returning the final
+     value.  Since assertions may be chained via mutually exclusive
+     predicates, we will need to trim the set of equivalences before
+     we are done.  */
   gcc_assert (vr_p->equiv == NULL);
   vr_p->equiv = BITMAP_ALLOC (NULL);
   add_equivalence (vr_p->equiv, var);
@@ -924,7 +1003,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
       || var_vr->type == VR_UNDEFINED
       || symbolic_range_p (vr_p)
       || symbolic_range_p (var_vr))
-    return;
+    goto done;
 
   if (var_vr->type == VR_RANGE && vr_p->type == VR_RANGE)
     {
@@ -968,6 +1047,11 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  && compare_values (var_vr->max, vr_p->max) == 0)
 	set_value_range_to_varying (vr_p);
     }
+
+  /* Remove names from the equivalence set that have ranges
+     incompatible with VR_P.  */
+done:
+  fix_equivalence_set (vr_p);
 }
 
 
