@@ -1,5 +1,11 @@
 2005-11-05  Daniel Berlin  <dberlin@dberlin.org>
 
+	* gcc_release:  Always determine revision number from date or tag,
+	and use that, instead of fragile date based export.
+	Put back setting of non-local CVSROOT.
+
+2005-11-05  Daniel Berlin  <dberlin@dberlin.org>
+
 	* gcc_release: Make tags go in /tags.
 	Don't tag for snapshots.
 	Determine revision number of export and put into snapshot
