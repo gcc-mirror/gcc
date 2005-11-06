@@ -1,0 +1,58 @@
+proc test_treelang_output { testname srcfiles infile resfile args } {
+    set comp_output [treelang_target_compile $srcfiles $testname executable $args]
+    if { [treelang_check_compile $testname $args $testname $comp_output] == 0 } {
+    	return 0;
+    }
+
+    verbose "Expected output is in $resfile"
+    set id [open $resfile r]
+    set expected ""
+    append expected [read $id]
+    close $id
+    set output ""
+    set output [exec $testname $infile]
+    regsub -all "\r" "$output" "" output
+    regsub "\n*$" $expected "" expected
+    regsub "\n*$" $output "" output
+    regsub "^\n*" $expected "" expected
+    regsub "^\n*" $output "" output
+    regsub -all "\[ \t\]\[ \t\]*" $expected " " expected
+    regsub -all "\[ \t\]*\n\n*" $expected "\n" expected
+    regsub -all "\[ \t\]\[ \t\]*" $output " " output
+    regsub -all "\[ \t\]*\n\n*" $output "\n" output
+    verbose "expected is $expected"
+    verbose "actual is $output"
+
+    if { $expected == $output } {
+	pass $testname
+    } else {
+        fail $testname
+    }
+    exec rm $testname
+}
+global srcdir subdir
+
+catch { lsort [glob -nocomplain ${srcdir}/${subdir}/*.out] } outfiles
+verbose "Output files are $outfiles"
+
+set prefix ""
+foreach x $outfiles {
+    regsub "\\.out$" $x "" prefix
+    set bname [file tail $prefix]
+
+    if [file exists ${prefix}.inp] {
+	set inpfile ${prefix}.inp
+    } else {
+	set inpfile ""
+    }
+
+    verbose "inpfile is $inpfile"
+
+    set srcfiles [lsort [glob -nocomplain ${prefix}.{c,tree}]]
+    verbose "source files are $srcfiles"
+    test_treelang_output "treelang/$bname" $srcfiles $inpfile $x ""
+}
+
+# Local Variables:
+# tcl-indent-level:4
+# End:

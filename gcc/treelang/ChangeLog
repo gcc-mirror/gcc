@@ -1,3 +1,10 @@
+2005-11-06  James A. Morrison  <phython@gcc.gnu.org>
+	Backport:
+	2005-08-06  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR treelang/23072
+	* Make-lang.in: Remove old testing cruft.
+
 2005-09-20  Release Manager
 
 	* GCC 4.0.2 released.
