@@ -6,6 +6,9 @@
 /* libm includes acosf */
 #undef HAVE_ACOSF
 
+/* Define to 1 if you have the `alarm' function. */
+#undef HAVE_ALARM
+
 /* libm includes asinf */
 #undef HAVE_ASINF
 
@@ -47,6 +50,9 @@
 
 /* Define if CRLF is line terminator. */
 #undef HAVE_CRLF
+
+/* Define to 1 if you have the `ctime' function. */
+#undef HAVE_CTIME
 
 /* libm includes erf */
 #undef HAVE_ERF
@@ -176,6 +182,9 @@
 
 /* libm includes scalbnf */
 #undef HAVE_SCALBNF
+
+/* Define to 1 if you have the `signal' function. */
+#undef HAVE_SIGNAL
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H

@@ -1,3 +1,12 @@
+2005-11-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/ctime.c: New file.
+	* configure.ac: Add check for ctime.
+	* Makefile.am: Add ctime.c
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+
 2005-11-05  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Use AM_FCFLAGS for extra flags, not FCFLAGS.

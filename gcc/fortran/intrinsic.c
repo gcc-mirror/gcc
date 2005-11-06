@@ -863,7 +863,7 @@ add_functions (void)
     *s = "s", *dm = "dim", *kind = "kind", *msk = "mask",
     *x = "x", *sh = "shift", *stg = "string", *ssg = "substring",
     *y = "y", *sz = "size", *sta = "string_a", *stb = "string_b",
-    *z = "z", *ln = "len", *ut = "unit";
+    *z = "z", *ln = "len", *ut = "unit", *tm = "time";
 
   int di, dr, dd, dl, dc, dz, ii;
 
@@ -1171,6 +1171,12 @@ add_functions (void)
 
   make_generic ("cshift", GFC_ISYM_CSHIFT, GFC_STD_F95);
 
+  add_sym_1 ("ctime", 0, 1, BT_CHARACTER, 0, GFC_STD_GNU,
+              gfc_check_ctime, NULL, gfc_resolve_ctime,
+	      tm, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("ctime", GFC_ISYM_CTIME, GFC_STD_GNU);
+
   add_sym_1 ("dble", 1, 1, BT_REAL, dd, GFC_STD_F77,
 	     gfc_check_dble, gfc_simplify_dble, gfc_resolve_dble,
 	     a, BT_REAL, dr, REQUIRED);
@@ -1285,6 +1291,11 @@ add_functions (void)
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("exponent", GFC_ISYM_EXPONENT, GFC_STD_F95);
+
+  add_sym_0 ("fdate", 1, 0, BT_CHARACTER, dc, GFC_STD_GNU,
+	     NULL, NULL, gfc_resolve_fdate);
+
+  make_generic ("fdate", GFC_ISYM_FDATE, GFC_STD_GNU);
 
   add_sym_2 ("floor", 1, 1, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_a_ikind, gfc_simplify_floor, gfc_resolve_floor,
@@ -2080,7 +2091,7 @@ add_subroutines (void)
     *f = "from", *sz = "size", *ln = "len", *cr = "count_rate",
     *com = "command", *length = "length", *st = "status",
     *val = "value", *num = "number", *name = "name",
-    *trim_name = "trim_name", *ut = "unit";
+    *trim_name = "trim_name", *ut = "unit", *res = "result";
 
   int di, dr, dc, dl;
 
@@ -2096,6 +2107,10 @@ add_subroutines (void)
 	      tm, BT_REAL, dr, REQUIRED);
 
   /* More G77 compatibility garbage.  */
+  add_sym_2s ("ctime", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	     gfc_check_ctime_sub, NULL, gfc_resolve_ctime_sub,
+	     tm, BT_INTEGER, di, REQUIRED, res, BT_CHARACTER, dc, REQUIRED);
+
   add_sym_1s ("second", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_second_sub, NULL, gfc_resolve_second_sub,
 	      tm, BT_REAL, dr, REQUIRED);
@@ -2117,6 +2132,10 @@ add_subroutines (void)
   add_sym_2s ("dtime", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	     gfc_check_etime_sub, NULL, gfc_resolve_etime_sub,
 	      vl, BT_REAL, 4, REQUIRED, tm, BT_REAL, 4, REQUIRED);
+
+  add_sym_1s ("fdate", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	     gfc_check_fdate_sub, NULL, gfc_resolve_fdate_sub,
+	     dt, BT_CHARACTER, dc, REQUIRED);
 
   add_sym_1s ("gerror", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
               gfc_check_gerror, NULL, gfc_resolve_gerror, c, BT_CHARACTER,

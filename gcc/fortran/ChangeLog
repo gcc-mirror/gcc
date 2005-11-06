@@ -1,3 +1,25 @@
+2005-11-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsic.c (add_functions): Add ctime and fdate intrinsics.
+	(add_subroutines): Likewise.
+	* intrinsic.h: Prototypes for gfc_check_ctime,
+	gfc_check_ctime_sub, gfc_check_fdate_sub, gfc_resolve_ctime,
+	gfc_resolve_fdate, gfc_resolve_ctime_sub, gfc_resolve_fdate_sub.
+	* gfortran.h: Add GFC_ISYM_CTIME and GFC_ISYM_FDATE.
+	* iresolve.c (gfc_resolve_ctime, gfc_resolve_fdate,
+	gfc_resolve_ctime_sub, gfc_resolve_fdate_sub): New functions.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Add
+	gfor_fndecl_fdate and gfor_fndecl_ctime.
+	* check.c (gfc_check_ctime, gfc_check_ctime_sub,
+	gfc_check_fdate_sub): New functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_ctime,
+	gfc_conv_intrinsic_fdate): New functions.
+	(gfc_conv_intrinsic_function): Add cases for GFC_ISYM_CTIME
+	and GFC_ISYM_FDATE.
+	* intrinsic.texi: Documentation for the new CTIME and FDATE
+	intrinsics.
+	* trans.h: Declarations for gfor_fndecl_ctime and gfor_fndecl_fdate.
+
 2005-11-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsic.c (add_functions): Add function version of TTYNAM.
