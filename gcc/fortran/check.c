@@ -667,6 +667,19 @@ gfc_check_cshift (gfc_expr * array, gfc_expr * shift, gfc_expr * dim)
 
 
 try
+gfc_check_ctime (gfc_expr * time)
+{
+  if (scalar_check (time, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (time, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_dcmplx (gfc_expr * x, gfc_expr * y)
 {
   if (numeric_check (x, 0) == FAILURE)
@@ -2540,6 +2553,21 @@ gfc_check_srand (gfc_expr * x)
 }
 
 try
+gfc_check_ctime_sub (gfc_expr * time, gfc_expr * result)
+{
+  if (scalar_check (time, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (time, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (result, 1, BT_CHARACTER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+try
 gfc_check_etime (gfc_expr * x)
 {
   if (array_check (x, 0) == FAILURE)
@@ -2585,6 +2613,16 @@ gfc_check_etime_sub (gfc_expr * values, gfc_expr * time)
     return FAILURE;
 
   if (kind_value_check(time, 1, 4) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_fdate_sub (gfc_expr * date)
+{
+  if (type_check (date, 0, BT_CHARACTER) == FAILURE)
     return FAILURE;
 
   return SUCCESS;

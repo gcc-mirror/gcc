@@ -68,6 +68,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{COUNT}:         COUNT,     Count occurrences of .TRUE. in an array
 * @code{CPU_TIME}:      CPU_TIME,  CPU time subroutine
 * @code{CSHIFT}:        CSHIFT,    Circular array shift function
+* @code{CTIME}:         CTIME,     Subroutine (or function) to convert a time into a string
 * @code{DATE_AND_TIME}: DATE_AND_TIME, Date and time subroutine
 * @code{DBLE}:          DBLE,      Double precision conversion function
 * @code{DCMPLX}:        DCMPLX,    Double complex conversion function
@@ -86,6 +87,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{EXIT}:          EXIT,      Exit the program with status.
 * @code{EXP}:           EXP,       Exponential function
 * @code{EXPONENT}:      EXPONENT,  Exponent function
+* @code{FDATE}:         FDATE,     Subroutine (or function) to get the current time as a string
 * @code{FLOOR}:         FLOOR,     Integer floor function
 * @code{FNUM}:          FNUM,      File number function
 * @code{FREE}:          FREE,      Memory de-allocation subroutine
@@ -1833,6 +1835,58 @@ end program test_cshift
 @end table
 
 
+@node CTIME
+@section @code{CTIME} --- Convert a time into a string
+@findex @code{CTIME} intrinsic
+@cindex ctime subroutine 
+
+@table @asis
+@item @emph{Description}:
+@code{CTIME(T,S)} converts @var{T}, a system time value, such as returned
+by @code{TIME8()}, to a string of the form @samp{Sat Aug 19 18:13:14
+1995}, and returns that string into @var{S}.
+
+If @code{CTIME} is invoked as a function, it can not be invoked as a
+subroutine, and vice versa.
+
+@var{T} is an @code{INTENT(IN)} @code{INTEGER(KIND=8)} variable.
+@var{S} is an @code{INTENT(OUT)} @code{CHARACTER} variable.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{CALL CTIME(T,S)}.
+@item @code{S = CTIME(T)}, (not recommended).
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{S}@tab The type shall be of type @code{CHARACTER}.
+@item @var{T}@tab The type shall be of type @code{INTEGER(KIND=8)}.
+@end multitable
+
+@item @emph{Return value}:
+The converted date and time as a string.
+
+@item @emph{Example}:
+@smallexample
+program test_ctime
+    integer(8) :: i
+    character(len=30) :: date
+    i = time8()
+
+    ! Do something, main part of the program
+    
+    call ctime(i,date)
+    print *, 'Program was started on ', date
+end program test_ctime
+@end smallexample
+@end table
 
 @node DATE_AND_TIME
 @section @code{DATE_AND_TIME} --- Date and time subroutine
@@ -2733,6 +2787,59 @@ None
 
 @item @emph{Example}:
 See @code{MALLOC} for an example.
+@end table
+
+
+@node FDATE
+@section @code{FDATE} --- Get the current time as a string
+@findex @code{FDATE} intrinsic
+@cindex fdate subroutine 
+
+@table @asis
+@item @emph{Description}:
+@code{FDATE(DATE)} returns the current date (using the same format as
+@code{CTIME}) in @var{DATE}. It is equivalent to @code{CALL CTIME(DATE,
+TIME8())}.
+
+If @code{FDATE} is invoked as a function, it can not be invoked as a
+subroutine, and vice versa.
+
+@var{DATE} is an @code{INTENT(OUT)} @code{CHARACTER} variable.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{CALL FDATE(DATE)}.
+@item @code{DATE = FDATE()}, (not recommended).
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{DATE}@tab The type shall be of type @code{CHARACTER}.
+@end multitable
+
+@item @emph{Return value}:
+The current date and time as a string.
+
+@item @emph{Example}:
+@smallexample
+program test_fdate
+    integer(8) :: i, j
+    character(len=30) :: date
+    call fdate(date)
+    print *, 'Program started on ', date
+    do i = 1, 100000000 ! Just a delay
+        j = i * i - i
+    end do
+    call fdate(date)
+    print *, 'Program ended on ', date
+end program test_fdate
+@end smallexample
 @end table
 
 

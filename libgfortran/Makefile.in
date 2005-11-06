@@ -165,7 +165,7 @@ am__objects_32 = close.lo file_pos.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo transfer.lo unit.lo \
 	unix.lo write.lo
 am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
-	c99_functions.lo chdir.lo cpu_time.lo cshift0.lo \
+	c99_functions.lo chdir.lo cpu_time.lo cshift0.lo ctime.lo \
 	date_and_time.lo env.lo erf.lo eoshift0.lo eoshift2.lo \
 	etime.lo exit.lo flush.lo fnum.lo gerror.lo getcwd.lo \
 	getlog.lo getXid.lo hyper.lo hostnm.lo kill.lo ierrno.lo \
@@ -385,6 +385,7 @@ intrinsics/c99_functions.c \
 intrinsics/chdir.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
+intrinsics/ctime.c \
 intrinsics/date_and_time.c \
 intrinsics/env.c \
 intrinsics/erf.c \
@@ -2234,6 +2235,9 @@ cpu_time.lo: intrinsics/cpu_time.c
 
 cshift0.lo: intrinsics/cshift0.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift0.lo `test -f 'intrinsics/cshift0.c' || echo '$(srcdir)/'`intrinsics/cshift0.c
+
+ctime.lo: intrinsics/ctime.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ctime.lo `test -f 'intrinsics/ctime.c' || echo '$(srcdir)/'`intrinsics/ctime.c
 
 date_and_time.lo: intrinsics/date_and_time.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o date_and_time.lo `test -f 'intrinsics/date_and_time.c' || echo '$(srcdir)/'`intrinsics/date_and_time.c
