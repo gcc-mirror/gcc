@@ -315,8 +315,19 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
     expr = create_character_intializer (init, last_ts, ref, rvalue);
   else
     {
-      /* We should never be overwriting an existing initializer.  */
-      gcc_assert (!init);
+      /* Overwriting an existing initializer is non-standard but usually only
+	 provokes a warning from other compilers.  */
+      if (init != NULL)
+	{
+	  /* Order in which the expressions arrive here depends on whether they
+	     are from data statements or F95 style declarations. Therefore,
+	     check which is the most recent.  */
+	  expr = (init->where.lb->linenum > rvalue->where.lb->linenum) ?
+		    init : rvalue;
+	  gfc_notify_std (GFC_STD_GNU, "Extension: re-initialization "
+			  "of '%s' at %L",  symbol->name, &expr->where);
+	  return;
+	}
 
       expr = gfc_copy_expr (rvalue);
       if (!gfc_compare_types (&lvalue->ts, &expr->ts))

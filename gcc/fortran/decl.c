@@ -203,24 +203,19 @@ var_element (gfc_data_variable * new)
 
   sym = new->expr->symtree->n.sym;
 
-  if(sym->value != NULL)
+  if (!sym->attr.function && gfc_current_ns->parent && gfc_current_ns->parent == sym->ns)
     {
-      gfc_error ("Variable '%s' at %C already has an initialization",
-		 sym->name);
+      gfc_error ("Host associated variable '%s' may not be in the DATA "
+		 "statement at %C.", sym->name);
       return MATCH_ERROR;
     }
 
-#if 0 /* TODO: Find out where to move this message */
-  if (sym->attr.in_common)
-    /* See if sym is in the blank common block.  */
-    for (t = &sym->ns->blank_common; t; t = t->common_next)
-      if (sym == t->head)
-	{
-	  gfc_error ("DATA statement at %C may not initialize variable "
-		     "'%s' from blank COMMON", sym->name);
-	  return MATCH_ERROR;
-	}
-#endif
+  if (gfc_current_state () != COMP_BLOCK_DATA
+	&& sym->attr.in_common
+	&& gfc_notify_std (GFC_STD_GNU, "Extension: initialization of "
+			   "common block variable '%s' in DATA statement at %C",
+			   sym->name) == FAILURE)
+    return MATCH_ERROR;
 
   if (gfc_add_data (&sym->attr, sym->name, &new->expr->where) == FAILURE)
     return MATCH_ERROR;

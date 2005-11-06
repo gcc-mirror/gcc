@@ -1787,6 +1787,13 @@ gfc_resolve_dt (gfc_dt * dt)
   /* Sanity checks on data transfer statements.  */
   if (e->ts.type == BT_CHARACTER)
     {
+      if (gfc_has_vector_index (e))
+	{
+	  gfc_error ("Internal unit with vector subscript at %L",
+		     &e->where);
+	  return FAILURE;
+	}
+
       if (dt->rec != NULL)
 	{
 	  gfc_error ("REC tag at %L is incompatible with internal file",

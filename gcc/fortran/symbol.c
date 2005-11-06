@@ -264,7 +264,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
     *function = "FUNCTION", *subroutine = "SUBROUTINE",
     *dimension = "DIMENSION", *in_equivalence = "EQUIVALENCE",
     *use_assoc = "USE ASSOCIATED", *cray_pointer = "CRAY POINTER",
-    *cray_pointee = "CRAY POINTEE";
+    *cray_pointee = "CRAY POINTEE", *data = "DATA";
 
   const char *a1, *a2;
 
@@ -372,6 +372,12 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (cray_pointee, entry);
   conf (cray_pointee, in_common);
   conf (cray_pointee, in_equivalence);
+
+  conf (data, dummy);
+  conf (data, function);
+  conf (data, result);
+  conf (data, allocatable);
+  conf (data, use_assoc);
 
   a1 = gfc_code2string (flavors, attr->flavor);
 

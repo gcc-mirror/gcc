@@ -1,3 +1,20 @@
+2005-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24534
+	gfortran.dg/private_type_2.f90: Modified to check that case with
+	PRIVATE declaration within derived type is accepted.
+
+	PR fortran/20838
+	gfortran.dg/pointer_assign_1.f90: New test.
+
+	PR fortran/20840
+	* gfortran.dg/arrayio_0.f90: New test.
+
+	PR fortran/17737
+	gfortran.dg/data_initialized.f90: New test.
+	gfortran.dg/data_constraints_1.f90: New test.
+	gfortran.dg/data_constraints_2.f90: New test.
+
 2005-11-06  Janne Blomqvist <jb@gcc.gnu.org>
 
 	PR fortran/24174
