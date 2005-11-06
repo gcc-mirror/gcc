@@ -1,3 +1,9 @@
+2005-11-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/18174
+	* include/bits/stl_queue.h (priority_queue): Tweak a bit the
+	comment describing the container.
+
 2005-11-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* configure.host: Add | rs6000 to the cpu_defines_dir switch,
