@@ -1,3 +1,7 @@
+2005-11-06  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2005-10-24  Diego Novillo  <dnovillo@redhat.com>
 
 	* MAINTAINERS (alias analysis): Add Daniel Berlin and
