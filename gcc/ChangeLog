@@ -1,3 +1,9 @@
+2005-11-05  Ian Lance Taylor  <ian@airs.com>
+
+	PR target/22432
+	* combine.c (apply_distributive_law): Don't distribute across a
+	vector mode subreg.
+
 2005-11-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c++/17964
