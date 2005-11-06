@@ -193,7 +193,8 @@ namespace std
       char* __grouping = new char[_M_grouping_size];
       __np.grouping().copy(__grouping, _M_grouping_size);
       _M_grouping = __grouping;
-      _M_use_grouping = _M_grouping_size && __np.grouping()[0] != 0;
+      _M_use_grouping = (_M_grouping_size
+			 && static_cast<signed char>(__np.grouping()[0]) > 0);
 
       _M_truename_size = __np.truename().size();
       _CharT* __truename = new _CharT[_M_truename_size];
@@ -228,7 +229,8 @@ namespace std
       char* __grouping = new char[_M_grouping_size];
       __mp.grouping().copy(__grouping, _M_grouping_size);
       _M_grouping = __grouping;
-      _M_use_grouping = _M_grouping_size && __mp.grouping()[0] != 0;
+      _M_use_grouping = (_M_grouping_size
+			 && static_cast<signed char>(__mp.grouping()[0]) > 0);
       
       _M_decimal_point = __mp.decimal_point();
       _M_thousands_sep = __mp.thousands_sep();
@@ -2464,9 +2466,11 @@ namespace std
       __test = __grouping_tmp[__i] == __grouping[__j];
     for (; __i && __test; --__i)
       __test = __grouping_tmp[__i] == __grouping[__min];
-    // ... but the last parsed grouping can be <= numpunct
-    // grouping.
-    __test &= __grouping_tmp[0] <= __grouping[__min];
+    // ... but the first parsed grouping can be <= numpunct
+    // grouping (only do the check if the numpunct char is > 0
+    // because <= 0 means any size is ok).
+    if (static_cast<signed char>(__grouping[__min]) > 0)
+      __test &= __grouping_tmp[0] <= __grouping[__min];
     return __test;
   }
 
@@ -2476,7 +2480,8 @@ namespace std
 		   const char* __gbeg, size_t __gsize,
 		   const _CharT* __first, const _CharT* __last)
     {
-      if (__last - __first > *__gbeg)
+      if (__last - __first > *__gbeg
+	  && static_cast<signed char>(*__gbeg) > 0)
 	{
 	  const bool __bump = __gsize != 1;
 	  __s = std::__add_grouping(__s,  __sep, __gbeg + __bump,
