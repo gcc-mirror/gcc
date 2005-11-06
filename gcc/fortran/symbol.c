@@ -249,7 +249,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
     *public = "PUBLIC", *optional = "OPTIONAL", *entry = "ENTRY",
     *function = "FUNCTION", *subroutine = "SUBROUTINE",
     *dimension = "DIMENSION", *in_equivalence = "EQUIVALENCE",
-    *use_assoc = "USE ASSOCIATED";
+    *use_assoc = "USE ASSOCIATED", *data = "DATA";
 
   const char *a1, *a2;
 
@@ -330,6 +330,12 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (entry, result);
 
   conf (function, subroutine);
+
+  conf (data, dummy);
+  conf (data, function);
+  conf (data, result);
+  conf (data, allocatable);
+  conf (data, use_assoc);
 
   a1 = gfc_code2string (flavors, attr->flavor);
 

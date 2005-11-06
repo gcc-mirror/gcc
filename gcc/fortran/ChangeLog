@@ -1,3 +1,28 @@
+2005-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24534
+	* resolve.c (resolve_symbol): Exclude case of PRIVATE declared
+	within derived type from error associated with PRIVATE type
+	components within derived type.
+
+	PR fortran/20838
+	PR fortran/20840
+	* gfortran.h: Add prototype for gfc_has_vector_index.
+	* io.c (gfc_resolve_dt): Error if internal unit has a vector index.
+	* expr.c (gfc_has_vector_index): New function to check if any of
+	the array references of an expression have vector inidices.
+	(gfc_check_pointer_assign): Error if internal unit has a vector index.
+
+	PR fortran/17737
+	* data.c (gfc_assign_data_value): Remove gcc_assert that caused the ICE
+	and replace by a standard dependent warning/error if overwriting an
+	existing initialization.
+	* decl.c (gfc_data_variable): Remove old error for already initialized
+	variable and the unused error check for common block variables.  Add
+	error for host associated variable and standard dependent error for
+	common block variables, outside of blockdata.
+	* symbol.c (check_conflict): Add constraints for DATA statement.
+
 2005-11-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsic.c (add_functions): Add ctime and fdate intrinsics.

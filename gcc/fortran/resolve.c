@@ -4329,9 +4329,11 @@ resolve_symbol (gfc_symbol * sym)
       return;
     }
 
-  /* Ensure that derived type components of a public derived type
-     are not of a private type.  */
+  /* If a component of a derived type is of a type declared to be private,
+     either the derived type definition must contain the PRIVATE statement,
+     or the derived type must be private.  (4.4.1 just after R427) */
   if (sym->attr.flavor == FL_DERIVED
+	&& sym->component_access != ACCESS_PRIVATE
 	&& gfc_check_access(sym->attr.access, sym->ns->default_access))
     {
       for (c = sym->components; c; c = c->next)
