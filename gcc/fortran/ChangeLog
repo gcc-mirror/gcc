@@ -1,3 +1,11 @@
+2005-11-06  Janne Blomqvist <jb@gcc.gnu.org>
+
+	PR fortran/24174
+	PR fortran/24305
+	* fortran/trans-io.c (gfc_build_io_library_fndecls): Add kind
+	argument to transfer_array.
+	(transfer_array_desc): Add kind argument.
+
 2005-11-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsic.c (add_functions): Add ctime and fdate intrinsics.
