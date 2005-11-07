@@ -1,3 +1,13 @@
+2005-11-07  James E Wilson  <wilson@specifix.com>
+
+	PR preprocessor/15220
+	* cppfiles.c (_cpp_find_file): New parameter angle_brackets.  Fix all
+	callers.  Pass to open_file_failed.
+	(open_file_failed): New parameter angle_brackets.  Fix
+	all callers.  use in print_dep assignment.
+	* cpphash.h (_cpp_find_file): Add new parm to declaration.
+	* cppinit.c (cpp_read_main_file): Pass another arg to _cpp_find_file.
+
 2005-11-05  Andreas Jaeger  <aj@suse.de>
 
 	* fixinc/check.tpl: Adopt for move to subversion.

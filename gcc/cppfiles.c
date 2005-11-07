@@ -164,7 +164,7 @@ static bool should_stack_file (cpp_reader *, _cpp_file *file, bool import);
 static struct cpp_dir *search_path_head (cpp_reader *, const char *fname,
 				 int angle_brackets, enum include_type);
 static const char *dir_name_of_file (_cpp_file *file);
-static void open_file_failed (cpp_reader *pfile, _cpp_file *file);
+static void open_file_failed (cpp_reader *pfile, _cpp_file *file, int);
 static struct file_hash_entry *search_cache (struct file_hash_entry *head,
 					     const cpp_dir *start_dir);
 static _cpp_file *make_cpp_file (cpp_reader *, cpp_dir *, const char *fname);
@@ -330,7 +330,7 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 
   if (file->err_no != ENOENT)
     {
-      open_file_failed (pfile, file);
+      open_file_failed (pfile, file, 0);
       return true;
     }
 
@@ -360,7 +360,7 @@ _cpp_find_failed (_cpp_file *file)
    to open_file().
 */
 _cpp_file *
-_cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool fake)
+_cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool fake, int angle_brackets)
 {
   struct file_hash_entry *entry, **hash_slot;
   _cpp_file *file;
@@ -391,7 +391,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
       file->dir = file->dir->next;
       if (file->dir == NULL)
 	{
-	  open_file_failed (pfile, file);
+	  open_file_failed (pfile, file, angle_brackets);
 	  if (invalid_pch)
 	    {
 	      cpp_error (pfile, CPP_DL_ERROR, 
@@ -533,7 +533,7 @@ read_file (cpp_reader *pfile, _cpp_file *file)
 
   if (file->fd == -1 && !open_file (file))
     {
-      open_file_failed (pfile, file);
+      open_file_failed (pfile, file, 0);
       return false;
     }
 
@@ -757,16 +757,17 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   if (!dir)
     return false;
 
-  return _cpp_stack_file (pfile, _cpp_find_file (pfile, fname, dir, false),
+  return _cpp_stack_file (pfile, _cpp_find_file (pfile, fname, dir, false,
+						 angle_brackets),
 		     type == IT_IMPORT);
 }
 
 /* Could not open FILE.  The complication is dependency output.  */
 static void
-open_file_failed (cpp_reader *pfile, _cpp_file *file)
+open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets)
 {
   int sysp = pfile->map ? pfile->map->sysp: 0;
-  bool print_dep = CPP_OPTION (pfile, deps.style) > !!sysp;
+  bool print_dep = CPP_OPTION (pfile, deps.style) > (angle_brackets || !!sysp);
 
   errno = file->err_no;
   if (print_dep && CPP_OPTION (pfile, deps.missing_files) && errno == ENOENT)
@@ -948,7 +949,7 @@ _cpp_cleanup_files (cpp_reader *pfile)
 void
 _cpp_fake_include (cpp_reader *pfile, const char *fname)
 {
-  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, true);
+  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, true, 0);
 }
 
 /* Not everyone who wants to set system-header-ness on a buffer can
@@ -1030,7 +1031,7 @@ _cpp_compare_file_date (cpp_reader *pfile, const char *fname,
   if (!dir)
     return -1;
 
-  file = _cpp_find_file (pfile, fname, dir, false);
+  file = _cpp_find_file (pfile, fname, dir, false, angle_brackets);
   if (file->err_no)
     return -1;
 
