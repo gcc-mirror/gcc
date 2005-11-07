@@ -1,3 +1,7 @@
+2005-11-07  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* g++.dg/abi/empty6.C (B): Align to twice pointer size.
+
 2005-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23567
