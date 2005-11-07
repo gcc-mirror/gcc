@@ -1,3 +1,8 @@
+2005-11-07  Paolo Bonzini  <bonzini@gnu.org>
+
+        * c-typeck.c (build_c_cast): Try using a shared constant, and see
+        if TREE_OVERFLOW or TREE_CONSTANT_OVERFLOW really changed.
+
 2005-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23567

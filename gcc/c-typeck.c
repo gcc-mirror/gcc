@@ -3500,16 +3500,19 @@ build_c_cast (tree type, tree expr)
       /* Ignore any integer overflow caused by the cast.  */
       if (TREE_CODE (value) == INTEGER_CST)
 	{
-	  /* If OVALUE had overflow set, then so will VALUE, so it
-	     is safe to overwrite.  */
-	  if (CONSTANT_CLASS_P (ovalue))
+	  if (CONSTANT_CLASS_P (ovalue)
+	      && (TREE_OVERFLOW (ovalue) || TREE_CONSTANT_OVERFLOW (ovalue)))
 	    {
+	      /* Avoid clobbering a shared constant.  */
+	      value = copy_node (value);
 	      TREE_OVERFLOW (value) = TREE_OVERFLOW (ovalue);
-	      /* Similarly, constant_overflow cannot have become cleared.  */
 	      TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
 	    }
-	  else
-	    TREE_OVERFLOW (value) = 0;
+	  else if (TREE_OVERFLOW (value) || TREE_CONSTANT_OVERFLOW (value))
+	    /* Reset VALUE's overflow flags, ensuring constant sharing.  */
+	    value = build_int_cst_wide (TREE_TYPE (value),
+					TREE_INT_CST_LOW (value),
+					TREE_INT_CST_HIGH (value));
 	}
     }
 
