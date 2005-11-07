@@ -2025,6 +2025,59 @@ noce_operand_ok (rtx op)
   return ! may_trap_p (op);
 }
 
+/* Return true if a write into MEM may trap or fault.  */
+
+static bool
+noce_mem_write_may_trap_or_fault_p (rtx mem)
+{
+  rtx addr;
+
+  if (MEM_READONLY_P (mem))
+    return true;
+
+  if (may_trap_or_fault_p (mem))
+    return true;
+
+  addr = XEXP (mem, 0);
+
+  /* Call target hook to avoid the effects of -fpic etc....  */
+  addr = targetm.delegitimize_address (addr);
+
+  while (addr)
+    switch (GET_CODE (addr))
+      {
+      case CONST:
+      case PRE_DEC:
+      case PRE_INC:
+      case POST_DEC:
+      case POST_INC:
+      case POST_MODIFY:
+	addr = XEXP (addr, 0);
+	break;
+      case LO_SUM:
+      case PRE_MODIFY:
+	addr = XEXP (addr, 1);
+	break;
+      case PLUS:
+	if (GET_CODE (XEXP (addr, 1)) == CONST_INT)
+	  addr = XEXP (addr, 0);
+	else
+	  return false;
+	break;
+      case LABEL_REF:
+	return true;
+      case SYMBOL_REF:
+	if (SYMBOL_REF_DECL (addr)
+	    && decl_readonly_section (SYMBOL_REF_DECL (addr), 0))
+	  return true;
+	return false;
+      default:
+	return false;
+      }
+
+  return false;
+}
+
 /* Given a simple IF-THEN or IF-THEN-ELSE block, attempt to convert it
    without using conditional execution.  Return TRUE if we were
    successful at converting the block.  */
@@ -2136,14 +2189,6 @@ noce_process_if_block (struct ce_if_block * ce_info)
   if (side_effects_p (x))
     return FALSE;
 
-  /* If x is a read-only memory, then the program is valid only if we
-     avoid the store into it.  If there are stores on both the THEN and
-     ELSE arms, then we can go ahead with the conversion; either the 
-     program is broken, or the condition is always false such that the
-     other memory is selected.  */
-  if (!set_b && MEM_P (x) && MEM_READONLY_P (x))
-    return FALSE;
-
   b = (set_b ? SET_SRC (set_b) : x);
 
   /* Only operate on register destinations, and even then avoid extending
@@ -2211,23 +2256,16 @@ noce_process_if_block (struct ce_if_block * ce_info)
     }
 
   /* Disallow the "if (...) x = a;" form (with an implicit "else x = x;")
-     for most optimizations if writing to x may trap, i.e. it's a memory
-     other than a static var or a stack slot.  */
-  if (! set_b
-      && MEM_P (orig_x)
-      && ! MEM_NOTRAP_P (orig_x)
-      && rtx_addr_can_trap_p (XEXP (orig_x, 0)))
-    {
-      if (HAVE_conditional_move)
-	{
-	  if (noce_try_cmove (&if_info))
-	    goto success;
-	  if (! HAVE_conditional_execution
-	      && noce_try_cmove_arith (&if_info))
-	    goto success;
-	}
-      return FALSE;
-    }
+     for optimizations if writing to x may trap or fault, i.e. it's a memory
+     other than a static var or a stack slot, is misaligned on strict
+     aligned machines or is read-only.
+     If x is a read-only memory, then the program is valid only if we
+     avoid the store into it.  If there are stores on both the THEN and
+     ELSE arms, then we can go ahead with the conversion; either the
+     program is broken, or the condition is always false such that the
+     other memory is selected.  */
+  if (!set_b && MEM_P (orig_x) && noce_mem_write_may_trap_or_fault_p (orig_x))
+    return FALSE;
 
   if (noce_try_move (&if_info))
     goto success;

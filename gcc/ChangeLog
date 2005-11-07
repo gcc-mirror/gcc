@@ -1,3 +1,11 @@
+2005-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/23567
+	* ifcvt.c (noce_mem_write_may_trap_or_fault_p): New function.
+	(noce_process_if_block): Don't do any optimizations except
+	if (cond) x = x; if !set_b and write into orig_x may trap
+	or fault.  Remove the MEM_READONLY_P check.
+
 2005-11-06  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 24670
