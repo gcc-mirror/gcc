@@ -2042,73 +2042,150 @@ num_insns_constant (rtx op, enum machine_mode mode)
     }
 }
 
-/* Returns the constant for the splat instruction, if exists.  */
 
-int
-easy_vector_splat_const (int cst, enum machine_mode mode)
+/* Return true if OP can be synthesized with a particular vspltisb, vspltish 
+   or vspltisw instruction.  OP is a CONST_VECTOR.  Which instruction is used
+   depends on STEP and COPIES, one of which will be 1.  If COPIES > 1,
+   all items are set to the same value and contain COPIES replicas of the
+   vsplt's operand; if STEP > 1, one in STEP elements is set to the vsplt's
+   operand and the others are set to the value of the operand's msb.  */
+
+static bool
+vspltis_constant (rtx op, unsigned step, unsigned copies)
 {
-  switch (mode)
+  enum machine_mode mode = GET_MODE (op);
+  enum machine_mode inner = GET_MODE_INNER (mode);
+
+  unsigned i;
+  unsigned nunits = GET_MODE_NUNITS (mode);
+  unsigned bitsize = GET_MODE_BITSIZE (inner);
+  unsigned mask = GET_MODE_MASK (inner);
+
+  rtx last = CONST_VECTOR_ELT (op, nunits - 1);
+  HOST_WIDE_INT val = INTVAL (last);
+  HOST_WIDE_INT splat_val = val;
+  HOST_WIDE_INT msb_val = val > 0 ? 0 : -1;
+
+  /* Construct the value to be splatted, if possible.  If not, return 0.  */
+  for (i = 2; i <= copies; i *= 2)
     {
-    case V4SImode:
-      if (EASY_VECTOR_15 (cst)
-	  || EASY_VECTOR_15_ADD_SELF (cst))
-	return cst;
-      if ((cst & 0xffff) != ((cst >> 16) & 0xffff))
-	break;
-      cst = cst >> 16;
-      /* Fall thru */
-
-    case V8HImode:
-      if (EASY_VECTOR_15 (cst)
-	  || EASY_VECTOR_15_ADD_SELF (cst))
-	return cst;
-      if ((cst & 0xff) != ((cst >> 8) & 0xff))
-	break;
-      cst = cst >> 8;
-      /* Fall thru */
-
-    case V16QImode:
-      if (EASY_VECTOR_15 (cst)
-	  || EASY_VECTOR_15_ADD_SELF (cst))
-	return cst;
-    default:
-      break;
+      HOST_WIDE_INT small_val;
+      bitsize /= 2;
+      small_val = splat_val >> bitsize;
+      mask >>= bitsize;
+      if (splat_val != ((small_val << bitsize) | (small_val & mask)))
+	return false;
+      splat_val = small_val;
     }
-  return 0;
+
+  /* Check if SPLAT_VAL can really be the operand of a vspltis[bhw].  */
+  if (EASY_VECTOR_15 (splat_val))
+    ;
+
+  /* Also check if we can splat, and then add the result to itself.  Do so if
+     the value is positive, of if the splat instruction is using OP's mode;
+     for splat_val < 0, the splat and the add should use the same mode.  */
+  else if (EASY_VECTOR_15_ADD_SELF (splat_val)
+           && (splat_val >= 0 || (step == 1 && copies == 1)))
+    ;
+
+  else
+    return false;
+
+  /* Check if VAL is present in every STEP-th element, and the
+     other elements are filled with its most significant bit.  */
+  for (i = 0; i < nunits - 1; ++i)
+    {
+      HOST_WIDE_INT desired_val;
+      if (((i + 1) & (step - 1)) == 0)
+	desired_val = val;
+      else
+	desired_val = msb_val;
+
+      if (desired_val != INTVAL (CONST_VECTOR_ELT (op, i)))
+	return false;
+    }
+
+  return true;
 }
 
-/* Return nonzero if all elements of a vector have the same value.  */
 
-int
-easy_vector_same (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+/* Return true if OP is of the given MODE and can be synthesized 
+   with a vspltisb, vspltish or vspltisw.  */
+
+bool
+easy_altivec_constant (rtx op, enum machine_mode mode)
 {
-  int units, i, cst;
+  unsigned step, copies;
 
-  units = CONST_VECTOR_NUNITS (op);
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+  else if (mode != GET_MODE (op))
+    return false;
 
-  cst = INTVAL (CONST_VECTOR_ELT (op, 0));
-  for (i = 1; i < units; ++i)
-    if (INTVAL (CONST_VECTOR_ELT (op, i)) != cst)
-      break;
-  if (i == units && easy_vector_splat_const (cst, mode))
-    return 1;
-  return 0;
+  /* Start with a vspltisw.  */
+  step = GET_MODE_NUNITS (mode) / 4;
+  copies = 1;
+
+  if (vspltis_constant (op, step, copies))
+    return true;
+
+  /* Then try with a vspltish.  */
+  if (step == 1)
+    copies <<= 1;
+  else
+    step >>= 1;
+
+  if (vspltis_constant (op, step, copies))
+    return true;
+
+  /* And finally a vspltisb.  */
+  if (step == 1)
+    copies <<= 1;
+  else
+    step >>= 1;
+
+  if (vspltis_constant (op, step, copies))
+    return true;
+
+  return false;
 }
 
-/* Generate easy_vector_constant out of a easy_vector_constant_add_self.  */
+/* Generate a VEC_DUPLICATE representing a vspltis[bhw] instruction whose
+   result is OP.  Abort if it is not possible.  */
 
 rtx
-gen_easy_vector_constant_add_self (rtx op)
+gen_easy_altivec_constant (rtx op)
 {
-  int i, units;
-  rtvec v;
-  units = GET_MODE_NUNITS (GET_MODE (op));
-  v = rtvec_alloc (units);
+  enum machine_mode mode = GET_MODE (op);
+  int nunits = GET_MODE_NUNITS (mode);
+  rtx last = CONST_VECTOR_ELT (op, nunits - 1);
+  unsigned step = nunits / 4;
+  unsigned copies = 1;
 
-  for (i = 0; i < units; i++)
-    RTVEC_ELT (v, i) =
-      GEN_INT (INTVAL (CONST_VECTOR_ELT (op, i)) >> 1);
-  return gen_rtx_raw_CONST_VECTOR (GET_MODE (op), v);
+  /* Start with a vspltisw.  */
+  if (vspltis_constant (op, step, copies))
+    return gen_rtx_VEC_DUPLICATE (V4SImode, gen_lowpart (SImode, last));
+
+  /* Then try with a vspltish.  */
+  if (step == 1)
+    copies <<= 1;
+  else
+    step >>= 1;
+
+  if (vspltis_constant (op, step, copies))
+    return gen_rtx_VEC_DUPLICATE (V8HImode, gen_lowpart (HImode, last));
+
+  /* And finally a vspltisb.  */
+  if (step == 1)
+    copies <<= 1;
+  else
+    step >>= 1;
+
+  if (vspltis_constant (op, step, copies))
+    return gen_rtx_VEC_DUPLICATE (V16QImode, gen_lowpart (QImode, last));
+
+  gcc_unreachable ();
 }
 
 const char *
@@ -2127,44 +2204,26 @@ output_vec_const_move (rtx *operands)
 
   if (TARGET_ALTIVEC)
     {
+      rtx splat_vec;
       if (zero_constant (vec, mode))
 	return "vxor %0,%0,%0";
 
-      gcc_assert (easy_vector_constant (vec, mode));
+      splat_vec = gen_easy_altivec_constant (vec);
+      gcc_assert (GET_CODE (splat_vec) == VEC_DUPLICATE);
+      operands[1] = XEXP (splat_vec, 0);
+      if (!EASY_VECTOR_15 (INTVAL (operands[1])))
+	return "#";
 
-      operands[1] = GEN_INT (cst);
-      switch (mode)
+      switch (GET_MODE (splat_vec))
 	{
 	case V4SImode:
-	  if (EASY_VECTOR_15 (cst))
-	    {
-	      operands[1] = GEN_INT (cst);
-	      return "vspltisw %0,%1";
-	    }
-	  else if (EASY_VECTOR_15_ADD_SELF (cst))
-	    return "#";
-	  cst = cst >> 16;
-	  /* Fall thru */
+	  return "vspltisw %0,%1";
 
 	case V8HImode:
-	  if (EASY_VECTOR_15 (cst))
-	    {
-	      operands[1] = GEN_INT (cst);
-	      return "vspltish %0,%1";
-	    }
-	  else if (EASY_VECTOR_15_ADD_SELF (cst))
-	    return "#";
-	  cst = cst >> 8;
-	  /* Fall thru */
+	  return "vspltish %0,%1";
 
 	case V16QImode:
-	  if (EASY_VECTOR_15 (cst))
-	    {
-	      operands[1] = GEN_INT (cst);
-	      return "vspltisb %0,%1";
-	    }
-	  else if (EASY_VECTOR_15_ADD_SELF (cst))
-	    return "#";
+	  return "vspltisb %0,%1";
 
 	default:
 	  gcc_unreachable ();
@@ -2220,11 +2279,10 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 				  gen_rtx_XOR (mode, target, target)));
 	  return;
 	}
-      else if (mode != V4SFmode && easy_vector_same (vals, mode))
+      else if (mode != V4SFmode && easy_vector_constant (vals, mode))
 	{
 	  /* Splat immediate.  */
-	  x = gen_rtx_VEC_DUPLICATE (mode, CONST_VECTOR_ELT (vals, 0));
-	  emit_insn (gen_rtx_SET (VOIDmode, target, x));
+	  emit_insn (gen_rtx_SET (VOIDmode, target, vals));
 	  return;
 	}
       else if (all_same)

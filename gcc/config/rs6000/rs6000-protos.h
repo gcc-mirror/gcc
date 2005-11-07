@@ -32,8 +32,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int);
 extern void rs6000_va_start (tree, rtx);
 #endif /* TREE_CODE */
 
-extern int easy_vector_same (rtx, enum machine_mode);
-extern int easy_vector_splat_const (int, enum machine_mode);
+extern bool easy_altivec_constant (rtx, enum machine_mode);
 extern bool macho_lo_sum_memory_operand (rtx, enum machine_mode);
 extern int num_insns_constant (rtx, enum machine_mode);
 extern int num_insns_constant_wide (HOST_WIDE_INT);
@@ -48,7 +47,7 @@ extern bool rs6000_legitimate_small_data_p (enum machine_mode, rtx);
 
 extern rtx rs6000_got_register (rtx);
 extern rtx find_addr_reg (rtx);
-extern rtx gen_easy_vector_constant_add_self (rtx);
+extern rtx gen_easy_altivec_constant (rtx);
 extern const char *output_vec_const_move (rtx *);
 extern void rs6000_expand_vector_init (rtx, rtx);
 extern void rs6000_expand_vector_set (rtx, rtx, int);
