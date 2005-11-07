@@ -140,8 +140,7 @@ by type.  Explanations are in the following sections.
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -Wall  -Waliasing  -Wconversion @gol
 -Wimplicit-interface  -Wnonstd-intrinsics  -Wsurprising  -Wunderflow @gol
--Wunused-labels -Wline-truncation @gol
--Werror  -W}
+-Wunused-labels -Wline-truncation -W}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.

@@ -621,6 +621,9 @@ gfc_error_now (const char *format, ...)
 
   error_char ('\0');
   buffer_flag = i;
+
+  if (flag_fatal_errors)
+    exit (1);
 }
 
 
@@ -687,6 +690,9 @@ gfc_error_check (void)
       if (error_buffer.message != NULL)
 	fputs (error_buffer.message, stderr);
       error_buffer.flag = 0;
+
+      if (flag_fatal_errors)
+	exit (1);
     }
 
   return rc;
