@@ -1,6 +1,6 @@
 2005-11-07  James A. Morrison  <phython@gcc.gnu.org>
 
-	PR treelang/21952
+	PR treelang/24066
 	* treetree.c (LANG_HOOKS_ATTRIBUTE_TABLE): Set to
 	treelang_attribute_table.
 	(handle_attribute): New function.
