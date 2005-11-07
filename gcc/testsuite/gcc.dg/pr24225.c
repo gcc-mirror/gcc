@@ -13,3 +13,5 @@ foo (int a, int b)
     return 0;
   }
 }
+
+/* { dg-final { cleanup-coverage-files } } */

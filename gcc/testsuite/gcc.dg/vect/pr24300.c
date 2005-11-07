@@ -33,3 +33,5 @@ foo (int Fc)
 
   return (tc);
 }
+
+/* { dg-final { cleanup-tree-dump "vect" } } */

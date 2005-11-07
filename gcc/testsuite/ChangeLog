@@ -1,6 +1,11 @@
 2005-11-07  Uros Bizjak  <uros@kss-loka.si>
 
-	* gcc.target/i386/pr23376: Compile with -mmmx.
+	* gcc.dg/vect/pr24225.c: Add cleanup-coverage-files.
+	* gcc.dg/vect/pr24300.c: Add cleanup-tree-dump.
+
+2005-11-07  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.target/i386/pr23376.c: Compile with -mmmx.
 
 2005-11-07  Ulrich Weigand  <uweigand@de.ibm.com>
 
