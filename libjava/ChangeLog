@@ -1,3 +1,8 @@
+2005-11-07  David Daney  <ddaney@avtrex.com>
+
+	* mauve-libgcj: Disable javax.rmi.* and
+	java.io.InputStreamReader.getEncoding.
+
 2005-11-04  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/14358, libgcj/24552:
