@@ -139,8 +139,10 @@ static tree* getstmtlist (void);
 
 /* Langhooks.  */
 static tree builtin_function (const char *name, tree type, int function_code,
-		  enum built_in_class class, const char *library_name,
-		  tree attrs);
+			      enum built_in_class class,
+			      const char *library_name,
+			      tree attrs);
+extern const struct attribute_spec treelang_attribute_table[];
 static tree getdecls (void);
 static int global_bindings_p (void);
 static void insert_block (tree);
@@ -166,6 +168,8 @@ static void treelang_expand_function (tree fndecl);
 #define LANG_HOOKS_TYPE_FOR_SIZE tree_lang_type_for_size
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE treelang_parse_file
+#undef LANG_HOOKS_ATTRIBUTE_TABLE
+#define LANG_HOOKS_ATTRIBUTE_TABLE treelang_attribute_table
 
 #undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION treelang_expand_function
@@ -1193,6 +1197,33 @@ treelang_init_decl_processing (void)
 
   pedantic_lvalues = pedantic;
 }
+
+static tree
+handle_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+		  int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    {
+      if (strcmp (IDENTIFIER_POINTER (name), "const") == 0)
+	TREE_READONLY (*node) = 1;
+      if (strcmp (IDENTIFIER_POINTER (name), "nothrow") == 0)
+	TREE_NOTHROW (*node) = 1;
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qD attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+const struct attribute_spec treelang_attribute_table[] =
+{
+  { "const", 0, 0, true, false, false, handle_attribute },
+  { "nothrow", 0, 0, true, false, false, handle_attribute },
+  { NULL, 0, 0, false, false, false, NULL },
+};
 
 /* Return a definition for a builtin function named NAME and whose data type
    is TYPE.  TYPE should be a function type with argument types.

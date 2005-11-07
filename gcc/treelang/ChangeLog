@@ -1,3 +1,11 @@
+2005-11-07  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR treelang/21952
+	* treetree.c (LANG_HOOKS_ATTRIBUTE_TABLE): Set to
+	treelang_attribute_table.
+	(handle_attribute): New function.
+	(treelang_attribute_table): New attribute table.
+
 2005-09-23  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* parse.y : Changed pointer declaration from "type* var" to "type *var"
