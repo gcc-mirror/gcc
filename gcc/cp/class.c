@@ -3286,8 +3286,8 @@ walk_subobject_offsets (tree type,
   return 0;
 }
 
-/* Record all of the empty subobjects of TYPE (located at OFFSET) in
-   OFFSETS.  If IS_DATA_MEMBER is true, then a non-static data member
+/* Record all of the empty subobjects of TYPE (either a type or a
+   binfo).  If IS_DATA_MEMBER is true, then a non-static data member
    is being placed at OFFSET; otherwise, it is a base class that is
    being placed at OFFSET.  */
 
@@ -3298,19 +3298,21 @@ record_subobject_offsets (tree type,
 			  bool is_data_member)
 {
   tree max_offset;
-  /* If recording subobjects for a non-static data member, do not need
-     to record offsets beyond the size of the biggest empty class.
-     Additional data members will go at the end of the class.
-     Additional base classes will go either at offset zero (if empty,
-     in which case they cannot overlap with offsets past the size of
-     the biggest empty class) or at the end of the class.  
+  /* If recording subobjects for a non-static data member or a
+     non-empty base class , we do not need to record offsets beyond
+     the size of the biggest empty class.  Additional data members
+     will go at the end of the class.  Additional base classes will go
+     either at offset zero (if empty, in which case they cannot
+     overlap with offsets past the size of the biggest empty class) or
+     at the end of the class.
 
-     However, if we are placing an empty class, then we must record
+     However, if we are placing an empty base class, then we must record
      all offsets, as either the empty class is at offset zero (where
      other empty classes might later be placed) or at the end of the
      class (where other objects might then be placed, so other empty
      subobjects might later overlap).  */
-  if (is_data_member)
+  if (is_data_member 
+      || !is_empty_class (BINFO_TYPE (type)))
     max_offset = sizeof_biggest_empty_class;
   else
     max_offset = NULL_TREE;
@@ -4850,8 +4852,9 @@ layout_class_type (tree t, tree *virtuals_p)
   splay_tree_delete (empty_base_offsets);
 
   if (CLASSTYPE_EMPTY_P (t)
-      && tree_int_cst_lt (sizeof_biggest_empty_class, TYPE_SIZE (t)))
-    sizeof_biggest_empty_class = TYPE_SIZE (t);
+      && tree_int_cst_lt (sizeof_biggest_empty_class, 
+			  TYPE_SIZE_UNIT (t)))
+    sizeof_biggest_empty_class = TYPE_SIZE_UNIT (t);
 }
 
 /* Determine the "key method" for the class type indicated by TYPE,

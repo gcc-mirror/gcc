@@ -1,5 +1,10 @@
 2005-11-06  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (record_subobject_offsets): Don't record offsets past
+	biggest empty class for non-empty base classes.
+	(layout_class_type): Use TYPE_SIZE_UNIT, not TYPE_SIZE, when
+	keeping track of the size of emptyclasses.
+
 	PR c++/21308
 	* class.c (sizeof_biggest_empty_class): New variable.
 	(record_subobject_offsets): Don't record offsets past biggest
