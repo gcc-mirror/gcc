@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -funroll-loops -fvariable-expansion-in-unroller" } */
+/* { dg-options "-O1 -mmmx -funroll-loops -fvariable-expansion-in-unroller" } */
 
 typedef int __m64 __attribute__ ((__vector_size__ (8)));
 typedef int __v2si __attribute__ ((__vector_size__ (8)));
