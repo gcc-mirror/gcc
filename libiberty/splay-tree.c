@@ -38,12 +38,11 @@ Boston, MA 02110-1301, USA.  */
 #include "splay-tree.h"
 
 static void splay_tree_delete_helper (splay_tree, splay_tree_node);
+static inline void rotate_left (splay_tree_node *,
+				splay_tree_node, splay_tree_node);
+static inline void rotate_right (splay_tree_node *,
+				splay_tree_node, splay_tree_node);
 static void splay_tree_splay (splay_tree, splay_tree_key);
-static splay_tree_node splay_tree_splay_helper (splay_tree,
-						splay_tree_key,
-						splay_tree_node*,
-						splay_tree_node*,
-						splay_tree_node*);
 static int splay_tree_foreach_helper (splay_tree, splay_tree_node,
                                       splay_tree_foreach_fn, void*);
 
@@ -107,116 +106,33 @@ splay_tree_delete_helper (splay_tree sp, splay_tree_node node)
 #undef VDEL
 }
 
-/* Help splay SP around KEY.  PARENT and GRANDPARENT are the parent
-   and grandparent, respectively, of NODE.  */
+/* Rotate the edge joining the left child N with its parent P.  PP is the
+   grandparents pointer to P.  */
 
-static splay_tree_node
-splay_tree_splay_helper (splay_tree sp, splay_tree_key key,
-                         splay_tree_node *node, splay_tree_node *parent,
-                         splay_tree_node *grandparent)
+static inline void
+rotate_left (splay_tree_node *pp, splay_tree_node p, splay_tree_node n)
 {
-  splay_tree_node *next;
-  splay_tree_node n;
-  int comparison;
-  
-  n = *node;
-
-  if (!n)
-    return *parent;
-
-  comparison = (*sp->comp) (key, n->key);
-
-  if (comparison == 0)
-    /* We've found the target.  */
-    next = 0;
-  else if (comparison < 0)
-    /* The target is to the left.  */
-    next = &n->left;
-  else 
-    /* The target is to the right.  */
-    next = &n->right;
-
-  if (next)
-    {
-      /* Continue down the tree.  */
-      n = splay_tree_splay_helper (sp, key, next, node, parent);
-
-      /* The recursive call will change the place to which NODE
-	 points.  */
-      if (*node != n)
-	return n;
-    }
-
-  if (!parent)
-    /* NODE is the root.  We are done.  */
-    return n;
-
-  /* First, handle the case where there is no grandparent (i.e.,
-     *PARENT is the root of the tree.)  */
-  if (!grandparent) 
-    {
-      if (n == (*parent)->left)
-	{
-	  *node = n->right;
-	  n->right = *parent;
-	}
-      else
-	{
-	  *node = n->left;
-	  n->left = *parent;
-	}
-      *parent = n;
-      return n;
-    }
-
-  /* Next handle the cases where both N and *PARENT are left children,
-     or where both are right children.  */
-  if (n == (*parent)->left && *parent == (*grandparent)->left)
-    {
-      splay_tree_node p = *parent;
-
-      (*grandparent)->left = p->right;
-      p->right = *grandparent;
-      p->left = n->right;
-      n->right = p;
-      *grandparent = n;
-      return n; 
-    }
-  else if  (n == (*parent)->right && *parent == (*grandparent)->right)
-    {
-      splay_tree_node p = *parent;
-
-      (*grandparent)->right = p->left;
-      p->left = *grandparent;
-      p->right = n->left;
-      n->left = p;
-      *grandparent = n;
-      return n;
-    }
-
-  /* Finally, deal with the case where N is a left child, but *PARENT
-     is a right child, or vice versa.  */
-  if (n == (*parent)->left) 
-    {
-      (*parent)->left = n->right;
-      n->right = *parent;
-      (*grandparent)->right = n->left;
-      n->left = *grandparent;
-      *grandparent = n;
-      return n;
-    } 
-  else
-    {
-      (*parent)->right = n->left;
-      n->left = *parent;
-      (*grandparent)->left = n->right;
-      n->right = *grandparent;
-      *grandparent = n;
-      return n;
-    }
+  splay_tree_node tmp;
+  tmp = n->right;
+  n->right = p;
+  p->left = tmp;
+  *pp = n;
 }
 
-/* Splay SP around KEY.  */
+/* Rotate the edge joining the right child N with its parent P.  PP is the
+   grandparents pointer to P.  */
+
+static inline void
+rotate_right (splay_tree_node *pp, splay_tree_node p, splay_tree_node n)
+{
+  splay_tree_node tmp;
+  tmp = n->left;
+  n->left = p;
+  p->right = tmp;
+  *pp = n;
+}
+
+/* Bottom up splay of key.  */
 
 static void
 splay_tree_splay (splay_tree sp, splay_tree_key key)
@@ -224,8 +140,61 @@ splay_tree_splay (splay_tree sp, splay_tree_key key)
   if (sp->root == 0)
     return;
 
-  splay_tree_splay_helper (sp, key, &sp->root, 
-			   /*grandparent=*/0, /*parent=*/0); 
+  do {
+    int cmp1, cmp2;
+    splay_tree_node n, c;
+
+    n = sp->root;
+    cmp1 = (*sp->comp) (key, n->key);
+
+    /* Found.  */
+    if (cmp1 == 0)
+      return;
+
+    /* Left or right?  If no child, then we're done.  */
+    if (cmp1 < 0)
+      c = n->left;
+    else
+      c = n->right;
+    if (!c)
+      return;
+
+    /* Next one left or right?  If found or no child, we're done
+       after one rotation.  */
+    cmp2 = (*sp->comp) (key, c->key);
+    if (cmp2 == 0
+        || (cmp2 < 0 && !c->left)
+        || (cmp2 > 0 && !c->right))
+      {
+	if (cmp1 < 0)
+	  rotate_left (&sp->root, n, c);
+	else
+	  rotate_right (&sp->root, n, c);
+        return;
+      }
+
+    /* Now we have the four cases of double-rotation.  */
+    if (cmp1 < 0 && cmp2 < 0)
+      {
+	rotate_left (&n->left, c, c->left);
+	rotate_left (&sp->root, n, n->left);
+      }
+    else if (cmp1 > 0 && cmp2 > 0)
+      {
+	rotate_right (&n->right, c, c->right);
+	rotate_right (&sp->root, n, n->right);
+      }
+    else if (cmp1 < 0 && cmp2 > 0)
+      {
+	rotate_right (&n->left, c, c->right);
+	rotate_left (&sp->root, n, n->left);
+      }
+    else if (cmp1 > 0 && cmp2 < 0)
+      {
+	rotate_left (&n->right, c, c->left);
+	rotate_right (&sp->root, n, n->right);
+      }
+  } while (1);
 }
 
 /* Call FN, passing it the DATA, for every node below NODE, all of

@@ -1,3 +1,10 @@
+2005-11-06  Richard Guenther  <rguenther@suse.de>
+
+	* splay-tree.c (rotate_left): New function.
+	(rotate_right): Likewise.
+	(splay_tree_splay_helper): Remove.
+	(splay_tree_splay): Re-implement.
+
 2005-10-31  Mark Kettenis  <kettenis@gnu.org>
 
 	* floatformat.c (floatformat_vax_aingle, floatformat_vax_double):
