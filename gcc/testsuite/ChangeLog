@@ -1,5 +1,14 @@
 2005-11-07  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR target/24230
+
+        * gcc.target/powerpc/altivec-consts.c,
+        gcc.target/powerpc/altivec-splat.c: New testcase.
+
+2005-11-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/24599
+
         * gcc.dg/overflow-2.c: New testcase.
 
 2005-11-07  Jakub Jelinek  <jakub@redhat.com>

@@ -1,5 +1,25 @@
 2005-11-07  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR target/24230
+
+	* config/rs6000/rs6000.c (easy_vector_splat_const, easy_vector_same,
+	gen_easy_vector_constant_add_self): Delete.
+	(vspltis_constant, easy_altivec_constant, gen_easy_altivec_constant):
+	New.
+	(output_vec_const_move): Use gen_easy_altivec_constant.
+	(rs6000_expand_vector_init): Do not emit a set of a VEC_DUPLICATE.
+	* config/rs6000/predicates.md (easy_vector_constant): Reorganize tests.
+	(easy_vector_constant_add_self): Rewritten.
+	* config/rs6000/rs6000-protos.h (easy_vector_splat_const,
+	easy_vector_same, gen_easy_vector_constant_add_self): Remove prototype.
+	(easy_altivec_constant, gen_easy_altivec_constant): Add prototype.
+	* config/rs6000/altivec.md (easy_vector_constant_add_self splitters):
+	Macroize and adjust for the other changes.
+
+2005-11-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/24599
+
         * c-typeck.c (build_c_cast): Try using a shared constant, and see
         if TREE_OVERFLOW or TREE_CONSTANT_OVERFLOW really changed.
 
