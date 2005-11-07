@@ -1,3 +1,9 @@
+2005-11-07  Steve Ellcey  <sje@cup.hp.com>
+
+	PR bootstrap/24688
+	* fixinc/inclhack.def (sco_math): Add bypass.
+	* fixinc/fixincl.x: Regenerate.
+
 2005-11-07  James E Wilson  <wilson@specifix.com>
 
 	PR preprocessor/15220

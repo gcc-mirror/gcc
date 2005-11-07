@@ -2422,6 +2422,7 @@ fix = {
     files    = ods_30_compat/math.h;
     files    = oldstyle/math.h;
     select   = "inline double abs";
+    bypass   = "__GNUG__";
     sed      = "/#define.*__fp_class(a) \\\\/i\\\n"
 	       "#ifndef __GNUC__\n";
     sed      =
@@ -3668,6 +3669,7 @@ fix = {
 fix = {
     hackname = sysz_stdlib_for_sun;
     files    = stdlib.h;
+    bypass   = "_CLASSIC_ANSI_TYPES";
 
     select    = "char[ \t]*\\*[ \t]*(calloc|malloc|realloc|bsearch)[ \t]*\\(";
     c_fix     = format;
