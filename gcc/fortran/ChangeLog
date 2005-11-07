@@ -1,3 +1,8 @@
+2005-11-07  Steven G. Kargl <kargls@comcast.net>
+
+	*error.c: Use flag_fatal_error.
+	*invoke.texi:  Remove -Werror from list of options.
+
 2005-11-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24534
