@@ -1,3 +1,7 @@
+2005-11-07  Paolo Bonzini  <bonzini@gnu.org>
+
+        * gcc.dg/overflow-2.c: New testcase.
+
 2005-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23567
