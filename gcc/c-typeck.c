@@ -2817,7 +2817,7 @@ readonly_error (tree arg, enum lvalue_use use)
 	error (READONLY_MSG (G_("assignment of read-only member %qs"),
 			     G_("increment of read-only member %qs"),
 			     G_("decrement of read-only member %qs"),
-			     G_("read-only member %qD used as %<asm%> output")),
+			     G_("read-only member %qs used as %<asm%> output")),
 	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (arg, 1))));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
@@ -3312,17 +3312,44 @@ build_c_cast (tree type, tree expr)
       /* Ignore any integer overflow caused by the cast.  */
       if (TREE_CODE (value) == INTEGER_CST)
 	{
-	  if (EXPR_P (ovalue))
-	    /* If OVALUE had overflow set, then so will VALUE, so it
-	       is safe to overwrite.  */
-	    TREE_OVERFLOW (value) = TREE_OVERFLOW (ovalue);
-	  else
-	    TREE_OVERFLOW (value) = 0;
-	  
-	  if (CONSTANT_CLASS_P (ovalue))
-	    /* Similarly, constant_overflow cannot have become
-	       cleared.  */
-	    TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
+	  /* The code here is quite complicated.  To fix PR/24599, we have
+	     to 1) copy VALUE if it will have TREE_CONSTANT_OVERFLOW or
+	     TREE_OVERFLOW set, 2) use the shared constant it if it will have
+	     the flags reset.  To mimic exactly what was happening before
+	     when the code was mucking with the bits directly, the resulting
+	     conditions are quite involuted.  The code in 4.1 and later is much
+	     simpler (Nov 7 2005).  */
+
+	  if (TREE_OVERFLOW (ovalue) && EXPR_P (ovalue))
+	    {
+	      /* Copy TREE_OVERFLOW from OVALUE if it was an expression.
+		 Avoid clobbering a shared constant.  */
+	      value = copy_node (value);
+	      TREE_OVERFLOW (value) = true;
+	    }
+	  else if (TREE_CONSTANT_OVERFLOW (ovalue) && CONSTANT_CLASS_P (ovalue))
+	    {
+	      /* When casting a constant, always reset TREE_OVERFLOW, but
+		 still copy TREE_CONSTANT_OVERFLOW from OVALUE.  */
+	      value = copy_node (value);
+	      TREE_OVERFLOW (value) = false;
+	      TREE_CONSTANT_OVERFLOW (value) = true;
+	    }
+	  else if (TREE_CONSTANT_OVERFLOW (value)
+		   ? /* If TREE_CONSTANT_OVERFLOW is true and OVALUE was
+			constant, it was not set in OVALUE and we should reset
+			it in VALUE too.  And for constant OVALUE, we should
+			reset TREE_OVERFLOW as well.  */
+		     CONSTANT_CLASS_P (ovalue)
+		   : /* TREE_CONSTANT_OVERFLOW is not set, we only care about
+			TREE_OVERFLOW.  If it is true and we arrived here,
+			OVALUE is not an expression and we reset the flag.  */
+		     TREE_OVERFLOW (value))
+	    /* After resetting TREE_OVERFLOW both flags are reset, ensure
+	       constant sharing.  */
+	    value = build_int_cst_wide (TREE_TYPE (value),
+					TREE_INT_CST_LOW (value),
+					TREE_INT_CST_HIGH (value));
 	}
     }
 

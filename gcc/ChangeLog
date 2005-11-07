@@ -1,3 +1,11 @@
+2005-11-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/24599
+        * c-typeck.c (build_c_cast): Try using a shared constant, and see
+        if TREE_OVERFLOW or TREE_CONSTANT_OVERFLOW really changed.
+
+	(readonly_error): Fix formatting error.
+
 2005-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23567

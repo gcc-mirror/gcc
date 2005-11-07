@@ -1,3 +1,8 @@
+2005-11-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/24599
+        * gcc.dg/overflow-2.c: New testcase.
+
 2005-11-07  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/uninit-4.c: XFAIL on 64-bit s390*-*-*.
