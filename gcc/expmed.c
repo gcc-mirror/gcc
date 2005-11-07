@@ -608,8 +608,8 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (HAVE_insv
       && GET_MODE (value) != BLKmode
       && !(bitsize == 1 && GET_CODE (value) == CONST_INT)
-      /* Ensure insv's size is wide enough for this field.  */
-      && (GET_MODE_BITSIZE (op_mode) >= bitsize)
+      && bitsize > 0
+      && GET_MODE_BITSIZE (op_mode) >= bitsize
       && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
 	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode))))
     {
@@ -1356,7 +1356,8 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (unsignedp)
     {
       if (HAVE_extzv
-	  && (GET_MODE_BITSIZE (extzv_mode) >= bitsize)
+	  && bitsize > 0
+	  && GET_MODE_BITSIZE (extzv_mode) >= bitsize
 	  && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
 		&& (bitsize + bitpos > GET_MODE_BITSIZE (extzv_mode))))
 	{
@@ -1488,7 +1489,8 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   else
     {
       if (HAVE_extv
-	  && (GET_MODE_BITSIZE (extv_mode) >= bitsize)
+	  && bitsize > 0
+	  && GET_MODE_BITSIZE (extv_mode) >= bitsize
 	  && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
 		&& (bitsize + bitpos > GET_MODE_BITSIZE (extv_mode))))
 	{
