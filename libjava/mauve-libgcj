@@ -22,3 +22,5 @@ JDBC2.0
 # Tests for not yet implemented classes and/or methods.
 !java.awt.event.MouseEvent.modifiersEx
 !org.omg.
+!javax.rmi
+!java.io.InputStreamReader.getEncoding
