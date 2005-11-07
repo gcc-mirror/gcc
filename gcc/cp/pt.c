@@ -11813,10 +11813,15 @@ instantiate_pending_templates (int retries)
      to avoid infinite loop.  */
   if (pending_templates && retries >= max_tinst_depth)
     {
+      tree decl = TREE_VALUE (pending_templates);
+
       error ("template instantiation depth exceeds maximum of %d"
-	    " instantiating %q+D, possibly from virtual table generation"
-	    " (use -ftemplate-depth-NN to increase the maximum)",
-	    max_tinst_depth, TREE_VALUE (pending_templates));
+	     " instantiating %q+D, possibly from virtual table generation"
+	     " (use -ftemplate-depth-NN to increase the maximum)",
+	     max_tinst_depth, decl);
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	/* Pretend that we defined it.  */
+	DECL_INITIAL (decl) = error_mark_node;
       return;
     }
 
