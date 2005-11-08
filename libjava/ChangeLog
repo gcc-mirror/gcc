@@ -1,5 +1,10 @@
 2005-11-08  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/24587:
+	* gnu/classpath/SystemProperties.java: Set gnu.classpath.version.
+
+2005-11-08  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/23763.  From aeby@graeff.com.
 	* java/lang/natPosixProcess.cc (nativeSpawn): Unblock SIGCHLD
 	before exec.
