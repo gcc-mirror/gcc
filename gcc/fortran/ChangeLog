@@ -1,7 +1,11 @@
+2005-11-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* dump-parse-tree.c: Fix comment typo, add a few blank lines.
+
 2005-11-07  Steven G. Kargl  <kargls@comcast.net>
 
-	*error.c: Use flag_fatal_error.
-	*invoke.texi:  Remove -Werror from list of options.
+	* error.c: Use flag_fatal_error.
+	* invoke.texi:  Remove -Werror from list of options.
 
 2005-11-06  Paul Thomas  <pault@gcc.gnu.org>
 
