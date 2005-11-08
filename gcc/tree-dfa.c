@@ -609,6 +609,18 @@ referenced_var_insert (unsigned int uid, tree to)
   *(struct int_tree_map **)  loc = h;
 }
 
+/* Remove the pair DECL_UID (TO), TO from the referenced vars
+   hashtable.  */
+
+void
+referenced_var_remove (tree to)
+{ 
+  struct int_tree_map in;
+  in.uid = DECL_UID (to);
+  in.to = to;
+  htab_remove_elt_with_hash (referenced_vars, &in, in.uid);
+}
+
 /* Add VAR to the list of dereferenced variables.
 
    WALK_STATE contains a hash table used to avoid adding the same
