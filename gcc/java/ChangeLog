@@ -1,3 +1,10 @@
+2005-11-08  Terry Laurenzo  <tlaurenzo@gmail.com>
+
+	PR java/24736
+	* gjavah.c (HANDLE_CODE_ATTRIBUTE): Only define for ELF Object
+	formats.
+	* gjavah.c (decompile_method): Add ATTRIBUTE_UNUSED
+
 2005-10-24  Wil Mahan  <wmahan@gmail.com>
 
 	PR java/23617
