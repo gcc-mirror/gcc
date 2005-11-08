@@ -611,7 +611,7 @@ proc check_v3_target_debug_mode { } {
 	# on correct ordering of static object destructors. This is
 	# indicative of the presence and use of __cxa_atexit.
 	set src debug_mode[pid].cc
-	set exe debug_mode[pid].x
+	set exe debug_mode[pid].exe
 
 	set f [open $src "w"]
 	puts $f "#include <string>"

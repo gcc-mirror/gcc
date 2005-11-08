@@ -59,35 +59,35 @@ namespace std
 
   // Helpers for exception objects in <stdexcept>
   void
-  __throw_logic_error(const char* __s) __attribute__((__noreturn__));
+  __throw_logic_error(const char*) __attribute__((__noreturn__));
 
   void
-  __throw_domain_error(const char* __s) __attribute__((__noreturn__));
+  __throw_domain_error(const char*) __attribute__((__noreturn__));
 
   void
-  __throw_invalid_argument(const char* __s) __attribute__((__noreturn__));
+  __throw_invalid_argument(const char*) __attribute__((__noreturn__));
 
   void
-  __throw_length_error(const char* __s) __attribute__((__noreturn__));
+  __throw_length_error(const char*) __attribute__((__noreturn__));
 
   void
-  __throw_out_of_range(const char* __s) __attribute__((__noreturn__));
+  __throw_out_of_range(const char*) __attribute__((__noreturn__));
 
   void
-  __throw_runtime_error(const char* __s) __attribute__((__noreturn__));
+  __throw_runtime_error(const char*) __attribute__((__noreturn__));
 
   void
-  __throw_range_error(const char* __s) __attribute__((__noreturn__));
+  __throw_range_error(const char*) __attribute__((__noreturn__));
 
   void
-  __throw_overflow_error(const char* __s) __attribute__((__noreturn__));
+  __throw_overflow_error(const char*) __attribute__((__noreturn__));
 
   void
-  __throw_underflow_error(const char* __s) __attribute__((__noreturn__));
+  __throw_underflow_error(const char*) __attribute__((__noreturn__));
 
   // Helpers for exception objects in basic_ios
   void
-  __throw_ios_failure(const char* __s) __attribute__((__noreturn__));
+  __throw_ios_failure(const char*) __attribute__((__noreturn__));
 } // namespace std
 
 #endif

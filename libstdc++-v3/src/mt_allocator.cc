@@ -63,7 +63,7 @@ namespace __gnu_internal
   static void 
   _M_destroy_thread_key(void* __id)
   {
-    // Return this thread id record to front of thread_freelist.
+    // Return this thread id record to the front of thread_freelist.
     __gnu_cxx::lock sentry(__gnu_internal::freelist_mutex);
     size_t _M_id = reinterpret_cast<size_t>(__id);
 
