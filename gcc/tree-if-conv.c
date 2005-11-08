@@ -679,7 +679,7 @@ find_phi_replacement_condition (struct loop *loop,
        S2: x = c ? b : a;
 
        S2 is preferred over S1. Make 'b' first_bb and use its condition.
-
+       
      2) Do not make loop header first_bb.
 
      3)
@@ -691,7 +691,10 @@ find_phi_replacement_condition (struct loop *loop,
        S3: x = (c == d) ? b : a;
 
        S3 is preferred over S1 and S2*, Make 'b' first_bb and use 
-       its condition.  */
+       its condition.  
+
+     4) If  pred B is dominated by pred A then use pred B's condition.
+        See PR23115.  */
 
   /* Select condition that is not TRUTH_NOT_EXPR.  */
   tmp_cond = first_bb->aux;
@@ -703,8 +706,10 @@ find_phi_replacement_condition (struct loop *loop,
       second_bb = tmp_bb;
     }
 
-  /* Check if FIRST_BB is loop header or not.  */
-  if (first_bb == loop->header) 
+  /* Check if FIRST_BB is loop header or not and make sure that
+     FIRST_BB does not dominate SECOND_BB.  */
+  if (first_bb == loop->header
+      || dominated_by_p (CDI_DOMINATORS, second_bb, first_bb))
     {
       tmp_cond = second_bb->aux;
       if (TREE_CODE (tmp_cond) == TRUTH_NOT_EXPR)

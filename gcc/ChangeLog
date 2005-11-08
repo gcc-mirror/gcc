@@ -1,3 +1,9 @@
+2005-11-08  Devang Patel <dpatel@apple.com>
+
+	PR tree-optimization/23115
+	* tree-if-conv.c (find_phi_replacement_condition): Check domninated_by
+	relation.
+
 2005-11-08  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/t-fprules (MULTILIB_MATCHES_FLOAT): Include

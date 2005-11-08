@@ -1,3 +1,8 @@
+2005-11-08  Devang Patel <dpatel@apple.com>
+
+	PR tree-optimization/23115
+	* gcc.dg/tree-ssa/pr23115.c: New.
+	
 2005-11-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/ext/altivec-{1-13}.C: XFAIL on AIX and SPE.
