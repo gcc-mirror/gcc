@@ -3,7 +3,7 @@
    AltiVec testsuite.  */
 
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
+/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } } */
 /* { dg-options "-maltivec" } */
                                                                                 
 #include <altivec.h>

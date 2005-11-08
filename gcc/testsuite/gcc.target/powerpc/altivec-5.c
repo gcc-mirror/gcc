@@ -1,4 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } } */
 /* { dg-options "-maltivec -O2" } */
 
 #define vector __attribute__((vector_size(16)))

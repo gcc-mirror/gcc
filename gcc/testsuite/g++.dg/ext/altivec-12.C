@@ -1,6 +1,6 @@
 /* Test vec_dst* functions with float pointer as first argument.  */
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
+/* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } } */
 /* { dg-options "-maltivec" } */
 
 #include <altivec.h>
