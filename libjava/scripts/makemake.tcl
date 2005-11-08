@@ -43,6 +43,7 @@ set package_map(javax/xml) bc
 set package_map(gnu/java/beans) bc
 set package_map(gnu/java/awt/peer/gtk) bc
 set package_map(gnu/java/awt/peer/qt) bc
+set package_map(gnu/javax/sound/midi) bc
 set package_map(org/xml) bc
 set package_map(org/w3c) bc
 
