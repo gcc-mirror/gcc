@@ -1,3 +1,8 @@
+2005-11-08  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/t-fprules (MULTILIB_MATCHES_FLOAT): Include
+	-mcpu=440.
+
 2005-11-08  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/23382
