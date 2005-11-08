@@ -1,3 +1,9 @@
+2005-11-08  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/23763.  From aeby@graeff.com.
+	* java/lang/natPosixProcess.cc (nativeSpawn): Unblock SIGCHLD
+	before exec.
+
 2005-11-08  Andrew Haley  <aph@redhat.com>
 
 	* gnu/java/rmi/rmic/CompilerProcess.java: Use a new thread to
