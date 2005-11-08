@@ -39,9 +39,9 @@
     installed by this file are used to handle resulting signals that come
     from these probes failing (i.e. touching protected pages) */
 
-/* This file should be kept synchronized with 2sinit.ads, 2sinit.adb, and
-   5zinit.adb. All these files implement the required functionality for
-   different targets. */
+/* This file should be kept synchronized with 2sinit.ads, 2sinit.adb,
+   s-init-ae653-cert.adb and s-init-xi-sparc.adb. All these files implement
+   the required functionality for different targets. */
 
 /* The following include is here to meet the published VxWorks requirement
    that the __vxworks header appear before any other include. */
@@ -630,7 +630,8 @@ __gnat_install_handler (void)
 /* GNU/Linux Section */
 /*********************/
 
-#elif defined (linux) && (defined (i386) || defined (__x86_64__))
+#elif defined (linux) && (defined (i386) || defined (__x86_64__) \
+                          || defined (__ia64__))
 
 #include <signal.h>
 
@@ -660,6 +661,8 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
   mcontext->gregs[REG_EIP]++;
 #elif defined (__x86_64__)
   mcontext->gregs[REG_RIP]++;
+#elif defined (__ia64__)
+  mcontext->sc_ip++;
 #endif
 }
 

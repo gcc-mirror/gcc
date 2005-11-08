@@ -1,8 +1,14 @@
+2005-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c: Use the Linux-specific section for the IA-64/Linux target.
+	(__gnat_adjust_context_for_raise): Add conditional code so that the
+	IA-64 is also supported.
+
 2005-11-03  James E Wilson  <wilson@specifix.com>
 
 	PR ada/23427
-        * trans.c (gnat_to_gnu): Use TYPE_SIZE_UNIT not TYPE_SIZE in
-        TREE_OVERFLOW check.
+	* trans.c (gnat_to_gnu): Use TYPE_SIZE_UNIT not TYPE_SIZE in
+	TREE_OVERFLOW check.
 
 2005-09-21  Olivier Hainque  <hainque@adacore.com>
 
