@@ -2504,6 +2504,24 @@ register_edge_assert_for (tree name, edge e, block_stmt_iterator si)
 	     need to invert the sign comparison.  */
 	  if (is_else_edge)
 	    comp_code = invert_tree_comparison (comp_code, 0);
+
+	  /* Do not register always-false predicates.  FIXME, this
+	     works around a limitation in fold() when dealing with
+	     enumerations.  Given 'enum { N1, N2 } x;', fold will not
+	     fold 'if (x > N2)' to 'if (0)'.  */
+	  if ((comp_code == GT_EXPR || comp_code == LT_EXPR)
+	      && (INTEGRAL_TYPE_P (TREE_TYPE (val))
+		  || SCALAR_FLOAT_TYPE_P (TREE_TYPE (val))))
+	    {
+	      tree min = TYPE_MIN_VALUE (TREE_TYPE (val));
+	      tree max = TYPE_MAX_VALUE (TREE_TYPE (val));
+
+	      if (comp_code == GT_EXPR && compare_values (val, max) == 0)
+		return false;
+
+	      if (comp_code == LT_EXPR && compare_values (val, min) == 0)
+		return false;
+	    }
 	}
     }
   else
