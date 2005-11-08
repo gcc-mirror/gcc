@@ -1,3 +1,11 @@
+2005-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/19450
+	* g++.dg/tls/diag-3.C: New test.
+	* g++.dg/tls/diag-4.C: New test.
+	* g++.dg/tls/static-1.C: New test.
+	* g++.dg/tls/static-1a.cc: New file.
+
 2005-11-08  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 23046
