@@ -848,6 +848,7 @@ delete_tree_ssa (void)
       set_phi_nodes (bb, NULL);
     }
 
+  delete_old_heap_vars ();
   /* Remove annotations from every referenced variable.  */
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {

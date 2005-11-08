@@ -252,6 +252,8 @@ compute_may_aliases (void)
   
   memset (&alias_stats, 0, sizeof (alias_stats));
 
+  delete_old_heap_vars ();
+
   /* Initialize aliasing information.  */
   ai = init_alias_info ();
 

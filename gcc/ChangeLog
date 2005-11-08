@@ -1,3 +1,18 @@
+2005-11-08  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/23382
+
+	* tree-ssa-alias.c (compute_may_aliases): Call
+	delete_old_heap_vars.
+	* tree-dfa.c (referenced_var_remove): New function.
+	* tree-ssa.c (delete_tree_ssa): Call delete_old_heap_vars.
+	* tree-flow.h (referenced_var_remove): Add prototype.
+	(delete_old_heap_vars): Ditto.
+	* tree-ssa-structalias.c (heapvars): New variable.
+	(oldheapvars): Ditto.
+	(get_constraint_for): Put heap vars on heapvars list.
+	(delete_old_heap_vars): New function.
+	
 2005-11-08  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (CALL_FROM_THUNK_P): Add CALL_EXPR_CHECK.

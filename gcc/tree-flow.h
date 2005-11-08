@@ -423,6 +423,7 @@ extern GTY((param_is (struct int_tree_map))) htab_t referenced_vars;
 
 extern tree referenced_var_lookup (unsigned int);
 extern tree referenced_var_lookup_if_exists (unsigned int);
+extern void referenced_var_remove (tree);
 #define num_referenced_vars htab_elements (referenced_vars)
 #define referenced_var(i) referenced_var_lookup (i)
 
@@ -891,6 +892,7 @@ int push_fields_onto_fieldstack (tree, VEC(fieldoff_s,heap) **,
 				 HOST_WIDE_INT, bool *);
 void sort_fieldstack (VEC(fieldoff_s,heap) *);
 
+void delete_old_heap_vars (void);
 #include "tree-flow-inline.h"
 
 #endif /* _TREE_FLOW_H  */

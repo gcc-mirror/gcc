@@ -159,6 +159,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
   TODO: We could handle unions, but to be honest, it's probably not
   worth the pain or slowdown.  */
 
+static VEC(tree, heap) *heapvars = NULL;
+static VEC(tree, heap) *oldheapvars = NULL;
+
 static bool use_field_sensitive = true;
 static unsigned int create_variable_info_for (tree, const char *);
 static struct constraint_expr get_constraint_for (tree, bool *);
@@ -2213,6 +2216,7 @@ get_constraint_for (tree t, bool *need_anyoffset)
 		tree heapvar;
 		
 		heapvar = create_tmp_var_raw (ptr_type_node, "HEAP");
+		VEC_safe_push (tree, heap, heapvars, heapvar);
 		DECL_EXTERNAL (heapvar) = 1;
 		add_referenced_tmp_var (heapvar);
 		temp.var = create_variable_info_for (heapvar,
@@ -3762,4 +3766,47 @@ delete_points_to_sets (void)
   free_alloc_pool (constraint_edge_pool);
 
   have_alias_info = false;
+}
+
+/* Delete old heap vars, since nothing else will remove them for
+   us.  */
+void
+delete_old_heap_vars (void)
+{
+  if (!in_ssa_p)
+    {
+      VEC_free (tree, heap, heapvars);
+      VEC_free (tree, heap, oldheapvars);
+      heapvars = NULL;
+      oldheapvars = NULL;
+    }
+  /* Why is this complicated?
+     We can't remove the heapvars from the referenced var array until
+     they go away from the ssa form, and we can't remove them from the
+     ssa form until we've renamed it.  We can't renamed it if it's not
+     in the referenced vars array. 
+     Thus, we have to first mark it for renaming, and then the *next*
+     time after that we call this function, we can remove it from
+     referenced vars.  */
+
+  if (!VEC_empty (tree, heapvars))
+    {
+      int i;
+      tree heapvar;
+      for (i = 0; VEC_iterate (tree, heapvars, i, heapvar); i++)
+	{
+	  if (in_ssa_p)
+	    mark_sym_for_renaming (heapvar);
+	  DECL_EXTERNAL (heapvar) = false;
+	  bitmap_clear_bit (call_clobbered_vars, DECL_UID (heapvar));
+	}
+      if (!VEC_empty (tree, oldheapvars))
+	{
+	  for (i = 0; VEC_iterate (tree, oldheapvars, i, heapvar); i++)
+	    referenced_var_remove (heapvar);
+	}
+      VEC_free (tree, heap, oldheapvars);
+      oldheapvars = heapvars;
+      heapvars = NULL;
+    }
 }
