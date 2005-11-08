@@ -502,7 +502,8 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 		t = build3 (COND_EXPR, TREE_TYPE (t), cond, t,
 			    cp_convert (TREE_TYPE (t), integer_zero_node));
 	    }
-	  t = force_target_expr (TREE_TYPE (t), t);
+	  if (IS_AGGR_TYPE (TREE_TYPE (t)))
+	    t = build_cplus_new (TREE_TYPE (t), t);
 	  finish_return_stmt (t);
 	}
 
