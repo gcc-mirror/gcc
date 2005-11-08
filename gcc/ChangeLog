@@ -1,3 +1,9 @@
+2005-11-08  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/23704
+	* config/rs6000/rs6000.c (rs6000_handle_option <OPT_m64>): Don't
+	override prior explicit -mno-powerpc-gfxopt.
+
 2005-11-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expmed.c (extract_bit_field): Do not use insv/extv/extzv patterns

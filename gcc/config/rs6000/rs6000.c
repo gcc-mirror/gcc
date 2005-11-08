@@ -1624,9 +1624,9 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 #else
     case OPT_m64:
 #endif
-      target_flags |= MASK_POWERPC64 | MASK_POWERPC | MASK_PPC_GFXOPT;
-      target_flags_explicit |= MASK_POWERPC64 | MASK_POWERPC
-	| MASK_PPC_GFXOPT;
+      target_flags |= MASK_POWERPC64 | MASK_POWERPC;
+      target_flags |= ~target_flags_explicit & MASK_PPC_GFXOPT;
+      target_flags_explicit |= MASK_POWERPC64 | MASK_POWERPC;
       break;
 
 #ifdef TARGET_USES_AIX64_OPT
