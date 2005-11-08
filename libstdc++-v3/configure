@@ -5134,8 +5134,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 echo "${ECHO_T}$ac_exception_model_name" >&6
 
 
-  echo "$as_me:$LINENO: checking for enabled PCH" >&5
-echo $ECHO_N "checking for enabled PCH... $ECHO_C" >&6
    # Check whether --enable-libstdcxx-pch or --disable-libstdcxx-pch was given.
 if test "${enable_libstdcxx_pch+set}" = set; then
   enableval="$enable_libstdcxx_pch"
@@ -5150,9 +5148,6 @@ echo "$as_me: error: Argument to enable/disable libstdcxx-pch must be yes or no"
 else
   enable_libstdcxx_pch=$is_hosted
 fi;
-
-  echo "$as_me:$LINENO: result: $enable_libstdcxx_pch" >&5
-echo "${ECHO_T}$enable_libstdcxx_pch" >&6
 
   if test $enable_libstdcxx_pch = yes; then
     echo "$as_me:$LINENO: checking for compiler with PCH support" >&5
@@ -5195,6 +5190,11 @@ echo "$as_me:$LINENO: result: $glibcxx_cv_prog_CXX_pch" >&5
 echo "${ECHO_T}$glibcxx_cv_prog_CXX_pch" >&6
     enable_libstdcxx_pch=$glibcxx_cv_prog_CXX_pch
   fi
+
+  echo "$as_me:$LINENO: checking for enabled PCH" >&5
+echo $ECHO_N "checking for enabled PCH... $ECHO_C" >&6
+  echo "$as_me:$LINENO: result: $enable_libstdcxx_pch" >&5
+echo "${ECHO_T}$enable_libstdcxx_pch" >&6
 
 
   if test $enable_libstdcxx_pch = yes; then
@@ -6352,7 +6352,7 @@ fi;
   if test $enable_libstdcxx_allocator_flag = auto; then
     case ${target_os} in
       linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
-        enable_libstdcxx_allocator_flag=mt
+        enable_libstdcxx_allocator_flag=new
         ;;
       *)
         enable_libstdcxx_allocator_flag=new

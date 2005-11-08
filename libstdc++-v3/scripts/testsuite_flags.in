@@ -57,7 +57,7 @@ case ${query} in
       echo ${PCHFLAGS}
       ;;
     *)
-      print_usagex
+      print_usage
       ;;
 esac
 

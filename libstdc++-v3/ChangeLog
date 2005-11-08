@@ -1,3 +1,19 @@
+2005-11-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_debug_mode): Use
+	exe as the executable extension.
+
+	* acinclude.m4 (GLIBCXX_ENABLE_ALLOCATOR): Change gnu defaults to
+	new.
+	(GLIBCXX_ENABLE_PCH): Adjust message order.
+	* configure: Regenerate.
+	
+	* scripts/testsuite_flags.in (query): Correct print_usagex typo.
+
+	* include/bits/functexcept.h: Remove argument names.
+
+	* src/mt_allocator.cc: Adjust comment.
+	
 2005-11-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/18174
@@ -120,8 +136,9 @@
 2005-10-17  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	PR libstdc++/24244
-	* include/tr1/boost_shared_ptr.h (_Sp_counted_base::_Sp_counted_base()):
-	When __GTHREAD_MUTEX_INIT is defined, initialize the mutex.
+	* include/tr1/boost_shared_ptr.h
+	(_Sp_counted_base::_Sp_counted_base()): When __GTHREAD_MUTEX_INIT
+	is defined, initialize the mutex.
 
 2005-10-15  Paolo Carlini  <pcarlini@suse.de>
 

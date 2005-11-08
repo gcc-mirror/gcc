@@ -1280,7 +1280,7 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
   if test $enable_libstdcxx_allocator_flag = auto; then
     case ${target_os} in
       linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
-        enable_libstdcxx_allocator_flag=mt
+        enable_libstdcxx_allocator_flag=new
         ;;
       *)
         enable_libstdcxx_allocator_flag=new
@@ -1558,10 +1558,7 @@ dnl Substs:
 dnl  glibcxx_PCHFLAGS
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_PCH], [
-  AC_MSG_CHECKING([for enabled PCH])
   GLIBCXX_ENABLE(libstdcxx-pch,$1,,[build pre-compiled libstdc++ headers])
-  AC_MSG_RESULT([$enable_libstdcxx_pch])
-
   if test $enable_libstdcxx_pch = yes; then
     AC_CACHE_CHECK([for compiler with PCH support],
       [glibcxx_cv_prog_CXX_pch],
@@ -1586,6 +1583,9 @@ AC_DEFUN([GLIBCXX_ENABLE_PCH], [
       ])
     enable_libstdcxx_pch=$glibcxx_cv_prog_CXX_pch
   fi
+
+  AC_MSG_CHECKING([for enabled PCH])
+  AC_MSG_RESULT([$enable_libstdcxx_pch])
 
   GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_PCH, test $enable_libstdcxx_pch = yes)
   if test $enable_libstdcxx_pch = yes; then
