@@ -1,3 +1,8 @@
+2005-11-08  Andrew Haley  <aph@redhat.com>
+
+	* gnu/java/rmi/rmic/CompilerProcess.java: Use a new thread to
+	handle stdout from the child process.
+
 2005-10-31  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/14358, libgcj/24552:
