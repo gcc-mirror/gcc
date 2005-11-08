@@ -145,7 +145,7 @@ static void print_method_info (FILE*, JCF*, int, int, JCF_u2);
 static void print_c_decl (FILE*, JCF*, int, int, int, const char *, int);
 static void print_stub_or_jni (FILE*, JCF*, int, int, int, const char *, int);
 static void print_full_cxx_name (FILE*, JCF*, int, int, int, const char *, int);
-static void decompile_method (FILE*, JCF*, int);
+static void decompile_method (FILE*, JCF*, int) ATTRIBUTE_UNUSED;
 static void add_class_decl (FILE*, JCF*, JCF_u2);
 
 static void print_name (FILE *, JCF *, int);
@@ -250,8 +250,14 @@ static int is_first_data_member = 0;
       }									\
   }
 
+/* Only include byte-code decompilation optimizations for ELF targets
+   since the generated headers are only known to work with ELF weak
+   symbol semnatics. Specifically, these optimizations are known to
+   not work on PE-COFF and possibly others.  */
+#ifdef OBJECT_FORMAT_ELF
 #define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH)	\
   if (out && method_declared) decompile_method (out, jcf, CODE_LENGTH);
+#endif
 
 static int decompiled = 0;
 #define HANDLE_END_METHOD()				\
