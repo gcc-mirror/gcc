@@ -1,3 +1,10 @@
+2005-11-08  James A. Morrison  <phython@gcc.gnu.org>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	PR 23046
+	* tree-vrp.c (register_edge_assert_for): Do not register
+	always-false predicates.
+
 2005-11-08  Devang Patel <dpatel@apple.com>
 
 	PR tree-optimization/23115

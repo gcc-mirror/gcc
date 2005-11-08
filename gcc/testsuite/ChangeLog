@@ -1,3 +1,8 @@
+2005-11-08  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 23046
+	* g++.dg/tree-ssa/pr23046.C: New test.
+
 2005-11-08  Devang Patel <dpatel@apple.com>
 
 	PR tree-optimization/23115
