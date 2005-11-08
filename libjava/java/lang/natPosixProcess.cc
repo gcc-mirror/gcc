@@ -1,6 +1,6 @@
 // natPosixProcess.cc - Native side of POSIX process code.
 
-/* Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -344,6 +344,12 @@ java::lang::ConcreteProcess::nativeSpawn ()
 		  _exit (127);
 		}
 	    }
+
+	  // Make sure that SIGCHLD is unblocked for the new process.
+	  sigset_t mask;
+	  sigemptyset (&mask);
+	  sigaddset (&mask, SIGCHLD);
+	  sigprocmask (SIG_UNBLOCK, &mask, NULL);
 
 	  execvp (args[0], args);
 
