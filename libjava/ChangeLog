@@ -1,3 +1,7 @@
+2005-11-08  Mark Wielaard  <mark@klomp.org>
+
+	* scripts/makemake.tcl: Set package gnu/javax/sound/midi to bc.
+
 2005-11-07  David Daney  <ddaney@avtrex.com>
 
 	* mauve-libgcj: Disable javax.rmi.* and
