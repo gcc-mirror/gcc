@@ -1023,7 +1023,7 @@ extern void tree_operand_check_failed (int, enum tree_code,
 
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
-#define CALL_FROM_THUNK_P(NODE) ((NODE)->common.protected_flag)
+#define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->common.protected_flag)
 
 /* In a type, nonzero means that all objects of the type are guaranteed by the
    language or front-end to be properly aligned, so we can indicate that a MEM
