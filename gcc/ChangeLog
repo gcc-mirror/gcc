@@ -1,3 +1,17 @@
+2005-11-08  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/19340
+	* reg-stack.c (reg_to_stack): Update register liveness also
+	for flag_sched2_use_traces.
+
+2005-11-08  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/24315
+	* config/i386/i386.md (*pushdi2_rex64 splitter)
+	(*movdi_1_rex64 splitter, *ashldi3_1 splitter)
+	(*ashrdi3_1 splitter, *lshrdi3_1 splitter): Delay splitting after
+	flow2 pass only when (optimize > 0 && flag_peephole2).
+
 2005-11-07  Ian Lance Taylor  <ian@airs.com>
 
 	PR rtl-optimization/24683

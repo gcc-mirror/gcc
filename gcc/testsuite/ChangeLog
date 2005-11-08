@@ -1,3 +1,13 @@
+2005-11-08  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/19340
+	* gcc.dg/pr19340.c: New test.
+
+2005-11-08  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/24315
+	* gcc.target/i386/pr24315.c: New test.
+
 2005-11-07  Ian Lance Taylor  <ian@airs.com>
 
 	PR rtl-optimization/24683
