@@ -1,3 +1,8 @@
+2005-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (multiple_reg_loc_descriptor): Don't assume
+	DBX_REGISTER_NUMBER being contiguous.
+
 2005-11-08  James A. Morrison  <phython@gcc.gnu.org>
 	    Diego Novillo  <dnovillo@redhat.com>
 
