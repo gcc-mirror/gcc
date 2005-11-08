@@ -70,6 +70,9 @@ public class SystemProperties
   {
     insertSystemProperties(defaultProperties);
 
+    defaultProperties.put("gnu.classpath.version",
+                          Configuration.CLASSPATH_VERSION);
+
     // Set base URL if not already set.
     if (defaultProperties.get("gnu.classpath.home.url") == null)
       defaultProperties.put("gnu.classpath.home.url",
