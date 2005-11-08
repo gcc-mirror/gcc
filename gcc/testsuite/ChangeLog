@@ -1,3 +1,22 @@
+2005-11-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/ext/altivec-{1-13}.C: XFAIL on AIX and SPE.
+	* gcc.target/powerpc/pr16155.c: Same.
+	* gcc.target/powerpc/altivec-1.c: Same.
+	* gcc.target/powerpc/altivec-2.c: Same.
+	* gcc.target/powerpc/altivec-3.c: Same.
+	* gcc.target/powerpc/altivec-5.c: Same.
+	* gcc.target/powerpc/altivec-11.c: Same.
+	* gcc.target/powerpc/altivec-12.c: Same.
+	* gcc.target/powerpc/altivec-14.c: Same.
+	* gcc.target/powerpc/altivec-22.c: Same.
+	* gcc.target/powerpc/altivec-consts.c: Same.
+	* gcc.target/powerpc/altivec-pr22085.c: Same.
+	* gcc.target/powerpc/altivec-splat.c: Same.
+	* gcc.target/powerpc/altivec-varargs-1.c: Same.
+	* gcc.target/powerpc/altivec-vec-merge.c: Same.
+	* gcc.target/powerpc/darwin-longlong.c: Same.
+
 2005-11-08  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/19340
