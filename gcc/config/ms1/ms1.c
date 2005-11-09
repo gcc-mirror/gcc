@@ -84,6 +84,8 @@ struct ms1_frame_info zero_frame_info;
 /* ms1 doesn't have unsigned compares need a library call for this.  */
 struct rtx_def * ms1_ucmpsi3_libcall;
 
+static int ms1_flag_delayed_branch;
+
 
 static rtx
 ms1_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED,
@@ -125,13 +127,6 @@ ms1_asm_output_opcode (FILE *f ATTRIBUTE_UNUSED, const char *ptr)
   return ptr;
 }
 
-/* Return TRUE if INSN is a memory load.  */
-static bool
-ms1_memory_load (rtx insn)
-{
-  return ((GET_CODE (insn) == SET) && (GET_CODE (XEXP (insn,1)) == MEM));
-}
-
 /* Given an insn, return whether it's a memory operation or a branch
    operation, otherwise return TYPE_ARITH.  */
 static enum attr_type
@@ -139,18 +134,24 @@ ms1_get_attr_type (rtx complete_insn)
 {
   rtx insn = PATTERN (complete_insn);
 
-  if ((GET_CODE (insn) == SET)
-      && ((GET_CODE (XEXP (insn, 0)) == MEM)
-	  || (GET_CODE (XEXP (insn, 1)) == MEM)))
-    return TYPE_MEM;
-
-  else if (((GET_CODE (insn) == SET) && (XEXP (insn, 0) == pc_rtx))
-	   || (GET_CODE (complete_insn) == JUMP_INSN)
-	   || (GET_CODE (complete_insn) == CALL_INSN))
+  if (JUMP_P (complete_insn))
+    return TYPE_BRANCH;
+  if (CALL_P (complete_insn))
     return TYPE_BRANCH;
 
-  else
+  if (GET_CODE (insn) != SET)
     return TYPE_ARITH;
+
+  if (SET_DEST (insn) == pc_rtx)
+    return TYPE_BRANCH;
+
+  if (GET_CODE (SET_DEST (insn)) == MEM)
+    return TYPE_STORE;
+
+  if (GET_CODE (SET_SRC (insn)) == MEM)
+    return TYPE_LOAD;
+  
+  return TYPE_ARITH;
 }
 
 /* A helper routine for insn_dependent_p called through note_stores.  */
@@ -212,35 +213,48 @@ ms1_final_prescan_insn (rtx   insn,
 			int   noperands ATTRIBUTE_UNUSED)
 {
   rtx prev_i;
+  enum attr_type prev_attr;
 
   ms1_nops_required = 0;
   ms1_nop_reasons = "";
 
+  /* ms2 constraints are dealt with in reorg.  */
+  if (ms1_cpu == PROCESSOR_MS2)
+    return;
+  
   /* Only worry about real instructions.  */
   if (! INSN_P (insn))
     return;
 
   /* Find the previous real instructions.  */
-  prev_i = PREV_INSN (insn);
-  while (prev_i != NULL
+  for (prev_i = PREV_INSN (insn);
+       prev_i != NULL
 	 && (! INSN_P (prev_i)
 	     || GET_CODE (PATTERN (prev_i)) == USE
-	     || GET_CODE (PATTERN (prev_i)) == CLOBBER))
-    prev_i = PREV_INSN (prev_i);
-
+	     || GET_CODE (PATTERN (prev_i)) == CLOBBER);
+       prev_i = PREV_INSN (prev_i))
+    {
+      /* If we meet a barrier, there is no flow through here.  */
+      if (BARRIER_P (prev_i))
+	return;
+    }
+  
   /* If there isn't one then there is nothing that we need do.  */
   if (prev_i == NULL || ! INSN_P (prev_i))
     return;
 
+  prev_attr = ms1_get_attr_type (prev_i);
+  
   /* Delayed branch slots already taken care of by delay branch scheduling.  */
-  if (ms1_get_attr_type (prev_i) == TYPE_BRANCH)
+  if (prev_attr == TYPE_BRANCH)
     return;
 
   switch (ms1_get_attr_type (insn))
     {
-    case TYPE_MEM:
+    case TYPE_LOAD:
+    case TYPE_STORE:
       /* Avoid consecutive memory operation.  */
-      if  (ms1_get_attr_type (prev_i) == TYPE_MEM
+      if  ((prev_attr == TYPE_LOAD || prev_attr == TYPE_STORE)
 	   && ms1_cpu == PROCESSOR_MS1_64_001)
 	{
 	  ms1_nops_required = 1;
@@ -252,7 +266,7 @@ ms1_final_prescan_insn (rtx   insn,
     case TYPE_COMPLEX:
       /* One cycle of delay is required between load
 	 and the dependent arithmetic instruction.  */
-      if (ms1_memory_load (PATTERN (prev_i))
+      if (prev_attr == TYPE_LOAD
 	  && insn_true_dependent_p (prev_i, insn))
 	{
 	  ms1_nops_required = 1;
@@ -263,7 +277,7 @@ ms1_final_prescan_insn (rtx   insn,
     case TYPE_BRANCH:
       if (insn_dependent_p (prev_i, insn))
 	{
-	  if (ms1_get_attr_type (prev_i) == TYPE_ARITH
+	  if (prev_attr == TYPE_ARITH
 	      && ms1_cpu == PROCESSOR_MS1_64_001)
 	    {
 	      /* One cycle of delay between arith
@@ -271,7 +285,7 @@ ms1_final_prescan_insn (rtx   insn,
 	      ms1_nops_required = 1;
 	      ms1_nop_reasons = "arith->branch dependency delay";
 	    }
-	  else if (ms1_memory_load (PATTERN (prev_i)))
+	  else if (prev_attr == TYPE_LOAD)
 	    {
 	      /* Two cycles of delay are required
 		 between load and dependent branch.  */
@@ -790,10 +804,9 @@ ms1_override_options (void)
       else if (!strcasecmp (ms1_cpu_string, "MS1-16-002"))
 	ms1_cpu = PROCESSOR_MS1_16_002;
       else if  (!strcasecmp (ms1_cpu_string, "MS1-16-003"))
-	{
-	  ms1_cpu = PROCESSOR_MS1_16_003;
-	  target_flags |= MASK_MUL;
-	}
+	ms1_cpu = PROCESSOR_MS1_16_003;
+      else if (!strcasecmp (ms1_cpu_string, "MS2"))
+	ms1_cpu = PROCESSOR_MS2;
       else
 	error ("bad value (%s) for -march= switch", ms1_cpu_string);
     }
@@ -805,6 +818,10 @@ ms1_override_options (void)
       flag_omit_frame_pointer = 0;
       flag_gcse = 0;
     }
+
+  /* We do delayed branch filling in machine dependent reorg */
+  ms1_flag_delayed_branch = flag_delayed_branch;
+  flag_delayed_branch = 0;
 
   init_machine_status = ms1_init_machine_status;
 }
@@ -1631,6 +1648,315 @@ ms1_pass_in_stack (enum machine_mode mode ATTRIBUTE_UNUSED, tree type)
 	       || TREE_ADDRESSABLE (type))));
 }
 
+
+/* Structures to hold branch information during reorg.  */
+typedef struct branch_info
+{
+  rtx insn;  /* The branch insn.  */
+  
+  struct branch_info *next;
+} branch_info;
+
+typedef struct label_info
+{
+  rtx label;  /* The label.  */
+  branch_info *branches;  /* branches to this label.  */
+  struct label_info *next;
+} label_info;
+
+/* Chain of labels found in current function, used during reorg.  */
+static label_info *ms1_labels;
+
+/* If *X is a label, add INSN to the list of branches for that
+   label.  */
+
+static int
+ms1_add_branches (rtx *x, void *insn)
+{
+  if (GET_CODE (*x) == LABEL_REF)
+    {
+      branch_info *branch = xmalloc (sizeof (*branch));
+      rtx label = XEXP (*x, 0);
+      label_info *info;
+
+      for (info = ms1_labels; info; info = info->next)
+	if (info->label == label)
+	  break;
+
+      if (!info)
+	{
+	  info = xmalloc (sizeof (*info));
+	  info->next = ms1_labels;
+	  ms1_labels = info;
+	  
+	  info->label = label;
+	  info->branches = NULL;
+	}
+
+      branch->next = info->branches;
+      info->branches = branch;
+      branch->insn = insn;
+    }
+  return 0;
+}
+
+/* If BRANCH has a filled delay slot, check if INSN is dependent upon
+   it.  If so, undo the delay slot fill.   Returns the next insn, if
+   we patch out the branch.  Returns the branch insn, if we cannot
+   patch out the branch (due to anti-dependency in the delay slot).
+   In that case, the caller must insert nops at the branch target.  */
+
+static rtx
+ms1_check_delay_slot (rtx branch, rtx insn)
+{
+  rtx slot;
+  rtx tmp;
+  rtx p;
+  rtx jmp;
+  
+  gcc_assert (GET_CODE (PATTERN (branch)) == SEQUENCE);
+  if (INSN_DELETED_P (branch))
+    return NULL_RTX;
+  slot = XVECEXP (PATTERN (branch), 0, 1);
+  
+  tmp = PATTERN (insn);
+  note_stores (PATTERN (slot), insn_dependent_p_1, &tmp);
+  if (tmp)
+    /* Not dependent.  */
+    return NULL_RTX;
+  
+  /* Undo the delay slot.  */
+  jmp = XVECEXP (PATTERN (branch), 0, 0);
+  
+  tmp = PATTERN (jmp);
+  note_stores (PATTERN (slot), insn_dependent_p_1, &tmp);
+  if (!tmp)
+    /* Anti dependent. */
+    return branch;
+      
+  p = PREV_INSN (branch);
+  NEXT_INSN (p) = slot;
+  PREV_INSN (slot) = p;
+  NEXT_INSN (slot) = jmp;
+  PREV_INSN (jmp) = slot;
+  NEXT_INSN (jmp) = branch;
+  PREV_INSN (branch) = jmp;
+  XVECEXP (PATTERN (branch), 0, 0) = NULL_RTX;
+  XVECEXP (PATTERN (branch), 0, 1) = NULL_RTX;
+  delete_insn (branch);
+  return jmp;
+}
+
+/* Insert nops to satisfy pipeline constraints.  We only deal with ms2
+   constraints here.  Earlier CPUs are dealt with by inserting nops with
+   final_prescan (but that can lead to inferior code, and is
+   impractical with ms2's JAL hazard).
+
+   ms2 dynamic constraints
+   1) a load and a following use must be separated by one insn
+   2) an insn and a following dependent call must be separated by two insns
+   
+   only arith insns are placed in delay slots so #1 cannot happen with
+   a load in a delay slot.  #2 can happen with an arith insn in the
+   delay slot.  */
+
+static void
+ms1_reorg_hazard (void)
+{
+  rtx insn, next;
+
+  /* Find all the branches */
+  for (insn = get_insns ();
+       insn;
+       insn = NEXT_INSN (insn))
+    {
+      rtx jmp;
+
+      if (!INSN_P (insn))
+	continue;
+
+      jmp = PATTERN (insn);
+      
+      if (GET_CODE (jmp) != SEQUENCE)
+	/* If it's not got a filled delay slot, then it can't
+	   conflict.  */
+	continue;
+      
+      jmp = XVECEXP (jmp, 0, 0);
+
+      if (recog_memoized (jmp) == CODE_FOR_tablejump)
+	for (jmp = XEXP (XEXP (XVECEXP (PATTERN (jmp), 0, 1), 0), 0);
+	     !JUMP_TABLE_DATA_P (jmp);
+	     jmp = NEXT_INSN (jmp))
+	  continue;
+
+      for_each_rtx (&PATTERN (jmp), ms1_add_branches, insn);
+    }
+
+  /* Now scan for dependencies.  */
+  for (insn = get_insns ();
+       insn && !INSN_P (insn);
+       insn = NEXT_INSN (insn))
+    continue;
+  
+  for (;
+       insn;
+       insn = next)
+    {
+      rtx jmp, tmp;
+      enum attr_type attr;
+      
+      gcc_assert (INSN_P (insn) && !INSN_DELETED_P (insn));
+      for (next = NEXT_INSN (insn);
+	   next && !INSN_P (next);
+	   next = NEXT_INSN (next))
+	continue;
+
+      jmp = insn;
+      if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	jmp = XVECEXP (PATTERN (insn), 0, 0);
+      
+      attr = recog_memoized (jmp) >= 0 ? get_attr_type (jmp) : TYPE_UNKNOWN;
+      
+      if (next && attr == TYPE_LOAD)
+	{
+	  /* A load.  See if NEXT is dependent, and if so insert a
+	     nop.  */
+	  
+	  tmp = PATTERN (next);
+	  if (GET_CODE (tmp) == SEQUENCE)
+	    tmp = PATTERN (XVECEXP (tmp, 0, 0));
+	  note_stores (PATTERN (insn), insn_dependent_p_1, &tmp);
+	  if (!tmp)
+	    emit_insn_after (gen_nop (), insn);
+	}
+      
+      if (attr == TYPE_CALL)
+	{
+	  /* A call.  Make sure we're not dependent on either of the
+	     previous two dynamic instructions.  */
+	  int nops = 0;
+	  int count;
+	  rtx prev = insn;
+	  rtx rescan = NULL_RTX;
+
+	  for (count = 2; count && !nops;)
+	    {
+	      int type;
+	      
+	      prev = PREV_INSN (prev);
+	      if (!prev)
+		{
+		  /* If we reach the start of the function, we must
+		     presume the caller set the address in the delay
+		     slot of the call instruction.  */
+		  nops = count;
+		  break;
+		}
+	      
+	      if (BARRIER_P (prev))
+		break;
+	      if (LABEL_P (prev))
+		{
+		  /* Look at branches to this label.  */
+		  label_info *label;
+		  branch_info *branch;
+
+		  for (label = ms1_labels;
+		       label;
+		       label = label->next)
+		    if (label->label == prev)
+		      {
+			for (branch = label->branches;
+			     branch;
+			     branch = branch->next)
+			  {
+			    tmp = ms1_check_delay_slot (branch->insn, jmp);
+
+			    if (tmp == branch->insn)
+			      {
+				nops = count;
+				break;
+			      }
+			    
+			    if (tmp && branch->insn == next)
+			      rescan = tmp;
+			  }
+			break;
+		      }
+		  continue;
+		}
+	      if (!INSN_P (prev))
+		continue;
+	      
+	      if (GET_CODE (PATTERN (prev)) == SEQUENCE)
+		{
+		  /* Look at the delay slot.  */
+		  tmp = ms1_check_delay_slot (prev, jmp);
+		  if (tmp == prev)
+		    nops = count;
+		  break;
+		}
+	      
+	      type = (INSN_CODE (prev) >= 0 ? get_attr_type (prev)
+		      : TYPE_COMPLEX);
+	      if (type == TYPE_CALL || type == TYPE_BRANCH)
+		break;
+	      
+	      if (type == TYPE_LOAD
+		  || type == TYPE_ARITH
+		  || type == TYPE_COMPLEX)
+		{
+		  tmp = PATTERN (jmp);
+		  note_stores (PATTERN (prev), insn_dependent_p_1, &tmp);
+		  if (!tmp)
+		    {
+		      nops = count;
+		      break;
+		    }
+		}
+	      count -= INSN_CODE (prev) >= 0;
+	    }
+
+	  if (rescan)
+	    for (next = NEXT_INSN (rescan);
+		 next && !INSN_P (next);
+		 next = NEXT_INSN (next))
+	      continue;
+	  while (nops--)
+	    emit_insn_before (gen_nop (), insn);
+	}
+    }
+
+  /* Free the data structures.  */
+  while (ms1_labels)
+    {
+      label_info *label = ms1_labels;
+      branch_info *branch, *next;
+      
+      ms1_labels = label->next;
+      for (branch = label->branches; branch; branch = next)
+	{
+	  next = branch->next;
+	  free (branch);
+	}
+      free (label);
+    }
+}
+
+/* Fixup the looping instructions, do delayed branch scheduling, fixup
+   scheduling hazards.  */
+
+static void
+ms1_machine_reorg (void)
+{
+  if (ms1_flag_delayed_branch)
+    dbr_schedule (get_insns (), dump_file);
+  
+  if (ms1_cpu == PROCESSOR_MS2)
+    ms1_reorg_hazard ();
+}
+
 /* Initialize the GCC target structure.  */
 const struct attribute_spec ms1_attribute_table[];
 
@@ -1646,6 +1972,8 @@ const struct attribute_spec ms1_attribute_table[];
 #define TARGET_MUST_PASS_IN_STACK       ms1_pass_in_stack
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES	ms1_arg_partial_bytes
+#undef  TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG  ms1_machine_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
