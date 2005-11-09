@@ -1503,7 +1503,7 @@ analyze_evolution_in_loop (tree loop_phi_node,
     {
       tree arg = PHI_ARG_DEF (loop_phi_node, i);
       tree ssa_chain, ev_fn;
-      bool res;
+      t_bool res;
 
       /* Select the edges that enter the loop body.  */
       bb = PHI_ARG_EDGE (loop_phi_node, i)->src;
@@ -1519,7 +1519,7 @@ analyze_evolution_in_loop (tree loop_phi_node,
 	  res = follow_ssa_edge (loop, ssa_chain, loop_phi_node, &ev_fn, 0);
 	}
       else
-	res = false;
+	res = t_false;
 	      
       /* When it is impossible to go back on the same
 	 loop_phi_node by following the ssa edges, the
@@ -1527,7 +1527,7 @@ analyze_evolution_in_loop (tree loop_phi_node,
 	 first iteration, EV_FN has the value INIT_COND, then
 	 all the other iterations it has the value of ARG.  
 	 For the moment, PEELED_CHREC nodes are not built.  */
-      if (!res)
+      if (res != t_true)
 	ev_fn = chrec_dont_know;
       
       /* When there are multiple back edges of the loop (which in fact never

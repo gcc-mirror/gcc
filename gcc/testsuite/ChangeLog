@@ -1,3 +1,8 @@
+2005-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/24716
+	* gcc.c-torture/execute/pr24716.c: New testcase.
+
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/pr24624.c: Disable for non S/390 targets.
