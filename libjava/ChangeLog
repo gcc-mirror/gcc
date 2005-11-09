@@ -1,3 +1,8 @@
+2005-11-09  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jacks/jacks.xfail (non-jls-zip-2): Now
+	passes.
+
 2005-11-08  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/24587:
