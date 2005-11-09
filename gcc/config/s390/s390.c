@@ -6009,7 +6009,10 @@ s390_regs_ever_clobbered (int *regs_ever_clobbered)
      deal with this automatically.  */
   if (current_function_calls_eh_return || cfun->machine->has_landing_pad_p)
     for (i = 0; EH_RETURN_DATA_REGNO (i) != INVALID_REGNUM ; i++)
-      regs_ever_clobbered[EH_RETURN_DATA_REGNO (i)] = 1;
+      if (current_function_calls_eh_return 
+	  || (cfun->machine->has_landing_pad_p 
+	      && regs_ever_live [EH_RETURN_DATA_REGNO (i)]))
+	regs_ever_clobbered[EH_RETURN_DATA_REGNO (i)] = 1;
 
   /* For nonlocal gotos all call-saved registers have to be saved.
      This flag is also set for the unwinding code in libgcc.
