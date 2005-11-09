@@ -1,5 +1,11 @@
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.c (s390_regs_ever_clobbered): Only save live eh regs
+	for a function containing a landing pad.
+	* testsuite/g++.dg/other/pr24623.C: Testcase added.
+
+2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* flow.c (mark_set_1): Handle CLOBBERs like SETs if the register
 	is live afterwards.
 
