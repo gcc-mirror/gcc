@@ -4694,11 +4694,10 @@ grokdeclarator (const struct c_declarator *declarator,
 	/* At file scope, the presence of a `static' or `register' storage
 	   class specifier, or the absence of all storage class specifiers
 	   makes this declaration a definition (perhaps tentative).  Also,
-	   the absence of both `static' and `register' makes it public.  */
+	   the absence of `static' makes it public.  */
 	if (current_scope == file_scope)
 	  {
-	    TREE_PUBLIC (decl) = !(storage_class == csc_static
-				   || storage_class == csc_register);
+	    TREE_PUBLIC (decl) = storage_class != csc_static;
 	    TREE_STATIC (decl) = !extern_ref;
 	  }
 	/* Not at file scope, only `static' makes a static definition.  */
