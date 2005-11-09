@@ -479,6 +479,19 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size, int align,
   function->x_stack_slot_list
     = gen_rtx_EXPR_LIST (VOIDmode, x, function->x_stack_slot_list);
 
+  /* Try to detect frame size overflows.  */
+  if ((FRAME_GROWS_DOWNWARD
+       ? (unsigned HOST_WIDE_INT) -function->x_frame_offset
+       : (unsigned HOST_WIDE_INT) function->x_frame_offset)
+	> ((unsigned HOST_WIDE_INT) 1 << (BITS_PER_WORD - 1))
+	    /* Leave room for the fixed part of the frame.  */
+	    - 64 * UNITS_PER_WORD)
+    {
+      error ("%Jtotal size of local objects too large", function->decl);
+      /* Avoid duplicate error messages as much as possible.  */
+      function->x_frame_offset = 0;
+    }
+
   return x;
 }
 
