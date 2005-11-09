@@ -1,3 +1,9 @@
+2005-11-09  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/22607
+	* gfortran-dg/pure_byref_1.f90: New.
+	* gfortran-dg/pure_byref_2.f90: New.
+
 2005-11-09  Uros Bizjak  <uros@kss-loka.si>
 
 	PR c/24101
