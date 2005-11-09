@@ -1,3 +1,10 @@
+2005-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* final.c (force_source_line): New global variable.
+	(final_scan_insn): Set it to true instead of clearing last_filename.
+	(notice_source_line): Return true if force_source_line is true,
+	unless source info is absent.
+
 2005-11-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/24644
