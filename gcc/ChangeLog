@@ -1,3 +1,8 @@
+2005-11-08  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/t-bfin-elf (MULTILIB_OPTIONS, MULTILIB_DEFAULTS,
+	MULTILIB_DIRNAMES, MULTILIB_EXCEPTIONS): New.
+
 2005-11-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Add ms2 support
