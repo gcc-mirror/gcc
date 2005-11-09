@@ -17,6 +17,7 @@
 
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	PR 24034
 	* flow.c (mark_set_1): Handle CLOBBERs like SETs if the register
 	is live afterwards.
 
