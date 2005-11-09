@@ -1,5 +1,10 @@
 2005-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* function.c (assign_stack_local_1): Issue an error message if
+	the frame size overflows in the signed target arithmetics.
+
+2005-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree.c (build_qualified_type): Chain the new type to the original
 	type's TYPE_NEXT_PTR_TO or TYPE_NEXT_REF_TO linked lists if it is
 	a POINTER_TYPE or a REFERENCE_TYPE respectively.
