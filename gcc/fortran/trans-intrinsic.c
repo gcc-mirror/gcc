@@ -2238,7 +2238,7 @@ gfc_conv_intrinsic_adjust (gfc_se * se, gfc_expr * expr, tree fndecl)
 
 
 /* Scalar transfer statement.
-   TRANSFER (source, mold) = *(typeof<mould> *)&source  */
+   TRANSFER (source, mold) = *(typeof<mold> *)&source  */
 
 static void
 gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)

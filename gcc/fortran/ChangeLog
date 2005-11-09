@@ -1,3 +1,7 @@
+2005-11-09  Steven G. Kargl <kargls@comcast.net>
+
+	* trans-intrinsic.c: Fix typo in comment.
+
 2005-11-07  Steven G. Kargl <kargls@comcast.net>
 
 	*error.c: Use flag_fatal_error.
