@@ -1,5 +1,6 @@
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	PR 24624
 	* config/s390/s390.c (struct s390_frame_layout): New fields 
 	first_save_gpr_slot and last_save_gpr_slot.
 	(cfun_grps_save_area_size, s390_frame_info, s390_emit_prologue,  
@@ -7,13 +8,12 @@
 	first_save_gpr and last_save_gpr with the _slot variants.
 	(s390_register_info): Calculate first_save_gpr_slot and 
 	last_save_gpr_slot using regs_ever_live.
-	* testsuite/gcc.dg/pr24624.c: Testcase added.
 
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	PR 24623
 	* config/s390/s390.c (s390_regs_ever_clobbered): Only save live eh regs
 	for a function containing a landing pad.
-	* testsuite/g++.dg/other/pr24623.C: Testcase added.
 
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 

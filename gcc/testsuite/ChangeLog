@@ -1,3 +1,13 @@
+2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
+	
+        PR 24624
+	* gcc.dg/pr24624.c: Testcase added.
+	
+2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR 24623
+	* g++.dg/other/pr24623.C: Testcase added.
+
 2005-11-09  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/22607
