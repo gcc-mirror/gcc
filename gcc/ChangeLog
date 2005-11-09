@@ -1,3 +1,11 @@
+2005-11-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/24644
+	* dwarf2-out.c (add_name_and_src_coords_attributes): Don't add
+	a linkage name for a variable if it a register variable.
+	* c-decl.c (grokdeclarator): Global register variables
+	should be set as PUBLIC.
+
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR 24624
