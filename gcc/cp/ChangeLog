@@ -1,3 +1,9 @@
+2005-11-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/21123
+	* method.c (use_thunk): Use build_cplus_new instead of 
+	force_target_expr.
+
 2005-11-03  Josh Conner  <jconner@apple.com>
 
 	PR c++/19989
