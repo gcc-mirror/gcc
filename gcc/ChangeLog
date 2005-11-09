@@ -1,3 +1,9 @@
+2005-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (gnucompare): Do comparison of all files using one of
+	the chosen methods and only afterwards decide if just warning should
+	be issued or comparison failure raised.
+
 2005-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ifcvt.c (noce_get_alt_condition): Use prev_nonnote_insn.
