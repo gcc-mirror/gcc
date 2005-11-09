@@ -24,6 +24,10 @@ Boston, MA 02110-1301, USA.  */
    covered by the GNU General Public License.  */
 
 #define _LIBOBJC
+/* The line below is needed for declarations of functions such as
+   pthread_mutexattr_settype, without which gthr-posix.h may fail to
+   compile within libobjc.  */
+#define _XOPEN_SOURCE 500
 #include "config.h"
 #include "tconfig.h"
 #include "coretypes.h"

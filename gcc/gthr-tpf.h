@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.
    Compile this one with gcc.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -69,19 +69,26 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 #define __tpf_pthread_active() (CE2THRCPTR != NOTATHREAD)
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
+# define __gthrw(name) \
+  extern __typeof(name) __gthrw_ ## name __attribute__ ((__weakref__(#name)))
+#else
+# define __gthrw_asmname(cname) __gthrw_asmnamep (__USER_LABEL_PREFIX__, cname)
+# define __gthrw_asmnamep(prefix, cname) __gthrw_string (prefix) cname
+# define __gthrw_string(x) #x
+# define __gthrw(name) \
+  extern __typeof(name) __gthrw_ ## name __asm (__gthrw_asmname (#name))
+#endif
 
-#pragma weak pthread_once
-#pragma weak pthread_key_create
-#pragma weak pthread_key_delete
-#pragma weak pthread_getspecific
-#pragma weak pthread_setspecific
-#pragma weak pthread_create
+__gthrw(pthread_once);
+__gthrw(pthread_key_create);
+__gthrw(pthread_key_delete);
+__gthrw(pthread_getspecific);
+__gthrw(pthread_setspecific);
+__gthrw(pthread_create);
 
-#pragma weak pthread_mutex_lock
-#pragma weak pthread_mutex_trylock
-#pragma weak pthread_mutex_unlock
-
-#endif /* SUPPORTS_WEAK */
+__gthrw(pthread_mutex_lock);
+__gthrw(pthread_mutex_trylock);
+__gthrw(pthread_mutex_unlock);
 
 static inline int
 __gthread_active_p (void)
@@ -93,7 +100,7 @@ static inline int
 __gthread_once (__gthread_once_t *once, void (*func) (void))
 {
   if (__tpf_pthread_active ())
-    return pthread_once (once, func);
+    return __gthrw_pthread_once (once, func);
   else
     return -1;
 }
@@ -102,7 +109,7 @@ static inline int
 __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 {
   if (__tpf_pthread_active ())
-    return pthread_key_create (key, dtor);
+    return __gthrw_pthread_key_create (key, dtor);
   else
     return -1;
 }
@@ -111,7 +118,7 @@ static inline int
 __gthread_key_delete (__gthread_key_t key)
 {
   if (__tpf_pthread_active ())
-    return pthread_key_delete (key);
+    return __gthrw_pthread_key_delete (key);
   else
     return -1;
 }
@@ -120,7 +127,7 @@ static inline void *
 __gthread_getspecific (__gthread_key_t key)
 {
   if (__tpf_pthread_active ())
-    return pthread_getspecific (key);
+    return __gthrw_pthread_getspecific (key);
   else
     return NULL;
 }
@@ -129,7 +136,7 @@ static inline int
 __gthread_setspecific (__gthread_key_t key, const void *ptr)
 {
   if (__tpf_pthread_active ())
-    return pthread_setspecific (key, ptr);
+    return __gthrw_pthread_setspecific (key, ptr);
   else
     return -1;
 }
@@ -138,7 +145,7 @@ static inline int
 __gthread_mutex_lock (__gthread_mutex_t *mutex)
 {
   if (__tpf_pthread_active ())
-    return pthread_mutex_lock (mutex);
+    return __gthrw_pthread_mutex_lock (mutex);
   else
     return 0;
 }
@@ -147,7 +154,7 @@ static inline int
 __gthread_mutex_trylock (__gthread_mutex_t *mutex)
 {
   if (__tpf_pthread_active ())
-    return pthread_mutex_trylock (mutex);
+    return __gthrw_pthread_mutex_trylock (mutex);
   else
     return 0;
 }
@@ -156,7 +163,7 @@ static inline int
 __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 {
   if (__tpf_pthread_active ())
-    return pthread_mutex_unlock (mutex);
+    return __gthrw_pthread_mutex_unlock (mutex);
   else
     return 0;
 }
