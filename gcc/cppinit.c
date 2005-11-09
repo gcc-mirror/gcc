@@ -498,8 +498,10 @@ read_original_filename (cpp_reader *pfile)
   token = _cpp_lex_direct (pfile);
   if (token->type == CPP_HASH)
     {
+      pfile->state.in_directive = 1;
       token1 = _cpp_lex_direct (pfile);
       _cpp_backup_tokens (pfile, 1);
+      pfile->state.in_directive = 0;
 
       /* If it's a #line directive, handle it.  */
       if (token1->type == CPP_NUMBER)

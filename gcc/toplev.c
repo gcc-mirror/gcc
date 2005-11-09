@@ -4271,6 +4271,10 @@ general_init (const char *argv0)
 static void
 process_options (void)
 {
+  /* Just in case lang_hooks.post_options ends up calling a debug_hook.
+     This can happen with incorrect pre-processed input. */
+  debug_hooks = &do_nothing_debug_hooks;
+
   /* Allow the front end to perform consistency checks and do further
      initialization based on the command line options.  This hook also
      sets the original filename if appropriate (e.g. foo.i -> foo.c)
@@ -4400,7 +4404,7 @@ process_options (void)
   /* Now we know write_symbols, set up the debug hooks based on it.
      By default we do nothing for debug output.  */
   if (write_symbols == NO_DEBUG)
-    debug_hooks = &do_nothing_debug_hooks;
+    ;
 #if defined(DBX_DEBUGGING_INFO)
   else if (write_symbols == DBX_DEBUG)
     debug_hooks = &dbx_debug_hooks;
