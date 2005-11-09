@@ -1,3 +1,9 @@
+2005-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ifcvt.c (noce_get_alt_condition): Use prev_nonnote_insn.
+	(noce_try_abs): Negate if the comparison is reversed.
+	Look only one instruction backwards for a REG_EQUAL note.
+
 2005-11-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR other/4372
