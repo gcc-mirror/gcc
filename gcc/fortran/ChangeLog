@@ -1,3 +1,7 @@
+2005-11-09  Steven G. Kargl  <kargls@comcast.net>
+
+	* trans-intrinsic.c: Typo in comment.
+
 2005-11-09  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/22607
