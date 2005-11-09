@@ -1,3 +1,11 @@
+2005-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (build_qualified_type): Chain the new type to the original
+	type's TYPE_NEXT_PTR_TO or TYPE_NEXT_REF_TO linked lists if it is
+	a POINTER_TYPE or a REFERENCE_TYPE respectively.
+	(build_pointer_type_for_mode): Only return unqualified types.
+	(build_reference_type_for_mode): Likewise.
+
 2005-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (gnucompare): Do comparison of all files using one of
