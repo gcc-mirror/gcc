@@ -42,6 +42,7 @@
 	.align		4
 	ldw	r14, sp, #0
 	addi	sp, sp, #4
+	nop
 	jal	r0, r14
 	or	r0, r0, r0
 	
@@ -50,5 +51,6 @@
 
 	ldw	r14, sp, #0
 	addi	sp, sp, #4
+	nop
 	jal	r0, r14
 	or	r0, r0, r0

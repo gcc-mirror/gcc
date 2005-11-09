@@ -1,3 +1,36 @@
+2005-11-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Add ms2 support
+	* config/ms1/ms1.md (UNSPEC_BLOCKAGE, UNSPEC_EI, UNSPEC_DI): New
+	constants.
+	(call,load,store): New insn types.
+	(mem_access, branch_access): Adjust reservation conditions.
+	(define_delay): Adjust condition.
+	(decrement_and_branch_until_zero): Allow for ms2.  Set branch
+	type.
+	(*decrement_and_rbanch_until_zero_no_clobber): Allow for ms2.
+	(*movqi_internal,*movsi_internal,*movsf_internal): Use load,store
+	insn type.
+	(call_internal, call_value_internal, return_internal,
+	return_interrupt_internal, eh_return_internal, indirect_jump,
+	tablejump): Set call insn type.
+	(blockage, ei, di): Use appropriate unspec const.
+	* config/ms1/ms1.c (ms1_flag_delayed_branch): New.
+	(ms1_get_attr_type): Adjust to give load & store types.
+	(ms1_final_prescan_insn): Adjust for new insn types.  Don't look
+	backwards past a barrier.
+	(ms1_override_options): Accept ms2 arch.  Copy and reset delayed
+	branch scheduling.
+	(struct branch_info, struct label_info): New.
+	(ms1_labels): New.
+	(ms1_add_branches, ms1_check_delay_slot, ms1_reorg_hazard): New.
+	(ms1_machine_reorg): New.
+	(TARGET_MACHINE_DEPENDENT_REORG): Override.
+	* config/ms1/crtn.asm: Add nop for ms2 JAL hazard.
+	* config/ms1/ms1.h (processor_type): Add PROCESSOR_MS2.
+	(ASM_SPEC, LIB_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): Add ms2.
+	(TARGET_MS2): New.
+
 2005-11-09  Per Bothner  <per@bothner.com>
 	    Uros Bizjak  <uros@kss-loka.si>
 	

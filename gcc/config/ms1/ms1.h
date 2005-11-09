@@ -25,7 +25,8 @@ enum processor_type
 {
   PROCESSOR_MS1_64_001,
   PROCESSOR_MS1_16_002,
-  PROCESSOR_MS1_16_003
+  PROCESSOR_MS1_16_003,
+  PROCESSOR_MS2
 };
 
 enum epilogue_type
@@ -40,7 +41,7 @@ extern enum processor_type ms1_cpu;
 /* A C string constant that tells the GCC driver program options to pass to
    the assembler.  */
 #undef  ASM_SPEC
-#define ASM_SPEC "%{march=ms1-16-002: -march=ms1-16-002} %{march=ms1-16-003: -march=ms1-16-003} %{!march=*: -march=ms1-16-002}"
+#define ASM_SPEC "%{march=ms1-16-002: -march=ms1-16-002} %{march=ms1-16-003: -march=ms1-16-003} %{march=ms2: -march=ms2} %{!march=*: -march=ms1-16-002}"
 
 /* A string to pass to at the end of the command given to the linker.  */
 #undef  LIB_SPEC
@@ -51,7 +52,9 @@ march=MS1-64-001:-T 64-001.ld%s; \
 march=ms1-16-002:-T 16-002.ld%s; \
 march=MS1-16-002:-T 16-002.ld%s; \
 march=ms1-16-003:-T 16-003.ld%s; \
-march=MS1-16-003:-T 16-003.ld%s}"
+march=MS1-16-003:-T 16-003.ld%s; \
+march=ms2:-T ms2.ld%s; \
+march=MS2:-T ms2.ld%s}"
 
 /* A string to pass at the very beginning of the command given to the
    linker.  */
@@ -62,7 +65,9 @@ march=MS1-64-001:%{!mno-crt0:crt0-64-001.o%s} startup-64-001.o%s; \
 march=ms1-16-002:%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s; \
 march=MS1-16-002:%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s; \
 march=ms1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s; \
-march=MS1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s} \
+march=MS1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s; \
+march=ms2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s; \
+march=MS2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s} \
 crti.o%s crtbegin.o%s"
 
 /* A string to pass at the end of the command given to the linker.  */
@@ -73,7 +78,9 @@ march=MS1-64-001:exit-64-001.o%s; \
 march=ms1-16-002:exit-16-002.o%s; \
 march=MS1-16-002:exit-16-002.o%s; \
 march=ms1-16-003:exit-16-003.o%s; \
-march=MS1-16-003:exit-16-003.o%s} \
+march=MS1-16-003:exit-16-003.o%s; \
+march=ms2:exit-ms2.o%s; \
+march=MS2:exit-ms2.o%s} \
  crtend.o%s crtn.o%s"
 
 /* Run-time target specifications.  */
@@ -89,6 +96,7 @@ march=MS1-16-003:exit-16-003.o%s} \
 #define TARGET_MS1_64_001 (ms1_cpu == PROCESSOR_MS1_64_001)
 #define TARGET_MS1_16_002 (ms1_cpu == PROCESSOR_MS1_16_002)
 #define TARGET_MS1_16_003 (ms1_cpu == PROCESSOR_MS1_16_003)
+#define TARGET_MS2 (ms1_cpu == PROCESSOR_MS2)
 
 #define TARGET_VERSION  fprintf (stderr, " (ms1)");
 
