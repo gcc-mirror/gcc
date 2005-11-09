@@ -1,6 +1,14 @@
 2005-11-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR other/4372
+	* gthr-dce.h, gthr-posix.h, gthr-posix95.h, gthr-solaris.h,
+	gthr-tpf.h: Define __gthrw.  For all identifiers that might
+	be weak, introduce weakrefs or non-weak aliases with __gthrw,
+	and prefix all uses with __ghtrw.
+
+2005-11-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR other/4372
 	* tree.h (IDENTIFIER_TRANSPARENT_ALIAS): New.
 	(TREE_DEPRECATED): Adjust comment.  Check for a DECL.
 	* c-common.c (handle_weakref_attribute): New.

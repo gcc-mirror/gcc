@@ -1,6 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -56,33 +57,44 @@ typedef struct {
 #define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
+# define __gthrw(name) \
+  extern __typeof(name) __gthrw_ ## name __attribute__ ((__weakref__(#name)))
+#else
+# define __gthrw_asmname(cname) __gthrw_asmnamep (__USER_LABEL_PREFIX__, cname)
+# define __gthrw_asmnamep(prefix, cname) __gthrw_string (prefix) cname
+# define __gthrw_string(x) #x
+# define __gthrw(name) \
+  extern __typeof(name) __gthrw_ ## name __asm (__gthrw_asmname (#name))
+#endif
 
-#pragma weak thr_keycreate
-#pragma weak thr_getspecific
-#pragma weak thr_setspecific
-#pragma weak thr_create
+__gthrw(thr_keycreate);
+__gthrw(thr_getspecific);
+__gthrw(thr_setspecific);
+__gthrw(thr_create);
 
-#pragma weak mutex_lock
-#pragma weak mutex_trylock
-#pragma weak mutex_unlock
+__gthrw(mutex_lock);
+__gthrw(mutex_trylock);
+__gthrw(mutex_unlock);
 
 #ifdef _LIBOBJC
-#pragma weak thr_exit
-#pragma weak thr_keycreate
-#pragma weak thr_getprio
-#pragma weak thr_self
-#pragma weak thr_setprio
-#pragma weak thr_yield
+__gthrw(thr_exit);
+__gthrw(thr_keycreate);
+__gthrw(thr_getprio);
+__gthrw(thr_self);
+__gthrw(thr_setprio);
+__gthrw(thr_yield);
 
-#pragma weak cond_init
-#pragma weak cond_destroy
-#pragma weak cond_wait
-#pragma weak cond_broadcast
-#pragma weak cond_signal
+__gthrw(cond_init);
+__gthrw(cond_destroy);
+__gthrw(cond_wait);
+__gthrw(cond_broadcast);
+__gthrw(cond_signal);
 
-#pragma weak mutex_init
-#pragma weak mutex_destroy
+__gthrw(mutex_init);
+__gthrw(mutex_destroy);
 #endif
+
+#if SUPPORTS_WEAK && GTHREAD_USE_WEAK
 
 /* This will not actually work in Solaris 2.5, since libc contains
    dummy symbols of all thr_* routines.  */
@@ -90,7 +102,7 @@ typedef struct {
 static inline int
 __gthread_active_p (void)
 {
-  static void *const __gthread_active_ptr = (void *) &thr_create;
+  static void *const __gthread_active_ptr = (void *) &__gthrw_thr_create;
   return __gthread_active_ptr != 0;
 }
 
@@ -120,7 +132,7 @@ __gthread_objc_init_thread_system (void)
 {
   /* Initialize the thread storage key.  */
   if (__gthread_active_p ()
-      && thr_keycreate (&_objc_thread_storage, NULL) == 0)
+      && __gthrw_thr_keycreate (&_objc_thread_storage, NULL) == 0)
     return 0;
 
   return -1;
@@ -148,7 +160,7 @@ __gthread_objc_thread_detach (void (*func)(void *), void *arg)
   if (!__gthread_active_p ())
     return NULL;
 
-  if (thr_create (NULL, 0, (void *) func, arg,
+  if (__gthrw_thr_create (NULL, 0, (void *) func, arg,
 		  THR_DETACHED | THR_NEW_LWP,
 		  &new_thread_id) == 0)
     thread_id = *(objc_thread_t *) &new_thread_id;
@@ -182,7 +194,7 @@ __gthread_objc_thread_set_priority (int priority)
     }
 
   /* Change priority */
-  if (thr_setprio (thr_self (), sys_priority) == 0)
+  if (__gthrw_thr_setprio (__gthrw_thr_self (), sys_priority) == 0)
     return 0;
   else
     return -1;
@@ -197,7 +209,7 @@ __gthread_objc_thread_get_priority (void)
   if (!__gthread_active_p ())
     return OBJC_THREAD_INTERACTIVE_PRIORITY;
 
-  if (thr_getprio (thr_self (), &sys_priority) == 0)
+  if (__gthrw_thr_getprio (__gthrw_thr_self (), &sys_priority) == 0)
     {
       if (sys_priority >= 250)
 	return OBJC_THREAD_INTERACTIVE_PRIORITY;
@@ -215,7 +227,7 @@ static inline void
 __gthread_objc_thread_yield (void)
 {
   if (__gthread_active_p ())
-    thr_yield ();
+    __gthrw_thr_yield ();
 }
 
 /* Terminate the current thread.  */
@@ -224,7 +236,7 @@ __gthread_objc_thread_exit (void)
 {
   if (__gthread_active_p ())
     /* exit the thread */
-    thr_exit (&__objc_thread_exit_status);
+    __gthrw_thr_exit (&__objc_thread_exit_status);
 
   /* Failed if we reached here */
   return -1;
@@ -235,7 +247,7 @@ static inline objc_thread_t
 __gthread_objc_thread_id (void)
 {
   if (__gthread_active_p ())
-    return (objc_thread_t) thr_self ();
+    return (objc_thread_t) __gthrw_thr_self ();
   else
     return (objc_thread_t) 1;
 }
@@ -246,7 +258,7 @@ __gthread_objc_thread_set_data (void *value)
 {
   if (__gthread_active_p ())
     {
-      if (thr_setspecific (_objc_thread_storage, value) == 0)
+      if (__gthrw_thr_setspecific (_objc_thread_storage, value) == 0)
 	return 0;
       else
 	return -1;
@@ -266,7 +278,7 @@ __gthread_objc_thread_get_data (void)
 
   if (__gthread_active_p ())
     {
-      if (thr_getspecific (_objc_thread_storage, &value) == 0)
+      if (__gthrw_thr_getspecific (_objc_thread_storage, &value) == 0)
 	return value;
       else
 	return NULL;
@@ -282,7 +294,7 @@ static inline int
 __gthread_objc_mutex_allocate (objc_mutex_t mutex)
 {
   if (__gthread_active_p ()
-      && mutex_init ((mutex_t *) (&(mutex->backend)), USYNC_THREAD, 0))
+      && __gthrw_mutex_init ((mutex_t *) (&(mutex->backend)), USYNC_THREAD, 0))
     return -1;
 
   return 0;
@@ -293,7 +305,7 @@ static inline int
 __gthread_objc_mutex_deallocate (objc_mutex_t mutex)
 {
   if (__gthread_active_p ())
-    mutex_destroy ((mutex_t *) (&(mutex->backend)));
+    __gthrw_mutex_destroy ((mutex_t *) (&(mutex->backend)));
 
   return 0;
 }
@@ -303,7 +315,7 @@ static inline int
 __gthread_objc_mutex_lock (objc_mutex_t mutex)
 {
   if (__gthread_active_p ()
-      && mutex_lock ((mutex_t *) (&(mutex->backend))) != 0)
+      && __gthrw_mutex_lock ((mutex_t *) (&(mutex->backend))) != 0)
     return -1;
 
   return 0;
@@ -314,7 +326,7 @@ static inline int
 __gthread_objc_mutex_trylock (objc_mutex_t mutex)
 {
   if (__gthread_active_p ()
-      && mutex_trylock ((mutex_t *) (&(mutex->backend))) != 0)
+      && __gthrw_mutex_trylock ((mutex_t *) (&(mutex->backend))) != 0)
     return -1;
 
   return 0;
@@ -325,7 +337,7 @@ static inline int
 __gthread_objc_mutex_unlock (objc_mutex_t mutex)
 {
   if (__gthread_active_p ()
-      && mutex_unlock ((mutex_t *) (&(mutex->backend))) != 0)
+      && __gthrw_mutex_unlock ((mutex_t *) (&(mutex->backend))) != 0)
     return -1;
 
   return 0;
@@ -338,7 +350,7 @@ static inline int
 __gthread_objc_condition_allocate (objc_condition_t condition)
 {
   if (__gthread_active_p ())
-    return cond_init ((cond_t *) (&(condition->backend)), USYNC_THREAD,
+    return __gthrw_cond_init ((cond_t *) (&(condition->backend)), USYNC_THREAD,
 		      NULL);
   else
     return 0;
@@ -349,7 +361,7 @@ static inline int
 __gthread_objc_condition_deallocate (objc_condition_t condition)
 {
   if (__gthread_active_p ())
-    return cond_destroy ((cond_t *) (&(condition->backend)));
+    return __gthrw_cond_destroy ((cond_t *) (&(condition->backend)));
   else
     return 0;
 }
@@ -359,7 +371,7 @@ static inline int
 __gthread_objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
 {
   if (__gthread_active_p ())
-    return cond_wait ((cond_t *) (&(condition->backend)),
+    return __gthrw_cond_wait ((cond_t *) (&(condition->backend)),
 		      (mutex_t *) (&(mutex->backend)));
   else
     return 0;
@@ -370,7 +382,7 @@ static inline int
 __gthread_objc_condition_broadcast (objc_condition_t condition)
 {
   if (__gthread_active_p ())
-    return cond_broadcast ((cond_t *) (&(condition->backend)));
+    return __gthrw_cond_broadcast ((cond_t *) (&(condition->backend)));
   else
     return 0;
 }
@@ -380,7 +392,7 @@ static inline int
 __gthread_objc_condition_signal (objc_condition_t condition)
 {
   if (__gthread_active_p ())
-    return cond_signal ((cond_t *) (&(condition->backend)));
+    return __gthrw_cond_signal ((cond_t *) (&(condition->backend)));
   else
     return 0;
 }
@@ -398,7 +410,7 @@ __gthread_once (__gthread_once_t *once, void (*func) (void))
 
   if (once->once == 0)
     {
-      int status = mutex_lock (&once->mutex);
+      int status = __gthrw_mutex_lock (&once->mutex);
       if (status != 0)
 	return status;
       if (once->once == 0)
@@ -406,7 +418,7 @@ __gthread_once (__gthread_once_t *once, void (*func) (void))
 	  (*func) ();
 	  once->once++;
 	}
-      mutex_unlock (&once->mutex);
+      __gthrw_mutex_unlock (&once->mutex);
     }
   return 0;
 }
@@ -417,7 +429,7 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
   /* Solaris 2.5 contains thr_* routines no-op in libc, so test if we actually
      got a reasonable key value, and if not, fail.  */
   *key = (__gthread_key_t)-1;
-  if (thr_keycreate (key, dtor) != 0 || *key == (__gthread_key_t)-1)
+  if (__gthrw_thr_keycreate (key, dtor) != 0 || *key == (__gthread_key_t)-1)
     return -1;
   else
     return 0;
@@ -434,7 +446,7 @@ static inline void *
 __gthread_getspecific (__gthread_key_t key)
 {
   void *ptr;
-  if (thr_getspecific (key, &ptr) == 0)
+  if (__gthrw_thr_getspecific (key, &ptr) == 0)
     return ptr;
   else
     return 0;
@@ -443,14 +455,14 @@ __gthread_getspecific (__gthread_key_t key)
 static inline int
 __gthread_setspecific (__gthread_key_t key, const void *ptr)
 {
-  return thr_setspecific (key, (void *) ptr);
+  return __gthrw_thr_setspecific (key, (void *) ptr);
 }
 
 static inline int
 __gthread_mutex_lock (__gthread_mutex_t *mutex)
 {
   if (__gthread_active_p ())
-    return mutex_lock (mutex);
+    return __gthrw_mutex_lock (mutex);
   else
     return 0;
 }
@@ -459,7 +471,7 @@ static inline int
 __gthread_mutex_trylock (__gthread_mutex_t *mutex)
 {
   if (__gthread_active_p ())
-    return mutex_trylock (mutex);
+    return __gthrw_mutex_trylock (mutex);
   else
     return 0;
 }
@@ -468,7 +480,7 @@ static inline int
 __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 {
   if (__gthread_active_p ())
-    return mutex_unlock (mutex);
+    return __gthrw_mutex_unlock (mutex);
   else
     return 0;
 }
@@ -478,7 +490,7 @@ __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
 {
   mutex->depth = 0;
   mutex->owner = (thread_t) 0;
-  return mutex_init (&mutex->actual, USYNC_THREAD, 0);
+  return __gthrw_mutex_init (&mutex->actual, USYNC_THREAD, 0);
 }
 
 static inline int
@@ -486,11 +498,11 @@ __gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
 {
   if (__gthread_active_p ())
     {
-      thread_t me = thr_self ();
+      thread_t me = __gthrw_thr_self ();
 
       if (mutex->owner != me)
 	{
-	  mutex_lock (&mutex->actual);
+	  __gthrw_mutex_lock (&mutex->actual);
 	  mutex->owner = me;
 	}
 
@@ -504,11 +516,11 @@ __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
 {
   if (__gthread_active_p ())
     {
-      thread_t me = thr_self ();
+      thread_t me = __gthrw_thr_self ();
 
       if (mutex->owner != me)
 	{
-	  if (mutex_trylock (&mutex->actual))
+	  if (__gthrw_mutex_trylock (&mutex->actual))
 	    return 1;
 	  mutex->owner = me;
 	}
@@ -526,7 +538,7 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
       if (--mutex->depth == 0)
 	{
 	   mutex->owner = (thread_t) 0;
-	   mutex_unlock (&mutex->actual);
+	   __gthrw_mutex_unlock (&mutex->actual);
 	}
     }
   return 0;
