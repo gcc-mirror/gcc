@@ -1,3 +1,9 @@
+2005-11-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR other/4372
+	* gcc.dg/attr-weakref-1.c, gcc.dg/attr-weakref-1a.c: New test.
+	* g++.old-deja/g++.abi/vtable2.C: Use weakref instead of alias.
+
 2005-11-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/24716

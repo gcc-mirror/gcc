@@ -1,5 +1,4 @@
 // { dg-do run  }
-// { dg-require-alias "" }
 // { dg-options "-fno-strict-aliasing" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
@@ -125,8 +124,11 @@ void S4::s1 ()
 // These are tricks to allow us to get raw function pointers for
 // member functions.
 extern "C" {
-  void S3_s3 () __attribute__((__alias__ ("_ZN2S32s3Ev")));
-  void S4_s1 () __attribute__((__alias__ ("_ZN2S42s1Ev")));
+  /* We can use weakref here without dg-require-weak, because we know
+     the symbols are defined, so we don't actually issue the .weak
+     directives.  */
+  void S3_s3 () __attribute__((__weakref__ ("_ZN2S32s3Ev")));
+  void S4_s1 () __attribute__((__weakref__ ("_ZN2S42s1Ev")));
 }
 
 // IA-64 uses function descriptors not function pointers in its vtables.

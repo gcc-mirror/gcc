@@ -13988,6 +13988,43 @@ _ACEOF
 
 fi
 
+echo "$as_me:$LINENO: checking assembler for .weakref" >&5
+echo $ECHO_N "checking assembler for .weakref... $ECHO_C" >&6
+if test "${gcc_cv_as_weakref+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_weakref=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
+  then gcc_cv_as_weakref=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '	.weakref foobar, barfnot' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_weakref=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_weakref" >&5
+echo "${ECHO_T}$gcc_cv_as_weakref" >&6
+if test $gcc_cv_as_weakref = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_GAS_WEAKREF 1
+_ACEOF
+
+fi
+
 echo "$as_me:$LINENO: checking assembler for .nsubspa comdat" >&5
 echo $ECHO_N "checking assembler for .nsubspa comdat... $ECHO_C" >&6
 if test "${gcc_cv_as_nsubspa_comdat+set}" = set; then
