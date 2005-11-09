@@ -1,3 +1,8 @@
+2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* flow.c (mark_set_1): Handle CLOBBERs like SETs if the register
+	is live afterwards.
+
 2005-11-08  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/t-bfin-elf (MULTILIB_OPTIONS, MULTILIB_DEFAULTS,

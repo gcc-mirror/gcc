@@ -2816,7 +2816,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 	      else
 		SET_REGNO_REG_SET (pbi->local_set, i);
 	    }
-	  if (code != CLOBBER)
+	  if (code != CLOBBER || needed_regno)
 	    SET_REGNO_REG_SET (pbi->new_set, i);
 
 	  some_was_live |= needed_regno;
