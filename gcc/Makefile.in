@@ -4241,30 +4241,30 @@ fastcompare fastcompare3 fastcompare4 fastcompare-lean fastcompare3-lean fastcom
 	for dir in . $(SUBDIRS) libgcc; do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
-	      case $$file in \
-		./cc*-checksum$(objext) | libgcc/* ) \
-		    tail +16c ./$$file > tmp-foo1 \
-		    && tail +16c stage$$stage/$$file > tmp-foo2 \
-		    && ( cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 \
-			 || echo warning: $$file differs || true ) \
+	      case "$@" in \
+		slowcompare* ) \
+		  tail +16c ./$$file > tmp-foo1; \
+		  tail +16c stage$$stage/$$file > tmp-foo2; \
+		  cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1; \
+		  cmpret=$$?; \
 		  ;; \
-		*)  case "$@" in \
-		  slowcompare* ) \
-		    tail +16c ./$$file > tmp-foo1; \
-		    tail +16c stage$$stage/$$file > tmp-foo2 \
-		      && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 \
-			  || echo $$file differs >> .bad_compare) || true; \
-		    ;; \
-		  fastcompare* ) \
-		    cmp $$file stage$$stage/$$file 16 16 > /dev/null 2>&1; \
-		    test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
-		    ;; \
-		  gnucompare* ) \
-		    cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1; \
-		    test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
-		    ;; \
-	        esac ; \
+		fastcompare* ) \
+		  cmp $$file stage$$stage/$$file 16 16 > /dev/null 2>&1; \
+		  cmpret=$$?; \
+		  ;; \
+		gnucompare* ) \
+		  cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1; \
+		  cmpret=$$?; \
+		  ;; \
 	      esac ; \
+	      if test $$cmpret -eq 1; then \
+		case $$file in \
+		  ./cc*-checksum$(objext) | libgcc/* ) \
+		    echo warning: $$file differs;; \
+		  *) \
+		    echo $$file differs >> .bad_compare;; \
+		esac ; \
+	      fi; \
 	    done; \
 	  else true; fi; \
 	done
