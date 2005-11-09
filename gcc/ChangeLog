@@ -1,3 +1,9 @@
+2005-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/24716
+	* tree-scalar-evolution.c (analyze_evolution_in_loop): Use
+	t_bool to track results from follow_ssa_edge.
+
 2005-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* final.c (force_source_line): New global variable.
