@@ -1,3 +1,10 @@
+2005-11-09  Per Bothner  <per@bothner.com>
+	    Uros Bizjak  <uros@kss-loka.si>
+	
+	PR c/24101
+	* toplev.c (process_options): Initialize debug_hooks early
+	in case lang_hooks.post_options ends up calling a debug_hook.
+
 2005-11-08  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/19340

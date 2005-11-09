@@ -1,3 +1,11 @@
+2005-11-09  Per Bothner  <per@bothner.com>
+	    Uros Bizjak  <uros@kss-loka.si>
+	
+	PR c/24101
+	* init.c (read_original_filename): Temporarily set
+	state.in_directive before calling _cpp_lex_direct for
+	CPP_HASH tokens.
+
 2005-11-03  James E Wilson  <wilson@specifix.com>
 
 	PR preprocessor/24202

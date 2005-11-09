@@ -1,3 +1,9 @@
+2005-11-09  Uros Bizjak  <uros@kss-loka.si>
+
+	PR c/24101
+	* gcc.dg/pr24101-1.i, gcc.dg/pr24101-2.i: New tests.
+	* gcc.dg/dg.exp: Run main loop also for *.i files.
+
 2005-11-08  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/19340
