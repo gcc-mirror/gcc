@@ -1,3 +1,10 @@
+2005-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/19450
+	* decl.c (redeclaration_error_message): Issue diagnostics about
+	olddecl and newdecl disagreement on __thread property.
+	(grokdeclarator): Set DECL_THREAD_LOCAL on class static variables.
+
 2005-11-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/21123
