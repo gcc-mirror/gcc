@@ -1,6 +1,6 @@
 /* This used to ICE due to a backend problem on s390.  */
 
-/* { dg-do compile } */
+/* { dg-do compile { target s390*-*-* } } */
 /* { dg-options "-O1 -mpacked-stack" } */
 
 typedef unsigned int __u32;
