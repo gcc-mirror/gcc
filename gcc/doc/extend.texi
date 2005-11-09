@@ -2364,6 +2364,38 @@ also be used with non-function declarations.  Weak symbols are supported
 for ELF targets, and also for a.out targets when using the GNU assembler
 and linker.
 
+@item weakref
+@itemx weakref ("@var{target}")
+@cindex @code{weakref} attribute
+The @code{weakref} attribute marks a declaration as a weak reference.
+Without arguments, it should be accompanied by an @code{alias} attribute
+naming the target symbol.  Optionally, the @var{target} may be given as
+an argument to @code{weakref} itself.  In either case, @code{weakref}
+implicitly marks the declaration as @code{weak}.  Without a
+@var{target}, given as an argument to @code{weakref} or to @code{alias},
+@code{weakref} is equivalent to @code{weak}.
+
+@smallexample
+extern int x() __attribute__ ((weakref ("y")));
+/* is equivalent to... */
+extern int x() __attribute__ ((weak, weakref, alias ("y")));
+/* and to... */
+extern int x() __attribute__ ((weakref));
+extern int x() __attribute__ ((alias ("y")));
+@end smallexample
+
+A weak reference is an alias that does not by itself require a
+definition to be given for the target symbol.  If the target symbol is
+only referenced through weak references, then the becomes a @code{weak}
+undefined symbol.  If it is directly referenced, however, then such
+strong references prevail, and a definition will be required for the
+symbol, not necessarily in the same translation unit.
+
+The effect is equivalent to moving all references to the alias to a
+separate translation unit, renaming the alias to the aliased symbol,
+declaring it as weak, compiling the two separate translation units and
+performing a reloadable link on them.
+
 @item externally_visible
 @cindex @code{externally_visible} attribute.
 This attribute, attached to a global variable or function nullify

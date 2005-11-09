@@ -1,3 +1,25 @@
+2005-11-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR other/4372
+	* tree.h (IDENTIFIER_TRANSPARENT_ALIAS): New.
+	(TREE_DEPRECATED): Adjust comment.  Check for a DECL.
+	* c-common.c (handle_weakref_attribute): New.
+	(c_common_attribute_table): Add weakref.
+	* configure.ac (HAVE_GAS_WEAKREF): Check for weakref support
+	in the assembler.
+	* configure, config.in: Rebuilt.
+	* defaults.h (ASM_OUTPUT_WEAKREF): Define if HAVE_GAS_WEAKREF.
+	* doc/extend.texi: Document weakref attribute.
+	* varasm.c (ultimate_transparent_alias_target): New
+	(assemble_name): Use it.
+	(weak_finish_1): Split out of...
+	(weak_finish): ... and deal with weakrefs in...
+	(weakref_targets): ... new list.
+	(globalize_decl): Clean up weakref_targets.
+	(do_assemble_alias): Handle weakrefs.
+	(finish_aliases_1): Do not reject weakrefs to external symbols.
+	(assemble_alias): Handle weakrefs.
+
 2005-11-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/24716

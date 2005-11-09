@@ -1995,6 +1995,23 @@ mark_decl_referenced (tree decl)
      which do not need to be marked.  */
 }
 
+static inline tree
+ultimate_transparent_alias_target (tree *alias)
+{
+  tree target = *alias;
+
+  if (IDENTIFIER_TRANSPARENT_ALIAS (target))
+    {
+      gcc_assert (TREE_CHAIN (target));
+      target = ultimate_transparent_alias_target (&TREE_CHAIN (target));
+      gcc_assert (! IDENTIFIER_TRANSPARENT_ALIAS (target)
+		  && ! TREE_CHAIN (target));
+      *alias = target;
+    }
+
+  return target;
+}
+
 /* Output to FILE (an assembly file) a reference to NAME.  If NAME
    starts with a *, the rest of NAME is output verbatim.  Otherwise
    NAME is transformed in a target-specific way (usually by the
@@ -2024,7 +2041,12 @@ assemble_name (FILE *file, const char *name)
 
   id = maybe_get_identifier (real_name);
   if (id)
-    mark_referenced (id);
+    {
+      mark_referenced (id);
+      ultimate_transparent_alias_target (&id);
+      name = IDENTIFIER_POINTER (id);
+      gcc_assert (! TREE_CHAIN (id));
+    }
 
   assemble_name_raw (file, name);
 }
@@ -4464,6 +4486,48 @@ declare_weak (tree decl)
   mark_weak (decl);
 }
 
+static void
+weak_finish_1 (tree decl)
+{
+#if defined (ASM_WEAKEN_DECL) || defined (ASM_WEAKEN_LABEL)
+  const char *const name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+#endif
+
+  if (! TREE_USED (decl))
+    return;
+
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl))
+      && lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
+    return;
+
+#ifdef ASM_WEAKEN_DECL
+  ASM_WEAKEN_DECL (asm_out_file, decl, name, NULL);
+#else
+#ifdef ASM_WEAKEN_LABEL
+  ASM_WEAKEN_LABEL (asm_out_file, name);
+#else
+#ifdef ASM_OUTPUT_WEAK_ALIAS
+  {
+    static bool warn_once = 0;
+    if (! warn_once)
+      {
+	warning (0, "only weak aliases are supported in this configuration");
+	warn_once = 1;
+      }
+    return;
+  }
+#endif
+#endif
+#endif
+}
+
+/* This TREE_LIST contains weakref targets.  */
+
+static GTY(()) tree weakref_targets;
+
+/* Forward declaration.  */
+static tree find_decl_and_mark_needed (tree decl, tree target);
+
 /* Emit any pending weak declarations.  */
 
 void
@@ -4471,28 +4535,72 @@ weak_finish (void)
 {
   tree t;
 
+  for (t = weakref_targets; t; t = TREE_CHAIN (t))
+    {
+      tree alias_decl = TREE_PURPOSE (t);
+      tree target = ultimate_transparent_alias_target (&TREE_VALUE (t));
+
+      if (! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (alias_decl)))
+	/* Remove alias_decl from the weak list, but leave entries for
+	   the target alone.  */
+	target = NULL_TREE;
+#ifndef ASM_OUTPUT_WEAKREF
+      else if (! TREE_SYMBOL_REFERENCED (target))
+	{
+# ifdef ASM_WEAKEN_LABEL
+	  ASM_WEAKEN_LABEL (asm_out_file, IDENTIFIER_POINTER (target));
+# else
+	  tree decl = find_decl_and_mark_needed (alias_decl, target);
+
+	  if (! decl)
+	    {
+	      decl = build_decl (TREE_CODE (alias_decl), target,
+				 TREE_TYPE (alias_decl));
+
+	      DECL_EXTERNAL (decl) = 1;
+	      TREE_PUBLIC (decl) = 1;
+	      DECL_ARTIFICIAL (decl) = 1;
+	      TREE_NOTHROW (decl) = TREE_NOTHROW (alias_decl);
+	      TREE_USED (decl) = 1;
+	    }
+
+	  weak_finish_1 (decl);
+# endif
+	}
+#endif
+
+      {
+	tree *p;
+	tree t2;
+
+	/* Remove the alias and the target from the pending weak list
+	   so that we do not emit any .weak directives for the former,
+	   nor multiple .weak directives for the latter.  */
+	for (p = &weak_decls; (t2 = *p) ; )
+	  {
+	    if (TREE_VALUE (t2) == alias_decl
+		|| target == DECL_ASSEMBLER_NAME (TREE_VALUE (t2)))
+	      *p = TREE_CHAIN (t2);
+	    else
+	      p = &TREE_CHAIN (t2);
+	  }
+
+	/* Remove other weakrefs to the same target, to speed things up.  */
+	for (p = &TREE_CHAIN (t); (t2 = *p) ; )
+	  {
+	    if (target == ultimate_transparent_alias_target (&TREE_VALUE (t2)))
+	      *p = TREE_CHAIN (t2);
+	    else
+	      p = &TREE_CHAIN (t2);
+	  }
+      }
+    }
+
   for (t = weak_decls; t; t = TREE_CHAIN (t))
     {
       tree decl = TREE_VALUE (t);
-#if defined (ASM_WEAKEN_DECL) || defined (ASM_WEAKEN_LABEL)
-      const char *const name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-#endif
 
-      if (! TREE_USED (decl))
-	continue;
-
-#ifdef ASM_WEAKEN_DECL
-      ASM_WEAKEN_DECL (asm_out_file, decl, name, NULL);
-#else
-#ifdef ASM_WEAKEN_LABEL
-      ASM_WEAKEN_LABEL (asm_out_file, name);
-#else
-#ifdef ASM_OUTPUT_WEAK_ALIAS
-      warning (0, "only weak aliases are supported in this configuration");
-      return;
-#endif
-#endif
-#endif
+      weak_finish_1 (decl);
     }
 }
 
@@ -4523,6 +4631,18 @@ globalize_decl (tree decl)
 	  else
 	    p = &TREE_CHAIN (t);
 	}
+
+	/* Remove weakrefs to the same target from the pending weakref
+	   list, for the same reason.  */
+	for (p = &weakref_targets; (t = *p) ; )
+	  {
+	    if (DECL_ASSEMBLER_NAME (decl)
+		== ultimate_transparent_alias_target (&TREE_VALUE (t)))
+	      *p = TREE_CHAIN (t);
+	    else
+	      p = &TREE_CHAIN (t);
+	  }
+
       return;
     }
 #elif defined(ASM_MAKE_LABEL_LINKONCE)
@@ -4596,13 +4716,34 @@ find_decl_and_mark_needed (tree decl, tree target)
    tree node is DECL to have the value of the tree node TARGET.  */
 
 static void
-do_assemble_alias (tree decl, tree target ATTRIBUTE_UNUSED)
+do_assemble_alias (tree decl, tree target)
 {
   if (TREE_ASM_WRITTEN (decl))
     return;
 
   TREE_ASM_WRITTEN (decl) = 1;
   TREE_ASM_WRITTEN (DECL_ASSEMBLER_NAME (decl)) = 1;
+
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
+    {
+      ultimate_transparent_alias_target (&target);
+
+      if (!TREE_SYMBOL_REFERENCED (target))
+	weakref_targets = tree_cons (decl, target, weakref_targets);
+
+#ifdef ASM_OUTPUT_WEAKREF
+      ASM_OUTPUT_WEAKREF (asm_out_file,
+			  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+			  IDENTIFIER_POINTER (target));
+#else
+      if (!SUPPORTS_WEAK)
+	{
+	  error ("%Jweakref is not supported in this configuration", decl);
+	  return;
+	}
+#endif
+      return;
+    }
 
 #ifdef ASM_OUTPUT_DEF
   /* Make name accessible from other files, if appropriate.  */
@@ -4638,6 +4779,17 @@ do_assemble_alias (tree decl, tree target ATTRIBUTE_UNUSED)
 	*p = TREE_CHAIN (t);
       else
 	p = &TREE_CHAIN (t);
+
+    /* Remove weakrefs to the same target from the pending weakref
+       list, for the same reason.  */
+    for (p = &weakref_targets; (t = *p) ; )
+      {
+	if (DECL_ASSEMBLER_NAME (decl)
+	    == ultimate_transparent_alias_target (&TREE_VALUE (t)))
+	  *p = TREE_CHAIN (t);
+	else
+	  p = &TREE_CHAIN (t);
+      }
   }
 #endif
 }
@@ -4657,9 +4809,13 @@ finish_aliases_1 (void)
 
       target_decl = find_decl_and_mark_needed (p->decl, p->target);
       if (target_decl == NULL)
-	error ("%q+D aliased to undefined symbol %qs",
-	       p->decl, IDENTIFIER_POINTER (p->target));
-      else if (DECL_EXTERNAL (target_decl))
+	{
+	  if (! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
+	    error ("%q+D aliased to undefined symbol %qs",
+		   p->decl, IDENTIFIER_POINTER (p->target));
+	}
+      else if (DECL_EXTERNAL (target_decl)
+	       && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
 	error ("%q+D aliased to external symbol %qs",
 	       p->decl, IDENTIFIER_POINTER (p->target));
     }
@@ -4688,19 +4844,41 @@ void
 assemble_alias (tree decl, tree target)
 {
   tree target_decl;
+  bool is_weakref = false;
 
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
+    {
+      tree alias = DECL_ASSEMBLER_NAME (decl);
+
+      is_weakref = true;
+
+      ultimate_transparent_alias_target (&target);
+
+      if (alias == target)
+	error ("%Jweakref %qD ultimately targets itself", decl, decl);
+      else
+	{
+#ifndef ASM_OUTPUT_WEAKREF
+	  IDENTIFIER_TRANSPARENT_ALIAS (alias) = 1;
+	  TREE_CHAIN (alias) = target;
+#endif
+	}
+    }
+  else
+    {
 #if !defined (ASM_OUTPUT_DEF)
 # if !defined(ASM_OUTPUT_WEAK_ALIAS) && !defined (ASM_WEAKEN_DECL)
-  error ("%Jalias definitions not supported in this configuration", decl);
-  return;
-# else
-  if (!DECL_WEAK (decl))
-    {
-      error ("%Jonly weak aliases are supported in this configuration", decl);
+      error ("%Jalias definitions not supported in this configuration", decl);
       return;
-    }
+# else
+      if (!DECL_WEAK (decl))
+	{
+	  error ("%Jonly weak aliases are supported in this configuration", decl);
+	  return;
+	}
 # endif
 #endif
+    }
 
   /* We must force creation of DECL_RTL for debug info generation, even though
      we don't use it here.  */
@@ -4710,7 +4888,8 @@ assemble_alias (tree decl, tree target)
   /* A quirk of the initial implementation of aliases required that the user
      add "extern" to all of them.  Which is silly, but now historical.  Do
      note that the symbol is in fact locally defined.  */
-  DECL_EXTERNAL (decl) = 0;
+  if (! is_weakref)
+    DECL_EXTERNAL (decl) = 0;
 
   /* Allow aliases to aliases.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)

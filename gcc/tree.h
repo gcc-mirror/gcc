@@ -428,6 +428,9 @@ struct tree_common GTY(())
 	TREE_DEPRECATED in
 	   ..._DECL
 
+	IDENTIFIER_TRANSPARENT_ALIAS in
+	   IDENTIFIER_NODE
+
    visited:
 
    	Used in tree traversals to mark visited nodes.
@@ -1042,9 +1045,15 @@ extern void tree_operand_check_failed (int, enum tree_code,
    In a BLOCK node, this is BLOCK_HANDLER_BLOCK.  */
 #define TREE_PROTECTED(NODE) ((NODE)->common.protected_flag)
 
-/* Nonzero in an IDENTIFIER_NODE if the use of the name is defined as a
+/* Nonzero in a _DECL if the use of the name is defined as a
    deprecated feature by __attribute__((deprecated)).  */
-#define TREE_DEPRECATED(NODE) ((NODE)->common.deprecated_flag)
+#define TREE_DEPRECATED(NODE) \
+  ((NODE)->common.deprecated_flag)
+
+/* Nonzero in an IDENTIFIER_NODE if the name is a local alias, whose
+   uses are to be substituted for uses of the TREE_CHAINed identifier.  */
+#define IDENTIFIER_TRANSPARENT_ALIAS(NODE) \
+  (IDENTIFIER_NODE_CHECK (NODE)->common.deprecated_flag)
 
 /* Value of expression is function invariant.  A strict subset of
    TREE_CONSTANT, such an expression is constant over any one function

@@ -744,6 +744,12 @@
 #endif
 
 
+/* Define if your assembler supports .weakref. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_WEAKREF
+#endif
+
+
 /* Define to 1 if you have the `getchar_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GETCHAR_UNLOCKED
