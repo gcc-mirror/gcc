@@ -19,6 +19,11 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 # it is fixed in binutils (if it is necessary).
 GCC_CFLAGS += -N
 
+MULTILIB_OPTIONS=mid-shared-library
+MULTILIB_DEFAULTS=
+MULTILIB_DIRNAMES=
+MULTILIB_EXCEPTIONS=
+
 # Assemble startup files.
 $(T)crti.o: $(srcdir)/config/bfin/crti.s $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \

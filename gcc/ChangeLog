@@ -11,6 +11,9 @@
 	(bfin_function_ok_for_sibcall): Only true if not an interrupt or
 	exception handler.
 
+	* config/bfin/t-bfin-elf (MULTILIB_OPTIONS, MULTILIB_DEFAULTS,
+	MULTILIB_DIRNAMES, MULTILIB_EXCEPTIONS): New.
+
 2005-11-09  Per Bothner  <per@bothner.com>
 	    Uros Bizjak  <uros@kss-loka.si>
 	
