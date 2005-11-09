@@ -1,4 +1,8 @@
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/pr24624.c: Disable for non S/390 targets.
+
+2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 	
         PR 24624
 	* gcc.dg/pr24624.c: Testcase added.
