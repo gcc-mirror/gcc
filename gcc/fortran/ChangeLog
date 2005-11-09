@@ -1,3 +1,10 @@
+2005-11-09  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/22607
+	* trans-decl.c(build_function_decl): Don't set
+	DECL_IS_PURE (fndecl) = 1 for return-by-reference
+	functions.
+
 2005-11-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* dump-parse-tree.c: Fix comment typo, add a few blank lines.
