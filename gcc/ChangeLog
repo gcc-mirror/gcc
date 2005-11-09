@@ -1,3 +1,8 @@
+2005-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (multiple_reg_loc_descriptor): Don't assume
+	DBX_REGISTER_NUMBER being contiguous.
+
 2005-11-08  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (n_dregs_to_save, n_pregs_to_save,
