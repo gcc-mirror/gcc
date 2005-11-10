@@ -1,3 +1,8 @@
+2005-11-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/attr-weakref-1.c: Add exit (0) to avoid spurious
+	failures.
+
 2005-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/sparc-getcontext-1.c: New test.

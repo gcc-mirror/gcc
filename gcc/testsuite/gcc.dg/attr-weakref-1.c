@@ -223,4 +223,6 @@ int main () {
   chk (!&wf12);
   chk (!&wf13);
   chk (!&Wf14a);
+
+  exit (0);
 }
