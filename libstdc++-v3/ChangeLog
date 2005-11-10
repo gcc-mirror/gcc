@@ -1,3 +1,20 @@
+2005-11-09  Benjamin Kosnik  <bkoz@redhat.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+            Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR libstdc++/22203
+	* numeric_limits.cc: Split into...
+	* numeric_limits/specialization.cc: ..this.
+	* numeric_limits/is_iec559.cc: Same.
+	* numeric_limits/sign.cc: Same.
+	* numeric_limits/quiet_NaN.cc: Same.
+	* numeric_limits/digits10.cc: Same.
+	* numeric_limits/denorm_min.cc: Same.
+	* numeric_limits/min_max.cc: Same.
+	* numeric_limits/epsilon.cc: Same.
+	* numeric_limits/infinity.cc: Same.
+	* numeric_limits/traps.cc: New.
+
 2005-11-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/boost_shared_ptr.h: Trivial formatting fixes.
