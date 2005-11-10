@@ -1,3 +1,8 @@
+2005-11-10  Andreas Jaeger  <aj@suse.de>
+
+	* libgfortran.h: Add missing prototypes for internal_pack
+	functions.
+
 2005-11-06  Janne Blomqvist <jb@gcc.gnu.org>
 
 	PR fortran/24174
@@ -5,7 +10,7 @@
 	* io/io.h: Add argument to prototypes, add prototypes for
 	size_from_*_kind functions.
 	* io/list_read.c (read_complex): Add size argument, use
-	it. 
+	it.
 	(list_formatted_read): Add size argument, cleanup.
 	(list_formatted_read_scalar): Add size argument.
 	(nml_read_obj): Fix for padding.
@@ -100,7 +105,7 @@
 	* Makefile.in: Regenerate.
 
 2005-10-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
-	
+
 
 	* Makefile.am (intrinsics): Add signal.c.
 	* Makefile.in: Regenerate.
