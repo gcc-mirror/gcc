@@ -1,3 +1,8 @@
+2005-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (int_fits_type_p): Only look at the base type
+	if it has the same precision as the original type.
+
 2005-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/4372
