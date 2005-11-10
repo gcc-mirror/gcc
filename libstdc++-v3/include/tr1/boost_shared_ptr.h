@@ -151,9 +151,12 @@ public:
     if (__gnu_cxx::__exchange_and_add(&_M_use_count, -1) == 1)
       {
 	dispose();
-	__glibcxx_mutex_lock(_M_mutex);
-	__glibcxx_mutex_unlock(_M_mutex);
-	weak_release();
+	
+	_GLIBCXX_READ_MEM_BARRIER;
+	_GLIBCXX_WRITE_MEM_BARRIER;
+	
+	if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) == 1)
+	  destroy();
       }
   }
 
@@ -168,8 +171,8 @@ public:
   {
     if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) == 1)
       {
-	__glibcxx_mutex_lock(_M_mutex);
-	__glibcxx_mutex_unlock(_M_mutex);
+	_GLIBCXX_READ_MEM_BARRIER;
+	_GLIBCXX_WRITE_MEM_BARRIER;
 	destroy();
       }
   }
@@ -328,7 +331,7 @@ class weak_count
 {
 private:
 
-  _Sp_counted_base * _M_pi;
+  _Sp_counted_base* _M_pi;
 
   friend class shared_count;
 
@@ -677,8 +680,8 @@ template<typename _Tp>
       _M_less(const shared_ptr<_Tp1>& __rhs) const
       { return _M_refcount < __rhs._M_refcount; }
 
-    template <typename _Tp1> friend class shared_ptr;
-    template <typename _Tp1> friend class weak_ptr;
+    template<typename _Tp1> friend class shared_ptr;
+    template<typename _Tp1> friend class weak_ptr;
 
     // friends injected into enclosing namespace and found by ADL:
     template<typename _Tp1>
