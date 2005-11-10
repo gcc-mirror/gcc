@@ -311,10 +311,10 @@ static tree anyoffset_tree;
 static unsigned int anyoffset_id;
 
 
-/* Lookup a heap var for STMT, and return it if we find one.  */
+/* Lookup a heap var for FROM, and return it if we find one.  */
 
 static tree 
-heapvar_lookup (tree stmt)
+heapvar_lookup (tree from)
 {
   struct tree_map *h, in;
   in.from = from;
