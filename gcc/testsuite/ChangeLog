@@ -1,3 +1,15 @@
+2005-11-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24655
+	PR fortran/24755
+	* gfortran.dg/recursive_statement_functions.f90: Add statement 
+	functions using inline intrinsic functions and parameters to test
+	that they no longer seg-fault.
+
+	PR fortran/24409
+	gfortran.dg/nested_modules_4.f90: New test.
+	gfortran.dg/nested_modules_5.f90: New test.
+
 2005-11-10  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/24643

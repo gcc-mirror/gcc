@@ -2113,9 +2113,17 @@ mio_symtree_ref (gfc_symtree ** stp)
 	 namespace to see if the required, non-contained symbol is available
 	 yet. If so, the latter should be written.  */
       if ((*stp)->n.sym && check_unique_name((*stp)->name))
-	ns_st = gfc_find_symtree (gfc_current_ns->sym_root, (*stp)->n.sym->name);
+	ns_st = gfc_find_symtree (gfc_current_ns->sym_root,
+				    (*stp)->n.sym->name);
 
-      mio_symbol_ref (ns_st ? &ns_st->n.sym : &(*stp)->n.sym);
+      /* On the other hand, if the existing symbol is the module name or the
+	 new symbol is a dummy argument, do not do the promotion.  */
+      if (ns_st && ns_st->n.sym
+	    && ns_st->n.sym->attr.flavor != FL_MODULE
+	    && !(*stp)->n.sym->attr.dummy)
+	mio_symbol_ref (&ns_st->n.sym);
+      else
+	mio_symbol_ref (&(*stp)->n.sym);
     }
   else
     {
