@@ -1,3 +1,30 @@
+2005-11-10  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (compute_may_aliases): Remove call to 
+	delete_old_heap_vars.
+	* tree-dfa.c (referenced_var_remove): Remove function.
+	* tree-ssa.c (init_tree_ssa): Call init_alias_heapvars.
+	(delete_tree_ssa): Remove call to delete_old_heapvars.
+	Add call to delete_alias_heapvars.
+	* tree-flow.h (referenced_var_remove): Remove prototype
+	(init_alias_heapvars): New prototype.
+	(delete_alias_heapvars): Ditto.
+	* Makefile.in (tree-ssa-structalias.o): Add
+	gt-tree-ssa-structalias.o
+	(GTFILES): Add tree-ssa-structalias.h and
+	tree-ssa-structalias.c.
+	(s-gtype): Add gt-tree-ssa-structalias.h.
+	* tree-ssa-structalias.c (heapvars): Remove.
+	(oldheapvars): Remove.
+	(heapvar_for_stmt): New variable.
+	(heapvar_lookup): New function.
+	(heapvar_insert): Ditto.
+	(get_constraint_for): See if we have an old heapvar
+	to reuse.
+	(init_alias_heapvars): New function.
+	(delete_alias_heapvars): Ditto.
+	Add include of gt-tree-ssa-structalias.h.
+
 2005-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/22127
