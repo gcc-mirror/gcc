@@ -1,3 +1,12 @@
+2005-11-10  Paolo Carlini  <pcarlini@suse.de>
+	    Peter Dimov  <pdimov@mmltd.net>
+
+	* include/tr1/boost_shared_ptr.h (_Sp_counted_base::release):
+	Optimize by manually inlining weak_release.
+
+	* include/tr1/boost_shared_ptr.h (_Sp_counted_base::release,
+	weak_release): Use explicit memory barriers.
+
 2005-11-09  Benjamin Kosnik  <bkoz@redhat.com>
 	    Paolo Carlini  <pcarlini@suse.de>
             Gabriel Dos Reis  <gdr@integrable-solutions.net>
