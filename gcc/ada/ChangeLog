@@ -1,3 +1,8 @@
+2005-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/23995
+	* trans.c (call_to_gnu): Restore statement lost in translation.
+
 2005-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* init.c: Use the Linux-specific section for the IA-64/Linux target.
