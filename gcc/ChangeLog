@@ -1,3 +1,9 @@
+2005-11-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/24778
+	* varasm.c (assemble_name): Recompute name only for transparent
+	aliases.
+
 2005-11-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	* tree-ssa-structalias.c (heapvar_lookup): Fix typo: stmt to from.
