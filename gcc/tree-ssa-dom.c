@@ -1794,6 +1794,7 @@ simplify_rhs_and_lookup_avail_expr (tree stmt, int insert)
      assignment.  Add minus to this, as we handle it specially below.  */
   if ((associative_tree_code (rhs_code) || rhs_code == MINUS_EXPR)
       && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME
+      && num_imm_uses (TREE_OPERAND (rhs, 0)) == 1
       && is_gimple_min_invariant (TREE_OPERAND (rhs, 1)))
     {
       tree rhs_def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));

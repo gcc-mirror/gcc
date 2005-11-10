@@ -1,3 +1,10 @@
+2005-11-04  Jeff Law  <law@redhat.com>
+
+	PR middle-end/23181
+	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Do not
+	perform reassociation if the parent statement will not die as
+	a result of the optimization.
+
 2005-11-10  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-alias.c (compute_may_aliases): Remove call to 
