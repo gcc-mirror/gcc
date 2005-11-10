@@ -1,3 +1,9 @@
+2005-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/4372
+	* varasm.c (assemble_alias): Use %q+D in the error
+	message instead of %J and %qD.
+
 2005-11-10  Richard Guenther  <rguenther@suse.de>
 
 	* gcse.c (free_ldst_entry): Only free hashtable if

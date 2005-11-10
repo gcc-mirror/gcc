@@ -4855,7 +4855,7 @@ assemble_alias (tree decl, tree target)
       ultimate_transparent_alias_target (&target);
 
       if (alias == target)
-	error ("%Jweakref %qD ultimately targets itself", decl, decl);
+	error ("weakref %q+D ultimately targets itself", decl);
       else
 	{
 #ifndef ASM_OUTPUT_WEAKREF
