@@ -2042,9 +2042,12 @@ assemble_name (FILE *file, const char *name)
   id = maybe_get_identifier (real_name);
   if (id)
     {
+      tree id_orig = id;
+
       mark_referenced (id);
       ultimate_transparent_alias_target (&id);
-      name = IDENTIFIER_POINTER (id);
+      if (id != id_orig)
+	name = IDENTIFIER_POINTER (id);
       gcc_assert (! TREE_CHAIN (id));
     }
 
