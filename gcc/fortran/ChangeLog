@@ -1,3 +1,10 @@
+2005-11-10  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/22607
+	* trans-decl.c(build_function_decl): Don't set
+	DECL_IS_PURE (fndecl) = 1 for return-by-reference
+	functions.
+
 2005-11-09  Steven G. Kargl <kargls@comcast.net>
 
 	* trans-intrinsic.c: Fix typo in comment.

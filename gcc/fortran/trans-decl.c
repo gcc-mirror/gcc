@@ -1145,7 +1145,7 @@ build_function_decl (gfc_symbol * sym)
       /* TODO: check if a pure SUBROUTINE has no INTENT(OUT) arguments
 	 including a alternate return. In that case it can also be
 	 marked as PURE. See also in gfc_get_extern_function_decl().  */
-      if (attr.function)
+      if (attr.function && !gfc_return_by_reference (sym))
 	DECL_IS_PURE (fndecl) = 1;
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
