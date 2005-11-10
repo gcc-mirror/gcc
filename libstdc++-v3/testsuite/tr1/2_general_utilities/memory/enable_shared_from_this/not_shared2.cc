@@ -1,4 +1,3 @@
-// { dg-do run { xfail *-*-* } }
 // Copyright (C) 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,18 +35,20 @@ test01()
   X x(*p);  // copy of shared object should not be shared
 
   try
-  {
-    std::tr1::shared_ptr<X> p = x.shared_from_this();
-  }
+    {
+      std::tr1::shared_ptr<X> p = x.shared_from_this();
+      VERIFY( false );
+    }
   catch (const std::tr1::bad_weak_ptr&)
-  {
-    // Expected.
-    __throw_exception_again;
-  }
+    {
+      // Expected.
+      VERIFY( true );
+    }
   catch (...)
-  {
-    // Failed.
-  }
+    {
+      // Failed.
+      VERIFY( false );
+    }
 
   return 0;
 }
