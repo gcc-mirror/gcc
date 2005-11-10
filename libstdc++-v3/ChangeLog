@@ -1,4 +1,9 @@
 2005-11-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/boost_shared_ptr.h (_Sp_counted_base::release,
+	weak_release): Protect barriers with __GTHREADS.
+
+2005-11-10  Paolo Carlini  <pcarlini@suse.de>
 	    Peter Dimov  <pdimov@mmltd.net>
 
 	* include/tr1/boost_shared_ptr.h (_Sp_counted_base::release):
