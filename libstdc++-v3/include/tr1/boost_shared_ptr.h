@@ -151,10 +151,10 @@ public:
     if (__gnu_cxx::__exchange_and_add(&_M_use_count, -1) == 1)
       {
 	dispose();
-	
+#ifdef __GTHREADS	
 	_GLIBCXX_READ_MEM_BARRIER;
 	_GLIBCXX_WRITE_MEM_BARRIER;
-	
+#endif
 	if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) == 1)
 	  destroy();
       }
@@ -171,8 +171,10 @@ public:
   {
     if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) == 1)
       {
+#ifdef __GTHREADS
 	_GLIBCXX_READ_MEM_BARRIER;
 	_GLIBCXX_WRITE_MEM_BARRIER;
+#endif
 	destroy();
       }
   }
@@ -326,7 +328,6 @@ public:
   { return _M_pi ? _M_pi->get_deleter(__ti) : 0; }
 };
 
-
 class weak_count
 {
 private:
@@ -417,6 +418,7 @@ shared_count::shared_count(const weak_count& __r)
   else
     __throw_bad_weak_ptr();
 }
+
 
 // fwd decls
 template<typename _Tp>
@@ -849,7 +851,6 @@ template<typename _Tp>
 
 #endif
     } // XXX MT
-
 
     long
     use_count() const // never throws
