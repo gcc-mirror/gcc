@@ -1,3 +1,13 @@
+2005-11-10  Uros Bizjak  <uros@kss-loka.si>
+
+        PR target/24315
+        * gcc.dg/pr24315.c: New test.
+
+2005-11-10  Uros Bizjak  <uros@kss-loka.si>
+
+        PR target/19340
+        * gcc.dg/pr19340.c: New test.
+
 2005-11-09  Uros Bizjak  <uros@kss-loka.si>
 
 	PR c/24101

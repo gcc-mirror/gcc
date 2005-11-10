@@ -429,7 +429,7 @@ reg_to_stack (rtx first, FILE *file)
      Also need to rebuild life when superblock scheduling is done
      as it don't update liveness yet.  */
   if (!optimize
-      || (flag_sched2_use_superblocks
+      || ((flag_sched2_use_superblocks || flag_sched2_use_traces)
 	  && flag_schedule_insns_after_reload))
     {
       count_or_remove_death_notes (NULL, 1);

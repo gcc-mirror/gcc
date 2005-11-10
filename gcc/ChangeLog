@@ -1,3 +1,16 @@
+2005-11-10  Uros Bizjak  <uros@kss-loka.si>
+
+        PR target/24315
+        * config/i386/i386.md (*pushdi2_rex64 splitter)
+        (*movdi_1_rex64 splitter): Delay splitting after
+        flow2 pass only when (optimize > 0 && flag_peephole2).
+
+2005-11-10  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/19340
+	* reg-stack.c (reg_to_stack): Update register liveness also
+	for flag_sched2_use_traces.
+
 2005-11-09  Per Bothner  <per@bothner.com>
 	    Uros Bizjak  <uros@kss-loka.si>
 	
