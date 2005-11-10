@@ -1687,6 +1687,9 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 					  gnu_copy, gnu_actual);
 	      annotate_with_node (gnu_temp, gnat_actual);
 	      append_to_statement_list (gnu_temp, &gnu_after_list);
+
+	      /* Account for next statement just below.  */
+	      gnu_name = gnu_actual;
 	    }
 	}
 
