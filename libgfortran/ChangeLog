@@ -1,5 +1,9 @@
 2005-11-10  Andreas Jaeger  <aj@suse.de>
 
+	* libgfortran.h: Add proper defines where needed.
+
+2005-11-10  Andreas Jaeger  <aj@suse.de>
+
 	* libgfortran.h: Add missing prototypes for internal_pack
 	functions.
 
