@@ -527,7 +527,9 @@ special_function_p (tree fndecl, int flags)
       else if ((tname[0] == 'q' && tname[1] == 's'
 		&& ! strcmp (tname, "qsetjmp"))
 	       || (tname[0] == 'v' && tname[1] == 'f'
-		   && ! strcmp (tname, "vfork")))
+		   && ! strcmp (tname, "vfork"))
+	       || (tname[0] == 'g' && tname[1] == 'e'
+		   && !strcmp (tname, "getcontext")))
 	flags |= ECF_RETURNS_TWICE;
 
       else if (tname[0] == 'l' && tname[1] == 'o'
