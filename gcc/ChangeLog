@@ -1,3 +1,8 @@
+2005-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/22127
+	* calls.c (special_function_p): Set ECF_RETURNS_TWICE for getcontext.
+
 2005-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (int_fits_type_p): Only look at the base type
