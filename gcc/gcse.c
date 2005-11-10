@@ -5088,7 +5088,8 @@ free_ldst_entry (struct ls_expr * ptr)
 static void
 free_ldst_mems (void)
 {
-  htab_delete (pre_ldst_table);
+  if (pre_ldst_table)
+    htab_delete (pre_ldst_table);
   pre_ldst_table = NULL;
 
   while (pre_ldst_mems)
