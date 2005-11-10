@@ -159,9 +159,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
   TODO: We could handle unions, but to be honest, it's probably not
   worth the pain or slowdown.  */
 
-static VEC(tree, heap) *heapvars = NULL;
-static VEC(tree, heap) *oldheapvars = NULL;
-
+static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
+  htab_t heapvar_for_stmt;
 static bool use_field_sensitive = true;
 static unsigned int create_variable_info_for (tree, const char *);
 static struct constraint_expr get_constraint_for (tree, bool *);
@@ -310,6 +309,38 @@ static unsigned int integer_id;
 static varinfo_t var_anyoffset;
 static tree anyoffset_tree;
 static unsigned int anyoffset_id;
+
+
+/* Lookup a heap var for STMT, and return it if we find one.  */
+
+static tree 
+heapvar_lookup (tree stmt)
+{
+  struct tree_map *h, in;
+  in.from = from;
+
+  h = htab_find_with_hash (heapvar_for_stmt, &in, htab_hash_pointer (from));
+  if (h)
+    return h->to;
+  return NULL_TREE;
+}
+
+/* Insert a mapping FROM->TO in the heap var for statement
+   hashtable.  */
+
+static void
+heapvar_insert (tree from, tree to)
+{
+  struct tree_map *h;
+  void **loc;
+
+  h = ggc_alloc (sizeof (struct tree_map));
+  h->hash = htab_hash_pointer (from);
+  h->from = from;
+  h->to = to;
+  loc = htab_find_slot_with_hash (heapvar_for_stmt, h, h->hash, INSERT);
+  *(struct tree_map **) loc = h;
+}  
 
 /* Return a new variable info structure consisting for a variable
    named NAME, and using constraint graph node NODE.  */
@@ -2213,12 +2244,16 @@ get_constraint_for (tree t, bool *need_anyoffset)
 	    if (call_expr_flags (t) & (ECF_MALLOC | ECF_MAY_BE_ALLOCA))
 	      {
 		varinfo_t vi;
-		tree heapvar;
+		tree heapvar = heapvar_lookup (t);
 		
-		heapvar = create_tmp_var_raw (ptr_type_node, "HEAP");
-		VEC_safe_push (tree, heap, heapvars, heapvar);
-		DECL_EXTERNAL (heapvar) = 1;
-		add_referenced_tmp_var (heapvar);
+		if (heapvar == NULL)
+		  {		    
+		    heapvar = create_tmp_var_raw (ptr_type_node, "HEAP");
+		    DECL_EXTERNAL (heapvar) = 1;
+		    add_referenced_tmp_var (heapvar);
+		    heapvar_insert (t, heapvar);
+		  }
+
 		temp.var = create_variable_info_for (heapvar,
 						     alias_get_name (heapvar));
 		
@@ -3768,45 +3803,18 @@ delete_points_to_sets (void)
   have_alias_info = false;
 }
 
-/* Delete old heap vars, since nothing else will remove them for
-   us.  */
-void
-delete_old_heap_vars (void)
+/* Initialize the heapvar for statement mapping.  */
+void 
+init_alias_heapvars (void)
 {
-  if (!in_ssa_p)
-    {
-      VEC_free (tree, heap, heapvars);
-      VEC_free (tree, heap, oldheapvars);
-      heapvars = NULL;
-      oldheapvars = NULL;
-    }
-  /* Why is this complicated?
-     We can't remove the heapvars from the referenced var array until
-     they go away from the ssa form, and we can't remove them from the
-     ssa form until we've renamed it.  We can't renamed it if it's not
-     in the referenced vars array. 
-     Thus, we have to first mark it for renaming, and then the *next*
-     time after that we call this function, we can remove it from
-     referenced vars.  */
-
-  if (!VEC_empty (tree, heapvars))
-    {
-      int i;
-      tree heapvar;
-      for (i = 0; VEC_iterate (tree, heapvars, i, heapvar); i++)
-	{
-	  if (in_ssa_p)
-	    mark_sym_for_renaming (heapvar);
-	  DECL_EXTERNAL (heapvar) = false;
-	  bitmap_clear_bit (call_clobbered_vars, DECL_UID (heapvar));
-	}
-      if (!VEC_empty (tree, oldheapvars))
-	{
-	  for (i = 0; VEC_iterate (tree, oldheapvars, i, heapvar); i++)
-	    referenced_var_remove (heapvar);
-	}
-      VEC_free (tree, heap, oldheapvars);
-      oldheapvars = heapvars;
-      heapvars = NULL;
-    }
+  heapvar_for_stmt = htab_create_ggc (11, tree_map_hash, tree_map_eq, NULL);
 }
+
+void
+delete_alias_heapvars (void)
+{
+  htab_delete (heapvar_for_stmt);  
+}
+
+  
+#include "gt-tree-ssa-structalias.h"
