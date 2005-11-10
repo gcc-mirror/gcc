@@ -1,3 +1,8 @@
+2005-11-10  Richard Guenther  <rguenther@suse.de>
+
+	* gcse.c (free_ldst_entry): Only free hashtable if
+	it exists.
+
 2005-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.c (assign_stack_local_1): Issue an error message if
