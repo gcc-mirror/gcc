@@ -1,3 +1,16 @@
+2005-11-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24655
+	PR fortran/24755
+	* match.c (recursive_stmt_fcn): Add checks that symtree exists
+	for the expression to weed out inline intrinsic functions and
+	parameters.
+
+	PR fortran/24409
+	* module.c (mio_symtree_ref): Correct the patch of 0923 so that
+	a symbol is not substituted for by a the symbol for the module
+	itself and to prevent the promotion of a formal argument.
+
 2005-11-10  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/24643
