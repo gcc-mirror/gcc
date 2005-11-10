@@ -1,3 +1,8 @@
+2005-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/22127
+	* calls.c (special_function_p): Set ECF_RETURNS_TWICE for getcontext.
+
 2005-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (multiple_reg_loc_descriptor): Don't assume
