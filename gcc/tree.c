@@ -5558,8 +5558,11 @@ int_fits_type_p (tree c, tree type)
     return 0;
 
   /* If we haven't been able to decide at this point, there nothing more we
-     can check ourselves here. Look at the base type if we have one.  */
-  if (TREE_CODE (type) == INTEGER_TYPE && TREE_TYPE (type) != 0)
+     can check ourselves here.  Look at the base type if we have one and it
+     has the same precision.  */
+  if (TREE_CODE (type) == INTEGER_TYPE
+      && TREE_TYPE (type) != 0
+      && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (type)))
     return int_fits_type_p (c, TREE_TYPE (type));
 
   /* Or to force_fit_type, if nothing else.  */
