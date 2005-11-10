@@ -1,3 +1,9 @@
+2005-11-10  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/24643
+	* primary.c (match_varspec): Check for implicitly typed CHARACTER
+	variables before matching substrings.
+
 2005-11-10  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/22607
