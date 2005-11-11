@@ -1,3 +1,8 @@
+2005-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.c-torture/execute/20051110-1.c,
+	gcc.c-torture/execute/20051110-2.c: New tests.
+
 2005-11-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR middle-end/24750
