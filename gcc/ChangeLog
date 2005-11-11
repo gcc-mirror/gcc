@@ -1,3 +1,9 @@
+2005-11-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/24445
+	* calls.c (expand_call): Copy a return value to a plain register
+	if needed.
+
 2005-11-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/24778
