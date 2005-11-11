@@ -1756,8 +1756,12 @@ all-prebootstrap: maybe-all-[+module+][+
 ENDFOR host_modules +]
 @endif gcc-no-bootstrap
 
+CONFIGURE_GDB_TK = @CONFIGURE_GDB_TK@
 GDB_TK = @GDB_TK@
+INSTALL_GDB_TK = @INSTALL_GDB_TK@
+configure-gdb: $(CONFIGURE_GDB_TK)
 all-gdb: $(gdbnlmrequirements) $(GDB_TK)
+install-gdb: $(INSTALL_GDB_TK)
 
 # Serialization dependencies.  Host configures don't work well in parallel to
 # each other, due to contention over config.cache.  Target configures and 
