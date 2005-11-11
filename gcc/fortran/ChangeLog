@@ -1,4 +1,10 @@
 2005-11-10  Paul Thomas  <pault@gcc.gnu.org>
+	    Steven G. Kargl <kargls@comcast.net>
+
+	PR fortran/15976
+	* resolve.c (resolve_symbol): Disallow automatic arrays in module scope.
+
+2005-11-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24655
 	PR fortran/24755
