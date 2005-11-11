@@ -1,3 +1,9 @@
+2005-11-11  Jie Zhang  <jie.zhang@analog.com>
+
+	* configure.ac: Enable checking assembler dwarf2 support for bfin
+	target.
+	* configure: Regenerate.
+
 2005-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/22127

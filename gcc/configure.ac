@@ -2801,7 +2801,7 @@ esac
 case "$target" in
   i?86*-*-* | mips*-*-* | alpha*-*-* | powerpc*-*-* | sparc*-*-* | m68*-*-* \
   | x86_64*-*-* | hppa*-*-* | arm*-*-* | strongarm*-*-* | xscale*-*-* \
-  | xstormy16*-*-* | cris-*-* | xtensa-*-*)
+  | xstormy16*-*-* | cris-*-* | xtensa-*-* | bfin-*-*)
     insn="nop"
     ;;
   ia64*-*-* | s390*-*-*)
