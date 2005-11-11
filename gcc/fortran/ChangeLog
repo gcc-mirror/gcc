@@ -1,3 +1,23 @@
+2005-11-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24655
+	PR fortran/24755
+	* match.c (recursive_stmt_fcn): Add checks that symtree exists
+	for the expression to weed out inline intrinsic functions and
+	parameters.
+
+	PR fortran/24409
+	PR fortran/16861
+	* module.c (mio_component_ref): Return if the symbol is NULL
+	and wait for another iteration during module reads.
+	(mio_symtree_ref): Suppress the writing of contained symbols,
+	when a symbol is available in the main namespace. Take care that
+	a symbol is not substituted for by a the symbol for the module
+	itself and prevent the promotion of a formal argument.
+	(read_module): Give symbols for variables from contained module
+	procedures different true_name entries to those from the module
+	proper.
+
 2005-11-10   Paul Thomas  <pault@gcc.gnu.org>
 	     Steven G. Kargl <kargls@comcast.net>
 

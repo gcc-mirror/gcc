@@ -41,4 +41,3 @@
        call eyeore ()
        call tigger (w)
        end
-

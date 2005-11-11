@@ -2087,10 +2087,26 @@ mio_symtree_ref (gfc_symtree ** stp)
 {
   pointer_info *p;
   fixup_t *f;
+  gfc_symtree * ns_st = NULL;
 
   if (iomode == IO_OUTPUT)
     {
-      mio_symbol_ref (&(*stp)->n.sym);
+      /* If this is a symtree for a symbol that came from a contained module
+	 namespace, it has a unique name and we should look in the current
+	 namespace to see if the required, non-contained symbol is available
+	 yet. If so, the latter should be written.  */
+      if ((*stp)->n.sym && check_unique_name((*stp)->name))
+	ns_st = gfc_find_symtree (gfc_current_ns->sym_root,
+				    (*stp)->n.sym->name);
+
+      /* On the other hand, if the existing symbol is the module name or the
+	 new symbol is a dummy argument, do not do the promotion.  */
+      if (ns_st && ns_st->n.sym
+	    && ns_st->n.sym->attr.flavor != FL_MODULE
+	    && !(*stp)->n.sym->attr.dummy)
+	mio_symbol_ref (&ns_st->n.sym);
+      else
+	mio_symbol_ref (&(*stp)->n.sym);
     }
   else
     {
@@ -3101,7 +3117,7 @@ read_module (void)
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_intrinsic_op i;
-  int ambiguous, symbol, j, nuse;
+  int ambiguous, j, nuse, symbol;
   pointer_info *info;
   gfc_use_rename *u;
   gfc_symtree *st;
@@ -3144,7 +3160,17 @@ read_module (void)
          being loaded again.  */
 
       sym = find_true_name (info->u.rsym.true_name, info->u.rsym.module);
-      if (sym == NULL)
+
+        /* See if the symbol has already been loaded by a previous module.
+	 If so, we reference the existing symbol and prevent it from
+	 being loaded again.  This should not happen if the symbol being
+	 read is an index for an assumed shape dummy array (ns != 1).  */
+
+      sym = find_true_name (info->u.rsym.true_name, info->u.rsym.module);
+
+      if (sym == NULL
+	   || (sym->attr.flavor == FL_VARIABLE
+	       && info->u.rsym.ns !=1))
 	continue;
 
       info->u.rsym.state = USED;
@@ -3486,11 +3512,6 @@ write_symbol1 (pointer_info * p)
 
   if (p->type != P_SYMBOL || p->u.wsym.state != NEEDS_WRITE)
     return 0;
-
-  /* FIXME: This shouldn't be necessary, but it works around
-     deficiencies in the module loader or/and symbol handling.  */
-  if (p->u.wsym.sym->module == NULL && p->u.wsym.sym->attr.dummy)
-    p->u.wsym.sym->module = gfc_get_string (module_name);
 
   p->u.wsym.state = WRITTEN;
   write_symbol (p->integer, p->u.wsym.sym);
