@@ -1,3 +1,9 @@
+2005-11-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* postreload.c (reload_cse_simplify_operands): Fix bug in sorting
+	algorithm so as to choose the best, not the worst, alternative.
+	Reset accumulated register class before processing next alternative.
+
 2005-11-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/24445
