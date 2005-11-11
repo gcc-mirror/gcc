@@ -291,7 +291,10 @@ find_exits (struct loop *loop, basic_block *body,
 static bool
 may_assign_reg_p (rtx x)
 {
-  return can_copy_p (GET_MODE (x));
+  return (can_copy_p (GET_MODE (x))
+	  && (!REG_P (x)
+	      || !HARD_REGISTER_P (x)
+	      || REGNO_REG_CLASS (REGNO (x)) != NO_REGS));
 }
 
 /* Finds definitions that may correspond to invariants in LOOP with body BODY.
@@ -436,8 +439,8 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed,
       || HARD_REGISTER_P (dest))
     simple = false;
 
-  if (!check_maybe_invariant (SET_SRC (set))
-      || !may_assign_reg_p (SET_DEST (set)))
+  if (!may_assign_reg_p (SET_DEST (set))
+      || !check_maybe_invariant (SET_SRC (set)))
     return;
 
   if (may_trap_p (PATTERN (insn)))
@@ -793,9 +796,9 @@ move_invariant_reg (struct loop *loop, unsigned invno, struct df *df)
   reg = gen_reg_rtx (GET_MODE (SET_DEST (set)));
   df_pattern_emit_after (df, gen_move_insn (SET_DEST (set), reg),
 			 BLOCK_FOR_INSN (inv->insn), inv->insn);
-  SET_DEST (set) = reg;
-  reorder_insns (inv->insn, inv->insn, BB_END (preheader));
-  df_insn_modify (df, preheader, inv->insn);
+  df_pattern_emit_after (df, gen_move_insn (reg, SET_SRC (set)),
+			 preheader, BB_END (preheader));
+  df_insn_delete (df, BLOCK_FOR_INSN (inv->insn), inv->insn);
 
   /* Replace the uses we know to be dominated.  It saves work for copy
      propagation, and also it is necessary so that dependent invariants
@@ -926,4 +929,8 @@ move_loop_invariants (struct loops *loops)
       free_loop_data (loops->parray[i]);
 
   df_finish (df);
+
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
 }

@@ -1,3 +1,15 @@
+2005-11-11  Steven Bosscher  <stevenb@suse.de>
+
+	PR 24265
+	* loop-invariant.c (may_assign_reg_p): Make sure a hard register
+	can be assigned to.
+	(find_invariant_insn): Do the cheapest check, may_assign_reg_p,
+	before check_maybe_invariant.
+	(move_invariant_reg): Use gen_move_insn instead of replacing
+	SET_DEST with the temporary for the invariant.
+	(move_loop_invariants): If checking is enabled, do internal
+	consistency checks after completing the pass.
+
 2005-11-11  David Edelsohn  <edelsohn@gnu.org>
 
 	PR 24644
