@@ -1,3 +1,10 @@
+2005-11-11  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* gfortran.dg/static_linking_1.f: Fix static_libgfortran processing.
+
+	* lib/target-supports.exp (check_effective_target_static_libgfortran):
+	Add -static to additional_flags and pass it to target_compile.
+
 2005-11-11  Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/24719
