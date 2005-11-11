@@ -1,3 +1,9 @@
+2005-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* tree-ssa-dse.c (struct address_walk_data, memory_ssa_name_same)
+	(memory_address_same): New.
+	(dse_optimize_stmt): Call memory_address_same.
+
 2005-11-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR middle-end/24750

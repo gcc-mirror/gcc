@@ -83,6 +83,13 @@ struct dse_block_local_data
   bitmap stores;
 };
 
+/* Basic blocks of the potentially dead store and the following
+   store, for memory_address_same.  */
+struct address_walk_data
+{
+  basic_block store1_bb, store2_bb;
+};
+
 static bool gate_dse (void);
 static void tree_ssa_dse (void);
 static void dse_initialize_block_local_data (struct dom_walk_data *,
@@ -143,6 +150,64 @@ dse_initialize_block_local_data (struct dom_walk_data *walk_data,
       if (bd->stores)
 	bitmap_clear (bd->stores);
     }
+}
+
+/* Helper function for memory_address_same via walk_tree.  Returns
+   non-NULL if it finds an SSA_NAME which is part of the address,
+   such that the definition of the SSA_NAME post-dominates the store
+   we want to delete but not the store that we believe makes it
+   redundant.  This indicates that the address may change between
+   the two stores.  */
+
+static tree
+memory_ssa_name_same (tree *expr_p, int *walk_subtrees ATTRIBUTE_UNUSED,
+		      void *data)
+{
+  struct address_walk_data *walk_data = data;
+  tree expr = *expr_p;
+  tree def_stmt;
+  basic_block def_bb;
+
+  if (TREE_CODE (expr) != SSA_NAME)
+    return NULL_TREE;
+
+  /* If we've found a default definition, then there's no problem.  Both
+     stores will post-dominate it.  And def_bb will be NULL.  */
+  if (expr == default_def (SSA_NAME_VAR (expr)))
+    return NULL_TREE;
+
+  def_stmt = SSA_NAME_DEF_STMT (expr);
+  def_bb = bb_for_stmt (def_stmt);
+
+  /* DEF_STMT must dominate both stores.  So if it is in the same
+     basic block as one, it does not post-dominate that store.  */
+  if (walk_data->store1_bb != def_bb
+      && dominated_by_p (CDI_POST_DOMINATORS, walk_data->store1_bb, def_bb))
+    {
+      if (walk_data->store2_bb == def_bb
+	  || !dominated_by_p (CDI_POST_DOMINATORS, walk_data->store2_bb,
+			      def_bb))
+	/* Return non-NULL to stop the walk.  */
+	return def_stmt;
+    }
+
+  return NULL_TREE;
+}
+
+/* Return TRUE if the destination memory address in STORE1 and STORE2
+   might be modified after STORE1, before control reaches STORE2.  */
+
+static bool
+memory_address_same (tree store1, tree store2)
+{
+  struct address_walk_data walk_data;
+
+  walk_data.store1_bb = bb_for_stmt (store1);
+  walk_data.store2_bb = bb_for_stmt (store2);
+
+  return (walk_tree (&TREE_OPERAND (store1, 0), memory_ssa_name_same,
+		     &walk_data, NULL)
+	  == NULL);
 }
 
 /* Attempt to eliminate dead stores in the statement referenced by BSI.
@@ -251,11 +316,14 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	}
 
       /* If we have precisely one immediate use at this point, then we may
-	 have found redundant store.  */
+	 have found redundant store.  Make sure that the stores are to
+	 the same memory location.  This includes checking that any
+	 SSA-form variables in the address will have the same values.  */
       if (use_p != NULL_USE_OPERAND_P
 	  && bitmap_bit_p (dse_gd->stores, get_stmt_uid (use_stmt))
 	  && operand_equal_p (TREE_OPERAND (stmt, 0),
-			      TREE_OPERAND (use_stmt, 0), 0))
+			      TREE_OPERAND (use_stmt, 0), 0)
+	  && memory_address_same (stmt, use_stmt))
 	{
 	  /* Make sure we propagate the ABNORMAL bit setting.  */
 	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (USE_FROM_PTR (first_use_p)))
