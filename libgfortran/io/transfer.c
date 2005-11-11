@@ -212,7 +212,6 @@ read_sf (int *length)
 	      return NULL;
 	    }
 
-	  current_unit->bytes_left = 0;
 	  *length = n;
 	  sf_seen_eor = 1;
 	  break;
@@ -550,6 +549,7 @@ formatted_transfer_scalar (bt type, void *p, int len, size_t size)
 
       /* Now discharge T, TR and X movements to the right.  This is delayed
 	 until a data producing format to suppress trailing spaces.  */
+	 
       t = f->format;
       if (g.mode == WRITING && skips != 0
 	&& ((n>0 && (  t == FMT_I  || t == FMT_B  || t == FMT_O
@@ -771,8 +771,15 @@ formatted_transfer_scalar (bt type, void *p, int len, size_t size)
 	  skips = f->u.n + skips;
 	  pending_spaces = pos - max_pos;
 
-	  /* Writes occur just before the switch on f->format, above, so that
-	     trailing blanks are suppressed.  */
+	  /* Writes occur just before the switch on f->format, above, so
+	     that trailing blanks are suppressed, unless we are doing a
+	     non-advancing write in which case we want to output the blanks
+	     now.  */
+	  if (g.mode == WRITING && advance_status == ADVANCE_NO)
+	    {
+	      write_x (skips, pending_spaces);
+	      skips = pending_spaces = 0;
+	    }
 	  if (g.mode == READING)
 	    read_x (f->u.n);
 
@@ -804,14 +811,22 @@ formatted_transfer_scalar (bt type, void *p, int len, size_t size)
 	     trailing blanks are suppressed.  */
 	  if (g.mode == READING)
 	    {
-	      if (skips > 0)
-		read_x (skips);
+	      /* Adjust everything for end-of-record condition */
+	      if (sf_seen_eor && !is_internal_unit())
+		{
+		  current_unit->bytes_left--;
+		  bytes_used = pos;
+		  sf_seen_eor = 0;
+		  skips--;
+		}
 	      if (skips < 0)
 		{
 		  move_pos_offset (current_unit->s, skips);
 		  current_unit->bytes_left -= (gfc_offset)skips;
 		  skips = pending_spaces = 0;
 		}
+	      else
+		read_x (skips);
 	    }
 
 	  break;
@@ -1936,11 +1951,13 @@ st_read (void)
 	  {
 	    generate_error (ERROR_END, NULL);
 	    current_unit->endfile = AFTER_ENDFILE;
+	    current_unit->current_record = 0;
 	  }
 	break;
 
       case AFTER_ENDFILE:
 	generate_error (ERROR_ENDFILE, NULL);
+	current_unit->current_record = 0;
 	break;
       }
 }
