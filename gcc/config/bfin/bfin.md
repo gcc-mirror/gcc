@@ -1458,7 +1458,7 @@
    (use (match_dup 2))
    (clobber (match_scratch:HI 5 "=&d"))]
   ""
-  "lsetup (1f, 1f) LC1 = %2; %5 = [%4++]; 1: MNOP || [%3++] = %5 || %5 = [%4++]; [%3++] = %5;"
+  "%5 = [%4++]; lsetup (1f, 1f) LC1 = %2; 1: MNOP || [%3++] = %5 || %5 = [%4++]; [%3++] = %5;"
   [(set_attr "type" "misc")
    (set_attr "length" "16")])
 
@@ -1477,7 +1477,7 @@
    (use (match_dup 2))
    (clobber (match_scratch:HI 5 "=&d"))]
   ""
-  "lsetup (1f, 1f) LC1 = %2; %h5 = W[%4++]; 1: MNOP || W [%3++] = %5 || %h5 = W [%4++]; W [%3++] = %5;"
+  "%h5 = W[%4++]; lsetup (1f, 1f) LC1 = %2; 1: MNOP || W [%3++] = %5 || %h5 = W [%4++]; W [%3++] = %5;"
   [(set_attr "type" "misc")
    (set_attr "length" "16")])
 
