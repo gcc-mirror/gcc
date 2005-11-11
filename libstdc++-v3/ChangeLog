@@ -1,3 +1,20 @@
+2005-11-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24799
+	* include/tr1/functional (hash): Inherit from std::unary_function.
+	* testsuite/tr1/6_containers/unordered/hash/24799.cc: New.
+
+	PR libstdc++/24805
+	* include/tr1/boost_shared_ptr.h (swap(shared_ptr<>&, shared_ptr<>&),
+	swap(weak_ptr<>&, weak_ptr<>&)): Move inside namespace tr1.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/modifiers/
+	24805.cc: New.
+
+	PR libstdc++/24809
+	* include/tr1/type_traits (__is_polymorhpic_helper): Adjust destructor.
+	* testsuite/tr1/4_metaprogramming/type_properties/is_polymorphic/
+	24809.cc: New.
+
 2005-11-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/tr1/2_general_utilities/memory/

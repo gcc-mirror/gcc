@@ -705,8 +705,13 @@ template<typename _Tp>
     shared_count _M_refcount;    // reference counter
   };  // shared_ptr
 
-// 2.2.3.9 shared_ptr casts
+// 2.2.3.8 shared_ptr specialized algorithms.
+template<typename _Tp>
+  inline void
+  swap(shared_ptr<_Tp>& __a, shared_ptr<_Tp>& __b)
+  { __a.swap(__b); }
 
+// 2.2.3.9 shared_ptr casts
 /** @warning The seemingly equivalent
  *           <code>shared_ptr<T>(static_cast<T*>(r.get()))</code>
  *           will eventually result in undefined behaviour,
@@ -902,6 +907,12 @@ template<typename _Tp>
 
   };  // weak_ptr
 
+// 2.2.4.7 weak_ptr specialized algorithms.
+template<typename _Tp>
+  void
+  swap(weak_ptr<_Tp>& __a, weak_ptr<_Tp>& __b)
+  { __a.swap(__b); }
+
 
 template<typename _Tp>
   class enable_shared_from_this
@@ -957,29 +968,6 @@ template<typename _Tp>
   };
 
 } // namespace tr1
-
-/**
- *  @brief   std::swap() specialisation for shared_ptr.
- *  @relates shared_ptr.
- */
-template<typename _Tp>
-  inline void
-  swap(tr1::shared_ptr<_Tp>& __a, tr1::shared_ptr<_Tp>& __b)
-  {
-    __a.swap(__b);
-  }
-
-/**
- *  @brief   std::swap() specialisation for weak_ptr.
- *  @relates weak_ptr.
- */
-template<typename _Tp>
-  void
-  swap(tr1::weak_ptr<_Tp>& __a, tr1::weak_ptr<_Tp>& __b)
-  {
-    __a.swap(__b);
-  }
-
 } // namespace std
 
 #endif

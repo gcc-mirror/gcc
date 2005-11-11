@@ -1103,6 +1103,7 @@ namespace tr1
 #define tr1_hashtable_define_trivial_hash(T)            \
   template<>                                            \
     struct hash<T>                                      \
+    : public std::unary_function<T, std::size_t>        \
     {                                                   \
       std::size_t                                       \
       operator()(T val) const                           \
@@ -1125,6 +1126,7 @@ namespace tr1
 
   template<typename T>
     struct hash<T*>
+    : public std::unary_function<T*, std::size_t>
     {
       std::size_t
       operator()(T* p) const
@@ -1185,7 +1187,8 @@ namespace tr1
   // for TR1 .cc files, these should go in one.
   template<>
     struct hash<std::string>
-    {
+    : public std::unary_function<std::string, std::size_t>
+    {      
       std::size_t
       operator()(const std::string& s) const
       { return Fnv_hash<>::hash(s.data(), s.length()); }
@@ -1194,6 +1197,7 @@ namespace tr1
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     struct hash<std::wstring>
+    : public std::unary_function<std::wstring, std::size_t>
     {
       std::size_t
       operator()(const std::wstring& s) const
@@ -1206,6 +1210,7 @@ namespace tr1
 
   template<>
     struct hash<float>
+    : public std::unary_function<float, std::size_t>
     {
       std::size_t
       operator()(float fval) const
@@ -1222,6 +1227,7 @@ namespace tr1
 
   template<>
     struct hash<double>
+    : public std::unary_function<double, std::size_t>
     {
       std::size_t
       operator()(double dval) const
@@ -1240,6 +1246,7 @@ namespace tr1
   // 10 bytes -> 12 bytes) and resort to frexp.
   template<>
     struct hash<long double>
+    : public std::unary_function<long double, std::size_t>
     {
       std::size_t
       operator()(long double ldval) const
