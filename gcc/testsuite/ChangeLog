@@ -1,5 +1,14 @@
 2005-11-11  Andreas Tobler  <a.tobler@schweiz.ch>
 
+	* lib/target-libpath.exp (get_shlib_extension): New proc.
+	* lib/g++.exp (g++_link_flags): Add flags in case of shared only build.
+	* lib/gfortran.exp (gfortran_link_flags): Likewise.
+	* lib/objc.exp (objc_target_compile): Likewise.
+	* lib/obj-c++.exp (obj-c++_link_flags): Likewise. Fix multilib libgcc
+	detection.
+
+2005-11-11  Andreas Tobler  <a.tobler@schweiz.ch>
+
 	* gfortran.dg/static_linking_1.f: Fix static_libgfortran processing.
 
 	* lib/target-supports.exp (check_effective_target_static_libgfortran):

@@ -1,15 +1,15 @@
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -235,3 +235,23 @@ proc restore_ld_library_path_env_vars { } {
     unsetenv DYLD_LIBRARY_PATH
   }
 }
+
+#######################################
+# proc get_shlib_extension { }
+#######################################
+
+proc get_shlib_extension { } {
+    global shlib_ext
+
+    if { [ istarget *-*-darwin* ] } {
+	set shlib_ext "dylib"
+    } elseif { [ istarget *-*-cygwin* ] || [ istarget *-*-mingw* ] } {
+	set shlib_ext "dll"
+    } elseif { [ istarget hppa*-*-hpux* ] } {
+	set shlib_ext "sl"
+    } else {
+	set shlib_ext "so"
+    }
+    return $shlib_ext
+}
+

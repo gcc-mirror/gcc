@@ -1,16 +1,16 @@
-# Copyright (C) 1992, 1993, 1994, 1996, 1997, 2000, 2001, 2002, 2004
+# Copyright (C) 1992, 1993, 1994, 1996, 1997, 2000, 2001, 2002, 2004, 2005
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -127,9 +127,12 @@ proc objc_target_compile { source dest type options } {
     global TOOL_OPTIONS
     global ld_library_path
     global objc_libgcc_s_path
+    global shlib_ext
 
     set ld_library_path ".:${objc_libgcc_s_path}"
     lappend options "libs=-lobjc"
+    set shlib_ext [get_shlib_extension]
+    verbose "shared lib extension: $shlib_ext"
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
@@ -161,8 +164,20 @@ proc objc_target_compile { source dest type options } {
     if { $libobjc_dir == ""} {
       verbose "see if we have -fgnu-runtime in options"
       if [regexp ".*-fgnu-runtime.*" "${options}"] {
-        set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.a]
+	set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.a]
       }
+    }
+    # Now check if we have a shared only build.
+    if { $libobjc_dir == ""} {
+     set libobjc_dir \
+	 [lookfor_file ${objcpath} libobjc/.libs/libobjc.${shlib_ext}]
+    }
+    if { $libobjc_dir == ""} {
+	verbose "see if we have -fgnu-runtime in options"
+	if [regexp ".*-fgnu-runtime.*" "${options}"] {
+	 set libobjc_dir \
+	     [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.${shlib_ext}]
+	}
     }
     if { $libobjc_dir != "" } {
 	set objc_include_dir "${srcdir}/../../libobjc"
