@@ -1,3 +1,20 @@
+2005-11-11  Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/24719
+	gfortran.dg/read_noadvance.f90: New test.
+	
+	PR libgfortran/24699
+	gfortran.dg/fmt_t_2.f90: New test.
+	
+	PR libgfortran/24785
+	gfortran.dg/read_x_eor.f90: New test.
+	
+	PR libgfortran/24584
+	gfortran.dg/namelist_empty.f90: Rename test.
+
+	PR libgfortran/24489
+	gfortran/read_eor.f90: Rename test.
+
 2005-11-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/15976
