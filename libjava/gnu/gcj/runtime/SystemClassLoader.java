@@ -52,6 +52,7 @@ public final class SystemClassLoader extends URLClassLoader
 		continue;
 	      }
 
+	    last_was_sep = false;
 	    File path = new File(e);
 	    // Ignore invalid paths.
 	    if (!path.exists())

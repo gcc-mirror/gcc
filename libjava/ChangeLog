@@ -1,3 +1,8 @@
+2005-11-10  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/runtime/SystemClassLoader.java (init): Clear
+	last_was_sep in loop.
+
 2005-11-09  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libjava.jacks/jacks.xfail (non-jls-zip-2): Now
