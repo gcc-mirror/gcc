@@ -1724,6 +1724,8 @@ case "$enable_gdbtk" in
     fi
     ;;
 esac
+CONFIGURE_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-configure-/g`
+INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 
 # Strip out unwanted targets.
 
@@ -2077,7 +2079,9 @@ AC_SUBST(BUILD_PREFIX)
 AC_SUBST(BUILD_PREFIX_1)
 AC_SUBST(tooldir)
 AC_SUBST(build_tooldir)
+AC_SUBST(CONFIGURE_GDB_TK)
 AC_SUBST(GDB_TK)
+AC_SUBST(INSTALL_GDB_TK)
 
 # Build module lists & subconfigure args.
 AC_SUBST(build_configargs)

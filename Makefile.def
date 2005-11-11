@@ -275,9 +275,6 @@ dependencies = { module=all-fixincludes; on=all-libiberty; };
 dependencies = { module=all-gnattools; on=all-target-libada; };
 
 // Host modules specific to gdb.
-dependencies = { module=configure-gdb; on=configure-itcl; };
-dependencies = { module=configure-gdb; on=configure-tcl; };
-dependencies = { module=configure-gdb; on=configure-tk; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=all-gdb; on=all-libiberty; };
 dependencies = { module=all-gdb; on=all-opcodes; };
@@ -286,10 +283,6 @@ dependencies = { module=all-gdb; on=all-readline; };
 dependencies = { module=all-gdb; on=all-build-bison; };
 dependencies = { module=all-gdb; on=all-build-byacc; };
 dependencies = { module=all-gdb; on=all-sim; };
-dependencies = { module=install-gdb; on=install-tcl; };
-dependencies = { module=install-gdb; on=install-tk; };
-dependencies = { module=install-gdb; on=install-itcl; };
-dependencies = { module=install-gdb; on=install-libgui; };
 
 dependencies = { module=configure-libgui; on=configure-tcl; };
 dependencies = { module=configure-libgui; on=configure-tk; };

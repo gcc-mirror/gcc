@@ -36621,9 +36621,6 @@ all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
 all-fixincludes: maybe-all-libiberty
 all-gnattools: maybe-all-target-libada
-configure-gdb: maybe-configure-itcl
-configure-gdb: maybe-configure-tcl
-configure-gdb: maybe-configure-tk
 configure-gdb: maybe-configure-sim
 all-gdb: maybe-all-libiberty
 all-gdb: maybe-all-opcodes
@@ -36632,10 +36629,6 @@ all-gdb: maybe-all-readline
 all-gdb: maybe-all-build-bison
 all-gdb: maybe-all-build-byacc
 all-gdb: maybe-all-sim
-install-gdb: maybe-install-tcl
-install-gdb: maybe-install-tk
-install-gdb: maybe-install-itcl
-install-gdb: maybe-install-libgui
 configure-libgui: maybe-configure-tcl
 configure-libgui: maybe-configure-tk
 all-libgui: maybe-all-tcl
@@ -36934,8 +36927,12 @@ all-prebootstrap: maybe-all-libiberty
 all-prebootstrap: maybe-all-zlib
 @endif gcc-no-bootstrap
 
+CONFIGURE_GDB_TK = @CONFIGURE_GDB_TK@
 GDB_TK = @GDB_TK@
+INSTALL_GDB_TK = @INSTALL_GDB_TK@
+configure-gdb: $(CONFIGURE_GDB_TK)
 all-gdb: $(gdbnlmrequirements) $(GDB_TK)
+install-gdb: $(INSTALL_GDB_TK)
 
 # Serialization dependencies.  Host configures don't work well in parallel to
 # each other, due to contention over config.cache.  Target configures and 
