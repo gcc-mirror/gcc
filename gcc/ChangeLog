@@ -1,3 +1,9 @@
+2005-11-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/24686
+	* gimplify.c (gimplify_cleanup_point_expr): Also save and restore 
+	the cleanup list.
+
 2005-11-11  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.c (bfin_expand_strmov): Correctly move the trailing
