@@ -2420,6 +2420,11 @@ bfin_expand_strmov (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 
 	      emit_insn (gen_rep_movsi (destreg, srcreg, countreg, destreg, srcreg));
 	    }
+	  if (count & 2)
+	    {
+	      single_move_for_strmov (dst, src, HImode, offset);
+	      offset += 2;
+	    }
 	}
       else
 	{
@@ -2435,11 +2440,6 @@ bfin_expand_strmov (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 
 	      emit_insn (gen_rep_movhi (destreg, srcreg, countreg, destreg, srcreg));
 	    }
-	}
-      if (count & 2)
-	{
-	  single_move_for_strmov (dst, src, HImode, offset);
-	  offset += 2;
 	}
       if (count & 1)
 	{

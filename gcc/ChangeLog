@@ -1,5 +1,12 @@
 2005-11-11  Jie Zhang  <jie.zhang@analog.com>
 
+	* config/bfin/bfin.c (bfin_expand_strmov): Correctly move the trailing
+	bytes when align is 2.
+	* config/bfin/bfin.md (rep_movsi, rep_movhi): Make LSETUP be followed
+	by the first instruction of the loop.
+
+2005-11-11  Jie Zhang  <jie.zhang@analog.com>
+
 	* configure.ac: Enable checking assembler dwarf2 support for bfin
 	target.
 	* configure: Regenerate.
