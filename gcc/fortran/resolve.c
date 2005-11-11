@@ -4253,6 +4253,22 @@ resolve_symbol (gfc_symbol * sym)
 	  return;
     }
 
+  /* A module array's shape needs to be constant.  */
+
+  if (sym->ns->proc_name
+      && sym->attr.flavor == FL_VARIABLE
+      && sym->ns->proc_name->attr.flavor == FL_MODULE
+      && !sym->attr.use_assoc
+      && !sym->attr.allocatable
+      && !sym->attr.pointer
+      && sym->as != NULL
+      && !gfc_is_compile_time_shape (sym->as))
+    {
+      gfc_error ("Module array '%s' at %L cannot be automatic "
+         "or assumed shape", sym->name, &sym->declared_at);
+      return;
+    }
+
   /* Make sure that character string variables with assumed length are
      dummy arguments.  */
 
