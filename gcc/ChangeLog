@@ -1,3 +1,7 @@
+2005-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* longlong.h (__clz_tab): Always provide.
+
 2005-11-11  Steven Bosscher  <stevenb@suse.de>
 
 	PR 24265
