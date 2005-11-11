@@ -3306,6 +3306,16 @@ corresponds to the C data type @code{double} and the @code{rintf}
 built-in function uses the mode which corresponds to the C data
 type @code{float}.
 
+@cindex @code{copysign@var{m}3} instruction pattern
+@item @samp{copysign@var{m}3}
+Store a value with the magnitude of operand 1 and the sign of operand
+2 into operand 0.
+
+The @code{copysign} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{copysignf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
 @cindex @code{ffs@var{m}2} instruction pattern
 @item @samp{ffs@var{m}2}
 Store into operand 0 one plus the index of the least significant 1-bit

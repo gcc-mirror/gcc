@@ -173,6 +173,10 @@ Wunused-variable
 Common Var(warn_unused_variable)
 Warn when a variable is unused
 
+Wvolatile-register-var
+Common Var(warn_register_var)
+Warn when a register variable is declared volatile
+
 aux-info
 Common Separate
 -aux-info <file>	Emit declaration information into <file>

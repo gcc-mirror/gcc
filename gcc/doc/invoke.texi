@@ -245,7 +245,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
 -Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
 -Wunused-value  -Wunused-variable  -Wvariadic-macros @gol
--Wwrite-strings}
+-Wvolatile-register-var  -Wwrite-strings}
 
 @item C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -3369,6 +3369,13 @@ only when @option{-pedantic} flag is used.
 Warn if variadic macros are used in pedantic ISO C90 mode, or the GNU
 alternate syntax when in pedantic ISO C99 mode.  This is default.
 To inhibit the warning messages, use @option{-Wno-variadic-macros}.
+
+@item -Wvolatile-register-var
+@opindex Wvolatile-register-var
+@opindex Wno-volatile-register-var
+Warn if a register variable is declared volatile.  The volatile
+modifier does not inhibit all optimizations that may eliminate reads
+and/or writes to register variables.
 
 @item -Wdisabled-optimization
 @opindex Wdisabled-optimization
