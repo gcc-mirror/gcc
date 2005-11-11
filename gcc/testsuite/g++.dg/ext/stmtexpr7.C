@@ -1,4 +1,5 @@
 // PR c++/24686
+// { dg-options "" }
 
 struct A
 {
