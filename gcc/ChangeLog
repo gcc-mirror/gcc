@@ -1,3 +1,9 @@
+2005-11-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/24750
+	* reload.c (find_reloads_address_1) <case TRUNCATE, SIGN_EXTEND,
+	ZERO_EXTEND>: New cases.
+
 2005-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* longlong.h (__clz_tab): Always provide.

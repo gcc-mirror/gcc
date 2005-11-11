@@ -5695,6 +5695,24 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	}
       return 0;
 
+    case TRUNCATE:
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+      /* Look for parts to reload in the inner expression and reload them
+	 too, in addition to this operation.  Reloading all inner parts in
+	 addition to this one shouldn't be necessary, but at this point,
+	 we don't know if we can possibly omit any part that *can* be
+	 reloaded.  Targets that are better off reloading just either part
+	 (or perhaps even a different part of an outer expression), should
+	 define LEGITIMIZE_RELOAD_ADDRESS.  */
+      find_reloads_address_1 (GET_MODE (XEXP (x, 0)), XEXP (x, 0),
+			      context, &XEXP (x, 0), opnum,
+			      type, ind_levels, insn);
+      push_reload (x, NULL_RTX, loc, (rtx*) 0,
+		   context_reg_class,
+		   GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+      return 1;
+
     case MEM:
       /* This is probably the result of a substitution, by eliminate_regs, of
 	 an equivalent address for a pseudo that was not allocated to a hard
