@@ -1,3 +1,9 @@
+2005-11-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/24750
+	* gcc.dg/torture/pr24750-1.c, gcc.target/cris/torture/pr24750-2.c:
+        New tests.
+
 2005-11-11  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* lib/target-libpath.exp (get_shlib_extension): New proc.
