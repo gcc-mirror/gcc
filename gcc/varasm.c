@@ -955,8 +955,9 @@ make_decl_rtl (tree decl)
 	      error ("global register variable has initial value");
 	    }
 	  if (TREE_THIS_VOLATILE (decl))
-	    warning (0, "volatile register variables don%'t "
-		     "work as you might wish");
+	    warning (OPT_Wvolatile_register_var,
+		     "optimization may eliminate reads and/or "
+		     "writes to register variables");
 
 	  /* If the user specified one of the eliminables registers here,
 	     e.g., FRAME_POINTER_REGNUM, we don't want to get this variable
