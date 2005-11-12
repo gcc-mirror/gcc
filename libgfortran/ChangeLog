@@ -1,3 +1,9 @@
+2005-11-12  Steven G. Kargl  <kargls@comcast.net>
+
+	PR libgfortran/24787
+	* intrinsics/string_intrinsics.c (string_scan): Off by one; Fix typos
+	in nearby comment.
+
 2005-11-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/ctime.c: New file.

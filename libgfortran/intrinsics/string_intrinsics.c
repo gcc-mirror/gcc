@@ -304,35 +304,32 @@ GFC_INTEGER_4
 string_scan (GFC_INTEGER_4 slen, const char * str, GFC_INTEGER_4 setlen,
              const char * set, GFC_LOGICAL_4 back)
 {
-  int start;
-  int last;
-  int i;
-  int delta;
+  int i, j;
 
   if (slen == 0 || setlen == 0)
     return 0;
 
   if (back)
     {
-      last =  0;
-      start = slen - 1;
-      delta = -1;
+      for (i = slen - 1; i >= 0; i--)
+	{
+	  for (j = 0; j < setlen; j++)
+	    {
+	      if (str[i] == set[j])
+		return (i + 1);
+	    }
+	}
     }
   else
     {
-      last = slen - 1;
-      start = 0;
-      delta = 1;
-    }
-
-  i = 0;
-  for (; start != last; start += delta)
-    {
-      for (i = 0; i < setlen; i++)
-        {
-          if (str[start] == set[i])
-            return (start + 1);
-        }
+      for (i = 0; i < slen; i++)
+	{
+	  for (j = 0; j < setlen; j++)
+	    {
+	      if (str[i] == set[j])
+		return (i + 1);
+	    }
+	}
     }
 
   return 0;
@@ -341,7 +338,7 @@ string_scan (GFC_INTEGER_4 slen, const char * str, GFC_INTEGER_4 setlen,
 
 /* Verify that a set of characters contains all the characters in a
    string by indentifying the position of the first character in a
-   characters that dose not appear in a given set of characters.  */
+   characters that does not appear in a given set of characters.  */
 
 GFC_INTEGER_4
 string_verify (GFC_INTEGER_4 slen, const char * str, GFC_INTEGER_4 setlen,
