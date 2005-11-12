@@ -1,3 +1,7 @@
+2005-11-12  Richard Guenther  <rguenther@suse.de>
+
+	* gcse.c (find_rtx_in_ldst): Handle NULL pre_ldst_table.
+
 2005-11-12  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (expand_expr_real_1): <MAX_EXPR, MIN_EXPR>: Canonicalize
