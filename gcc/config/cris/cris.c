@@ -38,6 +38,7 @@ Boston, MA 02110-1301, USA.  */
 #include "function.h"
 #include "toplev.h"
 #include "recog.h"
+#include "reload.h"
 #include "tm_p.h"
 #include "debug.h"
 #include "output.h"
@@ -1205,6 +1206,81 @@ cris_initial_elimination_offset (int fromreg, int toreg)
   gcc_unreachable ();
 }
 
+/* Worker function for LEGITIMIZE_RELOAD_ADDRESS.  */
+
+bool
+cris_reload_address_legitimized (rtx x,
+				 enum machine_mode mode ATTRIBUTE_UNUSED,
+				 int opnum ATTRIBUTE_UNUSED,
+				 int itype,
+				 int ind_levels ATTRIBUTE_UNUSED)
+{
+  enum reload_type type = itype;
+  rtx op0, op1;
+  rtx *op0p;
+  rtx *op1p;
+
+  if (GET_CODE (x) != PLUS)
+    return false;
+
+  op0 = XEXP (x, 0);
+  op0p = &XEXP (x, 0);
+  op1 = XEXP (x, 1);
+  op1p = &XEXP (x, 1);
+
+  if (!REG_P (op1))
+    return false;
+
+  if (GET_CODE (op0) == SIGN_EXTEND
+      && GET_CODE (XEXP (op0, 0)) == MEM)
+    {
+      rtx op00 = XEXP (op0, 0);
+      rtx op000 = XEXP (op00, 0);
+      rtx *op000p = &XEXP (op00, 0);
+
+      if ((GET_MODE (op00) == HImode || GET_MODE (op00) == QImode)
+	  && (REG_P (op000)
+	      || (GET_CODE (op000) == POST_INC && REG_P (XEXP (op000, 0)))))
+	{
+	  bool something_reloaded = false;
+
+	  if (GET_CODE (op000) == POST_INC
+	      && REG_P (XEXP (op000, 0))
+	      && REGNO (XEXP (op000, 0)) > CRIS_LAST_GENERAL_REGISTER)
+	    /* No, this gets too complicated and is too rare to care
+	       about trying to improve on the general code Here.
+	       As the return-value is an all-or-nothing indicator, we
+	       punt on the other register too.  */
+	    return false;
+
+	  if ((REG_P (op000)
+	       && REGNO (op000) > CRIS_LAST_GENERAL_REGISTER))
+	    {
+	      /* The address of the inner mem is a pseudo or wrong
+		 reg: reload that.  */
+	      push_reload (op000, NULL_RTX, op000p, NULL, GENERAL_REGS,
+			   GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+	      something_reloaded = true;
+	    }
+
+	  if (REGNO (op1) > CRIS_LAST_GENERAL_REGISTER)
+	    {
+	      /* Base register is a pseudo or wrong reg: reload it.  */
+	      push_reload (op1, NULL_RTX, op1p, NULL, GENERAL_REGS,
+			   GET_MODE (x), VOIDmode, 0, 0,
+			   opnum, type);
+	      something_reloaded = true;
+	    }
+
+	  gcc_assert (something_reloaded);
+
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 /*  This function looks into the pattern to see how this insn affects
     condition codes.
 
@@ -2160,7 +2236,7 @@ cris_asm_output_mi_thunk (FILE *stream,
     }
 }
 
-/* Boilerplate emitted at start of file.  
+/* Boilerplate emitted at start of file.
 
    NO_APP *only at file start* means faster assembly.  It also means
    comments are not allowed.  In some cases comments will be output

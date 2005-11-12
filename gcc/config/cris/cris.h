@@ -1055,6 +1055,15 @@ struct cum_args {int regs;};
    FIXME: Check and adjust for gcc-2.9x.  */
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN) {}
 
+/* Fix reloads known to cause suboptimal spilling.  */
+#define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, INDL, WIN)	\
+  do									\
+    {									\
+      if (cris_reload_address_legitimized (X, MODE, OPNUM, TYPE, INDL))	\
+	goto WIN;							\
+    }									\
+  while (0)
+
 /* In CRIS, only the postincrement address mode depends thus,
    since the increment depends on the size of the operand.  */
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)	\

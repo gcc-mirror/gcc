@@ -1,3 +1,11 @@
+2005-11-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (LEGITIMIZE_RELOAD_ADDRESS): Define.
+	* config/cris/cris.c: Include reload.h.
+	(cris_initial_elimination_offset): New function.
+	* config/cris/cris-protos.h: (cris_initial_elimination_offset):
+	Prototype.
+
 2005-11-12  Richard Guenther  <rguenther@suse.de>
 
 	* gcse.c (find_rtx_in_ldst): Handle NULL pre_ldst_table.
