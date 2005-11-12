@@ -1,3 +1,9 @@
+2005-11-12  Steven G. Kargl  <kargls@comcast.net>
+
+	PR libgfortran/24787
+	*  intrinsics/string_intrinsics.c (string_scan): Off by one; Fix typos
+	in nearby comment.
+
 2005-11-10  Andreas Jaeger  <aj@suse.de>
 
 	* libgfortran.h: Add proper defines where needed.
