@@ -1,3 +1,9 @@
+2005-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/24761
+	* pt.c (tsubst_copy_asm_operands): New function.
+	(tsubst_expr) <case ASM_EXPR>: Use it.
+
 2005-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19450
