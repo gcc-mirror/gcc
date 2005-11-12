@@ -1,5 +1,10 @@
 2005-11-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/24780
+	* typeck.c (complete_type): Set TYPE_NEEDS_CONSTRUCTING
+	and TYPE_HAS_NONTRIVIAL_DESTRUCTOR flags for all variants
+	of array type.
+
 	PR c++/24761
 	* pt.c (tsubst_copy_asm_operands): New function.
 	(tsubst_expr) <case ASM_EXPR>: Use it.

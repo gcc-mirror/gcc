@@ -123,12 +123,18 @@ complete_type (tree type)
   else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     {
       tree t = complete_type (TREE_TYPE (type));
+      unsigned int needs_constructing, has_nontrivial_dtor;
       if (COMPLETE_TYPE_P (t) && !dependent_type_p (type))
 	layout_type (type);
-      TYPE_NEEDS_CONSTRUCTING (type)
+      needs_constructing
 	= TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (t));
-      TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+      has_nontrivial_dtor
 	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TYPE_MAIN_VARIANT (t));
+      for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+	{
+	  TYPE_NEEDS_CONSTRUCTING (t) = needs_constructing;
+	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = has_nontrivial_dtor;
+	}
     }
   else if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
     instantiate_class_template (TYPE_MAIN_VARIANT (type));
