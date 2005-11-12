@@ -1,5 +1,8 @@
 2005-11-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/24780
+	* g++.dg/opt/pr24780.C: New test.
+
 	PR c++/24761
 	* g++.dg/template/asm1.C: New test.
 
