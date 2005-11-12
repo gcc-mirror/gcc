@@ -1,3 +1,7 @@
+2005-11-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.dg/pr24445.c: Fix for 64-bit targets.
+
 2005-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.c-torture/execute/20051110-1.c,
