@@ -1,3 +1,11 @@
+2005-11-12  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.h (REGISTER_NAMES, SHORT_REGISTER_NAMES,
+	HIGH_REGISTER_NAMES, FIXED_REGISTERS, CALL_USED_REGISTERS,
+	REG_ALLOC_ORDER, enum reg_class): Rearrange I/B/L registers.
+	* config/bfin/bfin.md: Redefine REG_ constants for I/B/L registers
+	in the new order.
+
 2005-11-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/24686

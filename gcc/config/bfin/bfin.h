@@ -280,8 +280,8 @@ extern const char *bfin_library_id_string;
 #define REGISTER_NAMES { \
   "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", \
   "P0", "P1", "P2", "P3", "P4", "P5", "SP", "FP", \
-  "I0", "B0", "L0", "I1", "B1", "L1", "I2", "B2", \
-  "L2", "I3", "B3", "L3", "M0", "M1", "M2", "M3", \
+  "I0", "I1", "I2", "I3", "B0", "B1", "B2", "B3", \
+  "L0", "L1", "L2", "L3", "M0", "M1", "M2", "M3", \
   "A0", "A1", \
   "CC", \
   "RETS", "RETI", "RETX", "RETN", "RETE", "ASTAT", "SEQSTAT", "USP", \
@@ -291,14 +291,14 @@ extern const char *bfin_library_id_string;
 #define SHORT_REGISTER_NAMES { \
 	"R0.L",	"R1.L",	"R2.L",	"R3.L", "R4.L", "R5.L", "R6.L", "R7.L", \
 	"P0.L",	"P1.L",	"P2.L",	"P3.L", "P4.L", "P5.L", "SP.L", "FP.L", \
-	"I0.L",	"B0.L", "L0.L",	"I1.L",	"B1.L",	"L1.L",	"I2.L",	"B2.L", \
-	"L2.L",	"I3.L",	"B3.L",	"L3.L",	"M0.L",	"M1.L",	"M2.L",	"M3.L", }
+	"I0.L",	"I1.L", "I2.L",	"I3.L",	"B0.L",	"B1.L",	"B2.L",	"B3.L", \
+	"L0.L",	"L1.L",	"L2.L",	"L3.L",	"M0.L",	"M1.L",	"M2.L",	"M3.L", }
 
 #define HIGH_REGISTER_NAMES { \
 	"R0.H",	"R1.H",	"R2.H",	"R3.H", "R4.H", "R5.H", "R6.H", "R7.H", \
 	"P0.H",	"P1.H",	"P2.H",	"P3.H", "P4.H", "P5.H", "SP.H", "FP.H", \
-	"I0.H",	"B0.H",	"L0.H",	"I1.H",	"B1.H",	"L1.H",	"I2.H",	"B2.H", \
-	"L2.H",	"I3.H",	"B3.H",	"L3.H",	"M0.H",	"M1.H",	"M2.H",	"M3.H", }
+	"I0.H",	"I1.H",	"I2.H",	"I3.H",	"B0.H",	"B1.H",	"B2.H",	"B3.H", \
+	"L0.H",	"L1.H",	"L2.H",	"L3.H",	"M0.H",	"M1.H",	"M2.H",	"M3.H", }
 
 #define DREGS_PAIR_NAMES { \
   "R1:0.p", 0, "R3:2.p", 0, "R5:4.p", 0, "R7:6.p", 0,  }
@@ -313,8 +313,8 @@ extern const char *bfin_library_id_string;
 #define FIXED_REGISTERS \
 /*r0 r1 r2 r3 r4 r5 r6 r7   p0 p1 p2 p3 p4 p5 p6 p7 */ \
 { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 1, 0,    \
-/*i0 b0 l0 i1 b1 l1 i2 b2   l2 i3 b3 l3 m0 m1 m2 m3 */ \
-  0, 0, 1, 0, 0, 1, 0, 0,   1, 0, 0, 1, 0, 0, 0, 0,    \
+/*i0 i1 i2 i3 b0 b1 b2 b3   l0 l1 l2 l3 m0 m1 m2 m3 */ \
+  0, 0, 0, 0, 0, 0, 0, 0,   1, 1, 1, 1, 0, 0, 0, 0,    \
 /*a0 a1 cc rets/i/x/n/e     astat seqstat usp argp */ \
   0, 0, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1	 \
 }
@@ -329,7 +329,7 @@ extern const char *bfin_library_id_string;
 #define CALL_USED_REGISTERS \
 /*r0 r1 r2 r3 r4 r5 r6 r7   p0 p1 p2 p3 p4 p5 p6 p7 */ \
 { 1, 1, 1, 1, 0, 0, 0, 0,   1, 1, 1, 0, 0, 0, 1, 0, \
-/*i0 b0 l0 i1 b1 l1 i2 b2   l2 i3 b3 l3 m0 m1 m2 m3 */ \
+/*i0 i1 i2 i3 b0 b1 b2 b3   l0 l1 l2 l3 m0 m1 m2 m3 */ \
   1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1, 1, 1,   \
 /*a0 a1 cc rets/i/x/n/e     astat seqstat usp argp */ \
   1, 1, 1, 1, 1, 1, 1, 1,   1, 1, 1, 1	 \
@@ -345,8 +345,8 @@ extern const char *bfin_library_id_string;
 { REG_R0, REG_R1, REG_R2, REG_R3, REG_R7, REG_R6, REG_R5, REG_R4, \
   REG_P2, REG_P1, REG_P0, REG_P5, REG_P4, REG_P3, REG_P6, REG_P7, \
   REG_A0, REG_A1, \
-  REG_I0, REG_B0, REG_L0, REG_I1, REG_B1, REG_L1, REG_I2, REG_B2, \
-  REG_L2, REG_I3, REG_B3, REG_L3, REG_M0, REG_M1, REG_M2, REG_M3, \
+  REG_I0, REG_I1, REG_I2, REG_I3, REG_B0, REG_B1, REG_B2, REG_B3, \
+  REG_L0, REG_L1, REG_L2, REG_L3, REG_M0, REG_M1, REG_M2, REG_M3, \
   REG_RETS, REG_RETI, REG_RETX, REG_RETN, REG_RETE,		  \
   REG_ASTAT, REG_SEQSTAT, REG_USP, 				  \
   REG_CC, REG_ARGP						  \
@@ -455,9 +455,9 @@ enum reg_class
 #define REG_CLASS_CONTENTS \
     /* 31 - 0       63-32   */ \
 {   { 0x00000000,    0 },		/* NO_REGS */	\
-    { 0x02490000,    0 },		/* IREGS */	\
-    { 0x04920000,    0 },		/* BREGS */		\
-    { 0x09240000,    0 },		/* LREGS */	\
+    { 0x000f0000,    0 },		/* IREGS */	\
+    { 0x00f00000,    0 },		/* BREGS */		\
+    { 0x0f000000,    0 },		/* LREGS */	\
     { 0xf0000000,    0 },		/* MREGS */   \
     { 0x0fff0000,    0 },		/* CIRCREGS */   \
     { 0xffff0000,    0 },		/* DAGREGS */   \
