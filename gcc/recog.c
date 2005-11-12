@@ -2429,16 +2429,22 @@ constrain_operands (int strict)
 		break;
 
 		/* No need to check general_operand again;
-		   it was done in insn-recog.c.  */
+		   it was done in insn-recog.c.  Well, except that reload
+		   doesn't check the validity of its replacements, but
+		   that should only matter when there's a bug.  */
 	      case 'g':
 		/* Anything goes unless it is a REG and really has a hard reg
 		   but the hard reg is not in the class GENERAL_REGS.  */
-		if (strict < 0
-		    || GENERAL_REGS == ALL_REGS
-		    || !REG_P (op)
-		    || (reload_in_progress
-			&& REGNO (op) >= FIRST_PSEUDO_REGISTER)
-		    || reg_fits_class_p (op, GENERAL_REGS, offset, mode))
+		if (REG_P (op))
+		  {
+		    if (strict < 0
+			|| GENERAL_REGS == ALL_REGS
+			|| (reload_in_progress
+			    && REGNO (op) >= FIRST_PSEUDO_REGISTER)
+			|| reg_fits_class_p (op, GENERAL_REGS, offset, mode))
+		      win = 1;
+		  }
+		else if (strict < 0 || general_operand (op, mode))
 		  win = 1;
 		break;
 

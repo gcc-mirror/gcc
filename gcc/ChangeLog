@@ -1,3 +1,8 @@
+2005-11-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* recog.c (constrain_operands) <case 'g'>: For a match, require
+	that a non-register matches general_operand when strict >= 0.
+
 2005-11-11  Steven Bosscher  <stevenb@suse.de>
 
 	* loop-invariant.c (move_loop_invariants): Fix a thinko in the
