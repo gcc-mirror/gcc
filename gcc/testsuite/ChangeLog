@@ -1,3 +1,9 @@
+2005-11-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/cris.exp: New file.
+	* gcc.target/cris/rld-legit1.c: New test.
+	* gcc.target/cris/rld-legit2.c: New test.
+
 2005-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/24780
