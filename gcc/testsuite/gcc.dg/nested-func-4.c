@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-pg" } */
+/* { dg-options "-pg -static" { target hppa*-*-hpux* } } */
 /* { dg-require-profiling "-pg" } */
 
 extern void abort(void);
