@@ -42,24 +42,25 @@ namespace std
 {
 namespace tr1
 {
-  // For use in __conv_helper, is_abstract and elsewhere.
+  // For use in __in_array and elsewhere.
   struct __sfinae_types
   {
     typedef char __one;
     typedef struct { char __arr[2]; } __two;
   };
 
-  template<typename _From, typename _To>
-    struct __conv_helper
+  template<typename _Tp>
+    struct __in_array
     : public __sfinae_types
     {
     private:
-      static __one __test(_To);
-      static __two __test(...);
-      static _From __makeFrom();
+      template<typename _Up>
+        static __one __test(_Up(*)[1]);
+      template<typename>
+        static __two __test(...);
     
     public:
-      static const bool __value = sizeof(__test(__makeFrom())) == 1;
+      static const bool __value = sizeof(__test<_Tp>(0)) == 1;
     };
 
 #define _DEFINE_SPEC_BODY(_Value)                                    \
@@ -183,22 +184,12 @@ namespace tr1
   template<typename>
     struct is_class { };
 
-  template<typename _Tp, bool = (is_void<_Tp>::value
-				 || is_reference<_Tp>::value)>
-    struct __is_function_helper
-    {
-      static const bool __value = (__conv_helper<typename
-				   add_reference<_Tp>::type, typename
-				   add_pointer<_Tp>::type>::__value);
-    };
-
-  template<typename _Tp>
-    struct __is_function_helper<_Tp, true>
-    { static const bool __value = false; };
-
   template<typename _Tp>
     struct is_function
-    : public integral_constant<bool, __is_function_helper<_Tp>::__value>
+    : public integral_constant<bool, !(__in_array<_Tp>::__value
+				       || __is_union_or_class<_Tp>::value
+				       || is_reference<_Tp>::value
+				       || is_void<_Tp>::value)>
     { };
 
   /// @brief  composite type traits [4.5.2].
@@ -338,27 +329,10 @@ namespace tr1
     { };
 
   // Exploit the resolution DR core/337.
-  template<typename _Tp, bool = !is_object<_Tp>::value>
-    struct __is_abstract_helper
-    : public __sfinae_types
-    {
-    private:
-      template<typename>
-        static __one __test(...);
-      template<typename _Up>
-        static __two __test(_Up(*)[1]);
-    
-    public:
-      static const bool __value = sizeof(__test<_Tp>(0)) == 1;
-    };
-  
-  template<typename _Tp>
-    struct __is_abstract_helper<_Tp, true>
-    { static const bool __value = false; };
-
   template<typename _Tp>
     struct is_abstract
-    : public integral_constant<bool, __is_abstract_helper<_Tp>::__value> { };
+    : public integral_constant<bool, (!__in_array<_Tp>::__value
+				      && __is_union_or_class<_Tp>::value)> { };
 
   template<typename _Tp>
     struct has_trivial_constructor
@@ -490,6 +464,19 @@ namespace tr1
 			       __is_base_of_helper<_Base, _Derived>::__value>
     { };
 
+  template<typename _From, typename _To>
+    struct __is_convertible_simple
+    : public __sfinae_types
+    {
+    private:
+      static __one __test(_To);
+      static __two __test(...);
+      static _From __makeFrom();
+    
+    public:
+      static const bool __value = sizeof(__test(__makeFrom())) == 1;
+    };
+
   template<typename _Tp>
     struct __is_int_or_cref
     {
@@ -510,7 +497,7 @@ namespace tr1
     struct __is_convertible_helper
     {
       // "An imaginary lvalue of type From...".
-      static const bool __value = (__conv_helper<typename
+      static const bool __value = (__is_convertible_simple<typename
 				   add_reference<_From>::type, _To>::__value);
     };
 
