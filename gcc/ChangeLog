@@ -1,3 +1,8 @@
+2005-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (expand_expr_real_1): <MAX_EXPR, MIN_EXPR>: Canonicalize
+	to compare against 0 when possible.
+
 2005-11-12  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.h (REGISTER_NAMES, SHORT_REGISTER_NAMES,
