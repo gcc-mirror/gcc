@@ -1,5 +1,22 @@
 2005-11-11  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/24808
+	* include/tr1/type_traits (__is_abstract_helper): Rename to __in_array
+	(with complemented logic).
+	(is_function): Use it, don't use __conv_helper.
+	(is_abstract): Adjust.
+	(__conv_helper): Rename to __is_convertible_simple.
+	(is_convertible): Adjust.
+	* testsuite/testsuite_tr1.h (class IncompleteClass): Add.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/is_object/
+	24808.cc: New.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/is_enum/
+	24808.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/is_function/
+	24808.cc: Likewise.
+
+2005-11-11  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/24799
 	* include/tr1/functional (hash): Inherit from std::unary_function.
 	* testsuite/tr1/6_containers/unordered/hash/24799.cc: New.
