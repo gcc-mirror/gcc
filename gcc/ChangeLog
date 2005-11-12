@@ -1,3 +1,8 @@
+2005-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.c (assign_stack_local_1): Restrict sanity check
+	on frame size overflow to 32-bit and above platforms.
+
 2005-11-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (LEGITIMIZE_RELOAD_ADDRESS): Define.

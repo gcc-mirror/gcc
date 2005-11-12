@@ -479,7 +479,8 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size, int align,
   function->x_stack_slot_list
     = gen_rtx_EXPR_LIST (VOIDmode, x, function->x_stack_slot_list);
 
-  /* Try to detect frame size overflows.  */
+  /* Try to detect frame size overflows on native platforms.  */
+#if BITS_PER_WORD >= 32
   if ((FRAME_GROWS_DOWNWARD
        ? (unsigned HOST_WIDE_INT) -function->x_frame_offset
        : (unsigned HOST_WIDE_INT) function->x_frame_offset)
@@ -491,6 +492,7 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size, int align,
       /* Avoid duplicate error messages as much as possible.  */
       function->x_frame_offset = 0;
     }
+#endif
 
   return x;
 }
