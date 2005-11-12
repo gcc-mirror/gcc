@@ -31,6 +31,7 @@ extern bool cris_simple_epilogue (void);
 #ifdef RTX_CODE
 extern const char *cris_op_str (rtx);
 extern void cris_notice_update_cc (rtx, rtx);
+extern bool cris_reload_address_legitimized (rtx, enum machine_mode, int, int, int);
 extern void cris_print_operand (FILE *, rtx, int);
 extern void cris_print_operand_address (FILE *, rtx);
 extern int cris_side_effect_mode_ok (enum rtx_code, rtx *, int, int,
