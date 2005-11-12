@@ -1,3 +1,9 @@
+2005-11-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-2.c: Fix outcome.
+	* gcc.dg/tree-ssa/loop-3.c: Change type of loop control
+	variable.
+
 2005-11-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	testsuite/24614

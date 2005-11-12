@@ -11,7 +11,7 @@ int foo(int);
 
 void xxx(void)
 {
-  int iter;
+  long iter;
 
   for (iter = 0; iter < 100; iter++)
     arr_base[iter] = foo (iter);

@@ -1,3 +1,8 @@
+2005-11-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (get_address_cost): Prevent splitting
+	addressing modes during calculation of costs.
+
 2005-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.c (assign_stack_local_1): Restrict sanity check

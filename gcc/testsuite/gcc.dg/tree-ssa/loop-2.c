@@ -34,9 +34,10 @@ void xxx(void)
 /* { dg-final { scan-tree-dump-times " \\+ 17" 1 "vars" } } */
 
 /* The induction variable comparison with 99 should be eliminated
-   and replaced by comparison of the variable for 17 * iter with 1700.  */
+   and replaced by comparison of one of the newly created ivs.  */
 
-/* { dg-final { scan-tree-dump-times "1700" 1 "vars" } } */
 /* { dg-final { scan-tree-dump-times "iter" 0 "vars" } } */
+/* { dg-final { scan-tree-dump-times "99" 0 "vars" } } */
+/* { dg-final { scan-tree-dump-times "100" 0 "vars" } } */
 
 /* { dg-final { cleanup-tree-dump "vars" } } */

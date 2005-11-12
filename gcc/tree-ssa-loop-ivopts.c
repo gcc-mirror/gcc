@@ -3384,6 +3384,7 @@ get_address_cost (bool symbol_present, bool var_present,
   acost = costs[symbol_present][var_present][offset_p][ratio_p];
   if (!acost)
     {
+      int old_cse_not_expected;
       acost = 0;
       
       addr = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
@@ -3412,7 +3413,12 @@ get_address_cost (bool symbol_present, bool var_present,
 	addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, base);
   
       start_sequence ();
+      /* To avoid splitting addressing modes, pretend that no cse will
+ 	 follow.  */
+      old_cse_not_expected = cse_not_expected;
+      cse_not_expected = true;
       addr = memory_address (Pmode, addr);
+      cse_not_expected = old_cse_not_expected;
       seq = get_insns ();
       end_sequence ();
   
