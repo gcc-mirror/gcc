@@ -1,3 +1,16 @@
+2005-11-12  Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/24699, 24700, 24719, 24785
+	* io/transfer.c (read_sf): Remove incorrect statement that was
+	clearing bytes_left.
+	(formatted_transfer_scalar): Add handling of end-of-record
+	condition, setting values correctly to backup.  Handle x format
+	when doing non-advancing write.
+	(st_read): Initialize current_record.
+
+	PR libgfortran/24584
+	* io/list_read.c (free_saved): Set saved_used to zero.
+	
 2005-11-12  Steven G. Kargl  <kargls@comcast.net>
 
 	PR libgfortran/24787

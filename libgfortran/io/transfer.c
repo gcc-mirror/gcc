@@ -209,7 +209,6 @@ read_sf (int *length)
 	      return NULL;
 	    }
 
-	  current_unit->bytes_left = 0;
 	  *length = n;
 	  sf_seen_eor = 1;
 	  break;
@@ -245,10 +244,6 @@ read_block (int *length)
   char *source;
   int nread;
 
-  if (current_unit->flags.form == FORM_FORMATTED &&
-      current_unit->flags.access == ACCESS_SEQUENTIAL)
-    return read_sf (length);	/* Special case.  */
-
   if (current_unit->bytes_left < *length)
     {
       if (current_unit->flags.pad == PAD_NO)
@@ -259,6 +254,10 @@ read_block (int *length)
 
       *length = current_unit->bytes_left;
     }
+
+  if (current_unit->flags.form == FORM_FORMATTED &&
+      current_unit->flags.access == ACCESS_SEQUENTIAL)
+    return read_sf (length);	/* Special case.  */
 
   current_unit->bytes_left -= *length;
 
@@ -293,7 +292,7 @@ write_block (int length)
 {
   char *dest;
 
-  if (!is_internal_unit() && current_unit->bytes_left < length)
+  if (current_unit->bytes_left < length)
     {
       generate_error (ERROR_EOR, NULL);
       return NULL;
@@ -702,8 +701,15 @@ formatted_transfer (bt type, void *p, int len)
 	  skips = f->u.n + skips;
 	  pending_spaces = pos - max_pos;
 
-	  /* Writes occur just before the switch on f->format, above, so that
-	     trailing blanks are suppressed.  */
+	  /* Writes occur just before the switch on f->format, above, so
+	     that trailing blanks are suppressed, unless we are doing a
+	     non-advancing write in which case we want to output the blanks
+	     now.  */
+	  if (g.mode == WRITING && advance_status == ADVANCE_NO)
+	    {
+	      write_x (skips, pending_spaces);
+	      skips = pending_spaces = 0;
+	    }
 	  if (g.mode == READING)
 	    read_x (f->u.n);
 
@@ -735,17 +741,24 @@ formatted_transfer (bt type, void *p, int len)
 	     trailing blanks are suppressed.  */
 	  if (g.mode == READING)
 	    {
-	      if (skips > 0)
-		read_x (skips);
+	      /* Adjust everything for end-of-record condition */
+	      if (sf_seen_eor && !is_internal_unit())
+		{
+		  current_unit->bytes_left--;
+		  bytes_used = pos;
+		  sf_seen_eor = 0;
+		  skips--;
+		}
 	      if (skips < 0)
 		{
 		  move_pos_offset (current_unit->s, skips);
-		  current_unit->bytes_left -= skips;
+		  current_unit->bytes_left -= (gfc_offset)skips;
 		  skips = pending_spaces = 0;
 		}
+	      else
+		read_x (skips);
 	    }
-
-	break;
+	  break;
 
 	case FMT_S:
 	  consume_data_flag = 0 ;
@@ -1644,11 +1657,13 @@ st_read (void)
 	  {
 	    generate_error (ERROR_END, NULL);
 	    current_unit->endfile = AFTER_ENDFILE;
+	    current_unit->current_record = 0;
 	  }
 	break;
 
       case AFTER_ENDFILE:
 	generate_error (ERROR_ENDFILE, NULL);
+	current_unit->current_record = 0;
 	break;
       }
 }
