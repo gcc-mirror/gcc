@@ -796,9 +796,22 @@ move_invariant_reg (struct loop *loop, unsigned invno, struct df *df)
   reg = gen_reg_rtx (GET_MODE (SET_DEST (set)));
   df_pattern_emit_after (df, gen_move_insn (SET_DEST (set), reg),
 			 BLOCK_FOR_INSN (inv->insn), inv->insn);
-  df_pattern_emit_after (df, gen_move_insn (reg, SET_SRC (set)),
-			 preheader, BB_END (preheader));
-  df_insn_delete (df, BLOCK_FOR_INSN (inv->insn), inv->insn);
+
+  /* If the SET_DEST of the invariant insn is a reg, we can just move
+     the insn out of the loop.  Otherwise, we have to use gen_move_insn
+     to let emit_move_insn produce a valid instruction stream.  */
+  if (REG_P (SET_DEST (set)))
+    {
+      SET_DEST (set) = reg;
+      reorder_insns (inv->insn, inv->insn, BB_END (preheader));
+      df_insn_modify (df, preheader, inv->insn);
+    }
+  else
+    {
+      df_pattern_emit_after (df, gen_move_insn (reg, SET_SRC (set)),
+			     preheader, BB_END (preheader));
+      df_insn_delete (df, BLOCK_FOR_INSN (inv->insn), inv->insn);
+    }
 
   /* Replace the uses we know to be dominated.  It saves work for copy
      propagation, and also it is necessary so that dependent invariants

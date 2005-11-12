@@ -1,3 +1,8 @@
+2005-11-11  Steven Bosscher  <stevenb@suse.de>
+
+	* loop-invariant.c (move_loop_invariants): Fix a thinko in the
+	previous checkin.
+
 2005-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* tree-ssa-dse.c (struct address_walk_data, memory_ssa_name_same)
