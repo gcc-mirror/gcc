@@ -1,3 +1,19 @@
+2005-11-13  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/tr1/boost_shared_ptr.h (get_deleter):
+	Declare before shared_ptr.
+	(shared_ptr<>): Declare get_deleter as friend.
+	(shared_ptr<>:_M_get_deleter): Private.
+
+2005-11-13  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR libstdc++/24818
+	* include/tr1/ref_wrap_iterate.h
+	(reference_wrapper::operator()()): Don't dereferene the result of
+	get() before calling it; it's already a reference.
+	* testsuite/tr1/3_function_objects/reference_wrapper/invoke.cc:
+	Test nullary calls to reference_wrappers.
+
 2005-11-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24808
