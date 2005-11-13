@@ -1,3 +1,8 @@
+2005-11-13  Razya Ladelsky <razya@il.ibm.com>
+
+        * ipa-prop.c (ipa_callsite_compute_param ): Removed obsolete type 
+	checking.
+
 2005-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/22489
