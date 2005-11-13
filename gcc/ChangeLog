@@ -1,3 +1,8 @@
+2005-11-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gthr-posix95.h: Remove declaration of pthread_mutexattr_settype
+	and duplicate declaration of pthread_self.
+
 2005-11-13  Eric Botcazou  <ebotcazou@adacore.com>
             Ian Lance Taylor  <ian@airs.com>
 
