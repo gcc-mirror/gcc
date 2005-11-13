@@ -1,3 +1,12 @@
+2005-11-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/22489
+	* dwarf2out.c (gen_subprogram_die): Force a declaration die for
+	lazily declared methods.
+	(force_decl_die): Stop if forcing out the context already make a
+	DIE for the decl.
+	(force_type_die): Likewise.
+
 2005-11-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24820
