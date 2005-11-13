@@ -80,7 +80,6 @@ __gthrw(pthread_mutex_lock);
 __gthrw(pthread_mutex_trylock);
 __gthrw(pthread_mutex_unlock);
 __gthrw(pthread_mutexattr_init);
-__gthrw(pthread_mutexattr_settype);
 __gthrw(pthread_mutexattr_destroy);
 
 __gthrw(pthread_mutex_init);
@@ -94,7 +93,6 @@ __gthrw(pthread_cond_signal);
 __gthrw(pthread_cond_wait);
 __gthrw(pthread_exit);
 __gthrw(pthread_mutex_destroy);
-__gthrw(pthread_self);
 #ifdef _POSIX_PRIORITY_SCHEDULING
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
 __gthrw(sched_get_priority_max);
