@@ -167,16 +167,16 @@ am__objects_32 = close.lo file_pos.lo format.lo inquire.lo \
 am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	c99_functions.lo chdir.lo cpu_time.lo cshift0.lo ctime.lo \
 	date_and_time.lo env.lo erf.lo eoshift0.lo eoshift2.lo \
-	etime.lo exit.lo flush.lo fnum.lo gerror.lo getcwd.lo \
-	getlog.lo getXid.lo hyper.lo hostnm.lo kill.lo ierrno.lo \
-	ishftc.lo link.lo malloc.lo mvbits.lo pack_generic.lo \
-	perror.lo signal.lo size.lo sleep.lo spread_generic.lo \
-	string_intrinsics.lo system.lo rand.lo random.lo rename.lo \
-	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
-	selected_real_kind.lo stat.lo symlnk.lo system_clock.lo \
-	time.lo transpose_generic.lo tty.lo umask.lo unlink.lo \
-	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
-	normalize.lo
+	etime.lo exit.lo fget.lo flush.lo fnum.lo ftell.lo gerror.lo \
+	getcwd.lo getlog.lo getXid.lo hyper.lo hostnm.lo kill.lo \
+	ierrno.lo ishftc.lo link.lo malloc.lo mvbits.lo \
+	pack_generic.lo perror.lo signal.lo size.lo sleep.lo \
+	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
+	random.lo rename.lo reshape_generic.lo reshape_packed.lo \
+	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
+	system_clock.lo time.lo transpose_generic.lo tty.lo umask.lo \
+	unlink.lo unpack_generic.lo in_pack_generic.lo \
+	in_unpack_generic.lo normalize.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
@@ -394,8 +394,10 @@ intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
 intrinsics/exit.c \
+intrinsics/fget.c \
 intrinsics/flush.c \
 intrinsics/fnum.c \
+intrinsics/ftell.c \
 intrinsics/gerror.c \
 intrinsics/getcwd.c \
 intrinsics/getlog.c \
@@ -2264,11 +2266,17 @@ etime.lo: intrinsics/etime.c
 exit.lo: intrinsics/exit.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exit.lo `test -f 'intrinsics/exit.c' || echo '$(srcdir)/'`intrinsics/exit.c
 
+fget.lo: intrinsics/fget.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fget.lo `test -f 'intrinsics/fget.c' || echo '$(srcdir)/'`intrinsics/fget.c
+
 flush.lo: intrinsics/flush.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush.lo `test -f 'intrinsics/flush.c' || echo '$(srcdir)/'`intrinsics/flush.c
 
 fnum.lo: intrinsics/fnum.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fnum.lo `test -f 'intrinsics/fnum.c' || echo '$(srcdir)/'`intrinsics/fnum.c
+
+ftell.lo: intrinsics/ftell.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ftell.lo `test -f 'intrinsics/ftell.c' || echo '$(srcdir)/'`intrinsics/ftell.c
 
 gerror.lo: intrinsics/gerror.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gerror.lo `test -f 'intrinsics/gerror.c' || echo '$(srcdir)/'`intrinsics/gerror.c

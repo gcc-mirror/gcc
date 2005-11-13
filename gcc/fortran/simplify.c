@@ -450,6 +450,31 @@ gfc_simplify_anint (gfc_expr * e, gfc_expr * k)
 
 
 gfc_expr *
+gfc_simplify_and (gfc_expr * x, gfc_expr * y)
+{
+  gfc_expr *result;
+  int kind;
+
+  if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  kind = x->ts.kind > y->ts.kind ? x->ts.kind : y->ts.kind;
+  if (x->ts.type == BT_INTEGER)
+    {
+      result = gfc_constant_result (BT_INTEGER, kind, &x->where);
+      mpz_and (result->value.integer, x->value.integer, y->value.integer);
+    }
+  else /* BT_LOGICAL */
+    {
+      result = gfc_constant_result (BT_LOGICAL, kind, &x->where);
+      result->value.logical = x->value.logical && y->value.logical;
+    }
+
+  return range_check (result, "AND");
+}
+
+
+gfc_expr *
 gfc_simplify_dnint (gfc_expr * e)
 {
   gfc_expr *result;
@@ -720,6 +745,34 @@ gfc_simplify_cmplx (gfc_expr * x, gfc_expr * y, gfc_expr * k)
     return &gfc_bad_expr;
 
   return simplify_cmplx ("CMPLX", x, y, kind);
+}
+
+
+gfc_expr *
+gfc_simplify_complex (gfc_expr * x, gfc_expr * y)
+{
+  int kind;
+
+  if (x->expr_type != EXPR_CONSTANT
+      || (y != NULL && y->expr_type != EXPR_CONSTANT))
+    return NULL;
+
+  if (x->ts.type == BT_INTEGER)
+    {
+      if (y->ts.type == BT_INTEGER)
+	kind = gfc_default_real_kind;
+      else
+	kind = y->ts.kind;
+    }
+  else
+    {
+      if (y->ts.type == BT_REAL)
+	kind = (x->ts.kind > y->ts.kind) ? x->ts.kind : y->ts.kind;
+      else
+	kind = x->ts.kind;
+    }
+
+  return simplify_cmplx ("COMPLEX", x, y, kind);
 }
 
 
@@ -2480,6 +2533,31 @@ gfc_simplify_null (gfc_expr * mold)
 
 
 gfc_expr *
+gfc_simplify_or (gfc_expr * x, gfc_expr * y)
+{
+  gfc_expr *result;
+  int kind;
+
+  if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  kind = x->ts.kind > y->ts.kind ? x->ts.kind : y->ts.kind;
+  if (x->ts.type == BT_INTEGER)
+    {
+      result = gfc_constant_result (BT_INTEGER, kind, &x->where);
+      mpz_ior (result->value.integer, x->value.integer, y->value.integer);
+    }
+  else /* BT_LOGICAL */
+    {
+      result = gfc_constant_result (BT_LOGICAL, kind, &x->where);
+      result->value.logical = x->value.logical || y->value.logical;
+    }
+
+  return range_check (result, "OR");
+}
+
+
+gfc_expr *
 gfc_simplify_precision (gfc_expr * e)
 {
   gfc_expr *result;
@@ -3705,6 +3783,34 @@ gfc_simplify_verify (gfc_expr * s, gfc_expr * set, gfc_expr * b)
   mpz_set_ui (result->value.integer, index);
   return result;
 }
+
+
+gfc_expr *
+gfc_simplify_xor (gfc_expr * x, gfc_expr * y)
+{
+  gfc_expr *result;
+  int kind;
+
+  if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  kind = x->ts.kind > y->ts.kind ? x->ts.kind : y->ts.kind;
+  if (x->ts.type == BT_INTEGER)
+    {
+      result = gfc_constant_result (BT_INTEGER, kind, &x->where);
+      mpz_xor (result->value.integer, x->value.integer, y->value.integer);
+    }
+  else /* BT_LOGICAL */
+    {
+      result = gfc_constant_result (BT_LOGICAL, kind, &x->where);
+      result->value.logical = (x->value.logical && ! y->value.logical)
+			      || (! x->value.logical && y->value.logical);
+    }
+
+  return range_check (result, "XOR");
+}
+
+
 
 /****************** Constant simplification *****************/
 
