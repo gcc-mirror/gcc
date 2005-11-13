@@ -1,3 +1,8 @@
+2005-11-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/24820
+	* testsuite/gcc.dg/pr24820.c: New test.
+
 2005-11-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/loop-2.c: Fix outcome.
