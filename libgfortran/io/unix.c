@@ -1640,6 +1640,12 @@ stream_ttyname (stream *s)
 #endif
 }
 
+gfc_offset
+stream_offset (stream *s)
+{
+  return (((unix_stream *) s)->logical_offset);
+}
+
 
 /* How files are stored:  This is an operating-system specific issue,
    and therefore belongs here.  There are three cases to consider.

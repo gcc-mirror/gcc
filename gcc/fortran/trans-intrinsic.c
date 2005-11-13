@@ -2983,6 +2983,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_aint (se, expr, FIX_ROUND_EXPR);
       break;
 
+    case GFC_ISYM_AND:
+      gfc_conv_intrinsic_bitop (se, expr, BIT_AND_EXPR);
+      break;
+
     case GFC_ISYM_ANY:
       gfc_conv_intrinsic_anyall (se, expr, NE_EXPR);
       break;
@@ -3035,6 +3039,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_COMMAND_ARGUMENT_COUNT:
       gfc_conv_intrinsic_iargc (se, expr);
+      break;
+
+    case GFC_ISYM_COMPLEX:
+      gfc_conv_intrinsic_cmplx (se, expr, 1);
       break;
 
     case GFC_ISYM_CONJG:
@@ -3167,6 +3175,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_not (se, expr);
       break;
 
+    case GFC_ISYM_OR:
+      gfc_conv_intrinsic_bitop (se, expr, BIT_IOR_EXPR);
+      break;
+
     case GFC_ISYM_PRESENT:
       gfc_conv_intrinsic_present (se, expr);
       break;
@@ -3199,6 +3211,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_bound (se, expr, 1);
       break;
 
+    case GFC_ISYM_XOR:
+      gfc_conv_intrinsic_bitop (se, expr, BIT_XOR_EXPR);
+      break;
+
     case GFC_ISYM_LOC:
       gfc_conv_intrinsic_loc (se, expr);
       break;
@@ -3206,8 +3222,13 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_CHDIR:
     case GFC_ISYM_DOT_PRODUCT:
     case GFC_ISYM_ETIME:
+    case GFC_ISYM_FGET:
+    case GFC_ISYM_FGETC:
     case GFC_ISYM_FNUM:
+    case GFC_ISYM_FPUT:
+    case GFC_ISYM_FPUTC:
     case GFC_ISYM_FSTAT:
+    case GFC_ISYM_FTELL:
     case GFC_ISYM_GETCWD:
     case GFC_ISYM_GETGID:
     case GFC_ISYM_GETPID:

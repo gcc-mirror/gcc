@@ -1,3 +1,15 @@
+2005-11-13  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/complex_intrinsic_1.f90: New test.
+	* gfortran.dg/complex_intrinsic_2.f90: New test.
+	* gfortran.dg/fgetc_1.f90: New test.
+	* gfortran.dg/fgetc_2.f90: New test.
+	* gfortran.dg/fgetc_3.f90: New test.
+	* gfortran.dg/ftell_1.f90: New test.
+	* gfortran.dg/ftell_2.f90: New test.
+	* gfortran.dg/gnu_logical_1.F: New test.
+	* gfortran.dg/gnu_logical_2.f90: New test.
+
 2005-11-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24820
