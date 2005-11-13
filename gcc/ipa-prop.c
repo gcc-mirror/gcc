@@ -431,7 +431,7 @@ void
 ipa_callsite_compute_param (struct cgraph_edge *cs)
 {
   tree call_tree;
-  tree arg, cst_decl, arg_type, formal_type;
+  tree arg, cst_decl;
   int arg_num;
   int i;
   struct cgraph_node *mt;
@@ -457,18 +457,8 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
 	    ipa_callsite_param_set_type (cs, arg_num, UNKNOWN_IPATYPE);
 	  else
 	    {
-		arg_type = TREE_TYPE (TREE_VALUE (arg));
-	  	formal_type = TREE_TYPE (ipa_method_get_tree (cs->callee, arg_num));
-	  	if (TYPE_NAME (arg_type) == TYPE_NAME (formal_type)
-		    && TYPE_CONTEXT (arg_type) == TYPE_CONTEXT (formal_type)
-		    && attribute_list_equal (TYPE_ATTRIBUTES (arg_type),
-					     TYPE_ATTRIBUTES (formal_type)))
-		  {
-		    ipa_callsite_param_set_type (cs, arg_num, FORMAL_IPATYPE);
-		    ipa_callsite_param_set_info_type_formal (cs, arg_num, i);
-		  }
-	 	else
-		  ipa_callsite_param_set_type (cs, arg_num, UNKNOWN_IPATYPE);
+	      ipa_callsite_param_set_type (cs, arg_num, FORMAL_IPATYPE);
+	      ipa_callsite_param_set_info_type_formal (cs, arg_num, i);
 	    }
 	}
       /* If a constant value was passed as argument, 
@@ -477,18 +467,9 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
       else if (TREE_CODE (TREE_VALUE (arg)) == INTEGER_CST
 	       || TREE_CODE (TREE_VALUE (arg)) == REAL_CST)
 	{
-	  arg_type = TREE_TYPE (TREE_VALUE (arg));
-	  formal_type = TREE_TYPE (ipa_method_get_tree (cs->callee, arg_num));
-	  if (TYPE_NAME (arg_type) == TYPE_NAME (formal_type)
-	      && TYPE_CONTEXT (arg_type) == TYPE_CONTEXT (formal_type)
-	      && attribute_list_equal (TYPE_ATTRIBUTES (arg_type),
-				       TYPE_ATTRIBUTES (formal_type)))
-	    {
-	      ipa_callsite_param_set_type (cs, arg_num, CONST_IPATYPE);
-	      ipa_callsite_param_set_info_type (cs, arg_num, TREE_VALUE (arg));
-	    }
-	  else
-	    ipa_callsite_param_set_type (cs, arg_num, UNKNOWN_IPATYPE);
+	  ipa_callsite_param_set_type (cs, arg_num, CONST_IPATYPE);
+	  ipa_callsite_param_set_info_type (cs, arg_num,
+					    TREE_VALUE (arg));
 	}
       /* This is for the case of Fortran. If the address of a const_decl 
          was passed as argument then we store 
@@ -499,25 +480,13 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
 	       CONST_DECL)
 	{
 	  cst_decl = TREE_OPERAND (TREE_VALUE (arg), 0);
-	  arg_type = TREE_TYPE (DECL_INITIAL (cst_decl));
-	  formal_type =
-	    TREE_TYPE (TREE_TYPE (ipa_method_get_tree (cs->callee, arg_num)));
 	  if (TREE_CODE (DECL_INITIAL (cst_decl)) == INTEGER_CST
 	      || TREE_CODE (DECL_INITIAL (cst_decl)) == REAL_CST)
 	    {
-	      if (TYPE_NAME (arg_type) == TYPE_NAME (formal_type)
-		  && TYPE_CONTEXT (arg_type) == TYPE_CONTEXT (formal_type)
-		  && attribute_list_equal (TYPE_ATTRIBUTES (arg_type),
-					   TYPE_ATTRIBUTES (formal_type)))
-
-		{
-		  ipa_callsite_param_set_type (cs, arg_num,
-					       CONST_IPATYPE_REF);
-		  ipa_callsite_param_set_info_type (cs, arg_num, DECL_INITIAL (cst_decl));
-
-		}
-	      else
-		ipa_callsite_param_set_type (cs, arg_num, UNKNOWN_IPATYPE);
+	      ipa_callsite_param_set_type (cs, arg_num,
+					   CONST_IPATYPE_REF);
+	      ipa_callsite_param_set_info_type (cs, arg_num,
+						DECL_INITIAL (cst_decl));
 	    }
 	}
       else
