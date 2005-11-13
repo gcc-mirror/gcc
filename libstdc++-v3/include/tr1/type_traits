@@ -321,7 +321,7 @@ namespace tr1
         : public _Up
 	{ 
 	  virtual void __dummy();
-	  virtual ~__second();
+	  virtual ~__second() throw();
 	};
 
     public:

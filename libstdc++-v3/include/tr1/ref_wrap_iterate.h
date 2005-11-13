@@ -40,5 +40,5 @@ template<_GLIBCXX_TEMPLATE_PARAMS>
 #else
 typename result_of<_M_func_type()>::type
 operator()() const
-{ return (*get())(); }
+{ return get()(); }
 #endif
