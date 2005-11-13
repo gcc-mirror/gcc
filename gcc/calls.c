@@ -2857,6 +2857,8 @@ expand_call (tree exp, rtx target, int ignore)
 	       && GET_MODE (target) == TYPE_MODE (TREE_TYPE (exp))
 	       && GET_MODE (target) == GET_MODE (valreg))
 	{
+	  bool may_overlap = false;
+
 	  /* We have to copy a return value in a CLASS_LIKELY_SPILLED hard
 	     reg to a plain register.  */
 	  if (REG_P (valreg)
@@ -2865,19 +2867,40 @@ expand_call (tree exp, rtx target, int ignore)
 	      && !(REG_P (target) && !HARD_REGISTER_P (target)))
 	    valreg = copy_to_reg (valreg);
 
-	  /* TARGET and VALREG cannot be equal at this point because the
-	     latter would not have REG_FUNCTION_VALUE_P true, while the
-	     former would if it were referring to the same register.
+	  /* If TARGET is a MEM in the argument area, and we have
+	     saved part of the argument area, then we can't store
+	     directly into TARGET as it may get overwritten when we
+	     restore the argument save area below.  Don't work too
+	     hard though and simply force TARGET to a register if it
+	     is a MEM; the optimizer is quite likely to sort it out.  */
+	  if (ACCUMULATE_OUTGOING_ARGS && pass && MEM_P (target))
+	    for (i = 0; i < num_actuals; i++)
+	      if (args[i].save_area)
+		{
+		  may_overlap = true;
+		  break;
+		}
 
-	     If they refer to the same register, this move will be a no-op,
-	     except when function inlining is being done.  */
-	  emit_move_insn (target, valreg);
+	  if (may_overlap)
+	    target = copy_to_reg (valreg);
+	  else
+	    {
+	      /* TARGET and VALREG cannot be equal at this point
+		 because the latter would not have
+		 REG_FUNCTION_VALUE_P true, while the former would if
+		 it were referring to the same register.
 
-	  /* If we are setting a MEM, this code must be executed.  Since it is
-	     emitted after the call insn, sibcall optimization cannot be
-	     performed in that case.  */
-	  if (MEM_P (target))
-	    sibcall_failure = 1;
+		 If they refer to the same register, this move will be
+		 a no-op, except when function inlining is being
+		 done.  */
+	      emit_move_insn (target, valreg);
+
+	      /* If we are setting a MEM, this code must be executed.
+		 Since it is emitted after the call insn, sibcall
+		 optimization cannot be performed in that case.  */
+	      if (MEM_P (target))
+		sibcall_failure = 1;
+	    }
 	}
       else if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
 	{
