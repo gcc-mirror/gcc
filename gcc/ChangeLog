@@ -1,3 +1,9 @@
+2005-11-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/24820
+	* builtins.c (integer_valued_real_p): Add break in
+	REAL_CST having TREE_OVERFLOW set.
+
 2005-11-12  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.h (REGISTER_NAMES, SHORT_REGISTER_NAMES,
