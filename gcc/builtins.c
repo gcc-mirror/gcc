@@ -6704,6 +6704,7 @@ integer_valued_real_p (tree t)
 	real_trunc (&cint, TYPE_MODE (TREE_TYPE (t)), &c);
 	return real_identical (&c, &cint);
       }
+      break;
 
     case NOP_EXPR:
       {
