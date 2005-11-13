@@ -3265,20 +3265,18 @@ store_reg (int reg, HOST_WIDE_INT disp, int base)
       rtx tmpreg = gen_rtx_REG (Pmode, 1);
 
       emit_move_insn (tmpreg, delta);
-      emit_move_insn (tmpreg, gen_rtx_PLUS (Pmode, tmpreg, basereg));
-      dest = gen_rtx_MEM (word_mode, tmpreg);
-      insn = emit_move_insn (dest, src);
+      insn = emit_move_insn (tmpreg, gen_rtx_PLUS (Pmode, tmpreg, basereg));
       if (DO_FRAME_NOTES)
 	{
 	  REG_NOTES (insn)
 	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-		gen_rtx_SET (VOIDmode,
-			     gen_rtx_MEM (word_mode,
-					  gen_rtx_PLUS (word_mode, basereg,
-							delta)),
-                             src),
+		gen_rtx_SET (VOIDmode, tmpreg,
+			     gen_rtx_PLUS (Pmode, basereg, delta)),
                 REG_NOTES (insn));
+	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
+      dest = gen_rtx_MEM (word_mode, tmpreg);
+      insn = emit_move_insn (dest, src);
     }
   else
     {
@@ -3358,6 +3356,12 @@ set_reg_plus_d (int reg, int base, HOST_WIDE_INT disp, int note)
       emit_move_insn (tmpreg, delta);
       insn = emit_move_insn (gen_rtx_REG (Pmode, reg),
 			     gen_rtx_PLUS (Pmode, tmpreg, basereg));
+      if (DO_FRAME_NOTES)
+	REG_NOTES (insn)
+	  = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+	      gen_rtx_SET (VOIDmode, tmpreg,
+			   gen_rtx_PLUS (Pmode, basereg, delta)),
+	      REG_NOTES (insn));
     }
   else
     {
