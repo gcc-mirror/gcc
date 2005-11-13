@@ -1,3 +1,9 @@
+2005-11-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/24709
+	* tree-ssa-operands.c (verify_imm_links): Increase limit for infinite
+	loop check.
+
 2005-11-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gthr-posix95.h: Remove declaration of pthread_mutexattr_settype

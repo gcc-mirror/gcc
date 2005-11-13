@@ -2012,8 +2012,8 @@ verify_imm_links (FILE *f, tree var)
 
       prev = ptr;
       ptr = ptr->next;
-      /* Avoid infinite loops.  */
-      if (count++ > 30000)
+      /* Avoid infinite loops.  50,000,000 uses probably indicates a problem.  */
+      if (count++ > 50000000)
 	goto error;
     }
 
