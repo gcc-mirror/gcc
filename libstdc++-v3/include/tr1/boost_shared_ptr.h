@@ -422,6 +422,9 @@ shared_count::shared_count(const weak_count& __r)
 
 // fwd decls
 template<typename _Tp>
+  class shared_ptr;
+
+template<typename _Tp>
   class weak_ptr;
 
 template<typename _Tp>
@@ -466,6 +469,11 @@ inline void
 __enable_shared_from_this(const shared_count&, ...)
 { }
 
+
+// get_deleter must be declared before friend declaration by shared_ptr.
+template<typename _Del, typename _Tp>
+  _Del* get_deleter(const shared_ptr<_Tp>&);
+
 /**
  *  @class shared_ptr <tr1/memory>
  *
@@ -473,7 +481,6 @@ __enable_shared_from_this(const shared_count&, ...)
  *  The object pointed to is deleted when the last shared_ptr pointing to it
  *  is destroyed or reset.
  */
-
 template<typename _Tp>
   class shared_ptr
   {
@@ -672,11 +679,11 @@ template<typename _Tp>
       _M_refcount.swap(__other._M_refcount);
     }
 
+  private:
     void*
     _M_get_deleter(const std::type_info& __ti) const
     { return _M_refcount.get_deleter(__ti); }
 
-  private:
     template<typename _Tp1>
       bool
       _M_less(const shared_ptr<_Tp1>& __rhs) const
@@ -684,6 +691,9 @@ template<typename _Tp>
 
     template<typename _Tp1> friend class shared_ptr;
     template<typename _Tp1> friend class weak_ptr;
+
+    template<typename _Del, typename _Tp1>
+      friend _Del* get_deleter(const shared_ptr<_Tp1>&);
 
     // friends injected into enclosing namespace and found by ADL:
     template<typename _Tp1>
