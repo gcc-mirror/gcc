@@ -1,3 +1,10 @@
+2005-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+            Ian Lance Taylor  <ian@airs.com>
+
+	PR middle-end/24003
+	* calls.c (expand_call): If TARGET is a MEM and some part of the
+	argument area has been saved, force TARGET to a register.
+
 2005-11-13  Razya Ladelsky <razya@il.ibm.com>
 
         * ipa-prop.c (ipa_callsite_compute_param ): Removed obsolete type 
