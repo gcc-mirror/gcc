@@ -94,6 +94,26 @@ gfc_resolve_aimag (gfc_expr * f, gfc_expr * x)
 
 
 void
+gfc_resolve_and (gfc_expr * f, gfc_expr * i, gfc_expr * j)
+{
+  f->ts.type = i->ts.type;
+  f->ts.kind = gfc_kind_max (i,j);
+
+  if (i->ts.kind != j->ts.kind)
+    {
+      if (i->ts.kind == gfc_kind_max (i,j))
+	gfc_convert_type(j, &i->ts, 2);
+      else
+	gfc_convert_type(i, &j->ts, 2);
+    }
+
+  f->value.function.name = gfc_get_string ("__and_%c%d",
+					   gfc_type_letter (i->ts.type),
+					   f->ts.kind);
+}
+
+
+void
 gfc_resolve_aint (gfc_expr * f, gfc_expr * a, gfc_expr * kind)
 {
   gfc_typespec ts;
@@ -317,6 +337,36 @@ gfc_resolve_dcmplx (gfc_expr * f, gfc_expr * x, gfc_expr * y)
 {
   gfc_resolve_cmplx (f, x, y, gfc_int_expr (gfc_default_double_kind));
 }
+
+void
+gfc_resolve_complex (gfc_expr * f, gfc_expr * x, gfc_expr * y)
+{
+  int kind;
+
+  if (x->ts.type == BT_INTEGER)
+    {
+      if (y->ts.type == BT_INTEGER)
+	kind = gfc_default_real_kind;
+      else
+	kind = y->ts.kind;
+    }
+  else
+    {
+      if (y->ts.type == BT_REAL)
+	kind = (x->ts.kind > y->ts.kind) ? x->ts.kind : y->ts.kind;
+      else
+	kind = x->ts.kind;
+    }
+
+  f->ts.type = BT_COMPLEX;
+  f->ts.kind = kind;
+
+  f->value.function.name =
+    gfc_get_string ("__cmplx1_%d_%c%d_%c%d", f->ts.kind,
+		    gfc_type_letter (x->ts.type), x->ts.kind,
+		    gfc_type_letter (y->ts.type), y->ts.kind);
+}
+
 
 void
 gfc_resolve_conjg (gfc_expr * f, gfc_expr * x)
@@ -1108,6 +1158,26 @@ gfc_resolve_not (gfc_expr * f, gfc_expr * i)
 
 
 void
+gfc_resolve_or (gfc_expr * f, gfc_expr * i, gfc_expr * j)
+{
+  f->ts.type = i->ts.type;
+  f->ts.kind = gfc_kind_max (i,j);
+
+  if (i->ts.kind != j->ts.kind)
+    {
+      if (i->ts.kind == gfc_kind_max (i,j))
+	gfc_convert_type(j, &i->ts, 2);
+      else
+	gfc_convert_type(i, &j->ts, 2);
+    }
+
+  f->value.function.name = gfc_get_string ("__or_%c%d",
+					   gfc_type_letter (i->ts.type),
+					   f->ts.kind);
+}
+
+
+void
 gfc_resolve_pack (gfc_expr * f,
                   gfc_expr * array ATTRIBUTE_UNUSED,
 		  gfc_expr * mask,
@@ -1437,6 +1507,84 @@ gfc_resolve_fstat (gfc_expr * f, gfc_expr * n, gfc_expr * a ATTRIBUTE_UNUSED)
 
 
 void
+gfc_resolve_fgetc (gfc_expr * f, gfc_expr * u, gfc_expr * c ATTRIBUTE_UNUSED)
+{
+  gfc_typespec ts;
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_c_int_kind;
+  if (u->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (u, &ts, 2);
+    }
+
+  f->value.function.name = gfc_get_string (PREFIX("fgetc"));
+}
+
+
+void
+gfc_resolve_fget (gfc_expr * f, gfc_expr * c ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_c_int_kind;
+  f->value.function.name = gfc_get_string (PREFIX("fget"));
+}
+
+
+void
+gfc_resolve_fputc (gfc_expr * f, gfc_expr * u, gfc_expr * c ATTRIBUTE_UNUSED)
+{
+  gfc_typespec ts;
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_c_int_kind;
+  if (u->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (u, &ts, 2);
+    }
+
+  f->value.function.name = gfc_get_string (PREFIX("fputc"));
+}
+
+
+void
+gfc_resolve_fput (gfc_expr * f, gfc_expr * c ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_c_int_kind;
+  f->value.function.name = gfc_get_string (PREFIX("fput"));
+}
+
+
+void
+gfc_resolve_ftell (gfc_expr * f, gfc_expr * u)
+{
+  gfc_typespec ts;
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_index_integer_kind;
+  if (u->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (u, &ts, 2);
+    }
+
+  f->value.function.name = gfc_get_string (PREFIX("ftell"));
+}
+
+
+void
 gfc_resolve_sum (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		 gfc_expr * mask)
 {
@@ -1674,6 +1822,26 @@ gfc_resolve_verify (gfc_expr * f, gfc_expr * string,
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = gfc_get_string ("__verify_%d", string->ts.kind);
+}
+
+
+void
+gfc_resolve_xor (gfc_expr * f, gfc_expr * i, gfc_expr * j)
+{
+  f->ts.type = i->ts.type;
+  f->ts.kind = gfc_kind_max (i,j);
+
+  if (i->ts.kind != j->ts.kind)
+    {
+      if (i->ts.kind == gfc_kind_max (i,j))
+	gfc_convert_type(j, &i->ts, 2);
+      else
+	gfc_convert_type(i, &j->ts, 2);
+    }
+
+  f->value.function.name = gfc_get_string ("__xor_%c%d",
+					   gfc_type_letter (i->ts.type),
+					   f->ts.kind);
 }
 
 
@@ -2061,6 +2229,119 @@ gfc_resolve_fstat_sub (gfc_code * c)
   if (u->ts.kind != ts->kind)
     gfc_convert_type (u, ts, 2);
   name = gfc_get_string (PREFIX("fstat_i%d_sub"), ts->kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_fgetc_sub (gfc_code * c)
+{
+  const char *name;
+  gfc_typespec ts;
+  gfc_expr *u, *st;
+
+  u = c->ext.actual->expr;
+  st = c->ext.actual->next->next->expr;
+
+  if (u->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (u, &ts, 2);
+    }
+
+  if (st != NULL)
+    name = gfc_get_string (PREFIX("fgetc_i%d_sub"), st->ts.kind);
+  else
+    name = gfc_get_string (PREFIX("fgetc_i%d_sub"), gfc_default_integer_kind);
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_fget_sub (gfc_code * c)
+{
+  const char *name;
+  gfc_expr *st;
+
+  st = c->ext.actual->next->expr;
+  if (st != NULL)
+    name = gfc_get_string (PREFIX("fget_i%d_sub"), st->ts.kind);
+  else
+    name = gfc_get_string (PREFIX("fget_i%d_sub"), gfc_default_integer_kind);
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_fputc_sub (gfc_code * c)
+{
+  const char *name;
+  gfc_typespec ts;
+  gfc_expr *u, *st;
+
+  u = c->ext.actual->expr;
+  st = c->ext.actual->next->next->expr;
+
+  if (u->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (u, &ts, 2);
+    }
+
+  if (st != NULL)
+    name = gfc_get_string (PREFIX("fputc_i%d_sub"), st->ts.kind);
+  else
+    name = gfc_get_string (PREFIX("fputc_i%d_sub"), gfc_default_integer_kind);
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_fput_sub (gfc_code * c)
+{
+  const char *name;
+  gfc_expr *st;
+
+  st = c->ext.actual->next->expr;
+  if (st != NULL)
+    name = gfc_get_string (PREFIX("fput_i%d_sub"), st->ts.kind);
+  else
+    name = gfc_get_string (PREFIX("fput_i%d_sub"), gfc_default_integer_kind);
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_ftell_sub (gfc_code * c)
+{
+  const char *name;
+  gfc_expr *unit;
+  gfc_expr *offset;
+  gfc_typespec ts;
+
+  unit = c->ext.actual->expr;
+  offset = c->ext.actual->next->expr;
+
+  if (unit->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (unit, &ts, 2);
+    }
+
+  name = gfc_get_string (PREFIX("ftell_i%d_sub"), offset->ts.kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
