@@ -4,11 +4,11 @@
 
 namespace N
 {
-  int i;            // { dg-error "declared" }
+  int i;            // { dg-error "i" }
 }
 
-int i;              // { dg-error "declared" }
+int i;              // { dg-error "i" }
 
 using namespace N;
 
-void foo() { i; }   // { dg-error "in this scope|ambiguous" }
+void foo() { i; }   // { dg-error "ambiguous" }

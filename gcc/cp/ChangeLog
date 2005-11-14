@@ -1,3 +1,29 @@
+2005-11-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20293
+	* cxx-pretty-print.c (pp_cxx_statement): Print qualifying scopes
+	for namespaces.
+	(pp_cxx_original_namespace_definition): Likewise.
+	* name-lookup.c (ambiguous_decl): Don't issue error messages;
+	instead return lists of ambiguous candidates.
+	(select_decl): Handle ambiguous namespace lookups.
+	* parser.c (cp_token): Add ambiguous_p.
+	(cp_lexer_get_preprocessor_token): Set it.
+	(cp_parser_diagnose_invalid_type_name): Avoid duplicate messages
+	when a qualified name uses an invalid scope. 
+	(cp_parser_primary_expression): Print ambiguous candidates.
+	(cp_parser_type_parameter): Adjust comment to reflect new
+	parameter name for cp_parser_lookup_name.
+	(cp_parser_template_argument): Likewise.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	(cp_parser_namespace_name): Likewise.
+	(cp_parser_class_name): Print ambiguous candidates.
+	(cp_parser_lookup_name): Rename ambiguous_p parameter to
+	ambiguous_decls.  Use it to return a list of ambiguous candiates
+	when a lookup is ambiguous.
+	(cp_parser_lookup_name_simple): Adjust comment to reflect new
+	parameter name for cp_parser_lookup_name.
+	
 2005-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/24780

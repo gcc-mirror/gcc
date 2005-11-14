@@ -1,3 +1,13 @@
+2005-11-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20293
+	* g++.dg/parse/ambig4.C: New test.
+	* g++.dg/tc1/dr101.C: Adjust error markers.
+	* g++.dg/lookup/strong-using-2.C: Likewise.
+	* g++.dg/lookup/ambig5.C: Likewise.
+	* g++.dg/lookup/ambig4.C: Likewise.
+	* g++.dg/parse/crash22.C: Likewise.
+
 2005-11-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/pr19340.c: Skip for mmix-*-* and cris-*-*.
