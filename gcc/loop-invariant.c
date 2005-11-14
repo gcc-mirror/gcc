@@ -40,6 +40,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "tm_p.h"
 #include "hard-reg-set.h"
 #include "obstack.h"
 #include "basic-block.h"
