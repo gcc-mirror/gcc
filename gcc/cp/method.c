@@ -889,7 +889,9 @@ locate_ctor (tree type, void *client ATTRIBUTE_UNUSED)
       tree fn = OVL_CURRENT (fns);
       tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
 
-      if (sufficient_parms_p (TREE_CHAIN (parms)))
+      parms = skip_artificial_parms_for (fn, parms);
+
+      if (sufficient_parms_p (parms))
 	return fn;
     }
   return NULL_TREE;
