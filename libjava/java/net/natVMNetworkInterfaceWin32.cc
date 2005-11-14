@@ -14,6 +14,7 @@ details.  */
 #include <java/net/NetworkInterface.h>
 #include <java/net/Inet4Address.h>
 #include <java/net/SocketException.h>
+#include <java/net/VMNetworkInterface.h>
 #include <java/util/Vector.h>
 
 /* As of this writing, NetworkInterface.java has

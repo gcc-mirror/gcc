@@ -1,4 +1,9 @@
 2005-11-14  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* java/net/natVMNetworkInterfaceWin32.cc: Include
+	java/net/VMNetworkInterface.h.
+
+2005-11-14  Mohan Embar  <gnustuff@thisiscool.com>
 	    David Daney  <ddaney@avtrex.com>
 
 	* gnu/java/net/natPlainSocketImplWin32.cc: Updated copyright.
