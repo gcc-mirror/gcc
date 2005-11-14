@@ -37,12 +37,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-DIST_COMMON = $(am__configure_deps) $(srcdir)/../config.guess \
-	$(srcdir)/../config.sub $(srcdir)/../install-sh \
-	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
-	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure ChangeLog
+DIST_COMMON = $(am__configure_deps) $(srcdir)/../compile \
+	$(srcdir)/../config.guess $(srcdir)/../config.sub \
+	$(srcdir)/../install-sh $(srcdir)/../ltmain.sh \
+	$(srcdir)/../missing $(srcdir)/../mkinstalldirs \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/config.h.in $(top_srcdir)/configure ChangeLog
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/lead-dot.m4 \
@@ -65,7 +65,7 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-libgfortran_la_LIBADD =
+libgfortran_la_DEPENDENCIES = libmatmul.la
 am__objects_1 = compile_options.lo environ.lo error.lo fpu.lo main.lo \
 	memory.lo pause.lo stop.lo string.lo select.lo
 am__objects_2 = all_l4.lo all_l8.lo all_l16.lo
@@ -116,33 +116,30 @@ am__objects_13 = dotprod_i4.lo dotprod_i8.lo dotprod_i16.lo \
 am__objects_14 = dotprod_l4.lo dotprod_l8.lo dotprod_l16.lo
 am__objects_15 = dotprod_c4.lo dotprod_c8.lo dotprod_c10.lo \
 	dotprod_c16.lo
-am__objects_16 = matmul_i4.lo matmul_i8.lo matmul_i16.lo matmul_r4.lo \
-	matmul_r8.lo matmul_r10.lo matmul_r16.lo matmul_c4.lo \
-	matmul_c8.lo matmul_c10.lo matmul_c16.lo
-am__objects_17 = matmul_l4.lo matmul_l8.lo matmul_l16.lo
-am__objects_18 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
+am__objects_16 = matmul_l4.lo matmul_l8.lo matmul_l16.lo
+am__objects_17 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
 	transpose_c4.lo transpose_c8.lo transpose_c10.lo \
 	transpose_c16.lo
-am__objects_19 = shape_i4.lo shape_i8.lo shape_i16.lo
-am__objects_20 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
-am__objects_21 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
-am__objects_22 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
-am__objects_23 = reshape_i4.lo reshape_i8.lo reshape_i16.lo \
+am__objects_18 = shape_i4.lo shape_i8.lo shape_i16.lo
+am__objects_19 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
+am__objects_20 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
+am__objects_21 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
+am__objects_22 = reshape_i4.lo reshape_i8.lo reshape_i16.lo \
 	reshape_c4.lo reshape_c8.lo reshape_c10.lo reshape_c16.lo
-am__objects_24 = in_pack_i4.lo in_pack_i8.lo in_pack_i16.lo \
+am__objects_23 = in_pack_i4.lo in_pack_i8.lo in_pack_i16.lo \
 	in_pack_c4.lo in_pack_c8.lo in_pack_c10.lo in_pack_c16.lo
-am__objects_25 = in_unpack_i4.lo in_unpack_i8.lo in_unpack_i16.lo \
+am__objects_24 = in_unpack_i4.lo in_unpack_i8.lo in_unpack_i16.lo \
 	in_unpack_c4.lo in_unpack_c8.lo in_unpack_c10.lo \
 	in_unpack_c16.lo
-am__objects_26 = exponent_r4.lo exponent_r8.lo exponent_r10.lo \
+am__objects_25 = exponent_r4.lo exponent_r8.lo exponent_r10.lo \
 	exponent_r16.lo
-am__objects_27 = fraction_r4.lo fraction_r8.lo fraction_r10.lo \
+am__objects_26 = fraction_r4.lo fraction_r8.lo fraction_r10.lo \
 	fraction_r16.lo
-am__objects_28 = nearest_r4.lo nearest_r8.lo nearest_r10.lo \
+am__objects_27 = nearest_r4.lo nearest_r8.lo nearest_r10.lo \
 	nearest_r16.lo
-am__objects_29 = set_exponent_r4.lo set_exponent_r8.lo \
+am__objects_28 = set_exponent_r4.lo set_exponent_r8.lo \
 	set_exponent_r10.lo set_exponent_r16.lo
-am__objects_30 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_r4_i4.lo \
+am__objects_29 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_r4_i4.lo \
 	pow_r8_i4.lo pow_r10_i4.lo pow_r16_i4.lo pow_c4_i4.lo \
 	pow_c8_i4.lo pow_c10_i4.lo pow_c16_i4.lo pow_i4_i8.lo \
 	pow_i8_i8.lo pow_i16_i8.lo pow_r4_i8.lo pow_r8_i8.lo \
@@ -151,7 +148,7 @@ am__objects_30 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_r4_i4.lo \
 	pow_i16_i16.lo pow_r4_i16.lo pow_r8_i16.lo pow_r10_i16.lo \
 	pow_r16_i16.lo pow_c4_i16.lo pow_c8_i16.lo pow_c10_i16.lo \
 	pow_c16_i16.lo
-am__objects_31 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
+am__objects_30 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
 	$(am__objects_11) $(am__objects_12) $(am__objects_13) \
@@ -160,11 +157,11 @@ am__objects_31 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_20) $(am__objects_21) $(am__objects_22) \
 	$(am__objects_23) $(am__objects_24) $(am__objects_25) \
 	$(am__objects_26) $(am__objects_27) $(am__objects_28) \
-	$(am__objects_29) $(am__objects_30)
-am__objects_32 = close.lo file_pos.lo format.lo inquire.lo \
+	$(am__objects_29)
+am__objects_31 = close.lo file_pos.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo size_from_kind.lo \
 	transfer.lo unit.lo unix.lo write.lo
-am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
+am__objects_32 = associated.lo abort.lo args.lo bessel.lo \
 	c99_functions.lo chdir.lo cpu_time.lo cshift0.lo ctime.lo \
 	date_and_time.lo env.lo erf.lo eoshift0.lo eoshift2.lo \
 	etime.lo exit.lo fget.lo flush.lo fnum.lo ftell.lo gerror.lo \
@@ -177,8 +174,8 @@ am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	system_clock.lo time.lo transpose_generic.lo tty.lo umask.lo \
 	unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo normalize.lo
-am__objects_34 =
-am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+am__objects_33 =
+am__objects_34 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
 	_exp_r16.lo _exp_c4.lo _exp_c8.lo _exp_c10.lo _exp_c16.lo \
@@ -198,20 +195,29 @@ am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_36 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_35 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo
-am__objects_37 = $(am__objects_35) $(am__objects_36) dprod_r8.lo \
+am__objects_36 = $(am__objects_34) $(am__objects_35) dprod_r8.lo \
 	f2c_specifics.lo
-am_libgfortran_la_OBJECTS = $(am__objects_1) $(am__objects_31) \
-	$(am__objects_32) $(am__objects_33) $(am__objects_34) \
-	$(am__objects_37)
+am_libgfortran_la_OBJECTS = $(am__objects_1) $(am__objects_30) \
+	$(am__objects_31) $(am__objects_32) $(am__objects_33) \
+	$(am__objects_36)
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 libgfortranbegin_la_LIBADD =
 am_libgfortranbegin_la_OBJECTS = fmain.lo
 libgfortranbegin_la_OBJECTS = $(am_libgfortranbegin_la_OBJECTS)
+libmatmul_la_LIBADD =
+am__objects_37 = libmatmul_la-matmul_i4.lo libmatmul_la-matmul_i8.lo \
+	libmatmul_la-matmul_i16.lo libmatmul_la-matmul_r4.lo \
+	libmatmul_la-matmul_r8.lo libmatmul_la-matmul_r10.lo \
+	libmatmul_la-matmul_r16.lo libmatmul_la-matmul_c4.lo \
+	libmatmul_la-matmul_c8.lo libmatmul_la-matmul_c10.lo \
+	libmatmul_la-matmul_c16.lo
+am_libmatmul_la_OBJECTS = $(am__objects_37)
+libmatmul_la_OBJECTS = $(am_libmatmul_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp =
 am__depfiles_maybe =
@@ -233,9 +239,10 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 FCCOMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 LTFCCOMPILE = $(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-SOURCES = $(libgfortran_la_SOURCES) $(libgfortranbegin_la_SOURCES)
+SOURCES = $(libgfortran_la_SOURCES) $(libgfortranbegin_la_SOURCES) \
+	$(libmatmul_la_SOURCES)
 DIST_SOURCES = $(libgfortran_la_SOURCES) \
-	$(libgfortranbegin_la_SOURCES)
+	$(libgfortranbegin_la_SOURCES) $(libmatmul_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -774,7 +781,7 @@ m4_files = m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
 gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
     $(i_product_c) $(i_sum_c) $(i_dotprod_c) $(i_dotprodl_c) $(i_dotprodc_c) \
-    $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
+    $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
     $(i_pow_c) \
@@ -915,12 +922,16 @@ $(gfor_built_specific2_src) \
 intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90
 
+EXTRA_LTLIBRARIES = libmatmul.la
+libmatmul_la_SOURCES = $(i_matmul_c)
+libmatmul_la_CFLAGS = -ftree-vectorize $(AM_CFLAGS)
 BUILT_SOURCES = $(gfor_built_src) $(gfor_built_specific_src) \
-    $(gfor_built_specific2_src)
+    $(gfor_built_specific2_src) $(libmatmul_la_SOURCES)
 
 libgfortran_la_SOURCES = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
     $(gfor_helper_src) $(gfor_io_headers) $(gfor_specific_src)
 
+libgfortran_la_LIBADD = libmatmul.la
 I_M4_DEPS = m4/iparm.m4
 I_M4_DEPS0 = $(I_M4_DEPS) m4/iforeach.m4
 I_M4_DEPS1 = $(I_M4_DEPS) m4/ifunction.m4
@@ -1011,6 +1022,8 @@ libgfortran.la: $(libgfortran_la_OBJECTS) $(libgfortran_la_DEPENDENCIES)
 	$(FCLINK) -rpath $(toolexeclibdir) $(libgfortran_la_LDFLAGS) $(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD) $(LIBS)
 libgfortranbegin.la: $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_DEPENDENCIES) 
 	$(LINK) -rpath $(toolexeclibdir) $(libgfortranbegin_la_LDFLAGS) $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_LIBADD) $(LIBS)
+libmatmul.la: $(libmatmul_la_OBJECTS) $(libmatmul_la_DEPENDENCIES) 
+	$(LINK)  $(libmatmul_la_LDFLAGS) $(libmatmul_la_OBJECTS) $(libmatmul_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1870,39 +1883,6 @@ dotprod_c10.lo: generated/dotprod_c10.c
 dotprod_c16.lo: generated/dotprod_c16.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_c16.lo `test -f 'generated/dotprod_c16.c' || echo '$(srcdir)/'`generated/dotprod_c16.c
 
-matmul_i4.lo: generated/matmul_i4.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_i4.lo `test -f 'generated/matmul_i4.c' || echo '$(srcdir)/'`generated/matmul_i4.c
-
-matmul_i8.lo: generated/matmul_i8.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_i8.lo `test -f 'generated/matmul_i8.c' || echo '$(srcdir)/'`generated/matmul_i8.c
-
-matmul_i16.lo: generated/matmul_i16.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_i16.lo `test -f 'generated/matmul_i16.c' || echo '$(srcdir)/'`generated/matmul_i16.c
-
-matmul_r4.lo: generated/matmul_r4.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_r4.lo `test -f 'generated/matmul_r4.c' || echo '$(srcdir)/'`generated/matmul_r4.c
-
-matmul_r8.lo: generated/matmul_r8.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_r8.lo `test -f 'generated/matmul_r8.c' || echo '$(srcdir)/'`generated/matmul_r8.c
-
-matmul_r10.lo: generated/matmul_r10.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_r10.lo `test -f 'generated/matmul_r10.c' || echo '$(srcdir)/'`generated/matmul_r10.c
-
-matmul_r16.lo: generated/matmul_r16.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_r16.lo `test -f 'generated/matmul_r16.c' || echo '$(srcdir)/'`generated/matmul_r16.c
-
-matmul_c4.lo: generated/matmul_c4.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_c4.lo `test -f 'generated/matmul_c4.c' || echo '$(srcdir)/'`generated/matmul_c4.c
-
-matmul_c8.lo: generated/matmul_c8.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_c8.lo `test -f 'generated/matmul_c8.c' || echo '$(srcdir)/'`generated/matmul_c8.c
-
-matmul_c10.lo: generated/matmul_c10.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_c10.lo `test -f 'generated/matmul_c10.c' || echo '$(srcdir)/'`generated/matmul_c10.c
-
-matmul_c16.lo: generated/matmul_c16.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_c16.lo `test -f 'generated/matmul_c16.c' || echo '$(srcdir)/'`generated/matmul_c16.c
-
 matmul_l4.lo: generated/matmul_l4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_l4.lo `test -f 'generated/matmul_l4.c' || echo '$(srcdir)/'`generated/matmul_l4.c
 
@@ -2388,6 +2368,39 @@ in_unpack_generic.lo: runtime/in_unpack_generic.c
 
 normalize.lo: runtime/normalize.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o normalize.lo `test -f 'runtime/normalize.c' || echo '$(srcdir)/'`runtime/normalize.c
+
+libmatmul_la-matmul_i4.lo: generated/matmul_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_i4.lo `test -f 'generated/matmul_i4.c' || echo '$(srcdir)/'`generated/matmul_i4.c
+
+libmatmul_la-matmul_i8.lo: generated/matmul_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_i8.lo `test -f 'generated/matmul_i8.c' || echo '$(srcdir)/'`generated/matmul_i8.c
+
+libmatmul_la-matmul_i16.lo: generated/matmul_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_i16.lo `test -f 'generated/matmul_i16.c' || echo '$(srcdir)/'`generated/matmul_i16.c
+
+libmatmul_la-matmul_r4.lo: generated/matmul_r4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_r4.lo `test -f 'generated/matmul_r4.c' || echo '$(srcdir)/'`generated/matmul_r4.c
+
+libmatmul_la-matmul_r8.lo: generated/matmul_r8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_r8.lo `test -f 'generated/matmul_r8.c' || echo '$(srcdir)/'`generated/matmul_r8.c
+
+libmatmul_la-matmul_r10.lo: generated/matmul_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_r10.lo `test -f 'generated/matmul_r10.c' || echo '$(srcdir)/'`generated/matmul_r10.c
+
+libmatmul_la-matmul_r16.lo: generated/matmul_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_r16.lo `test -f 'generated/matmul_r16.c' || echo '$(srcdir)/'`generated/matmul_r16.c
+
+libmatmul_la-matmul_c4.lo: generated/matmul_c4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_c4.lo `test -f 'generated/matmul_c4.c' || echo '$(srcdir)/'`generated/matmul_c4.c
+
+libmatmul_la-matmul_c8.lo: generated/matmul_c8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_c8.lo `test -f 'generated/matmul_c8.c' || echo '$(srcdir)/'`generated/matmul_c8.c
+
+libmatmul_la-matmul_c10.lo: generated/matmul_c10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_c10.lo `test -f 'generated/matmul_c10.c' || echo '$(srcdir)/'`generated/matmul_c10.c
+
+libmatmul_la-matmul_c16.lo: generated/matmul_c16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmatmul_la_CFLAGS) $(CFLAGS) -c -o libmatmul_la-matmul_c16.lo `test -f 'generated/matmul_c16.c' || echo '$(srcdir)/'`generated/matmul_c16.c
 
 .f90.o:
 	$(FCCOMPILE) -c -o $@ $<

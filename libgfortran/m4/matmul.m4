@@ -49,15 +49,17 @@ include(iparm.m4)dnl
          C(I,J) = C(I,J)+A(I,K)*B(K,J)
 */
 
-extern void matmul_`'rtype_code (rtype * retarray, rtype * a, rtype * b);
+extern void matmul_`'rtype_code (rtype * const restrict retarray, 
+	rtype * const restrict a, rtype * const restrict b);
 export_proto(matmul_`'rtype_code);
 
 void
-matmul_`'rtype_code (rtype * retarray, rtype * a, rtype * b)
+matmul_`'rtype_code (rtype * const restrict retarray, 
+	rtype * const restrict a, rtype * const restrict b)
 {
-  rtype_name *abase;
-  rtype_name *bbase;
-  rtype_name *dest;
+  const rtype_name * restrict abase;
+  const rtype_name * restrict bbase;
+  rtype_name * restrict dest;
 
   index_type rxstride, rystride, axstride, aystride, bxstride, bystride;
   index_type x, y, n, count, xcount, ycount;
@@ -106,12 +108,10 @@ matmul_`'rtype_code (rtype * retarray, rtype * a, rtype * b)
       retarray->offset = 0;
     }
 
-  abase = a->data;
-  bbase = b->data;
-  dest = retarray->data;
-
   if (retarray->dim[0].stride == 0)
     retarray->dim[0].stride = 1;
+
+  /* This prevents constifying the input arguments.  */
   if (a->dim[0].stride == 0)
     a->dim[0].stride = 1;
   if (b->dim[0].stride == 0)
@@ -177,9 +177,9 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 
   if (rxstride == 1 && axstride == 1 && bxstride == 1)
     {
-      rtype_name *bbase_y;
-      rtype_name *dest_y;
-      rtype_name *abase_n;
+      const rtype_name * restrict bbase_y;
+      rtype_name * restrict dest_y;
+      const rtype_name * restrict abase_n;
       rtype_name bbase_yn;
 
       if (rystride == ycount)

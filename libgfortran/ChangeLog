@@ -1,3 +1,13 @@
+2005-11-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/21468
+        * Makefile.am: Add -ftree-vectorize for compiling matmul.
+        * m4/matmul.m4: Add const and restrict to type declarations as
+        appropriate.
+        * m4/matmull.m4: Likewise.
+        * Makefile.in: Regenerated.
+        * generated/matmul_*.c: Likewise.
+	
 2005-11-13  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/fget.c: New file.
