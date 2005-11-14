@@ -1,3 +1,7 @@
+2005-11-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/pr19340.c: Skip for mmix-*-* and cris-*-*.
+
 2005-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/nested-calls-1.c: New test.
