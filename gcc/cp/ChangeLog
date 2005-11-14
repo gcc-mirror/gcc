@@ -1,5 +1,11 @@
 2005-11-13  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/24817
+	* decl.c (check_redeclaration_exception_specification): New
+	function.
+	(duplicate_decls): Use it.
+	* error.c (fndecl_to_string): Print the template parameter list.
+
 	PR c++/20293
 	* cxx-pretty-print.c (pp_cxx_statement): Print qualifying scopes
 	for namespaces.
