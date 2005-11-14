@@ -1,7 +1,7 @@
 /* Test semantics of #pragma pack.
    Contributed by Mike Coleman <mcoleman2@kc.rr.com> */
 
-/* { dg-do compile { target *-*-linux* *-*-cygwin* powerpc*-*-eabi* } } */
+/* { dg-do compile { target { { *-*-linux* *-*-cygwin* powerpc*-*-eabi* } && { ! default_packed } } } } */
 
 /* We only test the alignment of char, short, and int, because these
    are the only ones that are pretty certain to be the same across
