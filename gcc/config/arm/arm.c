@@ -3870,7 +3870,7 @@ legitimize_tls_address (rtx x, rtx reg)
       eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const1_rtx),
 			    UNSPEC_TLS);
       dest = gen_reg_rtx (Pmode);
-      emit_libcall_block (insns, dest, ret, x);
+      emit_libcall_block (insns, dest, ret, eqv);
 
       /* Load the addend.  */
       addend = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, x, GEN_INT (TLS_LDO32)),

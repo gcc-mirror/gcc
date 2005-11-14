@@ -1,3 +1,8 @@
+2005-11-14  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/arm.c (legitimize_tls_address): Use correct rtx for
+	REQ_EQUIV note.
+
 2005-11-14  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* loop-invariant.c: Include tm_p.h.
