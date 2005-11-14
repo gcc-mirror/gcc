@@ -1,3 +1,9 @@
+2005-11-14  Mohan Embar  <gnustuff@thisiscool.com>
+	    David Daney  <ddaney@avtrex.com>
+
+	* gnu/java/net/natPlainSocketImplWin32.cc: Updated copyright.
+	(read): Handle count == 0 case.
+
 2005-11-09  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libjava.jacks/jacks.xfail (non-jls-zip-2): Now

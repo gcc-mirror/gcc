@@ -1,4 +1,4 @@
-/* Copyright (C) 2003 Free Software Foundation
+/* Copyright (C) 2003, 2004, 2005 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -491,6 +491,11 @@ jint
 gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer,
   jint offset, jint count)
 {
+  // If zero bytes were requested, short circuit so that recv
+  // doesn't signal EOF.
+  if (count == 0)
+    return 0;
+
   if (! buffer)
     throw new ::java::lang::NullPointerException;
 
