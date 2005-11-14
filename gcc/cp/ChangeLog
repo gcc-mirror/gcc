@@ -1,3 +1,7 @@
+2005-11-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (eof_token): Add initializer for ambiguous_p.
+
 2005-11-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24817

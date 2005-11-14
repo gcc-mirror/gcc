@@ -76,7 +76,7 @@ DEF_VEC_ALLOC_P (cp_token_position,heap);
 
 static const cp_token eof_token =
 {
-  CPP_EOF, RID_MAX, 0, 0, 0, NULL_TREE,
+  CPP_EOF, RID_MAX, 0, 0, 0, false, NULL_TREE,
 #if USE_MAPPED_LOCATION
   0
 #else
