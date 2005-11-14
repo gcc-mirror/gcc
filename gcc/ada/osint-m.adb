@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001 Free Software Foundation, Inc.               --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -16,13 +16,24 @@
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
 -- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
--- MA 02111-1307, USA.                                                      --
+-- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
+-- Boston, MA 02110-1301, USA.                                              --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+with Osint;
+
+pragma Elaborate_All (Osint);
+--  This pragma is needed because of the call to Set_Program in the
+--  elaboration of the package. We cannot rely on the static model
+--  of elaboration since the compiler is routinely compiled with
+--  checks off (-gnatp), and with older versions of the compiler
+--  (up to and including most 5.04 wavefronts), -gnatp suppresses
+--  the static elaboration check mechanisms. It could be removed
+--  one day, but there really is no need to do so.
 
 package body Osint.M is
 
