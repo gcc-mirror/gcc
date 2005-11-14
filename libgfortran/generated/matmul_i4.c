@@ -48,15 +48,17 @@ Boston, MA 02110-1301, USA.  */
          C(I,J) = C(I,J)+A(I,K)*B(K,J)
 */
 
-extern void matmul_i4 (gfc_array_i4 * retarray, gfc_array_i4 * a, gfc_array_i4 * b);
+extern void matmul_i4 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_i4 * const restrict a, gfc_array_i4 * const restrict b);
 export_proto(matmul_i4);
 
 void
-matmul_i4 (gfc_array_i4 * retarray, gfc_array_i4 * a, gfc_array_i4 * b)
+matmul_i4 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_i4 * const restrict a, gfc_array_i4 * const restrict b)
 {
-  GFC_INTEGER_4 *abase;
-  GFC_INTEGER_4 *bbase;
-  GFC_INTEGER_4 *dest;
+  const GFC_INTEGER_4 * restrict abase;
+  const GFC_INTEGER_4 * restrict bbase;
+  GFC_INTEGER_4 * restrict dest;
 
   index_type rxstride, rystride, axstride, aystride, bxstride, bystride;
   index_type x, y, n, count, xcount, ycount;
@@ -105,12 +107,10 @@ matmul_i4 (gfc_array_i4 * retarray, gfc_array_i4 * a, gfc_array_i4 * b)
       retarray->offset = 0;
     }
 
-  abase = a->data;
-  bbase = b->data;
-  dest = retarray->data;
-
   if (retarray->dim[0].stride == 0)
     retarray->dim[0].stride = 1;
+
+  /* This prevents constifying the input arguments.  */
   if (a->dim[0].stride == 0)
     a->dim[0].stride = 1;
   if (b->dim[0].stride == 0)
@@ -175,9 +175,9 @@ matmul_i4 (gfc_array_i4 * retarray, gfc_array_i4 * a, gfc_array_i4 * b)
 
   if (rxstride == 1 && axstride == 1 && bxstride == 1)
     {
-      GFC_INTEGER_4 *bbase_y;
-      GFC_INTEGER_4 *dest_y;
-      GFC_INTEGER_4 *abase_n;
+      const GFC_INTEGER_4 * restrict bbase_y;
+      GFC_INTEGER_4 * restrict dest_y;
+      const GFC_INTEGER_4 * restrict abase_n;
       GFC_INTEGER_4 bbase_yn;
 
       if (rystride == ycount)

@@ -38,15 +38,17 @@ Boston, MA 02110-1301, USA.  */
 /* Dimensions: retarray(x,y) a(x, count) b(count,y).
    Either a or b can be rank 1.  In this case x or y is 1.  */
 
-extern void matmul_l16 (gfc_array_l16 *, gfc_array_l4 *, gfc_array_l4 *);
+extern void matmul_l16 (gfc_array_l16 * const restrict, 
+	gfc_array_l4 * const restrict, gfc_array_l4 * const restrict);
 export_proto(matmul_l16);
 
 void
-matmul_l16 (gfc_array_l16 * retarray, gfc_array_l4 * a, gfc_array_l4 * b)
+matmul_l16 (gfc_array_l16 * const restrict retarray, 
+	gfc_array_l4 * const restrict a, gfc_array_l4 * const restrict b)
 {
-  GFC_INTEGER_4 *abase;
-  GFC_INTEGER_4 *bbase;
-  GFC_LOGICAL_16 *dest;
+  const GFC_INTEGER_4 * restrict abase;
+  const GFC_INTEGER_4 * restrict bbase;
+  GFC_LOGICAL_16 * restrict dest;
   index_type rxstride;
   index_type rystride;
   index_type xcount;
@@ -56,8 +58,8 @@ matmul_l16 (gfc_array_l16 * retarray, gfc_array_l4 * a, gfc_array_l4 * b)
   index_type x;
   index_type y;
 
-  GFC_INTEGER_4 *pa;
-  GFC_INTEGER_4 *pb;
+  const GFC_INTEGER_4 * restrict pa;
+  const GFC_INTEGER_4 * restrict pb;
   index_type astride;
   index_type bstride;
   index_type count;

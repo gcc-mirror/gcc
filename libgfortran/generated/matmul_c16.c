@@ -48,15 +48,17 @@ Boston, MA 02110-1301, USA.  */
          C(I,J) = C(I,J)+A(I,K)*B(K,J)
 */
 
-extern void matmul_c16 (gfc_array_c16 * retarray, gfc_array_c16 * a, gfc_array_c16 * b);
+extern void matmul_c16 (gfc_array_c16 * const restrict retarray, 
+	gfc_array_c16 * const restrict a, gfc_array_c16 * const restrict b);
 export_proto(matmul_c16);
 
 void
-matmul_c16 (gfc_array_c16 * retarray, gfc_array_c16 * a, gfc_array_c16 * b)
+matmul_c16 (gfc_array_c16 * const restrict retarray, 
+	gfc_array_c16 * const restrict a, gfc_array_c16 * const restrict b)
 {
-  GFC_COMPLEX_16 *abase;
-  GFC_COMPLEX_16 *bbase;
-  GFC_COMPLEX_16 *dest;
+  const GFC_COMPLEX_16 * restrict abase;
+  const GFC_COMPLEX_16 * restrict bbase;
+  GFC_COMPLEX_16 * restrict dest;
 
   index_type rxstride, rystride, axstride, aystride, bxstride, bystride;
   index_type x, y, n, count, xcount, ycount;
@@ -105,12 +107,10 @@ matmul_c16 (gfc_array_c16 * retarray, gfc_array_c16 * a, gfc_array_c16 * b)
       retarray->offset = 0;
     }
 
-  abase = a->data;
-  bbase = b->data;
-  dest = retarray->data;
-
   if (retarray->dim[0].stride == 0)
     retarray->dim[0].stride = 1;
+
+  /* This prevents constifying the input arguments.  */
   if (a->dim[0].stride == 0)
     a->dim[0].stride = 1;
   if (b->dim[0].stride == 0)
@@ -175,9 +175,9 @@ matmul_c16 (gfc_array_c16 * retarray, gfc_array_c16 * a, gfc_array_c16 * b)
 
   if (rxstride == 1 && axstride == 1 && bxstride == 1)
     {
-      GFC_COMPLEX_16 *bbase_y;
-      GFC_COMPLEX_16 *dest_y;
-      GFC_COMPLEX_16 *abase_n;
+      const GFC_COMPLEX_16 * restrict bbase_y;
+      GFC_COMPLEX_16 * restrict dest_y;
+      const GFC_COMPLEX_16 * restrict abase_n;
       GFC_COMPLEX_16 bbase_yn;
 
       if (rystride == ycount)
