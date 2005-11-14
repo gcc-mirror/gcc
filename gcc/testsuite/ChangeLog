@@ -1,3 +1,7 @@
+2005-11-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/pack-test-1.c: Gate on ! default_packed.
+
 2005-11-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20293
