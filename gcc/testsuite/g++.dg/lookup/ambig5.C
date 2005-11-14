@@ -4,10 +4,10 @@
 
 namespace N
 {
-  namespace M {}    // { dg-error "declared" }
+  namespace M {}    // { dg-error "M" }
 }
 
-namespace M {}      // { dg-error "declared" }
+namespace M {}      // { dg-error "M" }
 
 using namespace N;
 using namespace M;  // { dg-error "namespace-name|ambiguous" }

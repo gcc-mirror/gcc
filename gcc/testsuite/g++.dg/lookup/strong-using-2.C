@@ -3,10 +3,10 @@
 // { dg-do compile }
 
 namespace foo_impl {
-  class T; // { dg-error "first declared" "" }
+  class T; // { dg-error "T" "" }
 }
 namespace bar_impl {
-  class T; // { dg-error "also declared" "" }
+  class T; // { dg-error "T" "" }
 }
 namespace foo {
   using namespace foo_impl __attribute__((strong));

@@ -1514,6 +1514,8 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
     case USING_STMT:
       pp_cxx_identifier (pp, "using");
       pp_cxx_identifier (pp, "namespace");
+      if (DECL_CONTEXT (t))
+	pp_cxx_nested_name_specifier (pp, DECL_CONTEXT (t));
       pp_cxx_qualified_id (pp, USING_STMT_NAMESPACE (t));
       break;
 
@@ -1701,6 +1703,8 @@ static void
 pp_cxx_original_namespace_definition (cxx_pretty_printer *pp, tree t)
 {
   pp_cxx_identifier (pp, "namespace");
+  if (DECL_CONTEXT (t))
+    pp_cxx_nested_name_specifier (pp, DECL_CONTEXT (t));
   if (DECL_NAME (t))
     pp_cxx_unqualified_id (pp, t);
   pp_cxx_whitespace (pp);
@@ -1723,10 +1727,15 @@ static void
 pp_cxx_namespace_alias_definition (cxx_pretty_printer *pp, tree t)
 {
   pp_cxx_identifier (pp, "namespace");
+  if (DECL_CONTEXT (t))
+    pp_cxx_nested_name_specifier (pp, DECL_CONTEXT (t));
   pp_cxx_unqualified_id (pp, t);
   pp_cxx_whitespace (pp);
   pp_equal (pp);
   pp_cxx_whitespace (pp);
+  if (DECL_CONTEXT (DECL_NAMESPACE_ALIAS (t)))
+    pp_cxx_nested_name_specifier (pp, 
+				  DECL_CONTEXT (DECL_NAMESPACE_ALIAS (t)));
   pp_cxx_qualified_id (pp, DECL_NAMESPACE_ALIAS (t));
   pp_cxx_semicolon (pp);
 }

@@ -17,10 +17,10 @@ namespace Test1 {
 
 namespace Test2 {
 
-  typedef unsigned int X;   // { dg-bogus "declared" "" { xfail *-*-* } }
+  typedef unsigned int X;   // { dg-bogus "X" "" { xfail *-*-* } }
   extern "C" int f2();
   namespace N {
-    typedef unsigned int X; // { dg-bogus "declared" "" { xfail *-*-* } }
+    typedef unsigned int X; // { dg-bogus "X" "" { xfail *-*-* } }
     extern "C" int f2();
   }
   using namespace N;
