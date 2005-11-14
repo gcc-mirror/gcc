@@ -3340,6 +3340,7 @@ thumb_find_work_register (unsigned long pushed_regs_mask)
   gcc_unreachable ();
 }
 
+static GTY(()) int pic_labelno;
 
 /* Generate code to load the PIC register.  In thumb mode SCRATCH is a
    low register.  */
@@ -3348,7 +3349,7 @@ void
 arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 {
 #ifndef AOF_ASSEMBLER
-  rtx l1, pic_tmp, pic_tmp2, pic_rtx;
+  rtx l1, labelno, pic_tmp, pic_tmp2, pic_rtx;
   rtx global_offset_table;
 
   if (current_function_uses_pic_offset_table == 0 || TARGET_SINGLE_PIC_BASE)
@@ -3356,12 +3357,17 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 
   gcc_assert (flag_pic);
 
-  l1 = gen_label_rtx ();
+  /* We use an UNSPEC rather than a LABEL_REF because this label never appears
+     in the code stream.  */
+
+  labelno = GEN_INT (pic_labelno++);
+  l1 = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+  l1 = gen_rtx_CONST (VOIDmode, l1);
 
   global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
   /* On the ARM the PC register contains 'dot + 8' at the time of the
      addition, on the Thumb it is 'dot + 4'.  */
-  pic_tmp = plus_constant (gen_rtx_LABEL_REF (Pmode, l1), TARGET_ARM ? 8 : 4);
+  pic_tmp = plus_constant (l1, TARGET_ARM ? 8 : 4);
   if (GOT_PCREL)
     pic_tmp2 = gen_rtx_CONST (VOIDmode,
 			    gen_rtx_PLUS (Pmode, global_offset_table, pc_rtx));
@@ -3374,7 +3380,7 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
     {
       emit_insn (gen_pic_load_addr_arm (pic_offset_table_rtx, pic_rtx));
       emit_insn (gen_pic_add_dot_plus_eight (pic_offset_table_rtx,
-					     pic_offset_table_rtx, l1));
+					     pic_offset_table_rtx, labelno));
     }
   else
     {
@@ -3390,7 +3396,7 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
       else
 	emit_insn (gen_pic_load_addr_thumb (pic_offset_table_rtx, pic_rtx));
       emit_insn (gen_pic_add_dot_plus_four (pic_offset_table_rtx,
-					    pic_offset_table_rtx, l1));
+					    pic_offset_table_rtx, labelno));
     }
 
   /* Need to emit this whether or not we obey regdecls,
@@ -3822,22 +3828,24 @@ load_tls_operand (rtx x, rtx reg)
 static rtx
 arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 {
-  rtx insns, label, sum;
+  rtx insns, label, labelno, sum;
 
   start_sequence ();
 
-  label = gen_label_rtx ();
+  labelno = GEN_INT (pic_labelno++);
+  label = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+  label = gen_rtx_CONST (VOIDmode, label);
+
   sum = gen_rtx_UNSPEC (Pmode,
-			gen_rtvec (4, x, GEN_INT (reloc),
-				   gen_rtx_LABEL_REF (Pmode, label),
+			gen_rtvec (4, x, GEN_INT (reloc), label,
 				   GEN_INT (TARGET_ARM ? 8 : 4)),
 			UNSPEC_TLS);
   reg = load_tls_operand (sum, reg);
 
   if (TARGET_ARM)
-    emit_insn (gen_pic_add_dot_plus_eight (reg, reg, label));
+    emit_insn (gen_pic_add_dot_plus_eight (reg, reg, labelno));
   else
-    emit_insn (gen_pic_add_dot_plus_four (reg, reg, label));
+    emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
 
   *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX, LCT_PURE, /* LCT_CONST?  */
 				     Pmode, 1, reg, Pmode);
@@ -3851,7 +3859,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 rtx
 legitimize_tls_address (rtx x, rtx reg)
 {
-  rtx dest, tp, label, sum, insns, ret, eqv, addend;
+  rtx dest, tp, label, labelno, sum, insns, ret, eqv, addend;
   unsigned int model = SYMBOL_REF_TLS_MODEL (x);
 
   switch (model)
@@ -3879,19 +3887,20 @@ legitimize_tls_address (rtx x, rtx reg)
       return gen_rtx_PLUS (Pmode, dest, addend);
 
     case TLS_MODEL_INITIAL_EXEC:
-      label = gen_label_rtx ();
+      labelno = GEN_INT (pic_labelno++);
+      label = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+      label = gen_rtx_CONST (VOIDmode, label);
       sum = gen_rtx_UNSPEC (Pmode,
-			    gen_rtvec (4, x, GEN_INT (TLS_IE32),
-				       gen_rtx_LABEL_REF (Pmode, label),
+			    gen_rtvec (4, x, GEN_INT (TLS_IE32), label,
 				       GEN_INT (TARGET_ARM ? 8 : 4)),
 			    UNSPEC_TLS);
       reg = load_tls_operand (sum, reg);
 
       if (TARGET_ARM)
-	emit_insn (gen_tls_load_dot_plus_eight (reg, reg, label));
+	emit_insn (gen_tls_load_dot_plus_eight (reg, reg, labelno));
       else
 	{
-	  emit_insn (gen_pic_add_dot_plus_four (reg, reg, label));
+	  emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
 	  emit_move_insn (reg, gen_const_mem (SImode, reg));
 	}
 
@@ -15431,6 +15440,16 @@ arm_output_addr_const_extra (FILE *fp, rtx x)
 {
   if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLS)
     return arm_emit_tls_decoration (fp, x);
+  else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PIC_LABEL)
+    {
+      char label[256];
+      int labelno = INTVAL (XVECEXP (x, 0, 0));
+
+      ASM_GENERATE_INTERNAL_LABEL (label, "LPIC", labelno);
+      assemble_name_raw (fp, label);
+
+      return TRUE;
+    }
   else if (GET_CODE (x) == CONST_VECTOR)
     return arm_emit_vector_const (fp, x);
 
