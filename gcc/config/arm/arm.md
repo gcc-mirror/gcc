@@ -91,6 +91,8 @@
    (UNSPEC_WMADDS   18) ; Used by the intrinsic form of the iWMMXt WMADDS instruction.
    (UNSPEC_WMADDU   19) ; Used by the intrinsic form of the iWMMXt WMADDU instruction.
    (UNSPEC_TLS      20) ; A symbol that has been treated properly for TLS usage.
+   (UNSPEC_PIC_LABEL 21) ; A label used for PIC access that does not appear in the
+                         ; instruction stream.
   ]
 )
 
@@ -4468,11 +4470,11 @@
 	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "0")
 			     (const (plus:SI (pc) (const_int 4))))]
 		   UNSPEC_PIC_BASE))
-   (use (label_ref (match_operand 2 "" "")))]
+   (use (match_operand 2 "" ""))]
   "TARGET_THUMB"
   "*
-  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-			     CODE_LABEL_NUMBER (operands[2]));
+  (*targetm.asm_out.internal_label) (asm_out_file, \"LPIC\",
+				     INTVAL (operands[2]));
   return \"add\\t%0, %|pc\";
   "
   [(set_attr "length" "2")]
@@ -4483,11 +4485,11 @@
 	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "r")
 			     (const (plus:SI (pc) (const_int 8))))]
 		   UNSPEC_PIC_BASE))
-   (use (label_ref (match_operand 2 "" "")))]
+   (use (match_operand 2 "" ""))]
   "TARGET_ARM"
   "*
-    (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-			       CODE_LABEL_NUMBER (operands[2]));
+    (*targetm.asm_out.internal_label) (asm_out_file, \"LPIC\",
+				       INTVAL (operands[2]));
     return \"add%?\\t%0, %|pc, %1\";
   "
   [(set_attr "predicable" "yes")]
@@ -4498,11 +4500,11 @@
 	(mem:SI (unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "r")
 				     (const (plus:SI (pc) (const_int 8))))]
 			   UNSPEC_PIC_BASE)))
-   (use (label_ref (match_operand 2 "" "")))]
+   (use (match_operand 2 "" ""))]
   "TARGET_ARM"
   "*
-    (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-			       CODE_LABEL_NUMBER (operands[2]));
+    (*targetm.asm_out.internal_label) (asm_out_file, \"LPIC\",
+				       INTVAL (operands[2]));
     return \"ldr%?\\t%0, [%|pc, %1]\t\t@ tls_load_dot_plus_eight\";
   "
   [(set_attr "predicable" "yes")]

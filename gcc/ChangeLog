@@ -1,5 +1,17 @@
 2005-11-14  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* config/arm/arm.c (pic_labelno): New.
+	(arm_load_pic_register): Use an UNSPEC_PIC_LABEL instead of a
+	LABEL_REF.  Pass only the labelno to PIC insns.
+	(arm_call_tls_get_addr, legitimize_tls_address): Likewise.
+	(arm_output_addr_const_extra): Handle UNSPEC_PIC_LABEL.
+	* arm.md (UNSPEC_PIC_LABEL): New constant.
+	(pic_add_dot_plus_four, pic_add_dot_plus_eight)
+	(tls_load_dot_plus_eight): Expect a labelno instead of a LABEL_REF.
+	Use the correct label prefix.
+
+2005-11-14  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* config/arm/arm.c (legitimize_tls_address): Use correct rtx for
 	REQ_EQUIV note.
 
