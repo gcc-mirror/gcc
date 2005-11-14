@@ -2008,7 +2008,8 @@ fndecl_to_string (tree fndecl, int verbose)
 {
   int flags;
 
-  flags = TFF_EXCEPTION_SPECIFICATION | TFF_DECL_SPECIFIERS;
+  flags = TFF_EXCEPTION_SPECIFICATION | TFF_DECL_SPECIFIERS
+    | TFF_TEMPLATE_HEADER;
   if (verbose)
     flags |= TFF_FUNCTION_DEFAULT_ARGUMENTS;
   reinit_cxx_pp ();
