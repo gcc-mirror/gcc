@@ -1,3 +1,9 @@
+2005-11-14  Gerald Pfeifer  <gerald@pfeifer.com>
+            Ian Lance Taylor  <ian@airs.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Annotate error with
+	ATTRIBUTE_FPTR_PRINTF(3,0) instead of ATTRIBUTE_PRINTF(3,0).
+
 2005-11-09  Per Bothner  <per@bothner.com>
 	    Uros Bizjak  <uros@kss-loka.si>
 	
