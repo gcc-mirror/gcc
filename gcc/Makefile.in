@@ -2321,7 +2321,7 @@ loop-iv.o : loop-iv.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(BASIC_BLOCK_H) \
    output.h intl.h
 loop-invariant.o : loop-invariant.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(EXPR_H) coretypes.h \
-   $(TM_H) function.h $(FLAGS_H) $(DF_H) $(OBSTACK_H) output.h
+   $(TM_H) $(TM_P_H) function.h $(FLAGS_H) $(DF_H) $(OBSTACK_H) output.h
 cfgloopmanip.o : cfgloopmanip.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(CFGLAYOUT_H) output.h \
    coretypes.h $(TM_H) cfghooks.h $(OBSTACK_H)
