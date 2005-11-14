@@ -384,8 +384,9 @@ proc check_effective_target_static_libgfortran { } {
        # Set up, compile, and execute a test program using static linking.
        # Include the current process ID in the file names to prevent
        # conflicts with invocations for multiple testsuites.
+       set opts "additional_flags=-static"
        set src static[pid].f
-        set exe static[pid].x
+       set exe static[pid].x
 
        set f [open $src "w"]
        puts $f "      print *, 'test'"
@@ -393,7 +394,7 @@ proc check_effective_target_static_libgfortran { } {
        close $f
 
        verbose "check_effective_target_static_libgfortran compiling testfile $src" 2
-       set lines [${tool}_target_compile $src $exe executable "-static"]
+       set lines [${tool}_target_compile $src $exe executable "$opts"]
        file delete $src
 
        if [string match "" $lines] then {

@@ -1,5 +1,5 @@
-! { dg-require-effective-target static_libgfortran }
 ! { dg-do run }
+! { dg-require-effective-target static_libgfortran }
 ! { dg-additional-sources static_linking_1.c }
 ! { dg-options "-static" }
 !
