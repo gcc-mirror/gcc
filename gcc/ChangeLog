@@ -1,3 +1,8 @@
+2005-11-14  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* loop-invariant.c: Include tm_p.h.
+	* Makefile.in: Updated.
+
 2005-11-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (store_reg): Revise generation of frame notes in large frames.
