@@ -1,3 +1,7 @@
+2005-11-14  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.c-torture/unsorted/unsorted.exp: Sort tests before running them.
+
 2005-11-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24817

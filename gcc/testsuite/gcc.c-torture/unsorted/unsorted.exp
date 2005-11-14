@@ -39,7 +39,7 @@ load_lib c-torture.exp
 # require unique options need their own .exp file.
 #
 
-foreach testcase [glob -nocomplain $srcdir/$subdir/*.c] {
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
     if [file exists [file rootname $testcase].exp] then {
 	verbose "INFO:\"[file rootname $testcase].exp\" exists, skipping test" 3
 	continue
