@@ -806,7 +806,7 @@ echo "	if [ -f stmp-dirs ]; then true; else touch stmp-dirs; fi"
 
 if [ "$need_eh_dummy" ]; then
   echo "eh_dummy.c:"
-  echo "	echo 'struct eh_dummy;' > \$@"
+  echo "	echo 'int __libgcc_eh_dummy;' > \$@"
 fi
 
 echo ""
