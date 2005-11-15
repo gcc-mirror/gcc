@@ -617,16 +617,6 @@ package body System.Tasking.Stages is
            (Storage_Error'Identity, "Failed to initialize task");
       end if;
 
-      if not System.Restrictions.Abort_Allowed then
-
-         --  If Abort is not allowed, reset the deferral level since it will
-         --  not get changed by the generated code. Keeping a default value
-         --  of one would prevent some operations (e.g. select or delay) to
-         --  proceed successfully.
-
-         T.Deferral_Level := 0;
-      end if;
-
       T.Master_of_Task := Master;
       T.Master_Within := T.Master_of_Task + 1;
 
@@ -949,6 +939,16 @@ package body System.Tasking.Stages is
 
       Lock_RTS;
       Unlock_RTS;
+
+      if not System.Restrictions.Abort_Allowed then
+
+         --  If Abort is not allowed, reset the deferral level since it will
+         --  not get changed by the generated code. Keeping a default value
+         --  of one would prevent some operations (e.g. select or delay) to
+         --  proceed successfully.
+
+         Self_ID.Deferral_Level := 0;
+      end if;
 
       begin
          --  We are separating the following portion of the code in order to
