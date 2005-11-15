@@ -1,3 +1,8 @@
+2005-09-16  Andrew Haley  <aph@redhat.com>
+
+        * java/io/ObjectStreamClass.java (findAccessibleMethod): Allow
+        protected readResolve().  Rewrite accessibility check.
+
 2005-09-06  Mark Wielaard  <mark@klomp.org>
 
 	* NEWS: Add new features for 0.18.
