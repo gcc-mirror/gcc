@@ -1382,7 +1382,7 @@ package body System.Task_Primitives.Operations is
    begin
       --  Check that caller is abort-deferred
 
-      if Self_ID.Deferral_Level <= 0 then
+      if Self_ID.Deferral_Level = 0 then
          return False;
       end if;
 
@@ -1419,7 +1419,7 @@ package body System.Task_Primitives.Operations is
 
       --  Check that caller is abort-deferred
 
-      if Self_ID.Deferral_Level <= 0 then
+      if Self_ID.Deferral_Level = 0 then
          return False;
       end if;
 
@@ -1498,7 +1498,7 @@ package body System.Task_Primitives.Operations is
    begin
       --  Check that caller is abort-deferred
 
-      if Self_ID.Deferral_Level <= 0 then
+      if Self_ID.Deferral_Level = 0 then
          return False;
       end if;
 
@@ -1617,7 +1617,7 @@ package body System.Task_Primitives.Operations is
 
       --  Check that caller is abort-deferred
 
-      if Self_ID.Deferral_Level <= 0 then
+      if Self_ID.Deferral_Level = 0 then
          return False;
       end if;
 
@@ -1646,7 +1646,7 @@ package body System.Task_Primitives.Operations is
    begin
       --  Check that caller is abort-deferred
 
-      if Self_ID.Deferral_Level <= 0 then
+      if Self_ID.Deferral_Level = 0 then
          return False;
       end if;
 
@@ -1833,7 +1833,7 @@ package body System.Task_Primitives.Operations is
 
       --  Check that caller is abort-deferred
 
-      if Self_ID.Deferral_Level <= 0 then
+      if Self_ID.Deferral_Level = 0 then
          return False;
       end if;
 

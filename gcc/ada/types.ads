@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -311,14 +311,14 @@ package Types is
    --  is in practice infinite and there is no need to check the range.
 
    Ureal_Low_Bound : constant := 500_000_000;
-   --  Low bound for Ureal values.
+   --  Low bound for Ureal values
 
    Ureal_High_Bound : constant := 599_999_999;
    --  Maximum number of Ureal values stored is 100_000_000 which is in
    --  practice infinite so that no check is required.
 
    Uint_Low_Bound : constant := 600_000_000;
-   --  Low bound for Uint values.
+   --  Low bound for Uint values
 
    Uint_Table_Start : constant := 2_000_000_000;
    --  Location where table entries for universal integers start (see
@@ -479,7 +479,7 @@ package Types is
    --  are not valid.
 
    First_Elist_Id : constant Elist_Id := No_Elist + 1;
-   --  Subscript of first allocated Elist header.
+   --  Subscript of first allocated Elist header
 
    --  Element Id values are used to identify individual elements of an
    --  element list (see package Elists for further details).
@@ -696,12 +696,19 @@ package Types is
       Tag_Check,
       All_Checks);
 
-   --  The following record contains an entry for each recognized check name
+   --  The following array contains an entry for each recognized check name
    --  for pragma Suppress. It is used to represent current settings of scope
    --  based suppress actions from pragma Suppress or command line settings.
 
-   type Suppress_Array is
-     array (Check_Id range Access_Check .. Tag_Check) of Boolean;
+   --  Note: when Suppress_Array (All_Checks) is True, then generally all other
+   --  specific check entries are set True, except for the Elaboration_Check
+   --  entry which is set only if an explicit Suppress for this check is given.
+   --  The reason for this non-uniformity is that we do not want All_Checks to
+   --  suppress elaboration checking when using the static elaboration model.
+   --  We recognize only an explicit suppress of Elaboration_Check as a signal
+   --  that the static elaboration checking should skip a compile time check.
+
+   type Suppress_Array is array (Check_Id) of Boolean;
    pragma Pack (Suppress_Array);
 
    --  To add a new check type to GNAT, the following steps are required:

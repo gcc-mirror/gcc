@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2481,13 +2481,11 @@ package body Checks is
             exit when N = Right_Opnd (P)
               and then Nkind (Left_Opnd (P)) = N_Op_Eq;
 
-         --  And/And then case, left operand must be inequality test. Note that
-         --  at this stage, the expander will have changed a/=b to not (a=b).
+         --  And/And then case, left operand must be inequality test
 
          elsif K = N_Op_And or else K = N_And_Then then
             exit when N = Right_Opnd (P)
-              and then Nkind (Left_Opnd (P)) = N_Op_Not
-              and then Nkind (Right_Opnd (Left_Opnd (P))) = N_Op_Eq;
+              and then Nkind (Left_Opnd (P)) = N_Op_Ne;
          end if;
 
          N := P;
@@ -3259,15 +3257,32 @@ package body Checks is
 
    function Elaboration_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
+      --  The complication in this routine is that if we are in the dynamic
+      --  model of elaboration, we also check All_Checks, since All_Checks
+      --  does not set Elaboration_Check explicitly.
+
       if Present (E) then
          if Kill_Elaboration_Checks (E) then
             return True;
+
          elsif Checks_May_Be_Suppressed (E) then
-            return Is_Check_Suppressed (E, Elaboration_Check);
+            if Is_Check_Suppressed (E, Elaboration_Check) then
+               return True;
+            elsif Dynamic_Elaboration_Checks then
+               return Is_Check_Suppressed (E, All_Checks);
+            else
+               return False;
+            end if;
          end if;
       end if;
 
-      return Scope_Suppress (Elaboration_Check);
+      if Scope_Suppress (Elaboration_Check) then
+         return True;
+      elsif Dynamic_Elaboration_Checks then
+         return Scope_Suppress (All_Checks);
+      else
+         return False;
+      end if;
    end Elaboration_Checks_Suppressed;
 
    ---------------------------
@@ -3690,6 +3705,15 @@ package body Checks is
       then
          return;
 
+      --  No check on a univeral real constant. The context will eventually
+      --  convert it to a machine number for some target type, or report an
+      --  illegality.
+
+      elsif Nkind (Expr) = N_Real_Literal
+        and then Etype (Expr) = Universal_Real
+      then
+         return;
+
       --  An annoying special case. If this is an out parameter of a scalar
       --  type, then the value is not going to be accessed, therefore it is
       --  inappropriate to do any validity check at the call site.
@@ -3845,11 +3869,10 @@ package body Checks is
       then
          return Expr_Known_Valid (Expression (Expr));
 
-      --  The result of any function call or operator is always considered
-      --  valid, since we assume the necessary checks are done by the call.
-      --  For operators on floating-point operations, we must also check
-      --  when the operation is the right-hand side of an assignment, or
-      --  is an actual in a call.
+      --  The result of any operator is always considered valid, since we
+      --  assume the necessary checks are done by the operator. For operators
+      --  on floating-point operations, we must also check when the operation
+      --  is the right-hand side of an assignment, or is an actual in a call.
 
       elsif
         Nkind (Expr) in N_Binary_Op or else Nkind (Expr) in N_Unary_Op
@@ -3865,9 +3888,6 @@ package body Checks is
          else
             return True;
          end if;
-
-      elsif Nkind (Expr) = N_Function_Call then
-         return True;
 
       --  For all other cases, we do not know the expression is valid
 
