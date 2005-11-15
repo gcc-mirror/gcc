@@ -510,6 +510,9 @@ C++ ObjC++
 ffixed-form
 C ObjC
 
+ffixed-line-length-none
+C ObjC
+
 ffixed-line-length-
 C ObjC Joined
 
