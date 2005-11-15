@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2003 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,8 +73,9 @@ package body System.Finalization_Root is
    --  Suppress warning for out paramater Item which is not assigned
    --  because it is pretty much empty.
 
-   procedure Read (Stream : access Ada.Streams.Root_Stream_Type'Class;
-                   Item : out Root_Controlled)
+   procedure Read
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : out Root_Controlled)
    is
    begin
       null;
@@ -87,8 +88,9 @@ package body System.Finalization_Root is
    --  Read and Write must be empty in order to avoid copying the
    --  finalization pointers.
 
-   procedure Write (Stream : access Ada.Streams.Root_Stream_Type'Class;
-                    Item : in Root_Controlled)
+   procedure Write
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in Root_Controlled)
    is
    begin
       null;

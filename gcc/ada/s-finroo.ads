@@ -61,10 +61,13 @@ package System.Finalization_Root is
    procedure Finalize   (Object : in out Root_Controlled);
    procedure Adjust     (Object : in out Root_Controlled);
 
-   procedure Write     (Stream : access Ada.Streams.Root_Stream_Type'Class;
-                        Item : in Root_Controlled);
-   procedure Read      (Stream : access Ada.Streams.Root_Stream_Type'Class;
-                        Item : out Root_Controlled);
+   procedure Write
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in Root_Controlled);
+
+   procedure Read
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : out Root_Controlled);
 
    for Root_Controlled'Read use Read;
    for Root_Controlled'Write use Write;
