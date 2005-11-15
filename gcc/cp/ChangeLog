@@ -1,3 +1,8 @@
+2005-11-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_lexer_get_preprocessor_token): Initialize keyword
+	field.
+
 2005-11-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/24580

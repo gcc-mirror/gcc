@@ -420,7 +420,10 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
 	  token->value = ridpointers[token->keyword];
 	}
       else
-	token->ambiguous_p = false;
+	{
+	  token->ambiguous_p = false;
+	  token->keyword = RID_MAX;
+	}
     }
   /* Handle Objective-C++ keywords.  */
   else if (token->type == CPP_AT_NAME)
