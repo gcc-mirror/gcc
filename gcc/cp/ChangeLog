@@ -1,3 +1,11 @@
+2005-11-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24687
+	* pt.c (check_explicit_specialization): Don't check for C linkage.
+	(push_template_decl_real): Likewise.
+	* parser.c (cp_parser_explicit_specialization): Check here.
+	(cp_parser_template_declaration_after_export): And here.
+
 2005-11-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/24580

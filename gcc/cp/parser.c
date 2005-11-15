@@ -9201,6 +9201,7 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 static void
 cp_parser_explicit_specialization (cp_parser* parser)
 {
+  bool need_lang_pop;
   /* Look for the `template' keyword.  */
   cp_parser_require_keyword (parser, RID_TEMPLATE, "`template'");
   /* Look for the `<'.  */
@@ -9209,9 +9210,22 @@ cp_parser_explicit_specialization (cp_parser* parser)
   cp_parser_require (parser, CPP_GREATER, "`>'");
   /* We have processed another parameter list.  */
   ++parser->num_template_parameter_lists;
+  /* [temp]
+   
+     A template ... explicit specialization ... shall not have C
+     linkage.  */ 
+  if (current_lang_name == lang_name_c)
+    {
+      error ("template specialization with C linkage");
+      /* Give it C++ linkage to avoid confusing other parts of the
+	 front end.  */
+      push_lang_context (lang_name_cplusplus);
+      need_lang_pop = true;
+    }
+  else
+    need_lang_pop = false;
   /* Let the front end know that we are beginning a specialization.  */
   begin_specialization ();
-
   /* If the next keyword is `template', we need to figure out whether
      or not we're looking a template-declaration.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
@@ -9228,9 +9242,12 @@ cp_parser_explicit_specialization (cp_parser* parser)
     cp_parser_single_declaration (parser,
 				  /*member_p=*/false,
 				  /*friend_p=*/NULL);
-
   /* We're done with the specialization.  */
   end_specialization ();
+  /* For the erroneous case of a template with C linkage, we pushed an
+     implicit C++ linkage scope; exit that scope now.  */
+  if (need_lang_pop)
+    pop_lang_context ();
   /* We're done with this parameter list.  */
   --parser->num_template_parameter_lists;
 }
@@ -14991,6 +15008,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
   tree decl = NULL_TREE;
   tree parameter_list;
   bool friend_p = false;
+  bool need_lang_pop;
 
   /* Look for the `template' keyword.  */
   if (!cp_parser_require_keyword (parser, RID_TEMPLATE, "`template'"))
@@ -14999,7 +15017,19 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
   /* And the `<'.  */
   if (!cp_parser_require (parser, CPP_LESS, "`<'"))
     return;
-
+  /* [temp]
+   
+     A template ... shall not have C linkage.  */
+  if (current_lang_name == lang_name_c)
+    {
+      error ("template with C linkage");
+      /* Give it C++ linkage to avoid confusing other parts of the
+	 front end.  */
+      push_lang_context (lang_name_cplusplus);
+      need_lang_pop = true;
+    }
+  else
+    need_lang_pop = false;
   /* If the next token is `>', then we have an invalid
      specialization.  Rather than complain about an invalid template
      parameter, issue an error message here.  */
@@ -15060,7 +15090,10 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
   /* Register member declarations.  */
   if (member_p && !friend_p && decl && !DECL_CLASS_TEMPLATE_P (decl))
     finish_member_declaration (decl);
-
+  /* For the erroneous case of a template with C linkage, we pushed an
+     implicit C++ linkage scope; exit that scope now.  */
+  if (need_lang_pop)
+    pop_lang_context ();
   /* If DECL is a function template, we must return to parse it later.
      (Even though there is no definition, there might be default
      arguments that need handling.)  */
