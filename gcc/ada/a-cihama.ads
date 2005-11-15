@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -57,6 +57,12 @@ package Ada.Containers.Indefinite_Hashed_Maps is
 
    function "=" (Left, Right : Map) return Boolean;
 
+   function Capacity (Container : Map) return Count_Type;
+
+   procedure Reserve_Capacity
+     (Container : in out Map;
+      Capacity  : Count_Type);
+
    function Length (Container : Map) return Count_Type;
 
    function Is_Empty (Container : Map) return Boolean;
@@ -67,19 +73,21 @@ package Ada.Containers.Indefinite_Hashed_Maps is
 
    function Element (Position : Cursor) return Element_Type;
 
+   procedure Replace_Element
+     (Container : in out Map;
+      Position  : Cursor;
+      New_Item  : Element_Type);
+
    procedure Query_Element
      (Position : Cursor;
       Process  : not null access procedure (Key     : Key_Type;
                                             Element : Element_Type));
 
    procedure Update_Element
-     (Position : Cursor;
-      Process  : not null access procedure (Key     : Key_Type;
+     (Container : in out Map;
+      Position  : Cursor;
+      Process   : not null access procedure (Key     : Key_Type;
                                             Element : in out Element_Type));
-
-   procedure Replace_Element
-     (Position : Cursor;
-      By       : Element_Type);
 
    procedure Move (Target : in out Map; Source : in out Map);
 
@@ -105,29 +113,11 @@ package Ada.Containers.Indefinite_Hashed_Maps is
       Key       : Key_Type;
       New_Item  : Element_Type);
 
-   procedure Delete
-     (Container : in out Map;
-      Key       : Key_Type);
+   procedure Exclude (Container : in out Map; Key : Key_Type);
 
-   procedure Delete
-     (Container : in out Map;
-      Position  : in out Cursor);
+   procedure Delete (Container : in out Map; Key : Key_Type);
 
-   procedure Exclude
-     (Container : in out Map;
-      Key       : Key_Type);
-
-   function Contains
-     (Container : Map;
-      Key       : Key_Type) return Boolean;
-
-   function Find
-     (Container : Map;
-      Key       : Key_Type) return Cursor;
-
-   function Element
-     (Container : Map;
-      Key       : Key_Type) return Element_Type;
+   procedure Delete (Container : in out Map; Position : in out Cursor);
 
    function First (Container : Map) return Cursor;
 
@@ -135,28 +125,23 @@ package Ada.Containers.Indefinite_Hashed_Maps is
 
    procedure Next (Position : in out Cursor);
 
+   function Find (Container : Map; Key : Key_Type) return Cursor;
+
+   function Contains (Container : Map; Key : Key_Type) return Boolean;
+
+   function Element (Container : Map; Key : Key_Type) return Element_Type;
+
    function Has_Element (Position : Cursor) return Boolean;
 
-   function Equivalent_Keys (Left, Right : Cursor)
-     return Boolean;
+   function Equivalent_Keys (Left, Right : Cursor) return Boolean;
 
-   function Equivalent_Keys
-     (Left  : Cursor;
-      Right : Key_Type) return Boolean;
+   function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean;
 
-   function Equivalent_Keys
-     (Left  : Key_Type;
-      Right : Cursor) return Boolean;
+   function Equivalent_Keys (Left : Key_Type; Right : Cursor) return Boolean;
 
    procedure Iterate
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
-
-   function Capacity (Container : Map) return Count_Type;
-
-   procedure Reserve_Capacity
-     (Container : in out Map;
-      Capacity  : Count_Type);
 
 private
    pragma Inline ("=");
@@ -194,6 +179,7 @@ private
 
    use HT_Types;
    use Ada.Finalization;
+   use Ada.Streams;
 
    procedure Adjust (Container : in out Map);
 
@@ -208,11 +194,21 @@ private
          Node      : Node_Access;
       end record;
 
+   procedure Write
+     (Stream : access Root_Stream_Type'Class;
+      Item   : Cursor);
+
+   for Cursor'Write use Write;
+
+   procedure Read
+     (Stream : access Root_Stream_Type'Class;
+      Item   : out Cursor);
+
+   for Cursor'Read use Read;
+
    No_Element : constant Cursor :=
      (Container => null,
       Node      => null);
-
-   use Ada.Streams;
 
    procedure Write
      (Stream    : access Root_Stream_Type'Class;

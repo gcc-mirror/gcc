@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -61,6 +61,8 @@ package Ada.Containers.Hashed_Sets is
    function "=" (Left, Right : Set) return Boolean;
 
    function Equivalent_Sets (Left, Right : Set) return Boolean;
+
+   function To_Set (New_Item : Element_Type) return Set;
 
    function Capacity (Container : Set) return Count_Type;
 
@@ -222,6 +224,7 @@ private
 
    use HT_Types;
    use Ada.Finalization;
+   use Ada.Streams;
 
    type Set_Access is access all Set;
    for Set_Access'Storage_Size use 0;
@@ -232,9 +235,19 @@ private
          Node      : Node_Access;
       end record;
 
-   No_Element : constant Cursor := (Container => null, Node => null);
+   procedure Write
+     (Stream : access Root_Stream_Type'Class;
+      Item   : Cursor);
 
-   use Ada.Streams;
+   for Cursor'Write use Write;
+
+   procedure Read
+     (Stream : access Root_Stream_Type'Class;
+      Item   : out Cursor);
+
+   for Cursor'Read use Read;
+
+   No_Element : constant Cursor := (Container => null, Node => null);
 
    procedure Write
      (Stream    : access Root_Stream_Type'Class;

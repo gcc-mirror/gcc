@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -56,7 +56,14 @@ package Ada.Containers.Red_Black_Trees.Generic_Operations is
 
    function Max (Node : Node_Access) return Node_Access;
 
-   procedure Check_Invariant (Tree : Tree_Type);
+   --  NOTE: The Check_Invariant operation was used during early
+   --  development of the red-black tree. Now that the tree type
+   --  implementation has matured, we don't really need Check_Invariant
+   --  anymore.
+
+   --  procedure Check_Invariant (Tree : Tree_Type);
+
+   function Vet (Tree : Tree_Type; Node : Node_Access) return Boolean;
 
    function Next (Node : Node_Access) return Node_Access;
 

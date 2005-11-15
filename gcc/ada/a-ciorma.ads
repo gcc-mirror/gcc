@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -40,15 +40,15 @@ with Ada.Streams;
 
 generic
    type Key_Type (<>) is private;
-
    type Element_Type (<>) is private;
 
    with function "<" (Left, Right : Key_Type) return Boolean is <>;
-
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Indefinite_Ordered_Maps is
    pragma Preelaborate;
+
+   function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
    type Map is tagged private;
 
@@ -70,17 +70,21 @@ package Ada.Containers.Indefinite_Ordered_Maps is
 
    function Element (Position : Cursor) return Element_Type;
 
+   procedure Replace_Element
+     (Container : in out Map;
+      Position  : Cursor;
+      New_Item  : Element_Type);
+
    procedure Query_Element
      (Position : Cursor;
       Process  : not null access procedure (Key     : Key_Type;
                                             Element : Element_Type));
 
    procedure Update_Element
-     (Position : Cursor;
-      Process  : not null access procedure (Key     : Key_Type;
-                                            Element : in out Element_Type));
-
-   procedure Replace_Element (Position : Cursor; By : Element_Type);
+     (Container : in out Map;
+      Position  : Cursor;
+      Process   : not null access procedure (Key     : Key_Type;
+                                             Element : in out Element_Type));
 
    procedure Move (Target : in out Map; Source : in out Map);
 
@@ -106,53 +110,27 @@ package Ada.Containers.Indefinite_Ordered_Maps is
       Key       : Key_Type;
       New_Item  : Element_Type);
 
-   procedure Delete
-     (Container : in out Map;
-      Key       : Key_Type);
+   procedure Exclude (Container : in out Map; Key : Key_Type);
 
-   procedure Delete
-     (Container : in out Map;
-      Position  : in out Cursor);
+   procedure Delete (Container : in out Map; Key : Key_Type);
+
+   procedure Delete (Container : in out Map; Position : in out Cursor);
 
    procedure Delete_First (Container : in out Map);
 
    procedure Delete_Last (Container : in out Map);
 
-   procedure Exclude
-     (Container : in out Map;
-      Key       : Key_Type);
-
-   function Contains
-     (Container : Map;
-      Key       : Key_Type) return Boolean;
-
-   function Find
-     (Container : Map;
-      Key       : Key_Type) return Cursor;
-
-   function Element
-     (Container : Map;
-      Key       : Key_Type) return Element_Type;
-
-   function Floor
-     (Container : Map;
-      Key       : Key_Type) return Cursor;
-
-   function Ceiling
-     (Container : Map;
-      Key       : Key_Type) return Cursor;
-
    function First (Container : Map) return Cursor;
-
-   function First_Key (Container : Map) return Key_Type;
 
    function First_Element (Container : Map) return Element_Type;
 
+   function First_Key (Container : Map) return Key_Type;
+
    function Last (Container : Map) return Cursor;
 
-   function Last_Key (Container : Map) return Key_Type;
-
    function Last_Element (Container : Map) return Element_Type;
+
+   function Last_Key (Container : Map) return Key_Type;
 
    function Next (Position : Cursor) return Cursor;
 
@@ -161,6 +139,16 @@ package Ada.Containers.Indefinite_Ordered_Maps is
    function Previous (Position : Cursor) return Cursor;
 
    procedure Previous (Position : in out Cursor);
+
+   function Find (Container : Map; Key : Key_Type) return Cursor;
+
+   function Element (Container : Map; Key : Key_Type) return Element_Type;
+
+   function Floor (Container : Map; Key : Key_Type) return Cursor;
+
+   function Ceiling (Container : Map; Key : Key_Type) return Cursor;
+
+   function Contains (Container : Map; Key : Key_Type) return Boolean;
 
    function Has_Element (Position : Cursor) return Boolean;
 
@@ -216,8 +204,9 @@ private
    use Red_Black_Trees;
    use Tree_Types;
    use Ada.Finalization;
+   use Ada.Streams;
 
-   type Map_Access is access Map;
+   type Map_Access is access all Map;
    for Map_Access'Storage_Size use 0;
 
    type Cursor is record
@@ -225,9 +214,19 @@ private
       Node      : Node_Access;
    end record;
 
-   No_Element : constant Cursor := Cursor'(null, null);
+   procedure Write
+     (Stream : access Root_Stream_Type'Class;
+      Item   : Cursor);
 
-   use Ada.Streams;
+   for Cursor'Write use Write;
+
+   procedure Read
+     (Stream : access Root_Stream_Type'Class;
+      Item   : out Cursor);
+
+   for Cursor'Read use Read;
+
+   No_Element : constant Cursor := Cursor'(null, null);
 
    procedure Write
      (Stream    : access Root_Stream_Type'Class;

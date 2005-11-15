@@ -303,37 +303,6 @@ package body Ada.Containers.Vectors is
          Count);
    end Append;
 
-   ------------
-   -- Assign --
-   ------------
-
-   procedure Assign
-     (Target : in out Vector;
-      Source : Vector)
-   is
-      N : constant Count_Type := Length (Source);
-
-   begin
-      if Target'Address = Source'Address then
-         return;
-      end if;
-
-      Clear (Target);
-
-      if N = 0 then
-         return;
-      end if;
-
-      if N > Capacity (Target) then
-         Reserve_Capacity (Target, Capacity => N);
-      end if;
-
-      Target.Elements (Index_Type'First .. Source.Last) :=
-        Source.Elements (Index_Type'First .. Source.Last);
-
-      Target.Last := Source.Last;
-   end Assign;
-
    --------------
    -- Capacity --
    --------------
@@ -443,8 +412,7 @@ package body Ada.Containers.Vectors is
          raise Constraint_Error;
       end if;
 
-      if Position.Container /=
-           Vector_Access'(Container'Unchecked_Access)
+      if Position.Container /= Container'Unrestricted_Access
         or else Position.Index > Container.Last
       then
          raise Program_Error;
@@ -452,11 +420,17 @@ package body Ada.Containers.Vectors is
 
       Delete (Container, Position.Index, Count);
 
-      if Position.Index <= Container.Last then
-         Position := (Container'Unchecked_Access, Position.Index);
-      else
-         Position := No_Element;
-      end if;
+      --  This is the old behavior, prior to the York API (2005/06):
+
+      --  if Position.Index <= Container.Last then
+      --    Position := (Container'Unchecked_Access, Position.Index);
+      --  else
+      --    Position := No_Element;
+      --  end if;
+
+      --  This is the behavior specified by the York API:
+
+      Position := No_Element;
    end Delete;
 
    ------------------
@@ -539,6 +513,7 @@ package body Ada.Containers.Vectors is
 
    procedure Finalize (Container : in out Vector) is
       X : Elements_Access := Container.Elements;
+
    begin
       if Container.Busy > 0 then
          raise Program_Error;
@@ -556,13 +531,12 @@ package body Ada.Containers.Vectors is
    function Find
      (Container : Vector;
       Item      : Element_Type;
-      Position  : Cursor := No_Element) return Cursor is
-
+      Position  : Cursor := No_Element) return Cursor
+   is
    begin
       if Position.Container /= null
-        and then (Position.Container /=
-                    Vector_Access'(Container'Unchecked_Access)
-                  or else Position.Index > Container.Last)
+        and then (Position.Container /= Container'Unrestricted_Access
+                    or else Position.Index > Container.Last)
       then
          raise Program_Error;
       end if;
@@ -583,7 +557,8 @@ package body Ada.Containers.Vectors is
    function Find_Index
      (Container : Vector;
       Item      : Element_Type;
-      Index     : Index_Type := Index_Type'First) return Extended_Index is
+      Index     : Index_Type := Index_Type'First) return Extended_Index
+   is
    begin
       for Indx in Index .. Container.Last loop
          if Container.Elements (Indx) = Item then
@@ -1152,6 +1127,31 @@ package body Ada.Containers.Vectors is
       Position := Cursor'(Container'Unchecked_Access, Index);
    end Insert;
 
+   procedure Insert
+     (Container : in out Vector;
+      Before    : Extended_Index;
+      Count     : Count_Type := 1)
+   is
+      New_Item : Element_Type;  -- Default-initialized value
+      pragma Warnings (Off, New_Item);
+
+   begin
+      Insert (Container, Before, New_Item, Count);
+   end Insert;
+
+   procedure Insert
+     (Container : in out Vector;
+      Before    : Cursor;
+      Position  : out Cursor;
+      Count     : Count_Type := 1)
+   is
+      New_Item : Element_Type;  -- Default-initialized value
+      pragma Warnings (Off, New_Item);
+
+   begin
+      Insert (Container, Before, New_Item, Position, Count);
+   end Insert;
+
    ------------------
    -- Insert_Space --
    ------------------
@@ -1339,7 +1339,7 @@ package body Ada.Containers.Vectors is
          Index := Before.Index;
       end if;
 
-      Insert_Space (Container, Index, Count);
+      Insert_Space (Container, Index, Count => Count);
 
       Position := Cursor'(Container'Unchecked_Access, Index);
    end Insert_Space;
@@ -1365,7 +1365,6 @@ package body Ada.Containers.Vectors is
       B : Natural renames V.Busy;
 
    begin
-
       B := B + 1;
 
       begin
@@ -1379,7 +1378,6 @@ package body Ada.Containers.Vectors is
       end;
 
       B := B - 1;
-
    end Iterate;
 
    ----------
@@ -1620,14 +1618,22 @@ package body Ada.Containers.Vectors is
       end loop;
    end Read;
 
+   procedure Read
+     (Stream   : access Root_Stream_Type'Class;
+      Position : out Cursor)
+   is
+   begin
+      raise Program_Error;
+   end Read;
+
    ---------------------
    -- Replace_Element --
    ---------------------
 
    procedure Replace_Element
-     (Container : Vector;
+     (Container : in out Vector;
       Index     : Index_Type;
-      By        : Element_Type)
+      New_Item  : Element_Type)
    is
    begin
       if Index > Container.Last then
@@ -1638,16 +1644,24 @@ package body Ada.Containers.Vectors is
          raise Program_Error;
       end if;
 
-      Container.Elements (Index) := By;
+      Container.Elements (Index) := New_Item;
    end Replace_Element;
 
-   procedure Replace_Element (Position : Cursor; By : Element_Type) is
+   procedure Replace_Element
+     (Container : in out Vector;
+      Position  : Cursor;
+      New_Item  : Element_Type)
+   is
    begin
       if Position.Container = null then
          raise Constraint_Error;
       end if;
 
-      Replace_Element (Position.Container.all, Position.Index, By);
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error;
+      end if;
+
+      Replace_Element (Container, Position.Index, New_Item);
    end Replace_Element;
 
    ----------------------
@@ -1799,6 +1813,41 @@ package body Ada.Containers.Vectors is
       end;
    end Reserve_Capacity;
 
+   ----------------------
+   -- Reverse_Elements --
+   ----------------------
+
+   procedure Reverse_Elements (Container : in out Vector) is
+   begin
+      if Container.Length <= 1 then
+         return;
+      end if;
+
+      if Container.Lock > 0 then
+         raise Program_Error;
+      end if;
+
+      declare
+         I : Index_Type := Index_Type'First;
+         J : Index_Type := Container.Last;
+         E : Elements_Type renames Container.Elements.all;
+
+      begin
+         while I < J loop
+            declare
+               EI : constant Element_Type := E (I);
+
+            begin
+               E (I) := E (J);
+               E (J) := EI;
+            end;
+
+            I := I + 1;
+            J := J - 1;
+         end loop;
+      end;
+   end Reverse_Elements;
+
    ------------------
    -- Reverse_Find --
    ------------------
@@ -1921,7 +1970,7 @@ package body Ada.Containers.Vectors is
    -- Swap --
    ----------
 
-   procedure Swap (Container : Vector; I, J : Index_Type) is
+   procedure Swap (Container : in out Vector; I, J : Index_Type) is
    begin
       if I > Container.Last
         or else J > Container.Last
@@ -1949,7 +1998,7 @@ package body Ada.Containers.Vectors is
       end;
    end Swap;
 
-   procedure Swap (I, J : Cursor) is
+   procedure Swap (Container : in out Vector; I, J : Cursor) is
    begin
       if I.Container = null
         or else J.Container = null
@@ -1957,11 +2006,13 @@ package body Ada.Containers.Vectors is
          raise Constraint_Error;
       end if;
 
-      if I.Container /= J.Container then
+      if I.Container /= Container'Unrestricted_Access
+        or else J.Container /= Container'Unrestricted_Access
+      then
          raise Program_Error;
       end if;
 
-      Swap (I.Container.all, I.Index, J.Index);
+      Swap (Container, I.Index, J.Index);
    end Swap;
 
    ---------------
@@ -2057,13 +2108,12 @@ package body Ada.Containers.Vectors is
    --------------------
 
    procedure Update_Element
-     (Container : Vector;
+     (Container : in out Vector;
       Index     : Index_Type;
       Process   : not null access procedure (Element : in out Element_Type))
    is
-      V : Vector renames Container'Unrestricted_Access.all;
-      B : Natural renames V.Busy;
-      L : Natural renames V.Lock;
+      B : Natural renames Container.Busy;
+      L : Natural renames Container.Lock;
 
    begin
       if Index > Container.Last then
@@ -2074,7 +2124,7 @@ package body Ada.Containers.Vectors is
       L := L + 1;
 
       begin
-         Process (V.Elements (Index));
+         Process (Container.Elements (Index));
       exception
          when others =>
             L := L - 1;
@@ -2087,15 +2137,20 @@ package body Ada.Containers.Vectors is
    end Update_Element;
 
    procedure Update_Element
-     (Position : Cursor;
-      Process  : not null access procedure (Element : in out Element_Type))
+     (Container : in out Vector;
+      Position  : Cursor;
+      Process   : not null access procedure (Element : in out Element_Type))
    is
    begin
       if Position.Container = null then
          raise Constraint_Error;
       end if;
 
-      Update_Element (Position.Container.all, Position.Index, Process);
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error;
+      end if;
+
+      Update_Element (Container, Position.Index, Process);
    end Update_Element;
 
    -----------
@@ -2112,6 +2167,14 @@ package body Ada.Containers.Vectors is
       for J in Index_Type'First .. Container.Last loop
          Element_Type'Write (Stream, Container.Elements (J));
       end loop;
+   end Write;
+
+   procedure Write
+     (Stream   : access Root_Stream_Type'Class;
+      Position : Cursor)
+   is
+   begin
+      raise Program_Error;
    end Write;
 
 end Ada.Containers.Vectors;
