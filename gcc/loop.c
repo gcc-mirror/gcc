@@ -1238,13 +1238,15 @@ scan_loop (struct loop *loop, int flags)
 		 - with -Os (this certainly increases size),
 		 - if the mode doesn't support copy operations (obviously),
 		 - if the source is already a reg (the motion will gain nothing),
-		 - if the source is a legitimate constant (likewise).  */
+		 - if the source is a legitimate constant (likewise),
+	         - if the dest is a hard register (may be unrecognizable).  */
 	      else if (insert_temp
 		       && (optimize_size
 			   || ! can_copy_p (GET_MODE (SET_SRC (set)))
 			   || REG_P (SET_SRC (set))
 			   || (CONSTANT_P (SET_SRC (set))
-			       && LEGITIMATE_CONSTANT_P (SET_SRC (set)))))
+			       && LEGITIMATE_CONSTANT_P (SET_SRC (set)))
+			   || REGNO (SET_DEST (set)) < FIRST_PSEUDO_REGISTER))
 		;
 	      else if ((tem = loop_invariant_p (loop, src))
 		       && (dependencies == 0
