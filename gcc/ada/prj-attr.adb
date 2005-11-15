@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,7 @@ package body Prj.Attr is
    --        insensitive
    --    'c' same as 'b', with optional index
 
-   --  End is indicated by two consecutive '#'.
+   --  End is indicated by two consecutive '#'
 
    Initialization_Data : constant String :=
 
@@ -75,6 +75,7 @@ package body Prj.Attr is
      "SVlibrary_auto_init#" &
      "LVlibrary_options#" &
      "SVlibrary_src_dir#" &
+     "SVlibrary_ali_dir#" &
      "SVlibrary_gcc#" &
      "SVlibrary_symbol_file#" &
      "SVlibrary_symbol_policy#" &

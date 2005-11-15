@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2005, Ada Core Technologies, Inc.           --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,8 @@ with Output; use Output;
 with Namet;  use Namet;
 
 with MLib.Utl; use MLib.Utl;
+
+with Prj.Com;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
@@ -67,24 +69,24 @@ package body MLib is
    procedure Check_Library_Name (Name : String) is
    begin
       if Name'Length = 0 then
-         Fail ("library name cannot be empty");
+         Prj.Com.Fail ("library name cannot be empty");
       end if;
 
       if Name'Length > Max_Characters_In_Library_Name then
-         Fail ("illegal library name """, Name, """: too long");
+         Prj.Com.Fail ("illegal library name """, Name, """: too long");
       end if;
 
       if not Is_Letter (Name (Name'First)) then
-         Fail ("illegal library name """,
-               Name,
-               """: should start with a letter");
+         Prj.Com.Fail ("illegal library name """,
+                       Name,
+                       """: should start with a letter");
       end if;
 
       for Index in Name'Range loop
          if not Is_Alphanumeric (Name (Index)) then
-            Fail ("illegal library name """,
-                  Name,
-                  """: should include only letters and digits");
+            Prj.Com.Fail ("illegal library name """,
+                          Name,
+                          """: should include only letters and digits");
          end if;
       end loop;
    end Check_Library_Name;
@@ -273,7 +275,7 @@ package body MLib is
             end;
 
             if not Success then
-               Fail ("could not copy ALI files to library dir");
+               Prj.Com.Fail ("could not copy ALI files to library dir");
             end if;
          end loop;
       end if;

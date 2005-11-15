@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ package body Prj.Env is
    --  and ADA_OBJECTS_PATH are stored.
 
    Ada_Path_Length : Natural := 0;
-   --  Index of the last valid character in Ada_Path_Buffer.
+   --  Index of the last valid character in Ada_Path_Buffer
 
    Ada_Prj_Include_File_Set : Boolean := False;
    Ada_Prj_Objects_File_Set : Boolean := False;
@@ -270,9 +270,9 @@ package body Prj.Env is
                   if Data.Library then
                      if Data.Object_Directory = No_Name
                        or else
-                         Contains_ALI_Files (Data.Library_Dir)
+                         Contains_ALI_Files (Data.Library_ALI_Dir)
                      then
-                        Add_To_Path (Get_Name_String (Data.Library_Dir));
+                        Add_To_Path (Get_Name_String (Data.Library_ALI_Dir));
                      else
                         Add_To_Path (Get_Name_String (Data.Object_Directory));
                      end if;
@@ -2121,16 +2121,17 @@ package body Prj.Env is
                           and then
                             (not Including_Libraries or else not Data.Library))
                      then
-                        --  For a library project, add the library directory
-                        --  if there is no object directory or if the library
-                        --  directory contains ALI files; otherwise add the
-                        --  object directory.
+                        --  For a library project, add the library ALI
+                        --  directory if there is no object directory or
+                        --  if the library ALI directory contains ALI files;
+                        --  otherwise add the object directory.
 
                         if Data.Library then
                            if Data.Object_Directory = No_Name
-                             or else Contains_ALI_Files (Data.Library_Dir)
+                             or else Contains_ALI_Files (Data.Library_ALI_Dir)
                            then
-                              Add_To_Object_Path (Data.Library_Dir, In_Tree);
+                              Add_To_Object_Path
+                                (Data.Library_ALI_Dir, In_Tree);
                            else
                               Add_To_Object_Path
                                 (Data.Object_Directory, In_Tree);
@@ -2138,13 +2139,18 @@ package body Prj.Env is
 
                         --  For a non-library project, add the object
                         --  directory, if it is not a virtual project, and
-                        --  if there are Ada sources. If there are no Ada
-                        --  sources, adding the object directory could
-                        --  disrupt the order of the object dirs in the path.
+                        --  if there are Ada sources or if the project is an
+                        --  extending project. if There Are No Ada sources,
+                        --  adding the object directory could disrupt
+                        --  the order of the object dirs in the path.
 
                         elsif not Data.Virtual
-                          and then In_Tree.Projects.Table
-                                     (Project).Ada_Sources_Present
+                          and then (In_Tree.Projects.Table
+                                      (Project).Ada_Sources_Present
+                                    or else
+                                      (Data.Extends /= No_Project
+                                       and then
+                                       Data.Object_Directory /= No_Name))
                         then
                            Add_To_Object_Path
                              (Data.Object_Directory, In_Tree);
@@ -2230,7 +2236,7 @@ package body Prj.Env is
          Add (Project);
       end if;
 
-      --  Write and close any file that has been created.
+      --  Write and close any file that has been created
 
       if Source_FD /= Invalid_FD then
          for Index in Source_Path_Table.First ..
