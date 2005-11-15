@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -475,44 +475,6 @@ package body Ada.Containers.Indefinite_Vectors is
          Count);
    end Append;
 
-   ------------
-   -- Assign --
-   ------------
-
-   procedure Assign
-     (Target : in out Vector;
-      Source : Vector)
-   is
-      N : constant Count_Type := Length (Source);
-
-   begin
-      if Target'Address = Source'Address then
-         return;
-      end if;
-
-      Clear (Target);
-
-      if N = 0 then
-         return;
-      end if;
-
-      if N > Capacity (Target) then
-         Reserve_Capacity (Target, Capacity => N);
-      end if;
-
-      for J in Index_Type'First .. Source.Last loop
-         declare
-            EA : constant Element_Access := Source.Elements (J);
-         begin
-            if EA /= null then
-               Target.Elements (J) := new Element_Type'(EA.all);
-            end if;
-         end;
-
-         Target.Last := J;
-      end loop;
-   end Assign;
-
    --------------
    -- Capacity --
    --------------
@@ -553,7 +515,8 @@ package body Ada.Containers.Indefinite_Vectors is
 
    function Contains
      (Container : Vector;
-      Item      : Element_Type) return Boolean is
+      Item      : Element_Type) return Boolean
+   is
    begin
       return Find_Index (Container, Item) /= No_Index;
    end Contains;
@@ -649,8 +612,7 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Constraint_Error;
       end if;
 
-      if Position.Container /=
-           Vector_Access'(Container'Unchecked_Access)
+      if Position.Container /= Container'Unchecked_Access
         or else Position.Index > Container.Last
       then
          raise Program_Error;
@@ -658,11 +620,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
       Delete (Container, Position.Index, Count);
 
-      if Position.Index <= Container.Last then
-         Position := (Container'Unchecked_Access, Position.Index);
-      else
-         Position := No_Element;
-      end if;
+      Position := No_Element;  -- See comment in a-convec.adb
    end Delete;
 
    ------------------
@@ -738,7 +696,16 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Constraint_Error;
       end if;
 
-      return Container.Elements (Index).all;
+      declare
+         EA : constant Element_Access := Container.Elements (Index);
+
+      begin
+         if EA = null then
+            raise Constraint_Error;
+         end if;
+
+         return EA.all;
+      end;
    end Element;
 
    function Element (Position : Cursor) return Element_Type is
@@ -773,13 +740,12 @@ package body Ada.Containers.Indefinite_Vectors is
    function Find
      (Container : Vector;
       Item      : Element_Type;
-      Position  : Cursor := No_Element) return Cursor is
-
+      Position  : Cursor := No_Element) return Cursor
+   is
    begin
       if Position.Container /= null
-        and then (Position.Container /=
-                    Vector_Access'(Container'Unchecked_Access)
-                  or else Position.Index > Container.Last)
+        and then (Position.Container /= Container'Unchecked_Access
+                    or else Position.Index > Container.Last)
       then
          raise Program_Error;
       end if;
@@ -802,7 +768,8 @@ package body Ada.Containers.Indefinite_Vectors is
    function Find_Index
      (Container : Vector;
       Item      : Element_Type;
-      Index     : Index_Type := Index_Type'First) return Extended_Index is
+      Index     : Index_Type := Index_Type'First) return Extended_Index
+   is
    begin
       for Indx in Index .. Container.Last loop
          if Container.Elements (Indx) /= null
@@ -1287,7 +1254,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    begin
       if Before.Container /= null
-        and then Before.Container /= Vector_Access'(Container'Unchecked_Access)
+        and then Before.Container /= Container'Unchecked_Access
       then
          raise Program_Error;
       end if;
@@ -1843,6 +1810,10 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Constraint_Error;
       end if;
 
+      if V.Elements (Index) = null then
+         raise Constraint_Error;
+      end if;
+
       B := B + 1;
       L := L + 1;
 
@@ -1907,14 +1878,22 @@ package body Ada.Containers.Indefinite_Vectors is
       end loop;
    end Read;
 
+   procedure Read
+     (Stream   : access Root_Stream_Type'Class;
+      Position : out Cursor)
+   is
+   begin
+      raise Program_Error;
+   end Read;
+
    ---------------------
    -- Replace_Element --
    ---------------------
 
    procedure Replace_Element
-     (Container : Vector;
+     (Container : in out Vector;
       Index     : Index_Type;
-      By        : Element_Type)
+      New_Item  : Element_Type)
    is
    begin
       if Index > Container.Last then
@@ -1928,18 +1907,26 @@ package body Ada.Containers.Indefinite_Vectors is
       declare
          X : Element_Access := Container.Elements (Index);
       begin
-         Container.Elements (Index) := new Element_Type'(By);
+         Container.Elements (Index) := new Element_Type'(New_Item);
          Free (X);
       end;
    end Replace_Element;
 
-   procedure Replace_Element (Position : Cursor; By : Element_Type) is
+   procedure Replace_Element
+     (Container : in out Vector;
+      Position  : Cursor;
+      New_Item  : Element_Type)
+   is
    begin
       if Position.Container = null then
          raise Constraint_Error;
       end if;
 
-      Replace_Element (Position.Container.all, Position.Index, By);
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error;
+      end if;
+
+      Replace_Element (Container, Position.Index, New_Item);
    end Replace_Element;
 
    ----------------------
@@ -2083,6 +2070,41 @@ package body Ada.Containers.Indefinite_Vectors is
       end;
    end Reserve_Capacity;
 
+   ----------------------
+   -- Reverse_Elements --
+   ----------------------
+
+   procedure Reverse_Elements (Container : in out Vector) is
+   begin
+      if Container.Length <= 1 then
+         return;
+      end if;
+
+      if Container.Lock > 0 then
+         raise Program_Error;
+      end if;
+
+      declare
+         I : Index_Type := Index_Type'First;
+         J : Index_Type := Container.Last;
+         E : Elements_Type renames Container.Elements.all;
+
+      begin
+         while I < J loop
+            declare
+               EI : constant Element_Access := E (I);
+
+            begin
+               E (I) := E (J);
+               E (J) := EI;
+            end;
+
+            I := I + 1;
+            J := J - 1;
+         end loop;
+      end;
+   end Reverse_Elements;
+
    ------------------
    -- Reverse_Find --
    ------------------
@@ -2096,8 +2118,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    begin
       if Position.Container /= null
-        and then Position.Container /=
-                   Vector_Access'(Container'Unchecked_Access)
+        and then Position.Container /= Container'Unchecked_Access
       then
          raise Program_Error;
       end if;
@@ -2230,7 +2251,7 @@ package body Ada.Containers.Indefinite_Vectors is
    ----------
 
    procedure Swap
-     (Container : Vector;
+     (Container : in out Vector;
       I, J      : Index_Type)
    is
    begin
@@ -2260,7 +2281,9 @@ package body Ada.Containers.Indefinite_Vectors is
       end;
    end Swap;
 
-   procedure Swap (I, J : Cursor)
+   procedure Swap
+     (Container : in out Vector;
+      I, J      : Cursor)
    is
    begin
       if I.Container = null
@@ -2269,11 +2292,13 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Constraint_Error;
       end if;
 
-      if I.Container /= J.Container then
+      if I.Container /= Container'Unrestricted_Access
+        or else J.Container /= Container'Unrestricted_Access
+      then
          raise Program_Error;
       end if;
 
-      Swap (I.Container.all, I.Index, J.Index);
+      Swap (Container, I.Index, J.Index);
    end Swap;
 
    ---------------
@@ -2387,16 +2412,19 @@ package body Ada.Containers.Indefinite_Vectors is
    --------------------
 
    procedure Update_Element
-     (Container : Vector;
+     (Container : in out Vector;
       Index     : Index_Type;
       Process   : not null access procedure (Element : in out Element_Type))
    is
-      V : Vector renames Container'Unrestricted_Access.all;
-      B : Natural renames V.Busy;
-      L : Natural renames V.Lock;
+      B : Natural renames Container.Busy;
+      L : Natural renames Container.Lock;
 
    begin
       if Index > Container.Last then
+         raise Constraint_Error;
+      end if;
+
+      if Container.Elements (Index) = null then
          raise Constraint_Error;
       end if;
 
@@ -2404,7 +2432,7 @@ package body Ada.Containers.Indefinite_Vectors is
       L := L + 1;
 
       begin
-         Process (V.Elements (Index).all);
+         Process (Container.Elements (Index).all);
       exception
          when others =>
             L := L - 1;
@@ -2417,15 +2445,20 @@ package body Ada.Containers.Indefinite_Vectors is
    end Update_Element;
 
    procedure Update_Element
-     (Position : Cursor;
-      Process  : not null access procedure (Element : in out Element_Type))
+     (Container : in out Vector;
+      Position  : Cursor;
+      Process   : not null access procedure (Element : in out Element_Type))
    is
    begin
       if Position.Container = null then
          raise Constraint_Error;
       end if;
 
-      Update_Element (Position.Container.all, Position.Index, Process);
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error;
+      end if;
+
+      Update_Element (Container, Position.Index, Process);
    end Update_Element;
 
    -----------
@@ -2464,6 +2497,14 @@ package body Ada.Containers.Indefinite_Vectors is
             end if;
          end loop;
       end;
+   end Write;
+
+   procedure Write
+     (Stream   : access Root_Stream_Type'Class;
+      Position : Cursor)
+   is
+   begin
+      raise Program_Error;
    end Write;
 
 end Ada.Containers.Indefinite_Vectors;

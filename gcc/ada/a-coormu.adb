@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -84,6 +84,13 @@ package body Ada.Containers.Ordered_Multisets is
    function Copy_Node (Source : Node_Access) return Node_Access;
    pragma Inline (Copy_Node);
 
+   procedure Free (X : in out Node_Access);
+
+   procedure Insert_Sans_Hint
+     (Tree     : in out Tree_Type;
+      New_Item : Element_Type;
+      Node     : out Node_Access);
+
    procedure Insert_With_Hint
      (Dst_Tree : in out Tree_Type;
       Dst_Hint : Node_Access;
@@ -114,9 +121,6 @@ package body Ada.Containers.Ordered_Multisets is
    --------------------------
    -- Local Instantiations --
    --------------------------
-
-   procedure Free is
-     new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
 
    package Tree_Operations is
      new Red_Black_Trees.Generic_Operations (Tree_Types);
@@ -154,18 +158,44 @@ package body Ada.Containers.Ordered_Multisets is
 
    function "<" (Left, Right : Cursor) return Boolean is
    begin
+      if Left.Node = null
+        or else Right.Node = null
+      then
+         raise Constraint_Error;
+      end if;
+
+      pragma Assert (Vet (Left.Container.Tree, Left.Node),
+                     "bad Left cursor in ""<""");
+
+      pragma Assert (Vet (Right.Container.Tree, Right.Node),
+                     "bad Right cursor in ""<""");
+
       return Left.Node.Element < Right.Node.Element;
    end "<";
 
    function "<" (Left : Cursor; Right : Element_Type)
       return Boolean is
    begin
+      if Left.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      pragma Assert (Vet (Left.Container.Tree, Left.Node),
+                     "bad Left cursor in ""<""");
+
       return Left.Node.Element < Right;
    end "<";
 
    function "<" (Left : Element_Type; Right : Cursor)
       return Boolean is
    begin
+      if Right.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      pragma Assert (Vet (Right.Container.Tree, Right.Node),
+                     "bad Right cursor in ""<""");
+
       return Left < Right.Node.Element;
    end "<";
 
@@ -184,6 +214,18 @@ package body Ada.Containers.Ordered_Multisets is
 
    function ">" (Left, Right : Cursor) return Boolean is
    begin
+      if Left.Node = null
+        or else Right.Node = null
+      then
+         raise Constraint_Error;
+      end if;
+
+      pragma Assert (Vet (Left.Container.Tree, Left.Node),
+                     "bad Left cursor in "">""");
+
+      pragma Assert (Vet (Right.Container.Tree, Right.Node),
+                     "bad Right cursor in "">""");
+
       --  L > R same as R < L
 
       return Right.Node.Element < Left.Node.Element;
@@ -192,12 +234,26 @@ package body Ada.Containers.Ordered_Multisets is
    function ">" (Left : Cursor; Right : Element_Type)
       return Boolean is
    begin
+      if Left.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      pragma Assert (Vet (Left.Container.Tree, Left.Node),
+                     "bad Left cursor in "">""");
+
       return Right < Left.Node.Element;
    end ">";
 
    function ">" (Left : Element_Type; Right : Cursor)
       return Boolean is
    begin
+      if Right.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      pragma Assert (Vet (Right.Container.Tree, Right.Node),
+                     "bad Right cursor in "">""");
+
       return Right.Node.Element < Left;
    end ">";
 
@@ -299,7 +355,7 @@ package body Ada.Containers.Ordered_Multisets is
       end loop;
    end Delete;
 
-   procedure Delete (Container : in out Set; Position  : in out Cursor) is
+   procedure Delete (Container : in out Set; Position : in out Cursor) is
    begin
       if Position.Node = null then
          raise Constraint_Error;
@@ -308,6 +364,9 @@ package body Ada.Containers.Ordered_Multisets is
       if Position.Container /= Container'Unrestricted_Access then
          raise Program_Error;
       end if;
+
+      pragma Assert (Vet (Container.Tree, Position.Node),
+                     "bad cursor in Delete");
 
       Delete_Node_Sans_Free (Container.Tree, Position.Node);
       Free (Position.Node);
@@ -371,8 +430,30 @@ package body Ada.Containers.Ordered_Multisets is
 
    function Element (Position : Cursor) return Element_Type is
    begin
+      if Position.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Element");
+
       return Position.Node.Element;
    end Element;
+
+   -------------------------
+   -- Equivalent_Elements --
+   -------------------------
+
+   function Equivalent_Elements (Left, Right : Element_Type) return Boolean is
+   begin
+      if Left < Right
+        or else Right < Left
+      then
+         return False;
+      else
+         return True;
+      end if;
+   end Equivalent_Elements;
 
    ---------------------
    -- Equivalent_Sets --
@@ -460,6 +541,10 @@ package body Ada.Containers.Ordered_Multisets is
 
    function First_Element (Container : Set) return Element_Type is
    begin
+      if Container.Tree.First = null then
+         raise Constraint_Error;
+      end if;
+
       return Container.Tree.First.Element;
    end First_Element;
 
@@ -478,6 +563,24 @@ package body Ada.Containers.Ordered_Multisets is
 
       return Cursor'(Container'Unrestricted_Access, Node);
    end Floor;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (X : in out Node_Access) is
+      procedure Deallocate is
+         new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
+
+   begin
+      if X /= null then
+         X.Parent := X;
+         X.Left := X;
+         X.Right := X;
+
+         Deallocate (X);
+      end if;
+   end Free;
 
    ------------------
    -- Generic_Keys --
@@ -509,34 +612,6 @@ package body Ada.Containers.Ordered_Multisets is
            Key_Type            => Key_Type,
            Is_Less_Key_Node    => Is_Less_Key_Node,
            Is_Greater_Key_Node => Is_Greater_Key_Node);
-
-      ---------
-      -- "<" --
-      ---------
-
-      function "<" (Left : Key_Type; Right : Cursor) return Boolean is
-      begin
-         return Left < Right.Node.Element;
-      end "<";
-
-      function "<" (Left : Cursor; Right : Key_Type) return Boolean is
-      begin
-         return Right > Left.Node.Element;
-      end "<";
-
-      ---------
-      -- ">" --
-      ---------
-
-      function ">" (Left : Cursor; Right : Key_Type) return Boolean is
-      begin
-         return Right < Left.Node.Element;
-      end ">";
-
-      function ">" (Left : Key_Type; Right : Cursor) return Boolean is
-      begin
-         return Left > Right.Node.Element;
-      end ">";
 
       -------------
       -- Ceiling --
@@ -596,8 +671,27 @@ package body Ada.Containers.Ordered_Multisets is
          Node : constant Node_Access :=
                   Key_Keys.Find (Container.Tree, Key);
       begin
+         if Node = null then
+            raise Constraint_Error;
+         end if;
+
          return Node.Element;
       end Element;
+
+      ---------------------
+      -- Equivalent_Keys --
+      ---------------------
+
+      function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
+      begin
+         if Left < Right
+           or else Right < Left
+         then
+            return False;
+         else
+            return True;
+         end if;
+      end Equivalent_Keys;
 
       -------------
       -- Exclude --
@@ -608,6 +702,7 @@ package body Ada.Containers.Ordered_Multisets is
          Node : Node_Access := Key_Keys.Ceiling (Tree, Key);
          Done : constant Node_Access := Key_Keys.Upper_Bound (Tree, Key);
          X    : Node_Access;
+
       begin
          while Node /= Done loop
             X := Node;
@@ -657,7 +752,7 @@ package body Ada.Containers.Ordered_Multisets is
         (Left  : Key_Type;
          Right : Node_Access) return Boolean is
       begin
-         return Left > Right.Element;
+         return Key (Right.Element) < Left;
       end Is_Greater_Key_Node;
 
       ----------------------
@@ -668,7 +763,7 @@ package body Ada.Containers.Ordered_Multisets is
         (Left  : Key_Type;
          Right : Node_Access) return Boolean is
       begin
-         return Left < Right.Element;
+         return Left < Key (Right.Element);
       end Is_Less_Key_Node;
 
       -------------
@@ -720,6 +815,13 @@ package body Ada.Containers.Ordered_Multisets is
 
       function Key (Position : Cursor) return Key_Type is
       begin
+         if Position.Node = null then
+            raise Constraint_Error;
+         end if;
+
+         pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                        "bad cursor in Key");
+
          return Key (Position.Node.Element);
       end Key;
 
@@ -786,9 +888,12 @@ package body Ada.Containers.Ordered_Multisets is
             raise Program_Error;
          end if;
 
+         pragma Assert (Vet (Container.Tree, Position.Node),
+                        "bad cursor in Update_Element_Preserving_Key");
+
          declare
             E : Element_Type renames Position.Node.Element;
-            K : Key_Type renames Key (E);
+            K : constant Key_Type := Key (E);
 
             B : Natural renames Tree.Busy;
             L : Natural renames Tree.Lock;
@@ -809,11 +914,7 @@ package body Ada.Containers.Ordered_Multisets is
             L := L - 1;
             B := B - 1;
 
-            if K < E
-              or else K > E
-            then
-               null;
-            else
+            if Equivalent_Keys (Left => K, Right => Key (E)) then
                return;
             end if;
          end;
@@ -854,6 +955,24 @@ package body Ada.Containers.Ordered_Multisets is
       New_Item  : Element_Type;
       Position  : out Cursor)
    is
+   begin
+      Insert_Sans_Hint
+        (Container.Tree,
+         New_Item,
+         Position.Node);
+
+      Position.Container := Container'Unrestricted_Access;
+   end Insert;
+
+   ----------------------
+   -- Insert_Sans_Hint --
+   ----------------------
+
+   procedure Insert_Sans_Hint
+     (Tree     : in out Tree_Type;
+      New_Item : Element_Type;
+      Node     : out Node_Access)
+   is
       function New_Node return Node_Access;
       pragma Inline (New_Node);
 
@@ -869,25 +988,23 @@ package body Ada.Containers.Ordered_Multisets is
 
       function New_Node return Node_Access is
          Node : constant Node_Access :=
-                  new Node_Type'(Parent => null,
-                                 Left   => null,
-                                 Right  => null,
-                                 Color  => Red,
+                  new Node_Type'(Parent  => null,
+                                 Left    => null,
+                                 Right   => null,
+                                 Color   => Red_Black_Trees.Red,
                                  Element => New_Item);
       begin
          return Node;
       end New_Node;
 
-   --  Start of processing for Insert
+   --  Start of processing for Insert_Sans_Hint
 
    begin
       Unconditional_Insert_Sans_Hint
-        (Container.Tree,
+        (Tree,
          New_Item,
-         Position.Node);
-
-      Position.Container := Container'Unrestricted_Access;
-   end Insert;
+         Node);
+   end Insert_Sans_Hint;
 
    ----------------------
    -- Insert_With_Hint --
@@ -1116,6 +1233,10 @@ package body Ada.Containers.Ordered_Multisets is
 
    function Last_Element (Container : Set) return Element_Type is
    begin
+      if Container.Tree.Last = null then
+         raise Constraint_Error;
+      end if;
+
       return Container.Tree.Last.Element;
    end Last_Element;
 
@@ -1165,6 +1286,9 @@ package body Ada.Containers.Ordered_Multisets is
          return No_Element;
       end if;
 
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Next");
+
       declare
          Node : constant Node_Access :=
                   Tree_Operations.Next (Position.Node);
@@ -1211,6 +1335,9 @@ package body Ada.Containers.Ordered_Multisets is
          return No_Element;
       end if;
 
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Previous");
+
       declare
          Node : constant Node_Access :=
                   Tree_Operations.Previous (Position.Node);
@@ -1231,29 +1358,36 @@ package body Ada.Containers.Ordered_Multisets is
      (Position : Cursor;
       Process  : not null access procedure (Element : Element_Type))
    is
-      E : Element_Type renames Position.Node.Element;
-
-      S : Set renames Position.Container.all;
-      T : Tree_Type renames S.Tree'Unrestricted_Access.all;
-
-      B : Natural renames T.Busy;
-      L : Natural renames T.Lock;
-
    begin
-      B := B + 1;
-      L := L + 1;
+      if Position.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Query_Element");
+
+      declare
+         T : Tree_Type renames Position.Container.Tree;
+
+         B : Natural renames T.Busy;
+         L : Natural renames T.Lock;
 
       begin
-         Process (E);
-      exception
-         when others =>
-            L := L - 1;
-            B := B - 1;
-            raise;
-      end;
+         B := B + 1;
+         L := L + 1;
 
-      L := L - 1;
-      B := B - 1;
+         begin
+            Process (Position.Node.Element);
+         exception
+            when others =>
+               L := L - 1;
+               B := B - 1;
+               raise;
+         end;
+
+         L := L - 1;
+         B := B - 1;
+      end;
    end Query_Element;
 
    ----------
@@ -1292,6 +1426,14 @@ package body Ada.Containers.Ordered_Multisets is
 
    begin
       Read (Stream, Container.Tree);
+   end Read;
+
+   procedure Read
+     (Stream : access Root_Stream_Type'Class;
+      Item   : out Cursor)
+   is
+   begin
+      raise Program_Error;
    end Read;
 
    ---------------------
@@ -1336,6 +1478,11 @@ package body Ada.Containers.Ordered_Multisets is
          function New_Node return Node_Access is
          begin
             Node.Element := Item;
+            Node.Color := Red_Black_Trees.Red;
+            Node.Parent := null;
+            Node.Left := null;
+            Node.Right := null;
+
             return Node;
          end New_Node;
 
@@ -1354,12 +1501,10 @@ package body Ada.Containers.Ordered_Multisets is
    end Replace_Element;
 
    procedure Replace_Element
-     (Container : Set;
+     (Container : in out Set;
       Position  : Cursor;
-      By        : Element_Type)
+      New_Item  : Element_Type)
    is
-      Tree : Tree_Type renames Container.Tree'Unrestricted_Access.all;
-
    begin
       if Position.Node = null then
          raise Constraint_Error;
@@ -1369,7 +1514,10 @@ package body Ada.Containers.Ordered_Multisets is
          raise Program_Error;
       end if;
 
-      Replace_Element (Tree, Position.Node, By);
+      pragma Assert (Vet (Container.Tree, Position.Node),
+                     "bad cursor in Replace_Element");
+
+      Replace_Element (Container.Tree, Position.Node, New_Item);
    end Replace_Element;
 
    ---------------------
@@ -1514,6 +1662,19 @@ package body Ada.Containers.Ordered_Multisets is
       return Set'(Controlled with Tree);
    end Symmetric_Difference;
 
+   ------------
+   -- To_Set --
+   ------------
+
+   function To_Set (New_Item : Element_Type) return Set is
+      Tree     : Tree_Type;
+      Node     : Node_Access;
+
+   begin
+      Insert_Sans_Hint (Tree, New_Item, Node);
+      return Set'(Controlled with Tree);
+   end To_Set;
+
    -----------
    -- Union --
    -----------
@@ -1562,6 +1723,14 @@ package body Ada.Containers.Ordered_Multisets is
 
    begin
       Write (Stream, Container.Tree);
+   end Write;
+
+   procedure Write
+     (Stream : access Root_Stream_Type'Class;
+      Item   : Cursor)
+   is
+   begin
+      raise Program_Error;
    end Write;
 
 end Ada.Containers.Ordered_Multisets;

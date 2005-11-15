@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -135,16 +135,56 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function "<" (Left, Right : Cursor) return Boolean is
    begin
+      if Left.Node = null
+        or else Right.Node = null
+      then
+         raise Constraint_Error;
+      end if;
+
+      if Left.Node.Key = null
+        or else Right.Node.Key = null
+      then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Left.Container.Tree, Left.Node),
+                     "bad Left cursor in ""<""");
+
+      pragma Assert (Vet (Right.Container.Tree, Right.Node),
+                     "bad Right cursor in ""<""");
+
       return Left.Node.Key.all < Right.Node.Key.all;
    end "<";
 
    function "<" (Left : Cursor; Right : Key_Type) return Boolean is
    begin
+      if Left.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      if Left.Node.Key = null then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Left.Container.Tree, Left.Node),
+                     "bad Left cursor in ""<""");
+
       return Left.Node.Key.all < Right;
    end "<";
 
    function "<" (Left : Key_Type; Right : Cursor) return Boolean is
    begin
+      if Right.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      if Right.Node.Key = null then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Right.Container.Tree, Right.Node),
+                     "bad Right cursor in ""<""");
+
       return Left < Right.Node.Key.all;
    end "<";
 
@@ -163,16 +203,56 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function ">" (Left, Right : Cursor) return Boolean is
    begin
+      if Left.Node = null
+        or else Right.Node = null
+      then
+         raise Constraint_Error;
+      end if;
+
+      if Left.Node.Key = null
+        or else Right.Node.Key = null
+      then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Left.Container.Tree, Left.Node),
+                     "bad Left cursor in "">""");
+
+      pragma Assert (Vet (Right.Container.Tree, Right.Node),
+                     "bad Right cursor in "">""");
+
       return Right.Node.Key.all < Left.Node.Key.all;
    end ">";
 
    function ">" (Left : Cursor; Right : Key_Type) return Boolean is
    begin
+      if Left.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      if Left.Node.Key = null then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Left.Container.Tree, Left.Node),
+                     "bad Left cursor in "">""");
+
       return Right < Left.Node.Key.all;
    end ">";
 
    function ">" (Left : Key_Type; Right : Cursor) return Boolean is
    begin
+      if Right.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      if Right.Node.Key = null then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Right.Container.Tree, Right.Node),
+                     "bad Right cursor in "">""");
+
       return Right.Node.Key.all < Left;
    end ">";
 
@@ -194,12 +274,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function Ceiling (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Node_Access := Key_Ops.Ceiling (Container.Tree, Key);
+
    begin
       if Node = null then
          return No_Element;
-      else
-         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
+
+      return Cursor'(Container'Unrestricted_Access, Node);
    end Ceiling;
 
    -----------
@@ -268,11 +349,20 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          raise Constraint_Error;
       end if;
 
-      if Position.Container /= Map_Access'(Container'Unrestricted_Access) then
+      if Position.Node.Key = null
+        or else Position.Node.Element = null
+      then
          raise Program_Error;
       end if;
 
-      Delete_Node_Sans_Free (Container.Tree, Position.Node);
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Container.Tree, Position.Node),
+                     "bad cursor in Delete");
+
+      Tree_Operations.Delete_Node_Sans_Free (Container.Tree, Position.Node);
       Free (Position.Node);
 
       Position.Container := null;
@@ -280,13 +370,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    procedure Delete (Container : in out Map; Key : Key_Type) is
       X : Node_Access := Key_Ops.Find (Container.Tree, Key);
+
    begin
       if X = null then
          raise Constraint_Error;
-      else
-         Delete_Node_Sans_Free (Container.Tree, X);
-         Free (X);
       end if;
+
+      Delete_Node_Sans_Free (Container.Tree, X);
+      Free (X);
    end Delete;
 
    ------------------
@@ -295,6 +386,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    procedure Delete_First (Container : in out Map) is
       X : Node_Access := Container.Tree.First;
+
    begin
       if X /= null then
          Tree_Operations.Delete_Node_Sans_Free (Container.Tree, X);
@@ -308,6 +400,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    procedure Delete_Last (Container : in out Map) is
       X : Node_Access := Container.Tree.Last;
+
    begin
       if X /= null then
          Tree_Operations.Delete_Node_Sans_Free (Container.Tree, X);
@@ -321,14 +414,45 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function Element (Position : Cursor) return Element_Type is
    begin
+      if Position.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      if Position.Node.Element = null then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Element");
+
       return Position.Node.Element.all;
    end Element;
 
    function Element (Container : Map; Key : Key_Type) return Element_Type is
       Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
+
    begin
+      if Node = null then
+         raise Constraint_Error;
+      end if;
+
       return Node.Element.all;
    end Element;
+
+   ---------------------
+   -- Equivalent_Keys --
+   ---------------------
+
+   function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
+   begin
+      if Left < Right
+        or else Right < Left
+      then
+         return False;
+      else
+         return True;
+      end if;
+   end Equivalent_Keys;
 
    -------------
    -- Exclude --
@@ -339,7 +463,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    begin
       if X /= null then
-         Delete_Node_Sans_Free (Container.Tree, X);
+         Tree_Operations.Delete_Node_Sans_Free (Container.Tree, X);
          Free (X);
       end if;
    end Exclude;
@@ -350,12 +474,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
+
    begin
       if Node = null then
          return No_Element;
-      else
-         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
+
+      return Cursor'(Container'Unrestricted_Access, Node);
    end Find;
 
    -----------
@@ -363,12 +488,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    -----------
 
    function First (Container : Map) return Cursor is
+      T : Tree_Type renames Container.Tree;
+
    begin
-      if Container.Tree.First = null then
+      if T.First = null then
          return No_Element;
-      else
-         return Cursor'(Container'Unrestricted_Access, Container.Tree.First);
       end if;
+
+      return Cursor'(Container'Unrestricted_Access, T.First);
    end First;
 
    -------------------
@@ -376,8 +503,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    -------------------
 
    function First_Element (Container : Map) return Element_Type is
+      T : Tree_Type renames Container.Tree;
+
    begin
-      return Container.Tree.First.Element.all;
+      if T.First = null then
+         raise Constraint_Error;
+      end if;
+
+      return T.First.Element.all;
    end First_Element;
 
    ---------------
@@ -385,8 +518,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    ---------------
 
    function First_Key (Container : Map) return Key_Type is
+      T : Tree_Type renames Container.Tree;
+
    begin
-      return Container.Tree.First.Key.all;
+      if T.First = null then
+         raise Constraint_Error;
+      end if;
+
+      return T.First.Key.all;
    end First_Key;
 
    -----------
@@ -395,12 +534,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function Floor (Container : Map; Key : Key_Type) return Cursor is
       Node : constant Node_Access := Key_Ops.Floor (Container.Tree, Key);
+
    begin
       if Node = null then
          return No_Element;
-      else
-         return Cursor'(Container'Unrestricted_Access, Node);
       end if;
+
+      return Cursor'(Container'Unrestricted_Access, Node);
    end Floor;
 
    ----------
@@ -410,10 +550,15 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    procedure Free (X : in out Node_Access) is
       procedure Deallocate is
         new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
+
    begin
       if X = null then
          return;
       end if;
+
+      X.Parent := X;
+      X.Left := X;
+      X.Right := X;
 
       begin
          Free_Key (X.Key);
@@ -664,6 +809,17 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function Key (Position : Cursor) return Key_Type is
    begin
+      if Position.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      if Position.Node.Key = null then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Key");
+
       return Position.Node.Key.all;
    end Key;
 
@@ -672,12 +828,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    ----------
 
    function Last (Container : Map) return Cursor is
+      T : Tree_Type renames Container.Tree;
+
    begin
-      if Container.Tree.Last = null then
+      if T.Last = null then
          return No_Element;
-      else
-         return Cursor'(Container'Unrestricted_Access, Container.Tree.Last);
       end if;
+
+      return Cursor'(Container'Unrestricted_Access, T.Last);
    end Last;
 
    ------------------
@@ -685,8 +843,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    ------------------
 
    function Last_Element (Container : Map) return Element_Type is
+      T : Tree_Type renames Container.Tree;
+
    begin
-      return Container.Tree.Last.Element.all;
+      if T.Last = null then
+         raise Constraint_Error;
+      end if;
+
+      return T.Last.Element.all;
    end Last_Element;
 
    --------------
@@ -694,8 +858,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    --------------
 
    function Last_Key (Container : Map) return Key_Type is
+      T : Tree_Type renames Container.Tree;
+
    begin
-      return Container.Tree.Last.Key.all;
+      if T.Last = null then
+         raise Constraint_Error;
+      end if;
+
+      return T.Last.Key.all;
    end Last_Key;
 
    ----------
@@ -738,8 +908,16 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          return No_Element;
       end if;
 
+      pragma Assert (Position.Node /= null);
+      pragma Assert (Position.Node.Key /= null);
+      pragma Assert (Position.Node.Element /= null);
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Next");
+
       declare
-         Node : constant Node_Access := Tree_Operations.Next (Position.Node);
+         Node : constant Node_Access :=
+                  Tree_Operations.Next (Position.Node);
+
       begin
          if Node = null then
             return No_Element;
@@ -773,9 +951,16 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          return No_Element;
       end if;
 
+      pragma Assert (Position.Node /= null);
+      pragma Assert (Position.Node.Key /= null);
+      pragma Assert (Position.Node.Element /= null);
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Previous");
+
       declare
          Node : constant Node_Access :=
-           Tree_Operations.Previous (Position.Node);
+                  Tree_Operations.Previous (Position.Node);
+
       begin
          if Node = null then
             return No_Element;
@@ -799,29 +984,46 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Process  : not null access procedure (Key     : Key_Type;
                                             Element : Element_Type))
    is
-      K : Key_Type renames Position.Node.Key.all;
-      E : Element_Type renames Position.Node.Element.all;
-
-      T : Tree_Type renames Position.Container.Tree;
-
-      B : Natural renames T.Busy;
-      L : Natural renames T.Lock;
-
    begin
-      B := B + 1;
-      L := L + 1;
+      if Position.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      if Position.Node.Key = null
+        or else Position.Node.Element = null
+      then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Position.Container.Tree, Position.Node),
+                     "bad cursor in Query_Element");
+
+      declare
+         T : Tree_Type renames Position.Container.Tree;
+
+         B : Natural renames T.Busy;
+         L : Natural renames T.Lock;
 
       begin
-         Process (K, E);
-      exception
-         when others =>
-            L := L - 1;
-            B := B - 1;
-            raise;
-      end;
+         B := B + 1;
+         L := L + 1;
 
-      L := L - 1;
-      B := B - 1;
+         declare
+            K : Key_Type renames Position.Node.Key.all;
+            E : Element_Type renames Position.Node.Element.all;
+
+         begin
+            Process (K, E);
+         exception
+            when others =>
+               L := L - 1;
+               B := B - 1;
+               raise;
+         end;
+
+         L := L - 1;
+         B := B - 1;
+      end;
    end Query_Element;
 
    ----------
@@ -861,6 +1063,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    begin
       Read (Stream, Container.Tree);
+   end Read;
+
+   procedure Read
+     (Stream : access Root_Stream_Type'Class;
+      Item   : out Cursor)
+   is
+   begin
+      raise Program_Error;
    end Read;
 
    -------------
@@ -908,15 +1118,40 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    -- Replace_Element --
    ---------------------
 
-   procedure Replace_Element (Position : Cursor; By : Element_Type) is
-      X : Element_Access := Position.Node.Element;
+   procedure Replace_Element
+     (Container : in out Map;
+      Position  : Cursor;
+      New_Item  : Element_Type)
+   is
    begin
-      if Position.Container.Tree.Lock > 0 then
+      if Position.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      if Position.Node.Key = null
+        or else Position.Node.Element = null
+      then
          raise Program_Error;
       end if;
 
-      Position.Node.Element := new Element_Type'(By);
-      Free_Element (X);
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error;
+      end if;
+
+      if Container.Tree.Lock > 0 then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Container.Tree, Position.Node),
+                     "bad cursor in Replace_Element");
+
+      declare
+         X : Element_Access := Position.Node.Element;
+
+      begin
+         Position.Node.Element := new Element_Type'(New_Item);
+         Free_Element (X);
+      end;
    end Replace_Element;
 
    ---------------------
@@ -1010,33 +1245,55 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    --------------------
 
    procedure Update_Element
-     (Position : Cursor;
-      Process  : not null access procedure (Key     : Key_Type;
-                                            Element : in out Element_Type))
+     (Container : in out Map;
+      Position  : Cursor;
+      Process   : not null access procedure (Key     : Key_Type;
+                                             Element : in out Element_Type))
    is
-      K : Key_Type renames Position.Node.Key.all;
-      E : Element_Type renames Position.Node.Element.all;
-
-      T : Tree_Type renames Position.Container.Tree;
-
-      B : Natural renames T.Busy;
-      L : Natural renames T.Lock;
-
    begin
-      B := B + 1;
-      L := L + 1;
+      if Position.Node = null then
+         raise Constraint_Error;
+      end if;
+
+      if Position.Node.Key = null
+        or else Position.Node.Element = null
+      then
+         raise Program_Error;
+      end if;
+
+      if Position.Container /= Container'Unrestricted_Access then
+         raise Program_Error;
+      end if;
+
+      pragma Assert (Vet (Container.Tree, Position.Node),
+                     "bad cursor in Update_Element");
+
+      declare
+         T : Tree_Type renames Position.Container.Tree;
+
+         B : Natural renames T.Busy;
+         L : Natural renames T.Lock;
 
       begin
-         Process (K, E);
-      exception
-         when others =>
-            L := L - 1;
-            B := B - 1;
-            raise;
-      end;
+         B := B + 1;
+         L := L + 1;
 
-      L := L - 1;
-      B := B - 1;
+         declare
+            K : Key_Type renames Position.Node.Key.all;
+            E : Element_Type renames Position.Node.Element.all;
+
+         begin
+            Process (K, E);
+         exception
+            when others =>
+               L := L - 1;
+               B := B - 1;
+               raise;
+         end;
+
+         L := L - 1;
+         B := B - 1;
+      end;
    end Update_Element;
 
    -----------
@@ -1072,6 +1329,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    begin
       Write (Stream, Container.Tree);
+   end Write;
+
+   procedure Write
+     (Stream : access Root_Stream_Type'Class;
+      Item   : Cursor)
+   is
+   begin
+      raise Program_Error;
    end Write;
 
 end Ada.Containers.Indefinite_Ordered_Maps;

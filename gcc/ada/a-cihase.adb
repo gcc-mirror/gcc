@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -72,6 +72,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    function Hash_Node (Node : Node_Access) return Hash_Type;
    pragma Inline (Hash_Node);
+
+   procedure Insert
+     (HT       : in out Hash_Table_Type;
+      New_Item : Element_Type;
+      Node     : out Node_Access;
+      Inserted : out Boolean);
 
    function Is_In (HT  : Hash_Table_Type; Key : Node_Access) return Boolean;
    pragma Inline (Is_In);
@@ -326,13 +332,16 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          begin
             if not Is_In (Right.HT, L_Node) then
                declare
-                  Indx : constant Hash_Type :=
-                           Hash (L_Node.Element.all) mod Buckets'Length;
-
+                  Src    : Element_Type renames L_Node.Element.all;
+                  Indx   : constant Hash_Type := Hash (Src) mod Buckets'Length;
                   Bucket : Node_Access renames Buckets (Indx);
-
+                  Tgt    : Element_Access := new Element_Type'(Src);
                begin
-                  Bucket := new Node_Type'(L_Node.Element, Bucket);
+                  Bucket := new Node_Type'(Tgt, Bucket);
+               exception
+                  when others =>
+                     Free_Element (Tgt);
+                     raise;
                end;
 
                Length := Length + 1;
@@ -644,6 +653,32 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Position  : out Cursor;
       Inserted  : out Boolean)
    is
+   begin
+      Insert (Container.HT, New_Item, Position.Node, Inserted);
+      Position.Container := Container'Unchecked_Access;
+   end Insert;
+
+   procedure Insert
+     (Container : in out Set;
+      New_Item  : Element_Type)
+   is
+      Position : Cursor;
+      Inserted : Boolean;
+
+   begin
+      Insert (Container, New_Item, Position, Inserted);
+
+      if not Inserted then
+         raise Constraint_Error;
+      end if;
+   end Insert;
+
+   procedure Insert
+     (HT       : in out Hash_Table_Type;
+      New_Item : Element_Type;
+      Node     : out Node_Access;
+      Inserted : out Boolean)
+   is
       function New_Node (Next : Node_Access) return Node_Access;
       pragma Inline (New_Node);
 
@@ -665,8 +700,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
             raise;
       end New_Node;
 
-      HT : Hash_Table_Type renames Container.HT;
-
    --  Start of processing for Insert
 
    begin
@@ -674,29 +707,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          HT_Ops.Reserve_Capacity (HT, 1);
       end if;
 
-      Local_Insert (HT, New_Item, Position.Node, Inserted);
+      Local_Insert (HT, New_Item, Node, Inserted);
 
       if Inserted
         and then HT.Length > HT_Ops.Capacity (HT)
       then
          HT_Ops.Reserve_Capacity (HT, HT.Length);
-      end if;
-
-      Position.Container := Container'Unchecked_Access;
-   end Insert;
-
-   procedure Insert
-     (Container : in out Set;
-      New_Item  : Element_Type)
-   is
-      Position : Cursor;
-      Inserted : Boolean;
-
-   begin
-      Insert (Container, New_Item, Position, Inserted);
-
-      if not Inserted then
-         raise Constraint_Error;
       end if;
    end Insert;
 
@@ -787,13 +803,20 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          begin
             if Is_In (Right.HT, L_Node) then
                declare
-                  Indx : constant Hash_Type :=
-                           Hash (L_Node.Element.all) mod Buckets'Length;
+                  Src : Element_Type renames L_Node.Element.all;
+
+                  Indx : constant Hash_Type := Hash (Src) mod Buckets'Length;
 
                   Bucket : Node_Access renames Buckets (Indx);
 
+                  Tgt : Element_Access := new Element_Type'(Src);
+
                begin
-                  Bucket := new Node_Type'(L_Node.Element, Bucket);
+                  Bucket := new Node_Type'(Tgt, Bucket);
+               exception
+                  when others =>
+                     Free_Element (Tgt);
+                     raise;
                end;
 
                Length := Length + 1;
@@ -1038,6 +1061,14 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    is
    begin
       Read_Nodes (Stream, Container.HT);
+   end Read;
+
+   procedure Read
+     (Stream : access Root_Stream_Type'Class;
+      Item   : out Cursor)
+   is
+   begin
+      raise Program_Error;
    end Read;
 
    ---------------
@@ -1502,6 +1533,20 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       return (Controlled with HT => (Buckets, Length, 0, 0));
    end Symmetric_Difference;
 
+   ------------
+   -- To_Set --
+   ------------
+
+   function To_Set (New_Item : Element_Type) return Set is
+      HT       : Hash_Table_Type;
+      Node     : Node_Access;
+      Inserted : Boolean;
+
+   begin
+      Insert (HT, New_Item, Node, Inserted);
+      return Set'(Controlled with HT);
+   end To_Set;
+
    -----------
    -- Union --
    -----------
@@ -1609,13 +1654,20 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          -------------
 
          procedure Process (L_Node : Node_Access) is
-            J : constant Hash_Type :=
-                  Hash (L_Node.Element.all) mod Buckets'Length;
+            Src : Element_Type renames L_Node.Element.all;
+
+            J : constant Hash_Type := Hash (Src) mod Buckets'Length;
 
             Bucket : Node_Access renames Buckets (J);
 
+            Tgt : Element_Access := new Element_Type'(Src);
+
          begin
-            Bucket := new Node_Type'(L_Node.Element, Bucket);
+            Bucket := new Node_Type'(Tgt, Bucket);
+         exception
+            when others =>
+               Free_Element (Tgt);
+               raise;
          end Process;
 
       --  Start of processing for Process
@@ -1749,6 +1801,14 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    is
    begin
       Write_Nodes (Stream, Container.HT);
+   end Write;
+
+   procedure Write
+     (Stream : access Root_Stream_Type'Class;
+      Item   : Cursor)
+   is
+   begin
+      raise Program_Error;
    end Write;
 
    ----------------
