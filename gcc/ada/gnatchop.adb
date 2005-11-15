@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1998-2005 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 1998-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1163,8 +1163,7 @@ procedure Gnatchop is
                Put (Standard_Error, "GNATCHOP ");
                Put_Line (Standard_Error, Gnatvsn.Gnat_Version_String);
                Put_Line
-                 (Standard_Error,
-                  "Copyright 1998-2005, Ada Core Technologies Inc.");
+                 (Standard_Error, "Copyright 1998-2005, AdaCore");
 
             when 'w' =>
                Overwrite_Files := True;

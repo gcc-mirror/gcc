@@ -74,7 +74,7 @@ package Uname is
    --  corresponding body, i.e. characters %s replaced by %b
 
    function Get_Parent_Body_Name (N : Unit_Name_Type) return Unit_Name_Type;
-   --  Given the name of a subunit, returns the name of the parent body.
+   --  Given the name of a subunit, returns the name of the parent body
 
    function Get_Parent_Spec_Name (N : Unit_Name_Type) return Unit_Name_Type;
    --  Given the name of a child unit spec or body, returns the unit name

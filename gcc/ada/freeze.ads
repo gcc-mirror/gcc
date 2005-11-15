@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -199,7 +199,7 @@ package Freeze is
    --  frozen entities.
 
    procedure Freeze_Before (N : Node_Id; T : Entity_Id);
-   --  Freeze T then Insert the generated Freeze nodes before the node N.
+   --  Freeze T then Insert the generated Freeze nodes before the node N
 
    procedure Freeze_Expression (N : Node_Id);
    --  Freezes the required entities when the Expression N causes freezing.

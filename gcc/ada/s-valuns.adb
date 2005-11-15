@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,10 +41,9 @@ package body System.Val_Uns is
    -------------------
 
    function Scan_Unsigned
-     (Str  : String;
-      Ptr  : access Integer;
-      Max  : Integer)
-      return Unsigned
+     (Str : String;
+      Ptr : access Integer;
+      Max : Integer) return Unsigned
    is
       P : Integer;
       --  Local copy of the pointer
@@ -285,12 +284,10 @@ package body System.Val_Uns is
    function Value_Unsigned (Str : String) return Unsigned is
       V : Unsigned;
       P : aliased Integer := Str'First;
-
    begin
       V := Scan_Unsigned (Str, P'Access, Str'Last);
       Scan_Trailing_Blanks (Str, P);
       return V;
-
    end Value_Unsigned;
 
 end System.Val_Uns;

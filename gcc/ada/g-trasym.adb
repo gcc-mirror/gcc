@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,10 +50,10 @@ package body GNAT.Traceback.Symbolic is
 
    function Symbolic_Traceback (Traceback : Tracebacks_Array) return String is
       procedure convert_addresses
-        (addrs    : System.Address;
-         n_addr   : Integer;
-         buf      : System.Address;
-         len      : System.Address);
+        (addrs  : System.Address;
+         n_addr : Integer;
+         buf    : System.Address;
+         len    : System.Address);
       pragma Import (C, convert_addresses, "convert_addresses");
       --  This is the procedure version of the Ada aware addr2line that will
       --  use argv[0] as the executable containing the debug information.

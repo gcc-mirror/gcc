@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,7 +63,7 @@ package body Output is
    --  will be silently ignored.
 
    Next_Column : Pos range 1 .. Buffer'Length + 1 := 1;
-   --  Column about to be written.
+   --  Column about to be written
 
    -----------------------
    -- Local_Subprograms --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1122,9 +1122,9 @@ package body Errout is
       --  Brief Error mode
 
       if Brief_Output or (not Full_List and not Verbose_Mode) then
-         E := First_Error_Msg;
          Set_Standard_Error;
 
+         E := First_Error_Msg;
          while E /= No_Error_Msg loop
             if not Errors.Table (E).Deleted and then not Debug_Flag_KK then
                if Full_Path_Name_For_Brief_Errors then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,8 +74,7 @@ package System.Val_Util is
      (Str  : String;
       Ptr  : access Integer;
       Max  : Integer;
-      Real : Boolean := False)
-      return Integer;
+      Real : Boolean := False) return Integer;
    --  Called to scan a possible exponent. Str, Ptr, Max are as described above
    --  for Scan_Sign. If Ptr.all < Max and Str (Ptr.all) = 'E' or 'e', then an
    --  exponent is scanned out, with the exponent value returned in Exp, and

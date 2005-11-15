@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Token scan routines.
+--  Token scan routines
 
 --  Error recovery: none of the T_xxx or TF_xxx routines raise Error_Resync
 
@@ -801,7 +801,7 @@ package body Tchk is
       M : String (1 .. Missing'Length + Tok_Name'Length);
 
    begin
-      --  Set M to Missing & Tok_Name.
+      --  Set M to Missing & Tok_Name
 
       M (1 .. Missing'Length) := Missing;
       M (Missing'Length + 1 .. M'Last) := Tok_Name;

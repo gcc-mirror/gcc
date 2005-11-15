@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,7 +143,7 @@ package Ttypes is
 
    Standard_Wide_Character_Size        : constant Pos := 16;
    Standard_Wide_Wide_Character_Size   : constant Pos := 32;
-   --  Standard wide character sizes.
+   --  Standard wide character sizes
 
    --  Note: there is no specific control over the representation of
    --  enumeration types. The convention used is that if an enumeration

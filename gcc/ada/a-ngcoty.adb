@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Numerics.Aux; use Ada.Numerics.Aux;
+
 package body Ada.Numerics.Generic_Complex_Types is
 
    subtype R is Real'Base;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -349,16 +349,16 @@ package GNAT.OS_Lib is
    --  platforms, Success is always set to False.
 
    function Read
-     (FD   : File_Descriptor;
-      A    : System.Address;
-      N    : Integer) return Integer;
+     (FD : File_Descriptor;
+      A  : System.Address;
+      N  : Integer) return Integer;
    --  Read N bytes to address A from file referenced by FD. Returned value is
    --  count of bytes actually read, which can be less than N at EOF.
 
    function Write
-     (FD   : File_Descriptor;
-      A    : System.Address;
-      N    : Integer) return Integer;
+     (FD : File_Descriptor;
+      A  : System.Address;
+      N  : Integer) return Integer;
    --  Write N bytes from address A to file referenced by FD. The returned
    --  value is the number of bytes written, which can be less than N if a
    --  disk full condition was detected.
@@ -718,8 +718,7 @@ package GNAT.OS_Lib is
      (Program_Name           : String;
       Args                   : Argument_List;
       Output_File_Descriptor : File_Descriptor;
-      Err_To_Out             : Boolean := True)
-      return                   Process_Id;
+      Err_To_Out             : Boolean := True) return Process_Id;
    --  Similar to the procedure above, but redirects the output to the file
    --  designated by Output_File_Descriptor. If Err_To_Out is True, then the
    --  Standard Error output is also redirected. Invalid_Id is returned
@@ -764,8 +763,7 @@ package GNAT.OS_Lib is
    --  there is no notion of executables under this OS.
 
    function Argument_String_To_List
-     (Arg_String : String)
-      return       Argument_List_Access;
+     (Arg_String : String) return Argument_List_Access;
    --  Take a string that is a program and its arguments and parse it into an
    --  Argument_List. Note that the result is allocated on the heap, and must
    --  be freed by the programmer (when it is no longer needed) to avoid

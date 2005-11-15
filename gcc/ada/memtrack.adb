@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@
 
 --    gnatmem -i gmem.out program
 
---  See gnatmem section in the GNAT User's Guide for more details.
+--  See gnatmem section in the GNAT User's Guide for more details
 
 --  NOTE: This capability is currently supported on the following targets:
 
@@ -120,13 +120,13 @@ package body System.Memory is
    pragma Import (C, fclose);
 
    procedure Finalize;
-   --  Replace the default __gnat_finalize to properly close the log file.
    pragma Export (C, Finalize, "__gnat_finalize");
+   --  Replace the default __gnat_finalize to properly close the log file
 
-   Address_Size    : constant := System.Address'Max_Size_In_Storage_Elements;
+   Address_Size : constant := System.Address'Max_Size_In_Storage_Elements;
    --  Size in bytes of a pointer
 
-   Max_Call_Stack  : constant := 200;
+   Max_Call_Stack : constant := 200;
    --  Maximum number of frames supported
 
    Tracebk   : aliased array (0 .. Max_Call_Stack) of Traceback_Entry;
@@ -137,7 +137,7 @@ package body System.Memory is
    --  ??? What about Ada.Command_Line.Command_Name & ".out" instead of static
    --  gmem.out
 
-   Gmemfile  : File_Ptr;
+   Gmemfile : File_Ptr;
    --  Global C file pointer to the allocation log
 
    procedure Gmem_Initialize;

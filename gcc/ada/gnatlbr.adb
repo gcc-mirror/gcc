@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Program to create, set, or delete an alternate runtime library.
+--  Program to create, set, or delete an alternate runtime library
 
 --  Works by calling an appropriate target specific Makefile residing
 --  in the default library object (e.g. adalib) directory from the context
@@ -222,7 +222,7 @@ begin
                end;
             end loop;
 
-            --  "Make" an alternate sublibrary for each default sublibrary.
+            --  "Make" an alternate sublibrary for each default sublibrary
 
             for Dirs in 1 .. Object_Dirs loop
                Make_Args (1) :=

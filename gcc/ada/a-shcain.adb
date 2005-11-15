@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,7 +33,7 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-with Ada.Characters.Handling;  use Ada.Characters.Handling;
+with Ada.Characters.Handling; use Ada.Characters.Handling;
 
 --  Note: source of this algorithm: GNAT.HTable.Hash (g-htable.adb)
 

@@ -294,7 +294,7 @@ package body System.Tasking.Utilities is
 
       if Parent /= Environment_Task then
 
-         --  We can not lock three tasks at the same time, so defer the
+         --  We cannot lock three tasks at the same time, so defer the
          --  operations on the parent.
 
          Parent_Needs_Updating := True;
@@ -382,7 +382,7 @@ package body System.Tasking.Utilities is
             pragma Assert (Self_ID.Awake_Count = 1);
          end if;
 
-      --  We are accepting with a terminate alternative.
+      --  We are accepting with a terminate alternative
 
       else
          if Self_ID.Open_Accepts = null then
@@ -494,7 +494,7 @@ package body System.Tasking.Utilities is
       --  C has a parent, P.
 
       loop
-         --  Notify P that C has gone passive.
+         --  Notify P that C has gone passive
 
          P.Awake_Count := P.Awake_Count - 1;
 
@@ -516,7 +516,7 @@ package body System.Tasking.Utilities is
          Write_Lock (C);
       end loop;
 
-      --  P has non-passive dependents.
+      --  P has non-passive dependents
 
       if P.Common.State = Master_Completion_Sleep
         and then C.Master_of_Task = P.Master_Within

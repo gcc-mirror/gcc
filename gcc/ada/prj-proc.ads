@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2005 Free Software Foundation, Inc.       --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,8 +25,8 @@
 ------------------------------------------------------------------------------
 
 --  This package is used to convert a project file tree (see prj-tree.ads) to
---  project file data structures (see prj.ads), taking into account
---  the environment (external references).
+--  project file data structures (see prj.ads), taking into account the
+--  environment (external references).
 
 with Prj.Tree;  use Prj.Tree;
 
@@ -40,9 +40,9 @@ package Prj.Proc is
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
       Follow_Links           : Boolean := True);
-   --  Process a project file tree into project file data structures.
-   --  If Report_Error is null, use the error reporting mechanism.
-   --  Otherwise, report errors using Report_Error.
+   --  Process a project file tree into project file data structures. If
+   --  Report_Error is null, use the error reporting mechanism. Otherwise,
+   --  report errors using Report_Error.
    --
    --  If Follow_Links is False, it is assumed that the project doesn't contain
    --  any file duplicated through symbolic links (although the latter are

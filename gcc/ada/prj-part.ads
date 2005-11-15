@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Implements the parsing of project files into a tree.
+--  Implements the parsing of project files into a tree
 
 with Prj.Tree;  use Prj.Tree;
 

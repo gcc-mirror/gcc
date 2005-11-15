@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1997-2005, Ada Core Technologies, Inc.           --
+--                     Copyright (C) 1997-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -233,7 +233,7 @@ procedure Gnatmem is
       New_Line;
       Put ("GNATMEM ");
       Put_Line (Gnat_Version_String);
-      Put_Line ("Copyright 1997-2005 Free Software Foundation, Inc.");
+      Put_Line ("Copyright 1997-2005, Free Software Foundation, Inc.");
       New_Line;
 
       Put_Line ("Usage: gnatmem switches [depth] exename");

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2001-2004 Free Software Foundation, Inc.           --
+--         Copyright (C) 2001-2005 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,14 +32,13 @@ with Tree_IO;  use Tree_IO;
 package body Osint.C is
 
    Output_Object_File_Name : String_Ptr;
-   --  Argument of -o compiler option, if given. This is needed to
-   --  verify consistency with the ALI file name.
+   --  Argument of -o compiler option, if given. This is needed to verify
+   --  consistency with the ALI file name.
 
    procedure Adjust_OS_Resource_Limits;
    pragma Import (C, Adjust_OS_Resource_Limits,
                   "__gnat_adjust_os_resource_limits");
-   --  Procedure to make system specific adjustments to make GNAT
-   --  run better.
+   --  Procedure to make system specific adjustments to make GNAT run better
 
    function Create_Auxiliary_File
      (Src    : File_Name_Type;
@@ -325,7 +324,7 @@ package body Osint.C is
       EL  : constant Natural := Ext'Length;
 
    begin
-      --  Make sure that the object file has the expected extension.
+      --  Make sure that the object file has the expected extension
 
       if NL <= EL
          or else

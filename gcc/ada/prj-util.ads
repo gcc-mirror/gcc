@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2005 Free Software Foundation, Inc.       --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,9 +67,9 @@ package Prj.Util is
    --  or if In_Array is null.
    --
    --  Depending on the attribute (only attributes may be associative arrays)
-   --  the index may or may not be case sensitive. If the index is not
-   --  case sensitive, it is first set to lower case before the search
-   --  in the associative array.
+   --  the index may or may not be case sensitive. If the index is not case
+   --  sensitive, it is first set to lower case before the search in the
+   --  associative array.
 
    function Value_Of
      (Name                    : Name_Id;
@@ -78,10 +78,9 @@ package Prj.Util is
       In_Package              : Package_Id;
       In_Tree                 : Project_Tree_Ref) return Variable_Value;
    --  In a specific package,
-   --   - if there exists an array Attribute_Or_Array_Name with an index
-   --     Name, returns the corresponding component (depending on the
-   --     attribute, the index may or may not be case sensitive, see previous
-   --     function),
+   --   - if there exists an array Attribute_Or_Array_Name with an index Name,
+   --     returns the corresponding component (depending on the attribute, the
+   --     index may or may not be case sensitive, see previous function),
    --   - otherwise if there is a single attribute Attribute_Or_Array_Name,
    --     returns this attribute,
    --   - otherwise, returns Nil_Variable_Value.
@@ -92,8 +91,8 @@ package Prj.Util is
       In_Array  : Name_Id;
       In_Arrays : Array_Id;
       In_Tree   : Project_Tree_Ref) return Name_Id;
-   --  Get a string array component in an array of an array list.
-   --  Returns No_Name if there is no component Index, if In_Arrays is null, if
+   --  Get a string array component in an array of an array list. Returns
+   --  No_Name if there is no component Index, if In_Arrays is null, if
    --  In_Array is not found in In_Arrays or if the component is a String list.
 
    function Value_Of
@@ -108,8 +107,8 @@ package Prj.Util is
      (Name        : Name_Id;
       In_Packages : Package_Id;
       In_Tree     : Project_Tree_Ref) return Package_Id;
-   --  Returns a specified package in a package list. Returns No_Package
-   --  if In_Packages is null or if Name is not the name of a package in
+   --  Returns a specified package in a package list. Returns No_Package if
+   --  In_Packages is null or if Name is not the name of a package in
    --  Package_List. The caller must ensure that Name is in lower case.
 
    function Value_Of
@@ -129,28 +128,28 @@ package Prj.Util is
    --  the last character of each line, if possible.
 
    type Text_File is limited private;
-   --  Represents a text file. Default is invalid text file.
+   --  Represents a text file. Default is invalid text file
 
    function Is_Valid (File : Text_File) return Boolean;
    --  Returns True if File designates an open text file that
    --  has not yet been closed.
 
    procedure Open (File : out Text_File; Name : String);
-   --  Open a text file. If this procedure fails, File is invalid.
+   --  Open a text file. If this procedure fails, File is invalid
 
    function End_Of_File (File : Text_File) return Boolean;
-   --  Returns True if the end of the text file File has been
-   --  reached. Fails if File is invalid.
+   --  Returns True if the end of the text file File has been reached. Fails if
+   --  File is invalid.
 
    procedure Get_Line
      (File : Text_File;
       Line : out String;
       Last : out Natural);
-   --  Reads a line from an open text file. Fails if File is invalid.
+   --  Reads a line from an open text file. Fails if File is invalid
 
    procedure Close (File : in out Text_File);
-   --  Close an open text file. File becomes invalid.
-   --  Fails if File is already invalid.
+   --  Close an open text file. File becomes invalid. Fails if File is already
+   --  invalid.
 
 private
 

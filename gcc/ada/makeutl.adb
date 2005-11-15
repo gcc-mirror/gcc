@@ -57,7 +57,7 @@ package body Makeutl is
       Key        => Mark_Key,
       Hash       => Hash,
       Equal      => "=");
-   --  A hash table to keep tracks of the marked units.
+   --  A hash table to keep tracks of the marked units
 
    type Linker_Options_Data is record
       Project : Project_Id;

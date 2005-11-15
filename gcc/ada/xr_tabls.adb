@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -131,7 +131,7 @@ package body Xr_Tabls is
    --  Column. This key should be used for lookup in Entity_HTable
 
    function Is_Less_Than (Decl1, Decl2 : Declaration_Reference) return Boolean;
-   --  Compare two declarations. The comparison is case-insensitive.
+   --  Compare two declarations (the comparison is case-insensitive)
 
    function Is_Less_Than (Ref1, Ref2 : Reference) return Boolean;
    --  Compare two references
@@ -144,14 +144,12 @@ package body Xr_Tabls is
       Get_Declaration : Boolean := False;
       Arr             : in out Reference_Array;
       Index           : in out Natural);
-   --  Store in Arr, starting at Index, all the references to Decl.
-   --  The Get_* parameters can be used to indicate which references should be
-   --  stored.
+   --  Store in Arr, starting at Index, all the references to Decl. The Get_*
+   --  parameters can be used to indicate which references should be stored.
    --  Constraint_Error will be raised if Arr is not big enough.
 
    procedure Sort (Arr : in out Reference_Array);
-   --  Sort an array of references.
-   --  Arr'First must be 1.
+   --  Sort an array of references (Arr'First must be 1)
 
    --------------
    -- Set_Next --

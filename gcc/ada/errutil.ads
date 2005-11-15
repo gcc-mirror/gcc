@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002 Free Software Foundation, Inc.               --
+--          Copyright (C) 2002-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 --  This package contains routines to output error messages and the
 --  corresponding instantiation of Styleg, suitable to instantiate Scng.
 
---  It is not dependent on the GNAT tree packages (Atree, Sinfo, ...).
+--  It is not dependent on the GNAT tree packages (Atree, Sinfo, ...)
 
 --  It uses the same global variables as Errout, located in package
 --  Err_Vars. Like Errout, it also uses the common variables and routines
@@ -222,10 +222,10 @@ package Errutil is
    --  preprocessor).
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr);
-   --  Output a message at specified location.
+   --  Output a message at specified location
 
    procedure Error_Msg_S (Msg : String);
-   --  Output a message at current scan pointer location.
+   --  Output a message at current scan pointer location
 
    procedure Error_Msg_SC (Msg : String);
    --  Output a message at the start of the current token, unless we are at
@@ -233,7 +233,7 @@ package Errutil is
    --  last real token in the file.
 
    procedure Error_Msg_SP (Msg : String);
-   --  Output a message at the start of the previous token.
+   --  Output a message at the start of the previous token
 
    procedure Set_Ignore_Errors (To : Boolean);
    --  Indicate, when To = True, that all reported errors should

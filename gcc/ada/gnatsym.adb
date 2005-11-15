@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,7 @@ procedure Gnatsym is
    --  The name of the reference symbol file
 
    Version_String : String_Access := Empty;
-   --  The version of the library. Used on VMS.
+   --  The version of the library (used on VMS)
 
    package Object_Files is new Table.Table
      (Table_Component_Type => String_Access,

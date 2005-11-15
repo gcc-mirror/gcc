@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -335,7 +335,7 @@ package Stand is
    --  This is a type used to represent the return type of procedures
 
    Standard_Exception_Type  : Entity_Id;
-   --  This is a type used to represent the Etype of exceptions.
+   --  This is a type used to represent the Etype of exceptions
 
    Standard_A_String   : Entity_Id;
    --  An access to String type used for building elements of tables
@@ -362,13 +362,13 @@ package Stand is
    --  is propagated to avoid cascaded errors from a single type error.
 
    Any_Access : Entity_Id;
-   --  Used to resolve the overloaded literal NULL.
+   --  Used to resolve the overloaded literal NULL
 
    Any_Array : Entity_Id;
    --  Used to represent some unknown array type
 
    Any_Boolean : Entity_Id;
-   --  The context type of conditions in IF and WHILE statements.
+   --  The context type of conditions in IF and WHILE statements
 
    Any_Character : Entity_Id;
    --  Any_Character is used to label character literals, which in general
@@ -386,7 +386,7 @@ package Stand is
    --  Used to represent some unknown fixed-point type
 
    Any_Integer : Entity_Id;
-   --  Used to represent some unknown integer type.
+   --  Used to represent some unknown integer type
 
    Any_Modular : Entity_Id;
    --  Used to represent the result type of a boolean operation on an
@@ -394,10 +394,10 @@ package Stand is
    --  only legal in a modular context.
 
    Any_Numeric : Entity_Id;
-   --  Used to represent some unknown numeric type.
+   --  Used to represent some unknown numeric type
 
    Any_Real : Entity_Id;
-   --  Used to represent some unknown real type.
+   --  Used to represent some unknown real type
 
    Any_Scalar : Entity_Id;
    --  Used to represent some unknown scalar type
@@ -416,7 +416,9 @@ package Stand is
    Universal_Real : Entity_Id;
    --  Entity for universal real type. The bounds of this type correspond to
    --  to the largest supported real type (i.e. Long_Long_Real). It is the
-   --  type used for runtime calculations in type universal real.
+   --  type used for runtime calculations in type universal real. Note that
+   --  this type is always IEEE format, even if Long_Long_Real is Vax_Float
+   --  (and in that case the bounds don't correspond exactly).
 
    Universal_Fixed : Entity_Id;
    --  Entity for universal fixed type. This is a type with  arbitrary

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,10 +42,10 @@ procedure Labl is
    --  Next label node to process
 
    function Find_Enclosing_Body_Or_Block (N : Node_Id) return Node_Id;
-   --  Find the innermost body or block that encloses N.
+   --  Find the innermost body or block that encloses N
 
    function Find_Enclosing_Body (N : Node_Id) return Node_Id;
-   --  Find the innermost body that encloses N.
+   --  Find the innermost body that encloses N
 
    procedure Check_Distinct_Labels;
    --  Checks the rule in RM-5.1(11), which requires distinct identifiers
@@ -134,7 +134,7 @@ procedure Labl is
       Result : Node_Id := Parent (N);
 
    begin
-      --  Climb up the parent chain until we find a body or block.
+      --  Climb up the parent chain until we find a body or block
 
       while Present (Result)
         and then Nkind (Result) /= N_Accept_Statement
@@ -160,7 +160,7 @@ procedure Labl is
       Succ      : Elmt_Id;
 
       function Goto_Id (Goto_Node : Node_Id) return Name_Id;
-      --  Find Name_Id of goto statement, which may be an expanded name.
+      --  Find Name_Id of goto statement, which may be an expanded name
 
       function Matches
         (Label_Node : Node_Id;

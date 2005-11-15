@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,29 +90,27 @@ package Osint is
    --  so that two file names compare equal if they refer to the same file.
 
    function Number_Of_Files return Int;
-   --  gives the total number of filenames found on the command line.
+   --  Gives the total number of filenames found on the command line
 
    No_Index : constant := -1;
-   --  Value used in Add_File to indicate that no index is specified
-   --  for a main.
+   --  Value used in Add_File to indicate no index is specified for main
 
    procedure Add_File (File_Name : String; Index : Int := No_Index);
-   --  Called by the subprogram processing the command line for each
-   --  file name found. The index, when not defaulted to No_Index
-   --  is the index of the subprogram in its source, zero indicating
-   --  that the source is not multi-unit.
+   --  Called by the subprogram processing the command line for each file name
+   --  found. The index, when not defaulted to No_Index is the index of the
+   --  subprogram in its source, zero indicating that the source is not
+   --  multi-unit.
 
    procedure Find_Program_Name;
    --  Put simple name of current program being run (excluding the directory
    --  path) in Name_Buffer, with the length in Name_Len.
 
    function Program_Name (Nam : String) return String_Access;
-   --  In the native compilation case, Create a string containing Nam. In
-   --  the cross compilation case, looks at the prefix of the current
-   --  program being run and prepend it to Nam. For instance if the program
-   --  being run is <target>-gnatmake and Nam is "gcc", the returned value
-   --  will be a pointer to "<target>-gcc". This function clobbers
-   --  Name_Buffer and Name_Len.
+   --  In the native compilation case, Create a string containing Nam. In the
+   --  cross compilation case, looks at the prefix of the current program being
+   --  run and prepend it to Nam. For instance if the program being run is
+   --  <target>-gnatmake and Nam is "gcc", the returned value will be a pointer
+   --  to "<target>-gcc". This function clobbers Name_Buffer and Name_Len.
 
    procedure Write_Program_Name;
    --  Writes name of program as invoked to the current output
@@ -121,8 +119,8 @@ package Osint is
    procedure Fail (S1 : String; S2 : String := ""; S3 : String := "");
    pragma No_Return (Fail);
    --  Outputs error messages S1 & S2 & S3 preceded by the name of the
-   --  executing program and exits with E_Fatal. The output goes to
-   --  standard error, except if special output is in effect (see Output).
+   --  executing program and exits with E_Fatal. The output goes to standard
+   --  error, except if special output is in effect (see Output).
 
    function Is_Directory_Separator (C : Character) return Boolean;
    --  Returns True if C is a directory separator
@@ -133,7 +131,7 @@ package Osint is
    --  directory part in the name.
 
    function Is_Readonly_Library (File : File_Name_Type) return Boolean;
-   --  Check if this library file is a read-only file.
+   --  Check if this library file is a read-only file
 
    function Strip_Directory (Name : File_Name_Type) return File_Name_Type;
    --  Strips the prefix directory name (if any) from Name. Returns the
@@ -177,11 +175,11 @@ package Osint is
       Prefix_Style : Boolean) return String_Access;
    --  Convert a host syntax directory specification (e.g. on a VMS host:
    --  "SYS$DEVICE:[DIR]") to canonical (Unix) syntax (e.g. "/sys$device/dir").
-   --  If Prefix_Style then make it a valid file specification prefix.
-   --  A file specification prefix is a directory specification that
-   --  can be appended with a simple file specification to yield a valid
-   --  absolute or relative path to a file. On a conversion to Unix syntax
-   --  this simply means the spec has a trailing slash ("/").
+   --  If Prefix_Style then make it a valid file specification prefix. A file
+   --  specification prefix is a directory specification that can be appended
+   --  with a simple file specification to yield a valid absolute or relative
+   --  path to a file. On a conversion to Unix syntax this simply means the
+   --  spec has a trailing slash ("/").
 
    function To_Canonical_File_Spec
      (Host_File : String) return String_Access;
@@ -204,7 +202,7 @@ package Osint is
 
    function To_Host_File_Spec
      (Canonical_File : String) return String_Access;
-   --  Convert a canonical syntax file specification to host syntax.
+   --  Convert a canonical syntax file specification to host syntax
 
    function Relocate_Path
      (Prefix : String;
@@ -552,7 +550,7 @@ package Osint is
 private
 
    ALI_Suffix : constant String_Ptr := new String'("ali");
-   --  The suffix used for the library files (also known as ALI files).
+   --  The suffix used for the library files (also known as ALI files)
 
    Current_Main : File_Name_Type := No_File;
    --  Used to save a simple file name between calls to Next_Main_Source and
@@ -561,7 +559,7 @@ private
    --  last call to Next_Main_Source (and stored here) is to be read.
 
    Object_Suffix : constant String := Get_Object_Suffix.all;
-   --  The suffix used for the object files.
+   --  The suffix used for the object files
 
    Output_FD : File_Descriptor;
    --  The file descriptor for the current library info, tree or binder output
@@ -609,10 +607,10 @@ private
    --  A check is made that this procedure is not called several times.
 
    function More_Files return Boolean;
-   --  Implements More_Source_Files and More_Lib_Files.
+   --  Implements More_Source_Files and More_Lib_Files
 
    function Next_Main_File return File_Name_Type;
-   --  Implements Next_Main_Source and Next_Main_Lib_File.
+   --  Implements Next_Main_Source and Next_Main_Lib_File
 
    function Object_File_Name (N : File_Name_Type) return File_Name_Type;
    --  Constructs the name of the object file corresponding to library

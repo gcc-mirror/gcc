@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---               Copyright (C) 2002 Ada Core Technologies, Inc.             --
+--                      Copyright (C) 2002-2005, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,9 +34,9 @@
 --  This package may be used to intercept the interruption of a running
 --  program by the operator typing Control-C, without having to use an Ada
 --  interrupt handler protected object.
---
---  This package is currently implemented under Windows and Unix platforms.
---
+
+--  This package is currently implemented under Windows and Unix platforms
+
 --  Note concerning Unix systems:
 
 --  The behavior of this package when using tasking depends on the interaction
@@ -55,7 +55,7 @@ package GNAT.Ctrl_C is
    --  Handler_Type should not propagate exceptions.
 
    procedure Install_Handler (Handler : Handler_Type);
-   --  Set up Handler to be called if the operator hits Ctrl-C.
+   --  Set up Handler to be called if the operator hits Ctrl-C
 
    procedure Uninstall_Handler;
    --  Reinstall the standard Control-C handler.

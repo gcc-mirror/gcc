@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2000-2003 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2000-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,18 +34,18 @@
 --  This package provides an interface allowing to control *automatic* output
 --  to standard error upon exception occurrences (as opposed to explicit
 --  generation of traceback information using GNAT.Traceback).
---
+
 --  This output includes the basic information associated with the exception
 --  (name, message) as well as a backtrace of the call chain at the point
 --  where the exception occurred. This backtrace is only output if the call
 --  chain information is available, depending if the binder switch dedicated
 --  to that purpose has been used or not.
---
+
 --  The default backtrace is in the form of absolute code locations which may
 --  be converted to corresponding source locations using the addr2line utility
 --  or from within GDB. Please refer to GNAT.Traceback for information about
 --  what is necessary to be able to exploit thisg possibility.
---
+
 --  The backtrace output can also be customized by way of a "decorator" which
 --  may return any string output in association with a provided call chain.
 
@@ -72,7 +72,7 @@ package GNAT.Exception_Traces is
    --  traces identified by the above trace kind values.
 
    procedure Trace_On (Kind : Trace_Kind);
-   --  Activate the traces denoted by Kind.
+   --  Activate the traces denoted by Kind
 
    procedure Trace_Off;
    --  Stop the tracing requested by the last call to Trace_On.

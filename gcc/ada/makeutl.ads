@@ -113,7 +113,7 @@ package Makeutl is
    function Is_Marked
      (Source_File : File_Name_Type;
       Index       : Int := 0) return Boolean;
-   --  Returns True if the unit was previously marked.
+   --  Returns True if the unit was previously marked
 
    procedure Delete_All_Marks;
    --  Remove all file/index couples marked

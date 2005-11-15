@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2000-2005 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2000-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,11 +101,10 @@ package GNAT.Dynamic_Tables is
    --  safety is not compromised by this approach.
 
    type Table_Ptr is access all Big_Table_Type;
-   --  The table is actually represented as a pointer to allow
-   --  reallocation.
+   --  The table is actually represented as a pointer to allow reallocation
 
    type Table_Private is private;
-   --  table private data that is not exported in Instance.
+   --  Table private data that is not exported in Instance
 
    type Instance is record
       Table : aliased Table_Ptr := null;

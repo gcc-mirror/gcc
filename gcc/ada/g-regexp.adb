@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1999-2004 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,7 +180,7 @@ package body GNAT.Regexp is
         (M     : String;
          Index : Integer);
       pragma No_Return (Raise_Exception);
-      --  Raise an exception, indicating an error at character Index in S.
+      --  Raise an exception, indicating an error at character Index in S
 
       --------------------
       -- Create_Mapping --
@@ -330,7 +330,7 @@ package body GNAT.Regexp is
                   if not Glob then
                      if J = S'First then
                         Raise_Exception
-                          ("'*', '+', '?' and '|' operators can not be in "
+                          ("'*', '+', '?' and '|' operators cannot be in "
                            & "first position in regular expression", J);
                      end if;
                   end if;
@@ -343,7 +343,7 @@ package body GNAT.Regexp is
                         --  and cannot be found at the beginning of the line
 
                         Raise_Exception
-                          ("'*', '+', '?' and '|' operators can not be in "
+                          ("'*', '+', '?' and '|' operators cannot be in "
                            & "first position in regular expression", J);
                      end if;
 
@@ -389,7 +389,7 @@ package body GNAT.Regexp is
          procedure Add_Empty_Char
            (State    : State_Index;
             To_State : State_Index);
-         --  Add a empty-character transition from State to To_State.
+         --  Add a empty-character transition from State to To_State
 
          procedure Create_Repetition
            (Repetition : Character;
@@ -461,7 +461,7 @@ package body GNAT.Regexp is
             End_Index   : Integer)
             return        Integer;
          --  Returns the index of the last character of the next sub-expression
-         --  in Simple. Index can not be greater than End_Index
+         --  in Simple. Index cannot be greater than End_Index.
 
          --------------------
          -- Add_Empty_Char --
@@ -829,7 +829,7 @@ package body GNAT.Regexp is
          procedure Add_Empty_Char
            (State    : State_Index;
             To_State : State_Index);
-         --  Add a empty-character transition from State to To_State.
+         --  Add a empty-character transition from State to To_State
 
          procedure Create_Simple
            (Start_Index : Integer;
@@ -1088,8 +1088,7 @@ package body GNAT.Regexp is
         (First_Table : Regexp_Array_Access;
          Num_States  : State_Index;
          Start_State : State_Index;
-         End_State   : State_Index)
-         return        Regexp
+         End_State   : State_Index) return Regexp
       is
          pragma Warnings (Off, Num_States);
 
@@ -1301,8 +1300,7 @@ package body GNAT.Regexp is
    function Get
      (Table  : Regexp_Array_Access;
       State  : State_Index;
-      Column : Column_Index)
-      return   State_Index
+      Column : Column_Index) return State_Index
    is
    begin
       if State <= Table'Last (1)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,7 +99,7 @@ package body Comperr is
    --  Start of processing for Compiler_Abort
 
    begin
-      --  Prevent recursion through Compiler_Abort, e.g. via SIGSEGV.
+      --  Prevent recursion through Compiler_Abort, e.g. via SIGSEGV
 
       if Abort_In_Progress then
          Exit_Program (E_Abort);

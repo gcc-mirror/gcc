@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/VMS)                          --
 --                                                                          --
---          Copyright (C) 2001-2005 Ada Core Technologies, Inc.             --
+--                     Copyright (C) 2001-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ package body System.Machine_State_Operations is
 
    subtype Cond_Value_Type is Unsigned_Longword;
 
-   --  Record layouts copied from Starlet.
+   --  Record layouts copied from Starlet
 
    type ICB_Fflags_Bits_Type is record
       Exception_Frame : Boolean;
@@ -94,7 +94,7 @@ package body System.Machine_State_Operations is
 
       Ireg : Unsigned_Quadword_Array (0 .. 30);
       Freg : Unsigned_Quadword_Array (0 .. 30);
-      --  The register contents areas. 31 for scalars, 31 for float.
+      --  The register contents areas. 31 for scalars, 31 for float
 
       System_Defined : Unsigned_Quadword_Array (0 .. 1);
       --  The following is an "internal" area that's reserved for use by
@@ -153,7 +153,7 @@ package body System.Machine_State_Operations is
 
    function Fetch_Code (Loc : Code_Loc) return Code_Loc is
    begin
-      --  The starting address is in the second longword pointed to by Loc.
+      --  The starting address is in the second longword pointed to by Loc
 
       return Fetch (System.Aux_DEC."+" (Loc, 8));
    end Fetch_Code;

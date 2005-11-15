@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---        Copyright (C) 1992,1993,1994 Free Software Foundation, Inc.       --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,16 +49,13 @@ package body System.Val_Bool is
 
       if S (F .. L) = "TRUE" then
          return True;
-      end if;
 
-      if S (F .. L) = "FALSE" then
+      elsif S (F .. L) = "FALSE" then
          return False;
+
+      else
+         raise Constraint_Error;
       end if;
-
-      raise Constraint_Error;
-
-      --  Above should use elsif, but this doesn't work in GNAT version 1.81???
-
    end Value_Boolean;
 
 end System.Val_Bool;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2002-2005 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2002-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,7 +90,7 @@ procedure VxAddr2Line is
 
    type Arch_Record is record
       Addr2line_Binary : String_Access;
-      --  Name of the addr2line utility to use.
+      --  Name of the addr2line utility to use
 
       Nm_Binary : String_Access;
       --  Name of the host nm utility, which will be used to find out the
@@ -294,7 +294,7 @@ procedure VxAddr2Line is
             return Value;
       end;
 
-      --  We can not get here
+      --  We cannot get here
 
       raise Program_Error;
 
@@ -408,7 +408,7 @@ begin
       Error ("Couldn't find " & Arch_List (Cur_Arch).Addr2line_Binary.all);
    end if;
 
-   --  The first argument specifies the image file. Check if it exists.
+   --  The first argument specifies the image file. Check if it exists
 
    if not Is_Regular_File (Argument (1)) then
       Error ("Couldn't find the executable " & Argument (1));

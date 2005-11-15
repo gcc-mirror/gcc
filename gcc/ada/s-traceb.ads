@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,6 +84,6 @@ package System.Traceback is
       Max_Len   : Natural)
       return      Natural;
    pragma Export (C, C_Call_Chain, "system__traceback__c_call_chain");
-   --  Version that can be used directly from C.
+   --  Version that can be used directly from C
 
 end System.Traceback;

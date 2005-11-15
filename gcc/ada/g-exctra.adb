@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2000-2002 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2000-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,8 +48,7 @@ package body GNAT.Exception_Traces is
 
    function Decorator_Wrapper
      (Traceback : System.Address;
-      Len       : Natural)
-      return      String;
+      Len       : Natural) return String;
    --  The wrapper to be called when a decorator is in place for exception
    --  backtraces.
    --
@@ -68,8 +67,7 @@ package body GNAT.Exception_Traces is
 
    function Decorator_Wrapper
      (Traceback : System.Address;
-      Len       : Natural)
-      return      String
+      Len       : Natural) return String
    is
       Decorator_Traceback : Tracebacks_Array (1 .. Len);
       for Decorator_Traceback'Address use Traceback;

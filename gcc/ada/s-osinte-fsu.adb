@@ -250,8 +250,8 @@ package body System.OS_Interface is
 
    --  FSU_THREADS does not have pthread_setschedparam
 
-   --  This routine returns a non-negative value upon failure
-   --  but the error code can not be set conforming the POSIX standard.
+   --  This routine returns a non-negative value upon failure but the error
+   --  code cannot be set conforming the POSIX standard.
 
    function pthread_setschedparam
      (thread : pthread_t;

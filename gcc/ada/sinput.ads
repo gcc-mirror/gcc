@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -655,7 +655,7 @@ private
    --  we avoid the use of fat pointers.
 
    type Logical_Lines_Table_Ptr is access all Logical_Lines_Table_Type;
-   --  Type used for pointers to logical line tables.
+   --  Type used for pointers to logical line tables
 
    -----------------------
    -- Source_File Table --

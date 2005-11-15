@@ -1671,7 +1671,7 @@ package body Ch5 is
 
    --  This function parses a block statement with DECLARE present
 
-   --  The caller has checked that the initial token is DECLARE.
+   --  The caller has checked that the initial token is DECLARE
 
    --  Error recovery: cannot raise Error_Resync
 

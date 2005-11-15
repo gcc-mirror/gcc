@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 1996-2005 Ada Core Technologies, Inc.              --
+--                      Copyright (C) 1996-2005, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,7 +50,7 @@ package GNAT.Current_Exception is
    -- Subprograms --
    -----------------
 
-   --  Note: the lower bound of returnd String values is always one.
+   --  Note: the lower bound of returnd String values is always one
 
    function Exception_Information return String;
    --  Returns the result of calling Ada.Exceptions.Exception_Information

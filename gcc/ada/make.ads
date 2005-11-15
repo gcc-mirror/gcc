@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,13 +75,13 @@ package Make is
    --  is raised. These need to be handled by the calling routines.
 
    Compilation_Failed : exception;
-   --  Raised by Compile_Sources if a compilation failed.
+   --  Raised by Compile_Sources if a compilation failed
 
    Bind_Failed : exception;
-   --  Raised by Bind below if the bind failed.
+   --  Raised by Bind below if the bind failed
 
    Link_Failed : exception;
-   --  Raised by Link below if the link failed.
+   --  Raised by Link below if the link failed
 
    procedure Bind (ALI_File : File_Name_Type; Args : Argument_List);
    --  Binds ALI_File. Args are the arguments to pass to the binder.
@@ -96,13 +96,13 @@ package Make is
    --  Compile_Sources can be called by an external unit.
 
    procedure Scan_Make_Arg (Argv : String; And_Save : Boolean);
-   --  Scan make arguments. Argv is a single argument to be processed.
+   --  Scan make arguments. Argv is a single argument to be processed
 
    procedure Extract_Failure
      (File  : out File_Name_Type;
       Unit  : out Unit_Name_Type;
       Found : out Boolean);
-   --  Extracts the first failure report from Bad_Compilation table.
+   --  Extracts the first failure report from Bad_Compilation table
 
    procedure Compile_Sources
      (Main_Source           : File_Name_Type;

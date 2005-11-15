@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                  Copyright (C) 2001-2005 Adacore, Inc.                   --
+--                     Copyright (C) 2001-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,7 @@ package body GNAT.Directory_Operations.Iteration is
       --  recursively for each sub-directories.
 
       function Make_Pathname (Dir, File : String) return String;
-      --  Returns the pathname for File by adding Dir as prefix.
+      --  Returns the pathname for File by adding Dir as prefix
 
       -------------------
       -- Make_Pathname --
@@ -378,6 +378,8 @@ package body GNAT.Directory_Operations.Iteration is
             Close (Dir);
          end if;
       end Read;
+
+   --  Start of processing for Wildcard_Iterator
 
    begin
       if Path = "" then

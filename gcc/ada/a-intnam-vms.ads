@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1991-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a OpenVMS/Alpha version of this package.
---
+--  This is a OpenVMS/Alpha version of this package
+
 --  This target-dependent package spec contains names of interrupts
 --  supported by the local system.
 

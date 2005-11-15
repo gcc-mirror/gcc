@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                   (Dummy body for non-distributed case)                  --
 --                                                                          --
---          Copyright (C) 1995-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@ package body System.Partition_Interface is
 
    type String_Access is access String;
 
-   --  To have a minimal implementation of U'Partition_ID.
+   --  To have a minimal implementation of U'Partition_ID
 
    type Pkg_Node;
    type Pkg_List is access Pkg_Node;

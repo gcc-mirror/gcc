@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Wide_Maps; use Ada.Strings.Wide_Maps;
+with Ada.Strings.Wide_Maps;   use Ada.Strings.Wide_Maps;
 with Ada.Strings.Wide_Search;
 
 package body Ada.Strings.Wide_Fixed is
@@ -296,7 +296,11 @@ package body Ada.Strings.Wide_Fixed is
       Tlength : constant Integer := Target'Length;
 
       function Is_Padding (Item : Wide_String) return Boolean;
-      --  Determinbe if all characters in Item are pad characters
+      --  Determine if all characters in Item are pad characters
+
+      ----------------
+      -- Is_Padding --
+      ----------------
 
       function Is_Padding (Item : Wide_String) return Boolean is
       begin

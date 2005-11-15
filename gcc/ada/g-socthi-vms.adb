@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001-2005 Ada Core Technologies, Inc.         --
+--                     Copyright (C) 2001-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,8 +40,8 @@ with Interfaces.C; use Interfaces.C;
 
 package body GNAT.Sockets.Thin is
 
-   Non_Blocking_Sockets : constant Fd_Set_Access
-     := New_Socket_Set (No_Socket_Set);
+   Non_Blocking_Sockets : constant Fd_Set_Access :=
+                            New_Socket_Set (No_Socket_Set);
    --  When this package is initialized with Process_Blocking_IO set
    --  to True, sockets are set in non-blocking mode to avoid blocking
    --  the whole process when a thread wants to perform a blocking IO
@@ -59,7 +59,7 @@ package body GNAT.Sockets.Thin is
    Thread_Blocking_IO : Boolean := True;
 
    Unknown_System_Error : constant C.Strings.chars_ptr :=
-     C.Strings.New_String ("Unknown system error");
+                            C.Strings.New_String ("Unknown system error");
 
    function Syscall_Accept
      (S       : C.int;
@@ -99,8 +99,7 @@ package body GNAT.Sockets.Thin is
      (S     : C.int;
       Msg   : System.Address;
       Len   : C.int;
-      Flags : C.int)
-      return  C.int;
+      Flags : C.int) return C.int;
    pragma Import (C, Syscall_Send, "send");
 
    function Syscall_Sendto
@@ -109,8 +108,7 @@ package body GNAT.Sockets.Thin is
       Len   : C.int;
       Flags : C.int;
       To    : Sockaddr_In_Access;
-      Tolen : C.int)
-      return  C.int;
+      Tolen : C.int) return C.int;
    pragma Import (C, Syscall_Sendto, "sendto");
 
    function Syscall_Socket

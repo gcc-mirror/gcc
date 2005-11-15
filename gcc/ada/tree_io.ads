@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,7 +96,7 @@ package Tree_IO is
    --  Writes a single integer value to the current tree file
 
    procedure Tree_Write_Str (S : String_Ptr);
-   --  Write out string value referenced by S. Low bound must be 1.
+   --  Write out string value referenced by S (low bound of S must be 1)
 
    procedure Tree_Write_Terminate;
    --  Terminates writing of the file (flushing the buffer), but does not

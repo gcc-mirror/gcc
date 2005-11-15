@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,7 @@ package Sem_Type is
    -----------------
 
    procedure Init_Interp_Tables;
-   --  Invoked by gnatf when processing multiple files.
+   --  Invoked by gnatf when processing multiple files
 
    procedure Collect_Interps (N : Node_Id);
    --  Invoked when the name N has more than one visible interpretation.
@@ -131,7 +131,7 @@ package Sem_Type is
    --  of the operands of N, to check visibility.
 
    procedure End_Interp_List;
-   --  End the list of interpretations of current node.
+   --  End the list of interpretations of current node
 
    procedure Get_First_Interp
      (N  : Node_Id;

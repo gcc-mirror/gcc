@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1998-2004 Free Software Foundation, Inc.           --
+--          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -210,7 +210,7 @@ procedure Gnatxref is
    procedure Write_Usage is
    begin
       Put_Line ("GNATXREF " & Gnatvsn.Gnat_Version_String);
-      Put_Line ("Copyright 1998-2004, Ada Core Technologies Inc.");
+      Put_Line ("Copyright 1998-2005, AdaCore");
       Put_Line ("Usage: gnatxref [switches] file1 file2 ...");
       New_Line;
       Put_Line ("  file ... list of source files to xref, " &

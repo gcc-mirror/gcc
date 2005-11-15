@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001-2004 Ada Core Technologies, Inc.         --
+--                     Copyright (C) 2001-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,7 +127,7 @@ package body GNAT.Sockets.Thin is
    procedure Disable_SIGPIPE (S : C.int);
    pragma Import (C, Disable_SIGPIPE, "__gnat_disable_sigpipe");
 
-   function  Non_Blocking_Socket (S : C.int) return Boolean;
+   function Non_Blocking_Socket (S : C.int) return Boolean;
    procedure Set_Non_Blocking_Socket (S : C.int; V : Boolean);
 
    --------------
@@ -503,7 +503,6 @@ package body GNAT.Sockets.Thin is
 
       if C_Msg = C.Strings.Null_Ptr then
          return Unknown_System_Error;
-
       else
          return C_Msg;
       end if;

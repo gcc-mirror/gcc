@@ -237,7 +237,7 @@ procedure Gnatfind is
    procedure Write_Usage is
    begin
       Put_Line ("GNATFIND " & Gnatvsn.Gnat_Version_String);
-      Put_Line ("Copyright 1998-2005, Ada Core Technologies Inc.");
+      Put_Line ("Copyright 1998-2005, AdaCore");
       Put_Line ("Usage: gnatfind pattern[:sourcefile[:line[:column]]] "
                 & "[file1 file2 ...]");
       New_Line;

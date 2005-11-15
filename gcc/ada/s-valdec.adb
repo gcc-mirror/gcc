@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,11 +48,9 @@ package body System.Val_Dec is
      (Str   : String;
       Ptr   : access Integer;
       Max   : Integer;
-      Scale : Integer)
-      return  Integer
+      Scale : Integer) return Integer
    is
       Val : Long_Long_Float;
-
    begin
       Val := Scan_Real (Str, Ptr, Max);
       return Integer (Val * 10.0 ** Scale);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,6 @@ package System.Val_Char is
    pragma Pure;
 
    function Value_Character (Str : String) return Character;
-   --  Computes Character'Value (Str).
+   --  Computes Character'Value (Str)
 
 end System.Val_Char;

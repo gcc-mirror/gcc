@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Characters.Latin_1;      use Ada.Characters.Latin_1;
-with Ada.Strings.Maps;            use Ada.Strings.Maps;
-with Ada.Strings.Maps.Constants;  use Ada.Strings.Maps.Constants;
+with Ada.Characters.Latin_1;     use Ada.Characters.Latin_1;
+with Ada.Strings.Maps;           use Ada.Strings.Maps;
+with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
 
 package body Ada.Characters.Handling is
 

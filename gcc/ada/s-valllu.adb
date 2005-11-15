@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,9 +41,9 @@ package body System.Val_LLU is
    -----------------------------
 
    function Scan_Long_Long_Unsigned
-     (Str  : String;
-      Ptr  : access Integer;
-      Max  : Integer) return Long_Long_Unsigned
+     (Str : String;
+      Ptr : access Integer;
+      Max : Integer) return Long_Long_Unsigned
    is
       P : Integer;
       --  Local copy of the pointer
@@ -289,7 +289,6 @@ package body System.Val_LLU is
    is
       V : Long_Long_Unsigned;
       P : aliased Integer := Str'First;
-
    begin
       V := Scan_Long_Long_Unsigned (Str, P'Access, Str'Last);
       Scan_Trailing_Blanks (Str, P);

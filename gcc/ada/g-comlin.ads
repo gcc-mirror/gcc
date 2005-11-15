@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1999-2003 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,7 +72,7 @@
 
 --  A more complicated example would involve the use of sections for the
 --  switches, as for instance in gnatmake. These sections are separated by
---  special switches, chosen by the programer. Each section act as a
+--  special switches chosen by the programer. Each section acts as a
 --  command line of its own.
 
 --  begin
@@ -104,24 +104,24 @@ package GNAT.Command_Line is
       Stop_At_First_Non_Switch : Boolean := False;
       Section_Delimiters       : String := "");
    --  This procedure resets the internal state of the package to prepare
-   --  to rescan the parameters. It need not (but may be) called before the
-   --  first use of Getopt, but it must be called if you want to start
-   --  rescanning the command line parameters from the start. The optional
-   --  parameter Switch_Char can be used to reset the switch character,
-   --  e.g. to '/' for use in DOS-like systems. The optional parameter
-   --  Stop_At_First_Non_Switch indicates if Getopt is to look for switches
-   --  on the whole command line, or if it has to stop as soon as a
+   --  to rescan the parameters. It does not need to be called before the
+   --  first use of Getopt (but it could be), but it must be called if you want
+   --  to start rescanning the command line parameters from the start. The
+   --  optional parameter Switch_Char can be used to reset the switch
+   --  character, e.g. to '/' for use in DOS-like systems. The optional
+   --  parameter Stop_At_First_Non_Switch indicates if Getopt is to look for
+   --  switches on the whole command line, or if it has to stop as soon as a
    --  non-switch argument is found.
    --
    --  Example:
    --
    --      Arguments: my_application file1 -c
    --
-   --      if Stop_At_First_Non_Switch is False, then -c will be considered
+   --      If Stop_At_First_Non_Switch is False, then -c will be considered
    --      as a switch (returned by getopt), otherwise it will be considered
    --      as a normal argument (returned by Get_Argument).
    --
-   --  if SECTION_DELIMITERS is set, then every following subprogram
+   --  If SECTION_DELIMITERS is set, then every following subprogram
    --  (Getopt and Get_Argument) will only operate within a section, which
    --  is delimited by any of these delimiters or the end of the command line.
    --
@@ -134,11 +134,11 @@ package GNAT.Command_Line is
    --      and -largs and includes '-d -e' and the last one includes '-f'
 
    procedure Goto_Section (Name : String := "");
-   --  Change the current section. The next Getopt of Get_Argument will
-   --  start looking at the beginning of the section. An empty name ("")
-   --  refers to the first section between the program name and the first
-   --  section delimiter.
-   --  If the section does not exist, then Invalid_Section is raised.
+   --  Change the current section. The next Getopt of Get_Argument will start
+   --  looking at the beginning of the section. An empty name ("") refers to
+   --  the first section between the program name and the first section
+   --  delimiter. If the section does not exist, then Invalid_Section is
+   --  raised.
 
    function Full_Switch return String;
    --  Returns the full name of the last switch found (Getopt only returns
@@ -147,34 +147,40 @@ package GNAT.Command_Line is
    function Getopt
      (Switches    : String;
       Concatenate : Boolean := True) return Character;
-   --  This function moves to the next switch on the command line (defined
-   --  as a switch character followed by a character within Switches,
-   --  casing being significant). The result returned is the first
-   --  character of the particular switch located. If there are no more
-   --  switches in the current section, returns ASCII.NUL. If Concatenate is
-   --  True (by default), the switches need not be separated by spaces (they
-   --  can be concatenated if they do not require an argument, e.g. -ab is the
-   --  same as two separate arguments -a -b).
+   --  This function moves to the next switch on the command line (defined as
+   --  switch character followed by a character within Switches, casing being
+   --  significant). The result returned is the first character of the switch
+   --  that is located. If there are no more switches in the current section,
+   --  returns ASCII.NUL. If Concatenate is True (by default), the switches
+   --  does not need to be separated by spaces (they can be concatenated if
+   --  they do not require an argument, e.g. -ab is the ame as two separate
+   --  arguments -a -b).
    --
    --  Switches is a string of all the possible switches, separated by a
-   --  space. A switch can be followed by one of the following characters :
+   --  space. A switch can be followed by one of the following characters:
    --
    --   ':'  The switch requires a parameter. There can optionally be a space
-   --        on the command line between the switch and its parameter
+   --        on the command line between the switch and its parameter.
+   --
    --   '='  The switch requires a parameter. There can either be a '=' or a
-   --        space on the command line between the switch and its parameter
+   --        space on the command line between the switch and its parameter.
+   --
    --   '!'  The switch requires a parameter, but there can be no space on the
-   --        command line between the switch and its parameter
+   --        command line between the switch and its parameter.
+   --
    --   '?'  The switch may have an optional parameter. There can be no space
-   --        between the switch and its argument
-   --        ex/ if Switches has the following value : "a? b"
-   --            The command line can be :
+   --        between the switch and its argument.
+   --
+   --        e.g. if Switches has the following value : "a? b",
+   --        The command line can be:
+   --
    --             -afoo    :  -a switch with 'foo' parameter
    --             -a foo   :  -a switch and another element on the
    --                           command line 'foo', returned by Get_Argument
    --
    --     Example: if Switches is "-a: -aO:", you can have the following
-   --              command lines :
+   --              command lines:
+   --
    --                -aarg    :  'a' switch with 'arg' parameter
    --                -a arg   :  'a' switch with 'arg' parameter
    --                -aOarg   :  'aO' switch with 'arg' parameter
@@ -194,14 +200,14 @@ package GNAT.Command_Line is
    --
    --    Example
    --       Getopt ("* a b")
-   --       If the command line is '-a -c toto.o -b', GetOpt will return
-   --       successively 'a', '*', '*' and 'b'. When '*' is returnd,
+   --       If the command line is '-a -c toto.o -b', Getopt will return
+   --       successively 'a', '*', '*' and 'b'. When '*' is returned,
    --       Full_Switch returns the corresponding item on the command line.
    --
    --
    --  When Getopt encounters an invalid switch, it raises the exception
    --  Invalid_Switch and sets Full_Switch to return the invalid switch.
-   --  When Getopt can not find the parameter associated with a switch, it
+   --  When Getopt cannot find the parameter associated with a switch, it
    --  raises Invalid_Parameter, and sets Full_Switch to return the invalid
    --  switch character.
    --
@@ -221,24 +227,24 @@ package GNAT.Command_Line is
    --       raised and Full_Switch will return "ab".
 
    function Get_Argument (Do_Expansion : Boolean := False) return String;
-   --  Returns the next element in the command line which is not a switch.
+   --  Returns the next element on the command line which is not a switch.
    --  This function should not be called before Getopt has returned
    --  ASCII.NUL.
    --
-   --  If Expansion is True, then the parameter on the command
-   --  line will considered as filename with wild cards, and will be
-   --  expanded. The matching file names will be returned one at a time.
-   --  When there are no more arguments on the command line, this function
-   --  returns an empty string. This is useful in non-Unix systems for
-   --  obtaining normal expansion of wild card references.
+   --  If Expansion is True, then the parameter on the command line will be
+   --  considered as a filename with wild cards, and will be expanded. The
+   --  matching file names will be returned one at a time. When there are no
+   --  more arguments on the command line, this function returns an empty
+   --  string. This is useful in non-Unix systems for obtaining normal
+   --  expansion of wild card references.
 
    function Parameter return String;
-   --  Returns parameter associated with the last switch returned by Getopt.
-   --  If no parameter was associated with the last switch, or no previous
-   --  call has been made to Get_Argument, raises Invalid_Parameter.
+   --  Returns the parameter associated with the last switch returned by
+   --  Getopt. If no parameter was associated with the last switch, or no
+   --  previous call has been made to Get_Argument, raises Invalid_Parameter.
    --  If the last switch was associated with an optional argument and this
    --  argument was not found on the command line, Parameter returns an empty
-   --  string
+   --  string.
 
    type Expansion_Iterator is limited private;
    --  Type used during expansion of file names
@@ -254,19 +260,19 @@ package GNAT.Command_Line is
    --  Basic_Regexp is True). When Directory is an empty string, the current
    --  directory is searched.
    --
-   --  Pattern may contains directory separators (as in "src/*/*.ada").
+   --  Pattern may contain directory separators (as in "src/*/*.ada").
    --  Subdirectories of Directory will also be searched, up to one
    --  hundred levels deep.
    --
    --  When Start_Expansion has been called, function Expansion should be
-   --  called repetitively until it returns an empty string, before
+   --  called repeatedly until it returns an empty string, before
    --  Start_Expansion can be called again with the same Expansion_Iterator
    --  variable.
 
    function Expansion (Iterator : Expansion_Iterator) return String;
-   --  Return the next file in the directory matching the parameters given
+   --  Returns the next file in the directory matching the parameters given
    --  to Start_Expansion and updates Iterator to point to the next entry.
-   --  Returns an empty string when there are no more files in the directory
+   --  Returns an empty string when there is no more file in the directory
    --  and its subdirectories.
    --
    --  If Expansion is called again after an empty string has been returned,
@@ -279,8 +285,8 @@ package GNAT.Command_Line is
    --  Raised when an invalid switch is detected in the command line
 
    Invalid_Parameter : exception;
-   --  Raised when a parameter is missing, or an attempt is made to obtain
-   --  a parameter for a switch that does not allow a parameter
+   --  Raised when a parameter is missing, or an attempt is made to obtain a
+   --  parameter for a switch that does not allow a parameter
 
 private
 
@@ -301,8 +307,8 @@ private
 
    type Expansion_Iterator is limited record
       Start : Positive := 1;
-      --  Position of the first character of the relative path to check
-      --  against the pattern.
+      --  Position of the first character of the relative path to check against
+      --  the pattern.
 
       Dir_Name : String (1 .. Max_Path_Length);
 
@@ -314,8 +320,8 @@ private
       --  Regular expression built with the pattern
 
       Maximum_Depth : Depth := 1;
-      --  The maximum depth of directories, reflecting the number of
-      --  directory separators in the pattern.
+      --  The maximum depth of directories, reflecting the number of directory
+      --  separators in the pattern.
 
    end record;
 

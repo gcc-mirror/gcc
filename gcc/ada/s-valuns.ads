@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,10 +40,9 @@ package System.Val_Uns is
    pragma Pure;
 
    function Scan_Unsigned
-     (Str  : String;
-      Ptr  : access Integer;
-      Max  : Integer)
-      return System.Unsigned_Types.Unsigned;
+     (Str : String;
+      Ptr : access Integer;
+      Max : Integer) return System.Unsigned_Types.Unsigned;
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  integer according to the syntax described in (RM 3.5(43)). The substring
    --  scanned extends no further than Str (Max). There are three cases for the
@@ -71,8 +70,7 @@ package System.Val_Uns is
    --  is greater than Max as required in this case.
 
    function Value_Unsigned
-     (Str : String)
-     return System.Unsigned_Types.Unsigned;
+     (Str : String) return System.Unsigned_Types.Unsigned;
    --  Used in computing X'Value (Str) where X is a modular integer type whose
    --  modulus does not exceed the range of System.Unsigned_Types.Unsigned. Str
    --  is the string argument of the attribute. Constraint_Error is raised if

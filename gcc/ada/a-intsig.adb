@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2000-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with System.Interrupt_Management.Operations;
+
 package body Ada.Interrupts.Signal is
 
    ------------------------
@@ -43,4 +44,5 @@ package body Ada.Interrupts.Signal is
       System.Interrupt_Management.Operations.Interrupt_Self_Process
         (System.Interrupt_Management.Interrupt_ID (Interrupt));
    end Generate_Interrupt;
+
 end Ada.Interrupts.Signal;

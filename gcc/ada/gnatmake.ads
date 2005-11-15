@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---        Copyright (C) 1992,1993,1994 Free Software Foundation, Inc.       --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,8 +25,7 @@
 ------------------------------------------------------------------------------
 
 procedure Gnatmake;
---  The driver for the gnatmake tool. This utility can be used to
---  automatically (re)compile a set of ada sources by giving the name
---  of the root compilation unit or the source file containing it.
---  For more information on gnatmake (its precise usage, flags and algorithm)
---  please refer to the body of gnatmake.
+--  The driver for the gnatmake tool. This utility can be used to automatically
+--  (re)compile a set of ada sources by giving the name of the root compilation
+--  unit or the source file containing it. For more information on gnatmake
+--  (its precise usage, flags and algorithm) please refer to the gnatmake body.

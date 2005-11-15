@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This packages provides a special implementation of the Ada95 storage pools.
+--  This packages provides a special implementation of the Ada95 storage pools
 
 --  The goal of this debug pool is to detect incorrect uses of memory
 --  (multiple deallocations, access to invalid memory,...). Errors are reported
@@ -70,7 +70,7 @@
 --  of memory that was allocated. The pool is also designed to work correctly
 --  in conjunction with gnatmem.
 
---  Finally, a subprogram Print_Pool is provided for use from the debugger.
+--  Finally, a subprogram Print_Pool is provided for use from the debugger
 
 --  Limitations
 --  ===========
@@ -300,7 +300,7 @@ private
       --  accesed to deallocated memory.
 
       Physically_Deallocated : Byte_Count := 0;
-      --  Total number of bytes that were free()-ed.
+      --  Total number of bytes that were free()-ed
 
       Marked_Blocks_Deallocated : Boolean := False;
       --  Set to true if some mark blocks had to be deallocated in the advanced
@@ -313,7 +313,7 @@ private
 
       First_Free_Block : System.Address := System.Null_Address;
       Last_Free_Block  : System.Address := System.Null_Address;
-      --  Pointers to the first and last logically freed blocks.
+      --  Pointers to the first and last logically freed blocks
 
       First_Used_Block : System.Address := System.Null_Address;
       --  Pointer to the list of currently allocated blocks. This list is

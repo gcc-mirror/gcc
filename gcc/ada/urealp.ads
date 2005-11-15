@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -148,19 +148,19 @@ package Urealp is
    --  Table.Tree_Write routines.
 
    function Rbase (Real : Ureal) return Nat;
-   --  Return the base of the universal real.
+   --  Return the base of the universal real
 
    function Denominator (Real : Ureal) return Uint;
-   --  Return the denominator of the universal real.
+   --  Return the denominator of the universal real
 
    function Numerator (Real : Ureal) return Uint;
-   --  Return the numerator of the universal real.
+   --  Return the numerator of the universal real
 
    function Norm_Den (Real : Ureal) return Uint;
-   --  Return the denominator of the universal real after a normalization.
+   --  Return the denominator of the universal real after a normalization
 
    function Norm_Num (Real : Ureal) return Uint;
-   --  Return the numerator of the universal real after a normalization.
+   --  Return the numerator of the universal real after a normalization
 
    function UR_From_Uint (UI : Uint) return Ureal;
    --  Returns real corresponding to universal integer value
@@ -234,7 +234,7 @@ package Urealp is
    --  Returns negative of real
 
    function UR_Eq (Left, Right : Ureal) return Boolean;
-   --  Compares reals for equality.
+   --  Compares reals for equality
 
    function UR_Max (Left, Right : Ureal) return Ureal;
    --  Returns the maximum of two reals
@@ -243,19 +243,19 @@ package Urealp is
    --  Returns the minimum of two reals
 
    function UR_Ne (Left, Right : Ureal) return Boolean;
-   --  Compares reals for inequality.
+   --  Compares reals for inequality
 
    function UR_Lt (Left, Right : Ureal) return Boolean;
-   --  Compares reals for less than.
+   --  Compares reals for less than
 
    function UR_Le (Left, Right : Ureal) return Boolean;
-   --  Compares reals for less than or equal.
+   --  Compares reals for less than or equal
 
    function UR_Gt (Left, Right : Ureal) return Boolean;
-   --  Compares reals for greater than.
+   --  Compares reals for greater than
 
    function UR_Ge (Left, Right : Ureal) return Boolean;
-   --  Compares reals for greater than or equal.
+   --  Compares reals for greater than or equal
 
    function UR_Is_Zero (Real : Ureal) return Boolean;
    --  Tests if real value is zero

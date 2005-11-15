@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -211,7 +211,7 @@ procedure GNATCmd is
    --  Display usage for platforms other than VMS
 
    procedure Process_Link;
-   --  Process GNAT LINK, when there is a project file specified.
+   --  Process GNAT LINK, when there is a project file specified
 
    procedure Set_Library_For
      (Project             : Project_Id;

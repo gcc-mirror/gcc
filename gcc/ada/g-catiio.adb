@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1999-2005 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -124,7 +124,6 @@ package body GNAT.Calendar.Time_IO is
       use Ada.Characters.Handling;
       Local : constant String :=
                 To_Upper (Str (1)) & To_Lower (Str (2 .. Str'Last));
-
    begin
       if Length = 0 then
          return Local;
@@ -174,7 +173,6 @@ package body GNAT.Calendar.Time_IO is
    begin
       if Length = 0 or else Padding = None then
          return NI (2 .. NI'Last);
-
       else
          return NIP (NIP'Last - Length + 1 .. NIP'Last);
       end if;
