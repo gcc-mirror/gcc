@@ -1,3 +1,10 @@
+2005-11-15  Alan Modra  <amodra@bigpond.net.au>
+
+	PR rtl-optimization/22002
+	* combine.c (distribute_notes): Detect cases where a reg dies
+	two or more times in a bb, including on the insn we are combining,
+	and place the death note on the correct range.
+
 2005-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/22489
