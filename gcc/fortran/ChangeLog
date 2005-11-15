@@ -1,3 +1,9 @@
+2005-11-16  Alan Modra  <amodra@bigpond.net.au>
+
+	PR fortran/24096
+	* trans-types.c (gfc_init_kinds): Use one less for max_exponent
+	of IBM extended double format.
+
 2005-11-13  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsic.c (add_functions): Add COMPLEX, FTELL, FGETC, FGET,
