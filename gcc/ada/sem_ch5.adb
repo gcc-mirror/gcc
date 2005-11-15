@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,15 +70,6 @@ package body Sem_Ch5 is
    -----------------------
 
    procedure Analyze_Iteration_Scheme (N : Node_Id);
-
-   procedure Check_Possible_Current_Value_Condition (Cnode : Node_Id);
-   --  Cnode is N_If_Statement, N_Elsif_Part, or N_Iteration_Scheme
-   --  (the latter when a WHILE condition is present). This call checks
-   --  if Condition (Cnode) is of the form ([NOT] var op val), where var
-   --  is a simple object, val is known at compile time, and op is one
-   --  of the six relational operators. If this is the case, and the
-   --  Current_Value field of "var" is not set, then it is set to Cnode.
-   --  See Exp_Util.Set_Current_Value_Condition for further details.
 
    ------------------------
    -- Analyze_Assignment --
@@ -1526,13 +1517,15 @@ package body Sem_Ch5 is
                         --  of reversing the bounds incorrectly in the range.
 
                         elsif Reverse_Present (LP)
-                          and then Nkind (H) = N_Integer_Literal
+                          and then Nkind (Original_Node (H)) =
+                                                          N_Integer_Literal
                           and then (Intval (H) = Uint_0
                                       or else
                                     Intval (H) = Uint_1)
                           and then Lhi > Hhi
                         then
                            Error_Msg_N ("?loop range may be null", DS);
+                           Error_Msg_N ("\?bounds may be wrong way round", DS);
                         end if;
                      end;
                   end if;

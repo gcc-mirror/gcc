@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,15 @@ package Sem_Ch5 is
    --  to insert an N_Implicit_Label_Declaration in the tree. It also takes
    --  care of setting Reachable, since labels defined by the expander can
    --  be assumed to be reachable.
+
+   procedure Check_Possible_Current_Value_Condition (Cnode : Node_Id);
+   --  Cnode is N_If_Statement, N_Elsif_Part, or N_Iteration_Scheme
+   --  (the latter when a WHILE condition is present). This call checks
+   --  if Condition (Cnode) is of the form ([NOT] var op val), where var
+   --  is a simple object, val is known at compile time, and op is one
+   --  of the six relational operators. If this is the case, and the
+   --  Current_Value field of "var" is not set, then it is set to Cnode.
+   --  See Exp_Util.Set_Current_Value_Condition for further details.
 
    procedure Check_Unreachable_Code (N : Node_Id);
    --  This procedure is called with N being the node for a statement that

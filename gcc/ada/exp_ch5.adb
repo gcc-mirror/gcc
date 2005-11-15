@@ -45,6 +45,7 @@ with Rtsfind;  use Rtsfind;
 with Sinfo;    use Sinfo;
 with Sem;      use Sem;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
@@ -1808,7 +1809,11 @@ package body Exp_Ch5 is
                end;
             end if;
 
-            Analyze (N);
+            --  N has been rewritten to a block statement for which it is
+            --  known by construction that no checks are necessary: analyze
+            --  it with all checks suppressed.
+
+            Analyze (N, Suppress => All_Checks);
             return;
          end Tagged_Case;
 
@@ -2258,6 +2263,13 @@ package body Exp_Ch5 is
                Insert_Actions      (N, Condition_Actions (Hed));
                Set_Condition       (N, Condition (Hed));
                Set_Then_Statements (N, Then_Statements (Hed));
+
+               --  Hed might have been captured as the condition determining
+               --  the current value for an entity. Now it is detached from
+               --  the tree, so a Current_Value pointer in the condition might
+               --  need to be updated.
+
+               Check_Possible_Current_Value_Condition (N);
 
                if Is_Empty_List (Elsif_Parts (N)) then
                   Set_Elsif_Parts (N, No_List);
@@ -2762,122 +2774,37 @@ package body Exp_Ch5 is
          Analyze (Exp);
       end if;
 
-      --  Implement the rules of 6.5(8-10), which require a tag check in
-      --  the case of a limited tagged return type, and tag reassignment
-      --  for nonlimited tagged results. These actions are needed when
-      --  the return type is a specific tagged type and the result
-      --  expression is a conversion or a formal parameter, because in
-      --  that case the tag of the expression might differ from the tag
-      --  of the specific result type.
-
-      if Is_Tagged_Type (Utyp)
-        and then not Is_Class_Wide_Type (Utyp)
-        and then (Nkind (Exp) = N_Type_Conversion
-                    or else Nkind (Exp) = N_Unchecked_Type_Conversion
-                    or else (Is_Entity_Name (Exp)
-                               and then Ekind (Entity (Exp)) in Formal_Kind))
-      then
-         --  When the return type is limited, perform a check that the
-         --  tag of the result is the same as the tag of the return type.
-
-         if Is_Limited_Type (Return_Type) then
-            Insert_Action (Exp,
-              Make_Raise_Constraint_Error (Loc,
-                Condition =>
-                  Make_Op_Ne (Loc,
-                    Left_Opnd =>
-                      Make_Selected_Component (Loc,
-                        Prefix => Duplicate_Subexpr (Exp),
-                        Selector_Name =>
-                          New_Reference_To (First_Tag_Component (Utyp), Loc)),
-                    Right_Opnd =>
-                      Unchecked_Convert_To (RTE (RE_Tag),
-                        New_Reference_To
-                          (Node (First_Elmt
-                                  (Access_Disp_Table (Base_Type (Utyp)))),
-                           Loc))),
-                Reason => CE_Tag_Check_Failed));
-
-         --  If the result type is a specific nonlimited tagged type,
-         --  then we have to ensure that the tag of the result is that
-         --  of the result type. This is handled by making a copy of the
-         --  expression in the case where it might have a different tag,
-         --  namely when the expression is a conversion or a formal
-         --  parameter. We create a new object of the result type and
-         --  initialize it from the expression, which will implicitly
-         --  force the tag to be set appropriately.
-
-         else
-            Result_Id :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
-            Result_Exp := New_Reference_To (Result_Id, Loc);
-
-            Result_Obj :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Result_Id,
-                Object_Definition   => New_Reference_To (Return_Type, Loc),
-                Constant_Present    => True,
-                Expression          => Relocate_Node (Exp));
-
-            Set_Assignment_OK (Result_Obj);
-            Insert_Action (Exp, Result_Obj);
-
-            Rewrite (Exp, Result_Exp);
-            Analyze_And_Resolve (Exp, Return_Type);
-         end if;
-
-      --  Ada 2005 (AI-344): If the result type is class-wide, then insert
-      --  a check that the level of the return expression's underlying type
-      --  is not deeper than the level of the master enclosing the function.
-      --  Always generate the check when the type of the return expression
-      --  is class-wide, when it's a type conversion, or when it's a formal
-      --  parameter. Otherwise, suppress the check in the case where the
-      --  return expression has a specific type whose level is known not to
-      --  be statically deeper than the function's result type.
-
-      elsif Ada_Version >= Ada_05
-        and then Is_Class_Wide_Type (Return_Type)
-        and then not Scope_Suppress (Accessibility_Check)
-        and then
-          (Is_Class_Wide_Type (Etype (Exp))
-            or else Nkind (Exp) = N_Type_Conversion
-            or else Nkind (Exp) = N_Unchecked_Type_Conversion
-            or else (Is_Entity_Name (Exp)
-                       and then Ekind (Entity (Exp)) in Formal_Kind)
-            or else Scope_Depth (Enclosing_Dynamic_Scope (Etype (Exp))) >
-                      Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))
-      then
-         Insert_Action (Exp,
-           Make_Raise_Program_Error (Loc,
-             Condition =>
-               Make_Op_Gt (Loc,
-                 Left_Opnd =>
-                   Make_Function_Call (Loc,
-                     Name =>
-                       New_Reference_To
-                         (RTE (RE_Get_Access_Level), Loc),
-                     Parameter_Associations =>
-                       New_List (Make_Attribute_Reference (Loc,
-                                   Prefix         =>
-                                      Duplicate_Subexpr (Exp),
-                                   Attribute_Name =>
-                                      Name_Tag))),
-                 Right_Opnd =>
-                   Make_Integer_Literal (Loc,
-                     Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
-             Reason => PE_Accessibility_Check_Failed));
-      end if;
-
       --  Deal with returning variable length objects and controlled types
 
       --  Nothing to do if we are returning by reference, or this is not
       --  a type that requires special processing (indicated by the fact
       --  that it requires a cleanup scope for the secondary stack case)
 
-      if Is_Return_By_Reference_Type (T)
-        or else not Requires_Transient_Scope (Return_Type)
-      then
+      if Is_Return_By_Reference_Type (T) then
          null;
+
+      elsif not Requires_Transient_Scope (Return_Type) then
+
+         --  mutable records with no variable length components are not
+         --  returned on the sec-stack so we need to make sure that the
+         --  backend will only copy back the size of the actual value  and not
+         --  the maximum size. We create an actual subtype for this purpose
+
+         declare
+            Ubt  : constant Entity_Id := Underlying_Type (Base_Type (T));
+            Decl : Node_Id;
+            Ent  : Entity_Id;
+         begin
+            if Has_Discriminants (Ubt)
+              and then not Is_Constrained (Ubt)
+              and then not Has_Unchecked_Union (Ubt)
+            then
+               Decl := Build_Actual_Subtype (Ubt, Exp);
+               Ent := Defining_Identifier (Decl);
+               Insert_Action (Exp, Decl);
+               Rewrite (Exp, Unchecked_Convert_To (Ent, Exp));
+            end if;
+         end;
 
       --  Case of secondary stack not used
 
@@ -3063,6 +2990,12 @@ package body Exp_Ch5 is
          then
             Set_By_Ref (N);
 
+            --  Remove side effects from the expression now so that
+            --  other part of the expander do not have to reanalyze
+            --  this node without this optimization
+
+            Rewrite (Exp, Duplicate_Subexpr_No_Checks (Exp));
+
          --  For controlled types, do the allocation on the sec-stack
          --  manually in order to call adjust at the right time
          --    type Anon1 is access Return_Type;
@@ -3128,6 +3061,112 @@ package body Exp_Ch5 is
          end if;
       end if;
 
+      --  Implement the rules of 6.5(8-10), which require a tag check in
+      --  the case of a limited tagged return type, and tag reassignment
+      --  for nonlimited tagged results. These actions are needed when
+      --  the return type is a specific tagged type and the result
+      --  expression is a conversion or a formal parameter, because in
+      --  that case the tag of the expression might differ from the tag
+      --  of the specific result type.
+
+      if Is_Tagged_Type (Utyp)
+        and then not Is_Class_Wide_Type (Utyp)
+        and then (Nkind (Exp) = N_Type_Conversion
+                    or else Nkind (Exp) = N_Unchecked_Type_Conversion
+                    or else (Is_Entity_Name (Exp)
+                               and then Ekind (Entity (Exp)) in Formal_Kind))
+      then
+         --  When the return type is limited, perform a check that the
+         --  tag of the result is the same as the tag of the return type.
+
+         if Is_Limited_Type (Return_Type) then
+            Insert_Action (Exp,
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Op_Ne (Loc,
+                    Left_Opnd =>
+                      Make_Selected_Component (Loc,
+                        Prefix => Duplicate_Subexpr (Exp),
+                        Selector_Name =>
+                          New_Reference_To (First_Tag_Component (Utyp), Loc)),
+                    Right_Opnd =>
+                      Unchecked_Convert_To (RTE (RE_Tag),
+                        New_Reference_To
+                          (Node (First_Elmt
+                                  (Access_Disp_Table (Base_Type (Utyp)))),
+                           Loc))),
+                Reason => CE_Tag_Check_Failed));
+
+         --  If the result type is a specific nonlimited tagged type,
+         --  then we have to ensure that the tag of the result is that
+         --  of the result type. This is handled by making a copy of the
+         --  expression in the case where it might have a different tag,
+         --  namely when the expression is a conversion or a formal
+         --  parameter. We create a new object of the result type and
+         --  initialize it from the expression, which will implicitly
+         --  force the tag to be set appropriately.
+
+         else
+            Result_Id :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+            Result_Exp := New_Reference_To (Result_Id, Loc);
+
+            Result_Obj :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Result_Id,
+                Object_Definition   => New_Reference_To (Return_Type, Loc),
+                Constant_Present    => True,
+                Expression          => Relocate_Node (Exp));
+
+            Set_Assignment_OK (Result_Obj);
+            Insert_Action (Exp, Result_Obj);
+
+            Rewrite (Exp, Result_Exp);
+            Analyze_And_Resolve (Exp, Return_Type);
+         end if;
+
+      --  Ada 2005 (AI-344): If the result type is class-wide, then insert
+      --  a check that the level of the return expression's underlying type
+      --  is not deeper than the level of the master enclosing the function.
+      --  Always generate the check when the type of the return expression
+      --  is class-wide, when it's a type conversion, or when it's a formal
+      --  parameter. Otherwise, suppress the check in the case where the
+      --  return expression has a specific type whose level is known not to
+      --  be statically deeper than the function's result type.
+
+      elsif Ada_Version >= Ada_05
+        and then Is_Class_Wide_Type (Return_Type)
+        and then not Scope_Suppress (Accessibility_Check)
+        and then
+          (Is_Class_Wide_Type (Etype (Exp))
+            or else Nkind (Exp) = N_Type_Conversion
+            or else Nkind (Exp) = N_Unchecked_Type_Conversion
+            or else (Is_Entity_Name (Exp)
+                       and then Ekind (Entity (Exp)) in Formal_Kind)
+            or else Scope_Depth (Enclosing_Dynamic_Scope (Etype (Exp))) >
+                      Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))
+      then
+         Insert_Action (Exp,
+           Make_Raise_Program_Error (Loc,
+             Condition =>
+               Make_Op_Gt (Loc,
+                 Left_Opnd =>
+                   Make_Function_Call (Loc,
+                     Name =>
+                       New_Reference_To
+                         (RTE (RE_Get_Access_Level), Loc),
+                     Parameter_Associations =>
+                       New_List (Make_Attribute_Reference (Loc,
+                                   Prefix         =>
+                                      Duplicate_Subexpr (Exp),
+                                   Attribute_Name =>
+                                      Name_Tag))),
+                 Right_Opnd =>
+                   Make_Integer_Literal (Loc,
+                     Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
+             Reason => PE_Accessibility_Check_Failed));
+      end if;
+
    exception
       when RE_Not_Available =>
          return;
@@ -3175,7 +3214,7 @@ package body Exp_Ch5 is
       if not Ctrl_Act then
          null;
 
-      --  The left hand side is an uninitialized  temporary
+      --  The left hand side is an uninitialized temporary
 
       elsif Nkind (L) = N_Type_Conversion
         and then Is_Entity_Name (Expression (L))
