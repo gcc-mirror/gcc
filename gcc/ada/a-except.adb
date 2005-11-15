@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,22 +41,10 @@ with System.Soft_Links;       use System.Soft_Links;
 
 package body Ada.Exceptions is
 
-   procedure builtin_longjmp (buffer : Address; Flag : Integer);
-   pragma No_Return (builtin_longjmp);
-   pragma Import (C, builtin_longjmp, "_gnat_builtin_longjmp");
-
    pragma Suppress (All_Checks);
    --  We definitely do not want exceptions occurring within this unit, or
    --  we are in big trouble. If an exceptional situation does occur, better
    --  that it not be raised, since raising it can cause confusing chaos.
-
-   Zero_Cost_Exceptions : Integer;
-   pragma Import (C, Zero_Cost_Exceptions, "__gl_zero_cost_exceptions");
-   --  Boolean indicating if we are handling exceptions using a zero cost
-   --  mechanism.
-   --
-   --  Note that although we currently do not support it, the GCC3 back-end
-   --  tables are also potentially useable for setjmp/longjmp processing.
 
    -----------------------
    -- Local Subprograms --
@@ -408,12 +396,6 @@ package body Ada.Exceptions is
    --  data has to be copied in various situations is better made explicit.
    --  The following procedures provide an internal interface to help making
    --  this explicit.
-
-   procedure Save_Occurrence_And_Private
-     (Target : out Exception_Occurrence;
-      Source : Exception_Occurrence);
-   --  Copy all the components of Source to Target as well as the
-   --  Private_Data pointer.
 
    procedure Save_Occurrence_No_Private
      (Target : out Exception_Occurrence;
@@ -783,81 +765,15 @@ package body Ada.Exceptions is
    is
       pragma Inspection_Point (E);
       --  This is so the debugger can reliably inspect the parameter
-
-      Jumpbuf_Ptr : constant Address := Get_Jmpbuf_Address.all;
-      Excep       : constant EOA := Get_Current_Excep.all;
-
    begin
-      --  WARNING : There should be no exception handler for this body
+      --  WARNING: There should be no exception handler for this body
       --  because this would cause gigi to prepend a setup for a new
-      --  jmpbuf to the sequence of statements. We would then always get
-      --  this new buf in Jumpbuf_Ptr instead of the one for the exception
-      --  we are handling, which would completely break the whole design
-      --  of this procedure.
+      --  jmpbuf to the sequence of statements in case of built-in sjljl.
+      --  We would then always get this new buf in Jumpbuf_Ptr instead of the
+      --  one for the exception we are handling, which would completely break
+      --  the whole design of this procedure.
 
-      --  Processing varies between zero cost and setjmp/lonjmp processing
-
-      if Zero_Cost_Exceptions /= 0 then
-
-         --  Use the GCC back-end to propagate the exception. Backtrace
-         --  computation is performed, if required, by the underlying routine.
-         --  Notifications for the debugger are also not performed here,
-         --  because we do not yet know if the exception is handled.
-
-         Exception_Propagation.Propagate_Exception (From_Signal_Handler);
-
-      else
-         --  Compute the backtrace for this occurrence if corresponding binder
-         --  option has been set. Call_Chain takes care of the reraise case.
-
-         Call_Chain (Excep);
-
-         --  Note on above call to Call_Chain:
-
-         --  We used to only do this if From_Signal_Handler was not set,
-         --  based on the assumption that backtracing from a signal handler
-         --  would not work due to stack layout oddities. However, since
-
-         --   1. The flag is never set in tasking programs (Notify_Exception
-         --      performs regular raise statements), and
-
-         --   2. No problem has shown up in tasking programs around here so
-         --      far, this turned out to be too strong an assumption.
-
-         --  As, in addition, the test was
-
-         --   1. preventing the production of backtraces in non-tasking
-         --      programs, and
-
-         --   2. introducing a behavior inconsistency between
-         --      the tasking and non-tasking cases,
-
-         --  we have simply removed it
-
-         --  If the jump buffer pointer is non-null, transfer control using
-         --  it. Otherwise announce an unhandled exception (note that this
-         --  means that we have no finalizations to do other than at the outer
-         --  level). Perform the necessary notification tasks in both cases.
-
-         if Jumpbuf_Ptr /= Null_Address then
-
-            if not Excep.Exception_Raised then
-               Excep.Exception_Raised := True;
-               Exception_Traces.Notify_Handled_Exception;
-            end if;
-
-            builtin_longjmp (Jumpbuf_Ptr, 1);
-
-         else
-            --  The pragma Inspection point here ensures that the debugger
-            --  can inspect the parameter.
-
-            pragma Inspection_Point (E);
-
-            Exception_Traces.Notify_Unhandled_Exception;
-            Exception_Traces.Unhandled_Exception_Terminate;
-         end if;
-      end if;
+      Exception_Propagation.Propagate_Exception (From_Signal_Handler);
    end Process_Raise_Exception;
 
    ----------------------------
@@ -892,8 +808,23 @@ package body Ada.Exceptions is
    -------------------------
 
    procedure Raise_Current_Excep (E : Exception_Id) is
+
       pragma Inspection_Point (E);
-      --  This is so the debugger can reliably inspect the parameter
+      --  This is so the debugger can reliably inspect the parameter when
+      --  inserting a breakpoint at the start of this procedure.
+
+      Id : Exception_Id := E;
+      pragma Volatile (Id);
+      pragma Warnings (Off, Id);
+      --  In order to provide support for breakpoints on unhandled exceptions,
+      --  the debugger will also need to be able to inspect the value of E from
+      --  another (inner) frame. So we need to make sure that if E is passed in
+      --  a register, its value is also spilled on stack. For this, we store
+      --  the parameter value in a local variable, and add a pragma Volatile to
+      --  make sure it is spilled. The pragma Warnings (Off) is needed because
+      --  the compiler knows that Id is not referenced and that this use of
+      --  pragma Volatile is peculiar!
+
    begin
       Process_Raise_Exception (E => E, From_Signal_Handler => False);
    end Raise_Current_Excep;
@@ -1261,19 +1192,6 @@ package body Ada.Exceptions is
       Save_Occurrence (Target.all, Source);
       return Target;
    end Save_Occurrence;
-
-   --------------------------------
-   -- Save_Occurrence_And_Private --
-   --------------------------------
-
-   procedure Save_Occurrence_And_Private
-     (Target : out Exception_Occurrence;
-      Source : Exception_Occurrence)
-   is
-   begin
-      Save_Occurrence_No_Private (Target, Source);
-      Target.Private_Data := Source.Private_Data;
-   end Save_Occurrence_And_Private;
 
    --------------------------------
    -- Save_Occurrence_No_Private --
