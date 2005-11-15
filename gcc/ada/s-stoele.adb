@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,15 +61,17 @@ package body System.Storage_Elements is
       return To_Offset (To_Address (To_Integer (Left) - To_Integer (Right)));
    end "-";
 
-   function "mod" (Left : Address; Right : Storage_Offset)
-     return Storage_Offset is
+   function "mod"
+     (Left  : Address;
+      Right : Storage_Offset) return Storage_Offset
+   is
    begin
       if Right >= 0 then
          return Storage_Offset
                   (To_Integer (Left) mod Integer_Address (Right));
       else
          return -Storage_Offset
-                  (To_Integer (Left) mod Integer_Address (-Right));
+                  ((-To_Integer (Left)) mod Integer_Address (-Right));
       end if;
    end "mod";
 
