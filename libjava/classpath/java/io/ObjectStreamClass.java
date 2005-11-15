@@ -514,14 +514,15 @@ outer:
 	  {
 	    Method res = c.getDeclaredMethod(name, noArgs);
 	    int mods = res.getModifiers();
-
-	    if (c != from
-		&& (Modifier.isPrivate(mods)
-		    || ! Modifier.isPublic(mods) && ! inSamePackage(c, from)))
-	      continue;
-
-	    AccessController.doPrivileged(new SetAccessibleAction(res));
-	    return res;
+	    
+	    if (c == from  
+		|| Modifier.isProtected(mods)
+		|| Modifier.isPublic(mods)
+		|| (! Modifier.isPrivate(mods) && inSamePackage(c, from)))
+	      {
+		AccessController.doPrivileged(new SetAccessibleAction(res));
+		return res;
+	      }
 	  }
 	catch (NoSuchMethodException e)
 	  {
