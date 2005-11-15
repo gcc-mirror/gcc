@@ -209,9 +209,14 @@ package Rtsfind is
       System_Exp_Mod,
       System_Exp_Uns,
       System_Fat_Flt,
+      System_Fat_IEEE_Long_Float,
+      System_Fat_IEEE_Short_Float,
       System_Fat_LFlt,
       System_Fat_LLF,
       System_Fat_SFlt,
+      System_Fat_VAX_D_Float,
+      System_Fat_VAX_F_Float,
+      System_Fat_VAX_G_Float,
       System_Finalization_Implementation,
       System_Finalization_Root,
       System_Fore,
@@ -493,6 +498,7 @@ package Rtsfind is
      RE_Get_Access_Level,                -- Ada.Tags
      RE_Get_Entry_Index,                 -- Ada.Tags
      RE_Get_External_Tag,                -- Ada.Tags
+     RE_Get_Offset_Index,                -- Ada.Tags
      RE_Get_Prim_Op_Address,             -- Ada.Tags
      RE_Get_Prim_Op_Kind,                -- Ada.Tags
      RE_Get_RC_Offset,                   -- Ada.Tags
@@ -501,25 +507,32 @@ package Rtsfind is
      RE_Inherit_TSD,                     -- Ada.Tags
      RE_Internal_Tag,                    -- Ada.Tags
      RE_Is_Descendant_At_Same_Level,     -- Ada.Tags
+     RE_Object_Specific_Data,            -- Ada.Tags
      RE_POK_Function,                    -- Ada.Tags
      RE_POK_Procedure,                   -- Ada.Tags
      RE_POK_Protected_Entry,             -- Ada.Tags
      RE_POK_Protected_Function,          -- Ada.Tags
      RE_POK_Protected_Procedure,         -- Ada.Tags
      RE_POK_Task_Entry,                  -- Ada.Tags
+     RE_POK_Task_Function,               -- Ada.Tags
      RE_POK_Task_Procedure,              -- Ada.Tags
      RE_Prim_Op_Kind,                    -- Ada.Tags
      RE_Register_Interface_Tag,          -- Ada.Tags
      RE_Register_Tag,                    -- Ada.Tags
+     RE_Select_Specific_Data,            -- Ada.Tags
      RE_Set_Access_Level,                -- Ada.Tags
      RE_Set_Entry_Index,                 -- Ada.Tags
      RE_Set_Expanded_Name,               -- Ada.Tags
      RE_Set_External_Tag,                -- Ada.Tags
+     RE_Set_Num_Prim_Ops,                -- Ada.Tags
+     RE_Set_Offset_Index,                -- Ada.Tags
      RE_Set_Offset_To_Top,               -- Ada.Tags
+     RE_Set_OSD,                         -- Ada.Tags
      RE_Set_Prim_Op_Address,             -- Ada.Tags
      RE_Set_Prim_Op_Kind,                -- Ada.Tags
      RE_Set_RC_Offset,                   -- Ada.Tags
      RE_Set_Remotely_Callable,           -- Ada.Tags
+     RE_Set_SSD,                         -- Ada.Tags
      RE_Set_TSD,                         -- Ada.Tags
      RE_Tag_Error,                       -- Ada.Tags
      RE_TSD_Entry_Size,                  -- Ada.Tags
@@ -527,6 +540,10 @@ package Rtsfind is
      RE_Interface_Tag,                   -- Ada.Tags
      RE_Tag,                             -- Ada.Tags
      RE_Address_Array,                   -- Ada.Tags
+     RE_Valid_Signature,                 -- Ada.Tags
+     RE_Primary_DT,                      -- Ada.Tags
+     RE_Secondary_DT,                    -- Ada.Tags
+     RE_Abstract_Interface,              -- Ada.Tags
 
      RE_Abort_Task,                      -- Ada.Task_Identification
      RE_Current_Task,                    -- Ada.Task_Identification
@@ -666,13 +683,28 @@ package Rtsfind is
 
      RE_Exp_Unsigned,                    -- System.Exp_Uns
 
-     RE_Fat_Float,                       -- System.Fat_Flt
+     RE_Attr_Float,                      -- System.Fat_Flt
 
-     RE_Fat_Long_Float,                  -- System.Fat_LFlt
+     RE_Attr_IEEE_Long,                  -- System.Fat_IEEE_Long_Float
+     RE_Fat_IEEE_Long,                   -- System.Fat_IEEE_Long_Float
 
-     RE_Fat_Long_Long_Float,             -- System.Fat_LLF
+     RE_Attr_IEEE_Short,                 -- System.Fat_IEEE_Short_Float
+     RE_Fat_IEEE_Short,                  -- System.Fat_IEEE_Short_Float
 
-     RE_Fat_Short_Float,                 -- System.Fat_SFlt
+     RE_Attr_Long_Float,                 -- System.Fat_LFlt
+
+     RE_Attr_Long_Long_Float,            -- System.Fat_LLF
+
+     RE_Attr_Short_Float,                -- System.Fat_SFlt
+
+     RE_Attr_VAX_D_Float,                -- System.Fat_VAX_D_Float
+     RE_Fat_VAX_D,                       -- System.Fat_VAX_D_Float
+
+     RE_Attr_VAX_F_Float,                -- System.Fat_VAX_F_Float
+     RE_Fat_VAX_F,                       -- System.Fat_VAX_F_Float
+
+     RE_Attr_VAX_G_Float,                -- System.Fat_VAX_G_Float
+     RE_Fat_VAX_G,                       -- System.Fat_VAX_G_Float
 
      RE_Attach_To_Final_List,            -- System.Finalization_Implementation
      RE_Finalize_List,                   -- System.Finalization_Implementation
@@ -1151,6 +1183,7 @@ package Rtsfind is
 
      RE_TC_Alias,                        -- System.PolyORB_Interface
      RE_TC_Build,                        -- System.PolyORB_Interface
+     RE_Get_TC,                          -- System.PolyORB_Interface
      RE_Set_TC,                          -- System.PolyORB_Interface
      RE_TC_Any,                          -- System.PolyORB_Interface
      RE_TC_AD,                           -- System.PolyORB_Interface
@@ -1219,6 +1252,7 @@ package Rtsfind is
      RE_Integer_Address,                 -- System.Storage_Elements
      RE_Storage_Offset,                  -- System.Storage_Elements
      RE_Storage_Array,                   -- System.Storage_Elements
+     RE_Storage_Element,                 -- System.Storage_Elements
      RE_To_Address,                      -- System.Storage_Elements
 
      RE_Root_Storage_Pool,               -- System.Storage_Pools
@@ -1291,6 +1325,7 @@ package Rtsfind is
      RE_Task_Procedure_Access,           -- System.Tasking
 
      RO_ST_Task_Id,                      -- System.Tasking
+     RO_ST_Null_Task,                    -- System.Tasking
 
      RE_Call_Modes,                      -- System.Tasking
      RE_Simple_Call,                     -- System.Tasking
@@ -1417,6 +1452,8 @@ package Rtsfind is
      RE_Le_G,                            -- System.Vax_Float_Operations
      RE_Lt_F,                            -- System.Vax_Float_Operations
      RE_Lt_G,                            -- System.Vax_Float_Operations
+     RE_Ne_F,                            -- System.Vax_Float_Operations
+     RE_Ne_G,                            -- System.Vax_Float_Operations
 
      RE_Valid_D,                         -- System.Vax_Float_Operations
      RE_Valid_F,                         -- System.Vax_Float_Operations
@@ -1602,6 +1639,7 @@ package Rtsfind is
      RE_Get_Access_Level                 => Ada_Tags,
      RE_Get_Entry_Index                  => Ada_Tags,
      RE_Get_External_Tag                 => Ada_Tags,
+     RE_Get_Offset_Index                 => Ada_Tags,
      RE_Get_Prim_Op_Address              => Ada_Tags,
      RE_Get_Prim_Op_Kind                 => Ada_Tags,
      RE_Get_RC_Offset                    => Ada_Tags,
@@ -1610,25 +1648,32 @@ package Rtsfind is
      RE_Inherit_TSD                      => Ada_Tags,
      RE_Internal_Tag                     => Ada_Tags,
      RE_Is_Descendant_At_Same_Level      => Ada_Tags,
+     RE_Object_Specific_Data             => Ada_Tags,
      RE_POK_Function                     => Ada_Tags,
      RE_POK_Procedure                    => Ada_Tags,
      RE_POK_Protected_Entry              => Ada_Tags,
      RE_POK_Protected_Function           => Ada_Tags,
      RE_POK_Protected_Procedure          => Ada_Tags,
      RE_POK_Task_Entry                   => Ada_Tags,
+     RE_POK_Task_Function                => Ada_Tags,
      RE_POK_Task_Procedure               => Ada_Tags,
      RE_Prim_Op_Kind                     => Ada_Tags,
      RE_Register_Interface_Tag           => Ada_Tags,
      RE_Register_Tag                     => Ada_Tags,
+     RE_Select_Specific_Data             => Ada_Tags,
      RE_Set_Access_Level                 => Ada_Tags,
      RE_Set_Entry_Index                  => Ada_Tags,
      RE_Set_Expanded_Name                => Ada_Tags,
      RE_Set_External_Tag                 => Ada_Tags,
+     RE_Set_Num_Prim_Ops                 => Ada_Tags,
+     RE_Set_Offset_Index                 => Ada_Tags,
      RE_Set_Offset_To_Top                => Ada_Tags,
+     RE_Set_OSD                          => Ada_Tags,
      RE_Set_Prim_Op_Address              => Ada_Tags,
      RE_Set_Prim_Op_Kind                 => Ada_Tags,
      RE_Set_RC_Offset                    => Ada_Tags,
      RE_Set_Remotely_Callable            => Ada_Tags,
+     RE_Set_SSD                          => Ada_Tags,
      RE_Set_TSD                          => Ada_Tags,
      RE_Tag_Error                        => Ada_Tags,
      RE_TSD_Entry_Size                   => Ada_Tags,
@@ -1636,6 +1681,10 @@ package Rtsfind is
      RE_Interface_Tag                    => Ada_Tags,
      RE_Tag                              => Ada_Tags,
      RE_Address_Array                    => Ada_Tags,
+     RE_Valid_Signature                  => Ada_Tags,
+     RE_Primary_DT                       => Ada_Tags,
+     RE_Secondary_DT                     => Ada_Tags,
+     RE_Abstract_Interface               => Ada_Tags,
 
      RE_Abort_Task                       => Ada_Task_Identification,
      RE_Current_Task                     => Ada_Task_Identification,
@@ -1773,13 +1822,28 @@ package Rtsfind is
 
      RE_Exp_Unsigned                     => System_Exp_Uns,
 
-     RE_Fat_Float                        => System_Fat_Flt,
+     RE_Attr_Float                       => System_Fat_Flt,
 
-     RE_Fat_Long_Float                   => System_Fat_LFlt,
+     RE_Attr_IEEE_Long                   => System_Fat_IEEE_Long_Float,
+     RE_Fat_IEEE_Long                    => System_Fat_IEEE_Long_Float,
 
-     RE_Fat_Long_Long_Float              => System_Fat_LLF,
+     RE_Attr_IEEE_Short                  => System_Fat_IEEE_Short_Float,
+     RE_Fat_IEEE_Short                   => System_Fat_IEEE_Short_Float,
 
-     RE_Fat_Short_Float                  => System_Fat_SFlt,
+     RE_Attr_Long_Float                  => System_Fat_LFlt,
+
+     RE_Attr_Long_Long_Float             => System_Fat_LLF,
+
+     RE_Attr_Short_Float                 => System_Fat_SFlt,
+
+     RE_Attr_VAX_D_Float                 => System_Fat_VAX_D_Float,
+     RE_Fat_VAX_D                        => System_Fat_VAX_D_Float,
+
+     RE_Attr_VAX_F_Float                 => System_Fat_VAX_F_Float,
+     RE_Fat_VAX_F                        => System_Fat_VAX_F_Float,
+
+     RE_Attr_VAX_G_Float                 => System_Fat_VAX_G_Float,
+     RE_Fat_VAX_G                        => System_Fat_VAX_G_Float,
 
      RE_Attach_To_Final_List             => System_Finalization_Implementation,
      RE_Finalize_List                    => System_Finalization_Implementation,
@@ -2249,6 +2313,7 @@ package Rtsfind is
 
      RE_TC_Alias                         => System_PolyORB_Interface,
      RE_TC_Build                         => System_PolyORB_Interface,
+     RE_Get_TC                           => System_PolyORB_Interface,
      RE_Set_TC                           => System_PolyORB_Interface,
      RE_TC_Any                           => System_PolyORB_Interface,
      RE_TC_AD                            => System_PolyORB_Interface,
@@ -2326,6 +2391,7 @@ package Rtsfind is
      RE_Integer_Address                  => System_Storage_Elements,
      RE_Storage_Offset                   => System_Storage_Elements,
      RE_Storage_Array                    => System_Storage_Elements,
+     RE_Storage_Element                  => System_Storage_Elements,
      RE_To_Address                       => System_Storage_Elements,
 
      RE_Root_Storage_Pool                => System_Storage_Pools,
@@ -2397,6 +2463,7 @@ package Rtsfind is
      RE_Task_Procedure_Access            => System_Tasking,
 
      RO_ST_Task_Id                       => System_Tasking,
+     RO_ST_Null_Task                     => System_Tasking,
 
      RE_Call_Modes                       => System_Tasking,
      RE_Simple_Call                      => System_Tasking,
@@ -2523,6 +2590,8 @@ package Rtsfind is
      RE_Le_G                             => System_Vax_Float_Operations,
      RE_Lt_F                             => System_Vax_Float_Operations,
      RE_Lt_G                             => System_Vax_Float_Operations,
+     RE_Ne_F                             => System_Vax_Float_Operations,
+     RE_Ne_G                             => System_Vax_Float_Operations,
 
      RE_Valid_D                          => System_Vax_Float_Operations,
      RE_Valid_F                          => System_Vax_Float_Operations,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
-with Exp_Ch9;
+with Exp_Ch9;  use Exp_Ch9;
 with Elists;   use Elists;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
@@ -94,11 +94,22 @@ package body Sem_Ch9 is
       while Present (T_Name) loop
          Analyze (T_Name);
 
-         if not Is_Task_Type (Etype (T_Name)) then
-            Error_Msg_N ("expect task name for ABORT", T_Name);
-            return;
-         else
+         if Is_Task_Type (Etype (T_Name))
+           or else (Ada_Version >= Ada_05
+                      and then Ekind (Etype (T_Name)) = E_Class_Wide_Type
+                      and then Is_Interface (Etype (T_Name))
+                      and then Is_Task_Interface (Etype (T_Name)))
+         then
             Resolve (T_Name);
+         else
+            if Ada_Version >= Ada_05 then
+               Error_Msg_N ("expect task name or task interface class-wide "
+                          & "object for ABORT", T_Name);
+            else
+               Error_Msg_N ("expect task name for ABORT", T_Name);
+            end if;
+
+            return;
          end if;
 
          Next (T_Name);
@@ -298,9 +309,7 @@ package body Sem_Ch9 is
 
          begin
             E1 := First_Entity (Current_Scope);
-
             while Present (E1) loop
-
                if Ekind (E1) = E_Procedure
                  and then Chars (E1) = Chars (Entry_Nam)
                  and then Type_Conformant (E1, Entry_Nam)
@@ -368,7 +377,6 @@ package body Sem_Ch9 is
 
          begin
             Decl := First (Declarations (N));
-
             while Present (Decl) loop
                Analyze (Decl);
 
@@ -390,6 +398,7 @@ package body Sem_Ch9 is
       --  In the case of a select alternative of a selective accept,
       --  the expander references the address declaration even if there
       --  is no statement list.
+
       --  We also need to create the renaming declarations for the local
       --  variables that will replace references to the formals within
       --  the accept.
@@ -440,14 +449,49 @@ package body Sem_Ch9 is
    ---------------------------------
 
    procedure Analyze_Asynchronous_Select (N : Node_Id) is
+      Param   : Node_Id;
+      Trigger : Node_Id;
+
    begin
       Tasking_Used := True;
       Check_Restriction (Max_Asynchronous_Select_Nesting, N);
       Check_Restriction (No_Select_Statements, N);
 
-      --  Analyze the statements. We analyze statements in the abortable part
-      --  first, because this is the section that is executed first, and that
-      --  way our remembering of saved values and checks is accurate.
+      if Ada_Version >= Ada_05 then
+         Trigger := Triggering_Statement (Triggering_Alternative (N));
+
+         Analyze (Trigger);
+
+         --  The trigger is a dispatching procedure. Postpone the analysis
+         --  of the triggering and abortable statements until the expansion
+         --  of this asynchronous select in Expand_N_Asynchronous_Select.
+         --  This action is required since the code replication in Expand-
+         --  _N_Asynchronous_Select of an already analyzed statement list
+         --  causes Gigi aborts.
+
+         if Expander_Active
+           and then Nkind (Trigger) = N_Procedure_Call_Statement
+           and then Present (Parameter_Associations (Trigger))
+         then
+            Param := First (Parameter_Associations (Trigger));
+
+            if Is_Controlling_Actual (Param)
+              and then Is_Interface (Etype (Param))
+            then
+               if Is_Limited_Record (Etype (Param)) then
+                  return;
+               else
+                  Error_Msg_N
+                   ("dispatching operation of limited or synchronized " &
+                    "interface required ('R'M 9.7.2(3))!", N);
+               end if;
+            end if;
+         end if;
+      end if;
+
+      --  Analyze the statements. We analyze statements in the abortable part,
+      --  because this is the section that is executed first, and that way our
+      --  remembering of saved values and checks is accurate.
 
       Analyze_Statements (Statements (Abortable_Part (N)));
       Analyze (Triggering_Alternative (N));
@@ -462,6 +506,16 @@ package body Sem_Ch9 is
       Check_Restriction (No_Select_Statements, N);
       Tasking_Used := True;
       Analyze (Entry_Call_Alternative (N));
+
+      if List_Length (Else_Statements (N)) = 1
+        and then Nkind (First (Else_Statements (N))) in N_Delay_Statement
+      then
+         Error_Msg_N
+           ("suspicious form of conditional entry call?", N);
+         Error_Msg_N
+           ("\`SELECT OR` may be intended rather than `SELECT ELSE`", N);
+      end if;
+
       Analyze_Statements (Else_Statements (N));
    end Analyze_Conditional_Entry_Call;
 
@@ -491,19 +545,19 @@ package body Sem_Ch9 is
 
          if Nkind (Delay_Statement (N)) = N_Delay_Relative_Statement then
             Pre_Analyze_And_Resolve (Expr, Standard_Duration);
-
          else
             Pre_Analyze_And_Resolve (Expr);
          end if;
 
-         if Nkind (Delay_Statement (N)) = N_Delay_Until_Statement and then
-            not Is_RTE (Base_Type (Etype (Expr)), RO_CA_Time)     and then
-            not Is_RTE (Base_Type (Etype (Expr)), RO_RT_Time)
+         if Nkind (Delay_Statement (N)) = N_Delay_Until_Statement
+           and then not Is_RTE (Base_Type (Etype (Expr)), RO_CA_Time)
+           and then not Is_RTE (Base_Type (Etype (Expr)), RO_RT_Time)
          then
             Error_Msg_N ("expect Time types for `DELAY UNTIL`", Expr);
          end if;
 
          Check_Restriction (No_Fixed_Point, Expr);
+
       else
          Analyze (Delay_Statement (N));
       end if;
@@ -632,7 +686,13 @@ package body Sem_Ch9 is
                      then
                         Set_Etype (Def, Empty);
                         Set_Analyzed (Def, False);
-                        Set_Discrete_Subtype_Definition (Index_Spec, Def);
+
+                        --  Keep the original subtree to ensure tree is
+                        --  properly formed (e.g. for ASIS use)
+
+                        Rewrite
+                          (Discrete_Subtype_Definition (Index_Spec), Def);
+
                         Set_Analyzed (Low_Bound (Def), False);
                         Set_Analyzed (High_Bound (Def), False);
 
@@ -683,12 +743,16 @@ package body Sem_Ch9 is
       --  The entity for the protected subprogram corresponding to the entry
       --  has been created. We retain the name of this entity in the entry
       --  body, for use when the corresponding subprogram body is created.
-      --  Note that entry bodies have to corresponding_spec, and there is no
+      --  Note that entry bodies have no corresponding_spec, and there is no
       --  easy link back in the tree between the entry body and the entity for
-      --  the entry itself.
+      --  the entry itself, which is why we must propagate some attributes
+      --  explicitly from spec to body.
 
-      Set_Protected_Body_Subprogram (Id,
-        Protected_Body_Subprogram (Entry_Name));
+      Set_Protected_Body_Subprogram
+        (Id, Protected_Body_Subprogram (Entry_Name));
+
+      Set_Entry_Parameters_Type
+        (Id, Entry_Parameters_Type (Entry_Name));
 
       if Present (Decls) then
          Analyze_Declarations (Decls);
@@ -707,6 +771,9 @@ package body Sem_Ch9 is
 
       --  At the same time, we set the flags on the spec entities to suppress
       --  any warnings on the spec formals, since we also scan the spec.
+      --  Finally, we propagate the Entry_Component attribute to the body
+      --  formals, for use in the renaming declarations created later for the
+      --  formals (see exp_ch9.Add_Formal_Renamings).
 
       declare
          E1  : Entity_Id;
@@ -736,6 +803,7 @@ package body Sem_Ch9 is
 
             Set_Referenced (E2, Referenced (E1));
             Set_Referenced (E1);
+            Set_Entry_Component (E2, Entry_Component (E1));
 
          <<Continue>>
             Next_Entity (E1);
@@ -1011,9 +1079,7 @@ package body Sem_Ch9 is
       end if;
 
       E := First_Entity (Current_Scope);
-
       while Present (E) loop
-
          if Ekind (E) = E_Function
            or else Ekind (E) = E_Procedure
          then
@@ -1072,8 +1138,9 @@ package body Sem_Ch9 is
       --  Ada 2005 (AI-345)
 
       if Present (Interface_List (N)) then
-         Iface := First (Interface_List (N));
+         Set_Is_Tagged_Type (T);
 
+         Iface := First (Interface_List (N));
          while Present (Iface) loop
             Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
             Iface_Def := Type_Definition (Parent (Iface_Typ));
@@ -1147,7 +1214,6 @@ package body Sem_Ch9 is
       --  illegal uses. Now it can be set correctly.
 
       E := First_Entity (Current_Scope);
-
       while Present (E) loop
          if Ekind (E) = E_Void then
             Set_Ekind (E, E_Component);
@@ -1254,14 +1320,13 @@ package body Sem_Ch9 is
       --  Overloaded case, find right interpretation
 
       if Is_Overloaded (Entry_Name) then
-         Get_First_Interp (Entry_Name, I, It);
          Entry_Id := Empty;
 
+         Get_First_Interp (Entry_Name, I, It);
          while Present (It.Nam) loop
             if No (First_Formal (It.Nam))
               or else Subtype_Conformant (Enclosing, It.Nam)
             then
-
                --  Ada 2005 (AI-345): Since protected and task types have
                --  primitive entry wrappers, we only consider source entries.
 
@@ -1348,9 +1413,10 @@ package body Sem_Ch9 is
             --  Processing for parameters accessed by the requeue
 
             declare
-               Ent : Entity_Id := First_Formal (Enclosing);
+               Ent : Entity_Id;
 
             begin
+               Ent := First_Formal (Enclosing);
                while Present (Ent) loop
 
                   --  For OUT or IN OUT parameter, the effect of the requeue
@@ -1398,6 +1464,8 @@ package body Sem_Ch9 is
    begin
       Check_Restriction (No_Select_Statements, N);
       Tasking_Used := True;
+
+      --  Loop to analyze alternatives
 
       Alt := First (Alts);
       while Present (Alt) loop
@@ -1716,7 +1784,6 @@ package body Sem_Ch9 is
 
       begin
          Ent := First_Entity (Spec_Id);
-
          while Present (Ent) loop
             if Is_Entry (Ent)
               and then not Entry_Accepted (Ent)
@@ -1799,6 +1866,8 @@ package body Sem_Ch9 is
       --  Ada 2005 (AI-345)
 
       if Present (Interface_List (N)) then
+         Set_Is_Tagged_Type (T);
+
          Iface := First (Interface_List (N));
          while Present (Iface) loop
             Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
@@ -1919,21 +1988,20 @@ package body Sem_Ch9 is
       end if;
 
       Analyze (Trigger);
+
       if Comes_From_Source (Trigger)
-        and then Nkind (Trigger) /= N_Delay_Until_Statement
-        and then Nkind (Trigger) /= N_Delay_Relative_Statement
+        and then Nkind (Trigger) not in N_Delay_Statement
         and then Nkind (Trigger) /= N_Entry_Call_Statement
       then
          if Ada_Version < Ada_05 then
             Error_Msg_N
              ("triggering statement must be delay or entry call", Trigger);
 
-         --  Ada 2005 (AI-345): If a procedure_call_statement is used
-         --  for a procedure_or_entry_call, the procedure_name or pro-
-         --  cedure_prefix of the procedure_call_statement shall denote
-         --  an entry renamed by a procedure, or (a view of) a primitive
-         --  subprogram of a limited interface whose first parameter is
-         --  a controlling parameter.
+         --  Ada 2005 (AI-345): If a procedure_call_statement is used for a
+         --  procedure_or_entry_call, the procedure_name or pro- cedure_prefix
+         --  of the procedure_call_statement shall denote an entry renamed by a
+         --  procedure, or (a view of) a primitive subprogram of a limited
+         --  interface whose first parameter is a controlling parameter.
 
          elsif Nkind (Trigger) = N_Procedure_Call_Statement
            and then not Is_Renamed_Entry (Entity (Name (Trigger)))
@@ -2089,7 +2157,6 @@ package body Sem_Ch9 is
 
          begin
             Ent := First (Ifaces);
-
             while Present (Ent) loop
                if Etype (Ent) = Iface then
                   return True;
@@ -2119,14 +2186,13 @@ package body Sem_Ch9 is
 
          Entry_Param := First (Entry_Params);
          Proc_Param  := Next (Proc_Param);
-         while Present (Entry_Param)
-           and then Present (Proc_Param)
-         loop
+         while Present (Entry_Param) and then Present (Proc_Param) loop
+
             --  The two parameters must be mode conformant and have the exact
             --  same types.
 
-            if In_Present (Entry_Param) /= In_Present (Proc_Param)
-              or else Out_Present (Entry_Param) /= Out_Present (Proc_Param)
+            if Ekind (Defining_Identifier (Entry_Param)) /=
+               Ekind (Defining_Identifier (Proc_Param))
               or else Etype (Parameter_Type (Entry_Param)) /=
                       Etype (Parameter_Type (Proc_Param))
             then
@@ -2177,7 +2243,6 @@ package body Sem_Ch9 is
                               Null_Present (Parent (Hom)))
                   then
                      Aliased_Hom := Hom;
-
                      while Present (Alias (Aliased_Hom)) loop
                         Aliased_Hom := Alias (Aliased_Hom);
                      end loop;
@@ -2274,7 +2339,6 @@ package body Sem_Ch9 is
 
       else
          Decl := First (Vis_Decls);
-
          while Present (Decl) loop
             if Nkind (Decl) = N_Entry_Declaration
               and then Must_Override (Decl)
@@ -2322,7 +2386,6 @@ package body Sem_Ch9 is
 
    begin
       E := First_Entity (Spec);
-
       while Present (E) loop
          Prev := Current_Entity (E);
          Set_Current_Entity (E);

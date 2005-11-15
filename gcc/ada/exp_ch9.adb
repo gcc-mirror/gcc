@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,21 +65,33 @@ package body Exp_Ch9 is
    -- Select_Expansion_Utilities --
    --------------------------------
 
+   --  The following constant establishes the upper bound for the index of
+   --  an entry family. It is used to limit the allocated size of protected
+   --  types with defaulted discriminant of an integer type, when the bound
+   --  of some entry family depends on a discriminant. The limitation to
+   --  entry families of 128K should be reasonable in all cases, and is a
+   --  documented implementation restriction. It will be lifted when protected
+   --  entry families are re-implemented as a single ordered queue.
+
+   Entry_Family_Bound : constant Int := 2**16;
+
    --  The following package contains helper routines used in the expansion of
    --  dispatching asynchronous, conditional and timed selects.
 
    package Select_Expansion_Utilities is
       function Build_Abort_Block
-        (Loc     : Source_Ptr;
-         Blk_Ent : Entity_Id;
-         Blk     : Node_Id) return Node_Id;
+        (Loc         : Source_Ptr;
+         Abr_Blk_Ent : Entity_Id;
+         Cln_Blk_Ent : Entity_Id;
+         Blk         : Node_Id) return Node_Id;
       --  Generate:
       --    begin
       --       Blk
       --    exception
       --       when Abort_Signal => Abort_Undefer;
       --    end;
-      --  Blk_Ent is the name of the encapsulated block, Blk is the actual
+      --  Abr_Blk_Ent is the name of the generated block, Cln_Blk_Ent is
+      --  the name of the encapsulated cleanup block, Blk is the actual
       --  block node.
 
       function Build_B
@@ -121,27 +133,22 @@ package body Exp_Ch9 is
       function Build_S
         (Loc      : Source_Ptr;
          Decls    : List_Id;
+         Obj      : Entity_Id;
          Call_Ent : Entity_Id) return Entity_Id;
       --  Generate:
-      --    S : constant Integer := DT_Position (Call_Ent);
-      --  where Call_Ent is the entity of the dispatching call name. Append
-      --  the object declaration to the list and return the name of the
-      --  object.
+      --    S : constant Integer :=
+      --          Ada.Tags.Get_Offset_Index (
+      --            Unchecked_Convert_To (Ada.Tags.Interface_Tag, Obj),
+      --            DT_Position (Call_Ent));
+      --  where Obj is the pointer to a secondary table, Call_Ent is the
+      --  entity of the dispatching call name. Append the object declaration
+      --  to the list and return its defining identifier.
 
-      function Build_Wrapping_Procedure
-        (Loc   : Source_Ptr;
-         Nam   : Character;
-         Decls : List_Id;
-         Stmts : List_Id) return Entity_Id;
-      --  Generate:
-      --    procedure <temp>Nam is
-      --    begin
-      --       Stmts
-      --    end <temp>Nam;
-      --  where Nam is the generated procedure name and Stmts are the
-      --  encapsulated statements. Append the procedure body to Decls.
-      --  Return the internally generated procedure name.
    end Select_Expansion_Utilities;
+
+   -----------------------------------------
+   -- Body for Select_Expansion_Utilities --
+   -----------------------------------------
 
    package body Select_Expansion_Utilities is
 
@@ -150,15 +157,17 @@ package body Exp_Ch9 is
       -----------------------
 
       function Build_Abort_Block
-        (Loc   : Source_Ptr;
-         Blk_Ent : Entity_Id;
-         Blk     : Node_Id) return Node_Id
+        (Loc         : Source_Ptr;
+         Abr_Blk_Ent : Entity_Id;
+         Cln_Blk_Ent : Entity_Id;
+         Blk         : Node_Id) return Node_Id
       is
       begin
          return
            Make_Block_Statement (Loc,
-             Declarations =>
-               No_List,
+             Identifier   => New_Reference_To (Abr_Blk_Ent, Loc),
+
+             Declarations => No_List,
 
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
@@ -166,7 +175,7 @@ package body Exp_Ch9 is
                    New_List (
                      Make_Implicit_Label_Declaration (Loc,
                        Defining_Identifier =>
-                         Blk_Ent,
+                         Cln_Blk_Ent,
                        Label_Construct =>
                          Blk),
                      Blk),
@@ -194,7 +203,8 @@ package body Exp_Ch9 is
         (Loc   : Source_Ptr;
          Decls : List_Id) return Entity_Id
       is
-         B : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uB);
+         B : constant Entity_Id := Make_Defining_Identifier (Loc,
+                                     Chars => New_Internal_Name ('B'));
 
       begin
          Append_To (Decls,
@@ -217,7 +227,8 @@ package body Exp_Ch9 is
         (Loc   : Source_Ptr;
          Decls : List_Id) return Entity_Id
       is
-         C : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uC);
+         C : constant Entity_Id := Make_Defining_Identifier (Loc,
+                                     Chars => New_Internal_Name ('C'));
 
       begin
          Append_To (Decls,
@@ -262,52 +273,30 @@ package body Exp_Ch9 is
       function Build_S
         (Loc      : Source_Ptr;
          Decls    : List_Id;
+         Obj      : Entity_Id;
          Call_Ent : Entity_Id) return Entity_Id
       is
-         S : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uS);
+         S : constant Entity_Id := Make_Defining_Identifier (Loc,
+                                     Chars => New_Internal_Name ('S'));
 
       begin
          Append_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => S,
              Constant_Present    => True,
+
              Object_Definition   =>
                New_Reference_To (Standard_Integer, Loc),
+
              Expression          =>
-               Make_Integer_Literal (Loc,
-                 Intval => DT_Position (Call_Ent))));
+               Make_Function_Call (Loc,
+                 Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+                 Parameter_Associations => New_List (
+                   Unchecked_Convert_To (RTE (RE_Interface_Tag), Obj),
+                   Make_Integer_Literal (Loc, DT_Position (Call_Ent))))));
 
          return S;
       end Build_S;
-
-      ------------------------------
-      -- Build_Wrapping_Procedure --
-      ------------------------------
-
-      function Build_Wrapping_Procedure
-        (Loc   : Source_Ptr;
-         Nam   : Character;
-         Decls : List_Id;
-         Stmts : List_Id) return Entity_Id
-      is
-         Proc_Nam : constant Entity_Id :=
-                      Make_Defining_Identifier (Loc, New_Internal_Name (Nam));
-      begin
-         Append_To (Decls,
-           Make_Subprogram_Body (Loc,
-             Specification =>
-               Make_Procedure_Specification (Loc,
-                 Defining_Unit_Name =>
-                   Proc_Nam),
-             Declarations =>
-               No_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements =>
-                   New_Copy_List (Stmts))));
-
-         return Proc_Nam;
-      end Build_Wrapping_Procedure;
    end Select_Expansion_Utilities;
 
    package SEU renames Select_Expansion_Utilities;
@@ -334,6 +323,18 @@ package body Exp_Ch9 is
    --  Decls. This object pointer is initialized to a type conversion
    --  of the System.Address pointer passed to entry barrier functions
    --  and entry body procedures.
+
+   procedure Add_Formal_Renamings
+     (Spec  : Node_Id;
+      Decls : List_Id;
+      Ent   : Entity_Id;
+      Loc   : Source_Ptr);
+   --  Create renaming declarations for the formals, inside the procedure
+   --  that implements an entry body. The renamings make the original names
+   --  of the formals accessible to gdb, and serve no other purpose.
+   --    Spec is the specification of the procedure being built.
+   --    Decls is the list of declarations to be enhanced.
+   --    Ent is the entity for the original entry body.
 
    function Build_Accept_Body (Astat : Node_Id) return Node_Id;
    --  Transform accept statement into a block with added exception handler.
@@ -463,8 +464,9 @@ package body Exp_Ch9 is
    --  The object is a limited record and therefore a by_reference type.
 
    function Build_Selected_Name
-     (Prefix, Selector : Name_Id;
-      Append_Char      : Character := ' ') return Name_Id;
+     (Prefix      : Entity_Id;
+      Selector    : Entity_Id;
+      Append_Char : Character := ' ') return Name_Id;
    --  Build a name in the form of Prefix__Selector, with an optional
    --  character appended. This is used for internal subprograms generated
    --  for operations of protected types, including barrier functions.
@@ -572,7 +574,7 @@ package body Exp_Ch9 is
       Actuals : List_Id;
       Formals : List_Id;
       Decls   : List_Id;
-      Stmts   : List_Id) return Node_Id;
+      Stmts   : List_Id) return Entity_Id;
    --  Set the components of the generated parameter block with the values of
    --  the actual parameters. Generate aliased temporaries to capture the
    --  values for types that are passed by copy. Otherwise generate a reference
@@ -588,6 +590,7 @@ package body Exp_Ch9 is
 
    function Parameter_Block_Unpack
      (Loc     : Source_Ptr;
+      P       : Entity_Id;
       Actuals : List_Id;
       Formals : List_Id) return List_Id;
    --  Retrieve the values of the components from the parameter block and
@@ -795,6 +798,7 @@ package body Exp_Ch9 is
       Pid   : Entity_Id;
       Loc   : Source_Ptr)
    is
+      Decl    : Node_Id;
       Obj_Ptr : Node_Id;
 
    begin
@@ -812,14 +816,16 @@ package body Exp_Ch9 is
             New_External_Name
               (Chars (Corresponding_Record_Type (Pid)), 'P'));
 
-      Prepend_To (Decls,
+      Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, Name_uObject),
           Object_Definition => New_Reference_To (Obj_Ptr, Loc),
           Expression =>
             Unchecked_Convert_To (Obj_Ptr,
-              Make_Identifier (Loc, Name_uO))));
+              Make_Identifier (Loc, Name_uO)));
+      Set_Needs_Debug_Info (Defining_Identifier (Decl));
+      Prepend_To (Decls, Decl);
 
       Prepend_To (Decls,
         Make_Full_Type_Declaration (Loc,
@@ -828,6 +834,65 @@ package body Exp_Ch9 is
             Subtype_Indication =>
               New_Reference_To (Corresponding_Record_Type (Pid), Loc))));
    end Add_Object_Pointer;
+
+   --------------------------
+   -- Add_Formal_Renamings --
+   --------------------------
+
+   procedure Add_Formal_Renamings
+     (Spec  : Node_Id;
+      Decls : List_Id;
+      Ent   : Entity_Id;
+      Loc   : Source_Ptr)
+   is
+      Ptr : constant Entity_Id :=
+              Defining_Identifier
+                (Next (First (Parameter_Specifications (Spec))));
+      --  The name of the formal that holds the address of the parameter block
+      --  for the call.
+
+      Comp   : Entity_Id;
+      Decl   : Node_Id;
+      Formal : Entity_Id;
+      New_F  : Entity_Id;
+
+   begin
+      Formal := First_Formal (Ent);
+      while Present (Formal) loop
+         Comp   := Entry_Component (Formal);
+         New_F  :=
+           Make_Defining_Identifier (Sloc (Formal), Chars (Formal));
+         Set_Etype (New_F, Etype (Formal));
+         Set_Scope (New_F, Ent);
+         Set_Needs_Debug_Info (New_F);   --  That's the whole point.
+
+         if Ekind (Formal) = E_In_Parameter then
+            Set_Ekind (New_F, E_Constant);
+         else
+            Set_Ekind (New_F, E_Variable);
+            Set_Extra_Constrained (New_F, Extra_Constrained (Formal));
+         end if;
+
+         Set_Actual_Subtype (New_F, Actual_Subtype (Formal));
+
+         Decl :=
+           Make_Object_Renaming_Declaration (Loc,
+           Defining_Identifier => New_F,
+           Subtype_Mark => New_Reference_To (Etype (Formal), Loc),
+           Name =>
+             Make_Explicit_Dereference (Loc,
+               Make_Selected_Component (Loc,
+                 Prefix =>
+                   Unchecked_Convert_To (Entry_Parameters_Type (Ent),
+                     Make_Identifier (Loc, Chars (Ptr))),
+                 Selector_Name =>
+                   New_Reference_To (Comp, Loc))));
+
+         Append (Decl, Decls);
+         Set_Renamed_Object (Formal, New_F);
+         Next_Formal (Formal);
+      end loop;
+   end Add_Formal_Renamings;
 
    ------------------------------
    -- Add_Private_Declarations --
@@ -840,6 +905,7 @@ package body Exp_Ch9 is
       Loc   : Source_Ptr)
    is
       Def      : constant Node_Id   := Protected_Definition (Parent (Typ));
+      Decl     : Node_Id;
       Body_Ent : constant Entity_Id := Corresponding_Body   (Parent (Typ));
       P        : Node_Id;
       Pdef     : Entity_Id;
@@ -849,28 +915,30 @@ package body Exp_Ch9 is
 
       if Present (Private_Declarations (Def)) then
          P := First (Private_Declarations (Def));
-
          while Present (P) loop
             if Nkind (P) = N_Component_Declaration then
                Pdef := Defining_Identifier (P);
-               Prepend_To (Decls,
+               Decl :=
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Prival (Pdef),
                    Subtype_Mark => New_Reference_To (Etype (Pdef), Loc),
                    Name =>
                      Make_Selected_Component (Loc,
                        Prefix        => Make_Identifier (Loc, Name),
-                       Selector_Name => Make_Identifier (Loc, Chars (Pdef)))));
+                       Selector_Name => Make_Identifier (Loc, Chars (Pdef))));
+               Set_Needs_Debug_Info (Defining_Identifier (Decl));
+               Prepend_To (Decls, Decl);
             end if;
+
             Next (P);
          end loop;
       end if;
 
-      --  One more "prival" for the object itself, with the right protection
-      --  type.
+      --  One more "prival" for object itself, with the right protection type
 
       declare
          Protection_Type : RE_Id;
+
       begin
          if Has_Attach_Handler (Typ) then
             if Restricted_Profile then
@@ -906,14 +974,16 @@ package body Exp_Ch9 is
             Protection_Type := RE_Protection;
          end if;
 
-         Prepend_To (Decls,
+         Decl :=
            Make_Object_Renaming_Declaration (Loc,
              Defining_Identifier => Object_Ref (Body_Ent),
              Subtype_Mark => New_Reference_To (RTE (Protection_Type), Loc),
              Name =>
                Make_Selected_Component (Loc,
                  Prefix        => Make_Identifier (Loc, Name),
-                 Selector_Name => Make_Identifier (Loc, Name_uObject))));
+                 Selector_Name => Make_Identifier (Loc, Name_uObject)));
+         Set_Needs_Debug_Info (Defining_Identifier (Decl));
+         Prepend_To (Decls, Decl);
       end;
    end Add_Private_Declarations;
 
@@ -931,9 +1001,9 @@ package body Exp_Ch9 is
 
    begin
       --  At the end of the statement sequence, Complete_Rendezvous is called.
-      --  A label skipping the Complete_Rendezvous, and all other
-      --  accept processing, has already been added for the expansion
-      --  of requeue statements.
+      --  A label skipping the Complete_Rendezvous, and all other accept
+      --  processing, has already been added for the expansion of requeue
+      --  statements.
 
       Call := Build_Runtime_Call (Loc, RE_Complete_Rendezvous);
       Insert_Before (Last (Statements (Stats)), Call);
@@ -1161,7 +1231,6 @@ package body Exp_Ch9 is
       E : Entity_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (N);
-
    begin
       return
         Make_Function_Call (Loc,
@@ -1247,7 +1316,8 @@ package body Exp_Ch9 is
               Component_List =>
                 Make_Component_List (Loc,
                   Component_Items => Cdecls),
-              Tagged_Present  => Ada_Version >= Ada_05,
+              Tagged_Present  =>
+                 Ada_Version >= Ada_05 and then Is_Tagged_Type (Ctyp),
               Limited_Present => True));
    end Build_Corresponding_Record;
 
@@ -1269,11 +1339,10 @@ package body Exp_Ch9 is
       Typ    : Entity_Id;
 
    begin
-      Ent := First_Entity (Concurrent_Type);
-      Eindx := 0;
-
       --  Count number of non-family entries
 
+      Eindx := 0;
+      Ent := First_Entity (Concurrent_Type);
       while Present (Ent) loop
          if Ekind (Ent) = E_Entry then
             Eindx := Eindx + 1;
@@ -1288,7 +1357,6 @@ package body Exp_Ch9 is
 
       Ent := First_Entity (Concurrent_Type);
       Comp := First (Component_List);
-
       while Present (Ent) loop
          if Ekind (Ent) = E_Entry_Family then
             while Chars (Ent) /= Chars (Defining_Identifier (Comp)) loop
@@ -1323,75 +1391,97 @@ package body Exp_Ch9 is
    is
       Actual   : Entity_Id;
       Comp_Nam : Node_Id;
-      Comp_Rec : Node_Id;
       Comps    : List_Id;
       Formal   : Entity_Id;
+      Has_Comp : Boolean := False;
+      Rec_Nam  : Node_Id;
 
    begin
       Actual := First (Actuals);
       Comps  := New_List;
       Formal := Defining_Identifier (First (Formals));
+
       while Present (Actual) loop
-         --  Generate:
-         --    type Ann is access all <actual-type>
+         if not Is_Controlling_Actual (Actual) then
 
-         Comp_Nam :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+            --  Generate:
+            --    type Ann is access all <actual-type>
 
-         Append_To (Decls,
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier =>
-               Comp_Nam,
-             Type_Definition =>
-               Make_Access_To_Object_Definition (Loc,
-                 All_Present =>
-                   True,
-                 Constant_Present =>
-                   Ekind (Formal) = E_In_Parameter,
-                 Subtype_Indication =>
-                   New_Reference_To (Etype (Actual), Loc))));
+            Comp_Nam :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
 
-         --  Generate:
-         --    Param : Ann;
+            Append_To (Decls,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier =>
+                  Comp_Nam,
+                Type_Definition =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present =>
+                      True,
+                    Constant_Present =>
+                      Ekind (Formal) = E_In_Parameter,
+                    Subtype_Indication =>
+                      New_Reference_To (Etype (Actual), Loc))));
 
-         Append_To (Comps,
-           Make_Component_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Chars (Formal)),
-             Component_Definition =>
-               Make_Component_Definition (Loc,
-                 Aliased_Present =>
-                   False,
-                 Subtype_Indication =>
-                   New_Reference_To (Comp_Nam, Loc))));
+            --  Generate:
+            --    Param : Ann;
+
+            Append_To (Comps,
+              Make_Component_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, Chars (Formal)),
+                Component_Definition =>
+                  Make_Component_Definition (Loc,
+                    Aliased_Present =>
+                      False,
+                    Subtype_Indication =>
+                      New_Reference_To (Comp_Nam, Loc))));
+
+            Has_Comp := True;
+         end if;
 
          Next_Actual (Actual);
          Next_Formal_With_Extras (Formal);
       end loop;
 
-      --  Generate:
-      --    type Pnn is record
-      --       Param1 : Ann1;
-      --       ...
-      --       ParamN : AnnN;
-
-      --  where Pnn is a parameter wrapping record, Param1 .. ParamN are the
-      --  original parameter names and Ann1 .. AnnN are the access to actual
-      --  types.
-
-      Comp_Rec :=
+      Rec_Nam :=
         Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
 
-      Append_To (Decls,
-        Make_Full_Type_Declaration (Loc,
-          Defining_Identifier =>
-            Comp_Rec,
-          Type_Definition =>
-            Make_Record_Definition (Loc,
-              Component_List =>
-                Make_Component_List (Loc, Comps))));
+      if Has_Comp then
 
-      return Comp_Rec;
+         --  Generate:
+         --    type Pnn is record
+         --       Param1 : Ann1;
+         --       ...
+         --       ParamN : AnnN;
+
+         --  where Pnn is a parameter wrapping record, Param1 .. ParamN are
+         --  the original parameter names and Ann1 .. AnnN are the access to
+         --  actual types.
+
+         Append_To (Decls,
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier =>
+               Rec_Nam,
+             Type_Definition =>
+               Make_Record_Definition (Loc,
+                 Component_List =>
+                   Make_Component_List (Loc, Comps))));
+      else
+         --  Generate:
+         --    type Pnn is null record;
+
+         Append_To (Decls,
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier =>
+               Rec_Nam,
+             Type_Definition =>
+               Make_Record_Definition (Loc,
+                 Null_Present   => True,
+                 Component_List => Empty)));
+      end if;
+
+      return Rec_Nam;
    end Build_Parameter_Block;
 
    ------------------------
@@ -1579,8 +1669,8 @@ package body Exp_Ch9 is
                --  The two parameters must be mode conformant and have
                --  the exact same types.
 
-               if Out_Present (Prim_Op_Param) /= Out_Present (Proc_Param)
-                 or else In_Present (Prim_Op_Param) /= In_Present (Proc_Param)
+               if Ekind (Defining_Identifier (Prim_Op_Param)) /=
+                  Ekind (Defining_Identifier (Proc_Param))
                  or else Etype (Parameter_Type (Prim_Op_Param)) /=
                          Etype (Parameter_Type (Proc_Param))
                then
@@ -1637,7 +1727,6 @@ package body Exp_Ch9 is
          return Type_Conformant_Parameters (
            Parameter_Specifications (Prim_Op_Spec),
            Parameter_Specifications (Proc_Spec));
-
       end Overriding_Possible;
 
       -----------------------------
@@ -1653,25 +1742,22 @@ package body Exp_Ch9 is
 
       begin
          Formal := First (Formals);
+         while Present (Formal) loop
 
-         if Present (Formal) then
-            while Present (Formal) loop
+            --  Create an explicit copy of the entry parameter
 
-               --  Create an explicit copy of the entry parameter
+            Append_To (New_Formals,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc,
+                    Chars          => Chars (Defining_Identifier (Formal))),
+                    In_Present     => In_Present  (Formal),
+                    Out_Present    => Out_Present (Formal),
+                    Parameter_Type => New_Reference_To (Etype (
+                                        Parameter_Type (Formal)), Loc)));
 
-               Append_To (New_Formals,
-                 Make_Parameter_Specification (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc,
-                       Chars => Chars (Defining_Identifier (Formal))),
-                   In_Present  => In_Present  (Formal),
-                   Out_Present => Out_Present (Formal),
-                   Parameter_Type => New_Reference_To (Etype (
-                                       Parameter_Type (Formal)), Loc)));
-
-               Next (Formal);
-            end loop;
-         end if;
+            Next (Formal);
+         end loop;
 
          return New_Formals;
       end Replicate_Entry_Formals;
@@ -1697,9 +1783,12 @@ package body Exp_Ch9 is
 
          if Present (Primitive_Operations (Iface)) then
             Iface_Prim_Op_Elmt := First_Elmt (Primitive_Operations (Iface));
-
             while Present (Iface_Prim_Op_Elmt) loop
                Iface_Prim_Op := Node (Iface_Prim_Op_Elmt);
+
+               while Present (Alias (Iface_Prim_Op)) loop
+                  Iface_Prim_Op := Alias (Iface_Prim_Op);
+               end loop;
 
                --  The current primitive operation can be overriden by the
                --  generated entry wrapper.
@@ -1897,9 +1986,7 @@ package body Exp_Ch9 is
       Spec := Build_Find_Body_Index_Spec (Typ);
 
       Ent := First_Entity (Typ);
-
       while Present (Ent) loop
-
          if Ekind (Ent) = E_Entry_Family then
             Has_F := True;
             exit;
@@ -1955,12 +2042,10 @@ package body Exp_Ch9 is
 
          elsif Nkind (Ret) = N_If_Statement then
 
-            --  Ranges are in increasing order, so last one doesn't need a
-            --  guard.
+            --  Ranges are in increasing order, so last one doesn't need guard
 
             declare
                Nod : constant Node_Id := Last (Elsif_Parts (Ret));
-
             begin
                Remove (Nod);
                Set_Else_Statements (Ret, Then_Statements (Nod));
@@ -2021,7 +2106,8 @@ package body Exp_Ch9 is
       S := Scope (E);
 
       --  Ada 2005 (AI-287): Do not set/get the has_master_entity reminder
-      --  in internal scopes. Required for nested limited aggregates.
+      --  in internal scopes, unless present already.. Required for nested
+      --  limited aggregates. This could use some more explanation ????
 
       if Ada_Version >= Ada_05 then
          while Is_Internal (S) loop
@@ -2110,11 +2196,16 @@ package body Exp_Ch9 is
       Espec := Build_Protected_Entry_Specification (Edef, Empty, Loc);
 
       --  <object pointer declaration>
-      --  Add object pointer declaration. This is needed by the
-      --  discriminal and prival renamings, which should already
-      --  have been inserted into the declaration list.
+
+      --  Add object pointer declaration. This is needed by the discriminal and
+      --  prival renamings, which should already have been inserted into the
+      --  declaration list.
 
       Add_Object_Pointer (Op_Decls, Pid, Loc);
+
+      --  Add renamings for formals for use by debugger
+
+      Add_Formal_Renamings (Espec, Op_Decls, Ent, Loc);
 
       if Abort_Allowed
         or else Restriction_Active (No_Entry_Queue) = False
@@ -2168,6 +2259,9 @@ package body Exp_Ch9 is
             Complete := New_Reference_To (
               RTE (RE_Exceptional_Complete_Single_Entry_Body), Loc);
          end if;
+
+         --  Create body of entry procedure. The renaming declarations are
+         --  placed ahead of the block that contains the actual entry body.
 
          return
            Make_Subprogram_Body (Loc,
@@ -2248,6 +2342,7 @@ package body Exp_Ch9 is
       Ident       : Entity_Id) return List_Id
    is
       Loc         : constant Source_Ptr := Sloc (N);
+      Decl        : Node_Id;
       Formal      : Entity_Id;
       New_Plist   : List_Id;
       New_Param   : Node_Id;
@@ -2255,7 +2350,6 @@ package body Exp_Ch9 is
    begin
       New_Plist := New_List;
       Formal := First_Formal (Ident);
-
       while Present (Formal) loop
          New_Param :=
            Make_Parameter_Specification (Loc,
@@ -2278,7 +2372,7 @@ package body Exp_Ch9 is
       --  to protected subprogram, the parameter is in-out. Otherwise it is
       --  an in parameter.
 
-      Prepend_To (New_Plist,
+      Decl :=
         Make_Parameter_Specification (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, Name_uObject),
@@ -2286,7 +2380,9 @@ package body Exp_Ch9 is
           Out_Present =>
            (Etype (Ident) = Standard_Void_Type
               and then not Is_RTE (Obj_Type, RE_Address)),
-          Parameter_Type => New_Reference_To (Obj_Type, Loc)));
+          Parameter_Type => New_Reference_To (Obj_Type, Loc));
+      Set_Needs_Debug_Info (Defining_Identifier (Decl));
+      Prepend_To (New_Plist, Decl);
 
       return New_Plist;
    end Build_Protected_Spec;
@@ -2302,9 +2398,7 @@ package body Exp_Ch9 is
    is
       Loc       : constant Source_Ptr := Sloc (N);
       Decl      : Node_Id;
-      Protnm    : constant Name_Id := Chars (Prottyp);
       Ident     : Entity_Id;
-      Nam       : Name_Id;
       New_Id    : Entity_Id;
       New_Plist : List_Id;
       New_Spec  : Node_Id;
@@ -2324,7 +2418,6 @@ package body Exp_Ch9 is
       end if;
 
       Ident := Defining_Unit_Name (Specification (Decl));
-      Nam := Chars (Ident);
 
       New_Plist :=
         Build_Protected_Spec (Decl,
@@ -2333,7 +2426,7 @@ package body Exp_Ch9 is
 
       New_Id :=
         Make_Defining_Identifier (Loc,
-          Chars => Build_Selected_Name (Protnm, Nam, Append_Chr (Mode)));
+          Chars => Build_Selected_Name (Prottyp, Ident, Append_Chr (Mode)));
 
       --  The unprotected operation carries the user code, and debugging
       --  information must be generated for it, even though this spec does
@@ -2397,23 +2490,27 @@ package body Exp_Ch9 is
       function Is_Exception_Safe (Subprogram : Node_Id) return Boolean is
 
          function Has_Side_Effect (N : Node_Id) return Boolean;
-         --  Return True whenever encountering a subprogram call or a
-         --  raise statement of any kind in the sequence of statements N
+         --  Return True whenever encountering a subprogram call or raise
+         --  statement of any kind in the sequence of statements
 
          ---------------------
          -- Has_Side_Effect --
          ---------------------
 
-         --  What is this doing buried two levels down in exp_ch9. It
-         --  seems like a generally useful function, and indeed there
-         --  may be code duplication going on here ???
+         --  What is this doing buried two levels down in exp_ch9. It seems
+         --  like a generally useful function, and indeed there may be code
+         --  duplication going on here ???
 
          function Has_Side_Effect (N : Node_Id) return Boolean is
-            Stmt : Node_Id := N;
+            Stmt : Node_Id;
             Expr : Node_Id;
 
             function Is_Call_Or_Raise (N : Node_Id) return Boolean;
             --  Indicate whether N is a subprogram call or a raise statement
+
+            ----------------------
+            -- Is_Call_Or_Raise --
+            ----------------------
 
             function Is_Call_Or_Raise (N : Node_Id) return Boolean is
             begin
@@ -2428,6 +2525,7 @@ package body Exp_Ch9 is
          --  Start of processing for Has_Side_Effect
 
          begin
+            Stmt := N;
             while Present (Stmt) loop
                if Is_Call_Or_Raise (Stmt) then
                   return True;
@@ -2485,13 +2583,12 @@ package body Exp_Ch9 is
       P_Op_Spec :=
         Build_Protected_Sub_Specification (N, Pid, Protected_Mode);
 
-      --  Build a list of the formal parameters of the protected
-      --  version of the subprogram to use as the actual parameters
-      --  of the unprotected version.
+      --  Build a list of the formal parameters of the protected version of
+      --  the subprogram to use as the actual parameters of the unprotected
+      --  version.
 
       Uactuals := New_List;
       Pformal := First (Parameter_Specifications (P_Op_Spec));
-
       while Present (Pformal) loop
          Append (
            Make_Identifier (Loc, Chars (Defining_Identifier (Pformal))),
@@ -2499,8 +2596,8 @@ package body Exp_Ch9 is
          Next (Pformal);
       end loop;
 
-      --  Make a call to the unprotected version of the subprogram
-      --  built above for use by the protected version built below.
+      --  Make a call to the unprotected version of the subprogram built above
+      --  for use by the protected version built below.
 
       if Nkind (Op_Spec) = N_Function_Specification then
          if Exc_Safe then
@@ -2711,17 +2808,18 @@ package body Exp_Ch9 is
    -------------------------
 
    function Build_Selected_Name
-     (Prefix, Selector : Name_Id;
-      Append_Char      : Character := ' ') return Name_Id
+     (Prefix      : Entity_Id;
+      Selector    : Entity_Id;
+      Append_Char : Character := ' ') return Name_Id
    is
       Select_Buffer : String (1 .. Hostparm.Max_Name_Length);
       Select_Len    : Natural;
 
    begin
-      Get_Name_String (Selector);
+      Get_Name_String (Chars (Selector));
       Select_Len := Name_Len;
       Select_Buffer (1 .. Select_Len) := Name_Buffer (1 .. Name_Len);
-      Get_Name_String (Prefix);
+      Get_Name_String (Chars (Prefix));
 
       --  If scope is anonymous type, discard suffix to recover name of
       --  single protected object. Otherwise use protected type name.
@@ -2739,12 +2837,28 @@ package body Exp_Ch9 is
          Name_Buffer (Name_Len) := Select_Buffer (J);
       end loop;
 
-      if Append_Char /= ' ' then
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Append_Char;
-      end if;
+      --  Now add the Append_Char if specified. The encoding to follow
+      --  depends on the type of entity. If Append_Char is either 'N' or 'P',
+      --  then the entity is associated to a protected type subprogram.
+      --  Otherwise, it is a protected type entry. For each case, the
+      --  encoding to follow for the suffix is documented in exp_dbug.ads.
 
-      return Name_Find;
+      --  It would be better to encapsulate this as a routine in Exp_Dbug ???
+
+      if Append_Char /= ' ' then
+         if Append_Char = 'P' or Append_Char = 'N' then
+            Name_Len := Name_Len + 1;
+            Name_Buffer (Name_Len) := Append_Char;
+            return Name_Find;
+         else
+            Name_Buffer (Name_Len + 1) := '_';
+            Name_Buffer (Name_Len + 2) := Append_Char;
+            Name_Len := Name_Len + 2;
+            return New_External_Name (Name_Find, ' ', -1);
+         end if;
+      else
+         return Name_Find;
+      end if;
    end Build_Selected_Name;
 
    -----------------------------
@@ -2815,24 +2929,26 @@ package body Exp_Ch9 is
          Loc       : constant Source_Ptr := Sloc (N);
          Parms     : constant List_Id    := Parameter_Associations (N);
          Stats     : constant List_Id    := New_List;
-         Pdecl     : Node_Id;
-         Xdecl     : Node_Id;
-         Decls     : List_Id;
+         Actual    : Node_Id;
+         Call      : Node_Id;
+         Comm_Name : Entity_Id;
          Conctyp   : Node_Id;
+         Decls     : List_Id;
          Ent       : Entity_Id;
          Ent_Acc   : Entity_Id;
+         Formal    : Node_Id;
+         Iface_Tag : Entity_Id;
+         Iface_Typ : Entity_Id;
+         N_Node    : Node_Id;
+         N_Var     : Node_Id;
          P         : Entity_Id;
-         X         : Entity_Id;
-         Plist     : List_Id;
          Parm1     : Node_Id;
          Parm2     : Node_Id;
          Parm3     : Node_Id;
-         Call      : Node_Id;
-         Actual    : Node_Id;
-         Formal    : Node_Id;
-         N_Node    : Node_Id;
-         N_Var     : Node_Id;
-         Comm_Name : Entity_Id;
+         Pdecl     : Node_Id;
+         Plist     : List_Id;
+         X         : Entity_Id;
+         Xdecl     : Node_Id;
 
       begin
          --  Simple entry and entry family cases merge here
@@ -2899,7 +3015,7 @@ package body Exp_Ch9 is
          end if;
 
          --  The third parameter is the packaged parameters. If there are
-         --  none, then it is just the null address, since nothing is passed
+         --  none, then it is just the null address, since nothing is passed.
 
          if No (Parms) then
             Parm3 := New_Reference_To (RTE (RE_Null_Address), Loc);
@@ -2909,8 +3025,8 @@ package body Exp_Ch9 is
          --  of a packaged record containing the required parameter values.
 
          else
-            --  First build a list of parameter values, which are
-            --  references to objects of the parameter types.
+            --  First build a list of parameter values, which are references to
+            --  objects of the parameter types.
 
             Plist := New_List;
 
@@ -2932,9 +3048,9 @@ package body Exp_Ch9 is
                       Object_Definition =>
                         New_Reference_To (Etype (Formal), Loc));
 
-                  --  We have to make an assignment statement separate for
-                  --  the case of limited type. We can not assign it unless
-                  --  the Assignment_OK flag is set first.
+                  --  We have to make an assignment statement separate for the
+                  --  case of limited type. We cannot assign it unless the
+                  --  Assignment_OK flag is set first.
 
                   if Ekind (Formal) /= E_Out_Parameter then
                      N_Var :=
@@ -2954,8 +3070,36 @@ package body Exp_Ch9 is
                     Prefix =>
                       New_Reference_To (Defining_Identifier (N_Node), Loc)));
                else
-                  Append_To (Plist,
-                    Make_Reference (Loc, Prefix => Relocate_Node (Actual)));
+                  --  Interface class-wide formal
+
+                  if Ada_Version >= Ada_05
+                    and then Ekind (Etype (Formal)) = E_Class_Wide_Type
+                    and then Is_Interface (Etype (Formal))
+                  then
+                     Iface_Typ := Etype (Etype (Formal));
+
+                     --  Generate:
+                     --    formal_iface_type! (actual.iface_tag)'reference
+
+                     Iface_Tag :=
+                       Find_Interface_Tag (Etype (Actual), Iface_Typ);
+                     pragma Assert (Present (Iface_Tag));
+
+                     Append_To (Plist,
+                       Make_Reference (Loc,
+                         Unchecked_Convert_To (Iface_Typ,
+                           Make_Selected_Component (Loc,
+                             Prefix =>
+                               Relocate_Node (Actual),
+                             Selector_Name =>
+                               New_Reference_To (Iface_Tag, Loc)))));
+                  else
+                     --  Generate:
+                     --    actual'reference
+
+                     Append_To (Plist,
+                       Make_Reference (Loc, Relocate_Node (Actual)));
+                  end if;
                end if;
 
                Next_Actual (Actual);
@@ -3066,8 +3210,8 @@ package body Exp_Ch9 is
 
          Append_To (Stats, Call);
 
-         --  If there are out or in/out parameters by copy
-         --  add assignment statements for the result values.
+         --  If there are out or in/out parameters by copy add assignment
+         --  statements for the result values.
 
          if Present (Parms) then
             Actual := First_Actual (N);
@@ -3088,17 +3232,17 @@ package body Exp_Ch9 is
                             Selector_Name =>
                               Make_Identifier (Loc, Chars (Formal)))));
 
-                  --  In all cases (including limited private types) we
-                  --  want the assignment to be valid.
+                  --  In all cases (including limited private types) we want
+                  --  the assignment to be valid.
 
                   Set_Assignment_OK (Name (N_Node));
 
                   --  If the call is the triggering alternative in an
-                  --  asynchronous select, or the entry_call alternative
-                  --  of a conditional entry call, the assignments for in-out
-                  --  parameters are incorporated into the statement list
-                  --  that follows, so that there are executed only if the
-                  --  entry call succeeds.
+                  --  asynchronous select, or the entry_call alternative of a
+                  --  conditional entry call, the assignments for in-out
+                  --  parameters are incorporated into the statement list that
+                  --  follows, so that there are executed only if the entry
+                  --  call succeeds.
 
                   if (Nkind (Parent (N)) = N_Triggering_Alternative
                        and then N = Triggering_Statement (Parent (N)))
@@ -3394,9 +3538,9 @@ package body Exp_Ch9 is
       Op_Decls  : List_Id;
 
    begin
-      --  Make an unprotected version of the subprogram for use
-      --  within the same object, with a new name and an additional
-      --  parameter representing the object.
+      --  Make an unprotected version of the subprogram for use within the same
+      --  object, with a new name and an additional parameter representing the
+      --  object.
 
       Op_Decls := Declarations (N);
       N_Op_Spec :=
@@ -3434,22 +3578,61 @@ package body Exp_Ch9 is
               Make_Defining_Identifier (Loc,
                 Chars => New_Internal_Name ('F'));
 
-            Efam_Decl :=
-              Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Efam_Type,
-                Type_Definition =>
-                  Make_Unconstrained_Array_Definition (Loc,
-                    Subtype_Marks => (New_List (
-                      New_Occurrence_Of (
+            declare
+               Bas : Entity_Id :=
                        Base_Type
-                         (Etype (Discrete_Subtype_Definition
-                           (Parent (Efam)))), Loc))),
+                        (Etype (Discrete_Subtype_Definition (Parent (Efam))));
+               Bas_Decl : Node_Id := Empty;
+               Lo, Hi   : Node_Id;
+
+            begin
+               Get_Index_Bounds
+                 (Discrete_Subtype_Definition (Parent (Efam)), Lo, Hi);
+               if Scope (Bas) = Standard_Standard
+                 and then Bas = Base_Type (Standard_Integer)
+                 and then Has_Discriminants (Conctyp)
+                 and then Present
+                   (Discriminant_Default_Value (First_Discriminant (Conctyp)))
+                 and then
+                   (Denotes_Discriminant (Lo, True)
+                     or else Denotes_Discriminant (Hi, True))
+               then
+                  Bas :=
+                    Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
+                  Bas_Decl :=
+                    Make_Subtype_Declaration (Loc,
+                       Defining_Identifier => Bas,
+                       Subtype_Indication =>
+                         Make_Subtype_Indication (Loc,
+                           Subtype_Mark =>
+                             New_Occurrence_Of (Standard_Integer, Loc),
+                           Constraint =>
+                             Make_Range_Constraint (Loc,
+                               Range_Expression => Make_Range (Loc,
+                                 Make_Integer_Literal
+                                   (Loc, -Entry_Family_Bound),
+                                 Make_Integer_Literal
+                                   (Loc, Entry_Family_Bound - 1)))));
+
+                  Insert_After (Current_Node, Bas_Decl);
+                  Current_Node := Bas_Decl;
+                  Analyze (Bas_Decl);
+               end if;
+
+               Efam_Decl :=
+                 Make_Full_Type_Declaration (Loc,
+                   Defining_Identifier => Efam_Type,
+                   Type_Definition =>
+                     Make_Unconstrained_Array_Definition (Loc,
+                       Subtype_Marks =>
+                         (New_List (New_Occurrence_Of (Bas, Loc))),
 
                     Component_Definition =>
                       Make_Component_Definition (Loc,
                         Aliased_Present    => False,
                         Subtype_Indication =>
                           New_Reference_To (Standard_Character, Loc))));
+            end;
 
             Insert_After (Current_Node, Efam_Decl);
             Current_Node := Efam_Decl;
@@ -3485,8 +3668,8 @@ package body Exp_Ch9 is
    -- Concurrent_Ref --
    --------------------
 
-   --  The expression returned for a reference to a concurrent
-   --  object has the form:
+   --  The expression returned for a reference to a concurrent object has the
+   --  form:
 
    --    taskV!(name)._Task_Id
 
@@ -3501,8 +3684,8 @@ package body Exp_Ch9 is
    --    objectV!(name.all)._Object
 
    --  here taskV and objectV are the types for the associated records, which
-   --  contain the required _Task_Id and _Object fields for tasks and
-   --  protected objects, respectively.
+   --  contain the required _Task_Id and _Object fields for tasks and protected
+   --  objects, respectively.
 
    --  For the case of a task type name, the expression is
 
@@ -3514,8 +3697,8 @@ package body Exp_Ch9 is
 
    --    objectR
 
-   --  which is a renaming of the _object field of the current object
-   --  object record, passed into protected operations as a parameter.
+   --  which is a renaming of the _object field of the current object object
+   --  record, passed into protected operations as a parameter.
 
    function Concurrent_Ref (N : Node_Id) return Node_Id is
       Loc  : constant Source_Ptr := Sloc (N);
@@ -3560,8 +3743,8 @@ package body Exp_Ch9 is
             end if;
          end loop;
 
-         --  We know that we are within the task body, so should have
-         --  found it in scope.
+         --  We know that we are within the task body, so should have found it
+         --  in scope.
 
          raise Program_Error;
       end Is_Current_Task;
@@ -3598,10 +3781,11 @@ package body Exp_Ch9 is
             else
                declare
                   Decl   : Node_Id;
-                  T_Self : constant Entity_Id
-                    := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
-                  T_Body : constant Node_Id
-                    := Parent (Corresponding_Body (Parent (Entity (N))));
+                  T_Self : constant Entity_Id :=
+                             Make_Defining_Identifier (Loc,
+                               Chars => New_Internal_Name ('T'));
+                  T_Body : constant Node_Id :=
+                             Parent (Corresponding_Body (Parent (Entity (N))));
 
                begin
                   Decl := Make_Object_Declaration (Loc,
@@ -3680,22 +3864,22 @@ package body Exp_Ch9 is
       S    : Node_Id;
 
    begin
-      --  The queues of entries and entry families appear in  textual
-      --  order in the associated record. The entry index is computed as
-      --  the sum of the number of queues for all entries that precede the
-      --  designated one, to which is added the index expression, if this
-      --  expression denotes a member of a family.
+      --  The queues of entries and entry families appear in textual order in
+      --  the associated record. The entry index is computed as the sum of the
+      --  number of queues for all entries that precede the designated one, to
+      --  which is added the index expression, if this expression denotes a
+      --  member of a family.
 
       --  The following is a place holder for the count of simple entries
 
       Num := Make_Integer_Literal (Sloc, 1);
 
-      --  We construct an expression which is a series of addition
-      --  operations. The first operand is the number of single entries that
-      --  precede this one, the second operand is the index value relative
-      --  to the start of the referenced family, and the remaining operands
-      --  are the lengths of the entry families that precede this entry, i.e.
-      --  the constructed expression is:
+      --  We construct an expression which is a series of addition operations.
+      --  The first operand is the number of single entries that precede this
+      --  one, the second operand is the index value relative to the start of
+      --  the referenced family, and the remaining operands are the lengths of
+      --  the entry families that precede this entry, i.e. the constructed
+      --  expression is:
 
       --    number_simple_entries +
       --      (s'pos (index-value) - s'pos (family'first)) + 1 +
@@ -3703,8 +3887,8 @@ package body Exp_Ch9 is
 
       --  where index-value is the given index value, and s is the index
       --  subtype (we have to use pos because the subtype might be an
-      --  enumeration type preventing direct subtraction).
-      --  Note that the task entry array is one-indexed.
+      --  enumeration type preventing direct subtraction). Note that the task
+      --  entry array is one-indexed.
 
       --  The upper bound of the entry family may be a discriminant, so we
       --  retrieve the lower bound explicitly to compute offset, rather than
@@ -3770,7 +3954,6 @@ package body Exp_Ch9 is
 
    procedure Establish_Task_Master (N : Node_Id) is
       Call : Node_Id;
-
    begin
       if Restriction_Active (No_Task_Hierarchy) = False then
          Call := Build_Runtime_Call (Sloc (N), RE_Enter_Master);
@@ -3822,13 +4005,12 @@ package body Exp_Ch9 is
    --  We can distinguish the two cases by seeing whether the accept statement
    --  is part of a list. If not, then it must be in an accept alternative.
 
-   --  To expand the requeue statement, a label is provided at the end of
-   --  the accept statement or alternative of which it is a part, so that
-   --  the statement can be skipped after the requeue is complete.
-   --  This label is created here rather than during the expansion of the
-   --  accept statement, because it will be needed by any requeue
-   --  statements within the accept, which are expanded before the
-   --  accept.
+   --  To expand the requeue statement, a label is provided at the end of the
+   --  accept statement or alternative of which it is a part, so that the
+   --  statement can be skipped after the requeue is complete. This label is
+   --  created here rather than during the expansion of the accept statement,
+   --  because it will be needed by any requeue statements within the accept,
+   --  which are expanded before the accept.
 
    procedure Expand_Accept_Declarations (N : Node_Id; Ent : Entity_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
@@ -3864,8 +4046,8 @@ package body Exp_Ch9 is
 
          --  Create and declare two labels to be placed at the end of the
          --  accept statement. The first label is used to allow requeues to
-         --  skip the remainder of entry processing. The second label is
-         --  used to skip the remainder of entry processing if the rendezvous
+         --  skip the remainder of entry processing. The second label is used
+         --  to skip the remainder of entry processing if the rendezvous
          --  completes in the middle of the accept body.
 
          if Present (Handled_Statement_Sequence (N)) then
@@ -3952,11 +4134,10 @@ package body Exp_Ch9 is
                   Next (Alt);
                end loop;
 
-               --  If we are the first accept statement, then we have to
-               --  create the Ann variable, as for the stand alone case,
-               --  except that it is inserted before the selective accept.
-               --  Similarly, a label for requeue expansion must be
-               --  declared.
+               --  If we are the first accept statement, then we have to create
+               --  the Ann variable, as for the stand alone case, except that
+               --  it is inserted before the selective accept. Similarly, a
+               --  label for requeue expansion must be declared.
 
                if N = Accept_Statement (Alt) then
                   Ann :=
@@ -3971,8 +4152,8 @@ package body Exp_Ch9 is
                   Insert_Before (Sel_Acc, Adecl);
                   Analyze (Adecl);
 
-               --  If we are not the first accept statement, then find the
-               --  Ann variable allocated by the first accept and use it.
+               --  If we are not the first accept statement, then find the Ann
+               --  variable allocated by the first accept and use it.
 
                else
                   Ann :=
@@ -3991,30 +4172,31 @@ package body Exp_Ch9 is
             Set_Needs_Debug_Info (Ann);
          end if;
 
-         --  Create renaming declarations for the entry formals. Each
-         --  reference to a formal becomes a dereference of a component
-         --  of the parameter block, whose address is held in Ann.
-         --  These declarations are eventually inserted into the accept
-         --  block, and analyzed there so that they have the proper scope
-         --  for gdb and do not conflict with other declarations.
+         --  Create renaming declarations for the entry formals. Each reference
+         --  to a formal becomes a dereference of a component of the parameter
+         --  block, whose address is held in Ann. These declarations are
+         --  eventually inserted into the accept block, and analyzed there so
+         --  that they have the proper scope for gdb and do not conflict with
+         --  other declarations.
 
          if Present (Parameter_Specifications (N))
            and then Present (Handled_Statement_Sequence (N))
          then
             declare
-               Formal : Entity_Id;
-               New_F  : Entity_Id;
                Comp   : Entity_Id;
                Decl   : Node_Id;
+               Formal : Entity_Id;
+               New_F  : Entity_Id;
 
             begin
                New_Scope (Ent);
                Formal := First_Formal (Ent);
 
                while Present (Formal) loop
-                  Comp   := Entry_Component (Formal);
-                  New_F  :=
+                  Comp  := Entry_Component (Formal);
+                  New_F :=
                     Make_Defining_Identifier (Sloc (Formal), Chars (Formal));
+
                   Set_Etype (New_F, Etype (Formal));
                   Set_Scope (New_F, Ent);
                   Set_Needs_Debug_Info (New_F);   --  That's the whole point.
@@ -4030,16 +4212,19 @@ package body Exp_Ch9 is
 
                   Decl :=
                     Make_Object_Renaming_Declaration (Loc,
-                    Defining_Identifier => New_F,
-                    Subtype_Mark => New_Reference_To (Etype (Formal), Loc),
-                    Name =>
-                      Make_Explicit_Dereference (Loc,
-                        Make_Selected_Component (Loc,
-                          Prefix =>
-                            Unchecked_Convert_To (Entry_Parameters_Type (Ent),
-                              New_Reference_To (Ann, Loc)),
-                          Selector_Name =>
-                            New_Reference_To (Comp, Loc))));
+                      Defining_Identifier =>
+                        New_F,
+                      Subtype_Mark =>
+                        New_Reference_To (Etype (Formal), Loc),
+                      Name =>
+                        Make_Explicit_Dereference (Loc,
+                          Make_Selected_Component (Loc,
+                            Prefix =>
+                              Unchecked_Convert_To (
+                                Entry_Parameters_Type (Ent),
+                                New_Reference_To (Ann, Loc)),
+                            Selector_Name =>
+                              New_Reference_To (Comp, Loc))));
 
                   if No (Declarations (N)) then
                      Set_Declarations (N, New_List);
@@ -4065,10 +4250,10 @@ package body Exp_Ch9 is
       Comps  : List_Id;
       T      : constant Entity_Id  := Defining_Identifier (N);
       D_T    : constant Entity_Id  := Designated_Type (T);
-      D_T2   : constant Entity_Id  := Make_Defining_Identifier
-                                        (Loc, New_Internal_Name ('D'));
-      E_T    : constant Entity_Id  := Make_Defining_Identifier
-                                        (Loc, New_Internal_Name ('E'));
+      D_T2   : constant Entity_Id  := Make_Defining_Identifier (Loc,
+                                        Chars => New_Internal_Name ('D'));
+      E_T    : constant Entity_Id  := Make_Defining_Identifier (Loc,
+                                        Chars => New_Internal_Name ('E'));
       P_List : constant List_Id    := Build_Protected_Spec
                                         (N, RTE (RE_Address), False, D_T);
       Decl1  : Node_Id;
@@ -4099,8 +4284,8 @@ package body Exp_Ch9 is
       Analyze (Decl1);
       Insert_After (N, Decl1);
 
-      --  Create Equivalent_Type, a record with two components for an
-      --  access to object and an access to subprogram.
+      --  Create Equivalent_Type, a record with two components for an access to
+      --  object and an access to subprogram.
 
       Comps := New_List (
         Make_Component_Declaration (Loc,
@@ -4154,12 +4339,12 @@ package body Exp_Ch9 is
          return;
       end if;
 
-      --  The body of the entry barrier must be analyzed in the context of
-      --  the protected object, but its scope is external to it, just as any
-      --  other unprotected version of a protected operation. The specification
-      --  has been produced when the protected type declaration was elaborated.
-      --  We build the body, insert it in the enclosing scope, but analyze it
-      --  in the current context. A more uniform approach would be to treat a
+      --  The body of the entry barrier must be analyzed in the context of the
+      --  protected object, but its scope is external to it, just as any other
+      --  unprotected version of a protected operation. The specification has
+      --  been produced when the protected type declaration was elaborated. We
+      --  build the body, insert it in the enclosing scope, but analyze it in
+      --  the current context. A more uniform approach would be to treat
       --  barrier just as a protected function, and discard the protected
       --  version of it because it is never called.
 
@@ -4178,7 +4363,7 @@ package body Exp_Ch9 is
 
          Update_Prival_Subtypes (B_F);
 
-         Set_Privals (Spec_Decl, N, Loc);
+         Set_Privals (Spec_Decl, N, Loc, After_Barrier => True);
          Set_Discriminals (Spec_Decl);
          Set_Scope (Func, Scope (Prot));
 
@@ -4186,16 +4371,16 @@ package body Exp_Ch9 is
          Analyze_And_Resolve (Cond, Any_Boolean);
       end if;
 
-      --  The Ravenscar profile restricts barriers to simple variables
-      --  declared within the protected object. We also allow Boolean
-      --  constants, since these appear in several published examples
-      --  and are also allowed by the Aonix compiler.
+      --  The Ravenscar profile restricts barriers to simple variables declared
+      --  within the protected object. We also allow Boolean constants, since
+      --  these appear in several published examples and are also allowed by
+      --  the Aonix compiler.
 
-      --  Note that after analysis variables in this context will be
-      --  replaced by the corresponding prival, that is to say a renaming
-      --  of a selected component of the form _Object.Var. If expansion is
-      --  disabled, as within a generic, we check that the entity appears in
-      --  the current scope.
+      --  Note that after analysis variables in this context will be replaced
+      --  by the corresponding prival, that is to say a renaming of a selected
+      --  component of the form _Object.Var. If expansion is disabled, as
+      --  within a generic, we check that the entity appears in the current
+      --  scope.
 
       if Is_Entity_Name (Cond) then
 
@@ -4278,11 +4463,37 @@ package body Exp_Ch9 is
 
       while Present (Tasknm) loop
          Count := Count + 1;
-         Append_To (Component_Associations (Aggr),
-           Make_Component_Association (Loc,
-             Choices => New_List (
-               Make_Integer_Literal (Loc, Count)),
-             Expression => Concurrent_Ref (Tasknm)));
+
+         --  A task interface class-wide type object is being aborted.
+         --  Retrieve its _task_id by calling a dispatching routine.
+
+         if Ada_Version >= Ada_05
+           and then Ekind (Etype (Tasknm)) = E_Class_Wide_Type
+           and then Is_Interface      (Etype (Tasknm))
+           and then Is_Task_Interface (Etype (Tasknm))
+         then
+            Append_To (Component_Associations (Aggr),
+              Make_Component_Association (Loc,
+                Choices => New_List (
+                  Make_Integer_Literal (Loc, Count)),
+                Expression =>
+
+                  --  Tasknm._disp_get_task_id
+
+                    Make_Selected_Component (Loc,
+                      Prefix =>
+                        New_Copy_Tree (Tasknm),
+                      Selector_Name =>
+                        Make_Identifier (Loc, Name_uDisp_Get_Task_Id))));
+
+         else
+            Append_To (Component_Associations (Aggr),
+              Make_Component_Association (Loc,
+                Choices => New_List (
+                  Make_Integer_Literal (Loc, Count)),
+                Expression => Concurrent_Ref (Tasknm)));
+         end if;
+
          Next (Tasknm);
       end loop;
 
@@ -4340,10 +4551,10 @@ package body Exp_Ch9 is
    --          Exceptional_Complete_Rendezvous (Get_GNAT_Exception);
    --    end;
 
-   --  The first three declarations were already inserted ahead of the
-   --  accept statement by the Expand_Accept_Declarations procedure, which
-   --  was called directly from the semantics during analysis of the accept.
-   --  statement, before analyzing its contained statements.
+   --  The first three declarations were already inserted ahead of the accept
+   --  statement by the Expand_Accept_Declarations procedure, which was called
+   --  directly from the semantics during analysis of the accept. statement,
+   --  before analyzing its contained statements.
 
    --  The declarations from the N_Accept_Statement, as noted in Sinfo, come
    --  from possible expansion activity (the original source of course does
@@ -4372,7 +4583,11 @@ package body Exp_Ch9 is
 
       function Null_Statements (Stats : List_Id) return Boolean;
       --  Check for null statement sequence (i.e a list of labels and
-      --  null statements)
+      --  null statements).
+
+      ---------------------
+      -- Null_Statements --
+      ---------------------
 
       function Null_Statements (Stats : List_Id) return Boolean is
          Stmt : Node_Id;
@@ -4475,11 +4690,11 @@ package body Exp_Ch9 is
              Declarations               => Declarations (N),
              Handled_Statement_Sequence => Build_Accept_Body (N));
 
-         --  Prepend call to Accept_Call to main statement sequence
-         --  If the accept has exception handlers, the statement sequence
-         --  is wrapped in a block. Insert call and renaming declarations
-         --  in the declarations of the block, so they are elaborated before
-         --  the handlers.
+         --  Prepend call to Accept_Call to main statement sequence If the
+         --  accept has exception handlers, the statement sequence is wrapped
+         --  in a block. Insert call and renaming declarations in the
+         --  declarations of the block, so they are elaborated before the
+         --  handlers.
 
          Call :=
            Make_Procedure_Call_Statement (Loc,
@@ -4504,28 +4719,28 @@ package body Exp_Ch9 is
             D      : Node_Id;
             Next_D : Node_Id;
             Typ    : Entity_Id;
+
          begin
             D := First (Declarations (N));
-
             while Present (D) loop
                Next_D := Next (D);
 
                if Nkind (D) = N_Object_Renaming_Declaration then
-                  --  The renaming declarations for the formals were
-                  --  created during analysis of the accept statement,
-                  --  and attached to the list of declarations. Place
-                  --  them now in the context of the accept block or
-                  --  subprogram.
+
+                  --  The renaming declarations for the formals were created
+                  --  during analysis of the accept statement, and attached to
+                  --  the list of declarations. Place them now in the context
+                  --  of the accept block or subprogram.
 
                   Remove (D);
                   Typ := Entity (Subtype_Mark (D));
                   Insert_After (Call, D);
                   Analyze (D);
 
-                  --  If the formal is class_wide, it does not have an
-                  --  actual subtype. The analysis of the renaming declaration
-                  --  creates one, but we need to retain the class-wide
-                  --  nature of the entity.
+                  --  If the formal is class_wide, it does not have an actual
+                  --  subtype. The analysis of the renaming declaration creates
+                  --  one, but we need to retain the class-wide nature of the
+                  --  entity.
 
                   if Is_Class_Wide_Type (Typ) then
                      Set_Etype (Defining_Identifier (D), Typ);
@@ -4691,16 +4906,6 @@ package body Exp_Ch9 is
    --     S   : constant Integer := DT_Position (<dispatching-call>);
    --     U   : Boolean;
 
-   --     procedure <temp>A is
-   --     begin
-   --        <abortable-statements>
-   --     end <temp>A;
-
-   --     procedure <temp>T is
-   --     begin
-   --        <triggered-statements>
-   --     end <temp>T;
-
    --  begin
    --     disp_get_prim_op_kind (<object>, S, C);
 
@@ -4723,7 +4928,7 @@ package body Exp_Ch9 is
    --              ParamN := P.ParamN;
 
    --              if Enqueued (Bnn) then
-   --                 <temp>A;
+   --                 <abortable-statements>
    --              end if;
    --           at end
    --              _clean;
@@ -4733,7 +4938,7 @@ package body Exp_Ch9 is
    --        end;
 
    --        if not Cancelled (Bnn) then
-   --           <temp>T;
+   --           <triggering-statements>
    --        end if;
 
    --     elsif C = POK_Task_Entry then
@@ -4756,7 +4961,7 @@ package body Exp_Ch9 is
    --           begin
    --              begin
    --                 Abort_Undefer;
-   --                 <temp>A;
+   --                 <abortable-statements>
    --              at end
    --                 _clean;
    --              end;
@@ -4765,13 +4970,13 @@ package body Exp_Ch9 is
    --           end;
 
    --           if not U then
-   --              <temp>T;
+   --              <triggering-statements>
    --           end if;
    --        end;
 
    --     else
    --        <dispatching-call>;
-   --        <temp>T;
+   --        <triggering-statements>
    --     end if;
 
    --  The job is to convert this to the asynchronous form
@@ -4795,46 +5000,46 @@ package body Exp_Ch9 is
       Trig   : constant Node_Id    := Triggering_Alternative (N);
       Tstats : constant List_Id    := Statements (Trig);
 
-      Abortable_Block : Node_Id;
-      Actuals         : List_Id;
-      Aproc           : Entity_Id;
-      Blk_Ent         : Entity_Id;
-      Blk_Typ         : Entity_Id;
-      Call            : Node_Id;
-      Call_Ent        : Entity_Id;
-      Cancel_Param    : Entity_Id;
-      Cleanup_Block   : Node_Id;
-      Cleanup_Stmts   : List_Id;
-      Concval         : Node_Id;
-      Dblock_Ent      : Entity_Id;
-      Decl            : Node_Id;
-      Decls           : List_Id;
-      Ecall           : Node_Id;
-      Ename           : Node_Id;
-      Enqueue_Call    : Node_Id;
-      Formals         : List_Id;
-      Hdle            : List_Id;
-      Index           : Node_Id;
-      N_Orig          : Node_Id;
-      Obj             : Entity_Id;
-      Param           : Node_Id;
-      Params          : List_Id;
-      Pdef            : Entity_Id;
-      ProtE_Stmts     : List_Id;
-      ProtP_Stmts     : List_Id;
-      Stmt            : Node_Id;
-      Stmts           : List_Id;
-      Target_Undefer  : RE_Id;
-      TaskE_Stmts     : List_Id;
-      Tproc           : Entity_Id;
-      Undefer_Args    : List_Id := No_List;
+      Abort_Block_Ent   : Entity_Id;
+      Abortable_Block   : Node_Id;
+      Actuals           : List_Id;
+      Blk_Ent           : Entity_Id;
+      Blk_Typ           : Entity_Id;
+      Call              : Node_Id;
+      Call_Ent          : Entity_Id;
+      Cancel_Param      : Entity_Id;
+      Cleanup_Block     : Node_Id;
+      Cleanup_Block_Ent : Entity_Id;
+      Cleanup_Stmts     : List_Id;
+      Concval           : Node_Id;
+      Dblock_Ent        : Entity_Id;
+      Decl              : Node_Id;
+      Decls             : List_Id;
+      Ecall             : Node_Id;
+      Ename             : Node_Id;
+      Enqueue_Call      : Node_Id;
+      Formals           : List_Id;
+      Hdle              : List_Id;
+      Index             : Node_Id;
+      N_Orig            : Node_Id;
+      Obj               : Entity_Id;
+      Param             : Node_Id;
+      Params            : List_Id;
+      Pdef              : Entity_Id;
+      ProtE_Stmts       : List_Id;
+      ProtP_Stmts       : List_Id;
+      Stmt              : Node_Id;
+      Stmts             : List_Id;
+      Target_Undefer    : RE_Id;
+      TaskE_Stmts       : List_Id;
+      Undefer_Args      : List_Id := No_List;
 
       B   : Entity_Id;  --  Call status flag
       Bnn : Entity_Id;  --  Communication block
       C   : Entity_Id;  --  Call kind
-      P   : Node_Id;    --  Parameter block
+      P   : Entity_Id;  --  Parameter block
       S   : Entity_Id;  --  Primitive operation slot
-      U   : Entity_Id;  --  Additional status flag
+      T   : Entity_Id;  --  Additional status flag
 
    begin
       Blk_Ent := Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
@@ -4900,50 +5105,37 @@ package body Exp_Ch9 is
 
             --  Dispatch table slot processing, generate:
             --    S : constant Integer :=
-            --          DT_Position (<dispatching-procedure>);
+            --          Ada.Tags.Get_Offset_Index (
+            --            Unchecked_Convert_To (Ada.Tags.Interface_Tag, Obj),
+            --            DT_Position (<dispatching-procedure>));
 
-            S := SEU.Build_S (Loc, Decls, Call_Ent);
+            S := SEU.Build_S (Loc, Decls, Obj, Call_Ent);
 
             --  Additional status flag processing, generate:
 
-            U := Make_Defining_Identifier (Loc, Name_uU);
+            T := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
 
             Append_To (Decls,
               Make_Object_Declaration (Loc,
                 Defining_Identifier =>
-                  U,
+                  T,
                 Object_Definition =>
                   New_Reference_To (Standard_Boolean, Loc)));
-
-            --  Generate:
-            --    procedure <temp>A is
-            --    begin
-            --       Astmts
-            --    end <temp>A;
-
-            Aproc := SEU.Build_Wrapping_Procedure (Loc, 'A', Decls, Astats);
-
-            --  Generate:
-            --    procedure <temp>T is
-            --    begin
-            --       Tstmts
-            --    end <temp>T;
-
-            Tproc := SEU.Build_Wrapping_Procedure (Loc, 'T', Decls, Tstats);
-
-            --  Generate:
-            --    _dispatching_get_prim_op_kind (<object>, S, C);
 
             Append_To (Stmts,
               Make_Procedure_Call_Statement (Loc,
                 Name =>
-                  Make_Identifier (Loc, Name_uDisp_Get_Prim_Op_Kind),
+                  New_Reference_To (
+                    Find_Prim_Op (Etype (Etype (Obj)),
+                      Name_uDisp_Get_Prim_Op_Kind),
+                  Loc),
                 Parameter_Associations =>
                   New_List (
                     New_Copy_Tree    (Obj),
                     New_Reference_To (S, Loc),
                     New_Reference_To (C, Loc))));
 
+            --  ---------------------------------------------------------------
             --  Protected entry handling
 
             --  Generate:
@@ -4951,7 +5143,7 @@ package body Exp_Ch9 is
             --    ...
             --    ParamN := P.ParamN;
 
-            Cleanup_Stmts := Parameter_Block_Unpack (Loc, Actuals, Formals);
+            Cleanup_Stmts := Parameter_Block_Unpack (Loc, P, Actuals, Formals);
 
             --  Generate:
             --    _dispatching_asynchronous_select
@@ -4960,21 +5152,24 @@ package body Exp_Ch9 is
             Prepend_To (Cleanup_Stmts,
               Make_Procedure_Call_Statement (Loc,
                 Name =>
-                  Make_Identifier (Loc, Name_uDisp_Asynchronous_Select),
+                  New_Reference_To (
+                    Find_Prim_Op (Etype (Etype (Obj)),
+                      Name_uDisp_Asynchronous_Select),
+                  Loc),
                 Parameter_Associations =>
                   New_List (
                     New_Copy_Tree    (Obj),
                     New_Reference_To (S, Loc),
-                    P,
+                    Make_Attribute_Reference (Loc,
+                      Prefix => New_Reference_To (P, Loc),
+                      Attribute_Name => Name_Address),
                     New_Reference_To (Bnn, Loc),
                     New_Reference_To (B, Loc))));
 
             --  Generate:
             --    if Enqueued (Bnn) then
-            --       <temp>A
+            --       <abortable-statements>
             --    end if;
-
-            --  where <temp>A is the abort statements wrapping procedure
 
             Append_To (Cleanup_Stmts,
               Make_If_Statement (Loc,
@@ -4987,12 +5182,7 @@ package body Exp_Ch9 is
                         New_Reference_To (Bnn, Loc))),
 
                 Then_Statements =>
-                  New_List (
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To (Aproc, Loc),
-                      Parameter_Associations =>
-                        No_List))));
+                  New_Copy_List_Tree (Astats)));
 
             --  Wrap the statements in a block. Exp_Ch7.Expand_Cleanup_Actions
             --  will then generate a _clean for the communication block Bnn.
@@ -5011,10 +5201,13 @@ package body Exp_Ch9 is
             --       _clean;
             --    end;
 
-            Cleanup_Block :=
-              SEU.Build_Cleanup_Block (Loc, Blk_Ent, Cleanup_Stmts, Bnn);
+            Cleanup_Block_Ent :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
 
-            --  Wrap the cleanup block in an exception handling block.
+            Cleanup_Block := SEU.Build_Cleanup_Block (Loc,
+              Cleanup_Block_Ent, Cleanup_Stmts, Bnn);
+
+            --  Wrap the cleanup block in an exception handling block
 
             --  Generate:
             --    begin
@@ -5023,16 +5216,21 @@ package body Exp_Ch9 is
             --       when Abort_Signal => Abort_Undefer;
             --    end;
 
+            Abort_Block_Ent :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+
             ProtE_Stmts :=
               New_List (
-                SEU.Build_Abort_Block (Loc, Blk_Ent, Cleanup_Block));
+                Make_Implicit_Label_Declaration (Loc,
+                  Defining_Identifier => Abort_Block_Ent),
+
+                SEU.Build_Abort_Block (Loc,
+                  Abort_Block_Ent, Cleanup_Block_Ent, Cleanup_Block));
 
             --  Generate:
             --    if not Cancelled (Bnn) then
-            --       <temp>T
+            --       <triggering-statements>
             --    end if;
-
-            --  there <temp>T is the triggering statements wrapping procedure
 
             Append_To (ProtE_Stmts,
               Make_If_Statement (Loc,
@@ -5047,14 +5245,9 @@ package body Exp_Ch9 is
                             New_Reference_To (Bnn, Loc)))),
 
                 Then_Statements =>
-                  New_List (
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To (Tproc, Loc),
-                      Parameter_Associations =>
-                        No_List))));
+                  New_Copy_List_Tree (Tstats)));
 
-            -------------------------------------------------------------------
+            --  ---------------------------------------------------------------
             --  Task entry handling
 
             --  Generate:
@@ -5062,7 +5255,7 @@ package body Exp_Ch9 is
             --    ...
             --    ParamN := P.ParamN;
 
-            TaskE_Stmts := Parameter_Block_Unpack (Loc, Actuals, Formals);
+            TaskE_Stmts := Parameter_Block_Unpack (Loc, P, Actuals, Formals);
 
             --  Generate:
             --    _dispatching_asynchronous_select
@@ -5071,12 +5264,17 @@ package body Exp_Ch9 is
             Prepend_To (TaskE_Stmts,
               Make_Procedure_Call_Statement (Loc,
                 Name =>
-                  Make_Identifier (Loc, Name_uDisp_Asynchronous_Select),
+                  New_Reference_To (
+                    Find_Prim_Op (Etype (Etype (Obj)),
+                      Name_uDisp_Asynchronous_Select),
+                  Loc),
                 Parameter_Associations =>
                   New_List (
                     New_Copy_Tree    (Obj),
                     New_Reference_To (S, Loc),
-                    New_Copy_Tree    (P),
+                    Make_Attribute_Reference (Loc,
+                      Prefix => New_Reference_To (P, Loc),
+                      Attribute_Name => Name_Address),
                     New_Reference_To (Bnn, Loc),
                     New_Reference_To (B, Loc))));
 
@@ -5092,23 +5290,16 @@ package body Exp_Ch9 is
 
             --  Generate:
             --    Abort_Undefer;
-            --    <temp>A
+            --    <abortable-statements>
 
-            --  where <temp>A is the abortable statements wrapping procedure
+            Cleanup_Stmts := New_Copy_List_Tree (Astats);
 
-            Cleanup_Stmts :=
-              New_List (
-                Make_Procedure_Call_Statement (Loc,
-                  Name =>
-                    New_Reference_To (RTE (RE_Abort_Undefer), Loc),
-                  Parameter_Associations =>
-                    No_List),
-
-                Make_Procedure_Call_Statement (Loc,
-                  Name =>
-                    New_Reference_To (Aproc, Loc),
-                  Parameter_Associations =>
-                    No_List));
+            Prepend_To (Cleanup_Stmts,
+              Make_Procedure_Call_Statement (Loc,
+                Name =>
+                  New_Reference_To (RTE (RE_Abort_Undefer), Loc),
+                Parameter_Associations =>
+                  No_List));
 
             --  Wrap the statements in a block. Exp_Ch7.Expand_Cleanup_Actions
             --  will generate a _clean for the additional status flag.
@@ -5125,10 +5316,11 @@ package body Exp_Ch9 is
             --       _clean;
             --    end;
 
-            Blk_Ent := Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+            Cleanup_Block_Ent :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
 
-            Cleanup_Block :=
-              SEU.Build_Cleanup_Block (Loc, Blk_Ent, Cleanup_Stmts, U);
+            Cleanup_Block := SEU.Build_Cleanup_Block (Loc,
+              Cleanup_Block_Ent, Cleanup_Stmts, T);
 
             --  Wrap the cleanup block in an exception handling block
 
@@ -5139,48 +5331,41 @@ package body Exp_Ch9 is
             --       when Abort_Signal => Abort_Undefer;
             --    end;
 
+            Abort_Block_Ent :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+
             Append_To (TaskE_Stmts,
-              SEU.Build_Abort_Block (Loc, Blk_Ent, Cleanup_Block));
+              Make_Implicit_Label_Declaration (Loc,
+                Defining_Identifier => Abort_Block_Ent));
+
+            Append_To (TaskE_Stmts,
+              SEU.Build_Abort_Block (Loc,
+                Abort_Block_Ent, Cleanup_Block_Ent, Cleanup_Block));
 
             --  Generate:
-            --    if not U then
-            --       <temp>T
+            --    if not T then
+            --       <triggering-statements>
             --    end if;
-
-            --  where <temp>T is the triggering statements wrapping procedure
 
             Append_To (TaskE_Stmts,
               Make_If_Statement (Loc,
                 Condition =>
                   Make_Op_Not (Loc,
                     Right_Opnd =>
-                      New_Reference_To (U, Loc)),
+                      New_Reference_To (T, Loc)),
+
                 Then_Statements =>
-                  New_List (
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To (Tproc, Loc),
-                      Parameter_Associations =>
-                        No_List))));
+                  New_Copy_List_Tree (Tstats)));
 
             -------------------------------------------------------------------
             --  Protected procedure handling
 
             --  Generate:
             --    <dispatching-call>;
-            --    <temp>T;
+            --    <triggering-statements>
 
-            --  where <temp>T is the triggering statements wrapping procedure
-
-            ProtP_Stmts :=
-              New_List (
-                New_Copy_Tree (Ecall),
-
-                Make_Procedure_Call_Statement (Loc,
-                  Name =>
-                    New_Reference_To (Tproc, Loc),
-                  Parameter_Associations =>
-                    No_List));
+            ProtP_Stmts := New_Copy_List_Tree (Tstats);
+            Prepend_To (ProtP_Stmts, New_Copy_Tree (Ecall));
 
             --  Generate:
             --    if C = POK_Procedure_Entry then
@@ -5212,6 +5397,7 @@ package body Exp_Ch9 is
                             New_Reference_To (C, Loc),
                           Right_Opnd =>
                             New_Reference_To (RTE (RE_POK_Task_Entry), Loc)),
+
                       Then_Statements =>
                         TaskE_Stmts)),
 
@@ -5331,6 +5517,7 @@ package body Exp_Ch9 is
             Analyze (N);
             return;
          end if;
+
       else
          N_Orig := N;
       end if;
@@ -5725,10 +5912,11 @@ package body Exp_Ch9 is
       Params   : List_Id;
       Stmt     : Node_Id;
       Stmts    : List_Id;
+      Unpack   : List_Id;
 
       B        : Entity_Id;  --  Call status flag
       C        : Entity_Id;  --  Call kind
-      P        : Node_Id;    --  Parameter block
+      P        : Entity_Id;  --  Parameter block
       S        : Entity_Id;  --  Primitive operation slot
 
    begin
@@ -5758,9 +5946,11 @@ package body Exp_Ch9 is
 
          --  Dispatch table slot processing, generate:
          --    S : constant Integer :=
-         --          DT_Position (<dispatching-procedure>);
+         --          Ada.Tags.Get_Offset_Index (
+         --            Unchecked_Convert_To (Ada.Tags.Interface_Tag, Obj),
+         --            DT_Position (<dispatching-procedure>));
 
-         S := SEU.Build_S (Loc, Decls, Call_Ent);
+         S := SEU.Build_S (Loc, Decls, Obj, Call_Ent);
 
          --  Generate:
          --    _dispatching_conditional_select (<object>, S, P'address, C, B);
@@ -5768,12 +5958,17 @@ package body Exp_Ch9 is
          Append_To (Stmts,
            Make_Procedure_Call_Statement (Loc,
              Name =>
-               Make_Identifier (Loc, Name_uDisp_Conditional_Select),
+               New_Reference_To (
+                 Find_Prim_Op (Etype (Etype (Obj)),
+                   Name_uDisp_Conditional_Select),
+                 Loc),
              Parameter_Associations =>
                New_List (
                  New_Copy_Tree    (Obj),
                  New_Reference_To (S, Loc),
-                 P,
+                 Make_Attribute_Reference (Loc,
+                   Prefix => New_Reference_To (P, Loc),
+                   Attribute_Name => Name_Address),
                  New_Reference_To (C, Loc),
                  New_Reference_To (B, Loc))));
 
@@ -5786,26 +5981,33 @@ package body Exp_Ch9 is
          --       ParamN := P.ParamN;
          --    end if;
 
-         Append_To (Stmts,
-           Make_If_Statement (Loc,
+         Unpack := Parameter_Block_Unpack (Loc, P, Actuals, Formals);
 
-             Condition =>
-               Make_Or_Else (Loc,
-                 Left_Opnd =>
-                   Make_Op_Eq (Loc,
-                     Left_Opnd =>
-                       New_Reference_To (C, Loc),
-                     Right_Opnd =>
-                       New_Reference_To (RTE (RE_POK_Protected_Entry), Loc)),
-                 Right_Opnd =>
-                   Make_Op_Eq (Loc,
-                     Left_Opnd =>
-                       New_Reference_To (C, Loc),
-                     Right_Opnd =>
-                       New_Reference_To (RTE (RE_POK_Task_Entry), Loc))),
+         --  Generate the if statement only when the packed parameters need
+         --  explicit assignments to their corresponding actuals.
 
-             Then_Statements =>
-               Parameter_Block_Unpack (Loc, Actuals, Formals)));
+         if Present (Unpack) then
+            Append_To (Stmts,
+              Make_If_Statement (Loc,
+
+                Condition =>
+                  Make_Or_Else (Loc,
+                    Left_Opnd =>
+                      Make_Op_Eq (Loc,
+                        Left_Opnd =>
+                          New_Reference_To (C, Loc),
+                        Right_Opnd =>
+                          New_Reference_To (RTE (
+                            RE_POK_Protected_Entry), Loc)),
+                    Right_Opnd =>
+                      Make_Op_Eq (Loc,
+                        Left_Opnd =>
+                          New_Reference_To (C, Loc),
+                        Right_Opnd =>
+                          New_Reference_To (RTE (RE_POK_Task_Entry), Loc))),
+
+                 Then_Statements => Unpack));
+         end if;
 
          --  Generate:
          --    if B then
@@ -5820,7 +6022,7 @@ package body Exp_Ch9 is
          --       <else-statements>
          --    end if;
 
-         N_Stats := New_Copy_List (Statements (Alt));
+         N_Stats := New_Copy_List_Tree (Statements (Alt));
 
          Prepend_To (N_Stats,
            Make_If_Statement (Loc,
@@ -6060,10 +6262,9 @@ package body Exp_Ch9 is
          end if;
       end if;
 
-      --  Associate privals and discriminals with the next protected
-      --  operation body to be expanded. These are used to expand
-      --  references to private data objects and discriminants,
-      --  respectively.
+      --  Associate privals and discriminals with the next protected operation
+      --  body to be expanded. These are used to expand references to private
+      --  data objects and discriminants, respectively.
 
       Next_Op := Next_Protected_Operation (N);
 
@@ -6091,16 +6292,15 @@ package body Exp_Ch9 is
          return;
       end if;
 
-      --  If this entry call is part of an asynchronous select, don't
-      --  expand it here; it will be expanded with the select statement.
-      --  Don't expand timed entry calls either, as they are translated
-      --  into asynchronous entry calls.
+      --  If this entry call is part of an asynchronous select, don't expand it
+      --  here; it will be expanded with the select statement. Don't expand
+      --  timed entry calls either, as they are translated into asynchronous
+      --  entry calls.
 
-      --  ??? This whole approach is questionable; it may be better
-      --  to go back to allowing the expansion to take place and then
-      --  attempting to fix it up in Expand_N_Asynchronous_Select.
-      --  The tricky part is figuring out whether the expanded
-      --  call is on a task or protected entry.
+      --  ??? This whole approach is questionable; it may be better to go back
+      --  to allowing the expansion to take place and then attempting to fix it
+      --  up in Expand_N_Asynchronous_Select. The tricky part is figuring out
+      --  whether the expanded call is on a task or protected entry.
 
       if (Nkind (Parent (N)) /= N_Triggering_Alternative
            or else N /= Triggering_Statement (Parent (N)))
@@ -6117,17 +6317,17 @@ package body Exp_Ch9 is
    -- Expand_N_Entry_Declaration --
    --------------------------------
 
-   --  If there are parameters, then first, each of the formals is marked
-   --  by setting Is_Entry_Formal. Next a record type is built which is
-   --  used to hold the parameter values. The name of this record type is
-   --  entryP where entry is the name of the entry, with an additional
-   --  corresponding access type called entryPA. The record type has matching
-   --  components for each formal (the component names are the same as the
-   --  formal names). For elementary types, the component type matches the
-   --  formal type. For composite types, an access type is declared (with
-   --  the name formalA) which designates the formal type, and the type of
-   --  the component is this access type. Finally the Entry_Component of
-   --  each formal is set to reference the corresponding record component.
+   --  If there are parameters, then first, each of the formals is marked by
+   --  setting Is_Entry_Formal. Next a record type is built which is used to
+   --  hold the parameter values. The name of this record type is entryP where
+   --  entry is the name of the entry, with an additional corresponding access
+   --  type called entryPA. The record type has matching components for each
+   --  formal (the component names are the same as the formal names). For
+   --  elementary types, the component type matches the formal type. For
+   --  composite types, an access type is declared (with the name formalA)
+   --  which designates the formal type, and the type of the component is this
+   --  access type. Finally the Entry_Component of each formal is set to
+   --  reference the corresponding record component.
 
    procedure Expand_N_Entry_Declaration (N : Node_Id) is
       Loc        : constant Source_Ptr := Sloc (N);
@@ -6231,11 +6431,11 @@ package body Exp_Ch9 is
    -----------------------------
 
    --  Protected bodies are expanded to the completion of the subprograms
-   --  created for the corresponding protected type. These are a protected
-   --  and unprotected version of each protected subprogram in the object,
-   --  a function to calculate each entry barrier, and a procedure to
-   --  execute the sequence of statements of each protected entry body.
-   --  For example, for protected type ptype:
+   --  created for the corresponding protected type. These are a protected and
+   --  unprotected version of each protected subprogram in the object, a
+   --  function to calculate each entry barrier, and a procedure to execute the
+   --  sequence of statements of each protected entry body. For example, for
+   --  protected type ptype:
 
    --  function entB
    --    (O : System.Address;
@@ -6379,7 +6579,6 @@ package body Exp_Ch9 is
 
          Actuals := New_List;
          Formal  := First (Parameter_Specifications (Spec));
-
          while Present (Formal) loop
             Append_To (Actuals,
               Make_Identifier (Loc, Chars (Defining_Identifier (Formal))));
@@ -6581,10 +6780,9 @@ package body Exp_Ch9 is
          Analyze (New_Op_Body);
       end if;
 
-      --  Ada 2005 (AI-345): Construct the primitive entry wrapper bodies
-      --  after the protected body. At this point the entry specs have been
-      --  created, frozen and included in the dispatch table for the
-      --  protected type.
+      --  Ada 2005 (AI-345): Construct the primitive entry wrapper bodies after
+      --  the protected body. At this point the entry specs have been created,
+      --  frozen and included in the dispatch table for the protected type.
 
       pragma Assert (Present (Corresponding_Record_Type (Pid)));
 
@@ -6600,10 +6798,10 @@ package body Exp_Ch9 is
             Wrap_Body : Node_Id;
 
          begin
-            --  Examine the visible declarations of the protected type,
-            --  looking for an entry declaration. We do not consider
-            --  entry families since they can not have dispatching
-            --  operations, thus they do not need entry wrappers.
+            --  Examine the visible declarations of the protected type, looking
+            --  for an entry declaration. We do not consider entry families
+            --  since they cannot have dispatching operations, thus they do not
+            --  need entry wrappers.
 
             while Present (Vis_Decl) loop
                if Nkind (Vis_Decl) = N_Entry_Declaration then
@@ -6658,57 +6856,55 @@ package body Exp_Ch9 is
    --      <private data fields>
    --    end record;
 
-   --  The discriminants are present only if the corresponding protected
-   --  type has discriminants, and they exactly mirror the protected type
-   --  discriminants. The private data fields similarly mirror the
-   --  private declarations of the protected type.
+   --  The discriminants are present only if the corresponding protected type
+   --  has discriminants, and they exactly mirror the protected type
+   --  discriminants. The private data fields similarly mirror the private
+   --  declarations of the protected type.
 
-   --  The Object field is always present. It contains RTS specific data
-   --  used to control the protected object. It is declared as Aliased
-   --  so that it can be passed as a pointer to the RTS. This allows the
-   --  protected record to be referenced within RTS data structures.
-   --  An appropriate Protection type and discriminant are generated.
+   --  The Object field is always present. It contains RTS specific data used
+   --  to control the protected object. It is declared as Aliased so that it
+   --  can be passed as a pointer to the RTS. This allows the protected record
+   --  to be referenced within RTS data structures. An appropriate Protection
+   --  type and discriminant are generated.
 
    --  The Service field is present for protected objects with entries. It
-   --  contains sufficient information to allow the entry service procedure
-   --  for this object to be called when the object is not known till runtime.
+   --  contains sufficient information to allow the entry service procedure for
+   --  this object to be called when the object is not known till runtime.
 
    --  One entry_family component is present for each entry family in the
    --  task definition (see Expand_N_Task_Type_Declaration).
 
    --  When a protected object is declared, an instance of the protected type
-   --  value record is created. The elaboration of this declaration creates
-   --  the correct bounds for the entry families, and also evaluates the
-   --  priority expression if needed. The initialization routine for
-   --  the protected type itself then calls Initialize_Protection with
-   --  appropriate parameters to initialize the value of the Task_Id field.
-   --  Install_Handlers may be also called if a pragma Attach_Handler applies.
+   --  value record is created. The elaboration of this declaration creates the
+   --  correct bounds for the entry families, and also evaluates the priority
+   --  expression if needed. The initialization routine for the protected type
+   --  itself then calls Initialize_Protection with appropriate parameters to
+   --  initialize the value of the Task_Id field. Install_Handlers may be also
+   --  called if a pragma Attach_Handler applies.
 
-   --  Note: this record is passed to the subprograms created by the
-   --  expansion of protected subprograms and entries. It is an in parameter
-   --  to protected functions and an in out parameter to procedures and
-   --  entry bodies. The Entity_Id for this created record type is placed
-   --  in the Corresponding_Record_Type field of the associated protected
-   --  type entity.
+   --  Note: this record is passed to the subprograms created by the expansion
+   --  of protected subprograms and entries. It is an in parameter to protected
+   --  functions and an in out parameter to procedures and entry bodies. The
+   --  Entity_Id for this created record type is placed in the
+   --  Corresponding_Record_Type field of the associated protected type entity.
 
-   --  Next we create a procedure specifications for protected subprograms
-   --  and entry bodies. For each protected subprograms two subprograms are
-   --  created, an unprotected and a protected version. The unprotected
-   --  version is called from within other operations of the same protected
-   --  object.
+   --  Next we create a procedure specifications for protected subprograms and
+   --  entry bodies. For each protected subprograms two subprograms are
+   --  created, an unprotected and a protected version. The unprotected version
+   --  is called from within other operations of the same protected object.
 
    --  We also build the call to register the procedure if a pragma
    --  Interrupt_Handler applies.
 
    --  A single subprogram is created to service all entry bodies; it has an
-   --  additional boolean out parameter indicating that the previous entry
-   --  call made by the current task was serviced immediately, i.e. not by
-   --  proxy. The O parameter contains a pointer to a record object of the
-   --  type described above. An untyped interface is used here to allow this
+   --  additional boolean out parameter indicating that the previous entry call
+   --  made by the current task was serviced immediately, i.e. not by proxy.
+   --  The O parameter contains a pointer to a record object of the type
+   --  described above. An untyped interface is used here to allow this
    --  procedure to be called in places where the type of the object to be
-   --  serviced is not known. This must be done, for example, when a call
-   --  that may have been requeued is cancelled; the corresponding object
-   --  must be serviced, but which object that is not known till runtime.
+   --  serviced is not known. This must be done, for example, when a call that
+   --  may have been requeued is cancelled; the corresponding object must be
+   --  serviced, but which object that is not known till runtime.
 
    --  procedure ptypeS
    --    (O : System.Address; P : out Boolean);
@@ -6724,9 +6920,8 @@ package body Exp_Ch9 is
    procedure Expand_N_Protected_Type_Declaration (N : Node_Id) is
       Loc     : constant Source_Ptr := Sloc (N);
       Prottyp : constant Entity_Id  := Defining_Identifier (N);
-      Protnm  : constant Name_Id    := Chars (Prottyp);
 
-      Pdef : constant Node_Id    := Protected_Definition (N);
+      Pdef : constant Node_Id := Protected_Definition (N);
       --  This contains two lists; one for visible and one for private decls
 
       Rec_Decl     : Node_Id;
@@ -6748,7 +6943,7 @@ package body Exp_Ch9 is
       Object_Comp  : Node_Id;
 
       procedure Register_Handler;
-      --  for a protected operation that is an interrupt handler, add the
+      --  For a protected operation that is an interrupt handler, add the
       --  freeze action that will register it as such.
 
       ----------------------
@@ -6803,7 +6998,8 @@ package body Exp_Ch9 is
       --  corresponding record type must refer to the discriminants of that
       --  record, so we must apply a new renaming to subtypes_indications:
 
-      --     protected discriminant => discriminal => record discriminant.
+      --     protected discriminant => discriminal => record discriminant
+
       --  This replacement is not applied to default expressions, for which
       --  the discriminal is correct.
 
@@ -6811,11 +7007,9 @@ package body Exp_Ch9 is
          declare
             Disc : Entity_Id;
             Decl : Node_Id;
-
          begin
             Disc := First_Discriminant (Prottyp);
             Decl := First (Discriminant_Specifications (Rec_Decl));
-
             while Present (Disc) loop
                Append_Elmt (Discriminal (Disc), Discr_Map);
                Append_Elmt (Defining_Identifier (Decl), Discr_Map);
@@ -6827,15 +7021,14 @@ package body Exp_Ch9 is
 
       --  Fill in the component declarations
 
-      --  Add components for entry families. For each entry family,
-      --  create an anonymous type declaration with the same size, and
-      --  analyze the type.
+      --  Add components for entry families. For each entry family, create an
+      --  anonymous type declaration with the same size, and analyze the type.
 
       Collect_Entry_Families (Loc, Cdecls, Current_Node, Prottyp);
 
-      --  Prepend the _Object field with the right type to the component
-      --  list. We need to compute the number of entries, and in some cases
-      --  the number of Attach_Handler pragmas.
+      --  Prepend the _Object field with the right type to the component list.
+      --  We need to compute the number of entries, and in some cases the
+      --  number of Attach_Handler pragmas.
 
       declare
          Ritem              : Node_Id;
@@ -6892,8 +7085,7 @@ package body Exp_Ch9 is
                      Sloc => Loc,
                      Constraints => New_List (Entry_Count_Expr)));
 
-         --  The type has explicit entries or generated primitive entry
-         --  wrappers.
+         --  Type has explicit entries or generated primitive entry wrappers
 
          elsif Has_Entries (Prottyp)
            or else (Ada_Version >= Ada_05
@@ -7039,7 +7231,7 @@ package body Exp_Ch9 is
          begin
             --  Examine the visible declarations of the protected type, looking
             --  for declarations of entries, and subprograms. We do not
-            --  consider entry families since they can not have dispatching
+            --  consider entry families since they cannot have dispatching
             --  operations, thus they do not need entry wrappers.
 
             Vis_Decl := First (Visible_Declarations (Pdef));
@@ -7096,12 +7288,12 @@ package body Exp_Ch9 is
          Entries_Aggr := Empty;
       end if;
 
-      --  Build two new procedure specifications for each protected
-      --  subprogram; one to call from outside the object and one to
-      --  call from inside. Build a barrier function and an entry
-      --  body action procedure specification for each protected entry.
-      --  Initialize the entry body array. If subprogram is flagged as
-      --  eliminated, do not generate any internal operations.
+      --  Build two new procedure specifications for each protected subprogram;
+      --  one to call from outside the object and one to call from inside.
+      --  Build a barrier function and an entry body action procedure
+      --  specification for each protected entry. Initialize the entry body
+      --  array. If subprogram is flagged as eliminated, do not generate any
+      --  internal operations.
 
       E_Count := 0;
 
@@ -7124,8 +7316,8 @@ package body Exp_Ch9 is
               (Defining_Unit_Name (Specification (Comp)),
                Defining_Unit_Name (Specification (Sub)));
 
-            --  Make the protected version of the subprogram available
-            --  for expansion of external calls.
+            --  Make the protected version of the subprogram available for
+            --  expansion of external calls.
 
             Current_Node := Sub;
 
@@ -7160,9 +7352,10 @@ package body Exp_Ch9 is
                Current_Node := Sub;
             end if;
 
-            --  If a pragma Interrupt_Handler applies, build and add
-            --  a call to Register_Interrupt_Handler to the freezing actions
-            --  of the protected version (Current_Node) of the subprogram:
+            --  If a pragma Interrupt_Handler applies, build and add a call to
+            --  Register_Interrupt_Handler to the freezing actions of the
+            --  protected version (Current_Node) of the subprogram:
+
             --    system.interrupts.register_interrupt_handler
             --       (prot_procP'address);
 
@@ -7179,10 +7372,7 @@ package body Exp_Ch9 is
             Set_Privals_Chain (Comp_Id, New_Elmt_List);
             Edef :=
               Make_Defining_Identifier (Loc,
-                Build_Selected_Name
-                 (Protnm,
-                  New_External_Name (Chars (Comp_Id), Suffix_Index => -1),
-                  'E'));
+                Build_Selected_Name (Prottyp, Comp_Id, 'E'));
             Sub :=
               Make_Subprogram_Declaration (Loc,
                 Specification =>
@@ -7199,10 +7389,7 @@ package body Exp_Ch9 is
 
             Bdef :=
               Make_Defining_Identifier (Loc,
-                Build_Selected_Name
-                 (Protnm,
-                  New_External_Name (Chars (Comp_Id), Suffix_Index => -1),
-                  'B'));
+                Build_Selected_Name (Prottyp, Comp_Id, 'B'));
             Sub :=
               Make_Subprogram_Declaration (Loc,
                 Specification =>
@@ -7246,10 +7433,7 @@ package body Exp_Ch9 is
                Set_Privals_Chain (Comp_Id, New_Elmt_List);
                Edef :=
                  Make_Defining_Identifier (Loc,
-                  Build_Selected_Name
-                   (Protnm,
-                    New_External_Name (Chars (Comp_Id), Suffix_Index => -1),
-                    'E'));
+                  Build_Selected_Name (Prottyp, Comp_Id, 'E'));
 
                Sub :=
                  Make_Subprogram_Declaration (Loc,
@@ -7267,10 +7451,8 @@ package body Exp_Ch9 is
 
                Bdef :=
                  Make_Defining_Identifier (Loc,
-                  Build_Selected_Name
-                   (Protnm,
-                    New_External_Name (Chars (Comp_Id), Suffix_Index => -1),
-                    'B'));
+                    Build_Selected_Name (Prottyp, Comp_Id, 'E'));
+
                Sub :=
                  Make_Subprogram_Declaration (Loc,
                    Specification =>
@@ -7283,9 +7465,8 @@ package body Exp_Ch9 is
                Set_Scope (Bdef, Scope (Comp_Id));
                Current_Node := Sub;
 
-               --  Collect pointers to the protected subprogram and the
-               --  barrier of the current entry, for insertion into
-               --  Entry_Bodies_Array.
+               --  Collect pointers to the protected subprogram and the barrier
+               --  of the current entry, for insertion into Entry_Bodies_Array.
 
                Append (
                  Make_Aggregate (Loc,
@@ -7345,9 +7526,8 @@ package body Exp_Ch9 is
                       Attribute_Name => Name_Unrestricted_Access))));
          end if;
 
-         --  A pointer to this array will be placed in the corresponding
-         --  record by its initialization procedure, so this needs to be
-         --  analyzed here.
+         --  A pointer to this array will be placed in the corresponding record
+         --  by its initialization procedure so this needs to be analyzed here.
 
          Insert_After (Current_Node, Body_Arr);
          Current_Node := Body_Arr;
@@ -7378,11 +7558,11 @@ package body Exp_Ch9 is
    --------------------------------
 
    --  A requeue statement is expanded into one of four GNARLI operations,
-   --  depending on the source and destination (task or protected object).
-   --  In addition, code must be generated to jump around the remainder of
-   --  processing for the original entry and, if the destination is a
-   --  (different) protected object, to attempt to service it.
-   --  The following illustrates the various cases:
+   --  depending on the source and destination (task or protected object). In
+   --  addition, code must be generated to jump around the remainder of
+   --  processing for the original entry and, if the destination is (different)
+   --  protected object, to attempt to service it. The following illustrates
+   --  the various cases:
 
    --  procedure entE
    --    (O : System.Address;
@@ -7539,8 +7719,8 @@ package body Exp_Ch9 is
             Prepend (Self_Param, Params);
             exit;
 
-         --  If neither task type or protected type, must be in some
-         --  inner enclosing block, so move on out
+         --  If neither task type or protected type, must be in some inner
+         --  enclosing block, so move on out
 
          else
             Oldtyp := Scope (Oldtyp);
@@ -7573,8 +7753,8 @@ package body Exp_Ch9 is
          end loop;
 
          --  The last statement is the second label, used for completing the
-         --  rendezvous the usual way.
-         --  The label we are looking for is right before it.
+         --  rendezvous the usual way. The label we are looking for is right
+         --  before it.
 
          Lab_Node :=
            Prev (Last (Statements (Handled_Statement_Sequence (Acc_Stat))));
@@ -7825,9 +8005,9 @@ package body Exp_Ch9 is
 
             --  During the analysis of the body of the accept statement, any
             --  zero cost exception handler records were collected in the
-            --  Accept_Handler_Records field of the N_Accept_Alternative
-            --  node. This is where we move them to where they belong,
-            --  namely the newly created procedure.
+            --  Accept_Handler_Records field of the N_Accept_Alternative node.
+            --  This is where we move them to where they belong, namely the
+            --  newly created procedure.
 
             Set_Handler_Records (PB_Ent, Accept_Handler_Records (Alt));
             Append (Proc_Body, Body_List);
@@ -7835,8 +8015,8 @@ package body Exp_Ch9 is
          else
             Null_Body := New_Reference_To (Standard_True,  Loc);
 
-            --  if accept statement has declarations, insert above, given
-            --  that we are not creating a body for the accept.
+            --  if accept statement has declarations, insert above, given that
+            --  we are not creating a body for the accept.
 
             if Present (Declarations (Acc_Stm)) then
                Insert_Actions (N, Declarations (Acc_Stm));
@@ -7931,9 +8111,9 @@ package body Exp_Ch9 is
                Alt_Stats := New_List;
             end if;
 
-            --  After the call, if any, branch to to trailing statements.
-            --  We create a label for each, as well as the corresponding
-            --  label declaration.
+            --  After the call, if any, branch to to trailing statements. We
+            --  create a label for each, as well as the corresponding label
+            --  declaration.
 
             Lab := Make_And_Declare_Label (Index);
             Append_To (Alt_Stats,
@@ -8067,8 +8247,8 @@ package body Exp_Ch9 is
 
          Append_List (Delay_Alt, Delay_List);
 
-         --  If the delay alternative has a statement part, add a
-         --  choice to the case statements for delays.
+         --  If the delay alternative has a statement part, add choice to the
+         --  case statements for delays.
 
          if Present (Statements (Alt)) then
 
@@ -8437,14 +8617,12 @@ package body Exp_Ch9 is
           Discrete_Choices => Choices,
           Statements => Alt_Stats));
 
-      --  We make use of the fact that Accept_Index is an integer type,
-      --  and generate successive literals for entries for each accept.
-      --  Only those for which there is a body or trailing statements are
-      --  given a case entry.
+      --  We make use of the fact that Accept_Index is an integer type, and
+      --  generate successive literals for entries for each accept. Only those
+      --  for which there is a body or trailing statements get a case entry.
 
       Alt := First (Select_Alternatives (N));
       Proc := First (Body_List);
-
       while Present (Alt) loop
 
          if Nkind (Alt) = N_Accept_Alternative then
@@ -8587,8 +8765,8 @@ package body Exp_Ch9 is
                 Name => New_Reference_To (RTE (RE_Timed_Selective_Wait), Loc),
                 Parameter_Associations => Parms));
 
-            --  This new call should follow the calculation of the
-            --  minimum delay.
+            --  This new call should follow the calculation of the minimum
+            --  delay.
 
             Insert_List_Before (Select_Call, Delay_List);
 
@@ -8652,9 +8830,9 @@ package body Exp_Ch9 is
    --------------------------------------
 
    --  Single task declarations should never be present after semantic
-   --  analysis, since we expect them to be replaced by a declaration of
-   --  an anonymous task type, followed by a declaration of the task
-   --  object. We include this routine to make sure that is happening!
+   --  analysis, since we expect them to be replaced by a declaration of an
+   --  anonymous task type, followed by a declaration of the task object. We
+   --  include this routine to make sure that is happening!
 
    procedure Expand_N_Single_Task_Declaration (N : Node_Id) is
    begin
@@ -8699,16 +8877,16 @@ package body Exp_Ch9 is
 
    --    tnameE := True;
 
-   --  In addition, if the task body is an activator, then a call to
-   --  activate tasks is added at the start of the statements, before
-   --  the call to Complete_Activation, and if in addition the task is
-   --  a master then it must be established as a master. These calls are
-   --  inserted and analyzed in Expand_Cleanup_Actions, when the
-   --  Handled_Sequence_Of_Statements is expanded.
+   --  In addition, if the task body is an activator, then a call to activate
+   --  tasks is added at the start of the statements, before the call to
+   --  Complete_Activation, and if in addition the task is a master then it
+   --  must be established as a master. These calls are inserted and analyzed
+   --  in Expand_Cleanup_Actions, when the Handled_Sequence_Of_Statements is
+   --  expanded.
 
    --  There is one discriminal declaration line generated for each
-   --  discriminant that is present to provide an easy reference point
-   --  for discriminant references inside the body (see Exp_Ch2.Expand_Name).
+   --  discriminant that is present to provide an easy reference point for
+   --  discriminant references inside the body (see Exp_Ch2.Expand_Name).
 
    --  Note on relationship to GNARLI definition. In the GNARLI definition,
    --  task body procedures have a profile (Arg : System.Address). That is
@@ -8777,9 +8955,8 @@ package body Exp_Ch9 is
       Rewrite (N, New_N);
       Analyze (N);
 
-      --  Set elaboration flag immediately after task body. If the body
-      --  is a subunit, the flag is set in  the declarative part that
-      --  contains the stub.
+      --  Set elaboration flag immediately after task body. If the body is a
+      --  subunit, the flag is set in the declarative part containing the stub.
 
       if Nkind (Parent (N)) /= N_Subunit then
          Insert_After (N,
@@ -8789,10 +8966,9 @@ package body Exp_Ch9 is
              Expression => New_Reference_To (Standard_True, Loc)));
       end if;
 
-      --  Ada 2005 (AI-345): Construct the primitive entry wrapper bodies
-      --  after the task body. At this point the entry specs have been
-      --  created, frozen and included in the dispatch table for the task
-      --  type.
+      --  Ada 2005 (AI-345): Construct the primitive entry wrapper bodies after
+      --  the task body. At this point the entry specs have been created,
+      --  frozen and included in the dispatch table for the task type.
 
       pragma Assert (Present (Corresponding_Record_Type (Ttyp)));
 
@@ -8814,10 +8990,10 @@ package body Exp_Ch9 is
                Current_Node := N;
             end if;
 
-            --  Examine the visible declarations of the task type,
-            --  looking for an entry declaration. We do not consider
-            --  entry families since they can not have dispatching
-            --  operations, thus they do not need entry wrappers.
+            --  Examine the visible declarations of the task type, looking for
+            --  an entry declaration. We do not consider entry families since
+            --  they cannot have dispatching operations, thus they do not need
+            --  entry wrappers.
 
             while Present (Vis_Decl) loop
                if Nkind (Vis_Decl) = N_Entry_Declaration
@@ -8858,8 +9034,8 @@ package body Exp_Ch9 is
 
    --    taskE : aliased Boolean := False;
 
-   --  Next a variable is declared to hold the task stack size (either
-   --  the default : Unspecified_Size, or a value that is set by a pragma
+   --  Next a variable is declared to hold the task stack size (either the
+   --  default : Unspecified_Size, or a value that is set by a pragma
    --  Storage_Size). If the value of the pragma Storage_Size is static, then
    --  the variable is initialized with this value:
 
@@ -8881,28 +9057,28 @@ package body Exp_Ch9 is
    --  The discriminants are present only if the corresponding task type has
    --  discriminants, and they exactly mirror the task type discriminants.
 
-   --  The Id field is always present. It contains the Task_Id value, as
-   --  set by the call to Create_Task. Note that although the task is
-   --  limited, the task value record type is not limited, so there is no
-   --  problem in passing this field as an out parameter to Create_Task.
+   --  The Id field is always present. It contains the Task_Id value, as set by
+   --  the call to Create_Task. Note that although the task is limited, the
+   --  task value record type is not limited, so there is no problem in passing
+   --  this field as an out parameter to Create_Task.
 
-   --  One entry_family component is present for each entry family in the
-   --  task definition. The bounds correspond to the bounds of the entry
-   --  family (which may depend on discriminants). The element type is
-   --  void, since we only need the bounds information for determining
-   --  the entry index. Note that the use of an anonymous array would
-   --  normally be illegal in this context, but this is a parser check,
-   --  and the semantics is quite prepared to handle such a case.
+   --  One entry_family component is present for each entry family in the task
+   --  definition. The bounds correspond to the bounds of the entry family
+   --  (which may depend on discriminants). The element type is void, since we
+   --  only need the bounds information for determining the entry index. Note
+   --  that the use of an anonymous array would normally be illegal in this
+   --  context, but this is a parser check, and the semantics is quite prepared
+   --  to handle such a case.
 
-   --  The _Size field is present only if a Storage_Size pragma appears in
-   --  the task definition. The expression captures the argument that was
-   --  present in the pragma, and is used to override the task stack size
-   --  otherwise associated with the task type.
+   --  The _Size field is present only if a Storage_Size pragma appears in the
+   --  task definition. The expression captures the argument that was present
+   --  in the pragma, and is used to override the task stack size otherwise
+   --  associated with the task type.
 
    --  The _Priority field is present only if a Priority or Interrupt_Priority
    --  pragma appears in the task definition. The expression captures the
-   --  argument that was present in the pragma, and is used to provide
-   --  the Size parameter to the call to Create_Task.
+   --  argument that was present in the pragma, and is used to provide the Size
+   --  parameter to the call to Create_Task.
 
    --  The _Task_Info field is present only if a Task_Info pragma appears in
    --  the task definition. The expression captures the argument that was
@@ -8910,18 +9086,18 @@ package body Exp_Ch9 is
    --  to the call to Create_Task.
 
    --  When a task is declared, an instance of the task value record is
-   --  created. The elaboration of this declaration creates the correct
-   --  bounds for the entry families, and also evaluates the size, priority,
-   --  and task_Info expressions if needed. The initialization routine for
-   --  the task type itself then calls Create_Task with appropriate
-   --  parameters to initialize the value of the Task_Id field.
+   --  created. The elaboration of this declaration creates the correct bounds
+   --  for the entry families, and also evaluates the size, priority, and
+   --  task_Info expressions if needed. The initialization routine for the task
+   --  type itself then calls Create_Task with appropriate parameters to
+   --  initialize the value of the Task_Id field.
 
    --  Note: the address of this record is passed as the "Discriminants"
-   --  parameter for Create_Task. Since Create_Task merely passes this onto
-   --  the body procedure, it does not matter that it does not quite match
-   --  the GNARLI model of what is being passed (the record contains more
-   --  than just the discriminants, but the discriminants can be found from
-   --  the record value).
+   --  parameter for Create_Task. Since Create_Task merely passes this onto the
+   --  body procedure, it does not matter that it does not quite match the
+   --  GNARLI model of what is being passed (the record contains more than just
+   --  the discriminants, but the discriminants can be found from the record
+   --  value).
 
    --  The Entity_Id for this created record type is placed in the
    --  Corresponding_Record_Type field of the associated task type entity.
@@ -9023,9 +9199,9 @@ package body Exp_Ch9 is
 
       Insert_After (Elab_Decl, Size_Decl);
 
-      --  Next build the rest of the corresponding record declaration.
-      --  This is done last, since the corresponding record initialization
-      --  procedure will reference the previously created entities.
+      --  Next build the rest of the corresponding record declaration. This is
+      --  done last, since the corresponding record initialization procedure
+      --  will reference the previously created entities.
 
       --  Fill in the component declarations -- first the _Task_Id field
 
@@ -9039,8 +9215,8 @@ package body Exp_Ch9 is
               Subtype_Indication => New_Reference_To (RTE (RO_ST_Task_Id),
                                     Loc))));
 
-      --  Declare static ATCB (that is, created by the expander) if we
-      --  are using the Restricted run time.
+      --  Declare static ATCB (that is, created by the expander) if we are
+      --  using the Restricted run time.
 
       if Restricted_Profile then
          Append_To (Cdecls,
@@ -9062,8 +9238,8 @@ package body Exp_Ch9 is
 
       end if;
 
-      --  Declare static stack (that is, created by the expander) if we
-      --  are using the Restricted run time on a bare board configuration.
+      --  Declare static stack (that is, created by the expander) if we are
+      --  using the Restricted run time on a bare board configuration.
 
       if Restricted_Profile
         and then Preallocated_Stacks_On_Target
@@ -9102,8 +9278,8 @@ package body Exp_Ch9 is
 
          Append_To (Cdecls, Decl_Stack);
 
-         --  The appropriate alignment for the stack is ensured by the
-         --  run-time code in charge of task creation.
+         --  The appropriate alignment for the stack is ensured by the run-time
+         --  code in charge of task creation.
 
       end if;
 
@@ -9218,14 +9394,14 @@ package body Exp_Ch9 is
 
       Insert_After (Rec_Decl, Body_Decl);
 
-      --  The subprogram does not comes from source, so we have to indicate
-      --  the need for debugging information explicitly.
+      --  The subprogram does not comes from source, so we have to indicate the
+      --  need for debugging information explicitly.
 
       Set_Needs_Debug_Info
         (Defining_Entity (Proc_Spec), Comes_From_Source (Original_Node (N)));
 
-      --  Ada 2005 (AI-345): Construct the primitive entry wrapper specs
-      --  before the corresponding record has been frozen.
+      --  Ada 2005 (AI-345): Construct the primitive entry wrapper specs before
+      --  the corresponding record has been frozen.
 
       if Ada_Version >= Ada_05
         and then Present (Taskdef)
@@ -9242,10 +9418,10 @@ package body Exp_Ch9 is
             New_N        : Node_Id;
 
          begin
-            --  Examine the visible declarations of the task type,
-            --  looking for an entry declaration. We do not consider
-            --  entry families since they can not have dispatching
-            --  operations, thus they do not need entry wrappers.
+            --  Examine the visible declarations of the task type, looking for
+            --  an entry declaration. We do not consider entry families since
+            --  they cannot have dispatching operations, thus they do not need
+            --  entry wrappers.
 
             while Present (Vis_Decl) loop
                if Nkind (Vis_Decl) = N_Entry_Declaration
@@ -9295,8 +9471,8 @@ package body Exp_Ch9 is
          end;
       end if;
 
-      --  Complete the expansion of access types to the current task
-      --  type, if any were declared.
+      --  Complete the expansion of access types to the current task type, if
+      --  any were declared.
 
       Expand_Previous_Access_Type (Tasktyp);
    end Expand_N_Task_Type_Declaration;
@@ -9305,8 +9481,8 @@ package body Exp_Ch9 is
    -- Expand_N_Timed_Entry_Call --
    -------------------------------
 
-   --  A timed entry call in normal case is not implemented using ATC
-   --  mechanism anymore for efficiency reason.
+   --  A timed entry call in normal case is not implemented using ATC mechanism
+   --  anymore for efficiency reason.
 
    --     select
    --        T.E;
@@ -9421,12 +9597,13 @@ package body Exp_Ch9 is
       Params   : List_Id;
       Stmt     : Node_Id;
       Stmts    : List_Id;
+      Unpack   : List_Id;
 
       B : Entity_Id;  --  Call status flag
       C : Entity_Id;  --  Call kind
       D : Entity_Id;  --  Delay
       M : Entity_Id;  --  Delay mode
-      P : Node_Id;    --  Parameter block
+      P : Entity_Id;  --  Parameter block
       S : Entity_Id;  --  Primitive operation slot
 
    begin
@@ -9576,9 +9753,11 @@ package body Exp_Ch9 is
 
          --  Dispatch table slot processing, generate:
          --    S : constant Integer :=
-         --          DT_Prosition (<dispatching-procedure>)
+         --          Ada.Tags.Get_Offset_Index (
+         --            Unchecked_Convert_To (Ada.Tags.Interface_Tag, Obj),
+         --            DT_Position (<dispatching-procedure>));
 
-         S := SEU.Build_S (Loc, Decls, Call_Ent);
+         S := SEU.Build_S (Loc, Decls, Obj, Call_Ent);
 
          --  Generate:
          --    _dispatching_timed_select (Obj, S, P'address, D, M, C, B);
@@ -9592,7 +9771,9 @@ package body Exp_Ch9 is
 
          Append_To (Params, New_Copy_Tree    (Obj));
          Append_To (Params, New_Reference_To (S, Loc));
-         Append_To (Params, P);
+         Append_To (Params, Make_Attribute_Reference (Loc,
+                              Prefix => New_Reference_To (P, Loc),
+                              Attribute_Name => Name_Address));
          Append_To (Params, New_Reference_To (D, Loc));
          Append_To (Params, New_Reference_To (M, Loc));
          Append_To (Params, New_Reference_To (C, Loc));
@@ -9601,7 +9782,10 @@ package body Exp_Ch9 is
          Append_To (Stmts,
            Make_Procedure_Call_Statement (Loc,
              Name =>
-               Make_Identifier (Loc, Name_uDisp_Timed_Select),
+               New_Reference_To (
+                 Find_Prim_Op (Etype (Etype (Obj)),
+                   Name_uDisp_Timed_Select),
+                 Loc),
              Parameter_Associations =>
                Params));
 
@@ -9614,28 +9798,36 @@ package body Exp_Ch9 is
          --       ParamN := P.ParamN;
          --    end if;
 
-         Append_To (Stmts,
-           Make_If_Statement (Loc,
+         Unpack := Parameter_Block_Unpack (Loc, P, Actuals, Formals);
 
-             Condition =>
-               Make_Or_Else (Loc,
-                 Left_Opnd =>
-                   Make_Op_Eq (Loc,
-                     Left_Opnd =>
-                       New_Reference_To (C, Loc),
-                     Right_Opnd =>
-                       New_Reference_To (RTE (RE_POK_Protected_Entry), Loc)),
-                 Right_Opnd =>
-                   Make_Op_Eq (Loc,
-                     Left_Opnd =>
-                       New_Reference_To (C, Loc),
-                     Right_Opnd =>
-                       New_Reference_To (RTE (RE_POK_Task_Entry), Loc))),
+         --  Generate the if statement only when the packed parameters need
+         --  explicit assignments to their corresponding actuals.
 
-             Then_Statements =>
-               Parameter_Block_Unpack (Loc, Actuals, Formals)));
+         if Present (Unpack) then
+            Append_To (Stmts,
+              Make_If_Statement (Loc,
+
+                Condition =>
+                  Make_Or_Else (Loc,
+                    Left_Opnd =>
+                      Make_Op_Eq (Loc,
+                        Left_Opnd =>
+                          New_Reference_To (C, Loc),
+                        Right_Opnd =>
+                          New_Reference_To (RTE (
+                            RE_POK_Protected_Entry), Loc)),
+                    Right_Opnd =>
+                      Make_Op_Eq (Loc,
+                        Left_Opnd =>
+                          New_Reference_To (C, Loc),
+                        Right_Opnd =>
+                          New_Reference_To (RTE (RE_POK_Task_Entry), Loc))),
+
+                Then_Statements => Unpack));
+         end if;
 
          --  Generate:
+
          --    if B then
          --       if C = POK_Procedure
          --         or else C = POK_Protected_Procedure
@@ -9648,7 +9840,7 @@ package body Exp_Ch9 is
          --       <delay-statements>
          --    end if;
 
-         N_Stats := New_Copy_List (E_Stats);
+         N_Stats := New_Copy_List_Tree (E_Stats);
 
          Prepend_To (N_Stats,
            Make_If_Statement (Loc,
@@ -9802,18 +9994,18 @@ package body Exp_Ch9 is
    -- Expand_Protected_Body_Declarations --
    ----------------------------------------
 
-   --  Part of the expansion of a protected body involves the creation of
-   --  a declaration that can be referenced from the statement sequences of
-   --  the entry bodies:
+   --  Part of the expansion of a protected body involves the creation of a
+   --  declaration that can be referenced from the statement sequences of the
+   --  entry bodies:
 
    --    A : Address;
 
-   --  This declaration is inserted in the declarations of the service
-   --  entries procedure for the protected body, and it is important that
-   --  it be inserted before the statements of the entry body statement
-   --  sequences are analyzed. Thus it would be too late to create this
-   --  declaration in the Expand_N_Protected_Body routine, which is why
-   --  there is a separate procedure to be called directly from Sem_Ch9.
+   --  This declaration is inserted in the declarations of the service entries
+   --  procedure for the protected body, and it is important that it be
+   --  inserted before the statements of the entry body statement sequences are
+   --  analyzed. Thus it would be too late to create this declaration in the
+   --  Expand_N_Protected_Body routine, which is why there is a separate
+   --  procedure to be called directly from Sem_Ch9.
 
    --  Ann is used to hold the address of the record containing the parameters
    --  (see Expand_N_Entry_Call for more details on how this record is built).
@@ -9824,14 +10016,14 @@ package body Exp_Ch9 is
    --  Accept_Address stack in the corresponding entry entity, and this element
    --  must be set in place  before the statements are processed.
 
-   --  No stack is needed for entry bodies, since they cannot be nested, but
-   --  it is kept for consistency between protected and task entries. The
-   --  stack will never contain more than one element. There is also only one
-   --  such variable for a given protected body, but this is placed on the
+   --  No stack is needed for entry bodies, since they cannot be nested, but it
+   --  is kept for consistency between protected and task entries. The stack
+   --  will never contain more than one element. There is also only one such
+   --  variable for a given protected body, but this is placed on the
    --  Accept_Address stack of all of the entries, again for consistency.
 
-   --  To expand the requeue statement, a label is provided at the end of
-   --  the loop in the entry service routine created by the expander (see
+   --  To expand the requeue statement, a label is provided at the end of the
+   --  loop in the entry service routine created by the expander (see
    --  Expand_N_Protected_Body for details), so that the statement can be
    --  skipped after the requeue is complete. This label is created during the
    --  expansion of the entry body, which will take place after the expansion
@@ -9859,9 +10051,9 @@ package body Exp_Ch9 is
 
       elsif Expander_Active then
 
-         --  Associate privals with the first subprogram or entry
-         --  body to be expanded. These are used to expand references
-         --  to private data objects.
+         --  Associate privals with the first subprogram or entry body to be
+         --  expanded. These are used to expand references to private data
+         --  objects.
 
          Op := First_Protected_Operation (Declarations (N));
 
@@ -9991,12 +10183,11 @@ package body Exp_Ch9 is
       Ttyp : Entity_Id) return Node_Id
    is
       function Convert_Discriminant_Ref (Bound : Node_Id) return Node_Id;
-      --  If one of the bounds is a reference to a discriminant, replace
-      --  with corresponding discriminal of type. Within the body of a task
-      --  retrieve the renamed discriminant by simple visibility, using its
-      --  generated name. Within a protected object, find the original dis-
-      --  criminant and replace it with the discriminal of the current prot-
-      --  ected operation.
+      --  If one of the bounds is a reference to a discriminant, replace with
+      --  corresponding discriminal of type. Within the body of a task retrieve
+      --  the renamed discriminant by simple visibility, using its generated
+      --  name. Within a protected object, find the original dis- criminant and
+      --  replace it with the discriminal of the current prot- ected operation.
 
       ------------------------------
       -- Convert_Discriminant_Ref --
@@ -10019,7 +10210,6 @@ package body Exp_Ch9 is
 
             elsif Is_Protected_Type (Ttyp) then
                D := First_Discriminant (Ttyp);
-
                while Chars (D) /= Chars (Entity (Bound)) loop
                   Next_Discriminant (D);
                end loop;
@@ -10097,7 +10287,6 @@ package body Exp_Ch9 is
 
    begin
       N := First (Visible_Declarations (T));
-
       while Present (N) loop
          if Nkind (N) = N_Pragma then
             if Chars (N) = P then
@@ -10118,7 +10307,6 @@ package body Exp_Ch9 is
       end loop;
 
       N := First (Private_Declarations (T));
-
       while Present (N) loop
          if Nkind (N) = N_Pragma then
             if  Chars (N) = P then
@@ -10178,10 +10366,9 @@ package body Exp_Ch9 is
       Lo : Node_Id := Type_Low_Bound  (Etype (Index_Id));
 
       function Replace_Discriminant (Bound : Node_Id) return Node_Id;
-      --  The bounds of the entry index may depend on discriminants, so
-      --  each declaration of an entry_index_constant must have its own
-      --  subtype declaration, using the local renaming of the object discri-
-      --  minant.
+      --  The bounds of the entry index may depend on discriminants, so each
+      --  declaration of an entry_index_constant must have its own subtype
+      --  declaration, using the local renaming of the object discriminant.
 
       --------------------------
       -- Replace_Discriminant --
@@ -10285,22 +10472,20 @@ package body Exp_Ch9 is
       Restricted  : constant Boolean := Restricted_Profile;
 
    begin
-      --  We may need two calls to properly initialize the object, one
-      --  to Initialize_Protection, and possibly one to Install_Handlers
-      --  if we have a pragma Attach_Handler.
+      --  We may need two calls to properly initialize the object, one to
+      --  Initialize_Protection, and possibly one to Install_Handlers if we
+      --  have a pragma Attach_Handler.
 
       --  Get protected declaration. In the case of a task type declaration,
-      --  this is simply the parent of the protected type entity.
-      --  In the single protected object
-      --  declaration, this parent will be the implicit type, and we can find
-      --  the corresponding single protected object declaration by
-      --  searching forward in the declaration list in the tree.
-      --  ??? I am not sure that the test for N_Single_Protected_Declaration
-      --      is needed here. Nodes of this type should have been removed
-      --      during semantic analysis.
+      --  this is simply the parent of the protected type entity. In the single
+      --  protected object declaration, this parent will be the implicit type,
+      --  and we can find the corresponding single protected object declaration
+      --  by searching forward in the declaration list in the tree.
+
+      --  Is the test for N_Single_Protected_Declaration needed here??? Nodes
+      --  of this type should have been removed during semantic analysis.
 
       Pdec := Parent (Ptyp);
-
       while Nkind (Pdec) /= N_Protected_Type_Declaration
         and then Nkind (Pdec) /= N_Single_Protected_Declaration
       loop
@@ -10378,10 +10563,11 @@ package body Exp_Ch9 is
          end if;
 
          if Has_Entry then
+
             --  Entry_Bodies parameter. This is a pointer to an array of
-            --  pointers to the entry body procedures and barrier functions
-            --  of the object. If the protected type has no entries this
-            --  object will not exist; in this case, pass a null.
+            --  pointers to the entry body procedures and barrier functions of
+            --  the object. If the protected type has no entries this object
+            --  will not exist; in this case, pass a null.
 
             P_Arr := Entry_Bodies_Array (Ptyp);
 
@@ -10446,11 +10632,14 @@ package body Exp_Ch9 is
 
       if Has_Attach_Handler (Ptyp) then
 
-         --  We have a list of N Attach_Handler (ProcI, ExprI),
-         --  and we have to make the following call:
+         --  We have a list of N Attach_Handler (ProcI, ExprI), and we have to
+         --  make the following call:
+
          --  Install_Handlers (_object,
          --    ((Expr1, Proc1'access), ...., (ExprN, ProcN'access));
+
          --  or, in the case of Ravenscar:
+
          --  Install_Handlers
          --    ((Expr1, Proc1'access), ...., (ExprN, ProcN'access));
 
@@ -10461,6 +10650,7 @@ package body Exp_Ch9 is
 
          begin
             if not Restricted then
+
                --  Appends the _object argument
 
                Append_To (Args,
@@ -10536,17 +10726,16 @@ package body Exp_Ch9 is
       Ttyp := Corresponding_Concurrent_Type (Task_Rec);
       Tnam := Chars (Ttyp);
 
-      --  Get task declaration. In the case of a task type declaration, this
-      --  is simply the parent of the task type entity. In the single task
+      --  Get task declaration. In the case of a task type declaration, this is
+      --  simply the parent of the task type entity. In the single task
       --  declaration, this parent will be the implicit type, and we can find
-      --  the corresponding single task declaration by searching forward in
-      --  the declaration list in the tree.
-      --  ??? I am not sure that the test for N_Single_Task_Declaration
-      --      is needed here. Nodes of this type should have been removed
-      --      during semantic analysis.
+      --  the corresponding single task declaration by searching forward in the
+      --  declaration list in the tree.
+
+      --  Is the test for N_Single_Task_Declaration needed here??? Nodes of
+      --  this type should have been removed during semantic analysis.
 
       Tdec := Parent (Ttyp);
-
       while Nkind (Tdec) /= N_Task_Type_Declaration
         and then Nkind (Tdec) /= N_Single_Task_Declaration
       loop
@@ -10741,7 +10930,6 @@ package body Exp_Ch9 is
 
    begin
       Next_Op := Next (N);
-
       while Present (Next_Op)
         and then Nkind (Next_Op) /= N_Subprogram_Body
         and then Nkind (Next_Op) /= N_Entry_Body
@@ -10764,12 +10952,14 @@ package body Exp_Ch9 is
       Decls   : List_Id;
       Stmts   : List_Id) return Node_Id
    is
-      Actual   : Entity_Id;
-      Blk_Nam  : Node_Id;
-      Formal   : Entity_Id;
-      Params   : List_Id;
-      Temp_Asn : Node_Id;
-      Temp_Nam : Node_Id;
+      Actual    : Entity_Id;
+      Expr      : Node_Id := Empty;
+      Formal    : Entity_Id;
+      Has_Param : Boolean := False;
+      P         : Entity_Id;
+      Params    : List_Id;
+      Temp_Asn  : Node_Id;
+      Temp_Nam  : Node_Id;
 
    begin
       Actual := First (Actuals);
@@ -10820,14 +11010,27 @@ package body Exp_Ch9 is
                   Name_Unchecked_Access,
                 Prefix =>
                   New_Reference_To (Temp_Nam, Loc)));
+
+            Has_Param := True;
+
+         --  The controlling parameter is omitted
+
          else
-            Append_To (Params,
-              Make_Reference (Loc, New_Copy_Tree (Actual)));
+            if not Is_Controlling_Actual (Actual) then
+               Append_To (Params,
+                 Make_Reference (Loc, New_Copy_Tree (Actual)));
+
+               Has_Param := True;
+            end if;
          end if;
 
          Next_Actual (Actual);
          Next_Formal_With_Extras (Formal);
       end loop;
+
+      if Has_Param then
+         Expr := Make_Aggregate (Loc, Params);
+      end if;
 
       --  Generate:
       --    P : Ann := (
@@ -10835,26 +11038,18 @@ package body Exp_Ch9 is
       --      <actual2>'reference;
       --      ...);
 
-      Blk_Nam := Make_Defining_Identifier (Loc, Name_uP);
+      P := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
 
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier =>
-            Blk_Nam,
+            P,
           Object_Definition =>
             New_Reference_To (Blk_Typ, Loc),
           Expression =>
-            Make_Aggregate (Loc, Params)));
+            Expr));
 
-      --  Return:
-      --    P'address
-
-      return
-        Make_Attribute_Reference (Loc,
-          Attribute_Name =>
-            Name_Address,
-          Prefix =>
-            New_Reference_To (Blk_Nam, Loc));
+      return P;
    end Parameter_Block_Pack;
 
    ----------------------------
@@ -10863,26 +11058,23 @@ package body Exp_Ch9 is
 
    function Parameter_Block_Unpack
      (Loc     : Source_Ptr;
+      P       : Entity_Id;
       Actuals : List_Id;
       Formals : List_Id) return List_Id
    is
-      Actual : Entity_Id;
-      Asnmt  : Node_Id;
-      Formal : Entity_Id;
-      Result : constant List_Id := New_List;
-
-      At_Least_One_Asnmt : Boolean := False;
+      Actual    : Entity_Id;
+      Asnmt     : Node_Id;
+      Formal    : Entity_Id;
+      Has_Asnmt : Boolean := False;
+      Result    : constant List_Id := New_List;
 
    begin
       Actual := First (Actuals);
       Formal := Defining_Identifier (First (Formals));
-
       while Present (Actual) loop
          if Is_By_Copy_Type (Etype (Actual))
            and then Ekind (Formal) /= E_In_Parameter
          then
-            At_Least_One_Asnmt := True;
-
             --  Generate:
             --    <actual> := P.<formal>;
 
@@ -10894,24 +11086,25 @@ package body Exp_Ch9 is
                   Make_Explicit_Dereference (Loc,
                     Make_Selected_Component (Loc,
                       Prefix =>
-                        Make_Identifier (Loc, Name_uP),
+                        New_Reference_To (P, Loc),
                       Selector_Name =>
                         Make_Identifier (Loc, Chars (Formal)))));
 
             Set_Assignment_OK (Name (Asnmt));
-
             Append_To (Result, Asnmt);
+
+            Has_Asnmt := True;
          end if;
 
          Next_Actual (Actual);
          Next_Formal_With_Extras (Formal);
       end loop;
 
-      if At_Least_One_Asnmt then
+      if Has_Asnmt then
          return Result;
+      else
+         return New_List (Make_Null_Statement (Loc));
       end if;
-
-      return New_List (Make_Null_Statement (Loc));
    end Parameter_Block_Unpack;
 
    ----------------------
@@ -10950,15 +11143,19 @@ package body Exp_Ch9 is
    -----------------
 
    procedure Set_Privals
-      (Dec : Node_Id;
-       Op  : Node_Id;
-       Loc : Source_Ptr)
+      (Dec           : Node_Id;
+       Op            : Node_Id;
+       Loc           : Source_Ptr;
+       After_Barrier : Boolean := False)
    is
-      P_Decl    : Node_Id;
-      P_Id      : Entity_Id;
-      Priv      : Entity_Id;
-      Def       : Node_Id;
-      Body_Ent  : Entity_Id;
+      P_Decl      : Node_Id;
+      P_Id        : Entity_Id;
+      Priv        : Entity_Id;
+      Def         : Node_Id;
+      Body_Ent    : Entity_Id;
+      For_Barrier : constant Boolean :=
+                      Nkind (Op) = N_Entry_Body and then not After_Barrier;
+
       Prec_Decl : constant Node_Id :=
                     Parent (Corresponding_Record_Type
                              (Defining_Identifier (Dec)));
@@ -10976,15 +11173,20 @@ package body Exp_Ch9 is
       Def := Protected_Definition (Dec);
 
       if Present (Private_Declarations (Def)) then
-
          P_Decl := First (Private_Declarations (Def));
-
          while Present (P_Decl) loop
             if Nkind (P_Decl) = N_Component_Declaration then
                P_Id := Defining_Identifier (P_Decl);
-               Priv :=
-                 Make_Defining_Identifier (Loc,
-                   New_External_Name (Chars (P_Id), 'P'));
+
+               if For_Barrier then
+                  Priv :=
+                    Make_Defining_Identifier (Loc,
+                      Chars => New_External_Name (Chars (P_Id), 'P'));
+               else
+                  Priv :=
+                    Make_Defining_Identifier (Loc,
+                      Chars => New_External_Name (Chars (P_Id)));
+               end if;
 
                Set_Ekind     (Priv, E_Variable);
                Set_Etype     (Priv, Etype (P_Id));
@@ -11075,7 +11277,6 @@ package body Exp_Ch9 is
          if Is_Entity_Name (N)  then
             declare
                E : constant Entity_Id := Entity (N);
-
             begin
                if Present (E)
                  and then (Ekind (E) = E_Constant

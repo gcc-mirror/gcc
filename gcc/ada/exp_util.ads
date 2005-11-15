@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,21 @@ with Sinfo;   use Sinfo;
 with Types;   use Types;
 
 package Exp_Util is
+
+   --  An enumeration type used to capture all the possible interface
+   --  kinds and their hierarchical relation. These values are used in
+   --  Find_Implemented_Interface and Implements_Interface.
+
+   type Interface_Kind is (
+     Any_Interface,               --  Any interface
+     Any_Limited_Interface,       --  Only limited interfaces
+     Any_Synchronized_Interface,  --  Only synchronized interfaces
+
+     Iface,                       --  Individual kinds
+     Limited_Interface,
+     Protected_Interface,
+     Synchronized_Interface,
+     Task_Interface);
 
    -----------------------------------------------
    -- Handling of Actions Associated with Nodes --
@@ -325,16 +340,26 @@ package Exp_Util is
    --  class-wide).
 
    function Find_Interface_ADT
-     (T         : Entity_Id;
-      Iface     : Entity_Id) return Entity_Id;
+     (T     : Entity_Id;
+      Iface : Entity_Id) return Entity_Id;
    --  Ada 2005 (AI-251): Given a type T implementing the interface Iface,
    --  return the Access_Disp_Table value of the interface.
 
    function Find_Interface_Tag
-     (T         : Entity_Id;
-      Iface     : Entity_Id) return Entity_Id;
+     (T     : Entity_Id;
+      Iface : Entity_Id) return Entity_Id;
    --  Ada 2005 (AI-251): Given a type T implementing the interface Iface,
    --  return the record component containing the tag of Iface.
+
+   function Find_Implemented_Interface
+     (Typ          : Entity_Id;
+      Kind         : Interface_Kind;
+      Check_Parent : Boolean := False) return Entity_Id;
+   --  Ada 2005 (AI-345): Find a designated kind of interface implemented by
+   --  Typ or any parent subtype. Return the first encountered interface that
+   --  correspond to the selected class. Return Empty if no such interface is
+   --  found. Use Check_Parent to climb a potential derivation chain and
+   --  examine the parent subtypes for any implementation.
 
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of type T whose name is 'Name'.
@@ -410,11 +435,13 @@ package Exp_Util is
    --  chain, counting only entries in the curren scope. If an entity is not
    --  overloaded, the returned number will be one.
 
-   function Implements_Limited_Interface (Typ : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-345): Determine whether Typ implements some limited
-   --  interface. The interface may be of limited, protected, synchronized
-   --  or taks kind. Typ may also be derived from a type that implements a
-   --  limited interface.
+   function Implements_Interface
+     (Typ          : Entity_Id;
+      Kind         : Interface_Kind;
+      Check_Parent : Boolean := False) return Boolean;
+   --  Ada 2005 (AI-345): Determine whether Typ implements a designated kind
+   --  of interface. Use Check_Parent to climb a potential derivation chain
+   --  and examine the parent subtypes for any implementation.
 
    function Inside_Init_Proc return Boolean;
    --  Returns True if current scope is within an init proc

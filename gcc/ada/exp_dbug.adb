@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -134,7 +134,7 @@ package body Exp_Dbug is
    --  used to determine whether encoding is required for a discrete type.
 
    procedure Output_Homonym_Numbers_Suffix;
-   --  If homonym numbers are stored, then output them into Name_Buffer.
+   --  If homonym numbers are stored, then output them into Name_Buffer
 
    procedure Prepend_String_To_Buffer (S : String);
    --  Prepend given string to the contents of the string buffer, updating
@@ -250,9 +250,9 @@ package body Exp_Dbug is
       then
          return True;
 
-      --  Here we check if the static bounds match the natural size, which
-      --  is the size passed through with the debugging information. This
-      --  is the Esize rounded up to 8, 16, 32 or 64 as appropriate.
+      --  Here we check if the static bounds match the natural size, which is
+      --  the size passed through with the debugging information. This is the
+      --  Esize rounded up to 8, 16, 32 or 64 as appropriate.
 
       else
          declare
@@ -305,12 +305,12 @@ package body Exp_Dbug is
       Def : Entity_Id;
 
       function Output_Subscript (N : Node_Id; S : String) return Boolean;
-      --  Outputs a single subscript value as ?nnn (subscript is compile
-      --  time known value with value nnn) or as ?e (subscript is local
-      --  constant with name e), where S supplies the proper string to
-      --  use for ?. Returns False if the subscript is not of an appropriate
-      --  type to output in one of these two forms. The result is prepended
-      --  to the name stored in Name_Buffer.
+      --  Outputs a single subscript value as ?nnn (subscript is compile time
+      --  known value with value nnn) or as ?e (subscript is local constant
+      --  with name e), where S supplies the proper string to use for ?.
+      --  Returns False if the subscript is not of an appropriate type to
+      --  output in one of these two forms. The result is prepended to the
+      --  name stored in Name_Buffer.
 
       ----------------------
       -- Output_Subscript --
@@ -358,9 +358,9 @@ package body Exp_Dbug is
          when N_Package_Renaming_Declaration =>
             Add_Str_To_Name_Buffer ("___XRP");
 
-            --  If it is a child unit create a fully qualified name,
-            --  to disambiguate multiple child units with the same
-            --  name and different parents.
+            --  If it is a child unit create a fully qualified name, to
+            --  disambiguate multiple child units with the same name and
+            --  different parents.
 
             if Is_Child_Unit (Ent) then
                Prepend_String_To_Buffer ("__");
@@ -386,8 +386,8 @@ package body Exp_Dbug is
 
             when N_Expanded_Name =>
 
-               --  The entity field for an N_Expanded_Name is on the
-               --  expanded name node itself, so we are done here too.
+               --  The entity field for an N_Expanded_Name is on the expanded
+               --  name node itself, so we are done here too.
 
                exit;
 
@@ -713,6 +713,7 @@ package body Exp_Dbug is
          --  If this is a library level subprogram (i.e. a subprogram that is a
          --  compilation unit other than a subunit), then we prepend _ada_ to
          --  ensure distinctions required as described in the spec.
+
          --  Check explicitly for child units, because those are not flagged
          --  as Compilation_Units by lib. Should they be ???
 
@@ -879,6 +880,39 @@ package body Exp_Dbug is
          end;
       end if;
    end Get_Variant_Encoding;
+
+   ------------------------------------
+   -- Get_Secondary_DT_External_Name --
+   ------------------------------------
+
+   procedure Get_Secondary_DT_External_Name
+     (Typ             : Entity_Id;
+      Ancestor_Typ    : Entity_Id;
+      Suffix_Index    : Int) is
+   begin
+      Get_External_Name (Typ, Has_Suffix => False);
+
+      if Ancestor_Typ /= Typ then
+         declare
+            Len      : constant Natural := Name_Len;
+            Save_Str : constant String (1 .. Name_Len)
+                         := Name_Buffer (1 .. Name_Len);
+         begin
+            Get_External_Name (Ancestor_Typ, Has_Suffix => False);
+
+            --  Append the extended name of the ancestor to the
+            --  extended name of Typ
+
+            Name_Buffer (Len + 2 .. Len + Name_Len + 1) :=
+              Name_Buffer (1 .. Name_Len);
+            Name_Buffer (1 .. Len) := Save_Str;
+            Name_Buffer (Len + 1) := '_';
+            Name_Len := Len + Name_Len + 1;
+         end;
+      end if;
+
+      Add_Nat_To_Name_Buffer (Suffix_Index);
+   end Get_Secondary_DT_External_Name;
 
    ---------------------------------
    -- Make_Packed_Array_Type_Name --
@@ -1166,7 +1200,6 @@ package body Exp_Dbug is
          else
             Add_Char_To_Name_Buffer ('X');
          end if;
-
       end Set_BNPE_Suffix;
 
       ---------------------
@@ -1338,7 +1371,6 @@ package body Exp_Dbug is
             exit;
          end if;
       end loop;
-
    end Strip_Suffixes;
 
 end Exp_Dbug;
