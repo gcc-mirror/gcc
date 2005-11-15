@@ -1,3 +1,8 @@
+2005-11-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24687
+	* g++.dg/template/crash43.C: Remove duplicate copy of test.
+
 2005-11-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24687
