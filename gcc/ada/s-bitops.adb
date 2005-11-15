@@ -40,7 +40,7 @@ with Unchecked_Conversion;
 package body System.Bit_Ops is
 
    subtype Bits_Array is System.Unsigned_Types.Packed_Bytes1 (Positive);
-   --  Unconstrained array used to interprete the address values. We use the
+   --  Constrained array used to interpret the address values. We use the
    --  unaligned version always, since this will handle both the aligned and
    --  unaligned cases, and we always do these operations by bytes anyway.
    --  Note: we use a ones origin array here so that the computations of the

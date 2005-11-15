@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,7 +139,7 @@ package System.File_IO is
 
    procedure Chain_File (File : FCB.AFCB_Ptr);
    --  Used to chain the given file into the list of open files. Normally this
-   --  is done implicitly by Open. Chain_File is used for the spcial cases of
+   --  is done implicitly by Open. Chain_File is used for the special cases of
    --  the system files defined by Text_IO (stdin, stdout, stderr) which are
    --  not opened in the normal manner. Note that the caller is responsible
    --  for task lock out to protect the global data structures if this is

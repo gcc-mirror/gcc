@@ -49,9 +49,9 @@ package body System.Exn_LLF is
    begin
       --  We use the standard logarithmic approach, Exp gets shifted right
       --  testing successive low order bits and Factor is the value of the
-      --  base raised to the next power of 2. For positive exponents we
-      --  multiply the result by this factor, for negative exponents, we
-      --  Division by this factor.
+      --  base raised to the next power of 2. If the low order bit or Exp is
+      --  set, multiply the result by this factor. For negative exponents,
+      --  invert result upon return.
 
       if Exp >= 0 then
          loop
