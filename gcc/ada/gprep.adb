@@ -73,7 +73,7 @@ package body GPrep is
    File_Name_Buffer_Initial_Size : constant := 50;
    File_Name_Buffer : String_Access :=
                         new String (1 .. File_Name_Buffer_Initial_Size);
-   --  A buffer to build output file names from input file names.
+   --  A buffer to build output file names from input file names
 
    -----------------
    -- Subprograms --
@@ -102,7 +102,7 @@ package body GPrep is
    --  True if C is in 'a' .. 'z' or in 'A' .. 'Z'
 
    procedure Double_File_Name_Buffer;
-   --  Double the size of the file name buffer.
+   --  Double the size of the file name buffer
 
    procedure Preprocess_Infile_Name;
    --  When the specified output is a directory, preprocess the infile name
@@ -116,12 +116,12 @@ package body GPrep is
    --  Process a -D switch on the command line
 
    procedure Put_Char_To_Outfile (C : Character);
-   --  Output one character to the output file.
-   --  Used to initialize the preprocessor.
+   --  Output one character to the output file. Used to initialize the
+   --  preprocessor.
 
    procedure New_EOL_To_Outfile;
-   --  Output a new line to the output file.
-   --  Used to initialize the preprocessor.
+   --  Output a new line to the output file. Used to initialize the
+   --  preprocessor.
 
    procedure Scan_Command_Line;
    --  Scan the switches and the file names
@@ -137,7 +137,7 @@ package body GPrep is
    begin
       if not Copyright_Displayed then
          Write_Line ("GNAT Preprocessor " & Gnatvsn.Gnat_Version_String);
-         Write_Line ("Copyright 1996-2004 Free Software Foundation, Inc.");
+         Write_Line ("Copyright 1996-2005, Free Software Foundation, Inc.");
          Copyright_Displayed := True;
       end if;
    end Display_Copyright;
@@ -198,21 +198,23 @@ package body GPrep is
       --  Test we had all the arguments needed
 
       if Infile_Name = No_Name then
+
          --  No input file specified, just output the usage and exit
 
          Usage;
          return;
 
       elsif Outfile_Name = No_Name then
+
          --  No output file specified, just output the usage and exit
 
          Usage;
          return;
       end if;
 
-      --  If a pragma Source_File_Name, we need to keep line numbers.
-      --  So, if the deleted lines are not put as comment, we must output them
-      --  as blank lines.
+      --  If a pragma Source_File_Name, we need to keep line numbers. So, if
+      --  the deleted lines are not put as comment, we must output them as
+      --  blank lines.
 
       if Source_Ref_Pragma and (not Opt.Comment_Deleted_Lines) then
          Opt.Blank_Deleted_Lines := True;
@@ -245,8 +247,7 @@ package body GPrep is
          end;
       end if;
 
-      --  If there are errors in the definition file, output these errors
-      --  and exit.
+      --  If there are errors in the definition file, output them and exit
 
       if Total_Errors_Detected > 0 then
          Errutil.Finalize (Source_Type => "definition");
@@ -281,7 +282,6 @@ package body GPrep is
       --  rooted at the input directory.
 
       Process_Files;
-
    end Gnatprep;
 
    ---------------------
@@ -327,7 +327,7 @@ package body GPrep is
 
    procedure Preprocess_Infile_Name is
       Len    : Natural;
-      First  : Positive := 1;
+      First  : Positive;
       Last   : Natural;
       Symbol : Name_Id;
       Data   : Symbol_Data;
@@ -346,6 +346,7 @@ package body GPrep is
 
       --  Look for possible symbols in the file name
 
+      First := 1;
       while First < Len loop
 
          --  A symbol starts with a dollar sign followed by a letter
@@ -387,7 +388,7 @@ package body GPrep is
 
                      declare
                         Sym_Len : constant Positive := Last - First + 1;
-                        Offset : constant Integer := Name_Len - Sym_Len;
+                        Offset  : constant Integer := Name_Len - Sym_Len;
                         New_Len : constant Natural := Len + Offset;
 
                      begin
@@ -465,7 +466,7 @@ package body GPrep is
       --  Outfile_Name.
 
       procedure Recursive_Process (In_Dir : String; Out_Dir : String);
-      --  Process recursively files in In_Dir. Results go to Out_Dir.
+      --  Process recursively files in In_Dir. Results go to Out_Dir
 
       ----------------------
       -- Process_One_File --
@@ -475,7 +476,7 @@ package body GPrep is
          Infile : Source_File_Index;
 
       begin
-         --  Create the output file; fails if this does not work.
+         --  Create the output file (fails if this does not work)
 
          begin
             Create (Text_Outfile, Out_File, Get_Name_String (Outfile_Name));
@@ -521,8 +522,7 @@ package body GPrep is
             Errutil.Finalize (Source_Type => "input");
          end if;
 
-         --  If we had some errors, delete the output file, and report
-         --  the errors.
+         --  If we had some errors, delete the output file, and report them
 
          if Err_Vars.Total_Errors_Detected > 0 then
             if Outfile /= Standard_Output then
@@ -533,7 +533,7 @@ package body GPrep is
 
             OS_Exit (0);
 
-         --  otherwise, close the output file, and we are done.
+         --  Otherwise, close the output file, and we are done
 
          elsif Outfile /= Standard_Output then
             Close (Text_Outfile);
@@ -563,6 +563,8 @@ package body GPrep is
             Input_Directory := In_Dir_Name;
             Output_Directory := Out_Dir_Name;
          end Set_Directory_Names;
+
+      --  Start of processing for Recursive_Process
 
       begin
          --  Open the current input directory
@@ -645,8 +647,11 @@ package body GPrep is
          end loop;
       end Recursive_Process;
 
+   --  Start of processing for Process_Files
+
    begin
       if Output_Directory = No_Name then
+
          --  If the output is not a directory, fail if the input is
          --  an existing directory, to avoid possible problems.
 
@@ -660,6 +665,7 @@ package body GPrep is
          Process_One_File;
 
       elsif Input_Directory = No_Name then
+
          --  Get the output file name from the input file name, and process
          --  the single input file.
 
@@ -697,7 +703,8 @@ package body GPrep is
 
       loop
          begin
-            Switch := GNAT.Command_Line.Getopt ("D: b c r s u v");
+            Switch := GNAT.Command_Line.Getopt ("D: b c C r s u v");
+
             case Switch is
 
                when ASCII.NUL =>
@@ -712,6 +719,9 @@ package body GPrep is
 
                when 'c' =>
                   Opt.Comment_Deleted_Lines := True;
+
+               when 'C' =>
+                  Opt.Replace_In_Comments := True;
 
                when 'r' =>
                   Source_Ref_Pragma := True;
@@ -780,6 +790,7 @@ package body GPrep is
       Write_Line ("gnatprep switches:");
       Write_Line ("   -b  Replace preprocessor lines by blank lines");
       Write_Line ("   -c  Keep preprocessor lines as comments");
+      Write_Line ("   -C  Do symbol replacements within comments");
       Write_Line ("   -D  Associate symbol with value");
       Write_Line ("   -r  Generate Source_Reference pragma");
       Write_Line ("   -s  Print a sorted list of symbol names and values");

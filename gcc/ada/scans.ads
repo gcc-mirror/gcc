@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -190,22 +190,27 @@ package Scans is
 
       Tok_Dot_Dot,         -- ..           Sterm, Chtok
 
-      --  The following three entries are used only when scanning project
-      --  files.
-
       Tok_Project,
       Tok_Extends,
       Tok_External,
-      Tok_Comment,
+      --  These three entries represent keywords for the project file language
+      --  and can be returned only in the case of scanning project files.
 
-      --  The following entry is used by the preprocessor and when scanning
-      --  project files.
+      Tok_Comment,
+      --  This entry is used when scanning project files (where it represents
+      --  an entire comment), and in preprocessing with the -C switch set
+      --  (where it represents just the "--" of a comment). For the project
+      --  file case, the text of the comment is stored in
 
       Tok_End_Of_Line,
-
-      --  The following entry is used by the preprocessor
+      --  Represents an end of line. Not used during normal compilation scans
+      --  where end of line is ignored. Active for preprocessor scanning and
+      --  also when scanning project files (where it is neede because of ???)
 
       Tok_Special,
+      --  Used only in preprocessor scanning (to represent one of the
+      --  characters '#', '$', '?', '@', '`', '\', '^', '~', or '_'. The
+      --  character value itself is stored in Scans.Special_Character.
 
       No_Token);
       --  No_Token is used for initializing Token values to indicate that
@@ -394,7 +399,7 @@ package Scans is
    --  We do things this way to minimize the impact on comment scanning.
 
    Character_Code : Char_Code;
-   --  Valid only when Token is Tok_Char_Literal.
+   --  Valid only when Token is Tok_Char_Literal
 
    Real_Literal_Value : Ureal;
    --  Valid only when Token is Tok_Real_Literal
@@ -411,11 +416,17 @@ package Scans is
    --  Valid only when Token = Tok_String_Literal.
 
    Special_Character : Character;
-   --  Valid only when Token = Tok_Special
+   --  Valid only when Token = Tok_Special. Returns one of the characters
+   --  '#', '$', '?', '@', '`', '\', '^', '~', or '_'.
+   --
+   --  Why only this set? What about wide characters???
 
    Comment_Id : Name_Id := No_Name;
    --  Valid only when Token = Tok_Comment. Store the string that follows
-   --  the two '-' of a comment.
+   --  the "--" of a comment when scanning project files.
+   --
+   --  Is it really right for this to be a Name rather than a String, what
+   --  about the case of Wide_Wide_Characters???
 
    --------------------------------------------------------
    -- Procedures for Saving and Restoring the Scan State --
