@@ -102,6 +102,7 @@ namespace __gnu_test
 
   union UnionType { };
 
+  class IncompleteClass;
 
   int truncate_float(float x) { return (int)x; }
   long truncate_double(double x) { return (long)x; }
