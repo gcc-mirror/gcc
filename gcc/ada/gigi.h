@@ -248,9 +248,21 @@ extern void init_code_table (void);
    called.  */
 extern Node_Id error_gnat_node;
 
-/* This is equivalent to stabilize_reference in GCC's tree.c, but we know
-   how to handle our new nodes and we take an extra argument that says
-   whether to force evaluation of everything.  */
+/* This is equivalent to stabilize_reference in GCC's tree.c, but we know how
+   to handle our new nodes and we take extra arguments.
+
+   FORCE says whether to force evaluation of everything,
+
+   SUCCESS we set to true unless we walk through something we don't
+   know how to stabilize, or through something which is not an lvalue
+   and LVALUES_ONLY is true, in which cases we set to false.  */
+extern tree maybe_stabilize_reference (tree ref, bool force, bool lvalues_only,
+				       bool *success);
+
+/* Wrapper around maybe_stabilize_reference, for common uses without
+   lvalue restrictions and without need to examine the success
+   indication.  */
+
 extern tree gnat_stabilize_reference (tree ref, bool force);
 
 /* Highest number in the front-end node table.  */
@@ -611,6 +623,11 @@ extern tree build_vms_descriptor (tree type, Mechanism_Type mech,
    as the name of the record.  */
 extern tree build_unc_object_type (tree template_type, tree object_type,
                                    tree name);
+
+/* Same as build_unc_object_type, but taking a thin or fat pointer type
+   instead of the template type. */
+extern tree build_unc_object_type_from_ptr (tree thin_fat_ptr_type,
+					    tree object_type, tree name);
 
 /* Update anything previously pointing to OLD_TYPE to point to NEW_TYPE.  In
    the normal case this is just two adjustments, but we have more to do

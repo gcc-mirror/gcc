@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  tree to fill in representation information, and also the routine used
 --  by -gnatR to print this information. This unit is used both in the
 --  compiler and in ASIS (it is used in ASIS as part of the implementation
---  of the data decomposition annex.
+--  of the data decomposition annex).
 
 with Types; use Types;
 with Uintp; use Uintp;
@@ -128,7 +128,7 @@ package Repinfo is
    --  Subtype used for values that can either be a Node_Ref (negative)
    --  or a value (non-negative)
 
-   type TCode is range 0 .. 27;
+   type TCode is range 0 .. 28;
    --  Type used on Ada side to represent DEFTREECODE values defined in
    --  tree.def. Only a subset of these tree codes can actually appear.
    --  The names are the names from tree.def in Ada casing.
@@ -162,6 +162,7 @@ package Repinfo is
    Ge_Expr          : constant TCode := 25; -- comparision >=           2
    Eq_Expr          : constant TCode := 26; -- comparision =            2
    Ne_Expr          : constant TCode := 27; -- comparision /=           2
+   Bit_And_Expr     : constant TCode := 28; -- Binary and               2
 
    --  The following entry is used to represent a discriminant value in
    --  the tree. It has a special tree code that does not correspond

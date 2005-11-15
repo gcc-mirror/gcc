@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,8 @@ with Table;  use Table;
 with Uname;  use Uname;
 with Urealp; use Urealp;
 
+with Ada.Unchecked_Conversion;
+
 package body Repinfo is
 
    SSU : constant := 8;
@@ -61,17 +63,16 @@ package body Repinfo is
    -- Representation of gcc Expressions --
    ---------------------------------------
 
-   --    This table is used only if Frontend_Layout_On_Target is False,
-   --    so that gigi lays out dynamic size/offset fields using encoded
-   --    gcc expressions.
+   --    This table is used only if Frontend_Layout_On_Target is False, so that
+   --    gigi lays out dynamic size/offset fields using encoded gcc
+   --    expressions.
 
-   --    A table internal to this unit is used to hold the values of
-   --    back annotated expressions. This table is written out by -gnatt
-   --    and read back in for ASIS processing.
+   --    A table internal to this unit is used to hold the values of back
+   --    annotated expressions. This table is written out by -gnatt and read
+   --    back in for ASIS processing.
 
-   --    Node values are stored as Uint values which are the negative of
-   --    the node index in this table. Constants appear as non-negative
-   --    Uint values.
+   --    Node values are stored as Uint values using the negative of the node
+   --    index in this table. Constants appear as non-negative Uint values.
 
    type Exp_Node is record
       Expr : TCode;
@@ -104,28 +105,27 @@ package body Repinfo is
    --  Identifier casing for current unit
 
    Need_Blank_Line : Boolean;
-   --  Set True if a blank line is needed before outputting any
-   --  information for the current entity. Set True when a new
-   --  entity is processed, and false when the blank line is output.
+   --  Set True if a blank line is needed before outputting any information for
+   --  the current entity. Set True when a new entity is processed, and false
+   --  when the blank line is output.
 
    -----------------------
    -- Local Subprograms --
    -----------------------
 
    function Back_End_Layout return Boolean;
-   --  Test for layout mode, True = back end, False = front end. This
-   --  function is used rather than checking the configuration parameter
-   --  because we do not want Repinfo to depend on Targparm (for ASIS)
+   --  Test for layout mode, True = back end, False = front end. This function
+   --  is used rather than checking the configuration parameter because we do
+   --  not want Repinfo to depend on Targparm (for ASIS)
 
    procedure Blank_Line;
    --  Called before outputting anything for an entity. Ensures that
    --  a blank line precedes the output for a particular entity.
 
    procedure List_Entities (Ent : Entity_Id);
-   --  This procedure lists the entities associated with the entity E,
-   --  starting with the First_Entity and using the Next_Entity link.
-   --  If a nested package is found, entities within the package are
-   --  recursively processed.
+   --  This procedure lists the entities associated with the entity E, starting
+   --  with the First_Entity and using the Next_Entity link. If a nested
+   --  package is found, entities within the package are recursively processed.
 
    procedure List_Name (Ent : Entity_Id);
    --  List name of entity Ent in appropriate case. The name is listed with
@@ -135,8 +135,8 @@ package body Repinfo is
    --  List representation info for array type Ent
 
    procedure List_Mechanisms (Ent : Entity_Id);
-   --  List mechanism information for parameters of Ent, which is a
-   --  subprogram, subprogram type, or an entry or entry family.
+   --  List mechanism information for parameters of Ent, which is subprogram,
+   --  subprogram type, or an entry or entry family.
 
    procedure List_Object_Info (Ent : Entity_Id);
    --  List representation info for object Ent
@@ -155,12 +155,11 @@ package body Repinfo is
    --  Output given number of spaces
 
    procedure Write_Info_Line (S : String);
-   --  Routine to write a line to Repinfo output file. This routine is
-   --  passed as a special output procedure to Output.Set_Special_Output.
-   --  Note that Write_Info_Line is called with an EOL character at the
-   --  end of each line, as per the Output spec, but the internal call
-   --  to the appropriate routine in Osint requires that the end of line
-   --  sequence be stripped off.
+   --  Routine to write a line to Repinfo output file. This routine is passed
+   --  as a special output procedure to Output.Set_Special_Output. Note that
+   --  Write_Info_Line is called with an EOL character at the end of each line,
+   --  as per the Output spec, but the internal call to the appropriate routine
+   --  in Osint requires that the end of line sequence be stripped off.
 
    procedure Write_Mechanism (M : Mechanism_Type);
    --  Writes symbolic string for mechanism represented by M
@@ -168,8 +167,8 @@ package body Repinfo is
    procedure Write_Val (Val : Node_Ref_Or_Val; Paren : Boolean := False);
    --  Given a representation value, write it out. No_Uint values or values
    --  dependent on discriminants are written as two question marks. If the
-   --  flag Paren is set, then the output is surrounded in parentheses if
-   --  it is other than a simple value.
+   --  flag Paren is set, then the output is surrounded in parentheses if it is
+   --  other than a simple value.
 
    ---------------------
    -- Back_End_Layout --
@@ -177,8 +176,8 @@ package body Repinfo is
 
    function Back_End_Layout return Boolean is
    begin
-      --  We have back end layout if the back end has made any entries in
-      --  the table of GCC expressions, otherwise we have front end layout.
+      --  We have back end layout if the back end has made any entries in the
+      --  table of GCC expressions, otherwise we have front end layout.
 
       return Rep_Table.Last > 0;
    end Back_End_Layout;
@@ -350,10 +349,10 @@ package body Repinfo is
          while Present (E) loop
             Need_Blank_Line := True;
 
-            --  We list entities that come from source (excluding private
-            --  or incomplete types or deferred constants, where we will
-            --  list the info for the full view). If debug flag A is set,
-            --  then all entities are listed
+            --  We list entities that come from source (excluding private or
+            --  incomplete types or deferred constants, where we will list the
+            --  info for the full view). If debug flag A is set, then all
+            --  entities are listed
 
             if (Comes_From_Source (E)
               and then not Is_Incomplete_Or_Private_Type (E)
@@ -402,10 +401,9 @@ package body Repinfo is
 
                end if;
 
-               --  Recurse into nested package, but not if they are
-               --  package renamings (in particular renamings of the
-               --  enclosing package, as for some Java bindings and
-               --  for generic instances).
+               --  Recurse into nested package, but not if they are package
+               --  renamings (in particular renamings of the enclosing package,
+               --  as for some Java bindings and for generic instances).
 
                if Ekind (E) = E_Package then
                   if No (Renamed_Object (E)) then
@@ -438,10 +436,10 @@ package body Repinfo is
             E := Next_Entity (E);
          end loop;
 
-         --  For a package body, the entities of the visible subprograms
-         --  are declared in the corresponding spec. Iterate over its
-         --  entities in order to handle properly the subprogram bodies.
-         --  Skip bodies in subunits, which are listed independently.
+         --  For a package body, the entities of the visible subprograms are
+         --  declared in the corresponding spec. Iterate over its entities in
+         --  order to handle properly the subprogram bodies. Skip bodies in
+         --  subunits, which are listed independently.
 
          if Ekind (Ent) = E_Package_Body
            and then Present (Corresponding_Spec (Find_Declaration (Ent)))
@@ -582,6 +580,9 @@ package body Repinfo is
                   when Truth_Not_Expr =>
                      Write_Str ("not ");
                      Print_Expr (Node.Op1);
+
+                  when Bit_And_Expr =>
+                     Binop (" & ");
 
                   when Lt_Expr =>
                      Binop (" < ");
@@ -801,9 +802,9 @@ package body Repinfo is
                UI_Image (Sunit);
             end if;
 
-            --  If the record is not packed, then we know that all
-            --  fields whose position is not specified have a starting
-            --  normalized bit position of zero
+            --  If the record is not packed, then we know that all fields whose
+            --  position is not specified have a starting normalized bit
+            --  position of zero
 
             if Unknown_Normalized_First_Bit (Comp)
               and then not Is_Packed (Ent)
@@ -885,11 +886,11 @@ package body Repinfo is
                UI_Write (Fbit);
                Write_Str (" .. ");
 
-               --  Allowing Uint_0 here is a kludge, really this should be
-               --  a fine Esize value but currently it means unknown, except
-               --  that we know after gigi has back annotated that a size of
-               --  zero is real, since otherwise gigi back annotates using
-               --  No_Uint as the value to indicate unknown).
+               --  Allowing Uint_0 here is a kludge, really this should be a
+               --  fine Esize value but currently it means unknown, except that
+               --  we know after gigi has back annotated that a size of zero is
+               --  real, since otherwise gigi back annotates using No_Uint as
+               --  the value to indicate unknown).
 
                if (Esize (Comp) = Uint_0 or else Known_Static_Esize (Comp))
                  and then Known_Static_Normalized_First_Bit (Comp)
@@ -916,8 +917,8 @@ package body Repinfo is
 
                   Write_Val (Esiz, Paren => True);
 
-                  --  If in front end layout mode, then dynamic size is
-                  --  stored in storage units, so renormalize for output
+                  --  If in front end layout mode, then dynamic size is stored
+                  --  in storage units, so renormalize for output
 
                   if not Back_End_Layout then
                      Write_Str (" * ");
@@ -1019,8 +1020,8 @@ package body Repinfo is
             Write_Line (";");
 
          --  For now, temporary case, to be removed when gigi properly back
-         --  annotates RM_Size, if RM_Size is not set, then list Esize as
-         --  Size. This avoids odd Object_Size output till we fix things???
+         --  annotates RM_Size, if RM_Size is not set, then list Esize as Size.
+         --  This avoids odd Object_Size output till we fix things???
 
          elsif Unknown_RM_Size (Ent) then
             Write_Str ("for ");
@@ -1086,6 +1087,14 @@ package body Repinfo is
       function V (Val : Node_Ref_Or_Val) return Uint;
       --  Internal recursive routine to evaluate tree
 
+      function W (Val : Uint) return Word;
+      --  Convert Val to Word, assuming Val is always in the Int range. This is
+      --  a helper function for the evaluation of bitwise expressions like
+      --  Bit_And_Expr, for which there is no direct support in uintp. Uint
+      --  values out of the Int range are expected to be seen in such
+      --  expressions only with overflowing byte sizes around, introducing
+      --  inherent unreliabilties in computations anyway.
+
       -------
       -- B --
       -------
@@ -1111,6 +1120,23 @@ package body Repinfo is
             return True;
          end if;
       end T;
+
+      -------
+      -- W --
+      -------
+
+      --  We use an unchecked conversion to map Int values to their Word
+      --  bitwise equivalent, which we could not achieve with a normal type
+      --  conversion for negative Ints. We want bitwise equivalents because W
+      --  is used as a helper for bit operators like Bit_And_Expr, and can be
+      --  called for negative Ints in the context of aligning expressions like
+      --  X+Align & -Align.
+
+      function W (Val : Uint) return Word is
+         function To_Word is new Ada.Unchecked_Conversion (Int, Word);
+      begin
+         return To_Word (UI_To_Int (Val));
+      end W;
 
       -------
       -- V --
@@ -1202,6 +1228,11 @@ package body Repinfo is
 
                   when Truth_Not_Expr =>
                      return B (not T (Node.Op1));
+
+                  when Bit_And_Expr =>
+                     L := V (Node.Op1);
+                     R := V (Node.Op2);
+                     return UI_From_Int (Int (W (L) and W (R)));
 
                   when Lt_Expr =>
                      return B (V (Node.Op1) < V (Node.Op2));
