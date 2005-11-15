@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1991-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,15 +31,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a LynxOS version of this package.
---
+--  This is a LynxOS version of this package
+
 --  The following signals are reserved by the run time:
---
+
 --  SIGFPE, SIGILL, SIGSEGV, SIGBUS, SIGTRAP, SIGABRT, SIGINT,
 --  SIGWAITING, SIGLWP, SIGTTIN, SIGTTOU, SIGTSTP, SIGPROF, SIGSTOP, SIGKILL
---
+
 --  The pragma Unreserve_All_Interrupts affects the following signal(s):
---
+
 --  SIGINT: made available for Ada handler
 
 with System.OS_Interface;
@@ -47,8 +47,8 @@ with System.OS_Interface;
 
 package Ada.Interrupts.Names is
 
-   --  Beware that the mapping of names to signals may be
-   --  many-to-one. There may be aliases.
+   --  Beware that the mapping of names to signals may be many-to-one. There
+   --  may be aliases.
 
    SIGHUP : constant Interrupt_ID :=
      System.OS_Interface.SIGHUP;      --  hangup

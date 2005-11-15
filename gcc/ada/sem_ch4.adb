@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1156,9 +1156,7 @@ package body Sem_Ch4 is
         and then Nkind (N) = N_Op_Ne
       then
          Op_Id := Get_Name_Entity_Id (Name_Op_Eq);
-
          while Present (Op_Id) loop
-
             if Ekind (Op_Id) = E_Operator then
                Find_Equality_Types (L, R, Op_Id, N);
             else
@@ -1216,7 +1214,6 @@ package body Sem_Ch4 is
 
          else
             Get_First_Interp (N, I, It);
-
             while Present (It.Nam) loop
                if Ekind (Base_Type (It.Typ)) /= E_Subprogram_Type
                  or else Etype (Base_Type (It.Typ)) = Standard_Void_Type
@@ -1274,7 +1271,6 @@ package body Sem_Ch4 is
 
       else
          Get_First_Interp (P, I, It);
-
          while Present (It.Nam) loop
             T := It.Typ;
 
@@ -1522,7 +1518,6 @@ package body Sem_Ch4 is
             end if;
 
             Index := First_Index (Array_Type);
-
             while Present (Index) and then Present (Exp) loop
                if not Has_Compatible_Type (Exp, Etype (Index)) then
                   Wrong_Type (Exp, Etype (Index));
@@ -1771,7 +1766,6 @@ package body Sem_Ch4 is
 
       else
          Op_Id := Get_Name_Entity_Id (Chars (N));
-
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator then
                Find_Boolean_Types (L, R, Op_Id, N);
@@ -1854,7 +1848,6 @@ package body Sem_Ch4 is
 
          else
             Get_First_Interp (L, Index, It);
-
             while Present (It.Typ) loop
                Try_One_Interp (It.Typ);
                Get_Next_Interp (Index, It);
@@ -2168,9 +2161,7 @@ package body Sem_Ch4 is
                        and then Nkind (Left_Opnd (Actual)) = N_Identifier
                      then
                         Formal := First_Formal (Nam);
-
                         while Present (Formal) loop
-
                            if Chars (Left_Opnd (Actual)) = Chars (Formal) then
                               Error_Msg_N
                                 ("possible misspelling of `='>`!", Actual);
@@ -3037,7 +3028,6 @@ package body Sem_Ch4 is
 
       else
          Get_First_Interp (L, Ind, It);
-
          while Present (It.Typ) loop
             if Root_Type (It.Typ) = Standard_Boolean
               and then Has_Compatible_Type (R, It.Typ)
@@ -3788,7 +3778,6 @@ package body Sem_Ch4 is
 
       else
          Get_First_Interp (L, Index1, It1);
-
          while Present (It1.Typ) loop
             Check_Right_Argument (It1.Typ);
             Get_Next_Interp (Index1, It1);
@@ -4281,7 +4270,7 @@ package body Sem_Ch4 is
          return False;
       end if;
 
-      --  Now test the entity we got to see if it a bad case
+      --  Now test the entity we got to see if it is a bad case
 
       case Ekind (Entity (Enode)) is
 
@@ -4346,7 +4335,7 @@ package body Sem_Ch4 is
             end if;
 
             --  If either operand has no type, then don't complain further,
-            --  since this simply means that we have a propragated error.
+            --  since this simply means that we have a propagated error.
 
             if R = Error
               or else Etype (R) = Any_Type
@@ -4669,7 +4658,6 @@ package body Sem_Ch4 is
                      --  select the predefined operator and discard others.
 
                      Get_First_Interp (N, I, It);
-
                      while Present (It.Nam) loop
                         if Scope (It.Nam) = Standard_Standard then
                            Set_Etype (N, Univ_Type);
@@ -4758,12 +4746,10 @@ package body Sem_Ch4 is
 
    begin
       Normalize_Actuals (N, Designated_Type (Typ), False, Call_OK);
+
       Actual := First_Actual (N);
       Formal := First_Formal (Designated_Type (Typ));
-
-      while Present (Actual)
-        and then Present (Formal)
-      loop
+      while Present (Actual) and then Present (Formal) loop
          if not Has_Compatible_Type (Actual, Etype (Formal)) then
             return False;
          end if;
@@ -4806,9 +4792,8 @@ package body Sem_Ch4 is
    begin
       Actual := First (Actuals);
       Index := First_Index (Typ);
-      while Present (Actual)
-        and then Present (Index)
-      loop
+      while Present (Actual) and then Present (Index) loop
+
          --  If the parameter list has a named association, the expression
          --  is definitely a call and not an indexed component.
 

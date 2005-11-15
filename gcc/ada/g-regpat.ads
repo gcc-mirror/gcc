@@ -206,7 +206,7 @@ package GNAT.Regpat is
    --  first version the regular expression has in fact to be compiled twice
    --  (first to compute the size, then to generate the byte code).
 
-   --  Note also that you can not use the function version of Compile if you
+   --  Note also that you cannot use the function version of Compile if you
    --  specify the size of the Pattern_Matcher, since the discriminants will
    --  most probably be different and you will get a Constraint_Error
 
@@ -291,20 +291,20 @@ package GNAT.Regpat is
    ---------------
 
    Expression_Error : exception;
-   --  This exception is raised when trying to compile an invalid
-   --  regular expression. All subprograms taking an expression
-   --  as parameter may raise Expression_Error.
+   --  This exception is raised when trying to compile an invalid regular
+   --  expression. All subprograms taking an expression as parameter may raise
+   --  Expression_Error.
 
    Max_Paren_Count : constant := 255;
-   --  Maximum number of parenthesis in a regular expression.
-   --  This is limited by the size of a Character, as found in the
-   --  byte-compiled version of regular expressions.
+   --  Maximum number of parenthesis in a regular expression. This is limited
+   --  by the size of a Character, as found in the byte-compiled version of
+   --  regular expressions.
 
    Max_Curly_Repeat : constant := 32767;
-   --  Maximum number of repetition for the curly operator.
-   --  The digits in the {n}, {n,} and {n,m } operators can not be higher
-   --  than this constant, since they have to fit on two characters in the
-   --  byte-compiled version of regular expressions.
+   --  Maximum number of repetition for the curly operator. The digits in the
+   --  {n}, {n,} and {n,m } operators cannot be higher than this constant,
+   --  since they have to fit on two characters in the byte-compiled version of
+   --  regular expressions.
 
    Max_Program_Size : constant := 2**15 - 1;
    --  Maximum size that can be allocated for a program
@@ -318,10 +318,10 @@ package GNAT.Regpat is
    --  and the programmer need not be concerned about it. There are two
    --  exceptions to this. First in the calls to Match, it is possible to
    --  specify a non-zero size that is known to be large enough. This can
-   --  slightly increase the efficiency by avoiding a copy. Second, in the
-   --  case of calling compile, it is possible using the procedural form
-   --  of Compile to use a single Pattern_Matcher variable for several
-   --  different expressions by setting its size sufficiently large.
+   --  slightly increase the efficiency by avoiding a copy. Second, in the case
+   --  of calling compile, it is possible using the procedural form of Compile
+   --  to use a single Pattern_Matcher variable for several different
+   --  expressions by setting its size sufficiently large.
 
    Auto_Size : constant := 0;
    --  Used in calls to Match to indicate that the Size should be set to
@@ -362,33 +362,28 @@ package GNAT.Regpat is
    end record;
 
    type Match_Array is array (Match_Count range <>) of Match_Location;
-   --  The substring matching a given pair of parenthesis.
-   --  Index 0 is the whole substring that matched the full regular
-   --  expression.
+   --  The substring matching a given pair of parenthesis. Index 0 is the whole
+   --  substring that matched the full regular expression.
    --
-   --  For instance, if your regular expression is something like:
-   --  "a(b*)(c+)", then Match_Array(1) will be the indexes of the
-   --  substring that matched "b*" and Match_Array(2) will be the substring
-   --  that matched "c+".
+   --  For instance, if your regular expression is something like: "a(b*)(c+)",
+   --  then Match_Array(1) will be the indexes of the substring that matched
+   --  "b*" and Match_Array(2) will be the substring that matched "c+".
    --
-   --  The number of parenthesis groups that can be retrieved is unlimited,
-   --  and all the Match subprograms below can use a Match_Array of any size.
-   --  Indexes that do not have any matching parenthesis are set to
-   --  No_Match.
+   --  The number of parenthesis groups that can be retrieved is unlimited, and
+   --  all the Match subprograms below can use a Match_Array of any size.
+   --  Indexes that do not have any matching parenthesis are set to No_Match.
 
    No_Match : constant Match_Location := (First => 0, Last => 0);
-   --  The No_Match constant is (0, 0) to differentiate between
-   --  matching a null string at position 1, which uses (1, 0)
-   --  and no match at all.
+   --  The No_Match constant is (0, 0) to differentiate between matching a null
+   --  string at position 1, which uses (1, 0) and no match at all.
 
    ---------------------------------
    -- Pattern_Matcher Compilation --
    ---------------------------------
 
-   --  The subprograms here are used to precompile regular expressions
-   --  for use in subsequent Match calls. Precompilation improves
-   --  efficiency if the same regular expression is to be used in
-   --  more than one Match call.
+   --  The subprograms here are used to precompile regular expressions for use
+   --  in subsequent Match calls. Precompilation improves efficiency if the
+   --  same regular expression is to be used in more than one Match call.
 
    type Pattern_Matcher (Size : Program_Size) is private;
    --  Type used to represent a regular expression compiled into byte code
@@ -419,21 +414,21 @@ package GNAT.Regpat is
       Flags           : Regexp_Flags := No_Flags);
    --  Compile a regular expression into into internal code
 
-   --  This procedure is significantly faster than the Compile function
-   --  since it avoids the extra step of precomputing the required size.
+   --  This procedure is significantly faster than the Compile function since
+   --  it avoids the extra step of precomputing the required size.
    --
    --  However, it requires the user to provide a Pattern_Matcher variable
    --  whose size is preset to a large enough value. One advantage of this
    --  approach, in addition to the improved efficiency, is that the same
    --  Pattern_Matcher variable can be used to hold the compiled code for
-   --  several different regular expressions by setting a size that is
-   --  large enough to accomodate all possibilities.
+   --  several different regular expressions by setting a size that is large
+   --  enough to accomodate all possibilities.
    --
-   --  In this version of the procedure call, the actual required code
-   --  size is returned. Also if Matcher.Size is zero on entry, then the
-   --  resulting code is not stored. A call with Matcher.Size set to Auto_Size
-   --  can thus be used to determine the space required for compiling the
-   --  given regular expression.
+   --  In this version of the procedure call, the actual required code size is
+   --  returned. Also if Matcher.Size is zero on entry, then the resulting code
+   --  is not stored. A call with Matcher.Size set to Auto_Size can thus be
+   --  used to determine the space required for compiling the given regular
+   --  expression.
    --
    --  This function raises Storage_Error if Matcher is too small to hold
    --  the resulting code (i.e. Matcher.Size has too small a value).
@@ -448,8 +443,8 @@ package GNAT.Regpat is
      (Matcher    : out Pattern_Matcher;
       Expression : String;
       Flags      : Regexp_Flags := No_Flags);
-   --  Same procedure as above, expect it does not return the final
-   --  program size, and Matcher.Size cannot be Auto_Size.
+--     --  Same procedure as above, expect it does not return the final
+--     --  program size, and Matcher.Size cannot be Auto_Size.
 
    function Paren_Count (Regexp : Pattern_Matcher) return Match_Count;
    pragma Inline (Paren_Count);

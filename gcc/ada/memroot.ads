@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1997-2003 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 1997-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ with System.Storage_Elements; use System.Storage_Elements;
 
 package Memroot is
 
-   --  Simple abstract type for names. A name is a sequence of letters.
+   --  Simple abstract type for names. A name is a sequence of letters
 
    type Name_Id is new Natural;
    No_Name_Id : constant Name_Id := 0;

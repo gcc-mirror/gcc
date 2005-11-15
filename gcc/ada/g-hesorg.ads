@@ -58,14 +58,16 @@ generic
    with procedure Move (From : Natural; To : Natural);
    --  A procedure that moves the data item with index value From to the data
    --  item with index value To (the old value in To being lost). An index
-   --  value of zero is used for moves from and to a single temporary location
+   --  value of zero is used for moves from and to a single temporary location.
+   --  For best efficiency, this routine should be marked as inlined.
 
    with function Lt (Op1, Op2 : Natural) return Boolean;
    --  A function that compares two items and returns True if the item with
    --  index Op1 is less than the item with Index Op2, and False if the Op1
    --  item is greater than the Op2 item. If the two items are equal, then
    --  it does not matter whether True or False is returned (it is slightly
-   --  more efficient to return False).
+   --  more efficient to return False). For best efficiency, this routine
+   --  should be marked as inlined.
 
    --  Note on use of temporary location
 

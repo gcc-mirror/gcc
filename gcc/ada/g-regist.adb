@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2003 Free Software Foundation, Inc.         --
+--           Copyright (C) 2001-2005, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,14 +81,12 @@ package body GNAT.Registry is
 
    function RegDeleteKey
      (Key      : HKEY;
-      lpSubKey : Address)
-      return     LONG;
+      lpSubKey : Address) return LONG;
    pragma Import (Stdcall, RegDeleteKey, "RegDeleteKeyA");
 
    function RegDeleteValue
      (Key         : HKEY;
-      lpValueName : Address)
-      return        LONG;
+      lpValueName : Address) return LONG;
    pragma Import (Stdcall, RegDeleteValue, "RegDeleteValueA");
 
    function RegEnumValue
@@ -99,8 +97,7 @@ package body GNAT.Registry is
       lpReserved    : LPDWORD;
       lpType        : LPDWORD;
       lpData        : Address;
-      lpcbData      : LPDWORD)
-      return          LONG;
+      lpcbData      : LPDWORD) return LONG;
    pragma Import (Stdcall, RegEnumValue, "RegEnumValueA");
 
    function RegOpenKeyEx
@@ -108,8 +105,7 @@ package body GNAT.Registry is
       lpSubKey   : Address;
       ulOptions  : DWORD;
       samDesired : REGSAM;
-      phkResult  : PHKEY)
-      return       LONG;
+      phkResult  : PHKEY) return LONG;
    pragma Import (Stdcall, RegOpenKeyEx, "RegOpenKeyExA");
 
    function RegQueryValueEx
@@ -118,8 +114,7 @@ package body GNAT.Registry is
       lpReserved  : LPDWORD;
       lpType      : LPDWORD;
       lpData      : Address;
-      lpcbData    : LPDWORD)
-      return        LONG;
+      lpcbData    : LPDWORD) return LONG;
    pragma Import (Stdcall, RegQueryValueEx, "RegQueryValueExA");
 
    function RegSetValueEx
@@ -128,15 +123,14 @@ package body GNAT.Registry is
       Reserved    : DWORD;
       dwType      : DWORD;
       lpData      : Address;
-      cbData      : DWORD)
-      return        LONG;
+      cbData      : DWORD) return LONG;
    pragma Import (Stdcall, RegSetValueEx, "RegSetValueExA");
 
    ---------------------
    -- Local Constants --
    ---------------------
 
-   Max_Key_Size   : constant := 1_024;
+   Max_Key_Size : constant := 1_024;
    --  Maximum number of characters for a registry key
 
    Max_Value_Size : constant := 2_048;
@@ -147,7 +141,7 @@ package body GNAT.Registry is
    -----------------------
 
    function To_C_Mode (Mode : Key_Mode) return REGSAM;
-   --  Returns the Win32 mode value for the Key_Mode value.
+   --  Returns the Win32 mode value for the Key_Mode value
 
    procedure Check_Result (Result : LONG; Message : String);
    --  Checks value Result and raise the exception Registry_Error if it is not
@@ -188,8 +182,7 @@ package body GNAT.Registry is
    function Create_Key
      (From_Key : HKEY;
       Sub_Key  : String;
-      Mode     : Key_Mode := Read_Write)
-      return     HKEY
+      Mode     : Key_Mode := Read_Write) return HKEY
    is
       use type REGSAM;
       use type DWORD;
@@ -318,8 +311,7 @@ package body GNAT.Registry is
 
    function Key_Exists
      (From_Key : HKEY;
-      Sub_Key  : String)
-      return     Boolean
+      Sub_Key  : String) return Boolean
    is
       New_Key : HKEY;
 
@@ -346,8 +338,7 @@ package body GNAT.Registry is
    function Open_Key
      (From_Key : HKEY;
       Sub_Key  : String;
-      Mode     : Key_Mode := Read_Only)
-      return     HKEY
+      Mode     : Key_Mode := Read_Only) return HKEY
    is
       use type REGSAM;
 
@@ -376,8 +367,7 @@ package body GNAT.Registry is
    function Query_Value
      (From_Key : HKEY;
       Sub_Key  : String;
-      Expand   : Boolean := False)
-      return     String
+      Expand   : Boolean := False) return String
    is
       use GNAT.Directory_Operations;
       use type LONG;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,7 +58,7 @@ package body Live is
    --  The problem of finding live entities is solved in two steps:
 
    procedure Mark (Root : Node_Id; Marks : out Name_Set);
-   --  Mark all live entities in Root as Marked.
+   --  Mark all live entities in Root as Marked
 
    procedure Sweep (Root : Node_Id; Marks : Name_Set);
    --  For all unmarked entities in Root set Is_Eliminated to true

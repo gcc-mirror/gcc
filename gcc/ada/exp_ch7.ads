@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,7 +164,7 @@ package Exp_Ch7 is
    function Cleanup_Protected_Object
      (N   : Node_Id;
       Ref : Node_Id) return Node_Id;
-   --  Generate code to finalize a protected object without entries.
+   --  Generate code to finalize a protected object without entries
 
    function Cleanup_Record
      (N   : Node_Id;
@@ -176,10 +176,10 @@ package Exp_Ch7 is
    function Cleanup_Task
      (N   : Node_Id;
       Ref : Node_Id) return Node_Id;
-   --  Generate code to finalize a task.
+   --  Generate code to finalize a task
 
    function Has_Simple_Protected_Object (T : Entity_Id) return Boolean;
-   --  Check whether composite type contains a simple protected component.
+   --  Check whether composite type contains a simple protected component
 
    function Is_Simple_Protected_Type (T : Entity_Id) return Boolean;
    --  Check whether argument is a protected type without entries.
@@ -203,7 +203,7 @@ package Exp_Ch7 is
    --  secondary stack is brought in, otherwise it isn't.
 
    function Node_To_Be_Wrapped return Node_Id;
-   --  return the node to be wrapped if the current scope is transient.
+   --  return the node to be wrapped if the current scope is transient
 
    procedure Store_Before_Actions_In_Scope (L : List_Id);
    --  Append the list L of actions to the end of the before-actions store

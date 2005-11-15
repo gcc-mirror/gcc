@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@ with GNAT.OS_Lib;         use GNAT.OS_Lib;
 package Symbols is
 
    type Policy is
-   --  Symbol policy:
+   --  Symbol policy
 
      (Autonomous,
       --  Create a symbol file without considering any reference

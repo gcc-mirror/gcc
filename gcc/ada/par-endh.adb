@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,7 +87,7 @@ package body Endh is
    --  child unit or a node with a Chars field identifying the actual label.
 
    End_Labl_Present : Boolean;
-   --  Indicates that the value in End_Labl was for an explicit label.
+   --  Indicates that the value in End_Labl was for an explicit label
 
    Syntax_OK : Boolean;
    --  Set True if the entry is syntactically correct

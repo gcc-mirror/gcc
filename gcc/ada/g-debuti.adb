@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1997-2004 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1997-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,13 +47,14 @@ package body GNAT.Debug_Utilities is
 
    function Image (A : Address) return Image_String is
       S : Image_String;
-      P : Natural := Address_Image_Length - 1;
-      N : Integer_Address := To_Integer (A);
+      P : Natural;
+      N : Integer_Address;
       U : Natural := 0;
 
    begin
       S (S'Last) := '#';
-
+      P := Address_Image_Length - 1;
+      N := To_Integer (A);
       while P > 3 loop
          if U = 4 then
             S (P) := '_';

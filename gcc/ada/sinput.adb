@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,7 +86,7 @@ package body Sinput is
       LL : Physical_Line_Number;
 
    begin
-      --  Reallocate the lines tables if necessary.
+      --  Reallocate the lines tables if necessary
 
       --  Note: the reason we do not use the normal Table package
       --  mechanism is that we have several of these tables. We could

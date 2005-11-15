@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -333,7 +333,10 @@ package Errout is
    --  passed to the error message routine for insertion sequences described
    --  above. The reason these are passed globally is that the insertion
    --  mechanism is essentially an untyped one in which the appropriate
-   --  variables are set dependingon the specific insertion characters used.
+   --  variables are set depending on the specific insertion characters used.
+
+   --  Note that is mandatory that the caller ensure that global variables
+   --  are set before the Error_Msg call, otherwise the result is undefined.
 
    Error_Msg_Col : Column_Number renames Err_Vars.Error_Msg_Col;
    --  Column for @ insertion character in message

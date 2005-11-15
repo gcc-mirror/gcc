@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 1996-2002 Free Software Foundation, Inc.           --
+--          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,14 +24,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Types; use Types;
-
 --  Package containing the routines to process a list of discrete choices.
 --  Such lists can occur in two different constructs: case statements and
 --  record variants. We have factorized what used to be two very similar
 --  sets of routines in one place. These are not currently used for the
 --  aggregate case, since issues with nested aggregates make that case
 --  substantially different.
+
+with Types; use Types;
 
 package Sem_Case is
 
@@ -63,10 +63,10 @@ package Sem_Case is
       --  to get to the actual list of discrete choices.
 
       with procedure Process_Empty_Choice (Choice : Node_Id);
-      --  Processing to carry out for an empty Choice.
+      --  Processing to carry out for an empty Choice
 
       with procedure Process_Non_Static_Choice (Choice : Node_Id);
-      --  Processing to carry out for a non static Choice.
+      --  Processing to carry out for a non static Choice
 
       with procedure Process_Associated_Node (A : Node_Id);
       --  Associated to each case alternative, aggregate component
@@ -96,11 +96,11 @@ package Sem_Case is
       --  On entry Choice_Table must be big enough to contain all the
       --  discrete choices encountered.
       --
-      --  On exit Choice_Table contains all the static and non empty
-      --  discrete choices in sorted order. Last_Choice gives the position
-      --  of the last valid choice in Choice_Table, Choice_Table'First
-      --  contains the first. We can have Last_Choice < Choice_Table'Last
-      --  for one (or several) of the following reasons:
+      --  On exit Choice_Table contains all the static and non empty discrete
+      --  choices in sorted order. Last_Choice gives the position of the last
+      --  valid choice in Choice_Table, Choice_Table'First contains the first.
+      --  We can have Last_Choice < Choice_Table'Last for one (or several) of
+      --  the following reasons:
       --
       --    (a) The list of choices contained a non static choice
       --
@@ -113,9 +113,9 @@ package Sem_Case is
       --  In one of the bounds of a discrete choice raises a constraint
       --  error the flag Raise_CE is set.
       --
-      --  Finally Others_Present is set to True if an Others choice is
-      --  present in the list of choices, and in this case the call also
-      --  sets Others_Discrete_Choices in the N_Others_Choice node.
+      --  Finally Others_Present is set to True if an Others choice is present
+      --  in the list of choices, and in this case the call also sets
+      --  Others_Discrete_Choices in the N_Others_Choice node.
 
    end Generic_Choices_Processing;
 

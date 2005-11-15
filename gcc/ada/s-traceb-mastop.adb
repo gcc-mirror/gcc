@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2005 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,8 +100,8 @@ package body System.Traceback is
    ------------------
 
    function C_Call_Chain
-     (Traceback   : System.Address;
-      Max_Len     : Natural) return Natural
+     (Traceback : System.Address;
+      Max_Len   : Natural) return Natural
    is
       Val : Natural;
    begin

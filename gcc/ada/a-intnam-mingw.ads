@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,10 +41,9 @@ with System.OS_Interface;
 
 package Ada.Interrupts.Names is
 
-   --  Beware that the mapping of names to signals may be
-   --  many-to-one.  There may be aliases.  Also, for all
-   --  signal names that are not supported on the current system
-   --  the value of the corresponding constant will be zero.
+   --  Beware that the mapping of names to signals may be many-to-one. There
+   --  may be aliases. Also, for all signal names that are not supported on the
+   --  current system the value of the corresponding constant will be zero.
 
    SIGINT : constant Interrupt_ID :=
      System.OS_Interface.SIGINT;      --  interrupt (rubout)

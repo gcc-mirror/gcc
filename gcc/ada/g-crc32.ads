@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2004 Ada Core Technologies, Inc.              --
+--                     Copyright (C) 2004-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  called CRC-32. This is a checksum based on treating the binary data
 --  as a polynomial over a binary field, and the exact specifications of
 --  the CRC-32 algorithm are as follows:
---
+
 --     Name   : "CRC-32"
 --     Width  : 32
 --     Poly   : 04C11DB7
@@ -44,15 +44,15 @@
 --     RefOut : True
 --     XorOut : FFFFFFFF
 --     Check  : CBF43926
---
---  Note that this is the algorithm used by PKZip, Ethernet and FDDI.
---
+
+--  Note that this is the algorithm used by PKZip, Ethernet and FDDI
+
 --  For more information about this algorithm see:
---
---  ftp://ftp.rocksoft.com/papers/crc_v3.txt
+
+--    ftp://ftp.rocksoft.com/papers/crc_v3.txt
 
 --  "A Painless Guide to CRC Error Detection Algorithms", Ross N. Williams
---
+
 --  "Computation of Cyclic Redundancy Checks via Table Look-Up", Communications
 --  of the ACM, Vol. 31 No. 8, pp.1008-1013 Aug. 1988. Sarwate, D.V.
 

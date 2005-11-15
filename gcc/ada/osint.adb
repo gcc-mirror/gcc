@@ -76,7 +76,7 @@ package body Osint is
    function Append_Suffix_To_File_Name
      (Name   : Name_Id;
       Suffix : String) return Name_Id;
-   --  Appends Suffix to Name and returns the new name.
+   --  Appends Suffix to Name and returns the new name
 
    function OS_Time_To_GNAT_Time (T : OS_Time) return Time_Stamp_Type;
    --  Convert OS format time to GNAT format time stamp
@@ -115,7 +115,7 @@ package body Osint is
    --  full file name if file found, or No_File if not found.
 
    function C_String_Length (S : Address) return Integer;
-   --  Returns length of a C string. Returns zero for a null address.
+   --  Returns length of a C string. Returns zero for a null address
 
    function To_Path_String_Access
      (Path_Addr : Address;
@@ -200,7 +200,7 @@ package body Osint is
    --  time stamp.
 
    File_Cache_Enabled : Boolean := False;
-   --  Set to true if you want the enable the file data caching mechanism.
+   --  Set to true if you want the enable the file data caching mechanism
 
    type File_Hash_Num is range 0 .. 1020;
 

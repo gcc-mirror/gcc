@@ -1169,7 +1169,7 @@ package body Atree is
 
       function Copy_Elist_With_Replacement
         (Old_Elist : Elist_Id) return Elist_Id;
-      --  Called during second phase to copy element list doing replacements.
+      --  Called during second phase to copy element list doing replacements
 
       procedure Copy_Itype_With_Replacement (New_Itype : Entity_Id);
       --  Called during the second phase to process a copied Itype. The actual
@@ -1178,7 +1178,7 @@ package body Atree is
       --  the copied Itype and copy them where necessary.
 
       function Copy_List_With_Replacement (Old_List : List_Id) return List_Id;
-      --  Called during second phase to copy list doing replacements.
+      --  Called during second phase to copy list doing replacements
 
       function Copy_Node_With_Replacement (Old_Node : Node_Id) return Node_Id;
       --  Called during second phase to copy node doing replacements
@@ -1775,7 +1775,7 @@ package body Atree is
             Visit_Field (Union_Id (Scalar_Range (Old_Itype)), Old_Itype);
 
          elsif Has_Discriminants (Base_Type (Old_Itype)) then
-            --  ??? This should involve call to Visit_Field.
+            --  ??? This should involve call to Visit_Field
             Visit_Elist (Discriminant_Constraint (Old_Itype));
 
          elsif Is_Array_Type (Old_Itype) then

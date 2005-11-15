@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2005, Ada Core Technologies               --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,10 +56,9 @@
 --  attribute is a potential source of dangling references.
 
 --  When a task goes away, we want to be able to recover all the storage
---  associated with its attributes. The Ada mechanism for this is
---  finalization, via controlled attribute types. For this reason, the ARM
---  requires finalization of attribute values when the associated task
---  terminates.
+--  associated with its attributes. The Ada mechanism for this is finalization,
+--  via controlled attribute types. For this reason, the ARM requires
+--  finalization of attribute values when the associated task terminates.
 
 --  This finalization must be triggered by the tasking runtime system, during
 --  termination of the task. Given the active set of instantiations of
@@ -376,7 +375,6 @@ package body Ada.Task_Attributes is
 
    procedure Deallocate (P : in out Access_Node) is
       T : Access_Wrapper := To_Access_Wrapper (P.Wrapper);
-
    begin
       Free (T);
    end Deallocate;

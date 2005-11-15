@@ -247,7 +247,7 @@ package Checks is
    --  be discarded, even if they are not in the current statement range.
 
    procedure Kill_All_Checks;
-   --  This procedure kills all remembered checks.
+   --  This procedure kills all remembered checks
 
    -----------------------------
    -- Length and Range Checks --
@@ -548,7 +548,7 @@ package Checks is
    --    If all possible stored values are valid, then any uninitialized
    --    value must be valid.
 
-   --    Literals, including enumeration literals, are clearly always valid.
+   --    Literals, including enumeration literals, are clearly always valid
 
    --    Constants are always assumed valid, with a validity check being
    --    performed on the initializing value where necessary to ensure that

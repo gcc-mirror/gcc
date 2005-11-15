@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1995-2005 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,13 +98,14 @@ package body GNAT.OS_Lib is
       Blocking     : Boolean);
    --  Internal routine to implement the two Spawn (blocking/non blocking)
    --  routines. If Blocking is set to True then the spawn is blocking
-   --  otherwise it is non blocking. In this latter case the Pid contains
-   --  the process id number. The first three parameters are as in Spawn.
-   --  Note that Spawn_Internal normalizes the argument list before calling
-   --  the low level system spawn routines (see Normalize_Arguments). Note
-   --  that Normalize_Arguments is designed to do nothing if it is called
-   --  more than once, so calling Normalize_Arguments before calling one
-   --  of the spawn routines is fine.
+   --  otherwise it is non blocking. In this latter case the Pid contains the
+   --  process id number. The first three parameters are as in Spawn. Note that
+   --  Spawn_Internal normalizes the argument list before calling the low level
+   --  system spawn routines (see Normalize_Arguments).
+   --
+   --  Note: Normalize_Arguments is designed to do nothing if it is called more
+   --  than once, so calling Normalize_Arguments before calling one of the
+   --  spawn routines is fine.
 
    function To_Path_String_Access
      (Path_Addr : Address;
@@ -250,10 +251,8 @@ package body GNAT.OS_Lib is
    ---------------------
 
    function C_String_Length (S : Address) return Integer is
-
       function Strlen (S : Address) return Integer;
       pragma Import (C, Strlen, "strlen");
-
    begin
       if S = Null_Address then
          return 0;
@@ -332,6 +331,8 @@ package body GNAT.OS_Lib is
          begin
             return C = Directory_Separator or else C = '/';
          end Is_Dirsep;
+
+      --  Start of processing for Build_Path
 
       begin
          --  Find base file name
@@ -504,8 +505,7 @@ package body GNAT.OS_Lib is
                   Dest : constant String := Build_Path (Pathname, Name);
 
                begin
-                  --  If the target file exists, we have an error
-                  --  otherwise do the copy.
+                  --  If target file exists, we have an error, else do copy
 
                   if Is_Regular_File (Dest) then
                      raise Copy_Error;
@@ -520,7 +520,7 @@ package body GNAT.OS_Lib is
                Copy_To (Pathname);
             end if;
 
-         --  Overwrite case, destination file may or may not exist
+         --  Overwrite case (destination file may or may not exist)
 
          when Overwrite =>
             if Is_Directory (Pathname) then
@@ -529,7 +529,7 @@ package body GNAT.OS_Lib is
                Copy_To (Pathname);
             end if;
 
-         --  Appending case, destination file may or may not exist
+         --  Append case (destination file may or may not exist)
 
          when Append =>
 
@@ -537,8 +537,8 @@ package body GNAT.OS_Lib is
 
             if Is_Regular_File (Pathname) then
 
-               --  Append mode and destination file exists, append data
-               --  at the end of Pathname.
+               --  Append mode and destination file exists, append data at the
+               --  end of Pathname.
 
                From := Open_Read (Name, Binary);
                To   := Open_Read_Write (Pathname, Binary);
@@ -857,7 +857,6 @@ package body GNAT.OS_Lib is
    function File_Time_Stamp (FD : File_Descriptor) return OS_Time is
       function File_Time (FD    : File_Descriptor) return OS_Time;
       pragma Import (C, File_Time, "__gnat_file_time_fd");
-
    begin
       return File_Time (FD);
    end File_Time_Stamp;
@@ -865,14 +864,12 @@ package body GNAT.OS_Lib is
    function File_Time_Stamp (Name : C_File_Name) return OS_Time is
       function File_Time (Name : Address) return OS_Time;
       pragma Import (C, File_Time, "__gnat_file_time_name");
-
    begin
       return File_Time (Name);
    end File_Time_Stamp;
 
    function File_Time_Stamp (Name : String) return OS_Time is
       F_Name : String (1 .. Name'Length + 1);
-
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
@@ -1152,7 +1149,6 @@ package body GNAT.OS_Lib is
         (Name   : Address;
          Length : Integer) return Integer;
       pragma Import (C, Is_Absolute_Path, "__gnat_is_absolute_path");
-
    begin
       return Is_Absolute_Path (Name'Address, Name'Length) /= 0;
    end Is_Absolute_Path;
@@ -1164,14 +1160,12 @@ package body GNAT.OS_Lib is
    function Is_Directory (Name : C_File_Name) return Boolean is
       function Is_Directory (Name : Address) return Integer;
       pragma Import (C, Is_Directory, "__gnat_is_directory");
-
    begin
       return Is_Directory (Name) /= 0;
    end Is_Directory;
 
    function Is_Directory (Name : String) return Boolean is
       F_Name : String (1 .. Name'Length + 1);
-
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
@@ -1185,14 +1179,12 @@ package body GNAT.OS_Lib is
    function Is_Regular_File (Name : C_File_Name) return Boolean is
       function Is_Regular_File (Name : Address) return Integer;
       pragma Import (C, Is_Regular_File, "__gnat_is_regular_file");
-
    begin
       return Is_Regular_File (Name) /= 0;
    end Is_Regular_File;
 
    function Is_Regular_File (Name : String) return Boolean is
       F_Name : String (1 .. Name'Length + 1);
-
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
@@ -1206,14 +1198,12 @@ package body GNAT.OS_Lib is
    function Is_Readable_File (Name : C_File_Name) return Boolean is
       function Is_Readable_File (Name : Address) return Integer;
       pragma Import (C, Is_Readable_File, "__gnat_is_readable_file");
-
    begin
       return Is_Readable_File (Name) /= 0;
    end Is_Readable_File;
 
    function Is_Readable_File (Name : String) return Boolean is
       F_Name : String (1 .. Name'Length + 1);
-
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
@@ -1227,14 +1217,12 @@ package body GNAT.OS_Lib is
    function Is_Writable_File (Name : C_File_Name) return Boolean is
       function Is_Writable_File (Name : Address) return Integer;
       pragma Import (C, Is_Writable_File, "__gnat_is_writable_file");
-
    begin
       return Is_Writable_File (Name) /= 0;
    end Is_Writable_File;
 
    function Is_Writable_File (Name : String) return Boolean is
       F_Name : String (1 .. Name'Length + 1);
-
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
@@ -1248,14 +1236,12 @@ package body GNAT.OS_Lib is
    function Is_Symbolic_Link (Name : C_File_Name) return Boolean is
       function Is_Symbolic_Link (Name : Address) return Integer;
       pragma Import (C, Is_Symbolic_Link, "__gnat_is_symbolic_link");
-
    begin
       return Is_Symbolic_Link (Name) /= 0;
    end Is_Symbolic_Link;
 
    function Is_Symbolic_Link (Name : String) return Boolean is
       F_Name : String (1 .. Name'Length + 1);
-
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
@@ -1370,18 +1356,15 @@ package body GNAT.OS_Lib is
       return                   Process_Id
    is
       Saved_Output : File_Descriptor;
-      Saved_Error  : File_Descriptor := Invalid_FD;
-      --  We need to initialize Saved_Error to Invalid_FD to avoid
-      --  a compiler warning that this variable may be used before
-      --  it is initialized (which can not happen, but the compiler
-      --  is not smart enough to figure this out).
-      Pid           : Process_Id;
+      Saved_Error  : File_Descriptor := Invalid_FD; -- prevent warning
+      Pid          : Process_Id;
    begin
       if Output_File_Descriptor = Invalid_FD then
          return Invalid_Pid;
       end if;
 
       --  Set standard output and, if specified, error to the temporary file
+
       Saved_Output := Dup (Standout);
       Dup2 (Output_File_Descriptor, Standout);
 
@@ -1417,11 +1400,10 @@ package body GNAT.OS_Lib is
      (Program_Name : String;
       Args         : Argument_List;
       Output_File  : String;
-      Err_To_Out   : Boolean := True)
-      return         Process_Id
+      Err_To_Out   : Boolean := True) return Process_Id
    is
       Output_File_Descriptor : constant File_Descriptor :=
-        Create_Output_Text_File (Output_File);
+                                 Create_Output_Text_File (Output_File);
       Result : Process_Id;
 
    begin
@@ -1530,6 +1512,8 @@ package body GNAT.OS_Lib is
 
          end if;
       end Quote_Argument;
+
+   --  Start of processing for Normalize_Arguments
 
    begin
       if Argument_Needs_Quote then
@@ -1857,6 +1841,7 @@ package body GNAT.OS_Lib is
             end if;
 
             --  Add the ASCII.NUL to be able to call the C function chdir
+
             Path (Pos + 1) := ASCII.NUL;
 
             Status := Change_Dir (Path (1 .. Pos + 1));
@@ -1890,13 +1875,13 @@ package body GNAT.OS_Lib is
 
       --  Start the conversions
 
-      --  If this is not finished after Max_Iterations, give up and
-      --  return an empty string.
+      --  If this is not finished after Max_Iterations, give up and return an
+      --  empty string.
 
       for J in 1 .. Max_Iterations loop
 
-         --  If we don't have an absolute pathname, prepend
-         --  the directory Reference_Dir.
+         --  If we don't have an absolute pathname, prepend the directory
+         --  Reference_Dir.
 
          if Last = 1
            and then not Is_Absolute_Path (Path_Buffer (1 .. End_Path))
@@ -1946,8 +1931,8 @@ package body GNAT.OS_Lib is
             end if;
          end loop;
 
-         --  Find the end of the current field: last character
-         --  or the one preceding the next directory separator.
+         --  Find the end of the current field: last character or the one
+         --  preceding the next directory separator.
 
          while Finish < End_Path
            and then Path_Buffer (Finish + 1) /= Directory_Separator
@@ -2058,11 +2043,10 @@ package body GNAT.OS_Lib is
 
       --  Too many iterations: give up
 
-      --  This can happen when there is a circularity in the symbolic links:
-      --  A is a symbolic link for B, which itself is a symbolic link, and
-      --  the target of B or of another symbolic link target of B is A.
-      --  In this case, we return an empty string to indicate failure to
-      --  resolve.
+      --  This can happen when there is a circularity in the symbolic links: A
+      --  is a symbolic link for B, which itself is a symbolic link, and the
+      --  target of B or of another symbolic link target of B is A. In this
+      --  case, we return an empty string to indicate failure to resolve.
 
       return "";
    end Normalize_Pathname;
@@ -2126,9 +2110,9 @@ package body GNAT.OS_Lib is
    ----------
 
    function Read
-     (FD   : File_Descriptor;
-      A    : System.Address;
-      N    : Integer) return Integer
+     (FD : File_Descriptor;
+      A  : System.Address;
+      N  : Integer) return Integer
    is
    begin
       return Integer (System.CRTL.read
@@ -2279,11 +2263,7 @@ package body GNAT.OS_Lib is
       Err_To_Out             : Boolean := True)
    is
       Saved_Output : File_Descriptor;
-      Saved_Error  : File_Descriptor := Invalid_FD;
-      --  We need to initialize Saved_Error to Invalid_FD to avoid
-      --  a compiler warning that this variable may be used before
-      --  it is initialized (which can not happen, but the compiler
-      --  is not smart enough to figure this out).
+      Saved_Error  : File_Descriptor := Invalid_FD; -- prevent compiler warning
 
    begin
       --  Set standard output and error to the temporary file
@@ -2373,15 +2353,15 @@ package body GNAT.OS_Lib is
                                               + Args_Length (Args);
          Command_Last : Natural := 0;
          Command : aliased Chars (1 .. Command_Len);
-         --  Command contains all characters of the Program_Name and Args,
-         --  all terminated by ASCII.NUL characters
+         --  Command contains all characters of the Program_Name and Args, all
+         --  terminated by ASCII.NUL characters
 
          Arg_List_Len : constant Positive := Args'Length + 2;
          Arg_List_Last : Natural := 0;
          Arg_List : aliased array (1 .. Arg_List_Len) of Char_Ptr;
-         --  List with pointers to NUL-terminated strings of the
-         --  Program_Name and the Args and terminated with a null pointer.
-         --  We rely on the default initialization for the last null pointer.
+         --  List with pointers to NUL-terminated strings of the Program_Name
+         --  and the Args and terminated with a null pointer. We rely on the
+         --  default initialization for the last null pointer.
 
          procedure Add_To_Command (S : String);
          --  Add S and a NUL character to Command, updating Last
@@ -2403,8 +2383,10 @@ package body GNAT.OS_Lib is
          begin
             Command_Last := Command_Last + S'Length;
 
-            --  Move characters one at a time, because Command has
-            --  aliased components.
+            --  Move characters one at a time, because Command has aliased
+            --  components.
+
+            --  But not volatile, so why is this necessary ???
 
             for J in S'Range loop
                Command (First + J - S'First) := S (J);
@@ -2509,9 +2491,9 @@ package body GNAT.OS_Lib is
    -----------
 
    function Write
-     (FD   : File_Descriptor;
-      A    : System.Address;
-      N    : Integer) return Integer
+     (FD : File_Descriptor;
+      A  : System.Address;
+      N  : Integer) return Integer
    is
    begin
       return Integer (System.CRTL.write

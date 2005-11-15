@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2002-2005 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2002-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -309,7 +309,7 @@ package body GNAT.Perfect_Hash_Generators is
    -- Internal Table Management --
    -------------------------------
 
-   function  Allocate (N : Natural; S : Natural := 1) return Table_Id;
+   function Allocate (N : Natural; S : Natural := 1) return Table_Id;
    --  Allocate N * S ints from IT table
 
    procedure Free_Tmp_Tables;

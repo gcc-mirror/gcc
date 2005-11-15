@@ -950,7 +950,7 @@ package body Layout is
       --  is the expression so far (which will be the body of the function).
 
       Size : Val_Type;
-      --  Value of size computed so far. See comments above.
+      --  Value of size computed so far. See comments above
 
       Vtyp : Entity_Id := Empty;
       --  Variant record type for the formal parameter of the
@@ -2356,7 +2356,7 @@ package body Layout is
 
          if Is_Discrete_Type (E) then
 
-            --  If the RM_Size is not set, then here is where we set it.
+            --  If the RM_Size is not set, then here is where we set it
 
             --  Note: an RM_Size of zero looks like not set here, but this
             --  is a rare case, and we can simply reset it without any harm.

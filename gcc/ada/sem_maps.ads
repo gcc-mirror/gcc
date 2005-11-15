@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@
 --  Map composition of renaming maps takes place for nested instantiations,
 --  for generic child units, and for formal packages.
 
---  For additional details, see the documentation in sem_ch12.
+--  For additional details, see the documentation in sem_ch12
 
 with Table;
 with Types; use Types;
@@ -58,24 +58,24 @@ package Sem_Maps is
    --  and New_Map (e2) = e3, then the image of e1 under the result is e3.
 
    function Copy (M : Map) return Map;
-   --  Full copy of contents and headers.
+   --  Full copy of contents and headers
 
    function Lookup (M : Map; E : Entity_Id) return Entity_Id;
-   --  Retrieve image of E under M, Empty if undefined.
+   --  Retrieve image of E under M, Empty if undefined
 
    procedure Add_Association
      (M    : in out Map;
       O_Id : Entity_Id;
       N_Id : Entity_Id;
       Kind : Scope_Kind := S_Local);
-   --  Update M in place. On entry M (O_Id) must not be defined.
+   --  Update M in place. On entry M (O_Id) must not be defined
 
    procedure Update_Association
      (M    : in out Map;
       O_Id : Entity_Id;
       N_Id : Entity_Id;
       Kind : Scope_Kind := S_Local);
-   --  Update the entry in M for O_Id.
+   --  Update the entry in M for O_Id
 
    function Build_Instance_Map (M : Map) return Map;
    --  Copy renaming map of generic, and create new entities for all the

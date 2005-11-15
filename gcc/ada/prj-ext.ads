@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2000-2005 Free Software Foundation, Inc.       --
+--          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,13 +42,13 @@ package Prj.Ext is
    procedure Add
      (External_Name : String;
       Value         : String);
-   --  Add an external reference (or modify an existing one).
+   --  Add an external reference (or modify an existing one)
 
    function Value_Of
      (External_Name : Name_Id;
       With_Default  : Name_Id := No_Name)
       return          Name_Id;
-   --  Get the value of an external reference, and cache it for future uses.
+   --  Get the value of an external reference, and cache it for future uses
 
    function Check (Declaration : String) return Boolean;
    --  Check that an external declaration <external>=<value> is correct.

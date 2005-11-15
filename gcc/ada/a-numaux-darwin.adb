@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                          (Apple OS X Version)                            --
 --                                                                          --
---          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  File a-numaux.adb <- a-numaux-darwin.adb
+--  File a-numaux.adb <- a-numaux-d arwin.adb
 
 package body Ada.Numerics.Aux is
 
@@ -95,7 +95,8 @@ package body Ada.Numerics.Aux is
       P5 : constant Double := Double'Leading_Part (Half_Pi - P1 - P2 - P3
                                                                  - P4, HM);
       P6 : constant Double := Double'Model (Half_Pi - P1 - P2 - P3 - P4 - P5);
-      K  : Double := X * Two_Over_Pi;
+      K  : Double;
+
    begin
       --  For X < 2.0**HM, all products below are computed exactly.
       --  Due to cancellation effects all subtractions are exact as well.
@@ -103,17 +104,17 @@ package body Ada.Numerics.Aux is
       --  zeros after the binary point, the result will be the correctly
       --  rounded result of X - K * (Pi / 2.0).
 
-      while abs K >= 2.0**HM loop
+      K := X * Two_Over_Pi;
+      while abs K >= 2.0 ** HM loop
          K := K * M - (K * M - K);
-         X := (((((X - K * P1) - K * P2) - K * P3)
-                     - K * P4) - K * P5) - K * P6;
+         X :=
+           (((((X - K * P1) - K * P2) - K * P3) - K * P4) - K * P5) - K * P6;
          K := X * Two_Over_Pi;
       end loop;
 
+      --  If K is not a number (because X was not finite) raise exception
+
       if K /= K then
-
-         --  K is not a number, because X was not finite
-
          raise Constraint_Error;
       end if;
 

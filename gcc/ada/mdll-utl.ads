@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ package MDLL.Utl is
       Options     : Argument_List;
       Base_File   : String := "";
       Build_Lib   : Boolean := False);
-   --  Run gcc binary.
+   --  Run gcc binary
 
    procedure Gnatbind
      (Alis : Argument_List;

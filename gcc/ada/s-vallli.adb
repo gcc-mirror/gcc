@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,7 +88,6 @@ package body System.Val_LLI is
    function Value_Long_Long_Integer (Str : String) return Long_Long_Integer is
       V : Long_Long_Integer;
       P : aliased Integer := Str'First;
-
    begin
       V := Scan_Long_Long_Integer (Str, P'Access, Str'Last);
       Scan_Trailing_Blanks (Str, P);

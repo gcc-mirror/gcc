@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2000-2005 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2000-2005 AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -266,7 +266,7 @@ package body GNAT.AWK is
       NR           : Natural := 0;
       FNR          : Natural := 0;
       Matches      : Regpat.Match_Array (0 .. 100);
-      --  latest matches for the regexp pattern
+      --  Latest matches for the regexp pattern
    end record;
 
    procedure Free is
@@ -377,7 +377,6 @@ package body GNAT.AWK is
          Session : Session_Type)
       is
          pragma Unreferenced (Session);
-
       begin
          A.Proc.all;
       end Call;
@@ -423,7 +422,6 @@ package body GNAT.AWK is
          Session : Session_Type) return Boolean
       is
          use type Regpat.Match_Location;
-
       begin
          Regpat.Match
            (P.Regx.all, Field (P.Rank, Session), Session.Data.Matches);
@@ -439,7 +437,6 @@ package body GNAT.AWK is
          Session : Session_Type) return Boolean
       is
          pragma Unreferenced (Session);
-
       begin
          return P.Pattern.all;
       end Match;
@@ -450,7 +447,6 @@ package body GNAT.AWK is
 
       procedure Release (P : in out Pattern) is
          pragma Unreferenced (P);
-
       begin
          null;
       end Release;
@@ -462,7 +458,6 @@ package body GNAT.AWK is
       procedure Release (P : in out Regexp_Pattern) is
          procedure Free is new Unchecked_Deallocation
            (Regpat.Pattern_Matcher, Pattern_Matcher_Access);
-
       begin
          Free (P.Regx);
       end Release;
@@ -950,7 +945,6 @@ package body GNAT.AWK is
      (Session : Session_Type := Current_Session) return Natural
    is
       Files : File_Table.Instance renames Session.Data.Files;
-
    begin
       return File_Table.Last (Files);
    end Number_Of_Files;
@@ -1258,8 +1252,8 @@ package body GNAT.AWK is
 
    procedure Set_Field_Widths
      (Field_Widths : Widths_Set;
-      Session      : Session_Type := Current_Session) is
-
+      Session      : Session_Type := Current_Session)
+   is
    begin
       Free (Session.Data.Separators);
 
@@ -1280,10 +1274,8 @@ package body GNAT.AWK is
 
    procedure Split_Line (Session : Session_Type) is
       Fields : Field_Table.Instance renames Session.Data.Fields;
-
    begin
       Field_Table.Init (Fields);
-
       Split.Current_Line (Session.Data.Separators.all, Session);
    end Split_Line;
 

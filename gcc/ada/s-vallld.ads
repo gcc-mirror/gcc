@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,8 +42,7 @@ package System.Val_LLD is
      (Str   : String;
       Ptr   : access Integer;
       Max   : Integer;
-      Scale : Integer)
-      return  Long_Long_Integer;
+      Scale : Integer) return Long_Long_Integer;
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  real literal according to the syntax described in (RM 3.5(43)). The
    --  substring scanned extends no further than Str (Max). There are three
@@ -73,8 +72,7 @@ package System.Val_LLD is
 
    function Value_Long_Long_Decimal
      (Str   : String;
-      Scale : Integer)
-      return  Long_Long_Integer;
+      Scale : Integer) return Long_Long_Integer;
    --  Used in computing X'Value (Str) where X is a decimal types whose size
    --  exceeds Standard.Integer'Size. Str is the string argument of the
    --  attribute. Constraint_Error is raised if the string is malformed

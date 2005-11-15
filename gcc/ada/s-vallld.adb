@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,11 +47,9 @@ package body System.Val_LLD is
      (Str   : String;
       Ptr   : access Integer;
       Max   : Integer;
-      Scale : Integer)
-      return  Long_Long_Integer
+      Scale : Integer) return Long_Long_Integer
    is
       Val : Long_Long_Float;
-
    begin
       Val := Scan_Real (Str, Ptr, Max);
       return Long_Long_Integer (Val * 10.0 ** Scale);
@@ -65,8 +63,7 @@ package body System.Val_LLD is
 
    function Value_Long_Long_Decimal
      (Str   : String;
-      Scale : Integer)
-      return  Long_Long_Integer
+      Scale : Integer) return Long_Long_Integer
    is
    begin
       return Long_Long_Integer (Value_Real (Str) * 10.0 ** Scale);

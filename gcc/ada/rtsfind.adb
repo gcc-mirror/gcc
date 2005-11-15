@@ -171,7 +171,7 @@ package body Rtsfind is
    --  is only effective in All_Errors mode.
 
    function RE_Chars (E : RE_Id) return Name_Id;
-   --  Given a RE_Id value returns the Chars of the corresponding entity.
+   --  Given a RE_Id value returns the Chars of the corresponding entity
 
    procedure RTE_Error_Msg (Msg : String);
    --  Generates a message by calling Error_Msg_N specifying Current_Error_Node
@@ -518,7 +518,7 @@ package body Rtsfind is
       --  Indicate those that must be restored.
 
       procedure Restore_Private_Visibility;
-      --  Restore the visibility of ancestors after compiling RTU.
+      --  Restore the visibility of ancestors after compiling RTU
 
       --------------------------------
       -- Restore_Private_Visibility --

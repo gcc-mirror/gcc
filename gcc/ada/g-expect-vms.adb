@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2002-2005 Ada Core Technologies, Inc.          --
+--                     Copyright (C) 2002-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VMS version.
+--  This is the VMS version
 
 with System;        use System;
 with Ada.Calendar;  use Ada.Calendar;
@@ -113,7 +113,7 @@ package body GNAT.Expect is
 
    function Waitpid (Pid : Process_Id) return Integer;
    pragma Import (C, Waitpid, "__gnat_waitpid");
-   --  Wait for a specific process id, and return its exit code.
+   --  Wait for a specific process id, and return its exit code
 
    ---------
    -- "+" --
@@ -330,7 +330,7 @@ package body GNAT.Expect is
          --  Calculate the timeout for the next turn.
          --  Note that Timeout is, from the caller's perspective, the maximum
          --  time until a match, not the maximum time until some output is
-         --  read, and thus can not be reused as is for Expect_Internal.
+         --  read, and thus cannot be reused as is for Expect_Internal.
 
          if Timeout /= -1 then
             Timeout_Tmp := Integer (Try_Until - Clock) * 1000;
@@ -660,7 +660,7 @@ package body GNAT.Expect is
                                    Descriptors (J).Buffer_Size - N;
                               end if;
 
-                              --  Keep what we read in the buffer.
+                              --  Keep what we read in the buffer
 
                               Descriptors (J).Buffer
                                 (Descriptors (J).Buffer_Index + 1 ..
@@ -1046,7 +1046,7 @@ package body GNAT.Expect is
    is
    begin
       Kill (Descriptor.Pid, Signal);
-      --  ??? Need to check process status here.
+      --  ??? Need to check process status here
    end Send_Signal;
 
    ---------------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 1998-2005 Free Software Foundation, Inc.           --
+--          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@ package Xr_Tabls is
    -------------------
 
    function ALI_File_Name (Ada_File_Name : String) return String;
-   --  Returns the ali file name corresponding to Ada_File_Name.
+   --  Returns the ali file name corresponding to Ada_File_Name
 
    procedure Create_Project_File (Name : String);
    --  Open and parse a new project file. If the file Name could not be
@@ -82,14 +82,14 @@ package Xr_Tabls is
       Remove_Only  : Boolean := False;
       Symbol_Match : Boolean := True)
       return         Declaration_Reference;
-   --  Add a new declaration in the table and return the index to it.
-   --  Decl_Type is the type of the entity Any previous instance of this
-   --  entity in the htable is removed. If Remove_Only is True, then any
-   --  previous instance is removed, but the new entity is never inserted.
-   --  Symbol_Match should be set to False if the name of the symbol doesn't
-   --  match the pattern from the command line. In that case, the entity will
-   --  not be output by gnatfind. If Symbol_Match is True, the entity will only
-   --  be output if the file name itself matches.
+   --  Add a new declaration in the table and return the index to it. Decl_Type
+   --  is the type of the entity Any previous instance of this entity in the
+   --  htable is removed. If Remove_Only is True, then any previous instance is
+   --  removed, but the new entity is never inserted. Symbol_Match should be
+   --  set to False if the name of the symbol doesn't match the pattern from
+   --  the command line. In that case, the entity will not be output by
+   --  gnatfind. If Symbol_Match is True, the entity will only be output if the
+   --  file name itself matches.
 
    procedure Add_Parent
      (Declaration : in out Declaration_Reference;
@@ -160,10 +160,9 @@ package Xr_Tabls is
       Get_Writes : Boolean := False;
       Get_Bodies : Boolean := False)
       return       Reference_Array_Access;
-   --  Return a sorted list of all references to the entity in decl.
-   --  The parameters Get_* are used to specify what kind of references
-   --  should be merged and returned (read-only accesses, write accesses
-   --  and bodies).
+   --  Return a sorted list of all references to the entity in decl. The
+   --  parameters Get_* are used to specify what kind of references should be
+   --  merged and returned (read-only accesses, write accesses and bodies).
 
    function Get_Column (Decl : Declaration_Reference) return String;
    function Get_Column (Ref : Reference) return String;
@@ -216,14 +215,13 @@ package Xr_Tabls is
      (File     : File_Reference;
       With_Dir : Boolean := False;
       Strip    : Natural := 0) return String;
-   --  Returns the file name (and its directory if With_Dir is True or the
-   --  user has used the -f switch on the command line. If Strip is not 0,
-   --  then the last Strip-th "-..." substrings are removed first. For
-   --  instance, with Strip=2, a file name "parent-child1-child2-child3.ali"
-   --  would be returned as "parent-child1.ali". This is used when looking
-   --  for the ALI file to use for a package, since for separates with have
-   --  to use the parent's ALI. The null string is returned if there is no
-   --  such parent unit.
+   --  Returns the file name (and its directory if With_Dir is True or the user
+   --  has used the -f switch on the command line. If Strip is not 0, then the
+   --  last Strip-th "-..." substrings are removed first. For instance, with
+   --  Strip=2, a file name "parent-child1-child2-child3.ali" would be returned
+   --  as "parent-child1.ali". This is used when looking for the ALI file to
+   --  use for a package, since for separates with have to use the parent's
+   --  ALI. The null string is returned if there is no such parent unit.
    --
    --  Note that this version of Get_File is not inlined
 
@@ -240,16 +238,16 @@ package Xr_Tabls is
    --  Return the source line associated with the reference
 
    procedure Grep_Source_Files;
-   --  Parse all the source files which have at least one reference,
-   --  and grep the appropriate source lines so that we'll be able to
-   --  display them.  This function should be called once all the .ali
-   --  files have been parsed, and only if the appropriate user switch
+   --  Parse all the source files which have at least one reference, and grep
+   --  the appropriate source lines so that we'll be able to display them. This
+   --  function should be called once all the .ali files have been parsed, and
+   --  only if the appropriate user switch
    --  has been used (gnatfind -s).
    --
-   --  Note: To save memory, the strings for the source lines are shared.
-   --  Thus it is no longer possible to free the references, or we would
-   --  free the same chunk multiple times. It doesn't matter, though, since
-   --  this is only called once, prior to exiting gnatfind.
+   --  Note: To save memory, the strings for the source lines are shared. Thus
+   --  it is no longer possible to free the references, or we would free the
+   --  same chunk multiple times. It doesn't matter, though, since this is only
+   --  called once, prior to exiting gnatfind.
 
    function Longest_File_Name return Natural;
    --  Returns the longest file name found
@@ -266,9 +264,9 @@ package Xr_Tabls is
    --  by the user
 
    function Next_Unvisited_File return File_Reference;
-   --  Returns the next unvisited library file in the list
-   --  If there is no more unvisited file, return Empty_File.
-   --  Two calls to this subprogram will return different files.
+   --  Returns the next unvisited library file in the list If there is no more
+   --  unvisited file, return Empty_File. Two calls to this subprogram will
+   --  return different files.
 
    procedure Set_Default_Match (Value : Boolean);
    --  Set the default value for match in declarations.
@@ -276,23 +274,22 @@ package Xr_Tabls is
    --  command line, then every file match
 
    procedure Reset_Directory (File : File_Reference);
-   --  Reset the cached directory for file. Next time Get_File is
-   --  called, the directory willl be recomputed.
+   --  Reset the cached directory for file. Next time Get_File is called, the
+   --  directory willl be recomputed.
 
    procedure Set_Unvisited (File_Ref : File_Reference);
-   --  Set File_Ref as unvisited. So Next_Unvisited_File will return it.
+   --  Set File_Ref as unvisited. So Next_Unvisited_File will return it
 
    procedure Read_File
      (File_Name : String;
       Contents  : out GNAT.OS_Lib.String_Access);
-   --  Reads File_Name into the newly allocated strig Contents. A
-   --  Types.EOF character will be added to the returned Contents to
-   --  simplify parsing. Name_Error is raised if the file was not found.
-   --  End_Error is raised if the file could not be read correctly. For
-   --  most systems correct reading means that the number of bytes read
-   --  is equal to the file size. The exception is OpenVMS where correct
-   --  reading means that the number of bytes read is less than or equal
-   --  to the file size.
+   --  Reads File_Name into the newly allocated strig Contents. Types.EOF
+   --  character will be added to the returned Contents to simplify parsing.
+   --  Name_Error is raised if the file was not found. End_Error is raised if
+   --  the file could not be read correctly. For most systems correct reading
+   --  means that the number of bytes read is equal to the file size. The
+   --  exception is OpenVMS where correct reading means that the number of
+   --  bytes read is less than or equal to the file size.
 
 private
    type Project_File (Src_Dir_Length, Obj_Dir_Length : Natural) is record

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---           Copyright (C) 1991-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,20 +31,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a Solaris version of this package.
---
+--  This is a Solaris version of this package
+
 --  The following signals are reserved by the run time (native threads):
---
+
 --  SIGFPE, SIGILL, SIGSEGV, SIGBUS, SIGTRAP, SIGABRT, SIGINT,
 --  SIGLWP, SIGWAITING, SIGCANCEL, SIGSTOP, SIGKILL
---
+
 --  The following signals are reserved by the run time (FSU threads):
---
+
 --  SIGFPE, SIGILL, SIGSEGV, SIGBUS, SIGTRAP, SIGTERM, SIGABRT, SIGINT,
 --  SIGLWP, SIGALRM, SIGVTALRM, SIGAITING, SIGSTOP, SIGKILL
---
+
 --  The pragma Unreserve_All_Interrupts affects the following signal(s):
---
+
 --  SIGINT: made available for Ada handlers
 
 with System.OS_Interface;
@@ -52,10 +52,9 @@ with System.OS_Interface;
 
 package Ada.Interrupts.Names is
 
-   --  Beware that the mapping of names to signals may be
-   --  many-to-one.  There may be aliases.  Also, for all
-   --  signal names that are not supported on the current system
-   --  the value of the corresponding constant will be zero.
+   --  Beware that the mapping of names to signals may be many-to-one. There
+   --  may be aliases. Also, for all signal names that are not supported on the
+   --  current system the value of the corresponding constant will be zero.
 
    SIGHUP : constant Interrupt_ID :=
      System.OS_Interface.SIGHUP;      --  hangup

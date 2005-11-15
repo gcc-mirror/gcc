@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,9 +38,9 @@ package System.Val_Int is
    pragma Pure;
 
    function Scan_Integer
-     (Str  : String;
-      Ptr  : access Integer;
-      Max  : Integer) return Integer;
+     (Str : String;
+      Ptr : access Integer;
+      Max : Integer) return Integer;
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  integer according to the syntax described in (RM 3.5(43)). The substring
    --  scanned extends no further than Str (Max). There are three cases for the

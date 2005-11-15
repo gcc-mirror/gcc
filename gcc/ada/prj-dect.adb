@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2005 Free Software Foundation, Inc          --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@ package body Prj.Dect is
       Current_Project   : Project_Node_Id;
       Current_Package   : Project_Node_Id;
       Packages_To_Check : String_List_Access);
-   --  Parse an attribute declaration.
+   --  Parse an attribute declaration
 
    procedure Parse_Case_Construction
      (In_Tree           : Project_Node_Tree_Ref;

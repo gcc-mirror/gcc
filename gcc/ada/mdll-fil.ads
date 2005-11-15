@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@ package MDLL.Fil is
    --  Return extension of Filename
 
    function Is_Ali (Filename : String) return Boolean;
-   --  Test if Filename is an Ada library file (.ali).
+   --  Test if Filename is an Ada library file (.ali)
 
    function Is_Obj (Filename : String) return Boolean;
    --  Test if Filename is an object file (.o or .obj)

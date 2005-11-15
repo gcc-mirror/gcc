@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---            Copyright (C) 2002-2004 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2002-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,7 +138,7 @@ package body GNAT.MD5 is
    procedure Transform
      (C     : in out Context;
       Block : String);
-   --  Process one block of 64 characters.
+   --  Process one block of 64 characters
 
    ------------
    -- Decode --
@@ -148,7 +148,7 @@ package body GNAT.MD5 is
      (Block : String;
       X     : out Sixteen_Words)
    is
-      Cur   : Positive := Block'First;
+      Cur : Positive := Block'First;
 
    begin
       pragma Assert (Block'Length = 64);
@@ -171,7 +171,7 @@ package body GNAT.MD5 is
       Result : Message_Digest;
 
       Cur : Natural := 1;
-      --  Index in Result where the next character will be placed.
+      --  Index in Result where the next character will be placed
 
       Last_Block : String (1 .. 64);
 
@@ -519,7 +519,6 @@ package body GNAT.MD5 is
 
    function Wide_Digest (W : Wide_String) return Message_Digest is
       C : Context;
-
    begin
       Wide_Update (C, W);
       return Digest (C);
@@ -533,7 +532,6 @@ package body GNAT.MD5 is
      (C     : in out Context;
       Input : Wide_String)
    is
-
       String_Input : String (1 .. 2 * Input'Length);
       Cur          : Positive := 1;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---       Copyright (C) 1998-2002 Free Software Foundation, Inc.             --
+--          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,7 +95,7 @@ package Xref_Lib is
    ------------------------
 
    function Default_Project_File (Dir_Name : in String) return String;
-   --  Returns the default Project file name for the directory Dir_Name.
+   --  Returns the default Project file name for the directory Dir_Name
 
    procedure Search
      (Pattern       : Search_Pattern;
@@ -144,16 +144,16 @@ private
    type Dependencies is new Dependencies_Tables.Instance;
 
    type ALI_File is limited record
-      Buffer         : String_Access := null;
+      Buffer : String_Access := null;
       --  Buffer used to read the whole file at once
 
-      Current_Line   : Positive;
+      Current_Line : Positive;
       --  Start of the current line in Buffer
 
-      Xref_Line      : Positive;
+      Xref_Line : Positive;
       --  Start of the xref lines in Buffer
 
-      X_File         : Xr_Tabls.File_Reference;
+      X_File : Xr_Tabls.File_Reference;
       --  Stores the cross-referencing file-name ("X..." lines), as an
       --  index into the dependencies table
 
@@ -171,10 +171,10 @@ private
       --  line, it is stored as "Entity_Name Declaration_File:line:column"
 
       File_Ref : Xr_Tabls.File_Reference;
-      --  A reference to the source file, if any.
+      --  A reference to the source file, if any
 
       Initialized : Boolean := False;
-      --  Set to True when Entity has been initialized.
+      --  Set to True when Entity has been initialized
    end record;
-   --  Stores all the pattern that are search for.
+
 end Xref_Lib;

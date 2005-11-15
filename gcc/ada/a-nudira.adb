@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Calendar;
+
 with Interfaces; use Interfaces;
 
 package body Ada.Numerics.Discrete_Random is
@@ -201,7 +202,6 @@ package body Ada.Numerics.Discrete_Random is
 
    procedure Reset (Gen : Generator; From_State : State) is
       Genp : constant Pointer := Gen.Gen_State'Unrestricted_Access;
-
    begin
       Genp.all := From_State;
    end Reset;

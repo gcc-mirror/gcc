@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -142,9 +142,9 @@
 --     may be used on a preprocessor line, but other than that, no other
 --     tokens may appear on a preprocessor line.
 
---     Any number of #elsif clauses can be present, including none at all.
+--     Any number of #elsif clauses can be present, including none at all
 
---     The #else is optional, as in Ada.
+--     The #else is optional, as in Ada
 
 --     The # marking the start of a preprocessor line must be the first
 --     non-blank character on the line, i.e. it must be preceded only by

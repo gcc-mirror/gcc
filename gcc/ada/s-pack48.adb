@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,7 +92,6 @@ package body System.Pack_48 is
 
    function Get_48 (Arr : System.Address; N : Natural) return Bits_48 is
       C : constant Cluster_Ref := To_Ref (Arr + Bits * Ofs (Uns (N) / 8));
-
    begin
       case N07 (Uns (N) mod 8) is
          when 0 => return C.E0;
@@ -112,7 +111,6 @@ package body System.Pack_48 is
 
    function GetU_48 (Arr : System.Address; N : Natural) return Bits_48 is
       C : constant ClusterU_Ref := To_Ref (Arr + Bits * Ofs (Uns (N) / 8));
-
    begin
       case N07 (Uns (N) mod 8) is
          when 0 => return C.E0;
@@ -132,7 +130,6 @@ package body System.Pack_48 is
 
    procedure Set_48 (Arr : System.Address; N : Natural; E : Bits_48) is
       C : constant Cluster_Ref := To_Ref (Arr + Bits * Ofs (Uns (N) / 8));
-
    begin
       case N07 (Uns (N) mod 8) is
          when 0 => C.E0 := E;
@@ -152,7 +149,6 @@ package body System.Pack_48 is
 
    procedure SetU_48 (Arr : System.Address; N : Natural; E : Bits_48) is
       C : constant ClusterU_Ref := To_Ref (Arr + Bits * Ofs (Uns (N) / 8));
-
    begin
       case N07 (Uns (N) mod 8) is
          when 0 => C.E0 := E;

@@ -88,7 +88,7 @@ package body Inline is
    type Subp_Index is new Nat;
    No_Subp : constant Subp_Index := 0;
 
-   --  The subprogram entities are hashed into the Inlined table.
+   --  The subprogram entities are hashed into the Inlined table
 
    Num_Hash_Headers : constant := 512;
 
@@ -182,10 +182,10 @@ package body Inline is
    To_Clean : Elist_Id;
 
    procedure Add_Scope_To_Clean (Inst : Entity_Id);
-   --  Build set of scopes on which cleanup actions must be performed.
+   --  Build set of scopes on which cleanup actions must be performed
 
    procedure Cleanup_Scopes;
-   --  Complete cleanup actions on scopes that need it.
+   --  Complete cleanup actions on scopes that need it
 
    --------------
    -- Add_Call --
@@ -215,7 +215,7 @@ package body Inline is
             J := Successors.Table (J).Next;
          end loop;
 
-         --  On exit, make a successor entry for P2.
+         --  On exit, make a successor entry for P2
 
          Successors.Increment_Last;
          Successors.Table (Successors.Last).Subp := P2;
@@ -505,7 +505,7 @@ package body Inline is
       J     : Subp_Index;
 
       procedure New_Entry;
-      --  Initialize entry in Inlined table.
+      --  Initialize entry in Inlined table
 
       procedure New_Entry is
       begin
@@ -692,7 +692,8 @@ package body Inline is
             then
                Error_Msg_N
                  ("& cannot be inlined?", Inlined.Table (Index).Name);
-               --  A warning on the first one might be sufficient.
+
+               --  A warning on the first one might be sufficient ???
             end if;
          end loop;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,10 +122,10 @@ package Elists is
    --  that contains no items.
 
    procedure Append_Elmt (Node : Node_Id; To : Elist_Id);
-   --  Appends Node at the end of To, allocating a new element.
+   --  Appends Node at the end of To, allocating a new element
 
    procedure Prepend_Elmt (Node : Node_Id; To : Elist_Id);
-   --  Appends Node at the beginning of To, allocating a new element.
+   --  Appends Node at the beginning of To, allocating a new element
 
    procedure Insert_Elmt_After (Node : Node_Id; Elmt : Elmt_Id);
    --  Add a new element (Node) right after the pre-existing element Elmt

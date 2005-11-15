@@ -646,7 +646,6 @@ package body Sem is
       if Suppress = All_Checks then
          declare
             Svg : constant Suppress_Array := Scope_Suppress;
-
          begin
             Scope_Suppress := (others => True);
             Analyze (N);
@@ -656,7 +655,6 @@ package body Sem is
       else
          declare
             Svg : constant Boolean := Scope_Suppress (Suppress);
-
          begin
             Scope_Suppress (Suppress) := True;
             Analyze (N);
@@ -687,7 +685,6 @@ package body Sem is
       if Suppress = All_Checks then
          declare
             Svg : constant Suppress_Array := Scope_Suppress;
-
          begin
             Scope_Suppress := (others => True);
             Analyze_List (L);
@@ -697,7 +694,6 @@ package body Sem is
       else
          declare
             Svg : constant Boolean := Scope_Suppress (Suppress);
-
          begin
             Scope_Suppress (Suppress) := True;
             Analyze_List (L);
@@ -928,7 +924,6 @@ package body Sem is
       if Suppress = All_Checks then
          declare
             Svg : constant Suppress_Array := Scope_Suppress;
-
          begin
             Scope_Suppress := (others => True);
             Insert_After_And_Analyze (N, M);
@@ -938,7 +933,6 @@ package body Sem is
       else
          declare
             Svg : constant Boolean := Scope_Suppress (Suppress);
-
          begin
             Scope_Suppress (Suppress) := True;
             Insert_After_And_Analyze (N, M);
@@ -990,7 +984,6 @@ package body Sem is
       if Suppress = All_Checks then
          declare
             Svg : constant Suppress_Array := Scope_Suppress;
-
          begin
             Scope_Suppress := (others => True);
             Insert_Before_And_Analyze (N, M);
@@ -1000,7 +993,6 @@ package body Sem is
       else
          declare
             Svg : constant Boolean := Scope_Suppress (Suppress);
-
          begin
             Scope_Suppress (Suppress) := True;
             Insert_Before_And_Analyze (N, M);
@@ -1051,7 +1043,6 @@ package body Sem is
       if Suppress = All_Checks then
          declare
             Svg : constant Suppress_Array := Scope_Suppress;
-
          begin
             Scope_Suppress := (others => True);
             Insert_List_After_And_Analyze (N, L);
@@ -1061,7 +1052,6 @@ package body Sem is
       else
          declare
             Svg : constant Boolean := Scope_Suppress (Suppress);
-
          begin
             Scope_Suppress (Suppress) := True;
             Insert_List_After_And_Analyze (N, L);
@@ -1111,7 +1101,6 @@ package body Sem is
       if Suppress = All_Checks then
          declare
             Svg : constant Suppress_Array := Scope_Suppress;
-
          begin
             Scope_Suppress := (others => True);
             Insert_List_Before_And_Analyze (N, L);
@@ -1121,7 +1110,6 @@ package body Sem is
       else
          declare
             Svg : constant Boolean := Scope_Suppress (Suppress);
-
          begin
             Scope_Suppress (Suppress) := True;
             Insert_List_Before_And_Analyze (N, L);

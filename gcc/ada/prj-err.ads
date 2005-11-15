@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,12 +24,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines to output error messages and the
---  scanner for the project files. It replaces Errout and Scn.
---  It is not dependent on the GNAT tree packages (Atree, Sinfo, ...).
---  It uses the same global variables as Errout, located in package
---  Err_Vars. Like Errout, it also uses the common variables and routines
---  in package Erroutc.
+--  This package contains the routines to output error messages and the scanner
+--  for the project files. It replaces Errout and Scn. It is not dependent on
+--  the GNAT tree packages (Atree, Sinfo, ...). It uses exactly the same global
+--  variables as Errout, located in package Err_Vars. Like Errout, it also uses
+--  the common variables and routines in package Erroutc.
 
 with Scng;
 with Errutil;
@@ -63,10 +62,10 @@ package Prj.Err is
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr)
      renames Errutil.Error_Msg;
-   --  Output a message at specified location.
+   --  Output a message at specified location
 
    procedure Error_Msg_S (Msg : String) renames Errutil.Error_Msg_S;
-   --  Output a message at current scan pointer location.
+   --  Output a message at current scan pointer location
 
    procedure Error_Msg_SC (Msg : String) renames Errutil.Error_Msg_SC;
    --  Output a message at the start of the current token, unless we are at
@@ -74,7 +73,7 @@ package Prj.Err is
    --  last real token in the file.
 
    procedure Error_Msg_SP (Msg : String) renames Errutil.Error_Msg_SP;
-   --  Output a message at the start of the previous token.
+   --  Output a message at the start of the previous token
 
    -------------
    -- Scanner --

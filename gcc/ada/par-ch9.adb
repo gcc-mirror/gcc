@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,8 +25,8 @@
 ------------------------------------------------------------------------------
 
 pragma Style_Checks (All_Checks);
---  Turn off subprogram body ordering check. Subprograms are in order
---  by RM section rather than alphabetical
+--  Turn off subprogram body ordering check. Subprograms are in order by RM
+--  section rather than alphabetical.
 
 separate (Par)
 package body Ch9 is
@@ -768,7 +768,7 @@ package body Ch9 is
       Not_Overriding : Boolean := False;
 
    begin
-      --  Ada 2005 (AI-397): Scan leading overriding indicator.
+      --  Ada 2005 (AI-397): Scan leading overriding indicator
 
       if Token = Tok_Not then
          Scan;  -- past NOT
@@ -1357,7 +1357,7 @@ package body Ch9 is
             elsif Nkind (Ecall_Node) = N_Identifier
               or else Nkind (Ecall_Node) = N_Selected_Component
             then
-               --  Case of a call to a parameterless entry.
+               --  Case of a call to a parameterless entry
 
                declare
                   C_Node : constant Node_Id :=

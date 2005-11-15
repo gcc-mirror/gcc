@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2004 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 2000-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -328,9 +328,7 @@ package body GNAT.Dynamic_Tables is
    --  Start of processing for Sort_Table
 
    begin
-
       Heap_Sort.Sort (Natural (Last (Table) - First) + 1);
-
    end Sort_Table;
 
 end GNAT.Dynamic_Tables;

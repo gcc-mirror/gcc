@@ -2442,7 +2442,7 @@ package body Bindgen is
          --  When building libraries, the version number of each unit can
          --  not be computed, since the binder does not know the full list
          --  of units. Therefore, the 'Version and 'Body_Version
-         --  attributes can not supported in this case.
+         --  attributes cannot supported in this case.
 
          return;
       end if;
@@ -2510,7 +2510,7 @@ package body Bindgen is
          --  When building libraries, the version number of each unit can
          --  not be computed, since the binder does not know the full list
          --  of units. Therefore, the 'Version and 'Body_Version
-         --  attributes can not supported.
+         --  attributes cannot supported.
 
          return;
       end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -141,7 +141,7 @@ package body Back_End is
       type Arg_Array is array (Nat) of BSP;
       type Arg_Array_Ptr is access Arg_Array;
 
-      --  Import flag_stack_check from toplev.c.
+      --  Import flag_stack_check from toplev.c
 
       flag_stack_check : Int;
       pragma Import (C, flag_stack_check); -- Import from toplev.c

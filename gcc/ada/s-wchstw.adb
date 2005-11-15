@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,7 +65,7 @@ package body System.WCh_StW is
       --  if P > S'Last on entry.
 
       function Get_UTF_32 is new Char_Sequence_To_UTF_32 (In_Char);
-      --  Function to get next UFT_32 value.
+      --  Function to get next UFT_32 value
 
       -------------
       -- In_Char --
@@ -80,6 +80,8 @@ package body System.WCh_StW is
             return S (P - 1);
          end if;
       end In_Char;
+
+   --  Start of processing for Get_Next_Code
 
    begin
       --  Check for wide character encoding

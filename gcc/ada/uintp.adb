@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,7 +50,7 @@ package body Uintp is
    --  value, since the issue is host representation of integer values.
 
    Uint_Int_Last : Uint;
-   --  Uint value containing Int'Last value set by Initialize.
+   --  Uint value containing Int'Last value set by Initialize
 
    UI_Power_2 : array (Int range 0 .. 64) of Uint;
    --  This table is used to memoize exponentiations by powers of 2. The Nth
@@ -727,9 +727,9 @@ package body Uintp is
    --  Mathematically: assume base congruent to 1 and compute an equivelent
    --  integer to Left.
 
-   --  If Sign = -1 return the alternating sum of the "digits".
+   --  If Sign = -1 return the alternating sum of the "digits"
 
-   --     D1 - D2 + D3 - D4 + D5 . . .
+   --     D1 - D2 + D3 - D4 + D5 ...
 
    --  (where D1 is Least Significant Digit)
 
@@ -761,7 +761,7 @@ package body Uintp is
 
                if Tmp_Int >= Base then
 
-                  --  Sign must be 1.
+                  --  Sign must be 1
 
                   Tmp_Int := (Tmp_Int / Base) + 1;
 
@@ -1328,7 +1328,7 @@ package body Uintp is
                   Carry        := Tmp_Int / Base;
                end loop;
 
-               --  Multiply Divisor by d.
+               --  Multiply Divisor by d
 
                Carry := 0;
                for J in reverse Divisor'Range loop
@@ -1338,14 +1338,14 @@ package body Uintp is
                end loop;
             end if;
 
-            --  Main loop of long division algorithm.
+            --  Main loop of long division algorithm
 
             Divisor_Dig1 := Divisor (1);
             Divisor_Dig2 := Divisor (2);
 
             for J in Quotient'Range loop
 
-               --  [ CALCULATE Q (hat) ] (step D3 in the algorithm).
+               --  [ CALCULATE Q (hat) ] (step D3 in the algorithm)
 
                Tmp_Int := Dividend (J) * Base + Dividend (J + 1);
 
@@ -1474,7 +1474,7 @@ package body Uintp is
       if Right = Uint_0 then
          return Uint_1;
 
-      --  0 to any positive power is 0.
+      --  0 to any positive power is 0
 
       elsif Left = Uint_0 then
          return Uint_0;
@@ -1664,7 +1664,7 @@ package body Uintp is
    -- UI_GCD --
    ------------
 
-   --  Lehmer's algorithm for GCD.
+   --  Lehmer's algorithm for GCD
 
    --  The idea is to avoid using multiple precision arithmetic wherever
    --  possible, substituting Int arithmetic instead. See Knuth volume II,
@@ -1712,7 +1712,7 @@ package body Uintp is
 
          loop
             --  We might overflow and get division by zero here. This just
-            --  means we can not take the single precision step
+            --  means we cannot take the single precision step
 
             Den1 := V_Hat + C;
             Den2 := V_Hat + D;
@@ -1745,14 +1745,14 @@ package body Uintp is
 
          if B = Int_0 then
 
-            --  No single precision steps take a regular Euclid step.
+            --  No single precision steps take a regular Euclid step
 
             Tmp_UI := U rem V;
             U := V;
             V := Tmp_UI;
 
          else
-            --  Use prior single precision steps to compute this Euclid step.
+            --  Use prior single precision steps to compute this Euclid step
 
             --  Fixed bug 1415-008 spends 80% of its time working on this
             --  step. Perhaps we need a special case Int / Uint dot
@@ -2257,7 +2257,7 @@ package body Uintp is
                   --  and replace the rem with simpler operations where
                   --  possible.
 
-                  --  Least_Sig_Digit might return Negative numbers.
+                  --  Least_Sig_Digit might return Negative numbers
 
                   when 2 =>
                      return UI_From_Int (
@@ -2357,7 +2357,7 @@ package body Uintp is
 
             end if;
 
-            --  Else fall through to general case.
+            --  Else fall through to general case
 
             --  ???This needs to be improved. We have the Rem when we do the
             --  Div. Div throws it away!
