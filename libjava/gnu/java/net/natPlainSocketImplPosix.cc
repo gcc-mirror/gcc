@@ -226,6 +226,21 @@ gnu::java::net::PlainSocketImpl::listen (jint backlog)
     }
 }
 
+static void 
+throw_on_sock_closed (gnu::java::net::PlainSocketImpl *soc_impl)
+{
+    // Avoid races from asynchronous close().
+    JvSynchronize sync (soc_impl);
+    if (soc_impl->native_fd == -1)
+      {
+        using namespace java::net;
+        // Socket was closed.
+        SocketException *se =
+            new SocketException (JvNewStringUTF ("Socket Closed"));
+        throw se;
+      }
+}
+
 void
 gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
 {
@@ -284,6 +299,7 @@ gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
 
  error:
   char* strerr = strerror (errno);
+  throw_on_sock_closed (this);
   throw new ::java::io::IOException (JvNewStringUTF (strerr));
 }
 
@@ -294,7 +310,11 @@ gnu::java::net::PlainSocketImpl::close()
   // Avoid races from asynchronous finalization.
   JvSynchronize sync (this);
 
-  // should we use shutdown here? how would that effect so_linger?
+  // Should we use shutdown here? Yes.
+  // How would that effect so_linger? Uncertain.
+  ::shutdown (native_fd, 2);
+  // Ignore errors in shutdown as we are closing and all the same
+  // errors are handled in the close.
   int res = _Jv_close (native_fd);
 
   if (res == -1)
@@ -371,7 +391,8 @@ gnu::java::net::PlainSocketImpl::sendUrgentData (jint)
 }
 
 static jint
-read_helper (jint native_fd, jint timeout, jbyte *bytes, jint count);
+read_helper (gnu::java::net::PlainSocketImpl *soc_impl,
+             jbyte *bytes, jint count);
 
 // Read a single byte from the socket.
 jint
@@ -379,7 +400,7 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(void)
 {
   jbyte data;
 
-  if (read_helper (this$0->native_fd, this$0->timeout, &data, 1) == 1)
+  if (read_helper (this$0, &data, 1) == 1)
     return data & 0xFF;
 
   return -1;
@@ -387,8 +408,9 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(void)
 
 // Read count bytes into the buffer, starting at offset.
 jint
-gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer, jint offset, 
-  jint count)
+gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer,
+                                                        jint offset, 
+                                                        jint count)
 {
  if (! buffer)
     throw new ::java::lang::NullPointerException;
@@ -398,12 +420,13 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer, jint 
   if (offset < 0 || count < 0 || offset + count > bsize)
     throw new ::java::lang::ArrayIndexOutOfBoundsException;
 
-  return read_helper (this$0->native_fd, this$0->timeout,
+  return read_helper (this$0,
 		      elements (buffer) + offset * sizeof (jbyte), count);
 }
 
 static jint
-read_helper (jint native_fd, jint timeout, jbyte *bytes, jint count)
+read_helper (gnu::java::net::PlainSocketImpl *soc_impl,
+             jbyte *bytes, jint count)
 {
   // If zero bytes were requested, short circuit so that recv
   // doesn't signal EOF.
@@ -411,19 +434,22 @@ read_helper (jint native_fd, jint timeout, jbyte *bytes, jint count)
     return 0;
     
   // Do timeouts via select.
-  if (timeout > 0 && native_fd >= 0 && native_fd < FD_SETSIZE)
+  if (soc_impl->timeout > 0
+      && soc_impl->native_fd >= 0
+      && soc_impl->native_fd < FD_SETSIZE)
     {
       // Create the file descriptor set.
       fd_set read_fds;
       FD_ZERO (&read_fds);
-      FD_SET (native_fd, &read_fds);
+      FD_SET (soc_impl->native_fd, &read_fds);
       // Create the timeout struct based on our internal timeout value.
       struct timeval timeout_value;
-      timeout_value.tv_sec = timeout / 1000;
-      timeout_value.tv_usec =(timeout % 1000) * 1000;
+      timeout_value.tv_sec = soc_impl->timeout / 1000;
+      timeout_value.tv_usec =(soc_impl->timeout % 1000) * 1000;
       // Select on the fds.
       int sel_retval =
-        _Jv_select (native_fd + 1, &read_fds, NULL, NULL, &timeout_value);
+        _Jv_select (soc_impl->native_fd + 1,
+                    &read_fds, NULL, NULL, &timeout_value);
       // We're only interested in the 0 return.
       // error returns still require us to try to read 
       // the socket to see what happened.
@@ -437,10 +463,13 @@ read_helper (jint native_fd, jint timeout, jbyte *bytes, jint count)
     }
 
   // Read the socket.
-  int r = ::recv (native_fd, (char *) bytes, count, 0);
+  int r = ::recv (soc_impl->native_fd, (char *) bytes, count, 0);
 
   if (r == 0)
-    return -1;
+    {
+      throw_on_sock_closed (soc_impl);
+      return -1;
+    }
 
   if (::java::lang::Thread::interrupted())
     {
@@ -452,6 +481,7 @@ read_helper (jint native_fd, jint timeout, jbyte *bytes, jint count)
     }
   else if (r == -1)
     {
+      throw_on_sock_closed (soc_impl);
       // Some errors cause us to return end of stream...
       if (errno == ENOTCONN)
         return -1;
