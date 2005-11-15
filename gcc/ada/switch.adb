@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Osint;
+
 package body Switch is
+
+   ----------------
+   -- Bad_Switch --
+   ----------------
+
+   procedure Bad_Switch (Switch : Character) is
+   begin
+      Osint.Fail ("invalid switch: ", (1 => Switch));
+   end Bad_Switch;
 
    -------------------------
    -- Is_Front_End_Switch --
@@ -61,24 +72,27 @@ package body Switch is
      (Switch_Chars : String;
       Max          : Integer;
       Ptr          : in out Integer;
-      Result       : out Nat)
+      Result       : out Nat;
+      Switch       : Character)
    is
    begin
       Result := 0;
 
       if Ptr > Max or else Switch_Chars (Ptr) not in '0' .. '9' then
-         raise Missing_Switch_Value;
+         Osint.Fail ("missing numeric value for switch: ", (1 => Switch));
+
+      else
+         while Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' loop
+            Result := Result * 10 +
+              Character'Pos (Switch_Chars (Ptr)) - Character'Pos ('0');
+            Ptr := Ptr + 1;
+
+            if Result > Switch_Max_Value then
+               Osint.Fail
+                 ("numeric value out of range for switch: ", (1 => Switch));
+            end if;
+         end loop;
       end if;
-
-      while Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' loop
-         Result := Result * 10 +
-           Character'Pos (Switch_Chars (Ptr)) - Character'Pos ('0');
-         Ptr := Ptr + 1;
-
-         if Result > Switch_Max_Value then
-            raise Bad_Switch_Value;
-         end if;
-      end loop;
    end Scan_Nat;
 
    --------------
@@ -89,15 +103,16 @@ package body Switch is
      (Switch_Chars : String;
       Max          : Integer;
       Ptr          : in out Integer;
-      Result       : out Pos)
+      Result       : out Pos;
+      Switch       : Character)
    is
       Temp : Nat;
 
    begin
-      Scan_Nat (Switch_Chars, Max, Ptr, Temp);
+      Scan_Nat (Switch_Chars, Max, Ptr, Temp, Switch);
 
       if Temp = 0 then
-         raise Bad_Switch_Value;
+         Osint.Fail ("numeric value out of range for switch: ", (1 => Switch));
       end if;
 
       Result := Temp;

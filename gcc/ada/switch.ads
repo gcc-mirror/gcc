@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,18 +62,6 @@ private
    --  child packages (there is one such child package for each tool that
    --  uses Switches to scan switches - Compiler/gnatbind/gnatmake/.
 
-   Bad_Switch : exception;
-   --  Exception raised if bad switch encountered
-
-   Bad_Switch_Value : exception;
-   --  Exception raised if bad switch value encountered
-
-   Missing_Switch_Value : exception;
-   --  Exception raised if no switch value encountered
-
-   Too_Many_Output_Files : exception;
-   --  Exception raised if the -o switch is encountered more than once
-
    Switch_Max_Value : constant := 999_999;
    --  Maximum value permitted in switches that take a value
 
@@ -81,7 +69,8 @@ private
      (Switch_Chars : String;
       Max          : Integer;
       Ptr          : in out Integer;
-      Result       : out Nat);
+      Result       : out Nat;
+      Switch       : Character);
    --  Scan natural integer parameter for switch. On entry, Ptr points
    --  just past the switch character, on exit it points past the last
    --  digit of the integer value.
@@ -90,9 +79,13 @@ private
      (Switch_Chars : String;
       Max          : Integer;
       Ptr          : in out Integer;
-      Result       : out Pos);
+      Result       : out Pos;
+      Switch       : Character);
    --  Scan positive integer parameter for switch. On entry, Ptr points
    --  just past the switch character, on exit it points past the last
    --  digit of the integer value.
+
+   procedure Bad_Switch (Switch : Character);
+   --  Fail with an appropriate message when a switch is not recognized
 
 end Switch;
