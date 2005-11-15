@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -405,9 +405,7 @@ package body Ch10 is
 
          elsif Private_Sloc /= No_Location
            and then
-             Nkind (Unit (Comp_Unit_Node)) /= N_Function_Instantiation
-           and then
-             Nkind (Unit (Comp_Unit_Node)) /= N_Procedure_Instantiation
+             Nkind (Unit (Comp_Unit_Node)) not in N_Subprogram_Instantiation
            and then
              Nkind (Unit (Comp_Unit_Node)) /= N_Subprogram_Renaming_Declaration
          then
@@ -529,8 +527,25 @@ package body Ch10 is
            or else Nkind (Unit_Node) = N_Single_Protected_Declaration
          then
             Name_Node := Defining_Identifier (Unit_Node);
-         else
+
+         elsif Nkind (Unit_Node) = N_Function_Instantiation
+           or else Nkind (Unit_Node) = N_Function_Specification
+           or else Nkind (Unit_Node) = N_Generic_Function_Renaming_Declaration
+           or else Nkind (Unit_Node) = N_Generic_Package_Renaming_Declaration
+           or else Nkind (Unit_Node) = N_Generic_Procedure_Renaming_Declaration
+           or else Nkind (Unit_Node) = N_Package_Body
+           or else Nkind (Unit_Node) = N_Package_Instantiation
+           or else Nkind (Unit_Node) = N_Package_Renaming_Declaration
+           or else Nkind (Unit_Node) = N_Package_Specification
+           or else Nkind (Unit_Node) = N_Procedure_Instantiation
+           or else Nkind (Unit_Node) = N_Procedure_Specification
+         then
             Name_Node := Defining_Unit_Name (Unit_Node);
+
+         --  Anything else is a serious error, abandon scan
+
+         else
+            raise Error_Resync;
          end if;
 
          Set_Sloc (Comp_Unit_Node, Sloc (Name_Node));
