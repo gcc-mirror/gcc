@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package body Switch.B is
       --  Skip past the initial character (must be the switch character)
 
       if Ptr = Max then
-         raise Bad_Switch;
+         Bad_Switch (C);
       else
          Ptr := Ptr + 1;
       end if;
@@ -122,7 +122,7 @@ package body Switch.B is
                then
                   Set_Debug_Flag (C);
                else
-                  raise Bad_Switch;
+                  Bad_Switch (C);
                end if;
             end loop;
 
@@ -132,7 +132,8 @@ package body Switch.B is
 
          when 'D' =>
             Ptr := Ptr + 1;
-            Scan_Pos (Switch_Chars, Max, Ptr, Default_Sec_Stack_Size);
+            Scan_Pos
+              (Switch_Chars, Max, Ptr, Default_Sec_Stack_Size, C);
 
          --  Processing for e switch
 
@@ -181,7 +182,7 @@ package body Switch.B is
 
          when 'i' =>
             if Ptr = Max then
-               raise Bad_Switch;
+               Bad_Switch (C);
             end if;
 
             Ptr := Ptr + 1;
@@ -197,7 +198,7 @@ package body Switch.B is
                Identifier_Character_Set := C;
                Ptr := Ptr + 1;
             else
-               raise Bad_Switch;
+               Bad_Switch (C);
             end if;
 
          --  Processing for K switch
@@ -216,7 +217,7 @@ package body Switch.B is
 
          when 'm' =>
             Ptr := Ptr + 1;
-            Scan_Pos (Switch_Chars, Max, Ptr, Maximum_Errors);
+            Scan_Pos (Switch_Chars, Max, Ptr, Maximum_Errors, C);
 
          --  Processing for n switch
 
@@ -234,7 +235,7 @@ package body Switch.B is
             Ptr := Ptr + 1;
 
             if Output_File_Name_Present then
-               raise Too_Many_Output_Files;
+               Osint.Fail ("duplicate -o switch");
 
             else
                Output_File_Name_Present := True;
@@ -282,7 +283,7 @@ package body Switch.B is
          when 'T' =>
             Ptr := Ptr + 1;
             Time_Slice_Set := True;
-            Scan_Nat (Switch_Chars, Max, Ptr, Time_Slice_Value);
+            Scan_Nat (Switch_Chars, Max, Ptr, Time_Slice_Value, C);
             Time_Slice_Value := Time_Slice_Value * 1_000;
 
          --  Processing for v switch
@@ -308,7 +309,7 @@ package body Switch.B is
                   Warning_Mode  := Suppress;
 
                when others =>
-                  raise Bad_Switch;
+                  Bad_Switch (C);
             end case;
 
             Ptr := Ptr + 1;
@@ -324,7 +325,7 @@ package body Switch.B is
                   exit;
 
                elsif J = WC_Encoding_Method'Last then
-                  raise Bad_Switch;
+                  Bad_Switch (C);
                end if;
             end loop;
 
@@ -345,7 +346,7 @@ package body Switch.B is
 
          when 'X' =>
             Ptr := Ptr + 1;
-            Scan_Pos (Switch_Chars, Max, Ptr, Default_Exit_Status);
+            Scan_Pos (Switch_Chars, Max, Ptr, Default_Exit_Status, C);
 
          --  Processing for z switch
 
@@ -402,7 +403,7 @@ package body Switch.B is
                         RTS_Src_Path_Name := Src_Path_Name;
                         RTS_Lib_Path_Name := Lib_Path_Name;
 
-                        --  We can exit as there can not be another switch
+                        --  We can exit as there cannot be another switch
                         --  after --RTS
 
                         exit;
@@ -429,22 +430,9 @@ package body Switch.B is
          --  Anything else is an error (illegal switch character)
 
          when others =>
-            raise Bad_Switch;
+            Bad_Switch (C);
          end case;
       end loop;
-
-   exception
-      when Bad_Switch =>
-         Osint.Fail ("invalid switch: ", (1 => C));
-
-      when Bad_Switch_Value =>
-         Osint.Fail ("numeric value out of range for switch: ", (1 => C));
-
-      when Missing_Switch_Value =>
-         Osint.Fail ("missing numeric value for switch: ", (1 => C));
-
-      when Too_Many_Output_Files =>
-         Osint.Fail ("duplicate -o switch");
    end Scan_Binder_Switches;
 
 end Switch.B;
