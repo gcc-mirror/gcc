@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001-2005 Free Software Foundation, Inc.       --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ package body Prj.PP is
    Not_Tested : array (Project_Node_Kind) of Boolean := (others => True);
 
    Max_Line_Length : constant := Hostparm.Max_Line_Length - 5;
-   --  Maximum length of a line.
+   --  Maximum length of a line
 
    Column : Natural := 0;
    --  Column number of the last character in the line. Used to avoid
@@ -91,7 +91,7 @@ package body Prj.PP is
       --  Outputs a name
 
       procedure Start_Line (Indent : Natural);
-      --  Outputs the indentation at the beginning of the line.
+      --  Outputs the indentation at the beginning of the line
 
       procedure Output_String (S : Name_Id);
       --  Outputs a string using the default output procedures
@@ -114,10 +114,10 @@ package body Prj.PP is
       Write_Char : Write_Char_Ap := Output.Write_Char'Access;
       Write_Eol  : Write_Eol_Ap  := Output.Write_Eol'Access;
       Write_Str  : Write_Str_Ap  := Output.Write_Str'Access;
-      --  These three access to procedure values are used for the output.
+      --  These three access to procedure values are used for the output
 
       Last_Line_Is_Empty : Boolean := False;
-      --  Used to avoid two consecutive empty lines.
+      --  Used to avoid two consecutive empty lines
 
       ---------------------------
       -- Output_Attribute_Name --
@@ -337,6 +337,11 @@ package body Prj.PP is
 
                   if Extended_Project_Path_Of (Node, In_Tree) /= No_Name then
                      Write_String (" extends ");
+
+                     if Is_Extending_All (Node, In_Tree) then
+                        Write_String ("all ");
+                     end if;
+
                      Output_String (Extended_Project_Path_Of (Node, In_Tree));
                   end if;
 
@@ -361,7 +366,14 @@ package body Prj.PP is
                when N_With_Clause =>
                   pragma Debug (Indicate_Tested (N_With_Clause));
 
-                  if Name_Of (Node, In_Tree) /= No_Name then
+                  --  The with clause will sometimes contain an invalid name
+                  --  when we are importing a virtual project from an
+                  --  extending all project. Do not output anything in this
+                  --  case
+
+                  if Name_Of (Node, In_Tree) /= No_Name
+                    and then String_Value_Of (Node, In_Tree) /= No_Name
+                  then
                      if First_With_In_List then
                         Print (First_Comment_Before (Node, In_Tree), Indent);
                         Start_Line (Indent);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2005 Free Software Foundation, Inc.       --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,9 +85,9 @@ package Prj.Tree is
       N_Case_Item,
       N_Comment_Zones,
       N_Comment);
-   --  Each node in the tree is of a Project_Node_Kind
-   --  For the signification of the fields in each node of a
-   --  Project_Node_Kind, look at package Tree_Private_Part.
+   --  Each node in the tree is of a Project_Node_Kind. For the signification
+   --  of the fields in each node of Project_Node_Kind, look at package
+   --  Tree_Private_Part.
 
    procedure Initialize (Tree : Project_Node_Tree_Ref);
    --  Initialize the Project File tree: empty the Project_Nodes table
@@ -97,8 +97,8 @@ package Prj.Tree is
      (In_Tree       : Project_Node_Tree_Ref;
       Of_Kind       : Project_Node_Kind;
       And_Expr_Kind : Variable_Kind := Undefined) return Project_Node_Id;
-   --  Returns a Project_Node_Record with the specified Kind and
-   --  Expr_Kind; all the other components have default nil values.
+   --  Returns a Project_Node_Record with the specified Kind and Expr_Kind. All
+   --  the other components have default nil values.
 
    function Hash (N : Project_Node_Id) return Header_Num;
    --  Used for hash tables where the key is a Project_Node_Id
@@ -149,10 +149,9 @@ package Prj.Tree is
    --  comment, then it should be associated with this node.
 
    procedure Set_Next_End_Node (To : Project_Node_Id);
-   --  Put node To on the top of the end node stack. When an "end" line
-   --  is found with this node on the top of the end node stack, the comments,
-   --  if any, immediately preceding this "end" line will be associated with
-   --  this node.
+   --  Put node To on the top of the end node stack. When an END line is found
+   --  with this node on the top of the end node stack, the comments, if any,
+   --  immediately preceding this "end" line will be associated with this node.
 
    procedure Remove_Next_End_Node;
    --  Remove the top of the end node stack
@@ -166,6 +165,7 @@ package Prj.Tree is
       Follows_Empty_Line        : Boolean := False;
       Is_Followed_By_Empty_Line : Boolean := False;
    end record;
+   --  Component type for Comments Table below
 
    package Comments is new Table.Table
      (Table_Component_Type => Comment_Data,
@@ -181,6 +181,7 @@ package Prj.Tree is
 
    type Comment_Location is
      (Before, After, Before_End, After_End, End_Of_Line);
+   --  Used in call to Add_Comments below
 
    procedure Add_Comments
      (To      : Project_Node_Id;
@@ -193,7 +194,10 @@ package Prj.Tree is
    ----------------------
 
    --  The following query functions are part of the abstract interface
-   --  of the Project File tree
+   --  of the Project File tree. They provide access to fields of a project.
+
+   --  In the following, there are "valid if" comments, but no indication
+   --  of what happens if they are called with invalid arguments ???
 
    function Name_Of
      (Node    : Project_Node_Id;
@@ -314,7 +318,9 @@ package Prj.Tree is
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref) return Name_Id;
    pragma Inline (String_Value_Of);
-   --  Only valid for N_With_Clause, N_Literal_String nodes or N_Comment
+   --  Only valid for N_With_Clause, N_Literal_String nodes or N_Comment.
+   --  For a N_With_Clause created automatically for a virtual extending
+   --  project, No_Name is returned.
 
    function Source_Index_Of
      (Node    : Project_Node_Id;
