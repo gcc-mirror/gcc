@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2257,6 +2257,9 @@ package body Freeze is
                            Error_Msg_N
                              ("(Ada 2005): invalid use of unconstrained tagged"
                               & " incomplete type", E);
+
+                        elsif Ekind (F_Type) = E_Subprogram_Type then
+                           Freeze_And_Append (F_Type, Loc, Result);
                         end if;
                      end if;
 
@@ -3001,7 +3004,7 @@ package body Freeze is
             end if;
 
          --  For access to a protected subprogram, freeze the equivalent
-         --  type (however this is not set if we are not generating code)
+         --  type (however this is not set if we are not generating code
          --  or if this is an anonymous type used just for resolution).
 
          elsif Ekind (E) = E_Access_Protected_Subprogram_Type then
@@ -3031,9 +3034,7 @@ package body Freeze is
                end if;
             end;
 
-            if Operating_Mode = Generate_Code
-              and then Present (Equivalent_Type (E))
-            then
+            if Present (Equivalent_Type (E)) then
                Freeze_And_Append (Equivalent_Type (E), Loc, Result);
             end if;
          end if;
