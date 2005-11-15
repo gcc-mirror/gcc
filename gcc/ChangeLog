@@ -1,3 +1,9 @@
+2005-11-14  Mike Stump  <mrs@apple.com>
+
+	* config/i386/i386.c (override_options): -masm=intel isn't
+	supported on darwin.
+	* doc/invoke.texi (i386 and x86-64 Options): Likewise.
+
 2005-11-15  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* crtstuff.c: Undefine gid_t, pid_t, rlim_t, ssize_t, uid_t and
