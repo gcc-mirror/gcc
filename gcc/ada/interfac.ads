@@ -35,11 +35,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Assumes integer sizes of 8, 16, 32 and 64 are available, and that the
---  floating-point formats are IEEE compatible.
-
---  Note: There is a specialized version of this package for OpenVMS
-
 package Interfaces is
    pragma Pure;
 
@@ -153,17 +148,26 @@ package Interfaces is
    pragma Import (Intrinsic, Rotate_Left);
    pragma Import (Intrinsic, Rotate_Right);
 
-   --  Floating point types. We assume that we are on an IEEE machine, and
-   --  that the types Short_Float and Long_Float in Standard refer to the
-   --  32-bit short and 64-bit long IEEE forms. Furthermore, if there is
-   --  an extended float, we assume that it is available as Long_Long_Float.
+   --  IEEE Floating point types. Note that the form of these definitions
+   --  ensures that the work on VMS, even if the standard library is compiled
+   --  using a Float_Representation pragma for Vax_Float.
+
+   pragma Warnings (Off);
+   --  Turn off warnings for targets not providing IEEE floating-point types
+
+   type IEEE_Float_32 is digits 6;
+   pragma Float_Representation (IEEE_Float, IEEE_Float_32);
+
+   type IEEE_Float_64 is digits 15;
+   pragma Float_Representation (IEEE_Float, IEEE_Float_64);
+
+   --  If there is an IEEE extended float available on the machine, we assume
+   --  that it is available as Long_Long_Float.
 
    --  Note: it is harmless, and explicitly permitted, to include additional
    --  types in interfaces, so it is not wrong to have IEEE_Extended_Float
    --  defined even if the extended format is not available.
 
-   type IEEE_Float_32       is new Short_Float;
-   type IEEE_Float_64       is new Long_Float;
    type IEEE_Extended_Float is new Long_Long_Float;
 
 end Interfaces;
