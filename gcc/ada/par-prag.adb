@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -233,7 +233,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
          elsif Id = Name_No_Dependence then
             Set_Restriction_No_Dependence
               (Unit => Expr,
-               Warn  => Prag_Id = Pragma_Restriction_Warnings);
+               Warn => Prag_Id = Pragma_Restriction_Warnings);
          end if;
 
          Next (Arg);
@@ -963,22 +963,28 @@ begin
       ---------------------
 
       --  pragma Warnings (On | Off, [LOCAL_NAME])
+      --  pragma Warnings (static_string_EXPRESSION);
 
-      --  The one argument case is processed by the parser, since it may
-      --  control parser warnings as well as semantic warnings, and in any
-      --  case we want to be absolutely sure that the range in the warnings
-      --  table is set well before any semantic analysis is performed.
+      --  The one argument ON/OFF case is processed by the parser, since it may
+      --  control parser warnings as well as semantic warnings, and in any case
+      --  we want to be absolutely sure that the range in the warnings table is
+      --  set well before any semantic analysis is performed.
 
       when Pragma_Warnings =>
          if Arg_Count = 1 then
             Check_No_Identifier (Arg1);
-            Check_Arg_Is_On_Or_Off (Arg1);
 
-            if Chars (Expression (Arg1)) = Name_On then
-               Set_Warnings_Mode_On (Pragma_Sloc);
-            else
-               Set_Warnings_Mode_Off (Pragma_Sloc);
-            end if;
+            declare
+               Argx : constant Node_Id := Expression (Arg1);
+            begin
+               if Nkind (Argx) = N_Identifier then
+                  if Chars (Argx) = Name_On then
+                     Set_Warnings_Mode_On (Pragma_Sloc);
+                  elsif Chars (Argx) = Name_Off then
+                     Set_Warnings_Mode_Off (Pragma_Sloc);
+                  end if;
+               end if;
+            end;
          end if;
 
       -----------------------

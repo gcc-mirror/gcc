@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,15 @@
 with Types; use Types;
 
 package Sem_Warn is
+
+   --------------------
+   -- Initialization --
+   --------------------
+
+   function Set_Warning_Switch (C : Character) return Boolean;
+   --  This function sets the warning switch or switches corresponding to
+   --  the given character. It is used for processing a -gnatw switch on the
+   --  command line, or a string literal in pragma Warnings.
 
    ------------------------------------------
    -- Routines to Handle Unused References --
