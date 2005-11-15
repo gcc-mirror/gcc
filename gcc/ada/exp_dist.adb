@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,7 +97,7 @@ package body Exp_Dist is
    --  DSA expansion associates stubs to distributed object types using
    --  a hash table on entity ids.
 
-   function Hash (F : Name_Id)   return Hash_Index;
+   function Hash (F : Name_Id) return Hash_Index;
    --  The generation of subprogram identifiers requires an overload counter
    --  to be associated with each remote subprogram names. These counters
    --  are maintained in a hash table on name ids.
@@ -270,7 +270,8 @@ package body Exp_Dist is
    --  its constrained status.
 
    function Is_RACW_Controlling_Formal
-     (Parameter : Node_Id; Stub_Type : Entity_Id) return Boolean;
+     (Parameter : Node_Id;
+      Stub_Type : Entity_Id) return Boolean;
    --  Return True if the current parameter is a controlling formal argument
    --  of type Stub_Type or access to Stub_Type.
 
@@ -10177,8 +10178,8 @@ package body Exp_Dist is
          -- Find_Numeric_Representation --
          ---------------------------------
 
-         function Find_Numeric_Representation (Typ : Entity_Id)
-           return Entity_Id
+         function Find_Numeric_Representation
+           (Typ : Entity_Id) return Entity_Id
          is
             FST    : constant Entity_Id := First_Subtype (Typ);
             P_Size : constant Uint      := Esize (FST);
@@ -10286,26 +10287,38 @@ package body Exp_Dist is
             Append_To (Indices,
               Make_Identifier (Loc, New_External_Name ('L', Depth)));
 
-            if Constrained then
-               Inner_Any := Any;
-               Inner_Counter := Counter;
-            else
+            if not Constrained or else Depth > 1 then
                Inner_Any := Make_Defining_Identifier (Loc,
-                 New_External_Name ('A', Depth));
+                              New_External_Name ('A', Depth));
                Set_Etype (Inner_Any, RTE (RE_Any));
-
-               if Present (Counter) then
-                  Inner_Counter := Make_Defining_Identifier (Loc,
-                    New_External_Name ('J', Depth));
-               else
-                  Inner_Counter := Empty;
-               end if;
+            else
+               Inner_Any := Empty;
             end if;
 
-            Append_Array_Traversal (Inner_Stmts,
-              Any     => Inner_Any,
-              Counter => Inner_Counter,
-              Depth   => Depth + 1);
+            if Present (Counter) then
+               Inner_Counter := Make_Defining_Identifier (Loc,
+                                  New_External_Name ('J', Depth));
+            else
+               Inner_Counter := Empty;
+            end if;
+
+            declare
+               Loop_Any : Node_Id := Inner_Any;
+            begin
+
+               --  For the first dimension of a constrained array, we add
+               --  elements directly in the corresponding Any; there is no
+               --  intervening inner Any.
+
+               if No (Loop_Any) then
+                  Loop_Any := Any;
+               end if;
+
+               Append_Array_Traversal (Inner_Stmts,
+                 Any     => Loop_Any,
+                 Counter => Inner_Counter,
+                 Depth   => Depth + 1);
+            end;
 
             Loop_Stm :=
               Make_Implicit_Loop_Statement (Subprogram,
@@ -10326,11 +10339,6 @@ package body Exp_Dist is
                               Make_Integer_Literal (Loc, Depth))))),
                 Statements => Inner_Stmts);
 
-            if Constrained then
-               Append_To (Stmts, Loop_Stm);
-               return;
-            end if;
-
             declare
                Decls       : constant List_Id := New_List;
                Dimen_Stmts : constant List_Id := New_List;
@@ -10344,13 +10352,22 @@ package body Exp_Dist is
 
             begin
                if Depth = 1 then
-                  Inner_Any_TypeCode_Expr :=
-                    Make_Function_Call (Loc,
-                      Name =>
-                        New_Occurrence_Of (RTE (RE_Any_Member_Type), Loc),
-                      Parameter_Associations => New_List (
-                        New_Occurrence_Of (Any, Loc),
-                        Make_Integer_Literal (Loc, Ndim)));
+                  if Constrained then
+                     Inner_Any_TypeCode_Expr :=
+                       Make_Function_Call (Loc,
+                         Name =>
+                           New_Occurrence_Of (RTE (RE_Get_TC), Loc),
+                         Parameter_Associations => New_List (
+                           New_Occurrence_Of (Any, Loc)));
+                  else
+                     Inner_Any_TypeCode_Expr :=
+                       Make_Function_Call (Loc,
+                         Name =>
+                           New_Occurrence_Of (RTE (RE_Any_Member_Type), Loc),
+                             Parameter_Associations => New_List (
+                               New_Occurrence_Of (Any, Loc),
+                               Make_Integer_Literal (Loc, Ndim)));
+                  end if;
                else
                   Inner_Any_TypeCode_Expr :=
                     Make_Function_Call (Loc,
@@ -10368,18 +10385,21 @@ package body Exp_Dist is
                    Object_Definition   => New_Occurrence_Of (
                                             RTE (RE_TypeCode), Loc),
                    Expression          => Inner_Any_TypeCode_Expr));
-               Append_To (Decls,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Inner_Any,
-                   Object_Definition   =>
-                     New_Occurrence_Of (RTE (RE_Any), Loc),
-                   Expression          =>
-                     Make_Function_Call (Loc,
-                       Name =>
-                         New_Occurrence_Of (
-                           RTE (RE_Create_Any), Loc),
-                       Parameter_Associations => New_List (
-                         New_Occurrence_Of (Inner_Any_TypeCode, Loc)))));
+
+               if Present (Inner_Any) then
+                  Append_To (Decls,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Inner_Any,
+                      Object_Definition   =>
+                        New_Occurrence_Of (RTE (RE_Any), Loc),
+                      Expression          =>
+                        Make_Function_Call (Loc,
+                          Name =>
+                            New_Occurrence_Of (
+                              RTE (RE_Create_Any), Loc),
+                          Parameter_Associations => New_List (
+                            New_Occurrence_Of (Inner_Any_TypeCode, Loc)))));
+               end if;
 
                if Present (Inner_Counter) then
                   Append_To (Decls,
@@ -10391,17 +10411,19 @@ package body Exp_Dist is
                         Make_Integer_Literal (Loc, 0)));
                end if;
 
-               Length_Node := Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Arry, Loc),
-                     Attribute_Name => Name_Length,
-                     Expressions    =>
-                       New_List (Make_Integer_Literal (Loc, Depth)));
-               Set_Etype (Length_Node, RTE (RE_Long_Unsigned));
+               if not Constrained then
+                  Length_Node := Make_Attribute_Reference (Loc,
+                        Prefix         => New_Occurrence_Of (Arry, Loc),
+                        Attribute_Name => Name_Length,
+                        Expressions    =>
+                          New_List (Make_Integer_Literal (Loc, Depth)));
+                  Set_Etype (Length_Node, RTE (RE_Long_Unsigned));
 
-               Add_Process_Element (Dimen_Stmts,
-                 Datum   => Length_Node,
-                 Any     => Inner_Any,
-                 Counter => Inner_Counter);
+                  Add_Process_Element (Dimen_Stmts,
+                    Datum   => Length_Node,
+                    Any     => Inner_Any,
+                    Counter => Inner_Counter);
+               end if;
 
                --  Loop_Stm does approrpriate processing for each element
                --  of Inner_Any.
@@ -10410,10 +10432,12 @@ package body Exp_Dist is
 
                --  Link outer and inner any
 
-               Add_Process_Element (Dimen_Stmts,
-                 Any     => Any,
-                 Counter => Counter,
-                 Datum   => New_Occurrence_Of (Inner_Any, Loc));
+               if Present (Inner_Any) then
+                  Add_Process_Element (Dimen_Stmts,
+                    Any     => Any,
+                    Counter => Counter,
+                    Datum   => New_Occurrence_Of (Inner_Any, Loc));
+               end if;
 
                Append_To (Stmts,
                  Make_Block_Statement (Loc,
@@ -10532,9 +10556,10 @@ package body Exp_Dist is
    -------------------
 
    function Scope_Of_Spec (Spec : Node_Id) return Entity_Id is
-      Unit_Name : Node_Id := Defining_Unit_Name (Spec);
+      Unit_Name : Node_Id;
 
    begin
+      Unit_Name := Defining_Unit_Name (Spec);
       while Nkind (Unit_Name) /= N_Defining_Identifier loop
          Unit_Name := Defining_Identifier (Unit_Name);
       end loop;
@@ -10757,7 +10782,8 @@ package body Exp_Dist is
      (Loc                   : Source_Ptr;
       Decls                 : List_Id;
       RCI_Locator           : Entity_Id;
-      Controlling_Parameter : Entity_Id) return RPC_Target is
+      Controlling_Parameter : Entity_Id) return RPC_Target
+   is
    begin
       case Get_PCS_Name is
          when Name_PolyORB_DSA =>
@@ -10798,7 +10824,8 @@ package body Exp_Dist is
       Dynamically_Asynchronous : Boolean   := False;
       Stub_Type                : Entity_Id := Empty;
       RACW_Type                : Entity_Id := Empty;
-      Parent_Primitive         : Entity_Id := Empty) return Node_Id is
+      Parent_Primitive         : Entity_Id := Empty) return Node_Id
+   is
    begin
       case Get_PCS_Name is
          when Name_PolyORB_DSA =>
