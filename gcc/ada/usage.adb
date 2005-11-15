@@ -162,7 +162,7 @@ begin
 
    --  Line for -gnateI switch
 
-   Write_Switch_Char ("eInnn");
+   Write_Switch_Char ("eInn");
    Write_Line ("Index in multi-unit source, e.g. -gnateI2");
 
    --  Line for -gnatem switch
@@ -213,7 +213,7 @@ begin
    --  Line for -gnatk switch
 
    Write_Switch_Char ("k");
-   Write_Line ("Limit file names to nnn characters (k = krunch)");
+   Write_Line ("Limit file names to nn characters (k = krunch)");
 
    --  Line for -gnatl switch
 
@@ -222,8 +222,8 @@ begin
 
    --  Line for -gnatm switch
 
-   Write_Switch_Char ("mnnn");
-   Write_Line ("Limit number of detected errors to nnn (1-999999)");
+   Write_Switch_Char ("mnn");
+   Write_Line ("Limit number of detected errors to nn (1-999999)");
 
    --  Line for -gnatn switch
 
@@ -289,8 +289,8 @@ begin
 
    --  Line for -gnatT switch
 
-   Write_Switch_Char ("Tnnn");
-   Write_Line ("All compiler tables start at nnn times usual starting size");
+   Write_Switch_Char ("Tnn");
+   Write_Line ("All compiler tables start at nn times usual starting size");
 
    --  Line for -gnatu switch
 
@@ -438,10 +438,10 @@ begin
    Write_Line ("        i    check if-then layout");
    Write_Line ("        k    check casing rules for keywords");
    Write_Line ("        l    check reference manual layout");
-   Write_Line ("        Lnnn check max nest level < nnn");
+   Write_Line ("        Lnn  check max nest level < nn ");
    Write_Line ("        m    check line length <= 79 characters");
    Write_Line ("        n    check casing of package Standard identifiers");
-   Write_Line ("        Mnnn check line length <= nnn characters");
+   Write_Line ("        Mnn  check line length <= nn  characters");
    Write_Line ("        o    check subprogram bodies in alphabetical order");
    Write_Line ("        p    check pragma casing");
    Write_Line ("        r    check casing for identifier references");

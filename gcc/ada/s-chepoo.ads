@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--       Copyright (C) 1992-1996, 2005      Free Software Foundation, Inc.  --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,32 +41,18 @@ package System.Checked_Pools is
    --  called on each implicit or explicit dereference of a pointer which
    --  has such a storage pool
 
-   procedure Allocate
-     (Pool                     : in out Checked_Pool;
-      Storage_Address          : out Address;
-      Size_In_Storage_Elements : in System.Storage_Elements.Storage_Count;
-      Alignment                : in System.Storage_Elements.Storage_Count)
-   is abstract;
-
-   procedure Deallocate
-     (Pool                     : in out Checked_Pool;
-      Storage_Address          : in Address;
-      Size_In_Storage_Elements : in System.Storage_Elements.Storage_Count;
-      Alignment                : in System.Storage_Elements.Storage_Count)
-   is abstract;
-
-   function Storage_Size
-     (Pool : Checked_Pool)
-      return System.Storage_Elements.Storage_Count
-   is abstract;
-
    procedure Dereference
      (Pool                     : in out Checked_Pool;
       Storage_Address          : in Address;
       Size_In_Storage_Elements : in System.Storage_Elements.Storage_Count;
       Alignment                : in System.Storage_Elements.Storage_Count)
    is abstract;
-   --  Called each time a pointer to a checked pool is dereferenced
+   --  Called implicitly each time a pointer to a checked pool is dereferenced
+   --  All parameters in the profile are compatible with the profile of
+   --  Allocate/Deallocate: the Storage_Address corresponds to the address of
+   --  the dereferenced object, Size_in_Storage_Elements is its dynamic size
+   --  (and thus may involve an implicit dispatching call to size) and
+   --  Alignment is the alignment of the object.
 
 private
    type Checked_Pool is abstract

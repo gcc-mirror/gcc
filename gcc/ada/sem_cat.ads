@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,7 +96,7 @@ package Sem_Cat is
    --  the checks cannot be made before knowing if the object is imported.
 
    procedure Validate_RCI_Declarations (P : Entity_Id);
-   --  Apply semantic checks given in  E2.3(10-14).
+   --  Apply semantic checks given in  E2.3(10-14)
 
    procedure Validate_RCI_Subprogram_Declaration (N : Node_Id);
    --  Check for RCI unit subprogram declarations with respect to
