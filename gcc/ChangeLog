@@ -1,3 +1,10 @@
+2005-11-14  Dale Johannesen  <dalej@apple.com>
+
+	* expmed.c (store_bit_field):  Add offset unconditionally for
+	memory targets.
+	(extract_bit_field):  Don't force extzv or extv operand into
+	a register if field is too big.
+
 2005-11-14  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/arm.c (pic_labelno): New.
