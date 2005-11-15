@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Ch7;  use Exp_Ch7;
+with Exp_Tss;  use Exp_Tss;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
@@ -236,7 +237,7 @@ package body Sem_Ch6 is
       Analyze (P);
 
       --  A call of the form A.B (X) may be an Ada05 call, which is rewritten
-      --  as B(A, X). If the rewriting is successful, the call has been
+      --  as B (A, X). If the rewriting is successful, the call has been
       --  analyzed and we just return.
 
       if Nkind (P) = N_Selected_Component
@@ -890,9 +891,16 @@ package body Sem_Ch6 is
       Missing_Ret  : Boolean;
       P_Ent        : Entity_Id;
 
-      procedure Check_Following_Pragma;
-      --  If front-end inlining is enabled, look ahead to recognize a pragma
-      --  that may appear after the body.
+      procedure Check_Inline_Pragma (Spec : in out Node_Id);
+      --  Look ahead to recognize a pragma that may appear after the body.
+      --  If there is a previous spec, check that it appears in the same
+      --  declarative part. If the pragma is Inline_Always, perform inlining
+      --  unconditionally, otherwise only if Front_End_Inlining is requested.
+      --  If the body acts as a spec, and inlining is required, we create a
+      --  subprogram declaration for it, in order to attach the body to inline.
+
+      procedure Copy_Parameter_List (Plist : List_Id);
+      --  Comment required ???
 
       procedure Verify_Overriding_Indicator;
       --  If there was a previous spec, the entity has been entered in the
@@ -900,33 +908,115 @@ package body Sem_Ch6 is
       --  indicator, check that it is consistent with the known status of the
       --  entity.
 
-      ----------------------------
-      -- Check_Following_Pragma --
-      ----------------------------
+      -------------------------
+      -- Check_Inline_Pragma --
+      -------------------------
 
-      procedure Check_Following_Pragma is
-         Prag : Node_Id;
+      procedure Check_Inline_Pragma (Spec : in out Node_Id) is
+         Prag  : Node_Id;
+         Plist : List_Id;
 
       begin
-         if Front_End_Inlining
-           and then Is_List_Member (N)
-           and then Present (Spec_Decl)
-           and then List_Containing (N) = List_Containing (Spec_Decl)
+         if not Expander_Active then
+            return;
+         end if;
+
+         if Is_List_Member (N)
+           and then Present (Next (N))
+           and then Nkind (Next (N)) = N_Pragma
          then
             Prag := Next (N);
 
-            if Present (Prag)
-              and then Nkind (Prag) = N_Pragma
-              and then Get_Pragma_Id (Chars (Prag)) = Pragma_Inline
+            if Nkind (Prag) = N_Pragma
               and then
-              Chars
-                (Expression (First (Pragma_Argument_Associations (Prag))))
-                   = Chars (Body_Id)
+                 (Get_Pragma_Id (Chars (Prag)) = Pragma_Inline_Always
+                  or else
+                    (Front_End_Inlining
+                     and then Get_Pragma_Id (Chars (Prag)) = Pragma_Inline))
+              and then
+                 Chars
+                   (Expression (First (Pragma_Argument_Associations (Prag))))
+                      = Chars (Body_Id)
             then
-               Analyze (Prag);
+               Prag := Next (N);
+            else
+               Prag := Empty;
+            end if;
+         else
+            Prag := Empty;
+         end if;
+
+         if Present (Prag) then
+            if Present (Spec_Id) then
+               if List_Containing (N) =
+                 List_Containing (Unit_Declaration_Node (Spec_Id))
+               then
+                  Analyze (Prag);
+               end if;
+
+            else
+               --  Create a subprogram declaration, to make treatment uniform.
+
+               declare
+                  Subp : constant Entity_Id :=
+                    Make_Defining_Identifier (Loc, Chars (Body_Id));
+                  Decl : constant Node_Id :=
+                    Make_Subprogram_Declaration (Loc,
+                      Specification =>  New_Copy_Tree (Specification (N)));
+               begin
+                  Set_Defining_Unit_Name (Specification (Decl), Subp);
+
+                  if Present (First_Formal (Body_Id)) then
+                     Plist := New_List;
+                     Copy_Parameter_List (Plist);
+                     Set_Parameter_Specifications
+                       (Specification (Decl), Plist);
+                  end if;
+
+                  Insert_Before (N, Decl);
+                  Analyze (Decl);
+                  Analyze (Prag);
+                  Set_Has_Pragma_Inline (Subp);
+
+                  if Get_Pragma_Id (Chars (Prag)) = Pragma_Inline_Always then
+                     Set_Is_Inlined (Subp);
+                     Set_Next_Rep_Item (Prag, First_Rep_Item (Subp));
+                     Set_First_Rep_Item (Subp, Prag);
+                  end if;
+
+                  Spec := Subp;
+               end;
             end if;
          end if;
-      end Check_Following_Pragma;
+      end Check_Inline_Pragma;
+
+      -------------------------
+      -- Copy_Parameter_List --
+      -------------------------
+
+      procedure Copy_Parameter_List (Plist : List_Id) is
+         Formal : Entity_Id;
+
+      begin
+         Formal := First_Formal (Body_Id);
+
+         while Present (Formal) loop
+            Append
+              (Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Sloc (Formal),
+                    Chars => Chars (Formal)),
+                In_Present  => In_Present (Parent (Formal)),
+                Out_Present => Out_Present (Parent (Formal)),
+             Parameter_Type =>
+                  New_Reference_To (Etype (Formal), Loc),
+                Expression =>
+                  New_Copy_Tree (Expression (Parent (Formal)))),
+              Plist);
+
+            Next_Formal (Formal);
+         end loop;
+      end Copy_Parameter_List;
 
       ---------------------------------
       -- Verify_Overriding_Indicator --
@@ -1071,6 +1161,8 @@ package body Sem_Ch6 is
          end loop;
       end if;
 
+      Check_Inline_Pragma (Spec_Id);
+
       --  Case of fully private operation in the body of the protected type.
       --  We must create a declaration for the subprogram, in order to attach
       --  the protected subprogram that will be used in internal calls.
@@ -1101,22 +1193,7 @@ package body Sem_Ch6 is
                Plist := No_List;
             end if;
 
-            while Present (Formal) loop
-               Append
-                 (Make_Parameter_Specification (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Sloc (Formal),
-                       Chars => Chars (Formal)),
-                   In_Present  => In_Present (Parent (Formal)),
-                   Out_Present => Out_Present (Parent (Formal)),
-                   Parameter_Type =>
-                     New_Reference_To (Etype (Formal), Loc),
-                   Expression =>
-                     New_Copy_Tree (Expression (Parent (Formal)))),
-                 Plist);
-
-               Next_Formal (Formal);
-            end loop;
+            Copy_Parameter_List (Plist);
 
             if Nkind (Body_Spec) = N_Procedure_Specification then
                New_Spec :=
@@ -1337,14 +1414,11 @@ package body Sem_Ch6 is
 
       elsif  Present (Spec_Id)
         and then Expander_Active
+        and then
+          (Is_Always_Inlined (Spec_Id)
+             or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining))
       then
-         Check_Following_Pragma;
-
-         if Is_Always_Inlined (Spec_Id)
-           or else (Has_Pragma_Inline (Spec_Id) and then Front_End_Inlining)
-         then
-            Build_Body_To_Inline (N, Spec_Id);
-         end if;
+         Build_Body_To_Inline (N, Spec_Id);
       end if;
 
       --  Ada 2005 (AI-262): In library subprogram bodies, after the analysis
@@ -2451,9 +2525,29 @@ package body Sem_Ch6 is
                     or else Is_Access_Constant (Etype (Old_Formal))
                               /= Is_Access_Constant (Etype (New_Formal)))
                then
-                  Conformance_Error
-                    ("type of & does not match!", New_Formal);
-                  return;
+                  --  It is allowed to omit the null-exclusion in case of
+                  --  stream attribute subprograms
+
+                  declare
+                     TSS_Name : TSS_Name_Type;
+
+                  begin
+                     Get_Name_String (Chars (New_Id));
+                     TSS_Name :=
+                       TSS_Name_Type
+                         (Name_Buffer
+                            (Name_Len - TSS_Name'Length + 1 .. Name_Len));
+
+                     if TSS_Name /= TSS_Stream_Read
+                       and then TSS_Name /= TSS_Stream_Write
+                       and then TSS_Name /= TSS_Stream_Input
+                       and then TSS_Name /= TSS_Stream_Output
+                     then
+                        Conformance_Error
+                          ("type of & does not match!", New_Formal);
+                        return;
+                     end if;
+                  end;
                end if;
 
                --  Check default expressions for in parameters
@@ -4696,7 +4790,7 @@ package body Sem_Ch6 is
          Decl       : constant Node_Id := Unit_Declaration_Node (E);
 
       begin
-         if Is_Package (Current_Scope)
+         if Is_Package_Or_Generic_Package (Current_Scope)
            and then In_Private_Part (Current_Scope)
          then
             Priv_Decls :=
@@ -5014,7 +5108,7 @@ package body Sem_Ch6 is
                   --  the fact that the full view of a private extension
                   --  re-inherits. It has to be dealt with.
 
-                  if Is_Package (Current_Scope)
+                  if Is_Package_Or_Generic_Package (Current_Scope)
                     and then In_Private_Part (Current_Scope)
                   then
                      Check_Operation_From_Private_View (S, E);
@@ -5423,9 +5517,12 @@ package body Sem_Ch6 is
               and then Is_Access_Type (Formal_Type)
               and then Null_Exclusion_Present (Param_Spec)
             then
-               if Can_Never_Be_Null (Formal_Type) then
+               if Can_Never_Be_Null (Formal_Type)
+                 and then Comes_From_Source (Related_Nod)
+               then
                   Error_Msg_N
-                    ("(Ada 2005) already a null-excluding type", Related_Nod);
+                    ("null exclusion must apply to a type that does not "
+                       & "exclude null ('R'M 3.10 (14)", Related_Nod);
                end if;
 
                Formal_Type :=
