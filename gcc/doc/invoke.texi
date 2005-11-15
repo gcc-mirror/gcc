@@ -9103,8 +9103,9 @@ functional units well resulting in instable performance.
 
 @item -masm=@var{dialect}
 @opindex masm=@var{dialect}
-Output asm instructions using selected @var{dialect}.  Supported choices are
-@samp{intel} or @samp{att} (the default one).
+Output asm instructions using selected @var{dialect}.  Supported
+choices are @samp{intel} or @samp{att} (the default one).  Darwin does
+not support intel.
 
 @item -mieee-fp
 @itemx -mno-ieee-fp
