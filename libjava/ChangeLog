@@ -1,3 +1,12 @@
+2005-11-15  Scott Gilbertson  <scottg@mantatest.com>
+
+	* Makefile.in: Re-generated.
+	* gnu/awt/xlib/XGraphicsDevice.java: New file.
+	* gnu/awt/xlib/XToolkit.java
+	(getLocalGraphicsEnvironment): Implemented. 
+	* gnu/awt/xlib/XGraphicsEnvironment.java: New file.
+	* sources.am: Re-generated.
+
 2005-15-09  David Daney <ddaney@avtrex.com>
 
 	PR libgcj/15430
