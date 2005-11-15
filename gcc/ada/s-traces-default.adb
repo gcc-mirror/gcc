@@ -45,7 +45,7 @@ package body System.Traces is
    ----------------------
 
    procedure Send_Trace_Info (Id : Trace_T) is
-      Task_S  : String := SSL.Task_Name.all;
+      Task_S  : constant String := SSL.Task_Name.all;
       Trace_S : String (1 .. 3 + Task_S'Length);
 
    begin
@@ -57,8 +57,8 @@ package body System.Traces is
    end Send_Trace_Info;
 
    procedure Send_Trace_Info (Id : Trace_T; Timeout : Duration) is
-      Task_S    : String := SSL.Task_Name.all;
-      Timeout_S : String := Duration'Image (Timeout);
+      Task_S    : constant String := SSL.Task_Name.all;
+      Timeout_S : constant String := Duration'Image (Timeout);
       Trace_S   : String (1 .. 6 + Task_S'Length + Timeout_S'Length);
 
    begin
