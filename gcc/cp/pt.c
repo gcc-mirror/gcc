@@ -1895,8 +1895,6 @@ check_explicit_specialization (tree declarator,
 	      ("default argument specified in explicit specialization");
 	    break;
 	  }
-      if (current_lang_name == lang_name_c)
-	error ("template specialization with C linkage");
     }
 
   if (specialization || member_specialization || explicit_instantiation)
@@ -2985,10 +2983,8 @@ push_template_decl_real (tree decl, bool is_friend)
     {
       if (DECL_CLASS_SCOPE_P (decl))
 	member_template_p = true;
-      if (current_lang_name == lang_name_c)
-	error ("template with C linkage");
-      else if (TREE_CODE (decl) == TYPE_DECL
-	       && ANON_AGGRNAME_P (DECL_NAME (decl)))
+      if (TREE_CODE (decl) == TYPE_DECL
+	  && ANON_AGGRNAME_P (DECL_NAME (decl)))
 	error ("template class without a name");
       else if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
