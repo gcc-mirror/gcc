@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001-2005, Free Software Foundation, Inc.     --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,7 @@
 --  This package provides a set of target dependent routines to build
 --  static, dynamic and shared libraries.
 
---  This is the GNU/Linux version of the body.
+--  This is the GNU/Linux version of the body
 
 with MLib.Fil;
 with MLib.Utl;
@@ -193,6 +193,15 @@ package body MLib.Tgt is
    begin
       return "so";
    end DLL_Ext;
+
+   ----------------
+   -- DLL_Prefix --
+   ----------------
+
+   function DLL_Prefix return String is
+   begin
+      return "lib";
+   end DLL_Prefix;
 
    --------------------
    -- Dynamic_Option --

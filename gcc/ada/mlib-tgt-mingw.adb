@@ -31,8 +31,6 @@
 --  This is the Windows version of the body. Works only with GCC versions
 --  supporting the "-shared" option.
 
-with GNAT.OS_Lib;             use GNAT.OS_Lib;
-
 with Namet;  use Namet;
 with Opt;
 with Output; use Output;
@@ -147,6 +145,15 @@ package body MLib.Tgt is
    begin
       return "dll";
    end DLL_Ext;
+
+   ----------------
+   -- DLL_Prefix --
+   ----------------
+
+   function DLL_Prefix return String is
+   begin
+      return "";
+   end DLL_Prefix;
 
    --------------------
    -- Dynamic_Option --

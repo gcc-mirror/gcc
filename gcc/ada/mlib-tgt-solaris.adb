@@ -191,6 +191,15 @@ package body MLib.Tgt is
       return "so";
    end DLL_Ext;
 
+   ----------------
+   -- DLL_Prefix --
+   ----------------
+
+   function DLL_Prefix return String is
+   begin
+      return "lib";
+   end DLL_Prefix;
+
    --------------------
    -- Dynamic_Option --
    --------------------
