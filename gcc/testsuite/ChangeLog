@@ -1,3 +1,8 @@
+2005-11-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24667
+	* g++.dg/warn/Wcast-qual1.C: New test.
+
 2005-11-15  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/winline-5.c: Add large-unit-insns limit.

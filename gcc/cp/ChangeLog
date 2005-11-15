@@ -1,3 +1,9 @@
+2005-11-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24667
+	* typeck.c (check_for_casting_away_constness): Use the diag_fn.
+	(build_const_cast_1): Call it, for C-style casts.
+
 2005-11-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24687
