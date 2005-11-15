@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,6 +62,9 @@ package Sem_Ch3  is
    --  Called to analyze a list of declarations (in what context ???). Also
    --  performs necessary freezing actions (more description needed ???)
 
+   procedure Analyze_Interface_Declaration (T : Entity_Id; Def : Node_Id);
+   --  Analyze an interface declaration or a formal interface declaration
+
    procedure Analyze_Per_Use_Expression (N : Node_Id; T : Entity_Id);
    --  Default and per object expressions do not freeze their components,
    --  and must be analyzed and resolved accordingly. The analysis is
@@ -97,6 +100,15 @@ package Sem_Ch3  is
    --  rather than on the declarations that require completion in the package
    --  declaration.
 
+   procedure Collect_Interfaces
+     (N            : Node_Id;
+      Derived_Type : Entity_Id);
+   --  Ada 2005 (AI-251): Subsidiary procedure to Build_Derived_Record_Type
+   --  and Analyze_Formal_Interface_Type.
+   --  Collect the list of interfaces that are not already implemented by the
+   --  ancestors. This is the list of interfaces for which we must provide
+   --  additional tag components.
+
    procedure Derive_Subprogram
      (New_Subp     : in out Entity_Id;
       Parent_Subp  : Entity_Id;
@@ -114,8 +126,7 @@ package Sem_Ch3  is
      (Parent_Type           : Entity_Id;
       Derived_Type          : Entity_Id;
       Generic_Actual        : Entity_Id := Empty;
-      No_Predefined_Prims   : Boolean   := False;
-      Predefined_Prims_Only : Boolean   := False);
+      No_Predefined_Prims   : Boolean   := False);
    --  To complete type derivation, collect/retrieve the primitive operations
    --  of the parent type, and replace the subsidiary subtypes with the derived
    --  type, to build the specs of the inherited ops. For generic actuals, the
@@ -124,9 +135,7 @@ package Sem_Ch3  is
    --  the derived subprograms are aliased to those of the actual, not those of
    --  the ancestor. The last two params are used in case of derivation from
    --  abstract interface types: No_Predefined_Prims is used to avoid the
-   --  derivation of predefined primitives from the interface, and Predefined
-   --  Prims_Only is used to complete the derivation predefined primitives
-   --  in case of private tagged types implementing interfaces.
+   --  derivation of predefined primitives from an abstract interface.
    --
    --  Note: one might expect this to be private to the package body, but
    --  there is one rather unusual usage in package Exp_Dist.
