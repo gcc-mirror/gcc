@@ -1,3 +1,7 @@
+2005-11-15  Steve Ellcey  <sje@cup.hp.com>
+
+	* mklibgcc.in: Change contents of eh_dummy.c.
+
 2005-11-15  Alan Modra  <amodra@bigpond.net.au>
 
 	PR rtl-optimization/22002
