@@ -27,7 +27,6 @@
 with GNAT.Table;
 with GNAT.HTable; use GNAT.HTable;
 with Ada.Text_IO; use Ada.Text_IO;
-with System.Storage_Elements; use System.Storage_Elements;
 
 package body Memroot is
 
