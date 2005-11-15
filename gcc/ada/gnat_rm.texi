@@ -399,6 +399,7 @@ Implementation of Specific Ada Features
 * GNAT Implementation of Shared Passive Packages::
 * Code Generation for Array Aggregates::
 * The Size of Discriminated Records with Default Discriminants::
+* Strict Conformance to the Ada 95 Reference Manual::
 
 Project File Reference
 
@@ -2036,7 +2037,7 @@ description of the @code{GNAT LIBRARY} command in the OpenVMS version
 of the GNAT Users Guide for details on the use of this command.
 
 The two argument form specifies the representation to be used for
-the specified floating-poin type. On all systems other than OpenVMS,
+the specified floating-point type. On all systems other than OpenVMS,
 the argument must
 be @code{IEEE_Float} and the pragma has no effect. On OpenVMS, the
 argument may be @code{VAX_Float} to specify the use of the VAX float
@@ -2597,8 +2598,7 @@ therefore cannot be @code{with}'ed by a restricted unit.
 This is used for a unit licensed under the GNAT modified GPL that includes
 a special exception paragraph that specifically permits the inclusion of
 the unit in programs without requiring the entire program to be released
-under the GPL@.  This is the license used for the GNAT run-time which ensures
-that the run-time can be used freely in any program without GPL concerns.
+under the GPL@.
 
 @item Restricted
 This is used for a unit that is restricted in that it is not permitted to
@@ -2927,7 +2927,7 @@ statement sequence is a call to such a procedure.
 Syntax:
 
 @smallexample @c ada
-ppragma No_Strict_Aliasing [([Entity =>] type_LOCAL_NAME)];
+pragma No_Strict_Aliasing [([Entity =>] type_LOCAL_NAME)];
 @end smallexample
 
 @noindent
@@ -2937,8 +2937,8 @@ strict aliasing optimization for the given type.  The form with no
 arguments is a configuration pragma which applies to all access types
 declared in units to which the pragma applies. For a detailed
 description of the strict aliasing optimization, and the situations
-in which it must be suppressed, see section "Optimization and Strict Aliasing"
-in the @value{EDITION} User's Guide.
+in which it must be suppressed, see section
+``Optimization and Strict Aliasing'' in the @value{EDITION} User's Guide.
 
 @node Pragma Normalize_Scalars
 @unnumberedsec Pragma Normalize_Scalars
@@ -3028,28 +3028,34 @@ pragma Obsolescent [(static_string_EXPRESSION [,Ada_05])];
 @end smallexample
 
 @noindent
-This pragma must occur immediately following a subprogram
-declaration. It indicates that the associated function or procedure
+This pragma can occur immediately following a subprogram
+declaration in which  indicates that the associated function or procedure
 is considered obsolescent and should not be used. Typically this is
 used when an API must be modified by eventually removing or modifying
 existing subprograms. The pragma can be used at an intermediate stage
 when the subprogram is still present, but will be removed later.
 
-The effect of this pragma is to output a warning message that the
+The effect of this pragma is to output a warning message on
+a call to a program thus marked that the
 subprogram is obsolescent if the appropriate warning option in the
 compiler is activated. If a parameter is present, then a second
 warning message is given containing this text.
-
 In addition, a call to such a program is considered a violation of
 pragma Restrictions (No_Obsolescent_Features).
+
+This pragma can also be used as a program unit pragma for a package,
+in which case it indicates that the entire package is considered
+obsolescent. In this case a client @code{with}'ing such a package
+violates the restriction, and the @code{with} statement is
+flagged with warnings if the warning option is set.
 
 If the optional second parameter is present (which must be exactly
 the identifier Ada_05, no other argument is allowed), then the
 indication of obsolescence applies only when compiling in Ada 2005
 mode. This is primarily intended for dealing with the situations
-in the predefined library where subprograms have become defined
-as obsolescent in Ada 2005 (e.g. in Ada.Characters.Handling), but
-may be used anywhere.
+in the predefined library where subprograms or packages
+have become definedas obsolescent in Ada 2005
+(e.g. in Ada.Characters.Handling), but may be used anywhere.
 
 @node Pragma Passive
 @unnumberedsec Pragma Passive
@@ -4273,6 +4279,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Warnings (On | Off [, local_NAME]);
+pragma Warnings (static_string_EXPRESSION);
 @end smallexample
 
 @noindent
@@ -4289,6 +4296,66 @@ If the @var{local_NAME} parameter is present, warnings are suppressed for
 the specified entity.  This suppression is effective from the point where
 it occurs till the end of the extended scope of the variable (similar to
 the scope of @code{Suppress}).
+
+The form with a static_string_EXPRESSION argument provides more precise
+control over which warnings are active. The string is a list of letters
+specifying which warnings are to be activated and which deactivated. The
+code for these letters is the same as the string used in the command
+line switch controlling warnings. The following is a brief summary. For
+full details see the GNAT Users Guide:
+
+@smallexample
+a   turn on all optional warnings (except d,h,l)
+A   turn off all optional warnings
+b   turn on warnings for bad fixed value (not multiple of small)
+B   turn off warnings for bad fixed value (not multiple of small)
+c   turn on warnings for constant conditional
+C   turn off warnings for constant conditional
+d   turn on warnings for implicit dereference
+D   turn off warnings for implicit dereference
+e   treat all warnings as errors
+f   turn on warnings for unreferenced formal
+F   turn off warnings for unreferenced formal
+g   turn on warnings for unrecognized pragma
+G   turn off warnings for unrecognized pragma
+h   turn on warnings for hiding variable
+H   turn off warnings for hiding variable
+i   turn on warnings for implementation unit
+I   turn off warnings for implementation unit
+j   turn on warnings for obsolescent (annex J) feature
+J   turn off warnings for obsolescent (annex J) feature
+k   turn on warnings on constant variable
+K   turn off warnings on constant variable
+l   turn on warnings for missing elaboration pragma
+L   turn off warnings for missing elaboration pragma
+m   turn on warnings for variable assigned but not read
+M   turn off warnings for variable assigned but not read
+n   normal warning mode (cancels s/e)
+o   turn on warnings for address clause overlay
+O   turn off warnings for address clause overlay
+p   turn on warnings for ineffective pragma Inline
+P   turn off warnings for ineffective pragma Inline
+r   turn on warnings for redundant construct
+R   turn off warnings for redundant construct
+s   suppress all warnings
+u   turn on warnings for unused entity
+U   turn off warnings for unused entity
+v   turn on warnings for unassigned variable
+V   turn off warnings for unassigned variable
+x   turn on warnings for export/import
+X   turn off warnings for export/import
+y   turn on warnings for Ada 2005 incompatibility
+Y   turn off warnings for Ada 2005 incompatibility
+z   turn on size/align warnings for unchecked conversion
+Z   turn off size/align warnings for unchecked conversion
+@end smallexample
+
+@noindent
+The specified warnings will be in effect until the end of the program
+or another pragma Warnings is encountered. The effect of the pragma is
+cumulative. Initially the set of warnings is the standard default set
+as possibly modified by compiler switches. Then each pragma Warning
+modifies this set of warnings as specified.
 
 @node Pragma Weak_External
 @unnumberedsec Pragma Weak_External
@@ -7475,9 +7542,27 @@ but for which no elaboration code is generated.  Generally, it is
 the case that preelaborable units will meet the restrictions, with
 the exception of large aggregates initialized with an others_clause,
 and exception declarations (which generate calls to a run-time
-registry procedure).  Note that this restriction is enforced on
+registry procedure).  This restriction is enforced on
 a unit by unit basis, it need not be obeyed consistently
 throughout a partition.
+
+It is not possible to precisely document
+the constructs which are compatible with this restriction, since,
+unlike most other restrictions, this is not a restriction on the
+source code, but a restriction on the generated object code. For
+example, if the source contains a declaration:
+
+@smallexample
+   Val : constant Integer := X;
+@end smallexample
+
+@noindent
+where X is not a static constant, it may be possible, depending
+on complex optimization circuitry, for the compiler to figure
+out the value of X at compile time, in which case this initialization
+can be done by the loader, and requires no initialization code. It
+is not possible to document the precise conditions under which the
+optimizer can figure this out.
 
 @item No_Entry_Queue
 @findex No_Entry_Queue
@@ -8271,8 +8356,14 @@ overflow situations, when the @code{Machine_Overflows} attribute of the
 result type is @code{False}.  See G.2.1(13).
 @end cartouche
 @noindent
-Infinite and Nan values are produced as dictated by the IEEE
+Infinite and NaN values are produced as dictated by the IEEE
 floating-point standard.
+
+Note that on machines that are not fully compliant with the IEEE
+floating-point standard, such as Alpha, the @option{-mieee} compiler flag
+must be used for achieving IEEE confirming behavior (although at the cost
+of a significant performance penalty), so infinite and NaN values are
+properly generated.
 
 @sp 1
 @cartouche
@@ -10399,8 +10490,9 @@ purposes the description in the Ada 95
 reference manual, or appropriate Ada
 text book, will be sufficient for making use of these facilities.
 
-In the case of the input-output facilities, @xref{The Implementation of
-Standard I/O}, gives details on exactly how GNAT interfaces to the
+In the case of the input-output facilities,
+@xref{The Implementation of Standard I/O},
+gives details on exactly how GNAT interfaces to the
 file system.  For the remaining packages, the Ada 95 reference manual
 should be sufficient.  The following is a list of the packages included,
 together with a brief description of the functionality that is provided.
@@ -10979,10 +11071,16 @@ All input/output operations use @code{fread}/@code{fwrite}.
 @end itemize
 
 @noindent
-There is no internal buffering of any kind at the Ada library level.  The
-only buffering is that provided at the system level in the
-implementation of the C library routines that support streams.  This
-facilitates shared use of these streams by mixed language programs.
+There is no internal buffering of any kind at the Ada library level. The only
+buffering is that provided at the system level in the implementation of the
+library routines that support streams. This facilitates shared use of these
+streams by mixed language programs. Note though that system level buffering is
+explictly enabled at elaboration of the standard I/O packages and that can have
+an impact on mixed language programs, in particular those using I/O before
+calling the Ada elaboration routine (e.g. adainit). It is recommended to call
+the Ada elaboration routine before performing any I/O or when impractical, flush
+the common I/O streams and in particular Standard_Output before elaborating the
+Ada code.
 
 @node FORM Strings
 @section FORM Strings
@@ -13480,6 +13578,7 @@ facilities.
 * GNAT Implementation of Shared Passive Packages::
 * Code Generation for Array Aggregates::
 * The Size of Discriminated Records with Default Discriminants::
+* Strict Conformance to the Ada 95 Reference Manual::
 @end menu
 
 @node Machine Code Insertions
@@ -14113,7 +14212,33 @@ aliasing all views of the object (which may be manipulated by different tasks,
 say) must be consistent, so it is imperative that the object, once created,
 remain invariant.
 
+@node Strict Conformance to the Ada 95 Reference Manual
+@section Strict Conformance to the Ada 95 Reference Manual
 
+@noindent
+The dynamic semantics defined by the Ada 95 Reference Manual impose a set of
+run-time checks to be generated. By default, the GNAT compiler will insert many
+run-time checks into the compiled code, including most of those required by the
+Ada 95 Reference Manual. However, there are three checks that are not enabled
+in the default mode for efficiency reasons: arithmetic overflow checking for
+integer operations (including division by zero), checks for access before
+elaboration on subprogram calls, and stack overflow checking (most operating
+systems do not perform this check by default).
+
+Strict conformance to the Ada 95 Reference Manual can be achieved by adding
+three compiler options for overflow checking for integer operations
+(@option{-gnato}), dynamic checks for access-before-elaboration on subprogram
+calls and generic instantiations (@option{-gnatE}), and stack overflow
+checking (@option{-fstack-check}).
+
+Note that the result of a floating point arithmetic operation in overflow and
+invalid situations, when the @code{Machine_Overflows} attribute of the result
+type is @code{False}, is to generate IEEE NaN and infinite values. This is the
+case for machines compliant with the IEEE floating-point standard, but on
+machines that are not fully compliant with this standard, such as Alpha, the
+@option{-mieee} compiler flag must be used for achieving IEEE confirming
+behavior (although at the cost of a significant performance penalty), so
+infinite and and NaN values are properly generated.
 
 
 @node Project File Reference
@@ -14431,7 +14556,55 @@ for building shared libraries.
 Expression must be a path name. The attribute defines the
 directory in which the sources of the interfaces of a Stand-alone Library will
 be copied.  The directory must exist, must be distinct from the project's
-object directory and source directories, and must be writable.
+object directory and source directories of all project in the project tree,
+and must be writable.
+
+@item  Library_Src_Dir
+Expression must be a path name. The attribute defines the
+directory in which the ALI files of a Library will
+be copied.  The directory must exist, must be distinct from the project's
+object directory and source directoriesof all project in the project tree,
+and must be writable.
+
+@item  Library_Symbol_File
+Expression must be a single string. Its value is the single file name of a
+symbol file to be created when building a stand-alone library when the
+symbol policy is either "compliant", "controlled" or "restricted",
+on platforms that support symbol control, such as VMS.
+
+@item   Library_Reference_Symbol_File
+Expression must be a single string. Its value is the single file name of a
+reference symbol file that is read when the symbol policy is either
+"compliant" or "controlled", on platforms that support symbol control,
+such as VMS, when building a stand-alone library.
+
+@item  Library_Symbol_Policy
+Expression must be a single string. Its case-insensitive value can only be
+"autonomous", "default", "compliant", "controlled" or "restricted".
+
+This attribute is not taken into account on all platforms. It controls the
+policy for exported symbols and, on some platforms (like VMS) that have the
+notions of major and minor IDs built in the library files, it controls
+the setting of these IDs.
+
+"autonomous" or "default": exported symbols are not controlled.
+
+"compliant": if attribute Library_Reference_Symbol_File is not defined, then
+it is equivalent to policy "autonomous". If there are exported symbols in
+the reference symbol file that are not in the object files of the interfaces,
+the major ID of the library is increased. If there are symbols in the
+object files of the interfaces that are not in the reference symbol file,
+these symbols are put at the end of the list in the newly created symbol file
+and the minor ID is increased.
+
+"controlled": the attribute Library_Reference_Symbol_File must be difined.
+The library will fail to build if the exported symbols in the object files of
+the interfaces do not match exactly the symbol in the symbol file.
+
+"restricted": The attribute Library_Symbol_File must be defined. The library
+will fail to build if there are symbols in the symbol file that are not in
+the exported symbols of the object files of the interfaces. Additional symbols
+in the object files are not added to the symbol file.
 
 @item  Main
 Expression must be a list of strings that are legal file names.
@@ -14442,6 +14615,12 @@ When a project file is elaborated, as part of the execution of a gnatmake
 command, one or several executables are built and placed in the Exec_Dir.
 If the gnatmake command does not include explicit file names, the executables
 that are built correspond to the files specified by this attribute.
+
+@item  Externally_Built
+Expression must be a single string. Its value must be either "true" of "false",
+case-insensitive. The default is "false". When the value of this attribute is
+"true", no attempt is made to compile the sources or to build the library,
+when the project is a library project.
 
 @item Main_Language
 This is a simple attribute. Its value is a string that specifies the
@@ -14700,27 +14879,20 @@ This is an associative array attribute. Its
 domain is a set of language names. Its range is a string list that
 specifies the compilation options to be used when compiling a component
 written in that language, for which no file-specific switches have been
-specified..
+specified.
 
 @item  Switches
 This is an associative array attribute. Its domain is
 a set of file names. Its range is a string list that specifies the
 compilation options to be used when compiling the named file. If a file
 is not specified in the Switches attribute, it is compiled with the
-settings specified by Default_Switches.
+options specified by Default_Switches of its language, if defined.
 
 @item  Local_Configuration_Pragmas.
 This is a simple attribute, whose
 value is a path name that designates a file containing configuration pragmas
 to be used for all invocations of the compiler for immediate sources of the
 project.
-
-@item Executable
-This is an associative array attribute. Its domain is
-a set of main source file names. Its range is a simple string that specifies
-the executable file name to be used when linking the specified main source.
-If a main source is not specified in the Executable attribute, the executable
-file name is deducted from the main source file name.
 @end table
 
 @subsection package Builder
@@ -14732,10 +14904,18 @@ following attributes apply to package @code{Builder}:
 
 @table @code
 @item Default_Switches
-As above.
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when building a main
+written in that language, for which no file-specific switches have been
+specified.
 
 @item Switches
-As above.
+This is an associative array attribute. Its domain is
+a set of file names. Its range is a string list that specifies
+options to be used when building the named main file. If a main file
+is not specified in the Switches attribute, it is built with the
+options specified by Default_Switches of its language, if defined.
 
 @item Global_Configuration_Pragmas
 This is a simple attribute, whose
@@ -14743,14 +14923,17 @@ value is a path name that designates a file that contains configuration pragmas
 to be used in every build of an executable. If both local and global
 configuration pragmas are specified, a compilation makes use of both sets.
 
+
 @item Executable
-This is an associative array attribute, defined over
-compilation unit names. The image is a string that is the name of the
-executable file corresponding to the main source file index.
+This is an associative array attribute. Its domain is
+a set of main source file names. Its range is a simple string that specifies
+the executable file name to be used when linking the specified main source.
+If a main source is not specified in the Executable attribute, the executable
+file name is deducted from the main source file name.
 This attribute has no effect if its value is the empty string.
 
 @item Executable_Suffix
-This is a simple attribute whose value is a suffix to be added to
+This is a simple attribute whose value is the suffix to be added to
 the executables that don't have an attribute Executable specified.
 @end table
 
@@ -14763,7 +14946,8 @@ The following attributes apply to package @code{Gnatls}:
 
 @table @code
 @item Switches
-As above.
+This is a single attribute with a string list value. Each non empty string
+in the list is an option when invoking @code{gnatls}.
 @end table
 
 @subsection package Binder
@@ -14775,9 +14959,18 @@ The following attributes apply to package @code{Binder}:
 
 @table @code
 @item     Default_Switches
-As above.
-@item     Switches
-As above.
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when binding a main
+written in that language, for which no file-specific switches have been
+specified.
+
+@item Switches
+This is an associative array attribute. Its domain is
+a set of file names. Its range is a string list that specifies
+options to be used when binding the named main file. If a main file
+is not specified in the Switches attribute, it is boundt with the
+options specified by Default_Switches of its language, if defined.
 @end table
 
 @subsection package Linker
@@ -14789,9 +14982,24 @@ The following attributes apply to package @code{Linker}:
 
 @table @code
 @item     Default_Switches
-As above
-@item     Switches
-As above.
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when linking a main
+written in that language, for which no file-specific switches have been
+specified.
+
+@item Switches
+This is an associative array attribute. Its domain is
+a set of file names. Its range is a string list that specifies
+options to be used when linking the named main file. If a main file
+is not specified in the Switches attribute, it is linked with the
+options specified by Default_Switches of its language, if defined.
+
+@item  Linker_Options
+This is a string list attribute. Its value specifies additional options that
+be givent to the linker when linking an executable. This attribute is not
+used in the main project, only in projects imported directly or indirectly.
+
 @end table
 
 @subsection package Cross_Reference
@@ -14804,9 +15012,19 @@ The following attributes apply to package @code{Cross_Reference}:
 
 @table @code
 @item     Default_Switches
-As above.
-@item     Switches
-As above.
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when calling @command{gnatxref} on a source
+written in that language, for which no file-specific switches have been
+specified.
+
+@item Switches
+This is an associative array attribute. Its domain is
+a set of file names. Its range is a string list that specifies
+options to be used when calling @command{gnatxref} on the named main source.
+If a source is not specified in the Switches attribute, @command{gnatxref} will
+be called with the options specified by Default_Switches of its language,
+if defined.
 @end table
 
 @subsection package   Finder
@@ -14818,9 +15036,19 @@ The following attributes apply to package @code{Finder}:
 
 @table @code
 @item     Default_Switches
-As above.
-@item     Switches
-As above.
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when calling @command{gnatfind} on a source
+written in that language, for which no file-specific switches have been
+specified.
+
+@item Switches
+This is an associative array attribute. Its domain is
+a set of file names. Its range is a string list that specifies
+options to be used when calling @command{gnatfind} on the named main source.
+If a source is not specified in the Switches attribute, @command{gnatfind} will
+be called with the options specified by Default_Switches of its language,
+if defined.
 @end table
 
 @subsection package Pretty_Printer
@@ -14833,9 +15061,94 @@ The following attributes apply to package @code{Pretty_Printer}:
 
 @table @code
 @item     Default_switches
-As above.
-@item     Switches
-As above.
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when calling @command{gnatpp} on a source
+written in that language, for which no file-specific switches have been
+specified.
+
+@item Switches
+This is an associative array attribute. Its domain is
+a set of file names. Its range is a string list that specifies
+options to be used when calling @command{gnatpp} on the named main source.
+If a source is not specified in the Switches attribute, @command{gnatpp} will
+be called with the options specified by Default_Switches of its language,
+if defined.
+@end table
+
+@subsection package gnatstub
+
+@noindent
+The attributes of package @code{gnatstub}
+specify the tool options to be used
+when invoking the tool @command{gnatstub}.
+The following attributes apply to package @code{gnatstub}:
+
+@table @code
+@item     Default_switches
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when calling @command{gnatstub} on a source
+written in that language, for which no file-specific switches have been
+specified.
+
+@item Switches
+This is an associative array attribute. Its domain is
+a set of file names. Its range is a string list that specifies
+options to be used when calling @command{gnatstub} on the named main source.
+If a source is not specified in the Switches attribute, @command{gnatpp} will
+be called with the options specified by Default_Switches of its language,
+if defined.
+@end table
+
+@subsection package Eliminate
+
+@noindent
+The attributes of package @code{Eliminate}
+specify the tool options to be used
+when invoking the tool @command{gnatelim}.
+The following attributes apply to package @code{Eliminate}:
+
+@table @code
+@item     Default_switches
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when calling @command{gnatelim} on a source
+written in that language, for which no file-specific switches have been
+specified.
+
+@item Switches
+This is an associative array attribute. Its domain is
+a set of file names. Its range is a string list that specifies
+options to be used when calling @command{gnatelim} on the named main source.
+If a source is not specified in the Switches attribute, @command{gnatelim} will
+be called with the options specified by Default_Switches of its language,
+if defined.
+@end table
+
+@subsection package Metrics
+
+@noindent
+The attributes of package @code{Metrics}
+specify the tool options to be used
+when invoking the tool @command{gnatmetric}.
+The following attributes apply to package @code{Metrics}:
+
+@table @code
+@item     Default_switches
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when calling @command{gnatmetric} on a source
+written in that language, for which no file-specific switches have been
+specified.
+
+@item Switches
+This is an associative array attribute. Its domain is
+a set of file names. Its range is a string list that specifies
+options to be used when calling @command{gnatmetric} on the named main source.
+If a source is not specified in the Switches attribute, @command{gnatmetric}
+will be called with the options specified by Default_Switches of its language,
+if defined.
 @end table
 
 @subsection  package IDE
