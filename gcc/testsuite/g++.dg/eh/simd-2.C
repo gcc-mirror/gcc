@@ -4,6 +4,7 @@
 // { dg-options "-O -w" { target i?86-*-* } }
 // { dg-options "-O -w" { target { x86_64-*-* && ilp32 } } }
 // { dg-options "-O -w -maltivec" { target powerpc*-*-linux* } }
+// { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } }
 // { dg-do run }
 
 #include "check-vect.h"
