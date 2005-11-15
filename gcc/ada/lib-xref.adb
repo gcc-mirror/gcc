@@ -111,8 +111,13 @@ package body Lib.Xref is
       if Opt.Xref_Active
 
          --  Definition must come from source
+         --  We make an exception for subprogram child units that have no
+         --  spec. For these we generate a subprogram declaration for library
+         --  use, and the corresponding entity does not come from source.
+         --  Nevertheless, all references will be attached to it and we have
+         --  to treat is as coming from user code.
 
-         and then Comes_From_Source (E)
+         and then (Comes_From_Source (E) or else Is_Child_Unit (E))
 
          --  And must have a reasonable source location that is not
          --  within an instance (all entities in instances are ignored)
@@ -517,6 +522,14 @@ package body Lib.Xref is
                   Ent := Alias (Ent);
                end if;
             end loop;
+
+         --  The internally created defining entity for a child subprogram
+         --  that has no previous spec has valid references.
+
+         elsif Is_Overloadable (E)
+           and then Is_Child_Unit (E)
+         then
+            Ent := E;
 
          --  Record components of discriminated subtypes or derived types
          --  must be treated as references to the original component.
