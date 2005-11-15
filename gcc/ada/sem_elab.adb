@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,7 +117,6 @@ package body Sem_Elab is
 
       Outer_Scope : Entity_Id;
       --  Save scope of outer level call
-
    end record;
 
    package Delay_Check is new Table.Table (
@@ -165,6 +164,13 @@ package body Sem_Elab is
    --  thus all calls are of interest. If it was set to some other scope,
    --  then the original call was an inner call, and we are not interested
    --  in calls that go outside this scope.
+
+   procedure Activate_Elaborate_All_Desirable (N : Node_Id; U : Entity_Id);
+   --  Analysis of construct N shows that we should set Elaborate_All_Desirable
+   --  for the WITH clause for unit U (which will always be present). A special
+   --  case is when N is a function or procedure instantiation, in which case
+   --  it is sufficient to set Elaborate_Desirable, since in this case there is
+   --  no possibility of transitive elaboration issues.
 
    procedure Check_A_Call
      (N                 : Node_Id;
@@ -308,6 +314,113 @@ package body Sem_Elab is
    --  which the pragma applies. This prevents spurious warnings when the
    --  called entity is renamed within U.
 
+   --------------------------------------
+   -- Activate_Elaborate_All_Desirable --
+   --------------------------------------
+
+   procedure Activate_Elaborate_All_Desirable (N : Node_Id; U : Entity_Id) is
+      UN  : constant Unit_Number_Type := Get_Code_Unit (N);
+      CU  : constant Node_Id          := Cunit (UN);
+      UE  : constant Entity_Id        := Cunit_Entity (UN);
+      Unm : constant Unit_Name_Type   := Unit_Name (UN);
+      CI  : constant List_Id          := Context_Items (CU);
+      Itm : Node_Id;
+      Ent : Entity_Id;
+
+      procedure Set_Elab_Flag (Itm : Node_Id);
+      --  Sets Elaborate_[All_]Desirable as appropriate on Itm
+
+      -------------------
+      -- Set_Elab_Flag --
+      -------------------
+
+      procedure Set_Elab_Flag (Itm : Node_Id) is
+      begin
+         if Nkind (N) in N_Subprogram_Instantiation then
+            Set_Elaborate_Desirable (Itm);
+         else
+            Set_Elaborate_All_Desirable (Itm);
+         end if;
+      end Set_Elab_Flag;
+
+   --  Start of processing for Activate_Elaborate_All_Desirable
+
+   begin
+      Itm := First (CI);
+      while Present (Itm) loop
+         if Nkind (Itm) = N_With_Clause then
+            Ent := Cunit_Entity (Get_Cunit_Unit_Number (Library_Unit (Itm)));
+
+            --  If we find it, then mark elaborate all desirable and return
+
+            if U = Ent then
+               Set_Elab_Flag (Itm);
+               return;
+            end if;
+         end if;
+
+         Next (Itm);
+      end loop;
+
+      --  If we fall through then the with clause is not present in the
+      --  current unit. One legitimate possibility is that the with clause
+      --  is present in the spec when we are a body.
+
+      if Is_Body_Name (Unm) then
+         declare
+            UEs : constant Entity_Id        := Spec_Entity (UE);
+            UNs : constant Unit_Number_Type := Get_Source_Unit (UEs);
+            CUs : constant Node_Id          := Cunit (UNs);
+            CIs : constant List_Id          := Context_Items (CUs);
+
+         begin
+            Itm := First (CIs);
+            while Present (Itm) loop
+               if Nkind (Itm) = N_With_Clause then
+                  Ent :=
+                    Cunit_Entity (Get_Cunit_Unit_Number (Library_Unit (Itm)));
+
+                  if U = Ent then
+
+                     --  If we find it, we have to create an implicit copy
+                     --  of the with clause for the body, just so that it
+                     --  can be marked as elaborate desirable (it would be
+                     --  wrong to put it on the spec item, since it is the
+                     --  body that has possible elaboration problems, not
+                     --  the spec.
+
+                     declare
+                        CW : constant Node_Id :=
+                               Make_With_Clause (Sloc (Itm),
+                                 Name => Name (Itm));
+
+                     begin
+                        Set_Library_Unit  (CW, Library_Unit (Itm));
+                        Set_Implicit_With (CW, True);
+
+                        --  Set elaborate all desirable on copy and then
+                        --  append the copy to the list of body with's
+                        --  and we are done.
+
+                        Set_Elab_Flag (CW);
+                        Append_To (CI, CW);
+                        return;
+                     end;
+                  end if;
+               end if;
+
+               Next (Itm);
+            end loop;
+         end;
+      end if;
+
+      --  Here if we do not find with clause on spec or body. We just ignore
+      --  this case, it means that the elaboration involves some other unit
+      --  than the unit being compiled, and will be caught elsewhere.
+
+      null;
+   end Activate_Elaborate_All_Desirable;
+
    ------------------
    -- Check_A_Call --
    ------------------
@@ -370,7 +483,7 @@ package body Sem_Elab is
 
       if (Nkind (N) = N_Function_Call
            or else Nkind (N) = N_Procedure_Call_Statement)
-        and then  No_Elaboration_Check (N)
+        and then No_Elaboration_Check (N)
       then
          return;
       end if;
@@ -710,8 +823,15 @@ package body Sem_Elab is
             end if;
 
             Error_Msg_Qual_Level := Nat'Last;
-            Error_Msg_NE
-              ("\missing pragma Elaborate_All for&?", N, W_Scope);
+
+            if Nkind (N) in N_Subprogram_Instantiation then
+               Error_Msg_NE
+                 ("\missing pragma Elaborate for&?", N, W_Scope);
+            else
+               Error_Msg_NE
+                 ("\missing pragma Elaborate_All for&?", N, W_Scope);
+            end if;
+
             Error_Msg_Qual_Level := 0;
             Output_Calls (N);
 
@@ -893,7 +1013,6 @@ package body Sem_Elab is
         ("\?Program_Error will be raised at run time", N);
       Insert_Elab_Check (N);
       Set_ABE_Is_Certain (N);
-
    end Check_Bad_Instantiation;
 
    ---------------------
@@ -1110,13 +1229,19 @@ package body Sem_Elab is
                      return;
                   end if;
 
-                  if Nkind (P) = N_Subprogram_Body
-                       or else
-                     Nkind (P) = N_Protected_Body
+                  --  A protected body has no elaboration code and contains
+                  --  only other bodies.
+
+                  if Nkind (P) = N_Protected_Body then
+                     return;
+
+                  elsif Nkind (P) = N_Subprogram_Body
                        or else
                      Nkind (P) = N_Task_Body
                        or else
                      Nkind (P) = N_Block_Statement
+                       or else
+                     Nkind (P) = N_Entry_Body
                   then
                      if L = Declarations (P) then
                         exit;
@@ -1510,7 +1635,6 @@ package body Sem_Elab is
       else
          Check_Internal_Call_Continue (N, E, Outer_Scope, Orig_Ent);
       end if;
-
    end Check_Internal_Call;
 
    ----------------------------------
@@ -1661,9 +1785,9 @@ package body Sem_Elab is
          --  does not normally visit subprogram bodies.
 
          declare
-            Decl : Node_Id := First (Declarations (Sbody));
-
+            Decl : Node_Id;
          begin
+            Decl := First (Declarations (Sbody));
             while Present (Decl) loop
                Traverse (Decl);
                Next (Decl);
@@ -1830,7 +1954,6 @@ package body Sem_Elab is
            and then Has_Task (Base_Type (Typ))
          then
             Comp := First_Component (Typ);
-
             while Present (Comp) loop
                Add_Task_Proc (Etype (Comp));
                Comp := Next_Component (Comp);
@@ -1874,10 +1997,9 @@ package body Sem_Elab is
                end if;
 
             else
-               Elmt := First_Elmt (Inter_Procs);
-
                --  No need for multiple entries of the same type
 
+               Elmt := First_Elmt (Inter_Procs);
                while Present (Elmt) loop
                   if Node (Elmt) = Proc then
                      return;
@@ -1899,9 +2021,7 @@ package body Sem_Elab is
       begin
          if Present (Decls) then
             Decl := First (Decls);
-
             while Present (Decl) loop
-
                if Nkind (Decl) = N_Object_Declaration
                  and then Has_Task (Etype (Defining_Identifier (Decl)))
                then
@@ -1918,9 +2038,10 @@ package body Sem_Elab is
       ----------------
 
       function Outer_Unit (E : Entity_Id) return Entity_Id is
-         Outer : Entity_Id := E;
+         Outer : Entity_Id;
 
       begin
+         Outer := E;
          while Present (Outer) loop
             if Elaboration_Checks_Suppressed (Outer) then
                Cunit_SC := True;
@@ -1970,7 +2091,6 @@ package body Sem_Elab is
       --  the task body to be elaborated before the current one.
 
       Elmt := First_Elmt (Inter_Procs);
-
       while Present (Elmt) loop
          Ent := Node (Elmt);
          Task_Scope := Outer_Unit (Scope (Ent));
@@ -2014,7 +2134,7 @@ package body Sem_Elab is
                   " requires pragma Elaborate_All on &?", N, Ent);
             end if;
 
-            Set_Elaborate_All_Desirable (Task_Scope);
+            Activate_Elaborate_All_Desirable (N, Task_Scope);
             Set_Suppress_Elaboration_Warnings (Task_Scope);
          end if;
 
@@ -2025,8 +2145,8 @@ package body Sem_Elab is
       --  the task procedure bodies, which are available.
 
       In_Task_Activation := True;
-      Elmt := First_Elmt (Intra_Procs);
 
+      Elmt := First_Elmt (Intra_Procs);
       while Present (Elmt) loop
          Ent := Node (Elmt);
          Check_Internal_Call_Continue (N, Ent, Enclosing, Ent);
@@ -2060,7 +2180,7 @@ package body Sem_Elab is
         or else
           (Is_Child_Unit (Scop) and then Is_Visible_Child_Unit (Scop))
       then
-         Set_Elaborate_All_Desirable (Scop);
+         Activate_Elaborate_All_Desirable (Call, Scop);
          Set_Suppress_Elaboration_Warnings (Scop, True);
          return;
       end if;
@@ -2077,13 +2197,14 @@ package body Sem_Elab is
          null;  --  detailed processing follows.
 
       else
-         Set_Elaborate_All_Desirable (Scop);
+         Activate_Elaborate_All_Desirable (Call, Scop);
          Set_Suppress_Elaboration_Warnings (Scop, True);
          return;
       end if;
 
       --  If the unit is not in the context, there must be an intermediate
-      --  unit that is, on which we need to place to elaboration flag.
+      --  unit that is, on which we need to place to elaboration flag. This
+      --  happens with init proc calls.
 
       if Is_Init_Proc (Subp)
         or else Init_Call
@@ -2098,21 +2219,21 @@ package body Sem_Elab is
                      Etype (First (Parameter_Associations (Call)));
          begin
             Elab_Unit := Scope (Typ);
-
             while (Present (Elab_Unit))
               and then not Is_Compilation_Unit (Elab_Unit)
             loop
                Elab_Unit := Scope (Elab_Unit);
             end loop;
          end;
+
+      --  If original node uses selected component notation, the prefix is
+      --  visible and determines the scope that must be elaborated. After
+      --  rewriting, the prefix is the first actual in the call.
+
       elsif Nkind (Original_Node (Call)) = N_Selected_Component then
-
-         --  If original node uses selected component notation, the
-         --  prefix is visible and determines the scope that must be
-         --  elaborated. After rewriting, the prefix is the first actual
-         --  in the call.
-
          Elab_Unit := Scope (Etype (First (Parameter_Associations (Call))));
+
+      --  Not one of special cases above
 
       else
          --  Using previously computed scope. If the elaboration check is
@@ -2122,7 +2243,7 @@ package body Sem_Elab is
          Elab_Unit := Scop;
       end if;
 
-      Set_Elaborate_All_Desirable (Elab_Unit);
+      Activate_Elaborate_All_Desirable (Call, Elab_Unit);
       Set_Suppress_Elaboration_Warnings (Elab_Unit, True);
    end Set_Elaboration_Constraint;
 
@@ -2268,7 +2389,7 @@ package body Sem_Elab is
 
          --  Otherwise look and see if we are embedded in a further package
 
-         elsif Is_Package (Scop) then
+         elsif Is_Package_Or_Generic_Package (Scop) then
 
             --  If so, get the body of the enclosing package, and look in
             --  its package body for the package body we are looking for.
@@ -2311,16 +2432,15 @@ package body Sem_Elab is
          --  Case of entity is in other than a package spec, in this case
          --  the body, if present, must be in the same declarative part.
 
-         if not Is_Package (Scop) then
+         if not Is_Package_Or_Generic_Package (Scop) then
             declare
                P : Node_Id;
 
             begin
-               P := Declaration_Node (Ent);
-
                --  Declaration node may get us a spec, so if so, go to
                --  the parent declaration.
 
+               P := Declaration_Node (Ent);
                while not Is_List_Member (P) loop
                   P := Parent (P);
                end loop;
@@ -2532,18 +2652,26 @@ package body Sem_Elab is
    ----------------------------
 
    function Same_Elaboration_Scope (Scop1, Scop2 : Entity_Id) return Boolean is
-      S1 : Entity_Id := Scop1;
-      S2 : Entity_Id := Scop2;
+      S1 : Entity_Id;
+      S2 : Entity_Id;
 
    begin
+      --  Find elaboration scope for Scop1
+
+      S1 := Scop1;
       while S1 /= Standard_Standard
         and then (Ekind (S1) = E_Package
+                    or else
+                  Ekind (S1) = E_Protected_Type
                     or else
                   Ekind (S1) = E_Block)
       loop
          S1 := Scope (S1);
       end loop;
 
+      --  Find elaboration scope for Scop2
+
+      S2 := Scop2;
       while S2 /= Standard_Standard
         and then (Ekind (S2) = E_Package
                     or else
@@ -2606,7 +2734,6 @@ package body Sem_Elab is
       if Nkind (N) = N_Subprogram_Declaration then
          declare
             Ent : constant Entity_Id := Defining_Unit_Name (Specification (N));
-
          begin
             Set_Is_Imported (Ent);
             Set_Convention  (Ent, Convention_Stubbed);
@@ -2615,7 +2742,6 @@ package body Sem_Elab is
       elsif Nkind (N) = N_Package_Declaration then
          declare
             Spec : constant Node_Id := Specification (N);
-
          begin
             New_Scope (Defining_Unit_Name (Spec));
             Supply_Bodies (Visible_Declarations (Spec));
@@ -2627,7 +2753,6 @@ package body Sem_Elab is
 
    procedure Supply_Bodies (L : List_Id) is
       Elmt : Node_Id;
-
    begin
       if Present (L) then
          Elmt := First (L);
@@ -2647,7 +2772,6 @@ package body Sem_Elab is
 
    begin
       Scop := E1;
-
       loop
          if Scop = E2 then
             return True;
@@ -2675,25 +2799,23 @@ package body Sem_Elab is
 
    begin
       Item := First (Context_Items (Cunit (Current_Sem_Unit)));
-
       while Present (Item) loop
          if Nkind (Item) = N_Pragma
            and then Get_Pragma_Id (Chars (Item)) = Pragma_Elaborate_All
          then
+            --  Return if some previous error on the pragma itself
+
             if Error_Posted (Item) then
-
-               --  Some previous error on the pragma itself
-
                return False;
             end if;
 
             Elab_Id :=
-              Entity (
-                Expression (First (Pragma_Argument_Associations (Item))));
+              Entity
+                (Expression (First (Pragma_Argument_Associations (Item))));
 
-            Par   := Parent (Unit_Declaration_Node (Elab_Id));
+            Par := Parent (Unit_Declaration_Node (Elab_Id));
+
             Item2 := First (Context_Items (Par));
-
             while Present (Item2) loop
                if Nkind (Item2) = N_With_Clause
                  and then Entity (Name (Item2)) = E

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1556,6 +1556,7 @@ package body ALI is
                Withs.Table (Withs.Last).Uname              := Get_Name;
                Withs.Table (Withs.Last).Elaborate          := False;
                Withs.Table (Withs.Last).Elaborate_All      := False;
+               Withs.Table (Withs.Last).Elab_Desirable     := False;
                Withs.Table (Withs.Last).Elab_All_Desirable := False;
                Withs.Table (Withs.Last).SAL_Interface      := False;
 
@@ -1571,12 +1572,24 @@ package body ALI is
                   Withs.Table (Withs.Last).Sfile := Get_Name (Lower => True);
                   Withs.Table (Withs.Last).Afile := Get_Name;
 
-                  --  Scan out possible E, EA, and NE parameters
+                  --  Scan out possible E, EA, ED, and AD parameters
 
                   while not At_Eol loop
                      Skip_Space;
 
-                     if Nextc = 'E' then
+                     if Nextc = 'A' then
+                        P := P + 1;
+                        Checkc ('D');
+                        Check_At_End_Of_Field;
+
+                        --  Store AD indication unless ignore required
+
+                        if not Ignore_ED then
+                           Withs.Table (Withs.Last).Elab_All_Desirable :=
+                             True;
+                        end if;
+
+                     elsif Nextc = 'E' then
                         P := P + 1;
 
                         if At_End_Of_Field then
@@ -1594,7 +1607,7 @@ package body ALI is
                            --  Store ED indication unless ignore required
 
                            if not Ignore_ED then
-                              Withs.Table (Withs.Last).Elab_All_Desirable :=
+                              Withs.Table (Withs.Last).Elab_Desirable :=
                                 True;
                            end if;
                         end if;

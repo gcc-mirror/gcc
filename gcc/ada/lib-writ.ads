@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -462,7 +462,7 @@ package Lib.Writ is
 
    --  Following each U line, is a series of lines of the form
 
-   --    W unit-name [source-name lib-name] [E] [EA] [ED]
+   --    W unit-name [source-name lib-name] [E] [EA] [ED] [AD]
    --
    --      One of these lines is present for each unit that is mentioned in
    --      an explicit with clause by the current unit. The first parameter
@@ -479,11 +479,17 @@ package Lib.Writ is
    --
    --        EA  pragma Elaborate_All applies to this unit
    --
-   --        ED  Elaborate_All_Desirable set for this unit, which means
+   --        ED  Elaborate_Desirable set for this unit, which means
+   --            that there is no Elaborate, but the analysis suggests
+   --            that Program_Error may be raised if the Elaborate
+   --            conditions cannot be satisfied. The binder will attempt
+   --            to treat ED as E if it can.
+   --
+   --        AD  Elaborate_All_Desirable set for this unit, which means
    --            that there is no Elaborate_All, but the analysis suggests
    --            that Program_Error may be raised if the Elaborate_All
    --            conditions cannot be satisfied. The binder will attempt
-   --            to treat ED as EA if it can.
+   --            to treat AD as EA if it can.
    --
    --      The parameter source-name and lib-name are omitted for the case
    --      of a generic unit compiled with earlier versions of GNAT which
