@@ -37,6 +37,7 @@
 
 --  WARNING! This file is a default version that must be replaced for
 --  each platform.
+--  The values below were computed from a i686-pc-linux-gnu environment.
 
 --  This file is generated automatically, do not modify it by hand! Instead,
 --  make changes to gen-soccon.c and re-run it on each target.
