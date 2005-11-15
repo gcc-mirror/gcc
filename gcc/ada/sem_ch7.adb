@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -195,7 +195,7 @@ package body Sem_Ch7 is
          Spec_Id := Current_Entity_In_Scope (Defining_Entity (N));
 
          if Present (Spec_Id)
-           and then Is_Package (Spec_Id)
+           and then Is_Package_Or_Generic_Package (Spec_Id)
          then
             Pack_Decl := Unit_Declaration_Node (Spec_Id);
 
@@ -213,7 +213,7 @@ package body Sem_Ch7 is
             return;
          end if;
 
-         if Is_Package (Spec_Id)
+         if Is_Package_Or_Generic_Package (Spec_Id)
            and then
              (Scope (Spec_Id) = Standard_Standard
                or else Is_Child_Unit (Spec_Id))
@@ -713,6 +713,14 @@ package body Sem_Ch7 is
       --  the error message "Unchecked_Union may not complete discriminated
       --  partial view".
 
+      procedure Install_Parent_Private_Declarations (Inst_Id : Entity_Id);
+      --  Given the package entity of a generic package instantiation or
+      --  formal package whose corresponding generic is a child unit, installs
+      --  the private declarations of each of the child unit's parents.
+      --  This has to be done at the point of entering the instance package's
+      --  private part rather than being done in Sem_Ch12.Install_Parent
+      --  (which is where the parents' visible declarations are installed).
+
       ---------------------
       -- Clear_Constants --
       ---------------------
@@ -881,6 +889,70 @@ package body Sem_Ch7 is
          end loop;
       end Inspect_Unchecked_Union_Completion;
 
+      -----------------------------------------
+      -- Install_Parent_Private_Declarations --
+      -----------------------------------------
+
+      procedure Install_Parent_Private_Declarations (Inst_Id : Entity_Id) is
+         Inst_Par  : Entity_Id := Inst_Id;
+         Gen_Par   : Entity_Id;
+         Inst_Node : Node_Id;
+
+      begin
+         Gen_Par :=
+           Generic_Parent (Specification (Unit_Declaration_Node (Inst_Par)));
+         while Present (Gen_Par) and then Is_Child_Unit (Gen_Par) loop
+            Inst_Node := Get_Package_Instantiation_Node (Inst_Par);
+
+            if (Nkind (Inst_Node) = N_Package_Instantiation
+                  or else Nkind (Inst_Node) = N_Formal_Package_Declaration)
+              and then Nkind (Name (Inst_Node)) = N_Expanded_Name
+            then
+               Inst_Par := Entity (Prefix (Name (Inst_Node)));
+
+               if Present (Renamed_Entity (Inst_Par)) then
+                  Inst_Par := Renamed_Entity (Inst_Par);
+               end if;
+
+               Gen_Par :=
+                 Generic_Parent
+                   (Specification (Unit_Declaration_Node (Inst_Par)));
+
+               --  Install the private declarations and private use clauses
+               --  of a parent instance of the child instance.
+
+               if Present (Gen_Par) then
+                  Install_Private_Declarations (Inst_Par);
+                  Set_Use (Private_Declarations
+                             (Specification
+                                (Unit_Declaration_Node (Inst_Par))));
+
+               --  If we've reached the end of the generic instance parents,
+               --  then finish off by looping through the nongeneric parents
+               --  and installing their private declarations.
+
+               else
+                  while Present (Inst_Par)
+                    and then Inst_Par /= Standard_Standard
+                    and then (not In_Open_Scopes (Inst_Par)
+                                or else not In_Private_Part (Inst_Par))
+                  loop
+                     Install_Private_Declarations (Inst_Par);
+                     Set_Use (Private_Declarations
+                                (Specification
+                                   (Unit_Declaration_Node (Inst_Par))));
+                     Inst_Par := Scope (Inst_Par);
+                  end loop;
+
+                  exit;
+               end if;
+
+            else
+               exit;
+            end if;
+         end loop;
+      end Install_Parent_Private_Declarations;
+
    --  Start of processing for Analyze_Package_Specification
 
    begin
@@ -972,6 +1044,20 @@ package body Sem_Ch7 is
 
       if Is_Compilation_Unit (Id) then
          Install_Private_With_Clauses (Id);
+      end if;
+
+      --  If this is a package associated with a generic instance or formal
+      --  package, then the private declarations of each of the generic's
+      --  parents must be installed at this point.
+
+      if Is_Generic_Instance (Id)
+        or else
+          (Nkind (Unit_Declaration_Node (Id)) = N_Generic_Package_Declaration
+             and then
+           Nkind (Original_Node (Unit_Declaration_Node (Id)))
+             = N_Formal_Package_Declaration)
+      then
+         Install_Parent_Private_Declarations (Id);
       end if;
 
       --  Analyze private part if present. The flag In_Private_Part is
@@ -1472,9 +1558,10 @@ package body Sem_Ch7 is
       Last_Entity : Entity_Id;
 
    begin
-      pragma Assert (Is_Package (P) or else Is_Record_Type (P));
+      pragma Assert
+        (Is_Package_Or_Generic_Package (P) or else Is_Record_Type (P));
 
-      if Is_Package (P) then
+      if Is_Package_Or_Generic_Package (P) then
          Last_Entity := First_Private_Entity (P);
       else
          Last_Entity := Empty;
@@ -1702,8 +1789,10 @@ package body Sem_Ch7 is
                      Set_Access_Disp_Table
                        (Priv, Access_Disp_Table
                                (Corresponding_Record_Type (Base_Type (Full))));
+
+                  --  Generic context, or previous errors
+
                   else
-                     pragma Assert (Serious_Errors_Detected > 0);
                      null;
                   end if;
 
