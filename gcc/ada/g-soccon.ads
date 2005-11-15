@@ -35,7 +35,6 @@
 --  by the GNAT.Sockets package (g-socket.ads). This package should not be
 --  directly with'ed by an applications program.
 
---  This is the version for i686-pc-linux-gnu
 --  WARNING! This file is a default version that must be replaced for
 --  each platform.
 
