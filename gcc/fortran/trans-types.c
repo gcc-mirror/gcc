@@ -192,6 +192,15 @@ gfc_init_kinds (void)
       gfc_real_kinds[r_index].digits = fmt->p;
       gfc_real_kinds[r_index].min_exponent = fmt->emin;
       gfc_real_kinds[r_index].max_exponent = fmt->emax;
+      if (fmt->pnan < fmt->p)
+	/* This is an IBM extended double format (or the MIPS variant)
+	   made up of two IEEE doubles.  The value of the long double is
+	   the sum of the values of the two parts.  The most significant
+	   part is required to be the value of the long double rounded
+	   to the nearest double.  If we use emax of 1024 then we can't
+	   represent huge(x) = (1 - b**(-p)) * b**(emax-1) * b, because
+	   rounding will make the most significant part overflow.  */
+	gfc_real_kinds[r_index].max_exponent = fmt->emax - 1;
       gfc_real_kinds[r_index].mode_precision = GET_MODE_PRECISION (mode);
       r_index += 1;
     }
