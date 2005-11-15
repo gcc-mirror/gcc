@@ -1,7 +1,7 @@
 // { dg-do run }
-// { dg-additional-sources " attr-weakref-1a.c" }
 // { dg-require-weak "" }
 // { dg-options "-O2" }
+// { dg-additional-sources "attr-weakref-1a.c" }
 
 // Copyright 2005 Free Software Foundation, Inc.
 // Contributed by Alexandre Oliva <aoliva@redhat.com>
