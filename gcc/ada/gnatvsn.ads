@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ package Gnatvsn is
    --  value should never be decreased in the future, but it would be
    --  OK to increase it if absolutely necessary.
 
-   Library_Version : constant String := "4.0";
+   Library_Version : constant String := "4.1";
    --  Library version. This value must be updated whenever any change to the
    --  compiler affects the library formats in such a way as to obsolete
    --  previously compiled library modules.
