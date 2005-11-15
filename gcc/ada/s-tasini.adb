@@ -127,13 +127,6 @@ package body System.Tasking.Initialization is
    -- Tasking Initialization --
    ----------------------------
 
-   procedure Gnat_Install_Locks (Lock, Unlock : SSL.No_Param_Proc);
-   pragma Import (C, Gnat_Install_Locks, "__gnatlib_install_locks");
-   --  Used by Init_RTS to install procedure Lock and Unlock for the
-   --  thread locking. This has no effect on GCC 2. For GCC 3,
-   --  it has an effect only if gcc is configured with
-   --  --enable_threads=gnat.
-
    procedure Init_RTS;
    --  This procedure completes the initialization of the GNARL. The first
    --  part of the initialization is done in the body of System.Tasking.
@@ -391,10 +384,6 @@ package body System.Tasking.Initialization is
       --  to the full and the restricted run times.
 
       SSL.Tasking.Init_Tasking_Soft_Links;
-
-      --  Install tasking locks in the GCC runtime
-
-      Gnat_Install_Locks (Task_Lock'Access, Task_Unlock'Access);
 
       --  Abort is deferred in a new ATCB, so we need to undefer abort
       --  at this stage to make the environment task abortable.
