@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2001-2005 Ada Core Technologies, Inc.            *
+ *                     Copyright (C) 2001-2005, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -76,17 +76,15 @@
 #include <process.h>
 
 void
-__gnat_kill (int pid, int sig)
+__gnat_kill (int pid, int sig, int close)
 {
-  HANDLE process_handle;
-
   if (sig == 9)
     {
-      process_handle = OpenProcess (PROCESS_TERMINATE, FALSE, pid);
-      if (process_handle != NULL)
+      if ((HANDLE)pid != NULL)
 	{
-	  TerminateProcess (process_handle, 0);
-	  CloseHandle (process_handle);
+	  TerminateProcess ((HANDLE)pid, 0);
+	  if (close)
+	    CloseHandle ((HANDLE)pid);
 	}
     }
 }
@@ -94,17 +92,14 @@ __gnat_kill (int pid, int sig)
 int
 __gnat_waitpid (int pid)
 {
-  HANDLE process_handle;
   DWORD exitcode = 1;
   DWORD res;
 
-  process_handle = OpenProcess (PROCESS_QUERY_INFORMATION, FALSE, pid);
-
-  if (process_handle != NULL)
+  if ((HANDLE)pid != NULL)
     {
-      res = WaitForSingleObject (process_handle, INFINITE);
-      GetExitCodeProcess (process_handle, &exitcode);
-      CloseHandle (process_handle);
+      res = WaitForSingleObject ((HANDLE)pid, INFINITE);
+      GetExitCodeProcess ((HANDLE)pid, &exitcode);
+      CloseHandle ((HANDLE)pid);
     }
 
   return (int) exitcode;
@@ -337,7 +332,7 @@ typedef long fd_mask;
 #endif /* !NO_FD_SET */
 
 void
-__gnat_kill (int pid, int sig)
+__gnat_kill (int pid, int sig, int close)
 {
   kill (pid, sig);
 }
@@ -456,7 +451,7 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 #else
 
 void
-__gnat_kill (int pid, int sig)
+__gnat_kill (int pid, int sig, int close)
 {
 }
 
