@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -473,6 +473,9 @@ package ALI is
       --  Indicates presence of EA parameter
 
       Elab_All_Desirable : Boolean;
+      --  Indicates presence of AD parameter
+
+      Elab_Desirable     : Boolean;
       --  Indicates presence of ED parameter
 
       SAL_Interface : Boolean := False;
@@ -872,7 +875,7 @@ package ALI is
    --  switch description settings.
    --
    --    Ignore_ED is normally False. If set to True, it indicates that
-   --    all ED (elaboration desirable) indications in the ALI file are
+   --    all AD/ED (elaboration desirable) indications in the ALI file are
    --    to be ignored. This parameter is obsolete now that the -f switch
    --    is removed from gnatbind, and should be removed ???
    --

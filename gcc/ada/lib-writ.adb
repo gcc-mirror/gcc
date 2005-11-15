@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,6 +182,9 @@ package body Lib.Writ is
       --  Array of flags to show which units have pragma Elaborate All set
 
       Elab_Des_Flags : array (Units.First .. Last_Unit) of Boolean;
+      --  Array of flags to show which units have Elaborate_Desirable set
+
+      Elab_All_Des_Flags : array (Units.First .. Last_Unit) of Boolean;
       --  Array of flags to show which units have Elaborate_All_Desirable set
 
       Sdep_Table : Unit_Ref_Table (1 .. Pos (Last_Unit - Units.First + 2));
@@ -229,11 +232,13 @@ package body Lib.Writ is
          Item := First (Context_Items (Cunit));
          while Present (Item) loop
 
+            --  Process with clause
+
             --  Ada 2005 (AI-50217): limited with_clauses do not create
             --  dependencies
 
             if Nkind (Item) = N_With_Clause
-               and then not (Limited_Present (Item))
+              and then not (Limited_Present (Item))
             then
                Unum := Get_Cunit_Unit_Number (Library_Unit (Item));
                With_Flags (Unum) := True;
@@ -246,7 +251,11 @@ package body Lib.Writ is
                   Elab_All_Flags (Unum) := True;
                end if;
 
-               if Elaborate_All_Desirable (Cunit_Entity (Unum)) then
+               if Elaborate_All_Desirable (Item) then
+                  Elab_All_Des_Flags (Unum) := True;
+               end if;
+
+               if Elaborate_Desirable (Item) then
                   Elab_Des_Flags (Unum) := True;
                end if;
             end if;
@@ -495,10 +504,11 @@ package body Lib.Writ is
          --  Generate with lines, first those that are directly with'ed
 
          for J in With_Flags'Range loop
-            With_Flags (J) := False;
-            Elab_Flags (J) := False;
-            Elab_All_Flags (J) := False;
-            Elab_Des_Flags (J) := False;
+            With_Flags         (J) := False;
+            Elab_Flags         (J) := False;
+            Elab_All_Flags     (J) := False;
+            Elab_Des_Flags     (J) := False;
+            Elab_All_Des_Flags (J) := False;
          end loop;
 
          Collect_Withs (Unode);
@@ -725,6 +735,10 @@ package body Lib.Writ is
                if Elab_Des_Flags (Unum) then
                   Write_Info_Str ("  ED");
                end if;
+
+               if Elab_All_Des_Flags (Unum) then
+                  Write_Info_Str ("  AD");
+               end if;
             end if;
 
             Write_Info_EOL;
@@ -818,12 +832,10 @@ package body Lib.Writ is
 
       begin
          if Nkind (U) = N_Subprogram_Body
-           or else (Nkind (U) = N_Package_Body
-                      and then
-                        (Nkind (Original_Node (U)) = N_Function_Instantiation
-                           or else
-                         Nkind (Original_Node (U)) =
-                                                  N_Procedure_Instantiation))
+           or else
+             (Nkind (U) = N_Package_Body
+               and then
+                 Nkind (Original_Node (U)) in N_Subprogram_Instantiation)
          then
             --  If the unit is a subprogram instance, the entity for the
             --  subprogram is the alias of the visible entity, which is the

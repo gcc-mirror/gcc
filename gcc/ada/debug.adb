@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,7 +98,7 @@ package body Debug is
    --  d.c
    --  d.d
    --  d.e
-   --  d.f
+   --  d.f  Inhibit folding of static expressions
    --  d.g
    --  d.h
    --  d.i
@@ -132,7 +132,7 @@ package body Debug is
 
    --  Debug flags for binder (GNATBIND)
 
-   --  da
+   --  da  All links (including internal units) listed if there is a cycle
    --  db
    --  dc  List units as they are chosen
    --  dd
@@ -410,7 +410,7 @@ package body Debug is
    --       indications. This debug flag disconnects the tracking of constant
    --       values (see Exp_Ch2.Expand_Current_Value).
 
-   --  dN   Do not generate file name information in exception messages.
+   --  dN   Do not generate file name information in exception messages
 
    --  dO   Output immediate error messages. This causes error messages to
    --       be output as soon as they are generated (disconnecting several
@@ -461,6 +461,10 @@ package body Debug is
    --       had Configurable_Run_Time_Mode set to True. This is useful in
    --       testing high integrity mode.
 
+   --  d.f  Suppress folding of static expressions. This of course results
+   --       in seriously non-conforming behavior, but is useful sometimes
+   --       when tracking down handling of complex expressions.
+
    --  d.x  No exception handlers in generated code. This causes exception
    --       handlers to be eliminated from the generated code. They are still
    --       fully compiled and analyzed, they just get eliminated from the
@@ -510,6 +514,12 @@ package body Debug is
    ------------------------------------------
    -- Documentation for Binder Debug Flags --
    ------------------------------------------
+
+   --  da  Normally if there is an elaboration circularity, then in describing
+   --      the cycle, links involving internal units are omitted, since they
+   --      are irrelevant and confusing. This debug flag causes all links to
+   --      be listed, and is useful when diagnosing circularities introduced
+   --      by incorrect changes to the run-time library itself.
 
    --  dc  List units as they are chosen. As units are selected for addition to
    --      the elaboration order, a line of output is generated showing which

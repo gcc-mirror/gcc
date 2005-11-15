@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,11 +90,11 @@ package Sinfo is
    --     node in the checks.
    --    Add an appropriate section to the case statement in sprint.adb
    --    Add an appropriate section to the case statement in sem.adb
-   --    Add an appropraite section to the case statement in exp_util.adb
+   --    Add an appropriate section to the case statement in exp_util.adb
    --     (Insert_Actions procedure)
-   --    For a subexpression, add an appropriate sections to the case
+   --    For a subexpression, add an appropriate section to the case
    --     statement in sem_eval.adb
-   --    For a subexpression, add an appropriate sections to the case
+   --    For a subexpression, add an appropriate section to the case
    --     statement in sem_res.adb
 
    --  Finally, four utility programs must be run:
@@ -457,27 +457,36 @@ package Sinfo is
 
    --  The following flag fields appear in all nodes
 
-   --  Analyzed
+   --  Analyzed (Flag1)
    --    This flag is used to indicate that a node (and all its children
    --    have been analyzed. It is used to avoid reanalysis of a node that
    --    has already been analyzed, both for efficiency and functional
    --    correctness reasons.
 
-   --  Error_Posted
+   --  Comes_From_Source (Flag2)
+   --    This flag is on for any nodes built by the scanner or parser from
+   --    the source program, and off for any nodes built by the analyzer or
+   --    expander. It indicates that a node comes from the original source.
+   --    This flag is defined in Atree.
+
+   --  Error_Posted (Flag3)
    --    This flag is used to avoid multiple error messages being posted
    --    on or referring to the same node. This flag is set if an error
    --    message refers to a node or is posted on its source location,
    --    and has the effect of inhibiting further messages involving
    --    this same node.
 
-   --  Comes_From_Source
-   --    This flag is on for any nodes built by the scanner or parser from
-   --    the source program, and off for any nodes built by the analyzer or
-   --    expander. It indicates that a node comes from the original source.
-   --    This flag is defined in Atree.
+   --  Has_Dynamic_Length_Check (Flag10-Sem)
+   --    This flag is present on all nodes. It is set to indicate that one
+   --    of the routines in unit Checks has generated a length check action
+   --    which has been inserted at the flagged node. This is used to avoid
+   --    the generation of duplicate checks.
 
-   --  Has_Dynamic_Length_Check and Has_Dynamic_Range_Check also appear on
-   --  all nodes. They are fully described in the next section.
+   --  Has_Dynamic_Range_Check (Flag12-Sem)
+   --    This flag is present on all nodes. It is set to indicate that one
+   --    of the routines in unit Checks has generated a range check action
+   --    which has been inserted at the flagged node. This is used to avoid
+   --    the generation of duplicate checks.
 
    ------------------------------------
    -- Description of Semantic Fields --
@@ -534,6 +543,15 @@ package Sinfo is
    --    which is acting as its own spec. This flag also appears in the
    --    compilation unit node at the library level for such a subprogram
    --    (see further description in spec of Lib package).
+
+   --  Actual_Designated_Subtype (Node2-Sem)
+   --    Present in N_Free_Statement and N_Explicit_Dereference nodes. If
+   --    GIGI needs to known the dynamic constrained subtype of the designated
+   --    object, this attribute is set to that type. This is done for
+   --    N_Free_Statements for access-to-classwide types and access to
+   --    unconstrained packed array types, and for N_Explicit_Dereference
+   --    when the designated type is an unconstrained packed array and the
+   --    dereference is the prefix of a 'Size attribute reference.
 
    --  Aggregate_Bounds (Node3-Sem)
    --    Present in array N_Aggregate nodes. If the aggregate contains
@@ -831,12 +849,22 @@ package Sinfo is
    --    yet decided how this flag is used (TBD ???).
 
    --  Elaborate_Present (Flag4-Sem)
-   --    This flag is set in the N_With_Clause node to indicate that a
-   --    pragma Elaborate pragma appears for the with'ed units.
+   --    This flag is set in the N_With_Clause node to indicate that pragma
+   --    Elaborate pragma appears for the with'ed units.
+
+   --  Elaborate_All_Desirable (Flag9-Sem)
+   --    This flag is set in the N_With_Clause mode to indicate that the static
+   --    elaboration processing has determined that an Elaborate_All pragma is
+   --    desirable for correct elaboration for this unit.
 
    --  Elaborate_All_Present (Flag14-Sem)
    --    This flag is set in the N_With_Clause node to indicate that a
    --    pragma Elaborate_All pragma appears for the with'ed units.
+
+   --  Elaborate_Desirable (Flag11-Sem)
+   --    This flag is set in the N_With_Clause mode to indicate that the static
+   --    elaboration processing has determined that an Elaborate pragma is
+   --    desirable for correct elaboration for this unit.
 
    --  Elaboration_Boolean (Node2-Sem)
    --    This field is present in function and procedure specification
@@ -1007,18 +1035,6 @@ package Sinfo is
    --    handler list, and is used to delete this entry if the corresponding
    --    handler is deleted during optimization. For further details on why
    --    this is required, see Exp_Ch11.Remove_Handler_Entries.
-
-   --  Has_Dynamic_Length_Check (Flag10-Sem)
-   --    This flag is present on all nodes. It is set to indicate that one
-   --    of the routines in unit Checks has generated a length check action
-   --    which has been inserted at the flagged node. This is used to avoid
-   --    the generation of duplicate checks.
-
-   --  Has_Dynamic_Range_Check (Flag12-Sem)
-   --    This flag is present on all nodes. It is set to indicate that one
-   --    of the routines in unit Checks has generated a range check action
-   --    which has been inserted at the flagged node. This is used to avoid
-   --    the generation of duplicate checks.
 
    --  Has_No_Elaboration_Code (Flag17-Sem)
    --    A flag that appears in the N_Compilation_Unit node to indicate
@@ -2847,6 +2863,7 @@ package Sinfo is
       --  N_Explicit_Dereference
       --  Sloc points to ALL
       --  Prefix (Node3)
+      --  Actual_Designated_Subtype (Node2-Sem)
       --  plus fields for expression
 
       -------------------------------
@@ -5217,6 +5234,8 @@ package Sinfo is
       --  Context_Installed (Flag13-Sem)
       --  Elaborate_Present (Flag4-Sem)
       --  Elaborate_All_Present (Flag14-Sem)
+      --  Elaborate_All_Desirable (Flag9-Sem)
+      --  Elaborate_Desirable (Flag11-Sem)
       --  Private_Present (Flag15) set if with_clause has private keyword
       --  Implicit_With (Flag16-Sem)
       --  Limited_Present (Flag17)  set if LIMITED is present
@@ -6233,6 +6252,7 @@ package Sinfo is
       --  Expression (Node3) argument to unchecked deallocation call
       --  Storage_Pool (Node1-Sem)
       --  Procedure_To_Call (Node4-Sem)
+      --  Actual_Designated_Subtype (Node2-Sem)
 
       --  Note: in the case where a debug source file is generated, the Sloc
       --  for this node points to the FREE keyword in the Sprint file output.
@@ -6757,10 +6777,14 @@ package Sinfo is
       N_Task_Body_Stub,
 
       --  N_Generic_Instantiation, N_Later_Decl_Item
+      --  N_Subprogram_Instantiation
 
       N_Function_Instantiation,
-      N_Package_Instantiation,
       N_Procedure_Instantiation,
+
+      --  N_Generic_Instantiation, N_Later_Decl_Item
+
+      N_Package_Instantiation,
 
       --  N_Unit_Body, N_Later_Decl_Item, N_Proper_Body
 
@@ -6797,7 +6821,7 @@ package Sinfo is
       N_Package_Renaming_Declaration,
       N_Subprogram_Renaming_Declaration,
 
-      --  N_Generic_Renaming_Declarations, N_Renaming_Declaration
+      --  N_Generic_Renaming_Declaration, N_Renaming_Declaration
 
       N_Generic_Function_Renaming_Declaration,
       N_Generic_Package_Renaming_Declaration,
@@ -6813,8 +6837,14 @@ package Sinfo is
       N_Case_Statement,
       N_Code_Statement,
       N_Conditional_Entry_Call,
+
+      --  N_Statement_Other_Than_Procedure_Call. N_Delay_Statement
+
       N_Delay_Relative_Statement,
       N_Delay_Until_Statement,
+
+      --  N_Statement_Other_Than_Procedure_Call
+
       N_Entry_Call_Statement,
       N_Free_Statement,
       N_Goto_Statement,
@@ -6940,6 +6970,10 @@ package Sinfo is
    --  Note: this includes all constructs normally thought of as declarations
    --  except those which are separately grouped as later declarations.
 
+   subtype N_Delay_Statement is Node_Kind range
+      N_Delay_Relative_Statement ..
+      N_Delay_Until_Statement;
+
    subtype N_Direct_Name is Node_Kind range
      N_Identifier ..
      N_Character_Literal;
@@ -6958,7 +6992,7 @@ package Sinfo is
 
    subtype N_Generic_Instantiation is Node_Kind range
      N_Function_Instantiation ..
-     N_Procedure_Instantiation;
+     N_Package_Instantiation;
 
    subtype N_Generic_Renaming_Declaration is Node_Kind range
      N_Generic_Function_Renaming_Declaration ..
@@ -7036,6 +7070,10 @@ package Sinfo is
    --  (since overloading is possible, so it needs to go through the normal
    --  overloading resolution for expressions).
 
+   subtype N_Subprogram_Instantiation is Node_Kind range
+     N_Function_Instantiation ..
+     N_Procedure_Instantiation;
+
    subtype N_Has_Condition is Node_Kind range
      N_Exit_Statement ..
      N_Terminate_Alternative;
@@ -7105,6 +7143,9 @@ package Sinfo is
 
    function Acts_As_Spec
      (N : Node_Id) return Boolean;    -- Flag4
+
+   function Actual_Designated_Subtype
+     (N : Node_Id) return Node_Id;    -- Node2
 
    function Aggregate_Bounds
      (N : Node_Id) return Node_Id;    -- Node3
@@ -7325,8 +7366,14 @@ package Sinfo is
    function Do_Tag_Check
      (N : Node_Id) return Boolean;    -- Flag13
 
+   function Elaborate_All_Desirable
+     (N : Node_Id) return Boolean;    -- Flag9
+
    function Elaborate_All_Present
      (N : Node_Id) return Boolean;    -- Flag14
+
+   function Elaborate_Desirable
+     (N : Node_Id) return Boolean;    -- Flag11
 
    function Elaborate_Present
      (N : Node_Id) return Boolean;    -- Flag4
@@ -7919,6 +7966,9 @@ package Sinfo is
    procedure Set_Acts_As_Spec
      (N : Node_Id; Val : Boolean := True);    -- Flag4
 
+   procedure Set_Actual_Designated_Subtype
+     (N : Node_Id; Val : Node_Id);            -- Node2
+
    procedure Set_Aggregate_Bounds
      (N : Node_Id; Val : Node_Id);            -- Node3
 
@@ -8138,8 +8188,14 @@ package Sinfo is
    procedure Set_Do_Tag_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag13
 
+   procedure Set_Elaborate_All_Desirable
+     (N : Node_Id; Val : Boolean := True);    -- Flag9
+
    procedure Set_Elaborate_All_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag14
+
+   procedure Set_Elaborate_Desirable
+     (N : Node_Id; Val : Boolean := True);    -- Flag11
 
    procedure Set_Elaborate_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag4
@@ -8723,6 +8779,7 @@ package Sinfo is
    pragma Inline (Actions);
    pragma Inline (Activation_Chain_Entity);
    pragma Inline (Acts_As_Spec);
+   pragma Inline (Actual_Designated_Subtype);
    pragma Inline (Aggregate_Bounds);
    pragma Inline (Aliased_Present);
    pragma Inline (All_Others);
@@ -8797,7 +8854,9 @@ package Sinfo is
    pragma Inline (Do_Storage_Check);
    pragma Inline (Do_Tag_Check);
    pragma Inline (Elaborate_Present);
+   pragma Inline (Elaborate_All_Desirable);
    pragma Inline (Elaborate_All_Present);
+   pragma Inline (Elaborate_Desirable);
    pragma Inline (Elaboration_Boolean);
    pragma Inline (Else_Actions);
    pragma Inline (Else_Statements);
@@ -8991,6 +9050,7 @@ package Sinfo is
    pragma Inline (Set_Actions);
    pragma Inline (Set_Activation_Chain_Entity);
    pragma Inline (Set_Acts_As_Spec);
+   pragma Inline (Set_Actual_Designated_Subtype);
    pragma Inline (Set_Aggregate_Bounds);
    pragma Inline (Set_Aliased_Present);
    pragma Inline (Set_All_Others);
@@ -9065,7 +9125,9 @@ package Sinfo is
    pragma Inline (Set_Do_Storage_Check);
    pragma Inline (Set_Do_Tag_Check);
    pragma Inline (Set_Elaborate_Present);
+   pragma Inline (Set_Elaborate_All_Desirable);
    pragma Inline (Set_Elaborate_All_Present);
+   pragma Inline (Set_Elaborate_Desirable);
    pragma Inline (Set_Elaboration_Boolean);
    pragma Inline (Set_Else_Actions);
    pragma Inline (Set_Else_Statements);
