@@ -1,3 +1,18 @@
+2005-11-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c (version_compare_spec_function): Use fatal() rather than
+	abort().
+
+	* config/rs6000/darwin.h (DARWIN_CRT2_SPEC): New.
+	(SUBTARGET_EXTRA_SPECS): Define %(darwin_crt2).
+	* config/i386/darwin.h (SUBTARGET_EXTRA_SPECS): Define %(darwin_crt2)
+	as empty.
+	* config/darwin.h (STARTFILE_SPEC): Use %(darwin_crt2) to possibly
+	link in crt2.o.
+	
+	* config/darwin.h (REAL_LIBGCC_SPEC): Link in shared libgcc depending
+	on -mmacosx-version-min setting.
+
 2005-11-14  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 24840
