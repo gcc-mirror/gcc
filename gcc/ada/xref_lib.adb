@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -372,7 +372,7 @@ package body Xref_Lib is
 
          if Tail (Dir_Ent (1 .. Last), 4) = ".adp" then
 
-            --  The first project file found is the good one.
+            --  The first project file found is the good one
 
             Close (My_Dir);
             return Dir_Ent (1 .. Last);
@@ -889,8 +889,9 @@ package body Xref_Lib is
 
       if Ali (Ptr) = '[' then
          Skip_To_Matching_Closing_Bracket;
+      end if;
 
-      elsif Ali (Ptr) = '<'
+      if Ali (Ptr) = '<'
         or else Ali (Ptr) = '('
         or else Ali (Ptr) = '{'
       then
@@ -1475,7 +1476,7 @@ package body Xref_Lib is
       --  Go to start of new line
 
       procedure Print80 (S : in String);
-      --  Print the text, respecting the 80 columns rule.
+      --  Print the text, respecting the 80 columns rule
 
       procedure Print_Ref (Line, Column : String);
       --  The beginning of the output is aligned on a column multiple of 9
