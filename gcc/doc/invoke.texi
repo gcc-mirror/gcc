@@ -5822,6 +5822,17 @@ This parameter is ignored when @option{-funit-at-a-time} is not used.
 The default value is 100 which limits large function growth to 2.0 times
 the original size.
 
+@item large-unit-insns
+The limit specifying large translation unit.  Growth caused by inlining of
+units larger than this limit is limited by @option{--param inline-unit-growth}.
+For small units this might be too tight (consider unit consisting of function A
+that is inline and B that just calls A three time.  If B is small relative to
+A, the growth of unit is 300\% and yet such inlining is very sane.  For very
+large units consisting of small inlininable functions however the overall unit
+growth limit is needed to avoid exponential explosion of code size.  Thus for
+smaller units, the size is increased to @option{--param large-unit-insns}
+before aplying @option{--param inline-unit-growth}.  The default is 10000
+
 @item inline-unit-growth
 Specifies maximal overall growth of the compilation unit caused by inlining.
 This parameter is ignored when @option{-funit-at-a-time} is not used.

@@ -179,6 +179,10 @@ DEFPARAM(PARAM_LARGE_FUNCTION_GROWTH,
 	 "large-function-growth",
 	 "Maximal growth due to inlining of large function (in percent)",
 	 100, 0, 0)
+DEFPARAM(PARAM_LARGE_UNIT_INSNS,
+	 "large-unit-insns",
+	 "The size of translation unit to be considered large",
+	 10000, 0, 0)
 DEFPARAM(PARAM_INLINE_UNIT_GROWTH,
 	 "inline-unit-growth",
 	 "how much can given compilation unit grow because of the inlining (in percent)",
