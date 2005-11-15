@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *              Copyright (C) 2004 Ada Core Technologies, Inc               *
+ *                     Copyright (C) 2004-2005, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -54,10 +54,21 @@ typedef struct {
  * trace_callback *
  ******************/
 
+#if defined (__ia64__) && defined (__hpux__)
+#include <uwx.h>
+#endif
+
 static _Unwind_Reason_Code
 trace_callback (struct _Unwind_Context * uw_context, uw_data_t * uw_data)
 {
-  void * pc = (void *) _Unwind_GetIP (uw_context);
+  void * pc;
+
+#if defined (__ia64__) && defined (__hpux__)
+  /* Work around problem with _Unwind_GetIP on ia64 HP-UX. */
+  uwx_get_reg ((struct uwx_env *) uw_context, UWX_REG_IP, (uint64_t *) &pc);
+#else
+  pc = (void *) _Unwind_GetIP (uw_context);
+#endif
 
   if (uw_data->n_frames_skipped < uw_data->n_frames_to_skip)
     {
