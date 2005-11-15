@@ -1,3 +1,7 @@
+2005-11-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/eh/simd-2.C: XFAIL on AIX and SPE.
+
 2005-11-14  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 24840
