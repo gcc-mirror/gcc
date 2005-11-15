@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package Sem_Ch12 is
    procedure Analyze_Formal_Package                     (N : Node_Id);
 
    procedure Start_Generic;
-   --  Must be invoked before starting to process a generic spec or body.
+   --  Must be invoked before starting to process a generic spec or body
 
    procedure End_Generic;
    --  Must be invoked just at the end of the end of the processing of a
@@ -69,6 +69,11 @@ package Sem_Ch12 is
    function Get_Instance_Of (A : Entity_Id) return Entity_Id;
    --  Retrieve actual associated with given generic parameter.
    --  If A is uninstantiated or not a generic parameter, return A.
+
+   function Get_Package_Instantiation_Node (A : Entity_Id) return Node_Id;
+   --  Given the entity of a unit that is an instantiation, retrieve the
+   --  original instance node. This is used when loading the instantiations
+   --  of the ancestors of a child generic that is being instantiated.
 
    procedure Instantiate_Package_Body
      (Body_Info    : Pending_Body_Info;
