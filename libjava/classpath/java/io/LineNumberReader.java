@@ -115,7 +115,7 @@ public class LineNumberReader extends BufferedReader
   /**
     * This method sets the current line number to the specified value.
     *
-    * @param line_number The new line number
+    * @param lineNumber The new line number
     */
   public void setLineNumber(int lineNumber)
   {
@@ -139,7 +139,7 @@ public class LineNumberReader extends BufferedReader
     * is called, the line number will be restored to the saved line number in
     * addition to the stream position.
     *
-    * @param readlimit The number of chars that can be read before the
+    * @param readLimit The number of chars that can be read before the
     * mark becomes invalid
     *
     * @exception IOException If an error occurs
@@ -269,7 +269,7 @@ public class LineNumberReader extends BufferedReader
     *
     * @param buf The array into which the chars read should be stored
     * @param offset The offset into the array to start storing chars
-    * @param len The requested number of chars to read
+    * @param count The requested number of chars to read
     *
     * @return The actual number of chars read, or -1 if end of stream
     *

@@ -365,6 +365,7 @@ public class BasicDesktopIconUI extends DesktopIconUI
    */
   public BasicDesktopIconUI()
   {
+    // Nothing to do here.
   }
 
   /**
@@ -585,6 +586,7 @@ public class BasicDesktopIconUI extends DesktopIconUI
     }
     catch (PropertyVetoException pve)
     {
+      // We do nothing if the attempt has been vetoed.
     }
   }
 }

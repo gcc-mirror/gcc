@@ -83,7 +83,7 @@ public class gnuCodecFactory extends LocalObject implements CodecFactory
         "supported by this factory."
       );
 
-    return new cdrEncapsCodec(orb,
+    return new CdrEncapsCodecImpl(orb,
       new Version(for_encoding.major_version, for_encoding.minor_version)
     );
   }

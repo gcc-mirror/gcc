@@ -102,7 +102,7 @@ protected Class resolveProxyClass(String intfs[])
 protected Object readValue(Class valueClass) throws IOException, ClassNotFoundException {
     if(valueClass.isPrimitive()){
         if(valueClass == Boolean.TYPE)
-            return new Boolean(readBoolean());
+            return Boolean.valueOf(readBoolean());
         if(valueClass == Byte.TYPE)
             return new Byte(readByte());
         if(valueClass == Character.TYPE)

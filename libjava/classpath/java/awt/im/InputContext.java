@@ -49,6 +49,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -334,7 +335,7 @@ public class InputContext
 
   /**
    * Starts a reconversion operation in the current input method. The input
-   * method gets theh text to reconvert from the client component, using
+   * method gets the text to reconvert from the client component, using
    * {@link InputMethodRequests#getSelectedText(Attribute[])}. Then the
    * composed and committed text produced by the operation is sent back to
    * the client using a sequence of InputMethodRequests.

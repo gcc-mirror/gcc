@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package org.omg.DynamicAny;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.ORB;
@@ -80,6 +82,25 @@ public abstract class DynAnyFactoryHelper
                             + " is not a DynAnyFactory");
       }
   }
+  
+  /**
+   * Narrow the given object to the DynAnyFactory. For the objects that are
+   * always local, this operation does not differ from the ordinary
+   * {@link #narrow} (ClassCastException will be thrown if narrowing something
+   * different).
+   * 
+   * @param obj the object to cast.
+   * 
+   * @return the casted DynAnyFactory.
+   * 
+   * @since 1.5 
+   * 
+   * @see OMG issue 4158.
+   */
+  public static DynAnyFactory unchecked_narrow(org.omg.CORBA.Object obj)
+  {
+    return narrow(obj);
+  }    
 
   /**
    * Get the final_type code of the {@link DynAnyFactory}.
@@ -161,13 +182,8 @@ public abstract class DynAnyFactoryHelper
    */
   static String not_applicable(String Id)
   {
-    try
-      {
-        throw new MARSHAL("The read/write are not applicable for " + Id);
-      }
-    catch (Exception e)
-      {
-        throw new MARSHAL();
-      }
+    MARSHAL m = new MARSHAL("The read/write are not applicable for " + Id);
+    m.minor = Minor.Inappropriate;
+    throw m;
   }
 }

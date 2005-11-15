@@ -49,7 +49,7 @@ import java.util.Set;
 /**
  * This class models a <code>String</code> with attributes over various
  * subranges of the string.  It allows applications to access this 
- * information via the <code>AttributedCharcterIterator</code> interface.
+ * information via the <code>AttributedCharacterIterator</code> interface.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
@@ -166,16 +166,16 @@ public class AttributedString
    *
    * @param aci The <code>AttributedCharacterIterator</code> containing the 
    *            text and attribute information.
-   * @param begin_index The beginning index of the text subrange.
-   * @param end_index The ending index of the text subrange.
+   * @param begin The beginning index of the text subrange.
+   * @param end The ending index of the text subrange.
    * @param attributes A list of attributes to include from the iterator, or 
    *                   <code>null</code> to include all attributes.
    */
-  public AttributedString(AttributedCharacterIterator aci, int begin_index, 
-          int end_index, AttributedCharacterIterator.Attribute[] attributes)
+  public AttributedString(AttributedCharacterIterator aci, int begin, int end, 
+                          AttributedCharacterIterator.Attribute[] attributes)
   {
     // Validate some arguments
-    if ((begin_index < 0) || (end_index < begin_index))
+    if ((begin < 0) || (end < begin) || end > aci.getEndIndex())
       throw new IllegalArgumentException("Bad index values");
 
     StringBuffer sb = new StringBuffer("");
@@ -186,7 +186,7 @@ public class AttributedString
       all_attribs.retainAll(Arrays.asList(attributes));
 
     // Loop through and extract the attributes
-    char c = aci.setIndex(begin_index);
+    char c = aci.setIndex(begin);
 
     ArrayList accum = new ArrayList();
     do
@@ -209,28 +209,28 @@ public class AttributedString
             int rl = aci.getRunLimit(attrib);
             if (rl == -1)
               continue;
-            if (rl > end_index)
-              rl = end_index;
-            rl -= begin_index;
+            if (rl > end)
+              rl = end;
+            rl -= begin;
 
             // Check to see if we already processed this one
             int rs = aci.getRunStart(attrib);
-            if ((rs < aci.getIndex()) && (aci.getIndex() != begin_index))
+            if ((rs < aci.getIndex()) && (aci.getIndex() != begin))
               continue;
 
             // If the attribute run starts before the beginning index, we
             // need to junk it if it is an Annotation.
             Object attrib_obj = aci.getAttribute(attrib);
-            if (rs < begin_index)
+            if (rs < begin)
               {
                 if (attrib_obj instanceof Annotation)
                    continue;
 
-                rs = begin_index;
+                rs = begin;
               }
             else
               {
-                rs -= begin_index;
+                rs -= begin;
               }
 
             // Create a map object.  Yes this will only contain one attribute
@@ -269,22 +269,23 @@ public class AttributedString
    *
    * @param attrib The attribute to add.
    * @param value The value of the attribute, which may be <code>null</code>.
-   * @param begin_index The beginning index of the subrange.
-   * @param end_index The ending index of the subrange.
+   * @param begin The beginning index of the subrange.
+   * @param end The ending index of the subrange.
    *
    * @exception IllegalArgumentException If attribute is <code>null</code> or 
    *            the subrange is not valid.
    */
   public void addAttribute(AttributedCharacterIterator.Attribute attrib, 
-          Object value, int begin_index, int end_index)
+          Object value, int begin, int end)
   {
     if (attrib == null)
       throw new IllegalArgumentException("null attribute");
-
+    if (end <= begin)
+      throw new IllegalArgumentException("Requires end > begin");
     HashMap hm = new HashMap();
     hm.put(attrib, value);
 
-    addAttributes(hm, begin_index, end_index);
+    addAttributes(hm, begin, end);
   }
 
   /**
@@ -295,16 +296,17 @@ public class AttributedString
    * @param begin_index The beginning index.
    * @param end_index The ending index
    *
-   * @throws IllegalArgumentException If the list is <code>null</code> or the 
-   * subrange is not valid.
+   * @throws NullPointerException if <code>attributes</code> is 
+   *         <code>null</code>.
+   * @throws IllegalArgumentException if the subrange is not valid.
    */
   public void addAttributes(Map attributes, int begin_index, int end_index)
   {
     if (attributes == null)
-      throw new IllegalArgumentException("null attribute");
+      throw new NullPointerException("null attribute");
 
     if ((begin_index < 0) || (end_index > sci.getEndIndex()) ||
-        (end_index < begin_index))
+        (end_index <= begin_index))
       throw new IllegalArgumentException("bad range");
 
     AttributeRange[] new_list = new AttributeRange[attribs.length + 1];

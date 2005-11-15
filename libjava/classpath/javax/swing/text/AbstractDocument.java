@@ -65,11 +65,10 @@ import javax.swing.undo.UndoableEdit;
  * @author original author unknown
  * @author Roman Kennke (roman@kennke.org)
  */
-public abstract class AbstractDocument
-  implements Document, Serializable
+public abstract class AbstractDocument implements Document, Serializable
 {
-  /** The serial version UID for this class as of JDK1.4. */
-  private static final long serialVersionUID = -116069779446114664L;
+  /** The serialization UID (compatible with JDK1.5). */
+  private static final long serialVersionUID = 6842927725919637215L;
 
   /**
    * Standard error message to indicate a bad location.
@@ -128,7 +127,28 @@ public abstract class AbstractDocument
    * Manages event listeners for this <code>Document</code>.
    */
   protected EventListenerList listenerList = new EventListenerList();
+  
+  /**
+   * Stores the current writer thread.  Used for locking.
+   */ 
+  private Thread currentWriter = null;
+  
+  /**
+   * The number of readers.  Used for locking.
+   */
+  private int numReaders = 0;
+  
+  /**
+   * Tells if there are one or more writers waiting.
+   */
+  private int numWritersWaiting = 0;  
 
+  /**
+   * A condition variable that readers and writers wait on.
+   */
+  Object documentCV = new Object();
+
+  
   /**
    * Creates a new <code>AbstractDocument</code> with the specified
    * {@link Content} model.
@@ -332,7 +352,7 @@ public abstract class AbstractDocument
    * @see GapContent
    * @see StringContent
    */
-  protected Content getContent()
+  protected final Content getContent()
   {
     return content;
   }
@@ -348,8 +368,7 @@ public abstract class AbstractDocument
    */
   protected Thread getCurrentWriter()
   {
-    // FIXME: Implement locking!
-    return null;
+    return currentWriter;
   }
 
   /**
@@ -516,13 +535,18 @@ public abstract class AbstractDocument
     // Just return when no text to insert was given.
     if (text == null || text.length() == 0)
       return;
-    
     DefaultDocumentEvent event =
       new DefaultDocumentEvent(offset, text.length(),
 			       DocumentEvent.EventType.INSERT);
-    content.insertString(offset, text);
+    
+    writeLock();
+    UndoableEdit undo = content.insertString(offset, text);
     insertUpdate(event, attributes);
+    writeUnlock();
+
     fireInsertUpdate(event);
+    if (undo != null)
+      fireUndoableEditUpdate(new UndoableEditEvent(this, undo));
   }
 
   /**
@@ -566,10 +590,28 @@ public abstract class AbstractDocument
   }
 
   /**
-   * Blocks until a read lock can be obtained.
+   * Blocks until a read lock can be obtained.  Must block if there is
+   * currently a writer modifying the <code>Document</code>.
    */
   public void readLock()
   {
+    if (currentWriter != null && currentWriter.equals(Thread.currentThread()))
+      return;
+    synchronized (documentCV)
+      {
+        while (currentWriter != null || numWritersWaiting > 0)
+          {
+            try
+              {
+                documentCV.wait();
+              }
+            catch (InterruptedException ie)
+              {
+                throw new Error("interrupted trying to get a readLock");
+              }
+          }
+          numReaders++;
+      }
   }
 
   /**
@@ -578,6 +620,40 @@ public abstract class AbstractDocument
    */
   public void readUnlock()
   {
+    // Note we could have a problem here if readUnlock was called without a
+    // prior call to readLock but the specs simply warn users to ensure that
+    // balance by using a finally block:
+    // readLock()
+    // try
+    // { 
+    //   doSomethingHere 
+    // }
+    // finally
+    // {
+    //   readUnlock();
+    // }
+    
+    // All that the JDK seems to check for is that you don't call unlock
+    // more times than you've previously called lock, but it doesn't make
+    // sure that the threads calling unlock were the same ones that called lock
+
+    // FIXME: the reference implementation throws a 
+    // javax.swing.text.StateInvariantError here
+    if (numReaders == 0)
+      throw new IllegalStateException("document lock failure");
+    
+    synchronized (documentCV)
+    {
+      // If currentWriter is not null, the application code probably had a 
+      // writeLock and then tried to obtain a readLock, in which case 
+      // numReaders wasn't incremented
+      if (currentWriter == null)
+        {
+          numReaders --;
+          if (numReaders == 0 && numWritersWaiting != 0)
+            documentCV.notify();
+        }
+    }
   }
 
   /**
@@ -595,10 +671,42 @@ public abstract class AbstractDocument
     DefaultDocumentEvent event =
       new DefaultDocumentEvent(offset, length,
 			       DocumentEvent.EventType.REMOVE);
+    
+    // Here we set up the parameters for an ElementChange, if one
+    // needs to be added to the DocumentEvent later
+    Element root = getDefaultRootElement();
+    int start = root.getElementIndex(offset);
+    int end = root.getElementIndex(offset + length);
+    
+    Element[] removed = new Element[end - start + 1];
+    for (int i = start; i <= end; i++)
+      removed[i - start] = root.getElement(i);
+    
     removeUpdate(event);
-    content.remove(offset, length);
+
+    Element[] added = new Element[1];
+    added[0] = root.getElement(start);
+    boolean shouldFire = content.getString(offset, length).length() != 0;
+    
+    writeLock();
+    UndoableEdit temp = content.remove(offset, length);
+    writeUnlock();
+    
     postRemoveUpdate(event);
-    fireRemoveUpdate(event);
+    
+    GapContent.UndoRemove changes = null;
+    if (content instanceof GapContent)
+      changes = (GapContent.UndoRemove) temp;
+
+    if (changes != null && !(start == end))
+      {
+        // We need to add an ElementChange to our DocumentEvent
+        ElementEdit edit = new ElementEdit (root, start, removed, added);
+        event.addEdit(edit);
+      }
+    
+    if (shouldFire)
+      fireRemoveUpdate(event);
   }
 
   /**
@@ -713,7 +821,15 @@ public abstract class AbstractDocument
    */
   public void render(Runnable runnable)
   {
-    // FIXME: Implement me!
+    readLock();
+    try
+    {
+      runnable.run();
+    }
+    finally
+    {
+      readUnlock();
+    }
   }
 
   /**
@@ -725,6 +841,7 @@ public abstract class AbstractDocument
    */
   public void setAsynchronousLoadPriority(int p)
   {
+    // TODO: Implement this properly.
   }
 
   /**
@@ -739,11 +856,30 @@ public abstract class AbstractDocument
   }
 
   /**
-   * Blocks until a write lock can be obtained.
+   * Blocks until a write lock can be obtained.  Must wait if there are 
+   * readers currently reading or another thread is currently writing.
    */
   protected void writeLock()
   {
-    // FIXME: Implement me.
+    if (currentWriter!= null && currentWriter.equals(Thread.currentThread()))
+      return;
+    synchronized (documentCV)
+      {
+        numWritersWaiting++;
+        while (numReaders > 0)
+          {
+            try
+              {
+                documentCV.wait();
+              }
+            catch (InterruptedException ie)
+              {
+                throw new Error("interruped while trying to obtain write lock");
+              }
+          }
+        numWritersWaiting --;
+        currentWriter = Thread.currentThread();
+      }
   }
 
   /**
@@ -752,7 +888,14 @@ public abstract class AbstractDocument
    */
   protected void writeUnlock()
   {
-    // FIXME: Implement me.
+    synchronized (documentCV)
+    {
+        if (Thread.currentThread().equals(currentWriter))
+          {
+            currentWriter = null;
+            documentCV.notifyAll();
+          }
+    }
   }
 
   /**
@@ -970,8 +1113,8 @@ public abstract class AbstractDocument
   public abstract class AbstractElement
     implements Element, MutableAttributeSet, TreeNode, Serializable
   {
-    /** The serial version UID for AbstractElement. */
-    private static final long serialVersionUID = 1265312733007397733L;
+    /** The serialization UID (compatible with JDK1.5). */
+    private static final long serialVersionUID = 1712240033321461704L;
 
     /** The number of characters that this Element spans. */
     int count;
@@ -1231,6 +1374,9 @@ public abstract class AbstractDocument
 
     /**
      * Returns the resolve parent of this element.
+     * This is taken from the AttributeSet, but if this is null,
+     * this method instead returns the Element's parent's 
+     * AttributeSet
      *
      * @return the resolve parent of this element
      *
@@ -1238,7 +1384,9 @@ public abstract class AbstractDocument
      */
     public AttributeSet getResolveParent()
     {
-      return attributes.getResolveParent();
+      if (attributes.getResolveParent() != null)
+        return attributes.getResolveParent();
+      return element_parent.getAttributes();
     }
 
     /**
@@ -1355,49 +1503,6 @@ public abstract class AbstractDocument
     public abstract int getStartOffset();
 
     /**
-     * Prints diagnostic information to the specified stream.
-     *
-     * @param stream the stream to dump to
-     * @param indent the indentation level
-     * @param element the element to be dumped
-     */
-    private void dumpElement(PrintStream stream, String indent,
-                             Element element)
-    {
-      // FIXME: Should the method be removed?
-      System.out.println(indent + "<" + element.getName() +">");
-
-      if (element.isLeaf())
-	{
-	  int start = element.getStartOffset();
-	  int end = element.getEndOffset();
-	  String text = "";
-	  try
-	    {
-	      text = getContent().getString(start, end - start);
-	    }
-	  catch (BadLocationException e)
-	    {
-          AssertionError error =
-            new AssertionError("BadLocationException should not be "
-                               + "thrown here. start = " + start
-                               + ", end = " + end);
-          error.initCause(e);
-          throw error;
-	    }
-	  System.out.println(indent + "  ["
-			     + start + ","
-			     + end + "]["
-			     + text + "]");
-	}
-      else
-	{
-	  for (int i = 0; i < element.getElementCount(); ++i)
-	    dumpElement(stream, indent + "  ", element.getElement(i));
-	}
-    }
-
-    /**
      * Prints diagnostic output to the specified stream.
      *
      * @param stream the stream to write to
@@ -1405,10 +1510,66 @@ public abstract class AbstractDocument
      */
     public void dump(PrintStream stream, int indent)
     {
-      String indentStr = "";
+      StringBuffer b = new StringBuffer();
       for (int i = 0; i < indent; ++i)
-	indentStr += "  ";
-      dumpElement(stream, indentStr, this);
+        b.append(' ');
+      b.append('<');
+      b.append(getName());
+      // Dump attributes if there are any.
+      if (getAttributeCount() > 0)
+        {
+          b.append('\n');
+          Enumeration attNames = getAttributeNames();
+          while (attNames.hasMoreElements())
+            {
+              for (int i = 0; i < indent + 2; ++i)
+                b.append(' ');
+              Object attName = attNames.nextElement();
+              b.append(attName);
+              b.append('=');
+              Object attribute = getAttribute(attName);
+              b.append(attribute);
+              b.append('\n');
+            }
+        }
+      b.append(">\n");
+
+      // Dump element content for leaf elements.
+      if (isLeaf())
+        {
+          for (int i = 0; i < indent + 2; ++i)
+            b.append(' ');
+          int start = getStartOffset();
+          int end = getEndOffset();
+          b.append('[');
+          b.append(start);
+          b.append(',');
+          b.append(end);
+          b.append("][");
+          try
+            {
+              b.append(getDocument().getText(start, end - start));
+            }
+          catch (BadLocationException ex)
+            {
+              AssertionError err = new AssertionError("BadLocationException "
+                                                      + "must not be thrown "
+                                                      + "here.");
+              err.initCause(ex);
+	      throw err;
+            }
+          b.append("]\n");
+        }
+      stream.print(b.toString());
+
+      // Dump child elements if any.
+      int count = getElementCount();
+      for (int i = 0; i < count; ++i)
+        {
+          Element el = getElement(i);
+          if (el instanceof AbstractElement)
+            ((AbstractElement) el).dump(stream, indent + 2);
+        }
     }
   }
 
@@ -1418,8 +1579,8 @@ public abstract class AbstractDocument
    */
   public class BranchElement extends AbstractElement
   {
-    /** The serial version UID for BranchElement. */
-    private static final long serialVersionUID = -8595176318868717313L;
+    /** The serialization UID (compatible with JDK1.5). */
+    private static final long serialVersionUID = -6037216547466333183L;
 
     /** The child elements of this BranchElement. */
     private Element[] children = new Element[0];
@@ -1503,19 +1664,30 @@ public abstract class AbstractDocument
      */
     public int getElementIndex(int offset)
     {
-      // If we have no children, return -1.
-      if (getElementCount() == 0)
-        return - 1;
-
+      // If offset is less than the start offset of our first child,
+      // return 0
+      if (offset < getStartOffset())
+        return 0;
+      
       // XXX: There is surely a better algorithm
       // as beginning from first element each time.
-      for (int index = 0; index < children.length; ++index)
+      for (int index = 0; index < children.length - 1; ++index)
         {
           Element elem = children[index];
 
           if ((elem.getStartOffset() <= offset)
                && (offset < elem.getEndOffset()))
             return index;
+          // If the next element's start offset is greater than offset
+          // then we have to return the closest Element, since no Elements
+          // will contain the offset
+          if (children[index + 1].getStartOffset() > offset)
+            {
+              if ((offset - elem.getEndOffset()) > (children[index + 1].getStartOffset() - offset))
+                return index + 1;
+              else
+                return index;
+            }
         }
 
       // If offset is greater than the index of the last element, return
@@ -1642,8 +1814,8 @@ public abstract class AbstractDocument
   public class DefaultDocumentEvent extends CompoundEdit
     implements DocumentEvent
   {
-    /** The serial version UID of DefaultDocumentEvent. */
-    private static final long serialVersionUID = -7406103236022413522L;
+    /** The serialization UID (compatible with JDK1.5). */
+    private static final long serialVersionUID = 5230037221564563284L;
 
     /** The starting offset of the change. */
     private int offset;
@@ -1748,7 +1920,7 @@ public abstract class AbstractDocument
       return (DocumentEvent.ElementChange) changes.get(elem);
     }
   }
-
+  
   /**
    * An implementation of {@link DocumentEvent.ElementChange} to be added
    * to {@link DefaultDocumentEvent}s.
@@ -1843,8 +2015,8 @@ public abstract class AbstractDocument
    */
   public class LeafElement extends AbstractElement
   {
-    /** The serial version UID of LeafElement. */
-    private static final long serialVersionUID = 5115368706941283802L;
+    /** The serialization UID (compatible with JDK1.5). */
+    private static final long serialVersionUID = -8906306331347768017L;
 
     /** Manages the start offset of this element. */
     Position startPos;

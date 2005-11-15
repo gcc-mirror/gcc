@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CosNaming;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.ObjectHelper;
@@ -189,7 +191,7 @@ public abstract class NamingContextExtPOA
     OutputStream out = null;
     Integer call_method = (Integer) _NamingContextImplBase.methods.get(method);
     if (call_method == null)
-      throw new BAD_OPERATION(0, CompletionStatus.COMPLETED_MAYBE);
+      throw new BAD_OPERATION(Minor.Method, CompletionStatus.COMPLETED_MAYBE);
 
     switch (call_method.intValue())
       {

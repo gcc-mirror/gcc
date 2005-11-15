@@ -95,9 +95,12 @@ public final class ContentModel
    */
   public int type;
 
-  /** Create a content model initializing all fields to default values. */
+  /**
+   * Create a content model initializing all fields to default values.
+   */
   public ContentModel()
   {
+    // Nothing to do here.
   }
 
   /**

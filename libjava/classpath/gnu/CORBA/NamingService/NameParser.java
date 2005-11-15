@@ -1,44 +1,45 @@
 /* NameParser.java --
- Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005 Free Software Foundation, Inc.
 
- This file is part of GNU Classpath.
+This file is part of GNU Classpath.
 
- GNU Classpath is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2, or (at your option)
- any later version.
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
 
- GNU Classpath is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with GNU Classpath; see the file COPYING.  If not, write to the
- Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- 02110-1301 USA.
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA.
 
- Linking this library statically or dynamically with other modules is
- making a combined work based on this library.  Thus, the terms and
- conditions of the GNU General Public License cover the whole
- combination.
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
 
- As a special exception, the copyright holders of this library give you
- permission to link this library with independent modules to produce an
- executable, regardless of the license terms of these independent
- modules, and to copy and distribute the resulting executable under
- terms of your choice, provided that you also meet, for each linked
- independent module, the terms and conditions of the license of that
- module.  An independent module is a module which is not derived from
- or based on this library.  If you modify this library, you may extend
- this exception to your version of the library, but you are not
- obligated to do so.  If you do not wish to do so, delete this
- exception statement from your version. */
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. */
 
 
 package gnu.CORBA.NamingService;
 
-import gnu.CORBA.Functional_ORB;
+import gnu.CORBA.Minor;
+import gnu.CORBA.OrbFunctional;
 import gnu.CORBA.IOR;
 import gnu.CORBA.Unexpected;
 import gnu.CORBA.Version;
@@ -51,11 +52,15 @@ import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CORBA.portable.Delegate;
 import org.omg.CORBA.portable.ObjectImpl;
 import org.omg.CosNaming.NamingContext;
-import org.omg.CosNaming.NamingContextExtHelper;
-import org.omg.CosNaming.NamingContextHelper;
 import org.omg.CosNaming._NamingContextStub;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -74,7 +79,7 @@ import java.util.StringTokenizer;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class NameParser
-  extends snConverter
+  extends NameTransformer
 {
   /**
    * The corbaloc prefix.
@@ -90,6 +95,21 @@ public class NameParser
    * The IOR prefix.
    */
   public static final String pxIOR = "ior";
+  
+  /**
+   * The file:// prefix.
+   */
+  public static final String pxFILE = "file://";
+  
+  /**
+   * The ftp:// prefix.
+   */
+  public static final String pxFTP = "ftp://";
+  
+  /**
+   * The http:// prefix.
+   */
+  public static final String pxHTTP = "http://";
 
   /**
    * Marks iiop protocol.
@@ -114,7 +134,7 @@ public class NameParser
   /**
    * The string to name converter, initialized on demand.
    */
-  static snConverter converter;
+  static NameTransformer converter;
 
   /**
    * The current position.
@@ -134,6 +154,9 @@ public class NameParser
    * 2. corbaloc:rir:[/key] <br>
    * 3. corbaname:[iiop][version.subversion@]:host[:port]/key <br>
    * 4. corbaname:rir:[/key] <br>
+   * 5. file://[file name]<br>
+   * 6. http://[url]<br>
+   * 7. ftp://[url]<br>
    * 
    * Protocol defaults to IOP, the object key defaults to the NameService.
    * 
@@ -143,9 +166,31 @@ public class NameParser
    * @return the resolved object.
    */
   public synchronized org.omg.CORBA.Object corbaloc(String corbaloc,
-    Functional_ORB orb)
+    OrbFunctional orb)
     throws BAD_PARAM
   {
+    return corbaloc(corbaloc, orb, 0);
+  }
+  
+  /**
+   * Parse controlling against the infinite recursion loop.
+   */
+  private org.omg.CORBA.Object corbaloc(String corbaloc,
+    OrbFunctional orb, int recursion)
+  {
+    // The used CORBA specification does not state how many times we should to
+    //redirect, but the infinite loop may be used to knock out the system.
+    // by malicious attempt.
+    if (recursion > 10)
+      throw new DATA_CONVERSION("More than 10 redirections");
+    
+    if (corbaloc.startsWith(pxFILE))
+      return corbaloc(readFile(corbaloc.substring(pxFILE.length())), orb, recursion+1);
+    else if (corbaloc.startsWith(pxHTTP))
+      return corbaloc(readUrl(corbaloc), orb, recursion+1);
+    else if (corbaloc.startsWith(pxFTP))
+      return corbaloc(readUrl(corbaloc), orb, recursion+1);
+
     boolean corbaname;
 
     // The alternative addresses, if given.
@@ -304,6 +349,70 @@ public class NameParser
     else
       throw new DATA_CONVERSION("Unsupported protocol '" + t[p] + "'");
   }
+  
+  /**
+   * Read IOR from the file in the local file system.
+   */
+  String readFile(String file)
+  {
+    File f = new File(file);
+    if (!f.exists())
+      {
+        DATA_CONVERSION err = new DATA_CONVERSION(f.getAbsolutePath()
+          + " does not exist.");
+        err.minor = Minor.Missing_IOR;
+      }
+    try
+      {
+        char[] c = new char[(int) f.length()];
+        FileReader fr = new FileReader(f);
+        fr.read(c);
+        fr.close();
+        return new String(c).trim();
+      }
+    catch (IOException ex)
+      {
+        DATA_CONVERSION d = new DATA_CONVERSION();
+        d.initCause(ex);
+        d.minor = Minor.Missing_IOR;
+        throw (d);
+      }
+  }
+  
+  /**
+   * Read IOR from the remote URL.
+   */
+  String readUrl(String url)
+  {
+    URL u;
+    try
+      {
+        u = new URL(url);
+      }
+    catch (MalformedURLException mex)
+      {
+        throw new BAD_PARAM("Malformed URL: '" + url + "'");
+      }
+
+    try
+      {
+        InputStreamReader r = new InputStreamReader(u.openStream());
+
+        StringBuffer b = new StringBuffer();
+        int c;
+
+        while ((c = r.read()) > 0)
+          b.append((char) c);
+
+        return b.toString().trim();
+      }
+    catch (Exception exc)
+      {
+        DATA_CONVERSION d = new DATA_CONVERSION("Reading " + url + " failed.");
+        d.minor = Minor.Missing_IOR;
+        throw d;
+      }
+  }
 
   private org.omg.CORBA.Object resolve(org.omg.CORBA.Object object)
   {
@@ -329,7 +438,7 @@ public class NameParser
       }
 
     if (converter == null)
-      converter = new snConverter();
+      converter = new NameTransformer();
 
     try
       {
@@ -380,7 +489,7 @@ public class NameParser
 
   static NameParser n = new NameParser();
 
-  static void corbalocT(String ior, Functional_ORB orb)
+  static void corbalocT(String ior, OrbFunctional orb)
   {
     System.out.println(ior);
     System.out.println(n.corbaloc(ior, orb));
@@ -391,7 +500,7 @@ public class NameParser
   {
     try
       {
-        Functional_ORB orb = (Functional_ORB) ORB.init(args, null);
+        OrbFunctional orb = (OrbFunctional) ORB.init(args, null);
         corbalocT("corbaloc:iiop:1.3@155axyz.com/Prod/aTradingService", orb);
         corbalocT("corbaloc:iiop:2.7@255bxyz.com/Prod/bTradingService", orb);
         corbalocT("corbaloc:iiop:355cxyz.com/Prod/cTradingService", orb);

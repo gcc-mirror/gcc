@@ -609,7 +609,7 @@ public abstract class ColorModel implements Transparency
    * @param obj Array of TransferType or null.
    *
    * @return pixel value encoded according to the color model.
-   * @throws ArrayIndexOutOfBounds
+   * @throws ArrayIndexOutOfBoundsException
    * @throws ClassCastException
    * @since 1.4
    */

@@ -53,6 +53,15 @@ import javax.swing.plaf.ComponentUI;
  */
 public class BasicCheckBoxMenuItemUI extends BasicMenuItemUI
 {
+  
+  /**
+   * Creates a new BasicCheckBoxMenuItemUI object.
+   */
+  public BasicCheckBoxMenuItemUI()
+  {
+    super();
+  }
+  
   /**
    * Factory method to create a BasicCheckBoxMenuItemUI for the given {@link
    * JComponent}, which should be a JCheckBoxMenuItem
@@ -77,18 +86,6 @@ public class BasicCheckBoxMenuItemUI extends BasicMenuItemUI
   }
 
   /**
-   * This method installs the defaults that are defined in  the Basic look and
-   * feel for this JRadioButtonMenuItem
-   */
-  protected void installDefaults()
-  {
-    super.installDefaults();
-
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    checkIcon = defaults.getIcon("CheckBoxMenuItem.checkIcon");
-  }
-
-  /**
    * DOCUMENT ME!
    *
    * @param item DOCUMENT ME!
@@ -100,5 +97,7 @@ public class BasicCheckBoxMenuItemUI extends BasicMenuItemUI
                                 MenuElement[] path,
                                 MenuSelectionManager manager)
   {
+    // TODO: May not be implemented properly.
+    item.processMouseEvent(e, path, manager);
   }
 }

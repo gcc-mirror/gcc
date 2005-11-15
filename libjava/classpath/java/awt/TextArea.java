@@ -603,6 +603,8 @@ public class TextArea extends TextComponent implements java.io.Serializable
   
   protected class AccessibleAWTTextArea extends AccessibleAWTTextComponent
   {
+    private static final long serialVersionUID = 3472827823632144419L;
+
     protected AccessibleAWTTextArea()
     {
     }

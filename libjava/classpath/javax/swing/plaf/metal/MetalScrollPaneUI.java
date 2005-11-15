@@ -39,19 +39,18 @@ exception statement from your version. */
 package javax.swing.plaf.metal;
 
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollPaneUI;
 
+/**
+ * A UI delegate for the {@link JScrollPane} component.
+ */
 public class MetalScrollPaneUI
   extends BasicScrollPaneUI
 {
-
-  // FIXME: maybe replace by a Map of instances when this becomes stateful
-  /** The shared UI instance for JScrollPanes. */
-  private static MetalScrollPaneUI instance = null;
-
   /**
-   * Constructs a new instance of MetalScrollPaneUI.
+   * Constructs a new instance of <code>MetalScrollPaneUI</code>.
    */
   public MetalScrollPaneUI()
   {
@@ -59,16 +58,14 @@ public class MetalScrollPaneUI
   }
 
   /**
-   * Returns an instance of MetalScrollPaneUI.
+   * Returns a shared instance of <code>MetalScrollPaneUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalScrollPaneUI
+   * @return A shared instance of <code>MetalScrollPaneUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instance == null)
-      instance = new MetalScrollPaneUI();
-    return instance;
+    return new MetalScrollPaneUI();
   }
 }

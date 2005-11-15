@@ -43,7 +43,6 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 
-import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 
@@ -87,9 +86,9 @@ public abstract class View implements SwingConstants
   {
     View parent = getParent();
     if (parent == null)
-      throw new AssertionError("The parent of a View must not be null.");
-
-    return parent.getContainer();
+      return null;
+    else
+      return parent.getContainer();
   }
   
   public Document getDocument()
@@ -508,6 +507,30 @@ public abstract class View implements SwingConstants
   }
 
   /**
+   * Maps a position in the document into the coordinate space of the View.
+   * The output rectangle usually reflects the font height but has a width
+   * of zero.
+   *
+   * This method is deprecated and calls
+   * {@link #modelToView(int, Position.Bias, int, Position.Bias, Shape)} with
+   * a bias of {@link Position.Bias#Forward}.
+   *
+   * @param pos the position of the character in the model
+   * @param a the area that is occupied by the view
+   *
+   * @return a rectangle that gives the location of the document position
+   *         inside the view coordinate space
+   *
+   * @throws BadLocationException if <code>pos</code> is invalid
+   *
+   * @deprecated Use {@link #modelToView(int, Shape, Position.Bias)} instead.
+   */
+  public Shape modelToView(int pos, Shape a) throws BadLocationException
+  {
+    return modelToView(pos, a, Position.Bias.Forward);
+  }
+
+  /**
    * Maps coordinates from the <code>View</code>'s space into a position
    * in the document model.
    *
@@ -521,6 +544,25 @@ public abstract class View implements SwingConstants
    */
   public abstract int viewToModel(float x, float y, Shape a, Position.Bias[] b);
 
+  /**
+   * Maps coordinates from the <code>View</code>'s space into a position
+   * in the document model. This method is deprecated and only there for
+   * compatibility.
+   *
+   * @param x the x coordinate in the view space
+   * @param y the y coordinate in the view space
+   * @param a the allocation of this <code>View</code>
+   *
+   * @return the position in the document that corresponds to the screen
+   *         coordinates <code>x, y</code>
+   *
+   * @deprecated Use {@link #viewToModel(float, float, Shape, Position.Bias[])}
+   *             instead.
+   */
+  public int viewToModel(float x, float y, Shape a)
+  {
+    return viewToModel(x, y, a, new Position.Bias[0]);
+  }
 
   /**
    * Dumps the complete View hierarchy. This method can be used for debugging
@@ -552,4 +594,30 @@ public abstract class View implements SwingConstants
     for (int i = 0; i < count; ++i)
       getView(i).dump(indent + 1);
   }
+
+  /**
+   * Returns the document position that is (visually) nearest to the given
+   * document position <code>pos</code> in the given direction <code>d</code>.
+   *
+   * @param c the text component
+   * @param pos the document position
+   * @param b the bias for <code>pos</code>
+   * @param d the direction, must be either {@link SwingConstants#NORTH},
+   *        {@link SwingConstants#SOUTH}, {@link SwingConstants#WEST} or
+   *        {@link SwingConstants#EAST}
+   * @param biasRet an array of {@link Position.Bias} that can hold at least
+   *        one element, which is filled with the bias of the return position
+   *        on method exit
+   *
+   * @return the document position that is (visually) nearest to the given
+   *         document position <code>pos</code> in the given direction
+   *         <code>d</code>
+   *
+   * @throws BadLocationException if <code>pos</code> is not a valid offset in
+   *         the document model
+   */
+  public abstract int getNextVisualPositionFrom(JTextComponent c, int pos,
+                                                Position.Bias b, int d,
+                                                Position.Bias[] biasRet)
+    throws BadLocationException;
 }

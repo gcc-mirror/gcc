@@ -116,7 +116,7 @@
 <menuitem><createlink name="CVS" url="http://savannah.gnu.org/cvs/?group=classpath"></menuitem>
 
 <menutitle>Development</menutitle>
-<menuitem><createlink name="Tasks" url="tasks.html"></menuitem>
+<menuitem><createlink name="Tasks" url="http://developer.classpath.org/mediation/ClasspathOpenTasks"></menuitem>
 <menuitem><createlink name="Docs" url="docs/docs.html"></menuitem>
 <menuitem><createlink name="Testing" url="benchmarks.html#testing"></menuitem>
 <menuitem><createlink name="Benchmarks" url="benchmarks.html#benchmarks"></menuitem>

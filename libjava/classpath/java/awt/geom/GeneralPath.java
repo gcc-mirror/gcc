@@ -558,7 +558,8 @@ public final class GeneralPath implements Shape, Cloneable
      * Constructs a new iterator for enumerating the segments of a
      * GeneralPath.
      *
-     * @param at an affine transformation for projecting the returned
+     * @param path the path to enumerate
+     * @param transform an affine transformation for projecting the returned
      * points, or <code>null</code> to return the original points
      * without any mapping.
      */

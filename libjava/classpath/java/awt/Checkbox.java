@@ -392,6 +392,11 @@ Checkbox(String label, boolean state, CheckboxGroup group)
   this.label = label;
   this.state = state;
   this.group = group;
+
+  if ( state && group != null )
+    {
+      group.setSelectedCheckbox(this);
+    }
 }
 
 /*************************************************************************/
@@ -610,8 +615,10 @@ dispatchEventImpl(AWTEvent e)
 protected String
 paramString()
 {
-  return ("label=" + label + ",state=" + state + ",group=" + group
-	  + "," + super.paramString());
+  // Note: We cannot add the checkbox group information here because this
+  // would trigger infinite recursion when CheckboxGroup.toString() is
+  // called and the box is in its selected state.
+  return ("label=" + label + ",state=" + state + "," + super.paramString());
 }
 
 /**

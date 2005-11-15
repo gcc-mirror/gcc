@@ -51,9 +51,7 @@ import java.awt.Dimension;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class DimensionUIResource
-  extends Dimension
-  implements UIResource
+public class DimensionUIResource extends Dimension implements UIResource
 {
   /**
    * Constructs a new DimensionUIResource, given its width and height.

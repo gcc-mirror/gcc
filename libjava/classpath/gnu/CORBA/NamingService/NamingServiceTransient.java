@@ -1,4 +1,4 @@
-/* Server.java --
+/* NamingServiceTransient.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package gnu.CORBA.NamingService;
 
-import gnu.CORBA.Functional_ORB;
+import gnu.CORBA.OrbFunctional;
 import gnu.CORBA.IOR;
 
 import org.omg.CosNaming.NamingContextExt;
@@ -102,7 +102,7 @@ public class NamingServiceTransient
     try
       {
         // Create and initialize the ORB
-        final Functional_ORB orb = new Functional_ORB();
+        final OrbFunctional orb = new OrbFunctional();
 
         if (args.length > 1)
           for (int i = 0; i < args.length - 1; i++)
@@ -114,7 +114,7 @@ public class NamingServiceTransient
                 iorf = args[i + 1];
             }
 
-        Functional_ORB.setPort(port);
+        OrbFunctional.setPort(port);
 
         // Create the servant and register it with the ORB
         NamingContextExt namer = new Ext(new TransientContext());
@@ -159,6 +159,6 @@ public class NamingServiceTransient
 
     // Restore the default value for allocating ports for the subsequent
     // objects.
-    Functional_ORB.setPort(Functional_ORB.DEFAULT_INITIAL_PORT);
+    OrbFunctional.setPort(OrbFunctional.DEFAULT_INITIAL_PORT);
   }
 }

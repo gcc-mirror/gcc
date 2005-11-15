@@ -45,12 +45,6 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
-
-import gnu.java.awt.AWTUtilities;
 
 /**
  * A layout that stacks the children of a container in a Box, either
@@ -61,248 +55,6 @@ import gnu.java.awt.AWTUtilities;
  */
 public class BoxLayout implements LayoutManager2, Serializable
 {
-
-  /**
-   * This is an abstraction that allows the BoxLayout algorithm to
-   * be applied to both direction (X and Y) without duplicating the
-   * algorithm. It defines several methods that access properties of
-   * a component for a specific direction.
-   */
-  static interface Direction
-  {
-    /**
-     * Returns the correct part of <code>d</code> for this direction. This will
-     * be <code>d.width</code> for horizontal and <code>d.height</code> for
-     * vertical direction.
-     *
-     * @param d the size as Dimension object
-     *
-     * @return the correct part of <code>d</code> for this direction
-     */
-    int size(Dimension d);
-
-    /**
-     * Returns the lower bounds of the {@link Insets} object according to this
-     * direction. This will be <code>insets.top</code> for vertical direction
-     * and <code>insets.left</code> for horizontal direction.
-     *
-     * @param the {@link Insets} object from which to return the lower bounds
-     *
-     * @return the lower bounds of the {@link Insets} object according to this
-     *     direction
-     */
-    int lower(Insets insets);
-
-    /**
-     * Returns the alignment property according to this direction.
-     *
-     * @param comp the Component for which to return the alignment property
-     *
-     * @return the alignment property according to this direction
-     */
-    float alignment(Component comp);
-
-    /**
-     * Sets the location for Component <code>c</code>. <code>coord1</code>
-     * specifies the coordinate of the location in this direction,
-     * <code>coord2</code> the coordinate of the location in the opposite
-     * direction.
-     *
-     * @param c the Component for which to set the location
-     * @param coord1 the coordinate in this direction
-     * @param coord2 the coordinate in the opposite direction
-     */
-    void setLocation(Component c, int coord1, int coord2);
-
-    /**
-     * Sets the size for Component <code>c</code>. <code>coord1</code>
-     * specifies the size in this direction,
-     * <code>coord2</code> the size in the opposite
-     * direction.
-     *
-     * @param c the Component for which to set the size
-     * @param size1 the size in this direction
-     * @param size2 the size in the opposite direction
-     */
-    void setSize(Component c, int size1, int size2);
-  }
-
-  /**
-   * The horizontal direction.
-   */
-  static class Horizontal implements Direction
-  {
-    /**
-     * Returns the correct part of <code>d</code> for this direction. This will
-     * be <code>d.width</code> for horizontal and <code>d.height</code> for
-     * vertical direction.
-     *
-     * @param d the size as Dimension object
-     *
-     * @return the correct part of <code>d</code> for this direction
-     */
-    public int size(Dimension d)
-    {
-      return d.width;
-    }
-
-    /**
-     * Returns the lower bounds of the {@link Insets} object according to this
-     * direction. This will be <code>insets.top</code> for vertical direction
-     * and <code>insets.left</code> for horizontal direction.
-     *
-     * @param insets the {@link Insets} object from which to return the lower 
-     *               bounds
-     *
-     * @return the lower bounds of the {@link Insets} object according to this
-     *     direction
-     */
-    public int lower(Insets insets)
-    {
-      return insets.left;
-    }
-
-    /**
-     * Returns the alignment property according to this direction.
-     *
-     * @param comp the Component for which to return the alignment property
-     *
-     * @return the alignment property according to this direction
-     */
-    public float alignment(Component comp)
-    {
-      return comp.getAlignmentX();
-    }
-
-    /**
-     * Sets the location for Component <code>c</code>. <code>coord1</code>
-     * specifies the coordinate of the location in this direction,
-     * <code>coord2</code> the coordinate of the location in the opposite
-     * direction.
-     *
-     * @param c the Component for which to set the location
-     * @param coord1 the coordinate in this direction
-     * @param coord2 the coordinate in the opposite direction
-     */
-    public void setLocation(Component c, int coord1, int coord2)
-    {
-      c.setLocation(coord1, coord2);
-    }
-
-    /**
-     * Sets the size for Component <code>c</code>. <code>coord1</code>
-     * specifies the size in this direction,
-     * <code>coord2</code> the size in the opposite
-     * direction.
-     *
-     * @param c the Component for which to set the size
-     * @param size1 the size in this direction
-     * @param size2 the size in the opposite direction
-     */
-    public void setSize(Component c, int size1, int size2)
-    {
-      c.setSize(size1, size2);
-    }
-  }
-  /**
-   * The vertical direction.
-   */
-  static class Vertical implements Direction
-  {
-    /**
-     * Returns the correct part of <code>d</code> for this direction. This will
-     * be <code>d.width</code> for horizontal and <code>d.height</code> for
-     * vertical direction.
-     *
-     * @param d the size as Dimension object
-     *
-     * @return the correct part of <code>d</code> for this direction
-     */
-    public int size(Dimension d)
-    {
-      return d.height;
-    }
-
-    /**
-     * Returns the lower bounds of the {@link Insets} object according to this
-     * direction. This will be <code>insets.top</code> for vertical direction
-     * and <code>insets.left</code> for horizontal direction.
-     *
-     * @param insets the {@link Insets} object from which to return the lower 
-     *        bounds
-     *
-     * @return the lower bounds of the {@link Insets} object according to this
-     *     direction
-     */
-    public int lower(Insets insets)
-    {
-      return insets.top;
-    }
-
-    /**
-     * Returns the alignment property according to this direction.
-     *
-     * @param comp the Component for which to return the alignment property
-     *
-     * @return the alignment property according to this direction
-     */
-    public float alignment(Component comp)
-    {
-      return comp.getAlignmentY();
-    }
-
-    /**
-     * Sets the location for Component <code>c</code>. <code>coord1</code>
-     * specifies the coordinate of the location in this direction,
-     * <code>coord2</code> the coordinate of the location in the opposite
-     * direction.
-     *
-     * @param c the Component for which to set the location
-     * @param coord1 the coordinate in this direction
-     * @param coord2 the coordinate in the opposite direction
-     */
-    public void setLocation(Component c, int coord1, int coord2)
-    {
-      c.setLocation(coord2, coord1);
-    }
-
-    /**
-     * Sets the size for Component <code>c</code>. <code>coord1</code>
-     * specifies the size in this direction,
-     * <code>coord2</code> the size in the opposite
-     * direction.
-     *
-     * @param c the Component for which to set the size
-     * @param size1 the size in this direction
-     * @param size2 the size in the opposite direction
-     */
-    public void setSize(Component c, int size1, int size2)
-    {
-      c.setSize(size2, size1);
-    }
-  }
-
-  /**
-   * A helper class that temporarily stores the size specs of a component.
-   */
-  static class SizeReq
-  {
-    int size;
-    int min;
-    int pref;
-    int max;
-    float align;
-    Component comp;
-    SizeReq(Component comp, Direction dir)
-    {
-      this.min = dir.size(comp.getMinimumSize());
-      this.pref = dir.size(comp.getPreferredSize());
-      this.max = dir.size(comp.getMaximumSize());
-      this.size = dir.size(comp.getSize());
-      this.align = dir.alignment(comp);
-      this.comp = comp;
-    }
-  }
 
   /**
    * Specifies that components are laid out left to right.
@@ -334,16 +86,50 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   private Container container;
   
-  /*
+  /**
    * Current type of component layouting. Defaults to X_AXIS.
    */
   private int way = X_AXIS;
 
-  /** Constant for the horizontal direction. */
-  private static final Direction HORIZONTAL = new Horizontal();
+  /**
+   * The size requirements of the containers children for the X direction.
+   */
+  private SizeRequirements[] xChildren;
 
-  /** Constant for the vertical direction. */
-  private static final Direction VERTICAL = new Vertical();
+  /**
+   * The size requirements of the containers children for the Y direction.
+   */
+  private SizeRequirements[] yChildren;
+
+  /**
+   * The size requirements of the container to be laid out for the X direction.
+   */
+  private SizeRequirements xTotal;
+
+  /**
+   * The size requirements of the container to be laid out for the Y direction.
+   */
+  private SizeRequirements yTotal;
+
+  /**
+   * The offsets of the child components in the X direction.
+   */
+  private int[] offsetsX;
+
+  /**
+   * The offsets of the child components in the Y direction.
+   */
+  private int[] offsetsY;
+
+  /**
+   * The spans of the child components in the X direction.
+   */
+  private int[] spansX;
+
+  /**
+   * The spans of the child components in the Y direction.
+   */
+  private int[] spansY;
 
   /**
    * Constructs a <code>BoxLayout</code> object.
@@ -355,6 +141,9 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public BoxLayout(Container container, int way)
   {
+    if (way != X_AXIS && way != Y_AXIS && way != LINE_AXIS && way != PAGE_AXIS)
+      throw new AWTError("Invalid axis");
+
     int width = 0;
     int height = 0;
     this.container = container;
@@ -369,6 +158,7 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public void addLayoutComponent(String name, Component component)
   {
+    // Nothing to do here.
   }
 
   /**
@@ -378,6 +168,7 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public void removeLayoutComponent(Component component)
   {
+    // Nothing to do here.
   }
 
   private boolean isHorizontalIn(Container parent)
@@ -401,45 +192,16 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public Dimension preferredLayoutSize(Container parent)
   {
-    if (parent != container)
-      throw new AWTError("invalid parent");
+    synchronized (container.getTreeLock())
+      {
+        if (container != parent)
+          throw new AWTError("BoxLayout can't be shared");
 
-    Insets insets = parent.getInsets();
-    int x = 0;
-    int y = 0;
-
-    List children = AWTUtilities.getVisibleChildren(parent);
-
-    if (isHorizontalIn(parent))
-      {        
-        x = insets.left + insets.right;
-        // sum up preferred widths of components, find maximum of preferred
-        // heights
-        for (Iterator i = children.iterator(); i.hasNext();)
-          {
-            Component comp = (Component) i.next();
-            Dimension sz = comp.getPreferredSize();
-            x += sz.width;
-            y = Math.max(y, sz.height);
-          }
-        y += insets.bottom + insets.top;
-      } 
-    else 
-      {        
-        y = insets.top + insets.bottom;
-        // sum up preferred heights of components, find maximum of
-        //  preferred widths
-        for (Iterator i = children.iterator(); i.hasNext();)
-          {
-            Component comp = (Component) i.next();
-            Dimension sz = comp.getPreferredSize();
-            y += sz.height;
-            x = Math.max(x, sz.width);
-          }
-        x += insets.left + insets.right;
+        checkTotalRequirements();
+        Insets i = container.getInsets();
+        return new Dimension(xTotal.preferred + i.left + i.right,
+                             yTotal.preferred + i.top + i.bottom);
       }
-
-    return new Dimension(x, y);
   }
 
   /**
@@ -451,41 +213,16 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public Dimension minimumLayoutSize(Container parent)
   {
-    if (parent != container)
-      throw new AWTError("invalid parent");
-
-    Insets insets = parent.getInsets();
-    int x = insets.left + insets.right;
-    int y = insets.bottom + insets.top;
-
-    List children = AWTUtilities.getVisibleChildren(parent);
-
-    if (isHorizontalIn(parent))
+    synchronized (container.getTreeLock())
       {
-        // sum up preferred widths of components, find maximum of preferred
-        // heights
-        for (Iterator i = children.iterator(); i.hasNext();)
-          {
-	    Component comp = (Component) i.next();
-            Dimension sz = comp.getMinimumSize();
-            x += sz.width;
-            y = Math.max(y, sz.height);
-          }
+        if (container != parent)
+          throw new AWTError("BoxLayout can't be shared");
+
+        checkTotalRequirements();
+        Insets i = container.getInsets();
+        return new Dimension(xTotal.minimum + i.left + i.right,
+                             yTotal.minimum + i.top + i.bottom);
       }
-    else
-      {
-        // sum up preferred heights of components, find maximum of
-        //  preferred widths
-        for (Iterator i = children.iterator(); i.hasNext();)
-          {
-	    Component comp = (Component) i.next();
-            Dimension sz = comp.getMinimumSize();
-            y += sz.height;
-            x = Math.max(x, sz.width);
-          }
-      }
-    
-    return new Dimension(x, y);
   }
 
   /**
@@ -495,12 +232,20 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public void layoutContainer(Container parent)
   {
-    if (isHorizontalIn(parent))
-      layoutAlgorithm(parent, HORIZONTAL, VERTICAL);
-    else
-      layoutAlgorithm(parent, VERTICAL, HORIZONTAL);
+    synchronized (container.getTreeLock())
+      {
+        if (container != parent)
+          throw new AWTError("BoxLayout can't be shared");
+      
+        checkLayout();
+        Component[] children = container.getComponents();
+        Insets in = container.getInsets();
+        for (int i = 0; i < children.length; i++)
+          children[i].setBounds(offsetsX[i] + in.left, offsetsY[i] + in.top,
+                                spansX[i], spansY[i]);
+      }
   }
-  
+
   /**
    * Adds a component to the layout. Not used in BoxLayout
    *
@@ -509,6 +254,7 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public void addLayoutComponent(Component child, Object constraints)
   {
+    // Nothing to do here.
   }
 
   /**
@@ -520,10 +266,14 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public float getLayoutAlignmentX(Container parent)
   {
-    if (parent != container)
-      throw new AWTError("invalid parent");
-    
-    return 0;
+    synchronized (container.getTreeLock())
+      {
+        if (container != parent)
+          throw new AWTError("BoxLayout can't be shared");
+
+        checkTotalRequirements();
+        return xTotal.alignment;
+      }
   }
 
   /**
@@ -535,10 +285,14 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public float getLayoutAlignmentY(Container parent)
   {
-    if (parent != container)
-      throw new AWTError("invalid parent");
-    
-    return 0;
+    synchronized (container.getTreeLock())
+      {
+        if (container != parent)
+          throw new AWTError("BoxLayout can't be shared");
+
+        checkTotalRequirements();
+        return yTotal.alignment;
+      }
   }
 
   /**
@@ -548,8 +302,20 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public void invalidateLayout(Container parent)
   {
-    if (parent != container)
-      throw new AWTError("invalid parent");
+    if (container != parent)
+      throw new AWTError("BoxLayout can't be shared");
+
+    synchronized (container.getTreeLock())
+      {
+        xChildren = null;
+        yChildren = null;
+        xTotal = null;
+        yTotal = null;
+        offsetsX = null;
+        offsetsY = null;
+        spansX = null;
+        spansY = null;
+      }
   }
 
   /**
@@ -562,188 +328,117 @@ public class BoxLayout implements LayoutManager2, Serializable
    */
   public Dimension maximumLayoutSize(Container parent)
   {
-    if (parent != container)
-      throw new AWTError("invalid parent");
-
-    Insets insets = parent.getInsets();
-    int x = insets.left + insets.right;
-    int y = insets.top + insets.bottom;
-
-    List children = AWTUtilities.getVisibleChildren(parent);
-
-    if (isHorizontalIn(parent))
+    synchronized (container.getTreeLock())
       {
-        
-        // sum up preferred widths of components, find maximum of preferred
-        // heights
-        for (Iterator i = children.iterator(); i.hasNext();)
-          {
-            Component comp = (Component) i.next();
-            Dimension sz = comp.getMaximumSize();
-            x += sz.width;
-            // Check for overflow.
-            if (x < 0)
-              x = Integer.MAX_VALUE;
-            y = Math.max(y, sz.height);
-          }
-      }
-    else
-      {
-        // sum up preferred heights of components, find maximum of
-        //  preferred widths
-        for (Iterator i = children.iterator(); i.hasNext();)
-          {
-            Component comp = (Component) i.next();
-            Dimension sz = comp.getMaximumSize();
-            y += sz.height;
-            // Check for overflow
-            if (y < 0)
-              y = Integer.MAX_VALUE;
-            x = Math.max(x, sz.width);
-          }
-      } 
-    return new Dimension(x, y);
-  }
+        if (container != parent)
+          throw new AWTError("BoxLayout can't be shared");
 
-  /**
-   * Lays out the Container <code>c</code> in the layout direction
-   * <code>layoutDir</code>. The direction that is crossing the layout
-   * direction is specified in <code>crossDir</code>.
-   *
-   * @param parent
-   * @param layoutDir
-   * @param crossDir
-   */
-  void layoutAlgorithm(Container parent, Direction layoutDir, Direction crossDir)
-  {
-    if (parent != container)
-      throw new AWTError("invalid parent");
-
-    Dimension parentSize = parent.getSize();
-    Insets insets = parent.getInsets();
-    Dimension innerSize = new Dimension(parentSize.width - insets.left
-                                        - insets.right, parentSize.height
-                                        - insets.bottom - insets.top);
-
-    // Set all components to their preferredSizes and sum up the allocated
-    // space. Create SizeReqs for each component and store them in
-    // sizeReqs. Find the maximum size in the crossing direction.
-    List children = AWTUtilities.getVisibleChildren(parent);
-    Vector sizeReqs = new Vector();
-    int allocated = 0;
-    for (Iterator i = children.iterator(); i.hasNext();)
-      {
-	Component c = (Component) i.next();
-	SizeReq sizeReq = new SizeReq(c, layoutDir);
-	int preferred = layoutDir.size(c.getPreferredSize());
-	sizeReq.size = preferred;
-	allocated += preferred;
-	sizeReqs.add(sizeReq);
-      }
-
-    // Distribute remaining space (may be positive or negative) over components
-    int remainder = layoutDir.size(innerSize) - allocated;
-    distributeSpace(sizeReqs, remainder, layoutDir);
-
-    // Resize and relocate components. If the component can be sized to
-    // take the full space in the crossing direction, then do so, otherwise
-    // align according to its alingnmentX or alignmentY property.
-    int loc = 0;
-    int offset1 = layoutDir.lower(insets);
-    int offset2 = crossDir.lower(insets);
-    for (Iterator i = sizeReqs.iterator(); i.hasNext();)
-      {
-	SizeReq sizeReq = (SizeReq) i.next();
-	Component c = sizeReq.comp;
-	int availCrossSize = crossDir.size(innerSize);
-	int maxCross = crossDir.size(c.getMaximumSize());
-	int crossSize = Math.min(availCrossSize, maxCross);
-	int crossRemainder = availCrossSize - crossSize;
-	int crossLoc = (int) (crossDir.alignment(c) * crossRemainder);
-	layoutDir.setSize(c, sizeReq.size, crossSize);
-	layoutDir.setLocation(c, offset1 + loc, offset2 + crossLoc);
-	loc += sizeReq.size;
+        checkTotalRequirements();
+        Insets i = container.getInsets();
+        return new Dimension(xTotal.maximum + i.left + i.right,
+                             yTotal.maximum + i.top + i.bottom);
       }
   }
 
   /**
-   * Distributes some space over a set of components. This implementation
-   * tries to set the components as close as possible to their
-   * <code>preferredSize</code>s, and respects the components
-   * <code>minimumSize</code> and <code>maximumSize</code>.
-   *
-   * The algorithm is implemented as follows:
-   *
-   * <ul>
-   * <li>The <code>remainder</code> is divided by the number of components
-   * in <code>freeComponents</code>.</li>
-   * <li>The result is added to (or substracted from) the size of each
-   * component.</li>
-   * <li>If the <code>minimumSize</code> or <code>maximumSize</code> of a
-   * component is exceeded, then this component is set to its
-   * <code>minimumSize</code> or <code>maximumSize</code>, it is removed from
-   * <code>freeComponents</code> and the difference is added to a new
-   * remainder.</li>
-   * <li>Finally, if there is a new remainer != 0 and the
-   * <code>freeComponents.size() != 0</code>, then this method is called
-   * recursivly to distribute the newly allocated remaining space.</li>
-   * </ul>
-   *
-   * @param freeComponents a SizeReq collection for components that have space
-   *     left so that they can be moved freely
-   * @param remainder the space that should be distributed between the
-   *     components
-   * @param dir the direction in which we operate
+   * Makes sure that the xTotal and yTotal fields are set up correctly. A call
+   * to {@link #invalidateLayout} sets these fields to null and they have to be
+   * recomputed.
    */
-  void distributeSpace(Collection freeComponents, int remainder, Direction dir)
+  private void checkTotalRequirements()
   {
-    // Sum up total available space in components. If the remainder is negative
-    // then we sum up the difference between minSize and size. If remainder
-    // is positive we sum up the difference between maxSize and size.
-    double totalAvailable = 0;
-    for (Iterator i = freeComponents.iterator(); i.hasNext();)
+    if (xTotal == null || yTotal == null)
       {
-        SizeReq sizeReq = (SizeReq) i.next();
-        if (remainder >= 0)
-          totalAvailable += sizeReq.max - sizeReq.size;
+        checkRequirements();
+        if (isHorizontalIn(container))
+          {
+            xTotal = SizeRequirements.getTiledSizeRequirements(xChildren);
+            yTotal = SizeRequirements.getAlignedSizeRequirements(yChildren);
+          }
         else
-          totalAvailable += sizeReq.min - sizeReq.size;
+          {
+            xTotal = SizeRequirements.getAlignedSizeRequirements(xChildren);
+            yTotal = SizeRequirements.getTiledSizeRequirements(yChildren);
+          }
       }
-    if (totalAvailable == 0)
-      if (remainder >= 0)
-        totalAvailable = 1;
-      else
-        totalAvailable = -1;
+  }
 
-    int newRemainder = 0;
-    Vector stillFree = new Vector();
-    for (Iterator i = freeComponents.iterator(); i.hasNext();)
+  /**
+   * Makes sure that the xChildren and yChildren fields are correctly set up.
+   * A call to {@link #invalidateLayout(Container)} sets these fields to null,
+   * so they have to be set up again.
+   */
+  private void checkRequirements()
+  {
+    if (xChildren == null || yChildren == null)
       {
-	// Add/substract share to component.
-	SizeReq sizeReq = (SizeReq) i.next();
-        double available = 0;
-        if (remainder >= 0)
-          available = sizeReq.max - sizeReq.size;
-        else
-          available = sizeReq.min - sizeReq.size;
-        int share = (int) ((available / totalAvailable) * remainder);
-	sizeReq.size += share;
-	// check for min/maximumSize
-	if (sizeReq.size < sizeReq.min)
-	  {
-	    newRemainder += sizeReq.size - sizeReq.min;
-	    sizeReq.size = sizeReq.min;
-	  }
-	else if (sizeReq.size > sizeReq.max)
-	  {
-	    newRemainder += sizeReq.size - sizeReq.max;
-	    sizeReq.size = sizeReq.max;
-	  }
-	else
-	  stillFree.add(sizeReq);
+        Component[] children = container.getComponents();
+        xChildren = new SizeRequirements[children.length];
+        yChildren = new SizeRequirements[children.length];
+        for (int i = 0; i < children.length; i++)
+          {
+            if (! children[i].isVisible())
+              {
+                xChildren[i] = new SizeRequirements();
+                yChildren[i] = new SizeRequirements();
+              }
+            else
+              {
+                xChildren[i] =
+                  new SizeRequirements(children[i].getMinimumSize().width,
+                                       children[i].getPreferredSize().width,
+                                       children[i].getMaximumSize().width,
+                                       children[i].getAlignmentX());
+                yChildren[i] =
+                  new SizeRequirements(children[i].getMinimumSize().height,
+                                       children[i].getPreferredSize().height,
+                                       children[i].getMaximumSize().height,
+                                       children[i].getAlignmentY());
+              }
+          }
       }
-    // recursivly call this method if necessary
-    if (newRemainder != 0 && stillFree.size() > 0)
-      distributeSpace(stillFree, newRemainder, dir);
+  }
+
+  /**
+   * Makes sure that the offsetsX, offsetsY, spansX and spansY fields are set
+   * up correctly. A call to {@link #invalidateLayout} sets these fields
+   * to null and they have to be recomputed.
+   */
+  private void checkLayout()
+  {
+    if (offsetsX == null || offsetsY == null || spansX == null
+        || spansY == null)
+      {
+        checkRequirements();
+        checkTotalRequirements();
+        int len = container.getComponents().length;
+        offsetsX = new int[len];
+        offsetsY = new int[len];
+        spansX = new int[len];
+        spansY = new int[len];
+
+        Insets in = container.getInsets();
+        int width = container.getWidth() - in.left - in.right;
+        int height = container.getHeight() - in.top -in.bottom;
+
+        if (isHorizontalIn(container))
+          {
+            SizeRequirements.calculateTiledPositions(width,
+                                                     xTotal, xChildren,
+                                                     offsetsX, spansX);
+            SizeRequirements.calculateAlignedPositions(height,
+                                                       yTotal, yChildren,
+                                                       offsetsY, spansY);
+          }
+        else
+          {
+            SizeRequirements.calculateAlignedPositions(width,
+                                                       xTotal, xChildren,
+                                                       offsetsX, spansX);
+            SizeRequirements.calculateTiledPositions(height,
+                                                     yTotal, yChildren,
+                                                     offsetsY, spansY);
+          }
+      }
   }
 }

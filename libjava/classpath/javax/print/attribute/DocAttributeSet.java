@@ -1,5 +1,5 @@
 /* DocAttributeSet.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,18 +38,45 @@ exception statement from your version. */
 package javax.print.attribute;
 
 /**
- * @author Michael Koch
+ * <code>DocAttributeSet</code> specifies an attribute set which only
+ * allows printing attributes of type 
+ * {@link javax.print.attribute.DocAttribute}.
+ * <p>
+ * The methods {@link #add(Attribute)} and {@link #addAll(AttributeSet)} are
+ * respecified in this interface to indicate that only 
+ * <code>DocAttribute</code> instances are allowed in this set.
+ * </p>
+ * 
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public interface DocAttributeSet extends AttributeSet
 {
   /**
-   * Adds the specified attribute value to this attribute set
+   * Adds the specified attribute value to this attribute set 
    * if it is not already present.
+   * 
+   * This operation removes any existing attribute of the same category 
+   * before adding the given attribute. 
+   * 
+   * @param attribute the attribute to add.
+   * @return <code>true</code> if the set is changed, false otherwise.
+   * @throws ClassCastException if attribute is not of type 
+   * <code>DocAttribute</code>.
+   * @throws NullPointerException if the attribute is <code>null</code>.
+   * @throws UnmodifiableSetException if the set does not support modification.
    */
   boolean add (Attribute attribute);
 
   /**
-   * Adds all of the elements in the specified set to this attribute.
+   * Adds all of the elements in the specified set to this attribute set.
+   * 
+   * @param attributes the set of attributes to add.
+   * @return <code>true</code> if the set is changed, false otherwise.
+   * @throws ClassCastException if one of the attributes is not of type 
+   * <code>DocAttribute</code>.
+   * @throws UnmodifiableSetException if the set does not support modification.
+   * 
+   * @see #add(Attribute)
    */
   boolean addAll (AttributeSet attributes);
 }

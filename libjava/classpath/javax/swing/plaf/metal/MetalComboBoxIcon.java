@@ -1,4 +1,4 @@
-/* MetalComboBoxButton.java
+/* MetalComboBoxIcon.java
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -88,10 +88,11 @@ public class MetalComboBoxIcon implements Icon, Serializable {
    */
   public void paintIcon(Component c, Graphics g, int x, int y)
   {
-    // TODO: work out whether/how the icon changes with different component
-    //       states (and also different metal themes)
     Color savedColor = g.getColor();
-    g.setColor(Color.black);
+    if (c.isEnabled())
+      g.setColor(MetalLookAndFeel.getBlack());
+    else
+      g.setColor(MetalLookAndFeel.getControlDisabled());
     for (int i = 0; i < 5; i++)
       g.drawLine(x + i, y + i, x + 9 - i, y + i);
     g.setColor(savedColor);

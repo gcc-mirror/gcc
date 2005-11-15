@@ -1,5 +1,5 @@
-/* ClassDesc.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* ClassDesc.java --
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,16 +40,27 @@ package javax.rmi.CORBA;
 
 import java.io.Serializable;
 
-public class ClassDesc
-  implements Serializable
+/**
+ * This class is used to marshal java.lang.Class objects over IIOP.
+ * When used as a parameter type, return type, or data member, the Java Class
+ * is mapped to the OMG IDL type ::javax::rmi::CORBA::ClassDesc.
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
+ */
+public class ClassDesc implements Serializable
 {
-  /*
-   * The following is serialized form required by Java API Doc
+  /** 
+   * Use serialVersionUID (V1.4) for interoperability. 
    */
-  private String repid;
-  private String codebase;
+  private static final long serialVersionUID = -3477057297839810709L;
+
+  /**
+   * The class repository Id.
+   */
+  String repid;
   
-  public ClassDesc()
-  {
-  }
+  /**
+   * Space separeted list of URL's from where the code can be downloaded.
+   */
+  String codebase;
 }

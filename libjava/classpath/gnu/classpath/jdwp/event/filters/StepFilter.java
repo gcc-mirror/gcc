@@ -66,7 +66,7 @@ public class StepFilter
   public StepFilter (ThreadId tid, int size, int depth)
     throws InvalidThreadException
   {
-    if (tid == null | tid.getReference().get () == null)
+    if (tid.getReference().get () == null)
       throw new InvalidThreadException (tid.getId ());
 
     _tid = tid;

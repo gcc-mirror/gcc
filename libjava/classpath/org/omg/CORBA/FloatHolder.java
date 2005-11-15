@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -62,7 +62,7 @@ public final class FloatHolder
    * The default type code for this holder.
    */
   private static final TypeCode t_float =
-    new primitiveTypeCode(TCKind.tk_float);
+    new PrimitiveTypeCode(TCKind.tk_float);
 
   /**
    * The <code>float</code> (CORBA <code>float</code>) value,

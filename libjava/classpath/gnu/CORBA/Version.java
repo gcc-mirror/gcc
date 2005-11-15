@@ -70,8 +70,8 @@ public class Version
   /**
    * Create the version with the given version numbers.
    *
-   * @param major major number (0..255)
-   * @param minor minor number (0..255)
+   * @param _major major number (0..255)
+   * @param _minor minor number (0..255)
    */
   public Version(int _major, int _minor)
   {
@@ -99,6 +99,15 @@ public class Version
     Version that = (Version) other;
     return same(that);
   }
+  
+  /**
+   * Get the hashcode, higher 8 bits being the major version and lower 8 bits
+   * the minor version.
+   */
+  public int hashCode()
+  {
+    return major << 8 | minor;
+  }    
 
   /**
    * Read from the input stream, major number first.
@@ -114,7 +123,10 @@ public class Version
       }
     catch (IOException ex)
       {
-        throw new MARSHAL("IOException while reading message header");
+        MARSHAL m = new MARSHAL("IOException while reading message header");
+        m.initCause(ex);
+        m.minor = Minor.Header;
+        throw m;
       }
   }
 
@@ -166,7 +178,7 @@ public class Version
    * Returs true if the given version is lower or equal to the
    * version, specified by the provided minor and major version
    * number. This means, the version, specified by these two numbers,
-   * should be supported by teh current version.
+   * should be supported by the current version.
    *
    * @param a_major a major version number.
    * @param a_minor a minor version number.
@@ -200,7 +212,11 @@ public class Version
       }
     catch (IOException ex)
       {
-        throw new MARSHAL("IOException while writing message header");
+        MARSHAL m = new MARSHAL("IOException while writing message header");
+        m.minor = Minor.Header;
+        m.initCause(ex);
+        throw m;
       }
   }
+ 
 }

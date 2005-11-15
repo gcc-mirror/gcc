@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.CORBA.Interceptor;
 
 import gnu.CORBA.Poa.ORB_1_4;
+import gnu.CORBA.ObjectCreator;
 import gnu.CORBA.gnuCodecFactory;
 
 import org.omg.CORBA.BAD_INV_ORDER;
@@ -87,7 +88,7 @@ public class Registrator extends LocalObject implements ORBInitInfo
   /**
    * The agreed properties prefix.
    */
-  public final static String m_prefix =
+  public static final String m_prefix =
     "org.omg.PortableInterceptor.ORBInitializerClass.";
 
   /**
@@ -182,7 +183,8 @@ public class Registrator extends LocalObject implements ORBInitInfo
                 try
                   {
                     String cn = sk.substring(m_prefix.length());
-                    Class iClass = Class.forName(cn);
+                    Class iClass = ObjectCreator.forName(cn);
+                    
                     ORBInitializer initializer =
                       (ORBInitializer) iClass.newInstance();
                     m_initializers.add(initializer);

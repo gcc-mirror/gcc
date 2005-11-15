@@ -77,9 +77,8 @@ public interface Border
    * @param width the width of the available area for painting the border.
    * @param height the height of the available area for painting the border.
    */
-  void paintBorder(Component c, Graphics g,
-                          int x, int y, int width, int height);
-  
+  void paintBorder(Component c, Graphics g, int x, int y, int width,
+                   int height);
   
   /**
    * Measures the width of this border.
@@ -91,7 +90,6 @@ public interface Border
    *         width of the border at the respective edge.
    */
   Insets getBorderInsets(Component c);
-  
   
   /**
    * Determines whether this border fills every pixel in its area

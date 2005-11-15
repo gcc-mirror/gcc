@@ -51,7 +51,7 @@ import org.omg.PortableServer.ServantRetentionPolicyValue;
  */
 public class gnuServantRetentionPolicy
   extends _PolicyImplBase
-  implements ServantRetentionPolicy, vPolicy
+  implements ServantRetentionPolicy, AccessiblePolicy
 {
   /**
    * Use serialVersionUID for interoperability.

@@ -38,7 +38,12 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
+import gnu.CORBA.Unexpected;
+import gnu.CORBA.gnuAny;
+import gnu.CORBA.gnuNVList;
+
 import org.omg.CORBA.portable.ObjectImpl;
+import org.omg.CORBA.portable.OutputStream;
 
 /**
  * This class was probably originally thinked as a base of all CORBA
@@ -51,18 +56,110 @@ import org.omg.CORBA.portable.ObjectImpl;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public abstract class DynamicImplementation
+public class DynamicImplementation
   extends ObjectImpl
 {
   /**
-   * Invoke the method of the CORBA object.
-   *
+   * Invoke the method of the CORBA object. After converting the parameters,
+   * this method delegates call to the {@link ObjectImpl#invoke}.
+   * 
    * @deprecated since 1.4.
-   *
-   * @param request the container for both passing and returing the
-   * parameters, also contains the method name and thrown exceptions.
+   * 
+   * @param request the container for both passing and returing the parameters,
+   * also contains the method name and thrown exceptions.
    */
-  public abstract void invoke(ServerRequest request);
+  public void invoke(ServerRequest request)
+  {
+    Request r = _request(request.operation());
+
+    // Copy the parameters.
+    NVList args = new gnuNVList();
+    request.arguments(args);
+    NamedValue v;
+    int i = 0;
+
+    try
+      {
+        // Set the arguments.
+        for (i = 0; i < args.count(); i++)
+          {
+            v = args.item(i);
+            Any n;
+            OutputStream out;
+
+            switch (v.flags())
+              {
+                case ARG_IN.value:
+                  out = v.value().create_output_stream();
+                  v.value().write_value(out);
+                  n = r.add_named_in_arg(v.name());
+                  n.read_value(out.create_input_stream(), v.value().type());                  
+                  break;
+                case ARG_INOUT.value:
+                  out = v.value().create_output_stream();
+                  v.value().write_value(out);
+                  n = r.add_named_inout_arg(v.name());
+                  n.read_value(out.create_input_stream(), v.value().type());                  
+                  break;
+                case ARG_OUT.value:
+                  r.add_named_out_arg(v.name());
+                  break;
+
+                default:
+                  throw new InternalError("Invalid flags " + v.flags());
+              }
+          }
+      }
+    catch (Bounds b)
+      {
+        throw new Unexpected(args.count() + "[" + i + "]", b);
+      }
+
+    // Set context.
+    r.ctx(request.ctx());
+    
+    // Set the return type (expects that the ServerRequest will initialise
+    // the passed Any.
+    
+    gnuAny g = new gnuAny();
+    request.result(g);
+    r.set_return_type(g.type());
+
+    // Invoke the method.
+    r.invoke();
+
+    // Transfer the returned values.
+    NVList r_args = r.arguments();
+
+    try
+      {
+        // API states that the ServerRequest.arguments must be called only
+        // once. Hence we assume we can just modify the previously returned
+        // value <code>args</code>, and the ServerRequest will preserve the 
+        // reference.
+        for (i = 0; i < args.count(); i++)
+          {
+            v = args.item(i);
+
+            if (v.flags() == ARG_OUT.value || v.flags() == ARG_INOUT.value)
+              {
+                OutputStream out = r_args.item(i).value().create_output_stream();
+                r_args.item(i).value().write_value(out);
+                v.value().read_value(out.create_input_stream(),
+                  v.value().type());
+              }
+          }
+      }
+    catch (Bounds b)
+      {
+        throw new Unexpected(args.count() + "[" + i + "]", b);
+      }
+
+    // Set the returned result (if any).
+    NamedValue returns = r.result();
+    if (returns != null)
+      request.set_result(returns.value());
+  }
 
   /**
    * Returns the array of the repository ids, supported by this object.

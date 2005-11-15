@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveArrayTypeCode;
+import gnu.CORBA.typecodes.ArrayTypeCode;
 
 import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.portable.InputStream;
@@ -127,7 +127,7 @@ public abstract class WStringSeqHelper
    */
   public static TypeCode type()
   {
-    return new primitiveArrayTypeCode(TCKind.tk_string);
+    return new ArrayTypeCode(TCKind.tk_string);
   }
 
   /**

@@ -402,7 +402,11 @@ public class TableColumn
     if (width == oldWidth)
       return;
 
-    firePropertyChange(COLUMN_WIDTH_PROPERTY, oldWidth, width);
+    // We do have a constant field COLUMN_WIDTH_PROPERTY,
+    // however, tests show that the actual fired property name is 'width'
+    // and even Sun's API docs say that this constant field is obsolete and
+    // not used.
+    firePropertyChange("width", oldWidth, width);
   }
 
   /**
@@ -422,12 +426,16 @@ public class TableColumn
    */
   public void setPreferredWidth(int preferredWidth)
   {
+    int oldPrefWidth = this.preferredWidth;
+
     if (preferredWidth < minWidth)
       this.preferredWidth = minWidth;
     else if (preferredWidth > maxWidth)
       this.preferredWidth = maxWidth;
     else
       this.preferredWidth = preferredWidth;
+
+    firePropertyChange("preferredWidth", oldPrefWidth, this.preferredWidth);
   }
 
   /**

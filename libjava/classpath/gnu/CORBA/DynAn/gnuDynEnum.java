@@ -60,7 +60,7 @@ import java.util.Arrays;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class gnuDynEnum extends anyUndivideable implements DynEnum
+public class gnuDynEnum extends UndivideableAny implements DynEnum
 {
   /**
    * Use serialVersionUID for interoperability.

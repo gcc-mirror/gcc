@@ -38,7 +38,13 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+
+import javax.swing.AbstractButton;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentUI;
 
 public class BasicToggleButtonUI extends BasicButtonUI
@@ -58,5 +64,62 @@ public class BasicToggleButtonUI extends BasicButtonUI
   {
     return "ToggleButton.";
   }
-}
 
+  /**
+   * Paint the component, which is an {@link AbstractButton}, according to 
+   * its current state.
+   *
+   * @param g The graphics context to paint with
+   * @param c The component to paint the state of
+   */
+  public void paint(Graphics g, JComponent c)
+  {      
+    AbstractButton b = (AbstractButton) c;
+
+    Rectangle tr = new Rectangle();
+    Rectangle ir = new Rectangle();
+    Rectangle vr = new Rectangle();
+
+    Font f = c.getFont();
+
+    g.setFont(f);
+
+    if (b.isBorderPainted())
+      SwingUtilities.calculateInnerArea(b, vr);
+    else
+      vr = SwingUtilities.getLocalBounds(b);
+    String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
+                                                     b.getText(),
+                                                     currentIcon(b),
+                                                     b.getVerticalAlignment(), 
+                                                     b.getHorizontalAlignment(),
+                                                     b.getVerticalTextPosition(), 
+                                                     b.getHorizontalTextPosition(),
+                                                     vr, ir, tr, 
+                                                     b.getIconTextGap() 
+                                                     + defaultTextShiftOffset);
+
+    if ((b.getModel().isArmed() && b.getModel().isPressed()) 
+        || b.isSelected())
+      paintButtonPressed(g, b);
+
+    paintIcon(g, b, ir);
+    if (text != null)
+      paintText(g, b, tr, text);
+    if (b.isFocusOwner() && b.isFocusPainted())
+      paintFocus(g, b, vr, tr, ir);
+  }
+
+  /**
+   * Paints the icon for the toggle button. This delegates to
+   * {@link BasicButtonUI#paintIcon(Graphics, JComponent, Rectangle)}.
+   *
+   * @param g the graphics context
+   * @param b the button to paint the icon for
+   * @param iconRect the area allocated for the icon
+   */
+  protected void paintIcon(Graphics g, AbstractButton b, Rectangle iconRect)
+  {
+    super.paintIcon(g, b, iconRect);
+  }
+}

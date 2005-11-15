@@ -52,7 +52,7 @@ package java.lang.ref;
  * automatically cleared, and you may remove it from the set. <br>
  *
  * @author Jochen Hoenicke 
- * @see java.util.WeakHashtable 
+ * @see java.util.WeakHashMap 
  */
 public class WeakReference 
   extends Reference

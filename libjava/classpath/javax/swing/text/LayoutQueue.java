@@ -57,6 +57,7 @@ public class LayoutQueue
    */
   public LayoutQueue()
   {
+    // Nothing to do here.
   }
 
   /**

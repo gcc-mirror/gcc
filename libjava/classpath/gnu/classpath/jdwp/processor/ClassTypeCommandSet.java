@@ -95,7 +95,8 @@ public class ClassTypeCommandSet
         // So if we throw an IOException we're in serious trouble
         throw new JdwpInternalErrorException(ex);
       }
-    return true;
+
+    return false;
   }
 
   private void executeSuperclass(ByteBuffer bb, DataOutputStream os)

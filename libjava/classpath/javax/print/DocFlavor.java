@@ -54,6 +54,8 @@ public class DocFlavor implements Cloneable, Serializable
   public static class BYTE_ARRAY
     extends DocFlavor
   {
+    private static final long serialVersionUID = -9065578006593857475L;
+
     public static final BYTE_ARRAY AUTOSENSE = new BYTE_ARRAY("application/octet-stream");
     public static final BYTE_ARRAY GIF = new BYTE_ARRAY("image/gif");
     public static final BYTE_ARRAY JPEG = new BYTE_ARRAY("image/jpeg");
@@ -103,6 +105,8 @@ public class DocFlavor implements Cloneable, Serializable
   public static class INPUT_STREAM
     extends DocFlavor
   {
+    private static final long serialVersionUID = -7045842700749194127L;
+
     public static final INPUT_STREAM AUTOSENSE = new INPUT_STREAM("application/octet-stream");
     public static final INPUT_STREAM GIF = new INPUT_STREAM("image/gif");
     public static final INPUT_STREAM JPEG = new INPUT_STREAM("image/jpeg");

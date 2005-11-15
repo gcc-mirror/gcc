@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.PortableServer;
 
+import gnu.CORBA.Minor;
 import gnu.CORBA.Poa.ForwardRequestHolder;
 
 import org.omg.CORBA.Any;
@@ -80,6 +81,7 @@ public abstract class ForwardRequestHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("ForwardRequest expected");
+        bad.minor = Minor.Any;        
         bad.initCause(cex);
         throw bad;
       }

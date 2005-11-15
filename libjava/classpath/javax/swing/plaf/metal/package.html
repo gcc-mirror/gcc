@@ -40,7 +40,16 @@ exception statement from your version. -->
 <head><title>GNU Classpath - javax.swing.plaf.metal</title></head>
 
 <body>
-<p>Provides a cross-platform look and feel known as "Metal".</p>
-
+<p>Provides a cross-platform look and feel known as "Metal".  To install this
+look and feel, add the following code (or something similar) 
+near the start of your application:</p>
+<pre>try
+  {
+&nbsp;&nbsp;UIManager.setLookAndFeel(new MetalLookAndFeel());
+  }
+catch (UnsupportedLookAndFeelException e)
+  {
+&nbsp;&nbsp;e.printStackTrace();
+  }</pre>
 </body>
 </html>

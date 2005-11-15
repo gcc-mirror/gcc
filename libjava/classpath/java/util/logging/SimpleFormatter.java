@@ -85,7 +85,7 @@ public class SimpleFormatter
   /**
    * Formats a log record into a String.
    *
-   * @param the log record to be formatted.
+   * @param record the log record to be formatted.
    *
    * @return a short human-readable message, typically one or two
    *   lines.  Lines are separated using the default platform line

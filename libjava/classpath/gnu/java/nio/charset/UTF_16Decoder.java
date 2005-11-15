@@ -54,6 +54,8 @@ final class UTF_16Decoder extends CharsetDecoder
   static final int BIG_ENDIAN = 0;
   static final int LITTLE_ENDIAN = 1;
   static final int UNKNOWN_ENDIAN = 2;
+  static final int MAYBE_BIG_ENDIAN = 3;
+  static final int MAYBE_LITTLE_ENDIAN = 4;
 
   private static final char BYTE_ORDER_MARK = 0xFEFF;
   private static final char REVERSED_BYTE_ORDER_MARK = 0xFFFE;
@@ -81,26 +83,37 @@ final class UTF_16Decoder extends CharsetDecoder
             byte b2 = in.get ();
 
             // handle byte order mark
-            if (byteOrder == UNKNOWN_ENDIAN)
+            if (byteOrder == UNKNOWN_ENDIAN ||
+                byteOrder == MAYBE_BIG_ENDIAN ||
+                byteOrder == MAYBE_LITTLE_ENDIAN)
               {
                 char c = (char) (((b1 & 0xFF) << 8) | (b2 & 0xFF));
                 if (c == BYTE_ORDER_MARK)
                   {
+                    if (byteOrder == MAYBE_LITTLE_ENDIAN)
+                      {
+                        return CoderResult.malformedForLength (2);
+                      }
                     byteOrder = BIG_ENDIAN;
                     inPos += 2;
                     continue;
                   }
                 else if (c == REVERSED_BYTE_ORDER_MARK)
                   {
+                    if (byteOrder == MAYBE_BIG_ENDIAN)
+                      {
+                        return CoderResult.malformedForLength (2);
+                      }
                     byteOrder = LITTLE_ENDIAN;
                     inPos += 2;
                     continue;
                   }
                 else
                   {
-                    // assume big endian, do not consume bytes,
+                    // assume big or little endian, do not consume bytes,
                     // continue with normal processing
-                    byteOrder = BIG_ENDIAN;
+                    byteOrder = (byteOrder == MAYBE_LITTLE_ENDIAN ?
+                                 LITTLE_ENDIAN : BIG_ENDIAN);
                   }
               }
 

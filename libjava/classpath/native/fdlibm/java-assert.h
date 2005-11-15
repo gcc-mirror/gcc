@@ -1,4 +1,4 @@
-// java-assert.h - Header file holding assertion definitions.  -*- c++ -*-
+/* java-assert.h - Header file holding assertion definitions.  -*- c++ -*- */
 
 /* Copyright (C) 1998, 1999  Free Software Foundation
 
@@ -11,7 +11,9 @@ details.  */
 #ifndef __JAVA_ASSERT_H__
 #define __JAVA_ASSERT_H__
 
-// This is a libgcj implementation header.
+#include <config.h>
+
+/* This is a libgcj implementation header. */
 
 void _Jv_Abort (const char *, const char *, int, const char *)
   __attribute__ ((__noreturn__));

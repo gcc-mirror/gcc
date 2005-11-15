@@ -46,46 +46,41 @@ import javax.swing.event.ChangeListener;
  *
  * @author Andrew Selkirk
  */
-public interface SingleSelectionModel {
+public interface SingleSelectionModel
+{
+  /**
+   * getSelectedIndex
+   * @returns int
+   */
+  int getSelectedIndex();
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * setSelectedIndex
+   * @param index TODO
+   */
+  void setSelectedIndex(int index);
 
-	/**
-	 * getSelectedIndex
-	 * @returns int
-	 */
-	int getSelectedIndex();
+  /**
+   * clearSelection
+   */
+  void clearSelection();
 
-	/**
-	 * setSelectedIndex
-	 * @param index TODO
-	 */
-	void setSelectedIndex(int index);
+  /**
+   * isSelected
+   * @returns boolean
+   */
+  boolean isSelected();
 
-	/**
-	 * clearSelection
-	 */
-	void clearSelection();
+  /**
+   * addChangeListener
+   * @param listener TODO
+   */
+  void addChangeListener(ChangeListener listener);
 
-	/**
-	 * isSelected
-	 * @returns boolean
-	 */
-	boolean isSelected();
+  /**
+   * removeChangeListener
+   * @param listener TODO
+   */
+  void removeChangeListener(ChangeListener listener);
 
-	/**
-	 * addChangeListener
-	 * @param listener TODO
-	 */
-	void addChangeListener(ChangeListener listener);
-
-	/**
-	 * removeChangeListener
-	 * @param listener TODO
-	 */
-	void removeChangeListener(ChangeListener listener);
-
-
-} // SingleSelectionModel
+}

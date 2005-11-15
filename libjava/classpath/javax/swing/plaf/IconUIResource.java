@@ -53,8 +53,7 @@ import javax.swing.Icon;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class IconUIResource
-  implements Icon, UIResource, Serializable
+public class IconUIResource implements Icon, UIResource, Serializable
 {
   /**
    * Verified using the <code>serialver</code> tool of Sun JDK 1.4.1_01

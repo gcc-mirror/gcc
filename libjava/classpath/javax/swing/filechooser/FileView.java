@@ -1,5 +1,5 @@
 /* FileView.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,72 +43,86 @@ import java.io.File;
 import javax.swing.Icon;
 
 /**
- * FileView
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract class that provides presentation information about files and 
+ * directories.  .
+ * 
+ * @author  Andrew Selkirk
  */
-public abstract class FileView {
+public abstract class FileView 
+{
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Creates a new <code>FileView</code> instance.
+   */
+  public FileView() 
+  {
+    // Nothing to do here.
+  } 
 
-	/**
-	 * Constructor FileView
-	 */
-	public FileView() {
-		// TODO
-	} // FileView()
+  /**
+   * Returns the name for the specified file.  This method always returns
+   * <code>null</code> and should be overridden by subclasses.
+   * 
+   * @param file  the file.
+   * 
+   * @return Always <code>null</code>.
+   */
+  public String getName(File file) 
+  {
+    return null;
+  } 
 
+  /**
+   * Returns a description for the specified file.  This method always returns
+   * <code>null</code> and should be overridden by subclasses.
+   * 
+   * @param file  the file.
+   * 
+   * @return Always <code>null</code>.
+   */
+  public String getDescription(File file) 
+  {
+    return null;
+  } 
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Returns a description for the type of the specified file.  This method 
+   * always returns <code>null</code> and should be overridden by subclasses.
+   * 
+   * @param file  the file.
+   * 
+   * @return Always <code>null</code>.
+   */
+  public String getTypeDescription(File file) 
+  {
+    return null;
+  } 
 
-	/**
-	 * getName
-	 * @param file TODO
-	 * @returns String
-	 */
-	public String getName(File file) {
-		return null; // TODO
-	} // getName()
+  /**
+   * Returns an {@link Icon} to represent the specified file.  This method 
+   * always returns <code>null</code> and should be overridden by subclasses.
+   * 
+   * @param file  the file.
+   * 
+   * @return Always <code>null</code>.
+   */
+  public Icon getIcon(File file) 
+  {
+    return null;
+  } 
 
-	/**
-	 * getDescription
-	 * @param value0 TODO
-	 * @returns String
-	 */
-	public String getDescription(File value0) {
-		return null; // TODO
-	} // getDescription()
+  /**
+   * Returns {@link Boolean#TRUE} if the given directory is traversable, and
+   * {@link Boolean#FALSE} if it is not.  This method always returns 
+   * <code>null</code> and should be overridden by subclasses.
+   * 
+   * @param directory  the directory.
+   * 
+   * @returns Always <code>null</code>.
+   */
+  public Boolean isTraversable(File directory) 
+  {
+    return null;
+  } 
 
-	/**
-	 * getTypeDescription
-	 * @param value0 TODO
-	 * @returns String
-	 */
-	public String getTypeDescription(File value0) {
-		return null; // TODO
-	} // getTypeDescription()
-
-	/**
-	 * getIcon
-	 * @param value0 TODO
-	 * @returns Icon
-	 */
-	public Icon getIcon(File value0) {
-		return null; // TODO
-	} // getIcon()
-
-	/**
-	 * isTraversable
-	 * @param value0 TODO
-	 * @returns Boolean
-	 */
-	public Boolean isTraversable(File value0) {
-		return null; // TODO
-	} // isTraversable()
-
-
-} // FileView
+}

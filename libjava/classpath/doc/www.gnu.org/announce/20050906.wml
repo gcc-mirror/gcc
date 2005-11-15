@@ -1,0 +1,221 @@
+#!wml --include=..
+
+#use wml::std::page
+#use wml::std::lang
+#use wml::fmt::isolatin
+#use wml::std::case global=upper
+
+<lang:star:slice:>
+
+<set-var last-modified-author="mjw">
+
+#include <include/macros.wml>
+
+<header title="GNU Classpath 0.18 Announcement (2005-09-06)"> 
+<pre>
+GNU Classpath 0.18 released.
+
+We are pleased to announce a new developer snapshot of GNU Classpath.
+
+GNU Classpath, essential libraries for java, is a project to create free
+core class libraries for use with runtimes, compilers and tools for the
+java programming language.
+
+The GNU Classpath developer snapshot releases are not directly aimed
+at the end user but are meant to be integrated into larger development
+platforms. For example the GCC (gcj) and Kaffe projects will use the
+developer snapshots as a base for future versions.
+
+This is our first release after "The Big Merge" with GCC/GCJ.  GNU
+Classpath can now be used as a subdirectory of libgcj inside the GCC
+tree so it will be much easier to keep GCC up-to-date with the latest
+GNU Classpath developer release snapshots.
+
+Some highlights of changes in this release (more extensive list below):
+
+  Added GNU JAWT for awt native interface support. Datatransfer
+  clipboard updated to 1.5 including support for copy/paste of
+  serialized objects, images and files.  Completed the org.omg
+  PortableInterceptor, DynamicAny and Portable Object Adapter
+  packages. Multi plaf support for Free Swing. Editing support for
+  JTree and JTable. Lots of icons and look and feel improvements for
+  Free Swing basic and metal themes. NIO FileChannel.map implemented
+  and DirectByteBuffer put method speedups. Image loading speedups for
+  awt. Support for darwin and solaris out of the box.
+
+29 people actively contributed to this release and made 535 CVS
+commits during the two months of development. diffstat since 0.17:
+ 994 files changed, 114744 insertions(+), 13663 deletions(-)
+
+More details about the various changes and contributions below.
+
+A full list of bug reports fixed for this release can be found at:
+http://gcc.gnu.org/bugzilla/buglist.cgi?product=classpath&target_milestone=0.18
+
+This release depends on gtk+ 2.4 for AWT support. But gtk+ 2.6 or
+higher is recommended. Included, but not activated by default in this
+release is a Graphics2D implementation based on the Cairo Graphics
+framework (http://www.cairographics.org). Enabling this makes programs
+like JFreeChart and JEdit start up on GNU Classpath based runtimes.
+To enable this support install the cairo 0.5.x snapshot, configure GNU
+Classpath with --enable-gtk-cairo.
+
+One of the major focuses of the GNU Classpath project is expanding
+and using the Mauve test suite for Compatibility, Completeness and
+Correctness checking.  Various groups around GNU Classpath collaborate
+on the free software Mauve test suite which contains 32.000+ core
+library tests.  Mauve has various modules for testing core class
+library implementations, byte code verifiers, source to byte code and
+native code compiler tests.  Mauve also contains the Wonka visual test
+suite and the Jacks Compiler Killer Suite.
+See for more information: http://www.sourceware.org/mauve/
+This release passes 31194 out of 32253 Mauve core library tests.
+
+Conformance reports for the included jaxp support can be found in the
+doc/README.jaxp file.
+
+GNU Classpath 0.18 can be downloaded from
+ftp://ftp.gnu.org/pub/gnu/classpath/
+or one of the ftp.gnu.org mirrors
+http://www.gnu.org/order/ftp.html
+
+File: classpath-0.18.tar.gz
+MD5sum: c0650c257aa93eafb709553f172f0bbb
+SHA1sum: 28061c750244cac4ff0151da6aba183b94b98b25
+
+The GNU Classpath developers site http://developer.classpath.org/
+provides detailed information on how to start with helping the GNU
+Classpath project and gives an overview of the core class library
+packages currently provided.  For each snapshot release generated
+documentation is provided through the GNU Classpath Tools gjdoc
+project.  A documentation generation framework for java source
+files used by the GNU project. Full documentation on the currently
+implementated packages and classes can be found at:
+http://developer.classpath.org/doc/
+
+New in release 0.18 (Sep 6, 2005)
+(See the ChangeLog file for a full list of changes.)
+
+* GNU JAWT implementation, the AWT Native Interface, which allows
+  direct access to native screen resources from within a Canvas's
+  paint method.  GNU Classpath Examples comes with a Demo, see
+  examples/README.
+* awt.datatransfer updated to 1.5 with supports for FlavorEvents.
+  The gtk+ awt peers now allow copy/paste of text, images, uris/files
+  and serialized objects with other applications and tracking
+  clipboard change events with gtk+ 2.6 (for gtk+ 2.4 only text and
+  serialized objects are supported). A GNU Classpath Examples
+  datatransfer Demo was added to show the new functionality.
+* org.omg.PortableInterceptor and related functionality in other
+  packages is now implemented:
+    - The sever and client interceptors work as required since 1.4.
+    - The IOR interceptor works as needed for 1.5.
+* The org.omg.DynamicAny package is completed and passes the prepared
+  tests.
+* The Portable Object Adapter should now support the output of the
+  recent IDL to java compilers. These compilers now generate servants and 
+  not CORBA objects as before, making the output depended on the existing 
+  POA implementation. Completing POA means that such code can already be 
+  tried to run on Classpath. Our POA is tested for the following usager
+  scenarios:
+    - POA converts servant to the CORBA object.
+    - Servant provides to the CORBA object.
+    - POA activates new CORBA object with the given Object Id
+      (byte array) that is later accessible for the servant.
+    - During the first call, the ServantActivator provides servant for
+      this and all subsequent calls on the current object.
+    - During each call, the ServantLocator provides servant for this call
+      only.
+    - ServantLocator or ServantActivator forwards call to another server.
+    - POA has a single servant, responsible for all objects.
+    - POA has a default servant, but some objects are explicitly
+      connected to they specific servants.
+  The POA is verified using tests from the former cost.omg.org.      
+* The javax.swing.plaf.multi.* package is now implemented.
+* Editing and several key actions for JTree and JTable were implemented.
+* Lots of icons and look and feel improvements for Free Swing basic
+  and metal themes were added.  Try running the GNU Classpath Swing
+  Demo in examples (gnu.classpath.examples.swing.Demo) with:
+  -Dswing.defaultlaf=javax.swing.plaf.basic.BasicLookAndFeel
+  -Dswing.defaultlaf=javax.swing.plaf.metal.MetalLookAndFeel
+* Start of styled text capabilites for java.swing.text.
+* NIO FileChannel.map implementation, fast bulk put implementation for
+  DirectByteBuffer (speeds up this method 10x).
+* Split gtk+ awt peers event handling in two threads and improve gdk
+  lock handling (solves several AWT lock ups).
+* Speed up awt Image loading.
+* Updated TimeZone data against Olson tzdata2005l.
+* Make zip and jar UTF-8 "clean".
+* "native" code builds and compiles (warning free) on Darwin and
+  Solaris.
+
+Runtime interface changes:
+
+* All native resource "pointers" in the VM interface classes are now
+  exposed as gnu.classpath.Pointer objects. This might impact runtimes
+  that optimize and support java.nio.DirectByteBuffers. Creating these
+  classes and accessing the contents as void * pointers for the native
+  reference JNI implementation is done through the
+  JCL_NewRawDataObject and JCL_GetRawData functions.
+* Simplified the Class/VMClass interface.
+* Removed loadedClasses map from ClassLoader. It's now the VMs
+  responsibility to manage the list of defined and loaded classes for
+  each class loader.
+* Moved native methods from java.lang.reflect.Proxy to VMProxy.
+* Added hook to VMClassLoader to allow VM to do class caching.
+
+New Untested/Disabled Features:
+
+  The following new features are included, but not ready for
+  production yet. They are explicitly disabled and not supported. But
+  if you want to help with the development of these new features we
+  are interested in feedback. You will have to explicitly enable them
+  to try them out (and they will most likely contain bugs). If you are
+  interested in any of these then please join the mailing-list and
+  follow development in CVS.
+
+* QT4 AWT peers, enable by giving configure --enable-qt-peer.
+* JDWP framework, enable by deleting the jdwp references from
+  lib/standard.omit and vm/reference/standard.omit. No default
+  implementation is provided. Work is being done on gcj/gij
+  integration.
+* StAX java.xml.stream, enable by deleting the gnu.xml.stream and
+  java.xml.stream references in lib/standard.omit.
+
+The following people helped with this release:
+
+Aaron Luchko (Lots of JDWP work)
+Andreas Tobler (Darwin and Solaris testing and fixing
+Andrew Haley (gcj build speedups)
+Anthony Balkissoon (Lots of Free Swing work including JTable editing)
+Archie Cobbs (Build fixes)
+Audrius Meskauskas (Lots of omg corba work plus testing and documenting)
+Bastiaan Huisman (TimeZone bug fixing)
+Casey Marshall (NIO FileChannel.map support, security and policy updates)
+Chris Burdess (StAX work and gnu xml fixes)
+Christian Schlichtherle (Zip fixes and cleanups)
+Christian Thalinger (64-bit cleanups)
+Dalibor Topic (Qt4 build infrastructure)
+David Gilbert (Basic and Metal icon and plaf and lots of documenting)
+Guilhem Lavaux (JCL native Pointer updates)
+Ingo Proetel (Image, Logger and URLClassLoader updates)
+Ito Kazumitsu (NetworkInterfaces implementation and updates)
+Jan Roehrich (BasicTreeUI updates)
+Jeroen Frijters (VMProxy and VMClassLoader updates, RMIClassLoader fixes)
+Keith Seitz (Lots of JDWP work)
+Kelley Cook (Build fixes)
+Lillian Angel (Lots of Free Swing work including JTree editing)
+Mark Wielaard (Clipboard implementation, build and release infrastructure)
+Rainer Orth (Build fixes)
+Robert Schuster (Documentation updates and beans fixes)
+Roman Kennke (Lots of Free Swing work including styled text)
+Sven de Marothy (Qt4 peers)
+Thomas Fitzsimmons (Lots of gtk+ awt peer work)
+Tom Tromey (Lots of fixes including coordinating The Big Merge)
+Wolfgang Baer (GapContent bug fixes)
+
+We would also like to thank the numerous bug reporters and testers!
+
+</pre>
+
+<footer>

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.imageio.spi;
 
+import javax.imageio.metadata.IIOMetadataFormat;
+import javax.imageio.metadata.IIOMetadataFormatImpl;
 
 /**
  * An abstract superclass that contains the common parts of {@link
@@ -421,5 +423,89 @@ public abstract class ImageReaderWriterSpi
   public String[] getExtraImageMetadataFormatNames()
   {
     return extraImageMetadataFormatNames;
+  }
+
+  /**
+   * Returns an IIOMetadataFormat object that represents the requested
+   * stream metadata format or null if the given format is supported
+   * but no IIOMetadataFormat can be created for it.
+   *
+   * @param formatName the requested stream metadata format name
+   *
+   * @return an IIOMetadataFormat object or null
+   *
+   * @throws IllegalArgumentException if formatName is null or is not
+   * one of the standard metadata format or this provider's native or
+   * extra stream metadata formats
+   */
+  public IIOMetadataFormat getStreamMetadataFormat (String formatName)
+  {
+    if (formatName == null)
+      throw new IllegalArgumentException ("null stream metadata format name");
+
+    if (!formatName.equals (getNativeStreamMetadataFormatName())
+        && !formatName.equals (IIOMetadataFormatImpl.standardMetadataFormatName))
+      {
+        String[] extraNames = getExtraStreamMetadataFormatNames ();
+        boolean foundName = false;
+        for (int i = 0; i < extraNames.length; i++)
+          {
+            if (formatName.equals(extraNames[i]))
+              {
+                foundName = true;
+                break;
+              }
+          }
+        if (!foundName)
+          throw new IllegalArgumentException ("unsupported stream metadata format name");
+      }
+
+    if (formatName.equals (IIOMetadataFormatImpl.standardMetadataFormatName))
+      return IIOMetadataFormatImpl.getStandardFormatInstance ();
+    else
+      // Default implementation returns null.
+      return null;
+  }
+
+  /**
+   * Returns an IIOMetadataFormat object that represents the requested
+   * image metadata format or null if the given format is supported
+   * but no IIOMetadataFormat can be created for it.
+   *
+   * @param formatName the requested image metadata format name
+   *
+   * @return an IIOMetadataFormat object or null
+   *
+   * @throws IllegalArgumentException if formatName is null or is not
+   * one of the standard metadata format or this provider's native or
+   * extra image metadata formats
+   */
+  public IIOMetadataFormat getImageMetadataFormat (String formatName)
+  {
+    if (formatName == null)
+      throw new IllegalArgumentException ("null image metadata format name");
+
+    if (!formatName.equals (getNativeImageMetadataFormatName())
+        && !formatName.equals (IIOMetadataFormatImpl.standardMetadataFormatName))
+      {
+        String[] extraNames = getExtraImageMetadataFormatNames ();
+        boolean foundName = false;
+        for (int i = 0; i < extraNames.length; i++)
+          {
+            if (formatName.equals(extraNames[i]))
+              {
+                foundName = true;
+                break;
+              }
+          }
+        if (!foundName)
+          throw new IllegalArgumentException ("unsupported image metadata format name");
+      }
+
+    if (formatName.equals (IIOMetadataFormatImpl.standardMetadataFormatName))
+      return IIOMetadataFormatImpl.getStandardFormatInstance ();
+    else
+      // Default implementation returns null.
+      return null;
   }
 }

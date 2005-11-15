@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveArrayTypeCode;
+import gnu.CORBA.typecodes.ArrayTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -62,8 +62,8 @@ public final class StringSeqHolder
   /**
    * The type code for this holder. Each holder has a different instance.
    */
-  private final primitiveArrayTypeCode typecode =
-    new primitiveArrayTypeCode(TCKind.tk_char);
+  private final ArrayTypeCode typecode =
+    new ArrayTypeCode(TCKind.tk_char);
 
   /**
    * Constructs an instance of StringSeqHolder,

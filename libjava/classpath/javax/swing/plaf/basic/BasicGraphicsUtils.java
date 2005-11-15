@@ -71,6 +71,7 @@ public class BasicGraphicsUtils
    */
   public BasicGraphicsUtils()
   {
+    // Nothing to do here.
   }
 
 

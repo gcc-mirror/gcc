@@ -51,13 +51,16 @@ import java.rmi.RemoteException;
 import java.rmi.ServerError;
 import java.rmi.server.ObjID;
 import java.rmi.server.UID;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Hashtable;
+import java.util.IdentityHashMap;
 
 public class UnicastServer
 	implements ProtocolConstants {
 
 static private Hashtable objects = new Hashtable();  //mapping OBJID to server ref
-static private Hashtable refcache = new Hashtable(); //mapping obj itself to server ref
+static private Map refcache = Collections.synchronizedMap(new IdentityHashMap()); //mapping obj itself to server ref
 static private DGCImpl dgc;
 
 public static void exportObject(UnicastServerRef obj) {

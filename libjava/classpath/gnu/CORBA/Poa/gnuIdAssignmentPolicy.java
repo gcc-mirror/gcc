@@ -51,7 +51,7 @@ import org.omg.PortableServer.IdAssignmentPolicyValue;
  */
 public class gnuIdAssignmentPolicy
   extends _PolicyImplBase
-  implements IdAssignmentPolicy, vPolicy
+  implements IdAssignmentPolicy, AccessiblePolicy
 {
   /**
    * Use serialVersionUID for interoperability.

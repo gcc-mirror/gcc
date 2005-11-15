@@ -47,13 +47,13 @@ package javax.swing.plaf;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class SpinnerUI
-  extends ComponentUI
+public abstract class SpinnerUI extends ComponentUI
 {
   /**
    * Constructs a new <code>SpinnerUI</code>.
    */
   public SpinnerUI()
   {
+    // Nothing to do here.
   }
 }

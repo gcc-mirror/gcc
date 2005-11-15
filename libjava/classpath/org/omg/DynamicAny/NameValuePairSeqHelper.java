@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.DynamicAny;
 
+import gnu.CORBA.Minor;
 import gnu.CORBA.NameValuePairSeqHolder;
 
 import org.omg.CORBA.Any;
@@ -98,6 +99,7 @@ public abstract class NameValuePairSeqHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("NameValuePairSeq expected");
         bad.initCause(cex);
+        bad.minor = Minor.Any;        
         throw bad;
       }
   }

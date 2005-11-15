@@ -1,5 +1,5 @@
 /* FileFilter.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,41 +40,46 @@ package javax.swing.filechooser;
 
 import java.io.File;
 
+import javax.swing.JFileChooser;
+
 /**
- * FileFilter
+ * The base class for filters that control the visibility of files in the
+ * {@link JFileChooser} component.
+ * 
+ * @see JFileChooser#addChoosableFileFilter(FileFilter)
+ * 
  * @author	Andrew Selkirk
- * @version	1.0
  */
-public abstract class FileFilter {
+public abstract class FileFilter 
+{
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Default constructor.
+   */
+  public FileFilter()
+  {
+    // Nothing to do here.
+  }
 
-	/**
-	 * Constructor FileFilter
-	 */
-	public FileFilter() {
-		// TODO
-	} // FileFilter()
+  /**
+   * Returns <code>true</code> if the specified file matches the filter, and
+   * <code>false</code> otherwise.
+   * 
+   * @param file  the file.
+   * 
+   * @returns A boolean.
+   */
+  public abstract boolean accept(File file);
 
+  /**
+   * Returns a description of the files that will be selected by the filter 
+   * (for example, "Java source files").  This description will usually be 
+   * displayed on the {@link JFileChooser} component, often in a combo box that
+   * is used to select the appropriate filter (in cases where more than one
+   * filter is available).
+   * 
+   * @returns A description of the filter.
+   */
+  public abstract String getDescription();
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * accept
-	 * @param file TODO
-	 * @returns boolean
-	 */
-	public abstract boolean accept(File file);
-
-	/**
-	 * getDescription
-	 * @returns String
-	 */
-	public abstract String getDescription();
-
-
-} // FileFilter
+}

@@ -116,11 +116,11 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_copyState
   gdk_gc_copy (g->gc, g_old->gc);
 
   if (GDK_STABLE_IS_PIXMAP (g->drawable))
-    gdk_pixmap_ref (g->drawable);
+    g_object_ref (g->drawable);
   else /* GDK_IS_WINDOW (g->drawable) */
-    gdk_window_ref (g->drawable);
+    g_object_ref (g->drawable);
 
-  gdk_colormap_ref (g->cm);
+  g_object_ref (g->cm);
 
   NSA_SET_G_PTR (env, obj, g);
 
@@ -140,8 +140,8 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_initState__II
 
   g->drawable = (GdkDrawable *) gdk_pixmap_new (NULL, width, height, 
 						gdk_rgb_get_visual ()->depth);
-  g->cm = gdk_rgb_get_cmap ();
-  gdk_colormap_ref (g->cm);
+  g->cm = gdk_rgb_get_colormap ();
+  g_object_ref (g->cm);
   g->gc = gdk_gc_new (g->drawable);
 
   NSA_SET_G_PTR (env, obj, g);
@@ -160,7 +160,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_initFromImage
 
   pixmap = cp_gtk_image_get_pixmap (env, source);
   g_assert(pixmap != NULL);
-  gdk_pixmap_ref (pixmap);
+  g_object_ref (pixmap);
 
   g = (struct graphics *) g_malloc (sizeof (struct graphics));
   g->x_offset = g->y_offset = 0;
@@ -168,7 +168,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_initFromImage
   g->drawable = (GdkDrawable *)pixmap;
 
   g->cm = gdk_drawable_get_colormap (g->drawable);
-  gdk_colormap_ref (g->cm);
+  g_object_ref (g->cm);
   g->gc = gdk_gc_new (g->drawable);
 
   NSA_SET_G_PTR (env, obj, g);
@@ -193,9 +193,9 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_initStateUnlocked
   widget = GTK_WIDGET (ptr);
   g->drawable = (GdkDrawable *) widget->window;
 
-  gdk_window_ref (g->drawable);
+  g_object_ref (g->drawable);
   g->cm = gtk_widget_get_colormap (widget);
-  gdk_colormap_ref (g->cm);
+  g_object_ref (g->cm);
   g->gc = gdk_gc_new (g->drawable);
   gdk_gc_copy (g->gc, widget->style->fg_gc[GTK_STATE_NORMAL]);
   color = widget->style->fg[GTK_STATE_NORMAL];
@@ -254,14 +254,14 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_dispose
 
   XFlush (GDK_DISPLAY ());
 
-  gdk_gc_destroy (g->gc);
+  g_object_unref (g->gc);
 
   if (GDK_STABLE_IS_PIXMAP (g->drawable))
-    gdk_pixmap_unref (g->drawable);
+    g_object_unref (g->drawable);
   else /* GDK_IS_WINDOW (g->drawable) */
-    gdk_window_unref (g->drawable);
+    g_object_unref (g->drawable);
 
-  gdk_colormap_unref (g->cm);
+  g_object_unref (g->cm);
 
   g_free (g);
 
@@ -388,12 +388,12 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_copyArea
 
   g = (struct graphics *) NSA_GET_G_PTR (env, obj);
 
-  gdk_window_copy_area ((GdkWindow *)g->drawable,
-			g->gc,
-			x + g->x_offset + dx, y + g->y_offset + dy,
-			(GdkWindow *)g->drawable,
-			x + g->x_offset, y + g->y_offset,
-			width, height);
+  gdk_draw_drawable ((GdkWindow *)g->drawable,
+		     g->gc,
+		     (GdkWindow *)g->drawable,
+		     x + g->x_offset, y + g->y_offset,
+		     x + g->x_offset + dx, y + g->y_offset + dy,
+		     width, height);
   gdk_flush ();
 
   gdk_threads_leave ();
@@ -471,8 +471,8 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_setFGColor
   color.blue = blue << 8;
 
   g = (struct graphics *) NSA_GET_G_PTR (env, obj);
-  
-  gdk_color_alloc (g->cm, &color);
+
+  gdk_colormap_alloc_color (g->cm, &color, TRUE, TRUE);
   gdk_gc_set_foreground (g->gc, &color);
 
   gdk_threads_leave ();

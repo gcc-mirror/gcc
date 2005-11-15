@@ -1,5 +1,5 @@
 /* java.lang.Character -- Wrapper class for char, and Unicode subsets
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1034,6 +1034,18 @@ public final class Character implements Serializable, Comparable
   public static final Class TYPE = VMClassLoader.getPrimitiveClass('C');
 
   /**
+   * The number of bits needed to represent a <code>char</code>.
+   * @since 1.5
+   */
+  public static final int SIZE = 16;
+
+  // This caches some Character values, and is used by boxing
+  // conversions via valueOf().  We must cache at least 0..127;
+  // this constant controls how much we actually cache.
+  private static final int MAX_CACHE = 127;
+  private static Character[] charCache = new Character[MAX_CACHE + 1];
+
+  /**
    * Lu = Letter, Uppercase (Informative).
    *
    * @since 1.1
@@ -1480,32 +1492,46 @@ public final class Character implements Serializable, Comparable
 
 
   /**
-   * Minimum high surrrogate code in UTF-16 encoding.
+   * Minimum high surrogate code in UTF-16 encoding.
    *
    * @since 1.5
    */
   public static final char MIN_HIGH_SURROGATE = '\ud800';
 
   /**
-   * Maximum high surrrogate code in UTF-16 encoding.
+   * Maximum high surrogate code in UTF-16 encoding.
    *
    * @since 1.5
    */
   public static final char MAX_HIGH_SURROGATE = '\udbff';
  
   /**
-   * Minimum low surrrogate code in UTF-16 encoding.
+   * Minimum low surrogate code in UTF-16 encoding.
    *
    * @since 1.5
    */
   public static final char MIN_LOW_SURROGATE = '\udc00';
 
   /**
-   * Maximum low surrrogate code in UTF-16 encoding.
+   * Maximum low surrogate code in UTF-16 encoding.
    *
    * @since 1.5
    */
   public static final char MAX_LOW_SURROGATE = '\udfff';
+
+  /**
+   * Minimum surrogate code in UTF-16 encoding.
+   *
+   * @since 1.5
+   */
+  public static final char MIN_SURROGATE = MIN_HIGH_SURROGATE;
+
+  /**
+   * Maximum low surrogate code in UTF-16 encoding.
+   *
+   * @since 1.5
+   */
+  public static final char MAX_SURROGATE = MAX_LOW_SURROGATE;
 
   /**
    * Grabs an attribute offset from the Unicode attribute database. The lower
@@ -2303,6 +2329,37 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
+   * Returns an <code>Character</code> object wrapping the value.
+   * In contrast to the <code>Character</code> constructor, this method
+   * will cache some values.  It is used by boxing conversion.
+   *
+   * @param val the value to wrap
+   * @return the <code>Character</code>
+   * 
+   * @since 1.5
+   */
+  public static Character valueOf(char val)
+  {
+    if (val > MAX_CACHE)
+      return new Character(val);
+    synchronized (charCache)
+      {
+    if (charCache[val - MIN_VALUE] == null)
+      charCache[val - MIN_VALUE] = new Character(val);
+    return charCache[val - MIN_VALUE];
+      }
+  }
+
+  /**
+   * Reverse the bytes in val.
+   * @since 1.5
+   */
+  public static char reverseBytes(char val)
+  {
+    return (char) (((val >> 8) & 0xff) | ((val << 8) & 0xff00));
+  }
+
+  /**
    * Converts a unicode code point to a UTF-16 representation of that
    * code point.
    * 
@@ -2370,7 +2427,7 @@ public final class Character implements Serializable, Comparable
    * Return number of 16-bit characters required to represent the given
    * code point.
    *
-   * @param codePoint a uncode code point
+   * @param codePoint a unicode code point
    *
    * @return 2 if codePoint >= 0x10000, 1 otherwise.
    *
@@ -2414,5 +2471,211 @@ public final class Character implements Serializable, Comparable
   public static boolean isValidCodePoint(int codePoint)
   {
     return codePoint >= MIN_CODE_POINT && codePoint <= MAX_CODE_POINT;
+  }
+
+  /**
+   * Return true if the given character is a high surrogate.
+   * @param ch the character
+   * @return true if the character is a high surrogate character
+   *
+   * @since 1.5
+   */
+  public static boolean isHighSurrogate(char ch)
+  {
+    return ch >= MIN_HIGH_SURROGATE && ch <= MAX_HIGH_SURROGATE;
+  }
+
+  /**
+   * Return true if the given character is a low surrogate.
+   * @param ch the character
+   * @return true if the character is a low surrogate character
+   *
+   * @since 1.5
+   */
+  public static boolean isLowSurrogate(char ch)
+  {
+    return ch >= MIN_LOW_SURROGATE && ch <= MAX_LOW_SURROGATE;
+  }
+
+  /**
+   * Return true if the given characters compose a surrogate pair.
+   * This is true if the first character is a high surrogate and the
+   * second character is a low surrogate.
+   * @param ch1 the first character
+   * @param ch2 the first character
+   * @return true if the characters compose a surrogate pair
+   *
+   * @since 1.5
+   */
+  public static boolean isSurrogatePair(char ch1, char ch2)
+  {
+    return isHighSurrogate(ch1) && isLowSurrogate(ch2);
+  }
+
+  /**
+   * Given a valid surrogate pair, this returns the corresponding
+   * code point.
+   * @param high the high character of the pair
+   * @param low the low character of the pair
+   * @return the corresponding code point
+   *
+   * @since 1.5
+   */
+  public static int toCodePoint(char high, char low)
+  {
+    return ((high - MIN_HIGH_SURROGATE) << 10) + (low - MIN_LOW_SURROGATE);
+  }
+
+  /**
+   * Get the code point at the specified index in the CharSequence.
+   * This is like CharSequence#charAt(int), but if the character is
+   * the start of a surrogate pair, and there is a following
+   * character, and this character completes the pair, then the
+   * corresponding supplementary code point is returned.  Otherwise,
+   * the character at the index is returned.
+   *
+   * @param sequence the CharSequence
+   * @param index the index of the codepoint to get, starting at 0
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
+   * @since 1.5
+   */
+  public static int codePointAt(CharSequence sequence, int index)
+  {
+    int len = sequence.length();
+    if (index < 0 || index >= len)
+      throw new IndexOutOfBoundsException();
+    char high = sequence.charAt(index);
+    if (! isHighSurrogate(high) || ++index >= len)
+      return high;
+    char low = sequence.charAt(index);
+    if (! isLowSurrogate(low))
+      return high;
+    return toCodePoint(high, low);
+  }
+
+  /**
+   * Get the code point at the specified index in the CharSequence.
+   * If the character is the start of a surrogate pair, and there is a
+   * following character, and this character completes the pair, then
+   * the corresponding supplementary code point is returned.
+   * Otherwise, the character at the index is returned.
+   *
+   * @param chars the character array in which to look
+   * @param index the index of the codepoint to get, starting at 0
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
+   * @since 1.5
+   */
+  public static int codePointAt(char[] chars, int index)
+  {
+    return codePointAt(chars, index, chars.length);
+  }
+
+  /**
+   * Get the code point at the specified index in the CharSequence.
+   * If the character is the start of a surrogate pair, and there is a
+   * following character within the specified range, and this
+   * character completes the pair, then the corresponding
+   * supplementary code point is returned.  Otherwise, the character
+   * at the index is returned.
+   *
+   * @param chars the character array in which to look
+   * @param index the index of the codepoint to get, starting at 0
+   * @param limit the limit past which characters should not be examined
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is negative or &gt;=
+   * limit, or if limit is negative or &gt;= the length of the array
+   * @since 1.5
+   */
+  public static int codePointAt(char[] chars, int index, int limit)
+  {
+    if (index < 0 || index >= limit || limit < 0 || limit >= chars.length)
+      throw new IndexOutOfBoundsException();
+    char high = chars[index];
+    if (! isHighSurrogate(high) || ++index >= limit)
+      return high;
+    char low = chars[index];
+    if (! isLowSurrogate(low))
+      return high;
+    return toCodePoint(high, low);
+  }
+
+  /**
+   * Get the code point before the specified index.  This is like
+   * #codePointAt(char[], int), but checks the characters at
+   * <code>index-1</code> and <code>index-2</code> to see if they form
+   * a supplementary code point.  If they do not, the character at
+   * <code>index-1</code> is returned.
+   *
+   * @param chars the character array
+   * @param index the index just past the codepoint to get, starting at 0
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
+   * @since 1.5
+   */
+  public static int codePointBefore(char[] chars, int index)
+  {
+    return codePointBefore(chars, index, 1);
+  }
+
+  /**
+   * Get the code point before the specified index.  This is like
+   * #codePointAt(char[], int), but checks the characters at
+   * <code>index-1</code> and <code>index-2</code> to see if they form
+   * a supplementary code point.  If they do not, the character at
+   * <code>index-1</code> is returned.  The start parameter is used to
+   * limit the range of the array which may be examined.
+   *
+   * @param chars the character array
+   * @param index the index just past the codepoint to get, starting at 0
+   * @param start the index before which characters should not be examined
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is &gt; start or &gt;
+   * the length of the array, or if limit is negative or &gt;= the
+   * length of the array
+   * @since 1.5
+   */
+  public static int codePointBefore(char[] chars, int index, int start)
+  {
+    if (index < start || index > chars.length
+	|| start < 0 || start >= chars.length)
+      throw new IndexOutOfBoundsException();
+    --index;
+    char low = chars[index];
+    if (! isLowSurrogate(low) || --index < start)
+      return low;
+    char high = chars[index];
+    if (! isHighSurrogate(high))
+      return low;
+    return toCodePoint(high, low);
+  }
+
+  /**
+   * Get the code point before the specified index.  This is like
+   * #codePointAt(CharSequence, int), but checks the characters at
+   * <code>index-1</code> and <code>index-2</code> to see if they form
+   * a supplementary code point.  If they do not, the character at
+   * <code>index-1</code> is returned.
+   *
+   * @param sequence the CharSequence
+   * @param index the index just past the codepoint to get, starting at 0
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
+   * @since 1.5
+   */
+  public static int codePointBefore(CharSequence sequence, int index)
+  {
+    int len = sequence.length();
+    if (index < 1 || index > len)
+      throw new IndexOutOfBoundsException();
+    --index;
+    char low = sequence.charAt(index);
+    if (! isLowSurrogate(low) || --index < 0)
+      return low;
+    char high = sequence.charAt(index);
+    if (! isHighSurrogate(high))
+      return low;
+    return toCodePoint(high, low);
   }
 } // class Character

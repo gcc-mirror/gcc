@@ -331,4 +331,14 @@ public interface GSSCredential extends Cloneable
    * @return True if this object equals the other.
    */
   boolean equals(Object another);
+
+  /**
+   * Return the hash code of this credential. When overriding {@link #equals},
+   * it is necessary to override hashCode() as well.
+   *
+   * @return the hash code that must be the same for two credentials if
+   * {@link #equals} returns true.
+   */
+  int hashCode();
+
 }

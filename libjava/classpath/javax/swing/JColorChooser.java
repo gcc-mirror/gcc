@@ -87,6 +87,7 @@ public class JColorChooser extends JComponent implements Accessible
      */
     protected AccessibleJColorChooser()
     {
+      // Nothing to do here.
     }
 
     /**
@@ -247,6 +248,7 @@ public class JColorChooser extends JComponent implements Accessible
       }
     catch (InterruptedException e)
       {
+        // TODO: Should this be handled?
       }
   }
 

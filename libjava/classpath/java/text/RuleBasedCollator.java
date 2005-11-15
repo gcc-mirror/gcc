@@ -510,7 +510,7 @@ main_parse_loop:
 	    int idx;
 
 	    // Parse the subrules but do not iterate through all
-	    // sublist. This is the priviledge of the first call.
+	    // sublist. This is the privilege of the first call.
 	    idx = subParseString(true, sorted_rules, base_offset+i, subrules);
     
 	    // Merge new parsed rules into the list.

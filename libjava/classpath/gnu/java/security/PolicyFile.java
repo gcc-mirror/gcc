@@ -533,7 +533,7 @@ public final class PolicyFile extends Policy
                 if (clazz == null)
                   {
                     currentPerms.add(new UnresolvedPermission(className,
-                      null, null, (Certificate[]) currentCerts.toArray(new Certificate[0])));
+		      null, null, (Certificate[]) currentCerts.toArray(new Certificate[currentCerts.size()])));
                     continue;
                   }
                 try
@@ -555,7 +555,7 @@ public final class PolicyFile extends Policy
                 if (clazz == null)
                   {
                     currentPerms.add(new UnresolvedPermission(className,
-                      target, null, (Certificate[]) currentCerts.toArray(new Certificate[0])));
+		      target, null, (Certificate[]) currentCerts.toArray(new Certificate[currentCerts.size()])));
                     continue;
                   }
                 try
@@ -598,7 +598,7 @@ public final class PolicyFile extends Policy
             if (clazz == null)
               {
                 currentPerms.add(new UnresolvedPermission(className,
-                  target, action, (Certificate[]) currentCerts.toArray(new Certificate[0])));
+		  target, action, (Certificate[]) currentCerts.toArray(new Certificate[currentCerts.size()])));
                 continue;
               }
             else

@@ -51,7 +51,7 @@ import org.omg.PortableServer.LifespanPolicyValue;
  */
 public class gnuLifespanPolicy
   extends _PolicyImplBase
-  implements LifespanPolicy, vPolicy
+  implements LifespanPolicy, AccessiblePolicy
 {
   /**
    * Use serialVersionUID for interoperability.

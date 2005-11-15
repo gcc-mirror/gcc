@@ -111,14 +111,25 @@ struct graphics
   jint x_offset, y_offset;
 };
 
+/* New-style event masks. */
+#define AWT_BUTTON1_DOWN_MASK (1 << 10)
+#define AWT_BUTTON2_DOWN_MASK (1 << 11)
+#define AWT_BUTTON3_DOWN_MASK (1 << 12)
+
 #define AWT_SHIFT_DOWN_MASK   (1 << 6)
 #define AWT_CTRL_DOWN_MASK    (1 << 7)
 #define AWT_META_DOWN_MASK    (1 << 8)
 #define AWT_ALT_DOWN_MASK     (1 << 9)
 
+/* Old-style event masks. */
 #define AWT_BUTTON1_MASK (1 << 4)
 #define AWT_BUTTON2_MASK (1 << 3)
 #define AWT_BUTTON3_MASK (1 << 2)
+
+#define AWT_SHIFT_MASK   (1 << 0)
+#define AWT_CTRL_MASK    (1 << 1)
+#define AWT_META_MASK    (1 << 2)
+#define AWT_ALT_MASK     (1 << 3)
 
 #define AWT_ITEM_SELECTED 1
 #define AWT_ITEM_DESELECTED 2

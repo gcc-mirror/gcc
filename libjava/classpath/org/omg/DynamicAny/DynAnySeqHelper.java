@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.DynamicAny;
 
 import gnu.CORBA.DynAnySeqHolder;
+import gnu.CORBA.Minor;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -106,6 +107,7 @@ public abstract class DynAnySeqHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("DynAnySeq expected");
         bad.initCause(cex);
+        bad.minor = Minor.Any;        
         throw bad;
       }
   }

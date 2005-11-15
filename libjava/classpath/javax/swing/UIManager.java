@@ -146,19 +146,29 @@ public class UIManager implements Serializable
           LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
           setLookAndFeel(laf);
         }
+      else
+        {
+          setLookAndFeel(new MetalLookAndFeel());
+        }
     }
     catch (Exception ex)
       {
         System.err.println("cannot initialize Look and Feel: " + defaultlaf);
-        System.err.println("error: " + ex.getMessage());
+        System.err.println("error: " + ex.toString());
         System.err.println("falling back to Metal Look and Feel");
+        try
+          {
+            setLookAndFeel(new MetalLookAndFeel());
+          }
+        catch (Exception ex2)
+        {
+          throw (Error) new AssertionError("There must be no problem installing"
+                                           + " the MetalLookAndFeel.")
+                                           .initCause(ex2);
+        }
       }
-    currentLookAndFeel = new MetalLookAndFeel();
-    currentLookAndFeel.initialize();
-    currentUIDefaults = currentLookAndFeel.getDefaults();
-
   }
-  
+
   /**
    * Creates a new instance of the <code>UIManager</code>.  There is no need
    * to construct an instance of this class, since all methods are static.

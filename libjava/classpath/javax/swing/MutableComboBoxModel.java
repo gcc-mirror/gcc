@@ -76,7 +76,7 @@ public interface MutableComboBoxModel extends ComboBoxModel
   /**
    * This method removes given element from the data model
    *
-   * @param element to remove.
+   * @param object element to remove.
    */
   void removeElement(Object object);
-} // MutableComboBoxModel
+}

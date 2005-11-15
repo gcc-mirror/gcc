@@ -75,7 +75,7 @@ public interface ImageConsumer
      * most one call to <code>setPixels</code> for any single pixel.
      *
      * @see #setHints
-     * @see #setPixels 
+     * @see #setPixels(int, int, int, int, ColorModel, int[], int, int) 
      */
     int SINGLEPASS = 8;
 

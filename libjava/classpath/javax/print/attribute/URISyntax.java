@@ -1,5 +1,5 @@
 /* URISyntax.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,10 @@ import java.io.Serializable;
 import java.net.URI;
 
 /**
- * @author Michael Koch
+ * <code>URISyntax</code> is the abstract base class of all attribute 
+ * classes having an Uniform Resource Identifier URI as value.
+ * 
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class URISyntax
   implements Cloneable, Serializable
@@ -66,11 +69,12 @@ public abstract class URISyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @returns true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -83,7 +87,7 @@ public abstract class URISyntax
   /**
    * Returns the URI value of this syntax object.
    *
-   * @return the URI
+   * @return The URI.
    */
   public URI getURI()
   {
@@ -93,7 +97,7 @@ public abstract class URISyntax
   /**
    * Returns the hashcode for this object.
    *
-   * @return the hashcode
+   * @return The hashcode.
    */
   public int hashCode()
   {
@@ -103,7 +107,7 @@ public abstract class URISyntax
   /**
    * Returns the string representation for this object.
    *
-   * @return the string representation
+   * @return The string representation.
    */
   public String toString()
   {

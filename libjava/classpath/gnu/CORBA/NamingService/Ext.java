@@ -73,7 +73,7 @@ public class Ext
    * The converter class converts between string and array form of the
    * name.
    */
-  private snConverter converter = new snConverter();
+  private NameTransformer converter = new NameTransformer();
 
   /**
    * Create the extensions for the given instance of the context.

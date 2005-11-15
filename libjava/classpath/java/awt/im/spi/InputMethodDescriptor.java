@@ -39,6 +39,7 @@ package java.awt.im.spi;
 
 import java.awt.AWTException;
 import java.awt.Image;
+import java.awt.im.InputContext;
 import java.util.Locale;
 
 /**
@@ -57,7 +58,7 @@ public interface InputMethodDescriptor
    * also by country and variant), via
    * {@link InputContext#selectInputMethod(Locale)}. The returned list should
    * ignore pass-through locales, so it is usually a subset of locales for
-   * which {@link InputMethod#setContext(Locale)} returns true. If
+   * which {@link InputMethod#setLocale(Locale)} returns true. If
    * {@link #hasDynamicLocaleList()} returns true, this is called each time
    * information is needed, allowing dynamic addition or removal of supported
    * locales.

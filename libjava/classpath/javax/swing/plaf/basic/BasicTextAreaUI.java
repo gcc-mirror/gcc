@@ -39,11 +39,16 @@ exception statement from your version. */
 package javax.swing.plaf.basic;
 
 
+import java.beans.PropertyChangeEvent;
+
 import javax.swing.JComponent;
+import javax.swing.JTextArea;
+import javax.swing.UIDefaults;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.text.Element;
 import javax.swing.text.PlainView;
 import javax.swing.text.View;
+import javax.swing.text.WrappedPlainView;
 
 public class BasicTextAreaUI extends BasicTextUI
 {
@@ -54,15 +59,55 @@ public class BasicTextAreaUI extends BasicTextUI
 
   public BasicTextAreaUI()
   {
+    // Nothing to do here.
   }
 
+  /**
+   * Create the view.  Returns a WrappedPlainView if the text area
+   * has lineWrap set to true, otherwise returns a PlainView.  If
+   * lineWrap is true has to check whether the wrap style is word 
+   * or character and return an appropriate WrappedPlainView.
+   * 
+   * @param elem the element to create a View for
+   * @return an appropriate View for the element
+   */
   public View create(Element elem)
   {
-    return new PlainView(elem);
+    JTextArea comp = (JTextArea)getComponent();
+    if (comp.getLineWrap())
+      {
+        if (comp.getWrapStyleWord())
+          return new WrappedPlainView(elem, true);
+        else
+          return new WrappedPlainView(elem, false);
+      }
+    else
+      return new PlainView(elem);
   }
 
+  /**
+   * Returns the prefix for entries in the {@link UIDefaults} table.
+   *
+   * @return "TextArea"
+   */
   protected String getPropertyPrefix()
   {
     return "TextArea";
+  }
+  
+  /**
+   * Receives notification whenever one of the text component's bound
+   * properties changes. This changes the view to WrappedPlainView
+   * if setLineWrap(true) is called, and back to PlainView if 
+   * setLineWrap(false) is called.
+   *
+   * @param ev the property change event
+   */
+  protected void propertyChange(PropertyChangeEvent ev)
+  {
+    JTextArea comp = (JTextArea)getComponent();
+    if (ev.getPropertyName() == "lineWrap"
+        || ev.getPropertyName() == "wrapStyleWord")
+      modelChanged();
   }
 }

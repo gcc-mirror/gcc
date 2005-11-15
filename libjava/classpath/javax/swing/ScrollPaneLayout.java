@@ -43,11 +43,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.Serializable;
-
-import javax.swing.border.Border;
 
 /**
  * ScrollPaneLayout
@@ -60,8 +57,11 @@ public class ScrollPaneLayout
   private static final long serialVersionUID = -4480022884523193743L;
 
   public static class UIResource extends ScrollPaneLayout 
-    implements javax.swing.plaf.UIResource {
-    public UIResource() {
+    implements javax.swing.plaf.UIResource
+  {
+    public UIResource()
+    {
+      super();
     }
   }
 
@@ -77,8 +77,9 @@ public class ScrollPaneLayout
   protected int vsbPolicy;
   protected int hsbPolicy;
 
-  public ScrollPaneLayout() {
-		
+  public ScrollPaneLayout()
+  {
+	// Nothing to do here.
   }
 
   public void syncWithScrollPane(JScrollPane scrollPane) {
@@ -95,11 +96,31 @@ public class ScrollPaneLayout
     upperRight = scrollPane.getCorner(UPPER_RIGHT_CORNER);    
   }
 
+  /**
+   * Removes an existing component.  If oldComponent is not null
+   * and is not equal to newComponent, oldComponent must be removed
+   * from its parent.
+   * @param oldComponent the old Component that may need to be removed.
+   * @param newComponent the Component to add.
+   * @return the newComponent
+   */
   protected Component addSingletonComponent(Component oldComponent,
-                                            Component newComponent) {
-    return null;
+                                            Component newComponent) 
+  {
+    if (oldComponent != null && oldComponent != newComponent)
+      oldComponent.getParent().remove(oldComponent);
+    return newComponent;
   }
 
+  /**
+   * Add the specified component to the layout. 
+   * @param key must be one of VIEWPORT, VERTICAL_SCROLLBAR,
+   * HORIZONTAL_SCROLLBAR, ROW_HEADER, COLUMN_HEADER,
+   * LOWER_RIGHT_CORNER, LOWER_LEFT_CORNER, UPPER_RIGHT_CORNER,
+   * UPPER_LEFT_CORNER.
+   * @param component the Component to add
+   * @throws IllegalArgumentException if key is not as above
+   */
   public void addLayoutComponent(String key, Component component) 
   {
     if (key == VIEWPORT)
@@ -120,6 +141,8 @@ public class ScrollPaneLayout
       lowerLeft = component;
     else if (key == UPPER_LEFT_CORNER)
       upperLeft = component;
+    else
+      throw new IllegalArgumentException();
   }
 
   public void removeLayoutComponent(Component component) {
@@ -147,9 +170,20 @@ public class ScrollPaneLayout
   {
     return vsbPolicy;
   }
-
+  
+  /**
+   * Sets the vertical scrollbar policy.
+   * @param policy must be one of VERTICAL_SCROLLBAR_AS_NEEDED,
+   * VERTICAL_SCROLLBAR_NEVER, VERTICAL_SCROLLBAR_ALWAYS.
+   * @throws IllegalArgumentException if policy is not one of the valid
+   * JScrollBar policies.
+   */
   public void setVerticalScrollBarPolicy(int policy)
   {
+    if (policy != VERTICAL_SCROLLBAR_AS_NEEDED && 
+        policy != VERTICAL_SCROLLBAR_NEVER &&
+        policy != VERTICAL_SCROLLBAR_ALWAYS)
+      throw new IllegalArgumentException("Illegal Scrollbar Policy");
     vsbPolicy = policy;
   }
 
@@ -158,8 +192,19 @@ public class ScrollPaneLayout
     return hsbPolicy;
   }
 
+  /**
+   * Sets the horizontal scrollbar policy.
+   * @param policy must be one of HORIZONTAL_SCROLLBAR_AS_NEEDED,
+   * HORIZONTAL_SCROLLBAR_NEVER, HORIZONTAL_SCROLLBAR_ALWAYS.
+   * @throws IllegalArgumentException if policy is not one of the valid 
+   * JScrollbar policies.
+   */
   public void setHorizontalScrollBarPolicy(int policy)
   {
+    if (policy != HORIZONTAL_SCROLLBAR_AS_NEEDED && 
+        policy != HORIZONTAL_SCROLLBAR_NEVER &&
+        policy != HORIZONTAL_SCROLLBAR_ALWAYS)
+      throw new IllegalArgumentException("Illegal Scrollbar Policy");
     hsbPolicy = policy;
   }
 
@@ -188,6 +233,12 @@ public class ScrollPaneLayout
     return colHead;
   }
 
+  /**
+   * Returns the Component at the specified corner.
+   * @param key the corner.
+   * @return the Component at the specified corner, or null if
+   * key is not one of the four valid corners.
+   */
   public Component getCorner(String key)
   {
     if (key == LOWER_RIGHT_CORNER)
@@ -201,151 +252,53 @@ public class ScrollPaneLayout
     return null;
   }
 
-  private static void maybeSetPreferredSize(JComponent src, Dimension dim)
-  {
-    Dimension tmp = null;
-    if (src != null)
-      tmp = src.getPreferredSize();
-    if (tmp != null)
-      dim.setSize(tmp);        
-  }
-
-  private static void maybeSetMinimumSize(JComponent src, Dimension dim)
-  {
-    Dimension tmp = null;
-    if (src != null)
-      tmp = src.getMinimumSize();
-    if (tmp != null)
-      dim.setSize(tmp);
-  }
-
   public Dimension preferredLayoutSize(Container parent) 
   {
-    if (parent != null && parent instanceof JScrollPane)
-      {
-        JScrollPane sc = (JScrollPane) parent;
-        synchronized (sc.getTreeLock ())
-          {
-            Dimension insetsSize = new Dimension(0,0); 
-            Dimension viewportSize = new Dimension(0,0); 
-            Dimension viewportInsetsSize = new Dimension(0,0); 
-            Dimension columnHeaderSize = new Dimension(0,0); 
-            Dimension rowHeaderSize = new Dimension(0,0); 
-            Dimension verticalScrollBarSize = new Dimension(0,0); 
-            Dimension horizontalScrollBarSize = new Dimension(0,0); 
+    // Sun's implementation simply throws a ClassCastException if
+    // parent is no JScrollPane, so do we.
+    JScrollPane sc = (JScrollPane) parent;
+    Dimension viewportSize = viewport.getPreferredSize();
+    Dimension viewSize = viewport.getViewSize();
+    int width = viewportSize.width;
+    int height = viewportSize.height;
 
-            Insets insets = sc.getInsets();
-            Border viewportBorder = sc.getViewportBorder();
-            Insets viewportInsets = null;
+    // horizontal scrollbar needed if the view's preferred width
+    // is larger than the viewport's preferred width
+    if (hsb != null && viewSize.width > viewportSize.width)
+      height += hsb.getPreferredSize().height;
 
-            if (viewportBorder != null)
-              {
-                viewportInsets = viewportBorder.getBorderInsets(parent);
-                if (viewportInsets != null)
-                  viewportInsetsSize.setSize(viewportInsets.left + viewportInsets.right,
-                                             viewportInsets.top + viewportInsets.bottom);
-              }
-
-            if (insets != null)
-              insetsSize.setSize(insets.left + insets.right,
-                                 insets.top + insets.bottom);
-
-            if (viewport != null)
-              {
-                Component view = null;
-                Scrollable scr = null;
-                Dimension pref = null;
-                
-                view = viewport.getView();
-                if (view != null && view instanceof Scrollable)
-                  scr = (Scrollable) view;
-                if (scr != null)
-                  pref = scr.getPreferredScrollableViewportSize();
-                if (pref == null)
-                  pref = viewport.getPreferredSize();
-                if (pref != null)
-                  viewportSize.setSize(pref);
-              }
-                       
-            maybeSetPreferredSize(colHead, columnHeaderSize);
-            maybeSetPreferredSize(rowHead, rowHeaderSize);
-            maybeSetPreferredSize(vsb, verticalScrollBarSize);
-            maybeSetPreferredSize(hsb, horizontalScrollBarSize);
-
-            return new Dimension(insetsSize.width 
-                                 + viewportSize.width
-                                 + viewportInsetsSize.width
-                                 + rowHeaderSize.width
-                                 + verticalScrollBarSize.width,
-                                 insetsSize.height
-                                 + viewportSize.height
-                                 + viewportInsetsSize.height
-                                 + columnHeaderSize.height
-                                 + horizontalScrollBarSize.height);
-          }
-      }
-    else
-      {
-        return new Dimension(0,0);
-      }
+    // vertical scrollbar needed if the view's preferred height
+    // is larger than the viewport's preferred height
+    if (vsb != null && viewSize.height > viewportSize.height)
+      width += vsb.getPreferredSize().width;
+    if (rowHead != null && rowHead.isVisible())
+      width += rowHead.getPreferredSize().width;
+    if (colHead != null && colHead.isVisible())
+      height += colHead.getPreferredSize().height;
+    Insets i = sc.getInsets();
+    return new Dimension(width + i.left + i.right,
+                         height + i.left + i.right);
   }
 
   public Dimension minimumLayoutSize(Container parent)
   {
-    if (parent instanceof JScrollPane)
-      {
-        JScrollPane sc = (JScrollPane) parent;
-        synchronized (sc.getTreeLock ())
-          {
-            Dimension insetsSize = new Dimension(0,0); 
-            Dimension viewportSize = new Dimension(0,0); 
-            Dimension viewportInsetsSize = new Dimension(0,0); 
-            Dimension columnHeaderSize = new Dimension(0,0); 
-            Dimension rowHeaderSize = new Dimension(0,0); 
-            Dimension verticalScrollBarSize = new Dimension(0,0); 
-            Dimension horizontalScrollBarSize = new Dimension(0,0); 
-
-            Insets insets = sc.getInsets();
-            Border viewportBorder = sc.getViewportBorder();
-            Insets viewportInsets = null;
-
-            if (viewportBorder != null)
-              {
-                viewportInsets = viewportBorder.getBorderInsets(parent);
-                if (viewportInsets != null)
-                  viewportInsetsSize.setSize(viewportInsets.left + viewportInsets.right,
-                                             viewportInsets.top + viewportInsets.bottom);
-              }
-            
-            if (insets != null)
-              insetsSize.setSize(insets.left + insets.right,
-                                 insets.top + insets.bottom);
-
-            maybeSetMinimumSize(colHead, columnHeaderSize);
-            maybeSetMinimumSize(rowHead, rowHeaderSize);
-            
-            if (vsbPolicy != VERTICAL_SCROLLBAR_NEVER)
-              maybeSetMinimumSize(vsb, verticalScrollBarSize);
-
-            if (hsbPolicy != HORIZONTAL_SCROLLBAR_NEVER)
-              maybeSetMinimumSize(hsb, horizontalScrollBarSize);
-            
-            return new Dimension(insetsSize.width 
-                                 + viewportSize.width
-                                 + viewportInsetsSize.width
-                                 + rowHeaderSize.width
-                                 + verticalScrollBarSize.width,
-                                 insetsSize.height
-                                 + viewportSize.height
-                                 + viewportInsetsSize.height
-                                 + columnHeaderSize.height
-                                 + horizontalScrollBarSize.height);
-          }
-      }
-    else
-      {
-        return new Dimension(0,0);
-      }
+    // Sun's implementation simply throws a ClassCastException if
+    // parent is no JScrollPane, so do we.
+    JScrollPane sc = (JScrollPane) parent;
+    Dimension viewportSize = viewport.getMinimumSize();
+    int width = viewportSize.width;
+    int height = viewportSize.height;
+    if (hsb != null && hsb.isVisible())
+      height += hsb.getMinimumSize().height;
+    if (vsb != null && vsb.isVisible())
+      width += vsb.getMinimumSize().width;
+    if (rowHead != null && rowHead.isVisible())
+      width += rowHead.getMinimumSize().width;
+    if (colHead != null && colHead.isVisible())
+      height += colHead.getMinimumSize().height;
+    Insets i = sc.getInsets();
+    return new Dimension(width + i.left + i.right,
+                         height + i.top + i.bottom);
   }
 
   /**
@@ -371,100 +324,91 @@ public class ScrollPaneLayout
    */
   public void layoutContainer(Container parent)
   {
-    if (parent instanceof JScrollPane)
+    // Sun's implementation simply throws a ClassCastException if
+    // parent is no JScrollPane, so do we.
+    JScrollPane sc = (JScrollPane) parent;
+    JViewport viewport = sc.getViewport();
+    Dimension viewSize = viewport.getViewSize();
+
+    int x1 = 0, x2 = 0, x3 = 0, x4 = 0;
+    int y1 = 0, y2 = 0, y3 = 0, y4 = 0;
+    Rectangle scrollPaneBounds = SwingUtilities.calculateInnerArea(sc, null);
+
+    x1 = scrollPaneBounds.x;
+    y1 = scrollPaneBounds.y;
+    x4 = scrollPaneBounds.x + scrollPaneBounds.width;
+    y4 = scrollPaneBounds.y + scrollPaneBounds.height;
+    if (colHead != null)
+      y2 = y1 + colHead.getPreferredSize().height;
+    else
+      y2 = y1;
+
+    if (rowHead != null)
+      x2 = x1 + rowHead.getPreferredSize().width;
+    else
+      x2 = x1;
+
+    int vsbPolicy = sc.getVerticalScrollBarPolicy();
+    int hsbPolicy = sc.getHorizontalScrollBarPolicy();
+
+    boolean showVsb = 
+      (vsb != null)
+      && ((vsbPolicy == VERTICAL_SCROLLBAR_ALWAYS)
+          || (vsbPolicy == VERTICAL_SCROLLBAR_AS_NEEDED 
+              && viewSize.height > (y4 - y2)));
+    boolean showHsb = 
+      (hsb != null)
+      && ((hsbPolicy == HORIZONTAL_SCROLLBAR_ALWAYS)
+          || (hsbPolicy == HORIZONTAL_SCROLLBAR_AS_NEEDED 
+              && viewSize.width > (x4 - x2)));
+
+    if (!showVsb)
+      x3 = x4;
+    else
+      x3 = x4 - vsb.getPreferredSize().width;
+
+    if (!showHsb)
+      y3 = y4;
+    else
+      y3 = y4 - hsb.getPreferredSize().height;
+
+    // now set the layout
+    if (viewport != null)
+      viewport.setBounds(new Rectangle(x2, y2, x3 - x2, y3 - y2));
+
+    if (colHead != null)
+      colHead.setBounds(new Rectangle(x2, y1, x3 - x2, y2 - y1));
+
+    if (rowHead != null)
+      rowHead.setBounds(new Rectangle(x1, y2, x2 - x1, y3 - y2));
+
+    if (showVsb)
       {
-        JScrollPane sc = (JScrollPane) parent;
-        synchronized (sc.getTreeLock ())
-          {
-            JViewport viewport = sc.getViewport();
-            Dimension viewSize = viewport.getViewSize(); 
-            Point viewPos = viewport.getViewPosition(); 
-
-            int x1 = 0, x2 = 0, x3 = 0, x4 = 0;
-            int y1 = 0, y2 = 0, y3 = 0, y4 = 0;
-
-            Rectangle scrollPaneBounds = SwingUtilities.calculateInnerArea(sc, null);
-
-            x1 = scrollPaneBounds.x;
-            y1 = scrollPaneBounds.y;
-            x4 = scrollPaneBounds.x + scrollPaneBounds.width;
-            y4 = scrollPaneBounds.y + scrollPaneBounds.height;
-            
-            if (colHead != null)
-              y2 = y1 + colHead.getPreferredSize().height;
-            else
-              y2 = y1;
-
-            if (rowHead != null)
-              x2 = x1 + rowHead.getPreferredSize().width;
-            else
-              x2 = x1;
-
-            int vsbPolicy = sc.getVerticalScrollBarPolicy();
-            int hsbPolicy = sc.getHorizontalScrollBarPolicy();
-
-            x3 = x4 - vsb.getPreferredSize().width;
-            y3 = y4 - hsb.getPreferredSize().height;
-
-            boolean showVsb = 
-              (vsb != null)
-              && ((vsbPolicy == VERTICAL_SCROLLBAR_ALWAYS)
-                  || (vsbPolicy == VERTICAL_SCROLLBAR_AS_NEEDED 
-                      && viewSize.height > (y3 - y2)));
-
-            boolean showHsb = 
-              (hsb != null)
-              && ((hsbPolicy == HORIZONTAL_SCROLLBAR_ALWAYS)
-                  || (hsbPolicy == HORIZONTAL_SCROLLBAR_AS_NEEDED 
-                      && viewSize.width > (x3 - x2)));
-            
-            if (!showVsb)
-              x3 = x4;
-            
-            if (!showHsb)
-              y3 = y4;
-
-            // now set the layout
-
-            if (viewport != null)
-              viewport.setBounds(new Rectangle(x2, y2, x3-x2, y3-y2));
-
-            if (colHead != null)
-              colHead.setBounds(new Rectangle(x2, y1, x3-x2, y2-y1));
-
-            if (rowHead != null)
-              rowHead.setBounds(new Rectangle(x1, y2, x2-x1, y3-y2));
-
-            if (showVsb)
-              {
-                vsb.setVisible(true);
-                vsb.setBounds(new Rectangle(x3, y2, x4-x3, y3-y2));
-              }
-            else if (vsb != null)
-              vsb.setVisible(false);
-
-            if (showHsb)
-              {
-                hsb.setVisible(true);
-                hsb.setBounds(new Rectangle(x2, y3, x3-x2, y4-y3));
-              }
-            else if (hsb != null)
-              hsb.setVisible(false);
-
-            if (upperLeft != null)
-              upperLeft.setBounds(new Rectangle(x1, y1, x2-x1, y2-y1));
-
-            if (upperRight != null)
-              upperRight.setBounds(new Rectangle(x3, y1, x4-x3, y2-y1));
-
-            if (lowerLeft != null)
-              lowerLeft.setBounds(new Rectangle(x1, y3, x2-x1, y4-y3));
-
-            if (lowerRight != null)
-              lowerRight.setBounds(new Rectangle(x3, y3, x4-x3, y4-y3));
-
-          }
+        vsb.setVisible(true);
+        vsb.setBounds(new Rectangle(x3, y2, x4 - x3, y3 - y2));
       }
+    else if (vsb != null)
+      vsb.setVisible(false);
+
+    if (showHsb)
+      {
+        hsb.setVisible(true);
+        hsb.setBounds(new Rectangle(x2, y3, x3 - x2, y4 - y3));
+      }
+    else if (hsb != null)
+      hsb.setVisible(false);
+
+    if (upperLeft != null)
+      upperLeft.setBounds(new Rectangle(x1, y1, x2 - x1, y2 - y1));
+
+    if (upperRight != null)
+      upperRight.setBounds(new Rectangle(x3, y1, x4 - x3, y2 - y1));
+
+    if (lowerLeft != null)
+      lowerLeft.setBounds(new Rectangle(x1, y3, x2 - x1, y4 - y3));
+
+    if (lowerRight != null)
+      lowerRight.setBounds(new Rectangle(x3, y3, x4 - x3, y4 - y3));
   }
 
   /**

@@ -43,7 +43,6 @@ import java.awt.Graphics;
 
 import javax.swing.JComponent;
 import javax.swing.JSeparator;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
@@ -73,9 +72,7 @@ public class BasicToolBarSeparatorUI extends BasicSeparatorUI
    */
   protected void installDefaults(JSeparator s)
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    
-    size = defaults.getDimension("ToolBar.separatorSize");
+    size = UIManager.getDimension("ToolBar.separatorSize");
   }
 
   /**

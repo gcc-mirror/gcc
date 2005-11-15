@@ -53,14 +53,14 @@ public class gnuNVList
   /**
    * The list of the named values.
    */
-  protected corbaArrayList list;
+  protected CorbaList list;
 
   /**
    * Creates the list with the default initial size.
    */
   public gnuNVList()
   {
-    list = new corbaArrayList();
+    list = new CorbaList();
   }
 
   /**
@@ -68,7 +68,7 @@ public class gnuNVList
    */
   public gnuNVList(int initial_size)
   {
-    list = new corbaArrayList(initial_size);
+    list = new CorbaList(initial_size);
   }
 
   /** {@inheritDoc} */

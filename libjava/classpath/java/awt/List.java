@@ -1088,18 +1088,23 @@ paramString()
   protected class AccessibleAWTList extends AccessibleAWTComponent
     implements AccessibleSelection, ItemListener, ActionListener
   {
+    private static final long serialVersionUID = 7924617370136012829L;
+
     protected class AccessibleAWTListChild extends AccessibleAWTComponent
       implements Accessible
     {
-      private int index;
+      private static final long serialVersionUID = 4412022926028300317L;
+      
+      // Field names are fixed by serialization spec.
       private List parent;
+      private int indexInParent;
       
       public AccessibleAWTListChild(List parent, int indexInParent)
       {
         this.parent = parent;
-        index = indexInParent;
+        this.indexInParent = indexInParent;
         if (parent == null)
-          index = -1;
+          this.indexInParent = -1;
       }
       
       /* (non-Javadoc)
@@ -1118,14 +1123,14 @@ paramString()
       public AccessibleStateSet getAccessibleStateSet()
       {
         AccessibleStateSet states = super.getAccessibleStateSet();
-        if (parent.isIndexSelected(index))
+        if (parent.isIndexSelected(indexInParent))
           states.add(AccessibleState.SELECTED);
         return states;
       }
       
       public int getAccessibleIndexInParent()
       {
-        return index;
+        return indexInParent;
       }
 
     }

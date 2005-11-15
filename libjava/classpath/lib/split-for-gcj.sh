@@ -31,7 +31,7 @@ test -d lists || mkdir lists
 for dir in java javax gnu org; do
    fgrep /$dir/ classes | while read file; do
       pkg=`echo "$file " | sed -n -e "s,^.*/\($dir/.*\)/[^/]*$,\1,p"`
-      list=lists/`echo $pkg | sed -e 's,/,-,g'`
+      list=lists/`echo $pkg | sed -e 's,/,-,g' | cut -f1-3 -d-`
       echo "$file" >> ${list}.list.1
       f2=`echo "$file" | sed -n -e "s,^.*/\($dir/.*\)$,\1,p"`
       f2=`echo "$f2" | sed -e 's/.java$//'`.class

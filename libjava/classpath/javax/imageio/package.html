@@ -40,7 +40,48 @@ exception statement from your version. -->
 <head><title>GNU Classpath - javax.imageio</title></head>
 
 <body>
-<p></p>
-
+<p>
+This package provides image input/output APIs.
+</p>
+<p>
+The standard class library provides other ways of loading images (@see
+java.awt.Toolkit, @see java.awt.Component)) but the ImageIO package is
+more powerful.
+</p>
+<p>
+The static ImageIO class supports reading and writing images in many
+different formats along with most other basic image I/O operations.
+</p>
+<p>
+Other classes provide finer control of image-related operations;
+reading is controlled by ImageReader, ImageReadParam and
+ImageTypeSpecifyer, writing by ImageWriter and ImageWriteParam.
+ImageTranscoder allows fine-grained control over how images are
+converted between formats and IIOException reports errors.  IIOImage
+describes an image file in detail including metadata and thumbnails.
+</p>
+<h2>Supported Formats</h2>
+<p>
+The default GNU Classpath ImageIO backend uses ImageMagick and so
+supports the following formats:
+<table>
+<tr>
+<th></th> <th>Read</th> <th>Write</th>
+</tr>
+<tr><td>JPEG</td><td>yes</td><td>yes</td></tr>
+<tr><td>PNG</td><td>yes</td><td>yes</td></tr>
+<tr><td>BMP</td><td>yes</td><td>yes</td></tr>
+<tr><td>WBMP</td><td>yes</td><td>yes</td></tr>
+<tr><td>GIF</td><td>yes</td><td>yes</td></tr>
+<tr><td>TIFF</td><td>yes</td><td>yes</td></tr>
+<tr><td>XPM</td><td>yes</td><td>yes</td></tr>
+<tr><td>TGA</td><td>yes</td><td>yes</td></tr>
+<tr><td>PDF</td><td>yes</td><td>no</td></tr>
+<tr><td>SVG</td><td>yes</td><td>no</td></tr>
+<table>
+</p>
+<p>
+@since 1.4
+</p>
 </body>
 </html>

@@ -45,35 +45,34 @@ import java.awt.event.FocusListener;
 
 import javax.swing.ComboBoxEditor;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
 
 /**
- * This is a component that is responsible for displaying/editting  selected
- * item in comboBox. By default, the  JTextField is returned as
- * BasicComboBoxEditor.
+ * An editor used by the {@link BasicComboBoxUI} class.  This editor uses a
+ * {@link JTextField} as the editor component.
  *
  * @author Olga Rodimina
  */
 public class BasicComboBoxEditor extends Object implements ComboBoxEditor,
                                                            FocusListener
 {
+  /** The editor component. */
   protected JTextField editor;
 
   /**
-   * Creates a new BasicComboBoxEditor object.
+   * Creates a new <code>BasicComboBoxEditor</code> instance.
    */
   public BasicComboBoxEditor()
   {
     editor = new JTextField();
-    editor.setBorder(new EmptyBorder(1, 1, 1, 1));
+    editor.setBorder(null);
+    editor.setColumns(9);
   }
 
   /**
-   * This method returns textfield that will be used by the combo  box to
-   * display/edit currently selected item in the combo box.
+   * Returns the component that will be used by the combo box to display and 
+   * edit the currently selected item in the combo box.
    *
-   * @return textfield that will be used by the combo box to  display/edit
-   *         currently selected item
+   * @return The editor component, which is a {@link JTextField} in this case.
    */
   public Component getEditorComponent()
   {
@@ -98,15 +97,18 @@ public class BasicComboBoxEditor extends Object implements ComboBoxEditor,
   }
 
   /**
-   * This method returns item that is currently editable.
+   * Returns the text from the editor component.
    *
-   * @return item in the combo box that is currently editable
+   * @return The text from the editor component.
    */
   public Object getItem()
   {
     return editor.getText();
   }
 
+  /**
+   * Selects all the text in the editor component.
+   */
   public void selectAll()
   {
     editor.selectAll();
@@ -136,8 +138,8 @@ public class BasicComboBoxEditor extends Object implements ComboBoxEditor,
   }
 
   /**
-   * This method adds actionListener to the editor. If the user will edit
-   * currently selected item in the textfield and pressEnter, then action
+   * Adds an {@link ActionListener} to the editor component.  If the user will 
+   * edit currently selected item in the textfield and pressEnter, then action
    * will be performed. The actionPerformed of this ActionListener should
    * change the selected item of the comboBox to the newly editted  selected
    * item.
@@ -147,27 +149,32 @@ public class BasicComboBoxEditor extends Object implements ComboBoxEditor,
    */
   public void addActionListener(ActionListener l)
   {
-    // FIXME: Need to implement
+    editor.addActionListener(l);
   }
 
   /**
-   * This method removes actionListener from the textfield.
+   * Removes the {@link ActionListener} from the editor component.
    *
-   * @param l the ActionListener to remove from the textfield.
+   * @param l the listener to remove.
    */
   public void removeActionListener(ActionListener l)
   {
-    // FIXME: Need to implement
+    editor.removeActionListener(l);
   }
 
+  /**
+   * A subclass of {@link BasicComboBoxEditor} that implements the 
+   * {@link UIResource} interface.
+   */
   public static class UIResource extends BasicComboBoxEditor
     implements javax.swing.plaf.UIResource
   {
     /**
-     * Creates a new UIResource object.
+     * Creates a new <code>BasicComboBoxEditor.UIResource</code> instance.
      */
     public UIResource()
     {
+      // Nothing to do here.
     }
   }
 }

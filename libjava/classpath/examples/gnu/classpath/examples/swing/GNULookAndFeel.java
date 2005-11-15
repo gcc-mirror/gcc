@@ -22,8 +22,13 @@ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 package gnu.classpath.examples.swing;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
+import javax.swing.JRadioButton;
 import javax.swing.UIDefaults;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.IconUIResource;
@@ -64,8 +69,10 @@ public class GNULookAndFeel extends BasicLookAndFeel
           "MenuBar.background", new ColorUIResource(blueGray),
           "MenuItem.background", new ColorUIResource(blueGray),
           "ScrollBar.background", new ColorUIResource(blueGray),
-
-	  "Tree.closedIcon",
+          "CheckBox.icon", new CheckBoxIcon(),
+          "RadioButton.icon", new RadioButtonIcon(),
+	  
+	"Tree.closedIcon",
 	  new IconUIResource(new ImageIcon
 			     (getClass().getResource
 			      (iconspath + "TreeClosed.png"))),
@@ -81,5 +88,178 @@ public class GNULookAndFeel extends BasicLookAndFeel
         LAF_defaults.putDefaults(myDefaults);
       }
     return LAF_defaults;
+  }
+  
+  /**
+   * The icon used for CheckBoxes in the BasicLookAndFeel. This is an empty
+   * icon with a size of 13x13 pixels.
+   */
+  static class CheckBoxIcon
+    implements Icon
+  {
+    /**
+     * Returns the height of the icon. The BasicLookAndFeel CheckBox icon
+     * has a height of 13 pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconHeight()
+    {
+      return 13;
+    }
+
+    /**
+     * Returns the width of the icon. The BasicLookAndFeel CheckBox icon
+     * has a width of 13 pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconWidth()
+    {
+      return 13;
+    }
+
+    /**
+     * Paints the icon. The BasicLookAndFeel CheckBox icon is empty and does
+     * not need to be painted.
+     *
+     * @param c the component to be painted
+     * @param g the Graphics context to be painted with
+     * @param x the x position of the icon
+     * @param y the y position of the icon
+     */
+    public void paintIcon(Component c, Graphics g, int x, int y)
+    {
+      Color save = g.getColor();
+      g.setColor(c.getForeground());
+      g.drawRect(x, y, getIconWidth(), getIconHeight());    
+      
+      JCheckBox item = (JCheckBox) c;
+      if (item.isSelected()) 
+        {
+          g.drawLine(3 + x, 5 + y, 3 + x, 9 + y);
+          g.drawLine(4 + x, 5 + y, 4 + x, 9 + y);
+          g.drawLine(5 + x, 7 + y, 9 + x, 3 + y);
+          g.drawLine(5 + x, 8 + y, 9 + x, 4 + y);
+        }
+      
+      g.setColor(save);
+    }
+  }
+  
+  /**
+   * The icon used for RadioButtons in the GNULookAndFeel. This is an empty
+   * icon with a size of 13x13 pixels.
+   */
+  static class RadioButtonIcon
+    implements Icon
+  {
+    /**
+     * Returns the height of the icon. The GNULookAndFeel RadioButton icon
+     * has a height of 13 pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconHeight()
+    {
+      return 13;
+    }
+
+    /**
+     * Returns the width of the icon. The GNULookAndFeel RadioButton icon
+     * has a width of 13 pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconWidth()
+    {
+      return 13;
+    }
+
+    /**
+     * Paints the icon. The GNULookAndFeel RadioButton icon is empty and does
+     * not need to be painted.
+     *
+     * @param c the component to be painted
+     * @param g the Graphics context to be painted with
+     * @param x the x position of the icon
+     * @param y the y position of the icon
+     */
+    public void paintIcon(Component c, Graphics g, int x, int y)
+    {
+      Color savedColor = g.getColor();
+      JRadioButton b = (JRadioButton) c;
+      
+      // draw outer circle
+      if (b.isEnabled())
+        g.setColor(Color.GRAY);
+      else
+        g.setColor(Color.GRAY);
+      g.drawLine(x + 2, y + 1, x + 3, y + 1);
+      g.drawLine(x + 4, y, x + 7, y);
+      g.drawLine(x + 8, y + 1, x + 9, y + 1);
+      g.drawLine(x + 10, y + 2, x + 10, y + 3);
+      g.drawLine(x + 11, y + 4, x + 11, y + 7);
+      g.drawLine(x + 10, y + 8, x + 10, y + 9);
+      g.drawLine(x + 8, y + 10, x + 9, y + 10);
+      g.drawLine(x + 4, y + 11, x + 7, y + 11);
+      g.drawLine(x + 2, y + 10, x + 3, y + 10);
+      g.drawLine(x + 1, y + 9, x + 1, y + 8);
+      g.drawLine(x, y + 7, x, y + 4);
+      g.drawLine(x + 1, y + 2, x + 1, y + 3);
+
+      if (b.getModel().isArmed())
+        {
+          g.setColor(Color.GRAY);
+          g.drawLine(x + 4, y + 1, x + 7, y + 1);
+          g.drawLine(x + 4, y + 10, x + 7, y + 10);
+          g.drawLine(x + 1, y + 4, x + 1, y + 7);
+          g.drawLine(x + 10, y + 4, x + 10, y + 7);
+          g.fillRect(x + 2, y + 2, 8, 8);
+        }
+      else 
+        {
+          // only draw inner highlight if not filled
+          if (b.isEnabled())
+            {
+              g.setColor(Color.WHITE);
+          
+              g.drawLine(x + 2, y + 8, x + 2, y + 9);
+              g.drawLine(x + 1, y + 4, x + 1, y + 7);
+              g.drawLine(x + 2, y + 2, x + 2, y + 3);
+              g.drawLine(x + 3, y + 2, x + 3, y + 2);
+              g.drawLine(x + 4, y + 1, x + 7, y + 1);
+              g.drawLine(x + 8, y + 2, x + 9, y + 2);
+            }
+        }
+
+      // draw outer highlight
+      if (b.isEnabled())
+        {
+          g.setColor(Color.WHITE);
+          
+          // outer
+          g.drawLine(x + 10, y + 1, x + 10, y + 1);
+          g.drawLine(x + 11, y + 2, x + 11, y + 3);
+          g.drawLine(x + 12, y + 4, x + 12, y + 7);
+          g.drawLine(x + 11, y + 8, x + 11, y + 9);
+          g.drawLine(x + 10, y + 10, x + 10, y + 10);
+          g.drawLine(x + 8, y + 11, x + 9, y + 11);
+          g.drawLine(x + 4, y + 12, x + 7, y + 12);
+          g.drawLine(x + 2, y + 11, x + 3, y + 11);
+        }
+      
+      if (b.isSelected())
+        {
+          if (b.isEnabled())
+            g.setColor(Color.BLACK);
+          else
+            g.setColor(Color.GRAY);
+          g.drawLine(x + 4, y + 3, x + 7, y + 3);
+          g.fillRect(x + 3, y + 4, 6, 4);
+          g.drawLine(x + 4, y + 8, x + 7, y + 8);
+        }
+      g.setColor(savedColor);
+    }  
   }
 }

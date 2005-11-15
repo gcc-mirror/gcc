@@ -67,29 +67,7 @@ public abstract class Configuration
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkPermission (new AuthPermission ("getLoginConfiguration"));
-    if (config == null)
-      {
-        String conf = (String) AccessController.doPrivileged
-          (new PrivilegedAction()
-            {
-              public Object run()
-              {
-                return Security.getProperty ("login.configuration.provider");
-              }
-            });
-        try
-          {
-            if (conf != null)
-              config = (Configuration) Class.forName (conf).newInstance();
-            else
-              config = new NullConfiguration();
-          }
-        catch (Exception x)
-          {
-            config = new NullConfiguration();
-          }
-      }
-    return config;
+    return getConfig();
   }
 
   public static synchronized void setConfiguration (Configuration config)
@@ -115,6 +93,28 @@ public abstract class Configuration
    */
   static Configuration getConfig()
   {
+    if (config == null)
+      {
+        String conf = (String) AccessController.doPrivileged
+          (new PrivilegedAction()
+            {
+              public Object run()
+              {
+                return Security.getProperty ("login.configuration.provider");
+              }
+            });
+        try
+          {
+            if (conf != null)
+              config = (Configuration) Class.forName (conf).newInstance();
+            else
+              config = new NullConfiguration();
+          }
+        catch (Exception x)
+          {
+            config = new NullConfiguration();
+          }
+      }
     return config;
   }
 }

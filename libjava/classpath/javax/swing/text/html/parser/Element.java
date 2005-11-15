@@ -148,10 +148,10 @@ public final class Element
   /**
    * The default constructor must have package level access in this
    * class. Use DTD.defineElement(..) to create an element when required.
-   * @todo MAKE THIS PACKAGE in the final version. Now the Parser needs it!
    */
   Element()
   {
+    // Nothing to do here.
   }
 
   /**

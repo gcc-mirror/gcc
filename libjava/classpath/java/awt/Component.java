@@ -587,6 +587,7 @@ public abstract class Component
    */
   protected Component()
   {
+    // Nothing to do here.
   }
 
   /**
@@ -720,8 +721,9 @@ public abstract class Component
 
   /**
    * Tests if the component is displayable. It must be connected to a native
-   * screen resource, and all its ancestors must be displayable. A containment
-   * hierarchy is made displayable when a window is packed or made visible.
+   * screen resource.  This reduces to checking that peer is not null.  A 
+   * containment  hierarchy is made displayable when a window is packed or 
+   * made visible.
    *
    * @return true if the component is displayable
    * @see Container#add(Component)
@@ -733,9 +735,7 @@ public abstract class Component
    */
   public boolean isDisplayable()
   {
-    if (parent != null)
-      return parent.isDisplayable();
-    return false;
+    return peer != null;
   }
 
   /**
@@ -763,7 +763,7 @@ public abstract class Component
     if (! visible || peer == null)
       return false;
 
-    return parent == null ? true : parent.isShowing();
+    return parent == null ? false : parent.isShowing();
   }
 
   /**
@@ -902,15 +902,16 @@ public abstract class Component
         if (currentPeer != null)
             currentPeer.setVisible(true);
 
+        // The JDK repaints the component before invalidating the parent.
+        // So do we.
+        if (isShowing())
+          repaint();
         // Invalidate the parent if we have one. The component itself must
         // not be invalidated. We also avoid NullPointerException with
         // a local reference here.
         Container currentParent = parent;
         if (currentParent != null)
-          {
-            currentParent.invalidate();
-            currentParent.repaint();
-          }
+          currentParent.invalidate();
 
         ComponentEvent ce =
           new ComponentEvent(this,ComponentEvent.COMPONENT_SHOWN);
@@ -946,18 +947,19 @@ public abstract class Component
         ComponentPeer currentPeer=peer;
         if (currentPeer != null)
             currentPeer.setVisible(false);
-        
+        boolean wasShowing = isShowing();
         this.visible = false;
-        
+
+        // The JDK repaints the component before invalidating the parent.
+        // So do we.
+        if (wasShowing)
+          repaint();
         // Invalidate the parent if we have one. The component itself must
         // not be invalidated. We also avoid NullPointerException with
         // a local reference here.
         Container currentParent = parent;
         if (currentParent != null)
-          {
-            currentParent.invalidate();
-            currentParent.repaint();
-          }
+          currentParent.invalidate();
 
         ComponentEvent ce =
           new ComponentEvent(this,ComponentEvent.COMPONENT_HIDDEN);
@@ -976,7 +978,7 @@ public abstract class Component
   {
     if (foreground != null)
       return foreground;
-    return parent == null ? SystemColor.windowText : parent.getForeground();
+    return parent == null ? null : parent.getForeground();
   }
 
   /**
@@ -1075,8 +1077,9 @@ public abstract class Component
     Component p = parent;
     if (p != null)
       return p.getFont();
-    else
-      return new Font("Dialog", Font.PLAIN, 12);
+    if (peer != null)
+      return peer.getGraphics().getFont();
+    return null;
   }
 
   /**
@@ -1402,17 +1405,14 @@ public abstract class Component
       peer.setBounds (x, y, width, height);
 
     // Erase old bounds and repaint new bounds for lightweights.
-    if (isLightweight() && isShowing ())
+    if (isLightweight() && isShowing())
       {
         if (parent != null)
           {
             Rectangle parentBounds = parent.getBounds();
-            Rectangle oldBounds = new Rectangle(parent.getX() + oldx,
-                                                parent.getY() + oldy,
-                                                oldwidth, oldheight);
-            Rectangle newBounds = new Rectangle(parent.getX() + x,
-                                                parent.getY() + y,
-                                                width, height);
+            Rectangle oldBounds = new Rectangle(oldx, oldy, oldwidth,
+                                                oldheight);
+            Rectangle newBounds = new Rectangle(x, y, width, height);
             Rectangle destroyed = oldBounds.union(newBounds);
             if (!destroyed.isEmpty())
               parent.repaint(0, destroyed.x, destroyed.y, destroyed.width,
@@ -1646,7 +1646,7 @@ public abstract class Component
    */
   public Dimension getMaximumSize()
   {
-    return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+    return new Dimension(Short.MAX_VALUE, Short.MAX_VALUE);
   }
 
   /**
@@ -1720,7 +1720,7 @@ public abstract class Component
     valid = false;
     prefSize = null;
     minSize = null;
-    if (parent != null && parent.valid)
+    if (parent != null && parent.isValid())
       parent.invalidate();
   }
 
@@ -1736,11 +1736,8 @@ public abstract class Component
     if (peer != null)
       {
         Graphics gfx = peer.getGraphics();
-        if (gfx != null)
-          return gfx;
-        // create graphics for lightweight:
-        Container parent = getParent();
-        if (parent != null)
+        // Create peer for lightweights.
+        if (gfx == null && parent != null)
           {
             gfx = parent.getGraphics();
             Rectangle bounds = getBounds();
@@ -1748,6 +1745,8 @@ public abstract class Component
             gfx.translate(bounds.x, bounds.y);
             return gfx;
           }
+        gfx.setFont(font);
+        return gfx;
       }
     return null;
   }
@@ -1887,7 +1886,7 @@ public abstract class Component
    * @see #repaint(long, int, int, int, int)
    */
   public void repaint()
-  {
+  {   
     if(!isShowing())
       {
         Component p = parent;
@@ -3481,7 +3480,10 @@ public abstract class Component
     ComponentPeer tmp = peer;
     peer = null;
     if (tmp != null)
-      tmp.dispose();
+      {
+        tmp.hide();
+        tmp.dispose();
+      }
   }
 
   /**
@@ -3807,13 +3809,16 @@ public abstract class Component
       {
         synchronized (getTreeLock ())
           {
-            // Find this Component's top-level ancestor.
-            Container parent = getParent ();
-
+            // Find this Component's top-level ancestor.            
+            Container parent = (this instanceof Container) ? (Container) this
+                                                          : getParent();            
             while (parent != null
                    && !(parent instanceof Window))
               parent = parent.getParent ();
 
+            if (parent == null)
+              return;
+            
             Window toplevel = (Window) parent;
             if (toplevel.isFocusableWindow ())
               {
@@ -4241,9 +4246,9 @@ public abstract class Component
     if (isDoubleBuffered())
       param.append(",doublebuffered");
     if (parent == null)
-      param.append(",parent==null");
+      param.append(",parent=null");
     else
-      param.append(",parent==").append(parent.getName());
+      param.append(",parent=").append(parent.getName());
     return param.toString();
   }
 
@@ -5567,6 +5572,7 @@ p   * <li>the set of backward traversal keys
        */
       protected AccessibleAWTComponentHandler()
       {
+        // Nothing to do here.
       }
 
       /**
@@ -5598,6 +5604,7 @@ p   * <li>the set of backward traversal keys
        */
       public void componentMoved(ComponentEvent e)
       {
+        // Nothing to do here.
       }
 
       /**
@@ -5607,6 +5614,7 @@ p   * <li>the set of backward traversal keys
        */
       public void componentResized(ComponentEvent e)
       {
+        // Nothing to do here.
       }
     } // class AccessibleAWTComponentHandler
 
@@ -5624,6 +5632,7 @@ p   * <li>the set of backward traversal keys
        */
       protected AccessibleAWTFocusHandler()
       {
+        // Nothing to do here.
       }
 
       /**

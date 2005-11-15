@@ -256,6 +256,7 @@ public class Parser
    */
   protected void endTag(boolean omitted)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -310,6 +311,7 @@ public class Parser
    */
   protected void handleComment(char[] comment)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -333,6 +335,7 @@ public class Parser
   protected void handleEmptyTag(TagElement tag)
     throws ChangedCharSetException
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -343,11 +346,13 @@ public class Parser
    */
   protected void handleEndTag(TagElement tag)
   {
+    // This default implementation does nothing.
   }
 
   /* Handle error that has occured in the given line. */
   protected void handleError(int line, String message)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -358,6 +363,7 @@ public class Parser
    */
   protected void handleStartTag(TagElement tag)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -376,6 +382,7 @@ public class Parser
    */
   protected void handleText(char[] text)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -387,6 +394,7 @@ public class Parser
    */
   protected void handleTitle(char[] title)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -420,6 +428,7 @@ public class Parser
    */
   protected void markFirstTime(Element element)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -432,5 +441,6 @@ public class Parser
   protected void startTag(TagElement tag)
     throws ChangedCharSetException
   {
+    // This default implementation does nothing.
   }
 }

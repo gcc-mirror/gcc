@@ -291,7 +291,12 @@ extern double rnd_prod(double, double), rnd_quot(double, double);
 
 
 #define MAX_BIGNUMS 16
+#ifdef Pack_32
 #define MAX_BIGNUM_WDS 32
+#else
+  /* Note that this is a workaround for */
+#define MAX_BIGNUM_WDS 128
+#endif
 
 struct _Jv_Bigint
 {

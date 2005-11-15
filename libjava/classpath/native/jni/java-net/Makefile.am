@@ -1,4 +1,4 @@
-pkglib_LTLIBRARIES = libjavanet.la
+nativelib_LTLIBRARIES = libjavanet.la
 
 libjavanet_la_SOURCES = javanet.c \
 			javanet.h \

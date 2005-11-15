@@ -39,42 +39,30 @@ exception statement from your version. */
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 
+import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
-import javax.swing.border.Border;
 
 /**
- * This class draws simple arrow buttons for the Basic Look and Feel.
+ * A button that displays an arrow (triangle) that points {@link #NORTH},
+ * {@link #SOUTH}, {@link #EAST} or {@link #WEST}.  This button is used by
+ * the {@link BasicComboBoxUI} class.
+ * 
+ * @see BasicComboBoxUI#createArrowButton
  */
 public class BasicArrowButton extends JButton implements SwingConstants
 {
-  /** The default size of the Arrow buttons. */
-  private static int defaultSize = 12;
 
-  /** The Polygon that points up. */
-  private static Polygon upIcon = new Polygon(new int[] { 0, 5, 9 },
-                                              new int[] { 7, 2, 7 }, 3);
-
-  /** The Polygon that points down. */
-  private static Polygon downIcon = new Polygon(new int[] { 1, 5, 9 },
-                                                new int[] { 3, 7, 3 }, 3);
-
-  /** The Polygon that points left. */
-  private static Polygon leftIcon = new Polygon(new int[] { 7, 3, 7 },
-                                                new int[] { 1, 5, 9 }, 3);
-
-  /** The Polygon that points right. */
-  private static Polygon rightIcon = new Polygon(new int[] { 3, 7, 3 },
-                                                 new int[] { 1, 5, 9 }, 3);
-
-  /** The direction to point in. */
+  /** 
+   * The direction that the arrow points. 
+   * 
+   * @see #getDirection()
+   */
   protected int direction;
 
   /**
@@ -89,7 +77,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
    * edges of the button.
    * This is package-private to avoid an accessor method.
    */
-  transient Color darkShadow = Color.DARK_GRAY;
+  transient Color darkShadow = new Color(102, 102, 102);
 
   /**
    * The top and left edges of the button.
@@ -97,51 +85,15 @@ public class BasicArrowButton extends JButton implements SwingConstants
    */
   transient Color highlight = Color.WHITE;
 
-  /** The border around the ArrowButton. */
-  private transient Border buttonBorder = new Border()
-    {
-      public Insets getBorderInsets(Component c)
-      {
-	return new Insets(2, 2, 2, 2);
-      }
-
-      public boolean isBorderOpaque()
-      {
-	return true;
-      }
-
-      public void paintBorder(Component c, Graphics g, int x, int y, int w,
-                              int h)
-      {
-	Color saved = g.getColor();
-	g.setColor(highlight);
-
-	g.drawLine(x + 1, y + 1, x + w - 1, y + 1);
-	g.drawLine(x + 1, y + 1, x + 1, y + h - 1);
-
-	g.setColor(shadow);
-
-	g.drawLine(x + 1, y + h - 1, x + w - 1, y + h - 1);
-	g.drawLine(x + w - 1, y + 1, x + w - 1, y + h - 1);
-
-	g.setColor(darkShadow);
-
-	g.drawLine(x, y + h, x + w, y + h);
-	g.drawLine(x + w, y, x + w, y + h);
-
-	g.setColor(saved);
-      }
-    };
-
   /**
-   * Creates a new BasicArrowButton object.
+   * Creates a new <code>BasicArrowButton</code> object.
    *
-   * @param direction The direction the arrow points in.
+   * @param direction The direction the arrow points in (one of: 
+   * {@link #NORTH}, {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
    */
   public BasicArrowButton(int direction)
   {
     super();
-    setBorder(buttonBorder);
     setDirection(direction);
   }
 
@@ -149,7 +101,8 @@ public class BasicArrowButton extends JButton implements SwingConstants
    * Creates a new BasicArrowButton object with the given colors and
    * direction.
    *
-   * @param direction The direction to point in.
+   * @param direction The direction to point in (one of: 
+   * {@link #NORTH}, {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
    * @param background The background color.
    * @param shadow The shadow color.
    * @param darkShadow The dark shadow color.
@@ -166,9 +119,10 @@ public class BasicArrowButton extends JButton implements SwingConstants
   }
 
   /**
-   * This method returns whether the focus can traverse to this component.
+   * Returns whether the focus can traverse to this component.  This method
+   * always returns <code>false</code>.
    *
-   * @return Whether the focus can traverse to this component.
+   * @return <code>false</code>.
    */
   public boolean isFocusTraversable()
   {
@@ -176,7 +130,8 @@ public class BasicArrowButton extends JButton implements SwingConstants
   }
 
   /**
-   * This method returns the direction of the arrow.
+   * Returns the direction of the arrow (one of: {@link #NORTH}, 
+   * {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
    *
    * @return The direction of the arrow.
    */
@@ -186,9 +141,10 @@ public class BasicArrowButton extends JButton implements SwingConstants
   }
 
   /**
-   * This method changes the direction of the arrow.
+   * Sets the direction of the arrow.
    *
-   * @param dir The new direction of the arrow.
+   * @param dir The new direction of the arrow (one of: {@link #NORTH}, 
+   *            {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
    */
   public void setDirection(int dir)
   {
@@ -196,7 +152,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
   }
 
   /**
-   * This method paints the arrow button. The painting is delegated to the
+   * Paints the arrow button. The painting is delegated to the
    * paintTriangle method.
    *
    * @param g The Graphics object to paint with.
@@ -204,147 +160,257 @@ public class BasicArrowButton extends JButton implements SwingConstants
   public void paint(Graphics g)
   {
     super.paint(g);
-    Insets insets = getInsets();
     Rectangle bounds = getBounds();
-    int x = insets.left
-            + (bounds.width - insets.left - insets.right - defaultSize) / 2;
-    int y = insets.top
-            + (bounds.height - insets.left - insets.right - defaultSize) / 2;
-    paintTriangle(g, x, y, defaultSize, direction, isEnabled());
+    int size = bounds.height / 4;
+    int x = (bounds.width - size) / 2;
+    int y = (bounds.height - size) / 2;
+    ButtonModel m = getModel();
+    if (m.isArmed())
+      {
+        x++;
+        y++;
+      }
+    paintTriangle(g, x, y, size, direction, isEnabled());
   }
 
+  /** The preferred size for the button. */
+  private static final Dimension PREFERRED_SIZE = new Dimension(16, 16);
+
+  /** The minimum size for the button. */
+  private static final Dimension MINIMUM_SIZE = new Dimension(5, 5);
+
+  /** The maximum size for the button. */
+  private static final Dimension MAXIMUM_SIZE 
+    = new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+  
   /**
-   * This method returns the preferred size of the arrow button.
+   * Returns the preferred size of the arrow button.
    *
-   * @return The preferred size.
+   * @return The preferred size (always 16 x 16).
    */
   public Dimension getPreferredSize()
   {
-    Insets insets = getInsets();
-    int w = defaultSize + insets.left + insets.right;
-    int h = defaultSize + insets.top + insets.bottom;
-
-    return new Dimension(w, h);
+    return PREFERRED_SIZE;
   }
 
   /**
-   * This method returns the minimum size of the arrow button.
+   * Returns the minimum size of the arrow button.
    *
-   * @return The minimum size.
+   * @return The minimum size (always 5 x 5).
    */
   public Dimension getMinimumSize()
   {
-    return getPreferredSize();
+    return MINIMUM_SIZE;
   }
 
   /**
-   * This method returns the maximum size of the arrow button.
+   * Returns the maximum size of the arrow button.
    *
    * @return The maximum size.
    */
   public Dimension getMaximumSize()
   {
-    return getPreferredSize();
+    return MAXIMUM_SIZE;
   }
 
   /**
-   * The method paints a triangle with the given size and direction at the
-   * given x and y coordinates.
+   * Paints a triangle with the given size, location and direction.  It is 
+   * difficult to explain the rationale behind the positioning of the triangle
+   * relative to the given (x, y) position - by trial and error we seem to 
+   * match the behaviour of the reference implementation (which is missing a 
+   * specification for this method).
    *
-   * @param g The Graphics object to paint with.
-   * @param x The x coordinate to paint at.
-   * @param y The y coordinate to paint at.
-   * @param size The size of the icon.
-   * @param direction The direction of the icon.
-   * @param isEnabled Whether it is enabled.
+   * @param g  the graphics device.
+   * @param x  the x-coordinate for the triangle's location.
+   * @param y  the y-coordinate for the triangle's location.
+   * @param size  the arrow size (depth).
+   * @param direction  the direction of the arrow (one of: {@link #NORTH}, 
+   *            {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
+   * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
+   *                   state, otherwise it is drawn in the disabled state.
    */
   public void paintTriangle(Graphics g, int x, int y, int size, int direction,
                             boolean isEnabled)
   {
-    Polygon arrow = null;
+    Color savedColor = g.getColor();
     switch (direction)
       {
       case NORTH:
-	arrow = upIcon;
-	break;
+        paintTriangleNorth(g, x, y, size, isEnabled);
+        break;
       case SOUTH:
-	arrow = downIcon;
-	break;
-      case EAST:
-      case RIGHT:
-	arrow = rightIcon;
-	break;
-      case WEST:
-      case LEFT:
-	arrow = leftIcon;
-	break;
-      }
-
-    int[] xPoints = arrow.xpoints;
-    int[] yPoints = arrow.ypoints;
-    int x1;
-    int y1;
-    int x2;
-    int y2;
-    x1 = y1 = x2 = y2 = 0;
-
-    if (size != defaultSize)
-      {
-	float scale = size * 1f / defaultSize;
-	for (int i = 0; i < 3; i++)
-	  {
-	    xPoints[i] *= scale;
-	    yPoints[i] *= scale;
-	  }
-      }
-    g.translate(x, y);
-
-    switch (direction)
-      {
-      case NORTH:
-	x1 = xPoints[0] + 2;
-	y1 = yPoints[0];
-	y2 = y1;
-	x2 = xPoints[2] - 1;
-	break;
-      case SOUTH:
-	x1 = xPoints[1];
-	y1 = yPoints[1] + 1;
-	x2 = xPoints[2] - 1;
-	y2 = yPoints[2];
-	break;
+        paintTriangleSouth(g, x, y, size, isEnabled);
+        break;
       case LEFT:
       case WEST:
-	x1 = xPoints[0] + 1;
-	y1 = yPoints[0] + 1;
-	x2 = x1;
-	y2 = yPoints[2] + 1;
-	break;
+        paintTriangleWest(g, x, y, size, isEnabled);
+        break;
       case RIGHT:
       case EAST:
-	x1 = xPoints[2];
-	y1 = yPoints[2] + 1;
-	x2 = xPoints[1] - 1;
-	y2 = yPoints[1] + 1;
-	break;
+        paintTriangleEast(g, x, y, size, isEnabled);
+        break;
       }
-    Color saved = g.getColor();
-
-    if (isEnabled)
-      {
-	g.setColor(Color.DARK_GRAY);
-
-	if (arrow != null)
-	  g.fillPolygon(xPoints, yPoints, 3);
-      }
-    else
-      {
-	g.setColor(Color.GRAY);
-	g.fillPolygon(xPoints, yPoints, 3);
-	g.setColor(Color.WHITE);
-	g.drawLine(x1, y1, x2, y2);
-      }
-    g.setColor(saved);
-    g.translate(-x, -y);
+    g.setColor(savedColor);
   }
+  
+  /**
+   * Paints an upward-pointing triangle.  This method is called by the 
+   * {@link #paintTriangle(Graphics, int, int, int, int, boolean)} method.
+   * 
+   * @param g  the graphics device.
+   * @param x  the x-coordinate for the anchor point.
+   * @param y  the y-coordinate for the anchor point.
+   * @param size  the arrow size (depth).
+   * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
+   *                   state, otherwise it is drawn in the disabled state.
+   */
+  private void paintTriangleNorth(Graphics g, int x, int y, int size, 
+          boolean isEnabled)
+  {
+    int tipX = x + (size - 2) / 2;
+    int tipY = y;
+    int baseX1 = tipX - (size - 1);
+    int baseX2 = tipX + (size - 1);
+    int baseY = y + (size - 1);
+    Polygon triangle = new Polygon();
+    triangle.addPoint(tipX, tipY);
+    triangle.addPoint(baseX1, baseY);
+    triangle.addPoint(baseX2, baseY);
+    if (isEnabled)
+     {
+       g.setColor(Color.DARK_GRAY);
+       g.fillPolygon(triangle);
+       g.drawPolygon(triangle);
+     }
+    else
+     {
+       g.setColor(Color.GRAY);
+       g.fillPolygon(triangle);
+       g.drawPolygon(triangle);
+       g.setColor(Color.WHITE);
+       g.drawLine(baseX1 + 1, baseY + 1, baseX2 + 1, baseY + 1);
+     }
+  }
+  
+  /**
+   * Paints an downward-pointing triangle.  This method is called by the 
+   * {@link #paintTriangle(Graphics, int, int, int, int, boolean)} method.
+   * 
+   * @param g  the graphics device.
+   * @param x  the x-coordinate for the anchor point.
+   * @param y  the y-coordinate for the anchor point.
+   * @param size  the arrow size (depth).
+   * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
+   *                   state, otherwise it is drawn in the disabled state.
+   */
+  private void paintTriangleSouth(Graphics g, int x, int y, int size, 
+          boolean isEnabled)
+  {
+    int tipX = x + (size - 2) / 2;
+    int tipY = y + (size - 1);
+    int baseX1 = tipX - (size - 1);
+    int baseX2 = tipX + (size - 1);
+    int baseY = y;
+    Polygon triangle = new Polygon();
+    triangle.addPoint(tipX, tipY);
+    triangle.addPoint(baseX1, baseY);
+    triangle.addPoint(baseX2, baseY);
+    if (isEnabled)
+     {
+       g.setColor(Color.DARK_GRAY);
+       g.fillPolygon(triangle);
+       g.drawPolygon(triangle);
+     }
+    else
+     {
+       g.setColor(Color.GRAY);
+       g.fillPolygon(triangle);
+       g.drawPolygon(triangle);
+       g.setColor(Color.WHITE);
+       g.drawLine(tipX + 1, tipY, baseX2, baseY + 1);
+       g.drawLine(tipX + 1, tipY + 1, baseX2 + 1, baseY + 1);
+     }
+  }
+  
+  /**
+   * Paints a right-pointing triangle.  This method is called by the 
+   * {@link #paintTriangle(Graphics, int, int, int, int, boolean)} method.
+   * 
+   * @param g  the graphics device.
+   * @param x  the x-coordinate for the anchor point.
+   * @param y  the y-coordinate for the anchor point.
+   * @param size  the arrow size (depth).
+   * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
+   *                   state, otherwise it is drawn in the disabled state.
+   */
+  private void paintTriangleEast(Graphics g, int x, int y, int size, 
+          boolean isEnabled)
+  {
+    int tipX = x + (size - 1);
+    int tipY = y + (size - 2) / 2;
+    int baseX = x;
+    int baseY1 = tipY - (size - 1);
+    int baseY2 = tipY + (size - 1);
+    
+    Polygon triangle = new Polygon();
+    triangle.addPoint(tipX, tipY);
+    triangle.addPoint(baseX, baseY1);
+    triangle.addPoint(baseX, baseY2);
+    if (isEnabled)
+     {
+       g.setColor(Color.DARK_GRAY);
+       g.fillPolygon(triangle);
+       g.drawPolygon(triangle);
+     }
+    else
+     {
+       g.setColor(Color.GRAY);
+       g.fillPolygon(triangle);
+       g.drawPolygon(triangle);
+       g.setColor(Color.WHITE);
+       g.drawLine(baseX + 1, baseY2, tipX, tipY + 1);
+       g.drawLine(baseX + 1, baseY2 + 1, tipX + 1, tipY + 1);
+     }
+  }
+  
+  /**
+   * Paints a left-pointing triangle.  This method is called by the 
+   * {@link #paintTriangle(Graphics, int, int, int, int, boolean)} method.
+   * 
+   * @param g  the graphics device.
+   * @param x  the x-coordinate for the anchor point.
+   * @param y  the y-coordinate for the anchor point.
+   * @param size  the arrow size (depth).
+   * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
+   *                   state, otherwise it is drawn in the disabled state.
+   */
+  private void paintTriangleWest(Graphics g, int x, int y, int size, 
+          boolean isEnabled)
+  {
+    int tipX = x;
+    int tipY = y + (size - 2) / 2;
+    int baseX = x + (size - 1);
+    int baseY1 = tipY - (size - 1);
+    int baseY2 = tipY + (size - 1);
+    
+    Polygon triangle = new Polygon();
+    triangle.addPoint(tipX, tipY);
+    triangle.addPoint(baseX, baseY1);
+    triangle.addPoint(baseX, baseY2);
+    if (isEnabled)
+     {
+       g.setColor(Color.DARK_GRAY);
+       g.fillPolygon(triangle);
+       g.drawPolygon(triangle);
+     }
+    else
+     {
+       g.setColor(Color.GRAY);
+       g.fillPolygon(triangle);
+       g.drawPolygon(triangle);
+       g.setColor(Color.WHITE);
+       g.drawLine(baseX + 1, baseY1 + 1, baseX + 1, baseY2 + 1);
+     }
+  }
+  
 }

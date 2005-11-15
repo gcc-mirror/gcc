@@ -1,5 +1,5 @@
 /* RealmChoiceCallback.java --
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,6 +43,8 @@ import javax.security.auth.callback.ChoiceCallback;
 /**
  * This callback is used by {@link SaslClient} and {@link SaslServer} to obtain
  * a realm given a list of realm choices.
+ *
+ * @since 1.5
  */
 public class RealmChoiceCallback extends ChoiceCallback
 {

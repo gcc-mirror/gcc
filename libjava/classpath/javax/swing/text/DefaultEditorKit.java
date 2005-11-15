@@ -66,8 +66,7 @@ public class DefaultEditorKit extends EditorKit
    *
    * @see Toolkit#beep()
    */
-  public static class BeepAction
-    extends TextAction
+  public static class BeepAction extends TextAction
   {
     /**
      * Creates a new <code>BeepAction</code>.
@@ -95,8 +94,7 @@ public class DefaultEditorKit extends EditorKit
    * @see CutAction
    * @see PasteAction
    */
-  public static class CopyAction 
-    extends TextAction
+  public static class CopyAction extends TextAction
   {
 
     /**
@@ -128,8 +126,7 @@ public class DefaultEditorKit extends EditorKit
    * @see CopyAction
    * @see PasteAction
    */
-  public static class CutAction 
-    extends TextAction
+  public static class CutAction extends TextAction
   {
 
     /**
@@ -159,8 +156,7 @@ public class DefaultEditorKit extends EditorKit
    * @see CopyAction
    * @see CutAction
    */
-  public static class PasteAction 
-    extends TextAction
+  public static class PasteAction extends TextAction
   {
 
     /**
@@ -226,9 +222,6 @@ public class DefaultEditorKit extends EditorKit
             {
               t.getDocument().insertString(t.getCaret().getDot(),
                                            event.getActionCommand(), null);
-              t.getCaret().setDot(Math.min(t.getCaret().getDot() + 1,
-                                           t.getDocument().getEndPosition()
-                                           .getOffset()));
             }
           catch (BadLocationException be)
             {
@@ -243,8 +236,7 @@ public class DefaultEditorKit extends EditorKit
    * of the text component. This is typically triggered by hitting
    * ENTER on the keyboard.
    */
-  public static class InsertBreakAction 
-    extends TextAction
+  public static class InsertBreakAction extends TextAction
   {
 
     /**
@@ -273,8 +265,7 @@ public class DefaultEditorKit extends EditorKit
    */
   // FIXME: Figure out what this Action is supposed to do. Obviously text
   // that is entered by the user is inserted through DefaultKeyTypedAction.
-  public static class InsertContentAction 
-    extends TextAction
+  public static class InsertContentAction extends TextAction
   {
 
     /**
@@ -292,14 +283,15 @@ public class DefaultEditorKit extends EditorKit
      */
     public void actionPerformed(ActionEvent event)
     {
+      // FIXME: Figure out what this Action is supposed to do. Obviously text
+      // that is entered by the user is inserted through DefaultKeyTypedAction.
     }
   }
 
   /**
    * Inserts a TAB character into the text editor.
    */
-  public static class InsertTabAction 
-    extends TextAction
+  public static class InsertTabAction extends TextAction
   {
 
     /**
@@ -699,6 +691,7 @@ public class DefaultEditorKit extends EditorKit
    */
   public DefaultEditorKit()
   {
+    // Nothing to do here.
   }
 
   /**
@@ -954,15 +947,23 @@ public class DefaultEditorKit extends EditorKit
    * @param offset the beginning offset from where to write
    * @param len the length of the fragment to write
    *
-   * @throws BadLocationException if <code>offset</code> or
-   *         <code>offset + len</code>is an invalid location inside
-   *         <code>document</code>
+   * @throws BadLocationException if <code>offset</code> is an 
+   * invalid location inside <code>document</code>.
    * @throws IOException if something goes wrong while writing to
    *        <code>out</code>
    */
   public void write(Writer out, Document document, int offset, int len)
-    throws BadLocationException, IOException
+      throws BadLocationException, IOException
   {
-    // TODO: Implement this properly.
+    // Throw a BLE if offset is invalid
+    if (offset < 0 || offset > document.getLength())
+      throw new BadLocationException("Tried to write to invalid location",
+                                     offset);
+
+    // If they gave an overly large len, just adjust it
+    if (offset + len > document.getLength())
+      len = document.getLength() - offset;
+
+    out.write(document.getText(offset, len));
   }
 }

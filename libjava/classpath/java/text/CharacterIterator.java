@@ -68,7 +68,7 @@ public interface CharacterIterator extends Cloneable
    * <code>getEndIndex() - 1</code>, it will not be incremented.
    *
    * @return The character at the position of the incremented index value,
-   * or <code>DONE</code> if the index has reached getEndIndex() - 1
+   * or {@link #DONE} if the index has reached getEndIndex() - 1
    */
   char next();
 

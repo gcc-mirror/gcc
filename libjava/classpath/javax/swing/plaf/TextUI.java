@@ -57,14 +57,14 @@ import javax.swing.text.View;
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class TextUI
-  extends ComponentUI
+public abstract class TextUI extends ComponentUI
 {
   /**
    * Constructs a new <code>TextUI</code>.
    */  
   public TextUI()
   {
+    // Nothing to do here.
   }
 
 

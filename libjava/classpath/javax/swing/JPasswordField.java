@@ -67,6 +67,7 @@ public class JPasswordField extends JTextField
      */
     protected AccessibleJPasswordField()
     {
+      // Nothing to do here.
     }
 
     /**

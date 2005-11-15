@@ -70,8 +70,8 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
@@ -141,13 +141,14 @@ public class BasicOptionPaneUI extends OptionPaneUI
                                                                               optionPane);
       if (inf != null)
         {
-	  try
-	    {
-	      inf.setClosed(true);
-	    }
-	  catch (PropertyVetoException pve)
-	    {
-	    }
+          try
+            {
+              inf.setClosed(true);
+            }
+          catch (PropertyVetoException pve)
+            {
+              // We do nothing if attempt has been vetoed.
+            }
         }
     }
   }
@@ -405,15 +406,29 @@ public class BasicOptionPaneUI extends OptionPaneUI
                || e.getPropertyName().equals(JOptionPane.WANTS_INPUT_PROPERTY)
                || e.getPropertyName().equals(JOptionPane.SELECTION_VALUES_PROPERTY))
         {
-	  optionPane.removeAll();
-	  messageAreaContainer = createMessageArea();
-	  optionPane.add(messageAreaContainer);
-	  optionPane.add(buttonContainer);
+          optionPane.remove(messageAreaContainer);
+          messageAreaContainer = createMessageArea();
+          optionPane.add(messageAreaContainer);
+          Container newButtons = createButtonArea();
+          optionPane.remove(buttonContainer);
+          optionPane.add(newButtons);
+          buttonContainer = newButtons;
+          optionPane.add(buttonContainer);
         }
       optionPane.invalidate();
       optionPane.repaint();
     }
   }
+
+  /**
+   * The minimum width for JOptionPanes.
+   */
+  public static final int MinimumWidth = 262;
+
+  /**
+   * The minimum height for JOptionPanes.
+   */
+  public static final int MinimumHeight = 90;
 
   /** Whether the JOptionPane contains custom components. */
   protected boolean hasCustomComponents = false;
@@ -432,12 +447,6 @@ public class BasicOptionPaneUI extends OptionPaneUI
 
   /** The component that receives input when the JOptionPane needs it. */
   protected JComponent inputComponent;
-
-  /** The minimum height of the JOptionPane. */
-  public static int minimumHeight;
-
-  /** The minimum width of the JOptionPane. */
-  public static int minimumWidth;
 
   /** The minimum dimensions of the JOptionPane. */
   protected Dimension minimumSize;
@@ -518,6 +527,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
      */
     public void paintIcon(Component c, Graphics g, int x, int y)
     {
+      // Nothing to do here.
     }
   }
 
@@ -637,6 +647,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
    */
   public BasicOptionPaneUI()
   {
+    // Nothing to do here.
   }
 
   /**
@@ -860,10 +871,10 @@ public class BasicOptionPaneUI extends OptionPaneUI
     addIcon(messageArea);
 
     JPanel rightSide = new JPanel();
-    rightSide.setBorder(BorderFactory.createEmptyBorder(0, 11, 17, 0));
+    rightSide.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
     rightSide.setLayout(new GridBagLayout());
     GridBagConstraints con = createConstraints();
-
+    
     addMessageComponents(rightSide, con, getMessage(),
                          getMaxCharactersPerLineCount(), false);
 
@@ -886,7 +897,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
 	  }
       }
 
-    messageArea.add(rightSide, BorderLayout.EAST);
+    messageArea.add(rightSide, BorderLayout.CENTER);
 
     return messageArea;
   }
@@ -944,8 +955,14 @@ public class BasicOptionPaneUI extends OptionPaneUI
       case JOptionPane.YES_NO_CANCEL_OPTION:
 	return new Object[] { YES_STRING, NO_STRING, CANCEL_STRING };
       case JOptionPane.OK_CANCEL_OPTION:
-      case JOptionPane.DEFAULT_OPTION:
 	return new Object[] { OK_STRING, CANCEL_STRING };
+      case JOptionPane.DEFAULT_OPTION:
+        return (optionPane.getWantsInput() ) ?
+               new Object[] { OK_STRING, CANCEL_STRING } :
+               ( optionPane.getMessageType() == JOptionPane.QUESTION_MESSAGE ) ?
+               new Object[] { YES_STRING, NO_STRING, CANCEL_STRING } :
+               // ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, PLAIN_MESSAGE
+               new Object[] { OK_STRING };
       }
     return null;
   }
@@ -1142,21 +1159,17 @@ public class BasicOptionPaneUI extends OptionPaneUI
    */
   protected void installDefaults()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-
-    optionPane.setFont(defaults.getFont("OptionPane.font"));
-    optionPane.setBackground(defaults.getColor("OptionPane.background"));
-    optionPane.setForeground(defaults.getColor("OptionPane.foreground"));
-    optionPane.setBorder(defaults.getBorder("OptionPane.border"));
+    LookAndFeel.installColorsAndFont(optionPane, "OptionPane.background",
+                                     "OptionPane.foreground",
+                                     "OptionPane.font");
+    LookAndFeel.installBorder(optionPane, "OptionPane.border");
     optionPane.setOpaque(true);
 
-    messageBorder = defaults.getBorder("OptionPane.messageAreaBorder");
-    messageForeground = defaults.getColor("OptionPane.messageForeground");
-    buttonBorder = defaults.getBorder("OptionPane.buttonAreaBorder");
+    messageBorder = UIManager.getBorder("OptionPane.messageAreaBorder");
+    messageForeground = UIManager.getColor("OptionPane.messageForeground");
+    buttonBorder = UIManager.getBorder("OptionPane.buttonAreaBorder");
 
-    minimumSize = defaults.getDimension("OptionPane.minimumSize");
-    minimumWidth = minimumSize.width;
-    minimumHeight = minimumSize.height;
+    minimumSize = UIManager.getDimension("OptionPane.minimumSize");
 
     // FIXME: Image icons don't seem to work properly right now.
     // Once they do, replace the synthetic icons with these ones.

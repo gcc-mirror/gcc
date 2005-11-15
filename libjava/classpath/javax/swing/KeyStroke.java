@@ -51,6 +51,7 @@ public class KeyStroke
   // Called by java.awt.AWTKeyStroke.registerSubclass via reflection.
   private KeyStroke()
   {
+    // Nothing to do here.
   }
   
   private KeyStroke(char keyChar, int keyCode, int modifiers,

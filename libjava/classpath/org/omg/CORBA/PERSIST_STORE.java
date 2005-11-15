@@ -57,7 +57,7 @@ public class PERSIST_STORE
   /**
    * Creates a PERSIST_STORE with the default minor code of 0,
    * completion state COMPLETED_NO and the given explaining message.
-   * @param reasom the explaining message.
+   * @param message the explaining message.
    */
   public PERSIST_STORE(String message)
   {

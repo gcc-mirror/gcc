@@ -201,6 +201,15 @@ public interface GSSName
   boolean equals(Object another);
 
   /**
+   * Return the hashcode of this GSSName. When overriding {@link #equals},
+   * it is normally necessary to override hashCode() as well.
+   *
+   * @return the hash code that must be the same for two names if {@link #equals}
+   * returns true.
+   */
+  int hashCode();
+
+  /**
    * Creates a mechanism name (MN) from an arbitrary internal name.  This
    * is equivalent to using the factory methods {@link
    * GSSManager#createName(java.lang.String,org.ietf.jgss.Oid,org.ietf.jgss.Oid)}

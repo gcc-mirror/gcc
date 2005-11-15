@@ -38,8 +38,41 @@ exception statement from your version. */
 
 package javax.imageio.metadata;
 
+import org.w3c.dom.Node;
+
 /**
+ * Represents metadata that describe an image or an image stream.
+ * Each ImageIO plugin will represent image data using an opaque
+ * object but all such objects should expose their internal
+ * information as a tree of IIOMetadataNodes.
+ *
+ * There are three formats of metadata that a plugin can support:
+ *
+ * <ul>
+ *   <li>a "native" format</li>
+ *   <li>a custom format</li>
+ *   <li>a standard plugin-neutral format</li>
+ * </ul>
+ *
+ * If a plugin supports more than one format of metadata, the other
+ * formats can be retrieved by calling getMetadataFormatNames.
+ *
+ * The native format is used to transfer metadata from one image to
+ * another image of the same type, losslessly.
+ *
+ * The custom format describes the image metadata and exposes a tree
+ * of IIOMetadataNodes but its internal representation is specific to
+ * this plugin.
+ *
+ * The plugin-neutral format uses a generic tree structure as its
+ * internal representation.
+ *
+ * ImageTranscoders may be used to convert metadata understood by one
+ * plugin to metadata understood by another, however the conversion
+ * may be lossy.
+ *
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Thomas Fitzsimmons (fitzsim@redhat.com)
  */
 public abstract class IIOMetadata
 {
@@ -52,7 +85,7 @@ public abstract class IIOMetadata
   protected boolean standardFormatSupported;
 
   /**
-   * Creates a <code>IIOMetaData</code> object.
+   * Construct an IIOMetadata object.
    */
   protected IIOMetadata()
   {
@@ -60,7 +93,7 @@ public abstract class IIOMetadata
   }
 
   /**
-   * Creates a <code>IIOMetaData</code> object with the given arguments.
+   * Construct an IIOMetadata object.
    *
    * @param standardMetadataFormatSupported
    * @param nativeMetadataFormatName
@@ -209,5 +242,82 @@ public abstract class IIOMetadata
   public void setController(IIOMetadataController controller)
   {
     this.controller = controller;
+  }
+
+  public abstract Node getAsTree (String formatName);
+
+  protected IIOMetadataNode getStandardChromaNode ()
+  {
+    return null;
+  }
+
+  protected IIOMetadataNode getStandardCompressionNode ()
+  {
+    return null;
+  }
+
+  protected IIOMetadataNode getStandardDataNode ()
+  {
+    return null;
+  }
+
+  protected IIOMetadataNode getStandardDimensionNode ()
+  {
+    return null;
+  }
+
+  protected IIOMetadataNode getStandardDocumentNode ()
+  {
+    return null;
+  }
+
+  protected IIOMetadataNode getStandardTextNode ()
+  {
+    return null;
+  }
+
+  protected IIOMetadataNode getStandardTileNode ()
+  {
+    return null;
+  }
+
+  protected IIOMetadataNode getStandardTransparencyNode ()
+  {
+    return null;
+  }
+
+  private void appendChild (IIOMetadataNode node,
+			    IIOMetadataNode child)
+  {
+    if (child != null)
+      node.appendChild(child);
+  }
+
+  protected final IIOMetadataNode getStandardTree ()
+  {
+    IIOMetadataNode node = new IIOMetadataNode();
+
+    appendChild (node, getStandardChromaNode());
+    appendChild (node, getStandardCompressionNode());
+    appendChild (node, getStandardDataNode());
+    appendChild (node, getStandardDimensionNode());
+    appendChild (node, getStandardDocumentNode());
+    appendChild (node, getStandardTextNode());
+    appendChild (node, getStandardTileNode());
+    appendChild (node, getStandardTransparencyNode());
+
+    return node;
+  }
+
+  public abstract void mergeTree (String formatName,
+                                  Node root)
+    throws IIOInvalidTreeException;
+
+  public void setFromTree (String formatName, Node root)
+    throws IIOInvalidTreeException
+  {
+    reset();
+
+    mergeTree (formatName, root);
   }
 }

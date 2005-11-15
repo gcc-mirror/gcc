@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
+import gnu.CORBA.Minor;
 import gnu.CORBA.TypeCodeHelper;
 
 import org.omg.CORBA.portable.ApplicationException;
@@ -52,7 +53,7 @@ import java.io.Serializable;
 /**
  * The stub for the IDL type. This stub can be used to access the
  * remote IDL type object, if its IOR is known. To create the
- * working instance with the known IOR, pass {@link gnu.CORBA.IOR_Delegate}
+ * working instance with the known IOR, pass {@link gnu.CORBA.IorDelegate}
  * to the constructor.
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
@@ -78,7 +79,7 @@ public class _IDLTypeStub
   /**
    * Create an instance with the given delegate.
    *
-   * @see gnu.CORBA.IOR_Delegate
+   * @see gnu.CORBA.IorDelegate
    */
   public _IDLTypeStub(Delegate delegate)
   {
@@ -114,6 +115,7 @@ public class _IDLTypeStub
     catch (UserException ex)
       {
         MARSHAL m = new MARSHAL();
+        m.minor = Minor.UserException;
         m.initCause(ex);
         throw m;
       }

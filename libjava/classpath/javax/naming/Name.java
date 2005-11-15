@@ -1,5 +1,5 @@
 /* Name.java -- Name build up from different components
-   Copyright (C) 2000, 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,7 +60,7 @@ import java.util.Enumeration;
  * @author Anthony Green (green@redhat.com)
  * @author Mark Wielaard (mark@klomp.org)
  */
-public interface Name extends Cloneable, Serializable
+public interface Name extends Cloneable, Serializable, Comparable
 {
   long serialVersionUID = -3617482732056931635L;
 

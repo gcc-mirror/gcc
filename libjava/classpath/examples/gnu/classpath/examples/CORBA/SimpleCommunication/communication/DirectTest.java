@@ -57,7 +57,7 @@ import java.io.IOException;
  * where the program has been started.
  *
  * The IOR.txt file is written by the server
- * {@link gnu.classpath.examples.CORBA.SimpleCommunication.comServer}.
+ * {@link gnu.classpath.examples.CORBA.SimpleCommunication.DemoServer}.
  * The server should be reachable over Internet, unless blocked by
  * security tools.
  *
@@ -83,7 +83,7 @@ public class DirectTest
   /**
    * The invocation target.
    */
-  comTester object;
+  DemoTester object;
 
   /**
    * Get the object reference.
@@ -102,7 +102,7 @@ public class DirectTest
 
         String ior = new String(c);
         DirectTest we = new DirectTest();
-        we.object = (comTester) orb.string_to_object(ior);
+        we.object = (DemoTester) orb.string_to_object(ior);
         we.Demo();
         orb.shutdown(false);
       }
@@ -199,11 +199,11 @@ public class DirectTest
   {
     System.out.println("***** Pass structure");
 
-    passThis arg = new passThis();
+    StructureToPass arg = new StructureToPass();
     arg.a = "A";
     arg.b = "B";
 
-    returnThis r = object.passStructure(arg);
+    StructureToReturn r = object.passStructure(arg);
 
     System.out.println("  Fields of the returned structure:");
 
@@ -257,15 +257,15 @@ public class DirectTest
     //      +-- bb
     System.out.println("***** Pass and return the tree.");
 
-    node n = nod("Root");
+    TreeNode n = nod("Root");
 
-    n.children = new node[] { nod("a"), nod("b") };
-    n.children [ 1 ].children = new node[] { nod("ba"), nod("bb") };
-    n.children [ 1 ].children [ 0 ].children = new node[] { nod("bac") };
+    n.children = new TreeNode[] { nod("a"), nod("b") };
+    n.children [ 1 ].children = new TreeNode[] { nod("ba"), nod("bb") };
+    n.children [ 1 ].children [ 0 ].children = new TreeNode[] { nod("bac") };
 
-    nodeHolder nh = new nodeHolder(n);
+    TreeNodeHolder nh = new TreeNodeHolder(n);
 
-    // The server should add '++' to each node name.
+    // The server should add '++' to each TreeNode name.
     object.passTree(nh);
 
     // Convert the returned tree to some strig representation.
@@ -288,7 +288,7 @@ public class DirectTest
         object.throwException(123);
         throw new InternalError();
       }
-    catch (ourUserException uex)
+    catch (WeThrowThisException uex)
       {
         System.out.println("  The user exception with field " + uex.ourField +
                            ", has been thrown on remote side."
@@ -312,9 +312,9 @@ public class DirectTest
   /**
    * Get the string representation of the passed tree.
    * @param b the string buffer to accumulate the representation.
-   * @param n the tree (root node).
+   * @param n the tree (root TreeNode).
    */
-  private void getImage(StringBuffer b, node n)
+  private void getImage(StringBuffer b, TreeNode n)
   {
     b.append(n.name);
     b.append(": (");
@@ -328,15 +328,15 @@ public class DirectTest
   }
 
   /**
-   * Create a node with the given header.
+   * Create a TreeNode with the given header.
    *
-   * @param hdr the node header.
-   * @return the created node.
+   * @param hdr the TreeNode header.
+   * @return the created TreeNode.
    */
-  private node nod(String hdr)
+  private TreeNode nod(String hdr)
   {
-    node n = new node();
-    n.children = new node[ 0 ];
+    TreeNode n = new TreeNode();
+    n.children = new TreeNode[ 0 ];
     n.name = hdr;
 
     return n;

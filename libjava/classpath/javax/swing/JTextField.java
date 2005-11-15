@@ -46,9 +46,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleStateSet;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
@@ -69,15 +68,19 @@ public class JTextField extends JTextComponent
      */
     protected AccessibleJTextField()
     {
+      super();
     }
 
     /**
-     * getAccessibleStateSet
-     * @return AccessibleStateSet
+     * Returns the accessible state of this <code>AccessibleJTextField</code>.
+     *
+     * @return the accessible state of this <code>AccessibleJTextField</code>
      */
     public AccessibleStateSet getAccessibleStateSet()
     {
-      return null;
+      AccessibleStateSet state = super.getAccessibleStateSet();
+      // TODO: Figure out what state must be added here to the super's state.
+      return state;
     }
   }
 
@@ -92,17 +95,17 @@ public class JTextField extends JTextComponent
   public static final String notifyAction = "notify-field-accept";
   
   static
-  {
-    actions = new Action[1];
-    actions[0] = new TextAction(notifyAction)
+    {
+      actions = new Action[1];
+      actions[0] = new TextAction(notifyAction)
       {
-	public void actionPerformed(ActionEvent event)
-	{
-	  JTextField textField = (JTextField) event.getSource();
-	  textField.fireActionPerformed();
-	}
+        public void actionPerformed(ActionEvent event)
+        {
+          JTextField textField = (JTextField) event.getSource();
+          textField.fireActionPerformed();
+        }
       };
-  }
+    }
   
   private int columns;
   private int align;
@@ -115,6 +118,11 @@ public class JTextField extends JTextComponent
   private String actionCommand;
   
   private PropertyChangeListener actionPropertyChangeListener;
+
+  /**
+   * The horizontal visibility of the textfield.
+   */
+  private BoundedRangeModel horizontalVisibility;
 
   /**
    * Creates a new instance of <code>JTextField</code>.
@@ -172,9 +180,9 @@ public class JTextField extends JTextComponent
   {
     if (columns < 0)
       throw new IllegalArgumentException();
-    
+
     this.columns = columns;
-    
+
     setDocument(doc == null ? createDefaultModel() : doc);
 
     if (text != null)
@@ -182,6 +190,9 @@ public class JTextField extends JTextComponent
 
     // default value for alignment
     align = LEADING;
+
+    // Initialize the horizontal visibility model.
+    horizontalVisibility = new DefaultBoundedRangeModel();
   }
 
   /**
@@ -192,15 +203,9 @@ public class JTextField extends JTextComponent
    */
   protected Document createDefaultModel()
   {
-    // subclassed to swallow newlines
-    return new PlainDocument() {
-        public void insertString(int offset, String str, AttributeSet a)
-          throws BadLocationException
-        {
-          if (str != null && str.indexOf('\n') == -1)
-            super.insertString(offset, str, a);
-        }
-      };
+    PlainDocument doc = new PlainDocument();
+    doc.putProperty("filterNewlines", Boolean.TRUE);
+    return doc;
   }
 
   /**
@@ -268,6 +273,11 @@ public class JTextField extends JTextComponent
     return columns;
   }
 
+  /**
+   * Sets the number of columns and then invalidates the layout.
+   * @param columns the number of columns
+   * @throws IllegalArgumentException if columns < 0
+   */
   public void setColumns(int columns)
   {
     if (columns < 0)
@@ -275,16 +285,31 @@ public class JTextField extends JTextComponent
 
     this.columns = columns;
     invalidate();
+    //FIXME: do we need this repaint call?
     repaint();
   }
 
+  /**
+   * Returns the horizontal alignment, which is one of: JTextField.LEFT, 
+   * JTextField.CENTER, JTextField.RIGHT, JTextField.LEADING, 
+   * JTextField.TRAILING.
+   * @return the horizontal alignment
+   */
   public int getHorizontalAlignment()
   {
     return align;
   }
 
+  /**
+   * Sets the horizontal alignment of the text.  Calls invalidate and repaint
+   * and fires a property change event.
+   * @param newAlign must be one of: JTextField.LEFT, JTextField.CENTER,
+   * JTextField.RIGHT, JTextField.LEADING, JTextField.TRAILING.
+   * @throws IllegalArgumentException if newAlign is not one of the above.
+   */
   public void setHorizontalAlignment(int newAlign)
   {
+    //FIXME: should throw an IllegalArgumentException if newAlign is invalid
     if (align == newAlign)
       return;
 
@@ -295,12 +320,20 @@ public class JTextField extends JTextComponent
     repaint();
   }
 
+  /**
+   * Sets the current font and revalidates so the font will take effect.
+   */
   public void setFont(Font newFont)
   {
     super.setFont(newFont);
     revalidate();
   }
 
+  /**
+   * Returns the preferred size.  If there is a non-zero number of columns, 
+   * this is the number of columns multiplied by the column width, otherwise
+   * it returns super.getPreferredSize().
+   */
   public Dimension getPreferredSize()
   {
     Dimension size = super.getPreferredSize();
@@ -318,6 +351,7 @@ public class JTextField extends JTextComponent
    */
   public int getScrollOffset()
   {
+    //FIXME: this should return horizontalVisibility's value
     return scrollOffset;
   }
 
@@ -328,9 +362,15 @@ public class JTextField extends JTextComponent
    */
   public void setScrollOffset(int offset)
   {
+    //FIXME: this should actualy scroll the field if needed
     scrollOffset = offset;
   }
 
+  /**
+   * Returns the set of Actions that are commands for the editor.
+   * This is the actions supported by this editor plus the actions
+   * of the UI (returned by JTextComponent.getActions()).
+   */
   public Action[] getActions()
   {
     return TextAction.augmentList(super.getActions(), actions);
@@ -364,26 +404,27 @@ public class JTextField extends JTextComponent
 
     if (action != null)
       {
-	removeActionListener(action);
-	action.removePropertyChangeListener(actionPropertyChangeListener);
-	actionPropertyChangeListener = null;
+        removeActionListener(action);
+        action.removePropertyChangeListener(actionPropertyChangeListener);
+        actionPropertyChangeListener = null;
       }
-    
+
     Action oldAction = action;
     action = newAction;
 
     if (action != null)
       {
-	addActionListener(action);
-	actionPropertyChangeListener =
-	  createActionPropertyChangeListener(action);
-	action.addPropertyChangeListener(actionPropertyChangeListener);
+        addActionListener(action);
+        actionPropertyChangeListener = createActionPropertyChangeListener(action);
+        action.addPropertyChangeListener(actionPropertyChangeListener);
       }
-    
+
+    //FIXME: is this a hack?  The horizontal alignment hasn't changed
     firePropertyChange("horizontalAlignment", oldAction, newAction);
   }
 
   /**
+   * Sets the command string used in action events.
    * @since 1.3
    */
   public void setActionCommand(String command)
@@ -397,45 +438,79 @@ public class JTextField extends JTextComponent
   protected PropertyChangeListener createActionPropertyChangeListener(Action action)
   {
     return new PropertyChangeListener()
+    {
+      public void propertyChange(PropertyChangeEvent event)
       {
-	public void propertyChange(PropertyChangeEvent event)
-	{
-	  // Update properties "action" and "horizontalAlignment".
-	  String name = event.getPropertyName();
+        // Update properties "action" and "horizontalAlignment".
+        String name = event.getPropertyName();
 
-	  if (name.equals("enabled"))
-	    {
-	      boolean enabled = ((Boolean) event.getNewValue()).booleanValue();
-	      JTextField.this.setEnabled(enabled);
-	    }
-	  else if (name.equals(Action.SHORT_DESCRIPTION))
-	    {
-	      JTextField.this.setToolTipText((String) event.getNewValue());
-	    }
-	}
-      };
+        if (name.equals("enabled"))
+          {
+            boolean enabled = ((Boolean) event.getNewValue()).booleanValue();
+            JTextField.this.setEnabled(enabled);
+          }
+        else if (name.equals(Action.SHORT_DESCRIPTION))
+          {
+            JTextField.this.setToolTipText((String) event.getNewValue());
+          }
+      }
+    };
   }
 
   /**
+   * 
    * @since 1.3
    */
   protected void configurePropertiesFromAction(Action action)
   {
     if (action != null)
       {
-	setEnabled(action.isEnabled());
-	setToolTipText((String) action.getValue(Action.SHORT_DESCRIPTION));
+        setEnabled(action.isEnabled());
+        setToolTipText((String) action.getValue(Action.SHORT_DESCRIPTION));
       }
     else
       {
-	setEnabled(true);      
-	setToolTipText(null);
+        setEnabled(true);
+        setToolTipText(null);
       }
   }
 
+  /**
+   * Returns the column width, which is the width of the character m
+   * for the font in use.
+   * @return the width of the character m for the font in use.
+   */
   protected int getColumnWidth()
   {
     FontMetrics metrics = getToolkit().getFontMetrics(getFont());
     return metrics.charWidth('m');
+  }
+
+  /**
+   * Returns the accessible context associated with the <code>JTextField</code>.
+   *
+   * @return the accessible context associated with the <code>JTextField</code>
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJTextField();
+    return accessibleContext;
+  }
+
+  /**
+   * Returns the bounded range model that describes the horizontal visibility
+   * of the text field in the case when the text does not fit into the
+   * available space. The actual values of this model are managed by the look
+   * and feel implementation.
+   *
+   * @return the bounded range model that describes the horizontal visibility
+   */
+  public BoundedRangeModel getHorizontalVisibility()
+  {
+    // TODO: The real implementation of this property is still missing.
+    // However, this is not done in JTextField but must instead be handled in
+    // javax.swing.text.FieldView.
+    return horizontalVisibility;
   }
 }

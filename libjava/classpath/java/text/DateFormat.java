@@ -58,6 +58,9 @@ import java.util.TimeZone;
 
 public abstract class DateFormat extends Format implements Cloneable
 {
+  private static final long serialVersionUID = 7218322306649953788L;
+
+  // Names fixed by serialization spec.
   protected Calendar calendar;
   protected NumberFormat numberFormat;
 

@@ -41,7 +41,6 @@ package javax.swing.plaf.basic;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.Polygon;
 import java.io.Serializable;
 
 import javax.swing.Icon;
@@ -241,34 +240,33 @@ public class BasicIconFactory implements Serializable
   {
     return new DummyIcon();
   }
+  
+  /**
+   * Returns a new instance of a 4 x 8 icon showing a small black triangle that
+   * points to the right.  This is displayed in menu items that have a 
+   * sub menu.
+   * 
+   * @return The icon.
+   */
   public static Icon getMenuArrowIcon()
   {
     return new Icon()
       {
 	public int getIconHeight()
 	{
-	  return 12;
+	  return 8;
 	}
-
 	public int getIconWidth()
 	{
-	  return 12;
+	  return 4;
 	}
-
 	public void paintIcon(Component c, Graphics g, int x, int y)
 	{
-	  g.translate(x, y);
-
 	  Color saved = g.getColor();
-
 	  g.setColor(Color.BLACK);
-
-	  g.fillPolygon(new Polygon(new int[] { 3, 9, 3 },
-                                  new int[] { 2, 6, 10 },
-                                  3));
-
+          for (int i = 0; i < 4; i++)
+            g.drawLine(x + i, y + i, x + i, y + 7 - i);
 	  g.setColor(saved);
-	  g.translate(-x, -y);
 	}
       };
   }

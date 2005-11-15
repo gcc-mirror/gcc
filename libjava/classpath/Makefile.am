@@ -11,7 +11,8 @@ native: lib
 
 EXTRA_DIST = HACKING BUGS THANKYOU mauve-classpath LICENSE \
              ChangeLog-2003 ChangeLog-2004 \
-             ChangeLog.gnujaxp.1 ChangeLog.gnujaxp.2 ChangeLog.libxmlj
+             ChangeLog.gnujaxp.1 ChangeLog.gnujaxp.2 ChangeLog.libxmlj \
+	     autogen.sh
 
 #DISTCHECK_CONFIGURE_FLAGS = --enable-gjdoc
 

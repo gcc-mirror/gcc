@@ -297,8 +297,8 @@ public abstract class Identity implements Principal, Serializable
 	if (identity == this)
 	  return true;
 
-	if ((((Identity) identity).getName() == this.name) &&
-	    (((Identity) identity).getScope() == this.scope))
+	if ((((Identity) identity).getName().equals(this.name)) &&
+	    (((Identity) identity).getScope().equals(this.scope)))
 	  return true;
 
 	return identityEquals((Identity) identity);
@@ -319,8 +319,8 @@ public abstract class Identity implements Principal, Serializable
    */
   protected boolean identityEquals(Identity identity)
   {
-    return ((identity.getName() == this.name) &&
-	    (identity.getPublicKey() == this.publicKey));
+    return ((identity.getName().equals(this.name)) &&
+	    (identity.getPublicKey().equals(this.publicKey)));
   }
 
   /**

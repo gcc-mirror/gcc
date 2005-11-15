@@ -52,8 +52,7 @@ import javax.swing.JComponent;
  * @author Andrew Selkirk
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class ComponentInputMapUIResource
-  extends ComponentInputMap
+public class ComponentInputMapUIResource extends ComponentInputMap
   implements UIResource
 {
   /**

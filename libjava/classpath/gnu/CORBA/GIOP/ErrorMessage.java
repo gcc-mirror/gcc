@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package gnu.CORBA.GIOP;
 
+import gnu.CORBA.OrbFunctional;
 import gnu.CORBA.IOR;
+import gnu.CORBA.Minor;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,6 +48,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import org.omg.CORBA.MARSHAL;
+import org.omg.CORBA.ORB;
 
 /**
  * The error message is sent in response to the message, encoded
@@ -59,6 +62,11 @@ import org.omg.CORBA.MARSHAL;
 public class ErrorMessage
   extends MessageHeader
 {
+  /** 
+   * Use serialVersionUID for interoperability. 
+   */
+  private static final long serialVersionUID = 1;
+  
   /**
    * Create a new error message, setting the message field
    * to the {@link MESSAGE_ERROR} and the version number to
@@ -73,14 +81,22 @@ public class ErrorMessage
   /**
    * Send the error message to the given IOR address.
    *
-   * @param to the IOR address (host and port, other fields
+   * @param ior the IOR address (host and port, other fields
    * are not used).
+   * 
+   * @param orb the ORB, sending the error message.
    */
-  public void send(IOR ior)
+  public void send(IOR ior, ORB orb)
   {
     try
       {
-        Socket socket = new Socket(ior.Internet.host, ior.Internet.port);
+        Socket socket;
+        
+        if (orb instanceof OrbFunctional)
+          socket = ((OrbFunctional) orb).socketFactory.createClientSocket(
+            ior.Internet.host, ior.Internet.port);
+        else
+          socket = new Socket(ior.Internet.host, ior.Internet.port);
 
         OutputStream socketOutput = socket.getOutputStream();
         write(socketOutput);
@@ -90,6 +106,7 @@ public class ErrorMessage
     catch (IOException ex)
       {
         MARSHAL t = new MARSHAL();
+        t.minor = Minor.Header;
         t.initCause(ex);
         throw t;
       }

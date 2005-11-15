@@ -64,7 +64,7 @@ public interface ComboBoxEditor
    * combo box list then this method should be called to change editting item
    * to the new selected item.
    *
-   * @param selectedItem item that is currently selected in the combo box
+   * @param item item that is currently selected in the combo box
    */
   void setItem(Object item);
 

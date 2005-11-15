@@ -166,7 +166,7 @@ proc scan_directory {basedir subdir} {
   set files {}
   set here [pwd]
   cd $basedir/$subdir
-  foreach file [lsort [glob *]] {
+  foreach file [lsort [glob -nocomplain *]] {
     if {[string match *.java $file]} {
       lappend files $subdir/$file
     } elseif {[file isdirectory $file]} {

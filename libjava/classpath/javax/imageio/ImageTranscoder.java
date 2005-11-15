@@ -41,14 +41,62 @@ package javax.imageio;
 import javax.imageio.metadata.IIOMetadata;
 
 /**
+ * An ImageTranscoder translates IIOMetadata objects provided by an
+ * ImageReader into corresponding IIOMetadata objects that can be
+ * understood by a given ImageWriter.
+ *
+ * Usually an ImageWriter will implement ImageTranscoder directly in
+ * which case the conversion methods will return IIOMetadata objects
+ * appropriate for this ImageWriter.
+ *
+ * Independent transcoders are also allowed; they must have knowledge
+ * of both the source IIOMetadata provided by the reader and the
+ * returned IIOMetadata expected by the writer.
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface ImageTranscoder
 {
+  /**
+   * Converts IIOMetadata from an input reader format, returning an
+   * IIOMetadata suitable for use by an image writer.
+   *
+   * The ImageTypeSpecifier specifies the destination image type.
+   *
+   * An optional ImageWriteParam argument is available in case the
+   * image writing parameters affect the metadata conversion.
+   *
+   * @param inData the metadata coming from an image reader
+   * @param imageType the output image type of the writer
+   * @param param the image writing parameters or null
+   *
+   * @return the converted metadata that should be used by the image
+   * writer, or null if this ImageTranscoder has no knowledge of the
+   * input metadata
+   *
+   * @exception IllegalArgumentException if either inData or imageType
+   * is null
+   */
   IIOMetadata convertImageMetadata(IIOMetadata inData,
 		                   ImageTypeSpecifier imageType,
 				   ImageWriteParam param);
 
+  /**
+   * Converts IIOMetadata from an input stream format, returning an
+   * IIOMetadata suitable for use by an image writer.
+   *
+   * An optional ImageWriteParam argument is available in case the
+   * image writing parameters affect the metadata conversion.
+   *
+   * @param inData the metadata coming from an input image stream
+   * @param param the image writing parameters or null
+   *
+   * @return the converted metadata that should be used by the image
+   * writer, or null if this ImageTranscoder has no knowledge of the
+   * input metadata
+   *
+   * @exception IllegalArgumentException if inData is null
+   */
   IIOMetadata convertStreamMetadata(IIOMetadata inData,
 				    ImageWriteParam param);
 }

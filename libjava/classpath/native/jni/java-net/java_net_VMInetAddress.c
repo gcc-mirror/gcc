@@ -181,7 +181,8 @@ Java_java_net_VMInetAddress_getHostByAddr (JNIEnv * env,
 						 sizeof (hostname), result);
   if (result != TARGET_NATIVE_OK)
     {
-      JCL_ThrowException (env, UNKNOWN_HOST_EXCEPTION, "Bad IP address");
+      JCL_ThrowException (env, UNKNOWN_HOST_EXCEPTION,
+			  TARGET_NATIVE_LAST_ERROR_STRING ());
       return (jstring) NULL;
     }
 

@@ -51,7 +51,7 @@ import org.omg.PortableServer.ThreadPolicyValue;
  */
 public class gnuThreadPolicy
   extends _PolicyImplBase
-  implements ThreadPolicy, vPolicy
+  implements ThreadPolicy, AccessiblePolicy
 {
   /**
    * Use serialVersionUID for interoperability.

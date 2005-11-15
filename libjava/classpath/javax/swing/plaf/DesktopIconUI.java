@@ -44,13 +44,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class DesktopIconUI
-  extends ComponentUI
+public abstract class DesktopIconUI extends ComponentUI
 {
   /**
    * Constructs a new <code>DesktopIconUI</code>.
    */
   public DesktopIconUI()
   {
+    // Nothing to do here.
   }
 }

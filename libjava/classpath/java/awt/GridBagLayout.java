@@ -705,17 +705,20 @@ public class GridBagLayout
                       if (lastInCol.containsKey(new Integer(x)))
                         {
                           Component lastComponent = (Component) lastInRow.get(new Integer(x));
-                          GridBagConstraints lastConstraints = lookupInternalConstraints(lastComponent);
-
-                          if (lastConstraints.gridheight == GridBagConstraints.RELATIVE)
+                          if (lastComponent != null)
                             {
-                              constraints.gridy = max_y - 1;
-                              break;
-                            }
-                          else
-                            {
-                              constraints.gridy = Math.max (constraints.gridy,
-                                                            lastConstraints.gridy + Math.max (1, lastConstraints.gridheight));
+                              GridBagConstraints lastConstraints = lookupInternalConstraints(lastComponent);
+    
+                              if (lastConstraints.gridheight == GridBagConstraints.RELATIVE)
+                                {
+                                  constraints.gridy = max_y - 1;
+                                  break;
+                                }
+                              else
+                                {
+                                  constraints.gridy = Math.max (constraints.gridy,
+                                                                lastConstraints.gridy + Math.max (1, lastConstraints.gridheight));
+                                }
                             }
                         }
                     }

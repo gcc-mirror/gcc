@@ -42,11 +42,14 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
 
+import javax.swing.LookAndFeel;
 import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.InsetsUIResource;
+import javax.swing.plaf.BorderUIResource.LineBorderUIResource;
 import javax.swing.plaf.basic.BasicLookAndFeel;
 
 
@@ -69,7 +72,8 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public MetalLookAndFeel()
   {
-    createDefaultTheme();
+    if (theme == null)
+      createDefaultTheme();
   }
 
   /**
@@ -601,12 +605,21 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Sets the current theme for the look and feel.
+   * Sets the current theme for the look and feel.  Note that the theme must be 
+   * set <em>before</em> the look and feel is installed.  To change the theme 
+   * for an already running application that is using the 
+   * {@link MetalLookAndFeel}, first set the theme with this method, then 
+   * create a new instance of {@link MetalLookAndFeel} and install it in the 
+   * usual way (see {@link UIManager#setLookAndFeel(LookAndFeel)}).
    * 
-   * @param theme  the theme.
+   * @param theme  the theme (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if <code>theme</code> is <code>null</code>.
    */
   public static void setCurrentTheme(MetalTheme theme)
   {
+    if (theme == null)
+      throw new NullPointerException("Null 'theme' not permitted.");
     MetalLookAndFeel.theme = theme;
   }
 
@@ -759,62 +772,206 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   {
     super.initComponentDefaults(defaults);
     Object[] myDefaults = new Object[] {
-      "Button.background", new ColorUIResource(getControl()),
+      "Button.background", getControl(),
       "Button.border", MetalBorders.getButtonBorder(),
-      "Button.darkShadow", new ColorUIResource(getControlDarkShadow()),
-      "Button.disabledText", new ColorUIResource(getControlDisabled()),
-      "Button.focus", new ColorUIResource(getFocusColor()),
+      "Button.darkShadow", getControlDarkShadow(),
+      "Button.disabledText", getInactiveControlTextColor(),
+      "Button.focus", getFocusColor(),
       "Button.font", getControlTextFont(),
-      "Button.foreground", new ColorUIResource(getSystemTextColor()),
-      "Button.highlight", new ColorUIResource(getControlHighlight()),
-      "Button.light", new ColorUIResource(getControlHighlight()),
-      "Button.margin", new Insets(2, 14, 2, 14),
-      "Button.select", new ColorUIResource(getPrimaryControlShadow()),
-      "Button.shadow", new ColorUIResource(getPrimaryControlShadow()),
-      "CheckBox.background", new ColorUIResource(getControl()),
+      "Button.foreground", getControlTextColor(),
+      "Button.highlight", getControlHighlight(),
+      "Button.light", getControlHighlight(),
+      "Button.margin", new InsetsUIResource(2, 14, 2, 14),
+      "Button.select", getControlShadow(),
+      "Button.shadow", getControlShadow(),
+
+      "CheckBox.background", getControl(),
       "CheckBox.border", MetalBorders.getButtonBorder(),
+      "CheckBox.disabledText", getInactiveControlTextColor(),
+      "CheckBox.focus", getFocusColor(),
+      "CheckBox.font", new FontUIResource("Dialog", Font.BOLD, 12),
+      "CheckBox.foreground", getControlTextColor(),
       "CheckBox.icon",
       new UIDefaults.ProxyLazyValue
           ("javax.swing.plaf.metal.MetalCheckBoxIcon"),
       "CheckBox.checkIcon",
       new UIDefaults.ProxyLazyValue
       ("javax.swing.plaf.metal.MetalCheckBoxIcon"),
-      "CheckBoxMenuItem.background", new ColorUIResource(getControl()),
+      "Checkbox.select", getControlShadow(),
+
+      "CheckBoxMenuItem.acceleratorFont", new FontUIResource("Dialog", Font.PLAIN, 10),
+      "CheckBoxMenuItem.acceleratorForeground", getAcceleratorForeground(),
+      "CheckBoxMenuItem.acceleratorSelectionForeground", getAcceleratorSelectedForeground(),
+      "CheckBoxMenuItem.background", getMenuBackground(),
+      "CheckBoxMenuItem.borderPainted", new Boolean(true),
+      "CheckBoxMenuItem.commandSound", "sounds/MenuItemCommand.wav",
       "CheckBoxMenuItem.checkIcon", MetalIconFactory.getCheckBoxMenuItemIcon(),
-      "ToolBar.background", new ColorUIResource(getControl()),
-      "Panel.background", new ColorUIResource(getControl()),
-      "Slider.background", new ColorUIResource(getControl()),
-      "OptionPane.background", new ColorUIResource(getControl()),
-      "ProgressBar.background", new ColorUIResource(getControl()),
-      "ScrollPane.border", new MetalBorders.ScrollPaneBorder(),
-      "TabbedPane.background", new ColorUIResource(getControl()),
+      "CheckBoxMenuItem.disabledForeground", getMenuDisabledForeground(),
+      "CheckBoxMenuItem.font", new FontUIResource("Dialog", Font.BOLD, 12),
+      "CheckBoxMenuItem.foreground", getMenuForeground(),
+      "CheckBoxMenuItem.selectionBackground", getMenuSelectedBackground(),
+      "CheckBoxMenuItem.selectionForeground", getMenuSelectedForeground(),
+
+      "ColorChooser.background", getControl(),
+      "ColorChooser.foreground", getControlTextColor(),
+      "ColorChooser.rgbBlueMnemonic", new Integer(0),
+      "ColorChooser.rgbGreenMnemonic", new Integer(0),
+      "ColorChooser.rgbRedMnemonic", new Integer(0),
+      "ColorChooser.swatchesDefaultRecentColor", getControl(),
+
+      "ComboBox.background", getControl(),
+      "ComboBox.buttonBackground", getControl(),
+      "ComboBox.buttonDarkShadow", getControlDarkShadow(),
+      "ComboBox.buttonHighlight", getControlHighlight(),
+      "ComboBox.buttonShadow", getControlShadow(),
+      "ComboBox.disabledBackground", getControl(),
+      "ComboBox.disabledForeground", getInactiveSystemTextColor(),
+      "ComboBox.font", new FontUIResource("Dialog", Font.BOLD, 12),
+      "ComboBox.foreground", getControlTextColor(),
+      "ComboBox.selectionBackground", getPrimaryControlShadow(),
+      "ComboBox.selectionForeground", getControlTextColor(),
+
+      "Desktop.background", getDesktopColor(),
+
+      "DesktopIcon.background", getControl(),
+      "DesktopIcon.foreground", getControlTextColor(),
+      "DesktopIcon.width", new Integer(160),
+      "DesktopIcon.border", MetalBorders.getDesktopIconBorder(),
+
+      "EditorPane.background", getWindowBackground(),
+      "EditorPane.caretForeground", getUserTextColor(),
+      "EditorPane.font", new FontUIResource("Dialog", Font.PLAIN, 12),
+      "EditorPane.foreground",  getUserTextColor(),
+      "EditorPane.inactiveForeground",  getInactiveSystemTextColor(),
+      "EditorPane.selectionBackground", getTextHighlightColor(),
+      "EditorPane.selectionForeground", getHighlightedTextColor(),
+      
+      "FormattedTextField.background", getWindowBackground(),
+      "FormattedTextField.border",
+      new BorderUIResource(MetalBorders.getTextFieldBorder()),
+      "FormattedTextField.caretForeground", getUserTextColor(),
+      "FormattedTextField.font", new FontUIResource("Dialog", Font.PLAIN, 12),
+      "FormattedTextField.foreground",  getUserTextColor(),
+      "FormattedTextField.inactiveBackground",  getControl(),
+      "FormattedTextField.inactiveForeground",  getInactiveSystemTextColor(),
+      "FormattedTextField.selectionBackground", getTextHighlightColor(),
+      "FormattedTextField.selectionForeground", getHighlightedTextColor(),
+
+      "FileView.computerIcon", MetalIconFactory.getTreeComputerIcon(),
+      "FileView.directoryIcon", MetalIconFactory.getTreeFolderIcon(),
+      "FileView.fileIcon", MetalIconFactory.getTreeLeafIcon(),
+      "FileView.floppyDriveIcon", MetalIconFactory.getTreeFloppyDriveIcon(),
+      "FileView.hardDriveIcon", MetalIconFactory.getTreeHardDriveIcon(),
+
+      "InternalFrame.activeTitleBackground", getWindowTitleBackground(),
+      "InternalFrame.activeTitleForeground", getWindowTitleForeground(),
       "InternalFrame.border", new MetalBorders.InternalFrameBorder(),
+      "InternalFrame.borderColor", getControl(),
+      "InternalFrame.borderDarkShadow", getControlDarkShadow(),
+      "InternalFrame.borderHighlight", getControlHighlight(),
+      "InternalFrame.borderLight", getControlHighlight(),
+      "InternalFrame.borderShadow", getControlShadow(),
       "InternalFrame.icon", MetalIconFactory.getInternalFrameDefaultMenuIcon(),
       "InternalFrame.closeIcon", 
         MetalIconFactory.getInternalFrameCloseIcon(16),
+      "InternalFrame.inactiveTitleBackground", getWindowTitleInactiveBackground(),
+      "InternalFrame.inactiveTitleForeground", getWindowTitleInactiveForeground(),
       "InternalFrame.maximizeIcon", 
         MetalIconFactory.getInternalFrameMaximizeIcon(16),
       "InternalFrame.iconifyIcon", 
         MetalIconFactory.getInternalFrameMinimizeIcon(16),
-      "Label.background", new ColorUIResource(getControl()),
+      "InternalFrame.paletteBorder", new MetalBorders.PaletteBorder(),
+      "InternalFrame.paletteCloseIcon", new MetalIconFactory.PaletteCloseIcon(),
+      "InternalFrame.paletteTitleHeight", new Integer(11),
+
+      "Label.background", getControl(),
+      "Label.disabledForeground", getInactiveSystemTextColor(),
+      "Label.disabledShadow", getControlShadow(),
       "Label.font", getControlTextFont(),
-      "Label.disabledForeground", new ColorUIResource(getInactiveControlTextColor()),
-      "Label.foreground", new ColorUIResource(getControlTextColor()),
-      "Menu.background", new ColorUIResource(getControl()),
+      "Label.foreground", getSystemTextColor(),
+
+      "List.font", getControlTextFont(),
+      "List.background", getWindowBackground(),
+      "List.foreground", getUserTextColor(),
+      "List.selectionBackground", getTextHighlightColor(),
+      "List.selectionForeground", getHighlightedTextColor(),
+      "List.focusCellHighlightBorder", 
+        new LineBorderUIResource(MetalLookAndFeel.getFocusColor()),
+
+      "Menu.acceleratorFont", new FontUIResource("Dialog", Font.PLAIN, 10),
+      "Menu.acceleratorForeground", getAcceleratorForeground(),
+      "Menu.acceleratorSelectionForeground", getAcceleratorSelectedForeground(),
+      "Menu.background", getMenuBackground(),
       "Menu.border", new MetalBorders.MenuItemBorder(),
       "Menu.borderPainted", Boolean.TRUE,
+      "Menu.disabledForeground", getMenuDisabledForeground(),
       "Menu.font", getControlTextFont(),
+      "Menu.foreground", getMenuForeground(),
       "Menu.selectionBackground", getMenuSelectedBackground(),
       "Menu.selectionForeground", getMenuSelectedForeground(),
-      "MenuBar.background", new ColorUIResource(getControl()),
+
+      "MenuBar.background", getMenuBackground(),
       "MenuBar.border", new MetalBorders.MenuBarBorder(),
       "MenuBar.font", getControlTextFont(),
-      "MenuItem.background", new ColorUIResource(getControl()),
+      "MenuBar.foreground", getMenuForeground(),
+      "MenuBar.highlight", getControlHighlight(),
+      "MenuBar.shadow", getControlShadow(),
+
+      "MenuItem.acceleratorFont", new FontUIResource("Dialog", Font.PLAIN, 10),
+      "MenuItem.acceleratorForeground", getAcceleratorForeground(),
+      "MenuItem.acceleratorSelectionForeground", getAcceleratorSelectedForeground(),
+      "MenuItem.background", getMenuBackground(),
       "MenuItem.border", new MetalBorders.MenuItemBorder(),
+      "MenuItem.disabledForeground", getMenuDisabledForeground(),
       "MenuItem.font", getControlTextFont(),
+      "MenuItem.foreground", getMenuForeground(),
       "MenuItem.selectionBackground", getMenuSelectedBackground(),
       "MenuItem.selectionForeground", getMenuSelectedForeground(),
-      "Panel.background", new ColorUIResource(getControl()),
+
+      "OptionPane.background", getControl(),
+      "OptionPane.errorDialog.border.background", new ColorUIResource(153, 51, 51), 
+      "OptionPane.errorDialog.titlePane.background", new ColorUIResource(255, 153, 153),
+      "OptionPane.errorDialog.titlePane.foreground", new ColorUIResource(51, 0, 0),
+      "OptionPane.errorDialog.titlePane.shadow", new ColorUIResource(204, 102, 102),
+      "OptionPane.foreground", getControlTextColor(),
+      "OptionPane.messageForeground", getControlTextColor(),
+      "OptionPane.questionDialog.border.background", new ColorUIResource(51, 102, 51),
+      "OptionPane.questionDialog.titlePane.background", new ColorUIResource(153, 204, 153),
+      "OptionPane.questionDialog.titlePane.foreground", new ColorUIResource(0, 51, 0),
+      "OptionPane.questionDialog.titlePane.shadow", new ColorUIResource(102, 153, 102),
+      "OptionPane.warningDialog.border.background", new ColorUIResource(153, 102, 51),
+      "OptionPane.warningDialog.titlePane.background", new ColorUIResource(255, 204, 153),
+      "OptionPane.warningDialog.titlePane.foreground", new ColorUIResource(102, 51, 0),
+      "OptionPane.warningDialog.titlePane.shadow", new ColorUIResource(204, 153, 102),
+
+      "Panel.background", getControl(),
+      "Panel.foreground", getUserTextColor(),
+
+      "PasswordField.background", getWindowBackground(),
+      "PasswordField.border",
+      new BorderUIResource(MetalBorders.getTextFieldBorder()),
+      "PasswordField.caretForeground", getUserTextColor(),
+      "PasswordField.foreground", getUserTextColor(),
+      "PasswordField.inactiveBackground", getControl(),
+      "PasswordField.inactiveForeground", getInactiveSystemTextColor(),
+      "PasswordField.selectionBackground", getTextHighlightColor(),
+      "PasswordField.selectionForeground", getHighlightedTextColor(),
+
+      "PopupMenu.background", getMenuBackground(),
+      "PopupMenu.border", new MetalBorders.PopupMenuBorder(),
+      "PopupMenu.font", new FontUIResource("Dialog", Font.BOLD, 12),
+      "PopupMenu.foreground", getMenuForeground(),
+
+      "ProgressBar.background", getControl(),
+      "ProgressBar.border", new BorderUIResource.LineBorderUIResource(getControlDarkShadow(), 1),
+      "ProgressBar.font", new FontUIResource("Dialog", Font.BOLD, 12),
+      "ProgressBar.foreground", getPrimaryControlShadow(),
+      "ProgressBar.selectionBackground", getPrimaryControlDarkShadow(),
+      "ProgressBar.selectionForeground", getControl(),
+
+      "RadioButton.background", getControl(),
+      "RadioButton.darkShadow", getControlDarkShadow(),
+      "RadioButton.disabledText", getInactiveControlTextColor(),
       "RadioButton.icon",
       new UIDefaults.LazyValue()
       {
@@ -823,80 +980,199 @@ public class MetalLookAndFeel extends BasicLookAndFeel
             return MetalIconFactory.getRadioButtonIcon();
           }
       },
+      "RadioButton.focus", MetalLookAndFeel.getFocusColor(),
+      "RadioButton.font", MetalLookAndFeel.getControlTextFont(),
+      "RadioButton.foreground", getControlTextColor(),
+      "RadioButton.highlight", getControlHighlight(),
+      "RadioButton.light", getControlHighlight(),
+      "RadioButton.select", getControlShadow(),
+      "RadioButton.shadow", getControlShadow(),
 
+      "RadioButtonMenuItem.acceleratorFont", new Font("Dialog", Font.PLAIN, 10),
+      "RadioButtonMenuItem.acceleratorForeground", getAcceleratorForeground(),
+      "RadioButtonMenuItem.acceleratorSelectionForeground", getAcceleratorSelectedForeground(),
+      "RadioButtonMenuItem.background", getMenuBackground(),
       "RadioButtonMenuItem.border", new MetalBorders.MenuItemBorder(),
       "RadioButtonMenuItem.borderPainted", Boolean.TRUE,
       "RadioButtonMenuItem.checkIcon", 
         MetalIconFactory.getRadioButtonMenuItemIcon(),
+      "RadioButtonMenuItem.disabledForeground", getMenuDisabledForeground(),
       "RadioButtonMenuItem.font", MetalLookAndFeel.getControlTextFont(),
+      "RadioButtonMenuItem.foreground", getMenuForeground(),
       "RadioButtonMenuItem.margin", new InsetsUIResource(2, 2, 2, 2),
       "RadioButtonMenuItem.selectionBackground", 
         MetalLookAndFeel.getMenuSelectedBackground(),
       "RadioButtonMenuItem.selectionForeground", 
         MetalLookAndFeel.getMenuSelectedForeground(),
 
-      "ScrollBar.background", new ColorUIResource(getControl()),
-      "ScrollBar.shadow", new ColorUIResource(getControlShadow()),
-      "ScrollBar.thumb", new ColorUIResource(getPrimaryControlShadow()),
-      "ScrollBar.thumbDarkShadow",
-      new ColorUIResource(getPrimaryControlDarkShadow()),
-      "ScrollBar.thumbHighlight",
-      new ColorUIResource(getPrimaryControl()),
+      "ScrollBar.background", getControl(),
+      "ScrollBar.darkShadow", getControlDarkShadow(),
+      "ScrollBar.foreground", getControl(),
+      "ScrollBar.highlight", getControlHighlight(),
+      "ScrollBar.shadow", getControlShadow(),
+      "ScrollBar.thumb", getPrimaryControlShadow(),
+      "ScrollBar.thumbDarkShadow", getControlDarkShadow(),
+      "ScrollBar.thumbHighlight", getPrimaryControl(),
+      "ScrollBar.thumbShadow", getPrimaryControlDarkShadow(),
+      "ScrollBar.track", getControl(),
+      "ScrollBar.trackHighlight", getControlDarkShadow(),
+      "ScrollBar.width", new Integer(17),
 
-      "SplitPane.darkShadow",
-      new ColorUIResource(getControlDarkShadow()),
-      "SplitPane.highlight",
-      new ColorUIResource(getControlHighlight()),
+      "ScrollPane.background", getControl(),
+      "ScrollPane.border", new MetalBorders.ScrollPaneBorder(),
+      "ScrollPane.foreground", getControlTextColor(),
 
+      "Separator.background", getSeparatorBackground(),
+      "Separator.foreground", getSeparatorForeground(),
+      "Separator.highlight", getControlHighlight(),
+      "Separator.shadow", getControlShadow(),
+
+      "Slider.background", getControl(),
+      "Slider.focus", getFocusColor(),
       "Slider.focusInsets", new InsetsUIResource(0, 0, 0, 0),
+      "Slider.foreground", getPrimaryControlShadow(),
+      "Slider.highlight", getControlHighlight(),
       "Slider.horizontalThumbIcon", 
       MetalIconFactory.getHorizontalSliderThumbIcon(),
+      "Slider.majorTickLength", new Integer(6),
+      "Slider.shadow", getControlShadow(),
+      "Slider.trackWidth", new Integer(7),
       "Slider.verticalThumbIcon", 
       MetalIconFactory.getVerticalSliderThumbIcon(),
-      "Slider.trackWidth", new Integer(7),
-      "Slider.majorTickLength", new Integer(6),
-      
+
+      "Spinner.background", getControl(),
+      "Spinner.font", new FontUIResource("Dialog", Font.BOLD, 12),
+      "Spinner.foreground", getControl(),
+
+      "SplitPane.background", getControl(),
+      "SplitPane.darkShadow", getControlDarkShadow(),
+      "SplitPane.dividerFocusColor", getPrimaryControl(),
+      "SplitPane.highlight", getControlHighlight(),
+      "SplitPane.shadow", getControlShadow(),
+
+      "SplitPaneDivider.draggingColor", Color.DARK_GRAY,
+
+      "TabbedPane.background", getControlShadow(),
+      "TabbedPane.darkShadow", getControlDarkShadow(),
+      "TabbedPane.focus", getPrimaryControlDarkShadow(),
       "TabbedPane.font", new FontUIResource("Dialog", Font.BOLD, 12),
-      "TabbedPane.tabInsets", new InsetsUIResource(0, 9, 1, 9),
+      "TabbedPane.foreground", getControlTextColor(),
+      "TabbedPane.highlight", getControlHighlight(),
+      "TabbedPane.light", getControl(),
+      "TabbedPane.selected", getControl(),
+      "TabbedPane.selectHighlight", getControlHighlight(),
       "TabbedPane.selectedTabPadInsets", new InsetsUIResource(2, 2, 2, 1),
+      "TabbedPane.shadow", getControlShadow(),
+      "TabbedPane.tabAreaBackground", getControl(),
       "TabbedPane.tabAreaInsets", new InsetsUIResource(4, 2, 0, 6),
+      "TabbedPane.tabInsets", new InsetsUIResource(0, 9, 1, 9),
+      
+      "Table.background", getWindowBackground(),
+      "Table.focusCellBackground", getWindowBackground(),
+      "Table.focusCellForeground", getControlTextColor(),
+      "Table.foreground", getControlTextColor(),
+      "Table.focusCellHighlightBorder",
+      new BorderUIResource.LineBorderUIResource(getControlShadow()),
+      "Table.focusCellBackground", getWindowBackground(),
+      "Table.gridColor", getControlDarkShadow(),
+      "Table.selectionBackground", new ColorUIResource(204, 204, 255),
+      "Table.selectionForeground", new ColorUIResource(0, 0, 0),
 
-      "ToggleButton.background", new ColorUIResource(getControl()),
-      "ToggleButton.border", MetalBorders.getButtonBorder(),
-      "ToggleButton.darkShadow", new ColorUIResource(getControlDarkShadow()),
-      "ToggleButton.disabledText", new ColorUIResource(getControlDisabled()),
-      "ToggleButton.focus", new ColorUIResource(getFocusColor()),
+      "TableHeader.background", getControl(),
+      "TableHeader.cellBorder", new MetalBorders.TableHeaderBorder(),
+      "TableHeader.foreground", getControlTextColor(),
+
+      "TextArea.background", getWindowBackground(),
+      "TextArea.caretForeground", getUserTextColor(),
+      "TextArea.font", new FontUIResource("Dialog", Font.PLAIN, 12),
+      "TextArea.foreground", getUserTextColor(),
+      "TextArea.inactiveForeground", getInactiveSystemTextColor(),
+      "TextArea.selectionBackground", getTextHighlightColor(),
+      "TextArea.selectionForeground", getHighlightedTextColor(),
+
+      "TextField.background", getWindowBackground(),
+      "TextField.border",
+      new BorderUIResource(MetalBorders.getTextFieldBorder()),
+      "TextField.caretForeground", getUserTextColor(),
+      "TextField.darkShadow", getControlDarkShadow(),
+      "TextField.font", new FontUIResource("Dialog", Font.PLAIN, 12),
+      "TextField.foreground", getUserTextColor(),
+      "TextField.highlight", getControlHighlight(),
+      "TextField.inactiveBackground", getControl(),
+      "TextField.inactiveForeground", getInactiveSystemTextColor(),
+      "TextField.light", getControlHighlight(),
+      "TextField.selectionBackground", getTextHighlightColor(),
+      "TextField.selectionForeground", getHighlightedTextColor(),
+      "TextField.shadow", getControlShadow(),
+     
+      "TextPane.background", getWindowBackground(),
+      "TextPane.caretForeground", getUserTextColor(),
+      "TextPane.font", new FontUIResource("Dialog", Font.PLAIN, 12),
+      "TextPane.foreground", getUserTextColor(),
+      "TextPane.inactiveForeground", getInactiveSystemTextColor(),
+      "TextPane.selectionBackground", getTextHighlightColor(),
+      "TextPane.selectionForeground", getHighlightedTextColor(),
+
+      "TitledBorder.font", new FontUIResource("Dialog", Font.BOLD, 12),
+      "TitledBorder.titleColor", getSystemTextColor(),
+
+      "ToggleButton.background", getControl(),
+      "ToggleButton.border", MetalBorders.getToggleButtonBorder(),
+      "ToggleButton.darkShadow", getControlDarkShadow(),
+      "ToggleButton.disabledText", getInactiveControlTextColor(),
+      "ToggleButton.focus", getFocusColor(),
       "ToggleButton.font", getControlTextFont(),
-      "ToggleButton.foreground", new ColorUIResource(getSystemTextColor()),
-      "ToggleButton.highlight", new ColorUIResource(getControlHighlight()),
-      "ToggleButton.light", new ColorUIResource(getControlHighlight()),
-      "ToggleButton.margin", new Insets(2, 14, 2, 14),
-      "ToggleButton.select", new ColorUIResource(getPrimaryControlShadow()),
-      "ToggleButton.shadow", new ColorUIResource(getPrimaryControlShadow()),
+      "ToggleButton.foreground", getControlTextColor(),
+      "ToggleButton.highlight", getControlHighlight(),
+      "ToggleButton.light", getControlHighlight(),
+      "ToggleButton.margin", new InsetsUIResource(2, 14, 2, 14),
+      "ToggleButton.select", getControlShadow(),
+      "ToggleButton.shadow", getControlShadow(),
 
-      "Tree.openIcon", MetalIconFactory.getTreeFolderIcon(),
+      "ToolBar.background", getMenuBackground(),
+      "ToolBar.darkShadow", getControlDarkShadow(),
+      "ToolBar.dockingBackground", getMenuBackground(),
+      "ToolBar.dockingForeground", getPrimaryControlDarkShadow(),
+      "ToolBar.floatingBackground", getMenuBackground(),
+      "ToolBar.floatingForeground", getPrimaryControl(),
+      "ToolBar.font", new FontUIResource("Dialog", Font.BOLD, 12),
+      "ToolBar.foreground", getMenuForeground(),
+      "ToolBar.highlight", getControlHighlight(),
+      "ToolBar.light", getControlHighlight(),
+      "ToolBar.shadow", getControlShadow(),
+      "ToolBar.border", new MetalBorders.ToolBarBorder(),
+
+      "ToolTip.background", getPrimaryControl(),
+      "ToolTip.backgroundInactive", getControl(),
+      "ToolTip.border", new BorderUIResource.LineBorderUIResource(getPrimaryControlDarkShadow(), 1),
+      "ToolTip.borderInactive", new BorderUIResource.LineBorderUIResource(getControlDarkShadow(), 1),
+      "ToolTip.font", new FontUIResource("Dialog", Font.PLAIN, 12),
+      "ToolTip.foreground", getPrimaryControlInfo(),
+      "ToolTip.foregroundInactive", getControlDarkShadow(),
+
+      "Tree.background", getWindowBackground(),
       "Tree.closedIcon", MetalIconFactory.getTreeFolderIcon(),
-      "Tree.leafIcon", MetalIconFactory.getTreeLeafIcon(),
       "Tree.collapsedIcon", MetalIconFactory.getTreeControlIcon(true),
       "Tree.expandedIcon", MetalIconFactory.getTreeControlIcon(false),
-      "Tree.font", new FontUIResource(new Font("Helvetica", Font.PLAIN, 12)),
-      "Tree.background", new ColorUIResource(Color.white),
-      "Tree.foreground", new ColorUIResource(new Color(204, 204, 255)),
-      "Tree.hash", new ColorUIResource(new Color(204, 204, 255)),
+      "Tree.font", new FontUIResource("Dialog", Font.PLAIN, 12),
+      "Tree.foreground", getUserTextColor(),
+      "Tree.hash", getPrimaryControl(),
+      "Tree.leafIcon", MetalIconFactory.getTreeLeafIcon(),
       "Tree.leftChildIndent", new Integer(7),
+      "Tree.line", getPrimaryControl(),
+      "Tree.openIcon", MetalIconFactory.getTreeFolderIcon(),
       "Tree.rightChildIndent", new Integer(13),
       "Tree.rowHeight", new Integer(20),
       "Tree.scrollsOnExpand", Boolean.TRUE,
-      "Tree.selectionBackground", new ColorUIResource(new Color(204, 204, 255)),
-      "Tree.nonSelectionBackground", new ColorUIResource(Color.white),
-      "Tree.selectionBorderColor", new ColorUIResource(new Color(102, 102, 153)),
+      "Tree.selectionBackground", getTextHighlightColor(),
       "Tree.selectionBorder", new BorderUIResource.LineBorderUIResource(new Color(102, 102, 153)),
-      "Tree.nonSelectionBorder", new BorderUIResource.LineBorderUIResource(Color.white),
-      "Tree.selectionForeground", new ColorUIResource(Color.black),
-      "Tree.textBackground", new ColorUIResource(new Color(204, 204, 255)),
-      "Tree.textForeground", new ColorUIResource(Color.black),
-      "Tree.selectionForeground", new ColorUIResource(Color.black),
-      "PopupMenu.border", new MetalBorders.PopupMenuBorder()
+      "Tree.selectionBorderColor", getFocusColor(),
+      "Tree.selectionForeground", getHighlightedTextColor(),
+      "Tree.textBackground", getWindowBackground(),
+      "Tree.textForeground", getUserTextColor(),
+
+      "Viewport.background", getControl(),
+      "Viewport.foreground", getUserTextColor()
     };
     defaults.putDefaults(myDefaults);
   }

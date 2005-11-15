@@ -42,6 +42,7 @@ import gnu.CORBA.GIOP.ReplyHeader;
 import gnu.CORBA.GIOP.RequestHeader;
 import gnu.CORBA.ObjectCreator;
 import gnu.CORBA.Poa.gnuServantObject;
+import gnu.CORBA.OrbFunctional;
 import gnu.CORBA.Unexpected;
 import gnu.CORBA.gnuRequest;
 
@@ -453,4 +454,23 @@ public class gnuServerRequestInfo extends LocalObject
       }
     return p;
   }
+
+  /** @inheritDoc */
+  public String[] adapter_name()
+  {
+    return m_object.poa.getReferenceTemplate().adapter_name();
+  }
+
+  /** @inheritDoc */
+  public String orb_id()
+  {
+    return m_object.orb.orb_id;
+  }
+
+  /** @inheritDoc */
+  public String server_id()
+  {
+    return OrbFunctional.server_id;
+  }
+  
 }

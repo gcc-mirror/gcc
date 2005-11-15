@@ -160,9 +160,7 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
   XSynchronize (GDK_DISPLAY_XDISPLAY (gdk_display_get_default ()), True);
 #endif
 
-  gdk_rgb_init ();
-  gtk_widget_set_default_colormap (gdk_rgb_get_cmap ());
-  gtk_widget_set_default_visual (gdk_rgb_get_visual ());
+  gtk_widget_set_default_colormap (gdk_rgb_get_colormap ());
 
   /* Make sure queued calls don't get sent to GTK/GDK while 
      we're shutting down. */

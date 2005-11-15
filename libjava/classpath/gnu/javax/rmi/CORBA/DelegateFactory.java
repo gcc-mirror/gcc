@@ -1,5 +1,5 @@
 /* DelegateFactory.java -- 
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,38 +38,70 @@ exception statement from your version. */
 
 package gnu.javax.rmi.CORBA;
 
-import java.util.HashMap;
+import gnu.CORBA.ObjectCreator;
 
+
+/**
+ * This class produces delegates, using the system properties. If not
+ * corresponding property is specified, returns default implementations.
+ * 
+ * @author Wu Gansha (gansha.wu@intel.com)
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
+ */
 public class DelegateFactory
 {
-  private static HashMap cache = new HashMap(4);
-    
-  public static synchronized Object getInstance(String type)
-    throws GetDelegateInstanceException
+  /**
+   * The name to get a stub delegate.
+   */
+  public static final String STUB = "Stub";
+
+  /**
+   * The name to get the util delegate.
+   */
+  public static final String UTIL = "Util";
+
+  /**
+   * The name to get the ValueHandler delegate.
+   */
+  public static final String VALUEHANDLER = "ValueHandler";
+
+  /**
+   * The name to get the PortableRemoteObject delegate.
+   */
+  public static final String PORTABLE_REMOTE_OBJECT = "PortableRemoteObject";
+
+  /**
+   * Get an instance of the given delegate. As in all cases the singleton
+   * instance is used, the caching here would be redundant.
+   * 
+   * @param type a delegate type.
+   * 
+   * @return the associated delegate.
+   * 
+   * @throws InternalError if the delegate class, indicated in the system
+   * properties, cannot be instantiated.
+   */
+  public static Object getInstance(String type)
+    throws InternalError
   {
-    Object r = cache.get(type);
-    if (r != null)
-      return r;
-    String dcname = System.getProperty("javax.rmi.CORBA." + type + "Class");
+    String propertyName = "javax.rmi.CORBA." + type + "Class";
+    String dcname = System.getProperty(propertyName);
     if (dcname == null)
       {
-	//throw new DelegateException
-	//  ("no javax.rmi.CORBA.XXXClass property sepcified.");
-	dcname = "gnu.javax.rmi.CORBA." + type + "DelegateImpl";
+        // // No javax.rmi.CORBA.XXXClass property sepcified.
+        dcname = "gnu.javax.rmi.CORBA." + type + "DelegateImpl";
       }
     try
       {
-	Class dclass = Class.forName(dcname, 
-				     true,
-				     Thread.currentThread().getContextClassLoader());
-	r = dclass.newInstance();
-	cache.put(type, r);
-	return r;
+        Class dclass = ObjectCreator.forName(dcname);
+        return dclass.newInstance();
       }
-    catch(Exception e)
+    catch (Exception e)
       {
-	throw new GetDelegateInstanceException
-	  ("Exception when trying to get delegate instance:" + dcname, e);
+        InternalError ierr = new InternalError("Exception when trying to get "
+          + type + "delegate instance:" + dcname);
+        ierr.initCause(e);
+        throw ierr;
       }
   }
 }

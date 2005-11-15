@@ -61,9 +61,14 @@ import javax.accessibility.AccessibleValue;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.plaf.TableHeaderUI;
 
 public class JTableHeader extends JComponent
+  implements TableColumnModelListener, Accessible
 {
   protected class AccessibleJTableHeader extends AccessibleJComponent
   {
@@ -305,11 +310,6 @@ public class JTableHeader extends JComponent
   private static final long serialVersionUID = 5144633983372967710L;
 
   /**
-   * The accessibleContext property.
-   */
-  AccessibleContext accessibleContext;
-
-  /**
    * The columnModel property.
    */
   protected TableColumnModel columnModel;
@@ -373,17 +373,8 @@ public class JTableHeader extends JComponent
    */
   public JTableHeader(TableColumnModel cm)
   {
-    accessibleContext = new AccessibleJTableHeader();
     columnModel = cm == null ? createDefaultColumnModel() : cm; 
-    draggedColumn = null;
-    draggedDistance = 0;
-    opaque = true;
-    reorderingAllowed = true;
-    resizingAllowed = true;
-    resizingColumn = null;
-    table = null;
-    updateTableInRealTime = true;
-    cellRenderer = createDefaultRenderer();
+    initializeLocalVars();
     updateUI();
   }
 
@@ -504,7 +495,9 @@ public class JTableHeader extends JComponent
    */ 
   public void setColumnModel(TableColumnModel c)
   {
+    columnModel.removeColumnModelListener(this);
     columnModel = c;
+    columnModel.addColumnModelListener(this);
   }
 
   /**
@@ -619,7 +612,7 @@ public class JTableHeader extends JComponent
 
   public Rectangle getHeaderRect(int column)
   {
-    Rectangle r = getTable().getCellRect(-1, column, true);
+    Rectangle r = getTable().getCellRect(-1, column, false);
     r.height = getHeight();
     return r;
   }
@@ -664,5 +657,89 @@ public class JTableHeader extends JComponent
       return columnModel.getColumnIndexAtX(point.x);
     
     return -1;
+  }
+
+  /**
+   * Receives notification when a column is added to the column model.
+   *
+   * @param event the table column model event
+   */
+  public void columnAdded(TableColumnModelEvent event)
+  {
+    // TODO: What else to do here (if anything)?
+    resizeAndRepaint();
+  }
+
+  /**
+   * Receives notification when a column margin changes in the column model.
+   *
+   * @param event the table column model event
+   */
+  public void columnMarginChanged(ChangeEvent event)
+  {
+    // TODO: What else to do here (if anything)?
+    resizeAndRepaint();
+  }
+
+  /**
+   * Receives notification when a column is moved within the column model.
+   *
+   * @param event the table column model event
+   */
+  public void columnMoved(TableColumnModelEvent event)
+  {
+    // TODO: What else to do here (if anything)?
+    resizeAndRepaint();
+  }
+
+  /**
+   * Receives notification when a column is removed from the column model.
+   *
+   * @param event the table column model event
+   */
+  public void columnRemoved(TableColumnModelEvent event)
+  {
+    // TODO: What else to do here (if anything)?
+    resizeAndRepaint();
+  }
+
+  /**
+   * Receives notification when the column selection has changed.
+   *
+   * @param event the table column model event
+   */
+  public void columnSelectionChanged(ListSelectionEvent event)
+  {
+    // TODO: What else to do here (if anything)?
+    resizeAndRepaint();
+  }
+
+  /**
+   * Validates the layout of this table header and repaints it. This is
+   * equivalent to <code>revalidate()</code> followed by
+   * <code>repaint()</code>.
+   */
+  public void resizeAndRepaint()
+  {
+    revalidate();
+    repaint();
+  }
+
+  /**
+   * Initializes the fields and properties of this class with default values.
+   * This is called by the constructors.
+   */
+  protected void initializeLocalVars()
+  {
+    accessibleContext = new AccessibleJTableHeader();
+    draggedColumn = null;
+    draggedDistance = 0;
+    opaque = true;
+    reorderingAllowed = true;
+    resizingAllowed = true;
+    resizingColumn = null;
+    table = null;
+    updateTableInRealTime = true;
+    cellRenderer = createDefaultRenderer();
   }
 }

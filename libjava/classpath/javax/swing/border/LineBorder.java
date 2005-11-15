@@ -50,8 +50,7 @@ import java.awt.Insets;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class LineBorder
-  extends AbstractBorder
+public class LineBorder extends AbstractBorder
 {
   /**
    * Determined using the <code>serialver</code> tool
@@ -71,7 +70,7 @@ public class LineBorder
   /**
    * A shared instance of a gray, one pixel thick, plain LineBorder.
    * The singleton object is lazily created by {@link
-   * #createBlackGrayBorder()} upon its first invocation.
+   * #createGrayLineBorder()} upon its first invocation.
    */
   private static LineBorder grayLineBorder;
 
@@ -213,29 +212,27 @@ public class LineBorder
     {
       g.setColor(lineColor);
 
-      /* If width and height were not adjusted, the border would
-       * appear one pixel too large in both directions.
-       */
+      // If width and height were not adjusted, the border would
+      // appear one pixel too large in both directions.
       width -= 1;
       height -= 1;
 
-      /* Blurred, too large appearance
-       * -----------------------------
-       * While Java 2D has introduced line strokes of arbitrary width,
-       * it seems desirable to keep this code independent of Java 2D.
-       * Therefore, multiple nested rectangles (or rounded rectangles)
-       * are drawn in order to simulate a line whose thickness is
-       * greater than one pixel.
-       *
-       * This hack causes a blurred appearance when anti-aliasing is
-       * on. Interestingly enough, though, the Sun JDK 1.3.1 (at least
-       * on MacOS X 10.1.5) shows exactly the same appearance under
-       * this condition. It thus seems likely that Sun does the same
-       * hack for simulating thick lines.  For this reason, the
-       * blurred appearance seems acceptable -- especially since GNU
-       * Classpath tries to be compatible with the Sun reference
-       * implementation.
-       */
+      // Blurred, too large appearance
+      // -----------------------------
+      // While Java 2D has introduced line strokes of arbitrary width,
+      // it seems desirable to keep this code independent of Java 2D.
+      // Therefore, multiple nested rectangles (or rounded rectangles)
+      // are drawn in order to simulate a line whose thickness is
+      // greater than one pixel.
+      //
+      // This hack causes a blurred appearance when anti-aliasing is
+      // on. Interestingly enough, though, the Sun JDK 1.3.1 (at least
+      // on MacOS X 10.1.5) shows exactly the same appearance under
+      // this condition. It thus seems likely that Sun does the same
+      // hack for simulating thick lines.  For this reason, the
+      // blurred appearance seems acceptable -- especially since GNU
+      // Classpath tries to be compatible with the Sun reference
+      // implementation.
       for (int i = 0; i < thickness; i++)
       {
         if (roundedCorners)
@@ -340,4 +337,3 @@ public class LineBorder
     return (!roundedCorners) && (lineColor.getAlpha() == 255);
   }
 }
-

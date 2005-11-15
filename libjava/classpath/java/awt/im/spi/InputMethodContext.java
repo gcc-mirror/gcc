@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.im.spi;
 
+import java.awt.HeadlessException;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.font.TextHitInfo;
 import java.awt.im.InputMethodRequests;
@@ -113,7 +115,7 @@ public interface InputMethodContext extends InputMethodRequests
   /**
    * Sets whether notification of the client window's location and state should
    * be enabled for the input method. When enabled, the input method's
-   * {@link #notifyClientWindowChange(Rectangle)} method is called.
+   * {@link InputMethod#notifyClientWindowChange(Rectangle)} method is called.
    * Notification is automatically disabled when the input method is disposed.
    *
    * @param inputMethod the method to change status of

@@ -125,6 +125,7 @@ public class EmptyExceptionHolder
     catch (Exception ex)
       {
         BAD_OPERATION bad = new BAD_OPERATION();
+        bad.minor = Minor.CDR;
         bad.initCause(ex);
         throw bad;
       }

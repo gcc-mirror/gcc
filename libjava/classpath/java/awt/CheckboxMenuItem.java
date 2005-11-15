@@ -335,6 +335,8 @@ paramString()
     implements AccessibleAction, AccessibleValue
   {
     // I think the base class provides the necessary implementation
+    
+    private static final long serialVersionUID = -1122642964303476L;
   }
   
   /**

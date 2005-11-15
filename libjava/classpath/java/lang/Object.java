@@ -343,7 +343,7 @@ public class Object
    *
    * <p>This thread still holds a lock on the object, so it is
    * typical to release the lock by exiting the synchronized
-   * code, calling wait(), or calling {@link Thread#sleep()}, so
+   * code, calling wait(), or calling {@link Thread#sleep(long)}, so
    * that the newly awakened thread can actually resume.  The
    * awakened thread will most likely be awakened with an
    * {@link InterruptedException}, but that is not guaranteed.
@@ -372,7 +372,7 @@ public class Object
    *
    * <p>This thread still holds a lock on the object, so it is
    * typical to release the lock by exiting the synchronized
-   * code, calling wait(), or calling {@link Thread#sleep()}, so
+   * code, calling wait(), or calling {@link Thread#sleep(long)}, so
    * that one of the newly awakened threads can actually resume.
    * The resuming thread will most likely be awakened with an
    * {@link InterruptedException}, but that is not guaranteed.

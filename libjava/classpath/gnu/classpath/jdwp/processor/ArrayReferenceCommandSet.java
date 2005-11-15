@@ -88,7 +88,8 @@ public class ArrayReferenceCommandSet
         // So if we throw an IOException we're in serious trouble
         throw new JdwpInternalErrorException(ex);
       }
-    return true;
+
+    return false;
   }
 
   private void executeLength(ByteBuffer bb, DataOutputStream os)

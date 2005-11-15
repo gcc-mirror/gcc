@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -61,7 +61,7 @@ public final class CharHolder
   /**
    * The default type code for this holder.
    */
-  private static final TypeCode t_char = new primitiveTypeCode(TCKind.tk_char);
+  private static final TypeCode t_char = new PrimitiveTypeCode(TCKind.tk_char);
 
   /**
    * The <code>char</code> (CORBA <code>char</code>) value,

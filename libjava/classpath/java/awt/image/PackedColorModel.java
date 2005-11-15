@@ -90,11 +90,7 @@ public abstract class PackedColorModel extends ColorModel
     return bitsPerComponent;
   }
 
-  /** Initializes the masks.
-   *
-   * @return an array containing the number of bits per color
-   * component.
-   */
+  /** Initializes the masks.  */
   private void initMasks(int[] colorMaskArray, int alphaMask)
   {
     int numComponents = colorMaskArray.length;

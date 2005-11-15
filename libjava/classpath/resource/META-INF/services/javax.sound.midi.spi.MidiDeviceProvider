@@ -1,0 +1,3 @@
+gnu.javax.sound.midi.alsa.AlsaMidiDeviceProvider
+gnu.javax.sound.midi.dssi.DSSIMidiDeviceProvider
+

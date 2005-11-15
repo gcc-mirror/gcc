@@ -60,9 +60,9 @@ public abstract class ObjectImpl
   implements org.omg.CORBA.Object
 {
   /**
-   * The vendor - dependent delegate, responsible for the method implementations.
+   * The delegate, responsible for the method implementations.
    */
-  private Delegate delegate;
+  transient Delegate delegate;
 
   /**
     * Create a request to invoke the method of this object, specifying

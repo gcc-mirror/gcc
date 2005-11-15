@@ -54,5 +54,6 @@ public abstract class SeparatorUI
    */
   public SeparatorUI()
   {
+    // Nothing to do here.
   }
 }

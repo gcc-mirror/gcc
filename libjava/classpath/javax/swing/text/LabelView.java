@@ -38,10 +38,57 @@ exception statement from your version. */
 
 package javax.swing.text;
 
-// TODO: Implement this class.
-public class LabelView
-  extends GlyphView
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Shape;
+
+import javax.swing.event.DocumentEvent;
+
+/**
+ * A {@link GlyphView} that caches the textattributes for most effective
+ * rendering.
+ *
+ * @author Roman Kennke (kennke@aicas.com)
+ */
+public class LabelView extends GlyphView
 {
+
+  /**
+   * The background color.
+   */
+  Color background;
+
+  /**
+   * The foreground color.
+   */
+  Color foreground;
+
+  /**
+   * The background color.
+   */
+  Font font;
+
+  /**
+   * The strikethrough flag.
+   */
+  boolean strikeThrough;
+
+  /**
+   * The underline flag.
+   */
+  boolean underline;
+
+  /**
+   * The subscript flag.
+   */
+  boolean subscript;
+
+  /**
+   * The superscript flag.
+   */
+  boolean superscript;
+
   /**
    * Creates a new <code>GlyphView</code> for the given <code>Element</code>.
    *
@@ -50,5 +97,194 @@ public class LabelView
   public LabelView(Element element)
   {
     super(element);
+    setPropertiesFromAttributes();
+  }
+
+  /**
+   * Loads the properties of this label view from the element's text
+   * attributes. This method is called from the constructor and the
+   * {@link #changedUpdate} method
+   */
+  protected void setPropertiesFromAttributes()
+  {
+    Element el = getElement();
+    AttributeSet atts = el.getAttributes();
+    background = StyleConstants.getBackground(atts);
+    foreground = StyleConstants.getForeground(atts);
+    strikeThrough = StyleConstants.isStrikeThrough(atts);
+    subscript = StyleConstants.isSubscript(atts);
+    superscript = StyleConstants.isSuperscript(atts);
+    underline = StyleConstants.isUnderline(atts);
+
+    // Determine the font.
+    String family = StyleConstants.getFontFamily(atts);
+    int size = StyleConstants.getFontSize(atts);
+    int style = Font.PLAIN;
+    if (StyleConstants.isBold(atts))
+        style |= Font.BOLD;
+    if (StyleConstants.isItalic(atts))
+      style |= Font.ITALIC;
+    font = new Font(family, style, size);
+  }
+
+  /**
+   * Receives notification when text attributes change in the chunk of
+   * text that this view is responsible for. This simply calls
+   * {@link #setPropertiesFromAttributes()}.
+   *
+   * @param e the document event
+   * @param a the allocation of this view
+   * @param vf the view factory to use for creating new views
+   */
+  public void changedUpdate(DocumentEvent e, Shape a, ViewFactory vf)
+  {
+    setPropertiesFromAttributes();
+  }
+
+  /**
+   * Returns the background color for the glyphs.
+   *
+   * @return the background color for the glyphs
+   */
+  public Color getBackground()
+  {
+    return background;
+  }
+
+  /**
+   * Sets the background color for the glyphs. A value of <code>null</code>
+   * means the background of the parent view should shine through.
+   *
+   * @param bg the background to set or <code>null</code>
+   *
+   * @since 1.5
+   */
+  protected void setBackground(Color bg)
+  {
+    background = bg;
+  }
+
+  /**
+   * Returns the foreground color for the glyphs.
+   *
+   * @return the foreground color for the glyphs
+   */
+  public Color getForeground()
+  {
+    return foreground;
+  }
+
+  /**
+   * Returns the font for the glyphs.
+   *
+   * @return the font for the glyphs
+   */
+  public Font getFont()
+  {
+    return font;
+  }
+
+  /**
+   * Returns the font metrics of the current font.
+   *
+   * @return the font metrics of the current font
+   *
+   * @deprecated this is not used anymore
+   */
+  protected FontMetrics getFontMetrics()
+  {
+    return getContainer().getGraphics().getFontMetrics(font);
+  }
+
+  /**
+   * Returns <code>true</code> if the glyphs are rendered underlined,
+   * <code>false</code> otherwise.
+   *
+   * @return <code>true</code> if the glyphs are rendered underlined,
+   *         <code>false</code> otherwise
+   */
+  public boolean isUnderline()
+  {
+    return underline;
+  }
+
+  /**
+   * Sets the underline flag.
+   *
+   * @param flag <code>true</code> if the glyphs are rendered underlined,
+   *             <code>false</code> otherwise
+   */
+  protected void setUnderline(boolean flag)
+  {
+    underline = flag;
+  }
+
+  /**
+   * Returns <code>true</code> if the glyphs are rendered as subscript,
+   * <code>false</code> otherwise.
+   *
+   * @return <code>true</code> if the glyphs are rendered as subscript,
+   *         <code>false</code> otherwise
+   */
+  public boolean isSubscript()
+  {
+    return subscript;
+  }
+
+  /**
+   * Sets the subscript flag.
+   *
+   * @param flag <code>true</code> if the glyphs are rendered as subscript,
+   *             <code>false</code> otherwise
+   */
+  protected void setSubscript(boolean flag)
+  {
+    subscript = flag;
+  }
+
+  /**
+   * Returns <code>true</code> if the glyphs are rendered as superscript,
+   * <code>false</code> otherwise.
+   *
+   * @return <code>true</code> if the glyphs are rendered as superscript,
+   *         <code>false</code> otherwise
+   */
+  public boolean isSuperscript()
+  {
+    return superscript;
+  }
+
+  /**
+   * Sets the superscript flag.
+   *
+   * @param flag <code>true</code> if the glyphs are rendered as superscript,
+   *             <code>false</code> otherwise
+   */
+  protected void setSuperscript(boolean flag)
+  {
+    superscript = flag;
+  }
+
+  /**
+   * Returns <code>true</code> if the glyphs are rendered strike-through,
+   * <code>false</code> otherwise.
+   *
+   * @return <code>true</code> if the glyphs are rendered strike-through,
+   *         <code>false</code> otherwise
+   */
+  public boolean isStrikeThrough()
+  {
+    return strikeThrough;
+  }
+
+  /**
+   * Sets the strike-through flag.
+   *
+   * @param flag <code>true</code> if the glyphs are rendered strike-through,
+   *             <code>false</code> otherwise
+   */
+  protected void setStrikeThrough(boolean flag)
+  {
+    strikeThrough = flag;
   }
 }

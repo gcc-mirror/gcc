@@ -73,7 +73,7 @@ import org.omg.CosNaming.NamingContextHelper;
  */
 public class Demo
 {
-  public static void main(final String[] args)
+  public static void main(String[] an_args)
   {
     // We create the following naming graph:
     // <ROOT CONTEXT>
@@ -90,6 +90,8 @@ public class Demo
     System.out.println("Starting the GNU Classpath " +
                        "built-in transient naming service"
                       );
+    
+    final String[] args = an_args;
 
     new Thread()
       {

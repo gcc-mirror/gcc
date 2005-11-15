@@ -39,6 +39,8 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Point;
 
 
 /**
@@ -89,6 +91,7 @@ public class Popup
    */
   protected Popup()
   {
+    // Nothing to do here.
   }
 
 
@@ -129,6 +132,7 @@ public class Popup
      */
     JWindow window;
 
+    private Component contents;
 
     /**
      * Constructs a new <code>JWindowPopup</code> given its owner,
@@ -155,10 +159,11 @@ public class Popup
       /* Checks whether contents is null. */
       super(owner, contents, x, y);
 
+      this.contents = contents;
       window = new JWindow();
-      window.getRootPane().add(contents);
+      window.getContentPane().add(contents);
       window.setLocation(x, y);
-      window.pack();
+      window.setFocusableWindowState(false);
     }
 
 
@@ -168,6 +173,7 @@ public class Popup
      */
     public void show()
     {
+      window.setSize(contents.getSize());
       window.show();
     }
     
@@ -184,6 +190,108 @@ public class Popup
        * show().
        */
       window.dispose();
+    }
+  }
+
+  /**
+   * A popup that displays itself within the JLayeredPane of a JRootPane of
+   * the containment hierarchy of the owner component.
+   *
+   * @author Roman Kennke (kennke@aicas.com)
+   */
+  static class LightweightPopup extends Popup
+  {
+    /**
+     * The owner component for this popup.
+     */
+    Component owner;
+
+    /**
+     * The contents that should be shown.
+     */
+    Component contents;
+
+    /**
+     * The X location in screen coordinates.
+     */
+    int x;
+
+    /**
+     * The Y location in screen coordinates.
+     */
+    int y;
+
+    /**
+     * The panel that holds the content.
+     */
+    private JPanel panel;
+    
+    /**
+     * The layered pane of the owner.
+     */
+    private JLayeredPane layeredPane;
+    
+    /**
+     * Constructs a new <code>LightweightPopup</code> given its owner,
+     * contents and the screen position where the popup
+     * will appear.
+     *
+     * @param owner the component that should own the popup window; this
+     *        provides the JRootPane in which we place the popup window
+     *
+     * @param contents the contents that will be displayed inside
+     *        the <code>Popup</code>.
+     *
+     * @param x the horizontal position where the Popup will appear in screen
+     *        coordinates
+     *
+     * @param y the vertical position where the Popup will appear in screen
+     *        coordinates
+     *
+     * @throws IllegalArgumentException if <code>contents</code>
+     *         is <code>null</code>.
+     */
+    public LightweightPopup(Component owner, Component  contents, int x, int y)
+    {
+      super(owner, contents, x, y);
+      this.owner = owner;
+      this.contents = contents;
+      this.x = x;
+      this.y = y;
+      
+      JRootPane rootPane = SwingUtilities.getRootPane(owner);
+      JLayeredPane layeredPane = rootPane.getLayeredPane();
+      this.layeredPane = layeredPane;
+    }
+
+    /**
+     * Places the popup within the JLayeredPane of the owner component and
+     * makes it visible.
+     */
+    public void show()
+    {
+      // We insert a JPanel between the layered pane and the contents so we
+      // can fiddle with the setLocation() method without disturbing a
+      // JPopupMenu (which overrides setLocation in an unusual manner).
+      if (panel == null)
+        {
+          panel = new JPanel();
+          panel.setLayout(new FlowLayout(0, 0, 0));
+        }
+      
+      panel.add(contents);
+      panel.setSize(contents.getSize());
+      Point layeredPaneLoc = layeredPane.getLocationOnScreen();
+      panel.setLocation(x - layeredPaneLoc.x, y - layeredPaneLoc.y);
+      layeredPane.add(panel, JLayeredPane.POPUP_LAYER);
+    }
+
+    /**
+     * Removes the popup from the JLayeredPane thus making it invisible.
+     */
+    public void hide()
+    {
+      layeredPane.remove(panel);
     }
   }
 }

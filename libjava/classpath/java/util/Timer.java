@@ -1,5 +1,5 @@
 /* Timer.java -- Timer that runs TimerTasks at a later time.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -297,12 +297,67 @@ public class Timer
       this.notify();
     }
 
+    /**
+     * Remove all canceled tasks from the queue.
+     */
+    public synchronized int purge()
+    {
+      int removed = 0;
+      // Null out any elements that are canceled.  Skip element 0 as
+      // it is the sentinel.
+      for (int i = elements; i > 0; --i)
+        {
+          if (heap[i].scheduled < 0)
+            {
+              ++removed;
+              
+              // Remove an element by pushing the appropriate child
+              // into place, and then iterating to the bottom of the
+              // tree.
+              int index = i;
+              while (heap[index] != null)
+                {
+                  int child = 2 * index;
+                  if (child >= heap.length)
+                    {
+                      // Off end; we're done.
+                      heap[index] = null;
+                      break;
+                    }
+                  
+                  if (child + 1 >= heap.length || heap[child + 1] == null)
+                    {
+                      // Nothing -- we're done.
+                    }
+                  else if (heap[child] == null
+                      || (heap[child].scheduled
+                          > heap[child + 1].scheduled))
+                    ++child;
+                  heap[index] = heap[child];
+                  index = child;
+                }
+            }
+        }
+      
+      // Make a new heap if we shrank enough.
+      int newLen = heap.length;
+      while (elements - removed + DEFAULT_SIZE / 2 <= newLen / 4)
+        newLen /= 2;
+      if (newLen != heap.length)
+        {
+          TimerTask[] newHeap = new TimerTask[newLen];
+          System.arraycopy(heap, 0, newHeap, 0, elements + 1);
+          heap = newHeap;
+        }
+      
+      return removed;
+    }
   }				// TaskQueue
 
   /**
    * The scheduler that executes all the tasks on a particular TaskQueue,
    * reschedules any repeating tasks and that waits when no task has to be
-   * executed immediatly. Stops running when canceled or when the parent
+   * executed immediately. Stops running when canceled or when the parent
    * Timer has been finalized and no more tasks have to be executed.
    */
   private static final class Scheduler implements Runnable
@@ -417,6 +472,30 @@ public class Timer
   public Timer(boolean daemon)
   {
     this(daemon, Thread.NORM_PRIORITY);
+  }
+
+  /**
+   * Create a new Timer whose Thread has the indicated name.  It will have 
+   * normal priority and will not be a daemon thread. 
+   * @param name the name of the Thread
+   * @since 1.5
+   */
+  public Timer(String name)
+  {
+    this(false, Thread.NORM_PRIORITY, name);
+  }
+
+  /**
+   * Create a new Timer whose Thread has the indicated name.  It will have 
+   * normal priority.  The boolean argument controls whether or not it
+   * will be a daemon thread.
+   * @param name the name of the Thread
+   * @param daemon true if the Thread should be a daemon thread
+   * @since 1.5
+   */
+  public Timer(String name, boolean daemon)
+  {
+    this(daemon, Thread.NORM_PRIORITY, name);
   }
 
   /**
@@ -611,5 +690,15 @@ public class Timer
   protected void finalize() throws Throwable
   {
     queue.setNullOnEmpty(true);
+  }
+  
+  /**
+   * Removes all cancelled tasks from the queue.
+   * @return the number of tasks removed
+   * @since 1.5
+   */
+  public int purge()
+  {
+    return queue.purge();
   }
 }

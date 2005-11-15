@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.DynamicAny;
 
+import gnu.CORBA.Minor;
 import gnu.CORBA.NameDynAnyPairHolder;
 
 import org.omg.CORBA.Any;
@@ -83,6 +84,7 @@ public abstract class NameDynAnyPairHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("NameDynAnyPair expected");
         bad.initCause(cex);
+        bad.minor = Minor.Any;        
         throw bad;
       }
   }

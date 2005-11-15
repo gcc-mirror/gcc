@@ -56,10 +56,6 @@ exception statement from your version. */
 #define AWT_HAND_CURSOR 12
 #define AWT_MOVE_CURSOR 13
 
-#define AWT_BUTTON1_DOWN_MASK (1 << 10)
-#define AWT_BUTTON2_DOWN_MASK (1 << 11)
-#define AWT_BUTTON3_DOWN_MASK (1 << 12)
-
 /* FIXME: use gtk-double-click-time, gtk-double-click-distance */
 #define MULTI_CLICK_TIME   250
 /* as opposed to a MULTI_PASS_TIME :) */
@@ -135,11 +131,11 @@ button_to_awt_mods (int button)
   switch (button)
     {
     case 1:
-      return AWT_BUTTON1_MASK;
+      return AWT_BUTTON1_DOWN_MASK | AWT_BUTTON1_MASK;
     case 2:
-      return AWT_BUTTON2_MASK;
+      return AWT_BUTTON2_DOWN_MASK | AWT_BUTTON2_MASK;
     case 3:
-      return AWT_BUTTON3_MASK;
+      return AWT_BUTTON3_DOWN_MASK | AWT_BUTTON3_MASK;
     }
 
   return 0;
@@ -151,11 +147,11 @@ cp_gtk_state_to_awt_mods (guint state)
   jint result = 0;
 
   if (state & GDK_SHIFT_MASK)
-    result |= AWT_SHIFT_DOWN_MASK;
+    result |= (AWT_SHIFT_DOWN_MASK | AWT_SHIFT_MASK);
   if (state & GDK_CONTROL_MASK)
-    result |= AWT_CTRL_DOWN_MASK;
+    result |= (AWT_CTRL_DOWN_MASK | AWT_CTRL_MASK);
   if (state & GDK_MOD1_MASK)
-    result |= AWT_ALT_DOWN_MASK;
+    result |= (AWT_ALT_DOWN_MASK | AWT_ALT_MASK);
 
   return result;
 }
@@ -166,13 +162,13 @@ state_to_awt_mods_with_button_states (guint state)
   jint result = 0;
 
   if (state & GDK_SHIFT_MASK)
-    result |= AWT_SHIFT_DOWN_MASK;
+    result |= AWT_SHIFT_DOWN_MASK | AWT_SHIFT_MASK;
   if (state & GDK_CONTROL_MASK)
-    result |= AWT_CTRL_DOWN_MASK;
+    result |= AWT_CTRL_DOWN_MASK | AWT_CTRL_MASK;
   if (state & GDK_MOD1_MASK)
-    result |= AWT_ALT_DOWN_MASK;
+    result |= AWT_ALT_DOWN_MASK | AWT_ALT_MASK;
   if (state & GDK_BUTTON1_MASK)
-    result |= AWT_BUTTON1_DOWN_MASK;
+    result |= AWT_BUTTON1_DOWN_MASK | AWT_BUTTON1_MASK;
   if (state & GDK_BUTTON2_MASK)
     result |= AWT_BUTTON2_DOWN_MASK;
   if (state & GDK_BUTTON3_MASK)
@@ -253,7 +249,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursorUnlocked
 
   gdk_cursor = gdk_cursor_new (gdk_cursor_type);
   gdk_window_set_cursor (widget->window, gdk_cursor);
-  gdk_cursor_destroy (gdk_cursor);
+  gdk_cursor_unref (gdk_cursor);
 }
 
 JNIEXPORT void JNICALL
@@ -276,9 +272,9 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetParent
   if (widget->parent == NULL)
     {
       if (GTK_IS_WINDOW (parent_widget))
-        {
-          GList *children = gtk_container_children 
-            (GTK_CONTAINER (parent_widget));
+	{
+	  GList *children = gtk_container_get_children
+	    (GTK_CONTAINER (parent_widget));
 
           if (GTK_IS_MENU_BAR (children->data))
             gtk_fixed_put (GTK_FIXED (children->next->data), widget, 0, 0);
@@ -458,7 +454,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetDispatchKeyEvent
  * Find the origin of a widget's window.
  */
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreen
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWindowGetLocationOnScreen
   (JNIEnv * env, jobject obj, jintArray jpoint)
 {
   void *ptr;
@@ -469,13 +465,36 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreen
   ptr = NSA_GET_PTR (env, obj);
   point = (*env)->GetIntArrayElements (env, jpoint, 0);
 
-  gdk_window_get_origin (GTK_WIDGET (ptr)->window, point, point+1);
+  gdk_window_get_root_origin (GTK_WIDGET (ptr)->window, point, point+1);
 
-  if (!GTK_IS_CONTAINER (ptr))
-    {
-      *point += GTK_WIDGET(ptr)->allocation.x;
-      *(point+1) += GTK_WIDGET(ptr)->allocation.y;
-    }
+  (*env)->ReleaseIntArrayElements(env, jpoint, point, 0);
+
+  gdk_threads_leave ();
+}
+
+/*
+ * Find the origin of a widget
+ */
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreen
+  (JNIEnv * env, jobject obj, jintArray jpoint)
+{
+  void *ptr;
+  jint *point;
+  GtkWidget *widget;
+
+  gdk_threads_enter ();
+
+  ptr = NSA_GET_PTR (env, obj);
+  point = (*env)->GetIntArrayElements (env, jpoint, 0);
+
+  widget = GTK_WIDGET(ptr);
+  while(gtk_widget_get_parent(widget) != NULL)
+    widget = gtk_widget_get_parent(widget);
+  gdk_window_get_position (GTK_WIDGET(widget)->window, point, point+1);
+
+  *point += GTK_WIDGET(ptr)->allocation.x;
+  *(point+1) += GTK_WIDGET(ptr)->allocation.y;
 
   (*env)->ReleaseIntArrayElements(env, jpoint, point, 0);
 
@@ -766,7 +785,10 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_isRealized
   ptr = NSA_GET_PTR (env, obj);
 
   if (ptr == NULL)
-    return FALSE;
+    {
+      gdk_threads_leave ();
+      return FALSE;
+    }
 
   ret_val = GTK_WIDGET_REALIZED (GTK_WIDGET (ptr));
 
@@ -844,7 +866,7 @@ find_fg_color_widget (GtkWidget *widget)
 
   if (GTK_IS_EVENT_BOX (widget)
       || (GTK_IS_BUTTON (widget)
-          && !GTK_IS_OPTION_MENU (widget)))
+	  && !GTK_IS_COMBO_BOX (widget)))
     fg_color_widget = gtk_bin_get_child (GTK_BIN(widget));
   else
     fg_color_widget = widget;
@@ -974,7 +996,7 @@ component_button_release_cb (GtkWidget *widget __attribute__((unused)),
   /* Generate an AWT click event only if the release occured in the
      window it was pressed in, and the mouse has not been dragged since
      the last time it was pressed. */
-  gdk_window_get_size (event->window, &width, &height);
+  gdk_drawable_get_size (event->window, &width, &height);
   if (! hasBeenDragged
       && event->x >= 0
       && event->y >= 0

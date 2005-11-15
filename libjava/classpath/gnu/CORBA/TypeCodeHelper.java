@@ -38,6 +38,13 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
+import gnu.CORBA.typecodes.FixedTypeCode;
+import gnu.CORBA.typecodes.GeneralTypeCode;
+import gnu.CORBA.typecodes.ArrayTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
+import gnu.CORBA.typecodes.RecordTypeCode;
+import gnu.CORBA.typecodes.StringTypeCode;
+
 import org.omg.CORBA.TCKind;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.TypeCodePackage.BadKind;
@@ -62,10 +69,10 @@ public class TypeCodeHelper
   {
     TCKind kind = TCKind.from_int(in.read_long());
     TypeCode rt;
-    generalTypeCode g;
-    recordTypeCode r;
-    recordTypeCode.Field f;
-    stringTypeCode s;
+    GeneralTypeCode g;
+    RecordTypeCode r;
+    RecordTypeCode.Field f;
+    StringTypeCode s;
     int n;
 
     switch (kind.value())
@@ -73,21 +80,21 @@ public class TypeCodeHelper
         case TCKind._tk_sequence :
         case TCKind._tk_array :
 
-          primitiveArrayTypeCode p = new primitiveArrayTypeCode(kind);
+          ArrayTypeCode p = new ArrayTypeCode(kind);
           p.setLength(in.read_long());
           rt = p;
           break;
           
         case TCKind._tk_string :
         case TCKind._tk_wstring :
-          s = new stringTypeCode(kind);
+          s = new StringTypeCode(kind);
           s.setLength(in.read_long());
           rt = s;
           break;
 
         case TCKind._tk_fixed :
 
-          fixedTypeCode fx = new fixedTypeCode();
+          FixedTypeCode fx = new FixedTypeCode();
           fx.setDigits(in.read_short());
           fx.setScale(in.read_short());
           rt = fx;
@@ -96,7 +103,7 @@ public class TypeCodeHelper
         case TCKind._tk_objref :
         case TCKind._tk_native :
         case TCKind._tk_abstract_interface :
-          g = new generalTypeCode(kind);
+          g = new GeneralTypeCode(kind);
           g.setId(in.read_string());
           g.setName(in.read_string());
           rt = g;
@@ -104,7 +111,7 @@ public class TypeCodeHelper
 
         case TCKind._tk_alias :
         case TCKind._tk_value_box :
-          g = new generalTypeCode(kind);
+          g = new GeneralTypeCode(kind);
           g.setId(in.read_string());
           g.setName(in.read_string());
           g.setContentType(in.read_TypeCode());
@@ -113,7 +120,7 @@ public class TypeCodeHelper
 
         case TCKind._tk_struct :
         case TCKind._tk_except :
-          r = new recordTypeCode(kind);
+          r = new RecordTypeCode(kind);
           r.setId(in.read_string());
           r.setName(in.read_string());
 
@@ -129,7 +136,7 @@ public class TypeCodeHelper
           break;
 
         case TCKind._tk_enum :
-          r = new recordTypeCode(kind);
+          r = new RecordTypeCode(kind);
           r.setId(in.read_string());
           r.setName(in.read_string());
 
@@ -144,7 +151,7 @@ public class TypeCodeHelper
           break;
 
         case TCKind._tk_union :
-          r = new recordTypeCode(kind);
+          r = new RecordTypeCode(kind);
           r.setId(in.read_string());
           r.setName(in.read_string());
           r.setDiscriminator_type(in.read_TypeCode());
@@ -164,7 +171,7 @@ public class TypeCodeHelper
           break;
 
         case TCKind._tk_value :
-          r = new recordTypeCode(kind);
+          r = new RecordTypeCode(kind);
           r.setId(in.read_string());
           r.setName(in.read_string());
           r.setTypeModifier(in.read_short());
@@ -183,7 +190,7 @@ public class TypeCodeHelper
           break;
 
         default :
-          rt = new primitiveTypeCode(kind);
+          rt = new PrimitiveTypeCode(kind);
       }
     return rt;
   }

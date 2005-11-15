@@ -55,12 +55,12 @@ public class TreeModelEvent extends EventObject {
 	/**
 	 * childIndices
 	 */
-	protected int[]		childIndices	= new int[0];
+	protected int[]		childIndices	= null;
 
 	/**
 	 * children
 	 */
-	protected Object[]	children		= new Object[0];
+	protected Object[]	children		= null;
 
 	/**
 	 * path
@@ -164,7 +164,9 @@ public class TreeModelEvent extends EventObject {
 	 * @returns String representation
 	 */
 	public String toString() {
-		return null; // TODO
+		return getClass() + " [Source: " + getSource() + ", TreePath: " + getTreePath() +
+        ", Child Indicies: " + getChildIndices() + ", Children: " + getChildren() + 
+        ", Path: " + getPath() +"]";
 	} // toString()
 
 

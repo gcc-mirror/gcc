@@ -40,8 +40,8 @@ package gnu.CORBA.DynAn;
 
 import gnu.CORBA.Poa.ORB_1_4;
 import gnu.CORBA.Unexpected;
-import gnu.CORBA.holderFactory;
-import gnu.CORBA.typeNamer;
+import gnu.CORBA.HolderLocator;
+import gnu.CORBA.TypeKindNamer;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.LocalObject;
@@ -227,7 +227,7 @@ public class gnuDynAnyFactory
    */
   public DynAny create_simple(TypeCode official, TypeCode type)
   {
-    Streamable holder = holderFactory.createHolder(type);
+    Streamable holder = HolderLocator.createHolder(type);
     return new gnuDynAny(holder, official, type, this, orb);
   }
 
@@ -314,7 +314,7 @@ public class gnuDynAnyFactory
             case TCKind._tk_Principal :
             case TCKind._tk_abstract_interface :
               throw new InconsistentTypeCode("Following API, the " +
-                                             typeNamer.nameIt(type) +
+                                             TypeKindNamer.nameIt(type) +
                                              " must not be supported."
                                             );
 

@@ -50,9 +50,7 @@ import java.awt.Font;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class FontUIResource
-  extends Font
-  implements UIResource
+public class FontUIResource extends Font implements UIResource
 {
   /**
    * Constructs a new <code>FontUIResource</code> given

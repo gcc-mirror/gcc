@@ -38,9 +38,17 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Toolkit;
+import java.net.URL;
 
+import javax.swing.border.Border;
+import javax.swing.plaf.ComponentInputMapUIResource;
+import javax.swing.plaf.IconUIResource;
+import javax.swing.plaf.InputMapUIResource;
+import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
 
 public abstract class LookAndFeel
@@ -104,6 +112,8 @@ public abstract class LookAndFeel
    */
   public void initialize()
   {
+    // We do nothing here. This method is meant to be overridden by
+    // LookAndFeel implementations.
   }
 
   /**
@@ -113,14 +123,27 @@ public abstract class LookAndFeel
    */
   public static void installBorder(JComponent c, String defaultBorderName)
   {
+    Border b = c.getBorder();
+    if (b == null || b instanceof UIResource)
+      c.setBorder(UIManager.getBorder(defaultBorderName));
   }
 
   /**
    * Convenience method for initializing a component's foreground and
    * background color properties with values from the current defaults table.
    */
-  public static void installColors(JComponent c, String defaultBgName, String defaultFgName)
+  public static void installColors(JComponent c, String defaultBgName,
+                                   String defaultFgName)
   {
+    // Install background.
+    Color bg = c.getBackground();
+    if (bg == null || bg instanceof UIResource)
+      c.setBackground(UIManager.getColor(defaultBgName));
+
+    // Install foreground.
+    Color fg = c.getForeground();
+    if (fg == null || fg instanceof UIResource)
+      c.setForeground(UIManager.getColor(defaultFgName));
   }
 
   /**
@@ -128,10 +151,16 @@ public abstract class LookAndFeel
    * and font properties with values from the current defaults table. 
    */
   public static void installColorsAndFont(JComponent component,
-					  String defaultBgName,
-					  String defaultFgName,
-					  String defaultFontName)
+                                          String defaultBgName,
+                                          String defaultFgName,
+                                          String defaultFontName)
   {
+    // Install colors.
+    installColors(component, defaultBgName, defaultFgName);
+    // Install font.
+    Font f = component.getFont();
+    if (f == null || f instanceof UIResource)
+      component.setFont(UIManager.getFont(defaultFontName));
   }
 
   /**
@@ -156,19 +185,47 @@ public abstract class LookAndFeel
   public abstract boolean isSupportedLookAndFeel();
 
   /**
-   * Loads the bindings in keys into retMap. 
+   * Loads the bindings in keys into retMap. Does not remove existing entries
+   * from retMap.  <code>keys</code> describes the InputMap, every even indexed
+   * item is either a KeyStroke or a String representing a KeyStroke and every
+   * odd indexed item is the Object associated with that KeyStroke in an 
+   * ActionMap.
+   * 
+   * @param retMap the InputMap into which we load bindings
+   * @param keys the Object array describing the InputMap as above
    */
   public static void loadKeyBindings(InputMap retMap, Object[] keys)
   {
+    if (keys == null)
+      return;
+    for (int i = 0; i < keys.length - 1; i+= 2)
+      {
+        Object key = keys[i];
+        KeyStroke keyStroke;
+        if (key instanceof KeyStroke)
+          keyStroke = (KeyStroke)key;
+        else
+          keyStroke = KeyStroke.getKeyStroke((String)key);
+        retMap.put(keyStroke, keys[i+1]);
+      }
   }
 
   /**
-   * Creates a ComponentInputMap from keys. 
+   * Creates a ComponentInputMap from keys.  
+   * <code>keys</code> describes the InputMap, every even indexed
+   * item is either a KeyStroke or a String representing a KeyStroke and every
+   * odd indexed item is the Object associated with that KeyStroke in an 
+   * ActionMap.
+   * 
+   * @param c the JComponent associated with the ComponentInputMap
+   * @param keys the Object array describing the InputMap as above
    */
   public static ComponentInputMap makeComponentInputMap(JComponent c,
 							Object[] keys)
   {
-    return null;
+    ComponentInputMap retMap = new ComponentInputMapUIResource(c);
+    loadKeyBindings(retMap, keys);
+    return retMap;
   }
 
   /**
@@ -177,23 +234,55 @@ public abstract class LookAndFeel
    */
   public static Object makeIcon(Class baseClass, String gifFile)
   {
-    return null;
+    final URL file = baseClass.getResource(gifFile);
+    return new UIDefaults.LazyValue() 
+      {
+        public Object createValue(UIDefaults table)
+        {
+          return new IconUIResource(new ImageIcon(file));
+        }
+      };
   }
 
   /**
    * Creates a InputMap from keys. 
+   * <code>keys</code> describes the InputMap, every even indexed
+   * item is either a KeyStroke or a String representing a KeyStroke and every
+   * odd indexed item is the Object associated with that KeyStroke in an 
+   * ActionMap.
+   * 
+   * @param keys the Object array describing the InputMap as above
    */
   public static InputMap makeInputMap(Object[] keys)
   {
-    return null;
+    InputMap retMap = new InputMapUIResource();
+    loadKeyBindings(retMap, keys);
+    return retMap;
   }
 
   /**
-   * Convenience method for building lists of KeyBindings.  
+   * Convenience method for building lists of KeyBindings.
+   * <code>keyBindingList</code> is an array of KeyStroke-Action pairs where
+   * even indexed elements are KeyStrokes or Strings representing KeyStrokes
+   * and odd indexed elements are the associated Actions.
+   * 
+   * @param keyBindingList the array of KeyStroke-Action pairs
+   * @return a JTextComponent.KeyBinding array
    */
   public static JTextComponent.KeyBinding[] makeKeyBindings(Object[] keyBindingList)
   {
-    return null;
+    JTextComponent.KeyBinding[] retBindings = 
+      new JTextComponent.KeyBinding[keyBindingList.length / 2];
+    for (int i = 0; i < keyBindingList.length - 1; i+= 2)
+      {
+        KeyStroke stroke;
+        if (keyBindingList[i] instanceof KeyStroke)
+          stroke = (KeyStroke)keyBindingList[i];
+        else
+          stroke = KeyStroke.getKeyStroke((String)keyBindingList[i]);
+        retBindings[i/2] = new JTextComponent.KeyBinding(stroke, (String)keyBindingList[i+1]);
+      }
+    return retBindings;
   }
 
   /**
@@ -224,6 +313,8 @@ public abstract class LookAndFeel
    */
   public void uninitialize()
   {
+    // We do nothing here. This method is meant to be overridden by
+    // LookAndFeel implementations.
   }
 
   /**
@@ -232,5 +323,7 @@ public abstract class LookAndFeel
    */
   public static void uninstallBorder(JComponent c)
   {
+    if (c.getBorder() instanceof UIResource)
+      c.setBorder(null);
   }
 }

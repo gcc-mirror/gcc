@@ -39,8 +39,9 @@ package javax.imageio;
 
 import java.io.IOException;
 
-
 /**
+ * A runtime exception to indicate image reading and writing failures.
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public class IIOException extends IOException

@@ -41,7 +41,9 @@ package java.lang;
 import gnu.classpath.VMStackWalker;
 
 import java.io.InputStream;
+import java.io.ObjectStreamClass;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -99,7 +101,7 @@ public final class Class implements Serializable
   /** The class signers. */
   private Object[] signers = null;
   /** The class protection domain. */
-  private final ProtectionDomain pd;
+  private final transient ProtectionDomain pd;
 
   /* We use an inner class, so that Class doesn't have a static initializer */
   private static final class StaticData
@@ -592,7 +594,8 @@ public final class Class implements Serializable
     ClassLoader cl = getClassLoader();
     if (cl != null)
       return cl.getPackage(getPackagePortion(getName()));
-    return null;
+    else
+      return VMClassLoader.getPackage(getPackagePortion(getName()));
   }
 
   /**
@@ -721,7 +724,7 @@ public final class Class implements Serializable
    * @param list List of methods to search
    * @param name Name of method
    * @param args Method parameter types
-   * @see #getMethod()
+   * @see #getMethod(String, Class[])
    */
   private static Method matchMethod(Method[] list, String name, Class[] args)
   {
@@ -829,7 +832,7 @@ public final class Class implements Serializable
    * public and final, but not an interface.
    *
    * @return the modifiers of this class
-   * @see Modifer
+   * @see Modifier
    * @since 1.1
    */
   public int getModifiers()

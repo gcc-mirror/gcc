@@ -1,5 +1,5 @@
 /* Security.java --- Java base security class implementation
-   Copyright (C) 1999, 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -651,7 +651,7 @@ public final class Security
     if (result.isEmpty())
       return null;
 
-    return (Provider[]) result.toArray(new Provider[0]);
+    return (Provider[]) result.toArray(new Provider[result.size()]);
   }
 
   private static void selectProviders(String svc, String algo, String attr,

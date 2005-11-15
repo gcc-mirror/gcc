@@ -88,9 +88,9 @@ public final class VMStackWalker
 
   /**
    * Get the class loader associated with the Class returned by
-   * <code>getCallingClass()</code>, or <code>null</code> if no
-   * such class exists or it is the boot loader. This method is an optimization
-   * for the expression <code>getClassContext()[1].getClassLoader()</code>
+   * <code>getCallingClass()</code>, or <code>null</code> if no such class
+   * exists or it is the boot loader. This method is an optimization for the
+   * expression <code>VMStackWalker.getClassLoader(getClassContext()[1])</code>
    * and should return the same result.
    *
    * <p>
@@ -102,7 +102,15 @@ public final class VMStackWalker
     Class[] ctx = getClassContext();
     if (ctx.length < 3)
       return null;
-    return ctx[2].getClassLoader();
+    return getClassLoader(ctx[2]);
   }
+
+  /**
+   * Retrieve the class's ClassLoader, or <code>null</code> if loaded
+   * by the bootstrap loader. I.e., this should return the same thing
+   * as {@link java.lang.VMClass#getClassLoader}. This duplicate version
+   * is here to work around access permissions.
+   */
+  public static native ClassLoader getClassLoader(Class cl);
 }
 

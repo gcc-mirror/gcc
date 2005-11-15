@@ -132,8 +132,8 @@ public class PlainDocument extends AbstractDocument
         // collapse elements if the removal spans more than 1 line
         Element newEl = createLeafElement(rootElement,
                                           SimpleAttributeSet.EMPTY,
-                                          start, end - len);
-        rootElement.replace(i1, i2 - i1, new Element[]{ newEl });
+                                          start, end);
+        rootElement.replace(i1, i2 - i1 + 1, new Element[]{ newEl });
       }
   }
 
@@ -146,5 +146,29 @@ public class PlainDocument extends AbstractDocument
   {
     Element root = getDefaultRootElement();
     return root.getElement(root.getElementIndex(pos));
+  }
+
+  /**
+   * Inserts a string into the document. If the document property
+   * '<code>filterNewLines</code>' is set to <code>Boolean.TRUE</code>, then
+   * all newlines in the inserted string are replaced by space characters,
+   * otherwise the superclasses behaviour is executed.
+   *
+   * Inserting content causes a write lock to be acquired during this method
+   * call.
+   *
+   * @param offs the offset at which to insert the string
+   * @param str the string to be inserted
+   * @param atts the text attributes of the string to be inserted
+   *
+   * @throws BadLocationException
+   */
+  public void insertString(int offs, String str, AttributeSet atts)
+    throws BadLocationException
+  {
+    String string = str;
+    if (Boolean.TRUE.equals(getProperty("filterNewlines")))
+      string = str.replaceAll("\n", " ");
+    super.insertString(offs, string, atts);
   }
 }

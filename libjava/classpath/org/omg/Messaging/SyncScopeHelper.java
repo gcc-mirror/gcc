@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package org.omg.Messaging;
 
-import gnu.CORBA.primitiveTypeCode;
-import gnu.CORBA.recordTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
+import gnu.CORBA.typecodes.RecordTypeCode;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.TCKind;
@@ -104,10 +104,10 @@ public class SyncScopeHelper
    */
   public static TypeCode type()
   {
-    recordTypeCode r = new recordTypeCode(TCKind.tk_alias);
+    RecordTypeCode r = new RecordTypeCode(TCKind.tk_alias);
     r.setName("SyncScope");
     r.setId(id());
-    r.setContentType(new primitiveTypeCode(TCKind.tk_short));
+    r.setContentType(new PrimitiveTypeCode(TCKind.tk_short));
     return r;
   }
 

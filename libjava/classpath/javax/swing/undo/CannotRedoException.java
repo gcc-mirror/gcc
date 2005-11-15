@@ -44,13 +44,13 @@ package javax.swing.undo;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class CannotRedoException
-  extends RuntimeException
+public class CannotRedoException extends RuntimeException
 {
   /**
    * Constructs a new instance of a <code>CannotRedoException</code>.
    */
   public CannotRedoException()
   {
+    super();
   }
 }

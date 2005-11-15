@@ -40,12 +40,14 @@ package gnu.CORBA.Interceptor;
 
 import gnu.CORBA.IOR;
 import gnu.CORBA.Poa.ORB_1_4;
+import gnu.CORBA.Poa.gnuPOA;
 
 import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.Policy;
 import org.omg.IOP.TaggedComponent;
 import org.omg.PortableInterceptor.IORInfo;
-import org.omg.PortableServer.POA;
+import org.omg.PortableInterceptor.ObjectReferenceFactory;
+import org.omg.PortableInterceptor.ObjectReferenceTemplate;
 
 /**
  * Implements IORInfo.
@@ -67,7 +69,7 @@ public class gnuIorInfo extends LocalObject implements IORInfo
   /**
    * The POA, to that IOR is related.
    */
-  public final POA poa;
+  public final gnuPOA poa;
 
   /**
    * The IOR itself.
@@ -77,7 +79,7 @@ public class gnuIorInfo extends LocalObject implements IORInfo
   /**
    * Create an instance.
    */
-  public gnuIorInfo(ORB_1_4 an_orb, POA a_poa, IOR an_ior)
+  public gnuIorInfo(ORB_1_4 an_orb, gnuPOA a_poa, IOR an_ior)
   {
     orb = an_orb;
     poa = a_poa;
@@ -113,8 +115,42 @@ public class gnuIorInfo extends LocalObject implements IORInfo
   /**
    * Return the state of the object POA.
    */
-  short state()
+  public short state()
   {
     return (short) poa.the_POAManager().get_state().value();
+  }
+
+  /**
+   * Get the adapter template, associated with this poa.
+   */
+  public ObjectReferenceTemplate adapter_template()
+  {
+    return poa.getReferenceTemplate();
+  }
+
+  /**
+   * Get the object factory of the current POA.
+   */
+  public ObjectReferenceFactory current_factory()
+  {
+    return poa.getReferenceFactory();
+  }
+
+  /**
+   * Set the object factory of the current POA. 
+   */
+  public void current_factory(ObjectReferenceFactory factory)
+  {
+    poa.setReferenceFactory(factory);
+  }
+
+  /**
+   * The method currently uses system identity hashcode that should be 
+   * different for each object.
+   */
+  public int manager_id()
+  {
+    // The System.identityHashCode is also called in gnuPoaManager.    
+    return System.identityHashCode(poa.the_POAManager());
   }
 }

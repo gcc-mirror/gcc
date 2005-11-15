@@ -38,10 +38,19 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.DefaultKeyboardFocusManager;
+import java.awt.FocusTraversalPolicy;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyEventPostProcessor;
 import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.VetoableChangeListener;
+import java.util.Set;
 
 /**
  * This class has been obsoleted by the new
@@ -54,46 +63,409 @@ public abstract class FocusManager
   extends DefaultKeyboardFocusManager
 {
   /**
-   * DisabledFocusManager
+   * A FocusManager that wraps an AWT KeyboardFocusManager and forwards all
+   * method calls to it. This is used for compatibility with the new focus
+   * system.
+   *
+   * @author Roman Kennke (kennke@aicas.com)
    */
-  static class DisabledFocusManager
+  private static class WrappingFocusManager
     extends FocusManager
   {
+    /**
+     * The wrapped KeyboardFocusManager.
+     */
+    private KeyboardFocusManager wrapped;
 
     /**
-     * Constructor DisabledFocusManager
+     * Creates a new instance of WrappedFocusManager.
+     *
+     * @param fm the focus manager to wrap
      */
-    DisabledFocusManager()
+    WrappingFocusManager(KeyboardFocusManager fm)
     {
-      // TODO
+      wrapped = fm;
     }
 
     /**
-     * processKeyEvent
-     * @param component TODO
-     * @param event TODO
+     * Wraps {@link DefaultKeyboardFocusManager#dispatchEvent(AWTEvent)}.
+     *
+     * @param ev the event to dispatch
+     *
+     * @return <code>true</code> if the event has been dispatched,
+     *         <code>false</code> otherwise
      */
-    public void processKeyEvent(Component component, KeyEvent event)
+    public boolean dispatchEvent(AWTEvent ev)
     {
-      // TODO
+      return wrapped.dispatchEvent(ev);
     }
 
     /**
-     * focusNextComponent
-     * @param component TODO
+     * Wraps {@link DefaultKeyboardFocusManager#dispatchKeyEvent(KeyEvent)}.
+     *
+     * @param ev the event to dispatch
+     *
+     * @return <code>true</code> if the event has been dispatched,
+     *         <code>false</code> otherwise
      */
-    public void focusNextComponent(Component component)
+    public boolean dispatchKeyEvent(KeyEvent ev)
     {
-      // TODO
+      return wrapped.dispatchKeyEvent(ev);
     }
 
     /**
-     * focusPreviousComponent
-     * @param value0 TODO
+     * Wraps {@link DefaultKeyboardFocusManager#downFocusCycle(Container)}.
+     *
+     * @param c the container
      */
-    public void focusPreviousComponent(Component value0)
+    public void downFocusCycle(Container c)
     {
-      // TODO
+      wrapped.downFocusCycle(c);
+    }
+
+    /**
+     * Wraps {@link DefaultKeyboardFocusManager#upFocusCycle(Container)}.
+     *
+     * @param c the container
+     */
+    public void upFocusCycle(Container c)
+    {
+      wrapped.upFocusCycle(c);
+    }
+
+    /**
+     * Wraps {@link DefaultKeyboardFocusManager#focusNextComponent(Component)}.
+     *
+     * @param c the component
+     */
+    public void focusNextComponent(Component c)
+    {
+      wrapped.focusNextComponent(c);
+    }
+
+    /**
+     * Wraps
+     * {@link DefaultKeyboardFocusManager#focusPreviousComponent(Component)}.
+     *
+     * @param c the component
+     */
+    public void focusPreviousComponent(Component c)
+    {
+      wrapped.focusPreviousComponent(c);
+    }
+
+    /**
+     * Wraps {@link DefaultKeyboardFocusManager#postProcessKeyEvent(KeyEvent)}.
+     *
+     * @param e the key event
+     *
+     * @return a boolead
+     */
+    public boolean postProcessKeyEvent(KeyEvent e)
+    {
+      return wrapped.postProcessKeyEvent(e);
+    }
+
+    /**
+     * Wraps
+     * {@link DefaultKeyboardFocusManager#processKeyEvent(Component, KeyEvent)}.
+     *
+     * @param c the component
+     * @param e the key event
+     */
+    public void processKeyEvent(Component c, KeyEvent e)
+    {
+      wrapped.processKeyEvent(c, e);
+    }
+
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#addKeyEventDispatcher(KeyEventDispatcher)}.
+     *
+     * @param d the dispatcher
+     */
+    public void addKeyEventDispatcher(KeyEventDispatcher d)
+    {
+      wrapped.addKeyEventDispatcher(d);
+    }
+
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#addKeyEventPostProcessor(KeyEventPostProcessor)}.
+     *
+     * @param p the post processor
+     */
+    public void addKeyEventPostProcessor(KeyEventPostProcessor p)
+    {
+      wrapped.addKeyEventPostProcessor(p);
+    }
+ 
+    /**
+     * Wraps {@link KeyboardFocusManager#addPropertyChangeListener(PropertyChangeListener)}.
+     *
+     * @param l the property change listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener l)
+    {
+      wrapped.addPropertyChangeListener(l);
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#addPropertyChangeListener(String, PropertyChangeListener)}.
+     *
+     * @param p the property name
+     * @param l the property change listener
+     */
+    public void addPropertyChangeListener(String p, PropertyChangeListener l)
+    {
+      wrapped.addPropertyChangeListener(p, l);
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#addVetoableChangeListener(String, VetoableChangeListener)}.
+     *
+     * @param p the property name
+     * @param l the vetoable change listener
+     */
+    public void addVetoableChangeListener(String p, VetoableChangeListener l)
+    {
+      wrapped.addVetoableChangeListener(p, l);
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#addVetoableChangeListener(VetoableChangeListener)}.
+     *
+     * @param l the vetoable change listener
+     */
+    public void addVetoableChangeListener(VetoableChangeListener l)
+    {
+      wrapped.addVetoableChangeListener(l);
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#clearGlobalFocusOwner()}.
+     */
+    public void clearGlobalFocusOwner()
+    {
+      wrapped.clearGlobalFocusOwner();
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getActiveWindow()}.
+     *
+     * @return the active window
+     */
+    public Window getActiveWindow()
+    {
+      return wrapped.getActiveWindow();
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getCurrentFocusCycleRoot()}.
+     *
+     * @return the focus cycle root
+     */
+    public Container getCurrentFocusCycleRoot()
+    {
+      return wrapped.getCurrentFocusCycleRoot();
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getDefaultFocusTraversalKeys(int)}.
+     *
+     * @param i the ID
+     *
+     * @return the focus traversal keys
+     */
+    public Set getDefaultFocusTraversalKeys(int i)
+    {
+      return wrapped.getDefaultFocusTraversalKeys(i);
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getDefaultFocusTraversalPolicy()}.
+     *
+     * @return the focus traversal policy
+     */
+    public FocusTraversalPolicy getDefaultFocusTraversalPolicy()
+    {
+      return wrapped.getDefaultFocusTraversalPolicy();
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getFocusedWindow()}.
+     *
+     * @return the focused window
+     */
+    public Window getFocusedWindow()
+    {
+      return wrapped.getFocusedWindow();
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getFocusOwner()}.
+     *
+     * @return the focus owner
+     */
+    public Component getFocusOwner()
+    {
+      return wrapped.getFocusOwner();
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getPermanentFocusOwner()}.
+     *
+     * @return the focus owner
+     */
+    public Component getPermanentFocusOwner()
+    {
+      return wrapped.getPermanentFocusOwner();
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getPropertyChangeListeners()}.
+     *
+     * @return the property change listeners
+     */
+    public PropertyChangeListener[] getPropertyChangeListeners()
+    {
+      return wrapped.getPropertyChangeListeners();
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getPropertyChangeListeners(String)}.
+     *
+     * @param n the property name
+     *
+     * @return the property change listeners
+     */
+    public PropertyChangeListener[] getPropertyChangeListeners(String n)
+    {
+      return wrapped.getPropertyChangeListeners(n);
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getVetoableChangeListeners()}.
+     *
+     * @return the vetoable change listeners
+     */
+    public VetoableChangeListener[] getVetoableChangeListeners()
+    {
+      return wrapped.getVetoableChangeListeners();
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#getVetoableChangeListeners(String)}.
+     *
+     * @param n the property name
+     *
+     * @return the vetoable change listeners
+     */
+    public VetoableChangeListener[] getVetoableChangeListeners(String n)
+    {
+      return wrapped.getVetoableChangeListeners(n);
+    }
+
+    
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#removeKeyEventDispatcher(KeyEventDispatcher)}.
+     *
+     * @param d the key event dispatcher to remove
+     */
+    public void removeKeyEventDispatcher(KeyEventDispatcher d)
+    {
+      wrapped.removeKeyEventDispatcher(d);
+    }
+
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#removeKeyEventPostProcessor(KeyEventPostProcessor)}.
+     *
+     * @param p the post processor
+     */
+    public void removeKeyEventPostProcessor(KeyEventPostProcessor p)
+    {
+      wrapped.removeKeyEventPostProcessor(p);
+    }
+
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#removePropertyChangeListener(PropertyChangeListener)}.
+     *
+     * @param l the listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener l)
+    {
+      wrapped.removePropertyChangeListener(l);
+    }
+
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#removePropertyChangeListener(String, PropertyChangeListener)}.
+     *
+     * @param n the property name
+     * @param l the listener
+     */
+    public void removePropertyChangeListener(String n, PropertyChangeListener l)
+    {
+      wrapped.removePropertyChangeListener(n, l);
+    }
+
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#removeVetoableChangeListener(VetoableChangeListener)}.
+     *
+     * @param l the listener
+     */
+    public void removeVetoableChangeListener(VetoableChangeListener l)
+    {
+      wrapped.removeVetoableChangeListener(l);
+    }
+
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#removeVetoableChangeListener(String, VetoableChangeListener)}.
+     *
+     * @param n the property name
+     * @param l the listener
+     */
+    public void removeVetoableChangeListener(String n, VetoableChangeListener l)
+    {
+      wrapped.removeVetoableChangeListener(n, l);
+    }
+
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#setDefaultFocusTraversalKeys(int, Set)}.
+     *
+     * @param id the ID
+     * @param k the keystrokes
+     */
+    public void setDefaultFocusTraversalKeys(int id, Set k)
+    {
+      wrapped.setDefaultFocusTraversalKeys(id, k);
+    }
+
+    /**
+     * Wraps {@link KeyboardFocusManager#setDefaultFocusTraversalPolicy(FocusTraversalPolicy)}.
+     *
+     * @param p the focus traversal policy
+     */
+    public void setDefaultFocusTraversalPolicy(FocusTraversalPolicy p)
+    {
+      wrapped.setDefaultFocusTraversalPolicy(p);
+    }
+
+    /**
+     * Wraps
+     * {@link KeyboardFocusManager#setGlobalCurrentFocusCycleRoot(Container)}.
+     *
+     * @param r the focus cycle root
+     */
+    public void setGlobalCurrentFocusCycleRoot(Container r)
+    {
+      wrapped.setGlobalCurrentFocusCycleRoot(r);
     }
   }
 
@@ -117,20 +489,9 @@ public abstract class FocusManager
    */
   public static FocusManager getCurrentManager()
   {
-    KeyboardFocusManager fm =
-      KeyboardFocusManager.getCurrentKeyboardFocusManager();
-    if (fm instanceof FocusManager)
-      return (FocusManager) fm;
-    else
-      {
-        System.err.println("The Swing FocusManager API has been obsoleted by");
-        System.err.println("the new KeyboardFocusManager system.");
-        System.err.println("You should either not use the Swing FocusManager");
-        System.err.println("API or set the system property");
-        System.err.println
-          ("gnu.java.awt.FocusManager=javax.swing.FocusManager");
-      }
-      return null;
+    KeyboardFocusManager m =
+      KeyboardFocusManager.getCurrentKeyboardFocusManager(); 
+    return new WrappingFocusManager(m);
   }
 
   /**

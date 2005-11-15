@@ -50,9 +50,7 @@ import javax.swing.ActionMap;
  * @author Andrew Selkirk
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class ActionMapUIResource
-  extends ActionMap
-  implements UIResource
+public class ActionMapUIResource extends ActionMap implements UIResource
 {
   /**
    * Constructs a new ActionMapUIResource.

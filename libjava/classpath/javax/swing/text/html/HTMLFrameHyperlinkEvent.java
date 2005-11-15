@@ -41,7 +41,6 @@ package javax.swing.text.html;
 import java.net.URL;
 
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.text.Element;
 
 /**
@@ -50,8 +49,7 @@ import javax.swing.text.Element;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class HTMLFrameHyperlinkEvent
-  extends HyperlinkEvent
+public class HTMLFrameHyperlinkEvent extends HyperlinkEvent
 {
   private final String target_frame;
 

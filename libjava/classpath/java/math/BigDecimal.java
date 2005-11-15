@@ -43,11 +43,26 @@ public class BigDecimal extends Number implements Comparable
   private int scale;
   private static final long serialVersionUID = 6108874887143696463L;
 
-  private static final BigDecimal ZERO = 
+  /**
+   * The constant zero as a BigDecimal with scale zero.
+   * @since 1.5
+   */
+  public static final BigDecimal ZERO = 
     new BigDecimal (BigInteger.valueOf (0), 0);
 
-  private static final BigDecimal ONE = 
+  /**
+   * The constant one as a BigDecimal with scale zero.
+   * @since 1.5
+   */
+  public static final BigDecimal ONE = 
     new BigDecimal (BigInteger.valueOf (1), 0);
+
+  /**
+   * The constant ten as a BigDecimal with scale zero.
+   * @since 1.5
+   */
+  public static final BigDecimal TEN = 
+    new BigDecimal (BigInteger.valueOf (10), 0);
 
   public static final int ROUND_UP = 0;
   public static final int ROUND_DOWN = 1;

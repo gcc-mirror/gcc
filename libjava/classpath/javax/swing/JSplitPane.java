@@ -59,6 +59,8 @@ public class JSplitPane extends JComponent implements Accessible
   /**
    * DOCUMENT ME!
    */
+  // FIXME: This inner class is a complete stub and must be implemented
+  // properly.
   protected class AccessibleJSplitPane extends JComponent.AccessibleJComponent
     implements AccessibleValue
   {
@@ -69,6 +71,7 @@ public class JSplitPane extends JComponent implements Accessible
      */
     protected AccessibleJSplitPane()
     {
+      // Nothing to do here.
     }
 
     /**

@@ -38,10 +38,11 @@ exception statement from your version. */
 
 package gnu.CORBA.GIOP.v1_2;
 
-import gnu.CORBA.CDR.cdrInput;
-import gnu.CORBA.CDR.cdrOutput;
+import gnu.CORBA.Minor;
+import gnu.CORBA.CDR.AbstractCdrInput;
+import gnu.CORBA.CDR.AbstractCdrOutput;
 import gnu.CORBA.GIOP.ServiceContext;
-import gnu.CORBA.GIOP.cxCodeSet;
+import gnu.CORBA.GIOP.CodeSetServiceContext;
 
 import java.io.IOException;
 
@@ -58,6 +59,11 @@ import org.omg.CORBA.NO_IMPLEMENT;
 public class RequestHeader
   extends gnu.CORBA.GIOP.v1_0.RequestHeader
 {
+  /** 
+   * Use serialVersionUID for interoperability. 
+   */
+  private static final long serialVersionUID = 1;
+  
   /**
    * Indicates that the object is addressed by the object key.
    */
@@ -89,7 +95,7 @@ public class RequestHeader
    */
   public RequestHeader()
   {
-    service_context = new ServiceContext[] { cxCodeSet.STANDARD };
+    service_context = new ServiceContext[] { CodeSetServiceContext.STANDARD };
   }
 
   /**
@@ -123,7 +129,7 @@ public class RequestHeader
    *
    * @param in a stream to read from.
    */
-  public void read(cdrInput in)
+  public void read(AbstractCdrInput in)
   {
     try
       {
@@ -150,20 +156,23 @@ public class RequestHeader
               throw new NO_IMPLEMENT("Object addressing by by IOR addressing info");
 
             default :
-              throw new MARSHAL("Unknow addressing method in request, " +
+              MARSHAL m = new MARSHAL("Unknow addressing method in request, " +
                                 AddressingDisposition
                                );
+              m.minor = Minor.UnsupportedAddressing;
+              throw m;
           }
 
         operation = in.read_string();
         service_context = gnu.CORBA.GIOP.ServiceContext.readSequence(in);
 
         // No requesting principal in this new format.
-        in.setCodeSet(cxCodeSet.find(service_context));
+        in.setCodeSet(CodeSetServiceContext.find(service_context));
       }
     catch (IOException ex)
       {
         MARSHAL t = new MARSHAL();
+        t.minor = Minor.Header;
         t.initCause(ex);
         throw t;
       }
@@ -186,7 +195,7 @@ public class RequestHeader
    *
    * @param out a stream to write into.
    */
-  public void write(cdrOutput out)
+  public void write(AbstractCdrOutput out)
   {
     out.write_ulong(request_id);
 
@@ -208,6 +217,6 @@ public class RequestHeader
     ServiceContext.writeSequence(out, service_context);
 
     // No requesting principal in this new format.
-    out.setCodeSet(cxCodeSet.find(service_context));
+    out.setCodeSet(CodeSetServiceContext.find(service_context));
   }
 }

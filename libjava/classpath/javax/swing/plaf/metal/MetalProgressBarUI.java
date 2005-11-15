@@ -38,20 +38,22 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Insets;
+
 import javax.swing.JComponent;
+import javax.swing.JProgressBar;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicProgressBarUI;
 
-public class MetalProgressBarUI
-  extends BasicProgressBarUI
-{
-
-  // FIXME: maybe replace by a Map of instances when this becomes stateful
-  /** The shared UI instance for MetalProgressBarUIs */
-  private static MetalProgressBarUI instance = null;
-
+/**
+ * A UI delegate for the {@link JProgressBar} component.
+ */
+public class MetalProgressBarUI extends BasicProgressBarUI
+{  
   /**
-   * Constructs a new instance of MetalProgressBarUI.
+   * Constructs a new instance of <code>MetalProgressBarUI</code>.
    */
   public MetalProgressBarUI()
   {
@@ -59,16 +61,87 @@ public class MetalProgressBarUI
   }
 
   /**
-   * Returns an instance of MetalProgressBarUI.
+   * Returns a new instance of <code>MetalProgressBarUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalProgressBarUI
+   * @return A new instance of <code>MetalProgressBarUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instance == null)
-      instance = new MetalProgressBarUI();
-    return instance;
+    return new MetalProgressBarUI();
+  }
+
+  /**
+   * Performs the painting for determinate progress bars. This calls the
+   * superclass behaviour and then adds some highlighting to the upper and left
+   * edge of the progress bar.
+   *
+   * @param g the graphics context
+   * @param c not used here
+   */
+  public void paintDeterminate(Graphics g, JComponent c)
+  {
+    super.paintDeterminate(g, c);
+    Color saved = g.getColor();
+    Insets i = progressBar.getInsets();
+    int w = progressBar.getWidth();
+    int h = progressBar.getHeight();
+    int orientation = progressBar.getOrientation();
+    
+    Color shadow = MetalLookAndFeel.getControlShadow();
+    g.setColor(shadow);
+
+    g.drawLine(i.left, i.top, w - i.right, i.top);
+    g.drawLine(i.left, i.top, i.left, h - i.bottom);
+    int full = getAmountFull(i, w, h);
+    if (full > 0)
+      {
+        Color darkShadow = MetalLookAndFeel.getPrimaryControlDarkShadow();
+        g.setColor(darkShadow);
+        if (orientation == JProgressBar.HORIZONTAL)
+          {
+            g.drawLine(i.left, i.top, i.left, h - i.bottom);
+            g.drawLine(i.left, i.top, i.left + full - 1, i.top);
+          }
+        else
+          {
+            if (full >= (h - i.top - i.bottom))
+              g.drawLine(i.left, i.top, w - i.right, i.top);
+            g.drawLine(i.left, h - i.bottom, i.left, h - i.bottom - full);
+          }
+      }
+    g.setColor(saved);
+  }
+
+  /**
+   * Performs the painting for indeterminate progress bars. This calls the
+   * superclass behaviour and then adds some highlighting to the upper and left
+   * edge of the progress bar.
+   *
+   * @param g the graphics context
+   * @param c not used here
+   */
+  public void paintIndeterminate(Graphics g, JComponent c)
+  {
+    super.paintIndeterminate(g, c);
+    Color saved = g.getColor();
+    Insets i = progressBar.getInsets();
+    int w = progressBar.getWidth();
+    int h = progressBar.getHeight();
+    Color shadow = MetalLookAndFeel.getControlShadow();
+    g.setColor(shadow);
+    g.drawLine(i.left, i.top, w - i.right, i.top);
+    g.drawLine(i.left, i.top, i.left, h - i.bottom);
+
+    boxRect = getBox(boxRect);
+    Color darkShadow = MetalLookAndFeel.getPrimaryControlDarkShadow();
+    g.setColor(darkShadow);
+    int orientation = progressBar.getOrientation();
+    if (orientation == JProgressBar.HORIZONTAL)
+      g.drawLine(boxRect.x, i.top, boxRect.x + boxRect.width - 1, i.top);
+    else
+      g.drawLine(i.left, boxRect.y, i.left, boxRect.y + boxRect.height - 1);
+    g.setColor(saved);
   }
 }

@@ -53,8 +53,7 @@ import java.awt.Insets;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class EmptyBorder
-  extends AbstractBorder
+public class EmptyBorder extends AbstractBorder
 {
   /**
    * Determined using the <code>serialver</code> tool
@@ -142,6 +141,7 @@ public class EmptyBorder
   public void paintBorder(Component c, Graphics g,
                           int x, int y, int width, int height)
   {
+    // Nothing to do here.
   }
 
 

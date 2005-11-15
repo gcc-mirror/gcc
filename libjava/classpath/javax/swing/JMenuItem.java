@@ -44,9 +44,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.EventListener;
 
 import javax.accessibility.Accessible;
@@ -84,6 +81,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
   public JMenuItem()
   {
     super();
+    init(null, null);
   }
 
   /**
@@ -118,6 +116,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
   {
     super();
     super.setAction(action);
+    init(null, null);
   }
 
   /**
@@ -147,15 +146,6 @@ public class JMenuItem extends AbstractButton implements Accessible,
     setMnemonic(mnemonic);
   }
 
-  private void readObject(ObjectInputStream stream)
-                   throws IOException, ClassNotFoundException
-  {
-  }
-
-  private void writeObject(ObjectOutputStream stream) throws IOException
-  {
-  }
-
   /**
    * Initializes this menu item
    *
@@ -176,7 +166,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
     //borderPainted = false;
     focusPainted = false;
     horizontalAlignment = JButton.LEFT;
-    horizontalTextPosition = JButton.LEFT;
+    horizontalTextPosition = JButton.TRAILING;
   }
 
   /**
@@ -189,7 +179,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
   {
     super.setUI(ui);
   }
-
+  
   /**
    * This method sets this menuItem's UI to the UIManager's default for the
    * current look and feel.
@@ -255,13 +245,18 @@ public class JMenuItem extends AbstractButton implements Accessible,
   }
 
   /**
-   * Sets accelerator for this menu item.
-   *
+   * Sets the key combination which invokes the menu item's action 
+   * listeners without navigating the menu hierarchy. Note that when the 
+   * keyboard accelerator is typed, it will work whether or not the 
+   * menu is currently displayed.
+   * 
    * @param keystroke accelerator for this menu item.
    */
   public void setAccelerator(KeyStroke keystroke)
   {
+    KeyStroke old = this.accelerator;
     this.accelerator = keystroke;
+    firePropertyChange ("accelerator", old, keystroke);
   }
 
   /**
@@ -276,7 +271,11 @@ public class JMenuItem extends AbstractButton implements Accessible,
     super.configurePropertiesFromAction(action);
 
     if (! (this instanceof JMenu) && action != null)
-      setAccelerator((KeyStroke) (action.getValue(Action.ACCELERATOR_KEY)));
+      {
+        setAccelerator((KeyStroke) (action.getValue(Action.ACCELERATOR_KEY)));
+        super.registerKeyboardAction(action, accelerator, 
+                                     JComponent.WHEN_IN_FOCUSED_WINDOW);
+      }
   }
 
   /**
@@ -667,6 +666,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
 
     public void stateChanged(ChangeEvent event)
     {
+      // TODO: What should be done here, if anything?
     }
 
     public AccessibleRole getAccessibleRole()

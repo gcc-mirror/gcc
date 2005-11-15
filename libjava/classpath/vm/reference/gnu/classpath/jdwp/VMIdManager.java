@@ -138,6 +138,7 @@ public class VMIdManager
 			{
 			  id.setId (++_lastId);
 			}
+		      id.setReference (obj);
 		      return id;
 		    }
 		  catch (InstantiationException ie)
@@ -162,7 +163,7 @@ public class VMIdManager
 	{
 	  id.setId (++_lastId);
 	}
-
+      id.setReference (obj);
       return id;
     }
 

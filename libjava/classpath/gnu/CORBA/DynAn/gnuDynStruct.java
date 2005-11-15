@@ -54,7 +54,7 @@ import org.omg.DynamicAny.DynAny;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class gnuDynStruct
-  extends abstractRecord
+  extends RecordAny
   implements DynStruct, Serializable
 {
   /**
@@ -89,7 +89,7 @@ public class gnuDynStruct
   }
 
   /** @inheritDoc */
-  protected abstractRecord newInstance(TypeCode oType, TypeCode aType,
+  protected RecordAny newInstance(TypeCode oType, TypeCode aType,
                                        gnuDynAnyFactory aFactory, ORB anOrb)
   {
     return new gnuDynStruct(oType, aType, aFactory, anOrb);

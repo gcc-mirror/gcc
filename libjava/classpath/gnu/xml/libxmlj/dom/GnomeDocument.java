@@ -376,31 +376,31 @@ public class GnomeDocument
     name = name.toLowerCase();
     if ("canonical-form".equals(name))
       {
-        return new Boolean(canonicalForm);
+        return Boolean.valueOf(canonicalForm);
       }
     else if ("cdata-sections".equals(name))
       {
-        return new Boolean(cdataSections);
+        return Boolean.valueOf(cdataSections);
       }
     else if ("check-character-normalization".equals(name))
       {
-        return new Boolean(checkCharacterNormalization);
+        return Boolean.valueOf(checkCharacterNormalization);
       }
     else if ("comments".equals(name))
       {
-        return new Boolean(comments);
+        return Boolean.valueOf(comments);
       }
     else if ("datatype-normalization".equals(name))
       {
-        return new Boolean(datatypeNormalization);
+        return Boolean.valueOf(datatypeNormalization);
       }
     else if ("element-content-whitespace".equals(name))
       {
-        return new Boolean(elementContentWhitespace);
+        return Boolean.valueOf(elementContentWhitespace);
       }
     else if ("entities".equals(name))
       {
-        return new Boolean(entities);
+        return Boolean.valueOf(entities);
       }
     else if ("error-handler".equals(name))
       {
@@ -408,43 +408,43 @@ public class GnomeDocument
       }
     else if ("infoset".equals(name))
       {
-        return new Boolean(!validateIfSchema &&
-                           !entities &&
-                           !datatypeNormalization &&
-                           !cdataSections &&
-                           namespaceDeclarations &&
-                           wellFormed &&
-                           elementContentWhitespace &&
-                           comments &&
-                           namespaces);
+        return Boolean.valueOf(!validateIfSchema &&
+			       !entities &&
+			       !datatypeNormalization &&
+			       !cdataSections &&
+			       namespaceDeclarations &&
+			       wellFormed &&
+			       elementContentWhitespace &&
+			       comments &&
+			       namespaces);
       }
     else if ("namespaces".equals(name))
       {
-        return new Boolean(namespaces);
+        return Boolean.valueOf(namespaces);
       }
     else if ("namespace-declarations".equals(name))
       {
-        return new Boolean(namespaceDeclarations);
+        return Boolean.valueOf(namespaceDeclarations);
       }
     else if ("normalize-characters".equals(name))
       {
-        return new Boolean(normalizeCharacters);
+        return Boolean.valueOf(normalizeCharacters);
       }
     else if ("split-cdata-sections".equals(name))
       {
-        return new Boolean(splitCdataSections);
+        return Boolean.valueOf(splitCdataSections);
       }
     else if ("validate".equals(name))
       {
-        return new Boolean(validate);
+        return Boolean.valueOf(validate);
       }
     else if ("validate-if-schema".equals(name))
       {
-        return new Boolean(validateIfSchema);
+        return Boolean.valueOf(validateIfSchema);
       }
     else if ("well-formed".equals(name))
       {
-        return new Boolean(wellFormed);
+        return Boolean.valueOf(wellFormed);
       }
     else
       {
@@ -497,7 +497,7 @@ public class GnomeDocument
       }
     else if (value instanceof String)
       {
-        return new Boolean ((String) value).booleanValue();
+        return Boolean.valueOf ((String) value).booleanValue();
       }
     return false;
   }

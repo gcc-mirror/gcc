@@ -116,7 +116,14 @@ public class PushbackInputStream extends FilterInputStream
    */
   public int available() throws IOException
   {
-    return (buf.length - pos) + super.available();
+    try 
+      {
+	return (buf.length - pos) + super.available();
+      } 
+    catch (NullPointerException npe) 
+      {
+	throw new IOException ("Stream closed");
+      }
   }
 
   /**

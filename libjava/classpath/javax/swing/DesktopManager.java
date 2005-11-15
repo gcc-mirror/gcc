@@ -95,7 +95,7 @@ public interface DesktopManager
    * This method should give focus to the JInternalFrame and its default focus
    * owner.
    *
-   * @param frame The JInternalFrame to activate.
+   * @param vframe The JInternalFrame to activate.
    */
   void activateFrame(JInternalFrame vframe);
 

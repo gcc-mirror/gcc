@@ -55,10 +55,12 @@ libgtkpeer_la_SOURCES = $(gtk_cairo_c_source_files) \
 libgtkpeer_la_LIBADD = $(top_builddir)/native/jni/classpath/native_state.lo \
 		       $(top_builddir)/native/jni/classpath/jcl.lo
 
-AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @CAIRO_LIBS@ @PANGOFT2_LIBS@ @X_LIBS@ -lXtst
+AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @CAIRO_LIBS@ @PANGOFT2_LIBS@ \
+             @X_PRE_LIBS@ @X_LIBS@ @X_EXTRA_LIBS@ -lX11 -lXtst
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 
 # Just the WARNING_CFLAGS. We cannot use the strict flags since the gtk
 # headers contain broken prototypes (by design, see gtkitemfactory.h).
 AM_CFLAGS = @WARNING_CFLAGS@ @ERROR_CFLAGS@ \
-            @GTK_CFLAGS@ @CAIRO_CFLAGS@ @PANGOFT2_CFLAGS@
+            @GTK_CFLAGS@ @CAIRO_CFLAGS@ @PANGOFT2_CFLAGS@ \
+            @X_CFLAGS@

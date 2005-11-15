@@ -45,6 +45,9 @@ import java.util.Hashtable;
 public class SimpleAttributeSet
   implements MutableAttributeSet, Serializable, Cloneable
 {
+  /** The serialization UID (compatible with JDK1.5). */
+  private static final long serialVersionUID = 8267656273837665219L;
+
   public static final AttributeSet EMPTY = new SimpleAttributeSet();
 
   Hashtable tab;
@@ -84,12 +87,34 @@ public class SimpleAttributeSet
     return s;
   }
 
+  /**
+   * Returns true if the given name and value represent an attribute
+   * found either in this AttributeSet or in its resolve parent hierarchy.
+   * @param name the key for the attribute
+   * @param value the value for the attribute
+   * @return true if the attribute is found here or in this set's resolve
+   * parent hierarchy
+   */
   public boolean containsAttribute(Object name, Object value)
+  {
+    return (tab.containsKey(name) && tab.get(name).equals(value)) || 
+      (getResolveParent() != null && getResolveParent().
+       containsAttribute(name, value));
+  }
+  
+  /**
+   * Returns true if the given name and value are found in this AttributeSet.
+   * Does not check the resolve parent.
+   * @param name the key for the attribute
+   * @param value the value for the attribute
+   * @return true if the attribute is found in this AttributeSet
+   */
+  boolean containsAttributeLocally(Object name, Object value)
   {
     return tab.containsKey(name) 
       && tab.get(name).equals(value);
   }
-    
+
   public boolean containsAttributes(AttributeSet attributes)
   {
     Enumeration e = attributes.getAttributeNames();
@@ -110,9 +135,9 @@ public class SimpleAttributeSet
 
   public boolean equals(Object obj)
   {
-    return (obj != null) 
-      && (obj instanceof SimpleAttributeSet)
-      && ((SimpleAttributeSet)obj).tab.equals(this.tab);
+    return 
+      (obj instanceof AttributeSet)
+      && this.isEqual((AttributeSet) obj);
   }
 
   public Object getAttribute(Object name)
@@ -157,10 +182,16 @@ public class SimpleAttributeSet
   {
     return tab.isEmpty();	
   }
-        
+
+  /**
+   * Returns true if the given set has the same number of attributes
+   * as this set and <code>containsAttributes(attr)</code> returns
+   * true.
+   */
   public boolean isEqual(AttributeSet attr)
   {
-    return this.equals(attr);
+    return getAttributeCount() == attr.getAttributeCount()
+      && this.containsAttributes(attr);
   }
     
   public void removeAttribute(Object name)
@@ -168,9 +199,21 @@ public class SimpleAttributeSet
     tab.remove(name);
   }
 
+  /**
+   * Removes attributes from this set if they are found in the 
+   * given set.  Only attributes whose key AND value are removed.
+   * Removes attributes only from this set, not from the resolving parent.
+   */
   public void removeAttributes(AttributeSet attributes)
   {
-    removeAttributes(attributes.getAttributeNames());
+    Enumeration e = attributes.getAttributeNames();
+    while (e.hasMoreElements())
+      {
+        Object name = e.nextElement();
+        Object val = attributes.getAttribute(name);
+        if (containsAttributeLocally(name, val))
+          removeAttribute(name);     
+      }
   }
 
   public void removeAttributes(Enumeration names)

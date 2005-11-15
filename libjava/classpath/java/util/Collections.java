@@ -1731,8 +1731,8 @@ public class Collections
   }
 
   /**
-   * The implementation of {@link #singletonMap(Object)}. This class name
-   * is required for compatibility with Sun's JDK serializability.
+   * The implementation of {@link #singletonMap(Object, Object)}. This class
+   * name is required for compatibility with Sun's JDK serializability.
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
@@ -2518,12 +2518,13 @@ public class Collections
     }
 
   /**
-   * Add an element to the end of the underlying list (optional operation).
-   * If the list imposes restraints on what can be inserted, such as no null
-   * elements, this should be documented.  A lock is obtained on the mutex before
-   * any of the elements are added.
+   * Add the contents of a collection to the underlying list at the given
+   * index (optional operation).  If the list imposes restraints on what 
+   * can be inserted, such as no null elements, this should be documented.
+   * A lock is obtained on the mutex before any of the elements are added.
    *
-   * @param o the object to add
+   * @param index the index at which to insert
+   * @param c the collection to add
    * @return <code>true</code>, as defined by Collection for a modified list
    * @throws UnsupportedOperationException if this list does not support the
    *         add operation
@@ -3858,7 +3859,7 @@ public class Collections
     /**
      * Called only by trusted code to specify the mutex as well as the set.
      * @param sync the mutex
-     * @param l the list
+     * @param ss the set
      */
     SynchronizedSortedSet(Object sync, SortedSet ss)
     {

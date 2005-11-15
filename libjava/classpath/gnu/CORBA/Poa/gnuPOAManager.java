@@ -40,6 +40,8 @@ package gnu.CORBA.Poa;
 
 import org.omg.CORBA.BAD_INV_ORDER;
 import org.omg.CORBA.LocalObject;
+import org.omg.PortableInterceptor.NON_EXISTENT;
+import org.omg.PortableInterceptor.ObjectReferenceTemplate;
 import org.omg.PortableServer.POAManager;
 import org.omg.PortableServer.POAManagerPackage.AdapterInactive;
 import org.omg.PortableServer.POAManagerPackage.State;
@@ -59,18 +61,22 @@ public class gnuPOAManager
   extends LocalObject
   implements POAManager
 {
-  /**
-   * The POAs, controlled by this manager. The members must be instances of
-   * the gnuAbstractPOA.
+  /** 
+   * Use serialVersionUID for interoperability. 
    */
-  HashSet POAs = new HashSet();
+  private static final long serialVersionUID = 1;
+  
+  /**
+   * The POAs, controlled by this manager.
+   */
+  private HashSet POAs = new HashSet();
 
   /**
    * The state of the manager. The newly created manager is always
    * in the holding state.
    */
   State state = State.HOLDING;
-
+  
   /**
    * Get the state of the POA manager.
    */
@@ -94,6 +100,8 @@ public class gnuPOAManager
       state = State.ACTIVE;
     else
       throw new AdapterInactive();
+    
+    notifyInterceptors(state.value());    
   }
 
   /**
@@ -113,6 +121,9 @@ public class gnuPOAManager
       state = State.HOLDING;
     else
       throw new AdapterInactive();
+    
+    notifyInterceptors(state.value());
+    
     if (wait_for_completion)
       waitForIdle();
   }
@@ -144,6 +155,9 @@ public class gnuPOAManager
     if (state == State.INACTIVE)
       throw new AdapterInactive("Repetetive inactivation");
     state = State.INACTIVE;
+    
+    notifyInterceptors(state.value());    
+    
     if (wait_for_completion)
       waitForIdle();
 
@@ -178,6 +192,9 @@ public class gnuPOAManager
       state = State.DISCARDING;
     else
       throw new AdapterInactive();
+    
+    notifyInterceptors(state.value());    
+    
     if (wait_for_completion)
       waitForIdle();
   }
@@ -193,11 +210,13 @@ public class gnuPOAManager
   {
     if (state == State.ACTIVE)
       throw new BAD_INV_ORDER("The state is active");
-
+     
+    gnuPOA poa;
     Iterator iter = POAs.iterator();
+    
     while (iter.hasNext())
       {
-        gnuPOA poa = (gnuPOA) iter.next();
+        poa = (gnuPOA) iter.next();
         poa.waitWhileRunning();
       }
   }
@@ -221,5 +240,34 @@ public class gnuPOAManager
   public void removePOA(gnuPOA poa)
   {
     POAs.remove(poa);
+  }
+  
+  /**
+   * This method is called when POA is destryed. The interceptors are
+   * notified.
+   */
+  public void poaDestroyed(gnuPOA poa)
+  {
+    notifyInterceptors(NON_EXISTENT.value); 
+  }
+  
+  /**
+   * Notify CORBA 3.0 interceptors about the status change.
+   */
+  public synchronized void notifyInterceptors(int new_state)
+  {
+    gnuPOA poa;
+    Iterator iter = POAs.iterator();
+
+    // The System.identityHashCode is also called in gnuIorInfo.
+    while (iter.hasNext())
+      {
+        poa = (gnuPOA) iter.next();
+        if (poa.m_orb.iIor != null)
+          {
+            poa.m_orb.iIor.adapter_manager_state_changed(
+              System.identityHashCode(this), (short) new_state);
+          }
+      }
   }
 }

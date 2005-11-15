@@ -69,7 +69,7 @@ public class gnuAdapterActivator
   {
     try
       {
-        POA n = parent.create_POA(child_name, null, policySets.rootPoa());
+        POA n = parent.create_POA(child_name, null, StandardPolicies.rootPoa());
         n.the_POAManager().activate();
       }
     catch (Exception ex)

@@ -146,8 +146,8 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
    */
   private AWTKeyStroke waitForKeyStroke = null;
 
-  /** The {@link java.util.SortedSet} of current {@link
-      #EventDelayRequest}s. */
+  /** The {@link java.util.SortedSet} of current 
+   * {@link EventDelayRequest}s. */
   private SortedSet delayRequests = new TreeSet ();
 
   public DefaultKeyboardFocusManager ()

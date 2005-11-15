@@ -38,14 +38,14 @@ exception statement from your version. */
 
 package gnu.CORBA.DynAn;
 
-import gnu.CORBA.CDR.cdrBufOutput;
+import gnu.CORBA.CDR.BufferedCdrOutput;
 import gnu.CORBA.OctetHolder;
 import gnu.CORBA.Unexpected;
 import gnu.CORBA.WCharHolder;
 import gnu.CORBA.WStringHolder;
-import gnu.CORBA.holderFactory;
-import gnu.CORBA.typeNamer;
-import gnu.CORBA.universalHolder;
+import gnu.CORBA.HolderLocator;
+import gnu.CORBA.TypeKindNamer;
+import gnu.CORBA.GeneralHolder;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.AnyHolder;
@@ -84,7 +84,7 @@ import java.util.Arrays;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class gnuDynAny extends abstractDynAny implements DynAny, Serializable
+public class gnuDynAny extends AbstractAny implements DynAny, Serializable
 {
   /**
    * Use serialVersionUID for interoperability.
@@ -132,7 +132,7 @@ public class gnuDynAny extends abstractDynAny implements DynAny, Serializable
   {
     if (holder != null)
       {
-        cdrBufOutput buffer = new cdrBufOutput();
+        BufferedCdrOutput buffer = new BufferedCdrOutput();
         holder._write(buffer);
 
         gnuDynAny other;
@@ -165,7 +165,7 @@ public class gnuDynAny extends abstractDynAny implements DynAny, Serializable
   public DynAny current_component() throws TypeMismatch
   {
     throw new TypeMismatch("Not applicable for " +
-      typeNamer.nameIt(final_type)
+      TypeKindNamer.nameIt(final_type)
     );
   }
 
@@ -193,14 +193,14 @@ public class gnuDynAny extends abstractDynAny implements DynAny, Serializable
       {
         throw new InvalidValue(ISNULL);
       }
-    else if (a_holder instanceof universalHolder)
+    else if (a_holder instanceof GeneralHolder)
       {
-        holder = holderFactory.createHolder(official_type);
+        holder = HolderLocator.createHolder(official_type);
         if (holder == null)
-          holder = holderFactory.createHolder(final_type);
+          holder = HolderLocator.createHolder(final_type);
 
         if (holder == null)
-          holder = ((universalHolder) a_holder).Clone();
+          holder = ((GeneralHolder) a_holder).Clone();
         else
           {
             InputStream in = an_any.create_input_stream();
@@ -890,7 +890,7 @@ public class gnuDynAny extends abstractDynAny implements DynAny, Serializable
    */
   public boolean equal(DynAny other)
   {
-    if (other instanceof abstractDynAny)
+    if (other instanceof AbstractAny)
       {
         if (other instanceof gnuDynAny)
           {
@@ -899,10 +899,10 @@ public class gnuDynAny extends abstractDynAny implements DynAny, Serializable
             if (!x.holder.getClass().equals(holder.getClass()))
               return false;
 
-            cdrBufOutput b1 = new cdrBufOutput();
+            BufferedCdrOutput b1 = new BufferedCdrOutput();
             x.holder._write(b1);
 
-            cdrBufOutput b2 = new cdrBufOutput(b1.buffer.size() + 10);
+            BufferedCdrOutput b2 = new BufferedCdrOutput(b1.buffer.size() + 10);
             holder._write(b2);
 
             return Arrays.equals(b1.buffer.toByteArray(),

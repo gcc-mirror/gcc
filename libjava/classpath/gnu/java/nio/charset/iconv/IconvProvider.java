@@ -62,7 +62,11 @@ public final class IconvProvider extends CharsetProvider
         }
     }
 
-  private IconvProvider()
+  // Declaring the construtor public may violate the use of singleton.
+  // But it must be public so that an instance of this class can be
+  // created by Class.newInstance(), which is the case when this provider is
+  // defined in META-INF/services/java.nio.charset.spi.CharsetProvider.
+  public IconvProvider()
   {
     IconvMetaData.setup();
   }

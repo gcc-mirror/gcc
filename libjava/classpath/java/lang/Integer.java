@@ -707,8 +707,8 @@ public final class Integer extends Number implements Comparable
    * @throws NullPointerException if decode is true and str if null
    * @see #parseInt(String, int)
    * @see #decode(String)
-   * @see Byte#parseInt(String, int)
-   * @see Short#parseInt(String, int)
+   * @see Byte#parseByte(String, int)
+   * @see Short#parseShort(String, int)
    */
   static int parseInt(String str, int radix, boolean decode)
   {

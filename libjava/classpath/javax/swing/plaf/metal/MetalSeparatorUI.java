@@ -38,10 +38,20 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+
 import javax.swing.JComponent;
+import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicSeparatorUI;
 
+/**
+ * A UI delegate for the {@link JSeparator} component.
+ */
 public class MetalSeparatorUI
   extends BasicSeparatorUI
 {
@@ -51,7 +61,7 @@ public class MetalSeparatorUI
   private static MetalSeparatorUI instance = null;
 
   /**
-   * Constructs a new instance of MetalSeparatorUI.
+   * Constructs a new instance of <code>MetalSeparatorUI</code>.
    */
   public MetalSeparatorUI()
   {
@@ -59,16 +69,63 @@ public class MetalSeparatorUI
   }
 
   /**
-   * Returns an instance of MetalSeparatorUI.
+   * Returns a shared instance of <code>MetalSeparatorUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalSeparatorUI
+   * @return A shared instance of <code>MetalSeparatorUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {
     if (instance == null)
       instance = new MetalSeparatorUI();
     return instance;
+  }
+
+  /**
+   * The separator is made of two lines. The top line will be 
+   * the Metal theme color separatorForeground (or left line if it's vertical).
+   * The bottom or right line will be the Metal theme color
+   * separatorBackground.
+   * The two lines will 
+   * be centered inside the bounds box. If the separator is horizontal, 
+   * then it will be vertically centered, or if it's vertical, it will 
+   * be horizontally centered.
+   *
+   * @param g The Graphics object to paint with
+   * @param c The JComponent to paint.
+   */
+  public void paint(Graphics g, JComponent c)
+  {
+    Rectangle r = new Rectangle();
+    SwingUtilities.calculateInnerArea(c, r);
+    Color saved = g.getColor();
+    Color c1 = UIManager.getColor("Separator.foreground");
+    Color c2 = UIManager.getColor("Separator.background");
+    JSeparator s;
+    if (c instanceof JSeparator)
+      s = (JSeparator) c;
+    else
+      return;
+      
+    if (s.getOrientation() == JSeparator.HORIZONTAL)
+      {    
+        int midAB = r.height / 2;
+        g.setColor(c1);
+        g.drawLine(r.x, r.y + midAB - 1, r.x + r.width, r.y + midAB - 1);
+
+        g.setColor(c2);
+        g.fillRect(r.x, r.y + midAB, r.x + r.width, r.y + midAB);
+      }
+      else
+      {
+        int midAD = r.height / 2 + r.y;
+        g.setColor(c1);
+        g.drawLine(r.x, r.y, r.x, r.y + r.height);
+
+        g.setColor(c2);
+        g.fillRect(r.x + midAD, r.y + r.height, r.x + midAD, r.y + r.height);
+      }
+    g.setColor(saved);
   }
 }

@@ -65,6 +65,9 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_initStaticState
   glyphVector_class = (*env)->FindClass 
     (env, "gnu/java/awt/peer/gtk/GdkGlyphVector");
 
+  glyphVector_class = (*env)->NewGlobalRef
+    (env, glyphVector_class);
+
   glyphVector_ctor = (*env)->GetMethodID 
     (env, glyphVector_class, "<init>", 
      "([D[ILjava/awt/Font;Ljava/awt/font/FontRenderContext;)V");
@@ -98,7 +101,7 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_dispose
   pfont = (struct peerfont *)NSA_DEL_FONT_PTR (env, self);
   g_assert (pfont != NULL);
   if (pfont->layout != NULL)
-    g_object_unref (pfont->font);
+    g_object_unref (pfont->layout);
   if (pfont->font != NULL)
     g_object_unref (pfont->font);
   if (pfont->ctx != NULL)

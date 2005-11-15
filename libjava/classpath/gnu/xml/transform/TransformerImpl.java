@@ -1,5 +1,5 @@
 /* TransformerImpl.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -505,6 +505,12 @@ class TransformerImpl
               {
                 URL url = new URL(systemId);
                 URLConnection connection = url.openConnection();
+                // We need to call setDoInput(false), because our
+                // implementation of the file protocol allows writing
+                // (unlike Sun), but it will fail with a FileNotFoundException
+                // if we also open the connection for input and the output
+                // file doesn't yet exist.
+                connection.setDoInput(false);
                 connection.setDoOutput(true);
                 out = connection.getOutputStream();
               }

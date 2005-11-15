@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.lang;
 
 import java.security.BasicPermission;
+import java.security.Permission;
 
 /**
  * A <code>RuntimePermission</code> contains a permission name, but no

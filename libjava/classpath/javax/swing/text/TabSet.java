@@ -41,6 +41,9 @@ import java.io.Serializable;
 
 public class TabSet implements Serializable
 {
+  /** The serialization UID (compatible with JDK1.5). */
+  private static final long serialVersionUID = 2367703481999080593L;
+
   TabStop[] tabs;
 
   public TabSet(TabStop[] t) 

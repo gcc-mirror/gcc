@@ -50,7 +50,7 @@ import java.io.OutputStream;
  */
 public class BigEndianOutputStream
   extends DataOutputStream
-  implements abstractDataOutputStream
+  implements AbstractDataOutput
 {
   /**
    * Delegate functionality to the parent constructor.

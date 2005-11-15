@@ -37,6 +37,9 @@ exception statement from your version. */
 
 package java.awt.im;
 
+import java.awt.Toolkit;
+import java.text.Annotation;
+import java.text.AttributedCharacterIterator;
 import java.util.Map;
 
 /**
@@ -53,7 +56,7 @@ import java.util.Map;
  * text segments.
  *
  * @author Eric Blake (ebb9@email.byu.edu)
- * @see AttributedCharacterIterators
+ * @see AttributedCharacterIterator
  * @see Annotation
  * @since 1.2
  * @status updated to 1.4

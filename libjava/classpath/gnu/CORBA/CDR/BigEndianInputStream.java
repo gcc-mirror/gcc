@@ -49,7 +49,7 @@ import java.io.InputStream;
  */
 public class BigEndianInputStream
   extends DataInputStream
-  implements abstractDataInputStream
+  implements AbstractDataInput
 {
   /**
    * Delegates to the parent constructor.

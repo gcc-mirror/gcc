@@ -39,19 +39,13 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.Panel;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.EventListener;
 
@@ -102,11 +96,11 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
 
      1. if DefaultLightWeightPopupEnabled true
          (i)  use lightweight container if popup feets inside top-level window
-         (ii) only use heavyweight container (JWindow) if popup doesn't fit.
+         (ii) only use heavyweight container (JDialog) if popup doesn't fit.
 
      2. if DefaultLightWeightPopupEnabled false
          (i) if popup fits, use awt.Panel (mediumWeight)
-         (ii) if popup doesn't fit, use JWindow (heavyWeight)
+         (ii) if popup doesn't fit, use JDialog (heavyWeight)
   */
   private static boolean DefaultLightWeightPopupEnabled = true;
 
@@ -130,8 +124,15 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   /* Popup that is used to display JPopupMenu */
   private transient Popup popup;
 
-  /* Location of the popup */
-  private Point popupLocation;
+  /**
+   * Location of the popup, X coordinate.
+   */
+  private int popupLocationX;
+
+  /**
+   * Location of the popup, Y coordinate.
+   */
+  private int popupLocationY;
 
   /* Field indicating if popup menu is visible or not */
   private boolean visible = false;
@@ -156,15 +157,6 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
     setSelectionModel(new DefaultSingleSelectionModel());
     super.setVisible(false);
     updateUI();
-  }
-
-  private void readObject(ObjectInputStream stream)
-                   throws IOException, ClassNotFoundException
-  {
-  }
-
-  private void writeObject(ObjectOutputStream stream) throws IOException
-  {
   }
 
   /**
@@ -220,19 +212,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   public void remove(int index)
   {
     super.remove(index);
-
-    GridBagConstraints constraints = new GridBagConstraints();
-    constraints.fill = GridBagConstraints.BOTH;
-    constraints.weightx = 100.0;
-    constraints.weighty = 100.0;
-
-    Component[] items = getComponents();
-    for (int i = index; i < items.length; i++)
-      {
-	constraints.gridy = i;
-	super.add(items[i], constraints, i);
-      }
-    this.setSize(this.getPreferredSize());
+    revalidate();
   }
 
   /**
@@ -257,27 +237,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    */
   public void insert(Component component, int index)
   {
-    GridBagConstraints constraints = new GridBagConstraints();
-    constraints.fill = GridBagConstraints.BOTH;
-    constraints.weightx = 100.0;
-    constraints.weighty = 100.0;
-
-    constraints.gridy = index;
-    super.add(component, constraints, index);
-
-    // need to change constraints for the components that were moved by 1
-    // due to the insertion
-    if (index != -1)
-      {
-	Component[] items = getComponents();
-
-	for (int i = index + 1; i < items.length; i++)
-	  {
-	    constraints.gridy = i;
-	    super.add(items[i], constraints, i);
-	  }
-      }
-    this.setSize(this.getPreferredSize());
+    super.add(component, index);
   }
 
   /**
@@ -527,7 +487,20 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    */
   public void pack()
   {
-    super.setSize(null);
+    // Hook up this call so that it gets executed on the event thread in order
+    // to avoid synchronization problems when calling the layout manager.
+    if (! SwingUtilities.isEventDispatchThread())
+      {
+        SwingUtilities.invokeLater(new Runnable()
+          {
+            public void run()
+            {
+              show();
+            }
+          });
+      }
+
+    setSize(getPreferredSize());
   }
 
   /**
@@ -547,8 +520,21 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    *
    * @param visible true if popup menu will become visible and false otherwise.
    */
-  public void setVisible(boolean visible)
+  public void setVisible(final boolean visible)
   {
+    // Hook up this call so that it gets executed on the event thread in order
+    // to avoid synchronization problems when calling the layout manager.
+    if (! SwingUtilities.isEventDispatchThread())
+      {
+        SwingUtilities.invokeLater(new Runnable()
+          {
+            public void run()
+            {
+              setVisible(visible);
+            }
+          });
+      }
+
     if (visible == isVisible())
       return;
 
@@ -556,58 +542,21 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
     this.visible = visible;
     if (old != isVisible())
       {
-	firePropertyChange("visible", old, isVisible());
-	if (visible)
-	  {
-	    firePopupMenuWillBecomeVisible();
-	    Container rootContainer = (Container) SwingUtilities.getRoot(invoker);
+        firePropertyChange("visible", old, isVisible());
+        if (visible)
+          {
+            firePopupMenuWillBecomeVisible();
 
-	    boolean fit = true;
-	    Dimension size;
-
-	    // Determine the size of the popup menu
-	    if (this.getSize().width == 0 && this.getSize().width == 0)
-	      size = this.getPreferredSize();
-	    else
-	      size = this.getSize();
-
-	    if ((size.width > (rootContainer.getWidth() - popupLocation.x))
-	        || (size.height > (rootContainer.getHeight() - popupLocation.y)))
-	      fit = false;
-	    if (lightWeightPopupEnabled && fit)
-	      popup = new LightWeightPopup(this);
-	    else
-	      {
-		if (fit)
-		  popup = new MediumWeightPopup(this);
-		else
-		  popup = new HeavyWeightPopup(this);
-	      }
-	    if (popup instanceof LightWeightPopup
-	        || popup instanceof MediumWeightPopup)
-	      {
-		JLayeredPane layeredPane;
-		layeredPane = SwingUtilities.getRootPane(invoker)
-		                            .getLayeredPane();
-		Point p = new Point(popupLocation.x, popupLocation.y);
-		SwingUtilities.convertPointFromScreen(p, layeredPane);
-		popup.show(p.x, p.y, size.width, size.height);  
-	      }
-	    else
-	      {
-		// Subtract insets of the top-level container if popup menu's
-		// top-left corner is inside it.
-		Insets insets = rootContainer.getInsets();
-		popup.show(popupLocation.x - insets.left,
-		           popupLocation.y - insets.top, size.width,
-		           size.height);
-	      }
-	  }
-	else
-	  {
-	    firePopupMenuWillBecomeInvisible();
-	    popup.hide();
-	  }
+            PopupFactory pf = PopupFactory.getSharedInstance();
+            pack();
+            popup = pf.getPopup(invoker, this, popupLocationX, popupLocationY);
+            popup.show();
+          }
+        else
+          {
+            firePopupMenuWillBecomeInvisible();
+            popup.hide();
+          }
       }
   }
 
@@ -619,11 +568,11 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    */
   public void setLocation(int x, int y)
   {
-    if (popupLocation == null)
-      popupLocation = new Point();
-
-    popupLocation.x = x;
-    popupLocation.y = y;
+    popupLocationX = x;
+    popupLocationY = y;
+    // Handle the case when the popup is already showing. In this case we need
+    // to fetch a new popup from PopupFactory and use this. See the general
+    // contract of the PopupFactory.
   }
 
   /**
@@ -657,11 +606,14 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    */
   public void show(Component component, int x, int y)
   {
-    setInvoker(component);
-    Point p = new Point(x, y);
-    SwingUtilities.convertPointToScreen(p, component);
-    setLocation(p.x, p.y);
-    setVisible(true);
+    if (component.isShowing())
+      {
+        setInvoker(component);
+        Point p = new Point(x, y);
+        SwingUtilities.convertPointToScreen(p, component);
+        setLocation(p.x, p.y);
+        setVisible(true);
+      }
   }
 
   /**
@@ -882,162 +834,13 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   }
 
   /**
-   * This interface is used to display menu items of the JPopupMenu
-   */
-  private interface Popup
-  {
-    /**
-     * Displays container on the screen
-     *
-     * @param x x-coordinate of popup menu's location on the screen
-     * @param y y-coordinate of popup menu's location on the screen
-     * @param width width of the container that is used to display menu
-     * item's for popup menu
-     * @param height height of the container that is used to display menu
-     * item's for popup menu
-     */
-    void show(int x, int y, int width, int height);
-
-    /**
-     * Hides container used to display popup menu item's from the screen
-     */
-    void hide();
-  }
-
-  /**
-   * This class represents Popup menu that uses light weight container
-   * to display its contents.
-   */
-  private class LightWeightPopup extends Container implements Popup
-  {
-    private Component c;
-
-    /**
-     * Creates a new LightWeightPopup menu
-     *
-     * @param c Container containing menu items
-     */
-    public LightWeightPopup(Container c)
-    {
-      this.c = c;
-    }
-
-    /**
-     * Displayes lightweight container with menu items to the screen
-     *
-     * @param x x-coordinate of lightweight container on the screen
-     * @param y y-coordinate of lightweight container on the screen
-     * @param width width of the lightweight container
-     * @param height height of the lightweight container
-     */
-    public void show(int x, int y, int width, int height)
-    {
-      JLayeredPane layeredPane;
-      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
-      c.setBounds(x, y, width, height);
-      layeredPane.add(c, JLayeredPane.POPUP_LAYER, 0);
-    }
-
-    /**
-     * Hides lightweight container from the screen
-     */
-    public void hide()
-    {
-      // FIXME: Right now the lightweight container is removed from JLayered
-      // pane. It is probably would be better in order to improve performance
-      // to make the container invisible instead of removing it everytime.
-      JLayeredPane layeredPane;
-      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
-      int index = layeredPane.getIndexOf(c);
-      layeredPane.remove(index);
-    }
-  }
-
-  /**
-   * MediumWeightPopup is an AWT Panel with JPopupMenu's menu items.
-   * It is used to display JPopupMenu's menu items on the screen
-   */
-  private class MediumWeightPopup extends Panel implements Popup
-  {
-    /**
-     * Creates a new MediumWeightPopup object.
-     *
-     * @param c Container with JPopupMenu's menu items
-     */
-    public MediumWeightPopup(Container c)
-    {
-      this.add(c);
-    }
-
-    /**
-     * Displays AWT Panel with its components on the screen
-     *
-     * @param x x-coordinate of the upper-left corner of the panel's
-     * @param y y-coordinate of the upper-left corner of the panel's
-     * @param width width of the panel
-     * @param height height of the panel
-     */
-    public void show(int x, int y, int width, int height)
-    {
-      JLayeredPane layeredPane;
-      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
-      layeredPane.add(this, JLayeredPane.POPUP_LAYER, 0);
-      this.setBounds(x, y, width, height);
-    }
-
-    /**
-     * Hides This panel from the screen
-     */
-    public void hide()
-    {
-      // FIXME: Right now the lightweight container is removed from JLayered
-      // pane. It is probably would be better in order to improve performance
-      // to make the container invisible instead of removing it everytime.
-      JLayeredPane layeredPane;
-      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
-      int index = layeredPane.getIndexOf(this);
-      layeredPane.remove(index);
-    }
-  }
-
-  /**
-   * HeavyWeightPopup is JWindow that is used to display JPopupMenu menu item's
-   * on the screen
-   */
-  private class HeavyWeightPopup extends JWindow implements Popup
-  {
-    /**
-     * Creates a new HeavyWeightPopup object.
-     *
-     * @param c Container containing menu items
-     */
-    public HeavyWeightPopup(Container c)
-    {
-      this.setContentPane(c);
-    }
-
-    /**
-     * Displays JWindow container JPopupMenu's menu items to the screen
-     *
-     * @param x x-coordinate of JWindow containing menu items
-     * @param y y-coordinate of JWindow containing menu items
-     * @param width width of the JWindow
-     * @param height height of the JWindow
-     */
-    public void show(int x, int y, int width, int height)
-    {
-      this.setBounds(x, y, width, height);
-      this.show();
-    }
-  }
-
-  /**
    * This is the separator that can be used in popup menu.
    */
   public static class Separator extends JSeparator
   {
     public Separator()
     {
+      super();
     }
 
     public String getUIClassID()
@@ -1052,6 +855,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
 
     protected AccessibleJPopupMenu()
     {
+      // Nothing to do here.
     }
 
     public AccessibleRole getAccessibleRole()
@@ -1066,8 +870,9 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   {
     public void propertyChange(PropertyChangeEvent evt)
     {
-      JPopupMenu.this.revalidate();
-      JPopupMenu.this.repaint();
+      // We used to have a revalidate() and repaint() call here. However I think
+      // this is not needed. Instead, a new Popup has to be fetched from the
+      // PopupFactory and used here.
     }
   }
 }

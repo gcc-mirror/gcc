@@ -46,13 +46,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class RootPaneUI
-  extends ComponentUI
+public abstract class RootPaneUI extends ComponentUI
 {
   /**
    * Constructs a new <code>RootPaneUI</code>.
    */
   public RootPaneUI()
   {
+    // Nothing to do here.
   }
 }

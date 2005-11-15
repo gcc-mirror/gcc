@@ -299,7 +299,7 @@ Java_gnu_java_awt_peer_gtk_GtkImage_freePixmap(JNIEnv *env, jobject obj)
   if (offScreen (env, obj) == JNI_FALSE)
     gdk_pixbuf_unref ((GdkPixbuf *)getData (env, obj));
   else
-    gdk_pixmap_unref ((GdkPixmap *)getData (env, obj));
+    g_object_unref ((GdkPixmap *)getData (env, obj));
 
   gdk_threads_leave ();
 }

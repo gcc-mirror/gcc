@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
+
 import org.omg.CORBA.TCKind;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.portable.InputStream;
@@ -61,7 +63,7 @@ public final class WCharHolder
   /**
    * The default type code for this holder.
    */
-  private static final TypeCode t_char = new primitiveTypeCode(TCKind.tk_wchar);
+  private static final TypeCode t_char = new PrimitiveTypeCode(TCKind.tk_wchar);
 
   /**
    * The <code>char</code> (CORBA <code>wchar</code>) value,

@@ -52,19 +52,17 @@ import java.io.Serializable;
  * @author Sascha Brawer (brawer@dandelis.ch)
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
-public abstract class AbstractBorder
-  implements Border, Serializable
+public abstract class AbstractBorder implements Border, Serializable
 {
   static final long serialVersionUID = -545885975315191844L;
-
 
   /**
    * Constructs a new AbstractBorder.
    */
-  public AbstractBorder ()
+  public AbstractBorder()
   {
+    // Nothing to do here.
   }
-
 
   /**
    * Performs nothing, because the default implementation provided by
@@ -79,16 +77,14 @@ public abstract class AbstractBorder
    * @param width the width of the available area for painting the border.
    * @param height the height of the available area for painting the border.
    */
-  public void paintBorder (Component c, Graphics g,
-                           int x, int y, int width, int height) 
+  public void paintBorder(Component c, Graphics g, int x, int y, int width,
+                          int height)
   {
-    /* A previous version of Classpath had emitted a warning when
-     * this method was called. The warning was removed because it is
-     * perfectly legal for a subclass to not override the paintBorder
-     * method. An example would be EmptyBorder.
-     */
+    // A previous version of Classpath had emitted a warning when
+    // this method was called. The warning was removed because it is
+    // perfectly legal for a subclass to not override the paintBorder
+    // method. An example would be EmptyBorder.
   }
-
 
   /**
    * Measures the width of this border.
@@ -102,11 +98,10 @@ public abstract class AbstractBorder
    *
    * @see #getBorderInsets(java.awt.Component, java.awt.Insets)
    */
-  public Insets getBorderInsets (Component c)
+  public Insets getBorderInsets(Component c)
   {
-    return new Insets (0, 0, 0, 0);
+    return new Insets(0, 0, 0, 0);
   }
-
 
   /**
    * Determines the insets of this border. The implementation provided
@@ -114,18 +109,17 @@ public abstract class AbstractBorder
    * <code>top</code> and <code>bottom</code> fields of the passed
    * <code>insets</code> parameter to zero.
    *
-   * @param c the component whose border is to be measured.
+   * @param c the component whose border is to be measured
    *
-   * @return the same object that was passed for <code>insets</code>.
+   * @return the same object that was passed for <code>insets</code>
    *
    * @see #getBorderInsets(Component)
    */
-  public Insets getBorderInsets (Component c, Insets insets) 
+  public Insets getBorderInsets(Component c, Insets insets) 
   {
     insets.left = insets.right = insets.top = insets.bottom = 0;
     return insets;
   }
-
 
   /**
    * Determines whether or not this border is opaque. An opaque border
@@ -136,11 +130,10 @@ public abstract class AbstractBorder
    *
    * @return <code>false</code>.
    */
-  public boolean isBorderOpaque () 
+  public boolean isBorderOpaque() 
   {
     return false;
   }
-
 
   /**
    * Returns a rectangle that covers the specified area minus this
@@ -154,12 +147,11 @@ public abstract class AbstractBorder
    * @param width the width of the available area for the border.
    * @param height the height of the available area for the border.
    */
-  public Rectangle getInteriorRectangle (Component c,
-                                         int x, int y, int width, int height) 
+  public Rectangle getInteriorRectangle(Component c, int x, int y, int width,
+                                        int height)
   {
     return getInteriorRectangle (c, this, x, y, width, height);
   }
-
   
   /**
    * Returns a rectangle that covers the specified area minus a
@@ -173,8 +165,8 @@ public abstract class AbstractBorder
    * @param width the width of the available area for the border.
    * @param height the height of the available area for the border.
    */
-  public static Rectangle getInteriorRectangle (Component c, Border b,
-                                                int x, int y, int width, int height)
+  public static Rectangle getInteriorRectangle(Component c, Border b, int x,
+                                               int y, int width, int height)
   {
     Insets borderInsets;
 

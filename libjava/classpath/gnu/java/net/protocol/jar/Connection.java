@@ -69,13 +69,17 @@ public final class Connection extends JarURLConnection
     private static Hashtable cache = new Hashtable();
     private static final int READBUFSIZE = 4*1024;
     
-    public static synchronized JarFile get (URL url) throws IOException
+    public static synchronized JarFile get (URL url, boolean useCaches)
+       throws IOException
     {
-      JarFile jf = (JarFile) cache.get (url);
+      JarFile jf;
+      if (useCaches)
+        {
+          jf = (JarFile) cache.get (url);
+          if (jf != null)
+            return jf;
+        }
 
-      if (jf != null)
-        return jf;
-      
       if ("file".equals (url.getProtocol()))
 	{
 	  File f = new File (url.getFile());
@@ -100,9 +104,10 @@ public final class Connection extends JarURLConnection
 	  jf = new JarFile (f, true,
 			    ZipFile.OPEN_READ | ZipFile.OPEN_DELETE);
 	}
-          
-      cache.put (url, jf);
-      
+
+      if (useCaches)
+        cache.put (url, jf);
+
       return jf;
     }
   }
@@ -120,7 +125,7 @@ public final class Connection extends JarURLConnection
       return;
 
     jar_url = getJarFileURL();
-    jar_file = JarFileCache.get (jar_url);
+    jar_file = JarFileCache.get (jar_url, useCaches);
     String entry_name = getEntryName();
     
     if (entry_name != null

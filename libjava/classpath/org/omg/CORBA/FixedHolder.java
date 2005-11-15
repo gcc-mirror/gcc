@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.fixedTypeCode;
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.FixedTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import java.math.BigDecimal;
 
@@ -108,7 +108,7 @@ public final class FixedHolder
    */
   public TypeCode _type()
   {
-    return new fixedTypeCode(value);
+    return new FixedTypeCode(value);
   }
 
   /**

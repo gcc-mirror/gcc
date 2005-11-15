@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor.ORBInitInfoPackage;
 
-import gnu.CORBA.Restricted_ORB;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
@@ -81,8 +81,8 @@ public class ObjectIdHelper
    */
   public static TypeCode type()
   {
-    ORB orb = Restricted_ORB.Singleton;
-    return orb.create_alias_tc(id(), "Object Id", orb.create_string_tc(0));
+    ORB orb = OrbRestricted.Singleton;
+    return orb.create_alias_tc(id(), "ObjectId", orb.create_string_tc(0));
   }
 
   /**
@@ -97,7 +97,7 @@ public class ObjectIdHelper
   /**
    * Calls {@link InputStream#read_string()}.
    *
-   * @param instream the stream to read from.
+   * @param input the stream to read from.
    */
   public static String read(InputStream input)
   {
@@ -107,7 +107,7 @@ public class ObjectIdHelper
   /**
    * Calls {@link OutputStream#write_string()}.
    *
-   * @param ostream the stream to write into.
+   * @param output the stream to write into.
    * @param value the string (Object Id) value to write.
    */
   public static void write(OutputStream output, String value)

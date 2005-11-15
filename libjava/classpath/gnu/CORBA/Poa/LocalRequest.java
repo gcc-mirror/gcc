@@ -38,19 +38,19 @@ exception statement from your version. */
 
 package gnu.CORBA.Poa;
 
-import gnu.CORBA.CDR.cdrBufOutput;
+import gnu.CORBA.CDR.BufferedCdrOutput;
 import gnu.CORBA.GIOP.MessageHeader;
 import gnu.CORBA.GIOP.v1_2.ReplyHeader;
 import gnu.CORBA.GIOP.v1_2.RequestHeader;
 import gnu.CORBA.Interceptor.gnuClientRequestInfo;
 import gnu.CORBA.Interceptor.gnuServerRequestInfo;
+import gnu.CORBA.typecodes.RecordTypeCode;
 import gnu.CORBA.ObjectCreator;
 import gnu.CORBA.Unexpected;
 import gnu.CORBA.gnuAny;
 import gnu.CORBA.gnuRequest;
-import gnu.CORBA.recordTypeCode;
-import gnu.CORBA.streamReadyHolder;
-import gnu.CORBA.streamRequest;
+import gnu.CORBA.StreamHolder;
+import gnu.CORBA.StreamBasedRequest;
 
 import org.omg.CORBA.ARG_OUT;
 import org.omg.CORBA.Any;
@@ -115,7 +115,7 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
   /**
    * The buffer to write into.
    */
-  cdrBufOutput buffer;
+  BufferedCdrOutput buffer;
 
   /**
    * The responsible POA.
@@ -252,7 +252,7 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
             handler = object.getHandler(operation(), cookie, false);
           }
 
-        cdrBufOutput request_part = new cdrBufOutput();
+        BufferedCdrOutput request_part = new BufferedCdrOutput();
 
         request_part.setOrb(orb());
 
@@ -288,7 +288,7 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
           request_part.create_input_stream();
 
         // Ensure the servant (handler) has a delegate set.
-        servantDelegate sd = null;
+        ServantDelegateImpl sd = null;
 
         Delegate d = null;
 
@@ -300,19 +300,19 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
           {
             // In some cases exception is thrown if the delegate is not set.
           }
-        if (d instanceof servantDelegate)
+        if (d instanceof ServantDelegateImpl)
           {
             // If the delegate is already set, try to reuse the existing
             // instance.
-            sd = (servantDelegate) d;
+            sd = (ServantDelegateImpl) d;
             if (sd.object != object)
               {
-                sd = new servantDelegate(servant, poa, Id);
+                sd = new ServantDelegateImpl(servant, poa, Id);
               }
           }
         else
           {
-            sd = new servantDelegate(servant, poa, Id);
+            sd = new ServantDelegateImpl(servant, poa, Id);
           }
         servant._set_delegate(sd);
 
@@ -368,13 +368,13 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
                       {
                         // Failed due any reason, insert without
                         // helper.
-                        a.insert_Streamable(new streamReadyHolder(
+                        a.insert_Streamable(new StreamHolder(
                             buf.create_input_stream()
                           )
                         );
 
-                        recordTypeCode r =
-                          new recordTypeCode(TCKind.tk_except);
+                        RecordTypeCode r =
+                          new RecordTypeCode(TCKind.tk_except);
                         r.setId(uex_idl);
                         r.setName(ObjectCreator.getDefaultName(uex_idl));
                       }
@@ -531,9 +531,9 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
   {
     InvokeHandler handler = object.getHandler(operation(), cookie, false);
 
-    if (handler instanceof dynImpHandler)
+    if (handler instanceof DynamicImpHandler)
       {
-        DynamicImplementation dyn = ((dynImpHandler) handler).servant;
+        DynamicImplementation dyn = ((DynamicImpHandler) handler).servant;
         if (serverRequest == null)
           {
             serverRequest = new LocalServerRequest(this);
@@ -589,7 +589,7 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
             // Prepare an Any that will hold the exception.
             gnuAny exc = new gnuAny();
 
-            exc.insert_Streamable(new streamReadyHolder(input));
+            exc.insert_Streamable(new StreamHolder(input));
 
             UnknownUserException unuex = new UnknownUserException(exc);
             m_environment.exception(unuex);
@@ -637,7 +637,7 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
    *
    * @return the CDR output stream, containing the written output.
    */
-  cdrBufOutput getBuffer()
+  BufferedCdrOutput getBuffer()
   {
     return buffer;
   }
@@ -656,7 +656,7 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
    */
   private void prepareStream()
   {
-    buffer = new cdrBufOutput();
+    buffer = new BufferedCdrOutput();
     buffer.setOrb(orb());
   }
 
@@ -664,9 +664,9 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
    * Get the parameter stream, where the invocation arguments should be written
    * if they are written into the stream directly.
    */
-  public streamRequest getParameterStream()
+  public StreamBasedRequest getParameterStream()
   {
-    m_parameter_buffer = new streamRequest();
+    m_parameter_buffer = new StreamBasedRequest();
     m_parameter_buffer.request = this;
     m_parameter_buffer.setOrb(poa.orb());
     return m_parameter_buffer;

@@ -39,18 +39,23 @@ exception statement from your version. */
 package javax.swing.plaf.metal;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 
 import javax.swing.AbstractButton;
+import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JToolBar;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.UIResource;
+import javax.swing.plaf.basic.BasicButtonListener;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
- * The Metal Look &amp; Feel implementation for
- * {@link javax.swing.AbstractButton}s.
+ * A UI delegate for the {@link JButton} component.
  *
  * @author Roman Kennke (roman@kennke.org)
  */
@@ -58,27 +63,25 @@ public class MetalButtonUI
   extends BasicButtonUI
 {
 
-  /** The cached MetalButtonUI instance. */
-  private static MetalButtonUI instance = null;
-
-  /** The color for the focus border. */
+  /** The color used to draw the focus rectangle around the text and/or icon. */
   protected Color focusColor;
-
-  /** The color that indicates a selected button. */
+    
+  /** The background color for the button when it is pressed. */
   protected Color selectColor;
 
   /** The color for disabled button labels. */
   protected Color disabledTextColor;
 
   /**
-   * Creates a new instance of MetalButtonUI.
+   * Creates a new instance.
    */
   public MetalButtonUI()
   {
     super();
-    focusColor = getFocusColor();
-    selectColor = getSelectColor();
-    disabledTextColor = getDisabledTextColor();
+    UIDefaults def = UIManager.getLookAndFeelDefaults();
+    focusColor = def.getColor(getPropertyPrefix() + "focus");
+    selectColor = def.getColor(getPropertyPrefix() + "select");
+    disabledTextColor = def.getColor(getPropertyPrefix() + "disabledText");
   }
 
   /**
@@ -88,8 +91,7 @@ public class MetalButtonUI
    */
   protected Color getFocusColor()
   {
-    UIDefaults def = UIManager.getLookAndFeelDefaults();
-    return def.getColor(getPropertyPrefix() + ".focus");
+    return focusColor;
   }
 
   /**
@@ -99,8 +101,7 @@ public class MetalButtonUI
    */
   protected Color getSelectColor()
   {
-    UIDefaults def = UIManager.getLookAndFeelDefaults();
-    return def.getColor(getPropertyPrefix() + ".select");
+    return selectColor;
   }
 
   /**
@@ -110,36 +111,123 @@ public class MetalButtonUI
    */
   protected Color getDisabledTextColor()
   {
-    UIDefaults def = UIManager.getLookAndFeelDefaults();
-    return def.getColor(getPropertyPrefix() + ".disabledText");
+    return disabledTextColor;
   }
 
   /**
-   * Returns an instance of MetalButtonUI.
-   *
-   * @param component a button for which a UI instance should be returned
+   * Returns a UI delegate for the specified component.
+   * 
+   * @param c  the component (should be a subclass of {@link AbstractButton}).
+   * 
+   * @return A new instance of <code>MetalButtonUI</code>.
    */
-  public static ComponentUI createUI(JComponent component)
-  {
-    if (instance == null)
-      instance = new MetalButtonUI();
-    return instance;
+  public static ComponentUI createUI(JComponent c) {
+    return new MetalButtonUI();
   }
 
   /**
-   * Install the Look &amp; Feel defaults for Buttons.
-   *
-   * @param button the button for which to install the Look &amp; Feel
+   * Installs the default settings for the specified button.
+   * 
+   * @param button  the button.
+   * 
+   * @see #uninstallDefaults(AbstractButton)
    */
   public void installDefaults(AbstractButton button)
   {
     super.installDefaults(button);
-
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    button.setFont(defaults.getFont("Button.font"));
-
-    if (button.getParent() instanceof JToolBar)
-      button.setBorder(MetalBorders.getToolbarButtonBorder());
+    if (button.isRolloverEnabled())
+      {
+        if (button.getBorder() instanceof UIResource)
+          button.setBorder(MetalBorders.getRolloverBorder());
+      }
+  }
+    
+  /**
+   * Removes the defaults added by {@link #installDefaults(AbstractButton)}.
+   */
+  public void uninstallDefaults(AbstractButton button) 
+  {
+    super.uninstallDefaults(button);
+    if (button.getBorder() instanceof UIResource)
+      button.setBorder(null);
   }
 
+  /**
+   * Returns a button listener for the specified button.
+   * 
+   * @param button  the button.
+   * 
+   * @return A button listener.
+   */
+  protected BasicButtonListener createButtonListener(AbstractButton button) 
+  {
+    return new MetalButtonListener(button);
+  }    
+
+  /**
+   * Paints the background of the button to indicate that it is in the "pressed"
+   * state.
+   * 
+   * @param g  the graphics context.
+   * @param b  the button.
+   */
+  protected void paintButtonPressed(Graphics g, AbstractButton b) 
+  { 
+    if (b.isContentAreaFilled())
+    {
+      Rectangle area = b.getVisibleRect();
+      g.setColor(selectColor);
+      g.fillRect(area.x, area.y, area.width, area.height);
+    }
+  }
+    
+  /** 
+   * Paints the focus rectangle around the button text and/or icon.
+   * 
+   * @param g  the graphics context.
+   * @param b  the button.
+   * @param viewRect  the button bounds.
+   * @param textRect  the text bounds.
+   * @param iconRect  the icon bounds.
+   */
+  protected void paintFocus(Graphics g, AbstractButton b, Rectangle viewRect,
+          Rectangle textRect, Rectangle iconRect) {
+    if (b.isEnabled() && b.hasFocus() && b.isFocusPainted())
+    {
+      Color savedColor = g.getColor();
+      g.setColor(getFocusColor());
+      Rectangle focusRect = iconRect.union(textRect);
+      g.drawRect(focusRect.x - 1, focusRect.y,
+                 focusRect.width + 1, focusRect.height);
+      g.setColor(savedColor);
+    }
+  }
+    
+  /**
+   * Paints the button text.
+   * 
+   * @param g  the graphics context.
+   * @param c  the button.
+   * @param textRect  the text bounds.
+   * @param text  the text to display.
+   */
+  protected void paintText(Graphics g, JComponent c, Rectangle textRect,
+          String text) 
+  {
+    AbstractButton b = (AbstractButton) c;
+    Font f = b.getFont();
+    g.setFont(f);
+    FontMetrics fm = g.getFontMetrics(f);
+
+    if (b.isEnabled())
+      {
+        g.setColor(b.getForeground());
+        g.drawString(text, textRect.x, textRect.y + fm.getAscent());
+      }
+    else
+      {
+        g.setColor(getDisabledTextColor());
+        g.drawString(text, textRect.x, textRect.y + fm.getAscent());
+      }  
+  }
 }

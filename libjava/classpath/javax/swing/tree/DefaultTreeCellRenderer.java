@@ -419,8 +419,7 @@ public class DefaultTreeCellRenderer
         super.setBackground(getBackgroundSelectionColor());
         setForeground(getTextSelectionColor());
         
-        if (tree.getLeadSelectionPath() == null || 
-            (tree.getLeadSelectionPath().getLastPathComponent()).equals(val))
+        if (hasFocus)
           setBorderSelectionColor(UIManager.getLookAndFeelDefaults().
                                   getColor("Tree.selectionBorderColor"));
         else

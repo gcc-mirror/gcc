@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CosNaming;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
@@ -71,6 +73,7 @@ public abstract class BindingTypeHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("Binding type expected");
         bad.initCause(ex);
+        bad.minor = Minor.Any;        
         throw bad;
       }
   }

@@ -144,9 +144,18 @@ public class ZipFile implements ZipConstants
   private void checkZipFile() throws IOException, ZipException
   {
     byte[] magicBuf = new byte[4];
-    raf.read(magicBuf);
+    boolean validRead = true;
 
-    if (readLeInt(magicBuf, 0) != LOCSIG)
+    try 
+      {
+	raf.readFully(magicBuf);
+      } 
+    catch (EOFException eof) 
+      {
+	validRead = false;
+      } 
+
+    if (validRead == false || readLeInt(magicBuf, 0) != LOCSIG)
       {
 	raf.close();
 	throw new ZipException("Not a valid zip file");
@@ -377,7 +386,7 @@ public class ZipFile implements ZipConstants
    * Checks that the ZipFile is still open and reads entries when necessary.
    *
    * @exception IllegalStateException when the ZipFile has already been closed.
-   * @exception IOEexception when the entries could not be read.
+   * @exception IOException when the entries could not be read.
    */
   private HashMap getEntries() throws IOException
   {
@@ -395,7 +404,7 @@ public class ZipFile implements ZipConstants
   /**
    * Searches for a zip entry in this archive with the given name.
    *
-   * @param the name. May contain directory components separated by
+   * @param name the name. May contain directory components separated by
    * slashes ('/').
    * @return the zip entry, or null if no entry with that name exists.
    *

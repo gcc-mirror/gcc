@@ -60,7 +60,7 @@ public interface Member
    * package-protected, but only which are declared in this class.
    * Used in SecurityManager.checkMemberAccess() to determine the
    * type of members to access.
-   * @see SecurityManager#checkMemberAccess()
+   * @see SecurityManager#checkMemberAccess(Class, int)
    */
   int DECLARED = 1;
 
@@ -68,7 +68,7 @@ public interface Member
    * Represents public members only, but includes all inherited members.
    *  Used in SecurityManager.checkMemberAccess() to determine the type of
    * members to access.
-   * @see SecurityManager#checkMemberAccess()
+   * @see SecurityManager#checkMemberAccess(Class, int)
    */
   int PUBLIC = 0;
 

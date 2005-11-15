@@ -42,6 +42,7 @@ exception statement from your version. */
  * Date: 2 Jun 1998
  */
 
+#include <config.h>
 #include <stddef.h>
 
 #include "java_lang_reflect_Array.h"

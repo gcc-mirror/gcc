@@ -544,7 +544,6 @@ public class Polygon implements Shape, Serializable
    * the positive X, or Y axis, within a given interval.
    *
    * @return the winding number.
-   * @see #condensed
    * @see #contains(double, double)
    */
   private int evaluateCrossings(double x, double y, boolean useYaxis,

@@ -39,14 +39,17 @@ exception statement from your version. */
 package gnu.CORBA.Poa;
 
 import gnu.CORBA.GIOP.ReplyHeader;
-import gnu.CORBA.IOR_Delegate;
-import gnu.CORBA.IOR_contructed_object;
+import gnu.CORBA.IorDelegate;
+import gnu.CORBA.IorObject;
 import gnu.CORBA.Interceptor.gnuServerRequestInfo;
+import gnu.CORBA.typecodes.RecordTypeCode;
+import gnu.CORBA.IOR;
+import gnu.CORBA.IorProvider;
+import gnu.CORBA.Minor;
 import gnu.CORBA.ObjectCreator;
 import gnu.CORBA.Unexpected;
-import gnu.CORBA.bufferedResponseHandler;
-import gnu.CORBA.recordTypeCode;
-import gnu.CORBA.streamReadyHolder;
+import gnu.CORBA.ResponseHandlerImpl;
+import gnu.CORBA.StreamHolder;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -90,7 +93,8 @@ import java.util.Arrays;
 public class gnuServantObject extends ObjectImpl
   implements org.omg.CORBA.Object,
     InvokeHandler,
-    CurrentOperations
+    CurrentOperations,
+    IorProvider
 {
   /**
    * The associated servant that must also implement the {@link InvokeHandler}
@@ -143,6 +147,14 @@ public class gnuServantObject extends ObjectImpl
     manager = a_poa.the_POAManager();
     poa = a_poa;
     orb = an_orb;
+  }
+  
+  /**
+   * Get the IOR as it would be for this object.
+   */
+  public IOR getIor()
+  {
+    return orb.getLocalIor(this);    
   }
 
   /**
@@ -257,10 +269,8 @@ public class gnuServantObject extends ObjectImpl
               }
             catch (Exception ex)
               {
-                ex.printStackTrace();
-
                 BAD_OPERATION bad =
-                  new BAD_OPERATION("Unable to activate", 0x5004,
+                  new BAD_OPERATION("Unable to activate", Minor.Activation,
                     CompletionStatus.COMPLETED_NO
                   );
                 bad.initCause(ex);
@@ -276,7 +286,7 @@ public class gnuServantObject extends ObjectImpl
         // No servant and no servant manager - throw exception.
         else
           {
-            throw new BAD_OPERATION("Unable to activate", 0x5002,
+            throw new BAD_OPERATION("Unable to activate", Minor.Activation,
               CompletionStatus.COMPLETED_NO
             );
           }
@@ -294,7 +304,7 @@ public class gnuServantObject extends ObjectImpl
       }
     else if (a_servant instanceof DynamicImplementation)
       {
-        return new dynImpHandler((DynamicImplementation) a_servant);
+        return new DynamicImpHandler((DynamicImplementation) a_servant);
       }
     else
       {
@@ -402,17 +412,17 @@ public class gnuServantObject extends ObjectImpl
     boolean intercept = false;
     ServerRequestInterceptorOperations interceptor = null;
     gnuServerRequestInfo info = null;
-    bufferedResponseHandler i_handler = null;
+    ResponseHandlerImpl i_handler = null;
 
     try
       {
         if (orb.iServer != null &&
-          r_handler instanceof bufferedResponseHandler
+          r_handler instanceof ResponseHandlerImpl
         )
           {
             interceptor = orb.iServer;
 
-            i_handler = (bufferedResponseHandler) r_handler;
+            i_handler = (ResponseHandlerImpl) r_handler;
 
             info =
               new gnuServerRequestInfo(this, i_handler.request_header,
@@ -426,7 +436,7 @@ public class gnuServantObject extends ObjectImpl
         try
           {
             CookieHolder cookie = null;
-            activeObjectMap.Obj self = poa.aom.get(Id);
+            AOM.Obj self = poa.aom.get(Id);
 
             if (poa.servant_locator != null)
               {
@@ -467,18 +477,18 @@ public class gnuServantObject extends ObjectImpl
               {
                 // In some cases exception is thrown if the delegate is not set.
               }
-            if (d instanceof servantDelegate)
+            if (d instanceof ServantDelegateImpl)
               {
                 // If the delegate is already set, check maybe we can
                 // reuse the existing instance.
-                if (((servantDelegate) d).object != this)
+                if (((ServantDelegateImpl) d).object != this)
                   {
-                    servant._set_delegate(new servantDelegate(servant, poa, Id));
+                    servant._set_delegate(new ServantDelegateImpl(servant, poa, Id));
                   }
               }
             else
               {
-                servant._set_delegate(new servantDelegate(servant, poa, Id));
+                servant._set_delegate(new ServantDelegateImpl(servant, poa, Id));
               }
 
             try
@@ -536,13 +546,13 @@ public class gnuServantObject extends ObjectImpl
                                     {
                                       // Failed due any reason, insert without
                                       // helper.
-                                      a.insert_Streamable(new streamReadyHolder(
+                                      a.insert_Streamable(new StreamHolder(
                                           buf.create_input_stream()
                                         )
                                       );
 
-                                      recordTypeCode r =
-                                        new recordTypeCode(TCKind.tk_except);
+                                      RecordTypeCode r =
+                                        new RecordTypeCode(TCKind.tk_except);
                                       r.setId(uex_idl);
                                       r.setName(ObjectCreator.getDefaultName(
                                           uex_idl
@@ -774,12 +784,12 @@ public class gnuServantObject extends ObjectImpl
         gnuServantObject g = (gnuServantObject) other;
         return orb == g.orb && poa == g.poa && Arrays.equals(Id, g.Id);
       }
-    else if (other instanceof IOR_contructed_object)
+    else if (other instanceof IorObject)
       {
-        IOR_contructed_object ir = ((IOR_contructed_object) other);
+        IorObject ir = ((IorObject) other);
         try
           {
-            IOR_Delegate ird = (IOR_Delegate) ir._get_delegate();
+            IorDelegate ird = (IorDelegate) ir._get_delegate();
             byte[] ior_id = poa.idFormIor(ird.getIor().key);
             if (ior_id != null && Arrays.equals(ior_id, Id))
               {

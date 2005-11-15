@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.DynamicAny.DynAnyPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
+import gnu.CORBA.Minor;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -107,6 +108,7 @@ public abstract class InvalidValueHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("InvalidValue expected");
         bad.initCause(cex);
+        bad.minor = Minor.Any;        
         throw bad;
       }
   }

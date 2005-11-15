@@ -284,3 +284,17 @@ All these files are distributed under the following terms:
   shall not be used in advertising or otherwise to promote the sale, use
   or other dealings in these Data Files or Software without prior
   written authorization of the copyright holder.
+
+
+The file native/jni/midi-dssi/gnu_javax_sound_midi_dssi_DSSISynthesizer.c
+contains two functions (get_port_default and set_control) derived from
+example code in the DSSI distribution (http://dssi.sourceforge.net).
+The original DSSI example code is distributed under the following
+terms:
+
+ Copyright 2004 Chris Cannam, Steve Harris and Sean Bolton.
+ 
+ Permission to use, copy, modify, distribute, and sell this software
+ for any purpose is hereby granted without fee, provided that the
+ above copyright notice and this permission notice are included in
+ all copies or substantial portions of the software.

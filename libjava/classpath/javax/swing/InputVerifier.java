@@ -53,6 +53,7 @@ public abstract class InputVerifier
    */
   public InputVerifier()
   {
+    // Nothing to do here.
   }
 
   /**

@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
@@ -49,10 +50,10 @@ import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.KeyStroke;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.DesktopPaneUI;
+import javax.swing.plaf.UIResource;
 
 /**
  * This class is the UI delegate for JDesktopPane for the Basic look and feel.
@@ -74,13 +75,14 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
     {
       if (desktop.getSelectedFrame() != null)
         {
-	  try
-	    {
-	      desktop.getSelectedFrame().setClosed(true);
-	    }
-	  catch (PropertyVetoException pve)
-	    {
-	    }
+          try
+            {
+              desktop.getSelectedFrame().setClosed(true);
+            }
+          catch (PropertyVetoException pve)
+            {
+              // We do nothing if the attempts has been vetoed.
+            }
         }
     }
 
@@ -112,13 +114,14 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
     {
       if (desktop.getSelectedFrame() != null)
         {
-	  try
-	    {
-	      desktop.getSelectedFrame().setMaximum(true);
-	    }
-	  catch (PropertyVetoException pve)
-	    {
-	    }
+          try
+            {
+              desktop.getSelectedFrame().setMaximum(true);
+            }
+          catch (PropertyVetoException pve)
+            {
+              // We do nothing if the attempts has been vetoed.
+            }
         }
     }
 
@@ -150,13 +153,14 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
     {
       if (desktop.getSelectedFrame() != null)
         {
-	  try
-	    {
-	      desktop.getSelectedFrame().setIcon(true);
-	    }
-	  catch (PropertyVetoException pve)
-	    {
-	    }
+          try
+            {
+              desktop.getSelectedFrame().setIcon(true);
+            }
+          catch (PropertyVetoException pve)
+            {
+              // We do nothing if the attempt has been vetoed.
+            }
         }
     }
 
@@ -236,16 +240,17 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
       JInternalFrame frame = desktop.getSelectedFrame();
       if (frame != null)
         {
-	  try
-	    {
-	      if (frame.isIcon())
-		frame.setIcon(false);
-	      else if (frame.isMaximum())
-		frame.setMaximum(false);
-	    }
-	  catch (PropertyVetoException pve)
-	    {
-	    }
+          try
+            {
+              if (frame.isIcon())
+                frame.setIcon(false);
+              else if (frame.isMaximum())
+                frame.setMaximum(false);
+            }
+          catch (PropertyVetoException pve)
+            {
+              // We do nothing if the attempt has been vetoed.
+            }
         }
     }
 
@@ -304,6 +309,7 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
    */
   public BasicDesktopPaneUI()
   {
+    // Nothing to do here.
   }
 
   /**
@@ -361,9 +367,9 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
    */
   protected void installDefaults()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-
-    desktop.setBackground(defaults.getColor("desktop"));
+    Color bg = desktop.getBackground();
+    if (bg == null || bg instanceof UIResource)
+      desktop.setBackground(UIManager.getColor("desktop"));
   }
 
   /**
@@ -381,7 +387,7 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
   protected void installKeyboardActions()
   {
     // FIXME: create actions and keystrokes.
-    registerKeyboardAction();
+    registerKeyboardActions();
   }
 
   /**
@@ -405,7 +411,7 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
    * This method registers the actions to the appropriate Action and Input
    * maps.
    */
-  protected void registerKeyboardAction()
+  protected void registerKeyboardActions()
   {
     // FIXME: Do the binding.
     // XXX: the gtk windows tend to intercept a lot of the

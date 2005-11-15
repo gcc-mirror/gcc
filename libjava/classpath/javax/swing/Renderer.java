@@ -49,24 +49,20 @@ import java.awt.Component;
  *           
  * @author Andrew Selkirk
  */
-public interface Renderer {
+public interface Renderer
+{
+  /**
+   * setValue
+   * @param value TODO
+   * @param selected TODO
+   */
+  void setValue(Object value, boolean selected);
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * setValue
-	 * @param value TODO
-	 * @param selected TODO
-	 */
-	void setValue(Object value, boolean selected);
-
-	/**
-	 * getComponent
-	 * @returns Component
-	 */
-	Component getComponent();
+  /**
+   * getComponent
+   * @returns Component
+   */
+  Component getComponent();
 
 
-} // Renderer
+}

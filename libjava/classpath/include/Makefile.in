@@ -40,10 +40,8 @@ subdir = include
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
-	$(top_srcdir)/../../config/lead-dot.m4 \
-	$(top_srcdir)/../../config/no-executables.m4 \
-	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/accross.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
+	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
 	$(top_srcdir)/m4/acinclude.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
 	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
@@ -76,10 +74,14 @@ CLASSPATH_MODULE = @CLASSPATH_MODULE@
 CP = @CP@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CREATE_ALSA_LIBRARIES_FALSE = @CREATE_ALSA_LIBRARIES_FALSE@
+CREATE_ALSA_LIBRARIES_TRUE = @CREATE_ALSA_LIBRARIES_TRUE@
 CREATE_API_DOCS_FALSE = @CREATE_API_DOCS_FALSE@
 CREATE_API_DOCS_TRUE = @CREATE_API_DOCS_TRUE@
 CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
+CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
+CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
 CREATE_GTK_PEER_LIBRARIES_TRUE = @CREATE_GTK_PEER_LIBRARIES_TRUE@
 CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
@@ -216,6 +218,7 @@ build_vendor = @build_vendor@
 datadir = @datadir@
 default_toolkit = @default_toolkit@
 exec_prefix = @exec_prefix@
+glibjdir = @glibjdir@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -229,6 +232,7 @@ libexecdir = @libexecdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+nativelibdir = @nativelibdir@
 oldincludedir = @oldincludedir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
@@ -245,6 +249,13 @@ DISTCLEANFILES = jni_md.h
 ARG_JNI_JAVAH = -jni
 ARG_CLASSPATH_JAVAH = -bootclasspath
 JAVAH = $(USER_JAVAH) $(ARG_JNI_JAVAH) $(ARG_CLASSPATH_JAVAH) ../lib:$(USER_CLASSLIB)
+SOUND_H_FILES = \
+$(top_srcdir)/include/gnu_javax_sound_midi_alsa_AlsaPortDevice.h \
+$(top_srcdir)/include/gnu_javax_sound_midi_alsa_AlsaMidiSequencerDevice.h \
+$(top_srcdir)/include/gnu_javax_sound_midi_alsa_AlsaMidiDeviceProvider.h \
+$(top_srcdir)/include/gnu_javax_sound_midi_dssi_DSSIMidiDeviceProvider.h \
+$(top_srcdir)/include/gnu_javax_sound_midi_dssi_DSSISynthesizer.h
+
 XMLJ_H_FILES = \
 $(top_srcdir)/include/gnu_xml_libxmlj_dom_GnomeDocument.h \
 $(top_srcdir)/include/gnu_xml_libxmlj_dom_GnomeXPathNodeList.h \
@@ -344,6 +355,7 @@ $(top_srcdir)/include/gnu_java_awt_peer_qt_QtContainerPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_qt_QtEmbeddedWindowPeer.h 
 
 H_FILES = \
+$(SOUND_H_FILES) \
 $(XMLJ_H_FILES) \
 $(GTKPEER_H_FILES) \
 $(QTPEER_H_FILES) \
@@ -567,6 +579,12 @@ uninstall-am: uninstall-info-am
 
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_awt_peer_qt_%.h: $(top_builddir)/lib/gnu/java/awt/peer/qt/%.class
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.awt.peer.qt.$*
+
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_javax_sound_midi_alsa_%.h: $(top_builddir)/lib/gnu/javax/sound/midi/alsa/%.class
+@CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.javax.sound.midi.alsa.$*
+
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_javax_sound_midi_dssi_%.h: $(top_builddir)/lib/gnu/javax/sound/midi/dssi/%.class
+@CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.javax.sound.midi.dssi.$*
 
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_net_PlainDatagramSocketImpl.h: $(top_srcdir)/gnu/java/net/PlainDatagramSocketImpl.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.net.PlainDatagramSocketImpl

@@ -40,6 +40,7 @@ package javax.swing;
 
 import java.awt.AWTError;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
 
@@ -63,13 +64,13 @@ public class Box extends JComponent implements Accessible
   /**
    * Provides accessibility support for <code>Box</code>es.
    */
-  // FIXME: disable to make libjava compile; visibility rules are broken
-  protected class AccessibleBox // extends Container.AccessibleAWTContainer
+  protected class AccessibleBox extends Container.AccessibleAWTContainer
   {
     private static final long serialVersionUID = -7775079816389931944L;
   
     protected AccessibleBox()
     {
+      // Nothing to do here.
     }
     
     public AccessibleRole getAccessibleRole()
@@ -88,13 +89,14 @@ public class Box extends JComponent implements Accessible
     /**
      * Provides accessibility support for <code>Box.Filler</code>.
      */
-    // FIXME: disable to make libjava compile; visibility rules are broken
-    protected class AccessibleBoxFiller // extends Component.AccessibleAWTComponent
+    protected class AccessibleBoxFiller
+      extends Component.AccessibleAWTComponent
     {
       private static final long serialVersionUID = 164963348357479321L;
       
       protected AccessibleBoxFiller()
       {
+        // Nothing to do here.
       }
       
       public AccessibleRole getAccessibleRole()
@@ -102,8 +104,6 @@ public class Box extends JComponent implements Accessible
         return null;
       }
     }
-    
-    protected AccessibleContext accessibleContext;
     
     private transient Dimension min, pref, max;
     
@@ -135,9 +135,8 @@ public class Box extends JComponent implements Accessible
     
     public AccessibleContext getAccessibleContext()
     {
-      // FIXME: disable to make libjava compile; visibility rules are broken      
-      //      if (accessibleContext == null)
-      //        accessibleContext = new AccessibleBoxFiller();
+      if (accessibleContext == null)
+        accessibleContext = new AccessibleBoxFiller();
       return accessibleContext;
     }
     
@@ -284,8 +283,8 @@ public class Box extends JComponent implements Accessible
   
   public AccessibleContext getAccessibleContext()
   {
-    //     if (accessibleContext == null)
-    //       accessibleContext = new AccessibleBox();
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleBox();
     return accessibleContext;
   }
   

@@ -1,5 +1,5 @@
 /* LineInputStream.java --
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.net;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -91,7 +92,8 @@ public class LineInputStream
     buf = new ByteArrayOutputStream();
     this.encoding = encoding;
     eof = false;
-    blockReads = in.markSupported();
+    // If it is already buffered, additional buffering gains nothing.
+    blockReads = !(in instanceof BufferedInputStream) && in.markSupported();
   }
 
   /**
@@ -109,11 +111,12 @@ public class LineInputStream
         if (blockReads)
           {
             // Use mark and reset to read chunks of bytes
-            final int MIN_LENGTH = 1024;
+            final int MAX_LENGTH = 1024;
             int len, pos;
-            
+
             len = in.available();
-            len = (len < MIN_LENGTH) ? MIN_LENGTH : len;
+            if (len == 0 || len > MAX_LENGTH)
+              len = MAX_LENGTH;
             byte[] b = new byte[len];
             in.mark(len);
             // Read into buffer b

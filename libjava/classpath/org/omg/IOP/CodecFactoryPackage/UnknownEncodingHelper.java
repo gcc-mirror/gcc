@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.IOP.CodecFactoryPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
+import gnu.CORBA.Minor;
 
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Any;
@@ -108,6 +109,7 @@ public abstract class UnknownEncodingHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("UnknownEncoding expected");
         bad.initCause(cex);
+        bad.minor = Minor.Any;        
         throw bad;
       }
   }  

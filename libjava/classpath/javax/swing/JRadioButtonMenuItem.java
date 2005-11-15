@@ -38,9 +38,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -149,10 +146,6 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
     model.setSelected(selected);
   }
 
-  private void writeObject(ObjectOutputStream stream) throws IOException
-  {
-  }
-
   /**
    * This method returns a name to identify which look and feel class will be
    * the UI delegate for the menuItem.
@@ -202,6 +195,7 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
      */
     protected AccessibleJRadioButtonMenuItem()
     {
+      // Nothing to do here.
     }
 
     public AccessibleRole getAccessibleRole()

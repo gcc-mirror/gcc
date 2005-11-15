@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
-import gnu.CORBA.CDR.cdrBufOutput;
+import gnu.CORBA.CDR.BufferedCdrOutput;
 
 import org.omg.CORBA.ARG_IN;
 import org.omg.CORBA.ARG_INOUT;
@@ -67,7 +67,7 @@ public class ServiceRequestAdapter
   /**
    * A buffer for writing the response.
    */
-  cdrBufOutput reply = new cdrBufOutput();
+  BufferedCdrOutput reply = new BufferedCdrOutput();
 
   /**
    * If set to true, an exception has been thrown during the invocation.
@@ -105,7 +105,7 @@ public class ServiceRequestAdapter
         int OUT = ARG_OUT.value;
 
         // Write all arguments to the buffer output stream.
-        cdrBufOutput buffer = new cdrBufOutput();
+        BufferedCdrOutput buffer = new BufferedCdrOutput();
         gnuNVList args = new gnuNVList();
         request.arguments(args);
 
@@ -127,7 +127,7 @@ public class ServiceRequestAdapter
           {
             // Write the exception information
             gnuAny exc = new gnuAny();
-            universalHolder uku = new universalHolder(h.reply);
+            GeneralHolder uku = new GeneralHolder(h.reply);
             exc.insert_Streamable(uku);
             request.set_exception(exc);
           }
@@ -146,7 +146,7 @@ public class ServiceRequestAdapter
               {
                 // Use the universal holder otherwise.
                 gnuAny r = new gnuAny();
-                r.insert_Streamable(new streamReadyHolder(in));
+                r.insert_Streamable(new StreamHolder(in));
               }
 
             // Unpack the arguments

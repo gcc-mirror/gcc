@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt;
 
 import java.applet.Applet;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
@@ -213,7 +214,7 @@ public abstract class KeyboardFocusManager
       currentFocusOwners */
   private static Map currentFocusCycleRoots = new HashMap ();
 
-  /** The default {@link FocusTraveralPolicy} that focus-managing
+  /** The default {@link FocusTraversalPolicy} that focus-managing
       {@link Container}s will use to define their initial focus
       traversal policy. */
   private FocusTraversalPolicy defaultPolicy;
@@ -287,51 +288,11 @@ public abstract class KeyboardFocusManager
     KeyboardFocusManager manager;
 
     if (m == null)
-      manager = createFocusManager();
+      manager = new DefaultKeyboardFocusManager();
     else
       manager = m;
 
     currentKeyboardFocusManagers.put (currentGroup, manager);
-  }
-
-  /**
-   * Creates a KeyboardFocusManager. The exact class is determined by the
-   * system property 'gnu.java.awt.FocusManager'. If this is not set,
-   * we default to DefaultKeyboardFocusManager.
-   */
-  private static KeyboardFocusManager createFocusManager()
-  {
-    String fmClassName = System.getProperty("gnu.java.awt.FocusManager",
-                                       "java.awt.DefaultKeyboardFocusManager");
-    try
-      {
-        Class fmClass = Class.forName(fmClassName);
-        KeyboardFocusManager fm = (KeyboardFocusManager) fmClass.newInstance();
-        return fm;
-      }
-    catch (ClassNotFoundException ex)
-      {
-        System.err.println("The class " + fmClassName + " cannot be found.");
-        System.err.println("Check the setting of the system property");
-        System.err.println("gnu.java.awt.FocusManager");
-        return null;
-      }
-    catch (InstantiationException ex)
-      {
-        System.err.println("The class " + fmClassName + " cannot be");
-        System.err.println("instantiated.");
-        System.err.println("Check the setting of the system property");
-        System.err.println("gnu.java.awt.FocusManager");
-        return null;
-      }
-    catch (IllegalAccessException ex)
-      {
-        System.err.println("The class " + fmClassName + " cannot be");
-        System.err.println("accessed.");
-        System.err.println("Check the setting of the system property");
-        System.err.println("gnu.java.awt.FocusManager");
-        return null;
-      }
   }
 
   /**
@@ -1364,11 +1325,11 @@ public abstract class KeyboardFocusManager
    *
    * @return a global object set by the current ThreadGroup, or null
    *
-   * @see getFocusOwner
-   * @see getPermanentFocusOwner
-   * @see getFocusedWindow
-   * @see getActiveWindow
-   * @see getCurrentFocusCycleRoot
+   * @see #getFocusOwner()
+   * @see #getPermanentFocusOwner()
+   * @see #getFocusedWindow()
+   * @see #getActiveWindow()
+   * @see #getCurrentFocusCycleRoot()
    */
   private Object getObject (Map globalMap)
   {
@@ -1388,11 +1349,11 @@ public abstract class KeyboardFocusManager
    * @throws SecurityException if this is not the keyboard focus
    * manager associated with the current {@link java.lang.ThreadGroup}
    *
-   * @see getGlobalFocusOwner
-   * @see getGlobalPermanentFocusOwner
-   * @see getGlobalFocusedWindow
-   * @see getGlobalActiveWindow
-   * @see getGlobalCurrentFocusCycleRoot
+   * @see #getGlobalFocusOwner()
+   * @see #getGlobalPermanentFocusOwner()
+   * @see #getGlobalFocusedWindow()
+   * @see #getGlobalActiveWindow()
+   * @see #getGlobalCurrentFocusCycleRoot()
    */
   private Object getGlobalObject (Map globalMap)
   {
@@ -1432,11 +1393,11 @@ public abstract class KeyboardFocusManager
    * @param newObject the object to set
    * @param property the property that will change
    *
-   * @see setGlobalFocusOwner
-   * @see setGlobalPermanentFocusOwner
-   * @see setGlobalFocusedWindow
-   * @see setGlobalActiveWindow
-   * @see setGlobalCurrentFocusCycleRoot
+   * @see #setGlobalFocusOwner(Component)
+   * @see #setGlobalPermanentFocusOwner(Component)
+   * @see #setGlobalFocusedWindow(Window)
+   * @see #setGlobalActiveWindow(Window)
+   * @see #setGlobalCurrentFocusCycleRoot(Container)
    */
   private void setGlobalObject (Map globalMap,
                                 Object newObject,

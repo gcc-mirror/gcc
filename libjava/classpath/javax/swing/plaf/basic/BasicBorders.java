@@ -806,8 +806,8 @@ public class BasicBorders
      */
     public MarginBorder()
     {
+      // Nothing to do here.
     }
-    
     
     /**
      * Measures the width of this border.
@@ -1313,33 +1313,32 @@ public class BasicBorders
    *
    * @author Sascha Brawer (brawer@dandelis.ch)
    */
-  public static class SplitPaneBorder
-    implements Border, UIResource
+  public static class SplitPaneBorder implements Border, UIResource
   {
     /**
      * Indicates that the top edge shall be not be painted
-     * by {@link #paintRect(java.awt.Graphics, int, int, int, int, int)}.
+     * by {@link #paintRect}.
      */
     private static final int SUPPRESS_TOP = 1;
 
 
     /**
      * Indicates that the left edge shall be not be painted
-     * by {@link #paintRect(java.awt.Graphics, int, int, int, int, int)}.
+     * by {@link #paintRect}.
      */
     private static final int SUPPRESS_LEFT = 2;
 
 
     /**
      * Indicates that the bottom edge shall be not be painted
-     * by {@link #paintRect(java.awt.Graphics, int, int, int, int, int)}.
+     * by {@link #paintRect}.
      */
     private static final int SUPPRESS_BOTTOM = 4;
 
 
     /**
      * Indicates that the right edge shall be not be painted
-     * by {@link #paintRect(java.awt.Graphics, int, int, int, int, int)}.
+     * by {@link #paintRect}.
      */
     private static final int SUPPRESS_RIGHT = 8;
 

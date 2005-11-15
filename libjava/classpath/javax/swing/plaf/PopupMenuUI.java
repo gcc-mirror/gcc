@@ -53,14 +53,14 @@ import javax.swing.PopupFactory;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class PopupMenuUI
-  extends ComponentUI
+public abstract class PopupMenuUI extends ComponentUI
 {
   /**
    * Constructs a new <code>PopupMenuUI</code>.
    */
   public PopupMenuUI()
   {
+    // Nothing to do here.
   }
 
 

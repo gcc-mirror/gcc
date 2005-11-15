@@ -51,7 +51,7 @@ import org.omg.PortableServer.ImplicitActivationPolicyValue;
  */
 public class gnuImplicitActivationPolicy
   extends _PolicyImplBase
-  implements ImplicitActivationPolicy, vPolicy
+  implements ImplicitActivationPolicy, AccessiblePolicy
 {
   /**
    * Use serialVersionUID for interoperability.

@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -61,7 +61,7 @@ public final class IntHolder
   /**
    * The default type code for this holder.
    */
-  private static final TypeCode t_long = new primitiveTypeCode(TCKind.tk_long);
+  private static final TypeCode t_long = new PrimitiveTypeCode(TCKind.tk_long);
 
   /**
    * The <code>int</code> (CORBA <code>long</code>) value,

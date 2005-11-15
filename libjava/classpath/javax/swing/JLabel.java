@@ -331,9 +331,6 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   /** The gap between the icon and the text. */
   private transient int iconTextGap = 4;
 
-  /** The accessible context for this JLabel. */
-  private AccessibleJLabel accessibleContext;
-
   /**
    * Creates a new vertically centered, horizontally on the leading edge
    * JLabel object with text and no icon.
@@ -403,6 +400,7 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
     this.text = text;
     this.icon = icon;
     this.horizontalAlignment = horizontalAlignment;
+    setAlignmentX(0.0F);
     updateUI();
   }
 
@@ -477,12 +475,14 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   {
     if (text != newText)
       {
-	String oldText = text;
-	text = newText;
-	firePropertyChange("text", oldText, newText);
+        String oldText = text;
+        text = newText;
+        firePropertyChange("text", oldText, newText);
 
-	if (text != null && text.length() <= displayedMnemonicIndex)
-	  setDisplayedMnemonicIndex(text.length() - 1);
+        if (text != null && text.length() <= displayedMnemonicIndex)
+          setDisplayedMnemonicIndex(text.length() - 1);
+        revalidate();
+        repaint();
       }
   }
 

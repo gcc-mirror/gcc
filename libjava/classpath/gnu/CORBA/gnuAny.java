@@ -39,8 +39,10 @@ exception statement from your version. */
 package gnu.CORBA;
 
 import gnu.CORBA.CDR.Vio;
-import gnu.CORBA.CDR.cdrBufInput;
-import gnu.CORBA.CDR.cdrBufOutput;
+import gnu.CORBA.CDR.BufferredCdrInput;
+import gnu.CORBA.CDR.BufferedCdrOutput;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
+import gnu.CORBA.typecodes.StringTypeCode;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.AnyHolder;
@@ -62,19 +64,14 @@ import org.omg.CORBA.StringHolder;
 import org.omg.CORBA.TCKind;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.TypeCodeHolder;
-import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.ValueBaseHolder;
-import org.omg.CORBA.portable.BoxedValueHelper;
 import org.omg.CORBA.portable.Streamable;
 
-import java.io.IOException;
 import java.io.Serializable;
-
 import java.lang.reflect.Field;
-
 import java.math.BigDecimal;
-
 import java.util.Arrays;
+import java.util.zip.Adler32;
 
 /**
  * The implementation of {@link Any}.
@@ -93,12 +90,17 @@ import java.util.Arrays;
 public class gnuAny
   extends Any
 {
+  /** 
+   * Use serialVersionUID for interoperability. 
+   */
+  private static final long serialVersionUID = 1;
+  
   /**
    * The value, returned by {@link #type()} if the value has been
    * not intialized.
    */
   protected static final TypeCode nullType =
-    new primitiveTypeCode(TCKind.tk_null);
+    new PrimitiveTypeCode(TCKind.tk_null);
 
   /**
    * The Streamable, representing the value, held by this gnuAny.
@@ -137,11 +139,11 @@ public class gnuAny
    */
   public gnuAny Clone()
   {
-    cdrBufOutput out = new cdrBufOutput();
+    BufferedCdrOutput out = new BufferedCdrOutput();
     out.setOrb(orb);
     out.write_any(this);
 
-    cdrBufInput in = new cdrBufInput(out.buffer.toByteArray());
+    BufferredCdrInput in = new BufferredCdrInput(out.buffer.toByteArray());
     in.setOrb(orb);
     return (gnuAny) in.read_any();
   }
@@ -152,18 +154,18 @@ public class gnuAny
    */
   public org.omg.CORBA.portable.InputStream create_input_stream()
   {
-    if (has instanceof universalHolder)
+    if (has instanceof GeneralHolder)
       {
-        universalHolder u = (universalHolder) has;
+        GeneralHolder u = (GeneralHolder) has;
         return u.getInputStream();
       }
     else
       {
-        cdrBufOutput out = new cdrBufOutput();
+        BufferedCdrOutput out = new BufferedCdrOutput();
         out.setOrb(orb);
         write_value(out);
 
-        cdrBufInput in = new cdrBufInput(out.buffer.toByteArray());
+        BufferredCdrInput in = new BufferredCdrInput(out.buffer.toByteArray());
         in.setOrb(orb);
         return in;
       }
@@ -174,7 +176,7 @@ public class gnuAny
    */
   public org.omg.CORBA.portable.OutputStream create_output_stream()
   {
-    cdrBufOutput stream = new cdrBufOutput();
+    BufferedCdrOutput stream = new BufferedCdrOutput();
     stream.setOrb(orb);
     return stream;
   }
@@ -194,11 +196,11 @@ public class gnuAny
       if (has.equals(((gnuAny) other).has))
         return true;
 
-    cdrBufOutput a = new cdrBufOutput();
+    BufferedCdrOutput a = new BufferedCdrOutput();
     a.setOrb(orb);
     write_value(a);
 
-    cdrBufOutput b = new cdrBufOutput();
+    BufferedCdrOutput b = new BufferedCdrOutput();
     b.setOrb(orb);
     other.write_value(b);
 
@@ -206,6 +208,28 @@ public class gnuAny
     byte[] bb = b.buffer.toByteArray();
 
     return Arrays.equals(ba, bb);
+  }
+  
+  /**
+   * Get the content - dependent hashcode.
+   */
+  public int hashCode()
+  {
+    if (has == null)
+      return type().kind().value();
+    else
+      {
+        Adler32 adler = new Adler32();
+
+        BufferedCdrOutput a = new BufferedCdrOutput();
+        a.setOrb(orb);
+        write_value(a);
+        
+        adler.update(a.buffer.toByteArray());
+        adler.update(type().kind().value());
+        
+        return (int) adler.getValue() & Integer.MAX_VALUE;
+      }
   }
 
   /**
@@ -232,7 +256,10 @@ public class gnuAny
       }
     catch (ClassCastException ex)
       {
-        throw new BAD_OPERATION();
+        BAD_OPERATION bad = new BAD_OPERATION();
+        bad.initCause(ex);
+        bad.minor = Minor.Any;
+        throw bad;
       }
   }
 
@@ -297,7 +324,10 @@ public class gnuAny
       }
     catch (Exception ex)
       {
-        return new BAD_OPERATION("Value type expected");
+        BAD_OPERATION bad = new BAD_OPERATION("Value type expected");
+        bad.minor = Minor.Any;
+        bad.initCause(ex);
+        throw bad;
       }
   }
 
@@ -664,7 +694,7 @@ public class gnuAny
     else
       has = new StringHolder(x);
 
-    typecode = new stringTypeCode(TCKind.tk_string);
+    typecode = new StringTypeCode(TCKind.tk_string);
   }
 
   /** {@inheritDoc} */
@@ -751,40 +781,27 @@ public class gnuAny
           }
         else
           {
-            has = holderFactory.createHolder(a_type);
+            has = HolderLocator.createHolder(a_type);
             if (has == null)
               {
                 // Use the Universal Holder that reads till the end of stream.
                 // This works with the extract/insert pair of the typical
                 // Helper.
-                cdrBufOutput buffer = new cdrBufOutput();
+                BufferedCdrOutput buffer = new BufferedCdrOutput();
                 buffer.setOrb(orb);
-                has = new universalHolder(buffer);
+                has = new GeneralHolder(buffer);
               }
           }
         type(a_type);
 
-        if (!(has instanceof universalHolder) &&
+        if (!(has instanceof GeneralHolder) &&
             (kind == TCKind._tk_value_box))
           {
             // The streamable only contains operations for
             // reading the value, not the value header.
             Field vField = has.getClass().getField("value");
 
-            BoxedValueHelper helper;
-
-            try
-              {
-                Class helperClass =
-                  Class.forName(ObjectCreator.toHelperName(a_type.id()));
-                helper = (BoxedValueHelper) helperClass.newInstance();
-              }
-            catch (Exception ex)
-              {
-                helper = null;
-              }
-
-            Object content = Vio.read(input, helper);
+            Object content = Vio.read(input, a_type.id());
             vField.set(has, content);
           }
         else
@@ -793,6 +810,7 @@ public class gnuAny
     catch (Exception ex)
       {
         MARSHAL m = new MARSHAL();
+        m.minor = Minor.Any;
         m.initCause(ex);
         throw m;
       }
@@ -805,7 +823,7 @@ public class gnuAny
       return typecode;
     else if (xKind >= 0)
       {
-        typecode = new primitiveTypeCode(TCKind.from_int(xKind));
+        typecode = new PrimitiveTypeCode(TCKind.from_int(xKind));
         return typecode;
       }
     else
@@ -838,38 +856,43 @@ public class gnuAny
 
   /**
    * Check if the current value if the value of the given kind.
+   * 
    * @param kind a kind to check.
    * @throws BAD_OPERATION if the value is not set of is different kind.
    */
   protected void check(int kind)
-                throws BAD_OPERATION
+    throws BAD_OPERATION
   {
     if (has == null)
-      throw new BAD_OPERATION("value not set");
+      {
+        BAD_OPERATION bad = new BAD_OPERATION("value not set");
+        bad.minor = Minor.Any;
+        throw bad;
+      }
 
     if (xKind >= 0)
       {
         if (xKind != kind)
-          if (!(
-                xKind == TCKind._tk_alias &&
-                has._type().kind().value() == kind
-              )
-             )
-            throw new BAD_OPERATION("Extracting " + typeNamer.nameIt(kind) +
-                                    " when stored " + typeNamer.nameIt(xKind)
-                                   );
+          if (!(xKind == TCKind._tk_alias && has._type().kind().value() == kind))
+            {
+              BAD_OPERATION bad = new BAD_OPERATION("Extracting "
+                + TypeKindNamer.nameIt(kind) + " when stored "
+                + TypeKindNamer.nameIt(xKind));
+              bad.minor = Minor.Any;
+              throw bad;
+            }
       }
     else
       {
         if (type().kind().value() != kind)
-          if (!(
-                type().kind().value() == TCKind._tk_alias &&
-                has._type().kind().value() == kind
-              )
-             )
-            throw new BAD_OPERATION("Extracting " + typeNamer.nameIt(kind) +
-                                    " stored " + typeNamer.nameIt(type())
-                                   );
+          if (!(type().kind().value() == TCKind._tk_alias && has._type().kind().value() == kind))
+            {
+              BAD_OPERATION bad = new BAD_OPERATION("Extracting "
+                + TypeKindNamer.nameIt(kind) + " stored "
+                + TypeKindNamer.nameIt(type()));
+              bad.minor = Minor.Any;
+              throw bad;
+            }
       }
   }
 

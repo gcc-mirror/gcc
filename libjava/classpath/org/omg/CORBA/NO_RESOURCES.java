@@ -41,9 +41,39 @@ package org.omg.CORBA;
 import java.io.Serializable;
 
 /**
- * Means that the ORB has reached some general resource limitation like
- * maximal number of the opened connections.
- *
+ * Means that the ORB has reached some general resource limitation like maximal
+ * number of the opened connections.
+ * 
+ * In GNU Classpath, this exception may have the following minor codes:
+ * 
+ * <table border="1">
+ * <tr>
+ * <td>Hex</td>
+ * <td>Dec</td>
+ * <td>Minor</td>
+ * <td>Name</td>
+ * <td>Case</td>
+ * </tr>
+ * <tr>
+ * <td>47430014</td>
+ * <td>1195573268</td>
+ * <td>20</td>
+ * <td>Ports</td>
+ * <td>No more free ports available for the new objects. The port control, if
+ * turned on, prevents malicios client from knocking the server out by suddenly
+ * requiring to allocate a very large number of objects.</td>
+ * </tr>
+ * <tr>
+ * <td>47430015</td>
+ * <td>1195573269</td>
+ * <td>21</td>
+ * <td>Threads</td>
+ * <td> Too many parallel calls (too many parallel threads). The thread control,
+ * if turned on, prevents malicios client from knocking the server out by
+ * suddenly submitting a very large number of requests. </td>
+ * </tr>
+ * </table> 
+ * 
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class NO_RESOURCES
@@ -56,8 +86,9 @@ public class NO_RESOURCES
   private static final long serialVersionUID = 8129246118235803597L;
 
   /**
-   * Creates a NO_RESOURCES with the default minor code of 0,
-   * completion state COMPLETED_NO and the given explaining message.
+   * Creates a NO_RESOURCES with the default minor code of 0, completion state
+   * COMPLETED_NO and the given explaining message.
+   * 
    * @param reasom the explaining message.
    */
   public NO_RESOURCES(String message)
@@ -66,32 +97,35 @@ public class NO_RESOURCES
   }
 
   /**
-   * Creates NO_RESOURCES with the default minor code of 0 and a
-   * completion state COMPLETED_NO.
+   * Creates NO_RESOURCES with the default minor code of 0 and a completion
+   * state COMPLETED_NO.
    */
   public NO_RESOURCES()
   {
     super("", 0, CompletionStatus.COMPLETED_NO);
   }
 
-  /** Creates a NO_RESOURCES exception with the specified minor
-   * code and completion status.
-   * @param minor additional error code.
-   * @param completed the method completion status.
+  /**
+   * Creates a NO_RESOURCES exception with the specified minor code and
+   * completion status.
+   * 
+   * @param a_minor additional error code.
+   * @param a_completed the method completion status.
    */
-  public NO_RESOURCES(int minor, CompletionStatus completed)
+  public NO_RESOURCES(int a_minor, CompletionStatus a_completed)
   {
-    super("", minor, completed);
+    super("", a_minor, a_completed);
   }
 
   /**
    * Created NO_RESOURCES exception, providing full information.
-   * @param reason explaining message.
-   * @param minor additional error code (the "minor").
-   * @param completed the method completion status.
+   * 
+   * @param a_reason explaining message.
+   * @param a_minor additional error code (the "minor").
+   * @param a_completed the method completion status.
    */
-  public NO_RESOURCES(String reason, int minor, CompletionStatus completed)
+  public NO_RESOURCES(String a_reason, int a_minor, CompletionStatus a_completed)
   {
-    super(reason, minor, completed);
+    super(a_reason, a_minor, a_completed);
   }
 }

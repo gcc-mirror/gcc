@@ -119,6 +119,7 @@ public class EventListenerList
    */
   public EventListenerList()
   {
+    // Nothing to do here.
   }
 
 

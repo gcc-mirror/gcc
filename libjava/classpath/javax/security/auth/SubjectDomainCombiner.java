@@ -1,5 +1,5 @@
 /* SubjectDomainCombiner.java -- domain combiner for Subjects.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,8 +67,9 @@ public class SubjectDomainCombiner implements DomainCombiner
                                      final ProtectionDomain[] assigned)
   {
     LinkedList domains = new LinkedList();
-    Principal[] principals =
-      (Principal[]) subject.getPrincipals().toArray (new Principal[0]);
+    Principal[] principals = null;
+    if (subject != null)
+      principals = (Principal[]) subject.getPrincipals().toArray (new Principal[0]);
     if (current != null)
       {
         for (int i = 0; i < current.length; i++)

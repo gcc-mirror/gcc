@@ -118,22 +118,24 @@ public class FieldView extends PlainView
     FontMetrics fm = getFontMetrics();
 
     if (axis == Y_AXIS)
-      return fm.getHeight();
+      return super.getPreferredSpan(axis);
 
     String text;
     Element elem = getElement();
 
     try
       {
-	text = elem.getDocument().getText(elem.getStartOffset(),
-					  elem.getEndOffset());
+        text = elem.getDocument().getText(elem.getStartOffset(),
+                                          elem.getEndOffset());
       }
     catch (BadLocationException e)
       {
-	// This should never happen.
-	text = "";
+	// Should never happen
+	AssertionError ae = new AssertionError();
+	ae.initCause(e);
+	throw ae;
       }
-    
+
     return fm.stringWidth(text);
   }
 
@@ -159,18 +161,21 @@ public class FieldView extends PlainView
   {
     Shape newAlloc = adjustAllocation(shape);
     super.insertUpdate(ev, newAlloc, vf);
+    getContainer().repaint();
   }
 
   public void removeUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
     Shape newAlloc = adjustAllocation(shape);
     super.removeUpdate(ev, newAlloc, vf);
+    getContainer().repaint();
   }
 
   public void changedUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
     Shape newAlloc = adjustAllocation(shape);
     super.removeUpdate(ev, newAlloc, vf);
+    getContainer().repaint();
   }
 
   public int viewToModel(float fx, float fy, Shape a, Position.Bias[] bias)

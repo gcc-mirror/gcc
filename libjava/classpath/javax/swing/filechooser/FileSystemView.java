@@ -40,21 +40,27 @@ package javax.swing.filechooser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
 import javax.swing.Icon;
+import javax.swing.JFileChooser;
 
 
 /**
- * DOCUMENT ME!
+ * The base class providing a view of the file system for use by the 
+ * {@link JFileChooser} component.
  */
 public abstract class FileSystemView
 {
+  /** The instance returned by {@link #getFileSystemView()}. */
+  private static FileSystemView defaultFileSystemView;
+  
   /**
-   * DOCUMENT ME!
+   * Creates a new file object with the given name in the specified directory.
    *
-   * @param dir DOCUMENT ME!
-   * @param filename DOCUMENT ME!
+   * @param dir  the directory (<code>null</code> permitted).
+   * @param filename  the file name.
    *
-   * @return DOCUMENT ME!
+   * @return A new file object.
    */
   public File createFileObject(File dir, String filename)
   {
@@ -62,11 +68,11 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates a new file object from the specified path.
    *
-   * @param path DOCUMENT ME!
+   * @param path  the path.
    *
-   * @return DOCUMENT ME!
+   * @return A new file object.
    */
   public File createFileObject(String path)
   {
@@ -89,13 +95,16 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Creates a new folder with a unique name in the specified directory and
+   * returns a {@link File} object representing the new directory.
    *
-   * @param containingDir DOCUMENT ME!
+   * @param containingDir  the directory to contain the new folder 
+   *                       (<code>null</code> not permitted).
    *
-   * @return DOCUMENT ME!
+   * @return A {@link File} object representing the new directory.
    *
-   * @throws IOException DOCUMENT ME!
+   * @throws IOException if an exception occurs while creating the new 
+   *                     directory.
    */
   public abstract File createNewFolder(File containingDir)
                                 throws IOException;
@@ -115,9 +124,9 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the default directory.
    *
-   * @return DOCUMENT ME!
+   * @return The default directory.
    */
   public File getDefaultDirectory()
   {
@@ -125,12 +134,16 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns an array containing the files in the given directory.  The 
+   * <code>useFileHiding</code> controls whether or not hidden files are 
+   * included in the result.
    *
-   * @param dir DOCUMENT ME!
-   * @param useFileHiding DOCUMENT ME!
+   * @param dir  the directory (if <code>null</code>
+   * @param useFileHiding  a flag that controls whether or not hidden files are
+   *                       included in the result (pass in <code>true</code> to
+   *                       exclude hidden files).
    *
-   * @return DOCUMENT ME!
+   * @return The files in the given directory (possibly <code>null</code>).
    */
   public File[] getFiles(File dir, boolean useFileHiding)
   {
@@ -143,31 +156,34 @@ public abstract class FileSystemView
     for (int i = 0; i < files.length; i++)
       if (! files[i].isHidden())
 	trim.add(files[i]);
-    File[] value = (File[]) trim.toArray(new File[0]);
+    File[] value = (File[]) trim.toArray(new File[trim.size()]);
     return value;
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns a default {@link FileSystemView} appropriate for the platform.
    *
-   * @return DOCUMENT ME!
+   * @return A default {@link FileSystemView} appropriate for the platform.
    */
   public static FileSystemView getFileSystemView()
   {
-    if (File.separator.equals("/"))
-      return new UnixFileSystemView();
-
-    // else if (File.Separator.equals("\"))
-    //	return new Win32FileSystemView();
-    // else 
-    //	return new GenericFileSystemView();
-    return null;
+    if (defaultFileSystemView == null)
+      {
+        if (File.separator.equals("/"))
+          defaultFileSystemView = new UnixFileSystemView();
+        // FIXME: need to implement additional views
+        // else if (File.Separator.equals("\"))
+        //   return new Win32FileSystemView();
+        // else 
+        //   return new GenericFileSystemView();
+      }
+    return defaultFileSystemView;
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the home directory for the current user.
    *
-   * @return DOCUMENT ME!
+   * @return The home directory for the current user.
    */
   public File getHomeDirectory()
   {
@@ -175,11 +191,12 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the parent directory for the given file/directory.
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file/directory.
    *
-   * @return DOCUMENT ME!
+   * @return The parent directory (or <code>null</code> if there is no parent
+   *         directory).
    */
   public File getParentDirectory(File f)
   {
@@ -189,9 +206,14 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns an array containing the file system roots.  On Unix-like platforms,
+   * this array will contain just a single item ("/"), while other platforms
+   * may return multiple roots.
+   * <p>
+   * This method is implemented to return <code>null</code>, subclasses must
+   * override this method.
    *
-   * @return DOCUMENT ME!
+   * @return An array containing the file system roots.
    */
   public File[] getRoots()
   {
@@ -200,11 +222,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the name of a file as it would be displayed by the underlying 
+   * system.  This implementation returns <code>null</code>, subclasses must
+   * override.
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file.
    *
-   * @return DOCUMENT ME!
+   * @return <code>null</code>.
    */
   public String getSystemDisplayName(File f)
   {
@@ -212,11 +236,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the icon that would be displayed for the given file by the 
+   * underlying system.  This implementation returns <code>null</code>, 
+   * subclasses must override.
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file.
    *
-   * @return DOCUMENT ME!
+   * @return <code>null</code>.
    */
   public Icon getSystemIcon(File f)
   {
@@ -224,11 +250,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the type description of a file that would be displayed by the 
+   * underlying system.  This implementation returns <code>null</code>, 
+   * subclasses must override.
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file.
    *
-   * @return DOCUMENT ME!
+   * @return <code>null</code>.
    */
   public String getSystemTypeDescription(File f)
   {
@@ -248,11 +276,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns <code>true</code> if the given directory represents a disk 
+   * drive, and <code>false</code> otherwise.  This default implementation
+   * always returns <code>false</code>.
    *
-   * @param dir DOCUMENT ME!
+   * @param dir  the directory.
    *
-   * @return DOCUMENT ME!
+   * @return <code>false</code>.
    */
   public boolean isDrive(File dir)
   {
@@ -260,11 +290,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns <code>true</code> if <code>f</code> is a file or directory, and
+   * <code>false</code> otherwise.
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file/directory.
    *
-   * @return DOCUMENT ME!
+   * @return <code>true</code> if <code>f</code> is a file or directory, and
+   * <code>false</code> otherwise.
    */
   public boolean isFileSystem(File f)
   {
@@ -272,11 +304,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns <code>true</code> if the given directory is a file system root,
+   * and <code>false</code> otherwise.
    *
-   * @param dir DOCUMENT ME!
+   * @param dir  the directory.
    *
-   * @return DOCUMENT ME!
+   * @return <code>true</code> if the given directory is a file system root,
+   *          and <code>false</code> otherwise.
    */
   public boolean isFileSystemRoot(File dir)
   {
@@ -291,11 +325,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns <code>true</code> if the given directory represents a floppy 
+   * drive, and <code>false</code> otherwise.  This default implementation
+   * always returns <code>false</code>.
    *
-   * @param dir DOCUMENT ME!
+   * @param dir  the directory.
    *
-   * @return DOCUMENT ME!
+   * @return <code>false</code>.
    */
   public boolean isFloppyDrive(File dir)
   {
@@ -303,11 +339,13 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns <code>true</code> if the given file is hidden, and 
+   * <code>false</code> otherwise.
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file.
    *
-   * @return DOCUMENT ME!
+   * @return <code>true</code> if the given file is hidden, and 
+   *         <code>false</code> otherwise.
    */
   public boolean isHiddenFile(File f)
   {
@@ -315,12 +353,14 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns <code>true</code> if <code>folder</code> is the parent of 
+   * <code>file</code>, and <code>false</code> otherwise.
    *
-   * @param folder DOCUMENT ME!
-   * @param file DOCUMENT ME!
+   * @param folder  the folder (<code>null</code> not permitted).
+   * @param file  the file (<code>null</code> not permitted).
    *
-   * @return DOCUMENT ME!
+   * @return <code>true</code> if <code>folder</code> is the parent of 
+   *         <code>file</code>, and <code>false</code> otherwise.
    */
   public boolean isParent(File folder, File file)
   {
@@ -344,11 +384,14 @@ public abstract class FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns <code>true</code> if the file is traversable, and 
+   * <code>false</code> otherwise.  Here, all directories are considered
+   * traversable, and files are considered non-traversable. 
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file or directory (<code>null</code> not permitted).
    *
-   * @return DOCUMENT ME!
+   * @return <code>true</code> if the file is traversable, and 
+   *         <code>false</code> otherwise.
    */
   public Boolean isTraversable(File f)
   {
@@ -356,6 +399,6 @@ public abstract class FileSystemView
     // traversable. (No files are listed when you traverse the directory)
     // My best guess is that as long as it's a directory, the file is
     // traversable.
-    return new Boolean(f.isDirectory());
+    return Boolean.valueOf(f.isDirectory());
   }
 }

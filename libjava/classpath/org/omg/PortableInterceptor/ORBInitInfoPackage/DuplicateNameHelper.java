@@ -110,6 +110,7 @@ public abstract class DuplicateNameHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("DuplicateName expected");
+        bad.minor = Minor.Any;        
         bad.initCause(cex);
         throw bad;
       }

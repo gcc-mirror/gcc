@@ -56,12 +56,17 @@ public class ViewportLayout implements LayoutManager, Serializable
 
   public ViewportLayout() 
   {
+    // Nothing to do here.
   }
+
   public void addLayoutComponent(String name, Component c) 
   {
+    // Nothing to do here.
   }
+
   public void removeLayoutComponent(Component c) 
   {
+    // Nothing to do here.
   }
 
   public Dimension preferredLayoutSize(Container parent) 

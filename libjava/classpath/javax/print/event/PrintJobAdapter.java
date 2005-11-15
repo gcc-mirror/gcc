@@ -1,5 +1,5 @@
 /* PrintJobAdapter.java -- 
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,11 @@ package javax.print.event;
 
 
 /**
+ * Adapter class for implementing {@link javax.print.event.PrintJobListener}
+ * classes. The methods in this class do nothing by default. Subclasses may
+ * only implement the methods for the {@link javax.print.event.PrintJobEvent}s
+ * they are interested in.
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class PrintJobAdapter
@@ -53,10 +58,11 @@ public abstract class PrintJobAdapter
   }
   
   /**
-   * Called to notify the client that all data has bin successfully transferred
+   * Called to notify the client that all data has been successfully transferred
    * to the print service.
+   * <p>The default implementation does nothing.</p>
    * 
-   * <p>The default implementation does nothing</p>
+   * @param event the event. 
    */
   public void printDataTransferCompleted(PrintJobEvent event)
   {
@@ -64,9 +70,10 @@ public abstract class PrintJobAdapter
   }
 
   /**
-   * Called to notify the client that a print job was canceled.
+   * Called to notify the client that a print job was canceled. 
+   * <p>The default implementation does nothing.</p>
    * 
-   * <p>The default implementation does nothing</p>
+   * @param event the event. 
    */
   public void printJobCanceled(PrintJobEvent event)
   {
@@ -75,8 +82,9 @@ public abstract class PrintJobAdapter
 
   /**
    * Called to notify the client that a print job was successfully completed.
+   * <p>The default implementation does nothing.</p>
    * 
-   * <p>The default implementation does nothing</p>
+   * @param event the event. 
    */
   public void printJobCompleted(PrintJobEvent event)
   {
@@ -86,8 +94,9 @@ public abstract class PrintJobAdapter
   /**
    * Called to notify the client that a print job failed to complete
    * successfully.
+   * <p>The default implementation does nothing.</p>
    * 
-   * <p>The default implementation does nothing</p>
+   * @param event the event. 
    */
   public void printJobFailed(PrintJobEvent event)
   {
@@ -96,8 +105,9 @@ public abstract class PrintJobAdapter
 
   /**
    * Called to notify the client that no more job events will be send.
+   * <p>The default implementation does nothing.</p>
    * 
-   * <p>The default implementation does nothing</p>
+   * @param event the event. 
    */
   public void printJobNoMoreEvents(PrintJobEvent event)
   {
@@ -105,10 +115,12 @@ public abstract class PrintJobAdapter
   }
 
   /**
-   * Called to notify the client that a problem occured during printing
-   * but the user may be able to fix it.
+   * Called to notify the client that a problem occured during printing.
+   * This event signals problems a user might be able to fix 
+   * (e.g. out of paper or paper jam).
+   * <p>The default implementation does nothing.</p>
    * 
-   * <p>The default implementation does nothing</p>
+   * @param event the event. 
    */
   public void printJobRequiresAttention(PrintJobEvent event)
   {

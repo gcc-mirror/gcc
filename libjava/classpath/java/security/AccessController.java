@@ -142,8 +142,8 @@ public final class AccessController
    * @param action the <code>PrivilegedExceptionAction</code> whose
    * <code>run()</code> should be be called.
    * @return the result of the <code>action.run()</code> method.
-   * @exception PrivilegedActionException wrapped around any exception that
-   * is thrown in the <code>run()</code> method.
+   * @exception PrivilegedActionException wrapped around any checked exception
+   * that is thrown in the <code>run()</code> method.
    */
   public static Object doPrivileged(PrivilegedExceptionAction action)
     throws PrivilegedActionException
@@ -152,6 +152,10 @@ public final class AccessController
     try
       {
         return action.run();
+      }
+    catch (RuntimeException e)
+      {
+	throw e;
       }
     catch (Exception e)
       {
@@ -178,8 +182,8 @@ public final class AccessController
    * @param context the <code>AccessControlContext</code> whose protection
    * domains should be added to the protection domain of the calling class.
    * @return the result of the <code>action.run()</code> method.
-   * @exception PrivilegedActionException wrapped around any exception that
-   * is thrown in the <code>run()</code> method.
+   * @exception PrivilegedActionException wrapped around any checked exception
+   * that is thrown in the <code>run()</code> method.
    */
   public static Object doPrivileged(PrivilegedExceptionAction action,
                                     AccessControlContext context)
@@ -189,6 +193,10 @@ public final class AccessController
     try
       {
         return action.run();
+      }
+    catch (RuntimeException e)
+      {
+	throw e;
       }
     catch (Exception e)
       {

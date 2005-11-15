@@ -42,6 +42,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
+import javax.swing.JRootPane;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.RootPaneUI;
@@ -56,11 +57,127 @@ public class BasicRootPaneUI extends RootPaneUI
 
   public void installUI(JComponent c)
   {
-    c.setBackground(UIManager.getColor("control"));
     super.installUI(c);
+    if (c instanceof JRootPane)
+      {
+        JRootPane rp = (JRootPane) c;
+        installDefaults(rp);
+        installComponents(rp);
+        installListeners(rp);
+        installKeyboardActions(rp);
+      }
+  }
+
+  /**
+   * Installs the look and feel defaults for JRootPane.
+   *
+   * @param rp the root pane to install the defaults to
+   */
+  protected void installDefaults(JRootPane rp)
+  {
+    // Is this ok?
+    rp.setBackground(UIManager.getColor("control"));
+  }
+
+  /**
+   * Installs additional look and feel components to the root pane.
+   *
+   * @param rp the root pane to install the components to
+   */
+  protected void installComponents(JRootPane rp)
+  {
+    // All components are initialized in the JRootPane constructor, and since
+    // the createXXXPane methods are protected, I see no reasonable way,
+    // and no need to initialize them here. This method is here anyway
+    // for compatibility and to provide the necessary hooks to subclasses.
+  }
+
+  /**
+   * Installs any look and feel specific listeners on the root pane.
+   *
+   * @param rp the root pane to install the listeners to
+   */
+  protected void installListeners(JRootPane rp)
+  {
+    rp.addPropertyChangeListener(this);
+  }
+
+  /**
+   * Installs look and feel keyboard actions on the root pane.
+   *
+   * @param rp the root pane to install the keyboard actions to
+   */
+  protected void installKeyboardActions(JRootPane rp)
+  {
+    // We currently do not install any keyboard actions here.
+    // This method is here anyway for compatibility and to provide
+    // the necessary hooks to subclasses.
   }
 
   public void propertyChange(PropertyChangeEvent event)
   {
+    // TODO: Implement this properly.
+  }
+
+  /**
+   * Uninstalls this UI from the root pane. This calls
+   * {@link #uninstallDefaults}, {@link #uninstallComponents},
+   * {@link #uninstallListeners}, {@link #uninstallKeyboardActions}
+   * in this order.
+   *
+   * @param c the root pane to uninstall the UI from
+   */
+  public void uninstallUI(JComponent c)
+  {
+    super.uninstallUI(c);
+    if (c instanceof JRootPane)
+      {
+        JRootPane rp = (JRootPane) c;
+        uninstallDefaults(rp);
+        uninstallComponents(rp);
+        uninstallListeners(rp);
+        uninstallKeyboardActions(rp);
+      }
+  }
+
+  /**
+   * Uninstalls the look and feel defaults that have been installed in
+   * {@link #installDefaults}.
+   *
+   * @param rp the root pane to uninstall the defaults from
+   */
+  protected void uninstallDefaults(JRootPane rp)
+  {
+    // We do nothing here.
+  }
+
+  /**
+   * Uninstalls look and feel components from the root pane.
+   *
+   * @param rp the root pane to uninstall the components from
+   */
+  protected void uninstallComponents(JRootPane rp)
+  {
+    // We do nothing here.
+  }
+
+  /**
+   * Uninstalls any look and feel specific listeners from the root pane.
+   *
+   * @param rp the root pane to uninstall the listeners from
+   */
+  protected void uninstallListeners(JRootPane rp)
+  {
+    rp.removePropertyChangeListener(this);
+  }
+
+  /**
+   * Uninstalls look and feel keyboard actions from the root pane.
+   *
+   * @param rp the root pane to uninstall the keyboard actions from
+   */
+  protected void uninstallKeyboardActions(JRootPane rp)
+  {
+    // We do nothing here.
   }
 }

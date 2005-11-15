@@ -45,101 +45,96 @@ import java.awt.Font;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public interface StyledDocument extends Document {
+public interface StyledDocument extends Document
+{
+  /**
+   * addStyle
+   * @param nm TODO
+   * @param parent TODO
+   * @returns Style
+   */
+  Style addStyle(String nm, Style parent);
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * removeStyle
+   * @param nm TODO
+   */
+  void removeStyle(String nm);
 
-	/**
-	 * addStyle
-	 * @param nm TODO
-	 * @param rent TODO
-	 * @returns Style
-	 */
-	Style addStyle(String nm, Style parent);
+  /**
+   * getStyle
+   * @param nm TODO
+   * @returns Style
+   */
+  Style getStyle(String nm);
 
-	/**
-	 * removeStyle
-	 * @param nm TODO
-	 */
-	void removeStyle(String nm);
+  /**
+   * setCharacterAttributes
+   * @param offset TODO
+   * @param length TODO
+   * @param set TODO
+   * @param replace TODO
+   */
+  void setCharacterAttributes(int offset, int length, AttributeSet set,
+                              boolean replace);
 
-	/**
-	 * getStyle
-	 * @param nm TODO
-	 * @returns Style
-	 */
-	Style getStyle(String nm);
+  /**
+   * setParagraphAttributes
+   * @param offset TODO
+   * @param length TODO
+   * @param set TODO
+   * @param replace TODO
+   */
+  void setParagraphAttributes(int offset, int length, AttributeSet set,
+                              boolean replace);
 
-	/**
-	 * setCharacterAttributes
-	 * @param offset TODO
-	 * @param length TODO
-	 * @param set TODO
-	 * @param replace TODO
-	 */
-	void setCharacterAttributes(int offset, int length,
-		AttributeSet set, boolean replace);
+  /**
+   * getLogicalStyle
+   * @param position TODO
+   * @returns Style
+   */
+  Style getLogicalStyle(int position);
 
-	/**
-	 * setParagraphAttributes
-	 * @param offset TODO
-	 * @param length TODO
-	 * @param set TODO
-	 * @param replace TODO
-	 */
-	void setParagraphAttributes(int offset, int length,
-		AttributeSet set, boolean replace);
+  /**
+   * setLogicalStyle
+   * @param position TODO
+   * @param style TODO
+   */
+  void setLogicalStyle(int position, Style style);
 
-	/**
-	 * getLogicalStyle
-	 * @param position TODO
-	 * @returns Style
-	 */
-	Style getLogicalStyle(int position);
+  /**
+   * getParagraphElement
+   * @param position TODO
+   * @returns Element
+   */
+  Element getParagraphElement(int position);
 
-	/**
-	 * setLogicalStyle
-	 * @param position TODO
-	 * @param style TODO
-	 */
-	void setLogicalStyle(int position, Style style);
+  /**
+   * getCharacterElement
+   * @param position TODO
+   * @returns Element
+   */
+  Element getCharacterElement(int position);
 
-	/**
-	 * getParagraphElement
-	 * @param position TODO
-	 * @returns Element
-	 */
-	Element getParagraphElement(int position);
+  /**
+   * getForeground
+   * @param set TODO
+   * @returns Color
+   */
+  Color getForeground(AttributeSet set);
 
-	/**
-	 * getCharacterElement
-	 * @param position TODO
-	 * @returns Element
-	 */
-	Element getCharacterElement(int position);
+  /**
+   * getBackground
+   * @param set TODO
+   * @returns Color
+   */
+  Color getBackground(AttributeSet set);
 
-	/**
-	 * getForeground
-	 * @param set TODO
-	 * @returns Color
-	 */
-	Color getForeground(AttributeSet set);
+  /**
+   * getFont
+   * @param set TODO
+   * @returns Font
+   */
+  Font getFont(AttributeSet set);
 
-	/**
-	 * getBackground
-	 * @param set TODO
-	 * @returns Color
-	 */
-	Color getBackground(AttributeSet set);
-
-	/**
-	 * getFont
-	 * @param set TODO
-	 * @returns Font
-	 */
-	Font getFont(AttributeSet set);
-
-
-} // StyledDocument
+}

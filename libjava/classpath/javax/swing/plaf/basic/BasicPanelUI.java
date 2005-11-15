@@ -40,8 +40,7 @@ package javax.swing.plaf.basic;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
+import javax.swing.LookAndFeel;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.PanelUI;
 
@@ -64,8 +63,29 @@ public class BasicPanelUI extends PanelUI
 
   public void installDefaults(JPanel p)
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    p.setBackground(defaults.getColor("Panel.background"));
+    LookAndFeel.installColorsAndFont(p, "Panel.background", "Panel.foreground",
+                                     "Panel.font");
     p.setOpaque(true);
+  }
+
+  /**
+   * Uninstalls this UI from the JPanel.
+   *
+   * @param c the JPanel from which to uninstall this UI
+   */
+  public void uninstallUI(JComponent c)
+  {
+    uninstallDefaults((JPanel) c);
+  }
+
+  /**
+   * Uninstalls the UI defaults that have been install through
+   * {@link #installDefaults}.
+   *
+   * @param p the panel from which to uninstall the UI defaults
+   */
+  protected void uninstallDefaults(JPanel p)
+  {
+    // Nothing to do here.
   }
 }

@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
+import java.io.InputStream;
 import java.util.Date;
 
 /**
@@ -64,19 +65,6 @@ public class Response
   protected final int code;
 
   /**
-   * The class of the response. This is the most significant digit of the
-   * status code.
-   * <dl>
-   * <dt><code>1xx</code></dt> <dd>Informational response</dd>
-   * <dt><code>2xx</code></dt> <dd>Success</dd>
-   * <dt><code>3xx</code></dt> <dd>Redirection</dd>
-   * <dt><code>4xx</code></dt> <dd>Client error</dd>
-   * <dt><code>5xx</code></dt> <dd>Server error</dd>
-   * </dl>
-   */
-  protected final int codeClass;
-
-  /**
    * Human-readable text of the response.
    */
   protected final String message;
@@ -87,18 +75,22 @@ public class Response
   protected final Headers headers;
 
   /**
+   * An InputStream that returns the body of the response.
+   */
+  protected final InputStream body;
+
+  /**
    * Constructs a new response with the specified parameters.
    */
   protected Response(int majorVersion, int minorVersion, int code,
-                     int codeClass, String message,
-                     Headers headers)
+                     String message, Headers headers, InputStream body)
   {
     this.majorVersion = majorVersion;
     this.minorVersion = minorVersion;
     this.code = code;
-    this.codeClass = codeClass;
     this.message = message;
     this.headers = headers;
+    this.body = body;
   }
 
   /**
@@ -129,12 +121,19 @@ public class Response
   }
 
   /**
-   * Returns the class of the response.
-   * @see #codeClass
+   * Returns the class of the response.  This is the most significant
+   * digit of the status code.
+   * <dl>
+   * <dt><code>1xx</code></dt> <dd>Informational response</dd>
+   * <dt><code>2xx</code></dt> <dd>Success</dd>
+   * <dt><code>3xx</code></dt> <dd>Redirection</dd>
+   * <dt><code>4xx</code></dt> <dd>Client error</dd>
+   * <dt><code>5xx</code></dt> <dd>Server error</dd>
+   * </dl>
    */
   public int getCodeClass()
   {
-    return codeClass;
+    return code / 100;
   }
 
   /**
@@ -173,6 +172,15 @@ public class Response
   }
 
   /**
+   * Returns the header value for the specified name as a long.
+   * @param name the header name
+   */
+  public long getLongHeader(String name)
+  {
+    return headers.getLongValue(name);
+  }
+
+  /**
    * Returns the header value for the specified name as a date.
    * @param name the header name
    */
@@ -181,5 +189,14 @@ public class Response
     return headers.getDateValue(name);
   }
 
+  /**
+   * Returns an InputStream that returns the body of the response.
+   *
+   * @return the body of the response
+   */
+  public InputStream getBody()
+  {
+    return body;
+  }
 }
 

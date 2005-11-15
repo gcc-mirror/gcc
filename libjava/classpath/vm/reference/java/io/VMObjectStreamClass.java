@@ -1,5 +1,5 @@
 /* VMObjectStreamClass.java -- VM helper functions for ObjectStreamClass
-   Copyright (C) 2003  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,19 @@ exception statement from your version. */
 
 package java.io;
 
+import gnu.classpath.Configuration;
 import java.lang.reflect.Field;
 
 final class VMObjectStreamClass
 {
+  static
+  {
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+	System.loadLibrary("javaio");
+      }
+  }
+
   /**
     * Returns true if CLAZZ has a static class initializer
     * (a.k.a. <clinit>).

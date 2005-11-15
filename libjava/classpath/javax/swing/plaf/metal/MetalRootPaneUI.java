@@ -39,9 +39,16 @@ exception statement from your version. */
 package javax.swing.plaf.metal;
 
 import javax.swing.JComponent;
+import javax.swing.JRootPane;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicRootPaneUI;
 
+/**
+ * A UI delegate for the {@link JRootPane} component.  This class is not fully
+ * implemented.
+ * 
+ * @since 1.4
+ */
 public class MetalRootPaneUI
   extends BasicRootPaneUI
 {
@@ -51,7 +58,7 @@ public class MetalRootPaneUI
   private static MetalRootPaneUI instance = null;
 
   /**
-   * Constructs a new instance of MetalRootPaneUI.
+   * Constructs a shared instance of <code>MetalRootPaneUI</code>.
    */
   public MetalRootPaneUI()
   {
@@ -59,11 +66,11 @@ public class MetalRootPaneUI
   }
 
   /**
-   * Returns an instance of MetalRootPaneUI.
+   * Returns a shared instance of <code>MetalRootPaneUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalRootPaneUI
+   * @return A shared instance of <code>MetalRootPaneUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {

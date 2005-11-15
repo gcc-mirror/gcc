@@ -79,7 +79,7 @@ public class BeanContextSupport extends BeanContextChildSupport
 
   protected class BCSChild implements Serializable
   {
-    private static final long serialVersionUID = 3289144128843950629L;
+    private static final long serialVersionUID = -5815286101609939109L;
   }
 
   protected static final class BCSIterator implements Iterator

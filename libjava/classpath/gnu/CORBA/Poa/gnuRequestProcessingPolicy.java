@@ -51,7 +51,7 @@ import org.omg.PortableServer.RequestProcessingPolicyValue;
  */
 public class gnuRequestProcessingPolicy
   extends _PolicyImplBase
-  implements RequestProcessingPolicy, vPolicy
+  implements RequestProcessingPolicy, AccessiblePolicy
 {
   /**
    * Use serialVersionUID for interoperability.

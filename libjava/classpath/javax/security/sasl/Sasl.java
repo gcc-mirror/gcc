@@ -74,6 +74,8 @@ import javax.security.auth.callback.CallbackHandler;
  *      Sasl.createSaslServer(mechanism, protocol, serverName, props,
  *                            callbackHandler);
  * </pre>
+ *
+ * @since 1.5
  */
 public class Sasl
 {

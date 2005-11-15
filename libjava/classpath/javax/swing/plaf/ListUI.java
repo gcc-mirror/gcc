@@ -49,14 +49,14 @@ import javax.swing.JList;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ListUI
-  extends ComponentUI
+public abstract class ListUI extends ComponentUI
 {
   /**
    * Constructs a new <code>ListUI</code>.
    */
   public ListUI()
   {
+    // Nothing to do here.
   }
 
 

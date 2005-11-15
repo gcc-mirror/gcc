@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class SliderUI
-  extends ComponentUI
+public abstract class SliderUI extends ComponentUI
 {
   /**
    * Constructs a new <code>SliderUI</code>.
    */
   public SliderUI()
   {
+    // Nothing to do here.
   }
 }

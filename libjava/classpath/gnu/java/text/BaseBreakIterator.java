@@ -68,12 +68,15 @@ public abstract class BaseBreakIterator extends BreakIterator
     return iter.getBeginIndex();
   }
 
+  /**
+   * Return the first boundary after <code>pos</code>.
+   * This has the side effect of setting the index of the 
+   * CharacterIterator.
+   */
   public int following (int pos)
   {
-    int save = iter.getIndex();
     iter.setIndex(pos);
     int r = next ();
-    iter.setIndex(save);
     return r;
   }
 

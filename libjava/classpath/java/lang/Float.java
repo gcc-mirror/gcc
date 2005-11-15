@@ -94,6 +94,12 @@ public final class Float extends Number implements Comparable
   public static final Class TYPE = VMClassLoader.getPrimitiveClass('F');
 
   /**
+   * The number of bits needed to represent a <code>float</code>.
+   * @since 1.5
+   */
+  public static final int SIZE = 32;
+
+  /**
    * The immutable value of this Float.
    *
    * @serial the wrapped float
@@ -189,6 +195,22 @@ public final class Float extends Number implements Comparable
   public static Float valueOf(String s)
   {
     return new Float(parseFloat(s));
+  }
+
+  /**
+   * Returns a <code>Float</code> object wrapping the value.
+   * In contrast to the <code>Float</code> constructor, this method
+   * may cache some values.  It is used by boxing conversion.
+   *
+   * @param val the value to wrap
+   * @return the <code>Float</code>
+   * 
+   * @since 1.5
+   */
+  public static Float valueOf(float val)
+  {
+    // We don't actually cache, but we could.
+    return new Float(val);
   }
 
   /**

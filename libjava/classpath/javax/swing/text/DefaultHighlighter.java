@@ -168,6 +168,7 @@ public class DefaultHighlighter extends LayeredHighlighter
   
   public DefaultHighlighter()
   {
+    // Nothing to do here.
   }
 
   public boolean getDrawsLayeredHighlights()
@@ -238,6 +239,7 @@ public class DefaultHighlighter extends LayeredHighlighter
                                      Shape viewBounds, JTextComponent editor,
                                      View view)
   {
+    // TODO: Implement this properly.
   }
 
   public void paint(Graphics g)

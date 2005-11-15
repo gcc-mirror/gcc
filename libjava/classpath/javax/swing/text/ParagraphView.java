@@ -59,6 +59,11 @@ public class ParagraphView extends FlowView implements TabExpander
     {
       super(el, X_AXIS);
     }
+    public float getAlignment(int axis)
+    {
+      // FIXME: This is very likely not 100% correct. Work this out.
+      return 0.0F;
+    }
   }
 
   /**
@@ -85,5 +90,30 @@ public class ParagraphView extends FlowView implements TabExpander
   protected View createRow()
   {
     return new Row(getElement());
+  }
+
+  /**
+   * Returns the alignment for this paragraph view for the specified axis.
+   * For the X_AXIS the paragraph view will be aligned at it's left edge
+   * (0.0F). For the Y_AXIS the paragraph view will be aligned at the
+   * center of it's first row.
+   *
+   * @param axis the axis which is examined
+   *
+   * @return the alignment for this paragraph view for the specified axis
+   */
+  public float getAlignment(int axis)
+  {
+    if (axis == X_AXIS)
+      return 0.0F;
+    else if (getViewCount() > 0)
+      {
+
+        float prefHeight = getPreferredSpan(Y_AXIS);
+        float firstRowHeight = getView(0).getPreferredSpan(Y_AXIS);
+        return (firstRowHeight / 2.F) / prefHeight;
+      }
+    else
+      return 0.0F;
   }
 }

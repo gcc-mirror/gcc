@@ -120,7 +120,9 @@ public boolean equals(Object obj) {
 	    in.read (); //some unknown UnicastRef2 field
 	  }
 
-	cname = RemoteRef.packagePrefix + '.' + cname;
+  // It would be nice to use RemoteRef.packagePrefix here, but for binary
+  // compatibility with the JDK that has to contain "sun.rmi.server"...
+	cname = "gnu.java.rmi.server." + cname;
 	try 
 	  {
 	    Class cls = Class.forName(cname);

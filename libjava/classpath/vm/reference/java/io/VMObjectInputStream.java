@@ -39,6 +39,7 @@ exception statement from your version. */
 
 package java.io;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.VMStackWalker;
 import java.lang.reflect.Constructor;
 import java.security.AccessController;
@@ -46,8 +47,13 @@ import java.security.PrivilegedAction;
 
 final class VMObjectInputStream
 {
-  private static Class oisClass = ObjectInputStream.class;
-  private static Class vmoisClass = VMObjectInputStream.class;
+  static
+  {
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+	System.loadLibrary("javaio");
+      }
+  }
 
   // PrivilegedAction needed for Class.getClassLoader()
   private static PrivilegedAction loaderAction = new PrivilegedAction()

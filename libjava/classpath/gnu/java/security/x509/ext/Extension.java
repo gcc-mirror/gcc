@@ -232,7 +232,7 @@ public class Extension
   {
     List ext = new ArrayList (3);
     ext.add (new DERValue (DER.OBJECT_IDENTIFIER, oid));
-    ext.add (new DERValue (DER.BOOLEAN, new Boolean (critical)));
+    ext.add (new DERValue (DER.BOOLEAN, Boolean.valueOf (critical)));
     ext.add (new DERValue (DER.OCTET_STRING, value.getEncoded()));
     return new DERValue (DER.CONSTRUCTED|DER.SEQUENCE, ext);
   }
@@ -272,6 +272,14 @@ public class Extension
     public byte[] getEncoded()
     {
       return (byte[]) encoded;
+    }
+
+    public int hashCode()
+    {
+      int result = 0;
+      for (int i = 0; i < encoded.length; ++i)
+        result = result * 31 + encoded[i];
+      return result;
     }
 
     public boolean equals(Object o)

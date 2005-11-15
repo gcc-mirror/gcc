@@ -50,6 +50,10 @@ package javax.swing.plaf;
  * they are initialized or set to <code>null</code>.
  * 
  * @author Brian Jones
+ *
  * @see ComponentUI 
  */
-public interface UIResource { }
+public interface UIResource
+{
+  // This is a marker interface and declares no methods.
+}

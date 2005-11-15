@@ -53,7 +53,7 @@ public class gnuContextList
   /**
    * The collection, holding the actual list of strings.
    */
-  corbaArrayList strings = new corbaArrayList();
+  CorbaList strings = new CorbaList();
 
   /** {@inheritDoc} */
   public void add(String name)

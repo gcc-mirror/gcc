@@ -140,7 +140,7 @@ Java_gnu_java_nio_charset_iconv_IconvDecoder_decode (JNIEnv * env,
 
   if (retval == (size_t) (-1))
     {
-      if (errno == EILSEQ || errno == EINVAL)
+      if (errno == EILSEQ)
 	retval = 1;
       else
 	retval = 0;

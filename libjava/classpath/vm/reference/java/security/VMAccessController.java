@@ -76,7 +76,7 @@ final class VMAccessController
     DEFAULT_CONTEXT = new AccessControlContext(domain);
   }
 
-  private static final boolean DEBUG = false;
+  private static final boolean DEBUG = gnu.classpath.Configuration.DEBUG;
   private static void debug(String msg)
   {
     System.err.print(">>> VMAccessController: ");
@@ -108,6 +108,8 @@ final class VMAccessController
     LinkedList stack = (LinkedList) contexts.get();
     if (stack == null)
       {
+         if (DEBUG)
+           debug("no stack... creating ");
         stack = new LinkedList();
         contexts.set(stack);
       }
@@ -133,6 +135,10 @@ final class VMAccessController
         stack.removeFirst();
         if (stack.isEmpty())
           contexts.set(null);
+      }
+    else if (DEBUG)
+      {
+        debug("no stack during pop?????");
       }
   }
 
@@ -166,7 +172,7 @@ final class VMAccessController
     String[] methods = (String[]) stack[1];
 
     if (DEBUG)
-      debug(">>> got trace of length " + classes.length);
+      debug("got trace of length " + classes.length);
 
     HashSet domains = new HashSet();
     HashSet seenDomains = new HashSet();
@@ -185,8 +191,9 @@ final class VMAccessController
 
         if (DEBUG)
           {
-            debug(">>> checking " + clazz + "." + method);
-            debug(">>> loader = " + clazz.getClassLoader());
+            debug("checking " + clazz + "." + method);
+            // subject to getClassLoader RuntimePermission
+            debug("loader = " + clazz.getClassLoader());
           }
 
         // If the previous frame was a call to doPrivileged, then this is
@@ -198,14 +205,16 @@ final class VMAccessController
             && method.equals ("doPrivileged"))
           {
             // If there was a call to doPrivileged with a supplied context,
-            // return that context.
+            // return that context. If using JAAS doAs*, it should be 
+	    // a context with a SubjectDomainCombiner
             LinkedList l = (LinkedList) contexts.get();
             if (l != null)
               context = (AccessControlContext) l.getFirst();
             privileged = 1;
           }
 
-        ProtectionDomain domain = clazz.getProtectionDomain();
+        // subject to getProtectionDomain RuntimePermission
+	ProtectionDomain domain = clazz.getProtectionDomain();
 
         if (domain == null)
           continue;
@@ -225,14 +234,25 @@ final class VMAccessController
     ProtectionDomain[] result = (ProtectionDomain[])
       domains.toArray(new ProtectionDomain[domains.size()]);
 
-    // Intersect the derived protection domain with the context supplied
-    // to doPrivileged.
     if (context != null)
-      context = new AccessControlContext(result, context,
-                                         IntersectingDomainCombiner.SINGLETON);
+      {
+        DomainCombiner dc = context.getDomainCombiner ();
+        // If the supplied context had no explicit DomainCombiner, use
+        // our private version, which computes the intersection of the
+        // context's domains with the derived set.
+        if (dc == null)
+          context = new AccessControlContext
+            (IntersectingDomainCombiner.SINGLETON.combine
+             (result, context.getProtectionDomains ()));
+        // Use the supplied DomainCombiner. This should be secure,
+        // because only trusted code may create an
+        // AccessControlContext with a custom DomainCombiner.
+        else
+          context = new AccessControlContext (result, context, dc);
+      }
     // No context was supplied. Return the derived one.
     else
-      context = new AccessControlContext(result);
+      context = new AccessControlContext (result);
 
     inGetContext.set(Boolean.FALSE);
     return context;

@@ -1735,6 +1735,6 @@ public class KeyEvent extends InputEvent
     throws IOException, ClassNotFoundException
   {
     s.defaultReadObject();
-    modifiers = EventModifier.extend(modifiers);
+    modifiersEx = EventModifier.extend(modifiers) & EventModifier.NEW_MASK;
   }
 } // class KeyEvent

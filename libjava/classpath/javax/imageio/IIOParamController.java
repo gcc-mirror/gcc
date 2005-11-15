@@ -39,12 +39,23 @@ exception statement from your version. */
 package javax.imageio;
 
 /**
+ * An interface to set image parameters.  An IIOParamController may be
+ * a GUI component, a database reader, command-line parser or any
+ * other means of getting parameter settings.  For exampe, a dialog
+ * box could implement IIOParamController to allow a user to adjust
+ * JPEG compression levels.
+ *
+ * The activate method should always behave modally; it should only
+ * return when the action has been either cancelled or completed.
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface IIOParamController
 {
   /**
-   * Activates the controller.
+   * Activates the controller.  A return value of false should mean
+   * that no changes were made to param.  A return value of true
+   * should mean that the image is ready to be read or written.
    *
    * @param param the <code>IIOParam</code> to be modified
    *

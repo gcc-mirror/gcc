@@ -1,5 +1,5 @@
 /* java_lang_VMProcess.c -- native code for java.lang.VMProcess
-   Copyright (C) 1998, 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -351,7 +351,6 @@ Java_java_lang_VMProcess_nativeSpawn (JNIEnv * env, jobject this,
 			  streams[0], streams[1], streams[2], (jlong) pid);
   if ((*env)->ExceptionOccurred (env))
     goto done;
-  (*env)->DeleteLocalRef (env, clazz);
 
 done:
   /*

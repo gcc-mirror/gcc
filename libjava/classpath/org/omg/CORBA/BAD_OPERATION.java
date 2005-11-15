@@ -41,8 +41,76 @@ package org.omg.CORBA;
 import java.io.Serializable;
 
 /**
- * Means that the object exists but does not support the operation that 
- * was invoked on it.
+ * Means that the object exists but does not support the operation that was
+ * invoked on it.
+ * 
+ * In GNU Classpath, this exception may have the following Minor codes:
+ * 
+ * <table border="1">
+ * <tr>
+ * <th>Hex</th>
+ * <th>Dec</th>
+ * <th>Minor</th>
+ * <th>Name</th>
+ * <th>Case</th>
+ * </tr>
+ * <tr>
+ * <td>47430000</td>
+ * <td>1195573248 </td>
+ * <td>0</td>
+ * <td>Method</td>
+ * <td> The remote side requested to invoke the method that is not available on
+ * that target (client and server probably disagree in the object definition).
+ * This code is set when the problem arises in the Classpath core; the idlj and
+ * rmic may generate the user code that sets 0x0 or other value.</td>
+ * </tr>
+ * <tr>
+ * <td>47430009</td>
+ * <td>1195573257</td>
+ * <td>9</td>
+ * <td>Any</td>
+ * <td> Attempt to extract from the Any value of the different type that was
+ * stored into that Any. </td>
+ * </tr>
+ * <tr>
+ * <td>4743000a</td>
+ * <td>1195573258</td>
+ * <td>10</td>
+ * <td>Activation</td>
+ * <td>Failed to activate the inactive object due any reason.</td>
+ * </tr>
+ * <tr>
+ * <td>4743000b</td>
+ * <td>1195573259</td>
+ * <td>11</td>
+ * <td>Policy</td>
+ * <td> The policies, applying to ORB or POA prevent the requested operation.
+ * </td>
+ * </tr>
+ * <tr>
+ * <td>4743000c</td>
+ * <td>1195573260</td>
+ * <td>12</td>
+ * <td>Socket</td>
+ * <td> Socket related errors like failure to open socket on the expected port.</td>
+ * </tr>
+ * <tr>
+ * <td>4743000e</td>
+ * <td>1195573262</td>
+ * <td>14</td>
+ * <td>Enumeration</td>
+ * <td> The passed value for enumeration is outside the valid range for that
+ * enumeration. </td>
+ * </tr>
+ * <tr>
+ * <td>4743000f</td>
+ * <td>1195573263</td>
+ * <td>15</td>
+ * <td>PolicyType</td>
+ * <td> The passed policy code is outside the valid range of the possible
+ * policies for the given policy type. </td>
+ * </tr>
+ * </table>
  * 
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
@@ -50,14 +118,15 @@ public class BAD_OPERATION
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1654621651720499682L;
 
   /**
-   * Creates a BAD_OPERATION with the default minor code of 0,
-   * completion state COMPLETED_NO and the given explaining message.
+   * Creates a BAD_OPERATION with the default minor code of 0, completion state
+   * COMPLETED_NO and the given explaining message.
+   * 
    * @param reasom the explaining message.
    */
   public BAD_OPERATION(String message)
@@ -66,16 +135,18 @@ public class BAD_OPERATION
   }
 
   /**
-   * Creates BAD_OPERATION with the default minor code of 0 and a
-   * completion state COMPLETED_NO.
+   * Creates BAD_OPERATION with the default minor code of 0 and a completion
+   * state COMPLETED_NO.
    */
   public BAD_OPERATION()
   {
     super("", 0, CompletionStatus.COMPLETED_NO);
   }
 
-  /** Creates a BAD_OPERATION exception with the specified minor
-   * code and completion status.
+  /**
+   * Creates a BAD_OPERATION exception with the specified minor code and
+   * completion status.
+   * 
    * @param minor additional error code.
    * @param completed the method completion status.
    */
@@ -86,6 +157,7 @@ public class BAD_OPERATION
 
   /**
    * Created BAD_OPERATION exception, providing full information.
+   * 
    * @param reason explaining message.
    * @param minor additional error code (the "minor").
    * @param completed the method completion status.

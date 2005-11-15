@@ -51,14 +51,14 @@ import javax.swing.JSplitPane;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class SplitPaneUI
-  extends ComponentUI
+public abstract class SplitPaneUI extends ComponentUI
 {
   /**
    * Constructs a new <code>SplitPaneUI</code>.
    */
   public SplitPaneUI()
   {
+    // Nothing to do here.
   }
 
 

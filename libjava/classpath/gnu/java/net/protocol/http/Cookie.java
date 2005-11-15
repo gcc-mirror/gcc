@@ -139,7 +139,7 @@ public class Cookie
   
   public String toString(boolean showPath, boolean showDomain)
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append(name);
     buf.append('=');
     buf.append(value);

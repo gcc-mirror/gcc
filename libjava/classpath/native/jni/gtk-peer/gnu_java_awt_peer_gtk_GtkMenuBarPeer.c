@@ -88,7 +88,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuBarPeer_nativeSetHelpMenu
 
   if (helpmenu != NULL)
     {
-      list = gtk_container_children (GTK_CONTAINER (mbar));
+      list = gtk_container_get_children (GTK_CONTAINER (mbar));
       while (list != NULL && list->data != helpmenu)
         list = list->next;
       if (list != NULL && list->data == helpmenu)
@@ -110,7 +110,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuBarPeer_delMenu
 
   ptr = NSA_GET_PTR (env, obj);
 
-  list = gtk_container_children (GTK_CONTAINER (ptr));
+  list = gtk_container_get_children (GTK_CONTAINER (ptr));
   list = g_list_nth (list, index);
   gtk_container_remove (GTK_CONTAINER (ptr), GTK_WIDGET (list->data));
 

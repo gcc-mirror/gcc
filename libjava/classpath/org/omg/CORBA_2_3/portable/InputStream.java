@@ -40,9 +40,9 @@ package org.omg.CORBA_2_3.portable;
 
 import gnu.CORBA.CDR.Vio;
 
-import org.omg.CORBA.MARSHAL;
+import org.omg.CORBA.CustomMarshal;
 import org.omg.CORBA.portable.BoxedValueHelper;
-import org.omg.CORBA.portable.ValueFactory;
+import org.omg.CORBA.portable.StreamableValue;
 
 import java.io.Serializable;
 
@@ -78,12 +78,12 @@ public abstract class InputStream
    */
   public Object read_abstract_interface()
   {
-    boolean isValue = read_boolean();
+    boolean isObject = read_boolean();
 
-    if (isValue)
-      return read_value();
-    else
+    if (isObject)
       return read_Object();
+    else
+      return read_value();      
   }
 
   /**
@@ -192,11 +192,7 @@ public abstract class InputStream
    */
   public Serializable read_value(String repository_id)
   {
-    ValueFactory factory =
-      ((org.omg.CORBA_2_3.ORB) orb()).lookup_value_factory(repository_id);
-    if (factory == null)
-      throw new MARSHAL("No factory");
-    return (Serializable) Vio.read(this, null, factory);
+    return Vio.read(this, repository_id);
   }
 
   /**

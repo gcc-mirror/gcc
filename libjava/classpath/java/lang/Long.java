@@ -50,7 +50,7 @@ package java.lang;
  * @author Warren Levy
  * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.0
- * @status updated to 1.4
+ * @status updated to 1.5
  */
 public final class Long extends Number implements Comparable
 {
@@ -77,6 +77,12 @@ public final class Long extends Number implements Comparable
    * @since 1.1
    */
   public static final Class TYPE = VMClassLoader.getPrimitiveClass ('J');
+
+  /**
+   * The number of bits needed to represent a <code>long</code>.
+   * @since 1.5
+   */
+  public static final int SIZE = 64;
 
   /**
    * The immutable value of this Long.
@@ -279,6 +285,21 @@ public final class Long extends Number implements Comparable
   public static Long valueOf(String s)
   {
     return new Long(parseLong(s, 10, false));
+  }
+
+  /**
+   * Returns a <code>Long</code> object wrapping the value.
+   *
+   * @param val the value to wrap
+   * @return the <code>Long</code>
+   * 
+   * @since 1.5
+   */
+  public static synchronized Long valueOf(long val)
+  {
+    // We aren't required to cache here.  We could, though perhaps we
+    // ought to consider that as an empirical question.
+    return new Long(val);
   }
 
   /**
@@ -509,6 +530,136 @@ public final class Long extends Number implements Comparable
   public int compareTo(Object o)
   {
     return compareTo((Long) o);
+  }
+
+  /**
+   * Return the number of bits set in x.
+   * @param x value to examine
+   * @since 1.5
+   */
+  public static int bitCount(long x)
+  {
+    // Successively collapse alternating bit groups into a sum.
+    x = ((x >> 1) & 0x5555555555555555L) + (x & 0x5555555555555555L);
+    x = ((x >> 2) & 0x3333333333333333L) + (x & 0x3333333333333333L);
+    int v = (int) ((x >>> 32) + x);
+    v = ((v >> 4) & 0x0f0f0f0f) + (v & 0x0f0f0f0f);
+    v = ((v >> 8) & 0x00ff00ff) + (v & 0x00ff00ff);
+    return ((v >> 16) & 0x0000ffff) + (v & 0x0000ffff);
+  }
+
+  /**
+   * Rotate x to the left by distance bits.
+   * @param x the value to rotate
+   * @param distance the number of bits by which to rotate
+   * @since 1.5
+   */
+  public static long rotateLeft(long x, int distance)
+  {
+    // This trick works because the shift operators implicitly mask
+    // the shift count.
+    return (x << distance) | (x >>> - distance);
+  }
+
+  /**
+   * Rotate x to the right by distance bits.
+   * @param x the value to rotate
+   * @param distance the number of bits by which to rotate
+   * @since 1.5
+   */
+  public static long rotateRight(long x, int distance)
+  {
+    // This trick works because the shift operators implicitly mask
+    // the shift count.
+    return (x << - distance) | (x >>> distance);
+  }
+
+  /**
+   * Find the highest set bit in value, and return a new value
+   * with only that bit set.
+   * @param value the value to examine
+   * @since 1.5
+   */
+  public static long highestOneBit(long value)
+  {
+    value |= value >>> 1;
+    value |= value >>> 2;
+    value |= value >>> 4;
+    value |= value >>> 8;
+    value |= value >>> 16;
+    value |= value >>> 32;
+    return value ^ (value >>> 1);
+  }
+
+  /**
+   * Return the number of leading zeros in value.
+   * @param value the value to examine
+   * @since 1.5
+   */
+  public static int numberOfLeadingZeros(long value)
+  {
+    value |= value >>> 1;
+    value |= value >>> 2;
+    value |= value >>> 4;
+    value |= value >>> 8;
+    value |= value >>> 16;
+    value |= value >>> 32;
+    return bitCount(~value);
+  }
+
+  /**
+   * Find the lowest set bit in value, and return a new value
+   * with only that bit set.
+   * @param value the value to examine
+   * @since 1.5
+   */
+  public static long lowestOneBit(long value)
+  {
+    // Classic assembly trick.
+    return value & - value;
+  }
+
+  /**
+   * Find the number of trailing zeros in value.
+   * @param value the value to examine
+   * @since 1.5
+   */
+  public static int numberOfTrailingZeros(long value)
+  {
+    return bitCount((value & -value) - 1);
+  }
+
+  /**
+   * Return 1 if x is positive, -1 if it is negative, and 0 if it is
+   * zero.
+   * @param x the value to examine
+   * @since 1.5
+   */
+  public static int signum(long x)
+  {
+    return x < 0 ? -1 : (x > 0 ? 1 : 0);
+  }
+
+  /**
+   * Reverse the bytes in val.
+   * @since 1.5
+   */
+  public static long reverseBytes(long val)
+  {
+    int hi = Integer.reverseBytes((int) val);
+    int lo = Integer.reverseBytes((int) (val >>> 32));
+    return (((long) hi) << 32) | lo;
+  }
+
+  /**
+   * Reverse the bits in val.
+   * @since 1.5
+   */
+  public static long reverse(long val)
+  {
+    long hi = Integer.reverse((int) val) & 0xffffffffL;
+    long lo = Integer.reverse((int) (val >>> 32)) & 0xffffffffL;
+    return (hi << 32) | lo;
   }
 
   /**

@@ -46,7 +46,7 @@ package javax.swing.plaf;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ButtonUI
-  extends ComponentUI
+public abstract class ButtonUI extends ComponentUI
 {
+  // This abstract class does not define any methods of its own.
 }

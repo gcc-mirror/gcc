@@ -227,9 +227,9 @@ public final class Matcher
    * If the match succeeds then more information can be obtained via the
    * start, end, and group methods.
    *
-   * @see #start
-   * @see #end
-   * @see #group
+   * @see #start()
+   * @see #end()
+   * @see #group()
    */
   public boolean matches ()
   {
@@ -267,7 +267,7 @@ public final class Matcher
   }
   
   /**
-   * @param group The index of a capturing group in this matcher's pattern
+   * @returns the index of a capturing group in this matcher's pattern
    *
    * @exception IllegalStateException If no match has yet been attempted,
    * or if the previous match operation failed

@@ -1,4 +1,4 @@
-pkglib_LTLIBRARIES = libjavalang.la libjavalangreflect.la
+nativelib_LTLIBRARIES = libjavalang.la libjavalangreflect.la
 
 libjavalang_la_SOURCES = java_lang_VMSystem.c \
 			 java_lang_VMFloat.c \

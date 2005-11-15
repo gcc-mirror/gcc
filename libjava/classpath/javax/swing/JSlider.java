@@ -118,6 +118,8 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   /**
    * DOCUMENT ME!
    */
+  // FIXME: This inner class is a complete stub and needs to be implemented
+  // properly.
   protected class AccessibleJSlider extends JComponent.AccessibleJComponent
     implements AccessibleValue
   {
@@ -128,6 +130,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
      */
     protected AccessibleJSlider()
     {
+      // Nothing to do here.
     }
 
     /**

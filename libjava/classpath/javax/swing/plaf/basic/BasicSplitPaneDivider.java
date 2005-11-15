@@ -802,6 +802,7 @@ public class BasicSplitPaneDivider extends Container
      */
     protected DividerLayout()
     {
+      // Nothing to do here.
     }
 
     /**

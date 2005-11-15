@@ -39,7 +39,7 @@ exception statement from your version. */
 package gnu.CORBA.DynAn;
 
 import gnu.CORBA.Unexpected;
-import gnu.CORBA.holderFactory;
+import gnu.CORBA.HolderLocator;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -66,7 +66,7 @@ import java.lang.reflect.Field;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class gnuDynArray
-  extends anyDivideable
+  extends DivideableAny
   implements DynArray, Serializable
 {
   /**
@@ -238,10 +238,10 @@ public class gnuDynArray
     try
       {
         Streamable memberHolder =
-          holderFactory.createHolder(official_components);
+          HolderLocator.createHolder(official_components);
 
         if (memberHolder == null)
-          memberHolder = holderFactory.createHolder(final_components);
+          memberHolder = HolderLocator.createHolder(final_components);
 
         Class memberHolderClass = memberHolder.getClass();
         Class memberClass = memberHolderClass.getField("value").getType();
@@ -260,7 +260,7 @@ public class gnuDynArray
             Array.set(members, i, member);
           }
 
-        Streamable arrayHolder = holderFactory.createHolder(official_type);
+        Streamable arrayHolder = HolderLocator.createHolder(official_type);
         arrayHolder.getClass().getField("value").set(arrayHolder, members);
 
         Any g = createAny();
@@ -296,9 +296,9 @@ public class gnuDynArray
           {
             if (holderClass == null)
               {
-                holder = holderFactory.createHolder(official_components);
+                holder = HolderLocator.createHolder(official_components);
                 if (holder == null)
-                  holder = holderFactory.createHolder(final_components);
+                  holder = HolderLocator.createHolder(final_components);
                 holderClass = holder.getClass();
               }
             else

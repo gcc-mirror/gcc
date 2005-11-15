@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.IOP;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
@@ -111,6 +113,7 @@ public abstract class IORHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("IOR expected");
+        bad.minor = Minor.Any;        
         bad.initCause(cex);
         throw bad;
       }

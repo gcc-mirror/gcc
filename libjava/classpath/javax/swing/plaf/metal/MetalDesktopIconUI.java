@@ -39,9 +39,13 @@ exception statement from your version. */
 package javax.swing.plaf.metal;
 
 import javax.swing.JComponent;
+import javax.swing.JInternalFrame;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicDesktopIconUI;
 
+/**
+ * A UI delegate for the {@link JInternalFrame.JDesktopIcon} component.
+ */
 public class MetalDesktopIconUI
   extends BasicDesktopIconUI
 {
@@ -51,7 +55,7 @@ public class MetalDesktopIconUI
   private static MetalDesktopIconUI instance = null;
 
   /**
-   * Constructs a new instance of MetalDesktopIconUI.
+   * Constructs a new instance of <code>MetalDesktopIconUI</code>.
    */
   public MetalDesktopIconUI()
   {
@@ -59,11 +63,11 @@ public class MetalDesktopIconUI
   }
 
   /**
-   * Returns an instance of MetalDesktopIconUI.
+   * Returns a shared instance of <code>MetalDesktopIconUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalDesktopIconUI
+   * @return A shared instance of <code>MetalDesktopIconUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {

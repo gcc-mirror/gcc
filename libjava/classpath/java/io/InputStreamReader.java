@@ -38,16 +38,14 @@ exception statement from your version. */
 
 package java.io;
 
-import java.nio.charset.UnsupportedCharsetException;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
+import gnu.java.nio.charset.EncodingHelper;
+
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.nio.CharBuffer;
-import java.nio.ByteBuffer;
-import gnu.java.nio.charset.EncodingHelper;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 
 /**
  * This class reads characters from a byte input stream.   The characters
@@ -251,8 +249,12 @@ public class InputStreamReader extends Reader
     this.in = in;
     this.decoder = decoder;
 
+    Charset charset = decoder.charset();
     try {
-	maxBytesPerChar = decoder.charset().newEncoder().maxBytesPerChar();
+      if (charset == null)
+        maxBytesPerChar = 1f;
+      else
+        maxBytesPerChar = charset.newEncoder().maxBytesPerChar();
     } catch(UnsupportedOperationException _){
 	maxBytesPerChar = 1f;
     } 
@@ -260,7 +262,10 @@ public class InputStreamReader extends Reader
     decoder.onMalformedInput(CodingErrorAction.REPLACE);
     decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
     decoder.reset();
-    encoding = EncodingHelper.getOldCanonical(decoder.charset().name());      
+    if (charset == null)
+      encoding = "US-ASCII";
+    else
+      encoding = EncodingHelper.getOldCanonical(decoder.charset().name());      
   }
   
   /**

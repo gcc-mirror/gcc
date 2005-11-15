@@ -46,14 +46,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class DesktopPaneUI
-  extends ComponentUI
+public abstract class DesktopPaneUI extends ComponentUI
 {
   /**
    * Constructs a new <code>DesktopPaneUI</code>.
    */
   public DesktopPaneUI()
   {
+    // Nothing to do here.
   }
 }
-

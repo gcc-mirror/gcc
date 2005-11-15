@@ -49,7 +49,9 @@ import java.io.PrintWriter;
 public class XPathException
   extends Exception
 {
+  private static final long serialVersionUID = -1837080260374986980L;
 
+  // Name is fixed by serialization spec.
   Throwable cause;
 
   public XPathException(String message)

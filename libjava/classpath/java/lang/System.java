@@ -464,7 +464,7 @@ public final class System
    *
    * @param finalizeOnExit whether to run finalizers on exit
    * @throws SecurityException if permission is denied
-   * @see Runtime#runFinalizersOnExit()
+   * @see Runtime#runFinalizersOnExit(boolean)
    * @since 1.1
    * @deprecated never rely on finalizers to do a clean, thread-safe,
    *             mop-up from your code

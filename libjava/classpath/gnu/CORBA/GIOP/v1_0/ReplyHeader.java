@@ -38,10 +38,10 @@ exception statement from your version. */
 
 package gnu.CORBA.GIOP.v1_0;
 
-import gnu.CORBA.CDR.cdrInput;
-import gnu.CORBA.CDR.cdrOutput;
+import gnu.CORBA.CDR.AbstractCdrInput;
+import gnu.CORBA.CDR.AbstractCdrOutput;
 import gnu.CORBA.GIOP.ServiceContext;
-import gnu.CORBA.GIOP.cxCodeSet;
+import gnu.CORBA.GIOP.CodeSetServiceContext;
 
 /**
  * The header of the standard reply.
@@ -98,13 +98,13 @@ public class ReplyHeader
    * @param in a stream to read from.
    */
 
-  public void read(cdrInput in)
+  public void read(AbstractCdrInput in)
   {
     service_context = ServiceContext.readSequence(in);
     request_id = in.read_ulong();
     reply_status = in.read_ulong();
 
-    in.setCodeSet(cxCodeSet.find(service_context));
+    in.setCodeSet(CodeSetServiceContext.find(service_context));
   }
 
   /**
@@ -128,12 +128,12 @@ public class ReplyHeader
    *
    * @param out a stream to write into.
    */
-  public void write(cdrOutput out)
+  public void write(AbstractCdrOutput out)
   {
     ServiceContext.writeSequence(out, service_context);
     out.write_ulong(request_id);
     out.write_ulong(reply_status);
 
-    out.setCodeSet(cxCodeSet.find(service_context));
+    out.setCodeSet(CodeSetServiceContext.find(service_context));
   }
 }

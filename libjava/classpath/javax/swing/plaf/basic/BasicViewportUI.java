@@ -38,61 +38,22 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.image.ImageObserver;
-
 import javax.swing.JComponent;
-import javax.swing.JViewport;
-import javax.swing.ViewportLayout;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.LookAndFeel;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ViewportUI;
 
 public class BasicViewportUI extends ViewportUI 
 {
-
-  ChangeListener changeListener;
-  Image backingStoreImage;
-  int backingStoreWidth = -1;
-  int backingStoreHeight = -1;
-  
-  class ChangeHandler implements ChangeListener
+  protected void installDefaults(JComponent c)
   {
-    public void stateChanged(ChangeEvent event)
-    {
-      JViewport v = (JViewport) event.getSource();
-      v.repaint();
-    }
-  }
-
-  void installDefaults(JComponent c)
-  {    
     c.setOpaque(true);
+    LookAndFeel.installColorsAndFont(c, "Viewport.background",
+                                     "Viewport.foreground", "Viewport.font");
   }
-
-  void uninstallDefaults(JComponent c)
+  protected void uninstallDefaults(JComponent c)
   {
-  }
-
-  void installListeners(JComponent c)
-  {
-    ((JViewport)c).addChangeListener(changeListener);
-  }
-
-  void uninstallListeners(JComponent c)
-  {
-    ((JViewport)c).removeChangeListener(changeListener);
-  }
-
-  public BasicViewportUI()
-  {
-    changeListener = new ChangeHandler();
+    // TODO: Implement this properly.
   }
 
   public static ComponentUI createUI(JComponent c)
@@ -103,132 +64,12 @@ public class BasicViewportUI extends ViewportUI
   public void installUI(JComponent c) 
   {
     super.installUI(c);
-    installListeners(c);
+    installDefaults(c);
   }
 
   public void uninstallUI(JComponent c) 
   {
-    uninstallListeners(c);
-  }
-    
-
-  public Dimension getPreferredSize(JComponent c) 
-  {
-    // let the ViewportLayout decide
-    return null;
-  }
-
-  public void paint(Graphics g, JComponent c)
-  {
-    JViewport port = (JViewport)c;
-    Component view = port.getView();
-
-    if (view == null)
-      return;
-
-    Point pos = port.getViewPosition();
-    Rectangle viewBounds = view.getBounds();
-    Rectangle portBounds = port.getBounds();
-
-    if (viewBounds.width == 0 
-        || viewBounds.height == 0
-        || portBounds.width == 0
-        || portBounds.height == 0)
-      return;
-
-    switch (port.getScrollMode())
-      {
-
-      case JViewport.BACKINGSTORE_SCROLL_MODE:
-        paintBackingStore(g, port, view, pos, viewBounds, portBounds);
-        break;
-
-      case JViewport.BLIT_SCROLL_MODE:
-        // FIXME: implement separate blit mode
-
-      case JViewport.SIMPLE_SCROLL_MODE:
-      default:
-        paintSimple(g, port, view, pos, viewBounds, portBounds);
-        break;
-      }
-  }
-
-  private void paintSimple(Graphics g, 
-                           JViewport v, 
-                           Component view, 
-                           Point pos, 
-                           Rectangle viewBounds, 
-                           Rectangle portBounds)
-  {
-    Rectangle oldClip = g.getClipBounds();
-    g.setClip(new Rectangle(0, 0, portBounds.width, portBounds.height));
-    g.translate (-pos.x, -pos.y);
-    try
-      {
-        view.paint(g);
-      } 
-    finally 
-      {
-        g.translate (pos.x, pos.y);
-        g.setClip (oldClip);
-      }
-  }
-
-  private void paintBackingStore(Graphics g, 
-                                 JViewport v, 
-                                 Component view, 
-                                 Point pos, 
-                                 Rectangle viewBounds, 
-                                 Rectangle portBounds)
-  {      
-    if (backingStoreImage == null 
-        || backingStoreWidth != viewBounds.width
-        || backingStoreHeight != viewBounds.height)
-      {
-        backingStoreImage = v.createImage(viewBounds.width, viewBounds.height);
-        backingStoreWidth = viewBounds.width;
-        backingStoreHeight = viewBounds.height;
-      }
-
-    Graphics g2 = backingStoreImage.getGraphics();
-
-    if (v.getBackground() != null)
-      {
-        // fill the backing store background
-        java.awt.Color save = g2.getColor();
-        g2.setColor(v.getBackground());
-        g2.fillRect (0, 0, backingStoreWidth, backingStoreHeight);
-        g2.setColor(save);
-
-        // fill the viewport background
-        save = g.getColor();
-        g.setColor(v.getBackground());
-        g.fillRect (0, 0, portBounds.width, portBounds.height);
-        g.setColor(save);
-
-      }
-    else
-      {
-        // clear the backing store background
-        g2.clearRect(0, 0, backingStoreWidth, backingStoreHeight);
-
-        // clear the viewport background
-        g.clearRect(0, 0, portBounds.width, portBounds.height);
-      }
-
-    g2.setClip(g.getClipBounds());
-    g2.translate(-pos.x, -pos.y);
-    try 
-      {
-        view.paint(g2);
-      }
-    finally
-      {
-        g2.translate(pos.x, pos.y);
-      }
-    g2 = null;
-    g.drawImage(backingStoreImage, 
-                0, 0, 
-                (ImageObserver)null);
+    super.uninstallUI(c);
+    uninstallDefaults(c);
   }
 }

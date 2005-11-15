@@ -140,6 +140,22 @@ public final class X500Principal implements Principal, Serializable
   // Instance methods.
   // ------------------------------------------------------------------------
 
+  public int hashCode()
+  {
+    int result = size();
+    for (int i = 0; i < size(); ++i)
+      {
+        Map m = (Map) components.get(i);
+        for (Iterator it2 = m.entrySet().iterator(); it2.hasNext(); )
+          {
+            Map.Entry e = (Map.Entry) it2.next();
+            // We don't bother looking at the value of the entry.
+            result = result * 31 + ((OID) e.getKey()).hashCode();
+          }
+      }
+    return result;
+  }
+
   public boolean equals(Object o)
   {
     if (!(o instanceof X500Principal))

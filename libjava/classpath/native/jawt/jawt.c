@@ -176,11 +176,11 @@ static void
 static void
 (JNICALL _Jv_AWTLock) (JNIEnv* env __attribute__((unused)))
 {
-  classpath_jawt_lock ();
+  /* FIXME: what is this supposed to do? */
 }
 
 static void
 (JNICALL _Jv_AWTUnlock) (JNIEnv* env __attribute__((unused)))
 {
-  classpath_jawt_unlock ();
+  /* FIXME: what is this supposed to do? */
 }

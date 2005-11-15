@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -62,7 +62,7 @@ public final class ShortHolder
    * The default type code for this holder.
    */
   private static final TypeCode t_short =
-    new primitiveTypeCode(TCKind.tk_short);
+    new PrimitiveTypeCode(TCKind.tk_short);
 
   /**
    * The <code>short</code> (CORBA <code>short</code>) value,

@@ -449,7 +449,7 @@ public class HashMap extends AbstractMap
    *
    * @param value the value to search for in this HashMap
    * @return true if at least one key maps to the value
-   * @see containsKey(Object)
+   * @see #containsKey(Object)
    */
   public boolean containsValue(Object value)
   {

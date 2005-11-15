@@ -40,8 +40,8 @@ package javax.swing;
 
 public class UnsupportedLookAndFeelException extends Exception
 {
-    public UnsupportedLookAndFeelException(String a)
-    {
-	super(a);
-    }
+  public UnsupportedLookAndFeelException(String a)
+  {
+    super(a);
+  }
 }

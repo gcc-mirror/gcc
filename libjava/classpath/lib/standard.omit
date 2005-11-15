@@ -1,4 +1,1 @@
 ../gnu/test/.*$
-../gnu/classpath/jdwp/.*$
-../gnu/xml/stream/.*$
-../javax/xml/stream/.*$

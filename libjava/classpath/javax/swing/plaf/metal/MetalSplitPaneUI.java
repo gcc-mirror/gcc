@@ -39,24 +39,22 @@ exception statement from your version. */
 package javax.swing.plaf.metal;
 
 import java.awt.Color;
-import java.util.HashMap;
 
 import javax.swing.JComponent;
+import javax.swing.JSplitPane;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 
-public class MetalSplitPaneUI
-  extends BasicSplitPaneUI
+/**
+ * A UI delegate for the {@link JSplitPane} component.
+ */
+public class MetalSplitPaneUI extends BasicSplitPaneUI
 {
-
-  /** The UI instances for MetalSplitPaneUIs */
-  private static HashMap instances;
-
   /**
-   * Constructs a new instance of MetalSplitPaneUI.
+   * Constructs a new instance of <code>MetalSplitPaneUI</code>.
    */
   public MetalSplitPaneUI()
   {
@@ -64,28 +62,15 @@ public class MetalSplitPaneUI
   }
 
   /**
-   * Returns an instance of MetalSplitPaneUI.
+   * Returns a new instance of <code>MetalSplitPaneUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalSplitPaneUI
+   * @return A new instance of <code>MetalSplitPaneUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instances == null)
-      instances = new HashMap();
-
-    Object o = instances.get(component);
-    MetalSplitPaneUI instance;
-    if (o == null)
-      {
-	instance = new MetalSplitPaneUI();
-	instances.put(component, instance);
-      }
-    else
-      instance = (MetalSplitPaneUI) o;
-
-    return instance;
+    return new MetalSplitPaneUI();
   }
 
   /**

@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.image.AreaAveragingScaleFilter;
 import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.awt.image.ReplicateScaleFilter;
@@ -141,7 +143,6 @@ public abstract class Image
    * This method is only valid for off-screen objects.
    *
    * @return a graphics context object for an off-screen object
-   * @see Graphics#getcreateImage(int, int)
    */
   public abstract Graphics getGraphics();
 
@@ -179,20 +180,25 @@ public abstract class Image
    */
   public Image getScaledInstance(int width, int height, int flags)
   {
+    ImageFilter filter;
     switch (flags)
     {
       case SCALE_DEFAULT:
       case SCALE_FAST:
       case SCALE_REPLICATE:
-        ImageProducer producer =
-          new FilteredImageSource(this.getSource(),
-                                  new ReplicateScaleFilter(width, height));
-        return Toolkit.getDefaultToolkit().createImage(producer);
-      case SCALE_SMOOTH:
+	filter = new ReplicateScaleFilter(width, height);
+	break;
       case SCALE_AREA_AVERAGING:
+	filter = new AreaAveragingScaleFilter(width, height);
+	break;
+      case SCALE_SMOOTH:
+        throw new Error("SCALE_SMOOTH: not implemented");
       default:
-        throw new Error("not implemented");
+        throw new Error("Unknown flag or not implemented: " + flags);
     }
+
+    ImageProducer producer = new FilteredImageSource(getSource(), filter);
+    return Toolkit.getDefaultToolkit().createImage(producer);
   }
 
   /**

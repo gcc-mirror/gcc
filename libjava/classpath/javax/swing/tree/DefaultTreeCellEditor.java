@@ -47,7 +47,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -56,12 +55,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.EventObject;
 
-import javax.swing.CellRendererPane;
 import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -354,9 +349,9 @@ public class DefaultTreeCellEditor
   /**
    * Configures the editing component whenever it is null.
    * 
-   * @param tree- the tree to configure to component for.
-   * @param renderer- the renderer used to set up the nodes
-   * @param editor- the editor used 
+   * @param tree the tree to configure to component for.
+   * @param renderer the renderer used to set up the nodes
+   * @param editor the editor used 
    */
   private void configureEditingComponent(JTree tree,
                                          DefaultTreeCellRenderer renderer,
@@ -513,6 +508,8 @@ public class DefaultTreeCellEditor
     // Cell may not be currently editable, but may need to start timer.
     if (shouldStartEditingTimer(event))
       startEditingTimer();
+    else if (timer.isRunning())
+      timer.stop();
     return false;
   }
 
@@ -605,7 +602,7 @@ public class DefaultTreeCellEditor
   /**
    * Messaged when the timer fires, this will start the editing session.
    * 
-   * @param @param e - the event that characterizes the action.
+   * @param e the event that characterizes the action.
    */
   public void actionPerformed(ActionEvent e)
   {

@@ -411,8 +411,6 @@ public abstract class URLStreamHandler
    * @param url2 The second URL.
    *
    * @return True if both URLs contain the same host.
-   *
-   * @exception UnknownHostException If an unknown host is found
    */
   protected boolean hostsEqual(URL url1, URL url2)
   {
@@ -511,18 +509,24 @@ public abstract class URLStreamHandler
     int size = protocol.length() + authority.length() + file.length() + 24;
     StringBuffer sb = new StringBuffer(size);
 
-    if (protocol != null && protocol.length() > 0)
+    if (protocol.length() > 0)
       {
 	sb.append(protocol);
 	sb.append(":");
       }
     
-    if (authority.length() != 0)
-      {
-	sb.append("//").append(authority);
-      }
-
-    sb.append(file);
+    // If we have superfluous leading slashes (that means, at least 2)
+    // we always add the authority component ("//" + host) to
+    // avoid ambiguity. Otherwise we would generate an URL like
+    // proto://home/foo
+    // where we meant: 
+    // host: <empty> - file: //home/foo
+    // but URL spec says it is:
+    // host: home - file: /foo
+    if (authority.length() != 0 || file.startsWith("//") )
+      sb.append("//").append(authority).append(file);
+    else
+      sb.append(file);
 
     if (ref != null)
       sb.append('#').append(ref);

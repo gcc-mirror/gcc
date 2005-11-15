@@ -76,7 +76,8 @@ public class BigInteger extends Number implements Comparable
   private static final long serialVersionUID = -8287574255936472291L;
 
 
-  /** We pre-allocate integers in the range minFixNum..maxFixNum. */
+  /** We pre-allocate integers in the range minFixNum..maxFixNum. 
+   * Note that we must at least preallocate 0, 1, and 10.  */
   private static final int minFixNum = -100;
   private static final int maxFixNum = 1024;
   private static final int numFixNum = maxFixNum-minFixNum+1;
@@ -87,11 +88,23 @@ public class BigInteger extends Number implements Comparable
       smallFixNums[i] = new BigInteger(i + minFixNum);
   }
 
-  // JDK1.2
+  /**
+   * The constant zero as a BigInteger.
+   * @since 1.2
+   */
   public static final BigInteger ZERO = smallFixNums[-minFixNum];
 
-  // JDK1.2
+  /**
+   * The constant one as a BigInteger.
+   * @since 1.2
+   */
   public static final BigInteger ONE = smallFixNums[1 - minFixNum];
+  
+  /**
+   * The constant ten as a BigInteger.
+   * @since 1.5
+   */
+  public static final BigInteger TEN = smallFixNums[10 - minFixNum];
 
   /* Rounding modes: */
   private static final int FLOOR = 1;

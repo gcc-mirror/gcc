@@ -50,6 +50,7 @@ import javax.swing.event.TableColumnModelListener;
  * 
  * @author Andrew Selkirk
  */
+// FIXME: The API documentation in this class is incomplete.
 public interface TableColumnModel
 {
   /**
@@ -107,7 +108,7 @@ public interface TableColumnModel
    * @throws IllegalArgumentException if <code>identifier</code> is 
    *         <code>null</code> or there is no column with that identifier.
    */
-  int getColumnIndex(Object columnIdentifier);
+  int getColumnIndex(Object identifier);
 
   /**
    * Returns the <code>TableColumn</code> at the specified index.
@@ -169,7 +170,6 @@ public interface TableColumnModel
 
   /**
    * getSelectionModel
-   * @param column TableColumn
    */
   ListSelectionModel getSelectionModel();
 

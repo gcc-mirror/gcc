@@ -856,8 +856,12 @@ _javanet_accept (JNIEnv * env, jobject this, jobject impl)
 	  && (TARGET_NATIVE_LAST_ERROR ()
 	      != TARGET_NATIVE_ERROR_INTERRUPT_FUNCTION_CALL))
 	{
-	  JCL_ThrowException (env, IO_EXCEPTION,
-			      "Internal error: _javanet_accept(): ");
+	  if (TARGET_NATIVE_LAST_ERROR () == EAGAIN)
+	    JCL_ThrowException (env, "java/net/SocketTimeoutException",
+				"Timeout");
+	  else
+	    JCL_ThrowException (env, IO_EXCEPTION,
+				TARGET_NATIVE_LAST_ERROR_STRING ());
 	  return;
 	}
     }
@@ -1542,8 +1546,7 @@ _javanet_shutdownInput (JNIEnv * env, jobject this)
   /* Shutdown input stream of socket. */
   if (shutdown (fd, SHUT_RD) == -1)
     {
-      JCL_ThrowException (env, SOCKET_EXCEPTION,
-			  "Can't shutdown input of socket");
+      JCL_ThrowException (env, SOCKET_EXCEPTION, strerror (errno));
       return;
     }
 }
@@ -1568,8 +1571,7 @@ _javanet_shutdownOutput (JNIEnv * env, jobject this)
   /* Shutdown output stream of socket. */
   if (shutdown (fd, SHUT_WR) == -1)
     {
-      JCL_ThrowException (env, SOCKET_EXCEPTION,
-			  "Can't shutdown output of socket");
+      JCL_ThrowException (env, SOCKET_EXCEPTION, strerror (errno));
       return;
     }
 }

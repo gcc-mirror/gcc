@@ -1,5 +1,5 @@
 /* GdkFontMetrics.java
-   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -62,15 +62,28 @@ public class GdkFontMetrics extends FontMetrics
   static final int TEXT_METRICS_HEIGHT = 3;
   static final int TEXT_METRICS_X_ADVANCE = 4;
   static final int TEXT_METRICS_Y_ADVANCE = 5;
-
-
+  
+  /**
+   * Makes sure to return a Font based on the given Font that has as
+   * peer a GdkFontPeer. Used in the initializer.
+   */
+  private static Font initFont(Font font)
+  {
+    if (font == null)
+      return new Font("Dialog", Font.PLAIN, 12);
+    else if (font.getPeer() instanceof GdkFontPeer)
+      return font;
+    else
+      {
+	ClasspathToolkit toolkit;
+	toolkit = (ClasspathToolkit) Toolkit.getDefaultToolkit();
+	return toolkit.getFont(font.getName(), font.getAttributes());
+      }
+  }
+    
   public GdkFontMetrics (Font font)
   {    
-    super (font.getPeer() instanceof GdkFontPeer 
-           ? font 
-           : ((ClasspathToolkit)(Toolkit.getDefaultToolkit ()))
-           .getFont (font.getName(), font.getAttributes ()));
-    
+    super(initFont(font));
     peer = (GdkFontPeer) this.font.getPeer();
 
     font_metrics = new int[5];

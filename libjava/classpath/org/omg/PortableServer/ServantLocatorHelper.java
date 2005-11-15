@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableServer;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.MARSHAL;
@@ -108,10 +110,30 @@ public abstract class ServantLocatorHelper
     catch (ClassCastException ex)
       {
         BAD_OPERATION bad = new BAD_OPERATION();
+        bad.minor = Minor.ClassCast;
         bad.initCause(ex);
         throw bad;
       }
   }
+  
+  /**
+   * Narrow the given object to the ServantLocator. For the objects that are
+   * always local, this operation does not differ from the ordinary
+   * {@link #narrow} (ClassCastException will be thrown if narrowing something
+   * different).
+   * 
+   * @param obj the object to cast.
+   * 
+   * @return the casted ServantLocator.
+   * 
+   * @since 1.5
+   * 
+   * @see OMG issue 4158.
+   */
+  public static ServantLocator unchecked_narrow(org.omg.CORBA.Object obj)
+  {
+    return narrow(obj);
+  }    
 
   /**
    * This should read the servant locator, but it cannot be transferred
@@ -125,7 +147,9 @@ public abstract class ServantLocatorHelper
    */
   public static ServantLocator read(InputStream input)
   {
-    throw new MARSHAL();
+    MARSHAL m = new MARSHAL("Inappropriate");
+    m.minor = Minor.Inappropriate;
+    throw m;
   }
 
   /**
@@ -140,6 +164,8 @@ public abstract class ServantLocatorHelper
    */
   public static void write(OutputStream output, ServantLocator value)
   {
-    throw new MARSHAL();
+    MARSHAL m = new MARSHAL("Inappropriate");
+    m.minor = Minor.Inappropriate;
+    throw m;
   }
 }

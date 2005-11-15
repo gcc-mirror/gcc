@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.awt;
 
+
 /**
   * This class implements a layout manager that positions components
   * in certain sectors of the parent container.
@@ -227,6 +228,12 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
    * @serial The vertical gap between components
    */
   private int vgap;
+
+
+  // Some constants for use with calcSize().
+  private static final int MIN = 0;
+  private static final int MAX = 1;
+  private static final int PREF = 2;
 
 
   /**
@@ -423,7 +430,7 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
    */
   public float getLayoutAlignmentX(Container parent)
   {
-    return(parent.getAlignmentX());
+    return 0.5F;
   }
 
   /**
@@ -438,7 +445,7 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
    */
   public float getLayoutAlignmentY(Container parent)
   {
-    return(parent.getAlignmentY());
+    return 0.5F;
   }
 
   /**
@@ -449,7 +456,7 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
    */
   public void invalidateLayout(Container parent)
   {
-    // FIXME: Implement this properly!
+    // Nothing to do here.
   }
 
   /**
@@ -560,7 +567,8 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
   }
 
   /**
-   * FIXME: Document me!
+   * This is a convenience method to set the bounds on a component.
+   * If the indicated component is null, nothing is done.
    */
   private void setBounds(Component comp, int x, int y, int w, int h)
   {
@@ -568,12 +576,6 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
       return;
     comp.setBounds(x, y, w, h);
   }
-
-  // FIXME: Maybe move to top of file.
-  // Some constants for use with calcSize().
-  private static final int MIN = 0;
-  private static final int MAX = 1;
-  private static final int PREF = 2;
 
   private Dimension calcCompSize(Component comp, int what)
   {
@@ -659,5 +661,113 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
 
         return(new Dimension(width, height));
       }
+  }
+
+  /**
+   * Return the component at the indicated location, or null if no component
+   * is at that location.  The constraints argument must be one of the 
+   * location constants specified by this class.   
+   * @param constraints the location
+   * @return the component at that location, or null
+   * @throws IllegalArgumentException if the constraints argument is not 
+   * recognized
+   * @since 1.5
+   */
+  public Component getLayoutComponent(Object constraints)
+  {
+    if (constraints == CENTER)
+      return center;
+    if (constraints == NORTH)
+      return north;
+    if (constraints == EAST)
+      return east;
+    if (constraints == SOUTH)
+      return south;
+    if (constraints == WEST)
+      return west;
+    if (constraints == PAGE_START)
+      return firstLine;
+    if (constraints == PAGE_END)
+      return lastLine;
+    if (constraints == LINE_START)
+      return firstItem;
+    if (constraints == LINE_END)
+      return lastItem;
+    throw new IllegalArgumentException("constraint " + constraints 
+                                       + " is not recognized");
+  }
+
+  /**
+   * Return the component at the specified location, which must be one
+   * of the absolute constants such as CENTER or SOUTH.  The container's
+   * orientation is used to map this location to the correct corresponding
+   * component, so for instance in a right-to-left container, a request
+   * for the EAST component could return the LINE_END component.  This will
+   * return null if no component is available at the given location.
+   * @param container the container whose orientation is used
+   * @param constraints the absolute location of the component
+   * @return the component at the location, or null
+   * @throws IllegalArgumentException if the constraint is not recognized
+   */
+  public Component getLayoutComponent(Container container, Object constraints)
+  {
+    ComponentOrientation orient = container.getComponentOrientation();
+    if (constraints == CENTER)
+      return center;
+    // Note that we don't support vertical layouts.
+    if (constraints == NORTH)
+      return north;
+    if (constraints == SOUTH)
+      return south;
+    if (constraints == WEST)
+      {
+        // Note that relative layout takes precedence.
+        if (orient.isLeftToRight())
+          return firstItem == null ? west : firstItem;
+        return lastItem == null ? west : lastItem;
+      }
+    if (constraints == EAST)
+      {
+        // Note that relative layout takes precedence.
+        if (orient.isLeftToRight())
+          return lastItem == null ? east : lastItem;
+        return firstItem == null ? east : firstItem;
+      }
+    throw new IllegalArgumentException("constraint " + constraints
+                                       + " is not recognized");
+  }
+
+  /**
+   * Return the constraint corresponding to a component in this layout.
+   * If the component is null, or is not in this layout, returns null.
+   * Otherwise, this will return one of the constraint constants defined
+   * in this class.
+   * @param c the component
+   * @return the constraint, or null
+   * @since 1.5
+   */
+  public Object getConstraints(Component c)
+  {
+    if (c == null)
+      return null;
+    if (c == center)
+      return CENTER;
+    if (c == north)
+      return NORTH;
+    if (c == east)
+      return EAST;
+    if (c == south)
+      return SOUTH;
+    if (c == west)
+      return WEST;
+    if (c == firstLine)
+      return PAGE_START;
+    if (c == lastLine)
+      return PAGE_END;
+    if (c == firstItem)
+      return LINE_START;
+    if (c == lastItem)
+      return LINE_END;
+    return null;
   }
 }
