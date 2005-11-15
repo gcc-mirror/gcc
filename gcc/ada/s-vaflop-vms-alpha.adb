@@ -626,7 +626,7 @@ package body System.Vax_Float_Operations is
    --  accurate, but is good enough in practice.
 
    function Valid_D (Arg : D) return Boolean is
-      Val : T := G_To_T (D_To_G (Arg));
+      Val : constant T := G_To_T (D_To_G (Arg));
    begin
       return Val'Valid;
    end Valid_D;
@@ -639,7 +639,7 @@ package body System.Vax_Float_Operations is
    --  accurate, but is good enough in practice.
 
    function Valid_F (Arg : F) return Boolean is
-      Val : S := F_To_S (Arg);
+      Val : constant S := F_To_S (Arg);
    begin
       return Val'Valid;
    end Valid_F;
@@ -652,7 +652,7 @@ package body System.Vax_Float_Operations is
    --  accurate, but is good enough in practice.
 
    function Valid_G (Arg : G) return Boolean is
-      Val : T := G_To_T (Arg);
+      Val : constant T := G_To_T (Arg);
    begin
       return Val'Valid;
    end Valid_G;

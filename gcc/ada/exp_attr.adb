@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,16 +85,17 @@ package body Exp_Attr is
 
    procedure Expand_Fpt_Attribute
      (N    : Node_Id;
-      Rtp  : Entity_Id;
+      Pkg  : RE_Id;
       Nam  : Name_Id;
       Args : List_Id);
    --  This procedure expands a call to a floating-point attribute function.
    --  N is the attribute reference node, and Args is a list of arguments to
-   --  be passed to the function call. Rtp is the root type of the floating
-   --  point type involved (used to select the proper generic instantiation
-   --  of the package containing the attribute routines). The Nam argument
-   --  is the attribute processing routine to be called. This is normally
-   --  the same as the attribute name, except in the Unaligned_Valid case.
+   --  be passed to the function call. Pkg identifies the package containing
+   --  the appropriate instantiation of System.Fat_Gen. Float arguments in Args
+   --  have already been converted to the floating-point type for which Pkg was
+   --  instantiated. The Nam argument is the relevant attribute processing
+   --  routine to be called. This is the same as the attribute name, except in
+   --  the Unaligned_Valid case.
 
    procedure Expand_Fpt_Attribute_R (N : Node_Id);
    --  This procedure expands a call to a floating-point attribute function
@@ -122,6 +123,15 @@ package body Exp_Attr is
    procedure Expand_Access_To_Type (N : Node_Id);
    --  A reference to a type within its own scope is resolved to a reference
    --  to the current instance of the type in its initialization procedure.
+
+   procedure Find_Fat_Info
+     (T        : Entity_Id;
+      Fat_Type : out Entity_Id;
+      Fat_Pkg  : out RE_Id);
+   --  Given a floating-point type T, identifies the package containing the
+   --  attributes for this type (returned in Fat_Pkg), and the corresponding
+   --  type for which this package was instantiated from Fat_Gen. Error if T
+   --  is not a floating-point type.
 
    function Find_Stream_Subprogram
      (Typ : Entity_Id;
@@ -176,7 +186,7 @@ package body Exp_Attr is
       if Check then
          Insert_Action (N, Decl);
       else
-         Insert_Action (N, Decl, All_Checks);
+         Insert_Action (N, Decl, Suppress => All_Checks);
       end if;
 
       if Installed then
@@ -260,34 +270,23 @@ package body Exp_Attr is
 
    procedure Expand_Fpt_Attribute
      (N    : Node_Id;
-      Rtp  : Entity_Id;
+      Pkg  : RE_Id;
       Nam  : Name_Id;
       Args : List_Id)
    is
       Loc : constant Source_Ptr := Sloc (N);
       Typ : constant Entity_Id  := Etype (N);
-      Pkg : RE_Id;
       Fnm : Node_Id;
 
    begin
-      --  The function name is the selected component Fat_xxx.yyy where xxx
-      --  is the floating-point root type, and yyy is the argument Nam.
+      --  The function name is the selected component Attr_xxx.yyy where
+      --  Attr_xxx is the package name, and yyy is the argument Nam.
 
       --  Note: it would be more usual to have separate RE entries for each
       --  of the entities in the Fat packages, but first they have identical
       --  names (so we would have to have lots of renaming declarations to
       --  meet the normal RE rule of separate names for all runtime entities),
       --  and second there would be an awful lot of them!
-
-      if Rtp = Standard_Short_Float then
-         Pkg := RE_Fat_Short_Float;
-      elsif Rtp = Standard_Float then
-         Pkg := RE_Fat_Float;
-      elsif Rtp = Standard_Long_Float then
-         Pkg := RE_Fat_Long_Float;
-      else
-         Pkg := RE_Fat_Long_Long_Float;
-      end if;
 
       Fnm :=
         Make_Selected_Component (Loc,
@@ -302,7 +301,7 @@ package body Exp_Attr is
       Rewrite (N,
         Unchecked_Convert_To (Base_Type (Etype (N)),
           Make_Function_Call (Loc,
-            Name => Fnm,
+            Name                   => Fnm,
             Parameter_Associations => Args)));
 
       Analyze_And_Resolve (N, Typ);
@@ -318,12 +317,13 @@ package body Exp_Attr is
 
    procedure Expand_Fpt_Attribute_R (N : Node_Id) is
       E1  : constant Node_Id    := First (Expressions (N));
-      Rtp : constant Entity_Id  := Root_Type (Etype (E1));
-
+      Ftp : Entity_Id;
+      Pkg : RE_Id;
    begin
+      Find_Fat_Info (Etype (E1), Ftp, Pkg);
       Expand_Fpt_Attribute
-        (N, Rtp, Attribute_Name (N),
-         New_List (Unchecked_Convert_To (Rtp, Relocate_Node (E1))));
+        (N, Pkg, Attribute_Name (N),
+         New_List (Unchecked_Convert_To (Ftp, Relocate_Node (E1))));
    end Expand_Fpt_Attribute_R;
 
    -----------------------------
@@ -337,14 +337,15 @@ package body Exp_Attr is
 
    procedure Expand_Fpt_Attribute_RI (N : Node_Id) is
       E1  : constant Node_Id   := First (Expressions (N));
-      Rtp : constant Entity_Id := Root_Type (Etype (E1));
+      Ftp : Entity_Id;
+      Pkg : RE_Id;
       E2  : constant Node_Id   := Next (E1);
-
    begin
+      Find_Fat_Info (Etype (E1), Ftp, Pkg);
       Expand_Fpt_Attribute
-        (N, Rtp, Attribute_Name (N),
+        (N, Pkg, Attribute_Name (N),
          New_List (
-           Unchecked_Convert_To (Rtp, Relocate_Node (E1)),
+           Unchecked_Convert_To (Ftp, Relocate_Node (E1)),
            Unchecked_Convert_To (Standard_Integer, Relocate_Node (E2))));
    end Expand_Fpt_Attribute_RI;
 
@@ -358,15 +359,16 @@ package body Exp_Attr is
 
    procedure Expand_Fpt_Attribute_RR (N : Node_Id) is
       E1  : constant Node_Id   := First (Expressions (N));
-      Rtp : constant Entity_Id := Root_Type (Etype (E1));
+      Ftp : Entity_Id;
+      Pkg : RE_Id;
       E2  : constant Node_Id   := Next (E1);
-
    begin
+      Find_Fat_Info (Etype (E1), Ftp, Pkg);
       Expand_Fpt_Attribute
-        (N, Rtp, Attribute_Name (N),
+        (N, Pkg, Attribute_Name (N),
          New_List (
-           Unchecked_Convert_To (Rtp, Relocate_Node (E1)),
-           Unchecked_Convert_To (Rtp, Relocate_Node (E2))));
+           Unchecked_Convert_To (Ftp, Relocate_Node (E1)),
+           Unchecked_Convert_To (Ftp, Relocate_Node (E2))));
    end Expand_Fpt_Attribute_RR;
 
    ----------------------------------
@@ -1011,8 +1013,31 @@ package body Exp_Attr is
 
       when Attribute_Callable => Callable :
       begin
-         Rewrite (N,
-           Build_Call_With_Task (Pref, RTE (RE_Callable)));
+         --  We have an object of a task interface class-wide type as a prefix
+         --  to Callable. Generate:
+
+         --    callable (Pref._disp_get_task_id);
+
+         if Ada_Version >= Ada_05
+           and then Ekind (Etype (Pref)) = E_Class_Wide_Type
+           and then Is_Interface      (Etype (Pref))
+           and then Is_Task_Interface (Etype (Pref))
+         then
+            Rewrite (N,
+              Make_Function_Call (Loc,
+                Name =>
+                  New_Reference_To (RTE (RE_Callable), Loc),
+                Parameter_Associations => New_List (
+                  Make_Selected_Component (Loc,
+                    Prefix =>
+                      New_Copy_Tree (Pref),
+                    Selector_Name =>
+                      Make_Identifier (Loc, Name_uDisp_Get_Task_Id)))));
+         else
+            Rewrite (N,
+              Build_Call_With_Task (Pref, RTE (RE_Callable)));
+         end if;
+
          Analyze_And_Resolve (N, Standard_Boolean);
       end Callable;
 
@@ -1630,8 +1655,8 @@ package body Exp_Attr is
 
       --  expands into
 
-      --    Result_Type (System.Fore (Long_Long_Float (Type'First)),
-      --                              Long_Long_Float (Type'Last))
+      --    Result_Type (System.Fore (Universal_Real (Type'First)),
+      --                              Universal_Real (Type'Last))
 
       --  Note that we know that the type is a non-static subtype, or Fore
       --  would have itself been computed dynamically in Eval_Attribute.
@@ -1647,12 +1672,12 @@ package body Exp_Attr is
                Name => New_Reference_To (RTE (RE_Fore), Loc),
 
                Parameter_Associations => New_List (
-                 Convert_To (Standard_Long_Long_Float,
+                 Convert_To (Universal_Real,
                    Make_Attribute_Reference (Loc,
                      Prefix => New_Reference_To (Ptyp, Loc),
                      Attribute_Name => Name_First)),
 
-                 Convert_To (Standard_Long_Long_Float,
+                 Convert_To (Universal_Real,
                    Make_Attribute_Reference (Loc,
                      Prefix => New_Reference_To (Ptyp, Loc),
                      Attribute_Name => Name_Last))))));
@@ -2283,6 +2308,17 @@ package body Exp_Attr is
       when Attribute_Machine =>
          Expand_Fpt_Attribute_R (N);
 
+      ----------------------
+      -- Machine_Rounding --
+      ----------------------
+
+      --  Transforms 'Machine_Rounding into a call to the floating-point
+      --  attribute function Machine_Rounding in Fat_xxx (where xxx is the root
+      --  type).
+
+      when Attribute_Machine_Rounding =>
+         Expand_Fpt_Attribute_R (N);
+
       ------------------
       -- Machine_Size --
       ------------------
@@ -2425,7 +2461,7 @@ package body Exp_Attr is
 
          end if;
 
-         Analyze_And_Resolve (N, Btyp, All_Checks);
+         Analyze_And_Resolve (N, Btyp, Suppress => All_Checks);
       end Mod_Case;
 
       -----------
@@ -3211,7 +3247,7 @@ package body Exp_Attr is
             Rewrite (Prefix (N), New_Occurrence_Of (Entity (Pref), Loc));
             return;
 
-         --  For x'Size applied to an object of a class-wide type, transform
+         --  For X'Size applied to an object of a class-wide type, transform
          --  X'Size into a call to the primitive operation _Size applied to X.
 
          elsif Is_Class_Wide_Type (Ptyp) then
@@ -3268,8 +3304,8 @@ package body Exp_Attr is
          else
             Apply_Universal_Integer_Attribute_Checks (N);
 
-            --  If we have Size applied to a formal parameter, that is a
-            --  packed array subtype, then apply size to the actual subtype.
+            --  If Size is applied to a formal parameter that is of a packed
+            --  array subtype, then apply Size to the actual subtype.
 
             if Is_Entity_Name (Pref)
               and then Is_Formal (Entity (Pref))
@@ -3282,6 +3318,20 @@ package body Exp_Attr is
                      New_Occurrence_Of (Get_Actual_Subtype (Pref), Loc),
                    Attribute_Name => Name_Size));
                Analyze_And_Resolve (N, Typ);
+            end if;
+
+            --  If Size is applied to a dereference of an access to
+            --  unconstrained packed array, GIGI needs to see its
+            --  unconstrained nominal type, but also a hint to the actual
+            --  constrained type.
+
+            if Nkind (Pref) = N_Explicit_Dereference
+              and then Is_Array_Type (Etype (Pref))
+              and then not Is_Constrained (Etype (Pref))
+              and then Is_Packed (Etype (Pref))
+            then
+               Set_Actual_Designated_Subtype (Pref,
+                 Get_Actual_Subtype (Pref));
             end if;
 
             return;
@@ -3590,7 +3640,28 @@ package body Exp_Attr is
 
       when Attribute_Terminated => Terminated :
       begin
-         if Restricted_Profile then
+         --  The prefix of Terminated is of a task interface class-wide type.
+         --  Generate:
+
+         --    terminated (Pref._disp_get_task_id);
+
+         if Ada_Version >= Ada_05
+           and then Ekind (Etype (Pref)) = E_Class_Wide_Type
+           and then Is_Interface      (Etype (Pref))
+           and then Is_Task_Interface (Etype (Pref))
+         then
+            Rewrite (N,
+              Make_Function_Call (Loc,
+                Name =>
+                  New_Reference_To (RTE (RE_Terminated), Loc),
+                Parameter_Associations => New_List (
+                  Make_Selected_Component (Loc,
+                    Prefix =>
+                      New_Copy_Tree (Pref),
+                    Selector_Name =>
+                      Make_Identifier (Loc, Name_uDisp_Get_Task_Id)))));
+
+         elsif Restricted_Profile then
             Rewrite (N,
               Build_Call_With_Task (Pref, RTE (RE_Restricted_Terminated)));
 
@@ -3641,7 +3712,26 @@ package body Exp_Attr is
       ----------------------
 
       when Attribute_Unchecked_Access =>
-         Expand_Access_To_Type (N);
+
+         --  Ada 2005 (AI-251): If the designated type is an interface, then
+         --  rewrite the referenced object as a conversion to force the
+         --  displacement of the pointer to the secondary dispatch table.
+
+         if Is_Interface (Directly_Designated_Type (Btyp)) then
+            declare
+               Ref_Object : constant Node_Id := Get_Referenced_Object (Pref);
+               Conversion : Node_Id;
+            begin
+               Conversion := Convert_To (Typ, New_Copy_Tree (Ref_Object));
+               Rewrite (N, Conversion);
+               Analyze_And_Resolve (N, Typ);
+            end;
+
+         --  Otherwise this is like normal Access without a check
+
+         else
+            Expand_Access_To_Type (N);
+         end if;
 
       -----------------
       -- UET_Address --
@@ -3687,7 +3777,26 @@ package body Exp_Attr is
       -------------------------
 
       when Attribute_Unrestricted_Access =>
-         Expand_Access_To_Type (N);
+
+         --  Ada 2005 (AI-251): If the designated type is an interface, then
+         --  rewrite the referenced object as a conversion to force the
+         --  displacement of the pointer to the secondary dispatch table.
+
+         if Is_Interface (Directly_Designated_Type (Btyp)) then
+            declare
+               Ref_Object : constant Node_Id := Get_Referenced_Object (Pref);
+               Conversion : Node_Id;
+            begin
+               Conversion := Convert_To (Typ, New_Copy_Tree (Ref_Object));
+               Rewrite (N, Conversion);
+               Analyze_And_Resolve (N, Typ);
+            end;
+
+         --  Otherwise this is like Access without a check
+
+         else
+            Expand_Access_To_Type (N);
+         end if;
 
       ---------------
       -- VADS_Size --
@@ -3824,43 +3933,50 @@ package body Exp_Attr is
 
          if Is_Floating_Point_Type (Ptyp) then
             declare
-               Rtp : constant Entity_Id := Root_Type (Etype (Pref));
+               Pkg : RE_Id;
+               Ftp : Entity_Id;
 
             begin
                --  For vax fpt types, call appropriate routine in special vax
                --  floating point unit. We do not have to worry about loads in
                --  this case, since these types have no signalling NaN's.
 
-               if Vax_Float (Rtp) then
+               if Vax_Float (Btyp) then
                   Expand_Vax_Valid (N);
 
-               --  If the floating-point object might be unaligned, we need
-               --  to call the special routine Unaligned_Valid, which makes
-               --  the needed copy, being careful not to load the value into
-               --  any floating-point register. The argument in this case is
-               --  obj'Address (see Unchecked_Valid routine in s-fatgen.ads).
-
-               elsif Is_Possibly_Unaligned_Object (Pref) then
-                  Set_Attribute_Name (N, Name_Unaligned_Valid);
-                  Expand_Fpt_Attribute
-                    (N, Rtp, Name_Unaligned_Valid,
-                     New_List (
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => Relocate_Node (Pref),
-                         Attribute_Name => Name_Address)));
-
-               --  In the normal case where we are sure the object is aligned,
-               --  we generate a call to Valid, and the argument in this case
-               --  is obj'Unrestricted_Access (after converting obj to the
-               --  right floating-point type).
+               --  Non VAX float case
 
                else
-                  Expand_Fpt_Attribute
-                    (N, Rtp, Name_Valid,
-                     New_List (
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => Unchecked_Convert_To (Rtp, Pref),
-                         Attribute_Name => Name_Unrestricted_Access)));
+                  Find_Fat_Info (Etype (Pref), Ftp, Pkg);
+
+                  --  If the floating-point object might be unaligned, we need
+                  --  to call the special routine Unaligned_Valid, which makes
+                  --  the needed copy, being careful not to load the value into
+                  --  any floating-point register. The argument in this case is
+                  --  obj'Address (see Unchecked_Valid routine in Fat_Gen).
+
+                  if Is_Possibly_Unaligned_Object (Pref) then
+                     Set_Attribute_Name (N, Name_Unaligned_Valid);
+                     Expand_Fpt_Attribute
+                       (N, Pkg, Name_Unaligned_Valid,
+                        New_List (
+                          Make_Attribute_Reference (Loc,
+                            Prefix => Relocate_Node (Pref),
+                            Attribute_Name => Name_Address)));
+
+                  --  In the normal case where we are sure the object is
+                  --  aligned, we generate a call to Valid, and the argument in
+                  --  this case is obj'Unrestricted_Access (after converting
+                  --  obj to the right floating-point type).
+
+                  else
+                     Expand_Fpt_Attribute
+                       (N, Pkg, Name_Valid,
+                        New_List (
+                          Make_Attribute_Reference (Loc,
+                            Prefix => Unchecked_Convert_To (Ftp, Pref),
+                            Attribute_Name => Name_Unrestricted_Access)));
+                  end if;
                end if;
 
                --  One more task, we still need a range check. Required
@@ -4487,6 +4603,78 @@ package body Exp_Attr is
                   Attribute_Name => Cnam)),
           Reason => CE_Overflow_Check_Failed));
    end Expand_Pred_Succ;
+
+   -------------------
+   -- Find_Fat_Info --
+   -------------------
+
+   procedure Find_Fat_Info
+     (T        : Entity_Id;
+      Fat_Type : out Entity_Id;
+      Fat_Pkg  : out RE_Id)
+   is
+      Btyp : constant Entity_Id := Base_Type (T);
+      Rtyp : constant Entity_Id := Root_Type (T);
+      Digs : constant Nat       := UI_To_Int (Digits_Value (Btyp));
+
+   begin
+      --  If the base type is VAX float, then get appropriate VAX float type
+
+      if Vax_Float (Btyp) then
+         case Digs is
+            when 6 =>
+               Fat_Type := RTE (RE_Fat_VAX_F);
+               Fat_Pkg  := RE_Attr_VAX_F_Float;
+
+            when 9 =>
+               Fat_Type := RTE (RE_Fat_VAX_D);
+               Fat_Pkg  := RE_Attr_VAX_D_Float;
+
+            when 15 =>
+               Fat_Type := RTE (RE_Fat_VAX_G);
+               Fat_Pkg  := RE_Attr_VAX_G_Float;
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+      --  If root type is VAX float, this is the case where the library has
+      --  been recompiled in VAX float mode, and we have an IEEE float type.
+      --  This is when we use the special IEEE Fat packages.
+
+      elsif Vax_Float (Rtyp) then
+         case Digs is
+            when 6 =>
+               Fat_Type := RTE (RE_Fat_IEEE_Short);
+               Fat_Pkg  := RE_Attr_IEEE_Short;
+
+            when 15 =>
+               Fat_Type := RTE (RE_Fat_IEEE_Long);
+               Fat_Pkg  := RE_Attr_IEEE_Long;
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+      --  If neither the base type nor the root type is VAX_Float then VAX
+      --  float is out of the picture, and we can just use the root type.
+
+      else
+         Fat_Type := Rtyp;
+
+         if Fat_Type = Standard_Short_Float then
+            Fat_Pkg := RE_Attr_Short_Float;
+         elsif Fat_Type = Standard_Float then
+            Fat_Pkg := RE_Attr_Float;
+         elsif Fat_Type = Standard_Long_Float then
+            Fat_Pkg := RE_Attr_Long_Float;
+         elsif Fat_Type = Standard_Long_Long_Float then
+            Fat_Pkg := RE_Attr_Long_Long_Float;
+         else
+            raise Program_Error;
+         end if;
+      end if;
+   end Find_Fat_Info;
 
    ----------------------------
    -- Find_Stream_Subprogram --
