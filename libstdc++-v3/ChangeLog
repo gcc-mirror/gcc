@@ -1,3 +1,9 @@
+2005-11-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Don't check for
+	shared libgcc for darwin exports.
+	* configure: Regenerate.
+
 2005-11-13  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/tr1/boost_shared_ptr.h (get_deleter):
