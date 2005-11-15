@@ -1465,6 +1465,17 @@ package body Scng is
             else -- Source (Scan_Ptr + 1) = '-' then
                if Style_Check then Style.Check_Comment; end if;
                Scan_Ptr := Scan_Ptr + 2;
+
+               --  If we are in preprocessor mode with Replace_In_Comments set,
+               --  then we return the "--" as a token on its own.
+
+               if Replace_In_Comments then
+                  Token := Tok_Comment;
+                  return;
+               end if;
+
+               --  Otherwise scan out the comment
+
                Start_Of_Comment := Scan_Ptr;
 
                --  Loop to scan comment (this loop runs more than once only if
