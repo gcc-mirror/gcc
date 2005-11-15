@@ -1,3 +1,17 @@
+2005-15-09  David Daney <ddaney@avtrex.com>
+
+	PR libgcj/15430
+	* gnu/java/net/natPlainSocketImplPosix.cc (throw_on_sock_closed): New
+	function.
+	(accept): Call it.
+	(close): Call shutdown before closing.
+	(read()): Call read_helper with proper parameters.
+	(read(buffer, int, int)): Likewise.
+	(read_helper):  Pass pointer to the PlainSocketImpl, remove native_fd
+	and timeout parameters.  Make prototype to match. Use 
+	pointer to PlainSocketImpl to access members. Call throw_on_sock_closed
+	in two places.
+
 2005-11-15  Andrew Haley  <aph@redhat.com>
 
 	* Merge from Classpath head:
