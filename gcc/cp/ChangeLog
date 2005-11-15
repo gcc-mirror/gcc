@@ -1,3 +1,16 @@
+2005-11-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/19253
+	PR c++/22172
+	Backport from mainline:
+	2005-11-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_parser_postfix_expression): Use
+	cp_parser_elaborated_type_specifier to handle typename-types in
+	functional casts.
+	(cp_parser_enclosed_argument_list): Skip ahead to the end of the
+	template argument list if the closing ">" is not found.
+
 2005-11-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/24580

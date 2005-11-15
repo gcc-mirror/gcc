@@ -1,3 +1,17 @@
+2005-11-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport from mainline:
+	2005-11-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19253
+	* g++.dg/parse/typename10.C: New test.
+
+	Backport from mainline:
+	2005-10-08  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR c++/22172
+	* g++.dg/parse/crash30.C: New test.
+
 2005-11-10  Uros Bizjak  <uros@kss-loka.si>
 
         PR target/24315
