@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -111,15 +111,20 @@ extern Boolean Is_Non_Ada_Error (Entity_Id);
 /* Here are some functions in sinput.adb we call from a-trans.c.  */
 typedef Nat Source_File_Index;
 typedef Int Logical_Line_Number;
+typedef Int Column_Number;
 
 #define Debug_Source_Name sinput__debug_source_name
 #define Full_Debug_Name sinput__full_debug_name
 #define Reference_Name sinput__reference_name
 #define Get_Source_File_Index sinput__get_source_file_index
 #define Get_Logical_Line_Number sinput__get_logical_line_number
+#define Get_Column_Number sinput__get_column_number
+#define Instantiation sinput__instantiation
 
 extern File_Name_Type Debug_Source_Name	(Source_File_Index);
 extern File_Name_Type Full_Debug_Name	(Source_File_Index);
 extern File_Name_Type Reference_Name	(Source_File_Index);
 extern Source_File_Index Get_Source_File_Index (Source_Ptr);
 extern Logical_Line_Number Get_Logical_Line_Number (Source_Ptr);
+extern Column_Number Get_Column_Number (Source_Ptr);
+extern Source_Ptr Instantiation (Source_File_Index);
