@@ -4495,8 +4495,8 @@ check_for_casting_away_constness (tree src_type, tree dest_type,
 				  const char *description)
 {
   if (diag_fn && casts_away_constness (src_type, dest_type))
-    error ("%s from type %qT to type %qT casts away constness",
-	   description, src_type, dest_type);
+    diag_fn ("%s from type %qT to type %qT casts away constness",
+	     description, src_type, dest_type);
 }
 
 /* Convert EXPR (an expression with pointer-to-member type) to TYPE
@@ -5021,9 +5021,9 @@ build_reinterpret_cast (tree type, tree expr)
 /* Perform a const_cast from EXPR to TYPE.  If the cast is valid,
    return an appropriate expression.  Otherwise, return
    error_mark_node.  If the cast is not valid, and COMPLAIN is true,
-   then a diagnostic will be issued.  If VALID_P is non-NULL, its
-   value upon return will indicate whether or not the conversion
-   succeeded.  */
+   then a diagnostic will be issued.  If VALID_P is non-NULL, we are
+   performing a C-style cast, its value upon return will indicate
+   whether or not the conversion succeeded.  */
 
 static tree
 build_const_cast_1 (tree dst_type, tree expr, bool complain,
@@ -5099,7 +5099,15 @@ build_const_cast_1 (tree dst_type, tree expr, bool complain,
       && comp_ptr_ttypes_const (dst_type, src_type))
     {
       if (valid_p)
-	*valid_p = true;
+	{
+	  *valid_p = true;
+	  /* This cast is actually a C-style cast.  Issue a warning if
+	     the user is making a potentially unsafe cast.  */
+	  if (warn_cast_qual)
+	    check_for_casting_away_constness (src_type, dst_type,
+					      warning,
+					      "cast");
+	}
       if (reference_type)
 	{
 	  expr = build_unary_op (ADDR_EXPR, expr, 0);
