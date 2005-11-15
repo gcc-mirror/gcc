@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -979,7 +979,14 @@ package body Sem_Aggr is
             --  in which the array aggregate occurs. If the context does not
             --  permit it, or the aggregate type is unconstrained, an others
             --  choice is not allowed.
-            --
+
+            --  If expansion is disabled (generic context, or semantics-only
+            --  mode) actual subtypes cannot be constructed, and the type of
+            --  an object may be its unconstrained nominal type. However, if
+            --  the context is an assignment, we assume that "others" is
+            --  allowed, because the target of the assignment will have a
+            --  constrained subtype when fully compiled.
+
             --  Note that there is no node for Explicit_Actual_Parameter.
             --  To test for this context we therefore have to test for node
             --  N_Parameter_Association which itself appears only if there is a
@@ -1012,6 +1019,16 @@ package body Sem_Aggr is
                     Component_Typ  => Component_Type (Typ),
                     Others_Allowed => True);
 
+            elsif not Expander_Active
+              and then Pkind = N_Assignment_Statement
+            then
+               Aggr_Resolved :=
+                 Resolve_Array_Aggregate
+                   (N,
+                    Index          => First_Index (Aggr_Typ),
+                    Index_Constr   => First_Index (Typ),
+                    Component_Typ  => Component_Type (Typ),
+                    Others_Allowed => True);
             else
                Aggr_Resolved :=
                  Resolve_Array_Aggregate
@@ -1031,9 +1048,15 @@ package body Sem_Aggr is
             Set_Etype (N, Aggr_Subtyp);
          end Array_Aggregate;
 
+      elsif Is_Private_Type (Typ)
+        and then Present (Full_View (Typ))
+        and then In_Inlined_Body
+        and then Is_Composite_Type (Full_View (Typ))
+      then
+         Resolve (N, Full_View (Typ));
+
       else
          Error_Msg_N ("illegal context for aggregate", N);
-
       end if;
 
       --  If we can determine statically that the evaluation of the
@@ -1889,7 +1912,6 @@ package body Sem_Aggr is
          Check_Length (Aggr_Low, Aggr_High, Nb_Elements);
          Check_Length (Index_Typ_Low, Index_Typ_High, Nb_Elements);
          Check_Length (Index_Base_Low, Index_Base_High, Nb_Elements);
-
       end if;
 
       if Raises_Constraint_Error (Aggr_Low)
@@ -2312,7 +2334,6 @@ package body Sem_Aggr is
                     ("initialization not allowed for limited types", N);
                   Explain_Limited_Type (Etype (Compon), Compon);
                end if;
-
             end if;
          end Check_Non_Limited_Type;
 
