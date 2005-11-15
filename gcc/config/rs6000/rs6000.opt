@@ -54,11 +54,15 @@ Use PowerPC Graphics group optional instructions
 
 mmfcrf
 Target Report Mask(MFCRF)
-Generate single field mfcr instruction
+Use PowerPC V2.01 single field mfcr instruction
 
 mpopcntb
 Target Report Mask(POPCNTB)
-Use PowerPC/AS popcntb instruction
+Use PowerPC V2.02 popcntb instruction
+
+mfprnd
+Target Report Mask(FPRND)
+Use PowerPC V2.02 floating point rounding instructions
 
 maltivec
 Target Report Mask(ALTIVEC)
