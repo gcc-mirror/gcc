@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -294,7 +294,20 @@ package body Sem_Warn is
                       or else List_Containing (Prev)
                         /= Generic_Formal_Declarations (P);
 
-               --  if we reach a subprogram body, entity is not referenceable
+               --  Similarly, the generic formals of a generic subprogram
+               --  are not accessible.
+
+               when N_Generic_Subprogram_Declaration  =>
+                  if Is_List_Member (Prev)
+                    and then List_Containing (Prev) =
+                               Generic_Formal_Declarations (P)
+                  then
+                     return False;
+                  else
+                     P := Parent (P);
+                  end if;
+
+               --  If we reach a subprogram body, entity is not referenceable
                --  unless it is the defining entity of the body. This will
                --  happen, e.g. when a function is an attribute renaming that
                --  is rewritten as a body.
@@ -451,8 +464,20 @@ package body Sem_Warn is
                  and then Is_True_Constant (E1)
                  and then not Generic_Package_Spec_Entity (E1)
                then
-                  Error_Msg_N
-                    ("& is not modified, could be declared constant?", E1);
+                  --  A special case, if this variable is volatile and not
+                  --  imported, it is not helpful to tell the programmer
+                  --  to mark the variable as constant, since this would be
+                  --  illegal by virtue of RM C.6(13).
+
+                  if (Is_Volatile (E1) or else Has_Volatile_Components (E1))
+                    and then not Is_Imported (E1)
+                  then
+                     Error_Msg_N
+                       ("& is not modified, volatile has no effect?", E1);
+                  else
+                     Error_Msg_N
+                       ("& is not modified, could be declared constant?", E1);
+                  end if;
                end if;
 
                --  Check for unset reference, note that we exclude access
@@ -1564,6 +1589,192 @@ package body Sem_Warn is
          end if;
       end loop;
    end Output_Unreferenced_Messages;
+
+   ------------------------
+   -- Set_Warning_Switch --
+   ------------------------
+
+   function Set_Warning_Switch (C : Character) return Boolean is
+   begin
+      case C is
+         when 'a' =>
+            Check_Unreferenced              := True;
+            Check_Unreferenced_Formals      := True;
+            Check_Withs                     := True;
+            Constant_Condition_Warnings     := True;
+            Implementation_Unit_Warnings    := True;
+            Ineffective_Inline_Warnings     := True;
+            Warn_On_Ada_2005_Compatibility  := True;
+            Warn_On_Bad_Fixed_Value         := True;
+            Warn_On_Constant                := True;
+            Warn_On_Export_Import           := True;
+            Warn_On_Modified_Unread         := True;
+            Warn_On_No_Value_Assigned       := True;
+            Warn_On_Obsolescent_Feature     := True;
+            Warn_On_Redundant_Constructs    := True;
+            Warn_On_Unchecked_Conversion    := True;
+            Warn_On_Unrecognized_Pragma     := True;
+
+         when 'A' =>
+            Check_Unreferenced              := False;
+            Check_Unreferenced_Formals      := False;
+            Check_Withs                     := False;
+            Constant_Condition_Warnings     := False;
+            Elab_Warnings                   := False;
+            Implementation_Unit_Warnings    := False;
+            Ineffective_Inline_Warnings     := False;
+            Warn_On_Ada_2005_Compatibility  := False;
+            Warn_On_Bad_Fixed_Value         := False;
+            Warn_On_Constant                := False;
+            Warn_On_Dereference             := False;
+            Warn_On_Export_Import           := False;
+            Warn_On_Hiding                  := False;
+            Warn_On_Modified_Unread         := False;
+            Warn_On_No_Value_Assigned       := False;
+            Warn_On_Obsolescent_Feature     := False;
+            Warn_On_Redundant_Constructs    := False;
+            Warn_On_Unchecked_Conversion    := False;
+            Warn_On_Unrecognized_Pragma     := False;
+
+         when 'b' =>
+            Warn_On_Bad_Fixed_Value         := True;
+
+         when 'B' =>
+            Warn_On_Bad_Fixed_Value         := False;
+
+         when 'c' =>
+            Constant_Condition_Warnings     := True;
+
+         when 'C' =>
+            Constant_Condition_Warnings     := False;
+
+         when 'd' =>
+            Warn_On_Dereference             := True;
+
+         when 'D' =>
+            Warn_On_Dereference             := False;
+
+         when 'e' =>
+            Warning_Mode                    := Treat_As_Error;
+
+         when 'f' =>
+            Check_Unreferenced_Formals      := True;
+
+         when 'F' =>
+            Check_Unreferenced_Formals      := False;
+
+         when 'g' =>
+            Warn_On_Unrecognized_Pragma     := True;
+
+         when 'G' =>
+            Warn_On_Unrecognized_Pragma     := False;
+
+         when 'h' =>
+            Warn_On_Hiding                  := True;
+
+         when 'H' =>
+            Warn_On_Hiding                  := False;
+
+         when 'i' =>
+            Implementation_Unit_Warnings    := True;
+
+         when 'I' =>
+            Implementation_Unit_Warnings    := False;
+
+         when 'j' =>
+            Warn_On_Obsolescent_Feature     := True;
+
+         when 'J' =>
+            Warn_On_Obsolescent_Feature     := False;
+
+         when 'k' =>
+            Warn_On_Constant                := True;
+
+         when 'K' =>
+            Warn_On_Constant                := False;
+
+         when 'l' =>
+            Elab_Warnings                   := True;
+
+         when 'L' =>
+            Elab_Warnings                   := False;
+
+         when 'm' =>
+            Warn_On_Modified_Unread         := True;
+
+         when 'M' =>
+            Warn_On_Modified_Unread         := False;
+
+         when 'n' =>
+            Warning_Mode                    := Normal;
+
+         when 'o' =>
+            Address_Clause_Overlay_Warnings := True;
+
+         when 'O' =>
+            Address_Clause_Overlay_Warnings := False;
+
+         when 'p' =>
+            Ineffective_Inline_Warnings     := True;
+
+         when 'P' =>
+            Ineffective_Inline_Warnings     := False;
+
+         when 'r' =>
+            Warn_On_Redundant_Constructs    := True;
+
+         when 'R' =>
+            Warn_On_Redundant_Constructs    := False;
+
+         when 's' =>
+            Warning_Mode                    := Suppress;
+
+         when 'u' =>
+            Check_Unreferenced              := True;
+            Check_Withs                     := True;
+            Check_Unreferenced_Formals      := True;
+
+         when 'U' =>
+            Check_Unreferenced              := False;
+            Check_Withs                     := False;
+            Check_Unreferenced_Formals      := False;
+
+         when 'v' =>
+            Warn_On_No_Value_Assigned       := True;
+
+         when 'V' =>
+            Warn_On_No_Value_Assigned       := False;
+
+         when 'x' =>
+            Warn_On_Export_Import           := True;
+
+         when 'X' =>
+            Warn_On_Export_Import           := False;
+
+         when 'y' =>
+            Warn_On_Ada_2005_Compatibility  := True;
+
+         when 'Y' =>
+            Warn_On_Ada_2005_Compatibility  := False;
+
+         when 'z' =>
+            Warn_On_Unchecked_Conversion    := True;
+
+         when 'Z' =>
+            Warn_On_Unchecked_Conversion    := False;
+
+            --  Allow and ignore 'w' so that the old
+            --  format (e.g. -gnatwuwl) will work.
+
+         when 'w' =>
+            null;
+
+         when others =>
+            return False;
+      end case;
+
+      return True;
+   end Set_Warning_Switch;
 
    -----------------------------
    -- Warn_On_Known_Condition --
