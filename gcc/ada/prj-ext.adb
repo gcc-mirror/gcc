@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2000-2005 Free Software Foundation, Inc.       --
+--          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,25 +25,30 @@
 ------------------------------------------------------------------------------
 
 with Namet;   use Namet;
+with Output;  use Output;
 with Osint;   use Osint;
 with Sdefault;
+
 with GNAT.HTable;
 
 package body Prj.Ext is
 
+   Gpr_Project_Path : constant String := "GPR_PROJECT_PATH";
    Ada_Project_Path : constant String := "ADA_PROJECT_PATH";
-   --  Name of the env. variable that contains path name(s) of directories
-   --  where project files may reside.
+   --  Name of the env. variables that contain path name(s) of directories
+   --  where project files may reside. GPR_PROJECT_PATH has precedence over
+   --  ADA_PROJECT_PATH.
 
-   Prj_Path : constant String_Access := Getenv (Ada_Project_Path);
+   Gpr_Prj_Path : constant String_Access := Getenv (Gpr_Project_Path);
+   Ada_Prj_Path : constant String_Access := Getenv (Ada_Project_Path);
    --  The path name(s) of directories where project files may reside.
    --  May be empty.
 
    No_Project_Default_Dir : constant String := "-";
 
    Current_Project_Path : String_Access;
-   --  The project path; initialized during elaboration of package
-   --  Contains at least the current working directory.
+   --  The project path. Initialized during elaboration of package Contains at
+   --  least the current working directory.
 
    package Htable is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
@@ -152,8 +157,7 @@ package body Prj.Ext is
          return The_Value;
       end if;
 
-      --  Find if it is an environment.
-      --  If it is, put the value in the hash table.
+      --  Find if it is an environment, if it is, put value in the hash table
 
       declare
          Env_Value : String_Access := Getenv (Name);
@@ -181,14 +185,30 @@ begin
       Add_Default_Dir : Boolean := True;
       First           : Positive;
       Last            : Positive;
+      New_Len         : Positive;
+      New_Last        : Positive;
+      Prj_Path        : String_Access := Gpr_Prj_Path;
 
    begin
+      if Gpr_Prj_Path.all /= "" then
+
+         --  Warn if both environment variables are defined
+
+         if Ada_Prj_Path.all /= "" then
+            Write_Line ("Warning: ADA_PROJECT_PATH is not taken into account");
+            Write_Line ("         when GPR_PROJECT_PATH is defined");
+         end if;
+
+      else
+         Prj_Path := Ada_Prj_Path;
+      end if;
+
       --  The current directory is always first
 
       Name_Len := 1;
       Name_Buffer (Name_Len) := '.';
 
-      --  If env. var. is defined and not empty, add its content
+      --  If environment variable is defined and not empty, add its content
 
       if Prj_Path.all /= "" then
          Name_Len := Name_Len + 1;
@@ -198,6 +218,7 @@ begin
 
          --  Scan the directory path to see if "-" is one of the directories.
          --  Remove each occurence of "-" and set Add_Default_Dir to False.
+         --  Also resolve relative paths and symbolic links.
 
          First := 3;
          loop
@@ -229,6 +250,27 @@ begin
                end loop;
 
                Name_Len := Name_Len - No_Project_Default_Dir'Length - 1;
+
+            else
+               declare
+                  New_Dir : constant String :=
+                             Normalize_Pathname (Name_Buffer (First .. Last));
+               begin
+                  --  If the absolute path was resolved and is different from
+                  --  the original, replace original with the resolved path.
+
+                  if New_Dir /= Name_Buffer (First .. Last)
+                    and then New_Dir'Length /= 0
+                  then
+                     New_Len := Name_Len + New_Dir'Length - (Last - First + 1);
+                     New_Last := First + New_Dir'Length - 1;
+                     Name_Buffer (New_Last + 1 .. New_Len) :=
+                       Name_Buffer (Last + 1 .. Name_Len);
+                     Name_Buffer (First .. New_Last) := New_Dir;
+                     Name_Len := New_Len;
+                     Last := New_Last;
+                  end if;
+               end;
             end if;
 
             First := Last + 1;
