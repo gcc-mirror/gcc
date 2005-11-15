@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -914,10 +914,13 @@ package body Ch3 is
          return False;
 
       else
+         --  Ada 2005 (AI-441): The qualifier has no semantic meaning in Ada 95
+         --  (all access Parameters Are "not null" in Ada 95).
+
          if Ada_Version < Ada_05 then
             Error_Msg_SP
-              ("null-excluding access is an Ada 2005 extension");
-            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+              ("null-excluding access is an Ada 2005 extension?");
+            Error_Msg_SP ("\unit should be compiled with -gnat05 switch?");
          end if;
 
          Scan; --  past NOT
@@ -3813,11 +3816,6 @@ package body Ch3 is
       --  Ada 95
 
       else
-         --  Ada 2005 (AI-254): The null-exclusion present is never present
-         --  in Ada 83 and Ada 95
-
-         pragma Assert (Null_Exclusion_Present = False);
-
          Set_Null_Exclusion_Present (Def_Node, False);
          Set_Subtype_Mark (Def_Node, P_Subtype_Mark);
          No_Constraint;

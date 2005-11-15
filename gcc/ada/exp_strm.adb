@@ -1447,11 +1447,15 @@ package body Exp_Strm is
       Profile : List_Id;
 
    begin
+      --  (Ada 2005: AI-441): Set the null-excluding attribute because it has
+      --  no semantic meaning in Ada 95 but it is a requirement in Ada2005.
+
       Profile := New_List (
         Make_Parameter_Specification (Loc,
           Defining_Identifier => Make_Defining_Identifier (Loc, Name_S),
           Parameter_Type      =>
           Make_Access_Definition (Loc,
+             Null_Exclusion_Present => True,
              Subtype_Mark => New_Reference_To (
                Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc))));
 
@@ -1483,6 +1487,9 @@ package body Exp_Strm is
    begin
       --  Construct function specification
 
+      --  (Ada 2005: AI-441): Set the null-excluding attribute because it has
+      --  no semantic meaning in Ada 95 but it is a requirement in Ada2005.
+
       Spec :=
         Make_Function_Specification (Loc,
           Defining_Unit_Name => Fnam,
@@ -1492,6 +1499,7 @@ package body Exp_Strm is
               Defining_Identifier => Make_Defining_Identifier (Loc, Name_S),
               Parameter_Type =>
                 Make_Access_Definition (Loc,
+                  Null_Exclusion_Present => True,
                   Subtype_Mark => New_Reference_To (
                     Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc)))),
 
@@ -1523,6 +1531,9 @@ package body Exp_Strm is
    begin
       --  Construct procedure specification
 
+      --  (Ada 2005: AI-441): Set the null-excluding attribute because it has
+      --  no semantic meaning in Ada 95 but it is a requirement in Ada2005.
+
       Spec :=
         Make_Procedure_Specification (Loc,
           Defining_Unit_Name => Pnam,
@@ -1532,6 +1543,7 @@ package body Exp_Strm is
               Defining_Identifier => Make_Defining_Identifier (Loc, Name_S),
               Parameter_Type =>
                 Make_Access_Definition (Loc,
+                  Null_Exclusion_Present => True,
                   Subtype_Mark => New_Reference_To (
                     Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc))),
 
