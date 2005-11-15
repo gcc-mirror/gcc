@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2000-2005 Ada Core Technologies, Inc.            *
+ *                     Copyright (C) 2000-2005, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -300,7 +300,11 @@ struct layout
 };
 
 #define LOWEST_ADDR 0
-#define FRAME_LEVEL 0
+#define FRAME_LEVEL 1
+/* builtin_frame_address (1) is expected to work on this target, and (0) might
+   return the soft stack pointer, which does not designate a location where a
+   backchain and a return address might be found.  */
+
 #define FRAME_OFFSET 0
 #define PC_ADJUST -2
 #define STOP_FRAME(CURRENT, TOP_STACK) \
@@ -309,7 +313,7 @@ struct layout
    || (CURRENT)->return_address == 0|| (CURRENT)->next == 0  \
    || (void *) (CURRENT) < (TOP_STACK))
 
-#define BASE_SKIP 1
+#define BASE_SKIP (1+FRAME_LEVEL)
 
 /* On i386 architecture we check that at the call point we really have a call
    insn. Possible call instructions are:
@@ -349,9 +353,13 @@ struct layout
 
 /*----------------------------- ia64 ---------------------------------*/
 
-#elif defined (__ia64__) && !defined (USE_LIBUNWIND_EXCEPTIONS)
+#elif defined (__ia64__) && (defined (linux) || defined (__hpux__))
 
 #define USE_GCC_UNWINDER
+/* Use _Unwind_Backtrace driven exceptions on ia64 HP-UX and ia64
+   GNU/Linux, where _Unwind_Backtrace is provided by the system unwind
+   library. On HP-UX 11.23 this requires patch PHSS_33352, which adds
+   _Unwind_Backtrace to the system unwind library. */
 
 #define PC_ADJUST -16
 /* Every call on ia64 is part of a 128 bit bundle, so an adjustment of
