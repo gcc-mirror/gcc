@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003 Free Software Foundation, Inc.               --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,7 +114,10 @@ begin
       Dir : String_Access := Getenv (Tmpdir);
 
    begin
-      if Dir'Length > 0 and then Is_Absolute_Path (Dir.all) then
+      if Dir'Length > 0 and then
+        Is_Absolute_Path (Dir.all) and then
+        Is_Directory (Dir.all)
+      then
          Temp_Dir := new String'(Normalize_Pathname (Dir.all));
       end if;
 
