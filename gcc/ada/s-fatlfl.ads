@@ -44,6 +44,6 @@ package System.Fat_LFlt is
    --  (i.e. the individual floating-point attribute routines) are accessed
    --  by name using selected notation.
 
-   package Fat_Long_Float is new System.Fat_Gen (Long_Float);
+   package Attr_Long_Float is new System.Fat_Gen (Long_Float);
 
 end System.Fat_LFlt;
