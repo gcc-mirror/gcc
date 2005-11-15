@@ -1,3 +1,8 @@
+2005-11-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24687
+	* g++.dg/template/crash43.C: New test. 
+
 2005-11-14  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.c-torture/unsorted/unsorted.exp: Sort tests before running them.
