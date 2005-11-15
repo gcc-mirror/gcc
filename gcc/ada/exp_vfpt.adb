@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -196,6 +196,13 @@ package body Exp_VFpt is
                Func := RE_Lt_G;
             end if;
 
+         when N_Op_Ne =>
+            if Typc = 'F' then
+               Func := RE_Ne_F;
+            else
+               Func := RE_Ne_G;
+            end if;
+
          when others =>
             Func := RE_Null;
             raise Program_Error;
@@ -295,14 +302,16 @@ package body Exp_VFpt is
          end if;
       end Call_Type;
 
+      -------------------------------------------------
+      -- Expand_Multiply_Fixed_By_Fixed_Giving_Fixed --
+      -------------------------------------------------
+
       function Equivalent_Integer_Type (T : Entity_Id) return Entity_Id is
       begin
          if Esize (T) = Esize (Standard_Long_Long_Integer) then
             return Standard_Long_Long_Integer;
-
          elsif Esize (T) = Esize (Standard_Long_Integer) then
             return  Standard_Long_Integer;
-
          else
             return Standard_Integer;
          end if;
@@ -320,38 +329,62 @@ package body Exp_VFpt is
          Rewrite (N,
            Unchecked_Convert_To (T_Typ, Expr));
 
+      --  Case of conversion of fixed-point type to Vax_Float type
+
       elsif Is_Fixed_Point_Type (S_Typ) then
 
-         --  convert the scaled integer value to the target type, and multiply
-         --  by 'Small of type.
+         --  If Conversion_OK set, then we introduce an intermediate IEEE
+         --  target type since we are expecting the code generator to handle
+         --  the case of integer to IEEE float.
 
-         Rewrite (N,
-            Make_Op_Multiply (Loc,
-              Left_Opnd =>
-                Make_Type_Conversion (Loc,
-                  Subtype_Mark => New_Occurrence_Of (T_Typ, Loc),
-                  Expression   =>
-                    Unchecked_Convert_To (
-                      Equivalent_Integer_Type (S_Typ), Expr)),
-              Right_Opnd =>
-                Make_Real_Literal (Loc, Realval => Small_Value (S_Typ))));
+         if Conversion_OK (N) then
+            Rewrite (N,
+              Convert_To (T_Typ, OK_Convert_To (Universal_Real, Expr)));
+
+         --  Otherwise, convert the scaled integer value to the target type,
+         --  and multiply by 'Small of type.
+
+         else
+            Rewrite (N,
+               Make_Op_Multiply (Loc,
+                 Left_Opnd =>
+                   Make_Type_Conversion (Loc,
+                     Subtype_Mark => New_Occurrence_Of (T_Typ, Loc),
+                     Expression   =>
+                       Unchecked_Convert_To (
+                         Equivalent_Integer_Type (S_Typ), Expr)),
+                 Right_Opnd =>
+                   Make_Real_Literal (Loc, Realval => Small_Value (S_Typ))));
+         end if;
+
+      --  Case of conversion of Vax_Float type to fixed-point type
 
       elsif Is_Fixed_Point_Type (T_Typ) then
 
-         --  multiply value by 'small of type, and convert to the corresponding
-         --  integer type.
+         --  If Conversion_OK set, then we introduce an intermediate IEEE
+         --  target type, since we are expecting the code generator to handle
+         --  the case of IEEE float to integer.
 
-         Rewrite (N,
-           Unchecked_Convert_To (T_Typ,
-             Make_Type_Conversion (Loc,
-               Subtype_Mark =>
-                 New_Occurrence_Of (Equivalent_Integer_Type (T_Typ), Loc),
-               Expression =>
-                 Make_Op_Multiply (Loc,
-                   Left_Opnd => Expr,
-                   Right_Opnd =>
-                     Make_Real_Literal (Loc,
-                       Realval => Ureal_1 / Small_Value (T_Typ))))));
+         if Conversion_OK (N) then
+            Rewrite (N,
+              OK_Convert_To (T_Typ, Convert_To (Universal_Real, Expr)));
+
+         --  Otherwise, multiply value by 'small of type, and convert to the
+         --  corresponding integer type.
+
+         else
+            Rewrite (N,
+              Unchecked_Convert_To (T_Typ,
+                Make_Type_Conversion (Loc,
+                  Subtype_Mark =>
+                    New_Occurrence_Of (Equivalent_Integer_Type (T_Typ), Loc),
+                  Expression =>
+                    Make_Op_Multiply (Loc,
+                      Left_Opnd => Expr,
+                      Right_Opnd =>
+                        Make_Real_Literal (Loc,
+                          Realval => Ureal_1 / Small_Value (T_Typ))))));
+         end if;
 
       --  All other cases
 

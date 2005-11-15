@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,6 +139,10 @@ package System.Vax_Float_Operations is
    function Lt_G (X, Y : G) return Boolean;
    --  Compares for X < Y
 
+   function Ne_F (X, Y : F) return Boolean;
+   function Ne_G (X, Y : G) return Boolean;
+   --  Compares for X /= Y
+
    ----------------------------------
    -- Routines for Valid Attribute --
    ----------------------------------
@@ -218,6 +222,8 @@ private
    pragma Inline (Le_G);
    pragma Inline (Lt_F);
    pragma Inline (Lt_G);
+   pragma Inline (Ne_F);
+   pragma Inline (Ne_G);
 
    pragma Inline (Valid_D);
    pragma Inline (Valid_F);
