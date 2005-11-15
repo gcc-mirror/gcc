@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -311,13 +311,21 @@ package Exp_Ch9 is
    --  protected type.
 
    procedure Set_Privals
-      (Dec : Node_Id;
-       Op  : Node_Id;
-       Loc : Source_Ptr);
+      (Dec           : Node_Id;
+       Op            : Node_Id;
+       Loc           : Source_Ptr;
+       After_Barrier : Boolean := False);
    --  Associates a new set of privals (placeholders for later access to
    --  private components of protected objects) with the private object
    --  declarations of a protected object. These will be used to expand
    --  the references to private objects in the next protected
    --  subprogram or entry body to be expanded.
+   --
+   --  The flag After_Barrier indicates whether this is called after building
+   --  the barrier function for an entry body. This flag determines whether
+   --  the privals should have source names (which simplifies debugging) or
+   --  internally generated names. Entry barriers contain no debuggable code,
+   --  and there may be visibility conflicts between an entry index and a
+   --  a prival, so  privals for barrier function have internal names.
 
 end Exp_Ch9;

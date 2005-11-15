@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,143 @@
 --  dispatching expansion.
 
 with Types; use Types;
+
 package Exp_Disp is
+
+   -------------------------------------
+   -- Predefined primitive operations --
+   -------------------------------------
+
+   --  The predefined primitive operations (PPOs) are subprograms generated
+   --  by GNAT for a particular tagged type. Their role is to provide support
+   --  for different Ada language features such as the attribute 'Size or
+   --  handling of dispatching triggers in select statements. PPOs are created
+   --  when a tagged type is expanded or frozen. These subprograms are later
+   --  collected and inserted into the dispatch table of a tagged type at
+   --  fixed positions. Some of the PPOs that manipulate data in tagged objects
+   --  require the generation of thunks.
+
+   --  List of predefined primitive operations
+
+   --    Leading underscores designate reserved names. Bracketed numerical
+   --    values represent dispatch table slot numbers.
+
+   --      _Size (1) - implementation of the attribute 'Size for any tagged
+   --      type. Constructs of the form Prefix'Size are converted into
+   --      Prefix._Size.
+
+   --      _Alignment (2) - implementation of the attribute 'Alignment for
+   --      any tagged type. Constructs of the form Prefix'Alignment are
+   --      converted into Prefix._Alignment.
+
+   --      TSS_Stream_Read (3) - implementation of the stream attribute Read
+   --      for any tagged type.
+
+   --      TSS_Stream_Write (4) - implementation of the stream attribute Write
+   --      for any tagged type.
+
+   --      TSS_Stream_Input (5) - implementation of the stream attribute Input
+   --      for any tagged type.
+
+   --      TSS_Stream_Output (6) - implementation of the stream attribute
+   --      Output for any tagged type.
+
+   --      Op_Eq (7) - implementation of the equality operator for any non-
+   --      limited tagged type.
+
+   --      _Assign (8) - implementation of the assignment operator for any
+   --      non-limited tagged type.
+
+   --      TSS_Deep_Adjust (9) - implementation of the finalization operation
+   --      Adjust for any non-limited tagged type.
+
+   --      TSS_Deep_Finalize (10) - implementation of the finalization
+   --      operation Finalize for any non-limited tagged type.
+
+   --      _Disp_Asynchronous_Select (11) - used in the expansion of ATC with
+   --      dispatching triggers. Null implementation for limited interfaces,
+   --      full body generation for types that implement limited interfaces,
+   --      not generated for the rest of the cases. See Expand_N_Asynchronous_
+   --      Select in Exp_Ch9 for more information.
+
+   --      _Disp_Conditional_Select (12) - used in the expansion of conditional
+   --      selects with dispatching triggers. Null implementation for limited
+   --      interfaces, full body generation for types that implement limited
+   --      interfaces, not generated for the rest of the cases. See Expand_N_
+   --      Conditional_Entry_Call in Exp_Ch9 for more information.
+
+   --      _Disp_Get_Prim_Op_Kind (13) - helper routine used in the expansion
+   --      of ATC with dispatching triggers. Null implementation for limited
+   --      interfaces, full body generation for types that implement limited
+   --      interfaces, not generated for the rest of the cases.
+
+   --      _Disp_Get_Task_Id (14) - helper routine used in the expansion of
+   --      Abort, attributes 'Callable and 'Terminated for task interface
+   --      class-wide types. Full body generation for task types, null
+   --      implementation for limited interfaces, not generated for the rest
+   --      of the cases. See Expand_N_Attribute_Reference in Exp_Attr and
+   --      Expand_N_Abort_Statement in Exp_Ch9 for more information.
+
+   --      _Disp_Timed_Select (15) - used in the expansion of timed selects
+   --      with dispatching triggers. Null implementation for limited
+   --      interfaces, full body generation for types that implement limited
+   --      interfaces, not generated for the rest of the cases. See Expand_N_
+   --      Timed_Entry_Call for more information.
+
+   --  Lifecycle of predefined primitive operations
+
+   --      The specifications and bodies of the PPOs are created by
+   --      Make_Predefined_Primitive_Specs and Predefined_Primitive_Bodies
+   --      in Exp_Ch3. The generated specifications are immediately analyzed,
+   --      while the bodies are left as freeze actions to the tagged type for
+   --      which they are created.
+
+   --      PPOs are collected and added to the Primitive_Operations list of
+   --      a type by the regular analysis mechanism.
+
+   --      PPOs are frozen in Predefined_Primitive_Freeze in Exp_Ch3.
+
+   --      Thunks for PPOs are created in Freeze_Subprogram in Exp_Ch6, by a
+   --      call to Register_Predefined_DT_Entry, also in Exp_Ch6.
+
+   --      Dispatch table positions of PPOs are set in Set_All_DT_Position in
+   --      Exp_Disp.
+
+   --      Calls to PPOs procede as regular dispatching calls. If the PPO
+   --      has a thunk, a call procedes as a regular dispatching call with
+   --      a thunk.
+
+   --  Guidelines for addition of new predefined primitive operations
+
+   --      Update the value of constant Default_Prim_Op_Count in Exp_Disp.ads
+   --      to reflect the new number of PPOs.
+
+   --      Update the value of constant Default_Prim_Op_Count in A-Tags.ads
+   --      to reflect the new number of PPOs. This value should be the same
+   --      as the one in Exp_Disp.ads.
+
+   --      Introduce a new predefined name for the new PPO in Snames.ads and
+   --      Snames.adb.
+
+   --      Categorize the new PPO name as predefined by adding an entry in
+   --      Is_Predefined_Dispatching_Operation in Exp_Util.adb.
+
+   --      Reserve a dispatch table position for the new PPO by adding an entry
+   --      in Default_Prim_Op_Position in Exp_Disp.adb.
+
+   --      Generate the specification of the new PPO in Make_Predefined_
+   --      Primitive_Spec in Exp_Ch3.adb. The Is_Internal flag of the defining
+   --      identifier of the specification must be set to True.
+
+   --      Generate the body of the new PPO in Predefined_Primitive_Bodies in
+   --      Exp_Ch3.adb. The Is_Internal flag of the defining identifier of the
+   --      specification must be set to True.
+
+   --      If the new PPO requires a thunk, add an entry in Freeze_Subprogram
+   --      in Exp_Ch6.adb.
+
+   --      When generating calls to a PPO, use Find_Prim_Op from Exp_Util.ads
+   --      to retrieve the entity of the operation directly.
 
    --  Number of predefined primitive operations added by the Expander
    --  for a tagged type. If more predefined primitive operations are
@@ -38,7 +174,7 @@ package Exp_Disp is
    --    Exp_Disp.Default_Prim_Op_Position - indirect use
    --    Exp_Disp.Set_All_DT_Position      - direct   use
 
-   Default_Prim_Op_Count : constant Int := 14;
+   Default_Prim_Op_Count : constant Int := 15;
 
    type DT_Access_Action is
       (CW_Membership,
@@ -48,6 +184,7 @@ package Exp_Disp is
        Get_Access_Level,
        Get_Entry_Index,
        Get_External_Tag,
+       Get_Offset_Index,
        Get_Prim_Op_Address,
        Get_Prim_Op_Kind,
        Get_RC_Offset,
@@ -60,10 +197,13 @@ package Exp_Disp is
        Set_Entry_Index,
        Set_Expanded_Name,
        Set_External_Tag,
+       Set_Offset_Index,
+       Set_OSD,
        Set_Prim_Op_Address,
        Set_Prim_Op_Kind,
        Set_RC_Offset,
        Set_Remotely_Callable,
+       Set_SSD,
        Set_TSD,
        TSD_Entry_Size,
        TSD_Prologue_Size);
@@ -117,16 +257,6 @@ package Exp_Disp is
    --  Ada 2005 (AI-251): Initialize the entries associated with predefined
    --  primitives in all the secondary dispatch tables of Typ.
 
-   procedure Make_Abstract_Interface_DT
-     (AI_Tag          : Entity_Id;
-      Acc_Disp_Tables : in out Elist_Id;
-      Result          : out List_Id);
-   --  Ada 2005 (AI-251): Expand the declarations for the secondary Dispatch
-   --  Tables corresponding with an abstract interface. The reference to the
-   --  dispatch table is appended at the end of Acc_Disp_Tables; it will be
-   --  are later used to generate the corresponding initialization statement
-   --  (see Exp_Ch3.Build_Init_Procedure).
-
    function Make_DT_Access_Action
      (Typ    : Entity_Id;
       Action : DT_Access_Action;
@@ -141,7 +271,8 @@ package Exp_Disp is
    function Make_Disp_Asynchronous_Select_Body
      (Typ : Entity_Id) return Node_Id;
    --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
-   --  Typ used for dispatching in asynchronous selects.
+   --  Typ used for dispatching in asynchronous selects. Generate a null body
+   --  if Typ is an interface type.
 
    function Make_Disp_Asynchronous_Select_Spec
      (Typ : Entity_Id) return Node_Id;
@@ -151,7 +282,8 @@ package Exp_Disp is
    function Make_Disp_Conditional_Select_Body
      (Typ : Entity_Id) return Node_Id;
    --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
-   --  Typ used for dispatching in conditional selects.
+   --  Typ used for dispatching in conditional selects. Generate a null body
+   --  if Typ is an interface type.
 
    function Make_Disp_Conditional_Select_Spec
      (Typ : Entity_Id) return Node_Id;
@@ -162,7 +294,7 @@ package Exp_Disp is
      (Typ : Entity_Id) return Node_Id;
    --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
    --  Typ used for retrieving the callable entity kind during dispatching in
-   --  asynchronous selects.
+   --  asynchronous selects. Generate a null body if Typ is an interface type.
 
    function Make_Disp_Get_Prim_Op_Kind_Spec
      (Typ : Entity_Id) return Node_Id;
@@ -170,22 +302,51 @@ package Exp_Disp is
    --  of the type Typ use for retrieving the callable entity kind during
    --  dispatching in asynchronous selects.
 
-   function Make_Disp_Select_Tables
-     (Typ : Entity_Id) return List_Id;
-   --  Ada 2005 (AI-345): Populate the two auxiliary tables in the TSD of Typ
-   --  used for dispatching in asynchronous, conditional and timed selects.
-   --  Generate code to set the primitive operation kinds and entry indices
-   --  of primitive operations and primitive wrappers.
+   function Make_Disp_Get_Task_Id_Body
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
+   --  Typ used for retrieving the _task_id field of a task interface class-
+   --  wide type. Generate a null body if Typ is an interface or a non-task
+   --  type.
+
+   function Make_Disp_Get_Task_Id_Spec
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the specification of the primitive operation
+   --  of type Typ used for retrieving the _task_id field of a task interface
+   --  class-wide type.
 
    function Make_Disp_Timed_Select_Body
      (Typ : Entity_Id) return Node_Id;
    --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
-   --  Typ used for dispatching in timed selects.
+   --  Typ used for dispatching in timed selects. Generate a null body if Nul
+   --  is an interface type.
 
    function Make_Disp_Timed_Select_Spec
      (Typ : Entity_Id) return Node_Id;
    --  Ada 2005 (AI-345): Generate the specification of the primitive operation
    --  of type Typ used for dispatching in timed selects.
+
+   function Make_Select_Specific_Data_Table
+     (Typ : Entity_Id) return List_Id;
+   --  Ada 2005 (AI-345): Create and populate the auxiliary table in the TSD
+   --  of Typ used for dispatching in asynchronous, conditional and timed
+   --  selects. Generate code to set the primitive operation kinds and entry
+   --  indices of primitive operations and primitive wrappers.
+
+   procedure Make_Secondary_DT
+     (Typ             : Entity_Id;
+      Ancestor_Typ    : Entity_Id;
+      Suffix_Index    : Int;
+      Iface           : Entity_Id;
+      AI_Tag          : Entity_Id;
+      Acc_Disp_Tables : in out Elist_Id;
+      Result          : out List_Id);
+   --  Ada 2005 (AI-251): Expand the declarations for the Secondary Dispatch
+   --  Table of Typ associated with Iface (each abstract interface implemented
+   --  by Typ has a secondary dispatch table). The arguments Typ, Ancestor_Typ
+   --  and Suffix_Index are used to generate an unique external name which
+   --  is added at the end of Acc_Disp_Tables; this external name will be
+   --  used later by the subprogram Exp_Ch3.Build_Init_Procedure.
 
    procedure Set_All_DT_Position (Typ : Entity_Id);
    --  Set the DT_Position field for each primitive operation. In the CPP

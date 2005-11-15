@@ -93,6 +93,7 @@ package body Snames is
      "_disp_conditional_select#" &
      "_disp_get_prim_op_kind#" &
      "_disp_timed_select#" &
+     "_disp_get_task_id#" &
      "initialize#" &
      "adjust#" &
      "finalize#" &
@@ -458,6 +459,7 @@ package body Snames is
      "machine_mantissa#" &
      "machine_overflows#" &
      "machine_radix#" &
+     "machine_rounding#" &
      "machine_rounds#" &
      "machine_size#" &
      "mantissa#" &
@@ -639,6 +641,7 @@ package body Snames is
      "unchecked_conversion#" &
      "unchecked_deallocation#" &
      "to_pointer#" &
+     "free#" &
      "abstract#" &
      "aliased#" &
      "protected#" &
@@ -674,6 +677,7 @@ package body Snames is
      "include_option#" &
      "language_processing#" &
      "languages#" &
+     "library_ali_dir#" &
      "library_dir#" &
      "library_auto_init#" &
      "library_gcc#" &

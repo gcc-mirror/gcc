@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1275,6 +1275,16 @@ package body Exp_Util is
       then
          null;
 
+      --  Nothing to be done for derived types with unknown discriminants if
+      --  the parent type also has unknown discriminants.
+
+      elsif Is_Record_Type (Unc_Type)
+        and then not Is_Class_Wide_Type (Unc_Type)
+        and then Has_Unknown_Discriminants (Unc_Type)
+        and then Has_Unknown_Discriminants (Underlying_Type (Unc_Type))
+      then
+         null;
+
       --  Nothing to be done if the type of the expression is limited, because
       --  in this case the expression cannot be copied, and its use can only
       --  be by reference and there is no need for the actual subtype.
@@ -1289,8 +1299,147 @@ package body Exp_Util is
       end if;
    end Expand_Subtype_From_Expr;
 
+   --------------------------------
+   -- Find_Implemented_Interface --
+   --------------------------------
+
+   --  Given the following code (XXX denotes irrelevant value):
+
+   --     type Limd_Iface is limited interface;
+   --     type Prot_Iface is protected interface;
+   --     type Sync_Iface is synchronized interface;
+
+   --     type Parent_Subtype is new Limd_Iface and Sync_Iface with ...
+   --     type Child_Subtype is new Parent_Subtype and Prot_Iface with ...
+
+   --  The following calls will return the following values:
+
+   --     Find_Implemented_Interface
+   --       (Child_Subtype, Synchronized_Interface, False)    -> Empty
+
+   --     Find_Implemented_Interface
+   --       (Child_Subtype, Synchronized_Interface, True)     -> Sync_Iface
+
+   --     Find_Implemented_Interface
+   --       (Child_Subtype, Any_Synchronized_Interface, XXX)  -> Prot_Iface
+
+   --     Find_Implemented_Interface
+   --       (Child_Subtype, Any_Limited_Interface, XXX)       -> Prot_Iface
+
+   function Find_Implemented_Interface
+     (Typ          : Entity_Id;
+      Kind         : Interface_Kind;
+      Check_Parent : Boolean := False) return Entity_Id
+   is
+      Iface_Elmt : Elmt_Id;
+
+      function Interface_In_Kind
+        (I    : Entity_Id;
+         Kind : Interface_Kind) return Boolean;
+      --  Determine whether an interface falls into a specified kind
+
+      -----------------------
+      -- Interface_In_Kind --
+      -----------------------
+
+      function Interface_In_Kind
+        (I    : Entity_Id;
+         Kind : Interface_Kind) return Boolean is
+      begin
+         if Is_Limited_Interface (I)
+           and then (Kind = Any_Interface
+             or else Kind = Any_Limited_Interface
+             or else Kind = Limited_Interface)
+         then
+            return True;
+
+         elsif Is_Protected_Interface (I)
+           and then (Kind = Any_Interface
+             or else Kind = Any_Limited_Interface
+             or else Kind = Any_Synchronized_Interface
+             or else Kind = Protected_Interface)
+         then
+            return True;
+
+         elsif Is_Synchronized_Interface (I)
+           and then (Kind = Any_Interface
+             or else Kind = Any_Limited_Interface
+             or else Kind = Synchronized_Interface)
+         then
+            return True;
+
+         elsif Is_Task_Interface (I)
+           and then (Kind = Any_Interface
+             or else Kind = Any_Limited_Interface
+             or else Kind = Any_Synchronized_Interface
+             or else Kind = Task_Interface)
+         then
+            return True;
+
+         --  Regular interface. This should be the last kind to check since
+         --  all of the previous cases have their Is_Interface flags set.
+
+         elsif Is_Interface (I)
+           and then (Kind = Any_Interface
+             or else Kind = Iface)
+         then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Interface_In_Kind;
+
+   --  Start of processing for Find_Implemented_Interface
+
+   begin
+      if not Is_Tagged_Type (Typ) then
+         return Empty;
+      end if;
+
+      --  Implementations of the form:
+      --    Typ is new Interface ...
+
+      if Is_Interface (Etype (Typ))
+        and then Interface_In_Kind (Etype (Typ), Kind)
+      then
+         return Etype (Typ);
+      end if;
+
+      --  Implementations of the form:
+      --     Typ is new Typ_Parent and Interface ...
+
+      if Present (Abstract_Interfaces (Typ)) then
+         Iface_Elmt := First_Elmt (Abstract_Interfaces (Typ));
+         while Present (Iface_Elmt) loop
+            if Interface_In_Kind (Node (Iface_Elmt), Kind) then
+               return Node (Iface_Elmt);
+            end if;
+
+            Iface_Elmt := Next_Elmt (Iface_Elmt);
+         end loop;
+      end if;
+
+      --  Typ is a derived type and may implement a limited interface
+      --  through its parent subtype. Check the parent subtype as well
+      --  as any interfaces explicitly implemented at this level.
+
+      if Check_Parent
+        and then Ekind (Typ) = E_Record_Type
+        and then Present (Parent_Subtype (Typ))
+      then
+         return Find_Implemented_Interface (
+           Parent_Subtype (Typ), Kind, Check_Parent);
+      end if;
+
+      --  Typ does not implement a limited interface either at this level or
+      --  in any of its parent subtypes.
+
+      return Empty;
+   end Find_Implemented_Interface;
+
    ------------------------
-   -- Find_Interface_Tag --
+   -- Find_Interface_ADT --
    ------------------------
 
    function Find_Interface_ADT
@@ -1302,7 +1451,7 @@ package body Exp_Util is
       Typ   : Entity_Id := T;
 
       procedure Find_Secondary_Table (Typ : Entity_Id);
-      --  Comment required ???
+      --  Internal subprogram used to recursively climb to the ancestors
 
       --------------------------
       -- Find_Secondary_Table --
@@ -1313,8 +1462,21 @@ package body Exp_Util is
          AI      : Node_Id;
 
       begin
-         if Etype (Typ) /= Typ then
+         --  Climb to the ancestor (if any) handling private types
+
+         if Present (Full_View (Etype (Typ))) then
+            if Full_View (Etype (Typ)) /= Typ then
+               Find_Secondary_Table (Full_View (Etype (Typ)));
+            end if;
+
+         elsif Etype (Typ) /= Typ then
             Find_Secondary_Table (Etype (Typ));
+         end if;
+
+         --  If we already found it there is nothing else to do
+
+         if Found then
+            return;
          end if;
 
          if Present (Abstract_Interfaces (Typ))
@@ -1401,9 +1563,14 @@ package body Exp_Util is
             return;
          end if;
 
-         --  Climb to the root type
+         --  Climb to the root type handling private types
 
-         if Etype (Typ) /= Typ then
+         if Present (Full_View (Etype (Typ))) then
+            if Full_View (Etype (Typ)) /= Typ then
+               Find_Tag (Full_View (Etype (Typ)));
+            end if;
+
+         elsif Etype (Typ) /= Typ then
             Find_Tag (Etype (Typ));
          end if;
 
@@ -1437,6 +1604,8 @@ package body Exp_Util is
    --  Start of processing for Find_Interface_Tag
 
    begin
+      pragma Assert (Is_Interface (Iface));
+
       --  Handle private types
 
       if Has_Private_Declaration (Typ)
@@ -1742,67 +1911,17 @@ package body Exp_Util is
       return Count;
    end Homonym_Number;
 
-   ----------------------------------
-   -- Implements_Limited_Interface --
-   ----------------------------------
+   --------------------------
+   -- Implements_Interface --
+   --------------------------
 
-   function Implements_Limited_Interface (Typ : Entity_Id) return Boolean is
-      function Contains_Limited_Interface
-        (Ifaces : Elist_Id) return Boolean;
-      --  Given a list of interfaces, determine whether one of them is limited
-
-      --------------------------------
-      -- Contains_Limited_Interface --
-      --------------------------------
-
-      function Contains_Limited_Interface
-        (Ifaces : Elist_Id) return Boolean
-      is
-         Iface_Elmt : Elmt_Id;
-
-      begin
-         if not Present (Ifaces) then
-            return False;
-         end if;
-
-         Iface_Elmt := First_Elmt (Ifaces);
-
-         while Present (Iface_Elmt) loop
-            if Is_Limited_Record (Node (Iface_Elmt)) then
-               return True;
-            end if;
-
-            Iface_Elmt := Next_Elmt (Iface_Elmt);
-         end loop;
-
-         return False;
-      end Contains_Limited_Interface;
-
-   --  Start of processing for Implements_Limited_Interface
-
+   function Implements_Interface
+     (Typ          : Entity_Id;
+      Kind         : Interface_Kind;
+      Check_Parent : Boolean := False) return Boolean is
    begin
-      --  Typ is a derived type and may implement a limited interface
-      --  through its parent subtype. Check the parent subtype as well
-      --  as any interfaces explicitly implemented at this level.
-
-      if Ekind (Typ) = E_Record_Type
-        and then Present (Parent_Subtype (Typ))
-      then
-         return Contains_Limited_Interface (Abstract_Interfaces (Typ))
-           or else Implements_Limited_Interface (Parent_Subtype (Typ));
-
-      --  Typ is an abstract type derived from some interface
-
-      elsif Is_Abstract (Typ) then
-         return Is_Interface (Etype (Typ))
-           and then Is_Limited_Record (Etype (Typ));
-
-      --  Typ may directly implement some interface
-
-      else
-         return Contains_Limited_Interface (Abstract_Interfaces (Typ));
-      end if;
-   end Implements_Limited_Interface;
+      return Find_Implemented_Interface (Typ, Kind, Check_Parent) /= Empty;
+   end Implements_Interface;
 
    ------------------------------
    -- In_Unconditional_Context --
@@ -2436,7 +2555,6 @@ package body Exp_Util is
       if Suppress = All_Checks then
          declare
             Svg : constant Suppress_Array := Scope_Suppress;
-
          begin
             Scope_Suppress := (others => True);
             Insert_Actions (Assoc_Node, Ins_Actions);
@@ -2446,7 +2564,6 @@ package body Exp_Util is
       else
          declare
             Svg : constant Boolean := Scope_Suppress (Suppress);
-
          begin
             Scope_Suppress (Suppress) := True;
             Insert_Actions (Assoc_Node, Ins_Actions);
@@ -2557,12 +2674,12 @@ package body Exp_Util is
       return True;
    end Is_All_Null_Statements;
 
-   ------------------------
-   -- Is_Default_Prim_Op --
-   ------------------------
+   -----------------------------------------
+   -- Is_Predefined_Dispatching_Operation --
+   -----------------------------------------
 
    function Is_Predefined_Dispatching_Operation
-     (Subp     : Entity_Id) return Boolean
+     (Subp : Entity_Id) return Boolean
    is
       TSS_Name : TSS_Name_Type;
       E        : Entity_Id := Subp;
@@ -2590,10 +2707,12 @@ package body Exp_Util is
            or else Chars (E) = Name_uAssign
            or else TSS_Name  = TSS_Deep_Adjust
            or else TSS_Name  = TSS_Deep_Finalize
-           or else Chars (E) = Name_uDisp_Asynchronous_Select
-           or else Chars (E) = Name_uDisp_Conditional_Select
-           or else Chars (E) = Name_uDisp_Get_Prim_Op_Kind
-           or else Chars (E) = Name_uDisp_Timed_Select
+           or else (Ada_Version >= Ada_05
+             and then (Chars (E) = Name_uDisp_Asynchronous_Select
+               or else Chars (E) = Name_uDisp_Conditional_Select
+               or else Chars (E) = Name_uDisp_Get_Prim_Op_Kind
+               or else Chars (E) = Name_uDisp_Get_Task_Id
+               or else Chars (E) = Name_uDisp_Timed_Select))
          then
             return True;
          end if;
@@ -3466,7 +3585,7 @@ package body Exp_Util is
             return New_Occurrence_Of (CW_Subtype, Loc);
          end;
 
-      --  Comment needed (what case is this ???)
+      --  Indefinite record type with discriminants.
 
       else
          D := First_Discriminant (Unc_Typ);
