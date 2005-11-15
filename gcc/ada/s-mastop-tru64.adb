@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/Dec Unix)                     --
 --                                                                          --
---           Copyright (C) 1999-2005 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,7 +143,7 @@ package body System.Machine_State_Operations is
       Prf : constant System.Address := exc_lookup_function (Get_Code_Loc (M));
 
    begin
-      if (Prf = System.Null_Address) then
+      if Prf = System.Null_Address then
          c_set_code_loc (M, 0);
       else
          exc_virtual_unwind (Prf, M);
