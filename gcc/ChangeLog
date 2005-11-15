@@ -1,3 +1,7 @@
+2005-11-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* c.opt (ffixed-line-length-none): New.
+
 2005-11-15  Steve Ellcey  <sje@cup.hp.com>
 
 	* mklibgcc.in: Change contents of eh_dummy.c.
