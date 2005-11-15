@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                           (LynxOS PPC Version)                           --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -91,14 +91,28 @@ package System is
 
    --  Priority-related Declarations (RM D.1)
 
-   Max_Priority           : constant Positive := 254;
+   --  17 is the system determined default priority for user applications
+   --  running on LynxOS.
+
+   --  The standard (Rm 13.7) requires that Default_Priority has the value:
+
+   --  (Priority'First + Priority'Last) / 2.
+
+   --  To allow an appropriate value for Default_Priority and expose a useful
+   --  range of priorities to the user, we use a range of 0 .. 34 for subtype
+   --  Priority.
+
+   --  The rest of the range allowed by the system from 35 to 255 is made
+   --  available here in Interrupt_Priority.
+
+   Max_Priority           : constant Positive := 34;
    Max_Interrupt_Priority : constant Positive := 255;
 
    subtype Any_Priority       is Integer      range   0 .. 255;
-   subtype Priority           is Any_Priority range   0 .. 254;
-   subtype Interrupt_Priority is Any_Priority range 255 .. 255;
+   subtype Priority           is Any_Priority range   0 .. 34;
+   subtype Interrupt_Priority is Any_Priority range  35 .. 255;
 
-   Default_Priority : constant Priority := 15;
+   Default_Priority : constant Priority := 17;
 
 private
 
