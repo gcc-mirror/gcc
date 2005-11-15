@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,8 +61,7 @@ package body Exp_Fixd is
      (N    : Node_Id;
       Typ  : Entity_Id;
       Expr : Node_Id;
-      Rchk : Boolean := False)
-      return Node_Id;
+      Rchk : Boolean := False) return Node_Id;
    --  Build an expression that converts the expression Expr to type Typ,
    --  taking the source location from Sloc (N). If the conversions involve
    --  fixed-point types, then the Conversion_OK flag will be set so that the
@@ -72,21 +71,19 @@ package body Exp_Fixd is
 
    function Build_Divide (N : Node_Id; L, R : Node_Id) return Node_Id;
    --  Builds an N_Op_Divide node from the given left and right operand
-   --  expressions, using the source location from Sloc (N). The operands
-   --  are either both Long_Long_Float, in which case Build_Divide differs
-   --  from Make_Op_Divide only in that the Etype of the resulting node is
-   --  set (to Long_Long_Float), or they can be integer types. In this case
-   --  the integer types need not be the same, and Build_Divide converts
-   --  the operand with the smaller sized type to match the type of the
-   --  other operand and sets this as the result type. The Rounded_Result
-   --  flag of the result in this case is set from the Rounded_Result flag
-   --  of node N. On return, the resulting node is analyzed, and has its
-   --  Etype set.
+   --  expressions, using the source location from Sloc (N). The operands are
+   --  either both Universal_Real, in which case Build_Divide differs from
+   --  Make_Op_Divide only in that the Etype of the resulting node is set (to
+   --  Universal_Real), or they can be integer types. In this case the integer
+   --  types need not be the same, and Build_Divide converts the operand with
+   --  the smaller sized type to match the type of the other operand and sets
+   --  this as the result type. The Rounded_Result flag of the result in this
+   --  case is set from the Rounded_Result flag of node N. On return, the
+   --  resulting node is analyzed, and has its Etype set.
 
    function Build_Double_Divide
      (N       : Node_Id;
-      X, Y, Z : Node_Id)
-      return    Node_Id;
+      X, Y, Z : Node_Id) return Node_Id;
    --  Returns a node corresponding to the value X/(Y*Z) using the source
    --  location from Sloc (N). The division is rounded if the Rounded_Result
    --  flag of N is set. The integer types of X, Y, Z may be different. On
@@ -100,37 +97,35 @@ package body Exp_Fixd is
    --  Generates a sequence of code for determining the quotient and remainder
    --  of the division X/(Y*Z), using the source location from Sloc (N).
    --  Entities of appropriate types are allocated for the quotient and
-   --  remainder and returned in Qnn and Rnn. The result is rounded if
-   --  the Rounded_Result flag of N is set. The Etype fields of Qnn and Rnn
-   --  are appropriately set on return.
+   --  remainder and returned in Qnn and Rnn. The result is rounded if the
+   --  Rounded_Result flag of N is set. The Etype fields of Qnn and Rnn are
+   --  appropriately set on return.
 
    function Build_Multiply (N : Node_Id; L, R : Node_Id) return Node_Id;
    --  Builds an N_Op_Multiply node from the given left and right operand
-   --  expressions, using the source location from Sloc (N). The operands
-   --  are either both Long_Long_Float, in which case Build_Divide differs
-   --  from Make_Op_Multiply only in that the Etype of the resulting node is
-   --  set (to Long_Long_Float), or they can be integer types. In this case
-   --  the integer types need not be the same, and Build_Multiply chooses
-   --  a type long enough to hold the product (i.e. twice the size of the
-   --  longer of the two operand types), and both operands are converted
-   --  to this type. The Etype of the result is also set to this value.
-   --  However, the result can never overflow Integer_64, so this is the
-   --  largest type that is ever generated. On return, the resulting node
-   --  is analyzed and has its Etype set.
+   --  expressions, using the source location from Sloc (N). The operands are
+   --  either both Universal_Real, in which case Build_Divide differs from
+   --  Make_Op_Multiply only in that the Etype of the resulting node is set (to
+   --  Universal_Real), or they can be integer types. In this case the integer
+   --  types need not be the same, and Build_Multiply chooses a type long
+   --  enough to hold the product (i.e. twice the size of the longer of the two
+   --  operand types), and both operands are converted to this type. The Etype
+   --  of the result is also set to this value. However, the result can never
+   --  overflow Integer_64, so this is the largest type that is ever generated.
+   --  On return, the resulting node is analyzed and has its Etype set.
 
    function Build_Rem (N : Node_Id; L, R : Node_Id) return Node_Id;
    --  Builds an N_Op_Rem node from the given left and right operand
-   --  expressions, using the source location from Sloc (N). The operands
-   --  are both integer types, which need not be the same. Build_Rem
-   --  converts the operand with the smaller sized type to match the type
-   --  of the other operand and sets this as the result type. The result
-   --  is never rounded (rem operations cannot be rounded in any case!)
-   --  On return, the resulting node is analyzed and has its Etype set.
+   --  expressions, using the source location from Sloc (N). The operands are
+   --  both integer types, which need not be the same. Build_Rem converts the
+   --  operand with the smaller sized type to match the type of the other
+   --  operand and sets this as the result type. The result is never rounded
+   --  (rem operations cannot be rounded in any case!) On return, the resulting
+   --  node is analyzed and has its Etype set.
 
    function Build_Scaled_Divide
      (N       : Node_Id;
-      X, Y, Z : Node_Id)
-      return    Node_Id;
+      X, Y, Z : Node_Id) return Node_Id;
    --  Returns a node corresponding to the value X*Y/Z using the source
    --  location from Sloc (N). The division is rounded if the Rounded_Result
    --  flag of N is set. The integer types of X, Y, Z may be different. On
@@ -183,10 +178,10 @@ package body Exp_Fixd is
 
    function Fpt_Value (N : Node_Id) return Node_Id;
    --  Given an operand of fixed-point operation, return an expression that
-   --  represents the corresponding Long_Long_Float value. The expression
+   --  represents the corresponding Universal_Real value. The expression
    --  can be of integer type, floating-point type, or fixed-point type.
    --  The expression returned is neither analyzed and resolved. The Etype
-   --  of the result is properly set (to Long_Long_Float).
+   --  of the result is properly set (to Universal_Real).
 
    function Integer_Literal (N : Node_Id; V : Uint) return Node_Id;
    --  Given a non-negative universal integer value, build a typed integer
@@ -198,8 +193,8 @@ package body Exp_Fixd is
 
    function Real_Literal (N : Node_Id; V : Ureal) return Node_Id;
    --  Build a real literal node from the given value, the Etype of the
-   --  returned node is set to Long_Long_Float, since all floating-point
-   --  arithmetic operations that we construct use Long_Long_Float
+   --  returned node is set to Universal_Real, since all floating-point
+   --  arithmetic operations that we construct use Universal_Real
 
    function Rounded_Result_Set (N : Node_Id) return Boolean;
    --  Returns True if N is a node that contains the Rounded_Result flag
@@ -224,8 +219,7 @@ package body Exp_Fixd is
      (N    : Node_Id;
       Typ  : Entity_Id;
       Expr : Node_Id;
-      Rchk : Boolean := False)
-      return Node_Id
+      Rchk : Boolean := False) return Node_Id
    is
       Loc    : constant Source_Ptr := Sloc (N);
       Result : Node_Id;
@@ -296,7 +290,6 @@ package body Exp_Fixd is
 
       Set_Etype (Result, Typ);
       return Result;
-
    end Build_Conversion;
 
    ------------------
@@ -314,11 +307,11 @@ package body Exp_Fixd is
       --  Deal with floating-point case first
 
       if Is_Floating_Point_Type (Left_Type) then
-         pragma Assert (Left_Type = Standard_Long_Long_Float);
-         pragma Assert (Right_Type = Standard_Long_Long_Float);
+         pragma Assert (Left_Type = Universal_Real);
+         pragma Assert (Right_Type = Universal_Real);
 
          Rnode := Make_Op_Divide (Loc, L, R);
-         Result_Type := Standard_Long_Long_Float;
+         Result_Type := Universal_Real;
 
       --  Integer and fixed-point cases
 
@@ -384,7 +377,6 @@ package body Exp_Fixd is
       end if;
 
       return Rnode;
-
    end Build_Divide;
 
    -------------------------
@@ -393,8 +385,7 @@ package body Exp_Fixd is
 
    function Build_Double_Divide
      (N       : Node_Id;
-      X, Y, Z : Node_Id)
-      return    Node_Id
+      X, Y, Z : Node_Id) return Node_Id
    is
       Y_Size : constant Int := UI_To_Int (Esize (Etype (Y)));
       Z_Size : constant Int := UI_To_Int (Esize (Etype (Z)));
@@ -582,7 +573,6 @@ package body Exp_Fixd is
                New_Occurrence_Of (Rnn, Loc),
                New_Occurrence_Of (Rnd, Loc))));
       end if;
-
    end Build_Double_Divide_Code;
 
    --------------------
@@ -603,10 +593,10 @@ package body Exp_Fixd is
       --  Deal with floating-point case first
 
       if Is_Floating_Point_Type (Left_Type) then
-         pragma Assert (Left_Type = Standard_Long_Long_Float);
-         pragma Assert (Right_Type = Standard_Long_Long_Float);
+         pragma Assert (Left_Type = Universal_Real);
+         pragma Assert (Right_Type = Universal_Real);
 
-         Result_Type := Standard_Long_Long_Float;
+         Result_Type := Universal_Real;
          Rnode := Make_Op_Multiply (Loc, L, R);
 
       --  Integer and fixed-point cases
@@ -782,8 +772,7 @@ package body Exp_Fixd is
 
    function Build_Scaled_Divide
      (N       : Node_Id;
-      X, Y, Z : Node_Id)
-      return    Node_Id
+      X, Y, Z : Node_Id) return Node_Id
    is
       X_Size : constant Int := UI_To_Int (Esize (Etype (X)));
       Y_Size : constant Int := UI_To_Int (Esize (Etype (Y)));
@@ -1060,7 +1049,6 @@ package body Exp_Fixd is
         Build_Multiply (N,
           Build_Divide (N, Fpt_Value (Left), Fpt_Value (Right)),
           Real_Literal (N, Frac)));
-
    end Do_Divide_Fixed_Fixed;
 
    -------------------------------
@@ -1176,7 +1164,6 @@ package body Exp_Fixd is
 
       Set_Result (N,
         Build_Multiply (N, Fpt_Value (Left), Real_Literal (N, Frac)));
-
    end Do_Divide_Fixed_Universal;
 
    -------------------------------
@@ -1295,7 +1282,6 @@ package body Exp_Fixd is
 
       Set_Result (N,
         Build_Divide (N, Real_Literal (N, Frac), Fpt_Value (Right)));
-
    end Do_Divide_Universal_Fixed;
 
    -----------------------------
@@ -1380,7 +1366,6 @@ package body Exp_Fixd is
         Build_Multiply (N,
           Build_Multiply (N, Fpt_Value (Left), Fpt_Value (Right)),
           Real_Literal (N, Frac)));
-
    end Do_Multiply_Fixed_Fixed;
 
    ---------------------------------
@@ -1420,7 +1405,7 @@ package body Exp_Fixd is
    --    If denominator = 1, then for K = 1, the small ratio is an integer, and
    --    this is clearly the minimum K case, so set
 
-   --      K = 1, Right_Small = Lit_Value.
+   --      K = 1, Right_Small = Lit_Value
 
    --    If denominator > 1, then set K to the numerator of the fraction, so
    --    that the resulting small ratio is the reciprocal of the integer (the
@@ -1498,7 +1483,6 @@ package body Exp_Fixd is
 
       Set_Result (N,
         Build_Multiply (N, Fpt_Value (Left), Real_Literal (N, Frac)));
-
    end Do_Multiply_Fixed_Universal;
 
    ---------------------------------
@@ -1553,7 +1537,6 @@ package body Exp_Fixd is
       Ratio_Den   := Norm_Den (Small_Ratio);
 
       if Ratio_Den = 1 then
-
          if Ratio_Num = 1 then
             Set_Result (N, Expr);
             return;
@@ -1585,7 +1568,6 @@ package body Exp_Fixd is
           Fpt_Value (Expr),
           Real_Literal (N, Small_Ratio)),
         Rng_Check);
-
    end Expand_Convert_Fixed_To_Fixed;
 
    -----------------------------------
@@ -1594,7 +1576,7 @@ package body Exp_Fixd is
 
    --  If the small of the fixed type is 1.0, then we simply convert the
    --  integer value directly to the target floating-point type, otherwise
-   --  we first have to multiply by the small, in Long_Long_Float, and then
+   --  we first have to multiply by the small, in Universal_Real, and then
    --  convert the result to the target floating-point type.
 
    procedure Expand_Convert_Fixed_To_Float (N : Node_Id) is
@@ -1679,7 +1661,6 @@ package body Exp_Fixd is
           Fpt_Value (Expr),
           Real_Literal (N, Small)),
         Rng_Check);
-
    end Expand_Convert_Fixed_To_Integer;
 
    -----------------------------------
@@ -1776,7 +1757,6 @@ package body Exp_Fixd is
           Fpt_Value (Expr),
           Real_Literal (N, Ureal_1 / Small)),
         Rng_Check);
-
    end Expand_Convert_Integer_To_Fixed;
 
    --------------------------------
@@ -1826,7 +1806,7 @@ package body Exp_Fixd is
    --  division or multiplication by the appropriate power of 10.
 
    procedure Expand_Decimal_Divide_Call (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
       Dividend  : Node_Id := First_Actual (N);
       Divisor   : Node_Id := Next_Actual (Dividend);
@@ -1971,7 +1951,6 @@ package body Exp_Fixd is
               Statements => Stmts)));
 
       Analyze (N);
-
    end Expand_Decimal_Divide_Call;
 
    -----------------------------------------------
@@ -1999,14 +1978,13 @@ package body Exp_Fixd is
       else
          Do_Divide_Fixed_Fixed (N);
       end if;
-
    end Expand_Divide_Fixed_By_Fixed_Giving_Fixed;
 
    -----------------------------------------------
    -- Expand_Divide_Fixed_By_Fixed_Giving_Float --
    -----------------------------------------------
 
-   --  The division is done in long_long_float, and the result is multiplied
+   --  The division is done in Universal_Real, and the result is multiplied
    --  by the small ratio, which is Small (Right) / Small (Left). Special
    --  treatment is required for universal operands, which represent their
    --  own value and do not require conversion.
@@ -2065,7 +2043,6 @@ package body Exp_Fixd is
              Real_Literal (N,
                Small_Value (Left_Type) / Small_Value (Right_Type))));
       end if;
-
    end Expand_Divide_Fixed_By_Fixed_Giving_Float;
 
    -------------------------------------------------
@@ -2075,18 +2052,14 @@ package body Exp_Fixd is
    procedure Expand_Divide_Fixed_By_Fixed_Giving_Integer (N : Node_Id) is
       Left  : constant Node_Id := Left_Opnd (N);
       Right : constant Node_Id := Right_Opnd (N);
-
    begin
       if Etype (Left) = Universal_Real then
          Do_Divide_Universal_Fixed (N);
-
       elsif Etype (Right) = Universal_Real then
          Do_Divide_Fixed_Universal (N);
-
       else
          Do_Divide_Fixed_Fixed (N);
       end if;
-
    end Expand_Divide_Fixed_By_Fixed_Giving_Integer;
 
    -------------------------------------------------
@@ -2099,7 +2072,6 @@ package body Exp_Fixd is
    procedure Expand_Divide_Fixed_By_Integer_Giving_Fixed (N : Node_Id) is
       Left  : constant Node_Id := Left_Opnd (N);
       Right : constant Node_Id := Right_Opnd (N);
-
    begin
       Set_Result (N, Build_Divide (N, Left, Right));
    end Expand_Divide_Fixed_By_Integer_Giving_Fixed;
@@ -2118,9 +2090,12 @@ package body Exp_Fixd is
       --  as a fixed * fixed multiplication, and convert the argument to
       --  the target fixed type.
 
-      procedure Rewrite_Non_Static_Universal (Opnd : Node_Id) is
-         Loc   : constant Source_Ptr := Sloc (N);
+      ----------------------------------
+      -- Rewrite_Non_Static_Universal --
+      ----------------------------------
 
+      procedure Rewrite_Non_Static_Universal (Opnd : Node_Id) is
+         Loc : constant Source_Ptr := Sloc (N);
       begin
          Rewrite (Opnd,
            Make_Type_Conversion (Loc,
@@ -2128,6 +2103,8 @@ package body Exp_Fixd is
              Expression   => Expression (Opnd)));
          Analyze_And_Resolve (Opnd, Etype (N));
       end Rewrite_Non_Static_Universal;
+
+   --  Start of processing for Expand_Multiply_Fixed_By_Fixed_Giving_Fixed
 
    begin
       --  Suppress expansion of a fixed-by-fixed multiplication if the
@@ -2158,14 +2135,13 @@ package body Exp_Fixd is
       else
          Do_Multiply_Fixed_Fixed (N);
       end if;
-
    end Expand_Multiply_Fixed_By_Fixed_Giving_Fixed;
 
    -------------------------------------------------
    -- Expand_Multiply_Fixed_By_Fixed_Giving_Float --
    -------------------------------------------------
 
-   --  The multiply is done in long_long_float, and the result is multiplied
+   --  The multiply is done in Universal_Real, and the result is multiplied
    --  by the adjustment for the smalls which is Small (Right) * Small (Left).
    --  Special treatment is required for universal operands.
 
@@ -2220,7 +2196,6 @@ package body Exp_Fixd is
              Real_Literal (N,
                Small_Value (Right_Type) * Small_Value (Left_Type))));
       end if;
-
    end Expand_Multiply_Fixed_By_Fixed_Giving_Float;
 
    ---------------------------------------------------
@@ -2230,18 +2205,14 @@ package body Exp_Fixd is
    procedure Expand_Multiply_Fixed_By_Fixed_Giving_Integer (N : Node_Id) is
       Left  : constant Node_Id := Left_Opnd (N);
       Right : constant Node_Id := Right_Opnd (N);
-
    begin
       if Etype (Left) = Universal_Real then
          Do_Multiply_Fixed_Universal (N, Right, Left);
-
       elsif Etype (Right) = Universal_Real then
          Do_Multiply_Fixed_Universal (N, Left, Right);
-
       else
          Do_Multiply_Fixed_Fixed (N);
       end if;
-
    end Expand_Multiply_Fixed_By_Fixed_Giving_Integer;
 
    ---------------------------------------------------
@@ -2281,17 +2252,13 @@ package body Exp_Fixd is
       if Is_Integer_Type (Typ)
         or else Is_Floating_Point_Type (Typ)
       then
-         return
-           Build_Conversion
-             (N, Standard_Long_Long_Float, N);
+         return Build_Conversion (N, Universal_Real, N);
 
       --  Fixed-point case, must get integer value first
 
       else
-         return
-           Build_Conversion (N, Standard_Long_Long_Float, N);
+         return Build_Conversion (N, Universal_Real, N);
       end if;
-
    end Fpt_Value;
 
    ---------------------
@@ -2348,7 +2315,7 @@ package body Exp_Fixd is
 
       --  Set type of result in case used elsewhere (see note at start)
 
-      Set_Etype (L, Standard_Long_Long_Float);
+      Set_Etype (L, Universal_Real);
       return L;
    end Real_Literal;
 
@@ -2358,7 +2325,6 @@ package body Exp_Fixd is
 
    function Rounded_Result_Set (N : Node_Id) return Boolean is
       K : constant Node_Kind := Nkind (N);
-
    begin
       if (K = N_Type_Conversion or else
           K = N_Op_Divide       or else
@@ -2399,7 +2365,6 @@ package body Exp_Fixd is
 
       Rewrite (N, Cnode);
       Analyze_And_Resolve (N, Result_Type);
-
    end Set_Result;
 
 end Exp_Fixd;
