@@ -312,6 +312,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result = ENOMEM then
+         Result := pthread_mutexattr_destroy (Attributes'Access);
          raise Storage_Error;
       end if;
 
