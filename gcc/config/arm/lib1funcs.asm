@@ -989,29 +989,15 @@ LSYM(Lover12):
 #ifdef L_dvmd_lnx
 @ GNU/Linux division-by zero handler.  Used in place of L_dvmd_tls
 
-/* Constants taken from <asm/unistd.h> and <asm/signal.h> */
+/* Constant taken from <asm/signal.h>.  */
 #define SIGFPE	8
-#define __NR_SYSCALL_BASE	0x900000
-#define __NR_getpid			(__NR_SYSCALL_BASE+ 20)
-#define __NR_kill			(__NR_SYSCALL_BASE+ 37)
-#define __NR_gettid			(__NR_SYSCALL_BASE+ 224)
-#define __NR_tkill			(__NR_SYSCALL_BASE+ 238)
 
 	.code	32
 	FUNC_START div0
 
 	stmfd	sp!, {r1, lr}
-	swi	__NR_gettid
-	cmn	r0, #1000
-	swihs	__NR_getpid
-	cmnhs	r0, #1000
-	RETLDM	r1 hs
-	mov	ip, r0
-	mov	r1, #SIGFPE
-	swi	__NR_tkill
-	movs	r0, r0
-	movne	r0, ip
-	swine	__NR_kill
+	mov	r0, #SIGFPE
+	bl	SYM(raise) __PLT__
 	RETLDM	r1
 
 	FUNC_END div0

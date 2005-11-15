@@ -1,5 +1,5 @@
 /* Configuration file for ARM GNU/Linux EABI targets.
-   Copyright (C) 2004
+   Copyright (C) 2004, 2005
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
@@ -68,3 +68,18 @@
    non-AAPCS.  */
 #undef WCHAR_TYPE
 #define WCHAR_TYPE (TARGET_AAPCS_BASED ? "unsigned int" : "long int")
+
+/* Clear the instruction cache from `beg' to `end'.  This makes an
+   inline system call to SYS_cacheflush.  It is modified to work with
+   both the original and EABI-only syscall interfaces.  */
+#undef CLEAR_INSN_CACHE
+#define CLEAR_INSN_CACHE(BEG, END)					\
+{									\
+  register unsigned long _beg __asm ("a1") = (unsigned long) (BEG);	\
+  register unsigned long _end __asm ("a2") = (unsigned long) (END);	\
+  register unsigned long _flg __asm ("a3") = 0;				\
+  register unsigned long _scno __asm ("r7") = 0xf0002;			\
+  __asm __volatile ("swi 0x9f0002		@ sys_cacheflush"	\
+		    : "=r" (_beg)					\
+		    : "0" (_beg), "r" (_end), "r" (_flg), "r" (_scno));	\
+}
