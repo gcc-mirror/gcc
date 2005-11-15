@@ -1,3 +1,9 @@
+2005-11-15  Jan Hubicka  <jh@suse.cz>
+
+	* invoke.texi (large-unit-insns): Document.
+	* ipa-inline.c (cgraph_decide_inlining): Use large-unit-insns param.
+	* params.def (large-unit-insns): New param.
+
 2005-11-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/24869

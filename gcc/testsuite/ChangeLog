@@ -1,3 +1,7 @@
+2005-11-15  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/winline-5.c: Add large-unit-insns limit.
+
 2005-11-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/eh/simd-2.C: XFAIL on AIX and SPE.

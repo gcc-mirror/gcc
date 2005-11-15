@@ -877,7 +877,11 @@ cgraph_decide_inlining (void)
   overall_insns = initial_insns;
   gcc_assert (!max_count || (profile_info && flag_branch_probabilities));
 
-  max_insns = ((HOST_WIDEST_INT) overall_insns
+  max_insns = overall_insns;
+  if (max_insns < PARAM_VALUE (PARAM_LARGE_UNIT_INSNS))
+    max_insns = PARAM_VALUE (PARAM_LARGE_UNIT_INSNS);
+
+  max_insns = ((HOST_WIDEST_INT) max_insns
 	       * (100 + PARAM_VALUE (PARAM_INLINE_UNIT_GROWTH)) / 100);
 
   nnodes = cgraph_postorder (order);
