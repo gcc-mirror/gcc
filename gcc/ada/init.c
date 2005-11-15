@@ -1502,7 +1502,12 @@ __gnat_install_handler (void)
   /* __gnat_error_prehandler is an assembly function.  */
   SYS$SETEXV (1, __gnat_error_prehandler, 3, &prvhnd);
 #else
-  SYS$SETEXV (1, __gnat_error_handler, 3, &prvhnd);
+#if defined (IN_RTS) && defined (__IA64)
+  if (getenv ("DBG$TDBG"))
+    printf ("DBG$TDBG defined, __gnat_error_handler not installed!\n");
+  else
+#endif
+    SYS$SETEXV (1, __gnat_error_handler, 3, &prvhnd);
 #endif
 
   __gnat_handler_installed = 1;
