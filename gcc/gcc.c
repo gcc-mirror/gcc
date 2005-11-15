@@ -7699,13 +7699,13 @@ version_compare_spec_function (int argc, const char **argv)
   bool result;
 
   if (argc < 3)
-    abort ();
+    fatal ("too few arguments to %%:version-compare");
   if (argv[0][0] == '\0')
     abort ();
   if ((argv[0][1] == '<' || argv[0][1] == '>') && argv[0][0] != '!')
     nargs = 2;
   if (argc != nargs + 3)
-    abort ();
+    fatal ("too many arguments to %%:version-compare");
 
   switch_len = strlen (argv[nargs + 1]);
   for (i = 0; i < n_switches; i++)
@@ -7746,7 +7746,7 @@ version_compare_spec_function (int argc, const char **argv)
       break;
 
     default:
-      abort ();
+      fatal ("unknown operator %qs in %%:version-compare", argv[0]);
     }
   if (! result)
     return NULL;

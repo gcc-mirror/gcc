@@ -302,23 +302,31 @@ Boston, MA 02110-1301, USA.  */
 
 #define LIB_SPEC "%{!static:-lSystem}"
 
-/* -dynamiclib implies -shared-libgcc just like -shared would on linux.  
-   Support -mmacosx-version-min by supplying different (stub) libgcc_s.dylib
-   libraries to link against.  */
-#undef REAL_LIBGCC_SPEC
-#define REAL_LIBGCC_SPEC						\
-   "%{static|static-libgcc:-lgcc -lgcc_eh;				\
-      :%{shared-libgcc|Zdynamiclib					\
-         :%:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	\
-          %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_s.10.5)	\
-          -lgcc;							\
-         :-lgcc -lgcc_eh}}"
+/* Support -mmacosx-version-min by supplying different (stub) libgcc_s.dylib
+   libraries to link against, and by not linking against libgcc_s on
+   earlier-than-10.3.9.
 
+   Note that by default, -lgcc_eh is not linked against!  This is
+   because in a future version of Darwin the EH frame information may
+   be in a new format, or the fallback routine might be changed; if
+   you want to explicitly link against the static version of those
+   routines, because you know you don't need to unwind through system
+   libraries, you need to explicitly say -static-libgcc.  
+   
+   If it is linked against, it has to be before -lgcc, because it may
+   need symbols from -lgcc.  */
+#undef REAL_LIBGCC_SPEC
+#define REAL_LIBGCC_SPEC						   \
+   "%{static-libgcc|static: -lgcc_eh -lgcc;				   \
+      shared-libgcc|fexceptions:					   \
+       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	   \
+       %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_s.10.5)	   \
+       -lgcc;								   \
+      :%:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
+       %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_s.10.5)	   \
+       -lgcc}"
+			 
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
-/* We don't want anything to do with crt2.o in the 64-bit case;
-   testing the PowerPC-specific -m64 flag here is a little irregular,
-   but it's overkill to make copies of this spec for each target
-   arch.  */
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC  \
@@ -326,11 +334,11 @@ Boston, MA 02110-1301, USA.  */
      %{!Zbundle:%{pg:%{static:-lgcrt0.o} \
                      %{!static:%{object:-lgcrt0.o} \
                                %{!object:%{preload:-lgcrt0.o} \
-                                 %{!preload:-lgcrt1.o %{!m64: crt2.o%s}}}}} \
+                                 %{!preload:-lgcrt1.o %(darwin_crt2)}}}} \
                 %{!pg:%{static:-lcrt0.o} \
                       %{!static:%{object:-lcrt0.o} \
                                 %{!object:%{preload:-lcrt0.o} \
-                                  %{!preload:-lcrt1.o %{!m64: crt2.o%s}}}}}}}"
+                                  %{!preload:-lcrt1.o %(darwin_crt2)}}}}}}"
 
 /* The native Darwin linker doesn't necessarily place files in the order
    that they're specified on the link line.  Thus, it is pointless
