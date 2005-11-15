@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@ with Exp_Code; use Exp_Code;
 with Exp_Disp; use Exp_Disp;
 with Exp_Fixd; use Exp_Fixd;
 with Exp_Util; use Exp_Util;
-with Itypes;   use Itypes;
+with Freeze;   use Freeze;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
@@ -133,13 +133,25 @@ package body Exp_Intr is
       Param_Arg  : constant Node_Id    := Next_Actual (Tag_Arg);
       Subp_Decl  : constant Node_Id    := Parent (Parent (Entity (Name (N))));
       Inst_Pkg   : constant Node_Id    := Parent (Subp_Decl);
-      Act_Rename : constant Node_Id    :=
-                     Next (Next (First (Visible_Declarations (Inst_Pkg))));
-      Act_Constr : constant Entity_Id  := Entity (Name (Act_Rename));
-      Result_Typ : constant Entity_Id  := Class_Wide_Type (Etype (Act_Constr));
+      Act_Rename : Node_Id;
+      Act_Constr : Entity_Id;
+      Result_Typ : Entity_Id;
       Cnstr_Call : Node_Id;
 
    begin
+      --  The subprogram is the third actual in the instantiation, and is
+      --  retrieved from the corresponding renaming declaration. However,
+      --  freeze nodes may appear before, so we retrieve the declaration
+      --  with an explicit loop.
+
+      Act_Rename := First (Visible_Declarations (Inst_Pkg));
+      while Nkind (Act_Rename) /= N_Subprogram_Renaming_Declaration loop
+         Next (Act_Rename);
+      end loop;
+
+      Act_Constr := Entity (Name (Act_Rename));
+      Result_Typ := Class_Wide_Type (Etype (Act_Constr));
+
       --  Create the call to the actual Constructor function
 
       Cnstr_Call :=
@@ -829,6 +841,82 @@ package body Exp_Intr is
       Append_To (Stmts, Free_Node);
       Set_Storage_Pool (Free_Node, Pool);
 
+      --  Deal with storage pool
+
+      if Present (Pool) then
+
+         --  Freeing the secondary stack is meaningless
+
+         if Is_RTE (Pool, RE_SS_Pool) then
+            null;
+
+         elsif Is_Class_Wide_Type (Etype (Pool)) then
+
+            --  Case of a class-wide pool type: make a dispatching call
+            --  to Deallocate through the class-wide Deallocate_Any.
+
+            Set_Procedure_To_Call (Free_Node,
+              RTE (RE_Deallocate_Any));
+
+         else
+            --  Case of a specific pool type: make a statically bound call
+
+            Set_Procedure_To_Call (Free_Node,
+              Find_Prim_Op (Etype (Pool), Name_Deallocate));
+         end if;
+      end if;
+
+      if Present (Procedure_To_Call (Free_Node)) then
+
+         --  For all cases of a Deallocate call, the back-end needs to be
+         --  able to compute the size of the object being freed. This may
+         --  require some adjustments for objects of dynamic size.
+         --
+         --  If the type is class wide, we generate an implicit type with the
+         --  right dynamic size, so that the deallocate call gets the right
+         --  size parameter computed by GIGI. Same for an access to
+         --  unconstrained packed array.
+
+         if Is_Class_Wide_Type (Desig_T)
+           or else
+            (Is_Array_Type (Desig_T)
+               and then not Is_Constrained (Desig_T)
+               and then Is_Packed (Desig_T))
+         then
+            declare
+               Deref    : constant Node_Id :=
+                            Make_Explicit_Dereference (Loc,
+                              Duplicate_Subexpr_No_Checks (Arg));
+               D_Subtyp : Node_Id;
+               D_Type   : Entity_Id;
+
+            begin
+               Set_Etype  (Deref, Typ);
+               Set_Parent (Deref, Free_Node);
+               D_Subtyp := Make_Subtype_From_Expr (Deref, Desig_T);
+
+               if Nkind (D_Subtyp) in N_Has_Entity then
+                  D_Type := Entity (D_Subtyp);
+
+               else
+                  D_Type := Make_Defining_Identifier (Loc,
+                              New_Internal_Name ('A'));
+                  Insert_Action (N,
+                    Make_Subtype_Declaration (Loc,
+                      Defining_Identifier => D_Type,
+                      Subtype_Indication  => D_Subtyp));
+                  Freeze_Itype (D_Type, N);
+
+               end if;
+
+               Set_Actual_Designated_Subtype (Free_Node, D_Type);
+            end;
+
+         end if;
+      end if;
+
+      Set_Expression (Free_Node, Free_Arg);
+
       --  Make implicit if statement. We omit this if we are the then part
       --  of a test of the form:
 
@@ -881,62 +969,27 @@ package body Exp_Intr is
          end if;
       end;
 
-      --  Deal with storage pool
+      --  Only remaining step is to set result to null, or generate a
+      --  raise of constraint error if the target object is "not null".
 
-      if Present (Pool) then
+      if Can_Never_Be_Null (Etype (Arg)) then
+         Append_To (Stmts,
+           Make_Raise_Constraint_Error (Loc,
+             Reason => CE_Access_Check_Failed));
 
-         --  Freeing the secondary stack is meaningless
-
-         if Is_RTE (Pool, RE_SS_Pool) then
-            null;
-
-         elsif Is_Class_Wide_Type (Etype (Pool)) then
-            Set_Procedure_To_Call (Free_Node,
-              RTE (RE_Deallocate_Any));
-         else
-            Set_Procedure_To_Call (Free_Node,
-              Find_Prim_Op (Etype (Pool), Name_Deallocate));
-
-            --  If the type is class wide, we generate an implicit type
-            --  with the right dynamic size, so that the deallocate call
-            --  gets the right size parameter computed by gigi
-
-            if Is_Class_Wide_Type (Desig_T) then
-               declare
-                  Acc_Type : constant Entity_Id :=
-                               Create_Itype (E_Access_Type, N);
-                  Deref    : constant Node_Id :=
-                               Make_Explicit_Dereference (Loc,
-                                 Duplicate_Subexpr_No_Checks (Arg));
-
-               begin
-                  Set_Etype  (Deref, Typ);
-                  Set_Parent (Deref, Free_Node);
-
-                  Set_Etype     (Acc_Type, Acc_Type);
-                  Set_Size_Info (Acc_Type, Typ);
-                  Set_Directly_Designated_Type
-                                (Acc_Type, Entity (Make_Subtype_From_Expr
-                                                    (Deref, Desig_T)));
-
-                  Free_Arg := Unchecked_Convert_To (Acc_Type, Free_Arg);
-               end;
-            end if;
-         end if;
+      else
+         declare
+            Lhs : constant Node_Id := Duplicate_Subexpr_No_Checks (Arg);
+         begin
+            Set_Assignment_OK (Lhs);
+            Append_To (Stmts,
+              Make_Assignment_Statement (Loc,
+                Name       => Lhs,
+                Expression => Make_Null (Loc)));
+         end;
       end if;
 
-      Set_Expression (Free_Node, Free_Arg);
-
-      declare
-         Lhs : constant Node_Id := Duplicate_Subexpr_No_Checks (Arg);
-
-      begin
-         Set_Assignment_OK (Lhs);
-         Append_To (Stmts,
-           Make_Assignment_Statement (Loc,
-             Name       => Lhs,
-             Expression => Make_Null (Loc)));
-      end;
+      --  Rewrite the call
 
       Rewrite (N, Gen_Code);
       Analyze (N);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -131,6 +131,15 @@ package body Sem_Intr is
             Error_Msg_NE
               ("argument in call to & must be 31 characters or less", N, Nam);
          end if;
+
+      --  Check for the case of freeing a non-null object which will raise
+      --  Constaint_Error. Issue warning here, do the expansion in Exp_Intr.
+
+      elsif Cnam = Name_Free
+        and then Can_Never_Be_Null (Etype (Arg1))
+      then
+         Error_Msg_N
+           ("freeing `NOT NULL` object will raise Constraint_Error?", N);
 
       --  For now, no other special checks are required
 
