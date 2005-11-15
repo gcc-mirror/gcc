@@ -153,6 +153,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatzc         ^ /DISTRIBUTION_STUBS=CALLER
 -gnatzr         ^ /DISTRIBUTION_STUBS=RECEIVER
 -gnat83         ^ /83
+-gnat95         ^ /95
+-gnat05         ^ /05
 -gnatx          ^ /XREF=SUPPRESS
 -gnatX          ^ /EXTENSIONS_ALLOWED
 --RTS           ^ /RUNTIME_SYSTEM

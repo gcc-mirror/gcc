@@ -5,9 +5,9 @@
 @c                                                                            o
 @c                           GNAT DOCUMENTATION                               o
 @c                                                                            o
-@c                      G N A T   C O D I N G   S T Y L E                     o
+@c                     G N A T   C O D I N G   S T Y L E                      o
 @c                                                                            o
-@c          Copyright (C) 1992-2005 Ada Core Technologies, Inc.               o
+@c                     Copyright (C) 1992-2005, AdaCore                       o
 @c                                                                            o
 @c  GNAT is free software;  you can  redistribute it  and/or modify it under  o
 @c  terms of the  GNU General Public License as published  by the Free Soft-  o
@@ -262,7 +262,8 @@ the first letter of the comment).
 When declarations are commented with ``hanging'' comments, i.e.@:
 comments after the declaration, there is no blank line before the
 comment, and if it is absolutely necessary to have blank lines within
-the comments these blank lines @emph{do} have a @code{--} (unlike the
+the comments, e.g. to make paragraph separations within a single comment,
+these blank lines @emph{do} have a @code{--} (unlike the
 normal rule, which is to use entirely blank lines for separating
 comment paragraphs).  The comment starts at same level of indentation
 as code it is commenting.

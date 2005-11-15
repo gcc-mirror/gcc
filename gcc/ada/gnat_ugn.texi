@@ -7,7 +7,7 @@
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c          Copyright (C) 1992-2005 Ada Core Technologies, Inc.               o
+@c                     Copyright (C) 1992-2005, AdaCore                       o
 @c                                                                            o
 @c  GNAT is free software;  you can  redistribute it  and/or modify it under  o
 @c  terms of the  GNU General Public License as published  by the Free Soft-  o
@@ -195,7 +195,7 @@ AdaCore@*
 * Other Utility Programs::
 * Running and Debugging Ada Programs::
 @ifset vms
-* Compatibility with DEC Ada::
+* Compatibility with HP Ada::
 @end ifset
 * Platform-Specific Information for the Run-Time Libraries::
 * Example of Binder Output File::
@@ -508,7 +508,7 @@ Running and Debugging Ada Programs
 @end ifset
 
 @ifset vms
-Compatibility with DEC Ada
+Compatibility with HP Ada
 
 * Ada 95 Compatibility::
 * Differences in the Definition of Package System::
@@ -516,7 +516,7 @@ Compatibility with DEC Ada
 * The Package STANDARD::
 * The Package SYSTEM::
 * Tasking and Task-Related Features::
-* Implementation of Tasks in DEC Ada for OpenVMS Alpha Systems::
+* Implementation of Tasks in HP Ada for OpenVMS Alpha Systems::
 * Pragmas and Pragma-Related Features::
 * Library of Predefined Units::
 * Bindings::
@@ -526,7 +526,6 @@ Compatibility with DEC Ada
 * Program Compilation and Library Management::
 * Input-Output::
 * Implementation Limits::
-* Tools::
 
 Language-Related Features
 
@@ -538,7 +537,7 @@ Language-Related Features
 * Address Clauses::
 * Other Representation Clauses::
 
-Implementation of Tasks in DEC Ada for OpenVMS Alpha Systems
+Implementation of Tasks in HP Ada for OpenVMS Alpha Systems
 
 * Assigning Task IDs::
 * Task IDs and Delays::
@@ -604,7 +603,7 @@ Compatibility and Porting Guide
 
 * Compatibility with Ada 83::
 * Implementation-dependent characteristics::
-* Compatibility with DEC Ada 83::
+* Compatibility with HP Ada 83::
 * Compatibility with Other Ada 95 Systems::
 * Representation Clauses::
 @ifset vms
@@ -798,10 +797,12 @@ Ada programs.
 
 @ifset vms
 @item
-@ref{Compatibility with DEC Ada}, details the compatibility of GNAT with
-DEC Ada 83 @footnote{``DEC Ada'' refers to the legacy product originally
+@ref{Compatibility with HP Ada}, details the compatibility of GNAT with
+HP Ada 83 @footnote{``HP Ada'' refers to the legacy product originally
 developed by Digital Equipment Corporation and currently supported by HP.}
-for OpenVMS Alpha.
+for OpenVMS Alpha. This product was formerly known as DEC Ada, and for
+historical compatibility reasons, the relevant libraries still use the
+DEC prefix.
 @end ifset
 
 @item
@@ -2915,7 +2916,7 @@ involving variant records, access parameters, tasks, or protected types,
 are unlikely to be able to be passed.
 
 Note that in the case of GNAT running
-on a platform that supports DEC Ada 83, a higher degree of compatibility
+on a platform that supports HP Ada 83, a higher degree of compatibility
 can be guaranteed, and in particular records are layed out in an identical
 manner in the two compilers. Note also that if output from two different
 compilers is mixed, the program is responsible for dealing with elaboration
@@ -2926,8 +2927,8 @@ elaboration of the GNAT components. Consult the documentation of the other
 Ada compiler for further details on elaboration.
 
 However, it is not possible to mix the tasking run time of GNAT and
-DEC Ada 83, All the tasking operations must either be entirely within
-GNAT compiled sections of the program, or entirely within DEC Ada 83
+HP Ada 83, All the tasking operations must either be entirely within
+GNAT compiled sections of the program, or entirely within HP Ada 83
 compiled sections of the program.
 
 @cindex Interfacing to Assembly
@@ -3048,21 +3049,21 @@ implemented as a single machine instruction.
 @findex Stdcall
 @cindex Convention Stdcall
 @item Stdcall
-This is relevant only to NT/Win95 implementations of GNAT,
-and specifies that the Stdcall calling sequence will be used, as defined
-by the NT API. Nevertheless, to ease building cross-platform bindings this
-convention will be handled as a C calling convention on non Windows
-platforms.
+This is relevant only to Windows XP/2000/NT/95 implementations of GNAT,
+and specifies that the @code{Stdcall} calling sequence will be used,
+as defined by the NT API. Nevertheless, to ease building
+cross-platform bindings this convention will be handled as a @code{C} calling
+convention on non Windows platforms.
 
 @findex DLL
 @cindex Convention DLL
 @item DLL
-This is equivalent to Stdcall.
+This is equivalent to @code{Stdcall}.
 
 @findex Win32
 @cindex Convention Win32
 @item Win32
-This is equivalent to Stdcall.
+This is equivalent to @code{Stdcall}.
 @end ifset
 
 @findex Stubbed
@@ -3872,7 +3873,7 @@ Output full source listing with embedded error messages.
 Limit number of detected error or warning messages to @var{n}
 where @var{n} is in the range 1..999_999. The default setting if
 no switch is given is 9999. Compilation is terminated if this
-limit is exceeded.
+limit is exceeded. The equal sign here is optional.
 
 @item -gnatn
 @cindex @option{-gnatn} (@command{gcc})
@@ -4130,6 +4131,13 @@ Execute @var{ver} version of the compiler. This is the @command{gcc}
 version, not the GNAT version.
 @end ifclear
 
+@item ^-w^NO_BACK_END_WARNINGS^
+@cindex @option{-w} (@command{gcc})
+Turn off warnings generated by the back end of the compiler. Use of
+this switch also causes the default for front end warnings to be set
+to suppress (as though @option{-gnatws} had appeared at the start of
+the options.
+
 @end table
 
 @ifclear vms
@@ -4295,7 +4303,7 @@ file) as well as the verbose
 format message or full listing (which as usual is written to
 @file{stdout} (the standard output file).
 
-@item -gnatm^^=^@var{n}
+@item -gnatm=@var{n}
 @cindex @option{-gnatm} (@command{gcc})
 @ifclear vms
 The @code{m} stands for maximum.
@@ -4310,6 +4318,10 @@ e.adb:5:35: missing ".."
 fatal error: maximum errors reached
 compilation abandoned
 @end smallexample
+
+@noindent
+Note that the equal sign is optional, so the switches
+@option{-gnatm2} and @option{-gnatm=2} are equivalent.
 
 @item -gnatf
 @cindex @option{-gnatf} (@command{gcc})
@@ -4615,6 +4627,13 @@ not get issued for the use of boolean variables or constants whose
 values are known at compile time, since this is a standard technique
 for conditional compilation in Ada, and this would generate too many
 ``false positive'' warnings.
+
+This warning option also activates a special test for comparisons using
+the operators >= and <=. If the compiler can tell that only the equality
+condition is posible, then it will warn that the > or < part of the test
+is useless and that the operator could be replaced by =. An example would
+be comparing a Natural variable <= 0.
+
 This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwC
@@ -4767,9 +4786,9 @@ This switch disables warnings on variables that could be declared constants.
 @cindex @option{-gnatwl} (@command{gcc})
 @cindex Elaboration, warnings
 This switch activates warnings on missing
-@code{pragma Elaborate_All} statements.
+@code{Elaborate_All} and @code{Elaborate} pragmas.
 See the section in this guide on elaboration checking for details on
-when such pragma should be used. Warnings are also generated if you
+when such pragmas should be used. Warnings are also generated if you
 are using the static mode of elaboration, and a @code{pragma Elaborate}
 is encountered. The default is that such warnings
 are not generated.
@@ -4778,9 +4797,9 @@ This warning is not automatically turned on by the use of @option{-gnatwa}.
 @item -gnatwL
 @emph{Suppress warnings for missing elaboration pragmas.}
 @cindex @option{-gnatwL} (@command{gcc})
-This switch suppresses warnings on missing pragma Elaborate_All statements.
+This switch suppresses warnings on missing Elaborate and Elaborate_All pragmas.
 See the section in this guide on elaboration checking for details on
-when such pragma should be used.
+when such pragmas should be used.
 
 @item -gnatwm
 @emph{Activate warnings on modified but unreferenced variables.}
@@ -4994,9 +5013,11 @@ warnings about uninitialized variables.
 
 @item ^-w^/NO_BACK_END_WARNINGS^
 @cindex @option{-w}
-This switch suppresses warnings from the @option{^gcc^GCC^} back end. It may
-be used in conjunction with @option{-gnatws} to ensure that all warnings
-are suppressed during the entire compilation process.
+This switch suppresses warnings from the @option{^gcc^GCC^} back end. The
+code generator detects a number of warning situations that are missed
+by the @option{GNAT} front end, and this switch can be used to suppress them.
+The use of this switch also sets the default front end warning mode to
+@option{-gnatws}, that is, front end warnings suppressed as well.
 
 @end table
 
@@ -5686,15 +5707,17 @@ clears any previously set style checks.
 @cindex Access before elaboration
 @cindex Checks, division by zero
 @cindex Checks, access before elaboration
+@cindex Checks, stack overflow checking
 
 @noindent
 If you compile with the default options, GNAT will insert many run-time
 checks into the compiled code, including code that performs range
 checking against constraints, but not arithmetic overflow checking for
-integer operations (including division by zero) or checks for access
-before elaboration on subprogram calls. All other run-time checks, as
-required by the Ada 95 Reference Manual, are generated by default.
-The following @command{gcc} switches refine this default behavior:
+integer operations (including division by zero), checks for access
+before elaboration on subprogram calls, or stack overflow checking. All
+other run-time checks, as required by the Ada 95 Reference Manual, are
+generated by default. The following @command{gcc} switches refine this
+default behavior:
 
 @table @option
 @c !sort!
@@ -5802,6 +5825,13 @@ Enables dynamic checks for access-before-elaboration
 on subprogram calls and generic instantiations.
 For full details of the effect and use of this switch,
 @xref{Compiling Using gcc}.
+
+@item -fstack-check
+@cindex @option{-fstack-check} (@command{gcc})
+@cindex Stack Overflow Checking
+@cindex Checks, stack overflow checking
+Activates stack overflow checking. For full details of the effect and use of
+this switch see @ref{Stack Overflow Checking}.
 @end table
 
 @findex Unsuppress
@@ -6406,6 +6436,9 @@ If _FILE is added at the end of an option
 then the output is to a file with the name @file{file_REP} where
 file is the name of the corresponding source file.
 @end ifset
+Note that it is possible for record components to have zero size. In
+this case, the component clause uses an obvious extension of permitted
+Ada syntax, for example @code{at 0 range 0 .. -1}.
 
 @item -gnatS
 @cindex @option{-gnatS} (@command{gcc})
@@ -6783,7 +6816,7 @@ Normally, define this value as a logical name containing a comma separated
 list of directory names.
 
 This variable can also be defined by means of an environment string
-(an argument to the DEC C exec* set of functions).
+(an argument to the HP C exec* set of functions).
 
 Logical Name:
 @smallexample
@@ -6794,7 +6827,7 @@ DEFINE ADA_INCLUDE_PATH ANOTHER_PATH,FOO:[BAM],FOO:[BAR]
 By default, the path includes GNU:[LIB.OPENVMS7_x.2_8_x.DECLIB]
 first, followed by the standard Ada 95
 libraries in GNU:[LIB.OPENVMS7_x.2_8_x.ADAINCLUDE].
-If this is not redefined, the user will obtain the DEC Ada 83 IO packages
+If this is not redefined, the user will obtain the HP Ada 83 IO packages
 (Text_IO, Sequential_IO, etc)
 instead of the Ada95 packages. Thus, in order to get the Ada 95
 packages by default, ADA_INCLUDE_PATH must be redefined.
@@ -7448,7 +7481,7 @@ Normally it only makes sense to use the @option{^-p^/PESSIMISTIC_ELABORATION^}
 switch if dynamic
 elaboration checking is used (@option{-gnatE} switch used for compilation).
 This is because in the default static elaboration mode, all necessary
-@code{Elaborate_All} pragmas are implicitly inserted.
+@code{Elaborate} and @code{Elaborate_All} pragmas are implicitly inserted.
 These implicit pragmas are still respected by the binder in
 @option{^-p^/PESSIMISTIC_ELABORATION^} mode, so a
 safe elaboration order is assured.
@@ -7699,7 +7732,7 @@ Normally, define this value as a logical name containing a comma separated
 list of directory names.
 
 This variable can also be defined by means of an environment string
-(an argument to the DEC C exec* set of functions).
+(an argument to the HP C exec* set of functions).
 
 Logical Name:
 @smallexample
@@ -7710,7 +7743,7 @@ DEFINE ADA_OBJECTS_PATH ANOTHER_PATH,FOO:[BAM],FOO:[BAR]
 By default, the path includes GNU:[LIB.OPENVMS7_x.2_8_x.DECLIB]
 first, followed by the standard Ada 95
 libraries in GNU:[LIB.OPENVMS7_x.2_8_x.ADALIB].
-If this is not redefined, the user will obtain the DEC Ada 83 IO packages
+If this is not redefined, the user will obtain the HP Ada 83 IO packages
 (Text_IO, Sequential_IO, etc)
 instead of the Ada95 packages. Thus, in order to get the Ada 95
 packages by default, ADA_OBJECTS_PATH must be redefined.
@@ -8004,14 +8037,16 @@ when multiple versions of the GNAT compiler are available. See the
 @cindex @option{--GCC=compiler_name} (@command{gnatlink})
 Program used for compiling the binder file. The default is
 @command{gcc}. You need to use quotes around @var{compiler_name} if
-@code{compiler_name} contains spaces or other separator characters. As
-an example @option{--GCC="foo -x -y"} will instruct @command{gnatlink} to use
-@code{foo -x -y} as your compiler. Note that switch @option{-c} is always
+@code{compiler_name} contains spaces or other separator characters.
+As an example @option{--GCC="foo -x -y"} will instruct @command{gnatlink} to
+use @code{foo -x -y} as your compiler. Note that switch @option{-c} is always
 inserted after your command name. Thus in the above example the compiler
 command that will be used by @command{gnatlink} will be @code{foo -c -x -y}.
-If several @option{--GCC=compiler_name} are used, only the last
-@var{compiler_name} is taken into account. However, all the additional
-switches are also taken into account. Thus,
+A limitation of this syntax is that the name and path name of the executable
+itself must not include any embedded spaces. If several
+@option{--GCC=compiler_name} are used, only the last @var{compiler_name}
+is taken into account. However, all the additional switches are also taken
+into account. Thus,
 @option{--GCC="foo -x -y" --GCC="bar -z -t"} is equivalent to
 @option{--GCC="bar -x -y -z -t"}.
 
@@ -8047,8 +8082,8 @@ Generate the executable file even if there are linker warnings.
 
 @item /NOSTART_FILES
 Don't link in the object file containing the ``main'' transfer address.
-Used when linking with a foreign language main program compiled with a
-Digital compiler.
+Used when linking with a foreign language main program compiled with an
+HP compiler.
 
 @item /STATIC
 Prefer linking with object libraries over sharable images, even without
@@ -8221,12 +8256,13 @@ Program used for compiling. The default is `@command{gcc}'. You need to use
 quotes around @var{compiler_name} if @code{compiler_name} contains
 spaces or other separator characters. As an example @option{--GCC="foo -x
 -y"} will instruct @command{gnatmake} to use @code{foo -x -y} as your
-compiler. Note that switch @option{-c} is always inserted after your
-command name. Thus in the above example the compiler command that will
-be used by @command{gnatmake} will be @code{foo -c -x -y}.
-If several @option{--GCC=compiler_name} are used, only the last
-@var{compiler_name} is taken into account. However, all the additional
-switches are also taken into account. Thus,
+compiler. A limitation of this syntax is that the name and path name of
+the executable itself must not include any embedded spaces. Note that
+switch @option{-c} is always inserted after your command name. Thus in the
+above example the compiler command that will be used by @command{gnatmake}
+will be @code{foo -c -x -y}. If several @option{--GCC=compiler_name} are
+used, only the last @var{compiler_name} is taken into account. However,
+all the additional switches are also taken into account. Thus,
 @option{--GCC="foo -x -y" --GCC="bar -z -t"} is equivalent to
 @option{--GCC="bar -x -y -z -t"}.
 
@@ -8236,8 +8272,10 @@ Program used for binding. The default is `@code{gnatbind}'. You need to
 use quotes around @var{binder_name} if @var{binder_name} contains spaces
 or other separator characters. As an example @option{--GNATBIND="bar -x
 -y"} will instruct @command{gnatmake} to use @code{bar -x -y} as your
-binder. Binder switches that are normally appended by @command{gnatmake} to
-`@code{gnatbind}' are now appended to the end of @code{bar -x -y}.
+binder. Binder switches that are normally appended by @command{gnatmake}
+to `@code{gnatbind}' are now appended to the end of @code{bar -x -y}.
+A limitation of this syntax is that the name and path name of the executable
+itself must not include any embedded spaces.
 
 @item --GNATLINK=@var{linker_name}
 @cindex @option{--GNATLINK=linker_name} (@command{gnatmake})
@@ -8247,6 +8285,8 @@ or other separator characters. As an example @option{--GNATLINK="lan -x
 -y"} will instruct @command{gnatmake} to use @code{lan -x -y} as your
 linker. Linker switches that are normally appended by @command{gnatmake} to
 `@command{gnatlink}' are now appended to the end of @code{lan -x -y}.
+A limitation of this syntax is that the name and path name of the executable
+itself must not include any embedded spaces.
 
 @end ifclear
 
@@ -8497,7 +8537,19 @@ if not up to date, and libraries are rebuilt, if necessary.
 @item ^-v^/REASONS^
 @cindex @option{^-v^/REASONS^} (@command{gnatmake})
 Verbose. Display the reason for all recompilations @command{gnatmake}
-decides are necessary.
+decides are necessary, with the highest verbosity level.
+
+@item ^-vl^/LOW_VERBOSITY^
+@cindex @option{^-vl^/LOW_VERBOSITY^} (@command{gnatmake})
+Verbosity level Low. Display fewer lines than in verbosity Medium.
+
+@item ^-vm^/MEDIUM_VERBOSITY^
+@cindex @option{^-vm^/MEDIUM_VERBOSITY^} (@command{gnatmake})
+Verbosity level Medium. Potentially display fewer lines than in verbosity High.
+
+@item ^-vh^/HIGH_VERBOSITY^
+@cindex @option{^-vm^/HIGH_VERBOSITY^} (@command{gnatmake})
+Verbosity level High. Equivalent to ^-v^/REASONS^.
 
 @item ^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}
 Indicate the verbosity of the parsing of GNAT project files.
@@ -9315,7 +9367,7 @@ to work. Examples of switches in this category are
 @option{-funroll-loops} and
 the various target-specific @option{-m} options (in particular, it has been
 observed that @option{-march=pentium4} can significantly improve performance
-on appropriate machines. For full details of these switches, see the
+on appropriate machines). For full details of these switches, see the
 @code{gcc} manual.
 
 @node Optimization and Strict Aliasing
@@ -9538,7 +9590,7 @@ unchecked conversion of access values.
 @subsection Coverage Analysis
 
 @noindent
-GNAT supports the Digital Performance Coverage Analyzer (PCA), which allows
+GNAT supports the HP Performance Coverage Analyzer (PCA), which allows
 the user to determine the distribution of execution time across a program,
 @pxref{Profiling} for details of usage.
 @end ifset
@@ -10221,7 +10273,7 @@ pragma Extend_System (Aux_DEC);
 @noindent
 In the presence of this pragma, GNAT adds to the definition of the
 predefined package SYSTEM all the additional types and subprograms that are
-defined in DEC Ada. See @ref{Compatibility with DEC Ada} for details.
+defined in HP Ada. See @ref{Compatibility with HP Ada} for details.
 @end ifset
 
 @node Handling Arbitrary File Naming Conventions Using gnatname
@@ -11608,12 +11660,10 @@ The following attributes are defined on projects (all are simple attributes):
 @tab string
 @item @code{Locally_Removed_Files}
 @tab string list
-@item @code{Main}
-@tab string list
 @item @code{Languages}
 @tab string list
-@item @code{Main_Language}
-@tab string
+@item @code{Main}
+@tab string list
 @item @code{Library_Dir}
 @tab string
 @item @code{Library_Name}
@@ -11628,7 +11678,19 @@ The following attributes are defined on projects (all are simple attributes):
 @tab string
 @item @code{Library_Options}
 @tab string list
+@item @code{Library_Src_Dir}
+@tab string
+@item @code{Library_ALI_Dir}
+@tab string
 @item @code{Library_GCC}
+@tab string
+@item @code{Library_Symbol_File}
+@tab string
+@item @code{Library_Symbol_Policy}
+@tab string
+@item @code{Library_Reference_Symbol_File}
+@tab string
+@item @code{Externally_Built}
 @tab string
 @end multitable
 
@@ -12531,7 +12593,7 @@ package models the Apex file naming rules:
 @end ifclear
 
 @ifset vms
-For example, the following package models the DEC Ada file naming rules:
+For example, the following package models the HP Ada file naming rules:
 
 @smallexample @c projectfile
 @group
@@ -12651,7 +12713,7 @@ sensitive or insensitive depending on the operating system).
 
 To create a library project, you need to define in its project file
 two project-level attributes: @code{Library_Name} and @code{Library_Dir}.
-Additionally, you may define the library-related attributes
+Additionally, you may define other library-related attributes such as
 @code{Library_Kind}, @code{Library_Version}, @code{Library_Interface},
 @code{Library_Auto_Init}, @code{Library_Options} and @code{Library_GCC}.
 
@@ -12663,10 +12725,9 @@ to be acceptable on all platforms.
 
 The @code{Library_Dir} attribute has a string value that designates the path
 (absolute or relative) of the directory where the library will reside.
-It must designate an existing directory, and this directory must be
-different from the project's object directory. It also needs to be writable.
-The directory should only be used for one library; the reason is that all
-files contained in this directory may be deleted by the Project Manager.
+It must designate an existing directory, and this directory must be writable,
+different from the project's object directory and from any source directory
+in the project tree.
 
 If both @code{Library_Name} and @code{Library_Dir} are specified and
 are legal, then the project file defines a library project.  The optional
@@ -12685,6 +12746,13 @@ different object directories, since in some cases some extra code needs to
 be generated for the latter. For such cases, it is recommended to either use
 two different project files, or a single one which uses external variables
 to indicate what kind of library should be build.
+
+The @code{Library_ALI_Dir} attribute may be specified to indicate the
+directory where the ALI files of the libriry will be copied. When it is
+not specified, the ALI files are copied ti the directory specified in
+attribute @code{Library_Dir}. The directory specified by @code{Library_ALI_Dir}
+must be writable and different from the project's object directory and from
+any source directory in the project tree.
 
 The @code{Library_Version} attribute has a string value whose interpretation
 is platform dependent. It has no effect on VMS and Windows. On Unix, it is
@@ -15086,7 +15154,7 @@ Options @option{^-pipe^/STANDARD_OUTPUT^},
 contains only one file to reformat.
 Option
 @option{^--eol^/END_OF_LINE^}
-can not be used together
+cannot be used together
 with @option{^-pipe^/STANDARD_OUTPUT^} option.
 
 @node Other gnatpp Switches
@@ -15113,7 +15181,7 @@ a trace of the actions it takes to produce or obtain the ASIS tree.
 @item ^-w^/WARNINGS^
 @cindex @option{^-w^/WARNINGS^} (@code{gnatpp})
 Warning mode;
-@command{gnatpp} generates a warning whenever it can not provide
+@command{gnatpp} generates a warning whenever it cannot provide
 a required layout in the result source.
 @end table
 
@@ -16401,6 +16469,16 @@ Causes both preprocessor lines and the lines deleted
 by preprocessing to be retained in the output source as comments marked
 with the special string @code{"--! "}. This option will result in line numbers
 being preserved in the output file.
+
+@item ^-C^/REPLACE_IN_COMMENTS^
+@cindex @option{^-C^/REPLACE_IN_COMMENTS^} (@command{gnatprep})
+Causes comments to be scanned. Normally comments are ignored by gnatprep.
+If this option is specified, then comments are scanned and any $symbol
+substitutions performed as in program text. This is particularly useful
+when structured comments are used (e.g. when writing programs in the
+SPARK dialect of Ada). Note that this switch is not available when
+doing integrated preprocessing (it would be useless in this context
+since comments are ignored by the compiler in any case).
 
 @item ^-Dsymbol=value^/ASSOCIATE="symbol=value"^
 @cindex @option{^-D^/ASSOCIATE^} (@command{gnatprep})
@@ -19080,7 +19158,7 @@ $ perl gnathtml.pl [switches] files
 @findex LSE
 
 @noindent
-The GNAT distribution provides an Ada 95 template for the Digital Language
+The GNAT distribution provides an Ada 95 template for the HP Language
 Sensitive Editor (LSE), a component of DECset. In order to
 access it, invoke LSE with the qualifier /ENVIRONMENT=GNU:[LIB]ADA95.ENV.
 
@@ -19089,7 +19167,7 @@ access it, invoke LSE with the qualifier /ENVIRONMENT=GNU:[LIB]ADA95.ENV.
 @findex PCA
 
 @noindent
-GNAT supports The Digital Performance Coverage Analyzer (PCA), a component
+GNAT supports The HP Performance Coverage Analyzer (PCA), a component
 of DECset. To use it proceed as outlined under ``HELP PCA'', except for running
 the collection phase with the /DEBUG qualifier.
 
@@ -20164,23 +20242,23 @@ end STB;
 @end smallexample
 
 @ifset vms
-@node Compatibility with DEC Ada
-@chapter Compatibility with DEC Ada
+@node Compatibility with HP Ada
+@chapter Compatibility with HP Ada
 @cindex Compatibility
 
 @noindent
-This section of the manual compares DEC Ada for OpenVMS Alpha and GNAT
+This section of the manual compares HP Ada for OpenVMS Alpha and GNAT
 OpenVMS Alpha. GNAT achieves a high level of compatibility
-with DEC Ada, and it should generally be straightforward to port code
-from the DEC Ada environment to GNAT. However, there are a few language
+with HP Ada, and it should generally be straightforward to port code
+from the HP Ada environment to GNAT. However, there are a few language
 and implementation differences of which the user must be aware. These
 differences are discussed in this section. In
 addition, the operating environment and command structure for the
 compiler are different, and these differences are also discussed.
 
 Note that this discussion addresses specifically the implementation
-of Ada 83 for DIGITAL OpenVMS Alpha Systems. In cases where the implementation
-of DEC Ada differs between OpenVMS Alpha Systems and OpenVMS VAX Systems,
+of Ada 83 for HP OpenVMS Alpha Systems. In cases where the implementation
+of HP Ada differs between OpenVMS Alpha Systems and OpenVMS VAX Systems,
 GNAT always follows the Alpha implementation.
 
 @menu
@@ -20190,7 +20268,7 @@ GNAT always follows the Alpha implementation.
 * The Package STANDARD::
 * The Package SYSTEM::
 * Tasking and Task-Related Features::
-* Implementation of Tasks in DEC Ada for OpenVMS Alpha Systems::
+* Implementation of Tasks in HP Ada for OpenVMS Alpha Systems::
 * Pragmas and Pragma-Related Features::
 * Library of Predefined Units::
 * Bindings::
@@ -20200,14 +20278,13 @@ GNAT always follows the Alpha implementation.
 * Program Compilation and Library Management::
 * Input-Output::
 * Implementation Limits::
-* Tools::
 @end menu
 
 @node Ada 95 Compatibility
 @section Ada 95 Compatibility
 
 @noindent
-GNAT is an Ada 95 compiler, and DEC Ada is an Ada 83
+GNAT is an Ada 95 compiler, and HP Ada is an Ada 83
 compiler. Ada 95 is almost completely upwards compatible
 with Ada 83, and therefore Ada 83 programs will compile
 and run under GNAT with
@@ -20235,8 +20312,8 @@ implementation-dependent declarations to package System. In normal mode,
 GNAT does not take advantage of this permission, and the version of System
 provided by GNAT exactly matches that in the Ada 95 Reference Manual.
 
-However, DEC Ada adds an extensive set of declarations to package System,
-as fully documented in the DEC Ada manuals. To minimize changes required
+However, HP Ada adds an extensive set of declarations to package System,
+as fully documented in the HP Ada manuals. To minimize changes required
 for programs that make use of these extensions, GNAT provides the pragma
 Extend_System for extending the definition of package System. By using:
 
@@ -20306,12 +20383,12 @@ related topics.
 @subsection Integer Types and Representations
 
 @noindent
-The set of predefined integer types is identical in DEC Ada and GNAT.
+The set of predefined integer types is identical in HP Ada and GNAT.
 Furthermore the representation of these integer types is also identical,
 including the capability of size clauses forcing biased representation.
 
 In addition,
-DEC Ada for OpenVMS Alpha systems has defined the
+HP Ada for OpenVMS Alpha systems has defined the
 following additional integer types in package System:
 
 @itemize @bullet
@@ -20338,21 +20415,21 @@ standard Ada 95 package @code{Interfaces}.
 Alternatively, by use of the pragma
 @code{Extend_System}, identical
 declarations can be referenced directly in package @code{System}.
-On both GNAT and DEC Ada, the maximum integer size is 64 bits.
+On both GNAT and HP Ada, the maximum integer size is 64 bits.
 
 @node Floating-Point Types and Representations
 @subsection Floating-Point Types and Representations
 @cindex Floating-Point types
 
 @noindent
-The set of predefined floating-point types is identical in DEC Ada and GNAT.
+The set of predefined floating-point types is identical in HP Ada and GNAT.
 Furthermore the representation of these floating-point
 types is also identical. One important difference is that the default
-representation for DEC Ada is VAX_Float, but the default representation
+representation for HP Ada is VAX_Float, but the default representation
 for GNAT is IEEE.
 
 Specific types may be declared to be VAX_Float or IEEE, using the pragma
-@code{Float_Representation} as described in the DEC Ada documentation.
+@code{Float_Representation} as described in the HP Ada documentation.
 For example, the declarations:
 
 @smallexample @c ada
@@ -20368,7 +20445,7 @@ pragma Float_Representation (VAX_Float, F_Float);
 declare a type F_Float that will be represented in VAX_Float format.
 This set of declarations actually appears in System.Aux_DEC, which provides
 the full set of additional floating-point declarations provided in
-the DEC Ada version of package
+the HP Ada version of package
 System. This and similar declarations may be accessed in a user program
 by using pragma @code{Extend_System}. The use of this
 pragma, and the related pragma @code{Long_Float} is described in further
@@ -20378,7 +20455,7 @@ detail in the following section.
 @subsection Pragmas Float_Representation and Long_Float
 
 @noindent
-DEC Ada provides the pragma @code{Float_Representation}, which
+HP Ada provides the pragma @code{Float_Representation}, which
 acts as a program library switch to allow control over
 the internal representation chosen for the predefined
 floating-point types declared in the package @code{Standard}.
@@ -20399,10 +20476,10 @@ types as follows:
 @itemize @bullet
 @item
 @code{VAX_Float} specifies that floating-point
-types are represented by default with the VAX hardware types
+types are represented by default with the VAX system hardware types
 F-floating, D-floating, G-floating. Note that the H-floating
-type is available only on DIGITAL Vax systems, and is not available
-in either DEC Ada or GNAT for Alpha systems.
+type was available only on Vax systems, and is not available
+in either HP Ada or GNAT for Alpha systems.
 
 @item
 @code{IEEE_Float} specifies that floating-point
@@ -20415,10 +20492,10 @@ GNAT provides an identical implementation of the pragma
 @code{Float_Representation}, except that it functions as a
 configuration pragma, as defined by Ada 95. Note that the
 notion of configuration pragma corresponds closely to the
-DEC Ada notion of a program library switch.
+HP Ada notion of a program library switch.
 
 When no pragma is used in GNAT, the default is IEEE_Float, which is different
-from DEC Ada 83, where the default is VAX_Float. In addition, the
+from HP Ada 83, where the default is VAX_Float. In addition, the
 predefined libraries in GNAT are built using IEEE_Float, so it is not
 advisable to change the format of numbers passed to standard library
 routines, and if necessary explicit type conversions may be needed.
@@ -20452,7 +20529,7 @@ and @i{directory} is the directory to be created to contain
 the new library.
 
 @noindent
-On OpenVMS systems, DEC Ada provides the pragma @code{Long_Float}
+On OpenVMS systems, HP Ada provides the pragma @code{Long_Float}
 to allow control over the internal representation chosen
 for the predefined type @code{Long_Float} and for floating-point
 type declarations with digits specified in the range 7 .. 15.
@@ -20468,7 +20545,7 @@ pragma Long_Float (D_FLOAT | G_FLOAT);
 @subsection Fixed-Point Types and Representations
 
 @noindent
-On DEC Ada for OpenVMS Alpha systems, rounding is
+On HP Ada for OpenVMS Alpha systems, rounding is
 away from zero for both positive and negative numbers.
 Therefore, +0.5 rounds to 1 and -0.5 rounds to -1.
 
@@ -20481,7 +20558,7 @@ fixed-point types are truncated.
 @subsection Record and Array Component Alignment
 
 @noindent
-On DEC Ada for OpenVMS Alpha, all non composite components
+On HP Ada for OpenVMS Alpha, all non composite components
 are aligned on natural boundaries. For example, 1-byte
 components are aligned on byte boundaries, 2-byte
 components on 2-byte boundaries, 4-byte components on 4-byte
@@ -20489,13 +20566,13 @@ byte boundaries, and so on. The OpenVMS Alpha hardware
 runs more efficiently with naturally aligned data.
 
 ON GNAT for OpenVMS Alpha, alignment rules are compatible
-with DEC Ada for OpenVMS Alpha.
+with HP Ada for OpenVMS Alpha.
 
 @node Address Clauses
 @subsection Address Clauses
 
 @noindent
-In DEC Ada and GNAT, address clauses are supported for
+In HP Ada and GNAT, address clauses are supported for
 objects and imported subprograms.
 The predefined type @code{System.Address} is a private type
 in both compilers, with the same representation (it is simply
@@ -20509,10 +20586,10 @@ Note that code that with's both this extended package @code{System}
 and the package @code{System.Storage_Elements} should not @code{use}
 both packages, or ambiguities will result. In general it is better
 not to mix these two sets of facilities. The Ada 95 package was
-designed specifically to provide the kind of features that DEC Ada
+designed specifically to provide the kind of features that HP Ada
 adds directly to package @code{System}.
 
-GNAT is compatible with DEC Ada in its handling of address
+GNAT is compatible with HP Ada in its handling of address
 clauses, except for some limitations in
 the form of address clauses for composite objects with
 initialization. Such address clauses are easily replaced
@@ -20555,7 +20632,7 @@ on address specifications is found in the GNAT Reference Manual.
 
 @noindent
 GNAT supports in a compatible manner all the representation
-clauses supported by DEC Ada. In addition, it
+clauses supported by HP Ada. In addition, it
 supports representation clause forms that are new in Ada 95
 including COMPONENT_SIZE and SIZE clauses for objects.
 
@@ -20563,32 +20640,32 @@ including COMPONENT_SIZE and SIZE clauses for objects.
 @section The Package STANDARD
 
 @noindent
-The package STANDARD, as implemented by DEC Ada, is fully
+The package STANDARD, as implemented by HP Ada, is fully
 described in the Reference Manual for the Ada Programming
-Language (ANSI/MIL-STD-1815A-1983) and in the DEC Ada
+Language (ANSI/MIL-STD-1815A-1983) and in the HP Ada
 Language Reference Manual. As implemented by GNAT, the
 package STANDARD is described in the Ada 95 Reference
 Manual.
 
-In addition, DEC Ada supports the Latin-1 character set in
+In addition, HP Ada supports the Latin-1 character set in
 the type CHARACTER. GNAT supports the Latin-1 character set
 in the type CHARACTER and also Unicode (ISO 10646 BMP) in
 the type WIDE_CHARACTER.
 
 The floating-point types supported by GNAT are those
-supported by DEC Ada, but defaults are different, and are controlled by
+supported by HP Ada, but defaults are different, and are controlled by
 pragmas. See @ref{Floating-Point Types and Representations} for details.
 
 @node The Package SYSTEM
 @section The Package SYSTEM
 
 @noindent
-DEC Ada provides a system-specific version of the package
+HP Ada provides a system-specific version of the package
 SYSTEM for each platform on which the language ships.
 For the complete specification of the package SYSTEM, see
-Appendix F of the DEC Ada Language Reference Manual.
+Appendix F of the HP Ada Language Reference Manual.
 
-On DEC Ada, the package SYSTEM includes the following conversion functions:
+On HP Ada, the package SYSTEM includes the following conversion functions:
 @itemize @bullet
 @item TO_ADDRESS(INTEGER)
 
@@ -20608,7 +20685,7 @@ On DEC Ada, the package SYSTEM includes the following conversion functions:
 By default, GNAT supplies a version of SYSTEM that matches
 the definition given in the Ada 95 Reference Manual.
 This
-is a subset of the DIGITAL system definitions, which is as
+is a subset of the HP system definitions, which is as
 close as possible to the original definitions. The only difference
 is that the definition of SYSTEM_NAME is different:
 
@@ -20627,7 +20704,7 @@ BIT_ORDER and DEFAULT_BIT_ORDER.
 
 However, the use of the following pragma causes GNAT
 to extend the definition of package SYSTEM so that it
-encompasses the full set of DIGITAL-specific extensions,
+encompasses the full set of HP-specific extensions,
 including the functions listed above:
 
 @smallexample @c ada
@@ -20641,8 +20718,8 @@ The pragma Extend_System is a configuration pragma that
 is most conveniently placed in the @file{gnat.adc} file. See the
 GNAT Reference Manual for further details.
 
-DEC Ada does not allow the recompilation of the package
-SYSTEM. Instead DEC Ada provides several pragmas (SYSTEM_
+HP Ada does not allow the recompilation of the package
+SYSTEM. Instead HP Ada provides several pragmas (SYSTEM_
 NAME, STORAGE_UNIT, and MEMORY_SIZE) to modify values in
 the package SYSTEM. On OpenVMS Alpha systems, the pragma
 SYSTEM_NAME takes the enumeration literal OPENVMS_AXP as
@@ -20664,7 +20741,7 @@ pragma Extend_System (AUX_Dec);
 @end smallexample
 
 @noindent
-are virtually identical to those provided by the DEC Ada 83 package
+are virtually identical to those provided by the HP Ada 83 package
 System. One important difference is that the name of the TO_ADDRESS
 function for type UNSIGNED_LONGWORD is changed to TO_ADDRESS_LONG.
 See the GNAT Reference manual for a discussion of why this change was
@@ -20674,7 +20751,7 @@ necessary.
 The version of TO_ADDRESS taking a universal integer argument is in fact
 an extension to Ada 83 not strictly compatible with the reference manual.
 In GNAT, we are constrained to be exactly compatible with the standard,
-and this means we cannot provide this capability. In DEC Ada 83, the
+and this means we cannot provide this capability. In HP Ada 83, the
 point of this definition is to deal with a call like:
 
 @smallexample @c ada
@@ -20684,7 +20761,7 @@ TO_ADDRESS (16#12777#);
 @noindent
 Normally, according to the Ada 83 standard, one would expect this to be
 ambiguous, since it matches both the INTEGER and UNSIGNED_LONGWORD forms
-of TO_ADDRESS. However, in DEC Ada 83, there is no ambiguity, since the
+of TO_ADDRESS. However, in HP Ada 83, there is no ambiguity, since the
 definition using universal_integer takes precedence.
 
 In GNAT, since the version with universal_integer cannot be supplied, it is
@@ -20710,35 +20787,28 @@ change the name to TO_ADDRESS_LONG.
 
 @noindent
 The concepts relevant to a comparison of tasking on GNAT
-and on DEC Ada for OpenVMS Alpha systems are discussed in
+and on HP Ada for OpenVMS Alpha systems are discussed in
 the following sections.
 
 For detailed information on concepts related to tasking in
-DEC Ada, see the DEC Ada Language Reference Manual and the
+HP Ada, see the HP Ada Language Reference Manual and the
 relevant run-time reference manual.
 
-@node Implementation of Tasks in DEC Ada for OpenVMS Alpha Systems
-@section Implementation of Tasks in DEC Ada for OpenVMS Alpha Systems
+@node Implementation of Tasks in HP Ada for OpenVMS Alpha Systems
+@section Implementation of Tasks in HP Ada for OpenVMS Alpha Systems
 
 @noindent
 On OpenVMS Alpha systems, each Ada task (except a passive
 task) is implemented as a single stream of execution
 that is created and managed by the kernel. On these
-systems, DEC Ada tasking support is based on DECthreads,
+systems, HP Ada tasking support is based on DECthreads,
 an implementation of the POSIX standard for threads.
 
-Although tasks are implemented as threads, all tasks in
-an Ada program are part of the same process. As a result,
-resources such as open files and virtual memory can be
-shared easily among tasks. Having all tasks in one process
-allows better integration with the programming environment
-(the shell and the debugger, for example).
-
-Also, on OpenVMS Alpha systems, DEC Ada tasks and foreign
+Also, on OpenVMS Alpha systems, HP Ada tasks and foreign
 code that calls DECthreads routines can be used together.
 The interaction between Ada tasks and DECthreads routines
 can have some benefits. For example when on OpenVMS Alpha,
-DEC Ada can call C code that is already threaded.
+HP Ada can call C code that is already threaded.
 GNAT on OpenVMS Alpha uses the facilities of DECthreads,
 and Ada tasks are mapped to threads.
 
@@ -20755,7 +20825,7 @@ and Ada tasks are mapped to threads.
 @subsection Assigning Task IDs
 
 @noindent
-The DEC Ada Run-Time Library always assigns %TASK 1 to
+The HP Ada Run-Time Library always assigns %TASK 1 to
 the environment task that executes the main program. On
 OpenVMS Alpha systems, %TASK 0 is often used for tasks
 that have been created but are not yet activated.
@@ -20763,7 +20833,7 @@ that have been created but are not yet activated.
 On OpenVMS Alpha systems, task IDs are assigned at
 activation. On GNAT systems, task IDs are also assigned at
 task creation but do not have the same form or values as
-task ID values in DEC Ada. There is no null task, and the
+task ID values in HP Ada. There is no null task, and the
 environment task does not have a specific task ID value.
 
 @node Task IDs and Delays
@@ -20802,18 +20872,18 @@ GNAT supplies the following task-related pragmas:
 @item  TASK_STORAGE
 
               GNAT implements pragma TASK_STORAGE in the same way as
-              DEC Ada.
-              Both DEC Ada and GNAT supply the pragmas PASSIVE,
+              HP Ada.
+              Both HP Ada and GNAT supply the pragmas PASSIVE,
               SUPPRESS, and VOLATILE.
 @end itemize
 @node Scheduling and Task Priority
 @subsection Scheduling and Task Priority
 
 @noindent
-DEC Ada implements the Ada language requirement that
+HP Ada implements the Ada language requirement that
 when two tasks are eligible for execution and they have
 different priorities, the lower priority task does not
-execute while the higher priority task is waiting. The DEC
+execute while the higher priority task is waiting. The HP
 Ada Run-Time Library keeps a task running until either the
 task is suspended or a higher priority task becomes ready.
 
@@ -20823,30 +20893,30 @@ at the processor. A task is run for a certain period of
 time and then placed at the rear of the ready queue for
 its priority level.
 
-DEC Ada provides the implementation-defined pragma TIME_SLICE,
+HP Ada provides the implementation-defined pragma TIME_SLICE,
 which can be used to enable or disable round-robin
 scheduling of tasks with the same priority.
-See the relevant DEC Ada run-time reference manual for
-information on using the pragmas to control DEC Ada task
+See the relevant HP Ada run-time reference manual for
+information on using the pragmas to control HP Ada task
 scheduling.
 
 GNAT follows the scheduling rules of Annex D (real-time
 Annex) of the Ada 95 Reference Manual. In general, this
-scheduling strategy is fully compatible with DEC Ada
+scheduling strategy is fully compatible with HP Ada
 although it provides some additional constraints (as
 fully documented in Annex D).
 GNAT implements time slicing control in a manner compatible with
-DEC Ada 83, by means of the pragma Time_Slice, whose semantics are identical
-to the DEC Ada 83 pragma of the same name.
+HP Ada 83, by means of the pragma Time_Slice, whose semantics are identical
+to the HP Ada 83 pragma of the same name.
 Note that it is not possible to mix GNAT tasking and
-DEC Ada 83 tasking in the same program, since the two run times are
+HP Ada 83 tasking in the same program, since the two run times are
 not compatible.
 
 @node The Task Stack
 @subsection The Task Stack
 
 @noindent
-In DEC Ada, a task stack is allocated each time a
+In HP Ada, a task stack is allocated each time a
 non passive task is activated. As soon as the task is
 terminated, the storage for the task stack is deallocated.
 If you specify a size of zero (bytes) with T'STORAGE_SIZE,
@@ -20859,24 +20929,24 @@ GNAT handles task stacks in a similar manner. According to
 the Ada 95 rules, it provides the pragma STORAGE_SIZE as
 an alternative method for controlling the task stack size.
 The specification of the attribute T'STORAGE_SIZE is also
-supported in a manner compatible with DEC Ada.
+supported in a manner compatible with HP Ada.
 
 @node External Interrupts
 @subsection External Interrupts
 
 @noindent
-On DEC Ada, external interrupts can be associated with task entries.
-GNAT is compatible with DEC Ada in its handling of external interrupts.
+On HP Ada, external interrupts can be associated with task entries.
+GNAT is compatible with HP Ada in its handling of external interrupts.
 
 @node Pragmas and Pragma-Related Features
 @section Pragmas and Pragma-Related Features
 
 @noindent
-Both DEC Ada and GNAT supply all language-defined pragmas
+Both HP Ada and GNAT supply all language-defined pragmas
 as specified by the Ada 83 standard. GNAT also supplies all
 language-defined pragmas specified in the Ada 95 Reference Manual.
 In addition, GNAT implements the implementation-defined pragmas
-from DEC Ada 83.
+from HP Ada 83.
 
 @itemize @bullet
 @item  AST_ENTRY
@@ -20939,7 +21009,7 @@ recognized, but which have no
 effect in GNAT. The effect of @code{Passive} may be obtained by the
 use of protected objects in Ada 95. In GNAT, all generics are inlined.
 
-Unlike DEC Ada, the GNAT 'EXPORT_@i{subprogram}' pragmas require
+Unlike HP Ada, the GNAT 'EXPORT_@i{subprogram}' pragmas require
 a separate subprogram specification which must appear before the
 subprogram body.
 
@@ -21016,7 +21086,7 @@ the GNAT Reference Manual.
 @subsection Restrictions on the Pragma INLINE
 
 @noindent
-DEC Ada applies the following restrictions to the pragma INLINE:
+HP Ada applies the following restrictions to the pragma INLINE:
 @itemize @bullet
 @item  Parameters cannot be a task type.
 
@@ -21059,7 +21129,7 @@ be incapable of being inlined.
 
 @noindent
 The following lists and describes the restrictions on the
-pragma INTERFACE on DEC Ada and GNAT:
+pragma INTERFACE on HP Ada and GNAT:
 @itemize @bullet
 @item  Languages accepted: Ada, Bliss, C, Fortran, Default.
 Default is the default on OpenVMS Alpha systems.
@@ -21080,14 +21150,14 @@ be a string, an array, or a record.
 @end itemize
 
 @noindent
-GNAT is entirely upwards compatible with DEC Ada, and in addition allows
+GNAT is entirely upwards compatible with HP Ada, and in addition allows
 record parameters for all languages.
 
 @node  Restrictions on the Pragma SYSTEM_NAME
 @subsection  Restrictions on the Pragma SYSTEM_NAME
 
 @noindent
-For DEC Ada for OpenVMS Alpha, the enumeration literal
+For HP Ada for OpenVMS Alpha, the enumeration literal
 for the type NAME is OPENVMS_AXP. In GNAT, the enumeration
 literal for the type NAME is SYSTEM_NAME_GNAT.
 
@@ -21096,13 +21166,13 @@ literal for the type NAME is SYSTEM_NAME_GNAT.
 
 @noindent
 A library of predefined units is provided as part of the
-DEC Ada and GNAT implementations. DEC Ada does not provide
+HP Ada and GNAT implementations. HP Ada does not provide
 the package MACHINE_CODE but instead recommends importing
 assembler code.
 
-The GNAT versions of the DEC Ada Run-Time Library (ADA$PREDEFINED:)
+The GNAT versions of the HP Ada Run-Time Library (ADA$PREDEFINED:)
 units are taken from the OpenVMS Alpha version, not the OpenVMS VAX
-version. During GNAT installation, the DEC Ada Predefined
+version. During GNAT installation, the HP Ada Predefined
 Library units are copied into the GNU:[LIB.OPENVMS7_x.2_8_x.DECLIB]
 (aka DECLIB) directory and patched to remove Ada 95 incompatibilities
 and to make them interoperable with GNAT, @pxref{Changes to DECLIB}
@@ -21116,9 +21186,9 @@ for example).
 
 However, it is possible to change the default so that the
 reverse is true, or even to mix them using child package
-notation. The DEC Ada 83 units are available as DEC.xxx where xxx
+notation. The HP Ada 83 units are available as DEC.xxx where xxx
 is the package name, and the Ada units are available in the
-standard manner defined for Ada 95, that is to say as Ada.xxx. To
+standard manner defined for Ada 95, that is to say as DEC.xxx. To
 change the default, set ADA_INCLUDE_PATH and ADA_OBJECTS_PATH
 appropriately. For example, to change the default to use the Ada95
 versions do:
@@ -21138,7 +21208,7 @@ $ DEFINE ADA_OBJECTS_PATH GNU:[LIB.OPENVMS7_1.2_8_1.ADALIB],-
 @subsection Changes to DECLIB
 
 @noindent
-The changes made to the DEC Ada predefined library for GNAT and Ada 95
+The changes made to the HP Ada predefined library for GNAT and Ada 95
 compatibility are minor and include the following:
 
 @itemize @bullet
@@ -21163,7 +21233,7 @@ None of the above changes is visible to users.
 @section Bindings
 
 @noindent
-On OpenVMS Alpha, DEC Ada provides the following strongly-typed bindings:
+On OpenVMS Alpha, HP Ada provides the following strongly-typed bindings:
 @itemize @bullet
 
 @item  Command Language Interpreter (CLI interface)
@@ -21199,10 +21269,10 @@ On OpenVMS Alpha, DEC Ada provides the following strongly-typed bindings:
 @end itemize
 
 @noindent
-GNAT provides implementations of these DEC bindings in the DECLIB directory.
+GNAT provides implementations of these HP bindings in the DECLIB directory.
 
 The X/Motif bindings used to build DECLIB are whatever versions are in the
-DEC Ada @file{ADA$PREDEFINED} directory with extension @file{.ADC}.
+HP Ada @file{ADA$PREDEFINED} directory with extension @file{.ADC}.
 The build script will
 automatically add a pragma Linker_Options to packages @code{Xm}, @code{Xt},
 and @code{X_Lib}
@@ -21225,7 +21295,7 @@ default @file{ADA$PREDEFINED} versions.
 @subsection Shared Libraries and Options Files
 
 @noindent
-When using the DEC Ada
+When using the HP Ada
 predefined X and Motif bindings, the linking with their sharable images is
 done automatically by @command{GNAT LINK}.
 When using other X and Motif bindings, you need
@@ -21241,7 +21311,7 @@ libraries under VMS. The VMS Link command can be used in standard fashion.
 @subsection Interfaces to C
 
 @noindent
-DEC Ada
+HP Ada
 provides the following Ada types and operations:
 
 @itemize @bullet
@@ -21254,7 +21324,7 @@ provides the following Ada types and operations:
 
 @noindent
 Interfacing to C with GNAT, one can use the above approach
-described for DEC Ada or the facilities of Annex B of
+described for HP Ada or the facilities of Annex B of
 the Ada 95 Reference Manual (packages INTERFACES.C,
 INTERFACES.C.STRINGS and INTERFACES.C.POINTERS). For more
 information, see the section ``Interfacing to C'' in the
@@ -21270,8 +21340,8 @@ of Compaq C. The qualifier has no effect on @code{Link_Name} parameters.
 
 @noindent
 The following section discusses differences in the
-definition of main programs on DEC Ada and GNAT.
-On DEC Ada, main programs are defined to meet the
+definition of main programs on HP Ada and GNAT.
+On HP Ada, main programs are defined to meet the
 following conditions:
 @itemize @bullet
 @item  Procedure with no formal parameters (returns 0 upon
@@ -21307,14 +21377,14 @@ generic subprogram
 @section Implementation-Defined Attributes
 
 @noindent
-GNAT provides all DEC Ada implementation-defined
+GNAT provides all HP Ada implementation-defined
 attributes.
 
 @node Compiler and Run-Time Interfacing
 @section Compiler and Run-Time Interfacing
 
 @noindent
-DEC Ada provides the following ways to pass options to the linker
+HP Ada provides the following ways to pass options to the linker
 (ACS LINK):
 @itemize @bullet
 @item  /WAIT and /SUBMIT qualifiers
@@ -21343,8 +21413,8 @@ switches:
 @noindent
 For more information on these switches, see
 @ref{Switches for gnatlink}.
-In DEC Ada, the command-line switch @option{/OPTIMIZE} is available
-to control optimization. DEC Ada also supplies the
+In HP Ada, the command-line switch @option{/OPTIMIZE} is available
+to control optimization. HP Ada also supplies the
 following pragmas:
 @itemize @bullet
 @item  @code{OPTIMIZE}
@@ -21361,24 +21431,24 @@ following pragmas:
 @noindent
 In GNAT, optimization is controlled strictly by command
 line parameters, as described in the corresponding section of this guide.
-The DIGITAL pragmas for control of optimization are
+The HP pragmas for control of optimization are
 recognized but ignored.
 
-Note that in GNAT, the default is optimization off, whereas in DEC Ada 83,
+Note that in GNAT, the default is optimization off, whereas in HP Ada 83,
 the default is that optimization is turned on.
 
 @node Program Compilation and Library Management
 @section Program Compilation and Library Management
 
 @noindent
-DEC Ada and GNAT provide a comparable set of commands to
-build programs. DEC Ada also provides a program library,
+HP Ada and GNAT provide a comparable set of commands to
+build programs. HP Ada also provides a program library,
 which is a concept that does not exist on GNAT. Instead,
 GNAT provides directories of sources that are compiled as
 needed.
 
 The following table summarizes
-the DEC Ada commands and provides
+the HP Ada commands and provides
 equivalent GNAT commands. In this table, some GNAT
 equivalents reflect the fact that GNAT does not use the
 concept of a program library. Instead, it uses a model
@@ -21387,12 +21457,12 @@ in a manner consistent with other languages like C and
 Fortran. Therefore, standard system file commands are used
 to manipulate these elements. Those GNAT commands are marked with
 an asterisk.
-Note that, unlike DEC Ada, none of the GNAT commands accepts wild cards.
+Note that, unlike HP Ada, none of the GNAT commands accepts wild cards.
 
 @need 1500
 @multitable @columnfractions .35 .65
 
-@item @emph{DEC Ada Command}
+@item @emph{HP Ada Command}
 @tab @emph{GNAT Equivalent / Description}
 
 @item @command{ADA}
@@ -21557,14 +21627,14 @@ valid form.
 @section Input-Output
 
 @noindent
-On OpenVMS Alpha systems, DEC Ada uses OpenVMS Record
+On OpenVMS Alpha systems, HP Ada uses OpenVMS Record
 Management Services (RMS) to perform operations on
 external files.
 
 @noindent
-DEC Ada and GNAT predefine an identical set of input-
+HP Ada and GNAT predefine an identical set of input-
 output packages. To make the use of the
-generic TEXT_IO operations more convenient, DEC Ada
+generic TEXT_IO operations more convenient, HP Ada
 provides predefined library packages that instantiate the
 integer and floating-point operations for the predefined
 integer and floating-point types as shown in the following table.
@@ -21589,9 +21659,9 @@ integer and floating-point types as shown in the following table.
 @end multitable
 
 @noindent
-The DEC Ada predefined packages and their operations
+The HP Ada predefined packages and their operations
 are implemented using OpenVMS Alpha files and input-
-output facilities. DEC Ada supports asynchronous input-
+output facilities. HP Ada supports asynchronous input-
 output on OpenVMS Alpha. Familiarity with the following is
 recommended:
 @itemize @bullet
@@ -21604,10 +21674,10 @@ recommended:
 
 @noindent
 GNAT provides I/O facilities that are completely
-compatible with DEC Ada. The distribution includes the
-standard DEC Ada versions of all I/O packages, operating
-in a manner compatible with DEC Ada. In particular, the
-following packages are by default the DEC Ada (Ada 83)
+compatible with HP Ada. The distribution includes the
+standard HP Ada versions of all I/O packages, operating
+in a manner compatible with HP Ada. In particular, the
+following packages are by default the HP Ada (Ada 83)
 versions of these packages rather than the renamings
 suggested in annex J of the Ada 95 Reference Manual:
 @itemize @bullet
@@ -21622,7 +21692,7 @@ suggested in annex J of the Ada 95 Reference Manual:
 The use of the standard Ada 95 syntax for child packages (for
 example, @code{ADA.TEXT_IO}) retrieves the Ada 95 versions of these
 packages, as defined in the Ada 95 Reference Manual.
-GNAT provides DIGITAL-compatible predefined instantiations
+GNAT provides HP-compatible predefined instantiations
 of the @code{TEXT_IO} packages, and also
 provides the standard predefined instantiations required
 by the Ada 95 Reference Manual.
@@ -21660,12 +21730,12 @@ This chapter covers the following:
 @section Implementation Limits
 
 @noindent
-The following table lists implementation limits for DEC Ada
+The following table lists implementation limits for HP Ada
 and GNAT systems.
 @multitable @columnfractions .60 .20 .20
 @sp 1
 @item  @emph{Compilation Parameter}
-@tab   @emph{DEC Ada}
+@tab   @emph{HP Ada}
 @tab   @emph{GNAT}
 @sp 1
 
@@ -21742,9 +21812,6 @@ and GNAT systems.
 @tab   2**31-1
 @tab   2**31-1
 @end multitable
-
-@node  Tools
-@section Tools
 
 @end ifset
 
@@ -23305,12 +23372,19 @@ later.
 
 The rule is simple. If a unit has elaboration code that can directly or
 indirectly make a call to a subprogram in a @code{with}'ed unit, or instantiate
-a generic unit in a @code{with}'ed unit,
+a generic package in a @code{with}'ed unit,
 then if the @code{with}'ed unit does not have
 pragma @code{Pure} or @code{Preelaborate}, then the client should have
 a pragma @code{Elaborate_All}
 for the @code{with}'ed unit. By following this rule a client is
 assured that calls can be made without risk of an exception.
+
+For generic subprogram instantiations, the rule can be relaxed to
+require only a pragma @code{Elaborate} since elaborating the body
+of a subprogram cannot cause any transitive elaboration (we are
+not calling the subprogram in this case, just elaborating its
+declaration).
+
 If this rule is not followed, then a program may be in one of four
 states:
 
@@ -23345,10 +23419,11 @@ may be true even if the rule is not followed.
 @end table
 
 @noindent
-Note that one additional advantage of following our Elaborate_All rule
+Note that one additional advantage of following our rules on the use
+of @code{Elaborate} and @code{Elaborate_All}
 is that the program continues to stay in the ideal (all orders OK) state
 even if maintenance
-changes some bodies of some subprograms. Conversely, if a program that does
+changes some bodies of some units. Conversely, if a program that does
 not follow this rule happens to be safe at some point, this state of affairs
 may deteriorate silently as a result of maintenance changes.
 
@@ -23698,11 +23773,15 @@ rule we previously described as the right approach. Let's restate it:
 @itemize
 @item
 @emph{If a unit has elaboration code that can directly or indirectly make a
-call to a subprogram in a @code{with}'ed unit, or instantiate a generic unit
-in a @code{with}'ed unit, then if the @code{with}'ed unit
+call to a subprogram in a @code{with}'ed unit, or instantiate a generic
+package in a @code{with}'ed unit, then if the @code{with}'ed unit
 does not have pragma @code{Pure} or
 @code{Preelaborate}, then the client should have an
-@code{Elaborate_All} for the @code{with}'ed unit.}
+@code{Elaborate_All} pragma for the @code{with}'ed unit.}
+
+@emph{In the case of instantiating a generic subprogram, it is always
+sufficient to have only an @code{Elaborate} pragma for the
+@code{with}'ed unit.}
 @end itemize
 
 @noindent
@@ -23710,24 +23789,26 @@ By following this rule a client is assured that calls and instantiations
 can be made without risk of an exception.
 
 In this mode GNAT traces all calls that are potentially made from
-elaboration code, and puts in any missing implicit @code{Elaborate_All}
-pragmas.
+elaboration code, and puts in any missing implicit @code{Elaborate}
+and @code{Elaborate_All} pragmas.
 The advantage of this approach is that no elaboration problems
 are possible if the binder can find an elaboration order that is
-consistent with these implicit @code{Elaborate_All} pragmas. The
+consistent with these implicit @code{Elaborate} and
+@code{Elaborate_All} pragmas. The
 disadvantage of this approach is that no such order may exist.
 
-If the binder does not generate any diagnostics, then it means that it
-has found an elaboration order that is guaranteed to be safe. However,
-the binder may still be relying on implicitly generated
-@code{Elaborate_All} pragmas so portability to other compilers than
-GNAT is not guaranteed.
+If the binder does not generate any diagnostics, then it means that it has
+found an elaboration order that is guaranteed to be safe. However, the binder
+may still be relying on implicitly generated @code{Elaborate} and
+@code{Elaborate_All} pragmas so portability to other compilers than GNAT is not
+guaranteed.
 
 If it is important to guarantee portability, then the compilations should
 use the
 @option{-gnatwl}
 (warn on elaboration problems) switch. This will cause warning messages
-to be generated indicating the missing @code{Elaborate_All} pragmas.
+to be generated indicating the missing @code{Elaborate} and
+@code{Elaborate_All} pragmas.
 Consider the following source program:
 
 @smallexample @c ada
@@ -23772,7 +23853,7 @@ and these warnings can be used as a guide for supplying manually
 the missing pragmas. It is usually a bad idea to use this warning
 option during development. That's because it will warn you when
 you need to put in a pragma, but cannot warn you when it is time
-to take it out. So the use of pragma Elaborate_All may lead to
+to take it out. So the use of pragma @code{Elaborate_All} may lead to
 unnecessary dependencies and even false circularities.
 
 This default mode is more restrictive than the Ada Reference
@@ -23980,7 +24061,7 @@ must be elaborated before itself, and that's a circularity.
 @end enumerate
 
 @noindent
-Indeed, if you add an explicit pragma Elaborate_All for @code{Utils} in
+Indeed, if you add an explicit pragma @code{Elaborate_All} for @code{Utils} in
 the body of @code{Decls} you will get a true Ada Reference Manual
 circularity that makes the program illegal.
 
@@ -24321,15 +24402,15 @@ the case of complex legacy code.
 @item Perform dynamic checks
 If the compilations are done using the
 @option{-gnatE}
-(dynamic elaboration check) switch, then GNAT behaves in
-a quite different manner. Dynamic checks are generated for all calls
-that could possibly result in raising an exception. With this switch,
-the compiler does not generate implicit @code{Elaborate_All} pragmas.
-The behavior then is exactly as specified in the Ada 95 Reference Manual.
-The binder will generate an executable program that may or may not
-raise @code{Program_Error}, and then it is the programmer's job to ensure
-that it does not raise an exception. Note that it is important to
-compile all units with the switch, it cannot be used selectively.
+(dynamic elaboration check) switch, then GNAT behaves in a quite different
+manner. Dynamic checks are generated for all calls that could possibly result
+in raising an exception. With this switch, the compiler does not generate
+implicit @code{Elaborate} or @code{Elaborate_All} pragmas. The behavior then is
+exactly as specified in the Ada 95 Reference Manual. The binder will generate
+an executable program that may or may not raise @code{Program_Error}, and then
+it is the programmer's job to ensure that it does not raise an exception. Note
+that it is important to compile all units with the switch, it cannot be used
+selectively.
 
 @item Suppress checks
 The drawback of dynamic checks is that they generate a
@@ -24341,15 +24422,15 @@ then you can use the configuration pragma
 example this pragma could be placed in the @file{gnat.adc} file.
 
 @item Suppress checks selectively
-When you know that certain calls in elaboration code cannot possibly
-lead to an elaboration error, and the binder nevertheless generates warnings
-on those calls and inserts Elaborate_All pragmas that lead to elaboration
-circularities, it is possible to remove those warnings locally and obtain
-a program that will bind. Clearly this can be unsafe, and it is the
-responsibility of the programmer to make sure that the resulting program has
-no elaboration anomalies. The pragma @code{Suppress (Elaboration_Check)} can
-be used with different granularity to suppress warnings and break
-elaboration circularities:
+When you know that certain calls or instantiations in elaboration code cannot
+possibly lead to an elaboration error, and the binder nevertheless complains
+about implicit @code{Elaborate} and @code{Elaborate_All} pragmas that lead to
+elaboration circularities, it is possible to remove those warnings locally and
+obtain a program that will bind. Clearly this can be unsafe, and it is the
+responsibility of the programmer to make sure that the resulting program has no
+elaboration anomalies. The pragma @code{Suppress (Elaboration_Check)} can be
+used with different granularity to suppress warnings and break elaboration
+circularities:
 
 @itemize @bullet
 @item
@@ -24560,8 +24641,8 @@ raised by the use of access-to-subprogram types and dynamic dispatching,
 the program is free of elaboration errors. If it is important that the
 program be portable, then use the
 @option{-gnatwl}
-switch to generate warnings about missing @code{Elaborate_All}
-pragmas, and supply the missing pragmas.
+switch to generate warnings about missing @code{Elaborate} or
+@code{Elaborate_All} pragmas, and supply the missing pragmas.
 
 If the program fails to bind using the default static elaboration
 handling, then you can fix the program to eliminate the binder
@@ -24710,7 +24791,7 @@ It is of course quite unlikely that both these results are correct, so
 it is up to you in a case like this to investigate the source of the
 difference, by looking at the two elaboration orders that are chosen,
 and figuring out which is correct, and then adding the necessary
-@code{Elaborate_All} pragmas to ensure the desired order.
+@code{Elaborate} or @code{Elaborate_All} pragmas to ensure the desired order.
 
 @node Inline Assembler
 @appendix Inline Assembler
@@ -25443,7 +25524,7 @@ applications developed in other Ada environments.
 * Implementation-dependent characteristics::
 * Compatibility with Other Ada 95 Systems::
 * Representation Clauses::
-* Compatibility with DEC Ada 83::
+* Compatibility with HP Ada 83::
 @ifset vms
 * Transitioning from Alpha to Integrity OpenVMS::
 @end ifset
@@ -25510,7 +25591,7 @@ the item nearer to the declaration of the entity to which it refers.
 A particular case is that representation pragmas
 @ifset vms
 (including the
-extended DEC Ada 83 compatibility pragmas such as @code{Export_Procedure})
+extended HP Ada 83 compatibility pragmas such as @code{Export_Procedure})
 @end ifset
 cannot be applied to a subprogram body.  If necessary, a separate subprogram
 declaration must be introduced to which the pragma can be applied.
@@ -25663,7 +25744,7 @@ are described in the GNAT Reference Manual, and these include several that
 are specifically intended to correspond to other vendors' Ada 83 pragmas.
 For migrating from VADS, the pragma @code{Use_VADS_Size} may be useful.
 For
-compatibility with DEC Ada 83, GNAT supplies the pragmas
+compatibility with HP Ada 83, GNAT supplies the pragmas
 @code{Extend_System}, @code{Ident}, @code{Inline_Generic},
 @code{Interface_Name}, @code{Passive}, @code{Suppress_All},
 and @code{Volatile}.
@@ -25682,7 +25763,7 @@ implementation.  All GNAT-defined attributes are described in the
 @cite{GNAT Reference Manual}, and these include several that are specifically
 intended
 to correspond to other vendors' Ada 83 attributes.  For migrating from VADS,
-the attribute @code{VADS_Size} may be useful.  For compatibility with DEC
+the attribute @code{VADS_Size} may be useful.  For compatibility with HP
 Ada 83, GNAT supplies the attributes @code{Bit}, @code{Machine_Size} and
 @code{Type_Class}.
 
@@ -25717,7 +25798,8 @@ Program_Error being raised due to an ``Access Before Elaboration'': an attempt
 to invoke a subprogram its body has been elaborated, or to instantiate a
 generic before the generic body has been elaborated.  By default GNAT
 attempts to choose a safe order (one that will not encounter access before
-elaboration problems) by implicitly inserting Elaborate_All pragmas where
+elaboration problems) by implicitly inserting @code{Elaborate} or
+@code{Elaborate_All} pragmas where
 needed.  However, this can lead to the creation of elaboration circularities
 and a resulting rejection of the program by gnatbind.  This issue is
 thoroughly described in @ref{Elaboration Order Handling in GNAT}.
@@ -25862,36 +25944,36 @@ is to use a component size clause for the element size in an array,
 or a record representation clause for an access field in a record.
 @end table
 
-@node Compatibility with DEC Ada 83
-@section Compatibility with DEC Ada 83
+@node Compatibility with HP Ada 83
+@section Compatibility with HP Ada 83
 
 @noindent
 The VMS version of GNAT fully implements all the pragmas and attributes
-provided by DEC Ada 83, as well as providing the standard DEC Ada 83
+provided by HP Ada 83, as well as providing the standard HP Ada 83
 libraries, including Starlet.  In addition, data layouts and parameter
 passing conventions are highly compatible.  This means that porting
-existing DEC Ada 83 code to GNAT in VMS systems should be easier than
+existing HP Ada 83 code to GNAT in VMS systems should be easier than
 most other porting efforts.  The following are some of the most
-significant differences between GNAT and DEC Ada 83.
+significant differences between GNAT and HP Ada 83.
 
 @table @asis
 @item Default floating-point representation
-In GNAT, the default floating-point format is IEEE, whereas in DEC Ada 83,
+In GNAT, the default floating-point format is IEEE, whereas in HP Ada 83,
 it is VMS format.  GNAT does implement the necessary pragmas
 (Long_Float, Float_Representation) for changing this default.
 
 @item System
 The package System in GNAT exactly corresponds to the definition in the
 Ada 95 reference manual, which means that it excludes many of the
-DEC Ada 83 extensions.  However, a separate package Aux_DEC is provided
+HP Ada 83 extensions.  However, a separate package Aux_DEC is provided
 that contains the additional definitions, and a special pragma,
 Extend_System allows this package to be treated transparently as an
 extension of package System.
 
 @item To_Address
 The definitions provided by Aux_DEC are exactly compatible with those
-in the DEC Ada 83 version of System, with one exception.
-DEC Ada provides the following declarations:
+in the HP Ada 83 version of System, with one exception.
+HP Ada provides the following declarations:
 
 @smallexample @c ada
 TO_ADDRESS (INTEGER)
@@ -25903,7 +25985,7 @@ TO_ADDRESS (universal_integer)
 The version of TO_ADDRESS taking a universal integer argument is in fact
 an extension to Ada 83 not strictly compatible with the reference manual.
 In GNAT, we are constrained to be exactly compatible with the standard,
-and this means we cannot provide this capability.  In DEC Ada 83, the
+and this means we cannot provide this capability.  In HP Ada 83, the
 point of this definition is to deal with a call like:
 
 @smallexample @c ada
@@ -25913,7 +25995,7 @@ TO_ADDRESS (16#12777#);
 @noindent
 Normally, according to the Ada 83 standard, one would expect this to be
 ambiguous, since it matches both the INTEGER and UNSIGNED_LONGWORD forms
-of TO_ADDRESS@.  However, in DEC Ada 83, there is no ambiguity, since the
+of TO_ADDRESS@.  However, in HP Ada 83, there is no ambiguity, since the
 definition using universal_integer takes precedence.
 
 In GNAT, since the version with universal_integer cannot be supplied, it is
@@ -25942,10 +26024,10 @@ which in GNAT is treated like any other declared task.
 @end table
 
 For full details on these and other less significant compatibility issues,
-see appendix E of the Digital publication entitled @cite{DEC Ada, Technical
-Overview and Comparison on DIGITAL Platforms}.
+see appendix E of the HP publication entitled @cite{HP Ada, Technical
+Overview and Comparison on HP Platforms}.
 
-For GNAT running on other than VMS systems, all the DEC Ada 83 pragmas and
+For GNAT running on other than VMS systems, all the HP Ada 83 pragmas and
 attributes are recognized, although only a subset of them can sensibly
 be implemented.  The description of pragmas in this reference manual
 indicates whether or not they are applicable to non-VMS systems.
@@ -26559,6 +26641,7 @@ environment to build your executable.
 @menu
 * C Calling Convention::
 * Stdcall Calling Convention::
+* Win32 Calling Convention::
 * DLL Calling Convention::
 @end menu
 
@@ -26577,6 +26660,9 @@ are available for Windows:
 
 @item
 @code{Stdcall} (Microsoft defined)
+
+@item
+@code{Win32} (GNAT specific)
 
 @item
 @code{DLL} (GNAT specific)
@@ -26621,8 +26707,8 @@ is missing, as in the above example, this parameter is set to be the
 
 When importing a variable defined in C, you should always use the @code{C}
 calling convention unless the object containing the variable is part of a
-DLL (in which case you should use the @code{DLL} calling convention,
-@pxref{DLL Calling Convention}).
+DLL (in which case you should use the @code{Stdcall} calling
+convention, @pxref{Stdcall Calling Convention}).
 
 @node Stdcall Calling Convention
 @subsection @code{Stdcall} Calling Convention
@@ -26697,14 +26783,10 @@ The @code{gnatdll} tool, which creates the import library for the DLL, is able
 to handle those cases (@pxref{Using gnatdll} for the description of
 the switches).
 
-@node DLL Calling Convention
-@subsection @code{DLL} Calling Convention
-
 @noindent
-This convention, which is GNAT-specific, must be used when you want to
-import in Ada a variables defined in a DLL. For functions and procedures
-this convention is equivalent to the @code{Stdcall} convention. As an
-example, if a DLL contains a variable defined as:
+It is also possible to import variables defined in a DLL by using an
+import pragma for a variable. As an example, if a DLL contains a
+variable defined as:
 
 @smallexample
 int my_var;
@@ -26716,13 +26798,27 @@ then, to access this variable from Ada you should write:
 @smallexample @c ada
 @group
 My_Var : Interfaces.C.int;
-pragma Import (DLL, My_Var);
+pragma Import (Stdcall, My_Var);
 @end group
 @end smallexample
 
-The remarks concerning the @code{External_Name} and @code{Link_Name}
-parameters given in the previous sections equally apply to the @code{DLL}
-calling convention.
+@noindent
+Note that to ease building cross-platform bindings this convention
+will be handled as a @code{C} calling convention on non Windows platforms.
+
+@node Win32 Calling Convention
+@subsection @code{Win32} Calling Convention
+
+@noindent
+This convention, which is GNAT-specific is fully equivalent to the
+@code{Stdcall} calling convention described above.
+
+@node DLL Calling Convention
+@subsection @code{DLL} Calling Convention
+
+@noindent
+This convention, which is GNAT-specific is fully equivalent to the
+@code{Stdcall} calling convention described above.
 
 @node Introduction to Dynamic Link Libraries (DLLs)
 @section Introduction to Dynamic Link Libraries (DLLs)
@@ -26907,9 +27003,9 @@ end API;
 @end smallexample
 
 @noindent
-Note that a variable is @strong{always imported with a DLL convention}. A
-function can have @code{C}, @code{Stdcall} or @code{DLL} convention. For
-subprograms, the @code{DLL} convention is a synonym of @code{Stdcall}
+Note that a variable is
+@strong{always imported with a Stdcall convention}. A function
+can have @code{C} or @code{Stdcall} convention.
 (@pxref{Windows Calling Conventions}).
 
 @node Creating an Import Library
@@ -27218,9 +27314,11 @@ library (@pxref{Using gnatdll}).
 @end enumerate
 
 @noindent
-Note that a relocatable DLL stripped using the @code{strip} binutils
-tool will not be relocatable anymore. To build a DLL without debug
-information pass @code{-largs -s} to @code{gnatdll}.
+Note that a relocatable DLL and stripped using the @code{strip}
+binutils tool will not be relocatable anymore. To build a DLL without
+debug information pass @code{-largs -s} to @code{gnatdll}. This
+restriction does not apply to a DLL built using a Library Project.
+@pxref{Library Projects}.
 
 @node Limitations When Using Ada DLLs from Ada
 @subsection Limitations When Using Ada DLLs from Ada
@@ -27250,10 +27348,9 @@ Windows object handles, etc.
 Building a DLL is a way to encapsulate a set of services usable from any
 application. As a result, the Ada entities exported by a DLL should be
 exported with the @code{C} or @code{Stdcall} calling conventions to avoid
-any Ada name mangling. Please note that the @code{Stdcall} convention
-should only be used for subprograms, not for variables. As an example here
-is an Ada package @code{API}, spec and body, exporting two procedures, a
-function, and a variable:
+any Ada name mangling. As an example here is an Ada package
+@code{API}, spec and body, exporting two procedures, a function, and a
+variable:
 
 @smallexample @c ada
 @group
@@ -27944,11 +28041,10 @@ switch). Here are the step-by-step instructions for debugging it:
 $ gdb -nw ada_main
 @end smallexample
 
-@item Break on the main procedure and run the program.
+@item Start the program and stop at the beginning of the main procedure
 
 @smallexample
-(gdb) break ada_main
-(gdb) run
+(gdb) start
 @end smallexample
 
 @noindent
@@ -27961,7 +28057,7 @@ possible to set a breakpoint in the DLL.
 
 @smallexample
 (gdb) break ada_dll
-(gdb) run
+(gdb) cont
 @end smallexample
 
 @end enumerate
@@ -27970,6 +28066,10 @@ possible to set a breakpoint in the DLL.
 At this stage a breakpoint is set inside the DLL. From there on
 you can use the standard approach to debug the whole program
 (@pxref{Running and Debugging Ada Programs}).
+
+@ignore
+@c This used to work, probably because the DLLs were non-relocatable
+@c keep this section around until the problem is sorted out.
 
 To break on the @code{DllMain} routine it is not possible to follow
 the procedure above. At the time the program stop on @code{ada_main}
@@ -27980,7 +28080,7 @@ the procedure below @pxref{Debugging the DLL Directly} or this procedure:
 @item Launch @code{GDB} on the main program.
 
 @smallexample
-$ gdb -nw ada_main
+$ gdb ada_main
 @end smallexample
 
 @item Load DLL symbols
@@ -28006,6 +28106,7 @@ on the proper line (break in @file{ada_dll.adb} line 45).
 @end smallexample
 
 @end enumerate
+@end ignore
 
 @node Program Built with Foreign Tools and DLL Built with GCC/GNAT
 @subsection Program Built with Foreign Tools and DLL Built with GCC/GNAT
@@ -28039,34 +28140,58 @@ been built with debugging information (see GNAT -g option).
 
 @enumerate 1
 @item
-Launch the debugger on the DLL.
+Find out the executable starting address
 
 @smallexample
-$ gdb -nw test.dll
+$ objdump --file-header main.exe
 @end smallexample
 
-@item Set a breakpoint on a DLL subroutine.
+The starting address is reported on the last line. For example:
+
+@smallexample
+main.exe:     file format pei-i386
+architecture: i386, flags 0x0000010a:
+EXEC_P, HAS_DEBUG, D_PAGED
+start address 0x00401010
+@end smallexample
+
+@item
+Launch the debugger on the executable.
+
+@smallexample
+$ gdb main.exe
+@end smallexample
+
+@item
+Set a breakpoint at the starting address, and launch the program.
+
+@smallexample
+$ (gdb) break *0x00401010
+$ (gdb) run
+@end smallexample
+
+The program will stop at the given address.
+
+@item
+Set a breakpoint on a DLL subroutine.
 
 @smallexample
 (gdb) break ada_dll.adb:45
 @end smallexample
 
-Note that at this point it is not possible to break using the routine symbol
-directly as the program is not yet running. The solution is to break
-on the proper line (break in @file{ada_dll.adb} line 45).
-
-@item
-Specify the executable file to @code{GDB}.
+Or if you want to break using a symbol on the DLL, you need first to
+select the Ada language (language used by the DLL).
 
 @smallexample
-(gdb) exec-file main.exe
+(gdb) set language ada
+(gdb) break ada_dll
 @end smallexample
 
 @item
-Run the program.
+Continue the program.
 
 @smallexample
-(gdb) run
+(gdb) cont
 @end smallexample
 
 @noindent
@@ -28104,7 +28229,7 @@ that the process PID for @file{main.exe} is 208.
 @item Launch gdb.
 
 @smallexample
-$ gdb -nw
+$ gdb
 @end smallexample
 
 @item Attach to the running process to be debugged.
@@ -28128,7 +28253,7 @@ $ gdb -nw
 @item Continue process execution.
 
 @smallexample
-(gdb) continue
+(gdb) cont
 @end smallexample
 
 @end enumerate
