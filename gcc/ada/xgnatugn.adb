@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,8 +180,8 @@ procedure Xgnatugn is
    Target : Target_Type;
    --  The Target variable is initialized using the command line
 
-   Valid_Characters : constant Character_Set
-     := To_Set (Span => (' ',  '~'));
+   Valid_Characters : constant Character_Set :=
+                        To_Set (Span => (' ',  '~'));
    --  This array controls which characters are permitted in the input
    --  file (after line breaks have been removed). Valid characters
    --  are all printable ASCII characters and the space character.
@@ -748,7 +748,7 @@ procedure Xgnatugn is
 
                      else
 
-                        --  Extend Seq to cover the current (known) word.
+                        --  Extend Seq to cover the current (known) word
 
                         Seq.Last := Token.Span.Last;
                         Next_Token;
@@ -1045,7 +1045,7 @@ procedure Xgnatugn is
 
             if (not Have_Conditional) or (Flag in Edition_Type) then
 
-               --  The ordinary case.
+               --  The ordinary case
 
                if not Currently_Excluding then
                   Put_Line (Output_File, Rewritten);
@@ -1068,7 +1068,7 @@ procedure Xgnatugn is
       --  case).
 
       procedure Add (Extension, Replacement : String);
-      --  Adds an extension with a custom replacement.
+      --  Adds an extension with a custom replacement
 
       ---------
       -- Add --
@@ -1294,7 +1294,7 @@ begin
       begin
          Target := Flag_Type'Value (Argument (1));
 
-         if Target not in Target_Type then
+         if not Target'Valid then
             Valid_Command_Line := False;
          end if;
 
