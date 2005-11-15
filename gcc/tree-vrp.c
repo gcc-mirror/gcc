@@ -2221,6 +2221,13 @@ infer_value_range (tree stmt, tree op, enum tree_code *comp_code_p, tree *val_p)
   if (tree_could_throw_p (stmt))
     return false;
 
+  /* If STMT is the last statement of a basic block with no
+     successors, there is no point inferring anything about any of its
+     operands.  We would not be able to find a proper insertion point
+     for the assertion, anyway.  */
+  if (stmt_ends_bb_p (stmt) && EDGE_COUNT (bb_for_stmt (stmt)->succs) == 0)
+    return false;
+
   if (POINTER_TYPE_P (TREE_TYPE (op)))
     {
       bool is_store;
