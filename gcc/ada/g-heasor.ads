@@ -37,15 +37,18 @@
 --  subprogram parameters, so that it can be used with different types with
 --  shared sorting code.
 
---  See also GNAT.Heap_Sort_G and GNAT.Heap_Sort_A. These are older versions
---  of this routine. In some cases GNAT.Heap_Sort_G may be a little faster
---  than GNAT.Heap_Sort, at the expense of generic code duplication and a
---  less convenient interface. The generic version also has the advantage
---  of being Pure, while this unit can only be Preelaborate.
-
 --  This heapsort algorithm uses approximately N*log(N) compares in the
 --  worst case and is in place with no additional storage required. See
 --  the body for exact details of the algorithm used.
+
+--  See also GNAT.Heap_Sort_G which is a generic version that will be faster
+--  since the overhead of the indirect calls is avoided, at the expense of
+--  generic code duplication and less convenient interface. The generic version
+--  also has the advantage of being Pure, while this unit can only be
+--  Preelaborate, because of the access types.
+
+--  Note: GNAT.Heap_Sort replaces and obsoletes GNAT.Heap_Sort_A, which is
+--  retained in the GNAT library for backwards compatibility.
 
 package GNAT.Heap_Sort is
    pragma Preelaborate;
