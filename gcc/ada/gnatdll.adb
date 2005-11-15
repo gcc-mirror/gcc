@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,7 +63,7 @@ procedure Gnatdll is
    --  build the DLL.
 
    Help : Boolean := False;
-   --  Help will be set to True the usage information is to be displayed.
+   --  Help will be set to True the usage information is to be displayed
 
    Version : constant String := Gnatvsn.Gnat_Version_String;
    --  Why should it be necessary to make a copy of this
@@ -165,8 +165,6 @@ procedure Gnatdll is
    ------------------------
 
    procedure Parse_Command_Line is
-
-      use GNAT.Command_Line;
 
       procedure Add_File (Filename : in String);
       --  Add one file to the list of file to handle
