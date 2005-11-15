@@ -55,6 +55,8 @@
 #if defined(__vxworks)
 #include <vxWorks.h>
 #include <ioLib.h>
+#include <hostLib.h>
+#include <resolvLib.h>
 #define SHUT_RD		0
 #define SHUT_WR		1
 #define SHUT_RDWR	2
@@ -131,7 +133,9 @@
 #include <errno.h>
 #endif
 
-#ifndef __vxworks
+#ifdef __vxworks
+#include <sys/times.h>
+#else
 #include <sys/time.h>
 #endif
 

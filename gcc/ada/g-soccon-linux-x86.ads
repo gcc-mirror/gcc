@@ -36,9 +36,6 @@
 --  directly with'ed by an applications program.
 
 --  This is the version for i686-pc-linux-gnu
---  WARNING! This file is a default version that must be replaced for
---  each platform.
-
 --  This file is generated automatically, do not modify it by hand! Instead,
 --  make changes to gen-soccon.c and re-run it on each target.
 

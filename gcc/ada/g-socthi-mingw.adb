@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005 AdaCore                      --
+--                     Copyright (C) 2001-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,8 +59,7 @@ package body GNAT.Sockets.Thin is
    function Standard_Connect
      (S       : C.int;
       Name    : System.Address;
-      Namelen : C.int)
-      return    C.int;
+      Namelen : C.int) return C.int;
    pragma Import (Stdcall, Standard_Connect, "connect");
 
    function Standard_Select
@@ -68,8 +67,7 @@ package body GNAT.Sockets.Thin is
       Readfds   : Fd_Set_Access;
       Writefds  : Fd_Set_Access;
       Exceptfds : Fd_Set_Access;
-      Timeout   : Timeval_Access)
-      return      C.int;
+      Timeout   : Timeval_Access) return C.int;
    pragma Import (Stdcall, Standard_Select, "select");
 
    type Error_Type is
@@ -239,8 +237,7 @@ package body GNAT.Sockets.Thin is
    function C_Connect
      (S       : C.int;
       Name    : System.Address;
-      Namelen : C.int)
-      return    C.int
+      Namelen : C.int) return C.int
    is
       Res : C.int;
 
@@ -263,8 +260,7 @@ package body GNAT.Sockets.Thin is
    function C_Readv
      (Socket : C.int;
       Iov    : System.Address;
-      Iovcnt : C.int)
-      return  C.int
+      Iovcnt : C.int) return C.int
    is
       Res : C.int;
       Count : C.int := 0;
@@ -299,8 +295,7 @@ package body GNAT.Sockets.Thin is
       Readfds   : Fd_Set_Access;
       Writefds  : Fd_Set_Access;
       Exceptfds : Fd_Set_Access;
-      Timeout   : Timeval_Access)
-      return      C.int
+      Timeout   : Timeval_Access) return C.int
    is
       pragma Warnings (Off, Exceptfds);
 
@@ -441,8 +436,7 @@ package body GNAT.Sockets.Thin is
    function C_Writev
      (Socket : C.int;
       Iov    : System.Address;
-      Iovcnt : C.int)
-      return   C.int
+      Iovcnt : C.int) return C.int
    is
       Res : C.int;
       Count : C.int := 0;
@@ -553,11 +547,8 @@ package body GNAT.Sockets.Thin is
    --------------------------
 
    function Socket_Error_Message
-     (Errno : Integer)
-     return  C.Strings.chars_ptr
+     (Errno : Integer) return C.Strings.chars_ptr
    is
-      use GNAT.Sockets.Constants;
-
    begin
       case Errno is
          when EINTR =>           return Error_Messages (N_EINTR);

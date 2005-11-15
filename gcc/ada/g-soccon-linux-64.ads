@@ -35,10 +35,7 @@
 --  by the GNAT.Sockets package (g-socket.ads). This package should not be
 --  directly with'ed by an applications program.
 
---  This is the version for i686-pc-linux-gnu
---  WARNING! This file is a default version that must be replaced for
---  each platform.
-
+--  This is the version for ia64-hp-linux-gnu
 --  This file is generated automatically, do not modify it by hand! Instead,
 --  make changes to gen-soccon.c and re-run it on each target.
 
@@ -178,7 +175,7 @@ package GNAT.Sockets.Constants is
 
    --  Sizes (in bytes) of the components of struct timeval
 
-   SIZEOF_tv_sec      : constant :=            4; --  tv_sec
-   SIZEOF_tv_usec     : constant :=            4; --  tv_usec
+   SIZEOF_tv_sec      : constant :=            8; --  tv_sec
+   SIZEOF_tv_usec     : constant :=            8; --  tv_usec
 
 end GNAT.Sockets.Constants;

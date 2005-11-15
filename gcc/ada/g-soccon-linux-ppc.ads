@@ -35,10 +35,7 @@
 --  by the GNAT.Sockets package (g-socket.ads). This package should not be
 --  directly with'ed by an applications program.
 
---  This is the version for i686-pc-linux-gnu
---  WARNING! This file is a default version that must be replaced for
---  each platform.
-
+--  This is the version for powerpc-linux
 --  This file is generated automatically, do not modify it by hand! Instead,
 --  make changes to gen-soccon.c and re-run it on each target.
 
@@ -114,8 +111,8 @@ package GNAT.Sockets.Constants is
    -- Control flags --
    -------------------
 
-   FIONBIO            : constant :=        21537; --  Set/clear non-blocking io
-   FIONREAD           : constant :=        21531; --  How many bytes to read
+   FIONBIO            : constant :=  -2147195266; --  Set/clear non-blocking io
+   FIONREAD           : constant :=   1074030207; --  How many bytes to read
 
    --------------------
    -- Shutdown modes --
@@ -157,8 +154,8 @@ package GNAT.Sockets.Constants is
    SO_BROADCAST       : constant :=            6; --  Can send broadcast msgs
    SO_SNDBUF          : constant :=            7; --  Set/get send buffer size
    SO_RCVBUF          : constant :=            8; --  Set/get recv buffer size
-   SO_SNDTIMEO        : constant :=           21; --  Emission timeout
-   SO_RCVTIMEO        : constant :=           20; --  Reception timeout
+   SO_SNDTIMEO        : constant :=           19; --  Emission timeout
+   SO_RCVTIMEO        : constant :=           18; --  Reception timeout
    SO_ERROR           : constant :=            4; --  Get/clear error status
    IP_MULTICAST_IF    : constant :=           32; --  Set/get mcast interface
    IP_MULTICAST_TTL   : constant :=           33; --  Set/get multicast TTL

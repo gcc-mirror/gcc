@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -168,5 +168,24 @@ package GNAT.Sockets.Constants is
    -------------------
 
    IOV_MAX            : constant := 2147483647; --  Maximum writev iovcnt
+
+   ----------------------
+   -- Type definitions --
+   ----------------------
+
+   --  Sizes (in bytes) of the components of struct timeval
+
+   SIZEOF_tv_sec      : constant :=          4; --  tv_sec
+   SIZEOF_tv_usec     : constant :=          4; --  tv_usec
+
+   --------------------------------
+   -- VxWorks-specific constants --
+   --------------------------------
+
+   --  These constants may be used only within the VxWorks version of
+   --  GNAT.Sockets.Thin.
+
+   OK                 : constant :=          0; --  VxWorks generic success
+   ERROR              : constant :=         -1; --  VxWorks generic error
 
 end GNAT.Sockets.Constants;
