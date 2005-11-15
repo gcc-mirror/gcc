@@ -87275,8 +87275,9 @@ echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
   fi
 fi
 
-# Check to see if libgcc_s exists, indicating that shared libgcc is possible.
-if test $enable_symvers != no; then
+# Check to see if 'gnu' can win.
+if test $enable_symvers = gnu; then
+  # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
   echo "$as_me:$LINENO: checking for shared libgcc" >&5
 echo $ECHO_N "checking for shared libgcc... $ECHO_C" >&6
   ac_save_CFLAGS="$CFLAGS"
@@ -87399,28 +87400,21 @@ rm -f conftest.err conftest.$ac_objext \
   fi
   echo "$as_me:$LINENO: result: $glibcxx_shared_libgcc" >&5
 echo "${ECHO_T}$glibcxx_shared_libgcc" >&6
-fi
 
-# If no shared libgcc, can't win.
-if test $glibcxx_shared_libgcc != yes &&
-   test $enable_symvers != no ; then
-    { echo "$as_me:$LINENO: WARNING: === You have requested some kind of symbol versioning, but" >&5
-echo "$as_me: WARNING: === You have requested some kind of symbol versioning, but" >&2;}
-    { echo "$as_me:$LINENO: WARNING: === you are not building a shared libgcc_s." >&5
-echo "$as_me: WARNING: === you are not building a shared libgcc_s." >&2;}
-    { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
-echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
-    enable_symvers=no
-  enable_symvers=no
-fi
-
-# Check to see if 'gnu' can win.
-if test $enable_symvers = gnu; then
   # For GNU ld, we need at least this version.  The format is described in
   # GLIBCXX_CHECK_LINKER_FEATURES above.
   glibcxx_min_gnu_ld_version=21400
 
-  if test $with_gnu_ld != yes ; then
+  # If no shared libgcc, can't win.
+  if test $glibcxx_shared_libgcc != yes; then
+      { echo "$as_me:$LINENO: WARNING: === You have requested GNU symbol versioning, but" >&5
+echo "$as_me: WARNING: === You have requested GNU symbol versioning, but" >&2;}
+      { echo "$as_me:$LINENO: WARNING: === you are not building a shared libgcc_s." >&5
+echo "$as_me: WARNING: === you are not building a shared libgcc_s." >&2;}
+      { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
+echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+      enable_symvers=no
+  elif test $with_gnu_ld != yes ; then
     # just fail for now
     { echo "$as_me:$LINENO: WARNING: === You have requested GNU symbol versioning, but" >&5
 echo "$as_me: WARNING: === You have requested GNU symbol versioning, but" >&2;}
