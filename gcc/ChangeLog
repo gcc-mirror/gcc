@@ -1,3 +1,9 @@
+2005-11-14  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 24840
+	* tree-vrp.c (infer_value_range): Return false if STMT is a
+	block terminator and its basic block has no successors.
+
 2005-11-14  Mike Stump  <mrs@apple.com>
 
 	* config/i386/i386.c (override_options): -masm=intel isn't

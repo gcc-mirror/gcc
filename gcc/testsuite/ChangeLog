@@ -1,3 +1,8 @@
+2005-11-14  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 24840
+	* gcc.dg/tree-ssa/pr24840.c: New test.
+
 2005-11-14  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/24841
