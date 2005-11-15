@@ -40,6 +40,7 @@
 /* Required for __gnat_malloc() */
 
 #include <string.h>
+/* Required for memcpy() */
 
 extern void __gnat_disable_sigpipe (int fd);
 extern void __gnat_free_socket_set (fd_set *);
@@ -49,8 +50,10 @@ extern void __gnat_insert_socket_in_set (fd_set *, int);
 extern int __gnat_is_socket_in_set (fd_set *, int);
 extern fd_set *__gnat_new_socket_set (fd_set *);
 extern void __gnat_remove_socket_from_set (fd_set *, int);
+extern int __gnat_get_h_errno (void);
 
 /* Disable the sending of SIGPIPE for writes on a broken stream */
+
 void
 __gnat_disable_sigpipe (int fd)
 {
@@ -151,4 +154,42 @@ void
 __gnat_remove_socket_from_set (fd_set *set, int socket)
 {
   FD_CLR (socket, set);
+}
+
+/* Get the value of the last host error */
+
+int
+__gnat_get_h_errno (void) {
+#ifdef __vxworks
+  int vxw_errno = errno;
+
+  switch (vxw_errno) {
+    case 0:
+      return 0;
+
+    case S_resolvLib_HOST_NOT_FOUND:
+    case S_hostLib_UNKNOWN_HOST:
+      return HOST_NOT_FOUND;
+
+    case S_resolvLib_TRY_AGAIN:
+      return TRY_AGAIN;
+
+    case S_resolvLib_NO_RECOVERY:
+    case S_resolvLib_BUFFER_2_SMALL:
+    case S_resolvLib_INVALID_PARAMETER:
+    case S_resolvLib_INVALID_ADDRESS:
+    case S_hostLib_INVALID_PARAMETER:
+      return NO_RECOVERY;
+
+    case S_resolvLib_NO_DATA:
+      return NO_DATA;
+
+    default:
+      return -1;
+  }
+#elif defined(VMS)
+  return errno;
+#else
+  return h_errno;
+#endif
 }

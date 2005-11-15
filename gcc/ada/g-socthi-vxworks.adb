@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2002-2004 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2002-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -267,14 +267,19 @@ package body GNAT.Sockets.Thin is
       function To_Pointer is
         new Unchecked_Conversion (System.Address, int_Access);
 
-      procedure VxWorks_Gethostbyaddr
-        (Addr : C.int; Buf : out C.char_array);
-      pragma Import (C, VxWorks_Gethostbyaddr, "hostGetByAddr");
+      function VxWorks_hostGetByAddr
+        (Addr : C.int; Buf : System.Address) return C.int;
+      pragma Import (C, VxWorks_hostGetByAddr, "hostGetByAddr");
 
-      Host_Name : C.char_array (1 .. Max_Name_Length);
+      Host_Name : aliased C.char_array (1 .. Max_Name_Length);
 
    begin
-      VxWorks_Gethostbyaddr (To_Pointer (Addr).all, Host_Name);
+      if VxWorks_hostGetByAddr (To_Pointer (Addr).all,
+                                Host_Name (Host_Name'First)'Address)
+           /= Constants.OK
+      then
+         return null;
+      end if;
 
       In_Addr_Access_Ptr.all.all := To_In_Addr (To_Pointer (Addr).all);
       Local_Hostent.all.H_Name := C.Strings.New_Char_Array (Host_Name);
@@ -289,14 +294,17 @@ package body GNAT.Sockets.Thin is
    function C_Gethostbyname
      (Name : C.char_array) return Hostent_Access
    is
-      function VxWorks_Gethostbyname
+      function VxWorks_hostGetByName
         (Name : C.char_array) return C.int;
-      pragma Import (C, VxWorks_Gethostbyname, "hostGetByName");
+      pragma Import (C, VxWorks_hostGetByName, "hostGetByName");
 
       Addr : C.int;
 
    begin
-      Addr := VxWorks_Gethostbyname (Name);
+      Addr := VxWorks_hostGetByName (Name);
+      if Addr /= Constants.OK then
+         return null;
+      end if;
 
       In_Addr_Access_Ptr.all.all := To_In_Addr (Addr);
       Local_Hostent.all.H_Name := C.Strings.New_Char_Array (To_C (Host_Name));
@@ -515,7 +523,6 @@ package body GNAT.Sockets.Thin is
 
    function Non_Blocking_Socket (S : C.int) return Boolean is
       R : Boolean;
-
    begin
       Task_Lock.Lock;
       R := (Is_Socket_In_Set (Non_Blocking_Sockets, S) /= 0);

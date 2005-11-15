@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001-2005 Ada Core Technologies, Inc.         --
+--                     Copyright (C) 2001-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -489,7 +489,7 @@ package GNAT.Sockets is
    Host_Error : exception;
    --  Exception raised by the two following procedures. Once raised, its
    --  message contains a string describing the error code. This exception is
-   --  raised when an host entry can not be retrieved.
+   --  raised when an host entry cannot be retrieved.
 
    function Get_Host_By_Address
      (Address : Inet_Addr_Type;
@@ -595,6 +595,16 @@ package GNAT.Sockets is
       Unknown_Server_Error,
       Cannot_Resolve_Error);
 
+   --  Timeval_Duration is a subtype of Standard.Duration because the full
+   --  range of Standard.Duration cannot be represented in the equivalent C
+   --  structure. Moreover, negative values are not allowed to avoid system
+   --  incompatibilities.
+
+   Immediate : constant := 0.0;
+   Forever   : constant := Duration (Integer'Last) * 1.0;
+
+   subtype Timeval_Duration is Duration range Immediate .. Forever;
+
    --  Get_Socket_Options and Set_Socket_Options manipulate options associated
    --  with a socket. Options may exist at multiple protocol levels in the
    --  communication stack. Socket_Level is the uppermost socket level.
@@ -610,18 +620,21 @@ package GNAT.Sockets is
    --  a boolean to enable or disable this option.
 
    type Option_Name is (
-     Keep_Alive,      -- Enable sending of keep-alive messages
-     Reuse_Address,   -- Allow bind to reuse local address
-     Broadcast,       -- Enable datagram sockets to recv/send broadcast packets
-     Send_Buffer,     -- Set/get the maximum socket send buffer in bytes
-     Receive_Buffer,  -- Set/get the maximum socket recv buffer in bytes
-     Linger,          -- Shutdown wait for msg to be sent or timeout occur
-     Error,           -- Get and clear the pending socket error
-     No_Delay,        -- Do not delay send to coalesce packets (TCP_NODELAY)
-     Add_Membership,  -- Join a multicast group
-     Drop_Membership, -- Leave a multicast group
-     Multicast_TTL,   -- Indicate the time-to-live of sent multicast packets
-     Multicast_Loop); -- Sent multicast packets are looped to the local socket
+     Keep_Alive,       -- Enable sending of keep-alive messages
+     Reuse_Address,    -- Allow bind to reuse local address
+     Broadcast,        -- Enable datagram sockets to recv/send broadcasts
+     Send_Buffer,      -- Set/get the maximum socket send buffer in bytes
+     Receive_Buffer,   -- Set/get the maximum socket recv buffer in bytes
+     Linger,           -- Shutdown wait for msg to be sent or timeout occur
+     Error,            -- Get and clear the pending socket error
+     No_Delay,         -- Do not delay send to coalesce packets (TCP_NODELAY)
+     Add_Membership,   -- Join a multicast group
+     Drop_Membership,  -- Leave a multicast group
+     Multicast_If,     -- Set default outgoing interface for multicast packets
+     Multicast_TTL,    -- Indicate the time-to-live of sent multicast packets
+     Multicast_Loop,   -- Sent multicast packets are looped to local socket
+     Send_Timeout,     -- Set timeout value for output
+     Receive_Timeout); -- Set timeout value for input
 
    type Option_Type (Name : Option_Name := Keep_Alive) is record
       case Name is
@@ -652,8 +665,15 @@ package GNAT.Sockets is
             Multicast_Address : Inet_Addr_Type;
             Local_Interface   : Inet_Addr_Type;
 
+         when Multicast_If    =>
+            Outgoing_If : Inet_Addr_Type;
+
          when Multicast_TTL   =>
             Time_To_Live : Natural;
+
+         when Send_Timeout |
+              Receive_Timeout =>
+            Timeout : Timeval_Duration;
 
       end case;
    end record;
@@ -935,15 +955,7 @@ package GNAT.Sockets is
    type Selector_Type is limited private;
    type Selector_Access is access all Selector_Type;
 
-   --  Selector_Duration is a subtype of Standard.Duration because the full
-   --  range of Standard.Duration cannot be represented in the equivalent C
-   --  structure. Moreover, negative values are not allowed to avoid system
-   --  incompatibilities.
-
-   Immediate : constant := 0.0;
-   Forever   : constant := Duration (Integer'Last) * 1.0;
-
-   subtype Selector_Duration is Duration range Immediate .. Forever;
+   subtype Selector_Duration is Timeval_Duration;
 
    procedure Create_Selector (Selector : out Selector_Type);
    --  Create a new selector

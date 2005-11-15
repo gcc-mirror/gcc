@@ -4,7 +4,7 @@
  *                                                                          *
  *                           G E N - S O C C O N                            *
  *                                                                          *
- *            Copyright (C) 2004-2005 Free Software Foundation, Inc.        *
+ *          Copyright (C) 2004-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -25,7 +25,7 @@
 /* This program generates g-soccon.ads */
 
 /* To build using DEC C:
-  CC/DEFINE="TARGET=OpenVMS" gen-soccon
+  CC/DEFINE="TARGET=""OpenVMS""" gen-soccon
   LINK gen-soccon
   RUN gen-soccon
 */
@@ -37,6 +37,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
+
+#ifdef __MINGW32__
+#include <fcntl.h>
+#endif
 
 #include "gsocket.h"
 
@@ -55,8 +60,8 @@ struct line *first = NULL, *last = NULL;
 #define _NL TXT("")
 /* Empty line */
 
-#define itoad(n) f_itoa ("%d", n)
-#define itoax(n) f_itoa ("16#%08x#", n)
+#define itoad(n) f_itoa ("%d", (n))
+#define itoax(n) f_itoa ("16#%08x#", (n))
 
 #define CND(name,comment) add_line(#name, itoad (name), comment);
 /* Constant (decimal) */
@@ -78,6 +83,10 @@ char *f_itoa (char *, int);
 
 void add_line (char *, char*, char*);
 
+#ifdef __MINGW32__
+unsigned int _CRT_fmode = _O_BINARY;
+#endif
+
 int
 main (void) {
 
@@ -89,7 +98,7 @@ TXT("--               G N A T . S O C K E T S . C O N S T A N T S               
 TXT("--                                                                          --")
 TXT("--                                 S p e c                                  --")
 TXT("--                                                                          --")
-TXT("--          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --")
+TXT("--          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --")
 TXT("--                                                                          --")
 TXT("-- GNAT is free software;  you can  redistribute it  and/or modify it under --")
 TXT("-- terms of the  GNU General Public License as published  by the Free Soft- --")
@@ -118,7 +127,7 @@ TXT("--  This package provides target dependent definitions of constant for use"
 TXT("--  by the GNAT.Sockets package (g-socket.ads). This package should not be")
 TXT("--  directly with'ed by an applications program.")
 _NL
-TXT("--  This is the version for " STR (TARGET))
+TXT("--  This is the version for " TARGET)
 TXT("--  This file is generated automatically, do not modify it by hand! Instead,")
 TXT("--  make changes to gen-soccon.c and re-run it on each target.")
 _NL
@@ -565,6 +574,36 @@ _NL
 CND(IOV_MAX, "Maximum writev iovcnt")
 
 _NL
+TXT("   ----------------------")
+TXT("   -- Type definitions --")
+TXT("   ----------------------")
+_NL
+
+{
+  struct timeval tv;
+TXT("   --  Sizes (in bytes) of the components of struct timeval")
+_NL
+#define SIZEOF_tv_sec (sizeof tv.tv_sec)
+CND(SIZEOF_tv_sec, "tv_sec")
+#define SIZEOF_tv_usec (sizeof tv.tv_usec)
+CND(SIZEOF_tv_usec, "tv_usec")
+}
+
+#ifdef __vxworks
+_NL
+TXT("   --------------------------------")
+TXT("   -- VxWorks-specific constants --")
+TXT("   --------------------------------")
+_NL
+TXT("   --  These constants may be used only within the VxWorks version of")
+TXT("   --  GNAT.Sockets.Thin.")
+_NL
+
+CND(OK,    "VxWorks generic success")
+CND(ERROR, "VxWorks generic error")
+#endif
+
+_NL
 TXT("end GNAT.Sockets.Constants;")
 
   output ();
@@ -614,6 +653,7 @@ f_itoa (char *fmt, int n) {
 void
 add_line (char *_text, char *_value, char *_comment) {
   struct line *l = (struct line *) malloc (sizeof (struct line));
+
   l->text = _text;
   l->value = _value;
   l->comment = _comment;
