@@ -39,9 +39,7 @@ with System.Traces;        use System.Traces;
 
 package body System.Traces.Tasking is
 
-   use System.Tasking;
    use System.Traces;
-   use System.Traces.Format;
 
    package SSL renames System.Soft_Links;
 
@@ -60,8 +58,8 @@ package body System.Traces.Tasking is
                     (1 .. Task_Name2.Common.Task_Image_Len);
       Trace_S : String (1 .. 6 + Task_S'Length + Task2_S'Length);
 
-      L0 : Integer := Task_S'Length;
-      L1 : Integer := Task2_S'Length;
+      L0 : constant Integer := Task_S'Length;
+      L1 : constant Integer := Task2_S'Length;
 
    begin
       if Parameters.Runtime_Traces then
@@ -108,13 +106,13 @@ package body System.Traces.Tasking is
       Task2_S : constant String :=
                   Task_Name2.Common.Task_Image
                     (1 .. Task_Name2.Common.Task_Image_Len);
-      Entry_S   : String := Integer'Image (Integer (Entry_Number));
+      Entry_S   : constant String := Integer'Image (Integer (Entry_Number));
       Trace_S   : String (1 .. 9 + Task_S'Length
                                  + Task2_S'Length + Entry_S'Length);
 
-      L0 : Integer := Task_S'Length;
-      L1 : Integer := Task_S'Length + Entry_S'Length;
-      L2 : Integer := Task_S'Length + Task2_S'Length;
+      L0 : constant Integer := Task_S'Length;
+      L1 : constant Integer := Task_S'Length + Entry_S'Length;
+      L2 : constant Integer := Task_S'Length + Task2_S'Length;
 
    begin
       if Parameters.Runtime_Traces then
@@ -156,12 +154,12 @@ package body System.Traces.Tasking is
       Task2_S : constant String :=
                   Task_Name2.Common.Task_Image
                     (1 .. Task_Name2.Common.Task_Image_Len);
-      Entry_S   : String := Integer'Image (Integer (Entry_Number));
+      Entry_S   : constant String := Integer'Image (Integer (Entry_Number));
       Trace_S   : String (1 .. 9 + Task_S'Length
                                  + Task2_S'Length + Entry_S'Length);
 
-      L0 : Integer := Task_S'Length;
-      L1 : Integer := Task_S'Length + Entry_S'Length;
+      L0 : constant Integer := Task_S'Length;
+      L1 : constant Integer := Task_S'Length + Entry_S'Length;
 
    begin
       if Parameters.Runtime_Traces then
@@ -183,11 +181,11 @@ package body System.Traces.Tasking is
    end Send_Trace_Info;
 
    procedure Send_Trace_Info (Id : Trace_T; Entry_Number : Entry_Index) is
-      Task_S  : String := SSL.Task_Name.all;
-      Entry_S : String := Integer'Image (Integer (Entry_Number));
+      Task_S  : constant String := SSL.Task_Name.all;
+      Entry_S : constant String := Integer'Image (Integer (Entry_Number));
       Trace_S : String (1 .. 6 + Task_S'Length + Entry_S'Length);
 
-      L0 : Integer := Task_S'Length;
+      L0 : constant Integer := Task_S'Length;
 
    begin
       if Parameters.Runtime_Traces then
@@ -212,7 +210,7 @@ package body System.Traces.Tasking is
                     (1 .. Task_Name2.Common.Task_Image_Len);
       Trace_S : String (1 .. 6 + Task_S'Length + Task2_S'Length);
 
-      L0 : Integer := Task2_S'Length;
+      L0 : constant Integer := Task2_S'Length;
 
    begin
       if Parameters.Runtime_Traces then
@@ -234,14 +232,15 @@ package body System.Traces.Tasking is
       Acceptor_S : constant String :=
                      Acceptor.Common.Task_Image
                        (1 .. Acceptor.Common.Task_Image_Len);
-      Entry_S    : String := Integer'Image (Integer (Entry_Number));
-      Timeout_S  : String := Duration'Image (Timeout);
+      Entry_S    : constant String := Integer'Image (Integer (Entry_Number));
+      Timeout_S  : constant String := Duration'Image (Timeout);
       Trace_S    : String (1 .. 12 + Task_S'Length + Acceptor_S'Length
                                    + Entry_S'Length + Timeout_S'Length);
 
-      L0 : Integer := Task_S'Length;
-      L1 : Integer := Task_S'Length + Acceptor_S'Length;
-      L2 : Integer := Task_S'Length + Acceptor_S'Length + Entry_S'Length;
+      L0 : constant Integer := Task_S'Length;
+      L1 : constant Integer := Task_S'Length + Acceptor_S'Length;
+      L2 : constant Integer :=
+             Task_S'Length + Acceptor_S'Length + Entry_S'Length;
 
    begin
       if Parameters.Runtime_Traces then
@@ -262,14 +261,14 @@ package body System.Traces.Tasking is
       Entry_Number : Entry_Index;
       Timeout      : Duration)
    is
-      Task_S    : String := SSL.Task_Name.all;
-      Entry_S   : String := Integer'Image (Integer (Entry_Number));
-      Timeout_S : String := Duration'Image (Timeout);
+      Task_S    : constant String := SSL.Task_Name.all;
+      Entry_S   : constant String := Integer'Image (Integer (Entry_Number));
+      Timeout_S : constant String := Duration'Image (Timeout);
       Trace_S   : String (1 .. 9 + Task_S'Length
                                  + Entry_S'Length + Timeout_S'Length);
 
-      L0 : Integer := Task_S'Length;
-      L1 : Integer := Task_S'Length + Entry_S'Length;
+      L0 : constant Integer := Task_S'Length;
+      L1 : constant Integer := Task_S'Length + Entry_S'Length;
 
    begin
       if Parameters.Runtime_Traces then
@@ -288,14 +287,14 @@ package body System.Traces.Tasking is
       Task_Name : Task_Id;
       Number    : Integer)
    is
-      Task_S    : String := SSL.Task_Name.all;
-      Number_S  : String := Integer'Image (Number);
-      Accepts_S : String := Extract_Accepts (Task_Name);
+      Task_S    : constant String := SSL.Task_Name.all;
+      Number_S  : constant String := Integer'Image (Number);
+      Accepts_S : constant String := Extract_Accepts (Task_Name);
       Trace_S   : String (1 .. 9 + Task_S'Length
                                  + Number_S'Length + Accepts_S'Length);
 
-      L0 : Integer := Task_S'Length;
-      L1 : Integer := Task_S'Length + Number_S'Length;
+      L0 : constant Integer := Task_S'Length;
+      L1 : constant Integer := Task_S'Length + Number_S'Length;
 
    begin
       if Parameters.Runtime_Traces then
@@ -315,16 +314,17 @@ package body System.Traces.Tasking is
       Number    : Integer;
       Timeout   : Duration)
    is
-      Task_S    : String := SSL.Task_Name.all;
-      Timeout_S : String := Duration'Image (Timeout);
-      Number_S  : String := Integer'Image (Number);
-      Accepts_S : String := Extract_Accepts (Task_Name);
+      Task_S    : constant String := SSL.Task_Name.all;
+      Timeout_S : constant String := Duration'Image (Timeout);
+      Number_S  : constant String := Integer'Image (Number);
+      Accepts_S : constant String := Extract_Accepts (Task_Name);
       Trace_S   : String (1 .. 12 + Task_S'Length + Timeout_S'Length
                                   + Number_S'Length + Accepts_S'Length);
 
-      L0 : Integer := Task_S'Length;
-      L1 : Integer := Task_S'Length + Timeout_S'Length;
-      L2 : Integer := Task_S'Length + Timeout_S'Length + Number_S'Length;
+      L0 : constant Integer := Task_S'Length;
+      L1 : constant Integer := Task_S'Length + Timeout_S'Length;
+      L2 : constant Integer :=
+             Task_S'Length + Timeout_S'Length + Number_S'Length;
 
    begin
       if Parameters.Runtime_Traces then

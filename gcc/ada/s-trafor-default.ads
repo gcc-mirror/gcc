@@ -34,6 +34,7 @@
 --  This package implements functions to format run-time traces
 
 package System.Traces.Format is
+   pragma Preelaborate;
 
    Max_Size : constant Integer := 128;
    --  Event messages' maximum size.
