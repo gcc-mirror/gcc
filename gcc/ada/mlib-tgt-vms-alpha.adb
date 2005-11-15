@@ -30,7 +30,6 @@
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 with MLib.Fil;
 with MLib.Utl;
@@ -539,6 +538,15 @@ package body MLib.Tgt is
    begin
       return "exe";
    end DLL_Ext;
+
+   ----------------
+   -- DLL_Prefix --
+   ----------------
+
+   function DLL_Prefix return String is
+   begin
+      return "lib";
+   end DLL_Prefix;
 
    --------------------
    -- Dynamic_Option --

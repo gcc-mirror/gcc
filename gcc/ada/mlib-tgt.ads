@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001-2005, Ada Core Technologies, Inc.        --
+--                     Copyright (C) 2001-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,6 +81,10 @@ package MLib.Tgt is
    function Object_Ext return String;
    --  System dependent object extension, without leadien dot.
    --  On Unix, returns "o".
+
+   function DLL_Prefix return String;
+   --  System dependent dynamic library prefix.
+   --  On Windows, returns "". On other platforms, returns "lib".
 
    function DLL_Ext return String;
    --  System dependent dynamic library extension, without leading dot.

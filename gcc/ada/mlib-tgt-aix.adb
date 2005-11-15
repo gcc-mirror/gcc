@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2003-2005, Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2003-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,15 +28,13 @@
 --  This package provides a set of target dependent routines to build
 --  static, dynamic or relocatable libraries.
 
---  This is the AIX version of the body.
+--  This is the AIX version of the body
 
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with GNAT.OS_Lib;       use GNAT.OS_Lib;
 
 with MLib.Fil;
 with MLib.Utl;
 with Namet;    use Namet;
-with Osint;    use Osint;
 with Opt;
 with Output;   use Output;
 with Prj.Com;
@@ -152,7 +150,7 @@ package body MLib.Tgt is
          Write_Line (Lib_File);
       end if;
 
-      --  Look for -lgnarl in Options. If found, set the thread options.
+      --  Look for -lgnarl in Options. If found, set the thread options
 
       for J in Options'Range loop
          if Options (J).all = "-lgnarl" then
@@ -218,6 +216,15 @@ package body MLib.Tgt is
    begin
       return "a";
    end DLL_Ext;
+
+   ----------------
+   -- DLL_Prefix --
+   ----------------
+
+   function DLL_Prefix return String is
+   begin
+      return "lib";
+   end DLL_Prefix;
 
    --------------------
    -- Dynamic_Option --
