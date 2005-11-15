@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,18 +154,20 @@ package body MDLL is
          --  5) Build the dynamic library
 
          declare
-            Params : OS_Lib.Argument_List :=
-                       Adr_Opt'Unchecked_Access & All_Options;
+            Params      : constant OS_Lib.Argument_List :=
+                            Map_Opt'Unchecked_Access &
+                            Adr_Opt'Unchecked_Access & All_Options;
+            First_Param : Positive := Params'First + 1;
 
          begin
             if Map_File then
-               Params := Map_Opt'Unchecked_Access & Params;
+               First_Param := Params'First;
             end if;
 
             Utl.Gcc
               (Output_File => Dll_File,
                Files       => Objects_Exp_File,
-               Options     => Params,
+               Options     => Params (First_Param .. Params'Last),
                Build_Lib   => True);
          end;
 
@@ -252,20 +254,25 @@ package body MDLL is
          Utl.Gnatbind (L_Afiles, Options & Bargs_Options);
 
          declare
-            Params : OS_Lib.Argument_List :=
-                       Out_Opt'Unchecked_Access &
-                       Dll_File'Unchecked_Access &
-                       Lib_Opt'Unchecked_Access &
-                       Exp_File'Unchecked_Access &
-                       Adr_Opt'Unchecked_Access &
-                       Ofiles &
-                       All_Options;
+            Params      : constant OS_Lib.Argument_List :=
+                            Map_Opt'Unchecked_Access &
+                            Out_Opt'Unchecked_Access &
+                            Dll_File'Unchecked_Access &
+                            Lib_Opt'Unchecked_Access &
+                            Exp_File'Unchecked_Access &
+                            Adr_Opt'Unchecked_Access &
+                            Ofiles &
+                            All_Options;
+            First_Param : Positive := Params'First + 1;
+
          begin
             if Map_File then
-               Params := Map_Opt'Unchecked_Access & Params;
+               First_Param := Params'First;
             end if;
 
-            Utl.Gnatlink (L_Afiles (L_Afiles'Last).all, Params);
+            Utl.Gnatlink
+              (L_Afiles (L_Afiles'Last).all,
+               Params (First_Param .. Params'Last));
          end;
 
          OS_Lib.Delete_File (Exp_File, Success);
