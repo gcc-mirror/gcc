@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,8 +73,10 @@ package Prj is
    --  Canonical_Case_File_Name is called on this variable in the body of Prj.
 
    -----------------------------------------------------
-   -- Multi-language stuff that will be modified soon --
+   -- Multi-language Stuff That Will be Modified Soon --
    -----------------------------------------------------
+
+   --  Still should be properly commented ???
 
    type Language_Index is new Nat;
 
@@ -232,6 +234,7 @@ package Prj is
 
    type Other_Source_Id is new Nat;
    No_Other_Source : constant Other_Source_Id := 0;
+
    type Other_Source is record
       Language         : Language_Index;       --  language of the source
       File_Name        : Name_Id;              --  source file simple name
@@ -273,10 +276,10 @@ package Prj is
    type Policy is (Autonomous, Compliant, Controlled, Restricted);
    --  Type to specify the symbol policy, when symbol control is supported.
    --  See full explanation about this type in package Symbols.
-   --  Autonomous: Create a symbol file without considering any reference
-   --  Compliant: Try to be as compatible as possible with an existing ref
-   --  Controlled: Fail if symbols are not the same as those in the reference
-   --  Restricted: Restrict the symbols to those in the symbol file
+   --    Autonomous: Create a symbol file without considering any reference
+   --    Compliant:  Try to be as compatible as possible with an existing ref
+   --    Controlled: Fail if symbols are not the same as those in the reference
+   --    Restricted: Restrict the symbols to those in the symbol file
 
    type Symbol_Record is record
       Symbol_File   : Name_Id := No_Name;
@@ -301,12 +304,12 @@ package Prj is
    type String_List_Id is new Nat;
    Nil_String : constant String_List_Id := 0;
    type String_Element is record
-      Value    : Name_Id        := No_Name;
-      Index    : Int            := 0;
+      Value         : Name_Id        := No_Name;
+      Index         : Int            := 0;
       Display_Value : Name_Id   := No_Name;
-      Location : Source_Ptr     := No_Location;
-      Flag     : Boolean        := False;
-      Next     : String_List_Id := Nil_String;
+      Location      : Source_Ptr     := No_Location;
+      Flag          : Boolean        := False;
+      Next          : String_List_Id := Nil_String;
    end record;
    --  To hold values for string list variables and array elements.
    --  Component Flag may be used for various purposes. For source
@@ -353,9 +356,9 @@ package Prj is
    type Variable_Id is new Nat;
    No_Variable : constant Variable_Id := 0;
    type Variable is record
-      Next     : Variable_Id := No_Variable;
-      Name     : Name_Id;
-      Value    : Variable_Value;
+      Next  : Variable_Id := No_Variable;
+      Name  : Name_Id;
+      Value : Variable_Value;
    end record;
    --  To hold the list of variables in a project file and in packages
 
@@ -430,7 +433,7 @@ package Prj is
       Parent : Package_Id   := No_Package;
       Next   : Package_Id   := No_Package;
    end record;
-   --  A package. Includes declarations that may include other packages
+   --  A package (includes declarations that may include other packages)
 
    package Package_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Package_Element,
@@ -473,8 +476,8 @@ package Prj is
       --  The position in the project file source where
       --  Ada_Spec_Suffix is defined.
 
-      Impl_Suffixes    : Impl_Suffix_Array   := No_Impl_Suffixes;
-      Supp_Suffixes    : Supp_Language_Index := No_Supp_Language_Index;
+      Impl_Suffixes : Impl_Suffix_Array   := No_Impl_Suffixes;
+      Supp_Suffixes : Supp_Language_Index := No_Supp_Language_Index;
       --  The source suffixes of the different languages
 
       Body_Suffix : Array_Element_Id := No_Array_Element;
@@ -553,7 +556,7 @@ package Prj is
       Supp_Languages : Supp_Language_Index  := No_Supp_Language_Index;
       --  Indicate the different languages of the source of this project
 
-      First_Referred_By  : Project_Id := No_Project;
+      First_Referred_By : Project_Id := No_Project;
       --  The project, if any, that was the first to be known as importing or
       --  extending this project. Set by Prj.Proc.Process.
 
@@ -585,6 +588,7 @@ package Prj is
       --  Directory where the project file resides. Set by Prj.Proc.Process
 
       Display_Directory : Name_Id := No_Name;
+      --  comment ???
 
       Dir_Path : String_Access;
       --  Same as Directory, but as an access to String. Set by
@@ -603,17 +607,30 @@ package Prj is
       --  different from Library_Dir for platforms where the file names are
       --  case-insensitive.
 
+      Library_TS : Time_Stamp_Type := Empty_Time_Stamp;
+      --  The timestamp of a library file in a library project.
+      --  Set by MLib.Prj.Check_Library.
+
       Library_Src_Dir : Name_Id := No_Name;
-      --  If a library project, directory where the sources and the ALI files
-      --  of the library are copied. By default, if attribute Library_Src_Dir
-      --  is not specified, sources are not copied anywhere and ALI files are
-      --  copied in the Library Directory. Set by
-      --  Prj.Nmsc.Language_Independent_Check.
+      --  If a Stand-Alone Library project, directory where the sources
+      --  of the interfaces of the library are copied. By default, if
+      --  attribute Library_Src_Dir is not specified, sources of the interfaces
+      --  are not copied anywhere. Set by Prj.Nmsc.Check_Stand_Alone_Library.
 
       Display_Library_Src_Dir : Name_Id := No_Name;
       --  The name of the library source directory, for display purposes.
       --  May be different from Library_Src_Dir for platforms where the file
       --  names are case-insensitive.
+
+      Library_ALI_Dir : Name_Id := No_Name;
+      --  In a library project, directory where the ALI files are copied.
+      --  If attribute Library_ALI_Dir is not specified, ALI files are
+      --  copied in the Library_Dir. Set by Prj.Nmsc.Check_Library_Attributes.
+
+      Display_Library_ALI_Dir : Name_Id := No_Name;
+      --  The name of the library ALI directory, for display purposes. May be
+      --  different from Library_ALI_Dir for platforms where the file names are
+      --  case-insensitive.
 
       Library_Name : Name_Id := No_Name;
       --  If a library project, name of the library
@@ -653,8 +670,8 @@ package Prj is
       --  A flag that indicates that there are non-Ada sources in this project
 
       Sources : String_List_Id := Nil_String;
-      --  The list of all the source file names. Set by
-      --  Prj.Nmsc.Check_Ada_Naming_Scheme.
+      --  The list of all the source file names.
+      --  Set by Prj.Nmsc.Check_Ada_Naming_Scheme.
 
       First_Other_Source : Other_Source_Id := No_Other_Source;
       Last_Other_Source  : Other_Source_Id := No_Other_Source;
@@ -711,13 +728,14 @@ package Prj is
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       First_Language_Processing : First_Language_Processing_Data :=
-        Default_First_Language_Processing_Data;
+                                    Default_First_Language_Processing_Data;
+      --  Comment needed ???
 
-      Supp_Language_Processing      : Supp_Language_Index :=
-                                       No_Supp_Language_Index;
+      Supp_Language_Processing : Supp_Language_Index := No_Supp_Language_Index;
+      --  Comment needed
 
-      Default_Linker                : Name_Id := No_Name;
-      Default_Linker_Path           : Name_Id := No_Name;
+      Default_Linker      : Name_Id := No_Name;
+      Default_Linker_Path : Name_Id := No_Name;
 
       Decl : Declarations := No_Declarations;
       --  The declarations (variables, attributes and packages) of this
@@ -726,6 +744,10 @@ package Prj is
       Imported_Projects : Project_List := Empty_Project_List;
       --  The list of all directly imported projects, if any. Set by
       --  Prj.Proc.Process.
+
+      All_Imported_Projects : Project_List := Empty_Project_List;
+      --  The list of all projects imported directly or indirectly, if any.
+      --  Set by Make.Initialize.
 
       Ada_Include_Path : String_Access := null;
       --  The cached value of ADA_INCLUDE_PATH for this project file. Do not
@@ -771,7 +793,7 @@ package Prj is
       --  A flag to avoid checking repetitively the naming scheme of
       --  this project file. Set by Prj.Nmsc.Check_Ada_Naming_Scheme.
 
-      Seen                           : Boolean := False;
+      Seen : Boolean := False;
       --  A flag to mark a project as "visited" to avoid processing the same
       --  project several time.
 
@@ -943,14 +965,14 @@ package Prj is
       In_Project : Project_Data;
       In_Tree    : Project_Tree_Ref) return Boolean;
    --  Return True when Language is one of the languages used in
-   --  project Project.
+   --  project In_Project.
 
    procedure Set
      (Language   : Language_Index;
       Present    : Boolean;
       In_Project : in out Project_Data;
       In_Tree    : Project_Tree_Ref);
-   --  Indicate if Language is or not a language used in project Project
+   --  Indicate if Language is or not a language used in project In_Project
 
    function Language_Processing_Data_Of
      (Language   : Language_Index;
@@ -1018,6 +1040,7 @@ private
       Table_Low_Bound      => 1,
       Table_Initial        => 5,
       Table_Increment      => 100);
+   --  Comment ???
 
    package Path_File_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Name_Id,
@@ -1045,10 +1068,11 @@ private
    --  A table to store the object dirs, before creating the object path file
 
    type Private_Project_Tree_Data is record
-      Namings           : Naming_Table.Instance;
-      Path_Files        : Path_File_Table.Instance;
-      Source_Paths      : Source_Path_Table.Instance;
-      Object_Paths      : Object_Path_Table.Instance;
-      Default_Naming    : Naming_Data;
+      Namings        : Naming_Table.Instance;
+      Path_Files     : Path_File_Table.Instance;
+      Source_Paths   : Source_Path_Table.Instance;
+      Object_Paths   : Object_Path_Table.Instance;
+      Default_Naming : Naming_Data;
    end record;
+   --  Comment ???
 end Prj;
