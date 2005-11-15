@@ -362,7 +362,7 @@ public class XToolkit extends ClasspathToolkit
    */
   public GraphicsEnvironment getLocalGraphicsEnvironment ()
   {
-    throw new java.lang.UnsupportedOperationException ();
+    return new XGraphicsEnvironment (this);
   }
   
   /** Acquires an appropriate {@link ClasspathFontPeer}, for use in

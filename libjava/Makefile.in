@@ -829,6 +829,8 @@ gnu/awt/xlib/XFontPeer.java \
 gnu/awt/xlib/XFramePeer.java \
 gnu/awt/xlib/XGraphics.java \
 gnu/awt/xlib/XGraphicsConfiguration.java \
+gnu/awt/xlib/XGraphicsDevice.java \
+gnu/awt/xlib/XGraphicsEnvironment.java \
 gnu/awt/xlib/XOffScreenImage.java \
 gnu/awt/xlib/XPanelPeer.java \
 gnu/awt/xlib/XToolkit.java
