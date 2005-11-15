@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,7 +95,7 @@ package body Sem_Ch10 is
    --  Verify that a stub is declared immediately within a compilation unit,
    --  and not in an inner frame.
 
-   procedure Expand_With_Clause (Nam : Node_Id; N : Node_Id);
+   procedure Expand_With_Clause (Item : Node_Id; Nam : Node_Id; N : Node_Id);
    --  When a child unit appears in a context clause, the implicit withs on
    --  parents are made explicit, and with clauses are inserted in the context
    --  clause before the one for the child. If a parent in the with_clause
@@ -998,7 +998,7 @@ package body Sem_Ch10 is
       Check_Stub_Level (N);
       Nam := Current_Entity_In_Scope (Id);
 
-      if No (Nam) or else not Is_Package (Nam) then
+      if No (Nam) or else not Is_Package_Or_Generic_Package (Nam) then
          Error_Msg_N ("missing specification for package stub", N);
 
       elsif Has_Completion (Nam)
@@ -1843,9 +1843,8 @@ package body Sem_Ch10 is
 
          E_Name := Defining_Entity (Specification (Instance_Spec (U)));
 
-      elsif Unit_Kind = N_Procedure_Instantiation
-        or else Unit_Kind = N_Function_Instantiation
-      then
+      elsif Unit_Kind in N_Subprogram_Instantiation then
+
          --  Instantiation node is replaced with a package that contains
          --  renaming declarations and instance itself. The subprogram
          --  Instance is declared in the visible part of the wrapper package.
@@ -1952,6 +1951,13 @@ package body Sem_Ch10 is
 
       if Private_Present (N) then
          Set_Is_Immediately_Visible (E_Name, False);
+      end if;
+
+      --  Check for with'ing obsolescent package. Exclude subprograms here
+      --  since we will catch those on the call rather than the WITH.
+
+      if Is_Package_Or_Generic_Package (E_Name) then
+         Check_Obsolescent (E_Name, N);
       end if;
    end Analyze_With_Clause;
 
@@ -2480,13 +2486,14 @@ package body Sem_Ch10 is
    -- Expand_With_Clause --
    ------------------------
 
-   procedure Expand_With_Clause (Nam : Node_Id; N : Node_Id) is
+   procedure Expand_With_Clause (Item : Node_Id; Nam : Node_Id; N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (Nam);
       Ent   : constant Entity_Id := Entity (Nam);
       Withn : Node_Id;
       P     : Node_Id;
 
       function Build_Unit_Name (Nam : Node_Id) return Node_Id;
+      --  Comment requireed here ???
 
       ---------------------
       -- Build_Unit_Name --
@@ -2523,12 +2530,20 @@ package body Sem_Ch10 is
       Set_First_Name            (Withn, True);
       Set_Implicit_With         (Withn, True);
 
+      --  If the unit is a package declaration, a private_with_clause on a
+      --  child unit implies that the implicit with on the parent is also
+      --  private.
+
+      if Nkind (Unit (N)) = N_Package_Declaration then
+         Set_Private_Present       (Withn, Private_Present (Item));
+      end if;
+
       Prepend (Withn, Context_Items (N));
       Mark_Rewrite_Insertion (Withn);
       Install_Withed_Unit (Withn);
 
       if Nkind (Nam) = N_Expanded_Name then
-         Expand_With_Clause (Prefix (Nam), N);
+         Expand_With_Clause (Item, Prefix (Nam), N);
       end if;
 
       New_Nodes_OK := New_Nodes_OK - 1;
@@ -2638,6 +2653,16 @@ package body Sem_Ch10 is
         and then Nkind (Original_Node (P_Unit)) = N_Package_Instantiation
       then
          P_Unit := Original_Node (P_Unit);
+      end if;
+
+      --  We add the implicit with if the child unit is the current unit
+      --  being compiled. If the current unit is a body, we do not want
+      --  to add an implicit_with a second time to the corresponding spec.
+
+      if Nkind (Child_Unit) = N_Package_Declaration
+        and then Child_Unit /= Unit (Cunit (Current_Sem_Unit))
+      then
+         return;
       end if;
 
       New_Nodes_OK := New_Nodes_OK + 1;
@@ -2764,7 +2789,7 @@ package body Sem_Ch10 is
 
             if Is_Child_Spec (Decl_Node) then
                if Nkind (Name (Item)) = N_Expanded_Name then
-                  Expand_With_Clause (Prefix (Name (Item)), N);
+                  Expand_With_Clause (Item, Prefix (Name (Item)), N);
                else
                   --  if not an expanded name, the child unit must be a
                   --  renaming, nothing to do.
@@ -2784,10 +2809,12 @@ package body Sem_Ch10 is
 
             if Sloc (Library_Unit (Item)) /= No_Location then
                License_Check : declare
+
+                  Withu : constant Unit_Number_Type :=
+                            Get_Source_Unit (Library_Unit (Item));
+
                   Withl : constant License_Type :=
-                            License (Source_Index
-                                       (Get_Source_Unit
-                                         (Library_Unit (Item))));
+                            License (Source_Index (Withu));
 
                   Unitl : constant License_Type :=
                            License (Source_Index (Current_Sem_Unit));
@@ -2802,35 +2829,44 @@ package body Sem_Ch10 is
                   procedure License_Error is
                   begin
                      Error_Msg_N
-                       ("?license of with'ed unit & is incompatible",
+                       ("?license of with'ed unit & may be inconsistent",
                         Name (Item));
                   end License_Error;
 
                --  Start of processing for License_Check
 
                begin
-                  case Unitl is
-                     when Unknown =>
-                        null;
+                  --  Exclude license check if withed unit is an internal unit.
+                  --  This situation arises e.g. with the GPL version of GNAT.
 
-                     when Restricted =>
-                        if Withl = GPL then
-                           License_Error;
-                        end if;
+                  if Is_Internal_File_Name (Unit_File_Name (Withu)) then
+                     null;
 
-                     when GPL =>
-                        if Withl = Restricted then
-                           License_Error;
-                        end if;
+                     --  Otherwise check various cases
+                  else
+                     case Unitl is
+                        when Unknown =>
+                           null;
 
-                     when Modified_GPL =>
-                        if Withl = Restricted or else Withl = GPL then
-                           License_Error;
-                        end if;
+                        when Restricted =>
+                           if Withl = GPL then
+                              License_Error;
+                           end if;
 
-                     when Unrestricted =>
-                        null;
-                  end case;
+                        when GPL =>
+                           if Withl = Restricted then
+                              License_Error;
+                           end if;
+
+                        when Modified_GPL =>
+                           if Withl = Restricted or else Withl = GPL then
+                              License_Error;
+                           end if;
+
+                        when Unrestricted =>
+                           null;
+                     end case;
+                  end if;
                end License_Check;
             end if;
 
@@ -2901,10 +2937,12 @@ package body Sem_Ch10 is
             begin
                Lib_Spec := Unit (Library_Unit (N));
                while Is_Child_Spec (Lib_Spec) loop
-                  P := Unit (Parent_Spec (Lib_Spec));
+                  P      := Unit (Parent_Spec (Lib_Spec));
+                  P_Name := Defining_Entity (P);
 
-                  if not (Private_Present (Parent (Lib_Spec))) then
-                     P_Name := Defining_Entity (P);
+                  if not (Private_Present (Parent (Lib_Spec)))
+                    and then not In_Private_Part (P_Name)
+                  then
                      Install_Private_Declarations (P_Name);
                      Install_Private_With_Clauses (P_Name);
                      Set_Use (Private_Declarations (Specification (P)));
@@ -3125,7 +3163,7 @@ package body Sem_Ch10 is
             Item : Node_Id;
 
          begin
-            --  A limited with_clause can not appear in the same context_clause
+            --  A limited with_clause cannot appear in the same context_clause
             --  as a nonlimited with_clause which mentions the same library.
 
             Item := First (Context_Items (Comp_Unit));
@@ -3270,7 +3308,7 @@ package body Sem_Ch10 is
          Error_Msg_N
            ("child of a generic package must be a generic unit", Lib_Unit);
 
-      elsif not Is_Package (P_Name) then
+      elsif not Is_Package_Or_Generic_Package (P_Name) then
          Error_Msg_N
            ("parent unit must be package or generic package", Lib_Unit);
          raise Unrecoverable_Error;
@@ -4378,16 +4416,12 @@ package body Sem_Ch10 is
                          & "limited with_clauses", N);
             return;
 
-         when N_Package_Instantiation |
-              N_Function_Instantiation |
-              N_Procedure_Instantiation =>
+         when N_Generic_Instantiation =>
             Error_Msg_N ("generic instantiations not allowed in "
                          & "limited with_clauses", N);
             return;
 
-         when N_Generic_Package_Renaming_Declaration |
-              N_Generic_Procedure_Renaming_Declaration |
-              N_Generic_Function_Renaming_Declaration =>
+         when N_Generic_Renaming_Declaration =>
             Error_Msg_N ("generic renamings not allowed in "
                          & "limited with_clauses", N);
             return;
