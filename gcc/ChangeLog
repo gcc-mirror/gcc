@@ -1,3 +1,10 @@
+2005-11-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/24869
+	* config/cris/cris.md ("*mov_sidesisf_mem"): Do not match
+	special register for operand 3.  Reindent constraints to align
+	them vertically.
+
 2005-11-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Add -mmfcrf,

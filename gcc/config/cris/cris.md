@@ -678,11 +678,15 @@
   [(set (mem
 	 (plus:SI
 	  (match_operand:SI
-	   0 "cris_bdap_operand" "%r,r,r,r,r,r,r,r,R,R,R,R,R,R")
+	   0 "cris_bdap_operand"
+	   			"%r,  r,   r,r,  r,   r,r,  R,R,  R,R, R")
 	  (match_operand:SI
-	   1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn,r>Rn,r>Rn,r,>Rn,r,r,r,r,r,r")))
-	(match_operand 2 "register_operand" "r,r,r,r,x,x,x,x,r,r,r,x,x,x"))
-   (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r,*0,!2,r,r,*1,!*2,r,*1,!*2,r")
+	   1 "cris_bdap_operand"
+	   			"r>Rn,r>Rn,r,>Rn,r>Rn,r,>Rn,r,r,  r,r, r")))
+	(match_operand 2 "register_operand"
+		       		"r,   r,   r,r,  x,   x,x,  r,r,  r,x, x"))
+   (set (match_operand:SI 3 "register_operand"
+			  	"=*0,!2,   r,r,  *0,  r,r, *1,!*2,r,*1,r")
 	(plus:SI (match_dup 0)
 		 (match_dup 1)))]
   "GET_MODE_SIZE (GET_MODE (operands[2])) == UNITS_PER_WORD
@@ -696,17 +700,15 @@
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
     return "#";
   if (which_alternative == 1
-      || which_alternative == 5
+      || which_alternative == 7
       || which_alternative == 8
-      || which_alternative == 9
-      || which_alternative == 11
-      || which_alternative == 12)
+      || which_alternative == 10)
     return "#";
   if (which_alternative < 4)
     return "move.%s2 %2,[%3=%0%S1]";
-  if (which_alternative == 10)
+  if (which_alternative == 9)
     return "move.%s2 %2,[%3=%1%S0]";
-  if (which_alternative == 13)
+  if (which_alternative == 11)
     return "move %2,[%3=%1%S0]";
   return "move %2,[%3=%0%S1]";
 })
