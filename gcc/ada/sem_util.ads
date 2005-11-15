@@ -108,6 +108,12 @@ package Sem_Util is
    --  place error message on node N. Used in  object declarations, type
    --  conversions, qualified expressions.
 
+   procedure Check_Obsolescent (Nam : Entity_Id; N : Node_Id);
+   --  Nam is either a subprogram or a (generic) package entity. This procedure
+   --  checks if the Is_Obsolescent flag is set and if so, outputs appropriate
+   --  diagnostics (it also checks the appropriate restriction). N is the node
+   --  to which error messages are attached.
+
    procedure Check_Potentially_Blocking_Operation (N : Node_Id);
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
