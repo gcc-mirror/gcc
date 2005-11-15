@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -310,6 +310,24 @@ package body System.Vax_Float_Operations is
       return X * Y;
    end Mul_G;
 
+   ----------
+   -- Ne_F --
+   ----------
+
+   function Ne_F (X, Y : F) return Boolean is
+   begin
+      return X /= Y;
+   end Ne_F;
+
+   ----------
+   -- Ne_G --
+   ----------
+
+   function Ne_G (X, Y : G) return Boolean is
+   begin
+      return X /= Y;
+   end Ne_G;
+
    -----------
    -- Neg_F --
    -----------
@@ -426,7 +444,7 @@ package body System.Vax_Float_Operations is
    --  accurate, but is good enough in practice.
 
    function Valid_D (Arg : D) return Boolean is
-      Val : T := G_To_T (D_To_G (Arg));
+      Val : constant T := G_To_T (D_To_G (Arg));
    begin
       return Val'Valid;
    end Valid_D;
@@ -439,7 +457,7 @@ package body System.Vax_Float_Operations is
    --  accurate, but is good enough in practice.
 
    function Valid_F (Arg : F) return Boolean is
-      Val : S := F_To_S (Arg);
+      Val : constant S := F_To_S (Arg);
    begin
       return Val'Valid;
    end Valid_F;
@@ -452,7 +470,7 @@ package body System.Vax_Float_Operations is
    --  accurate, but is good enough in practice.
 
    function Valid_G (Arg : G) return Boolean is
-      Val : T := G_To_T (Arg);
+      Val : constant T := G_To_T (Arg);
    begin
       return Val'Valid;
    end Valid_G;
