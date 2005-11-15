@@ -1,3 +1,8 @@
+2005-11-14  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/24841
+	* gcc.dg/attr-weakref-1.c: Rearrange test directives.
+
 2005-11-14  Dale Johannesen  <dalej@apple.com>
 
 	* gcc.c-torture/execute/20051113-1.c:  New.
