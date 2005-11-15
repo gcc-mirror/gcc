@@ -1,3 +1,9 @@
+2005-11-15  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/lib1funcs.asm (div0) [L_dvmd_lnx]: Call raise instead
+	of making syscalls.
+	* config/arm/linux-eabi.h (CLEAR_INSN_CACHE): Define.  Set r7 also.
+
 2005-11-15  Jan Hubicka  <jh@suse.cz>
 
 	* invoke.texi (large-unit-insns): Document.
