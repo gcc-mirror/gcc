@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1045,6 +1045,26 @@ package body Exp_Aggr is
 
             if Present (Comp_Type) and then Controlled_Type (Comp_Type) then
                Set_No_Ctrl_Actions (A);
+
+               --  If this is an aggregate for an array of arrays, each
+               --  subaggregate will be expanded as well, and even with
+               --  No_Ctrl_Actions the assignments of inner components will
+               --  require attachment in their assignments to temporaries.
+               --  These temporaries must be finalized for each subaggregate,
+               --  to prevent multiple attachments of the same temporary
+               --  location to same finalization chain (and consequently
+               --  circular lists). To ensure that finalization takes place
+               --  for each subaggregate we wrap the assignment in a block.
+
+               if Is_Array_Type (Comp_Type)
+                 and then Nkind (Expr) = N_Aggregate
+               then
+                  A :=
+                    Make_Block_Statement (Loc,
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                           Statements => New_List (A)));
+               end if;
             end if;
 
             Append_To (L, A);
@@ -1574,7 +1594,6 @@ package body Exp_Aggr is
    is
       Loc     : constant Source_Ptr := Sloc (N);
       L       : constant List_Id    := New_List;
-      Start_L : constant List_Id    := New_List;
       N_Typ   : constant Entity_Id  := Etype (N);
 
       Comp      : Node_Id;
@@ -1600,6 +1619,7 @@ package body Exp_Aggr is
 
       Init_Typ : Entity_Id := Empty;
       Attach   : Node_Id;
+      Ctrl_Stuff_Done : Boolean := False;
 
       function Get_Constraint_Association (T : Entity_Id) return Node_Id;
       --  Returns the first discriminant association in the constraint
@@ -1626,6 +1646,10 @@ package body Exp_Aggr is
       --  controller of the (possible) ancestor typ into target and attach
       --  it to finalization list F. Init_Pr conditions the call to the
       --  init proc since it may already be done due to ancestor initialization
+
+      procedure Gen_Ctrl_Actions_For_Aggr;
+      --  Deal with the various controlled type data structure
+      --  initializations
 
       ---------------------------------
       -- Ancestor_Discriminant_Value --
@@ -1821,6 +1845,7 @@ package body Exp_Aggr is
       is
          L   : constant List_Id := New_List;
          Ref : Node_Id;
+         RC  : RE_Id;
 
       begin
          --  Generate:
@@ -1854,50 +1879,232 @@ package body Exp_Aggr is
               and then Present (Etype (Prefix (Expression (Target))))
               and then Is_Limited_Type (Etype (Prefix (Expression (Target)))))
          then
-            if Init_Pr then
-               Append_List_To (L,
-                 Build_Initialization_Call (Loc,
-                   Id_Ref       => Ref,
-                   Typ          => RTE (RE_Limited_Record_Controller),
-                   In_Init_Proc => Within_Init_Proc));
-            end if;
-
-            Append_To (L,
-              Make_Procedure_Call_Statement (Loc,
-                Name =>
-                  New_Reference_To
-                    (Find_Prim_Op
-                       (RTE (RE_Limited_Record_Controller), Name_Initialize),
-                     Loc),
-                Parameter_Associations => New_List (New_Copy_Tree (Ref))));
-
+            RC := RE_Limited_Record_Controller;
          else
-            if Init_Pr then
-               Append_List_To (L,
-                 Build_Initialization_Call (Loc,
-                   Id_Ref       => Ref,
-                   Typ          => RTE (RE_Record_Controller),
-                   In_Init_Proc => Within_Init_Proc));
-            end if;
-
-            Append_To (L,
-              Make_Procedure_Call_Statement (Loc,
-                Name =>
-                  New_Reference_To
-                    (Find_Prim_Op
-                       (RTE (RE_Record_Controller), Name_Initialize),
-                     Loc),
-                Parameter_Associations => New_List (New_Copy_Tree (Ref))));
-
+            RC := RE_Record_Controller;
          end if;
+
+         if Init_Pr then
+            Append_List_To (L,
+              Build_Initialization_Call (Loc,
+                Id_Ref       => Ref,
+                Typ          => RTE (RC),
+                In_Init_Proc => Within_Init_Proc));
+         end if;
+
+         Append_To (L,
+           Make_Procedure_Call_Statement (Loc,
+             Name =>
+               New_Reference_To (
+                 Find_Prim_Op (RTE (RC), Name_Initialize), Loc),
+             Parameter_Associations =>
+               New_List (New_Copy_Tree (Ref))));
 
          Append_To (L,
            Make_Attach_Call (
              Obj_Ref     => New_Copy_Tree (Ref),
              Flist_Ref   => F,
              With_Attach => Attach));
+
          return L;
       end Init_Controller;
+
+      -------------------------------
+      -- Gen_Ctrl_Actions_For_Aggr --
+      -------------------------------
+
+      procedure Gen_Ctrl_Actions_For_Aggr is
+      begin
+         if Present (Obj)
+          and then Finalize_Storage_Only (Typ)
+          and then (Is_Library_Level_Entity (Obj)
+            or else Entity (Constant_Value (RTE (RE_Garbage_Collected))) =
+                                                              Standard_True)
+         then
+            Attach := Make_Integer_Literal (Loc, 0);
+
+         elsif Nkind (Parent (N)) = N_Qualified_Expression
+           and then Nkind (Parent (Parent (N))) = N_Allocator
+         then
+            Attach := Make_Integer_Literal (Loc, 2);
+
+         else
+            Attach := Make_Integer_Literal (Loc, 1);
+         end if;
+
+         --  Determine the external finalization list. It is either the
+         --  finalization list of the outer-scope or the one coming from
+         --  an outer aggregate.  When the target is not a temporary, the
+         --  proper scope is the scope of the target rather than the
+         --  potentially transient current scope.
+
+         if Controlled_Type (Typ) then
+            if Present (Flist) then
+               External_Final_List := New_Copy_Tree (Flist);
+
+            elsif Is_Entity_Name (Target)
+              and then Present (Scope (Entity (Target)))
+            then
+               External_Final_List
+                 := Find_Final_List (Scope (Entity (Target)));
+
+            else
+               External_Final_List := Find_Final_List (Current_Scope);
+            end if;
+
+         else
+            External_Final_List := Empty;
+         end if;
+
+         --  Initialize and attach the outer object in the is_controlled case
+
+         if Is_Controlled (Typ) then
+            if Ancestor_Is_Subtype_Mark then
+               Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
+               Set_Assignment_OK (Ref);
+               Append_To (L,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name =>
+                     New_Reference_To
+                       (Find_Prim_Op (Init_Typ, Name_Initialize), Loc),
+                   Parameter_Associations => New_List (New_Copy_Tree (Ref))));
+            end if;
+
+            if not Has_Controlled_Component (Typ) then
+               Ref := New_Copy_Tree (Target);
+               Set_Assignment_OK (Ref);
+               Append_To (L,
+                 Make_Attach_Call (
+                   Obj_Ref     => Ref,
+                   Flist_Ref   => New_Copy_Tree (External_Final_List),
+                   With_Attach => Attach));
+            end if;
+         end if;
+
+         --  In the Has_Controlled component case, all the intermediate
+         --  controllers must be initialized
+
+         if Has_Controlled_Component (Typ)
+           and not Is_Limited_Ancestor_Expansion
+         then
+            declare
+               Inner_Typ : Entity_Id;
+               Outer_Typ : Entity_Id;
+               At_Root   : Boolean;
+
+            begin
+
+               Outer_Typ := Base_Type (Typ);
+
+               --  Find outer type with a controller
+
+               while Outer_Typ /= Init_Typ
+                 and then not Has_New_Controlled_Component (Outer_Typ)
+               loop
+                  Outer_Typ := Etype (Outer_Typ);
+               end loop;
+
+               --  Attach it to the outer record controller to the
+               --  external final list
+
+               if Outer_Typ = Init_Typ then
+                  Append_List_To (L,
+                    Init_Controller (
+                      Target  => Target,
+                      Typ     => Outer_Typ,
+                      F       => External_Final_List,
+                      Attach  => Attach,
+                      Init_Pr => False));
+
+                  At_Root   := True;
+                  Inner_Typ := Init_Typ;
+
+               else
+                  Append_List_To (L,
+                    Init_Controller (
+                      Target  => Target,
+                      Typ     => Outer_Typ,
+                      F       => External_Final_List,
+                      Attach  => Attach,
+                      Init_Pr => True));
+
+                  Inner_Typ := Etype (Outer_Typ);
+                  At_Root   :=
+                    not Is_Tagged_Type (Typ) or else Inner_Typ = Outer_Typ;
+               end if;
+
+               --  The outer object has to be attached as well
+
+               if Is_Controlled (Typ) then
+                  Ref := New_Copy_Tree (Target);
+                  Set_Assignment_OK (Ref);
+                  Append_To (L,
+                    Make_Attach_Call (
+                      Obj_Ref     => Ref,
+                      Flist_Ref   => New_Copy_Tree (External_Final_List),
+                      With_Attach => New_Copy_Tree (Attach)));
+               end if;
+
+               --  Initialize the internal controllers for tagged types with
+               --  more than one controller.
+
+               while not At_Root and then Inner_Typ /= Init_Typ loop
+                  if Has_New_Controlled_Component (Inner_Typ) then
+                     F :=
+                       Make_Selected_Component (Loc,
+                         Prefix =>
+                           Convert_To (Outer_Typ, New_Copy_Tree (Target)),
+                         Selector_Name =>
+                           Make_Identifier (Loc, Name_uController));
+                     F :=
+                       Make_Selected_Component (Loc,
+                         Prefix => F,
+                         Selector_Name => Make_Identifier (Loc, Name_F));
+
+                     Append_List_To (L,
+                       Init_Controller (
+                         Target  => Target,
+                         Typ     => Inner_Typ,
+                         F       => F,
+                         Attach  => Make_Integer_Literal (Loc, 1),
+                         Init_Pr => True));
+                     Outer_Typ := Inner_Typ;
+                  end if;
+
+                  --  Stop at the root
+
+                  At_Root := Inner_Typ = Etype (Inner_Typ);
+                  Inner_Typ := Etype (Inner_Typ);
+               end loop;
+
+               --  If not done yet attach the controller of the ancestor part
+
+               if Outer_Typ /= Init_Typ
+                 and then Inner_Typ = Init_Typ
+                 and then Has_Controlled_Component (Init_Typ)
+               then
+                  F :=
+                    Make_Selected_Component (Loc,
+                      Prefix => Convert_To (Outer_Typ, New_Copy_Tree (Target)),
+                      Selector_Name =>
+                        Make_Identifier (Loc, Name_uController));
+                  F :=
+                    Make_Selected_Component (Loc,
+                      Prefix => F,
+                      Selector_Name => Make_Identifier (Loc, Name_F));
+
+                  Attach := Make_Integer_Literal (Loc, 1);
+                  Append_List_To (L,
+                    Init_Controller (
+                      Target  => Target,
+                      Typ     => Init_Typ,
+                      F       => F,
+                      Attach  => Attach,
+                      Init_Pr => Ancestor_Is_Expression));
+               end if;
+            end;
+         end if;
+      end Gen_Ctrl_Actions_For_Aggr;
 
    --  Start of processing for Build_Record_Aggr_Code
 
@@ -1908,6 +2115,7 @@ package body Exp_Aggr is
       if Nkind (N) = N_Extension_Aggregate then
          declare
             A : constant Node_Id := Ancestor_Part (N);
+            Assign : List_Id;
 
          begin
             --  If the ancestor part is a subtype mark "T", we generate
@@ -1975,14 +2183,14 @@ package body Exp_Aggr is
                if Has_Default_Init_Comps (N)
                  or else Has_Task (Base_Type (Init_Typ))
                then
-                  Append_List_To (Start_L,
+                  Append_List_To (L,
                     Build_Initialization_Call (Loc,
                       Id_Ref       => Ref,
                       Typ          => Init_Typ,
                       In_Init_Proc => Within_Init_Proc,
                       With_Default_Init => True));
                else
-                  Append_List_To (Start_L,
+                  Append_List_To (L,
                     Build_Initialization_Call (Loc,
                       Id_Ref       => Ref,
                       Typ          => Init_Typ,
@@ -2001,7 +2209,7 @@ package body Exp_Aggr is
             elsif Is_Limited_Type (Etype (A)) then
                Ancestor_Is_Expression := True;
 
-               Append_List_To (Start_L,
+               Append_List_To (L,
                   Build_Record_Aggr_Code (
                     N                             => Expression (A),
                     Typ                           => Etype (Expression (A)),
@@ -2017,9 +2225,34 @@ package body Exp_Aggr is
                Ancestor_Is_Expression := True;
                Init_Typ := Etype (A);
 
-               --  Assign the tag before doing the assignment to make sure
-               --  that the dispatching call in the subsequent deep_adjust
-               --  works properly (unless Java_VM, where tags are implicit).
+               --  If the ancestor part is an aggregate, force its full
+               --  expansion, which was delayed.
+
+               if Nkind (A) = N_Qualified_Expression
+                 and then (Nkind (Expression (A)) = N_Aggregate
+                             or else
+                           Nkind (Expression (A)) = N_Extension_Aggregate)
+               then
+                  Set_Analyzed (A, False);
+                  Set_Analyzed (Expression (A), False);
+               end if;
+
+               Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
+               Set_Assignment_OK (Ref);
+
+               --  Make the assignment without usual controlled actions since
+               --  we only want the post adjust but not the pre finalize here
+               --  Add manual adjust when necessary
+
+               Assign := New_List (
+                 Make_OK_Assignment_Statement (Loc,
+                   Name       => Ref,
+                   Expression => A));
+               Set_No_Ctrl_Actions (First (Assign));
+
+               --  Assign the tag now to make sure that the dispatching call in
+               --  the subsequent deep_adjust works properly (unless Java_VM,
+               --  where tags are implicit).
 
                if not Java_VM then
                   Instr :=
@@ -2039,30 +2272,23 @@ package body Exp_Aggr is
                              Loc)));
 
                   Set_Assignment_OK (Name (Instr));
-                  Append_To (L, Instr);
+                  Append_To (Assign, Instr);
                end if;
 
-               --  If the ancestor part is an aggregate, force its full
-               --  expansion, which was delayed.
+               --  Call Adjust manually
 
-               if Nkind (A) = N_Qualified_Expression
-                 and then (Nkind (Expression (A)) = N_Aggregate
-                             or else
-                           Nkind (Expression (A)) = N_Extension_Aggregate)
-               then
-                  Set_Analyzed (A, False);
-                  Set_Analyzed (Expression (A), False);
+               if Controlled_Type (Etype (A)) then
+                  Append_List_To (Assign,
+                    Make_Adjust_Call (
+                      Ref         => New_Copy_Tree (Ref),
+                      Typ         => Etype (A),
+                      Flist_Ref   => New_Reference_To (
+                        RTE (RE_Global_Final_List), Loc),
+                      With_Attach => Make_Integer_Literal (Loc, 0)));
                end if;
 
-               Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
-               Set_Assignment_OK (Ref);
                Append_To (L,
-                 Make_Unsuppress_Block (Loc,
-                   Name_Discriminant_Check,
-                   New_List (
-                     Make_OK_Assignment_Statement (Loc,
-                       Name       => Ref,
-                       Expression => A))));
+                 Make_Unsuppress_Block (Loc, Name_Discriminant_Check, Assign));
 
                if Has_Discriminants (Init_Typ) then
                   Check_Ancestor_Discriminants (Init_Typ);
@@ -2160,10 +2386,6 @@ package body Exp_Aggr is
 
                   if not Inside_Init_Proc and not Inside_Allocator then
                      Build_Activation_Chain_Entity (N);
-
-                     if not Has_Master_Entity (Current_Scope) then
-                        Build_Master_Entity (Etype (N));
-                     end if;
                   end if;
                end if;
             end;
@@ -2180,11 +2402,23 @@ package body Exp_Aggr is
             goto Next_Comp;
          end if;
 
-         --  ???
+         --  Prepare for component assignment
 
          if Ekind (Selector) /= E_Discriminant
            or else Nkind (N) = N_Extension_Aggregate
          then
+
+            --  All the discriminants have now been assigned
+            --  This is now a good moment to initialize and attach all the
+            --  controllers. Their position may depend on the discriminants.
+
+            if Ekind (Selector) /= E_Discriminant
+              and then not Ctrl_Stuff_Done
+            then
+               Gen_Ctrl_Actions_For_Aggr;
+               Ctrl_Stuff_Done := True;
+            end if;
+
             Comp_Type := Etype (Selector);
             Comp_Expr :=
               Make_Selected_Component (Loc,
@@ -2222,7 +2456,8 @@ package body Exp_Aggr is
                Internal_Final_List := Empty;
             end if;
 
-            --  ???
+            --  Now either create the assignment or generate the code for the
+            --  inner aggregate top-down.
 
             if Is_Delayed_Aggregate (Expr_Q) then
                Append_List_To (L,
@@ -2347,199 +2582,15 @@ package body Exp_Aggr is
          Append_To (L, Instr);
       end if;
 
-      --  Now deal with the various controlled type data structure
-      --  initializations
+      --  If the controllers have not been initialized yet (by lack of non-
+      --  discriminant components), let's do it now.
 
-      if Present (Obj)
-        and then Finalize_Storage_Only (Typ)
-        and then
-          (Is_Library_Level_Entity (Obj)
-             or else Entity (Constant_Value (RTE (RE_Garbage_Collected))) =
-                                                              Standard_True)
-      then
-         Attach := Make_Integer_Literal (Loc, 0);
-
-      elsif Nkind (Parent (N)) = N_Qualified_Expression
-        and then Nkind (Parent (Parent (N))) = N_Allocator
-      then
-         Attach := Make_Integer_Literal (Loc, 2);
-
-      else
-         Attach := Make_Integer_Literal (Loc, 1);
+      if not Ctrl_Stuff_Done then
+         Gen_Ctrl_Actions_For_Aggr;
+         Ctrl_Stuff_Done := True;
       end if;
 
-      --  Determine the external finalization list. It is either the
-      --  finalization list of the outer-scope or the one coming from
-      --  an outer aggregate.  When the target is not a temporary, the
-      --  proper scope is the scope of the target rather than the
-      --  potentially transient current scope.
-
-      if Controlled_Type (Typ) then
-         if Present (Flist) then
-            External_Final_List := New_Copy_Tree (Flist);
-
-         elsif Is_Entity_Name (Target)
-           and then Present (Scope (Entity (Target)))
-         then
-            External_Final_List := Find_Final_List (Scope (Entity (Target)));
-
-         else
-            External_Final_List := Find_Final_List (Current_Scope);
-         end if;
-
-      else
-         External_Final_List := Empty;
-      end if;
-
-      --  Initialize and attach the outer object in the is_controlled case
-
-      if Is_Controlled (Typ) then
-         if Ancestor_Is_Subtype_Mark then
-            Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
-            Set_Assignment_OK (Ref);
-            Append_To (L,
-              Make_Procedure_Call_Statement (Loc,
-                Name =>
-                  New_Reference_To
-                    (Find_Prim_Op (Init_Typ, Name_Initialize), Loc),
-                Parameter_Associations => New_List (New_Copy_Tree (Ref))));
-         end if;
-
-         if not Has_Controlled_Component (Typ) then
-            Ref := New_Copy_Tree (Target);
-            Set_Assignment_OK (Ref);
-            Append_To (Start_L,
-              Make_Attach_Call (
-                Obj_Ref     => Ref,
-                Flist_Ref   => New_Copy_Tree (External_Final_List),
-                With_Attach => Attach));
-         end if;
-      end if;
-
-      --  In the Has_Controlled component case, all the intermediate
-      --  controllers must be initialized
-
-      if Has_Controlled_Component (Typ)
-        and not Is_Limited_Ancestor_Expansion
-      then
-         declare
-            Inner_Typ : Entity_Id;
-            Outer_Typ : Entity_Id;
-            At_Root   : Boolean;
-
-         begin
-
-            Outer_Typ := Base_Type (Typ);
-
-            --  Find outer type with a controller
-
-            while Outer_Typ /= Init_Typ
-              and then not Has_New_Controlled_Component (Outer_Typ)
-            loop
-               Outer_Typ := Etype (Outer_Typ);
-            end loop;
-
-            --  Attach it to the outer record controller to the
-            --  external final list
-
-            if Outer_Typ = Init_Typ then
-               Append_List_To (Start_L,
-                 Init_Controller (
-                   Target  => Target,
-                   Typ     => Outer_Typ,
-                   F       => External_Final_List,
-                   Attach  => Attach,
-                   Init_Pr => Ancestor_Is_Expression));
-
-               At_Root   := True;
-               Inner_Typ := Init_Typ;
-
-            else
-               Append_List_To (Start_L,
-                 Init_Controller (
-                   Target  => Target,
-                   Typ     => Outer_Typ,
-                   F       => External_Final_List,
-                   Attach  => Attach,
-                   Init_Pr => True));
-
-               Inner_Typ := Etype (Outer_Typ);
-               At_Root   :=
-                 not Is_Tagged_Type (Typ) or else Inner_Typ = Outer_Typ;
-            end if;
-
-            --  The outer object has to be attached as well
-
-            if Is_Controlled (Typ) then
-               Ref := New_Copy_Tree (Target);
-               Set_Assignment_OK (Ref);
-               Append_To (Start_L,
-                  Make_Attach_Call (
-                    Obj_Ref     => Ref,
-                    Flist_Ref   => New_Copy_Tree (External_Final_List),
-                    With_Attach => New_Copy_Tree (Attach)));
-            end if;
-
-            --  Initialize the internal controllers for tagged types with
-            --  more than one controller.
-
-            while not At_Root and then Inner_Typ /= Init_Typ loop
-               if Has_New_Controlled_Component (Inner_Typ) then
-                  F :=
-                    Make_Selected_Component (Loc,
-                      Prefix => Convert_To (Outer_Typ, New_Copy_Tree (Target)),
-                      Selector_Name =>
-                        Make_Identifier (Loc, Name_uController));
-                  F :=
-                    Make_Selected_Component (Loc,
-                      Prefix => F,
-                      Selector_Name => Make_Identifier (Loc, Name_F));
-
-                  Append_List_To (Start_L,
-                    Init_Controller (
-                      Target  => Target,
-                      Typ     => Inner_Typ,
-                      F       => F,
-                      Attach  => Make_Integer_Literal (Loc, 1),
-                      Init_Pr => True));
-                  Outer_Typ := Inner_Typ;
-               end if;
-
-               --  Stop at the root
-
-               At_Root := Inner_Typ = Etype (Inner_Typ);
-               Inner_Typ := Etype (Inner_Typ);
-            end loop;
-
-            --  If not done yet attach the controller of the ancestor part
-
-            if Outer_Typ /= Init_Typ
-              and then Inner_Typ = Init_Typ
-              and then Has_Controlled_Component (Init_Typ)
-            then
-               F :=
-                  Make_Selected_Component (Loc,
-                    Prefix => Convert_To (Outer_Typ, New_Copy_Tree (Target)),
-                    Selector_Name => Make_Identifier (Loc, Name_uController));
-               F :=
-                  Make_Selected_Component (Loc,
-                    Prefix => F,
-                    Selector_Name => Make_Identifier (Loc, Name_F));
-
-               Attach := Make_Integer_Literal (Loc, 1);
-               Append_List_To (Start_L,
-                 Init_Controller (
-                   Target  => Target,
-                   Typ     => Init_Typ,
-                   F       => F,
-                   Attach  => Attach,
-                   Init_Pr => Ancestor_Is_Expression));
-            end if;
-         end;
-      end if;
-
-      Append_List_To (Start_L, L);
-      return Start_L;
+      return L;
    end Build_Record_Aggr_Code;
 
    -------------------------------
@@ -2698,6 +2749,11 @@ package body Exp_Aggr is
         and then not Discriminants_Ok
       then
          return;
+      end if;
+
+      if Requires_Transient_Scope (Typ) then
+         Establish_Transient_Scope (Aggr, Sec_Stack =>
+           Is_Controlled (Typ) or else Has_Controlled_Component (Typ));
       end if;
 
       Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ, Obj => Obj));
