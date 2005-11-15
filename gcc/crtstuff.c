@@ -58,6 +58,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    identified the set of defines that need to go into auto-target.h,
    this will have to do.  */
 #include "auto-host.h"
+#undef gid_t
+#undef pid_t
+#undef rlim_t
+#undef ssize_t
+#undef uid_t
+#undef vfork
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"

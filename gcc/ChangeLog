@@ -1,3 +1,8 @@
+2005-11-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* crtstuff.c: Undefine gid_t, pid_t, rlim_t, ssize_t, uid_t and
+	vfork after including auto-host.h.
+
 2005-11-15  Alan Modra  <amodra@bigpond.net.au>
 
 	PR rtl-optimization/22002
