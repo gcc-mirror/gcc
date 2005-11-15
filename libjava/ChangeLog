@@ -1,3 +1,24 @@
+2005-11-15  Andrew Haley  <aph@redhat.com>
+
+	* Merge from Classpath head:
+
+   2005-09-16  Andrew Haley  <aph@redhat.com>
+   
+           * java/io/ObjectStreamClass.java (findAccessibleMethod): Allow
+           protected readResolve().  Rewrite accessibility check.
+   
+   2005-07-07  Jeroen Frijters  <jeroen@frijters.net>
+   
+           * java/io/ObjectStreamClass.java
+           (findAccessibleMethod): Added code to make method accessible.
+   
+   2005-07-03  Daniel Bonniot  <bonniot@users.sf.net>
+   
+           * java/io/ObjectStreamClass.java (inSamePackage): New private method.
+           (findAccessibleMethod): Likewise.
+           (cacheMethods): Lookup readResolve and writeReplace using the new
+           findAccessibleMethod().
+   
 2005-11-14  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* java/net/natVMNetworkInterfaceWin32.cc: Include
