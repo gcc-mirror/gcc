@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -550,10 +550,13 @@ package body Sem_Disp is
       if Ada_Version = Ada_05
         and then Present (Tagged_Type)
         and then Is_Concurrent_Type (Tagged_Type)
-        and then not Is_Empty_Elmt_List
-                       (Abstract_Interfaces
-                        (Corresponding_Record_Type (Tagged_Type)))
       then
+         --  Protect the frontend against previously detected errors
+
+         if not Present (Corresponding_Record_Type (Tagged_Type)) then
+            return;
+         end if;
+
          Tagged_Type := Corresponding_Record_Type (Tagged_Type);
       end if;
 
@@ -589,8 +592,8 @@ package body Sem_Disp is
       --  where it can be a dispatching op is when it overrides an operation
       --  before the freezing point of the type.
 
-      elsif ((not Is_Package (Scope (Subp)))
-              or else In_Package_Body (Scope (Subp)))
+      elsif ((not Is_Package_Or_Generic_Package (Scope (Subp)))
+               or else In_Package_Body (Scope (Subp)))
         and then not Has_Dispatching_Parent
       then
          if not Comes_From_Source (Subp)
@@ -1261,7 +1264,7 @@ package body Sem_Disp is
          Replace_Elmt (Op_Elmt, New_Op);
       end if;
 
-      if (not Is_Package (Current_Scope))
+      if (not Is_Package_Or_Generic_Package (Current_Scope))
         or else not In_Private_Part (Current_Scope)
       then
          --  Not a private primitive

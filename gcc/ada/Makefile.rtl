@@ -391,9 +391,14 @@ GNATRTL_NONTASKING_OBJS= \
   s-fatsfl$(objext) \
   s-ficobl$(objext) \
   s-fileio$(objext) \
+  s-filofl$(objext) \
+  s-fishfl$(objext) \
   s-finimp$(objext) \
   s-finroo$(objext) \
   s-fore$(objext)   \
+  s-fvadfl$(objext) \
+  s-fvaffl$(objext) \
+  s-fvagfl$(objext) \
   s-geveop$(objext) \
   s-htable$(objext) \
   s-imgbiu$(objext) \

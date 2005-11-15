@@ -44,6 +44,6 @@ package System.Fat_Flt is
    --  (i.e. the individual floating-point attribute routines) are accessed
    --  by name using selected notation.
 
-   package Fat_Float is new System.Fat_Gen (Float);
+   package Attr_Float is new System.Fat_Gen (Float);
 
 end System.Fat_Flt;

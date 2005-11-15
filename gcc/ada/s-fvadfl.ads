@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                      S Y S T E M . F A T _ S F L T                       --
+--               S Y S T E M . F A T _ V A X _ D _ F L O A T                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -32,18 +32,25 @@
 ------------------------------------------------------------------------------
 
 --  This package contains an instantiation of the floating-point attribute
---  runtime routines for the type Short_Float.
+--  runtime routines for VAX D-float for use on VMS targets.
 
 with System.Fat_Gen;
 
-package System.Fat_SFlt is
+package System.Fat_VAX_D_Float is
    pragma Pure;
+
+   pragma Warnings (Off);
+   --  This unit is normally used only for VMS, but we compile it for other
+   --  targest for the convenience of testing vms code using -gnatdm.
+
+   type Fat_VAX_D is digits 9;
+   pragma Float_Representation (VAX_Float, Fat_VAX_D);
 
    --  Note the only entity from this package that is acccessed by Rtsfind
    --  is the name of the package instantiation. Entities within this package
    --  (i.e. the individual floating-point attribute routines) are accessed
    --  by name using selected notation.
 
-   package Attr_Short_Float is new System.Fat_Gen (Short_Float);
+   package Attr_VAX_D_Float is new System.Fat_Gen (Fat_VAX_D);
 
-end System.Fat_SFlt;
+end System.Fat_VAX_D_Float;
