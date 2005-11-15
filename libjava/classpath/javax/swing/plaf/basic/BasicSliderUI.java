@@ -60,13 +60,14 @@ import java.beans.PropertyChangeListener;
 import java.util.Dictionary;
 import java.util.Enumeration;
 
+import javax.swing.AbstractAction;
 import javax.swing.BoundedRangeModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -470,6 +471,34 @@ public class BasicSliderUI extends SliderUI
     }
   }
 
+  /**
+   * This class is no longer used as of JDK1.3.
+   */
+  public class ActionScroller extends AbstractAction
+  {
+    /**
+     * Not used.
+     *
+     * @param slider not used
+     * @param dir not used
+     * @param block not used
+     */
+    public ActionScroller(JSlider slider, int dir, boolean block)
+    {
+      // Not used.
+    }
+
+    /**
+     * Not used.
+     *
+     * @param event not used
+     */
+    public void actionPerformed(ActionEvent event)
+    {
+      // Not used.
+    }
+  }
+
   /** Listener for changes from the model. */
   protected ChangeListener changeListener;
 
@@ -680,16 +709,14 @@ public class BasicSliderUI extends SliderUI
    */
   protected void installDefaults(JSlider slider)
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-
-    slider.setForeground(defaults.getColor("Slider.foreground"));
-    slider.setBackground(defaults.getColor("Slider.background"));
-    shadowColor = defaults.getColor("Slider.shadow");
-    highlightColor = defaults.getColor("Slider.highlight");
-    focusColor = defaults.getColor("Slider.focus");
-    slider.setBorder(defaults.getBorder("Slider.border"));
+    LookAndFeel.installColors(slider, "Slider.background",
+                              "Slider.foreground");
+    LookAndFeel.installBorder(slider, "Slider.border");
+    shadowColor = UIManager.getColor("Slider.shadow");
+    highlightColor = UIManager.getColor("Slider.highlight");
+    focusColor = UIManager.getColor("Slider.focus");
+    focusInsets = UIManager.getInsets("Slider.focusInsets");
     slider.setOpaque(true);
-    focusInsets = defaults.getInsets("Slider.focusInsets");
   }
 
   /**
@@ -1465,7 +1492,7 @@ public class BasicSliderUI extends SliderUI
     // FIXME: Move this to propertyChangeEvent handler, when we get those.
     leftToRightCache = slider.getComponentOrientation() != ComponentOrientation.RIGHT_TO_LEFT;
     // FIXME: This next line is only here because the above line is here.
-    calculateThumbLocation();
+    calculateGeometry();
 
     if (slider.getPaintTrack())
       paintTrack(g);
@@ -1958,7 +1985,7 @@ public class BasicSliderUI extends SliderUI
   public void paintThumb(Graphics g)
   {
     Color saved_color = g.getColor();
-
+    
     Point a = new Point(thumbRect.x, thumbRect.y);
     Point b = new Point(a);
     Point c = new Point(a);

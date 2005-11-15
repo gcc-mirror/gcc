@@ -63,7 +63,6 @@ import java.util.Iterator;
 class DummyAppletContext implements AppletContext
 {
   private static final Enumeration EMPTY_ENUMERATION = Collections.enumeration(Collections.EMPTY_SET);
-  private static final AudioClip DUMMY_CLIP = new DummyAudioClip();
 
   DummyAppletContext()
   {
@@ -80,14 +79,7 @@ class DummyAppletContext implements AppletContext
    */
   public AudioClip getAudioClip(URL url)
   {
-    try
-      {
-	return (url.openConnection() != null ? DUMMY_CLIP : null);
-      }
-    catch (IOException ioe)
-      {
-	return null;
-      }
+    return Applet.newAudioClip(url);
   }
 
   /** Loads the <code>Image</code> instance by delegating to
@@ -169,32 +161,5 @@ class DummyAppletContext implements AppletContext
   public Iterator getStreamKeys()
   {
     return Collections.EMPTY_SET.iterator();
-  }
-
-  /** Dummy <code>AudioClip</code> implementation that does nothing but
-   * preventing <code>NullPointerException</code>S being thrown in programs
-   * that expect a valid <code>AudioClip</code> instance to be returned by
-   * their Applet.
-   *
-   * @author Robert Schuster
-   */
-  static class DummyAudioClip implements AudioClip
-  {
-    public void play()
-    {
-    }
-
-    public void stop()
-    {
-    }
-
-    public void loop()
-    {
-    }
-
-    public String toString()
-    {
-      return "DummyAudioClip never plays anything - implement javax.sound and make us happy :)";
-    }
   }
 }

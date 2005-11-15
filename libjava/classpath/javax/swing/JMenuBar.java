@@ -46,6 +46,9 @@ import java.awt.event.MouseEvent;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleSelection;
+import javax.accessibility.AccessibleStateSet;
 import javax.swing.plaf.MenuBarUI;
 
 /**
@@ -59,6 +62,137 @@ import javax.swing.plaf.MenuBarUI;
  */
 public class JMenuBar extends JComponent implements Accessible, MenuElement
 {
+  /**
+   * Provides accessibility support for <code>JMenuBar</code>.
+   * 
+   * @author Roman Kennke (kennke@aicas.com)
+   */
+  protected class AccessibleJMenuBar extends AccessibleJComponent
+    implements AccessibleSelection
+  {
+
+    /**
+     * Returns the number of selected items in the menu bar. Possible values
+     * are <code>0</code> if nothing is selected, or <code>1</code> if one
+     * item is selected.
+     *
+     * @return the number of selected items in the menu bar
+     */
+    public int getAccessibleSelectionCount()
+    {
+      int count = 0;
+      if (getSelectionModel().getSelectedIndex() != -1)
+        count = 1;
+      return count;
+    }
+
+    /**
+     * Returns the selected with index <code>i</code> menu, or
+     * <code>null</code> if the specified menu is not selected.
+     *
+     * @param i the index of the menu to return
+     *
+     * @return the selected with index <code>i</code> menu, or
+     *         <code>null</code> if the specified menu is not selected
+     */
+    public Accessible getAccessibleSelection(int i)
+    {
+      if (getSelectionModel().getSelectedIndex() != i)
+        return null;
+      return getMenu(i);
+    }
+
+    /**
+     * Returns <code>true</code> if the specified menu is selected,
+     * <code>false</code> otherwise.
+     *
+     * @param i the index of the menu to check
+     *
+     *@return <code>true</code> if the specified menu is selected,
+     *        <code>false</code> otherwise
+     */
+    public boolean isAccessibleChildSelected(int i)
+    {
+      return getSelectionModel().getSelectedIndex() == i;
+    }
+
+    /**
+     * Selects the menu with index <code>i</code>. If another menu is already
+     * selected, this will be deselected.
+     *
+     * @param i the menu to be selected
+     */
+    public void addAccessibleSelection(int i)
+    {
+      getSelectionModel().setSelectedIndex(i);
+    }
+
+    /**
+     * Deselects the menu with index <code>i</code>.
+     *
+     * @param i the menu index to be deselected
+     */
+    public void removeAccessibleSelection(int i)
+    {
+      if (getSelectionModel().getSelectedIndex() == i)
+        getSelectionModel().clearSelection();
+    }
+
+    /**
+     * Deselects all possibly selected menus.
+     */
+    public void clearAccessibleSelection()
+    {
+      getSelectionModel().clearSelection();
+    }
+
+    /**
+     * In menu bars it is not possible to select all items, so this method
+     * does nothing.
+     */
+    public void selectAllAccessibleSelection()
+    {
+      // In menu bars it is not possible to select all items, so this method
+      // does nothing.
+    }
+
+    /**
+     * Returns the accessible role of <code>JMenuBar</code>, which is
+     * {@link AccessibleRole#MENU_BAR}.
+     *
+     * @return the accessible role of <code>JMenuBar</code>, which is
+     *         {@link AccessibleRole#MENU_BAR}
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.MENU_BAR;
+    }
+
+    /**
+     * Returns the <code>AccessibleSelection</code> for this object. This
+     * method returns <code>this</code>, since the
+     * <code>AccessibleJMenuBar</code> manages its selection itself.
+     *
+     * @return the <code>AccessibleSelection</code> for this object
+     */
+    public AccessibleSelection getAccessibleSelection()
+    {
+      return this;
+    }
+
+    /**
+     * Returns the state of this <code>AccessibleJMenuBar</code>.
+     *
+     * @return the state of this <code>AccessibleJMenuBar</code>.
+     */
+    public AccessibleStateSet getAccessibleStateSet()
+    {
+      AccessibleStateSet stateSet = super.getAccessibleStateSet();
+      // TODO: Figure out what state must be added to the super state set.
+      return stateSet;
+    }
+  }
+
   private static final long serialVersionUID = -8191026883931977036L;
 
   /** JMenuBar's model. It keeps track of selected menu's index */
@@ -100,13 +234,15 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
    */
   public void addNotify()
   {
-    // FIXME: Should register this menu bar with the keyboard manager     
     super.addNotify();
+    KeyboardManager.getManager().registerJMenuBar(this);
   }
 
   public AccessibleContext getAccessibleContext()
   {
-    return null;
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJMenuBar();
+    return accessibleContext;
   }
 
   /**
@@ -253,7 +389,7 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
    * This method returns a name to identify which look and feel class will be
    * the UI delegate for the menu bar.
    *
-   * @return The Look and Feel classID. "MenuItemUI"
+   * @return The Look and Feel classID. "MenuBarUI"
    */
   public String getUIClassID()
   {
@@ -338,6 +474,63 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
   }
 
   /**
+   * This method overrides JComponent.processKeyBinding to allow the 
+   * JMenuBar to check all the child components (recursiveley) to see 
+   * if they'll consume the event.
+   * 
+   * @param ks the KeyStroke for the event
+   * @param e the KeyEvent for the event
+   * @param condition the focus condition for the binding
+   * @param pressed true if the key is pressed 
+   */
+  protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition,
+                                      boolean pressed)
+  {
+    // See if the regular JComponent behavior consumes the event
+    if (super.processKeyBinding(ks, e, condition, pressed))
+      return true;
+    
+    // If not, have to recursively check all the child menu elements to see 
+    // if they want it    
+    MenuElement[] children = getSubElements();
+    for (int i = 0; i < children.length; i++)
+      if (processKeyBindingHelper(children[i], ks, e, condition, pressed))
+        return true;
+    return false;
+  }
+  
+  /**
+   * This is a helper method to recursively check the children of this
+   * JMenuBar to see if they will consume a key event via key bindings.  
+   * This is used for menu accelerators.
+   * @param menuElement the menuElement to check (and check all its children)
+   * @param ks the KeyStroke for the event
+   * @param e the KeyEvent that may be consumed
+   * @param condition the focus condition for the binding
+   * @param pressed true if the key was pressed
+   * @return true <code>menuElement</code> or one of its children consume
+   * the event (processKeyBinding returns true for menuElement or one of
+   * its children).
+   */
+  static boolean processKeyBindingHelper(MenuElement menuElement, KeyStroke ks,
+                                         KeyEvent e, int condition,
+                                         boolean pressed)
+  {
+    // First check the menuElement itself, if it's a JComponent
+    if (menuElement instanceof JComponent
+        && ((JComponent) menuElement).processKeyBinding(ks, e, condition,
+                                                        pressed))
+      return true;
+    
+    // If that didn't consume it, check all the children recursively
+    MenuElement[] children = menuElement.getSubElements();
+    for (int i = 0; i < children.length; i++)
+      if (processKeyBindingHelper(children[i], ks, e, condition, pressed))
+        return true;
+    return false;
+  }
+  
+  /**
    * Process mouse events forwarded from MenuSelectionManager. This method
    * doesn't do anything. It is here to conform to the MenuElement interface.
    *
@@ -358,7 +551,7 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
    */
   public void removeNotify()
   {
-    // Must unregister this menu bar with the current keyboard manager.
+    KeyboardManager.getManager().unregisterJMenuBar(this);
     super.removeNotify();
   }
 
@@ -384,9 +577,14 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
    * Sets help menu for this menu bar
    *
    * @param menu help menu
+   *
+   * @specnote The specification states that this method is not yet implemented
+   *           and should throw an exception.
    */
   public void setHelpMenu(JMenu menu)
   {
+    // We throw an Error here, just as Sun's JDK does.
+    throw new Error("setHelpMenu() not yet implemented.");
   }
 
   /**

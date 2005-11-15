@@ -238,14 +238,32 @@ public class DefaultListSelectionModel implements Cloneable,
    */
   public void setLeadSelectionIndex(int leadIndex)
   {
+    // Only set the lead selection index to < 0 if anchorSelectionIndex < 0.
+    if (leadIndex < 0)
+      {
+        if (anchorSelectionIndex < 0)
+          leadSelectionIndex = -1;
+        else
+          return;
+      }
+
+    // Only touch the lead selection index if the anchor is >= 0.
+    if (anchorSelectionIndex < 0)
+      return;
+
+    if (selectionMode == SINGLE_SELECTION)
+      setSelectionInterval (leadIndex, leadIndex);
+    
     int oldLeadIndex = leadSelectionIndex;
+    if (oldLeadIndex == -1)
+      oldLeadIndex = leadIndex;
     if (setLeadCalledFromAdd == false)
       oldSel = sel.clone();
     leadSelectionIndex = leadIndex;
 
     if (anchorSelectionIndex == -1)
-      return;
-
+      return;    
+    
     int R1 = Math.min(anchorSelectionIndex, oldLeadIndex);
     int R2 = Math.max(anchorSelectionIndex, oldLeadIndex);
     int S1 = Math.min(anchorSelectionIndex, leadIndex);
@@ -253,8 +271,6 @@ public class DefaultListSelectionModel implements Cloneable,
 
     int lo = Math.min(R1, S1);
     int hi = Math.max(R2, S2);
-
-    BitSet oldRange = sel.get(lo, hi+1);
 
     if (isSelectedIndex(anchorSelectionIndex))
       {
@@ -265,10 +281,7 @@ public class DefaultListSelectionModel implements Cloneable,
       {
         sel.set(R1, R2+1);
         sel.clear(S1, S2+1);
-      }
-    
-    BitSet newRange = sel.get(lo, hi+1);
-    newRange.xor(oldRange);
+      }    
 
     int beg = sel.nextSetBit(0), end = -1;
     for(int i=beg; i >= 0; i=sel.nextSetBit(i+1)) 
@@ -277,6 +290,27 @@ public class DefaultListSelectionModel implements Cloneable,
       fireValueChanged(beg, end, valueIsAdjusting);    
   }
 
+  /**
+   * Moves the lead selection index to <code>leadIndex</code> without 
+   * changing the selection values.
+   * 
+   * If leadAnchorNotificationEnabled is true, send a notification covering the
+   * old and new lead cells.
+   * 
+   * @param leadIndex the new lead selection index
+   * @since 1.5
+   */
+  public void moveLeadSelectionIndex (int leadIndex)
+  {
+    if (leadSelectionIndex == leadIndex)
+      return;
+    
+    leadSelectionIndex = leadIndex;
+    if (isLeadAnchorNotificationEnabled())
+      fireValueChanged(Math.min(leadSelectionIndex, leadIndex),
+                       Math.max(leadSelectionIndex, leadIndex));
+  }
+  
   /**
    * Gets the value of the {@link #leadAnchorNotificationEnabled} property.
    * 
@@ -388,6 +422,9 @@ public class DefaultListSelectionModel implements Cloneable,
    */
   public boolean isSelectedIndex(int a)
   {
+    // TODO: Probably throw an exception here?
+    if (a >= sel.length() || a < 0)
+      return false;
     return sel.get(a);
   }
 
@@ -415,7 +452,7 @@ public class DefaultListSelectionModel implements Cloneable,
     oldSel = sel.clone();
 
     if (selectionMode == SINGLE_SELECTION)
-      sel.clear();
+      setSelectionInterval(index0, index1);
 
     // COMPAT: Like Sun (but not like IBM), we allow calls to 
     // addSelectionInterval when selectionMode is
@@ -426,10 +463,7 @@ public class DefaultListSelectionModel implements Cloneable,
             isSelectedIndex(index1) || 
             isSelectedIndex(Math.max(lo-1,0)) || 
             isSelectedIndex(Math.min(hi+1,sel.size()))))
-        sel.clear();
-    
-    if (selectionMode == SINGLE_SELECTION)
-      index0 = index1;
+        sel.clear();    
 
     // We have to update the anchorSelectionIndex and leadSelectionIndex
     // variables

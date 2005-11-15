@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package gnu.CORBA.Interceptor;
 
-import gnu.CORBA.CDR.cdrBufOutput;
+import gnu.CORBA.CDR.BufferedCdrOutput;
 import gnu.CORBA.Poa.ORB_1_4;
 
 import org.omg.CORBA.Any;
@@ -198,7 +198,7 @@ public class gnuIcCurrent extends ObjectImpl implements Current
         Any[] r = get_slots();
         Any[] copy = new Any[ r.length ];
 
-        cdrBufOutput buf = new cdrBufOutput();
+        BufferedCdrOutput buf = new BufferedCdrOutput();
         buf.setOrb(orb);
 
         for (int i = 0; i < copy.length; i++)

@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -64,7 +64,7 @@ public final class OctetHolder
    * The default type code for this holder.
    */
   private static final TypeCode t_octet =
-    new primitiveTypeCode(TCKind.tk_octet);
+    new PrimitiveTypeCode(TCKind.tk_octet);
 
   /**
    * The <code>long</code> (CORBA <code>octet</code>) value,

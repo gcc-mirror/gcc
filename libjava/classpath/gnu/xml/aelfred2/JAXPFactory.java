@@ -109,7 +109,7 @@ public final class JAXPFactory
         // (flags can't necessarily be set before parsing)
         new JaxpParser().getXMLReader().setFeature(name, value);
         
-        flags.put(name, new Boolean(value));
+        flags.put(name, Boolean.valueOf(value));
       }
     catch (SAXNotRecognizedException e)
       {

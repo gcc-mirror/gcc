@@ -39,6 +39,7 @@ exception statement from your version. */
 
 package java.lang;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 

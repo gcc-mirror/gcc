@@ -40,13 +40,9 @@ package javax.swing.text;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.Serializable;
 
 import javax.swing.Action;
 import javax.swing.JEditorPane;
-import javax.swing.JTextPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
@@ -460,11 +456,11 @@ public class StyledEditorKit extends DefaultEditorKit
    * <code>StyledEditorKit</code>, namely the following types of Elements:
    *
    * <ul>
-   * <li>{@link AbstractDocument.ContentElementName}</li>
-   * <li>{@link AbstractDocument.ParagraphElementName}</li>
-   * <li>{@link AbstractDocument.SectionElementName}</li>
-   * <li>{@link StyleContext.ComponentElementName}</li>
-   * <li>{@link StyleContext.IconElementName}</li>
+   * <li>{@link AbstractDocument#ContentElementName}</li>
+   * <li>{@link AbstractDocument#ParagraphElementName}</li>
+   * <li>{@link AbstractDocument#SectionElementName}</li>
+   * <li>{@link StyleConstants#ComponentElementName}</li>
+   * <li>{@link StyleConstants#IconElementName}</li>
    * </ul>
    */
   static class StyledViewFactory
@@ -667,11 +663,11 @@ public class StyledEditorKit extends DefaultEditorKit
    * namely the following types of <code>Element</code>s:
    *
    * <ul>
-   * <li>{@link AbstractDocument.ContentElementName}</li>
-   * <li>{@link AbstractDocument.ParagraphElementName}</li>
-   * <li>{@link AbstractDocument.SectionElementName}</li>
-   * <li>{@link StyleContext.ComponentElementName}</li>
-   * <li>{@link StyleContext.IconElementName}</li>
+   * <li>{@link AbstractDocument#ContentElementName}</li>
+   * <li>{@link AbstractDocument#ParagraphElementName}</li>
+   * <li>{@link AbstractDocument#SectionElementName}</li>
+   * <li>{@link StyleConstants#ComponentElementName}</li>
+   * <li>{@link StyleConstants#IconElementName}</li>
    * </ul>
    *
    * @return a {@link ViewFactory} that is able to create {@link View}s

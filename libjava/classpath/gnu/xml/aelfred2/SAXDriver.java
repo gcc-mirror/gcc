@@ -717,7 +717,9 @@ final public class SAXDriver
       }
     else
       {
-        in.setSystemId(absolutize(baseURI, in.getSystemId(), false));
+        in.setSystemId(absolutize(baseURI,
+                                  in.getSystemId(),
+                                  entityResolver != base));
         source = entityResolver.resolveEntity(in.getPublicId(),
                                               in.getSystemId());
         if (source == null)

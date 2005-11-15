@@ -43,6 +43,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.nio.channels.IllegalBlockingModeException;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
@@ -209,6 +210,8 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
    * @return the registered selection key
    * 
    * @exception ClosedChannelException If the channel is already closed.
+   * @exception IllegalBlockingModeException If the channel is configured in
+   * blocking mode.
    */
   public final SelectionKey register(Selector selin, int ops, Object att)
     throws ClosedChannelException
@@ -224,6 +227,9 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
 
     synchronized (blockingLock())
       {
+	if (blocking)
+	  throw new IllegalBlockingModeException();
+
 	key = locate(selector);
 
 	if (key != null && key.isValid())

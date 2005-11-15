@@ -110,7 +110,7 @@ public class ChunkedInputStream
         // Read chunk header
         int c, last = 0;
         boolean seenSemi = false;
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         do
           {
             c = in.read();

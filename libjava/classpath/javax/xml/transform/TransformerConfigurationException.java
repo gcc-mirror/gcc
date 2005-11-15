@@ -45,9 +45,8 @@ package javax.xml.transform;
 public class TransformerConfigurationException
   extends TransformerException
 {
+  private static final long serialVersionUID = 1285547467942875745L;
 
-  private SourceLocator locator;
-  
   /**
    * Constructor with no detail message.
    */
@@ -96,8 +95,7 @@ public class TransformerConfigurationException
                                            SourceLocator locator,
                                            Throwable e)
   {
-    super(message, e);
-    this.locator = locator;
+    super(message, locator, e);
   }  
 
 }

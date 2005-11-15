@@ -38,16 +38,20 @@ exception statement from your version. */
 
 package gnu.CORBA.Interceptor;
 
+import org.omg.CORBA.OBJ_ADAPTER;
+import org.omg.CORBA.OMGVMCID;
 import org.omg.PortableInterceptor.IORInfo;
 import org.omg.PortableInterceptor.IORInterceptor;
 import org.omg.PortableInterceptor.IORInterceptorOperations;
+import org.omg.PortableInterceptor.IORInterceptor_3_0Operations;
+import org.omg.PortableInterceptor.ObjectReferenceTemplate;
 
 /**
  * A block of the all registered IOR interceptors.
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class IORInterceptors implements IORInterceptorOperations
+public class IORInterceptors implements IORInterceptor_3_0Operations
 {
   /**
    * The array of all registered IOR interceptors.
@@ -105,5 +109,82 @@ public class IORInterceptors implements IORInterceptorOperations
   public String name()
   {
     return getClass().getName();
+  }
+
+  /**
+   * Call this method for all registered CORBA 3.0 interceptors.
+   */
+  public void adapter_manager_state_changed(int adapterManagerId, short adapterState)
+  {
+    for (int i = 0; i < interceptors.length; i++)
+      {
+        try
+          {
+            if (interceptors[i] instanceof IORInterceptor_3_0Operations)
+              {
+                ((IORInterceptor_3_0Operations) interceptors[i]).
+                  adapter_manager_state_changed(adapterManagerId, adapterState);
+              }
+          }
+        catch (Exception exc)
+          {
+            OBJ_ADAPTER oa = new OBJ_ADAPTER("components_established failed");
+            oa.initCause(exc);
+            oa.minor = 6 | OMGVMCID.value;
+            throw oa;
+          }
+      }
+  }
+
+  /**
+   * Call this method for all registered CORBA 3.0 interceptors.
+   */
+  public void adapter_state_changed(ObjectReferenceTemplate[] adapters, short adaptersState)
+  {
+    for (int i = 0; i < interceptors.length; i++)
+      {
+        try
+          {
+            if (interceptors[i] instanceof IORInterceptor_3_0Operations)
+              {
+                ((IORInterceptor_3_0Operations) interceptors[i]).
+                  adapter_state_changed(adapters, adaptersState);
+              }
+          }
+        catch (Exception exc)
+          {
+            OBJ_ADAPTER oa = new OBJ_ADAPTER("components_established failed");
+            oa.initCause(exc);
+            oa.minor = 6 | OMGVMCID.value;
+            throw oa;
+          }
+      }
+  }
+
+  /**
+   * Call this method for all registered CORBA 3.0 interceptors.
+   * 
+   * @throws OBJ_ADAPTER minor 6 on any failure (as defined by OMG specs).
+   */
+  public void components_established(IORInfo info)
+  {
+    for (int i = 0; i < interceptors.length; i++)
+      {
+        try
+          {
+            if (interceptors[i] instanceof IORInterceptor_3_0Operations)
+              {
+                ((IORInterceptor_3_0Operations) interceptors[i]).
+                  components_established(info);
+              }
+          }
+        catch (Exception exc)
+          {
+            OBJ_ADAPTER oa = new OBJ_ADAPTER("components_established failed");
+            oa.initCause(exc);
+            oa.minor = 6 | OMGVMCID.value;
+            throw oa;
+          }
+      }
   }
 }

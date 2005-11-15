@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.Restricted_ORB;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -87,7 +87,7 @@ public abstract class ParameterModeHelper
           new String[] { "PARAM_IN", "PARAM_OUT", "PARAM_INOUT" };
 
         typeCode =
-          Restricted_ORB.Singleton.create_enum_tc(id(), "ParameterMode", members);
+          OrbRestricted.Singleton.create_enum_tc(id(), "ParameterMode", members);
       }
     return typeCode;
   }

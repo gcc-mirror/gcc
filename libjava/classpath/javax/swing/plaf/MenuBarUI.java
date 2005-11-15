@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class MenuBarUI
-  extends ComponentUI
+public abstract class MenuBarUI extends ComponentUI
 {
   /**
    * Constructs a new <code>MenuBarUI</code>.
    */
   public MenuBarUI()
   {
+    // Nothing to do here.
   }
 }

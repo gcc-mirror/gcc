@@ -54,6 +54,10 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * This is the base applet class.  An applet is a Java program that
@@ -257,8 +261,6 @@ public class Applet extends Panel
    * Returns an audio clip from the specified URL. This clip is not tied to
    * any particular applet.
    *
-   * XXX Classpath does not yet implement this.
-   *
    * @param url the URL of the audio clip
    * @return the retrieved audio clip
    * @throws NullPointerException if url is null
@@ -267,8 +269,7 @@ public class Applet extends Panel
    */
   public static final AudioClip newAudioClip(URL url)
   {
-    // This requires an implementation of AudioClip in gnu.java.applet.
-    throw new Error("Not implemented");
+    return new URLAudioClip(url);
   }
 
   /**
@@ -521,4 +522,71 @@ public class Applet extends Panel
       return s;
     }
   } // class AccessibleApplet
+
+  private static class URLAudioClip implements AudioClip
+  {
+    // The URL we will try to play.
+    // This is null if we have already tried to create an
+    // audio input stream from this URL.
+    private URL url;
+
+    // The real audio clip.  This is null before the URL is read,
+    // and might be null afterward if we were unable to read the URL
+    // for some reason.
+    private Clip clip;
+    
+    public URLAudioClip(URL url)
+    {
+      this.url = url;
+    }
+
+    private synchronized Clip getClip()
+    {
+      if (url == null)
+        return clip;
+      try
+        {
+          clip = AudioSystem.getClip();
+          clip.open(AudioSystem.getAudioInputStream(url));
+        }
+      catch (LineUnavailableException _)
+        {
+          // Ignore.
+        }
+      catch (IOException _)
+        {
+          // Ignore.
+        }
+      catch (UnsupportedAudioFileException _)
+        {
+          // Ignore.
+        }
+      url = null;
+      return clip;
+    }
+
+    public void loop()
+    {
+      Clip myclip = getClip();
+      if (myclip != null)
+        myclip.loop(Clip.LOOP_CONTINUOUSLY);
+    }
+
+    public void play()
+    {
+      Clip myclip = getClip();
+      if (myclip != null)
+        myclip.start();
+    }
+
+    public void stop()
+    {
+      Clip myclip = getClip();
+      if (myclip != null)
+        {
+          myclip.stop();
+          myclip.setFramePosition(0);
+        }
+    }
+  }
 } // class Applet

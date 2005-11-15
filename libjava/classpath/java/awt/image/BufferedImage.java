@@ -1,5 +1,5 @@
 /* BufferedImage.java --
-   Copyright (C) 2000, 2002, 2003, 2004  Free Software Foundation
+   Copyright (C) 2000, 2002, 2003, 2004, 2005  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -48,9 +48,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -64,7 +62,7 @@ import java.util.Vector;
  * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public class BufferedImage extends Image
-  implements WritableRenderedImage
+  implements WritableRenderedImage, Transparency
 {
   public static final int TYPE_CUSTOM         =  0,
                           TYPE_INT_RGB        =  1,
@@ -689,5 +687,17 @@ public class BufferedImage extends Image
       return;
 	
     observers.remove (to);
+  }
+
+  /**
+   * Return the transparency type.
+   *
+   * @return One of {@link #OPAQUE}, {@link #BITMASK}, or {@link #TRANSLUCENT}.
+   * @see Transparency#getTransparency()
+   * @since 1.5
+   */
+  public int getTransparency()
+  {
+    return colorModel.getTransparency();
   }
 }

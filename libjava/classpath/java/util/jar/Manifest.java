@@ -80,10 +80,10 @@ public class Manifest implements Cloneable
   /**
    * Creates a Manifest from the supplied input stream.
    *
-   * @see read(Inputstream)
-   * @see write(OutputStream)
+   * @see #read(InputStream)
+   * @see #write(OutputStream)
    *
-   * @param InputStream the input stream to read the manifest from
+   * @param in the input stream to read the manifest from
    * @exception IOException when an i/o exception occurs or the input stream
    * does not describe a valid manifest
    */
@@ -102,7 +102,7 @@ public class Manifest implements Cloneable
    * a particular entry also changes the attributes of that entry in the
    * original manifest.
    *
-   * @see clone()
+   * @see #clone()
    * @param man the Manifest to copy from
    */
   public Manifest(Manifest man)

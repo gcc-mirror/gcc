@@ -38,7 +38,8 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.Restricted_ORB;
+import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 import gnu.CORBA.TypeCodeHelper;
 
 import org.omg.CORBA.portable.InputStream;
@@ -97,7 +98,7 @@ public abstract class UnionMemberHelper
                   }
                 active = true;
 
-                ORB orb = Restricted_ORB.Singleton;
+                ORB orb = OrbRestricted.Singleton;
 
                 StructMember[] members = new StructMember[ 4 ];
                 TypeCode member;
@@ -152,6 +153,7 @@ public abstract class UnionMemberHelper
     catch (UserException ex)
       {
         MARSHAL m = new MARSHAL();
+        m.minor = Minor.UserException;
         m.initCause(ex);
         throw m;
       }
@@ -172,6 +174,7 @@ public abstract class UnionMemberHelper
     catch (UserException ex)
       {
         MARSHAL m = new MARSHAL();
+        m.minor = Minor.UserException;        
         m.initCause(ex);
         throw m;
       }

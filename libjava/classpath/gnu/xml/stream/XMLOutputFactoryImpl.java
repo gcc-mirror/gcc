@@ -121,7 +121,8 @@ public class XMLOutputFactoryImpl
   {
     if (IS_PREFIX_DEFAULTING.equals(name))
       prefixDefaulting = ((Boolean) value).booleanValue();
-    throw new IllegalArgumentException(name);
+    else
+      throw new IllegalArgumentException(name);
   }
 
   public Object getProperty(String name)

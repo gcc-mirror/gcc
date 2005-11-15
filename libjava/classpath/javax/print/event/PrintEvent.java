@@ -1,5 +1,5 @@
 /* PrintEvent.java -- 
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,8 @@ import java.util.EventObject;
 
 
 /**
+ * Superclass of all events in the Java Print Service API.
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public class PrintEvent extends EventObject
@@ -58,7 +60,7 @@ public class PrintEvent extends EventObject
   /**
    * Returns a string representation of this object.
    * 
-   * @return the string representation
+   * @return The string representation
    */
   public String toString()
   {

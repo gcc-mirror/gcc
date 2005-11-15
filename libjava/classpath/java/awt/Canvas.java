@@ -292,8 +292,8 @@ public class Canvas
    *
    * @since 1.4
    */
-  public void createBufferStrategy(int numBuffers,
-				   BufferCapabilities caps)
+  public void createBufferStrategy(int numBuffers, BufferCapabilities caps)
+    throws AWTException
   {
     if (numBuffers < 1)
       throw new IllegalArgumentException("Canvas.createBufferStrategy: number"
@@ -305,15 +305,7 @@ public class Canvas
 
     // a flipping strategy was requested
     if (caps.isPageFlipping())
-      {
-	try
-	  {
-	    bufferStrategy = new CanvasFlipBufferStrategy(numBuffers);
-	  }
-	catch (AWTException e)
-	  {
-	  }
-      }
+      bufferStrategy = new CanvasFlipBufferStrategy(numBuffers);
     else
       bufferStrategy = new CanvasBltBufferStrategy(numBuffers, true);
   }

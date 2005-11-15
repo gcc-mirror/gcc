@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class InternalFrameUI
-  extends ComponentUI
+public abstract class InternalFrameUI extends ComponentUI
 {
   /**
    * Constructs a new <code>InternalFrameUI</code>.
    */
   public InternalFrameUI()
   {
+    // Nothing to do here.
   }
 }

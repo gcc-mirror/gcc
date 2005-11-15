@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.IOP.CodecPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
+import gnu.CORBA.Minor;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -106,6 +107,7 @@ public abstract class InvalidTypeForEncodingHelper
       {
         BAD_OPERATION bad =
           new BAD_OPERATION("InvalidTypeForEncoding expected");
+        bad.minor = Minor.Any;        
         bad.initCause(cex);
         throw bad;
       }

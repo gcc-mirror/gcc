@@ -87,12 +87,16 @@ public class ScrollPaneAdjustable
   
   public void addAdjustmentListener (AdjustmentListener listener)
   {
-    AWTEventMulticaster.add (adjustmentListener, listener);
+    if (listener == null)
+      return;
+    adjustmentListener = AWTEventMulticaster.add (adjustmentListener, listener);
   }
   
   public void removeAdjustmentListener (AdjustmentListener listener)
   {
-    AWTEventMulticaster.remove (adjustmentListener, listener);
+    if (listener == null)
+      return;
+    adjustmentListener = AWTEventMulticaster.remove (adjustmentListener, listener);
   }
   
   public AdjustmentListener[] getAdjustmentListeners ()

@@ -55,9 +55,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-public class BasicButtonListener
-  implements MouseListener, MouseMotionListener, FocusListener, 
-             ChangeListener, PropertyChangeListener
+public class BasicButtonListener implements MouseListener, MouseMotionListener,
+  FocusListener, ChangeListener, PropertyChangeListener
 {
   public BasicButtonListener(AbstractButton b)
   {
@@ -66,10 +65,12 @@ public class BasicButtonListener
   
   public void propertyChange(PropertyChangeEvent e)
   {
+    // TODO: What should be done here, if anything?
   }
   
   protected void checkOpacity(AbstractButton b) 
   {    
+    // TODO: What should be done here?
   }
   
   public void focusGained(FocusEvent e) 
@@ -129,18 +130,22 @@ public class BasicButtonListener
   
   public void stateChanged(ChangeEvent e)
   {
+    // TODO: What should be done here, if anything?
   }
   
   public void mouseMoved(MouseEvent e)
   {
+    // TODO: What should be done here, if anything?
   }
   
   public void mouseDragged(MouseEvent e)
   {
+    // TODO: What should be done here, if anything?
   }
   
   public void mouseClicked(MouseEvent e)
   {
+    // TODO: What should be done here, if anything?
   }
 
   /**

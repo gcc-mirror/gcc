@@ -71,7 +71,7 @@ public class BorderFactory
    */
   public static Border createLineBorder(Color color)
   {
-    return null;
+    return createLineBorder(color, 1);
   }
 
   /**

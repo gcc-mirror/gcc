@@ -39,6 +39,7 @@ package java.lang;
 
 import java.io.IOException;
 import java.nio.CharBuffer;
+import java.nio.ReadOnlyBufferException;
 
 /**
  * A <code>Readable</code> object is simply a source for Unicode character

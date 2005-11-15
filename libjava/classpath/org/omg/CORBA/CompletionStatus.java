@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
+import gnu.CORBA.Minor;
+
 import java.io.Serializable;
 
 import org.omg.CORBA.portable.IDLEntity;
@@ -108,6 +110,7 @@ public class CompletionStatus
 
   /**
    * Returns the CompletionStatus, matching the given integer constant
+   * 
    * @param completion one of COMPLETED_YES, COMPLETED_NO or COMPLEED_MAYBE.
    * @return one of COMPLETED_YES, COMPLETED_NO or COMPLEED_MAYBE.
    * @throws BAD_PARAM if the parameter is not one of these three valid values.
@@ -116,11 +119,14 @@ public class CompletionStatus
   {
     try
       {
-        return states [ completion ];
+        return states[completion];
       }
     catch (ArrayIndexOutOfBoundsException ex)
       {
-        throw new BAD_OPERATION("Invalid completion status " + completion);
+        BAD_OPERATION bad = new BAD_OPERATION("Invalid completion status "
+          + completion);
+        bad.minor = Minor.Enumeration;
+        throw bad;
       }
   }
 

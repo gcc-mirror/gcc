@@ -68,7 +68,7 @@ public class GdkGraphics extends Graphics
 
   Color color, xorColor;
   GtkComponentPeer component;
-  Font font;
+  Font font = new Font ("Dialog", Font.PLAIN, 12);
   Rectangle clip;
   GtkImage image; 
 
@@ -88,6 +88,8 @@ public class GdkGraphics extends Graphics
     color = g.color;
     xorColor = g.xorColor;
     font = g.font;
+    if (font == null)
+      font = new Font ("Dialog", Font.PLAIN, 12);
     clip = new Rectangle (g.clip);
     component = g.component;
 
@@ -115,7 +117,6 @@ public class GdkGraphics extends Graphics
   GdkGraphics (GtkComponentPeer component)
   {
     this.component = component;
-    font = component.awtComponent.getFont ();
     color = Color.black;
 
     if (component.isRealized ())
@@ -128,6 +129,8 @@ public class GdkGraphics extends Graphics
   {
     initState (component);
     color = component.awtComponent.getForeground ();
+    if (color == null)
+      color = Color.BLACK;
     Dimension d = component.awtComponent.getSize ();
     clip = new Rectangle (0, 0, d.width, d.height);
   }
@@ -137,6 +140,8 @@ public class GdkGraphics extends Graphics
   {
     initStateUnlocked (component);
     color = component.awtComponent.getForeground ();
+    if (color == null)
+      color = Color.BLACK;
     Dimension d = component.awtComponent.getSize ();
     clip = new Rectangle (0, 0, d.width, d.height);
   }
@@ -378,7 +383,8 @@ public class GdkGraphics extends Graphics
   
   public void setFont (Font font)
   {
-    this.font = font;
+    if (font != null)
+      this.font = font;
   }
 
   native void setFunction (int gdk_func);

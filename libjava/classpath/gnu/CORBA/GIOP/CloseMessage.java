@@ -38,14 +38,12 @@ exception statement from your version. */
 
 package gnu.CORBA.GIOP;
 
-import gnu.CORBA.IOR;
+import gnu.CORBA.Minor;
 
 import org.omg.CORBA.MARSHAL;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
-import java.net.Socket;
 
 /**
  * The explicit command to close the connection.
@@ -60,6 +58,11 @@ import java.net.Socket;
 public class CloseMessage
   extends MessageHeader
 {
+  /** 
+   * Use serialVersionUID for interoperability. 
+   */
+  private static final long serialVersionUID = 1;
+  
   /**
    * The singleton close message is typically enough, despite new
    * instances may be instantiated if the specific version field
@@ -95,6 +98,7 @@ public class CloseMessage
     catch (IOException ex)
       {
         MARSHAL m = new MARSHAL("Unable to flush the stream");
+        m.minor = Minor.Header;
         m.initCause(ex);
         throw m;
       }

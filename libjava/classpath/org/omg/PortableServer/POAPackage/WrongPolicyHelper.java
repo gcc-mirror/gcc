@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableServer.POAPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
+import gnu.CORBA.Minor;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -106,6 +107,7 @@ public abstract class WrongPolicyHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("WrongPolicy expected");
+        bad.minor = Minor.Any;        
         bad.initCause(cex);
         throw bad;
       }

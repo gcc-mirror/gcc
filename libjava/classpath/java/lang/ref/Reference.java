@@ -68,7 +68,7 @@ package java.lang.ref;
  * work.  It is useful to keep track, when an object is finalized.
  *
  * @author Jochen Hoenicke
- * @see java.util.WeakHashtable
+ * @see java.util.WeakHashMap
  */
 public abstract class Reference
 {
@@ -104,7 +104,7 @@ public abstract class Reference
    * Creates a new reference that is not registered to any queue.
    * Since it is package private, it is not possible to overload this
    * class in a different package.  
-   * @param referent the object we refer to.
+   * @param ref the object we refer to.
    */
   Reference(Object ref)
   {
@@ -115,7 +115,7 @@ public abstract class Reference
    * Creates a reference that is registered to a queue.  Since this is
    * package private, it is not possible to overload this class in a
    * different package.  
-   * @param referent the object we refer to.
+   * @param ref the object we refer to.
    * @param q the reference queue to register on.
    * @exception NullPointerException if q is null.
    */

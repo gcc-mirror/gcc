@@ -41,16 +41,19 @@ package javax.swing.plaf.basic;
 import java.awt.Dimension;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
+import javax.swing.LookAndFeel;
+import javax.swing.MenuElement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.MenuBarUI;
 
@@ -63,12 +66,15 @@ public class BasicMenuBarUI extends MenuBarUI
 
   /*ContainerListener that listens to the ContainerEvents fired from menu bar*/
   protected ContainerListener containerListener;
-
+  
   /*Property change listeners that listener to PropertyChangeEvent from menu bar*/
   protected PropertyChangeListener propertyChangeListener;
 
   /* menu bar for which this UI delegate is for*/
   protected JMenuBar menuBar;
+  
+  /* MouseListener that listens to the mouseEvents fired from menu bar*/
+  private MouseInputListener mouseListener;
 
   /**
    * Creates a new BasicMenuBarUI object.
@@ -78,6 +84,7 @@ public class BasicMenuBarUI extends MenuBarUI
     changeListener = createChangeListener();
     containerListener = createContainerListener();
     propertyChangeListener = new PropertyChangeHandler();
+    mouseListener = new MouseInputHandler();
   }
 
   /**
@@ -159,12 +166,9 @@ public class BasicMenuBarUI extends MenuBarUI
    */
   protected void installDefaults()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-
-    menuBar.setBackground(defaults.getColor("MenuBar.background"));
-    menuBar.setBorder(defaults.getBorder("MenuBar.border"));
-    menuBar.setFont(defaults.getFont("MenuBar.font"));
-    menuBar.setForeground(defaults.getColor("MenuBar.foreground"));
+    LookAndFeel.installBorder(menuBar, "MenuBar.border");
+    LookAndFeel.installColorsAndFont(menuBar, "MenuBar.background",
+                                     "MenuBar.foreground", "MenuBar.font");
     menuBar.setOpaque(true);
   }
 
@@ -183,6 +187,7 @@ public class BasicMenuBarUI extends MenuBarUI
   {
     menuBar.addContainerListener(containerListener);
     menuBar.addPropertyChangeListener(propertyChangeListener);
+    menuBar.addMouseListener(mouseListener);
   }
 
   /**
@@ -229,6 +234,7 @@ public class BasicMenuBarUI extends MenuBarUI
   {
     menuBar.removeContainerListener(containerListener);
     menuBar.removePropertyChangeListener(propertyChangeListener);
+    menuBar.removeMouseListener(mouseListener);
   }
 
   /**
@@ -250,6 +256,7 @@ public class BasicMenuBarUI extends MenuBarUI
   {
     public void stateChanged(ChangeEvent event)
     {
+      // TODO: What should be done here, if anything?
     }
   }
 
@@ -299,6 +306,86 @@ public class BasicMenuBarUI extends MenuBarUI
         menuBar.repaint();
       if (e.getPropertyName().equals("margin"))
         menuBar.repaint();
+    }
+  }
+  
+  private class MouseInputHandler implements MouseInputListener
+  {
+    /**
+     * Handles mouse clicked event
+     *
+     * @param e Mouse event
+     */
+    public void mouseClicked(MouseEvent e)
+    {
+      MenuElement[] me = menuBar.getSubElements();
+      
+      for (int i = 0; i < me.length; i++)
+        {
+          JMenu menu = menuBar.getMenu(i);
+          if (menu != null)
+            menu.setSelected(false);
+        }
+    }
+    
+    /**
+     * Handles mouse pressed event
+     *
+     * @param e Mouse event
+     */
+    public void mousePressed(MouseEvent e)
+    {
+      // TODO: What should be done here, if anything?
+    }
+    
+    /**
+     * Handles mouse released event
+     *
+     * @param e Mouse event
+     */
+    public void mouseReleased(MouseEvent e)
+    {
+      // TODO: What should be done here, if anything?
+    }
+    
+    /**
+     * Handles mouse exited event
+     *
+     * @param e Mouse event
+     */
+    public void mouseExited(MouseEvent e)
+    {
+      // TODO: What should be done here, if anything?
+    }
+    
+    /**
+     * Handles mouse dragged event
+     *
+     * @param e Mouse event
+     */
+    public void mouseDragged(MouseEvent e)
+    {
+      // TODO: What should be done here, if anything?
+    }
+    
+    /**
+     * Handles mouse moved event
+     *
+     * @param e Mouse event
+     */
+    public void mouseMoved(MouseEvent e)
+    {
+      // TODO: What should be done here, if anything?
+    }
+    
+    /**
+     * Handles mouse entered event
+     *
+     * @param e Mouse event
+     */
+    public void mouseEntered(MouseEvent e)
+    {
+      // TODO: What should be done here, if anything?
     }
   }
 }

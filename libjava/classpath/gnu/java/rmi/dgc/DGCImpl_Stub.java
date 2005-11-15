@@ -81,7 +81,7 @@ public final class DGCImpl_Stub
     public void clean(java.rmi.server.ObjID[] $param_0, long $param_1, java.rmi.dgc.VMID $param_2, boolean $param_3) throws java.rmi.RemoteException {
         try {
             if (useNewInvoke) {
-                ref.invoke(this, $method_clean_0, new java.lang.Object[] {$param_0, new java.lang.Long($param_1), $param_2, new java.lang.Boolean($param_3)}, -5803803475088455571L);
+                ref.invoke(this, $method_clean_0, new java.lang.Object[] {$param_0, new java.lang.Long($param_1), $param_2, Boolean.valueOf($param_3)}, -5803803475088455571L);
             }
             else {
                 java.rmi.server.RemoteCall call = ref.newCall((java.rmi.server.RemoteObject)this, operations, 0, interfaceHash);

@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -58,7 +58,7 @@ public final class PrincipalHolder
    * The default type code for this holder.
    */
   private static final TypeCode t_any =
-    new primitiveTypeCode(TCKind.tk_Principal);
+    new PrimitiveTypeCode(TCKind.tk_Principal);
 
   /**
    * The instance of {@link Principal}, held by this holder.

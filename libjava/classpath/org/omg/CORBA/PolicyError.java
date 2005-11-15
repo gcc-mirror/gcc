@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
+import org.omg.CORBA.portable.IDLEntity;
+
 import java.io.Serializable;
 
 /**
@@ -75,7 +77,7 @@ public class PolicyError
 
   /**
    * Constructs the policy error with the given reason code.
-   * @param reason a reason code, one of
+   * @param a_reason a reason code, one of
    * {@link BAD_POLICY}, {@link BAD_POLICY_TYPE},
    * {@link BAD_POLICY_VALUE}, {@link UNSUPPORTED_POLICY},
    * {@link UNSUPPORTED_POLICY_VALUE}.
@@ -88,11 +90,11 @@ public class PolicyError
   /**
    * Constructs the policy error with the given reason code and the
    * detailed message.
-   * @param reason a reason code, one of
+   * @param a_details the detailed message.
+   * @param a_reason a reason code, one of
    * {@link BAD_POLICY}, {@link BAD_POLICY_TYPE},
    * {@link BAD_POLICY_VALUE}, {@link UNSUPPORTED_POLICY},
    * {@link UNSUPPORTED_POLICY_VALUE}.
-   * @param details the detailed message.
    */
   public PolicyError(String a_details, short a_reason)
   {

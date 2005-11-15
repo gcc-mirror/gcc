@@ -38,7 +38,11 @@ exception statement from your version. */
 package javax.print.attribute;
 
 import java.io.Serializable;
-import java.util.Vector;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * @author Michael Koch
@@ -50,33 +54,41 @@ public abstract class SetOfIntegerSyntax
 
   private int[][] members;
 
-  private static int[][] normalize(Vector vecMembers)
+  private static int[][] normalize(int[][] values, int size)
   {
-    // XXX: Perhaps we should merge ranges that overlap.
-    
-    int current = 0;
-    int[][] members = new int[vecMembers.size()][];
+    // Sort into increasing order.  First the first index is
+    // compared, then the second.
+    Arrays.sort(values, 0, size, new Comparator()
+                {
+                  public int compare(Object o1, Object o2)
+                  {
+                    int[] v1 = (int[]) o1;
+                    int[] v2 = (int[]) o2;
+                    if (v1[0] == v2[0])
+                      return v1[1] - v2[1];
+                    return v1[0] - v2[0];
+                  }
+                });
 
-    while (vecMembers.size() > 0)
+    // Now coalesce overlapping ranges.
+    int outIndex = 0;
+    for (int i = 0; i < size; ++i)
       {
-        // Search the lowest range.
-        int[] range = (int[]) vecMembers.elementAt(0);
-
-        for (int index = 1; index < vecMembers.size(); index++)
+        // Note that we compare with values[i][1]+1, since
+        // we can coalesce {0,1} with {2,x}.
+        int save = i;
+        while (i + 1 < size && values[i + 1][0] <= values[i][1] + 1)
           {
-            int[] tmp = (int[]) vecMembers.elementAt(index);
-
-            if (range[0] > tmp[0]
-                || (range[0] == tmp[0]
-                    && range[0] > tmp[0]))
-              range = tmp;
+            values[i][1] = Math.max(values[i][1], values[i + 1][1]);
+            ++i;
           }
-
-        members[current] = range;
-        current++;
+        values[outIndex++] = values[save];
       }
     
-    return members;
+    int[][] result = new int[outIndex][];
+    System.arraycopy(values, 0, result, 0, outIndex);
+    
+    return result;
   }
   
   /**
@@ -104,10 +116,13 @@ public abstract class SetOfIntegerSyntax
    */
   protected SetOfIntegerSyntax(int[][] members)
   {
-    Vector vecMembers = new Vector();
-    
-    if (members != null)
+    int[][] newMembers;
+    int outIndex = 0;
+    if (members == null)
+      newMembers = new int[0][];
+    else
       {
+        newMembers = new int[members.length][];
         for (int index = 0; index < members.length; index++)
           {
             int lower;
@@ -126,6 +141,7 @@ public abstract class SetOfIntegerSyntax
             else
               throw new IllegalArgumentException("invalid member element");
 
+            // We only want to reject non-null ranges where lower<0.
             if (lower <= upper && lower < 0)
               throw new IllegalArgumentException("invalid member element");
 
@@ -134,12 +150,81 @@ public abstract class SetOfIntegerSyntax
                 int[] range = new int[2];
                 range[0] = lower;
                 range[1] = upper;
-                vecMembers.add(range);
+                newMembers[outIndex++] = range;
               }
           }
       }
     
-    this.members = normalize(vecMembers);
+    this.members = normalize(newMembers, outIndex);
+  }
+  
+  private boolean skipWhitespace(StringCharacterIterator i)
+  {
+    while (Character.isWhitespace(i.current()))
+      i.next();
+    return i.current() == CharacterIterator.DONE;
+  }
+  
+  private boolean skipNumber(StringCharacterIterator i)
+  {
+    boolean readAny = false;
+    while (Character.isDigit(i.current()))
+      {
+        readAny = true;
+        i.next();
+      }
+    return readAny;
+  }
+
+  protected SetOfIntegerSyntax(String s)
+  {
+    ArrayList vals = new ArrayList();
+
+    StringCharacterIterator it = new StringCharacterIterator(s);
+
+    while (true)
+      {
+        // Skip whitespace.
+        if (skipWhitespace(it))
+          break;
+
+        // Parse integer.
+        int index = it.getIndex();
+        if (! skipNumber(it))
+          throw new IllegalArgumentException();
+        int[] item = new int[2];
+        item[0] = Integer.parseInt(s.substring(index, it.getIndex()));
+
+        if (! skipWhitespace(it))
+          {
+            char c = it.current();
+            if (c == ':' || c == '-')
+              {
+                it.next();
+                if (skipWhitespace(it))
+                  throw new IllegalArgumentException();
+                index = it.getIndex();
+                if (! skipNumber(it))
+                  throw new IllegalArgumentException();
+                item[1] = Integer.parseInt(s.substring(index, it.getIndex()));
+              }
+            else
+              item[1] = item[0];
+          }
+        else
+          item[1] = item[0];
+
+        if (item[0] <= item[1]) 
+          vals.add(item);
+        
+        if (skipWhitespace(it))
+          break;
+        if (it.current() != ',')
+          throw new IllegalArgumentException();
+        it.next();
+      }
+
+    members = normalize((int[][]) vals.toArray(new int[0][]), vals.size());
   }
 
   /**
@@ -153,6 +238,7 @@ public abstract class SetOfIntegerSyntax
    */
   protected SetOfIntegerSyntax(int lowerBound, int upperBound)
   {
+    // We only want to reject non-null ranges where lower<0.
     if (lowerBound <= upperBound
         && lowerBound < 0)
       throw new IllegalArgumentException();
@@ -175,7 +261,7 @@ public abstract class SetOfIntegerSyntax
       {
         if (value < members[index][0])
           return false;
-        else if (value < members[index][1])
+        else if (value <= members[index][1])
           return true;
       }
 
@@ -205,8 +291,16 @@ public abstract class SetOfIntegerSyntax
   {
     if (! (obj instanceof SetOfIntegerSyntax))
       return false;
-
-    throw new Error("not implemented");
+    SetOfIntegerSyntax other = (SetOfIntegerSyntax) obj;
+    if (other.members.length != members.length)
+      return false;
+    for (int i = 0; i < members.length; ++i)
+      {
+        if (members[i][0] != other.members[i][0]
+            || members[i][1] != other.members[i][1])
+          return false;
+      }
+    return true;
   }
 
   /**
@@ -216,7 +310,7 @@ public abstract class SetOfIntegerSyntax
    */
   public int[][] getMembers()
   {
-    throw new Error("not implemented");
+    return (int[][]) members.clone();
   }
 
   /**
@@ -226,11 +320,14 @@ public abstract class SetOfIntegerSyntax
    */
   public int hashCode()
   {
-    throw new Error("not implemented");
+    int result = 0;
+    for (int i = 0; i < members.length; ++i)
+      result += members[i][0] + members[i][1];
+    return result;
   }
 
   /**
-   * Returns the smallest value that is greater then x.
+   * Returns the smallest value that is greater than x which is in this set.
    *
    * @param x an integer value
    *
@@ -238,7 +335,16 @@ public abstract class SetOfIntegerSyntax
    */
   public int next(int x)
   {
-    throw new Error("not implemented");
+    for (int i = 0; i < members.length; ++i)
+      {
+        if (x >= members[i][1])
+          continue;
+        if (x < members[i][0])
+          return members[i][0];
+        // X is in this range.
+        return x + 1;
+      }
+    return -1;
   }
 
   /**
@@ -248,6 +354,18 @@ public abstract class SetOfIntegerSyntax
    */
   public String toString()
   {
-    throw new Error("not implemented");
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < members.length; ++i)
+      {
+        if (i > 0)
+          sb.append(',');
+        sb.append(members[i][0]);
+        if (members[i][0] != members[i][1])
+          {
+            sb.append('-');
+            sb.append(members[i][1]);
+          }
+      }
+    return sb.toString();
   }
 }

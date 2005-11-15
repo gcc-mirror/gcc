@@ -53,5 +53,6 @@ public class CannotUndoException
    */
   public CannotUndoException()
   {
+    super();
   }
 }

@@ -1,5 +1,5 @@
 /* QName.java - An XML qualified name.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.xml.namespace;
 
+import java.io.Serializable;
+
 import javax.xml.XMLConstants;
 
 /**
@@ -47,14 +49,15 @@ import javax.xml.XMLConstants;
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  * @since 1.3
  */
-public class QName
+public class QName implements Serializable
 {
+  private static final long serialVersionUID = 4418622981026545151L;
 
   private final String namespaceURI;
   private final String localPart;
   private final String prefix;
-  private final String qName;
-  int hashCode = -1;
+  private transient String qName;
+  transient int hashCode = -1;
 
   public QName(String namespaceURI, String localPart)
   {
@@ -78,21 +81,6 @@ public class QName
     this.namespaceURI = namespaceURI;
     this.localPart = localPart;
     this.prefix = prefix;
-    
-    StringBuffer buf = new StringBuffer();
-    if (namespaceURI.length() > 0)
-      {
-        buf.append('{');
-        buf.append(namespaceURI);
-        buf.append('}');
-      }
-    if (prefix.length() > 0)
-      {
-        buf.append(prefix);
-        buf.append(':');
-      }
-    buf.append(localPart);
-    qName = buf.toString();
   }
 
   public QName(String localPart)
@@ -115,7 +103,7 @@ public class QName
     return prefix;
   }
 
-  public boolean equals(Object obj)
+  public final boolean equals(Object obj)
   {
     if (obj instanceof QName)
       {
@@ -129,19 +117,29 @@ public class QName
   public final int hashCode()
   {
     if (hashCode == -1)
-      {
-        StringBuffer buf = new StringBuffer();
-        buf.append('{');
-        buf.append(namespaceURI);
-        buf.append('}');
-        buf.append(localPart);
-        hashCode = buf.toString().hashCode();
-      }
+      hashCode = localPart.hashCode() ^ namespaceURI.hashCode();
     return hashCode;
   }
 
-  public String toString()
+  public synchronized String toString()
   {
+    if (qName == null)
+      {
+	StringBuffer buf = new StringBuffer();
+	if (namespaceURI.length() > 0)
+	  {
+	    buf.append('{');
+	    buf.append(namespaceURI);
+	    buf.append('}');
+	  }
+	if (prefix.length() > 0)
+	  {
+	    buf.append(prefix);
+	    buf.append(':');
+	  }
+	buf.append(localPart);
+	qName = buf.toString();
+      }
     return qName;
   }
 

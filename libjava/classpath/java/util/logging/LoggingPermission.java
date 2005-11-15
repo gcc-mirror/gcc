@@ -41,6 +41,8 @@ package java.util.logging;
 public final class LoggingPermission
   extends java.security.BasicPermission
 {
+  private static final long serialVersionUID = 63564341580231582L;
+
   /**
    * Creates a new LoggingPermission.
    *

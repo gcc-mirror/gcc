@@ -46,7 +46,12 @@ import java.util.EventListener;
 import javax.swing.event.EventListenerList;
 
 /**
- * Fires one or more action events after the specified delay.
+ * Fires one or more action events after the specified delay.  This is
+ * a specialised version of <code>java.util.Timer</code> just for
+ * firing <code>ActionEvent</code>s. All Timers share one (daemon)
+ * Thread (or java.util.Timer). All events are fired from the event
+ * queue.
+ * 
  * @author Ronald Veldema
  * @author Audrius Meskauskas (audriusa@Bionformatics.org) - bug fixes
  * and documentation comments
@@ -55,48 +60,19 @@ public class Timer
   implements Serializable
 {
   /**
-   * The timer thread
+   * Given to the shared java.util.Timer to (possibly repeatedly) call
+   * queueEvent().
    */
-  private class Waker
-    extends Thread
+  private class Task extends java.util.TimerTask
   {
-    /**
-     * Fires events, pausing for required intervals.
-     */
     public void run()
     {
-      running = true;
-      try
-        {
-          sleep(initialDelay);
+      if (logTimers)
+	System.out.println("javax.swing.Timer -> queueEvent()");
+      queueEvent();
 
-          queueEvent();
-
-          while (running)
-            {
-              try
-                {
-                  sleep(delay);
-                }
-              catch (InterruptedException e)
-                {
-                  return;
-                }
-              queueEvent();
-
-              if (logTimers)
-                System.out.println("javax.swing.Timer -> clocktick");
-
-              if ( ! repeats)
-                break;
-            }
-          running = false;
-        }
-      catch (Exception e)
-        {
-          // The timer is no longer running.
-          running = false;
-        }
+      if (!repeats)
+	task = null;
     }
   }
 
@@ -116,6 +92,14 @@ public class Timer
         drainEvents();
       }
     };
+
+  /**
+   * The static java.util.Timer daemon which will be used to schedule
+   * all javax.swing.Timer.Task objects. The daemon will always be
+   * running, even if there's no task scheduled in it.
+   */
+  private static java.util.Timer timer = new java.util.Timer("swing.Timer",
+							     true);
 
   /**
    * If <code>true</code>, the timer prints a message to
@@ -139,12 +123,6 @@ public class Timer
   boolean repeats = true;
 
   /**
-   * <code>true</code> if the timer is currently active, firing events
-   * as scheduled.
-   */
-  boolean running;
-
-  /**
    * The delay between subsequent repetetive events.
    */
   int delay;
@@ -162,10 +140,9 @@ public class Timer
   int ticks;
 
   /**
-   * Stores the thread that posts events to the queue at required time
-   * intervals.
+   * The task that calls queueEvent(). When null this Timer is stopped.
    */
-  private Waker waker;
+  private Task task;
 
   /**
    * This object manages a "queue" of virtual actionEvents, maintained as a
@@ -360,7 +337,7 @@ public class Timer
    */
   public boolean isRunning()
   {
-    return running;
+    return task != null;
   }
 
   /**
@@ -398,10 +375,16 @@ public class Timer
    */
   public void start()
   {
-    if (isRunning())
-      return;
-    waker = new Waker();
-    waker.start();
+    Task t = task;
+    if (t == null)
+      {
+	t = new Task();
+	if (isRepeats())
+	  timer.schedule(t, getInitialDelay(), getDelay());
+	else
+	  timer.schedule(t, getInitialDelay());
+	task = t;
+      }
   }
 
   /**
@@ -409,12 +392,11 @@ public class Timer
    */
   public void stop()
   {
-    running = false;
-    if (waker != null)
-      waker.interrupt();
-    synchronized (queueLock)
+    Task t = task;
+    if (t != null)
       {
-        queue = 0;
+	t.cancel();
+	task = null;
       }
   }
 
@@ -475,11 +457,11 @@ public class Timer
   */
   void queueEvent()
   {
-    synchronized (queueLock)
+    synchronized(queueLock)
       {
-        queue++;
-        if (queue == 1)
-          SwingUtilities.invokeLater(drainer);
+	queue++;
+	if (queue == 1)
+	  SwingUtilities.invokeLater(drainer);
       }
   }
 }

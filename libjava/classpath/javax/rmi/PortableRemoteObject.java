@@ -1,5 +1,5 @@
-/* PortableRemoteObject.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* PortableRemoteObject.java --
+   Copyright (C) 2004, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,77 +39,190 @@ exception statement from your version. */
 package javax.rmi;
 
 import gnu.javax.rmi.CORBA.DelegateFactory;
-import gnu.javax.rmi.CORBA.GetDelegateInstanceException;
+
+import org.omg.CORBA.BAD_PARAM;
+import org.omg.CORBA.ORB;
+import org.omg.CORBA.portable.ObjectImpl;
+import org.omg.PortableServer.POA;
+import org.omg.PortableServer.Servant;
 
 import java.rmi.NoSuchObjectException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import javax.rmi.CORBA.PortableRemoteObjectDelegate;
+import javax.rmi.CORBA.Stub;
+import javax.rmi.CORBA.Tie;
+import javax.rmi.CORBA.Util;
 
+/**
+ * <p>
+ * An utility class for RMI/IDL server side object implementations. Server side
+ * implementation objects may inherit from this class, but this is not
+ * mandatory, as the needed methds are static. Server side implementations may
+ * choose to inherit from {@link ObjectImpl} or {@link Servant} instead.
+ * </p>
+ * <p>
+ * The functionality of methods in this class is forwarded to the enclosed
+ * PortableRemoteObjectDelegate. This delegate can be altered by setting the
+ * system property "javax.rmi.CORBA.PortableRemoteObjectClass" to the name of
+ * the alternative class that must implement
+ * {@link PortableRemoteObjectDelegate}.
+ * </p>
+ * 
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
+ */
 public class PortableRemoteObject
-  implements Remote /* why doc doesn't say should implement Remote */
 {
+  /**
+   * A delegate where the functionality is forwarded.
+   */
+  static PortableRemoteObjectDelegate delegate = (PortableRemoteObjectDelegate) DelegateFactory.getInstance(DelegateFactory.PORTABLE_REMOTE_OBJECT);
 
-  private static PortableRemoteObjectDelegate delegate;
-  static
-  {
-    try
-      {
-	delegate = (PortableRemoteObjectDelegate)DelegateFactory.getInstance
-	  ("PortableRemoteObject");
-      }
-    catch(GetDelegateInstanceException e)
-      {
-	e.printStackTrace();
-	delegate = null;
-      }
-  }
-
+  /**
+   * The protected constructor calls {@link exportObject} (this).
+   * 
+   * @throws RemoteException if the exportObject(this) throws one.
+   */
   protected PortableRemoteObject()
     throws RemoteException
   {
-    if(delegate != null)
-      exportObject((Remote)this);
+    exportObject((Remote) this);
   }
 
+  /**
+   * <p>
+   * Makes the remote object <code>a_target</code> ready for remote
+   * communication using the same communications runtime as for the passed
+   * <code>a_source</code> parameter. The a_target is connected to the same
+   * ORB (and, if applicable, to the same {@link POA}) as the a_source.
+   * 
+   * @param a_target the target to connect to ORB, must be an instance of either
+   * {@link ObjectImpl} (Stubs and old-style ties) or {@link Tie}.
+   * 
+   * @param a_source the object, providing the connection information, must be
+   * an instance of either {@link ObjectImpl} (Stubs and old-style ties) or
+   * {@link Servant} (the next-generation Ties supporting {@link POA}).
+   * 
+   * @throws RemoteException if the target is already connected to another ORB.
+   */
   public static void connect(Remote target, Remote source)
     throws RemoteException
   {
-    if(delegate != null)
-      delegate.connect(target, source);
+    delegate.connect(target, source);
   }
-    
-  public static void exportObject(Remote obj)
+
+  /**
+   * <p>
+   * Makes a server object ready for remote calls. The subclasses of
+   * PortableRemoteObject do not need to call this method, as it is called by
+   * the constructor.
+   * </p>
+   * <p>
+   * This method only creates a tie object and caches it for future usage. The
+   * created tie does not have a delegate or an ORB associated.
+   * </p>
+   * 
+   * @param object the object to export.
+   * 
+   * @throws RemoteException if export fails due any reason.
+   */
+  public static void exportObject(Remote object)
     throws RemoteException
   {
-    if(delegate != null)
-      delegate.exportObject(obj);
+    delegate.exportObject(object);
   }
 
-  public static Object narrow(Object narrowFrom, Class narrowTo)
+  /**
+   * Narrows the passed object to conform to the given interface or IDL type. In
+   * RMI-IIOP, this method replaces the narrow(org.omg.CORBA.Object) method that
+   * was present in the CORBA Helpers. This method frequently returns different
+   * instance and cannot be replaced by the direct cast. The typical narrowing
+   * cases (all supported by GNU Classpath) are:
+   * <ul>
+   * <li>A CORBA object (for instance, returned by the
+   * {@link ORB#string_to_object} or from the naming service) can be narrowed
+   * into interface, derived from Remote. The method will try to locate an
+   * appropriate {@link Stub} by the name pattern (_*_Stub). If the object being
+   * narrowed is connected to an ORB, the returned instance will inherit that
+   * connection, representing the same remote (or local) object, but now with
+   * the possibility to invoke remote methods. </li>
+   * <li>A CORBA object may be directly narrowed into the appropriate
+   * {@link Stub} class, if it is and passed as a second parameter. This allows
+   * to use non-standard stubs without parameterless constructors.</li>
+   * <li>Any two classes, derived from the {@link ObjectImpl} (may be Stub's)
+   * can be narrowed one into another (a delegate is transferred). </li>
+   * <li>An implementation of Remote can be narrowed into {@link Tie} that can
+   * later connected to an ORB, making the methods accessible remotely. The
+   * Remote being narrowed normally provides a local implementation, but you can
+   * also narrow remote Stub, creating "forwarding Tie".</li>
+   * <li>null is narrowed into null regardless of the second parameter.</li>
+   * <li>A {@link Tie} can be narrowed into Remote, representing the
+   * implementation for this Tie (if one is set).</li>
+   * </ul>
+   * 
+   * @param object the object like CORBA Object, Stub or Remote that must be
+   * narrowed to the given interface.
+   * 
+   * @param narrowToInstaceOf the class of the interface to that the object must
+   * be narrowed.
+   * 
+   * @return On success, an object of type narrowTo or null, if narrowFrom =
+   * null.
+   * 
+   * @throws ClassCastException if no narrowing is possible.
+   */
+  public static Object narrow(Object object, Class narrowToInstaceOf)
     throws ClassCastException
   {
-    if(delegate != null)
-      return delegate.narrow(narrowFrom, narrowTo);
-    else
-      return null;
+    return delegate.narrow(object, narrowToInstaceOf);
   }
 
-  public static Remote toStub(Remote obj)
+  /**
+   * <p>
+   * Takes a server implementation object (name pattern *imp) and returns a stub
+   * object that can be used to access that server object (target), name
+   * (pattern _*_Stub).
+   * 
+   * The returned stub is not connected to any ORB and must be explicitly
+   * connected using {@link #connect}.
+   * </p>
+   * <p>
+   * The method signature prevents it from returning stubs that does not
+   * implement Remote (ClassCastException will be thrown).
+   * </p>
+   * 
+   * @param target a server side object implementation.
+   * @return a stub object that can be used to access that server object.
+   * 
+   * @throws NoSuchObjectException if a stub class cannot be located by supposed
+   * name pattern, or an instance of stub fails to be instantiated.
+   * 
+   * @throws ClassCastException if the stub class can be located, but it does
+   * not inherit from Remote.
+   * 
+   * @throws BAD_PARAM if the name of the passed class does not match the
+   * implementation name pattern (does not end by 'Impl').
+   */
+  public static Remote toStub(Remote targetImpl)
     throws NoSuchObjectException
   {
-    if(delegate != null)
-      return delegate.toStub(obj);
-    else
-      return null;
+    return delegate.toStub(targetImpl);
   }
 
-  public static void unexportObject(Remote obj)
+  /**
+   * Deregister a currently exported server object from the ORB runtimes. The
+   * object to becomes available for garbage collection. This is usually
+   * impemented via {@link Util#unexportObject}
+   * 
+   * @param object the object to unexport.
+   * 
+   * @throws NoSuchObjectException if the passed object is not currently
+   * exported.
+   */
+  public static void unexportObject(Remote object)
     throws NoSuchObjectException
   {
-    if(delegate != null)
-      delegate.unexportObject(obj);
+    delegate.unexportObject(object);
   }
-  
 }

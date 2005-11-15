@@ -39,7 +39,10 @@ package gnu.xml.stream;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
@@ -57,16 +60,56 @@ public class XMLStreamWriterImpl
   implements XMLStreamWriter
 {
 
+  /**
+   * The underlying character stream to write to.
+   */
   protected final Writer writer;
+
+  /**
+   * The encoding being used.
+   * Note that this must match the encoding of the character stream.
+   */
   protected final String encoding;
+
+  /**
+   * Whether prefix defaulting is being used.
+   * If true and a prefix has not been defined for a namespace specified on
+   * an element or an attribute, a new prefix and namespace declaration will
+   * be created.
+   */
   protected final boolean prefixDefaulting;
+
+  /**
+   * The namespace context used to determine the namespace-prefix mappings
+   * in scope.
+   */
   protected NamespaceContext namespaceContext;
   
+  /**
+   * The stack of elements in scope.
+   * Used to close the remaining elements.
+   */
   private LinkedList elements;
-  private boolean inStartElement;
-  private boolean emptyElement;
-  private NamespaceSupport namespaces;
 
+  /**
+   * Whether a start element has been opened but not yet closed.
+   */
+  private boolean inStartElement;
+
+  /**
+   * Whether we are in an empty element.
+   */
+  private boolean emptyElement;
+  
+  private NamespaceSupport namespaces;
+  private int count = 0;
+
+  /**
+   * Constructor.
+   * @see #writer
+   * @see #encoding
+   * @see #prefixDefaulting
+   */
   protected XMLStreamWriterImpl(Writer writer, String encoding,
                                 boolean prefixDefaulting)
   {
@@ -77,6 +120,10 @@ public class XMLStreamWriterImpl
     namespaces = new NamespaceSupport();
   }
 
+  /**
+   * Write the end of a start-element event.
+   * This will close the element if it was defined to be an empty element.
+   */
   private void endStartElement()
     throws IOException
   {
@@ -128,7 +175,7 @@ public class XMLStreamWriterImpl
         if (!isDeclared)
           {
             if (prefixDefaulting)
-              prefix = XMLConstants.DEFAULT_NS_PREFIX;
+              prefix = createPrefix(namespaceURI);
             else
               throw new XMLStreamException("namespace " + namespaceURI +
                                            " has not been declared");
@@ -140,13 +187,13 @@ public class XMLStreamWriterImpl
             writer.write(':');
           }
         writer.write(localName);
-        if (prefixDefaulting && !isDeclared)
+        inStartElement = true;
+        if (!isDeclared)
           {
             writeNamespace(prefix, namespaceURI);
           }
         
         elements.addLast(new String[] { prefix, localName });
-        inStartElement = true;
       }
     catch (IOException e)
       {
@@ -154,6 +201,26 @@ public class XMLStreamWriterImpl
         e2.initCause(e);
         throw e2;
       }
+  }
+
+  /**
+   * Creates a new unique prefix in the document.
+   * Subclasses may override this method to provide a suitably unique prefix
+   * for the given namespace.
+   * @param namespaceURI the namespace URI
+   */
+  protected String createPrefix(String namespaceURI)
+  {
+    Set prefixes = new HashSet();
+    for (Enumeration e = namespaces.getPrefixes(); e.hasMoreElements(); )
+      prefixes.add(e.nextElement());
+    String ret;
+    do
+      {
+        ret = "ns" + (count++);
+      }
+    while (prefixes.contains(ret));
+    return ret;
   }
 
   public void writeStartElement(String prefix, String localName,
@@ -656,6 +723,12 @@ public class XMLStreamWriterImpl
     throw new IllegalArgumentException(name);
   }
 
+  /**
+   * Write the specified text, ensuring that the content is suitably encoded
+   * for XML.
+   * @param text the text to write
+   * @param inAttr whether we are in an attribute value
+   */
   private void writeEncoded(String text, boolean inAttr)
     throws IOException
   {

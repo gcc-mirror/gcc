@@ -45,7 +45,11 @@ import java.net.URL;
  */
 public interface LoaderHandler
 {
-  String packagePrefix = "";
+  /**
+   * For binary compatibility with the JDK, the string "sun.rmi.server".
+   * Not actually used for anything.
+   */
+  String packagePrefix = "sun.rmi.server";
 
   /**
    * @deprecated

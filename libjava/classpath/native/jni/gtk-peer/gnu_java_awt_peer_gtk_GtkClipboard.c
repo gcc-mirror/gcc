@@ -53,7 +53,11 @@ jstring cp_gtk_imageTarget;
 jstring cp_gtk_filesTarget;
 
 /* Simple id to keep track of the selection we are currently managing. */
+#if SIZEOF_VOID_P == 8
+static long current_selection = 0;
+#else
 static int current_selection = 0;
+#endif
 
 /* Whether we "own" the clipboard. And may clear it. */
 static int owner = 0;
@@ -261,7 +265,11 @@ static void
 clipboard_clear_func (GtkClipboard *clipboard __attribute__((unused)),
 		      gpointer user_data)
 {
+#if SIZEOF_VOID_P == 8
+  if (owner && (long) user_data == current_selection)
+#else
   if (owner && (int) user_data == current_selection)
+#endif
     {
       JNIEnv *env = cp_gtk_gdk_env();
       owner = 0;

@@ -37,8 +37,10 @@ exception statement from your version. */
 
 package java.awt.im;
 
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.font.TextHitInfo;
+import java.awt.event.InputMethodListener;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedCharacterIterator.Attribute;
 

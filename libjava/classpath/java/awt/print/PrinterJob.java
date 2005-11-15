@@ -169,8 +169,11 @@ public abstract class PrinterJob
   /**
    * Prints the page with given attributes.
    */
-  public abstract void print (PrintRequestAttributeSet attributes)
-    throws PrinterException;
+  public void print (PrintRequestAttributeSet attributes)
+    throws PrinterException
+  {
+    print ();
+  }
 
   /**
    * Displays a dialog box to the user which allows the print job

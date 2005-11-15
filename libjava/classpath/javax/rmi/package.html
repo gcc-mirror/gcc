@@ -37,10 +37,40 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. -->
 
 <html>
-<head><title>GNU Classpath - javax.rmi</title></head>
+<head><title>GNU Classpath - javax.rmi.CORBA</title></head>
 
 <body>
-<p></p>
-
+<p>
+Java RMI over IIOP combines RMI technology with CORBA technology. Like plain RMI,
+RMI over IIOP allows to work completely in the Java programming language 
+(no IDL). When CORBA needs a separate helper class for each structure being
+passed, RMI over IIOP only needs stubs and ties for the objects that are remotely
+accessible. As a result, development with RMI-IIOP is easier. However the 
+specialised pure CORBA helpers needs no reflection to transfer they structures 
+and hence may be faster than methods, used by both RMI-IIOP and plain RMI.
+</p><p>
+Like RMI, RMI over IIOP provides flexibility by allowing to pass any serializable
+Java object (Objects By Value) between application components. A certain
+"imaginary IDL" is automatically supposed; this IDL can be explicitly generated
+and later used to interoperate with non-java application.
+</p><p>
+Like CORBA, RMI over IIOP is based on open standards defined with the 
+participation of hundredsof vendors and users in the OMG. It uses IIOP 
+communication protocol that provides much better interoperability with other 
+programming languages.
+</p><p>
+With RMI/IIOP you can use advanced CORBA features: multiple objects per servant
+and servants per object, servant activators and locators, servant, client and
+ior interceptors, CORBA naming service, various ORB policies, stringified object
+references and so on. This functionality is based on CORBA value type standard.
+RMI/IIOP supports (and GNU Classpath implements) transferring of the arbitrary 
+connected object graphs (graph flattenning).
+</p><p>
+GNU Classpath RMI-IIOP functionality is implemented as described in
+OMG formal/03-09-04 (IDL to Java mapping v1.3). Value types are written as 
+described in formal/04-03-12 (CORBA 3.0.3).
+</p>
+@author Wu Gansha (gansha.wu@intel.com), headers.
+@author Audrius Meskauskas (AudriusA@Bioinformatics.org), implementation.
 </body>
 </html>

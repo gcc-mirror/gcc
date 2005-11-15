@@ -148,6 +148,24 @@ public final class StringBuffer implements Serializable, CharSequence
   }
 
   /**
+   * Create a new <code>StringBuffer</code> with the characters from the
+   * specified <code>CharSequence</code>. Initial capacity will be the
+   * size of the CharSequence plus 16.
+   *
+   * @param sequence the <code>String</code> to convert
+   * @throws NullPointerException if str is null
+   *
+   * @since 1.5
+   */
+  public StringBuffer(CharSequence sequence)
+  {
+    count = Math.max(0, sequence.length());
+    value = new char[count + DEFAULT_CAPACITY];
+    for (int i = 0; i < count; ++i)
+      value[i] = sequence.charAt(i);
+  }
+
+  /**
    * Get the length of the <code>String</code> this <code>StringBuffer</code>
    * would create. Not to be confused with the <em>capacity</em> of the
    * <code>StringBuffer</code>.
@@ -234,13 +252,45 @@ public final class StringBuffer implements Serializable, CharSequence
    * @param index the index of the character to get, starting at 0
    * @return the character at the specified index
    * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
-   *         (while unspecified, this is a StringIndexOutOfBoundsException)
    */
   public synchronized char charAt(int index)
   {
     if (index < 0 || index >= count)
       throw new StringIndexOutOfBoundsException(index);
     return value[index];
+  }
+
+  /**
+   * Get the code point at the specified index.  This is like #charAt(int),
+   * but if the character is the start of a surrogate pair, and the
+   * following character completes the pair, then the corresponding
+   * supplementary code point is returned.
+   * @param index the index of the codepoint to get, starting at 0
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
+   * @since 1.5
+   */
+  public synchronized int codePointAt(int index)
+  {
+    return Character.codePointAt(value, index, count);
+  }
+
+  /**
+   * Get the code point before the specified index.  This is like
+   * #codePointAt(int), but checks the characters at <code>index-1</code> and
+   * <code>index-2</code> to see if they form a supplementary code point.
+   * @param index the index just past the codepoint to get, starting at 0
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
+   * @since 1.5
+   */
+  public synchronized int codePointBefore(int index)
+  {
+    // Character.codePointBefore() doesn't perform this check.  We
+    // could use the CharSequence overload, but this is just as easy.
+    if (index >= count)
+      throw new IndexOutOfBoundsException();
+    return Character.codePointBefore(value, index, 1);
   }
 
   /**
@@ -341,6 +391,46 @@ public final class StringBuffer implements Serializable, CharSequence
   }
 
   /**
+   * Append the <code>CharSequence</code> value of the argument to this
+   * <code>StringBuffer</code>.
+   *
+   * @param sequence the <code>CharSequence</code> to append
+   * @return this <code>StringBuffer</code>
+   * @see #append(Object)
+   * @since 1.5
+   */
+  public synchronized StringBuffer append(CharSequence sequence)
+  {
+    if (sequence == null)
+      sequence = "null";
+    return append(sequence, 0, sequence.length());
+  }
+
+  /**
+   * Append the specified subsequence of the <code>CharSequence</code>
+   * argument to this <code>StringBuffer</code>.
+   *
+   * @param sequence the <code>CharSequence</code> to append
+   * @param start the starting index
+   * @param end one past the ending index
+   * @return this <code>StringBuffer</code>
+   * @see #append(Object)
+   * @since 1.5
+   */
+  public synchronized StringBuffer append(CharSequence sequence,
+					  int start, int end)
+  {
+    if (sequence == null)
+      sequence = "null";
+    if (start < 0 || end < 0 || start > end || end > sequence.length())
+      throw new IndexOutOfBoundsException();
+    ensureCapacity_unsynchronized(this.count + end - start);
+    for (int i = start; i < end; ++i)
+      value[count++] = sequence.charAt(i);
+    return this;
+  }
+
+  /**
    * Append the <code>char</code> array to this <code>StringBuffer</code>.
    * This is similar (but more efficient) than
    * <code>append(new String(data))</code>, except in the case of null.
@@ -403,6 +493,25 @@ public final class StringBuffer implements Serializable, CharSequence
   {
     ensureCapacity_unsynchronized(count + 1);
     value[count++] = ch;
+    return this;
+  }
+
+  /**
+   * Append the code point to this <code>StringBuffer</code>.
+   * This is like #append(char), but will append two characters
+   * if a supplementary code point is given.
+   *
+   * @param code the code point to append
+   * @return this <code>StringBuffer</code>
+   * @see Character#toChars(int, char[], int)
+   * @since 1.5
+   */
+  public synchronized StringBuffer appendCodePoint(int code)
+  {
+    int len = Character.charCount(code);
+    ensureCapacity_unsynchronized(count + len);
+    Character.toChars(code, value, count);
+    count += len;
     return this;
   }
 
@@ -660,6 +769,54 @@ public final class StringBuffer implements Serializable, CharSequence
   }
 
   /**
+   * Insert the <code>CharSequence</code> argument into this
+   * <code>StringBuffer</code>.  If the sequence is null, the String
+   * "null" is used instead.
+   *
+   * @param offset the place to insert in this buffer
+   * @param sequence the <code>CharSequence</code> to insert
+   * @return this <code>StringBuffer</code>
+   * @throws IndexOutOfBoundsException if offset is out of bounds
+   * @since 1.5
+   */
+  public synchronized StringBuffer insert(int offset, CharSequence sequence)
+  {
+    if (sequence == null)
+      sequence = "null";
+    return insert(offset, sequence, 0, sequence.length());
+  }
+
+  /**
+   * Insert a subsequence of the <code>CharSequence</code> argument into this
+   * <code>StringBuffer</code>.  If the sequence is null, the String
+   * "null" is used instead.
+   *
+   * @param offset the place to insert in this buffer
+   * @param sequence the <code>CharSequence</code> to insert
+   * @param start the starting index of the subsequence
+   * @param end one past the ending index of the subsequence
+   * @return this <code>StringBuffer</code>
+   * @throws IndexOutOfBoundsException if offset, start,
+   * or end are out of bounds
+   * @since 1.5
+   */
+  public synchronized StringBuffer insert(int offset, CharSequence sequence,
+					  int start, int end)
+  {
+    if (sequence == null)
+      sequence = "null";
+    if (start < 0 || end < 0 || start > end || end > sequence.length())
+      throw new IndexOutOfBoundsException();
+    int len = end - start;
+    ensureCapacity_unsynchronized(count + len);
+    VMSystem.arraycopy(value, offset, value, offset + len, count - offset);
+    for (int i = start; i < end; ++i)
+      value[offset++] = sequence.charAt(i);
+    count += len;
+    return this;
+  }
+
+  /**
    * Insert the <code>char[]</code> argument into this
    * <code>StringBuffer</code>.
    *
@@ -877,6 +1034,106 @@ public final class StringBuffer implements Serializable, CharSequence
   {
     // The string will set this.shared = true.
     return new String(this);
+  }
+
+  /**
+   * This may reduce the amount of memory used by the StringBuffer,
+   * by resizing the internal array to remove unused space.  However,
+   * this method is not required to resize, so this behavior cannot
+   * be relied upon.
+   * @since 1.5
+   */
+  public synchronized void trimToSize()
+  {
+    int wouldSave = value.length - count;
+    // Some random heuristics: if we save less than 20 characters, who
+    // cares.
+    if (wouldSave < 20)
+      return;
+    // If we save more than 200 characters, shrink.
+    // If we save more than 1/4 of the buffer, shrink.
+    if (wouldSave > 200 || wouldSave * 4 > value.length)
+      {
+	char[] newValue = new char[count];
+	VMSystem.arraycopy(value, 0, newValue, 0, count);
+	value = newValue;
+      }
+  }
+
+  /**
+   * Return the number of code points between two indices in the
+   * <code>StringBuffer</code>.  An unpaired surrogate counts as a
+   * code point for this purpose.  Characters outside the indicated
+   * range are not examined, even if the range ends in the middle of a
+   * surrogate pair.
+   *
+   * @param start the starting index
+   * @param end one past the ending index
+   * @return the number of code points
+   * @since 1.5
+   */
+  public synchronized int codePointCount(int start, int end)
+  {
+    if (start < 0 || end >= count || start > end)
+      throw new StringIndexOutOfBoundsException();
+
+    int count = 0;
+    while (start < end)
+      {
+	char base = value[start];
+	if (base < Character.MIN_HIGH_SURROGATE
+	    || base > Character.MAX_HIGH_SURROGATE
+	    || start == end
+	    || start == count
+	    || value[start + 1] < Character.MIN_LOW_SURROGATE
+	    || value[start + 1] > Character.MAX_LOW_SURROGATE)
+	  {
+	    // Nothing.
+	  }
+	else
+	  {
+	    // Surrogate pair.
+	    ++start;
+	  }
+	++start;
+	++count;
+      }
+    return count;
+  }
+
+  /**
+   * Starting at the given index, this counts forward by the indicated
+   * number of code points, and then returns the resulting index.  An
+   * unpaired surrogate counts as a single code point for this
+   * purpose.
+   *
+   * @param start the starting index
+   * @param codePoints the number of code points
+   * @return the resulting index
+   * @since 1.5
+   */
+  public synchronized int offsetByCodePoints(int start, int codePoints)
+  {
+    while (codePoints > 0)
+      {
+	char base = value[start];
+	if (base < Character.MIN_HIGH_SURROGATE
+	    || base > Character.MAX_HIGH_SURROGATE
+	    || start == count
+	    || value[start + 1] < Character.MIN_LOW_SURROGATE
+	    || value[start + 1] > Character.MAX_LOW_SURROGATE)
+	  {
+	    // Nothing.
+	  }
+	else
+	  {
+	    // Surrogate pair.
+	    ++start;
+	  }
+	++start;
+	--codePoints;
+      }
+    return start;
   }
 
   /**

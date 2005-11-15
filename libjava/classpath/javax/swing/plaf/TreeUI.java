@@ -51,14 +51,14 @@ import javax.swing.tree.TreePath;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class TreeUI
-  extends ComponentUI
+public abstract class TreeUI extends ComponentUI
 {
   /**
    * Constructs a new <code>TreeUI</code>.
    */
   public TreeUI()
   {
+    // Nothing to do here.
   }
 
 

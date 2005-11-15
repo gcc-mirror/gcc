@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.DynamicAny;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.TypeCode;
@@ -101,7 +103,9 @@ public class _DynAnyFactoryStub
   public DynAny create_dyn_any(Any _0)
                         throws InconsistentTypeCode
   {
-    throw new MARSHAL(NOT_APPLICABLE);
+    MARSHAL m = new MARSHAL(NOT_APPLICABLE);
+    m.minor = Minor.Inappropriate;
+    throw m;
   }
 
   /**
@@ -113,7 +117,9 @@ public class _DynAnyFactoryStub
   public DynAny create_dyn_any_from_type_code(TypeCode _0)
                                        throws InconsistentTypeCode
   {
-    throw new MARSHAL(NOT_APPLICABLE);
+    MARSHAL m = new MARSHAL(NOT_APPLICABLE);
+    m.minor = Minor.Inappropriate;
+    throw m;
   }
 
   static String NOT_APPLICABLE =

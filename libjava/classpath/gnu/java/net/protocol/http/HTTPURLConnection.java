@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -75,7 +74,8 @@ public class HTTPURLConnection
   /**
    * Pool of reusable connections, used if keepAlive is true.
    */
-  private static final Map connectionPool = new LinkedHashMap();
+  private static final LinkedHashMap connectionPool = new LinkedHashMap();
+  static int maxConnections;
 
   /*
    * The underlying connection.
@@ -87,7 +87,6 @@ public class HTTPURLConnection
   int proxyPort;
   String agent;
   boolean keepAlive;
-  int maxConnections;
 
   private Request request;
   private Headers requestHeaders;
@@ -95,8 +94,8 @@ public class HTTPURLConnection
   private boolean requestMethodSetExplicitly;
 
   private Response response;
-  private ByteArrayInputStream responseSink;
-  private ByteArrayInputStream errorSink;
+  private InputStream responseSink;
+  private InputStream errorSink;
 
   private HandshakeCompletedEvent handshakeEvent;
 
@@ -202,34 +201,59 @@ public class HTTPURLConnection
               }
             connection.setProxy(proxyHostname, proxyPort);
           }
-        request = connection.newRequest(method, file);
-        if (!keepAlive)
+        try
           {
-            request.setHeader("Connection", "close");
-          }
-        if (agent != null)
-          {
-            request.setHeader("User-Agent", agent);
-          }
-        request.getHeaders().putAll(requestHeaders);
-        if (requestSink != null)
-          {
-            byte[] content = requestSink.toByteArray();
-            RequestBodyWriter writer = new ByteArrayRequestBodyWriter(content);
-            request.setRequestBodyWriter(writer);
-          }
-        ByteArrayResponseBodyReader reader = new ByteArrayResponseBodyReader();
-        request.setResponseBodyReader(reader);
-        if (creds != null)
-          {
-            request.setAuthenticator(new Authenticator() {
-              public Credentials getCredentials(String realm, int attempts)
+            request = connection.newRequest(method, file);
+            if (!keepAlive)
               {
-                return (attempts < 2) ? creds : null;
+                request.setHeader("Connection", "close");
               }
-            });
+            if (agent != null)
+              {
+                request.setHeader("User-Agent", agent);
+              }
+            request.getHeaders().putAll(requestHeaders);
+            if (requestSink != null)
+              {
+                byte[] content = requestSink.toByteArray();
+                RequestBodyWriter writer = new ByteArrayRequestBodyWriter(content);
+                request.setRequestBodyWriter(writer);
+              }
+            if (creds != null)
+              {
+                request.setAuthenticator(new Authenticator() {
+                    public Credentials getCredentials(String realm, int attempts)
+                    {
+                      return (attempts < 2) ? creds : null;
+                    }
+                  });
+              }
+            response = request.dispatch();
           }
-        response = request.dispatch();
+        catch (IOException ioe)
+          {
+            if (connection.useCount > 0)
+              {
+                // Connection re-use failed: Try a new connection.
+                try
+                  {
+                    connection.close();
+                  }
+                catch (IOException _)
+                  {
+                    // Ignore.
+                  }
+                connection = null;
+                retry = true;
+                continue;
+              }
+            else
+              {
+                // First time the connection was used: Hard failure.
+                throw ioe;
+              }
+          }
+        
         if (response.getCodeClass() == 3 && getInstanceFollowRedirects())
           {
             // Follow redirect
@@ -307,7 +331,8 @@ public class HTTPURLConnection
           }
         else
           {
-            responseSink = new ByteArrayInputStream(reader.toByteArray ());
+            responseSink = response.getBody();
+            
             if (response.getCode() == 404)
 	      {
 		errorSink = responseSink;
@@ -328,27 +353,14 @@ public class HTTPURLConnection
     HTTPConnection connection;
     if (keepAlive)
       {
-        StringBuffer buf = new StringBuffer(secure ? "https://" : "http://");
-        buf.append(Thread.currentThread().hashCode());
-        buf.append('@');
-        buf.append(host);
-        buf.append(':');
-        buf.append(port);
-        String key = buf.toString();
+        Object key = HTTPConnection.getPoolKey(host, port, secure);
         synchronized (connectionPool)
           {
-            connection = (HTTPConnection) connectionPool.get(key);
+            connection = (HTTPConnection) connectionPool.remove(key);
             if (connection == null)
               {
                 connection = new HTTPConnection(host, port, secure);
-                // Good housekeeping
-                if (connectionPool.size() == maxConnections)
-                  {
-                    // maxConnections must always be >= 1
-                    Object lru = connectionPool.keySet().iterator().next();
-                    connectionPool.remove(lru);
-                  }
-                connectionPool.put(key, connection);
+                connection.setPool(connectionPool);
               }
           }
       }
@@ -502,9 +514,9 @@ public class HTTPURLConnection
             return null;
           }
       }
-    Map headers = response.getHeaders();
-    Map ret = new LinkedHashMap();
-    ret.put("", Collections.singletonList(getStatusLine(response)));
+    Headers headers = response.getHeaders();
+    LinkedHashMap ret = new LinkedHashMap();
+    ret.put(null, Collections.singletonList(getStatusLine(response)));
     for (Iterator i = headers.entrySet().iterator(); i.hasNext(); )
       {
         Map.Entry entry = (Map.Entry) i.next();
@@ -512,7 +524,7 @@ public class HTTPURLConnection
         String value = (String) entry.getValue();
         ret.put(key, Collections.singletonList(value));
       }
-    return ret;
+    return Collections.unmodifiableMap(ret);
   }
 
   String getStatusLine(Response response)

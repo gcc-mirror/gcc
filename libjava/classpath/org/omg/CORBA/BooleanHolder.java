@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -62,7 +62,7 @@ public final class BooleanHolder
    * The default type code for this holder.
    */
   private static final TypeCode t_boolean =
-    new primitiveTypeCode(TCKind.tk_boolean);
+    new PrimitiveTypeCode(TCKind.tk_boolean);
 
   /**
    * The <code>boolean</code> (CORBA <code>boolean</code>) value,

@@ -1146,7 +1146,7 @@ public class TreeMap extends AbstractMap
    *
    * @param s the stream to read from
    * @param count the number of keys to read
-   * @param readValue true to read values, false to insert "" as the value
+   * @param readValues true to read values, false to insert "" as the value
    * @throws ClassNotFoundException if the underlying stream fails
    * @throws IOException if the underlying stream fails
    * @see #readObject(ObjectInputStream)

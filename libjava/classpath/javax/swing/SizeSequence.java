@@ -42,208 +42,197 @@ package javax.swing;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class SizeSequence {
+public class SizeSequence
+{
+  
+  /**
+    * sizes
+    */
+  private int[] sizes = new int[0];
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Constructor SizeSequence
+   */
+  public SizeSequence()
+  {
+    sizes = new int[0];
+  }
 
-	/**
-	 * sizes
-	 */
-	private int[] sizes = new int[0];
+  /**
+   * Constructor SizeSequence
+   * @param numEntries TODO
+   */
+  public SizeSequence(int numEntries)
+  {
+    this(numEntries, 0);
+  }
 
+  /**
+   * Constructor SizeSequence
+   * @param numEntries TODO
+   * @param value TODO
+   */
+  public SizeSequence(int numEntries, int value)
+  {
+    insertEntries(0, numEntries, value);
+  }
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Constructor SizeSequence
+   * @param sizes TODO
+   */
+  public SizeSequence(int[] sizes)
+  {
+    setSizes(sizes);
+  }
 
-	/**
-	 * Constructor SizeSequence
-	 */
-	public SizeSequence() {
-		sizes = new int[0];
-	} // SizeSequence()
+  /**
+   * setSize
+   * @param index TODO
+   * @param size TODO
+   */
+  public void setSize(int index, int size)
+  {
+    sizes[index] = size;
+  }
 
-	/**
-	 * Constructor SizeSequence
-	 * @param numEntries TODO
-	 */
-	public SizeSequence(int numEntries) {
-		this(numEntries, 0);
-	} // SizeSequence()
+  /**
+   * getIndex
+   * @param position TODO
+   * @returns int
+   */
+  public int getIndex(int position)
+  {
+    return 0; // TODO
+  }
 
-	/**
-	 * Constructor SizeSequence
-	 * @param numEntries TODO
-	 * @param value TODO
-	 */
-	public SizeSequence(int numEntries, int value) {
-		insertEntries(0, numEntries, value);
-	} // SizeSequence()
+  /**
+   * getSize
+   * @param index TODO
+   * @returns int
+   */
+  public int getSize(int index)
+  {
+    return sizes[index];
+  }
 
-	/**
-	 * Constructor SizeSequence
-	 * @param sizes TODO
-	 */
-	public SizeSequence(int[] sizes) {
-		setSizes(sizes);
-	} // SizeSequence()
+  /**
+   * setSizes
+   * @param sizes TODO
+   */
+  public void setSizes(int[] sizes)
+  {
+    int index;
+    // Initialize sizes.
+    this.sizes = new int[sizes.length];
+    for (index = 0; index < sizes.length; index++)
+      this.sizes[index] = sizes[index];
 
+  }
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * getSizes
+   * @returns int[]
+   */
+  public int[] getSizes()
+  {
+    int[] array;
+    int index;
 
-	/**
-	 * setSize
-	 * @param index TODO
-	 * @param size TODO
-	 */
-	public void setSize(int index, int size) {
-		sizes[index] = size;
-	} // setSize()
+    // Create new array.
+    array = new int[sizes.length];
+    for (index = 0; index < sizes.length; index++)
+      array[index] = sizes[index];
 
-	/**
-	 * getIndex
-	 * @param position TODO
-	 * @returns int
-	 */
-	public int getIndex(int position) {
-		return 0; // TODO
-	} // getIndex()
+    // Return newly created array.
+    return array;
 
-	/**
-	 * getSize
-	 * @param index TODO
-	 * @returns int
-	 */
-	public int getSize(int index) {
-		return sizes[index];
-	} // getSize()
+  }
 
-	/**
-	 * setSizes
-	 * @param sizes TODO
-	 */
-	public void setSizes(int[] sizes) {
-	
-		// Variables
-		int		index;
-		
-		// Initialize Sizes
-		this.sizes = new int[sizes.length];
-		for (index = 0; index < sizes.length; index++) {
-			this.sizes[index] = sizes[index];
-		} // for
+  /**
+   * getPosition
+   * @param index TODO
+   * @returns int
+   */
+  public int getPosition(int index)
+  {
+    int position;
+    int loop;
 
-	} // setSizes()
+    // Process sizes.
+    position = 0;
+    for (loop = 0; loop < index; loop++)
+      position += sizes[loop];
 
-	/**
-	 * getSizes
-	 * @returns int[]
-	 */
-	public int[] getSizes() {
-	
-		// Variables
-		int[]	array;
-		int		index;
+    // Return position.
+    return position;
 
-		// Create New Array
-		array = new int[sizes.length];
-		for (index = 0; index < sizes.length; index++) {
-			array[index] = sizes[index];
-		} // for
+  }
 
-		// Return Newly created array
-		return array;
+  /**
+   * insertEntries
+   * @param start TODO
+   * @param length TODO
+   * @param value TODO
+   */
+  public void insertEntries(int start, int length, int value)
+  {
+    int[] array;
+    int index;
+    int arrayIndex;
+    int loop;
 
-	} // getSizes()
+    // Create new array.
+    array = new int[sizes.length + length];
+    arrayIndex = 0;
+    for (index = 0; index < sizes.length; index++)
+      {
+        if (index == start)
+          {
+            for (loop = 0; loop < length; loop++)
+              {
+                array[arrayIndex] = value;
+                arrayIndex++;
+              }
+          }
+        else
+          {
+            array[arrayIndex] = sizes[index];
+            arrayIndex++;
+          }
+      }
 
-	/**
-	 * getPosition
-	 * @param index TODO
-	 * @returns int
-	 */
-	public int getPosition(int index) {
-	
-		// Variables
-		int		position;
-		int		loop;
-		
-		// Process Sizes
-		position = 0;
-		for (loop = 0; loop < index; loop++) {
-			position += sizes[loop];
-		} // for
+	}
 
-		// Return Position
-		return position;
+  /**
+   * removeEntries
+   * @param start TODO
+   * @param length TODO
+   */
+  public void removeEntries(int start, int length)
+  {
+    int[] array;
+    int index;
+    int arrayIndex;
 
-	} // getPosition()
+    // Sanity check.
+    if ((start + length) > sizes.length)
+      throw new IllegalArgumentException("Specified start/length that "
+                                         + "is greater than available sizes");
 
-	/**
-	 * insertEntries
-	 * @param start TODO
-	 * @param length TODO
-	 * @param value TODO
-	 */
-	public void insertEntries(int start, int length, int value) {
+    // Create new array.
+    array = new int[sizes.length - length];
+    arrayIndex = 0;
+    for (index = 0; index < sizes.length; index++)
+      {
+        if (index == start)
+          index += length - 1;
+        else
+          {
+            array[arrayIndex] = sizes[index];
+            arrayIndex++;
+          }
+      }
+  }
 
-		// Variables
-		int[]	array;
-		int		index;
-		int		arrayIndex;
-		int		loop;
-
-		// Create New Array
-		array = new int[sizes.length + length];
-		arrayIndex = 0;
-		for (index = 0; index < sizes.length; index++) {
-			if (index == start) {
-				for (loop = 0; loop < length; loop++) {
-					array[arrayIndex] = value;
-					arrayIndex++;
-				} // for
-			} else {
-				array[arrayIndex] = sizes[index];
-				arrayIndex++;
-			} // if
-		} // for
-
-	} // insertEntries()
-
-	/**
-	 * removeEntries
-	 * @param start TODO
-	 * @param length TODO
-	 */
-	public void removeEntries(int start, int length) {
-
-		// Variables
-		int[]	array;
-		int		index;
-		int		arrayIndex;
-
-		// Sanity Check
-		if ((start + length) > sizes.length) {
-			throw new IllegalArgumentException("Specified start/length that " +
-				"is greater than available sizes");
-		} // if
-
-		// Create New Array
-		array = new int[sizes.length - length];
-		arrayIndex = 0;
-		for (index = 0; index < sizes.length; index++) {
-			if (index == start) {
-				index += length - 1;
-			} else {
-				array[arrayIndex] = sizes[index];
-				arrayIndex++;
-			} // if
-		} // for
-
-	} // removeEntries()
-
-
-} // SizeSequence
+}

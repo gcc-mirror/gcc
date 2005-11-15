@@ -441,6 +441,8 @@ paramString()
    */
   protected class AccessibleAWTMenu extends AccessibleAWTMenuItem
   {
+    private static final long serialVersionUID = 5228160894980069094L;
+
     protected AccessibleAWTMenu()
     {
     }

@@ -302,7 +302,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @exception IOException If an error occurs
    *
-   * @see writeInt
+   * @see #writeInt(int)
    * @see DataInput#readFloat
    * @see Float#floatToIntBits
    */
@@ -326,7 +326,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @exception IOException If an error occurs
    *
-   * @see writeLong
+   * @see #writeLong(long)
    * @see DataInput#readDouble
    * @see Double#doubleToLongBits
    */
@@ -363,7 +363,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @exception IOException If an error occurs
    *
-   * @see writeChar
+   * @see #writeChar(char)
    */
   public final void writeChars (String value) throws IOException
   {

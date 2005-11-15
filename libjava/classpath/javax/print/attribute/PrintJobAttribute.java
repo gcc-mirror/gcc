@@ -1,5 +1,5 @@
 /* PrintJobAttribute.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,23 @@ exception statement from your version. */
 package javax.print.attribute;
 
 /**
- * @author Michael Koch
+ * Marker interface for all attribute classes describing attributes or the
+ * status of a ({@link javax.print.DocPrintJob} object. 
+ * <p>
+ * Instances of implementing attribute classes may be collected in a 
+ * {@link javax.print.attribute.PrintJobAttributeSet}.
+ * </p><p>
+ * A print service uses attributes of this type to inform about the status
+ * of a print job. 
+ * For example {@link javax.print.attribute.standard.DateTimeAtProcessing} 
+ * is used to report at which date and time a job has started processing. 
+ * </p>
+ * 
+ * @see javax.print.attribute.PrintJobAttributeSet
+ * 
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public interface PrintJobAttribute extends Attribute
 {
+  // Marker interface
 }

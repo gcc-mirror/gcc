@@ -60,7 +60,7 @@ import java.util.Set;
  * @author Chris Burdess (dog@gnu.org)
  */
 public class Headers
-  implements Map
+  extends LinkedHashMap
 {
 
   static final DateFormat dateFormat = new HTTPDateFormat();
@@ -143,36 +143,18 @@ public class Headers
     
   }
 
-  private LinkedHashMap headers;
-
   public Headers()
   {
-    headers = new LinkedHashMap();
-  }
-
-  public int size()
-  {
-    return headers.size();
-  }
-
-  public boolean isEmpty()
-  {
-    return headers.isEmpty();
   }
 
   public boolean containsKey(Object key)
   {
-    return headers.containsKey(new Header((String) key));
-  }
-
-  public boolean containsValue(Object value)
-  {
-    return headers.containsValue(value);
+    return super.containsKey(new Header((String) key));
   }
 
   public Object get(Object key)
   {
-    return headers.get(new Header((String) key));
+    return super.get(new Header((String) key));
   }
 
   /**
@@ -180,7 +162,7 @@ public class Headers
    */
   public String getValue(String header)
   {
-    return (String) headers.get(new Header(header));
+    return (String) super.get(new Header(header));
   }
 
   /**
@@ -197,6 +179,27 @@ public class Headers
     try
       {
         return Integer.parseInt(val);
+      }
+    catch (NumberFormatException e)
+      {
+      }
+    return -1;
+  }
+
+  /**
+   * Returns the value of the specified header as a long, or -1 if the
+   * header is not present or cannot be parsed as a long.
+   */
+  public long getLongValue(String header)
+  {
+    String val = getValue(header);
+    if (val == null)
+      {
+        return -1;
+      }
+    try
+      {
+        return Long.parseLong(val);
       }
     catch (NumberFormatException e)
       {
@@ -227,12 +230,12 @@ public class Headers
 
   public Object put(Object key, Object value)
   {
-    return headers.put(new Header((String) key), value);
+    return super.put(new Header((String) key), value);
   }
 
   public Object remove(Object key)
   {
-    return headers.remove(new Header((String) key));
+    return super.remove(new Header((String) key));
   }
 
   public void putAll(Map t)
@@ -241,18 +244,13 @@ public class Headers
       {
         String key = (String) i.next();
         String value = (String) t.get(key);
-        headers.put(new Header(key), value);
+        put(key, value);
       }
   }
   
-  public void clear()
-  {
-    headers.clear();
-  }
-
   public Set keySet()
   {
-    Set keys = headers.keySet();
+    Set keys = super.keySet();
     Set ret = new LinkedHashSet();
     for (Iterator i = keys.iterator(); i.hasNext(); )
       {
@@ -261,14 +259,9 @@ public class Headers
     return ret;
   }
 
-  public Collection values()
-  {
-    return headers.values();
-  }
-
   public Set entrySet()
   {
-    Set entries = headers.entrySet();
+    Set entries = super.entrySet();
     Set ret = new LinkedHashSet();
     for (Iterator i = entries.iterator(); i.hasNext(); )
       {
@@ -276,16 +269,6 @@ public class Headers
         ret.add(new HeaderEntry(entry));
       }
     return ret;
-  }
-
-  public boolean equals(Object other)
-  {
-    return headers.equals(other);
-  }
-
-  public int hashCode()
-  {
-    return headers.hashCode();
   }
 
   /**
@@ -298,7 +281,7 @@ public class Headers
       (LineInputStream) in : new LineInputStream(in);
     
     String name = null;
-    StringBuffer value = new StringBuffer();
+    StringBuilder value = new StringBuilder();
     while (true)
       {
         String line = lin.readLine();
@@ -354,14 +337,14 @@ public class Headers
   private void addValue(String name, String value)
   {
     Header key = new Header(name);
-    String old = (String) headers.get(key);
+    String old = (String) super.get(key);
     if (old == null)
       {
-        headers.put(key, value);
+        super.put(key, value);
       }
     else
       {
-        headers.put(key, old + ", " + value);
+        super.put(key, old + ", " + value);
       }
   }
   

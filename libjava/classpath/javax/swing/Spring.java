@@ -65,6 +65,7 @@ public abstract class Spring
    */
   protected Spring()
   {
+    // Nothing to do here.
   }
 
   /**

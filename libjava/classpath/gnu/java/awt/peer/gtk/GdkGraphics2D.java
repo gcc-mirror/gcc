@@ -101,7 +101,7 @@ public class GdkGraphics2D extends Graphics2D
   static 
   {
     if (! Configuration.GTK_CAIRO_ENABLED)
-      throw new Error("Grahics2D not implemented. "
+      throw new Error("Graphics2D not implemented. "
 		      + "Cairo was not found or disabled at configure time");
 
     if (Configuration.INIT_LOAD_LIBRARY)
@@ -154,11 +154,22 @@ public class GdkGraphics2D extends Graphics2D
 
   public Graphics create(int x, int y, int width, int height)
   {
-    return new GdkGraphics2D(width, height);
+    return new GdkGraphics2D(this, x, y, width, height);
+  }
+
+  private void fail_g2d ()
+  {
+    System.err.println ("Attempted to instantiate GdkGraphics2D"
+			+ " but Graphics2D not enabled.  Try again with"
+			+ " -Dgnu.java.awt.peer.gtk.Graphics=Graphics2D");
+    System.exit (1);
   }
 
   GdkGraphics2D(GdkGraphics2D g)
   {
+    if (!GtkToolkit.useGraphics2D ())
+      fail_g2d ();
+
     paint = g.paint;
     stroke = g.stroke;
     setRenderingHints(g.hints);
@@ -198,8 +209,18 @@ public class GdkGraphics2D extends Graphics2D
     stateStack = new Stack();
   }
 
+  GdkGraphics2D(GdkGraphics2D g, int x, int y, int widht, int height)
+  {
+    this(g);
+    translate(x, y);
+    clipRect(0, 0, widht, height);
+  }
+
   GdkGraphics2D(int width, int height)
   {
+    if (!GtkToolkit.useGraphics2D ())
+      fail_g2d ();
+
     initState(width, height);
 
     setColor(Color.black);
@@ -215,6 +236,9 @@ public class GdkGraphics2D extends Graphics2D
 
   GdkGraphics2D(GtkComponentPeer component)
   {
+    if (!GtkToolkit.useGraphics2D ())
+      fail_g2d ();
+
     this.component = component;
     
     if (component.isRealized())
@@ -949,7 +973,10 @@ public class GdkGraphics2D extends Graphics2D
 
   public Shape getClip()
   {
-    return clip.getBounds2D(); //getClipInDevSpace();
+    if (clip == null)
+      return null;
+    else
+      return clip.getBounds2D(); //getClipInDevSpace();
   }
 
   public Rectangle getClipBounds()
@@ -992,8 +1019,11 @@ public class GdkGraphics2D extends Graphics2D
     if (clip == null)
       {
 	// Reset clipping.
-	Dimension d = component.awtComponent.getSize();
-	setClip(0, 0, d.width, d.height);
+        if (component != null)
+          {
+            Dimension d = component.awtComponent.getSize();
+            setClip(0, 0, d.width, d.height);
+          }
       }
     else
       {
@@ -1045,8 +1075,9 @@ public class GdkGraphics2D extends Graphics2D
 
   public void clearRect(int x, int y, int width, int height)
   {
-    cairoSetRGBAColor(bg.getRed() / 255.0, bg.getGreen() / 255.0,
-                      bg.getBlue() / 255.0, 1.0);
+    if (bg != null)
+      cairoSetRGBAColor(bg.getRed() / 255.0, bg.getGreen() / 255.0,
+			bg.getBlue() / 255.0, 1.0);
     cairoNewPath();
     cairoRectangle(x, y, width, height);
     cairoFill();
@@ -1371,7 +1402,8 @@ public class GdkGraphics2D extends Graphics2D
 
   public void copyArea(int x, int y, int width, int height, int dx, int dy)
   {
-    throw new java.lang.UnsupportedOperationException();
+    GdkGraphics2D g = (GdkGraphics2D) create(x, y, width, height);
+    gdkDrawDrawable(g, x + dx, y + dy);
   }
 
   public void drawArc(int x, int y, int width, int height, int startAngle,
@@ -1604,6 +1636,11 @@ public class GdkGraphics2D extends Graphics2D
 
   public void setFont(Font f)
   {
+    // Sun's JDK does not throw NPEs, instead it leaves the current setting
+    // unchanged. So do we.
+    if (f == null)
+      return;
+
     if (f.getPeer() instanceof GdkFontPeer)
       font = f;
     else

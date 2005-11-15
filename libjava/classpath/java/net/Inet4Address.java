@@ -70,7 +70,7 @@ public final class Inet4Address extends InetAddress
    * only by static methods in this class.
    *
    * @param addr The IP number of this address as an array of bytes
-   * @param hostname The hostname of this IP address.
+   * @param host The hostname of this IP address.
    */
   Inet4Address(byte[] addr, String host)
   {

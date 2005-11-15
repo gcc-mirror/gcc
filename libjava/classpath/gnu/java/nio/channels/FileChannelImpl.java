@@ -175,7 +175,8 @@ public final class FileChannelImpl extends FileChannel
    */
   protected void finalize() throws IOException
   {
-    this.close();
+    if (fd != -1)
+      close();
   }
 
   public int read (ByteBuffer dst) throws IOException

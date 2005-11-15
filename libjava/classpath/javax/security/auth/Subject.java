@@ -1,5 +1,5 @@
 /* Subject.java -- a single entity in the system.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -385,19 +385,19 @@ public final class Subject implements Serializable
     // Constructors.
     // -----------------------------------------------------------------------
 
-    SecureSet (final Subject subject, final int type, final Collection elements)
+    SecureSet (final Subject subject, final int type, final Collection inElements)
     {
       this (subject, type);
-      for (Iterator it = elements.iterator(); it.hasNext(); )
+      for (Iterator it = inElements.iterator(); it.hasNext(); )
         {
           Object o = it.next();
           if (type == PRINCIPALS && !(o instanceof Principal))
             {
               throw new IllegalArgumentException(o+" is not a Principal");
             }
-          if (!elements.contains (o))
+          if (!this.elements.contains (o))
             {
-              elements.add (o);
+              this.elements.add (o);
             }
         }
     }
@@ -511,7 +511,7 @@ public final class Subject implements Serializable
 
     public synchronized boolean contains (final Object element)
     {
-      return elements.remove (element);
+      return elements.contains (element);
     }
 
     public boolean removeAll (final Collection c)

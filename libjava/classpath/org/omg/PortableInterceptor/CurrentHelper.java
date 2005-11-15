@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.MARSHAL;
@@ -45,6 +47,7 @@ import org.omg.CORBA.ORB;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
+import org.omg.PortableServer.ServantActivator;
 
 /**
  * The helper operations for the CORBA object {@link Current}.
@@ -123,6 +126,25 @@ public abstract class CurrentHelper
         throw new BAD_PARAM("Not a Current");
       }
   }
+  
+  /**
+   * Narrow the given object to the Current. For the objects that are
+   * always local, this operation does not differ from the ordinary
+   * {@link #narrow} (ClassCastException will be thrown if narrowing something
+   * different).
+   * 
+   * @param obj the object to cast.
+   * 
+   * @return the casted Current.
+   * 
+   * @since 1.5 
+   * 
+   * @see OMG issue 4158.
+   */
+  public static Current unchecked_narrow(org.omg.CORBA.Object obj)
+  {
+    return narrow(obj);
+  }    
 
   /**
    * Not supported for compatibility reasons.
@@ -133,7 +155,9 @@ public abstract class CurrentHelper
    */
   public static Current read(InputStream input)
   {
-    throw new MARSHAL();
+    MARSHAL m = new MARSHAL("Inappropriate");
+    m.minor = Minor.Inappropriate;
+    throw m;
   }
 
   /**
@@ -145,6 +169,8 @@ public abstract class CurrentHelper
    */
   public static void write(OutputStream output, Current value)
   {
-    throw new MARSHAL();
+    MARSHAL m = new MARSHAL("Inappropriate");
+    m.minor = Minor.Inappropriate;
+    throw m;
   }
 }

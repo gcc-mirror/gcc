@@ -71,9 +71,7 @@ import javax.swing.border.TitledBorder;
  * @author Brian Jones (cbj@gnu.org)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class BorderUIResource 
-  extends Object 
-  implements Border, UIResource, Serializable
+public class BorderUIResource implements Border, UIResource, Serializable
 {
   /**
    * Verified using the <code>serialver</code> tool

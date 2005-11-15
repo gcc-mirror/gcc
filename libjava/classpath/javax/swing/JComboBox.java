@@ -46,8 +46,6 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Vector;
 
 import javax.accessibility.Accessible;
@@ -58,6 +56,7 @@ import javax.accessibility.AccessibleSelection;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.event.PopupMenuEvent;
 import javax.swing.plaf.ComboBoxUI;
 
 /**
@@ -212,10 +211,6 @@ public class JComboBox extends JComponent implements ItemSelectable,
     this(new DefaultComboBoxModel());
   }
 
-  private void writeObject(ObjectOutputStream stream) throws IOException
-  {
-  }
-
   /**
    * This method returns true JComboBox is editable and false otherwise
    *
@@ -310,7 +305,8 @@ public class JComboBox extends JComponent implements ItemSelectable,
     // Stores old data model for event notification.
     ComboBoxModel oldDataModel = dataModel;
     dataModel = newDataModel;
-
+    selectedItemReminder = newDataModel.getSelectedItem();
+    
     // Notifies the listeners of the model change.
     firePropertyChange("model", oldDataModel, dataModel);
   }
@@ -551,14 +547,37 @@ public class JComboBox extends JComponent implements ItemSelectable,
     return -1;
   }
 
+  /**
+   * Returns an object that is used as the display value when calculating the 
+   * preferred size for the combo box.  This value is, of course, never 
+   * displayed anywhere.
+   * 
+   * @return The prototype display value (possibly <code>null</code>).
+   * 
+   * @since 1.4
+   * @see #setPrototypeDisplayValue(Object)
+   */
   public Object getPrototypeDisplayValue()
   {
     return prototypeDisplayValue;
   }
 
-  public void setPrototypeDisplayValue(Object newPrototypeDisplayValue)
+  /**
+   * Sets the object that is assumed to be the displayed item when calculating
+   * the preferred size for the combo box.  A {@link PropertyChangeEvent} (with
+   * the name <code>prototypeDisplayValue</code>) is sent to all registered 
+   * listeners. 
+   * 
+   * @param value  the new value (<code>null</code> permitted).
+   * 
+   * @since 1.4
+   * @see #getPrototypeDisplayValue()
+   */
+  public void setPrototypeDisplayValue(Object value)
   {
-    prototypeDisplayValue = newPrototypeDisplayValue;
+    Object oldValue = prototypeDisplayValue;
+    prototypeDisplayValue = value;
+    firePropertyChange("prototypeDisplayValue", oldValue, value);
   }
 
   /**
@@ -820,6 +839,47 @@ public class JComboBox extends JComponent implements ItemSelectable,
   }
 
   /**
+   * Fires a popupMenuCanceled() event to all <code>PopupMenuListeners</code>.
+   *
+   * Note: This method is intended for use by plaf classes only.
+   */
+  public void firePopupMenuCanceled()
+  {
+    PopupMenuListener[] listeners = getPopupMenuListeners();
+    PopupMenuEvent e = new PopupMenuEvent(this);
+    for(int i = 0; i < listeners.length; i++)
+      listeners[i].popupMenuCanceled(e);
+  }
+
+  /**
+   * Fires a popupMenuWillBecomeInvisible() event to all 
+   * <code>PopupMenuListeners</code>.
+   *
+   * Note: This method is intended for use by plaf classes only.
+   */
+  public void firePopupMenuWillBecomeInvisible()
+  {
+    PopupMenuListener[] listeners = getPopupMenuListeners();
+    PopupMenuEvent e = new PopupMenuEvent(this);
+    for(int i = 0; i < listeners.length; i++)
+      listeners[i].popupMenuWillBecomeInvisible(e);
+  }
+
+  /**
+   * Fires a popupMenuWillBecomeVisible() event to all 
+   * <code>PopupMenuListeners</code>.
+   *
+   * Note: This method is intended for use by plaf classes only.
+   */
+  public void firePopupMenuWillBecomeVisible()
+  {
+    PopupMenuListener[] listeners = getPopupMenuListeners();
+    PopupMenuEvent e = new PopupMenuEvent(this);
+    for(int i = 0; i < listeners.length; i++)
+      listeners[i].popupMenuWillBecomeVisible(e);
+  }
+
+  /**
    * This method is invoked whenever selected item changes in the combo box's
    * data model. It fires ItemEvent and ActionEvent to all registered
    * ComboBox's ItemListeners and ActionListeners respectively, indicating
@@ -836,8 +896,9 @@ public class JComboBox extends JComponent implements ItemSelectable,
 
     // Fire ItemEvent to indicate that new item is selected    
     Object newSelection = getSelectedItem();
-    fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED,
-                                       newSelection, ItemEvent.SELECTED));
+    if (newSelection != null)
+      fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED,
+                                         newSelection, ItemEvent.SELECTED));
 
     // Fire Action Event to JComboBox's registered listeners					 				 
     fireActionEvent();
@@ -961,19 +1022,19 @@ public class JComboBox extends JComponent implements ItemSelectable,
    */
   public void processKeyEvent(KeyEvent e)
   {
-  }
-
-  /**
-   * This method always returns false to indicate that JComboBox  itself is
-   * not focus traversable.
-   *
-   * @return false to indicate that JComboBox itself is not focus traversable.
-   *
-   * @deprecated
-   */
-  public boolean isFocusTraversable()
-  {
-    return false;
+    if (e.getKeyCode() == KeyEvent.VK_TAB)
+      setPopupVisible(false);
+    else if (keySelectionManager != null)
+      {
+        int i = keySelectionManager.selectionForKey(e.getKeyChar(),
+                                                    getModel());
+        if (i >= 0)
+          setSelectedIndex(i);
+        else
+          super.processKeyEvent(e);
+      }
+    else
+      super.processKeyEvent(e);
   }
 
   /**
@@ -983,6 +1044,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
    */
   public void setKeySelectionManager(KeySelectionManager aManager)
   {
+    keySelectionManager = aManager;
   }
 
   /**
@@ -1147,6 +1209,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
 
     protected AccessibleJComboBox()
     {
+      // Nothing to do here.
     }
 
     public int getAccessibleChildrenCount()
@@ -1206,18 +1269,22 @@ public class JComboBox extends JComponent implements ItemSelectable,
 
     public void addAccessibleSelection(int value0)
     {
+      // TODO: Implement this properly.
     }
 
     public void removeAccessibleSelection(int value0)
     {
+      // TODO: Implement this properly.
     }
 
     public void clearAccessibleSelection()
     {
+      // TODO: Implement this properly.
     }
 
     public void selectAllAccessibleSelection()
     {
+      // TODO: Implement this properly.
     }
   }
 }

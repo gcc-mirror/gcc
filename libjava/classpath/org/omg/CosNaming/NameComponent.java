@@ -40,6 +40,8 @@ package org.omg.CosNaming;
 
 import org.omg.CORBA.portable.IDLEntity;
 
+import java.util.zip.Adler32;
+
 /**
  * The name component, a node in the multi-comonent name.
  *
@@ -114,5 +116,15 @@ public final class NameComponent
   public String toString()
   {
     return id + "." + kind;
+  }
+
+  /**
+   * Return the hashCode of this NameComponent.
+   */
+  public int hashCode()
+  {
+    Adler32 adler = new Adler32();
+    adler.update(toString().getBytes());
+    return (int) adler.getValue() & Integer.MAX_VALUE;
   }
 }

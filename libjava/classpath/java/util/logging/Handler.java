@@ -191,8 +191,8 @@ h.setFormatter(h.getFormatter());</pre>
    * Returns the character encoding which this handler uses for publishing
    * log records.
    *
-   * @param encoding the name of a character encoding, or <code>null</code>
-   *            for the default platform encoding.
+   * @return the name of a character encoding, or <code>null</code>
+   *         for the default platform encoding.
    */
   public String getEncoding()
   {
@@ -252,7 +252,7 @@ h.setFormatter(h.getFormatter());</pre>
    * Sets the <code>Filter</code> for controlling which
    * log records will be published by this <code>Handler</code>.
    *
-   * @return the <code>Filter</code> to use, or
+   * @param filter the <code>Filter</code> to use, or
    *         <code>null</code> to filter log records purely based
    *         on their severity level.
    */

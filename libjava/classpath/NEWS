@@ -1,3 +1,58 @@
+New in release 0.20
+
+Runtime interface changes:
+
+* New method VMStackWalker.getClassLoader() was added to avoid an infinite
+  loop between getCallingClassLoader() and Class.getClassLoader().
+
+New in release 0.19 (Nov 2, 2005)
+
+* The Swing RepaintManager has been reworked for more efficient painting,
+  especially for large GUIs.
+
+* The Swing layout manager OverlayLayout has been implemented, the BoxLayout
+  has been rewritten to make use of the SizeRequirements utility class and
+  caching for more efficient layout.
+
+* Improved accessibility support for Swing.
+
+* The java.net.HttpURLConnection implementation no longer buffers the
+  entire response body in memory.  This means that response bodies
+  larger than available memory can now be handled.
+
+* The Andrew Watson, Vice President and Technical Director of the Object
+  Management Group, has officially assigned us 20 bit Vendor Minor Code Id: 
+  0x47430 ("GC") that will mark remote Classpath - specific system exceptions.
+  Obtaining the VMCID means that GNU Classpath now is a recogniseable type of
+  node in a highly interoperable CORBA world. 
+
+* Classpath now includes the first working draft to support the RMI over
+  IIOP protocol. The current implementation is capable for remote invocations,
+  transferring various Serializables and Externalizables via RMI-IIOP protocol.
+  It can flatten graphs and, at least for the simple cases, is interoperable
+  with Sun's jdk 1.5.
+
+* Qt4 configury switches for OS-X. Additional to the --enable-qt-peer, OS-X
+  users with a Qt4 installation can build the qt-peers with the argument
+  --with-qt4dir=<Qt4-installation-dir>.
+
+* Significant progress has been made in the implementation of the 
+  javax.swing.plaf.metal.* package, with most UI delegates in a working state
+  now.  Please test this with your own applications and provide feedback that 
+  will help us to improve this package.
+
+* The GUI demo (gnu.classpath.examples.swing.Demo) has been extended to 
+  highlight various features in our free-swing implementation. And includes
+  a look and feel switcher (Metal default, Ocean or GNU).
+
+Runtime interface changes:
+
+* Changed implementation of VMClassLoader.getPackage(s) : new method
+  VMClassLoader.getBootPackages should be implemented by the vm, and sould
+  return a string array of boot package names ("java.lang", "java.net", ...).
+  Feedback from vm implementors for usability and relevance of the
+  getBootPackages method would be greatly appreciated.
+  
 New in release 0.18 (Sep 6, 2005)
 
 * GNU JAWT implementation, the AWT Native Interface, which allows direct

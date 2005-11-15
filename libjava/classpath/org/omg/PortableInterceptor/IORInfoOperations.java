@@ -73,7 +73,7 @@ public interface IORInfoOperations
   void add_ior_component(TaggedComponent tagged_component);
 
   /**
-       * Get the server side policy for an IOR being constructed. The method returns
+   * Get the server side policy for an IOR being constructed. The method returns
    * policies applying for POA where the object, represented by this IOR, is
    * connected.
    *
@@ -85,4 +85,54 @@ public interface IORInfoOperations
    * @see org.omg.PortableServer.POAOperations#create_POA
    */
   Policy get_effective_policy(int policy_type);
+
+  /** 
+   * Get the adapter template that is associated with the object POA.
+   * The template is also a reference factory and can produce the new object
+   * references.
+   * 
+   * @since 1.5
+   */
+  public ObjectReferenceTemplate adapter_template();
+  
+  /**
+   * The current_factory is the factory, used by the adapter to create 
+   * object references. This factory is initially the same as the 
+   * adapter_template.
+   * 
+   * @since 1.5
+   */
+  public ObjectReferenceFactory current_factory();
+
+  /**
+   * Set the current object reference factory, used to produce the new objects.
+   * 
+   * The current factory can only be set during the call to the 
+   * {@link IORInterceptor_3_0Operations#components_established(IORInfo)}.
+   * 
+   * @since 1.5
+   */
+  public void current_factory(ObjectReferenceFactory factory);
+
+  /**
+   * Get the POA manager Id. 
+   * 
+   * @return Id that uniquely refers to the poa manager, used by this POA.
+   * 
+   * @since 1.5 
+   * 
+   * @see IORInterceptor_3_0Operations#adapter_manager_state_changed
+   */
+  public int manager_id();
+  
+  /**
+   * Get the state of the adapter manager.
+   * 
+   * @since 1.5
+   * 
+   * @return the state of the adapters to that the IOR being created belongs.
+   * One of the {@link HOLDING#value}, {@link DISCARDING#value},
+   * {@link INACTIVE#value} or {@link NON_EXISTENT#value}.
+   */
+  short state(); 
 }

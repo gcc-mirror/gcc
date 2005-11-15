@@ -90,17 +90,6 @@ public class Connected_objects
      * applicable.
      */
     public final java.lang.Object identity;
-
-    public boolean equals(java.lang.Object other)
-    {
-      if (other instanceof cObject)
-        {
-          cObject o = (cObject) other;
-          return o.object.equals(object) && o.port == port;
-        }
-      else
-        return false;
-    }
   }
 
   /**

@@ -39,7 +39,7 @@ exception statement from your version. */
 package org.omg.CORBA;
 
 import gnu.CORBA.CDR.Vio;
-import gnu.CORBA.recordTypeCode;
+import gnu.CORBA.typecodes.RecordTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -109,7 +109,7 @@ public abstract class ValueBaseHelper
    */
   public static TypeCode type()
   {
-    recordTypeCode r = new recordTypeCode(TCKind.tk_value);
+    RecordTypeCode r = new RecordTypeCode(TCKind.tk_value);
     return r;
   }
 

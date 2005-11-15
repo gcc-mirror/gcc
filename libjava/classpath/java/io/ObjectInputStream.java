@@ -39,7 +39,6 @@ exception statement from your version. */
 
 package java.io;
 
-import gnu.classpath.Configuration;
 import gnu.java.io.ObjectIdentityWrapper;
 
 import java.lang.reflect.Array;
@@ -53,6 +52,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.Vector;
 
 public class ObjectInputStream extends InputStream
@@ -91,7 +92,6 @@ public class ObjectInputStream extends InputStream
       }
 
     this.resolveEnabled = false;
-    this.isDeserializing = false;
     this.blockDataPosition = 0;
     this.blockDataBytes = 0;
     this.blockData = new byte[BUFFER_SIZE];
@@ -99,7 +99,6 @@ public class ObjectInputStream extends InputStream
     this.realInputStream = new DataInputStream(in);
     this.nextOID = baseWireHandle;
     this.objectLookupTable = new Hashtable();
-    this.validators = new Vector();
     this.classLookupTable = new Hashtable();
     setBlockDataMode(true);
     readStreamHeader();
@@ -113,7 +112,10 @@ public class ObjectInputStream extends InputStream
    * <code>private void readObject (ObjectInputStream)</code>.
    *
    * If an exception is thrown from this method, the stream is left in
-   * an undefined state.
+   * an undefined state. This method can also throw Errors and 
+   * RuntimeExceptions if caused by existing readResolve() user code.
+   * 
+   * @return The object read from the underlying stream.
    *
    * @exception ClassNotFoundException The class that an object being
    * read in belongs to cannot be found.
@@ -121,291 +123,312 @@ public class ObjectInputStream extends InputStream
    * @exception IOException Exception from underlying
    * <code>InputStream</code>.
    */
-  public final Object readObject() throws ClassNotFoundException, IOException
+  public final Object readObject()
+    throws ClassNotFoundException, IOException
   {
     if (this.useSubclassMethod)
       return readObjectOverride();
 
-    boolean was_deserializing;
-
     Object ret_val;
-    was_deserializing = this.isDeserializing;
-
-    boolean is_consumed = false;
     boolean old_mode = setBlockDataMode(false);
-
-    this.isDeserializing = true;
-
     byte marker = this.realInputStream.readByte();
 
-    depth += 2;
+    if (DEBUG)
+      depth += 2;
 
     if(dump) dumpElement("MARKER: 0x" + Integer.toHexString(marker) + " ");
 
     try
       {
-	switch (marker)
-	  {
-	  case TC_ENDBLOCKDATA:
-	    {
-	      ret_val = null;
-	      is_consumed = true;
-	      break;
-	    }
-
-	  case TC_BLOCKDATA:
-	  case TC_BLOCKDATALONG:
-	    {
-	      if (marker == TC_BLOCKDATALONG)
-		{ if(dump) dumpElementln("BLOCKDATALONG"); }
-	      else
-		{ if(dump) dumpElementln("BLOCKDATA"); }
-	      readNextBlock(marker);
-	      throw new StreamCorruptedException("Unexpected blockData");
-	    }
-
-	  case TC_NULL:
-	    {
-	      if(dump) dumpElementln("NULL");
-	      ret_val = null;
-	      break;
-	    }
-
-	  case TC_REFERENCE:
-	    {
-	      if(dump) dumpElement("REFERENCE ");
-	      Integer oid = new Integer(this.realInputStream.readInt());
-	      if(dump) dumpElementln(Integer.toHexString(oid.intValue()));
-	      ret_val = ((ObjectIdentityWrapper)
-			 this.objectLookupTable.get(oid)).object;
-	      break;
-	    }
-
-	  case TC_CLASS:
-	    {
-	      if(dump) dumpElementln("CLASS");
-	      ObjectStreamClass osc = (ObjectStreamClass)readObject();
-	      Class clazz = osc.forClass();
-	      assignNewHandle(clazz);
-	      ret_val = clazz;
-	      break;
-	    }
-
-	  case TC_PROXYCLASSDESC:
-	    {
-	      if(dump) dumpElementln("PROXYCLASS");
-	      int n_intf = this.realInputStream.readInt();
-	      String[] intfs = new String[n_intf];
-	      for (int i = 0; i < n_intf; i++)
-		{
-		  intfs[i] = this.realInputStream.readUTF();
-		  System.out.println(intfs[i]);
-		}
-	      
-	      boolean oldmode = setBlockDataMode(true);
-	      Class cl = resolveProxyClass(intfs);
-	      setBlockDataMode(oldmode);
-	      
-	      ObjectStreamClass osc = lookupClass(cl);
-	      assignNewHandle(osc);
-	      
-	      if (!is_consumed)
-		{
-		  byte b = this.realInputStream.readByte();
-		  if (b != TC_ENDBLOCKDATA)
-		    throw new IOException("Data annotated to class was not consumed." + b);
-		}
-	      else
-		is_consumed = false;
-	      ObjectStreamClass superosc = (ObjectStreamClass)readObject();
-	      osc.setSuperclass(superosc);
-	      ret_val = osc;
-	      break;
-	    }
-
-	  case TC_CLASSDESC:
-	    {
-	      ObjectStreamClass osc = readClassDescriptor();
-	      
-	      if (!is_consumed)
-		{
-		  byte b = this.realInputStream.readByte();
-		  if (b != TC_ENDBLOCKDATA)
-		    throw new IOException("Data annotated to class was not consumed." + b);
-		}
-	      else
-		is_consumed = false;
-	      
-	      osc.setSuperclass ((ObjectStreamClass)readObject());
-	      ret_val = osc;
-	      break;
-	    }
-
-	  case TC_STRING:
-	  case TC_LONGSTRING:
-	    {
-	      if(dump) dumpElement("STRING=");
-	      String s = this.realInputStream.readUTF();
-	      if(dump) dumpElementln(s);
-	      ret_val = processResolution(null, s, assignNewHandle(s));
-	      break;
-	    }
-
-	  case TC_ARRAY:
-	    {
-	      if(dump) dumpElementln("ARRAY");
-	      ObjectStreamClass osc = (ObjectStreamClass)readObject();
-	      Class componentType = osc.forClass().getComponentType();
-	      if(dump) dumpElement("ARRAY LENGTH=");
-	      int length = this.realInputStream.readInt();
-	      if(dump) dumpElementln (length + "; COMPONENT TYPE=" + componentType);
-	      Object array = Array.newInstance(componentType, length);
-	      int handle = assignNewHandle(array);
-	      readArrayElements(array, componentType);
-	      if(dump)
-	        for (int i = 0, len = Array.getLength(array); i < len; i++)
-		  dumpElementln("  ELEMENT[" + i + "]=" + Array.get(array, i));
-	      ret_val = processResolution(null, array, handle);
-	      break;
-	    }
-
-	  case TC_OBJECT:
-	    {
-	      if(dump) dumpElementln("OBJECT");
-	      ObjectStreamClass osc = (ObjectStreamClass)readObject();
-	      Class clazz = osc.forClass();
-	      
-	      if (!osc.realClassIsSerializable)
-		throw new NotSerializableException
-		  (clazz + " is not Serializable, and thus cannot be deserialized.");
-	      
-	      if (osc.realClassIsExternalizable)
-		{
-		  Externalizable obj = osc.newInstance();
-		  
-		  int handle = assignNewHandle(obj);
-		  
-		  boolean read_from_blocks = ((osc.getFlags() & SC_BLOCK_DATA) != 0);
-		  
-		  boolean oldmode = this.readDataFromBlock;
-		  if (read_from_blocks)
-		    setBlockDataMode(true);
-		  
-		  obj.readExternal(this);
-		  
-		  if (read_from_blocks)
-                    {
-		      setBlockDataMode(oldmode);
-                      if (!oldmode)
-			if (this.realInputStream.readByte() != TC_ENDBLOCKDATA)
-			    throw new IOException("No end of block data seen for class with readExternal (ObjectInputStream) method.");
-                    }
-		  
-		  ret_val = processResolution(osc, obj, handle);
-		  break;
-		} // end if (osc.realClassIsExternalizable)
-
-	      Object obj = newObject(clazz, osc.firstNonSerializableParentConstructor);
-	      
-	      int handle = assignNewHandle(obj);
-	      Object prevObject = this.currentObject;
-	      ObjectStreamClass prevObjectStreamClass = this.currentObjectStreamClass;
-	      
-	      this.currentObject = obj;
-	      ObjectStreamClass[] hierarchy =
-		inputGetObjectStreamClasses(clazz);
-	      
-	      for (int i = 0; i < hierarchy.length; i++)
-		{
-		  this.currentObjectStreamClass = hierarchy[i];
-		  
-		  if(dump) dumpElementln("Reading fields of " + this.currentObjectStreamClass.getName ());
-
-		  // XXX: should initialize fields in classes in the hierarchy
-		  // that aren't in the stream
-		  // should skip over classes in the stream that aren't in the
-		  // real classes hierarchy
-		  
-		  Method readObjectMethod = this.currentObjectStreamClass.readObjectMethod;
-		  if (readObjectMethod != null)
-		    {
-		      fieldsAlreadyRead = false;
-		      boolean oldmode = setBlockDataMode(true);
-		      callReadMethod(readObjectMethod, this.currentObjectStreamClass.forClass(), obj);
-		      setBlockDataMode(oldmode);
-		    }
-		  else
-		    {
-		      readFields(obj, currentObjectStreamClass);
-		    }
-
-		  if (this.currentObjectStreamClass.hasWriteMethod())
-		    {
-		      if(dump) dumpElement("ENDBLOCKDATA? ");
-		      try
-			{
-			  // FIXME: XXX: This try block is to
-			  // catch EOF which is thrown for some
-			  // objects.  That indicates a bug in
-			  // the logic.
-
-			  if (this.realInputStream.readByte() != TC_ENDBLOCKDATA)
-			    throw new IOException
-			      ("No end of block data seen for class with readObject (ObjectInputStream) method.");
-			  if(dump) dumpElementln("yes");
-			}
-// 		      catch (EOFException e)
-// 			{
-// 			  if(dump) dumpElementln("no, got EOFException");
-// 			}
-		      catch (IOException e)
-			{
-			  if(dump) dumpElementln("no, got IOException");
-			}
-		    }
-		}
-
-	      this.currentObject = prevObject;
-	      this.currentObjectStreamClass = prevObjectStreamClass;
-	      ret_val = processResolution(osc, obj, handle);
-		  
-	      break;
-	    }
-
-	  case TC_RESET:
-	    if(dump) dumpElementln("RESET");
-	    clearHandles();
-	    ret_val = readObject();
-	    break;
-
-	  case TC_EXCEPTION:
-	    {
-	      if(dump) dumpElement("EXCEPTION=");
-	      Exception e = (Exception)readObject();
-	      if(dump) dumpElementln(e.toString());
-	      clearHandles();
-	      throw new WriteAbortedException("Exception thrown during writing of stream", e);
-	    }
-
-	  default:
-	    throw new IOException("Unknown marker on stream: " + marker);
-	  }
+ 	ret_val = parseContent(marker);
       }
     finally
       {
-	setBlockDataMode(old_mode);
-	
-	this.isDeserializing = was_deserializing;
-	
-	depth -= 2;
-	
-	if (! was_deserializing)
-	  {
-	    if (validators.size() > 0)
-	      invokeValidators();
-	  }
+ 	setBlockDataMode(old_mode);
+ 	if (DEBUG)
+	  depth -= 2;
       }
     
+    return ret_val;
+  }
+
+   /**
+    * Handles a content block within the stream, which begins with a marker
+    * byte indicating its type.
+    *
+    * @param marker the byte marker.
+    * @return an object which represents the parsed content.
+    * @throws ClassNotFoundException if the class of an object being
+    *                                read in cannot be found.
+    * @throws IOException if invalid data occurs or one is thrown by the
+    *                     underlying <code>InputStream</code>.
+    */
+   private Object parseContent(byte marker)
+     throws ClassNotFoundException, IOException
+   {
+     Object ret_val;
+     boolean is_consumed = false;
+
+     switch (marker)
+       {
+       case TC_ENDBLOCKDATA:
+ 	{
+ 	  ret_val = null;
+ 	  is_consumed = true;
+ 	  break;
+ 	}
+ 	
+       case TC_BLOCKDATA:
+       case TC_BLOCKDATALONG:
+ 	{
+ 	  if (marker == TC_BLOCKDATALONG)
+ 	    { if(dump) dumpElementln("BLOCKDATALONG"); }
+ 	  else
+ 	    { if(dump) dumpElementln("BLOCKDATA"); }
+ 	  readNextBlock(marker);
+ 	}
+ 	
+       case TC_NULL:
+ 	{
+ 	  if(dump) dumpElementln("NULL");
+ 	  ret_val = null;
+ 	  break;
+ 	}
+ 	
+       case TC_REFERENCE:
+ 	{
+ 	  if(dump) dumpElement("REFERENCE ");
+ 	  Integer oid = new Integer(this.realInputStream.readInt());
+ 	  if(dump) dumpElementln(Integer.toHexString(oid.intValue()));
+ 	  ret_val = ((ObjectIdentityWrapper)
+ 		     this.objectLookupTable.get(oid)).object;
+ 	  break;
+ 	}
+ 	
+       case TC_CLASS:
+ 	{
+ 	  if(dump) dumpElementln("CLASS");
+ 	  ObjectStreamClass osc = (ObjectStreamClass)readObject();
+ 	  Class clazz = osc.forClass();
+ 	  assignNewHandle(clazz);
+ 	  ret_val = clazz;
+ 	  break;
+ 	}
+ 	
+       case TC_PROXYCLASSDESC:
+ 	{
+ 	  if(dump) dumpElementln("PROXYCLASS");
+ 	  int n_intf = this.realInputStream.readInt();
+ 	  String[] intfs = new String[n_intf];
+ 	  for (int i = 0; i < n_intf; i++)
+ 	    {
+ 	      intfs[i] = this.realInputStream.readUTF();
+ 	    }
+ 	  
+ 	  boolean oldmode = setBlockDataMode(true);
+ 	  Class cl = resolveProxyClass(intfs);
+ 	  setBlockDataMode(oldmode);
+ 	  
+ 	  ObjectStreamClass osc = lookupClass(cl);
+          if (osc.firstNonSerializableParentConstructor == null)
+            {
+              osc.realClassIsSerializable = true;
+              osc.fields = osc.fieldMapping = new ObjectStreamField[0];
+              try
+                {
+                  osc.firstNonSerializableParentConstructor =
+                    Object.class.getConstructor(new Class[0]);
+                }
+              catch (NoSuchMethodException x)
+                {
+                  throw (InternalError)
+                    new InternalError("Object ctor missing").initCause(x);
+                }
+            }
+ 	  assignNewHandle(osc);
+ 	  
+ 	  if (!is_consumed)
+ 	    {
+ 	      byte b = this.realInputStream.readByte();
+ 	      if (b != TC_ENDBLOCKDATA)
+ 		throw new IOException("Data annotated to class was not consumed." + b);
+ 	    }
+ 	  else
+ 	    is_consumed = false;
+ 	  ObjectStreamClass superosc = (ObjectStreamClass)readObject();
+ 	  osc.setSuperclass(superosc);
+ 	  ret_val = osc;
+ 	  break;
+ 	}
+ 	
+       case TC_CLASSDESC:
+ 	{
+ 	  ObjectStreamClass osc = readClassDescriptor();
+ 	  
+ 	  if (!is_consumed)
+ 	    {
+ 	      byte b = this.realInputStream.readByte();
+ 	      if (b != TC_ENDBLOCKDATA)
+ 		throw new IOException("Data annotated to class was not consumed." + b);
+ 	    }
+ 	  else
+ 	    is_consumed = false;
+ 	  
+ 	  osc.setSuperclass ((ObjectStreamClass)readObject());
+ 	  ret_val = osc;
+ 	  break;
+ 	}
+ 	
+       case TC_STRING:
+       case TC_LONGSTRING:
+ 	{
+ 	  if(dump) dumpElement("STRING=");
+ 	  String s = this.realInputStream.readUTF();
+ 	  if(dump) dumpElementln(s);
+ 	  ret_val = processResolution(null, s, assignNewHandle(s));
+ 	  break;
+ 	}
+ 
+       case TC_ARRAY:
+ 	{
+ 	  if(dump) dumpElementln("ARRAY");
+ 	  ObjectStreamClass osc = (ObjectStreamClass)readObject();
+ 	  Class componentType = osc.forClass().getComponentType();
+ 	  if(dump) dumpElement("ARRAY LENGTH=");
+ 	  int length = this.realInputStream.readInt();
+ 	  if(dump) dumpElementln (length + "; COMPONENT TYPE=" + componentType);
+ 	  Object array = Array.newInstance(componentType, length);
+ 	  int handle = assignNewHandle(array);
+ 	  readArrayElements(array, componentType);
+ 	  if(dump)
+ 	    for (int i = 0, len = Array.getLength(array); i < len; i++)
+ 	      dumpElementln("  ELEMENT[" + i + "]=" + Array.get(array, i));
+ 	  ret_val = processResolution(null, array, handle);
+ 	  break;
+ 	}
+ 	
+       case TC_OBJECT:
+ 	{
+ 	  if(dump) dumpElementln("OBJECT");
+ 	  ObjectStreamClass osc = (ObjectStreamClass)readObject();
+ 	  Class clazz = osc.forClass();
+ 	  
+ 	  if (!osc.realClassIsSerializable)
+ 	    throw new NotSerializableException
+ 	      (clazz + " is not Serializable, and thus cannot be deserialized.");
+ 	  
+ 	  if (osc.realClassIsExternalizable)
+	    {
+ 	      Externalizable obj = osc.newInstance();
+	      
+ 	      int handle = assignNewHandle(obj);
+	      
+ 	      boolean read_from_blocks = ((osc.getFlags() & SC_BLOCK_DATA) != 0);
+	      
+ 	      boolean oldmode = this.readDataFromBlock;
+ 	      if (read_from_blocks)
+ 		setBlockDataMode(true);
+	      
+ 	      obj.readExternal(this);
+ 	      
+ 	      if (read_from_blocks)
+                {
+ 		  setBlockDataMode(oldmode);
+ 		  if (!oldmode)
+ 		    if (this.realInputStream.readByte() != TC_ENDBLOCKDATA)
+ 		      throw new IOException("No end of block data seen for class with readExternal (ObjectInputStream) method.");
+		}
+
+ 	      ret_val = processResolution(osc, obj, handle);
+              break;
+	      
+ 	    } // end if (osc.realClassIsExternalizable)
+ 	  
+ 	  Object obj = newObject(clazz, osc.firstNonSerializableParentConstructor);
+ 	  
+ 	  int handle = assignNewHandle(obj);
+ 	  Object prevObject = this.currentObject;
+ 	  ObjectStreamClass prevObjectStreamClass = this.currentObjectStreamClass;
+	  TreeSet prevObjectValidators = this.currentObjectValidators;
+ 	  
+ 	  this.currentObject = obj;
+	  this.currentObjectValidators = null;
+ 	  ObjectStreamClass[] hierarchy =
+ 	    inputGetObjectStreamClasses(clazz);
+ 	  
+ 	  for (int i = 0; i < hierarchy.length; i++)      
+          {
+ 	      this.currentObjectStreamClass = hierarchy[i];
+ 	      if(dump) dumpElementln("Reading fields of " + this.currentObjectStreamClass.getName ());
+  	      
+ 	      // XXX: should initialize fields in classes in the hierarchy
+ 	      // that aren't in the stream
+ 	      // should skip over classes in the stream that aren't in the
+ 	      // real classes hierarchy
+  	      
+ 	      Method readObjectMethod = this.currentObjectStreamClass.readObjectMethod;
+ 	      if (readObjectMethod != null)
+ 		{
+ 		  fieldsAlreadyRead = false;
+ 		  boolean oldmode = setBlockDataMode(true);
+ 		  callReadMethod(readObjectMethod, this.currentObjectStreamClass.forClass(), obj);
+ 		  setBlockDataMode(oldmode);
+ 		}
+ 	      else
+ 		{
+ 		  readFields(obj, currentObjectStreamClass);
+ 		}
+  	      
+ 	      if (this.currentObjectStreamClass.hasWriteMethod())
+  		{
+ 		  if(dump) dumpElement("ENDBLOCKDATA? ");
+ 		  try
+  		    {
+ 		      /* Read blocks until an end marker */
+ 		      byte writeMarker = this.realInputStream.readByte();
+ 		      while (writeMarker != TC_ENDBLOCKDATA)
+			{	
+ 			  parseContent(writeMarker);
+ 			  writeMarker = this.realInputStream.readByte();
+			}
+ 		      if(dump) dumpElementln("yes");
+ 		    }
+ 		  catch (EOFException e)
+ 		    {
+ 		      throw (IOException) new IOException
+ 			("No end of block data seen for class with readObject (ObjectInputStream) method.").initCause(e);
+		    }
+		}
+	    }
+ 	  
+ 	  this.currentObject = prevObject;
+ 	  this.currentObjectStreamClass = prevObjectStreamClass;
+ 	  ret_val = processResolution(osc, obj, handle);
+	  if (currentObjectValidators != null)
+	    invokeValidators();
+	  this.currentObjectValidators = prevObjectValidators;
+
+ 	  break;
+ 	}
+	
+       case TC_RESET:
+ 	if(dump) dumpElementln("RESET");
+ 	clearHandles();
+ 	ret_val = readObject();
+ 	break;
+	
+       case TC_EXCEPTION:
+ 	{
+ 	  if(dump) dumpElement("EXCEPTION=");
+ 	  Exception e = (Exception)readObject();
+ 	  if(dump) dumpElementln(e.toString());
+ 	  clearHandles();
+ 	  throw new WriteAbortedException("Exception thrown during writing of stream", e);
+ 	}
+	
+       default:
+ 	throw new IOException("Unknown marker on stream: " + marker);
+      }
     return ret_val;
   }
 
@@ -716,8 +739,10 @@ public class ObjectInputStream extends InputStream
       throw new InvalidObjectException("attempt to add a null "
 				       + "ObjectInputValidation object");
 
-    this.validators.addElement(new ValidatorAndPriority (validator,
-							 priority));
+    if (currentObjectValidators == null)
+      currentObjectValidators = new TreeSet();
+    
+    currentObjectValidators.add(new ValidatorAndPriority(validator, priority));
   }
 
 
@@ -805,7 +830,7 @@ public class ObjectInputStream extends InputStream
 
   /**
    * Reconstruct class hierarchy the same way
-   * {@link java.io.ObjectStreamClass.getObjectStreamClasses(java.lang.Class)} does
+   * {@link java.io.ObjectStreamClass#getObjectStreamClasses(Class)} does
    * but using lookupClass instead of ObjectStreamClass.lookup. This
    * dup is necessary localize the lookup table. Hopefully some future
    * rewritings will be able to prevent this.
@@ -874,7 +899,7 @@ public class ObjectInputStream extends InputStream
       }
     else
       for (int i = 0; i < intfs.length; i++)
-	clss[i] = cl.loadClass(intfs[i]);
+	clss[i] = Class.forName(intfs[i], false, cl);
     try 
       {
 	return Proxy.getProxyClass(cl, clss);
@@ -1195,7 +1220,7 @@ public class ObjectInputStream extends InputStream
    * This method should be called by a method called 'readObject' in the
    * deserializing class (if present). It cannot (and should not)be called
    * outside of it. Its goal is to read all fields in the real input stream
-   * and keep them accessible through the {@link #GetField} class. Calling
+   * and keep them accessible through the {@link GetField} class. Calling
    * this method will not alter the deserializing object.
    *
    * @return A valid freshly created 'GetField' instance to get access to
@@ -1543,8 +1568,15 @@ public class ObjectInputStream extends InputStream
 	catch (IllegalAccessException ignore)
 	  {
 	  }
-	catch (InvocationTargetException ignore)
+	catch (InvocationTargetException exception)
 	  {
+	    Throwable cause = exception.getCause();
+	    if (cause instanceof ObjectStreamException)
+	      throw (ObjectStreamException) cause;
+	    else if (cause instanceof RuntimeException)
+	      throw (RuntimeException) cause;
+	    else if (cause instanceof Error)
+	      throw (Error) cause;
 	  }
       }
 
@@ -1821,18 +1853,19 @@ public class ObjectInputStream extends InputStream
   // on OBJ
   private void invokeValidators() throws InvalidObjectException
   {
-    Object[] validators = new Object[this.validators.size()];
-    this.validators.copyInto (validators);
-    Arrays.sort (validators);
-
     try
       {
-	for (int i=0; i < validators.length; i++)
-	  ((ObjectInputValidation)validators[i]).validateObject();
+	Iterator it = currentObjectValidators.iterator();
+	while(it.hasNext())
+	  {
+	    ValidatorAndPriority vap = (ValidatorAndPriority) it.next();
+	    ObjectInputValidation validator = vap.validator;
+	    validator.validateObject();
+	  }
       }
     finally
       {
-	this.validators.removeAllElements();
+	currentObjectValidators = null;
       }
   }
 
@@ -1881,10 +1914,9 @@ public class ObjectInputStream extends InputStream
   private Hashtable objectLookupTable;
   private Object currentObject;
   private ObjectStreamClass currentObjectStreamClass;
+  private TreeSet currentObjectValidators;
   private boolean readDataFromBlock;
-  private boolean isDeserializing;
   private boolean fieldsAlreadyRead;
-  private Vector validators;
   private Hashtable classLookupTable;
   private GetField prereadFields;
 
@@ -1906,14 +1938,6 @@ public class ObjectInputStream extends InputStream
     for (int i = 0; i < depth; i++)
       System.out.print (" ");
     System.out.print (Thread.currentThread() + ": ");
-  }
-
-  static
-  {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-	System.loadLibrary ("javaio");
-      }
   }
 
   // used to keep a prioritized list of object validators

@@ -41,13 +41,25 @@ package javax.swing;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.FocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Locale;
 import java.util.Vector;
 
 import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleComponent;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleSelection;
+import javax.accessibility.AccessibleState;
+import javax.accessibility.AccessibleStateSet;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
@@ -108,6 +120,736 @@ import javax.swing.text.Position;
 
 public class JList extends JComponent implements Accessible, Scrollable
 {
+
+  /**
+   * Provides accessibility support for <code>JList</code>.
+   */
+  protected class AccessibleJList extends AccessibleJComponent
+    implements AccessibleSelection, PropertyChangeListener,
+               ListSelectionListener, ListDataListener
+  {
+
+    /**
+     * Provides accessibility support for list elements in <code>JList</code>s.
+     */
+    protected class AccessibleJListChild extends AccessibleContext
+      implements Accessible, AccessibleComponent
+    {
+
+      /**
+       * The parent list.
+       */
+      JList parent;
+
+      /**
+       * The index in the list for that child.
+       */
+      int listIndex;
+
+      /**
+       * The cursor for this list child.
+       */
+      // TODO: Testcases show that this class somehow stores state about the
+      // cursor. I cannot make up though how that could affect
+      // the actual list.
+      Cursor cursor = Cursor.getDefaultCursor();
+
+      /**
+       * Creates a new instance of <code>AccessibleJListChild</code>.
+       *
+       * @param list the list of which this is an accessible child
+       * @param index the list index for this child
+       */
+      public AccessibleJListChild(JList list, int index)
+      {
+        parent = list;
+        listIndex = index;
+      }
+
+      /**
+       * Returns the accessible context of this object. Returns
+       * <code>this</code> since <code>AccessibleJListChild</code>s are their
+       * own accessible contexts.
+       *
+       * @return the accessible context of this object, <code>this</code>
+       */
+      public AccessibleContext getAccessibleContext()
+      {
+        return this;
+      }
+
+      /**
+       * Returns the background color for this list child. This returns the
+       * background of the <code>JList</code> itself since the background
+       * cannot be set on list children individually
+       *
+       * @return the background color for this list child
+       */
+      public Color getBackground()
+      {
+        return parent.getBackground();
+      }
+
+      /**
+       * Calling this method has no effect, since the background color cannot be
+       * set on list children individually.
+       *
+       * @param color not used here.
+       */
+      public void setBackground(Color color)
+      {
+        // Calling this method has no effect, since the background color cannot
+        // be set on list children individually.
+      }
+
+      /**
+       * Returns the foreground color for this list child. This returns the
+       * background of the <code>JList</code> itself since the foreground
+       * cannot be set on list children individually.
+       *
+       * @return the background color for this list child
+       */
+      public Color getForeground()
+      {
+        return parent.getForeground();
+      }
+
+      /**
+       * Calling this method has no effect, since the foreground color cannot be
+       * set on list children individually.
+       *
+       * @param color not used here.
+       */
+      public void setForeground(Color color)
+      {
+        // Calling this method has no effect, since the foreground color cannot
+        // be set on list children individually.
+      }
+
+      /**
+       * Returns the cursor for this list child.
+       *
+       * @return the cursor for this list child
+       */
+      public Cursor getCursor()
+      {
+        // TODO: Testcases show that this method returns the cursor that has
+        // been set by setCursor. I cannot make up though how that could affect
+        // the actual list.
+        return cursor;
+      }
+
+      /**
+       * Sets the cursor for this list child.
+       */
+      public void setCursor(Cursor cursor)
+      {
+        this.cursor = cursor;
+        // TODO: Testcases show that this method returns the cursor that has
+        // been set by setCursor. I cannot make up though how that could affect
+        // the actual list.
+      }
+
+      /**
+       * Returns the font of the <code>JList</code> since it is not possible to
+       * set fonts for list children individually.
+       *
+       * @return the font of the <code>JList</code>
+       */
+      public Font getFont()
+      {
+        return parent.getFont();
+      }
+
+      /**
+       * Does nothing since it is not possible to set the font on list children
+       * individually.
+       *
+       * @param font not used here
+       */
+      public void setFont(Font font)
+      {
+        // Does nothing since it is not possible to set the font on list
+        // children individually.
+      }
+
+      /**
+       * Returns the font metrics for the specified font. This method forwards
+       * to the parent <code>JList</code>. 
+       *
+       * @param font the font for which the font metrics is queried
+       *
+       * @return the font metrics for the specified font
+       */
+      public FontMetrics getFontMetrics(Font font)
+      {
+        return parent.getFontMetrics(font);
+      }
+
+      /**
+       * Returns <code>true</code> if the parent <code>JList</code> is enabled,
+       * <code>false</code> otherwise. The list children cannot have an enabled
+       * flag set individually.
+       *
+       * @return <code>true</code> if the parent <code>JList</code> is enabled,
+       *         <code>false</code> otherwise
+       */
+      public boolean isEnabled()
+      {
+        return parent.isEnabled();
+      }
+
+      /**
+       * Does nothing since the enabled flag cannot be set for list children
+       * individually.
+       *
+       * @param b not used here
+       */
+      public void setEnabled(boolean b)
+      {
+        // Does nothing since the enabled flag cannot be set for list children
+        // individually.
+      }
+
+      /**
+       * Returns <code>true</code> if this list child is visible,
+       * <code>false</code> otherwise. The value of this property depends
+       * on {@link JList#getFirstVisibleIndex()} and
+       * {@link JList#getLastVisibleIndex()}.
+       *
+       * @return <code>true</code> if this list child is visible,
+       *         <code>false</code> otherwise
+       */
+      public boolean isVisible()
+      {
+        return listIndex >= parent.getFirstVisibleIndex()
+               && listIndex <= parent.getLastVisibleIndex();
+      }
+
+      /**
+       * The value of the visible property cannot be modified, so this method
+       * does nothing.
+       *
+       * @param b not used here
+       */
+      public void setVisible(boolean b)
+      {
+        // The value of the visible property cannot be modified, so this method
+        // does nothing.
+      }
+
+      /**
+       * Returns <code>true</code> if this list child is currently showing on
+       * screen and <code>false</code> otherwise. The list child is showing if
+       * it is visible and if it's parent JList is currently showing.
+       *
+       * @return <code>true</code> if this list child is currently showing on
+       *         screen and <code>false</code> otherwise
+       */
+      public boolean isShowing()
+      {
+        return isVisible() && parent.isShowing();
+      }
+
+      /**
+       * Returns <code>true</code> if this list child covers the screen location
+       * <code>point</code> (relative to the <code>JList</code> coordinate
+       * system, <code>false</code> otherwise.
+       *
+       * @return <code>true</code> if this list child covers the screen location
+       *         <code>point</code> , <code>false</code> otherwise
+       */
+      public boolean contains(Point point)
+      {
+        return getBounds().contains(point);
+      }
+
+      /**
+       * Returns the absolute screen location of this list child.
+       *
+       * @return the absolute screen location of this list child
+       */
+      public Point getLocationOnScreen()
+      {
+        Point loc = getLocation();
+        SwingUtilities.convertPointToScreen(loc, parent);
+        return loc;
+      }
+
+      /**
+       * Returns the screen location of this list child relative to it's parent.
+       *
+       * @return the location of this list child relative to it's parent
+       *
+       * @see JList#indexToLocation(int)
+       */
+      public Point getLocation()
+      {
+        return parent.indexToLocation(listIndex);
+      }
+
+      /**
+       * Does nothing since the screen location cannot be set on list children
+       * explictitly.
+       *
+       * @param point not used here
+       */
+      public void setLocation(Point point)
+      {
+        // Does nothing since the screen location cannot be set on list children
+        // explictitly.
+      }
+
+      /**
+       * Returns the bounds of this list child.
+       *
+       * @return the bounds of this list child
+       *
+       * @see JList#getCellBounds(int, int)
+       */
+      public Rectangle getBounds()
+      {
+        return parent.getCellBounds(listIndex, listIndex);
+      }
+
+      /**
+       * Does nothing since the bounds cannot be set on list children
+       * individually.
+       *
+       * @param rectangle not used here
+       */
+      public void setBounds(Rectangle rectangle)
+      {
+        // Does nothing since the bounds cannot be set on list children
+        // individually.
+      }
+
+      /**
+       * Returns the size of this list child.
+       *
+       * @return the size of this list child
+       */
+      public Dimension getSize()
+      {
+        Rectangle b = getBounds();
+        return b.getSize();
+      }
+
+      /**
+       * Does nothing since the size cannot be set on list children
+       * individually.
+       *
+       * @param dimension not used here
+       */
+      public void setSize(Dimension dimension)
+      {
+        // Does nothing since the size cannot be set on list children
+        // individually.
+      }
+
+      /**
+       * Returns <code>null</code> because list children do not have children
+       * themselves
+       *
+       * @return <code>null</code>
+       */
+      public Accessible getAccessibleAt(Point point)
+      {
+        return null;
+      }
+
+      /**
+       * Returns <code>true</code> since list children are focus traversable.
+       *
+       * @return true
+       */
+      public boolean isFocusTraversable()
+      {
+        // TODO: Is this 100% ok?
+        return true;
+      }
+
+      /**
+       * Requests focus on the parent list. List children cannot request focus
+       * individually.
+       */
+      public void requestFocus()
+      {
+        // TODO: Is this 100% ok?
+        parent.requestFocus();
+      }
+
+      /**
+       * Adds a focus listener to the parent list. List children do not have
+       * their own focus management.
+       *
+       * @param listener the focus listener to add
+       */
+      public void addFocusListener(FocusListener listener)
+      {
+        // TODO: Is this 100% ok?
+        parent.addFocusListener(listener);
+      }
+
+      /**
+       * Removes a focus listener from the parent list. List children do not
+       * have their own focus management.
+       *
+       * @param listener the focus listener to remove
+       */
+      public void removeFocusListener(FocusListener listener)
+      {
+        // TODO: Is this 100%
+        parent.removeFocusListener(listener);
+      }
+
+      /**
+       * Returns the accessible role of this list item, which is
+       * {@link AccessibleRole#LABEL}.
+       *
+       * @return {@link AccessibleRole#LABEL}
+       */
+      public AccessibleRole getAccessibleRole()
+      {
+        return AccessibleRole.LABEL;
+      }
+
+      /**
+       * Returns the accessible state set of this list item.
+       *
+       * @return the accessible state set of this list item
+       */
+      public AccessibleStateSet getAccessibleStateSet()
+      {
+        AccessibleStateSet states = new AccessibleStateSet();
+        if (isVisible())
+          states.add(AccessibleState.VISIBLE);
+        if (isShowing())
+          states.add(AccessibleState.SHOWING);
+        if (isFocusTraversable())
+          states.add(AccessibleState.FOCUSABLE);
+        // TODO: How should the active state be handled? The API docs
+        // suggest that this state is set on the activated list child,
+        // that is the one that is drawn with a box. However, I don't know how
+        // to implement this.
+
+        // TODO: We set the selectable state here because list children are
+        // selectable. Is there a way to disable single children?
+        if (parent.isEnabled())
+          states.add(AccessibleState.SELECTABLE);
+ 
+        if (parent.isSelectedIndex(listIndex))
+          states.add(AccessibleState.SELECTED);
+
+        // TODO: Handle more states here?
+        return states;
+      }
+
+      /**
+       * Returns the index of this list child within it's parent list.
+       *
+       * @return the index of this list child within it's parent list
+       */
+      public int getAccessibleIndexInParent()
+      {
+        return listIndex;
+      }
+
+      /**
+       * Returns <code>0</code> since list children don't have children
+       * themselves.
+       *
+       * @return <code>0</code>
+       */
+      public int getAccessibleChildrenCount()
+      {
+        return 0;
+      }
+
+      /**
+       * Returns <code>null</code> since list children don't have children
+       * themselves.
+       *
+       * @return <code>null</code>
+       */
+      public Accessible getAccessibleChild(int i)
+      {
+        return null;
+      }
+
+      /**
+       * Returns the locale of this component. This call is forwarded to the
+       * parent list since list children don't have a separate locale setting.
+       *
+       * @return the locale of this component
+       */
+      public Locale getLocale()
+      {
+        return parent.getLocale();
+      }
+
+      /**
+       * This method does
+       * nothing, list children are transient accessible objects which means
+       * that they don't fire property change events.
+       *
+       * @param l not used here
+       */
+      public void addPropertyChangeListener(PropertyChangeListener l)
+      {
+        // Do nothing here.
+      }
+
+      /**
+       * This method does
+       * nothing, list children are transient accessible objects which means
+       * that they don't fire property change events.
+       *
+       * @param l not used here
+       */
+      public void removePropertyChangeListener(PropertyChangeListener l)
+      {
+        // Do nothing here.
+      }
+      
+      // TODO: Implement the remaining methods of this class.
+    }
+    
+    /**
+     * Create a new AccessibleJList.
+     */
+    public AccessibleJList()
+    {
+      // Nothing to do here.
+    }
+
+    /**
+     * Returns the number of selected accessible children.
+     *
+     * @return the number of selected accessible children
+     */
+    public int getAccessibleSelectionCount()
+    {
+      return getSelectedIndices().length;
+    }
+
+    /**
+     * Returns the n-th selected accessible child.
+     *
+     * @param n the index of the selected child to return
+     *
+     * @return the n-th selected accessible child
+     */
+    public Accessible getAccessibleSelection(int n)
+    {
+      return new AccessibleJListChild(JList.this, getSelectedIndices()[n]);
+    }
+
+    /**
+     * Returns <code>true</code> if the n-th child is selected,
+     * <code>false</code> otherwise.
+     *
+     * @param n the index of the child of which the selected state is queried
+     *
+     * @return <code>true</code> if the n-th child is selected,
+     *         <code>false</code> otherwise
+     */
+    public boolean isAccessibleChildSelected(int n)
+    {
+      return isSelectedIndex(n);
+    }
+
+    /**
+     * Adds the accessible item with the specified index to the selected items.
+     * If multiple selections are supported, the item is added to the selection,
+     * otherwise the item replaces the current selection.
+     *
+     * @param i the index of the item to add to the selection
+     */
+    public void addAccessibleSelection(int i)
+    {
+      addSelectionInterval(i, i);
+    }
+
+    /**
+     * Removes the accessible item with the specified index to the selection.
+     *
+     * @param i the index of the item to be removed from the selection
+     */
+    public void removeAccessibleSelection(int i)
+    {
+      removeSelectionInterval(i, i);
+    }
+
+    /**
+     * Remove all selection items from the selection.
+     */
+    public void clearAccessibleSelection()
+    {
+      clearSelection();
+    }
+
+    /**
+     * Selects all items if multiple selections are supported.
+     * Otherwise do nothing.
+     */
+    public void selectAllAccessibleSelection()
+    {
+      addSelectionInterval(0, getModel().getSize());
+    }
+
+    /**
+     * Receices notification when the list selection is changed. This method
+     * fires two property change events, the first with
+     * {@link AccessibleContext#ACCESSIBLE_VISIBLE_DATA_PROPERTY} and the second
+     * with {@link AccessibleContext#ACCESSIBLE_SELECTION_PROPERTY}.
+     *
+     * @param event the list selection event
+     */
+    public void valueChanged(ListSelectionEvent event)
+    {
+      firePropertyChange(ACCESSIBLE_VISIBLE_DATA_PROPERTY, Boolean.FALSE,
+                         Boolean.TRUE);
+      firePropertyChange(ACCESSIBLE_SELECTION_PROPERTY, Boolean.FALSE,
+                         Boolean.TRUE);
+    }
+
+    /**
+     * Receives notification when items have changed in the
+     * <code>JList</code>. This method fires a property change event with
+     * {@link AccessibleContext#ACCESSIBLE_VISIBLE_DATA_PROPERTY}.
+     *
+     * @param event the list data event
+     */
+    public void contentsChanged(ListDataEvent event)
+    {
+      firePropertyChange(ACCESSIBLE_VISIBLE_DATA_PROPERTY, Boolean.FALSE,
+                         Boolean.TRUE);
+    }
+
+    /**
+     * Receives notification when items are inserted into the
+     * <code>JList</code>. This method fires a property change event with
+     * {@link AccessibleContext#ACCESSIBLE_VISIBLE_DATA_PROPERTY}.
+     *
+     * @param event the list data event
+     */
+    public void intervalAdded(ListDataEvent event)
+    {
+      firePropertyChange(ACCESSIBLE_VISIBLE_DATA_PROPERTY, Boolean.FALSE,
+                         Boolean.TRUE);
+    }
+
+    /**
+     * Receives notification when items are removed from the
+     * <code>JList</code>. This method fires a property change event with
+     * {@link AccessibleContext#ACCESSIBLE_VISIBLE_DATA_PROPERTY}.
+     *
+     * @param event the list data event
+     */
+    public void intervalRemoved(ListDataEvent event)
+    {
+      firePropertyChange(ACCESSIBLE_VISIBLE_DATA_PROPERTY, Boolean.FALSE,
+                         Boolean.TRUE);
+    }
+
+
+    /**
+     * Receives notification about changes of the <code>JList</code>'s
+     * properties. This is used to re-register this object as listener to
+     * the data model and selection model when the data model or selection model
+     * changes.
+     *
+     * @param e the property change event
+     */
+    public void propertyChange(PropertyChangeEvent e)
+    {
+      String propertyName = e.getPropertyName();
+      if (propertyName.equals("model"))
+        {
+          ListModel oldModel = (ListModel) e.getOldValue();
+          oldModel.removeListDataListener(this);
+          ListModel newModel = (ListModel) e.getNewValue();
+          newModel.addListDataListener(this);
+        }
+      else if (propertyName.equals("selectionModel"))
+        {
+          ListSelectionModel oldModel = (ListSelectionModel) e.getOldValue();
+          oldModel.removeListSelectionListener(this);
+          ListSelectionModel newModel = (ListSelectionModel) e.getNewValue();
+          oldModel.addListSelectionListener(this);
+        }
+    }
+
+    /**
+     * Return the state set of the <code>JList</code>.
+     *
+     * @return the state set of the <code>JList</code>
+     */
+    public AccessibleStateSet getAccessibleStateSet()
+    {
+      // TODO: Figure out if there is possibly more state that must be
+      // handled here.
+      AccessibleStateSet s = super.getAccessibleStateSet();
+      if (getSelectionMode() != ListSelectionModel.SINGLE_SELECTION)
+        s.add(AccessibleState.MULTISELECTABLE);
+      return s;
+    }
+
+    /**
+     * Returns the accessible role for <code>JList</code>,
+     * {@link AccessibleRole#LIST}.
+     *
+     * @return the accessible role for <code>JList</code>
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.LIST;
+    }
+
+    /**
+     * Returns the accessible child at the visual location <code>p</code>
+     * (relative to the upper left corner of the <code>JList</code>). If there
+     * is no child at that location, this returns <code>null</code>.
+     *
+     * @param p the screen location for which to return the accessible child
+     *
+     * @return the accessible child at the specified location, or
+     *         <code>null</code> if there is no child at that location
+     */
+    public Accessible getAccessibleAt(Point p)
+    {
+      int childIndex = locationToIndex(p);
+      return getAccessibleChild(childIndex);
+    }
+
+    /**
+     * Returns the number of accessible children in the <code>JList</code>.
+     *
+     * @return the number of accessible children in the <code>JList</code>
+     */
+    public int getAccessibleChildrenCount()
+    {
+      return getModel().getSize();
+    }
+
+    /**
+     * Returns the n-th accessible child of this <code>JList</code>. This will
+     * be an instance of {@link AccessibleJListChild}. If there is no child
+     * at that index, <code>null</code> is returned.
+     *
+     * @param n the index of the child to return
+     *
+     * @return the n-th accessible child of this <code>JList</code>
+     */
+    public Accessible getAccessibleChild(int n)
+    {
+      if (getModel().getSize() <= n)
+        return null;
+      return new AccessibleJListChild(JList.this, n);
+    }
+  }
+
   private static final long serialVersionUID = 4406629526391098046L;
 
   /** 
@@ -181,7 +923,7 @@ public class JList extends JComponent implements Accessible, Scrollable
 
   /** 
    * This property specifies a foreground color for the selected cells in
-   * the list. When {@link ListCellRenderer.getListCellRendererComponent}
+   * the list. When {@link ListCellRenderer#getListCellRendererComponent}
    * is called with a selected cell object, the component returned will
    * have its "foreground" set to this color.
    */
@@ -189,7 +931,7 @@ public class JList extends JComponent implements Accessible, Scrollable
 
   /** 
    * This property specifies a background color for the selected cells in
-   * the list. When {@link ListCellRenderer.getListCellRendererComponent}
+   * the list. When {@link ListCellRenderer#getListCellRendererComponent}
    * is called with a selected cell object, the component returned will
    * have its "background" property set to this color.
    */
@@ -216,9 +958,9 @@ public class JList extends JComponent implements Accessible, Scrollable
   /** 
    * This property indicates a <em>preference</em> for the number of rows
    * displayed in the list, and will scale the
-   * {@link #preferredScrollableViewportSize} property accordingly. The actual
+   * {@link #getPreferredScrollableViewportSize} property accordingly. The actual
    * number of displayed rows, when the list is placed in a real {@link
-   * Viewport} or other component, may be greater or less than this number.
+   * JViewport} or other component, may be greater or less than this number.
    */
   int visibleRowCount;
 
@@ -270,7 +1012,7 @@ public class JList extends JComponent implements Accessible, Scrollable
                                            event.getValueIsAdjusting());
       JList.this.repaint();
     }
-  };
+  }
 
   /** 
    * Shared ListListener instance, subscribed to both the current {@link
@@ -437,7 +1179,7 @@ public class JList extends JComponent implements Accessible, Scrollable
   /**
    * Sets the value of the {@link #visibleRowCount} property. 
    *
-   * @param visibleRowCount The new property value
+   * @param vc The new property value
    */
   public void setVisibleRowCount(int vc)
   {
@@ -563,8 +1305,8 @@ public class JList extends JComponent implements Accessible, Scrollable
 
   /**
    * Returns the list index of the upper left or upper right corner of the
-   * {@link #visibleRect} property, depending on the {@link
-   * #componentOrientation} property.
+   * visible rectangle of this list, depending on the {@link
+   * Component#getComponentOrientation} property.
    *
    * @return The index of the first visible list cell, or <code>-1</code>
    * if none is visible.
@@ -585,7 +1327,8 @@ public class JList extends JComponent implements Accessible, Scrollable
    * 
    * @return index of the cell to which specified location is closest to.
    */
-   public int locationToIndex(Point location) {
+   public int locationToIndex(Point location)
+   {
      return getUI().locationToIndex(this, location);      
    }
 
@@ -595,14 +1338,15 @@ public class JList extends JComponent implements Accessible, Scrollable
    * 
    * @return location of the cell located at the specified index in the list.
    */
-   public Point indexToLocation(int index){
-     return getCellBounds(index, index).getLocation();
+   public Point indexToLocation(int index)
+   {
+     return getUI().indexToLocation(this, index);
    }
 
   /**
    * Returns the list index of the lower right or lower left corner of the
-   * {@link #visibleRect} property, depending on the {@link
-   * #componentOrientation} property.
+   * visible rectangle of this list, depending on the {@link
+   * Component#getComponentOrientation} property.
    *
    * @return The index of the last visible list cell, or <code>-1</code>
    * if none is visible.
@@ -625,7 +1369,7 @@ public class JList extends JComponent implements Accessible, Scrollable
    * selected.
    *
    * @return An array of model indices, each of which is selected according
-   * to the {@link #selection} property
+   *         to the {@link #getSelectedValues} property
    */
   public int[] getSelectedIndices()
   {
@@ -640,7 +1384,7 @@ public class JList extends JComponent implements Accessible, Scrollable
         n++;
     int [] v = new int[n];
     j = 0;
-    for (i = lo; i < hi; ++i)
+    for (i = lo; i <= hi; ++i)
       if (selectionModel.isSelectedIndex(i))
         v[j++] = i;
     return v;
@@ -670,7 +1414,7 @@ public class JList extends JComponent implements Accessible, Scrollable
    * @return The first selected element, or <code>null</code> if no element
    * is selected.
    *
-   * @see getSelectedValues
+   * @see #getSelectedValues
    */
   public Object getSelectedValue()
   {
@@ -686,7 +1430,7 @@ public class JList extends JComponent implements Accessible, Scrollable
    *
    * @return An array containing all the selected values
    *
-   * @see getSelectedValue
+   * @see #setSelectedValue
    */
   public Object[] getSelectedValues()
   {
@@ -845,7 +1589,7 @@ public class JList extends JComponent implements Accessible, Scrollable
   }
 
   /**
-   * Sets the value of the {@link #celLRenderer} property.
+   * Sets the value of the {@link #getCellRenderer} property.
    *
    * @param renderer The new property value
    */
@@ -876,10 +1620,15 @@ public class JList extends JComponent implements Accessible, Scrollable
    * #listListener} is unsubscribed from the existing model, if it exists,
    * and re-subscribed to the new model.
    *
-   * @param model The new property value
+   * @param model  the new model (<code>null</code> not permitted).
+   * 
+   * @throws IllegalArgumentException if <code>model</code> is 
+   *         <code>null</code>.
    */
   public void setModel(ListModel model)
   {
+    if (model == null) 
+      throw new IllegalArgumentException("Null 'model' argument.");
     if (this.model == model)
       return;
     
@@ -1019,14 +1768,14 @@ public class JList extends JComponent implements Accessible, Scrollable
 
   public AccessibleContext getAccessibleContext()
   {
-    return null;
+    return new AccessibleJList();
   }
 
   /**
    * Returns a size indicating how much space this list would like to
    * consume, when contained in a scrollable viewport. This is part of the
    * {@link Scrollable} interface, which interacts with {@link
-   * ScrollPaneLayout} and {@link Viewport} to define scrollable objects.
+   * ScrollPaneLayout} and {@link JViewport} to define scrollable objects.
    *
    * @return The preferred size
    */
@@ -1036,36 +1785,43 @@ public class JList extends JComponent implements Accessible, Scrollable
     //return the value from getPreferredSize. The current ListUI is 
     //expected to override getPreferredSize to return an appropriate value.
     if (getLayoutOrientation() != VERTICAL)
-      return getPreferredSize();
-    
-    if (fixedCellHeight != -1 && fixedCellWidth != -1)
-      return new Dimension(fixedCellWidth, getModel().getSize() * 
-                           fixedCellHeight);
+      return getPreferredSize();        
 
-    int prefWidth, prefHeight;
+    int size = getModel().getSize();
+    
+    // Trivial case: if fixedCellWidth and fixedCellHeight were set 
+    // just use them
+    if (fixedCellHeight != -1 && fixedCellWidth != -1)
+      return new Dimension(fixedCellWidth, size * fixedCellHeight);
+        
+    // If the model is empty we use 16 * the number of visible rows
+    // for the height and either fixedCellWidth (if set) or 256
+    // for the width
+    if (size == 0)
+      {
+        if (fixedCellWidth == -1)
+          return new Dimension(256, 16 * getVisibleRowCount());
+        else
+          return new Dimension(fixedCellWidth, 16 * getVisibleRowCount());
+      }
+
+    // Calculate the width: if fixedCellWidth was set use that, otherwise
+    // use the preferredWidth
+    int prefWidth;
     if (fixedCellWidth != -1)
       prefWidth = fixedCellWidth;
     else
-      {
-        prefWidth = 0;
-        int size = getModel().getSize();
-        for (int i = 0; i < size; i++)
-          if (getCellBounds(i, i).width > prefWidth)
-            prefWidth = getCellBounds(i, i).width;
-      }
-    
-    if (getModel().getSize() == 0 && fixedCellWidth == -1)
-      return new Dimension(256, 16 * getVisibleRowCount());
-    else if (getModel().getSize() == 0)
-      return new Dimension (fixedCellWidth, 16 * getVisibleRowCount());
-    
+      prefWidth = getPreferredSize().width;
+
+    // Calculate the height: if fixedCellHeight was set use that, otherwise
+    // use the height of the first row multiplied by the number of visible
+    // rows
+    int prefHeight;
     if (fixedCellHeight != -1)
       prefHeight = fixedCellHeight;
     else
-      {
-        prefHeight = getVisibleRowCount() * getCellBounds
-          (getFirstVisibleIndex(), getFirstVisibleIndex()).height;
-      }
+      prefHeight = getVisibleRowCount() * getCellBounds(0, 0).height;
+
     return new Dimension (prefWidth, prefHeight);
   }
 
@@ -1196,7 +1952,7 @@ public class JList extends JComponent implements Accessible, Scrollable
   }
 
   /**
-   * Gets the value of the {@link #scrollableTracksViewportWidth} property.
+   * Gets the value of the <code>scrollableTracksViewportWidth</code> property.
    *
    * @return <code>true</code> if the viewport is larger (horizontally)
    * than the list and the list should be expanded to fit the viewport;
@@ -1221,7 +1977,7 @@ public class JList extends JComponent implements Accessible, Scrollable
   }
 
   /**
-   * Gets the value of the {@link #scrollableTracksViewportWidth} property.
+   * Gets the value of the </code>scrollableTracksViewportWidth</code> property.
    *
    * @return <code>true</code> if the viewport is larger (vertically)
    * than the list and the list should be expanded to fit the viewport;
@@ -1373,7 +2129,7 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public Rectangle getCellBounds(int index0, int index1)
   {
-    return ((ListUI) ui).getCellBounds(this, index0, index1);
+    return getUI().getCellBounds(this, index0, index1);
   }
 
   /**
@@ -1383,8 +2139,8 @@ public class JList extends JComponent implements Accessible, Scrollable
    *
    * @param prefix the prefix to search for in the cell values
    * @param startIndex the index where to start searching from
-   * @param bias the search direction, either {@link Position.Bias.Forward}
-   *     or {@link Position.Bias.Backward}
+   * @param bias the search direction, either {@link Position.Bias#Forward}
+   *     or {@link Position.Bias#Backward}
    *
    * @return the index of the found element or -1 if no such element has
    *     been found

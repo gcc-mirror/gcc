@@ -316,7 +316,8 @@ public class ServerSocket
   {
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
-      sm.checkListen(impl.getLocalPort());
+      sm.checkAccept(impl.getInetAddress().getHostAddress(),
+                     impl.getLocalPort());
 
     Socket socket = new Socket();
 
@@ -369,6 +370,7 @@ public class ServerSocket
 
     impl.accept(socket.impl);
     socket.implCreated = true;
+    socket.bound = true;
   }
 
   /**

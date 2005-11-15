@@ -1,5 +1,5 @@
 /* ProgressMonitorInputStream.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,122 +39,187 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Component;
+
 import java.io.FilterInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.IOException;
 
 /**
  * ProgressMonitorInputStream
  * @author	Andrew Selkirk
- * @version	1.0
+ * @author  Robert Schuster (robertschuster@fsfe.org)
+ * @status updated to 1.2
+ * @since 1.2
  */
-public class ProgressMonitorInputStream extends FilterInputStream {
+public class ProgressMonitorInputStream extends FilterInputStream
+{
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * monitor
+   */
+  private ProgressMonitor monitor;
 
-	/**
-	 * monitor
-	 */
-	private ProgressMonitor monitor;
+  /**
+   * read
+   */
+  private int read;
 
-	/**
-	 * nread
-	 */
-	private int nread;
+  /**
+   * Constructor ProgressMonitorInputStream
+   * @param component TODO
+   * @param message TODO
+   * @param stream TODO
+   */
+  public ProgressMonitorInputStream(Component component, Object message,
+                                    InputStream stream)
+  {
+    super(stream);
 
-	/**
-	 * size
-	 */
-	private int size;
+    int max = 0;
+	
+    try
+      {
+        max = stream.available();
+      }
+    catch ( IOException ioe )
+      {
+        // Behave like the JDK here.
+      }
 
+    monitor = new ProgressMonitor(
+      component, message, null, 0, max );
+  }
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * reset
+   * @exception IOException TODO
+   */
+  public void reset() throws IOException
+  {
+    super.reset();
 
-	/**
-	 * Constructor ProgressMonitorInputStream
-	 * @param component TODO
-	 * @param message TODO
-	 * @param stream TODO
-	 */
-	public ProgressMonitorInputStream(Component component, Object message,
-			InputStream stream) {
-		super(stream);
-		// TODO
-	} // ProgressMonitorInputStream()
+    checkMonitorCanceled();
 
+    // TODO: The docs says the monitor should be resetted. But to which
+    // value? (mark is not overridden)
+  }
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * read
+   * @exception IOException TODO
+   * @returns int
+   */
+  public int read() throws IOException
+  {
+    int t = super.read();
 
-	/**
-	 * reset
-	 * @exception IOException TODO
-	 */
-	public synchronized void reset() throws IOException {
-		// TODO
-	} // reset()
+    monitor.setProgress(++read);
 
-	/**
-	 * read
-	 * @exception IOException TODO
-	 * @returns int
-	 */
-	public int read() throws IOException {
-		return 0; // TODO
-	} // read()
+    checkMonitorCanceled();
 
-	/**
-	 * read
-	 * @param data TODO
-	 * @exception IOException TODO
-	 * @returns int
-	 */
-	public int read(byte[] data) throws IOException {
-		return 0; // TODO
-	} // read()
+    return t;
+  }
 
-	/**
-	 * read
-	 * @param data TODO
-	 * @param offset TODO
-	 * @param length TODO
-	 * @exception IOException TODO
-	 * @returns int
-	 */
-	public int read(byte[] data, int offset, int length) throws IOException {
-		return 0; // TODO
-	} // read()
+  /**
+   * read
+   * @param data TODO
+   * @exception IOException TODO
+   * @returns int
+   */
+  public int read(byte[] data) throws IOException
+  {
+    int t = super.read(data);
 
-	/**
-	 * skip
-	 * @param length TODO
-	 * @exception IOException TODO
-	 * @returns long
-	 */
-	public long skip(long length) throws IOException {
-		return 0; // TODO
-	} // skip()
+    if ( t > 0 )
+      {
+        read += t;
+        monitor.setProgress(read);
 
-	/**
-	 * close
-	 * @exception IOException TODO
-	 */
-	public void close() throws IOException {
-		// TODO
-	} // close()
+        checkMonitorCanceled();
+      }
+    else
+      {
+        monitor.close();
+      }
 
-	/**
-	 * getProgressMonitor
-	 * @returns ProgressMonitor
-	 */
-	public ProgressMonitor getProgressMonitor() {
-		return null; // TODO
-	} // getProgressMonitor()
+    return t;
+  }
 
+  /**
+   * read
+   * @param data TODO
+   * @param offset TODO
+   * @param length TODO
+   * @exception IOException TODO
+   * @returns int
+   */
+  public int read(byte[] data, int offset, int length) throws IOException
+  {
+    int t = super.read(data, offset, length);
 
-} // ProgressMonitorInputStream
+    if ( t > 0 )
+      {
+        read += t;
+        monitor.setProgress(read);
+
+        checkMonitorCanceled();
+      }
+    else
+      {
+        monitor.close();
+      }
+
+    return t;
+  }
+
+  /**
+   * skip
+   * @param length TODO
+   * @exception IOException TODO
+   * @returns long
+   */
+  public long skip(long length) throws IOException
+  {
+    long t = super.skip(length);
+
+    // 'read' may overflow here in rare situations.
+    assert ( (long) read + t <= (long) Integer.MAX_VALUE );
+
+    read += (int) t;
+
+    monitor.setProgress(read);
+
+    checkMonitorCanceled();
+
+    return t;
+  }
+
+  /**
+   * close
+   * @exception IOException TODO
+   */
+  public void close() throws IOException
+  {
+    super.close();
+    monitor.close();
+  }
+
+  /**
+   * getProgressMonitor
+   * @returns ProgressMonitor
+   */
+  public ProgressMonitor getProgressMonitor()
+  {
+    return monitor;
+  }
+
+  private void checkMonitorCanceled() throws InterruptedIOException
+  {
+    if ( monitor.isCanceled() )
+      {
+        throw new InterruptedIOException("ProgressMonitor was canceled");
+      }
+  }
+
+}

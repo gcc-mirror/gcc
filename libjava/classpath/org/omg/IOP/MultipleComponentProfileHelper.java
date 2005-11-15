@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.IOP;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.TypeCode;
@@ -96,6 +98,7 @@ public abstract class MultipleComponentProfileHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("MultipleComponentProfile expected");
+        bad.minor = Minor.Any;        
         bad.initCause(cex);
         throw bad;
       }

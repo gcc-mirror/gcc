@@ -50,17 +50,17 @@ import javax.swing.plaf.basic.BasicGraphicsUtils;
 import javax.swing.plaf.basic.BasicLabelUI;
 
 /**
- * A UI delegate used for {@link JLabel}s in the {@link MetalLookAndFeel}.
+ * A UI delegate for the {@link JLabel} component.
  */
 public class MetalLabelUI
   extends BasicLabelUI
 {
 
-  /** The shared UI instance for JLabels. */
+  /** The shared instance of the UI delegate. */
   protected static MetalLabelUI metalLabelUI;
 
   /**
-   * Constructs a new instance of MetalLabelUI.
+   * Constructs a new instance of <code>MetalLabelUI</code>.
    */
   public MetalLabelUI()
   {
@@ -68,11 +68,11 @@ public class MetalLabelUI
   }
 
   /**
-   * Returns an instance of MetalLabelUI.
+   * Returns a shared instance of <code>MetalLabelUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalLabelUI
+   * @return A shared instance of <code>MetalLabelUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {

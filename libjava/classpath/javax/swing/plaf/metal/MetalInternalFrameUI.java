@@ -38,24 +38,31 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
-import java.util.HashMap;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
-import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
 
-
+/**
+ * A UI delegate for the {@link JInternalFrame} component.
+ */
 public class MetalInternalFrameUI
   extends BasicInternalFrameUI
 {
-
-  /** The instances of MetalInternalFrameUI*/
-  private static HashMap instances;
+  /** 
+   * The key (<code>JInternalFrame.isPalette</code>) for the client property 
+   * that controls whether the internal frame is displayed using the palette 
+   * style. 
+   */
+  protected static String IS_PALETTE = "JInternalFrame.isPalette";
 
   /**
-   * Constructs a new instance of MetalInternalFrameUI.
+   * Constructs a new instance of <code>MetalInternalFrameUI</code>.
+   * 
+   * @param frame  the frame.
    */
   public MetalInternalFrameUI(JInternalFrame frame)
   {
@@ -63,37 +70,96 @@ public class MetalInternalFrameUI
   }
 
   /**
-   * Returns an instance of MetalInternalFrameUI.
+   * Returns an instance of <code>MetalInternalFrameUI</code>.
    *
-   * @param component the component for which we return an UI instance
+   * @param component the internal frame.
    *
-   * @return an instance of MetalInternalFrameUI
+   * @return an instance of <code>MetalInternalFrameUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instances == null)
-      instances = new HashMap();
-
-
-    Object o = instances.get(component);
-    MetalInternalFrameUI instance;
-    if (o == null)
-      {
-	instance = new MetalInternalFrameUI((JInternalFrame) component);
-	instances.put(component, instance);
-      }
-    else
-      instance = (MetalInternalFrameUI) o;
-
-    return instance;
+    return new MetalInternalFrameUI((JInternalFrame) component);
   }
   
+  /**
+   * Sets the fields and properties for the component.
+   * 
+   * @param c  the component.
+   */
+  public void installUI(JComponent c)
+  {
+    super.installUI(c);
+    JInternalFrame f = (JInternalFrame) c;
+    boolean isPalette = false;
+    Boolean p = (Boolean) f.getClientProperty(IS_PALETTE);
+    if (p != null)
+      isPalette = p.booleanValue();
+    setPalette(isPalette);
+  }
+
+  /**
+   * Creates and returns the component that will be used for the north pane
+   * of the {@link JInternalFrame}.  
+   * 
+   * @param w  the internal frame.
+   * 
+   * @return A new instance of {@link MetalInternalFrameTitlePane}.
+   */
   protected JComponent createNorthPane(JInternalFrame w)
   {
     titlePane = new MetalInternalFrameTitlePane(w);
-    titlePane.setBorder(new EmptyBorder(2, 2, 2, 2));
     return titlePane;  
   }
   
-
+  /**
+   * Sets the state of the {@link JInternalFrame} to reflect whether or not
+   * it is using the palette style.  When a frame is displayed as a palette,
+   * it uses a different border and the title pane is drawn differently.
+   * 
+   * @param isPalette  use the palette style?
+   */
+  public void setPalette(boolean isPalette)
+  {
+    MetalInternalFrameTitlePane title = (MetalInternalFrameTitlePane) northPane;
+    title.setPalette(isPalette);
+    if (isPalette)
+      frame.setBorder(new MetalBorders.PaletteBorder());
+    else
+      frame.setBorder(new MetalBorders.InternalFrameBorder());
+  }
+ 
+  /** A listener that is used to handle IS_PALETTE property changes. */
+  private PropertyChangeListener paletteListener;
+  
+  /**
+   * Adds the required listeners.
+   */
+  protected void installListeners()
+  {
+    super.installListeners(); 
+    paletteListener = new PropertyChangeListener() 
+    {
+      public void propertyChange(PropertyChangeEvent e)
+      {
+        if (e.getPropertyName().equals(IS_PALETTE))
+          {
+            if (Boolean.TRUE.equals(e.getNewValue()))
+              setPalette(true);
+            else
+              setPalette(false);
+          }
+      }
+    };
+    frame.addPropertyChangeListener(paletteListener);
+  }
+  
+  /**
+   * Removes the listeners used.
+   */
+  protected void uninstallListeners()
+  {
+    super.uninstallListeners();
+    frame.removePropertyChangeListener(IS_PALETTE, paletteListener);
+    paletteListener = null;
+  }
 }

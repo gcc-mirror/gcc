@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CosNaming;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.BAD_PARAM;
@@ -78,6 +80,7 @@ public abstract class BindingIteratorHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("Binding iterator expected");
         bad.initCause(ex);
+        bad.minor = Minor.Any;
         throw bad;
       }
   }
@@ -120,6 +123,35 @@ public abstract class BindingIteratorHelper
         Delegate delegate = ((ObjectImpl) obj)._get_delegate();
         return new _BindingIteratorStub(delegate);
       }
+  }
+  
+  /**
+   * Narrow the given object to the BindingIterator. No type-checking is
+   * performed to verify that the object actually supports the requested type.
+   * The {@link BAD_OPERATION} will be thrown if unsupported operations are
+   * invoked on the new returned reference, but no failure is expected at the
+   * time of the unchecked_narrow.
+   * 
+   * @param obj the object to cast.
+   * 
+   * @return the casted binding iterator.
+   * 
+   * @since 1.5 
+   * 
+   * @see OMG issue 4158.
+   */
+  public static BindingIterator unchecked_narrow(org.omg.CORBA.Object obj)
+  {
+    if (obj == null)
+      return null;
+    else if (obj instanceof BindingIterator)
+      return (BindingIterator) obj;
+    else
+      {
+        // Do not call the _is_a(..).
+        Delegate delegate = ((ObjectImpl) obj)._get_delegate();
+        return new _BindingIteratorStub(delegate);
+      }    
   }
 
   /**

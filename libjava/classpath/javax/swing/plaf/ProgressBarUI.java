@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ProgressBarUI
-  extends ComponentUI
+public abstract class ProgressBarUI extends ComponentUI
 {
   /**
    * Constructs a new <code>ProgressBarUI</code>.
    */
   public ProgressBarUI()
   {
+    // Nothing to do here.
   }
 }

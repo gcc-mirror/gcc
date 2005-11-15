@@ -119,7 +119,7 @@ public class FileWriter extends OutputStreamWriter
    * This method intializes a new <code>FileWriter</code> object to 
    * write to the
    * specified named file.  This form of the constructor allows the caller
-   * to determin whether data should be written starting at the beginning or
+   * to determine whether data should be written starting at the beginning or
    * the end of the file.
    *
    * @param name The name of the file to write to

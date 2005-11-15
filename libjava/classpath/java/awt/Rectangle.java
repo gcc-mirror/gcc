@@ -727,6 +727,10 @@ public class Rectangle extends Rectangle2D implements Shape, Serializable
    */
   public boolean equals(Object obj)
   {
+    // NOTE: No special hashCode() method is required for this class,
+    // as this equals() implementation is functionally equivalent to
+    // super.equals(), which does define a proper hashCode().
+
     if (! (obj instanceof Rectangle2D))
       return false;
     Rectangle2D r = (Rectangle2D) obj;

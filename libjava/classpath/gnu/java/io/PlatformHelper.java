@@ -109,11 +109,6 @@ public class PlatformHelper
     String tmppath = path.replace('/', separatorChar);
     StringBuffer canonpath;
 
-    // We found it'll be more efficient and easy to handle to
-    // return a lowercased canonical path
-    if(isWindows)
-      tmppath = tmppath.toLowerCase();
-
     int i;
 
     if ((i = beginWithRootPathPrefix(tmppath)) == 0 )

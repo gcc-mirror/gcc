@@ -16,6 +16,7 @@ JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidge
 JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetBackground (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetDimensions (JNIEnv *env, jobject, jintArray);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetPreferredDimensions (JNIEnv *env, jobject, jintArray);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWindowGetLocationOnScreen (JNIEnv *env, jobject, jintArray);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreen (JNIEnv *env, jobject, jintArray);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursor (JNIEnv *env, jobject, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursorUnlocked (JNIEnv *env, jobject, jint);

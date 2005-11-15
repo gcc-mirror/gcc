@@ -42,6 +42,7 @@ import gnu.java.awt.EventModifier;
 
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.PopupMenu;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
@@ -227,6 +228,12 @@ public class MouseEvent extends InputEvent
         else if ((modifiers & BUTTON3_MASK) != 0)
           this.button = BUTTON3;
       }
+    // clear the mouse button modifier masks if this is a button
+    // release event.
+    if (id == MOUSE_RELEASED)
+      this.modifiersEx &= ~(BUTTON1_DOWN_MASK
+			    | BUTTON2_DOWN_MASK
+			    | BUTTON3_DOWN_MASK);
   }
 
   /**
@@ -392,17 +399,9 @@ public class MouseEvent extends InputEvent
         s.append("unknown type,(");
       }
     s.append(x).append(',').append(y).append("),button=").append(button);
-    if ((modifiers & EventModifier.NEW_MASK) != 0)
-      {
-        int mod = modifiers;
-        if ((mod & (ALT_DOWN_MASK | BUTTON2_DOWN_MASK)) != 0)
-          mod |= ALT_DOWN_MASK | BUTTON2_DOWN_MASK;
-        if ((mod & (META_DOWN_MASK | BUTTON3_DOWN_MASK)) != 0)
-          mod |= META_DOWN_MASK | BUTTON3_DOWN_MASK;
-        s.append(",modifiers=").append(getModifiersExText(mod));
-      }
-    if (modifiers != 0)
-      s.append(",extModifiers=").append(getModifiersExText(modifiers));
+    // FIXME: need a mauve test for this method
+    if (modifiersEx != 0)
+      s.append(",extModifiers=").append(getModifiersExText(modifiersEx));
     return s.append(",clickCount=").append(clickCount).toString();
   }
 
@@ -426,7 +425,7 @@ public class MouseEvent extends InputEvent
           button = BUTTON2;
         else if ((modifiers & BUTTON3_MASK) != 0)
           button = BUTTON3;
-        modifiers = EventModifier.extend(modifiers);
+        modifiersEx = EventModifier.extend(modifiers) & EventModifier.NEW_MASK;
       }
   }
 } // class MouseEvent

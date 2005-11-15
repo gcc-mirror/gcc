@@ -197,15 +197,26 @@ public abstract class InputEvent extends ComponentEvent
   private final long when;
 
   /**
-   * The modifiers in effect for this event. Package visible for use by
-   * subclasses. The old style (bitmask 0x3f) should not be mixed with the
-   * new style (bitmasks 0xffffffc0).
+   * The old-style modifiers in effect for this event. Package visible
+   * for use by subclasses. The old style (bitmask 0x3f) should not be
+   * mixed with the new style (bitmasks 0xffffffc0).
    *
    * @see #getModifiers()
    * @see MouseEvent
-   * @serial the modifier state, stored in the new style
+   * @serial the modifier state, stored in the old style
    */
   int modifiers;
+
+  /**
+   * The new-style modifiers in effect for this event. Package visible
+   * for use by subclasses. The old style (bitmask 0x3f) should not be
+   * mixed with the new style (bitmasks 0xffffffc0).
+   *
+   * @see #getModifiersEx()
+   * @see MouseEvent
+   * @serial the modifier state, stored in the new style
+   */
+  int modifiersEx;
 
   /**
    * Initializes a new instance of <code>InputEvent</code> with the specified
@@ -222,7 +233,8 @@ public abstract class InputEvent extends ComponentEvent
   {
     super(source, id);
     this.when = when;
-    this.modifiers = EventModifier.extend(modifiers);
+    this.modifiers = modifiers & EventModifier.OLD_MASK;
+    this.modifiersEx = modifiers & EventModifier.NEW_MASK;
   }
 
   /**
@@ -232,7 +244,8 @@ public abstract class InputEvent extends ComponentEvent
    */
   public boolean isShiftDown()
   {
-    return (modifiers & SHIFT_DOWN_MASK) != 0;
+    return ((modifiers & SHIFT_MASK) != 0)
+      || ((modifiersEx & SHIFT_DOWN_MASK) != 0);
   }
 
   /**
@@ -243,7 +256,8 @@ public abstract class InputEvent extends ComponentEvent
    */
   public boolean isControlDown()
   {
-    return (modifiers & CTRL_DOWN_MASK) != 0;
+    return ((modifiers & CTRL_MASK) != 0)
+      || ((modifiersEx & CTRL_DOWN_MASK) != 0);
   }
 
   /**
@@ -253,7 +267,8 @@ public abstract class InputEvent extends ComponentEvent
    */
   public boolean isMetaDown()
   {
-    return (modifiers & META_DOWN_MASK) != 0;
+    return ((modifiers & META_MASK) != 0)
+      || ((modifiersEx & META_DOWN_MASK) != 0);
   }
 
   /**
@@ -263,7 +278,8 @@ public abstract class InputEvent extends ComponentEvent
    */
   public boolean isAltDown()
   {
-    return (modifiers & ALT_DOWN_MASK) != 0;
+    return ((modifiers & ALT_MASK) != 0)
+      || ((modifiersEx & ALT_DOWN_MASK) != 0);
   }
 
   /**
@@ -274,7 +290,8 @@ public abstract class InputEvent extends ComponentEvent
    */
   public boolean isAltGraphDown()
   {
-    return (modifiers & ALT_GRAPH_DOWN_MASK) != 0;
+    return ((modifiers & ALT_GRAPH_MASK) != 0)
+      || ((modifiersEx & ALT_GRAPH_DOWN_MASK) != 0);
   }
 
   /**
@@ -300,7 +317,7 @@ public abstract class InputEvent extends ComponentEvent
    */
   public int getModifiers()
   {
-    return EventModifier.revert(modifiers);
+    return modifiers;
   }
 
   /**
@@ -321,7 +338,7 @@ public abstract class InputEvent extends ComponentEvent
    */
   public int getModifiersEx()
   {
-    return modifiers;
+    return modifiersEx;
   }
 
   /**

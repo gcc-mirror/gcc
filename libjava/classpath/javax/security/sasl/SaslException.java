@@ -1,5 +1,5 @@
 /* SaslException.java
-   Copyright (C) 2003, Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,12 +45,16 @@ import java.io.Serializable;
 
 /**
  * This class represents an error that has occurred when using SASL.
+ *
+ * @since 1.5
  */
 public class SaslException extends IOException implements Serializable
 {
 
   // Constants and variables
   // -------------------------------------------------------------------------
+
+  private static final long serialVersionUID = 4579784287983423626L;
 
   /**
    * @serial The possibly null root cause exception.

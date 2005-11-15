@@ -78,7 +78,8 @@ public class ComponentInputMap extends InputMap
   public void put(KeyStroke keystroke, Object value)
   {
     super.put(keystroke, value);
-    // FIXME: Notify component.
+    if (component != null)
+      component.updateComponentInputMap(this);
   }
 
   /**
@@ -87,7 +88,8 @@ public class ComponentInputMap extends InputMap
   public void clear()
   {
     super.clear();
-    // FIXME: Notify component.
+    if (component != null)
+      component.updateComponentInputMap(this);
   }
 
   /**
@@ -98,7 +100,8 @@ public class ComponentInputMap extends InputMap
   public void remove(KeyStroke keystroke)
   {
     super.remove(keystroke);
-    // FIXME: Notify component.
+    if (component != null)
+      component.updateComponentInputMap(this);
   }
 
   /**
@@ -111,14 +114,19 @@ public class ComponentInputMap extends InputMap
    */
   public void setParent(InputMap parentMap)
   {
-    if (! (parentMap instanceof ComponentInputMap))
-      throw new IllegalArgumentException();
-
-    if (((ComponentInputMap) parentMap).getComponent() != component)
-      throw new IllegalArgumentException();
+    if (parentMap != null && !(parentMap instanceof ComponentInputMap))
+      throw new IllegalArgumentException("ComponentInputMaps can only have " +
+                                         "ComponentInputMaps for parents");
+    
+    if (parentMap != null && 
+        ((ComponentInputMap) parentMap).getComponent() != component)
+      throw new 
+        IllegalArgumentException("ComponentInputMaps' parents must " +
+                                 "be associated with the same JComponents");
    
     super.setParent(parentMap);
-    // FIXME: Notify component.
+    if (component != null)
+      component.updateComponentInputMap(this);
   }
 
   /**

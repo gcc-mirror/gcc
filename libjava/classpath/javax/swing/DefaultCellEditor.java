@@ -69,7 +69,7 @@ public class DefaultCellEditor
   private static final long serialVersionUID = 3564035141373880027L;
 
   /**
-   * Delegates a couple of method calls (such as {@link #isCellEditable)
+   * Delegates a couple of method calls (such as {@link #isCellEditable}
    * to the component it contains and listens for events that indicate
    * that editing has stopped.
    */
@@ -88,12 +88,13 @@ public class DefaultCellEditor
      */
     protected EditorDelegate()
     {
+      // Nothing to do here.
     }
 
     /**
      * setValue
      *
-     * @param event TODO
+     * @param value TODO
      */
     public void setValue(Object value)
     {
@@ -387,7 +388,7 @@ public class DefaultCellEditor
   /**
    * getTableCellEditorComponent
    * 
-   * @param tree TODO
+   * @param table TODO
    * @param value TODO
    * @param isSelected TODO
    * @param row TODO

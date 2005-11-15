@@ -64,7 +64,7 @@ final class UnicodeLittle extends Charset
 
   public CharsetDecoder newDecoder ()
   {
-    return new UTF_16Decoder (this, UTF_16Decoder.UNKNOWN_ENDIAN);
+    return new UTF_16Decoder (this, UTF_16Decoder.MAYBE_LITTLE_ENDIAN);
   }
 
   public CharsetEncoder newEncoder ()

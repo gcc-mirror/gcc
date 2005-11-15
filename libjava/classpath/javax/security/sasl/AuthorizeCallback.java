@@ -1,5 +1,5 @@
 /* AuthorizeCallback.java --
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,18 +38,22 @@ exception statement from your version. */
 
 package javax.security.sasl;
 
+import java.io.Serializable;
 import javax.security.auth.callback.Callback;
 
 /**
  * This callback is used by {@link SaslServer} to determine whether one entity
  * (identified by an authenticated authentication ID) can act on behalf of
  * another entity (identified by an authorization ID).
+ *
+ * @since 1.5
  */
-public class AuthorizeCallback implements Callback
+public class AuthorizeCallback implements Callback, Serializable
 {
-
   // Constants and variables
   // -------------------------------------------------------------------------
+
+  private static final long serialVersionUID = -2353344186490470805L;
 
   /** @serial The (authenticated) authentication id to check. */
   private String authenticationID = null;

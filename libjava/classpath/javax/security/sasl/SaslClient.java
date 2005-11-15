@@ -1,5 +1,5 @@
 /* SaslClient.java --
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -102,6 +102,8 @@ package javax.security.sasl;
  *
  * @see Sasl
  * @see SaslClientFactory
+ *
+ * @since 1.5
  */
 public interface SaslClient
 {
@@ -216,7 +218,7 @@ public interface SaslClient
    * @throws IllegalStateException if this authentication exchange has not
    * completed.
    */
-  Object getNegotiatedProperty(String propName) throws SaslException;
+  Object getNegotiatedProperty(String propName);
 
   /**
    * Disposes of any system resources or security-sensitive information the

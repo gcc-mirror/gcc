@@ -1157,7 +1157,7 @@ protected abstract class AccessibleAWTMenuComponent
    * the appropriate information.
    *
    * @param color the new color to use for the background.
-   * @see getBackground()
+   * @see #getBackground()
    */
   public void setBackground(Color color)
   {
@@ -1217,7 +1217,7 @@ protected abstract class AccessibleAWTMenuComponent
    *
    * @param enabled true if the component should be enabled,
    *        false otherwise.
-   * @see #getEnabled()
+   * @see #isEnabled()
    */
   public void setEnabled(boolean enabled)
   {

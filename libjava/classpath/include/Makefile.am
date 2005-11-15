@@ -7,6 +7,13 @@ ARG_JNI_JAVAH = -jni
 ARG_CLASSPATH_JAVAH = -bootclasspath
 JAVAH = $(USER_JAVAH) $(ARG_JNI_JAVAH) $(ARG_CLASSPATH_JAVAH) ../lib:$(USER_CLASSLIB)
 
+SOUND_H_FILES = \
+$(top_srcdir)/include/gnu_javax_sound_midi_alsa_AlsaPortDevice.h \
+$(top_srcdir)/include/gnu_javax_sound_midi_alsa_AlsaMidiSequencerDevice.h \
+$(top_srcdir)/include/gnu_javax_sound_midi_alsa_AlsaMidiDeviceProvider.h \
+$(top_srcdir)/include/gnu_javax_sound_midi_dssi_DSSIMidiDeviceProvider.h \
+$(top_srcdir)/include/gnu_javax_sound_midi_dssi_DSSISynthesizer.h
+
 XMLJ_H_FILES = \
 $(top_srcdir)/include/gnu_xml_libxmlj_dom_GnomeDocument.h \
 $(top_srcdir)/include/gnu_xml_libxmlj_dom_GnomeXPathNodeList.h \
@@ -106,6 +113,7 @@ $(top_srcdir)/include/gnu_java_awt_peer_qt_QtContainerPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_qt_QtEmbeddedWindowPeer.h 
 
 H_FILES = \
+$(SOUND_H_FILES) \
 $(XMLJ_H_FILES) \
 $(GTKPEER_H_FILES) \
 $(QTPEER_H_FILES) \
@@ -149,6 +157,12 @@ $(top_srcdir)/include/gnu_java_awt_peer_gtk_%.h: $(top_builddir)/lib/gnu/java/aw
 
 $(top_srcdir)/include/gnu_java_awt_peer_qt_%.h: $(top_builddir)/lib/gnu/java/awt/peer/qt/%.class
 	$(JAVAH) -o $@ gnu.java.awt.peer.qt.$*
+
+$(top_srcdir)/include/gnu_javax_sound_midi_alsa_%.h: $(top_builddir)/lib/gnu/javax/sound/midi/alsa/%.class
+	$(JAVAH) -o $@ gnu.javax.sound.midi.alsa.$*
+
+$(top_srcdir)/include/gnu_javax_sound_midi_dssi_%.h: $(top_builddir)/lib/gnu/javax/sound/midi/dssi/%.class
+	$(JAVAH) -o $@ gnu.javax.sound.midi.dssi.$*
 
 $(top_srcdir)/include/gnu_java_net_PlainDatagramSocketImpl.h: $(top_srcdir)/gnu/java/net/PlainDatagramSocketImpl.java
 	$(JAVAH) -o $@ gnu.java.net.PlainDatagramSocketImpl

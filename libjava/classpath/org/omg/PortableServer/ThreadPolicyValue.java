@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableServer;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.portable.IDLEntity;
 
@@ -139,7 +141,9 @@ public class ThreadPolicyValue
       }
     catch (ArrayIndexOutOfBoundsException ex)
       {
-        throw new BAD_OPERATION("Invalid enumeration code " + code);
+        BAD_OPERATION bad = new BAD_OPERATION("Invalid policy code " + code);
+        bad.minor = Minor.PolicyType;
+        throw bad;
       }
   }
 

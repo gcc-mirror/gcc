@@ -44,7 +44,9 @@ package javax.xml.transform;
 public class TransformerFactoryConfigurationError
   extends Error
 {
+  private static final long serialVersionUID = -6527718720676281516L;
   
+  // Name is fixed by the serialization spec.
   private final Exception  exception;
 
   /**

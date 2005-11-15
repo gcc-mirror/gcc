@@ -39,8 +39,12 @@ exception statement from your version. */
 package javax.swing.plaf.metal;
 
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
 import javax.swing.plaf.ComponentUI;
 
+/**
+ * A UI delegate for the {@link JPopupMenu.Separator} component.
+ */
 public class MetalPopupMenuSeparatorUI
   extends MetalSeparatorUI
 {
@@ -50,7 +54,7 @@ public class MetalPopupMenuSeparatorUI
   private static MetalPopupMenuSeparatorUI instance = null;
 
   /**
-   * Constructs a new instance of MetalPopupMenuSeparatorUI.
+   * Constructs a new instance of <code>MetalPopupMenuSeparatorUI</code>.
    */
   public MetalPopupMenuSeparatorUI()
   {
@@ -58,11 +62,11 @@ public class MetalPopupMenuSeparatorUI
   }
 
   /**
-   * Returns an instance of MetalPopupMenuSeparatorUI.
+   * Returns a shared instance of <code>MetalPopupMenuSeparatorUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalPopupMenuSeparatorUI
+   * @return A shared instance of <code>MetalPopupMenuSeparatorUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {

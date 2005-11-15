@@ -324,10 +324,10 @@ public interface Map
      * this must be:
      * 
 <p><pre>(o instanceof Map.Entry)
-&& (getKey() == null ? ((HashMap) o).getKey() == null
-                     : getKey().equals(((HashMap) o).getKey()))
-&& (getValue() == null ? ((HashMap) o).getValue() == null
-                       : getValue().equals(((HashMap) o).getValue()))</pre>
+&& (getKey() == null ? ((Map.Entry) o).getKey() == null
+                     : getKey().equals(((Map.Entry) o).getKey()))
+&& (getValue() == null ? ((Map.Entry) o).getValue() == null
+                       : getValue().equals(((Map.Entry) o).getValue()))</pre>
      *
      * @param o the object to compare
      *

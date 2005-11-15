@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.stringTypeCode;
+import gnu.CORBA.typecodes.StringTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -61,8 +61,8 @@ public final class StringHolder
   /**
    * The default type code for this holder.
    */
-  private static final stringTypeCode t_string =
-    new stringTypeCode(TCKind.tk_string);
+  private static final StringTypeCode t_string =
+    new StringTypeCode(TCKind.tk_string);
 
   /**
    * The <code>String</code> (CORBA <code>string</code>) value,

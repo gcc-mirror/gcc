@@ -171,8 +171,12 @@ public class InputMap
    */
   public KeyStroke[] keys()
   {
-    KeyStroke[] array = new KeyStroke[size()];
-    return (KeyStroke[]) inputMap.keySet().toArray(array);
+    if (size() != 0)
+      {
+        KeyStroke[] array = new KeyStroke[size()];
+        return (KeyStroke[]) inputMap.keySet().toArray(array);
+      }
+    return null;
   }
 
   /**
@@ -189,7 +193,9 @@ public class InputMap
       set.addAll(Arrays.asList(parent.allKeys()));
 
     set.addAll(inputMap.keySet());
-    KeyStroke[] array = new KeyStroke[size()];
+    if (set.size() == 0)
+      return null;    
+    KeyStroke[] array = new KeyStroke[set.size()];
     return (KeyStroke[]) set.toArray(array);
   }
 

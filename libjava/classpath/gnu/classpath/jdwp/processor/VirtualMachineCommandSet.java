@@ -67,7 +67,7 @@ public class VirtualMachineCommandSet
   public boolean runCommand(ByteBuffer bb, DataOutputStream os, byte command)
     throws JdwpException
   {
-    boolean keepRunning = true;
+    boolean shutdown = false;
     try
       {
         switch (command)
@@ -91,7 +91,7 @@ public class VirtualMachineCommandSet
             executeIDsizes(bb, os);
             break;
           case JdwpConstants.CommandSet.VirtualMachine.DISPOSE:
-            keepRunning = false;
+            shutdown = true;
             executeDispose(bb, os);
             break;
           case JdwpConstants.CommandSet.VirtualMachine.SUSPEND:
@@ -101,7 +101,7 @@ public class VirtualMachineCommandSet
             executeResume(bb, os);
             break;
           case JdwpConstants.CommandSet.VirtualMachine.EXIT:
-            keepRunning = false;
+	    shutdown = true;
             executeExit(bb, os);
             break;
           case JdwpConstants.CommandSet.VirtualMachine.CREATE_STRING:
@@ -145,7 +145,8 @@ public class VirtualMachineCommandSet
         // So if we throw an IOException we're in serious trouble
         throw new JdwpInternalErrorException(ex);
       }
-    return keepRunning;
+
+    return shutdown;
   }
 
   private void executeVersion(ByteBuffer bb, DataOutputStream os)
@@ -164,8 +165,8 @@ public class VirtualMachineCommandSet
     String vmVersion = props.getProperty("java.version");
     String vmName = props.getProperty("java.vm.name");
     JdwpString.writeString(os, description);
-    os.write(jdwpMajor);
-    os.write(jdwpMinor);
+    os.writeInt(jdwpMajor);
+    os.writeInt(jdwpMinor);
     JdwpString.writeString(os, vmName);
     JdwpString.writeString(os, vmVersion);
   }

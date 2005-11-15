@@ -47,9 +47,11 @@ import java.io.PrintWriter;
 public class TransformerException
   extends Exception
 {
+  private static final long serialVersionUID = 975798773772956428L;
 
+  // Field names fixed by serialization spec.
   private SourceLocator  locator;
-  private Throwable  cause;
+  private Throwable  containedException;
 
   /**
    * Constructor with a detail message.
@@ -94,7 +96,7 @@ public class TransformerException
     if (cause != null)
       {
         initCause(cause);
-        this.cause = cause;
+        this.containedException = cause;
       }
   }
 
@@ -119,7 +121,7 @@ public class TransformerException
    */
   public Throwable getException()
   {
-    return cause;
+    return containedException;
   }
 
   /**
@@ -127,7 +129,7 @@ public class TransformerException
    */
   public Throwable getCause()
   {
-    return cause;
+    return containedException;
   }
 
   /**
@@ -143,7 +145,7 @@ public class TransformerException
    */
   public Throwable initCause(Throwable cause)
   {
-    if (this.cause != null)
+    if (this.containedException != null)
       {
         throw new IllegalStateException();
       }
@@ -151,7 +153,7 @@ public class TransformerException
       {
         throw new IllegalArgumentException();
       }
-    this.cause = cause;
+    this.containedException = cause;
     return this;
   }
 
@@ -221,20 +223,20 @@ public class TransformerException
   public void printStackTrace(PrintStream s)
   {
     super.printStackTrace(s);
-    if (cause != null)
+    if (containedException != null)
       {
         s.print("caused by ");
-        cause.printStackTrace(s);
+        containedException.printStackTrace(s);
       }
   }
 
   public void printStackTrace(PrintWriter s)
   {
     super.printStackTrace(s);
-    if (cause != null)
+    if (containedException != null)
       {
         s.print("caused by ");
-        cause.printStackTrace(s);
+        containedException.printStackTrace(s);
       }
   }
 

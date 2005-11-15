@@ -1,5 +1,5 @@
-/* StubDelegate.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* StubDelegate.java --
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,28 +38,66 @@ exception statement from your version. */
 
 package javax.rmi.CORBA;
 
+import org.omg.CORBA.ORB;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.rmi.RemoteException;
-//import org.omg.CORBA.ORB;
 
+import java.rmi.RemoteException;
+
+/**
+ * A delegate, implementing the functionality, provided by the {@link Stub}.
+ * The default delegate can be altered by setting the system property
+ * "javax.rmi.CORBA.StubClass" to the name of the alternative class that must
+ * implement StubDelegate.
+ * 
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
+ */
 public interface StubDelegate
 {
-
-  // XXX javax.rmi.ORB -> org.omg.CORBA.ORB
-  void connect(Stub self, javax.rmi.ORB orb)
+  /**
+   * <p>
+   * Makes the stub ready for remote communication using the given ORB.
+   * </p>
+   * <p>
+   * It is frequently easier to call {@link PortableRemoteObject#connect} rather
+   * than this method.
+   * </p>
+   * 
+   * @param orb the ORB where the Stub must be connected.
+   * 
+   * @throws RemoteException if the stub is already connected to some other ORB.
+   * If the stub is already connected to the ORB that was passed as parameter,
+   * the method returns without action.
+   */
+  void connect(Stub self, ORB orb)
     throws RemoteException;
 
+  /**
+   * The objects stubs are equal if they refer the same remote object.
+   */
   boolean equals(Stub self, Object obj);
 
+  /**
+   * Get the hashcode fo this delegate.
+   */
   int hashCode(Stub self);
 
+  /**
+   * Read this stub from the object input stream.
+   */
   void readObject(Stub self, ObjectInputStream s)
     throws IOException, ClassNotFoundException;
 
-  String toString(Stub self);
-
+  /**
+   * Write this stub to the object output stream.
+   */
   void writeObject(Stub self, ObjectOutputStream s)
     throws IOException;
+
+  /**
+   * Get the string representation of this stub.
+   */
+  String toString(Stub self);
 }

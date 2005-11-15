@@ -56,6 +56,7 @@ public class MultiLookAndFeel extends LookAndFeel {
    */
   public MultiLookAndFeel()
   {
+    // Nothing to do here.
   }
   
   /**

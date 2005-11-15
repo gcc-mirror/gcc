@@ -49,15 +49,13 @@ import javax.swing.InputMap;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class InputMapUIResource
-  extends InputMap
-  implements UIResource
+public class InputMapUIResource extends InputMap implements UIResource
 {
   /**
    * Constructs a new <code>InputMapUIResource</code>.
    */
   public InputMapUIResource()
   {
+    // Nothing to do here.
   }
 }
-

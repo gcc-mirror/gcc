@@ -1,5 +1,5 @@
 /* ProgressMonitor.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,191 +38,386 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Component;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
- * ProgressMonitor
- * @author	Andrew Selkirk
- * @version	1.0
+ * <p>Using this class you can easily monitor tasks where you cannot
+ * estimate the duration exactly.</p>
+ *
+ * <p>A ProgressMonitor instance waits until the first time setProgress
+ * is called. When <code>millisToDecideToPopup</code> time elapsed the
+ * instance estimates the duration until the whole operation is completed.
+ * If this duration exceeds <code>millisToPopup</code> a non-modal dialog
+ * with a message and a progress bar is shown.</p>
+ *
+ * <p>The value of <code>millisToDecideToPopup</code> defaults to
+ * <code>500</code> and <code>millisToPopup</code> to
+ * <code>2000</code>.</p>
+ *
+ * @author Andrew Selkirk
+ * @author Robert Schuster (robertschuster@fsfe.org)
+ * @since 1.2
+ * @status updated to 1.2
  */
-public class ProgressMonitor {
+public class ProgressMonitor
+{
+  /**
+   * parentComponent
+   */
+  Component component;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * note
+   */
+  String note;
 
-	/**
-	 * parentComponent
-	 */
-	private Component component;
+  /**
+   * message
+   */
+  Object message;
 
-	/**
-	 * note
-	 */
-	private String note;
+  /**
+   * millisToDecideToPopup
+   */
+  int millisToDecideToPopup = 500;
 
-	/**
-	 * message
-	 */
-	private Object message;
+  /**
+   * millisToPopup
+   */
+  int millisToPopup = 2000;
 
-	/**
-	 * millisToDecideToPopup
-	 */
-	private int millisToDecideToPopup;
+  int min, max, progress;
 
-	/**
-	 * millisToPopup
-	 */
-	private int millisToPopup;
+  JProgressBar progressBar;
 
-	/**
-	 * min
-	 */
-	private int minimum;
+  JLabel noteLabel;
 
-	/**
-	 * max
-	 */
-	private int maximum;
+  JDialog progressDialog;
 
+  Timer timer;
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  boolean canceled;
 
-	/**
-	 * Constructor ProgressMonitor
-	 * @param component TODO
-	 * @param message TODO
-	 * @param note TODO
-	 * @param minimum TODO
-	 * @param maximum TODO
-	 */
-	public ProgressMonitor(Component component, Object message,
-			String note, int minimum, int maximum) {
-			
-		// Set Data
-		this.component = component;
-		this.message = message;
-		this.note = note;
-		this.minimum = minimum;
-		this.maximum = maximum;
+  /**
+   * Constructor ProgressMonitor
+   * @param component The parent component of the progress dialog or <code>null</code>.
+   * @param message A constant message object which works in the way it does in <code>JOptionPane</code>.
+   * @param note A string message which can be changed while the operation goes on.
+   * @param minimum The minimum value for the operation (start value).
+   * @param maximum The maximum value for the operation (end value).
+   */
+  public ProgressMonitor(Component component, Object message,
+                         String note, int minimum, int maximum)
+  {
 
-		// TODO
-	} // ProgressMonitor()
+    // Set data.
+    this.component = component;
+    this.message = message;
+    this.note = note;
 
+    min = minimum;
+    max = maximum;
+  }
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * <p>Hides the dialog and stops any measurements.</p>
+   *
+   * <p>Has no effect when <code>setProgress</code> is not at least
+   * called once.</p>
+   */
+  public void close()
+  {
+    if ( progressDialog != null )
+      {
+        progressDialog.setVisible(false);
+      }
 
-	/**
-	 * close
-	 */
-	public void close() {
-		// TODO
-	} // close()
+    if ( timer != null )
+      {
+        timer.stop();
+        timer = null;
+      }
+  }
 
-	/**
-	 * setProgress
-	 * @param progress TODO
-	 */
-	public void setProgress(int progress) {
-		// TODO
-	} // setProgress()
+  /**
+   * <p>Updates the progress value.</p>
+   *
+   * <p>When called for the first time this initializes a timer
+   * which decides after <code>millisToDecideToPopup</code> time
+   * whether to show a progress dialog or not.</p>
+   *
+   * <p>If the progress value equals or exceeds the maximum
+   * value the progress dialog is closed automatically.</p>
+   *
+   * @param progress New progress value.
+   */
+  public void setProgress(int progress)
+  {
+    this.progress = progress;
 
-	/**
-	 * getMinimum
-	 * @returns int
-	 */
-	public int getMinimum() {
-		return minimum; // TODO
-	} // getMinimum()
+    // Initializes and starts a timer with a task
+    // which measures the duration and displays
+    // a progress dialog if neccessary.
+    if ( timer == null && progressDialog == null )
+      {
+        timer = new Timer(25, null);
+        timer.addActionListener(new TimerListener());
+        timer.start();
+      }
 
-	/**
-	 * setMinimum
-	 * @param minimum TODO
-	 */
-	public void setMinimum(int minimum) {
-		this.minimum = minimum;
-		// TODO
-	} // setMinimum()
+    // Cancels timer and hides progress dialog if the
+    // maximum value is reached.
+    if ( progressBar != null && this.progress >= progressBar.getMaximum() )
+      {
+        // The reason for using progressBar.getMaximum() instead of max is that
+        // we want to prevent that changes to the value have any effect after the
+        // progress dialog is visible (This is how the JDK behaves.).
+        close();
+      }
 
-	/**
-	 * getMaximum
-	 * @returns int
-	 */
-	public int getMaximum() {
-		return maximum; // TODO
-	} // getMaximum()
+  }
 
-	/**
-	 * setMaximum
-	 * @param maximum TODO
-	 */
-	public void setMaximum(int maximum) {
-		this.maximum = maximum;
-		// TODO
-	} // setMaximum()
+  /** Returns the minimum or start value of the operation.
+   *
+   * @returns Minimum or start value of the operation.
+   */
+  public int getMinimum()
+  {
+    return min;
+  }
 
-	/**
-	 * isCanceled
-	 * @returns boolean
-	 */
-	public boolean isCanceled() {
-		return false; // TODO
-	} // isCanceled()
+  /**
+   * <p>Use this method to set the minimum or start value of
+   * your operation.</p>
+   *
+   * <p>For typical application like copy operation this will be
+   * zero.</p>
+   *
+   * <p>Keep in mind that changing this value after the progress
+   * dialog is made visible has no effect upon the progress bar.</p>
+   *
+   * @param minimum The new minimum value.
+   */
+  public void setMinimum(int minimum)
+  {
+    min = minimum;
+  }
 
-	/**
-	 * getMillisToDecideToPopup
-	 * @returns int
-	 */
-	public int getMillisToDecideToPopup() {
-		return millisToDecideToPopup; // TODO
-	} // getMillisToDecideToPopup()
+  /**
+   * Return the maximum or end value of your operation.
+   *
+   * @returns Maximum or end value.
+   */
+  public int getMaximum()
+  {
+    return max;
+  }
 
-	/**
-	 * setMillisToDecideToPopup
-	 * @param time TODO
-	 */
-	public void setMillisToDecideToPopup(int time) {
-		millisToDecideToPopup = time;
-		// TODO
-	} // setMillisToDecideToPopup()
+  /**
+   * <p>Sets the maximum or end value of the operation to the
+   * given integer.</p>
+   *
+   * @param maximum
+   */
+  public void setMaximum(int maximum)
+  {
+    max = maximum;
+  }
 
-	/**
-	 * getMillisToPopup
-	 * @returns int
-	 */
-	public int getMillisToPopup() {
-		return millisToPopup; // TODO
-	} // getMillisToPopup()
+  /**
+   * Returns whether the user canceled the operation.
+   *
+   * @returns Whether the operation was canceled.
+   */
+  public boolean isCanceled()
+  {
+    // The value is predefined to false
+    // and changes only when the user clicks
+    // the cancel button in the progress dialog.
+    return canceled;
+  }
 
-	/**
-	 * setMillisToPopup
-	 * @param time TODO
-	 */
-	public void setMillisToPopup(int time) {
-		millisToPopup = time;
-		// TODO
-	} // setMillisToPopup()
+  /**
+   * Returns the amount of milliseconds to wait
+   * until the ProgressMonitor should decide whether
+   * a progress dialog is to be shown or not.
+   *
+   * @returns The duration in milliseconds.
+   */
+  public int getMillisToDecideToPopup()
+  {
+    return millisToDecideToPopup;
+  }
 
-	/**
-	 * getNote
-	 * @returns String
-	 */
-	public String getNote() {
-		return note; // TODO
-	} // getNote()
+  /**
+   * Sets the amount of milliseconds to wait until the
+   * ProgressMonitor should decide whether a progress dialog
+   * is to be shown or not.
+   *
+   * <p>This method has no effect when the progress dialog
+   * is already visible.</p>
+   *
+   * @param time The duration in milliseconds.
+   */
+  public void setMillisToDecideToPopup(int time)
+  {
+    millisToDecideToPopup = time;
+  }
 
-	/**
-	 * setNote
-	 * @param note TODO
-	 */
-	public void setNote(String note) {
-		this.note = note;
-		// TODO
-	} // setNote()
+  /**
+   * getMillisToPopup
+   * @returns int
+   */
+  public int getMillisToPopup()
+  {
+    return millisToPopup;
+  }
 
+  /**
+   * setMillisToPopup
+   * @param time TODO
+   */
+  public void setMillisToPopup(int time)
+  {
+    millisToPopup = time;
+  }
 
-} // ProgressMonitor
+  /**
+   * Returns a message which is shown in the progress dialog.
+   *
+   * @returns The changeable message visible in the progress dialog.
+   */
+  public String getNote()
+  {
+    return note;
+  }
+
+  /**
+   * <p>Set the message shown in the progess dialog.</p>
+   *
+   * <p>Changing the note while the progress dialog is visible
+   * is possible.</p>
+   *
+   * @param note A message shown in the progress dialog.
+   */
+  public void setNote(String note)
+  {
+    if ( noteLabel != null )
+      {
+        noteLabel.setText(note);
+      }
+    else
+      {
+        this.note = note;
+      }
+  }
+
+  /** Internal method that creates the progress dialog.
+   */
+  void createDialog()
+  {
+    // If there is no note we suppress the generation of the
+    // label.
+    Object[] tmp = (note == null) ?
+      new Object[]
+        {
+          message,
+          progressBar = new JProgressBar(min, max)
+        }
+      :
+      new Object[]
+        {
+          message,
+          noteLabel = new JLabel(note),
+          progressBar = new JProgressBar(min, max)
+        };
+
+    JOptionPane pane = new JOptionPane(tmp, JOptionPane.INFORMATION_MESSAGE);
+
+    // FIXME: Internationalize the button
+    JButton cancelButton = new JButton("Cancel");
+    cancelButton.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent ae)
+      {
+        canceled = true;
+      }
+    });
+
+    pane.setOptions(new Object[] { cancelButton });
+
+    // FIXME: Internationalize the title
+    progressDialog = pane.createDialog(component, "Progress ...");
+    progressDialog.setModal(false);
+    progressDialog.setResizable(true);
+
+    progressDialog.pack();
+    progressDialog.setVisible(true);
+
+  }
+
+  /** An ActionListener implementation which does the measurements
+   * and estimations of the ProgressMonitor.
+   */
+  class TimerListener implements ActionListener
+  {
+    long timestamp;
+
+    int lastProgress;
+
+    boolean first = true;
+
+    TimerListener()
+    {
+       timestamp = System.currentTimeMillis();
+    }
+
+    public void actionPerformed(ActionEvent ae)
+    {
+       long now = System.currentTimeMillis();
+
+       if ( first )
+       {
+         if (( now - timestamp ) > millisToDecideToPopup )
+         {
+           first = false;
+           long expected = ( now - timestamp ) * ( max - min ) / ( progress - min );
+
+           if ( expected > millisToPopup )
+           {
+             createDialog();
+           }
+         }
+         else
+         {
+           // We have not waited long enough to make a decision,
+           // so return and try again when the timer is invoked.
+           return;
+         }
+       }
+       else if ( progressDialog != null )
+       {
+         // The progress dialog is being displayed. We now calculate
+         // whether setting the progress bar to the current progress
+         // value would result in a visual difference. 
+         int delta = progress - progressBar.getValue();
+
+         if ( ( delta * progressBar.getWidth() / (max - min) ) > 0 )
+         {
+           // At least one pixel would change.
+           progressBar.setValue(progress);
+         }
+       }
+       else
+       {
+         // No dialog necessary
+         timer.stop();
+         timer = null;
+       }
+
+      timestamp = now;
+    }
+  }
+
+}

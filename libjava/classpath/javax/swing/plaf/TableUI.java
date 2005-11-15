@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class TableUI
-  extends ComponentUI
+public abstract class TableUI extends ComponentUI
 {
   /**
    * Constructs a new <code>TableUI</code>.
    */
   public TableUI()
   {
+    // Nothing to do here.
   }
 }

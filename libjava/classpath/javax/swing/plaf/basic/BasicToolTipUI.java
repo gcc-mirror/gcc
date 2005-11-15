@@ -1,5 +1,5 @@
 /* BasicToolTipUI.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,20 +39,18 @@ exception statement from your version. */
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 
 import javax.swing.JComponent;
 import javax.swing.JToolTip;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ToolTipUI;
 
@@ -61,58 +59,12 @@ import javax.swing.plaf.ToolTipUI;
  */
 public class BasicToolTipUI extends ToolTipUI
 {
-  /** The default Border around the JToolTip. */
-  private static Border defaultBorder = new Border()
-    {
-      // FIXME: This needs to go into Basic Look and Feel
-      // defaults.
 
-			/**
-			 * This method returns the border insets.
-			 *
-			 * @param c The Component to find Border insets for.
-			 *
-			 * @return The Border insets.
-			 */		 
-      public Insets getBorderInsets(Component c)
-      {
-	return new Insets(4, 4, 4, 4);
-      }
+  /** The shared instance of BasicToolTipUI used for all ToolTips. */
+  private static BasicToolTipUI shared;
 
-			/**
-			 * This method returns whether the border is opaque.
-			 *
-			 * @return Whether the border is opaque.
-			 */
-      public boolean isBorderOpaque()
-      {
-	return false;
-      }
-
-			/**
-			 * This method paints the border.
-			 *
-			 * @param c The Component to paint this border around.
-			 * @param g The Graphics object to paint with.
-			 * @param x The x coordinate to start painting at.
-			 * @param y The y coordinate to start painting at.
-			 * @param w The width of the Component.
-			 * @param h The height of the Component.
-			 */
-      public void paintBorder(Component c, Graphics g, int x, int y, int w,
-                              int h)
-      {
-	Color saved = g.getColor();
-	g.setColor(Color.BLACK);
-
-	g.drawRect(0, 0, w - 1, h - 1);
-
-	g.setColor(saved);
-      }
-    };
-
-	/** The shared instance of BasicToolTipUI used for all ToolTips. */
-	private static BasicToolTipUI shared;
+  /** The tooltip's text */
+  private String text;
 
   /**
    * Creates a new BasicToolTipUI object.
@@ -124,7 +76,7 @@ public class BasicToolTipUI extends ToolTipUI
 
   /**
    * This method creates a new BasicToolTip UI for the given 
-	 * JComponent.
+   * JComponent.
    *
    * @param c The JComponent to create a UI for.
    *
@@ -132,9 +84,9 @@ public class BasicToolTipUI extends ToolTipUI
    */
   public static ComponentUI createUI(JComponent c)
   {
-		if (shared == null)
-			shared = new BasicToolTipUI();
-		return shared;
+    if (shared == null)
+      shared = new BasicToolTipUI();
+    return shared;
   }
 
   /**
@@ -171,12 +123,16 @@ public class BasicToolTipUI extends ToolTipUI
   public Dimension getPreferredSize(JComponent c)
   {
     JToolTip tip = (JToolTip) c;
+    FontMetrics fm;
+    Toolkit g = tip.getToolkit();
+    text = tip.getTipText();
+    
     Rectangle vr = new Rectangle();
     Rectangle ir = new Rectangle();
     Rectangle tr = new Rectangle();
     Insets insets = tip.getInsets();
-    FontMetrics fm = tip.getToolkit().getFontMetrics(tip.getFont());
-    SwingUtilities.layoutCompoundLabel(tip, fm, tip.getTipText(), null,
+    fm = g.getFontMetrics(tip.getFont());
+    SwingUtilities.layoutCompoundLabel(tip, fm, text, null,
                                        SwingConstants.CENTER,
                                        SwingConstants.CENTER,
                                        SwingConstants.CENTER,
@@ -192,11 +148,9 @@ public class BasicToolTipUI extends ToolTipUI
    */
   protected void installDefaults(JComponent c)
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    c.setBackground(defaults.getColor("ToolTip.background"));
-    c.setForeground(defaults.getColor("ToolTip.foreground"));
-    c.setFont(defaults.getFont("ToolTip.font"));
-    c.setBorder(defaultBorder);
+    LookAndFeel.installColorsAndFont(c, "ToolTip.background",
+                                     "ToolTip.foreground", "ToolTip.font");
+    LookAndFeel.installBorder(c, "ToolTip.border");
   }
 
   /**
@@ -206,6 +160,7 @@ public class BasicToolTipUI extends ToolTipUI
    */
   protected void installListeners(JComponent c)
   {
+    // TODO: Implement this properly.
   }
 
   /**
@@ -231,6 +186,7 @@ public class BasicToolTipUI extends ToolTipUI
     JToolTip tip = (JToolTip) c;
 
     String text = tip.getTipText();
+    Toolkit t = tip.getToolkit();
     if (text == null)
       return;
 
@@ -238,19 +194,19 @@ public class BasicToolTipUI extends ToolTipUI
     vr = SwingUtilities.calculateInnerArea(tip, vr);
     Rectangle ir = new Rectangle();
     Rectangle tr = new Rectangle();
-    FontMetrics fm = tip.getToolkit().getFontMetrics(tip.getFont());
-    SwingUtilities.layoutCompoundLabel(tip, fm, tip.getTipText(), null,
+    FontMetrics fm = t.getFontMetrics(tip.getFont());
+    int ascent = fm.getAscent();
+    SwingUtilities.layoutCompoundLabel(tip, fm, text, null,
                                        SwingConstants.CENTER,
                                        SwingConstants.CENTER,
                                        SwingConstants.CENTER,
                                        SwingConstants.CENTER, vr, ir, tr, 0);
-
     Color saved = g.getColor();
     g.setColor(Color.BLACK);
 
-    g.drawString(text, vr.x, vr.y + fm.getAscent());
+    g.drawString(text, vr.x, vr.y + ascent); 
 
-    g.setColor(saved);
+    g.setColor(saved);   
   }
 
   /**
@@ -273,6 +229,7 @@ public class BasicToolTipUI extends ToolTipUI
    */
   protected void uninstallListeners(JComponent c)
   {
+    // TODO: Implement this properly.
   }
 
   /**

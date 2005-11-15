@@ -1,3 +1,10 @@
+2005-11-15  Mark Wielaard  <mark@klomp.org>
+
+	Imported GNU Classpath 0.19 + gcj-import-20051115.
+	* sources.am: Regenerated.
+	* Makefile.in: Likewise.
+	* scripts/makemake.tcl: Use glob -nocomplain.
+
 2005-11-15  Scott Gilbertson  <scottg@mantatest.com>
 
 	* Makefile.in: Re-generated.

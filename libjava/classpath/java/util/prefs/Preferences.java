@@ -230,15 +230,15 @@ public abstract class Preferences {
     }
 
     /**
-     * Returns the system preferences node for the package of an object.
-     * The package node name of the object is determined by dropping the
-     * class name of the object of the fully quallified class name and
-     * replacing all '.' to '/' in the package name. If the class of the
+     * Returns the system preferences node for the package of a class.
+     * The package node name of the class is determined by dropping the
+     * final component of the fully qualified class name and
+     * changing all '.' to '/' in the package name. If the class of the
      * object has no package then the package node name is "&lt;unnamed&gt;".
-     * The returened node is <code>systemRoot().node(packageNodeName)</code>.
+     * The returned node is <code>systemRoot().node(packageNodeName)</code>.
      *
-     * @param o Object whose default system preference node is requested
-     * @returns system preferences node that should be used by object o
+     * @param c Object whose default system preference node is requested
+     * @returns system preferences node that should be used by class c
      * @exception SecurityException when a security manager is installed and
      * the caller does not have <code>RuntimePermission("preferences")</code>.
      */
@@ -249,15 +249,15 @@ public abstract class Preferences {
     }
 
     /**
-     * Returns the user preferences node for the package of an object.
-     * The package node name of the object is determined by dropping the
-     * class name of the object of the fully quallified class name and
-     * replacing all '.' to '/' in the package name. If the class of the
+     * Returns the user preferences node for the package of a class.
+     * The package node name of the class is determined by dropping the
+     * final component of the fully qualified class name and
+     * changing all '.' to '/' in the package name. If the class of the
      * object has no package then the package node name is "&lt;unnamed&gt;".
-     * The returened node is <code>userRoot().node(packageNodeName)</code>.
+     * The returned node is <code>userRoot().node(packageNodeName)</code>.
      *
-     * @param o Object whose default user preference node is requested
-     * @returns user preferences node that should be used by object o
+     * @param c Object whose default userpreference node is requested
+     * @returns userpreferences node that should be used by class c
      * @exception SecurityException when a security manager is installed and
      * the caller does not have <code>RuntimePermission("preferences")</code>.
      */

@@ -1,5 +1,5 @@
 /* DateTimeSyntax.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,10 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @author Michael Koch
+ * <code>DateTimeSyntax</code> is the abstract base class of all attribute 
+ * classes having a date and a time as value.
+ * 
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class DateTimeSyntax implements Cloneable, Serializable
 {
@@ -52,7 +55,7 @@ public abstract class DateTimeSyntax implements Cloneable, Serializable
   /**
    * Creates a <code>DateTimeSyntax</code> with a given value.
    *
-   * @param value the value for this syntax
+   * @param value the date for this syntax
    *
    * @exception NullPointerException if value is null
    */
@@ -67,7 +70,7 @@ public abstract class DateTimeSyntax implements Cloneable, Serializable
   /**
    * Returns the date value of this object.
    *
-   * @return the date value
+   * @return The date value.
    */
   public Date getValue()
   {
@@ -79,7 +82,8 @@ public abstract class DateTimeSyntax implements Cloneable, Serializable
    * 
    * @param obj the object to test
    *
-   * @return True if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -92,7 +96,7 @@ public abstract class DateTimeSyntax implements Cloneable, Serializable
   /**
    * Returns the hashcode for this object.
    *
-   * @return the hashcode
+   * @return The hashcode.
    */
   public int hashCode()
   {

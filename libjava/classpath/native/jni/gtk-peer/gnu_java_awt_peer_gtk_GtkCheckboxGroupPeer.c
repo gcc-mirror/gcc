@@ -64,7 +64,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_remove
   /* Update the group to point to some other widget in the group.  We
      have to do this because Gtk doesn't have a separate object to
      represent a radio button's group.  */
-  for (list = gtk_radio_button_group (button); list != NULL;
+  for (list = gtk_radio_button_get_group (button); list != NULL;
        list = list->next)
     {
       if (list->data != button)

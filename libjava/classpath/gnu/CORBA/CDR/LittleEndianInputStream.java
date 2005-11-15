@@ -55,7 +55,7 @@ import java.io.PushbackInputStream;
  */
 public class LittleEndianInputStream
   extends FilterInputStream
-  implements abstractDataInputStream
+  implements AbstractDataInput
 {
   // Byte buffer, used to make primitive read calls more efficient.
   byte[] buf = new byte[ 8 ];

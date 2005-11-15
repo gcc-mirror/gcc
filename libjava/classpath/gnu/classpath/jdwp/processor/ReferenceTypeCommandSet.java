@@ -128,7 +128,8 @@ public class ReferenceTypeCommandSet
         // So if we throw an IOException we're in serious trouble
         throw new JdwpInternalErrorException(ex);
       }
-    return true;
+
+    return false;
   }
 
   private void executeSignature(ByteBuffer bb, DataOutputStream os)

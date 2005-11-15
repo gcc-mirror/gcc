@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# loc   Find a class or package
+#
+# Usage:  loc [-l] class-pattern [dirname]
+
+#    -l    Use system locate command instead of find.  In that case, loc
+#          will ignore any directory to be searched.
+
+# Example:
+#
+#     $ loc -l org.objectweb.jonas.common.JProp
+#     /var/lib/jonas/demoserver/ejbjars/autoload/mejb.jar
+#     /var/lib/jonas/lib/common/ow_jonas_bootstrap.jar
+#     /var/lib/jonas/eclipseserver/ejbjars/autoload/mejb.jar
+#     /var/lib/jonas/ejbjars/autoload/mejb.jar
+#     /var/cache/jonas/work/ejbjars/jonas/mejb_2005.09.15-17.01.52.jar
+#     /usr/src/redhat/BUILD/jonas-4.3.3/jonas/classes/common/org/objectweb/jonas/common/JProp.class
+
+
+MODE=$1
+if test "$MODE" == "-l"; then
+    COMMAND='(locate \*.jar ; locate \*.war)'
+    shift
+else
+    COMMAND='(find "$FOO" -name \*.jar -follow ; find "$FOO" -name \*.war -follow)'
+fi
+
+FOO=$2
+if test "x$FOO" == "x"; then
+    FOO=/usr/share/java
+fi
+
+eval "$COMMAND" 2>/dev/null | while read i; do
+    if (fastjar tf $i 2>/dev/null | grep $1) > /dev/null 2>&1 ; then
+	echo $i
+    fi
+done
+
+if test "$MODE" != "-l"; then
+    find "$FOO" -name '*.class' 2>/dev/null | grep $1
+else
+    locate \*.class | grep $1
+fi

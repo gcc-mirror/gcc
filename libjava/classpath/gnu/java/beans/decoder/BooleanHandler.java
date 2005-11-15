@@ -57,10 +57,10 @@ class BooleanHandler extends SimpleHandler
   protected Object parse(String number) throws AssemblyException
   {
     if (number.equals("true"))
-      return new Boolean(true);
+      return Boolean.TRUE;
 
     if (number.equals("false"))
-      return new Boolean(false);
+      return Boolean.FALSE;
 
     throw new AssemblyException(new IllegalArgumentException("Element contained no valid boolean value."));
   }

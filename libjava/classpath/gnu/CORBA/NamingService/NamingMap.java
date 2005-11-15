@@ -66,7 +66,7 @@ public class NamingMap
    */
   public NamingMap()
   {
-    map = new TreeMap(cmpNameComponent.singleton);
+    map = new TreeMap(NameComponentComparator.singleton);
   }
 
   /**

@@ -130,7 +130,7 @@ public class PipedInputStream extends InputStream
     * This stream is then ready for reading.  If this stream is already
     * connected or has been previously closed, then an exception is thrown
     *
-    * @param src The <code>PipedOutputStream</code> to connect this stream to
+    * @param source The <code>PipedOutputStream</code> to connect this stream to
     *
     * @exception IOException If this PipedInputStream or <code>source</code> 
     *                        has been connected already.

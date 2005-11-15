@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.classpath.examples.CORBA.SimpleCommunication;
 
+import java.io.File;
+
 import gnu.classpath.examples.CORBA.SimpleCommunication.communication.DirectTest;
 import gnu.classpath.examples.CORBA.SimpleCommunication.communication.RequestTest;
 
@@ -61,23 +63,34 @@ public class Demo
 {
   public static void main(final String[] args)
   {
+    File ior = new File("IOR.txt");
+    if (ior.exists())
+      ior.delete();
+
     // Start the server.
     new Thread()
     {
       public void run()
       {
-        comServer.start_server(args);
+        DemoServer.start_server(args);
       }
     }.start();
 
-    System.out.println("Waiting for three seconds for the server to start...");
-
-    // Pause some time for the server to start.
-    try {
-      Thread.sleep(3000);
-    }
-    catch (InterruptedException ex) {
-    }
+    System.out.print("Waiting for the server to start ");
+    while (!ior.exists())
+      {
+        // Pause some time for the server to start.
+        try
+          {
+            Thread.sleep(200);
+          }
+        catch (InterruptedException ex)
+          {
+          }
+        System.out.print(".");
+      }
+    System.out.println("ok.");
+    System.out.println();    
 
     // Test the stream oriented communication.
     DirectTest.main(args);

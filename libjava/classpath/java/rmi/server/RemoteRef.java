@@ -48,7 +48,11 @@ public interface RemoteRef extends Externalizable
 {
   long serialVersionUID = 3632638527362204081L;
   
-  String packagePrefix = "gnu.java.rmi.server";
+  /**
+   * For binary compatibility with the JDK, the string "sun.rmi.server".
+   * Not actually used for anything.
+   */
+  String packagePrefix = "sun.rmi.server";
 
   /**
    * @deprecated

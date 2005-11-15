@@ -47,12 +47,12 @@ package org.omg.PortableInterceptor;
 public interface IORInterceptorOperations extends InterceptorOperations
 {
   /**
-       * A server side ORB calls this method on all registered IORInterceptor's when
+   * A server side ORB calls this method on all registered IORInterceptor's when
    * creating the object reference (IOR). The interceptors have the possibility
    * to add additional tags to the IOR being created.
    *
-       * @param info the interface class providing methods to insert additional tags
-   * into IOR being constructed. The same instan
+   * @param info the interface class providing methods to insert additional tags
+   * into IOR being constructed. 
    */
   public void establish_components(IORInfo info);
 }

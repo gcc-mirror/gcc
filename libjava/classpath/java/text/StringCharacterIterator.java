@@ -143,7 +143,7 @@ public final class StringCharacterIterator implements CharacterIterator
    * an existing StringCharacterIterator and resets the beginning and
    * ending index.
    *
-   * @param scci The StringCharacterIterator to copy the info from
+   * @param sci The StringCharacterIterator to copy the info from
    * @param begin The beginning index of the range we are interested in.
    * @param end The ending index of the range we are interested in.
    */
@@ -339,6 +339,16 @@ public final class StringCharacterIterator implements CharacterIterator
 	    && end == sci.end
 	    && index == sci.index
 	    && text.equals (sci.text));
+  }
+  
+  /**
+   * Return the hash code for this object.
+   * @return the hash code
+   */
+  public int hashCode()
+  {
+    // Incorporate all the data in a goofy way.
+    return begin ^ end ^ index ^ text.hashCode();
   }
 
   /*************************************************************************/

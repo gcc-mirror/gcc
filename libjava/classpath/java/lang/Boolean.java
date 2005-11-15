@@ -221,4 +221,36 @@ public final class Boolean implements Serializable
       return false;
     return "true".equalsIgnoreCase(System.getProperty(name));
   }
+
+  /**
+   * If the String argument is "true", ignoring case, return true.
+   * Otherwise, return false.
+   *
+   * @param b String to parse
+   * @since 1.5
+   */
+  public static boolean parseBoolean(String b)
+  {
+    return "true".equalsIgnoreCase(b) ? true : false;
+  }
+  
+  /**
+   * Compares this Boolean to another.
+   * @param b the Boolean to compare this Boolean to
+   * @return 0 if both Booleans represent the same value, a positive number 
+   * if this Boolean represents true and b represents false, or a negative
+   * number otherwise.
+   * @since 1.5
+   */
+  public int compareTo (Boolean b)
+  {
+    if (b == null)
+      throw new NullPointerException("argument passed to compareTo(Boolean) cannot be null");
+    
+    if (this.value == b.value)
+      return 0;
+    if (this.value == true)
+      return 1;
+    return -1;
+  }
 }

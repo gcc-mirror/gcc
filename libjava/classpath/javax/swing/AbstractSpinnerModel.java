@@ -61,6 +61,7 @@ public abstract class AbstractSpinnerModel implements SpinnerModel
    */
   public AbstractSpinnerModel()
   {
+    // Nothing to do here.
   }
 
   /**

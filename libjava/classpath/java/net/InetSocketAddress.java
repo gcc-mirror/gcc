@@ -216,6 +216,6 @@ public class InetSocketAddress extends SocketAddress
    */
   public String toString()
   {
-    return (addr == null ? hostname : addr.getHostName()) + ":" + port;
+    return (addr == null ? hostname : addr.toString()) + ":" + port;
   }
 }

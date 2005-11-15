@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
-import gnu.CORBA.recordTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
+import gnu.CORBA.typecodes.RecordTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -63,11 +63,11 @@ public final class ObjectHolder
    * The default type code for this holder if the object type code with
    * the zero length string as id.
    */
-  private static final recordTypeCode t_object;
+  private static final RecordTypeCode t_object;
 
   static
   {
-    t_object = new recordTypeCode(TCKind.tk_objref);
+    t_object = new RecordTypeCode(TCKind.tk_objref);
     t_object.setId("");
   }
 

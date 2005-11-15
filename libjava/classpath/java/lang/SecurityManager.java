@@ -41,19 +41,35 @@ package java.lang;
 import gnu.classpath.VMStackWalker;
 
 import java.awt.AWTPermission;
+import java.awt.Frame;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilePermission;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Member;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketImplFactory;
 import java.net.SocketPermission;
+import java.net.URL;
+import java.net.URLStreamHandlerFactory;
 import java.security.AccessControlContext;
+import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.AllPermission;
+import java.security.BasicPermission;
 import java.security.Permission;
+import java.security.Policy;
 import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
 import java.security.Security;
 import java.security.SecurityPermission;
+import java.util.Properties;
 import java.util.PropertyPermission;
 import java.util.StringTokenizer;
 
@@ -196,7 +212,7 @@ public class SecurityManager
    * <ul>
    * <li>All methods on the stack are from system classes</li>
    * <li>All methods on the stack up to the first "privileged" caller, as
-   *  created by {@link AccessController.doPrivileged(PrivilegedAction)},
+   *  created by {@link AccessController#doPrivileged(PrivilegedAction)},
    *  are from system classes</li>
    * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
    * </ul>
@@ -219,7 +235,7 @@ public class SecurityManager
    * <ul>
    * <li>All methods on the stack are from system classes</li>
    * <li>All methods on the stack up to the first "privileged" caller, as
-   *  created by {@link AccessController.doPrivileged(PrivilegedAction)},
+   *  created by {@link AccessController#doPrivileged(PrivilegedAction)},
    *  are from system classes</li>
    * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
    * </ul>
@@ -258,7 +274,7 @@ public class SecurityManager
    * <ul>
    * <li>All methods on the stack are from system classes</li>
    * <li>All methods on the stack up to the first "privileged" caller, as
-   *  created by {@link AccessController.doPrivileged(PrivilegedAction)},
+   *  created by {@link AccessController#doPrivileged(PrivilegedAction)},
    *  are from system classes</li>
    * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
    * </ul>
@@ -431,7 +447,7 @@ public class SecurityManager
    * @throws SecurityException if permission is denied
    * @throws NullPointerException if g is null
    * @see Thread#Thread()
-   * @see ThreadGroup#ThreadGroup()
+   * @see ThreadGroup#ThreadGroup(String)
    * @see ThreadGroup#stop()
    * @see ThreadGroup#suspend()
    * @see ThreadGroup#resume()
@@ -537,7 +553,7 @@ public class SecurityManager
    * @throws NullPointerException if filename is null
    * @see File
    * @see FileInputStream#FileInputStream(String)
-   * @see RandomAccessFile#RandomAccessFile(String)
+   * @see RandomAccessFile#RandomAccessFile(String, String)
    */
   public void checkRead(String filename)
   {
@@ -602,9 +618,9 @@ public class SecurityManager
    * @see File
    * @see File#canWrite()
    * @see File#mkdir()
-   * @see File#renameTo()
+   * @see File#renameTo(File)
    * @see FileOutputStream#FileOutputStream(String)
-   * @see RandomAccessFile#RandomAccessFile(String)
+   * @see RandomAccessFile#RandomAccessFile(String, String)
    */
   public void checkWrite(String filename)
   {

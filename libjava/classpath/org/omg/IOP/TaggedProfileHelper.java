@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package org.omg.IOP;
 
-import gnu.CORBA.CDR.cdrBufInput;
-import gnu.CORBA.CDR.cdrBufOutput;
+import gnu.CORBA.Minor;
+import gnu.CORBA.CDR.BufferredCdrInput;
+import gnu.CORBA.CDR.BufferedCdrOutput;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -118,6 +119,7 @@ public abstract class TaggedProfileHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("TaggedProfile expected");
+        bad.minor = Minor.Any;        
         bad.initCause(cex);
         throw bad;
       }
@@ -143,10 +145,10 @@ public abstract class TaggedProfileHelper
     TaggedProfile value = new TaggedProfile();
     value.tag = input.read_long();
 
-    if (input instanceof cdrBufInput)
+    if (input instanceof BufferredCdrInput)
       {
         // Highly probable.
-        value.profile_data = ((cdrBufInput) input).read_sequence();
+        value.profile_data = ((BufferredCdrInput) input).read_sequence();
       }
     else
       {
@@ -167,7 +169,7 @@ public abstract class TaggedProfileHelper
   {
     output.write_long(value.tag);
 
-    if (output instanceof cdrBufOutput)
+    if (output instanceof BufferedCdrOutput)
       {
         // Highly probable.
         output.write_long(value.profile_data.length);
@@ -178,6 +180,7 @@ public abstract class TaggedProfileHelper
         catch (IOException e)
           {
             MARSHAL m = new MARSHAL();
+            m.minor = Minor.Encapsulation;
             m.initCause(e);
             throw m;
           }

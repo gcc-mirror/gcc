@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CosNaming;
 
-import gnu.CORBA.NamingService.snConverter;
+import gnu.CORBA.NamingService.NameTransformer;
 
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.ObjectHelper;
@@ -86,7 +86,7 @@ public class _NamingContextExtStub
   /**
    * The local name form converter.
    */
-  private snConverter converter = new snConverter();
+  private NameTransformer converter = new NameTransformer();
 
   /**
    * Create the naming context stub.

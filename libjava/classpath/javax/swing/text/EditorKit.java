@@ -48,24 +48,24 @@ import java.io.Writer;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 
-public abstract class EditorKit
-  implements Cloneable, Serializable
+public abstract class EditorKit implements Cloneable, Serializable
 {
   private static final long serialVersionUID = -5044124649345887822L;
   
   public EditorKit()
   {
+    // Nothing to do here.
   }
 
   public Object clone()
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException e)
       {
-	return null;
+        return null;
       }
   }
 
@@ -74,10 +74,12 @@ public abstract class EditorKit
    */
   public void deinstall(JEditorPane c)
   {
+    // This default implementation does nothing.
   }
 
   public void install(JEditorPane c)
   {
+    // This default implementation does nothing.
   }
 
   public abstract Caret createCaret();

@@ -41,13 +41,11 @@ package javax.swing.plaf.basic;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Rectangle;
 
 import javax.swing.JComponent;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.SeparatorUI;
@@ -121,10 +119,8 @@ public class BasicSeparatorUI extends SeparatorUI
    */
   protected void installDefaults(JSeparator s)
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-
-    shadow = defaults.getColor("Separator.shadow");
-    highlight = defaults.getColor("Separator.highlight");
+    shadow = UIManager.getColor("Separator.shadow");
+    highlight = UIManager.getColor("Separator.highlight");
     s.setOpaque(false);
   }
 
@@ -165,8 +161,8 @@ public class BasicSeparatorUI extends SeparatorUI
 
   /**
    * The separator is made of two lines. The top line will be 
-   * the highlight color (or left line if it's vertical). The bottom 
-   * or right line will be the shadow color. The two lines will 
+   * the shadow color (or left line if it's vertical). The bottom 
+   * or right line will be the highlight color. The two lines will 
    * be centered inside the bounds box. If the separator is horizontal, 
    * then it will be vertically centered, or if it's vertical, it will 
    * be horizontally centered.
@@ -180,9 +176,6 @@ public class BasicSeparatorUI extends SeparatorUI
     SwingUtilities.calculateInnerArea(c, r);
     Color saved = g.getColor();
     
-    int midAB = r.width / 2 + r.x;
-    int midAD = r.height / 2 + r.y;
-  
     JSeparator s;
     if (c instanceof JSeparator)
       s = (JSeparator) c;
@@ -190,21 +183,24 @@ public class BasicSeparatorUI extends SeparatorUI
       return;
       
     if (s.getOrientation() == JSeparator.HORIZONTAL)
-    {    
-      g.setColor(highlight);
-      g.drawLine(r.x, midAD, r.x + r.width, midAD);
-      
-      g.setColor(shadow);
-      g.drawLine(r.x, midAD + 1, r.x + r.width, midAD + 1);
-    }
-    else
-    {
-      g.setColor(highlight);
-      g.drawLine(midAB, r.y, midAB, r.y + r.height);
-      
-      g.setColor(shadow);
-      g.drawLine(midAB + 1, r.y, midAB + 1, r.y + r.height);
-    }
+      {    
+        int midAB = r.height / 2;
+        g.setColor(shadow);
+        g.drawLine(r.x, r.y + midAB - 1, r.x + r.width, r.y + midAB - 1);
+
+        g.setColor(highlight);
+        g.fillRect(r.x, r.y + midAB, r.x + r.width, r.y + midAB);
+      }
+      else
+      {
+        int midAD = r.height / 2 + r.y;
+        g.setColor(shadow);
+        g.drawLine(r.x, r.y, r.x, r.y + r.height);
+
+        g.setColor(highlight);
+        g.fillRect(r.x + midAD, r.y + r.height, r.x + midAD, r.y + r.height);
+      }
+    g.setColor(saved);
   }
 
   /**
@@ -217,28 +213,14 @@ public class BasicSeparatorUI extends SeparatorUI
    */
   public Dimension getPreferredSize(JComponent c)
   {
-    Dimension dims = new Dimension(0, 0);
-    Insets insets = c.getInsets();
-
+    Dimension pref = new Dimension(2, 0);
     if (c instanceof JSeparator)
       {
 	JSeparator s = (JSeparator) c;
-
 	if (s.getOrientation() == JSeparator.HORIZONTAL)
-	{
-	  dims.height = 2;
-	  dims.width = 40;
-	}
-	else
-	{
-	  dims.width = 2;
-	  dims.height = 40;
-	}
+          pref = new Dimension(0, 2);
       }
-    dims.width += insets.left + insets.right;
-    dims.height += insets.top + insets.bottom;
-    
-    return dims;
+    return pref;
   }
 
   /**
@@ -251,7 +233,7 @@ public class BasicSeparatorUI extends SeparatorUI
    */
   public Dimension getMinimumSize(JComponent c)
   {
-    return getPreferredSize(c);
+    return new Dimension(0, 0);
   }
 
   /**
@@ -264,6 +246,7 @@ public class BasicSeparatorUI extends SeparatorUI
    */
   public Dimension getMaximumSize(JComponent c)
   {
-    return getPreferredSize(c);
+    return new Dimension(Short.MAX_VALUE,
+                         Short.MAX_VALUE);
   }
 }

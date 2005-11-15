@@ -72,7 +72,7 @@ public class SortingFocusTraversalPolicy
    * simply advance within the containing focus cycle, subject to the
    * {@link #comparator} order and the {@link #accept} judgment.</p>
    *
-   * @see #getNextFocusableComponent
+   * @see #getImplicitDownCycleTraversal()
    */
   boolean implicitDownCycleTraversal = true;
   

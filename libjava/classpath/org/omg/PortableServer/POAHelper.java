@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableServer;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.ORB;
@@ -126,7 +128,9 @@ public abstract class POAHelper
    */
   public static POA read(InputStream input)
   {
-    throw new MARSHAL("Not applicable");
+    MARSHAL m = new MARSHAL("Inappropriate");
+    m.minor = Minor.Inappropriate;
+    throw m;
   }
 
   /**
@@ -142,6 +146,8 @@ public abstract class POAHelper
    */
   public static void write(OutputStream output, POA value)
   {
-    throw new MARSHAL("Not applicable");
+    MARSHAL m = new MARSHAL("Inappropriate");
+    m.minor = Minor.Inappropriate;
+    throw m;
   }
 }

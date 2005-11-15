@@ -1,5 +1,5 @@
 /* ListDataListener.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,33 +37,46 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
 import java.util.EventListener;
 
+import javax.swing.ListModel;
+
 /**
- * ListDataListener public interface
+ * A <code>ListDataListener</code> can register with a {@link ListModel} and
+ * receive notification of updates to the model.
+ * 
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public interface ListDataListener extends EventListener {
+public interface ListDataListener extends EventListener 
+{
 
-	/**
-	 * Contents Changed
-	 * @param event ListDataEvent Event
-	 */
-	void contentsChanged(ListDataEvent event);
+  /**
+   * Notifies the listener that the contents of the list have changed
+   * in some way.  This method will be called if the change cannot be
+   * notified via the {@link #intervalAdded(ListDataEvent)} or the
+   * {@link #intervalRemoved(ListDataEvent)} methods.
+   * 
+   * @param event  the event.
+   */
+  void contentsChanged(ListDataEvent event);
 
-	/**
-	 * Interval Added
-	 * @param event ListDataEvent Event
-	 */
-	void intervalAdded(ListDataEvent event);
+  /**
+   * Notifies the listener that one or more items have been added to the
+   * list.  The <code>event</code> argument can supply the indices for the
+   * range of items added.
+   * 
+   * @param event  the event.
+   */
+  void intervalAdded(ListDataEvent event);
 
-	/**
-	 * Interval Removed
-	 * @param event ListDataEvent Event
-	 */
-	void intervalRemoved(ListDataEvent event);
+  /**
+   * Notifies the listener that one or more items have been removed from
+   * the list.  The <code>event</code> argument can supply the indices for 
+   * the range of items removed.
+   * 
+   * @param event  the event.
+   */
+  void intervalRemoved(ListDataEvent event);
 
-
-} // ListDataListener
+}

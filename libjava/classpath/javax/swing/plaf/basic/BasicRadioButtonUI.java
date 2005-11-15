@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -93,6 +95,10 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
       b.setIcon(icon);
     if (b.getSelectedIcon() == null)
       b.setSelectedIcon(icon);
+    if (b.getDisabledIcon() == null)
+      b.setDisabledIcon(icon);
+    if (b.getDisabledSelectedIcon() == null)
+      b.setDisabledSelectedIcon(icon);
   }
 
   /**
@@ -139,10 +145,14 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
     g.setFont(f);
 
     Icon currentIcon = null;
-    if (b.isSelected())
+    if (b.isSelected() && b.isEnabled())
       currentIcon = b.getSelectedIcon();
-    else
+    else if (!b.isSelected() && b.isEnabled())
       currentIcon = b.getIcon();
+    else if (b.isSelected() && !b.isEnabled())
+      currentIcon = b.getDisabledSelectedIcon();
+    else // (!b.isSelected() && !b.isEnabled())
+      currentIcon = b.getDisabledIcon();
 
     SwingUtilities.calculateInnerArea(b, vr);
     String text = SwingUtilities.layoutCompoundLabel
@@ -157,6 +167,25 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
       }
     if (text != null)
       paintText(g, b, tr, text);
-    paintFocus(g, b, vr, tr, ir);
+    // TODO: Figure out what is the size parameter?
+    if (b.hasFocus() && b.isFocusPainted() && b.isEnabled())
+      paintFocus(g, tr, null);
+  }
+
+  /**
+   * Paints the focus indicator for JRadioButtons.
+   *
+   * @param g the graphics context
+   * @param tr the rectangle for the text label
+   * @param size the size (??)
+   */
+  // TODO: Figure out what for is the size parameter.
+  protected void paintFocus(Graphics g, Rectangle tr, Dimension size)
+  {
+    Color focusColor = UIManager.getColor(getPropertyPrefix() + ".focus");
+    Color saved = g.getColor();
+    g.setColor(focusColor);
+    g.drawRect(tr.x, tr.y, tr.width, tr.height);
+    g.setColor(saved);
   }
 }

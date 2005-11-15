@@ -591,6 +591,8 @@ public static Frame[] getFrames()
   
   protected class AccessibleAWTFrame extends AccessibleAWTWindow
   {
+    private static final long serialVersionUID = -6172960752956030250L;
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.FRAME;

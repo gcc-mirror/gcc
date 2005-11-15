@@ -51,7 +51,7 @@ import org.omg.PortableServer.IdUniquenessPolicyValue;
  */
 public class gnuIdUniquenessPolicy
   extends _PolicyImplBase
-  implements IdUniquenessPolicy, vPolicy
+  implements IdUniquenessPolicy, AccessiblePolicy
 {
   /**
    * Use serialVersionUID for interoperability.

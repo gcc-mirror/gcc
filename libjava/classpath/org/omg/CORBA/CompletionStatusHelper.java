@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.Restricted_ORB;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -131,7 +131,7 @@ public abstract class CompletionStatusHelper
           new String[] { "COMPLETED_YES", "COMPLETED_NO", "COMPLETED_MAYBE" };
 
         typeCode =
-          Restricted_ORB.Singleton.create_enum_tc(id(), "CompletionStatus",
+          OrbRestricted.Singleton.create_enum_tc(id(), "CompletionStatus",
                                                   members
                                                  );
       }

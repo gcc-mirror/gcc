@@ -61,7 +61,7 @@ public class BeanContextServicesSupport
   protected class BCSSChild
     extends BeanContextSupport.BCSChild
   {
-    private static final long serialVersionUID = -6848044915271367103L;
+    private static final long serialVersionUID = -3263851306889194873L;
   }
 
   protected class BCSSProxyServiceProvider

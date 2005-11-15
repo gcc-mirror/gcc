@@ -73,6 +73,7 @@ public class ImageIcon
      */
     protected AccessibleImageIcon()
     {
+      // Nothing to do here.
     }
 
     /**
@@ -204,7 +205,10 @@ public class ImageIcon
   private static final long serialVersionUID = 532615968316031794L;
 
   /** A dummy Component that is used in the MediaTracker. */
-  protected static Component component = new Component(){};
+  protected static Component component = new Component()
+  {
+    // No need to implement this. 
+  };
 
   /** The MediaTracker used to monitor the loading of images. */
   protected static MediaTracker tracker = new MediaTracker(component);
@@ -227,6 +231,7 @@ public class ImageIcon
    */
   public ImageIcon()
   {
+    // Nothing to do here.
   }
  
   /**
@@ -417,7 +422,7 @@ public class ImageIcon
       }
     catch (InterruptedException ex)
       {
-        ; // ignore this for now
+        // Ignore this for now.
       }
     finally
       {

@@ -80,6 +80,7 @@ public class ActionMap
    */
   public ActionMap()
   {
+    // Nothing to do here.
   }
 
   /**
@@ -170,7 +171,9 @@ public class ActionMap
    */
   public Object[] keys()
   {
-    return actionMap.keySet().toArray();
+    if (size() != 0)
+      return actionMap.keySet().toArray();
+    return null;
   }
 
   /**
@@ -187,7 +190,9 @@ public class ActionMap
       set.addAll(Arrays.asList(parent.allKeys()));
 
     set.addAll(actionMap.keySet());
-    return set.toArray();
+    if (set.size() != 0)
+      return set.toArray();
+    return null;
   }
 
   /**

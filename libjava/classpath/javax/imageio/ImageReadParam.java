@@ -42,6 +42,8 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 
 /**
+ * DOCUMENT ME
+ *
  * @author Michel Koch (konqueror@gmx.de)
  */
 public class ImageReadParam extends IIOParam

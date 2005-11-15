@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.ByteBuffer;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
@@ -472,6 +473,35 @@ public abstract class ClassLoader
   }
 
   /**
+   * Helper to define a class using the contents of a byte buffer. If
+   * the domain is null, the default of
+   * <code>Policy.getPolicy().getPermissions(new CodeSource(null,
+   * null))</code> is used. Once a class has been defined in a
+   * package, all further classes in that package must have the same
+   * set of certificates or a SecurityException is thrown.
+   *
+   * @param name the name to give the class.  null if unknown
+   * @param buf a byte buffer containing bytes that form a class.
+   * @param domain the ProtectionDomain to give to the class, null for the
+   *        default protection domain
+   * @return the class that was defined
+   * @throws ClassFormatError if data is not in proper classfile format
+   * @throws NoClassDefFoundError if the supplied name is not the same as
+   *                              the one specified by the byte buffer.
+   * @throws SecurityException if name starts with "java.", or if certificates
+   *         do not match up
+   * @since 1.5
+   */
+  protected final Class defineClass(String name, ByteBuffer buf,
+				    ProtectionDomain domain)
+    throws ClassFormatError
+  {
+    byte[] data = new byte[buf.remaining()];
+    buf.get(data);
+    return defineClass(name, data, 0, data.length, domain);
+  }
+
+  /**
    * Links the class, if that has not already been done. Linking basically
    * resolves all references to other classes made by this class.
    *
@@ -883,7 +913,7 @@ public abstract class ClassLoader
    *
    * @param name the (system specific) name of the requested library
    * @return the full pathname to the requested library, or null
-   * @see Runtime#loadLibrary()
+   * @see Runtime#loadLibrary(String)
    * @since 1.2
    */
   protected String findLibrary(String name)
@@ -913,7 +943,7 @@ public abstract class ClassLoader
    *
    * @param name the package (and subpackages) to affect
    * @param enabled true to set the default to enabled
-   * @see #setDefaultAssertionStatus(String, boolean)
+   * @see #setDefaultAssertionStatus(boolean)
    * @see #setClassAssertionStatus(String, boolean)
    * @see #clearAssertionStatus()
    * @since 1.4
@@ -934,7 +964,7 @@ public abstract class ClassLoader
    * @param name the class to affect
    * @param enabled true to set the default to enabled
    * @throws NullPointerException if name is null
-   * @see #setDefaultAssertionStatus(String, boolean)
+   * @see #setDefaultAssertionStatus(boolean)
    * @see #setPackageAssertionStatus(String, boolean)
    * @see #clearAssertionStatus()
    * @since 1.4

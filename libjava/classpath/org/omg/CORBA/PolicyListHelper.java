@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
@@ -97,7 +99,9 @@ public abstract class PolicyListHelper
       }
     catch (ClassCastException ex)
       {
-        throw new BAD_OPERATION("Policy[] expected");
+        BAD_OPERATION bad = new BAD_OPERATION("Policy[] expected");
+        bad.minor = Minor.Any;
+        throw bad;
       }
   }
 

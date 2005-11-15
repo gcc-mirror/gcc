@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package gnu.CORBA.GIOP;
 
-import gnu.CORBA.CDR.cdrInput;
-import gnu.CORBA.CDR.cdrOutput;
+import gnu.CORBA.CDR.AbstractCdrInput;
+import gnu.CORBA.CDR.AbstractCdrOutput;
 
 /**
  * The header of the standard reply.
@@ -47,7 +47,7 @@ import gnu.CORBA.CDR.cdrOutput;
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public abstract class ReplyHeader
-  extends contextSupportingHeader
+  extends ContextHandler
 {
   /**
    * Reply status, if no exception occured.
@@ -121,7 +121,7 @@ public abstract class ReplyHeader
    *
    * @param in a stream to read from.
    */
-  public abstract void read(cdrInput in);
+  public abstract void read(AbstractCdrInput in);
 
   /**
    * Returns a short string representation.
@@ -141,5 +141,5 @@ public abstract class ReplyHeader
    *
    * @param out a stream to write into.
    */
-  public abstract void write(cdrOutput out);
+  public abstract void write(AbstractCdrOutput out);
 }

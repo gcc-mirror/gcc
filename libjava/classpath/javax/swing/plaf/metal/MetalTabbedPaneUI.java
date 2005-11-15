@@ -40,7 +40,6 @@ package javax.swing.plaf.metal;
 
 import java.awt.Graphics;
 import java.awt.LayoutManager;
-import java.util.HashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
@@ -48,11 +47,9 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 /**
- * A UI delegate used for the {@link JTabbedPane} component in the 
- * {@link MetalLookAndFeel}.
+ * A UI delegate for the {@link JTabbedPane} component.
  */
-public class MetalTabbedPaneUI
-  extends BasicTabbedPaneUI
+public class MetalTabbedPaneUI extends BasicTabbedPaneUI
 {
 
   /**
@@ -65,13 +62,14 @@ public class MetalTabbedPaneUI
    *           public for compatibility.
    */
   public class TabbedPaneLayout 
-      extends BasicTabbedPaneUI.TabbedPaneLayout
+    extends BasicTabbedPaneUI.TabbedPaneLayout
   {
     /**
      * Creates a new instance of the layout manager.
      */
     public TabbedPaneLayout()
     {
+      // Nothing to do here.
     }
     
     /**
@@ -102,9 +100,6 @@ public class MetalTabbedPaneUI
     }
   }
 
-  /** The shared UI instance for JTabbedPanes. */
-  private static HashMap instances = null;
-
   /**
    * Constructs a new instance of MetalTabbedPaneUI.
    */
@@ -122,20 +117,7 @@ public class MetalTabbedPaneUI
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instances == null)
-      instances = new HashMap();
-
-    Object o = instances.get(component);
-    MetalTabbedPaneUI instance;
-    if (o == null)
-      {
-	instance = new MetalTabbedPaneUI();
-	instances.put(component, instance);
-      }
-    else
-      instance = (MetalTabbedPaneUI) o;
-
-    return instance;
+    return new MetalTabbedPaneUI();
   }
   
   /**
@@ -145,7 +127,7 @@ public class MetalTabbedPaneUI
    */
   protected LayoutManager createLayoutManager()
   {
-    return new TabbedPaneLayout();
+    return super.createLayoutManager();
   }
   
   /**

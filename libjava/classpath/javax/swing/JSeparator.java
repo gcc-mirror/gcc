@@ -62,6 +62,7 @@ public class JSeparator extends JComponent implements SwingConstants,
      */
     protected AccessibleJSeparator()
     {
+      // Nothing to do here.
     }
 
     /**
@@ -131,7 +132,6 @@ public class JSeparator extends JComponent implements SwingConstants,
   public void updateUI()
   {
     setUI((SeparatorUI) UIManager.getUI(this));
-    invalidate();
   }
 
   /**

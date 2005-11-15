@@ -44,6 +44,26 @@ import java.io.Serializable;
  * Means that the ORB cannot convert between the marshalled and
  * native data representation.
  * 
+ * In GNU Classpath, this exception may have the following minor codes:
+ * 
+ * <table border="1">
+ * <tr>
+ * <td>Hex</td>
+ * <td>Dec</td>
+ * <td>Minor</td>
+ * <td>Name</td>
+ * <td>Case</td>
+ * </tr>
+ * <td>47430016</td>
+ * <td>1195573270</td>
+ * <td>22</td>
+ * <td>Missing_IOR</td>
+ * <td>The object URL is such that the IOR string must be read from some
+ * local or remote resource (file or network), but this resource is not
+ * reacheable.</td>
+ * </tr>
+ * </table> 
+ * 
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class DATA_CONVERSION

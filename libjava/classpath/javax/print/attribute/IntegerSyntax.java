@@ -1,5 +1,5 @@
 /* IntegerSyntax.java -- 
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,10 @@ package javax.print.attribute;
 import java.io.Serializable;
 
 /**
- * @author Michael Koch
+ * <code>IntegerSyntax</code> is the abstract base class of all attribute 
+ * classes having an integer as value.
+ * 
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class IntegerSyntax implements Cloneable, Serializable
 {
@@ -49,7 +52,7 @@ public abstract class IntegerSyntax implements Cloneable, Serializable
   /**
    * Creates a <code>IntegerSyntax</code> with the given value.
    *
-   * @param value the value to set
+   * @param value the integer to set
    */
   protected IntegerSyntax(int value)
   {
@@ -57,9 +60,10 @@ public abstract class IntegerSyntax implements Cloneable, Serializable
   }
 
   /**
-   * Creates a <code>IntegerSyntax</code> with the given arguments.
+   * Creates a <code>IntegerSyntax</code> with the given integer value
+   * and checks if the value lies inside the given bounds..
    *
-   * @param value the value to set
+   * @param value the integer to set
    * @param lowerBound the lower bound for the value
    * @param upperBound the upper bound for the value
    *
@@ -78,7 +82,7 @@ public abstract class IntegerSyntax implements Cloneable, Serializable
   /**
    * Returns the value of this object.
    *
-   * @return the value
+   * @return The integer value.
    */
   public int getValue()
   {
@@ -86,11 +90,12 @@ public abstract class IntegerSyntax implements Cloneable, Serializable
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -103,7 +108,7 @@ public abstract class IntegerSyntax implements Cloneable, Serializable
   /**
    * Returns the hashcode for this object.
    *
-   * @return the hashcode
+   * @return The hashcode.
    */
   public int hashCode()
   {
@@ -113,7 +118,7 @@ public abstract class IntegerSyntax implements Cloneable, Serializable
   /**
    * Returns the string representation for this object.
    *
-   * @return the string representation
+   * @return The string representation.
    */
   public String toString()
   {

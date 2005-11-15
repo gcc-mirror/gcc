@@ -39,8 +39,7 @@ package javax.swing.text;
 
 import java.text.CharacterIterator;
 
-public class Segment
-  implements Cloneable, CharacterIterator
+public class Segment implements Cloneable, CharacterIterator
 {
   private boolean partialReturn;
   private int current;
@@ -51,6 +50,7 @@ public class Segment
 
   public Segment()
   {
+    // Nothing to do here.
   }
 
   public Segment(char[] array, int offset, int count)

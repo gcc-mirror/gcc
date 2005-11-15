@@ -39,7 +39,7 @@ exception statement from your version. */
 package org.omg.CORBA;
 
 import gnu.CORBA.SetOverrideTypeHolder;
-import gnu.CORBA.Restricted_ORB;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -88,7 +88,7 @@ public abstract class SetOverrideTypeHelper
           };
 
         typeCode =
-          Restricted_ORB.Singleton.create_enum_tc(id(), "SetOverrideType",
+          OrbRestricted.Singleton.create_enum_tc(id(), "SetOverrideType",
                                                   members
                                                  );
       }

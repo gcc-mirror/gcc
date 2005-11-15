@@ -44,66 +44,62 @@ import javax.swing.event.TreeModelListener;
  * TreeModel public interface
  * @author Andrew Selkirk
  */
-public interface TreeModel {
+public interface TreeModel
+{
+  /**
+   * getRoot
+   * @returns Object
+   */
+  Object getRoot();
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * getChild
+   * @param parent TODO
+   * @param index TODO
+   * @returns Object
+   */
+  Object getChild(Object parent, int index);
 
-	/**
-	 * getRoot
-	 * @returns Object
-	 */
-	Object getRoot();
+  /**
+   * getChildCount
+   * @param parent TODO
+   * @returns int
+   */
+  int getChildCount(Object parent);
 
-	/**
-	 * getChild
-	 * @param parent TODO
-	 * @param index TODO
-	 * @returns Object
-	 */
-	Object getChild(Object parent, int index);
+  /**
+   * isLeaf
+   * @param node TODO
+   * @returns boolean
+   */
+  boolean isLeaf(Object node);
 
-	/**
-	 * getChildCount
-	 * @param parent TODO
-	 * @returns int
-	 */
-	int getChildCount(Object parent);
+  /**
+   * valueForPathChanged
+   * @param path TODO
+   * @param newvalue TODO
+   */
+  void valueForPathChanged(TreePath path, Object newvalue);
 
-	/**
-	 * isLeaf
-	 * @param node TODO
-	 * @returns boolean
-	 */
-	boolean isLeaf(Object node);
+  /**
+   * getIndexOfChild
+   * @param parent TODO
+   * @param child TODO
+   * @returns int
+   */
+  int getIndexOfChild(Object parent, Object child);
 
-	/**
-	 * valueForPathChanged
-	 * @param path TODO
-	 * @param newvalue TODO
-	 */
-	void valueForPathChanged(TreePath path, Object newvalue);
+  /**
+   * addTreeModelListener
+   * @param listener TODO
+   */
+  void addTreeModelListener(TreeModelListener listener);
 
-	/**
-	 * getIndexOfChild
-	 * @param parent TODO
-	 * @param ild TODO
-	 * @returns int
-	 */
-	int getIndexOfChild(Object parent, Object child);
-
-	/**
-	 * addTreeModelListener
-	 * @param listener TODO
-	 */
-	void addTreeModelListener(TreeModelListener listener);
-
-	/**
-	 * removeTreeModelListener
-	 * @param listener TODO
-	 */
-	void removeTreeModelListener(TreeModelListener listener);
+  /**
+   * removeTreeModelListener
+   * @param listener TODO
+   */
+  void removeTreeModelListener(TreeModelListener listener);
 
 
-} // TreeModel
+}

@@ -38,31 +38,35 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.CellRendererPane;
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.LookAndFeel;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
@@ -70,7 +74,9 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.MouseInputListener;
+import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.InputMapUIResource;
 import javax.swing.plaf.ListUI;
 
 /**
@@ -125,8 +131,9 @@ public class BasicListUI extends ListUI
      * Helper method to repaint the focused cell's 
      * lost or acquired focus state.
      */
-    void repaintCellFocus()
+    protected void repaintCellFocus()
     {
+      // TODO: Implement this properly.
     }
   }
 
@@ -183,141 +190,231 @@ public class BasicListUI extends ListUI
      */
     public void valueChanged(ListSelectionEvent e)
     {
+      int index1 = e.getFirstIndex();
+      int index2 = e.getLastIndex();
+      Rectangle damaged = getCellBounds(list, index1, index2);
+      list.repaint(damaged);
     }
   }
 
   /**
-   * A helper class which listens for {@link KeyEvents}s 
-   * from the {@link JList}.
+   * This class is used to mimmic the behaviour of the JDK when registering
+   * keyboard actions.  It is the same as the private class used in JComponent
+   * for the same reason.  This class receives an action event and dispatches
+   * it to the true receiver after altering the actionCommand property of the
+   * event.
    */
-  private class KeyHandler extends KeyAdapter
+  private static class ActionListenerProxy
+    extends AbstractAction
   {
-    public KeyHandler()
+    ActionListener target;
+    String bindingCommandName;
+
+    public ActionListenerProxy(ActionListener li, 
+                               String cmd)
     {
+      target = li;
+      bindingCommandName = cmd;
     }
-    
-    public void keyPressed( KeyEvent evt ) 
+
+    public void actionPerformed(ActionEvent e)
     {
-      int lead = BasicListUI.this.list.getLeadSelectionIndex();
-      int max = BasicListUI.this.list.getModel().getSize() - 1;
-      // Do nothing if list is empty
-      if (max == -1)
-        return;
-
-      // Process the key event.  Bindings can be found in
-      // javax.swing.plaf.basic.BasicLookAndFeel.java
-      if ((evt.getKeyCode() == KeyEvent.VK_DOWN)
-          || (evt.getKeyCode() == KeyEvent.VK_KP_DOWN))
-        {
-          if (evt.getModifiers() == 0)
-            {
-              BasicListUI.this.list.clearSelection();
-              BasicListUI.this.list.setSelectedIndex(Math.min(lead+1,max));
-            }
-          else if (evt.getModifiers() == InputEvent.SHIFT_MASK)
-            {
-              BasicListUI.this.list.getSelectionModel().
-                setLeadSelectionIndex(Math.min(lead+1,max));
-            }
-        }
-      else if ((evt.getKeyCode() == KeyEvent.VK_UP)
-               || (evt.getKeyCode() == KeyEvent.VK_KP_UP))
-        {
-          if (evt.getModifiers() == 0)
-            {
-              BasicListUI.this.list.clearSelection();
-              BasicListUI.this.list.setSelectedIndex(Math.max(lead-1,0));
-            }
-          else if (evt.getModifiers() == InputEvent.SHIFT_MASK)
-            {
-              BasicListUI.this.list.getSelectionModel().
-                setLeadSelectionIndex(Math.max(lead-1,0));
-            }
-        }
-      else if (evt.getKeyCode() == KeyEvent.VK_PAGE_UP)
-        {
-          int target;
-          if (lead == BasicListUI.this.list.getFirstVisibleIndex())
-            {
-              target = Math.max 
-                (0, lead - (BasicListUI.this.list.getLastVisibleIndex() - 
-                             BasicListUI.this.list.getFirstVisibleIndex() + 1));
-            }
-          else
-            {
-              target = BasicListUI.this.list.getFirstVisibleIndex();
-            }
-          if (evt.getModifiers() == 0)
-            BasicListUI.this.list.setSelectedIndex(target);
-          else if (evt.getModifiers() == InputEvent.SHIFT_MASK)
-            BasicListUI.this.list.getSelectionModel().
-              setLeadSelectionIndex(target);
-        }
-      else if (evt.getKeyCode() == KeyEvent.VK_PAGE_DOWN)
-        {
-          int target;
-          if (lead == BasicListUI.this.list.getLastVisibleIndex())
-            {
-              target = Math.min
-                (max, lead + (BasicListUI.this.list.getLastVisibleIndex() -
-                              BasicListUI.this.list.getFirstVisibleIndex() + 1));
-            }
-          else
-            {
-              target = BasicListUI.this.list.getLastVisibleIndex();
-            }
-          if (evt.getModifiers() == 0)
-            BasicListUI.this.list.setSelectedIndex(target);
-          else if (evt.getModifiers() == InputEvent.SHIFT_MASK)
-            BasicListUI.this.list.getSelectionModel().
-              setLeadSelectionIndex(target);
-        }
-      else if (evt.getKeyCode() == KeyEvent.VK_BACK_SLASH
-               && (evt.getModifiers() == InputEvent.CTRL_MASK))
-        {
-            BasicListUI.this.list.clearSelection();
-        }
-      else if ((evt.getKeyCode() == KeyEvent.VK_HOME)
-               || evt.getKeyCode() == KeyEvent.VK_END)
-        {
-          if (evt.getModifiers() != 0 && 
-              evt.getModifiers() != InputEvent.SHIFT_MASK)
-            return;
-          // index is either 0 for HOME, or last cell for END
-          int index = (evt.getKeyCode() == KeyEvent.VK_HOME) ? 0 : max;
-          
-          if (!evt.isShiftDown() ||(BasicListUI.this.list.getSelectionMode() 
-                                    == ListSelectionModel.SINGLE_SELECTION))
-            BasicListUI.this.list.setSelectedIndex(index);
-          else if (BasicListUI.this.list.getSelectionMode() == 
-                   ListSelectionModel.SINGLE_INTERVAL_SELECTION)
-            BasicListUI.this.list.setSelectionInterval
-              (BasicListUI.this.list.getAnchorSelectionIndex(), index);
-          else
-            BasicListUI.this.list.getSelectionModel().
-              setLeadSelectionIndex(index);
-        }
-      else if ((evt.getKeyCode() == KeyEvent.VK_A || evt.getKeyCode()
-                == KeyEvent.VK_SLASH) && (evt.getModifiers() == 
-                                          InputEvent.CTRL_MASK))
-        {
-          BasicListUI.this.list.setSelectionInterval(0, max);
-          // this next line is to restore the lead selection index to the old
-          // position, because select-all should not change the lead index
-          BasicListUI.this.list.addSelectionInterval(lead, lead);
-        }
-      else if (evt.getKeyCode() == KeyEvent.VK_SPACE && 
-               (evt.getModifiers() == InputEvent.CTRL_MASK))
-        {
-          BasicListUI.this.list.getSelectionModel().
-            setLeadSelectionIndex(Math.min(lead+1,max));
-        }
-
-      BasicListUI.this.list.ensureIndexIsVisible
-        (BasicListUI.this.list.getLeadSelectionIndex());
+      ActionEvent derivedEvent = new ActionEvent(e.getSource(),
+                                                 e.getID(),
+                                                 bindingCommandName,
+                                                 e.getModifiers());
+      target.actionPerformed(derivedEvent);
     }
   }
   
+  class ListAction extends AbstractAction
+  {
+    public void actionPerformed (ActionEvent e)
+    {
+      int lead = list.getLeadSelectionIndex();
+      int max = list.getModel().getSize() - 1;
+      DefaultListSelectionModel selModel = (DefaultListSelectionModel)list.getSelectionModel();
+      String command = e.getActionCommand();
+      // Do nothing if list is empty
+      if (max == -1)
+        return;
+      
+      if (command.equals("selectNextRow"))
+        {
+          selectNextIndex();
+        }
+      else if (command.equals("selectPreviousRow"))
+        {
+          selectPreviousIndex();
+        }
+      else if (command.equals("clearSelection"))
+        {
+          list.clearSelection();
+        }
+      else if (command.equals("selectAll"))
+        {
+          list.setSelectionInterval(0, max);
+          // this next line is to restore the lead selection index to the old
+          // position, because select-all should not change the lead index
+          list.addSelectionInterval(lead, lead);
+        }
+      else if (command.equals("selectLastRow"))
+        {
+          list.setSelectedIndex(list.getModel().getSize() - 1); 
+        }
+      else if (command.equals("selectLastRowChangeLead"))
+        {
+          selModel.moveLeadSelectionIndex(list.getModel().getSize() - 1);
+        }
+      else if (command.equals("scrollDownExtendSelection"))
+        {
+          int target;
+          if (lead == list.getLastVisibleIndex())
+            {
+              target = Math.min
+                (max, lead + (list.getLastVisibleIndex() -
+                    list.getFirstVisibleIndex() + 1));
+            }
+          else
+            target = list.getLastVisibleIndex();
+          selModel.setLeadSelectionIndex(target);
+        }
+      else if (command.equals("scrollDownChangeLead"))
+        {
+          int target;
+          if (lead == list.getLastVisibleIndex())
+            {
+              target = Math.min
+                (max, lead + (list.getLastVisibleIndex() -
+                    list.getFirstVisibleIndex() + 1));
+            }
+          else
+            target = list.getLastVisibleIndex();
+          selModel.moveLeadSelectionIndex(target);
+        }
+      else if (command.equals("scrollUpExtendSelection"))
+        {
+          int target;
+          if (lead == list.getFirstVisibleIndex())
+            {
+              target = Math.max 
+                (0, lead - (list.getLastVisibleIndex() - 
+                    list.getFirstVisibleIndex() + 1));
+            }
+          else
+            target = list.getFirstVisibleIndex();
+          selModel.setLeadSelectionIndex(target);
+        }
+      else if (command.equals("scrollUpChangeLead"))
+        {
+          int target;
+          if (lead == list.getFirstVisibleIndex())
+            {
+              target = Math.max 
+                (0, lead - (list.getLastVisibleIndex() - 
+                    list.getFirstVisibleIndex() + 1));
+            }
+          else
+            target = list.getFirstVisibleIndex();
+          selModel.moveLeadSelectionIndex(target);
+        }
+      else if (command.equals("selectNextRowExtendSelection"))
+        {
+          selModel.setLeadSelectionIndex(Math.min(lead + 1,max));
+        }
+      else if (command.equals("selectFirstRow"))
+        {
+          list.setSelectedIndex(0);
+        }
+      else if (command.equals("selectFirstRowChangeLead"))
+          {
+            selModel.moveLeadSelectionIndex(0);
+          }
+      else if (command.equals("selectFirstRowExtendSelection"))
+        {
+          selModel.setLeadSelectionIndex(0);
+        }
+      else if (command.equals("selectPreviousRowExtendSelection"))
+        {
+          selModel.setLeadSelectionIndex(Math.max(0,lead - 1));
+        }
+      else if (command.equals("scrollUp"))
+        {
+          int target;
+          if (lead == list.getFirstVisibleIndex())
+            {
+              target = Math.max 
+                (0, lead - (list.getLastVisibleIndex() - 
+                    list.getFirstVisibleIndex() + 1));
+            }
+          else
+            target = list.getFirstVisibleIndex();
+          list.setSelectedIndex(target);          
+        }
+      else if (command.equals("selectLastRowExtendSelection"))
+        {
+          selModel.setLeadSelectionIndex(list.getModel().getSize() - 1);
+        }
+      else if (command.equals("scrollDown"))
+        {
+          int target;
+          if (lead == list.getLastVisibleIndex())
+            {
+              target = Math.min
+                (max, lead + (list.getLastVisibleIndex() -
+                    list.getFirstVisibleIndex() + 1));
+            }
+          else
+            target = list.getLastVisibleIndex();
+          list.setSelectedIndex(target);
+        }
+      else if (command.equals("selectNextRowChangeLead"))
+          {
+            if (selModel.getSelectionMode() != ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
+              selectNextIndex();
+            else
+              {
+                selModel.moveLeadSelectionIndex(Math.min(max, lead + 1));
+              }
+          }
+      else if (command.equals("selectPreviousRowChangeLead"))
+        {
+          if (selModel.getSelectionMode() != ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
+            selectPreviousIndex();
+          else
+            {
+              selModel.moveLeadSelectionIndex(Math.max(0, lead - 1));
+            }
+        }      
+      else if (command.equals("addToSelection"))
+        {
+          list.addSelectionInterval(lead, lead);
+        }
+      else if (command.equals("extendTo"))
+        {
+          selModel.setSelectionInterval(selModel.getAnchorSelectionIndex(),
+                                        lead);
+        }
+      else if (command.equals("toggleAndAnchor"))
+        {
+          if (!list.isSelectedIndex(lead))
+            list.addSelectionInterval(lead, lead);
+          else
+            list.removeSelectionInterval(lead, lead);
+          selModel.setAnchorSelectionIndex(lead);
+        }
+      else 
+        {
+          // DEBUG: uncomment the following line to print out 
+          // key bindings that aren't implemented yet
+          
+          // System.out.println ("not implemented: "+e.getActionCommand());
+        }
+      
+      list.ensureIndexIsVisible(list.getLeadSelectionIndex());
+    }
+  }
+     
   /**
    * A helper class which listens for {@link MouseEvent}s 
    * from the {@link JList}.
@@ -333,48 +430,46 @@ public class BasicListUI extends ListUI
     public void mouseClicked(MouseEvent event)
     {
       Point click = event.getPoint();
-      int index = BasicListUI.this.locationToIndex(list, click);
+      int index = locationToIndex(list, click);
       if (index == -1)
         return;
       if (event.isShiftDown())
         {
-          if (BasicListUI.this.list.getSelectionMode() == 
-              ListSelectionModel.SINGLE_SELECTION)
-            BasicListUI.this.list.setSelectedIndex(index);
-          else if (BasicListUI.this.list.getSelectionMode() == 
+          if (list.getSelectionMode() == ListSelectionModel.SINGLE_SELECTION)
+            list.setSelectedIndex(index);
+          else if (list.getSelectionMode() == 
                    ListSelectionModel.SINGLE_INTERVAL_SELECTION)
             // COMPAT: the IBM VM is compatible with the following line of code.
             // However, compliance with Sun's VM would correspond to replacing 
             // getAnchorSelectionIndex() with getLeadSelectionIndex().This is 
             // both unnatural and contradictory to the way they handle other 
             // similar UI interactions.
-            BasicListUI.this.list.setSelectionInterval
-              (BasicListUI.this.list.getAnchorSelectionIndex(), index);
+            list.setSelectionInterval(list.getAnchorSelectionIndex(), index);
           else
             // COMPAT: both Sun and IBM are compatible instead with:
-            // BasicListUI.this.list.setSelectionInterval
-            //     (BasicListUI.this.list.getLeadSelectionIndex(),index);
+            // list.setSelectionInterval
+            //     (list.getLeadSelectionIndex(),index);
             // Note that for IBM this is contradictory to what they did in 
             // the above situation for SINGLE_INTERVAL_SELECTION.  
             // The most natural thing to do is the following:
-            BasicListUI.this.list.getSelectionModel().
-              setLeadSelectionIndex(index);
+            if (list.isSelectedIndex(list.getAnchorSelectionIndex()))
+              list.getSelectionModel().setLeadSelectionIndex(index);
+            else
+              list.addSelectionInterval(list.getAnchorSelectionIndex(), index);
         }
       else if (event.isControlDown())
         {
-          if (BasicListUI.this.list.getSelectionMode() == 
-              ListSelectionModel.SINGLE_SELECTION)
-            BasicListUI.this.list.setSelectedIndex(index);
-          else if (BasicListUI.this.list.isSelectedIndex(index))
-            BasicListUI.this.list.removeSelectionInterval(index,index);
+          if (list.getSelectionMode() == ListSelectionModel.SINGLE_SELECTION)
+            list.setSelectedIndex(index);
+          else if (list.isSelectedIndex(index))
+            list.removeSelectionInterval(index,index);
           else
-            BasicListUI.this.list.addSelectionInterval(index,index);
+            list.addSelectionInterval(index,index);
         }
       else
-        BasicListUI.this.list.setSelectedIndex(index);
+        list.setSelectedIndex(index);
       
-      BasicListUI.this.list.ensureIndexIsVisible
-        (BasicListUI.this.list.getLeadSelectionIndex());
+      list.ensureIndexIsVisible(list.getLeadSelectionIndex());
     }
 
     /**
@@ -385,6 +480,7 @@ public class BasicListUI extends ListUI
      */
     public void mousePressed(MouseEvent event)
     {
+      // TODO: What should be done here, if anything?
     }
 
     /**
@@ -395,6 +491,7 @@ public class BasicListUI extends ListUI
      */
     public void mouseReleased(MouseEvent event)
     {
+      // TODO: What should be done here, if anything?
     }
 
     /**
@@ -405,6 +502,7 @@ public class BasicListUI extends ListUI
      */
     public void mouseEntered(MouseEvent event)
     {
+      // TODO: What should be done here, if anything?
     }
 
     /**
@@ -415,6 +513,7 @@ public class BasicListUI extends ListUI
      */
     public void mouseExited(MouseEvent event)
     {
+      // TODO: What should be done here, if anything?
     }
 
     /**
@@ -425,6 +524,7 @@ public class BasicListUI extends ListUI
      */
     public void mouseDragged(MouseEvent event)
     {
+      // TODO: What should be done here, if anything?
     }
 
     /**
@@ -435,6 +535,7 @@ public class BasicListUI extends ListUI
      */
     public void mouseMoved(MouseEvent event)
     {
+      // TODO: What should be done here, if anything?
     }
   }
 
@@ -459,9 +560,59 @@ public class BasicListUI extends ListUI
           if (e.getNewValue() != null && e.getNewValue() instanceof ListModel)
             ((ListModel) e.getNewValue()).addListDataListener(BasicListUI.this.listDataListener);
         }
+      // Update the updateLayoutStateNeeded flag.
+      if (e.getPropertyName().equals("model"))
+        updateLayoutStateNeeded += modelChanged;
+      else if (e.getPropertyName().equals("selectionModel"))
+        updateLayoutStateNeeded += selectionModelChanged;
+      else if (e.getPropertyName().equals("font"))
+        updateLayoutStateNeeded += fontChanged;
+      else if (e.getPropertyName().equals("fixedCellWidth"))
+        updateLayoutStateNeeded += fixedCellWidthChanged;
+      else if (e.getPropertyName().equals("fixedCellHeight"))
+        updateLayoutStateNeeded += fixedCellHeightChanged;
+      else if (e.getPropertyName().equals("prototypeCellValue"))
+        updateLayoutStateNeeded += prototypeCellValueChanged;
+      else if (e.getPropertyName().equals("cellRenderer"))
+        updateLayoutStateNeeded += cellRendererChanged;
       BasicListUI.this.damageLayout();
     }
   }
+
+  /**
+   * A constant to indicate that the model has changed.
+   */
+  protected static final int modelChanged = 1;
+
+  /**
+   * A constant to indicate that the selection model has changed.
+   */
+  protected static final int selectionModelChanged = 2;
+
+  /**
+   * A constant to indicate that the font has changed.
+   */
+  protected static final int fontChanged = 4;
+
+  /**
+   * A constant to indicate that the fixedCellWidth has changed.
+   */
+  protected static final int fixedCellWidthChanged = 8;
+
+  /**
+   * A constant to indicate that the fixedCellHeight has changed.
+   */
+  protected static final int fixedCellHeightChanged = 16;
+
+  /**
+   * A constant to indicate that the prototypeCellValue has changed.
+   */
+  protected static final int prototypeCellValueChanged = 32;
+
+  /**
+   * A constant to indicate that the cellRenderer has changed.
+   */
+  protected static final int cellRendererChanged = 64;
 
   /**
    * Creates a new BasicListUI for the component.
@@ -487,9 +638,6 @@ public class BasicListUI extends ListUI
   /** The mouse listener listening to the list. */
   protected MouseInputListener mouseInputListener;
 
-  /** The key listener listening to the list */
-  private KeyHandler keyListener;
-
   /** The property change listener listening to the list. */
   protected PropertyChangeListener propertyChangeListener;
 
@@ -501,7 +649,11 @@ public class BasicListUI extends ListUI
   /** Saved reference to the list this UI was created for. */
   protected JList list;
 
-  /** The height of a single cell in the list. */
+  /**
+   * The height of a single cell in the list. This field is used when the
+   * fixedCellHeight property of the list is set. Otherwise this field is
+   * set to <code>-1</code> and {@link #cellHeights} is used instead.
+   */
   protected int cellHeight;
 
   /** The width of a single cell in the list. */
@@ -509,14 +661,25 @@ public class BasicListUI extends ListUI
 
   /** 
    * An array of varying heights of cells in the list, in cases where each
-   * cell might have a different height.
+   * cell might have a different height. This field is used when the
+   * <code>fixedCellHeight</code> property of the list is not set. Otherwise
+   * this field is <code>null</code> and {@link #cellHeight} is used.
    */
   protected int[] cellHeights;
 
   /**
-   * A simple counter. When nonzero, indicates that the UI class is out of
+   * A bitmask that indicates which properties of the JList have changed.
+   * When nonzero, indicates that the UI class is out of
    * date with respect to the underlying list, and must recalculate the
    * list layout before painting or performing size calculations.
+   *
+   * @see #modelChanged
+   * @see #selectionModelChanged
+   * @see #fontChanged
+   * @see #fixedCellWidthChanged
+   * @see #fixedCellHeightChanged
+   * @see #prototypeCellValueChanged
+   * @see #cellRendererChanged
    */
   protected int updateLayoutStateNeeded;
 
@@ -524,6 +687,9 @@ public class BasicListUI extends ListUI
    * The {@link CellRendererPane} that is used for painting.
    */
   protected CellRendererPane rendererPane;
+  
+  /** The action bound to KeyStrokes. */
+  ListAction action;
 
   /**
    * Calculate the height of a particular row. If there is a fixed {@link
@@ -611,19 +777,51 @@ public class BasicListUI extends ListUI
    * @param y0 The Y coordinate to calculate the row number for
    *
    * @return The row number containing the specified Y value, or <code>-1</code>
-   * if the specified Y coordinate is invalid
+   *         if the list model is empty
+   *
+   * @specnote This method is specified to return -1 for an invalid Y
+   *           coordinate. However, some simple tests show that the behaviour
+   *           is to return the index of the last list element for an Y
+   *           coordinate that lies outside of the list bounds (even for
+   *           negative indices). <code>-1</code>
+   *           is only returned if the list model is empty.
    */
   protected int convertYToRow(int y0)
   {
-    for (int row = 0; row < cellHeights.length; ++row)
-      {
-        int h = getRowHeight(row);
+    if (list.getModel().getSize() == 0)
+      return -1;
 
-        if (y0 < h)
-          return row;
-        y0 -= h;
+    // When y0 < 0, then the JDK returns the maximum row index of the list. So
+    // do we.
+    if (y0 < 0)
+      return list.getModel().getSize() - 1;
+
+    // Update the layout if necessary.
+    maybeUpdateLayoutState();
+
+    int index = list.getModel().getSize() - 1;;
+
+    // If a fixed cell height is set, then we can work more efficient.
+    if (cellHeight > 0)
+      {
+        index = Math.max(y0 / cellHeight, index);
       }
-    return -1;
+    // If we have no fixed cell height, we must add up each cell height up
+    // to y0.
+    else
+      {
+        int h = 0;
+        for (int row = 0; row < cellHeights.length; ++row)
+          {
+            h += cellHeights[row];
+            if (y0 < h)
+              {
+                index = row;
+                break;
+              }
+          }
+      }
+    return index;
   }
 
   /**
@@ -638,29 +836,47 @@ public class BasicListUI extends ListUI
     cellWidth = -1;
     if (cellHeights == null || cellHeights.length != nrows)
       cellHeights = new int[nrows];
-    if (list.getFixedCellHeight() == -1 || list.getFixedCellWidth() == -1)
+    ListCellRenderer rend = list.getCellRenderer();
+    // Update the cellHeight(s) fields.
+    int fixedCellHeight = list.getFixedCellHeight();
+    if (fixedCellHeight > 0)
       {
-        ListCellRenderer rend = list.getCellRenderer();
-        for (int i = 0; i < nrows; ++i)
-          {
-            Component flyweight = rend.getListCellRendererComponent(list,
-                                                                    list.getModel()
-                                                                        .getElementAt(i),
-                                                                    0, false,
-                                                                    false);
-            Dimension dim = flyweight.getPreferredSize();
-            cellHeights[i] = dim.height;
-            // compute average cell height (little hack here)
-            cellHeight = (cellHeight * i + cellHeights[i]) / (i + 1);
-            cellWidth = Math.max(cellWidth, dim.width);
-            if (list.getLayoutOrientation() == JList.VERTICAL)
-                cellWidth = Math.max(cellWidth, list.getSize().width);
-          }
+        cellHeight = fixedCellHeight;
+        cellHeights = null;
       }
     else
       {
-        cellHeight = list.getFixedCellHeight();
-        cellWidth = list.getFixedCellWidth();
+        cellHeight = -1;
+        for (int i = 0; i < nrows; ++i)
+          {
+            Component flyweight =
+              rend.getListCellRendererComponent(list,
+                      list.getModel().getElementAt(i),
+                      i, list.isSelectedIndex(i),
+                      list.getSelectionModel().getAnchorSelectionIndex() == i);
+            Dimension dim = flyweight.getPreferredSize();
+            cellHeights[i] = dim.height;
+          }
+      }
+
+    // Update the cellWidth field.
+    int fixedCellWidth = list.getFixedCellWidth();
+    if (fixedCellWidth > 0)
+      cellWidth = fixedCellWidth;
+    else
+      {
+        for (int i = 0; i < nrows; ++i)
+          {
+            Component flyweight =
+              rend.getListCellRendererComponent(list,
+                                                list.getModel().getElementAt(i),
+                                                i, list.isSelectedIndex(i),
+                                                list.getSelectionModel().getAnchorSelectionIndex() == i);
+            Dimension dim = flyweight.getPreferredSize();
+            cellWidth = Math.max(cellWidth, dim.width);
+          }
+        if (list.getLayoutOrientation() == JList.VERTICAL)
+          cellWidth = Math.max(cellWidth, list.getSize().width);
       }
   }
 
@@ -694,13 +910,6 @@ public class BasicListUI extends ListUI
    */
   public BasicListUI()
   {
-    focusListener = new FocusHandler();
-    listDataListener = new ListDataHandler();
-    listSelectionListener = new ListSelectionHandler();
-    mouseInputListener = new MouseInputHandler();
-    keyListener = new KeyHandler();
-    propertyChangeListener = new PropertyChangeHandler();
-    componentListener = new ComponentHandler();
     updateLayoutStateNeeded = 1;
     rendererPane = new CellRendererPane();
   }
@@ -713,11 +922,10 @@ public class BasicListUI extends ListUI
    */
   protected void installDefaults()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    list.setForeground(defaults.getColor("List.foreground"));
-    list.setBackground(defaults.getColor("List.background"));
-    list.setSelectionForeground(defaults.getColor("List.selectionForeground"));
-    list.setSelectionBackground(defaults.getColor("List.selectionBackground"));
+    LookAndFeel.installColorsAndFont(list, "List.background",
+                                     "List.foreground", "List.font");
+    list.setSelectionForeground(UIManager.getColor("List.selectionForeground"));
+    list.setSelectionBackground(UIManager.getColor("List.selectionBackground"));
     list.setOpaque(true);
   }
 
@@ -727,7 +935,6 @@ public class BasicListUI extends ListUI
    */
   protected void uninstallDefaults()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
     list.setForeground(null);
     list.setBackground(null);
     list.setSelectionForeground(null);
@@ -742,14 +949,28 @@ public class BasicListUI extends ListUI
    */
   protected void installListeners()
   {
+    if (focusListener == null)
+      focusListener = createFocusListener();
     list.addFocusListener(focusListener);
+    if (listDataListener == null)
+      listDataListener = createListDataListener();
     list.getModel().addListDataListener(listDataListener);
+    if (listSelectionListener == null)
+      listSelectionListener = createListSelectionListener();
     list.addListSelectionListener(listSelectionListener);
+    if (mouseInputListener == null)
+      mouseInputListener = createMouseInputListener();
     list.addMouseListener(mouseInputListener);
-    list.addKeyListener(keyListener);
     list.addMouseMotionListener(mouseInputListener);
+    if (propertyChangeListener == null)
+      propertyChangeListener = createPropertyChangeListener();
     list.addPropertyChangeListener(propertyChangeListener);
+
+    // FIXME: Are these two really needed? At least they are not documented.
+    //keyListener = new KeyHandler();
+    componentListener = new ComponentHandler();
     list.addComponentListener(componentListener);
+    //list.addKeyListener(keyListener);
   }
 
   /**
@@ -761,16 +982,41 @@ public class BasicListUI extends ListUI
     list.getModel().removeListDataListener(listDataListener);
     list.removeListSelectionListener(listSelectionListener);
     list.removeMouseListener(mouseInputListener);
-    list.removeKeyListener(keyListener);
+    //list.removeKeyListener(keyListener);
     list.removeMouseMotionListener(mouseInputListener);
     list.removePropertyChangeListener(propertyChangeListener);
   }
-
+  
   /**
    * Installs keyboard actions for this UI in the {@link JList}.
    */
   protected void installKeyboardActions()
   {
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    InputMap focusInputMap = (InputMap)defaults.get("List.focusInputMap");
+    InputMapUIResource parentInputMap = new InputMapUIResource();
+    // FIXME: The JDK uses a LazyActionMap for parentActionMap
+    ActionMap parentActionMap = new ActionMapUIResource();
+    action = new ListAction();
+    Object keys[] = focusInputMap.allKeys();
+    // Register key bindings in the UI InputMap-ActionMap pair
+    for (int i = 0; i < keys.length; i++)
+      {
+        KeyStroke stroke = (KeyStroke)keys[i];
+        String actionString = (String) focusInputMap.get(stroke);
+        parentInputMap.put(KeyStroke.getKeyStroke(stroke.getKeyCode(),
+                                                  stroke.getModifiers()),
+                           actionString);
+
+        parentActionMap.put (actionString, 
+                             new ActionListenerProxy(action, actionString));
+      }
+    // Register the new InputMap-ActionMap as the parents of the list's
+    // InputMap and ActionMap
+    parentInputMap.setParent(list.getInputMap().getParent());
+    parentActionMap.setParent(list.getActionMap().getParent());
+    list.getInputMap().setParent(parentInputMap);
+    list.getActionMap().setParent(parentActionMap);
   }
 
   /**
@@ -778,6 +1024,7 @@ public class BasicListUI extends ListUI
    */
   protected void uninstallKeyboardActions()
   {
+    // TODO: Implement this properly.
   }
 
   /**
@@ -855,22 +1102,6 @@ public class BasicListUI extends ListUI
   }
 
   /**
-   * Paints the packground of the list using the background color
-   * of the specified component.
-   *
-   * @param g The graphics context to paint in
-   * @param c The component to paint the background of
-   */
-  private void paintBackground(Graphics g, JComponent c)
-  {
-    Dimension size = getPreferredSize(c);
-    Color save = g.getColor();
-    g.setColor(c.getBackground());
-    g.fillRect(0, 0, size.width, size.height);
-    g.setColor(save);
-  }
-
-  /**
    * Paints a single cell in the list.
    *
    * @param g The graphics context to paint in
@@ -892,14 +1123,12 @@ public class BasicListUI extends ListUI
     Component comp = rend.getListCellRendererComponent(list,
                                                        data.getElementAt(row),
                                                        0, isSel, hasFocus);
-    //comp.setBounds(new Rectangle(0, 0, bounds.width, bounds.height));
-    //comp.paint(g);
     rendererPane.paintComponent(g, comp, list, bounds);
   }
 
   /**
-   * Paints the list by calling {@link #paintBackground} and then repeatedly
-   * calling {@link #paintCell} for each visible cell in the list.
+   * Paints the list by repeatedly calling {@link #paintCell} for each visible
+   * cell in the list.
    *
    * @param g The graphics context to paint with
    * @param c Ignored; uses the saved {@link JList} reference 
@@ -916,9 +1145,12 @@ public class BasicListUI extends ListUI
     ListSelectionModel sel = list.getSelectionModel();
     int lead = sel.getLeadSelectionIndex();
     Rectangle clip = g.getClipBounds();
-    paintBackground(g, list);
 
-    for (int row = 0; row < nrows; ++row)
+    int startIndex = list.locationToIndex(new Point(clip.x, clip.y));
+    int endIndex = list.locationToIndex(new Point(clip.x + clip.width,
+                                                  clip.y + clip.height));
+    
+    for (int row = startIndex; row <= endIndex; ++row)
       {
         Rectangle bounds = getCellBounds(list, row, row);
         if (bounds.intersects(clip))
@@ -927,13 +1159,15 @@ public class BasicListUI extends ListUI
   }
 
   /**
-   * Computes the index of a list cell given a point within the list.
+   * Computes the index of a list cell given a point within the list. If the
+   * location lies outside the bounds of the list, the greatest index in the
+   * list model is returned.
    *
    * @param list the list which on which the computation is based on
    * @param location the coordinates
    *
    * @return the index of the list item that is located at the given
-   *         coordinates or <code>null</code> if the location is invalid
+   *         coordinates or <code>-1</code> if the list model is empty
    */
   public int locationToIndex(JList list, Point location)
   {
@@ -983,7 +1217,6 @@ public class BasicListUI extends ListUI
         int numberOfItems2 = list.getModel().getSize();
         int cellsPerRow2 = numberOfItems2 / visibleRows2 + 1;
 
-        Dimension listDim2 = list.getSize();
         int gridX2 = Math.min(location.x / cellWidth, cellsPerRow2 - 1);
         int gridY2 = Math.min(location.y / cellHeight, visibleRows2);
         index = gridY2 + gridX2 * visibleRows2;
@@ -1044,5 +1277,83 @@ public class BasicListUI extends ListUI
         break;
       }
     return loc;
+  }
+
+  /**
+   * Creates and returns the focus listener for this UI.
+   *
+   * @return the focus listener for this UI
+   */
+  protected FocusListener createFocusListener()
+  {
+    return new FocusHandler();
+  }
+
+  /**
+   * Creates and returns the list data listener for this UI.
+   *
+   * @return the list data listener for this UI
+   */
+  protected ListDataListener createListDataListener()
+  {
+    return new ListDataHandler();
+  }
+
+  /**
+   * Creates and returns the list selection listener for this UI.
+   *
+   * @return the list selection listener for this UI
+   */
+  protected ListSelectionListener createListSelectionListener()
+  {
+    return new ListSelectionHandler();
+  }
+
+  /**
+   * Creates and returns the mouse input listener for this UI.
+   *
+   * @return the mouse input listener for this UI
+   */
+  protected MouseInputListener createMouseInputListener()
+  {
+    return new MouseInputHandler();
+  }
+
+  /**
+   * Creates and returns the property change listener for this UI.
+   *
+   * @return the property change listener for this UI
+   */
+  protected PropertyChangeListener createPropertyChangeListener()
+  {
+    return new PropertyChangeHandler();
+  }
+
+  /**
+   * Selects the next list item and force it to be visible.
+   */
+  protected void selectNextIndex()
+  {
+    int index = list.getSelectionModel().getLeadSelectionIndex();
+    if (index < list.getModel().getSize() - 1)
+      {
+        index++;
+        list.setSelectedIndex(index);
+      }
+    list.ensureIndexIsVisible(index);
+  }
+
+  /**
+   * Selects the previous list item and force it to be visible.
+   */
+  protected void selectPreviousIndex()
+  {
+    int index = list.getSelectionModel().getLeadSelectionIndex();
+    if (index > 0)
+      {
+        index--;
+        list.setSelectedIndex(index);
+      }
+    list.ensureIndexIsVisible(index);
   }
 }

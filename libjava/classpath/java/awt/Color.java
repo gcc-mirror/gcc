@@ -762,7 +762,7 @@ public class Color implements Paint, Serializable
     if (max == 0)
       array[1] = 0;
     else
-      array[1] = (max - min) / max;
+      array[1] = ((float) (max - min)) / ((float) max);
     // Calculate hue.
     if (array[1] == 0)
       array[0] = 0;

@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CosNaming;
 
-import gnu.CORBA.Restricted_ORB;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
@@ -84,7 +84,7 @@ public abstract class IstringHelper
    */
   public static TypeCode type()
   {
-    ORB orb = Restricted_ORB.Singleton;
+    ORB orb = OrbRestricted.Singleton;
     return orb.create_alias_tc(id(), "Istring", orb.create_string_tc(0));
   }
 

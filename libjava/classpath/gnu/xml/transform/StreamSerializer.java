@@ -694,7 +694,11 @@ public class StreamSerializer
               {
                 buf = new StringBuffer(text.substring(0, i));
               }
-            buf.append("&apos;");
+            if (mode == Stylesheet.OUTPUT_HTML)
+              // HTML does not define &apos;, use character entity ref
+              buf.append("&#x27;");
+            else
+              buf.append("&apos;");
           }
         else if (c == '"' && inAttr)
           {

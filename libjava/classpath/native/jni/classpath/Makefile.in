@@ -42,10 +42,8 @@ target_triplet = @target@
 subdir = native/jni/classpath
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
-	$(top_srcdir)/../../config/lead-dot.m4 \
-	$(top_srcdir)/../../config/no-executables.m4 \
-	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/accross.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
+	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
 	$(top_srcdir)/m4/acinclude.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
 	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
@@ -57,8 +55,7 @@ CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libclasspath_la_LIBADD =
-am_libclasspath_la_OBJECTS = jcl.lo jnilink.lo primlib.lo \
-	native_state.lo
+am_libclasspath_la_OBJECTS = jcl.lo jnilink.lo native_state.lo
 libclasspath_la_OBJECTS = $(am_libclasspath_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -96,10 +93,14 @@ CLASSPATH_MODULE = @CLASSPATH_MODULE@
 CP = @CP@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CREATE_ALSA_LIBRARIES_FALSE = @CREATE_ALSA_LIBRARIES_FALSE@
+CREATE_ALSA_LIBRARIES_TRUE = @CREATE_ALSA_LIBRARIES_TRUE@
 CREATE_API_DOCS_FALSE = @CREATE_API_DOCS_FALSE@
 CREATE_API_DOCS_TRUE = @CREATE_API_DOCS_TRUE@
 CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
+CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
+CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
 CREATE_GTK_PEER_LIBRARIES_TRUE = @CREATE_GTK_PEER_LIBRARIES_TRUE@
 CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
@@ -236,6 +237,7 @@ build_vendor = @build_vendor@
 datadir = @datadir@
 default_toolkit = @default_toolkit@
 exec_prefix = @exec_prefix@
+glibjdir = @glibjdir@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -249,6 +251,7 @@ libexecdir = @libexecdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+nativelibdir = @nativelibdir@
 oldincludedir = @oldincludedir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
@@ -267,7 +270,6 @@ EXTRA_DIST = classpath_jawt.h
 noinst_LTLIBRARIES = libclasspath.la
 libclasspath_la_SOURCES = jcl.c jcl.h \
 			  jnilink.c jnilink.h \
-			  primlib.c primlib.h \
 			  native_state.c native_state.h
 
 AM_LDFLAGS = @CLASSPATH_MODULE@
@@ -327,7 +329,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jcl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jnilink.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/native_state.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/primlib.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \

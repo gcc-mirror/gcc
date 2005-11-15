@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.Restricted_ORB;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.portable.Delegate;
 import org.omg.CORBA.portable.InputStream;
@@ -84,7 +84,7 @@ public abstract class IDLTypeHelper
     if (typeCode == null)
       {
         typeCode =
-          Restricted_ORB.Singleton.create_interface_tc(IDLTypeHelper.id(),
+          OrbRestricted.Singleton.create_interface_tc(IDLTypeHelper.id(),
                                                        "IDLType"
                                                       );
       }

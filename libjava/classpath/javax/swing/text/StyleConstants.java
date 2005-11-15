@@ -54,11 +54,13 @@ public class StyleConstants
   public static final Object BidiLevel = CharacterConstants.BidiLevel;
   public static final Object Bold = CharacterConstants.Bold;
   public static final Object ComponentAttribute = CharacterConstants.ComponentAttribute;
-  public static final Object FontFamily = CharacterConstants.Family;
+  public static final Object Family = CharacterConstants.Family;
+  public static final Object FontFamily = CharacterConstants.Family;  
   public static final Object FontSize = CharacterConstants.Size;
   public static final Object Foreground = CharacterConstants.Foreground;
   public static final Object IconAttribute = CharacterConstants.IconAttribute;
   public static final Object Italic = CharacterConstants.Italic;
+  public static final Object Size = CharacterConstants.Size;
   public static final Object StrikeThrough = CharacterConstants.StrikeThrough;
   public static final Object Subscript = CharacterConstants.Subscript;
   public static final Object Superscript = CharacterConstants.Superscript;
@@ -109,7 +111,7 @@ public class StyleConstants
     if (a.isDefined(Background))
       return (Color) a.getAttribute(Background);
     else
-      return Color.BLACK;
+      return Color.WHITE;
   } 
   
   public static int getBidiLevel(AttributeSet a)

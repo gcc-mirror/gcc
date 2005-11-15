@@ -63,7 +63,7 @@ class ColorPaintContext implements PaintContext
   /**
    * Create the context for a given color.
    *
-   * @param c The solid color to use.
+   * @param colorRGB The solid color to use.
    */
   ColorPaintContext(int colorRGB)
   {
@@ -74,7 +74,7 @@ class ColorPaintContext implements PaintContext
    * Create the context for a given color.
    *
    * @param cm The color model of this context. 
-   * @param c The solid color to use.
+   * @param colorRGB The solid color to use.
    */
   ColorPaintContext(ColorModel cm,int colorRGB)
   {

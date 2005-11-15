@@ -58,6 +58,7 @@ public interface AttributeSet
    */
   static interface CharacterAttribute
   {
+    // This interface is a marker interface and has no methods.
   }
 
   /**
@@ -65,6 +66,7 @@ public interface AttributeSet
    */
   static interface ColorAttribute
   {
+    // This interface is a marker interface and has no methods.
   }
 
   /**
@@ -72,6 +74,7 @@ public interface AttributeSet
    */
   static interface FontAttribute
   {
+    // This interface is a marker interface and has no methods.
   }
 
   /**
@@ -79,6 +82,7 @@ public interface AttributeSet
    */
   static interface ParagraphAttribute
   {
+    // This interface is a marker interface and has no methods.
   }
 
   /**
@@ -99,7 +103,7 @@ public interface AttributeSet
    * <code>false</code> otherwise.
    *
    * @param name the name of the requested attribute
-   * @param the value of the requested attribute
+   * @param value the value of the requested attribute
    *
    * @return <code>true</code> if this <code>AttributeSet</code> contains
    *         an attribute with the specified <code>name</code> and

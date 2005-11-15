@@ -116,7 +116,17 @@ public class SizeRequirements implements Serializable
    */
   public String toString()
   {
-    return null; // TODO
+    StringBuilder b = new StringBuilder();
+    b.append("<[");
+    b.append(minimum);
+    b.append(',');
+    b.append(preferred);
+    b.append(',');
+    b.append(maximum);
+    b.append("]@");
+    b.append(alignment);
+    b.append('>');
+    return b.toString();
   }
 
   /**
@@ -132,13 +142,26 @@ public class SizeRequirements implements Serializable
   public static SizeRequirements
   getTiledSizeRequirements(SizeRequirements[] children)
   {
-    SizeRequirements result = new SizeRequirements();
+    long minimum = 0;
+    long preferred = 0;
+    long maximum = 0;
     for (int i = 0; i < children.length; i++)
       {
-        result.minimum += children[i].minimum;
-        result.preferred += children[i].preferred;
-        result.maximum += children[i].maximum;
+        minimum += children[i].minimum;
+        preferred += children[i].preferred;
+        maximum += children[i].maximum;
       }
+    // Overflow check.
+    if (minimum > Integer.MAX_VALUE)
+      minimum = Integer.MAX_VALUE;
+    if (preferred > Integer.MAX_VALUE)
+      preferred = Integer.MAX_VALUE;
+    if (maximum > Integer.MAX_VALUE)
+      maximum = Integer.MAX_VALUE;
+    SizeRequirements result = new SizeRequirements((int) minimum,
+                                                   (int) preferred,
+                                                   (int) maximum,
+                                                   0.5F);
     return result;
   }
 
@@ -156,7 +179,34 @@ public class SizeRequirements implements Serializable
   public static SizeRequirements
   getAlignedSizeRequirements(SizeRequirements[] children)
   {
-    return null; // TODO
+    float minLeft = 0;
+    float minRight = 0;
+    float prefLeft = 0;
+    float prefRight = 0;
+    float maxLeft = 0;
+    float maxRight = 0;
+    for (int i = 0; i < children.length; i++)
+      {
+        float myMinLeft = children[i].minimum * children[i].alignment;
+        float myMinRight = children[i].minimum - myMinLeft;
+        minLeft = Math.max(myMinLeft, minLeft);
+        minRight = Math.max(myMinRight, minRight);
+        float myPrefLeft = children[i].preferred * children[i].alignment;
+        float myPrefRight = children[i].preferred - myPrefLeft;
+        prefLeft = Math.max(myPrefLeft, prefLeft);
+        prefRight = Math.max(myPrefRight, prefRight);
+        float myMaxLeft = children[i].maximum * children[i].alignment;
+        float myMaxRight = children[i].maximum - myMaxLeft;
+        maxLeft = Math.max(myMaxLeft, maxLeft);
+        maxRight = Math.max(myMaxRight, maxRight);
+      }
+    int minSize = (int) (minLeft + minRight);
+    int prefSize = (int) (prefLeft + prefRight);
+    int maxSize = (int) (maxLeft + maxRight);
+    float align = prefLeft / (prefRight + prefLeft);
+    if (Float.isNaN(align))
+      align = 0;
+    return new SizeRequirements(minSize, prefSize, maxSize, align);
   }
 
   /**
@@ -222,6 +272,7 @@ public class SizeRequirements implements Serializable
                                              int[] offsets, int[] spans,
                                              boolean forward)
   {
+    int span = 0;
     if (forward)
       {
         int offset = 0;
@@ -229,6 +280,7 @@ public class SizeRequirements implements Serializable
           {
             offsets[i] = offset;
             spans[i] = children[i].preferred;
+            span += spans[i];
             offset += children[i].preferred;
           }
       }
@@ -239,8 +291,83 @@ public class SizeRequirements implements Serializable
           {
             offset -= children[i].preferred;
             offsets[i] = offset;
+            span += spans[i];
             spans[i] = children[i].preferred;
           }
+      }
+    // Adjust spans so that we exactly fill the allocated region. If
+    if (span > allocated)
+      adjustSmaller(allocated, children, spans, span);
+    else if (span < allocated)
+      adjustGreater(allocated, children, spans, span);
+
+    // Adjust offsets.
+    if (forward)
+      {
+        int offset = 0;
+        for (int i = 0; i < children.length; i++)
+          {
+            offsets[i] = offset;
+            offset += spans[i];
+          }
+      }
+    else
+      {
+        int offset = allocated;
+        for (int i = 0; i < children.length; i++)
+          {
+            offset -= spans[i];
+            offsets[i] = offset;
+          }
+      }
+  }
+
+  private static void adjustSmaller(int allocated, SizeRequirements[] children,
+                                    int[] spans, int span)
+  {
+    // Sum up (prefSize - minSize) over all children
+    int sumDelta = 0;
+    for (int i = 0; i < children.length; i++)
+      sumDelta += children[i].preferred - children[i].minimum;
+
+    // If we have sumDelta == 0, then all components have prefSize == maxSize
+    // and we can't do anything about it.
+    if (sumDelta == 0)
+      return;
+
+    // Adjust all sizes according to their preferred and minimum sizes.
+    for (int i = 0; i < children.length; i++)
+      {
+        double factor = ((double) (children[i].preferred - children[i].minimum))
+                        / ((double) sumDelta);
+        // In case we have a sumDelta of 0, the factor should also be 0.
+        if (Double.isNaN(factor))
+          factor = 0;
+        spans[i] -= factor * (span - allocated);
+      }
+  }
+
+  private static void adjustGreater(int allocated, SizeRequirements[] children,
+                                    int[] spans, int span)
+  {
+    // Sum up (maxSize - prefSize) over all children
+    long sumDelta = 0;
+    for (int i = 0; i < children.length; i++)
+      {
+        sumDelta += children[i].maximum - children[i].preferred;
+      }
+
+    // If we have sumDelta == 0, then all components have prefSize == maxSize
+    // and we can't do anything about it.
+    if (sumDelta == 0)
+      return;
+
+    // Adjust all sizes according to their preferred and minimum sizes.
+    for (int i = 0; i < children.length; i++)
+      {
+        double factor = ((double) (children[i].maximum - children[i].preferred))
+                        / ((double) sumDelta);
+        spans[i] += factor * (allocated - span);
       }
   }
 
@@ -271,7 +398,8 @@ public class SizeRequirements implements Serializable
                                                SizeRequirements[] children,
                                                int[] offsets, int[] spans)
   {
-    calculateTiledPositions(allocated, total, children, offsets, spans, true);
+    calculateAlignedPositions(allocated, total, children, offsets, spans,
+                              true);
   }
 
   /**
@@ -306,7 +434,74 @@ public class SizeRequirements implements Serializable
                                                int[] offset, int[] spans,
                                                boolean forward)
   {
-    // TODO
+    // First we compute the position of the baseline.
+    float baseline = allocated * total.alignment;
+
+    // Now we can layout the components along the baseline.
+    for (int i = 0; i < children.length; i++)
+      {
+        float align = children[i].alignment;
+        // Try to fit the component into the available space.
+        int[] spanAndOffset = new int[2];
+        if (align < .5F || baseline == 0)
+          adjustFromRight(children[i], baseline, allocated, spanAndOffset);
+        else
+          adjustFromLeft(children[i], baseline, allocated, spanAndOffset);
+        spans[i] = spanAndOffset[0];
+        offset[i] = spanAndOffset[1];
+      }
+  }
+
+  /**
+   * Adjusts the span and offset of a component for the aligned layout.
+   *
+   * @param reqs
+   * @param baseline
+   * @param allocated
+   * @param spanAndOffset
+   */
+  private static void adjustFromRight(SizeRequirements reqs, float baseline,
+                                      int allocated, int[] spanAndOffset)
+  {
+    float right = allocated - baseline;
+    // If the resulting span exceeds the maximum of the component, then adjust
+    // accordingly.
+    float maxRight = ((float) reqs.maximum) * (1.F - reqs.alignment);
+    if (right / (1.F - reqs.alignment) > reqs.maximum)
+      right = maxRight;
+    // If we have not enough space on the left side, then adjust accordingly.
+    if (right / (1.F - reqs.alignment) * reqs.alignment > allocated - baseline)
+      right = ((float) (allocated - baseline))
+             / reqs.alignment * (1.F - reqs.alignment);
+
+    spanAndOffset[0] = (int) (right / (1.F - reqs.alignment));
+    spanAndOffset[1] = (int) (baseline - spanAndOffset[0] * reqs.alignment);
+  }
+
+  /**
+   * Adjusts the span and offset of a component for the aligned layout.
+   *
+   * @param reqs
+   * @param baseline
+   * @param allocated
+   * @param spanAndOffset
+   */
+  private static void adjustFromLeft(SizeRequirements reqs, float baseline,
+                                     int allocated, int[] spanAndOffset)
+  {
+    float left = baseline;
+    // If the resulting span exceeds the maximum of the component, then adjust
+    // accordingly.
+    float maxLeft = ((float) reqs.maximum) * reqs.alignment;
+    if (left / reqs.alignment > reqs.maximum)
+      left = maxLeft;
+    // If we have not enough space on the right side, then adjust accordingly.
+    if (left / reqs.alignment * (1.F - reqs.alignment) > allocated - baseline)
+      left = ((float) (allocated - baseline))
+             / (1.F - reqs.alignment) * reqs.alignment;
+
+    spanAndOffset[0] = (int) (left / reqs.alignment);
+    spanAndOffset[1] = (int) (baseline - spanAndOffset[0] * reqs.alignment);
   }
 
   /**

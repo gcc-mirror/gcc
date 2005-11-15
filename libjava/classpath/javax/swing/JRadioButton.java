@@ -192,8 +192,8 @@ public class JRadioButton extends JToggleButton
   public JRadioButton(String text, Icon icon, boolean selected)
   {
     super(text, icon, selected);
-    borderPainted = false;
-    contentAreaFilled = false;
+    setBorderPainted(false);
+    setHorizontalAlignment(LEADING);
   }
       
   /**

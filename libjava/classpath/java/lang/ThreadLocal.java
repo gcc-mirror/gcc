@@ -38,7 +38,6 @@ exception statement from your version. */
 package java.lang;
 
 import java.util.Map;
-import java.util.WeakHashMap;
 
 
 /**

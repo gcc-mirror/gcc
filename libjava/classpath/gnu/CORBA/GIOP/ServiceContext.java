@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package gnu.CORBA.GIOP;
 
-import gnu.CORBA.CDR.cdrInput;
-import gnu.CORBA.CDR.cdrOutput;
+import gnu.CORBA.CDR.AbstractCdrInput;
+import gnu.CORBA.CDR.AbstractCdrOutput;
 
 import org.omg.CORBA.BAD_INV_ORDER;
 import org.omg.CORBA.BAD_PARAM;
@@ -48,7 +48,7 @@ import org.omg.CORBA.portable.IDLEntity;
 
 /**
  * Contains the ORB service data being passed.
- *
+ * 
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class ServiceContext
@@ -58,6 +58,50 @@ public class ServiceContext
    * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
+
+  /* Standard values for the context_id. */
+  public static final int TransactionService = 0;
+
+  /**
+   * Defines code sets, used to encode wide and narrow characters. Required for
+   * messages with data structures, involving wide characters.
+   */
+  public static final int CodeSets = 1;
+
+  public static final int ChainBypassCheck = 2;
+
+  public static final int ChainBypassInfo = 3;
+
+  public static final int LogicalThreadId = 4;
+
+  public static final int BI_DIR_IIOP = 5;
+
+  public static final int SendingContextRunTime = 6;
+
+  public static final int INVOCATION_POLICIES = 7;
+
+  public static final int FORWARDED_IDENTITY = 8;
+
+  /**
+   * Contains exception details if exception being transferred is other than
+   * System or User exception. javax.rmi uses this context to transfer arbitrary
+   * java exceptions as CORBA value types.
+   */
+  public static final int UnknownExceptionInfo = 9;
+
+  public static final int RTCorbaPriority = 10;
+
+  public static final int RTCorbaPriorityRange = 11;
+
+  public static final int FT_GROUP_VERSION = 12;
+
+  public static final int FT_REQUEST = 13;
+
+  public static final int ExceptionDetailMessage = 14;
+
+  public static final int SecurityAttributeService = 15;
+
+  public static final int ActivityService = 16;
 
   /**
    * The context id (for instance, 0x1 for code sets context). At the moment of
@@ -90,18 +134,18 @@ public class ServiceContext
 
   /**
    * Read the context values from the stream.
-   *
+   * 
    * @param istream a stream to read from.
    */
-  public static ServiceContext read(cdrInput istream)
+  public static ServiceContext read(AbstractCdrInput istream)
   {
     int id = istream.read_ulong();
 
     switch (id)
       {
-        case cxCodeSet.ID:
+        case CodeSetServiceContext.ID:
 
-          cxCodeSet codeset = new cxCodeSet();
+          CodeSetServiceContext codeset = new CodeSetServiceContext();
           codeset.readContext(istream);
           return codeset;
 
@@ -117,7 +161,7 @@ public class ServiceContext
   /**
    * Read a sequence of contexts from the input stream.
    */
-  public static ServiceContext[] readSequence(cdrInput istream)
+  public static ServiceContext[] readSequence(AbstractCdrInput istream)
   {
     int size = istream.read_long();
     ServiceContext[] value = new gnu.CORBA.GIOP.ServiceContext[size];
@@ -128,10 +172,10 @@ public class ServiceContext
 
   /**
    * Write the context values into the stream.
-   *
+   * 
    * @param ostream a stream to write the data to.
    */
-  public void write(cdrOutput ostream)
+  public void write(AbstractCdrOutput ostream)
   {
     ostream.write_ulong(context_id);
     ostream.write_sequence(context_data);
@@ -140,7 +184,7 @@ public class ServiceContext
   /**
    * Write the sequence of contexts into the input stream.
    */
-  public static void writeSequence(cdrOutput ostream, ServiceContext[] value)
+  public static void writeSequence(AbstractCdrOutput ostream, ServiceContext[] value)
   {
     ostream.write_long(value.length);
     for (int i = 0; i < value.length; i++)
@@ -172,8 +216,7 @@ public class ServiceContext
         // Replace context.
         if (!replace)
           throw new BAD_INV_ORDER("Repetetive setting of the context "
-                                  + service_context.context_id, 15,
-            CompletionStatus.COMPLETED_NO);
+            + service_context.context_id, 15, CompletionStatus.COMPLETED_NO);
         else
           cx[exists] = service_context;
       }
@@ -205,14 +248,12 @@ public class ServiceContext
         // Replace context.
         if (!replace)
           throw new BAD_INV_ORDER("Repetetive setting of the context "
-                                  + service_context.context_id, 15,
-            CompletionStatus.COMPLETED_NO);
+            + service_context.context_id, 15, CompletionStatus.COMPLETED_NO);
         else
           cx[exists] = new ServiceContext(service_context);
         return cx;
       }
   }
-
 
   /**
    * Find context with the given name in the context array.
@@ -227,8 +268,8 @@ public class ServiceContext
   }
 
   /**
-   * Find context with the given name in the context array,
-   * converting into org.omg.IOP.ServiceContext.
+   * Find context with the given name in the context array, converting into
+   * org.omg.IOP.ServiceContext.
    */
   public static org.omg.IOP.ServiceContext findContext(int ctx_name,
     ServiceContext[] cx)
@@ -237,6 +278,17 @@ public class ServiceContext
       if (cx[i].context_id == ctx_name)
         return new org.omg.IOP.ServiceContext(ctx_name, cx[i].context_data);
     throw new BAD_PARAM("No context with id " + ctx_name);
+  }
+
+  /**
+   * Find context with the given name in the context array without conversions.
+   */
+  public static ServiceContext find(int ctx_name, ServiceContext[] cx)
+  {
+    for (int i = 0; i < cx.length; i++)
+      if (cx[i].context_id == ctx_name)
+        return cx[i];
+    return null;
   }
 
   /**

@@ -41,6 +41,9 @@ package javax.imageio;
 import java.awt.Dimension;
 import java.util.Locale;
 
+/**
+ * DOCUMENT ME
+ */
 public class ImageWriteParam extends IIOParam
 {
   public static final int MODE_DISABLED = 0;

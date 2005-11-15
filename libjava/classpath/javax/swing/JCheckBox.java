@@ -38,7 +38,9 @@ exception statement from your version. */
 
 package javax.swing;
 
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 
 /**
  * A small box that displays a check or not, depending on it's
@@ -54,8 +56,32 @@ import javax.accessibility.AccessibleContext;
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
-public class JCheckBox extends JToggleButton
+public class JCheckBox extends JToggleButton implements Accessible
 {
+
+  /**
+   * Provides accessibility support for <code>JCheckBox</code>.
+   */
+  protected class AccessibleJCheckBox extends AccessibleJToggleButton
+  {
+    /**
+     * Creates a new instance of <code>AccessibleJCheckBox</code>.
+     */
+    public AccessibleJCheckBox()
+    {
+      // Nothing to do here.
+    }
+
+    /**
+     * Returns the accessble role of <code>JCheckBox</code>,
+     * {@link AccessibleRole#CHECK_BOX}. 
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.CHECK_BOX;
+    }
+  }
+
   private static final long serialVersionUID = -5246739313864538930L;
 
   public static final String BORDER_PAINTED_FLAT_CHANGED_PROPERTY =
@@ -71,60 +97,46 @@ public class JCheckBox extends JToggleButton
   
   public JCheckBox()
   {
-    super();
-    init();
+    this(null, null, false);
   }
 
   public JCheckBox(Action action)
   {
     super(action);
-    init();
   }
 
   public JCheckBox(Icon icon)
   { 
-    super(icon);
-    init();
+    this(null, icon, false);
   }    
   
   public JCheckBox(Icon icon, boolean selected)
   { 
-    super(icon, selected);
-    init();
+    this(null, icon, selected);
   }    
   
   public JCheckBox(String text)
   {
-    super(text);
-    init();
+    this(text, null, false);
   }
       
   public JCheckBox(String text, boolean selected)
   {
-    super(text, selected);
-    init();
+    this(text, null, selected);
   }
       
   public JCheckBox(String text, Icon icon)
   {
-    super(text, icon);
-    init();
+    this(text, icon, false);
   }
 
   public JCheckBox(String text, Icon icon, boolean selected)
   {
     super(text, icon, selected);
-    init();
+    setHorizontalAlignment(LEADING);
+    setBorderPainted(false);
   }
 
-  /**
-   * Gets the AccessibleContext associated with this JCheckBox.
-   */
-  public AccessibleContext getAccessibleContext()
-  {
-    return null;
-  }
-  
   /**
    * Returns a string that specifies the name of the Look and Feel class
    * that renders this component.
@@ -148,5 +160,17 @@ public class JCheckBox extends JToggleButton
   {
     firePropertyChange("borderPaintedFlat", borderPaintedFlat, newValue);
     borderPaintedFlat = newValue;
+  }
+
+  /**
+   * Returns the accessible context for this <code>JCheckBox</code>.
+   *
+   * @return the accessible context for this <code>JCheckBox</code>
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJCheckBox();
+    return accessibleContext;
   }
 }

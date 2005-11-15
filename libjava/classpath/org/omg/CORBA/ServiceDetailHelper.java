@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
+import gnu.CORBA.Minor;
 import gnu.CORBA.ServiceDetailHolder;
 
 import org.omg.CORBA.portable.InputStream;
@@ -78,7 +79,10 @@ public abstract class ServiceDetailHelper
       }
     catch (ClassCastException ex)
       {
-        throw new BAD_OPERATION();
+        BAD_OPERATION bad = new BAD_OPERATION();
+        bad.initCause(ex);
+        bad.minor = Minor.Any;
+        throw bad;
       }
   }
 

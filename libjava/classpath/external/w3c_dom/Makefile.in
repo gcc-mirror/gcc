@@ -39,10 +39,8 @@ target_triplet = @target@
 subdir = external/w3c_dom
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
-	$(top_srcdir)/../../config/lead-dot.m4 \
-	$(top_srcdir)/../../config/no-executables.m4 \
-	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/accross.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
+	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
 	$(top_srcdir)/m4/acinclude.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
 	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
@@ -75,10 +73,14 @@ CLASSPATH_MODULE = @CLASSPATH_MODULE@
 CP = @CP@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CREATE_ALSA_LIBRARIES_FALSE = @CREATE_ALSA_LIBRARIES_FALSE@
+CREATE_ALSA_LIBRARIES_TRUE = @CREATE_ALSA_LIBRARIES_TRUE@
 CREATE_API_DOCS_FALSE = @CREATE_API_DOCS_FALSE@
 CREATE_API_DOCS_TRUE = @CREATE_API_DOCS_TRUE@
 CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
+CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
+CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
 CREATE_GTK_PEER_LIBRARIES_TRUE = @CREATE_GTK_PEER_LIBRARIES_TRUE@
 CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
@@ -215,6 +217,7 @@ build_vendor = @build_vendor@
 datadir = @datadir@
 default_toolkit = @default_toolkit@
 exec_prefix = @exec_prefix@
+glibjdir = @glibjdir@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -228,6 +231,7 @@ libexecdir = @libexecdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+nativelibdir = @nativelibdir@
 oldincludedir = @oldincludedir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@

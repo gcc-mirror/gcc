@@ -48,13 +48,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ViewportUI
-  extends ComponentUI
+public abstract class ViewportUI extends ComponentUI
 {
   /**
    * Constructs a new <code>ViewportUI</code>.
    */
   public ViewportUI()
   {
+    // Nothing to do here.
   }
 }

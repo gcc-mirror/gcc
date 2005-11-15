@@ -168,6 +168,7 @@ public class DocumentParser
    * specific packages, write your own DTD or obtain the working instance
    * of parser in other way, for example, by calling
    * {@link javax.swing.text.html.HTMLEditorKit#getParser()}.
+   *
    * @param a_dtd a DTD to use.
    */
   public DocumentParser(DTD a_dtd)
@@ -212,6 +213,7 @@ public class DocumentParser
    */
   protected void handleComment(char[] comment)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -224,6 +226,7 @@ public class DocumentParser
   protected void handleEmptyTag(TagElement tag)
                          throws javax.swing.text.ChangedCharSetException
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -234,11 +237,13 @@ public class DocumentParser
    */
   protected void handleEndTag(TagElement tag)
   {
+    // This default implementation does nothing.
   }
 
   /* Handle error that has occured in the given line. */
   protected void handleError(int line, String message)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -249,6 +254,7 @@ public class DocumentParser
    */
   protected void handleStartTag(TagElement tag)
   {
+    // This default implementation does nothing.
   }
 
   /**
@@ -257,5 +263,6 @@ public class DocumentParser
    */
   protected void handleText(char[] text)
   {
+    // This default implementation does nothing.
   }
 }

@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.DynamicAny.DynAnyFactoryPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
+import gnu.CORBA.Minor;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -106,6 +107,7 @@ public abstract class InconsistentTypeCodeHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("InconsistentTypeCode expected");
         bad.initCause(cex);
+        bad.minor = Minor.Any;        
         throw bad;
       }
   }

@@ -52,6 +52,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
+import javax.imageio.metadata.IIOMetadataFormatImpl.IIOMetadataNodeAttr;
 
 public class IIOMetadataNode
   implements Element, NodeList
@@ -61,7 +62,127 @@ public class IIOMetadataNode
   private List children = new ArrayList();
   private IIOMetadataNode parent;
   private Object obj;
+
+  /**
+   * Simple NamedNodeMap class for IIOMetadataNode.
+   *
+   * @author jlquinn
+   */
+  private class IIONamedNodeMap implements NamedNodeMap
+  {
+    HashMap attrs;
+
+    /**
+     * @param attrs
+     * @param node
+     */
+    public IIONamedNodeMap(HashMap attrs)
+    {
+      this.attrs = attrs;
+    }
+
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NamedNodeMap#getNamedItem(java.lang.String)
+     */
+    public Node getNamedItem(String name)
+    {
+      return (Node)attrs.get(name);
+    }
+
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NamedNodeMap#setNamedItem(org.w3c.dom.Node)
+     */
+    public Node setNamedItem(Node arg) throws DOMException
+    {
+      if (arg instanceof IIOMetadataNodeAttr)
+        {
+          IIOMetadataNodeAttr attr = (IIOMetadataNodeAttr) arg;
+          // The only code that can successfully do this is in this package.
+          if (attr.owner != null)
+            throw new DOMException(DOMException.INUSE_ATTRIBUTE_ERR, "");
+          return (Node)attrs.put(attr.name, attr);
+        }
+      // Anything else gets treated as an invalid op.
+      throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "");
+    }
+
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NamedNodeMap#removeNamedItem(java.lang.String)
+     */
+    public Node removeNamedItem(String name) throws DOMException
+    {
+      return (Node)attrs.remove(name);
+    }
+
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NamedNodeMap#item(int)
+     */
+    public Node item(int index)
+    {
+      return (Node)attrs.values().toArray()[index];
+    }
+
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NamedNodeMap#getLength()
+     */
+    public int getLength()
+    {
+      return attrs.size();
+    }
+
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NamedNodeMap#getNamedItemNS(java.lang.String, java.lang.String)
+     */
+    public Node getNamedItemNS(String namespaceURI, String localName)
+    {
+      return getNamedItem(localName);
+    }
+
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NamedNodeMap#setNamedItemNS(org.w3c.dom.Node)
+     */
+    public Node setNamedItemNS(Node arg) throws DOMException
+    {
+      return setNamedItem(arg);
+    }
+
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NamedNodeMap#removeNamedItemNS(java.lang.String, java.lang.String)
+     */
+    public Node removeNamedItemNS(String namespaceURI, String localName)
+      throws DOMException
+    {
+      return removeNamedItem(localName);
+    }
+  }
+
+  /**
+   * Simple NodeList implementation for IIOMetadataNode.
+   *
+   * @author jlquinn
+   *
+   */
+  private class IIONodeList implements NodeList
+  {
+    List children = new ArrayList();
   
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NodeList#item(int)
+     */
+    public Node item(int index)
+    {
+      return (index < children.size()) ? (Node)children.get(index) : null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.w3c.dom.NodeList#getLength()
+     */
+    public int getLength()
+    {
+      return children.size();
+    }
+  }
+
   public IIOMetadataNode()
   {
     // Do nothing here.
@@ -71,12 +192,12 @@ public class IIOMetadataNode
   {
     name = nodename;
   }
-  
+
   public Object getUserObject()
   {
     return obj;
   }
-  
+
   public void setUserObject(Object o)
   {
     obj = o;
@@ -85,7 +206,7 @@ public class IIOMetadataNode
   public short compareDocumentPosition(Node other)
     throws DOMException
   {
-    throw new Error("not implemented");
+    return Element.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
   }
 
   /* (non-Javadoc)
@@ -104,7 +225,7 @@ public class IIOMetadataNode
   {
     String val = getAttribute(name);
     if (val != null)
-      return new IIOAttr(name, val, this);
+      return new IIOMetadataNodeAttr(this, name, val);
     return null;
   }
 
@@ -126,7 +247,7 @@ public class IIOMetadataNode
 
   public String getBaseURI()
   {
-    throw new Error("not implemented");
+    return null;
   }
 
   // Recursive function for assembling a node list.
@@ -217,7 +338,7 @@ public class IIOMetadataNode
     if (attr != null)
       attr.setValue(value);
     else
-      attrs.put(name, new IIOAttr(name, value, this));
+      attrs.put(name, new IIOMetadataNodeAttr(this, name, value));
   }
   
   /* (non-Javadoc)
@@ -295,7 +416,7 @@ public class IIOMetadataNode
     // clone attrs
     for (Iterator it = attrs.values().iterator(); it.hasNext();)
     {
-      IIOAttr attr = (IIOAttr)it.next();
+      IIOMetadataNodeAttr attr = (IIOMetadataNodeAttr)it.next();
       newnode.attrs.put(attr.name, attr.cloneNode(deep));
       attr.owner = newnode;
     }
@@ -321,7 +442,7 @@ public class IIOMetadataNode
 
   public Object getFeature(String feature, String version)
   {
-    throw new Error("not implemented");
+    return null;
   }
 
   /* (non-Javadoc)
@@ -432,18 +553,18 @@ public class IIOMetadataNode
 
   public TypeInfo getSchemaTypeInfo()
   {
-    throw new Error("not implemented");
+    return null;
   }
 
   public String getTextContent()
     throws DOMException
   {
-    throw new Error("not implemented");
+    return null;
   }
 
   public Object getUserData(String key)
   {
-    throw new Error("not implemented");
+    return null;
   }
   
   /* (non-Javadoc)
@@ -482,12 +603,12 @@ public class IIOMetadataNode
 
   public boolean isDefaultNamespace(String namespaceURI)
   {
-    throw new Error("not implemented");
+    return true;
   }
 
   public boolean isEqualNode(Node arg)
   {
-    throw new Error("not implemented");
+    return true;
   }
   
   public boolean isSameNode(Node other)
@@ -506,12 +627,12 @@ public class IIOMetadataNode
   
   public String lookupNamespaceURI(String prefix)
   {
-    throw new Error("not implemented");
+    return null;
   }
   
   public String lookupPrefix(String namespaceURI)
   {
-    throw new Error("not implemented");
+    return null;
   }
 
   /* (non-Javadoc)
@@ -550,19 +671,16 @@ public class IIOMetadataNode
   public void setIdAttribute(String name, boolean isId)
     throws DOMException
   {
-    throw new Error("not implemented");
   }
 
   public void setIdAttributeNode(Attr idAttr, boolean isId)
     throws DOMException
   {
-    throw new Error("not implemented");
   }
 
   public void setIdAttributeNS(String namespaceURI, String localName, boolean isId)
     throws DOMException
   {
-    throw new Error("not implemented");
   }
   
   /* (non-Javadoc)
@@ -582,11 +700,10 @@ public class IIOMetadataNode
   public void setTextContent(String textContent)
     throws DOMException
   {
-    throw new Error("not implemented");
   }
   
   public Object setUserData(String key, Object data, UserDataHandler handler)
   {
-    throw new Error("not implemented");
+    return null;
   }
 }

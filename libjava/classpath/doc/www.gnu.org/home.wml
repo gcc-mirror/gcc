@@ -36,7 +36,7 @@ obtained by looking at these resources.
   <ul>
     <li><createlink url="tasks.html" name="Task descriptions"></li>
     <li>GNU Classpath vs: <createlink url="http://www.kaffe.org/~stuart/japi/htmlout/h-jdk10-classpath.html" name="JDK 1.0"> <createlink url="http://www.kaffe.org/~stuart/japi/htmlout/h-jdk11-classpath.html" name="JDK 1.1"> <createlink url="http://www.kaffe.org/~stuart/japi/htmlout/h-jdk12-classpath.html" name="JDK 1.2"> <createlink url="http://www.kaffe.org/~stuart/japi/htmlout/h-jdk13-classpath.html" name="JDK 1.3"> <createlink url="http://www.kaffe.org/~stuart/japi/htmlout/h-jdk14-classpath.html" name="JDK 1.4"> (updated nightly)</li>
-    <li>GNU Classpath <createlink url="http://ontographics.com/classpath/mauve/mauvereport.cgi" name="Mauve Results"></li>
+    <li>GNU Classpath <createlink url="http://www.object-refinery.com/classpath/mauve/report/" name="Mauve Results"></li>
   </ul>
 </p>
 </boxitem>

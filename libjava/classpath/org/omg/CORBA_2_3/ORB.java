@@ -117,11 +117,9 @@ public abstract class ORB
   }
 
   /**
-   * Up till OMG 3.0.3 inclusive and also in Suns API till 1.4
-   * inclusive this is totally undocumented. No problem, though,
-   * because is in addition not implemented.
-   *
-   * @throws NO_IMPLEMENT, always.
+   * This method is called by RMI-IIOP {@link javax.rmi.Tie#orb(ORB)},
+   * passing <code>this</code> as parameter. The ORB will try to connect
+   * that tie as one of its objects.
    */
   public void set_delegate(java.lang.Object wrapper)
   {

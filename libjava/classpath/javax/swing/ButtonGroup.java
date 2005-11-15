@@ -79,6 +79,7 @@ public class ButtonGroup implements Serializable
    */
   public ButtonGroup()
   {
+    // Nothing to do here.
   }
 
   /**
@@ -89,6 +90,8 @@ public class ButtonGroup implements Serializable
   public void add(AbstractButton b)
   {
     b.getModel().setGroup(this);
+    if (b.isSelected())
+      sel = b.getModel();
     buttons.addElement(b);
   }
 
@@ -158,7 +161,7 @@ public class ButtonGroup implements Serializable
       {
         ButtonModel old = sel;
         sel = m;
-
+        
         if (old != null)
           old.setSelected(false);
         AbstractButton button = FindButton(old);

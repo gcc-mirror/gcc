@@ -97,6 +97,7 @@ public class JDesktopPane extends JLayeredPane implements Accessible
      */
     protected AccessibleJDesktopPane()
     {
+      // Nothing to do here.
     }
 
     /**
@@ -246,6 +247,7 @@ public class JDesktopPane extends JLayeredPane implements Accessible
           }
         catch (PropertyVetoException e)
           {
+            // We do nothing when the attempt is vetoed.
           }
       }
     selectedFrame = null;
@@ -259,6 +261,7 @@ public class JDesktopPane extends JLayeredPane implements Accessible
       }
     catch (PropertyVetoException e)
       {
+        // We do nothing when the attempt is vetoed.
       }
   }
 

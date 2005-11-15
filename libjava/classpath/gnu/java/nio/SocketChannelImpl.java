@@ -258,7 +258,7 @@ public final class SocketChannelImpl extends SocketChannel
 	}
       else
         {
-          dst.put (data, offset, len);
+          dst.put (data, offset, readBytes);
         }
 
     return readBytes;

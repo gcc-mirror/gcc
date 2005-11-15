@@ -50,9 +50,7 @@ import java.awt.Color;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class ColorUIResource
-  extends Color
-  implements UIResource
+public class ColorUIResource extends Color implements UIResource
 {
   /**
    * Constructs a <code>ColorUIResource</code> using the specified

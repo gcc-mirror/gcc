@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package javax.naming;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
@@ -47,9 +50,6 @@ import java.util.Vector;
 /**
  * @author Tom Tromey (tromey@redhat.com)
  * @date May 16, 2001
- *
- * FIXME: must write readObject and writeObject to conform to
- * serialization spec.
  *
  * FIXME: this class is underspecified.  For instance, the `flat'
  * direction is never described.  If it means that the CompoundName
@@ -467,6 +467,25 @@ public class CompoundName implements Name, Cloneable, Serializable
     this.trimBlanks
       = Boolean.valueOf (mySyntax.getProperty ("jndi.syntax.trimblanks",
 					       "false")).booleanValue ();
+  }
+
+  private void readObject(ObjectInputStream s)
+    throws IOException, ClassNotFoundException
+  {
+    mySyntax = (Properties) s.readObject();
+    int count = s.readInt();
+    elts = new Vector(count);
+    for (int i = 0; i < count; i++)
+      elts.addElement((String) s.readObject());
+  }
+
+  private void writeObject(ObjectOutputStream s)
+    throws IOException
+  {
+    s.writeObject(mySyntax);
+    s.writeInt(elts.size());
+    for (int i = 0; i < elts.size(); i++)
+        s.writeObject(elts.elementAt(i));
   }
 
   // The spec specifies this but does not document it in any way (it

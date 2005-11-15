@@ -48,14 +48,14 @@ import javax.swing.JComboBox;
  * @author Andrew Selkirk
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ComboBoxUI
-  extends ComponentUI
+public abstract class ComboBoxUI extends ComponentUI
 {
   /**
    * Constructs a new <code>ComboBoxUI</code>.
    */
   public ComboBoxUI()
   {
+    // Nothing to do here.
   }
   
   

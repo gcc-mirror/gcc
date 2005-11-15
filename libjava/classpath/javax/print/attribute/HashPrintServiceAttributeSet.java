@@ -1,5 +1,5 @@
 /* HashPrintServiceAttributeSet.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,10 @@ package javax.print.attribute;
 
 import java.io.Serializable;
 
+/**
+ * <code>HashPrintServiceAttributeSet</code> provides an implementation of
+ * {@link javax.print.attribute.PrintServiceAttributeSet}.
+ */
 public class HashPrintServiceAttributeSet extends HashAttributeSet
   implements Serializable, PrintServiceAttributeSet
 {
@@ -56,7 +60,7 @@ public class HashPrintServiceAttributeSet extends HashAttributeSet
    * Creates a <code>HashPrintServiceAttributeSet</code> object with the given
    * attribute in it.
    *
-   * @param attribute the attriute tu put into the attribute set
+   * @param attribute the attribute to put into the attribute set
    *
    * @exception NullPointerException if attribute is null
    */
@@ -69,9 +73,11 @@ public class HashPrintServiceAttributeSet extends HashAttributeSet
    * Creates a <code>HashPrintServiceAttributeSet</code> object with the given
    * attributes in it.
    *
-   * @param attributes the attributes to put into the attribute set
+   * @param attributes the array of attributes to put into the set. If
+   * <code>null</code> an empty set is created.
    *
-   * @exception NullPointerException if attributes is null
+   * @exception NullPointerException if one of the attributes of the given
+   * array is null.
    */
   public HashPrintServiceAttributeSet(PrintServiceAttribute[] attributes)
   {
@@ -79,11 +85,11 @@ public class HashPrintServiceAttributeSet extends HashAttributeSet
   }
   
   /**
-   * Creates a <code>HashPrintServiceAttributeSet</code> object with the given
-   * attributes in it.
+   * Creates a <code>HashPrintServiceAttributeSet</code> object with the attributes
+   * of the given attributes set in it.
    *
-   * @param attributes the attributes to put into the attribute set
-   *
+   * @param attributes the attributes set to put into the set. If 
+   * <code>null</code> an empty set is created.
    * @exception ClassCastException if any element of attributes is not
    * an instance of <code>PrintServiceAttribute</code>
    */

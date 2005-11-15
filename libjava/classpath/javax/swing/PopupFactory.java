@@ -39,6 +39,8 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
 
 
 /**
@@ -55,8 +57,8 @@ public class PopupFactory
   /**
    * The shared factory object.
    *
-   * @see #getSharedFactory
-   * @see #setSharedFactory
+   * @see #getSharedInstance
+   * @see #setSharedInstance
    */
   private static PopupFactory sharedFactory;
 
@@ -69,6 +71,7 @@ public class PopupFactory
    */
   public PopupFactory()
   {
+    // Nothing to do here.
   }
 
 
@@ -134,6 +137,30 @@ public class PopupFactory
   public Popup getPopup(Component owner, Component contents,
                         int x, int y)
   {
-    return new Popup.JWindowPopup(owner, contents, x, y);
+    Popup popup = null;
+    // By default we enable lightweight popups since they are more efficient
+    // than heavyweight popups.
+    boolean lightweightEnabled = true;
+    // Special case JPopupMenu here, since it supports a lightweightEnabled
+    // flag that we must respect.
+    if (contents instanceof JPopupMenu)
+      {
+        JPopupMenu menu = (JPopupMenu) contents;
+        lightweightEnabled = menu.isLightWeightPopupEnabled();
+      }
+
+    // If we have a root pane and the contents fits within the root pane and
+    // lightweight popups are enabled, than we can use a lightweight popup.
+    JRootPane root = SwingUtilities.getRootPane(owner);
+    Point rootLoc = root.getLocationOnScreen();
+    Dimension contentsSize = contents.getSize();
+    Dimension rootSize = root.getSize();
+    if (x >= rootLoc.x && y > rootLoc.y
+        && (x - rootLoc.x) + contentsSize.width < rootSize.width
+        && (y - rootLoc.y) + contentsSize.height < rootSize.height)
+      popup = new Popup.LightweightPopup(owner, contents, x, y);
+    else
+      popup = new Popup.JWindowPopup(owner, contents, x, y);
+    return popup;
   }
 }

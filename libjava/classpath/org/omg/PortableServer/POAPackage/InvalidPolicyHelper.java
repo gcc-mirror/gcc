@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.PortableServer.POAPackage;
 
+import gnu.CORBA.Minor;
 import gnu.CORBA.Poa.InvalidPolicyHolder;
 
 import org.omg.CORBA.Any;
@@ -110,6 +111,7 @@ public abstract class InvalidPolicyHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("InvalidPolicy expected");
+        bad.minor = Minor.Any;        
         bad.initCause(cex);
         throw bad;
       }

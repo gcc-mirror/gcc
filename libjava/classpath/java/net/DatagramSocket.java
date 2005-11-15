@@ -484,7 +484,6 @@ public class DatagramSocket
    * @param address The address to connect this socket to.
    * @param port The port to connect this socket to.
    *
-   * @exception SocketException If an error occurs.
    * @exception IllegalArgumentException If address or port are invalid.
    * @exception SecurityException If the caller is not allowed to send
    * datagrams to or receive from this address and port.

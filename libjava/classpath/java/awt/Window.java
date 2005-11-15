@@ -101,6 +101,8 @@ public class Window extends Container implements Accessible
 
   protected class AccessibleAWTWindow extends AccessibleAWTContainer
   {
+    private static final long serialVersionUID = 4215068635060671780L;
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.WINDOW;
@@ -278,14 +280,14 @@ public class Window extends Container implements Accessible
    */
   public void show()
   {
+    synchronized (getTreeLock())
+    {
     if (parent != null && !parent.isDisplayable())
       parent.addNotify();
     if (peer == null)
       addNotify();
 
     // Show visible owned windows.
-    synchronized (getTreeLock())
-      {
 	Iterator e = ownedWindows.iterator();
 	while(e.hasNext())
 	  {
@@ -302,14 +304,13 @@ public class Window extends Container implements Accessible
 	      // synchronous access to ownedWindows there.
 	      e.remove();
 	  }
-      }
     validate();
     super.show();
     toFront();
 
     KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
     manager.setGlobalFocusedWindow (this);
-
+    
     if (!shown)
       {
         FocusTraversalPolicy policy = getFocusTraversalPolicy ();
@@ -323,6 +324,7 @@ public class Window extends Container implements Accessible
 
         shown = true;
       }
+    }
   }
 
   public void hide()
@@ -344,13 +346,6 @@ public class Window extends Container implements Accessible
 	  }
       }
     super.hide();
-  }
-
-  public boolean isDisplayable()
-  {
-    if (super.isDisplayable())
-      return true;
-    return peer != null;
   }
 
   /**
@@ -808,20 +803,81 @@ public class Window extends Container implements Accessible
     return isVisible();
   }
 
-  public void setLocationRelativeTo (Component c)
+  public void setLocationRelativeTo(Component c)
   {
-    if (c == null || !c.isShowing ())
+    int x = 0;
+    int y = 0;
+    
+    if (c == null || !c.isShowing())
       {
-        int x = 0;
-        int y = 0;
-
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment ();
-        Point center = ge.getCenterPoint ();
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        Point center = ge.getCenterPoint();
         x = center.x - (width / 2);
         y = center.y - (height / 2);
-        setLocation (x, y);
       }
-    // FIXME: handle case where component is non-null.
+    else
+      {
+        int cWidth = c.getWidth();
+        int cHeight = c.getHeight();
+        Dimension screenSize = getToolkit().getScreenSize();
+
+        x = c.getLocationOnScreen().x;
+        y = c.getLocationOnScreen().y;
+        
+        // If bottom of component is cut off, window placed
+        // on the left or the right side of component
+        if ((y + cHeight) > screenSize.height)
+          {
+            // If the right side of the component is closer to the center
+            if ((screenSize.width / 2 - x) <= 0)
+              {
+                if ((x - width) >= 0)
+                  x -= width;
+                else
+                  x = 0;
+              }
+            else
+              {
+                if ((x + cWidth + width) <= screenSize.width)
+                  x += cWidth;
+                else
+                  x = screenSize.width - width;
+              }
+
+            y = screenSize.height - height;
+          }
+        else if (cWidth > width || cHeight > height)
+          {
+            // If right side of component is cut off
+            if ((x + width) > screenSize.width)
+              x = screenSize.width - width;
+            // If left side of component is cut off
+            else if (x < 0)
+              x = 0;
+            else
+              x += (cWidth - width) / 2;
+            
+            y += (cHeight - height) / 2;
+          }
+        else
+          {
+            // If right side of component is cut off
+            if ((x + width) > screenSize.width)
+              x = screenSize.width - width;
+            // If left side of component is cut off
+            else if (x < 0 || (x - (width - cWidth) / 2) < 0)
+              x = 0;
+            else
+              x -= (width - cWidth) / 2;
+
+            if ((y - (height - cHeight) / 2) > 0)
+              y -= (height - cHeight) / 2;
+            else
+              y = 0;
+          }
+      }
+
+    setLocation(x, y);
   }
 
   /**
@@ -938,8 +994,8 @@ public class Window extends Container implements Accessible
    *
    * @since 1.4
    */
-  public void createBufferStrategy(int numBuffers,
-				   BufferCapabilities caps)
+  public void createBufferStrategy(int numBuffers, BufferCapabilities caps)
+    throws AWTException
   {
     if (numBuffers < 1)
       throw new IllegalArgumentException("Window.createBufferStrategy: number"
@@ -951,15 +1007,7 @@ public class Window extends Container implements Accessible
 
     // a flipping strategy was requested
     if (caps.isPageFlipping())
-      {
-	try
-	  {
-	    bufferStrategy = new WindowFlipBufferStrategy(numBuffers);
-	  }
-	catch (AWTException e)
-	  {
-	  }
-      }
+      bufferStrategy = new WindowFlipBufferStrategy(numBuffers);
     else
       bufferStrategy = new WindowBltBufferStrategy(numBuffers, true);
   }

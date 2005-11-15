@@ -43,21 +43,31 @@ import javax.swing.Icon;
 
 
 /**
- * DOCUMENT ME!
+ * A concrete implementation of {@link FileSystemView} that is appropriate for
+ * Unix-like systems.
+ * 
+ * @see FileSystemView#getFileSystemView()
  */
 class UnixFileSystemView extends FileSystemView
 {
-  /** DOCUMENT ME! */
+  /** The default name for new folders. */
   private static final String NEW_FOLDER_NAME = "NewFolder";
 
   /**
-   * DOCUMENT ME!
+   * Creates a new folder with a unique name in the specified directory and
+   * returns a {@link File} object representing the new directory.  The name 
+   * of the new folder is <code>NewFolder</code> or, if a directory or file 
+   * with that name already exists, <code>NewFolder.n</code> where 
+   * <code>n</code> is the lowest integer greater than zero that results in 
+   * a unique directory name.
    *
-   * @param containingDir DOCUMENT ME!
+   * @param containingDir  the directory to contain the new folder 
+   *                       (<code>null</code> not permitted).
    *
-   * @return DOCUMENT ME!
+   * @return A {@link File} object representing the new directory.
    *
-   * @throws IOException DOCUMENT ME!
+   * @throws IOException if an exception occurs while creating the new 
+   *                     directory.
    */
   public File createNewFolder(File containingDir) throws IOException
   {
@@ -82,9 +92,9 @@ class UnixFileSystemView extends FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns an array containing the file system root. 
    *
-   * @return DOCUMENT ME!
+   * @return An array containing the file system root.
    */
   public File[] getRoots()
   {
@@ -92,11 +102,12 @@ class UnixFileSystemView extends FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the name of a file as it would be displayed by the underlying 
+   * system.  This method is NOT YET IMPLEMENTED.
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file.
    *
-   * @return DOCUMENT ME!
+   * @return <code>null</code>.
    */
   public String getSystemDisplayName(File f)
   {
@@ -105,11 +116,12 @@ class UnixFileSystemView extends FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the icon that would be displayed for the given file by the 
+   * underlying system.  This method is NOT YET IMPLEMENTED.
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file.
    *
-   * @return DOCUMENT ME!
+   * @return <code>null</code>.
    */
   public Icon getSystemIcon(File f)
   {
@@ -118,11 +130,12 @@ class UnixFileSystemView extends FileSystemView
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the description of a file that would be displayed by the 
+   * underlying system.  This method is NOT YET IMPLEMENTED.
    *
-   * @param f DOCUMENT ME!
+   * @param f  the file.
    *
-   * @return DOCUMENT ME!
+   * @return <code>null</code>.
    */
   public String getSystemTypeDescription(File f)
   {

@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ScrollPaneUI
-  extends ComponentUI
+public abstract class ScrollPaneUI extends ComponentUI
 {
   /**
    * Constructs a new <code>ScrollPaneUI</code>.
    */
   public ScrollPaneUI()
   {
+    // Nothing to do here.
   }
 }

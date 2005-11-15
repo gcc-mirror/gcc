@@ -39,7 +39,6 @@ exception statement from your version. */
 
 package java.io;
 
-import gnu.classpath.Configuration;
 import gnu.java.io.ObjectIdentityWrapper;
 import gnu.java.lang.reflect.TypeSignature;
 import gnu.java.security.action.SetAccessibleAction;
@@ -362,7 +361,9 @@ public class ObjectOutputStream extends OutputStream
 		break;
 	      }
 
-	    throw new NotSerializableException(clazz.getName ());
+	    throw new NotSerializableException(clazz.getName()
+					       + " in "
+					       + obj.getClass());
 	  } // end pseudo-loop
       }
     catch (ObjectStreamException ose)
@@ -412,37 +413,53 @@ public class ObjectOutputStream extends OutputStream
 
   protected void writeClassDescriptor(ObjectStreamClass osc) throws IOException
   {
-    realOutput.writeByte(TC_CLASSDESC);
-    realOutput.writeUTF(osc.getName());
-    realOutput.writeLong(osc.getSerialVersionUID());
-    assignNewHandle(osc);
-
-    int flags = osc.getFlags();
-
-    if (protocolVersion == PROTOCOL_VERSION_2
-	&& osc.isExternalizable())
-      flags |= SC_BLOCK_DATA;
-
-    realOutput.writeByte(flags);
-
-    ObjectStreamField[] fields = osc.fields;
-    realOutput.writeShort(fields.length);
-
-    ObjectStreamField field;
-    for (int i = 0; i < fields.length; i++)
+    if (osc.isProxyClass)
       {
-	field = fields[i];
-	realOutput.writeByte(field.getTypeCode ());
-	realOutput.writeUTF(field.getName ());
+        realOutput.writeByte(TC_PROXYCLASSDESC);
+	Class[] intfs = osc.forClass().getInterfaces();
+	realOutput.writeInt(intfs.length);
+	for (int i = 0; i < intfs.length; i++)
+	  realOutput.writeUTF(intfs[i].getName());
 
-	if (! field.isPrimitive())
-	  writeObject(field.getTypeString());
+        boolean oldmode = setBlockDataMode(true);
+        annotateProxyClass(osc.forClass());
+        setBlockDataMode(oldmode);
+        realOutput.writeByte(TC_ENDBLOCKDATA);
       }
+    else
+      {
+        realOutput.writeByte(TC_CLASSDESC);
+        realOutput.writeUTF(osc.getName());
+        realOutput.writeLong(osc.getSerialVersionUID());
+        assignNewHandle(osc);
 
-    boolean oldmode = setBlockDataMode(true);
-    annotateClass(osc.forClass());
-    setBlockDataMode(oldmode);
-    realOutput.writeByte(TC_ENDBLOCKDATA);
+        int flags = osc.getFlags();
+
+        if (protocolVersion == PROTOCOL_VERSION_2
+	    && osc.isExternalizable())
+        flags |= SC_BLOCK_DATA;
+
+        realOutput.writeByte(flags);
+
+        ObjectStreamField[] fields = osc.fields;
+        realOutput.writeShort(fields.length);
+
+        ObjectStreamField field;
+        for (int i = 0; i < fields.length; i++)
+          {
+	    field = fields[i];
+	    realOutput.writeByte(field.getTypeCode ());
+	    realOutput.writeUTF(field.getName ());
+
+	    if (! field.isPrimitive())
+	      writeObject(field.getTypeString());
+          }
+
+        boolean oldmode = setBlockDataMode(true);
+        annotateClass(osc.forClass());
+        setBlockDataMode(oldmode);
+        realOutput.writeByte(TC_ENDBLOCKDATA);
+      }
 
     if (osc.isSerializable() || osc.isExternalizable())
       writeObject(osc.getSuper());
@@ -531,7 +548,7 @@ public class ObjectOutputStream extends OutputStream
    * version)</code> is provided to change the default protocol
    * version.
    *
-   * For an explination of the differences beween the two protocols
+   * For an explanation of the differences between the two protocols
    * see XXX: the Java ObjectSerialization Specification.
    *
    * @exception IOException if <code>version</code> is not a valid
@@ -1567,12 +1584,4 @@ public class ObjectOutputStream extends OutputStream
   private boolean dump = false;
 
   private static final boolean DEBUG = false;
-
-  static
-  {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-        System.loadLibrary("javaio");
-      }
-  }
 }

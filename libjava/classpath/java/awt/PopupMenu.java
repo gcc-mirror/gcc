@@ -140,6 +140,8 @@ show(Component component, int x, int y)
 
   protected class AccessibleAWTPopupMenu extends AccessibleAWTMenu
   {
+    private static final long serialVersionUID = -4282044795947239955L;
+
     protected AccessibleAWTPopupMenu()
     {
     }

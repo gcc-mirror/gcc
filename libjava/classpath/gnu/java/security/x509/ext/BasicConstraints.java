@@ -112,7 +112,7 @@ public class BasicConstraints extends Extension.Value
     if (encoded == null)
       {
         List bc = new ArrayList (2);
-        bc.add (new DERValue (DER.BOOLEAN, new Boolean (ca)));
+        bc.add (new DERValue (DER.BOOLEAN, Boolean.valueOf (ca)));
         if (pathLenConstraint >= 0)
           bc.add (new DERValue (DER.INTEGER,
                                 BigInteger.valueOf ((long) pathLenConstraint)));

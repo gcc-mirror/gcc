@@ -565,6 +565,10 @@ processEvent(AWTEvent event)
 protected void
 processItemEvent(ItemEvent event)
 {
+  int index = pItems.indexOf((String) event.getItem());
+  // Don't call back into the peers when selecting index here
+  if (event.getStateChange() == ItemEvent.SELECTED)
+    this.selectedIndex = index;
   if (item_listeners != null)
     item_listeners.itemStateChanged(event);
 }

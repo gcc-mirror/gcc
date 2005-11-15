@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CosNaming;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
@@ -74,7 +76,10 @@ public abstract class BindingHelper
       }
     catch (ClassCastException ex)
       {
-        throw new BAD_OPERATION("Binding expected");
+        BAD_OPERATION bad = new BAD_OPERATION("Binding expected");
+        bad.minor = Minor.Any;
+        bad.initCause(ex);
+        throw bad;
       }
   }
 

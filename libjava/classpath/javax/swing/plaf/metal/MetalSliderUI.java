@@ -42,8 +42,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashMap;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -56,16 +56,59 @@ import javax.swing.plaf.basic.BasicSliderUI;
 /**
  * A UI delegate for the {@link JSlider} component.
  */
-public class MetalSliderUI
-  extends BasicSliderUI
+public class MetalSliderUI extends BasicSliderUI
 {
-  // TODO: find a use for this
+  /**
+   * A property change handler that updates the rendered component in response
+   * to specific property change events.  This custom handler is used to
+   * intercept the "JSlider.isFilled" property, which is only recognised by
+   * the {@link MetalLookAndFeel}.
+   */
+  protected class MetalPropertyListener
+    extends BasicSliderUI.PropertyChangeHandler
+  {
+    /**
+     * Creates a new listener.
+     */
+    protected MetalPropertyListener()
+    {
+      // Nothing to do here.
+    }
+    
+    /**
+     * Handles property change events.  Events with the name "JSlider.isFilled"
+     * are handled here, and other events are passed to the superclass.
+     * 
+     * @param e  the property change event.
+     */
+    public void propertyChange(PropertyChangeEvent e)
+    {
+      if (e.getPropertyName().equals(SLIDER_FILL))
+      {
+        Boolean b = (Boolean) e.getNewValue();
+        if (b == null)
+          filledSlider = false;
+        else
+          filledSlider = b.booleanValue();   
+      }
+      else
+        super.propertyChange(e);
+    }
+  }
+  
+  /** The thumb color (unused, because an icon is used to draw the thumb). */
   protected static Color thumbColor;
   
-  // TODO: find a use for this
+  /** 
+   * The highlight color used for drawing the track rect when the slider is
+   * enabled.
+   */
   protected static Color highlightColor;
   
-  // TODO: find a use for this
+  /**
+   * The shadow color used for drawing the track rect when the slider is
+   * enabled.
+   */
   protected static Color darkShadowColor;
   
   /** The track width. */
@@ -85,17 +128,14 @@ public class MetalSliderUI
   /** The gap between the track and the tick marks. */
   protected final int TICK_BUFFER = 4;
 
+  /** A key to look up the filledSlider setting in the {@link UIManager}. */
+  protected final String SLIDER_FILL = "JSlider.isFilled";
+  
   /** 
    * A flag that controls whether or not the track is filled up to the value
    * of the slider.
    */
   protected boolean filledSlider;
-    
-  /** A key to look up the filledSlider setting in the {@link UIManager}. */
-  protected final String SLIDER_FILL = "JSlider.isFilled";
-  
-  /** The UI instances for MetalSliderUIs */
-  private static HashMap instances;
 
   /**
    * Constructs a new instance.
@@ -104,33 +144,27 @@ public class MetalSliderUI
   {
     super(null);
     filledSlider = UIManager.getBoolean(SLIDER_FILL);
+    darkShadowColor = MetalLookAndFeel.getControlDarkShadow();
+    highlightColor = MetalLookAndFeel.getControlHighlight();
   }
 
   /**
-   * Returns an instance of MetalSliderUI.
+   * Returns a new instance of <code>MetalSliderUI</code>.
    *
-   * @param component the component for which we return an UI instance
+   * @param component the component (ignored).
    *
-   * @return an instance of MetalSliderUI
+   * @return A new instance of <code>MetalSliderUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instances == null)
-      instances = new HashMap();
-
-    Object o = instances.get(component);
-    MetalSliderUI instance;
-    if (o == null)
-      {
-        instance = new MetalSliderUI();
-        instances.put(component, instance);
-      }
-    else
-      instance = (MetalSliderUI) o;
-
-    return instance;
+    return new MetalSliderUI();
   }
   
+  /**
+   * Installs the default for this UI delegate in the supplied component.
+   * 
+   * @param c  the component.
+   */
   public void installUI(JComponent c)
   {
     super.installUI(c);
@@ -139,6 +173,18 @@ public class MetalSliderUI
       filledSlider = b.booleanValue();
   }
 
+  /**
+   * Creates a property change listener for the slider.  
+   * 
+   * @param slider  the slider.
+   * 
+   * @return A new instance of {@link MetalPropertyListener}.
+   */
+  protected PropertyChangeListener createPropertyChangeListener(JSlider slider)
+  {
+    return new MetalPropertyListener();    
+  }
+  
   /**
    * Paints the thumb icon for the slider.
    * 
@@ -153,46 +199,79 @@ public class MetalSliderUI
   }
   
   /**
-   * Creates a property change listener for the slider.
-   * 
-   * @param slider  the slider.
-   */
-  protected PropertyChangeListener createPropertyChangeListener(JSlider slider)
-  {
-    // TODO: try to figure out why it might be necessary to override this 
-    // method as is done in Sun's implementation
-    return super.createPropertyChangeListener(slider);    
-  }
-  
-  /**
    * Paints the track along which the thumb control moves.
    * 
    * @param g  the graphics device.
    */
   public void paintTrack(Graphics g)
   {
+    Color shadowColor = MetalLookAndFeel.getControlShadow();
     if (slider.getOrientation() == JSlider.HORIZONTAL)
-    {
-      if (filledSlider) 
       {
-        // TODO: fill the track
+        int trackX = trackRect.x;
+        int trackY = trackRect.y + (trackRect.height - getTrackWidth()) / 2;
+        int trackW = trackRect.width - 1;
+        int trackH = getTrackWidth();
+        
+        // draw border
+        if (slider.isEnabled())
+          BasicGraphicsUtils.drawEtchedRect(g, trackX, trackY, trackW, trackH, 
+              darkShadowColor, shadowColor, darkShadowColor, highlightColor);
+        else
+          {
+            g.setColor(MetalLookAndFeel.getControlShadow());
+            g.drawRect(trackX, trackY, trackW - 2, trackH - 2);
+          }
+
+        // fill track (if required)
+        if (filledSlider) 
+        {
+          int xPos = xPositionForValue(slider.getValue());
+          int x = (slider.getInverted() ? xPos : trackRect.x);
+          int w = (slider.getInverted() ? trackX + trackW - xPos 
+                  : xPos - trackRect.x);
+          g.setColor(MetalLookAndFeel.getControlShadow());
+          g.fillRect(x + 1, trackY + 1, w - 3, getTrackWidth() - 3);
+          if (slider.isEnabled())
+            {
+              g.setColor(MetalLookAndFeel.getControl());
+              g.drawLine(x + 1, trackY + 1, x + w - 3, trackY + 1);
+              g.drawLine(x + 1, trackY + 1, x + 1, 
+                      trackY + getTrackWidth() - 3);
+            }
+        }
       }
-      BasicGraphicsUtils.drawEtchedRect(g, trackRect.x, trackRect.y 
-          + (trackRect.height - getTrackWidth()) / 2, trackRect.width - 1, 
-          getTrackWidth(), Color.darkGray, Color.gray, Color.darkGray, 
-          Color.white);
-    }
     else
-    {
-      if (filledSlider) 
       {
-        // TODO: fill the track
+        int trackX = trackRect.x  + (trackRect.width - getTrackWidth()) / 2;
+        int trackY = trackRect.y;
+        int trackW = getTrackWidth();
+        int trackH = trackRect.height - 1;
+        if (slider.isEnabled())
+          BasicGraphicsUtils.drawEtchedRect(g, trackX, trackY, trackW, trackH, 
+              darkShadowColor, shadowColor, darkShadowColor, highlightColor);
+        else
+          {
+            g.setColor(MetalLookAndFeel.getControlShadow());
+            g.drawRect(trackX, trackY, trackW - 2, trackH - 2);
+          }
+        
+        if (filledSlider) 
+          {
+          int yPos = yPositionForValue(slider.getValue());
+          int y = (slider.getInverted() ? trackY : yPos);
+          int h = (slider.getInverted() ? yPos - trackY 
+                  : trackY + trackH - yPos);
+          g.setColor(MetalLookAndFeel.getControlShadow());
+          g.fillRect(trackX + 1, y + 1, getTrackWidth() - 3, h - 3);
+          if (slider.isEnabled())
+            {
+              g.setColor(MetalLookAndFeel.getControl());
+              g.drawLine(trackX + 1, y + 1, trackX + trackW - 3, y + 1);
+              g.drawLine(trackX + 1, y + 1, trackX + 1, y + h - 3);
+            }
+          }
       }
-      BasicGraphicsUtils.drawEtchedRect(g, trackRect.x  + (trackRect.width 
-          - getTrackWidth()) / 2, trackRect.y, getTrackWidth(), 
-          trackRect.height - 1, Color.darkGray, Color.gray, Color.darkGray, 
-          Color.white);
-    }
   }
   
   /**
@@ -262,12 +341,13 @@ public class MetalSliderUI
    */
   protected int getThumbOverhang()
   {
-    // TODO: figure out what this is used for
+    // FIXME:  for what might this method be used?
     return 0;
   }
   
   protected void scrollDueToClickInTrack(int dir)
   {
+    // FIXME:  for what might this method be overridden?
     super.scrollDueToClickInTrack(dir);
   }
   
@@ -283,8 +363,10 @@ public class MetalSliderUI
   {
     // Note the incoming 'g' has a translation in place to get us to the 
     // start of the tick rect already...
-    // TODO: get color from UIManager...
-    g.setColor(new Color(153, 153, 204));
+    if (slider.isEnabled())
+      g.setColor(MetalLookAndFeel.getPrimaryControlShadow());
+    else
+      g.setColor(MetalLookAndFeel.getControlDisabled());
     g.drawLine(x, TICK_BUFFER, x, TICK_BUFFER + tickLength / 2);
   }
  
@@ -300,8 +382,10 @@ public class MetalSliderUI
   {
     // Note the incoming 'g' has a translation in place to get us to the 
     // start of the tick rect already...
-    // TODO: get color from UIManager...
-    g.setColor(new Color(153, 153, 204));
+    if (slider.isEnabled())
+      g.setColor(MetalLookAndFeel.getPrimaryControlShadow());
+    else
+      g.setColor(MetalLookAndFeel.getControlDisabled());
     g.drawLine(x, TICK_BUFFER, x, TICK_BUFFER + tickLength);
   }
   
@@ -317,8 +401,10 @@ public class MetalSliderUI
   {
     // Note the incoming 'g' has a translation in place to get us to the 
     // start of the tick rect already...
-    // TODO: get color from UIManager...
-    g.setColor(new Color(153, 153, 204));
+    if (slider.isEnabled())
+      g.setColor(MetalLookAndFeel.getPrimaryControlShadow());
+    else
+      g.setColor(MetalLookAndFeel.getControlDisabled());
     g.drawLine(TICK_BUFFER - 1, y, TICK_BUFFER - 1 + tickLength / 2, y);
   }
   
@@ -334,8 +420,10 @@ public class MetalSliderUI
   {
     // Note the incoming 'g' has a translation in place to get us to the 
     // start of the tick rect already...
-    // TODO: get color from UIManager...
-    g.setColor(new Color(153, 153, 204));
+    if (slider.isEnabled())
+      g.setColor(MetalLookAndFeel.getPrimaryControlShadow());
+    else
+      g.setColor(MetalLookAndFeel.getControlDisabled());
     g.drawLine(TICK_BUFFER - 1, y, TICK_BUFFER - 1 + tickLength, y);
   }
   

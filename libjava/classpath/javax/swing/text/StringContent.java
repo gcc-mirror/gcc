@@ -56,6 +56,9 @@ import javax.swing.undo.UndoableEdit;
  */
 public final class StringContent implements AbstractDocument.Content, Serializable
 {
+  /** The serialization UID (compatible with JDK1.5). */
+  private static final long serialVersionUID = 4755994433709540381L;
+
   // This is package-private to avoid an accessor method.
   char[] content;
 

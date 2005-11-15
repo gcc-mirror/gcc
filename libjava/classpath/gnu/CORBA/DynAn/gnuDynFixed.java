@@ -57,7 +57,7 @@ import java.math.BigDecimal;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class gnuDynFixed extends anyUndivideable implements DynFixed
+public class gnuDynFixed extends UndivideableAny implements DynFixed
 {
   /**
    * Use serialVersionUID for interoperability.

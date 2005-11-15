@@ -46,7 +46,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
-import javax.swing.UIDefaults;
+import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputListener;
@@ -57,8 +57,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-public class BasicTableHeaderUI
-  extends TableHeaderUI
+public class BasicTableHeaderUI extends TableHeaderUI
 {
 
   public static ComponentUI createUI(JComponent h)
@@ -71,16 +70,42 @@ public class BasicTableHeaderUI
   protected CellRendererPane rendererPane;
   protected Border cellBorder;
 
-  class MouseInputHandler
-    implements MouseInputListener
+  public class MouseInputHandler implements MouseInputListener
   {
-    public void mouseClicked(MouseEvent e) {}
-    public void mouseDragged(MouseEvent e) {}
-    public void mouseEntered(MouseEvent e) {}
-    public void mouseExited(MouseEvent e) {}
-    public void mouseMoved(MouseEvent e) {}
-    public void mousePressed(MouseEvent e) {}
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e)
+    {
+      // TODO: Implement this properly.
+    }
+
+    public void mouseDragged(MouseEvent e)
+    {
+      // TODO: Implement this properly.
+    }
+
+    public void mouseEntered(MouseEvent e)
+    {
+      // TODO: Implement this properly.
+    }
+
+    public void mouseExited(MouseEvent e)
+    {
+      // TODO: Implement this properly.
+    }
+
+    public void mouseMoved(MouseEvent e)
+    {
+      // TODO: Implement this properly.
+    }
+
+    public void mousePressed(MouseEvent e)
+    {
+      // TODO: Implement this properly.
+    }
+
+    public void mouseReleased(MouseEvent e)
+    {
+      // TODO: Implement this properly.
+    }
   }
 
   protected MouseInputListener createMouseInputListener()
@@ -95,15 +120,15 @@ public class BasicTableHeaderUI
 
   protected void installDefaults()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    header.setBackground(defaults.getColor("TableHeader.background"));
-    header.setForeground(defaults.getColor("TableHeader.foreground"));
-    header.setFont(defaults.getFont("TableHeader.font"));
-    cellBorder = defaults.getBorder("TableHeader.cellBorder");
+    LookAndFeel.installColorsAndFont(header, "TableHeader.background",
+                                     "TableHeader.foreground",
+                                     "TableHeader.font");
+    cellBorder = UIManager.getBorder("TableHeader.cellBorder");
   }
 
   protected void installKeyboardActions()
   {
+    // TODO: Implement this properly.
   }
 
   protected void installListeners()
@@ -128,6 +153,7 @@ public class BasicTableHeaderUI
 
   protected void uninstallKeyboardActions()
   {
+    // TODO: Implement this properly.
   }
 
   protected void uninstallListeners()
@@ -157,6 +183,7 @@ public class BasicTableHeaderUI
         Rectangle bounds = header.getHeaderRect(i);
         if (bounds.intersects(clip))
           {
+            Rectangle oldClip = gfx.getClipBounds();
             TableColumn col = cmod.getColumn(i);
             TableCellRenderer rend = col.getHeaderRenderer();
             if (rend == null)
@@ -173,10 +200,12 @@ public class BasicTableHeaderUI
             if (comp instanceof JComponent)
               ((JComponent)comp).setBorder(cellBorder);
             gfx.translate(bounds.x, bounds.y);
+            gfx.setClip(0, 0, bounds.width, bounds.height);
             comp.setSize(bounds.width, bounds.height);
             comp.setLocation(0,0);
             comp.paint(gfx);
             gfx.translate(-bounds.x, -bounds.y);
+            gfx.setClip(oldClip);
           }
       }
 

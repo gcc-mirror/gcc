@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -62,7 +62,7 @@ public final class LongHolder
    * The default type code for this holder.
    */
   private static final TypeCode t_longlong =
-    new primitiveTypeCode(TCKind.tk_longlong);
+    new PrimitiveTypeCode(TCKind.tk_longlong);
 
   /**
    * The <code>long</code> (CORBA <code>long long</code>) value,

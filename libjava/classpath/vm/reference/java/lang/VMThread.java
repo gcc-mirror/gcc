@@ -376,15 +376,11 @@ final class VMThread
      */
     static void sleep(long ms, int ns) throws InterruptedException
     {
-
-      // Round up
-      ms += (ns != 0) ? 1 : 0;
-
       // Note: JDK treats a zero length sleep is like Thread.yield(),
       // without checking the interrupted status of the thread.
       // It's unclear if this is a bug in the implementation or the spec.
       // See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6213203
-      if (ms == 0)
+      if (ms == 0 && ns == 0)
 	{
 	  if (Thread.interrupted())
 	    throw new InterruptedException();
@@ -404,11 +400,12 @@ final class VMThread
 	{
 	  while (true)
 	    {
-	      vt.wait(ms);
+	      vt.wait(ms, ns);
 	      now = System.currentTimeMillis();
 	      if (now >= end)
 		break;
 	      ms = end - now;
+	      ns = 0;
 	    }
 	}
     }

@@ -54,7 +54,7 @@ public class gnuExceptionList
   /**
    * A list to store the objects.
    */
-  protected corbaArrayList list = new corbaArrayList();
+  protected CorbaList list = new CorbaList();
 
   /** {@inheritDoc} */
   public void add(TypeCode an_exception)

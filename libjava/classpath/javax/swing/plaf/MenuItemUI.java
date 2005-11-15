@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class MenuItemUI
-  extends ButtonUI
+public abstract class MenuItemUI extends ButtonUI
 {
   /**
    * Constructs a new <code>MenuItemUI</code>.
    */
   public MenuItemUI()
   {
+    // Nothing to do here.
   }
 }

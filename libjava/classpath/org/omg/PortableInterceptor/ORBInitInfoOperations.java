@@ -55,7 +55,7 @@ public interface ORBInitInfoOperations
    *
    * @param interceptor the interceptor to register.
    *
-       * @throws DuplicateName if the interceptor name is not an empty string and an
+   * @throws DuplicateName if the interceptor name is not an empty string and an
    * interceptor with this name is already registered with the ORB being
    * created.
    */
@@ -63,11 +63,14 @@ public interface ORBInitInfoOperations
     throws DuplicateName;
 
   /**
-   * Register the IOR (object reference) interceptor.
-   *
+   * Register the IOR (object reference) interceptor. If the registered
+   * interceptor implements the extended {@link IORInterceptor_3_0} interface,
+   * ORB will call its additional methods, defined in the
+   * {@link IORInterceptor_3_0Operations}.
+   * 
    * @param interceptor the interceptor to register.
-   *
-       * @throws DuplicateName if the interceptor name is not an empty string and an
+   * 
+   * @throws DuplicateName if the interceptor name is not an empty string and an
    * interceptor with this name is already registered with the ORB being
    * created.
    */
@@ -79,7 +82,7 @@ public interface ORBInitInfoOperations
    *
    * @param interceptor the interceptor to register.
    *
-       * @throws DuplicateName if the interceptor name is not an empty string and an
+   * @throws DuplicateName if the interceptor name is not an empty string and an
    * interceptor with this name is already registered with the ORB being
    * created.
    */
@@ -90,7 +93,7 @@ public interface ORBInitInfoOperations
    * Allocate a slot on a {@link PortableInterceptor.Current}. While slots can
    * be allocated by this method, they cannot be initialized.
    * {@link CurrentOperations#get_slot} and {@link CurrentOperations#set_slot}
-       * throw {@link org.omg.CORBA.BAD_INV_ORDER} while called from the interceptor
+   * throw {@link org.omg.CORBA.BAD_INV_ORDER} while called from the interceptor
    * initializer.
    *
    * @return the index to the slot that has been allocated.

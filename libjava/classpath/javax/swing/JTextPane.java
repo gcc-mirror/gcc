@@ -39,8 +39,6 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Component;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -49,7 +47,6 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
 import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
@@ -106,7 +103,7 @@ public class JTextPane
    * @throws IllegalArgumentException if <code>document</code> is not an
    *         instance of <code>StyledDocument</code>
    *
-   * @see {@link #setStyledDocument}
+   * @see #setStyledDocument
    */
   public void setDocument(Document document)
   {
@@ -120,7 +117,7 @@ public class JTextPane
   /**
    * Returns the {@link StyledDocument} that is the content model for
    * this <code>JTextPane</code>. This is a typed wrapper for
-   * {@link #getDocument}.
+   * {@link #getDocument()}.
    *
    * @return the content model of this <code>JTextPane</code>
    */
@@ -179,8 +176,6 @@ public class JTextPane
 	doc.setCharacterAttributes(start, contentLength, getInputAttributes(),
 				   true);
 
-	// Set dot to new position.
-	setCaretPosition(start + contentLength);
       }
     catch (BadLocationException e)
       {
@@ -300,7 +295,7 @@ public class JTextPane
    * @param replace if <code>true</code>, the attributes of the current
    *     selection are overridden, otherwise they are merged
    *
-   * @see {@link #getInputAttributes}
+   * @see #getInputAttributes
    */
   public void setCharacterAttributes(AttributeSet attribute,
                                      boolean replace)

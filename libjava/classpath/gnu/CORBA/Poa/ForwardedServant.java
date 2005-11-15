@@ -39,8 +39,9 @@ exception statement from your version. */
 package gnu.CORBA.Poa;
 
 import gnu.CORBA.IOR;
-import gnu.CORBA.IOR_Delegate;
-import gnu.CORBA.IOR_contructed_object;
+import gnu.CORBA.IorDelegate;
+import gnu.CORBA.IorObject;
+import gnu.CORBA.Minor;
 
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.CompletionStatus;
@@ -101,9 +102,9 @@ public class ForwardedServant
         ObjectImpl fto = (ObjectImpl) a_ref;
 
         // Check maybe the remote side forwarded back to our local object.
-        if (fto instanceof IOR_contructed_object)
+        if (fto instanceof IorObject)
           {
-            IOR_contructed_object iref = (IOR_contructed_object) fto;
+            IorObject iref = (IorObject) fto;
 
             // Check maybe the IOR is local.
             ORB t_orb = iref._orb();
@@ -111,13 +112,13 @@ public class ForwardedServant
               {
                 ORB_1_4 orb = (ORB_1_4) t_orb;
                 Delegate d = iref._get_delegate();
-                if (d instanceof IOR_Delegate)
+                if (d instanceof IorDelegate)
                   {
-                    IOR_Delegate ird = (IOR_Delegate) iref._get_delegate();
+                    IorDelegate ird = (IorDelegate) iref._get_delegate();
                     IOR ior = ird.getIor();
                     if (orb.LOCAL_HOST.equalsIgnoreCase(ior.Internet.host))
                       {
-                        activeObjectMap.Obj rx = orb.rootPOA.findIorKey(ior.key);
+                        AOM.Obj rx = orb.rootPOA.findIorKey(ior.key);
                         if (rx != null)
                           {
                             if (rx.object == fto ||
@@ -175,6 +176,7 @@ public class ForwardedServant
         catch (IOException io_ex)
           {
             MARSHAL m = new MARSHAL();
+            m.minor = Minor.Forwarding;
             m.initCause(io_ex);
             throw m;
           }

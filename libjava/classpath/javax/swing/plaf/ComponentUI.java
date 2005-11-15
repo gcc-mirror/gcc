@@ -38,8 +38,10 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
@@ -86,6 +88,7 @@ public abstract class ComponentUI
    */
   public ComponentUI()
   {
+    // Nothing to do here.
   }
   
   
@@ -157,6 +160,8 @@ public abstract class ComponentUI
    */
   public void paint(Graphics g, JComponent c)
   {
+    // Nothing is done here. This method is meant to be overridden by
+    // subclasses.
   }
   
   
@@ -181,13 +186,14 @@ public abstract class ComponentUI
   {
     if (c.isOpaque())
     {
+      Color oldColor = g.getColor();
       g.setColor(c.getBackground());
       g.fillRect(0, 0, c.getWidth(), c.getHeight());
+      g.setColor(oldColor);
     }
     paint(g, c);
   }
-  
-  
+   
   /**
    * Determines the preferred size of a component. The default
    * implementation returns <code>null</code>, which means that

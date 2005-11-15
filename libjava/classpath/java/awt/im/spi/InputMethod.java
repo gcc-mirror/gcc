@@ -38,7 +38,11 @@ exception statement from your version. */
 package java.awt.im.spi;
 
 import java.awt.AWTEvent;
+import java.awt.Component;
 import java.awt.Rectangle;
+import java.awt.im.InputContext;
+import java.awt.im.InputMethodRequests;
+import java.text.AttributedCharacterIterator.Attribute;
 import java.util.Locale;
 
 /**
@@ -152,8 +156,8 @@ public interface InputMethod
    * Notify this input method of changes in the client window. This is called
    * when notifications are enabled (see {@link
    * InputMethodContext#enableClientWindowNotification(InputMethod, boolean)},
-   * if {@link #removeNotify(Component)} has not been called. The following
-   * situations trigger a notification:<ul>
+   * if {@link InputContext#removeNotify(Component)} has not been called.
+   * The following situations trigger a notification:<ul>
    * <li>The client window changes in location, size, visibility,
    * iconification, or is closed.</li>
    * <li>When enabling client notification (or on the first activation after
@@ -202,7 +206,7 @@ public interface InputMethod
   /**
    * Notify the input method that a client component has been removed from its
    * hierarchy, or that input method support has been disabled. This is
-   * called by {@link InputContext#removeNotify()}, and only when the input
+   * called by {@link InputContext#removeNotify(Component)}, and only when the input
    * method is inactive.
    */
   void removeNotify();

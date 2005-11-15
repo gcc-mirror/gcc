@@ -12,6 +12,9 @@
 /* Define to 1 if you have the `accept' function. */
 #undef HAVE_ACCEPT
 
+/* Define to 1 if you have the <alsa/asoundlib.h> header file. */
+#undef HAVE_ALSA_ASOUNDLIB_H
+
 /* Define to 1 if you have the <asm/ioctls.h> header file. */
 #undef HAVE_ASM_IOCTLS_H
 
@@ -29,6 +32,9 @@
 
 /* Define to 1 if you have the <crt_externs.h> header file. */
 #undef HAVE_CRT_EXTERNS_H
+
+/* Define to 1 if you have the <dssi.h> header file. */
+#undef HAVE_DSSI_H
 
 /* Define to 1 if you have the `execve' function. */
 #undef HAVE_EXECVE
@@ -270,6 +276,9 @@
 
 /* Define to 1 if the X Window System is missing or not being used. */
 #undef X_DISPLAY_MISSING
+
+/* Define to `__attribute__' to nothing if it's not supported.  */
+#undef __attribute__
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

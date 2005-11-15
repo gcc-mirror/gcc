@@ -81,6 +81,7 @@ public abstract class ForwardRequestHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("ForwardRequest expected");
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

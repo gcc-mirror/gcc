@@ -530,7 +530,7 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the value of a flag indicating whether or not input is going
+   * Sets the value of a flag indicating whether or not input is going
    * to be done for this connection.  This default to true unless the
    * doOutput flag is set to false, in which case this defaults to false.
    *
@@ -560,7 +560,7 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns a boolean flag indicating whether or not output will be done
+   * Sets a boolean flag indicating whether or not output will be done
    * on this connection.  The default value is false, so this method can
    * be used to override the default
    *
@@ -851,7 +851,7 @@ public abstract class URLConnection
   }
 
   /**
-   * Set's the ContentHandlerFactory for an application.  This can be called
+   * Sets the ContentHandlerFactory for an application.  This can be called
    * once and only once.  If it is called again, then an Error is thrown.
    * Unlike for other set factory methods, this one does not do a security
    * check prior to setting the factory.
@@ -933,7 +933,7 @@ public abstract class URLConnection
   }
 
   /**
-   * This method set the <code>FileNameMap</code> object being used
+   * This method sets the <code>FileNameMap</code> object being used
    * to decode MIME types by file extension.
    *
    * @param map The <code>FileNameMap</code>.

@@ -551,7 +551,7 @@ public class ArrayList extends AbstractList
   /**
    * Serializes this object to the given stream.
    *
-   * @param out the stream to write to
+   * @param s the stream to write to
    * @throws IOException if the underlying stream fails
    * @serialData the size field (int), the length of the backing array
    *             (int), followed by its elements (Objects) in proper order.
@@ -572,7 +572,7 @@ public class ArrayList extends AbstractList
   /**
    * Deserializes this object from the given stream.
    *
-   * @param in the stream to read from
+   * @param s the stream to read from
    * @throws ClassNotFoundException if the underlying stream fails
    * @throws IOException if the underlying stream fails
    * @serialData the size field (int), the length of the backing array

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CosNaming;
 
+import gnu.CORBA.Minor;
+
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.BooleanHolder;
 import org.omg.CORBA.CompletionStatus;
@@ -114,7 +116,8 @@ public abstract class _BindingIteratorImplBase
         out = rh.createReply();
       }
     else
-      throw new BAD_OPERATION(method, 0, CompletionStatus.COMPLETED_MAYBE);
+      throw new BAD_OPERATION(method, Minor.Method, 
+        CompletionStatus.COMPLETED_MAYBE);
 
     return out;
   }

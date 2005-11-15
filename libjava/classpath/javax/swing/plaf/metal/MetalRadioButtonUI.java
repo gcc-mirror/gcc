@@ -38,20 +38,38 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+
+import javax.swing.AbstractButton;
 import javax.swing.JComponent;
+import javax.swing.JRadioButton;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicRadioButtonUI;
 
+
+/**
+ * A UI delegate for the {@link JRadioButton} component.
+ */
 public class MetalRadioButtonUI
   extends BasicRadioButtonUI
 {
 
-  // FIXME: maybe replace by a Map of instances when this becomes stateful
-  /** The shared UI instance for JRadioButtons. */
-  private static MetalRadioButtonUI instance = null;
-
+  /** Used to draw the focus rectangle. */
+  protected Color focusColor;
+  
+  /** Used to fill the icon when the button is pressed. */
+  protected Color selectColor;
+  
+  /** Used to draw disabled text. */
+  protected Color disabledTextColor;
+  
   /**
-   * Constructs a new instance of MetalRadioButtonUI.
+   * Constructs a new instance of <code>MetalRadioButtonUI</code>.
    */
   public MetalRadioButtonUI()
   {
@@ -59,16 +77,108 @@ public class MetalRadioButtonUI
   }
 
   /**
-   * Returns an instance of MetalRadioButtonUI.
+   * Returns a new instance of <code>MetalRadioButtonUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalRadioButtonUI
+   * @return A new instance of <code>MetalRadioButtonUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instance == null)
-      instance = new MetalRadioButtonUI();
-    return instance;
+    return new MetalRadioButtonUI();
   }
+  
+  /**
+   * Sets the default values for the specified button.
+   * 
+   * @param b  the button.
+   */
+  public void installDefaults(AbstractButton b)
+  {
+    super.installDefaults(b);
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    disabledTextColor = defaults.getColor("RadioButton.disabledText");
+    focusColor = defaults.getColor("RadioButton.focus");
+    selectColor = defaults.getColor("RadioButton.select");
+  }
+  
+  /**
+   * Clears any defaults set in the installDefaults() method.
+   * 
+   * @param b  the {@link JRadioButton}.
+   */
+  protected void uninstallDefaults(AbstractButton b)
+  {
+    super.uninstallDefaults(b);
+    disabledTextColor = null;
+    focusColor = null;
+    selectColor = null;
+  }
+  
+  /**
+   * Returns the color used to fill the {@link JRadioButton}'s icon when the
+   * button is pressed.  The default color is obtained from the 
+   * {@link UIDefaults} via an entry with the key 
+   * <code>RadioButton.select</code>.
+   * 
+   * @return The select color.
+   */
+  protected Color getSelectColor()
+  {
+    return selectColor;    
+  }
+  
+  /**
+   * Returns the color for the {@link JRadioButton}'s text when the button is
+   * disabled.  The default color is obtained from the {@link UIDefaults} via 
+   * an entry with the key <code>RadioButton.disabledText</code>.
+   * 
+   * @return The disabled text color.
+   */
+  protected Color getDisabledTextColor()
+  {
+    return disabledTextColor;
+  }
+  
+  /**
+   * Returns the color used to draw the focus rectangle when the 
+   * {@link JRadioButton} has the focus.  The default color is obtained from 
+   * the {@link UIDefaults} via an entry with the key 
+   * <code>RadioButton.focus</code>.
+   * 
+   * @return The color used to draw the focus rectangle.
+   * 
+   * @see #paintFocus(Graphics, Rectangle, Dimension)
+   */
+  protected Color getFocusColor()
+  {
+    return focusColor;
+  }
+  
+  /**
+   * Paints the {@link JRadioButton}.
+   * 
+   * @param g  the graphics device.
+   * @param c  the component (an instance of {@link JRadioButton}).
+   */
+  public void paint(Graphics g, JComponent c)
+  {
+    super.paint(g, c);
+    // FIXME:  disabled text isn't being drawn correctly, it's possible that
+    // it could be done here...
+  }
+  
+  /**
+   * Paints the focus rectangle for the {@link JRadioButton}.
+   * 
+   * @param g  the graphics device.
+   * @param t  the bounding rectangle for the text.
+   * @param d  ???
+   */
+  protected void paintFocus(Graphics g, Rectangle t, Dimension d)
+  {
+    g.setColor(focusColor);
+    g.drawRect(t.x - 1, t.y + 2, t.width + 2, t.height - 4);
+  }
+  
 }

@@ -91,7 +91,8 @@ public class StackFrameCommandSet
         // So if we throw an IOException we're in serious trouble
         throw new JdwpInternalErrorException(ex);
       }
-    return true;
+
+    return false;
   }
 
   private void executeGetValues(ByteBuffer bb, DataOutputStream os)

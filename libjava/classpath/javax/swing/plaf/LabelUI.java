@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class LabelUI
-  extends ComponentUI
+public abstract class LabelUI extends ComponentUI
 {
   /**
    * Constructs a new <code>LabelUI</code>.
    */
   public LabelUI()
   {
+    // Nothing to do here.
   }
 }

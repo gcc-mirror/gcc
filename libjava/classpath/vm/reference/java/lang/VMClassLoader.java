@@ -40,6 +40,7 @@ exception statement from your version. */
 package java.lang;
 
 import gnu.classpath.SystemProperties;
+import gnu.classpath.Configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +64,48 @@ import java.util.zip.ZipFile;
  */
 final class VMClassLoader
 {
+
+
+  /** packages loaded by the bootstrap class loader */
+  static final HashMap definedPackages = new HashMap();
+
+  /**
+   * Converts the array string of native package names to
+   * Packages. The packages are then put into the
+   * definedPackages hashMap
+   */
+  static
+  {
+    String[] packages = getBootPackages();
+    
+    if( packages != null)
+      {
+        String specName = 
+              SystemProperties.getProperty("java.specification.name");
+        String vendor =
+              SystemProperties.getProperty("java.specification.vendor");
+        String version =
+              SystemProperties.getProperty("java.specification.version");
+        
+        Package p;
+              
+        for(int i = 0; i < packages.length; i++)
+          {
+            p = new Package(packages[i],
+                  specName,
+                  vendor,
+                  version,
+                  "GNU Classpath",
+                  "GNU",
+                  Configuration.CLASSPATH_VERSION,
+                  null);
+
+            definedPackages.put(packages[i], p);
+          }
+      }
+  }
+
+  
   /**
    * Helper to define a class using a string of bytes. This assumes that
    * the security checks have already been performed, if necessary.
@@ -119,6 +162,9 @@ final class VMClassLoader
     return null;
   }
 
+  /** jars from property java.boot.class.path */
+  static final HashMap bootjars = new HashMap();
+  
   /**
    * Helper to get a list of resources from the bootstrap class loader.
    *
@@ -139,8 +185,9 @@ final class VMClassLoader
 	  {
 	    try
 	      {
-		v.add(new URL("file://"
-		  + new File(file, name).getAbsolutePath()));
+                File f = new File(file, name);
+                if (!f.exists()) continue;
+                v.add(new URL("file://" + f.getAbsolutePath()));
 	      }
 	    catch (MalformedURLException e)
 	      {
@@ -150,30 +197,28 @@ final class VMClassLoader
 	else if (file.isFile())
 	  {
 	    ZipFile zip;
-	    try
-	      {
-		zip = new ZipFile(file);
-	      }
-	    catch (IOException e)
-	      {
-		continue;
-	      }
-	    String zname = name.startsWith("/") ? name.substring(1) : name;
-	    try
-	      {
-		if (zip.getEntry(zname) == null)
+            synchronized(bootjars)
+              {
+                zip = (ZipFile) bootjars.get(file.getName());
+              }
+            if(zip == null)
+              {
+                try
+	          {
+                    zip = new ZipFile(file);
+                    synchronized(bootjars)
+                      {
+                        bootjars.put(file.getName(), zip);
+                      }
+	          }
+	        catch (IOException e)
+	          {
 		    continue;
-	      }
-	    finally
-	      {
-		try
-		  {
-		    zip.close();
-		  }
-		catch (IOException e)
-		  {
-		  }
-	      }
+	          }
+              }
+	    String zname = name.startsWith("/") ? name.substring(1) : name;
+	    if (zip.getEntry(zname) == null)
+	      continue;
 	    try
 	      {
 		v.add(new URL("jar:file://"
@@ -188,29 +233,41 @@ final class VMClassLoader
     return v.elements();
   }
 
+
   /**
-   * Helper to get a package from the bootstrap class loader.  The default
-   * implementation of returning null may be adequate, or you may decide
-   * that this needs some native help.
+   * Returns a String[] of native package names. The default
+   * implementation returns an empty array, or you may decide
+   * this needs native help.
+   */
+  private static String[] getBootPackages()
+  {
+    return new String[0];
+  }
+
+
+  /**
+   * Helper to get a package from the bootstrap class loader.
    *
    * @param name the name to find
    * @return the named package, if it exists
    */
   static Package getPackage(String name)
   {
-    return null;
+    return (Package)definedPackages.get(name);
   }
 
+
+  
   /**
-   * Helper to get all packages from the bootstrap class loader.  The default
-   * implementation of returning an empty array may be adequate, or you may
-   * decide that this needs some native help.
+   * Helper to get all packages from the bootstrap class loader.  
    *
    * @return all named packages, if any exist
    */
   static Package[] getPackages()
   {
-    return new Package[0];
+    Package[] packages = new Package[definedPackages.size()];
+    definedPackages.values().toArray(packages);
+    return packages;
   }
 
   /**

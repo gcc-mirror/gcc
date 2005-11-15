@@ -1,0 +1,37 @@
+#include "include/layout.wml"
+
+<subject "GNU Classpath CORBA interoperability page">
+
+<box>
+
+<boxtitle>GNU Classpath::Object management group</boxtitle>
+<boxitem>
+This page is referenced from the official
+<a href="http://doc.omg.org/vendor-tags">OMG Vendor tag list</a>,
+maintained by the <a href = "http://www.corba.org/">OMG</a>. 
+It is is designed to help programmers debugging interoperation
+with our ORB. 
+</boxitem>
+
+<boxtitle>GNU Classpath::CORBA interoperability</boxtitle>
+<boxitem>
+<ol>
+<li><a href="http://developer.classpath.org/mediation/CorbaInteroperability">
+Interoperability information (system exception minor codes, etc).</a></li>
+<li><a href="http://developer.classpath.org/doc/">GNU Classpath API Specification</a></li>
+<li><a href="bugs.html">Bug database.</a></li>
+<li>GNU Classpath CORBA vs:
+<a href="http://www.kaffe.org/~stuart/japi/htmlout/h-jdk12-classpath.html">JDK 1.2</a>
+<a href="http://www.kaffe.org/~stuart/japi/htmlout/h-jdk13-classpath.html">JDK 1.3</a>
+<a href="http://www.kaffe.org/~stuart/japi/htmlout/h-jdk14-classpath.html">JDK 1.4</a>
+ (updated nightly)</li>
+<li><a href="http://www.gnu.org/software/classpath/classpath.html">Project home page</a></li>
+</ol>
+Registered information
+<ul>
+<li>GNU Classpath Vendor Minor Code Id (VMCID) is 0x47430xxx 
+("GC\x00\x00" - "GC\x0f\xff").</li>
+</ul>
+</boxitem>
+
+</box>

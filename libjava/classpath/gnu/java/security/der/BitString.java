@@ -286,6 +286,19 @@ public class BitString implements Cloneable, Comparable
     return 0; // not reached.
   }
 
+  public int hashCode()
+  {
+    int result = 0;
+    for (int i = 0; i < bytes.length - 1; ++i)
+      result = result * 31 + bytes[i];
+    if (bytes.length > 0)
+      {
+        int lastByte = bytes[bytes.length - 1] & ~ ((1 << ignoredBits) - 1);
+        result = result * 31 + lastByte;
+      }
+    return result;
+  }
+
   public boolean equals(Object o)
   {
     if (!(o instanceof BitString))

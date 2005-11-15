@@ -77,14 +77,23 @@ public final class AccessControlContext
 
   /**
    * Construct a new AccessControlContext with the specified
-   * ProtectionDomains and DomainCombiner
+   * {@link ProtectionDomain}s and {@link DomainCombiner}.
    *
+   * <p>Code calling this constructor must have a {@link
+   * SecurityPermission} of <i>createAccessControlContext</i>.</p>
+   *
+   * @throws SecurityException If the caller does not have permission
+   * to create an access control context.
    * @since 1.3
    */
   public AccessControlContext(AccessControlContext acc,
 			      DomainCombiner combiner)
   {
-    // XXX check permission to call this.
+    SecurityManager sm = System.getSecurityManager ();
+    if (sm != null)
+      {
+        sm.checkPermission (new SecurityPermission ("createAccessControlContext"));
+      }
     AccessControlContext acc2 = AccessController.getContext();
     protectionDomains = combiner.combine (acc2.protectionDomains,
                                           acc.protectionDomains);
@@ -119,10 +128,20 @@ public final class AccessControlContext
   public void checkPermission(Permission perm) throws AccessControlException
   {
     if (protectionDomains.length == 0)
-      throw new AccessControlException ("permission not granted");
+      throw new AccessControlException ("permission " 
+					+ perm 
+					+ " not granted: no protection domains");
+
     for (int i = 0; i < protectionDomains.length; i++)
-      if (!protectionDomains[i].implies(perm))
-        throw new AccessControlException ("permission not granted");
+      {
+	final ProtectionDomain domain = protectionDomains[i];
+	if (!domain.implies(perm))
+	  throw new AccessControlException ("permission " 
+					    + perm 
+					    + " not granted: " 
+					    + domain 
+					    + " does not imply it.");
+      }
   }
 
   /**
@@ -172,5 +191,10 @@ public final class AccessControlContext
       h ^= protectionDomains[i].hashCode();
 
     return h;
+  }
+
+  ProtectionDomain[] getProtectionDomains ()
+  {
+    return protectionDomains;
   }
 }

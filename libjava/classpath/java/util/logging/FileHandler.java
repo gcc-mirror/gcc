@@ -43,10 +43,6 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-
 import java.util.LinkedList;
 import java.util.ListIterator;
 

@@ -1,5 +1,5 @@
 /* AbstractColorChooserPanel.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -64,7 +64,8 @@ public abstract class AbstractColorChooserPanel extends JPanel
    */
   public AbstractColorChooserPanel()
   {
-  } // AbstractColorChooserPanel()
+    // Nothing to do here.
+  }
 
   /**
    * This method returns the name displayed in the tab for this chooser panel.
@@ -73,6 +74,36 @@ public abstract class AbstractColorChooserPanel extends JPanel
    */
   public abstract String getDisplayName();
 
+  /**
+   * Returns the key code for the mnemonic for this panel.  This method returns
+   * zero to indicate no mnemonic, subclasses can override this.
+   * 
+   * @return <code>0</code>, to indicate no mnemonic key code.
+   * 
+   * @see #getDisplayedMnemonicIndex()
+   * @since 1.4
+   */
+  public int getMnemonic()
+  {
+    return 0;
+  }
+  
+  /**
+   * Returns the index of the character in the display name that is the 
+   * mnemonic.  This method returns <code>-1</code> to indicate no mnemonic,
+   * subclasses can override.
+   * 
+   * @return <code>-1</code>, to indicate no mnemonic.
+   * 
+   * @see #getDisplayName()
+   * @see #getMnemonic()
+   * @since 1.4
+   */
+  public int getDisplayedMnemonicIndex()
+  {
+    return -1;
+  }
+  
   /**
    * This method updates the chooser panel when the JColorChooser's color has
    * changed.

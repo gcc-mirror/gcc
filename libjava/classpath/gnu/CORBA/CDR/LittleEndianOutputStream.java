@@ -55,7 +55,7 @@ import java.io.OutputStream;
  */
 public class LittleEndianOutputStream
   extends FilterOutputStream
-  implements abstractDataOutputStream
+  implements AbstractDataOutput
 {
   /**
    * This method initializes an instance of <code>DataOutputStream</code> to

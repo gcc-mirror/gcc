@@ -41,6 +41,9 @@ import java.io.Serializable;
 
 public class TabStop implements Serializable
 {
+  /** The serialization UID (compatible with JDK1.5). */
+  private static final long serialVersionUID = -5381995917363605058L;
+
   public static final int ALIGN_LEFT = 0;
   public static final int ALIGN_RIGHT = 1;
   public static final int ALIGN_CENTER = 2;

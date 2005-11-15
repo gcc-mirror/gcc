@@ -58,6 +58,8 @@ public class JToolTip extends JComponent implements Accessible
   /**
    * DOCUMENT ME!
    */
+  // FIXME: This inner class is a complete stub and must be implemented
+  // properly.
   protected class AccessibleJToolTip extends AccessibleJComponent
   {
     private static final long serialVersionUID = -6222548177795408476L;
@@ -67,6 +69,7 @@ public class JToolTip extends JComponent implements Accessible
      */
     protected AccessibleJToolTip()
     {
+      // Nothing to do here.
     }
 
     /**

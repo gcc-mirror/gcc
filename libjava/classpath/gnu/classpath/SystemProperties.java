@@ -106,12 +106,6 @@ public class SystemProperties
     if (defaultProperties.get("file.encoding") == null)
       defaultProperties.put("file.encoding", "8859_1");
 
-    // Default to the Swing FocusManager so that the old-style Swing API
-    // for FocusManager can be supported without hardcoding it in AWT.
-    if (defaultProperties.get("gnu.java.awt.FocusManager") == null)
-      defaultProperties.put("gnu.java.awt.FocusManager",
-                            "gnu.java.awt.FocusManager");
-
     // XXX FIXME - Temp hack for old systems that set the wrong property
     if (defaultProperties.get("java.io.tmpdir") == null)
       defaultProperties.put("java.io.tmpdir",

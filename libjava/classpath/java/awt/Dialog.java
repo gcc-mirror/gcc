@@ -519,6 +519,8 @@ paramString()
   
   protected class AccessibleAWTDialog extends AccessibleAWTWindow
   {
+    private static final long serialVersionUID = 4837230331833941201L;
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.DIALOG;

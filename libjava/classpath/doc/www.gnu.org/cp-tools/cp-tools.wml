@@ -35,6 +35,15 @@ page describing them in more detail:
 </box>
 
 <box>
+<boxtitle><a name="Development">GNU Classpath::Tools::Downloads</a></boxtitle>
+<boxitem>
+At the moment there are only official releases of gjdoc on
+<createlink url="ftp://ftp.gnu.org/gnu/classpath/" name="ftp.gnu.org"/>.
+All other tools are available from CVS from the savannah project page below.
+</boxitem>
+</box>
+
+<box>
 <boxtitle><a name="Development">GNU Classpath::Tools::Development</a></boxtitle>
 <boxitem>
 GNU Classpath Tools is part of the GNU Classpath project which is hosted at

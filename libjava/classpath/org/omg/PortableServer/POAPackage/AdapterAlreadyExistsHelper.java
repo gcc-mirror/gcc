@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableServer.POAPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
+import gnu.CORBA.Minor;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -107,6 +108,7 @@ public abstract class AdapterAlreadyExistsHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("AdapterAlreadyExists expected");
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

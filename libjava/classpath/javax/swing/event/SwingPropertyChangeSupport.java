@@ -289,10 +289,9 @@ public final class SwingPropertyChangeSupport
     int index;
     PropertyChangeListener listener;
 
-    // Check Values if they are equal
-    if (event.getOldValue() == null && event.getNewValue() == null ||
-        (event.getOldValue() != null && event.getNewValue() != null &&
-              event.getOldValue().equals(event.getNewValue()))) 
+    // if the old and new values are non-null and equal, don't notify listeners
+    if (event.getOldValue() != null && event.getNewValue() != null &&
+              event.getOldValue().equals(event.getNewValue())) 
       return;
 
     // Process Main Listener List

@@ -165,6 +165,8 @@ public abstract class AbstractButton extends JComponent
      */
     public void stateChanged(ChangeEvent ev)
     {
+      AbstractButton.this.fireStateChanged();
+      repaint();
     }
   }
 
@@ -375,6 +377,7 @@ public abstract class AbstractButton extends JComponent
     
     protected AccessibleAbstractButton()
     {
+      // Nothing to do here yet.
     }
 
     public AccessibleStateSet getAccessibleStateSet()
@@ -509,11 +512,37 @@ public abstract class AbstractButton extends JComponent
   }
 
   /**
-   * Creates a new AbstractButton object.
+   * Creates a new AbstractButton object. Subclasses should call the following
+   * sequence in their constructor in order to initialize the button correctly:
+   * <pre>
+   * super();
+   * init(text, icon);
+   * </pre>
+   *
+   * The {@link #init(String, Icon)} method is not called automatically by this
+   * constructor.
+   *
+   * @see #init(String, Icon)
    */
   public AbstractButton()
   {
-    init("", null);
+    actionListener = createActionListener();
+    changeListener = createChangeListener();
+    itemListener = createItemListener();
+
+    horizontalAlignment = CENTER;
+    horizontalTextPosition = TRAILING;
+    verticalAlignment = CENTER;
+    verticalTextPosition = CENTER;
+    borderPainted = true;
+    contentAreaFilled = true;
+    focusPainted = true;
+    setFocusable(true);
+    setAlignmentX(CENTER_ALIGNMENT);
+    setAlignmentY(CENTER_ALIGNMENT);
+    setDisplayedMnemonicIndex(-1);
+    setOpaque(true);
+    text = "";
     updateUI();
   }
 
@@ -524,7 +553,7 @@ public abstract class AbstractButton extends JComponent
    */
   public ButtonModel getModel()
   {
-    return model;
+      return model;
   }
 
   /**
@@ -569,25 +598,6 @@ public abstract class AbstractButton extends JComponent
 
     if (icon != null)
       default_icon = icon;
-
-    actionListener = createActionListener();
-    changeListener = createChangeListener();
-    itemListener = createItemListener();
-
-    horizontalAlignment = CENTER;
-    horizontalTextPosition = TRAILING;
-    verticalAlignment = CENTER;
-    verticalTextPosition = CENTER;
-    borderPainted = true;
-    contentAreaFilled = true;
-
-    focusPainted = true;
-    setFocusable(true);
-
-    setAlignmentX(LEFT_ALIGNMENT);
-    setAlignmentY(CENTER_ALIGNMENT);
-
-    setDisplayedMnemonicIndex(-1);    
  }
  
   /**
@@ -615,7 +625,8 @@ public abstract class AbstractButton extends JComponent
    */
   public void setActionCommand(String actionCommand)
   {
-    model.setActionCommand(actionCommand);
+    if (model != null)
+      model.setActionCommand(actionCommand);
   }
 
   /**
@@ -782,7 +793,10 @@ public abstract class AbstractButton extends JComponent
    */
   public int getMnemonic()
   {
-    return getModel().getMnemonic();
+    ButtonModel mod = getModel();
+    if (mod != null)
+      return mod.getMnemonic();
+    return -1;
   }
 
   /**
@@ -810,11 +824,15 @@ public abstract class AbstractButton extends JComponent
    */
   public void setMnemonic(int mne)
   {
-    int old = getModel().getMnemonic();
+    ButtonModel mod = getModel();
+    int old = -1;
+    if (mod != null)
+      old = mod.getMnemonic();
 
     if (old != mne)
       {
-        getModel().setMnemonic(mne);
+        if (mod != null)
+          mod.setMnemonic(mne);
 
         if (text != null && !text.equals(""))
           {
@@ -907,7 +925,9 @@ public abstract class AbstractButton extends JComponent
    */
   public void setSelected(boolean s)
   {
-    getModel().setSelected(s);
+    ButtonModel mod = getModel();
+    if (mod != null)
+      mod.setSelected(s);
   }
 
   /**
@@ -918,7 +938,10 @@ public abstract class AbstractButton extends JComponent
    */
   public boolean isSelected()
   {
-    return getModel().isSelected();
+    ButtonModel mod = getModel();
+    if (mod != null)
+      return mod.isSelected();
+    return false;
   }
 
   /**
@@ -929,8 +952,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setEnabled(boolean b)
   {
+    // Do nothing if state does not change.
+    if (b == isEnabled())
+      return;
     super.setEnabled(b);
-    getModel().setEnabled(b);
+    setFocusable(b);
+    ButtonModel mod = getModel();
+    if (mod != null)
+      mod.setEnabled(b);
   }
 
   /** 
@@ -1608,16 +1637,9 @@ public abstract class AbstractButton extends JComponent
    *
    * @return The new ChangeListener
    */
-  protected  ChangeListener createChangeListener()
+  protected ChangeListener createChangeListener()
   {
-    return new ChangeListener()
-      {
-        public void stateChanged(ChangeEvent e)
-        {
-          AbstractButton.this.fireStateChanged();
-          AbstractButton.this.repaint();          
-        }
-      };
+    return new ButtonChangeListener();
   }
 
   /**
@@ -1669,18 +1691,22 @@ public abstract class AbstractButton extends JComponent
    */
   public void doClick(int pressTime)
   {
-    getModel().setArmed(true);
-    getModel().setPressed(true);
-    try
+    ButtonModel mod = getModel();
+    if (mod != null)
       {
-        java.lang.Thread.sleep(pressTime);
+        mod.setArmed(true);
+        mod.setPressed(true);
+        try
+          {
+            java.lang.Thread.sleep(pressTime);
+          }
+        catch (java.lang.InterruptedException e)
+          {
+            // probably harmless
+          }
+        mod.setPressed(false);
+        mod.setArmed(false);
       }
-    catch (java.lang.InterruptedException e)
-      {
-        // probably harmless
-      }
-    getModel().setPressed(false);
-    getModel().setArmed(false);
   }
 
   /**
@@ -1979,6 +2005,7 @@ public abstract class AbstractButton extends JComponent
    */
   public void updateUI()
   {
+    // TODO: What to do here?
   }
 
   /**

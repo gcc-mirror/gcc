@@ -44,8 +44,7 @@ import javax.swing.UIDefaults;
 import javax.swing.plaf.ComponentUI;
 
 /**
- * A UI delegate for the {@link JCheckBox} component under the 
- * {@link MetalLookAndFeel}.
+ * A UI delegate for the {@link JCheckBox} component.
  */
 public class MetalCheckBoxUI
   extends MetalRadioButtonUI
@@ -64,11 +63,11 @@ public class MetalCheckBoxUI
   }
 
   /**
-   * Returns an instance of MetalCheckBoxUI.
+   * Returns a shared instance of <code>MetalCheckBoxUI</code>.
    *
    * @param component the component for which we return an UI instance
    *
-   * @return an instance of MetalCheckBoxUI
+   * @return A shared instance of <code>MetalCheckBoxUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {

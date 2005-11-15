@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package gnu.CORBA.Poa;
 
-import gnu.CORBA.Functional_ORB;
+import gnu.CORBA.OrbFunctional;
 import gnu.CORBA.IOR;
 import gnu.CORBA.Connected_objects.cObject;
 import gnu.CORBA.DynAn.gnuDynAnyFactory;
@@ -53,11 +53,13 @@ import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.OBJECT_NOT_EXIST;
+import org.omg.CORBA.ORB;
 import org.omg.CORBA.Policy;
 import org.omg.CORBA.PolicyError;
 import org.omg.CORBA.portable.ObjectImpl;
 import org.omg.PortableInterceptor.PolicyFactory;
-import org.omg.PortableServer.POA;
+import org.omg.PortableServer.Servant;
+import org.omg.PortableServer.POAManagerPackage.State;
 import org.omg.PortableServer.POAPackage.InvalidPolicy;
 
 import java.applet.Applet;
@@ -69,7 +71,7 @@ import java.util.Properties;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class ORB_1_4
-  extends Functional_ORB
+  extends OrbFunctional
 {
   /**
    * The root POA.
@@ -100,7 +102,7 @@ public class ORB_1_4
     super();
     try
       {
-        rootPOA = new gnuPOA(null, "RootPOA", null, policySets.rootPoa(), this);
+        rootPOA = new gnuPOA(null, "RootPOA", null, StandardPolicies.rootPoa(), this);
       }
     catch (InvalidPolicy ex)
       {
@@ -130,7 +132,7 @@ public class ORB_1_4
       {
         try
           {
-            activeObjectMap.Obj exists = rootPOA.findObject(forObject);
+            AOM.Obj exists = rootPOA.findObject(forObject);
             if (exists == null)
               throw new OBJECT_NOT_EXIST(forObject == null ? "null"
                 : forObject.toString());
@@ -201,9 +203,9 @@ public class ORB_1_4
     IOR ior = super.createIOR(ref);
     if (iIor != null)
       {
-        activeObjectMap.Obj obj = rootPOA.findIorKey(ior.key);
+        AOM.Obj obj = rootPOA.findIorKey(ior.key);
 
-        POA poa;
+        gnuPOA poa;
 
         // Null means that the object was connected to the ORB directly.
         if (obj == null)
@@ -215,6 +217,7 @@ public class ORB_1_4
 
         // This may modify the ior.
         iIor.establish_components(info);
+        iIor.components_established(info);
       }
     return ior;
   }
@@ -252,5 +255,39 @@ public class ORB_1_4
     super.set_parameters(para, props);
     registerInterceptors(props, para);
   }
+  
+  /**
+   * This method is called by RMI-IIOP {@link javax.rmi.Tie#orb(ORB)}, passing
+   * <code>this</code> as parameter. The ORB will try to connect that tie as
+   * one of its objects, if it is not already connected. If the wrapper is an
+   * instance of Servant this method also activates the root poa (if not already
+   * active).
+   */
+  public void set_delegate(java.lang.Object wrapper)
+  {
+    if (wrapper instanceof org.omg.CORBA.Object)
+      {
+        org.omg.CORBA.Object object = (org.omg.CORBA.Object) wrapper;
+        if (connected_objects.getKey(object) == null)
+          connect(object);
+      }
+    else if (wrapper instanceof Servant)
+      {
+        Servant s = (Servant) wrapper;
+        if (rootPOA.findServant(s) == null)
+          try
+            {
+              rootPOA.servant_to_reference(s);
+              if (rootPOA.the_POAManager().get_state().value() == State._HOLDING)
+                rootPOA.the_POAManager().activate();
+            }
+          catch (Exception e)
+            {
+              BAD_OPERATION bad = new BAD_OPERATION("Unable to connect "
+                + wrapper + " to " + this);
+              throw bad;
+            }
+      }
+  }  
 
 }

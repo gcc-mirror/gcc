@@ -47,7 +47,8 @@ public abstract class SampleModel
   /** Height of image described. */
   protected int height;
   
-  /** Number of bands in the image described. */
+  /** Number of bands in the image described.  Package-private here,
+      shadowed by ComponentSampleModel. */
   protected int numBands;
 
   /** 

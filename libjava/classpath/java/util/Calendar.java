@@ -914,8 +914,19 @@ public abstract class Calendar implements Serializable, Cloneable
    */
   public boolean equals(Object o)
   {
-    return (o instanceof Calendar)
-           && getTimeInMillis() == ((Calendar) o).getTimeInMillis();
+    if (! (o instanceof Calendar))
+      return false;
+    Calendar cal = (Calendar) o;
+    if (getTimeInMillis() == ((Calendar) o).getTimeInMillis()
+        && cal.getFirstDayOfWeek() == getFirstDayOfWeek()
+        && cal.isLenient() == isLenient()
+        && cal.getMinimalDaysInFirstWeek() == getMinimalDaysInFirstWeek())
+      {
+        TimeZone self = getTimeZone();
+        TimeZone oth = cal.getTimeZone();
+        return self == null ? oth == null : self.equals(oth);
+      }
+    return false;
   }
 
   /**
@@ -926,7 +937,13 @@ public abstract class Calendar implements Serializable, Cloneable
   public int hashCode()
   {
     long time = getTimeInMillis();
-    return (int) ((time & 0xffffffffL) ^ (time >> 32));
+    int val = (int) ((time & 0xffffffffL) ^ (time >> 32));
+    val += (getFirstDayOfWeek() + (isLenient() ? 1230 : 1237)
+            + getMinimalDaysInFirstWeek());
+    TimeZone self = getTimeZone();
+    if (self != null)
+      val ^= self.hashCode();
+    return val;
   }
 
   /**

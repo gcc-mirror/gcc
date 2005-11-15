@@ -38,10 +38,18 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.Color;
+
 import javax.swing.JComponent;
+import javax.swing.JTextPane;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.UIDefaults;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.text.Element;
 import javax.swing.text.PlainView;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.text.View;
 
 public class BasicTextPaneUI extends BasicEditorPaneUI
@@ -61,8 +69,32 @@ public class BasicTextPaneUI extends BasicEditorPaneUI
     return new PlainView(elem);
   }
 
+  /**
+   * Returns the prefix for entries in the {@link UIDefaults} table.
+   *
+   * @return "TextPane"
+   */
   protected String getPropertyPrefix()
   {
     return "TextPane";
+  }
+
+  /**
+   * Installs this UI on the specified <code>JTextPane</code>. This calls the
+   * super implementation and then adds a default style to the text pane.
+   *
+   * @param c the text pane to install the UI to
+   */
+  public void installUI(JComponent c)
+  {
+    super.installUI(c);
+    JTextPane tp = (JTextPane) c;
+    Style defaultStyle = tp.getStyle(StyleContext.DEFAULT_STYLE);
+    defaultStyle.addAttribute(StyleConstants.Foreground,
+                              new ColorUIResource(Color.BLACK));
+    defaultStyle.addAttribute(StyleConstants.FontFamily, "Serif");
+    defaultStyle.addAttribute(StyleConstants.Italic, Boolean.FALSE);
+    defaultStyle.addAttribute(StyleConstants.Bold, Boolean.FALSE);
+    defaultStyle.addAttribute(StyleConstants.FontSize, new Integer(12));
   }
 }

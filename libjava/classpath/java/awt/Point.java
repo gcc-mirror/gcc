@@ -226,6 +226,10 @@ public class Point extends Point2D implements Serializable
   */
   public boolean equals(Object obj)
   {
+    // NOTE: No special hashCode() method is required for this class,
+    // as this equals() implementation is functionally equivalent to
+    // super.equals(), which does define a proper hashCode().
+
     if (! (obj instanceof Point2D))
       return false;
     Point2D p = (Point2D) obj;

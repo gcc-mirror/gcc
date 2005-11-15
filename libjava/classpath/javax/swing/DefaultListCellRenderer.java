@@ -68,6 +68,7 @@ public class DefaultListCellRenderer extends JLabel
   {
     public UIResource()
     {
+      super();
     }
   }
 
@@ -124,62 +125,75 @@ public class DefaultListCellRenderer extends JLabel
 
   public void validate()
   {
+    // Overridden to do nothing.
   }
 
   public void revalidate()
   {
+    // Overridden to do nothing.
   }
 
   public void repaint(long tm, int x, int y, int w, int h)
   {
+    // Overridden to do nothing.
   }
 
   public void repaint(Rectangle rect)
   {
+    // Overridden to do nothing.
   }
 
   protected void firePropertyChange(String propertyName, Object oldValue,
                                     Object newValue)
   {
+    // Overridden to do nothing.
   }
 
   public void firePropertyChange(String propertyName, byte oldValue,
                                  byte newValue)
   {
+    // Overridden to do nothing.
   }
 
   public void firePropertyChange(String propertyName, char oldValue,
                                  char newValue)
   {
+    // Overridden to do nothing.
   }
 
   public void firePropertyChange(String propertyName, short oldValue,
                                  short newValue)
   {
+    // Overridden to do nothing.
   }
 
   public void firePropertyChange(String propertyName, int oldValue,
                                  int newValue)
   {
+    // Overridden to do nothing.
   }
 
   public void firePropertyChange(String propertyName, long oldValue,
                                  long newValue)
   {
+    // Overridden to do nothing.
   }
 
   public void firePropertyChange(String propertyName, float oldValue,
                                  float newValue)
   {
+    // Overridden to do nothing.
   }
 
   public void firePropertyChange(String propertyName, double oldValue,
                                  double newValue)
   {
+    // Overridden to do nothing.
   }
 
   public void firePropertyChange(String propertyName, boolean oldValue,
                                  boolean newValue)
   {
+    // Overridden to do nothing.
   }
 }

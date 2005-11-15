@@ -150,14 +150,18 @@ lib_gnu_java_awt_peer_qt_la_OBJECTS =  \
 @QT_AWT_TRUE@am_lib_gnu_java_awt_peer_qt_la_rpath = -rpath \
 @QT_AWT_TRUE@	$(toolexeclibdir)
 am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
-	gnu/classpath/debug.lo gnu/gcj.lo gnu/gcj/convert.lo \
-	gnu/gcj/io.lo gnu/gcj/runtime.lo gnu/gcj/util.lo \
-	gnu/java/awt.lo gnu/java/awt/color.lo gnu/java/awt/image.lo \
-	gnu/java/awt/peer.lo gnu/java/io.lo gnu/java/lang.lo \
-	gnu/java/lang/reflect.lo gnu/java/locale.lo gnu/java/math.lo \
-	gnu/java/net.lo gnu/java/net/protocol/file.lo \
+	gnu/classpath/debug.lo gnu/classpath/jdwp.lo \
+	gnu/classpath/jdwp/event.lo \
+	gnu/classpath/jdwp/event/filters.lo \
+	gnu/classpath/jdwp/exception.lo gnu/classpath/jdwp/id.lo \
+	gnu/classpath/jdwp/processor.lo \
+	gnu/classpath/jdwp/transport.lo gnu/classpath/jdwp/util.lo \
+	gnu/gcj.lo gnu/gcj/convert.lo gnu/gcj/io.lo gnu/gcj/runtime.lo \
+	gnu/gcj/util.lo gnu/java/awt.lo gnu/java/awt/color.lo \
+	gnu/java/awt/image.lo gnu/java/awt/peer.lo gnu/java/io.lo \
+	gnu/java/lang.lo gnu/java/lang/reflect.lo gnu/java/locale.lo \
+	gnu/java/math.lo gnu/java/net.lo gnu/java/net/protocol/file.lo \
 	gnu/java/net/protocol/ftp.lo gnu/java/net/protocol/http.lo \
-	gnu/java/net/protocol/http/event.lo \
 	gnu/java/net/protocol/https.lo gnu/java/net/protocol/jar.lo \
 	gnu/java/nio.lo gnu/java/nio/channels.lo \
 	gnu/java/nio/charset.lo gnu/java/rmi.lo gnu/java/rmi/dgc.lo \
@@ -167,8 +171,8 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	gnu/java/security/pkcs.lo gnu/java/security/provider.lo \
 	gnu/java/security/util.lo gnu/java/security/x509.lo \
 	gnu/java/security/x509/ext.lo gnu/java/text.lo \
-	gnu/java/util.lo gnu/java/util/prefs.lo \
-	gnu/javax/swing/text/html/parser.lo \
+	gnu/java/util.lo gnu/java/util/prefs.lo gnu/javax/crypto.lo \
+	gnu/javax/imageio/bmp.lo gnu/javax/swing/text/html/parser.lo \
 	gnu/javax/swing/text/html/parser/models.lo \
 	gnu/javax/swing/text/html/parser/support.lo \
 	gnu/javax/swing/text/html/parser/support/low.lo gnu/regexp.lo \
@@ -196,7 +200,9 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/print/event.lo javax/security/auth.lo \
 	javax/security/auth/callback.lo javax/security/auth/login.lo \
 	javax/security/auth/spi.lo javax/security/auth/x500.lo \
-	javax/security/cert.lo javax/security/sasl.lo javax/sql.lo \
+	javax/security/cert.lo javax/security/sasl.lo \
+	javax/sound/midi.lo javax/sound/midi/spi.lo \
+	javax/sound/sampled.lo javax/sound/sampled/spi.lo javax/sql.lo \
 	javax/swing.lo javax/swing/border.lo \
 	javax/swing/colorchooser.lo javax/swing/event.lo \
 	javax/swing/filechooser.lo javax/swing/plaf.lo \
@@ -206,8 +212,8 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/text/html/parser.lo javax/swing/text/rtf.lo \
 	javax/swing/tree.lo javax/swing/undo.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo
-am__DEPENDENCIES_3 = gnu-java-beans.lo gnu-xml.lo javax-imageio.lo \
-	javax-xml.lo org-w3c.lo org-xml.lo
+am__DEPENDENCIES_3 = gnu-java-beans.lo gnu-javax-sound-midi.lo \
+	gnu-xml.lo javax-imageio.lo javax-xml.lo org-w3c.lo org-xml.lo
 am__DEPENDENCIES_4 = $(patsubst classpath/resource/%,%,$(addsuffix \
 	.lo,$(property_files)))
 am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
@@ -837,6 +843,7 @@ gnu/awt/xlib/XToolkit.java
 
 gnu_awt_xlib_header_files = $(patsubst %.java,%.h,$(gnu_awt_xlib_source_files))
 gnu_classpath_source_files = \
+classpath/gnu/classpath/ByteArray.java \
 classpath/gnu/classpath/Configuration.java \
 classpath/gnu/classpath/Pointer.java \
 classpath/gnu/classpath/Pointer32.java \
@@ -852,6 +859,116 @@ classpath/gnu/classpath/debug/PreciseFilter.java \
 classpath/gnu/classpath/debug/SystemLogger.java
 
 gnu_classpath_debug_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_debug_source_files)))
+gnu_classpath_jdwp_source_files = \
+classpath/gnu/classpath/jdwp/Jdwp.java \
+classpath/gnu/classpath/jdwp/JdwpConstants.java \
+gnu/classpath/jdwp/VMFrame.java \
+gnu/classpath/jdwp/VMIdManager.java \
+gnu/classpath/jdwp/VMVirtualMachine.java
+
+gnu_classpath_jdwp_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_source_files)))
+gnu_classpath_jdwp_event_source_files = \
+classpath/gnu/classpath/jdwp/event/ClassPrepareEvent.java \
+classpath/gnu/classpath/jdwp/event/Event.java \
+classpath/gnu/classpath/jdwp/event/EventManager.java \
+classpath/gnu/classpath/jdwp/event/EventRequest.java \
+classpath/gnu/classpath/jdwp/event/ThreadEndEvent.java \
+classpath/gnu/classpath/jdwp/event/ThreadStartEvent.java \
+classpath/gnu/classpath/jdwp/event/VmDeathEvent.java \
+classpath/gnu/classpath/jdwp/event/VmInitEvent.java
+
+gnu_classpath_jdwp_event_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_event_source_files)))
+gnu_classpath_jdwp_event_filters_source_files = \
+classpath/gnu/classpath/jdwp/event/filters/ClassExcludeFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/ClassMatchFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/ClassOnlyFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/ConditionalFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/CountFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/ExceptionOnlyFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/FieldOnlyFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/IEventFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/InstanceOnlyFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/LocationOnlyFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/StepFilter.java \
+classpath/gnu/classpath/jdwp/event/filters/ThreadOnlyFilter.java
+
+gnu_classpath_jdwp_event_filters_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_event_filters_source_files)))
+gnu_classpath_jdwp_exception_source_files = \
+classpath/gnu/classpath/jdwp/exception/InvalidClassException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidClassLoaderException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidCountException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidEventTypeException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidFieldException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidLocationException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidMethodException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidObjectException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidStringException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidThreadException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidThreadGroupException.java \
+classpath/gnu/classpath/jdwp/exception/JdwpException.java \
+classpath/gnu/classpath/jdwp/exception/JdwpIllegalArgumentException.java \
+classpath/gnu/classpath/jdwp/exception/JdwpInternalErrorException.java \
+classpath/gnu/classpath/jdwp/exception/NotImplementedException.java \
+classpath/gnu/classpath/jdwp/exception/VmDeadException.java
+
+gnu_classpath_jdwp_exception_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_exception_source_files)))
+gnu_classpath_jdwp_id_source_files = \
+classpath/gnu/classpath/jdwp/id/ArrayId.java \
+classpath/gnu/classpath/jdwp/id/ArrayReferenceTypeId.java \
+classpath/gnu/classpath/jdwp/id/ClassLoaderId.java \
+classpath/gnu/classpath/jdwp/id/ClassObjectId.java \
+classpath/gnu/classpath/jdwp/id/ClassReferenceTypeId.java \
+classpath/gnu/classpath/jdwp/id/InterfaceReferenceTypeId.java \
+classpath/gnu/classpath/jdwp/id/JdwpId.java \
+classpath/gnu/classpath/jdwp/id/ObjectId.java \
+classpath/gnu/classpath/jdwp/id/ReferenceTypeId.java \
+classpath/gnu/classpath/jdwp/id/StringId.java \
+classpath/gnu/classpath/jdwp/id/ThreadGroupId.java \
+classpath/gnu/classpath/jdwp/id/ThreadId.java
+
+gnu_classpath_jdwp_id_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_id_source_files)))
+gnu_classpath_jdwp_processor_source_files = \
+classpath/gnu/classpath/jdwp/processor/ArrayReferenceCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/ArrayTypeCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/ClassLoaderReferenceCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/ClassObjectReferenceCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/ClassTypeCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/CommandSet.java \
+classpath/gnu/classpath/jdwp/processor/EventRequestCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/FieldCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/InterfaceTypeCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/MethodCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/ObjectReferenceCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/PacketProcessor.java \
+classpath/gnu/classpath/jdwp/processor/ReferenceTypeCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/StackFrameCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/StringReferenceCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/ThreadGroupReferenceCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/ThreadReferenceCommandSet.java \
+classpath/gnu/classpath/jdwp/processor/VirtualMachineCommandSet.java
+
+gnu_classpath_jdwp_processor_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_processor_source_files)))
+gnu_classpath_jdwp_transport_source_files = \
+classpath/gnu/classpath/jdwp/transport/ITransport.java \
+classpath/gnu/classpath/jdwp/transport/JdwpCommandPacket.java \
+classpath/gnu/classpath/jdwp/transport/JdwpConnection.java \
+classpath/gnu/classpath/jdwp/transport/JdwpPacket.java \
+classpath/gnu/classpath/jdwp/transport/JdwpReplyPacket.java \
+classpath/gnu/classpath/jdwp/transport/SocketTransport.java \
+classpath/gnu/classpath/jdwp/transport/TransportException.java \
+classpath/gnu/classpath/jdwp/transport/TransportFactory.java
+
+gnu_classpath_jdwp_transport_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_transport_source_files)))
+gnu_classpath_jdwp_util_source_files = \
+classpath/gnu/classpath/jdwp/util/JdwpString.java \
+classpath/gnu/classpath/jdwp/util/LineTable.java \
+classpath/gnu/classpath/jdwp/util/Location.java \
+classpath/gnu/classpath/jdwp/util/MethodResult.java \
+classpath/gnu/classpath/jdwp/util/Signature.java \
+classpath/gnu/classpath/jdwp/util/Value.java \
+classpath/gnu/classpath/jdwp/util/VariableTable.java
+
+gnu_classpath_jdwp_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_util_source_files)))
 gnu_gcj_source_files = \
 gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
@@ -942,7 +1059,6 @@ classpath/gnu/java/awt/ClasspathToolkit.java \
 classpath/gnu/java/awt/ComponentDataBlitOp.java \
 classpath/gnu/java/awt/EmbeddedWindow.java \
 classpath/gnu/java/awt/EventModifier.java \
-classpath/gnu/java/awt/FocusManager.java \
 classpath/gnu/java/awt/GradientPaintContext.java
 
 gnu_java_awt_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_source_files)))
@@ -1335,7 +1451,6 @@ gnu_java_net_protocol_ftp_header_files = $(patsubst classpath/%,%,$(patsubst %.j
 gnu_java_net_protocol_http_source_files = \
 classpath/gnu/java/net/protocol/http/Authenticator.java \
 classpath/gnu/java/net/protocol/http/ByteArrayRequestBodyWriter.java \
-classpath/gnu/java/net/protocol/http/ByteArrayResponseBodyReader.java \
 classpath/gnu/java/net/protocol/http/ChunkedInputStream.java \
 classpath/gnu/java/net/protocol/http/Cookie.java \
 classpath/gnu/java/net/protocol/http/CookieManager.java \
@@ -1345,21 +1460,14 @@ classpath/gnu/java/net/protocol/http/HTTPDateFormat.java \
 classpath/gnu/java/net/protocol/http/HTTPURLConnection.java \
 classpath/gnu/java/net/protocol/http/Handler.java \
 classpath/gnu/java/net/protocol/http/Headers.java \
+classpath/gnu/java/net/protocol/http/LimitedLengthInputStream.java \
 classpath/gnu/java/net/protocol/http/Request.java \
 classpath/gnu/java/net/protocol/http/RequestBodyWriter.java \
 classpath/gnu/java/net/protocol/http/Response.java \
-classpath/gnu/java/net/protocol/http/ResponseBodyReader.java \
 classpath/gnu/java/net/protocol/http/ResponseHeaderHandler.java \
 classpath/gnu/java/net/protocol/http/SimpleCookieManager.java
 
 gnu_java_net_protocol_http_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_http_source_files)))
-gnu_java_net_protocol_http_event_source_files = \
-classpath/gnu/java/net/protocol/http/event/ConnectionEvent.java \
-classpath/gnu/java/net/protocol/http/event/ConnectionListener.java \
-classpath/gnu/java/net/protocol/http/event/RequestEvent.java \
-classpath/gnu/java/net/protocol/http/event/RequestListener.java
-
-gnu_java_net_protocol_http_event_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_http_event_source_files)))
 gnu_java_net_protocol_https_source_files = \
 classpath/gnu/java/net/protocol/https/Handler.java
 
@@ -1490,6 +1598,7 @@ gnu_java_rmi_registry_header_files = $(patsubst classpath/%,%,$(patsubst %.java,
 gnu_java_rmi_server_source_files = \
 classpath/gnu/java/rmi/server/ConnectionRunnerPool.java \
 classpath/gnu/java/rmi/server/ProtocolConstants.java \
+classpath/gnu/java/rmi/server/RMIClassLoaderImpl.java \
 classpath/gnu/java/rmi/server/RMIDefaultSocketFactory.java \
 classpath/gnu/java/rmi/server/RMIHashes.java \
 classpath/gnu/java/rmi/server/RMIIncomingThread.java \
@@ -1546,6 +1655,8 @@ classpath/gnu/java/security/provider/DSAParameterGenerator.java \
 classpath/gnu/java/security/provider/DSAParameters.java \
 classpath/gnu/java/security/provider/DSASignature.java \
 classpath/gnu/java/security/provider/DefaultPolicy.java \
+classpath/gnu/java/security/provider/DiffieHellmanKeyFactoryImpl.java \
+classpath/gnu/java/security/provider/DiffieHellmanKeyPairGeneratorImpl.java \
 classpath/gnu/java/security/provider/EncodedKeyFactory.java \
 classpath/gnu/java/security/provider/Gnu.java \
 classpath/gnu/java/security/provider/GnuDHPublicKey.java \
@@ -1626,6 +1737,38 @@ classpath/gnu/java/util/prefs/NodeReader.java \
 classpath/gnu/java/util/prefs/NodeWriter.java
 
 gnu_java_util_prefs_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_util_prefs_source_files)))
+gnu_javax_crypto_source_files = \
+classpath/gnu/javax/crypto/DiffieHellmanImpl.java \
+classpath/gnu/javax/crypto/GnuDHPrivateKey.java \
+classpath/gnu/javax/crypto/RSACipherImpl.java
+
+gnu_javax_crypto_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_crypto_source_files)))
+gnu_javax_imageio_bmp_source_files = \
+classpath/gnu/javax/imageio/bmp/BMPDecoder.java \
+classpath/gnu/javax/imageio/bmp/BMPException.java \
+classpath/gnu/javax/imageio/bmp/BMPFileHeader.java \
+classpath/gnu/javax/imageio/bmp/BMPImageReader.java \
+classpath/gnu/javax/imageio/bmp/BMPImageReaderSpi.java \
+classpath/gnu/javax/imageio/bmp/BMPInfoHeader.java \
+classpath/gnu/javax/imageio/bmp/DecodeBF16.java \
+classpath/gnu/javax/imageio/bmp/DecodeBF32.java \
+classpath/gnu/javax/imageio/bmp/DecodeRGB1.java \
+classpath/gnu/javax/imageio/bmp/DecodeRGB24.java \
+classpath/gnu/javax/imageio/bmp/DecodeRGB4.java \
+classpath/gnu/javax/imageio/bmp/DecodeRGB8.java \
+classpath/gnu/javax/imageio/bmp/DecodeRLE4.java \
+classpath/gnu/javax/imageio/bmp/DecodeRLE8.java
+
+gnu_javax_imageio_bmp_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_imageio_bmp_source_files)))
+gnu_javax_sound_midi_source_files = \
+classpath/gnu/javax/sound/midi/alsa/AlsaInputPortDevice.java \
+classpath/gnu/javax/sound/midi/alsa/AlsaMidiDeviceProvider.java \
+classpath/gnu/javax/sound/midi/alsa/AlsaMidiSequencerDevice.java \
+classpath/gnu/javax/sound/midi/alsa/AlsaOutputPortDevice.java \
+classpath/gnu/javax/sound/midi/alsa/AlsaPortDevice.java \
+classpath/gnu/javax/sound/midi/dssi/DSSIMidiDeviceProvider.java \
+classpath/gnu/javax/sound/midi/dssi/DSSISynthesizer.java
+
 gnu_javax_swing_text_html_parser_source_files = \
 classpath/gnu/javax/swing/text/html/parser/HTML_401F.java \
 classpath/gnu/javax/swing/text/html/parser/gnuDTD.java \
@@ -1850,6 +1993,33 @@ classpath/gnu/xml/pipeline/ValidationConsumer.java \
 classpath/gnu/xml/pipeline/WellFormednessFilter.java \
 classpath/gnu/xml/pipeline/XIncludeFilter.java \
 classpath/gnu/xml/pipeline/XsltFilter.java \
+classpath/gnu/xml/stream/AttributeImpl.java \
+classpath/gnu/xml/stream/CharactersImpl.java \
+classpath/gnu/xml/stream/CommentImpl.java \
+classpath/gnu/xml/stream/DTDImpl.java \
+classpath/gnu/xml/stream/EndDocumentImpl.java \
+classpath/gnu/xml/stream/EndElementImpl.java \
+classpath/gnu/xml/stream/EndEntityImpl.java \
+classpath/gnu/xml/stream/EntityDeclarationImpl.java \
+classpath/gnu/xml/stream/EntityReferenceImpl.java \
+classpath/gnu/xml/stream/FilteredEventReader.java \
+classpath/gnu/xml/stream/FilteredStreamReader.java \
+classpath/gnu/xml/stream/LocationImpl.java \
+classpath/gnu/xml/stream/NamespaceImpl.java \
+classpath/gnu/xml/stream/NotationDeclarationImpl.java \
+classpath/gnu/xml/stream/ProcessingInstructionImpl.java \
+classpath/gnu/xml/stream/StartDocumentImpl.java \
+classpath/gnu/xml/stream/StartElementImpl.java \
+classpath/gnu/xml/stream/StartEntityImpl.java \
+classpath/gnu/xml/stream/XMLEventAllocatorImpl.java \
+classpath/gnu/xml/stream/XMLEventFactoryImpl.java \
+classpath/gnu/xml/stream/XMLEventImpl.java \
+classpath/gnu/xml/stream/XMLEventReaderImpl.java \
+classpath/gnu/xml/stream/XMLEventWriterImpl.java \
+classpath/gnu/xml/stream/XMLInputFactoryImpl.java \
+classpath/gnu/xml/stream/XMLOutputFactoryImpl.java \
+classpath/gnu/xml/stream/XMLStreamReaderImpl.java \
+classpath/gnu/xml/stream/XMLStreamWriterImpl.java \
 classpath/gnu/xml/transform/AbstractNumberNode.java \
 classpath/gnu/xml/transform/ApplyImportsNode.java \
 classpath/gnu/xml/transform/ApplyTemplatesNode.java \
@@ -2497,6 +2667,7 @@ classpath/java/lang/Comparable.java \
 classpath/java/lang/Compiler.java \
 java/lang/ConcreteProcess.java \
 java/lang/Double.java \
+classpath/java/lang/EnumConstantNotPresentException.java \
 classpath/java/lang/Error.java \
 classpath/java/lang/Exception.java \
 classpath/java/lang/ExceptionInInitializerError.java \
@@ -2782,6 +2953,7 @@ classpath/java/rmi/activation/ActivationException.java \
 classpath/java/rmi/activation/ActivationGroup.java \
 classpath/java/rmi/activation/ActivationGroupDesc.java \
 classpath/java/rmi/activation/ActivationGroupID.java \
+classpath/java/rmi/activation/ActivationGroup_Stub.java \
 classpath/java/rmi/activation/ActivationID.java \
 classpath/java/rmi/activation/ActivationInstantiator.java \
 classpath/java/rmi/activation/ActivationMonitor.java \
@@ -3076,6 +3248,7 @@ classpath/java/util/HashMap.java \
 classpath/java/util/HashSet.java \
 classpath/java/util/Hashtable.java \
 classpath/java/util/IdentityHashMap.java \
+classpath/java/util/InvalidPropertiesFormatException.java \
 classpath/java/util/Iterator.java \
 classpath/java/util/LinkedHashMap.java \
 classpath/java/util/LinkedHashSet.java \
@@ -3274,15 +3447,12 @@ classpath/javax/imageio/event/IIOReadUpdateListener.java \
 classpath/javax/imageio/event/IIOReadWarningListener.java \
 classpath/javax/imageio/event/IIOWriteProgressListener.java \
 classpath/javax/imageio/event/IIOWriteWarningListener.java \
-classpath/javax/imageio/metadata/IIOAttr.java \
 classpath/javax/imageio/metadata/IIOInvalidTreeException.java \
 classpath/javax/imageio/metadata/IIOMetadata.java \
 classpath/javax/imageio/metadata/IIOMetadataController.java \
 classpath/javax/imageio/metadata/IIOMetadataFormat.java \
 classpath/javax/imageio/metadata/IIOMetadataFormatImpl.java \
 classpath/javax/imageio/metadata/IIOMetadataNode.java \
-classpath/javax/imageio/metadata/IIONamedNodeMap.java \
-classpath/javax/imageio/metadata/IIONodeList.java \
 classpath/javax/imageio/spi/IIORegistry.java \
 classpath/javax/imageio/spi/IIOServiceProvider.java \
 classpath/javax/imageio/spi/ImageInputStreamSpi.java \
@@ -3645,6 +3815,72 @@ classpath/javax/security/sasl/SaslServer.java \
 classpath/javax/security/sasl/SaslServerFactory.java
 
 javax_security_sasl_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_security_sasl_source_files)))
+javax_sound_midi_source_files = \
+classpath/javax/sound/midi/ControllerEventListener.java \
+classpath/javax/sound/midi/Instrument.java \
+classpath/javax/sound/midi/InvalidMidiDataException.java \
+classpath/javax/sound/midi/MetaEventListener.java \
+classpath/javax/sound/midi/MetaMessage.java \
+classpath/javax/sound/midi/MidiChannel.java \
+classpath/javax/sound/midi/MidiDevice.java \
+classpath/javax/sound/midi/MidiEvent.java \
+classpath/javax/sound/midi/MidiFileFormat.java \
+classpath/javax/sound/midi/MidiMessage.java \
+classpath/javax/sound/midi/MidiSystem.java \
+classpath/javax/sound/midi/MidiUnavailableException.java \
+classpath/javax/sound/midi/Patch.java \
+classpath/javax/sound/midi/Receiver.java \
+classpath/javax/sound/midi/Sequence.java \
+classpath/javax/sound/midi/Sequencer.java \
+classpath/javax/sound/midi/ShortMessage.java \
+classpath/javax/sound/midi/Soundbank.java \
+classpath/javax/sound/midi/SoundbankResource.java \
+classpath/javax/sound/midi/Synthesizer.java \
+classpath/javax/sound/midi/SysexMessage.java \
+classpath/javax/sound/midi/Track.java \
+classpath/javax/sound/midi/Transmitter.java \
+classpath/javax/sound/midi/VoiceStatus.java
+
+javax_sound_midi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_sound_midi_source_files)))
+javax_sound_midi_spi_source_files = \
+classpath/javax/sound/midi/spi/MidiDeviceProvider.java \
+classpath/javax/sound/midi/spi/MidiFileReader.java \
+classpath/javax/sound/midi/spi/MidiFileWriter.java \
+classpath/javax/sound/midi/spi/SoundbankReader.java
+
+javax_sound_midi_spi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_sound_midi_spi_source_files)))
+javax_sound_sampled_source_files = \
+classpath/javax/sound/sampled/AudioFileFormat.java \
+classpath/javax/sound/sampled/AudioFormat.java \
+classpath/javax/sound/sampled/AudioInputStream.java \
+classpath/javax/sound/sampled/AudioPermission.java \
+classpath/javax/sound/sampled/AudioSystem.java \
+classpath/javax/sound/sampled/BooleanControl.java \
+classpath/javax/sound/sampled/Clip.java \
+classpath/javax/sound/sampled/CompoundControl.java \
+classpath/javax/sound/sampled/Control.java \
+classpath/javax/sound/sampled/DataLine.java \
+classpath/javax/sound/sampled/EnumControl.java \
+classpath/javax/sound/sampled/FloatControl.java \
+classpath/javax/sound/sampled/Line.java \
+classpath/javax/sound/sampled/LineEvent.java \
+classpath/javax/sound/sampled/LineListener.java \
+classpath/javax/sound/sampled/LineUnavailableException.java \
+classpath/javax/sound/sampled/Mixer.java \
+classpath/javax/sound/sampled/Port.java \
+classpath/javax/sound/sampled/ReverbType.java \
+classpath/javax/sound/sampled/SourceDataLine.java \
+classpath/javax/sound/sampled/TargetDataLine.java \
+classpath/javax/sound/sampled/UnsupportedAudioFileException.java
+
+javax_sound_sampled_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_sound_sampled_source_files)))
+javax_sound_sampled_spi_source_files = \
+classpath/javax/sound/sampled/spi/AudioFileReader.java \
+classpath/javax/sound/sampled/spi/AudioFileWriter.java \
+classpath/javax/sound/sampled/spi/FormatConversionProvider.java \
+classpath/javax/sound/sampled/spi/MixerProvider.java
+
+javax_sound_sampled_spi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_sound_sampled_spi_source_files)))
 javax_sql_source_files = \
 classpath/javax/sql/ConnectionEvent.java \
 classpath/javax/sql/ConnectionEventListener.java \
@@ -3746,6 +3982,7 @@ classpath/javax/swing/JTree.java \
 classpath/javax/swing/JViewport.java \
 classpath/javax/swing/JWindow.java \
 classpath/javax/swing/KeyStroke.java \
+classpath/javax/swing/KeyboardManager.java \
 classpath/javax/swing/LayoutFocusTraversalPolicy.java \
 classpath/javax/swing/ListCellRenderer.java \
 classpath/javax/swing/ListModel.java \
@@ -3972,12 +4209,16 @@ javax_swing_plaf_basic_header_files = $(patsubst classpath/%,%,$(patsubst %.java
 javax_swing_plaf_metal_source_files = \
 classpath/javax/swing/plaf/metal/DefaultMetalTheme.java \
 classpath/javax/swing/plaf/metal/MetalBorders.java \
+classpath/javax/swing/plaf/metal/MetalButtonListener.java \
 classpath/javax/swing/plaf/metal/MetalButtonUI.java \
 classpath/javax/swing/plaf/metal/MetalCheckBoxIcon.java \
 classpath/javax/swing/plaf/metal/MetalCheckBoxUI.java \
+classpath/javax/swing/plaf/metal/MetalComboBoxButton.java \
+classpath/javax/swing/plaf/metal/MetalComboBoxEditor.java \
 classpath/javax/swing/plaf/metal/MetalComboBoxIcon.java \
 classpath/javax/swing/plaf/metal/MetalComboBoxUI.java \
 classpath/javax/swing/plaf/metal/MetalDesktopIconUI.java \
+classpath/javax/swing/plaf/metal/MetalFileChooserUI.java \
 classpath/javax/swing/plaf/metal/MetalIconFactory.java \
 classpath/javax/swing/plaf/metal/MetalInternalFrameTitlePane.java \
 classpath/javax/swing/plaf/metal/MetalInternalFrameUI.java \
@@ -3988,6 +4229,7 @@ classpath/javax/swing/plaf/metal/MetalProgressBarUI.java \
 classpath/javax/swing/plaf/metal/MetalRadioButtonUI.java \
 classpath/javax/swing/plaf/metal/MetalRootPaneUI.java \
 classpath/javax/swing/plaf/metal/MetalScrollBarUI.java \
+classpath/javax/swing/plaf/metal/MetalScrollButton.java \
 classpath/javax/swing/plaf/metal/MetalScrollPaneUI.java \
 classpath/javax/swing/plaf/metal/MetalSeparatorUI.java \
 classpath/javax/swing/plaf/metal/MetalSliderUI.java \
@@ -4000,7 +4242,8 @@ classpath/javax/swing/plaf/metal/MetalToggleButtonUI.java \
 classpath/javax/swing/plaf/metal/MetalToolBarUI.java \
 classpath/javax/swing/plaf/metal/MetalToolTipUI.java \
 classpath/javax/swing/plaf/metal/MetalTreeUI.java \
-classpath/javax/swing/plaf/metal/MetalUtils.java
+classpath/javax/swing/plaf/metal/MetalUtils.java \
+classpath/javax/swing/plaf/metal/OceanTheme.java
 
 javax_swing_plaf_metal_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_plaf_metal_source_files)))
 javax_swing_plaf_multi_source_files = \
@@ -4066,6 +4309,7 @@ classpath/javax/swing/text/DefaultEditorKit.java \
 classpath/javax/swing/text/DefaultFormatter.java \
 classpath/javax/swing/text/DefaultHighlighter.java \
 classpath/javax/swing/text/DefaultStyledDocument.java \
+classpath/javax/swing/text/DefaultTextUI.java \
 classpath/javax/swing/text/Document.java \
 classpath/javax/swing/text/DocumentFilter.java \
 classpath/javax/swing/text/EditorKit.java \
@@ -4105,10 +4349,12 @@ classpath/javax/swing/text/TabableView.java \
 classpath/javax/swing/text/TextAction.java \
 classpath/javax/swing/text/Utilities.java \
 classpath/javax/swing/text/View.java \
-classpath/javax/swing/text/ViewFactory.java
+classpath/javax/swing/text/ViewFactory.java \
+classpath/javax/swing/text/WrappedPlainView.java
 
 javax_swing_text_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_text_source_files)))
 javax_swing_text_html_source_files = \
+classpath/javax/swing/text/html/CSS.java \
 classpath/javax/swing/text/html/HTML.java \
 classpath/javax/swing/text/html/HTMLDocument.java \
 classpath/javax/swing/text/html/HTMLEditorKit.java \
@@ -4208,6 +4454,43 @@ classpath/javax/xml/parsers/FactoryConfigurationError.java \
 classpath/javax/xml/parsers/ParserConfigurationException.java \
 classpath/javax/xml/parsers/SAXParser.java \
 classpath/javax/xml/parsers/SAXParserFactory.java \
+classpath/javax/xml/stream/EventFilter.java \
+classpath/javax/xml/stream/FactoryConfigurationError.java \
+classpath/javax/xml/stream/Location.java \
+classpath/javax/xml/stream/StreamFilter.java \
+classpath/javax/xml/stream/XMLEventFactory.java \
+classpath/javax/xml/stream/XMLEventReader.java \
+classpath/javax/xml/stream/XMLEventWriter.java \
+classpath/javax/xml/stream/XMLFilter.java \
+classpath/javax/xml/stream/XMLInputFactory.java \
+classpath/javax/xml/stream/XMLIterator.java \
+classpath/javax/xml/stream/XMLOutputFactory.java \
+classpath/javax/xml/stream/XMLReporter.java \
+classpath/javax/xml/stream/XMLResolver.java \
+classpath/javax/xml/stream/XMLStreamConstants.java \
+classpath/javax/xml/stream/XMLStreamException.java \
+classpath/javax/xml/stream/XMLStreamReader.java \
+classpath/javax/xml/stream/XMLStreamWriter.java \
+classpath/javax/xml/stream/events/Attribute.java \
+classpath/javax/xml/stream/events/Characters.java \
+classpath/javax/xml/stream/events/Comment.java \
+classpath/javax/xml/stream/events/DTD.java \
+classpath/javax/xml/stream/events/EndDocument.java \
+classpath/javax/xml/stream/events/EndElement.java \
+classpath/javax/xml/stream/events/EndEntity.java \
+classpath/javax/xml/stream/events/EntityDeclaration.java \
+classpath/javax/xml/stream/events/EntityReference.java \
+classpath/javax/xml/stream/events/Namespace.java \
+classpath/javax/xml/stream/events/NotationDeclaration.java \
+classpath/javax/xml/stream/events/ProcessingInstruction.java \
+classpath/javax/xml/stream/events/StartDocument.java \
+classpath/javax/xml/stream/events/StartElement.java \
+classpath/javax/xml/stream/events/StartEntity.java \
+classpath/javax/xml/stream/events/XMLEvent.java \
+classpath/javax/xml/stream/util/EventReaderDelegate.java \
+classpath/javax/xml/stream/util/ReaderDelegate.java \
+classpath/javax/xml/stream/util/XMLEventAllocator.java \
+classpath/javax/xml/stream/util/XMLEventConsumer.java \
 classpath/javax/xml/transform/ErrorListener.java \
 classpath/javax/xml/transform/OutputKeys.java \
 classpath/javax/xml/transform/Result.java \
@@ -4449,6 +4732,14 @@ all_packages_source_files = \
   gnu/awt/j2d.list \
   gnu/classpath.list \
   gnu/classpath/debug.list \
+  gnu/classpath/jdwp.list \
+  gnu/classpath/jdwp/event.list \
+  gnu/classpath/jdwp/event/filters.list \
+  gnu/classpath/jdwp/exception.list \
+  gnu/classpath/jdwp/id.list \
+  gnu/classpath/jdwp/processor.list \
+  gnu/classpath/jdwp/transport.list \
+  gnu/classpath/jdwp/util.list \
   gnu/gcj.list \
   gnu/gcj/convert.list \
   gnu/gcj/io.list \
@@ -4467,7 +4758,6 @@ all_packages_source_files = \
   gnu/java/net/protocol/file.list \
   gnu/java/net/protocol/ftp.list \
   gnu/java/net/protocol/http.list \
-  gnu/java/net/protocol/http/event.list \
   gnu/java/net/protocol/https.list \
   gnu/java/net/protocol/jar.list \
   gnu/java/nio.list \
@@ -4489,6 +4779,8 @@ all_packages_source_files = \
   gnu/java/text.list \
   gnu/java/util.list \
   gnu/java/util/prefs.list \
+  gnu/javax/crypto.list \
+  gnu/javax/imageio/bmp.list \
   gnu/javax/swing/text/html/parser.list \
   gnu/javax/swing/text/html/parser/models.list \
   gnu/javax/swing/text/html/parser/support.list \
@@ -4563,6 +4855,10 @@ all_packages_source_files = \
   javax/security/auth/x500.list \
   javax/security/cert.list \
   javax/security/sasl.list \
+  javax/sound/midi.list \
+  javax/sound/midi/spi.list \
+  javax/sound/sampled.list \
+  javax/sound/sampled/spi.list \
   javax/sql.list \
   javax/swing.list \
   javax/swing/border.list \
@@ -4589,6 +4885,14 @@ ordinary_header_files = \
   $(gnu_awt_j2d_header_files) \
   $(gnu_classpath_header_files) \
   $(gnu_classpath_debug_header_files) \
+  $(gnu_classpath_jdwp_header_files) \
+  $(gnu_classpath_jdwp_event_header_files) \
+  $(gnu_classpath_jdwp_event_filters_header_files) \
+  $(gnu_classpath_jdwp_exception_header_files) \
+  $(gnu_classpath_jdwp_id_header_files) \
+  $(gnu_classpath_jdwp_processor_header_files) \
+  $(gnu_classpath_jdwp_transport_header_files) \
+  $(gnu_classpath_jdwp_util_header_files) \
   $(gnu_gcj_header_files) \
   $(gnu_gcj_convert_header_files) \
   $(gnu_gcj_io_header_files) \
@@ -4607,7 +4911,6 @@ ordinary_header_files = \
   $(gnu_java_net_protocol_file_header_files) \
   $(gnu_java_net_protocol_ftp_header_files) \
   $(gnu_java_net_protocol_http_header_files) \
-  $(gnu_java_net_protocol_http_event_header_files) \
   $(gnu_java_net_protocol_https_header_files) \
   $(gnu_java_net_protocol_jar_header_files) \
   $(gnu_java_nio_header_files) \
@@ -4629,6 +4932,8 @@ ordinary_header_files = \
   $(gnu_java_text_header_files) \
   $(gnu_java_util_header_files) \
   $(gnu_java_util_prefs_header_files) \
+  $(gnu_javax_crypto_header_files) \
+  $(gnu_javax_imageio_bmp_header_files) \
   $(gnu_javax_swing_text_html_parser_header_files) \
   $(gnu_javax_swing_text_html_parser_models_header_files) \
   $(gnu_javax_swing_text_html_parser_support_header_files) \
@@ -4703,6 +5008,10 @@ ordinary_header_files = \
   $(javax_security_auth_x500_header_files) \
   $(javax_security_cert_header_files) \
   $(javax_security_sasl_header_files) \
+  $(javax_sound_midi_header_files) \
+  $(javax_sound_midi_spi_header_files) \
+  $(javax_sound_sampled_header_files) \
+  $(javax_sound_sampled_spi_header_files) \
   $(javax_sql_header_files) \
   $(javax_swing_header_files) \
   $(javax_swing_border_header_files) \
@@ -4726,6 +5035,7 @@ ordinary_header_files = \
 
 bc_objects = \
   gnu-java-beans.lo \
+  gnu-javax-sound-midi.lo \
   gnu-xml.lo \
   javax-imageio.lo \
   javax-xml.lo \
@@ -6584,6 +6894,86 @@ gnu/classpath/debug.list: $(gnu_classpath_debug_source_files)
 
 -include gnu/classpath/debug.deps
 
+gnu/classpath/jdwp.list: $(gnu_classpath_jdwp_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_classpath_jdwp_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/classpath/jdwp.list
+
+-include gnu/classpath/jdwp.deps
+
+gnu/classpath/jdwp/event.list: $(gnu_classpath_jdwp_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_classpath_jdwp_event_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/classpath/jdwp/event.list
+
+-include gnu/classpath/jdwp/event.deps
+
+gnu/classpath/jdwp/event/filters.list: $(gnu_classpath_jdwp_event_filters_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_classpath_jdwp_event_filters_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/classpath/jdwp/event/filters.list
+
+-include gnu/classpath/jdwp/event/filters.deps
+
+gnu/classpath/jdwp/exception.list: $(gnu_classpath_jdwp_exception_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_classpath_jdwp_exception_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/classpath/jdwp/exception.list
+
+-include gnu/classpath/jdwp/exception.deps
+
+gnu/classpath/jdwp/id.list: $(gnu_classpath_jdwp_id_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_classpath_jdwp_id_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/classpath/jdwp/id.list
+
+-include gnu/classpath/jdwp/id.deps
+
+gnu/classpath/jdwp/processor.list: $(gnu_classpath_jdwp_processor_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_classpath_jdwp_processor_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/classpath/jdwp/processor.list
+
+-include gnu/classpath/jdwp/processor.deps
+
+gnu/classpath/jdwp/transport.list: $(gnu_classpath_jdwp_transport_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_classpath_jdwp_transport_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/classpath/jdwp/transport.list
+
+-include gnu/classpath/jdwp/transport.deps
+
+gnu/classpath/jdwp/util.list: $(gnu_classpath_jdwp_util_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_classpath_jdwp_util_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/classpath/jdwp/util.list
+
+-include gnu/classpath/jdwp/util.deps
+
 gnu/gcj.list: $(gnu_gcj_source_files)
 	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_source_files); do \
@@ -6788,16 +7178,6 @@ gnu/java/net/protocol/http.list: $(gnu_java_net_protocol_http_source_files)
 	done > gnu/java/net/protocol/http.list
 
 -include gnu/java/net/protocol/http.deps
-
-gnu/java/net/protocol/http/event.list: $(gnu_java_net_protocol_http_event_source_files)
-	@$(mkinstalldirs) $(dir $@)
-	@for file in $(gnu_java_net_protocol_http_event_source_files); do \
-	  if test -f $(srcdir)/$$file; then \
-	    echo $(srcdir)/$$file; \
-	  else echo $$file; fi; \
-	done > gnu/java/net/protocol/http/event.list
-
--include gnu/java/net/protocol/http/event.deps
 
 gnu/java/net/protocol/https.list: $(gnu_java_net_protocol_https_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -7008,6 +7388,31 @@ gnu/java/util/prefs.list: $(gnu_java_util_prefs_source_files)
 	done > gnu/java/util/prefs.list
 
 -include gnu/java/util/prefs.deps
+
+gnu/javax/crypto.list: $(gnu_javax_crypto_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_crypto_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/crypto.list
+
+-include gnu/javax/crypto.deps
+
+gnu/javax/imageio/bmp.list: $(gnu_javax_imageio_bmp_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_imageio_bmp_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/imageio/bmp.list
+
+-include gnu/javax/imageio/bmp.deps
+
+gnu-javax-sound-midi.lo: $(gnu_javax_sound_midi_source_files)
+	@find classpath/lib/gnu/javax/sound/midi -name '*.class' > gnu-javax-sound-midi.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-javax-sound-midi.lo @gnu-javax-sound-midi.list
+	@rm -f gnu-javax-sound-midi.list
 
 gnu/javax/swing/text/html/parser.list: $(gnu_javax_swing_text_html_parser_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -7758,6 +8163,46 @@ javax/security/sasl.list: $(javax_security_sasl_source_files)
 	done > javax/security/sasl.list
 
 -include javax/security/sasl.deps
+
+javax/sound/midi.list: $(javax_sound_midi_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(javax_sound_midi_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > javax/sound/midi.list
+
+-include javax/sound/midi.deps
+
+javax/sound/midi/spi.list: $(javax_sound_midi_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(javax_sound_midi_spi_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > javax/sound/midi/spi.list
+
+-include javax/sound/midi/spi.deps
+
+javax/sound/sampled.list: $(javax_sound_sampled_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(javax_sound_sampled_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > javax/sound/sampled.list
+
+-include javax/sound/sampled.deps
+
+javax/sound/sampled/spi.list: $(javax_sound_sampled_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(javax_sound_sampled_spi_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > javax/sound/sampled/spi.list
+
+-include javax/sound/sampled/spi.deps
 
 javax/sql.list: $(javax_sql_source_files)
 	@$(mkinstalldirs) $(dir $@)

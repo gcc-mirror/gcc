@@ -45,7 +45,7 @@ package java.awt.image;
  * points should give the desired results although Sun does not 
  * specify what the exact algorithm should be.
  * <br>
- * Currently this filter does nothing and needs to be implemented.
+ * FIXME: Currently this filter does nothing and needs to be implemented.
  *
  * @author C. Brian Jones (cbj@gnu.org) 
  */

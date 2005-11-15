@@ -39,75 +39,88 @@ exception statement from your version. */
 package javax.swing.event;
 
 /**
- * InternalFrameAdapter
+ * InternalFrameAdapter.
+ *
  * @author Andrew Selkirk
  */
 public abstract class InternalFrameAdapter implements InternalFrameListener
 {
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * InternalFrameAdapter constructor
-	 */
-	public InternalFrameAdapter() {
-	} // InternalFrameAdapter()
-
-
-	//-------------------------------------------------------------
-	// Interface: InternalFrameListener ---------------------------
-	//-------------------------------------------------------------
+  /**
+   * InternalFrameAdapter constructor.
+   */
+  public InternalFrameAdapter()
+  {
+    // Nothing to do here.
+  }
 	
-	/**
-	 * Internal frame activated
-	 * @param event Internal frame event
-	 */
-	public void internalFrameActivated(InternalFrameEvent event) {
-	} // internalFrameActivated()
+  /**
+   * Internal frame activated.
+   *
+   * @param event internal frame event
+   */
+  public void internalFrameActivated(InternalFrameEvent event)
+  {
+    // Nothing to do here.
+  }
 
-	/**
-	 * Internal frame closed
-	 * @param event Internal frame event
-	 */
-	public void internalFrameClosed(InternalFrameEvent event) {
-	} // internalFrameClosed()
+  /**
+   * Internal frame closed.
+   *
+   * @param event internal frame event
+   */
+  public void internalFrameClosed(InternalFrameEvent event)
+  {
+    // Nothing to do here.
+  }
 
-	/**
-	 * Internal frame closing
-	 * @param event Internal frame event
-	 */
-	public void internalFrameClosing(InternalFrameEvent event) {
-	} // internalFrameClosing()
+  /**
+   * Internal frame closing.
+   *
+   * @param event internal frame event
+   */
+  public void internalFrameClosing(InternalFrameEvent event)
+  {
+    // Nothing to do here.
+  }
 
-	/**
-	 * Internal frame deactivated
-	 * @param event Internal frame event
-	 */
-	public void internalFrameDeactivated(InternalFrameEvent event) {
-	} // internalFrameDeactivated()
+  /**
+   * Internal frame deactivated.
+   *
+   * @param event internal frame event
+   */
+  public void internalFrameDeactivated(InternalFrameEvent event)
+  {
+    // Nothing to do here.
+  }
 
-	/**
-	 * Internal frame deiconified
-	 * @param event Internal frame event
-	 */
-	public void internalFrameDeiconified(InternalFrameEvent event) {
-	} // internalFrameDeiconified()
+  /**
+   * Internal frame deiconified.
+   *
+   * @param event internal frame event
+   */
+  public void internalFrameDeiconified(InternalFrameEvent event)
+  {
+    // Nothing to do here.
+  }
 
-	/**
-	 * Internal frame iconified
-	 * @param event Internal frame event
-	 */
-	public void internalFrameIconified(InternalFrameEvent event) {
-	} // internalFrameIconified()
+  /**
+   * Internal frame iconified.
+   *
+   * @param event internal frame event
+   */
+  public void internalFrameIconified(InternalFrameEvent event)
+  {
+    // Nothing to do here.
+  }
 
-	/**
-	 * Internal frame opened
-	 * @param event Internal frame event
-	 */
-	public void internalFrameOpened(InternalFrameEvent event) {
-	} // internalFrameOpened()
+  /**
+   * Internal frame opened.
+   *
+   * @param event internal frame event
+   */
+  public void internalFrameOpened(InternalFrameEvent event)
+  {
+    // Nothing to do here.
+  }
 
-
-} // InternalFrameAdapter
+}

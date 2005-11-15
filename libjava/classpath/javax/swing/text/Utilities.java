@@ -40,6 +40,11 @@ package javax.swing.text;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.text.BreakIterator;
+
+import javax.swing.SwingConstants;
 
 /**
  * A set of utilities to deal with text. This is used by several other classes
@@ -194,5 +199,410 @@ public class Utilities
     maxWidth = Math.max(maxWidth, pixelX - x);
 
     return maxWidth;
+  }
+
+  /**
+   * Provides a facility to map screen coordinates into a model location. For a
+   * given text fragment and start location within this fragment, this method
+   * determines the model location so that the resulting fragment fits best
+   * into the span <code>[x0, x]</code>.
+   *
+   * The parameter <code>round</code> controls which model location is returned
+   * if the view coordinates are on a character: If <code>round</code> is
+   * <code>true</code>, then the result is rounded up to the next character, so
+   * that the resulting fragment is the smallest fragment that is larger than
+   * the specified span. If <code>round</code> is <code>false</code>, then the
+   * resulting fragment is the largest fragment that is smaller than the
+   * specified span.
+   *
+   * @param s the text segment
+   * @param fm the font metrics to use
+   * @param x0 the starting screen location
+   * @param x the target screen location at which the requested fragment should
+   *        end
+   * @param te the tab expander to use; if this is <code>null</code>, TABs are
+   *        expanded to one space character
+   * @param p0 the starting model location
+   * @param round if <code>true</code> round up to the next location, otherwise
+   *        round down to the current location
+   *
+   * @return the model location, so that the resulting fragment fits within the
+   *         specified span
+   */
+  public static final int getTabbedTextOffset(Segment s, FontMetrics fm, int x0,
+                                              int x, TabExpander te, int p0,
+                                              boolean round)
+  {
+    // At the end of the for loop, this holds the requested model location
+    int pos;
+    int currentX = x0;
+
+    for (pos = p0; pos < s.count; pos++)
+      {
+        char nextChar = s.array[s.offset+pos];
+        if (nextChar == 0)
+          {
+            if (! round)
+              pos--;
+            break;
+          }
+        if (nextChar != '\t')
+          currentX += fm.charWidth(nextChar);
+        else
+          {
+            if (te == null)
+              currentX += fm.charWidth(' ');
+            else
+              currentX = (int) te.nextTabStop(currentX, pos);
+          }
+        if (currentX > x)
+          {
+            if (! round)
+              pos--;
+            break;
+          }
+      }
+    return pos;
+  }
+
+  /**
+   * Provides a facility to map screen coordinates into a model location. For a
+   * given text fragment and start location within this fragment, this method
+   * determines the model location so that the resulting fragment fits best
+   * into the span <code>[x0, x]</code>.
+   *
+   * This method rounds up to the next location, so that the resulting fragment
+   * will be the smallest fragment of the text, that is greater than the
+   * specified span.
+   *
+   * @param s the text segment
+   * @param fm the font metrics to use
+   * @param x0 the starting screen location
+   * @param x the target screen location at which the requested fragment should
+   *        end
+   * @param te the tab expander to use; if this is <code>null</code>, TABs are
+   *        expanded to one space character
+   * @param p0 the starting model location
+   *
+   * @return the model location, so that the resulting fragment fits within the
+   *         specified span
+   */
+  public static final int getTabbedTextOffset(Segment s, FontMetrics fm, int x0,
+                                              int x, TabExpander te, int p0)
+  {
+    return getTabbedTextOffset(s, fm, x0, x, te, p0, true);
+  }
+  
+  /**
+   * Finds the start of the next word for the given offset.
+   * 
+   * @param c
+   *          the text component
+   * @param offs
+   *          the offset in the document
+   * @return the location in the model of the start of the next word.
+   * @throws BadLocationException
+   *           if the offset is invalid.
+   */
+  public static final int getNextWord(JTextComponent c, int offs)
+      throws BadLocationException
+  {
+    if (offs < 0 || offs > (c.getText().length() - 1))
+      throw new BadLocationException("invalid offset specified", offs);
+    String text = c.getText();
+    BreakIterator wb = BreakIterator.getWordInstance();
+    wb.setText(text);
+    int last = wb.following(offs);
+    int current = wb.next();
+    while (current != BreakIterator.DONE)
+      {
+        for (int i = last; i < current; i++)
+          {
+            // FIXME: Should use isLetter(int) and text.codePointAt(int)
+            // instead, but isLetter(int) isn't implemented yet
+            if (Character.isLetter(text.charAt(i)))
+              return last;
+          }
+        last = current;
+        current = wb.next();
+      }
+    return BreakIterator.DONE;
+  }
+
+  /**
+   * Finds the start of the previous word for the given offset.
+   * 
+   * @param c
+   *          the text component
+   * @param offs
+   *          the offset in the document
+   * @return the location in the model of the start of the previous word.
+   * @throws BadLocationException
+   *           if the offset is invalid.
+   */
+  public static final int getPreviousWord(JTextComponent c, int offs)
+      throws BadLocationException
+  {
+    if (offs < 0 || offs > (c.getText().length() - 1))
+      throw new BadLocationException("invalid offset specified", offs);
+    String text = c.getText();
+    BreakIterator wb = BreakIterator.getWordInstance();
+    wb.setText(text);
+    int last = wb.preceding(offs);
+    int current = wb.previous();
+
+    while (current != BreakIterator.DONE)
+      {
+        for (int i = last; i < offs; i++)
+          {
+            // FIXME: Should use isLetter(int) and text.codePointAt(int)
+            // instead, but isLetter(int) isn't implemented yet
+            if (Character.isLetter(text.charAt(i)))
+              return last;
+          }
+        last = current;
+        current = wb.previous();
+      }
+    return 0;
+  }
+  
+  /**
+   * Finds the start of a word for the given location.
+   * @param c the text component
+   * @param offs the offset location
+   * @return the location of the word beginning
+   * @throws BadLocationException if the offset location is invalid
+   */
+  public static final int getWordStart(JTextComponent c, int offs)
+      throws BadLocationException
+  {
+    if (offs < 0 || offs >= c.getText().length())
+      throw new BadLocationException("invalid offset specified", offs);
+    
+    String text = c.getText();
+    BreakIterator wb = BreakIterator.getWordInstance();
+    wb.setText(text);
+    if (wb.isBoundary(offs))
+      return offs;
+    return wb.preceding(offs);
+  }
+  
+  /**
+   * Finds the end of a word for the given location.
+   * @param c the text component
+   * @param offs the offset location
+   * @return the location of the word end
+   * @throws BadLocationException if the offset location is invalid
+   */
+  public static final int getWordEnd(JTextComponent c, int offs)
+      throws BadLocationException
+  {
+    if (offs < 0 || offs >= c.getText().length())
+      throw new BadLocationException("invalid offset specified", offs);
+    
+    String text = c.getText();
+    BreakIterator wb = BreakIterator.getWordInstance();
+    wb.setText(text);
+    return wb.following(offs);
+  }
+  
+  /**
+   * Get the model position of the end of the row that contains the 
+   * specified model position.  Return null if the given JTextComponent
+   * does not have a size.
+   * @param c the JTextComponent
+   * @param offs the model position
+   * @return the model position of the end of the row containing the given 
+   * offset
+   * @throws BadLocationException if the offset is invalid
+   */
+  public static final int getRowEnd(JTextComponent c, int offs)
+      throws BadLocationException
+  {
+    String text = c.getText();
+    if (text == null)
+      return -1;
+
+    // Do a binary search for the smallest position X > offs
+    // such that that character at positino X is not on the same
+    // line as the character at position offs
+    int high = offs + ((text.length() - 1 - offs) / 2);
+    int low = offs;
+    int oldHigh = text.length() + 1;
+    while (true)
+      {
+        if (c.modelToView(high).y != c.modelToView(offs).y)
+          {
+            oldHigh = high;
+            high = low + ((high + 1 - low) / 2);
+            if (oldHigh == high)
+              return high - 1;
+          }
+        else
+          {
+            low = high;
+            high += ((oldHigh - high) / 2);
+            if (low == high)
+              return low;
+          }
+      }
+  }
+      
+  /**
+   * Get the model position of the start of the row that contains the specified
+   * model position. Return null if the given JTextComponent does not have a
+   * size.
+   * 
+   * @param c the JTextComponent
+   * @param offs the model position
+   * @return the model position of the start of the row containing the given
+   *         offset
+   * @throws BadLocationException if the offset is invalid
+   */
+  public static final int getRowStart(JTextComponent c, int offs)
+      throws BadLocationException
+  {
+    String text = c.getText();
+    if (text == null)
+      return -1;
+
+    // Do a binary search for the greatest position X < offs
+    // such that the character at position X is not on the same
+    // row as the character at position offs
+    int high = offs;
+    int low = 0;
+    int oldLow = 0;
+    while (true)
+      {
+        if (c.modelToView(low).y != c.modelToView(offs).y)
+          {
+            oldLow = low;
+            low = high - ((high + 1 - low) / 2);
+            if (oldLow == low)
+              return low + 1;
+          }
+        else
+          {
+            high = low;
+            low -= ((low - oldLow) / 2);
+            if (low == high)
+              return low;
+          }
+      }
+  }
+  
+  /**
+   * Determine where to break the text in the given Segment, attempting to find
+   * a word boundary.
+   * @param s the Segment that holds the text
+   * @param metrics the font metrics used for calculating the break point
+   * @param x0 starting view location representing the start of the text
+   * @param x the target view location
+   * @param e the TabExpander used for expanding tabs (if this is null tabs
+   * are expanded to 1 space)
+   * @param startOffset the offset in the Document of the start of the text
+   * @return the offset at which we should break the text
+   */
+  public static final int getBreakLocation(Segment s, FontMetrics metrics,
+                                           int x0, int x, TabExpander e,
+                                           int startOffset)
+  {
+    int mark = Utilities.getTabbedTextOffset(s, metrics, x0, x, e, startOffset);
+    BreakIterator breaker = BreakIterator.getWordInstance();
+    breaker.setText(s.toString());
+    
+    // If mark is equal to the end of the string, just use that position
+    if (mark == s.count)
+      return mark;
+    
+    // Try to find a word boundary previous to the mark at which we 
+    // can break the text
+    int preceding = breaker.preceding(mark + 1);
+    
+    if (preceding != 0)
+      return preceding;
+    else
+      // If preceding is 0 we couldn't find a suitable word-boundary so
+      // just break it on the character boundary
+      return mark;
+  }
+
+  /**
+   * Returns the paragraph element in the text component <code>c</code> at
+   * the specified location <code>offset</code>.
+   *
+   * @param c the text component
+   * @param offset the offset of the paragraph element to return
+   *
+   * @return the paragraph element at <code>offset</code>
+   */
+  public static final Element getParagraphElement(JTextComponent c, int offset)
+  {
+    Document doc = c.getDocument();
+    Element par = null;
+    if (doc instanceof StyledDocument)
+      {
+        StyledDocument styledDoc = (StyledDocument) doc;
+        par = styledDoc.getParagraphElement(offset);
+      }
+    else
+      {
+        Element root = c.getDocument().getDefaultRootElement();
+        int parIndex = root.getElementIndex(offset);
+        par = root.getElement(parIndex);
+      }
+    return par;
+  }
+
+  /**
+   * Returns the document position that is closest above to the specified x
+   * coordinate in the row containing <code>offset</code>.
+   *
+   * @param c the text component
+   * @param offset the offset
+   * @param x the x coordinate
+   *
+   * @return  the document position that is closest above to the specified x
+   *          coordinate in the row containing <code>offset</code>
+   *
+   * @throws BadLocationException if <code>offset</code> is not a valid offset
+   */
+  public static final int getPositionAbove(JTextComponent c, int offset, int x)
+    throws BadLocationException
+  {
+    View rootView = c.getUI().getRootView(c);
+    Rectangle r = c.modelToView(offset);
+    int offs = c.viewToModel(new Point(x, r.y));
+    int pos = rootView.getNextVisualPositionFrom(c, offs,
+                                                 Position.Bias.Forward,
+                                                 SwingConstants.NORTH,
+                                                 new Position.Bias[1]);
+    return pos;
+  }
+
+  /**
+   * Returns the document position that is closest below to the specified x
+   * coordinate in the row containing <code>offset</code>.
+   *
+   * @param c the text component
+   * @param offset the offset
+   * @param x the x coordinate
+   *
+   * @return  the document position that is closest above to the specified x
+   *          coordinate in the row containing <code>offset</code>
+   *
+   * @throws BadLocationException if <code>offset</code> is not a valid offset
+   */
+  public static final int getPositionBelow(JTextComponent c, int offset, int x)
+    throws BadLocationException
+  {
+    View rootView = c.getUI().getRootView(c);
+    Rectangle r = c.modelToView(offset);
+    int offs = c.viewToModel(new Point(x, r.y));
+    int pos = rootView.getNextVisualPositionFrom(c, offs,
+                                                 Position.Bias.Forward,
+                                                 SwingConstants.SOUTH,
+                                                 new Position.Bias[1]);
+    return pos;
   }
 }

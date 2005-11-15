@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -55,7 +55,7 @@ public final class AnyHolder
   /**
    * The default type code for this holder.
    */
-  private static final TypeCode t_any = new primitiveTypeCode(TCKind.tk_any);
+  private static final TypeCode t_any = new PrimitiveTypeCode(TCKind.tk_any);
 
   /**
    * The instance of {@link Any} (not the "any value"), held by this holder.

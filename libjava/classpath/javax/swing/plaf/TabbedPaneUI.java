@@ -51,14 +51,14 @@ import javax.swing.JTabbedPane;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class TabbedPaneUI
-  extends ComponentUI
+public abstract class TabbedPaneUI extends ComponentUI
 {
   /**
    * Constructs a new <code>TabbedPaneUI</code>.
    */
   public TabbedPaneUI()
   {
+    // Nothing to do here.
   }
   
   

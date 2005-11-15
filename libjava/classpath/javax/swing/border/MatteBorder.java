@@ -54,8 +54,7 @@ import javax.swing.Icon;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class MatteBorder
-  extends EmptyBorder
+public class MatteBorder extends EmptyBorder
 {
   /**
    * Determined using the <code>serialver</code> tool
@@ -401,4 +400,3 @@ public class MatteBorder
     }
   }
 }
-

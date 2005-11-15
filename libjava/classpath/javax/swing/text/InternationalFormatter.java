@@ -57,9 +57,8 @@ import javax.swing.JFormattedTextField;
 public class InternationalFormatter
   extends DefaultFormatter
 {
-
-  /** The serialVersoinUID. */
-  private static final long serialVersionUID = 6941977820906408656L;
+  /** The serialization UID (compatible with JDK1.5). */
+  private static final long serialVersionUID = 2436068675711756856L;
 
   /** The format that handles value to string conversion. */
   Format format;

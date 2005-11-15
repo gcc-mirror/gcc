@@ -107,6 +107,8 @@ protected transient TextListener textListener;
     extends AccessibleAWTComponent
     implements AccessibleText, TextListener
   {
+    private static final long serialVersionUID = 3631432373506317811L;
+
     // Constructor
     // Adds a listener for tracking caret changes
     public AccessibleAWTTextComponent()

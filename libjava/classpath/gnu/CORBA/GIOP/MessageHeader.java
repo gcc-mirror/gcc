@@ -1,4 +1,4 @@
-/* MessageHeader.java -- GIOP 1.0 message header.
+/* MessageHeader.java -- GIOP message header.
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,32 +38,38 @@ exception statement from your version. */
 
 package gnu.CORBA.GIOP;
 
+import gnu.CORBA.Minor;
+import gnu.CORBA.Version;
+import gnu.CORBA.CDR.BigEndianInputStream;
 import gnu.CORBA.CDR.BigEndianOutputStream;
 import gnu.CORBA.CDR.LittleEndianInputStream;
 import gnu.CORBA.CDR.LittleEndianOutputStream;
-import gnu.CORBA.CDR.abstractDataOutputStream;
-import gnu.CORBA.Version;
+import gnu.CORBA.CDR.AbstractDataInput;
+import gnu.CORBA.CDR.AbstractDataOutput;
 
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.portable.IDLEntity;
 
-import java.io.DataInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-
-import java.util.Arrays;
-import gnu.CORBA.CDR.BigEndianInputStream;
-import gnu.CORBA.CDR.abstractDataInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.Arrays;
 
 /**
  * The GIOP message header.
- *
+ * 
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class MessageHeader
   implements IDLEntity
 {
+  /**
+   * Use serialVersionUID for interoperability.
+   */
+  private static final long serialVersionUID = 1;
+
   /**
    * Request message.
    */
@@ -80,16 +86,15 @@ public class MessageHeader
   public static final byte CANCEL_REQUEST = 2;
 
   /**
-   * Locate request message, used to check the server ability to
-   * process requests for the object reference.
-   * This message is also used to get the
+   * Locate request message, used to check the server ability to process
+   * requests for the object reference. This message is also used to get the
    * address where the object reference should be sent.
    */
   public static final byte LOCATE_REQUEST = 3;
 
   /**
-   * Locate reply message, sent in response to the
-   * {@link #LocateRequest} message.
+   * Locate reply message, sent in response to the {@link #LocateRequest}
+   * message.
    */
   public static final byte LOCATE_REPLY = 4;
 
@@ -104,8 +109,8 @@ public class MessageHeader
   public static final byte MESSAGE_ERROR = 6;
 
   /**
-   * The fragment messge, following the previous message that
-   * has more fragments flag set. Added in GIOP 1.1
+   * The fragment messge, following the previous message that has more fragments
+   * flag set. Added in GIOP 1.1
    */
   public static final byte FRAGMENT = 7;
 
@@ -117,12 +122,9 @@ public class MessageHeader
   /**
    * The message type names.
    */
-  protected static String[] types =
-    new String[]
-    {
-      "Request", "Reply", "Cancel", "Locate request", "Locate reply",
-      "Close connection", "Error", "Fragment"
-    };
+  protected static String[] types = new String[] { "Request", "Reply",
+    "Cancel", "Locate request", "Locate reply", "Close connection", "Error",
+    "Fragment" };
 
   /**
    * The GIOP version. Initialised to 1.0 .
@@ -154,7 +156,7 @@ public class MessageHeader
 
   /**
    * Create an empty message header, corresponding the given version.
-   *
+   * 
    * @param major the major message header version.
    * @param minor the minot message header version.
    */
@@ -164,8 +166,8 @@ public class MessageHeader
   }
 
   /**
-   * Checks if the message is encoded in the Big Endian, most significant
-   * byte first.
+   * Checks if the message is encoded in the Big Endian, most significant byte
+   * first.
    */
   public boolean isBigEndian()
   {
@@ -173,10 +175,18 @@ public class MessageHeader
   }
 
   /**
+   * Checks if the message is partial, and more subsequent fragments follow.
+   */
+  public boolean moreFragmentsFollow()
+  {
+    return (flags & 0x2) != 0;
+  }
+
+  /**
    * Set the encoding to use.
-   *
-   * @param use_big_endian if true (default), the Big Endian
-   * encoding is used. If false, the Little Endian encoding is used.
+   * 
+   * @param use_big_endian if true (default), the Big Endian encoding is used.
+   * If false, the Little Endian encoding is used.
    */
   public void setBigEndian(boolean use_big_endian)
   {
@@ -196,16 +206,16 @@ public class MessageHeader
 
   /**
    * Get the message type as string.
-   *
+   * 
    * @param type the message type as int (the field {@link message_type}).
-   *
+   * 
    * @return the message type as string.
    */
   public String getTypeString(int type)
   {
     try
       {
-        return types [ type ];
+        return types[type];
       }
     catch (ArrayIndexOutOfBoundsException ex)
       {
@@ -215,10 +225,10 @@ public class MessageHeader
 
   /**
    * Creates reply header, matching the message header version number.
-   *
+   * 
    * @return one of {@link gnu.CORBA.GIOP.v1_0.ReplyHeader},
-   * {@link gnu.CORBA.GIOP.v1_2.ReplyHeader}, etc - depending on
-   * the version number in this header.
+   * {@link gnu.CORBA.GIOP.v1_2.ReplyHeader}, etc - depending on the version
+   * number in this header.
    */
   public ReplyHeader create_reply_header()
   {
@@ -230,10 +240,10 @@ public class MessageHeader
 
   /**
    * Creates request header, matching the message header version number.
-   *
+   * 
    * @return one of {@link gnu.CORBA.GIOP.v1_0.RequestHeader},
-   * {@link gnu.CORBA.GIOP.v1_2.RequestHeader}, etc - depending on
-   * the version number in this header.
+   * {@link gnu.CORBA.GIOP.v1_2.RequestHeader}, etc - depending on the version
+   * number in this header.
    */
   public RequestHeader create_request_header()
   {
@@ -261,24 +271,28 @@ public class MessageHeader
 
   /**
    * Read the header from the stream.
-   *
+   * 
    * @param istream a stream to read from.
-   *
+   * 
    * @throws MARSHAL if this is not a GIOP 1.0 header.
    */
   public void read(java.io.InputStream istream)
-            throws MARSHAL
+    throws MARSHAL
   {
     try
       {
-        byte[] xMagic = new byte[ MAGIC.length ];
+        byte[] xMagic = new byte[MAGIC.length];
         istream.read(xMagic);
         if (!Arrays.equals(xMagic, MAGIC))
-          throw new MARSHAL("Not a GIOP message");
+          {
+            MARSHAL m = new MARSHAL("Not a GIOP message");
+            m.minor = Minor.Giop;
+            throw m;
+          }
 
         version = Version.read_version(istream);
 
-        abstractDataInputStream din;
+        AbstractDataInput din;
 
         flags = (byte) istream.read();
 
@@ -295,6 +309,7 @@ public class MessageHeader
     catch (IOException ex)
       {
         MARSHAL t = new MARSHAL();
+        t.minor = Minor.Header;
         t.initCause(ex);
         throw t;
       }
@@ -302,26 +317,26 @@ public class MessageHeader
 
   /**
    * Get the short string summary of the message.
-   *
+   * 
    * @return a short message summary.
    */
   public String toString()
   {
-    return "GIOP " + version + ", " + (isBigEndian() ? "Big" : "Little") +
-           " endian, " + getTypeString(message_type) + ", " + message_size +
-           " bytes. ";
+    return "GIOP " + version + ", " + (isBigEndian() ? "Big" : "Little")
+      + " endian, " + getTypeString(message_type) + ", " + message_size
+      + " bytes. ";
   }
 
   /**
    * Write the header to stream.
-   *
+   * 
    * @param out a stream to write into.
    */
   public void write(java.io.OutputStream out)
   {
     try
       {
-        abstractDataOutputStream dout;
+        AbstractDataOutput dout;
 
         if (isBigEndian())
           dout = new BigEndianOutputStream(out);
@@ -333,18 +348,99 @@ public class MessageHeader
 
         // Write version number.
         version.write((OutputStream) dout);
-
         dout.write(flags);
-
         dout.write(message_type);
-
         dout.writeInt(message_size);
       }
     catch (IOException ex)
       {
         MARSHAL t = new MARSHAL();
+        t.minor = Minor.Header;
         t.initCause(ex);
         throw t;
+      }
+  }
+
+  /**
+   * Read data, followed by the message header. Handle fragmented messages.
+   * 
+   * @param source the data source to read from.
+   * @param service the socket on that the time outs are set. Can be null (no
+   * timeouts are set).
+   * @param to_read the timeout while reading the message.
+   * @param to_pause the timeout for pauses between the message parts.
+   */
+  public byte[] readMessage(InputStream source, Socket service, int to_read,
+    int to_pause)
+  {
+    try
+      {
+        byte[] r = new byte[message_size];
+
+        int n = 0;
+        if (service != null)
+          service.setSoTimeout(to_read);
+
+        reading: while (n < r.length)
+          {
+            n += source.read(r, n, r.length - n);
+          }
+        if (service != null)
+          service.setSoTimeout(to_pause);
+
+        // Read the message remainder if the message is fragmented.
+        if (moreFragmentsFollow())
+          {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream(
+              2 * r.length);
+            buffer.write(r);
+
+            if (r.length < 10)
+              // Increase the buffer size if the default value (size of the
+              // previous message) is really too small.
+              r = new byte[1024];
+
+            MessageHeader h2 = new MessageHeader();
+
+            do
+              {
+                h2.read(source);
+
+                int dn;
+
+                n = 0;
+                reading: while (n < h2.message_size)
+                  {
+                    dn = source.read(r, 0, h2.message_size - n);
+
+                    if (n == 0 && service != null)
+                      service.setSoTimeout(to_read);
+
+                    if (n == 0 && version.since_inclusive(1, 2))
+                      {
+                        // Skip the four byte request id.
+                        buffer.write(r, 4, dn - 4);
+                      }
+                    else
+                      buffer.write(r, 0, dn);
+                    n = +dn;
+                  }
+
+                if (service != null)
+                  service.setSoTimeout(to_pause);
+              }
+            while (h2.moreFragmentsFollow());
+            return buffer.toByteArray();
+          }
+        else
+          return r;
+      }
+    catch (IOException ioex)
+      {
+        MARSHAL m = new MARSHAL("Unable to read the message continuation.");
+        m.minor = Minor.Header;
+        m.initCause(ioex);
+        throw m;
       }
   }
 }

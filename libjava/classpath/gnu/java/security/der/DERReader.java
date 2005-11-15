@@ -389,7 +389,7 @@ public class DERReader implements DER
               Integer.parseInt(str.substring( 4,  6)),    // day
               Integer.parseInt(str.substring( 6,  8)),    // hour
               Integer.parseInt(str.substring( 8, 10)));   // minute
-            if (date.length() == 12);
+            if (date.length() == 12)
               calendar.set(Calendar.SECOND,
                 Integer.parseInt(str.substring(10, 12)));
           }

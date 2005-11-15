@@ -1,5 +1,5 @@
 /* gnu_java_awt_GdkTextLayout.c
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
    
    This file is part of GNU Classpath.
    
@@ -38,11 +38,27 @@
 
 #include <jni.h>
 #include <gtk/gtk.h>
+#include <string.h>
+#include <pango/pango.h>
+#include <pango/pangoft2.h>
+#include <pango/pangofc-font.h>
+#include <freetype/ftglyph.h>
+#include <freetype/ftoutln.h>
 #include "native_state.h"
 #include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_GdkTextLayout.h"
 
 struct state_table *cp_gtk_native_text_layout_state_table;
+
+typedef struct gp
+{
+  JNIEnv *env;
+  jobject obj;
+  double px;
+  double py;
+  double sx;
+  double sy;
+} generalpath ;
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkTextLayout_initStaticState 
@@ -189,4 +205,220 @@ Java_gnu_java_awt_peer_gtk_GdkTextLayout_dispose
   g_free(tl);
 
   gdk_threads_leave ();
+}
+
+/* GetOutline code follows ****************************/
+/********* Freetype callback functions *****************************/
+
+static int _moveTo( FT_Vector* to,
+		    void *p)
+{
+  JNIEnv *env;
+  jobject obj;
+  jclass cls;
+  jmethodID method;
+  jvalue values[2];
+  generalpath *path = (generalpath *) p;
+
+  env = path->env;
+  obj = path->obj;
+
+  values[0].f = (jfloat)(to->x * path->sx + path->px);
+  values[1].f = (jfloat)(to->y * path->sy + path->py);
+
+  cls = (*env)->FindClass (env, "java/awt/geom/GeneralPath");
+  method = (*env)->GetMethodID (env, cls, "moveTo", "(FF)V");
+  (*env)->CallVoidMethodA(env, obj, method, values );
+
+  return 0;
+}
+
+static int _lineTo( FT_Vector*  to,
+		    void *p)
+{
+  JNIEnv *env;
+  jobject obj;
+  jclass cls;
+  jmethodID method;
+  jvalue values[2];
+  generalpath *path = (generalpath *) p;
+
+  env = path->env;
+  obj = path->obj; 
+  values[0].f = (jfloat)(to->x * path->sx + path->px);
+  values[1].f = (jfloat)(to->y * path->sy + path->py);
+
+  cls = (*env)->FindClass (env, "java/awt/geom/GeneralPath");
+  method = (*env)->GetMethodID (env, cls, "lineTo", "(FF)V");
+  (*env)->CallVoidMethodA(env, obj, method, values );
+
+  return 0;
+}
+
+static int _quadTo( FT_Vector*  cp,
+		    FT_Vector*  to,
+		    void *p)
+{
+  JNIEnv *env;
+  jobject obj;
+  jclass cls;
+  jmethodID method;
+  jvalue values[4];
+  generalpath *path = (generalpath *) p;
+
+  env = path->env;
+  obj = path->obj;
+  values[0].f = (jfloat)(cp->x * path->sx + path->px);
+  values[1].f = (jfloat)(cp->y * path->sy + path->py);
+  values[2].f = (jfloat)(to->x * path->sx + path->px);
+  values[3].f = (jfloat)(to->y * path->sy + path->py);
+
+  cls = (*env)->FindClass (env, "java/awt/geom/GeneralPath");
+  method = (*env)->GetMethodID (env, cls, "quadTo", "(FFFF)V");
+  (*env)->CallVoidMethodA(env, obj, method, values );
+
+  return 0;
+}
+
+static int _curveTo( FT_Vector*  cp1,
+		     FT_Vector*  cp2,
+		     FT_Vector*  to,
+		     void *p)
+{
+  JNIEnv *env;
+  jobject obj;
+  jclass cls;
+  jmethodID method;
+  jvalue values[6];
+  generalpath *path = (generalpath *) p;
+
+  env = path->env;
+  obj = path->obj;
+  values[0].f = (jfloat)(cp1->x * path->sx + path->px);
+  values[1].f = (jfloat)(cp1->y * path->sy + path->py);
+  values[2].f = (jfloat)(cp2->x * path->sx + path->px);
+  values[3].f = (jfloat)(cp2->y * path->sy + path->py);
+  values[4].f = (jfloat)(to->x * path->sx + path->px);
+  values[5].f = (jfloat)(to->y * path->sy + path->py);
+
+  cls = (*env)->FindClass (env, "java/awt/geom/GeneralPath");
+  method = (*env)->GetMethodID (env, cls, "curveTo", "(FFFFFF)V");
+  (*env)->CallVoidMethodA(env, obj, method, values );
+
+  return 0;
+}
+
+
+JNIEXPORT jobject JNICALL 
+Java_gnu_java_awt_peer_gtk_GdkTextLayout_getOutline
+ (JNIEnv *env, jobject obj, jobject transform)
+{
+  struct textlayout *tl;
+  generalpath *path;
+  jobject gp;
+  GSList *current_run;
+  PangoLayoutLine *current_line;
+  FT_Outline_Funcs ftCallbacks = 
+    {
+      _moveTo,
+      _lineTo,
+      _quadTo,
+      _curveTo,
+      0,
+      0
+    };
+  PangoLayoutIter* layoutIterator;
+
+  gdk_threads_enter ();
+
+  tl = (struct textlayout *)NSA_GET_TEXT_LAYOUT_PTR (env, obj);
+  g_assert(tl != NULL);
+  g_assert(tl->pango_layout != NULL);
+
+  path = g_malloc0 (sizeof (generalpath));
+  g_assert(path != NULL);
+  path->env = env;
+
+  /* Scaling factors */
+  path->sx = PANGO_SCALE/65536.0;
+  path->sy = -PANGO_SCALE/65536.0;	      
+
+  {  /* create a GeneralPath instance */
+    jclass cls;
+    jmethodID method;
+    
+    cls = (*env)->FindClass (env, "java/awt/geom/GeneralPath");
+    method = (*env)->GetMethodID (env, cls, "<init>", "()V");
+    gp = path->obj = (*env)->NewObject (env, cls, method);
+  }
+
+  layoutIterator = pango_layout_get_iter (tl->pango_layout);
+  g_assert (layoutIterator != NULL);
+
+  if (pango_layout_iter_get_line (layoutIterator))
+    do 
+      {
+	PangoRectangle line_logical_rect;
+	current_line = pango_layout_iter_get_line (layoutIterator);
+	pango_layout_iter_get_line_extents (layoutIterator,
+					    NULL,
+					    &line_logical_rect);
+      
+	path->px = line_logical_rect.x/(double)PANGO_SCALE;
+	path->py = line_logical_rect.y/(double)PANGO_SCALE;
+
+	current_run = current_line->runs;
+	while (current_run)
+	  {
+	    FT_Face ft_face;
+	    int index;
+	    PangoGlyphItem *run = current_run->data;
+	    PangoGlyphString *glyphs = run->glyphs;
+	  
+	    PangoAnalysis *analysis = &run->item->analysis;
+	    g_assert (analysis != NULL);
+	    g_assert (analysis->font != NULL);
+	  
+	    ft_face = pango_fc_font_lock_face ((PangoFcFont *)analysis->font);
+	    g_assert (ft_face != NULL);
+
+	    for (index = 0; index < glyphs->num_glyphs; index++)
+	      {
+		FT_Glyph glyph;
+		FT_Error fterror;
+		PangoGlyphGeometry pgg = glyphs->glyphs[index].geometry;
+	      
+		fterror = FT_Load_Glyph(ft_face, 
+					(FT_UInt)(glyphs->glyphs[index].glyph), 
+					FT_LOAD_DEFAULT | FT_LOAD_NO_BITMAP);
+		g_assert(fterror == 0);
+
+		FT_Get_Glyph (ft_face->glyph, &glyph);
+		FT_Outline_Decompose (&(((FT_OutlineGlyph)glyph)->outline),
+				      &ftCallbacks, path);
+		FT_Done_Glyph (glyph);
+
+		path->px += pgg.width/(double)PANGO_SCALE;
+	      }
+
+	    pango_fc_font_unlock_face ((PangoFcFont *)analysis->font);
+	    current_run = current_run->next;
+	  }
+      } while (pango_layout_iter_next_line (layoutIterator));
+
+  g_free(path);
+  gdk_threads_leave ();
+
+  if (transform != NULL)
+    {
+      jclass cls;
+      jmethodID method;
+
+      cls = (*env)->FindClass (env, "java/awt/geom/GeneralPath");
+      method = (*env)->GetMethodID (env, cls, "transform", 
+				    "(Ljava/awt/geom/AffineTransform;)V");
+      (*env)->CallVoidMethod(env, gp, method, transform );
+    }
+
+  return gp;
 }

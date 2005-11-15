@@ -38,20 +38,73 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.event.ContainerListener;
+import java.beans.PropertyChangeListener;
+
 import javax.swing.JComponent;
+import javax.swing.JToolBar;
+import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicToolBarUI;
 
-public class MetalToolBarUI
-  extends BasicToolBarUI
+/**
+ * A UI delegate for the {@link JToolBar} component.
+ */
+public class MetalToolBarUI extends BasicToolBarUI
 {
-
-  // FIXME: maybe replace by a Map of instances when this becomes stateful
-  /** The shared UI instance for MetalToolBarUIs */
-  private static MetalToolBarUI instance = null;
+  
+  /**
+   * A listener (no longer used) that responds when components are added to or 
+   * removed from the {@link JToolBar}.  The required behaviour is now
+   * handled in the super class. 
+   * 
+   * @see MetalToolBarUI#createContainerListener()
+   */
+  protected class MetalContainerListener
+    extends BasicToolBarUI.ToolBarContListener
+  {
+    /**
+     * Creates a new instance.
+     */
+    protected MetalContainerListener()
+    {
+      // Nothing to do here.
+    }
+  }
 
   /**
-   * Constructs a new instance of MetalToolBarUI.
+   * A listener (no longer used) that responds to property change events in a
+   * {@link JToolBar} component.  The required behaviour is now handled in the 
+   * super class. 
+   * 
+   * @see MetalToolBarUI#createRolloverListener()
+   */
+  protected class MetalRolloverListener
+    extends BasicToolBarUI.PropertyListener
+  {
+    /**
+     * Creates a new instance.
+     */
+    protected MetalRolloverListener()
+    {
+      // Nothing to do here.
+    }
+  }
+  
+  /** 
+   * The container listener (an implementation specific field, according to the
+   * spec, and not used in GNU Classpath).
+   */
+  protected ContainerListener contListener;
+  
+  /** 
+   * The rollover listener (an implementation specific field, according to the
+   * spec, and not used in GNU Classpath). 
+   */
+  protected PropertyChangeListener rolloverListener;
+
+  /**
+   * Creates a new instance of this UI delegate.
    */
   public MetalToolBarUI()
   {
@@ -59,16 +112,51 @@ public class MetalToolBarUI
   }
 
   /**
-   * Returns an instance of MetalToolBarUI.
+   * Returns a new instance of <code>MetalToolBarUI</code>.
    *
-   * @param component the component for which we return an UI instance
+   * @param component  the component for which we return an UI instance
    *
-   * @return an instance of MetalToolBarUI
+   * @return A new instance of <code>MetalToolBarUI</code>.
    */
   public static ComponentUI createUI(JComponent component)
   {
-    if (instance == null)
-      instance = new MetalToolBarUI();
-    return instance;
+    return new MetalToolBarUI();
   }
+  
+  /**
+   * Returns <code>null</code> as permitted by recent versions of the API
+   * specification.  Originally it seems this method returned a new instance of 
+   * {@link MetalRolloverListener}, but this is now redundant.
+   * 
+   * @return <code>null</code>.
+   */
+  protected PropertyChangeListener createRolloverListener()
+  {
+    return null;
+  }
+  
+  /**
+   * Returns <code>null</code> as permitted by recent versions of the API
+   * specification.  Originally it seems this method returned a new instance of 
+   * {@link MetalContainerListener}, but this is now redundant.
+   * 
+   * @return <code>null</code>.
+   */
+  protected ContainerListener createContainerListener()
+  {
+    return null;
+  }
+  
+  /**
+   * Returns a border with no rollover effect for buttons in the tool bar.
+   * 
+   * @return A border.
+   * 
+   * @see MetalBorders#getToolbarButtonBorder()
+   */
+  protected Border createNonRolloverBorder()
+  {
+    return MetalBorders.getToolbarButtonBorder();   
+  }
+
 }

@@ -915,7 +915,7 @@ public final class Locale implements Serializable, Cloneable
   /**
    * Write the locale to an object stream.
    *
-   * @param output the stream to write to
+   * @param s the stream to write to
    * @throws IOException if the write fails
    * @serialData The first three fields are Strings representing language,
    *             country, and variant. The fourth field is a placeholder for 
@@ -935,7 +935,7 @@ public final class Locale implements Serializable, Cloneable
   /**
    * Reads a locale from the input stream.
    *
-   * @param input the stream to read from
+   * @param s the stream to read from
    * @throws IOException if reading fails
    * @throws ClassNotFoundException if reading fails
    * @serialData the hashCode is always invalid and must be recomputed

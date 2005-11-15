@@ -53,14 +53,14 @@ import javax.swing.filechooser.FileView;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class FileChooserUI
-  extends ComponentUI
+public abstract class FileChooserUI extends ComponentUI
 {
   /**
    * Constructs a new <code>FileChooserUI</code>.
    */
   public FileChooserUI()
   {
+    // Nothing to do here.
   }
 
   

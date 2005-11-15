@@ -577,8 +577,8 @@ public class UIDefaults extends Hashtable
    *
    * @param key the key to the requested entry
    *
-   * @return the boolean entry for <code>key</code> or null if no such entry
-   *     exists
+   * @return The boolean entry for <code>key</code> or <code>false</code> if no 
+   *         such entry exists.
    */
   public boolean getBoolean(Object key)
   {
@@ -674,9 +674,9 @@ public class UIDefaults extends Hashtable
       return null;
     try 
       {
-        if (loader != null)
-          return loader.loadClass (className);    
-        return Class.forName (className);
+        if (loader == null)
+          loader = ClassLoader.getSystemClassLoader();
+        return loader.loadClass (className);
       }
     catch (Exception e)
       {

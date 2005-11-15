@@ -56,8 +56,7 @@ import java.awt.Insets;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class EtchedBorder
-  extends AbstractBorder
+public class EtchedBorder extends AbstractBorder
 {
   /**
    * Determined using the <code>serialver</code> tool
@@ -199,8 +198,8 @@ public class EtchedBorder
    * @param width the width of the available area for painting the border.
    * @param height the height of the available area for painting the border.
    */
-  public void paintBorder(Component c, Graphics  g,
-                          int x, int y, int width, int height)
+  public void paintBorder(Component c, Graphics  g, int x, int y, int width,
+                          int height)
   {
     switch (etchType)
     {
@@ -270,16 +269,14 @@ public class EtchedBorder
    */
   public boolean isBorderOpaque()
   {
-    /* If the colors are to be drived from the enclosed Component's
-     * background color, the border is guaranteed to be fully opaque
-     * because Color.brighten() and Color.darken() always return an
-     * opaque color.
-     */
+    // If the colors are to be derived from the enclosed Component's
+    // background color, the border is guaranteed to be fully opaque
+    // because Color.brighten() and Color.darken() always return an
+    // opaque color.
     return
       ((highlight == null) || (highlight.getAlpha() == 255))
       && ((shadow == null) || (shadow.getAlpha() == 255));
   }
-
   
   /**
    * Returns the appearance of this EtchedBorder, which is either
@@ -310,8 +307,7 @@ public class EtchedBorder
     else
       return c.getBackground().brighter();
   }
-  
-  
+
   /**
    * Returns the color that will be used for highlighted parts when
    * painting the border, or <code>null</code> if that color will be
@@ -359,11 +355,11 @@ public class EtchedBorder
    * Paints a two-pixel etching in two colors.
    *
    * <pre>
-   * @@@@@@@@@@@.
-   * @.........@.    @ = color a
-   * @.        @.    . = color b
-   * @.        @.
-   * @@@@@@@@@@@.
+   * +++++++++++.
+   * +.........+.    + = color a
+   * +.        +.    . = color b
+   * +.        +.
+   * +++++++++++.
    * ............</pre>
    *
    * @param g the graphics for painting.
@@ -374,9 +370,8 @@ public class EtchedBorder
    * @param a one of the two colors.
    * @param b the second of the two colors.
    */
-  private static void paintEtchedBorder(Graphics g,
-                                        int x, int y, int width, int height,
-                                        Color a, Color b)
+  private static void paintEtchedBorder(Graphics g, int x, int y, int width,
+                                        int height, Color a, Color b)
   {
     Color oldColor;
 
@@ -387,11 +382,10 @@ public class EtchedBorder
 
     try
     {
-      /* To understand this code, it might be helpful to look at the
-       * images that are included with the JavaDoc. They are located
-       * in the "doc-files" subdirectory. EtchedBorder-2.png might
-       * be especially informative.
-       */
+      // To understand this code, it might be helpful to look at the
+      // images that are included with the JavaDoc. They are located
+      // in the "doc-files" subdirectory. EtchedBorder-2.png might
+      // be especially informative.
       g.setColor(a);
       g.drawRect(0, 0, width - 1, height - 1);
 
@@ -408,4 +402,3 @@ public class EtchedBorder
     }
   }
 }
-

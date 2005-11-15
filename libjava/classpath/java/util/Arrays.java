@@ -2353,6 +2353,186 @@ public class Arrays
   }
 
   /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param a the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString (long[] a)
+  {
+    if (a == null)
+      return "null";
+    if (a.length == 0)
+      return "[]";
+    String result = "[";
+    for (int i = 0; i < a.length - 1; i++)
+      result += String.valueOf(a[i]) + ", ";
+    result += String.valueOf(a[a.length - 1]) + "]";
+    return result;
+  }  
+  
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param a the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString (int[] a)
+  {
+    if (a == null)
+      return "null";
+    if (a.length == 0)
+      return "[]";
+    String result = "[";
+    for (int i = 0; i < a.length - 1; i++)
+      result += String.valueOf(a[i]) + ", ";
+    result += String.valueOf(a[a.length - 1]) + "]";
+    return result;
+  }  
+  
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param a the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString (short[] a)
+  {
+    if (a == null)
+      return "null";
+    if (a.length == 0)
+      return "[]";
+    String result = "[";
+    for (int i = 0; i < a.length - 1; i++)
+      result += String.valueOf(a[i]) + ", ";
+    result += String.valueOf(a[a.length - 1]) + "]";
+    return result;
+  }  
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param a the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString (char[] a)
+  {
+    if (a == null)
+      return "null";
+    if (a.length == 0)
+      return "[]";
+    String result = "[";
+    for (int i = 0; i < a.length - 1; i++)
+      result += String.valueOf(a[i]) + ", ";
+    result += String.valueOf(a[a.length - 1]) + "]";
+    return result;
+  }  
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param a the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString (byte[] a)
+  {
+    if (a == null)
+      return "null";
+    if (a.length == 0)
+      return "[]";
+    String result = "[";
+    for (int i = 0; i < a.length - 1; i++)
+      result += String.valueOf(a[i]) + ", ";
+    result += String.valueOf(a[a.length - 1]) + "]";
+    return result;
+  }  
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param a the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString (boolean[] a)
+  {
+    if (a == null)
+      return "null";
+    if (a.length == 0)
+      return "[]";
+    String result = "[";
+    for (int i = 0; i < a.length - 1; i++)
+      result += String.valueOf(a[i]) + ", ";
+    result += String.valueOf(a[a.length - 1]) + "]";
+    return result;
+  }  
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param a the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString (float[] a)
+  {
+    if (a == null)
+      return "null";
+    if (a.length == 0)
+      return "[]";
+    String result = "[";
+    for (int i = 0; i < a.length - 1; i++)
+      result += String.valueOf(a[i]) + ", ";
+    result += String.valueOf(a[a.length - 1]) + "]";
+    return result;
+  }  
+  
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param a the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString (double[] a)
+  {
+    if (a == null)
+      return "null";
+    if (a.length == 0)
+      return "[]";
+    String result = "[";
+    for (int i = 0; i < a.length - 1; i++)
+      result += String.valueOf(a[i]) + ", ";
+    result += String.valueOf(a[a.length - 1]) + "]";
+    return result;
+  }  
+
+  /**
+   * Returns a String representation of the argument array.  Returns "null"
+   * if <code>a</code> is null.
+   * @param a the array to represent
+   * @return a String representing this array
+   * @since 1.5
+   */
+  public static String toString (Object[] a)
+  {
+    if (a == null)
+      return "null";
+    if (a.length == 0)
+      return "[]";
+    String result = "[";
+    for (int i = 0; i < a.length - 1; i++)
+      result += String.valueOf(a[i]) + ", ";
+    result += String.valueOf(a[a.length - 1]) + "]";
+    return result;
+  }  
+
+  /**
    * Inner class used by {@link #asList(Object[])} to provide a list interface
    * to an array. The name, though it clashes with java.util.ArrayList, is
    * Sun's choice for Serialization purposes. Element addition and removal

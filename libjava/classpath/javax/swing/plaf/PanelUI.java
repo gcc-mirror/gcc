@@ -46,13 +46,13 @@ package javax.swing.plaf;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class PanelUI
-  extends ComponentUI
+public abstract class PanelUI extends ComponentUI
 {
   /**
    * Constructs a new <code>PanelUI</code>.
    */
   public PanelUI()
   {
+    // Nothing to do here.
   }
 }

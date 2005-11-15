@@ -38,9 +38,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -48,8 +45,9 @@ import javax.accessibility.AccessibleRole;
 /**
  * A menu item that displays a checkbox. Its behaviour is very similar
  * to {@link JCheckBox}. Just like the <code>JCheckBox</code>, user can check
- * and uncheck this menu item by clicking on it. Also {@link #setSelected()}
- * and {@link #setState()} can be use used for the same purpose.
+ * and uncheck this menu item by clicking on it. Also
+ * {@link AbstractButton#setSelected} and {@link #setState} can be use used
+ * for the same purpose.
  * <code>JCheckBoxMenuItem</code> uses
  * <code>ToggleButtonModel</code> to keep track of its selection.
  *
@@ -152,10 +150,6 @@ public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants,
     this.setVisible(true);
   }
 
-  private void writeObject(ObjectOutputStream stream) throws IOException
-  {
-  }
-
   /**
    * This method returns a name to identify which look and feel class will be
    * the UI delegate for the menuItem.
@@ -248,6 +242,7 @@ public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants,
      */
     protected AccessibleJCheckBoxMenuItem()
     {
+      // Nothing to do here.
     }
 
     public AccessibleRole getAccessibleRole()

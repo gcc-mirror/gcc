@@ -46,8 +46,7 @@ package javax.swing.plaf;
  * @author Andrew Selkirk
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ColorChooserUI
-  extends ComponentUI
+public abstract class ColorChooserUI extends ComponentUI
 {
   /**
    * Constructs a ColorChooserUI.

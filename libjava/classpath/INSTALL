@@ -1,4 +1,4 @@
-Installing GNU Classpath - Last updated: August 31, 2005
+Installing GNU Classpath - Last updated: September 7, 2005
 
 First, this is a development release only! Unless you are interested in
 active development and debugging, or just like running random alpha code,
@@ -31,11 +31,16 @@ Suggested Software
 	--with-jikes, --with-gcj, --with-ecj or --with-kjc as argument to
 	configure; the present default is gcj.
 
-        - GCJ 3.3+ (part of the GNU GCC package).
+        - GCJ 4.0+ (part of the GNU GCC package).
         - IBM jikes 1.19+.  
         - Eclipse Compiler for Java 3.1+
         - The kjc compiler is supported with configure but we have
           been unable to successfully compile with it.
+
+	IMPORTANT: Versions of GCJ which are earlier than 4.0 contain
+	bugs which make it impossible to compile the class library and
+	are *not* supported any more. If you are stuck on a system where
+	GCC 3.x is the system compiler we recommend using Jikes.
 
 	For building the gtk+ AWT peer JNI native libraries, the following
 	are required unless --disable-gtk-peer is used as an argument to
@@ -74,6 +79,29 @@ Suggested Software
 
 	- texinfo 4.2 or higher.
 
+	For building the ALSA midi provider code you will need
+	ALSA.  http://www.alsa-project.org. 
+
+	For building the DSSI midi synthesizer provider code you will
+	need DSSI from http://dssi.sourceforge.net.  This, in turn, 
+	introduces many dependencies, including:
+
+	  - liblo: the Lightweight OSC implementation
+	    http://plugin.org.uk/liblo/
+
+	  - LADSPA: Linux Audio Developer's Simple Plugin API
+	    http://www.ladspa.org
+
+	  - the JACK Audio Connection Kit: A low latency audio server
+	    http://jackit.sourceforge.net
+
+	  - libsndfile: an audio file I/O library
+	    http://www.mega-nerd.com/libsndfile/
+
+	  - fluidsynth: a real-time SoundFont 2 based soft-synth
+	    http://www.fluidsynth.org/
+
+
 This package was designed to use the GNU standard for configuration
 and makefiles.  To build and install do the following:
 
@@ -99,8 +127,7 @@ gives a complete list.
   --enable-Werror         whether to compile C code with -Werror which turns
                           any compiler warning into a compilation failure
                           default=no
-  --enable-xmlj           compile native libxml/xslt library default=no
-  --with-gjdoc		      generate documentation using gjdoc default=no
+  --with-gjdoc            generate documentation using gjdoc default=no
   --with-jay              Regenerate the parsers with jay must be given the
                           path to the jay executable
 

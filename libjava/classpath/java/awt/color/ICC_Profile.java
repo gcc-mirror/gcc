@@ -324,11 +324,11 @@ public class ICC_Profile implements Serializable
    * An instance of the specialized classes ICC_ProfileRGB or ICC_ProfileGray
    * may be returned if appropriate.
    *
-   * @throws IllegalArgumentException if the profile data is an invalid
-   * v2 profile.
-   *
    * @param data - the profile data
    * @return An ICC_Profile object
+   *
+   * @throws IllegalArgumentException if the profile data is an invalid
+   * v2 profile.
    */
   public static ICC_Profile getInstance(byte[] data)
   {
@@ -373,12 +373,12 @@ public class ICC_Profile implements Serializable
    * An instance of the specialized classes ICC_ProfileRGB or ICC_ProfileGray
    * may be returned if appropriate.
    *
+   * @param filename - the file name of the profile file.
+   * @return An ICC_Profile object
+   *
    * @throws IllegalArgumentException if the profile data is an invalid
    * v2 profile.
    * @throws IOException if the file could not be read.
-   *
-   * @param filename - the file name of the profile file.
-   * @return An ICC_Profile object
    */
   public static ICC_Profile getInstance(String filename)
                                  throws IOException
@@ -400,12 +400,12 @@ public class ICC_Profile implements Serializable
    * An instance of the specialized classes ICC_ProfileRGB or ICC_ProfileGray
    * may be returned if appropriate.
    *
+   * @param in - the input stream to read the profile from.
+   * @return An ICC_Profile object
+   *
    * @throws IllegalArgumentException if the profile data is an invalid
    * v2 profile.
    * @throws IOException if the stream could not be read.
-   *
-   * @param in - the input stream to read the profile from.
-   * @return An ICC_Profile object
    */
   public static ICC_Profile getInstance(InputStream in)
                                  throws IOException

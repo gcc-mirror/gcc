@@ -388,10 +388,7 @@ public class GdkTextLayout
     throw new Error("not implemented");
   }
 
-  public Shape getOutline (AffineTransform tx)
-  {
-    throw new Error("not implemented");
-  }
+  public native Shape getOutline (AffineTransform tx);
 
   public Shape getVisualHighlightShape (TextHitInfo firstEndpoint,
                                         TextHitInfo secondEndpoint,

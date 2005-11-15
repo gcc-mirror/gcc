@@ -401,7 +401,7 @@ setScrollPosition(int x, int y)
 public void
 addNotify()
 {
-  if (!isDisplayable ())
+  if (peer != null)
     return;
 
   setPeer((ComponentPeer)getToolkit().createScrollPane(this));
@@ -592,6 +592,8 @@ paramString()
   
   protected class AccessibleAWTScrollPane extends AccessibleAWTContainer
   {
+    private static final long serialVersionUID = 6100703663886637L;
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.SCROLL_PANE;

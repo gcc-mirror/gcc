@@ -216,7 +216,8 @@ import org.omg.IOP.ServiceContext;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public interface ServerRequestInfoOperations extends RequestInfoOperations
+public interface ServerRequestInfoOperations
+  extends RequestInfoOperations
 {
   /**
    * Allows the interceptor to add service contexts to the request. Such added
@@ -231,9 +232,7 @@ public interface ServerRequestInfoOperations extends RequestInfoOperations
    * @throws BAD_INV_ORDER minor 15 if the context with the same Id already
    * exists and replace=false.
    */
-  void add_reply_service_context(ServiceContext service_context,
-    boolean replace
-  );
+  void add_reply_service_context(ServiceContext service_context, boolean replace);
 
   /**
    * Get the identifier for the object adapter (POA).
@@ -257,14 +256,15 @@ public interface ServerRequestInfoOperations extends RequestInfoOperations
    * @throws INV_POLICY minor 2 if no factory was registered to produce this
    * type of policy or the policy is otherwise invalid.
    */
-  Policy get_server_policy(int type) throws INV_POLICY;
+  Policy get_server_policy(int type)
+    throws INV_POLICY;
 
   /**
    * Get the exception to be returned to the client. If the returned Any cannot
    * not support holding of that exception, it holds
    * {@link org.omg.CORBA.UNKNOWN} minor 1 instead.
    *
-       * @return an Any, holding exception that has been thrown and will be returned
+   * @return an Any, holding exception that has been thrown and will be returned
    * to client.
    */
   Any sending_exception();
@@ -281,7 +281,8 @@ public interface ServerRequestInfoOperations extends RequestInfoOperations
    * @see RequestInfoOperations#get_slot(int)
    * @see org.omg.PortableInterceptor#Current
    */
-  void set_slot(int id, Any data) throws InvalidSlot;
+  void set_slot(int id, Any data)
+    throws InvalidSlot;
 
   /**
    * Checks if the servant is the given repository id.
@@ -299,4 +300,27 @@ public interface ServerRequestInfoOperations extends RequestInfoOperations
    * @return the repository id of the servant.
    */
   String target_most_derived_interface();
+
+  /**
+   * Returns the name of the adapter that is handling the current request.
+   * The name is returned as a string array, representing full path from
+   * the root poa till the current poa, for instance 
+   * {"RootPOA", "childPOA","grandchildPOA"}.
+   */
+  public String[] adapter_name();
+
+  /**
+   * Returns the id of the ORB that is handling the current request. The ORB
+   * id can be specified as the property org.omg.CORBA.ORBid when creating
+   * the ORB. 
+   */
+  public String orb_id();
+
+  /**
+   * Returs the id of the server that is handling the current request. The server
+   * id is the same for all POAs and ORBs in the current virtual machine and 
+   * can be set as the property org.omg.CORBA.ServerId when creating one of the
+   * ORBs.
+   */
+  public String server_id();
 }

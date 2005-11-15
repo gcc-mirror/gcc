@@ -46,11 +46,11 @@ Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_create
   gpointer widget;
 
   gdk_threads_enter ();
-  
+
   /* Create global reference and save it for future use */
   NSA_SET_GLOBAL_REF (env, obj);
 
-  widget = gtk_type_new (gtk_drawing_area_get_type ());
+  widget = gtk_drawing_area_new ();
 
   NSA_SET_PTR (env, obj, widget);
 

@@ -1,5 +1,5 @@
 /* TitledBorder.java -- 
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,6 +46,9 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
+import java.awt.geom.AffineTransform;
 
 import javax.swing.UIManager;
 
@@ -55,8 +58,7 @@ import javax.swing.UIManager;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class TitledBorder
-  extends AbstractBorder
+public class TitledBorder extends AbstractBorder
 {
   /**
    * A value for the <code>titlePosition</code> property that vertically
@@ -301,7 +303,7 @@ public class TitledBorder
   public TitledBorder(String title)
   {
     this(/* border */ null,
-         title, DEFAULT_JUSTIFICATION, DEFAULT_POSITION,
+         title, LEADING, TOP,
          /* titleFont */ null, /* titleColor */ null);
   }
 
@@ -314,7 +316,7 @@ public class TitledBorder
    */
   public TitledBorder(Border border)
   {
-    this(border, /* title */ "", DEFAULT_JUSTIFICATION, DEFAULT_POSITION,
+    this(border, /* title */ "", LEADING, TOP,
          /* titleFont */ null, /* titleColor */ null);
   }
   
@@ -330,7 +332,7 @@ public class TitledBorder
    */
   public TitledBorder(Border border, String title)
   {
-    this(border, title, DEFAULT_JUSTIFICATION, DEFAULT_POSITION,
+    this(border, title, LEADING, TOP,
          /* titleFont */ null, /* titleColor */ null);
   }
   
@@ -504,7 +506,7 @@ public class TitledBorder
       public void paint(Graphics g)
       {
         if (b != null)
-          b.paintBorder(c, g, x, y, width - 1, height - 1);
+          b.paintBorder(c, g, x, y, width, height);
       }
 
 
@@ -562,7 +564,7 @@ public class TitledBorder
         if (stripeHeight > 0)
         {
           paint(g, x, holeY, holeX - x, stripeHeight);  // patches #2 and #3
-          paint(g, holeX + holeWidth, holeY, width - (holeX + holeWidth), stripeHeight);
+          paint(g, holeX + holeWidth, holeY, x + width - (holeX + holeWidth), stripeHeight);
         }
 
         stripeHeight = height - (holeY - y + holeHeight);
@@ -574,16 +576,16 @@ public class TitledBorder
     BorderPainter bp;
     int textX, textY, borderWidth, borderHeight;
 
-    borderWidth = width - (mes.borderSpacing.left + mes.borderSpacing.right);
-    borderHeight = height - (mes.borderSpacing.top + mes.borderSpacing.bottom);
+    borderWidth = width - (mes.outerSpacing.left + mes.outerSpacing.right);
+    borderHeight = height - (mes.outerSpacing.top + mes.outerSpacing.bottom);
     bp = new BorderPainter(c, getBorder(),
-                           x + mes.borderSpacing.left, y + mes.borderSpacing.top,
+                           x + mes.outerSpacing.left, y + mes.outerSpacing.top,
                            borderWidth, borderHeight);
 
     switch (getRealTitleJustification(c))
     {
     case LEFT:
-      textX = x + TEXT_INSET_H;
+      textX = x + EDGE_SPACING + TEXT_INSET_H;
       break;
 
     case CENTER:
@@ -601,21 +603,22 @@ public class TitledBorder
     switch (titlePosition)
     {
     case ABOVE_TOP:
-      textY = y;
+      textY = y + EDGE_SPACING;
       break;
 
     case TOP:
     case DEFAULT_POSITION:
     default:
-      textY = y + mes.borderSpacing.top + mes.borderInsets.top - mes.textAscent;
+      textY = y + mes.outerSpacing.top + mes.borderInsets.top - mes.textAscent
+              + mes.lineHeight;
       break;
 
     case BELOW_TOP:
-      textY = y + mes.borderSpacing.top + mes.borderInsets.top + TEXT_SPACING;
+      textY = y + mes.outerSpacing.top + mes.borderInsets.top + TEXT_SPACING;
       break;
 
     case ABOVE_BOTTOM:
-      textY = y + height - mes.borderSpacing.bottom - mes.borderInsets.bottom
+      textY = y + height - mes.outerSpacing.bottom - mes.borderInsets.bottom
         - TEXT_SPACING - (mes.textAscent + mes.textDescent);
       break;
 
@@ -640,8 +643,8 @@ public class TitledBorder
         g.setFont(oldFont);
         g.setColor(oldColor);
       }
-      bp.paintExcept(g, textX - 2, textY,
-                     mes.textWidth + 2, mes.textAscent + mes.textDescent);
+      bp.paintExcept(g, textX, textY,
+                     mes.textWidth, mes.textAscent + mes.textDescent);
     }
   }
   
@@ -998,39 +1001,63 @@ public class TitledBorder
         m.trimmedText = null;
     }
     
-    m.textAscent = fmet.getAscent();
-    m.textDescent = fmet.getDescent();
     if (m.trimmedText != null)
-      m.textWidth = fmet.stringWidth(m.trimmedText) + 3;
+      {
+        m.textAscent = fmet.getAscent();
+        m.textDescent = fmet.getDescent() + fmet.getLeading();
 
-    m.edgeSpacing = new Insets(EDGE_SPACING, EDGE_SPACING, EDGE_SPACING, EDGE_SPACING);
-    m.borderSpacing = new Insets(0, 0, 0, 0);
+        FontRenderContext frc = new FontRenderContext(new AffineTransform(), 
+            false, false);
+        LineMetrics lmet = m.font.getLineMetrics(m.trimmedText, 0,
+            m.trimmedText.length(), frc);
+        m.lineHeight = (int) lmet.getStrikethroughOffset();
+        
+        // Fallback in case that LineMetrics is not available/working.
+        if (m.lineHeight == 0)
+          m.lineHeight = (int) (0.3333 * (double) m.textAscent);
+        m.textWidth = fmet.stringWidth(m.trimmedText) + 3;
+      }
+    else
+      {
+        m.textAscent = 0;
+        m.textDescent = 0;
+      }
+
+    m.innerSpacing = new Insets(EDGE_SPACING, EDGE_SPACING, EDGE_SPACING, 
+            EDGE_SPACING);
+    m.outerSpacing = new Insets(EDGE_SPACING, EDGE_SPACING, EDGE_SPACING, 
+            EDGE_SPACING);
 
     switch (titlePosition)
     {
     case ABOVE_TOP:
-      m.borderSpacing.top += m.textAscent + m.textDescent + TEXT_SPACING;
+      m.outerSpacing.top += m.textAscent + m.textDescent + TEXT_SPACING;
       break;
 
+    case TOP:
+      m.outerSpacing.top += m.textDescent + m.lineHeight;
+      m.innerSpacing.top += m.textAscent - m.lineHeight;
+      break;
+      
     case BELOW_TOP:
-      m.edgeSpacing.top += m.textAscent + m.textDescent + TEXT_SPACING;
+      m.innerSpacing.top += m.textAscent + m.textDescent + TEXT_SPACING;
       break;
 
     case ABOVE_BOTTOM:
-      m.edgeSpacing.bottom += m.textAscent + m.textDescent + TEXT_SPACING;
+      m.innerSpacing.bottom += m.textAscent + m.textDescent + TEXT_SPACING;
       break;
 
     case BOTTOM:
-      m.edgeSpacing.bottom += Math.max(m.textAscent - m.borderInsets.bottom, 0);
-      m.borderSpacing.bottom += m.textDescent;
+      m.innerSpacing.bottom += Math.max(m.textAscent - m.lineHeight, 0);
+      m.outerSpacing.bottom += m.textDescent + m.lineHeight;
       break;
 
     case BELOW_BOTTOM:
-      m.borderSpacing.bottom += m.textAscent + m.textDescent + TEXT_SPACING;
+      m.outerSpacing.bottom += m.textAscent + m.textDescent;
       break;
 
     default:
-      m.borderSpacing.top += m.textAscent;
+      m.outerSpacing.top += m.textAscent;
     }
 
     return m;
@@ -1053,7 +1080,7 @@ public class TitledBorder
      * which means that the font is to be retrieved from the current
      * LookAndFeel. In this case, this <code>font</code> field will
      * contain the result of the retrieval. Therefore, it is safe
-     * to assume that his <code>font</code> field will never have
+     * to assume that this <code>font</code> field will never have
      * a <code>null</code> value.
      */
     Font font;
@@ -1072,6 +1099,11 @@ public class TitledBorder
      */
     int textDescent;
 
+    /**
+     * The number of pixels between the base line and the height where
+     * a strike-through would be drawn.
+     */
+    int lineHeight;
 
     /**
      * The title text after removing leading and trailing white space
@@ -1088,7 +1120,7 @@ public class TitledBorder
 
 
     /**
-     * The border that constitues the interior border
+     * The border that constitutes the interior border
      * underneath the title text.
      */
     Border border;
@@ -1097,8 +1129,7 @@ public class TitledBorder
     /**
      * The distance between the TitledBorder and the interior border.
      */
-    Insets borderSpacing;
-
+    Insets outerSpacing;
     
     /**
      * The width of the interior border, as returned by
@@ -1111,7 +1142,7 @@ public class TitledBorder
      * The distance between the interior border and the nested
      * Component for which this TitledBorder is a border.
      */
-    Insets edgeSpacing;
+    Insets innerSpacing;
 
 
     /**
@@ -1130,10 +1161,10 @@ public class TitledBorder
     {
       if (i == null)
         i = new Insets(0, 0, 0, 0);
-      i.left = borderSpacing.left + borderInsets.left + edgeSpacing.left;
-      i.right = borderSpacing.right + borderInsets.right + edgeSpacing.right;
-      i.top = borderSpacing.top + borderInsets.top + edgeSpacing.top;
-      i.bottom = borderSpacing.bottom + borderInsets.bottom + edgeSpacing.bottom;
+      i.left = outerSpacing.left + borderInsets.left + innerSpacing.left;
+      i.right = outerSpacing.right + borderInsets.right + innerSpacing.right;
+      i.top = outerSpacing.top + borderInsets.top + innerSpacing.top;
+      i.bottom = outerSpacing.bottom + borderInsets.bottom + innerSpacing.bottom;
       return i;
     }
 
@@ -1148,7 +1179,8 @@ public class TitledBorder
       Insets insets;
 
       insets = getContentInsets(null);
-      width = Math.max(insets.left + insets.right, textWidth + 2 * TEXT_INSET_H);
+      width = Math.max(insets.left + insets.right, textWidth + 2 
+              * TEXT_INSET_H);
       return new Dimension(width, insets.top + insets.bottom);
     }
   }

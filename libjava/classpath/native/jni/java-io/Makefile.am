@@ -1,4 +1,4 @@
-pkglib_LTLIBRARIES = libjavaio.la 
+nativelib_LTLIBRARIES = libjavaio.la 
 
 libjavaio_la_SOURCES = 	javaio.h \
 			javaio.c \

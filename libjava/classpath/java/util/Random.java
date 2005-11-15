@@ -102,7 +102,7 @@ public class Random implements Serializable
    * in next.
    *
    * @serial the internal state of this generator
-   * @see #next()
+   * @see #next(int)
    */
   private long seed;
 

@@ -1,5 +1,5 @@
 /* Request.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,6 @@ package gnu.java.net.protocol.http;
 
 import gnu.java.net.BASE64;
 import gnu.java.net.LineInputStream;
-import gnu.java.net.protocol.http.event.RequestEvent;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,11 +97,6 @@ public class Request
    * Request body negotiation threshold for 100-continue expectations.
    */
   protected int requestBodyNegotiationThreshold;
-
-  /**
-   * The response body reader.
-   */
-  protected ResponseBodyReader responseBodyReader;
 
   /**
    * Map of response header handlers.
@@ -236,16 +230,6 @@ public class Request
   }
 
   /**
-   * Sets the response body reader.
-   * @param responseBodyReader the handler to receive notifications of
-   * response body content
-   */
-  public void setResponseBodyReader(ResponseBodyReader responseBodyReader)
-  {
-    this.responseBodyReader = responseBodyReader;
-  }
-
-  /**
    * Sets a callback handler to be invoked for the specified header name.
    * @param name the header name
    * @param handler the handler to receive the value for the header
@@ -324,13 +308,10 @@ public class Request
         do
           {
             retry = false;
-            // Send request
-            connection.fireRequestEvent(RequestEvent.REQUEST_SENDING, this);
             
             // Get socket output and input streams
             OutputStream out = connection.getOutputStream();
-            LineInputStream in =
-              new LineInputStream(connection.getInputStream());
+
             // Request line
             String requestUri = path;
             if (connection.isUsingProxy() &&
@@ -369,28 +350,42 @@ public class Request
                     count += len;
                   }
                 while (len > -1 && count < contentLength);
-                out.write(CRLF.getBytes(US_ASCII));
               }
             out.flush();
-            // Sent event
-            connection.fireRequestEvent(RequestEvent.REQUEST_SENT, this);
             // Get response
-            response = readResponse(in);
-            int sc = response.getCode();
-            if (sc == 401 && authenticator != null)
-              {
-                if (authenticate(response, attempts++))
-                  {
-                    retry = true;
-                  }
-              }
-            else if (sc == 100 && expectingContinue)
-              {
-                requestHeaders.remove("Expect");
-                setHeader("Content-Length", Integer.toString(contentLength));
-                expectingContinue = false;
-                retry = true;
-              }
+            while(true)
+            {
+              response = readResponse(connection.getInputStream());
+              int sc = response.getCode();
+              if (sc == 401 && authenticator != null)
+                {
+                  if (authenticate(response, attempts++))
+                    {
+                      retry = true;
+                    }
+                }
+              else if (sc == 100)
+                {
+                  if (expectingContinue)
+                    {
+                      requestHeaders.remove("Expect");
+                      setHeader("Content-Length",
+                                Integer.toString(contentLength));
+                      expectingContinue = false;
+                      retry = true;
+                    }
+                  else
+                    {
+                      // A conforming server can send an unsoliceted
+                      // Continue response but *should* not (RFC 2616
+                      // sec 8.2.3).  Ignore the bogus Continue
+                      // response and get the real response that
+                      // should follow
+                      continue;
+                    }
+                }
+              break;
+            }
           }
         while (retry);
       }
@@ -402,14 +397,16 @@ public class Request
     return response;
   }
     
-  Response readResponse(LineInputStream in)
+  Response readResponse(InputStream in)
     throws IOException
   {
     String line;
     int len;
     
     // Read response status line
-    line = in.readLine();
+    LineInputStream lis = new LineInputStream(in);
+
+    line = lis.readLine();
     if (line == null)
       {
         throw new ProtocolException("Peer closed connection");
@@ -438,30 +435,25 @@ public class Request
     String message = line.substring(end + 1, len - 1);
     // Read response headers
     Headers responseHeaders = new Headers();
-    responseHeaders.parse(in);
+    responseHeaders.parse(lis);
     notifyHeaderHandlers(responseHeaders);
-    // Construct response
-    int codeClass = code / 100;
-    Response ret = new Response(majorVersion, minorVersion, code,
-                                codeClass, message, responseHeaders);
+    InputStream body = null;
+    
     switch (code)
       {
+      case 100:
       case 204:
       case 205:
       case 304:
         break;
       default:
-        // Does response body reader want body?
-        boolean notify = (responseBodyReader != null);
-        if (notify)
-          {
-            if (!responseBodyReader.accept(this, ret))
-              {
-                notify = false;
-              }
-          }
-        readResponseBody(ret, in, notify);
+        body = createResponseBodyStream(responseHeaders, majorVersion,
+                                        minorVersion, in);
       }
+
+    // Construct response
+    Response ret = new Response(majorVersion, minorVersion, code,
+                                message, responseHeaders, body);
     return ret;
   }
 
@@ -487,25 +479,40 @@ public class Request
       }
   }
 
-  void readResponseBody(Response response, InputStream in,
-                        boolean notify)
+  private InputStream createResponseBodyStream(Headers responseHeaders,
+                                               int majorVersion,
+                                               int minorVersion,
+                                               InputStream in)
     throws IOException
   {
-    byte[] buffer = new byte[4096];
-    int contentLength = -1;
+    long contentLength = -1;
     Headers trailer = null;
     
-    String transferCoding = response.getHeader("Transfer-Encoding");
+    // Persistent connections are the default in HTTP/1.1
+    boolean doClose = "close".equalsIgnoreCase(getHeader("Connection")) ||
+      "close".equalsIgnoreCase(responseHeaders.getValue("Connection")) ||
+      (connection.majorVersion == 1 && connection.minorVersion == 0) ||
+      (majorVersion == 1 && minorVersion == 0);
+
+    String transferCoding = responseHeaders.getValue("Transfer-Encoding");
     if ("chunked".equalsIgnoreCase(transferCoding))
       {
-        trailer = new Headers();
-        in = new ChunkedInputStream(in, trailer);
+        in = new LimitedLengthInputStream(in, -1, false, connection, doClose);
+          
+        in = new ChunkedInputStream(in, responseHeaders);
       } 
     else
       {
-        contentLength = response.getIntHeader("Content-Length");
+        contentLength = responseHeaders.getLongValue("Content-Length");
+
+        if (contentLength < 0)
+          doClose = true;  // No Content-Length, must close.
+
+        in = new LimitedLengthInputStream(in, contentLength,
+                                          contentLength >= 0,
+                                          connection, doClose);
       }
-    String contentCoding = response.getHeader("Content-Encoding");
+    String contentCoding = responseHeaders.getValue("Content-Encoding");
     if (contentCoding != null && !"identity".equals(contentCoding))
       {
         if ("gzip".equals(contentCoding))
@@ -522,51 +529,7 @@ public class Request
                                         contentCoding);
           }
       }
-    
-    // Persistent connections are the default in HTTP/1.1
-    boolean doClose = "close".equalsIgnoreCase(getHeader("Connection")) ||
-      "close".equalsIgnoreCase(response.getHeader("Connection")) ||
-      (connection.majorVersion == 1 && connection.minorVersion == 0) ||
-      (response.majorVersion == 1 && response.minorVersion == 0);
-    
-    int count = contentLength;
-    int len = (count > -1) ? count : buffer.length;
-    len = (len > buffer.length) ? buffer.length : len;
-    while (len > -1)
-      {
-        len = in.read(buffer, 0, len);
-        if (len < 0)
-          {
-            // EOF
-            connection.closeConnection();
-            break;
-          }
-        if (notify)
-          {
-            responseBodyReader.read(buffer, 0, len);
-          }
-        if (count > -1)
-          {
-            count -= len;
-            if (count < 1)
-              {
-                if (doClose)
-                  {
-                    connection.closeConnection();
-                  }
-                break;
-              }
-          }
-      }
-    if (notify)
-      {
-        responseBodyReader.close();
-      }
-    if (trailer != null)
-      {
-        response.getHeaders().putAll(trailer);
-        notifyHeaderHandlers(trailer);
-      }
+    return in;
   }
 
   boolean authenticate(Response response, int attempts)
@@ -686,7 +649,7 @@ public class Request
   {
     int len = text.length();
     String key = null;
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     Properties ret = new Properties();
     boolean inQuote = false;
     for (int i = 0; i < len; i++)
@@ -739,7 +702,7 @@ public class Request
   {
     int nc = connection.getNonceCount(nonce);
     String hex = Integer.toHexString(nc);
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     for (int i = 8 - hex.length(); i > 0; i--)
       {
         buf.append('0');
@@ -810,7 +773,7 @@ public class Request
 
     int len = text.length();
     String attr = null;
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     boolean inQuote = false;
     for (int i = 0; i <= len; i++)
       {

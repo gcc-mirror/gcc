@@ -46,7 +46,7 @@ public final class Gnu extends Provider
 {
   public Gnu()
   {
-    super("GNU", 1.0, "GNU provider v1.0 implementing SHA-1, MD5, DSA, RSA, X.509 Certificates and CRLs, PKIX certificate path validators, Collection cert stores");
+    super("GNU", 1.0, "GNU provider v1.0 implementing SHA-1, MD5, DSA, RSA, X.509 Certificates and CRLs, PKIX certificate path validators, Collection cert stores, Diffie-Hellman key agreement and key pair generator");
 
     AccessController.doPrivileged (new PrivilegedAction()
     {
@@ -100,10 +100,12 @@ public final class Gnu extends Provider
         // Key Pair Generator
         put("KeyPairGenerator.DSA",
             gnu.java.security.provider.DSAKeyPairGenerator.class.getName());
+        put("KeyPairGenerator.DiffieHellman", DiffieHellmanKeyPairGeneratorImpl.class.getName ());
 
         put("Alg.Alias.KeyPairGenerator.OID.1.2.840.10040.4.1", "DSA");
         put("Alg.Alias.KeyPairGenerator.1.2.840.10040.4.1", "DSA");
         put("Alg.Alias.KeyPairGenerator.1.3.14.3.2.12", "DSA");
+        put("Alg.Alias.KeyPairGenerator.DH", "DiffieHellman");
 
         // Key Factory
         put("KeyFactory.DSA",
@@ -121,6 +123,9 @@ public final class Gnu extends Provider
         put("Alg.Alias.KeyFactory.OID.1.2.840.10040.4.1", "DSA");
         put("Alg.Alias.KeyFactory.1.2.840.10040.4.1", "DSA");
         put("Alg.Alias.KeyFactory.1.3.14.3.2.12", "DSA");
+
+        put("KeyFactory.DiffieHellman", DiffieHellmanKeyFactoryImpl.class.getName());
+        put("Alg.Alias.KeyFactory.DH", "DiffieHellman");
 
         // Message Digests
         put("MessageDigest.SHA", gnu.java.security.provider.SHA.class.getName());
@@ -160,6 +165,14 @@ public final class Gnu extends Provider
 
         // CertStore
         put("CertStore.Collection", CollectionCertStoreImpl.class.getName());
+
+        // KeyAgreement
+        put("KeyAgreement.DiffieHellman", gnu.javax.crypto.DiffieHellmanImpl.class.getName());
+        put("Alg.Alias.KeyAgreement.DH", "DiffieHellman");
+
+        // Cipher
+        put("Cipher.RSAES-PKCS1-v1_5", gnu.javax.crypto.RSACipherImpl.class.getName());
+        put("Alg.Alias.Cipher.RSA", "RSAES-PKCS1-v1_5");
 
         return null;
       }

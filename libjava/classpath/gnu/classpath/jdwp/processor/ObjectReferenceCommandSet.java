@@ -106,7 +106,8 @@ public class ObjectReferenceCommandSet
         // So if we throw an IOException we're in serious trouble
         throw new JdwpInternalErrorException(ex);
       }
-    return true;
+
+    return false;
   }
 
   private void executeReferenceType(ByteBuffer bb, DataOutputStream os)

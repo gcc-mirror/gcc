@@ -45,6 +45,8 @@ import org.omg.CORBA.ORB;
 import org.omg.PortableServer.POAPackage.ServantNotActive;
 import org.omg.PortableServer.POAPackage.WrongPolicy;
 import org.omg.PortableServer.portable.Delegate;
+
+import gnu.CORBA.Minor;
 import gnu.CORBA.Poa.ORB_1_4;
 import gnu.CORBA.Poa.gnuPOA;
 
@@ -239,6 +241,7 @@ public abstract class Servant
             catch (WrongPolicy unexp)
               {
                 BAD_OPERATION bad = new BAD_OPERATION();
+                bad.minor = Minor.Policy;
                 bad.initCause(unexp);
                 throw bad;
               }
@@ -253,6 +256,7 @@ public abstract class Servant
                     unexp.initCause(ex);
 
                     BAD_OPERATION bad = new BAD_OPERATION();
+                    bad.minor = Minor.Activation;
                     bad.initCause(unexp);
                     throw bad;
                   }

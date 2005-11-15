@@ -39,7 +39,7 @@ exception statement from your version. */
 package gnu.CORBA.DynAn;
 
 import gnu.CORBA.Unexpected;
-import gnu.CORBA.holderFactory;
+import gnu.CORBA.HolderLocator;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
@@ -65,7 +65,7 @@ import java.lang.reflect.Field;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class gnuDynValueBox
-  extends anyDivideable
+  extends DivideableAny
   implements DynValueBox, Serializable
 {
   /**
@@ -208,7 +208,7 @@ public class gnuDynValueBox
       {
         try
           {
-            Streamable holder = holderFactory.createHolder(content);
+            Streamable holder = HolderLocator.createHolder(content);
             Field v = holder.getClass().getField("value");
             v.set(holder, s);
 

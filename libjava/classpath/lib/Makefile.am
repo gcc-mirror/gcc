@@ -29,7 +29,7 @@ if FOUND_GCJX
 JAVAC = $(GCJX) -encoding UTF-8 -classpath .:$(USER_CLASSLIB) -d . @classes
 else
 if FOUND_ECJ
-JAVAC = $(ECJ) -encoding UTF-8 -warn:none -proceedOnError -bootclasspath '' -classpath $(compile_classpath) -d . @classes
+JAVAC = $(ECJ) -source 1.4 -encoding UTF-8 -warn:-deprecation,serial,typeHiding,unchecked,unused,varargsCast -proceedOnError -bootclasspath '' -classpath $(compile_classpath) -d . @classes
 endif # FOUND_ECJ
 endif # FOUND_GCJX
 endif # FOUND_KJC
@@ -40,7 +40,7 @@ JAVAH = $(USER_JAVAH) -jni -classpath .:$(USER_CLASSLIB)
 
 if INSTALL_GLIBJ_ZIP
 
-pkgdata_DATA = glibj.zip
+glibj_DATA = glibj.zip
 
 endif # INSTALL_GLIBJ_ZIP
 
@@ -73,7 +73,7 @@ endif # INSTALL_CLASS_FILES
 glibj.zip: classes compile-classes resources
 	if test "$(ZIP)" != ""; then $(ZIP) -r -D glibj.zip gnu java javax org META-INF > /dev/null; fi
 
-resources:
+resources: copy-vmresources.sh
 	if ! [ -e gnu ]; then mkdir gnu; fi
 	if ! [ -e gnu/java ]; then mkdir gnu/java; fi
 	if ! [ -e gnu/java/locale ]; then mkdir gnu/java/locale; fi
@@ -87,6 +87,7 @@ resources:
 	@list='$(metafiles)'; for p in $$list; do \
 	  cp $(top_srcdir)/resource/$$p $$p; \
 	done
+	@$(SHELL) ./copy-vmresources.sh
 	@list='$(iconfiles)'; for p in $$list; do \
 	  cp $(top_srcdir)/$$p $$p; \
 	done
@@ -145,6 +146,7 @@ clean-local:
 	-rm -rf java
 	-rm -rf javax
 	-rm -rf org
+	-rm -rf com
 	-rm -rf META-INF
 	-rm -rf lists
 	-rm -f Makefile.deps

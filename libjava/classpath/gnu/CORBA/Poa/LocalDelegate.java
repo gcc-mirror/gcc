@@ -38,8 +38,10 @@ exception statement from your version. */
 
 package gnu.CORBA.Poa;
 
-import gnu.CORBA.CDR.cdrOutput;
-import gnu.CORBA.streamRequest;
+import gnu.CORBA.CDR.AbstractCdrOutput;
+import gnu.CORBA.IOR;
+import gnu.CORBA.IorProvider;
+import gnu.CORBA.StreamBasedRequest;
 
 import org.omg.CORBA.ARG_INOUT;
 import org.omg.CORBA.Bounds;
@@ -68,17 +70,22 @@ import java.util.Arrays;
  * A local delegate, transferring all object requests to the locally available
  * servant. This class is involved in handling the method invocations on the
  * local object, obtained by POA.create_reference_with_id.
- *
+ * 
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
+public class LocalDelegate
+  extends org.omg.CORBA_2_3.portable.Delegate
+  implements IorProvider
 {
   /**
    * The same servant as an invocation handler.
    */
   gnuServantObject object;
+
   String operation;
-  final gnuPOA poa;
+
+  public final gnuPOA poa;
+
   final byte[] Id;
 
   /**
@@ -90,6 +97,14 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
     object = an_object;
     poa = a_poa;
     Id = an_id;
+  }
+  
+  /**
+   * Get the IOR of the connected object.
+   */
+  public IOR getIor()
+  {
+    return object.getIor();
   }
 
   public Request request(org.omg.CORBA.Object target, String method)
@@ -107,8 +122,7 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
   }
 
   public boolean is_equivalent(org.omg.CORBA.Object target,
-    org.omg.CORBA.Object other
-  )
+    org.omg.CORBA.Object other)
   {
     if (target == other)
       return true;
@@ -157,9 +171,9 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
 
   /**
    * Check if this object could be named by the given repository id.
-   *
+   * 
    * @param idl_id the repository id to check.
-   *
+   * 
    * @return true if it is one of the possible repository ids of this object.
    */
   public boolean is_a(org.omg.CORBA.Object a_servant, String idl_id)
@@ -167,7 +181,7 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
     String[] maybe = object._ids();
     for (int i = 0; i < maybe.length; i++)
       {
-        if (maybe [ i ].equals(idl_id))
+        if (maybe[i].equals(idl_id))
           return true;
       }
     return false;
@@ -186,8 +200,7 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
    */
   public Request create_request(org.omg.CORBA.Object target, Context context,
     String method, NVList parameters, NamedValue returns,
-    ExceptionList exceptions, ContextList ctx_list
-  )
+    ExceptionList exceptions, ContextList ctx_list)
   {
     operation = method;
 
@@ -204,8 +217,7 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
    * Create request for using with DII.
    */
   public Request create_request(org.omg.CORBA.Object target, Context context,
-    String method, NVList parameters, NamedValue returns
-  )
+    String method, NVList parameters, NamedValue returns)
   {
     operation = method;
 
@@ -226,23 +238,20 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
 
   /**
    * Create a request to invoke the method of this CORBA object.
-   *
+   * 
    * @param operation the name of the method to invoke.
    * @param response_expected specifies if this is one way message or the
    * response to the message is expected.
-   *
+   * 
    * @return the stream where the method arguments should be written.
    */
   public org.omg.CORBA.portable.OutputStream request(
-    org.omg.CORBA.Object target,
-    String method,
-    boolean response_expected
-  )
+    org.omg.CORBA.Object target, String method, boolean response_expected)
   {
     operation = method;
 
     // Check if the object is not explicitly deactivated.
-    activeObjectMap.Obj e = poa.aom.get(Id);
+    AOM.Obj e = poa.aom.get(Id);
     if (e != null && e.isDeactiveted())
       {
         if (poa.servant_activator != null || poa.servant_locator != null)
@@ -280,7 +289,7 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
 
   /**
    * Make an invocation.
-   *
+   * 
    * @param target not in use.
    * @param output the stream request that should be returned by
    * {@link #m_request} in this method.
@@ -292,31 +301,29 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
   {
     try
       {
-        streamRequest sr = (streamRequest) output;
+        StreamBasedRequest sr = (StreamBasedRequest) output;
 
         LocalRequest lr = (LocalRequest) sr.request;
-        InvokeHandler handler =
-          lr.object.getHandler(lr.operation(), lr.cookie, false);
+        InvokeHandler handler = lr.object.getHandler(lr.operation(), lr.cookie,
+          false);
 
-        if (handler instanceof dynImpHandler)
+        if (handler instanceof DynamicImpHandler)
           {
             // The local request known how to handle it, but the different
             // method must be called.
             lr.invoke();
 
             // The encapsulation will inherit orb, endian, charsets, etc.
-            cdrOutput buf = sr.createEncapsulation();
+            AbstractCdrOutput buf = sr.createEncapsulation();
 
             // Write all request parameters to the buffer stream.
             if (lr.env().exception() != null)
               {
                 try
                   {
-                    UnknownUserException uex =
-                      (UnknownUserException) lr.env().exception();
+                    UnknownUserException uex = (UnknownUserException) lr.env().exception();
                     throw new ApplicationException(uex.except.type().id(),
-                      uex.except.create_input_stream()
-                    );
+                      uex.except.create_input_stream());
                   }
                 catch (BadKind ex)
                   {
@@ -334,9 +341,8 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
                 for (int i = 0; i < lr.arguments().count(); i++)
                   {
                     a = lr.arguments().item(i);
-                    if (a.flags() == ARG_INOUT.value ||
-                      a.flags() == ARG_INOUT.value
-                    )
+                    if (a.flags() == ARG_INOUT.value
+                      || a.flags() == ARG_INOUT.value)
                       {
                         a.value().write_value(buf);
                       }
@@ -362,10 +368,7 @@ public class LocalDelegate extends org.omg.CORBA_2_3.portable.Delegate
         try
           {
             return ((ObjectImpl) f.forward_reference)._invoke(f.forward_reference._request(
-                operation,
-                true
-              )
-            );
+              operation, true));
           }
         catch (RemarshalException e)
           {

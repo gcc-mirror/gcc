@@ -50,6 +50,7 @@ import java.awt.LayoutManager;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 
 /**
@@ -65,8 +66,31 @@ import javax.accessibility.AccessibleContext;
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
 public class JFrame extends Frame
-  implements WindowConstants, RootPaneContainer
+  implements WindowConstants, RootPaneContainer, Accessible
 {
+  /**
+   * Provides accessibility support for <code>JFrame</code>s.
+   */
+  protected class AccessibleJFrame extends Frame.AccessibleAWTFrame
+  {
+    /**
+     * Creates a new instance of <code>AccessibleJFrame</code>.
+     */
+    public AccessibleJFrame()
+    {
+      super();
+      // Nothing to do here.
+    }
+  }
+
+  /**
+   * A flag for {@link #setDefaultCloseOperation(int)}, indicating that the
+   * application should be exited, when this <code>JFrame</code> is closed.
+   *
+   * @since 1.3
+   */
+  public static final int EXIT_ON_CLOSE = 3;
+
   private static final long serialVersionUID = -3362141868504252139L;
   private static boolean defaultLookAndFeelDecorated;
   private int close_action = HIDE_ON_CLOSE;
@@ -77,13 +101,6 @@ public class JFrame extends Frame
    * @specnote rootPaneCheckingEnabled is false to comply with J2SE 5.0
    */
   protected boolean rootPaneCheckingEnabled = false;
-
-  /**
-   * Tells us if we're in the initialization stage.
-   * If so, adds go to top-level Container, otherwise they go
-   * to the content pane for this container.
-   */
-  private boolean initStageDone = false;
 
   public JFrame()
   {
@@ -134,7 +151,7 @@ public class JFrame extends Frame
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     getRootPane(); // will do set/create
     // We're now done the init stage.
-    initStageDone = true;
+    setRootPaneCheckingEnabled(true);
   }
 
   public Dimension getPreferredSize()
@@ -156,13 +173,8 @@ public class JFrame extends Frame
   {
     // Check if we're in initialization stage.  If so, call super.setLayout
     // otherwise, valid calls go to the content pane.
-    if (initStageDone)
-      {
-        if (isRootPaneCheckingEnabled())
-          throw new Error("Cannot set layout. Use getContentPane().setLayout()"
-                           + " instead.");
-        getContentPane().setLayout(manager);
-      }
+    if (isRootPaneCheckingEnabled())
+      getContentPane().setLayout(manager);
     else
       super.setLayout(manager);
   }
@@ -222,15 +234,10 @@ public class JFrame extends Frame
   {
     // If we're adding in the initialization stage use super.add.
     // Otherwise pass the add onto the content pane.
-    if (!initStageDone)
-      super.addImpl(comp, constraints, index);
+    if (isRootPaneCheckingEnabled())
+      getContentPane().add(comp,constraints,index);
     else
-      {
-        if (isRootPaneCheckingEnabled())
-          throw new Error("rootPaneChecking is enabled - adding components "
-                           + "disallowed.");
-        getContentPane().add(comp,constraints,index);
-      }
+      super.addImpl(comp, constraints, index);
   }
 
   public void remove(Component comp)
@@ -275,6 +282,8 @@ public class JFrame extends Frame
 
   public AccessibleContext getAccessibleContext()
   {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJFrame();
     return accessibleContext;
   }
 

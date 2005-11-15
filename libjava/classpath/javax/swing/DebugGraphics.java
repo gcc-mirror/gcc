@@ -42,6 +42,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.image.ImageObserver;
@@ -84,15 +85,16 @@ public class DebugGraphics extends Graphics
   static PrintStream debugLogStream = System.out;
 
   /**
+   * Counts the created DebugGraphics objects. This is used by the
+   * logging facility.
+   */
+  static int counter = 0;
+
+  /**
    * graphics
    */
   Graphics graphics;
 
-  /**
-   * color
-   */
-  Color color = Color.BLACK;
-  
   /**
    * buffer
    */
@@ -123,7 +125,7 @@ public class DebugGraphics extends Graphics
    */
   public DebugGraphics()
   {
-    // TODO
+    counter++;
   }
 
   /**
@@ -134,7 +136,7 @@ public class DebugGraphics extends Graphics
    */
   public DebugGraphics(Graphics graphics, JComponent component)
   {
-    this.graphics = graphics;
+    this(graphics);
     // FIXME: What shall we do with component ?
   }
 
@@ -145,6 +147,7 @@ public class DebugGraphics extends Graphics
    */
   public DebugGraphics(Graphics graphics)
   {
+    this();
     this.graphics = graphics;
   }
 
@@ -155,7 +158,10 @@ public class DebugGraphics extends Graphics
    */
   public void setColor(Color color)
   {
-    this.color = color;
+    if ((debugOptions & LOG_OPTION) != 0)
+      logStream().println(prefix() + " Setting color: " + color);
+
+    graphics.setColor(color);
   }
 
   /**
@@ -166,7 +172,9 @@ public class DebugGraphics extends Graphics
    */
   public Graphics create()
   {
-    return new DebugGraphics(graphics.create());
+    DebugGraphics copy = new DebugGraphics(graphics.create());
+    copy.debugOptions = debugOptions;
+    return copy;
   }
 
   /**
@@ -182,7 +190,10 @@ public class DebugGraphics extends Graphics
    */
   public Graphics create(int x, int y, int width, int height)
   {
-    return new DebugGraphics(graphics.create(x, y, width, height));
+    DebugGraphics copy = new DebugGraphics(graphics.create(x, y, width,
+                                                           height));
+    copy.debugOptions = debugOptions;
+    return copy;
   }
 
   /**
@@ -282,6 +293,9 @@ public class DebugGraphics extends Graphics
    */
   public void setFont(Font font)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      logStream().println(prefix() + " Setting font: " + font);
+
     graphics.setFont(font);
   }
 
@@ -292,7 +306,7 @@ public class DebugGraphics extends Graphics
    */
   public Color getColor()
   {
-    return color;
+    return graphics.getColor();
   }
 
   /**
@@ -325,6 +339,9 @@ public class DebugGraphics extends Graphics
    */
   public void translate(int x, int y)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      logStream().println(prefix() + " Translating by: " + new Point(x, y));
+
     graphics.translate(x, y);
   }
 
@@ -333,6 +350,9 @@ public class DebugGraphics extends Graphics
    */
   public void setPaintMode()
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      logStream().println(prefix() + " Setting paint mode");
+
     graphics.setPaintMode();
   }
 
@@ -343,6 +363,9 @@ public class DebugGraphics extends Graphics
    */
   public void setXORMode(Color color)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      logStream().println(prefix() + " Setting XOR mode: " + color);
+
     graphics.setXORMode(color);
   }
 
@@ -366,7 +389,16 @@ public class DebugGraphics extends Graphics
    */
   public void clipRect(int x, int y, int width, int height)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().print(prefix() + " Setting clipRect: "
+                          + new Rectangle(x, y, width, height));
+      }
+
     graphics.clipRect(x, y, width, height);
+
+    if ((debugOptions & LOG_OPTION) != 0)
+      logStream().println(" Netting clipRect: " + graphics.getClipBounds());
   }
 
   /**
@@ -379,6 +411,12 @@ public class DebugGraphics extends Graphics
    */
   public void setClip(int x, int y, int width, int height)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Setting new clipRect: "
+                            + new Rectangle(x, y, width, height));
+      }
+
     graphics.setClip(x, y, width, height);
   }
 
@@ -399,6 +437,9 @@ public class DebugGraphics extends Graphics
    */
   public void setClip(Shape shape)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      logStream().println(prefix() + " Setting new clipRect: " + shape);
+
     graphics.setClip(shape);
   }
 
@@ -424,18 +465,27 @@ public class DebugGraphics extends Graphics
    */
   public void drawRect(int x, int y, int width, int height)
   {
-    for (int index = 0; index < (debugFlashCount - 1); ++index)
+    if ((debugOptions & LOG_OPTION) != 0)
       {
-        graphics.setColor(color);
-        graphics.drawRect(x, y, width, height);
-        sleep(debugFlashTime);
-
-        graphics.setColor(debugFlashColor);
-        graphics.drawRect(x, y, width, height);
-        sleep(debugFlashTime);
+        logStream().println(prefix() + " Drawing rect: "
+                            + new Rectangle(x, y, width, height));
       }
 
-    graphics.setColor(color);
+    if ((debugOptions & FLASH_OPTION) != 0)
+      {
+        Color color = graphics.getColor();
+        for (int index = 0; index < (debugFlashCount - 1); ++index)
+          {
+            graphics.setColor(color);
+            graphics.drawRect(x, y, width, height);
+            sleep(debugFlashTime);
+            graphics.setColor(debugFlashColor);
+            graphics.drawRect(x, y, width, height);
+            sleep(debugFlashTime);
+          }
+        graphics.setColor(color);
+      }
+
     graphics.drawRect(x, y, width, height);
   }
 
@@ -449,18 +499,27 @@ public class DebugGraphics extends Graphics
    */
   public void fillRect(int x, int y, int width, int height)
   {
-    for (int index = 0; index < (debugFlashCount - 1); ++index)
+    if ((debugOptions & LOG_OPTION) != 0)
       {
-        graphics.setColor(color);
-        graphics.fillRect(x, y, width, height);
-        sleep(debugFlashTime);
-
-        graphics.setColor(debugFlashColor);
-        graphics.fillRect(x, y, width, height);
-        sleep(debugFlashTime);
+        logStream().println(prefix() + " Filling rect: "
+                            + new Rectangle(x, y, width, height));
       }
 
-    graphics.setColor(color);
+    if ((debugOptions & FLASH_OPTION) != 0)
+      {
+        Color color = graphics.getColor();
+        for (int index = 0; index < (debugFlashCount - 1); ++index)
+          {
+            graphics.setColor(color);
+            graphics.fillRect(x, y, width, height);
+            sleep(debugFlashTime);
+            graphics.setColor(debugFlashColor);
+            graphics.fillRect(x, y, width, height);
+            sleep(debugFlashTime);
+          }
+        graphics.setColor(color);
+      }
+
     graphics.fillRect(x, y, width, height);
   }
 
@@ -474,6 +533,12 @@ public class DebugGraphics extends Graphics
    */
   public void clearRect(int x, int y, int width, int height)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Clearing rect: "
+                            + new Rectangle(x, y, width, height));
+      }
+
     graphics.clearRect(x, y, width, height);
   }
 
@@ -490,6 +555,14 @@ public class DebugGraphics extends Graphics
   public void drawRoundRect(int x, int y, int width, int height, 
 			    int arcWidth, int arcHeight)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing round rect: "
+                            + new Rectangle(x, y, width, height)
+                            + " arcWidth: " + arcWidth
+                            + " arcHeight: " + arcHeight);
+      }
+
     graphics.drawRoundRect(x, y, width, height, arcWidth, arcHeight);
   }
 
@@ -506,6 +579,14 @@ public class DebugGraphics extends Graphics
   public void fillRoundRect(int x, int y, int width, int height, 
 			    int arcWidth, int arcHeight)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Filling round rect: "
+                            + new Rectangle(x, y, width, height)
+                            + " arcWidth: " + arcWidth
+                            + " arcHeight: " + arcHeight);
+      }
+
     graphics.fillRoundRect(x, y, width, height, arcWidth, arcHeight);
   }
 
@@ -519,6 +600,12 @@ public class DebugGraphics extends Graphics
    */
   public void drawLine(int x1, int y1, int x2, int y2)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing line: from (" + x1 + ", "
+                            + y1 + ") to (" + x2 + ", " + y2 + ")");
+      }
+
     graphics.drawLine(x1, y1, x2, y2);
   }
 
@@ -533,6 +620,13 @@ public class DebugGraphics extends Graphics
    */
   public void draw3DRect(int x, int y, int width, int height, boolean raised)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing 3D rect: "
+                            + new Rectangle(x, y, width, height)
+                            + "Raised bezel: " + raised);
+      }
+
     graphics.draw3DRect(x, y, width, height, raised);
   }
 
@@ -547,6 +641,13 @@ public class DebugGraphics extends Graphics
    */
   public void fill3DRect(int x, int y, int width, int height, boolean raised)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Filling 3D rect: "
+                            + new Rectangle(x, y, width, height)
+                            + "Raised bezel: " + raised);
+      }
+
     graphics.fill3DRect(x, y, width, height, raised);
   }
 
@@ -560,6 +661,12 @@ public class DebugGraphics extends Graphics
    */
   public void drawOval(int x, int y, int width, int height)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing oval: "
+                            + new Rectangle(x, y, width, height));
+      }
+
     graphics.drawOval(x, y, width, height);
   }
 
@@ -573,6 +680,12 @@ public class DebugGraphics extends Graphics
    */
   public void fillOval(int x, int y, int width, int height)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Filling oval: "
+                            + new Rectangle(x, y, width, height));
+      }
+
     graphics.fillOval(x, y, width, height);
   }
 
@@ -589,6 +702,14 @@ public class DebugGraphics extends Graphics
   public void drawArc(int x, int y, int width, int height, 
 		      int startAngle, int arcAngle)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing arc: "
+                            + new Rectangle(x, y, width, height)
+                            + " startAngle: " + startAngle
+                            + " arcAngle: " + arcAngle);
+      }
+
     graphics.drawArc(x, y, width, height, startAngle, arcAngle);
   }
 
@@ -605,6 +726,14 @@ public class DebugGraphics extends Graphics
   public void fillArc(int x, int y, int width, int height, 
 		      int startAngle, int arcAngle)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Filling arc: "
+                            + new Rectangle(x, y, width, height)
+                            + " startAngle: " + startAngle
+                            + " arcAngle: " + arcAngle);
+      }
+
     graphics.fillArc(x, y, width, height, startAngle, arcAngle);
   }
 
@@ -617,6 +746,12 @@ public class DebugGraphics extends Graphics
    */
   public void drawPolyline(int[] xpoints, int[] ypoints, int npoints)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing polyline: nPoints: " + npoints
+                            + " X's: " + xpoints + " Y's: " + ypoints);
+      }
+
     graphics.drawPolyline(xpoints, ypoints, npoints);
   }
 
@@ -629,6 +764,12 @@ public class DebugGraphics extends Graphics
    */
   public void drawPolygon(int[] xpoints, int[] ypoints, int npoints)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing polygon: nPoints: " + npoints
+                            + " X's: " + xpoints + " Y's: " + ypoints);
+      }
+
     graphics.drawPolygon(xpoints, ypoints, npoints);
   }
 
@@ -641,6 +782,12 @@ public class DebugGraphics extends Graphics
    */
   public void fillPolygon(int[] xpoints, int[] ypoints, int npoints)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing polygon: nPoints: " + npoints
+                            + " X's: " + xpoints + " Y's: " + ypoints);
+      }
+
     graphics.fillPolygon(xpoints, ypoints, npoints);
   }
 
@@ -653,6 +800,12 @@ public class DebugGraphics extends Graphics
    */
   public void drawString(String string, int x, int y)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing string: \"" + string
+                            + "\" at: " + new Point(x, y));
+      }
+
     graphics.drawString(string, x, y);
   }
 
@@ -666,6 +819,12 @@ public class DebugGraphics extends Graphics
   public void drawString(AttributedCharacterIterator iterator,
 			 int x, int y)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing string: \"" + iterator
+                            + "\" at: " + new Point(x, y));
+      }
+
     graphics.drawString(iterator, x, y);
   }
 
@@ -681,6 +840,9 @@ public class DebugGraphics extends Graphics
   public void drawBytes(byte[] data, int offset, int length,
 			int x, int y)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      logStream().println(prefix() + " Drawing bytes at: " + new Point(x, y));
+
     graphics.drawBytes(data, offset, length, x, y);
   }
 
@@ -696,18 +858,24 @@ public class DebugGraphics extends Graphics
   public void drawChars(char[] data, int offset, int length, 
 			int x, int y)
   {
-    for (int index = 0; index < (debugFlashCount - 1); ++index)
-      {
-        graphics.setColor(color);
-        graphics.drawChars(data, offset, length, x, y);
-        sleep(debugFlashTime);
+    if ((debugOptions & LOG_OPTION) != 0)
+      logStream().println(prefix() + " Drawing chars at: " + new Point(x, y));
 
-        graphics.setColor(debugFlashColor);
-        graphics.drawChars(data, offset, length, x, y);
-        sleep(debugFlashTime);
+    if ((debugOptions & FLASH_OPTION) != 0)
+      {
+        Color color = graphics.getColor();
+        for (int index = 0; index < (debugFlashCount - 1); ++index)
+          {
+            graphics.setColor(color);
+            graphics.drawChars(data, offset, length, x, y);
+            sleep(debugFlashTime);
+            graphics.setColor(debugFlashColor);
+            graphics.drawChars(data, offset, length, x, y);
+            sleep(debugFlashTime);
+          }
+        graphics.setColor(color);
       }
 
-    graphics.setColor(color);
     graphics.drawChars(data, offset, length, x, y);
   }
 
@@ -723,6 +891,12 @@ public class DebugGraphics extends Graphics
   public boolean drawImage(Image image, int x, int y,
 			   ImageObserver observer)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing image: " + image + " at: "
+                          + new Point(x, y));
+      }
+
     return graphics.drawImage(image, x, y, observer);
   }
 
@@ -741,6 +915,12 @@ public class DebugGraphics extends Graphics
   public boolean drawImage(Image image, int x, int y, int width, 
 			   int height, ImageObserver observer)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing image: " + image
+                            + " at: " + new Rectangle(x, y, width, height));
+      }
+
     return graphics.drawImage(image, x, y, width, height, observer);
   }
 
@@ -759,6 +939,13 @@ public class DebugGraphics extends Graphics
   public boolean drawImage(Image image, int x, int y, 
 			   Color background, ImageObserver observer)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing image: " + image
+                            + " at: " + new Point(x, y)
+                            + ", bgcolor: " + background);
+      }
+
     return graphics.drawImage(image, x, y, background, observer);
   }
 
@@ -779,6 +966,13 @@ public class DebugGraphics extends Graphics
   public boolean drawImage(Image image, int x, int y, int width, int height, 
 			   Color background, ImageObserver observer)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing image: " + image
+                            + " at: " + new Rectangle(x, y, width, height)
+                            + ", bgcolor: " + background);
+      }
+
     return graphics.drawImage(image, x, y, width, height, background, observer);
   }
 
@@ -802,6 +996,13 @@ public class DebugGraphics extends Graphics
 			   int dx2, int dy2, int sx1, int sy1, int sx2, int sy2,
 			   ImageObserver observer)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing image: " + image
+                         + " destination: " + new Rectangle(dx1, dy1, dx2, dy2)
+                         + " source: " + new Rectangle(sx1, sy1, sx2, sy2));
+      }
+
     return graphics.drawImage(image, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, observer);
   }
 
@@ -827,6 +1028,14 @@ public class DebugGraphics extends Graphics
 			   int dx2, int dy2, int sx1, int sy1, int sx2, int sy2,
 			   Color background, ImageObserver observer)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Drawing image: " + image
+                         + " destination: " + new Rectangle(dx1, dy1, dx2, dy2)
+                         + " source: " + new Rectangle(sx1, sy1, sx2, sy2)
+                         + ", bgcolor: " + background);
+      }
+
     return graphics.drawImage(image, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, background, observer);
   }
 
@@ -843,6 +1052,13 @@ public class DebugGraphics extends Graphics
   public void copyArea(int x, int y, int width, int height, 
 		       int destx, int desty)
   {
+    if ((debugOptions & LOG_OPTION) != 0)
+      {
+        logStream().println(prefix() + " Copying area from: "
+                            +  new Rectangle(x, y, width, height)
+                            + " to: " + new Point(destx, desty));
+      }
+
     graphics.copyArea(x, y, width, height, destx, desty);
   }
 
@@ -873,6 +1089,11 @@ public class DebugGraphics extends Graphics
   public void setDebugOptions(int options)
   {
     debugOptions = options;
+    if ((debugOptions & LOG_OPTION) != 0)
+      if (options == NONE_OPTION)
+        logStream().println(prefix() + "Disabling debug");
+      else
+        logStream().println(prefix() + "Enabling debug");
   }
 
   /**
@@ -883,5 +1104,22 @@ public class DebugGraphics extends Graphics
   public int getDebugOptions()
   {
     return debugOptions;
+  }
+
+  /**
+   * Creates and returns the prefix that should be prepended to all logging
+   * messages. The prefix is made up like this:
+   * 
+   * <code>Graphics(<counter>-1)</code> where counter is an integer number
+   * saying how many DebugGraphics objects have been created so far. The second
+   * number always seem to be 1 on Sun's JDK, this has to be investigated a
+   * little more.
+   *
+   * @return the prefix that should be prepended to all logging
+   *         messages
+   */
+  private String prefix()
+  {
+    return "Graphics(" + counter + "-1)";
   }
 }

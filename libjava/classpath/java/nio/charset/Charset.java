@@ -38,19 +38,15 @@ exception statement from your version. */
 
 package java.nio.charset;
 
+import gnu.classpath.ServiceFactory;
 import gnu.classpath.SystemProperties;
-
 import gnu.java.nio.charset.Provider;
 import gnu.java.nio.charset.iconv.IconvProvider;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.spi.CharsetProvider;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -174,7 +170,7 @@ public abstract class Charset implements Comparable
    * Returns the Charset instance for the charset of the given name.
    * 
    * @param charsetName
-   * @return
+   * @return the Charset instance for the indicated charset
    * @throws UnsupportedCharsetException if this VM does not support
    * the charset of the given name.
    * @throws IllegalCharsetNameException if the given charset name is
@@ -265,23 +261,10 @@ public abstract class Charset implements Comparable
       {
         try
           {
-            Enumeration en = ClassLoader.getSystemResources
-	      ("META-INF/services/java.nio.charset.spi.CharsetProvider");
+            Iterator i = ServiceFactory.lookupProviders(CharsetProvider.class);
             LinkedHashSet set = new LinkedHashSet();
-            while (en.hasMoreElements())
-              {
-                BufferedReader rdr = new BufferedReader(new InputStreamReader
-                  (((URL) (en.nextElement())).openStream()));
-                while (true)
-                  {
-                    String s = rdr.readLine();
-                    if (s == null)
-		      break;
-                    CharsetProvider p =
-		      (CharsetProvider) ((Class.forName(s)).newInstance());
-                    set.add(p);
-                  }
-               }
+            while (i.hasNext())
+              set.add(i.next());
 
             providers = new CharsetProvider[set.size()];
             set.toArray(providers);

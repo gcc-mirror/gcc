@@ -78,7 +78,7 @@ class MetalSplitPaneDivider extends BasicSplitPaneDivider
   {
     //super.paint(g);
     Dimension s = getSize();
-    MetalUtils.fillMetalPattern(g, 2, 2, s.width - 4, s.height - 4,
+    MetalUtils.fillMetalPattern(splitPane, g, 2, 2, s.width - 4, s.height - 4,
                                 light, dark);
   }
 }

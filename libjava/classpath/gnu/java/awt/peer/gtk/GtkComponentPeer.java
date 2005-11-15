@@ -71,6 +71,7 @@ import java.awt.image.ImageProducer;
 import java.awt.image.VolatileImage;
 import java.awt.peer.ComponentPeer;
 import java.awt.peer.ContainerPeer;
+import java.awt.peer.WindowPeer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -98,6 +99,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   native int[] gtkWidgetGetBackground ();
   native void gtkWidgetGetDimensions (int[] dim);
   native void gtkWidgetGetPreferredDimensions (int[] dim);
+  native void gtkWindowGetLocationOnScreen (int[] point);
   native void gtkWidgetGetLocationOnScreen (int[] point);
   native void gtkWidgetSetCursor (int type);
   native void gtkWidgetSetCursorUnlocked (int type);
@@ -270,7 +272,10 @@ public class GtkComponentPeer extends GtkGenericPeer
   public Point getLocationOnScreen () 
   { 
     int point[] = new int[2];
-    gtkWidgetGetLocationOnScreen (point);
+    if( this instanceof WindowPeer )
+      gtkWindowGetLocationOnScreen (point);
+    else
+      gtkWidgetGetLocationOnScreen (point);
     return new Point (point[0], point[1]);
   }
 

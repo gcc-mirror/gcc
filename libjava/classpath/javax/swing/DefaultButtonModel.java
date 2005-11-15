@@ -145,6 +145,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    */
   public DefaultButtonModel()
   {
+    // Nothing to do here.
   }
 
   /**

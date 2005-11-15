@@ -131,7 +131,7 @@ public abstract class FilterReader extends Reader
   /**
     * Calls the <code>in.skip(long)</code> method
     *
-    * @param numBytes The requested number of chars to skip. 
+    * @param num_chars The requested number of chars to skip. 
     *
     * @return The value returned from <code>in.skip(long)</code>
     *

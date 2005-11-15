@@ -40,8 +40,8 @@ package org.omg.CORBA.TypeCodePackage;
 
 import java.io.Serializable;
 
-import org.omg.CORBA.IDLEntity;
 import org.omg.CORBA.UserException;
+import org.omg.CORBA.portable.IDLEntity;
 
 /**
  * This exception is thrown when an inappropriate operation is invoked on

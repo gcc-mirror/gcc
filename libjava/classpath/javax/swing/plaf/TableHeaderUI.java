@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class TableHeaderUI
-  extends ComponentUI
+public abstract class TableHeaderUI extends ComponentUI
 {
   /**
    * Constructs a new <code>TableHeaderUI</code>.
    */
   public TableHeaderUI()
   {
+    // Nothing to do here.
   }
 }

@@ -79,7 +79,7 @@ public class ValueBaseHolder
 
   /**
    * Read fill in the value field by reading an instance from the
-   * given input stream. Uses {@link ValueBaseHelper.}
+   * given input stream. Uses {@link ValueBaseHelper}
    *
    * @param input a stream to read from.
    */
@@ -89,7 +89,7 @@ public class ValueBaseHolder
   }
 
   /**
-   * Get the typecode of the stored instance. Uses {@link ValueBaseHelper.}
+   * Get the typecode of the stored instance. Uses {@link ValueBaseHelper}
    */
   public TypeCode _type()
   {
@@ -97,10 +97,10 @@ public class ValueBaseHolder
   }
 
   /**
-   * Write the stored instance to the given input stream.
-   * Uses {@link ValueBaseHelper.}
+   * Write the stored instance to the given output stream.
+   * Uses {@link ValueBaseHelper}
    *
-   * @param input a stream to read from.
+   * @param output a stream to write to.
    */
   public void _write(OutputStream output)
   {

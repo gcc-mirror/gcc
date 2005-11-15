@@ -47,13 +47,13 @@ package javax.swing.plaf;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ToolBarUI
-  extends ComponentUI
+public abstract class ToolBarUI extends ComponentUI
 {
   /**
    * Constructs a new <code>ToolBarUI</code>.
    */
   public ToolBarUI()
   {
+    // Nothing to do here.
   }
 }

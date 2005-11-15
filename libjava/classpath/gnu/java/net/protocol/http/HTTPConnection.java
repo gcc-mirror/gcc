@@ -41,10 +41,6 @@ package gnu.java.net.protocol.http;
 import gnu.classpath.Configuration;
 import gnu.classpath.SystemProperties;
 import gnu.java.net.EmptyX509TrustManager;
-import gnu.java.net.protocol.http.event.ConnectionEvent;
-import gnu.java.net.protocol.http.event.ConnectionListener;
-import gnu.java.net.protocol.http.event.RequestEvent;
-import gnu.java.net.protocol.http.event.RequestListener;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -57,6 +53,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -131,8 +128,6 @@ public class HTTPConnection
    */
   protected int minorVersion;
 
-  private final List connectionListeners;
-  private final List requestListeners;
   private final List handshakeCompletedListeners;
 
   /**
@@ -164,6 +159,12 @@ public class HTTPConnection
    * The cookie manager for this connection.
    */
   protected CookieManager cookieManager;
+
+
+  /**
+   * The pool that this connection is a member of (if any).
+   */
+  private LinkedHashMap pool;
 
   /**
    * Creates a new HTTP connection.
@@ -236,8 +237,6 @@ public class HTTPConnection
     this.connectionTimeout = connectionTimeout;
     this.timeout = timeout;
     majorVersion = minorVersion = 1;
-    connectionListeners = new ArrayList(4);
-    requestListeners = new ArrayList(4);
     handshakeCompletedListeners = new ArrayList(2);
   }
 
@@ -332,6 +331,73 @@ public class HTTPConnection
   }
 
   /**
+   * The number of times this HTTPConnection has be used via keep-alive.
+   */
+  int useCount;
+
+  /**
+   * Generates a key for connections in the connection pool.
+   *
+   * @param h the host name.
+   * @param p the port.
+   * @param sec true if using https.
+   *
+   * @return the key.
+   */
+  static Object getPoolKey(String h, int p, boolean sec)
+  {
+    StringBuilder buf = new StringBuilder(sec ? "https://" : "http://");
+    buf.append(h);
+    buf.append(':');
+    buf.append(p);
+    return buf.toString();
+  }
+
+  /**
+   * Set the connection pool that this HTTPConnection is a member of.
+   * If left unset or set to null, it will not be a member of any pool
+   * and will not be a candidate for reuse.
+   *
+   * @param p the pool.
+   */
+  void setPool(LinkedHashMap p)
+  {
+    pool = p;
+  }
+
+  /**
+   * Signal that this HTTPConnection is no longer needed and can be
+   * returned to the connection pool.
+   *
+   */
+  void release()
+  {
+    if (pool != null)
+      {
+        synchronized (pool)
+          {
+            useCount++;
+            Object key = HTTPConnection.getPoolKey(hostname, port, secure);
+            pool.put(key, this);
+            while (pool.size() >= HTTPURLConnection.maxConnections)
+              {
+                // maxConnections must always be >= 1
+                Object lru = pool.keySet().iterator().next();
+                HTTPConnection c = (HTTPConnection)pool.remove(lru);
+                try
+                  {
+                    c.closeConnection();
+                  }
+                catch (IOException ioe)
+                  {
+                      // Ignore it.  We are just cleaning up.
+                  }
+              }
+          }
+      }
+  }
+
+  /**
    * Creates a new request using this connection.
    * @param method the HTTP method to invoke
    * @param path the URI-escaped RFC2396 <code>abs_path</code> with
@@ -367,7 +433,7 @@ public class HTTPConnection
         Cookie[] cookies = cookieManager.getCookies(hostname, secure, path);
         if (cookies != null && cookies.length > 0)
           {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append("$Version=1");
             for (int i = 0; i < cookies.length; i++)
               {
@@ -378,7 +444,6 @@ public class HTTPConnection
             ret.setHeader("Cookie", buf.toString());
           }
       }
-    fireRequestEvent(RequestEvent.REQUEST_CREATED, ret);
     return ret;
   }
 
@@ -388,14 +453,7 @@ public class HTTPConnection
   public void close()
     throws IOException
   {
-    try
-      {
-        closeConnection();
-      }
-    finally
-      {
-        fireConnectionEvent(ConnectionEvent.CONNECTION_CLOSED);
-      }
+    closeConnection();
   }
 
   /**
@@ -534,7 +592,7 @@ public class HTTPConnection
    */
   protected String getURI()
   {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append(secure ? "https://" : "http://");
     buf.append(hostname);
     if (secure)
@@ -584,84 +642,6 @@ public class HTTPConnection
 
   // -- Events --
   
-  public void addConnectionListener(ConnectionListener l)
-  {
-    synchronized (connectionListeners)
-      {
-        connectionListeners.add(l);
-      }
-  }
-
-  public void removeConnectionListener(ConnectionListener l)
-  {
-    synchronized (connectionListeners)
-      {
-        connectionListeners.remove(l);
-      }
-  }
-
-  protected void fireConnectionEvent(int type)
-  {
-    ConnectionEvent event = new ConnectionEvent(this, type);
-    ConnectionListener[] l = null;
-    synchronized (connectionListeners)
-      {
-        l = new ConnectionListener[connectionListeners.size()];
-        connectionListeners.toArray(l);
-      }
-    for (int i = 0; i < l.length; i++)
-      {
-        switch (type)
-          {
-          case ConnectionEvent.CONNECTION_CLOSED:
-            l[i].connectionClosed(event);
-            break;
-          }
-      }
-  }
-
-  public void addRequestListener(RequestListener l)
-  {
-    synchronized (requestListeners)
-      {
-        requestListeners.add(l);
-      }
-  }
-
-  public void removeRequestListener(RequestListener l)
-  {
-    synchronized (requestListeners)
-      {
-        requestListeners.remove(l);
-      }
-  }
-
-  protected void fireRequestEvent(int type, Request request)
-  {
-    RequestEvent event = new RequestEvent(this, type, request);
-    RequestListener[] l = null;
-    synchronized (requestListeners)
-      {
-        l = new RequestListener[requestListeners.size()];
-        requestListeners.toArray(l);
-      }
-    for (int i = 0; i < l.length; i++)
-      {
-        switch (type)
-          {
-          case RequestEvent.REQUEST_CREATED:
-            l[i].requestCreated(event);
-            break;
-          case RequestEvent.REQUEST_SENDING:
-            l[i].requestSent(event);
-            break;
-          case RequestEvent.REQUEST_SENT:
-            l[i].requestSent(event);
-            break;
-          }
-      }
-  }
-
   void addHandshakeCompletedListener(HandshakeCompletedListener l)
   {
     synchronized (handshakeCompletedListeners)

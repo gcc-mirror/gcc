@@ -43,31 +43,26 @@ package javax.swing;
  *
  * @author Andrew Selkirk
  */
-public interface WindowConstants {
+public interface WindowConstants
+{
+  /**
+   * DO_NOTHING_ON_CLOSE
+   */
+  int DO_NOTHING_ON_CLOSE = 0;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * HIDE_ON_CLOSE
+   */
+  int HIDE_ON_CLOSE = 1;
 
-	/**
-	 * DO_NOTHING_ON_CLOSE
-	 */
-	int DO_NOTHING_ON_CLOSE = 0;
+  /**
+   * DISPOSE_ON_CLOSE
+   */
+  int DISPOSE_ON_CLOSE = 2;
 
-	/**
-	 * HIDE_ON_CLOSE
-	 */
-	int HIDE_ON_CLOSE = 1;
+  /**
+   * EXIT_ON_CLOSE
+   */
+  int EXIT_ON_CLOSE =3;
 
-	/**
-	 * DISPOSE_ON_CLOSE
-	 */
-	int DISPOSE_ON_CLOSE = 2;
-
-	/**
-	 * EXIT_ON_CLOSE
-	 */
-	int EXIT_ON_CLOSE =3;
-
-
-} // WindowConstants
+}

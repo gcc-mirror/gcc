@@ -208,7 +208,7 @@ public class ObjectStreamField implements Comparable
    * This method sets the current offset of the field.
    * 
    * @param off The offset of the field in bytes.
-   * @see getOffset()
+   * @see #getOffset()
    */
   protected void setOffset (int off)
   {

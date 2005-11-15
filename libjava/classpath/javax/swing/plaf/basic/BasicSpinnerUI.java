@@ -53,9 +53,8 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JSpinner;
+import javax.swing.LookAndFeel;
 import javax.swing.Timer;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.SpinnerUI;
 
@@ -167,16 +166,9 @@ public class BasicSpinnerUI extends SpinnerUI
    */
   protected void installDefaults()
   {
-    /* most of it copied from BasicLabelUI, I don't know what keys are
-       available, so someone may want to update this. Hence: TODO
-    */
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    /*
-    spinner.setForeground(defaults.getColor("Spinner.foreground"));
-    spinner.setBackground(defaults.getColor("Spinner.background"));
-    spinner.setFont(defaults.getFont("Spinner.font"));
-    spinner.setBorder(defaults.getBorder("Spinner.border"));
-    */
+    LookAndFeel.installColorsAndFont(spinner, "Spinner.background",
+                                     "Spinner.foreground", "Spinner.font");
+    LookAndFeel.installBorder(spinner, "Spinner.border");
     spinner.setLayout(createLayout());
     spinner.setOpaque(true);
   }

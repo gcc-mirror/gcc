@@ -1215,7 +1215,7 @@ public class Area implements Shape, Cloneable
    * @param t1 - global parametric value of the first curve's starting point
    * @param t2 - global parametric value of the second curve's starting point
    * @param w1 - global parametric length of curve 1
-   * @param c1 - global parametric length of curve 2
+   * @param w2 - global parametric length of curve 2
    *
    * The final four parameters are for keeping track of the parametric
    * value of the curve. For a full curve t = 0, w = 1, w is halved with

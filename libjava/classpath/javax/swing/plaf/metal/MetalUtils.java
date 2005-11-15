@@ -1,4 +1,4 @@
-/* Metaltils.java
+/* MetalUtils.java
 Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,7 +38,12 @@ exception statement from your version. */
 package javax.swing.plaf.metal;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.TexturePaint;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 /**
  * Some utility and helper methods for the Metal Look &amp; Feel.
@@ -49,6 +54,21 @@ class MetalUtils
 {
 
   /**
+   * The typical metal pattern for use with Graphics2D.
+   */
+  static BufferedImage pattern2D;
+
+  /**
+   * The light color to draw the pattern.
+   */
+  static Color lightColor;
+
+  /**
+   * The dark color to draw to draw the pattern.
+   */
+  static Color darkColor;
+
+  /**
    * Fills a rectangle with the typical Metal pattern.
    *
    * @param g the <code>Graphics</code> context to use
@@ -57,31 +77,78 @@ class MetalUtils
    * @param y the Y coordinate of the upper left corner of the rectangle to
    *     fill
    * @param w the width of the rectangle to fill
-   * @param w the height of the rectangle to fill
+   * @param h the height of the rectangle to fill
    * @param light the light color to use
    * @param dark the dark color to use
    */
-  static void fillMetalPattern(Graphics g, int x, int y, int w, int h,
+  static void fillMetalPattern(Component c, Graphics g, int x, int y, int w, int h,
                                 Color light, Color dark)
   {
-    int xOff = 0;
-    for (int mY = y; mY < (y + h); mY++)
+    if (g instanceof Graphics2D)
+      fillMetalPattern2D((Graphics2D) g, x, y, w, h, light, dark);
+    else
       {
-        // set color alternating with every line
-        if ((mY % 2) == 0)
-          g.setColor(light);
-        else
-          g.setColor(dark);
-
-        for (int mX = x + (xOff); mX < (x + w); mX += 4)
+        int xOff = 0;
+        for (int mY = y; mY < (y + h); mY++)
           {
-            g.drawLine(mX, mY, mX, mY);
-          }
+            // set color alternating with every line
+            if (((mY - y) % 2) == 0)
+              g.setColor(light);
+            else
+              g.setColor(dark);
 
-        // increase x offset
-        xOff++;
-        if (xOff > 3)
-          xOff = 0;
-      }
+            for (int mX = x + (xOff); mX < (x + w); mX += 4)
+              {
+                g.drawLine(mX, mY, mX, mY);
+              }
+
+            // increase x offset
+            xOff++;
+            if (xOff > 3)
+              xOff = 0;
+          }
+        }
+  }
+
+  /**
+   * Fills a rectangle with the typical Metal pattern using Java2D.
+   *
+   * @param g2d the <code>Graphics2D</code> context to use
+   * @param x the X coordinate of the upper left corner of the rectangle to
+   *     fill
+   * @param y the Y coordinate of the upper left corner of the rectangle to
+   *     fill
+   * @param w the width of the rectangle to fill
+   * @param h the height of the rectangle to fill
+   */
+  static void fillMetalPattern2D(Graphics2D g2d,  int x, int y, int w, int h,
+                                 Color light, Color dark)
+  {
+    if (pattern2D == null || !darkColor.equals(dark) || !lightColor.equals(light))
+      initializePattern(light, dark);
+
+    // Prepare the texture.
+    TexturePaint texture =
+      new TexturePaint(pattern2D, new Rectangle2D.Double(0., 0., 4., 4.));
+    g2d.setPaint(texture);
+    g2d.fillRect(x, y, w, h);
+  }
+
+  /**
+   * Initializes the pattern image.
+   */
+  static void initializePattern(Color light, Color dark)
+  {
+    pattern2D = new BufferedImage(4, 4, BufferedImage.TYPE_INT_ARGB);
+    lightColor = light;
+    darkColor = dark;
+    Graphics g = pattern2D.getGraphics();
+    g.setColor(light);
+    g.fillRect(0, 0, 1, 1);
+    g.fillRect(2, 2, 1, 1);
+    g.setColor(dark);
+    g.fillRect(1, 1, 1, 1);
+    g.fillRect(3, 3, 1, 1);
+    g.dispose();
   }
 }

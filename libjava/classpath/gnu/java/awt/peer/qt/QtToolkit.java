@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.qt;
 
+import gnu.classpath.Configuration;
 import gnu.java.awt.EmbeddedWindow;
 import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
@@ -135,7 +136,8 @@ public class QtToolkit extends ClasspathToolkit
   {
     eventQueue = new EventQueue();
     repaintThread = new QtRepaintThread();
-    System.loadLibrary("qtpeer");
+    if (Configuration.INIT_LOAD_LIBRARY)
+      System.loadLibrary("qtpeer");
 
     String theme = null;
     try 

@@ -50,8 +50,7 @@ import java.io.Serializable;
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class InsetsUIResource
-  extends Insets
+public class InsetsUIResource extends Insets
   implements Cloneable, UIResource, Serializable
 {
   /**

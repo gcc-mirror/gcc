@@ -1,5 +1,5 @@
 /* EnumSyntax.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,69 @@ exception statement from your version. */
 
 package javax.print.attribute;
 
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 /**
- * @author Michael Koch
+ * <code>EnumSyntax</code> is the abstract base class of all enumeration
+ * classes in the Java Print Service API. 
+ * <p>
+ * Every enumeration class which extends from EnumSyntax provides several 
+ * enumeration objects as singletons of its class.
+ * </p>
+ * <p>
+ * Notes for implementing subclasses:
+ * <ul>
+ *   <li>
+ *     The values of all enumeration singelton instances have to be in a 
+ *     sequence which may start at any value. See: {@link #getOffset()}
+ *   </li>
+ *   <li>
+ *     Subclasses have to override {@link #getEnumValueTable()} and should
+ *     override {@link #getStringTable()} for correct serialization.
+ *   </li>
+ * </ul>
+ * </p>
+ * Example: 
+ * <pre> 
+ * public class PrinterState extends EnumSyntax
+ * {
+ *   public static final PrinterState IDLE = new PrinterState(1);
+ *   public static final PrinterState PROCESSING = new PrinterState(2);
+ *   public static final PrinterState STOPPED = new PrinterState(3);
+ * 
+ *   protected PrinterState(int value)
+ *   {
+ *     super(value);
+ *   }
+ * 
+ *   // Overridden because values start not at zero !
+ *   protected int getOffset()
+ *   {
+ *     return 1;
+ *   }
+ * 
+ *   private static final String[] stringTable = { "idle", "processing", 
+ *                                                 "stopped" };
+ * 
+ *   protected String[] getStringTable()
+ *   {
+ *     return stringTable;
+ *   }
+ * 
+ *   private static final PrinterState[] enumValueTable = { IDLE, 
+ *                                             PROCESSING, STOPPED};
+ * 
+ *   protected EnumSyntax[] getEnumValueTable()
+ *   {
+ *     return enumValueTable;
+ *   }
+ * }
+ * </pre>
+ * 
+ * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public abstract class EnumSyntax implements Cloneable, Serializable
 {
@@ -51,7 +110,7 @@ public abstract class EnumSyntax implements Cloneable, Serializable
   /**
    * Creates a <code>EnumSyntax</code> object.
    *
-   * @param value the value to set
+   * @param value the value to set.
    */
   protected EnumSyntax(int value)
   {
@@ -59,9 +118,9 @@ public abstract class EnumSyntax implements Cloneable, Serializable
   }
 
   /**
-   * Returns the value of this object.
+   * Returns the value of this enumeration object.
    *
-   * @return the value
+   * @return The value.
    */
   public int getValue()
   {
@@ -71,7 +130,7 @@ public abstract class EnumSyntax implements Cloneable, Serializable
   /**
    * Clones this object.
    *
-   * @return a clone of this object
+   * @return A clone of this object.
    */
   public Object clone()
   {
@@ -87,9 +146,10 @@ public abstract class EnumSyntax implements Cloneable, Serializable
   }
 
   /**
-   * Returns the hashcode for this object.
+   * Returns the hashcode for this object. 
+   * The hashcode is the value of this enumeration object.
    *
-   * @return the hashcode
+   * @return The hashcode.
    */
   public int hashCode()
   {
@@ -98,8 +158,11 @@ public abstract class EnumSyntax implements Cloneable, Serializable
 
   /**
    * Returns the string representation for this object.
+   * The string value from <code>getStringTable()</code> method is returned
+   * if subclasses override this method. Otherwise the value of this object
+   * as a string is returned.
    *
-   * @return the string representation
+   * @return The string representation.
    */
   public String toString()
   {
@@ -118,9 +181,10 @@ public abstract class EnumSyntax implements Cloneable, Serializable
    * Returns a table with the enumeration values represented as strings
    * for this object.
    *
-   * The default implementation just returns null.
+   * The default implementation just returns null. Subclasses should
+   * override this method.
    *
-   * @return the enumeration values as strings
+   * @return The enumeration values as strings.
    */
   protected String[] getStringTable()
   {
@@ -128,17 +192,49 @@ public abstract class EnumSyntax implements Cloneable, Serializable
   }
 
   /**
+   * Needed for singelton semantics during deserialisation.
+   * 
+   * Subclasses must not override this class. Subclasses have to override
+   * <code>getEnumValueTable()</code> and should override 
+   * <code>getStringTable()</code> for correct serialization.
+   * 
+   * @return The Object at index <code>value - getOffset()</code> 
+   *         in getEnumValueTable.
+   * @throws ObjectStreamException if getEnumValueTable() returns null.
+   */
+  protected Object readResolve() throws ObjectStreamException
+  {
+    EnumSyntax[] table = getEnumValueTable();
+    if (table == null)
+      throw new InvalidObjectException("Null enumeration value table "
+                                       + "for class "
+                                       + this.getClass().toString());
+
+    return table[value - getOffset()];
+  }
+
+  /**
    * Returns a table with the enumeration values for this object.
    *
-   * The default implementation just returns null.
+   * The default implementation just returns null. Subclasses have to
+   * to override this method for serialization.
    *
-   * @return the enumeration values
+   * @return The enumeration values.
    */
   protected EnumSyntax[] getEnumValueTable()
   {
     return null;
   }
 
+  /**
+   * Returns the lowest used value by the enumerations of this class. 
+   * 
+   * The default implementation returns 0. This is enough if enumerations
+   * start with a zero value. Otherwise subclasses need to override this 
+   * method for serialization and return the lowest value they use.
+   * .
+   * @return The lowest used value used.
+   */
   protected int getOffset()
   {
     return 0;

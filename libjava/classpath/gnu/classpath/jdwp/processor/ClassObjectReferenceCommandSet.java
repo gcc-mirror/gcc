@@ -79,7 +79,8 @@ public class ClassObjectReferenceCommandSet
         // So if we throw an IOException we're in serious trouble
         throw new JdwpInternalErrorException(ex);
       }
-    return true;
+
+    return false;
   }
 
   public void executeReflectedType(ByteBuffer bb, DataOutputStream os)

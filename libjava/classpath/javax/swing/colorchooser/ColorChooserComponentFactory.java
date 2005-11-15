@@ -53,7 +53,8 @@ public class ColorChooserComponentFactory
    */
   private ColorChooserComponentFactory()
   {
-  } // ColorChooserComponentFactory()
+    // Nothing to do here.
+  }
 
   /**
    * This method returns the three default chooser panels to be used in

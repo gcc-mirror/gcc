@@ -40,8 +40,8 @@ package org.omg.CORBA.TypeCodePackage;
 
 import java.io.Serializable;
 
-import org.omg.CORBA.IDLEntity;
 import org.omg.CORBA.UserException;
+import org.omg.CORBA.portable.IDLEntity;
 
 /**
  * The {@link org.omg.CORBA.TypeCode#member_name(int) },

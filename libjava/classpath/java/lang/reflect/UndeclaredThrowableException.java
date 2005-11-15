@@ -65,7 +65,7 @@ public class UndeclaredThrowableException extends RuntimeException
 
   /**
    * The immutable exception that this wraps. This field is redundant
-   * with {@link Throwable#cause}, but is necessary for serial compatibility.
+   * with {@link Throwable#getCause()}, but is necessary for serial compatibility.
    *
    * @serial the chained exception
    */

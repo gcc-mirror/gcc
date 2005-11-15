@@ -55,8 +55,7 @@ import java.awt.Insets;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class SoftBevelBorder
-  extends BevelBorder
+public class SoftBevelBorder extends BevelBorder
 {
   /**
    * Determined using the <code>serialver</code> tool
@@ -264,10 +263,10 @@ public class SoftBevelBorder
    * Paints a soft bevel in four colors.
    * 
    * <pre>
-   * @@@@@@@@@@@.
-   * @@.........#    @ = color a
-   * @..        #    . = color b
-   * @.         #    X = color c
+   * +++++++++++.
+   * ++.........#    + = color a
+   * +..        #    . = color b
+   * +.         #    X = color c
    * ..        X#    # = color d
    * . ##########</pre>
    *
@@ -326,4 +325,3 @@ public class SoftBevelBorder
     }
   }
 }
-

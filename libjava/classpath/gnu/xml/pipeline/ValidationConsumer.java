@@ -1607,7 +1607,7 @@ public final class ValidationConsumer extends EventFilter
 		    throw new RuntimeException ("patchNext");
 	    }
 
-	    if (table != null && (flags | F_LOOPHEAD) != 0)
+	    if (table != null && (flags & F_LOOPHEAD) != 0)
 		table.put (this, this);
 	}
 

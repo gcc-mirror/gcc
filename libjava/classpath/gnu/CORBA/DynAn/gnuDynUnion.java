@@ -62,8 +62,8 @@ import java.io.Serializable;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class gnuDynUnion
-  extends anyDivideable
-  implements DynUnion, Serializable, valueChangedListener
+  extends DivideableAny
+  implements DynUnion, Serializable, ValueChangeListener
 {
   /**
    * Use serialVersionUID for interoperability.
@@ -96,7 +96,7 @@ public class gnuDynUnion
         discriminator =
           factory.create_dyn_any_from_type_code(final_type.discriminator_type());
 
-        ((abstractDynAny) discriminator).listener = this;
+        ((AbstractAny) discriminator).listener = this;
 
         if (final_type.default_index() >= 0)
           set_to_default_member();
@@ -114,7 +114,7 @@ public class gnuDynUnion
   /*
    * (non-Javadoc)
    *
-   * @see gnu.CORBA.DynAn.anyDivideable#to_any()
+   * @see gnu.CORBA.DynAn.DivideableAny#to_any()
    */
   public Any to_any()
   {
@@ -171,7 +171,7 @@ public class gnuDynUnion
         gnuDynUnion other =
           new gnuDynUnion(official_type, final_type, factory, orb);
         other.discriminator = discriminator.copy();
-        ((abstractDynAny) other.discriminator).listener = other;
+        ((AbstractAny) other.discriminator).listener = other;
         if (array.length == 1)
           {
             other.array = new DynAny[] { other.discriminator };

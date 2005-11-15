@@ -91,6 +91,7 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
    */
   public DefaultDesktopManager()
   {
+    // Nothing to do here.
   }
 
   /**
@@ -223,6 +224,7 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
           }
         catch (PropertyVetoException e)
           {
+            // Do nothing if attempt is vetoed.
           }
       }
 
@@ -302,6 +304,7 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
           }
         catch (PropertyVetoException e)
           {
+            // Do nothing if attempt is vetoed.
           }
       }
 
@@ -329,6 +332,7 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
           }
         catch (PropertyVetoException e)
           {
+            // Do nothing if attempt is vetoed.
           }
       }
   }

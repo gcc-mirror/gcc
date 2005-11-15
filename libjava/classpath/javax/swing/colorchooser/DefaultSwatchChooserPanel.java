@@ -587,6 +587,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
      */
     public void addLayoutComponent(String name, Component comp)
     {
+      // Nothing to do here.
     }
 
     /**
@@ -634,6 +635,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
      */
     public void removeLayoutComponent(Component comp)
     {
+      // Nothing to do here.
     }
 
     /**
@@ -786,6 +788,7 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel
    */
   public void updateChooser()
   {
+    // Nothing to do here yet.
   }
 
   /**

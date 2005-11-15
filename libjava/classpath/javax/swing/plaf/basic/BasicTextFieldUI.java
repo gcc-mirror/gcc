@@ -41,6 +41,7 @@ package javax.swing.plaf.basic;
 import java.beans.PropertyChangeEvent;
 
 import javax.swing.JComponent;
+import javax.swing.UIDefaults;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.text.Element;
 import javax.swing.text.FieldView;
@@ -63,6 +64,11 @@ public class BasicTextFieldUI extends BasicTextUI
     return new BasicTextFieldUI();
   }
 
+  /**
+   * Returns the prefix for entries in the {@link UIDefaults} table.
+   *
+   * @return "TextField"
+   */
   protected String getPropertyPrefix()
   {
     return "TextField";
@@ -73,8 +79,22 @@ public class BasicTextFieldUI extends BasicTextUI
     super.installUI(c);
   }
 
+  /**
+   * Receives notification whenever one of the text component's bound
+   * properties changes. Here we check for the editable and enabled
+   * properties and adjust the background color accordingly.
+   *
+   * @param event the property change event
+   */
   protected void propertyChange(PropertyChangeEvent event)
   {
-    // Does nothing by default.
+    if (event.getPropertyName().equals("editable"))
+      {
+        boolean editable = ((Boolean) event.getNewValue()).booleanValue();
+        if (editable)
+          textComponent.setBackground(background);
+        else 
+          textComponent.setBackground(inactiveBackground);
+      }
   }
 }

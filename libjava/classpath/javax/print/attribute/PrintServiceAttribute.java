@@ -1,5 +1,5 @@
 /* PrintServiceAttribute.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,23 @@ exception statement from your version. */
 package javax.print.attribute;
 
 /**
- * @author Michael Koch
+ * Marker interface for all attribute classes describing parameters
+ * or the status of a {@link javax.print.PrintService}. 
+ * <p>
+ * Instances of implementing attribute classes may be collected in a 
+ * {@link javax.print.attribute.PrintServiceAttributeSet}.
+ * </p><p>
+ * A print service uses attributes of this type to inform about the status
+ * or the specific capabilities of itself. 
+ * For example {@link javax.print.attribute.standard.PagesPerMinute} is used
+ * to specify the average printable pages per minute of the print service. 
+ * </p>
+ * 
+ * @see javax.print.attribute.PrintServiceAttributeSet
+ * 
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public interface PrintServiceAttribute extends Attribute
 {
+  // Marker interface
 }

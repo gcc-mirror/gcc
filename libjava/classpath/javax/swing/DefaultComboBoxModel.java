@@ -1,5 +1,5 @@
 /* DefaultComboBoxModel.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,13 +41,14 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Vector;
 
+import javax.swing.event.ListDataEvent;
+
 
 /**
- * The default implementation of {@link MutableComboBoxModel}.
- * This model keeps track
- * of elements contained in the JComboBox as well as the current combo box
- * selection. Whenever selection in the JComboBox changes, the ComboBoxModel
- * will fire ListDataEvents to ComboBox's ListDataListeners.
+ * A model that stores a list of elements and a selected item (which may be
+ * <code>null</code>).  Changes to the model are signalled to listeners using
+ * {@link ListDataEvent}.  This model is designed for use by the
+ * {@link JComboBox} component.
  *
  * @author Andrew Selkirk
  * @author Olga Rodimina
@@ -59,17 +60,17 @@ public class DefaultComboBoxModel extends AbstractListModel
   private static final long serialVersionUID = 6698657703676921904L;
 
   /**
-   * List containing items in the combo box
+   * Storage for the elements in the model's list.
    */
   private Vector list;
 
   /**
-   * Currently selected item in the combo box list
+   * The selected item (<code>null</code> indicates no selection).
    */
   private Object selectedItem = null;
 
   /**
-   * Constructor DefaultComboBoxModel. Create empty JComboBox.
+   * Creates a new model, initially empty.
    */
   public DefaultComboBoxModel()
   {
@@ -77,64 +78,92 @@ public class DefaultComboBoxModel extends AbstractListModel
   }
 
   /**
-   * Constructs new DefaultComboBoxModel object and initializes its item list
-   * to values in the given array.
+   * Creates a new model and initializes its item list to the values in the 
+   * given array.  The selected item is set to the first item in the array, or 
+   * <code>null</code> if the array length is zero.
    *
-   * @param items array containing items of the combo box.
+   * @param items  an array containing items for the model (<code>null</code>
+   *               not permitted).
+   * 
+   * @throws NullPointerException if <code>items</code> is <code>null</code>.
    */
   public DefaultComboBoxModel(Object[] items)
   {
     list = new Vector(Arrays.asList(items));
+    if (list.size() > 0)
+      selectedItem = list.get(0);
   }
 
   /**
-   * Consturcts new DefaultComboBoxModel object and initializes its item list
-   * to values in the given vector.
+   * Creates a new model and initializes its item list to the values in the 
+   * given vector.  The selected item is set to the first item in the vector, 
+   * or <code>null</code> if the vector length is zero.
    *
-   * @param vector Vector containing items for this combo box.
+   * @param vector  a vector containing items for the model (<code>null</code>
+   *                not permitted).
+   * 
+   * @throws NullPointerException if <code>vector</code> is <code>null</code>.
    */
   public DefaultComboBoxModel(Vector vector)
   {
     this.list = vector;
+    if (vector.size() > 0)
+      selectedItem = vector.get(0);
   }
 
   /**
-   * This method adds element to the combo box list. It fires ListDataEvent
-   * indicating that component was added to the combo box  to all of the
-   * JComboBox's registered ListDataListeners.
+   * Adds an element to the model's item list and sends a {@link ListDataEvent}
+   * to all registered listeners.  If the new element is the first item added
+   * to the list, it is set as the selected item.
    *
-   * @param object item to add to the combo box list
+   * @param object item to add to the model's item list.
    */
   public void addElement(Object object)
   {
     list.add(object);
-    fireIntervalAdded(this, list.size() - 1, list.size());
+    fireIntervalAdded(this, list.size() - 1, list.size() - 1);
+    if (list.size() == 1)
+      setSelectedItem(object);
   }
 
   /**
-   * This method removes element at the specified index from the combo box
-   * list. It fires ListDataEvent indicating that component was removed from
-   * the combo box list to all of the JComboBox's registered
-   * ListDataListeners.
+   * Removes the element at the specified index from the model's item list
+   * and sends a {@link ListDataEvent} to all registered listeners.  If the
+   * element removed was the selected item, then the preceding element becomes 
+   * the new selected item (or the next element, if there is no preceding 
+   * element).
    *
-   * @param index index specifying location of the element to remove in the
-   *        combo box list.
+   * @param index  the index of the item to remove.
+   * 
+   * @throws ArrayIndexOutOfBoundsException if <code>index</code> is out of
+   *         bounds.
    */
   public void removeElementAt(int index)
   {
+    int selected = getIndexOf(selectedItem);
     list.remove(index);
+    if (selected == index) // choose a new selected item
+      {
+        if (selected > 0)
+          selectedItem = getElementAt(selected - 1);
+        else 
+          selectedItem = getElementAt(selected);
+      }
     fireIntervalRemoved(this, index, index);
   }
 
   /**
-   * This method inserts given object to the combo box list at the specified
-   * index. It fires ListDataEvent indicating that component was inserted to
-   * the combo box list to all of the JComboBox's registered
-   * ListDataListeners.
+   * Adds an element at the specified index in the model's item list
+   * and sends a {@link ListDataEvent} to all registered listeners.
    *
    * @param object element to insert
    * @param index index specifing position in the list where given element
    *        should be inserted.
+   * 
+   * @throws ArrayIndexOutOfBoundsException if <code>index</code> is out of 
+   *         bounds.
+   * 
+   * @see #addElement(Object)
    */
   public void insertElementAt(Object object, int index)
   {
@@ -143,11 +172,13 @@ public class DefaultComboBoxModel extends AbstractListModel
   }
 
   /**
-   * Removes given object from the combo box list. It fires ListDataEvent
-   * indicating that component was removed from the combo box list to all of
-   * the JComboBox's registered ListDataListeners.
+   * Removes an element from the model's item list and sends a 
+   * {@link ListDataEvent} to all registered listeners.  If the item to be
+   * removed is the current selected item, a new selected item will be set.
+   * If the element is not found in the model's item list, this method does
+   * nothing.
    *
-   * @param object Element that will be removed from the combo box list
+   * @param object  the element to remove.
    */
   public void removeElement(Object object)
   {
@@ -157,21 +188,25 @@ public class DefaultComboBoxModel extends AbstractListModel
   }
 
   /**
-   * Removes all the items from the JComboBox's item list. It fires
-   * ListDataEvent indicating that all the elements were removed from the
-   * combo box list to all of the JComboBox's registered ListDataListeners.
+   * Removes all the items from the model's item list, resets and selected item
+   * to <code>null</code>, and sends a {@link ListDataEvent} to all registered 
+   * listeners.
    */
   public void removeAllElements()
   {
-    list.clear();
-    int listSize = getSize();
-    fireIntervalAdded(this, 0, listSize);
+    selectedItem = null;
+    int size = getSize();
+    if (size > 0)
+      {
+        list.clear();
+        fireIntervalRemoved(this, 0, size - 1);
+      }
   }
 
   /**
-   * Returns number of items in the combo box list
+   * Returns the number of items in the model's item list.
    *
-   * @return number of items in the combo box list
+   * @return The number of items in the model's item list.
    */
   public int getSize()
   {
@@ -179,32 +214,32 @@ public class DefaultComboBoxModel extends AbstractListModel
   }
 
   /**
-   * Selects given object in the combo box list. This method fires
-   * ListDataEvent to all registered ListDataListeners of the JComboBox. The
-   * start and end index of the event is set to -1 to indicate combo box's
-   * selection has changed, and not its contents.
-   * 
-   * <p>If the given object is not contained in the combo box list then nothing
-   * happens.</p>
+   * Sets the selected item for the model and sends a {@link ListDataEvent} to
+   * all registered listeners.  The start and end index of the event is set to 
+   * -1 to indicate the model's selection has changed, and not its contents.
    *
-   * @param object item to select in the JComboBox
+   * @param object  the new selected item (<code>null</code> permitted).
    */
   public void setSelectedItem(Object object)
   {
-    
-    // Updates the selected item only if the given object
-    // is null or in the list (this is how the JDK behaves).
-    if(object == null || list.contains(object)) {
-	selectedItem = object;
-	fireContentsChanged(this, -1, -1);
-    }
-  	
+    if (selectedItem == null)
+      {
+        if (object == null)
+          return;
+      }
+    else
+      {
+        if (selectedItem.equals(object))
+          return;
+      }
+    selectedItem = object;
+    fireContentsChanged(this, -1, -1);    
   }
 
   /**
-   * Returns currently selected item in the combo box list
+   * Returns the selected item.
    *
-   * @return currently selected item in the combo box list
+   * @return The selected item (possibly <code>null</code>).
    */
   public Object getSelectedItem()
   {
@@ -212,24 +247,27 @@ public class DefaultComboBoxModel extends AbstractListModel
   }
 
   /**
-   * Returns element in the combo box list located at the given index
+   * Returns the element at the specified index in the model's item list.
    *
-   * @param index specifying location of the element in the list
+   * @param index  the element index.
    *
-   * @return return element in the combo box list located at the given index
+   * @return The element at the specified index in the model's item list, or
+   *         <code>null</code> if the <code>index</code> is outside the bounds
+   *         of the list.
    */
   public Object getElementAt(int index)
   {
+    if (index < 0 || index >= list.size())
+      return null;
     return list.elementAt(index);
   }
 
   /**
-   * Returns index of the specified object in the combo box list.
+   * Returns the index of the specified element in the model's item list.
    *
-   * @param object element to look for in the combo box list .
+   * @param object  the element.
    *
-   * @return Index specifying position of the specified element in combo box
-   *         list.
+   * @return The index of the specified element in the model's item list.
    */
   public int getIndexOf(Object object)
   {

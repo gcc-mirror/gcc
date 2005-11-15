@@ -146,7 +146,9 @@ public class MenuSelectionManager
   {
     // Convert sourcePoint to screen coordinates.
     Point sourcePointOnScreen = sourcePoint;
-    SwingUtilities.convertPointToScreen(sourcePointOnScreen, source);
+    
+    if (source.isShowing())
+      SwingUtilities.convertPointToScreen(sourcePointOnScreen, source);
 
     Point compPointOnScreen;
     Component resultComp = null;
@@ -168,7 +170,10 @@ public class MenuSelectionManager
 	    && sourcePointOnScreen.y < compPointOnScreen.y + size.height)
 	  {
 	    Point p = sourcePointOnScreen;
-	    SwingUtilities.convertPointFromScreen(p, comp);
+        
+        if (comp.isShowing())
+          SwingUtilities.convertPointFromScreen(p, comp);
+        
 	    resultComp = SwingUtilities.getDeepestComponentAt(comp, p.x, p.y);
 	    break;
 	  }
