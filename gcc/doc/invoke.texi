@@ -636,6 +636,7 @@ See RS/6000 and PowerPC Options.
 -maltivec  -mno-altivec @gol
 -mpowerpc-gpopt  -mno-powerpc-gpopt @gol
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
+-mmfcrf  -mno-mfcrf  -mpopcntb  -mno-popcntb  -mfprnd  -mno-fprnd @gol
 -mnew-mnemonics  -mold-mnemonics @gol
 -mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
 -m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
@@ -10830,6 +10831,12 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @itemx -mno-powerpc-gfxopt
 @itemx -mpowerpc64
 @itemx -mno-powerpc64
+@itemx -mmfcrf
+@itemx -mno-mfcrf
+@itemx -mpopcntb
+@itemx -mno-popcntb
+@itemx -mfprnd
+@itemx -mno-fprnd
 @opindex mpower
 @opindex mno-power
 @opindex mpower2
@@ -10842,12 +10849,18 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @opindex mno-powerpc-gfxopt
 @opindex mpowerpc64
 @opindex mno-powerpc64
+@opindex mmfcrf
+@opindex mno-mfcrf
+@opindex mpopcntb
+@opindex mno-popcntb
+@opindex mfprnd
+@opindex mno-fprnd
 GCC supports two related instruction set architectures for the
 RS/6000 and PowerPC@.  The @dfn{POWER} instruction set are those
 instructions supported by the @samp{rios} chip set used in the original
 RS/6000 systems and the @dfn{PowerPC} instruction set is the
-architecture of the Motorola MPC5xx, MPC6xx, MPC8xx microprocessors, and
-the IBM 4xx microprocessors.
+architecture of the Freescale MPC5xx, MPC6xx, MPC8xx microprocessors, and
+the IBM 4xx, 6xx, and follow-on microprocessors.
 
 Neither architecture is a subset of the other.  However there is a
 large common subset of instructions supported by both.  An MQ
@@ -10874,6 +10887,18 @@ General Purpose group, including floating-point square root.  Specifying
 @option{-mpowerpc-gfxopt} implies @option{-mpowerpc} and also allows GCC to
 use the optional PowerPC architecture instructions in the Graphics
 group, including floating-point select.
+
+The @option{-mmfcrf} option allows GCC to generate the move from
+condition register field instruction implemented on the POWER4
+processor and other processors that support the PowerPC V2.01
+architecture.
+The @option{-mpopcntb} option allows GCC to generate the popcount and
+double precision FP reciprocal estimate instruction implemented on the
+POWER5 processor and other processors that support the PowerPC V2.02
+architecture.
+The @option{-mfprnd} option allows GCC to generate the FP round to
+integer instructions implemented on the POWER5+ processor and other
+processors that support the PowerPC V2.03 architecture.
 
 The @option{-mpowerpc64} option allows GCC to generate the additional
 64-bit instructions that are found in the full PowerPC64 architecture
@@ -10913,9 +10938,10 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{601}, @samp{602}, @samp{603}, @samp{603e}, @samp{604},
 @samp{604e}, @samp{620}, @samp{630}, @samp{740}, @samp{7400},
 @samp{7450}, @samp{750}, @samp{801}, @samp{821}, @samp{823},
-@samp{860}, @samp{970}, @samp{8540}, @samp{common}, @samp{ec603e}, @samp{G3},
+@samp{860}, @samp{970}, @samp{8540}, @samp{ec603e}, @samp{G3},
 @samp{G4}, @samp{G5}, @samp{power}, @samp{power2}, @samp{power3},
-@samp{power4}, @samp{power5}, @samp{powerpc}, @samp{powerpc64},
+@samp{power4}, @samp{power5}, @samp{power5+},
+@samp{common}, @samp{powerpc}, @samp{powerpc64},
 @samp{rios}, @samp{rios1}, @samp{rios2}, @samp{rsc}, and @samp{rs64}.
 
 @option{-mcpu=common} selects a completely generic processor.  Code
@@ -10935,19 +10961,20 @@ those options will run best on that processor, and may not run at all on
 others.
 
 The @option{-mcpu} options automatically enable or disable the
-following options: @option{-maltivec}, @option{-mhard-float},
-@option{-mmfcrf}, @option{-mmultiple}, @option{-mnew-mnemonics},
-@option{-mpower}, @option{-mpower2}, @option{-mpowerpc64},
-@option{-mpowerpc-gpopt}, @option{-mpowerpc-gfxopt},
-@option{-mstring}.  The particular options set for any particular CPU
-will vary between compiler versions, depending on what setting seems
-to produce optimal code for that CPU; it doesn't necessarily reflect
-the actual hardware's capabilities.  If you wish to set an individual
-option to a particular value, you may specify it after the
-@option{-mcpu} option, like @samp{-mcpu=970 -mno-altivec}.
+following options: @option{-maltivec}, @option{-mfprnd},
+@option{-mhard-float}, @option{-mmfcrf}, @option{-mmultiple},
+@option{-mnew-mnemonics}, @option{-mpopcntb}, @option{-mpower},
+@option{-mpower2}, @option{-mpowerpc64}, @option{-mpowerpc-gpopt},
+@option{-mpowerpc-gfxopt}, @option{-mstring}.  The particular options
+set for any particular CPU will vary between compiler versions,
+depending on what setting seems to produce optimal code for that CPU;
+it doesn't necessarily reflect the actual hardware's capabilities.  If
+you wish to set an individual option to a particular value, you may
+specify it after the @option{-mcpu} option, like @samp{-mcpu=970
+-mno-altivec}.
 
 On AIX, the @option{-maltivec} and @option{-mpowerpc64} options are
-not enabled or disabled by the @option{-mcpu} option at present, since
+not enabled or disabled by the @option{-mcpu} option at present because
 AIX does not have full support for these options.  You may still
 enable or disable them individually if you're sure it'll work in your
 environment.

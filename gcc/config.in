@@ -161,6 +161,12 @@
 #endif
 
 
+/* Define if your assembler supports fprnd. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_FPRND
+#endif
+
+
 /* Define if your assembler supports the --gdwarf2 option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_GDWARF2_DEBUG_FLAG

@@ -94,8 +94,18 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("_ARCH_PWR");
   if (TARGET_POWERPC)
     builtin_define ("_ARCH_PPC");
+  if (TARGET_PPC_GPOPT)
+    builtin_define ("_ARCH_PPCSQ");
+  if (TARGET_PPC_GFXOPT)
+    builtin_define ("_ARCH_PPCGR");
   if (TARGET_POWERPC64)
     builtin_define ("_ARCH_PPC64");
+  if (TARGET_MFCRF)
+    builtin_define ("_ARCH_PWR4");
+  if (TARGET_POPCNTB)
+    builtin_define ("_ARCH_PWR5");
+  if (TARGET_FPRND)
+    builtin_define ("_ARCH_PWR5X");
   if (! TARGET_POWER && ! TARGET_POWER2 && ! TARGET_POWERPC)
     builtin_define ("_ARCH_COM");
   if (TARGET_ALTIVEC)

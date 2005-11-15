@@ -1,3 +1,26 @@
+2005-11-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Add -mmfcrf,
+	-mpopcntb, -mfprnd. Add -mcpu=power5+.
+	* configure.ac: Add test for FP rounding instructions.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	_ARCH_PPCSQ, _ARCH_PPCGR, _ARCH_PWR4, _ARCH_PWR5, _ARCH_PWR5X if
+	features enabled.
+	* config/rs6000/rs6000.opt (mfprnd): New.
+	* config/rs6000/rs6000.c (processor_target_table): Add power5+.
+	(POWERPC_MASKS): Add MASK_POPCNTB and MASK_FPRND.
+	* config/rs6000/aix52.h (ASM_CPU_SPEC): Add -mpower5+.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add -mpower5+.
+	(TARGET_FPRND): New.
+	* config/rs6000/rs6000.md (UNSPEC_FRIM, UNSPEC_FRIN, UNSPEC_FRIP,
+	UNSPEC_FRIZ): New.
+	(btrunc<mode>2): New.
+	(ceil<mode>2): New.
+	(floor<mode>2): New.
+	(round<mode>2): New.
+
 2005-11-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c (version_compare_spec_function): Use fatal() rather than

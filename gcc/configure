@@ -15577,6 +15577,52 @@ _ACEOF
 fi
 
     case $target in
+      *-*-aix*) conftest_s='	.machine "pwr5x"
+	.csect .text[PR]
+	frin 1,1';;
+      *) conftest_s='	.machine power5x
+	.text
+	frin 1,1';;
+    esac
+
+    echo "$as_me:$LINENO: checking assembler for fp round support" >&5
+echo $ECHO_N "checking assembler for fp round support... $ECHO_C" >&6
+if test "${gcc_cv_as_powerpc_fprnd+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_powerpc_fprnd=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
+  then gcc_cv_as_powerpc_fprnd=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_powerpc_fprnd=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_powerpc_fprnd" >&5
+echo "${ECHO_T}$gcc_cv_as_powerpc_fprnd" >&6
+if test $gcc_cv_as_powerpc_fprnd = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_FPRND 1
+_ACEOF
+
+fi
+
+    case $target in
       *-*-aix*) conftest_s='	.csect .text[PR]
 LCF..0:
 	addis 11,30,_GLOBAL_OFFSET_TABLE_-LCF..0@ha';;

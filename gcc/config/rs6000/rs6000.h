@@ -72,6 +72,7 @@
 %{mcpu=power3: -mppc64} \
 %{mcpu=power4: -mpower4} \
 %{mcpu=power5: -mpower4} \
+%{mcpu=power5+: -mpower4} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rios: -mpwr} \
 %{mcpu=rios1: -mpwr} \
@@ -149,6 +150,14 @@
 #ifndef HAVE_AS_POPCNTB
 #undef  TARGET_POPCNTB
 #define TARGET_POPCNTB 0
+#endif
+
+/* Define TARGET_FPRND if the target assembler does not support the
+   fp rounding instructions.  */
+
+#ifndef HAVE_AS_FPRND
+#undef  TARGET_FPRND
+#define TARGET_FPRND 0
 #endif
 
 #ifndef TARGET_SECURE_PLT

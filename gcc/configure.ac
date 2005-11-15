@@ -2763,6 +2763,21 @@ foo:	nop
 	  [Define if your assembler supports popcntb field.])])
 
     case $target in
+      *-*-aix*) conftest_s='	.machine "pwr5x"
+	.csect .text[[PR]]
+	frin 1,1';;
+      *) conftest_s='	.machine power5x
+	.text
+	frin 1,1';;
+    esac
+
+    gcc_GAS_CHECK_FEATURE([fp round support],
+      gcc_cv_as_powerpc_fprnd, [2,17,0],,
+      [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_FPRND, 1,
+	  [Define if your assembler supports fprnd.])])
+
+    case $target in
       *-*-aix*) conftest_s='	.csect .text[[PR]]
 LCF..0:
 	addis 11,30,_GLOBAL_OFFSET_TABLE_-LCF..0@ha';;
