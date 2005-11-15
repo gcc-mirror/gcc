@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,6 +87,9 @@ procedure Gnatbind is
    --  All the one character arguments are still handled by Switch. This
    --  routine handles -aO -aI and -I-.
 
+   function Is_Cross_Compiler return Boolean;
+   --  Returns True iff this is a cross-compiler
+
    ---------------------------------
    -- Gnatbind_Supports_Auto_Init --
    ---------------------------------
@@ -98,6 +101,17 @@ procedure Gnatbind is
    begin
       return gnat_binder_supports_auto_init /= 0;
    end Gnatbind_Supports_Auto_Init;
+
+   -----------------------
+   -- Is_Cross_Compiler --
+   -----------------------
+
+   function Is_Cross_Compiler return Boolean is
+      Cross_Compiler : Integer;
+      pragma Import (C, Cross_Compiler, "__gnat_is_cross_compiler");
+   begin
+      return Cross_Compiler = 1;
+   end Is_Cross_Compiler;
 
    ----------------------------------
    -- List_Applicable_Restrictions --
@@ -350,8 +364,12 @@ procedure Gnatbind is
          --  -Mname
 
          elsif Argv'Length >= 3 and then Argv (2) = 'M' then
-            Opt.Bind_Alternate_Main_Name := True;
-            Opt.Alternate_Main_Name := new String'(Argv (3 .. Argv'Last));
+            if Is_Cross_Compiler then
+               Opt.Bind_Alternate_Main_Name := True;
+               Opt.Alternate_Main_Name := new String'(Argv (3 .. Argv'Last));
+            else
+               Fail ("-M option only valid for a cross-compiler");
+            end if;
 
          --  All other options are single character and are handled by
          --  Scan_Binder_Switches.
