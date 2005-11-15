@@ -119,7 +119,7 @@ package body System.Stream_Attributes is
    -- I_AD --
    ----------
 
-   function I_AD (Stream : access RST) return Fat_Pointer is
+   function I_AD (Stream : not null access RST) return Fat_Pointer is
       T : S_AD;
       L : SEO;
 
@@ -137,7 +137,7 @@ package body System.Stream_Attributes is
    -- I_AS --
    ----------
 
-   function I_AS (Stream : access RST) return Thin_Pointer is
+   function I_AS (Stream : not null access RST) return Thin_Pointer is
       T : S_AS;
       L : SEO;
 
@@ -155,7 +155,7 @@ package body System.Stream_Attributes is
    -- I_B --
    ---------
 
-   function I_B (Stream : access RST) return Boolean is
+   function I_B (Stream : not null access RST) return Boolean is
       T : S_B;
       L : SEO;
 
@@ -173,7 +173,7 @@ package body System.Stream_Attributes is
    -- I_C --
    ---------
 
-   function I_C (Stream : access RST) return Character is
+   function I_C (Stream : not null access RST) return Character is
       T : S_C;
       L : SEO;
 
@@ -191,7 +191,7 @@ package body System.Stream_Attributes is
    -- I_F --
    ---------
 
-   function I_F (Stream : access RST) return Float is
+   function I_F (Stream : not null access RST) return Float is
       T : S_F;
       L : SEO;
 
@@ -209,7 +209,7 @@ package body System.Stream_Attributes is
    -- I_I --
    ---------
 
-   function I_I (Stream : access RST) return Integer is
+   function I_I (Stream : not null access RST) return Integer is
       T : S_I;
       L : SEO;
 
@@ -227,7 +227,7 @@ package body System.Stream_Attributes is
    -- I_LF --
    ----------
 
-   function I_LF (Stream : access RST) return Long_Float is
+   function I_LF (Stream : not null access RST) return Long_Float is
       T : S_LF;
       L : SEO;
 
@@ -245,7 +245,7 @@ package body System.Stream_Attributes is
    -- I_LI --
    ----------
 
-   function I_LI (Stream : access RST) return Long_Integer is
+   function I_LI (Stream : not null access RST) return Long_Integer is
       T : S_LI;
       L : SEO;
 
@@ -263,7 +263,7 @@ package body System.Stream_Attributes is
    -- I_LLF --
    -----------
 
-   function I_LLF (Stream : access RST) return Long_Long_Float is
+   function I_LLF (Stream : not null access RST) return Long_Long_Float is
       T : S_LLF;
       L : SEO;
 
@@ -281,7 +281,7 @@ package body System.Stream_Attributes is
    -- I_LLI --
    -----------
 
-   function I_LLI (Stream : access RST) return Long_Long_Integer is
+   function I_LLI (Stream : not null access RST) return Long_Long_Integer is
       T : S_LLI;
       L : SEO;
 
@@ -299,7 +299,9 @@ package body System.Stream_Attributes is
    -- I_LLU --
    -----------
 
-   function I_LLU (Stream : access RST) return UST.Long_Long_Unsigned is
+   function I_LLU
+     (Stream : not null access RST) return UST.Long_Long_Unsigned
+   is
       T : S_LLU;
       L : SEO;
 
@@ -317,7 +319,7 @@ package body System.Stream_Attributes is
    -- I_LU --
    ----------
 
-   function I_LU (Stream : access RST) return UST.Long_Unsigned is
+   function I_LU (Stream : not null access RST) return UST.Long_Unsigned is
       T : S_LU;
       L : SEO;
 
@@ -335,7 +337,7 @@ package body System.Stream_Attributes is
    -- I_SF --
    ----------
 
-   function I_SF (Stream : access RST) return Short_Float is
+   function I_SF (Stream : not null access RST) return Short_Float is
       T : S_SF;
       L : SEO;
 
@@ -353,7 +355,7 @@ package body System.Stream_Attributes is
    -- I_SI --
    ----------
 
-   function I_SI (Stream : access RST) return Short_Integer is
+   function I_SI (Stream : not null access RST) return Short_Integer is
       T : S_SI;
       L : SEO;
 
@@ -371,7 +373,7 @@ package body System.Stream_Attributes is
    -- I_SSI --
    -----------
 
-   function I_SSI (Stream : access RST) return Short_Short_Integer is
+   function I_SSI (Stream : not null access RST) return Short_Short_Integer is
       T : S_SSI;
       L : SEO;
 
@@ -389,7 +391,9 @@ package body System.Stream_Attributes is
    -- I_SSU --
    -----------
 
-   function I_SSU (Stream : access RST) return UST.Short_Short_Unsigned is
+   function I_SSU
+     (Stream : not null access RST) return UST.Short_Short_Unsigned
+   is
       T : S_SSU;
       L : SEO;
 
@@ -407,7 +411,7 @@ package body System.Stream_Attributes is
    -- I_SU --
    ----------
 
-   function I_SU (Stream : access RST) return UST.Short_Unsigned is
+   function I_SU (Stream : not null access RST) return UST.Short_Unsigned is
       T : S_SU;
       L : SEO;
 
@@ -425,7 +429,7 @@ package body System.Stream_Attributes is
    -- I_U --
    ---------
 
-   function I_U (Stream : access RST) return UST.Unsigned is
+   function I_U (Stream : not null access RST) return UST.Unsigned is
       T : S_U;
       L : SEO;
 
@@ -443,7 +447,7 @@ package body System.Stream_Attributes is
    -- I_WC --
    ----------
 
-   function I_WC (Stream : access RST) return Wide_Character is
+   function I_WC (Stream : not null access RST) return Wide_Character is
       T : S_WC;
       L : SEO;
 
@@ -461,7 +465,7 @@ package body System.Stream_Attributes is
    -- W_AD --
    ----------
 
-   procedure W_AD (Stream : access RST; Item : in Fat_Pointer) is
+   procedure W_AD (Stream : not null access RST; Item : in Fat_Pointer) is
       T : constant S_AD := From_AD (Item);
 
    begin
@@ -472,7 +476,7 @@ package body System.Stream_Attributes is
    -- W_AS --
    ----------
 
-   procedure W_AS (Stream : access RST; Item : in Thin_Pointer) is
+   procedure W_AS (Stream : not null access RST; Item : in Thin_Pointer) is
       T : constant S_AS := From_AS (Item);
 
    begin
@@ -483,7 +487,7 @@ package body System.Stream_Attributes is
    -- W_B --
    ---------
 
-   procedure W_B (Stream : access RST; Item : in Boolean) is
+   procedure W_B (Stream : not null access RST; Item : in Boolean) is
       T : S_B;
 
    begin
@@ -495,7 +499,7 @@ package body System.Stream_Attributes is
    -- W_C --
    ---------
 
-   procedure W_C (Stream : access RST; Item : in Character) is
+   procedure W_C (Stream : not null access RST; Item : in Character) is
       T : S_C;
 
    begin
@@ -507,7 +511,7 @@ package body System.Stream_Attributes is
    -- W_F --
    ---------
 
-   procedure W_F (Stream : access RST; Item : in Float) is
+   procedure W_F (Stream : not null access RST; Item : in Float) is
       T : constant S_F := From_F (Item);
 
    begin
@@ -518,7 +522,7 @@ package body System.Stream_Attributes is
    -- W_I --
    ---------
 
-   procedure W_I (Stream : access RST; Item : in Integer) is
+   procedure W_I (Stream : not null access RST; Item : in Integer) is
       T : constant S_I := From_I (Item);
 
    begin
@@ -529,7 +533,7 @@ package body System.Stream_Attributes is
    -- W_LF --
    ----------
 
-   procedure W_LF (Stream : access RST; Item : in Long_Float) is
+   procedure W_LF (Stream : not null access RST; Item : in Long_Float) is
       T : constant S_LF := From_LF (Item);
 
    begin
@@ -540,7 +544,7 @@ package body System.Stream_Attributes is
    -- W_LI --
    ----------
 
-   procedure W_LI (Stream : access RST; Item : in Long_Integer) is
+   procedure W_LI (Stream : not null access RST; Item : in Long_Integer) is
       T : constant S_LI := From_LI (Item);
 
    begin
@@ -551,7 +555,7 @@ package body System.Stream_Attributes is
    -- W_LLF --
    -----------
 
-   procedure W_LLF (Stream : access RST; Item : in Long_Long_Float) is
+   procedure W_LLF (Stream : not null access RST; Item : in Long_Long_Float) is
       T : constant S_LLF := From_LLF (Item);
 
    begin
@@ -562,7 +566,9 @@ package body System.Stream_Attributes is
    -- W_LLI --
    -----------
 
-   procedure W_LLI (Stream : access RST; Item : in Long_Long_Integer) is
+   procedure W_LLI
+     (Stream : not null access RST; Item : in Long_Long_Integer)
+   is
       T : constant S_LLI := From_LLI (Item);
 
    begin
@@ -573,7 +579,9 @@ package body System.Stream_Attributes is
    -- W_LLU --
    -----------
 
-   procedure W_LLU (Stream : access RST; Item : in UST.Long_Long_Unsigned) is
+   procedure W_LLU
+     (Stream : not null access RST; Item : in UST.Long_Long_Unsigned)
+   is
       T : constant S_LLU := From_LLU (Item);
 
    begin
@@ -584,7 +592,9 @@ package body System.Stream_Attributes is
    -- W_LU --
    ----------
 
-   procedure W_LU (Stream : access RST; Item : in UST.Long_Unsigned) is
+   procedure W_LU
+     (Stream : not null access RST; Item : in UST.Long_Unsigned)
+   is
       T : constant S_LU := From_LU (Item);
 
    begin
@@ -595,7 +605,7 @@ package body System.Stream_Attributes is
    -- W_SF --
    ----------
 
-   procedure W_SF (Stream : access RST; Item : in Short_Float) is
+   procedure W_SF (Stream : not null access RST; Item : in Short_Float) is
       T : constant S_SF := From_SF (Item);
 
    begin
@@ -606,7 +616,7 @@ package body System.Stream_Attributes is
    -- W_SI --
    ----------
 
-   procedure W_SI (Stream : access RST; Item : in Short_Integer) is
+   procedure W_SI (Stream : not null access RST; Item : in Short_Integer) is
       T : constant S_SI := From_SI (Item);
 
    begin
@@ -617,7 +627,9 @@ package body System.Stream_Attributes is
    -- W_SSI --
    -----------
 
-   procedure W_SSI (Stream : access RST; Item : in Short_Short_Integer) is
+   procedure W_SSI
+     (Stream : not null access RST; Item : in Short_Short_Integer)
+   is
       T : constant S_SSI := From_SSI (Item);
 
    begin
@@ -628,7 +640,9 @@ package body System.Stream_Attributes is
    -- W_SSU --
    -----------
 
-   procedure W_SSU (Stream : access RST; Item : in UST.Short_Short_Unsigned) is
+   procedure W_SSU
+     (Stream : not null access RST; Item : in UST.Short_Short_Unsigned)
+   is
       T : constant S_SSU := From_SSU (Item);
 
    begin
@@ -639,7 +653,9 @@ package body System.Stream_Attributes is
    -- W_SU --
    ----------
 
-   procedure W_SU (Stream : access RST; Item : in UST.Short_Unsigned) is
+   procedure W_SU
+     (Stream : not null access RST; Item : in UST.Short_Unsigned)
+   is
       T : constant S_SU := From_SU (Item);
 
    begin
@@ -650,7 +666,7 @@ package body System.Stream_Attributes is
    -- W_U --
    ---------
 
-   procedure W_U (Stream : access RST; Item : in UST.Unsigned) is
+   procedure W_U (Stream : not null access RST; Item : in UST.Unsigned) is
       T : constant S_U := From_U (Item);
 
    begin
@@ -661,7 +677,7 @@ package body System.Stream_Attributes is
    -- W_WC --
    ----------
 
-   procedure W_WC (Stream : access RST; Item : in Wide_Character) is
+   procedure W_WC (Stream : not null access RST; Item : in Wide_Character) is
       T : constant S_WC := From_WC (Item);
 
    begin

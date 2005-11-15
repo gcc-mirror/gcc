@@ -101,25 +101,26 @@ package System.Stream_Attributes is
    --  is the same for all elementary types (no bounds or discriminants
    --  are involved).
 
-   function I_AD  (Stream : access RST) return Fat_Pointer;
-   function I_AS  (Stream : access RST) return Thin_Pointer;
-   function I_B   (Stream : access RST) return Boolean;
-   function I_C   (Stream : access RST) return Character;
-   function I_F   (Stream : access RST) return Float;
-   function I_I   (Stream : access RST) return Integer;
-   function I_LF  (Stream : access RST) return Long_Float;
-   function I_LI  (Stream : access RST) return Long_Integer;
-   function I_LLF (Stream : access RST) return Long_Long_Float;
-   function I_LLI (Stream : access RST) return Long_Long_Integer;
-   function I_LLU (Stream : access RST) return UST.Long_Long_Unsigned;
-   function I_LU  (Stream : access RST) return UST.Long_Unsigned;
-   function I_SF  (Stream : access RST) return Short_Float;
-   function I_SI  (Stream : access RST) return Short_Integer;
-   function I_SSI (Stream : access RST) return Short_Short_Integer;
-   function I_SSU (Stream : access RST) return UST.Short_Short_Unsigned;
-   function I_SU  (Stream : access RST) return UST.Short_Unsigned;
-   function I_U   (Stream : access RST) return UST.Unsigned;
-   function I_WC  (Stream : access RST) return Wide_Character;
+   function I_AD  (Stream : not null access RST) return Fat_Pointer;
+   function I_AS  (Stream : not null access RST) return Thin_Pointer;
+   function I_B   (Stream : not null access RST) return Boolean;
+   function I_C   (Stream : not null access RST) return Character;
+   function I_F   (Stream : not null access RST) return Float;
+   function I_I   (Stream : not null access RST) return Integer;
+   function I_LF  (Stream : not null access RST) return Long_Float;
+   function I_LI  (Stream : not null access RST) return Long_Integer;
+   function I_LLF (Stream : not null access RST) return Long_Long_Float;
+   function I_LLI (Stream : not null access RST) return Long_Long_Integer;
+   function I_LLU (Stream : not null access RST) return UST.Long_Long_Unsigned;
+   function I_LU  (Stream : not null access RST) return UST.Long_Unsigned;
+   function I_SF  (Stream : not null access RST) return Short_Float;
+   function I_SI  (Stream : not null access RST) return Short_Integer;
+   function I_SSI (Stream : not null access RST) return Short_Short_Integer;
+   function I_SSU (Stream : not null access RST)
+     return UST.Short_Short_Unsigned;
+   function I_SU  (Stream : not null access RST) return UST.Short_Unsigned;
+   function I_U   (Stream : not null access RST) return UST.Unsigned;
+   function I_WC  (Stream : not null access RST) return Wide_Character;
 
    -----------------------
    -- Output Procedures --
@@ -130,25 +131,29 @@ package System.Stream_Attributes is
    --  between 'Write and 'Output because there are no discriminants
    --  or bounds to be written.
 
-   procedure W_AD  (Stream : access RST; Item : in Fat_Pointer);
-   procedure W_AS  (Stream : access RST; Item : in Thin_Pointer);
-   procedure W_B   (Stream : access RST; Item : in Boolean);
-   procedure W_C   (Stream : access RST; Item : in Character);
-   procedure W_F   (Stream : access RST; Item : in Float);
-   procedure W_I   (Stream : access RST; Item : in Integer);
-   procedure W_LF  (Stream : access RST; Item : in Long_Float);
-   procedure W_LI  (Stream : access RST; Item : in Long_Integer);
-   procedure W_LLF (Stream : access RST; Item : in Long_Long_Float);
-   procedure W_LLI (Stream : access RST; Item : in Long_Long_Integer);
-   procedure W_LLU (Stream : access RST; Item : in UST.Long_Long_Unsigned);
-   procedure W_LU  (Stream : access RST; Item : in UST.Long_Unsigned);
-   procedure W_SF  (Stream : access RST; Item : in Short_Float);
-   procedure W_SI  (Stream : access RST; Item : in Short_Integer);
-   procedure W_SSI (Stream : access RST; Item : in Short_Short_Integer);
-   procedure W_SSU (Stream : access RST; Item : in UST.Short_Short_Unsigned);
-   procedure W_SU  (Stream : access RST; Item : in UST.Short_Unsigned);
-   procedure W_U   (Stream : access RST; Item : in UST.Unsigned);
-   procedure W_WC  (Stream : access RST; Item : in Wide_Character);
+   procedure W_AD  (Stream : not null access RST; Item : in Fat_Pointer);
+   procedure W_AS  (Stream : not null access RST; Item : in Thin_Pointer);
+   procedure W_B   (Stream : not null access RST; Item : in Boolean);
+   procedure W_C   (Stream : not null access RST; Item : in Character);
+   procedure W_F   (Stream : not null access RST; Item : in Float);
+   procedure W_I   (Stream : not null access RST; Item : in Integer);
+   procedure W_LF  (Stream : not null access RST; Item : in Long_Float);
+   procedure W_LI  (Stream : not null access RST; Item : in Long_Integer);
+   procedure W_LLF (Stream : not null access RST; Item : in Long_Long_Float);
+   procedure W_LLI (Stream : not null access RST; Item : in Long_Long_Integer);
+   procedure W_LLU (Stream : not null access RST;
+                    Item   : in UST.Long_Long_Unsigned);
+   procedure W_LU  (Stream : not null access RST; Item : in UST.Long_Unsigned);
+   procedure W_SF  (Stream : not null access RST; Item : in Short_Float);
+   procedure W_SI  (Stream : not null access RST; Item : in Short_Integer);
+   procedure W_SSI (Stream : not null access RST;
+                    Item   : in Short_Short_Integer);
+   procedure W_SSU (Stream : not null access RST;
+                    Item   : in UST.Short_Short_Unsigned);
+   procedure W_SU  (Stream : not null access RST;
+                    Item   : in UST.Short_Unsigned);
+   procedure W_U   (Stream : not null access RST; Item : in UST.Unsigned);
+   procedure W_WC  (Stream : not null access RST; Item : in Wide_Character);
 
    ----------------------------
    -- Composite Input/Output --
