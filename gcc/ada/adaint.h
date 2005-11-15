@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -163,11 +163,6 @@ extern void   __gnat_plist_init                    (void);
 
 /* This function returns the version of GCC being used.  Here it's GCC 3.  */
 extern int get_gcc_version		     (void);
-
-/* This function offers a hook for libgnarl to set the
-   locking subprograms for libgcc_eh. */
-extern void __gnatlib_install_locks	     (void (*) (void),
-                                          void (*) (void));
 
 extern int __gnat_binder_supports_auto_init (void);
 extern int __gnat_sals_init_using_constructors (void);

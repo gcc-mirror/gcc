@@ -195,6 +195,13 @@ struct vstring
 #define DIR_SEPARATOR '/'
 #endif
 
+/* Check for cross-compilation */
+#ifdef CROSS_COMPILE
+int __gnat_is_cross_compiler = 1;
+#else
+int __gnat_is_cross_compiler = 0;
+#endif
+
 char __gnat_dir_separator = DIR_SEPARATOR;
 
 char __gnat_path_separator = PATH_SEPARATOR;
@@ -2535,8 +2542,10 @@ _flush_cache()
 #endif
 
 #if defined (CROSS_COMPILE)  \
-  || (! (defined (sparc) && defined (sun) && defined (__SVR4)) \
+  || (! ((defined (sparc) || defined (i386)) && defined (sun) \
+      && defined (__SVR4)) \
       && ! (defined (linux) && (defined (i386) || defined (__x86_64__))) \
+      && ! (defined (linux) && defined (__ia64__)) \
       && ! defined (__FreeBSD__) \
       && ! defined (__hpux__) \
       && ! defined (__APPLE__) \
@@ -2545,9 +2554,9 @@ _flush_cache()
       && ! defined (__MINGW32__) \
       && ! (defined (__mips) && defined (__sgi)))
 
-/* Dummy function to satisfy g-trasym.o.  Currently Solaris sparc, HP/UX,
-   GNU/Linux x86{_64}, Tru64 & Windows provide a non-dummy version of this
-   procedure in libaddr2line.a.  */
+/* Dummy function to satisfy g-trasym.o. See the preprocessor conditional
+   just above for a list of native platforms that provide a non-dummy
+   version of this procedure in libaddr2line.a.  */
 
 void
 convert_addresses (void *addrs ATTRIBUTE_UNUSED,
@@ -2626,27 +2635,6 @@ __gnat_copy_attribs (char *from, char *to, int mode)
     }
 
   return 0;
-#endif
-}
-
-/* This function is installed in libgcc.a.  */
-extern void __gnat_install_locks (void (*) (void), void (*) (void));
-
-/* This function offers a hook for libgnarl to set the
-   locking subprograms for libgcc_eh.
-   This is only needed on OpenVMS, since other platforms use standard
-   --enable-threads=posix option, or similar.  */
-
-void
-__gnatlib_install_locks (void (*lock) (void) ATTRIBUTE_UNUSED,
-                         void (*unlock) (void) ATTRIBUTE_UNUSED)
-{
-#if defined (IN_RTS) && defined (VMS)
-  __gnat_install_locks (lock, unlock);
-  /* There is a bootstrap path issue if adaint is build with this
-     symbol unresolved for the stage1 compiler. Since the compiler
-     does not use tasking, we simply make __gnatlib_install_locks
-     a no-op in this case. */
 #endif
 }
 
