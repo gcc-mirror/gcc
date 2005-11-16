@@ -27314,7 +27314,7 @@ library (@pxref{Using gnatdll}).
 @end enumerate
 
 @noindent
-Note that a relocatable DLL and stripped using the @code{strip}
+Note that a relocatable DLL stripped using the @code{strip}
 binutils tool will not be relocatable anymore. To build a DLL without
 debug information pass @code{-largs -s} to @code{gnatdll}. This
 restriction does not apply to a DLL built using a Library Project.
