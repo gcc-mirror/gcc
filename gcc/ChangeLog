@@ -1,3 +1,12 @@
+2005-11-16  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/crti.s (__init, __fini): Use appropriate prologue if
+	__PIC__ is defined.
+	* config/bfin/crtn.s: Change epilogues to match.
+	* config/bfin/t-bfin-elf (EXTRA_MULTILIB_PARTS): Define.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): If flag_pic, define
+	__PIC__ and __pic__.
+
 2005-11-16  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR 24357
