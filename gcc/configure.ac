@@ -2766,7 +2766,7 @@ foo:	nop
       *-*-aix*) conftest_s='	.machine "pwr5x"
 	.csect .text[[PR]]
 	frin 1,1';;
-      *) conftest_s='	.machine power5x
+      *) conftest_s='	.machine power5
 	.text
 	frin 1,1';;
     esac
