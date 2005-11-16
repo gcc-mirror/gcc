@@ -1,3 +1,30 @@
+2005-11-15  Tom Tromey  <tromey@redhat.com>
+
+	classpath/23890:
+	* java/util/Calendar.java (equals): Include other calendar
+	attributes.
+	(hashCode): Updated.
+	* java/util/GregorianCalendar.java (hashCode): New method.
+	(equals): Use super.equals().
+
+2005-11-15  Sven de Marothy  <sven@physto.se>
+
+	* java/util/Calendar (setTimeInMillis): Recompute time fields.
+
+2005-11-15  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/SimpleTimeZone.java: Removed, fully merged now.
+	* java/util/Date.java: Likewise.
+	* sources.am: Regenerated.
+	* Makefile.in: Regenerated.
+
+2005-11-15  David Gilbert  <david.gilbert@object-refinery.com>
+
+	* java/util/Calendar.java: fixed minor problems in API docs,
+	* java/util/Date.java: likewise,
+	* java/util/ResourceBundle.java: likewise,
+	* java/util/SimpleTimeZone.java: likewise,
+
 2005-11-15  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/io/ObjectInputStream.java

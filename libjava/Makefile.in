@@ -3236,7 +3236,7 @@ classpath/java/util/Collections.java \
 classpath/java/util/Comparator.java \
 classpath/java/util/ConcurrentModificationException.java \
 java/util/Currency.java \
-java/util/Date.java \
+classpath/java/util/Date.java \
 classpath/java/util/Dictionary.java \
 classpath/java/util/EmptyStackException.java \
 classpath/java/util/Enumeration.java \
@@ -3271,7 +3271,7 @@ classpath/java/util/Random.java \
 classpath/java/util/RandomAccess.java \
 java/util/ResourceBundle.java \
 classpath/java/util/Set.java \
-java/util/SimpleTimeZone.java \
+classpath/java/util/SimpleTimeZone.java \
 classpath/java/util/SortedMap.java \
 classpath/java/util/SortedSet.java \
 classpath/java/util/Stack.java \
