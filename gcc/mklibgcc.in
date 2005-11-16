@@ -246,6 +246,9 @@ for file in $LIB2ADDEH; do
   fi
 done
 
+# Flag whether we need eh_dummy.c
+need_eh_dummy=
+
 if [ "$SHLIB_LINK" ]; then
   # Those should be in libgcc_eh.a.
   for file in $LIB2ADDEHSTATIC; do
@@ -260,6 +263,23 @@ if [ "$SHLIB_LINK" ]; then
     oname=`echo $name | sed -e 's,.*/,,'`
     libgcc2_eh_shared_objs="$libgcc2_eh_shared_objs ${oname}${objext}"
   done
+
+  # If nothing went into libgcc_eh.a, create a dummy object -
+  # some linkers don't like totally empty archives.
+  if [ -z "$LIB2ADDEHSTATIC" ]; then
+      file=eh_dummy.c
+      libgcc2_eh_static_objs="$libgcc2_eh_static_objs eh_dummy${objext}"
+      need_eh_dummy=1
+
+      for ml in $MULTILIBS; do
+        dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+        flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+        out="libgcc/${dir}/eh_dummy${objext}"
+
+        echo $out: stmp-dirs $file
+        echo "	$gcc_compile" $flags -fexceptions -c $file -o $out
+      done
+  fi
 fi
 
 for file in $LIB2ADD_ST; do
@@ -648,6 +668,11 @@ done
 
 echo ""
 echo "all: $all"
+
+if [ "$need_eh_dummy" ]; then
+  echo "eh_dummy.c:"
+  echo "	echo 'int __libgcc_eh_dummy;' > \$@"
+fi
 
 echo ""
 echo "install: $all"

@@ -1,3 +1,9 @@
+2005-11-16  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/24718
+	* mklibgcc.in: Create dummy object for libgcc_eh.a
+	* config/ia64/hpux.h (LIBGCC_SPEC): Remove.
+
 2005-11-13  Andreas Jaeger  <aj@suse.de>
 
 	* fixinc/check.tpl: Handle CVS additionally.

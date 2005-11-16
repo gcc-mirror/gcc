@@ -84,13 +84,6 @@ do {							\
 	  %{mlp64:-L/usr/lib/hpux64/libp} -lgprof} \
      %{!symbolic:-lc}}"
 
-#ifndef CROSS_COMPILE
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC \
-  "%{shared-libgcc:%{!mlp64:-lgcc_s}%{mlp64:-lgcc_s_hpux64} -lgcc} \
-   %{!shared-libgcc:-lgcc}"
-#endif
-
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
   { "ilp32",    MASK_ILP32,     "Generate ILP32 code" }, \
