@@ -1,3 +1,7 @@
+2005-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* unwind-sjlj.c (_Unwind_GetCFA): Handle the builtin_setjmp case.
+
 2005-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/alpha/alpha.c (alpha_init_builtins): Use type_for_mode
