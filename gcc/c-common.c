@@ -5464,7 +5464,7 @@ handle_cleanup_attribute (tree *node, tree name, tree args,
       *no_add_attrs = true;
       return NULL_TREE;
     }
-  cleanup_decl = lookup_name (cleanup_id);
+  cleanup_decl = lookup_name_two (cleanup_id, 0);
   if (!cleanup_decl || TREE_CODE (cleanup_decl) != FUNCTION_DECL)
     {
       error ("cleanup argument not a function");

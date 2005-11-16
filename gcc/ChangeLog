@@ -1,3 +1,10 @@
+2005-11-15  Mike Stump  <mrs@apple.com>
+
+	* c-decl.c (lookup_name_two): Add.
+	* c-tree.h (lookup_name_two): Likewise.
+	* c-common.c (handle_cleanup_attribute): Use lookup_name_two instead.
+	* config/darwin-c.c (darwin_pragma_unused): Likewise.
+
 2005-11-16  Alan Modra  <amodra@bigpond.net.au>
 
 	PR rtl-optimization/23392

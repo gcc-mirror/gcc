@@ -1,3 +1,7 @@
+2005-11-11  Mike Stump  <mrs@apple.com>
+
+	* g++.old-deja/g++.mike/unused.C: Add.
+
 2005-11-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24667
