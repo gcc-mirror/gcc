@@ -1,3 +1,21 @@
+2005-11-15  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/ObjectInputStream.java
+	(parseContent): Removed bogus println and fixed bug #24422.
+		
+2005-11-15  Mark Wielaard  <mark@klomp.org>
+
+	* java/io/ObjectStreamClass.java: Removed, fully merged now.
+	* sources.am: Regenerated.
+	* Makefile.in: Regenerated.
+
+2005-11-15  Wolfgang Baer  <WBaer@gmx.de>
+
+	* java/io/ObjectInputStream.java
+	(processResolution): Pass Error, RuntimeException and
+	ObjectStreamException through to the caller.
+	(readObject): Documentation update.
+
 2005-11-15  Mark Wielaard  <mark@klomp.org>
 
 	Imported GNU Classpath 0.19 + gcj-import-20051115.
