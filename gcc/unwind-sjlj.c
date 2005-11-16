@@ -185,6 +185,18 @@ _Unwind_Word
 _Unwind_GetCFA (struct _Unwind_Context *context __attribute__((unused)))
 {
   /* ??? Ideally __builtin_setjmp places the CFA in the jmpbuf.  */
+
+#ifndef DONT_USE_BUILTIN_SETJMP
+  /* This is a crude imitation of the CFA: the saved stack pointer.
+     This is roughly the CFA of the frame before CONTEXT.  When using the
+     DWARF-2 unwinder _Unwind_GetCFA returns the CFA of the frame described
+     by CONTEXT instead; but for DWARF-2 the cleanups associated with
+     CONTEXT have already been run, and for SJLJ they have not yet been.  */
+  if (context->fc != NULL)
+    return (_Unwind_Word) context->fc->jbuf[2];
+#endif
+
+  /* Otherwise we're out of luck for now.  */
   return (_Unwind_Word) 0;
 }
 
