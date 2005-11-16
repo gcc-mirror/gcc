@@ -32,3 +32,5 @@ $(T)crti.o: $(srcdir)/config/bfin/crti.s $(GCC_PASSES)
 $(T)crtn.o: $(srcdir)/config/bfin/crtn.s $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
 	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/bfin/crtn.s
+
+EXTRA_MULTILIB_PARTS= crtbegin.o crtend.o crti.o crtn.o

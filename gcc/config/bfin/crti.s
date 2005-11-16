@@ -38,10 +38,21 @@ Boston, MA 02110-1301, USA.  */
 	.globl  __init
 	.type   __init,@function
 __init:
-	LINK 0;
-
+#if defined __PIC__
+	[--SP] = P5;
+#endif
+	LINK 12;
+#if defined __PIC__
+	P5 = [P5 + _current_shared_library_p5_offset_]
+#endif	
 	.section .fini
 	.globl  __fini
 	.type   __fini,@function
 __fini:
-	LINK 0; 
+#if defined __PIC__
+	[--SP] = P5; 
+#endif
+	LINK 12; 
+#if defined __PIC__
+	P5 = [P5 + _current_shared_library_p5_offset_]
+#endif	

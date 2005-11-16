@@ -36,8 +36,14 @@ Boston, MA 02110-1301, USA.  */
 
 	.section .init
 	unlink; 
+#if defined __PIC__
+	P5 = [SP++];
+#endif
 	rts;
 
 	.section .fini
 	unlink;
+#if defined __PIC__
+	P5 = [SP++];
+#endif
 	rts;
