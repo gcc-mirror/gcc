@@ -1,3 +1,9 @@
+2005-11-16  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/23497
+	* tree-ssa.c (warn_uninitialized_var): Skip real and imaginary
+	parts of an SSA_NAME.
+
 2005-11-16  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/24861
