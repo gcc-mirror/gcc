@@ -1,3 +1,9 @@
+2005-11-16  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/24861
+	* arm.md (split for movsf with immediate): Restrict split to insns
+	that set a general register.
+
 2005-11-16  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/crti.s (__init, __fini): Use appropriate prologue if
