@@ -359,7 +359,7 @@ public abstract class ResourceBundle
    *
    * @param baseName the name of the ResourceBundle
    * @param locale A locale
-   * @param classloader a ClassLoader
+   * @param classLoader a ClassLoader
    * @return the desired resource bundle
    * @throws MissingResourceException if the resource bundle can't be found
    * @throws NullPointerException if any argument is null
