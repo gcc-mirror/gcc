@@ -3029,7 +3029,7 @@ pragma Obsolescent [(static_string_EXPRESSION [,Ada_05])];
 
 @noindent
 This pragma can occur immediately following a subprogram
-declaration in which  indicates that the associated function or procedure
+declaration and indicates that the associated function or procedure
 is considered obsolescent and should not be used. Typically this is
 used when an API must be modified by eventually removing or modifying
 existing subprograms. The pragma can be used at an intermediate stage
@@ -3054,7 +3054,7 @@ the identifier Ada_05, no other argument is allowed), then the
 indication of obsolescence applies only when compiling in Ada 2005
 mode. This is primarily intended for dealing with the situations
 in the predefined library where subprograms or packages
-have become definedas obsolescent in Ada 2005
+have become defined as obsolescent in Ada 2005
 (e.g. in Ada.Characters.Handling), but may be used anywhere.
 
 @node Pragma Passive
