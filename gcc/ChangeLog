@@ -1,3 +1,12 @@
+2005-11-16  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR 24357
+	* doc/invoke.texi: Distinguish between free and fixed form instead of
+	Fortran and Fortran 90/95.  Remove ratfor from the list of supported
+	languages.
+	* gcc.c (default_compilers): Remove double entries, add entries for
+	suffixes '.F90' and '.F95'.
+
 2005-11-16  Eric Botcazou <ebotcazou@adacore.com>
 
 	* config/alpha/alpha.c (alpha_expand_prologue): Fix off-by-one bug
