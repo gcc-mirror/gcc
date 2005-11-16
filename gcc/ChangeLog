@@ -1,3 +1,8 @@
+2005-11-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.ac: Use .machine power5 not power5x.
+	* configure: Regenerate.
+
 2005-11-15  Mike Stump  <mrs@apple.com>
 
 	* c-decl.c (lookup_name_two): Add.
