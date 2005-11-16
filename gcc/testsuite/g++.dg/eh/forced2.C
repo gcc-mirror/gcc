@@ -6,6 +6,7 @@
 
 #include <unwind.h>
 #include <stdlib.h>
+#include <string.h>
 
 static _Unwind_Reason_Code
 force_unwind_stop (int version, _Unwind_Action actions,
@@ -29,7 +30,8 @@ static void
 force_unwind ()
 {
   _Unwind_Exception *exc = new _Unwind_Exception;
-  exc->exception_class = 0;
+  // exception_class might not be a scalar.
+  memset (&exc->exception_class, 0, sizeof (exc->exception_class));
   exc->exception_cleanup = force_unwind_cleanup;
 
 #ifndef __USING_SJLJ_EXCEPTIONS__

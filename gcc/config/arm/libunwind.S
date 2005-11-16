@@ -78,7 +78,7 @@ ARM_FUNC_START gnu_Unwind_Save_VFP
 
 /* Wrappers to save core registers, then call the real routine.   */
 
-.macro  UNWIND_WRAPPER name
+.macro  UNWIND_WRAPPER name nargs
 	ARM_FUNC_START \name
 	/* Create a phase2_vrs structure.  */
 	/* Split reg push in two to ensure the correct value for sp.  */
@@ -89,8 +89,8 @@ ARM_FUNC_START gnu_Unwind_Save_VFP
 	mov r3, #0
 	stmfd sp!, {r2, r3}
 
-	/* Point r1 at the block.  Pass r0 unchanged.  */
-	add r1, sp, #4
+	/* Point r1 at the block.  Pass r[0..nargs) unchanged.  */
+	add r\nargs, sp, #4
 #if defined(__thumb__)
 	/* Switch back to thumb mode to avoid interworking hassle.  */
 	adr ip, .L1_\name
@@ -112,7 +112,9 @@ ARM_FUNC_START gnu_Unwind_Save_VFP
 	UNPREFIX \name
 .endm
 
-UNWIND_WRAPPER _Unwind_RaiseException
-UNWIND_WRAPPER _Unwind_Resume
+UNWIND_WRAPPER _Unwind_RaiseException 1
+UNWIND_WRAPPER _Unwind_Resume 1
+UNWIND_WRAPPER _Unwind_Resume_or_Rethrow 1
+UNWIND_WRAPPER _Unwind_ForcedUnwind 3
 
 #endif  /* __symbian__ */
