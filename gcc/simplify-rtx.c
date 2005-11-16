@@ -2242,6 +2242,17 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 				     &f0, &f1);
 	  real_convert (&result, mode, &value);
 
+	  /* Don't constant fold this floating point operation if
+	     the result has overflowed and flag_trapping_math.  */
+
+	  if (flag_trapping_math
+	      && MODE_HAS_INFINITIES (mode)
+	      && REAL_VALUE_ISINF (result)
+	      && !REAL_VALUE_ISINF (f0)
+	      && !REAL_VALUE_ISINF (f1))
+	    /* Overflow plus exception.  */
+	    return 0;
+
 	  /* Don't constant fold this floating point operation if the
 	     result may dependent upon the run-time rounding mode and
 	     flag_rounding_math is set, or if GCC's software emulation
