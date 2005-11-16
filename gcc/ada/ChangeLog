@@ -1,3 +1,8 @@
+2005-11-16  Richard Guenther  <rguenther@suse.de>
+
+	* Make-lang.in (ada/decl.o): Add $(EXPR_H) dependency.
+	(ada/misc.o): Likewise.
+
 2005-11-14  Thomas Quinot  <quinot@adacore.com>
 
 	* g-soccon.ads: Minor reformatting. Update comments.

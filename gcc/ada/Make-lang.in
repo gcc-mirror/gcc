@@ -1049,10 +1049,10 @@ ada/decl.o : ada/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    flags.h toplev.h convert.h target.h ada/ada.h ada/types.h ada/atree.h \
    ada/nlists.h ada/elists.h ada/uintp.h ada/sinfo.h ada/einfo.h ada/snames.h \
    ada/namet.h ada/stringt.h ada/repinfo.h ada/fe.h $(ADA_TREE_H) ada/gigi.h \
-   gt-ada-decl.h
+   gt-ada-decl.h $(EXPR_H)
 
 ada/misc.o : ada/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-   $(RTL_H) expr.h insn-codes.h insn-flags.h insn-config.h recog.h flags.h \
+   $(RTL_H) $(EXPR_H) insn-codes.h insn-flags.h recog.h flags.h \
    diagnostic.h output.h except.h $(TM_P_H) langhooks.h debug.h \
    $(LANGHOOKS_DEF_H) libfuncs.h $(OPTABS_H) ada/ada.h ada/types.h \
    ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h \
