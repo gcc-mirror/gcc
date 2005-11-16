@@ -1,3 +1,11 @@
+2005-11-16  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/24772
+	* config/rs6000/predicates.md (vrsave_operation): SET_SRC is a VEC.
+
+	* config/rs6000/rs6000.md (btruncsf2, ceilsf2, floorsf2,
+	roundsf2): Remove "s" from mnemonic.
+
 2005-11-16  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/crti.s (__init, __fini): Use appropriate prologue if
