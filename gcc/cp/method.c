@@ -851,7 +851,7 @@ synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
         continue;
       while (TREE_CODE (type) == ARRAY_TYPE)
   	type = TREE_TYPE (type);
-      if (TREE_CODE (type) != RECORD_TYPE)
+      if (!CLASS_TYPE_P (type))
         continue;
       
       fn = (*extractor) (type, client);
@@ -942,7 +942,7 @@ locate_copy (tree type, void *client_)
       int excess;
       int quals;
       
-      parms = TREE_CHAIN (parms);
+      parms = skip_artificial_parms_for (fn, parms);
       if (!parms)
         continue;
       src_type = non_reference (TREE_VALUE (parms));
