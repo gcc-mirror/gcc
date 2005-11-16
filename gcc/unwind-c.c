@@ -129,7 +129,7 @@ PERSONALITY_FUNCTION (int version,
   _Unwind_Ptr landing_pad, ip;
 
 #ifdef __ARM_EABI_UNWINDER__
-  if (state != _US_UNWIND_FRAME_STARTING)
+  if ((state & _US_ACTION_MASK) != _US_UNWIND_FRAME_STARTING)
     CONTINUE_UNWINDING;
 
   /* The dwarf unwinder assumes the context structure holds things like the

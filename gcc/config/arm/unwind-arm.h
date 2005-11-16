@@ -37,10 +37,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  /* We add a prototype for abort here to avoid creating a dependency on
-     target headers.  */
-  extern void abort();
-
   typedef unsigned _Unwind_Word __attribute__((__mode__(__word__)));
   typedef signed _Unwind_Sword __attribute__((__mode__(__word__)));
   typedef unsigned _Unwind_Ptr __attribute__((__mode__(__pointer__)));
@@ -195,18 +191,9 @@ extern "C" {
   void * _Unwind_GetLanguageSpecificData (_Unwind_Context *);
   _Unwind_Ptr _Unwind_GetRegionStart (_Unwind_Context *);
 
-  /* These two should never be used */
-  static inline _Unwind_Ptr
-  _Unwind_GetDataRelBase (_Unwind_Context * context __attribute__ ((unused)))
-    {
-      abort ();
-    }
-
-  static inline _Unwind_Ptr
-  _Unwind_GetTextRelBase (_Unwind_Context * context __attribute__ ((unused)))
-    {
-      abort ();
-    }
+  /* These two should never be used.  */
+  _Unwind_Ptr _Unwind_GetDataRelBase (_Unwind_Context *);
+  _Unwind_Ptr _Unwind_GetTextRelBase (_Unwind_Context *);
 
   /* Interface functions: */
   _Unwind_Reason_Code _Unwind_RaiseException(_Unwind_Control_Block *ucbp);
@@ -218,6 +205,7 @@ extern "C" {
 	_Unwind_Control_Block *, struct _Unwind_Context *, void *);
   _Unwind_Reason_Code _Unwind_ForcedUnwind (_Unwind_Control_Block *,
 					    _Unwind_Stop_Fn, void *);
+  _Unwind_Word _Unwind_GetCFA (struct _Unwind_Context *);
   void _Unwind_Complete(_Unwind_Control_Block *ucbp);
   void _Unwind_DeleteException (_Unwind_Exception *);
 
