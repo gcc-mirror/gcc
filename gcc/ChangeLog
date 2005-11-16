@@ -1,3 +1,20 @@
+2005-11-16  Richard Henderson  <rth@redhat.com>
+	    J"orn Rennecke <joern.rennecke@st.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR rtl-opt/24160
+	PR target/24621
+	* reload1.c (reg_equiv_invariant): New.
+	(reload): Allocate, initialize, and free it.
+	(calculate_needs_all_insns): Check it when skipping equivalence
+	setting insns.
+	(alter_reg): Likewise.
+	(eliminate_regs_1): Rename from eliminate_regs.  Add new
+	may_use_invariant argument; only use reg_equiv_invariant when true.
+	(eliminate_regs): New.
+	(eliminate_regs_in_insn): Use eliminate_regs_1; track when we're in
+	a context for which may_use_invariant may be true.
+
 2005-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (const_binop): Don't constant fold the operation

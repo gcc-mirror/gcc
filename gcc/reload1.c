@@ -96,6 +96,11 @@ static HARD_REG_SET reg_is_output_reload;
    with the constant it stands for.  */
 rtx *reg_equiv_constant;
 
+/* Element N is an invariant value to which pseudo reg N is equivalent.
+   eliminate_regs_in_insn uses this to replace pseudos in particular
+   contexts.  */
+rtx *reg_equiv_invariant;
+
 /* Element N is a memory location to which pseudo reg N is equivalent,
    prior to any register elimination (such as frame pointer to stack
    pointer).  Depending on whether or not it is a valid address, this value
@@ -693,6 +698,7 @@ reload (rtx first, int global)
      be substituted eventually by altering the REG-rtx's.  */
 
   reg_equiv_constant = xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_invariant = xcalloc (max_regno, sizeof (rtx));
   reg_equiv_mem = xcalloc (max_regno, sizeof (rtx));
   reg_equiv_address = xcalloc (max_regno, sizeof (rtx));
   reg_max_ref_width = xcalloc (max_regno, sizeof (int));
@@ -762,13 +768,12 @@ reload (rtx first, int global)
 		    {
 		      /* This is PLUS of frame pointer and a constant,
 			 and might be shared.  Unshare it.  */
-		      reg_equiv_constant[i] = copy_rtx (x);
+		      reg_equiv_invariant[i] = copy_rtx (x);
 		      num_eliminable_invariants++;
 		    }
-		  else if (x == frame_pointer_rtx
-			   || x == arg_pointer_rtx)
+		  else if (x == frame_pointer_rtx || x == arg_pointer_rtx)
 		    {
-		      reg_equiv_constant[i] = x;
+		      reg_equiv_invariant[i] = x;
 		      num_eliminable_invariants++;
 		    }
 		  else if (LEGITIMATE_CONSTANT_P (x))
@@ -1238,7 +1243,10 @@ reload (rtx first, int global)
   /* Indicate that we no longer have known memory locations or constants.  */
   if (reg_equiv_constant)
     free (reg_equiv_constant);
+  if (reg_equiv_invariant)
+    free (reg_equiv_invariant);
   reg_equiv_constant = 0;
+  reg_equiv_invariant = 0;
   VARRAY_GROW (reg_equiv_memory_loc_varray, 0);
   reg_equiv_memory_loc = 0;
 
@@ -1454,7 +1462,9 @@ calculate_needs_all_insns (int global)
 	  /* Skip insns that only set an equivalence.  */
 	  if (set && REG_P (SET_DEST (set))
 	      && reg_renumber[REGNO (SET_DEST (set))] < 0
-	      && reg_equiv_constant[REGNO (SET_DEST (set))])
+	      && (reg_equiv_constant[REGNO (SET_DEST (set))]
+		  || (reg_equiv_invariant[REGNO (SET_DEST (set))]))
+		      && reg_equiv_init[REGNO (SET_DEST (set))])
 	    continue;
 
 	  /* If needed, eliminate any eliminable registers.  */
@@ -1944,6 +1954,7 @@ alter_reg (int i, int from_reg)
   if (reg_renumber[i] < 0
       && REG_N_REFS (i) > 0
       && reg_equiv_constant[i] == 0
+      && (reg_equiv_invariant[i] == 0 || reg_equiv_init[i] == 0)
       && reg_equiv_memory_loc[i] == 0)
     {
       rtx x;
@@ -2252,8 +2263,9 @@ set_label_offsets (rtx x, rtx insn, int initial_p)
    encounter, return the actual location so that find_reloads will do
    the proper thing.  */
 
-rtx
-eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
+static rtx
+eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
+		  bool may_use_invariant)
 {
   enum rtx_code code = GET_CODE (x);
   struct elim_table *ep;
@@ -2296,10 +2308,16 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 
 	}
       else if (reg_renumber && reg_renumber[regno] < 0
-	       && reg_equiv_constant && reg_equiv_constant[regno]
-	       && ! CONSTANT_P (reg_equiv_constant[regno]))
-	return eliminate_regs (copy_rtx (reg_equiv_constant[regno]),
-			       mem_mode, insn);
+	       && reg_equiv_invariant && reg_equiv_invariant[regno])
+	{
+	  if (may_use_invariant)
+	    return eliminate_regs_1 (copy_rtx (reg_equiv_invariant[regno]),
+			             mem_mode, insn, true);
+	  /* There exists at least one use of REGNO that cannot be
+	     eliminated.  Prevent the defining insn from being deleted.  */
+	  reg_equiv_init[regno] = NULL_RTX;
+	  alter_reg (regno, -1);
+	}
       return x;
 
     /* You might think handling MINUS in a manner similar to PLUS is a
@@ -2359,8 +2377,8 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 	 operand of a load-address insn.  */
 
       {
-	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
-	rtx new1 = eliminate_regs (XEXP (x, 1), mem_mode, insn);
+	rtx new0 = eliminate_regs_1 (XEXP (x, 0), mem_mode, insn, true);
+	rtx new1 = eliminate_regs_1 (XEXP (x, 1), mem_mode, insn, true);
 
 	if (reg_renumber && (new0 != XEXP (x, 0) || new1 != XEXP (x, 1)))
 	  {
@@ -2432,9 +2450,9 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
     case GE:       case GT:       case GEU:    case GTU:
     case LE:       case LT:       case LEU:    case LTU:
       {
-	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
-	rtx new1
-	  = XEXP (x, 1) ? eliminate_regs (XEXP (x, 1), mem_mode, insn) : 0;
+	rtx new0 = eliminate_regs_1 (XEXP (x, 0), mem_mode, insn, false);
+	rtx new1 = XEXP (x, 1)
+		   ? eliminate_regs_1 (XEXP (x, 1), mem_mode, insn, false) : 0;
 
 	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
 	  return gen_rtx_fmt_ee (code, GET_MODE (x), new0, new1);
@@ -2445,7 +2463,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
       /* If we have something in XEXP (x, 0), the usual case, eliminate it.  */
       if (XEXP (x, 0))
 	{
-	  new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
+	  new = eliminate_regs_1 (XEXP (x, 0), mem_mode, insn, true);
 	  if (new != XEXP (x, 0))
 	    {
 	      /* If this is a REG_DEAD note, it is not valid anymore.
@@ -2453,7 +2471,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 		 REG_DEAD note for the stack or frame pointer.  */
 	      if (GET_MODE (x) == REG_DEAD)
 		return (XEXP (x, 1)
-			? eliminate_regs (XEXP (x, 1), mem_mode, insn)
+			? eliminate_regs_1 (XEXP (x, 1), mem_mode, insn, true)
 			: NULL_RTX);
 
 	      x = gen_rtx_EXPR_LIST (REG_NOTE_KIND (x), new, XEXP (x, 1));
@@ -2468,7 +2486,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 	 strictly needed, but it simplifies the code.  */
       if (XEXP (x, 1))
 	{
-	  new = eliminate_regs (XEXP (x, 1), mem_mode, insn);
+	  new = eliminate_regs_1 (XEXP (x, 1), mem_mode, insn, true);
 	  if (new != XEXP (x, 1))
 	    return
 	      gen_rtx_fmt_ee (GET_CODE (x), GET_MODE (x), XEXP (x, 0), new);
@@ -2492,7 +2510,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
     case CTZ:
     case POPCOUNT:
     case PARITY:
-      new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
+      new = eliminate_regs_1 (XEXP (x, 0), mem_mode, insn, false);
       if (new != XEXP (x, 0))
 	return gen_rtx_fmt_e (code, GET_MODE (x), new);
       return x;
@@ -2513,7 +2531,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 	  new = SUBREG_REG (x);
 	}
       else
-	new = eliminate_regs (SUBREG_REG (x), mem_mode, insn);
+	new = eliminate_regs_1 (SUBREG_REG (x), mem_mode, insn, false);
 
       if (new != SUBREG_REG (x))
 	{
@@ -2549,12 +2567,12 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 	 case more efficiently.  */
       return
 	replace_equiv_address_nv (x,
-				  eliminate_regs (XEXP (x, 0),
-						  GET_MODE (x), insn));
+				  eliminate_regs_1 (XEXP (x, 0), GET_MODE (x),
+						    insn, true));
 
     case USE:
       /* Handle insn_list USE that a call to a pure function may generate.  */
-      new = eliminate_regs (XEXP (x, 0), 0, insn);
+      new = eliminate_regs_1 (XEXP (x, 0), 0, insn, false);
       if (new != XEXP (x, 0))
 	return gen_rtx_USE (GET_MODE (x), new);
       return x;
@@ -2575,7 +2593,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
     {
       if (*fmt == 'e')
 	{
-	  new = eliminate_regs (XEXP (x, i), mem_mode, insn);
+	  new = eliminate_regs_1 (XEXP (x, i), mem_mode, insn, false);
 	  if (new != XEXP (x, i) && ! copied)
 	    {
 	      rtx new_x = rtx_alloc (code);
@@ -2590,7 +2608,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 	  int copied_vec = 0;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    {
-	      new = eliminate_regs (XVECEXP (x, i, j), mem_mode, insn);
+	      new = eliminate_regs_1 (XVECEXP (x, i, j), mem_mode, insn, false);
 	      if (new != XVECEXP (x, i, j) && ! copied_vec)
 		{
 		  rtvec new_v = gen_rtvec_v (XVECLEN (x, i),
@@ -2611,6 +2629,12 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
     }
 
   return x;
+}
+
+rtx
+eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
+{
+  return eliminate_regs_1 (x, mem_mode, insn, false);
 }
 
 /* Scan rtx X for modifications of elimination target registers.  Update
@@ -2870,7 +2894,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
   rtx substed_operand[MAX_RECOG_OPERANDS];
   rtx orig_operand[MAX_RECOG_OPERANDS];
   struct elim_table *ep;
-  rtx plus_src;
+  rtx plus_src, plus_cst_src;
 
   if (! insn_is_asm && icode < 0)
     {
@@ -2975,16 +2999,19 @@ eliminate_regs_in_insn (rtx insn, int replace)
   /* We allow one special case which happens to work on all machines we
      currently support: a single set with the source or a REG_EQUAL
      note being a PLUS of an eliminable register and a constant.  */
-  plus_src = 0;
+  plus_src = plus_cst_src = 0;
   if (old_set && REG_P (SET_DEST (old_set)))
     {
-      /* First see if the source is of the form (plus (reg) CST).  */
-      if (GET_CODE (SET_SRC (old_set)) == PLUS
-	  && REG_P (XEXP (SET_SRC (old_set), 0))
-	  && GET_CODE (XEXP (SET_SRC (old_set), 1)) == CONST_INT
-	  && REGNO (XEXP (SET_SRC (old_set), 0)) < FIRST_PSEUDO_REGISTER)
+      if (GET_CODE (SET_SRC (old_set)) == PLUS)
 	plus_src = SET_SRC (old_set);
-      else if (REG_P (SET_SRC (old_set)))
+      /* First see if the source is of the form (plus (reg) CST).  */
+      if (plus_src
+	  && REG_P (XEXP (plus_src, 0))
+	  && GET_CODE (XEXP (plus_src, 1)) == CONST_INT
+	  && REGNO (XEXP (plus_src, 0)) < FIRST_PSEUDO_REGISTER)
+	plus_cst_src = plus_src;
+      else if (REG_P (SET_SRC (old_set))
+	       || plus_src)
 	{
 	  /* Otherwise, see if we have a REG_EQUAL note of the form
 	     (plus (reg) CST).  */
@@ -2997,16 +3024,16 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		  && GET_CODE (XEXP (XEXP (links, 0), 1)) == CONST_INT
 		  && REGNO (XEXP (XEXP (links, 0), 0)) < FIRST_PSEUDO_REGISTER)
 		{
-		  plus_src = XEXP (links, 0);
+		  plus_cst_src = XEXP (links, 0);
 		  break;
 		}
 	    }
 	}
     }
-  if (plus_src)
+  if (plus_cst_src)
     {
-      rtx reg = XEXP (plus_src, 0);
-      HOST_WIDE_INT offset = INTVAL (XEXP (plus_src, 1));
+      rtx reg = XEXP (plus_cst_src, 0);
+      HOST_WIDE_INT offset = INTVAL (XEXP (plus_cst_src, 1));
 
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	if (ep->from_rtx == reg && ep->can_eliminate)
@@ -3038,9 +3065,9 @@ eliminate_regs_in_insn (rtx insn, int replace)
 	    /* If we have a nonzero offset, and the source is already
 	       a simple REG, the following transformation would
 	       increase the cost of the insn by replacing a simple REG
-	       with (plus (reg sp) CST).  So try only when plus_src
-	       comes from old_set proper, not REG_NOTES.  */
-	    else if (SET_SRC (old_set) == plus_src)
+	       with (plus (reg sp) CST).  So try only when we already
+	       had a PLUS before.  */
+	    else if (plus_src)
 	      {
 		new_body = old_body;
 		if (! replace)
@@ -3079,6 +3106,8 @@ eliminate_regs_in_insn (rtx insn, int replace)
       /* For an asm statement, every operand is eliminable.  */
       if (insn_is_asm || insn_data[icode].operand[i].eliminable)
 	{
+	  bool is_set_src, in_plus;
+
 	  /* Check for setting a register that we know about.  */
 	  if (recog_data.operand_type[i] != OP_IN
 	      && REG_P (orig_operand[i]))
@@ -3093,8 +3122,21 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		  ep->can_eliminate = 0;
 	    }
 
-	  substed_operand[i] = eliminate_regs (recog_data.operand[i], 0,
-					       replace ? insn : NULL_RTX);
+	  /* Companion to the above plus substitution, we can allow
+	     invariants as the source of a plain move.  */
+	  is_set_src = false;
+	  if (old_set && recog_data.operand_loc[i] == &SET_SRC (old_set))
+	    is_set_src = true;
+	  in_plus = false;
+	  if (plus_src
+	      && (recog_data.operand_loc[i] == &XEXP (plus_src, 0)
+		  || recog_data.operand_loc[i] == &XEXP (plus_src, 1)))
+	    in_plus = true;
+
+	  substed_operand[i]
+	    = eliminate_regs_1 (recog_data.operand[i], 0,
+			        replace ? insn : NULL_RTX,
+				is_set_src || in_plus);
 	  if (substed_operand[i] != orig_operand[i])
 	    val = 1;
 	  /* Terminate the search in check_eliminable_occurrences at
@@ -3222,7 +3264,8 @@ eliminate_regs_in_insn (rtx insn, int replace)
      of spill registers to be needed in the final reload pass than in
      the pre-passes.  */
   if (val && REG_NOTES (insn) != 0)
-    REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, REG_NOTES (insn));
+    REG_NOTES (insn)
+      = eliminate_regs_1 (REG_NOTES (insn), 0, REG_NOTES (insn), true);
 
   return val;
 }
