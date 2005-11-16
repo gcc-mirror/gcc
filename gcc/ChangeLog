@@ -1,3 +1,28 @@
+2005-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/unwind-arm.c (abort): Add prototype here.
+	(UCB_FORCED_STOP_ARG): Correct typo in macro argument.
+	(struct phase1_vrs): Add prev_sp.
+	(unwind_phase2_forced): Save the original core registers instead of
+	modifying entry_vrs.  Take a new flag argument for resuming unwinding
+	and set action flags accordingly.  Always set _US_END_OF_STACK when
+	get_eit_entry fails.  Unwind before calling the stop function.
+	(_Unwind_GetCFA): New function.
+	(__gnu_Unwind_ForcedUnwind): Update call to unwind_phase2_forced.
+	(__gnu_Unwind_Resume_or_Rethrow): Likewise.
+	(__gnu_Unwind_Resume): Do not unwind here for forced unwinding;
+	just call unwind_phase2_forced.
+	(_Unwind_GetDataRelBase, _Unwind_GetTextRelBase): Move to here.
+	* config/arm/unwind-arm.h (abort): Remove prototype.
+	(_Unwind_GetDataRelBase, _Unwind_GetTextRelBase): Change to
+	prototypes.
+	(_Unwind_GetCFA): New prototype.
+	* config/arm/pr-support.c (abort): Add prototype here.
+	* unwind-c.c (PERSONALITY_FUNCTION) [__ARM_EABI_UNWINDER__]: Handle
+	forced unwinding.
+	* config/arm/arm.c (arm_expand_prologue, thumb_expand_prologue): Do
+	not schedule the prologue with non-call exceptions and EABI.
+
 2005-11-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/arm/unwind-arm.h: Reorder interface function declarations.

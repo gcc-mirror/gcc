@@ -10850,8 +10850,11 @@ arm_expand_prologue (void)
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  Similarly if the user has requested no
-     scheduling in the prolog.  */
-  if (current_function_profile || !TARGET_SCHED_PROLOG)
+     scheduling in the prolog.  Similarly if we want non-call exceptions
+     using the EABI unwinder, to prevent faulting instructions from being
+     swapped with a stack adjustment.  */
+  if (current_function_profile || !TARGET_SCHED_PROLOG
+      || (ARM_EABI_UNWIND_TABLES && flag_non_call_exceptions))
     emit_insn (gen_blockage ());
 
   /* If the link register is being kept alive, with the return address in it,
@@ -13714,7 +13717,13 @@ thumb_expand_prologue (void)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (current_function_profile || !TARGET_SCHED_PROLOG)
+  /* If we are profiling, make sure no instructions are scheduled before
+     the call to mcount.  Similarly if the user has requested no
+     scheduling in the prolog.  Similarly if we want non-call exceptions
+     using the EABI unwinder, to prevent faulting instructions from being
+     swapped with a stack adjustment.  */
+  if (current_function_profile || !TARGET_SCHED_PROLOG
+      || (ARM_EABI_UNWIND_TABLES && flag_non_call_exceptions))
     emit_insn (gen_blockage ());
 
   cfun->machine->lr_save_eliminated = !thumb_force_lr_save ();

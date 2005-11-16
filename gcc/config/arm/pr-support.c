@@ -27,6 +27,10 @@
    Boston, MA 02110-1301, USA.  */
 #include "unwind.h"
 
+/* We add a prototype for abort here to avoid creating a dependency on
+   target headers.  */
+extern void abort (void);
+
 typedef struct _ZSt9type_info type_info; /* This names C++ type_info type */
 
 /* Misc constants.  */
