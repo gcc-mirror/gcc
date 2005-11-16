@@ -276,6 +276,13 @@ uw_update_context (struct _Unwind_Context *context,
   context->fc = context->fc->prev;
 }
 
+static void
+uw_advance_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
+{
+  _Unwind_SjLj_Unregister (context->fc);
+  uw_update_context (context, fs);
+}
+
 static inline void
 uw_init_context (struct _Unwind_Context *context)
 {
