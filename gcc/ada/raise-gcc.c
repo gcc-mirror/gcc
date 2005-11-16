@@ -45,6 +45,7 @@
 #endif
 #include "tsystem.h"
 #include <sys/stat.h>
+#include <stdarg.h>
 typedef char bool;
 # define true 1
 # define false 0
