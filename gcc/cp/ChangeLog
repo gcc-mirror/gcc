@@ -1,3 +1,10 @@
+2005-11-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/24580
+	* method.c (locate_copy): Also use skip_artificial_parms here.
+	(synthesize_exception_spec): Use CLASS_TYPE_P rather than checking
+	for RECORD_TYPE.
+
 2005-11-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24667
