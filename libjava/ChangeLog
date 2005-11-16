@@ -1,3 +1,10 @@
+2005-11-15  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/zip/ZipEntry.java: Removed, fully merged now.
+	* java/util/zip/ZipFile.java: Likewise.
+	* sources.am: Regenerated.
+	* Makefile.in: Regenerated.
+
 2005-11-15  Tom Tromey  <tromey@redhat.com>
 
 	classpath/23890:

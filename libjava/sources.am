@@ -3832,9 +3832,9 @@ java/util/zip/GZIPOutputStream.java \
 java/util/zip/Inflater.java \
 java/util/zip/InflaterInputStream.java \
 classpath/java/util/zip/ZipConstants.java \
-java/util/zip/ZipEntry.java \
+classpath/java/util/zip/ZipEntry.java \
 classpath/java/util/zip/ZipException.java \
-java/util/zip/ZipFile.java \
+classpath/java/util/zip/ZipFile.java \
 classpath/java/util/zip/ZipInputStream.java \
 classpath/java/util/zip/ZipOutputStream.java
 
