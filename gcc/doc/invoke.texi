@@ -854,25 +854,21 @@ C++ header file to be turned into a precompiled header.
 @item @var{file}.f
 @itemx @var{file}.for
 @itemx @var{file}.FOR
-Fortran source code which should not be preprocessed.
+Fixed form Fortran source code which should not be preprocessed.
 
 @item @var{file}.F
 @itemx @var{file}.fpp
 @itemx @var{file}.FPP
-Fortran source code which must be preprocessed (with the traditional
+Fixed form Fortran source code which must be preprocessed (with the traditional
 preprocessor).
-
-@item @var{file}.r
-Fortran source code which must be preprocessed with a RATFOR
-preprocessor (not included with GCC)@.
 
 @item @var{file}.f90
 @itemx @var{file}.f95
-Fortran 90/95 source code which should not be preprocessed.
+Free form Fortran source code which should not be preprocessed.
 
 @item @var{file}.F90
 @itemx @var{file}.F95
-Fortran 90/95 source code which must be preprocessed (with the
+Free form Fortran source code which must be preprocessed (with the
 traditional preprocessor).
 
 @c FIXME: Descriptions of Java file types.
@@ -896,6 +892,8 @@ package body).  Such files are also called @dfn{bodies}.
 @c Pascal:
 @c @var{file}.p
 @c @var{file}.pas
+@c Ratfor:
+@c @var{file}.r
 
 @item @var{file}.s
 Assembler code.
@@ -924,7 +922,7 @@ objective-c  objective-c-header  objective-c-cpp-output
 objective-c++ objective-c++-header objective-c++-cpp-output
 assembler  assembler-with-cpp
 ada
-f77  f77-cpp-input  ratfor
+f77  f77-cpp-input
 f95  f95-cpp-input
 java
 treelang
