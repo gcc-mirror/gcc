@@ -1,5 +1,14 @@
 2005-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* config/ia64/unwind-ia64.c (uw_advance_context): New.  Call
+	uw_update_context.
+	* unwind-dw2.c (uw_advance_context): Likewise.
+	* unwind-sjlj.c (uw_advance_context): Likewise.  Also call
+	_Unwind_SjLj_Unregister.
+	* unwind.inc (_Unwind_ForcedUnwind_Phase2): Call uw_advance_context.
+
+2005-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* unwind-sjlj.c (_Unwind_GetCFA): Handle the builtin_setjmp case.
 
 2005-11-16  Eric Botcazou  <ebotcazou@adacore.com>

@@ -2060,6 +2060,12 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     }
 }
 
+static void
+uw_advance_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
+{
+  uw_update_context (context, fs);
+}
+
 /* Fill in CONTEXT for top-of-stack.  The only valid registers at this
    level will be the return address and the CFA.  Note that CFA = SP+16.  */
    

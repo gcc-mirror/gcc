@@ -184,8 +184,9 @@ _Unwind_ForcedUnwind_Phase2 (struct _Unwind_Exception *exc,
 	    return _URC_FATAL_PHASE2_ERROR;
 	}
 
-      /* Update cur_context to describe the same frame as fs.  */
-      uw_update_context (context, &fs);
+      /* Update cur_context to describe the same frame as fs, and discard
+	 the previous context if necessary.  */
+      uw_advance_context (context, &fs);
     }
 
   return code;
