@@ -1,3 +1,10 @@
+2005-11-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23797
+	Backport from mainline:
+	* g++.dg/parse/typename8.C: New test.
+	* g++.dg/parse/typename9.C: Likewise.
+
 2005-11-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport from mainline:

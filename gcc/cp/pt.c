@@ -4805,6 +4805,8 @@ uses_template_parms (tree t)
   else if (TREE_CODE (t) == TREE_LIST)
     dependent_p = (uses_template_parms (TREE_VALUE (t))
 		   || uses_template_parms (TREE_CHAIN (t)));
+  else if (TREE_CODE (t) == TYPE_DECL)
+    dependent_p = dependent_type_p (TREE_TYPE (t));
   else if (DECL_P (t) 
 	   || EXPR_P (t) 
 	   || TREE_CODE (t) == TEMPLATE_PARM_INDEX
@@ -12043,6 +12045,8 @@ type_dependent_expression_p (tree expression)
       abort ();
     }
   
+  my_friendly_assert (TREE_CODE (expression) != TYPE_DECL, 20051116);
+ 
   return (dependent_type_p (TREE_TYPE (expression)));
 }
 
