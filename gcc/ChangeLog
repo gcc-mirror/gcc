@@ -1,3 +1,15 @@
+2005-11-16  Alan Modra  <amodra@bigpond.net.au>
+
+	PR rtl-optimization/23392
+	* regrename.c (enum scan_actions) Add mark_access.
+	(scan_actions_name): Ditto.
+	(scan_rtx_reg): Handle mark_access.
+	(scan_rtx_address): Do nothing for mark_access.
+	(build_def_use): Mark source registers in REG_FRAME_RELATED_EXPR
+	and regs in REG_INC notes before closing chains for dead regs.
+	Mark destination regs in REG_FRAME_RELATED_EXPR notes after
+	opening chains for new writes.
+
 2005-11-15  Steve Ellcey  <sje@cup.hp.com>
 
 	* mklibgcc.in: Change contents of eh_dummy.c.
