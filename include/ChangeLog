@@ -1,3 +1,7 @@
+2005-11-15  Kean Johnston  <jkj@sco.com>
+
+	* ansidecl.h: Back-ported ATTRIBUTE_FPTR_PRINTF macros from head.
+
 2005-09-20  Release Manager
 
 	* GCC 4.0.2 released.

@@ -1,3 +1,9 @@
+2005-11-15  Kean Johnston  <jkj@sco.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Make the (*error)
+	function pointer use ATTRIBUTE_FPTR_PRINTF so that versions
+	of gcc prior to 3.1 can bootstrap again.
+
 2005-11-09  Per Bothner  <per@bothner.com>
 	    Uros Bizjak  <uros@kss-loka.si>
 	
