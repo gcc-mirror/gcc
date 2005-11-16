@@ -1,3 +1,11 @@
+2005-11-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/24580
+	* method.c (locate_copy): Also use skip_artificial_parms here.
+	(synthesize_exception_spec): Use CLASS_TYPE_P rather than checking
+	for RECORD_TYPE.
+	(locate_ctor): Abort if we fail to find a default constructor.
+
 2005-11-15  Mike Stump  <mrs@apple.com>
 
 	* name-lookup.c (lookup_name_two): Add.
