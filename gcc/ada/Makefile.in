@@ -780,6 +780,7 @@ ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt.adb<mlib-tgt-linux.adb
 
+  EH_MECHANISM=-gcc
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
