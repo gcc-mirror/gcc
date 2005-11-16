@@ -1,3 +1,7 @@
+2005-11-16  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in: Add EH_MECHANISM=-gcc to s390(x) linux.
+
 2005-11-16  Joel Sherrill <joel.sherrill@oarcorp.com>
 
         PR ada/24855
