@@ -1,3 +1,8 @@
+2005-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/alpha/alpha.c (alpha_init_builtins): Use type_for_mode
+	langhook to get a DImode integer type.
+
 2005-11-16  Richard Henderson  <rth@redhat.com>
 	    J"orn Rennecke <joern.rennecke@st.com>
 	    Ulrich Weigand  <uweigand@de.ibm.com>

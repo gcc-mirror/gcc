@@ -6473,13 +6473,16 @@ static void
 alpha_init_builtins (void)
 {
   const struct alpha_builtin_def *p;
+  tree dimode_integer_type_node;
   tree ftype, attrs[2];
   size_t i;
+
+  dimode_integer_type_node = lang_hooks.types.type_for_mode (DImode, 0);
 
   attrs[0] = tree_cons (get_identifier ("nothrow"), NULL, NULL);
   attrs[1] = tree_cons (get_identifier ("const"), NULL, attrs[0]);
 
-  ftype = build_function_type (long_integer_type_node, void_list_node);
+  ftype = build_function_type (dimode_integer_type_node, void_list_node);
 
   p = zero_arg_builtins;
   for (i = 0; i < ARRAY_SIZE (zero_arg_builtins); ++i, ++p)
@@ -6487,8 +6490,8 @@ alpha_init_builtins (void)
       lang_hooks.builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
 				   NULL, attrs[p->is_const]);
 
-  ftype = build_function_type_list (long_integer_type_node,
-				    long_integer_type_node, NULL_TREE);
+  ftype = build_function_type_list (dimode_integer_type_node,
+				    dimode_integer_type_node, NULL_TREE);
 
   p = one_arg_builtins;
   for (i = 0; i < ARRAY_SIZE (one_arg_builtins); ++i, ++p)
@@ -6496,9 +6499,9 @@ alpha_init_builtins (void)
       lang_hooks.builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
 				   NULL, attrs[p->is_const]);
 
-  ftype = build_function_type_list (long_integer_type_node,
-				    long_integer_type_node,
-				    long_integer_type_node, NULL_TREE);
+  ftype = build_function_type_list (dimode_integer_type_node,
+				    dimode_integer_type_node,
+				    dimode_integer_type_node, NULL_TREE);
 
   p = two_arg_builtins;
   for (i = 0; i < ARRAY_SIZE (two_arg_builtins); ++i, ++p)
