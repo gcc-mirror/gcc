@@ -5137,11 +5137,12 @@
   "
 )
 
+;; Transform a floating-point move of a constant into a core register into
+;; an SImode operation.
 (define_split
-  [(set (match_operand:SF 0 "nonimmediate_operand" "")
+  [(set (match_operand:SF 0 "arm_general_register_operand" "")
 	(match_operand:SF 1 "immediate_operand" ""))]
   "TARGET_ARM
-   && !(TARGET_HARD_FLOAT && TARGET_FPA)
    && reload_completed
    && GET_CODE (operands[1]) == CONST_DOUBLE"
   [(set (match_dup 2) (match_dup 3))]

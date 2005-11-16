@@ -1,3 +1,9 @@
+2005-11-16  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/24861
+	* arm.md (split for movsf with immediate): Restrict split to insns
+	that set a general register.
+
 2005-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/ia64/unwind-ia64.c (uw_advance_context): New.  Call
