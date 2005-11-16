@@ -1,3 +1,8 @@
+2005-11-16  Eric Botcazou <ebotcazou@adacore.com>
+
+	* config/alpha/alpha.c (alpha_expand_prologue): Fix off-by-one bug
+	in the stack probing loop.
+
 2005-11-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.ac: Use .machine power5 not power5x.
