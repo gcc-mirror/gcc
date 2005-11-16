@@ -113,7 +113,10 @@ public class ObjectInputStream extends InputStream
    * <code>private void readObject (ObjectInputStream)</code>.
    *
    * If an exception is thrown from this method, the stream is left in
-   * an undefined state.
+   * an undefined state. This method can also throw Errors and 
+   * RuntimeExceptions if caused by existing readResolve() user code.
+   * 
+   * @return The object read from the underlying stream.
    *
    * @exception ClassNotFoundException The class that an object being
    * read in belongs to cannot be found.
@@ -199,7 +202,6 @@ public class ObjectInputStream extends InputStream
 	      for (int i = 0; i < n_intf; i++)
 		{
 		  intfs[i] = this.realInputStream.readUTF();
-		  System.out.println(intfs[i]);
 		}
 	      
 	      boolean oldmode = setBlockDataMode(true);
@@ -207,6 +209,21 @@ public class ObjectInputStream extends InputStream
 	      setBlockDataMode(oldmode);
 	      
 	      ObjectStreamClass osc = lookupClass(cl);
+	      if (osc.firstNonSerializableParentConstructor == null)
+		{
+		  osc.realClassIsSerializable = true;
+		  osc.fields = osc.fieldMapping = new ObjectStreamField[0];
+		  try
+		    {
+		      osc.firstNonSerializableParentConstructor =
+		        Object.class.getConstructor(new Class[0]);
+		    }
+		  catch (NoSuchMethodException x)
+		    {
+		      throw (InternalError)
+			new InternalError("Object ctor missing").initCause(x);
+		    }
+		}
 	      assignNewHandle(osc);
 	      
 	      if (!is_consumed)
@@ -1558,8 +1575,15 @@ public class ObjectInputStream extends InputStream
 	catch (IllegalAccessException ignore)
 	  {
 	  }
-	catch (InvocationTargetException ignore)
+	catch (InvocationTargetException exception)
 	  {
+	    Throwable cause = exception.getCause();
+	    if (cause instanceof ObjectStreamException)
+	      throw (ObjectStreamException) cause;
+	    else if (cause instanceof RuntimeException)
+	      throw (RuntimeException) cause;
+	    else if (cause instanceof Error)
+	      throw (Error) cause;
 	  }
       }
 

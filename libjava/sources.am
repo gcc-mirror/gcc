@@ -2748,7 +2748,7 @@ java/io/ObjectInputStream.java \
 classpath/java/io/ObjectInputValidation.java \
 classpath/java/io/ObjectOutput.java \
 classpath/java/io/ObjectOutputStream.java \
-java/io/ObjectStreamClass.java \
+classpath/java/io/ObjectStreamClass.java \
 classpath/java/io/ObjectStreamConstants.java \
 classpath/java/io/ObjectStreamException.java \
 classpath/java/io/ObjectStreamField.java \
