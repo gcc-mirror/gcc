@@ -1,3 +1,7 @@
+2005-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/fold-overflow-1.c: New test.
+
 2005-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.dg/cleanup-5.c, gcc.dg/cleanup-8.c, gcc.dg/cleanup-9.c,

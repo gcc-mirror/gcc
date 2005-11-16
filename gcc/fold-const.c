@@ -1537,6 +1537,16 @@ const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
       inexact = real_arithmetic (&value, code, &d1, &d2);
       real_convert (&result, mode, &value);
 
+      /* Don't constant fold this floating point operation if
+	 the result has overflowed and flag_trapping_math.  */
+
+      if (flag_trapping_math
+	  && MODE_HAS_INFINITIES (mode)
+	  && REAL_VALUE_ISINF (result)
+	  && !REAL_VALUE_ISINF (d1)
+	  && !REAL_VALUE_ISINF (d2))
+	return NULL_TREE;
+
       /* Don't constant fold this floating point operation if the
 	 result may dependent upon the run-time rounding mode and
 	 flag_rounding_math is set, or if GCC's software emulation

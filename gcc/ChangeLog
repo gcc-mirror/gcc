@@ -1,3 +1,9 @@
+2005-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (const_binop): Don't constant fold the operation
+	if the result has overflowed and flag_trapping_math.
+	* simplify-rtx.c (simplify_const_binary_operation): Likewise.
+
 2005-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/unwind-arm.c (abort): Add prototype here.
