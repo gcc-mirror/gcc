@@ -1,3 +1,11 @@
+2005-11-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/eh/forced1.C: Adjust to cope with ARM EABI
+	structures.
+	* g++.dg/eh/forced2.C: Likewise.
+	* g++.dg/eh/forced3.C: Likewise.
+	* g++.dg/eh/forced4.C: Likewise.
+
 2005-11-11  Mike Stump  <mrs@apple.com>
 
 	* g++.old-deja/g++.mike/unused.C: Add.

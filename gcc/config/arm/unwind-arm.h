@@ -1,5 +1,5 @@
 /* Header file for the ARM EABI unwinder
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
@@ -54,28 +54,41 @@ extern "C" {
     {
       _URC_OK = 0,       /* operation completed successfully */
       _URC_FOREIGN_EXCEPTION_CAUGHT = 1,
+      _URC_END_OF_STACK = 5,
       _URC_HANDLER_FOUND = 6,
       _URC_INSTALL_CONTEXT = 7,
       _URC_CONTINUE_UNWIND = 8,
       _URC_FAILURE = 9   /* unspecified failure of some kind */
     }
   _Unwind_Reason_Code;
-  
+
   typedef enum
     {
       _US_VIRTUAL_UNWIND_FRAME = 0,
       _US_UNWIND_FRAME_STARTING = 1,
-      _US_UNWIND_FRAME_RESUME = 2
+      _US_UNWIND_FRAME_RESUME = 2,
+      _US_ACTION_MASK = 3,
+      _US_FORCE_UNWIND = 8,
+      _US_END_OF_STACK = 16
     }
   _Unwind_State;
-  
+
+  /* Provided only for for compatibility with existing code.  */
+  typedef int _Unwind_Action;
+#define _UA_SEARCH_PHASE	1
+#define _UA_CLEANUP_PHASE	2
+#define _UA_HANDLER_FRAME	4
+#define _UA_FORCE_UNWIND	8
+#define _UA_END_OF_STACK	16
+#define _URC_NO_REASON 	_URC_OK
+
   typedef struct _Unwind_Control_Block _Unwind_Control_Block;
   typedef struct _Unwind_Context _Unwind_Context;
   typedef _uw _Unwind_EHT_Header;
-  
-  
+
+
   /* UCB: */
-  
+
   struct _Unwind_Control_Block
     {
       char exception_class[8];
@@ -83,10 +96,10 @@ extern "C" {
       /* Unwinder cache, private fields for the unwinder's use */
       struct
 	{
-	  _uw reserved1;	/* init reserved1 to 0, then don't touch */
-	  _uw reserved2;
-	  _uw reserved3;
-	  _uw reserved4;
+	  _uw reserved1;  /* Forced unwind stop fn, 0 if not forced */
+	  _uw reserved2;  /* Personality routine address */
+	  _uw reserved3;  /* Saved callsite address */
+	  _uw reserved4;  /* Forced unwind stop arg */
 	  _uw reserved5;
 	}
       unwinder_cache;
@@ -114,14 +127,9 @@ extern "C" {
       pr_cache;
       long long int :0;	/* Force alignment to 8-byte boundary */
     };
-  
-  /* Interface functions: */
-  _Unwind_Reason_Code _Unwind_RaiseException(_Unwind_Control_Block *ucbp);
-  void __attribute__((noreturn)) _Unwind_Resume(_Unwind_Control_Block *ucbp);
-  void _Unwind_Complete(_Unwind_Control_Block *ucbp);
 
   /* Virtual Register Set*/
-        
+
   typedef enum
     {
       _UVRSC_CORE = 0,      /* integer register */
@@ -131,7 +139,7 @@ extern "C" {
       _UVRSC_WMMXC = 4      /* Intel WMMX control register */
     }
   _Unwind_VRS_RegClass;
-  
+
   typedef enum
     {
       _UVRSD_UINT32 = 0,
@@ -142,13 +150,13 @@ extern "C" {
       _UVRSD_DOUBLE = 5
     }
   _Unwind_VRS_DataRepresentation;
-  
+
   typedef enum
     {
       _UVRSR_OK = 0,
       _UVRSR_NOT_IMPLEMENTED = 1,
       _UVRSR_FAILED = 2
-    } 
+    }
   _Unwind_VRS_Result;
 
   /* Frame unwinding state.  */
@@ -171,11 +179,11 @@ extern "C" {
   _Unwind_VRS_Result _Unwind_VRS_Set(_Unwind_Context *, _Unwind_VRS_RegClass,
                                      _uw, _Unwind_VRS_DataRepresentation,
                                      void *);
-  
+
   _Unwind_VRS_Result _Unwind_VRS_Get(_Unwind_Context *, _Unwind_VRS_RegClass,
                                      _uw, _Unwind_VRS_DataRepresentation,
                                      void *);
-  
+
   _Unwind_VRS_Result _Unwind_VRS_Pop(_Unwind_Context *, _Unwind_VRS_RegClass,
                                      _uw, _Unwind_VRS_DataRepresentation);
 
@@ -200,6 +208,17 @@ extern "C" {
       abort ();
     }
 
+  /* Interface functions: */
+  _Unwind_Reason_Code _Unwind_RaiseException(_Unwind_Control_Block *ucbp);
+  void __attribute__((noreturn)) _Unwind_Resume(_Unwind_Control_Block *ucbp);
+  _Unwind_Reason_Code _Unwind_Resume_or_Rethrow (_Unwind_Control_Block *ucbp);
+
+  typedef _Unwind_Reason_Code (*_Unwind_Stop_Fn)
+       (int, _Unwind_Action, _Unwind_Exception_Class,
+	_Unwind_Control_Block *, struct _Unwind_Context *, void *);
+  _Unwind_Reason_Code _Unwind_ForcedUnwind (_Unwind_Control_Block *,
+					    _Unwind_Stop_Fn, void *);
+  void _Unwind_Complete(_Unwind_Control_Block *ucbp);
   void _Unwind_DeleteException (_Unwind_Exception *);
 
   _Unwind_Reason_Code __gnu_unwind_frame (_Unwind_Control_Block *,
@@ -253,16 +272,6 @@ extern "C" {
      landing pad uses the same instruction set as the call site.  */
 #define _Unwind_SetIP(context, val) \
   _Unwind_SetGR (context, 15, val | (_Unwind_GetGR (context, 15) & 1))
-
-  /* Provided only for for compatibility with existing code.  */
-  typedef int _Unwind_Action;
-#define _UA_SEARCH_PHASE	1
-#define _UA_CLEANUP_PHASE	2
-#define _UA_HANDLER_FRAME	4
-#define _UA_FORCE_UNWIND	8
-#define _UA_END_OF_STACK	16
-
-#define _URC_NO_REASON _URC_OK
 
 #ifdef __cplusplus
 }   /* extern "C" */

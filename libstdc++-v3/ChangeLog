@@ -1,3 +1,13 @@
+2005-11-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libsupc++/eh_arm.cc (__cxa_begin_cleanup): Remember a
+	foreign exception too.
+	(__gnu_end_cleanup): Recover a foreign exception too.
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Cope
+	with forced unwinding.
+	* libsupc++/eh_throw.cc (__cxxabiv1::__cxa_rethrow): Use
+	_Unwind_Resume_or_Rethrow for ARM EABI.
+
 2005-11-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Don't check for

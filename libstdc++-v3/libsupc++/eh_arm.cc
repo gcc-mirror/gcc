@@ -89,20 +89,31 @@ __cxa_begin_cleanup(_Unwind_Exception* ue_header)
 {
   __cxa_eh_globals *globals = __cxa_get_globals();
   __cxa_exception *header = __get_exception_header_from_ue(ue_header);
+  bool native = __is_gxx_exception_class(header->unwindHeader.exception_class);
 
-  if (!__is_gxx_exception_class(header->unwindHeader.exception_class))
+
+  if (native)
     {
-      // TODO: cleanups with foreign exceptions.
-      return false;
+      header->propagationCount++;
+      // Add it to the chain if this is the first time we've seen this
+      // exception.
+      if (header->propagationCount == 1)
+	{
+	  header->nextPropagatingException = globals->propagatingExceptions;
+	  globals->propagatingExceptions = header;
+	}
     }
-  header->propagationCount++;
-  // Add it to the chain if this is the first time we've seen this exception.
-  if (header->propagationCount == 1)
+  else
     {
-      header->nextPropagatingException = globals->propagatingExceptions;
+      // Remember the exception object, so end_cleanup can return it.
+      // These cannot be stacked, so we must abort if we already have
+      // a propagating exception.
+      if (globals->propagatingExceptions)
+	std::terminate ();
       globals->propagatingExceptions = header;
     }
-  return true;
+
+  return !native;
 }
 
 // Do the work for __cxa_end_cleanup.  Returns the currently propagating
@@ -119,13 +130,19 @@ __gnu_end_cleanup(void)
   if (!header)
     std::terminate();
 
-  header->propagationCount--;
-  if (header->propagationCount == 0)
+  if (__is_gxx_exception_class(header->unwindHeader.exception_class))
     {
-      // Remove exception from chain.
-      globals->propagatingExceptions = header->nextPropagatingException;
-      header->nextPropagatingException = NULL;
+      header->propagationCount--;
+      if (header->propagationCount == 0)
+	{
+	  // Remove exception from chain.
+	  globals->propagatingExceptions = header->nextPropagatingException;
+	  header->nextPropagatingException = NULL;
+	}
     }
+  else
+    globals->propagatingExceptions = NULL;
+
   return &header->unwindHeader;
 }
 

@@ -51,8 +51,10 @@ __gnu_Unwind_Find_exidx (_Unwind_Ptr, int *);
 #define EXIDX_CANTUNWIND 1
 #define uint32_highbit (((_uw) 1) << 31)
 
+#define UCB_FORCED_STOP_FN(ucbp) ((ucbp)->unwinder_cache.reserved1)
 #define UCB_PR_ADDR(ucbp) ((ucbp)->unwinder_cache.reserved2)
 #define UCB_SAVED_CALLSITE_ADDR(ucbp) ((ucbp)->unwinder_cache.reserved3)
+#define UCB_FORCED_STOP_ARG(ucb) ((ucbp)->unwinder_cache.reserved4)
 
 struct core_regs
 {
@@ -356,9 +358,9 @@ search_EIT_table (const __EIT_entry * table, int nrec, _uw return_address)
       n = (left + right) / 2;
       this_fn = selfrel_offset31 (&table[n].fnoffset);
       if (n != nrec - 1)
-	next_fn = selfrel_offset31 (&table[n + 1].fnoffset);
+	next_fn = selfrel_offset31 (&table[n + 1].fnoffset) - 1;
       else
-	next_fn = ~(_uw) 0;
+	next_fn = (_uw)0 - 1;
 
       if (return_address < this_fn)
 	{
@@ -366,7 +368,7 @@ search_EIT_table (const __EIT_entry * table, int nrec, _uw return_address)
 	    return (__EIT_entry *) 0;
 	  right = n - 1;
 	}
-      else if (return_address < next_fn)
+      else if (return_address <= next_fn)
 	return &table[n];
       else
 	left = n + 1;
@@ -419,7 +421,7 @@ get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
   if (eitp->content == EXIDX_CANTUNWIND)
     {
       UCB_PR_ADDR (ucbp) = 0;
-      return _URC_FAILURE;
+      return _URC_END_OF_STACK;
     }
 
   /* Obtain the address of the "real" __EHT_Header word.  */
@@ -472,26 +474,75 @@ unwind_phase2 (_Unwind_Control_Block * ucbp, phase2_vrs * vrs)
 {
   _Unwind_Reason_Code pr_result;
 
-  for(;;)
+  do
     {
       /* Find the entry for this routine.  */
       if (get_eit_entry (ucbp, vrs->core.r[R_PC]) != _URC_OK)
 	abort ();
 
       UCB_SAVED_CALLSITE_ADDR (ucbp) = vrs->core.r[R_PC];
-      
+
       /* Call the pr to decide what to do.  */
       pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_UNWIND_FRAME_STARTING, ucbp, (_Unwind_Context *) vrs);
-
-      if (pr_result != _URC_CONTINUE_UNWIND)
-	break;
     }
+  while (pr_result == _URC_CONTINUE_UNWIND);
   
   if (pr_result != _URC_INSTALL_CONTEXT)
     abort();
   
   restore_core_regs (&vrs->core);
+}
+
+/* Perform phase2 forced unwinding.  */
+
+static _Unwind_Reason_Code
+unwind_phase2_forced (_Unwind_Control_Block *ucbp, phase2_vrs *entry_vrs)
+{
+  _Unwind_Stop_Fn stop_fn = (_Unwind_Stop_Fn) UCB_FORCED_STOP_FN (ucbp);
+  void *stop_arg = (void *)UCB_FORCED_STOP_ARG (ucbp);
+  _Unwind_Reason_Code pr_result;
+
+  /* Unwind until we reach a propagation barrier.  */
+  do
+    {
+      _Unwind_State action;
+      _Unwind_Reason_Code entry_code;
+      _Unwind_Reason_Code stop_code;
+
+      /* Find the entry for this routine.  */
+      entry_code = get_eit_entry (ucbp, entry_vrs->core.r[R_PC]);
+
+      action = _US_UNWIND_FRAME_STARTING | _US_FORCE_UNWIND;
+      if (entry_code == _URC_END_OF_STACK)
+	action |= _US_END_OF_STACK;
+      else if (entry_code != _URC_OK)
+	return _URC_FAILURE;
+
+      stop_code = stop_fn (1, action, ucbp->exception_class, ucbp,
+			   (void *)entry_vrs, stop_arg);
+      if (stop_code != _URC_NO_REASON)
+	return _URC_FAILURE;
+
+      if (entry_code == _URC_END_OF_STACK)
+	return entry_code;
+
+      UCB_SAVED_CALLSITE_ADDR (ucbp) = entry_vrs->core.r[R_PC];
+
+      /* Call the pr to decide what to do.  */
+      pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
+	(action, ucbp, (void *) entry_vrs);
+    }
+  while (pr_result == _URC_CONTINUE_UNWIND);
+
+  if (pr_result != _URC_INSTALL_CONTEXT)
+    {
+      /* Some sort of failure has occurred in the pr and probably the
+	 pr returned _URC_FAILURE.  */
+      return _URC_FAILURE;
+    }
+
+  restore_core_regs (&entry_vrs->core);
 }
 
 /* Perform phase1 unwinding.  UCBP is the exception being thrown, and
@@ -516,7 +567,7 @@ __gnu_Unwind_RaiseException (_Unwind_Control_Block * ucbp,
   saved_vrs.demand_save_flags = ~(_uw) 0;
   
   /* Unwind until we reach a propagation barrier.  */
-  for (;;)
+  do
     {
       /* Find the entry for this routine.  */
       if (get_eit_entry (ucbp, saved_vrs.core.r[R_PC]) != _URC_OK)
@@ -525,10 +576,8 @@ __gnu_Unwind_RaiseException (_Unwind_Control_Block * ucbp,
       /* Call the pr to decide what to do.  */
       pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
 	(_US_VIRTUAL_UNWIND_FRAME, ucbp, (void *) &saved_vrs);
-
-      if (pr_result != _URC_CONTINUE_UNWIND)
-	break;
     }
+  while (pr_result == _URC_CONTINUE_UNWIND);
 
   /* We've unwound as far as we want to go, so restore the original
      register state.  */
@@ -547,19 +596,42 @@ __gnu_Unwind_RaiseException (_Unwind_Control_Block * ucbp,
    being thrown and ENTRY_VRS is the register state on entry to
    _Unwind_Resume.  */
 _Unwind_Reason_Code
+__gnu_Unwind_ForcedUnwind (_Unwind_Control_Block *,
+			   _Unwind_Stop_Fn, void *, phase2_vrs *);
+
+_Unwind_Reason_Code
+__gnu_Unwind_ForcedUnwind (_Unwind_Control_Block *ucbp,
+			   _Unwind_Stop_Fn stop_fn, void *stop_arg,
+			   phase2_vrs *entry_vrs)
+{
+  UCB_FORCED_STOP_FN (ucbp) = (_uw) stop_fn;
+  UCB_FORCED_STOP_ARG (ucbp) = (_uw) stop_arg;
+
+  /* Set the pc to the call site.  */
+  entry_vrs->core.r[R_PC] = entry_vrs->core.r[R_LR];
+
+  return unwind_phase2_forced (ucbp, entry_vrs);
+}
+
+_Unwind_Reason_Code
 __gnu_Unwind_Resume (_Unwind_Control_Block *, phase2_vrs *);
 
 _Unwind_Reason_Code
 __gnu_Unwind_Resume (_Unwind_Control_Block * ucbp, phase2_vrs * entry_vrs)
 {
   _Unwind_Reason_Code pr_result;
+  _Unwind_State action;
 
   /* Recover the saved address.  */
   entry_vrs->core.r[R_PC] = UCB_SAVED_CALLSITE_ADDR (ucbp);
-  
+
   /* Call the cached PR.  */
+  action = _US_UNWIND_FRAME_RESUME;
+  if (UCB_FORCED_STOP_FN (ucbp))
+    action |= _US_FORCE_UNWIND;
+
   pr_result = ((personality_routine) UCB_PR_ADDR (ucbp))
-	(_US_UNWIND_FRAME_RESUME, ucbp, (_Unwind_Context *) entry_vrs);
+	(action, ucbp, (_Unwind_Context *) entry_vrs);
 
   switch (pr_result)
     {
@@ -569,11 +641,30 @@ __gnu_Unwind_Resume (_Unwind_Control_Block * ucbp, phase2_vrs * entry_vrs)
 
     case _URC_CONTINUE_UNWIND:
       /* Continue unwinding the next frame.  */
-      unwind_phase2 (ucbp, entry_vrs);
+      if (UCB_FORCED_STOP_FN (ucbp))
+	return unwind_phase2_forced (ucbp, entry_vrs);
+      else
+	unwind_phase2 (ucbp, entry_vrs);
 
     default:
       abort ();
     }
+}
+
+_Unwind_Reason_Code
+__gnu_Unwind_Resume_or_Rethrow (_Unwind_Control_Block *, phase2_vrs *);
+
+_Unwind_Reason_Code
+__gnu_Unwind_Resume_or_Rethrow (_Unwind_Control_Block * ucbp,
+				phase2_vrs * entry_vrs)
+{
+  if (!UCB_FORCED_STOP_FN (ucbp))
+    return __gnu_Unwind_RaiseException (ucbp, entry_vrs);
+
+  /* Set the pc to the call site.  */
+  entry_vrs->core.r[R_PC] = entry_vrs->core.r[R_LR];
+  /* Continue unwinding the next frame.  */
+  return unwind_phase2_forced (ucbp, entry_vrs);
 }
 
 /* Clean up an exception object when unwinding is complete.  */
@@ -619,6 +710,9 @@ __gnu_unwind_pr_common (_Unwind_State state,
   _uw rtti_count;
   int phase2_call_unexpected_after_unwind = 0;
   int in_range = 0;
+  int forced_unwind = state & _US_FORCE_UNWIND;
+
+  state &= _US_ACTION_MASK;
 
   data = (_uw *) ucbp->pr_cache.ehtp;
   uws.data = *(data++);
@@ -748,9 +842,9 @@ __gnu_unwind_pr_common (_Unwind_State state,
 	      /* Exception specification.  */
 	      if (state == _US_VIRTUAL_UNWIND_FRAME)
 		{
-		  if (in_range)
+		  if (in_range && (!forced_unwind || !rtti_count))
 		    {
-		      /* Match against teh exception specification.  */
+		      /* Match against the exception specification.  */
 		      _uw i;
 		      _uw rtti;
 		      void *matched;

@@ -1,3 +1,28 @@
+2005-11-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/arm/unwind-arm.h: Reorder interface function declarations.
+	(_URC_END_OF_STACK): New enumeration value.
+	(_US_UNWIND_ACTION_MASK, _US_FORCE_UNWIND, _US_END_OF_STACK): Likewise.
+	(struct _Unwind_Control_Block): Document reserved field use.
+	(_Unwind_Stop_Fn): New typedef.
+	(_Unwind_ForcedUnwind): Declare.
+	(_Unwind_Resume_or_Rethrow): Declare.
+	* gcc/config/arm/libunwind.S (UNWIND_WRAPER): Add nargs
+	argument.  Adjust.
+	(_Unwind_Resume_or_Rethrow, _Unwind_ForcedUnwind): New.
+	* config/arm/unwind-arm.c (UCB_FORCED_STOP_FN)
+	(UCB_FORCED_STOP_ARG): New.
+	(search_EIT_table): Update boundary condition checks.
+	(get_eit_entry): Return _URC_END_OF_STACK when cannot unwind.
+	(unwind_phase2): Replace for with do..while.
+	(unwind_phase2_forced): New.
+	(__gnu_Unwind_RaiseException): Replace for with do..while.
+	(__gnu_Unwind_ForcedUnwind): New.
+	(__gnu_Unwind_Resume): Set FORCE_UNWIND flag, if forced unwinding.
+	Use appropriate phase2 unwinder.
+	(__gnu_Unwind_Resume_or_Rethrow): New.
+	(__gnu_unwind_pr_common): Cope with forced unwinding.
+
 2005-11-16  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/24772
