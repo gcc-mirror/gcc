@@ -153,7 +153,7 @@ namelist_info;
 /* Options for the OPEN statement.  */
 
 typedef enum
-{ ACCESS_SEQUENTIAL, ACCESS_DIRECT,
+{ ACCESS_SEQUENTIAL, ACCESS_DIRECT, ACCESS_APPEND,
   ACCESS_UNSPECIFIED
 }
 unit_access;

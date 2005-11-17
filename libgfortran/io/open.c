@@ -39,6 +39,7 @@ Boston, MA 02110-1301, USA.  */
 static const st_option access_opt[] = {
   {"sequential", ACCESS_SEQUENTIAL},
   {"direct", ACCESS_DIRECT},
+  {"append", ACCESS_APPEND},
   {NULL, 0}
 };
 
@@ -485,6 +486,19 @@ st_open (void)
       && flags.access == ACCESS_DIRECT)
     generate_error (ERROR_BAD_OPTION,
 		    "Cannot use POSITION with direct access files");
+
+  if (flags.access == ACCESS_APPEND)
+    {
+      if (flags.position != POSITION_UNSPECIFIED
+	  && flags.position != POSITION_APPEND)
+	generate_error (ERROR_BAD_OPTION, "Conflicting ACCESS and POSITION "
+			"flags in OPEN statement");
+	
+      notify_std (GFC_STD_GNU,
+		  "Extension: APPEND as a value for ACCESS in OPEN statement");
+      flags.access = ACCESS_SEQUENTIAL;
+      flags.position = POSITION_APPEND;
+    }
 
   if (flags.position == POSITION_UNSPECIFIED)
     flags.position = POSITION_ASIS;
