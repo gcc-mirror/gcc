@@ -1,3 +1,8 @@
+2005-11-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/24851
+	* gcc.c-torture/execute/pr24851.c: New testcase.
+
 2005-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/fold-overflow-1.c: New test.

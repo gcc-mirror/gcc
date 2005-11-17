@@ -5537,7 +5537,8 @@ constant_boolean_node (int value, tree type)
    offset to the appropriate trees.  If there is no offset,
    offset is set to NULL_TREE.  Base will be canonicalized to
    something you can get the element type from using
-   TREE_TYPE (TREE_TYPE (base)).  */
+   TREE_TYPE (TREE_TYPE (base)).  Offset will be the offset
+   in bytes to the base.  */
 
 static bool
 extract_array_ref (tree expr, tree *base, tree *offset)
@@ -5573,8 +5574,10 @@ extract_array_ref (tree expr, tree *base, tree *offset)
       tree op0 = TREE_OPERAND (expr, 0);
       if (TREE_CODE (op0) == ARRAY_REF)
 	{
+	  tree idx = TREE_OPERAND (op0, 1);
 	  *base = TREE_OPERAND (op0, 0);
-	  *offset = TREE_OPERAND (op0, 1);
+	  *offset = fold_build2 (MULT_EXPR, TREE_TYPE (idx), idx,
+				 array_ref_element_size (op0)); 
 	}
       else
 	{
@@ -8888,25 +8891,21 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && extract_array_ref (arg1, &base1, &offset1)
 	      && operand_equal_p (base0, base1, 0))
 	    {
-	      if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (base0)))
-		  && integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_TYPE (base0)))))
-		offset0 = NULL_TREE;
-	      if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (base1)))
-		  && integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_TYPE (base1)))))
-		offset1 = NULL_TREE;
+	      /* Handle no offsets on both sides specially.  */
 	      if (offset0 == NULL_TREE
 		  && offset1 == NULL_TREE)
-		{
-		  offset0 = integer_zero_node;
-		  offset1 = integer_zero_node;
-		}
-	      else if (offset0 == NULL_TREE)
-		offset0 = build_int_cst (TREE_TYPE (offset1), 0);
-	      else if (offset1 == NULL_TREE)
-		offset1 = build_int_cst (TREE_TYPE (offset0), 0);
+		return fold_build2 (code, type, integer_zero_node,
+				    integer_zero_node);
 
-	      if (TREE_TYPE (offset0) == TREE_TYPE (offset1))
-		return fold_build2 (code, type, offset0, offset1);
+	      if (!offset0 || !offset1
+		  || TREE_TYPE (offset0) == TREE_TYPE (offset1))
+		{
+		  if (offset0 == NULL_TREE)
+		    offset0 = build_int_cst (TREE_TYPE (offset1), 0);
+		  if (offset1 == NULL_TREE)
+		    offset1 = build_int_cst (TREE_TYPE (offset0), 0);
+		  return fold_build2 (code, type, offset0, offset1);
+		}
 	    }
 	}
 
