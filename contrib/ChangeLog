@@ -1,3 +1,8 @@
+2005-11-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	Backport from mainline:
+	* gcc_update: When svn update is called and --silent is used, pass -q.
+
 2005-11-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc_update: Include revision number in LAST_UPDATED.
