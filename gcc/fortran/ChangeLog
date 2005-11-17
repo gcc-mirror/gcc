@@ -1,3 +1,17 @@
+2005-11-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/20811
+	* scanner.c (gfc_open_included_file): Add an extra include_cwd
+	argument. Only include files in the current working directory if
+	its value is true.
+	* gfortran.h: Change prototype for gfc_open_included_file.
+	(load_file): Don't search for include files in the current working
+	directory.
+	* options.c (gfc_post_options): Add the directory of the source file
+	to the list of paths for included files.
+	* module.c (gfc_use_module): Look for module files in the current
+	directory.
+
 2005-11-16  Alan Modra  <amodra@bigpond.net.au>
 
 	PR fortran/24096

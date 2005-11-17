@@ -172,6 +172,8 @@ bool
 gfc_post_options (const char **pfilename)
 {
   const char *filename = *pfilename;
+  char *source_path;
+  int i;
 
   /* Verify the input file name.  */
   if (!filename || strcmp (filename, "-") == 0)
@@ -180,6 +182,21 @@ gfc_post_options (const char **pfilename)
     }
 
   gfc_source_file = filename;
+
+  /* Adds the path where the source file is to the list of include files.  */
+
+  i = strlen(gfc_source_file);
+  while (i > 0 && !IS_DIR_SEPARATOR(gfc_source_file[i]))
+    i--;
+  if (i != 0)
+    {
+      source_path = alloca (i + 1);
+      memcpy (source_path, gfc_source_file, i);
+      source_path[i] = 0;
+      gfc_add_include_path (source_path);
+    }
+  else
+    gfc_add_include_path (".");
 
   /* Decide which form the file will be read in as.  */
 
