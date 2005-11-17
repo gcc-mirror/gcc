@@ -233,6 +233,9 @@ namespace gcj
   
   /* When true, enable the bytecode verifier and BC-ABI verification. */
   extern bool verifyClasses;
+
+  /* Thread stack size specified by the -Xss runtime argument. */
+  extern size_t stack_size;
 }
 
 // This class handles all aspects of class preparation and linking.
@@ -362,6 +365,10 @@ void _Jv_SetMaximumHeapSize (const char *arg);
 /* Free the method cache, if one was allocated.  This is only called
    during thread deregistration.  */
 void _Jv_FreeMethodCache ();
+
+/* Set the stack size for threads.  Parses ARG, a number which can 
+   optionally have "k" or "m" appended.  */
+void _Jv_SetStackSize (const char *arg);
 
 extern "C" void JvRunMain (jclass klass, int argc, const char **argv);
 void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, 

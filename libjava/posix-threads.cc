@@ -311,6 +311,19 @@ _Jv_InitThreads (void)
   // Block SIGCHLD here to ensure that any non-Java threads inherit the new 
   // signal mask.
   block_sigchld();
+
+  // Check/set the thread stack size.
+  size_t min_ss = 32 * 1024;
+  
+  if (sizeof (void *) == 8)
+    // Bigger default on 64-bit systems.
+    min_ss *= 2;
+
+  if (min_ss < PTHREAD_STACK_MIN)
+    min_ss = PTHREAD_STACK_MIN;
+  
+  if (gcj::stack_size > 0 && gcj::stack_size < min_ss)
+    gcj::stack_size = min_ss;
 }
 
 _Jv_Thread_t *
@@ -430,6 +443,14 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
   pthread_attr_init (&attr);
   pthread_attr_setschedparam (&attr, &param);
   pthread_attr_setdetachstate (&attr, PTHREAD_CREATE_DETACHED);
+  
+  // Set stack size if -Xss option was given.
+  if (gcj::stack_size > 0)
+    {
+      int e = pthread_attr_setstacksize (&attr, gcj::stack_size);
+      if (e != 0)
+	JvFail (strerror (e));
+    }
 
   info = (struct starter *) _Jv_AllocBytes (sizeof (struct starter));
   info->method = meth;
