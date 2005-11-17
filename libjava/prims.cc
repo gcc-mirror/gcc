@@ -926,6 +926,9 @@ namespace gcj
   
   // When true, enable the bytecode verifier and BC-ABI type verification. 
   bool verifyClasses = true;
+
+  // Thread stack size specified by the -Xss runtime argument.
+  size_t stack_size = 0;
 }
 
 // We accept all non-standard options accepted by Sun's java command,
@@ -1012,7 +1015,7 @@ parse_x_arg (char* option_string)
     }
   else if (! strncmp (option_string, "ss", 2))
     {
-      // FIXME: set thread stack size
+      _Jv_SetStackSize (option_string + 2);
     }
   else if (! strcmp (option_string, "X:+UseAltSigs"))
     {
@@ -1374,7 +1377,7 @@ JvRunMain (jclass klass, int argc, const char **argv)
 
 // Parse a string and return a heap size.
 static size_t
-parse_heap_size (const char *spec)
+parse_memory_size (const char *spec)
 {
   char *end;
   unsigned long val = strtoul (spec, &end, 10);
@@ -1390,7 +1393,7 @@ parse_heap_size (const char *spec)
 void
 _Jv_SetInitialHeapSize (const char *arg)
 {
-  size_t size = parse_heap_size (arg);
+  size_t size = parse_memory_size (arg);
   _Jv_GCSetInitialHeapSize (size);
 }
 
@@ -1399,11 +1402,16 @@ _Jv_SetInitialHeapSize (const char *arg)
 void
 _Jv_SetMaximumHeapSize (const char *arg)
 {
-  size_t size = parse_heap_size (arg);
+  size_t size = parse_memory_size (arg);
   _Jv_GCSetMaximumHeapSize (size);
 }
 
-
+void
+_Jv_SetStackSize (const char *arg)
+{
+  size_t size = parse_memory_size (arg);
+  gcj::stack_size = size;
+}
 
 void *
 _Jv_Malloc (jsize size)
