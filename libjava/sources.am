@@ -976,9 +976,9 @@ gnu/java/net.list: $(gnu_java_net_source_files)
 
 gnu_java_net_protocol_file_source_files = \
 gnu/java/net/protocol/file/Connection.java \
-gnu/java/net/protocol/file/Handler.java
+classpath/gnu/java/net/protocol/file/Handler.java
 
-gnu_java_net_protocol_file_header_files = $(patsubst %.java,%.h,$(gnu_java_net_protocol_file_source_files))
+gnu_java_net_protocol_file_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_file_source_files)))
 
 gnu/java/net/protocol/file.list: $(gnu_java_net_protocol_file_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -3009,7 +3009,7 @@ classpath/java/net/NoRouteToHostException.java \
 classpath/java/net/PasswordAuthentication.java \
 classpath/java/net/PortUnreachableException.java \
 classpath/java/net/ProtocolException.java \
-java/net/ServerSocket.java \
+classpath/java/net/ServerSocket.java \
 classpath/java/net/Socket.java \
 classpath/java/net/SocketAddress.java \
 classpath/java/net/SocketException.java \
