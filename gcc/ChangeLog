@@ -1,3 +1,11 @@
+2005-11-17  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/elf.h (STARTFILE_SPEC): Add "crtlibid%O%s"
+	* config/bfin/uclinux.h (STARFILE_SPEC): Likewise.
+	* config/bfin/t-bfin-elf (EXTRA_PARTS, EXTRA_MULTILIB_PARTS): Add
+	crtlibid.o.
+	($(T)crtlibid.o): New rule.
+
 2005-11-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/24851
