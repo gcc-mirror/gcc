@@ -1,3 +1,15 @@
+2005-11-17  Bryce McKinlay  <mckinlay@redhat.com>
+
+	Implement -Xss.
+	* include/jvm.h (gcj::stack_size): Declare.
+	(_Jv_StackSize): Declare.
+	* posix-threads.cc (_Jv_InitThreads): Validate gcj::stack_size.
+	(_Jv_ThreadStart): Set stack size if specified.
+	* prims.cc (gcj::stack_size): Define.
+	(parse_memory_size): Renamed from parse_heap_size.
+	(_Jv_SetStackSize): Parse stack size argument and set 
+	gcj::stack_size.
+
 2005-11-17  Mark Wielaard  <mark@klomp.org>
 
 	* java/text/SimpleDateFormat.java: Removed, fully merged now.
