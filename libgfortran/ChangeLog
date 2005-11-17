@@ -1,3 +1,10 @@
+2005-11-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/24892
+	* io/io.h (unit_access): Add ACCESS_APPEND.
+	* io/open.c (access_opt): Add APPEND value for ACCESS keyword.
+	(st_open): Use that new value to set the POSITION accordingly.
+
 2005-11-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR fortran/21468
