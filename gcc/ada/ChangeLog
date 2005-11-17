@@ -1,3 +1,11 @@
+2005-11-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	PR ada/22333
+	* trans.c (gnat_gimplify_expr, case ADDR_EXPR): Always make
+	a temporary if taking the address of something that is neither
+	reference, declaration, or constant, since the gimplifier
+	can't handle that case.
+
 2005-11-17  Laurent GUERBY  <laurent@guerby.net>
 
 	PR ada/24857

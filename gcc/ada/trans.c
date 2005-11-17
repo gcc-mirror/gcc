@@ -4570,6 +4570,7 @@ int
 gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 {
   tree expr = *expr_p;
+  tree op;
 
   if (IS_ADA_STMT (expr))
     return gnat_gimplify_stmt (expr_p);
@@ -4600,25 +4601,50 @@ gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
       return GS_OK;
 
     case ADDR_EXPR:
+      op = TREE_OPERAND (expr, 0);
+
       /* If we're taking the address of a constant CONSTRUCTOR, force it to
 	 be put into static memory.  We know it's going to be readonly given
 	 the semantics we have and it's required to be static memory in
-	 the case when the reference is in an elaboration procedure.  */
-      if (TREE_CODE (TREE_OPERAND (expr, 0)) == CONSTRUCTOR
-	  && TREE_CONSTANT (TREE_OPERAND (expr, 0)))
+	 the case when the reference is in an elaboration procedure.   */
+      if (TREE_CODE (op) == CONSTRUCTOR && TREE_CONSTANT (op))
 	{
-	  tree new_var
-	    = create_tmp_var (TREE_TYPE (TREE_OPERAND (expr, 0)), "C");
+	  tree new_var = create_tmp_var (TREE_TYPE (op), "C");
 
 	  TREE_READONLY (new_var) = 1;
 	  TREE_STATIC (new_var) = 1;
 	  TREE_ADDRESSABLE (new_var) = 1;
-	  DECL_INITIAL (new_var) = TREE_OPERAND (expr, 0);
+	  DECL_INITIAL (new_var) = op;
 
 	  TREE_OPERAND (expr, 0) = new_var;
 	  recompute_tree_invarant_for_addr_expr (expr);
 	  return GS_ALL_DONE;
 	}
+
+      /* Otherwise, if we are taking the address of something that is neither
+	 reference, declaration, or constant, make a variable for the operand
+	 here and then take its address.  If we don't do it this way, we may
+	 confuse the gimplifier because it needs to know the variable is
+	 addressable at this point.  This duplicates code in
+	 internal_get_tmp_var, which is unfortunate.  */
+      else if (TREE_CODE_CLASS (TREE_CODE (op)) != tcc_reference
+	       && TREE_CODE_CLASS (TREE_CODE (op)) != tcc_declaration
+	       && TREE_CODE_CLASS (TREE_CODE (op)) != tcc_constant)
+	{
+	  tree new_var = create_tmp_var (TREE_TYPE (op), "A");
+	  tree mod = build (MODIFY_EXPR, TREE_TYPE (op), new_var, op);
+
+	  TREE_ADDRESSABLE (new_var) = 1;
+
+	  if (EXPR_HAS_LOCATION (op))
+	    SET_EXPR_LOCUS (mod, EXPR_LOCUS (op));
+
+	  gimplify_and_add (mod, pre_p);
+	  TREE_OPERAND (expr, 0) = new_var;
+	  recompute_tree_invarant_for_addr_expr (expr);
+	  return GS_ALL_DONE;
+	}
+
       return GS_UNHANDLED;
 
     case COMPONENT_REF:
