@@ -3217,7 +3217,7 @@ classpath/java/text/NumberFormat.java \
 classpath/java/text/ParseException.java \
 classpath/java/text/ParsePosition.java \
 classpath/java/text/RuleBasedCollator.java \
-java/text/SimpleDateFormat.java \
+classpath/java/text/SimpleDateFormat.java \
 classpath/java/text/StringCharacterIterator.java
 
 java_text_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_text_source_files)))

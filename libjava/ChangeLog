@@ -1,3 +1,50 @@
+2005-11-17  Mark Wielaard  <mark@klomp.org>
+
+	* java/text/SimpleDateFormat.java: Removed, fully merged now.
+	* sources.am: Regenerated.
+	* Makefile.in: Regenerated.
+
+2005-11-17  Sven de Marothy  <sven@physto.se>
+
+	* java/text/SimpleDateFormat.java
+	(computeOffset): Allow timezone to be first in the parsed String.
+
+2005-11-17  Mark Wielaard  <mark@klomp.org>
+
+	* java/text/SimpleDateFormat.java (field, size): Make package private.
+
+2005-11-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/SimpleDateFormat.java (compileFormat): Correctly
+	handle quoted single quotes.  PR classspath/23183.
+
+2005-11-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/SimpleDateFormat.java (compileFormat): Reformatted.
+
+2005-11-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/DateFormat.java (serialVersionUID): New field.
+
+2005-11-17  Mark Wielaard  <mark@klomp.org>
+
+	* java/text/DateFormat.java (equals): Reimplement.
+
+2005-11-17  David Gilbert  <david.gilbert@object-refinery.com>
+
+	* java/text/Collator.java: API doc fixes,
+	* java/text/DateFormat.java: likewise,
+	* java/text/DecimalFormatSymbols.java: likewise,
+	* java/text/DateFormatSymbols.java: likewise,
+	* java/text/SimpleDateFormat.java: likewise.
+
+2005-11-17  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/text/Collator.java (getInstance(Locale)):
+	Added default collation pattern to handle case when resource
+	is missing and throw InternalError instead of returning null
+	should parsing fail.
+
 2005-11-15  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/zip/ZipEntry.java: Removed, fully merged now.
