@@ -1,3 +1,12 @@
+2005-11-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/24851
+	* fold-const.c (extract_array_ref): Return byte offset
+	in all cases.
+	(fold_binary): Fold &x[a] CMP &x[b] to
+	a*sizeof(*x) CMP b*sizeof(*x) to get correct overflow
+	behavior.
+
 2005-11-16  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/23497
