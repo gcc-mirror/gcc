@@ -3,7 +3,7 @@
 LIB1ASMSRC = bfin/lib1funcs.asm
 LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3
 
-EXTRA_PARTS = crtbegin.o crtend.o crti.o crtn.o
+EXTRA_PARTS = crtbegin.o crtend.o crti.o crtn.o crtlibid.o
 
 FPBIT = fp-bit.c
 DPBIT = dp-bit.c
@@ -33,4 +33,9 @@ $(T)crtn.o: $(srcdir)/config/bfin/crtn.s $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
 	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/bfin/crtn.s
 
-EXTRA_MULTILIB_PARTS= crtbegin.o crtend.o crti.o crtn.o
+$(T)crtlibid.o: $(srcdir)/config/bfin/crtlibid.s $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	-c -o $(T)crtlibid.o -x assembler-with-cpp \
+	$(srcdir)/config/bfin/crtlibid.s
+
+EXTRA_MULTILIB_PARTS= crtbegin.o crtend.o crti.o crtn.o crtlibid.o
