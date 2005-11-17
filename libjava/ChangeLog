@@ -1,3 +1,79 @@
+2005-11-17  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/net/protocol/file/Handler.java: Removed, fully merged now.
+	* java/net/ServerSocket.java: Likewise.
+	* sources.am: Regenerated.
+	* Makefile.in: Regenerated.
+
+2005-11-17  Mark Wielaard  <mark@klomp.org>
+
+	Fixes bug #24006
+	* java/net/ServerSocket.java (implAccept): Set Socket.bound to true.
+
+2005-11-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/ServerSocket.java (accept): Use correct security manager
+	call.
+
+2005-11-17  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/net/ServerSocket.java
+	(bound): Removed.
+	(local): New field.
+	(bind): Cache local socket address.
+	(getInetAddress, getLocalPort, getLocalSocketAddress, isBound):
+	Use cached local socket address.
+	(close): bound field was removed.
+
+2005-11-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/URLConnection.java (setDoInput): Javadoc fix.
+	(setDoOutput): Likewise.
+	(setContentHandlerFactory): Likewise.
+	(setFileNameMap): Likewise.
+
+2005-11-17  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/URLClassloader.java (addURLs): Add comment about jboss.
+
+2005-11-17  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/URLClassLoader.java (addURLs): Don't call addURL(), but
+	call urls.add() and addURLImpl() directly on each URL.
+
+2005-11-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/URLClassLoader.java (definePackage): Javadoc fixes.
+
+2005-11-17  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/net/URLClassLoader.java
+	(Resource.name): Removed field.
+	(JarURLResource.name): Added field.
+	(FileResource.getURL): Use File.toURL() instead of doing it in
+	a way that breaks on Windows.
+
+2005-11-17  Roman Kennke  <roman@kennke.org>
+
+	Reported by: Ingo Proetel  <proetel@aicas.com>
+	* java/net/URLClassLoader.java
+	(findClass): Added null check to avoid NullPointerException.
+
+2005-11-17  David Gilbert  <david.gilbert@object-refinery.com>
+
+	* java/net/URLClassLoader.java: reordered some API doc comments to
+	suppress Eclipse warnings, and fixed API doc link.
+
+2005-11-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/URLClassLoader.java (URLClassLoader): Removed
+	unused constructor.
+
+2005-11-17  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/net/URLClassLoader (findClass): Close InputStream after we're
+	done with it.
+
 2005-11-17  Bryce McKinlay  <mckinlay@redhat.com>
 
 	Implement -Xss.
