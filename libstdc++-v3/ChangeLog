@@ -1,3 +1,15 @@
+2005-11-17  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/os/bsd/darwin/ppc-extra.ver: New.
+	* src/Makefile.am (libstdc++-symbol.ver): Move outside conditionals,
+	and make dependent on port symbol files.
+	(libstdc++-symbol.explist): Use the generated .ver file, not
+	the template.
+	* src/compatibility.cc [APPLE] (__eprintf): New.
+	* src/Makefile.in: Regenerate.
+	* configure.host (powerpc*-*-darwin*): Define
+	port_specific_symbol_files.
+
 2005-11-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* libsupc++/eh_arm.cc (__cxa_begin_cleanup): Remember a
