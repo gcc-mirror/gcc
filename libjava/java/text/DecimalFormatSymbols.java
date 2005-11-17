@@ -122,7 +122,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
    * This method initializes a new instance of
    * <code>DecimalFormatSymbols</code> for the specified locale.
    *
-   * @param locale The local to load symbols for.
+   * @param loc The local to load symbols for.
    */
   public DecimalFormatSymbols (Locale loc)
   {
@@ -380,7 +380,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
   /**
    * This method sets the currency symbol to the specified value.
    *
-   * @param currencySymbol The new currency symbol
+   * @param currency The new currency symbol
    */
   public void setCurrencySymbol (String currency)
   {
@@ -390,7 +390,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
   /**
    * This method sets the decimal point character to the specified value.
    *
-   * @param decimalSeparator The new decimal point character
+   * @param decimalSep The new decimal point character
    */
   public void setDecimalSeparator (char decimalSep)
   {
@@ -417,7 +417,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
   /**
    * This method sets the character used to separate groups of digits.
    *
-   * @param groupingSeparator The character used to separate groups of digits.
+   * @param groupSep The character used to separate groups of digits.
    */
   public void setGroupingSeparator (char groupSep)
   {
@@ -459,8 +459,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
    * This method sets the character used for the decimal point in currency
    * values.
    *
-   * @param monetarySeparator The decimal point character used in
-   *                          currency values. 
+   * @param decimalSep The decimal point character used in currency values. 
    */
   public void setMonetaryDecimalSeparator (char decimalSep)
   {
@@ -471,7 +470,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
    * This method sets the string used to represent the NaN (not a
    * number) value. 
    *
-   * @param NaN The string used to represent NaN
+   * @param nan The string used to represent NaN
    */
   public void setNaN (String nan)
   {
@@ -482,7 +481,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
    * This method sets the character used to separate positive and negative
    * subpatterns in a format pattern.
    *
-   * @param patternSeparator The character used to separate positive and
+   * @param patternSep The character used to separate positive and
    * negative subpatterns in a format pattern.
    */
   public void setPatternSeparator (char patternSep)

@@ -266,7 +266,7 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    * This is a two element <code>String</code> array indexed by
    * <code>Calendar.AM</code> and <code>Calendar.PM</code>
    *
-   * @param ampms The new list of AM/PM display strings.
+   * @param value The new list of AM/PM display strings.
    */
   public void setAmPmStrings (String[] value)
   {
@@ -279,11 +279,11 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    * This is a two element <code>String</code>
    * array indexed by <code>Calendar.BC</code> and <code>Calendar.AD</code>.
    *
-   * @param eras The new list of era disply strings.
+   * @param labels The new list of era display strings.
    */
-  public void setEras (String[] value)
+  public void setEras (String[] labels)
   {
-    eras = value;
+    eras = labels;
   }
 
   /**
@@ -317,11 +317,11 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     * <li>17 - time zone (z)</li>
     * </ul>
     *
-    * @param localPatternChars The new format patter characters
+    * @param chars The new format pattern characters
     */
-  public void setLocalPatternChars (String value)
+  public void setLocalPatternChars (String chars)
   {
-    localPatternChars = value;
+    localPatternChars = chars;
   }
 
   /**
@@ -331,11 +331,11 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
     * <code>Calendar.UNDECEMBER</code>.  Note that there are thirteen
     * elements because some calendars have thriteen months.
     *
-    * @param months The list of month display strings.
+    * @param labels The list of month display strings.
     */
-  public void setMonths (String[] value)
+  public void setMonths (String[] labels)
   {
-    months = value;
+    months = labels;
   }
 
   /**
@@ -346,11 +346,11 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    * through <code>Calendar.UNDECEMBER</code>.  Note that there are thirteen
    * elements because some calendars have thirteen months.
    *
-   * @param shortMonths The new list of abbreviated month display strings.
+   * @param labels The new list of abbreviated month display strings.
    */
-  public void setShortMonths (String[] value)
+  public void setShortMonths (String[] labels)
   {
-    shortMonths = value;
+    shortMonths = labels;
   }
 
   /**
@@ -361,11 +361,11 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    * through <code>Calendar.SATURDAY</code>.  Note that the first element
    * of this array is ignored.
    *
-   * @param shortWeekdays This list of abbreviated weekday display strings.
+   * @param labels This list of abbreviated weekday display strings.
    */
-  public void setShortWeekdays (String[] value)
+  public void setShortWeekdays (String[] labels)
   {
-    shortWeekdays = value;
+    shortWeekdays = labels;
   }
 
   /**
@@ -375,11 +375,11 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    * through <code>Calendar.SATURDAY</code>.  Note that the first element
    * of this array is ignored.
    *
-   * @param weekdays This list of weekday display strings.
+   * @param labels This list of weekday display strings.
    */
-  public void setWeekdays (String[] value)
+  public void setWeekdays (String[] labels)
   {
-    weekdays = value;
+    weekdays = labels;
   }
 
   /**
@@ -395,11 +395,11 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
    * <li>4 - the short name of the time zone (daylight savings time).</li>
    * </ul>
    *
-   * @return The list of time zone display strings.
+   * @params zones The list of time zone display strings.
    */
-  public void setZoneStrings (String[][] value)
+  public void setZoneStrings (String[][] zones)
   {
-    zoneStrings = value;
+    zoneStrings = zones;
   }
 
   /* Does a "deep" equality test - recurses into arrays. */
@@ -469,7 +469,7 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
   /**
    * Returns a new copy of this object.
    *
-   * @param A copy of this object
+   * @return A copy of this object
    */
   public Object clone ()
   {
