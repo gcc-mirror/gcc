@@ -282,6 +282,9 @@ case "${host}" in
     abi_baseline_pair="mips-linux-gnu"
     cpu_include_dir="cpu/mips"
     ;;
+  powerpc*-*-darwin*)
+    port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
+    ;;
   powerpc64-*-linux*)
     abi_baseline_pair="powerpc64-linux-gnu"
     ;;
