@@ -6488,7 +6488,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
      information.  It would be better of the diagnostic routines
      used the file/line information embedded in the tree nodes rather
      than globals.  */
-  if (cfun && EXPR_HAS_LOCATION (exp))
+  if (cfun && cfun->ib_boundaries_block && EXPR_HAS_LOCATION (exp))
     {
       location_t saved_location = input_location;
       input_location = EXPR_LOCATION (exp);
