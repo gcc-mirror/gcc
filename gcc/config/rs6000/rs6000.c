@@ -2277,7 +2277,14 @@ easy_fp_constant (rtx op, enum machine_mode mode)
       long k[2];
       REAL_VALUE_TYPE rv;
 
-      if (TARGET_E500_DOUBLE)
+      /* Force constants to memory before reload to utilize
+	 compress_float_constant.
+	 Avoid this when flag_unsafe_math_optimizations is enabled
+	 because RDIV division to reciprocal optimization is not able
+	 to regenerate the division.  */
+      if (TARGET_E500_DOUBLE
+	  || (!reload_in_progress && !reload_completed
+	      && !flag_unsafe_math_optimizations))
 	return 0;
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
@@ -2291,6 +2298,19 @@ easy_fp_constant (rtx op, enum machine_mode mode)
     {
       long l;
       REAL_VALUE_TYPE rv;
+
+      /* The constant 0.f is easy.  */
+      if (op == CONST0_RTX (SFmode))
+	return 1;
+
+      /* Force constants to memory before reload to utilize
+	 compress_float_constant.
+	 Avoid this when flag_unsafe_math_optimizations is enabled
+	 because RDIV division to reciprocal optimization is not able
+	 to regenerate the division.  */
+      if (!reload_in_progress && !reload_completed
+	  && !flag_unsafe_math_optimizations)
+	return 0;
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
@@ -2940,6 +2960,28 @@ reg_or_mem_operand (rtx op, enum machine_mode mode)
 	  || memory_operand (op, mode)
 	  || macho_lo_sum_memory_operand (op, mode)
 	  || volatile_mem_operand (op, mode));
+}
+
+/* Return 1 if the operand is CONST_DOUBLE 0, register or memory operand.  */
+
+int
+zero_reg_mem_operand (rtx op, enum machine_mode mode)
+{
+  return zero_fp_constant (op, mode) || reg_or_mem_operand (op, mode);
+}
+
+/* Return 1 if the operand is either a reg or, if not e500, a memory.  */
+
+int
+reg_or_none500mem_operand (rtx op, enum machine_mode mode)
+{
+  if (GET_CODE (op) == MEM)
+    return (!TARGET_E500_DOUBLE
+	    && (memory_operand (op, mode)
+		|| macho_lo_sum_memory_operand (op, mode)
+		|| volatile_mem_operand (op, mode)));
+  else
+    return gpc_reg_operand (op, mode);
 }
 
 /* Return 1 if the operand is a general register or memory operand without
@@ -11650,9 +11692,9 @@ rs6000_generate_compare (enum rtx_code code)
     }
 
   /* Some kinds of FP comparisons need an OR operation;
-     under flag_unsafe_math_optimizations we don't bother.  */
+     under flag_finite_math_only we don't bother.  */
   if (rs6000_compare_fp_p
-      && ! flag_unsafe_math_optimizations
+      && ! flag_finite_math_only
       && ! (TARGET_HARD_FLOAT && TARGET_E500 && !TARGET_FPRS)
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT

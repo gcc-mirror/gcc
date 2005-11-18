@@ -1,3 +1,29 @@
+2005-11-18  David Edelsohn  <edelsohn@gnu.org>
+	    Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/24779
+	Backport 2005-03-13  David Edelsohn  <edelsohn@gnu.org>,
+	2005-03-20  David Edelsohn  <edelsohn@gnu.org>,
+	2005-03-24  David Edelsohn  <edelsohn@gnu.org>,
+	2005-09-11  David Edelsohn  <edelsohn@gnu.org>
+	* config/rs6000/rs6000.c (easy_fp_constant): SFmode constant
+	0.0f is easy.  Return 0 for SFmode and DFmode before reload when
+	flag_unsafe_math_optimizations not enabled.
+	(reg_or_none500mem_operand): New predicate.
+	(zero_reg_mem_operand): New predicate.
+	(rs6000_generate_compare): Test flag_finite_math_only, not
+	flag_unsafe_math_optimizations.
+	* config/rs6000/rs6000.h (PREDICATES): Add zero_reg_mem_operand
+	and reg_or_none500mem_operand.
+	* config/rs6000/rs6000-protos.h (zero_reg_mem_operand): Prototype.
+	(reg_or_none500mem_operand): Likewise.
+	* config/rs6000/rs6000.md (extendsfdf2): Change operand1 predicate
+	to reg_or_none500mem_operand.
+	(extendsfdf2_fpr): Add MEM alternative.
+	(movdf splitter): Use const_double_operand predicate.
+	(extenddftf2_internal): Change operand2 predicate to
+	zero_reg_mem_operand.
+
 2005-11-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/elf.h (STARTFILE_SPEC): Add "crtlibid%O%s"

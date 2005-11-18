@@ -2572,6 +2572,8 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"easy_vector_constant_add_self", {CONST_VECTOR}},			   \
   {"zero_fp_constant", {CONST_DOUBLE}},					   \
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},				   \
+  {"zero_reg_mem_operand", {SUBREG, MEM, REG}},				   \
+  {"reg_or_none500mem_operand", {SUBREG, MEM, REG}},			   \
   {"lwa_operand", {SUBREG, MEM, REG}},					   \
   {"volatile_mem_operand", {MEM}},					   \
   {"offsettable_mem_operand", {MEM}},					   \

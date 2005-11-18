@@ -79,6 +79,8 @@ extern int and_operand (rtx, enum machine_mode);
 extern int count_register_operand (rtx, enum machine_mode);
 extern int xer_operand (rtx, enum machine_mode);
 extern int reg_or_mem_operand (rtx, enum machine_mode);
+extern int zero_reg_mem_operand (rtx, enum machine_mode);
+extern int reg_or_none500mem_operand (rtx, enum machine_mode);
 extern int lwa_operand (rtx, enum machine_mode);
 extern int call_operand (rtx, enum machine_mode);
 extern int current_file_function_operand (rtx, enum machine_mode);
