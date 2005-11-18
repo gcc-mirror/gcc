@@ -1,3 +1,8 @@
+2005-11-18  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-scalar-evolution.c (expression_expensive_p): New function.
+	(scev_const_prop): Use compute_overall_effect_of_inner_loop.
+
 2005-11-18  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/crtlibid.s: New file.

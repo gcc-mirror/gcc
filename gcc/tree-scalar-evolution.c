@@ -2700,6 +2700,14 @@ scev_finalize (void)
   BITMAP_FREE (already_instantiated);
 }
 
+/* Returns true if EXPR looks expensive.  */
+
+static bool
+expression_expensive_p (tree expr)
+{
+  return force_expr_to_var_cost (expr) >= target_spill_cost;
+}
+
 /* Replace ssa names for that scev can prove they are constant by the
    appropriate constants.  Also perform final value replacement in loops,
    in case the replacement expressions are cheap.
@@ -2775,7 +2783,8 @@ scev_const_prop (void)
   for (i = current_loops->num - 1; i > 0; i--)
     {
       edge exit;
-      tree def, stmts;
+      tree def, rslt, ass;
+      block_stmt_iterator bsi;
 
       loop = current_loops->parray[i];
       if (!loop)
@@ -2787,46 +2796,50 @@ scev_const_prop (void)
       if (!exit
 	  || number_of_iterations_in_loop (loop) == chrec_dont_know)
 	continue;
-      ex_loop = exit->dest->loop_father;
+
+      /* Ensure that it is possible to insert new statements somewhere.  */
+      if (!single_pred_p (exit->dest))
+	split_loop_exit_edge (exit);
+      tree_block_label (exit->dest);
+      bsi = bsi_after_labels (exit->dest);
+
+      ex_loop = superloop_at_depth (loop, exit->dest->loop_father->depth + 1);
 
       for (phi = phi_nodes (exit->dest); phi; phi = next_phi)
 	{
 	  next_phi = PHI_CHAIN (phi);
+	  rslt = PHI_RESULT (phi);
 	  def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
-	  if (!is_gimple_reg (def)
-	      || expr_invariant_in_loop_p (loop, def))
+	  if (!is_gimple_reg (def))
 	    continue;
 
 	  if (!POINTER_TYPE_P (TREE_TYPE (def))
 	      && !INTEGRAL_TYPE_P (TREE_TYPE (def)))
 	    continue;
 
-	  def = analyze_scalar_evolution_in_loop (ex_loop, ex_loop, def);
+	  def = analyze_scalar_evolution_in_loop (ex_loop, loop, def);
+	  def = compute_overall_effect_of_inner_loop (ex_loop, def);
 	  if (!tree_does_not_contain_chrecs (def)
-	      || chrec_contains_symbols_defined_in_loop (def, loop->num)
-	      || def == PHI_RESULT (phi)
-	      || (TREE_CODE (def) == SSA_NAME
-		  && loop_containing_stmt (SSA_NAME_DEF_STMT (def))
-		  && loop_containing_stmt (phi)
-		  && loop_containing_stmt (SSA_NAME_DEF_STMT (def))
-		  == loop_containing_stmt (phi)))
+	      || chrec_contains_symbols_defined_in_loop (def, ex_loop->num))
 	    continue;
 
-	  /* If computing the expression is expensive, let it remain in
-	     loop.  TODO -- we should take the cost of computing the expression
-	     in loop into account.  */
-	  if (force_expr_to_var_cost (def) >= target_spill_cost)
+	  /* If computing the expression is expensive, let it remain in the
+	     loop.  */
+	  if (expression_expensive_p (def))
 	    continue;
+
+	  /* Eliminate the phi node and replace it by a computation outside
+	     the loop.  */
 	  def = unshare_expr (def);
+	  SET_PHI_RESULT (phi, NULL_TREE);
+	  remove_phi_node (phi, NULL_TREE);
 
-	  if (is_gimple_val (def))
-	    stmts = NULL_TREE;
-	  else
-	    def = force_gimple_operand (def, &stmts, true,
-					SSA_NAME_VAR (PHI_RESULT (phi)));
-	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, exit), def);
-	  if (stmts)
-	    compute_phi_arg_on_exit (exit, stmts, def);
+	  ass = build2 (MODIFY_EXPR, void_type_node, rslt, NULL_TREE);
+	  SSA_NAME_DEF_STMT (rslt) = ass;
+	  bsi_insert_after (&bsi, ass, BSI_NEW_STMT);
+	  def = force_gimple_operand_bsi (&bsi, def, false, NULL_TREE);
+	  TREE_OPERAND (ass, 1) = def;
+	  update_stmt (ass);
 	}
     }
 }

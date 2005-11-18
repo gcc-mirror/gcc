@@ -1,3 +1,7 @@
+2005-11-18  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-14.c: New test.
+
 2005-11-17  James A. Morrison  <phython@gcc.gnu.org>
             Michael Chamberlain <michael@chamberlain.net.au>
 
