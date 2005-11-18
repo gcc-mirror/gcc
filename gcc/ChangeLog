@@ -1,3 +1,7 @@
+2005-11-18  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.md (trap): New pattern.
+
 2005-11-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-ssa-dom.c (extract_range_from_cond): Deal with variable bounds

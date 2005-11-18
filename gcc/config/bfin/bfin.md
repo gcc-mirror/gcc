@@ -2001,6 +2001,13 @@
   "ssync;"
   [(set_attr "type" "sync")])
 
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 3))]
+  ""
+  "excpt 3;"
+  [(set_attr "type" "misc")
+   (set_attr "length" "2")])
+
 (define_insn "trapifcc"
   [(trap_if (reg:BI REG_CC) (const_int 3))]
   ""
