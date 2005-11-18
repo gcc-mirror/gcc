@@ -51,7 +51,6 @@ import javax.swing.JButton;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.BevelBorder;
@@ -95,10 +94,7 @@ public class BasicBorders
    */
   public static Border getButtonBorder()
   {
-    UIDefaults defaults;
     Border outer;
-
-    defaults = UIManager.getLookAndFeelDefaults();
 
     /* The keys for UIDefaults have been determined by writing a
      * test program that dumps the UIDefaults to stdout; that program
@@ -106,10 +102,10 @@ public class BasicBorders
      * the key "light" is usually called "highlight", and "highlight"
      * is usually called "lightHighlight".
      */
-    outer = new ButtonBorder(defaults.getColor("Button.shadow"),
-                             defaults.getColor("Button.darkShadow"),
-                             defaults.getColor("Button.light"),
-                             defaults.getColor("Button.highlight"));
+    outer = new ButtonBorder(UIManager.getColor("Button.shadow"),
+                             UIManager.getColor("Button.darkShadow"),
+                             UIManager.getColor("Button.light"),
+                             UIManager.getColor("Button.highlight"));
 
     /* While the inner border is shared between multiple buttons,
      * we do not share the outer border because ButtonBorders store
@@ -145,10 +141,7 @@ public class BasicBorders
    */
   public static Border getRadioButtonBorder()
   {
-    UIDefaults defaults;
     Border outer;
-
-    defaults = UIManager.getLookAndFeelDefaults();
 
     /* The keys for UIDefaults have been determined by writing a
      * test program that dumps the UIDefaults to stdout; that program
@@ -157,10 +150,10 @@ public class BasicBorders
      * is usually called "lightHighlight".
      */
     outer = new RadioButtonBorder(
-      defaults.getColor("RadioButton.shadow"),
-      defaults.getColor("RadioButton.darkShadow"),
-      defaults.getColor("RadioButton.light"),
-      defaults.getColor("RadioButton.highlight"));
+      UIManager.getColor("RadioButton.shadow"),
+      UIManager.getColor("RadioButton.darkShadow"),
+      UIManager.getColor("RadioButton.light"),
+      UIManager.getColor("RadioButton.highlight"));
 
     /* While the inner border is shared between multiple buttons, we
      * do not share the outer border because RadioButtonBorders, being
@@ -197,10 +190,7 @@ public class BasicBorders
    */
   public static Border getToggleButtonBorder()
   {
-    UIDefaults defaults;
     Border outer;
-
-    defaults = UIManager.getLookAndFeelDefaults();
 
     /* The keys for UIDefaults have been determined by writing a
      * test program that dumps the UIDefaults to stdout; that program
@@ -209,10 +199,10 @@ public class BasicBorders
      * is usually called "lightHighlight".
      */
     outer = new ToggleButtonBorder(
-      defaults.getColor("ToggleButton.shadow"),
-      defaults.getColor("ToggleButton.darkShadow"),
-      defaults.getColor("ToggleButton.light"),
-      defaults.getColor("ToggleButton.highlight"));
+      UIManager.getColor("ToggleButton.shadow"),
+      UIManager.getColor("ToggleButton.darkShadow"),
+      UIManager.getColor("ToggleButton.light"),
+      UIManager.getColor("ToggleButton.highlight"));
 
     /* While the inner border is shared between multiple buttons, we
      * do not share the outer border because ToggleButtonBorders, being
@@ -247,12 +237,9 @@ public class BasicBorders
    */
   public static Border getMenuBarBorder()
   {
-    UIDefaults defaults;
-
     /* See comment in methods above for why this border is not shared. */
-    defaults = UIManager.getLookAndFeelDefaults();
-    return new MenuBarBorder(defaults.getColor("MenuBar.shadow"),
-                             defaults.getColor("MenuBar.highlight"));
+    return new MenuBarBorder(UIManager.getColor("MenuBar.shadow"),
+                             UIManager.getColor("MenuBar.highlight"));
   }
 
 
@@ -279,12 +266,9 @@ public class BasicBorders
    */
   public static Border getSplitPaneBorder()
   {
-    UIDefaults defaults;
-
     /* See comment in methods above for why this border is not shared. */
-    defaults = UIManager.getLookAndFeelDefaults();
-    return new SplitPaneBorder(defaults.getColor("SplitPane.highlight"),
-                               defaults.getColor("SplitPane.darkShadow"));
+    return new SplitPaneBorder(UIManager.getColor("SplitPane.highlight"),
+                               UIManager.getColor("SplitPane.darkShadow"));
   }
 
 
@@ -314,13 +298,10 @@ public class BasicBorders
    */
   public static Border getSplitPaneDividerBorder()
   {
-    UIDefaults defaults;
-
     /* See comment in methods above for why this border is not shared. */
-    defaults = UIManager.getLookAndFeelDefaults();
     return new SplitPaneDividerBorder(
-      defaults.getColor("SplitPane.highlight"),
-      defaults.getColor("SplitPane.darkShadow"));
+      UIManager.getColor("SplitPane.highlight"),
+      UIManager.getColor("SplitPane.darkShadow"));
   }
 
 
@@ -346,15 +327,12 @@ public class BasicBorders
    */
   public static Border getTextFieldBorder()
   {
-    UIDefaults defaults;
-
     /* See comment in methods above for why this border is not shared. */
-    defaults = UIManager.getLookAndFeelDefaults();
     return new FieldBorder(
-      defaults.getColor("TextField.shadow"),
-      defaults.getColor("TextField.darkShadow"),
-      defaults.getColor("TextField.light"),
-      defaults.getColor("TextField.highlight"));
+      UIManager.getColor("TextField.shadow"),
+      UIManager.getColor("TextField.darkShadow"),
+      UIManager.getColor("TextField.light"),
+      UIManager.getColor("TextField.highlight"));
   }
   
 
@@ -394,17 +372,14 @@ public class BasicBorders
    */
   public static Border getInternalFrameBorder()
   {
-    UIDefaults defaults;
     Color shadow, darkShadow, highlight, lightHighlight, line;
 
     /* See comment in methods above for why this border is not shared. */
-    defaults = UIManager.getLookAndFeelDefaults();
-    
-    shadow = defaults.getColor("InternalFrame.borderShadow");
-    darkShadow = defaults.getColor("InternalFrame.borderDarkShadow");
-    highlight = defaults.getColor("InternalFrame.borderLight");
-    lightHighlight = defaults.getColor("InternalFrame.borderHighlight");
-    line = defaults.getColor("InternalFrame.borderColor");
+    shadow = UIManager.getColor("InternalFrame.borderShadow");
+    darkShadow = UIManager.getColor("InternalFrame.borderDarkShadow");
+    highlight = UIManager.getColor("InternalFrame.borderLight");
+    lightHighlight = UIManager.getColor("InternalFrame.borderHighlight");
+    line = UIManager.getColor("InternalFrame.borderColor");
 
     return new BorderUIResource.CompoundBorderUIResource(
       /* outer border */

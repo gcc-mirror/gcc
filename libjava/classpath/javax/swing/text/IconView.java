@@ -39,11 +39,25 @@ exception statement from your version. */
 package javax.swing.text;
 
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.Shape;
 
+import javax.swing.Icon;
+import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 
-// TODO: Implement this class.
+/**
+ * A View that can render an icon. This view is created by the
+ * {@link StyledEditorKit}'s view factory for all elements that have name
+ * {@link StyleConstants#IconElementName}. This is usually created by
+ * inserting an icon into <code>JTextPane</code> using
+ * {@link JTextPane#insertIcon(Icon)}
+ *
+ * The icon is determined using the attribute
+ * {@link StyleConstants#IconAttribute}, which's value must be an {@link Icon}.
+ *
+ * @author Roman Kennke (kennke@aicas.com)
+ */
 public class IconView
   extends View
 {
@@ -67,7 +81,9 @@ public class IconView
    */
   public void paint(Graphics g, Shape a)
   {
-    // TODO: Implement me.
+    Icon icon = StyleConstants.getIcon(getElement().getAttributes());
+    Rectangle b = a.getBounds();
+    icon.paintIcon(getContainer(), g, b.x, b.y);
   }
 
   /**
@@ -80,8 +96,15 @@ public class IconView
    */
   public float getPreferredSpan(int axis)
   {
-    // TODO: Implement me.
-    return 0F;
+    Icon icon = StyleConstants.getIcon(getElement().getAttributes());
+    float span;
+    if (axis == X_AXIS)
+      span = icon.getIconWidth();
+    else if (axis == Y_AXIS)
+      span = icon.getIconHeight();
+    else
+      throw new IllegalArgumentException();
+    return span;
   }
 
   /**
@@ -106,8 +129,12 @@ public class IconView
   public Shape modelToView(int pos, Shape a, Position.Bias b)
     throws BadLocationException
   {
-    // Implement me.
-    return null;
+    Element el = getElement();
+    if (pos < el.getStartOffset() || pos >= el.getEndOffset())
+      throw new BadLocationException("Illegal offset for this view", pos);
+    Rectangle r = a.getBounds();
+    Icon icon = StyleConstants.getIcon(el.getAttributes());
+    return new Rectangle(r.x, r.y, icon.getIconWidth(), icon.getIconHeight());
   }
 
   /**
@@ -124,8 +151,11 @@ public class IconView
    */
   public int viewToModel(float x, float y, Shape a, Position.Bias[] b)
   {
-    // FIXME: not implemented
-    return 0;
+    // The element should only have one character position and it is clear
+    // that this position is the position that best matches the given screen
+    // coordinates, simply because this view has only this one position.
+    Element el = getElement();
+    return el.getStartOffset();
   }
 
   /**
@@ -157,4 +187,5 @@ public class IconView
     // TODO: Implement this properly.
     throw new AssertionError("Not implemented yet.");
   }
+
 }

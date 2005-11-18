@@ -212,6 +212,8 @@ public class BasicProgressBarUI extends ProgressBarUI
 
   /**
    * Holds the value of the bouncing box that is returned by {@link #getBox}.
+   *
+   * @since 1.5
    */ 
   protected Rectangle boxRect;
 

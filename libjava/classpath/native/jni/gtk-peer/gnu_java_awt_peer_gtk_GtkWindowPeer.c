@@ -1204,8 +1204,8 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowSetResizable
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-
   gtk_window_set_resizable (GTK_WINDOW (ptr), resizable);
+  g_object_set (G_OBJECT (ptr), "allow-shrink", resizable, NULL);
 
   gdk_threads_leave ();
 }

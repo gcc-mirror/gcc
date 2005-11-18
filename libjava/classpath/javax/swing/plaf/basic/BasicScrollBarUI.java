@@ -62,7 +62,6 @@ import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -501,14 +500,12 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
    */
   protected void configureScrollBarColors()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-
-    trackColor = defaults.getColor("ScrollBar.track");
-    trackHighlightColor = defaults.getColor("ScrollBar.trackHighlight");
-    thumbColor = defaults.getColor("ScrollBar.thumb");
-    thumbHighlightColor = defaults.getColor("ScrollBar.thumbHighlight");
-    thumbDarkShadowColor = defaults.getColor("ScrollBar.thumbDarkShadow");
-    thumbLightShadowColor = defaults.getColor("ScrollBar.thumbShadow");
+    trackColor = UIManager.getColor("ScrollBar.track");
+    trackHighlightColor = UIManager.getColor("ScrollBar.trackHighlight");
+    thumbColor = UIManager.getColor("ScrollBar.thumb");
+    thumbHighlightColor = UIManager.getColor("ScrollBar.thumbHighlight");
+    thumbDarkShadowColor = UIManager.getColor("ScrollBar.thumbDarkShadow");
+    thumbLightShadowColor = UIManager.getColor("ScrollBar.thumbShadow");
   }
 
   /**
@@ -660,11 +657,7 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 	width += decrButton.getPreferredSize().getWidth();
 
 	width += (scrollbar.getMaximum() - scrollbar.getMinimum());
-
-	height = Math.max(incrButton.getPreferredSize().height,
-	                  decrButton.getPreferredSize().height);
-	height = Math.max(getMinimumThumbSize().height, height);
-	height = Math.min(getMaximumThumbSize().height, height);
+	height = UIManager.getInt("ScrollBar.width");
       }
     else
       {
@@ -672,11 +665,7 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 	height += decrButton.getPreferredSize().getHeight();
 
 	height += (scrollbar.getMaximum() - scrollbar.getMinimum());
-
-	width = Math.max(incrButton.getPreferredSize().width,
-	                 decrButton.getPreferredSize().width);
-	width = Math.max(getMinimumThumbSize().width, width);
-	width = Math.min(getMaximumThumbSize().width, width);
+	width = UIManager.getInt("ScrollBar.width");
       }
 
     Insets insets = scrollbar.getInsets();

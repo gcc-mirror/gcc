@@ -1,3 +1,644 @@
+2005-11-17  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/JEditorPane.java
+	(PlainEditorKit): New inner class.
+	(createDefaultEditorKit): Return an instance of PlainEditorKit.
+	* javax/swing/JTextPane.java
+	(insertComponent): Implemented previously stubbed method.
+	(insertIcon): Implemented previously stubbed method.
+
+2005-11-17  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/basic/BasicEditorPaneUI.java
+	(create): Removed unneeded method.
+	* javax/swing/plaf/basic/BasicTextPaneUI.java
+	(create): Removed unneeded method.
+
+2005-11-17  Roman Kennke  <kennke@aicas.com>
+
+	* java/awt/Container.java
+	(Container): Added comment.
+	(remove): Only call removeNotify if removed component is still
+	showing.
+	(paintComponents): Call paint() instead of super.paint().
+	(AccessibleContainerHandler.AccessibleContainerHandler): Added
+	comment.
+	(LightweightDispatcher.acquireComponentForMouseEvent):
+	Don't special case MOUSE_RELEASED events. They should be
+	dispatched unmodified just as MOUSE_PRESSED.
+	(LightweightDispatcher.handleEvent): Also clean up the pressCount
+	after a MOUSE_RELEASE.
+
+2005-11-17  Anthony Balkissoon  <abalkiss@redhat.com>
+
+	* javax/swing/text/BoxView.java:
+	(modelToView): New API method.
+
+2005-11-17  Lillian Angel  <langel@redhat.com>
+
+	Fixes PR classpath/PR24721
+	* javax/swing/text/BoxView.java
+	(getViewAtPoint): Added check in to return the last view, if one exists and
+	the point was not contained in the rectangle. This is what the JDK does.
+	* javax/swing/text/CompositeView.java
+	(viewToModel): Fixed API documentation. Added check to make sure
+	x and y are greater than 0. Otherwise, 0 is returned.
+	* javax/swing/text/DefaultCaret.java
+	(moveDot): Added check to match API specs.
+	(setDot): Likewise.
+	* javax/swing/text/GlyphView.java
+	(viewToModel): Removed assert. This is not needed here. The point does not
+	need to be in the rectangle.
+
+2005-11-17  Roman Kennke  <kennke@aicas.com>
+
+	Reported by Roman Schnider <schnider@aicas.com>:
+	* java/awt/Component.java
+	(reshape): Removed unused statement.
+	(repaint()): Don't forward to parent when not showing.
+	(repaint(int)): Don't forward to parent when not showing.
+	(repaint(int,int,int,int)): Don't forward to parent when not showing.
+	(repaint(float,int,int,int,int)): Don't forward to parent when not
+	showing.
+
+2005-11-17  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/text/AbstractDocument.java
+	(LeafElement.getName): If super.getName() returns something
+	non-null, then return that instead of ContentElementName.
+	* javax/swing/text/ComponentView.java
+	(comp): New field.
+	(getAlignment): Implemented previously stubbed method.
+	(getComponent): Implemented previously stubbed method.
+	(getMaximumSpan): Implemented previously stubbed method.
+	(getMinimumSpan): Implemented previously stubbed method.
+	(getPreferredSpan): Implemented previously stubbed method.
+	(modelToView): Implemented previously stubbed method.
+	(paint): Implemented previously stubbed method.
+	(setParent): Implemented previously stubbed method.
+	(setSize): Removed unneeded method.
+	(viewToModel): Implemented previously stubbed method.
+	* javax/swing/text/FlowView.java
+	(insertUpdate): Forward this event to the logical view.
+	* javax/swing/text/IconView.java
+	(paint): Implemented previously stubbed method.
+	(getPreferredSpan): Implemented previously stubbed method.
+	(modelToView): Implemented previously stubbed method.
+	(viewToModel): Implemented previously stubbed method.
+	* javax/swing/text/ParagraphView.java
+	(firstLineIndent): New field.
+	(justification): New field.
+	(lineSpacing): New field.
+	(tabSet): New field.
+	(changedUpdate): New method.
+	(setPropertiesFromAttributes): New method.
+	(setFirstLineIndent): New method.
+	(setJustification): New method.
+	(setLineSpacing): New method.
+	(getLayoutView): New method.
+	(getLayoutViewCount): New method.
+	(getTabSet): New method.
+
+2005-11-17  Anthony Balkissoon  <abalkiss@redhat.com>
+
+	* javax/swing/plaf/basic/BasicEditorPaneUI.java:
+	(create): Create new WrappedPlainView instance instead of PlainView.
+
+2005-11-17  Audrius Meskauskas  <AudriusA@Bioinformatics.org>
+        
+	PR 24911
+	* classpath/examples/Makefile.am
+	(EXAMPLE_JAVA_FILES): Extended by /*/*/*.java and /*/*/*/*.java.
+	(READMES): New category.
+	(ALL_EXAMPLE_FILES): Extended by READMES category. 
+
+2004-11-17  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gnu/java/net/protocol/jar/Connection.java (getHeaderField):
+	Implemented.
+	(getLastModified): Implemented.
+
+2005-11-17  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/URLClassLoader.java: Reindented.
+
+2005-11-17  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/JApplet.java
+	(paramString): Returns super.paramString() instead of a meaningless
+	'JFrame'.
+	* javax/swing/JPanel.java
+	(paramString): Returns super.paramString() instead of a meaningless
+	'JPanel'.
+
+2005-11-17  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/basic/BasicButtonUI.java
+	(installDefaults): Don't handle the Button.rollover property here,
+	this is Metal specific and is handled in MetalButtonUI.
+
+2005-11-17  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/JList.java
+	(locationToIndex): Clarified API comment.
+
+2005-11-17  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/tree/DefaultTreeCellEditor.java
+	(DefaultTreeCellEditor): Replaced
+	UIManager.getLookAndFeelDefaults().getXXX() with UIManager.getXXX().
+	(createTreeCellEditor): Replaced
+	UIManager.getLookAndFeelDefaults().getXXX() with UIManager.getXXX().
+	* javax/swing/tree/DefaultTreeCellRenderer.java
+	(DefaultTreeCellRenderer): Replaced
+	UIManager.getLookAndFeelDefaults().getXXX() with UIManager.getXXX().
+	(getDefaultOpenIcon): Replaced
+	UIManager.getLookAndFeelDefaults().getXXX() with UIManager.getXXX().
+	(getDefaultClosedIcon): Replaced
+	UIManager.getLookAndFeelDefaults().getXXX() with UIManager.getXXX().
+	(getDefaultLeafIcon): Replaced
+	UIManager.getLookAndFeelDefaults().getXXX() with UIManager.getXXX().
+	(getTreeCellRendererComponent): Replaced
+	UIManager.getLookAndFeelDefaults().getXXX() with UIManager.getXXX().w
+	(paint): Replaced UIManager.getLookAndFeelDefaults().getXXX()
+	with UIManager.getXXX().
+
+2005-11-17  Andrew Haley  <aph@redhat.com>
+
+	* gnu/java/net/protocol/file/Connection.java (unquote): New
+	method.
+	(connect): Unquote filename.
+	* gnu/java/net/protocol/jar/Connection.java (get): Likewise.
+
+	* java/net/URL.java (URL): If the file part of a spec is absolute,
+	ignore the file part of its context.
+
+2005-11-17  Audrius Meskauskas  <AudriusA@Bioinformatics.org>
+
+	* examples/gnu/classpath/examples/CORBA/swing/README.html:
+	Added note about the build.
+	
+2005-11-16  Anthony Balkissoon  <abalkiss@redhat.com>
+
+	* javax/swing/JSplitPane.java: Reformatted file.
+	* javax/swing/plaf/basic/BasicSplitPaneUI.java: Reformatted file.
+
+2005-11-16  Lillian Angel  <langel@redhat.com>
+
+	* javax/swing/ToolTipManager.java
+	(mouseEntered): No need to start the insideTimer here,
+	already called showTip.
+
+2005-11-16  Lillian Angel  <langel@redhat.com>
+
+	Fixes PR classpath/PR24763
+	* javax/swing/ToolTipManager.java
+	(mouseEntered): showTip should be called if exitTimer is running.
+	This means that the mouse has exited and re-entered a component
+	in less than 500ms.
+	(mouseExited): If enterTimer is not running, the exitTimer should
+	be started no matter what.
+	(showTip): Should not show tool tip if the currentComponent is
+	not showing.
+
+2005-11-16  Lillian Angel  <langel@redhat.com>
+	
+	Fixes PR classpath/PR23557 and PR classpath/PR24099
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
+	(Java_gnu_java_awt_peer_gtk_GdkGraphics2D_gdkDrawDrawable):
+	Added check to determine if dst->drawable or src->drawable
+	are actually drawable. If not, return.
+
+2005-11-16  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/metal/MetalBorders.java
+	(ButtonBorder.paintBorder): Special case the OceanTheme.
+	(ButtonBorder.paintOceanThemeBorder): New method.
+	* javax/swing/plaf/metal/MetalButtonUI.java
+	(installDefaults): Set the rollover flag here. Don't set a special
+	border for rollover buttons.
+	(uninstallDefaults): Reset the rollover flag.
+	(update): Only paint gradient when button is enabled and not pressed.
+	* javax/swing/plaf/metal/MetalButtonUI.java
+	(getCurrentTheme): New method.
+
+2005-11-16  Gary Benson  <gbenson@redhat.com>
+
+	* java/io/FilePermission.java (implies): Correct the sense
+	in which action checks are applied.
+
+2005-11-16  Anthony Balkissoon  <abalkiss@redhat.com>
+
+	* AUTHORS: Added myself.
+	* javax/swing/KeyboardManager.java: Changed @author tag to match the 
+	other ones I have.
+	* javax/swing/text/WrappedPlainView.java: Likewise.
+
+2005-11-16  Gary Benson  <gbenson@redhat.com>
+ 
+	* java/security/ProtectionDomain.java (toString): Use
+	gnu.classpath.SystemProperties to read line.separator
+	without security manager check.
+
+2005-11-16  Lillian Angel  <langel@redhat.com>
+
+	* java/awt/image/MemoryImageSource.java
+	(startProduction): If animated, imageComplete should
+	be called with the SINGLEFRAMEDONE flag, meaning the
+	single frame is complete, but there are more frames 
+	to follow.
+
+2005-11-16  Anthony Balkissoon  <abalkiss@redhat.com>
+
+	* javax/swing/text/PlainDocument.java:
+	(insertString): Null check fixes PR 24890.
+
+2005-11-16  Lillian Angel  <langel@redhat.com>
+
+	* javax/swing/plaf/basic/BasicTreeUI.java
+	(paintVerticalPartOfLeg): Added a check to prevent
+	ArrayOutOfBoundsException.
+
+2005-11-16  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/basic/BasicInternalFrameTitlePane.java
+	(paintTitleBackground): Only paint background if component is
+	opaque.
+	* javax/swing/plaf/metal/MetalInternalFrameTitlePane.java
+	(paintPalette): Added gradient painting.
+	(paintComponent): Added gradient painting.
+	* javax/swing/plaf/metal/OceanTheme.java
+	(addCustomEntriesToTable): Added gradient for
+	InternalFrama.activeTitleGradient.
+
+2005-11-16  Lillian Angel  <langel@redhat.com>
+
+	* javax/swing/ToolTipManager.java:
+	Removed unneeded fields.
+	(showTip): Re-implemented to use PopupFactory.
+	(hideTip): Likewise.
+	(adjustLocation): Fixed location.
+
+2005-11-16  Anthony Balkissoon  <abalkiss@redhat.com>
+
+	* javax/swing/text/PlainDocument.java:
+	(insertUpdate): The very first new element added doesn't start at the 
+	start of the event, it starts at the start offset of the Element that
+	contains the start of the event.
+
+2005-11-16  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/basic/BasicMenuItemUI.java
+	(paintMenuItem): Always call paintBackground().
+
+2005-11-16  Lillian Angel  <langel@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkDialogPeer.java
+	(create): Since popups were changed to be JWindowPopups,
+	this code should be done in GtkWindowPeer. Code is not
+	needed.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java
+	(create): If window is not focusable, it should not take
+	the focus away from any other window. Therefore, its
+	type should be set to GDK_WINDOW_TYPE_HINT_MENU.
+
+2005-11-16  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/metal/MetalButtonUI.java
+	(update): New method. Paints the gradient.
+	* javax/swing/plaf/metal/MetalCheckBoxIcon.java
+	(paintIcon): Paint gradient.
+	* javax/swing/plaf/metal/MetalIconFactory.java
+	(RadioButtonIcon.paintIcon): Paint gradient.
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(initClassDefaults): Added MetalMenuBarUI.
+	* javax/swing/plaf/metal/MetalMenuBarUI.java: New file.
+	* javax/swing/plaf/metal/MetalToggleButtonUI.java
+	(update): New method. Paints the gradient.
+	* javax/swing/plaf/metal/OceanTheme.java
+	(addCustomEntriesToTable): Added all the gradients.
+
+2005-11-16  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/JMenu.java
+	(JMenu()): Set opaque flag to false.
+	(JMenu(String)): Likewise.
+	(JMenu(Action)): Likewise.
+
+2005-11-16  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/basic/BasicListUI.java
+	(getRowHeight): Adjusted to deal correctly with fixed cell heights.
+	(convertYRoRow): Likewise.
+	* javax/swing/plaf/basic/BasicMenuItemUI.java
+	(installDefaults): Don't make the menu item opaque here.
+	(paintBackground): Moved background painting code from
+	paintMenuItem() to this method.
+	(paintMenuItem): Moved background painting to paintBackground().
+	(installDefaults): Don't set opaque flag here.
+
+2005-11-16  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/metal/MetalUtils.java
+	(paintGradient): New utility method(s).
+	(paintHorizontalGradient): New utility method.
+	(paintVerticalGradient): New utility method.
+
+2005-11-15  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/JComponent.java
+	(paintDoubleBuffered): Put paint() call inside a try-finally
+	block to correctly recover the double-buffering flag when
+	an exception is thrown inside the paint() call.
+
+2005-11-15  Lillian Angel  <langel@redhat.com>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowSetResizable):
+	Needed to set allow_shrink to the same value as resizable. Other-
+	wise, it is always set to false.
+
+2005-11-15  Lillian Angel  <langel@redhat.com>
+
+	* javax/swing/plaf/basic/BasicTreeUI.java
+	(paint): Added check to prevent NPE.
+
+2005-11-15  Anthony Balkissoon  <abalkiss@redhat.com>
+
+	* javax/swing/JComponent.java:
+	(removeNotify): Unregister WHEN_IN_FOCUSED_WINDOW bindings from the 
+	KeyboardManager.
+
+2005-11-15  Lillian Angel  <langel@redhat.com>
+
+	* javax/swing/plaf/basic/BasicLookAndFeel.java
+	(initComponentDefaults): Default rowHeight for tree's should
+	be 0. This is Sun and IBM's default.
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(initComponentDefaults): Default rowHeight for tree's should
+	e 0. This is Sun and IBM's default.
+	* javax/swing/plaf/basic/BasicTreeUI.java:
+	Added a default rowHeight field.
+	(setRowHeight): Set the rowHeight to the class default if parameter
+	is 0. Tree row height should never be set to 0. 20 is the minimum.
+	(installDefaults): fixed call to tree.setRowHeight
+	(shouldPaintExpandControl): Added to check to prevent NPE.
+
+2005-11-15  Audrius Meskauskas  <AudriusA@Bioinformatics.org>
+
+	* examples/gnu/classpath/examples/CORBA/swing/README.html,
+	examples/gnu/classpath/examples/CORBA/swing/x5/CanvasWorld.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/ChatConstants.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/ClientFrame.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/Demo.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/GameManager.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/GameManagerImpl.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/IorReader.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/OrbStarter.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/Player.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/PlayerImpl.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/PlayingDesk.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/State.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/X5Server.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/_GameManagerImpl_Tie.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/_GameManager_Stub.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/_PlayerImpl_Tie.java,
+	examples/gnu/classpath/examples/CORBA/swing/x5/_Player_Stub.java: 
+	New files.
+
+2005-11-15  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/UIManager.java
+	(userUIDefaults): New field.
+	(get(Object)): Respect the user UI settings.
+	(get(Object,Locale)): Respect the user UI settings.
+	(getBoolean(Object)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getBoolean(Object,Locale)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getBorder(Object)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getBorder(Object,Locale)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getColor(Object)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getColor(Object,Locale)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getDimension(Object)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getDimension(Object,Locale)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getFont(Object)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getFont(Object,Locale)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getIcon(Object)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getIcon(Object,Locale)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getInsets(Object)): Call get() instead of
+	getLookAndFeelDefaults().getInsets() in order to respect the user UI
+	settings.
+	(getInsets(Object,Locale)): Call get() instead of
+	getLookAndFeelDefaults().getInsets() in order to respect the user UI
+	settings.
+	(getInt(Object)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getInt(Object,Locale)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getString(Object)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getString(Object,Locale)): Call get() instead of
+	getLookAndFeelDefaults().get() in order to respect the user UI
+	settings.
+	(getUI(JComponent)): Respect the user UI settings.
+	(put): Put key/value into user UI settings.
+
+2005-11-15  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/metal/MetalBorders.java
+	(OptionDialogBorder.paintBorder): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	* javax/swing/plaf/metal/MetalButtonUI.java
+	(MetalButtonUI): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/metal/MetalInternalFrameTitlePane.java
+	(installDefaults): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/metal/MetalLabelUI.java
+	(paintDisabledText): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/metal/MetalRadioButtonUI.java
+	(installDefaults): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/metal/MetalScrollBarUI.java
+	(createDecreaseButton): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(createIncreaseButton): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(paintThumbHorizontal): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(paintThumbVertical): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	* javax/swing/plaf/metal/MetalSplitPaneUI.java
+	(createDefaultDivider): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	* javax/swing/plaf/metal/MetalToggleButtonUI.java
+	(installDefaults): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/metal/MetalToolTipUI.java
+	(MetalToolTipUI): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/metal/MetalTreeUI.java
+	Removed all listener fields.
+	(installUI): Removed initialization and call super.installUI()
+	instead.
+	(uninstallUI): Removed initialization and call super.uninstallUI()
+	instead.
+
+2005-11-15  Audrius Meskauskas  <AudriusA@Bioinformatics.org>
+
+	* gnu/CORBA/OrbFunctional.java (serveStep):
+	Returning ensure that the socket is closed.
+
+2005-11-15  Roman Kennke  <kennke@aicas.com>
+
+	* javax/swing/plaf/basic/BasicBorders.java
+	(getButtonBorder): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	(getRadioButtonBorder): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(getToggleButtonBorder): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(getMenuBarBorder): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(getSplitPaneBorder): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(getSplitPaneDividerBorder): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(getTextFieldBorder): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(getInternalFrameBorder): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	* javax/swing/plaf/basic/BasicButtonUI.java
+	(paintText): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/basic/BasicCheckBoxUI.java
+	(getDefaultIcon): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/basic/BasicComboBoxUI.java
+	(paintCurrentValue): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/basic/BasicFileChooserUI.java
+	(installStrings): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/basic/BasicInternalFrameTitlePane.java
+	(installDefaults): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/basic/BasicListUI.java
+	(installKeyboardActions): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	* javax/swing/plaf/basic/BasicProgressBarUI.java
+	(boxRect): Added @since tag to the API comment.
+	* javax/swing/plaf/basic/BasicRadioButtonUI.java
+	(getDefaultIcon): Replaced UIManager.getLookAndFeelDefaults().get()
+	with UIManager.get().
+	* javax/swing/plaf/basic/BasicScrollBarUI.java
+	(configureScrollBarColors): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(calculatePreferredSize): Fetch preferred width or height from
+	UI defaults.
+	* javax/swing/plaf/basic/BasicTableUI.java
+	(installKeyboardActions): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	* javax/swing/plaf/basic/BasicTextUI.java
+	(createKeymap): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(getInputMap): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(getActionMap): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	* javax/swing/plaf/basic/BasicToolBarUI.java
+	(dragTo): Don't use cached* fields.
+	(installComponents): Don't use cached* fields.
+	* javax/swing/plaf/basic/BasicTreeUI.java
+	(getHashColor): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	(setHashColor): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+	Added FIXME comment.
+	(installKeyboardActions): Replaced
+	UIManager.getLookAndFeelDefaults().get() with UIManager.get().
+
+2005-11-15  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* native/jni/java-lang/java_lang_VMDouble.c (initIDs): Register 
+	clsDouble as global ref.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c 
+	(gtkInit): Register gtkgenericpeer as global ref.
+
+2005-11-15  Lillian Angel  <langel@redhat.com>
+
+	* javax/swing/plaf/basic/BasicTreeUI.java:
+	Removed unneeded field.
+	(getPathBounds): Reimplemented to use getNodeDimensions.
+	(getRowCount): Removed call to updateCurrentVisiblePath.
+	(uninstallKeyboardActions): Implemented.
+	(paint): Reimplemented to only paint rows contained in clip.
+	No longer uses recursion.
+	(mousePressed): If control icon is clicked, should scroll to that
+	path.
+	(getNodeDimensions): Implemented.
+	(getRowX): Implemented.
+	(getCellBounds): Removed.
+	(getCellLocation): Removed.
+	(paintRecursive): Removed.
+	(paintControlIcons): Removed.
+	(getPreviousVisibleNode): Removed call to updateCurrentVisiblePath.
+	(getLevel): Added check for invisible root.
+	(paintVerticalLine): Set graphics color.
+	(paintHorizontalLine): Likewise.
+	(drawCentered): Added negative check.
+	(drawDashedHorizontalLine): Set graphics color.
+	(drawDashedVerticalLine): Likewise.
+	(paintExpandControl): Implemented.
+	(paintHorizontalPartOfLeg): Likewise.
+	(paintVerticalPartOfLeg): Likewise.
+	(paintRow): Added call to paint the control icons.
+	(updateCurrentVisiblePath): Cleaned up function.	
+
+2005-11-15  Anthony Balkissoon  <abalkiss@redhat.com>
+
+	* javax/swing/text/AbstractDocument.java:
+	(remove): Do not set up an ElementEdit here, this is done in the 
+	Document implementation's removeUpdate method.
+	* javax/swing/text/PlainDocument.java:
+	(insertUpdate): Do not call reindex, instead, reindex the lines here
+	directly but only starting from the offset of the newly inserted text.
+	Also, if entire lines have been added or removed, set up an ElementEdit
+	and add it to the DocumentEvent.  Chain BadLocationException to an 
+	AssertionError and throw it in the unexpected case.
+	(removeUpdate): If entire lines have been added or removed, set up an 
+	ElementEdit and add it to the DocumentEvent.  Chain 
+	BadLocationException to an AssertionError and throw it in the 
+	unexpected case.
+	(reindex): Removed unnecessary method.
+
 2005-11-15  Wolfgang Baer  <WBaer@gmx.de>
 
 	* javax/print/attribute/DateTimeSyntax.java,
@@ -8,7 +649,8 @@
 
 2005-11-15  Lillian Angel  <langel@redhat.com>
 
-	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java:
+	Code written by Sven de Marothy.
 	(gtkWindowGetLocationOnScreen): Added declaration
 	for native function.
 	(getLocationOnScreen): Changed to handle 2 different cases.

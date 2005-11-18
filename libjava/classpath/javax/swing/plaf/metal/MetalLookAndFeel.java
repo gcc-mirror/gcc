@@ -693,6 +693,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "DesktopIconUI", "javax.swing.plaf.metal.MetalDesktopIconUI",
       "InternalFrameUI", "javax.swing.plaf.metal.MetalInternalFrameUI",
       "LabelUI", "javax.swing.plaf.metal.MetalLabelUI",
+      "MenuBarUI", "javax.swing.plaf.metal.MetalMenuBarUI",
       "PopupMenuSeparatorUI",
       "javax.swing.plaf.metal.MetalPopupMenuSeparatorUI",
       "ProgressBarUI", "javax.swing.plaf.metal.MetalProgressBarUI",
@@ -1162,7 +1163,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "Tree.line", getPrimaryControl(),
       "Tree.openIcon", MetalIconFactory.getTreeFolderIcon(),
       "Tree.rightChildIndent", new Integer(13),
-      "Tree.rowHeight", new Integer(20),
+      "Tree.rowHeight", new Integer(0),
       "Tree.scrollsOnExpand", Boolean.TRUE,
       "Tree.selectionBackground", getTextHighlightColor(),
       "Tree.selectionBorder", new BorderUIResource.LineBorderUIResource(new Color(102, 102, 153)),
@@ -1201,4 +1202,13 @@ public class MetalLookAndFeel extends BasicLookAndFeel
     defaults.putDefaults(uiDefaults);
   }
 
+  /**
+   * Returns the current theme setting for the Metal L&amp;F.
+   *
+   * @return the current theme setting for the Metal L&amp;F
+   */
+  public static MetalTheme getCurrentTheme()
+  {
+    return theme;
+  }
 }

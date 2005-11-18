@@ -44,10 +44,6 @@ import java.awt.Rectangle;
 import java.awt.event.PaintEvent;
 import java.awt.peer.DialogPeer;
 
-import javax.swing.JDialog;
-import javax.swing.JPopupMenu;
-import javax.swing.JToolTip;
-
 public class GtkDialogPeer extends GtkWindowPeer
   implements DialogPeer
 {
@@ -87,27 +83,9 @@ public class GtkDialogPeer extends GtkWindowPeer
   void create ()
   {
     Dialog dialog = (Dialog) awtComponent;
-    int type = GDK_WINDOW_TYPE_HINT_DIALOG;
-
-    if (dialog instanceof JDialog)
-      {
-        Class heavyWeightClass;
-        try
-          {
-            heavyWeightClass = Class.forName("javax.swing.Popup$JWindowPopup");
-          }
-        catch (ClassNotFoundException e)
-          {
-            throw new AssertionError(e);
-          }
-        
-        if (dialog.getClass() == heavyWeightClass 
-            || ((JDialog) dialog).getContentPane() instanceof JToolTip)
-          type = GDK_WINDOW_TYPE_HINT_MENU;
-      }
     
     // Create a decorated dialog window.
-    create (type, !((Dialog) awtComponent).isUndecorated ());
+    create (GDK_WINDOW_TYPE_HINT_DIALOG, !((Dialog) awtComponent).isUndecorated ());
 
     gtkWindowSetModal (dialog.isModal ());
     setTitle (dialog.getTitle ());

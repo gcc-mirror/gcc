@@ -1159,7 +1159,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "Tree.hash", new ColorUIResource(new Color(128, 128, 128)),
       "Tree.leftChildIndent", new Integer(7),
       "Tree.rightChildIndent", new Integer(13),
-      "Tree.rowHeight", new Integer(16),
+      "Tree.rowHeight", new Integer(0),
       "Tree.scrollsOnExpand", Boolean.TRUE,
       "Tree.selectionBackground", new ColorUIResource(Color.black),
       "Tree.nonSelectionBackground", new ColorUIResource(new Color(255, 255, 255)),

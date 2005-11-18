@@ -135,6 +135,8 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
 
   gtkgenericpeer = (*env)->FindClass(env, "gnu/java/awt/peer/gtk/GtkGenericPeer");
 
+  gtkgenericpeer = (*env)->NewGlobalRef(env, gtkgenericpeer);
+
   printCurrentThreadID = (*env)->GetStaticMethodID (env, gtkgenericpeer,
                                                     "printCurrentThread", "()V");
  

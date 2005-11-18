@@ -53,7 +53,7 @@ import java.util.Vector;
  * Components register keyboard actions with the condition
  * JComponent.WHEN_IN_FOCUSED_WINDOW.
  * 
- * @author Anthony Balkissoon <abalkiss@redhat.com>
+ * @author Anthony Balkissoon abalkiss at redhat dot com
  *
  */
 class KeyboardManager

@@ -278,13 +278,13 @@ public final class FilePermission extends Permission implements Serializable
 	break;
       }
 
-    if (readPerm && ! fp.readPerm)
+    if (fp.readPerm && ! readPerm)
       return false;
-    if (writePerm && ! fp.writePerm)
+    if (fp.writePerm && ! writePerm)
       return false;
-    if (executePerm && ! fp.executePerm)
+    if (fp.executePerm && ! executePerm)
       return false;
-    if (deletePerm && ! fp.deletePerm)
+    if (fp.deletePerm && ! deletePerm)
       return false;
     
     return true;

@@ -457,9 +457,6 @@ public class GlyphView extends View implements TabableView, Cloneable
                            Bias[] biasRet)
     {
       Rectangle b = a.getBounds();
-      assert b.contains(x, y) : "The coordinates are expected to be within the "
-                                + "view's bounds: x=" + x + ", y=" + y
-                                + "a=" + a;
       int pos = getBoundedPosition(v, v.getStartOffset(), b.x, x - b.x);
       return pos;
     }

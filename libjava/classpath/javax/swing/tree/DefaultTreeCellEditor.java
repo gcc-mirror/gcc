@@ -339,9 +339,8 @@ public class DefaultTreeCellEditor
     lastPath = tree.getLeadSelectionPath();
     tree.addTreeSelectionListener(this);
     editingContainer = createContainer();
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    setFont(defaults.getFont("Tree.font"));
-    setBorderSelectionColor(defaults.getColor("Tree.selectionBorderColor"));
+    setFont(UIManager.getFont("Tree.font"));
+    setBorderSelectionColor(UIManager.getColor("Tree.selectionBorderColor"));
     editingIcon = renderer.getIcon();
     timer = new javax.swing.Timer(1200, this);
   }
@@ -735,9 +734,8 @@ public class DefaultTreeCellEditor
    */
   protected TreeCellEditor createTreeCellEditor()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
     realEditor = new DefaultCellEditor(new DefaultTreeCellEditor.DefaultTextField(
-                                  defaults.getBorder("Tree.selectionBorder")));
+                                  UIManager.getBorder("Tree.selectionBorder")));
     return realEditor;
   }
 }

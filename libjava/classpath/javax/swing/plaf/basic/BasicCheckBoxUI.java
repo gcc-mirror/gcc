@@ -40,7 +40,6 @@ package javax.swing.plaf.basic;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
@@ -53,12 +52,11 @@ public class BasicCheckBoxUI extends BasicRadioButtonUI
 
   public Icon getDefaultIcon()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    return defaults.getIcon("CheckBox.icon");
+    return UIManager.getIcon("CheckBox.icon");
   }
   
   /**
-   * Returns the prefix for entries in the {@link UIDefaults} table.
+   * Returns the prefix for entries in the {@link UIManager} defaults table.
    *
    * @return "CheckBox."
    */

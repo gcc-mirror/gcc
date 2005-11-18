@@ -475,7 +475,6 @@ public class BasicMenuItemUI extends MenuItemUI
     
     menuItem.setHorizontalTextPosition(SwingConstants.TRAILING);
     menuItem.setHorizontalAlignment(SwingConstants.LEADING);
-    menuItem.setOpaque(true);
   }
 
   /**
@@ -553,11 +552,20 @@ public class BasicMenuItemUI extends MenuItemUI
    */
   protected void paintBackground(Graphics g, JMenuItem menuItem, Color bgColor)
   {
-    Dimension size = getPreferredSize(menuItem);
-    Color foreground = g.getColor();
-    g.setColor(bgColor);
-    g.drawRect(0, 0, size.width, size.height);
-    g.setColor(foreground);
+    // Menu item is considered to be highlighted when it is selected.
+    // But we don't want to paint the background of JCheckBoxMenuItems
+    ButtonModel mod = menuItem.getModel();
+    if ((menuItem.isSelected() && checkIcon == null) || (mod != null && 
+        mod.isArmed())
+        && (menuItem.getParent() instanceof MenuElement))
+      {
+        if (menuItem.isContentAreaFilled())
+          {
+            g.setColor(selectionBackground);
+            g.fillRect(0, 0, menuItem.getWidth(), menuItem.getHeight());
+          }
+      }
+
   }
 
   /**
@@ -611,28 +619,6 @@ public class BasicMenuItemUI extends MenuItemUI
     br.y -= insets.top;
     br.width += insets.right + insets.left;
     br.height += insets.top + insets.bottom;
-
-    // Menu item is considered to be highlighted when it is selected.
-    // But we don't want to paint the background of JCheckBoxMenuItems
-    ButtonModel mod = m.getModel();
-    if ((m.isSelected() && checkIcon == null) || (mod != null && 
-        mod.isArmed())
-        && (m.getParent() instanceof MenuElement))
-      {
-        if (m.isContentAreaFilled())
-          {
-            g.setColor(selectionBackground);
-            g.fillRect(br.x, br.y, br.width, br.height);
-          }
-      }
-    else
-      {
-        if (m.isContentAreaFilled())
-          {
-            g.setColor(m.getBackground());
-            g.fillRect(br.x, br.y, br.width, br.height);
-          }
-      }
 
     // If this menu item is a JCheckBoxMenuItem then paint check icon
     if (checkIcon != null)

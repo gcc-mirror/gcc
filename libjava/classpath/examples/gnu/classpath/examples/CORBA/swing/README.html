@@ -1,0 +1,493 @@
+<html>
+  <head>
+    <title>Five-in-a-row v 0.0</title>
+  </head>
+  <body LANG="en-US">
+    <h1>
+      <i>Five-in-a-row
+      </i> 0.0 supplementary documentation
+    </h1>
+    <h3>Introduction and rules
+    </h3>
+    <p>
+      <i>Five-in-a-row
+      </i> is a two player strategy game. The players
+      are connected via network using CORBA-based RMI/IIOP protocol and
+      make they moves with the help of the Swing-based
+      interface. While playing, the users can also chat.
+    </p>
+    <p>The system consists of the single server and any number of
+      interconnected players. The person, willing to play, starts the
+      client and connects the server. The server redirects call to the
+      partner that has previously connected the same server, also willing
+      to play.
+    </p>
+    <p>The game desk is a field where it is possible to set O's
+      and X'es, one per move. The goal is to get five O's in a row while
+      preventing your partner from getting five X's in a row. Vertical,
+      horizontal and diagonal rows are allowed. The system detects the
+      loss-victory situation on the desk, but currently does not serve as a
+      playing partner, requiring at least two human players for this game.
+    </p>
+    <p>Both players can at any time reset the game (restarting it with
+      the same player) or leave the game (disconnecting). The disconnected
+      player can contact the game manager again, requesting to find another
+      partner.
+    </p>
+    <p>Simple as it is, the application has some features of the typical
+      role playing game that frequently just has more states, actions,
+      possible moves and also provides far richer graphics environment. The
+      game manger serves as a World-Wide-Pub where you can always find a
+      partner to play.
+
+      The players can made both unsynchronized (chatting, game reset and
+      leaving) and synchronized (moves) actions. The game state changes
+      while playing, and the set of the available actions depends on the
+      current state. Finally, the mouse and canvas are involved. However
+      using RMI/IIOP machinery allowed to implement all this functionality
+      with just 13 classes (plus 4 generated), all of them being rather
+      simple.
+      
+      This example refers to the standard classes only and must be buildable
+      from your IDE as long as it has any java 1.4 compiler.       
+    </p>
+    <p>
+      The used IIOP protocol must ensure interoperability, allowing players
+      to use different java virtual machines and operating systems.
+      The processors may have the opposite byte order.
+    </p>
+    <h3>Configuration and run
+    </h3>
+    <p>The game manager server executable class is
+      <i>gnu.classpath.examples.CORBA.swing.x5.X5Server
+      </i>. After start,
+      it will print to console the Internet address that must be entered to
+      the client to reach the manager.
+    </p>
+    <p>The client executable class it
+      <i>gnu.classpath.examples.CORBA.swing.x5.Demo
+      </i>.
+    </p>
+    <p>The game should run with GNU Classpath
+      0.19 and Sun Microsystems java 1.5.0_04. Due later fixed bugs it will
+      not run with the older versions of these two implementations.
+    </p>
+    <p>The game manager HTTP server uses port
+      1500. Hence all firewalls between the server and the player must be
+      configured to allow HTTP on 1500. The ports, used by the RMI/IIOP are
+      not persistent. GNU Classpath is configured to take ports 1501, 1502
+      and 1503 (the firewalls must allow to use them for RMI/IIOP). The
+      CORBA implementation other than Classpath may use different port
+      values. Unfortunately, there is no standard method to configure the
+      used port range in a vendor-independent way.
+    </p>
+    <h3>The game server
+    </h3>
+    <p>The game manager is first reachable via http:// protocol (for
+      instance http://123.456.7.89:1500). The simple server at this port
+      always serves much longer string, representing the CORBA stringified
+      object reference (IOR). The
+      <i>Five-in-a-row&nbsp;
+      </i>client uses
+      this reference to find and access the remote game server object.
+    </p>
+    <p>If the server player queue is empty, it simply queues this player.
+      If the queue is not empty, the server introduces the arrived player
+      and queued player to each other as leaves the them alone. When
+      playing, the two clients communicate with each other directly, so the
+      server is just a &ldquo;meeting point&rdquo; where the players can
+      find each other. The game server is a console-only application.
+    </p>
+    <p>The initial server http:// address must be transferred to players
+      by some other means of communication (web chat, E-mail, link in a web
+      site and so on). The server writes this address to the specified
+      file, and the client can also take the default value from the same
+      file. This is convenient when all applications run on a single
+      machine, but also may be used to transfer the address via shared
+      filesystem.
+    </p>
+    <h3>The game client
+    </h3>
+    <p>The clients are Swing-based GUI applications, capable for remote
+      communication with each other and with the game manager. They have a
+      set of predefined states and switch between these states in
+      accordance to the preprogrammed logic. The client states are defined
+      in the
+      <i>State
+      </i> interface. They are displayed in the bottom left
+      corner of the window and are summarized in the following table:
+    </p>
+    <table BORDER=1 CELLPADDING=4 CELLSPACING=0 WIDTH="100%">
+      <thead>
+        <tr BGCOLOR="#ccccff">
+          <th BGCOLOR="#e6e6ff">
+            Our state
+          </th>
+          <th BGCOLOR="#e6e6ff">
+            Partner state
+          </th>
+          <th BGCOLOR="#e6e6ff">
+            Possible actions
+          </th>
+          <th BGCOLOR="#e6e6ff">
+            Comment
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            Disconnected
+          </td>
+          <td>
+            Partner not accessible
+          </td>
+          <td>
+            Connect
+          </td>
+          <td>
+            Initial state.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Queued
+          </td>
+          <td>
+            Partner not accessible
+          </td>
+          <td>
+            Leave
+          </td>
+          <td>
+            Queued by the game manager.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            I think.
+          </td>
+          <td>
+            I wait for your move
+          </td>
+          <td>
+            Make move, reset game, leave, chat.
+          </td>
+          <td>
+            The person who waited for another player to come starts
+            the game first.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            I wait for your move
+          </td>
+          <td>
+            I think
+          </td>
+          <td>
+            Chat, reset game, leave.
+          </td>
+          <td>
+            After the partner makes the move, the state changes to
+            <i>I think
+            </i>, unless the end of game situation is detected by
+            the desk analyzer.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            I have lost
+          </td>
+          <td>
+            I have won
+          </td>
+          <td>
+            Chat, reset game, leave.
+          </td>
+          <td>
+            Can be entered with the help of the desk analyzer only.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            I have won
+          </td>
+          <td>
+            I have lost
+          </td>
+          <td>
+            Chat, reset game, leave
+          </td>
+          <td>
+            Can be entered with the help of the desk analyzer only.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Error
+          </td>
+          <td>
+            Any
+          </td>
+          <td>
+            Chat, leave
+          </td>
+          <td>
+            This should never happen under normal work, but the demo
+            program may be modified by the user.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    As it is seen, being in one of the states, the client expects to
+    be the partner client in a certain defined state, and both clients
+    change they states in a synchronized manner. Each state has its own
+    set of the available actions and each action either preserves the
+    current state (chat, reset) or changes it following the rules. For
+    this simple example, the state change rules are obvious.
+    <h3>The used RMI-IIOP architecture
+    </h3>
+    Both player and game manager servants are derived from the
+    <i>org.omg.PortableServer.Servant
+    </i> and, being servants, are simply
+    connected to the
+    <i>POA
+    </i>with
+    <i>POA.servant_to_reference
+    </i>. The
+    first remote object (game manager) is found using the stringified
+    object reference. No naming service is involved.
+</p>
+Where required, the CORBA objects are narrowed into required
+player and game manager interfaces using method
+<i>PortableRemoteObject.narrow(org.omg.CORBA.Object object, Class
+  interface_class)
+</i>, passing the actual interface of the object as
+the second parameter. After narrowing, the remote side obtains
+possibility to invoke remote methods, defined in the interface of
+this object. After the first remote object is found, other objects
+can be simply passed as the method parameters. For instance, the game
+manager introduces another player by passing its reference as a
+parameter to the method
+<i>Player.start_game.
+</i>
+<h3>Class and interface summary
+</h3>
+<table BORDER=1 CELLPADDING=3 CELLSPACING=0 WIDTH="100%">
+  <col>
+  <col>
+  <tr>
+    <th COLSPAN=2 BGCOLOR="#e6e6ff">
+      Executables classes
+    </th>
+  </tr>
+  <tr>
+    <td>
+      Demo
+    </td>
+    <td>
+      The main executable class of the game client.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      X5Server
+    </td>
+    <td>
+      The main executable class of the game manager server.
+    </td>
+  </tr>
+</table>
+<p></p>
+<table BORDER=1 CELLPADDING=3 CELLSPACING=0 WIDTH="100%">
+  <tr BGCOLOR="#ccccff">
+    <th COLSPAN=2 BGCOLOR="#e6e6ff">
+      Interface Summary
+    </th>
+  </tr>
+  <tr>
+    <td>
+      GameManager
+    </td>
+    <td>
+      The game manager interface.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Player
+    </td>
+    <td>
+      Defines remote methods that are invoked by another player or by
+      the challenge server.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      State
+    </td>
+    <td>
+      Defines the states in that the player can be.
+    </td>
+  </tr>
+</table>
+&nbsp;
+<table BORDER=1 CELLPADDING=3 CELLSPACING=0 WIDTH="100%">
+  <col>
+  <col>
+  <tr BGCOLOR="#ccccff">
+    <th COLSPAN=2 BGCOLOR="#e6e6ff">
+      Class Summary
+    </th>
+  </tr>
+  <tr>
+    <td>
+      _GameManager_Stub
+    </td>
+    <td>
+      Normally generated with rmic compiler, this class represents
+      the GameManager Stub on the client side.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      _GameManagerImpl_Tie
+    </td>
+    <td>
+      Normally generated with rmic compiler, this class represents
+      the GameManager Tie on the client side.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      _Player_Stub
+    </td>
+    <td>
+      Generate with rmic, command line rmic -iiop -poa -keep
+      gnu.classpath.examples.CORBA.swing.x5.PlayerImpl (the compiled
+      package must be present in the current folder).
+    </td>
+  </tr>
+  <tr>
+    <td>
+      _PlayerImpl_Tie
+    </td>
+    <td>
+      Generate with rmic, command line rmic -iiop -poa -keep
+      gnu.classpath.examples.CORBA.swing.x5.PlayerImpl (the compiled
+      package must be present in the current folder).
+    </td>
+  </tr>
+  <tr>
+    <td>
+      ChatConstants
+    </td>
+    <td>
+      The chat color code constants, used to indicate who is talking.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      ClientFrame
+    </td>
+    <td>
+      The JFrame of the GUI client.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      GameManagerImpl
+    </td>
+    <td>
+      The manager connects two players into the game.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      IorReader
+    </td>
+    <td>
+      Reads the remote URL.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      OrbStarter
+    </td>
+    <td>
+      Starts the ORBs, involved into this application.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      PlayerImpl
+    </td>
+    <td>
+      The implementation of the PlayerCommunicator, providing the
+      local functionality.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      PlayingDesk
+    </td>
+    <td>
+      Manages actions, related to the game rules and also does all
+      painting.
+    </td>
+  </tr>
+</table>
+<h3>See also
+</h3>
+<p>
+  <a HREF="http://www.javascripter.net/games/xo/xo.htm">http://www.javascripter.net/games/xo/xo.htm
+  </a>
+</p>
+<p>
+  <a HREF="http://www.leepoint.net/notes-java/45examples/55games/five/five.html">http://www.leepoint.net/notes-java/45examples/55games/five/five.html
+  </a>
+</p>
+<p>Copyright
+</p>
+<p>
+  <font COLOR="#b3b3b3">Copyright (C) 2005 Free Software Foundation,
+    Inc. This file is part of GNU Classpath. GNU Classpath is free
+    software; you can redistribute it and/or modify it under the terms of
+    the GNU General Public License as published by the Free Software
+    Foundation; either version 2, or (at your option) any later version.
+    GNU Classpath is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    General Public License for more details. You should have received a
+    copy of the GNU General Public License along with GNU Classpath; see
+    the file COPYING. If not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+    Linking this library statically or dynamically with other modules is
+    making a combined work based on this library. Thus, the terms and
+    conditions of the GNU General Public License cover the whole
+    combination. As a special exception, the copyright holders of this
+    library give you permission to link this library with independent
+    modules to produce an executable, regardless of the license terms of
+    these independent modules, and to copy and distribute the resulting
+    executable under terms of your choice, provided that you also meet,
+    for each linked independent module, the terms and conditions of the
+    license of that module. An independent module is a module which is
+    not derived from or based on this library. If you modify this
+    library, you may extend this exception to your version of the
+    library, but you are not obligated to do so. If you do not wish to do
+    so, delete this exception statement from your version.
+  </font>
+</p>
+<p>
+  <br>
+  <br>
+</p>
+<p>
+First version written by <a href="http://savannah.gnu.org/users/audriusa">
+Audrius Me&scaron;kauskas</a>
+</p>
+</body>
+</html>

@@ -189,7 +189,7 @@ public class JApplet extends Applet
 
   protected String paramString()
   {
-    return "JFrame";
+    return super.paramString();
   }
 
   protected void processKeyEvent(KeyEvent e)

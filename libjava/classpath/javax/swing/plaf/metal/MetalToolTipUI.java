@@ -56,7 +56,6 @@ import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
@@ -107,13 +106,12 @@ public class MetalToolTipUI
   public MetalToolTipUI()
   {
     super();
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    activeBorder = defaults.getBorder("ToolTip.border");
-    inactiveBorder = defaults.getBorder("ToolTip.borderInactive");
-    isAcceleratorHidden = defaults.getBoolean("ToolTip.hideAccelerator");
-    acceleratorFont = defaults.getFont("MenuItem.acceleratorFont");
-    acceleratorForeground = defaults.getColor("MenuItem.acceleratorForeground");
-    acceleratorDelimiter = defaults.getString("MenuItem.acceleratorDelimiter");
+    activeBorder = UIManager.getBorder("ToolTip.border");
+    inactiveBorder = UIManager.getBorder("ToolTip.borderInactive");
+    isAcceleratorHidden = UIManager.getBoolean("ToolTip.hideAccelerator");
+    acceleratorFont = UIManager.getFont("MenuItem.acceleratorFont");
+    acceleratorForeground = UIManager.getColor("MenuItem.acceleratorForeground");
+    acceleratorDelimiter = UIManager.getString("MenuItem.acceleratorDelimiter");
   }
 
   /**

@@ -211,7 +211,6 @@ public class BasicMenuUI extends BasicMenuItemUI
     selectionForeground = UIManager.getColor("Menu.selectionForeground");
     arrowIcon = UIManager.getIcon("Menu.arrowIcon");
     oldBorderPainted = UIManager.getBoolean("Menu.borderPainted");
-    menuItem.setOpaque(true);
   }
 
   /**

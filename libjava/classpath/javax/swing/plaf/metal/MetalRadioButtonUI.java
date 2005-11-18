@@ -46,7 +46,6 @@ import java.awt.Rectangle;
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicRadioButtonUI;
@@ -96,10 +95,9 @@ public class MetalRadioButtonUI
   public void installDefaults(AbstractButton b)
   {
     super.installDefaults(b);
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    disabledTextColor = defaults.getColor("RadioButton.disabledText");
-    focusColor = defaults.getColor("RadioButton.focus");
-    selectColor = defaults.getColor("RadioButton.select");
+    disabledTextColor = UIManager.getColor("RadioButton.disabledText");
+    focusColor = UIManager.getColor("RadioButton.focus");
+    selectColor = UIManager.getColor("RadioButton.select");
   }
   
   /**
@@ -118,7 +116,7 @@ public class MetalRadioButtonUI
   /**
    * Returns the color used to fill the {@link JRadioButton}'s icon when the
    * button is pressed.  The default color is obtained from the 
-   * {@link UIDefaults} via an entry with the key 
+   * {@link UIManager} defaults via an entry with the key 
    * <code>RadioButton.select</code>.
    * 
    * @return The select color.
@@ -130,8 +128,8 @@ public class MetalRadioButtonUI
   
   /**
    * Returns the color for the {@link JRadioButton}'s text when the button is
-   * disabled.  The default color is obtained from the {@link UIDefaults} via 
-   * an entry with the key <code>RadioButton.disabledText</code>.
+   * disabled.  The default color is obtained from the {@link UIManager}
+   * defaults via an entry with the key <code>RadioButton.disabledText</code>.
    * 
    * @return The disabled text color.
    */
@@ -143,7 +141,7 @@ public class MetalRadioButtonUI
   /**
    * Returns the color used to draw the focus rectangle when the 
    * {@link JRadioButton} has the focus.  The default color is obtained from 
-   * the {@link UIDefaults} via an entry with the key 
+   * the {@link UIManager} defaults via an entry with the key 
    * <code>RadioButton.focus</code>.
    * 
    * @return The color used to draw the focus rectangle.

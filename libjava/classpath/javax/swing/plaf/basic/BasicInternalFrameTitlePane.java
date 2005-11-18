@@ -66,7 +66,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 
 /**
@@ -718,13 +717,11 @@ public class BasicInternalFrameTitlePane extends JComponent
    */
   protected void installDefaults()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-
-    title.setFont(defaults.getFont("InternalFrame.titleFont"));
-    selectedTextColor = defaults.getColor("InternalFrame.activeTitleForeground");
-    selectedTitleColor = defaults.getColor("InternalFrame.activeTitleBackground");
-    notSelectedTextColor = defaults.getColor("InternalFrame.inactiveTitleForeground");
-    notSelectedTitleColor = defaults.getColor("InternalFrame.inactiveTitleBackground");
+    title.setFont(UIManager.getFont("InternalFrame.titleFont"));
+    selectedTextColor = UIManager.getColor("InternalFrame.activeTitleForeground");
+    selectedTitleColor = UIManager.getColor("InternalFrame.activeTitleBackground");
+    notSelectedTextColor = UIManager.getColor("InternalFrame.inactiveTitleForeground");
+    notSelectedTitleColor = UIManager.getColor("InternalFrame.inactiveTitleBackground");
   
     closeIcon = UIManager.getIcon("InternalFrame.closeIcon");
     iconIcon = UIManager.getIcon("InternalFrame.iconifyIcon");
@@ -901,6 +898,9 @@ public class BasicInternalFrameTitlePane extends JComponent
    */
   protected void paintTitleBackground(Graphics g)
   {
+    if (!isOpaque())
+      return;
+
     Color saved = g.getColor();
     Dimension dims = getSize();
 

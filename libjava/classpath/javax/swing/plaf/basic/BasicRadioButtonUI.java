@@ -48,7 +48,6 @@ import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
@@ -122,8 +121,7 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
    */
   public Icon getDefaultIcon()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    return defaults.getIcon(getPropertyPrefix() + "icon");
+    return UIManager.getIcon(getPropertyPrefix() + "icon");
   }
 
   /**

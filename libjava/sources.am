@@ -975,7 +975,7 @@ gnu/java/net.list: $(gnu_java_net_source_files)
 
 
 gnu_java_net_protocol_file_source_files = \
-gnu/java/net/protocol/file/Connection.java \
+classpath/gnu/java/net/protocol/file/Connection.java \
 classpath/gnu/java/net/protocol/file/Handler.java
 
 gnu_java_net_protocol_file_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_file_source_files)))
@@ -5133,6 +5133,7 @@ classpath/javax/swing/plaf/metal/MetalInternalFrameTitlePane.java \
 classpath/javax/swing/plaf/metal/MetalInternalFrameUI.java \
 classpath/javax/swing/plaf/metal/MetalLabelUI.java \
 classpath/javax/swing/plaf/metal/MetalLookAndFeel.java \
+classpath/javax/swing/plaf/metal/MetalMenuBarUI.java \
 classpath/javax/swing/plaf/metal/MetalPopupMenuSeparatorUI.java \
 classpath/javax/swing/plaf/metal/MetalProgressBarUI.java \
 classpath/javax/swing/plaf/metal/MetalRadioButtonUI.java \

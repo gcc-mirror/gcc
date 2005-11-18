@@ -408,10 +408,7 @@ public final class URL implements Serializable
 	    // The 1.2 doc specifically says these are copied to the new URL.
 	    host = context.host;
 	    port = context.port;
-	    file = context.file;
             userInfo = context.userInfo;
-	    if (file == null || file.length() == 0)
-	      file = "/";
 	    authority = context.authority;
 	  }
       }
@@ -423,10 +420,13 @@ public final class URL implements Serializable
 	protocol = context.protocol;
 	host = context.host;
 	port = context.port;
-	file = context.file;
         userInfo = context.userInfo;
-	if (file == null || file.length() == 0)
-	  file = "/";
+	if (spec.indexOf(":/", 1) < 0)
+	  {
+	    file = context.file;
+	    if (file == null || file.length() == 0)
+	      file = "/";
+	  }
 	authority = context.authority;
       }
     else // Protocol NOT specified in spec. and no context available.

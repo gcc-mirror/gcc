@@ -79,7 +79,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -1429,27 +1428,25 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   protected void installStrings(JFileChooser fc)
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    acceptAllFileFilterText = UIManager.getString("FileChooser.acceptAllFileFilterText");
+    cancelButtonMnemonic = UIManager.getInt("FileChooser.cancelButtonMnemonic");
+    cancelButtonText = UIManager.getString("FileChooser.cancelButtonText");
+    cancelButtonToolTipText = UIManager.getString("FileChooser.cancelButtonToolTipText");
 
-    acceptAllFileFilterText = defaults.getString("FileChooser.acceptAllFileFilterText");
-    cancelButtonMnemonic = defaults.getInt("FileChooser.cancelButtonMnemonic");
-    cancelButtonText = defaults.getString("FileChooser.cancelButtonText");
-    cancelButtonToolTipText = defaults.getString("FileChooser.cancelButtonToolTipText");
+    dirDescText = UIManager.getString("FileChooser.directoryDescriptionText");
+    fileDescText = UIManager.getString("FileChooser.fileDescriptionText");
 
-    dirDescText = defaults.getString("FileChooser.directoryDescriptionText");
-    fileDescText = defaults.getString("FileChooser.fileDescriptionText");
+    helpButtonMnemonic = UIManager.getInt("FileChooser.helpButtonMnemonic");
+    helpButtonText = UIManager.getString("FileChooser.helpButtonText");
+    helpButtonToolTipText = UIManager.getString("FileChooser.helpButtonToolTipText");
 
-    helpButtonMnemonic = defaults.getInt("FileChooser.helpButtonMnemonic");
-    helpButtonText = defaults.getString("FileChooser.helpButtonText");
-    helpButtonToolTipText = defaults.getString("FileChooser.helpButtonToolTipText");
+    openButtonMnemonic = UIManager.getInt("FileChooser.openButtonMnemonic");
+    openButtonText = UIManager.getString("FileChooser.openButtonText");
+    openButtonToolTipText = UIManager.getString("FileChooser.openButtonToolTipText");
 
-    openButtonMnemonic = defaults.getInt("FileChooser.openButtonMnemonic");
-    openButtonText = defaults.getString("FileChooser.openButtonText");
-    openButtonToolTipText = defaults.getString("FileChooser.openButtonToolTipText");
-
-    saveButtonMnemonic = defaults.getInt("FileChooser.saveButtonMnemonic");
-    saveButtonText = defaults.getString("FileChooser.saveButtonText");
-    saveButtonToolTipText = defaults.getString("FileChooser.saveButtonToolTipText");
+    saveButtonMnemonic = UIManager.getInt("FileChooser.saveButtonMnemonic");
+    saveButtonText = UIManager.getString("FileChooser.saveButtonText");
+    saveButtonToolTipText = UIManager.getString("FileChooser.saveButtonToolTipText");
   }
 
   /**

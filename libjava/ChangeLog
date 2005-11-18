@@ -1,5 +1,12 @@
 2005-11-17  Mark Wielaard  <mark@klomp.org>
 
+	Imported GNU Classpath gcj-import-20051117.
+	* gnu/java/net/protocol/file/Connection.java: Removed, fully merged.
+	* sources.am: Regenerated.
+	* Makefile.in: Likewise.
+
+2005-11-17  Mark Wielaard  <mark@klomp.org>
+
 	* gnu/java/net/protocol/file/Handler.java: Removed, fully merged now.
 	* java/net/ServerSocket.java: Likewise.
 	* sources.am: Regenerated.

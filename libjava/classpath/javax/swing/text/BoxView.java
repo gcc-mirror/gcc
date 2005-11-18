@@ -476,7 +476,6 @@ public class BoxView
   protected View getViewAtPoint(int x, int y, Rectangle r)
   {
     View result = null;
-
     int count = getViewCount();
     Rectangle copy = new Rectangle(r);
 
@@ -490,7 +489,9 @@ public class BoxView
             break;
           }
       }
-
+    
+    if (result == null && count > 0)
+      return getView(count - 1);
     return result;
   }
 
@@ -498,10 +499,12 @@ public class BoxView
    * Computes the allocation for a child <code>View</code>. The parameter
    * <code>a</code> stores the allocation of this <code>CompositeView</code>
    * and is then adjusted to hold the allocation of the child view.
-   *
-   * @param index the index of the child <code>View</code>
-   * @param a the allocation of this <code>CompositeView</code> before the
-   *        call, the allocation of the child on exit
+   * 
+   * @param index
+   *          the index of the child <code>View</code>
+   * @param a
+   *          the allocation of this <code>CompositeView</code> before the
+   *          call, the allocation of the child on exit
    */
   protected void childAllocation(int index, Rectangle a)
   {
@@ -736,5 +739,23 @@ public class BoxView
     if (height)
       yLayoutValid = false;
     super.preferenceChanged(child, width, height);
+  }
+  
+  /**
+   * Maps the document model position <code>pos</code> to a Shape
+   * in the view coordinate space.  This method overrides CompositeView's
+   * method to make sure the children are allocated properly before
+   * calling the super's behaviour.
+   */
+  public Shape modelToView(int pos, Shape a, Position.Bias bias)
+      throws BadLocationException
+  {
+    // Make sure everything is allocated properly and then call super
+    if (!isAllocationValid())
+      {
+        Rectangle bounds = a.getBounds();
+        setSize(bounds.width, bounds.height);
+      }
+    return super.modelToView(pos, a, bias);
   }
 }

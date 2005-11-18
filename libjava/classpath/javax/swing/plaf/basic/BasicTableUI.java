@@ -66,7 +66,6 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.LookAndFeel;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -398,8 +397,7 @@ public class BasicTableUI extends TableUI
 
   protected void installKeyboardActions() 
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    InputMap ancestorMap = (InputMap)defaults.get("Table.ancestorInputMap");
+    InputMap ancestorMap = (InputMap) UIManager.get("Table.ancestorInputMap");
     InputMapUIResource parentInputMap = new InputMapUIResource();
     // FIXME: The JDK uses a LazyActionMap for parentActionMap
     ActionMap parentActionMap = new ActionMapUIResource();

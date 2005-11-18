@@ -45,12 +45,9 @@ import javax.swing.JTextPane;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.UIDefaults;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.text.Element;
-import javax.swing.text.PlainView;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
-import javax.swing.text.View;
 
 public class BasicTextPaneUI extends BasicEditorPaneUI
 {
@@ -62,11 +59,6 @@ public class BasicTextPaneUI extends BasicEditorPaneUI
   public static ComponentUI createUI(JComponent comp)
   {
     return new BasicTextPaneUI();
-  }
-
-  public View create(Element elem)
-  {
-    return new PlainView(elem);
   }
 
   /**

@@ -187,7 +187,7 @@ public class MemoryImageSource implements ImageProducer
 	ic = (ImageConsumer) list.elementAt(i);
 	sendPicture(ic);
 	if (animated)
-	  ic.imageComplete(ImageConsumer.SINGLEFRAME);
+	  ic.imageComplete(ImageConsumer.SINGLEFRAMEDONE);
 	else
 	  ic.imageComplete(ImageConsumer.STATICIMAGEDONE);
       }

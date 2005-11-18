@@ -52,6 +52,8 @@ import javax.swing.JInternalFrame;
 import javax.swing.JRadioButton;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
 
 
@@ -779,6 +781,10 @@ public class MetalIconFactory implements Serializable
      */
     public void paintIcon(Component c, Graphics g, int x, int y) 
     {
+      if (UIManager.get("RadioButton.gradient") != null)
+        MetalUtils.paintGradient(g, x, y, getIconWidth(), getIconHeight(),
+                              SwingConstants.VERTICAL, "RadioButton.gradient");
+
       Color savedColor = g.getColor();
       JRadioButton b = (JRadioButton) c;
       

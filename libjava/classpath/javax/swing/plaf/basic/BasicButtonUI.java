@@ -52,7 +52,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.ComponentUI;
@@ -161,7 +160,6 @@ public class BasicButtonUI extends ButtonUI
     b.setIconTextGap(UIManager.getInt(prefix + "textIconGap"));
     b.setInputMap(JComponent.WHEN_FOCUSED, 
                   (InputMap) UIManager.get(prefix + "focusInputMap"));
-    b.setRolloverEnabled(UIManager.getBoolean(prefix + "rollover"));
   }
 
   /**
@@ -444,9 +442,8 @@ public class BasicButtonUI extends ButtonUI
       }
     else
       {
-        UIDefaults defaults = UIManager.getLookAndFeelDefaults();
         String prefix = getPropertyPrefix();
-        g.setColor(defaults.getColor(prefix + "disabledText"));
+        g.setColor(UIManager.getColor(prefix + "disabledText"));
         g.drawString(text, textRect.x, textRect.y + fm.getAscent());
       }
   } 

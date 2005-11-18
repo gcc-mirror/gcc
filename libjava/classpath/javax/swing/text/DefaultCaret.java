@@ -781,28 +781,34 @@ public class DefaultCaret extends Rectangle
    */
   public void moveDot(int dot)
   {
-    this.dot = dot;
-    handleHighlight();
-    adjustVisibility(this);
-    appear();
+    if (dot >= 0)
+      {
+        this.dot = dot;
+        handleHighlight();
+        adjustVisibility(this);
+        appear();
+      }
   }
 
   /**
    * Sets the current position of this <code>Caret</code> within the
-   * <code>Document</code>. This also sets the <code>mark</code> to the
-   * new location.
-   *
-   * @param dot the new position to be set
-   *
+   * <code>Document</code>. This also sets the <code>mark</code> to the new
+   * location.
+   * 
+   * @param dot
+   *          the new position to be set
    * @see #moveDot(int)
    */
   public void setDot(int dot)
   {
-    this.dot = dot;
-    this.mark = dot;
-    handleHighlight();
-    adjustVisibility(this);
-    appear();
+    if (dot >= 0)
+      {
+        this.mark = dot;
+        this.dot = dot;
+        handleHighlight();
+        adjustVisibility(this);
+        appear();
+      }
   }
   
   /**
@@ -878,7 +884,7 @@ public class DefaultCaret extends Rectangle
           }
         Rectangle area = null;
         try
-          {
+          {            
             area = getComponent().modelToView(getDot());
           }
         catch (BadLocationException ex)

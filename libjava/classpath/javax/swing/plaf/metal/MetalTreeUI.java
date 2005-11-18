@@ -41,24 +41,10 @@ package javax.swing.plaf.metal;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.event.ComponentListener;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseListener;
-import java.beans.PropertyChangeListener;
-import java.util.Hashtable;
 
 import javax.swing.JComponent;
 import javax.swing.JTree;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-import javax.swing.tree.TreeCellEditor;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeModelListener;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicTreeUI;
 
@@ -67,19 +53,6 @@ import javax.swing.plaf.basic.BasicTreeUI;
  */
 public class MetalTreeUI extends BasicTreeUI
 {
-
-  /** Listeners */
-  private PropertyChangeListener propertyChangeListener;
-  private FocusListener focusListener;
-  private TreeSelectionListener treeSelectionListener;
-  private MouseListener mouseListener;
-  private KeyListener keyListener;
-  private PropertyChangeListener selectionModelPropertyChangeListener;
-  private ComponentListener componentListener;
-  private CellEditorListener cellEditorListener;
-  private TreeExpansionListener treeExpansionListener;
-  private TreeModelListener treeModelListener;
-    
   /**
    * Constructs a new instance of <code>MetalTreeUI</code>.
    */
@@ -128,71 +101,8 @@ public class MetalTreeUI extends BasicTreeUI
    */
   public void installUI(JComponent c)
   {
-    tree = (JTree) c;
-    configureLayoutCache();
-    
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    tree.setFont(defaults.getFont("Tree.font"));
-    tree.setForeground(defaults.getColor("Tree.foreground"));
-    tree.setBackground(defaults.getColor("Tree.background"));
-    tree.setOpaque(true);
-    tree.setScrollsOnExpand(defaults.getBoolean("Tree.scrollsOnExpand"));
-    rightChildIndent = defaults.getInt("Tree.rightChildIndent");
-    leftChildIndent = defaults.getInt("Tree.leftChildIndent");
-    setRowHeight(defaults.getInt("Tree.rowHeight"));
-    tree.setRowHeight(defaults.getInt("Tree.rowHeight"));
-    tree.requestFocusInWindow(false);
-    
-    setExpandedIcon(defaults.getIcon("Tree.expandedIcon"));
-    setCollapsedIcon(defaults.getIcon("Tree.collapsedIcon"));
-    
-    currentCellRenderer = createDefaultCellRenderer();
-    rendererPane = createCellRendererPane();
-    createdRenderer = true;
-    setCellEditor(createDefaultCellEditor());
-    createdCellEditor = true;
-    TreeModel mod = tree.getModel();
-    setModel(mod);
-
-    treeSelectionModel = tree.getSelectionModel();
-    drawingCache = new Hashtable();
-    nodeDimensions = createNodeDimensions();
-    
-    propertyChangeListener = createPropertyChangeListener();
-    focusListener = createFocusListener();
-    treeSelectionListener = createTreeSelectionListener();
-    mouseListener = createMouseListener();
-    keyListener = createKeyListener();
-    selectionModelPropertyChangeListener = createSelectionModelPropertyChangeListener();
-    componentListener = createComponentListener();
-    cellEditorListener = createCellEditorListener();
-    treeExpansionListener = createTreeExpansionListener();
-    treeModelListener = createTreeModelListener();
-
-    editingRow = -1;
-    lastSelectedRow = -1;
-    
-    installKeyboardActions();
-    
-    tree.addPropertyChangeListener(propertyChangeListener);
-    tree.addFocusListener(focusListener);
-    tree.addTreeSelectionListener(treeSelectionListener);
-    tree.addMouseListener(mouseListener);
-    tree.addKeyListener(keyListener);
-    tree.addPropertyChangeListener(selectionModelPropertyChangeListener);
-    tree.addComponentListener(componentListener);
-    tree.addTreeExpansionListener(treeExpansionListener);
-    if (treeModel != null)
-      treeModel.addTreeModelListener(treeModelListener);
-    
-    if (mod != null)
-      {
-        TreePath path = new TreePath(mod.getRoot());
-        if (!tree.isExpanded(path))
-          toggleExpandState(path);
-      }
-    
-    completeUIInstall();
+    // TODO: What to do here, if anything?
+    super.installUI(c);
   }
   
   /**
@@ -212,31 +122,8 @@ public class MetalTreeUI extends BasicTreeUI
    */
   public void uninstallUI(JComponent c)
   {
-    tree.setFont(null);
-    tree.setForeground(null);
-    tree.setBackground(null);
-    
-    uninstallKeyboardActions();
-    
-    tree.removePropertyChangeListener(propertyChangeListener);
-    tree.removeFocusListener(focusListener);
-    tree.removeTreeSelectionListener(treeSelectionListener);
-    tree.removeMouseListener(mouseListener);
-    tree.removeKeyListener(keyListener);
-    tree.removePropertyChangeListener(selectionModelPropertyChangeListener);
-    tree.removeComponentListener(componentListener);
-    tree.removeTreeExpansionListener(treeExpansionListener);
-
-    TreeCellEditor tce = tree.getCellEditor();
-    if (tce != null)
-      tce.removeCellEditorListener(cellEditorListener);
-    TreeModel tm = tree.getModel();
-    if (tm != null)
-      tm.removeTreeModelListener(treeModelListener);
-    
-    tree = null;
-    uninstallComponents();
-    completeUIUninstall();
+    // TODO: What to do here?
+    super.uninstallUI(c);
   }
   
   /**

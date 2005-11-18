@@ -137,6 +137,6 @@ public class JPanel extends JComponent implements Accessible
     
   protected  String paramString()
   {
-	return "JPanel";
+	return super.paramString();
   }
 }

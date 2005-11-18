@@ -43,7 +43,6 @@ import java.awt.Graphics;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
@@ -83,22 +82,20 @@ public class MetalLabelUI
   
   /**
    * Draws the text for a disabled label, using the color defined in the 
-   * {@link UIDefaults} with the key <code>Label.disabledForeground</code>.
+   * {@link UIManager} defaults with the key
+   * <code>Label.disabledForeground</code>.
    * 
    * @param l  the label.
    * @param g  the graphics device.
    * @param s  the label text.
    * @param textX  the x-coordinate for the label.
    * @param textY  the y-coordinate for the label.
-   * 
-   * @see UIManager#getLookAndFeelDefaults()
    */
   protected void paintDisabledText(JLabel l, Graphics g, String s, int textX,
                                  int textY)
   {
     Color savedColor = g.getColor();
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    g.setColor(defaults.getColor("Label.disabledForeground"));
+    g.setColor(UIManager.getColor("Label.disabledForeground"));
     int mnemIndex = l.getDisplayedMnemonicIndex();
     if (mnemIndex != -1)
       BasicGraphicsUtils.drawStringUnderlineCharAt(g, s, mnemIndex, textX,
