@@ -571,12 +571,6 @@ extern void dump_generic_bb (FILE *, basic_block, int, int);
 extern var_ann_t create_var_ann (tree);
 extern stmt_ann_t create_stmt_ann (tree);
 extern tree_ann_t create_tree_ann (tree);
-extern void reserve_phi_args_for_new_edge (basic_block);
-extern tree create_phi_node (tree, basic_block);
-extern void add_phi_arg (tree, tree, edge);
-extern void remove_phi_args (edge);
-extern void remove_phi_node (tree, tree);
-extern tree phi_reverse (tree);
 extern void dump_dfa_stats (FILE *);
 extern void debug_dfa_stats (void);
 extern void debug_referenced_vars (void);
@@ -591,6 +585,14 @@ extern void mark_new_vars_to_rename (tree);
 extern void find_new_referenced_vars (tree *);
 
 extern tree make_rename_temp (tree, const char *);
+
+/* In tree-phinodes.c  */
+extern void reserve_phi_args_for_new_edge (basic_block);
+extern tree create_phi_node (tree, basic_block);
+extern void add_phi_arg (tree, tree, edge);
+extern void remove_phi_args (edge);
+extern void remove_phi_node (tree, tree);
+extern tree phi_reverse (tree);
 
 /* In gimple-low.c  */
 extern void record_vars (tree);
