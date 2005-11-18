@@ -1,3 +1,9 @@
+2005-11-18  James A. Morrison  <phython@gcc.gnu.org>
+
+	* tree-flow.h (reserve_phi_args_for_new_edge, create_phi_node,
+	add_phi_arg, remove_phi_args, remove_phi_node phi_reverse): Mention that
+	these functions are now in tree-phinodes.c.
+
 2005-11-18  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.md (trap): New pattern.
