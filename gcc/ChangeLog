@@ -1,3 +1,7 @@
+2005-11-17  James E Wilson  <wilson@specifix.com>
+
+	* tree.def (FUNCTION_DECL): Correct typo in comment.
+
 2005-11-17  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (dw_cfi_oprnd_struct): Reduce dw_cfi_reg_num to int.
