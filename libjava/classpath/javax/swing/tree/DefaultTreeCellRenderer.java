@@ -51,7 +51,6 @@ import javax.swing.border.Border;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.UIResource;
@@ -133,17 +132,15 @@ public class DefaultTreeCellRenderer
    */
   public DefaultTreeCellRenderer()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-
     setLeafIcon(getDefaultLeafIcon());
     setOpenIcon(getDefaultOpenIcon());
     setClosedIcon(getDefaultClosedIcon());
 
-    setTextNonSelectionColor(defaults.getColor("Tree.textForeground"));
-    setTextSelectionColor(defaults.getColor("Tree.selectionForeground"));
-    setBackgroundNonSelectionColor(defaults.getColor("Tree.nonSelectionBackground"));
-    setBackgroundSelectionColor(defaults.getColor("Tree.selectionBackground"));
-    setBorderSelectionColor(defaults.getColor("Tree.selectionBorderColor"));
+    setTextNonSelectionColor(UIManager.getColor("Tree.textForeground"));
+    setTextSelectionColor(UIManager.getColor("Tree.selectionForeground"));
+    setBackgroundNonSelectionColor(UIManager.getColor("Tree.nonSelectionBackground"));
+    setBackgroundSelectionColor(UIManager.getColor("Tree.selectionBackground"));
+    setBorderSelectionColor(UIManager.getColor("Tree.selectionBorderColor"));
   }
 
   // -------------------------------------------------------------
@@ -157,7 +154,7 @@ public class DefaultTreeCellRenderer
    */
   public Icon getDefaultOpenIcon()
   {
-    return UIManager.getLookAndFeelDefaults().getIcon("Tree.openIcon");
+    return UIManager.getIcon("Tree.openIcon");
   }
 
   /**
@@ -167,7 +164,7 @@ public class DefaultTreeCellRenderer
    */
   public Icon getDefaultClosedIcon()
   {
-    return UIManager.getLookAndFeelDefaults().getIcon("Tree.closedIcon");
+    return UIManager.getIcon("Tree.closedIcon");
   }
 
   /**
@@ -177,7 +174,7 @@ public class DefaultTreeCellRenderer
    */
   public Icon getDefaultLeafIcon()
   {
-    return UIManager.getLookAndFeelDefaults().getIcon("Tree.leafIcon");
+    return UIManager.getIcon("Tree.leafIcon");
   }
 
   /**
@@ -412,7 +409,7 @@ public class DefaultTreeCellRenderer
     setOpaque(false);
     setVerticalAlignment(TOP);
     setEnabled(true);
-    super.setFont(UIManager.getLookAndFeelDefaults().getFont("Tree.font"));
+    super.setFont(UIManager.getFont("Tree.font"));
 
     if (selected)
       {
@@ -459,8 +456,7 @@ public class DefaultTreeCellRenderer
     Rectangle tr = new Rectangle();
 
     Insets insets = new Insets(0, 0, 0, 0);
-    Border border = UIManager.getLookAndFeelDefaults().getBorder(
-                                                                 "Tree.selectionBorder");
+    Border border = UIManager.getBorder("Tree.selectionBorder");
     if (border != null)
       insets = border.getBorderInsets(this);
 

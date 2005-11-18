@@ -47,7 +47,9 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
 import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
 
@@ -192,9 +194,20 @@ public class JTextPane
    */
   public void insertComponent(Component component)
   {
-    // TODO: One space must be inserted here with attributes set to indicate
-    // that the component must be displayed here. Have to figure out the
-    // attributes.
+    SimpleAttributeSet atts = new SimpleAttributeSet();
+    atts.addAttribute(StyleConstants.ComponentAttribute, component);
+    atts.addAttribute(StyleConstants.NameAttribute,
+                      StyleConstants.ComponentElementName);
+    try
+      {
+        getDocument().insertString(getCaret().getDot(), " ", atts);
+      }
+    catch (BadLocationException ex)
+      {
+        AssertionError err = new AssertionError("Unexpected bad location");
+        err.initCause(ex);
+        throw err;
+      }
   }
 
   /**
@@ -204,9 +217,20 @@ public class JTextPane
    */
   public void insertIcon(Icon icon)
   {
-    // TODO: One space must be inserted here with attributes set to indicate
-    // that the icon must be displayed here. Have to figure out the
-    // attributes.
+    SimpleAttributeSet atts = new SimpleAttributeSet();
+    atts.addAttribute(StyleConstants.IconAttribute, icon);
+    atts.addAttribute(StyleConstants.NameAttribute,
+                      StyleConstants.IconElementName);
+    try
+      {
+        getDocument().insertString(getCaret().getDot(), " ", atts);
+      }
+    catch (BadLocationException ex)
+      {
+        AssertionError err = new AssertionError("Unexpected bad location");
+        err.initCause(ex);
+        throw err;
+      }
   }
 
   /**

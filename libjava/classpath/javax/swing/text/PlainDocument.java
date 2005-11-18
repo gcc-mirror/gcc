@@ -105,10 +105,65 @@ public class PlainDocument extends AbstractDocument
     return root;
   }
 
-  protected void insertUpdate(DefaultDocumentEvent event, AttributeSet attributes)
+  protected void insertUpdate(DefaultDocumentEvent event,
+                              AttributeSet attributes)
   {
-    reindex();
+    int offset = event.getOffset();
+    int end = offset + event.getLength();
+    int elementIndex = rootElement.getElementIndex(offset);
+    Element firstElement = rootElement.getElement(elementIndex);
+    
+    // added and removed are Element arrays used to add an ElementEdit
+    // to the DocumentEvent if there were entire lines added or removed.
+    Element[] removed = new Element[1];
+    Element[] added;
+    try 
+      {
+        String str = content.getString(0, content.length());
+        ArrayList elts = new ArrayList();
 
+        // Determine how many NEW lines were added by finding the newline
+        // characters within the newly inserted text
+        int j = firstElement.getStartOffset();
+        int i = str.indexOf('\n', offset);
+        while (i != -1 && i <= end)
+          {            
+            // For each new line, create a new element
+            elts.add(createLeafElement(rootElement, SimpleAttributeSet.EMPTY,
+                                       j, i + 1));
+            j = i + 1;
+            if (j >= str.length())
+              break;
+            i = str.indexOf('\n', j);
+          }
+        // If there were new lines added we have to add an ElementEdit to 
+        // the DocumentEvent and we have to call rootElement.replace to 
+        // insert the new lines
+        if (elts.size() != 0)
+          {
+            // Set up the ElementEdit by filling the added and removed 
+            // arrays with the proper Elements
+            added = new Element[elts.size()];
+            for (int k = 0; k < elts.size(); ++k)
+              added[k] = (Element) elts.get(k);
+            removed[0] = firstElement;
+            
+            // Now create and add the ElementEdit
+            ElementEdit e = new ElementEdit(rootElement, elementIndex, removed,
+                                            added);
+            event.addEdit(e);
+            
+            // And call replace to actually make the changes
+            ((BranchElement) rootElement).replace(elementIndex, 1, added);
+          }
+      }
+    catch (BadLocationException e)
+      {
+        // This shouldn't happen so we throw an AssertionError
+        AssertionError ae = new AssertionError();
+        ae.initCause(e);
+        throw ae;
+      }
     super.insertUpdate(event, attributes);
   }
 
@@ -116,24 +171,37 @@ public class PlainDocument extends AbstractDocument
   {
     super.removeUpdate(event);
 
+    // added and removed are Element arrays used to add an ElementEdit
+    // to the DocumentEvent if there were entire lines added or removed
+    // from the Document
+    Element[] added = new Element[1];
+    Element[] removed;
     int p0 = event.getOffset();
-    int len = event.getLength();
-    int p1 = len + p0;
 
     // check if we must collapse some elements
     int i1 = rootElement.getElementIndex(p0);
-    int i2 = rootElement.getElementIndex(p1);
+    int i2 = rootElement.getElementIndex(p0 + event.getLength());
     if (i1 != i2)
       {
-        Element el1 = rootElement.getElement(i1);
-        Element el2 = rootElement.getElement(i2);
-        int start = el1.getStartOffset();
-        int end = el2.getEndOffset();
-        // collapse elements if the removal spans more than 1 line
-        Element newEl = createLeafElement(rootElement,
+        // If there were lines removed then we have to add an ElementEdit
+        // to the DocumentEvent so we set it up now by filling the Element
+        // arrays "removed" and "added" appropriately
+        removed = new Element [i2 - i1 + 1];
+        for (int i = i1; i <= i2; i++)
+          removed[i-i1] = rootElement.getElement(i);
+        
+        int start = rootElement.getElement(i1).getStartOffset();
+        int end = rootElement.getElement(i2).getEndOffset();        
+        added[0] = createLeafElement(rootElement,
                                           SimpleAttributeSet.EMPTY,
                                           start, end);
-        rootElement.replace(i1, i2 - i1 + 1, new Element[]{ newEl });
+
+        // Now create and add the ElementEdit
+        ElementEdit e = new ElementEdit(rootElement, i1, removed, added);
+        event.addEdit(e);
+
+        // collapse elements if the removal spans more than 1 line
+        rootElement.replace(i1, i2 - i1 + 1, added);
       }
   }
 
@@ -167,7 +235,7 @@ public class PlainDocument extends AbstractDocument
     throws BadLocationException
   {
     String string = str;
-    if (Boolean.TRUE.equals(getProperty("filterNewlines")))
+    if (str != null && Boolean.TRUE.equals(getProperty("filterNewlines")))
       string = str.replaceAll("\n", " ");
     super.insertString(offs, string, atts);
   }

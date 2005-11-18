@@ -1918,9 +1918,15 @@ public abstract class JComponent extends Container implements Serializable
     g2 = getComponentGraphics(g2);
     g2.setClip(r.x, r.y, r.width, r.height);
     isPaintingDoubleBuffered = true;
-    paint(g2);
-    isPaintingDoubleBuffered = false;
-    g2.dispose();
+    try
+      {
+        paint(g2);
+      }
+    finally
+      {
+        isPaintingDoubleBuffered = false;
+        g2.dispose();
+      }
     
     // Paint the buffer contents on screen.
     g.drawImage(buffer, 0, 0, this);
@@ -2921,8 +2927,7 @@ public abstract class JComponent extends Container implements Serializable
   {
     super.removeNotify();
 
-    // FIXME: remove the WHEN_IN_FOCUSED_WINDOW bindings from the 
-    // KeyboardManager
+    KeyboardManager.getManager().clearBindingsForComp(this);
     
     // Notify ancestor listeners.
     fireAncestorEvent(this, AncestorEvent.ANCESTOR_REMOVED);

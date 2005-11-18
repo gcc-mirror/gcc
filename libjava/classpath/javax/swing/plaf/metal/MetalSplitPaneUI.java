@@ -42,7 +42,6 @@ import java.awt.Color;
 
 import javax.swing.JComponent;
 import javax.swing.JSplitPane;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
@@ -83,9 +82,8 @@ public class MetalSplitPaneUI extends BasicSplitPaneUI
    */
   public BasicSplitPaneDivider createDefaultDivider()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    Color light = defaults.getColor("SplitPane.highlight");
-    Color dark = defaults.getColor("SplitPane.darkShadow");
+    Color light = UIManager.getColor("SplitPane.highlight");
+    Color dark = UIManager.getColor("SplitPane.darkShadow");
     return new MetalSplitPaneDivider(this, light, dark);
   }
 }

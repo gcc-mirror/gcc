@@ -71,6 +71,11 @@ Java_java_lang_VMDouble_initIDs (JNIEnv * env, jclass cls __attribute__ ((__unus
     {
       DBG ("unable to get class java.lang.Double\n") return;
     }
+  clsDouble = (*env)->NewGlobalRef(env, clsDouble);
+  if (clsDouble == NULL)
+    {
+      DBG ("unable to register class java.lang.Double as global ref\n") return;
+    }
   isNaNID = (*env)->GetStaticMethodID (env, clsDouble, "isNaN", "(D)Z");
   if (isNaNID == NULL)
     {

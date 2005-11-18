@@ -96,6 +96,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   public JMenu()
   {
     super();
+    setOpaque(false);
   }
 
   /**
@@ -107,6 +108,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   {
     super(text);
     popupMenu.setInvoker(this);
+    setOpaque(false);
   }
 
   /**
@@ -120,6 +122,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
     super(action);
     createActionChangeListener(this);
     popupMenu.setInvoker(this);
+    setOpaque(false);
   }
 
   /**

@@ -1409,7 +1409,6 @@ public abstract class Component
       {
         if (parent != null)
           {
-            Rectangle parentBounds = parent.getBounds();
             Rectangle oldBounds = new Rectangle(oldx, oldy, oldwidth,
                                                 oldheight);
             Rectangle newBounds = new Rectangle(x, y, width, height);
@@ -1887,13 +1886,7 @@ public abstract class Component
    */
   public void repaint()
   {   
-    if(!isShowing())
-      {
-        Component p = parent;
-        if (p != null)
-          p.repaint(0, getX(), getY(), width, height);
-      }
-    else
+    if (isShowing())
       repaint(0, 0, 0, width, height);
   }
 
@@ -1908,13 +1901,7 @@ public abstract class Component
    */
   public void repaint(long tm)
   {
-    if(!isShowing())
-      {
-        Component p = parent;
-        if (p != null)
-          p.repaint(tm, getX(), getY(), width, height);
-      }
-    else
+    if (isShowing())
       repaint(tm, 0, 0, width, height);
   }
 
@@ -1932,13 +1919,7 @@ public abstract class Component
    */
   public void repaint(int x, int y, int w, int h)
   {
-    if(!isShowing())
-      {
-        Component p = parent;
-        if (p != null)
-          p.repaint(0, x + getX(), y + getY(), width, height);
-      }
-    else
+    if (isShowing())
       repaint(0, x, y, w, h);
   }
 
@@ -1957,13 +1938,7 @@ public abstract class Component
    */
   public void repaint(long tm, int x, int y, int width, int height)
   {
-    if(!isShowing())
-      {
-        Component p = parent;
-        if (p != null)
-          p.repaint(tm, x + getX(), y + getY(), width, height);
-      }
-    else
+    if (isShowing())
       {
         ComponentPeer p = peer;
         if (p != null)

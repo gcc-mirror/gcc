@@ -58,7 +58,6 @@ import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -618,13 +617,14 @@ public abstract class BasicTextUI extends TextUI
   protected Keymap createKeymap()
   {
     String prefix = getPropertyPrefix();
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
     JTextComponent.KeyBinding[] bindings = 
-      (JTextComponent.KeyBinding[]) defaults.get(prefix + ".keyBindings");
+      (JTextComponent.KeyBinding[]) UIManager.get(prefix + ".keyBindings");
     if (bindings == null)
       {
         bindings = new JTextComponent.KeyBinding[0];
-        defaults.put(prefix + ".keyBindings", bindings);
+        // FIXME: Putting something into the defaults map is certainly wrong.
+        // Must be fixed somehow.
+        UIManager.put(prefix + ".keyBindings", bindings);
       }
 
     Keymap km = JTextComponent.addKeymap(getKeymapName(), 
@@ -661,17 +661,16 @@ public abstract class BasicTextUI extends TextUI
   InputMap getInputMap(int condition)
   {
     String prefix = getPropertyPrefix();
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
     switch (condition)
       {
       case JComponent.WHEN_IN_FOCUSED_WINDOW:
         // FIXME: is this the right string? nobody seems to use it.
-        return (InputMap) defaults.get(prefix + ".windowInputMap"); 
+        return (InputMap) UIManager.get(prefix + ".windowInputMap"); 
       case JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT:
-        return (InputMap) defaults.get(prefix + ".ancestorInputMap");
+        return (InputMap) UIManager.get(prefix + ".ancestorInputMap");
       default:
       case JComponent.WHEN_FOCUSED:
-        return (InputMap) defaults.get(prefix + ".focusInputMap");
+        return (InputMap) UIManager.get(prefix + ".focusInputMap");
       }
   }
 
@@ -685,12 +684,14 @@ public abstract class BasicTextUI extends TextUI
   ActionMap getActionMap()
   {
     String prefix = getPropertyPrefix();
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();    
-    ActionMap am = (ActionMap) defaults.get(prefix + ".actionMap");
+    ActionMap am = (ActionMap) UIManager.get(prefix + ".actionMap");
     if (am == null)
       {
         am = createActionMap();
-        defaults.put(prefix + ".actionMap", am);
+        // FIXME: Putting something in the UIDefaults map is certainly wrong.
+        // However, the whole method seems wrong and must be replaced by
+        // something that is less wrong.
+        UIManager.put(prefix + ".actionMap", am);
       }
     return am;
   }

@@ -565,6 +565,13 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics2D_gdkDrawDrawable
 
   /* gdk_flush(); */
 
+  if (!GDK_IS_DRAWABLE (src->drawable) || 
+   !GDK_IS_DRAWABLE (dst->drawable))
+    {
+      gdk_threads_leave ();
+      return;
+    }
+
   gdk_drawable_get_size (src->drawable, &s_width, &s_height);
   gdk_drawable_get_size (dst->drawable, &d_width, &d_height);
   width = min (s_width, d_width);

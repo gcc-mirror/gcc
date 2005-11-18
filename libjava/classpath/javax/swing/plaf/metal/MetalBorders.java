@@ -56,7 +56,6 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
@@ -131,6 +130,82 @@ public class MetalBorders
     public void paintBorder(Component c, Graphics g, int x, int y, int w,
                             int h)
     {
+      // With the OceanTheme the button border is painted entirely different.
+      // However, I couldn't figure out how this is determined besides checking
+      // for instanceof OceanTheme. The button painting is definitely not
+      // influenced by a UI default property and it is definitely performed
+      // by the same Border class.
+      if (MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme)
+        paintOceanButtonBorder(c, g, x, y, w, h);
+      else
+        {
+          ButtonModel bmodel = null;
+      
+          if (c instanceof AbstractButton)
+            bmodel = ((AbstractButton) c).getModel();
+
+          Color darkShadow = MetalLookAndFeel.getControlDarkShadow();
+          Color shadow = MetalLookAndFeel.getControlShadow();
+          Color light = MetalLookAndFeel.getControlHighlight();
+          Color middle = MetalLookAndFeel.getControl();
+
+          if (c.isEnabled())
+            {
+              // draw dark border
+              g.setColor(darkShadow);
+              g.drawRect(x, y, w - 2, h - 2);
+
+              if (!bmodel.isPressed())
+                {
+                  // draw light border
+                  g.setColor(light);
+                  g.drawRect(x + 1, y + 1, w - 2, h - 2);
+
+                  // draw crossing pixels of both borders
+                  g.setColor(middle);
+                  g.drawLine(x + 1, y + h - 2, x + 1, y + h - 2);
+                  g.drawLine(x + w - 2, y + 1, x + w - 2, y + 1);
+                }
+              else
+                {
+                  // draw light border
+                  g.setColor(light);
+                  g.drawLine(x + w - 1, y + 1, x + w - 1, y + h - 1);
+                  g.drawLine(x + 1, y + h - 1, x + w - 1, y + h - 1);
+
+                  // draw shadow border
+                  g.setColor(middle);
+                  g.drawLine(x + 1, y + 1, x + w - 2, y + 1);
+                  g.drawLine(x + 1, y + 1, x + 1, y + h - 2);
+ 
+                  // draw crossing pixels of both borders
+                  g.setColor(shadow);
+                  g.drawRect(x + 1, y + h - 2, 0, 0);
+                  g.drawRect(x + w - 2, y + 1, 0, 0);
+                }
+            }
+          else 
+            {
+              // draw disabled border
+              g.setColor(MetalLookAndFeel.getInactiveControlTextColor());
+              g.drawRect(x, y, w - 2, h - 2);          
+            }
+        }
+    }
+
+    /**
+     * Paints the button border for the OceanTheme.
+     *
+     * @param c the button
+     * @param g the graphics context
+     * @param x the X coordinate of the upper left corner of the painting rect
+     * @param y the Y coordinate of the upper left corner of the painting rect
+     * @param w the width of the painting rect
+     * @param h the height of the painting rect
+     */
+    private void paintOceanButtonBorder(Component c, Graphics g, int x,
+                                        int y, int w, int h)
+    {
       ButtonModel bmodel = null;
       
       if (c instanceof AbstractButton)
@@ -138,44 +213,31 @@ public class MetalBorders
 
       Color darkShadow = MetalLookAndFeel.getControlDarkShadow();
       Color shadow = MetalLookAndFeel.getControlShadow();
-      Color light = MetalLookAndFeel.getWhite();
+      Color light = MetalLookAndFeel.getControlHighlight();
       Color middle = MetalLookAndFeel.getControl();
 
       if (c.isEnabled())
-      {
-        // draw dark border
-        g.setColor(darkShadow);
-        g.drawRect(x, y, w - 2, h - 2);
-
-        if (!bmodel.isPressed())
-          {
-            // draw light border
-            g.setColor(light);
-            g.drawRect(x + 1, y + 1, w - 2, h - 2);
-
-            // draw crossing pixels of both borders
-            g.setColor(middle);
-            g.drawRect(x + 1, y + h - 2, 0, 0);
-            g.drawRect(x + w - 2, y + 1, 0, 0);
-          }
-        else
-          {
-            // draw light border
-            g.setColor(light);
-            g.drawLine(x + w - 1, y + 1, x + w - 1, y + h - 1);
-            g.drawLine(x + 1, y + h - 1, x + w - 1, y + h - 1);
-
-            // draw shadow border
-            g.setColor(middle);
-            g.drawLine(x + 1, y + 1, x + w - 2, y + 1);
-            g.drawLine(x + 1, y + 1, x + 1, y + h - 2);
- 
-            // draw crossing pixels of both borders
-            g.setColor(shadow);
-            g.drawRect(x + 1, y + h - 2, 0, 0);
-            g.drawRect(x + w - 2, y + 1, 0, 0);
-          }
-      }
+        {
+          if (bmodel.isPressed())
+            {
+              // draw fat border
+              g.drawLine(x + 1, y + 1, x + w - 2, y + 1);
+              g.drawLine(x + 1, y + 1, x + 1, y + h - 2);
+            }
+          else if (bmodel.isRollover())
+            {
+              g.setColor(shadow);
+              g.drawRect(x, y, w - 1, h - 1);
+              g.drawRect(x + 2, y + 2, w - 5, h - 5);
+              g.setColor(darkShadow);
+              g.drawRect(x + 1, y + 1, w - 3, h - 3);
+            }
+          else
+            {
+              g.setColor(darkShadow);
+              g.drawRect(x, y, w - 1, h - 1);
+            }
+        }
       else 
         {
           // draw disabled border
@@ -654,24 +716,23 @@ public class MetalBorders
         {
           JOptionPane pane = (JOptionPane) f.getContentPane();
           int type = pane.getMessageType();
-          UIDefaults defaults = UIManager.getLookAndFeelDefaults();
           if (type == JOptionPane.QUESTION_MESSAGE)
             {
-              Color bc = defaults.getColor(
+              Color bc = UIManager.getColor(
                   "OptionPane.questionDialog.border.background");
               if (bc != null)
                 g.setColor(bc);
             }
           if (type == JOptionPane.WARNING_MESSAGE)
             {
-              Color bc = defaults.getColor(
+              Color bc = UIManager.getColor(
                   "OptionPane.warningDialog.border.background");
               if (bc != null)
                 g.setColor(bc);              
             }
           else if (type == JOptionPane.ERROR_MESSAGE)
             {
-              Color bc = defaults.getColor(
+              Color bc = UIManager.getColor(
                   "OptionPane.errorDialog.border.background");
               if (bc != null)
                 g.setColor(bc);              

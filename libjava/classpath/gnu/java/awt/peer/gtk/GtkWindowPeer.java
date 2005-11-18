@@ -41,7 +41,6 @@ package gnu.java.awt.peer.gtk;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Window;
-import java.awt.event.ComponentEvent;
 import java.awt.event.WindowEvent;
 import java.awt.peer.WindowPeer;
 
@@ -80,12 +79,16 @@ public class GtkWindowPeer extends GtkContainerPeer
 
   void create (int type, boolean decorated)
   {
+    Window window = (Window) awtComponent;
     GtkWindowPeer parent_peer = null;
     Component parent = awtComponent.getParent();
-
+    
+    if (!window.isFocusableWindow())
+      type = GDK_WINDOW_TYPE_HINT_MENU;
+    
     if (parent != null)
       parent_peer = (GtkWindowPeer) awtComponent.getParent().getPeer();
-
+    
     create (type, decorated, parent_peer);
   }
 

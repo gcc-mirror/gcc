@@ -703,12 +703,17 @@ public class BasicListUI extends ListUI
    */
   protected int getRowHeight(int row)
   {
-    if (row < 0 || row >= cellHeights.length)
-      return -1;
-    else if (cellHeight != -1)
-      return cellHeight;
+    int height;
+    if (cellHeights == null)
+      height = cellHeight;
     else
-      return cellHeights[row];
+      {
+        if (row < 0 || row >= cellHeights.length)
+          height = -1;
+        else
+          height = cellHeights[row];
+      }
+    return height;
   }
 
   /**
@@ -803,9 +808,7 @@ public class BasicListUI extends ListUI
 
     // If a fixed cell height is set, then we can work more efficient.
     if (cellHeight > 0)
-      {
-        index = Math.max(y0 / cellHeight, index);
-      }
+      index = Math.min(y0 / cellHeight, index);
     // If we have no fixed cell height, we must add up each cell height up
     // to y0.
     else
@@ -992,8 +995,7 @@ public class BasicListUI extends ListUI
    */
   protected void installKeyboardActions()
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    InputMap focusInputMap = (InputMap)defaults.get("List.focusInputMap");
+    InputMap focusInputMap = (InputMap) UIManager.get("List.focusInputMap");
     InputMapUIResource parentInputMap = new InputMapUIResource();
     // FIXME: The JDK uses a LazyActionMap for parentActionMap
     ActionMap parentActionMap = new ActionMapUIResource();

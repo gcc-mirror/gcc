@@ -38,6 +38,10 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.awt.Shape;
+
+import javax.swing.event.DocumentEvent;
+
 /**
  * A {@link FlowView} that flows it's children horizontally and boxes the rows
  * vertically.
@@ -65,6 +69,26 @@ public class ParagraphView extends FlowView implements TabExpander
       return 0.0F;
     }
   }
+
+  /**
+   * The indentation of the first line of the paragraph.
+   */
+  protected int firstLineIndent;
+
+  /**
+   * The justification of the paragraph.
+   */
+  private int justification;
+
+  /**
+   * The line spacing of this paragraph.
+   */
+  private float lineSpacing;
+
+  /**
+   * The TabSet of this paragraph.
+   */
+  private TabSet tabSet;
 
   /**
    * Creates a new <code>ParagraphView</code> for the given
@@ -115,5 +139,94 @@ public class ParagraphView extends FlowView implements TabExpander
       }
     else
       return 0.0F;
+  }
+
+  /**
+   * Receives notification when some attributes of the displayed element
+   * changes. This triggers a refresh of the cached attributes of this
+   * paragraph.
+   *
+   * @param ev the document event
+   * @param a the allocation of this view
+   * @param fv the view factory to use for creating new child views
+   */
+  public void changedUpdate(DocumentEvent ev, Shape a, ViewFactory fv)
+  {
+    setPropertiesFromAttributes();
+  }
+
+  /**
+   * Fetches the cached properties from the element's attributes.
+   */
+  protected void setPropertiesFromAttributes()
+  {
+    Element el = getElement();
+    AttributeSet atts = el.getAttributes();
+    setFirstLineIndent(StyleConstants.getFirstLineIndent(atts));
+    setLineSpacing(StyleConstants.getLineSpacing(atts));
+    setJustification(StyleConstants.getAlignment(atts));
+    tabSet = StyleConstants.getTabSet(atts);
+  }
+
+  /**
+   * Sets the indentation of the first line of the paragraph.
+   *
+   * @param i the indentation to set
+   */
+  protected void setFirstLineIndent(float i)
+  {
+    firstLineIndent = (int) i;
+  }
+
+  /**
+   * Sets the justification of the paragraph.
+   *
+   * @param j the justification to set 
+   */
+  protected void setJustification(int j)
+  {
+    justification = j;
+  }
+
+  /**
+   * Sets the line spacing for this paragraph.
+   *
+   * @param s the line spacing to set
+   */
+  protected void setLineSpacing(float s)
+  {
+    lineSpacing = s;
+  }
+
+  /**
+   * Returns the i-th view from the logical views, before breaking into rows.
+   *
+   * @param i the index of the logical view to return
+   *
+   * @return the i-th view from the logical views, before breaking into rows
+   */
+  protected View getLayoutView(int i)
+  {
+    return layoutPool.getView(i);
+  }
+
+  /**
+   * Returns the number of logical child views.
+   *
+   * @return the number of logical child views
+   */
+  protected int getLayoutViewCount()
+  {
+    return layoutPool.getViewCount();
+  }
+
+  /**
+   * Returns the TabSet used by this ParagraphView.
+   *
+   * @return the TabSet used by this ParagraphView
+   */
+  protected TabSet getTabSet()
+  {
+    return tabSet;
   }
 }

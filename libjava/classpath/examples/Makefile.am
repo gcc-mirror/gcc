@@ -20,7 +20,7 @@ endif
 endif
 
 # All our example java source files
-EXAMPLE_JAVA_FILES = $(srcdir)/gnu/classpath/examples/*/*.java
+EXAMPLE_JAVA_FILES = $(srcdir)/gnu/classpath/examples/*/*.java $(srcdir)/gnu/classpath/examples/*/*/*.java $(srcdir)/gnu/classpath/examples/*/*/*/*.java
 
 # The example C source files
 EXAMPLE_C_FILES = $(srcdir)/gnu/classpath/examples/*/*.c
@@ -34,8 +34,11 @@ BUILT_SOURCES = $(EXAMPLE_ZIP)
 # the png icons we use in some of the examples.
 EXAMPLE_ICONS = $(srcdir)/gnu/classpath/examples/icons/*.png
 
+# The example specific README files.
+READMES = $(srcdir)/gnu/classpath/examples/CORBA/swing/README.html
+
 # All the files we find "interesting"
-ALL_EXAMPLE_FILES = $(EXAMPLE_JAVA_FILES) $(EXAMPLE_C_FILES) $(EXAMPLE_ICONS)
+ALL_EXAMPLE_FILES = $(EXAMPLE_JAVA_FILES) $(EXAMPLE_C_FILES) $(EXAMPLE_ICONS) $(READMES)
 
 # Some architecture independent data to be installed.
 example_DATA = $(EXAMPLE_ZIP) README

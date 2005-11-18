@@ -264,50 +264,56 @@ public abstract class CompositeView
    * Maps coordinates from the <code>View</code>'s space into a position
    * in the document model.
    *
-   * @param x the x coordinate in the view space
-   * @param y the y coordinate in the view space
+   * @param x the x coordinate in the view space, x >= 0
+   * @param y the y coordinate in the view space, y >= 0
    * @param a the allocation of this <code>View</code>
    * @param b the bias to use
    *
    * @return the position in the document that corresponds to the screen
-   *         coordinates <code>x, y</code>
+   *         coordinates <code>x, y</code> >= 0
    */
   public int viewToModel(float x, float y, Shape a, Position.Bias[] b)
   {
-    Rectangle r = getInsideAllocation(a);
-    View view = getViewAtPoint((int) x, (int) y, r);
-    return view.viewToModel(x, y, a, b);
+    if (x >= 0 && y >= 0)
+      {
+        Rectangle r = getInsideAllocation(a);
+        View view = getViewAtPoint((int) x, (int) y, r);
+        return view.viewToModel(x, y, a, b);
+      }
+    return 0;
   }
 
   /**
    * Returns the next model location that is visible in eiter north / south
-   * direction or east / west direction. This is used to determine the
-   * placement of the caret when navigating around the document with
-   * the arrow keys.
-   *
-   * This is a convenience method for
-   * {@link #getNextNorthSouthVisualPositionFrom} and
-   * {@link #getNextEastWestVisualPositionFrom}.
-   *
-   * @param pos the model position to start search from
-   * @param b the bias for <code>pos</code>
-   * @param a the allocated region for this view
-   * @param direction the direction from the current position, can be one of
-   *        the following:
-   *        <ul>
-   *        <li>{@link SwingConstants#WEST}</li>
-   *        <li>{@link SwingConstants#EAST}</li>
-   *        <li>{@link SwingConstants#NORTH}</li>
-   *        <li>{@link SwingConstants#SOUTH}</li>
-   *        </ul>
-   * @param biasRet the bias of the return value gets stored here
-   *
+   * direction or east / west direction. This is used to determine the placement
+   * of the caret when navigating around the document with the arrow keys. This
+   * is a convenience method for {@link #getNextNorthSouthVisualPositionFrom}
+   * and {@link #getNextEastWestVisualPositionFrom}.
+   * 
+   * @param pos
+   *          the model position to start search from
+   * @param b
+   *          the bias for <code>pos</code>
+   * @param a
+   *          the allocated region for this view
+   * @param direction
+   *          the direction from the current position, can be one of the
+   *          following:
+   *          <ul>
+   *          <li>{@link SwingConstants#WEST}</li>
+   *          <li>{@link SwingConstants#EAST}</li>
+   *          <li>{@link SwingConstants#NORTH}</li>
+   *          <li>{@link SwingConstants#SOUTH}</li>
+   *          </ul>
+   * @param biasRet
+   *          the bias of the return value gets stored here
    * @return the position inside the model that represents the next visual
    *         location
-   *
-   * @throws BadLocationException if <code>pos</code> is not a valid location
-   *         inside the document model
-   * @throws IllegalArgumentException if <code>direction</code> is invalid
+   * @throws BadLocationException
+   *           if <code>pos</code> is not a valid location inside the document
+   *           model
+   * @throws IllegalArgumentException
+   *           if <code>direction</code> is invalid
    */
   public int getNextVisualPositionFrom(int pos, Position.Bias b, Shape a,
                                        int direction, Position.Bias[] biasRet)

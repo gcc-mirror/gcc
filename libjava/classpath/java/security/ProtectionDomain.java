@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.security;
 
+import gnu.classpath.SystemProperties;
+
 /**
  * <p>This <code>ProtectionDomain</code> class encapsulates the characteristics
  * of a domain, which encloses a set of classes whose instances are granted a
@@ -222,7 +224,7 @@ public class ProtectionDomain
    */
   public String toString()
   {
-    String linesep = System.getProperty("line.separator");
+    String linesep = SystemProperties.getProperty("line.separator");
     StringBuffer sb = new StringBuffer("ProtectionDomain (").append(linesep);
 
     if (code_source == null)

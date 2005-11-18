@@ -601,6 +601,9 @@ public abstract class FlowView extends BoxView
    */
   public void insertUpdate(DocumentEvent changes, Shape a, ViewFactory vf)
   {
+    // First we must send the insertUpdate to the logical view so it can
+    // be updated accordingly.
+    layoutPool.insertUpdate(changes, a, vf);
     strategy.insertUpdate(this, changes, getInsideAllocation(a));
   }
 

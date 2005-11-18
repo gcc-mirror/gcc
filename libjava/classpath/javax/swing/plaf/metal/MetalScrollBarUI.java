@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -195,8 +194,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
    */
   protected JButton createDecreaseButton(int orientation)
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    scrollBarWidth = defaults.getInt("ScrollBar.width");
+    scrollBarWidth = UIManager.getInt("ScrollBar.width");
     decreaseButton = new MetalScrollButton(orientation, scrollBarWidth, 
             isFreeStanding);
     return decreaseButton;
@@ -213,8 +211,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
    */
   protected JButton createIncreaseButton(int orientation)
   {
-    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-    scrollBarWidth = defaults.getInt("ScrollBar.width");
+    scrollBarWidth = UIManager.getInt("ScrollBar.width");
     increaseButton = new MetalScrollButton(orientation, scrollBarWidth, 
             isFreeStanding);
     return increaseButton;
@@ -403,8 +400,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
       }
     
     // draw the shadow line
-    UIDefaults def = UIManager.getLookAndFeelDefaults();
-    g.setColor(def.getColor("ScrollBar.shadow"));
+    g.setColor(UIManager.getColor("ScrollBar.shadow"));
     g.drawLine(x + w, y + 1, x + w, y + h - 1);
 
   }
@@ -456,8 +452,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
       }
     
     // draw the shadow line
-    UIDefaults def = UIManager.getLookAndFeelDefaults();
-    g.setColor(def.getColor("ScrollBar.shadow"));
+    g.setColor(UIManager.getColor("ScrollBar.shadow"));
     g.drawLine(x + 1, y + h, x + w - 2, y + h);
   }
   

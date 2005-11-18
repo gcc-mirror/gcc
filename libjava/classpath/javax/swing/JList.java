@@ -1322,7 +1322,11 @@ public class JList extends JComponent implements Accessible, Scrollable
 
 
   /**
-   * Returns index of the cell to which specified location is closest to
+   * Returns index of the cell to which specified location is closest to. If
+   * the location is outside the bounds of the list, then the greatest index
+   * in the list model is returned. If the list model is empty, then
+   * <code>-1</code> is returned.
+   *
    * @param location for which to look for in the list
    * 
    * @return index of the cell to which specified location is closest to.

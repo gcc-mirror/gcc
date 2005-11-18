@@ -50,7 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.text.Position.Bias;
 
 /**
- * @author abalkiss
+ * @author Anthony Balkissoon abalkiss at redhat dot com
  *
  */
 public class WrappedPlainView extends BoxView implements TabExpander

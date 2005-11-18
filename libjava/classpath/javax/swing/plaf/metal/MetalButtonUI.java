@@ -47,7 +47,7 @@ import java.awt.Rectangle;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.UIDefaults;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.UIResource;
@@ -78,10 +78,9 @@ public class MetalButtonUI
   public MetalButtonUI()
   {
     super();
-    UIDefaults def = UIManager.getLookAndFeelDefaults();
-    focusColor = def.getColor(getPropertyPrefix() + "focus");
-    selectColor = def.getColor(getPropertyPrefix() + "select");
-    disabledTextColor = def.getColor(getPropertyPrefix() + "disabledText");
+    focusColor = UIManager.getColor(getPropertyPrefix() + "focus");
+    selectColor = UIManager.getColor(getPropertyPrefix() + "select");
+    disabledTextColor = UIManager.getColor(getPropertyPrefix() + "disabledText");
   }
 
   /**
@@ -135,11 +134,8 @@ public class MetalButtonUI
   public void installDefaults(AbstractButton button)
   {
     super.installDefaults(button);
-    if (button.isRolloverEnabled())
-      {
-        if (button.getBorder() instanceof UIResource)
-          button.setBorder(MetalBorders.getRolloverBorder());
-      }
+    button.setRolloverEnabled(UIManager.getBoolean(
+                                            getPropertyPrefix() + "rollover"));
   }
     
   /**
@@ -148,8 +144,7 @@ public class MetalButtonUI
   public void uninstallDefaults(AbstractButton button) 
   {
     super.uninstallDefaults(button);
-    if (button.getBorder() instanceof UIResource)
-      button.setBorder(null);
+    button.setRolloverEnabled(false);
   }
 
   /**
@@ -229,5 +224,25 @@ public class MetalButtonUI
         g.setColor(getDisabledTextColor());
         g.drawString(text, textRect.x, textRect.y + fm.getAscent());
       }  
+  }
+
+  /**
+   * If the property <code>Button.gradient</code> is set, then a gradient is
+   * painted as background, otherwise the normal superclass behaviour is
+   * called.
+   */
+  public void update(Graphics g, JComponent c)
+  {
+    AbstractButton b = (AbstractButton) c;
+    if (b.isOpaque() && UIManager.get(getPropertyPrefix() + "gradient") != null
+        && !b.getModel().isPressed() && b.isEnabled())
+      {
+        MetalUtils.paintGradient(g, 0, 0, c.getWidth(), c.getHeight(),
+                                 SwingConstants.VERTICAL,
+                                 getPropertyPrefix() + "gradient");
+        paint(g, c);
+      }
+    else
+      super.update(g, c);
   }
 }

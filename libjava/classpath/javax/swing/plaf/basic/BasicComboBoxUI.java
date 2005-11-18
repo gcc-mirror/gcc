@@ -805,10 +805,10 @@ public class BasicComboBoxUI extends ComboBoxUI
                 isPressed, hasFocus);
         if (! comboBox.isEnabled())
           {
-            comp.setBackground(UIManager.getLookAndFeelDefaults().getColor(
-                "ComboBox.disabledBackground"));
-            comp.setForeground(UIManager.getLookAndFeelDefaults().getColor(
-                "ComboBox.disabledForeground"));
+            comp.setBackground(UIManager.getColor(
+                                               "ComboBox.disabledBackground"));
+            comp.setForeground(UIManager.getColor(
+                                               "ComboBox.disabledForeground"));
             comp.setEnabled(false);
           }
         comp.setBounds(0, 0, bounds.width, bounds.height);

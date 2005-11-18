@@ -1612,6 +1612,18 @@ public class OrbFunctional extends OrbRestricted
         // TODO log it.
         return;
       }
+    finally
+      {
+        try 
+          {
+            if (service!=null && !service.isClosed())
+              service.close();
+          }
+        catch (IOException ioex)
+          {
+            // OK.
+          }
+      }
   }
   
   /**

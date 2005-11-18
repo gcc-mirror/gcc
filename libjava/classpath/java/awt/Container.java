@@ -123,6 +123,7 @@ public class Container extends Component
    */
   public Container()
   {
+    // Nothing to do here.
   }
 
   /**
@@ -427,7 +428,8 @@ public class Container extends Component
         for (int j = 0; j < list.length; j++)
               r.removeComponentListener(list[j]);
         
-        r.removeNotify();
+        if (r.isShowing())
+          r.removeNotify();
 
         System.arraycopy(component, index + 1, component, index,
                          ncomponents - index - 1);
@@ -846,7 +848,7 @@ public class Container extends Component
    */
   public void paintComponents(Graphics g)
   {
-    super.paint(g);
+    paint(g);
     visitChildren(g, GfxPaintAllVisitor.INSTANCE, true);
   }
 
@@ -1972,6 +1974,7 @@ public class Container extends Component
        */
       protected AccessibleContainerHandler()
       {
+        // Nothing to do here.
       }
 
       /**
@@ -2039,8 +2042,7 @@ class LightweightDispatcher implements Serializable
    * location, otherwise the appropriate component from the conditions
    * above.
    */
-  Component getDeepestComponentForMouseEventAt (
-                                                              Component parent, int x, int y)
+  Component getDeepestComponentForMouseEventAt(Component parent, int x, int y)
   {
     if (parent == null || (! parent.contains(x, y)))
       return null;
@@ -2064,8 +2066,7 @@ class LightweightDispatcher implements Serializable
     Point p = me.getPoint();
     while (candidate == null && parent != null)
       {
-        candidate =
-          getDeepestComponentForMouseEventAt(parent, p.x, p.y);
+        candidate = getDeepestComponentForMouseEventAt(parent, p.x, p.y);
         if (candidate == null || (candidate.eventMask & me.getID()) == 0)
           {
             candidate = null;
@@ -2147,14 +2148,12 @@ class LightweightDispatcher implements Serializable
         break;
       }
 
-    if (me.getID() == MouseEvent.MOUSE_RELEASED
-        || me.getID() == MouseEvent.MOUSE_PRESSED && modifiers > 0
+    if (me.getID() == MouseEvent.MOUSE_PRESSED && modifiers > 0
         || me.getID() == MouseEvent.MOUSE_DRAGGED)
       {
         // If any of the following events occur while a button is held down,
         // they should be dispatched to the same component to which the
         // original MOUSE_PRESSED event was dispatched:
-        //   - MOUSE_RELEASED
         //   - MOUSE_PRESSED: another button pressed while the first is held
         //     down
         //   - MOUSE_DRAGGED
@@ -2204,10 +2203,13 @@ class LightweightDispatcher implements Serializable
                 // there is a CLICKED event after this, it will do clean up.
                 if (--pressCount == 0
                     && mouseEventTarget != pressedComponent)
-                  pressedComponent = null;
+                  {
+                    pressedComponent = null;
+                    pressCount = 0;
+                  }
                 break;
               }
-            
+
             MouseEvent newEvt =
               AWTUtilities.convertMouseEvent(nativeContainer, me,
                                              mouseEventTarget);
