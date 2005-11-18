@@ -1,3 +1,7 @@
+2005-11-18  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/crtlibid.s: New file.
+
 2005-11-18  David Edelsohn  <edelsohn@gnu.org>
 	    Alan Modra  <amodra@bigpond.net.au>
 
