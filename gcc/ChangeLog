@@ -1,3 +1,24 @@
+2005-11-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/24348
+	* config.gcc (hppa*-*-hpux*): Add pa/t-slibgcc-elf-ver to tmake config
+	when not using sjlj exceptions.
+	* config/pa/pa64-hpux.h (LIB_SPEC): Add -lpthread in static links.
+	* config/pa/pa-hpux11.h (LIB_SPEC): Likewise.
+	* config/pa/som.h (ASM_PREFERRED_EH_DATA_FORMAT): Delete define.
+	* config/pa/linux-unwind.h (pa32_fallback_frame_state): Use
+	DWARF_ALT_FRAME_RETURN_COLUMN instead of column 0 as return column.
+	* config/pa/pa-hpux.h (MD_UNWIND_SUPPORT): New define.
+	* config/pa/pa-linux.h (INCOMING_RETURN_ADDR_RTX,
+	DWARF_FRAME_RETURN_COLUMN, ASM_PREFERRED_EH_DATA_FORMAT,
+	ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Delete defines.
+	* config/pa/pa.h (ARG_POINTER_CFA_OFFSET): Delete.
+	(FRAME_POINTER_CFA_OFFSET, INCOMING_RETURN_ADDR_RTX,
+	DWARF_FRAME_RETURN_COLUMN, DWARF_ALT_FRAME_RETURN_COLUMN,
+	ASM_PREFERRED_EH_DATA_FORMAT, ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): New
+	defines.
+	* config/pa/hpux-unwind.h: New file.
+
 2005-11-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/rs6000/rs6000.h (ASM_OUTPUT_WEAKREF): Define.

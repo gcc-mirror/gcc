@@ -124,3 +124,5 @@ Boston, MA 02110-1301, USA.  */
 /* Define this so we can compile MS code for use with WINE.  */
 #undef HANDLE_PRAGMA_PACK_PUSH_POP
 #define HANDLE_PRAGMA_PACK_PUSH_POP
+
+#define MD_UNWIND_SUPPORT "config/pa/hpux-unwind.h"

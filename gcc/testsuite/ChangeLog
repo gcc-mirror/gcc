@@ -1,3 +1,10 @@
+2005-11-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/cleanup-8.c: Enable test on hppa*-*-hpux*.
+	* gcc.dg/cleanup-9.c: Likewise.
+	* gcc.dg/cleanup-10.c: Likewise.
+	* gcc.dg/cleanup-11.c: Likewise.
+
 2005-11-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/24892

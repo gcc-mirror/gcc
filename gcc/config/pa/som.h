@@ -34,15 +34,6 @@ Boston, MA 02110-1301, USA.  */
 
 #define DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
 
-/* Select a format to encode pointers in exception handling data.  CODE
-   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
-   true if the symbol may be affected by dynamic relocations.  Because
-   the HP assembler does auto alignment, it is necessary to use
-   DW_EH_PE_aligned instead of the default DW_EH_PE_absptr.  */
-
-#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
-  (TARGET_GAS ? DW_EH_PE_absptr : DW_EH_PE_aligned)
-
 /* HPUX has a program 'chatr' to list the dependencies of dynamically
    linked executables and shared libraries.  */
 #define LDD_SUFFIX "chatr"
