@@ -3203,10 +3203,7 @@ extract_range_from_cond (tree cond, tree *hi_p, tree *lo_p, int *inverted_p)
      record ranges for enumerations.  Presumably this is due to
      the fact that they're rarely used directly.  They are typically
      cast into an integer type and used that way.  */
-  if (TREE_CODE (type) != INTEGER_TYPE
-      /* We don't know how to deal with types with variable bounds.  */
-      || TREE_CODE (TYPE_MIN_VALUE (type)) != INTEGER_CST
-      || TREE_CODE (TYPE_MAX_VALUE (type)) != INTEGER_CST)
+  if (TREE_CODE (type) != INTEGER_TYPE)
     return 0;
 
   switch (TREE_CODE (cond))
@@ -3223,12 +3220,19 @@ extract_range_from_cond (tree cond, tree *hi_p, tree *lo_p, int *inverted_p)
 
     case GE_EXPR:
       low = op1;
+
+      /* Get the highest value of the type.  If not a constant, use that
+	 of its base type, if it has one.  */
       high = TYPE_MAX_VALUE (type);
+      if (TREE_CODE (high) != INTEGER_CST && TREE_TYPE (type))
+	high = TYPE_MAX_VALUE (TREE_TYPE (type));
       inverted = 0;
       break;
 
     case GT_EXPR:
       high = TYPE_MAX_VALUE (type);
+      if (TREE_CODE (high) != INTEGER_CST && TREE_TYPE (type))
+	high = TYPE_MAX_VALUE (TREE_TYPE (type));
       if (!tree_int_cst_lt (op1, high))
 	return 0;
       low = int_const_binop (PLUS_EXPR, op1, integer_one_node, 1);
@@ -3238,11 +3242,15 @@ extract_range_from_cond (tree cond, tree *hi_p, tree *lo_p, int *inverted_p)
     case LE_EXPR:
       high = op1;
       low = TYPE_MIN_VALUE (type);
+      if (TREE_CODE (low) != INTEGER_CST && TREE_TYPE (type))
+	low = TYPE_MIN_VALUE (TREE_TYPE (type));
       inverted = 0;
       break;
 
     case LT_EXPR:
       low = TYPE_MIN_VALUE (type);
+      if (TREE_CODE (low) != INTEGER_CST && TREE_TYPE (type))
+	low = TYPE_MIN_VALUE (TREE_TYPE (type));
       if (!tree_int_cst_lt (low, op1))
 	return 0;
       high = int_const_binop (MINUS_EXPR, op1, integer_one_node, 1);
