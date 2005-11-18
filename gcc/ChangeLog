@@ -1,3 +1,14 @@
+2005-11-18  Mike Stump  <mrs@apple.com>
+
+	* c-common.c (handle_cleanup_attribute): Use a lang hook for lookup_name.
+	* config/darwin-c.c (darwin_pragma_unused): Likewise.
+	* c-decl.c (lookup_name_two) Remove.
+	* c-tree.h (lookup_name_two): Remove.
+	* c-objc-common.h (LANG_HOOKS_LOOKUP_NAME): Add.
+	* langhooks-def.h (LANG_HOOKS_LOOKUP_NAME): Add.
+	(LANG_HOOKS_DECLS): Add initializer for LANG_HOOKS_LOOKUP_NAME.
+	* langhooks.h (lang_hooks_for_decls): Add lookup_name.
+	
 2005-11-18  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/24914
