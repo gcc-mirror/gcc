@@ -1,6 +1,6 @@
 2005-11-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* expr.c (expand_expr_real): Don't look at EXPR_HAS_LOCATION unless
+	* expr.c (expand_expr_real): Don't call record_block_change unless
 	ib_boundaries_block is non-null
 
 	* postreload.c (reload_cse_move2add): Don't try to work with BImode.
