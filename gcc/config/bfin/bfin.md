@@ -1922,6 +1922,13 @@
   "ssync;"
   [(set_attr "type" "sync")])
 
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 3))]
+  ""
+  "excpt 3;"
+  [(set_attr "type" "misc")
+   (set_attr "length" "2")])
+
 ;;; Vector instructions
 
 (define_insn "addv2hi"

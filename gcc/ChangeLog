@@ -1,3 +1,7 @@
+2005-11-18  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.md (trap): New pattern.
+
 2005-11-18  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/crtlibid.s: New file.
