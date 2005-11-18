@@ -4551,7 +4551,10 @@ weak_finish (void)
 #ifndef ASM_OUTPUT_WEAKREF
       else if (! TREE_SYMBOL_REFERENCED (target))
 	{
-# ifdef ASM_WEAKEN_LABEL
+	  /* Use ASM_WEAKEN_LABEL only if ASM_WEAKEN_DECL is not
+	     defined, otherwise we and weak_finish_1 would use a
+	     different macros.  */
+# if defined ASM_WEAKEN_LABEL && ! defined ASM_WEAKEN_DECL
 	  ASM_WEAKEN_LABEL (asm_out_file, IDENTIFIER_POINTER (target));
 # else
 	  tree decl = find_decl_and_mark_needed (alias_decl, target);
@@ -4736,7 +4739,7 @@ do_assemble_alias (tree decl, tree target)
 	weakref_targets = tree_cons (decl, target, weakref_targets);
 
 #ifdef ASM_OUTPUT_WEAKREF
-      ASM_OUTPUT_WEAKREF (asm_out_file,
+      ASM_OUTPUT_WEAKREF (asm_out_file, decl,
 			  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
 			  IDENTIFIER_POINTER (target));
 #else

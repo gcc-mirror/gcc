@@ -6766,6 +6766,12 @@ defines (equates) the weak symbol @var{name} to have the value
 to make @var{name} weak.
 @end defmac
 
+@defmac ASM_OUTPUT_WEAKREF (@var{stream}, @var{decl}, @var{name}, @var{value})
+Outputs a directive that enables @var{name} to be used to refer to
+symbol @var{value} with weak-symbol semantics.  @code{decl} is the
+declaration of @code{name}.
+@end defmac
+
 @defmac SUPPORTS_WEAK
 A C expression which evaluates to true if the target supports weak symbols.
 
