@@ -1268,7 +1268,7 @@ reload_cse_move2add (rtx first)
 		      rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
 		      validate_change (insn, &SET_SRC (pat), tem, 0);
 		    }
-		  else
+		  else if (GET_MODE (reg) != BImode)
 		    {
 		      enum machine_mode narrow_mode;
 		      for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
