@@ -1503,7 +1503,7 @@ void gfc_scanner_init_1 (void);
 
 void gfc_add_include_path (const char *);
 void gfc_release_include_path (void);
-FILE *gfc_open_included_file (const char *);
+FILE *gfc_open_included_file (const char *, bool);
 
 int gfc_at_end (void);
 int gfc_at_eof (void);

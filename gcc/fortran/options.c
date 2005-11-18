@@ -96,6 +96,8 @@ bool
 gfc_post_options (const char **pfilename)
 {
   const char *filename = *pfilename;
+  char *source_path;
+  int i;
 
   /* Verify the input file name.  */
   if (!filename || strcmp (filename, "-") == 0)
@@ -104,6 +106,21 @@ gfc_post_options (const char **pfilename)
     }
 
   gfc_option.source = filename;
+
+  /* Adds the path where the source file is to the list of include files.  */
+
+  i = strlen(gfc_option.source);
+  while (i > 0 && !IS_DIR_SEPARATOR(gfc_option.source[i]))
+    i--;
+  if (i != 0)
+    {
+      source_path = alloca (i + 1);
+      memcpy (source_path, gfc_option.source, i);
+      source_path[i] = 0;
+      gfc_add_include_path (source_path);
+    }
+  else
+    gfc_add_include_path (".");
 
   flag_inline_trees = 1;
 

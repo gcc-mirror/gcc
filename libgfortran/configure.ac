@@ -113,7 +113,7 @@ m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 # Add -Wall -fno-repack-arrays -fno-underscoring if we are using GCC.
 if test "x$GCC" = "xyes"; then
-  AM_FCFLAGS="-Wall -fno-repack-arrays -fno-underscoring"
+  AM_FCFLAGS="-I . -Wall -fno-repack-arrays -fno-underscoring"
   ## We like to use C99 routines when available.  This makes sure that
   ## __STDC_VERSION__ is set such that libc includes make them available.
   AM_CFLAGS="-std=gnu99 -Wall"

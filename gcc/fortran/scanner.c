@@ -159,18 +159,22 @@ gfc_release_include_path (void)
 }
 
 /* Opens file for reading, searching through the include directories
-   given if necessary.  */
+   given if necessary.  If the include_cwd argument is true, we try
+   to open the file in the current directory first.  */
 
 FILE *
-gfc_open_included_file (const char *name)
+gfc_open_included_file (const char *name, const bool include_cwd)
 {
   char *fullname;
   gfc_directorylist *p;
   FILE *f;
 
-  f = gfc_open_file (name);
-  if (f != NULL)
-    return f;
+  if (include_cwd)
+    {
+      f = gfc_open_file (name);
+      if (f != NULL)
+	return f;
+    }
 
   for (p = include_dirs; p; p = p->next)
     {
@@ -1022,7 +1026,7 @@ load_file (char *filename, bool initial)
     }
   else
     {
-      input = gfc_open_included_file (filename);
+      input = gfc_open_included_file (filename, false);
       if (input == NULL)
 	{
 	  gfc_error_now ("Can't open included file '%s'", filename);

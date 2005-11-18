@@ -3721,7 +3721,7 @@ gfc_use_module (void)
   strcpy (filename, module_name);
   strcat (filename, MODULE_EXTENSION);
 
-  module_fp = gfc_open_included_file (filename);
+  module_fp = gfc_open_included_file (filename, true);
   if (module_fp == NULL)
     gfc_fatal_error ("Can't open module file '%s' for reading at %C: %s",
 		     filename, strerror (errno));
