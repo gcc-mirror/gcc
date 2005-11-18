@@ -2118,9 +2118,8 @@ apply_opt_in_copies (struct opt_info *opt_info,
               
               if (ivts)
                 {
-#ifdef ENABLE_CHECKING
-		  gcc_assert (rtx_equal_p (PATTERN (insn), PATTERN (orig_insn)));
-#endif
+		  gcc_assert (GET_CODE (PATTERN (insn))
+			      == GET_CODE (PATTERN (orig_insn)));
                   
                   if (!delta)
                     insert_base_initialization (ivts, insn);
@@ -2133,9 +2132,8 @@ apply_opt_in_copies (struct opt_info *opt_info,
               ves = htab_find (opt_info->insns_with_var_to_expand, &ve_templ);
               if (ves)
                 { 
-#ifdef ENABLE_CHECKING
-                  gcc_assert (rtx_equal_p (PATTERN (insn), PATTERN (orig_insn)));
-#endif
+		  gcc_assert (GET_CODE (PATTERN (insn))
+			      == GET_CODE (PATTERN (orig_insn)));
                   expand_var_during_unrolling (ves, insn);
                 }
             }

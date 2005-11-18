@@ -1,5 +1,11 @@
 2005-11-18  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR rtl-optimization/24497
+	* loop-unroll.c (apply_opt_in_copies): Do not verify equality of
+	the copied insn.
+
+2005-11-18  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* tree-scalar-evolution.c (expression_expensive_p): New function.
 	(scev_const_prop): Use compute_overall_effect_of_inner_loop.
 
