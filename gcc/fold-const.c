@@ -4062,10 +4062,22 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
     }
 
   if (value != 0 && ! TREE_OVERFLOW (value))
-    return build_range_check (type,
-			      fold_build2 (MINUS_EXPR, etype, exp, low),
-			      1, fold_convert (etype, integer_zero_node),
-			      value);
+    {
+      /* There is no requirement that LOW be within the range of ETYPE
+	 if the latter is a subtype.  It must, however, be within the base
+	 type of ETYPE.  So be sure we do the subtraction in that type.  */
+      if (INTEGRAL_TYPE_P (etype) && TREE_TYPE (etype))
+	{
+	  etype = TREE_TYPE (etype);
+	  exp = fold_convert (etype, exp);
+	  low = fold_convert (etype, low);
+	  value = fold_convert (etype, value);
+	}
+
+      return build_range_check (type,
+				fold_build2 (MINUS_EXPR, etype, exp, low),
+				1, build_int_cst (etype, 0), value);
+    }
 
   return 0;
 }
