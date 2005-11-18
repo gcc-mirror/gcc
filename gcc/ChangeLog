@@ -1,3 +1,9 @@
+2005-11-18  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/24914
+	* arm.c (arm_hard_regno_mode_ok): Co-processor registers aren't ok
+	when not generating code to use that co-processor.
+
 2005-11-18  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.md (trap): New pattern.
