@@ -174,7 +174,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    the latter is referenced directly, a strong reference prevails.  */
 #ifndef ASM_OUTPUT_WEAKREF
 #if defined HAVE_GAS_WEAKREF
-#define ASM_OUTPUT_WEAKREF(FILE, NAME, VALUE)				\
+#define ASM_OUTPUT_WEAKREF(FILE, DECL, NAME, VALUE)			\
   do									\
     {									\
       fprintf ((FILE), "\t.weakref\t");					\
