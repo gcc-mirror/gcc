@@ -1,3 +1,7 @@
+2005-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/run_all.sh (target_run): Revert 2005-11-17 patch.
+
 2005-11-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* g++.dg/cpp/string-2.C: New test.
