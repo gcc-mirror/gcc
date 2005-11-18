@@ -1,4 +1,4 @@
-// Versatile string utilities -*- C++ -*-
+// Versatile string utility -*- C++ -*-
 
 // Copyright (C) 2005 Free Software Foundation, Inc.
 //
@@ -47,16 +47,6 @@
 
 namespace __gnu_cxx
 {
-  template<typename _Type>
-    inline bool
-    __is_null_p(_Type* __ptr)
-    { return __ptr == 0; }
-
-  template<typename _Type>
-    inline bool
-    __is_null_p(_Type)
-    { return false; }
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     struct __vstring_utility
     {
@@ -91,6 +81,53 @@ namespace __gnu_cxx
 			__versa_string<_CharT, _Traits, _Alloc,
 				       __rc_string_base> >
         __const_rc_iterator;
+
+      // NB:  When the allocator is empty, deriving from it saves space 
+      // (http://www.cantrip.org/emptyopt.html).  We do that anyway for
+      // consistency.
+      template<typename _Alloc1, bool = std::__is_empty<_Alloc1>::__value>
+        struct _Alloc_hider
+	: public _Alloc1
+	{
+	  _Alloc_hider(const _Alloc1& __a, _CharT* __ptr)
+	  : _Alloc1(__a), _M_p(__ptr) { }
+
+	  void
+	  _M_alloc_swap(_Alloc_hider& __ah)
+	  {
+	    // Implement Option 3 of DR 431 (see N1599).
+	    // Precondition: swappable allocators.
+	    _Alloc1& __this = static_cast<_Alloc1&>(*this);
+	    _Alloc1& __that = static_cast<_Alloc1&>(__ah);
+	    if (__this != __that)
+	      swap(__this, __that);
+	  }
+
+	  _CharT*  _M_p; // The actual data.
+	};
+
+      template<typename _Alloc1>
+        struct _Alloc_hider<_Alloc1, true>
+	: public _Alloc1
+	{
+	  _Alloc_hider(const _Alloc1& __a, _CharT* __ptr)
+	  : _Alloc1(__a), _M_p(__ptr) { }
+
+	  void _M_alloc_swap(_Alloc_hider&) { }
+
+	  _CharT*  _M_p; // The actual data.
+	};
+
+      // For use in _M_construct (_S_construct) forward_iterator_tag.
+      template<typename _Type>
+        static bool
+        _S_is_null_pointer(_Type* __ptr)
+        { return __ptr == 0; }
+
+      template<typename _Type>
+        static bool
+        _S_is_null_pointer(_Type)
+        { return false; }
 
       // When __n = 1 way faster than the general multichar
       // traits_type::copy/move/assign.
