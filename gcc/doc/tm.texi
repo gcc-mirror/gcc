@@ -2926,6 +2926,21 @@ want to support call frame debugging information like that provided by
 DWARF 2.
 @end defmac
 
+@defmac FRAME_POINTER_CFA_OFFSET (@var{fundecl})
+If defined, a C expression whose value is an integer giving the offset
+in bytes from the frame pointer to the canonical frame address (cfa).
+The final value should conincide with that calculated by
+@code{INCOMING_FRAME_SP_OFFSET}.
+
+Normally the CFA is calculated as an offset from the argument pointer,
+via @code{ARG_POINTER_CFA_OFFSET}, but if the argument pointer is 
+variable due to the ABI, this may not be possible.  If this macro is
+defined, it imples that the virtual register instantiation should be
+based on the frame pointer instead of the argument pointer.  Only one
+of @code{FRAME_POINTER_CFA_OFFSET} and @code{ARG_POINTER_CFA_OFFSET}
+should be defined.
+@end defmac
+
 @node Exception Handling
 @subsection Exception Handling Support
 @cindex exception handling

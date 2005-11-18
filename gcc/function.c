@@ -1246,7 +1246,14 @@ instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
   else if (x == virtual_outgoing_args_rtx)
     new = stack_pointer_rtx, offset = out_arg_offset;
   else if (x == virtual_cfa_rtx)
-    new = arg_pointer_rtx, offset = cfa_offset;
+    {
+#ifdef FRAME_POINTER_CFA_OFFSET
+      new = frame_pointer_rtx;
+#else
+      new = arg_pointer_rtx;
+#endif
+      offset = cfa_offset;
+    }
   else
     return NULL_RTX;
 
@@ -1632,7 +1639,11 @@ instantiate_virtual_regs (void)
   var_offset = STARTING_FRAME_OFFSET;
   dynamic_offset = STACK_DYNAMIC_OFFSET (current_function_decl);
   out_arg_offset = STACK_POINTER_OFFSET;
+#ifdef FRAME_POINTER_CFA_OFFSET
+  cfa_offset = FRAME_POINTER_CFA_OFFSET (current_function_decl);
+#else
   cfa_offset = ARG_POINTER_CFA_OFFSET (current_function_decl);
+#endif
 
   /* Initialize recognition, indicating that volatile is OK.  */
   init_recog ();
