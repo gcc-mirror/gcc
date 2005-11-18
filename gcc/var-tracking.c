@@ -557,8 +557,13 @@ adjust_stack_reference (rtx mem, HOST_WIDE_INT adjustment)
 {
   rtx addr, cfa, tmp;
 
+#ifdef FRAME_POINTER_CFA_OFFSET
+  adjustment -= FRAME_POINTER_CFA_OFFSET (current_function_decl);
+  cfa = plus_constant (frame_pointer_rtx, adjustment);
+#else
   adjustment -= ARG_POINTER_CFA_OFFSET (current_function_decl);
   cfa = plus_constant (arg_pointer_rtx, adjustment);
+#endif
 
   addr = replace_rtx (copy_rtx (XEXP (mem, 0)), stack_pointer_rtx, cfa);
   tmp = simplify_rtx (addr);

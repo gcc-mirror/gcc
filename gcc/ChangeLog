@@ -1,3 +1,21 @@
+2005-11-17  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (dw_cfi_oprnd_struct): Reduce dw_cfi_reg_num to int.
+	(lookup_cfa_1): Apply data alignment to DW_CFA_def_cfa_offset_sf
+	and DW_CFA_def_cfa_sf.
+	(def_cfa_1): Use DW_CFA_def_cfa_offset_sf with negative values.
+	(dbx_reg_number): Don't assert particular registers here.
+	(based_loc_descr): ... do it here instead.  Fold in ...
+	(eliminate_reg_to_offset): ... this function.
+	(compute_frame_pointer_to_cfa_displacement): Fold in the effects
+	of eliminate_reg_to_offset; use FRAME_POINTER_CFA_OFFSET.
+	* unwind-dw2.c (execute_cfa_program): Apply data align factor
+	to DW_CFA_def_cfa_offset_sf and DW_CFA_def_cfa_sf.
+	* function.c (instantiate_new_reg): Use FRAME_POINTER_CFA_OFFSET.
+	(instantiate_virtual_regs): Likewise.
+	* var-tracking.c (adjust_stack_reference): Likewise.
+	* doc/tm.texi (FRAME_POINTER_CFA_OFFSET): New.
+
 2005-11-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/elf.h (STARTFILE_SPEC): Add "crtlibid%O%s"
