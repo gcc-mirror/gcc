@@ -1,3 +1,8 @@
+2005-11-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (build_range_check): Use proper type for subtraction
+	when merging lower bound.
+
 2005-11-18  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/24497
