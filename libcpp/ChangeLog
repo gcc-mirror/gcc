@@ -1,3 +1,8 @@
+2005-11-18  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* errors.c (cpp_error): Use cpplib's notion of pedantic_errors
+	when passing diagnostics to front end.
+
 2005-11-15  Kean Johnston  <jkj@sco.com>
 
 	* include/cpplib.h (struct cpp_callbacks): Make the (*error)

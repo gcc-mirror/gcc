@@ -1,3 +1,7 @@
+2005-11-18  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* g++.dg/cpp/string-2.C: New test.
+
 2005-11-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24667

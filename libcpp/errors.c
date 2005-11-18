@@ -141,7 +141,16 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
   va_start (ap, msgid);
 
   if (CPP_OPTION (pfile, client_diagnostic))
-    pfile->cb.error (pfile, level, _(msgid), &ap);
+    {
+      /* Versions up to 4.0.2 used cpplib's notion of pedantic_errors
+	 rather than the front end's, so preserve this for the 4.0
+	 branch.  */
+      if (level == CPP_DL_PEDWARN)
+	level = (CPP_OPTION (pfile, pedantic_errors)
+		 ? CPP_DL_ERROR
+		 : CPP_DL_WARNING);
+      pfile->cb.error (pfile, level, _(msgid), &ap);
+    }
   else
     {
       if (CPP_OPTION (pfile, traditional))
