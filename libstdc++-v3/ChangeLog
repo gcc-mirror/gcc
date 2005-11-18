@@ -1,3 +1,43 @@
+2005-11-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/rc_string_base.h (__rc_string_base<>::_Rep): Avoid the
+	anonymous struct extension, adjust everywhere.
+
+	* include/ext/rc_string_base.h (__rc_string_base<>::_S_empty_rep()):
+	Just use a static member.
+	(__rc_string_base<>::__rc_string_base(), _S_construct): Adjust.
+
+	* include/ext/rc_string_base.h (__rc_string_base<>::_Rep): Use anonymous
+	union together with _CharT to fix alignment issues, rebind to _Rep and
+	rename _Raw_alloc to _Rep_alloc_type.
+	(__rc_string_base<>::_Rep::_S_create, _M_destroy): Adjust consistently.
+
+	* include/ext/vstring_util.h (__is_null_p): Move inside struct
+	__vstring_utility as static _S_is_null_pointer.
+	* include/ext/sso_string.h
+	(__sso_string_base<>::_M_construct(std::forward_iterator_tag): Adjust.
+	* include/ext/rc_string_base.h
+	(__rc_string_base<>::_S_construct(std::forward_iterator_tag): Likewise.
+
+	Implement Option 3 of DR 431 for ext/vstring - both available bases.
+	* include/bits/cpp_type_traits.h (struct __is_empty): Add.
+	* include/ext/vstring.h (__versa_string<>::swap): Delegate to
+	this->_M_swap.
+	* include/ext/vstring.tcc (__versa_string<>::swap): Remove.
+	* include/ext/vstring_util.h (struct __vstring_utility<>): Add struct
+	_Alloc_hider<>, augmented of allocator swapping facility, specialized
+	to nop for empty allocators.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_swap): Use it.
+	(__rc_string_base<>::_M_is_leaked, _M_set_sharable): Change to private.
+	* include/ext/sso_string_base.h	(__sso_string_base<>::_M_swap):
+	Likewise.
+	(__sso_string_base<>::_M_is_leaked, _M_set_sharable): Remove, unused.	
+
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_data(_CharT*):
+	Return void.
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_data(_CharT*):
+	Likewise.
+
 2005-11-17  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/os/bsd/darwin/ppc-extra.ver: New.

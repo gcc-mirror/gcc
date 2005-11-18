@@ -364,6 +364,26 @@ namespace std
 	};
     };
 
+  //
+  // A stripped-down version of std::tr1::is_empty
+  //
+  template<typename _Tp>
+    struct __is_empty
+    { 
+    private:
+      template<typename>
+        struct __first { };
+      template<typename _Up>
+        struct __second
+        : public _Up { };
+           
+    public:
+      enum
+	{
+	  __value = sizeof(__first<_Tp>) == sizeof(__second<_Tp>)
+	};
+    };
+
 } // namespace std
 
 #endif //_CPP_TYPE_TRAITS_H

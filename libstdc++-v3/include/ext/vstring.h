@@ -1214,7 +1214,8 @@ namespace __gnu_cxx
        *  time.
       */
       void
-      swap(__versa_string& __s);
+      swap(__versa_string& __s)
+      { this->_M_swap(__s); }
 
       // String operations:
       /**
