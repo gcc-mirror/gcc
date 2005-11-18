@@ -326,8 +326,8 @@ DEFTREECODE (STRING_CST, "string_cst", tcc_constant, 0)
 
    FUNCTION_DECLs use four special fields:
    DECL_ARGUMENTS holds a chain of PARM_DECL nodes for the arguments.
-   DECL_RESULT holds a RESULT_DECL node for the value of a function,
-    or it is 0 for a function that returns no value.
+   DECL_RESULT holds a RESULT_DECL node for the value of a function.
+    The DECL_RTL field is 0 for a function that returns no value.
     (C functions returning void have zero here.)
     The TREE_TYPE field is the type in which the result is actually
     returned.  This is usually the same as the return type of the
