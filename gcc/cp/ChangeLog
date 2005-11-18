@@ -1,3 +1,11 @@
+2005-11-18  Mike Stump  <mrs@apple.com>
+
+	* cp-objcp-common.h (LANG_HOOKS_LOOKUP_NAME): Add.
+	* name-lookup.c (lookup_name_two): Remove.
+	(lookup_name_one): Add.
+	* name-lookup.h (lookup_name_two): Remove.
+	(lookup_name_one): Add.
+
 2005-11-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/24580

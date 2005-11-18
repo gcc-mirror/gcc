@@ -4003,9 +4003,9 @@ lookup_name (tree name, int prefer_type)
 /* Similar to `lookup_name' for the benefit of common code.  */
 
 tree
-lookup_name_two (tree name, int prefer_type)
+lookup_name_one (tree name)
 {
-  return lookup_name (name, prefer_type);
+  return lookup_name (name, 0);
 }
 
 /* Look up NAME for type used in elaborated name specifier in
