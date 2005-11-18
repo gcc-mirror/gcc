@@ -948,6 +948,8 @@ ifeq ($(strip $(filter-out rtems%,$(osys))),)
   s-parame.adb<s-parame-rtems.adb \
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
+  s-auxdec.ads<s-auxdec-empty.ads \
+  s-auxdec.adb<s-auxdec-empty.adb \
   s-tpopsp.adb<s-tpopsp-rtems.adb
 endif
 

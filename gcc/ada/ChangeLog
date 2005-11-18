@@ -1,3 +1,8 @@
+2005-11-18  Laurent GUERBY  <laurent@guerby.net>
+
+        PR ada/24857
+        * Makefile.in: Use s-auxdec-empty for RTEMS.
+
 2005-11-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	PR ada/22333
