@@ -1,4 +1,6 @@
-2005-11-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2005-11-18  Richard Kenner  <kenner@don.gnat.com>
+
+	* postreload.c (reload_cse_move2add): Don't try to work with BImode.
 
 	* fold-const.c (build_range_check): Use proper type for subtraction
 	when merging lower bound.
