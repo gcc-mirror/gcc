@@ -11818,7 +11818,9 @@ int
 arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 {
   if (GET_MODE_CLASS (mode) == MODE_CC)
-    return regno == CC_REGNUM || regno == VFPCC_REGNUM;
+    return (regno == CC_REGNUM
+	    || (TARGET_HARD_FLOAT && TARGET_VFP
+		&& regno == VFPCC_REGNUM));
 
   if (TARGET_THUMB)
     /* For the Thumb we only allow values bigger than SImode in
@@ -11828,7 +11830,8 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
        start of an even numbered register pair.  */
     return (ARM_NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
 
-  if (IS_CIRRUS_REGNUM (regno))
+  if (TARGET_HARD_FLOAT && TARGET_MAVERICK
+      && IS_CIRRUS_REGNUM (regno))
     /* We have outlawed SI values in Cirrus registers because they
        reside in the lower 32 bits, but SF values reside in the
        upper 32 bits.  This causes gcc all sorts of grief.  We can't
@@ -11836,7 +11839,8 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
        get sign extended to 64bits-- aldyh.  */
     return (GET_MODE_CLASS (mode) == MODE_FLOAT) || (mode == DImode);
 
-  if (IS_VFP_REGNUM (regno))
+  if (TARGET_HARD_FLOAT && TARGET_VFP
+      && IS_VFP_REGNUM (regno))
     {
       if (mode == SFmode || mode == SImode)
 	return TRUE;
@@ -11847,28 +11851,32 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
       return FALSE;
     }
 
-  if (IS_IWMMXT_GR_REGNUM (regno))
-    return mode == SImode;
+  if (TARGET_REALLY_IWMMXT)
+    {
+      if (IS_IWMMXT_GR_REGNUM (regno))
+	return mode == SImode;
 
-  if (IS_IWMMXT_REGNUM (regno))
-    return VALID_IWMMXT_REG_MODE (mode);
-
+      if (IS_IWMMXT_REGNUM (regno))
+	return VALID_IWMMXT_REG_MODE (mode);
+    }
+  
   /* We allow any value to be stored in the general registers.
      Restrict doubleword quantities to even register pairs so that we can
      use ldrd.  */
   if (regno <= LAST_ARM_REGNUM)
     return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
 
-  if (   regno == FRAME_POINTER_REGNUM
+  if (regno == FRAME_POINTER_REGNUM
       || regno == ARG_POINTER_REGNUM)
     /* We only allow integers in the fake hard registers.  */
     return GET_MODE_CLASS (mode) == MODE_INT;
 
   /* The only registers left are the FPA registers
      which we only allow to hold FP values.  */
-  return GET_MODE_CLASS (mode) == MODE_FLOAT
-    && regno >= FIRST_FPA_REGNUM
-    && regno <= LAST_FPA_REGNUM;
+  return (TARGET_HARD_FLOAT && TARGET_FPA
+	  && GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && regno >= FIRST_FPA_REGNUM
+	  && regno <= LAST_FPA_REGNUM);
 }
 
 int
