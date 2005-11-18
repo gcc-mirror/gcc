@@ -1,3 +1,8 @@
+2005-11-17  James A. Morrison  <phython@gcc.gnu.org>
+            Michael Chamberlain <michael@chamberlain.net.au>
+
+	* ada/acats/run_all.sh (target_run): Kill long running tests.
+
 2005-11-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/cleanup-8.c: Enable test on hppa*-*-hpux*.
