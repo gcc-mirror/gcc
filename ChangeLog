@@ -1,3 +1,8 @@
+2005-11-18  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* ltcf-c.sh (whole_archive_flag_spec): Remove '-all_load $convenience'
+	to match upstream libtool for darwin.
+
 2005-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.def: Remove gdb dependencies for gdbtk.
