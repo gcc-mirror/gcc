@@ -404,12 +404,72 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
   gen_rtx_MEM (word_mode,						\
 	       gen_rtx_PLUS (word_mode, frame_pointer_rtx,		\
 			     TARGET_64BIT ? GEN_INT (-16) : GEN_INT (-20)))
-			  	
 
-/* Offset from the argument pointer register value to the top of
-   stack.  This is different from FIRST_PARM_OFFSET because of the
-   frame marker.  */
-#define ARG_POINTER_CFA_OFFSET(FNDECL) 0
+/* Offset from the frame pointer register value to the top of stack.  */
+#define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
+
+/* A C expression whose value is RTL representing the location of the
+   incoming return address at the beginning of any function, before the
+   prologue.  You only need to define this macro if you want to support
+   call frame debugging information like that provided by DWARF 2.  */
+#define INCOMING_RETURN_ADDR_RTX (gen_rtx_REG (word_mode, 2))
+#define DWARF_FRAME_RETURN_COLUMN (DWARF_FRAME_REGNUM (2))
+
+/* A C expression whose value is an integer giving a DWARF 2 column
+   number that may be used as an alternate return column.  This should
+   be defined only if DWARF_FRAME_RETURN_COLUMN is set to a general
+   register, but an alternate column needs to be used for signal frames.
+
+   Column 0 is not used but unfortunately its register size is set to
+   4 bytes (sizeof CCmode) so it can't be used on 64-bit targets.  */
+#define DWARF_ALT_FRAME_RETURN_COLUMN FIRST_PSEUDO_REGISTER
+
+/* This macro chooses the encoding of pointers embedded in the exception
+   handling sections.  If at all possible, this should be defined such
+   that the exception handling section will not require dynamic relocations,
+   and so may be read-only.
+
+   Because the HP assembler auto aligns, it is necessary to use
+   DW_EH_PE_aligned.  It's not possible to make the data read-only
+   on the HP-UX SOM port since the linker requires fixups for label
+   differences in different sections to be word aligned.  However,
+   the SOM linker can do unaligned fixups for absolute pointers.
+   We also need aligned pointers for global and function pointers.
+
+   Although the HP-UX 64-bit ELF linker can handle unaligned pc-relative
+   fixups, the runtime doesn't have a consistent relationship between
+   text and data for dynamically loaded objects.  Thus, it's not possible
+   to use pc-relative encoding for pointers on this target.  It may be
+   possible to use segment relative encodings but GAS doesn't currently
+   have a mechanism to generate these encodings.  For other targets, we
+   use pc-relative encoding for pointers.  If the pointer might require
+   dynamic relocation, we make it indirect.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)			\
+  (TARGET_GAS && !TARGET_HPUX						\
+   ? (DW_EH_PE_pcrel							\
+      | ((GLOBAL) || (CODE) == 2 ? DW_EH_PE_indirect : 0)		\
+      | (TARGET_64BIT ? DW_EH_PE_sdata8 : DW_EH_PE_sdata4))		\
+   : (!TARGET_GAS || (GLOBAL) || (CODE) == 2				\
+      ? DW_EH_PE_aligned : DW_EH_PE_absptr))
+
+/* Handle special EH pointer encodings.  Absolute, pc-relative, and
+   indirect are handled automatically.  We output pc-relative, and
+   indirect pc-relative ourself since we need some special magic to
+   generate pc-relative relocations, and to handle indirect function
+   pointers.  */
+#define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(FILE, ENCODING, SIZE, ADDR, DONE) \
+  do {									\
+    if (((ENCODING) & 0x70) == DW_EH_PE_pcrel)				\
+      {									\
+	fputs (integer_asm_op (SIZE, FALSE), FILE);			\
+	if ((ENCODING) & DW_EH_PE_indirect)				\
+	  output_addr_const (FILE, get_deferred_plabel (ADDR));		\
+	else								\
+	  assemble_name (FILE, XSTR ((ADDR), 0));			\
+	fputs ("+8-$PIC_pcrel$0", FILE);				\
+	goto DONE;							\
+      }									\
+    } while (0)
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.

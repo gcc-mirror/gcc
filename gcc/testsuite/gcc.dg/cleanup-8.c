@@ -1,4 +1,4 @@
-/* { dg-do run { target *-*-linux* powerpc*-*-darwin* } } */
+/* { dg-do run { target hppa*-*-hpux* *-*-linux* powerpc*-*-darwin* } } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -O2" } */
 /* Verify that cleanups work with exception handling through signal
    frames.  */

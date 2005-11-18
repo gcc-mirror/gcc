@@ -134,7 +134,7 @@ Boston, MA 02110-1301, USA.  */
 #define LIB_SPEC \
   "%{!shared:\
      %{mt|pthread:-lpthread} -lc \
-     %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}"
+     %{static:%{!nolibdld:-a shared -ldld -a archive -lpthread -lc}}}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
