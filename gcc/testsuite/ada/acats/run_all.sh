@@ -12,8 +12,25 @@
 gccflags="-O2"
 gnatflags="-gnatws"
 
+if [ "x$DEJAGNU_TIMEOUT" != "x" ]; then
+  timeout=$DEJAGNU_TIMEOUT
+else
+  timeout=300
+fi
+
 target_run () {
-$*
+  sh -c "
+  (sleep $timeout && kill 2>/dev/null \$\$) &
+  watchdog=\$!
+  ($*) &
+  child=\$!
+  trap \"kill 2>/dev/null \$child\" 0 1
+  wait \$child
+  status=\$?
+  trap \"\" 0 1
+  kill 2>/dev/null \$watchdog
+  exit \$status
+  "
 }
 
 # End of customization section.
