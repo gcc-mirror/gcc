@@ -1,3 +1,8 @@
+2005-11-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/fpu-glibc.h (set_fpu): Only call fedisableexcept for
+	nonzero FE_ALL_EXCEPT.
+
 2005-11-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/24892

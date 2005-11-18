@@ -39,7 +39,8 @@ Boston, MA 02110-1301, USA.  */
 
 void set_fpu (void)
 {
-  fedisableexcept (FE_ALL_EXCEPT);
+  if (FE_ALL_EXCEPT != 0)
+    fedisableexcept (FE_ALL_EXCEPT);
 
   if (options.fpe & GFC_FPE_INVALID)
 #ifdef FE_INVALID
