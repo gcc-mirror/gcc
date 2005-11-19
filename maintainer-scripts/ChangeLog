@@ -1,3 +1,7 @@
+2005-11-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* crontab: Add 4.1 branch entry.
+
 2005-11-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc_release: Further update for SVN.  Don't set EXPORTTAG or
