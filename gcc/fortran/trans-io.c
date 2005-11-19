@@ -1640,11 +1640,41 @@ gfc_trans_transfer (gfc_code * code)
 
   if (ss == gfc_ss_terminator)
     {
+      /* Transfer a scalar value.  */
       gfc_conv_expr_reference (&se, expr);
       transfer_expr (&se, &expr->ts, se.expr);
     }
-  else if (expr->ts.type == BT_DERIVED)
+  else
     {
+      /* Transfer an array. There are 3 options:
+      1) An array of an intrinsic type. This is handled by transfering
+	 the descriptor to the library.
+      2) A derived type containing an array. Scalarized by the frontend.
+      3) An array of derived type. Scalarized by the frontend.
+      */
+      if (expr->ts.type != BT_DERIVED)
+	{
+	  /* Get the descriptor.  */
+	  gfc_conv_expr_descriptor (&se, expr, ss);
+	  /* If it's not an array of derived type, transfer the array
+	     descriptor to the library.  */
+	  tmp = gfc_get_dtype (TREE_TYPE (se.expr));
+	  if (((TREE_INT_CST_LOW (tmp) & GFC_DTYPE_TYPE_MASK) 
+	       >> GFC_DTYPE_TYPE_SHIFT) != GFC_DTYPE_DERIVED)
+	    {
+	      tmp = gfc_build_addr_expr (NULL, se.expr);
+	      transfer_array_desc (&se, &expr->ts, tmp);
+	      goto finish_block_label;
+	    }
+	  else
+	    {
+	      /* Cleanup the mess getting the descriptor caused.  */
+	      expr = code->expr;
+	      ss = gfc_walk_expr (expr);
+	      gfc_init_se (&se, NULL);
+	    }
+	}
+      
       /* Initialize the scalarizer.  */
       gfc_init_loopinfo (&loop);
       gfc_add_ss_to_loop (&loop, ss);
@@ -1663,13 +1693,8 @@ gfc_trans_transfer (gfc_code * code)
       gfc_conv_expr_reference (&se, expr);
       transfer_expr (&se, &expr->ts, se.expr);
     }
-  else
-    {
-      /* Pass the array descriptor to the library.  */
-      gfc_conv_expr_descriptor (&se, expr, ss);
-      tmp = gfc_build_addr_expr (NULL, se.expr);
-      transfer_array_desc (&se, &expr->ts, tmp);
-    }
+
+ finish_block_label:
 
   gfc_add_block_to_block (&body, &se.pre);
   gfc_add_block_to_block (&body, &se.post);

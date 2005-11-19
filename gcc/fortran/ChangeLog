@@ -1,3 +1,8 @@
+2005-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/24862
+	* trans-io.c (gfc_trans_transfer): Handle arrays of derived type.
+
 2005-11-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20811
