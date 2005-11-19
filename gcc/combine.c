@@ -6914,6 +6914,16 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	SUBST (XEXP (x, i), new);
       }
 
+  /* If this is a commutative operation, the changes to the operands
+     may have made it noncanonical.  */
+  if (COMMUTATIVE_ARITH_P (x)
+      && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
+    {
+      tem = XEXP (x, 0);
+      SUBST (XEXP (x, 0), XEXP (x, 1));
+      SUBST (XEXP (x, 1), tem);
+    }
+
   return x;
 }
 
