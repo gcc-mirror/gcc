@@ -1,5 +1,5 @@
 /* Origin: PR target/11693 from Andreas Schwab <schwab@suse.de> */
-/* { dg-do compile { target ia64-*-linux* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -frename-registers" } */
 
 static inline unsigned long

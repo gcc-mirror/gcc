@@ -3,7 +3,7 @@
    insns, and messed up its internal state on which slot it was issuing
    to, and aborted.  */
 
-/* { dg-do compile { target ia64-*-* } } */
+/* { dg-do compile } */
 /* In ILP32 mode, we get warnings about large integer constants.
    Those cause spurious FAILs.  */
 /* { dg-options "-w -O2 -mconstant-gp" } */

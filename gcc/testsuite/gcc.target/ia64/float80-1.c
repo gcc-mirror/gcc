@@ -1,5 +1,5 @@
 /* Bug 14610 */
-/* { dg-do run { target ia64-*-* } } */
+/* { dg-do run } */
 
 extern void abort(void);
 volatile __float80 x = 30.0;

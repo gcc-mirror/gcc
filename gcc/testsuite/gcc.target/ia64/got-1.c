@@ -1,4 +1,4 @@
-/* { dg-do compile { target ia64*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -fPIC" } */
 
 /* { dg-final { scan-assembler "@ltoffx\\(object#\\)" } } */

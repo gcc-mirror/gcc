@@ -3,8 +3,8 @@
    exact value from a floating point expression is unwise but GCC
    depends on it in allocno_compare.  */
 
-/* { dg-do run { target ia64-*-* } } */
-/* { dg-options "-minline-float-divide-max-throughput" { target ia64-*-* } } */
+/* { dg-do run } */
+/* { dg-options "-minline-float-divide-max-throughput" } */
 
 extern void abort (void);
 

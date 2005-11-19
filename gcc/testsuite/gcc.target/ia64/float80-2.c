@@ -1,5 +1,5 @@
 /* Bug 14610 */
-/* { dg-do run { target ia64-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-minline-int-divide-max-throughput" } */
 
 extern void abort(void);
