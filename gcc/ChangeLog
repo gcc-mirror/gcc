@@ -1,3 +1,7 @@
+2005-11-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* DEV-PHASE: Change to prerelease.
+
 2005-11-18  James E Wilson  <wilson@specifix.com>
 
 	* builtins.c (fold_builtin_strstr): Pass s1 through fold_convert before
