@@ -2880,6 +2880,10 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
        match.  But, we'll check later, when we construct the
        template.  */
     return;
+  /* Instantiations or specializations of templates may be declared as
+     friends in any namespace.  */
+  if (friendp && DECL_USE_TEMPLATE (decl))
+    return;
   if (is_overloaded_fn (old))
     {
       for (; old; old = OVL_NEXT (old))

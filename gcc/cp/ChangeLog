@@ -1,3 +1,10 @@
+2005-11-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8355
+	* decl.c (grokfndecl): Set up DECL_TEMPLATE_INFO before calling
+	set_decl_namespace.
+	* name-lookup.c (set_decl_namespace): 
+
 2005-11-18  Mike Stump  <mrs@apple.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_LOOKUP_NAME): Add.
