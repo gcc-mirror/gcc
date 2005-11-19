@@ -1,3 +1,8 @@
+2005-11-19  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_indirect_ref_1): Make sure we fold
+	ARRAY_REFs of constant strings.
+
 2005-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (version_compare_spec_function): Use '%s' rather than %qs in

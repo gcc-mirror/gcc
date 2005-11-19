@@ -11523,9 +11523,15 @@ fold_indirect_ref_1 (tree type, tree op0)
     {
       tree op = TREE_OPERAND (sub, 0);
       tree optype = TREE_TYPE (op);
-      /* *&p => p */
+      /* *&p => p;  make sure to handle *&"str"[cst] here.  */
       if (type == optype)
-	return op;
+	{
+	  tree fop = fold_read_from_constant_string (op);
+	  if (fop)
+	    return fop;
+	  else
+	    return op;
+	}
       /* *(foo *)&fooarray => fooarray[0] */
       else if (TREE_CODE (optype) == ARRAY_TYPE
 	       && type == TREE_TYPE (optype))
