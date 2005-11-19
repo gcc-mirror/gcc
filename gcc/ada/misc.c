@@ -364,12 +364,23 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 static void
 internal_error_function (const char *msgid, va_list *ap)
 {
-  char buffer[1000];		/* Assume this is big enough.  */
+  text_info tinfo;
+  char *buffer;
   char *p;
   String_Template temp;
   Fat_Pointer fp;
 
-  vsprintf (buffer, msgid, *ap);
+  /* Reset the pretty-printer.  */
+  pp_clear_output_area (global_dc->printer);
+
+  /* Format the message into the pretty-printer.  */
+  tinfo.format_spec = msgid;
+  tinfo.args_ptr = ap;
+  tinfo.err_no = errno;
+  pp_format_verbatim (global_dc->printer, &tinfo);
+
+  /* Extract a (writable) pointer to the formatted text.  */
+  buffer = (char*) pp_formatted_text (global_dc->printer);
 
   /* Go up to the first newline.  */
   for (p = buffer; *p; p++)
@@ -379,8 +390,10 @@ internal_error_function (const char *msgid, va_list *ap)
 	break;
       }
 
-  temp.Low_Bound = 1, temp.High_Bound = strlen (buffer);
-  fp.Array = buffer, fp.Bounds = &temp;
+  temp.Low_Bound = 1;
+  temp.High_Bound = p - buffer;
+  fp.Bounds = &temp;
+  fp.Array = buffer;
 
   Current_Error_Node = error_gnat_node;
   Compiler_Abort (fp, -1);
