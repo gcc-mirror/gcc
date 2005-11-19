@@ -1,4 +1,4 @@
-/* { dg-do run { target ia64-*-linux* } } */
+/* { dg-do run } */
 /* { dg-options "-O3" } */
 
 extern void abort (void);

@@ -1,4 +1,4 @@
-/* { dg-do run { target ia64-*-* } } */
+/* { dg-do run } */
 /* { dg-options } */
 
 extern void abort (void);

@@ -1,5 +1,5 @@
 /* PR target/6054 */
-/* { dg-do compile { target ia64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O -mconstant-gp" } */
 /* { dg-final { scan-assembler "mov r1 =" } } */
 

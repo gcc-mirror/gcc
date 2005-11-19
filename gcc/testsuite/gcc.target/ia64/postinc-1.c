@@ -1,4 +1,4 @@
-/* { dg-do compile { target ia64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -mlp64" { target ia64-*-hpux* } } */
 
