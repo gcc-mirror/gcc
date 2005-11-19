@@ -5696,7 +5696,6 @@ grokfndecl (tree ctype,
 {
   tree decl;
   int staticp = ctype && TREE_CODE (type) == FUNCTION_TYPE;
-  int has_default_arg = 0;
   tree t;
 
   if (raises)
@@ -5707,6 +5706,67 @@ grokfndecl (tree ctype,
   /* Propagate volatile out from type to decl.  */
   if (TYPE_VOLATILE (type))
     TREE_THIS_VOLATILE (decl) = 1;
+
+  if (friendp
+      && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
+    {
+      if (funcdef_flag)
+	error
+	  ("defining explicit specialization %qD in friend declaration",
+	   orig_declarator);
+      else
+	{
+	  tree fns = TREE_OPERAND (orig_declarator, 0);
+	  tree args = TREE_OPERAND (orig_declarator, 1);
+
+	  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
+	    {
+	      /* Something like `template <class T> friend void f<T>()'.  */
+	      error ("invalid use of template-id %qD in declaration "
+		     "of primary template",
+		     orig_declarator);
+	      return NULL_TREE;
+	    }
+
+
+	  /* A friend declaration of the form friend void f<>().  Record
+	     the information in the TEMPLATE_ID_EXPR.  */
+	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
+
+	  if (TREE_CODE (fns) == COMPONENT_REF)
+	    {
+	      /* Due to bison parser ickiness, we will have already looked
+		 up an operator_name or PFUNCNAME within the current class
+		 (see template_id in parse.y). If the current class contains
+		 such a name, we'll get a COMPONENT_REF here. Undo that.  */
+
+	      gcc_assert (TREE_TYPE (TREE_OPERAND (fns, 0))
+			  == current_class_type);
+	      fns = TREE_OPERAND (fns, 1);
+	    }
+	  gcc_assert (TREE_CODE (fns) == IDENTIFIER_NODE
+		      || TREE_CODE (fns) == OVERLOAD);
+	  DECL_TEMPLATE_INFO (decl) = tree_cons (fns, args, NULL_TREE);
+
+	  for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
+	    if (TREE_PURPOSE (t)
+		&& TREE_CODE (TREE_PURPOSE (t)) == DEFAULT_ARG)
+	    {
+	      error ("default arguments are not allowed in declaration "
+		     "of friend template specialization %qD",
+		     decl);
+	      return NULL_TREE;
+	    }
+
+	  if (inlinep)
+	    {
+	      error ("%<inline%> is not allowed in declaration of friend "
+		     "template specialization %qD",
+		     decl);
+	      return NULL_TREE;
+	    }
+	}
+    }
 
   /* If this decl has namespace scope, set that up.  */
   if (in_namespace)
@@ -5827,73 +5887,6 @@ grokfndecl (tree ctype,
 
   if (ctype && decl_function_context (decl))
     DECL_NO_STATIC_CHAIN (decl) = 1;
-
-  for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
-    if (TREE_PURPOSE (t)
-	&& TREE_CODE (TREE_PURPOSE (t)) == DEFAULT_ARG)
-      {
-	has_default_arg = 1;
-	break;
-      }
-
-  if (friendp
-      && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
-    {
-      if (funcdef_flag)
-	error
-	  ("defining explicit specialization %qD in friend declaration",
-	   orig_declarator);
-      else
-	{
-	  tree fns = TREE_OPERAND (orig_declarator, 0);
-	  tree args = TREE_OPERAND (orig_declarator, 1);
-
-	  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
-	    {
-	      /* Something like `template <class T> friend void f<T>()'.  */
-	      error ("invalid use of template-id %qD in declaration "
-		     "of primary template",
-		     orig_declarator);
-	      return NULL_TREE;
-	    }
-
-
-	  /* A friend declaration of the form friend void f<>().  Record
-	     the information in the TEMPLATE_ID_EXPR.  */
-	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
-
-	  if (TREE_CODE (fns) == COMPONENT_REF)
-	    {
-	      /* Due to bison parser ickiness, we will have already looked
-		 up an operator_name or PFUNCNAME within the current class
-		 (see template_id in parse.y). If the current class contains
-		 such a name, we'll get a COMPONENT_REF here. Undo that.  */
-
-	      gcc_assert (TREE_TYPE (TREE_OPERAND (fns, 0))
-			  == current_class_type);
-	      fns = TREE_OPERAND (fns, 1);
-	    }
-	  gcc_assert (TREE_CODE (fns) == IDENTIFIER_NODE
-		      || TREE_CODE (fns) == OVERLOAD);
-	  DECL_TEMPLATE_INFO (decl) = tree_cons (fns, args, NULL_TREE);
-
-	  if (has_default_arg)
-	    {
-	      error ("default arguments are not allowed in declaration "
-		     "of friend template specialization %qD",
-		     decl);
-	      return NULL_TREE;
-	    }
-
-	  if (inlinep)
-	    {
-	      error ("%<inline%> is not allowed in declaration of friend "
-		     "template specialization %qD",
-		     decl);
-	      return NULL_TREE;
-	    }
-	}
-    }
 
   if (funcdef_flag)
     /* Make the init_value nonzero so pushdecl knows this is not
