@@ -1,3 +1,8 @@
+2005-11-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* combine.c (make_compound_operation): Swap operands of
+	commutative operation if necessary before returning.
+
 2005-11-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/23294
