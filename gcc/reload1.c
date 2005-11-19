@@ -437,6 +437,7 @@ static void add_auto_inc_notes (rtx, rtx);
 static void copy_eh_notes (rtx, rtx);
 static int reloads_conflict (int, int);
 static rtx gen_reload (rtx, rtx, int, enum reload_type);
+static rtx emit_insn_if_valid_for_reload (rtx);
 
 /* Initialize the reload pass once per compilation.  */
 
@@ -7449,6 +7450,32 @@ emit_reload_insns (struct insn_chain *chain)
   IOR_HARD_REG_SET (reg_reloaded_dead, reg_reloaded_died);
 }
 
+/* Go through the motions to emit INSN and test if it is strictly valid.
+   Return the emitted insn if valid, else return NULL.  */
+
+static rtx
+emit_insn_if_valid_for_reload (rtx insn)
+{
+  rtx last = get_last_insn ();
+  int code;
+
+  insn = emit_insn (insn);
+  code = recog_memoized (insn);
+
+  if (code >= 0)
+    {
+      extract_insn (insn);
+      /* We want constrain operands to treat this insn strictly in its
+	 validity determination, i.e., the way it would after reload has
+	 completed.  */
+      if (constrain_operands (1))
+	return insn;
+    }
+
+  delete_insns_since (last);
+  return NULL;
+}
+
 /* Emit code to perform a reload from IN (which may be a reload register) to
    OUT (which may also be a reload register).  IN or OUT is from operand
    OPNUM with reload type TYPE.
@@ -7484,6 +7511,12 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
      elimination and while reloading addresses.  This case is handled by
      trying to emit a single insn to perform the add.  If it is not valid,
      we use a two insn sequence.
+
+     Or we can be asked to reload an unary operand that was a fragment of
+     an addressing mode, into a register.  If it isn't recognized as-is,
+     we try making the unop operand and the reload-register the same:
+     (set reg:X (unop:X expr:Y))
+     -> (set reg:Y expr:Y) (set reg:X (unop:X reg:Y)).
 
      Finally, we could be called to handle an 'o' constraint by putting
      an address into a register.  In that case, we first try to do this
@@ -7542,20 +7575,9 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       if (op0 != XEXP (in, 0) || op1 != XEXP (in, 1))
 	in = gen_rtx_PLUS (GET_MODE (in), op0, op1);
 
-      insn = emit_insn (gen_rtx_SET (VOIDmode, out, in));
-      code = recog_memoized (insn);
-
-      if (code >= 0)
-	{
-	  extract_insn (insn);
-	  /* We want constrain operands to treat this insn strictly in
-	     its validity determination, i.e., the way it would after reload
-	     has completed.  */
-	  if (constrain_operands (1))
-	    return insn;
-	}
-
-      delete_insns_since (last);
+      insn = emit_insn_if_valid_for_reload (gen_rtx_SET (VOIDmode, out, in));
+      if (insn)
+	return insn;
 
       /* If that failed, we must use a conservative two-insn sequence.
 
@@ -7591,29 +7613,17 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       if (rtx_equal_p (op0, op1))
 	op1 = out;
 
-      insn = emit_insn (gen_add2_insn (out, op1));
+      insn = emit_insn_if_valid_for_reload (gen_add2_insn (out, op1));
+      if (insn)
+	{
+	  /* Add a REG_EQUIV note so that find_equiv_reg can find it.  */
+	  REG_NOTES (insn)
+	    = gen_rtx_EXPR_LIST (REG_EQUIV, in, REG_NOTES (insn));
+	  return insn;
+	}
 
       /* If that failed, copy the address register to the reload register.
 	 Then add the constant to the reload register.  */
-
-      code = recog_memoized (insn);
-
-      if (code >= 0)
-	{
-	  extract_insn (insn);
-	  /* We want constrain operands to treat this insn strictly in
-	     its validity determination, i.e., the way it would after reload
-	     has completed.  */
-	  if (constrain_operands (1))
-	    {
-	      /* Add a REG_EQUIV note so that find_equiv_reg can find it.  */
-	      REG_NOTES (insn)
-		= gen_rtx_EXPR_LIST (REG_EQUIV, in, REG_NOTES (insn));
-	      return insn;
-	    }
-	}
-
-      delete_insns_since (last);
 
       gen_reload (out, op1, opnum, type);
       insn = emit_insn (gen_add2_insn (out, op0));
@@ -7643,7 +7653,44 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
       gen_reload (out, loc, opnum, type);
     }
 #endif
+  else if (REG_P (out) && UNARY_P (in))
+    {
+      rtx insn;
+      rtx op1;
+      rtx out_moded;
+      rtx set;
 
+      /* First, try a plain SET.  */
+      set = emit_insn_if_valid_for_reload (gen_rtx_SET (VOIDmode, out, in));
+      if (set)
+	return set;
+
+      /* If that failed, move the inner operand to the reload
+	 register, and try the same unop with the inner expression
+	 replaced with the reload register.  */
+      op1 = XEXP (in, 0);
+
+      if (GET_MODE (op1) != GET_MODE (out))
+	out_moded = gen_rtx_REG (GET_MODE (op1), REGNO (out));
+      else
+	out_moded = out;
+
+      gen_reload (out_moded, op1, opnum, type);
+
+      insn
+	= gen_rtx_SET (VOIDmode, out,
+		       gen_rtx_fmt_e (GET_CODE (in), GET_MODE (in),
+				      out_moded));
+      insn = emit_insn_if_valid_for_reload (insn);
+      if (insn)
+	{
+	  REG_NOTES (insn)
+	    = gen_rtx_EXPR_LIST (REG_EQUIV, in, REG_NOTES (insn));
+	  return insn;
+	}
+
+      fatal_insn ("Failure trying to reload:", set);
+    }
   /* If IN is a simple operand, use gen_move_insn.  */
   else if (OBJECT_P (in) || GET_CODE (in) == SUBREG)
     emit_insn (gen_move_insn (out, in));
