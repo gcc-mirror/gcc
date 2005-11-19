@@ -1,3 +1,8 @@
+2005-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (version_compare_spec_function): Use '%s' rather than %qs in
+	fatal format string.
+
 2005-11-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* combine.c (make_compound_operation): Swap operands of

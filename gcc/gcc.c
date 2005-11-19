@@ -7745,7 +7745,7 @@ version_compare_spec_function (int argc, const char **argv)
       break;
 
     default:
-      fatal ("unknown operator %qs in %%:version-compare", argv[0]);
+      fatal ("unknown operator '%s' in %%:version-compare", argv[0]);
     }
   if (! result)
     return NULL;
