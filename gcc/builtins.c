@@ -9199,8 +9199,10 @@ fold_builtin_strstr (tree arglist, tree type)
 	  return fold_convert (type, tem);
 	}
 
+      /* The argument is const char *, and the result is char *, so we need
+	 a type conversion here to avoid a warning.  */
       if (p2[0] == '\0')
-	return s1;
+	return fold_convert (type, s1);
 
       if (p2[1] != '\0')
 	return 0;

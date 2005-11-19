@@ -1,3 +1,8 @@
+2005-11-18  James E Wilson  <wilson@specifix.com>
+
+	* builtins.c (fold_builtin_strstr): Pass s1 through fold_convert before
+	returning it.
+
 2005-11-18  Mike Stump  <mrs@apple.com>
 
 	* c-common.c (handle_cleanup_attribute): Use a lang hook for lookup_name.
