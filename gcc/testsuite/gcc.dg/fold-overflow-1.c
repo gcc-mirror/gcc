@@ -1,6 +1,8 @@
 /* { dg-compile } */
 /* { dg-options "-O -ftrapping-math" } */
 
+/* There should be exactly 2 +Inf in the assembly file.  */
+
 float f1 =  __FLT_MAX__ + __FLT_MAX__;
 
 float foo1(void)
