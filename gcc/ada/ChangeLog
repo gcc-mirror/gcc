@@ -1,3 +1,11 @@
+2005-11-19  Richard Guenther  <rguenther@suse.de>
+	Roger Sayle  <roger@eyesopen.com>
+
+	PR ada/23717
+	* misc.c (internal_error_function): Don't use vsprintf to format
+	the error message text, instead use pp_format_text and the new
+	pretty printer APIs.  This allows handling of %qs, %w, etc.
+
 2005-11-18  Laurent GUERBY  <laurent@guerby.net>
 
         PR ada/24857
