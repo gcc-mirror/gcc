@@ -1,3 +1,13 @@
+2005-11-19  Paolo Bonzini  <bonzini@gcc.gnu.org>
+
+	* gensupport.c (old_preds): Rename to std_preds, add special field.
+	(struct old_pred_table): Rename to struct std_pred_table, add special
+	field.
+	(NUM_KNOWN_OLD_PREDS): Rename to NUM_KNOWN_STD_PREDS.
+	(NUM_OLD_SPECIAL_MODE_PREDS): Remove.
+	(init_predicate_table): Adjust, and set along the way whether a
+	predicate is special.
+
 2005-11-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* BASE-VER: Change to 4.2.0.

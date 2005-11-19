@@ -1220,46 +1220,38 @@ add_predicate (struct pred_data *pred)
 /* This array gives the initial content of the predicate table.  It
    has entries for all predicates defined in recog.c.  */
 
-struct old_pred_table
+struct std_pred_table
 {
   const char *name;
+  bool special;
   RTX_CODE codes[NUM_RTX_CODE];
 };
 
-static const struct old_pred_table old_preds[] = {
-  {"general_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-		       LABEL_REF, SUBREG, REG, MEM }},
-  {"address_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-		       LABEL_REF, SUBREG, REG, MEM,
-		       PLUS, MINUS, MULT}},
-  {"register_operand", {SUBREG, REG}},
-  {"pmode_register_operand", {SUBREG, REG}},
-  {"scratch_operand", {SCRATCH, REG}},
-  {"immediate_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-			 LABEL_REF}},
-  {"const_int_operand", {CONST_INT}},
-  {"const_double_operand", {CONST_INT, CONST_DOUBLE}},
-  {"nonimmediate_operand", {SUBREG, REG, MEM}},
-  {"nonmemory_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-			 LABEL_REF, SUBREG, REG}},
-  {"push_operand", {MEM}},
-  {"pop_operand", {MEM}},
-  {"memory_operand", {SUBREG, MEM}},
-  {"indirect_operand", {SUBREG, MEM}},
-  {"comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU, GTU,
-			   UNORDERED, ORDERED, UNEQ, UNGE, UNGT, UNLE,
-			   UNLT, LTGT}}
+static const struct std_pred_table std_preds[] = {
+  {"general_operand", false, {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
+			      LABEL_REF, SUBREG, REG, MEM }},
+  {"address_operand", true, {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
+			     LABEL_REF, SUBREG, REG, MEM,
+			     PLUS, MINUS, MULT}},
+  {"register_operand", false, {SUBREG, REG}},
+  {"pmode_register_operand", true, {SUBREG, REG}},
+  {"scratch_operand", false, {SCRATCH, REG}},
+  {"immediate_operand", false, {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
+				LABEL_REF}},
+  {"const_int_operand", false, {CONST_INT}},
+  {"const_double_operand", false, {CONST_INT, CONST_DOUBLE}},
+  {"nonimmediate_operand", false, {SUBREG, REG, MEM}},
+  {"nonmemory_operand", false, {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
+			 false, LABEL_REF, SUBREG, REG}},
+  {"push_operand", false, {MEM}},
+  {"pop_operand", false, {MEM}},
+  {"memory_operand", false, {SUBREG, MEM}},
+  {"indirect_operand", false, {SUBREG, MEM}},
+  {"comparison_operator", false, {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU, GTU,
+				  UNORDERED, ORDERED, UNEQ, UNGE, UNGT, UNLE,
+				  UNLT, LTGT}}
 };
-#define NUM_KNOWN_OLD_PREDS ARRAY_SIZE (old_preds)
-
-/* This table gives the set of special predicates.  It has entries for
-   all special predicates defined in recog.c.  */
-static const char *const old_special_pred_table[] = {
-  "address_operand",
-  "pmode_register_operand",
-};
-
-#define NUM_OLD_SPECIAL_MODE_PREDS ARRAY_SIZE (old_special_pred_table)
+#define NUM_KNOWN_STD_PREDS ARRAY_SIZE (std_preds)
 
 /* Initialize the table of predicate definitions, starting with
    the information we have on generic predicates.  */
@@ -1274,14 +1266,15 @@ init_predicate_table (void)
 				       eq_struct_pred_data, 0,
 				       xcalloc, free);
 
-  for (i = 0; i < NUM_KNOWN_OLD_PREDS; i++)
+  for (i = 0; i < NUM_KNOWN_STD_PREDS; i++)
     {
       pred = xcalloc (sizeof (struct pred_data), 1);
-      pred->name = old_preds[i].name;
+      pred->name = std_preds[i].name;
+      pred->special = std_preds[i].special;
 
-      for (j = 0; old_preds[i].codes[j] != 0; j++)
+      for (j = 0; std_preds[i].codes[j] != 0; j++)
 	{
-	  enum rtx_code code = old_preds[i].codes[j];
+	  enum rtx_code code = std_preds[i].codes[j];
 
 	  pred->codes[code] = true;
 	  if (GET_RTX_CLASS (code) != RTX_CONST_OBJ)
@@ -1295,20 +1288,8 @@ init_predicate_table (void)
 	    pred->allows_non_lvalue = true;
 	}
       if (j == 1)
-	pred->singleton = old_preds[i].codes[0];
+	pred->singleton = std_preds[i].codes[0];
       
       add_predicate (pred);
-    }
-
-  for (i = 0; i < NUM_OLD_SPECIAL_MODE_PREDS; i++)
-    {
-      pred = lookup_predicate (old_special_pred_table[i]);
-      if (!pred)
-	{
-	  error ("old-style special predicate list refers "
-		 "to unknown predicate '%s'", old_special_pred_table[i]);
-	  continue;
-	}
-      pred->special = true;
     }
 }
