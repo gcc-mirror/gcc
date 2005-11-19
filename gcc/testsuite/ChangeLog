@@ -1,3 +1,7 @@
+2005-11-19  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/fold-overflow-1.c: Adjust for float output for mmix-*-*.
+
 2005-11-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8355
