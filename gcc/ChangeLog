@@ -1,3 +1,14 @@
+2005-11-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/24912
+	PR middle-end/24750
+	* reload.c (find_reloads_address_1): Mention dependency on
+	gen_reload.
+	* reload1.c (gen_reload): For IN with an unary operation, try
+	moving inner expression to OUT if trivial SET is not valid.
+	Confirm that the result is valid.  Move common code block into...
+	(emit_insn_if_valid_for_reload): New function.
+
 2005-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (version_compare_spec_function): Use '%s' rather than %qs in
