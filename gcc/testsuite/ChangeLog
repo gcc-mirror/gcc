@@ -1,3 +1,8 @@
+2005-11-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/23294
+	* gcc.dg/tree-ssa/pr23294.c: New testcase.
+
 2005-11-19  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/fold-overflow-1.c: Adjust for float output for mmix-*-*.

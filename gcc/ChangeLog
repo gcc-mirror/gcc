@@ -1,3 +1,10 @@
+2005-11-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/23294
+	* fold-const.c (fold_plusminus_mult_expr): New function.
+	(fold_binary): Use to canonicalize PLUS_EXPR and MINUS_EXPR
+	cases, remove now unnecessary code.
+
 2005-11-19  Paolo Bonzini  <bonzini@gcc.gnu.org>
 
 	* gensupport.c (old_preds): Rename to std_preds, add special field.
