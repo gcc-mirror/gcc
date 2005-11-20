@@ -225,7 +225,6 @@ Allow @samp{$} as a valid character in a symbol name.
 @item -fno-backslash
 @cindex backslash
 @cindex escape characters
-@item
 Compile switch to change the interpretation of a backslash from
 ``C''-style escape characters to a single backslash character.
 
