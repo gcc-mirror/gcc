@@ -1,3 +1,7 @@
+2005-11-20  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* gcc.c-torture/execute/usmul.c: New test.
+
 2005-11-19  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/vrp22.c: New test.
