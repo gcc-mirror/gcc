@@ -1,3 +1,7 @@
+2005-11-19  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/vrp22.c: New test.
+
 2005-11-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR middle-end/24912
