@@ -2113,7 +2113,7 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
 
   emit_insn (GEN_FCN (icode) (cmp_reg, mem, ar_ccv, new_reg));
 
-  emit_cmp_and_jump_insns (cmp_reg, old_reg, EQ, NULL, DImode, true, label);
+  emit_cmp_and_jump_insns (cmp_reg, old_reg, NE, NULL, DImode, true, label);
 }
 
 /* Begin the assembly file.  */
