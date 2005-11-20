@@ -35,8 +35,6 @@ Boston, MA 02110-1301, USA.  */
 
 /* For the definitive definition of GIMPLE, see doc/tree-ssa.texi.  */
 
-static inline bool is_gimple_id (tree);
-
 /* Validation of GIMPLE expressions.  */
 
 /* Return true if T is a GIMPLE RHS for an assignment to a temporary.  */
@@ -244,7 +242,7 @@ is_gimple_variable (tree t)
 
 /*  Return true if T is a GIMPLE identifier (something with an address).  */
 
-static inline bool
+bool
 is_gimple_id (tree t)
 {
   return (is_gimple_variable (t)
