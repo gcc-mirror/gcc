@@ -1,3 +1,7 @@
+2005-11-20  Graham Stott <btinternet.com>
+
+	* gensupport.c (std_preds): Fixed extraneous `false` in last change.
+
 2005-11-20  Andreas Schwab  <schwab@suse.de>
 
 	PR target/24757
