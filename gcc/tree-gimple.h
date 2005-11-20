@@ -53,6 +53,8 @@ extern bool is_gimple_formal_tmp_var (tree);
 extern bool is_gimple_formal_tmp_reg (tree);
 /* Returns true iff T is any sort of variable.  */
 extern bool is_gimple_variable (tree);
+/* Returns true iff T is any sort of symbol.  */
+extern bool is_gimple_id (tree);
 /* Returns true iff T is a variable or an INDIRECT_REF (of a variable).  */
 extern bool is_gimple_min_lval (tree);
 /* Returns true iff T is something whose address can be taken.  */
