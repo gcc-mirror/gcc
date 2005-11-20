@@ -1,3 +1,9 @@
+2005-11-20  Richard Henderson  <rth@redhat.com>
+
+        * Makefile.am: Revert 2005-11-14 change.  Enable -free-vectorize
+        via gmake per-target variables.
+	* Makefile.in, aclocal.m4: Regenerate.
+
 2005-11-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* configure.ac: Add "-I ." to the AM_FCFLAGS.
