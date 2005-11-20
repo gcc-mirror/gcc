@@ -1,3 +1,9 @@
+2005-11-20  Andreas Schwab  <schwab@suse.de>
+
+	PR target/24757
+	* config/ia64/ia64.c (ia64_expand_atomic_op): Fix condition of cmp
+	insn.
+
 2005-11-19  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/24665
