@@ -1242,7 +1242,7 @@ static const struct std_pred_table std_preds[] = {
   {"const_double_operand", false, {CONST_INT, CONST_DOUBLE}},
   {"nonimmediate_operand", false, {SUBREG, REG, MEM}},
   {"nonmemory_operand", false, {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-			 false, LABEL_REF, SUBREG, REG}},
+			        LABEL_REF, SUBREG, REG}},
   {"push_operand", false, {MEM}},
   {"pop_operand", false, {MEM}},
   {"memory_operand", false, {SUBREG, MEM}},
