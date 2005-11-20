@@ -1,3 +1,13 @@
+2005-11-20  David Ayers  <d.ayers@inode.at>
+
+	PR libobjc/19024
+	* objc/hash.h: Remove deprecated hash API.
+	* hash_compat.c: Remove.
+	* Makefile.in: Remove reference to hash_compat.c.
+
+	* configure.ac (VERSION): Bump library version to 2:0:0.
+	* configure: Regenerate.
+
 2005-11-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR other/4372
