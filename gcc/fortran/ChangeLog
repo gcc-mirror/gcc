@@ -1,3 +1,7 @@
+2005-11-20  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* invoke.texi: Remove superfluous @item.
+
 2005-11-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/24862
