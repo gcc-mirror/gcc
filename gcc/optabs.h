@@ -82,6 +82,8 @@ enum optab_index
   /* Signed multiply with result one machine mode wider than args */
   OTI_smul_widen,
   OTI_umul_widen,
+  /* Widening multiply of one unsigned and one signed operand.  */
+  OTI_usmul_widen,
 
   /* Signed divide */
   OTI_sdiv,
@@ -268,6 +270,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define umul_highpart_optab (optab_table[OTI_umul_highpart])
 #define smul_widen_optab (optab_table[OTI_smul_widen])
 #define umul_widen_optab (optab_table[OTI_umul_widen])
+#define usmul_widen_optab (optab_table[OTI_usmul_widen])
 #define sdiv_optab (optab_table[OTI_sdiv])
 #define smulv_optab (optab_table[OTI_smulv])
 #define sdivv_optab (optab_table[OTI_sdivv])
