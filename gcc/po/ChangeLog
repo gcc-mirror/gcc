@@ -1,3 +1,7 @@
+2005-11-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2005-09-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/15586
