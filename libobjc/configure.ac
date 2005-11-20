@@ -28,7 +28,7 @@ GCC_TOPLEV_SUBDIRS
 # We need the following definitions because AC_PROG_LIBTOOL relies on them
 PACKAGE=libobjc
 # Version is pulled out to make it a bit easier to change using sed.
-VERSION=1:0:0
+VERSION=2:0:0
 AC_SUBST(VERSION)
 
 # This works around the fact that libtool configuration may change LD

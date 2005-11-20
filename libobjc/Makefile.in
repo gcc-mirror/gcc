@@ -148,13 +148,13 @@ OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h \
 OBJS =    archive.lo class.lo encoding.lo gc.lo hash.lo init.lo linking.lo \
 	  misc.lo nil_method.lo NXConstStr.lo Object.lo objects.lo \
 	  Protocol.lo sarray.lo selector.lo sendmsg.lo thr.lo \
-	  $(OBJC_THREAD_FILE).lo exception.lo hash_compat.lo
+	  $(OBJC_THREAD_FILE).lo exception.lo
 
 OBJS_GC = archive_gc.lo class_gc.lo encoding_gc.lo gc_gc.lo hash_gc.lo \
 	  init_gc.lo linking_gc.lo misc_gc.lo nil_method_gc.lo \
 	  NXConstStr_gc.lo Object_gc.lo objects_gc.lo Protocol_gc.lo \
 	  sarray_gc.lo selector_gc.lo sendmsg_gc.lo thr_gc.lo \
-	  $(OBJC_THREAD_FILE)_gc.lo exception_gc.lo hash_compat_gc.lo
+	  $(OBJC_THREAD_FILE)_gc.lo exception_gc.lo
 
 runtime-info.h: 
 	echo "" > tmp-runtime.m
@@ -182,10 +182,6 @@ gc_gc.lo: gc.c
 		$(INCLUDES) $<
 
 hash_gc.lo: hash.c
-	$(LIBTOOL_COMPILE) $(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
-		$(INCLUDES) $<
-
-hash_compat_gc.lo: hash_compat.c
 	$(LIBTOOL_COMPILE) $(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
 		$(INCLUDES) $<
 
