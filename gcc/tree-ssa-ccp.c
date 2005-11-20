@@ -104,6 +104,30 @@ dump_lattice_value (FILE *outf, const char *prefix, value val)
     }
 }
 
+/* The regular is_gimple_min_invariant does a shallow test of the object.
+   It assumes that full gimplification has happened, or will happen on the
+   object.  For a value coming from DECL_INITIAL, this is not true, so we
+   have to be more strict outselves.  */
+
+static bool
+ccp_decl_initial_min_invariant (tree t)
+{
+  if (!is_gimple_min_invariant (t))
+    return false;
+  if (TREE_CODE (t) == ADDR_EXPR)
+    {
+      /* Inline and unroll is_gimple_addressable.  */
+      while (1)
+	{
+	  t = TREE_OPERAND (t, 0);
+	  if (is_gimple_id (t))
+	    return true;
+	  if (!handled_component_p (t))
+	    return false;
+	}
+    }
+  return true;
+}
 
 /* Return a default value for variable VAR using the following rules:
 
@@ -154,7 +178,7 @@ get_default_value (tree var)
          unless they are declared 'const'.  */
       if (TREE_READONLY (sym)
 	  && DECL_INITIAL (sym)
-	  && is_gimple_min_invariant (DECL_INITIAL (sym)))
+	  && ccp_decl_initial_min_invariant (DECL_INITIAL (sym)))
 	{
 	  val.lattice_val = CONSTANT;
 	  val.const_val = DECL_INITIAL (sym);
@@ -1552,7 +1576,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 
       /* Fold away CONST_DECL to its value, if the type is scalar.  */
       if (TREE_CODE (base) == CONST_DECL
-	  && is_gimple_min_invariant (DECL_INITIAL (base)))
+	  && ccp_decl_initial_min_invariant (DECL_INITIAL (base)))
 	return DECL_INITIAL (base);
 
       /* Try folding *(&B+O) to B[X].  */

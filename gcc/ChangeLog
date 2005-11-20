@@ -1,3 +1,12 @@
+2005-11-19  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/24665
+	* tree-gimple.c (is_gimple_id): Export.
+	* tree-gimple.h (is_gimple_id): Declare.
+	* tree-ssa-ccp.c (ccp_decl_initial_min_invariant): New.
+	(get_default_value): Use it.
+	(maybe_fold_stmt_indirect): Likewise.
+
 2005-11-18  James E Wilson  <wilson@specifix.com>
 
 	* builtins.c (fold_builtin_strstr): Pass s1 through fold_convert before
@@ -187,8 +196,8 @@
 2005-11-07  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/24599
-        * c-typeck.c (build_c_cast): Try using a shared constant, and see
-        if TREE_OVERFLOW or TREE_CONSTANT_OVERFLOW really changed.
+	* c-typeck.c (build_c_cast): Try using a shared constant, and see
+	if TREE_OVERFLOW or TREE_CONSTANT_OVERFLOW really changed.
 
 	(readonly_error): Fix formatting error.
 
