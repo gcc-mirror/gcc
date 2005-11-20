@@ -1878,6 +1878,10 @@ compare_ranges (enum tree_code comp, value_range_t *vr0, value_range_t *vr1)
 	  else if (cmp_min != -2 && cmp_max != -2)
 	    return boolean_false_node;
 	}
+      /* If [V0_MIN, V1_MAX] < [V1_MIN, V1_MAX] then V0 != V1.  */
+      else if (compare_values (vr0->min, vr1->max) == 1
+	       || compare_values (vr1->min, vr0->max) == 1)
+	return boolean_false_node;
 
       return NULL_TREE;
     }
