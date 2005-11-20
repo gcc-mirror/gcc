@@ -1,3 +1,12 @@
+2005-11-19  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/24665
+	* tree-gimple.c (is_gimple_id): Export.
+	* tree-gimple.h (is_gimple_id): Declare.
+	* tree-ssa-ccp.c (ccp_decl_initial_min_invariant): New.
+	(get_default_value): Use it.
+	(maybe_fold_stmt_indirect): Likewise.
+
 2005-11-20  Andreas Schwab  <schwab@suse.de>
 
 	PR target/24757
@@ -450,7 +459,7 @@
 	and duplicate declaration of pthread_self.
 
 2005-11-13  Eric Botcazou  <ebotcazou@adacore.com>
-            Ian Lance Taylor  <ian@airs.com>
+	    Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/24003
 	* calls.c (expand_call): If TARGET is a MEM and some part of the
@@ -458,7 +467,7 @@
 
 2005-11-13  Razya Ladelsky <razya@il.ibm.com>
 
-        * ipa-prop.c (ipa_callsite_compute_param ): Removed obsolete type 
+	* ipa-prop.c (ipa_callsite_compute_param ): Removed obsolete type 
 	checking.
 
 2005-11-13  Jason Merrill  <jason@redhat.com>
@@ -896,8 +905,8 @@
 
 	PR c/24599
 
-        * c-typeck.c (build_c_cast): Try using a shared constant, and see
-        if TREE_OVERFLOW or TREE_CONSTANT_OVERFLOW really changed.
+	* c-typeck.c (build_c_cast): Try using a shared constant, and see
+	if TREE_OVERFLOW or TREE_CONSTANT_OVERFLOW really changed.
 
 2005-11-07  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1355,16 +1364,16 @@
 
 2005-10-28  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/ms1/ms1.h (TARGET_MS1_64_001): New.
-        (TARGET_MS1_16_002): New.
-        (TARGET_MS1_16_003): New.
+	* config/ms1/ms1.h (TARGET_MS1_64_001): New.
+	(TARGET_MS1_16_002): New.
+	(TARGET_MS1_16_003): New.
 
-        * config/ms1/ms1.md ("decrement_and_branch_until_zero"): Rewrite.
-        ("*decrement_and_branch_until_zero_no_clobber"): New.
-        Add corresponding splitter for decrement_and_branch_until_zero
-        instruction.
-        Key all decrement_and_branch_until_zero patterns off of
-        TARGET_MS1_16_003.
+	* config/ms1/ms1.md ("decrement_and_branch_until_zero"): Rewrite.
+	("*decrement_and_branch_until_zero_no_clobber"): New.
+	Add corresponding splitter for decrement_and_branch_until_zero
+	instruction.
+	Key all decrement_and_branch_until_zero patterns off of
+	TARGET_MS1_16_003.
 
 2005-10-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -1378,7 +1387,7 @@
 	indirect call to _mcount if the function needs a static chain.
 
 2005-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Caroline Tice  <ctice@apple.com>
+	    Caroline Tice  <ctice@apple.com>
 
 	PR rtl-optimization/24460
 	* dwarf2out.c (have_switched_text_sections): New boolean variable.
@@ -1636,7 +1645,7 @@
 	Check that elements of TYPE_METHODS are FUNCTION_DECLs.
 
 2005-10-17  Alexey Starovoytov  <alexey.starovoytov@sun.com>
-            Ian Lance Taylor <ian@airs.com>
+	    Ian Lance Taylor <ian@airs.com>
 
 	PR middle-end/23522
 	* fold-const.c (fold_widened_comparison): Do not allow range based
