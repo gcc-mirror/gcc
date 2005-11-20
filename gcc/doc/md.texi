@@ -3125,6 +3125,14 @@ Similar widening-multiplication instructions of other widths.
 Similar widening-multiplication instructions that do unsigned
 multiplication.
 
+@cindex @code{usmulqihi3} instruction pattern
+@cindex @code{usmulhisi3} instruction pattern
+@cindex @code{usmulsidi3} instruction pattern
+@item @samp{usmulqihi3}, @samp{usmulhisi3}, @samp{usmulsidi3}
+Similar widening-multiplication instructions that interpret the first
+operand as unsigned and the second operand as signed, then do a signed
+multiplication.
+
 @cindex @code{smul@var{m}3_highpart} instruction pattern
 @item @samp{smul@var{m}3_highpart}
 Perform a signed multiplication of operands 1 and 2, which have mode
