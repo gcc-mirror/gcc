@@ -151,7 +151,5 @@ extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 #define LANG_HOOKS_TO_TARGET_CHARSET c_common_to_target_charset
 #undef LANG_HOOKS_GIMPLIFY_EXPR
 #define LANG_HOOKS_GIMPLIFY_EXPR cp_gimplify_expr
-#undef LANG_HOOKS_LOOKUP_NAME
-#define LANG_HOOKS_LOOKUP_NAME lookup_name_one
 
 #endif /* GCC_CP_OBJCP_COMMON */

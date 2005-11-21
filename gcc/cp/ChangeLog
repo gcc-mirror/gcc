@@ -1,3 +1,16 @@
+2005-11-21  Richard Henderson  <rth@redhat.com>
+
+	* cp-objcp-common.h, name-lookup.c, name-lookup.h: Revert 11-18 patch.
+
+	* name-lookup.c (lookup_name): Remove prefer_type argument.
+	(lookup_name_prefer_type): New.
+	* decl.c (lookup_and_check_tag): Use them.
+	* pt.c (tsubst_friend_class): Likewise.
+	(lookup_template_class): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	* name-lookup.h (lookup_name_prefer_type): New.
+	(lookup_name): Remove declaration.
+
 2005-11-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8355

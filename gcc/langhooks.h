@@ -170,12 +170,6 @@ struct lang_hooks_for_decls
   /* Returns the chain of decls so far in the current scope level.  */
   tree (*getdecls) (void);
 
-/* Look up NAME in the current scope and its superiors
-   in the namespace of variables, functions and typedefs.
-   Return a ..._DECL node of some kind representing its definition,
-   or return 0 if it is undefined.  */
-  tree (*lookup_name) (tree);
-
   /* Returns true when we should warn for an unused global DECL.
      We will already have checked that it has static binding.  */
   bool (*warn_unused_global) (tree);
