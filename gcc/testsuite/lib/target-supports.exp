@@ -530,6 +530,7 @@ proc check_effective_target_fortran_large_real { } {
 	puts $f "integer,parameter :: k = &"
         puts $f "  selected_real_kind (precision (0.0_8) + 1)"
         puts $f "real(kind=k) :: x"
+        puts $f "x = cos (x);"
 	puts $f "end"
 	close $f
 
