@@ -1423,6 +1423,7 @@ combinable_i3pat (rtx i3, rtx *loc, rtx i2dest, rtx i1dest,
       rtx dest = SET_DEST (set);
       rtx src = SET_SRC (set);
       rtx inner_dest = dest;
+      rtx subdest;
 
       while (GET_CODE (inner_dest) == STRICT_LOW_PART
 	     || GET_CODE (inner_dest) == SUBREG
@@ -1457,27 +1458,35 @@ combinable_i3pat (rtx i3, rtx *loc, rtx i2dest, rtx i1dest,
 	  || (i1_not_in_src && reg_overlap_mentioned_p (i1dest, src)))
 	return 0;
 
-      /* If DEST is used in I3, it is being killed in this insn,
-	 so record that for later.
+      /* If DEST is used in I3, it is being killed in this insn, so
+	 record that for later.  We have to consider paradoxical
+	 subregs here, since they kill the whole register, but we
+	 ignore partial subregs, STRICT_LOW_PART, etc.
 	 Never add REG_DEAD notes for the FRAME_POINTER_REGNUM or the
 	 STACK_POINTER_REGNUM, since these are always considered to be
 	 live.  Similarly for ARG_POINTER_REGNUM if it is fixed.  */
-      if (pi3dest_killed && REG_P (dest)
-	  && reg_referenced_p (dest, PATTERN (i3))
-	  && REGNO (dest) != FRAME_POINTER_REGNUM
+      subdest = dest;
+      if (GET_CODE (subdest) == SUBREG
+	  && (GET_MODE_SIZE (GET_MODE (subdest))
+	      >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (subdest)))))
+	subdest = SUBREG_REG (subdest);
+      if (pi3dest_killed
+	  && REG_P (subdest)
+	  && reg_referenced_p (subdest, PATTERN (i3))
+	  && REGNO (subdest) != FRAME_POINTER_REGNUM
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	  && REGNO (dest) != HARD_FRAME_POINTER_REGNUM
+	  && REGNO (subdest) != HARD_FRAME_POINTER_REGNUM
 #endif
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
-	  && (REGNO (dest) != ARG_POINTER_REGNUM
-	      || ! fixed_regs [REGNO (dest)])
+	  && (REGNO (subdest) != ARG_POINTER_REGNUM
+	      || ! fixed_regs [REGNO (subdest)])
 #endif
-	  && REGNO (dest) != STACK_POINTER_REGNUM)
+	  && REGNO (subdest) != STACK_POINTER_REGNUM)
 	{
 	  if (*pi3dest_killed)
 	    return 0;
 
-	  *pi3dest_killed = dest;
+	  *pi3dest_killed = subdest;
 	}
     }
 
