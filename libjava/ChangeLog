@@ -1,3 +1,8 @@
+2005-11-21  Matthias Klose  <doko@debian.org>
+
+	* configure.ac: Fix typo in error message.
+	* configure: Regenerate.
+
 2005-11-17  Bryce McKinlay  <mckinlay@redhat.com>
 
 	Implement -Xss.

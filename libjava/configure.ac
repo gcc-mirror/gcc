@@ -514,7 +514,7 @@ for peer in $peerlibs ; do
       ;;
     gtk)
       if test "$no_x" = yes; then
-	 echo "*** xlib peers requested but no X library available" 1>&2
+	 echo "*** gtk peers requested but no X library available" 1>&2
 	 exit 1
       else
 	 use_gtk_awt=yes
