@@ -74,8 +74,8 @@ namespace __gnu_cxx
       
       union
       {
-	_CharT                  _M_local_data[_S_local_capacity + 1];
-	size_type               _M_allocated_capacity;
+	_CharT           _M_local_data[_S_local_capacity + 1];
+	size_type        _M_allocated_capacity;
       };
 
       void
@@ -99,7 +99,7 @@ namespace __gnu_cxx
       _M_create(size_type&, size_type);
       
       void
-      _M_dispose() throw()
+      _M_dispose()
       {
 	if (!_M_is_local())
 	  _M_destroy(_M_allocated_capacity + 1);
@@ -110,7 +110,7 @@ namespace __gnu_cxx
 
       // _M_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIterator is an integral type
-      template<class _InIterator>
+      template<typename _InIterator>
         void
         _M_construct_aux(_InIterator __beg, _InIterator __end, __false_type)
 	{
@@ -118,13 +118,13 @@ namespace __gnu_cxx
           _M_construct(__beg, __end, _Tag());
 	}
 
-      template<class _InIterator>
+      template<typename _InIterator>
         void
         _M_construct_aux(_InIterator __beg, _InIterator __end, __true_type)
 	{ _M_construct(static_cast<size_type>(__beg),
 		       static_cast<value_type>(__end)); }
 
-      template<class _InIterator>
+      template<typename _InIterator>
         void
         _M_construct(_InIterator __beg, _InIterator __end)
 	{
@@ -133,14 +133,14 @@ namespace __gnu_cxx
         }
 
       // For Input Iterators, used in istreambuf_iterators, etc.
-      template<class _InIterator>
+      template<typename _InIterator>
         void
         _M_construct(_InIterator __beg, _InIterator __end,
 		     std::input_iterator_tag);
       
       // For forward_iterators up to random_access_iterators, used for
       // string::iterator, _CharT*, etc.
-      template<class _FwdIterator>
+      template<typename _FwdIterator>
         void
         _M_construct(_FwdIterator __beg, _FwdIterator __end,
 		     std::forward_iterator_tag);
@@ -202,7 +202,7 @@ namespace __gnu_cxx
       ~__sso_string_base()
       { _M_dispose(); }
 
-      allocator_type
+      const allocator_type&
       _M_get_allocator() const
       { return _M_dataplus; }
 
@@ -392,7 +392,7 @@ namespace __gnu_cxx
       }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template <typename _InIterator>
+    template<typename _InIterator>
       void
       __sso_string_base<_CharT, _Traits, _Alloc>::
       _M_construct(_InIterator __beg, _InIterator __end,
