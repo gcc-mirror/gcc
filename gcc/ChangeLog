@@ -1,3 +1,9 @@
+2005-11-21  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/24953
+	* config/rs6000/predicates.md (vrsave_operation): Check
+	UNSPEC_VOLATILE value.
+
 2005-11-21  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/24653
