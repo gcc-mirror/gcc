@@ -127,6 +127,9 @@ struct sra_elt
      should happen via memcpy and not per-element.  */
   bool use_block_copy;
 
+  /* True if everything under this element has been marked TREE_NO_WARNING.  */
+  bool all_no_warning;
+
   /* A flag for use with/after random access traversals.  */
   bool visited;
 };
@@ -598,9 +601,10 @@ struct sra_walk_fns
   /* Invoked when ELT is required as a unit.  Note that ELT might refer to
      a leaf node, in which case this is a simple scalar reference.  *EXPR_P
      points to the location of the expression.  IS_OUTPUT is true if this
-     is a left-hand-side reference.  */
+     is a left-hand-side reference.  USE_ALL is true if we saw something we
+     couldn't quite identify and had to force the use of the entire object.  */
   void (*use) (struct sra_elt *elt, tree *expr_p,
-	       block_stmt_iterator *bsi, bool is_output);
+	       block_stmt_iterator *bsi, bool is_output, bool use_all);
 
   /* Invoked when we have a copy between two scalarizable references.  */
   void (*copy) (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
@@ -654,6 +658,7 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
   tree expr = *expr_p;
   tree inner = expr;
   bool disable_scalarization = false;
+  bool use_all_p = false;
 
   /* We're looking to collect a reference expression between EXPR and INNER,
      such that INNER is a scalarizable decl and all other nodes through EXPR
@@ -674,7 +679,7 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	    if (disable_scalarization)
 	      elt->cannot_scalarize = true;
 	    else
-	      fns->use (elt, expr_p, bsi, is_output);
+	      fns->use (elt, expr_p, bsi, is_output, use_all_p);
 	  }
 	return;
 
@@ -742,6 +747,7 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
       use_all:
         expr_p = &TREE_OPERAND (inner, 0);
 	inner = expr = *expr_p;
+	use_all_p = true;
 	break;
 
       default:
@@ -813,7 +819,7 @@ sra_walk_modify_expr (tree expr, block_stmt_iterator *bsi,
       if (!rhs_elt->is_scalar)
 	fns->ldst (rhs_elt, lhs, bsi, false);
       else
-	fns->use (rhs_elt, &TREE_OPERAND (expr, 1), bsi, false);
+	fns->use (rhs_elt, &TREE_OPERAND (expr, 1), bsi, false, false);
     }
 
   /* If it isn't scalarizable, there may be scalarizable variables within, so
@@ -859,7 +865,7 @@ sra_walk_modify_expr (tree expr, block_stmt_iterator *bsi,
       /* Otherwise we're being used in some context that requires the
 	 aggregate to be seen as a whole.  Invoke USE.  */
       else
-	fns->use (lhs_elt, &TREE_OPERAND (expr, 0), bsi, true);
+	fns->use (lhs_elt, &TREE_OPERAND (expr, 0), bsi, true, false);
     }
 
   /* Similarly to above, LHS_ELT being null only means that the LHS as a
@@ -967,7 +973,7 @@ find_candidates_for_sra (void)
 static void
 scan_use (struct sra_elt *elt, tree *expr_p ATTRIBUTE_UNUSED,
 	  block_stmt_iterator *bsi ATTRIBUTE_UNUSED,
-	  bool is_output ATTRIBUTE_UNUSED)
+	  bool is_output ATTRIBUTE_UNUSED, bool use_all ATTRIBUTE_UNUSED)
 {
   elt->n_uses += 1;
 }
@@ -1472,6 +1478,23 @@ mark_all_v_defs (tree list)
     }
 }
 
+/* Mark every replacement under ELT with TREE_NO_WARNING.  */
+
+static void
+mark_no_warning (struct sra_elt *elt)
+{
+  if (!elt->all_no_warning)
+    {
+      if (elt->replacement)
+	TREE_NO_WARNING (elt->replacement) = 1;
+      else
+	{
+	  struct sra_elt *c;
+	  for (c = elt->children; c ; c = c->sibling)
+	    mark_no_warning (c);
+	}
+    }
+}
 
 /* Build a single level component reference to ELT rooted at BASE.  */
 
@@ -1815,7 +1838,7 @@ sra_replace (block_stmt_iterator *bsi, tree list)
 
 static void
 scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
-	       bool is_output)
+	       bool is_output, bool use_all)
 {
   tree list = NULL, stmt = bsi_stmt (*bsi);
 
@@ -1850,7 +1873,11 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
       if (is_output)
 	sra_insert_after (bsi, list);
       else
-	sra_insert_before (bsi, list);
+	{
+	  sra_insert_before (bsi, list);
+	  if (use_all)
+	    mark_no_warning (elt);
+	}
     }
 }
 
@@ -2015,7 +2042,7 @@ scalarize_ldst (struct sra_elt *elt, tree other,
     {
       /* Since ELT is not fully instantiated, we have to leave the
 	 block copy in place.  Treat this as a USE.  */
-      scalarize_use (elt, NULL, bsi, is_output);
+      scalarize_use (elt, NULL, bsi, is_output, false);
     }
   else
     {
