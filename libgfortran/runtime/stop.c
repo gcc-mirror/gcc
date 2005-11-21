@@ -1,5 +1,5 @@
 /* Implementation of the STOP statement.
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -37,8 +37,6 @@ Boston, MA 02110-1301, USA.  */
 void
 stop_numeric (GFC_INTEGER_4 code)
 {
-  show_locus ();
-
   if (code == -1)
     code = 0;
   else
@@ -55,8 +53,6 @@ export_proto(stop_string);
 void
 stop_string (const char *string, GFC_INTEGER_4 len)
 {
-  show_locus ();
-
   st_printf ("STOP ");
   while (len--)
     st_printf ("%c", *(string++));

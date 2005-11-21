@@ -363,6 +363,9 @@
 /* libc includes getuid */
 #undef HAVE_GETUID
 
+/* Define if the compiler has a thread header that is non single. */
+#undef HAVE_GTHR_DEFAULT
+
 /* libm includes hypot */
 #undef HAVE_HYPOT
 
@@ -462,6 +465,9 @@
 /* libm includes powl */
 #undef HAVE_POWL
 
+/* Define to 1 if the target supports #pragma weak */
+#undef HAVE_PRAGMA_WEAK
+
 /* libm includes round */
 #undef HAVE_ROUND
 
@@ -557,6 +563,9 @@
 
 /* Define to 1 if you have the `symlink' function. */
 #undef HAVE_SYMLINK
+
+/* Define to 1 if the target supports __sync_fetch_and_add */
+#undef HAVE_SYNC_FETCH_AND_ADD
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H

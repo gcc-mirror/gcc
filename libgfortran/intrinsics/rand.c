@@ -1,5 +1,5 @@
 /* Implementation of the IRAND, RAND, and SRAND intrinsics.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargls@comcast.net>.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -37,12 +37,18 @@ Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "libgfortran.h"
+#include "../io/io.h"
 
 #define GFC_RAND_A	16807
 #define GFC_RAND_M	2147483647
 #define GFC_RAND_M1	(GFC_RAND_M - 1)
 
 static GFC_UINTEGER_8 rand_seed = 1;
+#ifdef __GTHREAD_MUTEX_INIT
+static __gthread_mutex_t rand_seed_lock = __GTHREAD_MUTEX_INIT;
+#else
+static __gthread_mutex_t rand_seed_lock;
+#endif
 
 
 /* Set the seed of the irand generator.  Note 0 is a bad seed.  */
@@ -59,7 +65,9 @@ export_proto_np(PREFIX(srand));
 void
 PREFIX(srand) (GFC_INTEGER_4 *i)
 {
+  __gthread_mutex_lock (&rand_seed_lock);
   srand_internal (*i);
+  __gthread_mutex_unlock (&rand_seed_lock);
 }
 
 /* Return an INTEGER in the range [1,GFC_RAND_M-1].  */
@@ -75,6 +83,8 @@ irand (GFC_INTEGER_4 *i)
     j = *i;
   else
     j = 0;
+
+  __gthread_mutex_lock (&rand_seed_lock);
 
   switch (j)
   {
@@ -95,8 +105,11 @@ irand (GFC_INTEGER_4 *i)
    }
 
    rand_seed = GFC_RAND_A * rand_seed % GFC_RAND_M;
+   j = (GFC_INTEGER_4) rand_seed;
 
-   return (GFC_INTEGER_4) rand_seed;
+  __gthread_mutex_unlock (&rand_seed_lock);
+
+   return j;
 }
 iexport(irand);
 
@@ -111,3 +124,11 @@ PREFIX(rand) (GFC_INTEGER_4 *i)
 {
   return normalize_r4_i4 (irand (i) - 1, GFC_RAND_M1 - 1);
 }
+
+#ifndef __GTHREAD_MUTEX_INIT
+static void __attribute__((constructor))
+init (void)
+{
+  __GTHREAD_MUTEX_INIT_FUNCTION (&rand_seed_lock);
+}
+#endif

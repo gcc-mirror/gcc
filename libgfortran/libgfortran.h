@@ -437,11 +437,11 @@ iexport_data_proto(filename);
 extern void stupid_function_name_for_static_linking (void);
 internal_proto(stupid_function_name_for_static_linking);
 
-extern void library_start (void);
+struct st_parameter_common;
+extern void library_start (struct st_parameter_common *);
 internal_proto(library_start);
 
-extern void library_end (void);
-internal_proto(library_end);
+#define library_end()
 
 extern void set_args (int, char **);
 export_proto(set_args);
@@ -465,13 +465,14 @@ internal_proto(xtoa);
 extern void os_error (const char *) __attribute__ ((noreturn));
 internal_proto(os_error);
 
-extern void show_locus (void);
+extern void show_locus (struct st_parameter_common *);
 internal_proto(show_locus);
 
 extern void runtime_error (const char *) __attribute__ ((noreturn));
 iexport_proto(runtime_error);
 
-extern void internal_error (const char *) __attribute__ ((noreturn));
+extern void internal_error (struct st_parameter_common *, const char *)
+  __attribute__ ((noreturn));
 internal_proto(internal_error);
 
 extern const char *get_oserror (void);
@@ -491,7 +492,7 @@ internal_proto(st_sprintf);
 extern const char *translate_error (int);
 internal_proto(translate_error);
 
-extern void generate_error (int, const char *);
+extern void generate_error (struct st_parameter_common *, int, const char *);
 internal_proto(generate_error);
 
 /* fpu.c */
@@ -526,7 +527,8 @@ internal_proto(show_variables);
 
 /* string.c */
 
-extern int find_option (const char *, int, const st_option *, const char *);
+extern int find_option (struct st_parameter_common *, const char *, int,
+			const st_option *, const char *);
 internal_proto(find_option);
 
 extern int fstrlen (const char *, int);

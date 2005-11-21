@@ -20699,6 +20699,166 @@ _ACEOF
 
   fi
 
+# Check out sync builtins support.
+
+  echo "$as_me:$LINENO: checking whether the target supports __sync_fetch_and_add" >&5
+echo $ECHO_N "checking whether the target supports __sync_fetch_and_add... $ECHO_C" >&6
+if test "${have_sync_fetch_and_add+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+  if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+int foovar = 0;
+int
+main ()
+{
+
+if (foovar <= 0) return __sync_fetch_and_add (&foovar, 1);
+if (foovar > 10) return __sync_add_and_fetch (&foovar, -1);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  have_sync_fetch_and_add=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+have_sync_fetch_and_add=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $have_sync_fetch_and_add" >&5
+echo "${ECHO_T}$have_sync_fetch_and_add" >&6
+  if test $have_sync_fetch_and_add = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_SYNC_FETCH_AND_ADD 1
+_ACEOF
+
+  fi
+
+# Check out thread support.
+
+  echo "$as_me:$LINENO: checking configured target thread model" >&5
+echo $ECHO_N "checking configured target thread model... $ECHO_C" >&6
+if test "${target_thread_file+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+fi
+echo "$as_me:$LINENO: result: $target_thread_file" >&5
+echo "${ECHO_T}$target_thread_file" >&6
+
+  if test $target_thread_file != single; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_GTHR_DEFAULT 1
+_ACEOF
+
+  fi
+
+# Check out #pragma weak.
+
+  echo "$as_me:$LINENO: checking whether pragma weak works" >&5
+echo $ECHO_N "checking whether pragma weak works... $ECHO_C" >&6
+if test "${have_pragma_weak+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+  gfor_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Wunknown-pragmas"
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+void foo (void);
+#pragma weak foo
+int
+main ()
+{
+if (foo) foo ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  have_pragma_weak=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+have_pragma_weak=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $have_pragma_weak" >&5
+echo "${ECHO_T}$have_pragma_weak" >&6
+  if test $have_pragma_weak = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_PRAGMA_WEAK 1
+_ACEOF
+
+  fi
+
 # Various other checks on target
 
   echo "$as_me:$LINENO: checking whether the target can unlink an open file" >&5

@@ -2147,7 +2147,7 @@ terminate_io (gfc_code * io_code)
   gfc_code *c;
 
   if (io_code == NULL)
-    io_code = &new_st;
+    io_code = new_st.block;
 
   c = gfc_get_code ();
   c->op = EXEC_DT_END;
@@ -2353,7 +2353,9 @@ get_io_list:
 
   new_st.op = (k == M_READ) ? EXEC_READ : EXEC_WRITE;
   new_st.ext.dt = dt;
-  new_st.next = io_code;
+  new_st.block = gfc_get_code ();
+  new_st.block->op = new_st.op;
+  new_st.block->next = io_code;
 
   terminate_io (io_code);
 
@@ -2522,8 +2524,6 @@ gfc_match_inquire (void)
       if (m == MATCH_NO)
 	goto syntax;
 
-      terminate_io (code);
-
       new_st.op = EXEC_IOLENGTH;
       new_st.expr = inquire->iolength;
       new_st.ext.inquire = inquire;
@@ -2535,7 +2535,10 @@ gfc_match_inquire (void)
 	  return MATCH_ERROR;
 	}
 
-      new_st.next = code;
+      new_st.block = gfc_get_code ();
+      new_st.block->op = EXEC_IOLENGTH;
+      terminate_io (code);
+      new_st.block->next = code;
       return MATCH_YES;
     }
 
