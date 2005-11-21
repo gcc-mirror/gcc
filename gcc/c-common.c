@@ -5164,7 +5164,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   orig_mode = TYPE_MODE (type);
 
   if (TREE_CODE (type) == RECORD_TYPE
-      || (GET_MODE_CLASS (orig_mode) != MODE_FLOAT
+      || (!SCALAR_FLOAT_MODE_P (orig_mode)
 	  && GET_MODE_CLASS (orig_mode) != MODE_INT)
       || !host_integerp (TYPE_SIZE_UNIT (type), 1))
     {

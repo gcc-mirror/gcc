@@ -1,3 +1,28 @@
+2005-11-22  Ben Elliston  <bje@au.ibm.com>
+
+	* optabs.c (expand_abs_nojump): Use SCALAR_FLOAT_MODE_P instead of
+	explicitly testing GET_MODE_CLASS (x) == MODE_FLOAT.
+	* genopinit.c (gen_insn): Likewise.
+	* reload.c (find_equiv_reg): Likewise.
+	* loop.c (load_mems): Likewise.
+	* rtlanal.c (may_trap_p_1, canonicalize_condition): Likewise.
+	* cse.c (find_comparison_args, fold_rtx): Likewise.
+	* dwarf2out.c (add_const_value_attribute): Likewise.
+	* expr.c (convert_move): Likewise.
+	* recog.c (general_operand, register_operand): Likewise.
+	* reg-stack.c (replace_reg): Likewise.
+	* tree-vect-generic.c (type_for_widest_vector_mode): Likewise.
+	* c-common.c (handle_vector_size_attribute): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	(simplify_binary_operation_1): Likewise.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_relational_operation): Likewise.
+	(simplify_const_relational_operation): Likewise.
+	(simplify_immed_subreg): Likewise.
+	* emit-rtl.c (gen_lowpart_common): Likewise.
+	* expmed.c (expand_mult): Likewise.
+	* stor-layout.c (layout_type): Likewise.
+
 2005-11-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/24951

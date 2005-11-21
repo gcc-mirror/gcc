@@ -3155,7 +3155,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 
   /* Expand x*2.0 as x+x.  */
   if (GET_CODE (op1) == CONST_DOUBLE
-      && GET_MODE_CLASS (mode) == MODE_FLOAT)
+      && SCALAR_FLOAT_MODE_P (mode))
     {
       REAL_VALUE_TYPE d;
       REAL_VALUE_FROM_CONST_DOUBLE (d, op1);

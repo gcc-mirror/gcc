@@ -348,7 +348,7 @@ type_for_widest_vector_mode (enum machine_mode inner_mode, optab op)
   enum machine_mode best_mode = VOIDmode, mode;
   int best_nunits = 0;
 
-  if (GET_MODE_CLASS (inner_mode) == MODE_FLOAT)
+  if (SCALAR_FLOAT_MODE_P (inner_mode))
     mode = MIN_MODE_VECTOR_FLOAT;
   else
     mode = MIN_MODE_VECTOR_INT;

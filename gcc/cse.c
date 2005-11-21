@@ -3088,7 +3088,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	      || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_INT
 		  && code == LT && STORE_FLAG_VALUE == -1)
 #ifdef FLOAT_STORE_FLAG_VALUE
-	      || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_FLOAT
+	      || (SCALAR_FLOAT_MODE_P (arg1)
 		  && (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
 		      REAL_VALUE_NEGATIVE (fsfv)))
 #endif
@@ -3098,7 +3098,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 		   || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_INT
 		       && code == GE && STORE_FLAG_VALUE == -1)
 #ifdef FLOAT_STORE_FLAG_VALUE
-		   || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_FLOAT
+		   || (SCALAR_FLOAT_MODE_P (arg1)
 		       && (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
 			   REAL_VALUE_NEGATIVE (fsfv)))
 #endif
@@ -3161,7 +3161,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 			      << (GET_MODE_BITSIZE (inner_mode) - 1))))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		   || (code == LT
-		       && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
+		       && SCALAR_FLOAT_MODE_P (inner_mode)
 		       && (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
 			   REAL_VALUE_NEGATIVE (fsfv)))
 #endif
@@ -3181,7 +3181,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 			       << (GET_MODE_BITSIZE (inner_mode) - 1))))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		    || (code == GE
-			&& GET_MODE_CLASS (inner_mode) == MODE_FLOAT
+			&& SCALAR_FLOAT_MODE_P (inner_mode)
 			&& (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
 			    REAL_VALUE_NEGATIVE (fsfv)))
 #endif
@@ -3946,7 +3946,7 @@ fold_rtx (rtx x, rtx insn)
 	  enum machine_mode mode_arg1;
 
 #ifdef FLOAT_STORE_FLAG_VALUE
-	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	  if (SCALAR_FLOAT_MODE (mode))
 	    {
 	      true_rtx = (CONST_DOUBLE_FROM_REAL_VALUE
 			  (FLOAT_STORE_FLAG_VALUE (mode), mode));
@@ -4061,7 +4061,7 @@ fold_rtx (rtx x, rtx insn)
 	      rtx true_rtx = const_true_rtx, false_rtx = const0_rtx;
 
 #ifdef FLOAT_STORE_FLAG_VALUE
-	      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	      if (SCALAR_FLOAT_MODE_P (mode))
 		{
 		  true_rtx = (CONST_DOUBLE_FROM_REAL_VALUE
 			  (FLOAT_STORE_FLAG_VALUE (mode), mode));

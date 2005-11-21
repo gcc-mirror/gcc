@@ -690,7 +690,7 @@ replace_reg (rtx *reg, int regno)
   gcc_assert (regno <= LAST_STACK_REG);
   gcc_assert (STACK_REG_P (*reg));
 
-  gcc_assert (GET_MODE_CLASS (GET_MODE (*reg)) == MODE_FLOAT
+  gcc_assert (SCALAR_FLOAT_MODE_P (GET_MODE (*reg))
 	      || GET_MODE_CLASS (GET_MODE (*reg)) == MODE_COMPLEX_FLOAT);
 
   *reg = FP_MODE_REG (regno, GET_MODE (*reg));
