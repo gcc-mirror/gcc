@@ -1,3 +1,9 @@
+2005-11-21  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* socket.c: Add extern int h_errno for rtems since networking header
+	files are not available at this point in a tool bootstrap. Newlib
+	only has basic C library header files.
+
 2005-11-19  Richard Guenther  <rguenther@suse.de>
 	Roger Sayle  <roger@eyesopen.com>
 
