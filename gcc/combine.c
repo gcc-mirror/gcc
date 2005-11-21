@@ -2080,35 +2080,6 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 
   subst_insn = i3;
 
-  /* It is possible that the source of I2 or I1 may be performing an
-     unneeded operation, such as a ZERO_EXTEND of something that is known
-     to have the high part zero.  Handle that case by letting subst look at
-     the innermost one of them.
-
-     Another way to do this would be to have a function that tries to
-     simplify a single insn instead of merging two or more insns.  We don't
-     do this because of the potential of infinite loops and because
-     of the potential extra memory required.  However, doing it the way
-     we are is a bit of a kludge and doesn't catch all cases.
-
-     But only do this if -fexpensive-optimizations since it slows things down
-     and doesn't usually win.  */
-
-  if (flag_expensive_optimizations)
-    {
-      /* Pass pc_rtx so no substitutions are done, just simplifications.  */
-      if (i1)
-	{
-	  subst_low_cuid = INSN_CUID (i1);
-	  i1src = subst (i1src, pc_rtx, pc_rtx, 0, 0);
-	}
-      else
-	{
-	  subst_low_cuid = INSN_CUID (i2);
-	  i2src = subst (i2src, pc_rtx, pc_rtx, 0, 0);
-	}
-    }
-
 #ifndef HAVE_cc0
   /* Many machines that don't use CC0 have insns that can both perform an
      arithmetic operation and set the condition code.  These operations will
@@ -2171,6 +2142,41 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   else
 #endif
     {
+      /* It is possible that the source of I2 or I1 may be performing
+	 an unneeded operation, such as a ZERO_EXTEND of something
+	 that is known to have the high part zero.  Handle that case
+	 by letting subst look at the innermost one of them.
+
+	 Another way to do this would be to have a function that tries
+	 to simplify a single insn instead of merging two or more
+	 insns.  We don't do this because of the potential of infinite
+	 loops and because of the potential extra memory required.
+	 However, doing it the way we are is a bit of a kludge and
+	 doesn't catch all cases.
+
+	 But only do this if -fexpensive-optimizations since it slows
+	 things down and doesn't usually win.
+
+	 This is not done in the COMPARE case above because the
+	 unmodified I2PAT is used in the PARALLEL and so a pattern
+	 with a modified I2SRC would not match.  */
+
+      if (flag_expensive_optimizations)
+	{
+	  /* Pass pc_rtx so no substitutions are done, just
+	     simplifications.  */
+	  if (i1)
+	    {
+	      subst_low_cuid = INSN_CUID (i1);
+	      i1src = subst (i1src, pc_rtx, pc_rtx, 0, 0);
+	    }
+	  else
+	    {
+	      subst_low_cuid = INSN_CUID (i2);
+	      i2src = subst (i2src, pc_rtx, pc_rtx, 0, 0);
+	    }
+	}
+
       n_occurrences = 0;		/* `subst' counts here */
 
       /* If I1 feeds into I2 (not into I3) and I1DEST is in I1SRC, we
