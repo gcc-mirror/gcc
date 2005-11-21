@@ -1,3 +1,88 @@
+2005-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/14943
+	PR fortran/21647
+	* Make-lang.in (fortran/trans-io.o): Depend on fortran/ioparm.def.
+	* dump-parse-tree.c (gfc_show_code_node): Dump c->block for
+	EXEC_{READ,WRITE,IOLENGTH} nodes.
+	* io.c (terminate_io, match_io, gfc_match_inquire): Put data
+	transfer commands into EXEC_{READ,WRITE,IOLENGTH}'s code->block.
+	* resolve.c (resolve_blocks): Handle EXEC_{READ,WRITE,IOLENGTH}.
+	* trans-io.c (ioparm_unit, ioparm_err, ioparm_end, ioparm_eor,
+	ioparm_list_format, ioparm_library_return, ioparm_iostat,
+	ioparm_exist, ioparm_opened, ioparm_number, ioparm_named,
+	ioparm_rec, ioparm_nextrec, ioparm_size, ioparm_recl_in,
+	ioparm_recl_out, ioparm_iolength, ioparm_file, ioparm_file_len,
+	ioparm_status, ioparm_status_len, ioparm_access, ioparm_access_len,
+	ioparm_form, ioparm_form_len, ioparm_blank, ioparm_blank_len,
+	ioparm_position, ioparm_position_len, ioparm_action,
+	ioparm_action_len, ioparm_delim, ioparm_delim_len, ioparm_pad,
+	ioparm_pad_len, ioparm_format, ioparm_format_len, ioparm_advance,
+	ioparm_advance_len, ioparm_name, ioparm_name_len,
+	ioparm_internal_unit, ioparm_internal_unit_len,
+	ioparm_internal_unit_desc, ioparm_sequential, ioparm_sequential_len,
+	ioparm_direct, ioparm_direct_len, ioparm_formatted,
+	ioparm_formatted_len, ioparm_unformatted, ioparm_unformatted_len,
+	ioparm_read, ioparm_read_len, ioparm_write, ioparm_write_len,
+	ioparm_readwrite, ioparm_readwrite_len, ioparm_namelist_name,
+	ioparm_namelist_name_len, ioparm_namelist_read_mode, ioparm_iomsg,
+	ioparm_iomsg_len, ioparm_var): Remove.
+	(enum ioparam_type, enum iofield_type, enum iofield,
+	enum iocall): New enums.
+	(gfc_st_parameter_field, gfc_st_parameter): New typedefs.
+	(st_parameter, st_parameter_field, iocall): New variables.
+	(ADD_FIELD, ADD_STRING): Remove.
+	(dt_parm, dt_post_end_block): New variables.
+	(gfc_build_st_parameter): New function.
+	(gfc_build_io_library_fndecls): Use it.  Initialize iocall
+	array rather than ioparm_*, add extra first arguments to
+	the function types.
+	(set_parameter_const): New function.
+	(set_parameter_value): Add type argument, return a bitmask.
+	Changed to set a field in automatic structure variable rather
+	than set a field in a global _gfortran_ioparm variable.
+	(set_parameter_ref): Likewise.  If requested var has different
+	size than what field should point to, call with a temporary and
+	then copy into the user variable.  Add postblock argument.
+	(set_string): Remove var_len argument, add type argument, return
+	a bitmask.  Changed to set fields in automatic structure variable
+	rather than set a field in a global _gfortran_ioparm variable.
+	(set_internal_unit): Remove iunit, iunit_len, iunit_desc arguments,
+	add var argument.  Return a bitmask.  Changed to set fields in
+	automatic structure variable rather than set a field in a global
+	_gfortran_ioparm variable.
+	(set_flag): Removed.
+	(io_result): Add var argument.  Changed to read common.flags field
+	from automatic structure variable and bitwise AND it with 3.
+	(set_error_locus): Add var argument.  Changed to set fields in
+	automatic structure variable rather than set a field in a global
+	_gfortran_{filename,line} variables.
+	(gfc_trans_open): Use gfc_start_block rather than gfc_init_block.
+	Create a temporary st_parameter_* structure.  Adjust callers of
+	all above mentioned functions.  Pass address of the temporary
+	variable as first argument to the generated function call.
+	Use iocall array rather than ioparm_* separate variables.
+	(gfc_trans_close, build_filepos, gfc_trans_inquire): Likewise.
+	(build_dt): Likewise.  Change first argument to tree from tree *.
+	Don't dereference code->ext.dt if last_dt == INQUIRE.  Emit
+	IOLENGTH argument setup here.  Set dt_parm/dt_post_end_block
+	variables and gfc_trans_code the nested data transfer commands
+	in code->block.
+	(gfc_trans_iolength): Just set last_dt and call build_dt immediately.
+	(transfer_namelist_element): Pass address of dt_parm variable
+	to generated functions.  Use iocall array rather than ioparm_*
+	separate variables.
+	(gfc_trans_backspace, gfc_trans_endfile, gfc_trans_rewind,
+	gfc_trans_flush, gfc_trans_read, gfc_trans_write): Use iocall array
+	rather than ioparm_* separate variables.
+	(gfc_trans_dt_end): Likewise.  Pass address of dt_parm variable
+	as first argument to generated function.  Adjust io_result caller.
+	Prepend dt_post_end_block before io_result code.
+	(transfer_expr): Use iocall array rather than ioparm_* separate
+	variables.  Pass address of dt_parm variables as first argument
+	to generated functions.
+	* ioparm.def: New file.
+
 2005-11-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24223

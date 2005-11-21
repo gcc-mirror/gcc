@@ -30,6 +30,7 @@ write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 #include "libgfortran.h"
+#include "../io/io.h"
 
 extern void random_r4 (GFC_REAL_4 *);
 iexport_proto(random_r4);
@@ -42,6 +43,12 @@ export_proto(arandom_r4);
 
 extern void arandom_r8 (gfc_array_r8 *);
 export_proto(arandom_r8);
+
+#ifdef __GTHREAD_MUTEX_INIT
+static __gthread_mutex_t random_lock = __GTHREAD_MUTEX_INIT;
+#else
+static __gthread_mutex_t random_lock;
+#endif
 
 #if 0
 
@@ -111,12 +118,14 @@ static unsigned int seed[N];
 void
 random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
+  __gthread_mutex_lock (&random_lock);
+
   /* Initialize the seed in system dependent manner.  */
   if (get == NULL && put == NULL && size == NULL)
     {
       int fd;
       fd = open ("/dev/urandom", O_RDONLY);
-      if (fd == 0)
+      if (fd < 0)
 	{
 	  /* We dont have urandom.  */
 	  GFC_UINTEGER_4 s = (GFC_UINTEGER_4) seed;
@@ -131,15 +140,16 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 	  /* Using urandom, might have a length issue.  */
 	  read (fd, &seed[0], sizeof (GFC_UINTEGER_4) * N);
 	  close (fd);
+	  i = N;
 	}
-      return;
+      goto return_unlock;
     }
 
   /* Return the size of the seed */
   if (size != NULL)
     {
       *size = N;
-      return;
+      goto return_unlock;
     }
 
   /* if we have gotten to this pount we have a get or put
@@ -159,7 +169,7 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 
       /* If this is the case the array is a temporary */
       if (put->dim[0].stride == 0)
-	return;
+	goto return_unlock;
 
       /*  This code now should do correct strides. */
       for (i = 0; i < N; i++)
@@ -179,12 +189,15 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 
       /* If this is the case the array is a temporary */
       if (get->dim[0].stride == 0)
-	return;
+	goto return_unlock;
 
       /*  This code now should do correct strides. */
       for (i = 0; i < N; i++)
 	get->data[i * get->dim[0].stride] = seed[i];
     }
+
+ random_unlock:
+  __gthread_mutex_unlock (&random_lock);
 }
 iexport(random_seed);
 
@@ -220,6 +233,8 @@ random_generate (void)
 void
 random_r4 (GFC_REAL_4 * harv)
 {
+  __gthread_mutex_lock (&random_lock);
+
   /* Regenerate if we need to.  */
   if (i >= N)
     random_generate ();
@@ -227,6 +242,7 @@ random_r4 (GFC_REAL_4 * harv)
   /* Convert uint32 to REAL(KIND=4).  */
   *harv = (GFC_REAL_4) ((GFC_REAL_4) (GFC_UINTEGER_4) seed[i++] /
 			(GFC_REAL_4) (~(GFC_UINTEGER_4) 0));
+  __gthread_mutex_unlock (&random_lock);
 }
 iexport(random_r4);
 
@@ -235,6 +251,8 @@ iexport(random_r4);
 void
 random_r8 (GFC_REAL_8 * harv)
 {
+  __gthread_mutex_lock (&random_lock);
+
   /* Regenerate if we need to, may waste one 32-bit value.  */
   if ((i + 1) >= N)
     random_generate ();
@@ -243,6 +261,7 @@ random_r8 (GFC_REAL_8 * harv)
   *harv = ((GFC_REAL_8) ((((GFC_UINTEGER_8) seed[i+1]) << 32) + seed[i])) /
 	  (GFC_REAL_8) (~(GFC_UINTEGER_8) 0);
   i += 2;
+  __gthread_mutex_unlock (&random_lock);
 }
 iexport(random_r8);
 
@@ -278,6 +297,8 @@ arandom_r4 (gfc_array_r4 * harv)
     }
 
   stride0 = stride[0];
+
+  __gthread_mutex_lock (&random_lock);
 
   while (dest)
     {
@@ -319,6 +340,8 @@ arandom_r4 (gfc_array_r4 * harv)
 	    }
 	}
     }
+
+  __gthread_mutex_unlock (&random_lock);
 }
 
 /* REAL(KIND=8) array.  */
@@ -351,6 +374,8 @@ arandom_r8 (gfc_array_r8 * harv)
     }
 
   stride0 = stride[0];
+
+  __gthread_mutex_lock (&random_lock);
 
   while (dest)
     {
@@ -393,6 +418,8 @@ arandom_r8 (gfc_array_r8 * harv)
 	    }
 	}
     }
+
+  __gthread_mutex_unlock (&random_lock);
 }
 
 #else
@@ -470,11 +497,13 @@ random_r4 (GFC_REAL_4 *x)
 {
   GFC_UINTEGER_4 kiss;
 
+  __gthread_mutex_lock (&random_lock);
   kiss = kiss_random_kernel ();
   /* Burn a random number, so the REAL*4 and REAL*8 functions
      produce similar sequences of random numbers.  */
   kiss_random_kernel ();
   *x = normalize_r4_i4 (kiss, ~(GFC_UINTEGER_4) 0);
+  __gthread_mutex_unlock (&random_lock);
 }
 iexport(random_r4);
 
@@ -486,9 +515,11 @@ random_r8 (GFC_REAL_8 *x)
 {
   GFC_UINTEGER_8 kiss;
 
+  __gthread_mutex_lock (&random_lock);
   kiss = ((GFC_UINTEGER_8)kiss_random_kernel ()) << 32;
   kiss += kiss_random_kernel ();
   *x = normalize_r8_i8 (kiss, ~(GFC_UINTEGER_8) 0);
+  __gthread_mutex_unlock (&random_lock);
 }
 iexport(random_r8);
 
@@ -504,6 +535,7 @@ arandom_r4 (gfc_array_r4 *x)
   index_type stride0;
   index_type dim;
   GFC_REAL_4 *dest;
+  GFC_UINTEGER_4 kiss;
   int n;
 
   dest = x->data;
@@ -524,9 +556,16 @@ arandom_r4 (gfc_array_r4 *x)
 
   stride0 = stride[0];
 
+  __gthread_mutex_lock (&random_lock);
+
   while (dest)
     {
-      random_r4 (dest);
+      /* random_r4 (dest); */
+      kiss = kiss_random_kernel ();
+      /* Burn a random number, so the REAL*4 and REAL*8 functions
+	 produce similar sequences of random numbers.  */
+      kiss_random_kernel ();
+      *dest = normalize_r4_i4 (kiss, ~(GFC_UINTEGER_4) 0);
 
       /* Advance to the next element.  */
       dest += stride0;
@@ -554,6 +593,7 @@ arandom_r4 (gfc_array_r4 *x)
             }
         }
     }
+  __gthread_mutex_unlock (&random_lock);
 }
 
 /*  This function fills a REAL(8) array with values from the uniform
@@ -568,6 +608,7 @@ arandom_r8 (gfc_array_r8 *x)
   index_type stride0;
   index_type dim;
   GFC_REAL_8 *dest;
+  GFC_UINTEGER_8 kiss;
   int n;
 
   dest = x->data;
@@ -588,9 +629,14 @@ arandom_r8 (gfc_array_r8 *x)
 
   stride0 = stride[0];
 
+  __gthread_mutex_lock (&random_lock);
+
   while (dest)
     {
-      random_r8 (dest);
+      /* random_r8 (dest); */
+      kiss = ((GFC_UINTEGER_8)kiss_random_kernel ()) << 32;
+      kiss += kiss_random_kernel ();
+      *dest = normalize_r8_i8 (kiss, ~(GFC_UINTEGER_8) 0);
 
       /* Advance to the next element.  */
       dest += stride0;
@@ -618,6 +664,7 @@ arandom_r8 (gfc_array_r8 *x)
             }
         }
     }
+  __gthread_mutex_unlock (&random_lock);
 }
 
 /* random_seed is used to seed the PRNG with either a default
@@ -628,6 +675,8 @@ void
 random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
   int i;
+
+  __gthread_mutex_lock (&random_lock);
 
   if (size == NULL && put == NULL && get == NULL)
     {
@@ -678,7 +727,17 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
       for (i = 0; i < kiss_size; i++)
         get->data[i * get->dim[0].stride] = (GFC_INTEGER_4) kiss_seed[i];
     }
+
+  __gthread_mutex_unlock (&random_lock);
 }
 iexport(random_seed);
 
 #endif /* mersenne twister */
+
+#ifndef __GTHREAD_MUTEX_INIT
+static void __attribute__((constructor))
+init (void)
+{
+  __GTHREAD_MUTEX_INIT_FUNCTION (&random_lock);
+}
+#endif

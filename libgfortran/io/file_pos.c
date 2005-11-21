@@ -36,7 +36,7 @@ Boston, MA 02110-1301, USA.  */
    ENDFILE, and REWIND as well as the FLUSH statement.  */
 
 
-/* formatted_backspace(void)-- Move the file back one line.  The
+/* formatted_backspace(fpp, u)-- Move the file back one line.  The
    current position is after the newline that terminates the previous
    record, and we have to sift backwards to find the newline before
    that or the start of the file, whichever comes first.  */
@@ -44,20 +44,20 @@ Boston, MA 02110-1301, USA.  */
 #define READ_CHUNK 4096
 
 static void
-formatted_backspace (void)
+formatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
 {
   gfc_offset base;
   char *p;
   int n;
 
-  base = file_position (current_unit->s) - 1;
+  base = file_position (u->s) - 1;
 
   do
     {
       n = (base < READ_CHUNK) ? base : READ_CHUNK;
       base -= n;
 
-      p = salloc_r_at (current_unit->s, &n, base);
+      p = salloc_r_at (u->s, &n, base);
       if (p == NULL)
 	goto io_error;
 
@@ -84,24 +84,24 @@ formatted_backspace (void)
 
   /* base is the new pointer.  Seek to it exactly.  */
  done:
-  if (sseek (current_unit->s, base) == FAILURE)
+  if (sseek (u->s, base) == FAILURE)
     goto io_error;
-  current_unit->last_record--;
-  current_unit->endfile = NO_ENDFILE;
+  u->last_record--;
+  u->endfile = NO_ENDFILE;
 
   return;
 
  io_error:
-  generate_error (ERROR_OS, NULL);
+  generate_error (&fpp->common, ERROR_OS, NULL);
 }
 
 
-/* unformatted_backspace() -- Move the file backwards for an unformatted
+/* unformatted_backspace(fpp) -- Move the file backwards for an unformatted
    sequential file.  We are guaranteed to be between records on entry and 
    we have to shift to the previous record.  */
 
 static void
-unformatted_backspace (void)
+unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
 {
   gfc_offset m, new;
   int length;
@@ -109,42 +109,40 @@ unformatted_backspace (void)
 
   length = sizeof (gfc_offset);
 
-  p = salloc_r_at (current_unit->s, &length,
-		   file_position (current_unit->s) - length);
+  p = salloc_r_at (u->s, &length,
+		   file_position (u->s) - length);
   if (p == NULL)
     goto io_error;
 
   memcpy (&m, p, sizeof (gfc_offset));
-  new = file_position (current_unit->s) - m - 2*length;
-  if (sseek (current_unit->s, new) == FAILURE)
+  new = file_position (u->s) - m - 2*length;
+  if (sseek (u->s, new) == FAILURE)
     goto io_error;
 
-  current_unit->last_record--;
+  u->last_record--;
   return;
 
  io_error:
-  generate_error (ERROR_OS, NULL);
+  generate_error (&fpp->common, ERROR_OS, NULL);
 }
 
 
-extern void st_backspace (void);
+extern void st_backspace (st_parameter_filepos *);
 export_proto(st_backspace);
 
 void
-st_backspace (void)
+st_backspace (st_parameter_filepos *fpp)
 {
   gfc_unit *u;
 
-  library_start ();
+  library_start (&fpp->common);
 
-  u = find_unit (ioparm.unit);
+  u = find_unit (fpp->common.unit);
   if (u == NULL)
     {
-      generate_error (ERROR_BAD_UNIT, NULL);
+      generate_error (&fpp->common, ERROR_BAD_UNIT, NULL);
       goto done;
     }
-
-  current_unit = u;
 
   /* Ignore direct access.  Non-advancing I/O is only allowed for formatted
      sequential I/O and the next direct access transfer repositions the file 
@@ -170,60 +168,69 @@ st_backspace (void)
         }
 
       if (u->flags.form == FORM_FORMATTED)
-	formatted_backspace ();
+	formatted_backspace (fpp, u);
       else
-	unformatted_backspace ();
+	unformatted_backspace (fpp, u);
 
       u->endfile = NO_ENDFILE;
       u->current_record = 0;
     }
 
  done:
+  if (u != NULL)
+    unlock_unit (u);
+
   library_end ();
 }
 
 
-extern void st_endfile (void);
+extern void st_endfile (st_parameter_filepos *);
 export_proto(st_endfile);
 
 void
-st_endfile (void)
+st_endfile (st_parameter_filepos *fpp)
 {
   gfc_unit *u;
 
-  library_start ();
+  library_start (&fpp->common);
 
-  u = get_unit (0);
+  u = find_unit (fpp->common.unit);
   if (u != NULL)
     {
-      current_unit = u;		/* next_record() needs this set.  */
       if (u->current_record)
-	next_record (1);
+	{
+	  st_parameter_dt dtp;
+	  dtp.common = fpp->common;
+	  memset (&dtp.u.p, 0, sizeof (dtp.u.p));
+	  dtp.u.p.current_unit = u;
+	  next_record (&dtp, 1);
+	}
 
-      flush(u->s);
+      flush (u->s);
       struncate (u->s);
       u->endfile = AFTER_ENDFILE;
+      unlock_unit (u);
     }
 
   library_end ();
 }
 
 
-extern void st_rewind (void);
+extern void st_rewind (st_parameter_filepos *);
 export_proto(st_rewind);
 
 void
-st_rewind (void)
+st_rewind (st_parameter_filepos *fpp)
 {
   gfc_unit *u;
 
-  library_start ();
+  library_start (&fpp->common);
 
-  u = find_unit (ioparm.unit);
+  u = find_unit (fpp->common.unit);
   if (u != NULL)
     {
       if (u->flags.access != ACCESS_SEQUENTIAL)
-	generate_error (ERROR_BAD_OPTION,
+	generate_error (&fpp->common, ERROR_BAD_OPTION,
 			"Cannot REWIND a file opened for DIRECT access");
       else
 	{
@@ -239,7 +246,7 @@ st_rewind (void)
 	  u->mode = READING;
 	  u->last_record = 0;
 	  if (sseek (u->s, 0) == FAILURE)
-	    generate_error (ERROR_OS, NULL);
+	    generate_error (&fpp->common, ERROR_OS, NULL);
 
 	  u->endfile = NO_ENDFILE;
 	  u->current_record = 0;
@@ -247,27 +254,28 @@ st_rewind (void)
 	}
       /* Update position for INQUIRE.  */
       u->flags.position = POSITION_REWIND;
+      unlock_unit (u);
     }
 
   library_end ();
 }
 
 
-extern void st_flush (void);
+extern void st_flush (st_parameter_filepos *);
 export_proto(st_flush);
 
 void
-st_flush (void)
+st_flush (st_parameter_filepos *fpp)
 {
   gfc_unit *u;
 
-  library_start ();
+  library_start (&fpp->common);
 
-  u = get_unit (0);
+  u = find_unit (fpp->common.unit);
   if (u != NULL)
     {
-      current_unit = u;  /* Just to be sure.  */
-      flush(u->s);
+      flush (u->s);
+      unlock_unit (u);
     }
 
   library_end ();
