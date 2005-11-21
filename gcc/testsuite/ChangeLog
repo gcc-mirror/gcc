@@ -1,3 +1,9 @@
+2005-11-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR libfortran/24432
+	* lib/target-supports.exp (check_effective_target_fortran_large_real):
+	Check that 'cos' is supported.
+
 2005-11-21  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR middle-end/20583
