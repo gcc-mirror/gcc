@@ -1,5 +1,13 @@
 2005-11-21  Uros Bizjak  <uros@kss-loka.si>
 
+	* config/i386/predicates.md (ax_reg_operand): New predicate.
+	(memory_displacement_only_operand): New predicate.
+	* config/i386/i386.md ("modrm" attribute): Return 0 if one
+	operand is AX register and the other operand is memory operand
+	with displacement only.
+
+2005-11-21  Uros Bizjak  <uros@kss-loka.si>
+
 	* fold-const.c (fold_binary) <RDIV_EXPR>: Optimize A / A to 1.0 
 	if we don't care about NaNs or Infinities.
 
