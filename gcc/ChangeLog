@@ -1,3 +1,15 @@
+2005-11-20  Richard Henderson  <rth@redhat.com>
+
+	PR 24931
+	* tree-sra.c (struct sra_elt): Add all_no_warning.
+	(struct sra_walk_fns) <use>: Add use_all argument.
+	(sra_walk_expr): Pass it.
+	(sra_walk_modify_expr): Likewise.
+	(scalarize_ldst): Likewise.
+	(scan_use): Update for new argument.
+	(mark_no_warning): New.
+	(scalarize_use): Use it.
+
 2005-11-19  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/24665
