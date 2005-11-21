@@ -776,6 +776,7 @@ extern tree finish_label_address_expr (tree);
 /* Same function prototype, but the C and C++ front ends have
    different implementations.  Used in c-common.c.  */
 extern tree lookup_label (tree);
+extern tree lookup_name (tree);
 
 extern int vector_types_convertible_p (tree t1, tree t2);
 
