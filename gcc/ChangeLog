@@ -1,3 +1,8 @@
+2005-11-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* combine.c (try_combine): Do not run subst on i1src and i2src in
+	the case of generating a PARALLEL for a comparison.
+
 2005-11-20  Richard Henderson  <rth@redhat.com>
 
 	PR 24931
