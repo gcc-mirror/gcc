@@ -1,3 +1,11 @@
+2005-11-21  Paul Thomas  <pault@gcc.gnu.org
+
+	PR fortran/24223
+	* gfortran.dg/substring_equivalence.f90: New test.
+
+	PR fortran/24705
+	* gfortran.dg/auto_internal_assumed.f90: New test.
+
 2005-11-21  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/fold-div-2.c: New test.

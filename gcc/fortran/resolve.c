@@ -294,6 +294,19 @@ resolve_contained_fntype (gfc_symbol * sym, gfc_namespace * ns)
 	  sym->attr.untyped = 1;
 	}
     }
+
+  /*Fortran 95 Draft Standard, page 51, Section 5.1.1.5, on the Character type,
+    lists the only ways a character length value of * can be used: dummy arguments
+    of proceedures, named constants, and function results in external functions.
+    Internal function results are not on that list; ergo, not permitted.  */
+
+  if (sym->ts.type == BT_CHARACTER)
+    {
+      gfc_charlen *cl = sym->ts.cl;
+      if (!cl || !cl->length)
+	gfc_error ("Character-valued internal function '%s' at %L must "
+		   "not be assumed length", sym->name, &sym->declared_at);
+    }
 }
 
 
