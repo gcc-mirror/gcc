@@ -1,3 +1,16 @@
+2005-11-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/sso_string_base.h: Minor formatting and stylistic fixes.
+	(__sso_string_base<>::_M_get_allocator): Return by const ref.
+	* include/ext/rc_string_base.h: Likewise.
+	(__rc_string_base<>::_M_get_allocator): Return by const ref.
+	(__rc_string_base<>::_M_dispose): Take void, use _M_get_allocator.
+	(__rc_string_base<>::_M_grab): Take one alloc, use _M_get_allocator.
+	(__rc_string_base<>::~__rc_string_base,
+	__rc_string_base(const __rc_string_base&), _M_assign, _M_reserve,
+	_M_mutate): Adjust.
+	* include/ext/vstring_util.h: Minor stylistic fixes.
+
 2005-11-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/rc_string_base.h (__rc_string_base<>::_Rep): Avoid the

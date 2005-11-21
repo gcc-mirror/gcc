@@ -160,7 +160,7 @@ namespace __gnu_cxx
 
       // _S_copy_chars is a separate template to permit specialization
       // to optimize for the common case of pointers as iterators.
-      template<class _Iterator>
+      template<typename _Iterator>
         static void
         _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
         {
