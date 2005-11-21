@@ -5506,6 +5506,22 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      break;
 	    }
 
+	  /* Reject certain invalid forms of CONST that we create.  */
+	  else if (CONSTANT_P (trial)
+		   && GET_CODE (trial) == CONST
+		   /* Reject cases that will cause decode_rtx_const to
+		      die.  On the alpha when simplifying a switch, we
+		      get (const (truncate (minus (label_ref)
+		      (label_ref)))).  */
+		   && (GET_CODE (XEXP (trial, 0)) == TRUNCATE
+		       /* Likewise on IA-64, except without the
+			  truncate.  */
+		       || (GET_CODE (XEXP (trial, 0)) == MINUS
+			   && GET_CODE (XEXP (XEXP (trial, 0), 0)) == LABEL_REF
+			   && GET_CODE (XEXP (XEXP (trial, 0), 1)) == LABEL_REF)))
+	    /* Do nothing for this case.  */
+	    ;
+
 	  /* Look for a substitution that makes a valid insn.  */
 	  else if (validate_change (insn, &SET_SRC (sets[i].rtl), trial, 0))
 	    {
@@ -5541,17 +5557,6 @@ cse_insn (rtx insn, rtx libcall_insn)
 
 	  else if (constant_pool_entries_cost
 		   && CONSTANT_P (trial)
-		   /* Reject cases that will cause decode_rtx_const to
-		      die.  On the alpha when simplifying a switch, we
-		      get (const (truncate (minus (label_ref)
-		      (label_ref)))).  */
-		   && ! (GET_CODE (trial) == CONST
-			 && GET_CODE (XEXP (trial, 0)) == TRUNCATE)
-		   /* Likewise on IA-64, except without the truncate.  */
-		   && ! (GET_CODE (trial) == CONST
-			 && GET_CODE (XEXP (trial, 0)) == MINUS
-			 && GET_CODE (XEXP (XEXP (trial, 0), 0)) == LABEL_REF
-			 && GET_CODE (XEXP (XEXP (trial, 0), 1)) == LABEL_REF)
 		   && (src_folded == 0
 		       || (!MEM_P (src_folded)
 			   && ! src_folded_force_flag))
