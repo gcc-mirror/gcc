@@ -8227,6 +8227,17 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && real_zerop (arg1))
 	return NULL_TREE;
 
+      /* Optimize A / A to 1.0 if we don't care about
+	 NaNs or Infinities.  */
+      if (! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0)))
+	  && ! HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (arg0)))
+	  && operand_equal_p (arg0, arg1, 0))
+	{
+	  tree r = build_real (TREE_TYPE (arg0), dconst1);
+
+	  return omit_two_operands (type, r, arg0, arg1);
+	}
+
       /* (-A) / (-B) -> A / B  */
       if (TREE_CODE (arg0) == NEGATE_EXPR && negate_expr_p (arg1))
 	return fold_build2 (RDIV_EXPR, type,
