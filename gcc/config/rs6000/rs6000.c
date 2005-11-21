@@ -2200,9 +2200,6 @@ output_vec_const_move (rtx *operands)
 
   dest = operands[0];
   vec = operands[1];
-
-  cst = INTVAL (CONST_VECTOR_ELT (vec, 0));
-  cst2 = INTVAL (CONST_VECTOR_ELT (vec, 1));
   mode = GET_MODE (dest);
 
   if (TARGET_ALTIVEC)
@@ -2240,8 +2237,10 @@ output_vec_const_move (rtx *operands)
 
      FIXME: We should probably return # and add post reload
      splitters for these, but this way is so easy ;-).  */
-  operands[1] = GEN_INT (cst);
-  operands[2] = GEN_INT (cst2);
+  cst = INTVAL (CONST_VECTOR_ELT (vec, 0));
+  cst2 = INTVAL (CONST_VECTOR_ELT (vec, 1));
+  operands[1] = CONST_VECTOR_ELT (vec, 0);
+  operands[2] = CONST_VECTOR_ELT (vec, 1);
   if (cst == cst2)
     return "li %0,%1\n\tevmergelo %0,%0,%0";
   else

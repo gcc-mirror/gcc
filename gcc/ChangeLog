@@ -1,3 +1,9 @@
+2005-11-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/24951
+	* config/rs6000/rs6000.c (output_vec_const_move): Load cst and
+	cst2 only for SPE vectors.
+
 2005-11-21  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR middle-end/20583
