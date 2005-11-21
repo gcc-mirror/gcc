@@ -1162,7 +1162,7 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
     return 0;
 
   /* Don't allow generating paradoxical FLOAT_MODE subregs.  */
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT && msize > xsize)
+  if (SCALAR_FLOAT_MODE_P (mode) && msize > xsize)
     return 0;
 
   offset = subreg_lowpart_offset (mode, innermode);

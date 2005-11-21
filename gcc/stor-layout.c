@@ -1645,7 +1645,7 @@ layout_type (tree type)
 	    enum machine_mode mode;
 
 	    /* First, look for a supported vector type.  */
-	    if (GET_MODE_CLASS (innermode) == MODE_FLOAT)
+	    if (SCALAR_FLOAT_MODE_P (innermode))
 	      mode = MIN_MODE_VECTOR_FLOAT;
 	    else
 	      mode = MIN_MODE_VECTOR_INT;

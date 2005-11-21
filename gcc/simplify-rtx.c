@@ -983,7 +983,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
     }
 
   else if (GET_CODE (op) == CONST_DOUBLE
-	   && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	   && SCALAR_FLOAT_MODE_P (mode))
     {
       REAL_VALUE_TYPE d, t;
       REAL_VALUE_FROM_CONST_DOUBLE (d, op);
@@ -1029,7 +1029,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
     }
 
   else if (GET_CODE (op) == CONST_DOUBLE
-	   && GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
+	   && SCALAR_FLOAT_MODE_P (GET_MODE (op))
 	   && GET_MODE_CLASS (mode) == MODE_INT
 	   && width <= 2*HOST_BITS_PER_WIDE_INT && width > 0)
     {
@@ -1610,7 +1610,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
       /* x*2 is x+x and x*(-1) is -x */
       if (GET_CODE (trueop1) == CONST_DOUBLE
-	  && GET_MODE_CLASS (GET_MODE (trueop1)) == MODE_FLOAT
+	  && SCALAR_FLOAT_MODE_P (GET_MODE (trueop1))
 	  && GET_MODE (op0) == mode)
 	{
 	  REAL_VALUE_TYPE d;
@@ -1792,7 +1792,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
     case DIV:
       /* Handle floating point and integers separately.  */
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+      if (SCALAR_FLOAT_MODE_P (mode))
 	{
 	  /* Maybe change 0.0 / x to 0.0.  This transformation isn't
 	     safe for modes with NaNs, since 0.0 / 0.0 will then be
@@ -2146,7 +2146,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
       return gen_rtx_CONST_VECTOR (mode, v);
     }
 
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+  if (SCALAR_FLOAT_MODE_P (mode)
       && GET_CODE (op0) == CONST_DOUBLE
       && GET_CODE (op1) == CONST_DOUBLE
       && mode == GET_MODE (op0) && mode == GET_MODE (op1))
@@ -2890,7 +2890,7 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
   tem = simplify_const_relational_operation (code, cmp_mode, op0, op1);
   if (tem)
     {
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+      if (SCALAR_FLOAT_MODE_P (mode))
 	{
           if (tem == const0_rtx)
             return CONST0_RTX (mode);
@@ -3108,7 +3108,7 @@ simplify_const_relational_operation (enum rtx_code code,
      the result.  */
   else if (GET_CODE (trueop0) == CONST_DOUBLE
 	   && GET_CODE (trueop1) == CONST_DOUBLE
-	   && GET_MODE_CLASS (GET_MODE (trueop0)) == MODE_FLOAT)
+	   && SCALAR_FLOAT_MODE_P (GET_MODE (trueop0)))
     {
       REAL_VALUE_TYPE d0, d1;
 
@@ -3642,7 +3642,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	      long tmp[max_bitsize / 32];
 	      int bitsize = GET_MODE_BITSIZE (GET_MODE (el));
 
-	      gcc_assert (GET_MODE_CLASS (GET_MODE (el)) == MODE_FLOAT);
+	      gcc_assert (SCALAR_FLOAT_MODE_P (GET_MODE (el)));
 	      gcc_assert (bitsize <= elem_bitsize);
 	      gcc_assert (bitsize % value_bit == 0);
 

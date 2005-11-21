@@ -2155,7 +2155,7 @@ may_trap_p_1 (rtx x, bool unaligned_mems)
     case UMOD:
       if (HONOR_SNANS (GET_MODE (x)))
 	return 1;
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+      if (SCALAR_FLOAT_MODE_P (GET_MODE (x)))
 	return flag_trapping_math;
       if (!CONSTANT_P (XEXP (x, 1)) || (XEXP (x, 1) == const0_rtx))
 	return 1;
@@ -2212,7 +2212,7 @@ may_trap_p_1 (rtx x, bool unaligned_mems)
 
     default:
       /* Any floating arithmetic may trap.  */
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
+      if (SCALAR_FLOAT_MODE_P (GET_MODE (x))
 	  && flag_trapping_math)
 	return 1;
     }
@@ -4683,7 +4683,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 				<< (GET_MODE_BITSIZE (inner_mode) - 1))))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		     || (code == LT
-			 && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
+			 && SCALAR_FLOAT_MODE_P (inner_mode)
 			 && (fsfv = FLOAT_STORE_FLAG_VALUE (inner_mode),
 			     REAL_VALUE_NEGATIVE (fsfv)))
 #endif
@@ -4703,7 +4703,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 				<< (GET_MODE_BITSIZE (inner_mode) - 1))))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		     || (code == GE
-			 && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
+			 && SCALAR_FLOAT_MODE_P (inner_mode)
 			 && (fsfv = FLOAT_STORE_FLAG_VALUE (inner_mode),
 			     REAL_VALUE_NEGATIVE (fsfv)))
 #endif

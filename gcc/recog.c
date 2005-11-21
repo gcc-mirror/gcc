@@ -1003,7 +1003,7 @@ general_operand (rtx op, enum machine_mode mode)
 
       /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
 	 create such rtl, and we must reject it.  */
-      if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
+      if (SCALAR_FLOAT_MODE_P (GET_MODE (op))
 	  && GET_MODE_SIZE (GET_MODE (op)) > GET_MODE_SIZE (GET_MODE (sub)))
 	return 0;
 
@@ -1087,7 +1087,7 @@ register_operand (rtx op, enum machine_mode mode)
 
       /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
 	 create such rtl, and we must reject it.  */
-      if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
+      if (SCALAR_FLOAT_MODE_P (GET_MODE (op))
 	  && GET_MODE_SIZE (GET_MODE (op)) > GET_MODE_SIZE (GET_MODE (sub)))
 	return 0;
 

@@ -10816,7 +10816,7 @@ load_mems (const struct loop *loop)
 	}
 
       if (flag_float_store && written
-	  && GET_MODE_CLASS (GET_MODE (mem)) == MODE_FLOAT)
+	  && SCALAR_FLOAT_MODE_P (GET_MODE (mem)))
 	loop_info->mems[i].optimize = 0;
 
       /* If this MEM is written to, we must be sure that there
