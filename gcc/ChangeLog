@@ -1,3 +1,8 @@
+2005-11-21  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR middle-end/20583
+	* cse.c (cse_insn): Reject invalid forms of CONST earlier.
+
 2005-11-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* combine.c (try_combine): Do not run subst on i1src and i2src in
