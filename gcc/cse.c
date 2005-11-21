@@ -3088,7 +3088,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	      || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_INT
 		  && code == LT && STORE_FLAG_VALUE == -1)
 #ifdef FLOAT_STORE_FLAG_VALUE
-	      || (SCALAR_FLOAT_MODE_P (arg1)
+	      || (SCALAR_FLOAT_MODE_P (GET_MODE (arg1))
 		  && (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
 		      REAL_VALUE_NEGATIVE (fsfv)))
 #endif
@@ -3098,7 +3098,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 		   || (GET_MODE_CLASS (GET_MODE (arg1)) == MODE_INT
 		       && code == GE && STORE_FLAG_VALUE == -1)
 #ifdef FLOAT_STORE_FLAG_VALUE
-		   || (SCALAR_FLOAT_MODE_P (arg1)
+		   || (SCALAR_FLOAT_MODE_P (GET_MODE (arg1))
 		       && (fsfv = FLOAT_STORE_FLAG_VALUE (GET_MODE (arg1)),
 			   REAL_VALUE_NEGATIVE (fsfv)))
 #endif
@@ -3946,7 +3946,7 @@ fold_rtx (rtx x, rtx insn)
 	  enum machine_mode mode_arg1;
 
 #ifdef FLOAT_STORE_FLAG_VALUE
-	  if (SCALAR_FLOAT_MODE (mode))
+	  if (SCALAR_FLOAT_MODE_P (mode))
 	    {
 	      true_rtx = (CONST_DOUBLE_FROM_REAL_VALUE
 			  (FLOAT_STORE_FLAG_VALUE (mode), mode));
