@@ -189,6 +189,13 @@ __gnat_get_h_errno (void) {
   }
 #elif defined(VMS)
   return errno;
+#elif defined(__rtems__)
+  /* At this stage in the tool build, no networking .h files are available.
+     Newlib does not provide networking .h files and RTEMS is not built yet.
+     So we need to explicitly extern h_errno to access it.
+   */
+  extern int h_errno;
+  return h_errno;
 #else
   return h_errno;
 #endif
