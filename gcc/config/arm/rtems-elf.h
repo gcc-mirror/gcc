@@ -1,5 +1,5 @@
 /* Definitions for RTEMS based ARM systems using ELF
-   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2005 Free Software Foundation, Inc.
  
    This file is part of GCC.
  
@@ -37,3 +37,10 @@
 #undef SUBTARGET_EXTRA_ASM_SPEC
 #define SUBTARGET_EXTRA_ASM_SPEC "\
   %{!mhard-float: %{!msoft-float:-mfpu=softfpa}}"
+
+/*
+ *  The default includes --start-group and --end-group which conflicts
+ *  with how this used to be defined.
+ */
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define LINK_GCC_C_SEQUENCE_SPEC "%G %L"

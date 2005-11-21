@@ -1,3 +1,9 @@
+2005-11-21  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config/arm/rtems-elf.h: Added definition of LINK_GCC_C_SEQUENCE_SPEC
+	which matches behavior of gcc 4.0 and older for RTEMS targets.  The
+	default now includes a linker group which makes the RTEMS one nest.
+
 2005-11-21  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/24953
