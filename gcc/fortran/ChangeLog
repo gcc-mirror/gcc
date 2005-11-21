@@ -1,3 +1,14 @@
+2005-11-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24223
+	* resolve.c (resolve_contained_fntype) Error if an internal
+	function is assumed character length.
+
+	PR fortran/24705
+	* trans-decl.c (gfc_create_module_variable) Skip ICE in
+	when backend decl has been built and the symbol is marked
+	as being in an equivalence statement.
+
 2005-11-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20811

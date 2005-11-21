@@ -2229,7 +2229,8 @@ gfc_create_module_variable (gfc_symbol * sym)
     return;
 
   /* Equivalenced variables arrive here after creation.  */
-  if (sym->backend_decl && sym->equiv_built)
+  if (sym->backend_decl
+	&& (sym->equiv_built || sym->attr.in_equivalence))
       return;
 
   if (sym->backend_decl)
