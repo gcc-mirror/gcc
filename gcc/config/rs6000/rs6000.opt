@@ -68,6 +68,10 @@ maltivec
 Target Report Mask(ALTIVEC)
 Use AltiVec instructions
 
+mmulhw
+Target Report Mask(MULHW)
+Use 4xx half-word multiply instructions
+
 mmultiple
 Target Report Mask(MULTIPLE)
 Generate load/store multiple instructions
