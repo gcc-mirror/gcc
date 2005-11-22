@@ -26,7 +26,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 extern tree objcp_start_struct (enum tree_code, tree);
 extern tree objcp_finish_struct (tree, tree, tree);
 extern void objcp_finish_function (void);
-extern tree objcp_lookup_name (tree);
 extern tree objcp_build_function_call (tree, tree);
 extern tree objcp_xref_tag (enum tree_code, tree);
 extern int objcp_comptypes (tree, tree);
@@ -46,8 +45,6 @@ extern tree objcp_end_compound_stmt (tree, int);
 	objcp_finish_struct (t, fieldlist, attributes)
 #define finish_function() \
 	objcp_finish_function ()
-#define lookup_name(name) \
-	objcp_lookup_name (name)
 #define xref_tag(code, name) \
 	objcp_xref_tag (code, name)
 #define comptypes(type1, type2) \

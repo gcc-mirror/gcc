@@ -1,3 +1,9 @@
+2005-11-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* objcp-decl.c (objcp_lookup_name): Remove.
+	* objcp-decl.h (objcp_lookup_name): Delete.
+	(lookup_name): Kill define.
+
 2005-09-11  Richard Henderson  <rth@redhat.com>
 
 	* objcp-lang.c (objcxx_init_ts): Remove ALIAS_DECL.
