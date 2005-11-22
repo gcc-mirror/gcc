@@ -1,3 +1,17 @@
+2005-11-22  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24975
+	* include/bits/stl_set.h (insert(iterator, const value_type&),
+	erase(iterator), erase(iterator, iterator)): Don't break aliasing
+	rules casting to _Rep_iterator&, forward to _Rb_tree facilities.
+	* include/bits/stl_multiset.h (insert(iterator, const value_type&),
+	erase(iterator), erase(iterator, iterator)): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_insert(_Const_Base_ptr,
+	_Const_Base_ptr, const value_type&), insert_unique(const_iterator,
+	const value_type&), insert_equal(const_iterator, const value_type&),
+	erase(const_iterator), erase(const_iterator, const_iterator)): New,
+	_Rb_tree<>::const_iterator counterparts of existing facilities.
+
 2005-11-21  Benjamin Kosnik  <bkoz@redhat.com>
             Ulrich Drepper  <drepper@redhat.com>
 
