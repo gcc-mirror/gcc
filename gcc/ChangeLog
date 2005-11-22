@@ -1,5 +1,11 @@
 2005-11-22  Alan Modra  <amodra@bigpond.net.au>
 
+	PR middle-end/24950
+	* expmed.c (store_bit_field): Don't attempt to insv a field
+	larger than the reg.
+
+2005-11-22  Alan Modra  <amodra@bigpond.net.au>
+
 	PR target/24954
 	* config/rs6000/predicated.md (easy_vector_constant_add_self): Use
 	explicit sign extension, not a (char) cast.
