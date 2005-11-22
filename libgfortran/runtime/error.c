@@ -37,6 +37,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "libgfortran.h"
 #include "../io/io.h"
+#include "../io/unix.h"
 
 /* Error conditions.  The tricky part here is printing a message when
  * it is the I/O subsystem that is severely wounded.  Our goal is to
@@ -52,17 +53,6 @@ Boston, MA 02110-1301, USA.  */
  *
  * Other error returns are reserved for the STOP statement with a numeric code.
  */
-
-/* locus variables.  These are optionally set by a caller before a
- * library subroutine is called.  They are always cleared on exit so
- * that files that report loci and those that do not can be linked
- * together without reporting an erroneous position. */
-
-char *filename = 0;
-iexport_data(filename);
-
-unsigned line = 0;
-iexport_data(line);
 
 /* gfc_itoa()-- Integer to decimal conversion. */
 
@@ -145,9 +135,10 @@ st_printf (const char *format, ...)
   const char *q;
   stream *s;
   char itoa_buf[GFC_ITOA_BUF_SIZE];
+  unix_stream err_stream;
 
   total = 0;
-  s = init_error_stream ();
+  s = init_error_stream (&err_stream);
   va_start (arg, format);
 
   for (;;)
@@ -288,12 +279,12 @@ st_sprintf (char *buffer, const char *format, ...)
  * something went wrong */
 
 void
-show_locus (void)
+show_locus (st_parameter_common *cmp)
 {
-  if (!options.locus || filename == NULL)
+  if (!options.locus || cmp == NULL || cmp->filename == NULL)
     return;
 
-  st_printf ("At line %d of file %s\n", line, filename);
+  st_printf ("At line %d of file %s\n", cmp->line, cmp->filename);
 }
 
 
@@ -324,7 +315,6 @@ void
 os_error (const char *message)
 {
   recursion_check ();
-  show_locus ();
   st_printf ("Operating system error: %s\n%s\n", get_oserror (), message);
   sys_exit (1);
 }
@@ -337,7 +327,6 @@ void
 runtime_error (const char *message)
 {
   recursion_check ();
-  show_locus ();
   st_printf ("Fortran runtime error: %s\n", message);
   sys_exit (2);
 }
@@ -348,10 +337,10 @@ iexport(runtime_error);
  * that indicate something deeply wrong. */
 
 void
-internal_error (const char *message)
+internal_error (st_parameter_common *cmp, const char *message)
 {
   recursion_check ();
-  show_locus ();
+  show_locus (cmp);
   st_printf ("Internal Error: %s\n", message);
 
   /* This function call is here to get the main.o object file included
@@ -452,48 +441,52 @@ translate_error (int code)
  * the most recent operating system error is used. */
 
 void
-generate_error (int family, const char *message)
+generate_error (st_parameter_common *cmp, int family, const char *message)
 {
   /* Set the error status.  */
-  if (ioparm.iostat != NULL)
-    *ioparm.iostat = family;
+  if ((cmp->flags & IOPARM_HAS_IOSTAT))
+    *cmp->iostat = family;
 
   if (message == NULL)
     message =
       (family == ERROR_OS) ? get_oserror () : translate_error (family);
 
-  if (ioparm.iomsg)
-    cf_strcpy (ioparm.iomsg, ioparm.iomsg_len, message);
+  if (cmp->flags & IOPARM_HAS_IOMSG)
+    cf_strcpy (cmp->iomsg, cmp->iomsg_len, message);
 
   /* Report status back to the compiler.  */
+  cmp->flags &= ~IOPARM_LIBRETURN_MASK;
   switch (family)
     {
     case ERROR_EOR:
-      ioparm.library_return = LIBRARY_EOR;
-      if (ioparm.eor != 0)
+      cmp->flags |= IOPARM_LIBRETURN_EOR;
+      if ((cmp->flags & IOPARM_EOR))
 	return;
       break;
 
     case ERROR_END:
-      ioparm.library_return = LIBRARY_END;
-      if (ioparm.end != 0)
+      cmp->flags |= IOPARM_LIBRETURN_END;
+      if ((cmp->flags & IOPARM_END))
 	return;
       break;
 
     default:
-      ioparm.library_return = LIBRARY_ERROR;
-      if (ioparm.err != 0)
+      cmp->flags |= IOPARM_LIBRETURN_ERROR;
+      if ((cmp->flags & IOPARM_ERR))
 	return;
       break;
     }
 
   /* Return if the user supplied an iostat variable.  */
-  if (ioparm.iostat != NULL)
+  if ((cmp->flags & IOPARM_HAS_IOSTAT))
     return;
 
   /* Terminate the program */
 
-  runtime_error (message);
+  recursion_check ();
+  show_locus (cmp);
+  st_printf ("Fortran runtime error: %s\n", message);
+  sys_exit (2);
 }
 
 
@@ -511,7 +504,6 @@ notify_std (int std, const char * message)
   if ((compile_options.allow_std & std) != 0 && !warning)
     return SUCCESS;
 
-  show_locus ();
   if (!warning)
     {
       st_printf ("Fortran runtime error: %s\n", message);

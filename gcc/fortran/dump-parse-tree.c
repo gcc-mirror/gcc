@@ -1357,6 +1357,7 @@ gfc_show_code_node (int level, gfc_code * c)
     case EXEC_IOLENGTH:
       gfc_status ("IOLENGTH ");
       gfc_show_expr (c->expr);
+      goto show_dt_code;
       break;
 
     case EXEC_READ:
@@ -1411,7 +1412,11 @@ gfc_show_code_node (int level, gfc_code * c)
 	  gfc_show_expr (dt->advance);
 	}
 
-      break;
+    show_dt_code:
+      gfc_status_char ('\n');
+      for (c = c->block->next; c; c = c->next)
+	gfc_show_code_node (level + (c->next != NULL), c);
+      return;
 
     case EXEC_TRANSFER:
       gfc_status ("TRANSFER ");

@@ -43,11 +43,11 @@ static const st_option status_opt[] = {
 };
 
 
-extern void st_close (void);
+extern void st_close (st_parameter_close *);
 export_proto(st_close);
 
 void
-st_close (void)
+st_close (st_parameter_close *clp)
 {
   close_status status;
   gfc_unit *u;
@@ -57,25 +57,25 @@ st_close (void)
   path = NULL;
 #endif
 
-  library_start ();
+  library_start (&clp->common);
 
-  status = (ioparm.status == NULL) ? CLOSE_UNSPECIFIED :
-    find_option (ioparm.status, ioparm.status_len, status_opt,
-		 "Bad STATUS parameter in CLOSE statement");
+  status = !(clp->common.flags & IOPARM_CLOSE_HAS_STATUS) ? CLOSE_UNSPECIFIED :
+    find_option (&clp->common, clp->status, clp->status_len,
+		 status_opt, "Bad STATUS parameter in CLOSE statement");
 
-  if (ioparm.library_return != LIBRARY_OK)
+  if ((clp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
   {
     library_end ();
     return;
   }
 
-  u = find_unit (ioparm.unit);
+  u = find_unit (clp->common.unit);
   if (u != NULL)
     {
       if (u->flags.status == STATUS_SCRATCH)
 	{
 	  if (status == CLOSE_KEEP)
-	    generate_error (ERROR_BAD_OPTION,
+	    generate_error (&clp->common, ERROR_BAD_OPTION,
 			    "Can't KEEP a scratch file on CLOSE");
 #if !HAVE_UNLINK_OPEN_FILE
 	  path = (char *) gfc_alloca (u->file_len + 1);

@@ -3879,6 +3879,9 @@ resolve_blocks (gfc_code * b, gfc_namespace * ns)
 	case EXEC_FORALL:
 	case EXEC_DO:
 	case EXEC_DO_WHILE:
+	case EXEC_READ:
+	case EXEC_WRITE:
+	case EXEC_IOLENGTH:
 	  break;
 
 	default:

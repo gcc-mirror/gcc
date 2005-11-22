@@ -41,19 +41,6 @@ Boston, MA 02110-1301, USA.  */
 /* SUBROUTINE FLUSH(UNIT)
    INTEGER, INTENT(IN), OPTIONAL :: UNIT  */
 
-static void
-recursive_flush (gfc_unit *us)
-{
-  /* There can be no open files.  */
-  if (us == NULL)
-    return;
-
-  flush (us->s);
-  recursive_flush (us->left);
-  recursive_flush (us->right);
-}
-
-
 extern void flush_i4 (GFC_INTEGER_4 *);
 export_proto(flush_i4);
 
@@ -64,15 +51,15 @@ flush_i4 (GFC_INTEGER_4 *unit)
 
   /* flush all streams */
   if (unit == NULL)
-    {
-      us = g.unit_root;
-      recursive_flush(us);
-    }
+    flush_all_units ();
   else
     {
-      us = find_unit(*unit);
+      us = find_unit (*unit);
       if (us != NULL)
-        flush (us->s);
+	{
+	  flush (us->s);
+	  unlock_unit (us);
+	}
     }
 }
 
@@ -87,14 +74,14 @@ flush_i8 (GFC_INTEGER_8 *unit)
 
   /* flush all streams */
   if (unit == NULL)
-    {
-      us = g.unit_root;
-      recursive_flush(us);
-    }
+    flush_all_units ();
   else
     {
-      us = find_unit(*unit);
+      us = find_unit (*unit);
       if (us != NULL)
-        flush (us->s);
+	{
+	  flush (us->s);
+	  unlock_unit (us);
+	}
     }
 }

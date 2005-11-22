@@ -32,6 +32,11 @@ Boston, MA 02110-1301, USA.  */
 
 #include <setjmp.h>
 #include "libgfortran.h"
+#ifdef HAVE_PRAGMA_WEAK
+/* Used by gthr.h.  */
+#define SUPPORTS_WEAK 1
+#endif
+#include <gthr.h>
 
 #define DEFAULT_TEMPDIR "/tmp"
 
@@ -47,6 +52,8 @@ bt;
 typedef enum
 { SUCCESS = 1, FAILURE }
 try;
+
+struct st_parameter_dt;
 
 typedef struct stream
 {
@@ -202,83 +209,213 @@ typedef enum
 {READING, WRITING}
 unit_mode;
 
-/* Statement parameters.  These are all the things that can appear in
-   an I/O statement.  Some are inputs and some are outputs, but none
-   are both.  All of these values are initially zeroed and are zeroed
-   at the end of a library statement.  The relevant values need to be
-   set before entry to an I/O statement.  This structure needs to be
-   duplicated by the back end.  */
+#define CHARACTER1(name) \
+	      char * name; \
+	      gfc_charlen_type name ## _len
+#define CHARACTER2(name) \
+	      gfc_charlen_type name ## _len; \
+	      char * name
+
+#define IOPARM_LIBRETURN_MASK		(3 << 0)
+#define IOPARM_LIBRETURN_OK		(0 << 0)
+#define IOPARM_LIBRETURN_ERROR		(1 << 0)
+#define IOPARM_LIBRETURN_END		(2 << 0)
+#define IOPARM_LIBRETURN_EOR		(3 << 0)
+#define IOPARM_ERR			(1 << 2)
+#define IOPARM_END			(1 << 3)
+#define IOPARM_EOR			(1 << 4)
+#define IOPARM_HAS_IOSTAT		(1 << 5)
+#define IOPARM_HAS_IOMSG		(1 << 6)
+
+#define IOPARM_COMMON_MASK		((1 << 7) - 1)
+
+typedef struct st_parameter_common
+{
+  GFC_INTEGER_4 flags;
+  GFC_INTEGER_4 unit;
+  const char *filename;
+  GFC_INTEGER_4 line;
+  CHARACTER2 (iomsg);
+  GFC_INTEGER_4 *iostat;
+}
+st_parameter_common;
+
+#define IOPARM_OPEN_HAS_RECL_IN		(1 << 7)
+#define IOPARM_OPEN_HAS_FILE		(1 << 8)
+#define IOPARM_OPEN_HAS_STATUS		(1 << 9)
+#define IOPARM_OPEN_HAS_ACCESS		(1 << 10)
+#define IOPARM_OPEN_HAS_FORM		(1 << 11)
+#define IOPARM_OPEN_HAS_BLANK		(1 << 12)
+#define IOPARM_OPEN_HAS_POSITION	(1 << 13)
+#define IOPARM_OPEN_HAS_ACTION		(1 << 14)
+#define IOPARM_OPEN_HAS_DELIM		(1 << 15)
+#define IOPARM_OPEN_HAS_PAD		(1 << 16)
 
 typedef struct
 {
-  GFC_INTEGER_4 unit;
-  GFC_INTEGER_4 err, end, eor, list_format; /* These are flags, not values.  */
-
-/* Return values from library statements.  These are returned only if
-   the labels are specified in the statement itself and the condition
-   occurs.  In most cases, none of the labels are specified and the
-   return value does not have to be checked.  Must be consistent with
-   the front end.  */
-
-  enum
-  {
-    LIBRARY_OK = 0,
-    LIBRARY_ERROR,
-    LIBRARY_END,
-    LIBRARY_EOR
-  }
-  library_return;
-
-  GFC_INTEGER_4 *iostat, *exist, *opened, *number, *named;
-  GFC_INTEGER_4 rec;
-  GFC_INTEGER_4 *nextrec, *size;
-
+  st_parameter_common common;
   GFC_INTEGER_4 recl_in;
-  GFC_INTEGER_4 *recl_out;
-
-  GFC_INTEGER_4 *iolength;
-
-#define CHARACTER(name) \
-              char * name; \
-              gfc_charlen_type name ## _len
-  CHARACTER (file);
-  CHARACTER (status);
-  CHARACTER (access);
-  CHARACTER (form);
-  CHARACTER (blank);
-  CHARACTER (position);
-  CHARACTER (action);
-  CHARACTER (delim);
-  CHARACTER (pad);
-  CHARACTER (format);
-  CHARACTER (advance);
-  CHARACTER (name);
-  CHARACTER (internal_unit);
-  gfc_array_char *internal_unit_desc;
-  CHARACTER (sequential);
-  CHARACTER (direct);
-  CHARACTER (formatted);
-  CHARACTER (unformatted);
-  CHARACTER (read);
-  CHARACTER (write);
-  CHARACTER (readwrite);
-
-/* namelist related data */
-  CHARACTER (namelist_name);
-  GFC_INTEGER_4 namelist_read_mode;
-
-  /* iomsg */
-  CHARACTER (iomsg);
-
-#undef CHARACTER
+  CHARACTER2 (file);
+  CHARACTER1 (status);
+  CHARACTER2 (access);
+  CHARACTER1 (form);
+  CHARACTER2 (blank);
+  CHARACTER1 (position);
+  CHARACTER2 (action);
+  CHARACTER1 (delim);
+  CHARACTER2 (pad);
 }
-st_parameter;
+st_parameter_open;
 
-extern st_parameter ioparm;
-iexport_data_proto(ioparm);
+#define IOPARM_CLOSE_HAS_STATUS		(1 << 7)
 
-extern namelist_info * ionml;
-internal_proto(ionml);
+typedef struct
+{
+  st_parameter_common common;
+  CHARACTER1 (status);
+}
+st_parameter_close;
+
+typedef struct
+{
+  st_parameter_common common;
+}
+st_parameter_filepos;
+
+#define IOPARM_INQUIRE_HAS_EXIST	(1 << 7)
+#define IOPARM_INQUIRE_HAS_OPENED	(1 << 8)
+#define IOPARM_INQUIRE_HAS_NUMBER	(1 << 9)
+#define IOPARM_INQUIRE_HAS_NAMED	(1 << 10)
+#define IOPARM_INQUIRE_HAS_NEXTREC	(1 << 11)
+#define IOPARM_INQUIRE_HAS_RECL_OUT	(1 << 12)
+#define IOPARM_INQUIRE_HAS_FILE		(1 << 13)
+#define IOPARM_INQUIRE_HAS_ACCESS	(1 << 14)
+#define IOPARM_INQUIRE_HAS_FORM		(1 << 15)
+#define IOPARM_INQUIRE_HAS_BLANK	(1 << 16)
+#define IOPARM_INQUIRE_HAS_POSITION	(1 << 17)
+#define IOPARM_INQUIRE_HAS_ACTION	(1 << 18)
+#define IOPARM_INQUIRE_HAS_DELIM	(1 << 19)
+#define IOPARM_INQUIRE_HAS_PAD		(1 << 20)
+#define IOPARM_INQUIRE_HAS_NAME		(1 << 21)
+#define IOPARM_INQUIRE_HAS_SEQUENTIAL	(1 << 22)
+#define IOPARM_INQUIRE_HAS_DIRECT	(1 << 23)
+#define IOPARM_INQUIRE_HAS_FORMATTED	(1 << 24)
+#define IOPARM_INQUIRE_HAS_UNFORMATTED	(1 << 25)
+#define IOPARM_INQUIRE_HAS_READ		(1 << 26)
+#define IOPARM_INQUIRE_HAS_WRITE	(1 << 27)
+#define IOPARM_INQUIRE_HAS_READWRITE	(1 << 28)
+
+typedef struct
+{
+  st_parameter_common common;
+  GFC_INTEGER_4 *exist, *opened, *number, *named;
+  GFC_INTEGER_4 *nextrec, *recl_out;
+  CHARACTER1 (file);
+  CHARACTER2 (access);
+  CHARACTER1 (form);
+  CHARACTER2 (blank);
+  CHARACTER1 (position);
+  CHARACTER2 (action);
+  CHARACTER1 (delim);
+  CHARACTER2 (pad);
+  CHARACTER1 (name);
+  CHARACTER2 (sequential);
+  CHARACTER1 (direct);
+  CHARACTER2 (formatted);
+  CHARACTER1 (unformatted);
+  CHARACTER2 (read);
+  CHARACTER1 (write);
+  CHARACTER2 (readwrite);
+}
+st_parameter_inquire;
+
+struct gfc_unit;
+struct format_data;
+
+#define IOPARM_DT_LIST_FORMAT			(1 << 7)
+#define IOPARM_DT_NAMELIST_READ_MODE		(1 << 8)
+#define IOPARM_DT_HAS_REC			(1 << 9)
+#define IOPARM_DT_HAS_SIZE			(1 << 10)
+#define IOPARM_DT_HAS_IOLENGTH			(1 << 11)
+#define IOPARM_DT_HAS_FORMAT			(1 << 12)
+#define IOPARM_DT_HAS_ADVANCE			(1 << 13)
+#define IOPARM_DT_HAS_INTERNAL_UNIT		(1 << 14)
+#define IOPARM_DT_HAS_NAMELIST_NAME		(1 << 15)
+/* Internal use bit.  */
+#define IOPARM_DT_IONML_SET			(1 << 31)
+
+typedef struct st_parameter_dt
+{
+  st_parameter_common common;
+  GFC_INTEGER_4 rec;
+  GFC_INTEGER_4 *size, *iolength;
+  gfc_array_char *internal_unit_desc;
+  CHARACTER1 (format);
+  CHARACTER2 (advance);
+  CHARACTER1 (internal_unit);
+  CHARACTER2 (namelist_name);
+  /* Private part of the structure.  The compiler just needs
+     to reserve enough space.  */
+  union
+    {
+      struct
+	{
+	  void (*transfer) (struct st_parameter_dt *, bt, void *, int,
+			    size_t, size_t);
+	  struct gfc_unit *current_unit;
+	  int item_count; /* Item number in a formatted data transfer.  */
+	  unit_mode mode;
+	  unit_blank blank_status;
+	  enum {SIGN_S, SIGN_SS, SIGN_SP} sign_status;
+	  int scale_factor;
+	  int max_pos; /* Maximum righthand column written to.  */
+	  /* Number of skips + spaces to be done for T and X-editing.  */
+	  int skips;
+	  /* Number of spaces to be done for T and X-editing.  */
+	  int pending_spaces;
+	  unit_advance advance_status;
+	  char reversion_flag; /* Format reversion has occurred.  */
+	  char first_item;
+	  char seen_dollar;
+	  char sf_seen_eor;
+	  char eor_condition;
+	  char no_leading_blank;
+	  char nml_delim;
+	  char char_flag;
+	  char input_complete;
+	  char at_eol;
+	  char comma_flag;
+	  char last_char;
+	  /* A namelist specific flag used in the list directed library
+	     to flag that calls are being made from namelist read (eg. to
+	     ignore comments or to treat '/' as a terminator)  */
+	  char namelist_mode;
+	  /* A namelist specific flag used in the list directed library
+	     to flag read errors and return, so that an attempt can be
+	     made to read a new object name.  */
+	  char nml_read_error;
+	  /* Storage area for values except for strings.  Must be large
+	     enough to hold a complex value (two reals) of the largest
+	     kind.  */
+	  char value[32];
+	  int repeat_count;
+	  int saved_length;
+	  int saved_used;
+	  bt saved_type;
+	  char *saved_string;
+	  char *scratch;
+	  char *line_buffer;
+	  struct format_data *fmt;
+	  jmp_buf *eof_jump;
+	  namelist_info *ionml;
+	} p;
+      char pad[16 * sizeof (char *) + 32 * sizeof (int)];
+    } u;
+}
+st_parameter_dt;
+
+#undef CHARACTER1
+#undef CHARACTER2
 
 typedef struct
 {
@@ -316,54 +453,35 @@ typedef struct gfc_unit
   { NO_ENDFILE, AT_ENDFILE, AFTER_ENDFILE }
   endfile;
 
-  unit_mode  mode;
+  unit_mode mode;
   unit_flags flags;
-  
+
   /* recl           -- Record length of the file.
      last_record    -- Last record number read or written
      maxrec         -- Maximum record number in a direct access file
      bytes_left     -- Bytes left in current record.  */
   gfc_offset recl, last_record, maxrec, bytes_left;
 
+  __gthread_mutex_t lock;
+  /* Number of threads waiting to acquire this unit's lock.
+     When non-zero, close_unit doesn't only removes the unit
+     from the UNIT_ROOT tree, but doesn't free it and the
+     last of the waiting threads will do that.
+     This must be either atomically increased/decreased, or
+     always guarded by UNIT_LOCK.  */
+  int waiting;
+  /* Flag set by close_unit if the unit as been closed.
+     Must be manipulated under unit's lock.  */
+  int closed;
+
   /* For traversing arrays */
   array_loop_spec *ls;
   int rank;
-  
-  /* Filename is allocated at the end of the structure.  */  
+
   int file_len;
-  char file[1];
+  char *file;
 }
 gfc_unit;
-
-/* Global variables.  Putting these in a structure makes it easier to
-   maintain, particularly with the constraint of a prefix.  */
-
-typedef struct
-{
-  int in_library;       /* Nonzero if a library call is being processed.  */
-  int size;	/* Bytes processed by the current data-transfer statement.  */
-  gfc_offset max_offset;	/* Maximum file offset.  */
-  int item_count;	/* Item number in a formatted data transfer.  */
-  int reversion_flag;	/* Format reversion has occurred.  */
-  int first_item;
-
-  gfc_unit *unit_root;
-  int seen_dollar;
-
-  unit_mode  mode;
-
-  unit_blank blank_status;
-  enum {SIGN_S, SIGN_SS, SIGN_SP} sign_status;
-  int scale_factor;
-  jmp_buf eof_jump;
-}
-global_t;
-
-extern global_t g;
-internal_proto(g);
-
-extern gfc_unit *current_unit;
-internal_proto(current_unit);
 
 /* Format tokens.  Only about half of these can be stored in the
    format nodes.  */
@@ -436,10 +554,7 @@ internal_proto(move_pos_offset);
 extern int compare_files (stream *, stream *);
 internal_proto(compare_files);
 
-extern stream *init_error_stream (void);
-internal_proto(init_error_stream);
-
-extern stream *open_external (unit_flags *);
+extern stream *open_external (st_parameter_open *, unit_flags *);
 internal_proto(open_external);
 
 extern stream *open_internal (char *, int);
@@ -457,8 +572,11 @@ internal_proto(error_stream);
 extern int compare_file_filename (gfc_unit *, const char *, int);
 internal_proto(compare_file_filename);
 
-extern gfc_unit *find_file (void);
+extern gfc_unit *find_file (const char *file, gfc_charlen_type file_len);
 internal_proto(find_file);
+
+extern void flush_all_units (void);
+internal_proto(flush_all_units);
 
 extern int stream_at_bof (stream *);
 internal_proto(stream_at_bof);
@@ -469,7 +587,7 @@ internal_proto(stream_at_eof);
 extern int delete_file (gfc_unit *);
 internal_proto(delete_file);
 
-extern int file_exists (void);
+extern int file_exists (const char *file, gfc_charlen_type file_len);
 internal_proto(file_exists);
 
 extern const char *inquire_sequential (const char *, int);
@@ -531,72 +649,83 @@ internal_proto(unpack_filename);
 
 /* unit.c */
 
-extern void insert_unit (gfc_unit *);
-internal_proto(insert_unit);
+/* Maximum file offset, computed at library initialization time.  */
+extern gfc_offset max_offset;
+internal_proto(max_offset);
+
+/* Unit tree root.  */
+extern gfc_unit *unit_root;
+internal_proto(unit_root);
+
+extern __gthread_mutex_t unit_lock;
+internal_proto(unit_lock);
 
 extern int close_unit (gfc_unit *);
 internal_proto(close_unit);
 
-extern int is_internal_unit (void);
+extern int is_internal_unit (st_parameter_dt *);
 internal_proto(is_internal_unit);
 
-extern int is_array_io (void);
+extern int is_array_io (st_parameter_dt *);
 internal_proto(is_array_io);
 
 extern gfc_unit *find_unit (int);
 internal_proto(find_unit);
 
-extern gfc_unit *get_unit (int);
+extern gfc_unit *find_or_create_unit (int);
+internal_proto(find_unit);
+
+extern gfc_unit *get_unit (st_parameter_dt *, int);
 internal_proto(get_unit);
+
+extern void unlock_unit (gfc_unit *);
+internal_proto(unlock_unit);
 
 /* open.c */
 
 extern void test_endfile (gfc_unit *);
 internal_proto(test_endfile);
 
-extern void new_unit (unit_flags *);
+extern gfc_unit *new_unit (st_parameter_open *, gfc_unit *, unit_flags *);
 internal_proto(new_unit);
 
 /* format.c */
 
-extern void parse_format (void);
+extern void parse_format (st_parameter_dt *);
 internal_proto(parse_format);
 
-extern fnode *next_format (void);
+extern const fnode *next_format (st_parameter_dt *);
 internal_proto(next_format);
 
-extern void unget_format (fnode *);
+extern void unget_format (st_parameter_dt *, const fnode *);
 internal_proto(unget_format);
 
-extern void format_error (fnode *, const char *);
+extern void format_error (st_parameter_dt *, const fnode *, const char *);
 internal_proto(format_error);
 
-extern void free_fnodes (void);
-internal_proto(free_fnodes);
+extern void free_format_data (st_parameter_dt *);
+internal_proto(free_format_data);
 
 /* transfer.c */
 
 #define SCRATCH_SIZE 300
 
-extern char scratch[];
-internal_proto(scratch);
-
 extern const char *type_name (bt);
 internal_proto(type_name);
 
-extern void *read_block (int *);
+extern void *read_block (st_parameter_dt *, int *);
 internal_proto(read_block);
 
-extern void *write_block (int);
+extern void *write_block (st_parameter_dt *, int);
 internal_proto(write_block);
 
-extern gfc_offset next_array_record (array_loop_spec *);
+extern gfc_offset next_array_record (st_parameter_dt *, array_loop_spec *);
 internal_proto(next_array_record);
 
-extern gfc_offset init_loop_spec (gfc_array_char *desc, array_loop_spec *ls);
+extern gfc_offset init_loop_spec (gfc_array_char *, array_loop_spec *);
 internal_proto(init_loop_spec);
 
-extern void next_record (int);
+extern void next_record (st_parameter_dt *, int);
 internal_proto(next_record);
 
 /* read.c */
@@ -607,83 +736,82 @@ internal_proto(set_integer);
 extern GFC_UINTEGER_LARGEST max_value (int, int);
 internal_proto(max_value);
 
-extern int convert_real (void *, const char *, int);
+extern int convert_real (st_parameter_dt *, void *, const char *, int);
 internal_proto(convert_real);
 
-extern void read_a (fnode *, char *, int);
+extern void read_a (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(read_a);
 
-extern void read_f (fnode *, char *, int);
+extern void read_f (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(read_f);
 
-extern void read_l (fnode *, char *, int);
+extern void read_l (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(read_l);
 
-extern void read_x (int);
+extern void read_x (st_parameter_dt *, int);
 internal_proto(read_x);
 
-extern void read_radix (fnode *, char *, int, int);
+extern void read_radix (st_parameter_dt *, const fnode *, char *, int, int);
 internal_proto(read_radix);
 
-extern void read_decimal (fnode *, char *, int);
+extern void read_decimal (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(read_decimal);
 
 /* list_read.c */
 
-extern void list_formatted_read (bt, void *, int, size_t, size_t);
+extern void list_formatted_read (st_parameter_dt *, bt, void *, int, size_t,
+				 size_t);
 internal_proto(list_formatted_read);
 
-extern void finish_list_read (void);
+extern void finish_list_read (st_parameter_dt *);
 internal_proto(finish_list_read);
 
-extern void init_at_eol (void);
-internal_proto(init_at_eol);
-
-extern void namelist_read (void);
+extern void namelist_read (st_parameter_dt *);
 internal_proto(namelist_read);
 
-extern void namelist_write (void);
+extern void namelist_write (st_parameter_dt *);
 internal_proto(namelist_write);
 
 /* write.c */
 
-extern void write_a (fnode *, const char *, int);
+extern void write_a (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_a);
 
-extern void write_b (fnode *, const char *, int);
+extern void write_b (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_b);
 
-extern void write_d (fnode *, const char *, int);
+extern void write_d (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_d);
 
-extern void write_e (fnode *, const char *, int);
+extern void write_e (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_e);
 
-extern void write_en (fnode *, const char *, int);
+extern void write_en (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_en);
 
-extern void write_es (fnode *, const char *, int);
+extern void write_es (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_es);
 
-extern void write_f (fnode *, const char *, int);
+extern void write_f (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_f);
 
-extern void write_i (fnode *, const char *, int);
+extern void write_i (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_i);
 
-extern void write_l (fnode *, char *, int);
+extern void write_l (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(write_l);
 
-extern void write_o (fnode *, const char *, int);
+extern void write_o (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_o);
 
-extern void write_x (int, int);
+extern void write_x (st_parameter_dt *, int, int);
 internal_proto(write_x);
 
-extern void write_z (fnode *, const char *, int);
+extern void write_z (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_z);
 
-extern void list_formatted_write (bt, void *, int, size_t, size_t);
+extern void list_formatted_write (st_parameter_dt *, bt, void *, int, size_t,
+				  size_t);
 internal_proto(list_formatted_write);
 
 /* error.c */
@@ -696,5 +824,41 @@ internal_proto(size_from_real_kind);
 
 extern size_t size_from_complex_kind (int);
 internal_proto(size_from_complex_kind);
+
+/* lock.c */
+extern void free_ionml (st_parameter_dt *);
+internal_proto(free_ionml);
+
+static inline void
+inc_waiting_locked (gfc_unit *u)
+{
+#ifdef HAVE_SYNC_FETCH_AND_ADD
+  (void) __sync_fetch_and_add (&u->waiting, 1);
+#else
+  u->waiting++;
+#endif
+}
+
+static inline int
+predec_waiting_locked (gfc_unit *u)
+{
+#ifdef HAVE_SYNC_FETCH_AND_ADD
+  return __sync_add_and_fetch (&u->waiting, -1);
+#else
+  return --u->waiting;
+#endif
+}
+
+static inline void
+dec_waiting_unlocked (gfc_unit *u)
+{
+#ifdef HAVE_SYNC_FETCH_AND_ADD
+  (void) __sync_fetch_and_add (&u->waiting, -1);
+#else
+  __gthread_mutex_lock (&unit_lock);
+  u->waiting--;
+  __gthread_mutex_unlock (&unit_lock);
+#endif
+}
 
 #endif

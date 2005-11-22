@@ -1,3 +1,11 @@
+2005-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/24774
+	* gfortran.dg/inquire_9.f90: New test.
+
+	PR fortran/21647
+	* gfortran.fortran-torture/execute/inquire_5.f90: New test.
+
 2005-11-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR libfortran/24432

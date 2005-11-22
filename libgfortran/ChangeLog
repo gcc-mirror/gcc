@@ -1,3 +1,238 @@
+2005-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/24774
+	PR fortran/14943
+	PR fortran/21647
+	* Makefile.am (AM_CPPFLAGS): Add gcc directories as -I paths,
+	add -D_GNU_SOURCE.
+	* Makefile.in: Regenerated.
+	* acinclude.m4 (LIBGFOR_CHECK_SYNC_FETCH_AND_ADD,
+	LIBGFOR_CHECK_GTHR_DEFAULT, LIBGFOR_CHECK_PRAGMA_WEAK): New macros.
+	* configure.ac: Add them.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+	* libtool-version: Bump libgfortran.so SONAME to libgfortran.so.1.
+	* libgfortran.h (library_start, show_locus, internal_error,
+	generate_error, find_option): Add st_parameter_common * argument.
+	(library_end): Change into a dummy macro.
+	* io/io.h: Include gthr.h.
+	(SUPPORTS_WEAK): Define if HAVE_PRAGMA_WEAK.
+	(CHARACTER): Remove define.
+	(st_parameter, global_t): Remove typedef.
+	(ioparm, g, ionml, current_unit): Remove variables.
+	(init_error_stream): Remove prototype.
+	(CHARACTER1, CHARACTER2): Define.
+	(st_parameter_common, st_parameter_open, st_parameter_close,
+	st_parameter_filepos, st_parameter_inquire, st_parameter_dt): New
+	typedefs.
+	(IOPARM_LIBRETURN_MASK, IOPARM_LIBRETURN_OK, IOPARM_LIBRETURN_ERROR,
+	IOPARM_LIBRETURN_END, IOPARM_LIBRETURN_EOR, IOPARM_ERR, IOPARM_END,
+	IOPARM_EOR, IOPARM_HAS_IOSTAT, IOPARM_HAS_IOMSG, IOPARM_COMMON_MASK,
+	IOPARM_OPEN_HAS_RECL_IN, IOPARM_OPEN_HAS_FILE, IOPARM_OPEN_HAS_STATUS,
+	IOPARM_OPEN_HAS_ACCESS, IOPARM_OPEN_HAS_FORM, IOPARM_OPEN_HAS_BLANK,
+	IOPARM_OPEN_HAS_POSITION, IOPARM_OPEN_HAS_ACTION,
+	IOPARM_OPEN_HAS_DELIM, IOPARM_OPEN_HAS_PAD, IOPARM_CLOSE_HAS_STATUS,
+	IOPARM_INQUIRE_HAS_EXIST, IOPARM_INQUIRE_HAS_OPENED,
+	IOPARM_INQUIRE_HAS_NUMBER, IOPARM_INQUIRE_HAS_NAMED,
+	IOPARM_INQUIRE_HAS_NEXTREC, IOPARM_INQUIRE_HAS_RECL_OUT,
+	IOPARM_INQUIRE_HAS_FILE, IOPARM_INQUIRE_HAS_ACCESS,
+	IOPARM_INQUIRE_HAS_FORM, IOPARM_INQUIRE_HAS_BLANK,
+	IOPARM_INQUIRE_HAS_POSITION, IOPARM_INQUIRE_HAS_ACTION,
+	IOPARM_INQUIRE_HAS_DELIM, IOPARM_INQUIRE_HAS_PAD,
+	IOPARM_INQUIRE_HAS_NAME, IOPARM_INQUIRE_HAS_SEQUENTIAL,
+	IOPARM_INQUIRE_HAS_DIRECT, IOPARM_INQUIRE_HAS_FORMATTED,
+	IOPARM_INQUIRE_HAS_UNFORMATTED, IOPARM_INQUIRE_HAS_READ,
+	IOPARM_INQUIRE_HAS_WRITE, IOPARM_INQUIRE_HAS_READWRITE,
+	IOPARM_DT_LIST_FORMAT, IOPARM_DT_NAMELIST_READ_MODE,
+	IOPARM_DT_HAS_REC, IOPARM_DT_HAS_SIZE, IOPARM_DT_HAS_IOLENGTH,
+	IOPARM_DT_HAS_FORMAT, IOPARM_DT_HAS_ADVANCE,
+	IOPARM_DT_HAS_INTERNAL_UNIT, IOPARM_DT_HAS_NAMELIST_NAME,
+	IOPARM_DT_IONML_SET): Define.
+	(gfc_unit): Add lock, waiting and close fields.  Change file
+	from flexible array member into pointer to char.
+	(open_external): Add st_parameter_open * argument.
+	(find_file, file_exists): Add file and file_len arguments.
+	(flush_all_units): New prototype.
+	(max_offset, unit_root, unit_lock): New variable.
+	(is_internal_unit, is_array_io, next_array_record,
+	parse_format, next_format, unget_format, format_error,
+	read_block, write_block, next_record, convert_real,
+	read_a, read_f, read_l, read_x, read_radix, read_decimal,
+	list_formatted_read, finish_list_read, namelist_read,
+	namelist_write, write_a, write_b, write_d, write_e, write_en,
+	write_es, write_f, write_i, write_l, write_o, write_x, write_z,
+	list_formatted_write, get_unit): Add st_parameter_dt * argument.
+	(insert_unit): Remove prototype.
+	(find_or_create_unit, unlock_unit): New prototype.
+	(new_unit): Return gfc_unit *.  Add st_parameter_open *
+	and gfc_unit * arguments.
+	(free_fnodes): Remove prototype.
+	(free_format_data): New prototype.
+	(scratch): Remove.
+	(init_at_eol): Remove prototype.
+	(free_ionml): New prototype.
+	(inc_waiting_locked, predec_waiting_locked, dec_waiting_unlocked):
+	New inline functions.
+	* io/unit.c (max_offset, unit_root, unit_lock): New variables.
+	(insert): Adjust os_error caller.
+	(insert_unit): Made static.  Allocate memory here, initialize
+	lock and after inserting it return it, locked.
+	(delete_unit): Adjust for deletion of g.
+	(find_unit_1): New function.
+	(find_unit): Use it.
+	(find_or_create_unit): New function.
+	(get_unit): Add dtp argument, change meaning of the int argument
+	as creation request flag.  Adjust for different st_* calling
+	conventions, lock internal unit's lock before returning it
+	and removal of g.  Call find_unit_1 instead of find_unit.
+	(is_internal_unit, is_array_io): Add dtp argument, adjust for
+	removal of most of global variables.
+	(init_units): Initialize unit_lock.  Adjust insert_unit callers
+	and adjust for g removal.
+	(close_unit_1): New function.
+	(close_unit): Use it.
+	(unlock_unit): New function.
+	(close_units): Lock unit_lock, use close_unit_1 rather than
+	close_unit.
+	* io/close.c (st_close): Add clp argument.  Adjust for new
+	st_* calling conventions and internal function API changes.
+	* io/file_pos.c (st_backspace, st_endfile, st_rewind, st_flush):
+	Add fpp argument.  Adjust for new st_* calling conventions and
+	internal function API changes.
+	(formatted_backspace, unformatted_backspace): Likewise.  Add
+	u argument.
+	* io/open.c (edit_modes, st_open): Add opp argument.  Adjust for
+	new st_* calling conventions and internal function API changes.
+	(already_open): Likewise.  If not HAVE_UNLINK_OPEN_FILE, unlink
+	scratch file.  Instead of calling close_unit just call sclose,
+	free u->file if any and clear a few u fields before calling
+	new_unit.
+	(new_unit): Return gfc_unit *.  Add opp and u arguments.
+	Adjust for new st_* calling conventions and internal function
+	API changes.  Don't allocate unit here, rather than work with
+	already created unit u already locked on entry.  In case
+	of failure, close_unit it.
+	* io/unix.c: Include unix.h.
+	(BUFFER_SIZE, unix_stream): Moved to unix.h.
+	(unit_to_fd): Add unlock_unit call.
+	(tempfile): Add opp argument, use its fields rather than ioparm.
+	(regular_file): Likewise.
+	(open_external): Likewise.  Only unlink file if fd >= 0.
+	(init_error_stream): Add error argument, set structure it points
+	to rather than filling static variable and returning its address.
+	(FIND_FILE0_DECL, FIND_FILE0_ARGS): Define.
+	(find_file0): Use them.  Don't crash if u->s == NULL.
+	(find_file): Add file and file_len arguments, use them instead
+	of ioparm.  Add locking.  Pass either an array of 2 struct stat
+	or file and file_len pair to find_file0.
+	(flush_all_units_1, flush_all_units): New functions.
+	(file_exists): Add file and file_len arguments, use them instead
+	of ioparm.
+	* io/unix.h: New file.
+	* io/lock.c (ioparm, g, ionml): Remove variables.
+	(library_start): Add cmp argument, adjust for new st_* calling
+	conventions.
+	(library_end): Remove.
+	(free_ionml): New function.
+	* io/inquire.c (inquire_via_unit, inquire_via_filename,
+	st_inquire): Add iqp argument, adjust for new st_* calling
+	conventions and internal function API changes.
+	* io/format.c (FARRAY_SIZE): Decrease to 64.
+	(fnode_array, format_data): New typedefs.
+	(avail, array, format_string, string, error, saved_token, value,
+	format_string_len, reversion_ok, saved_format): Remove variables.
+	(colon_node): Add const.
+	(free_fnode, free_fnodes): Remove.
+	(free_format_data): New function.
+	(next_char, unget_char, get_fnode, format_lex, parse_format_list,
+	format_error, parse_format, revert, unget_format, next_test): Add
+	fmt or dtp arguments, pass it all around, adjust for internal
+	function API changes and adjust for removal of global variables.
+	(next_format): Likewise.  Constify return type.
+	(next_format0): Constify return type.
+	* io/transfer.c (current_unit, sf_seen_eor, eor_condition, max_pos,
+	skips, pending_spaces, scratch, line_buffer, advance_status,
+	transfer): Remove variables.
+	(transfer_integer, transfer_real, transfer_logical,
+	transfer_character, transfer_complex, transfer_array, current_mode,
+	read_sf, read_block, read_block_direct, write_block,
+	write_block_direct, unformatted_read, unformatted_write,
+	type_name, write_constant_string, require_type,
+	formatted_transfer_scalar, us_read, us_write, pre_position,
+	data_transfer_init, next_record_r, next_record_w, next_record,
+	finalize_transfer, iolength_transfer, iolength_transfer_init,
+	st_iolength, st_iolength_done, st_read, st_read_done, st_write,
+	st_write_done, st_set_nml_var, st_set_nml_var_dim,
+	next_array_record): Add dtp argument, pass it all around, adjust for
+	internal function API changes and removal of global variables.
+	* io/list_read.c (repeat_count, saved_length, saved_used,
+	input_complete, at_eol, comma_flag, last_char, saved_string,
+	saved_type, namelist_mode, nml_read_error, value, parse_err_msg,
+	nml_err_msg, prev_nl): Remove variables.
+	(push_char, free_saved, next_char, unget_char, eat_spaces,
+	eat_separator, finish_separator, nml_bad_return, convert_integer,
+	parse_repeat, read_logical, read_integer, read_character,
+	parse_real, read_complex, read_real, check_type,
+	list_formatted_read_scalar, list_formatted_read, finish_list_read,
+	find_nml_node, nml_untouch_nodes, nml_match_name, nml_query,
+	namelist_read): Add dtp argument, pass it all around, adjust for
+	internal function API changes and removal of global variables.
+	(nml_parse_qualifier): Likewise.  Add parse_err_msg argument.
+	(nml_read_obj): Likewise.  Add pprev_nl, nml_err_msg, clow and
+	chigh arguments.
+	(nml_get_obj_data): Likewise.  Add pprev_nl and nml_err_msg
+	arguments.
+	(init_at_eol): Removed.
+	* io/read.c (convert_real, read_l, read_a, next_char, read_decimal,
+	read_radix, read_f, read_x): Add dtp argument, pass it all around,
+	adjust for internal function API changes and removal of global
+	variables.
+	(set_integer): Adjust internal_error caller.
+	* io/write.c (no_leading_blank, nml_delim): Remove variables.
+	(write_a, calculate_sign, calculate_G_format, output_float,
+	write_l, write_float, write_int, write_decimal, write_i, write_b,
+	write_o, write_z, write_d, write_e, write_f, write_en, write_es,
+	write_x, write_char, write_logical, write_integer, write_character,
+	write_real, write_complex, write_separator,
+	list_formatted_write_scalar, list_formatted_write, nml_write_obj,
+	namelist_write): Add dtp argument, pass it all around, adjust for
+	internal function API changes and removal of global variables.
+	(extract_int, extract_uint, extract_real): Adjust internal_error
+	callers.
+	* runtime/fpu.c (_GNU_SOURCE): Don't define here.
+	* runtime/error.c: Include ../io/unix.h.
+	(filename, line): Remove variables.
+	(st_printf): Pass address of a local variable to init_error_stream.
+	(show_locus): Add cmp argument.  Use fields it points to rather than
+	filename and line variables.
+	(os_error, runtime_error): Remove show_locus calls.
+	(internal_error): Add cmp argument.  Pass it down to show_locus.
+	(generate_error): Likewise.  Use flags bitmask instead of non-NULL
+	check for iostat and iomsg parameter presence, adjust for st_*
+	calling convention changes.
+	* runtime/stop.c (stop_numeric, stop_string): Remove show_locus
+	calls.
+	* runtime/pause.c (pause_numeric, pause_string): Likewise.
+	* runtime/string.c: Include ../io/io.h.
+	(find_option): Add cmp argument.  Pass it down to generate_error.
+	* intrinsics/flush.c (recursive_flush): Remove.
+	(flush_i4, flush_i8): Use flush_all_units.  Add unlock_unit
+	call.
+	* intrinsics/rand.c: Include ../io/io.h.
+	(rand_seed_lock): New variable.
+	(srand, irand): Add locking.
+	(init): New constructor function.
+	* intrinsics/random.c: Include ../io/io.h.
+	(random_lock): New variable.
+	(random_r4, random_r8, arandom_r4, arandom_r8): Add locking.
+	(random_seed): Likewise.  open failed if fd < 0.  Set i correctly.
+	(init): New constructor function.
+	* intrinsics/system_clock.c (tp0, t0): Remove.
+	(system_clock_4, system_clock_8): Don't subtract tp0/t0 from current
+	time, use just integer arithmetics.
+	* intrinsics/tty.c (isatty_l4, isatty_l8, ttynam_sub): Add
+	unlock_unit calls.
+
 2005-11-20  Richard Henderson  <rth@redhat.com>
 
         * Makefile.am: Revert 2005-11-14 change.  Enable -free-vectorize
