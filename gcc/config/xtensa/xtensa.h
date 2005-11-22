@@ -90,11 +90,6 @@ extern unsigned xtensa_current_frame_size;
     builtin_define (TARGET_BIG_ENDIAN ? "__XTENSA_EB__" : "__XTENSA_EL__"); \
     if (!TARGET_HARD_FLOAT)						\
       builtin_define ("__XTENSA_SOFT_FLOAT__");				\
-    if (flag_pic)							\
-      {									\
-        builtin_define ("__PIC__");					\
-        builtin_define ("__pic__");					\
-      }									\
   } while (0)
 
 #define CPP_SPEC " %(subtarget_cpp_spec) "

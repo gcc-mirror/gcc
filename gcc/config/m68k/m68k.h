@@ -92,12 +92,6 @@ Boston, MA 02110-1301, USA.  */
 	}					\
       if (TARGET_CF_HWDIV)			\
 	builtin_define ("__mcfhwdiv__");	\
-      if (flag_pic)				\
-	{					\
-	  builtin_define ("__pic__");		\
-	  if (flag_pic > 1)			\
-	    builtin_define ("__PIC__");		\
-	}					\
       builtin_assert ("cpu=m68k");		\
       builtin_assert ("machine=m68k");		\
     }						\

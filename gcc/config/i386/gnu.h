@@ -8,11 +8,6 @@
   do						\
     {						\
 	HURD_TARGET_OS_CPP_BUILTINS();		\
-	if (flag_pic)				\
-	  {					\
-	    builtin_define ("__PIC__");		\
-	    builtin_define ("__pic__");		\
-	  }					\
     }						\
   while (0)
 

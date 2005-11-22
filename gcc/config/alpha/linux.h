@@ -36,11 +36,6 @@ Boston, MA 02110-1301, USA.  */
 	/* The GNU C++ standard library requires this.  */	\
 	if (c_dialect_cxx ())					\
 	  builtin_define ("_GNU_SOURCE");			\
-	if (flag_pic)						\
-	  {							\
-		builtin_define ("__PIC__");			\
-		builtin_define ("__pic__");			\
-	  }							\
     } while (0)
 
 #undef LIB_SPEC

@@ -94,10 +94,10 @@ Boston, MA 02110-1301, USA.  */
 #undef CPP_SPEC
 #if TARGET_DEFAULT & MASK_68881
 #define CPP_SPEC \
-  "%{fPIC|fpic|fPIE|fpie:-D__PIC__ -D__pic__} %{!msoft-float:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
+  "%{!msoft-float:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 #else
 #define CPP_SPEC \
-  "%{fPIC|fpic|fPIE|fpie:-D__PIC__ -D__pic__} %{m68881:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
+  "%{m68881:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 #endif
 
 /* We override the ASM_SPEC from svr4.h because we must pass -m68040 down

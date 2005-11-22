@@ -67,11 +67,6 @@ Boston, MA 02110-1301, USA.  */
 	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
 	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
 	builtin_assert ("system=beos");					\
-	if (flag_pic)							\
-	  {								\
-	    builtin_define ("__PIC__");					\
-	    builtin_define ("__pic__");					\
-	  }								\
     }									\
   while (0)
     

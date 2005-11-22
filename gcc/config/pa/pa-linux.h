@@ -25,11 +25,6 @@ Boston, MA 02110-1301, USA.  */
     {						\
 	LINUX_TARGET_OS_CPP_BUILTINS();		\
 	builtin_assert ("machine=bigendian");	\
-	if (flag_pic)				\
-	  {					\
-		builtin_define ("__PIC__");	\
-		builtin_define ("__pic__");	\
-	  }					\
     }						\
   while (0)
 

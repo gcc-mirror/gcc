@@ -1,3 +1,24 @@
+2005-11-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __pic__ and __PIC__ when
+	flag_pic is set.
+	
+	* config/alpha/freebsd.h, config/alpha/linux.h,
+	config/arm/linux-elf.h, config/bfin/bfin.h,
+	config/cris/linux.h, config/darwin.h, config/freebsd-spec.h,
+	config/i386/beos-elf.h, config/i386/gnu.h,
+	config/i386/linux.h, config/i386/linux64.h, config/i386/nto.h,
+	config/i386/sco5.h, config/m32r/m32r.h, config/m68k/linux.h,
+	config/m68k/m68k.h, config/mips/linux.h, config/pa/pa-linux.h,
+	config/rs6000/linux64.h, config/rs6000/sysv4.h,
+	config/rs6000/vxworks.h, config/s390/linux.h, config/s390/tpf.h,
+	config/sh/linux.h, config/sh/sh.h, config/sol2.h,
+	config/sparc/linux.h, config/sparc/linux64.h,
+	config/xtensa/xtensa.h: Don't define __pic__ or __PIC__.
+
+	* doc/invoke.texi: Document that the macros __pic__ and __PIC__
+	are both defined when either flag -fpic or -fPIC are used.
+
 2005-11-22  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/fp-bit.c (clzusi): New function.

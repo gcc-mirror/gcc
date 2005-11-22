@@ -72,11 +72,6 @@ Boston, MA 02110-1301, USA.  */
 	    builtin_define ("_LARGEFILE64_SOURCE=1");	\
 	    builtin_define ("__EXTENSIONS__");		\
 	  }						\
-	if (flag_pic)					\
-	  {						\
-	    builtin_define ("__PIC__");			\
-	    builtin_define ("__pic__");			\
-	  }						\
 	TARGET_SUB_OS_CPP_BUILTINS();			\
     } while (0)
 
