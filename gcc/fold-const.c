@@ -6771,6 +6771,12 @@ fold_unary (enum tree_code code, tree type, tree op0)
     case FIX_ROUND_EXPR:
       if (TREE_TYPE (op0) == type)
 	return op0;
+      
+      /* If we have (type) (a CMP b) and type is an integal type, return
+         new expression involving the new type.  */
+      if (COMPARISON_CLASS_P (op0) && INTEGRAL_TYPE_P (type))
+	return fold_build2 (TREE_CODE (op0), type, TREE_OPERAND (op0, 0),
+			    TREE_OPERAND (op0, 1));
 
       /* Handle cases of two conversions in a row.  */
       if (TREE_CODE (op0) == NOP_EXPR
