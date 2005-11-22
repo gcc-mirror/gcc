@@ -1,3 +1,9 @@
+2005-11-23  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/24954
+	* config/rs6000/predicates.md (easy_vector_constant_add_self): Fix
+	typo last change.
+
 2005-11-22  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/24950
