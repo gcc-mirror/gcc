@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include "unwind-cxx.h"
 #include <bits/c++config.h>
+#include "unwind-cxx.h"
 
 /* We default to the talkative, informative handler in a normal hosted
    library.  This pulls in the demangler, the dyn-string utilities, and

@@ -29,10 +29,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include "new"
+#include <bits/c++config.h>
 #include <cstdlib>
 #include <exception_defines.h>
-#include <bits/c++config.h>
+#include "new"
 
 using std::new_handler;
 using std::bad_alloc;
