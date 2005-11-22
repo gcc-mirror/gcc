@@ -1,3 +1,12 @@
+2005-11-22  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.opt (mmulhw): New option.
+	* doc/invoke.texi (-mmulhw): Document.
+	* config/rs6000/rs6000.c (rs6000_override_options): Enable -mmulhw
+	for 405 and 440.
+	* config/rs6000/rs6000.md: Add half-word multiply and
+	multiply-accumulate instructions for 405 and 440.
+
 2005-11-21  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* config/arm/rtems-elf.h: Added definition of LINK_GCC_C_SEQUENCE_SPEC
