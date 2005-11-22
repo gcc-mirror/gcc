@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
-timestamp='2005-07-08'
+timestamp='2005-11-11'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -779,7 +779,7 @@ EOF
     i*:PW*:*)
 	echo ${UNAME_MACHINE}-pc-pw32
 	exit ;;
-    x86:Interix*:[34]*)
+    x86:Interix*:[345]*)
 	echo i586-pc-interix${UNAME_RELEASE}|sed -e 's/\..*//'
 	exit ;;
     [345]86:Windows_95:* | [345]86:Windows_98:* | [345]86:Windows_NT:*)
@@ -794,7 +794,7 @@ EOF
     i*:UWIN*:*)
 	echo ${UNAME_MACHINE}-pc-uwin
 	exit ;;
-    amd64:CYGWIN*:*:*)
+    amd64:CYGWIN*:*:* | x86_64:CYGWIN*:*:*)
 	echo x86_64-unknown-cygwin
 	exit ;;
     p*:CYGWIN*:*)
@@ -873,6 +873,9 @@ EOF
 	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep ^CPU=`
 	test x"${CPU}" != x && { echo "${CPU}-unknown-linux-gnu"; exit; }
 	;;
+    or32:Linux:*:*)
+	echo or32-unknown-linux-gnu
+	exit ;;
     ppc:Linux:*:*)
 	echo powerpc-unknown-linux-gnu
 	exit ;;
@@ -1182,7 +1185,6 @@ EOF
     *:Darwin:*:*)
 	UNAME_PROCESSOR=`uname -p` || UNAME_PROCESSOR=unknown
 	case $UNAME_PROCESSOR in
-	    *86) UNAME_PROCESSOR=i686 ;;
 	    unknown) UNAME_PROCESSOR=powerpc ;;
 	esac
 	echo ${UNAME_PROCESSOR}-apple-darwin${UNAME_RELEASE}
