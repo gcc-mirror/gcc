@@ -1,3 +1,8 @@
+2005-11-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/23435
+	* gcc.c-torture/compile/pr23435.c: New.
+
 2005-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/24774
