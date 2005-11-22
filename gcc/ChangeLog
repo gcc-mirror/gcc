@@ -1,5 +1,22 @@
 2005-11-22  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* config/fp-bit.c (clzusi): New function.
+	(si_to_float, usi_to_float): Use it to compute proper shift.
+	(usi_to_float): Preserve guard bits when shifting right.
+	* libgcc-std.ver (GCC_4.2.0): New version.
+	* libgcc2.c (__floatundixf, __floatunditf, __floatundidf,
+	__floatundisf): New functions.
+	* libgcc2.h (__floatundixf, __floatunditf, __floatundidf,
+	__floatundisf): Declare.
+	* mklibgcc.in (lib2funcs): Add _floatundidf, _floatundisf,
+	_floatundixf, and _floatunditf.
+	* optabs.c (expand_float): If target does not define a pattern for
+	signed or unsigned conversion, use an unsigned libcall instead of
+	a signed one.
+	(init_optabs): Initialize ufloat_optab.
+
+2005-11-22  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* config/rs6000/rs6000.opt (mmulhw): New option.
 	* doc/invoke.texi (-mmulhw): Document.
 	* config/rs6000/rs6000.c (rs6000_override_options): Enable -mmulhw

@@ -1323,6 +1323,17 @@ __floatdixf (DWtype u)
 }
 #endif
 
+#if defined(L_floatundixf) && LIBGCC2_HAS_XF_MODE
+XFtype
+__floatundixf (UDWtype u)
+{
+  XFtype d = (UWtype) (u >> W_TYPE_SIZE);
+  d *= Wtype_MAXp1_F;
+  d += (UWtype)u;
+  return d;
+}
+#endif
+
 #if defined(L_floatditf) && LIBGCC2_HAS_TF_MODE
 TFtype
 __floatditf (DWtype u)
@@ -1334,11 +1345,33 @@ __floatditf (DWtype u)
 }
 #endif
 
+#if defined(L_floatunditf) && LIBGCC2_HAS_TF_MODE
+TFtype
+__floatunditf (UDWtype u)
+{
+  TFtype d = (UWtype) (u >> W_TYPE_SIZE);
+  d *= Wtype_MAXp1_F;
+  d += (UWtype)u;
+  return d;
+}
+#endif
+
 #if defined(L_floatdidf) && LIBGCC2_HAS_DF_MODE
 DFtype
 __floatdidf (DWtype u)
 {
   DFtype d = (Wtype) (u >> W_TYPE_SIZE);
+  d *= Wtype_MAXp1_F;
+  d += (UWtype)u;
+  return d;
+}
+#endif
+
+#if defined(L_floatundidf) && LIBGCC2_HAS_DF_MODE
+DFtype
+__floatundidf (UDWtype u)
+{
+  DFtype d = (UWtype) (u >> W_TYPE_SIZE);
   d *= Wtype_MAXp1_F;
   d += (UWtype)u;
   return d;
@@ -1415,6 +1448,87 @@ __floatdisf (DWtype u)
   /* No leading bits means u == minimum.  */
   if (count == 0)
     return -(Wtype_MAXp1_F * Wtype_MAXp1_F / 2);
+
+  shift = W_TYPE_SIZE - count;
+
+  /* Shift down the most significant bits.  */
+  hi = u >> shift;
+
+  /* If we lost any nonzero bits, set the lsb to ensure correct rounding.  */
+  if (u & ((1 << shift) - 1))
+    hi |= 1;
+
+  /* Convert the one word of data, and rescale.  */
+  SFtype f = hi;
+  f *= (UWtype)1 << shift;
+  return f;
+#endif
+}
+#endif
+
+#if defined(L_floatundisf) && LIBGCC2_HAS_SF_MODE
+#define DI_SIZE (W_TYPE_SIZE * 2)
+#define SF_SIZE FLT_MANT_DIG
+
+SFtype
+__floatundisf (UDWtype u)
+{
+#if SF_SIZE >= W_TYPE_SIZE
+  /* When the word size is small, we never get any rounding error.  */
+  SFtype f = (UWtype) (u >> W_TYPE_SIZE);
+  f *= Wtype_MAXp1_F;
+  f += (UWtype)u;
+  return f;
+#elif LIBGCC2_HAS_DF_MODE
+
+#if LIBGCC2_DOUBLE_TYPE_SIZE == 64
+#define DF_SIZE DBL_MANT_DIG
+#elif LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64
+#define DF_SIZE LDBL_MANT_DIG
+#else
+# error
+#endif
+
+#define REP_BIT ((UDWtype) 1 << (DI_SIZE - DF_SIZE))
+
+  /* Protect against double-rounding error.
+     Represent any low-order bits, that might be truncated by a bit that
+     won't be lost.  The bit can go in anywhere below the rounding position
+     of the SFmode.  A fixed mask and bit position handles all usual
+     configurations.  It doesn't handle the case of 128-bit DImode, however.  */
+  if (DF_SIZE < DI_SIZE
+      && DF_SIZE > (DI_SIZE - DF_SIZE + SF_SIZE))
+    {
+      if (u >= ((UDWtype) 1 << DF_SIZE))
+	{
+	  if ((UDWtype) u & (REP_BIT - 1))
+	    {
+	      u &= ~ (REP_BIT - 1);
+	      u |= REP_BIT;
+	    }
+	}
+    }
+
+  /* Do the calculation in DFmode so that we don't lose any of the
+     precision of the high word while multiplying it.  */
+  DFtype f = (UWtype) (u >> W_TYPE_SIZE);
+  f *= Wtype_MAXp1_F;
+  f += (UWtype)u;
+  return (SFtype) f;
+#else
+  /* Finally, the word size is larger than the number of bits in SFmode,
+     and we've got no DFmode.  The only way to avoid double rounding is
+     to special case the extraction.  */
+
+  /* If there are no high bits set, fall back to one conversion.  */
+  if ((UWtype)u == u)
+    return (SFtype)(UWtype)u;
+
+  /* Otherwise, find the power of two.  */
+  UWtype hi = u >> W_TYPE_SIZE;
+
+  UWtype count, shift;
+  count_leading_zeros (count, hi);
 
   shift = W_TYPE_SIZE - count;
 

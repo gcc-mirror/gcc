@@ -238,6 +238,10 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define __floatditf	__NDW(float,tf)
 #define __floatdidf	__NDW(float,df)
 #define __floatdisf	__NDW(float,sf)
+#define __floatundixf	__NDW(floatun,xf)
+#define __floatunditf	__NDW(floatun,tf)
+#define __floatundidf	__NDW(floatun,df)
+#define __floatundisf	__NDW(floatun,sf)
 #define __fixunsxfSI	__NW(fixunsxf,)
 #define __fixunstfSI	__NW(fixunstf,)
 #define __fixunsdfSI	__NW(fixunsdf,)
@@ -318,6 +322,7 @@ extern SItype __negvsi2 (SItype);
 #if LIBGCC2_HAS_SF_MODE
 extern DWtype __fixsfdi (SFtype);
 extern SFtype __floatdisf (DWtype);
+extern SFtype __floatundisf (UDWtype);
 extern UWtype __fixunssfSI (SFtype);
 extern DWtype __fixunssfDI (SFtype);
 extern SFtype __powisf2 (SFtype, int);
@@ -327,6 +332,7 @@ extern SCtype __mulsc3 (SFtype, SFtype, SFtype, SFtype);
 #if LIBGCC2_HAS_DF_MODE
 extern DWtype __fixdfdi (DFtype);
 extern DFtype __floatdidf (DWtype);
+extern DFtype __floatundidf (UDWtype);
 extern UWtype __fixunsdfSI (DFtype);
 extern DWtype __fixunsdfDI (DFtype);
 extern DFtype __powidf2 (DFtype, int);
@@ -338,6 +344,7 @@ extern DCtype __muldc3 (DFtype, DFtype, DFtype, DFtype);
 extern DWtype __fixxfdi (XFtype);
 extern DWtype __fixunsxfDI (XFtype);
 extern XFtype __floatdixf (DWtype);
+extern XFtype __floatundixf (UDWtype);
 extern UWtype __fixunsxfSI (XFtype);
 extern XFtype __powixf2 (XFtype, int);
 extern XCtype __divxc3 (XFtype, XFtype, XFtype, XFtype);
@@ -348,6 +355,7 @@ extern XCtype __mulxc3 (XFtype, XFtype, XFtype, XFtype);
 extern DWtype __fixunstfDI (TFtype);
 extern DWtype __fixtfdi (TFtype);
 extern TFtype __floatditf (DWtype);
+extern TFtype __floatunditf (UDWtype);
 extern TFtype __powitf2 (TFtype, int);
 extern TCtype __divtc3 (TFtype, TFtype, TFtype, TFtype);
 extern TCtype __multc3 (TFtype, TFtype, TFtype, TFtype);
