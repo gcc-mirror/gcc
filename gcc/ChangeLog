@@ -1,3 +1,8 @@
+2005-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/22561
+	* tree-ssa-structalias.c (get_constraint_for): Handle ARRAY_RANGE_REF.
+
 2005-11-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/23435
