@@ -1,3 +1,9 @@
+2005-11-22  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/24954
+	* config/rs6000/predicated.md (easy_vector_constant_add_self): Use
+	explicit sign extension, not a (char) cast.
+
 2005-11-21  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* config/arm/rtems-elf.h: Added definition of LINK_GCC_C_SEQUENCE_SPEC
