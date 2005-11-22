@@ -88,12 +88,6 @@ objcp_finish_function (void)
 }
 
 tree
-objcp_lookup_name (tree name)
-{
-  return lookup_name (name, -1);
-}
-
-tree
 objcp_xref_tag (enum tree_code code ATTRIBUTE_UNUSED, tree name)
 {
   return xref_tag (record_type, name, ts_global, false);
