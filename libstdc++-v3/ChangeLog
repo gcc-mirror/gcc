@@ -1,4 +1,20 @@
 2005-11-21  Benjamin Kosnik  <bkoz@redhat.com>
+            Ulrich Drepper  <drepper@redhat.com>
+
+	PR libstdc++/23591
+	* scripts/create_testsuite_files: Support for "C" test files.
+	* testsuite/lib/libstdc++.exp: Same.
+	* testsuite/libstdc++-dg/normal.exp: Same.
+	* testsuite/ext/mt_allocator/22309_thread.cc: Update names.
+	* testsuite/19_diagnostics/23591_thread-1.c: New.
+	* testsuite/testsuite_shared.cc: Add tests, rename existing functions.
+	* libsupc++/eh_globals.cc: Make global thread local if possible.
+	* configure.ac: Use GCC_CHECK_TLS.
+	* acinclude.m4: Include tls.m4.
+	* configure: Regenerate.
+	* config.h.in: Same.
+	
+2005-11-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/del_op.cc: Include c++config.h first.
 	* libsupc++/eh_alloc.cc: Same.

@@ -1,4 +1,4 @@
-# Primary test file for libstdc++.
+# Functional and regression tests in C++ for libstdc++.
 
 # Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 #
@@ -61,6 +61,11 @@ if {[info exists tests_file] && [file exists $tests_file]} {
     # Find all the tests.
     foreach s $subdirs {
 	set subdir_tests [find $s *.cc]
+	set subdir_tests_c [find $s *.c]
+	foreach e $subdir_tests_c {
+	    lappend subdir_tests $e
+	}
+
 	# Filter out tests that should not be run.
 	foreach t $subdir_tests {
 	    # The DejaGNU "find" procedure sometimes returns a list 

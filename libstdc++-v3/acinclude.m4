@@ -1648,8 +1648,8 @@ EOF
     rm -f conftest*
   fi
 
-  # This is a tad weird, for hysterical raisins.  We have to map enable/disable 
-  # to two different models.
+  # This is a tad weird, for hysterical raisins.  We have to map
+  # enable/disable to two different models.
   case $enable_sjlj_exceptions in
     yes)
       AC_DEFINE(_GLIBCXX_SJLJ_EXCEPTIONS, 1,
@@ -1878,5 +1878,6 @@ AC_DEFUN([AC_LC_MESSAGES], [
   ])
 ])
 
+# Macros from the top-level gcc directory.
+m4_include([../config/tls.m4])
 
-dnl vim:et:ts=2:sw=2
