@@ -142,6 +142,7 @@ static rtx arm_expand_binop_builtin (enum insn_code, tree, rtx);
 static rtx arm_expand_unop_builtin (enum insn_code, tree, rtx, int);
 static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void emit_constant_insn (rtx cond, rtx pattern);
+static rtx emit_set_insn (rtx, rtx);
 static int arm_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, bool);
 
@@ -707,6 +708,14 @@ enum tls_reloc {
   TLS_IE32,
   TLS_LE32
 };
+
+/* Emit an insn that's a simple single-set.  Both the operands must be known
+   to be valid.  */
+inline static rtx
+emit_set_insn (rtx x, rtx y)
+{
+  return emit_insn (gen_rtx_SET (VOIDmode, x, y));
+}
 
 /* Return the number of bits set in VALUE.  */
 static unsigned
@@ -1673,22 +1682,21 @@ arm_split_constant (enum rtx_code code, enum machine_mode mode, rtx insn,
 	    {
 	      /* Currently SET is the only monadic value for CODE, all
 		 the rest are diadic.  */
-	      emit_insn (gen_rtx_SET (VOIDmode, target, GEN_INT (val)));
+	      emit_set_insn (target, GEN_INT (val));
 	      return 1;
 	    }
 	  else
 	    {
 	      rtx temp = subtargets ? gen_reg_rtx (mode) : target;
 
-	      emit_insn (gen_rtx_SET (VOIDmode, temp, GEN_INT (val)));
+	      emit_set_insn (temp, GEN_INT (val));
 	      /* For MINUS, the value is subtracted from, since we never
 		 have subtraction of a constant.  */
 	      if (code == MINUS)
-		emit_insn (gen_rtx_SET (VOIDmode, target,
-					gen_rtx_MINUS (mode, temp, source)));
+		emit_set_insn (target, gen_rtx_MINUS (mode, temp, source));
 	      else
-		emit_insn (gen_rtx_SET (VOIDmode, target,
-					gen_rtx_fmt_ee (code, mode, source, temp)));
+		emit_set_insn (target,
+			       gen_rtx_fmt_ee (code, mode, source, temp));
 	      return 2;
 	    }
 	}
@@ -3970,11 +3978,9 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 	    }
 
 	  base_reg = gen_reg_rtx (SImode);
-	  val = force_operand (gen_rtx_PLUS (SImode, xop0,
-					     GEN_INT (n)), NULL_RTX);
+	  val = force_operand (plus_constant (xop0, n), NULL_RTX);
 	  emit_move_insn (base_reg, val);
-	  x = (low_n == 0 ? base_reg
-	       : gen_rtx_PLUS (SImode, base_reg, GEN_INT (low_n)));
+	  x = plus_constant (base_reg, low_n);
 	}
       else if (xop0 != XEXP (x, 0) || xop1 != XEXP (x, 1))
 	x = gen_rtx_PLUS (SImode, xop0, xop1);
@@ -4022,7 +4028,7 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 	  index -= mask;
 	}
       base_reg = force_reg (SImode, GEN_INT (base));
-      x = gen_rtx_PLUS (SImode, base_reg, GEN_INT (index));
+      x = plus_constant (base_reg, index);
     }
 
   if (flag_pic)
@@ -6223,8 +6229,7 @@ arm_gen_load_multiple (int base_regno, int count, rtx from, int up,
   if (write_back)
     {
       XVECEXP (result, 0, 0)
-	= gen_rtx_SET (GET_MODE (from), from,
-		       plus_constant (from, count * 4 * sign));
+	= gen_rtx_SET (VOIDmode, from, plus_constant (from, count * 4 * sign));
       i = 1;
       count++;
     }
@@ -6287,7 +6292,7 @@ arm_gen_store_multiple (int base_regno, int count, rtx to, int up,
   if (write_back)
     {
       XVECEXP (result, 0, 0)
-	= gen_rtx_SET (GET_MODE (to), to,
+	= gen_rtx_SET (VOIDmode, to,
 		       plus_constant (to, count * 4 * sign));
       i = 1;
       count++;
@@ -6737,8 +6742,7 @@ arm_gen_compare_reg (enum rtx_code code, rtx x, rtx y)
   enum machine_mode mode = SELECT_CC_MODE (code, x, y);
   rtx cc_reg = gen_rtx_REG (mode, CC_REGNUM);
 
-  emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
-			  gen_rtx_COMPARE (mode, x, y)));
+  emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
 
   return cc_reg;
 }
@@ -6792,7 +6796,7 @@ arm_reload_in_hi (rtx *operands)
     {
       rtx base_plus = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
 
-      emit_insn (gen_rtx_SET (VOIDmode, base_plus, base));
+      emit_set_insn (base_plus, base);
       base = base_plus;
     }
   else if (GET_CODE (base) == PLUS)
@@ -6850,20 +6854,19 @@ arm_reload_in_hi (rtx *operands)
 						plus_constant (base,
 							       offset + 1))));
   if (!BYTES_BIG_ENDIAN)
-    emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_SUBREG (SImode, operands[0], 0),
-			gen_rtx_IOR (SImode,
-				     gen_rtx_ASHIFT
-				     (SImode,
-				      gen_rtx_SUBREG (SImode, operands[0], 0),
-				      GEN_INT (8)),
-				     scratch)));
+    emit_set_insn (gen_rtx_SUBREG (SImode, operands[0], 0),
+		   gen_rtx_IOR (SImode,
+				gen_rtx_ASHIFT
+				(SImode,
+				 gen_rtx_SUBREG (SImode, operands[0], 0),
+				 GEN_INT (8)),
+				scratch));
   else
-    emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_SUBREG (SImode, operands[0], 0),
-			    gen_rtx_IOR (SImode,
-					 gen_rtx_ASHIFT (SImode, scratch,
-							 GEN_INT (8)),
-					 gen_rtx_SUBREG (SImode, operands[0],
-							 0))));
+    emit_set_insn (gen_rtx_SUBREG (SImode, operands[0], 0),
+		   gen_rtx_IOR (SImode,
+				gen_rtx_ASHIFT (SImode, scratch,
+						GEN_INT (8)),
+				gen_rtx_SUBREG (SImode, operands[0], 0)));
 }
 
 /* Handle storing a half-word to memory during reload by synthesizing as two
@@ -6938,7 +6941,7 @@ arm_reload_out_hi (rtx *operands)
 	    }
 	}
 
-      emit_insn (gen_rtx_SET (VOIDmode, base_plus, base));
+      emit_set_insn (base_plus, base);
       base = base_plus;
     }
   else if (GET_CODE (base) == PLUS)
@@ -8445,8 +8448,7 @@ vfp_emit_fstmx (int base_reg, int count)
 				   UNSPEC_PUSH_MULT));
 
   tmp = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-		     gen_rtx_PLUS (SImode, stack_pointer_rtx,
-				   GEN_INT (-(count * 8 + 4))));
+		     plus_constant (stack_pointer_rtx, -(count * 8 + 4)));
   RTX_FRAME_RELATED_P (tmp) = 1;
   XVECEXP (dwarf, 0, 0) = tmp;
 
@@ -8464,9 +8466,8 @@ vfp_emit_fstmx (int base_reg, int count)
 
       tmp = gen_rtx_SET (VOIDmode,
 			 gen_frame_mem (DFmode,
-					gen_rtx_PLUS (SImode,
-						      stack_pointer_rtx,
-						      GEN_INT (i * 8))),
+					plus_constant (stack_pointer_rtx,
+						       i * 8)),
 			 reg);
       RTX_FRAME_RELATED_P (tmp) = 1;
       XVECEXP (dwarf, 0, i + 1) = tmp;
@@ -10207,11 +10208,9 @@ emit_multi_reg_push (unsigned long mask)
 
   par = emit_insn (par);
 
-  tmp = gen_rtx_SET (SImode,
+  tmp = gen_rtx_SET (VOIDmode,
 		     stack_pointer_rtx,
-		     gen_rtx_PLUS (SImode,
-				   stack_pointer_rtx,
-				   GEN_INT (-4 * num_regs)));
+		     plus_constant (stack_pointer_rtx, -4 * num_regs));
   RTX_FRAME_RELATED_P (tmp) = 1;
   XVECEXP (dwarf, 0, 0) = tmp;
 
@@ -10276,9 +10275,8 @@ emit_sfm (int base_reg, int count)
 
   tmp = gen_rtx_SET (VOIDmode,
 		     stack_pointer_rtx,
-		     gen_rtx_PLUS (SImode,
-				   stack_pointer_rtx,
-				   GEN_INT (-12 * count)));
+		     plus_constant (stack_pointer_rtx, -12 * count));
+
   RTX_FRAME_RELATED_P (tmp) = 1;
   XVECEXP (dwarf, 0, 0) = tmp;
 
@@ -10611,25 +10609,19 @@ arm_expand_prologue (void)
 	     inherited from the caller.  */
 
 	  if (regs_ever_live[3] == 0)
-	    {
-	      insn = gen_rtx_REG (SImode, 3);
-	      insn = gen_rtx_SET (SImode, insn, ip_rtx);
-	      insn = emit_insn (insn);
-	    }
+	    insn = emit_set_insn (gen_rtx_REG (SImode, 3), ip_rtx);
 	  else if (args_to_push == 0)
 	    {
 	      rtx dwarf;
-	      insn = gen_rtx_PRE_DEC (SImode, stack_pointer_rtx);
-	      insn = gen_frame_mem (SImode, insn);
-	      insn = gen_rtx_SET (VOIDmode, insn, ip_rtx);
-	      insn = emit_insn (insn);
 
+	      insn = gen_rtx_PRE_DEC (SImode, stack_pointer_rtx);
+	      insn = emit_set_insn (gen_frame_mem (SImode, insn), ip_rtx);
 	      fp_offset = 4;
 
 	      /* Just tell the dwarf backend that we adjusted SP.  */
 	      dwarf = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-				   gen_rtx_PLUS (SImode, stack_pointer_rtx,
-						 GEN_INT (-fp_offset)));
+				   plus_constant (stack_pointer_rtx,
+						  -fp_offset));
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
 						    dwarf, REG_NOTES (insn));
@@ -10652,21 +10644,12 @@ arm_expand_prologue (void)
 	      args_to_push = 0;
 
 	      /* Now reuse r3 to preserve IP.  */
-	      insn = gen_rtx_REG (SImode, 3);
-	      insn = gen_rtx_SET (SImode, insn, ip_rtx);
-	      (void) emit_insn (insn);
+	      emit_set_insn (gen_rtx_REG (SImode, 3), ip_rtx);
 	    }
 	}
 
-      if (fp_offset)
-	{
-	  insn = gen_rtx_PLUS (SImode, stack_pointer_rtx, GEN_INT (fp_offset));
-	  insn = gen_rtx_SET  (SImode, ip_rtx, insn);
-	}
-      else
-	insn = gen_movsi (ip_rtx, stack_pointer_rtx);
-
-      insn = emit_insn (insn);
+      insn = emit_set_insn (ip_rtx,
+			    plus_constant (stack_pointer_rtx, fp_offset));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -10691,11 +10674,11 @@ arm_expand_prologue (void)
   if ((func_type == ARM_FT_ISR || func_type == ARM_FT_FIQ)
       && (live_regs_mask & (1 << LR_REGNUM)) != 0
       && ! frame_pointer_needed)
-    emit_insn (gen_rtx_SET (SImode,
-			    gen_rtx_REG (SImode, LR_REGNUM),
-			    gen_rtx_PLUS (SImode,
-					  gen_rtx_REG (SImode, LR_REGNUM),
-					  GEN_INT (-4))));
+    {
+      rtx lr = gen_rtx_REG (SImode, LR_REGNUM);
+      
+      emit_set_insn (lr, plus_constant (lr, -4));
+    }
 
   if (live_regs_mask)
     {
@@ -10710,8 +10693,7 @@ arm_expand_prologue (void)
 	{
 	  insn = gen_rtx_PRE_DEC (V2SImode, stack_pointer_rtx);
 	  insn = gen_frame_mem (V2SImode, insn);
-	  insn = emit_insn (gen_rtx_SET (VOIDmode, insn,
-					 gen_rtx_REG (V2SImode, reg)));
+	  insn = emit_set_insn (insn, gen_rtx_REG (V2SImode, reg));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  saved_regs += 8;
 	}
@@ -10729,8 +10711,7 @@ arm_expand_prologue (void)
 	      {
 		insn = gen_rtx_PRE_DEC (XFmode, stack_pointer_rtx);
 		insn = gen_frame_mem (XFmode, insn);
-		insn = emit_insn (gen_rtx_SET (VOIDmode, insn,
-					       gen_rtx_REG (XFmode, reg)));
+		insn = emit_set_insn (insn, gen_rtx_REG (XFmode, reg));
 		RTX_FRAME_RELATED_P (insn) = 1;
 		saved_regs += 12;
 	      }
@@ -10806,12 +10787,11 @@ arm_expand_prologue (void)
 	    insn = gen_rtx_REG (SImode, 3);
 	  else /* if (current_function_pretend_args_size == 0) */
 	    {
-	      insn = gen_rtx_PLUS (SImode, hard_frame_pointer_rtx,
-				   GEN_INT (4));
+	      insn = plus_constant (hard_frame_pointer_rtx, 4);
 	      insn = gen_frame_mem (SImode, insn);
 	    }
 
-	  emit_insn (gen_rtx_SET (SImode, ip_rtx, insn));
+	  emit_set_insn (ip_rtx, insn);
 	  /* Add a USE to stop propagate_one_insn() from barfing.  */
 	  emit_insn (gen_prologue_use (ip_rtx));
 	}
@@ -13665,7 +13645,7 @@ thumb_expand_prologue (void)
 	      insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
 					    stack_pointer_rtx, reg));
 	      RTX_FRAME_RELATED_P (insn) = 1;
-	      dwarf = gen_rtx_SET (SImode, stack_pointer_rtx,
+	      dwarf = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
 				   plus_constant (stack_pointer_rtx,
 						  -amount));
 	      RTX_FRAME_RELATED_P (dwarf) = 1;
@@ -13691,7 +13671,7 @@ thumb_expand_prologue (void)
 	      insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
 					    stack_pointer_rtx, reg));
 	      RTX_FRAME_RELATED_P (insn) = 1;
-	      dwarf = gen_rtx_SET (SImode, stack_pointer_rtx,
+	      dwarf = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
 				   plus_constant (stack_pointer_rtx,
 						  -amount));
 	      RTX_FRAME_RELATED_P (dwarf) = 1;
@@ -13715,7 +13695,7 @@ thumb_expand_prologue (void)
 	  insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
 					hard_frame_pointer_rtx,
 					stack_pointer_rtx));
-	  dwarf = gen_rtx_SET (SImode, hard_frame_pointer_rtx,
+	  dwarf = gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
 			       plus_constant (stack_pointer_rtx, amount));
 	  RTX_FRAME_RELATED_P (dwarf) = 1;
 	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
