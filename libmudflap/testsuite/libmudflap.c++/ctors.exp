@@ -1,3 +1,5 @@
+global MUDFLAP_FLAGS
+set MUDFLAP_FLAGS [list {} {-static} {-O2} {-O3}]
 
 libmudflap-init c++
 if {$cxx == "g++"} then {
@@ -9,7 +11,7 @@ dg-init
 
 global srcdir subdir
 
-foreach flags [list {} {-static} {-O2} {-O3}] {
+foreach flags $MUDFLAP_FLAGS {
     set l1 [libmudflap_target_compile "$srcdir/$subdir/ctors-1.cxx" "ctors-1.o" object {additional_flags=-fmudflap}]
     set test "ctors-1 compilation ${flags}"
     if [string match "*mudflap cannot track unknown size extern *k*" $l1] { pass $test } { fail $test }

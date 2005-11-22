@@ -117,6 +117,28 @@ proc libmudflap-init { language } {
           unset gluefile
       }
     }
+
+    # If there is no static library then don't run tests with -static.
+    global tool
+    set opts "additional_flags=-static"
+    lappend opts "additional_flags=-fmudflap"
+    lappend opts "additional_flags=-lmudflap"
+    set src stlm[pid].c
+    set exe stlm[pid].x
+
+    set f [open $src "w"]
+    puts $f "int main () { }"
+    close $f
+    set lines [${tool}_target_compile $src $exe executable "$opts"]
+    file delete $src
+    remote_file build delete $exe
+
+    if { ![string match "" $lines] } {
+	# Compilation failed; assume static library is not available.
+	global MUDFLAP_FLAGS
+	set i [lsearch $MUDFLAP_FLAGS "*static*"]
+	set MUDFLAP_FLAGS [lreplace $MUDFLAP_FLAGS $i $i]
+    }
 }
 
 proc libmudflap-dg-test { prog do_what extra_tool_flags } {
