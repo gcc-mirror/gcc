@@ -1028,7 +1028,7 @@ rs6000_hard_regno_mode_ok (int regno, enum machine_mode mode)
   /* The float registers can only hold floating modes and DImode.  */
   if (FP_REGNO_P (regno))
     return
-      (GET_MODE_CLASS (mode) == MODE_FLOAT
+      (SCALAR_FLOAT_MODE_P (mode)
        && FP_REGNO_P (regno + HARD_REGNO_NREGS (regno, mode) - 1))
       || (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_SIZE (mode) == UNITS_PER_FP_WORD);
@@ -4126,7 +4126,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 
 /* Nonzero if we can use a floating-point register to pass this arg.  */
 #define USE_FP_FOR_ARG_P(CUM,MODE,TYPE)		\
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
+  (SCALAR_FLOAT_MODE_P (MODE)			\
    && (CUM)->fregno <= FP_ARG_MAX_REG		\
    && TARGET_HARD_FLOAT && TARGET_FPRS)
 
@@ -4650,7 +4650,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
       cum->words = align_words + n_words;
 
-      if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      if (SCALAR_FLOAT_MODE_P (mode)
 	  && TARGET_HARD_FLOAT && TARGET_FPRS)
 	cum->fregno += (GET_MODE_SIZE (mode) + 7) >> 3;
 
@@ -11698,7 +11698,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
       return 0;
     }
   else if (TARGET_E500 && TARGET_HARD_FLOAT && !TARGET_FPRS
-	   && GET_MODE_CLASS (compare_mode) == MODE_FLOAT)
+	   && SCALAR_FLOAT_MODE_P (compare_mode))
     return 0;
 
   is_against_zero = op1 == CONST0_RTX (compare_mode);
@@ -11708,7 +11708,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
      can't be generated if we care about that.  It's safe if one side
      of the construct is zero, since then no subtract will be
      generated.  */
-  if (GET_MODE_CLASS (compare_mode) == MODE_FLOAT
+  if (SCALAR_FLOAT_MODE_P (compare_mode)
       && flag_trapping_math && ! is_against_zero)
     return 0;
 
@@ -15249,7 +15249,7 @@ rs6000_output_function_epilogue (FILE *file,
 
 	      if (GET_CODE (parameter) == REG)
 		{
-		  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+		  if (SCALAR_FLOAT_MODE_P (mode))
 		    {
 		      int bits;
 
@@ -18909,7 +18909,7 @@ rs6000_libcall_value (enum machine_mode mode)
 				      GEN_INT (4))));
     }
 
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+  if (SCALAR_FLOAT_MODE_P (mode)
 	   && TARGET_HARD_FLOAT && TARGET_FPRS)
     regno = FP_ARG_RETURN;
   else if (ALTIVEC_VECTOR_MODE (mode)

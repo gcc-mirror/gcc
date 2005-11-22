@@ -187,7 +187,7 @@
   REAL_VALUE_TYPE rv;
 
   if (GET_MODE (op) != mode
-      || (GET_MODE_CLASS (mode) != MODE_FLOAT && mode != DImode))
+      || (!SCALAR_FLOAT_MODE_P (mode) && mode != DImode))
     return 0;
 
   /* Consider all constants with -msoft-float to be easy.  */
@@ -330,7 +330,7 @@
 ;; or non-special register register field no cr0
 (define_predicate "zero_fp_constant"
   (and (match_code "const_double")
-       (match_test "GET_MODE_CLASS (mode) == MODE_FLOAT
+       (match_test "SCALAR_FLOAT_MODE_P (mode)
 		    && op == CONST0_RTX (mode)")))
 
 ;; Return 1 if the operand is in volatile memory.  Note that during the
@@ -707,7 +707,7 @@
     return 1;
 
   /* For floating-point, easy constants are valid.  */
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+  if (SCALAR_FLOAT_MODE_P (mode)
       && CONSTANT_P (op)
       && easy_fp_constant (op, mode))
     return 1;
@@ -725,7 +725,7 @@
 
   /* For floating-point or multi-word mode, the only remaining valid type
      is a register.  */
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+  if (SCALAR_FLOAT_MODE_P (mode)
       || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     return register_operand (op, mode);
 
