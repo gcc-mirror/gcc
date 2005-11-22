@@ -55,7 +55,6 @@
       builtin_define ("__POWERPC__");           \
       builtin_define ("__NATURAL_ALIGNMENT__"); \
       darwin_cpp_builtins (pfile);		\
-      SUBTARGET_OS_CPP_BUILTINS ();             \
     }                                           \
   while (0)
 
