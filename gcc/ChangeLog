@@ -1,3 +1,9 @@
+2005-11-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/23435
+	* m68k.md (zero_extendsidi2): Force operands[1] to a register
+	if both operands[0] and operands[1] are memory.
+
 2005-11-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23606
