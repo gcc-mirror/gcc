@@ -1,3 +1,9 @@
+2005-11-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/22238
+	* error.c (resolve_virtual_fun_from_obj_type_ref): New.
+	(dump_expr): Use it in <case CALL_EXPR>.
+
 2005-11-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/24580
