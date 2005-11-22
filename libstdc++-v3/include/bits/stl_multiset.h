@@ -331,10 +331,7 @@ namespace _GLIBCXX_STD
        */
       iterator
       insert(iterator __position, const value_type& __x)
-      {
-	typedef typename _Rep_type::iterator _Rep_iterator;
-	return _M_t.insert_equal((_Rep_iterator&)__position, __x);
-      }
+      { return _M_t.insert_equal(__position, __x); }
 
       /**
        *  @brief A template function that attemps to insert a range of elements.
@@ -361,10 +358,7 @@ namespace _GLIBCXX_STD
        */
       void
       erase(iterator __position)
-      {
-	typedef typename _Rep_type::iterator _Rep_iterator;
-	_M_t.erase((_Rep_iterator&)__position);
-      }
+      { _M_t.erase(__position); }
 
       /**
        *  @brief Erases elements according to the provided key.
@@ -394,10 +388,7 @@ namespace _GLIBCXX_STD
        */
       void
       erase(iterator __first, iterator __last)
-      {
-	typedef typename _Rep_type::iterator _Rep_iterator;
-	_M_t.erase((_Rep_iterator&)__first, (_Rep_iterator&)__last);
-      }
+      { _M_t.erase(__first, __last); }
 
       /**
        *  Erases all elements in a %multiset.  Note that this function only
