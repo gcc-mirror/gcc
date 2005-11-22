@@ -1278,6 +1278,23 @@ dump_expr_init_vec (VEC(constructor_elt,gc) *v, int flags)
 }
 
 
+/* We've gotten an indirect REFERENCE (an OBJ_TYPE_REF) to a virtual
+   function.  Resolve it to a close relative -- in the sense of static
+   type -- variant being overridden.  That is close to what was written in
+   the source code.  Subroutine of dump_expr.  */
+
+static tree
+resolve_virtual_fun_from_obj_type_ref (tree ref)
+{
+  tree obj_type = TREE_TYPE (OBJ_TYPE_REF_OBJECT (ref));
+  int index = tree_low_cst (OBJ_TYPE_REF_TOKEN (ref), 1);
+  tree fun = BINFO_VIRTUALS (TYPE_BINFO (TREE_TYPE (obj_type)));
+    while (index--)
+      fun = TREE_CHAIN (fun);
+
+  return BV_FN (fun);
+}
+
 /* Print out an expression E under control of FLAGS.  */
 
 static void
@@ -1385,6 +1402,10 @@ dump_expr (tree t, int flags)
 
 	if (TREE_CODE (fn) == ADDR_EXPR)
 	  fn = TREE_OPERAND (fn, 0);
+
+        /* Nobody is interested in seeing the guts of vcalls.  */
+        if (TREE_CODE (fn) == OBJ_TYPE_REF)
+          fn = resolve_virtual_fun_from_obj_type_ref (fn);
 
 	if (TREE_TYPE (fn) != NULL_TREE && NEXT_CODE (fn) == METHOD_TYPE)
 	  {
