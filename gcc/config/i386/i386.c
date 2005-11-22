@@ -3615,7 +3615,7 @@ ix86_value_regno (enum machine_mode mode, tree func, tree fntype)
     return FIRST_SSE_REG;
 
   /* Most things go in %eax, except (unless -mno-fp-ret-in-387) fp values.  */
-  if (GET_MODE_CLASS (mode) != MODE_FLOAT || !TARGET_FLOAT_RETURNS_IN_80387)
+  if (!SCALAR_FLOAT_MODE_P (mode) || !TARGET_FLOAT_RETURNS_IN_80387)
     return 0;
 
   /* Floating point return values in %st(0), except for local functions when
@@ -9103,7 +9103,7 @@ ix86_fp_compare_mode (enum rtx_code code ATTRIBUTE_UNUSED)
 enum machine_mode
 ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 {
-  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
+  if (SCALAR_FLOAT_MODE_P (GET_MODE (op0)))
     return ix86_fp_compare_mode (code);
   switch (code)
     {
@@ -9684,7 +9684,7 @@ ix86_expand_compare (enum rtx_code code, rtx *second_test, rtx *bypass_test)
       ret = gen_rtx_fmt_ee (code, VOIDmode, ix86_compare_emitted, const0_rtx);
       ix86_compare_emitted = NULL_RTX;
     }
-  else if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
+  else if (SCALAR_FLOAT_MODE_P (GET_MODE (op0)))
     ret = ix86_expand_fp_compare (code, op0, op1, NULL_RTX,
 				  second_test, bypass_test);
   else

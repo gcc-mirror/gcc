@@ -1,3 +1,15 @@
+2005-11-22  Ben Elliston  <bje@au.ibm.com>
+
+	* optabs.c: Use SCALAR_FLOAT_MODE_P instead of explicitly testing
+	GET_MODE_CLASS (x) == MODE_FLOAT.
+	* config/i386/i386.c: Likewise.
+	* config/rs6000/xcoff.h: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/rs6000/predicates.md: Likewise.
+	* config/rs6000/sysv4.h: Likewise.
+
 2005-11-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define __pic__ and __PIC__ when

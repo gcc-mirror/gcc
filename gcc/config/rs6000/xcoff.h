@@ -164,7 +164,7 @@ toc_section (void)					\
        || (GET_CODE (X) == CONST_DOUBLE					\
 	   && (TARGET_POWERPC64						\
 	       || TARGET_MINIMAL_TOC					\
-	       || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
+	       || (SCALAR_FLOAT_MODE_P (GET_MODE (X))			\
 		   && ! TARGET_NO_FP_IN_TOC)))))
 
 #define TARGET_ASM_GLOBALIZE_LABEL  rs6000_xcoff_asm_globalize_label

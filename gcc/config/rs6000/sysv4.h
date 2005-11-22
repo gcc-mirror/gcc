@@ -508,7 +508,7 @@ fini_section (void)							\
        || (!TARGET_NO_FP_IN_TOC						\
 	   && !TARGET_RELOCATABLE					\
 	   && GET_CODE (X) == CONST_DOUBLE				\
-	   && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
+	   && SCALAR_FLOAT_MODE_P (GET_MODE (X))			\
 	   && BITS_PER_WORD == HOST_BITS_PER_INT)))
 
 /* These macros generate the special .type and .size directives which

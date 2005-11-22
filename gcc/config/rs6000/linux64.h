@@ -457,12 +457,12 @@ extern int dot_symbols;
 	   && ((TARGET_64BIT						\
 		&& (TARGET_POWERPC64					\
 		    || TARGET_MINIMAL_TOC				\
-		    || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
+		    || (SCALAR_FLOAT_MODE_P (GET_MODE (X))		\
 			&& ! TARGET_NO_FP_IN_TOC)))			\
 	       || (!TARGET_64BIT					\
 		   && !TARGET_NO_FP_IN_TOC				\
 		   && !TARGET_RELOCATABLE				\
-		   && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
+		   && SCALAR_FLOAT_MODE_P (GET_MODE (X))		\
 		   && BITS_PER_WORD == HOST_BITS_PER_INT)))))
 
 /* This ABI cannot use DBX_LINES_FUNCTION_RELATIVE, nor can it use
