@@ -1,10 +1,12 @@
+global MUDFLAP_FLAGS
+set MUDFLAP_FLAGS [list {} {-static} {-O2} {-O3}]
 
 libmudflap-init c
 
 dg-init
 
 global srcdir
-foreach flags [list {} {-static} {-O2} {-O3}] {
+foreach flags $MUDFLAP_FLAGS {
     foreach srcfile [lsort [glob -nocomplain \
                             ${srcdir}/libmudflap.c/*frag.c \
                             ${srcdir}/libmudflap.c/heap*.c \

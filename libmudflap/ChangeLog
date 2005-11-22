@@ -1,3 +1,13 @@
+2005-11-22  Janis Johnson  <janis187@us.ibm.com>
+
+	* testsuite/lib/libmudflap.exp (libmudflap-init): Remove -static from
+	MUDFLAP_FLAGS if static library not supported.
+	* testsuite/libmudflap.c/cfrags.exp (MUDFLAP_FLAGS): new.
+	* testsuite/libmudflap.c/externs.exp: Ditto.
+	* testsuite/libmudflap.c++/ctors.exp: Ditto.
+	* testsuite/libmudflap.c++/c++frags.exp: Ditto.
+	* testsuite/libmudflap.cth/cthfrags.exp: Ditto.
+
 2005-10-04  James E Wilson  <wilson@specifix.com>
 
 	* configure.ac (mudflap_cv_entry_point): Use quadrigraphs to declare
