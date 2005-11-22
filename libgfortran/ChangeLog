@@ -1,3 +1,8 @@
+2005-11-21  David Edelsohn  <edelsohn@gnu.org>
+
+	* io/io.h (_LARGE_FILES): Undefine for AIX.
+	(_LARGE_FILE_API): Define for AIX.
+
 2005-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/24774
