@@ -1,3 +1,17 @@
+2005-11-22  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.c (emit_set_insn): New function.
+	(arm_split_constant): Call it.
+	(arm_gen_compare_reg, arm_reload_in_hi, arm_reload_out_hi): Likewise.
+	(arm_legitimize_address): Likewise.  Use plus_constant.
+	(arm_expand_prologue): Likewise.  Use VOIDmode in SET.
+	(thumb_expand_prologue): Likewise.
+	(arm_gen_load_multiple): Use VOIDmode in SET.
+	(arm_gen_store_multiple): Likewise.
+	(vfp_emit_fstmx): Likewise.  Use plus_constant.
+	(emit_multi_reg_push): Likewise.
+	(emit_sfm): Use plus_constant.
+	
 2005-11-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/24954
