@@ -879,6 +879,10 @@ ccp_fold (tree stmt)
 	    op0 = get_value (op0, true)->value;
 	}
 
+      if ((code == NOP_EXPR || code == CONVERT_EXPR)
+	  && tree_ssa_useless_type_conversion_1 (TREE_TYPE (rhs),
+		  				 TREE_TYPE (op0)))
+	return op0;
       return fold_unary (code, TREE_TYPE (rhs), op0);
     }
 
