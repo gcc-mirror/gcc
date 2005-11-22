@@ -685,16 +685,6 @@ extern int fixuplabelno;
 #define TARGET_OS_SYSV_CPP_BUILTINS()		\
   do						\
     {						\
-      if (flag_pic == 1)			\
-	{					\
-	  builtin_define ("__pic__=1");		\
-	  builtin_define ("__PIC__=1");		\
-	}					\
-      else if (flag_pic == 2)			\
-	{					\
-	  builtin_define ("__pic__=2");		\
-	  builtin_define ("__PIC__=2");		\
-	}					\
       if (target_flags_explicit			\
 	  & MASK_RELOCATABLE)			\
 	builtin_define ("_RELOCATABLE");	\

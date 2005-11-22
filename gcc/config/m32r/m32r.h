@@ -112,11 +112,6 @@
       builtin_assert ("machine=m32r");		\
       builtin_define (TARGET_BIG_ENDIAN		\
                       ? "__BIG_ENDIAN__" : "__LITTLE_ENDIAN__"); \
-      if (flag_pic)				\
-        {					\
-          builtin_define ("__pic__");		\
-          builtin_define ("__PIC__");		\
-        }					\
     }						\
   while (0)
 

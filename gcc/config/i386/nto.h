@@ -37,11 +37,6 @@ Boston, MA 02110-1301, USA.  */
         builtin_assert ("system=qnxnto");	\
         builtin_assert ("system=nto");		\
         builtin_assert ("system=unix");		\
-        if (flag_pic)				\
-          {					\
-            builtin_define ("__PIC__");		\
-            builtin_define ("__pic__");		\
-          }					\
     }						\
   while (0)
 

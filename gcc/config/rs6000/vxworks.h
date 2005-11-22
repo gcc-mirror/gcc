@@ -41,16 +41,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
       builtin_define ("__VXWORKS__");		\
       if (!TARGET_SOFT_FLOAT)			\
 	builtin_define ("__hardfp");		\
-      if (flag_pic == 2)			\
-	{					\
-	  builtin_define ("__PIC__=2");		\
-	  builtin_define ("__pic__=2");		\
-	}					\
-      else if (flag_pic == 1)			\
-	{					\
-	  builtin_define ("__PIC__=1");		\
-	  builtin_define ("__pic__=1");		\
-	}					\
 						\
       /* C89 namespace violation! */		\
       builtin_define ("CPU_FAMILY=PPC");	\

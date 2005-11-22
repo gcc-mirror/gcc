@@ -41,11 +41,6 @@ extern int target_flags;
     {                                           \
       builtin_define ("bfin");                  \
       builtin_define ("BFIN");                  \
-      if (flag_pic)				\
-	{					\
-	  builtin_define ("__PIC__");		\
-	  builtin_define ("__pic__");		\
-	}					\
     }                                           \
   while (0)
 #endif

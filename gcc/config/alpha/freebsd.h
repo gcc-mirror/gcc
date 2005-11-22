@@ -24,22 +24,9 @@ Boston, MA 02110-1301, USA.  */
 #define SUBTARGET_EXTRA_SPECS \
   { "fbsd_dynamic_linker", FBSD_DYNAMIC_LINKER }
 
-/* Provide a FBSD_TARGET_CPU_CPP_BUILTINS and CPP_SPEC appropriate for
-   FreeBSD/alpha.  Besides the dealing with
-   the GCC option `-posix', and PIC issues as on all FreeBSD platforms, we must
-   deal with the Alpha's FP issues.  */
-
-#undef  FBSD_TARGET_CPU_CPP_BUILTINS
-#define FBSD_TARGET_CPU_CPP_BUILTINS()		\
-  do						\
-    {						\
-      if (flag_pic)				\
-	{					\
-	  builtin_define ("__PIC__");		\
-	  builtin_define ("__pic__");		\
-	}					\
-    }						\
-  while (0)
+/* Provide a CPP_SPEC appropriate for FreeBSD/alpha.  Besides the
+   dealing with the GCC option `-posix', we must deal with the Alpha's
+   FP issues.  */
 
 #undef  CPP_SPEC
 #define CPP_SPEC "%(cpp_subtarget) %{posix:-D_POSIX_SOURCE}"

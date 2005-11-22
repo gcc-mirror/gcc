@@ -72,11 +72,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
       builtin_define_std ("tpf");               \
       builtin_assert ("system=tpf");            \
       builtin_define ("__ELF__");               \
-      if (flag_pic)                             \
-        {                                       \
-          builtin_define ("__PIC__");           \
-          builtin_define ("__pic__");           \
-        }                                       \
     }                                           \
   while (0)
 

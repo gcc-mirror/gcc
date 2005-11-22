@@ -419,6 +419,11 @@ c_cpp_builtins (cpp_reader *pfile)
     cpp_define (pfile, "__FINITE_MATH_ONLY__=1");
   else
     cpp_define (pfile, "__FINITE_MATH_ONLY__=0");
+  if (flag_pic)
+    {
+      builtin_define_with_int_value ("__pic__", flag_pic);
+      builtin_define_with_int_value ("__PIC__", flag_pic);
+    }
 
   if (flag_iso)
     cpp_define (pfile, "__STRICT_ANSI__");

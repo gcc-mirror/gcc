@@ -140,14 +140,6 @@ Boston, MA 02110-1301, USA.  */
   { "-unexported_symbols_list", "-Zunexported_symbols_list" }, \
   SUBTARGET_OPTION_TRANSLATE_TABLE
 
-#define SUBTARGET_OS_CPP_BUILTINS()                     \
-  do							\
-    {							\
-      if (flag_pic)					\
-	builtin_define ("__PIC__");			\
-    }							\
-  while (0)
-
 /* These compiler options take n arguments.  */
 
 #undef  WORD_SWITCH_TAKES_ARG

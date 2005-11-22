@@ -12882,6 +12882,9 @@ only on certain machines.  For the 386, GCC supports PIC for System V
 but not for the Sun 386i.  Code generated for the IBM RS/6000 is always
 position-independent.
 
+When this flag is set, the macros @code{__pic__} and @code{__PIC__}
+are defined to 1.
+
 @item -fPIC
 @opindex fPIC
 If supported for the target machine, emit position-independent code,
@@ -12891,6 +12894,9 @@ PowerPC and SPARC@.
 
 Position-independent code requires special support, and therefore works
 only on certain machines.
+
+When this flag is set, the macros @code{__pic__} and @code{__PIC__}
+are defined to 2.
 
 @item -fpie
 @itemx -fPIE

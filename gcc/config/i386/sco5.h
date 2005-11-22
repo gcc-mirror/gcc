@@ -221,11 +221,6 @@ Boston, MA 02110-1301, USA.  */
 	builtin_assert ("system=svr3");				\
 	if (flag_iso)						\
 	  cpp_define (pfile, "_STRICT_ANSI");			\
-	if (flag_pic)						\
-	  {							\
-	    builtin_define ("__PIC__");				\
-	    builtin_define ("__pic__");				\
-	  }							\
     }								\
   while (0)
 

@@ -29,11 +29,6 @@ Boston, MA 02110-1301, USA.  */
 	builtin_assert ("system=linux");	\
 	builtin_assert ("system=unix");		\
 	builtin_assert ("system=posix");	\
-	if (flag_pic)				\
-	  {					\
-		builtin_define ("__PIC__");	\
-		builtin_define ("__pic__");	\
-	  }					\
     }						\
   while (0)
 
