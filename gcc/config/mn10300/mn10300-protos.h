@@ -36,8 +36,8 @@ extern void mn10300_print_reg_list (FILE *, int);
 extern int mn10300_get_live_callee_saved_regs (void);
 extern void mn10300_gen_multiple_store (int);
 extern void notice_update_cc (rtx, rtx);
-extern enum reg_class secondary_reload_class (enum reg_class,
-					      enum machine_mode, rtx);
+extern enum reg_class mn10300_secondary_reload_class (enum reg_class,
+						      enum machine_mode, rtx);
 extern const char *output_tst (rtx, rtx);
 extern int store_multiple_operation (rtx, enum machine_mode);
 extern int symbolic_operand (rtx, enum machine_mode);

@@ -672,10 +672,10 @@ enum reg_class {
    FP register.  */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,IN) \
-  secondary_reload_class((CLASS), (MODE), (IN), 1)
+  alpha_secondary_reload_class((CLASS), (MODE), (IN), 1)
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,OUT) \
-  secondary_reload_class((CLASS), (MODE), (OUT), 0)
+  alpha_secondary_reload_class((CLASS), (MODE), (OUT), 0)
 
 /* If we are copying between general and FP registers, we need a memory
    location unless the FIX extension is available.  */

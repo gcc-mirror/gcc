@@ -1187,7 +1187,7 @@ enum reg_class
    NO_REGS is returned.  */
 
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
-  secondary_reload_class (CLASS, MODE, IN)
+  rs6000_secondary_reload_class (CLASS, MODE, IN)
 
 /* If we are copying between FP or AltiVec registers and anything
    else, we need a memory location.  */

@@ -5576,7 +5576,7 @@ output_arg_descriptor (rtx call_insn)
    It might be worthwhile to try and make this a leaf function too.  */
 
 enum reg_class
-secondary_reload_class (enum reg_class class, enum machine_mode mode, rtx in)
+pa_secondary_reload_class (enum reg_class class, enum machine_mode mode, rtx in)
 {
   int regno, is_symbolic;
 
@@ -5589,7 +5589,7 @@ secondary_reload_class (enum reg_class class, enum machine_mode mode, rtx in)
     return R1_REGS;
 
   /* Profiling showed the PA port spends about 1.3% of its compilation
-     time in true_regnum from calls inside secondary_reload_class.  */
+     time in true_regnum from calls inside pa_secondary_reload_class.  */
 
   if (GET_CODE (in) == REG)
     {
@@ -5628,7 +5628,7 @@ secondary_reload_class (enum reg_class class, enum machine_mode mode, rtx in)
     in = XEXP (in, 0);
 
   /* Profiling has showed GCC spends about 2.6% of its compilation
-     time in symbolic_operand from calls inside secondary_reload_class.
+     time in symbolic_operand from calls inside pa_secondary_reload_class.
 
      We use an inline copy and only compute its return value once to avoid
      useless work.  */

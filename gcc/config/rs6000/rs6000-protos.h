@@ -64,8 +64,8 @@ extern int insvdi_rshift_rlwimi_p (rtx, rtx, rtx);
 extern int registers_ok_for_quad_peep (rtx, rtx);
 extern int mems_ok_for_quad_peep (rtx, rtx);
 extern bool gpr_or_gpr_p (rtx, rtx);
-extern enum reg_class secondary_reload_class (enum reg_class,
-					      enum machine_mode, rtx);
+extern enum reg_class rs6000_secondary_reload_class (enum reg_class,
+						     enum machine_mode, rtx);
 extern int ccr_bit (rtx, int);
 extern int extract_MB (rtx);
 extern int extract_ME (rtx);
