@@ -1337,7 +1337,8 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
    We might be able to simplify this.  */
 enum reg_class
-secondary_reload_class (enum reg_class class, enum machine_mode mode, rtx in)
+mn10300_secondary_reload_class (enum reg_class class, enum machine_mode mode,
+				rtx in)
 {
   /* Memory loads less than a full word wide can't have an
      address or stack pointer destination.  They must use

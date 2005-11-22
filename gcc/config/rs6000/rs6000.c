@@ -9761,9 +9761,9 @@ mems_ok_for_quad_peep (rtx mem1, rtx mem2)
    NO_REGS is returned.  */
 
 enum reg_class
-secondary_reload_class (enum reg_class class,
-			enum machine_mode mode ATTRIBUTE_UNUSED,
-			rtx in)
+rs6000_secondary_reload_class (enum reg_class class,
+			       enum machine_mode mode ATTRIBUTE_UNUSED,
+			       rtx in)
 {
   int regno;
 

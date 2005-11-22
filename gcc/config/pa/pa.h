@@ -535,7 +535,7 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
   ((CLASS == BASE_REG_CLASS && GET_CODE (IN) == REG		\
     && REGNO (IN) < FIRST_PSEUDO_REGISTER)			\
-   ? NO_REGS : secondary_reload_class (CLASS, MODE, IN))
+   ? NO_REGS : pa_secondary_reload_class (CLASS, MODE, IN))
 
 #define MAYBE_FP_REG_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), FP_REGS)

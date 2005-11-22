@@ -1,3 +1,19 @@
+2005-11-22  J"orn Rennecke <joern.rennecke@st.com>
+
+	Preparatory work for PR target/21623:
+	* alpha.c (secondary_reload_class): Rename to:
+	(alpha_secondary_reload_class).
+	* alpha.h, alpha-protos.h: Likewise.
+	* mn10300.c (secondary_reload_class): Rename to:
+	(mn10300_secondary_reload_class).
+	* mn10300.h, mn10300-protos.h: Likewise.
+	* pa.c (secondary_reload_class): Rename to:
+	(pa_secondary_reload_class).
+	* pa.h, pa-protos.h: Likewise.
+	* rs6000.c (secondary_reload_class): Rename to:
+	rs6000_secondary_reload_class.
+	* rs6000.h, rs6000-protos.h: Likewise.
+
 2005-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/22561

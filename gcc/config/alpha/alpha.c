@@ -1597,7 +1597,7 @@ alpha_preferred_reload_class(rtx x, enum reg_class class)
    from register elimination into a DImode fp register.  */
 
 enum reg_class
-secondary_reload_class (enum reg_class class, enum machine_mode mode,
+alpha_secondary_reload_class (enum reg_class class, enum machine_mode mode,
 			rtx x, int in)
 {
   if ((mode == QImode || mode == HImode) && ! TARGET_BWX)
