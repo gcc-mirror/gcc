@@ -1,3 +1,9 @@
+2005-11-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/24988
+	* config/rs6000/darwin.h (TARGET_OS_CPP_BUILTINS): Remove call
+	to SUBTARGET_OS_CPP_BUILTINS.
+	
 2005-11-22  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (emit_set_insn): New function.
