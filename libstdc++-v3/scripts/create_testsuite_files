@@ -35,7 +35,9 @@ dlist=`echo [0-9][0-9]*`
 for d in [a-z]*; do
   test -d $d && dlist="$dlist $d"
 done
-find $dlist "(" -type f -o -type l ")" -name "*.cc" -print | sort > $tmp.1
+find $dlist "(" -type f -o -type l ")" -name "*.cc" -print > $tmp.01
+find $dlist "(" -type f -o -type l ")" -name "*.c" -print > $tmp.02
+cat  $tmp.01 $tmp.02 | sort > $tmp.1
 if test ! -s "$tmp.1"; then
   exit 1
 fi

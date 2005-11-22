@@ -17,11 +17,14 @@
 // USA.
 
 #include <string>
+#include <stdexcept>
+#include <iostream>
+#include <sstream>
 #include <ext/mt_allocator.h>
 
 // libstdc++/22309
 extern "C" void
-foo()
+try_allocation()
 {
   typedef char value_t;
 
@@ -33,4 +36,38 @@ foo()
 
   string_t s;
   s += "west beach, indiana dunes";
+}
+
+// libstdc++/23591
+extern "C" void 
+try_throw_exception()
+{
+  try
+    {
+      throw std::bad_exception();
+    }
+  catch (const std::exception& e)
+    { }
+}
+
+extern "C" void 
+try_function_random_fail()
+{
+  long seed = lrand48();
+  if (seed < 2000)
+    seed = 2000;
+
+  {
+    std::ostringstream s;
+    s << "random_throw, seed: " << seed << std::endl;
+    std::cout << s.str();
+  }
+
+  while (--seed > 0)
+    {
+      try_throw_exception();
+    }
+
+  // Randomly throw. See if other threads cleanup.
+  throw std::bad_exception();
 }
