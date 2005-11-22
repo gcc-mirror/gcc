@@ -1,5 +1,9 @@
 2005-11-22  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* gcc.c-torture/execute/floatunsisf-1.c: New test.
+
+2005-11-22  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* gcc.target/powerpc/405-macchw-1.c,
 	gcc.target/powerpc/405-macchw-2.c,
 	gcc.target/powerpc/405-macchwu-1.c,

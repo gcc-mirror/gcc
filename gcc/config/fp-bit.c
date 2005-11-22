@@ -186,6 +186,22 @@ flip_sign ( fp_number_type *  x)
   x->sign = !x->sign;
 }
 
+/* Count leading zeroes in N.  */
+INLINE
+static int
+clzusi (USItype n)
+{
+  extern int __clzsi2 (USItype);
+  if (sizeof (USItype) == sizeof (unsigned int))
+    return __builtin_clz (n);
+  else if (sizeof (USItype) == sizeof (unsigned long))
+    return __builtin_clzl (n);
+  else if (sizeof (USItype) == sizeof (unsigned long long))
+    return __builtin_clzll (n);
+  else
+    return __clzsi2 (n);
+}
+
 extern FLO_type pack_d ( fp_number_type * );
 
 #if defined(L_pack_df) || defined(L_pack_sf) || defined(L_pack_tf)
@@ -1334,6 +1350,8 @@ si_to_float (SItype arg_a)
     }
   else
     {
+      USItype uarg;
+      int shift;
       in.normal_exp = FRACBITS + NGARDS;
       if (in.sign) 
 	{
@@ -1343,15 +1361,17 @@ si_to_float (SItype arg_a)
 	    {
 	      return (FLO_type)(- MAX_SI_INT - 1);
 	    }
-	  in.fraction.ll = (-arg_a);
+	  uarg = (-arg_a);
 	}
       else
-	in.fraction.ll = arg_a;
+	uarg = arg_a;
 
-      while (in.fraction.ll < ((fractype)1 << (FRACBITS + NGARDS)))
+      in.fraction.ll = uarg;
+      shift = clzusi (uarg) - (BITS_PER_SI - 1 - FRACBITS - NGARDS);
+      if (shift > 0)
 	{
-	  in.fraction.ll <<= 1;
-	  in.normal_exp -= 1;
+	  in.fraction.ll <<= shift;
+	  in.normal_exp -= shift;
 	}
     }
   return pack_d (&in);
@@ -1371,19 +1391,23 @@ usi_to_float (USItype arg_a)
     }
   else
     {
+      int shift;
       in.class = CLASS_NUMBER;
       in.normal_exp = FRACBITS + NGARDS;
       in.fraction.ll = arg_a;
 
-      while (in.fraction.ll > ((fractype)1 << (FRACBITS + NGARDS)))
-        {
-          in.fraction.ll >>= 1;
-          in.normal_exp += 1;
-        }
-      while (in.fraction.ll < ((fractype)1 << (FRACBITS + NGARDS)))
+      shift = clzusi (arg_a) - (BITS_PER_SI - 1 - FRACBITS - NGARDS);
+      if (shift < 0)
 	{
-	  in.fraction.ll <<= 1;
-	  in.normal_exp -= 1;
+	  fractype guard = in.fraction.ll & (((fractype)1 << -shift) - 1);
+	  in.fraction.ll >>= -shift;
+	  in.fraction.ll |= (guard != 0);
+	  in.normal_exp -= shift;
+	}
+      else if (shift > 0)
+	{
+	  in.fraction.ll <<= shift;
+	  in.normal_exp -= shift;
 	}
     }
   return pack_d (&in);
