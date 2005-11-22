@@ -2285,6 +2285,7 @@ get_constraint_for (tree t, bool *need_anyoffset)
 	      return temp;
 	    }
 	  case ARRAY_REF:
+	  case ARRAY_RANGE_REF:
 	  case COMPONENT_REF:
 	    temp = get_constraint_for_component_ref (t, need_anyoffset);
 	    return temp;

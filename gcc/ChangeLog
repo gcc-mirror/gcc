@@ -1,3 +1,8 @@
+2005-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/22561
+	* tree-ssa-structalias.c (get_constraint_for): Handle ARRAY_RANGE_REF.
+
 2005-11-22  Ian Lance Taylor  <ian@airs.com>
 
 	* optabs.c (expand_unop): Call SCALAR_FLOAT_MODE_P on a mode, not
