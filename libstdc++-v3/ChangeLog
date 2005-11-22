@@ -1,3 +1,29 @@
+2005-11-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* libsupc++/del_op.cc: Include c++config.h first.
+	* libsupc++/eh_alloc.cc: Same.
+	* libsupc++/new_opv.cc: Same.
+	* libsupc++/eh_throw.cc: Same.
+	* libsupc++/new_op.cc: Same.
+	* libsupc++/del_opv.cc: Same.
+	* libsupc++/eh_catch.cc: Same.
+	* libsupc++/guard.cc: Same.
+	* libsupc++/del_opnt.cc: Same.
+	* libsupc++/eh_exception.cc: Same.
+	* libsupc++/new_opvnt.cc: Same.
+	* libsupc++/eh_term_handler.cc: Same.
+	* libsupc++/eh_personality.cc: Same.
+	* libsupc++/eh_call.cc: Same.
+	* libsupc++/new_opnt.cc: Same.
+	* libsupc++/del_opvnt.cc: Same.
+
+2005-11-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (LTCXXCOMPILE): CXXFLAGS last.
+	* libsupc++/Makefile.am: Same.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Same.
+
 2005-11-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/sso_string_base.h: Minor formatting and stylistic fixes.
@@ -20,9 +46,9 @@
 	Just use a static member.
 	(__rc_string_base<>::__rc_string_base(), _S_construct): Adjust.
 
-	* include/ext/rc_string_base.h (__rc_string_base<>::_Rep): Use anonymous
-	union together with _CharT to fix alignment issues, rebind to _Rep and
-	rename _Raw_alloc to _Rep_alloc_type.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_Rep): Use
+	anonymous union together with _CharT to fix alignment issues,
+	rebind to _Rep and rename _Raw_alloc to _Rep_alloc_type.	
 	(__rc_string_base<>::_Rep::_S_create, _M_destroy): Adjust consistently.
 
 	* include/ext/vstring_util.h (__is_null_p): Move inside struct
@@ -44,8 +70,7 @@
 	(__rc_string_base<>::_M_is_leaked, _M_set_sharable): Change to private.
 	* include/ext/sso_string_base.h	(__sso_string_base<>::_M_swap):
 	Likewise.
-	(__sso_string_base<>::_M_is_leaked, _M_set_sharable): Remove, unused.	
-
+	(__sso_string_base<>::_M_is_leaked, _M_set_sharable): Remove, unused.
 	* include/ext/rc_string_base.h (__rc_string_base<>::_M_data(_CharT*):
 	Return void.
 	* include/ext/sso_string_base.h (__sso_string_base<>::_M_data(_CharT*):

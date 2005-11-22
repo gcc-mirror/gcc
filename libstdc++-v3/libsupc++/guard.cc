@@ -29,9 +29,9 @@
 // Written by Mark Mitchell, CodeSourcery LLC, <mark@codesourcery.com>
 // Thread support written by Jason Merrill, Red Hat Inc. <jason@redhat.com>
 
+#include <bits/c++config.h>
 #include <cxxabi.h>
 #include <exception>
-#include <bits/c++config.h>
 #include <bits/gthr.h>
 #include <bits/atomicity.h>
 

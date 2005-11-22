@@ -1,5 +1,5 @@
 // -*- C++ -*- Allocate exception objects.
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -30,6 +30,7 @@
 // This is derived from the C++ ABI for IA-64.  Where we diverge
 // for cross-architecture compatibility are noted with "@@@".
 
+#include <bits/c++config.h>
 #include <cstdlib>
 #if _GLIBCXX_HOSTED
 #include <cstring>
@@ -37,7 +38,6 @@
 #include <climits>
 #include <exception>
 #include "unwind-cxx.h"
-#include "bits/c++config.h"
 #include "bits/gthr.h"
 
 #if _GLIBCXX_HOSTED

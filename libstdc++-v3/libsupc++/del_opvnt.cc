@@ -28,8 +28,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include "new"
 #include <bits/c++config.h>
+#include "new"
 
 _GLIBCXX_WEAK_DEFINITION void
 operator delete[] (void *ptr, const std::nothrow_t&) throw ()
