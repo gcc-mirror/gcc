@@ -1,3 +1,8 @@
+2005-11-23  Alan Modra  <amodra@bigpond.net.au>
+
+	* io/open.c (new_unit): Use the right unit number when checking
+	for stdin, stdout, stderr.
+
 2005-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/24794
