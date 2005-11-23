@@ -1,3 +1,8 @@
+2005-11-23  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.target/powerpc/altivec-consts.c (vspltisb): Use int val.
+	(vspltish, vspltisw): Likewise.
+
 2005-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/24794
