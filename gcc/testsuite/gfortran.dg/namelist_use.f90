@@ -17,8 +17,8 @@ program namelist_use
   real    :: rrr
   namelist /nml2/ ii, rrr    ! Concatenate use and host associated variables.
   open (10, status="scratch")
-  write (10,*) "&NML1 aa=lmno ii=1 rr=2.5 /"
-  write (10,*) "&NML2 aa=pqrs ii=2 rrr=3.5 /"
+  write (10,*) "&NML1 aa='lmno' ii=1 rr=2.5 /"
+  write (10,*) "&NML2 aa='pqrs' ii=2 rrr=3.5 /"
   rewind (10)
   read (10,nml=nml1,iostat=i)
   if ((i.ne.0).or.(aa.ne."lmno").or.(ii.ne.1).or.(rr.ne.2.5)) call abort ()
