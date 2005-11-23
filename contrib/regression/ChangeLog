@@ -1,3 +1,11 @@
+2005-11-23  Geoffrey Keating  <geoffk@geoffk.org>
+
+	* GCC Regression Tester.wdgt/widget.html: New file.
+	* GCC Regression Tester.wdgt/Info.plist: New file.
+	* GCC Regression Tester.wdgt/Icon.png: New file.
+	* GCC Regression Tester.wdgt/Default.png: New file.
+	* README: Describe new files.
+
 2005-06-07  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* btest-gcc.sh: Add support for option
