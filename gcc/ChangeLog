@@ -1,3 +1,11 @@
+2005-11-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/invoke.texi: For man pages, include gcc-vers.texi.
+	List @file in the option summary.  Include the libiberty
+	documentation for @file.
+	* gcc.c (main): Call expandargv.
+	* Makefile.in (gcc-vers.texi): Define srcdir.
+
 2005-11-23  Diego Novillo  <dnovillo@redhat.com>
 
 	* passes.c (init_optimization_passes): Document

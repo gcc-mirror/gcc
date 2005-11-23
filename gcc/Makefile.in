@@ -3320,6 +3320,7 @@ gcc-vers.texi: $(BASEVER) $(DEVPHASE)
 	 then echo "@set DEVELOPMENT"; \
 	 else echo "@clear DEVELOPMENT"; \
 	 fi) > $@T
+	echo "@set srcdir $(srcdir)" >> $@T
 	mv -f $@T $@
 
 
