@@ -1,3 +1,9 @@
+2005-11-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c/21668
+	* gcc.dg/Wc++-compat.c: New.
+	* gcc.dg/Wno-c++-compat.c: New.
+
 2005-11-23  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.target/powerpc/altivec-consts.c (vspltisb): Use int val.
