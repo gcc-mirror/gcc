@@ -1,3 +1,7 @@
+2005-11-23  Ben Elliston  <bje@au.ibm.com>
+
+	* dwarf2.h (enum dwarf_type): Add DW_ATE_decimal_float.
+
 2005-11-22  J"orn Rennecke <joern.rennecke@st.com>
 
 	Preparatory work for PR target/21623:

@@ -1,7 +1,7 @@
 /* Declarations and definitions of codes relating to the DWARF2 symbolic
    debugging information format.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1999, 2000, 2001, 2002,
-   2003, 2004 Free Software Foundation, Inc.
+   2003, 2004, 2005 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -547,6 +547,7 @@ enum dwarf_type
     DW_ATE_unsigned_char = 0x8,
     /* DWARF 3.  */
     DW_ATE_imaginary_float = 0x9,
+    DW_ATE_decimal_float = 0xf,
     /* HP extensions.  */
     DW_ATE_HP_float80            = 0x80, /* Floating-point (80 bit).  */
     DW_ATE_HP_complex_float80    = 0x81, /* Complex floating-point (80 bit).  */
