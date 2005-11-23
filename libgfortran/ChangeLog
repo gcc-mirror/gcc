@@ -1,3 +1,9 @@
+2005-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/24794
+	* io/list_read.c (read_character): Add auto completion on short
+	namelist reads.
+
 2005-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/24774
