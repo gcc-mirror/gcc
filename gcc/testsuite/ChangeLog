@@ -1,3 +1,8 @@
+2005-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/21983
+	* g++.dg/warn/pr21983.C: New test.
+
 2005-11-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/24950
