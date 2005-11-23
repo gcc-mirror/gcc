@@ -15,8 +15,8 @@ int main(int argc, char** argv) {
 
   cpu_facilities = i386_cpuid ();
 
-  if ((cpu_facilities & (bit_MMX | bit_SSE | bit_CMOV))
-      != (bit_MMX | bit_SSE | bit_CMOV))
+  if ((cpu_facilities & (bit_MMX | bit_SSE | bit_SSE2 | bit_CMOV))
+      != (bit_MMX | bit_SSE | bit_SSE2 | bit_CMOV))
     /* If host has no vector support, pass.  */
     return 0;
 
