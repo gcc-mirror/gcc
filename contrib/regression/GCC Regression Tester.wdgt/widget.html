@@ -1,0 +1,155 @@
+<!-- Get and update the GCC regression tester's web page.
+     Copyright (C) 2005 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.  -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<META http-equiv="Content-Script-Type" content="text/javascript">
+
+<head>
+<script type='text/javascript'>
+// A string representing NUM, with a leading zero if it would be 1 digit long
+function dig2 (num) 
+{
+    var result = num.toString();
+    if (result.length == 1)
+	return '0' + result;
+    else
+	return result;
+}
+
+// Get DATE as a string in standard ISO format in UTC
+function getISO (date) 
+{
+    return (date.getUTCFullYear().toString() + '-'
+	    + dig2 (date.getUTCMonth() + 1) + '-'
+	    + dig2 (date.getUTCDate()) + 'T'
+	    + dig2 (date.getUTCHours()) + ':'
+	    + dig2 (date.getUTCMinutes()) + 'Z');
+}
+
+// STR is a bunch of lines of the form '<key>: <date>' where <date> is in
+// standard ISO UTC format.  Return a Date object corresponding to KEY, or null
+// if none is found.
+function fromISO (str, key)
+{
+    var rx = new RegExp (key + ": (\\d+)-(\\d+)-(\\d+)T(\\d+):(\\d+):(\\d+)Z");
+    var match = rx.exec (str);
+    if (match == null || match.length != 7)
+	return null;
+    var date = new Date(0);
+    date.setUTCFullYear (match[1], match[2] - 1, match[3]);
+    date.setUTCHours (match[4], match[5], match[6], 0);
+    return date;
+}
+
+// Update the data
+function updateContents () {
+    var url = 'http://gcc.gnu.org/regtest/HEAD/status.txt';
+    var xml_request = new XMLHttpRequest();
+    
+    xml_request.onload = function(e) 
+	{
+	    gotContents(e, xml_request);
+	}
+    xml_request.open("GET", url);
+    xml_request.setRequestHeader("Cache-Control", "max-age=0");
+    xml_request.send(null);
+}
+
+function gotContents (event, request) {
+    if (request.status != 200)
+        return;
+
+    if (! request.responseText)
+	return;
+
+    var txt = (request.responseText
+	       .replace (/&/g,"&amp;")
+	       .replace (/</g,"&lt;")
+	       .replace (/&quot;/g,"&quot;")
+	       .replace (/>;/g,"&gt;"));
+    
+    var today = new Date();
+    var date_r = fromISO (txt, "Date");
+    var completed_r = fromISO (txt, "Test-Completed");
+    var now_test_r = fromISO (txt, "Now-Testing");
+    var eta = "";
+    
+    if (date_r != null && completed_r != null && now_test_r != null)
+	{
+	    var eta_r = new Date (now_test_r.getTime() 
+				  + completed_r.getTime() - date_r.getTime());
+	    eta = "ETA: " + getISO (eta_r) + '\n';
+	}
+
+    var val = txt + "Now: " + getISO (today) + '\n' + eta;
+    document.getElementById ("contents").innerHTML = "<pre>"+val+"<\/pre>";
+}
+
+var mainTimer = null;
+
+function myOnShow () 
+{
+    if (! mainTimer) {
+	mainTimer = setInterval (updateContents, 60000);
+    }
+    updateContents();
+}
+
+function myOnHide () 
+{
+    if (mainTimer) {
+	clearInterval (mainTimer);
+	mainTimer = null;
+    }
+}
+
+function myOnLoad ()
+{
+    if ( window.widget ) {
+	widget.onshow = myOnShow;
+	widget.onhide = myOnHide;
+    }
+    myOnShow();
+}
+</script>
+<style>
+body {
+	margin: 0px;
+	padding: 0px;
+}
+pre {
+	font-family: Monaco;
+	font-size: 9px;
+	margin: 0px;
+	padding: 1px 2px 1px 2px;
+	color: black;
+	background-color: white;
+	opacity: 0.8;
+}
+</style>
+</head>
+
+<body onLoad='myOnLoad();'>
+<div id="contents">Loading...</div>
+</body>
+</html>
