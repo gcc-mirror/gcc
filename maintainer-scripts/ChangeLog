@@ -1,3 +1,7 @@
+2005-11-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* update_web_docs_svn: Set @srcdir in gcc-vers.texi. 
+	
 2005-11-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* crontab: Add 4.1 branch entry.
