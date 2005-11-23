@@ -25,8 +25,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING.  If not, write to
-# the Free Software Foundation, 59 Temple Place - Suite 330,
-# Boston, MA 02111-1307, USA.
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
 #
 ########################################################################
 
@@ -65,19 +65,19 @@ inform() {
 usage() {
 cat <<EOF
 gcc_release -r release [-f] [further options]
-gcc_release -s name:cvsbranch [further options]
+gcc_release -s name:svnbranch [further options]
 
 Options:
 
   -r release           Version of the form X.Y or X.Y.Z.
-  -s name:cvsbranch    Create a snapshot, not a real release.
+  -s name:svnbranch    Create a snapshot, not a real release.
 
   -d destination       Local working directory where we will build the release
                        (default=${HOME}).
   -f                   Create a final release (and update ChangeLogs,...).
   -l                   Indicate that we are running on gcc.gnu.org.
   -p previous-tarball  Location of a previous tarball (to generate diff files).
-  -t tag               Tag to mark the release in CVS.
+  -t tag               Tag to mark the release in SVN.
   -u username          Username for upload operations.
 EOF
     exit 1
@@ -118,8 +118,7 @@ build_sources() {
   if [ ${FINAL} -ne 0 ]; then
     inform "Updating ChangeLogs and version files"
 
-    ${CVS} co -d "`basename ${SOURCE_DIRECTORY}`" \
-           -r ${CVSBRANCH} gcc || \
+    ${SVN} -q co "${SVNROOT}/${SVNBRANCH}" "`basename ${SOURCE_DIRECTORY}`" ||\
            error "Could not check out release sources"
     for x in `find ${SOURCE_DIRECTORY} -name ChangeLog`; do
       # Update this ChangeLog file only if it does not yet contain the
@@ -135,66 +134,64 @@ EOF
         mv ${x}.new ${x} || \
             error "Could not update ${x}"
         (changedir `dirname ${x}` && \
-            ${CVS} ci -m 'Mark ChangeLog' `basename ${x}`) || \
+            ${SVN} -q ci -m 'Mark ChangeLog' `basename ${x}`) || \
             error "Could not commit ${x}"
       fi
     done
 
-    # Update `gcc/version.c'.
-    for x in gcc/version.c; do 
-      y=`basename ${x}`
-      (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
-          sed -e 's|version_string\[\] = \".*\"|version_string\[\] = \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
-	  mv ${y}.new ${y} && \
-          ${CVS} ci -m 'Update version' ${y}) || \
-	  error "Could not update ${x}"
-    done
+    # Update gcc/DEV-PHASE if it exists, otherwise gcc/version.c.
+
+    if [ -f ${SOURCE_DIRECTORY}/gcc/DEV-PHASE ]; then
+      [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` = ${RELEASE} ] || \
+      error "Release number ${RELEASE} does not match BASE-VER"
+      (changedir ${SOURCE_DIRECTORY}/gcc && \
+       : > DEV-PHASE && \
+       ${SVN} -q ci -m 'Mark as release' DEV-PHASE) || \
+      error "Could not update DEV-PHASE"
+    else
+      for x in gcc/version.c; do 
+        y=`basename ${x}`
+        (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
+            sed -e 's|version_string\[\] = \".*\"|version_string\[\] = \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
+	    mv ${y}.new ${y} && \
+            ${SVN} -q ci -m 'Update version' ${y}) || \
+	    error "Could not update ${x}"
+      done
+    fi
 
     # Make sure we tag the sources for a final release.
-    TAG="gcc_`echo ${RELEASE} | tr . _`_release"
+    TAG="tags/gcc_`echo ${RELEASE} | tr . _`_release"
 
     rm -rf ${SOURCE_DIRECTORY}
   fi
 
   # Tag the sources.
-  EXPORTDATE=""
   if [ -n "${TAG}" ]; then
     inform "Tagging sources as ${TAG}"
-    ${CVS} rtag -r ${CVSBRANCH} -F ${TAG} gcc || \
-      error "Could not tag sources"
-    EXPORTTAG="-r${TAG}"
-  else
-    if [ ${CVSBRANCH} != "HEAD" ]; then
-      EXPORTTAG="-r${CVSBRANCH}"
-      # It does not work to use both "-r" and "-D" with
-      # "cvs export" so EXPORTDATE is not set here.
-    else
-      # HEAD is the default branch, no need to specify it.
-      EXPORTTAG=""
-      EXPORTDATE="-D`date -u +"%Y-%m-%d %H:%M"` UTC"
+    # We don't want to overwrite an existing tag.  So, if the tag
+    # already exists, issue an error message; the release manager can
+    # manually remove the tag if appropriate.
+    echo "${SVN} ls ${SVNROOT}/${TAG}/ChangeLog" 
+    if ${SVN} ls "${SVNROOT}/${TAG}/ChangeLog"; then 
+      error "Tag ${TAG} already exists"
     fi
+    ${SVN} -m "Tagging source as ${TAG}" cp "${SVNROOT}/${SVNBRANCH}" "${SVNROOT}/${TAG}" || \
+      error "Could not tag sources"
+    SVNBRANCH=${TAG}
   fi
+  SVNREV=`${SVN} info "${SVNROOT}/${SVNBRANCH}"|awk '/Revision:/ {print $2}'`
 
   # Export the current sources.
-  inform "Retrieving sources (cvs export ${EXPORTTAG} ${EXPORTDATE} gcc)"
+  inform "Retrieving sources (svn export -r ${SVNREV} ${SVNROOT}/${SVNBRANCH})"
 
-  if [ -z "${EXPORTTAG}" ]; then
-    ${CVS} export -d "`basename ${SOURCE_DIRECTORY}`" \
-       "${EXPORTDATE}" gcc || \
-      error "Could not retrieve sources"
-  elif [ -z "${EXPORTDATE}" ]; then
-    ${CVS} export -d "`basename ${SOURCE_DIRECTORY}`" \
-       "${EXPORTTAG}" gcc || \
-      error "Could not retrieve sources"
-  else
-    error "Cannot specify -r and -D at the same time"
-  fi
+  ${SVN} -q export -r${SVNREV} "${SVNROOT}/${SVNBRANCH}" "`basename ${SOURCE_DIRECTORY}`" ||\
+    error "Could not retrieve sources"
 
   # Run gcc_update on them to set up the timestamps nicely, and (re)write
-  # the LAST_UPDATED file containing the CVS tag/date used.
+  # the LAST_UPDATED file containing the SVN tag/revision used.
   changedir "gcc-${RELEASE}"
   contrib/gcc_update --touch
-  echo "Obtained from CVS: ${EXPORTTAG} ${EXPORTDATE}" > LAST_UPDATED
+  echo "Obtained from SVN: ${SVNBRANCH} revision ${SVNREV}" > LAST_UPDATED
 
   # Obtain some documentation files from the wwwdocs module.
   inform "Retrieving HTML documentation"
@@ -217,7 +214,7 @@ EOF
   done
 
   # For a prerelease or real release, we need to generate additional
-  # files not present in CVS.
+  # files not present in SVN.
   changedir "${SOURCE_DIRECTORY}"
   if [ $SNAPSHOT -ne 1 ]; then
     # Generate the documentation.
@@ -245,15 +242,31 @@ EOF
 
   # Move message catalogs to source directory.
   mv ../objdir/gcc/po/*.gmo gcc/po/
+  [ -f libcpp/po/cpplib.pot ] && mv ../objdir/libcpp/po/*.gmo libcpp/po/
 
   # Create a "MD5SUMS" file to use for checking the validity of the release.
-  find . -type f |sed -e 's:^\./::' -e '/MD5SUMS/d' |sort |xargs md5sum >MD5SUMS
+  echo \
+"# This file contains the MD5 checksums of the files in the 
+# gcc-"${RELEASE}".tar.bz2 tarball.
+#
+# Besides verifying that all files in the tarball were correctly expanded,
+# it also can be used to determine if any files have changed since the
+# tarball was expanded or to verify that a patchfile was correctly applied.
+#
+# Suggested usage:
+# md5sum -c MD5SUMS | grep -v \"OK$\"
+" > MD5SUMS
+
+  find . -type f |
+  sed -e 's:^\./::' -e '/MD5SUMS/d' |
+  sort |
+  xargs md5sum >>MD5SUMS
 }
 
 # Buid a single tarfile.  The first argument is the name of the name
 # of the tarfile to build, without any suffixes.  They will be added
 # automatically.  The rest of the arguments are the files or
-# directories to include.
+# directories to include, and possibly other arguments to tar.
 
 build_tarfile() {
   # Get the name of the destination tar file.
@@ -264,6 +277,25 @@ build_tarfile() {
   (${TAR} cf - "$@" | ${BZIP2} > ${TARFILE}) || \
     error "Could not build tarfile"
   FILE_LIST="${FILE_LIST} ${TARFILE}"
+}
+
+# Build a single tarfile if any of the directories listed exist,
+# but not if none of them do (because that component doesn't exist
+# on this branch).
+maybe_build_tarfile() {
+  dest=$1
+  shift
+  dir_exists=0
+  for maybe_dir in "$@"; do
+    if [ -d "$maybe_dir" ]; then
+      dir_exists=1
+    fi
+  done
+  if [ $dir_exists = 1 ]; then
+    build_tarfile "$dest" "$@"
+  else
+    echo "Not building $dest tarfile"
+  fi
 }
 
 # Build the various tar files for the release.
@@ -283,16 +315,16 @@ build_tarfiles() {
   build_tarfile gcc-${RELEASE} `basename ${SOURCE_DIRECTORY}`
 
   # Now, build one for each of the languages.
-  build_tarfile gcc-ada-${RELEASE} ${ADA_DIRS}
-  build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
-  build_tarfile gcc-g77-${RELEASE} ${FORTRAN_DIRS}
-  build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
-  build_tarfile gcc-objc-${RELEASE} ${OBJECTIVEC_DIRS}
-  build_tarfile gcc-testsuite-${RELEASE} ${TESTSUITE_DIRS}
+  maybe_build_tarfile gcc-ada-${RELEASE} ${ADA_DIRS}
+  maybe_build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
+  maybe_build_tarfile gcc-g77-${RELEASE} ${FORTRAN_DIRS}
+  maybe_build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
+  maybe_build_tarfile gcc-objc-${RELEASE} ${OBJECTIVEC_DIRS}
+  maybe_build_tarfile gcc-testsuite-${RELEASE} ${TESTSUITE_DIRS}
    
   # The core is everything else.
   EXCLUDES=""
-  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} \
+  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS}\
 	   ${JAVA_DIRS} ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
     EXCLUDES="${EXCLUDES} --exclude $x"
   done
@@ -383,36 +415,101 @@ upload_files() {
   done
 }
 
+#Print description if snapshot exists
+snapshot_print() {
+  if [ -e ${RELEASE}/$1 ]; then
+     printf "%-38s%s\n\n" "$1" "$2" >> ${SNAPSHOT_README}
+     echo "  <tr><td><a href=\"$1\">$1</a></td>" >> ${SNAPSHOT_INDEX}
+     echo "      <td>$2</td></tr>" >> ${SNAPSHOT_INDEX}
+  fi
+}
+
 # Announce a snapshot, both on the web and via mail.
 announce_snapshot() {
   inform "Updating links and READMEs on the FTP server"
   
   TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
-  changedir ~ftp/pub/gcc/snapshots
-  sed -e "s%@DATE@%$DATE%g" \
-    -e "s%@TEXT_DATE@%$TEXT_DATE%g" \
-    -e "s%@LAST_DATE@%$LAST_DATE%g" \
-    -e "s%@BRANCH@%${BRANCH}%g" \
-    -e "s%@RELEASE@%${RELEASE}%g" \
-    -e "s%@EXPORT@%${EXPORTTAG} ${EXPORTDATE}%g" \
-    ~/scripts/snapshot-README > $$
-  mv $$ ${RELEASE}/README
-  sed -e "s%@DATE@%$DATE%g" \
-    -e "s%@TEXT_DATE@%$TEXT_DATE%g" \
-    -e "s%@LAST_DATE@%$LAST_DATE%g" \
-    -e "s%@BRANCH@%${BRANCH}%g" \
-    -e "s%@RELEASE@%${RELEASE}%g" \
-    -e "s%@EXPORT@%${EXPORTTAG} ${EXPORTDATE}%g" \
-    ~/scripts/snapshot-index.html > $$
-  mv $$ ${RELEASE}/index.html
+  SNAPSHOT_README=${RELEASE}/README
+  SNAPSHOT_INDEX=${RELEASE}/index.html
 
-  touch LATEST-IS-${BRANCH}-${DATE}
-  rm -f LATEST-IS-${BRANCH}-${LAST_DATE}
+  changedir "${SNAPSHOTS_DIR}"
+  echo \
+"Snapshot gcc-"${RELEASE}" is now available on
+  ftp://gcc.gnu.org/pub/gcc/snapshots/"${RELEASE}"/
+and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
+
+This snapshot has been generated from the GCC "${BRANCH}" SVN branch
+with the following options: "svn://gcc.gnu.org/svn/gcc/${SVNBRANCH} revision ${SVNREV}"
+
+You'll find:
+" > ${SNAPSHOT_README}
+
+  echo \
+"<html>
+
+<head>
+<title>GCC "${RELEASE}" Snapshot</title>
+</head>
+
+<body>
+<h1>GCC "${RELEASE}" Snapshot</h1>
+
+<p>The <a href =\"http://gcc.gnu.org/\">GCC Project</a> makes
+periodic snapshots of the GCC source tree available to the public
+for testing purposes.</p>
+	
+<p>If you are planning to download and use one of our snapshots, then
+we highly recommend you join the GCC developers list.  Details for
+how to sign up can be found on the GCC project home page.</p>
+
+<p>This snapshot has been generated from the GCC "${BRANCH}" SVN branch
+with the following options: <code>"svn://gcc.gnu.org/svn/gcc/${SVNBRANCH} revision ${SVNREV}"</code></p>
+
+<table>" > ${SNAPSHOT_INDEX}
+       
+  snapshot_print gcc-${RELEASE}.tar.bz2 "Complete GCC (includes all of below)"
+  snapshot_print gcc-core-${RELEASE}.tar.bz2 "C front end and core compiler"
+  snapshot_print gcc-ada-${RELEASE}.tar.bz2 "Ada front end and runtime"
+  snapshot_print gcc-g++-${RELEASE}.tar.bz2 "C++ front end and runtime"
+  snapshot_print gcc-g77-${RELEASE}.tar.bz2 "Fortran 77 front end and runtime"
+  snapshot_print gcc-java-${RELEASE}.tar.bz2 "Java front end and runtime"
+  snapshot_print gcc-objc-${RELEASE}.tar.bz2 "Objective-C front end and runtime"
+  snapshot_print gcc-testsuite-${RELEASE}.tar.bz2 "The GCC testsuite"
+
+  echo \
+"Diffs from "${BRANCH}"-"${LAST_DATE}" are available in the diffs/ subdirectory.
+
+When a particular snapshot is ready for public consumption the LATEST-"${BRANCH}"
+link is updated and a message is sent to the gcc list.  Please do not use
+a snapshot before it has been announced that way." >> ${SNAPSHOT_README}
+
+  echo \
+"</table>
+<p>Diffs from "${BRANCH}"-"${LAST_DATE}" are available in the
+<a href=\"diffs/\">diffs/ subdirectory</a>.</p>
+
+<p>When a particular snapshot is ready for public consumption the LATEST-"${BRANCH}"
+link is updated and a message is sent to the gcc list.  Please do not use
+a snapshot before it has been announced that way.</p>
+
+<hr />
+
+<address>
+<a href=\"mailto:gcc@gcc.gnu.org\">gcc@gcc.gnu.org</a>
+<br />
+Last modified "${TEXT_DATE}"
+</address>
+</body>
+
+</html>" >> ${SNAPSHOT_INDEX}
+
+  rm -f LATEST-${BRANCH}
+  ln -s ${RELEASE} LATEST-${BRANCH}
 
   inform "Sending mail"
 
   export QMAILHOST=gcc.gnu.org
-  mail -s "gcc-ss-${RELEASE} is now available" gcc@gcc.gnu.org < ~ftp/pub/gcc/snapshots/${RELEASE}/README
+  mail -s "gcc-${RELEASE} is now available" gcc@gcc.gnu.org < ${SNAPSHOT_README}
 }
 
 ########################################################################
@@ -423,21 +520,22 @@ announce_snapshot() {
 DATE=`date "+%Y%m%d"`
 LONG_DATE=`date "+%Y-%m-%d"`
 
+SVN=${SVN:-/usr/bin/svn}
 # The CVS server containing the GCC repository.
-CVS_SERVER="gcc.gnu.org"
+SVN_SERVER="gcc.gnu.org"
 # The path to the repository on that server.
-CVS_REPOSITORY="/cvs/gcc"
-# The CVS protocol to use.
-CVS_PROTOCOL="ext"
+SVN_REPOSITORY="/svn/gcc"
 # The username to use when connecting to the server.
-CVS_USERNAME="${USER}"
+SVN_USERNAME="${USER}"
 
 # The machine to which files will be uploaded.
 GCC_HOSTNAME="gcc.gnu.org"
 # The name of the account on the machine to which files are uploaded.
 GCC_USERNAME="gccadmin"
-# The directory in which the files will be placed.
-FTP_PATH="~ftp/pub/gcc"
+# The directory in which the files will be placed (do not use ~user syntax).
+FTP_PATH=/var/ftp/pub/gcc
+# The directory in which snapshots will be placed.
+SNAPSHOTS_DIR=${FTP_PATH}/snapshots
 
 # The major number for the release.  For release `3.0.2' this would be 
 # `3'
@@ -457,7 +555,7 @@ BRANCH=""
 
 # The name of the branch from which the release should be made, as used
 # for our version control system.
-CVSBRANCH=""
+SVNBRANCH=""
 
 # The tag to apply to the sources used for the release.
 TAG=""
@@ -475,7 +573,7 @@ SOURCE_DIRECTORY=""
 
 # The directories that should be part of the various language-specific
 # tar files.  These are all relative to the top of the source tree.
-ADA_DIRS="gcc/ada"
+ADA_DIRS="gcc/ada libada gnattools"
 CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
 FORTRAN_DIRS="gcc/f libf2c"
 JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"
@@ -507,7 +605,7 @@ FILE_LIST=""
 
 BZIP2="${BZIP2:-bzip2}"
 CVS="${CVS:-cvs -f -Q -z9}"
-DIFF="${DIFF:-diff -Nrc3pad}"
+DIFF="${DIFF:-diff -Nrcpad}"
 ENV="${ENV:-env}"
 GZIP="${GZIP:-gzip --best}"
 SCP="${SCP:-scp -p}"
@@ -524,15 +622,14 @@ while getopts "d:fr:u:t:p:s:l" ARG; do
     d)    DESTINATION="${OPTARG}";;
     r)    RELEASE="${OPTARG}";;
     t)    TAG="${OPTARG}";;
-    u)    CVS_USERNAME="${OPTARG}";;
+    u)    SVN_USERNAME="${OPTARG}";;
     f)    FINAL=1;;
     s)    SNAPSHOT=1
           BRANCH=${OPTARG%:*}
-          CVSBRANCH=${OPTARG#*:}
+          SVNBRANCH=${OPTARG#*:}
           ;;
     l)    LOCAL=1
 	  SCP=cp
-	  FTP_PATH=~ftp/pub/gcc
 	  PATH=~:/usr/local/bin:$PATH;;
     p)    OLD_TARS="${OLD_TARS} ${OPTARG}"
           if [ ! -f ${OPTARG} ]; then
@@ -563,7 +660,7 @@ while [ $# -ne 0 ]; do
 done
 
 # Perform consistency checking.
-if [ ${LOCAL} -eq 0 ] && [ -z ${CVS_USERNAME} ]; then
+if [ ${LOCAL} -eq 0 ] && [ -z ${SVN_USERNAME} ]; then
   error "No username specified"
 fi
 
@@ -594,7 +691,7 @@ if [ $SNAPSHOT -eq 0 ]; then
 
   # Compute the name of the branch, which is based solely on the major
   # and minor release numbers.
-  CVSBRANCH="gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
+  SVNBRANCH="branches/gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
 
   # If this is not a final release, set various parameters acordingly.
   if [ ${FINAL} -ne 1 ]; then
@@ -606,16 +703,13 @@ if [ $SNAPSHOT -eq 0 ]; then
 else
   RELEASE=${BRANCH}-${DATE}
   FTP_PATH="${FTP_PATH}/snapshots/${RELEASE}"
-  if [ ${CVSBRANCH} != "HEAD" ]; then
-    TAG=gcc-ss-`echo ${RELEASE} | tr '.' '_'`
-  fi
 
-  # Building locally on gcc.gnu.org, we know what the last snapshot date
-  # was.
-  if [ $MODE_DIFFS -ne 0 ] && [ $LOCAL -ne 0 ]; then
+  # If diffs are requested when building locally on gcc.gnu.org, we (usually)
+  # know what the last snapshot date was and take the corresponding tarballs,
+  # unless the user specified tarballs explictly.
+  if [ $MODE_DIFFS -ne 0 ] && [ $LOCAL -ne 0 ] && [ -z "${OLD_TARS}" ]; then
     LAST_DATE=`cat ~/.snapshot_date-${BRANCH}`
-    LAST_DIR=~ftp/pub/gcc/snapshots/${BRANCH}-${LAST_DATE}
-    OLD_TARS=${LAST_DIR}/gcc-${BRANCH}-${LAST_DATE}.tar.bz2
+    OLD_TARS=${SNAPSHOTS_DIR}/${BRANCH}-${LAST_DATE}/gcc-${BRANCH}-${LAST_DATE}.tar.bz2
   fi
 fi
 
@@ -632,13 +726,15 @@ JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
 OBJECTIVEC_DIRS=`adjust_dirs ${OBJECTIVEC_DIRS}`
 TESTSUITE_DIRS=`adjust_dirs ${TESTSUITE_DIRS}`
 
-# Set up CVSROOT.
+# Set up SVNROOT.
 if [ $LOCAL -eq 0 ]; then
-    CVSROOT=":${CVS_PROTOCOL}:${CVS_USERNAME}@"
-    CVSROOT="${CVSROOT}${CVS_SERVER}:${CVS_REPOSITORY}"
+    SVNROOT="svn+ssh://${SVN_USERNAME}@${SVN_SERVER}${SVN_REPOSITORY}"
+    CVSROOT=":ext:${SVN_USERNAME}@gcc.gnu.org/cvs/gcc"
 else
-    CVSROOT="${CVS_REPOSITORY}"
+    SVNROOT="file:///svn/gcc"
+    CVSROOT="/cvs/gcc"
 fi
+export SVNROOT
 export CVSROOT
 
 ########################################################################
@@ -678,7 +774,6 @@ if [ $MODE_GZIP -ne 0 ]; then
 fi
 
 # Upload them to the FTP server.
-
 if [ $MODE_UPLOAD -ne 0 ]; then
   upload_files
 

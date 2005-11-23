@@ -1,3 +1,8 @@
+2005-11-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* gcc_release: Copy from mainline after SVN move.  Remove
+	references to Fortran 95 builds.
+
 2005-05-19  Release Manager
 
 	* GCC 3.4.4 released.
