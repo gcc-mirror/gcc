@@ -1,3 +1,9 @@
+2005-11-24  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/24950
+	Copy from trunk 2005-11-14  Dale Johannesen  <dalej@apple.com>
+	* gcc.c-torture/execute/20051113-1.c:  New.
+
 2005-11-21  Paul Thomas  <pault@gcc.gnu.org
 
 	PR fortran/24223
