@@ -6032,6 +6032,8 @@ main (int argc, const char **argv)
 
   xmalloc_set_program_name (programname);
 
+  expandargv (&argc, &argv);
+
 #ifdef GCC_DRIVER_HOST_INITIALIZATION
   /* Perform host dependent initialization when needed.  */
   GCC_DRIVER_HOST_INITIALIZATION;

@@ -4,6 +4,10 @@
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
+@c man begin INCLUDE
+@include gcc-vers.texi
+@c man end
+
 @c man begin COPYRIGHT
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
@@ -36,7 +40,7 @@ gcc [@option{-c}|@option{-S}|@option{-E}] [@option{-std=}@var{standard}]
     [@option{-I}@var{dir}@dots{}] [@option{-L}@var{dir}@dots{}]
     [@option{-D}@var{macro}[=@var{defn}]@dots{}] [@option{-U}@var{macro}]
     [@option{-f}@var{option}@dots{}] [@option{-m}@var{machine-option}@dots{}]
-    [@option{-o} @var{outfile}] @var{infile}@dots{}
+    [@option{-o} @var{outfile}] [@@@var{file}] @var{infile}@dots{}
 
 Only the most useful options are listed here; see below for the
 remainder.  @samp{g++} accepts mostly the same options as @samp{gcc}.
@@ -156,7 +160,7 @@ in the following sections.
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @gccoptlist{-c  -S  -E  -o @var{file}  -combine -pipe  -pass-exit-codes  @gol
--x @var{language}  -v  -###  --help  --target-help  --version}
+-x @var{language}  -v  -###  --help  --target-help  --version @@@var{file}}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
@@ -1049,6 +1053,8 @@ line options for each tool.
 @item --version
 @opindex version
 Display the version number and copyrights of the invoked GCC@.
+
+@include @value{srcdir}/../libiberty/at-file.texi
 @end table
 
 @node Invoking G++
