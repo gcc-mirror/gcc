@@ -704,6 +704,11 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
       goto get_string;
 
     default:
+      if (dtp->u.p.namelist_mode)
+	{
+	  unget_char (dtp,c);
+	  return;
+	}
       push_char (dtp, c);
       goto get_string;
     }
