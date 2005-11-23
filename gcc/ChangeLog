@@ -1,3 +1,12 @@
+2005-11-23  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/predicates.md (pcrel_address, extend_operator,
+	post_inc_operand, pre_dec_operand): Remove redundant
+	conditionals.
+	(const_uint32_operand, const_sint32_operand): Use gcc_assert
+	instead of abort.
+	(valid_dbcc_comparison_p): Rewrite in the lisp style.
+
 2005-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* dwarf2.h (enum dwarf_type): Add DW_ATE_decimal_float.

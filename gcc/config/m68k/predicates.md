@@ -76,11 +76,7 @@
 ;; "general_src_operand".
 
 (define_predicate "pcrel_address"
-  (match_code "symbol_ref,label_ref,const")
-{
-  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF
-	  || GET_CODE (op) == CONST);
-})
+  (match_code "symbol_ref,label_ref,const"))
 
 ;; Accept integer operands in the range 0..0xffffffff.  We have to
 ;; check the range carefully since this predicate is used in DImode
@@ -92,8 +88,7 @@
 {
   /* It doesn't make sense to ask this question with a mode that is
      not larger than 32 bits.  */
-  if (GET_MODE_BITSIZE (mode) <= 32)
-    abort ();
+  gcc_assert (GET_MODE_BITSIZE (mode) > 32);
 
 #if HOST_BITS_PER_WIDE_INT > 32
   /* All allowed constants will fit a CONST_INT.  */
@@ -114,8 +109,7 @@
 {
   /* It doesn't make sense to ask this question with a mode that is
      not larger than 32 bits.  */
-  if (GET_MODE_BITSIZE (mode) <= 32)
-    abort ();
+  gcc_assert (GET_MODE_BITSIZE (mode) > 32);
 
   /* All allowed constants will fit a CONST_INT.  */
   return (GET_CODE (op) == CONST_INT
@@ -128,27 +122,13 @@
 ;; some comparisons when CC_NO_OVERFLOW is set.
 
 (define_predicate "valid_dbcc_comparison_p"
-  (match_code "eq,ne,gtu,ltu,geu,leu,gt,lt,ge,le")
-{
-  return valid_dbcc_comparison_p_2 (op, mode);
-})
+  (and (match_code "eq,ne,gtu,ltu,geu,leu,gt,lt,ge,le")
+       (match_test "valid_dbcc_comparison_p_2 (op, mode)")))
 
 ;; Check for sign_extend or zero_extend.  Used for bit-count operands.
 
 (define_predicate "extend_operator"
-  (match_code "sign_extend,zero_extend")
-{
-  if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-      return 1;
-    default:
-      return 0;
-    }
-})
+  (match_code "sign_extend,zero_extend"))
 
 ;; Returns true if OP is either a symbol reference or a sum of a
 ;; symbol reference and a constant.
@@ -182,15 +162,11 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "post_inc_operand"
-  (match_code "mem")
-{
-  return MEM_P (op) && GET_CODE (XEXP (op, 0)) == POST_INC;
-})
+  (and (match_code "mem")
+       (match_test "GET_CODE (XEXP (op, 0)) == POST_INC")))
 
 ;; TODO: Add a comment here.
 
 (define_predicate "pre_dec_operand"
-  (match_code "mem")
-{
-  return MEM_P (op) && GET_CODE (XEXP (op, 0)) == PRE_DEC;
-})
+  (and (match_code "mem")
+       (match_test "GET_CODE (XEXP (op, 0)) == PRE_DEC")))
