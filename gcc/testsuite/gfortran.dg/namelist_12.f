@@ -1,9 +1,9 @@
 c{ dg-do run }
-c This program repeats many of the same tests as test_nml_1 but for integer instead of real.
-c  It also tests repeat nulls, comma delimited character read, a triplet qualifier, a range with
-c and assumed start, a quote delimited string, a qualifier with an assumed end and a fully
-c explicit range.  It also tests that integers and characters are successfully read back by
-c namelist.
+c This program repeats many of the same tests as test_nml_1 but for integer
+c instead of real. It also tests repeat nulls, comma delimited character read,
+c a triplet qualifier, a range with and assumed start, a quote delimited string,
+c a qualifier with an assumed end and a fully explicit range.  It also tests
+c that integers and characters are successfully read back by namelist.
 c Provided by Paul Thomas - pault@gcc.gnu.org
 
       program namelist_12
@@ -25,14 +25,14 @@ c set debug = 0 or 1 in the namelist! (line 33)
       ch ="zzzzzzzzzz"
       check="abcdefghij"
 
-      open (10,status="scratch")
-      write (10, *) "!mynml"
-      write (10, *) " "
-      write (10, *) "&mynml  x(7) =+99 x=1, 2 ,"
-      write (10, *) " 2*3, ,, 2* !comment"
-      write (10, *) " 9 ch=qqqdefghqq , x(8:7:-1) = 8 , 7"
-      write (10, *) " ch(:3) =""abc"","
-      write (10, *) " ch(9:)='ij' x(4:5)=4 ,5 xx = 42/"
+      open (10,status="scratch", delim="apostrophe")
+      write (10, '(a)') "!mynml"
+      write (10, '(a)') " "
+      write (10, '(a)') "&mynml  x(7) =+99 x=1, 2 ,"
+      write (10, '(a)') " 2*3, ,, 2* !comment"
+      write (10, '(a)') " 9 ch='qqqdefghqq' , x(8:7:-1) = 8 , 7"
+      write (10, '(a)') " ch(:3) =""abc"","
+      write (10, '(a)') " ch(9:)='ij' x(4:5)=4 ,5 xx = 42/"
       rewind (10)
 
       read (10, nml=mynml, IOSTAT=ier)
@@ -52,5 +52,4 @@ c set debug = 0 or 1 in the namelist! (line 33)
         if ( ch(i:i).ne.check(I:I) ) call abort
       end do
       if (xx.ne.42) call abort ()
-
       end program

@@ -1,3 +1,15 @@
+2005-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/24794
+	* gfortran.dg/namelist_12.f: Fix quotes.
+	* gfortran.dg/namelist_13.f90: Fix quotes.
+	* gfortran.dg/namelist_14.f90: Fix quotes.
+	* gfortran.dg/namelist_15.f90: Fix quotes.
+	* gfortran.dg/namelist_use.f90: Fix quotes.
+	* gfortran.dg/namelist_use_only.f90: Fix quotes.
+	* gfortran.dg/namelist_21.f90: New test.
+	* gfortran.dg/namelist_22.f90: New test.
+
 2005-11-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/23435

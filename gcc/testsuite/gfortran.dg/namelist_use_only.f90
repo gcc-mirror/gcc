@@ -22,8 +22,8 @@ program namelist_use_only
   use global, only : nml1, aa, ii, rr
   use global, only : nml2, rrrr=>rrr, foo
   open (10, status="scratch")
-  write (10,*) "&NML1 aa=lmno ii=1 rr=2.5 /"
-  write (10,*) "&NML2 aaa=pqrs iii=2 rrr=3.5 /"
+  write (10,'(a)') "&NML1 aa='lmno' ii=1 rr=2.5 /"
+  write (10,'(a)') "&NML2 aaa='pqrs' iii=2 rrr=3.5 /"
   rewind (10)
   read (10,nml=nml1,iostat=i)
   if ((i.ne.0).or.(aa.ne."lmno").or.(ii.ne.1).or.(rr.ne.2.5)) call abort ()

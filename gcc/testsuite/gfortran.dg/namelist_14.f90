@@ -55,7 +55,7 @@ contains
     dts = mt ((/1, 2, 3, 4/))
     dtl = mt ((/41, 42, 43, 44/))
 
-    open (10, status = "scratch")
+    open (10, status = "scratch", delim='apostrophe')
     write (10, nml = z, iostat = ier)
     if (ier /= 0 ) call abort()
     rewind (10)
