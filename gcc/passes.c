@@ -420,7 +420,25 @@ next_pass_1 (struct tree_opt_pass **list, struct tree_opt_pass *pass)
           
 }
 
-/* Construct the pass tree.  */
+/* Construct the pass tree.  The sequencing of passes is driven by
+   the cgraph routines:
+
+   cgraph_finalize_compilation_unit ()
+       for each node N in the cgraph
+	   cgraph_analyze_function (N)
+	       cgraph_lower_function (N) -> all_lowering_passes
+
+   If we are optimizing, cgraph_optimize is then invoked:
+
+   cgraph_optimize ()
+       ipa_passes () 			-> all_ipa_passes
+       cgraph_expand_all_functions ()
+           for each node N in the cgraph
+	       cgraph_expand_function (N)
+	           cgraph_lower_function (N)	-> Now a NOP.
+		   lang_hooks.callgraph.expand_function (DECL (N))
+		   	tree_rest_of_compilation (DECL (N))  -> all_passes
+*/
 
 void
 init_optimization_passes (void)
@@ -439,9 +457,8 @@ init_optimization_passes (void)
   NEXT_PASS (pass_ipa_type_escape);
   *p = NULL;
 
-  /* All passes needed to lower the function into shape optimizers can operate
-     on.  These passes are performed before interprocedural passes, unlike rest
-     of local passes (all_passes).  */
+  /* All passes needed to lower the function into shape optimizers can
+     operate on.  */
   p = &all_lowering_passes;
   NEXT_PASS (pass_remove_useless_stmts);
   NEXT_PASS (pass_mudflap_1);
