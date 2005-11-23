@@ -17,21 +17,21 @@ char w[16] __attribute__((aligned(16)));
 
 /* Emulate the vspltis? instructions on a 16-byte array of chars.  */
 
-void vspltisb (char *v, char val)
+void vspltisb (char *v, int val)
 {
   int i;
   for (i = 0; i < 16; i++)
     v[i] = val;
 }
 
-void vspltish (char *v, char val)
+void vspltish (char *v, int val)
 {
   int i;
   for (i = 0; i < 16; i += 2)
     v[i] = val >> 7, v[i + 1] = val;
 }
 
-void vspltisw (char *v, char val)
+void vspltisw (char *v, int val)
 {
   int i;
   for (i = 0; i < 16; i += 4)
