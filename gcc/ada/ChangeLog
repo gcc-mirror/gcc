@@ -1,3 +1,7 @@
+2005-11-23  Laurent GUERBY  <laurent@guerby.net>
+
+        * mlib-prj.adb (Build_Library): Initialize Delete.
+
 2005-11-21  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* socket.c: Add extern int h_errno for rtems since networking header

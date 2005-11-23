@@ -1658,7 +1658,7 @@ package body MLib.Prj is
 
             declare
                Dir    : Dir_Type;
-               Delete : Boolean;
+               Delete : Boolean := False;
                Unit   : Unit_Data;
 
                Name : String (1 .. 200);
