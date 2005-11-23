@@ -1,3 +1,15 @@
+2005-11-24  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/24950
+	* expmed.c (store_bit_field): Don't attempt to insv a field
+	larger than the reg.
+
+	Merge from trunk 2005-11-14  Dale Johannesen  <dalej@apple.com>
+	* expmed.c (store_bit_field):  Add offset unconditionally for
+	memory targets.
+	(extract_bit_field):  Don't force extzv or extv operand into
+	a register if field is too big.
+
 2005-11-19  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/24665
