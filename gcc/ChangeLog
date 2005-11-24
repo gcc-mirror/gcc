@@ -1,3 +1,12 @@
+2005-11-24  Richard Guenther  <rguenther@suse.de>
+	Dirk Mueller <dmueller@suse.de>
+
+	PR c++/14024
+	* c-common.h (strict_aliasing_warning): Declare.
+	* c-common.c (strict_aliasing_warning): New function,
+	split out from ...
+	* c-typeck.c (build_c_cast): ... here.
+
 2005-11-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* optabs.c (expand_binop): Use swap_commutative_operands_with_target

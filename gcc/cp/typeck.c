@@ -5011,6 +5011,8 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
   else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
 	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
     {
+      tree sexpr = expr;
+
       if (!c_cast_p)
 	check_for_casting_away_constness (intype, type, error,
 					  "reinterpret_cast");
@@ -5024,6 +5026,11 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	warning (0, "cast from %qT to %qT increases required alignment of "
 		 "target type",
 		 intype, type);
+
+      /* We need to strip nops here, because the frontend likes to
+	 create (int *)&a for array-to-pointer decay, instead of &a[0].  */
+      STRIP_NOPS (sexpr);
+      strict_aliasing_warning (intype, type, sexpr);
 
       return fold_if_not_in_template (build_nop (type, expr));
     }
