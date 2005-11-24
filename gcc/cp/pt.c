@@ -9093,7 +9093,8 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
 		  if (TYPE_ANONYMOUS_P (nt))
 		    error ("%qT is/uses anonymous type", t);
 		  else
-		    error ("%qT uses local type %qT", t, nt);
+		    error ("template argument for %qD uses local type %qT",
+                           tmpl, t);
 		}
 	      result = true;
 	    }
