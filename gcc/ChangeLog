@@ -1,3 +1,62 @@
+2005-11-24  J"orn Rennecke <joern.rennecke@st.com>
+	PR target/21623:
+
+	* regclass.c (FORBIDDEN_INC_DEC_CLASSES): Remove
+	SECONDARY_INPUT_RELOAD_CLASS and SECONDARY_OUTPUT_RELOAD_CLASS tests.
+	(init_fake_stack_mems): Remove HAVE_SECONDARY_RELOADS test.
+	(memory_move_secondary_cost, init_reg_autoinc): Remove
+	SECONDARY_INPUT_RELOAD_CLASS / SECONDARY_OUTPUT_RELOAD_CLASS tests.
+	Replace SECONDARY_{IN,OUT}PUT_RELOAD_CLASS use with
+	secondary_reload_class call.
+	(copy_cost): Likewise.  Add new parameter prev_sri.  Changed all
+	callers.
+	* reload.c (entire file): Remove HAVE_SECONDARY_RELOADS checks.
+	(push_secondary_reload): Use secondary_reload target hook.
+	(secondary_reload_class, scratch_reload_class): New functions.
+	(push_reload): Remove SECONDARY_INPUT_RELOAD_CLASS and
+	SECONDARY_OUTPUT_RELOAD_CLASS tests.  Replace
+	SECONDARY_{IN,OUT}PUT_RELOAD_CLASS use with secondary_reload_class call.
+	* reload.h (HAVE_SECONDARY_RELOADS): Don't define nor test.
+	(secondary_reload_class, scratch_reload_class): Declare.
+	* reload1.c: Include target.h.
+	(reload_adjust_reg_for_temp): New function.
+	(reload_adjust_reg_for_icode): Likewise.
+	(choose_reload_regs): Remove SECONDARY_INPUT_RELOAD_CLASS test.
+	Replace SECONDARY_INPUT_RELOAD_CLASS use with secondary_reload_class
+	call.
+	(emit_input_reload_insns): Likewise.  Rewrite secondary reload checks
+	for inheritance.  Support case when both secondary & tertiary reloads
+	are for intermediate registers.
+	(emit_output_reload_insns): Replace SECONDARY_OUTPUT_RELOAD_CLASS use
+        with secondary_reload_class call.  Support case when both secondary
+	& tertiary reloads are for intermediate registers.
+	* target-def.h (TARGET_SECONDARY_RELOAD): Provide default definition.
+	(TARGET_INITIALIZER) Add TARGET_SECONDARY_RELOAD.
+	* target.h (secondary_reload_info): New struct / typedef.
+	(struct gcc_target): New member secondary_reload.
+	* targhooks.c Include reload.h, optabs.h and recog.h.
+	(default_secondary_reload): New function.
+	* targhooks.h (default_secondary_reload): Declare.
+	* doc/tm.texi: Document secondary_reload target hook.  Update
+	description of SECONDARY_*RELOAD_CLASS and reload_{in,out}<mode>.
+	* doc/md.texi: Likewise.
+
+	* sh-protos.h (sh_secondary_reload): Declare.
+	* sh.c (TARGET_SECONDARY_RELOAD): Override.
+	(sh_secondary_reload): New function.
+	* sh.h (SECONDARY_INOUT_RELOAD_CLASS): Don't define.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Likewise.
+	(SECONDARY_INPUT_RELOAD_CLASS): Likewise.
+	(HAVE_SECONDARY_RELOADS): Define.
+	* sh.md (reload_indf): Rename to:
+	(reload_indf__frn).
+	(reload_outdf): Rename to:
+	(reload_outdf__RnFRm).
+	(reload_insf): Rename to:
+	(reload_insf__frn).
+	(reload_insi): Rename to:
+	(reload_insi__i_fpul).
+
 2005-11-24  Uros Bizjak  <uros@kss-loka.si>
 
 	* configure.ac: Require at least texinfo 4.4.

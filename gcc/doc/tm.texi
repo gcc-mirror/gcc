@@ -2397,32 +2397,114 @@ Don't define this macro unless the target machine has limitations which
 require the macro to do something nontrivial.
 @end defmac
 
-@defmac SECONDARY_RELOAD_CLASS (@var{class}, @var{mode}, @var{x})
-@defmacx SECONDARY_INPUT_RELOAD_CLASS (@var{class}, @var{mode}, @var{x})
-@defmacx SECONDARY_OUTPUT_RELOAD_CLASS (@var{class}, @var{mode}, @var{x})
+@deftypefn {Target Hook} enum reg_class TARGET_SECONDARY_RELOAD (bool @var{in_p}, rtx @var{x}, enum reg_class @var{reload_class}, enum machine_mode @var{reload_mode}, secondary_reload_info *@var{sri})
 Many machines have some registers that cannot be copied directly to or
 from memory or even from other types of registers.  An example is the
 @samp{MQ} register, which on most machines, can only be copied to or
-from general registers, but not memory.  Some machines allow copying all
-registers to and from memory, but require a scratch register for stores
-to some memory locations (e.g., those with symbolic address on the RT,
-and those with certain symbolic address on the SPARC when compiling
-PIC)@.  In some cases, both an intermediate and a scratch register are
-required.
+from general registers, but not memory.  Below, we shall be using the
+term 'intermediate register' when a move operation cannot be performed
+directly, but has to be done by copying the source into the intermediate
+register first, and then copying the intermediate register to the
+destination.  An intermediate register always has the same mode as
+source and destination.  Since it holds the actual value being copied,
+reload might apply optimizations to re-use an intermediate register
+and eliding the copy from the source when it can determine that the
+intermediate register still holds the required value.
 
-You should define these macros to indicate to the reload phase that it may
+Another kind of secondary reload is required on some machines which
+allow copying all registers to and from memory, but require a scratch
+register for stores to some memory locations (e.g., those with symbolic
+address on the RT, and those with certain symbolic address on the SPARC
+when compiling PIC)@.  Scratch registers need not have the same mode
+as the value being copied, and usually hold a different value that
+that being copied.  Special patterns in the md file are needed to
+describe how the copy is performed with the help of the scratch register;
+these patterns also describe the number, register class(es) and mode(s)
+of the scratch register(s).
+
+In some cases, both an intermediate and a scratch register are required.
+
+For input reloads, this target hook is called with nonzero @var{in_p},
+and @var{x} is an rtx that needs to be copied to a register in of class
+@var{reload_class} in @var{reload_mode}.  For output reloads, this target
+hook is called with zero @var{in_p}, and a register of class @var{reload_mode}
+needs to be copied to rtx @var{x} in @var{reload_mode}.
+
+If copying a register of @var{reload_class} from/to @var{x} requires
+an intermediate register, the hook @code{secondary_reload} should
+return the register class required for this intermediate register.
+If no intermediate register is required, it should return NO_REGS.
+If more than one intermediate register is required, describe the one
+that is closest in the copy chain to the reload register.
+
+If scratch registers are needed, you also have to describe how to
+perform the copy from/to the reload register to/from this
+closest intermediate register.  Or if no intermediate register is
+required, but still a scratch register is needed, describe the
+copy  from/to the reload register to/from the reload operand @var{x}.
+
+You do this by setting @code{sri->icode} to the instruction code of a pattern
+in the md file which performs the move.  Operands 0 and 1 are the output
+and input of this copy, respectively.  Operands from operand 2 onward are
+for scratch operands.  These scratch operands must have a mode, and a
+single-register-class
+@c [later: or memory]
+output constraint.
+
+When an intermediate register is used, the @code{secondary_reload}
+hook will be called again to determine how to copy the intermediate
+register to/from the reload operand @var{x}, so your hook must also
+have code to handle the register class of the intermediate operand.
+
+@c [For later: maybe we'll allow multi-alternative reload patterns -
+@c   the port maintainer could name a mov<mode> pattern that has clobbers -
+@c   and match the constraints of input and output to determine the required
+@c   alternative.  A restriction would be that constraints used to match
+@c   against reloads registers would have to be written as register class
+@c   constraints, or we need a new target macro / hook that tells us if an
+@c   arbitrary constraint can match an unknown register of a given class.
+@c   Such a macro / hook would also be useful in other places.]
+
+
+@var{x} might be a pseudo-register or a @code{subreg} of a
+pseudo-register, which could either be in a hard register or in memory.
+Use @code{true_regnum} to find out; it will return @minus{}1 if the pseudo is
+in memory and the hard register number if it is in a register.
+
+Scratch operands in memory (constraint @code{"=m"} / @code{"=&m"}) are
+currently not supported.  For the time being, you will have to continue
+to use @code{SECONDARY_MEMORY_NEEDED} for that purpose.
+
+@code{copy_cost} also uses this target hook to find out how values are
+copied.  If you want it to include some extra cost for the need to allocate
+(a) scratch register(s), set @code{sri->extra_cost} to the additional cost.
+Or if two dependent moves are supposed to have a lower cost than the sum
+of the individual moves due to expected fortuitous scheduling and/or special
+forwarding logic, you can set @code{sri->extra_cost} to a negative amount.
+@end deftypefn
+
+@defmac SECONDARY_RELOAD_CLASS (@var{class}, @var{mode}, @var{x})
+@defmacx SECONDARY_INPUT_RELOAD_CLASS (@var{class}, @var{mode}, @var{x})
+@defmacx SECONDARY_OUTPUT_RELOAD_CLASS (@var{class}, @var{mode}, @var{x})
+These macros are obsolete, new ports should use the target hook 
+@code{TARGET_SECONDARY_RELOAD} instead.
+
+These are obsolete macros, replaced by the @code{TARGET_SECONDARY_RELOAD}
+target hook.  Older ports still define these macros to indicate to the
+reload phase that it may
 need to allocate at least one register for a reload in addition to the
 register to contain the data.  Specifically, if copying @var{x} to a
 register @var{class} in @var{mode} requires an intermediate register,
-you should define @code{SECONDARY_INPUT_RELOAD_CLASS} to return the
+you were supposed to define @code{SECONDARY_INPUT_RELOAD_CLASS} to return the
 largest register class all of whose registers can be used as
 intermediate registers or scratch registers.
 
 If copying a register @var{class} in @var{mode} to @var{x} requires an
 intermediate or scratch register, @code{SECONDARY_OUTPUT_RELOAD_CLASS}
-should be defined to return the largest register class required.  If the
-requirements for input and output reloads are the same, the macro
-@code{SECONDARY_RELOAD_CLASS} should be used instead of defining both
+was supposed to be defined be defined to return the largest register
+class required.  If the
+requirements for input and output reloads were the same, the macro
+@code{SECONDARY_RELOAD_CLASS} should have been used instead of defining both
 macros identically.
 
 The values returned by these macros are often @code{GENERAL_REGS}.
@@ -2432,14 +2514,15 @@ can be directly copied to or from a register of @var{class} in
 macro if it would always return @code{NO_REGS}.
 
 If a scratch register is required (either with or without an
-intermediate register), you should define patterns for
+intermediate register), you were supposed to define patterns for
 @samp{reload_in@var{m}} or @samp{reload_out@var{m}}, as required
-(@pxref{Standard Names}.  These patterns, which will normally be
+(@pxref{Standard Names}.  These patterns, which were normally
 implemented with a @code{define_expand}, should be similar to the
 @samp{mov@var{m}} patterns, except that operand 2 is the scratch
 register.
 
-Define constraints for the reload register and scratch register that
+These patterns need constraints for the reload register and scratch
+register that
 contain a single register class.  If the original reload register (whose
 class is @var{class}) can meet the constraint given in the pattern, the
 value returned by these macros is used for the class of the scratch

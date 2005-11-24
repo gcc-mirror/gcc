@@ -500,6 +500,9 @@ static int hard_regs_intersect_p (HARD_REG_SET *, HARD_REG_SET *);
 #define TARGET_ADJUST_UNROLL_MAX sh_adjust_unroll_max
 #endif
 
+#undef TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD sh_secondary_reload
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Implement TARGET_HANDLE_OPTION.  */
@@ -10670,6 +10673,106 @@ shmedia_prepare_call_address (rtx fnaddr, int is_sibcall)
   else if (! target_reg_operand (fnaddr, Pmode))
     fnaddr = copy_to_mode_reg (Pmode, fnaddr);
   return fnaddr;
+}
+
+enum reg_class
+sh_secondary_reload (bool in_p, rtx x, enum reg_class class,
+		     enum machine_mode mode, secondary_reload_info *sri)
+{
+  if (in_p)
+    {
+      if (REGCLASS_HAS_FP_REG (class)
+	  && ! TARGET_SHMEDIA
+	  && immediate_operand ((x), mode)
+	  && ! ((fp_zero_operand (x) || fp_one_operand (x))
+		&& mode == SFmode && fldi_ok ()))
+	switch (mode)
+	  {
+	  case SFmode:
+	    sri->icode = CODE_FOR_reload_insf__frn;
+	    return NO_REGS;
+	  case DFmode:
+	    sri->icode = CODE_FOR_reload_indf__frn;
+	    return NO_REGS;
+	  case SImode:
+	    /* ??? If we knew that we are in the appropriate mode -
+	       single precision - we could use a reload pattern directly.  */
+	    return FPUL_REGS;
+	  default:
+	    abort ();
+	  }
+      if (class == FPUL_REGS
+          && ((GET_CODE (x) == REG
+               && (REGNO (x) == MACL_REG || REGNO (x) == MACH_REG
+                   || REGNO (x) == T_REG))
+              || GET_CODE (x) == PLUS))
+        return GENERAL_REGS;
+      if (class == FPUL_REGS && immediate_operand (x, mode))
+	{
+	  if (GET_CODE (x) == CONST_INT && CONST_OK_FOR_I08 (INTVAL (x)))
+	    return GENERAL_REGS;
+	  sri->icode = CODE_FOR_reload_insi__i_fpul;
+	  return NO_REGS;
+	}
+      if (class == FPSCR_REGS
+          && ((GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
+              || (GET_CODE (x) == MEM && GET_CODE (XEXP (x, 0)) == PLUS)))
+        return GENERAL_REGS;
+      if (REGCLASS_HAS_FP_REG (class)
+          && TARGET_SHMEDIA
+          && immediate_operand (x, mode)
+          && x != CONST0_RTX (GET_MODE (x))
+          && GET_MODE (x) != V4SFmode)
+        return GENERAL_REGS;
+      if ((mode == QImode || mode == HImode)
+          && TARGET_SHMEDIA && inqhi_operand (x, mode))
+	{
+	  sri->icode = ((mode == QImode)
+			? CODE_FOR_reload_inqi : CODE_FOR_reload_inhi);
+	  return NO_REGS;
+	}
+      if (TARGET_SHMEDIA && class == GENERAL_REGS
+          && (GET_CODE (x) == LABEL_REF || PIC_DIRECT_ADDR_P (x)))
+        return TARGET_REGS;
+    } /* end of input-only processing.  */
+
+  if (((REGCLASS_HAS_FP_REG (class)
+	&& (GET_CODE (x) == REG
+	    && (GENERAL_OR_AP_REGISTER_P (REGNO (x))
+		|| (FP_REGISTER_P (REGNO (x)) && mode == SImode
+		    && TARGET_FMOVD))))
+       || (REGCLASS_HAS_GENERAL_REG (class)
+	   && GET_CODE (x) == REG
+	   && FP_REGISTER_P (REGNO (x))))
+      && ! TARGET_SHMEDIA
+      && (mode == SFmode || mode == SImode))
+    return FPUL_REGS;
+  if ((class == FPUL_REGS
+       || (REGCLASS_HAS_FP_REG (class)
+           && ! TARGET_SHMEDIA && mode == SImode))
+      && (GET_CODE (x) == MEM
+          || (GET_CODE (x) == REG
+              && (REGNO (x) >= FIRST_PSEUDO_REGISTER
+                  || REGNO (x) == T_REG
+                  || system_reg_operand (x, VOIDmode)))))
+    {
+      if (class == FPUL_REGS)
+	return GENERAL_REGS;
+      return FPUL_REGS;
+    }
+  if ((class == TARGET_REGS
+       || (TARGET_SHMEDIA && class == SIBCALL_REGS))
+      && !EXTRA_CONSTRAINT_Csy (x)
+      && (GET_CODE (x) != REG || ! GENERAL_REGISTER_P (REGNO (x))))
+    return GENERAL_REGS;
+  if ((class == MAC_REGS || class == PR_REGS)
+      && GET_CODE (x) == REG && ! GENERAL_REGISTER_P (REGNO (x))
+      && class != REGNO_REG_CLASS (REGNO (x)))
+    return GENERAL_REGS;
+  if (class != GENERAL_REGS && GET_CODE (x) == REG
+      && TARGET_REGISTER_P (REGNO (x)))
+    return GENERAL_REGS;
+  return NO_REGS;
 }
 
 enum sh_divide_strategy_e sh_div_strategy = SH_DIV_STRATEGY_DEFAULT;

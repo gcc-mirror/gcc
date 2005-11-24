@@ -43,6 +43,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "toplev.h"
 #include "except.h"
 #include "tree.h"
+#include "target.h"
 
 /* This file contains the reload pass of the compiler, which is
    run after register allocation has been done.  It checks that
@@ -5540,11 +5541,9 @@ choose_reload_regs (struct insn_chain *chain)
 			     enough.  */
 			  || ((REGISTER_MOVE_COST (mode, last_class, class)
 			       < MEMORY_MOVE_COST (mode, class, 1))
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
-			      && (SECONDARY_INPUT_RELOAD_CLASS (class, mode,
-								last_reg)
+			      && (secondary_reload_class (1, class, mode,
+							  last_reg)
 				  == NO_REGS)
-#endif
 #ifdef SECONDARY_MEMORY_NEEDED
 			      && ! SECONDARY_MEMORY_NEEDED (last_class, class,
 							    mode)
@@ -6205,6 +6204,55 @@ static rtx other_output_reload_insns[MAX_RECOG_OPERANDS];
 static rtx new_spill_reg_store[FIRST_PSEUDO_REGISTER];
 static HARD_REG_SET reg_reloaded_died;
 
+/* Check if *RELOAD_REG is suitable as an intermediate or scratch register
+   of class NEW_CLASS with mode NEW_MODE.  Or alternatively, if alt_reload_reg
+   is nonzero, if that is suitable.  On success, change *RELOAD_REG to the
+   adjusted register, and return true.  Otherwise, return false.  */
+static bool
+reload_adjust_reg_for_temp (rtx *reload_reg, rtx alt_reload_reg,
+			    enum reg_class new_class,
+			    enum machine_mode new_mode)
+
+{
+  rtx reg;
+
+  for (reg = *reload_reg; reg; reg = alt_reload_reg, alt_reload_reg = 0)
+    {
+      unsigned regno = REGNO (reg);
+
+      if (!TEST_HARD_REG_BIT (reg_class_contents[(int) new_class], regno))
+	continue;
+      if (GET_MODE (reg) != new_mode)
+	{
+	  if (!HARD_REGNO_MODE_OK (regno, new_mode))
+	    continue;
+	  if (hard_regno_nregs[regno][new_mode]
+	      > hard_regno_nregs[regno][GET_MODE (reg)])
+	    continue;
+	  reg = reload_adjust_reg_for_mode (reg, new_mode);
+	}
+      *reload_reg = reg;
+      return true;
+    }
+  return false;
+}
+
+/* Check if *RELOAD_REG is suitable as a scratch register for the reload
+   pattern with insn_code ICODE, or alternatively, if alt_reload_reg is
+   nonzero, if that is suitable.  On success, change *RELOAD_REG to the
+   adjusted register, and return true.  Otherwise, return false.  */
+static bool
+reload_adjust_reg_for_icode (rtx *reload_reg, rtx alt_reload_reg,
+			     enum insn_code icode)
+
+{
+  enum reg_class new_class = scratch_reload_class (icode);
+  enum machine_mode new_mode = insn_data[(int) icode].operand[2].mode;
+
+  return reload_adjust_reg_for_temp (reload_reg, alt_reload_reg,
+				     new_class, new_mode);
+}
+
 /* Generate insns to perform reload RL, which is for the insn in CHAIN and
    has the number J.  OLD contains the value to be used as input.  */
 
@@ -6256,7 +6304,6 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
   if (mode == VOIDmode)
     mode = rl->inmode;
 
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
   /* If we need a secondary register for this operation, see if
      the value is already in a register in that class.  Don't
      do this if the secondary register will be used as a scratch
@@ -6269,7 +6316,6 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
       = find_equiv_reg (old, insn,
 			rld[rl->secondary_in_reload].class,
 			-1, NULL, 0, mode);
-#endif
 
   /* If reloading from memory, see if there is a register
      that already holds the same value.  If so, reload from there.
@@ -6306,11 +6352,8 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	       && (REGISTER_MOVE_COST (mode, REGNO_REG_CLASS (regno),
 				       rl->class)
 		   >= MEMORY_MOVE_COST (mode, rl->class, 1)))
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
-	      || (SECONDARY_INPUT_RELOAD_CLASS (rl->class,
-						mode, oldequiv)
+	      || (secondary_reload_class (1, rl->class, mode, oldequiv)
 		  != NO_REGS)
-#endif
 #ifdef SECONDARY_MEMORY_NEEDED
 	      || SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (regno),
 					  rl->class,
@@ -6496,7 +6539,6 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 
   /* We can't do that, so output an insn to load RELOADREG.  */
 
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
   /* If we have a secondary reload, pick up the secondary register
      and icode, if any.  If OLDEQUIV and OLD are different or
      if this is an in-out reload, recompute whether or not we
@@ -6511,11 +6553,13 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
   if (! special && rl->secondary_in_reload >= 0)
     {
       rtx second_reload_reg = 0;
+      rtx third_reload_reg = 0;
       int secondary_reload = rl->secondary_in_reload;
       rtx real_oldequiv = oldequiv;
       rtx real_old = old;
       rtx tmp;
       enum insn_code icode;
+      enum insn_code tertiary_icode = CODE_FOR_nothing;
 
       /* If OLDEQUIV is a pseudo with a MEM, get the real MEM
 	 and similarly for OLD.
@@ -6563,53 +6607,89 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	}
 
       second_reload_reg = rld[secondary_reload].reg_rtx;
+      if (rld[secondary_reload].secondary_in_reload >= 0)
+	{
+	  int tertiary_reload = rld[secondary_reload].secondary_in_reload;
+
+	  third_reload_reg = rld[tertiary_reload].reg_rtx;
+	  tertiary_icode = rld[secondary_reload].secondary_in_icode;
+	  /* We'd have to add more code for quartary reloads.  */
+	  gcc_assert (rld[tertiary_reload].secondary_in_reload < 0);
+	}
       icode = rl->secondary_in_icode;
 
       if ((old != oldequiv && ! rtx_equal_p (old, oldequiv))
 	  || (rl->in != 0 && rl->out != 0))
 	{
-	  enum reg_class new_class
-	    = SECONDARY_INPUT_RELOAD_CLASS (rl->class,
-					    mode, real_oldequiv);
+	  secondary_reload_info sri, sri2;
+	  enum reg_class new_class, new_t_class;
 
-	  if (new_class == NO_REGS)
+	  sri.icode = CODE_FOR_nothing;
+	  sri.prev_sri = NULL;
+	  new_class = targetm.secondary_reload (1, real_oldequiv, rl->class,
+						mode, &sri);
+
+	  if (new_class == NO_REGS && sri.icode == CODE_FOR_nothing)
 	    second_reload_reg = 0;
+	  else if (new_class == NO_REGS)
+	    {
+	      if (reload_adjust_reg_for_icode (&second_reload_reg,
+					       third_reload_reg, sri.icode))
+		icode = sri.icode, third_reload_reg = 0;
+	      else
+		oldequiv = old, real_oldequiv = real_old;
+	    }
+	  else if (sri.icode != CODE_FOR_nothing)
+	    /* We currently lack a way to express this in reloads.  */
+	    gcc_unreachable ();
 	  else
 	    {
-	      enum insn_code new_icode;
-	      enum machine_mode new_mode;
-
-	      if (! TEST_HARD_REG_BIT (reg_class_contents[(int) new_class],
-				       REGNO (second_reload_reg)))
-		oldequiv = old, real_oldequiv = real_old;
-	      else
+	      sri2.icode = CODE_FOR_nothing;
+	      sri2.prev_sri = &sri;
+	      new_t_class = targetm.secondary_reload (1, real_oldequiv,
+						      new_class, mode, &sri);
+	      if (new_t_class == NO_REGS && sri2.icode == CODE_FOR_nothing)
 		{
-		  new_icode = reload_in_optab[(int) mode];
-		  if (new_icode != CODE_FOR_nothing
-		      && ((insn_data[(int) new_icode].operand[0].predicate
-			   && ! ((*insn_data[(int) new_icode].operand[0].predicate)
-				 (reloadreg, mode)))
-			  || (insn_data[(int) new_icode].operand[1].predicate
-			      && ! ((*insn_data[(int) new_icode].operand[1].predicate)
-				    (real_oldequiv, mode)))))
-		    new_icode = CODE_FOR_nothing;
-
-		  if (new_icode == CODE_FOR_nothing)
-		    new_mode = mode;
+		  if (reload_adjust_reg_for_temp (&second_reload_reg,
+						  third_reload_reg,
+						  new_class, mode))
+		    third_reload_reg = 0, tertiary_icode = sri2.icode;
 		  else
-		    new_mode = insn_data[(int) new_icode].operand[2].mode;
-
-		  if (GET_MODE (second_reload_reg) != new_mode)
-		    {
-		      if (!HARD_REGNO_MODE_OK (REGNO (second_reload_reg),
-					       new_mode))
-			oldequiv = old, real_oldequiv = real_old;
-		      else
-			second_reload_reg
-			  = reload_adjust_reg_for_mode (second_reload_reg,
-							new_mode);
-		    }
+		    oldequiv = old, real_oldequiv = real_old;
 		}
+	      else if (new_t_class == NO_REGS && sri2.icode != CODE_FOR_nothing)
+		{
+		  rtx intermediate = second_reload_reg;
+
+		  if (reload_adjust_reg_for_temp (&intermediate, NULL,
+						  new_class, mode)
+		      && reload_adjust_reg_for_icode (&third_reload_reg, NULL,
+						      sri2.icode))
+		    {
+		      second_reload_reg = intermediate;
+		      tertiary_icode = sri2.icode;
+		    }
+		  else
+		    oldequiv = old, real_oldequiv = real_old;
+		}
+	      else if (new_t_class != NO_REGS && sri2.icode == CODE_FOR_nothing)
+		{
+		  rtx intermediate = second_reload_reg;
+
+		  if (reload_adjust_reg_for_temp (&intermediate, NULL,
+						  new_class, mode)
+		      && reload_adjust_reg_for_temp (&third_reload_reg, NULL,
+						      new_t_class, mode))
+		    {
+		      second_reload_reg = intermediate;
+		      tertiary_icode = sri2.icode;
+		    }
+		  else
+		    oldequiv = old, real_oldequiv = real_old;
+		}
+	      else
+		/* This could be handled more intelligently too.  */
+		oldequiv = old, real_oldequiv = real_old;
 	    }
 	}
 
@@ -6624,6 +6704,9 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	{
 	  if (icode != CODE_FOR_nothing)
 	    {
+	      /* We'd have to add extra code to handle this case.  */
+	      gcc_assert (!third_reload_reg);
+
 	      emit_insn (GEN_FCN (icode) (reloadreg, real_oldequiv,
 					  second_reload_reg));
 	      special = 1;
@@ -6632,17 +6715,20 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	    {
 	      /* See if we need a scratch register to load the
 		 intermediate register (a tertiary reload).  */
-	      enum insn_code tertiary_icode
-		= rld[secondary_reload].secondary_in_icode;
-
 	      if (tertiary_icode != CODE_FOR_nothing)
 		{
-		  rtx third_reload_reg
-		    = rld[rld[secondary_reload].secondary_in_reload].reg_rtx;
-
 		  emit_insn ((GEN_FCN (tertiary_icode)
 			      (second_reload_reg, real_oldequiv,
 			       third_reload_reg)));
+		}
+	      else if (third_reload_reg)
+		{
+		  gen_reload (third_reload_reg, real_oldequiv,
+			      rl->opnum,
+			      rl->when_needed);
+		  gen_reload (second_reload_reg, third_reload_reg,
+			      rl->opnum,
+			      rl->when_needed);
 		}
 	      else
 		gen_reload (second_reload_reg, real_oldequiv,
@@ -6653,7 +6739,6 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	    }
 	}
     }
-#endif
 
   if (! special && ! rtx_equal_p (reloadreg, oldequiv))
     {
@@ -6729,8 +6814,6 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
   if (GET_MODE (reloadreg) != mode)
     reloadreg = reload_adjust_reg_for_mode (reloadreg, mode);
 
-#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-
   /* If we need two reload regs, set RELOADREG to the intermediate
      one, since it will be stored into OLD.  We might need a secondary
      register only for an input reload, so check again here.  */
@@ -6738,22 +6821,25 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
   if (rl->secondary_out_reload >= 0)
     {
       rtx real_old = old;
+      int secondary_reload = rl->secondary_out_reload;
+      int tertiary_reload = rld[secondary_reload].secondary_out_reload;
 
       if (REG_P (old) && REGNO (old) >= FIRST_PSEUDO_REGISTER
 	  && reg_equiv_mem[REGNO (old)] != 0)
 	real_old = reg_equiv_mem[REGNO (old)];
 
-      if ((SECONDARY_OUTPUT_RELOAD_CLASS (rl->class,
-					  mode, real_old)
-	   != NO_REGS))
+      if (secondary_reload_class (0, rl->class, mode, real_old) != NO_REGS)
 	{
 	  rtx second_reloadreg = reloadreg;
-	  reloadreg = rld[rl->secondary_out_reload].reg_rtx;
+	  reloadreg = rld[secondary_reload].reg_rtx;
 
 	  /* See if RELOADREG is to be used as a scratch register
 	     or as an intermediate register.  */
 	  if (rl->secondary_out_icode != CODE_FOR_nothing)
 	    {
+	      /* We'd have to add extra code to handle this case.  */
+	      gcc_assert (tertiary_reload < 0);
+
 	      emit_insn ((GEN_FCN (rl->secondary_out_icode)
 			  (real_old, second_reloadreg, reloadreg)));
 	      special = 1;
@@ -6763,17 +6849,19 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
 	      /* See if we need both a scratch and intermediate reload
 		 register.  */
 
-	      int secondary_reload = rl->secondary_out_reload;
 	      enum insn_code tertiary_icode
 		= rld[secondary_reload].secondary_out_icode;
+
+	      /* We'd have to add more code for quartary reloads.  */
+	      gcc_assert (tertiary_reload < 0
+			  || rld[tertiary_reload].secondary_out_reload < 0);
 
 	      if (GET_MODE (reloadreg) != mode)
 		reloadreg = reload_adjust_reg_for_mode (reloadreg, mode);
 
 	      if (tertiary_icode != CODE_FOR_nothing)
 		{
-		  rtx third_reloadreg
-		    = rld[rld[secondary_reload].secondary_out_reload].reg_rtx;
+		  rtx third_reloadreg = rld[tertiary_reload].reg_rtx;
 		  rtx tem;
 
 		  /* Copy primary reload reg to secondary reload reg.
@@ -6799,15 +6887,24 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
 		}
 
 	      else
-		/* Copy between the reload regs here and then to
-		   OUT later.  */
+		{
+		  /* Copy between the reload regs here and then to
+		     OUT later.  */
 
-		gen_reload (reloadreg, second_reloadreg,
-			    rl->opnum, rl->when_needed);
+		  gen_reload (reloadreg, second_reloadreg,
+			      rl->opnum, rl->when_needed);
+		  if (tertiary_reload >= 0)
+		    {
+		      rtx third_reloadreg = rld[tertiary_reload].reg_rtx;
+
+		      gen_reload (third_reloadreg, reloadreg,
+				  rl->opnum, rl->when_needed);
+		      reloadreg = third_reloadreg;
+		    }
+		}
 	    }
 	}
     }
-#endif
 
   /* Output the last reload insn.  */
   if (! special)

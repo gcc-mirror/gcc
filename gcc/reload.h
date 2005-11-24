@@ -30,19 +30,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   SECONDARY_RELOAD_CLASS (CLASS, MODE, X)
 #endif
 
-/* If either macro is defined, show that we need secondary reloads.  */
-#if defined(SECONDARY_INPUT_RELOAD_CLASS) || defined(SECONDARY_OUTPUT_RELOAD_CLASS)
-#define HAVE_SECONDARY_RELOADS
-#endif
-
 /* If MEMORY_MOVE_COST isn't defined, give it a default here.  */
 #ifndef MEMORY_MOVE_COST
-#ifdef HAVE_SECONDARY_RELOADS
 #define MEMORY_MOVE_COST(MODE,CLASS,IN) \
   (4 + memory_move_secondary_cost ((MODE), (CLASS), (IN)))
-#else
-#define MEMORY_MOVE_COST(MODE,CLASS,IN) 4
-#endif
 #endif
 extern int memory_move_secondary_cost (enum machine_mode, enum reg_class, int);
 
@@ -251,6 +242,13 @@ extern void compute_use_by_pseudos (HARD_REG_SET *, regset);
 #endif
 
 /* Functions from reload.c:  */
+
+extern enum reg_class secondary_reload_class (bool, enum reg_class,
+					      enum machine_mode, rtx);
+
+#ifdef GCC_INSN_CODES_H
+extern enum reg_class scratch_reload_class (enum insn_code);
+#endif
 
 /* Return a memory location that will be used to copy X in mode MODE.
    If we haven't already made a location for this mode in this insn,

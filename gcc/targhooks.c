@@ -63,6 +63,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target-def.h"
 #include "ggc.h"
 #include "hard-reg-set.h"
+#include "reload.h"
+#include "optabs.h"
+#include "recog.h"
 
 
 void
@@ -453,6 +456,89 @@ default_internal_arg_pointer (void)
     return copy_to_reg (virtual_incoming_args_rtx);
   else
     return virtual_incoming_args_rtx;
+}
+
+enum reg_class
+default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
+			  enum reg_class reload_class ATTRIBUTE_UNUSED,
+			  enum machine_mode reload_mode ATTRIBUTE_UNUSED,
+			  secondary_reload_info *sri)
+{
+  enum reg_class class = NO_REGS;
+
+  if (sri->prev_sri && sri->prev_sri->t_icode != CODE_FOR_nothing)
+    {
+      sri->icode = sri->prev_sri->t_icode;
+      return NO_REGS;
+    }
+#ifdef SECONDARY_INPUT_RELOAD_CLASS
+  if (in_p)
+    class = SECONDARY_INPUT_RELOAD_CLASS (reload_class, reload_mode, x);
+#endif
+#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
+  if (! in_p)
+    class = SECONDARY_OUTPUT_RELOAD_CLASS (reload_class, reload_mode, x);
+#endif
+  if (class != NO_REGS)
+    {
+      enum insn_code icode = (in_p ? reload_in_optab[(int) reload_mode]
+			      : reload_out_optab[(int) reload_mode]);
+
+      if (icode != CODE_FOR_nothing
+	  && insn_data[(int) icode].operand[in_p].predicate
+	  && ! insn_data[(int) icode].operand[in_p].predicate (x, reload_mode))
+	icode = CODE_FOR_nothing;
+      else if (icode != CODE_FOR_nothing)
+	{
+	  const char *insn_constraint, *scratch_constraint;
+	  char insn_letter, scratch_letter;
+	  enum reg_class insn_class, scratch_class;
+
+	  gcc_assert (insn_data[(int) icode].n_operands == 3);
+	  insn_constraint = insn_data[(int) icode].operand[!in_p].constraint;
+	  if (!*insn_constraint)
+	    insn_class = ALL_REGS;
+	  else
+	    {
+	      if (in_p)
+		{
+		  gcc_assert (*insn_constraint == '=');
+		  insn_constraint++;
+		}
+	      insn_letter = *insn_constraint;
+	      insn_class
+		= (insn_letter == 'r' ? GENERAL_REGS
+		   : REG_CLASS_FROM_CONSTRAINT ((unsigned char) insn_letter,
+						insn_constraint));
+	      gcc_assert (insn_class != NO_REGS);
+	    }
+
+	  scratch_constraint = insn_data[(int) icode].operand[2].constraint;
+	  /* The scratch register's constraint must start with "=&".  */
+	  gcc_assert (scratch_constraint[0] == '='
+		      && scratch_constraint[1] == '&');
+	  scratch_constraint += 2;
+	  scratch_letter = *scratch_constraint;
+	  scratch_class
+	    = (scratch_letter == 'r' ? GENERAL_REGS
+	       : REG_CLASS_FROM_CONSTRAINT ((unsigned char) scratch_letter,
+					    scratch_constraint));
+
+	  if (reg_class_subset_p (reload_class, insn_class))
+	    {
+	      gcc_assert (scratch_class == class);
+	      class = NO_REGS;
+	    }
+	  else
+	    class = insn_class;
+
+        }
+      if (class == NO_REGS)
+	sri->icode = icode;
+      else
+	sri->t_icode = icode;
+    }
+  return class;
 }
 
 #include "gt-targhooks.h"

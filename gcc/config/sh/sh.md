@@ -5845,15 +5845,15 @@ label:
 	      (clobber (scratch:SI))])]
   "")
 
-(define_expand "reload_indf"
-  [(parallel [(set (match_operand:DF 0 "register_operand" "=f")
+(define_expand "reload_indf__frn"
+  [(parallel [(set (match_operand:DF 0 "register_operand" "=a")
 		   (match_operand:DF 1 "immediate_operand" "FQ"))
 	      (use (reg:PSI FPSCR_REG))
 	      (clobber (match_operand:SI 2 "register_operand" "=&z"))])]
   "TARGET_SH1"
   "")
 
-(define_expand "reload_outdf"
+(define_expand "reload_outdf__RnFRm"
   [(parallel [(set (match_operand:DF 0 "register_operand" "=r,f")
 		   (match_operand:DF 1 "register_operand" "af,r"))
 	      (clobber (match_operand:SI 2 "register_operand" "=&y,y"))])]
@@ -6475,7 +6475,7 @@ label:
   [(set_attr "length" "0")
    (set_attr "type" "nil")])
 
-(define_expand "reload_insf"
+(define_expand "reload_insf__frn"
   [(parallel [(set (match_operand:SF 0 "register_operand" "=a")
 		   (match_operand:SF 1 "immediate_operand" "FQ"))
 	      (use (reg:PSI FPSCR_REG))
@@ -6483,7 +6483,7 @@ label:
   "TARGET_SH1"
   "")
 
-(define_expand "reload_insi"
+(define_expand "reload_insi__i_fpul"
   [(parallel [(set (match_operand:SI 0 "fpul_operand" "=y")
 		   (match_operand:SI 1 "immediate_operand" "i"))
 	      (clobber (match_operand:SI 2 "register_operand" "=&z"))])]

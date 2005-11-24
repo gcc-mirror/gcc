@@ -242,11 +242,9 @@ static int output_reloadnum;
       ? RELOAD_FOR_OUTADDR_ADDRESS			\
       : (type)))
 
-#ifdef HAVE_SECONDARY_RELOADS
 static int push_secondary_reload (int, rtx, int, int, enum reg_class,
 				  enum machine_mode, enum reload_type,
-				  enum insn_code *);
-#endif
+				  enum insn_code *, secondary_reload_info *);
 static enum reg_class find_valid_class (enum machine_mode, enum machine_mode,
 					int, unsigned int);
 static int reload_inner_reg_of_subreg (rtx, enum machine_mode, int);
@@ -283,8 +281,6 @@ static int refers_to_mem_for_reload_p (rtx);
 static int refers_to_regno_for_reload_p (unsigned int, unsigned int,
 					 rtx, rtx *);
 
-#ifdef HAVE_SECONDARY_RELOADS
-
 /* Determine if any secondary reloads are needed for loading (if IN_P is
    nonzero) or storing (if IN_P is zero) X to or from a reload register of
    register class RELOAD_CLASS in mode RELOAD_MODE.  If secondary reloads
@@ -298,16 +294,18 @@ static int
 push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 		       enum reg_class reload_class,
 		       enum machine_mode reload_mode, enum reload_type type,
-		       enum insn_code *picode)
+		       enum insn_code *picode, secondary_reload_info *prev_sri)
 {
   enum reg_class class = NO_REGS;
+  enum reg_class scratch_class;
   enum machine_mode mode = reload_mode;
   enum insn_code icode = CODE_FOR_nothing;
-  enum reg_class t_class = NO_REGS;
-  enum machine_mode t_mode = VOIDmode;
-  enum insn_code t_icode = CODE_FOR_nothing;
+  enum insn_code t_icode;
   enum reload_type secondary_type;
   int s_reload, t_reload = -1;
+  const char *scratch_constraint;
+  char letter;
+  secondary_reload_info sri;
 
   if (type == RELOAD_FOR_INPUT_ADDRESS
       || type == RELOAD_FOR_OUTPUT_ADDRESS
@@ -339,36 +337,21 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
       && reg_equiv_mem[REGNO (x)] != 0)
     x = reg_equiv_mem[REGNO (x)];
 
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
-  if (in_p)
-    class = SECONDARY_INPUT_RELOAD_CLASS (reload_class, reload_mode, x);
-#endif
-
-#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-  if (! in_p)
-    class = SECONDARY_OUTPUT_RELOAD_CLASS (reload_class, reload_mode, x);
-#endif
+  sri.icode = CODE_FOR_nothing;
+  sri.prev_sri = prev_sri;
+  class = targetm.secondary_reload (in_p, x, reload_class, reload_mode, &sri);
+  icode = sri.icode;
 
   /* If we don't need any secondary registers, done.  */
-  if (class == NO_REGS)
+  if (class == NO_REGS && icode == CODE_FOR_nothing)
     return -1;
 
-  /* Get a possible insn to use.  If the predicate doesn't accept X, don't
-     use the insn.  */
+  if (class != NO_REGS)
+    t_reload = push_secondary_reload (in_p, x, opnum, optional, class,
+				      reload_mode, type, &t_icode, &sri);
 
-  icode = (in_p ? reload_in_optab[(int) reload_mode]
-	   : reload_out_optab[(int) reload_mode]);
-
-  if (icode != CODE_FOR_nothing
-      && insn_data[(int) icode].operand[in_p].predicate
-      && (! (insn_data[(int) icode].operand[in_p].predicate) (x, reload_mode)))
-    icode = CODE_FOR_nothing;
-
-  /* If we will be using an insn, see if it can directly handle the reload
-     register we will be using.  If it can, the secondary reload is for a
-     scratch register.  If it can't, we will use the secondary reload for
-     an intermediate register and require a tertiary reload for the scratch
-     register.  */
+  /* If we will be using an insn, the secondary reload is for a
+     scratch register.  */
 
   if (icode != CODE_FOR_nothing)
     {
@@ -377,45 +360,29 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 	 in operand 1.  Outputs should have an initial "=", which we must
 	 skip.  */
 
-      enum reg_class insn_class;
+      /* ??? It would be useful to be able to handle only two, or more than
+	 three, operands, but for now we can only handle the case of having
+	 exactly three: output, input and one temp/scratch.  */
+      gcc_assert (insn_data[(int) icode].n_operands == 3);
 
-      if (insn_data[(int) icode].operand[!in_p].constraint[0] == 0)
-	insn_class = ALL_REGS;
-      else
-	{
-	  const char *insn_constraint
-	    = &insn_data[(int) icode].operand[!in_p].constraint[in_p];
-	  char insn_letter = *insn_constraint;
-	  insn_class
-	    = (insn_letter == 'r' ? GENERAL_REGS
-	       : REG_CLASS_FROM_CONSTRAINT ((unsigned char) insn_letter,
-					    insn_constraint));
+      /* ??? We currently have no way to represent a reload that needs
+	 an icode to reload from an intermediate tertiaty reload register.
+	 We should probably have a new field in struct reload to tag a
+	 chain of scratch operand reloads onto.   */
+      gcc_assert (class == NO_REGS);
 
-          gcc_assert (insn_class != NO_REGS);
-	  gcc_assert (!in_p
-		      || insn_data[(int) icode].operand[!in_p].constraint[0]
-			 == '=');
-	}
+      scratch_constraint = insn_data[(int) icode].operand[2].constraint;
+      gcc_assert (*scratch_constraint == '=');
+      scratch_constraint++;
+      if (*scratch_constraint == '&')
+	scratch_constraint++;
+      letter = *scratch_constraint;
+      scratch_class = (letter == 'r' ? GENERAL_REGS
+		       : REG_CLASS_FROM_CONSTRAINT ((unsigned char) letter,
+						    insn_constraint));
 
-      /* The scratch register's constraint must start with "=&".  */
-      gcc_assert (insn_data[(int) icode].operand[2].constraint[0] == '='
-		  && insn_data[(int) icode].operand[2].constraint[1] == '&');
-
-      if (reg_class_subset_p (reload_class, insn_class))
-	mode = insn_data[(int) icode].operand[2].mode;
-      else
-	{
-	  const char *t_constraint
-	    = &insn_data[(int) icode].operand[2].constraint[2];
-	  char t_letter = *t_constraint;
-	  class = insn_class;
-	  t_mode = insn_data[(int) icode].operand[2].mode;
-	  t_class = (t_letter == 'r' ? GENERAL_REGS
-		     : REG_CLASS_FROM_CONSTRAINT ((unsigned char) t_letter,
-						  t_constraint));
-	  t_icode = icode;
-	  icode = CODE_FOR_nothing;
-	}
+      class = scratch_class;
+      mode = insn_data[(int) icode].operand[2].mode;
     }
 
   /* This case isn't valid, so fail.  Reload is allowed to use the same
@@ -434,68 +401,6 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 
   gcc_assert (!in_p || class != reload_class || icode != CODE_FOR_nothing
 	      || t_icode != CODE_FOR_nothing);
-
-  /* If we need a tertiary reload, see if we have one we can reuse or else
-     make a new one.  */
-
-  if (t_class != NO_REGS)
-    {
-      for (t_reload = 0; t_reload < n_reloads; t_reload++)
-	if (rld[t_reload].secondary_p
-	    && (reg_class_subset_p (t_class, rld[t_reload].class)
-		|| reg_class_subset_p (rld[t_reload].class, t_class))
-	    && ((in_p && rld[t_reload].inmode == t_mode)
-		|| (! in_p && rld[t_reload].outmode == t_mode))
-	    && ((in_p && (rld[t_reload].secondary_in_icode
-			  == CODE_FOR_nothing))
-		|| (! in_p &&(rld[t_reload].secondary_out_icode
-			      == CODE_FOR_nothing)))
-	    && (SMALL_REGISTER_CLASS_P (t_class) || SMALL_REGISTER_CLASSES)
-	    && MERGABLE_RELOADS (secondary_type,
-				 rld[t_reload].when_needed,
-				 opnum, rld[t_reload].opnum))
-	  {
-	    if (in_p)
-	      rld[t_reload].inmode = t_mode;
-	    if (! in_p)
-	      rld[t_reload].outmode = t_mode;
-
-	    if (reg_class_subset_p (t_class, rld[t_reload].class))
-	      rld[t_reload].class = t_class;
-
-	    rld[t_reload].opnum = MIN (rld[t_reload].opnum, opnum);
-	    rld[t_reload].optional &= optional;
-	    rld[t_reload].secondary_p = 1;
-	    if (MERGE_TO_OTHER (secondary_type, rld[t_reload].when_needed,
-				opnum, rld[t_reload].opnum))
-	      rld[t_reload].when_needed = RELOAD_OTHER;
-	  }
-
-      if (t_reload == n_reloads)
-	{
-	  /* We need to make a new tertiary reload for this register class.  */
-	  rld[t_reload].in = rld[t_reload].out = 0;
-	  rld[t_reload].class = t_class;
-	  rld[t_reload].inmode = in_p ? t_mode : VOIDmode;
-	  rld[t_reload].outmode = ! in_p ? t_mode : VOIDmode;
-	  rld[t_reload].reg_rtx = 0;
-	  rld[t_reload].optional = optional;
-	  rld[t_reload].inc = 0;
-	  /* Maybe we could combine these, but it seems too tricky.  */
-	  rld[t_reload].nocombine = 1;
-	  rld[t_reload].in_reg = 0;
-	  rld[t_reload].out_reg = 0;
-	  rld[t_reload].opnum = opnum;
-	  rld[t_reload].when_needed = secondary_type;
-	  rld[t_reload].secondary_in_reload = -1;
-	  rld[t_reload].secondary_out_reload = -1;
-	  rld[t_reload].secondary_in_icode = CODE_FOR_nothing;
-	  rld[t_reload].secondary_out_icode = CODE_FOR_nothing;
-	  rld[t_reload].secondary_p = 1;
-
-	  n_reloads++;
-	}
-    }
 
   /* See if we can reuse an existing secondary reload.  */
   for (s_reload = 0; s_reload < n_reloads; s_reload++)
@@ -581,7 +486,58 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
   *picode = icode;
   return s_reload;
 }
-#endif /* HAVE_SECONDARY_RELOADS */
+
+/* If a secondary reload is needed, return its class.  If both an intermediate
+   register and a scratch register is needed, we return the class of the
+   intermediate register.  */
+enum reg_class
+secondary_reload_class (bool in_p, enum reg_class class,
+			enum machine_mode mode, rtx x)
+{
+  enum insn_code icode;
+  secondary_reload_info sri;
+
+  sri.icode = CODE_FOR_nothing;
+  sri.prev_sri = NULL;
+  class = targetm.secondary_reload (in_p, x, class, mode, &sri);
+  icode = sri.icode;
+
+  /* If there are no secondary reloads at all, we return NO_REGS.
+     If an intermediate register is needed, we return its class.  */
+  if (icode == CODE_FOR_nothing || class != NO_REGS)
+    return class;
+
+  /* No intermediate register is needed, but we have a special reload
+     pattern, which we assume for now needs a scratch register.  */
+  return scratch_reload_class (icode);
+}
+
+/* ICODE is the insn_code of a reload pattern.  Check that it has exactly
+   three operands, verify that operand 2 is an output operand, and return
+   its register class.
+   ??? We'd like to be able to handle any pattern with at least 2 operands,
+   for zero or more scratch registers, but that needs more infrastructure.  */
+enum reg_class
+scratch_reload_class (enum insn_code icode)
+{
+  const char *scratch_constraint;
+  char scratch_letter;
+  enum reg_class class;
+
+  gcc_assert (insn_data[(int) icode].n_operands == 3);
+  scratch_constraint = insn_data[(int) icode].operand[2].constraint;
+  gcc_assert (*scratch_constraint == '=');
+  scratch_constraint++;
+  if (*scratch_constraint == '&')
+    scratch_constraint++;
+  scratch_letter = *scratch_constraint;
+  if (scratch_letter == 'r')
+    return GENERAL_REGS;
+  class = REG_CLASS_FROM_CONSTRAINT ((unsigned char) scratch_letter,
+				     scratch_constraint);
+  gcc_assert (class != NO_REGS);
+  return class;
+}
 
 #ifdef SECONDARY_MEMORY_NEEDED
 
@@ -1058,13 +1014,10 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 		       != (int) hard_regno_nregs[REGNO (SUBREG_REG (in))]
 						[GET_MODE (SUBREG_REG (in))]))
 		  || ! HARD_REGNO_MODE_OK (subreg_regno (in), inmode)))
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
-	  || (SECONDARY_INPUT_RELOAD_CLASS (class, inmode, in) != NO_REGS
-	      && (SECONDARY_INPUT_RELOAD_CLASS (class,
-						GET_MODE (SUBREG_REG (in)),
-						SUBREG_REG (in))
+	  || (secondary_reload_class (1, class, inmode, in) != NO_REGS
+	      && (secondary_reload_class (1, class, GET_MODE (SUBREG_REG (in)),
+					  SUBREG_REG (in))
 		  == NO_REGS))
-#endif
 #ifdef CANNOT_CHANGE_MODE_CLASS
 	  || (REG_P (SUBREG_REG (in))
 	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
@@ -1154,13 +1107,10 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 		       != (int) hard_regno_nregs[REGNO (SUBREG_REG (out))]
 						[GET_MODE (SUBREG_REG (out))]))
 		  || ! HARD_REGNO_MODE_OK (subreg_regno (out), outmode)))
-#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-	  || (SECONDARY_OUTPUT_RELOAD_CLASS (class, outmode, out) != NO_REGS
-	      && (SECONDARY_OUTPUT_RELOAD_CLASS (class,
-						 GET_MODE (SUBREG_REG (out)),
-						 SUBREG_REG (out))
+	  || (secondary_reload_class (0, class, outmode, out) != NO_REGS
+	      && (secondary_reload_class (0, class, GET_MODE (SUBREG_REG (out)),
+					  SUBREG_REG (out))
 		  == NO_REGS))
-#endif
 #ifdef CANNOT_CHANGE_MODE_CLASS
 	  || (REG_P (SUBREG_REG (out))
 	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
@@ -1310,19 +1260,14 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	 and IN or CLASS and OUT.  Get the icode and push any required reloads
 	 needed for each of them if so.  */
 
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
       if (in != 0)
 	secondary_in_reload
 	  = push_secondary_reload (1, in, opnum, optional, class, inmode, type,
-				   &secondary_in_icode);
-#endif
-
-#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
+				   &secondary_in_icode, NULL);
       if (out != 0 && GET_CODE (out) != SCRATCH)
 	secondary_out_reload
 	  = push_secondary_reload (0, out, opnum, optional, class, outmode,
-				   type, &secondary_out_icode);
-#endif
+				   type, &secondary_out_icode, NULL);
 
       /* We found no existing reload suitable for re-use.
 	 So add an additional reload.  */

@@ -52,6 +52,21 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 struct stdarg_info;
 
+/* The struct used by the secondary_reload target hook.  */
+typedef struct secondary_reload_info
+{
+  /* icode is actually an enum insn_code, but we don't want to force every
+     file that includes target.h to include optabs.h .  */
+  int icode;
+  int extra_cost; /* Cost for using (a) scratch register(s) to be taken
+		     into account by copy_cost.  */
+  /* The next two members are for the use of the backward
+     compatibility hook.  */
+  struct secondary_reload_info *prev_sri;
+  int t_icode; /* Actually an enum insn_code - see above.  */
+} secondary_reload_info;
+
+
 struct gcc_target
 {
   /* Functions that output assembler for the target.  */
@@ -630,6 +645,11 @@ struct gcc_target
   /* Return the diagnostic message string if the binary operation OP
      is not permitted on TYPE1 and TYPE2, NULL otherwise.  */
   const char *(*invalid_binary_op) (int op, tree type1, tree type2);
+
+  /* Return the class for a secondary reload, and fill in extra information.  */
+  enum reg_class (*secondary_reload) (bool, rtx, enum reg_class,
+				      enum machine_mode,
+				      struct secondary_reload_info *);
 
   /* Functions specific to the C++ frontend.  */
   struct cxx {
