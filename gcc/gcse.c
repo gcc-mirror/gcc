@@ -1700,10 +1700,15 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
       unsigned int regno = REGNO (dest);
       rtx tmp;
 
-      /* If this is a single set and we are doing constant propagation,
-	 see if a REG_NOTE shows this equivalent to a constant.  */
-      if (table->set_p && (note = find_reg_equal_equiv_note (insn)) != 0
-	  && gcse_constant_p (XEXP (note, 0)))
+      /* See if a REG_NOTE shows this equivalent to a simpler expression.
+	 This allows us to do a single GCSE pass and still eliminate
+	 redundant constants, addresses or other expressions that are
+	 constructed with multiple instructions.  */
+      note = find_reg_equal_equiv_note (insn);
+      if (note != 0
+	  && (table->set_p
+	      ? gcse_constant_p (XEXP (note, 0))
+	      : want_to_gcse_p (XEXP (note, 0))))
 	src = XEXP (note, 0), pat = gen_rtx_SET (VOIDmode, dest, src);
 
       /* Only record sets of pseudo-regs in the hash table.  */
@@ -1724,8 +1729,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
 	     REG_EQUIV notes and if the argument slot is used somewhere
 	     explicitly, it means address of parameter has been taken,
 	     so we should not extend the lifetime of the pseudo.  */
-	  && ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) == 0
-	      || ! MEM_P (XEXP (note, 0))))
+	  && (note == NULL_RTX || ! MEM_P (XEXP (note, 0))))
 	{
 	  /* An expression is not anticipatable if its operands are
 	     modified before this insn or if this is not the only SET in
