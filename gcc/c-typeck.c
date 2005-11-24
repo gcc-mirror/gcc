@@ -1859,16 +1859,10 @@ build_array_ref (tree array, tree index)
       return error_mark_node;
     }
 
-  /* Subscripting with type char is likely to lose on a machine where
-     chars are signed.  So warn on any machine, but optionally.  Don't
-     warn for unsigned char since that type is safe.  Don't warn for
-     signed char because anyone who uses that must have done so
-     deliberately.  ??? Existing practice has also been to warn only
-     when the char index is syntactically the index, not for
-     char[array].  */
-  if (!swapped
-      && TYPE_MAIN_VARIANT (TREE_TYPE (index)) == char_type_node)
-    warning (OPT_Wchar_subscripts, "array subscript has type %<char%>");
+  /* ??? Existing practice has been to warn only when the char
+     index is syntactically the index, not for char[array].  */
+  if (!swapped)
+     warn_array_subscript_with_type_char (index);
 
   /* Apply default promotions *after* noticing character types.  */
   index = default_conversion (index);

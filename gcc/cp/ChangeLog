@@ -1,3 +1,9 @@
+2005-11-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/21667
+	* typeck.c (build_array_ref): Avoid code duplicate.  Use common
+	C/C++ diagnostic function warn_array_subscript_with_type_char. 
+
 2005-11-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/22238
