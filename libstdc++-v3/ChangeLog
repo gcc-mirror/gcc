@@ -1,3 +1,9 @@
+2005-11-23  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24975 (basic_string)
+	* include/bits/basic_string.h (_Rep::_S_empty_rep): Avoid
+	strict-aliasing warnings.
+
 2005-11-22  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24975
