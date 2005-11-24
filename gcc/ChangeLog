@@ -1,4 +1,13 @@
 2005-11-24  J"orn Rennecke <joern.rennecke@st.com>
+
+	* caller-save.c: (this_insn_sets): Move into:
+	(save_call_clobbered_regs).
+	(mark_set_regs): Get this_insn_sets from data.
+
+	(save_call_clobbered_regs): Take sets of the return value by
+	sibcalls into account.
+
+2005-11-24  J"orn Rennecke <joern.rennecke@st.com>
 	PR target/21623:
 
 	* regclass.c (FORBIDDEN_INC_DEC_CLASSES): Remove
