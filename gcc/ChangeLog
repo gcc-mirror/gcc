@@ -1,5 +1,17 @@
 2005-11-24  Ben Elliston  <bje@au.ibm.com>
 
+	* machmode.h (CLASS_HAS_WIDER_MODES_P): New macro.
+	* optabs.c (expand_binop): Use CLASS_HAS_WIDER_MODES_P, improve
+	formatting.
+	(expand_twoval_unop): Likewise.
+	(widen_clz): Likewise.
+	(expand_parity): Likewise.
+	(expand_unop): Likewise.
+	(emit_cmp_and_jmp_insn_1): Likewise.
+	(prepare_float_lib_cmp): Likewise.
+
+2005-11-24  Ben Elliston  <bje@au.ibm.com>
+
 	* optabs.c (prepare_cmp_insn): Use SCALAR_FLOAT_MODE_P.
 	Remove unused `class' variable.
 
