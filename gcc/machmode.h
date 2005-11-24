@@ -76,6 +76,12 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 #define SCALAR_FLOAT_MODE_P(MODE)		\
   (GET_MODE_CLASS (MODE) == MODE_FLOAT)
 
+/* Nonzero if CLASS modes can be widened.  */
+#define CLASS_HAS_WIDER_MODES_P(CLASS)         \
+  (CLASS == MODE_INT                           \
+   || CLASS == MODE_FLOAT                      \
+   || CLASS == MODE_COMPLEX_FLOAT)
+
 /* Get the size in bytes and bits of an object of mode MODE.  */
 
 extern CONST_MODE_SIZE unsigned char mode_size[NUM_MACHINE_MODES];
