@@ -1,3 +1,7 @@
+2005-10-24  Kean Johnston  <jkj@sco.com>
+
+	* config.sub, config.guess: Sync from upstream sources.
+
 2005-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/18939
