@@ -1,3 +1,7 @@
+2005-10-24  Kean Johnston  <jkj@sco.com>
+
+	* config.sub, config.guess: Sync from upstream sources.
+
 2005-11-18  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* ltcf-c.sh (whole_archive_flag_spec): Remove '-all_load $convenience'

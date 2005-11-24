@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
-timestamp='2005-07-08'
+timestamp='2005-11-13'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -171,6 +171,10 @@ case $os in
 	-hiux*)
 		os=-hiuxwe2
 		;;
+	-sco6)
+		os=-sco5v6
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
+		;;
 	-sco5)
 		os=-sco3.2v5
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
@@ -184,6 +188,10 @@ case $os in
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
 		;;
 	-sco3.2v[4-9]*)
+		# Don't forget version if it is 3.2v4 or newer.
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
+		;;
+	-sco5v6*)
 		# Don't forget version if it is 3.2v4 or newer.
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
 		;;
