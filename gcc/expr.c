@@ -7855,7 +7855,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 				     TREE_OPERAND (subexp1, 0),
 				     NULL_RTX, &op1, &op0, 0);
 
-		  goto binop2;
+		  goto binop3;
 		}
 	    }
 	}
