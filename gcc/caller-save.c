@@ -83,10 +83,6 @@ static int n_regs_saved;
    insn.  */
 static HARD_REG_SET referenced_regs;
 
-/* Computed in mark_set_regs, holds all registers set by the current
-   instruction.  */
-static HARD_REG_SET this_insn_sets;
-
 
 static void mark_set_regs (rtx, rtx, void *);
 static void mark_referenced_regs (rtx);
@@ -370,6 +366,10 @@ save_call_clobbered_regs (void)
   struct insn_chain *chain, *next;
   enum machine_mode save_mode [FIRST_PSEUDO_REGISTER];
 
+  /* Computed in mark_set_regs, holds all registers set by the current
+     instruction.  */
+  HARD_REG_SET this_insn_sets;
+
   CLEAR_HARD_REG_SET (hard_regs_saved);
   n_regs_saved = 0;
 
@@ -448,7 +448,12 @@ save_call_clobbered_regs (void)
 		 multi-hard-reg pseudo; then the pseudo is considered live
 		 during the call, but the subreg that is set isn't.  */
 	      CLEAR_HARD_REG_SET (this_insn_sets);
-	      note_stores (PATTERN (insn), mark_set_regs, NULL);
+	      note_stores (PATTERN (insn), mark_set_regs, &this_insn_sets);
+	      /* Sibcalls are considered to set the return value,
+		 compare flow.c:propagate_one_insn.  */
+	      if (SIBLING_CALL_P (insn) && current_function_return_rtx)
+		mark_set_regs (current_function_return_rtx, NULL_RTX,
+			       &this_insn_sets);
 
 	      /* Compute which hard regs must be saved before this call.  */
 	      AND_COMPL_HARD_REG_SET (hard_regs_to_save, call_fixed_reg_set);
@@ -484,16 +489,17 @@ save_call_clobbered_regs (void)
     }
 }
 
-/* Here from note_stores when an insn stores a value in a register.
+/* Here from note_stores, or directly from save_call_clobbered_regs, when
+   an insn stores a value in a register.
    Set the proper bit or bits in this_insn_sets.  All pseudos that have
    been assigned hard regs have had their register number changed already,
    so we can ignore pseudos.  */
 static void
-mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED,
-	       void *data ATTRIBUTE_UNUSED)
+mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *data)
 {
   int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);
+  HARD_REG_SET *this_insn_sets = data;
 
   if (GET_CODE (reg) == SUBREG)
     {
@@ -511,7 +517,7 @@ mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED,
   endregno = regno + hard_regno_nregs[regno][mode];
 
   for (i = regno; i < endregno; i++)
-    SET_HARD_REG_BIT (this_insn_sets, i);
+    SET_HARD_REG_BIT (*this_insn_sets, i);
 }
 
 /* Here from note_stores when an insn stores a value in a register.
