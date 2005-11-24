@@ -165,6 +165,10 @@ extern int shmedia_cleanup_truncate (rtx *, void *);
 
 extern int sh_contains_memref_p (rtx);
 extern rtx shmedia_prepare_call_address (rtx fnaddr, int is_sibcall);
+struct secondary_reload_info;
+extern enum reg_class sh_secondary_reload (bool, rtx, enum reg_class,
+					   enum machine_mode,
+					   struct secondary_reload_info *);
 
 #endif /* ! GCC_SH_PROTOS_H */
 

@@ -69,3 +69,6 @@ extern const char *hook_invalid_arg_for_unprototyped_fn
 extern bool hook_bool_rtx_commutative_p (rtx, int);
 extern rtx default_function_value (tree, tree, bool);
 extern rtx default_internal_arg_pointer (void);
+extern enum reg_class default_secondary_reload (bool, rtx, enum reg_class,
+						enum machine_mode,
+						secondary_reload_info *);

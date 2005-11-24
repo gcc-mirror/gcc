@@ -46,6 +46,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "ggc.h"
 #include "timevar.h"
 #include "hashtab.h"
+#include "target.h"
 
 static void init_reg_sets_1 (void);
 static void init_reg_autoinc (void);
@@ -53,11 +54,10 @@ static void init_reg_autoinc (void);
 /* If we have auto-increment or auto-decrement and we can have secondary
    reloads, we are not allowed to use classes requiring secondary
    reloads for pseudos auto-incremented since reload can't handle it.  */
-
-#ifdef AUTO_INC_DEC
-#if defined(SECONDARY_INPUT_RELOAD_CLASS) || defined(SECONDARY_OUTPUT_RELOAD_CLASS)
+/* We leave it to target hooks to decide if we have secondary reloads, so
+   assume that we might have them.  */
+#if defined(AUTO_INC_DEC) /* */
 #define FORBIDDEN_INC_DEC_CLASSES
-#endif
 #endif
 
 /* Register tables used by many passes.  */
@@ -597,17 +597,14 @@ init_regs (void)
 void
 init_fake_stack_mems (void)
 {
-#ifdef HAVE_SECONDARY_RELOADS
   {
     int i;
 
     for (i = 0; i < MAX_MACHINE_MODE; i++)
       top_of_stack[i] = gen_rtx_MEM (i, stack_pointer_rtx);
   }
-#endif
 }
 
-#ifdef HAVE_SECONDARY_RELOADS
 
 /* Compute extra cost of moving registers to/from memory due to reloads.
    Only needed if secondary reloads are required for memory moves.  */
@@ -622,22 +619,7 @@ memory_move_secondary_cost (enum machine_mode mode, enum reg_class class, int in
   rtx mem ATTRIBUTE_UNUSED = top_of_stack[(int) mode];
 
 
-  if (in)
-    {
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
-      altclass = SECONDARY_INPUT_RELOAD_CLASS (class, mode, mem);
-#else
-      altclass = NO_REGS;
-#endif
-    }
-  else
-    {
-#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-      altclass = SECONDARY_OUTPUT_RELOAD_CLASS (class, mode, mem);
-#else
-      altclass = NO_REGS;
-#endif
-    }
+  altclass = secondary_reload_class (in ? 1 : 0, class, mode, mem);
 
   if (altclass == NO_REGS)
     return 0;
@@ -661,7 +643,6 @@ memory_move_secondary_cost (enum machine_mode mode, enum reg_class class, int in
      secondary reload.  */
   return memory_move_secondary_cost (mode, altclass, in) + partial_cost;
 }
-#endif
 
 /* Return a machine mode that is legitimate for hard reg REGNO and large
    enough to save nregs.  If we can't find one, return VOIDmode.
@@ -878,7 +859,8 @@ static void dump_regclass (FILE *);
 static void record_reg_classes (int, int, rtx *, enum machine_mode *,
 				const char **, rtx, struct costs *,
 				struct reg_pref *);
-static int copy_cost (rtx, enum machine_mode, enum reg_class, int);
+static int copy_cost (rtx, enum machine_mode, enum reg_class, int,
+		      secondary_reload_info *);
 static void record_address_regs (rtx, enum reg_class, int);
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 static int auto_inc_dec_reg_p (rtx, enum machine_mode);
@@ -1175,6 +1157,8 @@ init_reg_autoinc (void)
 		 m = (enum machine_mode) ((int) m + 1))
 	      if (HARD_REGNO_MODE_OK (j, m))
 		{
+		  enum reg_class base_class = MODE_BASE_REG_CLASS (VOIDmode);
+
 		  PUT_MODE (r, m);
 
 		  /* If a register is not directly suitable for an
@@ -1182,21 +1166,8 @@ init_reg_autoinc (void)
 		     requires secondary reloads, disallow its class from
 		     being used in such addresses.  */
 
-		  if ((0
-#ifdef SECONDARY_RELOAD_CLASS
-		       || (SECONDARY_RELOAD_CLASS (MODE_BASE_REG_CLASS (VOIDmode), m, r)
-			   != NO_REGS)
-#else
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
-		       || (SECONDARY_INPUT_RELOAD_CLASS (MODE_BASE_REG_CLASS (VOIDmode), m, r)
-			   != NO_REGS)
-#endif
-#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-		       || (SECONDARY_OUTPUT_RELOAD_CLASS (MODE_BASE_REG_CLASS (VOIDmode), m, r)
-			   != NO_REGS)
-#endif
-#endif
-		       )
+		  if ((secondary_reload_class (1, base_class, m, r)
+		       || secondary_reload_class (1, base_class, m, r))
 		      && ! auto_inc_dec_reg_p (r, m))
 		    forbidden_inc_dec_class[i] = 1;
 		}
@@ -1473,7 +1444,10 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		     operand to the register used for the other operand.  */
 
 		  else if (classes[j] != NO_REGS)
-		    alt_cost += copy_cost (op, mode, classes[j], 1), win = 1;
+		    {
+		      alt_cost += copy_cost (op, mode, classes[j], 1, NULL);
+		      win = 1;
+		    }
 		}
 	      else if (!REG_P (ops[j])
 		       || REGNO (ops[j]) < FIRST_PSEUDO_REGISTER)
@@ -1491,7 +1465,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		     operand.  */
 
 		  else
-		    alt_cost += copy_cost (ops[j], mode, classes[j], 1);
+		    alt_cost += copy_cost (ops[j], mode, classes[j], 1, NULL);
 		}
 	      else
 		{
@@ -1777,10 +1751,10 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	  else if (classes[i] != NO_REGS)
 	    {
 	      if (recog_data.operand_type[i] != OP_OUT)
-		alt_cost += copy_cost (op, mode, classes[i], 1);
+		alt_cost += copy_cost (op, mode, classes[i], 1, NULL);
 
 	      if (recog_data.operand_type[i] != OP_IN)
-		alt_cost += copy_cost (op, mode, classes[i], 0);
+		alt_cost += copy_cost (op, mode, classes[i], 0, NULL);
 	    }
 
 	  /* The only other way this alternative can be used is if this is a
@@ -1878,12 +1852,11 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
    X must not be a pseudo.  */
 
 static int
-copy_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
-	   enum reg_class class, int to_p ATTRIBUTE_UNUSED)
+copy_cost (rtx x, enum machine_mode mode, enum reg_class class, int to_p,
+	   secondary_reload_info *prev_sri)
 {
-#ifdef HAVE_SECONDARY_RELOADS
   enum reg_class secondary_class = NO_REGS;
-#endif
+  secondary_reload_info sri;
 
   /* If X is a SCRATCH, there is actually nothing to move since we are
      assuming optimal allocation.  */
@@ -1894,40 +1867,33 @@ copy_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
   /* Get the class we will actually use for a reload.  */
   class = PREFERRED_RELOAD_CLASS (x, class);
 
-#ifdef HAVE_SECONDARY_RELOADS
-  /* If we need a secondary reload (we assume here that we are using
-     the secondary reload as an intermediate, not a scratch register), the
+  /* If we need a secondary reload for an intermediate, the
      cost is that to load the input into the intermediate register, then
-     to copy them.  We use a special value of TO_P to avoid recursion.  */
+     to copy it.  */
 
-#ifdef SECONDARY_INPUT_RELOAD_CLASS
-  if (to_p == 1)
-    secondary_class = SECONDARY_INPUT_RELOAD_CLASS (class, mode, x);
-#endif
-
-#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-  if (! to_p)
-    secondary_class = SECONDARY_OUTPUT_RELOAD_CLASS (class, mode, x);
-#endif
+  sri.prev_sri = prev_sri;
+  sri.extra_cost = 0;
+  secondary_class = targetm.secondary_reload (to_p, x, class, mode, &sri);
 
   if (secondary_class != NO_REGS)
     return (move_cost[mode][(int) secondary_class][(int) class]
-	    + copy_cost (x, mode, secondary_class, 2));
-#endif  /* HAVE_SECONDARY_RELOADS */
+	    + sri.extra_cost
+	    + copy_cost (x, mode, secondary_class, to_p, &sri));
 
   /* For memory, use the memory move cost, for (hard) registers, use the
      cost to move between the register classes, and use 2 for everything
      else (constants).  */
 
   if (MEM_P (x) || class == NO_REGS)
-    return MEMORY_MOVE_COST (mode, class, to_p);
+    return sri.extra_cost + MEMORY_MOVE_COST (mode, class, to_p);
 
   else if (REG_P (x))
-    return move_cost[mode][(int) REGNO_REG_CLASS (REGNO (x))][(int) class];
+    return (sri.extra_cost
+	    + move_cost[mode][(int) REGNO_REG_CLASS (REGNO (x))][(int) class]);
 
   else
     /* If this is a constant, we may eventually want to call rtx_cost here.  */
-    return COSTS_N_INSNS (1);
+    return sri.extra_cost + COSTS_N_INSNS (1);
 }
 
 /* Record the pseudo registers we must reload into hard registers

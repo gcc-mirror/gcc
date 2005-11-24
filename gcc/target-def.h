@@ -480,6 +480,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_HANDLE_PRAGMA_EXTERN_PREFIX 0
 #endif
 
+#ifndef TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD default_secondary_reload
+#endif
+
 
 /* C++ specific.  */
 #ifndef TARGET_CXX_GUARD_TYPE
@@ -609,6 +613,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_INVALID_CONVERSION,			\
   TARGET_INVALID_UNARY_OP,			\
   TARGET_INVALID_BINARY_OP,			\
+  TARGET_SECONDARY_RELOAD,			\
   TARGET_CXX,					\
   TARGET_UNWIND_TABLES_DEFAULT,			\
   TARGET_HAVE_NAMED_SECTIONS,			\

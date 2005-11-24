@@ -5191,9 +5191,7 @@ init_optabs (void)
       sync_lock_test_and_set[i] = CODE_FOR_nothing;
       sync_lock_release[i] = CODE_FOR_nothing;
 
-#ifdef HAVE_SECONDARY_RELOADS
       reload_in_optab[i] = reload_out_optab[i] = CODE_FOR_nothing;
-#endif
     }
 
   /* Fill in the optabs with the insns we support.  */
