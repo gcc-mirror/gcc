@@ -998,6 +998,30 @@ expand_simple_binop (enum machine_mode mode, enum rtx_code code, rtx op0,
   return expand_binop (mode, binop, op0, op1, target, unsignedp, methods);
 }
 
+/* Return whether OP0 and OP1 should be swapped when expanding a commutative
+   binop.  Order them according to commutative_operand_precedence and, if
+   possible, try to put TARGET or a pseudo first.  */
+static bool
+swap_commutative_operands_with_target (rtx target, rtx op0, rtx op1)
+{
+  int op0_prec = commutative_operand_precedence (op0);
+  int op1_prec = commutative_operand_precedence (op1);
+
+  if (op0_prec < op1_prec)
+    return true;
+
+  if (op0_prec > op1_prec)
+    return false;
+
+  /* With equal precedence, both orders are ok, but it is better if the
+     first operand is TARGET, or if both TARGET and OP0 are pseudos.  */
+  if (target == 0 || REG_P (target))
+    return (REG_P (op1) && !REG_P (op0)) || target == op1;
+  else
+    return rtx_equal_p (op1, target);
+}
+
+
 /* Generate code to perform an operation specified by BINOPTAB
    on operands OP0 and OP1, with result having machine-mode MODE.
 
@@ -1073,12 +1097,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
     {
       commutative_op = 1;
 
-      if (((target == 0 || REG_P (target))
-	   ? ((REG_P (op1)
-	       && !REG_P (op0))
-	      || target == op1)
-	   : rtx_equal_p (op1, target))
-	  || GET_CODE (op0) == CONST_INT)
+      if (swap_commutative_operands_with_target (target, op0, op1))
 	{
 	  temp = op1;
 	  op1 = op0;
