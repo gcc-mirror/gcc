@@ -373,7 +373,7 @@ Necessary to build GCC during development because the generated output
 files are not included in the CVS repository.  They are included in
 releases.
 
-@item Texinfo version 4.2 (or later)
+@item Texinfo version 4.4 (or later)
 
 Necessary for running @command{makeinfo} when modifying @file{*.texi}
 files to test your changes.
@@ -1491,7 +1491,7 @@ parser sources, releases contain the Bison-generated files and you do
 not need Bison installed to build them.
 
 When building from CVS or snapshots, or if you modify Texinfo
-documentation, you need version 4.2 or later of Texinfo installed if you
+documentation, you need version 4.4 or later of Texinfo installed if you
 want Info documentation to be regenerated.  Releases contain Info
 documentation pre-built for the unmodified documentation in the release.
 
@@ -2060,7 +2060,7 @@ If you find a bug, please report it following the
 @uref{../bugs.html,,bug reporting guidelines}.
 
 If you want to print the GCC manuals, do @samp{cd @var{objdir}; make
-dvi}.  You will need to have @command{texi2dvi} (version at least 4.2)
+dvi}.  You will need to have @command{texi2dvi} (version at least 4.4)
 and @TeX{} installed.  This creates a number of @file{.dvi} files in
 subdirectories of @file{@var{objdir}}; these may be converted for
 printing with programs such as @command{dvips}.  You can also
@@ -3497,7 +3497,7 @@ or newer for a working GCC@.
 @end html
 @heading @anchor{powerpc-x-netbsd}powerpc-*-netbsd*
 PowerPC system in big endian mode running NetBSD@.  To build the
-documentation you will need Texinfo version 4.2 (NetBSD 1.5.1 included
+documentation you will need Texinfo version 4.4 (NetBSD 1.5.1 included
 Texinfo version 3.12).
 
 @html

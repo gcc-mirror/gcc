@@ -1,3 +1,17 @@
+2005-11-24  Uros Bizjak  <uros@kss-loka.si>
+
+	* configure.ac: Require at least texinfo 4.4.
+	* configure: Regenerate.
+
+	* doc/install.texi (Tools/packages necessary for building GCC):
+	Update required version of texinfo to at least 4.4.
+	(Installing GCC: Building): Update required version of texinfo
+	to at least 4.4.
+	(Installing GCC: Final installation): Update required version
+	of texi2dvi to at least 4.4.
+	(Host/target specific installation notes for GCC): Update required
+	version of texinfo to at least 4.4.
+
 2005-11-24  Richard Guenther  <rguenther@suse.de>
 	Dirk Mueller <dmueller@suse.de>
 
