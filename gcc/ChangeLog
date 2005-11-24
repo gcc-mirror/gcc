@@ -1,5 +1,11 @@
 2005-11-24  Paolo Bonzini  <bonzini@gnu.org>
 
+	* optabs.c (expand_binop): Use swap_commutative_operands_with_target
+	to order operands.
+	(swap_commutative_operands_with_target): New.
+
+2005-11-24  Paolo Bonzini  <bonzini@gnu.org>
+
 	* gcse.c (hash_scan_set): Look through REG_EQUAL or REG_EQUIV notes
 	also when doing PRE, rather than only for global CPROP.
 
