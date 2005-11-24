@@ -26,6 +26,20 @@
 	* optabs.c (prepare_cmp_insn): Use SCALAR_FLOAT_MODE_P.
 	Remove unused `class' variable.
 
+2005-11-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/21667
+	* c-typeck.c (build_array_ref): Avoid code duplicate.  Use common
+	C/C++ diagnostic function warn_array_subscript_with_type_char. 
+	* c-common.h (warn_array_subscript_with_type_char): Declare. 
+	* c-common.c (warn_array_subscript_with_type_char): Define.
+
+2005-11-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c/21668
+	* c-decl.c (grokdeclarator): Don't warn for 'extern const' when
+	compiling at the intersection of C and C++.
+
 2005-11-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/invoke.texi: For man pages, include gcc-vers.texi.
