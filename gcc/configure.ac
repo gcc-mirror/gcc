@@ -822,7 +822,7 @@ MISSING="${CONFIG_SHELL-/bin/sh} $srcdir/../missing"
 # that we can use it.
 gcc_AC_CHECK_PROG_VER(MAKEINFO, makeinfo, --version,
   [GNU texinfo.* \([0-9][0-9.]*\)],
-  [4.[2-9]*])
+  [4.[4-9]*])
 if test $gcc_cv_prog_makeinfo_modern = no; then
   MAKEINFO="$MISSING makeinfo"
   AC_MSG_WARN([
