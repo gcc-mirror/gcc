@@ -1,3 +1,7 @@
+2005-11-24  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* expr.c (expand_expr_real_1): Fix error in last change.
+
 2005-11-24  J"orn Rennecke <joern.rennecke@st.com>
 
 	* caller-save.c: (this_insn_sets): Move into:
