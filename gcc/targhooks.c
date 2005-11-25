@@ -514,10 +514,15 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 	    }
 
 	  scratch_constraint = insn_data[(int) icode].operand[2].constraint;
-	  /* The scratch register's constraint must start with "=&".  */
+	  /* The scratch register's constraint must start with "=&",
+	     except for an input reload, where only "=" is necessary,
+	     and where it might be beneficial to re-use registers from
+	     the input.  */
 	  gcc_assert (scratch_constraint[0] == '='
-		      && scratch_constraint[1] == '&');
-	  scratch_constraint += 2;
+		      && (in_p || scratch_constraint[1] == '&'));
+	  scratch_constraint++;
+	  if (*scratch_constraint == '&')
+	    scratch_constraint++;
 	  scratch_letter = *scratch_constraint;
 	  scratch_class
 	    = (scratch_letter == 'r' ? GENERAL_REGS
