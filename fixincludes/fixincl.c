@@ -1199,7 +1199,10 @@ write_replacement (tFixDesc* p_fixd)
 
    {
      FILE* out_fp = create_file ();
-     fputs (pz_text, out_fp);
+     size_t sz = strlen (pz_text);
+     fwrite (pz_text, sz, 1, out_fp);
+     if (pz_text[ sz-1 ] != '\n')
+       fputc ('\n', out_fp);
      fclose (out_fp);
    }
 }
