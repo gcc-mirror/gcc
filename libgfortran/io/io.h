@@ -380,30 +380,30 @@ typedef struct st_parameter_dt
 	  /* Number of spaces to be done for T and X-editing.  */
 	  int pending_spaces;
 	  unit_advance advance_status;
-	  char reversion_flag; /* Format reversion has occurred.  */
-	  char first_item;
-	  char seen_dollar;
-	  char sf_seen_eor;
-	  char eor_condition;
-	  char no_leading_blank;
-	  char nml_delim;
-	  char char_flag;
-	  char input_complete;
-	  char at_eol;
-	  char comma_flag;
-	  char last_char;
+
+	  unsigned reversion_flag : 1; /* Format reversion has occurred.  */
+	  unsigned first_item : 1;
+	  unsigned seen_dollar : 1;
+	  unsigned sf_seen_eor : 1;
+	  unsigned eor_condition : 1;
+	  unsigned no_leading_blank : 1;
+	  unsigned char_flag : 1;
+	  unsigned input_complete : 1;
+	  unsigned at_eol : 1;
+	  unsigned comma_flag : 1;
 	  /* A namelist specific flag used in the list directed library
 	     to flag that calls are being made from namelist read (eg. to
 	     ignore comments or to treat '/' as a terminator)  */
-	  char namelist_mode;
+	  unsigned namelist_mode : 1;
 	  /* A namelist specific flag used in the list directed library
 	     to flag read errors and return, so that an attempt can be
 	     made to read a new object name.  */
-	  char nml_read_error;
-	  /* Storage area for values except for strings.  Must be large
-	     enough to hold a complex value (two reals) of the largest
-	     kind.  */
-	  char value[32];
+	  unsigned nml_read_error : 1;
+	  /* 20 unused bits.  */
+
+	  char last_char;
+	  char nml_delim;
+
 	  int repeat_count;
 	  int saved_length;
 	  int saved_used;
@@ -414,6 +414,11 @@ typedef struct st_parameter_dt
 	  struct format_data *fmt;
 	  jmp_buf *eof_jump;
 	  namelist_info *ionml;
+
+	  /* Storage area for values except for strings.  Must be large
+	     enough to hold a complex value (two reals) of the largest
+	     kind.  */
+	  char value[32];
 	} p;
       char pad[16 * sizeof (char *) + 32 * sizeof (int)];
     } u;

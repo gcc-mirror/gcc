@@ -1489,8 +1489,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	  eat_spaces (dtp);
 	  neg = 0;
 
-	  /*process a potential sign.  */
-
+	  /* Process a potential sign.  */
 	  c = next_char (dtp);
 	  switch (c)
 	    {
@@ -1506,8 +1505,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	      break;
 	    }
 
-	  /*process characters up to the next ':' , ',' or ')'  */
-
+	  /* Process characters up to the next ':' , ',' or ')'.  */
 	  for (;;)
 	    {
 	      c = next_char (dtp);
@@ -1518,8 +1516,8 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  break;
 
 		case ',': case ')':
-		  if ( (c==',' && dim == rank -1)
-		    || (c==')' && dim  < rank -1))
+		  if ((c==',' && dim == rank -1)
+		      || (c==')' && dim < rank -1))
 		    {
 		      st_sprintf (parse_err_msg,
 				  "Bad number of index fields");
@@ -1549,7 +1547,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		}
 
 	      if ((c == ':' && indx == 1 && dtp->u.p.saved_string == 0)
-		|| (indx == 2 && dtp->u.p.saved_string == 0))
+		  || (indx == 2 && dtp->u.p.saved_string == 0))
 		{
 		  st_sprintf(parse_err_msg, "Bad index triplet");
 		  goto err_ret;
@@ -1558,14 +1556,13 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	      /* If '( : ? )' or '( ? : )' break and flag read failure.  */
 	      null_flag = 0;
 	      if ((c == ':' && indx == 0 && dtp->u.p.saved_string == 0)
-		|| (indx==1 && dtp->u.p.saved_string == 0))
+		  || (indx==1 && dtp->u.p.saved_string == 0))
 		{
 		  null_flag = 1;
 		  break;
 		}
 
 	      /* Now read the index.  */
-
 	      if (convert_integer (dtp, sizeof(int), neg))
 		{
 		  st_sprintf (parse_err_msg, "Bad integer in index");
@@ -1574,52 +1571,47 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	      break;
 	    }
 
-	  /*feed the index values to the triplet arrays.  */
-
+	  /* Feed the index values to the triplet arrays.  */
 	  if (!null_flag)
 	    {
 	      if (indx == 0)
-		ls[dim].start = *(int *)dtp->u.p.value;
+		memcpy (&ls[dim].start, dtp->u.p.value, sizeof(int));
 	      if (indx == 1)
-		ls[dim].end   = *(int *)dtp->u.p.value;
+		memcpy (&ls[dim].end, dtp->u.p.value, sizeof(int));
 	      if (indx == 2)
-		ls[dim].step  = *(int *)dtp->u.p.value;
+		memcpy (&ls[dim].step, dtp->u.p.value, sizeof(int));
 	    }
 
-	  /*singlet or doublet indices  */
-
+	  /* Singlet or doublet indices.  */
 	  if (c==',' || c==')')
 	    {
 	      if (indx == 0)
 		{
-		  ls[dim].start = *(int *)dtp->u.p.value;
-		  ls[dim].end = *(int *)dtp->u.p.value;
+		  memcpy (&ls[dim].start, dtp->u.p.value, sizeof(int));
+		  ls[dim].end = ls[dim].start;
 		}
 	      break;
 	    }
 	}
 
-      /*Check the values of the triplet indices.  */
-
-      if ( (ls[dim].start > (ssize_t)ad[dim].ubound)
-	|| (ls[dim].start < (ssize_t)ad[dim].lbound)
-	|| (ls[dim].end   > (ssize_t)ad[dim].ubound)
-	|| (ls[dim].end   < (ssize_t)ad[dim].lbound))
+      /* Check the values of the triplet indices.  */
+      if ((ls[dim].start > (ssize_t)ad[dim].ubound)
+	  || (ls[dim].start < (ssize_t)ad[dim].lbound)
+	  || (ls[dim].end > (ssize_t)ad[dim].ubound)
+	  || (ls[dim].end < (ssize_t)ad[dim].lbound))
 	{
 	  st_sprintf (parse_err_msg, "Index %d out of range", dim + 1);
 	  goto err_ret;
 	}
       if (((ls[dim].end - ls[dim].start ) * ls[dim].step < 0)
-	|| (ls[dim].step == 0))
+	  || (ls[dim].step == 0))
 	{
 	  st_sprintf (parse_err_msg, "Bad range in index %d", dim + 1);
 	  goto err_ret;
 	}
 
       /* Initialise the loop index counter.  */
-
       ls[dim].idx = ls[dim].start;
-
     }
   eat_spaces (dtp);
   return SUCCESS;

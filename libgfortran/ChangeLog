@@ -1,3 +1,13 @@
+2005-11-25  Richard Henderson  <rth@redhat.com>
+
+	* io/list_read.c (nml_parse_qualifier): Use memcpy to extract
+	values from dtp->u.p.value.
+	* io/io.h (struct st_parameter_dt): Change reversion_flag, first_item,
+	seen_dollar, sf_seen_eor, eor_condition, no_leading_blank, char_flag,
+	input_complete, at_eol, comma_flag, namelist_mode, nml_read_error to
+	single-bit fields.  Move value to where it'll be at least pointer
+	aligned.
+
 2005-11-23  Alan Modra  <amodra@bigpond.net.au>
 
 	* io/open.c (new_unit): Use the right unit number when checking
