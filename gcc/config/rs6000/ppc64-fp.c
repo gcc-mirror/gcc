@@ -39,8 +39,11 @@ extern DItype __fixsfdi (SFtype);
 extern USItype __fixunsdfsi (DFtype);
 extern USItype __fixunssfsi (SFtype);
 extern TFtype __floatditf (DItype);
+extern TFtype __floatunditf (UDItype);
 extern DFtype __floatdidf (DItype);
+extern DFtype __floatundidf (UDItype);
 extern SFtype __floatdisf (DItype);
+extern SFtype __floatundisf (UDItype);
 extern DItype __fixunstfdi (TFtype);
 
 static DItype local_fixunssfdi (SFtype);
@@ -100,12 +103,36 @@ __floatditf (DItype u)
   return (TFtype) dh + (TFtype) dl;
 }
 
+TFtype
+__floatunditf (UDItype u)
+{
+  DFtype dh, dl;
+
+  dh = (USItype) (u >> (sizeof (SItype) * 8));
+  dh *= 2.0 * (((UDItype) 1) << ((sizeof (SItype) * 8) - 1));
+  dl = (USItype) (u & ((((UDItype) 1) << (sizeof (SItype) * 8)) - 1));
+
+  return (TFtype) dh + (TFtype) dl;
+}
+
 DFtype
 __floatdidf (DItype u)
 {
   DFtype d;
 
   d = (SItype) (u >> (sizeof (SItype) * 8));
+  d *= 2.0 * (((UDItype) 1) << ((sizeof (SItype) * 8) - 1));
+  d += (USItype) (u & ((((UDItype) 1) << (sizeof (SItype) * 8)) - 1));
+
+  return d;
+}
+
+DFtype
+__floatundidf (UDItype u)
+{
+  DFtype d;
+
+  d = (USItype) (u >> (sizeof (SItype) * 8));
   d *= 2.0 * (((UDItype) 1) << ((sizeof (SItype) * 8) - 1));
   d += (USItype) (u & ((((UDItype) 1) << (sizeof (SItype) * 8)) - 1));
 
@@ -131,6 +158,30 @@ __floatdisf (DItype u)
         }
     }
   f = (SItype) (u >> (sizeof (SItype) * 8));
+  f *= 2.0 * (((UDItype) 1) << ((sizeof (SItype) * 8) - 1));
+  f += (USItype) (u & ((((UDItype) 1) << (sizeof (SItype) * 8)) - 1));
+
+  return (SFtype) f;
+}
+
+SFtype
+__floatundisf (UDItype u)
+{
+  DFtype f;
+
+  if (53 < (sizeof (DItype) * 8)
+      && 53 > ((sizeof (DItype) * 8) - 53 + 24))
+    {
+      if (u >= ((UDItype) 1 << 53))
+        {
+          if ((UDItype) u & (((UDItype) 1 << ((sizeof (DItype) * 8) - 53)) - 1))
+            {
+              u &= ~ (((UDItype) 1 << ((sizeof (DItype) * 8) - 53)) - 1);
+              u |= ((UDItype) 1 << ((sizeof (DItype) * 8) - 53));
+            }
+        }
+    }
+  f = (USItype) (u >> (sizeof (SItype) * 8));
   f *= 2.0 * (((UDItype) 1) << ((sizeof (SItype) * 8) - 1));
   f += (USItype) (u & ((((UDItype) 1) << (sizeof (SItype) * 8)) - 1));
 
