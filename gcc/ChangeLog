@@ -1,3 +1,9 @@
+2005-11-25  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR middle-end/24998
+	* config/rs6000/rs6000.c (rs6000_init_libfuncs): Use _q_utoq for
+	unsigned conversions from SImode to TFmode.
+
 2005-11-24  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* expr.c (expand_expr_real_1): Fix error in last change.
