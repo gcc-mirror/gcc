@@ -9078,6 +9078,7 @@ rs6000_init_libfuncs (void)
       set_conv_libfunc (sfix_optab, SImode, TFmode, "_q_qtoi");
       set_conv_libfunc (ufix_optab, SImode, TFmode, "_q_qtou");
       set_conv_libfunc (sfloat_optab, TFmode, SImode, "_q_itoq");
+      set_conv_libfunc (ufloat_optab, TFmode, SImode, "_q_utoq");
     }
 }
 
