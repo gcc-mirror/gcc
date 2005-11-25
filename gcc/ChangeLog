@@ -1,3 +1,15 @@
+2005-11-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_sr_alias_set): Delete.
+	(rs6000_override_options): Remove initialization of
+	rs6000_sr_alias_set.
+	(rs6000_emit_eh_reg_restore): Use gen_frame_mem.
+	(rs6000_emit_stack_tie): Same.
+	(emit_frame_save): Same.
+	(gen_frame_mem_offset): Same.
+	(rs6000_emit_prologue): Same.
+	(rs6000_emit_epilogue): Same.
+
 2005-11-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24989
