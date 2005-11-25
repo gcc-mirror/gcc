@@ -8839,6 +8839,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       /* If one arg is a real or integer constant, put it last.  */
       if (tree_swap_operands_p (arg0, arg1, true))
 	return fold_build2 (swap_tree_comparison (code), type, op1, op0);
+
+      /*  ~a != C becomes a != ~C where C is a constant.  Likewise for ==.  */
+      if (TREE_CODE (arg0) == BIT_NOT_EXPR && TREE_CODE (arg1) == INTEGER_CST
+	  && (code == NE_EXPR || code == EQ_EXPR))
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
+			    fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg1), 
+					 arg1));
 	
       /* bool_var != 0 becomes bool_var. */
       if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE && integer_zerop (arg1)
