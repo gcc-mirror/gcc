@@ -5653,14 +5653,12 @@ instantiate_class_template (tree type)
 	    {
 	      /* Build new CLASSTYPE_NESTED_UTDS.  */
 
-	      tree tag = t;
-	      tree name = TYPE_IDENTIFIER (tag);
 	      tree newtag;
 	      bool class_template_p;
 
-	      class_template_p = (TREE_CODE (tag) != ENUMERAL_TYPE
-				  && TYPE_LANG_SPECIFIC (tag)
-				  && CLASSTYPE_IS_TEMPLATE (tag));
+	      class_template_p = (TREE_CODE (t) != ENUMERAL_TYPE
+				  && TYPE_LANG_SPECIFIC (t)
+				  && CLASSTYPE_IS_TEMPLATE (t));
 	      /* If the member is a class template, then -- even after
 		 substitution -- there may be dependent types in the
 		 template argument list for the class.  We increment
@@ -5669,7 +5667,7 @@ instantiate_class_template (tree type)
 		 when outside of a template.  */
 	      if (class_template_p)
 		++processing_template_decl;
-	      newtag = tsubst (tag, args, tf_error, NULL_TREE);
+	      newtag = tsubst (t, args, tf_error, NULL_TREE);
 	      if (class_template_p)
 		--processing_template_decl;
 	      if (newtag == error_mark_node)
@@ -5677,6 +5675,8 @@ instantiate_class_template (tree type)
 
 	      if (TREE_CODE (newtag) != ENUMERAL_TYPE)
 		{
+		  tree name = TYPE_IDENTIFIER (t);
+
 		  if (class_template_p)
 		    /* Unfortunately, lookup_template_class sets
 		       CLASSTYPE_IMPLICIT_INSTANTIATION for a partial
