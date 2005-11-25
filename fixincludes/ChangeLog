@@ -1,3 +1,8 @@
+2005-11-24  Bruce Korb  <bkorb@gnu.org>
+
+	* fixincl.c(write_replacement) "here strings" in AutoGen often/generally
+	don't have a terminating newline.  Check the last byte for '\n'.
+
 2005-11-13  Andreas Jaeger  <aj@suse.de>
 
 	* check.tpl: Handle CVS additionally.
