@@ -1,3 +1,7 @@
+2005-11-24  Bryce McKinlay  <mckinlay@redhat.com>
+
+        * gcj.texi (gij options): Add -Xss documentation.
+
 2005-11-08  Wil Mahan  <wmahan@gmail.com>
 
 	PR java/23617
