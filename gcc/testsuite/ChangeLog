@@ -1,3 +1,7 @@
+2005-11-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* objc.dg/gnu-runtime-3.m: New test.
+
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/9278
