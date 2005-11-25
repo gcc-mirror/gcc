@@ -1,3 +1,10 @@
+2005-11-25  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR middle-end/24998
+	* config/sparc/sparc.c (sparc_init_libfuncs): Use _Q_utoq and
+	_Q_ulltoq for unsigned conversions from SImode and DImode to
+	TFmode.
+
 2005-11-25  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/ppc64-fp.c (__floatunditf): New function.
