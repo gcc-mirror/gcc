@@ -857,8 +857,8 @@ div_if_zero_remainder (enum tree_code code, tree arg1, tree arg2)
   return build_int_cst_wide (type, quol, quoh);
 }
 
-/* Return true if built-in mathematical function specified by CODE
-   preserves the sign of it argument, i.e. -f(x) == f(-x).  */
+/* Return true if the built-in mathematical function specified by CODE
+   is odd, i.e. -f(x) == f(-x).  */
 
 static bool
 negate_mathfn_p (enum built_in_function code)
@@ -868,15 +868,30 @@ negate_mathfn_p (enum built_in_function code)
     case BUILT_IN_ASIN:
     case BUILT_IN_ASINF:
     case BUILT_IN_ASINL:
+    case BUILT_IN_ASINH:
+    case BUILT_IN_ASINHF:
+    case BUILT_IN_ASINHL:
     case BUILT_IN_ATAN:
     case BUILT_IN_ATANF:
     case BUILT_IN_ATANL:
+    case BUILT_IN_ATANH:
+    case BUILT_IN_ATANHF:
+    case BUILT_IN_ATANHL:
+    case BUILT_IN_CBRT:
+    case BUILT_IN_CBRTF:
+    case BUILT_IN_CBRTL:
     case BUILT_IN_SIN:
     case BUILT_IN_SINF:
     case BUILT_IN_SINL:
+    case BUILT_IN_SINH:
+    case BUILT_IN_SINHF:
+    case BUILT_IN_SINHL:
     case BUILT_IN_TAN:
     case BUILT_IN_TANF:
     case BUILT_IN_TANL:
+    case BUILT_IN_TANH:
+    case BUILT_IN_TANHF:
+    case BUILT_IN_TANHL:
       return true;
 
     default:

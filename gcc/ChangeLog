@@ -1,3 +1,9 @@
+2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* fold-const.c (negate_mathfn_p): Fix comment and add support
+	for BUILT_IN_CBRT, BUILT_IN_SINH, BUILT_IN_TANH, BUILT_IN_ASINH,
+	BUILT_IN_ATANH.
+
 2005-11-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR middle-end/24998
