@@ -833,8 +833,8 @@ div_and_round_double (enum tree_code code, int uns,
   return overflow;
 }
 
-/* Return true if built-in mathematical function specified by CODE
-   preserves the sign of it argument, i.e. -f(x) == f(-x).  */
+/* Return true if the built-in mathematical function specified by CODE
+   is odd, i.e. -f(x) == f(-x).  */
 
 static bool
 negate_mathfn_p (enum built_in_function code)

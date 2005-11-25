@@ -1,3 +1,7 @@
+2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* fold-const.c (negate_mathfn_p): Fix comment.
+
 2005-11-24  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/24950
