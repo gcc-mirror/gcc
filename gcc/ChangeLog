@@ -1,3 +1,8 @@
+2005-11-25  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/ppc64-fp.c (__floatunditf): New function.
+	(__floatundidf, __floatundisf): Likewise.
+
 2005-11-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_sr_alias_set): Delete.
