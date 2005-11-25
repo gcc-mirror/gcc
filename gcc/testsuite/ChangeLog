@@ -1,3 +1,7 @@
+2005-11-25  J"orn Rennecke <joern.rennecke@st.com>
+
+	* gcc.dg/20050922-2.c: New test.
+
 2005-11-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* objc.dg/gnu-runtime-3.m: New test.
