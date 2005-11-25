@@ -568,8 +568,6 @@ AC_ARG_WITH(ecos,
 TARGET_ECOS="$with_ecos"
 )
 
-supply_backtrace=no
-
 PLATFORM_INNER_NAT_HDRS=
 case "$TARGET_ECOS" in
    no) case "$host" in
@@ -902,33 +900,6 @@ else
 		   fork execvp pipe sigaction ftruncate])
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
    AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h) 
-   AC_CHECK_FUNC(backtrace, [
-     case "$host" in
-       ia64-*-linux*)
-	 # Has broken backtrace()
-	 ;;
-       mips*-*-linux*)
-         # Has broken backtrace(), but we supply our own.
-         if test -d sysdep; then true; else mkdir -p sysdep; fi
-	 supply_backtrace=yes
-         AC_DEFINE(HAVE_BACKTRACE, 1,
-           [Define if your platform has a working backtrace() function.])
-         ;;
-       *)
-         AC_DEFINE(HAVE_BACKTRACE, 1,
-           [Define if your platform has a working backtrace() function.])
-	 ;;
-     esac
-   ], [
-     case "$host" in
-       *mingw*)
-         # Has backtrace() defined in libgcj itself
-         AC_DEFINE(HAVE_BACKTRACE, 1,
-           [Define if your platform has a working backtrace() function.])
-         ;;
-     esac
-   ])
-
    AC_CHECK_LIB(dl, dladdr, [
      if test "x${disable_dladdr}" = "xyes"; then
        #Broken dladdr().
@@ -1162,7 +1133,6 @@ else
       AC_CHECK_LIB(dl, main, SYSTEMSPEC="$SYSTEMSPEC -ldl")
    fi
 fi
-AM_CONDITIONAL(SUPPLY_BACKTRACE, test "$supply_backtrace" = yes)
 
 # Use a semicolon as CLASSPATH separator for MinGW, otherwise a colon.
 case $build in

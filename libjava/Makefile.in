@@ -52,13 +52,12 @@ target_triplet = @target@
 @USING_GCC_TRUE@am__append_5 = $(WARNINGS)
 @USING_BOEHMGC_TRUE@am__append_6 = boehm.cc
 @USING_NOGC_TRUE@am__append_7 = nogc.cc
-@SUPPLY_BACKTRACE_TRUE@am__append_8 = sysdep/dwarf2-backtrace.cc
-@USING_POSIX_PLATFORM_TRUE@am__append_9 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_10 = win32.cc
-@USING_DARWIN_CRT_TRUE@am__append_11 = darwin.cc
-@USING_POSIX_THREADS_TRUE@am__append_12 = posix-threads.cc
-@USING_WIN32_THREADS_TRUE@am__append_13 = win32-threads.cc
-@USING_NO_THREADS_TRUE@am__append_14 = no-threads.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_8 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_9 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_10 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_11 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_12 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_13 = no-threads.cc
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -70,7 +69,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	NEWS THANKS
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@noinst_PROGRAMS =  \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gen-from-JIS$(EXEEXT)
-@XLIB_AWT_TRUE@am__append_15 = $(xlib_nat_headers)
+@XLIB_AWT_TRUE@am__append_14 = $(xlib_nat_headers)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -256,9 +255,9 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	java/nio/natDirectByteBufferImpl.cc java/text/natCollator.cc \
 	java/util/natResourceBundle.cc java/util/natVMTimeZone.cc \
 	java/util/logging/natLogger.cc java/util/zip/natDeflater.cc \
-	java/util/zip/natInflater.cc boehm.cc nogc.cc \
-	sysdep/dwarf2-backtrace.cc posix.cc win32.cc darwin.cc \
-	posix-threads.cc win32-threads.cc no-threads.cc
+	java/util/zip/natInflater.cc boehm.cc nogc.cc posix.cc \
+	win32.cc darwin.cc posix-threads.cc win32-threads.cc \
+	no-threads.cc
 am__objects_2 = gnu/classpath/natSystemProperties.lo \
 	gnu/gcj/natCore.lo gnu/gcj/convert/JIS0208_to_Unicode.lo \
 	gnu/gcj/convert/JIS0212_to_Unicode.lo \
@@ -299,19 +298,18 @@ am__objects_2 = gnu/classpath/natSystemProperties.lo \
 	java/util/zip/natInflater.lo
 @USING_BOEHMGC_TRUE@am__objects_3 = boehm.lo
 @USING_NOGC_TRUE@am__objects_4 = nogc.lo
-@SUPPLY_BACKTRACE_TRUE@am__objects_5 = sysdep/dwarf2-backtrace.lo
-@USING_POSIX_PLATFORM_TRUE@am__objects_6 = posix.lo
-@USING_WIN32_PLATFORM_TRUE@am__objects_7 = win32.lo
-@USING_DARWIN_CRT_TRUE@am__objects_8 = darwin.lo
-@USING_POSIX_THREADS_TRUE@am__objects_9 = posix-threads.lo
-@USING_WIN32_THREADS_TRUE@am__objects_10 = win32-threads.lo
-@USING_NO_THREADS_TRUE@am__objects_11 = no-threads.lo
+@USING_POSIX_PLATFORM_TRUE@am__objects_5 = posix.lo
+@USING_WIN32_PLATFORM_TRUE@am__objects_6 = win32.lo
+@USING_DARWIN_CRT_TRUE@am__objects_7 = darwin.lo
+@USING_POSIX_THREADS_TRUE@am__objects_8 = posix-threads.lo
+@USING_WIN32_THREADS_TRUE@am__objects_9 = win32-threads.lo
+@USING_NO_THREADS_TRUE@am__objects_10 = no-threads.lo
 am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo stacktrace.lo \
 	link.lo defineclass.lo interpret.lo verify.lo \
 	java/lang/Class.lo java/lang/Object.lo $(am__objects_2) \
 	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
 	$(am__objects_6) $(am__objects_7) $(am__objects_8) \
-	$(am__objects_9) $(am__objects_10) $(am__objects_11)
+	$(am__objects_9) $(am__objects_10)
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 libgcjawt_la_DEPENDENCIES = lib-gnu-java-awt-peer-gtk.la
 am_libgcjawt_la_OBJECTS = classpath/native/jawt/libgcjawt_la-jawt.lo
@@ -515,8 +513,6 @@ RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-SUPPLY_BACKTRACE_FALSE = @SUPPLY_BACKTRACE_FALSE@
-SUPPLY_BACKTRACE_TRUE = @SUPPLY_BACKTRACE_TRUE@
 SYSDEP_SOURCES = @SYSDEP_SOURCES@
 SYSTEMSPEC = @SYSTEMSPEC@
 SYS_ZLIBS = @SYS_ZLIBS@
@@ -719,7 +715,7 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
 	java/lang/Object.java $(nat_source_files) $(am__append_6) \
 	$(am__append_7) $(am__append_8) $(am__append_9) \
 	$(am__append_10) $(am__append_11) $(am__append_12) \
-	$(am__append_13) $(am__append_14)
+	$(am__append_13)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
@@ -5200,7 +5196,7 @@ gnu/gcj/xlib/natXImage.cc \
 gnu/gcj/xlib/natXUnmapEvent.cc
 
 sourcesdir = $(jardir)
-headers_to_make = $(nat_headers) $(am__append_15)
+headers_to_make = $(nat_headers) $(am__append_14)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -5656,14 +5652,6 @@ java/util/zip/natDeflater.lo: java/util/zip/$(am__dirstamp) \
 	java/util/zip/$(DEPDIR)/$(am__dirstamp)
 java/util/zip/natInflater.lo: java/util/zip/$(am__dirstamp) \
 	java/util/zip/$(DEPDIR)/$(am__dirstamp)
-sysdep/$(am__dirstamp):
-	@$(mkdir_p) sysdep
-	@: > sysdep/$(am__dirstamp)
-sysdep/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) sysdep/$(DEPDIR)
-	@: > sysdep/$(DEPDIR)/$(am__dirstamp)
-sysdep/dwarf2-backtrace.lo: sysdep/$(am__dirstamp) \
-	sysdep/$(DEPDIR)/$(am__dirstamp)
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES) 
 	$(libgcj_la_LINK) -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(libgcj_la_OBJECTS) $(libgcj_la_LIBADD) $(LIBS)
 classpath/native/jawt/$(am__dirstamp):
@@ -5939,8 +5927,6 @@ mostlyclean-compile:
 	-rm -f java/util/zip/natDeflater.lo
 	-rm -f java/util/zip/natInflater.$(OBJEXT)
 	-rm -f java/util/zip/natInflater.lo
-	-rm -f sysdep/dwarf2-backtrace.$(OBJEXT)
-	-rm -f sysdep/dwarf2-backtrace.lo
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -6048,7 +6034,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/logging/$(DEPDIR)/natLogger.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/zip/$(DEPDIR)/natDeflater.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/zip/$(DEPDIR)/natInflater.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@sysdep/$(DEPDIR)/dwarf2-backtrace.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \
@@ -6298,7 +6283,6 @@ clean-libtool:
 	-rm -rf java/util/.libs java/util/_libs
 	-rm -rf java/util/logging/.libs java/util/logging/_libs
 	-rm -rf java/util/zip/.libs java/util/zip/_libs
-	-rm -rf sysdep/.libs sysdep/_libs
 
 distclean-libtool:
 	-rm -f libtool
@@ -6713,8 +6697,6 @@ distclean-generic:
 	-rm -f java/util/logging/$(am__dirstamp)
 	-rm -f java/util/zip/$(DEPDIR)/$(am__dirstamp)
 	-rm -f java/util/zip/$(am__dirstamp)
-	-rm -f sysdep/$(DEPDIR)/$(am__dirstamp)
-	-rm -f sysdep/$(am__dirstamp)
 	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
@@ -6728,7 +6710,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) classpath/native/jawt/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/native/jawt/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -6759,7 +6741,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) classpath/native/jawt/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/native/jawt/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

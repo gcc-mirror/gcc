@@ -190,10 +190,6 @@ if USING_NOGC
 libgcj_la_SOURCES += nogc.cc
 endif
 
-if SUPPLY_BACKTRACE
-libgcj_la_SOURCES += sysdep/dwarf2-backtrace.cc
-endif
-
 if USING_POSIX_PLATFORM
 libgcj_la_SOURCES += posix.cc
 endif

@@ -1,5 +1,16 @@
 2005-11-24  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* sysdep/ia64-frame.h: Removed.
+	* sysdep/ia64.c: Removed.
+	* sysdep/dwarf2-backtrace.cc: Removed.
+	* configure.ac: Remove references to HAVE_BACKTRACE and
+	SUPPLY_BACKTRACE.
+	* Makefile.am: Remove SUPPLY_BACKTRACE support.
+	* configure: Rebuilt.
+	* Makefile.in: Rebuilt.
+
+2005-11-24  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* gij.cc (nonstandard_opts_help): Add entry for -Xss.
 
 2005-11-17  Mark Wielaard  <mark@klomp.org>
