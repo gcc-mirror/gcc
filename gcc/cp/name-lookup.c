@@ -3971,12 +3971,9 @@ lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
   if (!val)
     val = unqualified_namespace_lookup (name, flags);
 
-  if (val)
-    {
-      /* If we have a single function from a using decl, pull it out.  */
-      if (TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
-	val = OVL_FUNCTION (val);
-    }
+  /* If we have a single function from a using decl, pull it out.  */
+  if (val && TREE_CODE (val) == OVERLOAD && !really_overloaded_fn (val))
+    val = OVL_FUNCTION (val);
 
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val);
 }

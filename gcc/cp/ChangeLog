@@ -1,5 +1,9 @@
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* name-lookup.c (lookup_name_real): Merge two if's.
+
+2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* pt.c (instantiate_class_template): Clean-up.
 
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
