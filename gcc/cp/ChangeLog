@@ -1,5 +1,10 @@
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* typeck2.c (process_init_constructor_union): Remove check for
+	unnamed union members.
+
+2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* name-lookup.c (lookup_name_real): Merge two if's.
 
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>

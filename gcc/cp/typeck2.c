@@ -993,12 +993,7 @@ process_init_constructor_union (tree type, tree init)
       tree field = TYPE_FIELDS (type);
       while (field && (!DECL_NAME (field) || TREE_CODE (field) != FIELD_DECL))
 	field = TREE_CHAIN (field);
-      if (!field)
-	{
-	  error ("union %qT with no named members cannot be initialized",
-		 type);
-	  ce->value = error_mark_node;
-	}
+      gcc_assert (field);
       ce->index = field;
     }
 
