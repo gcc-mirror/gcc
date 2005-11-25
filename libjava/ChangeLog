@@ -1,3 +1,7 @@
+2005-11-24  Bryce McKinlay  <mckinlay@redhat.com>
+
+        * gij.cc (nonstandard_opts_help): Add entry for -Xss.
+
 2005-11-17  Mark Wielaard  <mark@klomp.org>
 
 	Imported GNU Classpath gcj-import-20051117.
