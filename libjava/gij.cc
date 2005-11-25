@@ -52,6 +52,7 @@ nonstandard_opts_help ()
 {
   printf ("  -Xms<size>         set initial heap size\n");
   printf ("  -Xmx<size>         set maximum heap size\n");
+  printf ("  -Xss<size>         set thread stack size\n");
   exit (0);
 }
 

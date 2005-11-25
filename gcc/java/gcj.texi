@@ -1111,6 +1111,9 @@ Set the initial heap size.
 
 @item -Xmx@var{size}
 Set the maximum heap size.
+
+@item -Xss@var{size}
+Set the thread stack size.
 @end table
 
 Unrecognized @code{-X} options are ignored, for compatibility with
