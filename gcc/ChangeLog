@@ -1,5 +1,11 @@
 2005-11-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR middle-end/24989
+	* fold-const.c (fold_build): Convert bool_var != 1 and
+	bool_var == 0 to !bool_var.
+
+2005-11-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/24990
 	* fold-const.c (fold_binary): Fold (~a) == C to a == ~C
 	for C being INTEGER_CST.  Likewise for !=.

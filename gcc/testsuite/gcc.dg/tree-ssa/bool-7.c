@@ -11,8 +11,7 @@ int f(_Bool x)
   return y;
 }
 
-/* There should be no != 1. Though PHI-OPT or invert_truth does not
-   fold its tree.  */
-/* { dg-final { scan-tree-dump-times "!= 1" 0 "optimized" { xfail *-*-* } }  }*/
+/* There should be no != 1. Fold changes x != 1 to ! x.  */
+/* { dg-final { scan-tree-dump-times "!= 1" 0 "optimized" } } */
 
 /* { dg-final { cleanup-tree-dump "optimized" } } */

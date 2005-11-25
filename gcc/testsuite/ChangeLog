@@ -1,5 +1,12 @@
 2005-11-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR middle-end/24989
+	* gcc.dg/tree-ssa/bool-10.c: New test.
+	* gcc.dg/tree-ssa/bool-11.c: New test.
+	* gcc.dg/tree-ssa/bool-7.c: Un-xfail.
+
+2005-11-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/24990
 	* tree-ssa/pr24990-1.c: New test.
 
