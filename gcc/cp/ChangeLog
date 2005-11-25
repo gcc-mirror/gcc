@@ -1,5 +1,9 @@
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* pt.c (instantiate_class_template): Clean-up.
+
+2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* pt.c (template_class_depth_real): Remove. Move functionality to ...
 	(template_class_depth): ... here, replacing count_specializations
 	with 0.  Adjust comment.
