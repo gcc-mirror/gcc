@@ -137,7 +137,6 @@ static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
 static void regenerate_decl_from_template (tree, tree);
 static tree most_specialized (tree, tree, tree);
 static tree most_specialized_class (tree, tree);
-static int template_class_depth_real (tree, int);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
 static tree tsubst_arg_types (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
@@ -266,15 +265,14 @@ finish_member_template_decl (tree decl)
 
    A<T>::B<U> has depth two, while A<T> has depth one.
    Both A<T>::B<int> and A<int>::B<U> have depth one, if
-   COUNT_SPECIALIZATIONS is 0 or if they are instantiations, not
-   specializations.
+   they are instantiations, not specializations.
 
    This function is guaranteed to return 0 if passed NULL_TREE so
    that, for example, `template_class_depth (current_class_type)' is
    always safe.  */
 
-static int
-template_class_depth_real (tree type, int count_specializations)
+int
+template_class_depth (tree type)
 {
   int depth;
 
@@ -287,33 +285,19 @@ template_class_depth_real (tree type, int count_specializations)
 	{
 	  if (CLASSTYPE_TEMPLATE_INFO (type)
 	      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
-	      && ((count_specializations
-		   && CLASSTYPE_TEMPLATE_SPECIALIZATION (type))
-		  || uses_template_parms (CLASSTYPE_TI_ARGS (type))))
+	      && uses_template_parms (CLASSTYPE_TI_ARGS (type)))
 	    ++depth;
 	}
       else
 	{
 	  if (DECL_TEMPLATE_INFO (type)
 	      && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (type))
-	      && ((count_specializations
-		   && DECL_TEMPLATE_SPECIALIZATION (type))
-		  || uses_template_parms (DECL_TI_ARGS (type))))
+	      && uses_template_parms (DECL_TI_ARGS (type)))
 	    ++depth;
 	}
     }
 
   return depth;
-}
-
-/* Returns the template nesting level of the indicated class TYPE.
-   Like template_class_depth_real, but instantiations do not count in
-   the depth.  */
-
-int
-template_class_depth (tree type)
-{
-  return template_class_depth_real (type, /*count_specializations=*/0);
 }
 
 /* Returns 1 if processing DECL as part of do_pending_inlines
