@@ -92,14 +92,33 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
     return _JV_NOT_OWNER;
 
   struct timespec ts;
-  jlong m, startTime;
 
   if (millis > 0 || nanos > 0)
     {
-      startTime = java::lang::System::currentTimeMillis();
-      m = millis + startTime;
-      ts.tv_sec = m / 1000; 
-      ts.tv_nsec = ((m % 1000) * 1000000) + nanos; 
+      // Calculate the abstime corresponding to the timeout.
+      // Everything is in milliseconds.
+      //
+      // We use `unsigned long long' rather than jlong because our
+      // caller may pass up to Long.MAX_VALUE millis.  This would
+      // overflow the range of a jlong when added to the current time.
+      
+      unsigned long long startTime 
+	= (unsigned long long)java::lang::System::currentTimeMillis();
+      unsigned long long m = (unsigned long long)millis + startTime;
+      unsigned long long seconds = m / 1000; 
+
+      ts.tv_sec = seconds;
+      if (ts.tv_sec < 0 || (unsigned long long)ts.tv_sec != seconds)
+        {
+          // We treat a timeout that won't fit into a struct timespec
+          // as a wait forever.
+          millis = nanos = 0;
+        }
+      else
+        {
+          m %= 1000;
+          ts.tv_nsec = m * 1000000 + (unsigned long long)nanos;
+        }
     }
 
   _Jv_Thread_t *current = _Jv_ThreadCurrentData ();
