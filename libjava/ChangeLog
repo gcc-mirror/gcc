@@ -1,3 +1,10 @@
+2005-11-25  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	* testsuite/libjava.jacks/jacks.xfail: Remove
+	non-jls-argument-expansion-13 and add
+	non-jls-argument-expansion-error-1 in response to the @file support
+	patch in the main GCC driver.
+
 2005-11-24  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* sysdep/ia64-frame.h: Removed.
