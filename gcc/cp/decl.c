@@ -8598,6 +8598,7 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
       if (VOID_TYPE_P (type))
 	{
 	  if (same_type_p (type, void_type_node)
+	      && DECL_SELF_REFERENCE_P (type)
 	      && !DECL_NAME (decl) && !result && !parm->next && !ellipsis)
 	    /* this is a parmlist of `(void)', which is ok.  */
 	    break;

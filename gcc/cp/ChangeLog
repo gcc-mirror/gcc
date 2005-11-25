@@ -1,5 +1,11 @@
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/9278
+	* decl.c (grokparms): Do not allow typedef-names in a '(void)'
+	parmlist.
+
+2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* typeck2.c (process_init_constructor_union): Remove check for
 	unnamed union members.
 
