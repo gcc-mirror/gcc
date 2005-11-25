@@ -1,3 +1,9 @@
+2005-11-25  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/25016
+	* posix-threads.cc (_Jv_CondWait): Rewrite calculation of the
+	struct timespec we pass to pthread_cond_timedwait.
+
 2005-11-24  Bryce McKinlay  <mckinlay@redhat.com>
 
         * gij.cc (nonstandard_opts_help): Add entry for -Xss.
