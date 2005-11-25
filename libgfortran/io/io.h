@@ -36,6 +36,12 @@ Boston, MA 02110-1301, USA.  */
 /* Used by gthr.h.  */
 #define SUPPORTS_WEAK 1
 #endif
+
+#ifdef _AIX
+#undef _LARGE_FILES
+#define _LARGE_FILE_API
+#endif
+
 #include <gthr.h>
 
 #define DEFAULT_TEMPDIR "/tmp"

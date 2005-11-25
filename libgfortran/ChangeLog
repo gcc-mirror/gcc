@@ -1,3 +1,8 @@
+2005-11-25  David Edelsohn  <edelsohn@gnu.org>
+
+        * io/io.h (_LARGE_FILES): Undefine for AIX.
+        (_LARGE_FILE_API): Define for AIX.
+
 2005-11-23  Alan Modra  <amodra@bigpond.net.au>
 
 	* io/open.c (new_unit): Use the right unit number when checking
