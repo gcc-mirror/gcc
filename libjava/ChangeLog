@@ -1,3 +1,16 @@
+2005-11-25  Mark Wielaard  <mark@klomp.org>
+
+	* standard.omit.in: Remove javax/rmi, org/omg, gnu/CORBA and
+	gnu/javax/rmi.
+	* scripts/makemake.tcl: Set javax/rmi, org/omg, gnu/CORBA and
+	gnu/javax/rmi to bc.
+	* gnu/CORBA/ObjectCreator.java: New override file for missing
+	VMStackWalker issue.
+	* gnu/CORBA/DynAn/gnuDynValue.java: New override file for bug #24938
+	* gnu/CORBA/DynAn/RecordAny.java: Likewise
+	* sources.am: Regenerated.
+	* Makefile.in: Regenerated
+
 2005-11-25  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/25016
