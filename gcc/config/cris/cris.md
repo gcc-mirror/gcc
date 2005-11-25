@@ -1151,7 +1151,7 @@
   "")
 
 (define_expand "reload_out<mode>"
-  [(set (match_operand:BW 2 "register_operand" "=r")
+  [(set (match_operand:BW 2 "register_operand" "=&r")
 	(match_operand:BW 1 "register_operand" "x"))
    (set (match_operand:BW 0 "memory_operand" "=m")
 	(match_dup 2))]

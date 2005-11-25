@@ -1,3 +1,10 @@
+2005-11-25  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("reload_out<mode>"): Mark operand 2 as
+	earlyclobber.
+	* targhooks.c (default_secondary_reload): Don't require operand 2
+	for an input reload to be earlyclobber.
+
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* fold-const.c (negate_mathfn_p): Fix comment and add support
