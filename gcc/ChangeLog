@@ -1,3 +1,7 @@
+2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* fold-const.c (negate_mathfn_p): Fix comment.
+
 2005-11-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/22561
