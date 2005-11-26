@@ -49,6 +49,10 @@ main_test(void)
      prototypes are set correctly too.  */
   __builtin_fputc ('\n', *s_ptr);
   __builtin_fwrite ("hello\n", 1, 6, *s_ptr);
+  /* Check the unlocked style, these evaluate to nothing to avoid
+     problems on systems without the unlocked functions.  */
+  fputs_unlocked ("", *s_ptr);
+  __builtin_fputs_unlocked ("", *s_ptr);
 
   /* Check side-effects in conditional expression.  */
   s_ptr = s_array;
