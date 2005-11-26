@@ -4785,6 +4785,9 @@ will be written using @code{zero_extract} rather than the equivalent
 
 @end itemize
 
+Further canonicalization rules are defined in the function
+@code{commutative_operand_precedence} in @file{gcc/rtlanal.c}.
+
 @end ifset
 @ifset INTERNALS
 @node Expander Definitions

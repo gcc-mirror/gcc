@@ -1,3 +1,8 @@
+2005-11-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/md.texi (Insn Canonicalizations): Refer to the
+	function commutative_operand_precedence for further rules.
+
 2005-11-25  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/21309
