@@ -1563,7 +1563,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		}
 
 	      /* Now read the index.  */
-	      if (convert_integer (dtp, sizeof(int), neg))
+	      if (convert_integer (dtp, sizeof(ssize_t), neg))
 		{
 		  st_sprintf (parse_err_msg, "Bad integer in index");
 		  goto err_ret;
@@ -1575,11 +1575,11 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	  if (!null_flag)
 	    {
 	      if (indx == 0)
-		memcpy (&ls[dim].start, dtp->u.p.value, sizeof(int));
+		memcpy (&ls[dim].start, dtp->u.p.value, sizeof(ssize_t));
 	      if (indx == 1)
-		memcpy (&ls[dim].end, dtp->u.p.value, sizeof(int));
+		memcpy (&ls[dim].end, dtp->u.p.value, sizeof(ssize_t));
 	      if (indx == 2)
-		memcpy (&ls[dim].step, dtp->u.p.value, sizeof(int));
+		memcpy (&ls[dim].step, dtp->u.p.value, sizeof(ssize_t));
 	    }
 
 	  /* Singlet or doublet indices.  */
@@ -1587,7 +1587,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	    {
 	      if (indx == 0)
 		{
-		  memcpy (&ls[dim].start, dtp->u.p.value, sizeof(int));
+		  memcpy (&ls[dim].start, dtp->u.p.value, sizeof(ssize_t));
 		  ls[dim].end = ls[dim].start;
 		}
 	      break;
