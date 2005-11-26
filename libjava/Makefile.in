@@ -212,8 +212,9 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/text/html/parser.lo javax/swing/text/rtf.lo \
 	javax/swing/tree.lo javax/swing/undo.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo
-am__DEPENDENCIES_3 = gnu-java-beans.lo gnu-javax-sound-midi.lo \
-	gnu-xml.lo javax-imageio.lo javax-xml.lo org-w3c.lo org-xml.lo
+am__DEPENDENCIES_3 = gnu-CORBA.lo gnu-java-beans.lo gnu-javax-rmi.lo \
+	gnu-javax-sound-midi.lo gnu-xml.lo javax-imageio.lo \
+	javax-rmi.lo javax-xml.lo org-omg.lo org-w3c.lo org-xml.lo
 am__DEPENDENCIES_4 = $(patsubst classpath/resource/%,%,$(addsuffix \
 	.lo,$(property_files)))
 am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
@@ -814,6 +815,167 @@ CLEANFILES = libgcj-$(gcc_version).jar \
 
 DISTCLEANFILES = native.dirs
 SUFFIXES = .class .java .h .properties .list
+gnu_CORBA_source_files = \
+classpath/gnu/CORBA/Asynchron.java \
+classpath/gnu/CORBA/BigDecimalHelper.java \
+classpath/gnu/CORBA/ByteArrayComparator.java \
+classpath/gnu/CORBA/CDR/AbstractCdrInput.java \
+classpath/gnu/CORBA/CDR/AbstractCdrOutput.java \
+classpath/gnu/CORBA/CDR/AbstractDataInput.java \
+classpath/gnu/CORBA/CDR/AbstractDataOutput.java \
+classpath/gnu/CORBA/CDR/AligningInput.java \
+classpath/gnu/CORBA/CDR/AligningOutput.java \
+classpath/gnu/CORBA/CDR/ArrayValueHelper.java \
+classpath/gnu/CORBA/CDR/BigEndianInputStream.java \
+classpath/gnu/CORBA/CDR/BigEndianOutputStream.java \
+classpath/gnu/CORBA/CDR/BufferedCdrOutput.java \
+classpath/gnu/CORBA/CDR/BufferredCdrInput.java \
+classpath/gnu/CORBA/CDR/EncapsulationStream.java \
+classpath/gnu/CORBA/CDR/HeadlessInput.java \
+classpath/gnu/CORBA/CDR/IDLTypeHelper.java \
+classpath/gnu/CORBA/CDR/LittleEndianInputStream.java \
+classpath/gnu/CORBA/CDR/LittleEndianOutputStream.java \
+classpath/gnu/CORBA/CDR/UnknownExceptionCtxHandler.java \
+classpath/gnu/CORBA/CDR/VMVio.java \
+classpath/gnu/CORBA/CDR/Vio.java \
+classpath/gnu/CORBA/CDR/gnuRuntime.java \
+classpath/gnu/CORBA/CDR/gnuValueStream.java \
+classpath/gnu/CORBA/CdrEncapsCodecImpl.java \
+classpath/gnu/CORBA/Connected_objects.java \
+classpath/gnu/CORBA/CorbaList.java \
+classpath/gnu/CORBA/DefaultSocketFactory.java \
+classpath/gnu/CORBA/DefinitionKindHolder.java \
+classpath/gnu/CORBA/DuplicateNameHolder.java \
+classpath/gnu/CORBA/DynAn/AbstractAny.java \
+classpath/gnu/CORBA/DynAn/DivideableAny.java \
+classpath/gnu/CORBA/DynAn/NameValuePairHolder.java \
+gnu/CORBA/DynAn/RecordAny.java \
+classpath/gnu/CORBA/DynAn/UndivideableAny.java \
+classpath/gnu/CORBA/DynAn/ValueChangeListener.java \
+classpath/gnu/CORBA/DynAn/gnuDynAny.java \
+classpath/gnu/CORBA/DynAn/gnuDynAnyFactory.java \
+classpath/gnu/CORBA/DynAn/gnuDynArray.java \
+classpath/gnu/CORBA/DynAn/gnuDynEnum.java \
+classpath/gnu/CORBA/DynAn/gnuDynFixed.java \
+classpath/gnu/CORBA/DynAn/gnuDynSequence.java \
+classpath/gnu/CORBA/DynAn/gnuDynStruct.java \
+classpath/gnu/CORBA/DynAn/gnuDynUnion.java \
+gnu/CORBA/DynAn/gnuDynValue.java \
+classpath/gnu/CORBA/DynAn/gnuDynValueBox.java \
+classpath/gnu/CORBA/DynAnySeqHolder.java \
+classpath/gnu/CORBA/EmptyExceptionHolder.java \
+classpath/gnu/CORBA/ForwardRequestHelper.java \
+classpath/gnu/CORBA/GIOP/CancelHeader.java \
+classpath/gnu/CORBA/GIOP/CharSets_OSF.java \
+classpath/gnu/CORBA/GIOP/CloseMessage.java \
+classpath/gnu/CORBA/GIOP/CodeSetServiceContext.java \
+classpath/gnu/CORBA/GIOP/ContextHandler.java \
+classpath/gnu/CORBA/GIOP/ErrorMessage.java \
+classpath/gnu/CORBA/GIOP/MessageHeader.java \
+classpath/gnu/CORBA/GIOP/ReplyHeader.java \
+classpath/gnu/CORBA/GIOP/RequestHeader.java \
+classpath/gnu/CORBA/GIOP/ServiceContext.java \
+classpath/gnu/CORBA/GIOP/v1_0/CancelHeader.java \
+classpath/gnu/CORBA/GIOP/v1_0/ReplyHeader.java \
+classpath/gnu/CORBA/GIOP/v1_0/RequestHeader.java \
+classpath/gnu/CORBA/GIOP/v1_2/ReplyHeader.java \
+classpath/gnu/CORBA/GIOP/v1_2/RequestHeader.java \
+classpath/gnu/CORBA/GeneralHolder.java \
+classpath/gnu/CORBA/HolderLocator.java \
+classpath/gnu/CORBA/IOR.java \
+classpath/gnu/CORBA/Interceptor/ClientRequestInterceptors.java \
+classpath/gnu/CORBA/Interceptor/ForwardRequestHolder.java \
+classpath/gnu/CORBA/Interceptor/IORInterceptors.java \
+classpath/gnu/CORBA/Interceptor/Registrator.java \
+classpath/gnu/CORBA/Interceptor/ServerRequestInterceptors.java \
+classpath/gnu/CORBA/Interceptor/gnuClientRequestInfo.java \
+classpath/gnu/CORBA/Interceptor/gnuIcCurrent.java \
+classpath/gnu/CORBA/Interceptor/gnuIorInfo.java \
+classpath/gnu/CORBA/Interceptor/gnuServerRequestInfo.java \
+classpath/gnu/CORBA/IorDelegate.java \
+classpath/gnu/CORBA/IorObject.java \
+classpath/gnu/CORBA/IorProvider.java \
+classpath/gnu/CORBA/Minor.java \
+classpath/gnu/CORBA/NameDynAnyPairHolder.java \
+classpath/gnu/CORBA/NameDynAnyPairSeqHolder.java \
+classpath/gnu/CORBA/NameValuePairHolder.java \
+classpath/gnu/CORBA/NameValuePairSeqHolder.java \
+classpath/gnu/CORBA/NamingService/Binding_iterator_impl.java \
+classpath/gnu/CORBA/NamingService/Ext.java \
+classpath/gnu/CORBA/NamingService/NameComponentComparator.java \
+classpath/gnu/CORBA/NamingService/NameParser.java \
+classpath/gnu/CORBA/NamingService/NameTransformer.java \
+classpath/gnu/CORBA/NamingService/NameValidator.java \
+classpath/gnu/CORBA/NamingService/NamingMap.java \
+classpath/gnu/CORBA/NamingService/NamingServiceTransient.java \
+classpath/gnu/CORBA/NamingService/TransientContext.java \
+gnu/CORBA/ObjectCreator.java \
+classpath/gnu/CORBA/OctetHolder.java \
+classpath/gnu/CORBA/OrbFocused.java \
+classpath/gnu/CORBA/OrbFunctional.java \
+classpath/gnu/CORBA/OrbRestricted.java \
+classpath/gnu/CORBA/Poa/AOM.java \
+classpath/gnu/CORBA/Poa/AccessiblePolicy.java \
+classpath/gnu/CORBA/Poa/DynamicImpHandler.java \
+classpath/gnu/CORBA/Poa/ForwardRequestHolder.java \
+classpath/gnu/CORBA/Poa/ForwardedServant.java \
+classpath/gnu/CORBA/Poa/InvalidPolicyHolder.java \
+classpath/gnu/CORBA/Poa/LocalDelegate.java \
+classpath/gnu/CORBA/Poa/LocalRequest.java \
+classpath/gnu/CORBA/Poa/LocalServerRequest.java \
+classpath/gnu/CORBA/Poa/ORB_1_4.java \
+classpath/gnu/CORBA/Poa/ServantDelegateImpl.java \
+classpath/gnu/CORBA/Poa/StandardPolicies.java \
+classpath/gnu/CORBA/Poa/gnuAdapterActivator.java \
+classpath/gnu/CORBA/Poa/gnuForwardRequest.java \
+classpath/gnu/CORBA/Poa/gnuIdAssignmentPolicy.java \
+classpath/gnu/CORBA/Poa/gnuIdUniquenessPolicy.java \
+classpath/gnu/CORBA/Poa/gnuImplicitActivationPolicy.java \
+classpath/gnu/CORBA/Poa/gnuLifespanPolicy.java \
+classpath/gnu/CORBA/Poa/gnuPOA.java \
+classpath/gnu/CORBA/Poa/gnuPOAManager.java \
+classpath/gnu/CORBA/Poa/gnuPoaCurrent.java \
+classpath/gnu/CORBA/Poa/gnuRequestProcessingPolicy.java \
+classpath/gnu/CORBA/Poa/gnuServantObject.java \
+classpath/gnu/CORBA/Poa/gnuServantRetentionPolicy.java \
+classpath/gnu/CORBA/Poa/gnuThreadPolicy.java \
+classpath/gnu/CORBA/RawReply.java \
+classpath/gnu/CORBA/ResponseHandlerImpl.java \
+classpath/gnu/CORBA/ServiceDetailHolder.java \
+classpath/gnu/CORBA/ServiceRequestAdapter.java \
+classpath/gnu/CORBA/SetOverrideTypeHolder.java \
+classpath/gnu/CORBA/SimpleDelegate.java \
+classpath/gnu/CORBA/SocketRepository.java \
+classpath/gnu/CORBA/StreamBasedRequest.java \
+classpath/gnu/CORBA/StreamHolder.java \
+classpath/gnu/CORBA/StubLocator.java \
+classpath/gnu/CORBA/TypeCodeHelper.java \
+classpath/gnu/CORBA/TypeKindNamer.java \
+classpath/gnu/CORBA/Unexpected.java \
+classpath/gnu/CORBA/Version.java \
+classpath/gnu/CORBA/WCharHolder.java \
+classpath/gnu/CORBA/WStringHolder.java \
+classpath/gnu/CORBA/_PolicyImplBase.java \
+classpath/gnu/CORBA/gnuAny.java \
+classpath/gnu/CORBA/gnuCodecFactory.java \
+classpath/gnu/CORBA/gnuContext.java \
+classpath/gnu/CORBA/gnuContextList.java \
+classpath/gnu/CORBA/gnuEnvironment.java \
+classpath/gnu/CORBA/gnuExceptionList.java \
+classpath/gnu/CORBA/gnuNVList.java \
+classpath/gnu/CORBA/gnuNamedValue.java \
+classpath/gnu/CORBA/gnuRequest.java \
+classpath/gnu/CORBA/gnuValueHolder.java \
+classpath/gnu/CORBA/interfaces/SocketFactory.java \
+classpath/gnu/CORBA/typecodes/AliasTypeCode.java \
+classpath/gnu/CORBA/typecodes/ArrayTypeCode.java \
+classpath/gnu/CORBA/typecodes/FixedTypeCode.java \
+classpath/gnu/CORBA/typecodes/GeneralTypeCode.java \
+classpath/gnu/CORBA/typecodes/PrimitiveTypeCode.java \
+classpath/gnu/CORBA/typecodes/RecordTypeCode.java \
+classpath/gnu/CORBA/typecodes/RecursiveTypeCode.java \
+classpath/gnu/CORBA/typecodes/StringTypeCode.java
+
 gnu_awt_source_files = \
 gnu/awt/LightweightRedirector.java
 
@@ -1760,6 +1922,19 @@ classpath/gnu/javax/imageio/bmp/DecodeRLE4.java \
 classpath/gnu/javax/imageio/bmp/DecodeRLE8.java
 
 gnu_javax_imageio_bmp_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_imageio_bmp_source_files)))
+gnu_javax_rmi_source_files = \
+classpath/gnu/javax/rmi/CORBA/CorbaInput.java \
+classpath/gnu/javax/rmi/CORBA/CorbaOutput.java \
+classpath/gnu/javax/rmi/CORBA/DefaultWriteObjectTester.java \
+classpath/gnu/javax/rmi/CORBA/DelegateFactory.java \
+classpath/gnu/javax/rmi/CORBA/GetDelegateInstanceException.java \
+classpath/gnu/javax/rmi/CORBA/PortableRemoteObjectDelegateImpl.java \
+classpath/gnu/javax/rmi/CORBA/RmiUtilities.java \
+classpath/gnu/javax/rmi/CORBA/StubDelegateImpl.java \
+classpath/gnu/javax/rmi/CORBA/TieTargetRecord.java \
+classpath/gnu/javax/rmi/CORBA/UtilDelegateImpl.java \
+classpath/gnu/javax/rmi/CORBA/ValueHandlerDelegateImpl.java
+
 gnu_javax_sound_midi_source_files = \
 classpath/gnu/javax/sound/midi/alsa/AlsaInputPortDevice.java \
 classpath/gnu/javax/sound/midi/alsa/AlsaMidiDeviceProvider.java \
@@ -3746,6 +3921,18 @@ classpath/javax/print/event/PrintServiceAttributeEvent.java \
 classpath/javax/print/event/PrintServiceAttributeListener.java
 
 javax_print_event_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_print_event_source_files)))
+javax_rmi_source_files = \
+classpath/javax/rmi/CORBA/ClassDesc.java \
+classpath/javax/rmi/CORBA/PortableRemoteObjectDelegate.java \
+classpath/javax/rmi/CORBA/Stub.java \
+classpath/javax/rmi/CORBA/StubDelegate.java \
+classpath/javax/rmi/CORBA/Tie.java \
+classpath/javax/rmi/CORBA/Util.java \
+classpath/javax/rmi/CORBA/UtilDelegate.java \
+classpath/javax/rmi/CORBA/ValueHandler.java \
+classpath/javax/rmi/CORBA/ValueHandlerMultiFormat.java \
+classpath/javax/rmi/PortableRemoteObject.java
+
 javax_security_auth_source_files = \
 classpath/javax/security/auth/AuthPermission.java \
 classpath/javax/security/auth/DestroyFailedException.java \
@@ -4542,6 +4729,542 @@ classpath/org/ietf/jgss/MessageProp.java \
 classpath/org/ietf/jgss/Oid.java
 
 org_ietf_jgss_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(org_ietf_jgss_source_files)))
+org_omg_source_files = \
+classpath/org/omg/CORBA/ACTIVITY_COMPLETED.java \
+classpath/org/omg/CORBA/ACTIVITY_REQUIRED.java \
+classpath/org/omg/CORBA/ARG_IN.java \
+classpath/org/omg/CORBA/ARG_INOUT.java \
+classpath/org/omg/CORBA/ARG_OUT.java \
+classpath/org/omg/CORBA/Any.java \
+classpath/org/omg/CORBA/AnyHolder.java \
+classpath/org/omg/CORBA/AnySeqHelper.java \
+classpath/org/omg/CORBA/AnySeqHolder.java \
+classpath/org/omg/CORBA/BAD_CONTEXT.java \
+classpath/org/omg/CORBA/BAD_INV_ORDER.java \
+classpath/org/omg/CORBA/BAD_OPERATION.java \
+classpath/org/omg/CORBA/BAD_PARAM.java \
+classpath/org/omg/CORBA/BAD_POLICY.java \
+classpath/org/omg/CORBA/BAD_POLICY_TYPE.java \
+classpath/org/omg/CORBA/BAD_POLICY_VALUE.java \
+classpath/org/omg/CORBA/BAD_QOS.java \
+classpath/org/omg/CORBA/BAD_TYPECODE.java \
+classpath/org/omg/CORBA/BooleanHolder.java \
+classpath/org/omg/CORBA/BooleanSeqHelper.java \
+classpath/org/omg/CORBA/BooleanSeqHolder.java \
+classpath/org/omg/CORBA/Bounds.java \
+classpath/org/omg/CORBA/ByteHolder.java \
+classpath/org/omg/CORBA/CODESET_INCOMPATIBLE.java \
+classpath/org/omg/CORBA/COMM_FAILURE.java \
+classpath/org/omg/CORBA/CTX_RESTRICT_SCOPE.java \
+classpath/org/omg/CORBA/CharHolder.java \
+classpath/org/omg/CORBA/CharSeqHelper.java \
+classpath/org/omg/CORBA/CharSeqHolder.java \
+classpath/org/omg/CORBA/CompletionStatus.java \
+classpath/org/omg/CORBA/CompletionStatusHelper.java \
+classpath/org/omg/CORBA/Context.java \
+classpath/org/omg/CORBA/ContextList.java \
+classpath/org/omg/CORBA/Current.java \
+classpath/org/omg/CORBA/CurrentHelper.java \
+classpath/org/omg/CORBA/CurrentHolder.java \
+classpath/org/omg/CORBA/CurrentOperations.java \
+classpath/org/omg/CORBA/CustomMarshal.java \
+classpath/org/omg/CORBA/CustomValue.java \
+classpath/org/omg/CORBA/DATA_CONVERSION.java \
+classpath/org/omg/CORBA/DataInputStream.java \
+classpath/org/omg/CORBA/DataOutputStream.java \
+classpath/org/omg/CORBA/DefinitionKind.java \
+classpath/org/omg/CORBA/DefinitionKindHelper.java \
+classpath/org/omg/CORBA/DomainManager.java \
+classpath/org/omg/CORBA/DomainManagerOperations.java \
+classpath/org/omg/CORBA/DoubleHolder.java \
+classpath/org/omg/CORBA/DoubleSeqHelper.java \
+classpath/org/omg/CORBA/DoubleSeqHolder.java \
+classpath/org/omg/CORBA/DynAny.java \
+classpath/org/omg/CORBA/DynAnyPackage/Invalid.java \
+classpath/org/omg/CORBA/DynAnyPackage/InvalidSeq.java \
+classpath/org/omg/CORBA/DynAnyPackage/InvalidValue.java \
+classpath/org/omg/CORBA/DynAnyPackage/TypeMismatch.java \
+classpath/org/omg/CORBA/DynArray.java \
+classpath/org/omg/CORBA/DynEnum.java \
+classpath/org/omg/CORBA/DynFixed.java \
+classpath/org/omg/CORBA/DynSequence.java \
+classpath/org/omg/CORBA/DynStruct.java \
+classpath/org/omg/CORBA/DynUnion.java \
+classpath/org/omg/CORBA/DynValue.java \
+classpath/org/omg/CORBA/DynamicImplementation.java \
+classpath/org/omg/CORBA/Environment.java \
+classpath/org/omg/CORBA/ExceptionList.java \
+classpath/org/omg/CORBA/FREE_MEM.java \
+classpath/org/omg/CORBA/FieldNameHelper.java \
+classpath/org/omg/CORBA/FixedHolder.java \
+classpath/org/omg/CORBA/FloatHolder.java \
+classpath/org/omg/CORBA/FloatSeqHelper.java \
+classpath/org/omg/CORBA/FloatSeqHolder.java \
+classpath/org/omg/CORBA/IDLType.java \
+classpath/org/omg/CORBA/IDLTypeHelper.java \
+classpath/org/omg/CORBA/IDLTypeOperations.java \
+classpath/org/omg/CORBA/IMP_LIMIT.java \
+classpath/org/omg/CORBA/INITIALIZE.java \
+classpath/org/omg/CORBA/INTERNAL.java \
+classpath/org/omg/CORBA/INTF_REPOS.java \
+classpath/org/omg/CORBA/INVALID_ACTIVITY.java \
+classpath/org/omg/CORBA/INVALID_TRANSACTION.java \
+classpath/org/omg/CORBA/INV_FLAG.java \
+classpath/org/omg/CORBA/INV_IDENT.java \
+classpath/org/omg/CORBA/INV_OBJREF.java \
+classpath/org/omg/CORBA/INV_POLICY.java \
+classpath/org/omg/CORBA/IRObject.java \
+classpath/org/omg/CORBA/IRObjectOperations.java \
+classpath/org/omg/CORBA/IdentifierHelper.java \
+classpath/org/omg/CORBA/IntHolder.java \
+classpath/org/omg/CORBA/LocalObject.java \
+classpath/org/omg/CORBA/LongHolder.java \
+classpath/org/omg/CORBA/LongLongSeqHelper.java \
+classpath/org/omg/CORBA/LongLongSeqHolder.java \
+classpath/org/omg/CORBA/LongSeqHelper.java \
+classpath/org/omg/CORBA/LongSeqHolder.java \
+classpath/org/omg/CORBA/MARSHAL.java \
+classpath/org/omg/CORBA/NO_IMPLEMENT.java \
+classpath/org/omg/CORBA/NO_MEMORY.java \
+classpath/org/omg/CORBA/NO_PERMISSION.java \
+classpath/org/omg/CORBA/NO_RESOURCES.java \
+classpath/org/omg/CORBA/NO_RESPONSE.java \
+classpath/org/omg/CORBA/NVList.java \
+classpath/org/omg/CORBA/NameValuePair.java \
+classpath/org/omg/CORBA/NameValuePairHelper.java \
+classpath/org/omg/CORBA/NamedValue.java \
+classpath/org/omg/CORBA/OBJECT_NOT_EXIST.java \
+classpath/org/omg/CORBA/OBJ_ADAPTER.java \
+classpath/org/omg/CORBA/OMGVMCID.java \
+classpath/org/omg/CORBA/ORB.java \
+classpath/org/omg/CORBA/ORBPackage/InconsistentTypeCode.java \
+classpath/org/omg/CORBA/ORBPackage/InvalidName.java \
+classpath/org/omg/CORBA/Object.java \
+classpath/org/omg/CORBA/ObjectHelper.java \
+classpath/org/omg/CORBA/ObjectHolder.java \
+classpath/org/omg/CORBA/OctetSeqHelper.java \
+classpath/org/omg/CORBA/OctetSeqHolder.java \
+classpath/org/omg/CORBA/PERSIST_STORE.java \
+classpath/org/omg/CORBA/PRIVATE_MEMBER.java \
+classpath/org/omg/CORBA/PUBLIC_MEMBER.java \
+classpath/org/omg/CORBA/ParameterMode.java \
+classpath/org/omg/CORBA/ParameterModeHelper.java \
+classpath/org/omg/CORBA/ParameterModeHolder.java \
+classpath/org/omg/CORBA/Policy.java \
+classpath/org/omg/CORBA/PolicyError.java \
+classpath/org/omg/CORBA/PolicyErrorCodeHelper.java \
+classpath/org/omg/CORBA/PolicyErrorHelper.java \
+classpath/org/omg/CORBA/PolicyErrorHolder.java \
+classpath/org/omg/CORBA/PolicyHelper.java \
+classpath/org/omg/CORBA/PolicyHolder.java \
+classpath/org/omg/CORBA/PolicyListHelper.java \
+classpath/org/omg/CORBA/PolicyListHolder.java \
+classpath/org/omg/CORBA/PolicyOperations.java \
+classpath/org/omg/CORBA/PolicyTypeHelper.java \
+classpath/org/omg/CORBA/Principal.java \
+classpath/org/omg/CORBA/PrincipalHolder.java \
+classpath/org/omg/CORBA/REBIND.java \
+classpath/org/omg/CORBA/RepositoryIdHelper.java \
+classpath/org/omg/CORBA/Request.java \
+classpath/org/omg/CORBA/ServerRequest.java \
+classpath/org/omg/CORBA/ServiceDetail.java \
+classpath/org/omg/CORBA/ServiceDetailHelper.java \
+classpath/org/omg/CORBA/ServiceInformation.java \
+classpath/org/omg/CORBA/ServiceInformationHelper.java \
+classpath/org/omg/CORBA/ServiceInformationHolder.java \
+classpath/org/omg/CORBA/SetOverrideType.java \
+classpath/org/omg/CORBA/SetOverrideTypeHelper.java \
+classpath/org/omg/CORBA/ShortHolder.java \
+classpath/org/omg/CORBA/ShortSeqHelper.java \
+classpath/org/omg/CORBA/ShortSeqHolder.java \
+classpath/org/omg/CORBA/StringHolder.java \
+classpath/org/omg/CORBA/StringSeqHelper.java \
+classpath/org/omg/CORBA/StringSeqHolder.java \
+classpath/org/omg/CORBA/StringValueHelper.java \
+classpath/org/omg/CORBA/StructMember.java \
+classpath/org/omg/CORBA/StructMemberHelper.java \
+classpath/org/omg/CORBA/SystemException.java \
+classpath/org/omg/CORBA/TCKind.java \
+classpath/org/omg/CORBA/TIMEOUT.java \
+classpath/org/omg/CORBA/TRANSACTION_MODE.java \
+classpath/org/omg/CORBA/TRANSACTION_REQUIRED.java \
+classpath/org/omg/CORBA/TRANSACTION_ROLLEDBACK.java \
+classpath/org/omg/CORBA/TRANSACTION_UNAVAILABLE.java \
+classpath/org/omg/CORBA/TRANSIENT.java \
+classpath/org/omg/CORBA/TypeCode.java \
+classpath/org/omg/CORBA/TypeCodeHolder.java \
+classpath/org/omg/CORBA/TypeCodePackage/BadKind.java \
+classpath/org/omg/CORBA/TypeCodePackage/Bounds.java \
+classpath/org/omg/CORBA/ULongLongSeqHelper.java \
+classpath/org/omg/CORBA/ULongLongSeqHolder.java \
+classpath/org/omg/CORBA/ULongSeqHelper.java \
+classpath/org/omg/CORBA/ULongSeqHolder.java \
+classpath/org/omg/CORBA/UNKNOWN.java \
+classpath/org/omg/CORBA/UNSUPPORTED_POLICY.java \
+classpath/org/omg/CORBA/UNSUPPORTED_POLICY_VALUE.java \
+classpath/org/omg/CORBA/UShortSeqHelper.java \
+classpath/org/omg/CORBA/UShortSeqHolder.java \
+classpath/org/omg/CORBA/UnionMember.java \
+classpath/org/omg/CORBA/UnionMemberHelper.java \
+classpath/org/omg/CORBA/UnknownUserException.java \
+classpath/org/omg/CORBA/UnknownUserExceptionHelper.java \
+classpath/org/omg/CORBA/UnknownUserExceptionHolder.java \
+classpath/org/omg/CORBA/UserException.java \
+classpath/org/omg/CORBA/VM_ABSTRACT.java \
+classpath/org/omg/CORBA/VM_CUSTOM.java \
+classpath/org/omg/CORBA/VM_NONE.java \
+classpath/org/omg/CORBA/VM_TRUNCATABLE.java \
+classpath/org/omg/CORBA/ValueBaseHelper.java \
+classpath/org/omg/CORBA/ValueBaseHolder.java \
+classpath/org/omg/CORBA/ValueMember.java \
+classpath/org/omg/CORBA/ValueMemberHelper.java \
+classpath/org/omg/CORBA/VersionSpecHelper.java \
+classpath/org/omg/CORBA/VisibilityHelper.java \
+classpath/org/omg/CORBA/WCharSeqHelper.java \
+classpath/org/omg/CORBA/WCharSeqHolder.java \
+classpath/org/omg/CORBA/WStringSeqHelper.java \
+classpath/org/omg/CORBA/WStringSeqHolder.java \
+classpath/org/omg/CORBA/WStringValueHelper.java \
+classpath/org/omg/CORBA/WrongTransaction.java \
+classpath/org/omg/CORBA/WrongTransactionHelper.java \
+classpath/org/omg/CORBA/WrongTransactionHolder.java \
+classpath/org/omg/CORBA/_IDLTypeStub.java \
+classpath/org/omg/CORBA/_PolicyStub.java \
+classpath/org/omg/CORBA/portable/ApplicationException.java \
+classpath/org/omg/CORBA/portable/BoxedValueHelper.java \
+classpath/org/omg/CORBA/portable/CustomValue.java \
+classpath/org/omg/CORBA/portable/Delegate.java \
+classpath/org/omg/CORBA/portable/IDLEntity.java \
+classpath/org/omg/CORBA/portable/IndirectionException.java \
+classpath/org/omg/CORBA/portable/InputStream.java \
+classpath/org/omg/CORBA/portable/InvokeHandler.java \
+classpath/org/omg/CORBA/portable/ObjectImpl.java \
+classpath/org/omg/CORBA/portable/OutputStream.java \
+classpath/org/omg/CORBA/portable/RemarshalException.java \
+classpath/org/omg/CORBA/portable/ResponseHandler.java \
+classpath/org/omg/CORBA/portable/ServantObject.java \
+classpath/org/omg/CORBA/portable/Streamable.java \
+classpath/org/omg/CORBA/portable/StreamableValue.java \
+classpath/org/omg/CORBA/portable/UnknownException.java \
+classpath/org/omg/CORBA/portable/ValueBase.java \
+classpath/org/omg/CORBA/portable/ValueFactory.java \
+classpath/org/omg/CORBA_2_3/ORB.java \
+classpath/org/omg/CORBA_2_3/portable/Delegate.java \
+classpath/org/omg/CORBA_2_3/portable/InputStream.java \
+classpath/org/omg/CORBA_2_3/portable/ObjectImpl.java \
+classpath/org/omg/CORBA_2_3/portable/OutputStream.java \
+classpath/org/omg/CosNaming/Binding.java \
+classpath/org/omg/CosNaming/BindingHelper.java \
+classpath/org/omg/CosNaming/BindingHolder.java \
+classpath/org/omg/CosNaming/BindingIterator.java \
+classpath/org/omg/CosNaming/BindingIteratorHelper.java \
+classpath/org/omg/CosNaming/BindingIteratorHolder.java \
+classpath/org/omg/CosNaming/BindingIteratorOperations.java \
+classpath/org/omg/CosNaming/BindingIteratorPOA.java \
+classpath/org/omg/CosNaming/BindingListHelper.java \
+classpath/org/omg/CosNaming/BindingListHolder.java \
+classpath/org/omg/CosNaming/BindingType.java \
+classpath/org/omg/CosNaming/BindingTypeHelper.java \
+classpath/org/omg/CosNaming/BindingTypeHolder.java \
+classpath/org/omg/CosNaming/IstringHelper.java \
+classpath/org/omg/CosNaming/NameComponent.java \
+classpath/org/omg/CosNaming/NameComponentHelper.java \
+classpath/org/omg/CosNaming/NameComponentHolder.java \
+classpath/org/omg/CosNaming/NameHelper.java \
+classpath/org/omg/CosNaming/NameHolder.java \
+classpath/org/omg/CosNaming/NamingContext.java \
+classpath/org/omg/CosNaming/NamingContextExt.java \
+classpath/org/omg/CosNaming/NamingContextExtHelper.java \
+classpath/org/omg/CosNaming/NamingContextExtHolder.java \
+classpath/org/omg/CosNaming/NamingContextExtOperations.java \
+classpath/org/omg/CosNaming/NamingContextExtPOA.java \
+classpath/org/omg/CosNaming/NamingContextExtPackage/AddressHelper.java \
+classpath/org/omg/CosNaming/NamingContextExtPackage/InvalidAddress.java \
+classpath/org/omg/CosNaming/NamingContextExtPackage/InvalidAddressHelper.java \
+classpath/org/omg/CosNaming/NamingContextExtPackage/InvalidAddressHolder.java \
+classpath/org/omg/CosNaming/NamingContextExtPackage/StringNameHelper.java \
+classpath/org/omg/CosNaming/NamingContextExtPackage/URLStringHelper.java \
+classpath/org/omg/CosNaming/NamingContextHelper.java \
+classpath/org/omg/CosNaming/NamingContextHolder.java \
+classpath/org/omg/CosNaming/NamingContextOperations.java \
+classpath/org/omg/CosNaming/NamingContextPOA.java \
+classpath/org/omg/CosNaming/NamingContextPackage/AlreadyBound.java \
+classpath/org/omg/CosNaming/NamingContextPackage/AlreadyBoundHelper.java \
+classpath/org/omg/CosNaming/NamingContextPackage/AlreadyBoundHolder.java \
+classpath/org/omg/CosNaming/NamingContextPackage/CannotProceed.java \
+classpath/org/omg/CosNaming/NamingContextPackage/CannotProceedHelper.java \
+classpath/org/omg/CosNaming/NamingContextPackage/CannotProceedHolder.java \
+classpath/org/omg/CosNaming/NamingContextPackage/InvalidName.java \
+classpath/org/omg/CosNaming/NamingContextPackage/InvalidNameHelper.java \
+classpath/org/omg/CosNaming/NamingContextPackage/InvalidNameHolder.java \
+classpath/org/omg/CosNaming/NamingContextPackage/NotEmpty.java \
+classpath/org/omg/CosNaming/NamingContextPackage/NotEmptyHelper.java \
+classpath/org/omg/CosNaming/NamingContextPackage/NotEmptyHolder.java \
+classpath/org/omg/CosNaming/NamingContextPackage/NotFound.java \
+classpath/org/omg/CosNaming/NamingContextPackage/NotFoundHelper.java \
+classpath/org/omg/CosNaming/NamingContextPackage/NotFoundHolder.java \
+classpath/org/omg/CosNaming/NamingContextPackage/NotFoundReason.java \
+classpath/org/omg/CosNaming/NamingContextPackage/NotFoundReasonHelper.java \
+classpath/org/omg/CosNaming/NamingContextPackage/NotFoundReasonHolder.java \
+classpath/org/omg/CosNaming/_BindingIteratorImplBase.java \
+classpath/org/omg/CosNaming/_BindingIteratorStub.java \
+classpath/org/omg/CosNaming/_NamingContextExtImplBase.java \
+classpath/org/omg/CosNaming/_NamingContextExtStub.java \
+classpath/org/omg/CosNaming/_NamingContextImplBase.java \
+classpath/org/omg/CosNaming/_NamingContextStub.java \
+classpath/org/omg/Dynamic/Parameter.java \
+classpath/org/omg/DynamicAny/AnySeqHelper.java \
+classpath/org/omg/DynamicAny/DynAny.java \
+classpath/org/omg/DynamicAny/DynAnyFactory.java \
+classpath/org/omg/DynamicAny/DynAnyFactoryHelper.java \
+classpath/org/omg/DynamicAny/DynAnyFactoryOperations.java \
+classpath/org/omg/DynamicAny/DynAnyFactoryPackage/InconsistentTypeCode.java \
+classpath/org/omg/DynamicAny/DynAnyFactoryPackage/InconsistentTypeCodeHelper.java \
+classpath/org/omg/DynamicAny/DynAnyHelper.java \
+classpath/org/omg/DynamicAny/DynAnyOperations.java \
+classpath/org/omg/DynamicAny/DynAnyPackage/InvalidValue.java \
+classpath/org/omg/DynamicAny/DynAnyPackage/InvalidValueHelper.java \
+classpath/org/omg/DynamicAny/DynAnyPackage/TypeMismatch.java \
+classpath/org/omg/DynamicAny/DynAnyPackage/TypeMismatchHelper.java \
+classpath/org/omg/DynamicAny/DynAnySeqHelper.java \
+classpath/org/omg/DynamicAny/DynArray.java \
+classpath/org/omg/DynamicAny/DynArrayHelper.java \
+classpath/org/omg/DynamicAny/DynArrayOperations.java \
+classpath/org/omg/DynamicAny/DynEnum.java \
+classpath/org/omg/DynamicAny/DynEnumHelper.java \
+classpath/org/omg/DynamicAny/DynEnumOperations.java \
+classpath/org/omg/DynamicAny/DynFixed.java \
+classpath/org/omg/DynamicAny/DynFixedHelper.java \
+classpath/org/omg/DynamicAny/DynFixedOperations.java \
+classpath/org/omg/DynamicAny/DynSequence.java \
+classpath/org/omg/DynamicAny/DynSequenceHelper.java \
+classpath/org/omg/DynamicAny/DynSequenceOperations.java \
+classpath/org/omg/DynamicAny/DynStruct.java \
+classpath/org/omg/DynamicAny/DynStructHelper.java \
+classpath/org/omg/DynamicAny/DynStructOperations.java \
+classpath/org/omg/DynamicAny/DynUnion.java \
+classpath/org/omg/DynamicAny/DynUnionHelper.java \
+classpath/org/omg/DynamicAny/DynUnionOperations.java \
+classpath/org/omg/DynamicAny/DynValue.java \
+classpath/org/omg/DynamicAny/DynValueBox.java \
+classpath/org/omg/DynamicAny/DynValueBoxOperations.java \
+classpath/org/omg/DynamicAny/DynValueCommon.java \
+classpath/org/omg/DynamicAny/DynValueCommonOperations.java \
+classpath/org/omg/DynamicAny/DynValueHelper.java \
+classpath/org/omg/DynamicAny/DynValueOperations.java \
+classpath/org/omg/DynamicAny/FieldNameHelper.java \
+classpath/org/omg/DynamicAny/NameDynAnyPair.java \
+classpath/org/omg/DynamicAny/NameDynAnyPairHelper.java \
+classpath/org/omg/DynamicAny/NameDynAnyPairSeqHelper.java \
+classpath/org/omg/DynamicAny/NameValuePair.java \
+classpath/org/omg/DynamicAny/NameValuePairHelper.java \
+classpath/org/omg/DynamicAny/NameValuePairSeqHelper.java \
+classpath/org/omg/DynamicAny/_DynAnyFactoryStub.java \
+classpath/org/omg/DynamicAny/_DynAnyStub.java \
+classpath/org/omg/DynamicAny/_DynArrayStub.java \
+classpath/org/omg/DynamicAny/_DynEnumStub.java \
+classpath/org/omg/DynamicAny/_DynFixedStub.java \
+classpath/org/omg/DynamicAny/_DynSequenceStub.java \
+classpath/org/omg/DynamicAny/_DynStructStub.java \
+classpath/org/omg/DynamicAny/_DynUnionStub.java \
+classpath/org/omg/DynamicAny/_DynValueStub.java \
+classpath/org/omg/IOP/CodeSets.java \
+classpath/org/omg/IOP/Codec.java \
+classpath/org/omg/IOP/CodecFactory.java \
+classpath/org/omg/IOP/CodecFactoryHelper.java \
+classpath/org/omg/IOP/CodecFactoryOperations.java \
+classpath/org/omg/IOP/CodecFactoryPackage/UnknownEncoding.java \
+classpath/org/omg/IOP/CodecFactoryPackage/UnknownEncodingHelper.java \
+classpath/org/omg/IOP/CodecOperations.java \
+classpath/org/omg/IOP/CodecPackage/FormatMismatch.java \
+classpath/org/omg/IOP/CodecPackage/FormatMismatchHelper.java \
+classpath/org/omg/IOP/CodecPackage/InvalidTypeForEncoding.java \
+classpath/org/omg/IOP/CodecPackage/InvalidTypeForEncodingHelper.java \
+classpath/org/omg/IOP/CodecPackage/TypeMismatch.java \
+classpath/org/omg/IOP/CodecPackage/TypeMismatchHelper.java \
+classpath/org/omg/IOP/ComponentIdHelper.java \
+classpath/org/omg/IOP/ENCODING_CDR_ENCAPS.java \
+classpath/org/omg/IOP/Encoding.java \
+classpath/org/omg/IOP/ExceptionDetailMessage.java \
+classpath/org/omg/IOP/IOR.java \
+classpath/org/omg/IOP/IORHelper.java \
+classpath/org/omg/IOP/IORHolder.java \
+classpath/org/omg/IOP/MultipleComponentProfileHelper.java \
+classpath/org/omg/IOP/MultipleComponentProfileHolder.java \
+classpath/org/omg/IOP/ProfileIdHelper.java \
+classpath/org/omg/IOP/RMICustomMaxStreamFormat.java \
+classpath/org/omg/IOP/ServiceContext.java \
+classpath/org/omg/IOP/ServiceContextHelper.java \
+classpath/org/omg/IOP/ServiceContextHolder.java \
+classpath/org/omg/IOP/ServiceContextListHelper.java \
+classpath/org/omg/IOP/ServiceContextListHolder.java \
+classpath/org/omg/IOP/ServiceIdHelper.java \
+classpath/org/omg/IOP/TAG_ALTERNATE_IIOP_ADDRESS.java \
+classpath/org/omg/IOP/TAG_CODE_SETS.java \
+classpath/org/omg/IOP/TAG_INTERNET_IOP.java \
+classpath/org/omg/IOP/TAG_JAVA_CODEBASE.java \
+classpath/org/omg/IOP/TAG_MULTIPLE_COMPONENTS.java \
+classpath/org/omg/IOP/TAG_ORB_TYPE.java \
+classpath/org/omg/IOP/TAG_POLICIES.java \
+classpath/org/omg/IOP/TAG_RMI_CUSTOM_MAX_STREAM_FORMAT.java \
+classpath/org/omg/IOP/TaggedComponent.java \
+classpath/org/omg/IOP/TaggedComponentHelper.java \
+classpath/org/omg/IOP/TaggedComponentHolder.java \
+classpath/org/omg/IOP/TaggedProfile.java \
+classpath/org/omg/IOP/TaggedProfileHelper.java \
+classpath/org/omg/IOP/TaggedProfileHolder.java \
+classpath/org/omg/IOP/TransactionService.java \
+classpath/org/omg/Messaging/SYNC_WITH_TRANSPORT.java \
+classpath/org/omg/Messaging/SyncScopeHelper.java \
+classpath/org/omg/PortableInterceptor/ACTIVE.java \
+classpath/org/omg/PortableInterceptor/AdapterManagerIdHelper.java \
+classpath/org/omg/PortableInterceptor/AdapterNameHelper.java \
+classpath/org/omg/PortableInterceptor/AdapterStateHelper.java \
+classpath/org/omg/PortableInterceptor/ClientRequestInfo.java \
+classpath/org/omg/PortableInterceptor/ClientRequestInfoOperations.java \
+classpath/org/omg/PortableInterceptor/ClientRequestInterceptor.java \
+classpath/org/omg/PortableInterceptor/ClientRequestInterceptorOperations.java \
+classpath/org/omg/PortableInterceptor/Current.java \
+classpath/org/omg/PortableInterceptor/CurrentHelper.java \
+classpath/org/omg/PortableInterceptor/CurrentOperations.java \
+classpath/org/omg/PortableInterceptor/DISCARDING.java \
+classpath/org/omg/PortableInterceptor/ForwardRequest.java \
+classpath/org/omg/PortableInterceptor/ForwardRequestHelper.java \
+classpath/org/omg/PortableInterceptor/HOLDING.java \
+classpath/org/omg/PortableInterceptor/INACTIVE.java \
+classpath/org/omg/PortableInterceptor/IORInfo.java \
+classpath/org/omg/PortableInterceptor/IORInfoOperations.java \
+classpath/org/omg/PortableInterceptor/IORInterceptor.java \
+classpath/org/omg/PortableInterceptor/IORInterceptorOperations.java \
+classpath/org/omg/PortableInterceptor/IORInterceptor_3_0.java \
+classpath/org/omg/PortableInterceptor/IORInterceptor_3_0Helper.java \
+classpath/org/omg/PortableInterceptor/IORInterceptor_3_0Holder.java \
+classpath/org/omg/PortableInterceptor/IORInterceptor_3_0Operations.java \
+classpath/org/omg/PortableInterceptor/Interceptor.java \
+classpath/org/omg/PortableInterceptor/InterceptorOperations.java \
+classpath/org/omg/PortableInterceptor/InvalidSlot.java \
+classpath/org/omg/PortableInterceptor/InvalidSlotHelper.java \
+classpath/org/omg/PortableInterceptor/LOCATION_FORWARD.java \
+classpath/org/omg/PortableInterceptor/NON_EXISTENT.java \
+classpath/org/omg/PortableInterceptor/ORBIdHelper.java \
+classpath/org/omg/PortableInterceptor/ORBInitInfo.java \
+classpath/org/omg/PortableInterceptor/ORBInitInfoOperations.java \
+classpath/org/omg/PortableInterceptor/ORBInitInfoPackage/DuplicateName.java \
+classpath/org/omg/PortableInterceptor/ORBInitInfoPackage/DuplicateNameHelper.java \
+classpath/org/omg/PortableInterceptor/ORBInitInfoPackage/InvalidName.java \
+classpath/org/omg/PortableInterceptor/ORBInitInfoPackage/InvalidNameHelper.java \
+classpath/org/omg/PortableInterceptor/ORBInitInfoPackage/ObjectIdHelper.java \
+classpath/org/omg/PortableInterceptor/ORBInitializer.java \
+classpath/org/omg/PortableInterceptor/ORBInitializerOperations.java \
+classpath/org/omg/PortableInterceptor/ObjectIdHelper.java \
+classpath/org/omg/PortableInterceptor/ObjectReferenceFactory.java \
+classpath/org/omg/PortableInterceptor/ObjectReferenceFactoryHelper.java \
+classpath/org/omg/PortableInterceptor/ObjectReferenceFactoryHolder.java \
+classpath/org/omg/PortableInterceptor/ObjectReferenceFactoryOperations.java \
+classpath/org/omg/PortableInterceptor/ObjectReferenceTemplate.java \
+classpath/org/omg/PortableInterceptor/ObjectReferenceTemplateHelper.java \
+classpath/org/omg/PortableInterceptor/ObjectReferenceTemplateHolder.java \
+classpath/org/omg/PortableInterceptor/ObjectReferenceTemplateSeqHelper.java \
+classpath/org/omg/PortableInterceptor/ObjectReferenceTemplateSeqHolder.java \
+classpath/org/omg/PortableInterceptor/PolicyFactory.java \
+classpath/org/omg/PortableInterceptor/PolicyFactoryOperations.java \
+classpath/org/omg/PortableInterceptor/RequestInfo.java \
+classpath/org/omg/PortableInterceptor/RequestInfoOperations.java \
+classpath/org/omg/PortableInterceptor/SUCCESSFUL.java \
+classpath/org/omg/PortableInterceptor/SYSTEM_EXCEPTION.java \
+classpath/org/omg/PortableInterceptor/ServerIdHelper.java \
+classpath/org/omg/PortableInterceptor/ServerRequestInfo.java \
+classpath/org/omg/PortableInterceptor/ServerRequestInfoOperations.java \
+classpath/org/omg/PortableInterceptor/ServerRequestInterceptor.java \
+classpath/org/omg/PortableInterceptor/ServerRequestInterceptorOperations.java \
+classpath/org/omg/PortableInterceptor/TRANSPORT_RETRY.java \
+classpath/org/omg/PortableInterceptor/USER_EXCEPTION.java \
+classpath/org/omg/PortableInterceptor/_IORInterceptor_3_0Stub.java \
+classpath/org/omg/PortableServer/AdapterActivator.java \
+classpath/org/omg/PortableServer/AdapterActivatorOperations.java \
+classpath/org/omg/PortableServer/Current.java \
+classpath/org/omg/PortableServer/CurrentHelper.java \
+classpath/org/omg/PortableServer/CurrentOperations.java \
+classpath/org/omg/PortableServer/CurrentPackage/NoContext.java \
+classpath/org/omg/PortableServer/CurrentPackage/NoContextHelper.java \
+classpath/org/omg/PortableServer/DynamicImplementation.java \
+classpath/org/omg/PortableServer/ForwardRequest.java \
+classpath/org/omg/PortableServer/ForwardRequestHelper.java \
+classpath/org/omg/PortableServer/ID_ASSIGNMENT_POLICY_ID.java \
+classpath/org/omg/PortableServer/ID_UNIQUENESS_POLICY_ID.java \
+classpath/org/omg/PortableServer/IMPLICIT_ACTIVATION_POLICY_ID.java \
+classpath/org/omg/PortableServer/IdAssignmentPolicy.java \
+classpath/org/omg/PortableServer/IdAssignmentPolicyOperations.java \
+classpath/org/omg/PortableServer/IdAssignmentPolicyValue.java \
+classpath/org/omg/PortableServer/IdUniquenessPolicy.java \
+classpath/org/omg/PortableServer/IdUniquenessPolicyOperations.java \
+classpath/org/omg/PortableServer/IdUniquenessPolicyValue.java \
+classpath/org/omg/PortableServer/ImplicitActivationPolicy.java \
+classpath/org/omg/PortableServer/ImplicitActivationPolicyOperations.java \
+classpath/org/omg/PortableServer/ImplicitActivationPolicyValue.java \
+classpath/org/omg/PortableServer/LIFESPAN_POLICY_ID.java \
+classpath/org/omg/PortableServer/LifespanPolicy.java \
+classpath/org/omg/PortableServer/LifespanPolicyOperations.java \
+classpath/org/omg/PortableServer/LifespanPolicyValue.java \
+classpath/org/omg/PortableServer/POA.java \
+classpath/org/omg/PortableServer/POAHelper.java \
+classpath/org/omg/PortableServer/POAManager.java \
+classpath/org/omg/PortableServer/POAManagerOperations.java \
+classpath/org/omg/PortableServer/POAManagerPackage/AdapterInactive.java \
+classpath/org/omg/PortableServer/POAManagerPackage/AdapterInactiveHelper.java \
+classpath/org/omg/PortableServer/POAManagerPackage/State.java \
+classpath/org/omg/PortableServer/POAOperations.java \
+classpath/org/omg/PortableServer/POAPackage/AdapterAlreadyExists.java \
+classpath/org/omg/PortableServer/POAPackage/AdapterAlreadyExistsHelper.java \
+classpath/org/omg/PortableServer/POAPackage/AdapterNonExistent.java \
+classpath/org/omg/PortableServer/POAPackage/AdapterNonExistentHelper.java \
+classpath/org/omg/PortableServer/POAPackage/InvalidPolicy.java \
+classpath/org/omg/PortableServer/POAPackage/InvalidPolicyHelper.java \
+classpath/org/omg/PortableServer/POAPackage/NoServant.java \
+classpath/org/omg/PortableServer/POAPackage/NoServantHelper.java \
+classpath/org/omg/PortableServer/POAPackage/ObjectAlreadyActive.java \
+classpath/org/omg/PortableServer/POAPackage/ObjectAlreadyActiveHelper.java \
+classpath/org/omg/PortableServer/POAPackage/ObjectNotActive.java \
+classpath/org/omg/PortableServer/POAPackage/ObjectNotActiveHelper.java \
+classpath/org/omg/PortableServer/POAPackage/ServantAlreadyActive.java \
+classpath/org/omg/PortableServer/POAPackage/ServantAlreadyActiveHelper.java \
+classpath/org/omg/PortableServer/POAPackage/ServantNotActive.java \
+classpath/org/omg/PortableServer/POAPackage/ServantNotActiveHelper.java \
+classpath/org/omg/PortableServer/POAPackage/WrongAdapter.java \
+classpath/org/omg/PortableServer/POAPackage/WrongAdapterHelper.java \
+classpath/org/omg/PortableServer/POAPackage/WrongPolicy.java \
+classpath/org/omg/PortableServer/POAPackage/WrongPolicyHelper.java \
+classpath/org/omg/PortableServer/REQUEST_PROCESSING_POLICY_ID.java \
+classpath/org/omg/PortableServer/RequestProcessingPolicy.java \
+classpath/org/omg/PortableServer/RequestProcessingPolicyOperations.java \
+classpath/org/omg/PortableServer/RequestProcessingPolicyValue.java \
+classpath/org/omg/PortableServer/SERVANT_RETENTION_POLICY_ID.java \
+classpath/org/omg/PortableServer/Servant.java \
+classpath/org/omg/PortableServer/ServantActivator.java \
+classpath/org/omg/PortableServer/ServantActivatorHelper.java \
+classpath/org/omg/PortableServer/ServantActivatorOperations.java \
+classpath/org/omg/PortableServer/ServantActivatorPOA.java \
+classpath/org/omg/PortableServer/ServantLocator.java \
+classpath/org/omg/PortableServer/ServantLocatorHelper.java \
+classpath/org/omg/PortableServer/ServantLocatorOperations.java \
+classpath/org/omg/PortableServer/ServantLocatorPOA.java \
+classpath/org/omg/PortableServer/ServantLocatorPackage/CookieHolder.java \
+classpath/org/omg/PortableServer/ServantManager.java \
+classpath/org/omg/PortableServer/ServantManagerOperations.java \
+classpath/org/omg/PortableServer/ServantRetentionPolicy.java \
+classpath/org/omg/PortableServer/ServantRetentionPolicyOperations.java \
+classpath/org/omg/PortableServer/ServantRetentionPolicyValue.java \
+classpath/org/omg/PortableServer/THREAD_POLICY_ID.java \
+classpath/org/omg/PortableServer/ThreadPolicy.java \
+classpath/org/omg/PortableServer/ThreadPolicyOperations.java \
+classpath/org/omg/PortableServer/ThreadPolicyValue.java \
+classpath/org/omg/PortableServer/_ServantActivatorStub.java \
+classpath/org/omg/PortableServer/_ServantLocatorStub.java \
+classpath/org/omg/PortableServer/portable/Delegate.java \
+classpath/org/omg/SendingContext/RunTime.java \
+classpath/org/omg/SendingContext/RunTimeOperations.java \
+classpath/org/omg/stub/java/rmi/_Remote_Stub.java
+
 org_w3c_source_files = \
 classpath/external/w3c_dom/org/w3c/dom/Attr.java \
 classpath/external/w3c_dom/org/w3c/dom/CDATASection.java \
@@ -5035,11 +5758,15 @@ ordinary_header_files = \
   $(org_ietf_jgss_header_files)
 
 bc_objects = \
+  gnu-CORBA.lo \
   gnu-java-beans.lo \
+  gnu-javax-rmi.lo \
   gnu-javax-sound-midi.lo \
   gnu-xml.lo \
   javax-imageio.lo \
+  javax-rmi.lo \
   javax-xml.lo \
+  org-omg.lo \
   org-w3c.lo \
   org-xml.lo
 
@@ -6845,6 +7572,11 @@ lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPEND
 %.lo: %.list
 	$(LTGCJCOMPILE) -c -o $@ -MT $@ -MD -MP -MF $(basename $@).deps @$<
 
+gnu-CORBA.lo: $(gnu_CORBA_source_files)
+	@find classpath/lib/gnu/CORBA -name '*.class' > gnu-CORBA.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-CORBA.lo @gnu-CORBA.list
+	@rm -f gnu-CORBA.list
+
 gnu/awt.list: $(gnu_awt_source_files)
 	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_awt_source_files); do \
@@ -7409,6 +8141,11 @@ gnu/javax/imageio/bmp.list: $(gnu_javax_imageio_bmp_source_files)
 	done > gnu/javax/imageio/bmp.list
 
 -include gnu/javax/imageio/bmp.deps
+
+gnu-javax-rmi.lo: $(gnu_javax_rmi_source_files)
+	@find classpath/lib/gnu/javax/rmi -name '*.class' > gnu-javax-rmi.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-javax-rmi.lo @gnu-javax-rmi.list
+	@rm -f gnu-javax-rmi.list
 
 gnu-javax-sound-midi.lo: $(gnu_javax_sound_midi_source_files)
 	@find classpath/lib/gnu/javax/sound/midi -name '*.class' > gnu-javax-sound-midi.list
@@ -8095,6 +8832,11 @@ javax/print/event.list: $(javax_print_event_source_files)
 
 -include javax/print/event.deps
 
+javax-rmi.lo: $(javax_rmi_source_files)
+	@find classpath/lib/javax/rmi -name '*.class' > javax-rmi.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-rmi.lo @javax-rmi.list
+	@rm -f javax-rmi.list
+
 javax/security/auth.list: $(javax_security_auth_source_files)
 	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_source_files); do \
@@ -8409,6 +9151,11 @@ org/ietf/jgss.list: $(org_ietf_jgss_source_files)
 	done > org/ietf/jgss.list
 
 -include org/ietf/jgss.deps
+
+org-omg.lo: $(org_omg_source_files)
+	@find classpath/lib/org/omg -name '*.class' > org-omg.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-omg.lo @org-omg.list
+	@rm -f org-omg.list
 
 org-w3c.lo: $(org_w3c_source_files)
 	@find classpath/lib/org/w3c -name '*.class' > org-w3c.list
