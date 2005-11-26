@@ -2836,6 +2836,17 @@ choose_mult_variant (enum machine_mode mode, HOST_WIDE_INT val,
   struct mult_cost limit;
   int op_cost;
 
+  /* Fail quickly for impossible bounds.  */
+  if (mult_cost < 0)
+    return false;
+
+  /* Ensure that mult_cost provides a reasonable upper bound.
+     Any constant multiplication can be performed with less
+     than 2 * bits additions.  */
+  op_cost = 2 * GET_MODE_BITSIZE (mode) * add_cost[mode];
+  if (mult_cost > op_cost)
+    mult_cost = op_cost;
+
   *variant = basic_variant;
   limit.cost = mult_cost;
   limit.latency = mult_cost;
