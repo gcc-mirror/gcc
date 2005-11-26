@@ -1,3 +1,8 @@
+2005-11-26  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libgfortran/24945
+	* gfortran.dg/open_status_2.f90: New test.
+	
 2005-11-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/builtins/fprintf.c,
