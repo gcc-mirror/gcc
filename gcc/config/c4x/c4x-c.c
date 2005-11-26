@@ -68,25 +68,25 @@ c4x_parse_pragma (name, func, sect)
 {
   tree f, s, x;
 
-  if (c_lex (&x) != CPP_OPEN_PAREN)
+  if (pragma_lex (&x) != CPP_OPEN_PAREN)
     BAD ("missing '(' after '#pragma %s' - ignored", name);
 
-  if (c_lex (&f) != CPP_NAME)
+  if (pragma_lex (&f) != CPP_NAME)
     BAD ("missing function name in '#pragma %s' - ignored", name);
 
   if (sect)
     {
-      if (c_lex (&x) != CPP_COMMA)
+      if (pragma_lex (&x) != CPP_COMMA)
 	BAD ("malformed '#pragma %s' - ignored", name);
-      if (c_lex (&s) != CPP_STRING)
+      if (pragma_lex (&s) != CPP_STRING)
 	BAD ("missing section name in '#pragma %s' - ignored", name);
       *sect = s;
     }
 
-  if (c_lex (&x) != CPP_CLOSE_PAREN)
+  if (pragma_lex (&x) != CPP_CLOSE_PAREN)
     BAD ("missing ')' for '#pragma %s' - ignored", name);
 
-  if (c_lex (&x) != CPP_EOF)
+  if (pragma_lex (&x) != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of '#pragma %s'", name);
 
   *func = f;

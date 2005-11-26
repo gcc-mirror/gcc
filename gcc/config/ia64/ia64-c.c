@@ -40,13 +40,13 @@ ia64_hpux_handle_builtin_pragma (cpp_reader *pfile ATTRIBUTE_UNUSED)
   enum cpp_ttype type;
   tree x;
 
-  type = c_lex (&x);
+  type = pragma_lex (&x);
   while (type == CPP_NAME)
     {
       ia64_hpux_add_pragma_builtin (x);
-      type = c_lex (&x);
+      type = pragma_lex (&x);
       if (type == CPP_COMMA)
-	type = c_lex (&x);
+	type = pragma_lex (&x);
     }
   if (type != CPP_EOF)
     warning (OPT_Wpragmas, "malformed #pragma builtin");

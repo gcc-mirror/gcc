@@ -64,7 +64,7 @@ extern void maybe_apply_pending_pragma_weaks (void);
 extern tree maybe_apply_renaming_pragma (tree, tree);
 extern void add_to_renaming_pragma_list (tree, tree);
 
-extern enum cpp_ttype c_lex (tree *);
+extern enum cpp_ttype pragma_lex (tree *);
 extern enum cpp_ttype c_lex_with_flags (tree *, location_t *, unsigned char *);
 
 /* If 1, then lex strings into the execution character set.  

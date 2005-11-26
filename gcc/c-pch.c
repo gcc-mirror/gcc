@@ -447,7 +447,7 @@ c_common_pch_pragma (cpp_reader *pfile)
   const char *name;
   int fd;
 
-  if (c_lex (&name_t) != CPP_STRING)
+  if (pragma_lex (&name_t) != CPP_STRING)
     {
       error ("malformed #pragma GCC pch_preprocess, ignored");
       return;
