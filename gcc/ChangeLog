@@ -1,3 +1,11 @@
+2005-11-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/25022
+	* builtins.c (expand_builtin_printf, expand_builtin_fprintf,
+	fold_builtin_fputs, fold_builtin_printf, fold_builtin_fprintf):
+	Lookup the explicit replacement functions for any unlocked
+	stdio builtin transformations.
+
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* fold-const.c (negate_mathfn_p): Fix comment.
