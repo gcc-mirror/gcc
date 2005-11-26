@@ -102,17 +102,17 @@ darwin_pragma_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
   const char *arg;
   tree t, x;
 
-  if (c_lex (&t) != CPP_NAME)
+  if (pragma_lex (&t) != CPP_NAME)
     BAD ("malformed '#pragma options', ignoring");
   arg = IDENTIFIER_POINTER (t);
   if (strcmp (arg, "align"))
     BAD ("malformed '#pragma options', ignoring");
-  if (c_lex (&t) != CPP_EQ)
+  if (pragma_lex (&t) != CPP_EQ)
     BAD ("malformed '#pragma options', ignoring");
-  if (c_lex (&t) != CPP_NAME)
+  if (pragma_lex (&t) != CPP_NAME)
     BAD ("malformed '#pragma options', ignoring");
 
-  if (c_lex (&x) != CPP_EOF)
+  if (pragma_lex (&x) != CPP_EOF)
     warning (0, "junk at end of '#pragma options'");
 
   arg = IDENTIFIER_POINTER (t);
@@ -134,19 +134,19 @@ darwin_pragma_unused (cpp_reader *pfile ATTRIBUTE_UNUSED)
   tree decl, x;
   int tok;
 
-  if (c_lex (&x) != CPP_OPEN_PAREN)
+  if (pragma_lex (&x) != CPP_OPEN_PAREN)
     BAD ("missing '(' after '#pragma unused', ignoring");
 
   while (1)
     {
-      tok = c_lex (&decl);
+      tok = pragma_lex (&decl);
       if (tok == CPP_NAME && decl)
 	{
 	  tree local = lookup_name (decl);
 	  if (local && (TREE_CODE (local) == PARM_DECL
 			|| TREE_CODE (local) == VAR_DECL))
 	    TREE_USED (local) = 1;
-	  tok = c_lex (&x);
+	  tok = pragma_lex (&x);
 	  if (tok != CPP_COMMA)
 	    break;
 	}
@@ -155,7 +155,7 @@ darwin_pragma_unused (cpp_reader *pfile ATTRIBUTE_UNUSED)
   if (tok != CPP_CLOSE_PAREN)
     BAD ("missing ')' after '#pragma unused', ignoring");
 
-  if (c_lex (&x) != CPP_EOF)
+  if (pragma_lex (&x) != CPP_EOF)
     warning (0, "junk at end of '#pragma unused'");
 }
 

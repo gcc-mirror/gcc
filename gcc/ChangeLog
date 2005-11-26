@@ -1,3 +1,13 @@
+2005-11-26  Richard Henderson  <rth@redhat.com>
+
+	* c-lex.c (pragma_lex): Rename from c_lex.
+	* c-pch.c: Update for pragma_lex rename.
+	* c-pragma.c, c-pragma.h, config/ia64/ia64-c.c: Likewise.
+	* config/m32c/m32c-pragma.c, config/darwin-c.c: Likewise.
+	* config/rs6000/rs6000-c.c, config/c4x/c4x-c.c: Likewise.
+	* config/sol2-c.c, config/v850/v850-c.c: Likewise.
+	* doc/tm.texi: Likewise.
+
 2005-11-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23669

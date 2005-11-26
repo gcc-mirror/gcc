@@ -9160,7 +9160,7 @@ pragma of the form
 @code{NULL} to put the pragma in the global namespace.  The callback
 routine receives @var{pfile} as its first argument, which can be passed
 on to cpplib's functions if necessary.  You can lex tokens after the
-@var{name} by calling @code{c_lex}.  Tokens that are not read by the
+@var{name} by calling @code{pragma_lex}.  Tokens that are not read by the
 callback will be silently ignored.  The end of the line is indicated by
 a token of type @code{CPP_EOF}.  Macro expansion occurs on the
 arguments of pragmas registered with
@@ -9170,15 +9170,15 @@ pragmas registered with @code{c_register_pragma}.
 For an example use of this routine, see @file{c4x.h} and the callback
 routines defined in @file{c4x-c.c}.
 
-Note that the use of @code{c_lex} is specific to the C and C++
+Note that the use of @code{pragma_lex} is specific to the C and C++
 compilers.  It will not work in the Java or Fortran compilers, or any
-other language compilers for that matter.  Thus if @code{c_lex} is going
+other language compilers for that matter.  Thus if @code{pragma_lex} is going
 to be called from target-specific code, it must only be done so when
 building the C and C++ compilers.  This can be done by defining the
 variables @code{c_target_objs} and @code{cxx_target_objs} in the
 target entry in the @file{config.gcc} file.  These variables should name
 the target-specific, language-specific object file which contains the
-code that uses @code{c_lex}.  Note it will also be necessary to add a
+code that uses @code{pragma_lex}.  Note it will also be necessary to add a
 rule to the makefile fragment pointed to by @code{tmake_file} that shows
 how to build this object file.
 @end deftypefun

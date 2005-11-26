@@ -52,14 +52,14 @@ m32c_pragma_memregs (cpp_reader * reader ATTRIBUTE_UNUSED)
   HOST_WIDE_INT i;
   static char new_number[3];
 
-  type = c_lex (&val);
+  type = pragma_lex (&val);
   if (type == CPP_NUMBER)
     {
       if (host_integerp (val, 1))
 	{
 	  i = tree_low_cst (val, 1);
 
-	  type = c_lex (&val);
+	  type = pragma_lex (&val);
 	  if (type != CPP_EOF)
 	    warning (0, "junk at end of #pragma GCC memregs [0..16]");
 

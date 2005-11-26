@@ -460,11 +460,11 @@ parse_strconst_pragma (const char* name, int opt)
   tree result, x;
   enum cpp_ttype t;
 
-  t = c_lex (&x);
+  t = pragma_lex (&x);
   if (t == CPP_STRING)
     {
       result = x;
-      if (c_lex (&x) != CPP_EOF)
+      if (pragma_lex (&x) != CPP_EOF)
 	warning (0, "junk at end of #pragma %s", name);
       return result;
     }
@@ -583,7 +583,7 @@ static void
 handle_pragma_java_exceptions (cpp_reader* dfile ATTRIBUTE_UNUSED )
 {
   tree x;
-  if (c_lex (&x) != CPP_EOF)
+  if (pragma_lex (&x) != CPP_EOF)
     warning (0, "junk at end of #pragma GCC java_exceptions");
 
   choose_personality_routine (lang_java);

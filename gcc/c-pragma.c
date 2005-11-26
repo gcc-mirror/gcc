@@ -147,10 +147,10 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
   enum cpp_ttype token;
   enum { set, push, pop } action;
 
-  if (c_lex (&x) != CPP_OPEN_PAREN)
+  if (pragma_lex (&x) != CPP_OPEN_PAREN)
     GCC_BAD ("missing %<(%> after %<#pragma pack%> - ignored");
 
-  token = c_lex (&x);
+  token = pragma_lex (&x);
   if (token == CPP_CLOSE_PAREN)
     {
       action = set;
@@ -160,7 +160,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
     {
       align = TREE_INT_CST_LOW (x);
       action = set;
-      if (c_lex (&x) != CPP_CLOSE_PAREN)
+      if (pragma_lex (&x) != CPP_CLOSE_PAREN)
 	GCC_BAD ("malformed %<#pragma pack%> - ignored");
     }
   else if (token == CPP_NAME)
@@ -179,9 +179,9 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
       else
 	GCC_BAD2 ("unknown action %qs for %<#pragma pack%> - ignored", op);
 
-      while ((token = c_lex (&x)) == CPP_COMMA)
+      while ((token = pragma_lex (&x)) == CPP_COMMA)
 	{
-	  token = c_lex (&x);
+	  token = pragma_lex (&x);
 	  if (token == CPP_NAME && id == 0)
 	    {
 	      id = x;
@@ -203,7 +203,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
   else
     GCC_BAD ("malformed %<#pragma pack%> - ignored");
 
-  if (c_lex (&x) != CPP_EOF)
+  if (pragma_lex (&x) != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of %<#pragma pack%>");
 
   if (flag_pack_struct)
@@ -333,14 +333,14 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
 
   value = 0;
 
-  if (c_lex (&name) != CPP_NAME)
+  if (pragma_lex (&name) != CPP_NAME)
     GCC_BAD ("malformed #pragma weak, ignored");
-  t = c_lex (&x);
+  t = pragma_lex (&x);
   if (t == CPP_EQ)
     {
-      if (c_lex (&value) != CPP_NAME)
+      if (pragma_lex (&value) != CPP_NAME)
 	GCC_BAD ("malformed #pragma weak, ignored");
-      t = c_lex (&x);
+      t = pragma_lex (&x);
     }
   if (t != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of #pragma weak");
@@ -410,11 +410,11 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
   tree oldname, newname, decl, x;
   enum cpp_ttype t;
 
-  if (c_lex (&oldname) != CPP_NAME)
+  if (pragma_lex (&oldname) != CPP_NAME)
     GCC_BAD ("malformed #pragma redefine_extname, ignored");
-  if (c_lex (&newname) != CPP_NAME)
+  if (pragma_lex (&newname) != CPP_NAME)
     GCC_BAD ("malformed #pragma redefine_extname, ignored");
-  t = c_lex (&x);
+  t = pragma_lex (&x);
   if (t != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of #pragma redefine_extname");
 
@@ -480,9 +480,9 @@ handle_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
   tree prefix, x;
   enum cpp_ttype t;
 
-  if (c_lex (&prefix) != CPP_STRING)
+  if (pragma_lex (&prefix) != CPP_STRING)
     GCC_BAD ("malformed #pragma extern_prefix, ignored");
-  t = c_lex (&x);
+  t = pragma_lex (&x);
   if (t != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of #pragma extern_prefix");
 
@@ -603,7 +603,7 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
   enum { bad, push, pop } action = bad;
   static VEC (visibility, heap) *visstack;
  
-  token = c_lex (&x);
+  token = pragma_lex (&x);
   if (token == CPP_NAME)
     {
       const char *op = IDENTIFIER_POINTER (x);
@@ -631,9 +631,9 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
         }
       else
         {
-          if (c_lex (&x) != CPP_OPEN_PAREN)
+          if (pragma_lex (&x) != CPP_OPEN_PAREN)
             GCC_BAD ("missing %<(%> after %<#pragma GCC visibility push%> - ignored");
-          token = c_lex (&x);
+          token = pragma_lex (&x);
           if (token != CPP_NAME)
             {
               GCC_BAD ("malformed #pragma GCC visibility push");
@@ -657,11 +657,11 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
                 }
               visibility_options.inpragma = 1;
             }
-          if (c_lex (&x) != CPP_CLOSE_PAREN)
+          if (pragma_lex (&x) != CPP_CLOSE_PAREN)
             GCC_BAD ("missing %<(%> after %<#pragma GCC visibility push%> - ignored");
         }
     }
-  if (c_lex (&x) != CPP_EOF)
+  if (pragma_lex (&x) != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of %<#pragma GCC visibility%>");
 }
 
