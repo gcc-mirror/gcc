@@ -1,5 +1,5 @@
 ! { dg-do run } 
-! PR 25036
+! PR 24945
 ! Test reopening file without status specifier or with
 ! status='unknown'. The standard says that these two must behave
 ! identically, but the actual behaviour is processor dependent.
