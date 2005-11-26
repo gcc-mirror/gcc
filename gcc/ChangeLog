@@ -1,3 +1,11 @@
+2005-11-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/25022
+	* builtins.c (expand_builtin_printf, expand_builtin_fprintf,
+	fold_builtin_fputs, fold_builtin_printf, fold_builtin_fprintf):
+	Lookup the explicit replacement functions for any unlocked
+	stdio builtin transformations.
+
 2005-11-25  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md ("reload_out<mode>"): Mark operand 2 as

@@ -4843,11 +4843,12 @@ expand_builtin_printf (tree exp, rtx target, enum machine_mode mode,
 		       bool unlocked)
 {
   tree arglist = TREE_OPERAND (exp, 1);
-  tree fn_putchar = unlocked
-		    ? implicit_built_in_decls[BUILT_IN_PUTCHAR_UNLOCKED]
-		    : implicit_built_in_decls[BUILT_IN_PUTCHAR];
-  tree fn_puts = unlocked ? implicit_built_in_decls[BUILT_IN_PUTS_UNLOCKED]
-			  : implicit_built_in_decls[BUILT_IN_PUTS];
+  /* If we're using an unlocked function, assume the other unlocked
+     functions exist explicitly.  */
+  tree const fn_putchar = unlocked ? built_in_decls[BUILT_IN_PUTCHAR_UNLOCKED]
+    : implicit_built_in_decls[BUILT_IN_PUTCHAR];
+  tree const fn_puts = unlocked ? built_in_decls[BUILT_IN_PUTS_UNLOCKED]
+    : implicit_built_in_decls[BUILT_IN_PUTS];
   const char *fmt_str;
   tree fn, fmt, arg;
 
@@ -4949,10 +4950,12 @@ expand_builtin_fprintf (tree exp, rtx target, enum machine_mode mode,
 		        bool unlocked)
 {
   tree arglist = TREE_OPERAND (exp, 1);
-  tree fn_fputc = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
-			   : implicit_built_in_decls[BUILT_IN_FPUTC];
-  tree fn_fputs = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTS_UNLOCKED]
-			   : implicit_built_in_decls[BUILT_IN_FPUTS];
+  /* If we're using an unlocked function, assume the other unlocked
+     functions exist explicitly.  */
+  tree const fn_fputc = unlocked ? built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
+    : implicit_built_in_decls[BUILT_IN_FPUTC];
+  tree const fn_fputs = unlocked ? built_in_decls[BUILT_IN_FPUTS_UNLOCKED]
+    : implicit_built_in_decls[BUILT_IN_FPUTS];
   const char *fmt_str;
   tree fn, fmt, fp, arg;
 
@@ -9611,9 +9614,11 @@ tree
 fold_builtin_fputs (tree arglist, bool ignore, bool unlocked, tree len)
 {
   tree fn;
-  tree fn_fputc = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
+  /* If we're using an unlocked function, assume the other unlocked
+     functions exist explicitly.  */
+  tree const fn_fputc = unlocked ? built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
     : implicit_built_in_decls[BUILT_IN_FPUTC];
-  tree fn_fwrite = unlocked ? implicit_built_in_decls[BUILT_IN_FWRITE_UNLOCKED]
+  tree const fn_fwrite = unlocked ? built_in_decls[BUILT_IN_FWRITE_UNLOCKED]
     : implicit_built_in_decls[BUILT_IN_FWRITE];
 
   /* If the return value is used, or the replacement _DECL isn't
@@ -10752,8 +10757,10 @@ fold_builtin_printf (tree fndecl, tree arglist, bool ignore,
 
   if (fcode == BUILT_IN_PRINTF_UNLOCKED)
     {
-      fn_putchar = implicit_built_in_decls[BUILT_IN_PUTCHAR_UNLOCKED];
-      fn_puts = implicit_built_in_decls[BUILT_IN_PUTS_UNLOCKED];
+      /* If we're using an unlocked function, assume the other
+	 unlocked functions exist explicitly.  */
+      fn_putchar = built_in_decls[BUILT_IN_PUTCHAR_UNLOCKED];
+      fn_puts = built_in_decls[BUILT_IN_PUTS_UNLOCKED];
     }
   else
     {
@@ -10908,8 +10915,10 @@ fold_builtin_fprintf (tree fndecl, tree arglist, bool ignore,
 
   if (fcode == BUILT_IN_FPRINTF_UNLOCKED)
     {
-      fn_fputc = implicit_built_in_decls[BUILT_IN_FPUTC_UNLOCKED];
-      fn_fputs = implicit_built_in_decls[BUILT_IN_FPUTS_UNLOCKED];
+      /* If we're using an unlocked function, assume the other
+	 unlocked functions exist explicitly.  */
+      fn_fputc = built_in_decls[BUILT_IN_FPUTC_UNLOCKED];
+      fn_fputs = built_in_decls[BUILT_IN_FPUTS_UNLOCKED];
     }
   else
     {
