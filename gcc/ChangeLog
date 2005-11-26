@@ -1,3 +1,9 @@
+2005-11-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23669
+	* fold-const.c (fold_binary): Convert -A/-B to A/B for signed types
+	when overflow is undefined.
+
 2005-11-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/md.texi (Insn Canonicalizations): Refer to the

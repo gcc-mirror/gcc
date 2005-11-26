@@ -8440,6 +8440,19 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && TREE_INT_CST_HIGH (arg1) == -1)
 	return fold_convert (type, negate_expr (arg0));
 
+      /* Convert -A / -B to A / B when the type is signed and overflow is
+	 undefined.  */
+      if (!TYPE_UNSIGNED (type) && !flag_wrapv
+	  && TREE_CODE (arg0) == NEGATE_EXPR
+	  && negate_expr_p (arg1))
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
+			    negate_expr (arg1));
+      if (!TYPE_UNSIGNED (type) && !flag_wrapv
+	  && TREE_CODE (arg1) == NEGATE_EXPR
+	  && negate_expr_p (arg0))
+	return fold_build2 (code, type, negate_expr (arg0),
+			    TREE_OPERAND (arg1, 0));
+
       /* If arg0 is a multiple of arg1, then rewrite to the fastest div
 	 operation, EXACT_DIV_EXPR.
 
