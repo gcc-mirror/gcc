@@ -144,9 +144,10 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 
   /* Status must be OLD if present.  */
 
-  if (flags->status != STATUS_UNSPECIFIED && flags->status != STATUS_OLD)
+  if (flags->status != STATUS_UNSPECIFIED && flags->status != STATUS_OLD &&
+      flags->status != STATUS_UNKNOWN)
     generate_error (&opp->common, ERROR_BAD_OPTION,
-		    "OPEN statement must have a STATUS of OLD");
+		    "OPEN statement must have a STATUS of OLD or UNKNOWN");
 
   if (u->flags.form == FORM_UNFORMATTED)
     {
