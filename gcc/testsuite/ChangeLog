@@ -1,3 +1,9 @@
+2005-11-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23669
+	* gcc.dg/tree-ssa/divide-1.c: New test.
+	* gcc.dg/tree-ssa/divide-2.c: New test.
+
 2005-11-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libgfortran/24945
