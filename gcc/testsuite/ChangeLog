@@ -1,3 +1,8 @@
+2005-11-27  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/24917
+	* gfortran.dg/boz_6.f90: New test.
+
 2005-11-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libgfortran/24945
