@@ -1,3 +1,9 @@
+2005-11-27  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/24917
+	* primary.c (match_boz_constant):  Implement postfix BOZ constants;
+	(match_string_constant): Peek for b, o, z, and x
+
 2005-11-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/23912
