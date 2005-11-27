@@ -3274,13 +3274,6 @@ extern GTY(()) VEC(tree,gc) *local_classes;
 				  && IDENTIFIER_POINTER (ID_NODE)[1] == '_')
 #endif /* !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL) */
 
-/* Returns nonzero iff NODE is a declaration for the global function
-   `main'.  */
-#define DECL_MAIN_P(NODE)				\
-   (DECL_EXTERN_C_FUNCTION_P (NODE)			\
-    && DECL_NAME (NODE) != NULL_TREE			\
-    && MAIN_NAME_P (DECL_NAME (NODE)))
-
 
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
