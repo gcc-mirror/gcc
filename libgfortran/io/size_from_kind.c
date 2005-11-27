@@ -31,6 +31,8 @@ Boston, MA 02110-1301, USA.  */
 /* This file contains utility functions for determining the size of a
    variable given its kind. */
 
+#include "config.h"
+#include "libgfortran.h"
 #include "io.h"
 
 size_t
