@@ -1,3 +1,7 @@
+2005-11-27  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k.c (notice_update_cc): Remove useless code.
+
 2005-11-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24575
