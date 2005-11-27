@@ -1536,7 +1536,11 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 
   if (obj->type != GFC_DTYPE_DERIVED)
     {
+#ifdef HAVE_CRLF
+      write_character (dtp, "\r\n ", 3);
+#else
       write_character (dtp, "\n ", 2);
+#endif
       len = 0;
       if (base)
 	{
@@ -1728,7 +1732,11 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	  if (num > 5)
 	    {
 	      num = 0;
+#ifdef HAVE_CRLF
+	      write_character (dtp, "\r\n ", 3);
+#else
 	      write_character (dtp, "\n ", 2);
+#endif
 	    }
 	  rep_ctr = 1;
 	}
@@ -1808,7 +1816,11 @@ namelist_write (st_parameter_dt *dtp)
 	  t1 = nml_write_obj (dtp, t2, dummy_offset, dummy, dummy_name);
 	}
     }
+#ifdef HAVE_CRLF
+  write_character (dtp, "  /\r\n ", 5);
+#else
   write_character (dtp, "  /\n", 4);
+#endif
 
   /* Recover the original delimiter.  */
 

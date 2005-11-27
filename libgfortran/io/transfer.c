@@ -136,7 +136,8 @@ static char *
 read_sf (st_parameter_dt *dtp, int *length)
 {
   char *base, *p, *q;
-  int n, readlen;
+  int n, readlen, crlf;
+  gfc_offset pos;
 
   if (*length > SCRATCH_SIZE)
     dtp->u.p.line_buffer = get_mem (*length);
@@ -183,6 +184,19 @@ read_sf (st_parameter_dt *dtp, int *length)
 	  if (dtp->u.p.advance_status == ADVANCE_NO || dtp->u.p.seen_dollar)
 	    dtp->u.p.eor_condition = 1;
 
+	  crlf = 0;
+	  /* If we encounter a CR, it might be a CRLF.  */
+	  if (*q == '\r') /* Probably a CRLF */
+	    {
+	      readlen = 1;
+	      pos = stream_offset (dtp->u.p.current_unit->s);
+	      q = salloc_r (dtp->u.p.current_unit->s, &readlen);
+	      if (*q != '\n' && readlen == 1) /* Not a CRLF after all.  */
+		sseek (dtp->u.p.current_unit->s, pos);
+	      else
+		crlf = 1;
+	    }
+
 	  /* Without padding, terminate the I/O statement without assigning
 	     the value.  With padding, the value still needs to be assigned,
 	     so we can just continue with a short read.  */
@@ -193,7 +207,7 @@ read_sf (st_parameter_dt *dtp, int *length)
 	    }
 
 	  *length = n;
-	  dtp->u.p.sf_seen_eor = 1;
+	  dtp->u.p.sf_seen_eor = (crlf ? 2 : 1);
 	  break;
 	}
 
@@ -803,10 +817,20 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	      /* Adjust everything for end-of-record condition */
 	      if (dtp->u.p.sf_seen_eor && !is_internal_unit (dtp))
 		{
-		  dtp->u.p.current_unit->bytes_left--;
+		  if (dtp->u.p.sf_seen_eor == 2)
+		    {
+		      /* The EOR was a CRLF (two bytes wide).  */
+		      dtp->u.p.current_unit->bytes_left -= 2;
+		      dtp->u.p.skips -= 2;
+		    }
+		  else
+		    {
+		      /* The EOR marker was only one byte wide.  */
+		      dtp->u.p.current_unit->bytes_left--;
+		      dtp->u.p.skips--;
+		    }
 		  bytes_used = pos;
 		  dtp->u.p.sf_seen_eor = 0;
-		  dtp->u.p.skips--;
 		}
 	      if (dtp->u.p.skips < 0)
 		{
