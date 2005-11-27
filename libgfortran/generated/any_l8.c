@@ -37,18 +37,21 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_LOGICAL_8) && defined (HAVE_GFC_LOGICAL_8)
 
 
-extern void any_l8 (gfc_array_l8 *, gfc_array_l8 *, index_type *);
+extern void any_l8 (gfc_array_l8 * const restrict, 
+	gfc_array_l8 * const restrict, const index_type * const restrict);
 export_proto(any_l8);
 
 void
-any_l8 (gfc_array_l8 *retarray, gfc_array_l8 *array, index_type *pdim)
+any_l8 (gfc_array_l8 * const restrict retarray, 
+	gfc_array_l8 * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_LOGICAL_8 *base;
-  GFC_LOGICAL_8 *dest;
+  const GFC_LOGICAL_8 * restrict base;
+  GFC_LOGICAL_8 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -120,7 +123,7 @@ any_l8 (gfc_array_l8 *retarray, gfc_array_l8 *array, index_type *pdim)
 
   while (base)
     {
-      GFC_LOGICAL_8 *src;
+      const GFC_LOGICAL_8 * restrict src;
       GFC_LOGICAL_8 result;
       src = base;
       {

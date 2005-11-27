@@ -37,18 +37,21 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_LOGICAL_16) && defined (HAVE_GFC_INTEGER_4)
 
 
-extern void count_4_l16 (gfc_array_i4 *, gfc_array_l16 *, index_type *);
+extern void count_4_l16 (gfc_array_i4 * const restrict, 
+	gfc_array_l16 * const restrict, const index_type * const restrict);
 export_proto(count_4_l16);
 
 void
-count_4_l16 (gfc_array_i4 *retarray, gfc_array_l16 *array, index_type *pdim)
+count_4_l16 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_l16 * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_LOGICAL_16 *base;
-  GFC_INTEGER_4 *dest;
+  const GFC_LOGICAL_16 * restrict base;
+  GFC_INTEGER_4 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -120,7 +123,7 @@ count_4_l16 (gfc_array_i4 *retarray, gfc_array_l16 *array, index_type *pdim)
 
   while (base)
     {
-      GFC_LOGICAL_16 *src;
+      const GFC_LOGICAL_16 * restrict src;
       GFC_INTEGER_4 result;
       src = base;
       {

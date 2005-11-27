@@ -37,9 +37,12 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_INTEGER_4)
 
 static void
-eoshift1 (gfc_array_char *ret, const gfc_array_char *array, const gfc_array_i4 *h,
-	  const char *pbound, const GFC_INTEGER_4 *pwhich, index_type size,
-	  char filler)
+eoshift1 (gfc_array_char * const restrict ret, 
+	const gfc_array_char * const restrict array, 
+	const gfc_array_i4 * const restrict h,
+	const char * const restrict pbound, 
+	const GFC_INTEGER_4 * const restrict pwhich, 
+	index_type size, char filler)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -218,32 +221,40 @@ eoshift1 (gfc_array_char *ret, const gfc_array_char *array, const gfc_array_i4 *
     }
 }
 
-void eoshift1_4 (gfc_array_char *, const gfc_array_char *,
-			    const gfc_array_i4 *, const char *, const GFC_INTEGER_4 *);
+void eoshift1_4 (gfc_array_char * const restrict, 
+	const gfc_array_char * const restrict,
+	const gfc_array_i4 * const restrict, const char * const restrict, 
+	const GFC_INTEGER_4 * const restrict);
 export_proto(eoshift1_4);
 
 void
-eoshift1_4 (gfc_array_char *ret, const gfc_array_char *array,
-		       const gfc_array_i4 *h, const char *pbound,
-		       const GFC_INTEGER_4 *pwhich)
+eoshift1_4 (gfc_array_char * const restrict ret, 
+	const gfc_array_char * const restrict array,
+	const gfc_array_i4 * const restrict h, 
+	const char * const restrict pbound,
+	const GFC_INTEGER_4 * const restrict pwhich)
 {
   eoshift1 (ret, array, h, pbound, pwhich, GFC_DESCRIPTOR_SIZE (array), 0);
 }
 
-void eoshift1_4_char (gfc_array_char *, GFC_INTEGER_4,
-				   const gfc_array_char *, const gfc_array_i4 *,
-				   const char *, const GFC_INTEGER_4 *,
-				   GFC_INTEGER_4, GFC_INTEGER_4);
+void eoshift1_4_char (gfc_array_char * const restrict, 
+	GFC_INTEGER_4,
+	const gfc_array_char * const restrict, 
+	const gfc_array_i4 * const restrict,
+	const char * const restrict, 
+	const GFC_INTEGER_4 * const restrict,
+	GFC_INTEGER_4, GFC_INTEGER_4);
 export_proto(eoshift1_4_char);
 
 void
-eoshift1_4_char (gfc_array_char *ret,
-			      GFC_INTEGER_4 ret_length __attribute__((unused)),
-			      const gfc_array_char *array, const gfc_array_i4 *h,
-			      const char *pbound, const GFC_INTEGER_4 *pwhich,
-			      GFC_INTEGER_4 array_length,
-			      GFC_INTEGER_4 bound_length
-				__attribute__((unused)))
+eoshift1_4_char (gfc_array_char * const restrict ret,
+	GFC_INTEGER_4 ret_length __attribute__((unused)),
+	const gfc_array_char * const restrict array, 
+	const gfc_array_i4 * const restrict h,
+	const char *  const restrict pbound, 
+	const GFC_INTEGER_4 * const restrict pwhich,
+	GFC_INTEGER_4 array_length,
+	GFC_INTEGER_4 bound_length __attribute__((unused)))
 {
   eoshift1 (ret, array, h, pbound, pwhich, array_length, ' ');
 }

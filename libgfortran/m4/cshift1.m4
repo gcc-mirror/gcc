@@ -38,8 +38,11 @@ include(iparm.m4)dnl
 `#if defined (HAVE_'atype_name`)'
 
 static void
-cshift1 (gfc_array_char * ret, const gfc_array_char * array,
-	 const atype * h, const atype_name * pwhich, index_type size)
+cshift1 (gfc_array_char * const restrict ret, 
+	const gfc_array_char * const restrict array,
+	const atype * const restrict h, 
+	const atype_name * const restrict pwhich, 
+	index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -195,30 +198,36 @@ cshift1 (gfc_array_char * ret, const gfc_array_char * array,
     }
 }
 
-void cshift1_`'atype_kind (gfc_array_char *, const gfc_array_char *,
-			   const atype *, const atype_name *);
+void cshift1_`'atype_kind (gfc_array_char * const restrict, 
+	const gfc_array_char * const restrict,
+	const atype * const restrict, 
+	const atype_name * const restrict);
 export_proto(cshift1_`'atype_kind);
 
 void
-cshift1_`'atype_kind (gfc_array_char * ret,
-		      const gfc_array_char * array,
-		      const atype * h, const atype_name * pwhich)
+cshift1_`'atype_kind (gfc_array_char * const restrict ret,
+	const gfc_array_char * const restrict array,
+	const atype * const restrict h, 
+	const atype_name * const restrict pwhich)
 {
   cshift1 (ret, array, h, pwhich, GFC_DESCRIPTOR_SIZE (array));
 }
 
-void cshift1_`'atype_kind`'_char (gfc_array_char * ret, GFC_INTEGER_4,
-				  const gfc_array_char * array,
-				  const atype * h, const atype_name * pwhich,
-				  GFC_INTEGER_4);
+void cshift1_`'atype_kind`'_char (gfc_array_char * const restrict ret, 
+	GFC_INTEGER_4,
+	const gfc_array_char * const restrict array,
+	const atype * const restrict h, 
+	const atype_name * const restrict pwhich,
+	GFC_INTEGER_4);
 export_proto(cshift1_`'atype_kind`'_char);
 
 void
-cshift1_`'atype_kind`'_char (gfc_array_char * ret,
-			     GFC_INTEGER_4 ret_length __attribute__((unused)),
-			     const gfc_array_char * array,
-			     const atype * h, const atype_name * pwhich,
-			     GFC_INTEGER_4 array_length)
+cshift1_`'atype_kind`'_char (gfc_array_char * const restrict ret,
+	GFC_INTEGER_4 ret_length __attribute__((unused)),
+	const gfc_array_char * const restrict array,
+	const atype * const restrict h, 
+	const atype_name * const restrict pwhich,
+	GFC_INTEGER_4 array_length)
 {
   cshift1 (ret, array, h, pwhich, array_length);
 }

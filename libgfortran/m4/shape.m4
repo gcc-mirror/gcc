@@ -36,11 +36,13 @@ include(iparm.m4)dnl
 
 `#if defined (HAVE_'rtype_name`)'
 
-extern void shape_`'rtype_kind (rtype * ret, const rtype * array);
+extern void shape_`'rtype_kind (rtype * const restrict ret, 
+	const rtype * const restrict array);
 export_proto(shape_`'rtype_kind);
 
 void
-shape_`'rtype_kind (rtype * ret, const rtype * array)
+shape_`'rtype_kind (rtype * const restrict ret, 
+	const rtype * const restrict array)
 {
   int n;
   index_type stride;

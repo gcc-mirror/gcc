@@ -35,11 +35,13 @@ Boston, MA 02110-1301, USA.  */
 
 #if defined (HAVE_GFC_INTEGER_8)
 
-extern void shape_8 (gfc_array_i8 * ret, const gfc_array_i8 * array);
+extern void shape_8 (gfc_array_i8 * const restrict ret, 
+	const gfc_array_i8 * const restrict array);
 export_proto(shape_8);
 
 void
-shape_8 (gfc_array_i8 * ret, const gfc_array_i8 * array)
+shape_8 (gfc_array_i8 * const restrict ret, 
+	const gfc_array_i8 * const restrict array)
 {
   int n;
   index_type stride;

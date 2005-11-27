@@ -35,14 +35,16 @@ Boston, MA 02110-1301, USA.  */
 
 #if defined (HAVE_GFC_LOGICAL_8)
 
-extern GFC_LOGICAL_8 dot_product_l8 (gfc_array_l4 *, gfc_array_l4 *);
+extern GFC_LOGICAL_8 dot_product_l8 (gfc_array_l4 * const restrict, 
+	gfc_array_l4 * const restrict);
 export_proto(dot_product_l8);
 
 GFC_LOGICAL_8
-dot_product_l8 (gfc_array_l4 * a, gfc_array_l4 * b)
+dot_product_l8 (gfc_array_l4 * const restrict a, 
+	gfc_array_l4 * const restrict b)
 {
-  GFC_LOGICAL_4 *pa;
-  GFC_LOGICAL_4 *pb;
+  const GFC_LOGICAL_4 * restrict pa;
+  const GFC_LOGICAL_4 * restrict pb;
   index_type count;
   index_type astride;
   index_type bstride;

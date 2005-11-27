@@ -38,18 +38,21 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_REAL_10) && defined (HAVE_GFC_REAL_10)
 
 
-extern void minval_r10 (gfc_array_r10 *, gfc_array_r10 *, index_type *);
+extern void minval_r10 (gfc_array_r10 * const restrict, 
+	gfc_array_r10 * const restrict, const index_type * const restrict);
 export_proto(minval_r10);
 
 void
-minval_r10 (gfc_array_r10 *retarray, gfc_array_r10 *array, index_type *pdim)
+minval_r10 (gfc_array_r10 * const restrict retarray, 
+	gfc_array_r10 * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_REAL_10 *base;
-  GFC_REAL_10 *dest;
+  const GFC_REAL_10 * restrict base;
+  GFC_REAL_10 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -121,7 +124,7 @@ minval_r10 (gfc_array_r10 *retarray, gfc_array_r10 *array, index_type *pdim)
 
   while (base)
     {
-      GFC_REAL_10 *src;
+      const GFC_REAL_10 * restrict src;
       GFC_REAL_10 result;
       src = base;
       {
@@ -172,22 +175,25 @@ minval_r10 (gfc_array_r10 *retarray, gfc_array_r10 *array, index_type *pdim)
 }
 
 
-extern void mminval_r10 (gfc_array_r10 *, gfc_array_r10 *, index_type *,
-					       gfc_array_l4 *);
+extern void mminval_r10 (gfc_array_r10 * const restrict, 
+	gfc_array_r10 * const restrict, const index_type * const restrict,
+	gfc_array_l4 * const restrict);
 export_proto(mminval_r10);
 
 void
-mminval_r10 (gfc_array_r10 * retarray, gfc_array_r10 * array,
-				  index_type *pdim, gfc_array_l4 * mask)
+mminval_r10 (gfc_array_r10 * const restrict retarray, 
+	gfc_array_r10 * const restrict array, 
+	const index_type * const restrict pdim, 
+	gfc_array_l4 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  GFC_REAL_10 *dest;
-  GFC_REAL_10 *base;
-  GFC_LOGICAL_4 *mbase;
+  GFC_REAL_10 * restrict dest;
+  const GFC_REAL_10 * restrict base;
+  const GFC_LOGICAL_4 * restrict mbase;
   int rank;
   int dim;
   index_type n;
@@ -278,8 +284,8 @@ mminval_r10 (gfc_array_r10 * retarray, gfc_array_r10 * array,
 
   while (base)
     {
-      GFC_REAL_10 *src;
-      GFC_LOGICAL_4 *msrc;
+      const GFC_REAL_10 * restrict src;
+      const GFC_LOGICAL_4 * restrict msrc;
       GFC_REAL_10 result;
       src = base;
       msrc = mbase;

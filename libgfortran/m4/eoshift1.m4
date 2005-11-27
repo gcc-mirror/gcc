@@ -38,9 +38,12 @@ include(iparm.m4)dnl
 `#if defined (HAVE_'atype_name`)'
 
 static void
-eoshift1 (gfc_array_char *ret, const gfc_array_char *array, const atype *h,
-	  const char *pbound, const atype_name *pwhich, index_type size,
-	  char filler)
+eoshift1 (gfc_array_char * const restrict ret, 
+	const gfc_array_char * const restrict array, 
+	const atype * const restrict h,
+	const char * const restrict pbound, 
+	const atype_name * const restrict pwhich, 
+	index_type size, char filler)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -219,32 +222,40 @@ eoshift1 (gfc_array_char *ret, const gfc_array_char *array, const atype *h,
     }
 }
 
-void eoshift1_`'atype_kind (gfc_array_char *, const gfc_array_char *,
-			    const atype *, const char *, const atype_name *);
+void eoshift1_`'atype_kind (gfc_array_char * const restrict, 
+	const gfc_array_char * const restrict,
+	const atype * const restrict, const char * const restrict, 
+	const atype_name * const restrict);
 export_proto(eoshift1_`'atype_kind);
 
 void
-eoshift1_`'atype_kind (gfc_array_char *ret, const gfc_array_char *array,
-		       const atype *h, const char *pbound,
-		       const atype_name *pwhich)
+eoshift1_`'atype_kind (gfc_array_char * const restrict ret, 
+	const gfc_array_char * const restrict array,
+	const atype * const restrict h, 
+	const char * const restrict pbound,
+	const atype_name * const restrict pwhich)
 {
   eoshift1 (ret, array, h, pbound, pwhich, GFC_DESCRIPTOR_SIZE (array), 0);
 }
 
-void eoshift1_`'atype_kind`'_char (gfc_array_char *, GFC_INTEGER_4,
-				   const gfc_array_char *, const atype *,
-				   const char *, const atype_name *,
-				   GFC_INTEGER_4, GFC_INTEGER_4);
+void eoshift1_`'atype_kind`'_char (gfc_array_char * const restrict, 
+	GFC_INTEGER_4,
+	const gfc_array_char * const restrict, 
+	const atype * const restrict,
+	const char * const restrict, 
+	const atype_name * const restrict,
+	GFC_INTEGER_4, GFC_INTEGER_4);
 export_proto(eoshift1_`'atype_kind`'_char);
 
 void
-eoshift1_`'atype_kind`'_char (gfc_array_char *ret,
-			      GFC_INTEGER_4 ret_length __attribute__((unused)),
-			      const gfc_array_char *array, const atype *h,
-			      const char *pbound, const atype_name *pwhich,
-			      GFC_INTEGER_4 array_length,
-			      GFC_INTEGER_4 bound_length
-				__attribute__((unused)))
+eoshift1_`'atype_kind`'_char (gfc_array_char * const restrict ret,
+	GFC_INTEGER_4 ret_length __attribute__((unused)),
+	const gfc_array_char * const restrict array, 
+	const atype * const restrict h,
+	const char *  const restrict pbound, 
+	const atype_name * const restrict pwhich,
+	GFC_INTEGER_4 array_length,
+	GFC_INTEGER_4 bound_length __attribute__((unused)))
 {
   eoshift1 (ret, array, h, pbound, pwhich, array_length, ' ');
 }

@@ -39,18 +39,21 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_REAL_10) && defined (HAVE_GFC_INTEGER_8)
 
 
-extern void minloc1_8_r10 (gfc_array_i8 *, gfc_array_r10 *, index_type *);
+extern void minloc1_8_r10 (gfc_array_i8 * const restrict, 
+	gfc_array_r10 * const restrict, const index_type * const restrict);
 export_proto(minloc1_8_r10);
 
 void
-minloc1_8_r10 (gfc_array_i8 *retarray, gfc_array_r10 *array, index_type *pdim)
+minloc1_8_r10 (gfc_array_i8 * const restrict retarray, 
+	gfc_array_r10 * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_REAL_10 *base;
-  GFC_INTEGER_8 *dest;
+  const GFC_REAL_10 * restrict base;
+  GFC_INTEGER_8 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -122,7 +125,7 @@ minloc1_8_r10 (gfc_array_i8 *retarray, gfc_array_r10 *array, index_type *pdim)
 
   while (base)
     {
-      GFC_REAL_10 *src;
+      const GFC_REAL_10 * restrict src;
       GFC_INTEGER_8 result;
       src = base;
       {
@@ -178,22 +181,25 @@ minloc1_8_r10 (gfc_array_i8 *retarray, gfc_array_r10 *array, index_type *pdim)
 }
 
 
-extern void mminloc1_8_r10 (gfc_array_i8 *, gfc_array_r10 *, index_type *,
-					       gfc_array_l4 *);
+extern void mminloc1_8_r10 (gfc_array_i8 * const restrict, 
+	gfc_array_r10 * const restrict, const index_type * const restrict,
+	gfc_array_l4 * const restrict);
 export_proto(mminloc1_8_r10);
 
 void
-mminloc1_8_r10 (gfc_array_i8 * retarray, gfc_array_r10 * array,
-				  index_type *pdim, gfc_array_l4 * mask)
+mminloc1_8_r10 (gfc_array_i8 * const restrict retarray, 
+	gfc_array_r10 * const restrict array, 
+	const index_type * const restrict pdim, 
+	gfc_array_l4 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_8 *dest;
-  GFC_REAL_10 *base;
-  GFC_LOGICAL_4 *mbase;
+  GFC_INTEGER_8 * restrict dest;
+  const GFC_REAL_10 * restrict base;
+  const GFC_LOGICAL_4 * restrict mbase;
   int rank;
   int dim;
   index_type n;
@@ -284,8 +290,8 @@ mminloc1_8_r10 (gfc_array_i8 * retarray, gfc_array_r10 * array,
 
   while (base)
     {
-      GFC_REAL_10 *src;
-      GFC_LOGICAL_4 *msrc;
+      const GFC_REAL_10 * restrict src;
+      const GFC_LOGICAL_4 * restrict msrc;
       GFC_INTEGER_8 result;
       src = base;
       msrc = mbase;

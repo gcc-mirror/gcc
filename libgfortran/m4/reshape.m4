@@ -42,13 +42,19 @@ typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
    return array.  */
 dnl Only the kind (ie size) is used to name the function.
 
-extern void reshape_`'rtype_ccode (rtype *, rtype *, shape_type *,
-				    rtype *, shape_type *);
+extern void reshape_`'rtype_ccode (rtype * const restrict, 
+	rtype * const restrict, 
+	shape_type * const restrict,
+	rtype * const restrict, 
+	shape_type * const restrict);
 export_proto(reshape_`'rtype_ccode);
 
 void
-reshape_`'rtype_ccode (rtype * ret, rtype * source, shape_type * shape,
-                      rtype * pad, shape_type * order)
+reshape_`'rtype_ccode (rtype * const restrict ret, 
+	rtype * const restrict source, 
+	shape_type * const restrict shape,
+	rtype * const restrict pad, 
+	shape_type * const restrict order)
 {
   /* r.* indicates the return array.  */
   index_type rcount[GFC_MAX_DIMENSIONS];
