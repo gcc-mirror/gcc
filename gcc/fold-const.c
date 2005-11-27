@@ -991,6 +991,16 @@ negate_expr_p (tree t)
 	       || negate_expr_p (TREE_OPERAND (t, 0));
       break;
 
+    case TRUNC_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      if (TYPE_UNSIGNED (TREE_TYPE (t)) || flag_wrapv)
+        break;
+      return negate_expr_p (TREE_OPERAND (t, 1))
+             || negate_expr_p (TREE_OPERAND (t, 0));
+
     case NOP_EXPR:
       /* Negate -((double)float) as (double)(-float).  */
       if (TREE_CODE (type) == REAL_TYPE)
@@ -1130,6 +1140,28 @@ negate_expr (tree t)
 					      negate_expr (tem),
 					      TREE_OPERAND (t, 1)));
 	}
+      break;
+
+    case TRUNC_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      if (!TYPE_UNSIGNED (TREE_TYPE (t)) && !flag_wrapv)
+        {
+          tem = TREE_OPERAND (t, 1);
+          if (negate_expr_p (tem))
+            return fold_convert (type,
+                                 fold_build2 (TREE_CODE (t), TREE_TYPE (t),
+                                              TREE_OPERAND (t, 0),
+                                              negate_expr (tem)));
+          tem = TREE_OPERAND (t, 0);
+          if (negate_expr_p (tem))
+            return fold_convert (type,
+                                 fold_build2 (TREE_CODE (t), TREE_TYPE (t),
+                                              negate_expr (tem),
+                                              TREE_OPERAND (t, 1)));
+        }
       break;
 
     case NOP_EXPR:

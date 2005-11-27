@@ -1,3 +1,10 @@
+2005-11-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/24575
+	* fold-const.c (negate_expr_p): Add case for signed divides if overflow
+	is undefined.
+	(negate_expr): Likewise.
+
 2005-11-27  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c: Reindent and fix whitespace, remove
