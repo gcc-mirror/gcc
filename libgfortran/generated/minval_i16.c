@@ -38,18 +38,21 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_INTEGER_16) && defined (HAVE_GFC_INTEGER_16)
 
 
-extern void minval_i16 (gfc_array_i16 *, gfc_array_i16 *, index_type *);
+extern void minval_i16 (gfc_array_i16 * const restrict, 
+	gfc_array_i16 * const restrict, const index_type * const restrict);
 export_proto(minval_i16);
 
 void
-minval_i16 (gfc_array_i16 *retarray, gfc_array_i16 *array, index_type *pdim)
+minval_i16 (gfc_array_i16 * const restrict retarray, 
+	gfc_array_i16 * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_16 *base;
-  GFC_INTEGER_16 *dest;
+  const GFC_INTEGER_16 * restrict base;
+  GFC_INTEGER_16 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -121,7 +124,7 @@ minval_i16 (gfc_array_i16 *retarray, gfc_array_i16 *array, index_type *pdim)
 
   while (base)
     {
-      GFC_INTEGER_16 *src;
+      const GFC_INTEGER_16 * restrict src;
       GFC_INTEGER_16 result;
       src = base;
       {
@@ -172,22 +175,25 @@ minval_i16 (gfc_array_i16 *retarray, gfc_array_i16 *array, index_type *pdim)
 }
 
 
-extern void mminval_i16 (gfc_array_i16 *, gfc_array_i16 *, index_type *,
-					       gfc_array_l4 *);
+extern void mminval_i16 (gfc_array_i16 * const restrict, 
+	gfc_array_i16 * const restrict, const index_type * const restrict,
+	gfc_array_l4 * const restrict);
 export_proto(mminval_i16);
 
 void
-mminval_i16 (gfc_array_i16 * retarray, gfc_array_i16 * array,
-				  index_type *pdim, gfc_array_l4 * mask)
+mminval_i16 (gfc_array_i16 * const restrict retarray, 
+	gfc_array_i16 * const restrict array, 
+	const index_type * const restrict pdim, 
+	gfc_array_l4 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_16 *dest;
-  GFC_INTEGER_16 *base;
-  GFC_LOGICAL_4 *mbase;
+  GFC_INTEGER_16 * restrict dest;
+  const GFC_INTEGER_16 * restrict base;
+  const GFC_LOGICAL_4 * restrict mbase;
   int rank;
   int dim;
   index_type n;
@@ -278,8 +284,8 @@ mminval_i16 (gfc_array_i16 * retarray, gfc_array_i16 * array,
 
   while (base)
     {
-      GFC_INTEGER_16 *src;
-      GFC_LOGICAL_4 *msrc;
+      const GFC_INTEGER_16 * restrict src;
+      const GFC_LOGICAL_4 * restrict msrc;
       GFC_INTEGER_16 result;
       src = base;
       msrc = mbase;

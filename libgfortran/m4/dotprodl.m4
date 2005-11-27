@@ -36,14 +36,16 @@ include(iparm.m4)dnl
 
 `#if defined (HAVE_'rtype_name`)'
 
-extern rtype_name dot_product_`'rtype_code (gfc_array_l4 *, gfc_array_l4 *);
+extern rtype_name dot_product_`'rtype_code (gfc_array_l4 * const restrict, 
+	gfc_array_l4 * const restrict);
 export_proto(dot_product_`'rtype_code);
 
 rtype_name
-dot_product_`'rtype_code (gfc_array_l4 * a, gfc_array_l4 * b)
+dot_product_`'rtype_code (gfc_array_l4 * const restrict a, 
+	gfc_array_l4 * const restrict b)
 {
-  GFC_LOGICAL_4 *pa;
-  GFC_LOGICAL_4 *pb;
+  const GFC_LOGICAL_4 * restrict pa;
+  const GFC_LOGICAL_4 * restrict pb;
   index_type count;
   index_type astride;
   index_type bstride;

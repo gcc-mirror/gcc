@@ -40,13 +40,19 @@ typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 /* The shape parameter is ignored. We can currently deduce the shape from the
    return array.  */
 
-extern void reshape_c16 (gfc_array_c16 *, gfc_array_c16 *, shape_type *,
-				    gfc_array_c16 *, shape_type *);
+extern void reshape_c16 (gfc_array_c16 * const restrict, 
+	gfc_array_c16 * const restrict, 
+	shape_type * const restrict,
+	gfc_array_c16 * const restrict, 
+	shape_type * const restrict);
 export_proto(reshape_c16);
 
 void
-reshape_c16 (gfc_array_c16 * ret, gfc_array_c16 * source, shape_type * shape,
-                      gfc_array_c16 * pad, shape_type * order)
+reshape_c16 (gfc_array_c16 * const restrict ret, 
+	gfc_array_c16 * const restrict source, 
+	shape_type * const restrict shape,
+	gfc_array_c16 * const restrict pad, 
+	shape_type * const restrict order)
 {
   /* r.* indicates the return array.  */
   index_type rcount[GFC_MAX_DIMENSIONS];

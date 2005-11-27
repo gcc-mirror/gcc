@@ -37,18 +37,21 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_4)
 
 
-extern void sum_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *);
+extern void sum_i4 (gfc_array_i4 * const restrict, 
+	gfc_array_i4 * const restrict, const index_type * const restrict);
 export_proto(sum_i4);
 
 void
-sum_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
+sum_i4 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_i4 * const restrict array, 
+	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_4 *base;
-  GFC_INTEGER_4 *dest;
+  const GFC_INTEGER_4 * restrict base;
+  GFC_INTEGER_4 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -120,7 +123,7 @@ sum_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
 
   while (base)
     {
-      GFC_INTEGER_4 *src;
+      const GFC_INTEGER_4 * restrict src;
       GFC_INTEGER_4 result;
       src = base;
       {
@@ -170,22 +173,25 @@ sum_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
 }
 
 
-extern void msum_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *,
-					       gfc_array_l4 *);
+extern void msum_i4 (gfc_array_i4 * const restrict, 
+	gfc_array_i4 * const restrict, const index_type * const restrict,
+	gfc_array_l4 * const restrict);
 export_proto(msum_i4);
 
 void
-msum_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
-				  index_type *pdim, gfc_array_l4 * mask)
+msum_i4 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_i4 * const restrict array, 
+	const index_type * const restrict pdim, 
+	gfc_array_l4 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  GFC_INTEGER_4 *dest;
-  GFC_INTEGER_4 *base;
-  GFC_LOGICAL_4 *mbase;
+  GFC_INTEGER_4 * restrict dest;
+  const GFC_INTEGER_4 * restrict base;
+  const GFC_LOGICAL_4 * restrict mbase;
   int rank;
   int dim;
   index_type n;
@@ -276,8 +282,8 @@ msum_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
 
   while (base)
     {
-      GFC_INTEGER_4 *src;
-      GFC_LOGICAL_4 *msrc;
+      const GFC_INTEGER_4 * restrict src;
+      const GFC_LOGICAL_4 * restrict msrc;
       GFC_INTEGER_4 result;
       src = base;
       msrc = mbase;

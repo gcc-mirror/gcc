@@ -34,11 +34,13 @@ Boston, MA 02110-1301, USA.  */
 
 #if defined (HAVE_GFC_COMPLEX_16)
 
-extern void transpose_c16 (gfc_array_c16 * ret, gfc_array_c16 * source);
+extern void transpose_c16 (gfc_array_c16 * const restrict ret, 
+	gfc_array_c16 * const restrict source);
 export_proto(transpose_c16);
 
 void
-transpose_c16 (gfc_array_c16 * ret, gfc_array_c16 * source)
+transpose_c16 (gfc_array_c16 * const restrict ret, 
+	gfc_array_c16 * const restrict source)
 {
   /* r.* indicates the return array.  */
   index_type rxstride, rystride;

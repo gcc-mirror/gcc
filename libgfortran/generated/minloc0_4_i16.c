@@ -39,17 +39,19 @@ Boston, MA 02110-1301, USA.  */
 #if defined (HAVE_GFC_INTEGER_16) && defined (HAVE_GFC_INTEGER_4)
 
 
-extern void minloc0_4_i16 (gfc_array_i4 * retarray, gfc_array_i16 *array);
+extern void minloc0_4_i16 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_i16 * const restrict array);
 export_proto(minloc0_4_i16);
 
 void
-minloc0_4_i16 (gfc_array_i4 * retarray, gfc_array_i16 *array)
+minloc0_4_i16 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_i16 * const restrict array)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
-  GFC_INTEGER_16 *base;
+  const GFC_INTEGER_16 *base;
   GFC_INTEGER_4 *dest;
   index_type rank;
   index_type n;
@@ -154,12 +156,14 @@ minloc0_4_i16 (gfc_array_i4 * retarray, gfc_array_i16 *array)
 }
 
 
-extern void mminloc0_4_i16 (gfc_array_i4 *, gfc_array_i16 *, gfc_array_l4 *);
+extern void mminloc0_4_i16 (gfc_array_i4 * const restrict, 
+	gfc_array_i16 * const restrict, gfc_array_l4 * const restrict);
 export_proto(mminloc0_4_i16);
 
 void
-mminloc0_4_i16 (gfc_array_i4 * retarray, gfc_array_i16 *array,
-				  gfc_array_l4 * mask)
+mminloc0_4_i16 (gfc_array_i4 * const restrict retarray, 
+	gfc_array_i16 * const restrict array,
+	gfc_array_l4 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -167,7 +171,7 @@ mminloc0_4_i16 (gfc_array_i4 * retarray, gfc_array_i16 *array,
   index_type mstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
   GFC_INTEGER_4 *dest;
-  GFC_INTEGER_16 *base;
+  const GFC_INTEGER_16 *base;
   GFC_LOGICAL_4 *mbase;
   int rank;
   index_type n;

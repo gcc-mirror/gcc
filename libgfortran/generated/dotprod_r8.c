@@ -37,15 +37,16 @@ Boston, MA 02110-1301, USA.  */
 
 typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) char_array;
 
-extern GFC_REAL_8 dot_product_r8 (gfc_array_r8 * a, gfc_array_r8 * b);
+extern GFC_REAL_8 dot_product_r8 (gfc_array_r8 * const restrict a, 
+	gfc_array_r8 * const restrict b);
 export_proto(dot_product_r8);
 
 /* Both parameters will already have been converted to the result type.  */
 GFC_REAL_8
-dot_product_r8 (gfc_array_r8 * a, gfc_array_r8 * b)
+dot_product_r8 (gfc_array_r8 * const restrict a, gfc_array_r8 * const restrict b)
 {
-  GFC_REAL_8 *pa;
-  GFC_REAL_8 *pb;
+  const GFC_REAL_8 * restrict pa;
+  const GFC_REAL_8 * restrict pb;
   GFC_REAL_8 res;
   index_type count;
   index_type astride;
