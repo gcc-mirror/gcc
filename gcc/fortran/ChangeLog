@@ -1,3 +1,8 @@
+2005-11-27 Bernhard Fischer <rep.nop@aon.at>
+
+	* gfortran.h: remove superfluous whitespace and use GNU
+	comment-style for the documentation of backend_decl.
+
 2005-11-27  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/24917
