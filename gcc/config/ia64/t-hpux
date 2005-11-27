@@ -9,7 +9,7 @@ MULTILIB_MATCHES =
 
 # Support routines for HP-UX 128 bit floats.
 
-LIB2FUNCS_EXTRA=quadlib.c
+LIB2FUNCS_EXTRA=quadlib.c $(srcdir)/config/floatunsitf.c
 
 quadlib.c: $(srcdir)/config/ia64/quadlib.c
 	cat $(srcdir)/config/ia64/quadlib.c > quadlib.c
