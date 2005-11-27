@@ -450,8 +450,21 @@ gfc_check_a_p (gfc_expr * a, gfc_expr * p)
   if (int_or_real_check (a, 0) == FAILURE)
     return FAILURE;
 
-  if (same_type_check (a, 0, p, 1) == FAILURE)
-    return FAILURE;
+  if (a->ts.type != p->ts.type)
+    {
+      gfc_error ("'%s' and '%s' arguments of '%s' intrinsic at %L must "
+                "have the same type", gfc_current_intrinsic_arg[0],
+                gfc_current_intrinsic_arg[1], gfc_current_intrinsic,
+                &p->where);
+      return FAILURE;
+    }
+
+  if (a->ts.kind != p->ts.kind)
+    {
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: Different type kinds at %L",
+                          &p->where) == FAILURE)
+       return FAILURE;
+    }
 
   return SUCCESS;
 }
