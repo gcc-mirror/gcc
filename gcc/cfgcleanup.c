@@ -1572,11 +1572,23 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
 	}
     }
 
-  /* Avoid splitting if possible.  */
-  if (newpos2 == BB_HEAD (src2))
+  /* Avoid splitting if possible.  We must always split when SRC2 has
+     EH predecessor edges, or we may end up with basic blocks with both
+     normal and EH predecessor edges.  */
+  if (newpos2 == BB_HEAD (src2)
+      && !(EDGE_PRED (src2, 0)->flags & EDGE_EH))
     redirect_to = src2;
   else
     {
+      if (newpos2 == BB_HEAD (src2))
+	{
+	  /* Skip possible basic block header.  */
+	  if (LABEL_P (newpos2))
+	    newpos2 = NEXT_INSN (newpos2);
+	  if (NOTE_P (newpos2))
+	    newpos2 = NEXT_INSN (newpos2);
+	}
+
       if (dump_file)
 	fprintf (dump_file, "Splitting bb %i before %i insns\n",
 		 src2->index, nmatch);
