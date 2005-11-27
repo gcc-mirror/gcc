@@ -1,3 +1,8 @@
+2005-11-27  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c: Reindent and fix whitespace, remove
+	redundant parens.
+
 2005-11-27  Steven Bosscher  <stevenb@suse.de>
 
 	* cfgcleanup.c (try_crossjump_to_edge): Always split SRC2 if it
