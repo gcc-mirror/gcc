@@ -1,3 +1,7 @@
+2005-11-26  Eric Christopher  <echristo@apple.com>
+
+	* gcc.dg/intmax_t-1.c: Remove mips xfail.
+
 2005-11-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* objc.dg/gnu-runtime-3.m: Simplify.
@@ -17,7 +21,7 @@
 
 	PR libgfortran/24945
 	* gfortran.dg/open_status_2.f90: New test.
-	
+
 2005-11-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/builtins/fprintf.c,
@@ -200,7 +204,7 @@
 2005-11-21  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/fold-div-2.c: New test.
-	
+
 2005-11-20  Ian Lance Taylor  <ian@airs.com>
 
 	PR rtl-optimization/24883
@@ -257,7 +261,7 @@
 	gcc.target/ia64/float80-2.c, gcc.target/ia64/got-1.c,
 	gcc.target/ia64/postinc-1.c, gcc.target/ia64/types-1.c,
 	gcc.target/ia64/types-2.c, gcc.target/ia64/visibility-1.c,
-	gcc.target/ia64/visibility-2.c: Move from gcc.dg/, with 
+	gcc.target/ia64/visibility-2.c: Move from gcc.dg/, with
 	renaming to remove initial "ia64-".
 
 2005-11-18  Eric Botcazou  <ebotcazou@adacore.com>
@@ -346,7 +350,7 @@
 2005-11-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24687
-	* g++.dg/template/crash43.C: New test. 
+	* g++.dg/template/crash43.C: New test.
 
 2005-11-14  Daniel Jacobowitz  <dan@codesourcery.com>
 
@@ -466,13 +470,13 @@
 
 	PR libgfortran/24719
 	gfortran.dg/read_noadvance.f90: New test.
-	
+
 	PR libgfortran/24699
 	gfortran.dg/fmt_t_2.f90: New test.
-	
+
 	PR libgfortran/24785
 	gfortran.dg/read_x_eor.f90: New test.
-	
+
 	PR libgfortran/24584
 	gfortran.dg/namelist_empty.f90: Rename test.
 
@@ -493,7 +497,7 @@
 
 	PR fortran/24655
 	PR fortran/24755
-	* gfortran.dg/recursive_statement_functions.f90: Add statement 
+	* gfortran.dg/recursive_statement_functions.f90: Add statement
 	functions using inline intrinsic functions and parameters to test
 	that they no longer seg-fault.
 
@@ -535,10 +539,10 @@
 	* gcc.dg/pr24624.c: Disable for non S/390 targets.
 
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
-	
+
         PR 24624
 	* gcc.dg/pr24624.c: Testcase added.
-	
+
 2005-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR 24623
@@ -573,7 +577,7 @@
 
 	PR tree-optimization/23115
 	* gcc.dg/tree-ssa/pr23115.c: New.
-	
+
 2005-11-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/ext/altivec-{1-13}.C: XFAIL on AIX and SPE.
@@ -655,7 +659,7 @@
 
 	PR fortran/24174
 	PR fortran/24305
-	* testsuite/gfortran.dg/large_real_kind_form_io_1.f90: New file.	
+	* testsuite/gfortran.dg/large_real_kind_form_io_1.f90: New file.
 
 2005-11-06  Diego Novillo  <dnovillo@redhat.com>
 

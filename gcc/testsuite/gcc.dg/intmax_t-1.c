@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wall" } */
-/* { dg-error "" "" { target *-*-solaris2.5.1 mips*-*-elf* *arm*-*-*elf* xscale*-*-elf* xtensa-*-elf* } 0 } */
+/* { dg-error "" "" { target *-*-solaris2.5.1 *arm*-*-*elf* xscale*-*-elf* xtensa-*-elf* } 0 } */
 
 /* Compile with -Wall to get a warning if built-in and system intmax_t don't
    match.  */
