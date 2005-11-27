@@ -2367,8 +2367,6 @@ notice_update_cc (rtx exp, rtx insn)
 		   || GET_CODE (SET_SRC (exp)) == MEM
 		   || GET_CODE (SET_SRC (exp)) == CONST_DOUBLE))
 	CC_STATUS_INIT; 
-      else if (GET_CODE (SET_SRC (exp)) == CALL)
-	CC_STATUS_INIT; 
       else if (XEXP (exp, 0) != pc_rtx)
 	{
 	  cc_status.flags = 0;
