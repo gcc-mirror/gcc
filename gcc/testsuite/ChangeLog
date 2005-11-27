@@ -1,3 +1,10 @@
+2005-11-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/24919
+	* gfortran.dg/ftell_1.f90: Modify testcase so that it doesn't
+	fail on CRLF platforms.
+	* gfortran.dg/ftell_2.f90: Likewise.
+
 2005-11-26  Eric Christopher  <echristo@apple.com>
 
 	* gcc.dg/intmax_t-1.c: Remove mips xfail.

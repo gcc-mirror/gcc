@@ -1037,7 +1037,7 @@ tempfile (st_parameter_open *opp)
 
   if (mktemp (template))
     do
-#ifdef HAVE_CRLF
+#if defined(HAVE_CRLF) && defined(O_BINARY)
       fd = open (template, O_RDWR | O_CREAT | O_EXCL | O_BINARY,
                  S_IREAD | S_IWRITE);
 #else
@@ -1127,7 +1127,7 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
 
   /* rwflag |= O_LARGEFILE; */
 
-#ifdef HAVE_CRLF
+#if defined(HAVE_CRLF) && defined(O_BINARY)
   crflag |= O_BINARY;
 #endif
 
@@ -1475,7 +1475,7 @@ stream_at_bof (stream * s)
 }
 
 
-/* stream_at_eof()-- Returns nonzero if the stream is at the beginning
+/* stream_at_eof()-- Returns nonzero if the stream is at the end
  * of the file. */
 
 int

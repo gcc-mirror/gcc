@@ -201,7 +201,7 @@ eat_spaces (st_parameter_dt *dtp)
 static void
 eat_separator (st_parameter_dt *dtp)
 {
-  char c;
+  char c, n;
 
   eat_spaces (dtp);
   dtp->u.p.comma_flag = 0;
@@ -218,8 +218,18 @@ eat_separator (st_parameter_dt *dtp)
       dtp->u.p.input_complete = 1;
       break;
 
-    case '\n':
     case '\r':
+      n = next_char(dtp);
+      if (n == '\n')
+	dtp->u.p.at_eol = 1;
+      else
+        {
+	  unget_char (dtp, n);
+	  unget_char (dtp, c);
+        } 
+      break;
+
+    case '\n':
       dtp->u.p.at_eol = 1;
       break;
 
@@ -263,7 +273,7 @@ finish_separator (st_parameter_dt *dtp)
       else
 	{
 	  c = eat_spaces (dtp);
-	  if (c == '\n')
+	  if (c == '\n' || c == '\r')
 	    goto restart;
 	}
 
@@ -796,7 +806,7 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
 	      goto done;
 	    }
 
-	  if (c != '\n')
+	  if (c != '\n' && c != '\r')
 	    push_char (dtp, c);
 	  break;
 
@@ -1741,32 +1751,56 @@ nml_query (st_parameter_dt *dtp, char c)
 	  /* "&namelist_name\n"  */
 
 	  len = dtp->namelist_name_len;
+#ifdef HAVE_CRLF
+	  p = write_block (dtp, len + 3);
+#else
 	  p = write_block (dtp, len + 2);
+#endif
 	  if (!p)
 	    goto query_return;
 	  memcpy (p, "&", 1);
 	  memcpy ((char*)(p + 1), dtp->namelist_name, len);
+#ifdef HAVE_CRLF
+	  memcpy ((char*)(p + len + 1), "\r\n", 2);
+#else
 	  memcpy ((char*)(p + len + 1), "\n", 1);
+#endif
 	  for (nl = dtp->u.p.ionml; nl; nl = nl->next)
 	    {
 
 	      /* " var_name\n"  */
 
 	      len = strlen (nl->var_name);
+#ifdef HAVE_CRLF
+	      p = write_block (dtp, len + 3);
+#else
 	      p = write_block (dtp, len + 2);
+#endif
 	      if (!p)
 		goto query_return;
 	      memcpy (p, " ", 1);
 	      memcpy ((char*)(p + 1), nl->var_name, len);
+#ifdef HAVE_CRLF
+	      memcpy ((char*)(p + len + 1), "\r\n", 2);
+#else
 	      memcpy ((char*)(p + len + 1), "\n", 1);
+#endif
 	    }
 
 	  /* "&end\n"  */
 
+#ifdef HAVE_CRLF
+	  p = write_block (dtp, 6);
+#else
 	  p = write_block (dtp, 5);
+#endif
 	  if (!p)
 	    goto query_return;
+#ifdef HAVE_CRLF
+	  memcpy (p, "&end\r\n", 6);
+#else
 	  memcpy (p, "&end\n", 5);
+#endif
 	}
 
       /* Flush the stream to force immediate output.  */
