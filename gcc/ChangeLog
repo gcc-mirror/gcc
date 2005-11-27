@@ -1,3 +1,8 @@
+2005-11-27  Steven Bosscher  <stevenb@suse.de>
+
+	* cfgcleanup.c (try_crossjump_to_edge): Always split SRC2 if it
+	has EH predecessor edges.
+
 2005-11-26  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/i386.md (*zero_extendqihi2_movzbw): Avoid partial
