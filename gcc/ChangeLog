@@ -1,3 +1,10 @@
+2005-11-27  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/21309
+	* expmed.c (choose_mult_variant): Return immediately when mult_cost
+	is less than zero.  Limit mult_cost to a reasonable upper bound for
+	the synthetic multiplication sequence.
+
 2005-11-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* fold-const.c (negate_mathfn_p): Fix comment.
