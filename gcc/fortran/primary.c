@@ -298,33 +298,46 @@ cleanup:
 
 
 /* Match a binary, octal or hexadecimal constant that can be found in
-   a DATA statement.  */
+   a DATA statement.  The standard permits b'010...', o'73...', and
+   z'a1...' where b, o, and z can be capital letters.  This function
+   also accepts postfixed forms of the constants: '01...'b, '73...'o,
+   and 'a1...'z.  An additional extension is the use of x for z.  */
 
 static match
 match_boz_constant (gfc_expr ** result)
 {
-  int radix, delim, length, x_hex, kind;
-  locus old_loc;
+  int post, radix, delim, length, x_hex, kind;
+  locus old_loc, start_loc;
   char *buffer;
   gfc_expr *e;
 
-  old_loc = gfc_current_locus;
+  start_loc = old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
 
   x_hex = 0;
-  switch (gfc_next_char ())
+  switch (post = gfc_next_char ())
     {
     case 'b':
       radix = 2;
+      post = 0;
       break;
     case 'o':
       radix = 8;
+      post = 0;
       break;
     case 'x':
       x_hex = 1;
       /* Fall through.  */
     case 'z':
       radix = 16;
+      post = 0;
+      break;
+    case '\'':
+      /* Fall through.  */
+    case '\"':
+      delim = post;
+      post = 1;
+      radix = 16;  /* Set to accept any valid digit string.  */
       break;
     default:
       goto backup;
@@ -332,7 +345,9 @@ match_boz_constant (gfc_expr ** result)
 
   /* No whitespace allowed here.  */
 
-  delim = gfc_next_char ();
+  if (post == 0)
+    delim = gfc_next_char ();
+
   if (delim != '\'' && delim != '\"')
     goto backup;
 
@@ -347,40 +362,36 @@ match_boz_constant (gfc_expr ** result)
   length = match_digits (0, radix, NULL);
   if (length == -1)
     {
-      switch (radix)
-        {
-	case 2:
-          gfc_error ("Empty set of digits in binary constant at %C");
-	  break;
-	case 8:
-          gfc_error ("Empty set of digits in octal constant at %C");
-	  break;
-	case 16:
-          gfc_error ("Empty set of digits in hexadecimal constant at %C");
-	  break;
-        default:
-	  gcc_unreachable ();
-        }
+      gfc_error ("Empty set of digits in BOZ constant at %C");
       return MATCH_ERROR;
     }
 
   if (gfc_next_char () != delim)
     {
-      switch (radix)
-        {
-	case 2:
-	  gfc_error ("Illegal character in binary constant at %C");
+      gfc_error ("Illegal character in BOZ constant at %C");
+      return MATCH_ERROR;
+    }
+
+  if (post == 1)
+    {
+      switch (gfc_next_char ())
+	{
+	case 'b':
+	  radix = 2;
 	  break;
-	case 8:
-	  gfc_error ("Illegal character in octal constant at %C");
+	case 'o':
+	  radix = 8;
 	  break;
-	case 16:
-	  gfc_error ("Illegal character in hexadecimal constant at %C");
+	case 'x':
+	  /* Fall through.  */
+	case 'z':
+	  radix = 16;
 	  break;
 	default:
-	  gcc_unreachable ();
+	  goto backup;
 	}
-      return MATCH_ERROR;
+	gfc_notify_std (GFC_STD_GNU, "Extension: BOZ constant "
+			"at %C uses non-standard postfix syntax.");
     }
 
   gfc_current_locus = old_loc;
@@ -389,8 +400,9 @@ match_boz_constant (gfc_expr ** result)
   memset (buffer, '\0', length + 1);
 
   match_digits (0, radix, buffer);
-  gfc_next_char ();  /* Eat delimiter.  */
-
+  gfc_next_char ();    /* Eat delimiter.  */
+  if (post == 1)
+    gfc_next_char ();  /* Eat postfixed b, o, z, or x.  */
 
   /* In section 5.2.5 and following C567 in the Fortran 2003 standard, we find
      "If a data-stmt-constant is a boz-literal-constant, the corresponding
@@ -405,7 +417,6 @@ match_boz_constant (gfc_expr ** result)
   if (gfc_range_check (e) != ARITH_OK)
     {
       gfc_error ("Integer too big for integer kind %i at %C", kind);
-
       gfc_free_expr (e);
       return MATCH_ERROR;
     }
@@ -414,7 +425,7 @@ match_boz_constant (gfc_expr ** result)
   return MATCH_YES;
 
 backup:
-  gfc_current_locus = old_loc;
+  gfc_current_locus = start_loc;
   return MATCH_NO;
 }
 
@@ -954,6 +965,13 @@ got_delim:
 
       length++;
     }
+
+  /* Peek at the next character to see if it is a b, o, z, or x for the
+     postfixed BOZ literal constants.  */
+  c = gfc_peek_char ();
+  if (c == 'b' || c == 'o' || c =='z' || c == 'x')
+    goto no_match;
+
 
   e = gfc_get_expr ();
 

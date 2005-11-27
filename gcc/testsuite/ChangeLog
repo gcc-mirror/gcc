@@ -1,3 +1,8 @@
+2005-11-27  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/24917
+	*  gfortran.dg/boz_6.f90: New test.
+
 2005-11-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/23912
