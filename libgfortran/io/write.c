@@ -1817,7 +1817,7 @@ namelist_write (st_parameter_dt *dtp)
 	}
     }
 #ifdef HAVE_CRLF
-  write_character (dtp, "  /\r\n ", 5);
+  write_character (dtp, "  /\r\n", 5);
 #else
   write_character (dtp, "  /\n", 4);
 #endif

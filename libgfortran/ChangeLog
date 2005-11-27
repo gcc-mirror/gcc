@@ -1,5 +1,10 @@
 2005-11-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	* io/write.c (namelist_write): Correct type in previous
+	commit.
+
+2005-11-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/24919
 	* io/list_read.c (eat_separator, finish_separator,
 	read_character): Handle CRLF separators correctly during reads.
