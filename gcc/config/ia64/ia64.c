@@ -8437,6 +8437,9 @@ ia64_init_libfuncs (void)
 
   set_conv_libfunc (sfloat_optab, TFmode, SImode, "_U_Qfcnvxf_sgl_to_quad");
   set_conv_libfunc (sfloat_optab, TFmode, DImode, "_U_Qfcnvxf_dbl_to_quad");
+  /* HP-UX 11.23 libc does not have a function for unsigned
+     SImode-to-TFmode conversion.  */
+  set_conv_libfunc (ufloat_optab, TFmode, DImode, "_U_Qfcnvxuf_dbl_to_quad");
 }
 
 /* Rename all the TFmode libfuncs using the HPUX conventions.  */
