@@ -1,3 +1,8 @@
+2005-11-28  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (strict_aliasing_warning): Handle all
+	component-ref like accesses.
+
 2005-11-28  Roger Sayle  <roger@eyesopen.com>
 	    Uros Bizjak  <uros@kss-loka.si>
 

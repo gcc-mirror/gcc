@@ -1,3 +1,8 @@
+2005-11-28  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/alias-9.c: New testcase.
+	* g++.dg/warn/Wstrict-aliasing-7.C: Likewise.
+
 2005-11-28  Roger Sayle  <roger@eyesopen.com>
 	    Uros Bizjak  <uros@kss-loka.si>
 
