@@ -71,7 +71,7 @@ function updateContents () {
 	    gotContents(e, xml_request);
 	}
     xml_request.open("GET", url);
-    xml_request.setRequestHeader("Cache-Control", "max-age=0");
+    xml_request.setRequestHeader("Cache-Control", "max-age=30");
     xml_request.send(null);
 }
 
