@@ -11507,9 +11507,9 @@ same as @option{-msdata=sysv}.
 
 @item -msdata-data
 @opindex msdata-data
-On System V.4 and embedded PowerPC systems, put small global and static
-data in the @samp{.sdata} section.  Put small uninitialized global and
-static data in the @samp{.sbss} section.  Do not use register @code{r13}
+On System V.4 and embedded PowerPC systems, put small global
+data in the @samp{.sdata} section.  Put small uninitialized global
+data in the @samp{.sbss} section.  Do not use register @code{r13}
 to address small data however.  This is the default behavior unless
 other @option{-msdata} options are used.
 
