@@ -1,3 +1,7 @@
+2005-11-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.c (main): Change type of argv to "char **".
+
 2005-11-28  Alan Modra  <amodra@bigpond.net.au>
 
 	* doc/invoke.texi (powerpc msdata-data): Static data doesn't go in
