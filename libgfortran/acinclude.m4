@@ -174,7 +174,7 @@ target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`])
   fi])
 
 dnl Check for pragma weak.
-AC_DEFUN([LIBGFOR_CHECK_PRAGMA_WEAK], [
+AC_DEFUN([LIBGFOR_GTHREAD_WEAK], [
   AC_CACHE_CHECK([whether pragma weak works],
 		 have_pragma_weak, [
   gfor_save_CFLAGS="$CFLAGS"
@@ -183,9 +183,15 @@ AC_DEFUN([LIBGFOR_CHECK_PRAGMA_WEAK], [
 #pragma weak foo], [if (foo) foo ();],
 		 have_pragma_weak=yes, have_pragma_weak=no)])
   if test $have_pragma_weak = yes; then
-    AC_DEFINE(HAVE_PRAGMA_WEAK, 1,
+    AC_DEFINE(SUPPORTS_WEAK, 1,
 	      [Define to 1 if the target supports #pragma weak])
-  fi])
+  fi
+  case "$host" in
+    *-*-darwin* | *-*-hpux* | *-*-cygwin*)
+      AC_DEFINE(GTHREAD_USE_WEAK, 0,
+		[Define to 0 if the target shouldn't use #pragma weak])
+      ;;
+  esac])
 
 dnl Check whether target can unlink a file still open.
 AC_DEFUN([LIBGFOR_CHECK_UNLINK_OPEN_FILE], [

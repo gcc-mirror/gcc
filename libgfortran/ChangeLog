@@ -1,5 +1,16 @@
 2005-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	libfortran/24991
+	* acinclude.m4 (LIBGFOR_CHECK_PRAGMA_WEAK): Rename to...
+	(LIBGFOR_GTHREAD_WEAK): ... this.  Define SUPPORTS_WEAK rather
+	than HAVE_PRAGMA_WEAK.  Define GTHREAD_USE_WEAK to 0 on hosts
+	that shouldn't use weak in gthr.h.
+	* configure.ac: Use LIBGFOR_GTHREAD_WEAK instead of
+	LIBGFOR_CHECK_PRAGMA_WEAK.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* io/io.h (SUPPORTS_WEAK): Don't define here.
+
 	* intrinsics/ftell.c (ftell, FTELL_SUB): Add unlock_unit call.
 	* intrinsics/fget.c (fgetc, fputs): Likewise.
 	* intrinsics/tty.c (ttynam): Likewise.

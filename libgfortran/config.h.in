@@ -3,6 +3,9 @@
 /* Does gettimeofday take a single argument */
 #undef GETTIMEOFDAY_ONE_ARGUMENT
 
+/* Define to 0 if the target shouldn't use #pragma weak */
+#undef GTHREAD_USE_WEAK
+
 /* libm includes acos */
 #undef HAVE_ACOS
 
@@ -465,9 +468,6 @@
 /* libm includes powl */
 #undef HAVE_POWL
 
-/* Define to 1 if the target supports #pragma weak */
-#undef HAVE_PRAGMA_WEAK
-
 /* libm includes round */
 #undef HAVE_ROUND
 
@@ -683,6 +683,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* Define to 1 if the target supports #pragma weak */
+#undef SUPPORTS_WEAK
 
 /* Define to 1 if the target is ILP32. */
 #undef TARGET_ILP32
