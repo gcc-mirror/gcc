@@ -1,3 +1,7 @@
+2005-11-29  Ben Elliston  <bje@au.ibm.com>
+
+	* libdecnumber: Import decNumber sources from the dfp-branch.
+
 2005-11-21  Kean Johnston  <jkj@sco.com>
 
 	* config.sub, config.guess: Sync from upstream sources.

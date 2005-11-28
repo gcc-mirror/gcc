@@ -1,0 +1,9 @@
+2005-11-29  Ben Elliston  <bje@au.ibm.com>
+
+	* decimal32.h, decimal64.h, decimal128.h: New.
+        * decimal32.c, decimal64.c, decimal128.c: Likewise.
+	* decContext.c, decContext.h: Likewise.
+	* decUtility.c, decUtility.h: Likewise.
+	* decNumber.c, decNumber.h, decNumberLocal.h: Likewise.
+	* decDPD.h: Likewise.
+	* decLibrary.c, decRound.c: Likewise.
