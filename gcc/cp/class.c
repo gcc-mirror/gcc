@@ -2801,7 +2801,7 @@ check_field_decls (tree t, tree *access_decls,
 		  (0,
 		   "ignoring packed attribute on unpacked non-POD field %q+#D",
 		   x);
-	      else
+	      else if (TYPE_ALIGN (TREE_TYPE (x)) > BITS_PER_UNIT)
 		DECL_PACKED (x) = 1;
 	    }
 
