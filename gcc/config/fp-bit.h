@@ -318,7 +318,7 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #endif
 
 /* Preserve the sticky-bit when shifting fractions to the right.  */
-#define LSHIFT(a) { a = (a & 1) | (a >> 1); }
+#define LSHIFT(a, s) { a = (a >> s) | !!(a & (((fractype) 1 << s) - 1)); }
 
 /* numeric parameters */
 /* F_D_BITOFF is the number of bits offset between the MSB of the mantissa

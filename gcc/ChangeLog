@@ -1,3 +1,9 @@
+2005-11-28  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/fp-bit.h (LSHIFT): Take shift count parameter.
+	* config/fp-bit.c (_fpadd_parts): Shift in one go instead of one
+	bit at a time.
+
 2005-11-28  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_secondary_reload): Renamed from

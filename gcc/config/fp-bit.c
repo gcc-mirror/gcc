@@ -649,6 +649,7 @@ _fpadd_parts (fp_number_type * a,
      they're the same */
   {
     int diff;
+    int sdiff;
 
     a_normal_exp = a->normal_exp;
     b_normal_exp = b->normal_exp;
@@ -656,21 +657,21 @@ _fpadd_parts (fp_number_type * a,
     b_fraction = b->fraction.ll;
 
     diff = a_normal_exp - b_normal_exp;
+    sdiff = diff;
 
     if (diff < 0)
       diff = -diff;
     if (diff < FRAC_NBITS)
       {
-	/* ??? This does shifts one bit at a time.  Optimize.  */
-	while (a_normal_exp > b_normal_exp)
+	if (sdiff > 0)
 	  {
-	    b_normal_exp++;
-	    LSHIFT (b_fraction);
+	    b_normal_exp += diff;
+	    LSHIFT (b_fraction, diff);
 	  }
-	while (b_normal_exp > a_normal_exp)
+	else if (sdiff < 0)
 	  {
-	    a_normal_exp++;
-	    LSHIFT (a_fraction);
+	    a_normal_exp += diff;
+	    LSHIFT (a_fraction, diff);
 	  }
       }
     else
@@ -731,7 +732,7 @@ _fpadd_parts (fp_number_type * a,
 
   if (tmp->fraction.ll >= IMPLICIT_2)
     {
-      LSHIFT (tmp->fraction.ll);
+      LSHIFT (tmp->fraction.ll, 1);
       tmp->normal_exp++;
     }
   return tmp;
