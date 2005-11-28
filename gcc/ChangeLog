@@ -1,3 +1,7 @@
+2005-11-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* varasm.c (ultimate_transparent_alias_target): Add comment.
+
 2005-11-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k.c (notice_update_cc): Use SET_DEST and

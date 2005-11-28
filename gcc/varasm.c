@@ -1996,6 +1996,14 @@ mark_decl_referenced (tree decl)
      which do not need to be marked.  */
 }
 
+
+/* Follow the IDENTIFIER_TRANSPARENT_ALIAS chain starting at *ALIAS
+   until we find an identifier that is not itself a transparent alias.
+   Modify the alias passed to it by reference (and all aliases on the
+   way to the ultimate target), such that they do not have to be
+   followed again, and return the ultimate target of the alias
+   chain.  */
+
 static inline tree
 ultimate_transparent_alias_target (tree *alias)
 {
