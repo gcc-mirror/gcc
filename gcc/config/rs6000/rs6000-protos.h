@@ -123,6 +123,7 @@ extern rtx rs6000_libcall_value (enum machine_mode);
 extern rtx rs6000_va_arg (tree, tree);
 extern int function_ok_for_sibcall (tree);
 extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
+extern bool rs6000_elf_in_small_data_p (tree);
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
 extern enum direction function_arg_padding (enum machine_mode, tree);

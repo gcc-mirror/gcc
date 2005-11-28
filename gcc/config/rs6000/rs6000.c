@@ -615,7 +615,6 @@ static void rs6000_elf_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
 static void rs6000_elf_encode_section_info (tree, rtx, int)
      ATTRIBUTE_UNUSED;
-static bool rs6000_elf_in_small_data_p (tree);
 #endif
 #if TARGET_XCOFF
 static void rs6000_xcoff_asm_globalize_label (FILE *, const char *);
@@ -17437,7 +17436,7 @@ rs6000_elf_encode_section_info (tree decl, rtx rtl, int first)
     }
 }
 
-static bool
+bool
 rs6000_elf_in_small_data_p (tree decl)
 {
   if (rs6000_sdata == SDATA_NONE)
