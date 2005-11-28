@@ -2,9 +2,13 @@
 // { dg-do run } */
 // { dg-options "-O2" } */
 
+#ifndef __RANGE_TEST_HDR_INCL
+#define __RANGE_TEST_HDR_INCL
+/* Protect against fix-header weakness */
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
+#endif
 
 #if (INT_MAX == 2147483647) && (INT_MIN == -2147483648) \
     && (SCHAR_MIN == -128) && (SCHAR_MAX == 127) \

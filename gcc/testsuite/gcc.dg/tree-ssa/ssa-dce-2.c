@@ -2,11 +2,11 @@
 /* { dg-options "-O1 -fdump-tree-dce3" } */
 
 /* We should notice constantness of this function. */
-int t(int a) 
+static int __attribute__((noinline)) t(int a) 
 {
 	return a+1;
 }
-q()
+void q(void)
 {
   int i = t(1);
   if (!i)
