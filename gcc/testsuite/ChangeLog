@@ -1,3 +1,8 @@
+2005-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/compat/struct-layout-1_generate.c: Add -w option
+	on mmix-*-* for *_[xy].c.
+
 2005-11-28  Kean Johnston  <jkj@sco.com>
 
 	* g++.dg/opt/range-test-1.C: Prevent re-inclusion of system
