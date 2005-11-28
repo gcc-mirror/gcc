@@ -54,6 +54,7 @@ PREFIX(fgetc) (const int * unit, char * c, gfc_charlen_type c_len)
   s = 1;
   memset (c, ' ', c_len);
   ret = sread (u->s, c, &s);
+  unlock_unit (u);
 
   if (ret != 0)
     return ret;
@@ -118,13 +119,16 @@ PREFIX(fputc) (const int * unit, char * c,
 	       gfc_charlen_type c_len __attribute__((unused)))
 {
   size_t s;
+  int ret;
   gfc_unit * u = find_unit (*unit);
 
   if (u == NULL)
     return -1;
 
   s = 1;
-  return swrite (u->s, c, &s);
+  ret = swrite (u->s, c, &s);
+  unlock_unit (u);
+  return ret;
 }
 
 

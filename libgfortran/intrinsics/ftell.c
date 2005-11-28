@@ -42,10 +42,12 @@ size_t
 PREFIX(ftell) (int * unit)
 {
   gfc_unit * u = find_unit (*unit);
+  size_t ret;
   if (u == NULL)
     return ((size_t) -1);
-  else
-    return ((size_t) stream_offset (u->s));
+  ret = (size_t) stream_offset (u->s);
+  unlock_unit (u);
+  return ret;
 }
 
 #define FTELL_SUB(kind) \
@@ -58,7 +60,10 @@ PREFIX(ftell) (int * unit)
     if (u == NULL) \
       *offset = -1; \
     else \
-      *offset = stream_offset (u->s); \
+      { \
+	*offset = stream_offset (u->s); \
+	unlock_unit (u); \
+      } \
   }
 
 FTELL_SUB(1)
