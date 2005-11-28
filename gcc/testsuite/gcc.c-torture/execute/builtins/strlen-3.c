@@ -7,9 +7,9 @@
 extern void abort (void);
 extern __SIZE_TYPE__ strlen (const char *);
 extern char *strcpy (char *, const char *);
-const char bar[] = "Hello, World!";
-const char baz[] = "hello, world?";
-const char larger[20] = "short string";
+static const char bar[] = "Hello, World!";
+static const char baz[] = "hello, world?";
+static const char larger[20] = "short string";
 extern volatile int inside_main;
 
 int l1 = 1;
