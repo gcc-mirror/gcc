@@ -1,3 +1,9 @@
+2005-11-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25109
+	* io/unit.c (init_units): Set default flag to BLANK_NULL per
+	requirement of F95 standard.  Set PAD_YES for stdin.
+
 2005-11-27  David Edelsohn  <edelsohn@gnu.org>
 
 	* intrinsics/random.c: Include config.h
