@@ -573,7 +573,7 @@ SOURCE_DIRECTORY=""
 
 # The directories that should be part of the various language-specific
 # tar files.  These are all relative to the top of the source tree.
-ADA_DIRS="gcc/ada libada gnattools"
+ADA_DIRS="gcc/ada"
 CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
 FORTRAN_DIRS="gcc/f libf2c"
 JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"

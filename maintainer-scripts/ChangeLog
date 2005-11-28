@@ -1,3 +1,8 @@
+2005-11-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* gcc_release (ADA_DIRS): libada and gnattools are not part of
+	this release.
+
 2005-11-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* gcc_release: Copy from mainline after SVN move.  Remove
