@@ -2367,23 +2367,26 @@ notice_update_cc (rtx exp, rtx insn)
 		   || GET_CODE (SET_SRC (exp)) == MEM
 		   || GET_CODE (SET_SRC (exp)) == CONST_DOUBLE))
 	CC_STATUS_INIT; 
-      else if (XEXP (exp, 0) != pc_rtx)
+      else if (SET_DEST (exp) != pc_rtx)
 	{
 	  cc_status.flags = 0;
-	  cc_status.value1 = XEXP (exp, 0);
-	  cc_status.value2 = XEXP (exp, 1);
+	  cc_status.value1 = SET_DEST (exp);
+	  cc_status.value2 = SET_SRC (exp);
 	}
     }
   else if (GET_CODE (exp) == PARALLEL
 	   && GET_CODE (XVECEXP (exp, 0, 0)) == SET)
     {
-      if (ADDRESS_REG_P (XEXP (XVECEXP (exp, 0, 0), 0)))
+      rtx dest = SET_DEST (XVECEXP (exp, 0, 0));
+      rtx src  = SET_SRC  (XVECEXP (exp, 0, 0));
+
+      if (ADDRESS_REG_P (dest))
 	CC_STATUS_INIT;
-      else if (XEXP (XVECEXP (exp, 0, 0), 0) != pc_rtx)
+      else if (dest != pc_rtx)
 	{
 	  cc_status.flags = 0;
-	  cc_status.value1 = XEXP (XVECEXP (exp, 0, 0), 0);
-	  cc_status.value2 = XEXP (XVECEXP (exp, 0, 0), 1);
+	  cc_status.value1 = dest;
+	  cc_status.value2 = src;
 	}
     }
   else
