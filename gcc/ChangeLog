@@ -1,3 +1,15 @@
+2005-11-28  Roger Sayle  <roger@eyesopen.com>
+	    Uros Bizjak  <uros@kss-loka.si>
+
+	PR middle-end/20219
+	* fold-const.c (fold binary) <RDIV_EXPR>: Optimize 
+	sin(x)/tan(x) as cos(x) and tan(x)/sin(x) as 1.0/cos(x)
+	when flag_unsafe_math_optimizations is set and
+	we don't care about NaNs or Infinities.
+
+	Move x/expN(y) and x/pow(y,z) transformation into common
+	flag_unsafe_math_optimizations section.
+
 2005-11-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.c (main): Change type of argv to "char **".

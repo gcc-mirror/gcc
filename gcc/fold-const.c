@@ -8365,36 +8365,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
       if (flag_unsafe_math_optimizations)
 	{
-	  enum built_in_function fcode = builtin_mathfn_code (arg1);
-	  /* Optimize x/expN(y) into x*expN(-y).  */
-	  if (BUILTIN_EXPONENT_P (fcode))
-	    {
-	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
-	      tree arg = negate_expr (TREE_VALUE (TREE_OPERAND (arg1, 1)));
-	      tree arglist = build_tree_list (NULL_TREE,
-					      fold_convert (type, arg));
-	      arg1 = build_function_call_expr (expfn, arglist);
-	      return fold_build2 (MULT_EXPR, type, arg0, arg1);
-	    }
-
-	  /* Optimize x/pow(y,z) into x*pow(y,-z).  */
-	  if (fcode == BUILT_IN_POW
-	      || fcode == BUILT_IN_POWF
-	      || fcode == BUILT_IN_POWL)
-	    {
-	      tree powfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
-	      tree arg10 = TREE_VALUE (TREE_OPERAND (arg1, 1));
-	      tree arg11 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg1, 1)));
-	      tree neg11 = fold_convert (type, negate_expr (arg11));
-	      tree arglist = tree_cons(NULL_TREE, arg10,
-				       build_tree_list (NULL_TREE, neg11));
-	      arg1 = build_function_call_expr (powfn, arglist);
-	      return fold_build2 (MULT_EXPR, type, arg0, arg1);
-	    }
-	}
-
-      if (flag_unsafe_math_optimizations)
-	{
 	  enum built_in_function fcode0 = builtin_mathfn_code (arg0);
 	  enum built_in_function fcode1 = builtin_mathfn_code (arg1);
 
@@ -8430,6 +8400,53 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		}
 	    }
 
+ 	  /* Optimize sin(x)/tan(x) as cos(x) if we don't care about
+	     NaNs or Infinities.  */
+ 	  if (((fcode0 == BUILT_IN_SIN && fcode1 == BUILT_IN_TAN)
+ 	       || (fcode0 == BUILT_IN_SINF && fcode1 == BUILT_IN_TANF)
+ 	       || (fcode0 == BUILT_IN_SINL && fcode1 == BUILT_IN_TANL)))
+	    {
+	      tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
+	      tree arg01 = TREE_VALUE (TREE_OPERAND (arg1, 1));
+
+	      if (! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg00)))
+		  && ! HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (arg00)))
+		  && operand_equal_p (arg00, arg01, 0))
+		{
+		  tree cosfn = mathfn_built_in (type, BUILT_IN_COS);
+
+		  if (cosfn != NULL_TREE)
+		    return build_function_call_expr (cosfn,
+						     TREE_OPERAND (arg0, 1));
+		}
+	    }
+
+ 	  /* Optimize tan(x)/sin(x) as 1.0/cos(x) if we don't care about
+	     NaNs or Infintes.  */
+ 	  if (((fcode0 == BUILT_IN_TAN && fcode1 == BUILT_IN_SIN)
+ 	       || (fcode0 == BUILT_IN_TANF && fcode1 == BUILT_IN_SINF)
+ 	       || (fcode0 == BUILT_IN_TANL && fcode1 == BUILT_IN_SINL)))
+	    {
+	      tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
+	      tree arg01 = TREE_VALUE (TREE_OPERAND (arg1, 1));
+
+	      if (! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg00)))
+		  && ! HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (arg00)))
+		  && operand_equal_p (arg00, arg01, 0))
+		{
+		  tree cosfn = mathfn_built_in (type, BUILT_IN_COS);
+
+		  if (cosfn != NULL_TREE)
+		    {
+		      tree tmp = TREE_OPERAND (arg0, 1);
+		      tmp = build_function_call_expr (cosfn, tmp);
+		      return fold (build (RDIV_EXPR, type,
+					  build_real (type, dconst1),
+					  tmp));
+		    }
+		}
+	    }
+
 	  /* Optimize pow(x,c)/x as pow(x,c-1).  */
 	  if (fcode0 == BUILT_IN_POW
 	      || fcode0 == BUILT_IN_POWF
@@ -8452,6 +8469,32 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  arglist = tree_cons (NULL_TREE, arg1, arglist);
 		  return build_function_call_expr (powfn, arglist);
 		}
+	    }
+
+	  /* Optimize x/expN(y) into x*expN(-y).  */
+	  if (BUILTIN_EXPONENT_P (fcode1))
+	    {
+	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
+	      tree arg = negate_expr (TREE_VALUE (TREE_OPERAND (arg1, 1)));
+	      tree arglist = build_tree_list (NULL_TREE,
+					      fold_convert (type, arg));
+	      arg1 = build_function_call_expr (expfn, arglist);
+	      return fold_build2 (MULT_EXPR, type, arg0, arg1);
+	    }
+
+	  /* Optimize x/pow(y,z) into x*pow(y,-z).  */
+	  if (fcode1 == BUILT_IN_POW
+	      || fcode1 == BUILT_IN_POWF
+	      || fcode1 == BUILT_IN_POWL)
+	    {
+	      tree powfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
+	      tree arg10 = TREE_VALUE (TREE_OPERAND (arg1, 1));
+	      tree arg11 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg1, 1)));
+	      tree neg11 = fold_convert (type, negate_expr (arg11));
+	      tree arglist = tree_cons(NULL_TREE, arg10,
+				       build_tree_list (NULL_TREE, neg11));
+	      arg1 = build_function_call_expr (powfn, arglist);
+	      return fold_build2 (MULT_EXPR, type, arg0, arg1);
 	    }
 	}
       goto binary;
