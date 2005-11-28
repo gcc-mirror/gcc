@@ -121,8 +121,10 @@ ttynam (char ** name, gfc_charlen_type * name_len, int unit)
 	{
 	  *name_len = strlen (*name);
 	  *name = strdup (*name);
+	  unlock_unit (u);
 	  return;
 	}
+      unlock_unit (u);
     }
 
   *name_len = 0;
