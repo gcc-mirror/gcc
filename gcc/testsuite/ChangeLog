@@ -1,3 +1,10 @@
+2005-11-28  Roger Sayle  <roger@eyesopen.com>
+	    Uros Bizjak  <uros@kss-loka.si>
+
+	PR middle-end/20219
+	* gcc.dg/builtins-20.c: Add checks for sin(x)/tan(x) and
+	tan(x)/sin(x) transformations.
+
 2005-11-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24575
