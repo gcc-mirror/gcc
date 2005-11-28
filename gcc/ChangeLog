@@ -1,3 +1,7 @@
+2005-11-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* varasm.c (ultimate_transparent_alias_target): Add comment.
+
 2005-11-26  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/21309
