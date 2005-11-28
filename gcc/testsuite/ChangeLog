@@ -1,3 +1,23 @@
+2005-11-28  Kean Johnston  <jkj@sco.com>
+
+	(Back-ported from HEAD)
+	* g++.dg/opt/range-test-1.C: Prevent re-inclusion of system
+	headers.
+	* g++.old-deja/g++.law/profile1.C: No longer expect fail on OSR5.
+	* gcc.c-torture/compile/20000804-1.c: Skip if using -fPIC on X86.
+	* gcc.target/i386/asm-3.c: Ditto.
+	* gcc.target/i386/clobbers.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-dce-2.c: Make t() static and prototype it.
+	* gcc.target/i386/cmov1.c: Make magic* static so it matches the
+	test regexp. Correct prototypes.
+	* gcc.target/i386/mul.c: Ditto.
+	* gcc.target/i386/ssetype-1.c: Ditto.
+	* gcc.dg/20040813-1.c: Skip on SVR5 systems.
+	* gcc.c-torture/execute/builtins/strlen-3.c: Declare variables as
+	static so the test works with -fPIC mode too. Based on comment in
+	PR19231 by Pinski.
+	* gcc.dg/nest.c: No longer fail on SCO systems as it has -pg again.
+
 2005-11-27  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/24917
