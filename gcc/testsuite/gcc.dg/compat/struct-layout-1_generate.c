@@ -723,7 +723,7 @@ int main (void)\n\
   fprintf (outfile, "\
 /* { dg-options \"-w -I%s\" } */\n\
 /* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
-/* { dg-options \"-I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
+/* { dg-options \"-w -I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1_x1.h\"\n\
 #include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_x2.h\"\n\
@@ -736,7 +736,7 @@ int main (void)\n\
   fprintf (outfile, "\
 /* { dg-options \"-w -I%s\" } */\n\
 /* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
-/* { dg-options \"-I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
+/* { dg-options \"-w -I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1_y1.h\"\n\
 #include \"t%03d_test.h\"\n\
 #include \"struct-layout-1_y2.h\"\n\
