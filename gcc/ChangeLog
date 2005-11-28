@@ -1,3 +1,13 @@
+2005-11-28  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_secondary_reload): Renamed from
+	secondary_input_reload_class, made static.  Adapt to new
+	infrastructure.
+	(secondary_output_reload_class): Delete.
+	(TARGET_SECONDARY_RELOAD): New macro.
+	* config/bfin/bfin.h (SECONDARY_INPUT_RELOAD_CLASS,
+	SECONDARY_OUTPUT_RELOAD_CLASS): Delete.
+
 2005-11-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21166

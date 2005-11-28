@@ -515,11 +515,6 @@ enum reg_class
    perhaps another, smaller class.  */
 #define PREFERRED_RELOAD_CLASS(X, CLASS) (CLASS)
 
-#define  SECONDARY_OUTPUT_RELOAD_CLASS(class,mode,x) \
-    secondary_output_reload_class(class,mode,x)
-#define  SECONDARY_INPUT_RELOAD_CLASS(class,mode,x)  \
-    secondary_input_reload_class(class,mode,x)
-
 /* Function Calling Conventions. */
 
 /* The type of the current function; normal functions are of type

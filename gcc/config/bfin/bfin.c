@@ -1714,9 +1714,9 @@ bfin_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    CLASS requires an extra scratch register.  Return the class needed for the
    scratch register.  */
 
-enum reg_class
-secondary_input_reload_class (enum reg_class class, enum machine_mode mode,
-			      rtx x)
+static enum reg_class
+bfin_secondary_reload (bool in_p, rtx x, enum reg_class class,
+		     enum machine_mode mode, secondary_reload_info *sri)
 {
   /* If we have HImode or QImode, we can only use DREGS as secondary registers;
      in most other cases we can also use PREGS.  */
@@ -1750,11 +1750,13 @@ secondary_input_reload_class (enum reg_class class, enum machine_mode mode,
 	return NO_REGS;
       /* If destination is a DREG, we can do this without a scratch register
 	 if the constant is valid for an add instruction.  */
-      if (class == DREGS || class == DPREGS)
-	return large_constant_p ? PREGS : NO_REGS;
+      if ((class == DREGS || class == DPREGS)
+	  && ! large_constant_p)
+	return NO_REGS;
       /* Reloading to anything other than a DREG?  Use a PREG scratch
 	 register.  */
-      return PREGS;
+      sri->icode = CODE_FOR_reload_insi;
+      return NO_REGS;
     }
 
   /* Data can usually be moved freely between registers of most classes.
@@ -1782,15 +1784,6 @@ secondary_input_reload_class (enum reg_class class, enum machine_mode mode,
     if (! reg_class_subset_p (class, default_class))
       return default_class;
   return NO_REGS;
-}
-
-/* Like secondary_input_reload_class; and all we do is call that function.  */
-
-enum reg_class
-secondary_output_reload_class (enum reg_class class, enum machine_mode mode,
-			       rtx x)
-{
-  return secondary_input_reload_class (class, mode, x);
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */
@@ -3007,5 +3000,8 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
+
+#undef TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD bfin_secondary_reload
 
 struct gcc_target targetm = TARGET_INITIALIZER;
