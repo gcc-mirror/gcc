@@ -160,14 +160,15 @@ INLINE
 static int
 isnan ( fp_number_type *  x)
 {
-  return x->class == CLASS_SNAN || x->class == CLASS_QNAN;
+  return __builtin_expect (x->class == CLASS_SNAN || x->class == CLASS_QNAN,
+			   0);
 }
 
 INLINE
 static int
 isinf ( fp_number_type *  x)
 {
-  return x->class == CLASS_INFINITY;
+  return __builtin_expect (x->class == CLASS_INFINITY, 0);
 }
 
 #endif /* NO_NANS */
@@ -249,7 +250,7 @@ pack_d ( fp_number_type *  src)
     }
   else
     {
-      if (src->normal_exp < NORMAL_EXPMIN)
+      if (__builtin_expect (src->normal_exp < NORMAL_EXPMIN, 0))
 	{
 #ifdef NO_DENORMALS
 	  /* Go straight to a zero representation if denormals are not
@@ -296,7 +297,7 @@ pack_d ( fp_number_type *  src)
 #endif /* NO_DENORMALS */
 	}
       else if (!LARGEST_EXPONENT_IS_NORMAL (FRAC_NBITS)
-	       && src->normal_exp > EXPBIAS)
+	       && __builtin_expect (src->normal_exp > EXPBIAS, 0))
 	{
 	  exp = EXPMAX;
 	  fraction = 0;
@@ -560,7 +561,8 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
 	  dst->fraction.ll = fraction;
 	}
     }
-  else if (!LARGEST_EXPONENT_IS_NORMAL (FRAC_NBITS) && exp == EXPMAX)
+  else if (!LARGEST_EXPONENT_IS_NORMAL (FRAC_NBITS)
+	   && __builtin_expect (exp == EXPMAX, 0))
     {
       /* Huge exponent*/
       if (fraction == 0)
