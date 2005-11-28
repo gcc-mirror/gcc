@@ -966,7 +966,7 @@ strict_aliasing_warning(tree otype, tree type, tree expr)
       && POINTER_TYPE_P (type) && POINTER_TYPE_P (otype)
       && TREE_CODE (expr) == ADDR_EXPR
       && (DECL_P (TREE_OPERAND (expr, 0))
-          || TREE_CODE (TREE_OPERAND (expr, 0)) == COMPONENT_REF)
+          || handled_component_p (TREE_OPERAND (expr, 0)))
       && !VOID_TYPE_P (TREE_TYPE (type)))
     {
       /* Casting the address of an object to non void pointer. Warn
