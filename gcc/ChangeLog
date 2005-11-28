@@ -1,3 +1,8 @@
+2005-11-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k.c (notice_update_cc): Use SET_DEST and
+	SET_SRC instead of XEXP where appropriate.
+
 2005-11-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/fp-bit.c (isnan, isinf, pack_d, unpack_d): Use
