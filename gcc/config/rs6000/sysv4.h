@@ -550,12 +550,10 @@ extern int rs6000_pic_labelno;
 
 #define	LCOMM_ASM_OP	"\t.lcomm\t"
 
-/* Override elfos.h definition.  */
-#undef	ASM_OUTPUT_ALIGNED_LOCAL
-#define	ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
+/* Describe how to emit uninitialized local items.  */
+#define	ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
 do {									\
-  if (rs6000_sdata != SDATA_NONE && (SIZE) > 0				\
-      && (SIZE) <= g_switch_value)					\
+  if ((DECL) && rs6000_elf_in_small_data_p (DECL))			\
     {									\
       sbss_section ();							\
       ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\
@@ -577,7 +575,7 @@ do {									\
 /* Describe how to emit uninitialized external linkage items.  */
 #define	ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
 do {									\
-  ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
+  ASM_OUTPUT_ALIGNED_DECL_LOCAL (FILE, DECL, NAME, SIZE, ALIGN);	\
 } while (0)
 
 #ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
