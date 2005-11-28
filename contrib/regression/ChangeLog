@@ -1,3 +1,20 @@
+2005-11-28  Geoffrey Keating  <geoffk@geoffk.org>
+
+	* GCC Regression Tester.wdgt: Rename to GCC_Regression_Tester.wdgt.
+	* GCC_Regression_Tester.wdgt/Info.plist
+	(CFBundleDisplayName): Update for rename.
+	(CFBundleName): Use shorter name.
+	(CFBundleVersion): Update to 1.0.1.
+	(CFBundleShortVersionString): Update to 1.0.1.
+	(LSHasLocalizedDisplayName): New.
+	(NSHumanReadableCopyright): New.
+	* GCC_Regression_Tester.wdgt/de.lproj/InfoPlist.strings: New.
+	* GCC_Regression_Tester.wdgt/en.lproj/InfoPlist.strings: New.
+	* GCC_Regression_Tester.wdgt/ja.lproj/InfoPlist.strings: New.
+
+	* GCC_Regression_Tester.wdgt/widget.html: Use max-age=30
+	to help out intermediate caches.
+
 2005-11-23  Geoffrey Keating  <geoffk@geoffk.org>
 
 	* GCC Regression Tester.wdgt/widget.html: New file.
