@@ -20854,10 +20854,19 @@ echo "${ECHO_T}$have_pragma_weak" >&6
   if test $have_pragma_weak = yes; then
 
 cat >>confdefs.h <<\_ACEOF
-#define HAVE_PRAGMA_WEAK 1
+#define SUPPORTS_WEAK 1
 _ACEOF
 
   fi
+  case "$host" in
+    *-*-darwin* | *-*-hpux* | *-*-cygwin*)
+
+cat >>confdefs.h <<\_ACEOF
+#define GTHREAD_USE_WEAK 0
+_ACEOF
+
+      ;;
+  esac
 
 # Various other checks on target
 
