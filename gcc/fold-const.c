@@ -953,6 +953,8 @@ negate_expr_p (tree t)
 
       /* Check that -CST will not overflow type.  */
       return may_negate_without_overflow_p (t);
+    case BIT_NOT_EXPR:
+       return INTEGRAL_TYPE_P (type);
 
     case REAL_CST:
     case NEGATE_EXPR:
@@ -1052,6 +1054,12 @@ negate_expr (tree t)
 
   switch (TREE_CODE (t))
     {
+    /* Convert - (~A) to A + 1.  */
+    case BIT_NOT_EXPR:
+      if (INTEGRAL_TYPE_P (type))
+        return fold_build2 (PLUS_EXPR, type, TREE_OPERAND (t, 0),
+                            build_int_cst (type, 1));
+      
     case INTEGER_CST:
       tem = fold_negate_const (t, type);
       if (! TREE_OVERFLOW (tem)
@@ -7030,10 +7038,6 @@ fold_unary (enum tree_code code, tree type, tree op0)
     case NEGATE_EXPR:
       if (negate_expr_p (arg0))
 	return fold_convert (type, negate_expr (arg0));
-      /* Convert - (~A) to A + 1.  */
-      if (INTEGRAL_TYPE_P (type) && TREE_CODE (arg0) == BIT_NOT_EXPR)
-	return fold_build2 (PLUS_EXPR, type, TREE_OPERAND (arg0, 0),
-			    build_int_cst (type, 1));
       return NULL_TREE;
 
     case ABS_EXPR:
