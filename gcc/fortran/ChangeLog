@@ -1,3 +1,7 @@
+2005-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* io.c (gfc_resolve_open): RESOLVE_TAG access field as well.
+
 2005-11-27 Bernhard Fischer <rep.nop@aon.at>
 
 	* gfortran.h: remove superfluous whitespace and use GNU
