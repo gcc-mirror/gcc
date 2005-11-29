@@ -1,5 +1,13 @@
 2005-11-29  Ben Elliston  <bje@au.ibm.com>
 
+	* Makefile.def: Add new libdecnumber host_module.  Make all-gcc
+	depend on all-libdecnumber.
+	* configure.in (host_libs): Include libdecnumber.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+
+2005-11-29  Ben Elliston  <bje@au.ibm.com>
+
 	* libdecnumber: Import decNumber sources from the dfp-branch.
 
 2005-11-21  Kean Johnston  <jkj@sco.com>
