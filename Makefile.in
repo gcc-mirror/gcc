@@ -810,6 +810,7 @@ configure-host:  \
     maybe-configure-itcl \
     maybe-configure-ld \
     maybe-configure-libcpp \
+    maybe-configure-libdecnumber \
     maybe-configure-libgui \
     maybe-configure-libiberty \
     maybe-configure-libtool \
@@ -938,6 +939,7 @@ all-host:  \
     maybe-all-itcl \
     maybe-all-ld \
     maybe-all-libcpp \
+    maybe-all-libdecnumber \
     maybe-all-libgui \
     maybe-all-libiberty \
     maybe-all-libtool \
@@ -1044,6 +1046,7 @@ info-host:  \
     maybe-info-itcl \
     maybe-info-ld \
     maybe-info-libcpp \
+    maybe-info-libdecnumber \
     maybe-info-libgui \
     maybe-info-libiberty \
     maybe-info-libtool \
@@ -1146,6 +1149,7 @@ dvi-host:  \
     maybe-dvi-itcl \
     maybe-dvi-ld \
     maybe-dvi-libcpp \
+    maybe-dvi-libdecnumber \
     maybe-dvi-libgui \
     maybe-dvi-libiberty \
     maybe-dvi-libtool \
@@ -1248,6 +1252,7 @@ html-host:  \
     maybe-html-itcl \
     maybe-html-ld \
     maybe-html-libcpp \
+    maybe-html-libdecnumber \
     maybe-html-libgui \
     maybe-html-libiberty \
     maybe-html-libtool \
@@ -1350,6 +1355,7 @@ TAGS-host:  \
     maybe-TAGS-itcl \
     maybe-TAGS-ld \
     maybe-TAGS-libcpp \
+    maybe-TAGS-libdecnumber \
     maybe-TAGS-libgui \
     maybe-TAGS-libiberty \
     maybe-TAGS-libtool \
@@ -1452,6 +1458,7 @@ install-info-host:  \
     maybe-install-info-itcl \
     maybe-install-info-ld \
     maybe-install-info-libcpp \
+    maybe-install-info-libdecnumber \
     maybe-install-info-libgui \
     maybe-install-info-libiberty \
     maybe-install-info-libtool \
@@ -1554,6 +1561,7 @@ installcheck-host:  \
     maybe-installcheck-itcl \
     maybe-installcheck-ld \
     maybe-installcheck-libcpp \
+    maybe-installcheck-libdecnumber \
     maybe-installcheck-libgui \
     maybe-installcheck-libiberty \
     maybe-installcheck-libtool \
@@ -1656,6 +1664,7 @@ mostlyclean-host:  \
     maybe-mostlyclean-itcl \
     maybe-mostlyclean-ld \
     maybe-mostlyclean-libcpp \
+    maybe-mostlyclean-libdecnumber \
     maybe-mostlyclean-libgui \
     maybe-mostlyclean-libiberty \
     maybe-mostlyclean-libtool \
@@ -1758,6 +1767,7 @@ clean-host:  \
     maybe-clean-itcl \
     maybe-clean-ld \
     maybe-clean-libcpp \
+    maybe-clean-libdecnumber \
     maybe-clean-libgui \
     maybe-clean-libiberty \
     maybe-clean-libtool \
@@ -1860,6 +1870,7 @@ distclean-host:  \
     maybe-distclean-itcl \
     maybe-distclean-ld \
     maybe-distclean-libcpp \
+    maybe-distclean-libdecnumber \
     maybe-distclean-libgui \
     maybe-distclean-libiberty \
     maybe-distclean-libtool \
@@ -1962,6 +1973,7 @@ maintainer-clean-host:  \
     maybe-maintainer-clean-itcl \
     maybe-maintainer-clean-ld \
     maybe-maintainer-clean-libcpp \
+    maybe-maintainer-clean-libdecnumber \
     maybe-maintainer-clean-libgui \
     maybe-maintainer-clean-libiberty \
     maybe-maintainer-clean-libtool \
@@ -2120,6 +2132,7 @@ check-host:  \
     maybe-check-itcl \
     maybe-check-ld \
     maybe-check-libcpp \
+    maybe-check-libdecnumber \
     maybe-check-libgui \
     maybe-check-libiberty \
     maybe-check-libtool \
@@ -2249,6 +2262,7 @@ install-host-nogcc:  \
     maybe-install-itcl \
     maybe-install-ld \
     maybe-install-libcpp \
+    maybe-install-libdecnumber \
     maybe-install-libgui \
     maybe-install-libiberty \
     maybe-install-libtool \
@@ -2319,6 +2333,7 @@ install-host:  \
     maybe-install-itcl \
     maybe-install-ld \
     maybe-install-libcpp \
+    maybe-install-libdecnumber \
     maybe-install-libgui \
     maybe-install-libiberty \
     maybe-install-libtool \
@@ -16760,6 +16775,670 @@ maintainer-clean-libcpp:
 	  || exit 1
 
 @endif libcpp
+
+
+
+.PHONY: configure-libdecnumber maybe-configure-libdecnumber
+maybe-configure-libdecnumber:
+@if libdecnumber
+maybe-configure-libdecnumber: configure-libdecnumber
+configure-libdecnumber: 
+	@test -f stage_last && exit 0; \
+	test ! -f $(HOST_SUBDIR)/libdecnumber/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	echo Configuring in $(HOST_SUBDIR)/libdecnumber; \
+	cd "$(HOST_SUBDIR)/libdecnumber" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
+	libsrcdir="$$s/libdecnumber"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  || exit 1
+@endif libdecnumber
+
+
+
+.PHONY: configure-stage1-libdecnumber maybe-configure-stage1-libdecnumber
+maybe-configure-stage1-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-configure-stage1-libdecnumber: configure-stage1-libdecnumber
+configure-stage1-libdecnumber: 
+	@[ `cat stage_current` = stage1 ] || $(MAKE) stage1-start
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] && exit 0 || : ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/libdecnumber ; \
+	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
+	libsrcdir="$$s/libdecnumber"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+@endif libdecnumber-bootstrap
+
+.PHONY: configure-stage2-libdecnumber maybe-configure-stage2-libdecnumber
+maybe-configure-stage2-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-configure-stage2-libdecnumber: configure-stage2-libdecnumber
+configure-stage2-libdecnumber: 
+	@[ `cat stage_current` = stage2 ] || $(MAKE) stage2-start
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] && exit 0 || : ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/libdecnumber ; \
+	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
+	libsrcdir="$$s/libdecnumber"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  @stage2_werror_flag@ 
+@endif libdecnumber-bootstrap
+
+.PHONY: configure-stage3-libdecnumber maybe-configure-stage3-libdecnumber
+maybe-configure-stage3-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-configure-stage3-libdecnumber: configure-stage3-libdecnumber
+configure-stage3-libdecnumber: 
+	@[ `cat stage_current` = stage3 ] || $(MAKE) stage3-start
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] && exit 0 || : ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/libdecnumber ; \
+	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
+	libsrcdir="$$s/libdecnumber"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  @stage2_werror_flag@ 
+@endif libdecnumber-bootstrap
+
+.PHONY: configure-stage4-libdecnumber maybe-configure-stage4-libdecnumber
+maybe-configure-stage4-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-configure-stage4-libdecnumber: configure-stage4-libdecnumber
+configure-stage4-libdecnumber: 
+	@[ `cat stage_current` = stage4 ] || $(MAKE) stage4-start
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] && exit 0 || : ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/libdecnumber ; \
+	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
+	libsrcdir="$$s/libdecnumber"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  @stage2_werror_flag@ 
+@endif libdecnumber-bootstrap
+
+.PHONY: configure-stageprofile-libdecnumber maybe-configure-stageprofile-libdecnumber
+maybe-configure-stageprofile-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-configure-stageprofile-libdecnumber: configure-stageprofile-libdecnumber
+configure-stageprofile-libdecnumber: 
+	@[ `cat stage_current` = stageprofile ] || $(MAKE) stageprofile-start
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] && exit 0 || : ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage profile in $(HOST_SUBDIR)/libdecnumber ; \
+	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
+	libsrcdir="$$s/libdecnumber"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  @stage2_werror_flag@ 
+@endif libdecnumber-bootstrap
+
+.PHONY: configure-stagefeedback-libdecnumber maybe-configure-stagefeedback-libdecnumber
+maybe-configure-stagefeedback-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-configure-stagefeedback-libdecnumber: configure-stagefeedback-libdecnumber
+configure-stagefeedback-libdecnumber: 
+	@[ `cat stage_current` = stagefeedback ] || $(MAKE) stagefeedback-start
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] && exit 0 || : ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/libdecnumber ; \
+	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
+	libsrcdir="$$s/libdecnumber"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  @stage2_werror_flag@ 
+@endif libdecnumber-bootstrap
+
+
+
+
+
+.PHONY: all-libdecnumber maybe-all-libdecnumber
+maybe-all-libdecnumber:
+@if libdecnumber
+TARGET-libdecnumber=all
+maybe-all-libdecnumber: all-libdecnumber
+all-libdecnumber: configure-libdecnumber
+	@test -f stage_last && exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-libdecnumber))
+@endif libdecnumber
+
+
+
+.PHONY: all-stage1-libdecnumber maybe-all-stage1-libdecnumber
+.PHONY: clean-stage1-libdecnumber maybe-clean-stage1-libdecnumber
+maybe-all-stage1-libdecnumber:
+maybe-clean-stage1-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-all-stage1-libdecnumber: all-stage1-libdecnumber
+all-stage1: all-stage1-libdecnumber
+TARGET-stage1-libdecnumber = $(TARGET-libdecnumber)
+all-stage1-libdecnumber: configure-stage1-libdecnumber
+	@[ `cat stage_current` = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS)  CFLAGS="$(STAGE1_CFLAGS)"  \
+		$(TARGET-stage1-libdecnumber)
+
+maybe-clean-stage1-libdecnumber: clean-stage1-libdecnumber
+clean-stage1: clean-stage1-libdecnumber
+clean-stage1-libdecnumber:
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-libdecnumber/Makefile ] \
+	  || exit 0 ; \
+	@[ `cat stage_current` = stage1 ] || $(MAKE) stage1-start
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)"  clean
+@endif libdecnumber-bootstrap
+
+
+.PHONY: all-stage2-libdecnumber maybe-all-stage2-libdecnumber
+.PHONY: clean-stage2-libdecnumber maybe-clean-stage2-libdecnumber
+maybe-all-stage2-libdecnumber:
+maybe-clean-stage2-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-all-stage2-libdecnumber: all-stage2-libdecnumber
+all-stage2: all-stage2-libdecnumber
+TARGET-stage2-libdecnumber = $(TARGET-libdecnumber)
+all-stage2-libdecnumber: configure-stage2-libdecnumber
+	@[ `cat stage_current` = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS)   \
+		$(TARGET-stage2-libdecnumber)
+
+maybe-clean-stage2-libdecnumber: clean-stage2-libdecnumber
+clean-stage2: clean-stage2-libdecnumber
+clean-stage2-libdecnumber:
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-libdecnumber/Makefile ] \
+	  || exit 0 ; \
+	@[ `cat stage_current` = stage2 ] || $(MAKE) stage2-start
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
+@endif libdecnumber-bootstrap
+
+
+.PHONY: all-stage3-libdecnumber maybe-all-stage3-libdecnumber
+.PHONY: clean-stage3-libdecnumber maybe-clean-stage3-libdecnumber
+maybe-all-stage3-libdecnumber:
+maybe-clean-stage3-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-all-stage3-libdecnumber: all-stage3-libdecnumber
+all-stage3: all-stage3-libdecnumber
+TARGET-stage3-libdecnumber = $(TARGET-libdecnumber)
+all-stage3-libdecnumber: configure-stage3-libdecnumber
+	@[ `cat stage_current` = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS)   \
+		$(TARGET-stage3-libdecnumber)
+
+maybe-clean-stage3-libdecnumber: clean-stage3-libdecnumber
+clean-stage3: clean-stage3-libdecnumber
+clean-stage3-libdecnumber:
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-libdecnumber/Makefile ] \
+	  || exit 0 ; \
+	@[ `cat stage_current` = stage3 ] || $(MAKE) stage3-start
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
+@endif libdecnumber-bootstrap
+
+
+.PHONY: all-stage4-libdecnumber maybe-all-stage4-libdecnumber
+.PHONY: clean-stage4-libdecnumber maybe-clean-stage4-libdecnumber
+maybe-all-stage4-libdecnumber:
+maybe-clean-stage4-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-all-stage4-libdecnumber: all-stage4-libdecnumber
+all-stage4: all-stage4-libdecnumber
+TARGET-stage4-libdecnumber = $(TARGET-libdecnumber)
+all-stage4-libdecnumber: configure-stage4-libdecnumber
+	@[ `cat stage_current` = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS)   \
+		$(TARGET-stage4-libdecnumber)
+
+maybe-clean-stage4-libdecnumber: clean-stage4-libdecnumber
+clean-stage4: clean-stage4-libdecnumber
+clean-stage4-libdecnumber:
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-libdecnumber/Makefile ] \
+	  || exit 0 ; \
+	@[ `cat stage_current` = stage4 ] || $(MAKE) stage4-start
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
+@endif libdecnumber-bootstrap
+
+
+.PHONY: all-stageprofile-libdecnumber maybe-all-stageprofile-libdecnumber
+.PHONY: clean-stageprofile-libdecnumber maybe-clean-stageprofile-libdecnumber
+maybe-all-stageprofile-libdecnumber:
+maybe-clean-stageprofile-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-all-stageprofile-libdecnumber: all-stageprofile-libdecnumber
+all-stageprofile: all-stageprofile-libdecnumber
+TARGET-stageprofile-libdecnumber = $(TARGET-libdecnumber)
+all-stageprofile-libdecnumber: configure-stageprofile-libdecnumber
+	@[ `cat stage_current` = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS) CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  \
+		$(TARGET-stageprofile-libdecnumber)
+
+maybe-clean-stageprofile-libdecnumber: clean-stageprofile-libdecnumber
+clean-stageprofile: clean-stageprofile-libdecnumber
+clean-stageprofile-libdecnumber:
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-libdecnumber/Makefile ] \
+	  || exit 0 ; \
+	@[ `cat stage_current` = stageprofile ] || $(MAKE) stageprofile-start
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
+@endif libdecnumber-bootstrap
+
+
+.PHONY: all-stagefeedback-libdecnumber maybe-all-stagefeedback-libdecnumber
+.PHONY: clean-stagefeedback-libdecnumber maybe-clean-stagefeedback-libdecnumber
+maybe-all-stagefeedback-libdecnumber:
+maybe-clean-stagefeedback-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-all-stagefeedback-libdecnumber: all-stagefeedback-libdecnumber
+all-stagefeedback: all-stagefeedback-libdecnumber
+TARGET-stagefeedback-libdecnumber = $(TARGET-libdecnumber)
+all-stagefeedback-libdecnumber: configure-stagefeedback-libdecnumber
+	@[ `cat stage_current` = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS) CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  \
+		$(TARGET-stagefeedback-libdecnumber)
+
+maybe-clean-stagefeedback-libdecnumber: clean-stagefeedback-libdecnumber
+clean-stagefeedback: clean-stagefeedback-libdecnumber
+clean-stagefeedback-libdecnumber:
+	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-libdecnumber/Makefile ] \
+	  || exit 0 ; \
+	@[ `cat stage_current` = stagefeedback ] || $(MAKE) stagefeedback-start
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
+@endif libdecnumber-bootstrap
+
+
+
+
+
+.PHONY: check-libdecnumber maybe-check-libdecnumber
+maybe-check-libdecnumber:
+@if libdecnumber
+maybe-check-libdecnumber: check-libdecnumber
+
+check-libdecnumber:
+	@$(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif libdecnumber
+
+.PHONY: install-libdecnumber maybe-install-libdecnumber
+maybe-install-libdecnumber:
+@if libdecnumber
+maybe-install-libdecnumber: install-libdecnumber
+
+install-libdecnumber: installdirs
+	@$(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif libdecnumber
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-libdecnumber info-libdecnumber
+maybe-info-libdecnumber:
+@if libdecnumber
+maybe-info-libdecnumber: info-libdecnumber
+
+info-libdecnumber: \
+    configure-libdecnumber 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+@endif libdecnumber
+
+.PHONY: maybe-dvi-libdecnumber dvi-libdecnumber
+maybe-dvi-libdecnumber:
+@if libdecnumber
+maybe-dvi-libdecnumber: dvi-libdecnumber
+
+dvi-libdecnumber: \
+    configure-libdecnumber 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+@endif libdecnumber
+
+.PHONY: maybe-html-libdecnumber html-libdecnumber
+maybe-html-libdecnumber:
+@if libdecnumber
+maybe-html-libdecnumber: html-libdecnumber
+
+html-libdecnumber: \
+    configure-libdecnumber 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          html) \
+	  || exit 1
+
+@endif libdecnumber
+
+.PHONY: maybe-TAGS-libdecnumber TAGS-libdecnumber
+maybe-TAGS-libdecnumber:
+@if libdecnumber
+maybe-TAGS-libdecnumber: TAGS-libdecnumber
+
+TAGS-libdecnumber: \
+    configure-libdecnumber 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+@endif libdecnumber
+
+.PHONY: maybe-install-info-libdecnumber install-info-libdecnumber
+maybe-install-info-libdecnumber:
+@if libdecnumber
+maybe-install-info-libdecnumber: install-info-libdecnumber
+
+install-info-libdecnumber: \
+    configure-libdecnumber \
+    info-libdecnumber 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+@endif libdecnumber
+
+.PHONY: maybe-installcheck-libdecnumber installcheck-libdecnumber
+maybe-installcheck-libdecnumber:
+@if libdecnumber
+maybe-installcheck-libdecnumber: installcheck-libdecnumber
+
+installcheck-libdecnumber: \
+    configure-libdecnumber 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+@endif libdecnumber
+
+.PHONY: maybe-mostlyclean-libdecnumber mostlyclean-libdecnumber
+maybe-mostlyclean-libdecnumber:
+@if libdecnumber
+maybe-mostlyclean-libdecnumber: mostlyclean-libdecnumber
+
+mostlyclean-libdecnumber: 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif libdecnumber
+
+.PHONY: maybe-clean-libdecnumber clean-libdecnumber
+maybe-clean-libdecnumber:
+@if libdecnumber
+maybe-clean-libdecnumber: clean-libdecnumber
+
+clean-libdecnumber: 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+@endif libdecnumber
+
+.PHONY: maybe-distclean-libdecnumber distclean-libdecnumber
+maybe-distclean-libdecnumber:
+@if libdecnumber
+maybe-distclean-libdecnumber: distclean-libdecnumber
+
+distclean-libdecnumber: 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+@endif libdecnumber
+
+.PHONY: maybe-maintainer-clean-libdecnumber maintainer-clean-libdecnumber
+maybe-maintainer-clean-libdecnumber:
+@if libdecnumber
+maybe-maintainer-clean-libdecnumber: maintainer-clean-libdecnumber
+
+maintainer-clean-libdecnumber: 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif libdecnumber
 
 
 
@@ -35222,6 +35901,12 @@ stage1-start::
 	set stage1-libcpp libcpp ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); [ -d stage1-libdecnumber ] || \
+	  mkdir stage1-libdecnumber; \
+	set stage1-libdecnumber libdecnumber ; \
+	@CREATE_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stage1-libiberty ] || \
 	  mkdir stage1-libiberty; \
@@ -35269,6 +35954,10 @@ stage1-end::
 	@cd $(HOST_SUBDIR); set libcpp stage1-libcpp ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); set libdecnumber stage1-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); set libiberty stage1-libiberty ; \
 	@UNDO_LINK_TO_DIR@ 
@@ -35384,6 +36073,14 @@ stage2-start::
 	set stage1-libcpp prev-libcpp ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); [ -d stage2-libdecnumber ] || \
+	  mkdir stage2-libdecnumber; \
+	set stage2-libdecnumber libdecnumber ; \
+	@CREATE_LINK_TO_DIR@  ; \
+	set stage1-libdecnumber prev-libdecnumber ; \
+	@CREATE_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stage2-libiberty ] || \
 	  mkdir stage2-libiberty; \
@@ -35451,6 +36148,12 @@ stage2-end::
 	set prev-libcpp stage1-libcpp ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); set libdecnumber stage2-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@  ; \
+	set prev-libdecnumber stage1-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); set libiberty stage2-libiberty ; \
 	@UNDO_LINK_TO_DIR@  ; \
@@ -35574,6 +36277,14 @@ stage3-start::
 	set stage2-libcpp prev-libcpp ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); [ -d stage3-libdecnumber ] || \
+	  mkdir stage3-libdecnumber; \
+	set stage3-libdecnumber libdecnumber ; \
+	@CREATE_LINK_TO_DIR@  ; \
+	set stage2-libdecnumber prev-libdecnumber ; \
+	@CREATE_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stage3-libiberty ] || \
 	  mkdir stage3-libiberty; \
@@ -35641,6 +36352,12 @@ stage3-end::
 	set prev-libcpp stage2-libcpp ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); set libdecnumber stage3-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@  ; \
+	set prev-libdecnumber stage2-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); set libiberty stage3-libiberty ; \
 	@UNDO_LINK_TO_DIR@  ; \
@@ -35803,6 +36520,14 @@ stage4-start::
 	set stage3-libcpp prev-libcpp ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); [ -d stage4-libdecnumber ] || \
+	  mkdir stage4-libdecnumber; \
+	set stage4-libdecnumber libdecnumber ; \
+	@CREATE_LINK_TO_DIR@  ; \
+	set stage3-libdecnumber prev-libdecnumber ; \
+	@CREATE_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stage4-libiberty ] || \
 	  mkdir stage4-libiberty; \
@@ -35870,6 +36595,12 @@ stage4-end::
 	set prev-libcpp stage3-libcpp ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); set libdecnumber stage4-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@  ; \
+	set prev-libdecnumber stage3-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); set libiberty stage4-libiberty ; \
 	@UNDO_LINK_TO_DIR@  ; \
@@ -36029,6 +36760,14 @@ stageprofile-start::
 	set stage1-libcpp prev-libcpp ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); [ -d stageprofile-libdecnumber ] || \
+	  mkdir stageprofile-libdecnumber; \
+	set stageprofile-libdecnumber libdecnumber ; \
+	@CREATE_LINK_TO_DIR@  ; \
+	set stage1-libdecnumber prev-libdecnumber ; \
+	@CREATE_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stageprofile-libiberty ] || \
 	  mkdir stageprofile-libiberty; \
@@ -36096,6 +36835,12 @@ stageprofile-end::
 	set prev-libcpp stage1-libcpp ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); set libdecnumber stageprofile-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@  ; \
+	set prev-libdecnumber stage1-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); set libiberty stageprofile-libiberty ; \
 	@UNDO_LINK_TO_DIR@  ; \
@@ -36215,6 +36960,14 @@ stagefeedback-start::
 	set stageprofile-libcpp prev-libcpp ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-libdecnumber ] || \
+	  mkdir stagefeedback-libdecnumber; \
+	set stagefeedback-libdecnumber libdecnumber ; \
+	@CREATE_LINK_TO_DIR@  ; \
+	set stageprofile-libdecnumber prev-libdecnumber ; \
+	@CREATE_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-libiberty ] || \
 	  mkdir stagefeedback-libiberty; \
@@ -36282,6 +37035,12 @@ stagefeedback-end::
 	set prev-libcpp stageprofile-libcpp ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); set libdecnumber stagefeedback-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@  ; \
+	set prev-libdecnumber stageprofile-libdecnumber ; \
+	@UNDO_LINK_TO_DIR@ 
+@endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); set libiberty stagefeedback-libiberty ; \
 	@UNDO_LINK_TO_DIR@  ; \
@@ -36577,6 +37336,14 @@ all-stage3-gcc: all-stage3-libcpp
 all-stage4-gcc: all-stage4-libcpp
 all-stageprofile-gcc: all-stageprofile-libcpp
 all-stagefeedback-gcc: all-stagefeedback-libcpp
+all-gcc: all-libdecnumber
+
+all-stage1-gcc: all-stage1-libdecnumber
+all-stage2-gcc: all-stage2-libdecnumber
+all-stage3-gcc: all-stage3-libdecnumber
+all-stage4-gcc: all-stage4-libdecnumber
+all-stageprofile-gcc: all-stageprofile-libdecnumber
+all-stagefeedback-gcc: all-stagefeedback-libdecnumber
 all-gcc: maybe-all-libiberty
 
 all-stage1-gcc: maybe-all-stage1-libiberty
@@ -36923,6 +37690,7 @@ all-prebootstrap: maybe-all-gas
 all-prebootstrap: maybe-all-intl
 all-prebootstrap: maybe-all-ld
 all-prebootstrap: maybe-all-libcpp
+all-prebootstrap: maybe-all-libdecnumber
 all-prebootstrap: maybe-all-libiberty
 all-prebootstrap: maybe-all-zlib
 @endif gcc-no-bootstrap
