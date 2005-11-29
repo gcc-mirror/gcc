@@ -1,3 +1,12 @@
+2005-11-28  Tom Tromey  <tromey@redhat.com>
+
+	PR java/18278:
+	* expr.c (build_jni_stub): Unwrap the return value.
+	* java-tree.h (soft_unwrapjni_node): New define.
+	(enum java_tree_index): Added JTI_SOFT_UNWRAPJNI_NODE.
+	* decl.c (java_init_decl_processing): Initialize
+	soft_unwrapjni_node.
+
 2005-11-24  Bryce McKinlay  <mckinlay@redhat.com>
 
         * gcj.texi (gij options): Add -Xss documentation.

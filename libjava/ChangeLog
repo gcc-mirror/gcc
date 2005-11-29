@@ -1,3 +1,13 @@
+2005-11-28  Tom Tromey  <tromey@redhat.com>
+
+	PR java/18278:
+	* testsuite/libjava.jni/pr18278.out: New file.
+	* testsuite/libjava.jni/pr18278.c: New file.
+	* testsuite/libjava.jni/pr18278.java: New file.
+	* include/jvm.h (_Jv_UnwrapJNIweakReference): Declare.
+	* jni.cc (_Jv_UnwrapJNIweakReference): New function.
+	(call): Unwrap return value if needed.
+
 2005-11-25  Mark Wielaard  <mark@klomp.org>
 
 	* standard.omit.in: Remove javax/rmi, org/omg, gnu/CORBA and
