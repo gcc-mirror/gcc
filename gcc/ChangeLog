@@ -1,3 +1,7 @@
+2005-11-29  Paul Brook  <paul@codesourcery.com>
+
+	* config.gcc: Do not use fixproto on m68k-elf.
+
 2005-11-28  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (div_cost): Replace with...
