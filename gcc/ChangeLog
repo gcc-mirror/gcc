@@ -1,3 +1,13 @@
+2005-11-28  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (div_cost): Replace with...
+	(sdiv_cost, udiv_cost): New.
+	(init_expmed): Initialize sdiv_cost and udiv_cost, not div_cost.
+	Rename the div and mod fields, used to initialize sdiv_pow2_cheap
+	and smod_pow2_cheap, to sdiv_32 and smod_32 to avoid confusion.
+	(expand_divmod): Replace use of div_cost with either sdiv_cost
+	or udiv_cost depending upon the signedness of the operation.
+
 2005-11-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR libfortran/24991
