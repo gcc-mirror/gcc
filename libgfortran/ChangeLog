@@ -1,3 +1,9 @@
+2005-11-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* intrinsics/random.c: Include config.h
+	* io/size_from_kind.c: Include config.h and libgfortran.h
+	* io/io.h: Revert 2005-11-25 change.
+
 2005-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	libfortran/24991
