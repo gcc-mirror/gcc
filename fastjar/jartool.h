@@ -35,7 +35,7 @@
 
 /*
   jartool.h - generic defines, struct defs etc.
-  Copyright (C) 1999  Bryan Burns
+  Copyright (C) 1999, 2005  Bryan Burns
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -115,5 +115,9 @@ struct zipentry {
 };
 
 typedef struct zipentry zipentry;
+
+#ifndef __GNUC__
+#define __attribute__()
+#endif
 
 #endif /* __FASTJAR_JARTOOL_H__ */

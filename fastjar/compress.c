@@ -139,7 +139,8 @@ void init_compression(){
 }
 
 int
-write_data (int fd, void *buf, size_t len, struct zipentry *ze)
+write_data (int fd, void *buf, size_t len,
+	    struct zipentry *ze __attribute__((unused)))
 {
 #ifdef WITH_SHIFT_DOWN
   struct zipentry *next = NULL;

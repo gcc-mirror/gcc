@@ -1,3 +1,11 @@
+2005-11-29  Tom Tromey  <tromey@redhat.com>
+
+	* compress.c (write_data): Mark 'ze' as unused.
+	* jartool.h (__attribute__): New define.
+	* shift.c (shift_up): Added cast.
+	(shift_down): Likewise.
+	* jartool.c (help): Split string constant.
+
 2005-06-29  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* all files: Update FSF address.

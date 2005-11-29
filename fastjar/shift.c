@@ -1,5 +1,5 @@
 /* shift.c -- utilities to move regions of data in a file.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -81,7 +81,7 @@ shift_up (int fd, off_t begin, off_t amount, struct zipentry *ze)
 
   for (; ze; ze = ze->next_entry)
     {
-      if (ze->offset >= begin)
+      if ((off_t) ze->offset >= begin)
 	{
 	  ze->offset -= amount;
 	  moved = 1;
@@ -150,7 +150,7 @@ shift_down (int fd, off_t begin, off_t amount, struct zipentry *ze)
 
   for (; ze; ze = ze->next_entry)
     {
-      if (ze->offset >= begin)
+      if ((off_t) ze->offset >= begin)
 	{
 	  ze->offset += amount;
 	  moved = 1;
