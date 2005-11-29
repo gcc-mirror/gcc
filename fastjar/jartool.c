@@ -2245,6 +2245,8 @@ Store many files together in a single `jar' file.\n\
   -E              don't include the files found in a directory\n\
   -f FILE         specify archive file name\n\
   --help          print this help, then exit\n\
+");
+  printf("\
   -m FILE         include manifest information from specified manifest file\n\
   -M              Do not create a manifest file for the entries\n\
   -v              generate verbose output on standard output\n\
