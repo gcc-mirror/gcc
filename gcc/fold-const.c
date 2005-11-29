@@ -1059,6 +1059,7 @@ negate_expr (tree t)
       if (INTEGRAL_TYPE_P (type))
         return fold_build2 (PLUS_EXPR, type, TREE_OPERAND (t, 0),
                             build_int_cst (type, 1));
+      break;
       
     case INTEGER_CST:
       tem = fold_negate_const (t, type);
