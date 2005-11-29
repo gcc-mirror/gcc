@@ -1,3 +1,7 @@
+2005-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/open_access_1.f90: New test.
+
 2005-11-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/charset/builtin2.c: New test.
