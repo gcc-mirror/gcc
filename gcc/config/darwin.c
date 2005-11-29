@@ -316,6 +316,21 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
   const char *suffix;
   const char *prefix = user_label_prefix;
   const char *quote = "";
+  tree id;
+
+  id = maybe_get_identifier (name);
+  if (id)
+    {
+      tree id_orig = id;
+
+      while (IDENTIFIER_TRANSPARENT_ALIAS (id))
+	id = TREE_CHAIN (id);
+      if (id != id_orig)
+	{
+	  name = IDENTIFIER_POINTER (id);
+	  namelen = strlen (name);
+	}
+    }
   
   if (name[0] == '*')
     {
@@ -861,6 +876,18 @@ machopic_output_indirection (void **slot, void *data)
     {
       char *sym;
       char *stub;
+      tree id;
+
+      id = maybe_get_identifier (sym_name);
+      if (id)
+	{
+	  tree id_orig = id;
+
+	  while (IDENTIFIER_TRANSPARENT_ALIAS (id))
+	    id = TREE_CHAIN (id);
+	  if (id != id_orig)
+	    sym_name = IDENTIFIER_POINTER (id);
+	}
 
       sym = alloca (strlen (sym_name) + 2);
       if (sym_name[0] == '*' || sym_name[0] == '&')

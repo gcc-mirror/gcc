@@ -1,5 +1,11 @@
 2005-11-28  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR libfortran/24991
+	* config/darwin.c (machopic_indirection_name,
+	machopic_output_indirection): Follow transparent alias chain.
+
+2005-11-28  Alexandre Oliva  <aoliva@redhat.com>
+
 	* varasm.c (ultimate_transparent_alias_target): Add comment.
 
 2005-11-28  Kazu Hirata  <kazu@codesourcery.com>
