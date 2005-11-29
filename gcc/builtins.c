@@ -187,7 +187,15 @@ static tree fold_builtin_strncat (tree);
 static tree fold_builtin_strspn (tree);
 static tree fold_builtin_strcspn (tree);
 static tree fold_builtin_sprintf (tree, int);
+static bool init_target_chars (void);
 
+static unsigned HOST_WIDE_INT target_newline;
+static unsigned HOST_WIDE_INT target_percent;
+static unsigned HOST_WIDE_INT target_c;
+static unsigned HOST_WIDE_INT target_s;
+static char target_percent_c[3];
+static char target_percent_s[3];
+static char target_percent_s_newline[4];
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -4680,8 +4688,11 @@ expand_builtin_printf (tree exp, rtx target, enum machine_mode mode,
   if (fmt_str == NULL)
     return 0;
 
+  if (!init_target_chars())
+    return 0;
+  
   /* If the format specifier was "%s\n", call __builtin_puts(arg).  */
-  if (strcmp (fmt_str, "%s\n") == 0)
+  if (strcmp (fmt_str, target_percent_s_newline) == 0)
     {
       if (! arglist
           || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
@@ -4690,7 +4701,7 @@ expand_builtin_printf (tree exp, rtx target, enum machine_mode mode,
       fn = fn_puts;
     }
   /* If the format specifier was "%c", call __builtin_putchar(arg).  */
-  else if (strcmp (fmt_str, "%c") == 0)
+  else if (strcmp (fmt_str, target_percent_c) == 0)
     {
       if (! arglist
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != INTEGER_TYPE
@@ -4701,7 +4712,7 @@ expand_builtin_printf (tree exp, rtx target, enum machine_mode mode,
   else
     {
       /* We can't handle anything else with % args or %% ... yet.  */
-      if (strchr (fmt_str, '%'))
+      if (strchr (fmt_str, target_percent))
         return 0;
 
       if (arglist)
@@ -4724,7 +4735,7 @@ expand_builtin_printf (tree exp, rtx target, enum machine_mode mode,
 	{
 	  /* If the format specifier was "string\n", call puts("string").  */
 	  size_t len = strlen (fmt_str);
-	  if (fmt_str[len - 1] == '\n')
+	  if ((unsigned char)fmt_str[len - 1] == target_newline)
 	    {
 	      /* Create a NUL-terminated string that's one char shorter
 		 than the original, stripping off the trailing '\n'.  */
@@ -4791,8 +4802,11 @@ expand_builtin_fprintf (tree exp, rtx target, enum machine_mode mode,
   if (fmt_str == NULL)
     return 0;
 
+  if (!init_target_chars())
+    return 0;
+  
   /* If the format specifier was "%s", call __builtin_fputs(arg,fp).  */
-  if (strcmp (fmt_str, "%s") == 0)
+  if (strcmp (fmt_str, target_percent_s) == 0)
     {
       if (! arglist
           || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
@@ -4804,7 +4818,7 @@ expand_builtin_fprintf (tree exp, rtx target, enum machine_mode mode,
       fn = fn_fputs;
     }
   /* If the format specifier was "%c", call __builtin_fputc(arg,fp).  */
-  else if (strcmp (fmt_str, "%c") == 0)
+  else if (strcmp (fmt_str, target_percent_c) == 0)
     {
       if (! arglist
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != INTEGER_TYPE
@@ -4818,7 +4832,7 @@ expand_builtin_fprintf (tree exp, rtx target, enum machine_mode mode,
   else
     {
       /* We can't handle anything else with % args or %% ... yet.  */
-      if (strchr (fmt_str, '%'))
+      if (strchr (fmt_str, target_percent))
         return 0;
 
       if (arglist)
@@ -4880,8 +4894,11 @@ expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
   if (fmt_str == NULL)
     return 0;
 
+  if (!init_target_chars())
+    return 0;
+
   /* If the format doesn't contain % args or %%, use strcpy.  */
-  if (strchr (fmt_str, '%') == 0)
+  if (strchr (fmt_str, target_percent) == 0)
     {
       tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
       tree exp;
@@ -4896,7 +4913,7 @@ expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
       return expand_expr (exp, target, mode, EXPAND_NORMAL);
     }
   /* If the format is "%s", use strcpy if the result isn't used.  */
-  else if (strcmp (fmt_str, "%s") == 0)
+  else if (strcmp (fmt_str, target_percent_s) == 0)
     {
       tree fn, arg, len;
       fn = implicit_built_in_decls[BUILT_IN_STRCPY];
@@ -9110,8 +9127,11 @@ fold_builtin_sprintf (tree arglist, int ignored)
   call = NULL_TREE;
   retval = NULL_TREE;
 
+  if (!init_target_chars())
+    return 0;
+
   /* If the format doesn't contain % args or %%, use strcpy.  */
-  if (strchr (fmt_str, '%') == NULL)
+  if (strchr (fmt_str, target_percent) == NULL)
     {
       tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
 
@@ -9128,7 +9148,7 @@ fold_builtin_sprintf (tree arglist, int ignored)
     }
 
   /* If the format is "%s", use strcpy if the result isn't used.  */
-  else if (fmt_str && strcmp (fmt_str, "%s") == 0)
+  else if (fmt_str && strcmp (fmt_str, target_percent_s) == 0)
     {
       tree fn, orig;
       fn = implicit_built_in_decls[BUILT_IN_STRCPY];
@@ -9158,4 +9178,38 @@ fold_builtin_sprintf (tree arglist, int ignored)
     }
   else
     return call;
+}
+
+/* Initialize format string characters in the target charset.  */
+
+static bool
+init_target_chars (void)
+{
+  static bool init;
+  if (!init)
+    {
+      target_newline = lang_hooks.to_target_charset ('\n');
+      target_percent = lang_hooks.to_target_charset ('%');
+      target_c = lang_hooks.to_target_charset ('c');
+      target_s = lang_hooks.to_target_charset ('s');
+      if (target_newline == 0 || target_percent == 0 || target_c == 0
+	  || target_s == 0)
+	return false;
+
+      target_percent_c[0] = target_percent;
+      target_percent_c[1] = target_c;
+      target_percent_c[2] = '\0';
+
+      target_percent_s[0] = target_percent;
+      target_percent_s[1] = target_s;
+      target_percent_s[2] = '\0';
+
+      target_percent_s_newline[0] = target_percent;
+      target_percent_s_newline[1] = target_s;
+      target_percent_s_newline[2] = target_newline;
+      target_percent_s_newline[3] = '\0';
+      
+      init = true;
+    }
+  return true;
 }

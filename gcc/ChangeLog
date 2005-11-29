@@ -1,3 +1,12 @@
+2005-11-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/20109
+	PR middle-end/25120
+	* builtins.c (init_target_chars): New.
+	(expand_builtin_printf, expand_builtin_fprintf,
+	expand_builtin_sprintf, fold_builtin_sprintf): Check for matching
+	format strings using the target charset.
+
 2005-11-27  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/21309
