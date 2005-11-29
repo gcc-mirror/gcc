@@ -1,3 +1,15 @@
+2005-11-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/20109
+	PR middle-end/25120
+	* builtins.c (init_target_chars): New.
+	(expand_builtin_printf, expand_builtin_fprintf,
+	expand_builtin_sprintf, fold_builtin_sprintf,
+	maybe_emit_sprintf_chk_warning, fold_builtin_sprintf_chk,
+	fold_builtin_snprintf_chk, fold_builtin_printf,
+	fold_builtin_fprintf): Check for matching format strings using
+	the target charset.
+
 2005-11-29  Paul Brook  <paul@codesourcery.com>
 
 	* config.gcc: Do not use fixproto on m68k-elf.
