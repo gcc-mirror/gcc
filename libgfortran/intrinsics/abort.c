@@ -38,3 +38,15 @@ void PREFIX(abort) (void)
   close_units ();
   abort ();
 }
+
+/* abort() is needed for the testsuite when linking with -std=f95.  */
+
+extern void abort_ (void);
+export_proto_np(abort_);
+
+void
+abort_ (void)
+{
+  close_units ();
+  abort ();
+}
