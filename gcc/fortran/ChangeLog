@@ -1,3 +1,7 @@
+2005-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* io.c (gfc_resolve_open): RESOLVE_TAG access field as well.
+
 2005-11-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24223
