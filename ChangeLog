@@ -1,5 +1,11 @@
 2005-11-29  Ben Elliston  <bje@au.ibm.com>
 
+	* Makefile.tpl (clean-target-libgcc): Invoke clean-target-libgcc
+	from the gcc build directory.
+	* Makefile.in: Regenerate.
+
+2005-11-29  Ben Elliston  <bje@au.ibm.com>
+
 	* Makefile.def: Add new libdecnumber host_module.  Make all-gcc
 	depend on all-libdecnumber.
 	* configure.in (host_libs): Include libdecnumber.
