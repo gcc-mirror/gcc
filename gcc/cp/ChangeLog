@@ -1,3 +1,7 @@
+2005-11-30  Ben Elliston  <bje@au.ibm.com>
+
+	* typeck.c (build_x_unary_op): Correct spelling in error message.
+
 2005-11-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21166

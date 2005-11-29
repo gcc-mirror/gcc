@@ -3688,7 +3688,7 @@ build_x_unary_op (enum tree_code code, tree xarg)
 	    }
 	  else
 	    {
-	      error ("parenthesis around %qE cannot be used to form a"
+	      error ("parentheses around %qE cannot be used to form a"
 		     " pointer-to-member-function",
 		     xarg);
 	      PTRMEM_OK_P (xarg) = 1;
