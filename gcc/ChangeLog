@@ -1,5 +1,10 @@
 2005-11-29  Ben Elliston  <bje@au.ibm.com>
 
+	* config/i386/i386.h (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN):
+	Fix typo in comment.
+
+2005-11-29  Ben Elliston  <bje@au.ibm.com>
+
 	* Makefile.in (clean-target): Depend on clean-target-libgcc.
 	(clean-target-libgcc): Import rule from the top-level Makefile.in.
 
