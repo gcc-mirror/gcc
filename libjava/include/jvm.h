@@ -459,6 +459,8 @@ extern "C" void _Jv_RegisterClasses_Counted (const jclass *classes,
 extern "C" void _Jv_RegisterResource (void *vptr);
 extern void _Jv_UnregisterClass (_Jv_Utf8Const*, java::lang::ClassLoader*);
 
+extern "C" jobject _Jv_UnwrapJNIweakReference (jobject);
+
 extern jclass _Jv_FindClass (_Jv_Utf8Const *name,
 			     java::lang::ClassLoader *loader);
 extern jclass _Jv_FindClassFromSignature (char *,
