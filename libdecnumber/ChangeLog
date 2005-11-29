@@ -1,5 +1,10 @@
 2005-11-29  Ben Elliston  <bje@au.ibm.com>
 
+	* decUtility.c: Remove redundant #includes.
+	* decUtility.h (__dec_byte_swap): Remove prototype.
+
+2005-11-29  Ben Elliston  <bje@au.ibm.com>
+
 	* configure.ac: New file.
 	* aclocal.m4: Likewise.
 	* Makefile.in: Likewise.

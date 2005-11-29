@@ -26,4 +26,3 @@
 
 extern void decDensePackCoeff (decNumber *, uByte *, Int, Int);
 extern void decDenseUnpackCoeff (uByte *, Int, decNumber *, Int, Int);
-extern unsigned long __dec_byte_swap (unsigned long in);

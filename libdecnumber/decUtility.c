@@ -23,10 +23,6 @@
 #include "decNumberLocal.h"     /* decNumber local types, etc. */
 #include "decUtility.h"         /* utility routines */
 
-#include "tconfig.h"
-#include "coretypes.h"
-#include "tm.h"
-
 /* ================================================================== */
 /* Shared utility routines                                            */
 /* ================================================================== */
