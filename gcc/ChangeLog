@@ -1,3 +1,9 @@
+2005-11-29  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* fold-const.c (negate_expr_p): Return true for BIT_NOT_EXPR.
+	(fold_unary) <case NEGATE_EXPR>: Move -(~a) transformation to ...
+	(negate_expr): Here.
+
 2005-11-29  Ben Elliston  <bje@au.ibm.com>
 
 	* config/i386/i386.h (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN):
