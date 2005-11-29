@@ -3423,6 +3423,18 @@ fsf-funding.pod: funding.texi
 	-$(TEXI2POD) $< > $@
 
 #
+# clean-target removes all files made by compilation.
+# This can be added to over time.
+
+clean-target: clean-target-libgcc
+
+clean-target-libgcc:
+	test ! -d libgcc || \
+	(cd libgcc && find . -type d -print) | \
+	while read d; do rm -f $$d/libgcc.a || : ; done
+	test ! -d libgcc || rm -r libgcc
+	test ! -f stmp-dirs || rm stmp-dirs
+
 # Deletion of files made during compilation.
 # There are four levels of this:
 #   `mostlyclean', `clean', `distclean' and `maintainer-clean'.

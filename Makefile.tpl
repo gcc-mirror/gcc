@@ -839,14 +839,10 @@ maintainer-clean: local-maintainer-clean do-maintainer-clean local-clean
 maintainer-clean: local-distclean
 realclean: maintainer-clean
 
-# Extra dependency for clean-target, owing to the mixed nature of gcc
+# Extra dependency for clean-target, owing to the mixed nature of gcc.
 clean-target: clean-target-libgcc
 clean-target-libgcc:
-	test ! -d gcc/libgcc || \
-	(cd gcc/libgcc && find . -type d -print) | \
-	while read d; do rm -f gcc/$$d/libgcc.a || : ; done
-	-rm -rf gcc/libgcc
-	-rm -f gcc/stmp-dirs
+	test ! -d gcc || (cd gcc && $(MAKE) $@)
 
 # Check target.
 

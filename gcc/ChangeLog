@@ -1,3 +1,8 @@
+2005-11-29  Ben Elliston  <bje@au.ibm.com>
+
+	* Makefile.in (clean-target): Depend on clean-target-libgcc.
+	(clean-target-libgcc): Import rule from the top-level Makefile.in.
+
 2005-11-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/20109
