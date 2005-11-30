@@ -1,3 +1,20 @@
+2005-11-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* tree.h (CASE_FLT_FN, CASE_INT_FN): New macros.
+	* builtins.c (expand_builtin_mathfn): Use them.
+	(expand_builtin_mathfn_2): Likewise.
+	(expand_builtin_mathfn_3): Likewise.
+	(expand_builtin_int_roundingfn): Likewise.
+	(expand_builtin): Likewise.
+	(integer_valued_real_p): Likewise.
+	(fold_builtin_int_roundingfn): Likewise.
+	(fold_builtin_bitop): Likewise.
+	(fold_builtin_logarithm): Likewise.
+	(fold_builtin_1): Likewise.
+	* convert.c (convert_to_integer): Likewise.
+	* fold-const.c (negate_mathfn_p): Likewise.
+	(tree_expr_nonnegative_p): Likewise.
+
 2005-11-30  Dale Johannesen  <dalej@apple.com>
             Andrew Pinski  <pinskia@physics.uc.edu>
 

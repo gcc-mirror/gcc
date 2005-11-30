@@ -234,6 +234,9 @@ extern const char * built_in_names[(int) END_BUILTINS];
 
 #define BUILTIN_ROOT_P(FN) (BUILTIN_SQRT_P (FN) || BUILTIN_CBRT_P (FN))
 
+#define CASE_FLT_FN(FN) case FN: case FN##F: case FN##L
+#define CASE_INT_FN(FN) case FN: case FN##L: case FN##LL
+
 /* An array of _DECL trees for the above.  */
 extern GTY(()) tree built_in_decls[(int) END_BUILTINS];
 extern GTY(()) tree implicit_built_in_decls[(int) END_BUILTINS];

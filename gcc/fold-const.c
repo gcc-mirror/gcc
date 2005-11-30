@@ -865,33 +865,15 @@ negate_mathfn_p (enum built_in_function code)
 {
   switch (code)
     {
-    case BUILT_IN_ASIN:
-    case BUILT_IN_ASINF:
-    case BUILT_IN_ASINL:
-    case BUILT_IN_ASINH:
-    case BUILT_IN_ASINHF:
-    case BUILT_IN_ASINHL:
-    case BUILT_IN_ATAN:
-    case BUILT_IN_ATANF:
-    case BUILT_IN_ATANL:
-    case BUILT_IN_ATANH:
-    case BUILT_IN_ATANHF:
-    case BUILT_IN_ATANHL:
-    case BUILT_IN_CBRT:
-    case BUILT_IN_CBRTF:
-    case BUILT_IN_CBRTL:
-    case BUILT_IN_SIN:
-    case BUILT_IN_SINF:
-    case BUILT_IN_SINL:
-    case BUILT_IN_SINH:
-    case BUILT_IN_SINHF:
-    case BUILT_IN_SINHL:
-    case BUILT_IN_TAN:
-    case BUILT_IN_TANF:
-    case BUILT_IN_TANL:
-    case BUILT_IN_TANH:
-    case BUILT_IN_TANHF:
-    case BUILT_IN_TANHL:
+    CASE_FLT_FN (BUILT_IN_ASIN):
+    CASE_FLT_FN (BUILT_IN_ASINH):
+    CASE_FLT_FN (BUILT_IN_ATAN):
+    CASE_FLT_FN (BUILT_IN_ATANH):
+    CASE_FLT_FN (BUILT_IN_CBRT):
+    CASE_FLT_FN (BUILT_IN_SIN):
+    CASE_FLT_FN (BUILT_IN_SINH):
+    CASE_FLT_FN (BUILT_IN_TAN):
+    CASE_FLT_FN (BUILT_IN_TANH):
       return true;
 
     default:
@@ -11075,84 +11057,77 @@ tree_expr_nonnegative_p (tree t)
 	if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
-#define CASE_BUILTIN_F(BUILT_IN_FN) \
-  case BUILT_IN_FN: case BUILT_IN_FN##F: case BUILT_IN_FN##L:
-#define CASE_BUILTIN_I(BUILT_IN_FN) \
-  case BUILT_IN_FN: case BUILT_IN_FN##L: case BUILT_IN_FN##LL:
-
-	    CASE_BUILTIN_F (BUILT_IN_ACOS)
-	    CASE_BUILTIN_F (BUILT_IN_ACOSH)
-	    CASE_BUILTIN_F (BUILT_IN_CABS)
-	    CASE_BUILTIN_F (BUILT_IN_COSH)
-	    CASE_BUILTIN_F (BUILT_IN_ERFC)
-	    CASE_BUILTIN_F (BUILT_IN_EXP)
-	    CASE_BUILTIN_F (BUILT_IN_EXP10)
-	    CASE_BUILTIN_F (BUILT_IN_EXP2)
-	    CASE_BUILTIN_F (BUILT_IN_FABS)
-	    CASE_BUILTIN_F (BUILT_IN_FDIM)
-	    CASE_BUILTIN_F (BUILT_IN_HYPOT)
-	    CASE_BUILTIN_F (BUILT_IN_POW10)
-	    CASE_BUILTIN_I (BUILT_IN_FFS)
-	    CASE_BUILTIN_I (BUILT_IN_PARITY)
-	    CASE_BUILTIN_I (BUILT_IN_POPCOUNT)
+	    CASE_FLT_FN (BUILT_IN_ACOS):
+	    CASE_FLT_FN (BUILT_IN_ACOSH):
+	    CASE_FLT_FN (BUILT_IN_CABS):
+	    CASE_FLT_FN (BUILT_IN_COSH):
+	    CASE_FLT_FN (BUILT_IN_ERFC):
+	    CASE_FLT_FN (BUILT_IN_EXP):
+	    CASE_FLT_FN (BUILT_IN_EXP10):
+	    CASE_FLT_FN (BUILT_IN_EXP2):
+	    CASE_FLT_FN (BUILT_IN_FABS):
+	    CASE_FLT_FN (BUILT_IN_FDIM):
+	    CASE_FLT_FN (BUILT_IN_HYPOT):
+	    CASE_FLT_FN (BUILT_IN_POW10):
+	    CASE_INT_FN (BUILT_IN_FFS):
+	    CASE_INT_FN (BUILT_IN_PARITY):
+	    CASE_INT_FN (BUILT_IN_POPCOUNT):
 	      /* Always true.  */
 	      return 1;
 
-	    CASE_BUILTIN_F (BUILT_IN_SQRT)
+	    CASE_FLT_FN (BUILT_IN_SQRT):
 	      /* sqrt(-0.0) is -0.0.  */
 	      if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (t))))
 		return 1;
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
-	    CASE_BUILTIN_F (BUILT_IN_ASINH)
-	    CASE_BUILTIN_F (BUILT_IN_ATAN)
-	    CASE_BUILTIN_F (BUILT_IN_ATANH)
-	    CASE_BUILTIN_F (BUILT_IN_CBRT)
-	    CASE_BUILTIN_F (BUILT_IN_CEIL)
-	    CASE_BUILTIN_F (BUILT_IN_ERF)
-	    CASE_BUILTIN_F (BUILT_IN_EXPM1)
-	    CASE_BUILTIN_F (BUILT_IN_FLOOR)
-	    CASE_BUILTIN_F (BUILT_IN_FMOD)
-	    CASE_BUILTIN_F (BUILT_IN_FREXP)
-	    CASE_BUILTIN_F (BUILT_IN_LCEIL)
-	    CASE_BUILTIN_F (BUILT_IN_LDEXP)
-	    CASE_BUILTIN_F (BUILT_IN_LFLOOR)
-	    CASE_BUILTIN_F (BUILT_IN_LLCEIL)
-	    CASE_BUILTIN_F (BUILT_IN_LLFLOOR)
-	    CASE_BUILTIN_F (BUILT_IN_LLRINT)
-	    CASE_BUILTIN_F (BUILT_IN_LLROUND)
-	    CASE_BUILTIN_F (BUILT_IN_LRINT)
-	    CASE_BUILTIN_F (BUILT_IN_LROUND)
-	    CASE_BUILTIN_F (BUILT_IN_MODF)
-	    CASE_BUILTIN_F (BUILT_IN_NEARBYINT)
-	    CASE_BUILTIN_F (BUILT_IN_POW)
-	    CASE_BUILTIN_F (BUILT_IN_RINT)
-	    CASE_BUILTIN_F (BUILT_IN_ROUND)
-	    CASE_BUILTIN_F (BUILT_IN_SIGNBIT)
-	    CASE_BUILTIN_F (BUILT_IN_SINH)
-	    CASE_BUILTIN_F (BUILT_IN_TANH)
-	    CASE_BUILTIN_F (BUILT_IN_TRUNC)
+	    CASE_FLT_FN (BUILT_IN_ASINH):
+	    CASE_FLT_FN (BUILT_IN_ATAN):
+	    CASE_FLT_FN (BUILT_IN_ATANH):
+	    CASE_FLT_FN (BUILT_IN_CBRT):
+	    CASE_FLT_FN (BUILT_IN_CEIL):
+	    CASE_FLT_FN (BUILT_IN_ERF):
+	    CASE_FLT_FN (BUILT_IN_EXPM1):
+	    CASE_FLT_FN (BUILT_IN_FLOOR):
+	    CASE_FLT_FN (BUILT_IN_FMOD):
+	    CASE_FLT_FN (BUILT_IN_FREXP):
+	    CASE_FLT_FN (BUILT_IN_LCEIL):
+	    CASE_FLT_FN (BUILT_IN_LDEXP):
+	    CASE_FLT_FN (BUILT_IN_LFLOOR):
+	    CASE_FLT_FN (BUILT_IN_LLCEIL):
+	    CASE_FLT_FN (BUILT_IN_LLFLOOR):
+	    CASE_FLT_FN (BUILT_IN_LLRINT):
+	    CASE_FLT_FN (BUILT_IN_LLROUND):
+	    CASE_FLT_FN (BUILT_IN_LRINT):
+	    CASE_FLT_FN (BUILT_IN_LROUND):
+	    CASE_FLT_FN (BUILT_IN_MODF):
+	    CASE_FLT_FN (BUILT_IN_NEARBYINT):
+	    CASE_FLT_FN (BUILT_IN_POW):
+	    CASE_FLT_FN (BUILT_IN_RINT):
+	    CASE_FLT_FN (BUILT_IN_ROUND):
+	    CASE_FLT_FN (BUILT_IN_SIGNBIT):
+	    CASE_FLT_FN (BUILT_IN_SINH):
+	    CASE_FLT_FN (BUILT_IN_TANH):
+	    CASE_FLT_FN (BUILT_IN_TRUNC):
 	      /* True if the 1st argument is nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
-	    CASE_BUILTIN_F (BUILT_IN_FMAX)
+	    CASE_FLT_FN (BUILT_IN_FMAX):
 	      /* True if the 1st OR 2nd arguments are nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist))
 	        || tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
 
-	    CASE_BUILTIN_F (BUILT_IN_FMIN)
+	    CASE_FLT_FN (BUILT_IN_FMIN):
 	      /* True if the 1st AND 2nd arguments are nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist))
 	        && tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
 
-	    CASE_BUILTIN_F (BUILT_IN_COPYSIGN)
+	    CASE_FLT_FN (BUILT_IN_COPYSIGN):
 	      /* True if the 2nd argument is nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
 
 	    default:
 	      break;
-#undef CASE_BUILTIN_F
-#undef CASE_BUILTIN_I
 	    }
       }
 
