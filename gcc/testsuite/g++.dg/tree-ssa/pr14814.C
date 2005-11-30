@@ -14,7 +14,7 @@ int foo(XX& r) {
   if (r.direction().y() < 0.000001) return 0;
   return 1; }
 
-/* { dg-final { scan-tree-dump-times "&this" 0 "forwprop2" { xfail *-*-* } } }*/
+/* { dg-final { scan-tree-dump-times "&this" 0 "forwprop2" } } */
 /* { dg-final { scan-tree-dump-times "&r" 0 "forwprop2" } } */
 /* { dg-final { cleanup-tree-dump "forwprop2" } } */
 
