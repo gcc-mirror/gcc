@@ -11,6 +11,8 @@
 	* config/sparc/sparc.md: Likewise.
 	* config/sparc/sparc-protos.h: Update extern declaration.
 
+	* tree-into-ssa.c (rewrite_into_ssa): Fix comment typo.
+
 2005-11-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* fold-const.c (negate_expr) <case BIT_NOT_EXPR>: Add break after

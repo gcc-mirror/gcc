@@ -1726,7 +1726,7 @@ mark_def_site_blocks (sbitmap interesting_blocks)
 
    4- Rename all the blocks (rewrite_blocks) and statements in the program.
 
-   Steps 3 and 5 are done using the dominator tree walker
+   Steps 3 and 4 are done using the dominator tree walker
    (walk_dominator_tree).  */
 
 static void
