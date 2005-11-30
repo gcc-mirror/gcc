@@ -1,3 +1,9 @@
+2005-11-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/21123
+	* cp-gimplify.c (cp_genericize_r): Don't dereference invisible reference 
+	parms in a thunk.
+
 2005-11-30  Ben Elliston  <bje@au.ibm.com>
 
 	* typeck.c (build_x_unary_op): Correct spelling in error message.
