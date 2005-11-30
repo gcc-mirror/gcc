@@ -1,3 +1,16 @@
+2005-11-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	    Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* pa/predicates.md (symbolic_operand): Add comment.
+	* pa/pa.md (reload_insi_r1, reload_indi_r1): New reload expanders.
+	* pa/pa-protos.h (pa_secondary_reload_class): Delete.
+	* pa/pa.c (TARGET_SECONDARY_RELOAD): Define.
+	(pa_secondary_reload_class): Delete.
+	(pa_secondary_reload): New function derived from SECONDARY_RELOAD_CLASS
+	and pa_secondary_reload_class.  Reorder some checks.  Update inline
+	copy of symbolic operand.
+	* pa/pa.h (SECONDARY_RELOAD_CLASS): Delete.
+
 2005-11-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* loop-doloop.c (add_test): Only add jump notes if we did emit a

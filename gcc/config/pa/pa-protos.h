@@ -106,8 +106,6 @@ extern int emit_move_sequence (rtx *, enum machine_mode, rtx);
 extern int emit_hpdiv_const (rtx *, int);
 extern int is_function_label_plus_const (rtx);
 extern int jump_in_call_delay (rtx);
-extern enum reg_class pa_secondary_reload_class (enum reg_class,
-						 enum machine_mode, rtx);
 extern int hppa_fpstore_bypass_p (rtx, rtx);
 extern int attr_length_millicode_call (rtx);
 extern int attr_length_call (rtx, int);
