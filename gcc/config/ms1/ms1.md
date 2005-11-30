@@ -88,30 +88,13 @@
     (set (match_dup 0)
 	 (plus:SI (match_dup 0)
 		  (const_int -1)))
-    (clobber (match_scratch:SI 2 "=X,r"))]
+    (clobber (match_scratch:SI 2 "=X,&r"))]
   "TARGET_MS1_16_003 || TARGET_MS2"
   "@
    dbnz\t%0, %l1%#
    #"
-  [(set_attr "length" "4,16")]
-)
-
-;; Same as above, but without the clobber. The peephole below will
-;; match this pattern.
-(define_insn "*decrement_and_branch_until_zero_no_clobber"
-   [(set (pc)
-	 (if_then_else
-	  (ne (match_operand:SI 0 "register_operand" "+r")
-	      (const_int 0))
-	  (label_ref (match_operand 1 "" ""))
-	  (pc)))
-    (set (match_dup 0)
-	 (plus:SI (match_dup 0)
-		  (const_int -1)))]
-  "TARGET_MS1_16_003 || TARGET_MS2"
-  "dbnz\t%0, %l1%#"
-  [(set_attr "length" "4")
-   (set_attr "type" "branch")]
+  [(set_attr "length" "4,16")
+   (set_attr "type" "branch,unknown")]
 )
 
 ;; Split the above to handle the case where operand 0 is in memory
@@ -148,12 +131,11 @@
   [(set (match_operand:SI 0 "register_operand" "")
 	(plus:SI (match_dup 0) (const_int -1)))
    (set (match_operand:SI 1 "register_operand" "")
-	(const_int -1))
+     (const_int -1))
    (set (pc) (if_then_else
 	        (ne (match_dup 0) (match_dup 1))
 		(label_ref (match_operand 2 "" ""))
-		(pc)))
-   ]
+		(pc)))]
   "TARGET_MS1_16_003 || TARGET_MS2"
   [(parallel [(set (pc)
 	           (if_then_else
@@ -162,10 +144,9 @@
 	              (pc)))
               (set (match_dup 0)
 	           (plus:SI (match_dup 0) (const_int -1)))
-	     ])
-  ]
-  ""
-)
+	      (clobber (reg:SI 0))])]
+  "")
+
 
 ;; Moves
 
@@ -959,7 +940,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r,r")
      (mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand" "%r,r"))
      	      (sign_extend:SI (match_operand:HI 2 "arith_operand" "r,I"))))]
-  "TARGET_MUL"
+  "TARGET_MS1_16_003 || TARGET_MS2"
   "@
   mul %0, %1, %2
   muli %0, %1, %2"

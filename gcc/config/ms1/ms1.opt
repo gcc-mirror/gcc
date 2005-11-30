@@ -19,10 +19,6 @@
 ; Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 ; 02110-1301, USA.
 
-mmul
-Target Report Mask(MUL)
-Generate multiply instructions
-
 mbacc
 Target Report Mask(BYTE_ACCESS)
 Use byte loads and stores when generating code.
