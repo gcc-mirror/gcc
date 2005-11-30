@@ -1,3 +1,11 @@
+2005-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR testsuite/19275
+	Backport from mainline:
+
+	* gcc.dg/20020919-1.c:  Fix for x86 Darwin.
+	* gcc.dg/20020919-1.c:  Remove unnecessary conditional.
+
 2005-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/21983
