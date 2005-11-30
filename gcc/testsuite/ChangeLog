@@ -1,3 +1,8 @@
+2005-11-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/21655
+	* g++.dg/tree-ssa/pr14814.C: Remove XFAIL.
+
 2005-11-30  Dale Johannesen  <dalej@apple.com>
 
 	* gcc.c-torture/compile/pr24930.c:  New.
