@@ -1,3 +1,14 @@
+2005-11-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/ms1/ms1.md (decrement_and_branch_until_zero): Add early
+	clobber to scratch reg.
+	(*decrement_and_branch_until_zero_no_clobber): Remove.
+	(decrement_and_branch peephole): Add dummy scratch reg to pattern.
+	(mulhish3): Use TARGET_MS1_16_003, TARGET_MS2.
+	* config/ms1/ms1.opt (mmul): Remove.
+	* config/ms1/ms1.h (ASM_SPEC): Cope with uppercase arch names.
+	(LINK_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): Default to 16-002.
+
 2005-11-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 	    Bernd Schmidt  <bernd.schmidt@analog.com>
 

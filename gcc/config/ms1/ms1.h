@@ -41,7 +41,7 @@ extern enum processor_type ms1_cpu;
 /* A C string constant that tells the GCC driver program options to pass to
    the assembler.  */
 #undef  ASM_SPEC
-#define ASM_SPEC "%{march=ms1-16-002: -march=ms1-16-002} %{march=ms1-16-003: -march=ms1-16-003} %{march=ms2: -march=ms2} %{!march=*: -march=ms1-16-002}"
+#define ASM_SPEC "%{march=*} %{!march=*: -march=ms1-16-002}"
 
 /* A string to pass to at the end of the command given to the linker.  */
 #undef  LIB_SPEC
@@ -54,7 +54,8 @@ march=MS1-16-002:-T 16-002.ld%s; \
 march=ms1-16-003:-T 16-003.ld%s; \
 march=MS1-16-003:-T 16-003.ld%s; \
 march=ms2:-T ms2.ld%s; \
-march=MS2:-T ms2.ld%s}"
+march=MS2:-T ms2.ld%s; \
+	 : -T 16-002.ld}"
 
 /* A string to pass at the very beginning of the command given to the
    linker.  */
@@ -67,7 +68,8 @@ march=MS1-16-002:%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s; \
 march=ms1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s; \
 march=MS1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s; \
 march=ms2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s; \
-march=MS2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s} \
+march=MS2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s; \
+	 :%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s} \
 crti.o%s crtbegin.o%s"
 
 /* A string to pass at the end of the command given to the linker.  */
@@ -80,7 +82,8 @@ march=MS1-16-002:exit-16-002.o%s; \
 march=ms1-16-003:exit-16-003.o%s; \
 march=MS1-16-003:exit-16-003.o%s; \
 march=ms2:exit-ms2.o%s; \
-march=MS2:exit-ms2.o%s} \
+march=MS2:exit-ms2.o%s; \
+	 :exit-16-002.o%s} \
  crtend.o%s crtn.o%s"
 
 /* Run-time target specifications.  */
