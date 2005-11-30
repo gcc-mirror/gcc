@@ -1,3 +1,11 @@
+2005-11-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/22501
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): New
+	function split out from ...
+	(forward_propagate_addr_expr): ... here.  Use it to propagate
+	ADDR_EXPRs to all uses.
+
 2005-11-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* tree.h (CASE_FLT_FN, CASE_INT_FN): New macros.

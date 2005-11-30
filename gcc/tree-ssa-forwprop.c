@@ -528,36 +528,16 @@ forward_propagate_addr_into_variable_array_index (tree offset, tree lhs,
 
 /* STMT is a statement of the form SSA_NAME = ADDR_EXPR <whatever>.
 
-   Try to forward propagate the ADDR_EXPR into the uses of the SSA_NAME.
+   Try to forward propagate the ADDR_EXPR into the use USE_STMT.
    Often this will allow for removal of an ADDR_EXPR and INDIRECT_REF
-   node or for recovery of array indexing from pointer arithmetic.  */
+   node or for recovery of array indexing from pointer arithmetic.
+   Return true, if the propagation was successful.  */
 
 static bool
-forward_propagate_addr_expr (tree stmt)
+forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
 {
-  int stmt_loop_depth = bb_for_stmt (stmt)->loop_depth;
   tree name = TREE_OPERAND (stmt, 0);
-  use_operand_p imm_use;
-  tree use_stmt, lhs, rhs, array_ref;
-
-  /* We require that the SSA_NAME holding the result of the ADDR_EXPR
-     be used only once.  That may be overly conservative in that we
-     could propagate into multiple uses.  However, that would effectively
-     be un-cseing the ADDR_EXPR, which is probably not what we want.  */
-  single_imm_use (name, &imm_use, &use_stmt);
-  if (!use_stmt)
-    return false;
-
-  /* If the use is not in a simple assignment statement, then
-     there is nothing we can do.  */
-  if (TREE_CODE (use_stmt) != MODIFY_EXPR)
-    return false;
-
-  /* If the use is in a deeper loop nest, then we do not want
-     to propagate the ADDR_EXPR into the loop as that is likely
-     adding expression evaluations into the loop.  */
-  if (bb_for_stmt (use_stmt)->loop_depth > stmt_loop_depth)
-    return false;
+  tree lhs, rhs, array_ref;
 
   /* Strip away any outer COMPONENT_REF/ARRAY_REF nodes from the LHS. 
      ADDR_EXPR will not appear on the LHS.  */
@@ -679,6 +659,50 @@ forward_propagate_addr_expr (tree stmt)
     }
   return false;
 }
+
+/* STMT is a statement of the form SSA_NAME = ADDR_EXPR <whatever>.
+
+   Try to forward propagate the ADDR_EXPR into all uses of the SSA_NAME.
+   Often this will allow for removal of an ADDR_EXPR and INDIRECT_REF
+   node or for recovery of array indexing from pointer arithmetic.
+   Returns true, if all uses have been propagated into.  */
+
+static bool
+forward_propagate_addr_expr (tree stmt)
+{
+  int stmt_loop_depth = bb_for_stmt (stmt)->loop_depth;
+  tree name = TREE_OPERAND (stmt, 0);
+  use_operand_p imm_use;
+  imm_use_iterator iter;
+  bool all = true;
+
+  FOR_EACH_IMM_USE_SAFE (imm_use, iter, name)
+    {
+      tree use_stmt = USE_STMT (imm_use);
+
+      /* If the use is not in a simple assignment statement, then
+	 there is nothing we can do.  */
+      if (TREE_CODE (use_stmt) != MODIFY_EXPR)
+	{
+	  all = false;
+	  continue;
+	}
+
+     /* If the use is in a deeper loop nest, then we do not want
+	to propagate the ADDR_EXPR into the loop as that is likely
+	adding expression evaluations into the loop.  */
+      if (bb_for_stmt (use_stmt)->loop_depth > stmt_loop_depth)
+	{
+	  all = false;
+	  continue;
+	}
+
+      all = all && forward_propagate_addr_expr_1 (stmt, use_stmt);
+    }
+
+  return all;
+}
+
 
 /* Main entry point for the forward propagation optimizer.  */
 
