@@ -1,3 +1,13 @@
+2005-11-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* simplify-rtx.c (simplify_plus_minus): Remove final parameter.
+	Always produce an output if we can remove NEGs or canonicalize
+	(minus (minus ...)) expressions.  Provide a fast path for the
+	two-operand case.
+	(simplify_gen_binary): Do not call simplify_plus_minus.
+	(simplify_binary_operation_1): Reassociate at the end of the
+	function.
+
 2005-11-29  Evan Cheng  <evan.cheng@apple.com>
 
 	* config/i386/xmmintrin.h (_MM_TRANSPOSE4_PS): Rewrite using high/low
