@@ -498,18 +498,18 @@ resources: copy-vmresources.sh
 	if ! [ -e gnu/java ]; then mkdir gnu/java; fi
 	if ! [ -e gnu/java/locale ]; then mkdir gnu/java/locale; fi
 	if ! [ -e gnu/javax/swing/plaf/gtk/icons ]; then mkdir -p gnu/javax/swing/plaf/gtk/icons; fi
-	@list='$(propertydirs)'; for p in $$list; do \
+	list='$(propertydirs)'; for p in $$list; do \
 	  if ! [ -e $$p ]; then mkdir $$p; fi; \
 	done
-	@list='$(propertyfiles)'; for p in $$list; do \
-	  cp $(top_srcdir)/resource/$$p $$p; \
+	list='$(propertyfiles)'; for p in $$list; do \
+	  cp -f $(top_srcdir)/resource/$$p $$p; \
 	done
-	@list='$(metafiles)'; for p in $$list; do \
-	  cp $(top_srcdir)/resource/$$p $$p; \
+	list='$(metafiles)'; for p in $$list; do \
+	  cp -f $(top_srcdir)/resource/$$p $$p; \
 	done
-	@$(SHELL) ./copy-vmresources.sh
-	@list='$(iconfiles)'; for p in $$list; do \
-	  cp $(top_srcdir)/$$p $$p; \
+	$(SHELL) ./copy-vmresources.sh
+	list='$(iconfiles)'; for p in $$list; do \
+	  cp -f $(top_srcdir)/$$p $$p; \
 	done
 	touch resources
 

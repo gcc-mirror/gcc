@@ -1,3 +1,8 @@
+2005-11-30  Andrew Haley  <aph@redhat.com>
+
+	* classpath/lib/Makefile.am (resources): Use `cp -p'.
+	Remove `@' from start of line.
+
 2005-11-29  Tom Tromey  <tromey@redhat.com>
 
 	PR java/18278:
