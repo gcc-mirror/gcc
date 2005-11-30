@@ -19,6 +19,7 @@
    Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA.  */
 
+#include "config.h"
 #include "decNumber.h"          /* base number library */
 #include "decNumberLocal.h"     /* decNumber local types, etc. */
 #include "decUtility.h"         /* utility routines */

@@ -1,3 +1,15 @@
+2005-11-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* decContext.h: Properly guard inclusion of stdint.h
+	* decContext.c: Include config.h
+	* decLibrary.c: Ditto.
+	* decNumber.c: Ditto.
+	* decRound.c: Ditto.
+	* decUtility.c: Ditto.
+	* decimal32.c: Ditto.
+	* decimal64.c: Ditto.
+	* decimal128.c: Ditto.
+	
 2005-11-29  Ben Elliston  <bje@au.ibm.com>
 
 	* decUtility.c: Remove redundant #includes.
