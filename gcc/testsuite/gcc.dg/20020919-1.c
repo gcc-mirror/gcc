@@ -31,8 +31,9 @@
 #elif defined (__i386__)
 # define REG1 "%eax"
 # define REG2 "%edx"
-# define REG3 "%ecx"
-# define REG4 "%ebx"
+/* On Darwin -fpic is on by default, so don't use %ebx. */
+# define REG3 "%esi"
+# define REG4 "%edi"
 #elif defined (__MMIX__)
 # define REG1 "$8"
 # define REG2 "$9"
