@@ -2039,8 +2039,13 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
   enum insn_code icode;
 
   /* Special case for using fetchadd.  */
-  if ((mode == SImode || mode == DImode) && fetchadd_operand (val, mode))
+  if ((mode == SImode || mode == DImode)
+      && (code == PLUS || code == MINUS)
+      && fetchadd_operand (val, mode))
     {
+      if (code == MINUS)
+	val = GEN_INT (-INTVAL (val));
+
       if (!old_dst)
         old_dst = gen_reg_rtx (mode);
 
