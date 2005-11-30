@@ -141,6 +141,14 @@ ffixed-line-length-
 Fortran RejectNegative Joined UInteger
 -ffixed-line-length-<n>		Use n as character line width in fixed mode
 
+ffree-line-length-none
+Fortran RejectNegative
+Allow arbitrary character line width in free mode
+
+ffree-line-length-
+Fortran RejectNegative Joined UInteger
+-ffree-line-length-<n>		Use n as character line width in free mode
+
 fmax-identifier-length=
 Fortran RejectNegative Joined UInteger
 -fmax-identifier-length=<n>	Maximum identifier length

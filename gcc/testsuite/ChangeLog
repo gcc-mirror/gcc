@@ -1,4 +1,8 @@
-2005-11-30  Richard Guenther  <rguenther@suse.de>
+2005-11-30  Bernhard Fischer  <rep.nop@aon.at>
+
+	PR fortran/21302
+	* gfortran.dg/line_length_1.f: New test.
+	* gfortran.dg/line_length_2.f90: Ditto.
 
 	PR tree-optimization/21655
 	* g++.dg/tree-ssa/pr14814.C: Remove XFAIL.
