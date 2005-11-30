@@ -1,3 +1,9 @@
+2005-11-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21166
+	* class.c (check_field_decls): Only set DECL_PACKED on a field
+	when its natural alignment is > BITS_PER_UNIT.
+
 2005-11-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/22238

@@ -1495,8 +1495,6 @@ finalize_type_size (tree type)
 void
 finish_record_layout (record_layout_info rli, int free_p)
 {
-  tree field;
-  
   /* Compute the final size.  */
   finalize_record_size (rli);
 
@@ -1506,15 +1504,6 @@ finish_record_layout (record_layout_info rli, int free_p)
   /* Perform any last tweaks to the TYPE_SIZE, etc.  */
   finalize_type_size (rli->t);
 
-  /* We might be able to clear DECL_PACKED on any members that happen
-     to be suitably aligned (not forgetting the alignment of the type
-     itself).  */
-  for (field = TYPE_FIELDS (rli->t); field; field = TREE_CHAIN (field))
-    if (TREE_CODE (field) == FIELD_DECL && DECL_PACKED (field)
-	&& DECL_OFFSET_ALIGN (field) >= TYPE_ALIGN (TREE_TYPE (field))
-	&& TYPE_ALIGN (rli->t) >= TYPE_ALIGN (TREE_TYPE (field)))
-      DECL_PACKED (field) = 0;
-  
   /* Lay out any static members.  This is done now because their type
      may use the record's type.  */
   while (rli->pending_statics)

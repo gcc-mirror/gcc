@@ -1,3 +1,12 @@
+2005-11-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21166
+	* c-decl.c (finish_struct):  Only set DECL_PACKED on a field
+	when its natural alignment is > BITS_PER_UNIT.
+	* stor-layout.c (finalize_type_size): Revert my patch of 2005-08-08.
+	* c-common.c (handle_packed_attribute): Ignore packing on a field
+	whose type is naturally char aligned.
+
 2005-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_tls_address): Add ORIG_OP1 argument.
