@@ -1,3 +1,9 @@
+2005-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/ia64.c (ia64_expand_atomic_op): Only use
+	fetchadd{4,8}.acq instruction if CODE is PLUS or MINUS, for MINUS
+	negate VAL.
+
 2005-11-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/20109
