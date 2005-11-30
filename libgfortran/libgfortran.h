@@ -65,9 +65,24 @@ typedef short int16_t;
 typedef int int32_t;
 typedef long long int64_t;
 typedef unsigned char uint8_t;
+#if defined(__sun) && defined(__svr4__)
+/* Prevent <pthread.h> from redefining uint8_t on Solaris 2.5.1
+   FIXME when the header inclusion scheme is revisited.  */
+#define _UINT8_T
+#endif
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
+#if defined(__sun) && defined(__svr4__)
+/* Prevent <pthread.h> from redefining uint32_t on Solaris 2.5.1
+   FIXME when the header inclusion scheme is revisited.  */
+#define _UINT32_T
+#endif
 typedef unsigned long long uint64_t;
+#if defined(__sun) && defined(__svr4__)
+/* Prevent <pthread.h> from redefining uint64_t on Solaris 2.5.1
+   FIXME when the header inclusion scheme is revisited.  */
+#define _UINT64_T
+#endif
 #endif
 
 #if HAVE_SYS_TYPES_H

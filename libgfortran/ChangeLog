@@ -1,3 +1,8 @@
+2005-11-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* libgfortran.h (ILP32 typedefs): Define _UINT8_T, _UINT32_T and
+	_UINT64_T on Solaris.
+
 2005-11-28  Steven G. Kargl  <kargls@comcast.net>
 
 	PR libgfortran/25149
