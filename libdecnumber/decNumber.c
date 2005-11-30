@@ -153,6 +153,7 @@
 #include <stdio.h>		/* for printf [if needed] */
 #include <string.h>		/* for strcpy */
 #include <ctype.h>		/* for lower */
+#include "config.h"
 #include "decNumber.h"		/* base number library */
 #include "decNumberLocal.h"	/* decNumber local types, etc. */
 

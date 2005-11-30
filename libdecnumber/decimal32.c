@@ -31,6 +31,7 @@
 #include <stdio.h>		/* [for printf] */
 
 #define  DECNUMDIGITS  7	/* we need decNumbers with space for 7 */
+#include "config.h"
 #include "decNumber.h"		/* base number library */
 #include "decNumberLocal.h"	/* decNumber local types, etc. */
 #include "decimal32.h"		/* our primary include */

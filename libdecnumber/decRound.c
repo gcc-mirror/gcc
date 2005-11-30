@@ -18,6 +18,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
+#include "config.h"
 #include "decContext.h"
 
 #define FE_DEC_DOWNWARD 0

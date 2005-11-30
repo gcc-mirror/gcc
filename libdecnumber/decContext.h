@@ -40,7 +40,9 @@
 #define DECCFULLNAME "Decimal Context Descriptor"	/* Verbose name */
 #define DECCAUTHOR   "Mike Cowlishaw"	/* Who to blame */
 
+#ifdef HAVE_STDINT_H
 #include <stdint.h>		/* C99 standard integers */
+#endif
 #include <signal.h>		/* for traps */
 
 
