@@ -1197,14 +1197,14 @@ _mm_pause (void)
 #define _MM_TRANSPOSE4_PS(row0, row1, row2, row3)			\
 do {									\
   __v4sf __r0 = (row0), __r1 = (row1), __r2 = (row2), __r3 = (row3);	\
-  __v4sf __t0 = __builtin_ia32_shufps (__r0, __r1, 0x44);		\
-  __v4sf __t2 = __builtin_ia32_shufps (__r0, __r1, 0xEE);		\
-  __v4sf __t1 = __builtin_ia32_shufps (__r2, __r3, 0x44);		\
-  __v4sf __t3 = __builtin_ia32_shufps (__r2, __r3, 0xEE);		\
-  (row0) = __builtin_ia32_shufps (__t0, __t1, 0x88);			\
-  (row1) = __builtin_ia32_shufps (__t0, __t1, 0xDD);			\
-  (row2) = __builtin_ia32_shufps (__t2, __t3, 0x88);			\
-  (row3) = __builtin_ia32_shufps (__t2, __t3, 0xDD);			\
+  __v4sf __t0 = __builtin_ia32_unpcklps (__r0, __r1);			\
+  __v4sf __t2 = __builtin_ia32_unpcklps (__r2, __r3);			\
+  __v4sf __t1 = __builtin_ia32_unpckhps (__r0, __r1);			\
+  __v4sf __t3 = __builtin_ia32_unpckhps (__r2, __r3);			\
+  (row0) = __builtin_ia32_movlhps (__t0, __t1);				\
+  (row1) = __builtin_ia32_movhlps (__t1, __t0);				\
+  (row2) = __builtin_ia32_movlhps (__t2, __t3);				\
+  (row3) = __builtin_ia32_movhlps (__t3, __t2);				\
 } while (0)
 
 /* For backward source compatibility.  */
