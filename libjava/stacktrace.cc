@@ -108,16 +108,17 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
       state->frames = (_Jv_StackFrame *) newFrames;
       state->length = newLength;
     }
-  
-  _Unwind_Ptr func_addr = _Unwind_GetRegionStart (context);
-  
+
+  void *func_addr = (void *) _Unwind_GetRegionStart (context);
+
   // If we see the interpreter's main function, "pop" an entry off the 
   // interpreter stack and use that instead, so that the trace goes through 
   // the java code and not the interpreter itself. This assumes a 1:1 
   // correspondance between call frames in the interpreted stack and occurances
   // of _Jv_InterpMethod::run() on the native stack.
 #ifdef INTERPRETER
-  if ((void (*)(void)) func_addr == (void (*)(void)) &_Jv_InterpMethod::run)
+  void *interp_run = (void *) &_Jv_InterpMethod::run;
+  if (func_addr == UNWRAP_FUNCTION_DESCRIPTOR (interp_run))
     {
       state->frames[pos].type = frame_interpreter;
       state->frames[pos].interp.meth = state->interp_frame->self;
@@ -129,7 +130,7 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
     {
       state->frames[pos].type = frame_native;
       state->frames[pos].ip = (void *) _Unwind_GetIP (context);
-      state->frames[pos].start_ip = (void *) func_addr;
+      state->frames[pos].start_ip = func_addr;
     }
 
   //printf ("unwind ip: %p\n", _Unwind_GetIP (context));
