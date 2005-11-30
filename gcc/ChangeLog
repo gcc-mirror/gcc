@@ -1,3 +1,8 @@
+2005-11-30  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Properly
+	handle SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
 2005-11-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21166

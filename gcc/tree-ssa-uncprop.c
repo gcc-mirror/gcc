@@ -92,7 +92,8 @@ associate_equivalences_with_edges (void)
 
 	  /* If the conditional is a single variable 'X', record 'X = 1'
 	     for the true edge and 'X = 0' on the false edge.  */
-	  if (TREE_CODE (cond) == SSA_NAME)
+	  if (TREE_CODE (cond) == SSA_NAME
+	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (cond))
 	    {
 	      equivalency = xmalloc (sizeof (struct edge_equivalency));
 	      equivalency->rhs = constant_boolean_node (1, TREE_TYPE (cond));
@@ -114,6 +115,7 @@ associate_equivalences_with_edges (void)
 		 know the value of OP0 on both arms of the branch.  i.e., we
 		 can record an equivalence for OP0 rather than COND.  */
 	      if (TREE_CODE (op0) == SSA_NAME
+		  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0)
 		  && TREE_CODE (TREE_TYPE (op0)) == BOOLEAN_TYPE
 		  && is_gimple_min_invariant (op1))
 		{
@@ -152,8 +154,10 @@ associate_equivalences_with_edges (void)
 		}
 
 	      if (TREE_CODE (op0) == SSA_NAME
+		  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0)
 		  && (is_gimple_min_invariant (op1)
-		      || TREE_CODE (op1) == SSA_NAME))
+		      || (TREE_CODE (op1) == SSA_NAME
+			  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op1))))
 		{
 		  /* For IEEE, -0.0 == 0.0, so we don't necessarily know
 		     the sign of a variable compared against zero.  If
@@ -185,7 +189,8 @@ associate_equivalences_with_edges (void)
 	{
 	  tree cond = SWITCH_COND (stmt);
 
-	  if (TREE_CODE (cond) == SSA_NAME)
+	  if (TREE_CODE (cond) == SSA_NAME
+	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (cond))
 	    {
 	      tree labels = SWITCH_LABELS (stmt);
 	      int i, n_labels = TREE_VEC_LENGTH (labels);
