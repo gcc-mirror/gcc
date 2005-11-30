@@ -891,14 +891,11 @@ gen_thread_pointer (void)
 
 static rtx
 ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
-			 HOST_WIDE_INT addend)
+			 rtx orig_op1, HOST_WIDE_INT addend)
 {
   rtx tga_op1, tga_op2, tga_ret, tga_eqv, tmp, insns;
-  rtx orig_op0 = op0, orig_op1 = op1;
+  rtx orig_op0 = op0;
   HOST_WIDE_INT addend_lo, addend_hi;
-
-  addend_lo = ((addend & 0x3fff) ^ 0x2000) - 0x2000;
-  addend_hi = addend - addend_lo;
 
   switch (tls_kind)
     {
@@ -959,6 +956,9 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
       break;
 
     case TLS_MODEL_INITIAL_EXEC:
+      addend_lo = ((addend & 0x3fff) ^ 0x2000) - 0x2000;
+      addend_hi = addend - addend_lo;
+
       op1 = plus_constant (op1, addend_hi);
       addend = addend_lo;
 
@@ -1023,7 +1023,7 @@ ia64_expand_move (rtx op0, rtx op1)
 
       tls_kind = tls_symbolic_operand_type (sym);
       if (tls_kind)
-	return ia64_expand_tls_address (tls_kind, op0, sym, addend);
+	return ia64_expand_tls_address (tls_kind, op0, sym, op1, addend);
 
       if (any_offset_symbol_operand (sym, mode))
 	addend = 0;
