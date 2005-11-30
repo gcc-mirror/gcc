@@ -1,3 +1,11 @@
+2005-11-29  David S. Miller  <davem@sunset.davemloft.net>
+
+	* config/sparc/sparc.c (gen_compare_reg): Kill 2nd and 3rd
+	argument, they are always sparc_compare_op0 and sparc_compare_op1.
+	(gen_v9_scc): Update callers.
+	* config/sparc/sparc.md: Likewise.
+	* config/sparc/sparc-protos.h: Update extern declaration.
+
 2005-11-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* fold-const.c (negate_expr) <case BIT_NOT_EXPR>: Add break after
