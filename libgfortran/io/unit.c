@@ -393,6 +393,7 @@ get_unit (st_parameter_dt *dtp, int do_create)
       internal_unit.flags.action = ACTION_READWRITE;
       internal_unit.flags.form = FORM_FORMATTED;
       internal_unit.flags.delim = DELIM_NONE;
+      internal_unit.flags.pad = PAD_YES;
 
       return &internal_unit;
     }
@@ -453,7 +454,8 @@ init_units (void)
       u->flags.access = ACCESS_SEQUENTIAL;
       u->flags.form = FORM_FORMATTED;
       u->flags.status = STATUS_OLD;
-      u->flags.blank = BLANK_UNSPECIFIED;
+      u->flags.blank = BLANK_NULL;
+      u->flags.pad = PAD_YES
       u->flags.position = POSITION_ASIS;
 
       u->recl = options.default_recl;
@@ -472,7 +474,7 @@ init_units (void)
       u->flags.access = ACCESS_SEQUENTIAL;
       u->flags.form = FORM_FORMATTED;
       u->flags.status = STATUS_OLD;
-      u->flags.blank = BLANK_UNSPECIFIED;
+      u->flags.blank = BLANK_NULL;
       u->flags.position = POSITION_ASIS;
 
       u->recl = options.default_recl;
@@ -491,7 +493,7 @@ init_units (void)
       u->flags.access = ACCESS_SEQUENTIAL;
       u->flags.form = FORM_FORMATTED;
       u->flags.status = STATUS_OLD;
-      u->flags.blank = BLANK_UNSPECIFIED;
+      u->flags.blank = BLANK_NULL;
       u->flags.position = POSITION_ASIS;
 
       u->recl = options.default_recl;
