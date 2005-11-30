@@ -1,4 +1,6 @@
 // { dg-do assemble { target i?86-*-linux* } }
+// We'd use ebx with -fpic/-fPIC, so skip.
+// { dg-skip-if "" { i?86-*-* } { "-fpic" "-fPIC" } { "" } }
 // Origin: "Weidmann, Nicholas" <nicholas.weidmann@swx.ch>
 
 typedef void (function_ptr)(int);

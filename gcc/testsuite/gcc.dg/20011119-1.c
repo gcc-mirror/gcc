@@ -1,5 +1,6 @@
 /* Test for reload failing to eliminate from argp to sp.  */
 /* { dg-do run { target i?86-*-* } } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" "-fpic" "-fPIC" } { "" } } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 
 static int ustrsize (const char *s);
