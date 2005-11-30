@@ -2255,9 +2255,24 @@
     DONE;
 }")
 
-;; Reloading an SImode or DImode value requires a scratch register if
-;; going in to or out of float point registers.
+;; Handle SImode input reloads requiring %r1 as a scratch register.
+(define_expand "reload_insi_r1"
+  [(set (match_operand:SI 0 "register_operand" "=Z")
+	(match_operand:SI 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" "=&a"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, SImode, operands[2]))
+    DONE;
 
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+;; Handle SImode input reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_insi"
   [(set (match_operand:SI 0 "register_operand" "=Z")
 	(match_operand:SI 1 "non_hard_reg_operand" ""))
@@ -2273,6 +2288,8 @@
   DONE;
 }")
 
+;; Handle SImode output reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_outsi"
   [(set (match_operand:SI 0 "non_hard_reg_operand" "")
 	(match_operand:SI 1  "register_operand" "Z"))
@@ -3787,9 +3804,8 @@
     DONE;
 }")
 
-;; Reloading an SImode or DImode value requires a scratch register if
-;; going in to or out of float point registers.
-
+;; Handle DFmode input reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_indf"
   [(set (match_operand:DF 0 "register_operand" "=Z")
 	(match_operand:DF 1 "non_hard_reg_operand" ""))
@@ -3805,6 +3821,8 @@
   DONE;
 }")
 
+;; Handle DFmode output reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_outdf" 
  [(set (match_operand:DF 0 "non_hard_reg_operand" "")
 	(match_operand:DF 1  "register_operand" "Z"))
@@ -4044,6 +4062,24 @@
     DONE;
 }")
 
+;; Handle DImode input reloads requiring %r1 as a scratch register.
+(define_expand "reload_indi_r1"
+  [(set (match_operand:DI 0 "register_operand" "=Z")
+	(match_operand:DI 1 "non_hard_reg_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" "=&a"))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, DImode, operands[2]))
+    DONE;
+
+  /* We don't want the clobber emitted, so handle this ourselves.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  DONE;
+}")
+
+;; Handle DImode input reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_indi"
   [(set (match_operand:DI 0 "register_operand" "=Z")
 	(match_operand:DI 1 "non_hard_reg_operand" ""))
@@ -4059,6 +4095,8 @@
   DONE;
 }")
 
+;; Handle DImode output reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_outdi"
   [(set (match_operand:DI 0 "non_hard_reg_operand" "")
 	(match_operand:DI 1 "register_operand" "Z"))
@@ -4306,9 +4344,8 @@
     DONE;
 }")
 
-;; Reloading an SImode or DImode value requires a scratch register if
-;; going in to or out of float point registers.
-
+;; Handle SFmode input reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_insf"
   [(set (match_operand:SF 0 "register_operand" "=Z")
 	(match_operand:SF 1 "non_hard_reg_operand" ""))
@@ -4324,6 +4361,8 @@
   DONE;
 }")
 
+;; Handle SFmode output reloads requiring a general register as a
+;; scratch register.
 (define_expand "reload_outsf"
   [(set (match_operand:SF 0 "non_hard_reg_operand" "")
 	(match_operand:SF 1  "register_operand" "Z"))

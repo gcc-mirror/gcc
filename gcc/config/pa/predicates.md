@@ -60,7 +60,8 @@
   return (memory_address_p (mode, op) && IS_INDEX_ADDR_P (op));
 })
 
-;; TODO: Add a comment.
+;; Return 1 iff OP is a symbolic operand.
+;; Note: an inline copy of this code is present in pa_secondary_reload.
 
 (define_predicate "symbolic_operand"
   (match_code "symbol_ref,label_ref,const")
