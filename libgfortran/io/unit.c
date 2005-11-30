@@ -455,7 +455,7 @@ init_units (void)
       u->flags.form = FORM_FORMATTED;
       u->flags.status = STATUS_OLD;
       u->flags.blank = BLANK_NULL;
-      u->flags.pad = PAD_YES
+      u->flags.pad = PAD_YES;
       u->flags.position = POSITION_ASIS;
 
       u->recl = options.default_recl;
