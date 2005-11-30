@@ -3327,7 +3327,7 @@ build_c_cast (tree type, tree expr)
 	      value = copy_node (value);
 	      TREE_OVERFLOW (value) = true;
 	    }
-	  else if (TREE_CONSTANT_OVERFLOW (ovalue) && CONSTANT_CLASS_P (ovalue))
+	  else if (CONSTANT_CLASS_P (ovalue) && TREE_CONSTANT_OVERFLOW (ovalue))
 	    {
 	      /* When casting a constant, always reset TREE_OVERFLOW, but
 		 still copy TREE_CONSTANT_OVERFLOW from OVALUE.  */
