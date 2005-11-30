@@ -1,3 +1,7 @@
+2005-11-30  Jeff Law  <law@redhat.com>
+
+	* g++.old-deja/g++.law/pr25000.C: New test.
+
 2005-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tls/opt-11.c: New test.
