@@ -46,7 +46,8 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_source_file = NULL;
   gfc_option.module_dir = NULL;
   gfc_option.source_form = FORM_UNKNOWN;
-  gfc_option.fixed_line_length = 72;
+  gfc_option.fixed_line_length = -1;
+  gfc_option.free_line_length = -1;
   gfc_option.max_identifier_length = GFC_MAX_SYMBOL_LEN;
   gfc_option.verbose = 0;
 
@@ -423,8 +424,26 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.source_form = FORM_FIXED;
       break;
 
+    case OPT_ffixed_line_length_none:
+      gfc_option.fixed_line_length = 0;
+      break;
+
+    case OPT_ffixed_line_length_:
+      if (value != 0 && value < 7)
+	gfc_fatal_error ("Fixed line length must be at least seven.");
+      gfc_option.fixed_line_length = value;
+      break;
+
     case OPT_ffree_form:
       gfc_option.source_form = FORM_FREE;
+      break;
+
+    case OPT_ffree_line_length_none:
+      gfc_option.free_line_length = 0;
+      break;
+
+    case OPT_ffree_line_length_:
+      gfc_option.free_line_length = value;
       break;
 
     case OPT_funderscoring:
@@ -457,16 +476,6 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_frepack_arrays:
       gfc_option.flag_repack_arrays = value;
-      break;
-
-    case OPT_ffixed_line_length_none:
-      gfc_option.fixed_line_length = 0;
-      break;
-
-    case OPT_ffixed_line_length_:
-      if (value != 0 && value < 7)
-	gfc_fatal_error ("Fixed line length must be at least seven.");
-      gfc_option.fixed_line_length = value;
       break;
 
     case OPT_fmax_identifier_length_:
