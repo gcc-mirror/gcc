@@ -244,14 +244,18 @@ add_test (rtx cond, basic_block bb, basic_block dest)
   do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL_RTX, label);
 
   jump = get_last_insn ();
-  JUMP_LABEL (jump) = label;
+  /* It is possible for the jump to be optimized out.  */
+  if (JUMP_P (jump))
+    {
+      JUMP_LABEL (jump) = label;
 
-  /* The jump is supposed to handle an unlikely special case.  */
-  REG_NOTES (jump)
-	  = gen_rtx_EXPR_LIST (REG_BR_PROB,
-			       const0_rtx, REG_NOTES (jump));
+       /* The jump is supposed to handle an unlikely special case.  */
+      REG_NOTES (jump)
+	= gen_rtx_EXPR_LIST (REG_BR_PROB,
+			     const0_rtx, REG_NOTES (jump));
 
-  LABEL_NUSES (label)++;
+      LABEL_NUSES (label)++;
+    }
 
   seq = get_insns ();
   end_sequence ();
