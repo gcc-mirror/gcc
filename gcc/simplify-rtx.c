@@ -52,8 +52,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 static rtx neg_const_int (enum machine_mode, rtx);
 static bool plus_minus_operand_p (rtx);
 static int simplify_plus_minus_op_data_cmp (const void *, const void *);
-static rtx simplify_plus_minus (enum rtx_code, enum machine_mode, rtx,
-				rtx, int);
+static rtx simplify_plus_minus (enum rtx_code, enum machine_mode, rtx, rtx);
 static rtx simplify_immed_subreg (enum machine_mode, rtx, enum machine_mode,
 				  unsigned int);
 static rtx simplify_associative_operation (enum rtx_code, enum machine_mode,
@@ -124,16 +123,6 @@ simplify_gen_binary (enum rtx_code code, enum machine_mode mode, rtx op0,
   tem = simplify_binary_operation (code, mode, op0, op1);
   if (tem)
     return tem;
-
-  /* Handle addition and subtraction specially.  Otherwise, just form
-     the operation.  */
-
-  if (code == PLUS || code == MINUS)
-    {
-      tem = simplify_plus_minus (code, mode, op0, op1, 1);
-      if (tem)
-	return tem;
-    }
 
   return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
@@ -1366,7 +1355,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       if (INTEGRAL_MODE_P (mode)
 	  && (plus_minus_operand_p (op0)
 	      || plus_minus_operand_p (op1))
-	  && (tem = simplify_plus_minus (code, mode, op0, op1, 0)) != 0)
+	  && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
 	return tem;
 
       /* Reassociate floating point addition only when the user
@@ -1531,18 +1520,6 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	    return simplify_gen_binary (MINUS, mode, tem, XEXP (op0, 0));
 	}
 
-      /* If one of the operands is a PLUS or a MINUS, see if we can
-	 simplify this by the associative law.
-	 Don't use the associative law for floating point.
-	 The inaccuracy makes it nonassociative,
-	 and subtle programs can break if operations are associated.  */
-
-      if (INTEGRAL_MODE_P (mode)
-	  && (plus_minus_operand_p (op0)
-	      || plus_minus_operand_p (op1))
-	  && (tem = simplify_plus_minus (code, mode, op0, op1, 0)) != 0)
-	return tem;
-
       /* Don't let a relocatable value get a negative coeff.  */
       if (GET_CODE (op1) == CONST_INT && GET_MODE (op0) != VOIDmode)
 	return simplify_gen_binary (PLUS, mode,
@@ -1565,6 +1542,19 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      return simplify_gen_binary (AND, mode, op0, tem);
 	    }
 	}
+
+      /* If one of the operands is a PLUS or a MINUS, see if we can
+	 simplify this by the associative law.  This will, for example,
+         canonicalize (minus A (plus B C)) to (minus (minus A B) C).
+	 Don't use the associative law for floating point.
+	 The inaccuracy makes it nonassociative,
+	 and subtle programs can break if operations are associated.  */
+
+      if (INTEGRAL_MODE_P (mode)
+	  && (plus_minus_operand_p (op0)
+	      || plus_minus_operand_p (op1))
+	  && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
+	return tem;
       break;
 
     case MULT:
@@ -2583,12 +2573,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 
    Rather than test for specific case, we do this by a brute-force method
    and do all possible simplifications until no more changes occur.  Then
-   we rebuild the operation.
-
-   If FORCE is true, then always generate the rtx.  This is used to
-   canonicalize stuff emitted from simplify_gen_binary.  Note that this
-   can still fail if the rtx is too complex.  It won't fail just because
-   the result is not 'simpler' than the input, however.  */
+   we rebuild the operation.  */
 
 struct simplify_plus_minus_op_data
 {
@@ -2613,12 +2598,12 @@ simplify_plus_minus_op_data_cmp (const void *p1, const void *p2)
 
 static rtx
 simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
-		     rtx op1, int force)
+		     rtx op1)
 {
   struct simplify_plus_minus_op_data ops[8];
   rtx result, tem;
   int n_ops = 2, input_ops = 2, input_consts = 0, n_consts;
-  int first, changed;
+  int first, changed, canonicalized = 0;
   int i, j;
 
   memset (ops, 0, sizeof ops);
@@ -2656,12 +2641,14 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 	      ops[i].op = XEXP (this_op, 0);
 	      input_ops++;
 	      changed = 1;
+	      canonicalized |= this_neg;
 	      break;
 
 	    case NEG:
 	      ops[i].op = XEXP (this_op, 0);
 	      ops[i].neg = ! this_neg;
 	      changed = 1;
+	      canonicalized = 1;
 	      break;
 
 	    case CONST:
@@ -2676,6 +2663,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 		  n_ops++;
 		  input_consts++;
 		  changed = 1;
+	          canonicalized = 1;
 		}
 	      break;
 
@@ -2688,6 +2676,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 		  ops[i].op = XEXP (this_op, 0);
 		  ops[i].neg = !this_neg;
 		  changed = 1;
+	          canonicalized = 1;
 		}
 	      break;
 
@@ -2697,6 +2686,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 		  ops[i].op = neg_const_int (mode, this_op);
 		  ops[i].neg = 0;
 		  changed = 1;
+	          canonicalized = 1;
 		}
 	      break;
 
@@ -2707,9 +2697,36 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
     }
   while (changed);
 
-  /* If we only have two operands, we can't do anything.  */
-  if (n_ops <= 2 && !force)
+  gcc_assert (n_ops >= 2);
+  if (!canonicalized)
     return NULL_RTX;
+
+  /* If we only have two operands, we can avoid the loops.  */
+  if (n_ops == 2)
+    {
+      enum rtx_code code = ops[0].neg || ops[1].neg ? MINUS : PLUS;
+      rtx lhs, rhs;
+
+      /* Get the two operands.  Be careful with the order, especially for
+	 the cases where code == MINUS.  */
+      if (ops[0].neg && ops[1].neg)
+	{
+	  lhs = gen_rtx_NEG (mode, ops[0].op);
+	  rhs = ops[1].op;
+	}
+      else if (ops[0].neg)
+	{
+	  lhs = ops[1].op;
+	  rhs = ops[0].op;
+	}
+      else
+	{
+	  lhs = ops[0].op;
+	  rhs = ops[1].op;
+	}
+
+      return simplify_const_binary_operation (code, mode, lhs, rhs);
+    }
 
   /* Count the number of CONSTs we didn't split above.  */
   for (i = 0; i < n_ops; i++)
@@ -2823,15 +2840,6 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
   for (i = 0; i < n_ops; i++)
     if (GET_CODE (ops[i].op) == CONST)
       n_consts++;
-
-  /* Give up if we didn't reduce the number of operands we had.  Make
-     sure we count a CONST as two operands.  If we have the same
-     number of operands, but have made more CONSTs than before, this
-     is also an improvement, so accept it.  */
-  if (!force
-      && (n_ops + n_consts > input_ops
-	  || (n_ops + n_consts == input_ops && n_consts <= input_consts)))
-    return NULL_RTX;
 
   /* Put a non-negated operand first, if possible.  */
 
