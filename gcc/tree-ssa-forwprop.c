@@ -697,7 +697,7 @@ forward_propagate_addr_expr (tree stmt)
 	  continue;
 	}
 
-      all = all && forward_propagate_addr_expr_1 (stmt, use_stmt);
+      all = forward_propagate_addr_expr_1 (stmt, use_stmt) && all;
     }
 
   return all;
