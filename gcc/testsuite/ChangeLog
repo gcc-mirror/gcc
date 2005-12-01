@@ -1,3 +1,8 @@
+2005-12-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.target/powerpc/pr18096-1.c: Be more liberal about possible
+	error messages.
+
 2005-12-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24789
