@@ -366,6 +366,15 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define VEC_unordered_remove(T,V,I)	\
 	(VEC_OP(T,base,unordered_remove)(VEC_BASE(V),I VEC_CHECK_INFO))
 
+/* Remove a block of elements
+   void VEC_T_block_remove (VEC(T) *v, unsigned ix, unsigned len);
+   
+   Remove LEN elements starting at the IXth.  Ordering is retained.
+   This is an O(1) operation.  */
+
+#define VEC_block_remove(T,V,I,L)	\
+	(VEC_OP(T,base,block_remove)(VEC_BASE(V),I,L VEC_CHECK_INFO))
+
 /* Get the address of the array of elements
    T *VEC_T_address (VEC(T) v)
 
@@ -636,6 +645,17 @@ static inline T VEC_OP (T,base,unordered_remove)			  \
   return obj_;								  \
 }									  \
 									  \
+static inline void VEC_OP (T,base,block_remove)				  \
+     (VEC(T,base) *vec_, unsigned ix_, unsigned len_ VEC_CHECK_DECL)	  \
+{									  \
+  T *slot_;								  \
+									  \
+  VEC_ASSERT (ix_ + len_ <= vec_->num, "block_remove", T, base);	  \
+  slot_ = &vec_->vec[ix_];						  \
+  vec_->num -= len_;							  \
+  memmove (slot_, slot_ + len_, (vec_->num - ix_) * sizeof (T));	  \
+}									  \
+									  \
 static inline T *VEC_OP (T,base,address)				  \
      (VEC(T,base) *vec_)						  \
 {									  \
@@ -884,6 +904,17 @@ static inline void VEC_OP (T,base,unordered_remove)			  \
 {									  \
   VEC_ASSERT (ix_ < vec_->num, "remove", T, base);			  \
   vec_->vec[ix_] = vec_->vec[--vec_->num];				  \
+}									  \
+									  \
+static inline void VEC_OP (T,base,block_remove)				  \
+     (VEC(T,base) *vec_, unsigned ix_, unsigned len_ VEC_CHECK_DECL)	  \
+{									  \
+  T *slot_;								  \
+									  \
+  VEC_ASSERT (ix_ + len_ <= vec_->num, "block_remove", T, base);	  \
+  slot_ = &vec_->vec[ix_];						  \
+  vec_->num -= len_;							  \
+  memmove (slot_, slot_ + len_, (vec_->num - ix_) * sizeof (T));	  \
 }									  \
 									  \
 static inline T *VEC_OP (T,base,address)				  \
