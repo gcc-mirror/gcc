@@ -1,3 +1,8 @@
+2005-12-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* parser.c (cp_parser_declaration): Set token2.type to CPP_EOF,
+	not RID_MAX.
+
 2005-11-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/21123
