@@ -7,7 +7,7 @@
 struct array 
 {
   char align[4092];
-  long long elem[2] __attribute__ ((__packed__));
+  long long elem[2] __attribute__ ((__packed__)); /* { dg-warning "attribute ignored" "" { target default_packed } } */
 };
 
 long long
