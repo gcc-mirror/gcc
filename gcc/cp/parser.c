@@ -6914,7 +6914,10 @@ cp_parser_declaration (cp_parser* parser)
   if (token1.type != CPP_EOF)
     token2 = *cp_lexer_peek_nth_token (parser->lexer, 2);
   else
-    token2.type = token2.keyword = RID_MAX;
+    {
+      token2.type = CPP_EOF;
+      token2.keyword = RID_MAX;
+    }
 
   /* Get the high-water mark for the DECLARATOR_OBSTACK.  */
   p = obstack_alloc (&declarator_obstack, 0);
