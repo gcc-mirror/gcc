@@ -1,3 +1,7 @@
+2005-12-01  Richard Henderson  <rth@redhat.com>
+
+	* optabs.c (expand_vec_cond_expr): Use EXPAND_NORMAL.
+
 2005-11-30  Dale Johannesen  <dalej@apple.com>
             Andrew Pinski  <pinskia@physics.uc.edu>
 

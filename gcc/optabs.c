@@ -5524,13 +5524,13 @@ expand_vec_cond_expr (tree vec_cond_expr, rtx target)
   cc_op1 = XEXP (comparison, 1);
   /* Expand both operands and force them in reg, if required.  */
   rtx_op1 = expand_expr (TREE_OPERAND (vec_cond_expr, 1),
-			 NULL_RTX, VOIDmode, 1);
+			 NULL_RTX, VOIDmode, EXPAND_NORMAL);
   if (!insn_data[icode].operand[1].predicate (rtx_op1, mode)
       && mode != VOIDmode)
     rtx_op1 = force_reg (mode, rtx_op1);
 
   rtx_op2 = expand_expr (TREE_OPERAND (vec_cond_expr, 2),
-			 NULL_RTX, VOIDmode, 1);
+			 NULL_RTX, VOIDmode, EXPAND_NORMAL);
   if (!insn_data[icode].operand[2].predicate (rtx_op2, mode)
       && mode != VOIDmode)
     rtx_op2 = force_reg (mode, rtx_op2);
