@@ -1,4 +1,9 @@
-2005-11-30  Paul Thomas  <pault@gcc.gnu.org
+2005-11-30  Dale Johannesen  <dalej@apple.com>
+
+	PR rtl-opt/24930
+	* gcc.c-torture/compile/pr24930.c:  New.
+
+2005-11-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24223
 	* gfortran.dg/substring_equivalence.f90: New test.
