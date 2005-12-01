@@ -1,3 +1,8 @@
+2005-12-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/t-slibgcc-darwin (SHLIB_LINK): Use -single_module rather
+	than -flat_namespace.
+
 2005-12-01  Ben Elliston  <bje@au.ibm.com>
 
         * mklibgcc.in: Parameterise the script to build soft float
