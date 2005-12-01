@@ -5990,19 +5990,19 @@ lvalue_error (enum lvalue_use use)
   switch (use)
     {
     case lv_assign:
-      error ("invalid lvalue in assignment");
+      error ("lvalue required as left operand of assignment");
       break;
     case lv_increment:
-      error ("invalid lvalue in increment");
+      error ("lvalue required as increment operand");
       break;
     case lv_decrement:
-      error ("invalid lvalue in decrement");
+      error ("lvalue required as decrement operand");
       break;
     case lv_addressof:
-      error ("invalid lvalue in unary %<&%>");
+      error ("lvalue required as unary %<&%> operand");
       break;
     case lv_asm:
-      error ("invalid lvalue in asm statement");
+      error ("lvalue required in asm statement");
       break;
     default:
       gcc_unreachable ();

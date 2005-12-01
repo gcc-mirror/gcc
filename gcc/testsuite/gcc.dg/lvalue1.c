@@ -4,6 +4,6 @@
 int main()
 {
   int i;
-  +i = 1;	/* { dg-error "invalid lvalue in assignment" } */
+  +i = 1;	/* { dg-error "lvalue required as left operand of assignment" } */
   return 0;
 }
