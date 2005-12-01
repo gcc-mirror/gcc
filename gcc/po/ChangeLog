@@ -1,3 +1,7 @@
+2005-11-30  Release Manager
+
+	* GCC 3.4.5 released.
+
 2005-08-15  Matthias Klose  <doko@debian.org>
 
 	* gcc-3.4.3.rw.po: Remove.
