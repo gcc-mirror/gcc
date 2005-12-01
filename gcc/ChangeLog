@@ -1,3 +1,9 @@
+2005-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/25158
+	* builtins.c (fold_builtin_fputs): Defer check for missing
+	replacement functions.
+
 2005-11-30  Kean Johnston  <jkj@sco.com>
 
 	* config/i386/i386.c: Check the value of SUPPORTS_ONE_ONLY, not

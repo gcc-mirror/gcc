@@ -9639,9 +9639,8 @@ fold_builtin_fputs (tree arglist, bool ignore, bool unlocked, tree len)
   tree const fn_fwrite = unlocked ? built_in_decls[BUILT_IN_FWRITE_UNLOCKED]
     : implicit_built_in_decls[BUILT_IN_FWRITE];
 
-  /* If the return value is used, or the replacement _DECL isn't
-     initialized, don't do the transformation.  */
-  if (!ignore || !fn_fputc || !fn_fwrite)
+  /* If the return value is used, don't do the transformation.  */
+  if (!ignore)
     return 0;
 
   /* Verify the arguments in the original call.  */
@@ -9702,6 +9701,11 @@ fold_builtin_fputs (tree arglist, bool ignore, bool unlocked, tree len)
     default:
       gcc_unreachable ();
     }
+
+  /* If the replacement _DECL isn't initialized, don't do the
+     transformation.  */
+  if (!fn)
+    return 0;
 
   /* These optimizations are only performed when the result is ignored,
      hence there's no need to cast the result to integer_type_node.  */
