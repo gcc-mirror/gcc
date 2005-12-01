@@ -1,3 +1,11 @@
+2005-12-01  Anthony Green  <green@redhat.com>
+
+        PR bootstrap/25207
+        * configure.ac: Make sure we have an alsa library in addition to
+        the headers.  This extra test is required for systems with
+        multilibs.
+        * configure: Rebuilt.
+
 2005-10-03  Tom Tromey  <tromey@redhat.com>
 
 	* native/jawt/Makefile.in: Rebuilt.
