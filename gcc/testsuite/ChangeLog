@@ -1,5 +1,24 @@
 2005-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	Backport:
+	2005-01-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	* g++.old-deja/g++.pt/asm1.C, g++.old-deja/g++.pt/asm2.C,
+	gcc.dg/20011119-1.c: Bypass tests on x86 when using -fpic/-fPIC.
+	
+	2005-11-28  Kean Johnston  <jkj@sco.com>
+	* gcc.c-torture/compile/20000804-1.c: Skip if using -fPIC on X86.
+	* gcc.dg/clobbers.c: Ditto.
+	* gcc.dg/i386-cmov1.c: Make magic* static so it matches the test
+	regexp.
+	* gcc.dg/i386-mul.c: Ditto.
+	* gcc.dg/i386-ssetype-1.c: Ditto.
+	
+2005-11-30  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (dg-skip-if): New.
+	
+2005-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	PR testsuite/19275
 	Backport from mainline:
 
