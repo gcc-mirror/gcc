@@ -15,7 +15,7 @@ public:
 
 class B
 {
-  A a __attribute__((packed));
+  A a __attribute__((packed)); // { dg-warning "attribute ignored" "" { target default_packed } }
 
 public:
   B() {}
