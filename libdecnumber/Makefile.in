@@ -58,7 +58,7 @@ libdecnumber_a_OBJS = decNumber.o decContext.o decUtility.o \
 	decimal32.o decimal64.o decimal128.o
 
 libdecnumber_a_SOURCES = decContext.c decContext.h decDPD.h \
-	decLibrary.c decNumber.c decNumber.h decNumberLocal.h \
+	decNumber.c decNumber.h decNumberLocal.h \
 	decUtility.c decUtility.h \
 	decRound.c decimal128.c decimal128.h decimal32.c decimal32.h \
 	decimal64.c decimal64.h
