@@ -501,8 +501,10 @@ static void
 pa_init_builtins (void)
 {
 #ifdef DONT_HAVE_FPUTC_UNLOCKED
-  built_in_decls[(int) BUILT_IN_FPUTC_UNLOCKED] = NULL_TREE;
-  implicit_built_in_decls[(int) BUILT_IN_FPUTC_UNLOCKED] = NULL_TREE;
+  built_in_decls[(int) BUILT_IN_FPUTC_UNLOCKED] =
+    built_in_decls[(int) BUILT_IN_PUTC_UNLOCKED];
+  implicit_built_in_decls[(int) BUILT_IN_FPUTC_UNLOCKED]
+    = implicit_built_in_decls[(int) BUILT_IN_PUTC_UNLOCKED];
 #endif
 }
 
