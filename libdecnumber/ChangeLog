@@ -1,3 +1,9 @@
+2005-12-01  Ben Elliston  <bje@au.ibm.com>
+
+	* Makefile.in (libdecnumber_a_SOURCES): Drop decLibrary.c.
+	* decUtility.c (__dec_byte_swap): Move from here ..
+	* decLibrary.c: .. to here.
+
 2005-11-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* decContext.h: Properly guard inclusion of stdint.h

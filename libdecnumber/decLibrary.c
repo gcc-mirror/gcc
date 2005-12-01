@@ -80,3 +80,22 @@ __dfp_raise (int exception __attribute__ ((unused)))
 {
   raise (SIGFPE);
 }
+
+unsigned long
+__dec_byte_swap (unsigned long in)
+{
+  unsigned long out;
+  unsigned char *p = (unsigned char *) &out;
+  union {
+    unsigned long i;
+    unsigned char b[4];
+  } u;
+
+  u.i = in;
+  p[0] = u.b[3];
+  p[1] = u.b[2];
+  p[2] = u.b[1];
+  p[3] = u.b[0];
+
+  return out;
+}
