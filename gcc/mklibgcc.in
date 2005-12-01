@@ -313,95 +313,41 @@ for ml in $MULTILIBS; do
   # Build software floating point functions.
   #
 
-  if [ "$FPBIT" ]; then
-    for name in $FPBIT_FUNCS; do
-      if [ "$libgcc_s_so" ]; then
-	out="libgcc/${dir}/${name}${objext}"
-	outS="libgcc/${dir}/${name}_s${objext}"
+  for fpbit_var in FPBIT DPBIT TPBIT ; do
+      fpfuncs_var="${fpbit_var}_FUNCS"
+      eval fpbit=\$$fpbit_var
+      eval fpfuncs=\$$fpfuncs_var
 
-	echo $outS: $FPBIT $fpbit_c_dep
-	echo "	$gcc_s_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	  -c $FPBIT -o $outS
+      if [ "$fpbit" ] ; then
+	  for name in $fpfuncs; do
+	      if [ "$libgcc_s_so" ]; then
+		  out="libgcc/${dir}/${name}${objext}"
+		  outS="libgcc/${dir}/${name}_s${objext}"
 
-        echo $out: $FPBIT $fpbit_c_dep
-        echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	  '$(vis_hide)' -c $FPBIT -o $out
+		  echo $outS: $fpbit $fpbit_c_dep
+		  echo "	$gcc_s_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+		      -c $fpbit -o $outS
 
-	echo $libgcc_a: $out
-	echo $libgcc_s_so: $outS
-	if [ "$SHLIB_MKMAP" ]; then
-	  echo libgcc/${dir}/libgcc.map: $outS
-	fi
-      else
-	out="libgcc/${dir}/${name}${objext}"
-	echo $out: $FPBIT $fpbit_c_dep
-	echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	  -c $FPBIT -o $out
-
-	echo $libgcc_a: $out
+		  echo $out: $fpbit $fpbit_c_dep
+		  echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+		      '$(vis_hide)' -c $fpbit -o $out
+		  
+		  echo $libgcc_a: $out
+		  echo $libgcc_s_so: $outS
+		  if [ "$SHLIB_MKMAP" ]; then
+		      echo libgcc/${dir}/libgcc.map: $outS
+		  fi
+	      else
+		  out="libgcc/${dir}/${name}${objext}"
+		  echo $out: $fpbit $fpbit_c_dep
+		  echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+		      -c $fpbit -o $out
+		  
+		  echo $libgcc_a: $out
+	      fi
+	  done
       fi
-    done
-  fi
-
-  if [ "$DPBIT" ]; then
-    for name in $DPBIT_FUNCS; do
-      if [ "$libgcc_s_so" ]; then
-	out="libgcc/${dir}/${name}${objext}"
-	outS="libgcc/${dir}/${name}_s${objext}"
-
-	echo $outS: $DPBIT $fpbit_c_dep
-	echo "	$gcc_s_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	  -c $DPBIT -o $outS
-
-        echo $out: $DPBIT $fpbit_c_dep
-        echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	  '$(vis_hide)' -c $DPBIT -o $out
-
-	echo $libgcc_a: $out
-	echo $libgcc_s_so: $outS
-	if [ "$SHLIB_MKMAP" ]; then
-	  echo libgcc/${dir}/libgcc.map: $outS
-	fi
-      else
-	out="libgcc/${dir}/${name}${objext}"
-	echo $out: $DPBIT $fpbit_c_dep
-	echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	  -c $DPBIT -o $out
-
-	echo $libgcc_a: $out
-      fi
-    done
-  fi
-
-  if [ "$TPBIT" ]; then
-    for name in $TPBIT_FUNCS; do
-      if [ "$libgcc_s_so" ]; then
-	out="libgcc/${dir}/${name}${objext}"
-	outS="libgcc/${dir}/${name}_s${objext}"
-
-	echo $outS: $TPBIT $fpbit_c_dep
-	echo "	$gcc_s_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	  -c $TPBIT -o $outS
-
-        echo $out: $TPBIT $fpbit_c_dep
-        echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	  '$(vis_hide)' -c $TPBIT -o $out
-
-	echo $libgcc_a: $out
-	echo $libgcc_s_so: $outS
-	if [ "$SHLIB_MKMAP" ]; then
-	  echo libgcc/${dir}/libgcc.map: $outS
-	fi
-      else
-	out="libgcc/${dir}/${name}${objext}"
-	echo $out: $TPBIT $fpbit_c_dep
-	echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
-	  -c $TPBIT -o $out
-
-	echo $libgcc_a: $out
-      fi
-    done
-  fi
+  done
 
   for file in $LIB2ADD; do
     name=`echo $file | sed -e 's/[.][cS]$//' -e 's/[.]asm$//'`
