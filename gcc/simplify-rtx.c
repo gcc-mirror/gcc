@@ -2602,7 +2602,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 {
   struct simplify_plus_minus_op_data ops[8];
   rtx result, tem;
-  int n_ops = 2, input_ops = 2, input_consts = 0, n_consts;
+  int n_ops = 2, input_ops = 2;
   int first, changed, canonicalized = 0;
   int i, j;
 
@@ -2661,7 +2661,6 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 		  ops[n_ops].op = XEXP (XEXP (this_op, 0), 1);
 		  ops[n_ops].neg = this_neg;
 		  n_ops++;
-		  input_consts++;
 		  changed = 1;
 	          canonicalized = 1;
 		}
@@ -2699,7 +2698,16 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 
   gcc_assert (n_ops >= 2);
   if (!canonicalized)
-    return NULL_RTX;
+    {
+      int n_constants = 0;
+
+      for (i = 0; i < n_ops; i++)
+	if (GET_CODE (ops[i].op) == CONST_INT)
+	  n_constants++;
+
+      if (n_constants <= 1)
+	return NULL_RTX;
+    }
 
   /* If we only have two operands, we can avoid the loops.  */
   if (n_ops == 2)
@@ -2727,11 +2735,6 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 
       return simplify_const_binary_operation (code, mode, lhs, rhs);
     }
-
-  /* Count the number of CONSTs we didn't split above.  */
-  for (i = 0; i < n_ops; i++)
-    if (GET_CODE (ops[i].op) == CONST)
-      input_consts++;
 
   /* Now simplify each pair of operands until nothing changes.  The first
      time through just simplify constants against each other.  */
@@ -2834,12 +2837,6 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
       ops[n_ops - 2].op = plus_constant (ops[n_ops - 2].op, INTVAL (value));
       n_ops--;
     }
-
-  /* Count the number of CONSTs that we generated.  */
-  n_consts = 0;
-  for (i = 0; i < n_ops; i++)
-    if (GET_CODE (ops[i].op) == CONST)
-      n_consts++;
 
   /* Put a non-negated operand first, if possible.  */
 

@@ -1,3 +1,8 @@
+2005-12-02  Alan Modra  <amodra@bigpond.net.au>
+
+	* simplify-rtx.c (simplify_plus_minus): Do simplify constants.
+	Delete dead code.
+
 2005-12-01  Richard Henderson  <rth@redhat.com>
 
 	* optabs.c (expand_vec_cond_expr): Use EXPAND_NORMAL.
