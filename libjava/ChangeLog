@@ -1,3 +1,9 @@
+2005-12-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* testsuite/lib/libjava.exp (test_libjava_from_javac): Support
+	xfail-byte-exec.
+	* testsuite/libjava.lang/Array_3.xfail: New file.
+
 2005-12-01  Alan Modra  <amodra@bigpond.net.au>
 
 	* stacktrace.cc (UnwindTraceFn): Use UNWRAP_FUNCTION_DESCRIPTOR

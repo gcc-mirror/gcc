@@ -871,6 +871,9 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     pass "$errname compilation from bytecode"
 
     # Set up the options the way they are expected by libjava_invoke.
+    if {[info exists opts(xfail-byte-exec)]} {
+	set opts(xfail-exec) x
+    }
     if {[info exists opts(xfail-byte-output)]} {
 	set opts(xfail-output) x
     }
@@ -896,6 +899,8 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 #                 front end.
 #   `xfail-byte'  compilation from bytecode will fail
 #   `xfail-exec'  exec will fail
+#   `xfail-byte-exec'
+#		  exec will fail when compiled from bytecode
 #   `xfail-output'
 #                 output will be wrong
 #   `xfail-byte-output'
