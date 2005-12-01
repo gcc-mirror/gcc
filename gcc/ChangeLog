@@ -1,3 +1,7 @@
+2005-12-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* vec.h (VEC_block_remove): New.
+
 2005-12-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c/13384
