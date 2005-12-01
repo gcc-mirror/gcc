@@ -14,7 +14,7 @@ SHLIB_DIR = @multilib_dir@
 # uses the stub versions named by $(LIBGCC).
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -dynamiclib -nodefaultlibs \
 	-Wl,-install_name,$(slibdir)/$(SHLIB_SONAME) \
-	-Wl,-flat_namespace -o $(SHLIB_SONAME).tmp \
+	-single_module -o $(SHLIB_SONAME).tmp \
 	-Wl,-exported_symbols_list,$(SHLIB_MAP) \
 	$(SHLIB_VERSTRING) \
 	@multilib_flags@ $(SHLIB_OBJS) -lc && \
