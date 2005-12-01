@@ -1,3 +1,8 @@
+2005-12-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Fix
+	thinko in last patch.
+
 2005-12-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/t-slibgcc-darwin (SHLIB_LINK): Use -single_module rather
