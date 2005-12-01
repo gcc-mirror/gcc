@@ -1,3 +1,7 @@
+2005-12-01  Richard Henderson  <rth@redhat.com>
+
+	* optabs.c (expand_vec_cond_expr): Use EXPAND_NORMAL.
+
 2005-12-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (BUILT_IN_PUTC, BUILT_IN_PUTC_UNLOCKED): New.
