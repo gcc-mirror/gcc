@@ -1,3 +1,11 @@
+2005-12-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def (BUILT_IN_PUTC, BUILT_IN_PUTC_UNLOCKED): New.
+
+	* config/pa/pa.c (pa_init_builtins): If we detect
+	DONT_HAVE_FPUTC_UNLOCKED, set builtin fputc_unlocked to
+	putc_unlocked.
+
 2005-12-01  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary): Use fold_build2, not
