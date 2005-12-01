@@ -1,3 +1,8 @@
+2005-12-01  Alan Modra  <amodra@bigpond.net.au>
+
+	* stacktrace.cc (UnwindTraceFn): Use UNWRAP_FUNCTION_DESCRIPTOR
+	to compare _Jv_InterpMethod::run against current func.
+
 2005-11-30  Andrew Haley  <aph@redhat.com>
 
 	* classpath/lib/Makefile.am (resources): Use `cp -p'.
