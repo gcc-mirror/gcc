@@ -847,23 +847,22 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	      if (TREE_CODE (length) != INTEGER_CST)
 		{
 		  gfc_finish_var_decl (length, sym);
-
-		  /* Set the element size of automatic character length
-		     length, dummy, pointer arrays.  */
-		  if (sym->attr.pointer && sym->attr.dummy
-			&& sym->attr.dimension)
-		    {
-		      tmp = gfc_build_indirect_ref (sym->backend_decl);
-		      etype = gfc_get_element_type (TREE_TYPE (tmp));
-		      if (TYPE_SIZE_UNIT (etype) == NULL_TREE)
-			{
-			  tmp = TYPE_SIZE_UNIT (gfc_character1_type_node);
-			  tmp = fold_convert (TREE_TYPE (tmp), length);
-			  TYPE_SIZE_UNIT (etype) = tmp;
-			}
-		    }
-
 		  gfc_defer_symbol_init (sym);
+		}
+	    }
+
+	  /* Set the element size of automatic and assumed character length
+	     length, dummy, pointer arrays.  */
+	  if (sym->attr.pointer && sym->attr.dummy
+		&& sym->attr.dimension)
+	    {
+	      tmp = gfc_build_indirect_ref (sym->backend_decl);
+	      etype = gfc_get_element_type (TREE_TYPE (tmp));
+	      if (TYPE_SIZE_UNIT (etype) == NULL_TREE)
+		{
+		  tmp = TYPE_SIZE_UNIT (gfc_character1_type_node);
+		  tmp = fold_convert (TREE_TYPE (tmp), sym->ts.cl->backend_decl);
+		  TYPE_SIZE_UNIT (etype) = tmp;
 		}
 	    }
 	}

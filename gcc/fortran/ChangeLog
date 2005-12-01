@@ -1,3 +1,10 @@
+2005-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24789
+	* trans-decl.c (gfc_get_symbol_decl):  Move the expression for
+	unit size of automatic character length, dummy pointer array
+	elements down a few lines from the version that fixed PR15809.
+
 2005-11-30  Bernhard Fischer <rep.nop@aon.at>
 
 	PR fortran/21302
