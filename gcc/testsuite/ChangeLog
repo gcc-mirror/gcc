@@ -1,5 +1,28 @@
 2005-12-01  Uros Bizjak  <uros@kss-loka.si>
 
+	PR target/24475
+	* lib/target-supports.exp (check_effective_target_tls): New.
+	(check_effective_target_tls_runtime): New.
+	* gcc.dg/tls/tls.exp, g++.dg/tls/tls.exp: Remove check
+	for TLS support.
+	* gcc.dg/tls/opt-1.c, gcc.dg/tls/opt-2.c, gcc.dg/tls/opt-3.c,
+	gcc.dg/tls/opt-4.c, gcc.dg/tls/opt-5.c, gcc.dg/tls/opt-6.c,
+	gcc.dg/tls/opt-7.c, gcc.dg/tls/opt-8.c, gcc.dg/tls/opt-9.c,
+	gcc.dg/tls/opt-10.c, gcc.dg/tls/diag-1.c, gcc.dg/tls/diag-2.c,
+	gcc.dg/tls/diag-3.c, gcc.dg/tls/diag-4.c, gcc.dg/tls/diag-5.c,
+	gcc.dg/tls/alias-1.c, gcc.dg/tls/alpha-1.c, gcc.dg/tls/asm-1.c,
+	gcc.dg/tls/debug-1.c, gcc.dg/tls/init-1.c, gcc.dg/tls/nonpic-1.c,
+	gcc.dg/tls/pic-1.c, gcc.dg/tls/section-1.c, gcc.dg/tls/struct-1.c,
+	gcc.dg/tls/trivial.c, g++.dg/tls/diag-1.C, g++.dg/tls/diag-2.C,
+	g++.dg/tls/diag-3.C, g++.dg/tls/diag-4.C, g++.dg/tls/init-1.C,
+	g++.dg/tls/init-2.C, g++.dg/tls/trivial.C: Require
+	effective-target TLS.
+	* gcc.dg/tls/pr24428-2.c, gcc.dg/tls/pr24428.c, gcc.dg/tls/opt-11.c, 
+	g++.dg/tls/static-1a.cc, g++.dg/tls/static-1.C: Require
+	effective-target TLS runtime.
+
+2005-12-01  Uros Bizjak  <uros@kss-loka.si>
+
 	* lib/gcov.exp (clean-gcov): Also remove $base.h.gcov files.
 
 2005-12-01  Hans-Peter Nilsson  <hp@axis.com>

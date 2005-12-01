@@ -1,4 +1,4 @@
-#   Copyright (C) 2002 Free Software Foundation, Inc.
+#   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,16 +18,6 @@
 
 # Load support procs.
 load_lib gcc-dg.exp
-
-# Test for thread-local data supported by the platform.  If it
-# isn't, everything will fail with the "not supported" message.
-
-set comp_output [gcc_target_compile \
-		"$srcdir/$subdir/trivial.c" "trivial.S" assembly ""]
-remove-build-file "trivial.S"
-if { [string match "*not supported*" $comp_output] } {
-  return 0
-}
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
