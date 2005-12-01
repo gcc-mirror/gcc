@@ -1,5 +1,7 @@
 2005-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* config/ms1/ms1.c (ms1_reorg_hazard): Don't count noop moves.
+
 	* vec.h (VEC_block_remove): New.
 
 2005-12-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
