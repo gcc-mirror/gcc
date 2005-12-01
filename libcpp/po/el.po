@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-07-07 10:59-0700\n"
+"POT-Creation-Date: 2005-11-20 16:34+0000\n"
 "PO-Revision-Date: 2002-08-18 15:46+0100\n"
 "Last-Translator: Simos Xenitellis <simos@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -14,348 +14,361 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-7\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: charset.c:655
+#: charset.c:654
 #, fuzzy, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "η μετατροπή από `%s' σε `%s' δεν υποστηρίζετε"
 
-#: charset.c:658
+#: charset.c:657
 msgid "iconv_open"
 msgstr ""
 
-#: charset.c:666
+#: charset.c:665
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr ""
 
-#: charset.c:743
+#: charset.c:742
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr ""
 
-#: charset.c:760 charset.c:1243
+#: charset.c:759 charset.c:1352
 msgid "converting to execution character set"
 msgstr ""
 
-#: charset.c:766
+#: charset.c:765
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr ""
 
-#: charset.c:865
+#: charset.c:889
+#, c-format
+msgid "Character %x might not be NFKC"
+msgstr ""
+
+#: charset.c:949
 #, fuzzy
 msgid "universal character names are only valid in C++ and C99"
 msgstr "U+%04X: εκτός ορίων χαρακτήρας"
 
-#: charset.c:868
+#: charset.c:952
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr ""
 
-#: charset.c:894
+#: charset.c:961
+msgid "In _cpp_valid_ucn but not a UCN"
+msgstr ""
+
+#: charset.c:986
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr ""
 
-#: charset.c:906
+#: charset.c:998
 #, fuzzy, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "Το `%s' δεν είναι κατάλογος."
 
-#: charset.c:916
+#: charset.c:1008 lex.c:472
+msgid "'$' in identifier or number"
+msgstr ""
+
+#: charset.c:1018
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr ""
 
-#: charset.c:920
+#: charset.c:1022
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr ""
 
-#: charset.c:953
+#: charset.c:1056 charset.c:1571
 msgid "converting UCN to source character set"
 msgstr ""
 
-#: charset.c:957
+#: charset.c:1060
 msgid "converting UCN to execution character set"
 msgstr ""
 
-#: charset.c:1029
+#: charset.c:1132
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr ""
 
-#: charset.c:1046
+#: charset.c:1149
 msgid "\\x used with no following hex digits"
 msgstr ""
 
-#: charset.c:1053
+#: charset.c:1156
 #, fuzzy
 msgid "hex escape sequence out of range"
 msgstr "μη έγκυρη διαδικασία διαφυγής στο τέλος του αλφαριθμιτικού"
 
-#: charset.c:1092
+#: charset.c:1195
 #, fuzzy
 msgid "octal escape sequence out of range"
 msgstr "μη έγκυρη διαδικασία διαφυγής στο τέλος του αλφαριθμιτικού"
 
-#: charset.c:1160
+#: charset.c:1263
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr ""
 
-#: charset.c:1167
+#: charset.c:1270
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr ""
 
 # src/main.c:663
-#: charset.c:1175
+#: charset.c:1278
 #, fuzzy, c-format
 msgid "unknown escape sequence '\\%c'"
 msgstr "Άγνωστη συμβολοσειρά `%s'"
 
 # src/main.c:663
-#: charset.c:1178
+#: charset.c:1286
 #, fuzzy, c-format
-msgid "unknown escape sequence: '\\%03o'"
+msgid "unknown escape sequence: '\\%s'"
 msgstr "Άγνωστη συμβολοσειρά `%s'"
 
-#: charset.c:1184
+#: charset.c:1293
 #, fuzzy
 msgid "converting escape sequence to execution character set"
 msgstr "μη έγκυρη διαδικασία διαφυγής στο τέλος του αλφαριθμιτικού"
 
-#: charset.c:1306 charset.c:1369
+#: charset.c:1415 charset.c:1478
 #, fuzzy
 msgid "character constant too long for its type"
 msgstr "μη έγκυρος σταθερός χαρακτήρας στο αλφαριθμιτικό"
 
-#: charset.c:1309
+#: charset.c:1418
 #, fuzzy
 msgid "multi-character character constant"
 msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#: charset.c:1401
+#: charset.c:1510
 #, fuzzy
 msgid "empty character constant"
 msgstr "κενό αλφαριθμητικό"
 
-#: charset.c:1450
+#: charset.c:1612
 #, fuzzy, c-format
 msgid "failure to convert %s to %s"
 msgstr "δεν είναι δυνατό να δημιουργηθεί το %s `%s' στο `%s'"
 
-#: directives.c:216
+#: directives.c:219 directives.c:245
 #, c-format
 msgid "extra tokens at end of #%s directive"
 msgstr ""
 
-#: directives.c:303
+#: directives.c:346
 #, c-format
 msgid "#%s is a GCC extension"
 msgstr ""
 
-#: directives.c:315
+#: directives.c:358
 msgid "suggest not using #elif in traditional C"
 msgstr ""
 
-#: directives.c:318
+#: directives.c:361
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr ""
 
-#: directives.c:322
+#: directives.c:365
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr ""
 
-#: directives.c:348
+#: directives.c:391
 msgid "embedding a directive within macro arguments is not portable"
 msgstr ""
 
-#: directives.c:368
+#: directives.c:411
 msgid "style of line directive is a GCC extension"
 msgstr ""
 
-#: directives.c:418
+#: directives.c:461
 #, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr ""
 
-#: directives.c:489
+#: directives.c:532
 msgid "\"defined\" cannot be used as a macro name"
 msgstr ""
 
-#: directives.c:495
+#: directives.c:538
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr ""
 
-#: directives.c:498
+#: directives.c:541
 #, c-format
 msgid "no macro name given in #%s directive"
 msgstr ""
 
-#: directives.c:501
+#: directives.c:544
 #, fuzzy
 msgid "macro names must be identifiers"
 msgstr "διπλός προσδιοριστής μηνύματος"
 
-#: directives.c:542
+#: directives.c:585
 #, fuzzy, c-format
 msgid "undefining \"%s\""
 msgstr "Μη ορισμένο όνομα %s"
 
-#: directives.c:597
+#: directives.c:640
 #, fuzzy
 msgid "missing terminating > character"
 msgstr "έχει παραληφθεί το αρχείο προορισμού"
 
-#: directives.c:650
+#: directives.c:695
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr ""
 
-#: directives.c:673
+#: directives.c:735
 #, fuzzy, c-format
 msgid "empty filename in #%s"
 msgstr "Μη ορισμένο όνομα %s"
 
-#: directives.c:681
+#: directives.c:745
 msgid "#include nested too deeply"
 msgstr ""
 
-#: directives.c:719
+#: directives.c:786
 msgid "#include_next in primary source file"
 msgstr ""
 
-#: directives.c:745
+#: directives.c:812
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr ""
 
-#: directives.c:797
+#: directives.c:864
 #, fuzzy, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#: directives.c:803
+#: directives.c:870
 #, fuzzy
 msgid "line number out of range"
 msgstr "%s: αριθμός γραμμής έξω από τα όρια"
 
-#: directives.c:816 directives.c:893
+#: directives.c:883 directives.c:960
 #, fuzzy, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#: directives.c:853
+#: directives.c:920
 #, fuzzy, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#: directives.c:955
-#, fuzzy
-msgid "invalid #ident directive"
+#: directives.c:1022
+#, fuzzy, c-format
+msgid "invalid #%s directive"
 msgstr "%%%c: κατευθυντήριος γραμμή μη έγκυρη."
 
-#: directives.c:1043
+#: directives.c:1111
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr ""
 
-#: directives.c:1046
+#: directives.c:1114
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr ""
 
-#: directives.c:1049
+#: directives.c:1117
 #, fuzzy, c-format
 msgid "#pragma %s is already registered"
 msgstr "ο χάρτης χαρακτήρων `%s' ορίστηκε ήδη"
 
-#: directives.c:1249
+#: directives.c:1317
 msgid "#pragma once in main file"
 msgstr ""
 
-#: directives.c:1272
+#: directives.c:1340
 msgid "invalid #pragma GCC poison directive"
 msgstr ""
 
-#: directives.c:1281
+#: directives.c:1349
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr ""
 
-#: directives.c:1302
+#: directives.c:1370
 msgid "#pragma system_header ignored outside include file"
 msgstr ""
 
-#: directives.c:1326
+#: directives.c:1394
 #, fuzzy, c-format
 msgid "cannot find source file %s"
 msgstr "αδυναμία ανοίγματος υποδοχής: %s"
 
-#: directives.c:1330
+#: directives.c:1398
 #, c-format
 msgid "current file is older than %s"
 msgstr ""
 
-#: directives.c:1444
+#: directives.c:1512
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.c:1551
+#: directives.c:1613
 msgid "#else without #if"
 msgstr ""
 
-#: directives.c:1556
+#: directives.c:1618
 msgid "#else after #else"
 msgstr "#else μετά από #else"
 
-#: directives.c:1558 directives.c:1591
+#: directives.c:1620 directives.c:1653
 msgid "the conditional began here"
 msgstr ""
 
-#: directives.c:1584
+#: directives.c:1646
 msgid "#elif without #if"
 msgstr ""
 
-#: directives.c:1589
+#: directives.c:1651
 msgid "#elif after #else"
 msgstr "#elif μετά από #else"
 
-#: directives.c:1619
+#: directives.c:1681
 msgid "#endif without #if"
 msgstr ""
 
-#: directives.c:1696
+#: directives.c:1758
 msgid "missing '(' after predicate"
 msgstr ""
 
-#: directives.c:1711
+#: directives.c:1773
 msgid "missing ')' to complete answer"
 msgstr ""
 
-#: directives.c:1731
+#: directives.c:1793
 msgid "predicate's answer is empty"
 msgstr ""
 
-#: directives.c:1758
+#: directives.c:1820
 #, fuzzy
 msgid "assertion without predicate"
 msgstr "Η λειτουργία δεν επιτρέπεται"
 
-#: directives.c:1760
+#: directives.c:1822
 #, fuzzy
 msgid "predicate must be an identifier"
 msgstr "διπλός προσδιοριστής μηνύματος"
 
-#: directives.c:1846
+#: directives.c:1908
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2069
+#: directives.c:2132
 #, fuzzy, c-format
 msgid "unterminated #%s"
 msgstr "μη τερματιζόμενo αλφαριθμητικό"
@@ -373,13 +386,13 @@ msgstr "εσωτερικό σφάλμα: "
 msgid "error: "
 msgstr "εσωτερικό σφάλμα: "
 
-#: errors.c:181
+#: errors.c:186
 #, fuzzy
 msgid "stdout"
 msgstr "δομή"
 
 # src/request.c:37
-#: errors.c:183
+#: errors.c:188
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
@@ -556,151 +569,157 @@ msgstr ""
 msgid "division by zero in #if"
 msgstr "Διαίρεση με μηδέν στην αποτίμηση: %s"
 
-#: files.c:401
+#: files.c:402
 msgid "NULL directory in find_file"
 msgstr ""
 
-#: files.c:454
+#: files.c:440
 msgid "one or more PCH files were found, but they were invalid"
 msgstr ""
 
-#: files.c:457
+#: files.c:443
 msgid "use -Winvalid-pch for more information"
 msgstr ""
 
-#: files.c:522
+#: files.c:501
 #, fuzzy, c-format
 msgid "%s is a block device"
 msgstr "Δεν έμεινε καθόλου χώρος στη συσκευή"
 
 # src/shred.c:1134
-#: files.c:539
+#: files.c:518
 #, fuzzy, c-format
 msgid "%s is too large"
 msgstr "%s: το αρχείο είναι πολύ μεγάλο"
 
-#: files.c:574
+#: files.c:553
 #, fuzzy, c-format
 msgid "%s is shorter than expected"
 msgstr "%s: Αναμενόταν δυαδικός χειριστής.\n"
 
-#: files.c:803
+#: files.c:782
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr ""
 
-#: files.c:1096
+#: files.c:1071
 msgid "Multiple include guards may be useful for:\n"
 msgstr ""
 
-#: init.c:393
+#: init.c:400
 #, fuzzy
 msgid "cppchar_t must be an unsigned type"
 msgstr "διπλός προσδιοριστής μηνύματος"
 
-#: init.c:397
+#: init.c:404
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr ""
 
-#: init.c:404
+#: init.c:411
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr ""
 
-#: init.c:407
+#: init.c:414
 msgid "target char is less than 8 bits wide"
 msgstr ""
 
-#: init.c:411
+#: init.c:418
 msgid "target wchar_t is narrower than target char"
 msgstr ""
 
-#: init.c:415
+#: init.c:422
 msgid "target int is narrower than target char"
 msgstr ""
 
-#: init.c:420
+#: init.c:427
 msgid "CPP half-integer narrower than CPP character"
 msgstr ""
 
-#: init.c:424
+#: init.c:431
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr ""
 
-#: lex.c:274
+#: lex.c:271
 msgid "backslash and newline separated by space"
 msgstr ""
 
-#: lex.c:279
+#: lex.c:276
 #, fuzzy
 msgid "backslash-newline at end of file"
 msgstr "μη έγκυρη διαφυγή με πισωκάθετο στο τέλος του αλφαριθμητικού"
 
-#: lex.c:294
+#: lex.c:291
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr ""
 
-#: lex.c:301
+#: lex.c:298
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr ""
 
-#: lex.c:347
+#: lex.c:344
 msgid "\"/*\" within comment"
 msgstr ""
 
-#: lex.c:405
+#: lex.c:402
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr ""
 
-#: lex.c:414
+#: lex.c:411
 #, fuzzy
 msgid "null character(s) ignored"
 msgstr "μη έγκυρος χαρακτήρας στο αρχείο: "
 
-#: lex.c:449
-msgid "'$' in identifier or number"
-msgstr ""
+#: lex.c:448
+#, fuzzy, c-format
+msgid "`%.*s' is not in NFKC"
+msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: lex.c:510
+#: lex.c:451
+#, fuzzy, c-format
+msgid "`%.*s' is not in NFC"
+msgstr "το `%s' δεν είναι κανονικό αρχείο"
+
+#: lex.c:539
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.c:518
+#: lex.c:547
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:614
+#: lex.c:647
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:805
+#: lex.c:838
 #, fuzzy
 msgid "no newline at end of file"
 msgstr "%s: πρόωρο τέλος αρχείου"
 
-#: lex.c:948 traditional.c:162
+#: lex.c:990 traditional.c:162
 #, fuzzy
 msgid "unterminated comment"
 msgstr "Μη τερματισμένη εντολή `s'"
 
-#: lex.c:959
+#: lex.c:1001
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:961
+#: lex.c:1003
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:966
+#: lex.c:1008
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:1230
+#: lex.c:1331
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "%s: αδύνατο το άνοιγμα του %s: %m\n"
@@ -732,104 +751,104 @@ msgstr "μη έγκυρο μήκος γραμμής: %s"
 msgid "could not determine date and time"
 msgstr "Δεν μπόρεσα να ανοίξω το αρχείο %s"
 
-#: macro.c:400
+#: macro.c:391
 #, fuzzy
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "μη έγκυρος αρχικός αριθμός γραμμής: `%s'"
 
-#: macro.c:483
+#: macro.c:474
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr ""
 
-#: macro.c:521
+#: macro.c:512
 #, fuzzy
 msgid "ISO C99 requires rest arguments to be used"
 msgstr "Κακή αίτηση παραμέτρων"
 
-#: macro.c:526
+#: macro.c:517
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr ""
 
-#: macro.c:531
+#: macro.c:522
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr ""
 
-#: macro.c:642 traditional.c:675
+#: macro.c:633 traditional.c:675
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr ""
 
-#: macro.c:745
+#: macro.c:736
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr ""
 
-#: macro.c:1261
+#: macro.c:1252
 #, fuzzy, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#: macro.c:1306
+#: macro.c:1298
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr ""
 
-#: macro.c:1314
+#: macro.c:1306
 msgid "macro parameters must be comma-separated"
 msgstr ""
 
-#: macro.c:1331
+#: macro.c:1323
 msgid "parameter name missing"
 msgstr ""
 
-#: macro.c:1348
+#: macro.c:1340
 msgid "anonymous variadic macros were introduced in C99"
 msgstr ""
 
-#: macro.c:1353
+#: macro.c:1345
 msgid "ISO C does not permit named variadic macros"
 msgstr ""
 
-#: macro.c:1362
+#: macro.c:1354
 msgid "missing ')' in macro parameter list"
 msgstr ""
 
-#: macro.c:1439
+#: macro.c:1432
 #, fuzzy
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "Κακή αίτηση παραμέτρων"
 
-#: macro.c:1463
+#: macro.c:1456
 msgid "missing whitespace after the macro name"
 msgstr ""
 
-#: macro.c:1493
+#: macro.c:1486
 msgid "'#' is not followed by a macro parameter"
 msgstr ""
 
-#: macro.c:1512
+#: macro.c:1505
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr ""
 
-#: macro.c:1608
+#: macro.c:1603
 #, fuzzy, c-format
 msgid "\"%s\" redefined"
 msgstr "αόριστο"
 
-#: macro.c:1613
+#: macro.c:1608
 #, fuzzy
 msgid "this is the location of the previous definition"
 msgstr "αυτή είναι η θέση του πρώτου ορισμού"
 
-#: macro.c:1663
+#: macro.c:1658
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr ""
 
-#: macro.c:1686
+#: macro.c:1681
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr ""
@@ -1680,6 +1699,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #, fuzzy
 #~ msgid "unknown string token %s\n"
 #~ msgstr "Άγνωστή επιλογή για το `s'"
+
+# src/main.c:663
+#, fuzzy
+#~ msgid "unknown escape sequence: '\\%03o'"
+#~ msgstr "Άγνωστη συμβολοσειρά `%s'"
 
 #~ msgid "invalid option %s"
 #~ msgstr "μη έγκυρη επιλογή %s"
