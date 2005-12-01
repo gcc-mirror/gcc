@@ -1,3 +1,11 @@
+2005-12-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+        PR c/13384
+	* gcc.dg/pr17730-1.c: Adjust.
+	* gcc.dg/lvalue1.c (main): Likewise.
+	* gcc.dg/lvalue-2.c: Likewise.
+	* g++.dg/pr7503-3.C
+
 2005-12-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.target/powerpc/pr18096-1.c: Be more liberal about possible
