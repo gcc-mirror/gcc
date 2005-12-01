@@ -8,5 +8,5 @@ void mkcatdefs(char *fname)
 {
   char line [2147483647];
   f(line);
-} /* { dg-warning "stack frame too large" "stack frame too large" } */
+} /* { dg-warning "too large" "stack frame too large" } */
 
