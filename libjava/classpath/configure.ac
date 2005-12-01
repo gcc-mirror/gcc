@@ -112,7 +112,9 @@ AC_ARG_ENABLE([alsa],
                 no) COMPILE_ALSA=no ;;
                 *) COMPILE_ALSA=yes ;;
               esac],
-	      [AC_CHECK_HEADERS([alsa/asoundlib.h],COMPILE_ALSA=yes,COMPILE_ALSA=no)])
+	      [AC_CHECK_HEADERS([alsa/asoundlib.h],
+				[AC_CHECK_LIB([asound], [snd_seq_open], COMPILE_ALSA=yes,COMPILE_ALSA=no)],
+				COMPILE_ALSA=no)])
 AM_CONDITIONAL(CREATE_ALSA_LIBRARIES, test "x${COMPILE_ALSA}" = xyes)
 
 dnl -----------------------------------------------------------
