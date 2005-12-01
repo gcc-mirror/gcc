@@ -1,3 +1,8 @@
+2005-11-30  Dale Johannesen  <dalej@apple.com>
+
+	PR rtl-opt/24930
+	* gcc.c-torture/compile/pr24930.c:  New.
+
 2005-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/19275

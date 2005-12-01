@@ -3189,13 +3189,15 @@ find_split_point (rtx *loc, rtx insn)
 	  rtx dest = XEXP (SET_DEST (x), 0);
 	  enum machine_mode mode = GET_MODE (dest);
 	  unsigned HOST_WIDE_INT mask = ((HOST_WIDE_INT) 1 << len) - 1;
+	  rtx or_mask;
 
 	  if (BITS_BIG_ENDIAN)
 	    pos = GET_MODE_BITSIZE (mode) - len - pos;
 
+	  or_mask = gen_int_mode (src << pos, mode);
 	  if (src == mask)
 	    SUBST (SET_SRC (x),
-		   simplify_gen_binary (IOR, mode, dest, GEN_INT (src << pos)));
+		   simplify_gen_binary (IOR, mode, dest, or_mask));
 	  else
 	    {
 	      rtx negmask = gen_int_mode (~(mask << pos), mode);
@@ -3203,7 +3205,7 @@ find_split_point (rtx *loc, rtx insn)
 		     simplify_gen_binary (IOR, mode,
 				          simplify_gen_binary (AND, mode,
 							       dest, negmask),
-					  GEN_INT (src << pos)));
+					  or_mask));
 	    }
 
 	  SUBST (SET_DEST (x), dest);
