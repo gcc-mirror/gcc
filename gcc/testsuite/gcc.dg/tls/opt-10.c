@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fpic" } */
+/* { dg-require-effective-target tls } */
 
 /* The web pass was creating unrecognisable pic_load_dot_plus_four insns
    on ARM.  */
