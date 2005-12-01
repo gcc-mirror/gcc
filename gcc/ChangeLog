@@ -1,3 +1,8 @@
+2005-12-01  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary): Use fold_build2, not
+	fold (build (...)).
+
 2005-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/ms1/ms1.c (ms1_reorg_hazard): Don't count noop moves.

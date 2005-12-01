@@ -8427,9 +8427,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		    {
 		      tree tmp = TREE_OPERAND (arg0, 1);
 		      tmp = build_function_call_expr (cosfn, tmp);
-		      return fold (build (RDIV_EXPR, type,
+		      return fold_build2 (RDIV_EXPR, type,
 					  build_real (type, dconst1),
-					  tmp));
+					  tmp);
 		    }
 		}
 	    }
