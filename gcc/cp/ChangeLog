@@ -1,5 +1,16 @@
 2005-12-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* parser.c (cp_parser_make_typename_type): Call make_typename_type
+	with tf_none instead of magic value 0.
+	(cp_parser_explicit_instantiation): Call do_type_instantiation
+	with tf_error instead of magic value 1.
+	(cp_parser_elaborated_type_specifier): Call make_typename_type
+	with tf_error instead of magic value 1.
+	(cp_parser_class_name): Likewise.
+	(cp_parser_lookup_name): Likewise.
+
+2005-12-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* parser.c (cp_parser_declaration): Set token2.type to CPP_EOF,
 	not RID_MAX.
 

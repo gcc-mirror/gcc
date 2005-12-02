@@ -2417,7 +2417,7 @@ cp_parser_make_typename_type (cp_parser *parser, tree scope, tree id)
   if (TREE_CODE (id) == IDENTIFIER_NODE)
     {
       result = make_typename_type (scope, id, typename_type,
-				   /*complain=*/0);
+                                   /*complain=*/tf_none);
       if (result == error_mark_node)
 	cp_parser_diagnose_invalid_type_name (parser, scope, id);
       return result;
@@ -9243,7 +9243,8 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 	 template instantiation.  */
       pop_deferring_access_checks ();
       if (type)
-	do_type_instantiation (type, extension_specifier, /*complain=*/1);
+	do_type_instantiation (type, extension_specifier,
+                               /*complain=*/tf_error);
     }
   else
     {
@@ -9953,7 +9954,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	       && tag_type == typename_type)
 	type = make_typename_type (parser->scope, decl,
 				   typename_type,
-				   /*complain=*/1);
+				   /*complain=*/tf_error);
       else
 	type = TREE_TYPE (decl);
     }
@@ -12588,7 +12589,8 @@ cp_parser_class_name (cp_parser *parser,
   /* If this is a typename, create a TYPENAME_TYPE.  */
   if (typename_p && decl != error_mark_node)
     {
-      decl = make_typename_type (scope, decl, typename_type, /*complain=*/1);
+      decl = make_typename_type (scope, decl, typename_type,
+                                 /*complain=*/tf_error);
       if (decl != error_mark_node)
 	decl = TYPE_NAME (decl);
     }
@@ -14609,7 +14611,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 		 A::B' should be considered a type-name, even if `A'
 		 is dependent.  */
 	      type = make_typename_type (parser->scope, name, tag_type,
-					 /*complain=*/1);
+					 /*complain=*/tf_error);
 	      decl = TYPE_NAME (type);
 	    }
 	  else if (is_template
@@ -14618,7 +14620,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 						  CPP_CLOSE_PAREN)))
 	    decl = make_unbound_class_template (parser->scope,
 						name, NULL_TREE,
-						/*complain=*/1);
+						/*complain=*/tf_error);
 	  else
 	    decl = build_qualified_name (/*type=*/NULL_TREE,
 					 parser->scope, name,
