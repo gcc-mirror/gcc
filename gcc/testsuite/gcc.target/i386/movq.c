@@ -1,5 +1,7 @@
-/* { dg-do compile { target "i?86*-*-*" } }
+/* { dg-do compile }
 /* { dg-options "-Os -march=pentium4 -mtune=prescott" } */
+/* { dg-require-effective-target ilp32 } */
+
 register char foo asm("edi");
 char x;
 int bar() {

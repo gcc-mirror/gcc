@@ -1,3 +1,10 @@
+2005-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/25199
+	* config/i386/i386.md (movqi_1): Only force imovx for alternative
+	5 if operand 1 is not aligned.  Undo previous constraint change.
+	* config/i386/predicates.md (aligned_operand): Use MEM_ALIGN.
+
 2005-12-02  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/25176

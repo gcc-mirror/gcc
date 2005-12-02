@@ -1,3 +1,10 @@
+2005-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/25199
+	* gcc.target/i386/movq-2.c: New test.
+	* gcc.target/i386/movq.c: Remove target i?86, instead add
+	dg-require-effective-target ilp32.
+
 2005-12-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/ftell_1.f90: Modify testcase so that it doesn't
