@@ -1,3 +1,7 @@
+2005-12-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (pa_secondary_reload): Revise initialization of variable regno.
+
 2005-12-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* ggc.h (GGC_RESIZEVEC): New.
