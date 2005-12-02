@@ -5577,8 +5577,7 @@ static enum reg_class
 pa_secondary_reload (bool in_p, rtx x, enum reg_class class,
 		     enum machine_mode mode, secondary_reload_info *sri)
 {
-  int is_symbolic;
-  int regno = -1;
+  int is_symbolic, regno;
 
   /* Handle the easy stuff first.  */
   if (class == R1_REGS)
@@ -5590,6 +5589,8 @@ pa_secondary_reload (bool in_p, rtx x, enum reg_class class,
       if (class == BASE_REG_CLASS && regno < FIRST_PSEUDO_REGISTER)
 	return NO_REGS;
     }
+  else
+    regno = -1;
 
   /* If we have something like (mem (mem (...)), we can safely assume the
      inner MEM will end up in a general register after reloading, so there's
