@@ -1312,10 +1312,10 @@ java_create_object (tree type)
 		     ? alloc_object_node
 		     : alloc_no_finalizer_node);
   
-  return build (CALL_EXPR, promote_type (type),
-		build_address_of (alloc_node),
-		build_tree_list (NULL_TREE, build_class_ref (type)),
-		NULL_TREE);
+  return build3 (CALL_EXPR, promote_type (type),
+		 build_address_of (alloc_node),
+		 build_tree_list (NULL_TREE, build_class_ref (type)),
+		 NULL_TREE);
 }
 
 static void
