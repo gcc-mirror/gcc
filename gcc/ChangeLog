@@ -1,5 +1,11 @@
 2005-12-02  Alan Modra  <amodra@bigpond.net.au>
 
+	PR target/21017
+	* combine.c (simplify_logical <IOR>): Simplify more patterns to
+	rotates.
+
+2005-12-02  Alan Modra  <amodra@bigpond.net.au>
+
 	PR middle-end/25176
 	* function.c (expand_function_end): Emit blockage for unwinder
 	after return label.
