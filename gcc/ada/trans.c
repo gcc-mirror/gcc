@@ -4632,7 +4632,7 @@ gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 	       && TREE_CODE_CLASS (TREE_CODE (op)) != tcc_constant)
 	{
 	  tree new_var = create_tmp_var (TREE_TYPE (op), "A");
-	  tree mod = build (MODIFY_EXPR, TREE_TYPE (op), new_var, op);
+	  tree mod = build2 (MODIFY_EXPR, TREE_TYPE (op), new_var, op);
 
 	  TREE_ADDRESSABLE (new_var) = 1;
 
