@@ -1,3 +1,9 @@
+2005-12-01  Steven G. Kargl  <kargls@comcast.net>
+
+	PR libgfortran/25149
+	* intrinsics/abort.c: Add external abort_ to allow linking when 
+	invoking -std=f95 in testsuite.
+
 2005-11-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* libgfortran.h (ILP32 typedefs): Define _UINT8_T, _UINT32_T and
