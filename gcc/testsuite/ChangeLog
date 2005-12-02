@@ -1,3 +1,12 @@
+2005-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/builtins/fprintf.c,
+	gcc.c-torture/execute/builtins/fputs-lib.c,
+	gcc.c-torture/execute/builtins/fputs.c,
+	gcc.c-torture/execute/builtins/lib/fprintf.c,
+	gcc.c-torture/execute/builtins/lib/printf.c,
+	gcc.c-torture/execute/builtins/printf.c: Test the unlocked style.
+
 2005-11-30  Dale Johannesen  <dalej@apple.com>
 
 	PR rtl-opt/24930

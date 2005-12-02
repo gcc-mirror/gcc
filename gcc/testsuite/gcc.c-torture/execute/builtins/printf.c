@@ -6,6 +6,7 @@
    Written by Kaveh R. Ghazi, 12/4/2000.  */
 
 extern int printf (const char *, ...);
+extern int printf_unlocked (const char *, ...);
 extern void abort(void);
 
 void
@@ -28,6 +29,7 @@ main_test (void)
   if (s3 != s2+1 || *s3 != 0)
     abort();
   
+  printf ("");
   printf ("\n");
   printf ("hello world\n");
   
@@ -38,4 +40,8 @@ main_test (void)
      prototypes are set correctly too.  */
   __builtin_putchar ('\n');
   __builtin_puts ("hello");
+  /* Check the unlocked style, these evaluate to nothing to avoid
+     problems on systems without the unlocked functions.  */
+  printf_unlocked ("");
+  __builtin_printf_unlocked ("");
 }

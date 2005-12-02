@@ -6,6 +6,7 @@
    Written by Kaveh R. Ghazi, 1/7/2001.  */
 
 #include <stdio.h>
+extern int fprintf_unlocked (FILE *, const char *, ...);
 extern void abort(void);
 
 void
@@ -15,6 +16,8 @@ main_test (void)
   const char *const s1 = "hello world";
   const char *const s2[] = { s1, 0 }, *const*s3;
   
+  fprintf (*s_ptr, "");
+  fprintf (*s_ptr, "%s", "");
   fprintf (*s_ptr, "%s", "hello");
   fprintf (*s_ptr, "%s", "\n");
   fprintf (*s_ptr, "%s", *s2);
@@ -49,4 +52,10 @@ main_test (void)
   /* Test at least one instance of the __builtin_ style.  We do this
      to ensure that it works and that the prototype is correct.  */
   __builtin_fprintf (*s_ptr, "%s", "hello world\n");
+  /* Check the unlocked style, these evaluate to nothing to avoid
+     problems on systems without the unlocked functions.  */
+  fprintf_unlocked (*s_ptr, "");
+  __builtin_fprintf_unlocked (*s_ptr, "");
+  fprintf_unlocked (*s_ptr, "%s", "");
+  __builtin_fprintf_unlocked (*s_ptr, "%s", "");
 }

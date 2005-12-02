@@ -1,3 +1,14 @@
+2005-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/25022
+	* builtins.c (expand_builtin_printf, expand_builtin_fprintf,
+	fold_builtin_fputs): Lookup the explicit replacement functions
+	for any unlocked stdio builtin transformations.
+
+	PR middle-end/25158
+	* builtins.c (fold_builtin_fputs): Defer check for missing
+	replacement functions.
+
 2005-11-30  Dale Johannesen  <dalej@apple.com>
             Andrew Pinski  <pinskia@physics.uc.edu>
 
