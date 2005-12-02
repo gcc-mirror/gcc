@@ -1,3 +1,72 @@
+2005-12-02  Jon Grimm  <jgrimm2@us.ibm.com>
+	    Janis Johnson  <janis187@us.ibm.com>
+	    David Edelsohn  <dje@watson.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* dfp.h, dfp.c: New files.
+	* Makefile.in (DECNUM, DECNUMINC, LIBDECNUMBER): New variables.
+	(DECNUM_H): Likewise.
+	(LIBDEPS, LIBS, BACKEND): Append $(LIBDECNUMBER).
+	(INCLUDES): Append $(DECNUMINC).
+	(OBJS-common): Add dfp.o.
+	(dfp.o): New rule.
+	* real.h (EXP_BITS): Pinch one bit to ..
+	(struct real_value): Add decimal field.
+	(real_format): Change table size, update documentation.
+	(REAL_MODE_FORMAT): Update for to handle float, decimal float.
+	(real_from_string3): Declare.
+	(decimal_single_format): Declare.
+	(decimal_double_format): Declare.
+	(decimal_quad_format): Declare.
+	(REAL_VALUE_TO_TARGET_DECIMAL32): New.
+	(REAL_VALUE_TO_TARGET_DECIMAL64): New.
+	(REAL_VALUE_TO_TARGET_DECIMAL128): New.
+	* real.c: Include dfp.h.
+	(normalize): Early return for decimal floats.
+	(do_add): Zero decimal field.
+	(do_compare): Call do_decimal_compare for decimal floats.
+	(do_fix_trunc): Likewise, call decimal_do_fix_trunc.
+	(real_arithmetic): Call decimal_real_arithmetic for decimal
+	floating point operands.
+	(real_identical): If a and b are of differing radix, return false.
+	(real_to_integer): Call decimal_real_to_integer if the value is a
+	decimal float.
+	(real_to_integer2): Likewise, call decimal_real_to_integer2.
+	(real_to_decimal): Likewise, call decimal_real_to_decimal.
+	(real_to_hexadecimal): Place "N/A" in the return string for
+	decimal float.
+	(real_from_string3): New variant, given a mode.
+	(real_maxval): Use decimal_real_maxval for decimal floats.
+	(round_for_format): Use decimal_round_for_format for decimals.
+	(real_convert): Use decimal_real_convert where appropriate.
+	(significand_size): Handle base 10.
+	(encode_decimal_single, decode_decimal_single,
+	encode_decimal_double, decode_decimal_double, encode_decimal_quad,
+	decode_decimal_quad): New functions.
+	(decimal_single_format): New.
+	(decimal_double_format): New.
+	(decimal_quad_format): New.
+	* machmode.def: Add SD, DD and TD decimal floating point modes.
+	* machmode.h (FLOAT_MODE_P, SCALAR_FLOAT_MODE_P, MODES_WIDEN_P):
+	Include MODE_DECIMAL_FLOAT.
+	(DECIMAL_FLOAT_MODE_P): New.
+	* mode-classes.def (MODE_DECIMAL_FLOAT): New mode class.
+	* genmodes.c (struct mode_data): Add counter field.
+	(struct mode_data): Update comment for format.
+	(blank_mode): Initialise counter field.
+	(new_mode): Increment counter field for each mode defined.
+	(complete_mode): Handle MODE_DECIMAL_FLOAT, update check for mode
+	using a format.
+	(make_complex_modes): Handle modes containing `D'.
+	(DECIMAL_FLOAT_MODE, FRACTIONAL_DECIMAL_FLOAT_MODE): New.
+	(make_decimal_float_mode): New.
+	(reset_float_format): Handle MODE_DECIMAL_FLOAT.
+	(cmp_modes): Compare counter field if other characteristics
+	similar.
+	(emit_real_format_for_mode): Support formats for decimal floats.
+	* doc/rtl.texi (Machine Modes): Document SD, DD and TDmodes.
+	Document MODE_DECIMAL_FLOAT.
+
 2005-12-02  Alan Modra  <amodra@bigpond.net.au>
 
 	* simplify-rtx.c (simplify_plus_minus): Do simplify constants.

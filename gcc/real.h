@@ -35,7 +35,7 @@ enum real_value_class {
 };
 
 #define SIGNIFICAND_BITS	(128 + HOST_BITS_PER_LONG)
-#define EXP_BITS		(32 - 5)
+#define EXP_BITS		(32 - 6)
 #define MAX_EXP			((1 << (EXP_BITS - 1)) - 1)
 #define SIGSZ			(SIGNIFICAND_BITS / HOST_BITS_PER_LONG)
 #define SIG_MSB			((unsigned long)1 << (HOST_BITS_PER_LONG - 1))
@@ -46,6 +46,7 @@ struct real_value GTY(())
      sure they're packed together, otherwise REAL_VALUE_TYPE_SIZE will
      be miscomputed.  */
   unsigned int /* ENUM_BITFIELD (real_value_class) */ cl : 2;
+  unsigned int decimal : 1;
   unsigned int sign : 1;
   unsigned int signalling : 1;
   unsigned int canonical : 1;
@@ -155,12 +156,20 @@ struct real_format
 };
 
 
-/* The target format used for each floating floating point mode.
-   Indexed by MODE - QFmode.  */
+/* The target format used for each floating point mode.
+   Float modes are followed by decimal float modes, with entries for
+   float modes indexed by (MODE - first float mode), and entries for
+   decimal float modes indexed by (MODE - first decimal float mode) +
+   the number of float modes.  */
 extern const struct real_format *
-  real_format_for_mode[MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1];
+  real_format_for_mode[MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1
+		       + MAX_MODE_DECIMAL_FLOAT - MIN_MODE_DECIMAL_FLOAT + 1];
 
-#define REAL_MODE_FORMAT(MODE) (real_format_for_mode[(MODE) - MIN_MODE_FLOAT])
+#define REAL_MODE_FORMAT(MODE)						\
+  (real_format_for_mode[DECIMAL_FLOAT_MODE_P (MODE)			\
+			? ((MODE - MIN_MODE_DECIMAL_FLOAT)		\
+			   + (MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1))	\
+			: (MODE - MIN_MODE_FLOAT)])
 
 /* The following macro determines whether the floating point format is
    composite, i.e. may contain non-consecutive mantissa bits, in which
@@ -214,6 +223,8 @@ extern void real_to_integer2 (HOST_WIDE_INT *, HOST_WIDE_INT *,
 
 /* Initialize R from a decimal or hexadecimal string.  */
 extern void real_from_string (REAL_VALUE_TYPE *, const char *);
+/* Wrapper to allow different internal representation for decimal floats. */
+extern void real_from_string3 (REAL_VALUE_TYPE *, const char *, enum machine_mode);
 
 /* Initialize R from an integer pair HIGH/LOW.  */
 extern void real_from_integer (REAL_VALUE_TYPE *, enum machine_mode,
@@ -260,6 +271,9 @@ extern const struct real_format i370_double_format;
 extern const struct real_format c4x_single_format;
 extern const struct real_format c4x_extended_format;
 extern const struct real_format real_internal_format;
+extern const struct real_format decimal_single_format;
+extern const struct real_format decimal_double_format;
+extern const struct real_format decimal_quad_format;
 
 
 /* ====================================================================== */
@@ -301,6 +315,19 @@ extern const struct real_format real_internal_format;
 
 #define REAL_VALUE_FROM_UNSIGNED_INT(r, lo, hi, mode) \
   real_from_integer (&(r), mode, lo, hi, 1)
+
+/* Real values to IEEE 754R decimal floats.  */
+
+/* IN is a REAL_VALUE_TYPE.  OUT is an array of longs.  */
+#define REAL_VALUE_TO_TARGET_DECIMAL128(IN, OUT) \
+  real_to_target (OUT, &(IN), mode_for_size (128, MODE_DECIMAL_FLOAT, 0))
+
+#define REAL_VALUE_TO_TARGET_DECIMAL64(IN, OUT) \
+  real_to_target (OUT, &(IN), mode_for_size (64, MODE_DECIMAL_FLOAT, 0))
+
+/* IN is a REAL_VALUE_TYPE.  OUT is a long.  */
+#define REAL_VALUE_TO_TARGET_DECIMAL32(IN, OUT) \
+  ((OUT) = real_to_target (NULL, &(IN), mode_for_size (32, MODE_DECIMAL_FLOAT, 0)))
 
 extern REAL_VALUE_TYPE real_value_truncate (enum machine_mode,
 					    REAL_VALUE_TYPE);
