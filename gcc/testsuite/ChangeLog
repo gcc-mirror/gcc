@@ -1,3 +1,10 @@
+2005-12-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/ftell_1.f90: Modify testcase so that it doesn't
+	fail on CRLF platforms.
+	* gfortran.dg/ftell_2.f90: Likewise.
+	* gfortran.dg/modulo_1.f90: New test.
+
 2005-12-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/24103
