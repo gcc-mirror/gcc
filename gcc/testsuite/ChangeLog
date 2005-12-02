@@ -1,3 +1,9 @@
+2005-12-01  Bernhard Fischer  <rep.nop@aon.at>
+
+	PR fortran/21302
+	* gfortran.dg/line_length_1.f: New test.
+	* gfortran.dg/line_length_2.f90: Ditto.
+
 2005-11-30  Dale Johannesen  <dalej@apple.com>
 
 	PR rtl-opt/24930

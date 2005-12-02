@@ -1,3 +1,17 @@
+2005-12-01  Bernhard Fischer <rep.nop@aon.at>
+
+	PR fortran/21302
+	* lang.opt: New options -ffree-line-length- and -ffree-line-length-none.
+	* gfortran.h: Add free_line_length and add description of
+	free_line_length and fixed_line_length.
+	* options.c (gfc_init_options, gfc_handle_option): Initialize
+	and set free_line_length and fixed_line_length.
+	* scanner.c (load_line): Set free_line_length to 132 and
+	fixed_line_length to 72 or user requested values.
+	* scanner.c: Typo in comment.
+	* invoke.texi: Document -ffree-line-length- and
+	-ffree-line-length-none
+
 2005-11-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24223
