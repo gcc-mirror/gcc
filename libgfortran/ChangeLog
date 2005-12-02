@@ -1,3 +1,21 @@
+2005-12-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/24919
+	* io/list_read.c (eat_separator, finish_separator,
+	read_character): Handle CRLF separators correctly during reads.
+	(nml_query): Use the HAVE_CRLF macro to print adequate newlines.
+	* io/io.h (st_parameter_dt): Add comment about the possible
+	values for sf_seen_eor.
+	* io/unix.c (tempfile, regular_file): HAVE_CRLF doesn't imply
+	that O_BINARY is defined, so we add that condition.
+	(stream_at_bof): Fix typo in comment.
+	* io/transfer.c (read_sf): Handle correctly CRLF, setting
+	sf_seen_eor value to 2 instead of 1.
+	(formatted_transfer_scalar): Use the sf_seen_eor value to
+	handle CRLF the right way.
+	* io/write.c (nml_write_obj, namelist_write): Use CRLF as newline
+	when HAVE_CRLF is defined.
+
 2005-12-01  Steven G. Kargl  <kargls@comcast.net>
 
 	PR libgfortran/25149

@@ -370,12 +370,16 @@ typedef struct st_parameter_dt
 	  int skips;
 	  /* Number of spaces to be done for T and X-editing.  */
 	  int pending_spaces;
+	  /* Whether an EOR condition was encountered. Value is:
+	       0 if no EOR was encountered
+	       1 if an EOR was encountered due to a 1-byte marker (LF)
+	       2 if an EOR was encountered due to a 2-bytes marker (CRLF) */
+	  int sf_seen_eor;
 	  unit_advance advance_status;
 
 	  unsigned reversion_flag : 1; /* Format reversion has occurred.  */
 	  unsigned first_item : 1;
 	  unsigned seen_dollar : 1;
-	  unsigned sf_seen_eor : 1;
 	  unsigned eor_condition : 1;
 	  unsigned no_leading_blank : 1;
 	  unsigned char_flag : 1;
