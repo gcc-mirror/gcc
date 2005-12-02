@@ -1,3 +1,9 @@
+2005-12-02  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/25176
+	* function.c (expand_function_end): Emit blockage for unwinder
+	after return label.
+
 2005-12-01  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.h (TREE_OVERFLOW): Make this flag/predicate specific to
