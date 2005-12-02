@@ -1511,17 +1511,17 @@ generate_one_element_ref (struct sra_elt *elt, tree base)
 	if (DECL_FIELD_CONTEXT (field) != TYPE_MAIN_VARIANT (TREE_TYPE (base)))
 	  field = find_compatible_field (TREE_TYPE (base), field);
 
-        return build (COMPONENT_REF, elt->type, base, field, NULL);
+        return build3 (COMPONENT_REF, elt->type, base, field, NULL);
       }
 
     case ARRAY_TYPE:
-      return build (ARRAY_REF, elt->type, base, elt->element, NULL, NULL);
+      return build4 (ARRAY_REF, elt->type, base, elt->element, NULL, NULL);
 
     case COMPLEX_TYPE:
       if (elt->element == integer_zero_node)
-	return build (REALPART_EXPR, elt->type, base);
+	return build1 (REALPART_EXPR, elt->type, base);
       else
-	return build (IMAGPART_EXPR, elt->type, base);
+	return build1 (IMAGPART_EXPR, elt->type, base);
 
     default:
       gcc_unreachable ();
@@ -1561,17 +1561,17 @@ generate_copy_inout (struct sra_elt *elt, bool copy_out, tree expr,
       c = lookup_element (elt, integer_one_node, NULL, NO_INSERT);
       i = c->replacement;
 
-      t = build (COMPLEX_EXPR, elt->type, r, i);
-      t = build (MODIFY_EXPR, void_type_node, expr, t);
+      t = build2 (COMPLEX_EXPR, elt->type, r, i);
+      t = build2 (MODIFY_EXPR, void_type_node, expr, t);
       SSA_NAME_DEF_STMT (expr) = t;
       append_to_statement_list (t, list_p);
     }
   else if (elt->replacement)
     {
       if (copy_out)
-	t = build (MODIFY_EXPR, void_type_node, elt->replacement, expr);
+	t = build2 (MODIFY_EXPR, void_type_node, elt->replacement, expr);
       else
-	t = build (MODIFY_EXPR, void_type_node, expr, elt->replacement);
+	t = build2 (MODIFY_EXPR, void_type_node, expr, elt->replacement);
       append_to_statement_list (t, list_p);
     }
   else
@@ -1606,8 +1606,8 @@ generate_element_copy (struct sra_elt *dst, struct sra_elt *src, tree *list_p)
 
       gcc_assert (src->replacement);
 
-      t = build (MODIFY_EXPR, void_type_node, dst->replacement,
-		 src->replacement);
+      t = build2 (MODIFY_EXPR, void_type_node, dst->replacement,
+		  src->replacement);
       append_to_statement_list (t, list_p);
     }
 }
@@ -1638,7 +1638,7 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
       gcc_assert (elt->is_scalar);
       t = fold_convert (elt->type, integer_zero_node);
 
-      t = build (MODIFY_EXPR, void_type_node, elt->replacement, t);
+      t = build2 (MODIFY_EXPR, void_type_node, elt->replacement, t);
       append_to_statement_list (t, list_p);
     }
 }
@@ -1650,7 +1650,7 @@ static void
 generate_one_element_init (tree var, tree init, tree *list_p)
 {
   /* The replacement can be almost arbitrarily complex.  Gimplify.  */
-  tree stmt = build (MODIFY_EXPR, void_type_node, var, init);
+  tree stmt = build2 (MODIFY_EXPR, void_type_node, var, init);
   gimplify_and_add (stmt, list_p);
 }
 

@@ -2164,21 +2164,21 @@ build_assert_expr_for (tree cond, tree v)
 
   if (COMPARISON_CLASS_P (cond))
     {
-      tree a = build (ASSERT_EXPR, TREE_TYPE (v), v, cond); 
-      assertion = build (MODIFY_EXPR, TREE_TYPE (v), n, a);
+      tree a = build2 (ASSERT_EXPR, TREE_TYPE (v), v, cond); 
+      assertion = build2 (MODIFY_EXPR, TREE_TYPE (v), n, a);
     }
   else if (TREE_CODE (cond) == TRUTH_NOT_EXPR)
     {
       /* Given !V, build the assignment N = false.  */
       tree op0 = TREE_OPERAND (cond, 0);
       gcc_assert (op0 == v);
-      assertion = build (MODIFY_EXPR, TREE_TYPE (v), n, boolean_false_node);
+      assertion = build2 (MODIFY_EXPR, TREE_TYPE (v), n, boolean_false_node);
     }
   else if (TREE_CODE (cond) == SSA_NAME)
     {
       /* Given V, build the assignment N = true.  */
       gcc_assert (v == cond);
-      assertion = build (MODIFY_EXPR, TREE_TYPE (v), n, boolean_true_node);
+      assertion = build2 (MODIFY_EXPR, TREE_TYPE (v), n, boolean_true_node);
     }
   else
     gcc_unreachable ();
@@ -2781,7 +2781,7 @@ process_assert_insertions_for (tree name, assert_locus_t loc)
   edge_iterator ei;
   edge e;
 
-  cond = build (loc->comp_code, boolean_type_node, name, loc->val);
+  cond = build2 (loc->comp_code, boolean_type_node, name, loc->val);
   assert_expr = build_assert_expr_for (cond, name);
 
   if (loc->e)
@@ -3957,7 +3957,7 @@ simplify_cond_using_ranges (tree stmt)
 		}
 
 	      COND_EXPR_COND (stmt)
-		= build (EQ_EXPR, boolean_type_node, op0, new);
+		= build2 (EQ_EXPR, boolean_type_node, op0, new);
 	      update_stmt (stmt);
 
 	      if (dump_file)
@@ -3985,7 +3985,7 @@ simplify_cond_using_ranges (tree stmt)
 		}
 
 	      COND_EXPR_COND (stmt)
-		= build (NE_EXPR, boolean_type_node, op0, new);
+		= build2 (NE_EXPR, boolean_type_node, op0, new);
 	      update_stmt (stmt);
 
 	      if (dump_file)

@@ -1,3 +1,17 @@
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (build_assert_expr_for, process_assert_insertions_for,
+	simplify_cond_using_ranges): Use buildN instead of build.
+	* tree-tailcall.c (adjust_accumulator_values,
+	adjust_return_value): Likewise.
+	* tree-sra.c (generate_one_element_ref, generate_copy_inout,
+	generate_element_copy, generate_element_zero,
+	generate_one_element_init): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_into_cond_1): Likewise.
+	* lambda-code.c (gcc_loop_to_lambda_loop, lbv_to_gcc_expression,
+	lle_to_gcc_expression, lambda_loopnest_to_gcc_loopnest,
+	perfect_nestify): Likewise.
+
 2005-12-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_secondary_reload): Revise initialization of variable regno.
