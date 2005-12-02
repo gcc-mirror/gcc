@@ -1,5 +1,13 @@
 2005-12-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* parser.c (cp_lexer_new_main): Usr GGC_RESIZEVEC instead of
+	ggc_realloc. 
+	(cp_parser_template_argument_list): Use XRESIZEVEC instead of
+	xrealloc. 
+	* class.c (pushclass): Likewise.
+
+2005-12-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* decl2.c (get_priority_info): Use XNEW, not xmalloc.
 	* decl.c (push_switch): Likewise.
 	* lex.c (handle_pragma_implementation): Likewise.
