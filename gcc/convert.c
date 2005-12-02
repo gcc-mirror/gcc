@@ -420,7 +420,7 @@ convert_to_integer (tree type, tree expr)
       expr = fold_build1 (CONVERT_EXPR,
 			  lang_hooks.types.type_for_size (POINTER_SIZE, 0),
 			  expr);
-      return fold_build1 (NOP_EXPR, type, expr);
+      return fold_convert (type, expr);
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
@@ -500,9 +500,7 @@ convert_to_integer (tree type, tree expr)
 	  /* We can pass truncation down through right shifting
 	     when the shift count is a nonpositive constant.  */
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
-	      && tree_int_cst_lt (TREE_OPERAND (expr, 1),
-				  convert (TREE_TYPE (TREE_OPERAND (expr, 1)),
-					   integer_one_node)))
+	      && tree_int_cst_sgn (TREE_OPERAND (expr, 1)) < 0)
 	    goto trunc1;
 	  break;
 
@@ -528,7 +526,7 @@ convert_to_integer (tree type, tree expr)
 		     but (int) a << 32 is undefined and would get a
 		     warning.  */
 
-		  tree t = convert_to_integer (type, integer_zero_node);
+		  tree t = build_int_cst (type, 0);
 
 		  /* If the original expression had side-effects, we must
 		     preserve it.  */

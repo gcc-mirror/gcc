@@ -1,5 +1,12 @@
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
+	* convert.c (convert_to_integer): Use fold_convert instead
+	of fold_build1 (NOP_EXPR, ...).  Use tree_int_cst_sgn < 0
+	instead of comparing against 0.  Use build_int_cst instead
+	of converting integer_zero_node.
+
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
 	* tree-pretty-print.c (op_symbol): Handle LROTATE_EXPR
 	and RROTATE_EXPR.
  
