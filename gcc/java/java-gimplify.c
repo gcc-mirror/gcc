@@ -186,9 +186,9 @@ java_gimplify_labeled_block_expr (tree expr)
   tree t;
 
   DECL_CONTEXT (label) = current_function_decl;
-  t = build (LABEL_EXPR, void_type_node, label);
+  t = build1 (LABEL_EXPR, void_type_node, label);
   if (body != NULL_TREE)
-    t = build (COMPOUND_EXPR, void_type_node, body, t);
+    t = build2 (COMPOUND_EXPR, void_type_node, body, t);
   return t;
 }
 

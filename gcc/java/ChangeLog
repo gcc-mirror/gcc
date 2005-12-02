@@ -1,3 +1,10 @@
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* java-gimplify.c (java_gimplify_labeled_block_expr): Use
+	buildN instead of build.
+	* class.c (finish_class): Likewise.
+	* expr.c (java_create_object): Likewise.
+
 2005-11-28  Tom Tromey  <tromey@redhat.com>
 
 	PR java/18278:
