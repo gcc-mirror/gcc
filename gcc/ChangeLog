@@ -1,3 +1,12 @@
+2005-12-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/24103
+	Backport:
+	2002-08-22  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree.c (simple_cst_equal): Call simple_cst_list_equal to compare
+	CONSTRUCTOR_ELTS pointers.
+
 2005-12-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* version.c: Bump version number.

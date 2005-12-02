@@ -3417,10 +3417,8 @@ simple_cst_equal (tree t1, tree t2)
 			 TREE_STRING_LENGTH (t1)));
 
     case CONSTRUCTOR:
-      if (CONSTRUCTOR_ELTS (t1) == CONSTRUCTOR_ELTS (t2))
-	return 1;
-      else
-	abort ();
+      return simple_cst_list_equal (CONSTRUCTOR_ELTS (t1),
+				    CONSTRUCTOR_ELTS (t2));
 
     case SAVE_EXPR:
       return simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
