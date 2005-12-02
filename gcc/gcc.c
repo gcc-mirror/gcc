@@ -2871,7 +2871,10 @@ execute (void)
 	       we would otherwise have succeeded.  */
 	    if (WTERMSIG (status) == SIGPIPE
 		&& (signal_count || greatest_status >= MIN_FATAL_STATUS))
-	      ;
+	      {
+		signal_count++;
+		ret_code = -1;
+	      }
 	    else
 #endif
 	      fatal ("\
@@ -2880,8 +2883,6 @@ Please submit a full bug report.\n\
 See %s for instructions.",
 		     strsignal (WTERMSIG (status)), commands[i].prog,
 		     bug_report_url);
-	    signal_count++;
-	    ret_code = -1;
 	  }
 	else if (WIFEXITED (status)
 		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)

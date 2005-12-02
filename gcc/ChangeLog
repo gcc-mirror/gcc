@@ -1,3 +1,7 @@
+2005-12-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* gcc.c (execute): Improve readability.
+
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (mark_used_vars): New function.
