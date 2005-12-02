@@ -1279,6 +1279,7 @@ match
 gfc_match_old_kind_spec (gfc_typespec * ts)
 {
   match m;
+  int original_kind;
 
   if (gfc_match_char ('*') != MATCH_YES)
     return MATCH_NO;
@@ -1287,17 +1288,24 @@ gfc_match_old_kind_spec (gfc_typespec * ts)
   if (m != MATCH_YES)
     return MATCH_ERROR;
 
+  original_kind = ts->kind;
+
   /* Massage the kind numbers for complex types.  */
-  if (ts->type == BT_COMPLEX && ts->kind == 8)
-    ts->kind = 4;
-  if (ts->type == BT_COMPLEX && ts->kind == 16)
-    ts->kind = 8;
+  if (ts->type == BT_COMPLEX)
+    {
+      if (ts->kind % 2)
+        {
+          gfc_error ("Old-style type declaration %s*%d not supported at %C",
+                     gfc_basic_typename (ts->type), original_kind);
+          return MATCH_ERROR;
+        }
+      ts->kind /= 2;
+    }
 
   if (gfc_validate_kind (ts->type, ts->kind, true) < 0)
     {
-      gfc_error ("Old-style kind %d not supported for type %s at %C",
-		 ts->kind, gfc_basic_typename (ts->type));
-
+      gfc_error ("Old-style type declaration %s*%d not supported at %C",
+                 gfc_basic_typename (ts->type), original_kind);
       return MATCH_ERROR;
     }
 
