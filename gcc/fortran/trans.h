@@ -576,7 +576,7 @@ struct lang_decl		GTY(())
 #define gfc_todo_error(args...) fatal_error("gfc_todo: Not Implemented: " args)
 
 /* Build an expression with void type.  */
-#define build1_v(code, arg) build(code, void_type_node, arg)
+#define build1_v(code, arg) build1(code, void_type_node, arg)
 #define build2_v(code, arg1, arg2) build2(code, void_type_node, \
                                           arg1, arg2)
 #define build3_v(code, arg1, arg2, arg3) build3(code, void_type_node, \

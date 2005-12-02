@@ -1,3 +1,8 @@
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* trans.h (build1_v): Use build1, not build to build the
+	void typed tree.
+
 2005-12-01  Erik Schnetter  <schnetter@aei.mpg.de>
 
 	* decl.c (gfc_match_old_kind_spec):  Improve handling of old style
