@@ -7493,10 +7493,10 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   f_sav = TREE_CHAIN (f_ovf);
 
   valist = build_va_arg_indirect_ref (valist);
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
-  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+  gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
+  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   /* Count number of gp and fp argument registers used.  */
 
@@ -7505,16 +7505,16 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   if (cfun->va_list_gpr_size)
     {
-      t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
-	         build_int_cst (NULL_TREE, n_gpr));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
+	          build_int_cst (NULL_TREE, n_gpr));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
   if (cfun->va_list_fpr_size)
     {
-      t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
-	         build_int_cst (NULL_TREE, n_fpr));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
+	          build_int_cst (NULL_TREE, n_fpr));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -7531,9 +7531,9 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 	fprintf (stderr, "va_start: n_gpr = %d, n_fpr = %d off %d\n",
 		 (int)n_gpr, (int)n_fpr, off);
 
-      t = build (PLUS_EXPR, TREE_TYPE (ovf), t, build_int_cst (NULL_TREE, off));
+      t = build2 (PLUS_EXPR, TREE_TYPE (ovf), t, build_int_cst (NULL_TREE, off));
 
-      t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+      t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -7543,10 +7543,10 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       || (cfun->va_list_fpr_size && n_fpr < FP_ARG_NUM_REG))
     {
       t = make_tree (TREE_TYPE (sav), return_address_pointer_rtx);
-      t = build (PLUS_EXPR, TREE_TYPE (sav), t,
-	         build_int_cst (NULL_TREE, -RETURN_REGNUM * UNITS_PER_WORD));
+      t = build2 (PLUS_EXPR, TREE_TYPE (sav), t,
+	          build_int_cst (NULL_TREE, -RETURN_REGNUM * UNITS_PER_WORD));
   
-      t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
+      t = build2 (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -7591,10 +7591,10 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
   f_sav = TREE_CHAIN (f_ovf);
 
   valist = build_va_arg_indirect_ref (valist);
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
-  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+  gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
+  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   size = int_size_in_bytes (type);
 
