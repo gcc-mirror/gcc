@@ -1,6 +1,7 @@
 // { dg-do run }
 // { dg-options "-O2" }
 // { dg-additional-sources "static-1a.cc" }
+// { dg-require-effective-target tls_runtime }
 
 struct A
 {

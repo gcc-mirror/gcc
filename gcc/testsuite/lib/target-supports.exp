@@ -384,6 +384,84 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
     return $et_pcc_bitfield_type_matters_saved
 }
 
+# Return 1 if thread local storage (TLS) is supported, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_tls {} {
+    global et_tls_saved
+
+    if [info exists et_tls_saved] {
+	verbose "check_effective_target_tls: using cached result" 2
+    } else {
+	set et_tls_saved 1
+
+	set src tls[pid].c
+	set asm tls[pid].S
+	verbose "check_effective_target_tls: compiling testfile $src" 2
+	set f [open $src "w"]
+	# Compile a small test program.
+	puts $f "__thread int i;\n"
+	close $f
+
+	# Test for thread-local data supported by the platform.
+	set comp_output \
+	    [target_compile $src $asm assembly ""]
+	file delete $src
+	if { [string match "*not supported*" $comp_output] } {
+	    set et_tls_saved 0
+	}
+	remove-build-file $asm
+    }
+    verbose "check_effective_target_tls: returning $et_tls_saved" 2
+    return $et_tls_saved
+}
+
+# Return 1 if TLS executables can run correctly, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_tls_runtime {} {
+    global et_tls_runtime_saved
+
+    if [info exists et_tls_runtime_saved] {
+	verbose "check_effective_target_tls_runtime: using cached result" 2
+    } else {
+	set et_tls_runtime_saved 0
+
+	set src tls_runtime[pid].c
+	set exe tls_runtime[pid].x
+	verbose "check_effective_target_tls_runtime: compiling testfile $src" 2
+	set f [open $src "w"]
+	# Compile a small test program.
+	puts $f "__thread int thr = 0;\n"
+	puts $f "int main(void)\n {\n return thr;\n}"
+	close $f
+
+	set comp_output \
+	    [target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $comp_output] then {
+	    # No error messages, everything is OK.
+
+	    set result [remote_load target "./$exe" "" ""]
+	    set status [lindex $result 0]
+	    remote_file build delete $exe
+
+	    verbose "check_effective_target_tls_runtime status is <$status>" 2
+
+	    if { $status == "pass" } {
+		set et_tls_runtime_saved 1
+	    }
+
+	    verbose "check_effective_target_tls_runtime: returning $et_tls_runtime_saved" 2
+	}
+    }
+
+    return $et_tls_runtime_saved
+}
+
 # Return 1 if -fpic and -fPIC are supported, as in no warnings or errors
 # emitted, 0 otherwise.  Whether a shared library can actually be built is
 # out of scope for this test.
