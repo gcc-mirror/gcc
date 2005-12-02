@@ -1,3 +1,7 @@
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* trans.c (gnat_gimplify_expr): Use buildN instead of build.
+
 2005-12-01  Roger Sayle  <roger@eyesopen.com>
 
 	* utils.c (max_size): Only test for TREE_OVERFLOW on INTEGER_CST
