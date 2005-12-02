@@ -1,3 +1,8 @@
+2005-12-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/24103
+	* g++.dg/other/default1.C: New test.
+
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/20031106-6.c: Remove XFAIL.
