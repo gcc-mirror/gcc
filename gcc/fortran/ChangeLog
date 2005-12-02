@@ -1,3 +1,8 @@
+2005-12-01  Erik Schnetter  <schnetter@aei.mpg.de>
+
+	* decl.c (gfc_match_old_kind_spec):  Improve handling of old style
+	COMPLEX*N
+
 2005-12-01  Bernhard Fischer <rep.nop@aon.at>
 
 	PR fortran/21302
