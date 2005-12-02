@@ -1,3 +1,8 @@
+2005-12-01  Erik Schnetter  <schnetter@aei.mpg.de>
+
+	* decl.c (gfc_match_old_kind_spec):  Improve handling of old style
+	COMPLEX*N
+
 2005-12-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24789
@@ -18,7 +23,6 @@
 	* scanner.c: Typo in comment.
 	* invoke.texi: Document -ffree-line-length- and
 	-ffree-line-length-none
-
 
 2005-11-30  Paul Thomas  <pault@gcc.gnu.org>
 
