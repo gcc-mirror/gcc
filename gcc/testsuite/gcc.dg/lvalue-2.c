@@ -9,12 +9,12 @@ int a, b;
 void
 f0 (void)
 {
-  (a+b) = 1; /* { dg-error "lvalue required as left operand of assignment" } */
-  (a+b)++; /* { dg-error "lvalue required as increment operand" } */
-  ++(a+b); /* { dg-error "lvalue required as increment operand" } */
-  (a+b)--; /* { dg-error "lvalue required as decrement operand" } */
-  --(a+b); /* { dg-error "lvalue required as decrement operand" } */
-  &(a+b); /* { dg-error "lvalue required as unary '&' operand" } */
+  (a+b) = 1; /* { dg-error "error: lvalue required as left operand of assignment" } */
+  (a+b)++; /* { dg-error "error: lvalue required as increment operand" } */
+  ++(a+b); /* { dg-error "error: lvalue required as increment operand" } */
+  (a+b)--; /* { dg-error "error: lvalue required as decrement operand" } */
+  --(a+b); /* { dg-error "error: lvalue required as decrement operand" } */
+  &(a+b); /* { dg-error "error: lvalue required as unary '&' operand" } */
 }
 
 const int c;

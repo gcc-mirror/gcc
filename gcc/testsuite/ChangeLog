@@ -1,3 +1,7 @@
+2005-12-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* gcc.dg/lvalue-2.c (f0): Put "error: " marker back.
+
 2005-12-02  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/21017
