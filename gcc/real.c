@@ -4323,6 +4323,7 @@ const struct real_format i370_double_format =
     false
   };
 
+/* Encode real R into a single precision DFP value in BUF.  */
 static void
 encode_decimal_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
                        long *buf ATTRIBUTE_UNUSED, 
@@ -4331,6 +4332,7 @@ encode_decimal_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
   encode_decimal32 (fmt, buf, r);
 }
 
+/* Decode a single precision DFP value in BUF into a real R.  */
 static void 
 decode_decimal_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		       REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED, 
@@ -4339,6 +4341,7 @@ decode_decimal_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decode_decimal32 (fmt, r, buf);
 }
 
+/* Encode real R into a double precision DFP value in BUF.  */
 static void 
 encode_decimal_double (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		       long *buf ATTRIBUTE_UNUSED, 
@@ -4347,6 +4350,7 @@ encode_decimal_double (const struct real_format *fmt ATTRIBUTE_UNUSED,
   encode_decimal64 (fmt, buf, r);
 }
 
+/* Decode a double precision DFP value in BUF into a real R.  */
 static void 
 decode_decimal_double (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		       REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED, 
@@ -4355,6 +4359,7 @@ decode_decimal_double (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decode_decimal64 (fmt, r, buf);
 }
 
+/* Encode real R into a quad precision DFP value in BUF.  */
 static void 
 encode_decimal_quad (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		     long *buf ATTRIBUTE_UNUSED,
@@ -4363,6 +4368,7 @@ encode_decimal_quad (const struct real_format *fmt ATTRIBUTE_UNUSED,
   encode_decimal128 (fmt, buf, r);
 }
 
+/* Decode a quad precision DFP value in BUF into a real R.  */
 static void 
 decode_decimal_quad (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		     REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED,
@@ -4371,7 +4377,7 @@ decode_decimal_quad (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decode_decimal128 (fmt, r, buf);
 }
 
-/* Proposed IEEE 754r decimal floating point. */
+/* Single precision decimal floating point (IEEE 754R). */
 const struct real_format decimal_single_format =
   {
     encode_decimal_single,
@@ -4391,6 +4397,7 @@ const struct real_format decimal_single_format =
     true
   };
 
+/* Double precision decimal floating point (IEEE 754R). */
 const struct real_format decimal_double_format =
   {
     encode_decimal_double,
@@ -4410,6 +4417,7 @@ const struct real_format decimal_double_format =
     true
   };
 
+/* Quad precision decimal floating point (IEEE 754R). */
 const struct real_format decimal_quad_format =
   {
     encode_decimal_quad,
