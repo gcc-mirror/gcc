@@ -1,3 +1,8 @@
+2005-12-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/pr24489.f90: Delete, replaced by read_eor.f90.
+	* gfortran.dg/pr24584.f90: Delete, replaced by namelist_empty.f90. 
+
 2005-12-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
         PR c/13384
