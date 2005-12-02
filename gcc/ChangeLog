@@ -1,3 +1,10 @@
+2005-12-01  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.h (TREE_OVERFLOW): Make this flag/predicate specific to
+	constant nodes, i.e. INTEGER_CST, REAL_CST, etc...
+	* tree-vrp.c (compare_values): Only check TREE_OVERFLOW for
+	integer constant comparisons.
+
 2005-12-02  Jon Grimm  <jgrimm2@us.ibm.com>
 	    Janis Johnson  <janis187@us.ibm.com>
 	    David Edelsohn  <dje@watson.ibm.com>

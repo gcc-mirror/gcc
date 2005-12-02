@@ -1,3 +1,8 @@
+2005-12-01  Roger Sayle  <roger@eyesopen.com>
+
+	* utils.c (max_size): Only test for TREE_OVERFLOW on INTEGER_CST
+	nodes.
+
 2005-11-23  Laurent GUERBY  <laurent@guerby.net>
 
         * mlib-prj.adb (Build_Library): Initialize Delete.

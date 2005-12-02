@@ -2031,12 +2031,19 @@ max_size (tree exp, bool max_p)
 	       Likewise, handle a MINUS_EXPR or PLUS_EXPR with the LHS
 	       overflowing or the maximum possible value and the RHS
 	       a variable.  */
-	    if (max_p && code == MIN_EXPR && TREE_OVERFLOW (rhs))
+	    if (max_p
+		&& code == MIN_EXPR
+		&& TREE_CODE (rhs) == INTEGER_CST
+		&& TREE_OVERFLOW (rhs))
 	      return lhs;
-	    else if (max_p && code == MIN_EXPR && TREE_OVERFLOW (lhs))
+	    else if (max_p
+		     && code == MIN_EXPR
+		     && TREE_CODE (lhs) == INTEGER_CST
+		     && TREE_OVERFLOW (lhs))
 	      return rhs;
 	    else if ((code == MINUS_EXPR || code == PLUS_EXPR)
-		     && ((TREE_CONSTANT (lhs) && TREE_OVERFLOW (lhs))
+		     && ((TREE_CODE (lhs) == INTEGER_CST
+			  && TREE_OVERFLOW (lhs))
 			 || operand_equal_p (lhs, TYPE_MAX_VALUE (type), 0))
 		     && !TREE_CONSTANT (rhs))
 	      return lhs;

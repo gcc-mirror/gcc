@@ -528,12 +528,14 @@ compare_values (tree val1, tree val2)
   if (!is_gimple_min_invariant (val1) || !is_gimple_min_invariant (val2))
     return -2;
 
-  /* We cannot compare overflowed values.  */
-  if (TREE_OVERFLOW (val1) || TREE_OVERFLOW (val2))
-    return -2;
-
   if (!POINTER_TYPE_P (TREE_TYPE (val1)))
-    return tree_int_cst_compare (val1, val2);
+    {
+      /* We cannot compare overflowed values.  */
+      if (TREE_OVERFLOW (val1) || TREE_OVERFLOW (val2))
+	return -2;
+
+      return tree_int_cst_compare (val1, val2);
+    }
   else
     {
       tree t;
