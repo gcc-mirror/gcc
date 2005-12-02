@@ -1,3 +1,8 @@
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-pretty-print.c (op_symbol): Handle LROTATE_EXPR
+	and RROTATE_EXPR.
+ 
 2005-12-02  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/21017
