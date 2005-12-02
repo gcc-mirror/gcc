@@ -1,3 +1,15 @@
+2005-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/25199
+	* gcc.target/i386/movq-2.c: New test.
+	* gcc.target/i386/movq.c: Remove target i?86, instead add
+	dg-require-effective-target ilp32.
+
+	Backport from mainline:
+	2005-06-07  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.target/i386/movq.c: New.
+
 2005-12-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/24103

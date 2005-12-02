@@ -1,3 +1,16 @@
+2005-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/25199
+	* config/i386/i386.md (movqi_1): Only force imovx for alternative
+	5 if operand 1 is not aligned.  Undo previous constraint change.
+	* config/i386/predicates.md (aligned_operand): Use MEM_ALIGN.
+
+	Backport from mainline:
+	2005-06-07  Dale Johannesen  <dalej@apple.com>
+
+	* config/i386/i386.md (movqi_1): Fix case where source
+	is memory and destination EDI.
+
 2005-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/25022

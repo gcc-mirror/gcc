@@ -651,7 +651,7 @@
   return parts.seg == SEG_DEFAULT;
 })
 
-;; Return nonzero if the rtx is known aligned.
+;; Return nonzero if the rtx is known to be at least 32 bits aligned.
 (define_predicate "aligned_operand"
   (match_operand 0 "general_operand")
 {
@@ -664,6 +664,10 @@
   /* Don't even try to do any aligned optimizations with volatiles.  */
   if (MEM_VOLATILE_P (op))
     return 0;
+
+  if (MEM_ALIGN (op) >= 32)
+    return 1;
+
   op = XEXP (op, 0);
 
   /* Pushes and pops are only valid on the stack pointer.  */
