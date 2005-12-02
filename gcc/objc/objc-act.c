@@ -3485,7 +3485,7 @@ objc_build_exc_ptr (void)
       return var;
     }
   else
-    return build (EXC_PTR_EXPR, objc_object_type);
+    return build0 (EXC_PTR_EXPR, objc_object_type);
 }
 
 /* Build "objc_exception_try_exit(&_stack)".  */
@@ -3533,10 +3533,10 @@ next_sjlj_build_enter_and_setjmp (void)
   t = tree_cons (NULL, t, NULL);
   sj = build_function_call (objc_setjmp_decl, t);
 
-  cond = build (COMPOUND_EXPR, TREE_TYPE (sj), enter, sj);
+  cond = build2 (COMPOUND_EXPR, TREE_TYPE (sj), enter, sj);
   cond = c_common_truthvalue_conversion (cond);
 
-  return build (COND_EXPR, void_type_node, cond, NULL, NULL);
+  return build3 (COND_EXPR, void_type_node, cond, NULL, NULL);
 }
 
 /* Build
@@ -3552,7 +3552,7 @@ next_sjlj_build_exc_extract (tree decl)
   t = tree_cons (NULL, t, NULL);
   t = build_function_call (objc_exception_extract_decl, t);
   t = convert (TREE_TYPE (decl), t);
-  t = build (MODIFY_EXPR, void_type_node, decl, t);
+  t = build2 (MODIFY_EXPR, void_type_node, decl, t);
 
   return t;
 }
@@ -3603,7 +3603,7 @@ next_sjlj_build_catch_list (void)
 	      t = build_function_call (objc_exception_match_decl, args);
 	      cond = c_common_truthvalue_conversion (t);
 	    }
-	  t = build (COND_EXPR, void_type_node, cond, body, NULL);
+	  t = build3 (COND_EXPR, void_type_node, cond, body, NULL);
 	  SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
 
 	  *last = t;
@@ -3613,8 +3613,8 @@ next_sjlj_build_catch_list (void)
 
   if (!saw_id)
     {
-      t = build (MODIFY_EXPR, void_type_node, cur_try_context->rethrow_decl,
-		 cur_try_context->caught_decl);
+      t = build2 (MODIFY_EXPR, void_type_node, cur_try_context->rethrow_decl,
+		  cur_try_context->caught_decl);
       SET_EXPR_LOCATION (t, cur_try_context->end_catch_locus);
       append_to_statement_list (t, last);
 
@@ -3679,18 +3679,18 @@ next_sjlj_build_try_catch_finally (void)
   TREE_CHAIN (rethrow_decl) = stack_decl;
 
   /* Build the outermost variable binding level.  */
-  bind = build (BIND_EXPR, void_type_node, rethrow_decl, NULL, NULL);
+  bind = build3 (BIND_EXPR, void_type_node, rethrow_decl, NULL, NULL);
   SET_EXPR_LOCATION (bind, cur_try_context->try_locus);
   TREE_SIDE_EFFECTS (bind) = 1;
 
   /* Initialize rethrow_decl.  */
-  t = build (MODIFY_EXPR, void_type_node, rethrow_decl,
-	     convert (objc_object_type, null_pointer_node));
+  t = build2 (MODIFY_EXPR, void_type_node, rethrow_decl,
+	      convert (objc_object_type, null_pointer_node));
   SET_EXPR_LOCATION (t, cur_try_context->try_locus);
   append_to_statement_list (t, &BIND_EXPR_BODY (bind));
 
   /* Build the outermost TRY_FINALLY_EXPR.  */
-  try_fin = build (TRY_FINALLY_EXPR, void_type_node, NULL, NULL);
+  try_fin = build2 (TRY_FINALLY_EXPR, void_type_node, NULL, NULL);
   SET_EXPR_LOCATION (try_fin, cur_try_context->try_locus);
   TREE_SIDE_EFFECTS (try_fin) = 1;
   append_to_statement_list (try_fin, &BIND_EXPR_BODY (bind));
@@ -3824,7 +3824,7 @@ objc_begin_catch_clause (tree decl)
   /* Initialize the decl from the EXC_PTR_EXPR we get from the runtime.  */
   t = objc_build_exc_ptr ();
   t = convert (TREE_TYPE (decl), t);
-  t = build (MODIFY_EXPR, void_type_node, decl, t);
+  t = build2 (MODIFY_EXPR, void_type_node, decl, t);
   add_stmt (t);
 }
 
@@ -6540,7 +6540,7 @@ build_objc_method_call (int super_flag, tree method_prototype,
 
   /* ??? Selector is not at this point something we can use inside
      the compiler itself.  Set it to garbage for the nonce.  */
-  t = build (OBJ_TYPE_REF, sender_cast, method, lookup_object, size_zero_node);
+  t = build3 (OBJ_TYPE_REF, sender_cast, method, lookup_object, size_zero_node);
   return build_function_call (t, method_params);
 }
 
@@ -9428,9 +9428,9 @@ objc_rewrite_function_call (tree function, tree params)
       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (function, 0), 0))
 	 == FUNCTION_DECL)
     {
-      function = build (OBJ_TYPE_REF, TREE_TYPE (function),
-			TREE_OPERAND (function, 0),
-			TREE_VALUE (params), size_zero_node);
+      function = build3 (OBJ_TYPE_REF, TREE_TYPE (function),
+			 TREE_OPERAND (function, 0),
+			 TREE_VALUE (params), size_zero_node);
     }
 
   return function;

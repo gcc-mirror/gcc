@@ -1,3 +1,11 @@
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* objc-act.c (objc_build_exc_ptr, next_sjlj_build_enter_and_setjmp
+	next_sjlj_build_exc_extract, next_sjlj_build_catch_list,
+	next_sjlj_build_try_catch_finally, objc_begin_catch_clause,
+	build_objc_method_call, objc_rewrite_function_call): Use buildN
+	instead of build.
+
 2005-10-20  Geoffrey Keating  <geoffk@apple.com>
 
 	* objc-act.c (synth_module_prologue): Clear TREE_NOTHROW
