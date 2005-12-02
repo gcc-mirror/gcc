@@ -523,12 +523,24 @@ gfc_resolve_dble (gfc_expr * f, gfc_expr * a)
 
 
 void
-gfc_resolve_dim (gfc_expr * f, gfc_expr * x,
-		 gfc_expr * y ATTRIBUTE_UNUSED)
+gfc_resolve_dim (gfc_expr * f, gfc_expr * a, gfc_expr * p)
 {
-  f->ts = x->ts;
+  f->ts.type = a->ts.type;
+  if (p != NULL)
+    f->ts.kind = gfc_kind_max (a,p);
+  else
+    f->ts.kind = a->ts.kind;
+
+  if (p != NULL && a->ts.kind != p->ts.kind)
+    {
+      if (a->ts.kind == gfc_kind_max (a,p))
+	gfc_convert_type(p, &a->ts, 2);
+      else
+	gfc_convert_type(a, &p->ts, 2);
+    }
+
   f->value.function.name =
-    gfc_get_string ("__dim_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    gfc_get_string ("__dim_%c%d", gfc_type_letter (f->ts.type), f->ts.kind);
 }
 
 
@@ -1179,23 +1191,47 @@ gfc_resolve_minval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 
 
 void
-gfc_resolve_mod (gfc_expr * f, gfc_expr * a,
-		 gfc_expr * p ATTRIBUTE_UNUSED)
+gfc_resolve_mod (gfc_expr * f, gfc_expr * a, gfc_expr * p)
 {
-  f->ts = a->ts;
+  f->ts.type = a->ts.type;
+  if (p != NULL)
+    f->ts.kind = gfc_kind_max (a,p);
+  else
+    f->ts.kind = a->ts.kind;
+
+  if (p != NULL && a->ts.kind != p->ts.kind)
+    {
+      if (a->ts.kind == gfc_kind_max (a,p))
+	gfc_convert_type(p, &a->ts, 2);
+      else
+	gfc_convert_type(a, &p->ts, 2);
+    }
+
   f->value.function.name =
-    gfc_get_string ("__mod_%c%d", gfc_type_letter (a->ts.type), a->ts.kind);
+    gfc_get_string ("__mod_%c%d", gfc_type_letter (f->ts.type), f->ts.kind);
 }
 
 
 void
-gfc_resolve_modulo (gfc_expr * f, gfc_expr * a,
-		    gfc_expr * p ATTRIBUTE_UNUSED)
+gfc_resolve_modulo (gfc_expr * f, gfc_expr * a, gfc_expr * p)
 {
-  f->ts = a->ts;
+  f->ts.type = a->ts.type;
+  if (p != NULL)
+    f->ts.kind = gfc_kind_max (a,p);
+  else
+    f->ts.kind = a->ts.kind;
+
+  if (p != NULL && a->ts.kind != p->ts.kind)
+    {
+      if (a->ts.kind == gfc_kind_max (a,p))
+	gfc_convert_type(p, &a->ts, 2);
+      else
+	gfc_convert_type(a, &p->ts, 2);
+    }
+
   f->value.function.name =
-    gfc_get_string ("__modulo_%c%d", gfc_type_letter (a->ts.type),
-		    a->ts.kind);
+    gfc_get_string ("__modulo_%c%d", gfc_type_letter (f->ts.type),
+		    f->ts.kind);
 }
 
 void

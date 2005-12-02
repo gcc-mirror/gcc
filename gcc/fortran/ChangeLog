@@ -1,3 +1,15 @@
+2005-12-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/23912
+	* iresolve.c (gfc_resolve_dim, gfc_resolve_mod,
+	gfc_resolve_modulo): When arguments have different kinds, fold
+	the lower one to the largest kind.
+	* check.c (gfc_check_a_p): Arguments of different kinds is not
+	a hard error, but an extension.
+	* simplify.c (gfc_simplify_dim, gfc_simplify_mod,
+	gfc_simplify_modulo): When arguments have different kinds, fold
+	the lower one to the largest kind.
+
 2005-12-01  Erik Schnetter  <schnetter@aei.mpg.de>
 
 	* decl.c (gfc_match_old_kind_spec):  Improve handling of old style

@@ -920,11 +920,13 @@ gfc_expr *
 gfc_simplify_dim (gfc_expr * x, gfc_expr * y)
 {
   gfc_expr *result;
+  int kind;
 
   if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  kind = x->ts.kind > y->ts.kind ? x->ts.kind : y->ts.kind;
+  result = gfc_constant_result (x->ts.type, kind, &x->where);
 
   switch (x->ts.type)
     {
@@ -2250,11 +2252,13 @@ gfc_simplify_mod (gfc_expr * a, gfc_expr * p)
 {
   gfc_expr *result;
   mpfr_t quot, iquot, term;
+  int kind;
 
   if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (a->ts.type, a->ts.kind, &a->where);
+  kind = a->ts.kind > p->ts.kind ? a->ts.kind : p->ts.kind;
+  result = gfc_constant_result (a->ts.type, kind, &a->where);
 
   switch (a->ts.type)
     {
@@ -2278,7 +2282,7 @@ gfc_simplify_mod (gfc_expr * a, gfc_expr * p)
 	  return &gfc_bad_expr;
 	}
 
-      gfc_set_model_kind (a->ts.kind);
+      gfc_set_model_kind (kind);
       mpfr_init (quot);
       mpfr_init (iquot);
       mpfr_init (term);
@@ -2306,11 +2310,13 @@ gfc_simplify_modulo (gfc_expr * a, gfc_expr * p)
 {
   gfc_expr *result;
   mpfr_t quot, iquot, term;
+  int kind;
 
   if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (a->ts.type, a->ts.kind, &a->where);
+  kind = a->ts.kind > p->ts.kind ? a->ts.kind : p->ts.kind;
+  result = gfc_constant_result (a->ts.type, kind, &a->where);
 
   switch (a->ts.type)
     {
@@ -2336,7 +2342,7 @@ gfc_simplify_modulo (gfc_expr * a, gfc_expr * p)
 	  return &gfc_bad_expr;
 	}
 
-      gfc_set_model_kind (a->ts.kind);
+      gfc_set_model_kind (kind);
       mpfr_init (quot);
       mpfr_init (iquot);
       mpfr_init (term);
