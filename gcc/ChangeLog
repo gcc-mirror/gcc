@@ -1,5 +1,26 @@
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
+	* config/alpha/alpha.c (alpha_va_start, alpha_gimplify_va_arg_1i,
+	alpha_gimplify_va_arg): Use buildN and fold_buildN where applicable.
+	* config/frv/frv.c (frv_expand_builtin_va_start): Likewise.
+	* config/s390/s390.c (s390_va_start, s390_gimplify_va_arg): Likewise.
+	* config/ia64/ia64.c (ia64_gimplify_va_arg): Likewise.
+	* config/i386/i386.c (ix86_va_start, ix86_gimplify_va_arg): Likewise.
+	* config/rs6000/rs6000.c (rs6000_va_start, rs6000_gimplify_va_arg):
+	Likewise.
+	* config/sh/sh.c (sh_va_start, sh_gimplify_va_arg_expr,
+	sh_adjust_unroll_max): Likewise.
+	* config/c4x/c4x.c (c4x_gimplify_va_arg_expr): Likewise.
+	* config/pa/pa.c (hppa_gimplify_va_arg_expr): Likewise.
+	* config/xtensa/xtensa.c (xtensa_va_start, xtensa_gimplify_va_arg_expr):
+	Likewise.
+	* config/stormy16/stormy16.c (xstormy16_expand_builtin_va_start):
+	Likewise.
+	* config/mips/mips.c (mips_va_start, mips_gimplify_va_arg_expr):
+	Likewise.
+
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vrp.c (build_assert_expr_for, process_assert_insertions_for,
 	simplify_cond_using_ranges): Use buildN instead of build.
 	* tree-tailcall.c (adjust_accumulator_values,

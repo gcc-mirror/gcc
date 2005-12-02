@@ -4092,31 +4092,31 @@ mips_va_start (tree valist, rtx nextarg)
       f_goff = TREE_CHAIN (f_ftop);
       f_foff = TREE_CHAIN (f_goff);
 
-      ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
-		    NULL_TREE);
-      gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
-		    NULL_TREE);
-      ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
-		    NULL_TREE);
-      goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
-		    NULL_TREE);
-      foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
-		    NULL_TREE);
+      ovfl = build3 (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
+		     NULL_TREE);
+      gtop = build3 (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
+		     NULL_TREE);
+      ftop = build3 (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
+		     NULL_TREE);
+      goff = build3 (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
+		     NULL_TREE);
+      foff = build3 (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
+		     NULL_TREE);
 
       /* Emit code to initialize OVFL, which points to the next varargs
 	 stack argument.  CUM->STACK_WORDS gives the number of stack
 	 words used by named arguments.  */
       t = make_tree (TREE_TYPE (ovfl), virtual_incoming_args_rtx);
       if (cum->stack_words > 0)
-	t = build (PLUS_EXPR, TREE_TYPE (ovfl), t,
-		   build_int_cst (NULL_TREE,
-				  cum->stack_words * UNITS_PER_WORD));
-      t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
+	t = build2 (PLUS_EXPR, TREE_TYPE (ovfl), t,
+		    build_int_cst (NULL_TREE,
+				   cum->stack_words * UNITS_PER_WORD));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Emit code to initialize GTOP, the top of the GPR save area.  */
       t = make_tree (TREE_TYPE (gtop), virtual_incoming_args_rtx);
-      t = build (MODIFY_EXPR, TREE_TYPE (gtop), gtop, t);
+      t = build2 (MODIFY_EXPR, TREE_TYPE (gtop), gtop, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Emit code to initialize FTOP, the top of the FPR save area.
@@ -4126,21 +4126,21 @@ mips_va_start (tree valist, rtx nextarg)
       fpr_offset = gpr_save_area_size + UNITS_PER_FPVALUE - 1;
       fpr_offset &= ~(UNITS_PER_FPVALUE - 1);
       if (fpr_offset)
-	t = build (PLUS_EXPR, TREE_TYPE (ftop), t,
-		   build_int_cst (NULL_TREE, -fpr_offset));
-      t = build (MODIFY_EXPR, TREE_TYPE (ftop), ftop, t);
+	t = build2 (PLUS_EXPR, TREE_TYPE (ftop), t,
+		    build_int_cst (NULL_TREE, -fpr_offset));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (ftop), ftop, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Emit code to initialize GOFF, the offset from GTOP of the
 	 next GPR argument.  */
-      t = build (MODIFY_EXPR, TREE_TYPE (goff), goff,
-		 build_int_cst (NULL_TREE, gpr_save_area_size));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (goff), goff,
+		  build_int_cst (NULL_TREE, gpr_save_area_size));
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Likewise emit code to initialize FOFF, the offset from FTOP
 	 of the next FPR argument.  */
-      t = build (MODIFY_EXPR, TREE_TYPE (foff), foff,
-		 build_int_cst (NULL_TREE, fpr_save_area_size));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (foff), foff,
+		  build_int_cst (NULL_TREE, fpr_save_area_size));
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
   else
@@ -4214,16 +4214,16 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 
 	 [1] and [9] can sometimes be optimized away.  */
 
-      ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
-		    NULL_TREE);
+      ovfl = build3 (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl,
+		     NULL_TREE);
 
       if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT
 	  && GET_MODE_SIZE (TYPE_MODE (type)) <= UNITS_PER_FPVALUE)
 	{
-	  top = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
-		       NULL_TREE);
-	  off = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
-		       NULL_TREE);
+	  top = build3 (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop,
+		        NULL_TREE);
+	  off = build3 (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff,
+		        NULL_TREE);
 
 	  /* When floating-point registers are saved to the stack,
 	     each one will take up UNITS_PER_HWFPVALUE bytes, regardless
@@ -4251,42 +4251,42 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	}
       else
 	{
-	  top = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
-		       NULL_TREE);
-	  off = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
-		       NULL_TREE);
+	  top = build3 (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop,
+		        NULL_TREE);
+	  off = build3 (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff,
+		        NULL_TREE);
 	  if (rsize > UNITS_PER_WORD)
 	    {
 	      /* [1] Emit code for: off &= -rsize.	*/
-	      t = build (BIT_AND_EXPR, TREE_TYPE (off), off,
-			 build_int_cst (NULL_TREE, -rsize));
-	      t = build (MODIFY_EXPR, TREE_TYPE (off), off, t);
+	      t = build2 (BIT_AND_EXPR, TREE_TYPE (off), off,
+			  build_int_cst (NULL_TREE, -rsize));
+	      t = build2 (MODIFY_EXPR, TREE_TYPE (off), off, t);
 	      gimplify_and_add (t, pre_p);
 	    }
 	  osize = rsize;
 	}
 
       /* [2] Emit code to branch if off == 0.  */
-      t = build (NE_EXPR, boolean_type_node, off,
-		 build_int_cst (TREE_TYPE (off), 0));
-      addr = build (COND_EXPR, ptr_type_node, t, NULL, NULL);
+      t = build2 (NE_EXPR, boolean_type_node, off,
+		  build_int_cst (TREE_TYPE (off), 0));
+      addr = build3 (COND_EXPR, ptr_type_node, t, NULL_TREE, NULL_TREE);
 
       /* [5] Emit code for: off -= rsize.  We do this as a form of
 	 post-increment not available to C.  Also widen for the
 	 coming pointer arithmetic.  */
       t = fold_convert (TREE_TYPE (off), build_int_cst (NULL_TREE, rsize));
-      t = build (POSTDECREMENT_EXPR, TREE_TYPE (off), off, t);
+      t = build2 (POSTDECREMENT_EXPR, TREE_TYPE (off), off, t);
       t = fold_convert (sizetype, t);
       t = fold_convert (TREE_TYPE (top), t);
 
       /* [4] Emit code for: addr_rtx = top - off.  On big endian machines,
 	 the argument has RSIZE - SIZE bytes of leading padding.  */
-      t = build (MINUS_EXPR, TREE_TYPE (top), top, t);
+      t = build2 (MINUS_EXPR, TREE_TYPE (top), top, t);
       if (BYTES_BIG_ENDIAN && rsize > size)
 	{
 	  u = fold_convert (TREE_TYPE (t), build_int_cst (NULL_TREE,
 							  rsize - size));
-	  t = build (PLUS_EXPR, TREE_TYPE (t), t, u);
+	  t = build2 (PLUS_EXPR, TREE_TYPE (t), t, u);
 	}
       COND_EXPR_THEN (addr) = t;
 
@@ -4295,11 +4295,11 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	  /* [9] Emit: ovfl += ((intptr_t) ovfl + osize - 1) & -osize.  */
 	  u = fold_convert (TREE_TYPE (ovfl),
 			    build_int_cst (NULL_TREE, osize - 1));
-	  t = build (PLUS_EXPR, TREE_TYPE (ovfl), ovfl, u);
+	  t = build2 (PLUS_EXPR, TREE_TYPE (ovfl), ovfl, u);
 	  u = fold_convert (TREE_TYPE (ovfl),
 			    build_int_cst (NULL_TREE, -osize));
-	  t = build (BIT_AND_EXPR, TREE_TYPE (ovfl), t, u);
-	  align = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
+	  t = build2 (BIT_AND_EXPR, TREE_TYPE (ovfl), t, u);
+	  align = build2 (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
 	}
       else
 	align = NULL;
@@ -4309,17 +4309,17 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	 the argument has OSIZE - SIZE bytes of leading padding.  */
       u = fold_convert (TREE_TYPE (ovfl),
 			build_int_cst (NULL_TREE, osize));
-      t = build (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl, u);
+      t = build2 (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl, u);
       if (BYTES_BIG_ENDIAN && osize > size)
 	{
 	  u = fold_convert (TREE_TYPE (t),
 			    build_int_cst (NULL_TREE, osize - size));
-	  t = build (PLUS_EXPR, TREE_TYPE (t), t, u);
+	  t = build2 (PLUS_EXPR, TREE_TYPE (t), t, u);
 	}
 
       /* String [9] and [10,11] together.  */
       if (align)
-	t = build (COMPOUND_EXPR, TREE_TYPE (t), align, t);
+	t = build2 (COMPOUND_EXPR, TREE_TYPE (t), align, t);
       COND_EXPR_ELSE (addr) = t;
 
       addr = fold_convert (build_pointer_type (type), addr);

@@ -2203,8 +2203,8 @@ frv_expand_builtin_va_start (tree valist, rtx nextarg)
       debug_rtx (nextarg);
     }
 
-  t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
-	     make_tree (ptr_type_node, nextarg));
+  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
+	      make_tree (ptr_type_node, nextarg));
   TREE_SIDE_EFFECTS (t) = 1;
 
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);

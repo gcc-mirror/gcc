@@ -6658,20 +6658,20 @@ sh_va_start (tree valist, rtx nextarg)
   f_next_fp_limit = TREE_CHAIN (f_next_fp);
   f_next_stack = TREE_CHAIN (f_next_fp_limit);
 
-  next_o = build (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
-		  NULL_TREE);
-  next_o_limit = build (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
-			valist, f_next_o_limit, NULL_TREE);
-  next_fp = build (COMPONENT_REF, TREE_TYPE (f_next_fp), valist, f_next_fp,
+  next_o = build3 (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
 		   NULL_TREE);
-  next_fp_limit = build (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
-			 valist, f_next_fp_limit, NULL_TREE);
-  next_stack = build (COMPONENT_REF, TREE_TYPE (f_next_stack),
-		      valist, f_next_stack, NULL_TREE);
+  next_o_limit = build3 (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
+			 valist, f_next_o_limit, NULL_TREE);
+  next_fp = build3 (COMPONENT_REF, TREE_TYPE (f_next_fp), valist, f_next_fp,
+		    NULL_TREE);
+  next_fp_limit = build3 (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
+			  valist, f_next_fp_limit, NULL_TREE);
+  next_stack = build3 (COMPONENT_REF, TREE_TYPE (f_next_stack),
+		       valist, f_next_stack, NULL_TREE);
 
   /* Call __builtin_saveregs.  */
   u = make_tree (ptr_type_node, expand_builtin_saveregs ());
-  t = build (MODIFY_EXPR, ptr_type_node, next_fp, u);
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_fp, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -6680,13 +6680,13 @@ sh_va_start (tree valist, rtx nextarg)
     nfp = 8 - nfp;
   else
     nfp = 0;
-  u = fold (build (PLUS_EXPR, ptr_type_node, u,
-		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nfp)));
-  t = build (MODIFY_EXPR, ptr_type_node, next_fp_limit, u);
+  u = fold_build2 (PLUS_EXPR, ptr_type_node, u,
+		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nfp));
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_fp_limit, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  t = build (MODIFY_EXPR, ptr_type_node, next_o, u);
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_o, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -6695,14 +6695,14 @@ sh_va_start (tree valist, rtx nextarg)
     nint = 4 - nint;
   else
     nint = 0;
-  u = fold (build (PLUS_EXPR, ptr_type_node, u,
-		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nint)));
-  t = build (MODIFY_EXPR, ptr_type_node, next_o_limit, u);
+  u = fold_build2 (PLUS_EXPR, ptr_type_node, u,
+		   build_int_cst (NULL_TREE, UNITS_PER_WORD * nint));
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_o_limit, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   u = make_tree (ptr_type_node, nextarg);
-  t = build (MODIFY_EXPR, ptr_type_node, next_stack, u);
+  t = build2 (MODIFY_EXPR, ptr_type_node, next_stack, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
@@ -6761,16 +6761,16 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       f_next_fp_limit = TREE_CHAIN (f_next_fp);
       f_next_stack = TREE_CHAIN (f_next_fp_limit);
 
-      next_o = build (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
-		      NULL_TREE);
-      next_o_limit = build (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
-			    valist, f_next_o_limit, NULL_TREE);
-      next_fp = build (COMPONENT_REF, TREE_TYPE (f_next_fp),
-		       valist, f_next_fp, NULL_TREE);
-      next_fp_limit = build (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
-			     valist, f_next_fp_limit, NULL_TREE);
-      next_stack = build (COMPONENT_REF, TREE_TYPE (f_next_stack),
-			  valist, f_next_stack, NULL_TREE);
+      next_o = build3 (COMPONENT_REF, TREE_TYPE (f_next_o), valist, f_next_o,
+		       NULL_TREE);
+      next_o_limit = build3 (COMPONENT_REF, TREE_TYPE (f_next_o_limit),
+			     valist, f_next_o_limit, NULL_TREE);
+      next_fp = build3 (COMPONENT_REF, TREE_TYPE (f_next_fp),
+		        valist, f_next_fp, NULL_TREE);
+      next_fp_limit = build3 (COMPONENT_REF, TREE_TYPE (f_next_fp_limit),
+			      valist, f_next_fp_limit, NULL_TREE);
+      next_stack = build3 (COMPONENT_REF, TREE_TYPE (f_next_stack),
+			   valist, f_next_stack, NULL_TREE);
 
       /* Structures with a single member with a distinct mode are passed
 	 like their member.  This is relevant if the latter has a REAL_TYPE
@@ -6829,19 +6829,19 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	  if (size > 4 && !is_double)
 	    tmp = build2 (PLUS_EXPR, TREE_TYPE (tmp), tmp,
 			  fold_convert (TREE_TYPE (tmp), size_int (4 - size)));
-	  tmp = build (GE_EXPR, boolean_type_node, next_fp_tmp, tmp);
-	  cmp = build (COND_EXPR, void_type_node, tmp,
-		       build (GOTO_EXPR, void_type_node, lab_false),
-		       NULL);
+	  tmp = build2 (GE_EXPR, boolean_type_node, next_fp_tmp, tmp);
+	  cmp = build3 (COND_EXPR, void_type_node, tmp,
+		        build1 (GOTO_EXPR, void_type_node, lab_false),
+		        NULL_TREE);
 	  if (!is_double)
 	    gimplify_and_add (cmp, pre_p);
 
 	  if (TYPE_ALIGN (type) > BITS_PER_WORD || (is_double || size == 16))
 	    {
 	      tmp = fold_convert (ptr_type_node, size_int (UNITS_PER_WORD));
-	      tmp = build (BIT_AND_EXPR, ptr_type_node, next_fp_tmp, tmp);
-	      tmp = build (PLUS_EXPR, ptr_type_node, next_fp_tmp, tmp);
-	      tmp = build (MODIFY_EXPR, ptr_type_node, next_fp_tmp, tmp);
+	      tmp = build2 (BIT_AND_EXPR, ptr_type_node, next_fp_tmp, tmp);
+	      tmp = build2 (PLUS_EXPR, ptr_type_node, next_fp_tmp, tmp);
+	      tmp = build2 (MODIFY_EXPR, ptr_type_node, next_fp_tmp, tmp);
 	      gimplify_and_add (tmp, pre_p);
 	    }
 	  if (is_double)
@@ -6861,19 +6861,19 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 		= std_gimplify_va_arg_expr (next_fp_tmp, subtype, pre_p, NULL);
 	      real = get_initialized_tmp_var (real, pre_p, NULL);
 
-	      result = build (COMPLEX_EXPR, type, real, imag);
+	      result = build2 (COMPLEX_EXPR, type, real, imag);
 	      result = get_initialized_tmp_var (result, pre_p, NULL);
 	    }
 #endif /* FUNCTION_ARG_SCmode_WART */
 
-	  tmp = build (GOTO_EXPR, void_type_node, lab_over);
+	  tmp = build1 (GOTO_EXPR, void_type_node, lab_over);
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build (LABEL_EXPR, void_type_node, lab_false);
+	  tmp = build1 (LABEL_EXPR, void_type_node, lab_false);
 	  gimplify_and_add (tmp, pre_p);
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
-	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  tmp = build2 (MODIFY_EXPR, void_type_node, addr, tmp);
 	  gimplify_and_add (tmp, pre_p);
 	  tmp = build2 (MODIFY_EXPR, ptr_type_node, next_fp_tmp, valist);
 	  gimplify_and_add (tmp, pre_p);
@@ -6885,37 +6885,37 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       else
 	{
 	  tmp = fold_convert (ptr_type_node, size_int (rsize));
-	  tmp = build (PLUS_EXPR, ptr_type_node, next_o, tmp);
-	  tmp = build (GT_EXPR, boolean_type_node, tmp, next_o_limit);
-	  tmp = build (COND_EXPR, void_type_node, tmp,
-		       build (GOTO_EXPR, void_type_node, lab_false),
-		       NULL);
+	  tmp = build2 (PLUS_EXPR, ptr_type_node, next_o, tmp);
+	  tmp = build2 (GT_EXPR, boolean_type_node, tmp, next_o_limit);
+	  tmp = build3 (COND_EXPR, void_type_node, tmp,
+		        build1 (GOTO_EXPR, void_type_node, lab_false),
+		        NULL_TREE);
 	  gimplify_and_add (tmp, pre_p);
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_o);
-	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  tmp = build2 (MODIFY_EXPR, void_type_node, addr, tmp);
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build (GOTO_EXPR, void_type_node, lab_over);
+	  tmp = build1 (GOTO_EXPR, void_type_node, lab_over);
 	  gimplify_and_add (tmp, pre_p);
 
-	  tmp = build (LABEL_EXPR, void_type_node, lab_false);
+	  tmp = build1 (LABEL_EXPR, void_type_node, lab_false);
 	  gimplify_and_add (tmp, pre_p);
 
 	  if (size > 4 && ! TARGET_SH4)
 	    {
-	      tmp = build (MODIFY_EXPR, ptr_type_node, next_o, next_o_limit);
+	      tmp = build2 (MODIFY_EXPR, ptr_type_node, next_o, next_o_limit);
 	      gimplify_and_add (tmp, pre_p);
 	    }
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
-	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  tmp = build2 (MODIFY_EXPR, void_type_node, addr, tmp);
 	  gimplify_and_add (tmp, pre_p);
 	}
 
       if (!result)
 	{
-	  tmp = build (LABEL_EXPR, void_type_node, lab_over);
+	  tmp = build1 (LABEL_EXPR, void_type_node, lab_over);
 	  gimplify_and_add (tmp, pre_p);
 	}
     }
@@ -6926,10 +6926,10 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   tmp = std_gimplify_va_arg_expr (valist, type, pre_p, NULL);
   if (result)
     {
-      tmp = build (MODIFY_EXPR, void_type_node, result, tmp);
+      tmp = build2 (MODIFY_EXPR, void_type_node, result, tmp);
       gimplify_and_add (tmp, pre_p);
 
-      tmp = build (LABEL_EXPR, void_type_node, lab_over);
+      tmp = build1 (LABEL_EXPR, void_type_node, lab_over);
       gimplify_and_add (tmp, pre_p);
     }
   else
@@ -10279,10 +10279,10 @@ sh_adjust_unroll_max (struct loop * loop, int insn_count,
 			  if (TREE_CODE (type) != ARRAY_TYPE
 			      || ! TYPE_SIZE (type) || ! TYPE_SIZE_UNIT (type))
 			    break;
-			  size_tree = fold (build (TRUNC_DIV_EXPR,
+			  size_tree = fold_build2 (TRUNC_DIV_EXPR,
 						   bitsizetype,
 						   TYPE_SIZE (type),
-						   TYPE_SIZE_UNIT (type)));
+						   TYPE_SIZE_UNIT (type));
 			  if (TREE_CODE (size_tree) == INTEGER_CST
 			      && ! TREE_INT_CST_HIGH (size_tree)
 			      && TREE_INT_CST_LOW  (size_tree) < max_iterations)

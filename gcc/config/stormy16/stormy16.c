@@ -1365,20 +1365,20 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   f_base = TYPE_FIELDS (va_list_type_node);
   f_count = TREE_CHAIN (f_base);
   
-  base = build (COMPONENT_REF, TREE_TYPE (f_base), valist, f_base, NULL_TREE);
-  count = build (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
-		 NULL_TREE);
+  base = build3 (COMPONENT_REF, TREE_TYPE (f_base), valist, f_base, NULL_TREE);
+  count = build3 (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
+		  NULL_TREE);
 
   t = make_tree (TREE_TYPE (base), virtual_incoming_args_rtx);
-  t = build (PLUS_EXPR, TREE_TYPE (base), t, 
-	     build_int_cst (NULL_TREE, INCOMING_FRAME_SP_OFFSET));
-  t = build (MODIFY_EXPR, TREE_TYPE (base), base, t);
+  t = build2 (PLUS_EXPR, TREE_TYPE (base), t, 
+	      build_int_cst (NULL_TREE, INCOMING_FRAME_SP_OFFSET));
+  t = build2 (MODIFY_EXPR, TREE_TYPE (base), base, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  t = build (MODIFY_EXPR, TREE_TYPE (count), count, 
-	     build_int_cst (NULL_TREE,
-			    current_function_args_info * UNITS_PER_WORD));
+  t = build2 (MODIFY_EXPR, TREE_TYPE (count), count, 
+	      build_int_cst (NULL_TREE,
+			     current_function_args_info * UNITS_PER_WORD));
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
@@ -1401,9 +1401,9 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
   f_base = TYPE_FIELDS (va_list_type_node);
   f_count = TREE_CHAIN (f_base);
   
-  base = build (COMPONENT_REF, TREE_TYPE (f_base), valist, f_base, NULL_TREE);
-  count = build (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
-		 NULL_TREE);
+  base = build3 (COMPONENT_REF, TREE_TYPE (f_base), valist, f_base, NULL_TREE);
+  count = build3 (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
+		  NULL_TREE);
 
   must_stack = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
   size_tree = round_up (size_in_bytes (type), UNITS_PER_WORD);
@@ -1421,23 +1421,23 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
       tree r;
 
       t = fold_convert (TREE_TYPE (count), size_tree);
-      t = build (PLUS_EXPR, TREE_TYPE (count), count_tmp, t);
+      t = build2 (PLUS_EXPR, TREE_TYPE (count), count_tmp, t);
       r = fold_convert (TREE_TYPE (count), size_int (size_of_reg_args));
-      t = build (GT_EXPR, boolean_type_node, t, r);
-      t = build (COND_EXPR, void_type_node, t,
-		 build (GOTO_EXPR, void_type_node, lab_fromstack),
-		 NULL);
+      t = build2 (GT_EXPR, boolean_type_node, t, r);
+      t = build3 (COND_EXPR, void_type_node, t,
+		  build1 (GOTO_EXPR, void_type_node, lab_fromstack),
+		  NULL_TREE);
       gimplify_and_add (t, pre_p);
   
       t = fold_convert (ptr_type_node, count_tmp);
-      t = build (PLUS_EXPR, ptr_type_node, base, t);
-      t = build (MODIFY_EXPR, void_type_node, addr, t);
+      t = build2 (PLUS_EXPR, ptr_type_node, base, t);
+      t = build2 (MODIFY_EXPR, void_type_node, addr, t);
       gimplify_and_add (t, pre_p);
 
-      t = build (GOTO_EXPR, void_type_node, lab_gotaddr);
+      t = build1 (GOTO_EXPR, void_type_node, lab_gotaddr);
       gimplify_and_add (t, pre_p);
 
-      t = build (LABEL_EXPR, void_type_node, lab_fromstack);
+      t = build1 (LABEL_EXPR, void_type_node, lab_fromstack);
       gimplify_and_add (t, pre_p);
     }
   
@@ -1450,31 +1450,31 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
       tree r, u;
 
       r = size_int (NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD);
-      u = build (MODIFY_EXPR, void_type_node, count_tmp, r);
+      u = build2 (MODIFY_EXPR, void_type_node, count_tmp, r);
 
       t = fold_convert (TREE_TYPE (count), r);
-      t = build (GE_EXPR, boolean_type_node, count_tmp, t);
-      t = build (COND_EXPR, void_type_node, t, NULL, u);
+      t = build2 (GE_EXPR, boolean_type_node, count_tmp, t);
+      t = build3 (COND_EXPR, void_type_node, t, NULL_TREE, u);
       gimplify_and_add (t, pre_p);
     }
 
   t = size_int (NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD
 		- INCOMING_FRAME_SP_OFFSET);
   t = fold_convert (TREE_TYPE (count), t);
-  t = build (MINUS_EXPR, TREE_TYPE (count), count_tmp, t);
-  t = build (PLUS_EXPR, TREE_TYPE (count), t,
-	     fold_convert (TREE_TYPE (count), size_tree));
+  t = build2 (MINUS_EXPR, TREE_TYPE (count), count_tmp, t);
+  t = build2 (PLUS_EXPR, TREE_TYPE (count), t,
+	      fold_convert (TREE_TYPE (count), size_tree));
   t = fold_convert (TREE_TYPE (base), fold (t));
-  t = build (MINUS_EXPR, TREE_TYPE (base), base, t);
-  t = build (MODIFY_EXPR, void_type_node, addr, t);
+  t = build2 (MINUS_EXPR, TREE_TYPE (base), base, t);
+  t = build2 (MODIFY_EXPR, void_type_node, addr, t);
   gimplify_and_add (t, pre_p);
 
-  t = build (LABEL_EXPR, void_type_node, lab_gotaddr);
+  t = build1 (LABEL_EXPR, void_type_node, lab_gotaddr);
   gimplify_and_add (t, pre_p);
 
   t = fold_convert (TREE_TYPE (count), size_tree);
-  t = build (PLUS_EXPR, TREE_TYPE (count), count_tmp, t);
-  t = build (MODIFY_EXPR, TREE_TYPE (count), count, t);
+  t = build2 (PLUS_EXPR, TREE_TYPE (count), count_tmp, t);
+  t = build2 (MODIFY_EXPR, TREE_TYPE (count), count, t);
   gimplify_and_add (t, pre_p);
   
   addr = fold_convert (build_pointer_type (type), addr);

@@ -6148,8 +6148,8 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
     {
       nextarg = plus_constant (nextarg, offset);
       nextarg = plus_constant (nextarg, NUM_ARGS * UNITS_PER_WORD);
-      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
-		 make_tree (ptr_type_node, nextarg));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
+		  make_tree (ptr_type_node, nextarg));
       TREE_SIDE_EFFECTS (t) = 1;
 
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6159,20 +6159,20 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       base_field = TYPE_FIELDS (TREE_TYPE (valist));
       offset_field = TREE_CHAIN (base_field);
 
-      base_field = build (COMPONENT_REF, TREE_TYPE (base_field),
-			  valist, base_field, NULL_TREE);
-      offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
-			    valist, offset_field, NULL_TREE);
+      base_field = build3 (COMPONENT_REF, TREE_TYPE (base_field),
+			   valist, base_field, NULL_TREE);
+      offset_field = build3 (COMPONENT_REF, TREE_TYPE (offset_field),
+			     valist, offset_field, NULL_TREE);
 
       t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
-      t = build (PLUS_EXPR, ptr_type_node, t,
-		 build_int_cst (NULL_TREE, offset));
-      t = build (MODIFY_EXPR, TREE_TYPE (base_field), base_field, t);
+      t = build2 (PLUS_EXPR, ptr_type_node, t,
+		  build_int_cst (NULL_TREE, offset));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (base_field), base_field, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       t = build_int_cst (NULL_TREE, NUM_ARGS * UNITS_PER_WORD);
-      t = build (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field, t);
+      t = build2 (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -6188,8 +6188,8 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
   if (targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
     {
       t = build_int_cst (TREE_TYPE (offset), 6*8);
-      t = build (MODIFY_EXPR, TREE_TYPE (offset), offset,
-		 build (MAX_EXPR, TREE_TYPE (offset), offset, t));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (offset), offset,
+		  build2 (MAX_EXPR, TREE_TYPE (offset), offset, t));
       gimplify_and_add (t, pre_p);
     }
 
@@ -6210,23 +6210,23 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
       imag_part = alpha_gimplify_va_arg_1 (TREE_TYPE (type), base,
 					   offset, pre_p);
 
-      return build (COMPLEX_EXPR, type, real_temp, imag_part);
+      return build2 (COMPLEX_EXPR, type, real_temp, imag_part);
     }
   else if (TREE_CODE (type) == REAL_TYPE)
     {
       tree fpaddend, cond, fourtyeight;
 
       fourtyeight = build_int_cst (TREE_TYPE (addend), 6*8);
-      fpaddend = fold (build (MINUS_EXPR, TREE_TYPE (addend),
-			      addend, fourtyeight));
-      cond = fold (build (LT_EXPR, boolean_type_node, addend, fourtyeight));
-      addend = fold (build (COND_EXPR, TREE_TYPE (addend), cond,
-			    fpaddend, addend));
+      fpaddend = fold_build2 (MINUS_EXPR, TREE_TYPE (addend),
+			      addend, fourtyeight);
+      cond = fold_build2 (LT_EXPR, boolean_type_node, addend, fourtyeight);
+      addend = fold_build3 (COND_EXPR, TREE_TYPE (addend), cond,
+			    fpaddend, addend);
     }
 
   /* Build the final address and force that value into a temporary.  */
-  addr = build (PLUS_EXPR, ptr_type, fold_convert (ptr_type, base),
-	        fold_convert (ptr_type, addend));
+  addr = build2 (PLUS_EXPR, ptr_type, fold_convert (ptr_type, base),
+	         fold_convert (ptr_type, addend));
   internal_post = NULL;
   gimplify_expr (&addr, pre_p, &internal_post, is_gimple_val, fb_rvalue);
   append_to_statement_list (internal_post, pre_p);
@@ -6242,8 +6242,8 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
       t = size_binop (MULT_EXPR, t, size_int (8));
     }
   t = fold_convert (TREE_TYPE (offset), t);
-  t = build (MODIFY_EXPR, void_type_node, offset,
-	     build (PLUS_EXPR, TREE_TYPE (offset), offset, t));
+  t = build2 (MODIFY_EXPR, void_type_node, offset,
+	      build2 (PLUS_EXPR, TREE_TYPE (offset), offset, t));
   gimplify_and_add (t, pre_p);
 
   return build_va_arg_indirect_ref (addr);
@@ -6260,10 +6260,10 @@ alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 
   base_field = TYPE_FIELDS (va_list_type_node);
   offset_field = TREE_CHAIN (base_field);
-  base_field = build (COMPONENT_REF, TREE_TYPE (base_field),
-		      valist, base_field, NULL_TREE);
-  offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
-			valist, offset_field, NULL_TREE);
+  base_field = build3 (COMPONENT_REF, TREE_TYPE (base_field),
+		       valist, base_field, NULL_TREE);
+  offset_field = build3 (COMPONENT_REF, TREE_TYPE (offset_field),
+			 valist, offset_field, NULL_TREE);
 
   /* Pull the fields of the structure out into temporaries.  Since we never
      modify the base field, we can use a formal temporary.  Sign-extend the
@@ -6282,8 +6282,8 @@ alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   r = alpha_gimplify_va_arg_1 (type, base, offset, pre_p);
 
   /* Stuff the offset temporary back into its field.  */
-  t = build (MODIFY_EXPR, void_type_node, offset_field,
-	     fold_convert (TREE_TYPE (offset_field), offset));
+  t = build2 (MODIFY_EXPR, void_type_node, offset_field,
+	      fold_convert (TREE_TYPE (offset_field), offset));
   gimplify_and_add (t, pre_p);
 
   if (indirect)

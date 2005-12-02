@@ -5658,10 +5658,10 @@ rs6000_va_start (tree valist, rtx nextarg)
   f_sav = TREE_CHAIN (f_ovf);
 
   valist = build_va_arg_indirect_ref (valist);
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
-  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+  gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
+  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   /* Count number of gp and fp argument registers used.  */
   words = current_function_args_info.words;
@@ -5677,16 +5677,16 @@ rs6000_va_start (tree valist, rtx nextarg)
 
   if (cfun->va_list_gpr_size)
     {
-      t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
-		 build_int_cst (NULL_TREE, n_gpr));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
+		  build_int_cst (NULL_TREE, n_gpr));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
   if (cfun->va_list_fpr_size)
     {
-      t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
-		 build_int_cst (NULL_TREE, n_fpr));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
+		  build_int_cst (NULL_TREE, n_fpr));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -5694,9 +5694,9 @@ rs6000_va_start (tree valist, rtx nextarg)
   /* Find the overflow area.  */
   t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
   if (words != 0)
-    t = build (PLUS_EXPR, TREE_TYPE (ovf), t,
-	       build_int_cst (NULL_TREE, words * UNITS_PER_WORD));
-  t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+    t = build2 (PLUS_EXPR, TREE_TYPE (ovf), t,
+	        build_int_cst (NULL_TREE, words * UNITS_PER_WORD));
+  t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -5711,9 +5711,9 @@ rs6000_va_start (tree valist, rtx nextarg)
   /* Find the register save area.  */
   t = make_tree (TREE_TYPE (sav), virtual_stack_vars_rtx);
   if (cfun->machine->varargs_save_offset)
-    t = build (PLUS_EXPR, TREE_TYPE (sav), t,
-	       build_int_cst (NULL_TREE, cfun->machine->varargs_save_offset));
-  t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
+    t = build2 (PLUS_EXPR, TREE_TYPE (sav), t,
+	        build_int_cst (NULL_TREE, cfun->machine->varargs_save_offset));
+  t = build2 (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
@@ -5759,7 +5759,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	      imag_part = rs6000_gimplify_va_arg (valist, elem_type, pre_p,
 						  post_p);
 
-	      return build (COMPLEX_EXPR, type, real_part, imag_part);
+	      return build2 (COMPLEX_EXPR, type, real_part, imag_part);
 	    }
 	}
 
@@ -5773,10 +5773,10 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   f_sav = TREE_CHAIN (f_ovf);
 
   valist = build_va_arg_indirect_ref (valist);
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
-  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+  gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
+  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   size = int_size_in_bytes (type);
   rsize = (size + 3) / 4;
@@ -5857,7 +5857,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	{
 	  /* Ensure that we don't find any more args in regs.
 	     Alignment has taken care of the n_reg == 2 case.  */
-	  t = build (MODIFY_EXPR, TREE_TYPE (reg), reg, size_int (8));
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (reg), reg, size_int (8));
 	  gimplify_and_add (t, pre_p);
 	}
     }

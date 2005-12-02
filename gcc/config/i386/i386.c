@@ -3804,10 +3804,10 @@ ix86_va_start (tree valist, rtx nextarg)
   f_sav = TREE_CHAIN (f_ovf);
 
   valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
-  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+  gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
+  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   /* Count number of gp and fp argument registers used.  */
   words = current_function_args_info.words;
@@ -3820,16 +3820,16 @@ ix86_va_start (tree valist, rtx nextarg)
 
   if (cfun->va_list_gpr_size)
     {
-      t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
-		 build_int_cst (NULL_TREE, n_gpr * 8));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
+		  build_int_cst (NULL_TREE, n_gpr * 8));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
   if (cfun->va_list_fpr_size)
     {
-      t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
-		 build_int_cst (NULL_TREE, n_fpr * 16 + 8*REGPARM_MAX));
+      t = build2 (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
+		  build_int_cst (NULL_TREE, n_fpr * 16 + 8*REGPARM_MAX));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -3837,9 +3837,9 @@ ix86_va_start (tree valist, rtx nextarg)
   /* Find the overflow area.  */
   t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
   if (words != 0)
-    t = build (PLUS_EXPR, TREE_TYPE (ovf), t,
-	       build_int_cst (NULL_TREE, words * UNITS_PER_WORD));
-  t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+    t = build2 (PLUS_EXPR, TREE_TYPE (ovf), t,
+	        build_int_cst (NULL_TREE, words * UNITS_PER_WORD));
+  t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -3848,7 +3848,7 @@ ix86_va_start (tree valist, rtx nextarg)
       /* Find the register save area.
 	 Prologue of the function save it right above stack frame.  */
       t = make_tree (TREE_TYPE (sav), frame_pointer_rtx);
-      t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
+      t = build2 (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -3880,10 +3880,10 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   f_sav = TREE_CHAIN (f_ovf);
 
   valist = build_va_arg_indirect_ref (valist);
-  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
-  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
-  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
-  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
+  gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
+  fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
+  ovf = build3 (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
+  sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   indirect_p = pass_by_reference (NULL, TYPE_MODE (type), type, false);
   if (indirect_p)
@@ -3965,7 +3965,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 			     (REGPARM_MAX - needed_intregs + 1) * 8);
 	  t = build2 (GE_EXPR, boolean_type_node, gpr, t);
 	  t2 = build1 (GOTO_EXPR, void_type_node, lab_false);
-	  t = build (COND_EXPR, void_type_node, t, t2, NULL_TREE);
+	  t = build3 (COND_EXPR, void_type_node, t, t2, NULL_TREE);
 	  gimplify_and_add (t, pre_p);
 	}
       if (needed_sseregs)
@@ -3975,7 +3975,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 			     + REGPARM_MAX * 8);
 	  t = build2 (GE_EXPR, boolean_type_node, fpr, t);
 	  t2 = build1 (GOTO_EXPR, void_type_node, lab_false);
-	  t = build (COND_EXPR, void_type_node, t, t2, NULL_TREE);
+	  t = build3 (COND_EXPR, void_type_node, t, t2, NULL_TREE);
 	  gimplify_and_add (t, pre_p);
 	}
 
@@ -4072,10 +4072,10 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   else
     {
       HOST_WIDE_INT align = FUNCTION_ARG_BOUNDARY (VOIDmode, type) / 8;
-      t = build (PLUS_EXPR, TREE_TYPE (ovf), ovf,
-		 build_int_cst (TREE_TYPE (ovf), align - 1));
-      t = build (BIT_AND_EXPR, TREE_TYPE (t), t,
-		 build_int_cst (TREE_TYPE (t), -align));
+      t = build2 (PLUS_EXPR, TREE_TYPE (ovf), ovf,
+		  build_int_cst (TREE_TYPE (ovf), align - 1));
+      t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t,
+		  build_int_cst (TREE_TYPE (t), -align));
     }
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
