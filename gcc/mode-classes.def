@@ -25,6 +25,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   DEF_MODE_CLASS (MODE_INT),		/* integer */			   \
   DEF_MODE_CLASS (MODE_PARTIAL_INT),	/* integer with padding bits */	   \
   DEF_MODE_CLASS (MODE_FLOAT),		/* floating point */		   \
+  DEF_MODE_CLASS (MODE_DECIMAL_FLOAT),	/* decimal floating point */	   \
   DEF_MODE_CLASS (MODE_COMPLEX_INT), 	/* complex numbers */		   \
   DEF_MODE_CLASS (MODE_COMPLEX_FLOAT),					   \
   DEF_MODE_CLASS (MODE_VECTOR_INT),	/* SIMD vectors */		   \

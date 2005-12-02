@@ -60,7 +60,7 @@ struct mode_data
   unsigned int bytesize;	/* storage size in addressable units */
   unsigned int ncomponents;	/* number of subunits */
   unsigned int alignment;	/* mode alignment */
-  const char *format;		/* floating point format - MODE_FLOAT only */
+  const char *format;		/* floating point format - float modes only */
 
   struct mode_data *component;	/* mode of components */
   struct mode_data *wider;	/* next wider mode */
@@ -72,6 +72,7 @@ struct mode_data
 
   const char *file;		/* file and line of definition, */
   unsigned int line;		/* for error reporting */
+  unsigned int counter;		/* Rank ordering of modes */
 };
 
 static struct mode_data *modes[MAX_MODE_CLASS];
@@ -82,7 +83,7 @@ static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
   -1U, -1U, -1U, -1U,
   0, 0, 0, 0, 0, 0,
-  "<unknown>", 0
+  "<unknown>", 0, 0
 };
 
 static htab_t modes_by_name;
@@ -146,6 +147,7 @@ new_mode (enum mode_class cl, const char *name,
 	  const char *file, unsigned int line)
 {
   struct mode_data *m;
+  static unsigned int count = 0;
 
   m = find_mode (name);
   if (m)
@@ -163,6 +165,7 @@ new_mode (enum mode_class cl, const char *name,
   if (file)
     m->file = trim_filename (file);
   m->line = line;
+  m->counter = count++;
 
   m->next = modes[cl];
   modes[cl] = m;
@@ -323,11 +326,12 @@ complete_mode (struct mode_data *m)
 
     case MODE_INT:
     case MODE_FLOAT:
+    case MODE_DECIMAL_FLOAT:
       /* A scalar mode must have a byte size, may have a bit size,
 	 and must not have components.   A float mode must have a
          format.  */
       validate_mode (m, OPTIONAL, SET, UNSET, UNSET,
-		     m->cl == MODE_FLOAT ? SET : UNSET);
+		     m->cl != MODE_INT ? SET : UNSET);
 
       m->ncomponents = 1;
       m->component = 0;
@@ -429,17 +433,22 @@ make_complex_modes (enum mode_class cl,
          This inconsistency should be eliminated.  */
       if (cl == MODE_FLOAT)
 	{
-	  char *p;
+	  char *p, *q = 0;
 	  strncpy (buf, m->name, sizeof buf);
 	  p = strchr (buf, 'F');
 	  if (p == 0)
+	    q = strchr (buf, 'D');
+	  if (p == 0 && q == 0)
 	    {
-	      error ("%s:%d: float mode \"%s\" has no 'F'",
+	      error ("%s:%d: float mode \"%s\" has no 'F' or 'D'",
 		     m->file, m->line, m->name);
 	      continue;
 	    }
 
-	  *p = 'C';
+	  if (p != 0)
+	    *p = 'C';
+	  else
+	    snprintf (buf, sizeof buf, "C%s", m->name);
 	}
       else
 	snprintf (buf, sizeof buf, "C%s", m->name);
@@ -540,6 +549,23 @@ make_float_mode (const char *name,
   m->format = format;
 }
 
+#define DECIMAL_FLOAT_MODE(N, Y, F)	\
+	FRACTIONAL_DECIMAL_FLOAT_MODE (N, -1U, Y, F)
+#define FRACTIONAL_DECIMAL_FLOAT_MODE(N, B, Y, F)	\
+  make_decimal_float_mode (#N, B, Y, #F, __FILE__, __LINE__)
+
+static void
+make_decimal_float_mode (const char *name,
+			 unsigned int precision, unsigned int bytesize,
+			 const char *format,
+			 const char *file, unsigned int line)
+{
+  struct mode_data *m = new_mode (MODE_DECIMAL_FLOAT, name, file, line);
+  m->bytesize = bytesize;
+  m->precision = precision;
+  m->format = format;
+}
+
 #define RESET_FLOAT_FORMAT(N, F) \
   reset_float_format (#N, #F, __FILE__, __LINE__)
 static void ATTRIBUTE_UNUSED
@@ -552,9 +578,9 @@ reset_float_format (const char *name, const char *format,
       error ("%s:%d: no mode \"%s\"", file, line, name);
       return;
     }
-  if (m->cl != MODE_FLOAT)
+  if (m->cl != MODE_FLOAT && m->cl != MODE_DECIMAL_FLOAT)
     {
-      error ("%s:%d: mode \"%s\" is not class FLOAT", file, line, name);
+      error ("%s:%d: mode \"%s\" is not a FLOAT class", file, line, name);
       return;
     }
   m->format = format;
@@ -675,7 +701,12 @@ cmp_modes (const void *a, const void *b)
     return -1;
 
   if (!m->component && !n->component)
-    return 0;
+    {
+      if (m->counter < n->counter)
+	return -1;
+      else
+	return 1;
+    }
 
   if (m->component->bytesize > n->component->bytesize)
     return 1;
@@ -687,7 +718,10 @@ cmp_modes (const void *a, const void *b)
   else if (m->component->precision < n->component->precision)
     return -1;
 
-  return 0;
+  if (m->counter < n->counter)
+    return -1;
+  else
+    return 1;
 }
 
 static void
@@ -1083,10 +1117,19 @@ emit_real_format_for_mode (void)
 			  format);
 #else
   print_decl ("struct real_format *\n", "real_format_for_mode",
-	      "MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1");
+	      "MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1 "
+	      "+ MAX_MODE_DECIMAL_FLOAT - MIN_MODE_DECIMAL_FLOAT + 1");
 #endif
 
+  /* The beginning of the table is entries for float modes.  */
   for (m = modes[MODE_FLOAT]; m; m = m->next)
+    if (!strcmp (m->format, "0"))
+      tagged_printf ("%s", m->format, m->name);
+    else
+      tagged_printf ("&%s", m->format, m->name);
+
+  /* The end of the table is entries for decimal float modes.  */
+  for (m = modes[MODE_DECIMAL_FLOAT]; m; m = m->next)
     if (!strcmp (m->format, "0"))
       tagged_printf ("%s", m->format, m->name);
     else

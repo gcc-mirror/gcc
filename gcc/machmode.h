@@ -54,6 +54,7 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 /* Nonzero if MODE is a floating-point mode.  */
 #define FLOAT_MODE_P(MODE)		\
   (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+   || GET_MODE_CLASS (MODE) == MODE_DECIMAL_FLOAT \
    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT \
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT)
 
@@ -74,12 +75,18 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 
 /* Nonzero if MODE is a scalar floating point mode.  */
 #define SCALAR_FLOAT_MODE_P(MODE)		\
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT)
+  (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
+   || GET_MODE_CLASS (MODE) == MODE_DECIMAL_FLOAT)
+
+/* Nonzero if MODE is a decimal floating point mode.  */
+#define DECIMAL_FLOAT_MODE_P(MODE)		\
+  (GET_MODE_CLASS (MODE) == MODE_DECIMAL_FLOAT)
 
 /* Nonzero if CLASS modes can be widened.  */
 #define CLASS_HAS_WIDER_MODES_P(CLASS)         \
   (CLASS == MODE_INT                           \
    || CLASS == MODE_FLOAT                      \
+   || CLASS == MODE_DECIMAL_FLOAT              \
    || CLASS == MODE_COMPLEX_FLOAT)
 
 /* Get the size in bytes and bits of an object of mode MODE.  */

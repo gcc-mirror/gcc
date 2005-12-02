@@ -87,6 +87,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 	using floating point format FORMAT.
 	All of the bits of its representation are significant.
 
+     DECIMAL FLOAT_MODE (MODE, BYTESIZE);
+	declares MODE to be of class DECIMAL_FLOAT and BYTESIZE bytes
+	wide.  All of the bits of its representation are significant.
+
      FRACTIONAL_FLOAT_MODE (MODE, PRECISION, BYTESIZE, FORMAT);
         declares MODE to be of class FLOAT, BYTESIZE bytes wide in
 	storage, but with only PRECISION significant bits, using
@@ -185,6 +189,11 @@ CC_MODE (CC);
 /* Complex modes.  */
 COMPLEX_MODES (INT);
 COMPLEX_MODES (FLOAT);
+
+/* Decimal floating point modes.  */
+DECIMAL_FLOAT_MODE (SD, 4, decimal_single_format);
+DECIMAL_FLOAT_MODE (DD, 8, decimal_double_format);
+DECIMAL_FLOAT_MODE (TD, 16, decimal_quad_format);
 
 /* The symbol Pmode stands for one of the above machine modes (usually SImode).
    The tm.h file specifies which one.  It is not a distinct mode.  */
