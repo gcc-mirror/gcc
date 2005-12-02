@@ -1595,7 +1595,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
   add_referenced_tmp_var (temp);
   if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
     DECL_COMPLEX_GIMPLE_REG_P (temp) = 1;
-  newexpr = build (MODIFY_EXPR, TREE_TYPE (expr), temp, newexpr);
+  newexpr = build2 (MODIFY_EXPR, TREE_TYPE (expr), temp, newexpr);
   name = make_ssa_name (temp, newexpr);
   TREE_OPERAND (newexpr, 0) = name;
   NECESSARY (newexpr) = 0;

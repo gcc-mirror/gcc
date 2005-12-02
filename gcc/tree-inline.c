@@ -1148,7 +1148,7 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
 
       /* We want to use MODIFY_EXPR, not INIT_EXPR here so that we
 	 keep our trees in gimple form.  */
-      init_stmt = build (MODIFY_EXPR, TREE_TYPE (var), var, rhs);
+      init_stmt = build2 (MODIFY_EXPR, TREE_TYPE (var), var, rhs);
 
       /* If we did not create a gimple value and we did not create a gimple
 	 cast of a gimple value, then we will need to gimplify INIT_STMTS

@@ -380,7 +380,7 @@ init_tmp_var (struct nesting_info *info, tree exp, tree_stmt_iterator *tsi)
   tree t, stmt;
 
   t = create_tmp_var_for (info, TREE_TYPE (exp), NULL);
-  stmt = build (MODIFY_EXPR, TREE_TYPE (t), t, exp);
+  stmt = build2 (MODIFY_EXPR, TREE_TYPE (t), t, exp);
   SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
   tsi_link_before (tsi, stmt, TSI_SAME_STMT);
 
@@ -408,7 +408,7 @@ save_tmp_var (struct nesting_info *info, tree exp,
   tree t, stmt;
 
   t = create_tmp_var_for (info, TREE_TYPE (exp), NULL);
-  stmt = build (MODIFY_EXPR, TREE_TYPE (t), exp, t);
+  stmt = build2 (MODIFY_EXPR, TREE_TYPE (t), exp, t);
   SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
   tsi_link_after (tsi, stmt, TSI_SAME_STMT);
 
@@ -749,7 +749,7 @@ get_static_chain (struct nesting_info *info, tree target_context,
 	  tree field = get_chain_field (i);
 
 	  x = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (x)), x);
-	  x = build (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
+	  x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
 	  x = init_tmp_var (info, x, tsi);
 	}
     }
@@ -783,14 +783,14 @@ get_frame_field (struct nesting_info *info, tree target_context,
 	  tree field = get_chain_field (i);
 
 	  x = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (x)), x);
-	  x = build (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
+	  x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
 	  x = init_tmp_var (info, x, tsi);
 	}
 
       x = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (x)), x);
     }
 
-  x = build (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
+  x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
   return x;
 }
 
@@ -1370,9 +1370,9 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	  else
 	    x = p;
 
-	  y = build (COMPONENT_REF, TREE_TYPE (field),
-		     root->frame_decl, field, NULL_TREE);
-	  x = build (MODIFY_EXPR, TREE_TYPE (field), y, x);
+	  y = build3 (COMPONENT_REF, TREE_TYPE (field),
+		      root->frame_decl, field, NULL_TREE);
+	  x = build2 (MODIFY_EXPR, TREE_TYPE (field), y, x);
 	  append_to_statement_list (x, &stmt_list);
 	}
     }
@@ -1381,9 +1381,9 @@ finalize_nesting_tree_1 (struct nesting_info *root)
      from chain_decl.  */
   if (root->chain_field)
     {
-      tree x = build (COMPONENT_REF, TREE_TYPE (root->chain_field),
-		      root->frame_decl, root->chain_field, NULL_TREE);
-      x = build (MODIFY_EXPR, TREE_TYPE (x), x, get_chain_decl (root));
+      tree x = build3 (COMPONENT_REF, TREE_TYPE (root->chain_field),
+		       root->frame_decl, root->chain_field, NULL_TREE);
+      x = build2 (MODIFY_EXPR, TREE_TYPE (x), x, get_chain_decl (root));
       append_to_statement_list (x, &stmt_list);
     }
 
@@ -1408,8 +1408,8 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	  x = build_addr (i->context, context);
 	  arg = tree_cons (NULL, x, arg);
 
-	  x = build (COMPONENT_REF, TREE_TYPE (field),
-		     root->frame_decl, field, NULL_TREE);
+	  x = build3 (COMPONENT_REF, TREE_TYPE (field),
+		      root->frame_decl, field, NULL_TREE);
 	  x = build_addr (x, context);
 	  arg = tree_cons (NULL, x, arg);
 

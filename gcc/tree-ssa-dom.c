@@ -834,9 +834,9 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	  dummy_cond = walk_data->global_data;
 	  if (! dummy_cond)
 	    {
-	      dummy_cond = build (cond_code, boolean_type_node, op0, op1);
-	      dummy_cond = build (COND_EXPR, void_type_node,
-				  dummy_cond, NULL, NULL);
+	      dummy_cond = build2 (cond_code, boolean_type_node, op0, op1);
+	      dummy_cond = build3 (COND_EXPR, void_type_node,
+				   dummy_cond, NULL_TREE, NULL_TREE);
 	      walk_data->global_data = dummy_cond;
 	    }
 	  else
@@ -1851,17 +1851,17 @@ simplify_rhs_and_lookup_avail_expr (tree stmt, int insert)
 		  if (rhs_def_code != rhs_code)
 		    {
 		      if (rhs_def_code == MINUS_EXPR)
-		        t = build (MINUS_EXPR, type, outer_const, def_stmt_op1);
+		        t = build2 (MINUS_EXPR, type, outer_const, def_stmt_op1);
 		      else
-		        t = build (MINUS_EXPR, type, def_stmt_op1, outer_const);
+		        t = build2 (MINUS_EXPR, type, def_stmt_op1, outer_const);
 		      rhs_code = PLUS_EXPR;
 		    }
 		  else if (rhs_def_code == MINUS_EXPR)
-		    t = build (PLUS_EXPR, type, def_stmt_op1, outer_const);
+		    t = build2 (PLUS_EXPR, type, def_stmt_op1, outer_const);
 		  else
-		    t = build (rhs_def_code, type, def_stmt_op1, outer_const);
+		    t = build2 (rhs_def_code, type, def_stmt_op1, outer_const);
 		  t = local_fold (t);
-		  t = build (rhs_code, type, def_stmt_op0, t);
+		  t = build2 (rhs_code, type, def_stmt_op0, t);
 		  t = local_fold (t);
 
 		  /* If the result is a suitable looking gimple expression,
@@ -1969,8 +1969,8 @@ find_equivalent_equality_comparison (tree cond)
 	  new = build1 (TREE_CODE (def_rhs), def_rhs_inner_type, op1);
 	  new = local_fold (new);
 	  if (is_gimple_val (new) && tree_int_cst_equal (new, op1))
-	    return build (TREE_CODE (cond), TREE_TYPE (cond),
-			  def_rhs_inner, new);
+	    return build2 (TREE_CODE (cond), TREE_TYPE (cond),
+			   def_rhs_inner, new);
 	}
     }
   return NULL;
@@ -2752,7 +2752,7 @@ record_equivalences_from_stmt (tree stmt,
       if (rhs)
 	{
 	  /* Build a new statement with the RHS and LHS exchanged.  */
-	  new = build (MODIFY_EXPR, TREE_TYPE (stmt), rhs, lhs);
+	  new = build2 (MODIFY_EXPR, TREE_TYPE (stmt), rhs, lhs);
 
 	  create_ssa_artficial_load_stmt (new, stmt);
 

@@ -2019,8 +2019,8 @@ vectorizable_condition (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   /* Arguments are ready. create the new vector stmt.  */
   vec_compare = build2 (TREE_CODE (cond_expr), vectype, 
 			vec_cond_lhs, vec_cond_rhs);
-  vec_cond_expr = build (VEC_COND_EXPR, vectype, 
-			 vec_compare, vec_then_clause, vec_else_clause);
+  vec_cond_expr = build3 (VEC_COND_EXPR, vectype, 
+			  vec_compare, vec_then_clause, vec_else_clause);
 
   *vec_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, vec_cond_expr);
   new_temp = make_ssa_name (vec_dest, *vec_stmt);

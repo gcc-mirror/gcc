@@ -1589,9 +1589,9 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
   if (!integer_zerop (elt_offset))
     idx = int_const_binop (PLUS_EXPR, idx, elt_offset, 0);
 
-  return build (ARRAY_REF, orig_type, base, idx, min_idx,
-		size_int (tree_low_cst (elt_size, 1)
-			  / (TYPE_ALIGN_UNIT (elt_type))));
+  return build4 (ARRAY_REF, orig_type, base, idx, min_idx,
+		 size_int (tree_low_cst (elt_size, 1)
+			   / (TYPE_ALIGN_UNIT (elt_type))));
 }
 
 
@@ -1652,7 +1652,7 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 	{
 	  if (base_is_ptr)
 	    base = build1 (INDIRECT_REF, record_type, base);
-	  t = build (COMPONENT_REF, field_type, base, f, NULL_TREE);
+	  t = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
 	  return t;
 	}
       
@@ -1692,7 +1692,7 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
      nonzero offset into them.  Recurse and hope for a valid match.  */
   if (base_is_ptr)
     base = build1 (INDIRECT_REF, record_type, base);
-  base = build (COMPONENT_REF, field_type, base, f, NULL_TREE);
+  base = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
 
   t = maybe_fold_offset_to_array_ref (base, offset, orig_type);
   if (t)

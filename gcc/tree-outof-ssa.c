@@ -191,7 +191,7 @@ insert_copy_on_edge (edge e, tree dest, tree src)
 {
   tree copy;
 
-  copy = build (MODIFY_EXPR, TREE_TYPE (dest), dest, src);
+  copy = build2 (MODIFY_EXPR, TREE_TYPE (dest), dest, src);
   set_is_used (dest);
 
   if (TREE_CODE (src) == ADDR_EXPR)
@@ -2471,8 +2471,8 @@ insert_backedge_copies (void)
 
 		  /* Create a new instance of the underlying
 		     variable of the PHI result.  */
-		  stmt = build (MODIFY_EXPR, TREE_TYPE (result_var),
-				NULL, PHI_ARG_DEF (phi, i));
+		  stmt = build2 (MODIFY_EXPR, TREE_TYPE (result_var),
+				 NULL_TREE, PHI_ARG_DEF (phi, i));
 		  name = make_ssa_name (result_var, stmt);
 		  TREE_OPERAND (stmt, 0) = name;
 

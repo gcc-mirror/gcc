@@ -1070,7 +1070,7 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
       LIM_DATA (aref->stmt)->sm_done = true;
 
   /* Emit the load & stores.  */
-  load = build (MODIFY_EXPR, void_type_node, tmp_var, ref);
+  load = build2 (MODIFY_EXPR, void_type_node, tmp_var, ref);
   get_stmt_ann (load)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));
   LIM_DATA (load)->max_loop = loop;
   LIM_DATA (load)->tgt_loop = loop;
@@ -1081,8 +1081,8 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
 
   for (i = 0; i < n_exits; i++)
     {
-      store = build (MODIFY_EXPR, void_type_node,
-		     unshare_expr (ref), tmp_var);
+      store = build2 (MODIFY_EXPR, void_type_node,
+		      unshare_expr (ref), tmp_var);
       bsi_insert_on_edge (exits[i], store);
     }
 }
