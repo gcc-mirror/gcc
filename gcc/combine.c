@@ -5597,7 +5597,7 @@ simplify_logical (rtx x)
   enum machine_mode mode = GET_MODE (x);
   rtx op0 = XEXP (x, 0);
   rtx op1 = XEXP (x, 1);
-  rtx reversed;
+  rtx tmp, reversed;
 
   switch (GET_CODE (x))
     {
@@ -5724,16 +5724,37 @@ simplify_logical (rtx x)
       /* Convert (ior (ashift A CX) (lshiftrt A CY)) where CX+CY equals the
 	 mode size to (rotate A CX).  */
 
-      if (((GET_CODE (op0) == ASHIFT && GET_CODE (op1) == LSHIFTRT)
-	   || (GET_CODE (op1) == ASHIFT && GET_CODE (op0) == LSHIFTRT))
+      if (GET_CODE (op1) == ASHIFT
+	  || GET_CODE (op1) == SUBREG)
+	tmp = op1, op1 = op0, op0 = tmp;
+
+      if (GET_CODE (op0) == ASHIFT && GET_CODE (op1) == LSHIFTRT
 	  && rtx_equal_p (XEXP (op0, 0), XEXP (op1, 0))
 	  && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	  && GET_CODE (XEXP (op1, 1)) == CONST_INT
 	  && (INTVAL (XEXP (op0, 1)) + INTVAL (XEXP (op1, 1))
 	      == GET_MODE_BITSIZE (mode)))
-	return gen_rtx_ROTATE (mode, XEXP (op0, 0),
-			       (GET_CODE (op0) == ASHIFT
-				? XEXP (op0, 1) : XEXP (op1, 1)));
+	return gen_rtx_ROTATE (mode, XEXP (op1, 0), XEXP (op0, 1));
+
+      /* Same, but for ashift that has been "simplified" to a wider mode
+	 by simplify_shift_const.  */
+
+      if (GET_CODE (op0) == SUBREG
+	  && GET_CODE (SUBREG_REG (op0)) == ASHIFT
+	  && GET_CODE (op1) == LSHIFTRT
+	  && GET_CODE (XEXP (op1, 0)) == SUBREG
+	  && GET_MODE (op0) == GET_MODE (XEXP (op1, 0))
+	  && SUBREG_BYTE (op0) == SUBREG_BYTE (XEXP (op1, 0))
+	  && (GET_MODE_SIZE (GET_MODE (op0))
+	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))))
+	  && rtx_equal_p (XEXP (SUBREG_REG (op0), 0),
+			  SUBREG_REG (XEXP (op1, 0)))
+	  && GET_CODE (XEXP (SUBREG_REG (op0), 1)) == CONST_INT
+	  && GET_CODE (XEXP (op1, 1)) == CONST_INT
+	  && (INTVAL (XEXP (SUBREG_REG (op0), 1)) + INTVAL (XEXP (op1, 1))
+	      == GET_MODE_BITSIZE (mode)))
+	return gen_rtx_ROTATE (mode, XEXP (op1, 0),
+			       XEXP (SUBREG_REG (op0), 1));
 
       /* If OP0 is (ashiftrt (plus ...) C), it might actually be
 	 a (sign_extend (plus ...)).  If so, OP1 is a CONST_INT, and the PLUS
