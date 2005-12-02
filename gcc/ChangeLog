@@ -1,5 +1,45 @@
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-loop-im.c (schedule_sm): Use buildN instead of build.
+	* tree-complex.c (update_complex_assignment, expand_complex_div_wide):
+	Likewise.
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref,
+	maybe_fold_offset_to_component_ref): Likewise.
+	* tree-ssa-dom.c (thread_across_edge,
+	simplify_rhs_and_lookup_avail_expr,
+	find_equivalent_equality_comparison, record_equivalences_from_stmt):
+	Likewise.
+	* gimple-low.c (lower_function_body, lower_return_expr): Likewise.
+	* tree-eh.c (do_return_redirection, honor_protect_cleanup_actions,
+	lower_try_finally_switch): Likewise.
+	* tree-if-conv.c (add_to_dst_predicate_list,
+	replace_phi_with_cond_modify_expr, ifc_temp_var): Likewise.
+	* gimplify.c (internal_get_tmp_var, gimple_build_eh_filter,
+	voidify_wrapper_expr, build_stack_save_restore, gimplify_bind_expr,
+	gimplify_return_expr, gimplify_decl_expr, gimplify_switch_expr,
+	gimplify_case_label_expr, gimplify_exit_expr, gimplify_self_mod_expr,
+	shortcut_cond_r, shortcut_cond_expr, gimplify_cond_expr,
+	gimplify_init_ctor_eval, gimplify_init_constructor,
+	gimplify_variable_sized_compare, gimplify_boolean_expr,
+	gimplify_cleanup_point_expr, gimple_push_cleanup, gimplify_target_expr,
+	gimplify_expr, gimplify_body, gimplify_function_tree,
+	force_gimple_operand): Likewise.
+	* tree-ssa-pre.c (create_expression_by_pieces): Likewise.
+	* tree-mudflap.c (mf_decl_cache_locals, mf_build_check_statement_for,
+	mx_register_decls): Likewise.
+	* tree-nested.c (init_tmp_var, save_tmp_var, get_static_chain,
+	get_frame_field, finalize_nesting_tree_1): Likewise.
+	* tree-inline.c (setup_one_parameter): Likewise.
+	* tree-vect-transform.c (vectorizable_condition): Likewise.
+	* tree-outof-ssa.c (insert_copy_on_edge, insert_backedge_copies):
+	Likewise.
+	* tree-profile.c (tree_gen_edge_profiler): Likewise.
+	* tree-cfg.c (factor_computed_gotos, gimplify_val): Likewise.
+	* c-parser.c (c_parser_if_body, c_parser_switch_statement): Likewise.
+	* tree-chrec.h (build_polynomial_chrec): Likewise.
+
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
 	* config/alpha/alpha.c (alpha_va_start, alpha_gimplify_va_arg_1i,
 	alpha_gimplify_va_arg): Use buildN and fold_buildN where applicable.
 	* config/frv/frv.c (frv_expand_builtin_va_start): Likewise.

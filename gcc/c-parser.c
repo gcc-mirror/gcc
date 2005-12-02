@@ -3629,7 +3629,7 @@ c_parser_if_body (c_parser *parser, bool *if_p)
     c_parser_label (parser);
   *if_p = c_parser_next_token_is_keyword (parser, RID_IF);
   if (extra_warnings && c_parser_next_token_is (parser, CPP_SEMICOLON))
-    add_stmt (build (NOP_EXPR, NULL_TREE, NULL_TREE));
+    add_stmt (build1 (NOP_EXPR, NULL_TREE, NULL_TREE));
   c_parser_statement_after_labels (parser);
   return c_end_compound_stmt (block, flag_isoc99);
 }
@@ -3692,7 +3692,7 @@ c_parser_switch_statement (c_parser *parser)
   body = c_parser_c99_block_statement (parser);
   c_finish_case (body);
   if (c_break_label)
-    add_stmt (build (LABEL_EXPR, void_type_node, c_break_label));
+    add_stmt (build1 (LABEL_EXPR, void_type_node, c_break_label));
   c_break_label = save_break;
   add_stmt (c_end_compound_stmt (block, flag_isoc99));
 }

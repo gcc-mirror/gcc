@@ -644,13 +644,13 @@ do_return_redirection (struct goto_queue_node *q, tree finlab, tree mod,
 	    else
 	      new = *return_value_p;
 
-	    x = build (MODIFY_EXPR, TREE_TYPE (new), new, old);
+	    x = build2 (MODIFY_EXPR, TREE_TYPE (new), new, old);
 	    append_to_statement_list (x, &q->repl_stmt);
 
 	    if (new == result)
 	      x = result;
 	    else
-	      x = build (MODIFY_EXPR, TREE_TYPE (result), result, new);
+	      x = build2 (MODIFY_EXPR, TREE_TYPE (result), result, new);
 	    q->cont_stmt = build1 (RETURN_EXPR, void_type_node, x);
 	  }
 
@@ -839,21 +839,21 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
       save_filt = create_tmp_var (integer_type_node, "save_filt");
 
       i = tsi_start (finally);
-      x = build (EXC_PTR_EXPR, ptr_type_node);
-      x = build (MODIFY_EXPR, void_type_node, save_eptr, x);
+      x = build0 (EXC_PTR_EXPR, ptr_type_node);
+      x = build2 (MODIFY_EXPR, void_type_node, save_eptr, x);
       tsi_link_before (&i, x, TSI_CONTINUE_LINKING);
 
-      x = build (FILTER_EXPR, integer_type_node);
-      x = build (MODIFY_EXPR, void_type_node, save_filt, x);
+      x = build0 (FILTER_EXPR, integer_type_node);
+      x = build2 (MODIFY_EXPR, void_type_node, save_filt, x);
       tsi_link_before (&i, x, TSI_CONTINUE_LINKING);
 
       i = tsi_last (finally);
-      x = build (EXC_PTR_EXPR, ptr_type_node);
-      x = build (MODIFY_EXPR, void_type_node, x, save_eptr);
+      x = build0 (EXC_PTR_EXPR, ptr_type_node);
+      x = build2 (MODIFY_EXPR, void_type_node, x, save_eptr);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 
-      x = build (FILTER_EXPR, integer_type_node);
-      x = build (MODIFY_EXPR, void_type_node, x, save_filt);
+      x = build0 (FILTER_EXPR, integer_type_node);
+      x = build2 (MODIFY_EXPR, void_type_node, x, save_filt);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 
       x = build_resx (get_eh_region_number (tf->region));
@@ -863,10 +863,10 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
   /* Wrap the block with protect_cleanup_actions as the action.  */
   if (protect_cleanup_actions)
     {
-      x = build (EH_FILTER_EXPR, void_type_node, NULL, NULL);
+      x = build2 (EH_FILTER_EXPR, void_type_node, NULL, NULL);
       append_to_statement_list (protect_cleanup_actions, &EH_FILTER_FAILURE (x));
       EH_FILTER_MUST_NOT_THROW (x) = 1;
-      finally = build (TRY_CATCH_EXPR, void_type_node, finally, x);
+      finally = build2 (TRY_CATCH_EXPR, void_type_node, finally, x);
       lower_eh_filter (outer_state, &finally);
     }
   else
@@ -1163,8 +1163,8 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   finally_label = create_artificial_label ();
 
   case_label_vec = make_tree_vec (ndests);
-  switch_stmt = build (SWITCH_EXPR, integer_type_node, finally_tmp,
-		       NULL_TREE, case_label_vec);
+  switch_stmt = build3 (SWITCH_EXPR, integer_type_node, finally_tmp,
+		        NULL_TREE, case_label_vec);
   switch_body = NULL;
   last_case = NULL;
   last_case_index = 0;
@@ -1175,8 +1175,8 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
   if (tf->may_fallthru)
     {
-      x = build (MODIFY_EXPR, void_type_node, finally_tmp,
-		 build_int_cst (NULL_TREE, fallthru_index));
+      x = build2 (MODIFY_EXPR, void_type_node, finally_tmp,
+		  build_int_cst (NULL_TREE, fallthru_index));
       append_to_statement_list (x, tf->top_p);
 
       if (tf->may_throw)
@@ -1186,13 +1186,13 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 	}
 
 
-      last_case = build (CASE_LABEL_EXPR, void_type_node,
-			 build_int_cst (NULL_TREE, fallthru_index), NULL,
-			 create_artificial_label ());
+      last_case = build3 (CASE_LABEL_EXPR, void_type_node,
+			  build_int_cst (NULL_TREE, fallthru_index), NULL,
+			  create_artificial_label ());
       TREE_VEC_ELT (case_label_vec, last_case_index) = last_case;
       last_case_index++;
 
-      x = build (LABEL_EXPR, void_type_node, CASE_LABEL (last_case));
+      x = build1 (LABEL_EXPR, void_type_node, CASE_LABEL (last_case));
       append_to_statement_list (x, &switch_body);
 
       x = lower_try_finally_fallthru_label (tf);
@@ -1205,17 +1205,17 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       x = build1 (LABEL_EXPR, void_type_node, tf->eh_label);
       append_to_statement_list (x, tf->top_p);
 
-      x = build (MODIFY_EXPR, void_type_node, finally_tmp,
-		 build_int_cst (NULL_TREE, eh_index));
+      x = build2 (MODIFY_EXPR, void_type_node, finally_tmp,
+		  build_int_cst (NULL_TREE, eh_index));
       append_to_statement_list (x, tf->top_p);
 
-      last_case = build (CASE_LABEL_EXPR, void_type_node,
-			 build_int_cst (NULL_TREE, eh_index), NULL,
-			 create_artificial_label ());
+      last_case = build3 (CASE_LABEL_EXPR, void_type_node,
+			  build_int_cst (NULL_TREE, eh_index), NULL,
+			  create_artificial_label ());
       TREE_VEC_ELT (case_label_vec, last_case_index) = last_case;
       last_case_index++;
 
-      x = build (LABEL_EXPR, void_type_node, CASE_LABEL (last_case));
+      x = build1 (LABEL_EXPR, void_type_node, CASE_LABEL (last_case));
       append_to_statement_list (x, &switch_body);
       x = build_resx (get_eh_region_number (tf->region));
       append_to_statement_list (x, &switch_body);
@@ -1237,15 +1237,15 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
       if (q->index < 0)
 	{
-	  mod = build (MODIFY_EXPR, void_type_node, finally_tmp,
-		       build_int_cst (NULL_TREE, return_index));
+	  mod = build2 (MODIFY_EXPR, void_type_node, finally_tmp,
+		        build_int_cst (NULL_TREE, return_index));
 	  do_return_redirection (q, finally_label, mod, &return_val);
 	  switch_id = return_index;
 	}
       else
 	{
-	  mod = build (MODIFY_EXPR, void_type_node, finally_tmp,
-		       build_int_cst (NULL_TREE, q->index));
+	  mod = build2 (MODIFY_EXPR, void_type_node, finally_tmp,
+		        build_int_cst (NULL_TREE, q->index));
 	  do_goto_redirection (q, finally_label, mod);
 	  switch_id = q->index;
 	}
@@ -1253,15 +1253,15 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       case_index = j + q->index;
       if (!TREE_VEC_ELT (case_label_vec, case_index))
 	TREE_VEC_ELT (case_label_vec, case_index)
-	  = build (CASE_LABEL_EXPR, void_type_node,
-		   build_int_cst (NULL_TREE, switch_id), NULL,
-		   /* We store the cont_stmt in the
-		      CASE_LABEL, so that we can recover it
-		      in the loop below.  We don't create
-		      the new label while walking the
-		      goto_queue because pointers don't
-		      offer a stable order.  */
-		   q->cont_stmt);
+	  = build3 (CASE_LABEL_EXPR, void_type_node,
+		    build_int_cst (NULL_TREE, switch_id), NULL,
+		    /* We store the cont_stmt in the
+		       CASE_LABEL, so that we can recover it
+		       in the loop below.  We don't create
+		       the new label while walking the
+		       goto_queue because pointers don't
+		       offer a stable order.  */
+		    q->cont_stmt);
     }
   for (j = last_case_index; j < last_case_index + nlabels; j++)
     {
@@ -1277,7 +1277,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       label = create_artificial_label ();
       CASE_LABEL (last_case) = label;
 
-      x = build (LABEL_EXPR, void_type_node, label);
+      x = build1 (LABEL_EXPR, void_type_node, label);
       append_to_statement_list (x, &switch_body);
       append_to_statement_list (cont_stmt, &switch_body);
       maybe_record_in_goto_queue (state, cont_stmt);

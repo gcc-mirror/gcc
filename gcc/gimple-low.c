@@ -91,7 +91,7 @@ lower_function_body (void)
       && (data.return_statements == NULL
           || TREE_OPERAND (TREE_VALUE (data.return_statements), 0) != NULL))
     {
-      x = build (RETURN_EXPR, void_type_node, NULL);
+      x = build1 (RETURN_EXPR, void_type_node, NULL);
       SET_EXPR_LOCATION (x, cfun->function_end_locus);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
     }
@@ -100,7 +100,7 @@ lower_function_body (void)
      at the end of the function.  */
   for (t = data.return_statements ; t ; t = TREE_CHAIN (t))
     {
-      x = build (LABEL_EXPR, void_type_node, TREE_PURPOSE (t));
+      x = build1 (LABEL_EXPR, void_type_node, TREE_PURPOSE (t));
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 
       /* Remove the line number from the representative return statement.
@@ -503,7 +503,7 @@ lower_return_expr (tree_stmt_iterator *tsi, struct lower_data *data)
 
   /* Generate a goto statement and remove the return statement.  */
  found:
-  t = build (GOTO_EXPR, void_type_node, label);
+  t = build1 (GOTO_EXPR, void_type_node, label);
   SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
   tsi_link_before (tsi, t, TSI_SAME_STMT);
   tsi_delink (tsi);

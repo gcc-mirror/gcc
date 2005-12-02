@@ -298,8 +298,8 @@ factor_computed_gotos (void)
 	    }
 
 	  /* Copy the original computed goto's destination into VAR.  */
-	  assignment = build (MODIFY_EXPR, ptr_type_node,
-			      var, GOTO_DESTINATION (last));
+	  assignment = build2 (MODIFY_EXPR, ptr_type_node,
+			       var, GOTO_DESTINATION (last));
 	  bsi_insert_before (&bsi, assignment, BSI_SAME_STMT);
 
 	  /* And re-vector the computed goto to the new destination.  */
@@ -5074,7 +5074,7 @@ gimplify_val (block_stmt_iterator *bsi, tree type, tree exp)
     return exp;
 
   t = make_rename_temp (type, NULL);
-  new_stmt = build (MODIFY_EXPR, type, t, exp);
+  new_stmt = build2 (MODIFY_EXPR, type, t, exp);
 
   orig_stmt = bsi_stmt (*bsi);
   SET_EXPR_LOCUS (new_stmt, EXPR_LOCUS (orig_stmt));

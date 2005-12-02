@@ -105,8 +105,8 @@ build_polynomial_chrec (unsigned loop_num,
       || right == chrec_dont_know)
     return chrec_dont_know;
 
-  return build (POLYNOMIAL_CHREC, TREE_TYPE (left), 
-		build_int_cst (NULL_TREE, loop_num), left, right);
+  return build3 (POLYNOMIAL_CHREC, TREE_TYPE (left), 
+		 build_int_cst (NULL_TREE, loop_num), left, right);
 }
 
 

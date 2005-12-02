@@ -106,11 +106,11 @@ tree_gen_edge_profiler (int edgeno, edge e)
   tree tmp1 = create_tmp_var (gcov_type_node, "PROF");
   tree tmp2 = create_tmp_var (gcov_type_node, "PROF");
   tree ref = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
-  tree stmt1 = build (MODIFY_EXPR, gcov_type_node, tmp1, ref);
-  tree stmt2 = build (MODIFY_EXPR, gcov_type_node, tmp2,
-		      build (PLUS_EXPR, gcov_type_node, 
-			     tmp1, integer_one_node));
-  tree stmt3 = build (MODIFY_EXPR, gcov_type_node, ref, tmp2);
+  tree stmt1 = build2 (MODIFY_EXPR, gcov_type_node, tmp1, ref);
+  tree stmt2 = build2 (MODIFY_EXPR, gcov_type_node, tmp2,
+		       build2 (PLUS_EXPR, gcov_type_node, 
+			      tmp1, integer_one_node));
+  tree stmt3 = build2 (MODIFY_EXPR, gcov_type_node, ref, tmp2);
   bsi_insert_on_edge (e, stmt1);
   bsi_insert_on_edge (e, stmt2);
   bsi_insert_on_edge (e, stmt3);
