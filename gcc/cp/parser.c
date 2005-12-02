@@ -286,7 +286,7 @@ cp_lexer_new_main (void)
 	{
 	  space = alloc;
 	  alloc *= 2;
-	  buffer = ggc_realloc (buffer, alloc * sizeof (cp_token));
+	  buffer = GGC_RESIZEVEC (cp_token, buffer, alloc);
 	  pos = buffer + space;
 	}
       cp_lexer_get_preprocessor_token (lexer, pos);
@@ -8934,7 +8934,7 @@ cp_parser_template_argument_list (cp_parser* parser)
 	      memcpy (arg_ary, fixed_args, sizeof (tree) * n_args);
 	    }
 	  else
-	    arg_ary = xrealloc (arg_ary, sizeof (tree) * alloced);
+	    arg_ary = XRESIZEVEC (tree, arg_ary, alloced);
 	}
       arg_ary[n_args++] = argument;
     }

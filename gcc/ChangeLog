@@ -1,3 +1,7 @@
+2005-12-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* ggc.h (GGC_RESIZEVEC): New.
+
 2005-12-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* gcc.c (execute): Improve readability.

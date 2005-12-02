@@ -5382,9 +5382,8 @@ pushclass (tree type)
     {
       current_class_stack_size *= 2;
       current_class_stack
-	= xrealloc (current_class_stack,
-		    current_class_stack_size
-		    * sizeof (struct class_stack_node));
+	= XRESIZEVEC (struct class_stack_node, current_class_stack,
+                      current_class_stack_size);
     }
 
   /* Insert a new entry on the class stack.  */
