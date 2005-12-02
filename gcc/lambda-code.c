@@ -1434,8 +1434,8 @@ gcc_loop_to_lambda_loop (struct loop *loop, int depth,
   ubound = gcc_tree_to_linear_expression (depth, uboundvar,
 					  outerinductionvars,
 					  *invariants, extra);
-  uboundresult = build (PLUS_EXPR, TREE_TYPE (uboundvar), uboundvar,
-			build_int_cst (TREE_TYPE (uboundvar), extra));
+  uboundresult = build2 (PLUS_EXPR, TREE_TYPE (uboundvar), uboundvar,
+			 build_int_cst (TREE_TYPE (uboundvar), extra));
   VEC_safe_push (tree, heap, *uboundvars, uboundresult);
   VEC_safe_push (tree, heap, *lboundvars, lboundvar);
   VEC_safe_push (int, heap, *steps, stepint);
@@ -1576,7 +1576,7 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
   add_referenced_tmp_var (resvar);
 
   /* Start at 0.  */
-  stmt = build (MODIFY_EXPR, void_type_node, resvar, integer_zero_node);
+  stmt = build2 (MODIFY_EXPR, void_type_node, resvar, integer_zero_node);
   name = make_ssa_name (resvar, stmt);
   TREE_OPERAND (stmt, 0) = name;
   tsi = tsi_last (stmts);
@@ -1591,8 +1591,8 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
 	  
 	  /* newname = coefficient * induction_variable */
 	  coeffmult = build_int_cst (type, LBV_COEFFICIENTS (lbv)[i]);
-	  stmt = build (MODIFY_EXPR, void_type_node, resvar,
-			fold_build2 (MULT_EXPR, type, iv, coeffmult));
+	  stmt = build2 (MODIFY_EXPR, void_type_node, resvar,
+			 fold_build2 (MULT_EXPR, type, iv, coeffmult));
 
 	  newname = make_ssa_name (resvar, stmt);
 	  TREE_OPERAND (stmt, 0) = newname;
@@ -1601,8 +1601,8 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
 	  tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
 
 	  /* name = name + newname */
-	  stmt = build (MODIFY_EXPR, void_type_node, resvar,
-			build (PLUS_EXPR, type, name, newname));
+	  stmt = build2 (MODIFY_EXPR, void_type_node, resvar,
+			 build2 (PLUS_EXPR, type, name, newname));
 	  name = make_ssa_name (resvar, stmt);
 	  TREE_OPERAND (stmt, 0) = name;
 	  fold_stmt (&stmt);
@@ -1616,8 +1616,8 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
   if (LBV_DENOMINATOR (lbv) != 1)
     {
       tree denominator = build_int_cst (type, LBV_DENOMINATOR (lbv));
-      stmt = build (MODIFY_EXPR, void_type_node, resvar,
-		    build (CEIL_DIV_EXPR, type, name, denominator));
+      stmt = build2 (MODIFY_EXPR, void_type_node, resvar,
+		     build2 (CEIL_DIV_EXPR, type, name, denominator));
       name = make_ssa_name (resvar, stmt);
       TREE_OPERAND (stmt, 0) = name;
       fold_stmt (&stmt);
@@ -1667,7 +1667,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
   for (; lle != NULL; lle = LLE_NEXT (lle))
     {
       /* Start at name = 0.  */
-      stmt = build (MODIFY_EXPR, void_type_node, resvar, integer_zero_node);
+      stmt = build2 (MODIFY_EXPR, void_type_node, resvar, integer_zero_node);
       name = make_ssa_name (resvar, stmt);
       TREE_OPERAND (stmt, 0) = name;
       fold_stmt (&stmt);
@@ -1698,7 +1698,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 		}
 
 	      /* newname = mult */
-	      stmt = build (MODIFY_EXPR, void_type_node, resvar, mult);
+	      stmt = build2 (MODIFY_EXPR, void_type_node, resvar, mult);
 	      newname = make_ssa_name (resvar, stmt);
 	      TREE_OPERAND (stmt, 0) = newname;
 	      fold_stmt (&stmt);
@@ -1706,8 +1706,8 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 	      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
 
 	      /* name = name + newname */
-	      stmt = build (MODIFY_EXPR, void_type_node, resvar,
-			    build (PLUS_EXPR, type, name, newname));
+	      stmt = build2 (MODIFY_EXPR, void_type_node, resvar,
+			     build2 (PLUS_EXPR, type, name, newname));
 	      name = make_ssa_name (resvar, stmt);
 	      TREE_OPERAND (stmt, 0) = name;
 	      fold_stmt (&stmt);
@@ -1739,7 +1739,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 		}
 
 	      /* newname = mult */
-	      stmt = build (MODIFY_EXPR, void_type_node, resvar, mult);
+	      stmt = build2 (MODIFY_EXPR, void_type_node, resvar, mult);
 	      newname = make_ssa_name (resvar, stmt);
 	      TREE_OPERAND (stmt, 0) = newname;
 	      fold_stmt (&stmt);
@@ -1747,8 +1747,8 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 	      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
 
 	      /* name = name + newname */
-	      stmt = build (MODIFY_EXPR, void_type_node, resvar,
-			    build (PLUS_EXPR, type, name, newname));
+	      stmt = build2 (MODIFY_EXPR, void_type_node, resvar,
+			     build2 (PLUS_EXPR, type, name, newname));
 	      name = make_ssa_name (resvar, stmt);
 	      TREE_OPERAND (stmt, 0) = name;
 	      fold_stmt (&stmt);
@@ -1761,9 +1761,9 @@ lle_to_gcc_expression (lambda_linear_expression lle,
          name = name + constant.  */
       if (LLE_CONSTANT (lle) != 0)
 	{
-	  stmt = build (MODIFY_EXPR, void_type_node, resvar,
-			build (PLUS_EXPR, type, name, 
-			       build_int_cst (type, LLE_CONSTANT (lle))));
+	  stmt = build2 (MODIFY_EXPR, void_type_node, resvar,
+			 build2 (PLUS_EXPR, type, name, 
+			         build_int_cst (type, LLE_CONSTANT (lle))));
 	  name = make_ssa_name (resvar, stmt);
 	  TREE_OPERAND (stmt, 0) = name;
 	  fold_stmt (&stmt);
@@ -1775,9 +1775,9 @@ lle_to_gcc_expression (lambda_linear_expression lle,
          name = name + linear offset.  */
       if (LLE_CONSTANT (offset) != 0)
 	{
-	  stmt = build (MODIFY_EXPR, void_type_node, resvar,
-			build (PLUS_EXPR, type, name, 
-			       build_int_cst (type, LLE_CONSTANT (offset))));
+	  stmt = build2 (MODIFY_EXPR, void_type_node, resvar,
+			 build2 (PLUS_EXPR, type, name, 
+			         build_int_cst (type, LLE_CONSTANT (offset))));
 	  name = make_ssa_name (resvar, stmt);
 	  TREE_OPERAND (stmt, 0) = name;
 	  fold_stmt (&stmt);
@@ -1789,9 +1789,9 @@ lle_to_gcc_expression (lambda_linear_expression lle,
       if (LLE_DENOMINATOR (lle) != 1)
 	{
 	  stmt = build_int_cst (type, LLE_DENOMINATOR (lle));
-	  stmt = build (wrap == MAX_EXPR ? CEIL_DIV_EXPR : FLOOR_DIV_EXPR,
-			type, name, stmt);
-	  stmt = build (MODIFY_EXPR, void_type_node, resvar, stmt);
+	  stmt = build2 (wrap == MAX_EXPR ? CEIL_DIV_EXPR : FLOOR_DIV_EXPR,
+			 type, name, stmt);
+	  stmt = build2 (MODIFY_EXPR, void_type_node, resvar, stmt);
 
 	  /* name = {ceil, floor}(name/denominator) */
 	  name = make_ssa_name (resvar, stmt);
@@ -1811,8 +1811,8 @@ lle_to_gcc_expression (lambda_linear_expression lle,
     {
       tree op1 = VEC_index (tree, results, 0);
       tree op2 = VEC_index (tree, results, 1);
-      stmt = build (MODIFY_EXPR, void_type_node, resvar,
-		    build (wrap, type, op1, op2));
+      stmt = build2 (MODIFY_EXPR, void_type_node, resvar,
+		     build2 (wrap, type, op1, op2));
       name = make_ssa_name (resvar, stmt);
       TREE_OPERAND (stmt, 0) = name;
       tsi = tsi_last (stmts);
@@ -1927,10 +1927,10 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 	 dominate the block containing the exit condition.
 	 So we simply create our own incremented iv to use in the new exit
 	 test,  and let redundancy elimination sort it out.  */
-      inc_stmt = build (PLUS_EXPR, type, 
-			ivvar, build_int_cst (type, LL_STEP (newloop)));
-      inc_stmt = build (MODIFY_EXPR, void_type_node, SSA_NAME_VAR (ivvar),
-			inc_stmt);
+      inc_stmt = build2 (PLUS_EXPR, type, 
+			 ivvar, build_int_cst (type, LL_STEP (newloop)));
+      inc_stmt = build2 (MODIFY_EXPR, void_type_node, SSA_NAME_VAR (ivvar),
+			 inc_stmt);
       ivvarinced = make_ssa_name (SSA_NAME_VAR (ivvar), inc_stmt);
       TREE_OPERAND (inc_stmt, 0) = ivvarinced;
       bsi = bsi_for_stmt (exitcond);
@@ -1948,9 +1948,9 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       if (exit->flags & EDGE_FALSE_VALUE)
 	testtype = swap_tree_comparison (testtype);
 
-      COND_EXPR_COND (exitcond) = build (testtype,
-					 boolean_type_node,
-					 newupperbound, ivvarinced);
+      COND_EXPR_COND (exitcond) = build2 (testtype,
+					  boolean_type_node,
+					  newupperbound, ivvarinced);
       update_stmt (exitcond);
       VEC_replace (tree, new_ivs, i, ivvar);
 
@@ -2424,11 +2424,11 @@ perfect_nestify (struct loops *loops,
   make_edge (headerbb, bodybb, EDGE_FALLTHRU); 
   then_label = build1 (GOTO_EXPR, void_type_node, tree_block_label (latchbb));
   else_label = build1 (GOTO_EXPR, void_type_node, tree_block_label (olddest));
-  cond_stmt = build (COND_EXPR, void_type_node,
-		     build (NE_EXPR, boolean_type_node, 
-			    integer_one_node, 
-			    integer_zero_node), 
-		     then_label, else_label);
+  cond_stmt = build3 (COND_EXPR, void_type_node,
+		      build2 (NE_EXPR, boolean_type_node, 
+			      integer_one_node, 
+			      integer_zero_node), 
+		      then_label, else_label);
   bsi = bsi_start (bodybb);
   bsi_insert_after (&bsi, cond_stmt, BSI_NEW_STMT);
   e = make_edge (bodybb, olddest, EDGE_FALSE_VALUE);
@@ -2464,8 +2464,8 @@ perfect_nestify (struct loops *loops,
   exit_condition = get_loop_exit_condition (newloop);
   uboundvar = create_tmp_var (integer_type_node, "uboundvar");
   add_referenced_tmp_var (uboundvar);
-  stmt = build (MODIFY_EXPR, void_type_node, uboundvar, 
-		VEC_index (tree, ubounds, 0));
+  stmt = build2 (MODIFY_EXPR, void_type_node, uboundvar, 
+		 VEC_index (tree, ubounds, 0));
   uboundvar = make_ssa_name (uboundvar, stmt);
   TREE_OPERAND (stmt, 0) = uboundvar;
 
@@ -2474,10 +2474,10 @@ perfect_nestify (struct loops *loops,
   else
     bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
   update_stmt (stmt);
-  COND_EXPR_COND (exit_condition) = build (GE_EXPR, 
-					   boolean_type_node,
-					   uboundvar,
-					   ivvarinced);
+  COND_EXPR_COND (exit_condition) = build2 (GE_EXPR, 
+					    boolean_type_node,
+					    uboundvar,
+					    ivvarinced);
   update_stmt (exit_condition);
   bbs = get_loop_body_in_dom_order (loop); 
   /* Now move the statements, and replace the induction variable in the moved

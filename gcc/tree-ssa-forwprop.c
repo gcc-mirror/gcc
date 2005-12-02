@@ -244,7 +244,7 @@ forward_propagate_into_cond_1 (tree cond, tree *test_var_p)
 	  if (!is_gimple_val (t))
 	    return NULL_TREE;
 
-	  new_cond = build (cond_code, boolean_type_node, op0, t);
+	  new_cond = build2 (cond_code, boolean_type_node, op0, t);
 	}
     }
 
@@ -285,8 +285,8 @@ forward_propagate_into_cond_1 (tree cond, tree *test_var_p)
 	  if (has_single_use (test_var))
 	    {
 	      /* TEST_VAR was set from a relational operator.  */
-	      new_cond = build (TREE_CODE (def_rhs),
-				boolean_type_node, op0, op1);
+	      new_cond = build2 (TREE_CODE (def_rhs),
+				 boolean_type_node, op0, op1);
 
 	      /* Invert the conditional if necessary.  */
 	      if ((cond_code == EQ_EXPR
