@@ -276,7 +276,7 @@ save_partially_mangled_name (void)
     {
       gcc_assert (!partially_mangled_name);
       partially_mangled_name_len = obstack_object_size (mangle_obstack);
-      partially_mangled_name = xmalloc (partially_mangled_name_len);
+      partially_mangled_name = XNEWVEC (char, partially_mangled_name_len);
       memcpy (partially_mangled_name, obstack_base (mangle_obstack),
 	      partially_mangled_name_len);
       obstack_free (mangle_obstack, obstack_finish (mangle_obstack));

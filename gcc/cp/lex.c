@@ -571,7 +571,7 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
     }
   if (ifiles == 0)
     {
-      ifiles = xmalloc (sizeof (struct impl_files));
+      ifiles = XNEW (struct impl_files);
       ifiles->filename = filename;
       ifiles->next = impl_file_chain;
       impl_file_chain = ifiles;

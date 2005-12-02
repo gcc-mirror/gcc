@@ -252,7 +252,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
   /* Make sure to have room for the trailing NULL argument.  */
   num_args = argc + added + need_math + shared_libgcc + (library > 0) + 1;
-  arglist = xmalloc (num_args * sizeof (char *));
+  arglist = XNEWVEC (const char *, num_args);
 
   i = 0;
   j = 0;

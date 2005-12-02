@@ -132,7 +132,7 @@ open_repo_file (const char *filename)
   if (! p)
     p = s + strlen (s);
 
-  repo_name = xmalloc (p - s + 5);
+  repo_name = XNEWVEC (char, p - s + 5);
   memcpy (repo_name, s, p - s);
   memcpy (repo_name + (p - s), ".rpo", 5);
 
