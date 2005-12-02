@@ -5334,7 +5334,7 @@ init_class_processing (void)
   current_class_depth = 0;
   current_class_stack_size = 10;
   current_class_stack
-    = xmalloc (current_class_stack_size * sizeof (struct class_stack_node));
+    = XNEWVEC (struct class_stack_node, current_class_stack_size);
   local_classes = VEC_alloc (tree, gc, 8);
   sizeof_biggest_empty_class = size_zero_node;
 

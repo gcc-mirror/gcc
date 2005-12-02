@@ -1,3 +1,19 @@
+2005-12-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl2.c (get_priority_info): Use XNEW, not xmalloc.
+	* decl.c (push_switch): Likewise.
+	* lex.c (handle_pragma_implementation): Likewise.
+	* cp-objcp-common.c (decl_shadowed_for_var_insert): Use GGC_NEW,
+	not ggc_alloc.
+	(cxx_initialize_diagnostics): Use XNEW, not xmalloc.
+	* class.c (init_class_processing): Use XNEWVEC, not xmalloc.
+	* g++spec.c (lang_specific_driver): Likewise.
+	* mangle.c (save_partially_mangled_name): Likewise.
+	* parser.c (cp_lexer_new_main): Use GGC_NEWVEC, not ggc_alloc.
+	(cp_parser_template_argument_list): Use XNEWVEC, nto xmalloc.
+	(cp_parser_sizeof_operand): Likewise.
+	* repo.c (open_repo_file, open_repo_file): Likewise.
+	
 2005-12-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* parser.c (cp_parser_make_typename_type): Call make_typename_type
