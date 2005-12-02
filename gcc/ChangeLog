@@ -1,5 +1,12 @@
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
+	* tree.h (build): Remove prototype.
+	(build, _buildN1, _buildN2, _buildC1, _buildC2): Remove macros.
+	* tree.c (build): Remove.
+	(build0_stat): Update comment.
+
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-loop-im.c (schedule_sm): Use buildN instead of build.
 	* tree-complex.c (update_complex_assignment, expand_complex_div_wide):
 	Likewise.
