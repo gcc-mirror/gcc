@@ -2931,7 +2931,7 @@ simplify_aggr_init_expr (tree *tp)
       call_expr = build_aggr_init (slot, call_expr,
 				   DIRECT_BIND | LOOKUP_ONLYCONVERTING);
       pop_deferring_access_checks ();
-      call_expr = build (COMPOUND_EXPR, TREE_TYPE (slot), call_expr, slot);
+      call_expr = build2 (COMPOUND_EXPR, TREE_TYPE (slot), call_expr, slot);
     }
 
   *tp = call_expr;

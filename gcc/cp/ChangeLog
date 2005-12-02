@@ -1,3 +1,8 @@
+2005-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* semantics.c (simplify_aggr_init_expr): Use buildN instead
+	of build.
+
 2005-12-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* parser.c (cp_lexer_new_main): Usr GGC_RESIZEVEC instead of
