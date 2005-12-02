@@ -500,7 +500,7 @@ convert_to_integer (tree type, tree expr)
 	  /* We can pass truncation down through right shifting
 	     when the shift count is a nonpositive constant.  */
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
-	      && tree_int_cst_sgn (TREE_OPERAND (expr, 1)) < 0)
+	      && tree_int_cst_sgn (TREE_OPERAND (expr, 1)) <= 0)
 	    goto trunc1;
 	  break;
 
