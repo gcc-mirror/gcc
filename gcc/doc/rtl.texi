@@ -1081,6 +1081,22 @@ number.  This mode only has 80 meaningful bits (ten bytes).  Some
 processors require such numbers to be padded to twelve bytes, others
 to sixteen; this mode is used for either.
 
+@findex SDmode
+@item SDmode
+``Single Decimal Floating'' mode represents a four byte decimal
+floating point number (as distinct from conventional binary floating
+point).
+
+@findex DDmode
+@item DDmode
+``Double Decimal Floating'' mode represents an eight byte decimal
+floating point number.
+
+@findex TDmode
+@item TDmode
+``Tetra Decimal Floating'' mode represents a sixteen byte decimal
+floating point number all 128 of whose bits are meaningful.
+
 @findex TFmode
 @item TFmode
 ``Tetra Floating'' mode represents a sixteen byte floating point number
@@ -1172,6 +1188,11 @@ The ``partial integer'' modes, @code{PQImode}, @code{PHImode},
 Floating point modes.  By default these are @code{QFmode},
 @code{HFmode}, @code{TQFmode}, @code{SFmode}, @code{DFmode},
 @code{XFmode} and @code{TFmode}.
+
+@findex MODE_DECIMAL_FLOAT
+@item MODE_DECIMAL_FLOAT
+Decimal floating point modes.  By default these are @code{SDmode},
+@code{DDmode} and @code{TDmode}.
 
 @findex MODE_COMPLEX_INT
 @item MODE_COMPLEX_INT
