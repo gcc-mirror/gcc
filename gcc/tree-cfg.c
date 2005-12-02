@@ -4425,6 +4425,26 @@ tree_duplicate_sese_region (edge entry, edge exit,
 }
 
 
+static tree
+mark_used_vars (tree *tp, int *walk_subtrees, void *used_vars_)
+{
+  bitmap *used_vars = (bitmap *)used_vars_;
+
+  if (walk_subtrees
+      && IS_TYPE_OR_DECL_P (*tp))
+    *walk_subtrees = 0;
+
+  if (!SSA_VAR_P (*tp))
+    return NULL_TREE;
+
+  if (TREE_CODE (*tp) == SSA_NAME)
+    bitmap_set_bit (*used_vars, DECL_UID (SSA_NAME_VAR (*tp)));
+  else
+    bitmap_set_bit (*used_vars, DECL_UID (*tp));
+
+  return NULL_TREE;
+}
+
 /* Dump FUNCTION_DECL FN to file FILE using FLAGS (see TDF_* in tree.h)  */
 
 void
@@ -4459,18 +4479,47 @@ dump_function_to_file (tree fn, FILE *file, int flags)
      BIND_EXPRs, so display them separately.  */
   if (cfun && cfun->decl == fn && cfun->unexpanded_var_list)
     {
+      bitmap used_vars = BITMAP_ALLOC (NULL);
       ignore_topmost_bind = true;
 
+      /* Record vars we'll use dumping the functions tree.  */
+      if (cfun->cfg && basic_block_info)
+	{
+	  FOR_EACH_BB (bb)
+	    {
+	      block_stmt_iterator bsi;
+	      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	        walk_tree (bsi_stmt_ptr (bsi), mark_used_vars,
+			   &used_vars, NULL);
+	    }
+	  for (vars = cfun->unexpanded_var_list; vars;
+	       vars = TREE_CHAIN (vars))
+	    {
+	      var = TREE_VALUE (vars);
+	      if (TREE_CODE (var) == VAR_DECL
+		  && DECL_INITIAL (var)
+		  && bitmap_bit_p (used_vars, DECL_UID (var)))
+		walk_tree (&DECL_INITIAL (var), mark_used_vars,
+			   &used_vars, NULL);
+	    }
+	}
+
+      /* Dump used vars.  */
       fprintf (file, "{\n");
       for (vars = cfun->unexpanded_var_list; vars; vars = TREE_CHAIN (vars))
 	{
 	  var = TREE_VALUE (vars);
+	  if (cfun->cfg && basic_block_info
+	      && !bitmap_bit_p (used_vars, DECL_UID (var)))
+            continue;
 
 	  print_generic_decl (file, var, flags);
 	  fprintf (file, "\n");
 
 	  any_var = true;
 	}
+
+      BITMAP_FREE (used_vars);
     }
 
   if (cfun && cfun->decl == fn && cfun->cfg && basic_block_info)
