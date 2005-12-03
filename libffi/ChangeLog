@@ -1,3 +1,9 @@
+2005-12-03  Alan Modra  <amodra@bigpond.net.au>
+
+	* src/powerpc/ffi.c: Formatting.
+	(ffi_prep_args_SYSV): Avoid possible aliasing problems by using unions.
+	(ffi_prep_args64): Likewise.
+
 2005-09-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* testsuite/lib/libffi-dg.exp (libffi_target_compile): For
