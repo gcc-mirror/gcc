@@ -1,3 +1,19 @@
+2005-12-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_sizeof_or_alignof_type): Use fold_convert instead
+	of building a NOP_EXPR.
+	(c_alignof_expr): Likewise.  Handle CONVERT_EXPR the same as
+	NOP_EXPR.
+	* c-convert.c (convert): Use fold_convert instead of building
+	NOP_EXPRs and CONVERT_EXPRs directly.  Don't special case
+	c_objc_common_truthvalue_conversion returning a NOP_EXPR.  Remove
+	#if 0 code.
+	* c-pretty-print.c (pp_c_cast_expression, pp_c_expression): Handle
+	NOP_EXPR the same as CONVERT_EXPR.
+	* c-typeck.c (build_function_call): Use fold_convert instead of
+	building a NOP_EXPR directly.
+	(build_compound_expr): Handle NOP_EXPR the same as CONVERT_EXPR.
+
 2005-12-03  Alan Modra  <amodra@bigpond.net.au>
 
 	PR rtl-optimization/25197

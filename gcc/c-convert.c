@@ -88,7 +88,7 @@ convert (tree type, tree expr)
     return expr;
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
-    return fold_build1 (NOP_EXPR, type, expr);
+    return fold_convert (type, expr);
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
   if (TREE_CODE (TREE_TYPE (expr)) == VOID_TYPE)
@@ -97,28 +97,11 @@ convert (tree type, tree expr)
       return error_mark_node;
     }
   if (code == VOID_TYPE)
-    return build1 (CONVERT_EXPR, type, e);
-#if 0
-  /* This is incorrect.  A truncation can't be stripped this way.
-     Extensions will be stripped by the use of get_unwidened.  */
-  if (TREE_CODE (expr) == NOP_EXPR)
-    return convert (type, TREE_OPERAND (expr, 0));
-#endif
+    return fold_convert (type, e);
   if (code == INTEGER_TYPE || code == ENUMERAL_TYPE)
     return fold (convert_to_integer (type, e));
   if (code == BOOLEAN_TYPE)
-    {
-      tree t = c_objc_common_truthvalue_conversion (expr);
-      if (TREE_CODE (t) == ERROR_MARK)
-	return t;
-
-      /* If it returns a NOP_EXPR, we must fold it here to avoid
-	 infinite recursion between fold () and convert ().  */
-      if (TREE_CODE (t) == NOP_EXPR)
-	return fold_build1 (NOP_EXPR, type, TREE_OPERAND (t, 0));
-      else
-	return fold_build1 (NOP_EXPR, type, t);
-    }
+    return fold_convert (type, c_objc_common_truthvalue_conversion (expr));
   if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     return fold (convert_to_pointer (type, e));
   if (code == REAL_TYPE)
