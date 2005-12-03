@@ -1,3 +1,9 @@
+2005-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.old-deja/g++.other/enum5.C: Change from "run" to "compile".
+	Fix attribute for new parser.  Remove unnecessary dg-bogus.
+	* g++.old-deja/g++.pt/friend44.C: Change from "run" to "compile".
+
 2005-12-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/24103

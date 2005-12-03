@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do compile }
 // Test that template friends referring to class template members are
 // respected.
 
