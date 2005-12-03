@@ -1,6 +1,6 @@
 2005-12-03  Alan Modra  <amodra@bigpond.net.au>
 
-	PR rtl-optimization 25197
+	PR rtl-optimization/25197
 	* dwarf2out.c (dwarf2out_frame_debug_expr <rule 12>): Assert we
 	have a reg.
 
