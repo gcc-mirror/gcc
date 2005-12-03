@@ -5,7 +5,7 @@
 
 	(java_gimplify_new_array_init): Set the DECL_CONTEXT of array and
 	tmp to current_function_decl.
-	
+
 2004-04-13  Diego Novillo  <dnovillo@redhat.com>
 
 	* expr.c (build_expr_wfl): Don't check type nodes for
@@ -32,9 +32,9 @@
 
 2004-01-29  Richard Henderson  <rth@redhat.com>
 
-        PR java/12906
-        * decl.c (maybe_pushlevels): Careful with TREE_CHAIN when
-        registering decls with push_jvm_slot.
+	PR java/12906
+	* decl.c (maybe_pushlevels): Careful with TREE_CHAIN when
+	registering decls with push_jvm_slot.
 
 2003-12-10  Diego Novillo  <dnovillo@redhat.com>
 
@@ -56,8 +56,8 @@
 
 2003-11-31  Richard Henderson  <rth@redhat.com>
 
-        * jcf-parse.c (java_parse_file): Finalize cgraph after emitting
-        class tables.
+	* jcf-parse.c (java_parse_file): Finalize cgraph after emitting
+	class tables.
 
 2003-11-24  Richard Henderson  <rth@redhat.com>
 
@@ -132,8 +132,8 @@
 
 2003-10-13  Richard Henderson  <rth@redhat.com>
 
-        * expr.c (build_java_jsr): Don't emit LABEL_EXPR or
-        load_type_state here.
+	* expr.c (build_java_jsr): Don't emit LABEL_EXPR or
+	load_type_state here.
 
 2003-10-12  Richard Henderson  <rth@redhat.com>
 
@@ -178,18 +178,18 @@
 
 2003-10-01  Richard Henderson  <rth@redhat.com>
 
-        * decl.c (end_java_method): Invoke remove_useless_stmts_and_vars
-        and lower_eh_constructs.
-        * parse.y (source_end_java_method): Likewise.
+	* decl.c (end_java_method): Invoke remove_useless_stmts_and_vars
+	and lower_eh_constructs.
+	* parse.y (source_end_java_method): Likewise.
 
 2003-09-24  Jason Merrill  <jason@redhat.com>
 
 	* decl.c, jcf-parse.c, jcf-write.c, parse.h, parse.y, resource.c:
 	Revert from TREE_LOCUS to DECL_SOURCE_LOCATION.
-	
+
 2003-09-18  Richard Henderson  <rth@redhat.com>
 
-        * lang.c (java_estimate_num_insns): Take an expr, not a decl.
+	* lang.c (java_estimate_num_insns): Take an expr, not a decl.
 
 2003-08-12  Diego Novillo  <dnovillo@redhat.com>
 
@@ -219,11 +219,11 @@
 	(java_stack_dup): Replace emit_move_insn with java_add_stmt.
 	(build_java_athrow): Replace expand_expr_stmt with java_add_stmt.
 	(build_java_jsr): Replace emit_jump with java_add_stmt (build (GOTO_EXPR))
-	(build_java_ret): Replace expand_computed_goto with 
+	(build_java_ret): Replace expand_computed_goto with
 	java_add_stmt (build (GOTO_EXPR))
 	(expand_java_arraystore): Replace expand_assignment with
 	java_add_stmt.
-	(expand_java_return): Replace expand_return with 
+	(expand_java_return): Replace expand_return with
 	java_add_stmt (build (RETURN_EXPR))
 	(expand_load_internal): Remove layout_decl, DECL_REGISTER,
 	expand_decl, and expand_decl_init.  Instead, add the local
@@ -232,7 +232,7 @@
 	java_add_stmt.
 	(expand_compare): Replace expand_cond with
 	java_add_stmt(build (COND_EXPR))
-	(expand_java_goto): Replace expand_goto with 
+	(expand_java_goto): Replace expand_goto with
 	java_add_stmt (build (GOTO_EXPR))
 	(expand_invoke): Replace expand_expr_stmt with java_add_stmt.
 	(build_jni_stub): Generate a BIND_EXPR to hold the block we've
@@ -241,7 +241,7 @@
 	java_add_stmt.
 	(java_expand_expr): Abort.  No-one should call this function any
 	more.
-	(expand_byte_code): Replace expand_label with 
+	(expand_byte_code): Replace expand_label with
 	java_add_stmt (build (LABEL_EXPR))
 	(process_jvm_instruction): Replace build (JAVA_EXC_OBJ_EXPR) with
 	build_exception_object_ref.  Replace expand_assignment with

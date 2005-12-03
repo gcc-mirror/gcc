@@ -24,7 +24,7 @@
 2004-05-06  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (parse_output_constraint): Don't warn for read-write
-        memory operand.
+	memory operand.
 	* gimplify.c (gimplify_asm_expr): Force in-out memory operands
 	to minimal lvalues, then expand to non-matching constraints.
 
@@ -184,7 +184,7 @@
 
 2004-04-21  Jeff Law  <law@redhat.com>
 
- 	* tree-ssa-copy.c (cprop_operand): Break out of cprop_into_stmt.
+	* tree-ssa-copy.c (cprop_operand): Break out of cprop_into_stmt.
 	(cprop_into_stmt): Use cprop_operand.  Rearrange slightly to avoid
 	switch statement inside a loop.
 
@@ -2723,7 +2723,7 @@
 
 	* tree-alias-common.c (get_alias_var): Handle BIT_FIELD_REF.
 	(find_func_aliases): Ditto.
-  	Update for fact that basic component_refs are no longer
+	Update for fact that basic component_refs are no longer
 	is_gimple_variable.
 	(create_fun_alias_var): Set DECL_CONTEXT on our faked declarations.
 	(pass_del_pta): PTA dumps info on delete, so it needs a name.

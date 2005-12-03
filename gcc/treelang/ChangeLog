@@ -83,7 +83,7 @@
 
 2005-03-22  James A. Morrison  <phython@gcc.gnu.org>
 
-	* treetree.c (tree_code_if_start): Use fold_buildN. 
+	* treetree.c (tree_code_if_start): Use fold_buildN.
 	(tree_code_create_variable): Likewise.
 	(tree_code_generate_return): Likewise.
 	(tree_code_get_expression): Likewise.
