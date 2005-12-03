@@ -1,3 +1,12 @@
+2005-12-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-typeck.c (default_function_array_conversion,
+	build_function_call): Allow for CONVERT_EXPR as well as NOP_EXPR.
+	(build_conditional_expr): Apply integer_zerop to orig_op1 and
+	orig_op2.  Don't check them for NOP_EXPR.
+	(build_c_cast, convert_for_assignment): Don't check for NOP_EXPR
+	around integer zero.
+
 2005-12-03  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_stack_t): Remove toc_save_p,
