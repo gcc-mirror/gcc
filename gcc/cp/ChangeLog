@@ -1,3 +1,9 @@
+2005-12-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24173
+	* decl.c (duplicate_decls): Don't rely on DECL_TEMPLATE_INFO after
+	clobbering newdecl.
+
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* semantics.c (simplify_aggr_init_expr): Use buildN instead
