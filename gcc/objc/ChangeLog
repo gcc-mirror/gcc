@@ -13,7 +13,7 @@
 
 2005-10-17  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* objc-act.c (objc_build_component_ref): Adjust call to 
+	* objc-act.c (objc_build_component_ref): Adjust call to
 	finish_class_member_access_expr due to a changed prototype.
 
 2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -42,7 +42,7 @@
 	instead of build_constructor.
 
 2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* objc-act.c (objc_push_parm): DECL_ARG_TYPE_AS_WRITTEN is
 	removed.
 	* objc-act.h (KEYWORD_ARG_NAME): Use decl_non_common.
@@ -347,7 +347,7 @@
 
 	* objc-act.c (objc_finish_file): In ObjC++ mode, set at_eof before
 	calling instantiate_pending_templates.
-	
+
 2005-01-26  Alexander Malmberg  <alexander@malmberg.org>
 
 	PR objc/18862
@@ -423,7 +423,7 @@
 	(objc_types_are_equivalent): Check TYPE_HAS_OBJC_INFO(...) before
 	accessing TYPE_OBJC_PROTOCOL_LIST.
 	* objc-act.h (OBJC_INFO_SLOT_ELTS, TYPE_OBJC_INFO, INIT_TYPE_OBJC_INFO,
-	DUP_TYPE_OBJC_INFO, ALLOC_OBJC_TYPE_LANG_SPECIFIC, 
+	DUP_TYPE_OBJC_INFO, ALLOC_OBJC_TYPE_LANG_SPECIFIC,
 	SIZEOF_OBJC_TYPE_LANG_SPECIFIC): New macros.
 	(TYPE_OBJC_INTERFACE): Replaces TREE_STATIC_INSTANCE and now points
 	to an actual @interface; stored in TYPE_LANG_SPECIFIC(...).

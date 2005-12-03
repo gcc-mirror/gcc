@@ -37,9 +37,9 @@
 2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR other/19896
-        * execute/execute.exp: New file.
-        * execute/funccall.tree, execute/funccall-2.tree, execute/initial.tree,
-        execute/main.tree, execute/static.tree: New tests.
+	* execute/execute.exp: New file.
+	* execute/funccall.tree, execute/funccall-2.tree, execute/initial.tree,
+	execute/main.tree, execute/static.tree: New tests.
 
 2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
 
@@ -64,9 +64,9 @@
 
 2004-01-18  James A. Morrison  <ja2morri@uwaterloo.ca>
 
-        * compile/compile.exp: New File.
-        * compile/tabs.tree: Test whether the front end
-        compiles code with tabs in it.
+	* compile/compile.exp: New File.
+	* compile/tabs.tree: Test whether the front end
+	compiles code with tabs in it.
 
 2003-02-25  Tim Josling  <tej@melbpc.org.au>
 
@@ -86,7 +86,7 @@
 	Remove duplicate call to layout_decl
 
 2001-12-02  Tim Josling  <tej@melbpc.org.au>
-     
+
       * Make-lang.in
       Ensure directory is built during install (installdirs dependency)
 
@@ -98,11 +98,11 @@
       Work around poisoned malloc (undef IN_GCC)
 
       * tree1.c
-      New front end interface. 
+      New front end interface.
       (top level) New structure lang_hooks.
-      (tree_post_options) Remove. 
+      (tree_post_options) Remove.
       errorcount now a macro so do not define it.
-      current_nesting_level => work_nesting_level due to clash. 
+      current_nesting_level => work_nesting_level due to clash.
 
       * treelang.h
       errorcount now a macro so do not reference it.
@@ -114,11 +114,11 @@
 
 2001-06-11  Tim Josling  <tej@melbpc.org.au>
 
-	* treelang.exp (global) remove COBOL specific code. 
+	* treelang.exp (global) remove COBOL specific code.
 
 2001-05-24  Tim Josling  <tej@melbpc.org.au>
 
-        Created this directory and its tests. All derived from the cobol
+	Created this directory and its tests. All derived from the cobol
 	test swamp which was also all written by me.
-	
+
 
