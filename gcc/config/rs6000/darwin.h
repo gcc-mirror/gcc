@@ -77,7 +77,6 @@ do {									\
     else if (flag_pic == 1)						\
       {									\
         /* Darwin doesn't support -fpic.  */				\
-        warning (0, "-fpic is not supported; -fPIC assumed");		\
         flag_pic = 2;							\
       }									\
   }									\
