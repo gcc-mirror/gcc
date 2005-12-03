@@ -1,3 +1,7 @@
+2005-12-02  Stuart Hastings  <stuart@apple.com>
+
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Remove -fpic warning.
+
 2005-12-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-typeck.c (default_function_array_conversion,
