@@ -1,5 +1,9 @@
 2005-12-03  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/cast-pretty-print-1.c: New test.
+
+2005-12-03  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/c90-const-expr-4.c, gcc.dg/c99-const-expr-4.c: New tests.
 
 2005-12-02  Mark Mitchell  <mark@codesourcery.com>
