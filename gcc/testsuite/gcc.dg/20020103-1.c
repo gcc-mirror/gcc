@@ -1,8 +1,8 @@
 /* Verify that constant equivalences get reloaded properly, either by being
    spilled to the stack, or regenerated, but not dropped to memory.  */
 /* { dg-do compile { target i?86-*-* powerpc-*-* rs6000-*-* alpha*-*-* x86_64-*-*} } */
-/* { dg-options "-O2 -fpic -fno-omit-frame-pointer" } */
-/* { dg-final { scan-assembler-not "LC" } } */
+/* { dg-options "-O2 -fpic -fno-omit-frame-pointer -fno-asynchronous-unwind-tables" } */
+/* { dg-final { scan-assembler-not "LC\[0-9\]" } } */
 
 /* Clobber all call-saved registers that can hold a pointer value.  */
 #if defined(__i386__)

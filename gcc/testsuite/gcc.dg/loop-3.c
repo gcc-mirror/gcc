@@ -3,7 +3,8 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
-/* { dg-options "-O3 -mtune=i386" { target i?86-*-* x86_64-*-* } } */
+/* { dg-options "-O3 -mtune=i386" { target i?86-*-* } } */
+/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
 
 #if defined(STACK_SIZE) && (STACK_SIZE < 65536)
 # define BYTEMEM_SIZE 10000L

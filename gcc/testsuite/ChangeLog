@@ -1,3 +1,24 @@
+2005-12-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/loop-3.c: Skip if ix86 and -m64.
+	* gcc.dg/i386-local.c: Likewise.  Also skip if x86_64 and -m32.
+	
+	Backport:
+	
+	2005-08-25  Alan Modra  <amodra@bigpond.net.au>
+        * gcc.dg/20020103-1.c: Scan for LC[0-9], not LC.
+
+	2004-12-09  Richard Henderson  <rth@redhat.com>
+        * gcc.dg/loop-3.c: Don't use i386 tuning for amd64.
+
+	2004-11-17  Janis Johnson  <janis187@us.ibm.com>
+	* gcc.dg/i386-sse-8.c: Use dg-skip-if i?86 -m64.
+
+	2004-04-06  Jakub Jelinek  <jakub@redhat.com>
+        * gcc.dg/i386-sse-8.c: Don't use -march=pentium3 on x86_64.
+        * gcc.dg/i386-local.c: Expect %edi, not %eax register on x86_64.
+        * gcc.dg/20020103-1.c: Add -fno-asynchronous-unwind-tables to options.
+
 2005-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.old-deja/g++.other/enum5.C: Change from "run" to "compile".
