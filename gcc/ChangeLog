@@ -1,6 +1,13 @@
+2005-12-03  Alan Modra  <amodra@bigpond.net.au>
+
+	PR rtl-optimization 25197
+	* dwarf2out.c (dwarf2out_frame_debug_expr <rule 12>): Assert we
+	have a reg.
+
 2005-12-02  Stuart Hastings  <stuart@apple.com>
 
-	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Remove -fpic warning.
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Remove -fpic
+	warning.
 
 2005-12-03  Joseph S. Myers  <joseph@codesourcery.com>
 
