@@ -1,3 +1,8 @@
+2005-12-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24173
+	* g++.dg/template/friend40.C: New test.
+	
 2005-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25199
