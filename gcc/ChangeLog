@@ -1,3 +1,15 @@
+2005-12-03  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_stack_t): Remove toc_save_p,
+	toc_save_offset, toc_size, lr_size.
+	(rs6000_stack_info): Use memset rather than bss struct copy to init.
+	Test rs6000_ra_ever_killed last in condition setting lr_save_p.
+	Adjust for removal of unused rs6000_stack_t fields.
+	(debug_stack_info): Adjust.
+	(rs6000_ra_ever_killed): Expand FIND_REG_INC_NOTE.  Test for calls
+	first, and don't bother checking for set/inc of lr on sibcalls.
+	(rs6000_emit_epilogue): Tidy code restoring stack pointer.
+
 2005-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25199
