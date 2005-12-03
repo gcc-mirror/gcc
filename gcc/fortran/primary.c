@@ -1474,7 +1474,7 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist ** argp)
 
       if (sub_flag && gfc_match_char ('*') == MATCH_YES)
 	{
-	  m = gfc_match_st_label (&label, 0);
+	  m = gfc_match_st_label (&label);
 	  if (m == MATCH_NO)
 	    gfc_error ("Expected alternate return label at %C");
 	  if (m != MATCH_YES)

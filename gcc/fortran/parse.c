@@ -318,29 +318,24 @@ next_free (void)
   if (ISDIGIT (c))
     {
       /* Found a statement label?  */
-      m = gfc_match_st_label (&gfc_statement_label, 0);
+      m = gfc_match_st_label (&gfc_statement_label);
 
       d = gfc_peek_char ();
       if (m != MATCH_YES || !gfc_is_whitespace (d))
 	{
+	  gfc_match_small_literal_int (&c);
+	  if (c == 0)
+	    gfc_error_now ("Statement label at %C is zero");
+	  else
+	    gfc_error_now ("Statement label at %C is out of range");
+
 	  do
-	    {
-	      /* Skip the bad statement label.  */
-	      gfc_warning_now ("Ignoring bad statement label at %C");
-	      c = gfc_next_char ();
-	    }
-	  while (ISDIGIT (c));
+	    c = gfc_next_char ();
+	  while (ISDIGIT(c));
 	}
       else
 	{
 	  label_locus = gfc_current_locus;
-
-	  if (gfc_statement_label->value == 0)
-	    {
-	      gfc_warning_now ("Ignoring statement label of zero at %C");
-	      gfc_free_st_label (gfc_statement_label);
-	      gfc_statement_label = NULL;
-	    }
 
 	  gfc_gobble_whitespace ();
 

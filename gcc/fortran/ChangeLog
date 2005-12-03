@@ -1,3 +1,16 @@
+2005-12-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/25106
+	* parse.c (next_free): Use new prototype for gfc_match_st_label.
+	Correctly emit hard error if a label is zero.
+	* match.c (gfc_match_st_label): Never allow zero as a valid
+	label.
+	(gfc_match, gfc_match_do, gfc_match_goto): Use new prototype for
+	gfc_match_st_label.
+	* primary.c (): Use new prototype for gfc_match_st_label.
+	* io.c (): Likewise.
+	* match.h: Likewise.
+
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* trans.h (build1_v): Use build1, not build to build the
