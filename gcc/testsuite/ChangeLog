@@ -1,3 +1,11 @@
+2005-12-04  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/7776
+	* gcc.dg/Wstring-literal-comparison-1.c: New test case.
+	* gcc.dg/Wstring-literal-comparison-2.c: Likewise.
+	* gcc.dg/Wstring-literal-comparison-3.c: Likewise.
+	* gcc.dg/Wstring-literal-comparison-4.c: Likewise.
+
 2005-12-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cast-pretty-print-1.c: New test.

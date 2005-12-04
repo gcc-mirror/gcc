@@ -125,6 +125,10 @@ Wstrict-aliasing=
 Common Joined UInteger
 Warn about code which might break strict aliasing rules
 
+Wstring-literal-comparison
+Common Var(warn_string_literal_comparison)
+Warn about comparisons to constant string literals
+
 Wswitch
 Common Var(warn_switch)
 Warn about enumerated switches, with no default, missing a case

@@ -1,3 +1,14 @@
+2005-12-04  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/7776
+	* common.opt (Wstring-literal-comparison): New command line option.
+	* c-opts.c (c_common_handle_option): Set it with -Wall.
+	* c-typeck.c (parser_build_binary_op): Issue warning if either
+	operand of a comparison operator is a string literal, except for
+	testing equality or inequality against NULL.
+
+	* doc/invoke.texi: Document new -Wstring-literal-comparison option.
+
 2005-12-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-common.c (c_sizeof_or_alignof_type): Use fold_convert instead
