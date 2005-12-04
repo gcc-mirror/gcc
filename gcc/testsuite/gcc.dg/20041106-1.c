@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-struct S { long x __attribute__((packed)); };
+struct S { long x __attribute__((packed)); }; /* { dg-warning "attribute ignored" "" { target default_packed } } */
 volatile long sink;
 
 void foo (struct S *s)

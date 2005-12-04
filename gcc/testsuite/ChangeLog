@@ -1,3 +1,10 @@
+2005-12-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/20041106-1.c, gcc.dg/20030321-1.c, gcc.dg/pr17112-1.c,
+	gcc.dg/pr17112-1.c, g++.dg/other/packed1.C,
+	g++.dg/other/crash-4.C, g++.dg/ext/packed8.C: Match "attribute
+	ignored" warnings when "packing" is the same as the ABI layout.
+
 2005-12-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24173

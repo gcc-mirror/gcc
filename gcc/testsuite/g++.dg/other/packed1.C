@@ -11,7 +11,11 @@
 
 struct thing { int m; };
 
-struct pod {char a; thing m __attribute__ ((packed)); };
+struct pod
+ {
+   char a;
+   thing m __attribute__ ((packed)); // { dg-warning "attribute ignored" "" { target default_packed } }
+ };
 
 int main ()
 {
