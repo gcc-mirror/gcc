@@ -1,5 +1,11 @@
 2005-12-04  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* c-typeck.c (null_pointer_constant_p): New function.
+	(build_conditional_expr, build_c_cast, convert_for_assignment,
+	build_binary_op): Use it.
+
+2005-12-04  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* c-common.c (binary_op_error): Do not allow NOP_EXPR.
 	(c_common_truthvalue_conversion): Handle NOP_EXPR the same as
 	CONVERT_EXPR.
