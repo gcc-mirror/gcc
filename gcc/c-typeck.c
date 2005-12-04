@@ -2601,8 +2601,18 @@ pointer_diff (tree op0, tree op1)
      different mode in place.)
      So first try to find a common term here 'by hand'; we want to cover
      at least the cases that occur in legal static initializers.  */
-  con0 = TREE_CODE (op0) == NOP_EXPR ? TREE_OPERAND (op0, 0) : op0;
-  con1 = TREE_CODE (op1) == NOP_EXPR ? TREE_OPERAND (op1, 0) : op1;
+  if ((TREE_CODE (op0) == NOP_EXPR || TREE_CODE (op0) == CONVERT_EXPR)
+      && (TYPE_PRECISION (TREE_TYPE (op0))
+	  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0, 0)))))
+    con0 = TREE_OPERAND (op0, 0);
+  else
+    con0 = op0;
+  if ((TREE_CODE (op1) == NOP_EXPR || TREE_CODE (op1) == CONVERT_EXPR)
+      && (TYPE_PRECISION (TREE_TYPE (op1))
+	  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op1, 0)))))
+    con1 = TREE_OPERAND (op1, 0);
+  else
+    con1 = op1;
 
   if (TREE_CODE (con0) == PLUS_EXPR)
     {
@@ -2760,9 +2770,6 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	}
       arg = c_objc_common_truthvalue_conversion (arg);
       return invert_truthvalue (arg);
-
-    case NOP_EXPR:
-      break;
 
     case REALPART_EXPR:
       if (TREE_CODE (arg) == COMPLEX_CST)
@@ -2941,7 +2948,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       return val;
 
     default:
-      break;
+      gcc_unreachable ();
     }
 
   if (argtype == 0)
