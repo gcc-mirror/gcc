@@ -1,3 +1,8 @@
+2005-12-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/format.c: Removing unused code.
+	* intrinsics/random.c: Likewise.
+
 2005-12-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/24919
