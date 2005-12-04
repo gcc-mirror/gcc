@@ -1,3 +1,15 @@
+2005-12-04  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-common.c (binary_op_error): Do not allow NOP_EXPR.
+	(c_common_truthvalue_conversion): Handle NOP_EXPR the same as
+	CONVERT_EXPR.
+	(check_function_arguments_recurse): Allow both NOP_EXPR and
+	CONVERT_EXPR but check conversions preserve precision.
+	* c-typeck.c (pointer_diff): Allow both NOP_EXPR and CONVERT_EXPR
+	but check conversions preserve precision.
+	(build_unary_op): Don't allow NOP_EXPR.  Use gcc_unreachable () in
+	default case.
+
 2005-12-04  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/7776
