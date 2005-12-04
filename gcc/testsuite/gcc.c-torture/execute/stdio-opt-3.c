@@ -6,6 +6,8 @@
    Written by Kaveh R. Ghazi, 1/7/2001.  */
 
 #include <stdio.h>
+#include <stdarg.h>
+extern int fprintf_unlocked (FILE *, const char *, ...);
 extern int fprintf (FILE *, const char *, ...);
 extern void abort(void);
 
@@ -15,6 +17,8 @@ int main()
   const char *const s1 = "hello world";
   const char *const s2[] = { s1, 0 }, *const*s3;
   
+  fprintf (*s_ptr, "");
+  fprintf (*s_ptr, "%s", "");
   fprintf (*s_ptr, "%s", "hello");
   fprintf (*s_ptr, "%s", "\n");
   fprintf (*s_ptr, "%s", *s2);
@@ -49,6 +53,12 @@ int main()
   /* Test at least one instance of the __builtin_ style.  We do this
      to ensure that it works and that the prototype is correct.  */
   __builtin_fprintf (*s_ptr, "%s", "hello world\n");
+  /* Check the unlocked style, these evaluate to nothing to avoid
+     problems on systems without the unlocked functions.  */
+  fprintf_unlocked (*s_ptr, "");
+  __builtin_fprintf_unlocked (*s_ptr, "");
+  fprintf_unlocked (*s_ptr, "%s", "");
+  __builtin_fprintf_unlocked (*s_ptr, "%s", "");
 
   return 0;
 }
@@ -64,3 +74,19 @@ fprintf (FILE *stream, const char *string, ...)
   abort();
 }
 #endif
+
+/* Locking stdio doesn't matter for the purposes of this test.  */
+static int __attribute__ ((__noinline__))
+fprintf_unlocked (FILE *stream, const char *string, ...)
+{
+#ifdef __OPTIMIZE__
+  abort();
+#else
+  va_list ap;
+  int r;
+  va_start (ap, string);
+  r = vfprintf (stream, string, ap);
+  va_end (ap);
+  return r;
+#endif
+}

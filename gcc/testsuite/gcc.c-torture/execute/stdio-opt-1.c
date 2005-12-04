@@ -52,6 +52,10 @@ int main()
      prototypes are set correctly too.  */
   __builtin_fputc ('\n', *s_ptr);
   __builtin_fwrite ("hello\n", 1, 6, *s_ptr);
+  /* Check the unlocked style, these evaluate to nothing to avoid
+     problems on systems without the unlocked functions.  */
+  fputs_unlocked ("", *s_ptr);
+  __builtin_fputs_unlocked ("", *s_ptr);
 
   /* Check side-effects in conditional expression.  */
   s_ptr = s_array;
@@ -75,4 +79,16 @@ fputs(const char *string, FILE *stream)
 {
   abort();
 }
+
 #endif
+
+/* Locking stdio doesn't matter for the purposes of this test.  */
+static int __attribute__ ((__noinline__))
+fputs_unlocked(const char *string, FILE *stream)
+{
+#ifdef __OPTIMIZE__
+  abort();
+#else
+  return fputs (string, stream);
+#endif
+}

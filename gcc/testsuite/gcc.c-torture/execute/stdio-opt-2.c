@@ -5,7 +5,10 @@
 
    Written by Kaveh R. Ghazi, 12/4/2000.  */
 
+#include <stdio.h>
+#include <stdarg.h>
 extern int printf (const char *, ...);
+extern int printf_unlocked (const char *, ...);
 extern void abort(void);
 
 int main()
@@ -27,6 +30,7 @@ int main()
   if (s3 != s2+1 || *s3 != 0)
     abort();
   
+  printf ("");
   printf ("\n");
   printf ("hello world\n");
   
@@ -37,6 +41,10 @@ int main()
      prototypes are set correctly too.  */
   __builtin_putchar ('\n');
   __builtin_puts ("hello");
+  /* Check the unlocked style, these evaluate to nothing to avoid
+     problems on systems without the unlocked functions.  */
+  printf_unlocked ("");
+  __builtin_printf_unlocked ("");
 
   return 0;
 }
@@ -52,3 +60,19 @@ printf (const char *string, ...)
   abort();
 }
 #endif
+
+/* Locking stdio doesn't matter for the purposes of this test.  */
+static int __attribute__ ((__noinline__))
+printf_unlocked (const char *string, ...)
+{
+#ifdef __OPTIMIZE__
+  abort();
+#else
+  va_list ap;
+  int r;
+  va_start (ap, string);
+  r = vprintf (string, ap);
+  va_end (ap);
+  return r;
+#endif
+}

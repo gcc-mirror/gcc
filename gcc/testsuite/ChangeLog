@@ -1,5 +1,11 @@
 2005-12-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.c-torture/execute/stdio-opt-1.c,
+	gcc.c-torture/execute/stdio-opt-2.c,
+	gcc.c-torture/execute/stdio-opt-3.c: Test the unlocked style.
+
+2005-12-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* gcc.dg/loop-3.c: Skip if ix86 and -m64.
 	* gcc.dg/i386-local.c: Likewise.  Also skip if x86_64 and -m32.
 	

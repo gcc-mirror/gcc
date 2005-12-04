@@ -1,3 +1,13 @@
+2005-12-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/25022
+	* builtins.c (expand_builtin_fputs, expand_builtin_printf,
+	expand_builtin_fprintf): Lookup the explicit replacement functions
+	for any unlocked stdio builtin transformations.
+
+	* builtins.c (expand_builtin_fputs): Defer check for missing
+	replacement functions.
+
 2005-12-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/24103
