@@ -2552,6 +2552,20 @@ parser_build_binary_op (enum tree_code code, struct c_expr arg1,
 
     }
 
+  /* Warn about comparisons against string literals, with the exception
+     of testing for equality or inequality of a string literal with NULL.  */
+  if (code == EQ_EXPR || code == NE_EXPR)
+    {
+      if ((code1 == STRING_CST && !integer_zerop (arg2.value))
+	  || (code2 == STRING_CST && !integer_zerop (arg1.value)))
+	warning (OPT_Wstring_literal_comparison,
+		 "comparison with string literal");
+    }
+  else if (TREE_CODE_CLASS (code) == tcc_comparison
+	   && (code1 == STRING_CST || code2 == STRING_CST))
+    warning (OPT_Wstring_literal_comparison,
+	     "comparison with string literal");
+
   unsigned_conversion_warning (result.value, arg1.value);
   unsigned_conversion_warning (result.value, arg2.value);
   overflow_warning (result.value);
