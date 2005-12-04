@@ -1,3 +1,8 @@
+2005-12-04  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi, doc/standards.texi: Refer to
+	gcc-4.1/c99status.html.
+
 2005-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25199

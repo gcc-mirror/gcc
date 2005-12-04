@@ -1155,7 +1155,7 @@ ISO C90 as modified in amendment 1.
 @itemx iso9899:1999
 @itemx iso9899:199x
 ISO C99.  Note that this standard is not yet fully supported; see
-@w{@uref{http://gcc.gnu.org/c99status.html}} for more information.  The
+@w{@uref{http://gcc.gnu.org/gcc-4.1/c99status.html}} for more information.  The
 names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
 @item gnu89
