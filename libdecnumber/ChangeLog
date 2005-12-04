@@ -1,3 +1,13 @@
+2005-12-05  Ben Elliston  <bje@au.ibm.com>
+
+	* Makefile.in (clean): Remove stray reference to libcpp.a.
+
+	* decimal128.h, decContext.c, decRound.c, decimal32.c,
+	decNumber.c, decContext.h, decimal64.c, decimal32.h, decNumber.h,
+	decimal64.h, decUtility.c, decLibrary.c, configure.ac,
+	decNumberLocal.h, decUtility.h, decDPD.h, decimal128.c: Update FSF
+	office address.
+
 2005-12-01  Ben Elliston  <bje@au.ibm.com>
 
 	* Makefile.in (libdecnumber_a_SOURCES): Drop decLibrary.c.
