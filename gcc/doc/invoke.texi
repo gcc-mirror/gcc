@@ -244,6 +244,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wstack-protector @gol
 -Wstrict-aliasing -Wstrict-aliasing=2 @gol
+-Wstring-literal-comparison @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum @gol
 -Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
@@ -3403,8 +3404,18 @@ This option is only supported for C and Objective-C@.
 Make all warnings into errors.
 
 @item -Wstack-protector
+@opindex Wstack-protector
 This option is only active when @option{-fstack-protector} is active.  It
 warns about functions that will not be protected against stack smashing.
+
+@item -Wstring-literal-comparison
+@opindex Wstring-literal-comparison
+Warn about suspicious comparisons to string literal constants.  In C,
+direct comparisons against the memory address of a string literal, such
+as @code{if (x == "abc")}, typically indicate a programmer error, and
+even when intentional, result in unspecified behavior and are not portable.
+Usually these warnings alert that the programmer intended to use
+@code{strcmp}.  This warning is enabled by @option{-Wall}.
 
 @end table
 
