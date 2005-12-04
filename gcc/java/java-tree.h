@@ -242,6 +242,12 @@ extern int always_initialize_class_p;
 
 extern int flag_verify_invocations;
 
+/* Largest pc so far in this method that has been passed to lookup_label. */
+extern int highest_label_pc_this_method;
+
+/* Base value for this method to add to pc to get generated label. */
+extern int start_label_pc_this_method;
+
 typedef struct CPool constant_pool;
 
 #define CONSTANT_ResolvedFlag 16

@@ -1,3 +1,15 @@
+2005-12-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	2005-06-13  Per Bothner  <per@bothner.com>
+	* expr.c (int highest_label_pc_this_method,
+	start_label_pc_this_method): New globals.
+	(lookup_label): Add start_label_pc_this_method to pc for label, and
+	update highest_label_pc_this_method.  This prevents conflicts between
+	labels from different methods.
+	* java-tree.h: Declare new globals.
+	* jcf-parse.c (parse_class_file): If needed bump
+	start_label_pc_this_method and reset highest_label_pc_this_method.
+
 2005-11-24  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gcj.texi (gij options): Add -Xss documentation.
