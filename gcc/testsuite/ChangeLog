@@ -1,3 +1,11 @@
+2005-12-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+	2005-10-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23307
+	* g++.dg/template/crash38.C: New test.
+
 2005-12-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/stdio-opt-1.c,

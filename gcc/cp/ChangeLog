@@ -1,3 +1,12 @@
+2005-12-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+	2005-10-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23307
+	* pt.c (push_template_decl_real): Complain about attempts to
+	declare template variables.
+
 2005-11-30  Release Manager
 
 	* GCC 3.4.5 released.
