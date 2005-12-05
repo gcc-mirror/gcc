@@ -4751,7 +4751,12 @@ handle_alias_attribute (tree *node, tree name, tree args,
   tree decl = *node;
 
   if ((TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl))
-      || (TREE_CODE (decl) != FUNCTION_DECL && !DECL_EXTERNAL (decl)))
+      || (TREE_CODE (decl) != FUNCTION_DECL 
+	  && TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl))
+      /* A static variable declaration is always a tentative definition,
+	 but the alias is a non-tentative definition which overrides.  */
+      || (TREE_CODE (decl) != FUNCTION_DECL 
+	  && ! TREE_PUBLIC (decl) && DECL_INITIAL (decl)))
     {
       error ("%q+D defined both normally and as an alias", decl);
       *no_add_attrs = true;
@@ -4816,6 +4821,8 @@ handle_weakref_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       attr = tree_cons (get_identifier ("weakref"), NULL_TREE, attr);
 
       *no_add_attrs = true;
+
+      decl_attributes (node, attr, flags);
     }
   else
     {
@@ -4823,10 +4830,11 @@ handle_weakref_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	error ("%Jweakref attribute must appear before alias attribute",
 	       *node);
 
-      attr = tree_cons (get_identifier ("weak"), NULL_TREE, attr);
+      /* Can't call declare_weak because it wants this to be TREE_PUBLIC,
+	 and that isn't supported; and because it wants to add it to
+	 the list of weak decls, which isn't helpful.  */
+      DECL_WEAK (*node) = 1;
     }
-
-  decl_attributes (node, attr, flags);
 
   return NULL_TREE;
 }

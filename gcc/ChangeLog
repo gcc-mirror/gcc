@@ -1,5 +1,26 @@
 2005-12-05  Geoffrey Keating  <geoffk@apple.com>
 
+	* varasm.c (default_binds_local_p_1): Weakrefs don't bind locally.
+	A hidden weak object does bind locally.  Strong linkonce data
+	counts like any other strong symbol for binding.
+	(weak_finish_1): Don't specially handle weakrefs, they no longer
+	arrive here.
+	(assemble_alias): Weakrefs can't be TREE_PUBLIC yet.
+	* c-common.c (handle_alias_attribute): Allow static aliases
+	of variables.
+	(handle_weakref_attribute): Don't call declare_weak on weakrefs.
+	* gthr-dce.h: Make weakrefs static.
+	* gthr-tpf.h: Likewise.
+	* gthr-solaris.h: Likewise.
+	* gthr-posix.h: Likewise.
+	* gthr-posix95.h: Likewise.
+	* config/darwin.c (darwin_encode_section_info): static weakref
+	variables are not necessarily defined in this translation unit.
+	* doc/extend.texi (Function Attributes): Mention that an alias
+	attribute creates a definition for the thing it's attached to.
+	Change the documentation for weakref to say that the thing
+	it's attached to must be static.
+
 	* config/rs6000/host-darwin.c (segv_handler): Unblock SEGV so
 	we don't go into an infinite loop.
 

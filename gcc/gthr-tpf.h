@@ -70,7 +70,7 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
 # define __gthrw(name) \
-  extern __typeof(name) __gthrw_ ## name __attribute__ ((__weakref__(#name)))
+  static __typeof(name) __gthrw_ ## name __attribute__ ((__weakref__(#name)))
 #else
 # define __gthrw_asmname(cname) __gthrw_asmnamep (__USER_LABEL_PREFIX__, cname)
 # define __gthrw_asmnamep(prefix, cname) __gthrw_string (prefix) cname

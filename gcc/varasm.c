@@ -4508,10 +4508,6 @@ weak_finish_1 (tree decl)
   if (! TREE_USED (decl))
     return;
 
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl))
-      && lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
-    return;
-
 #ifdef ASM_WEAKEN_DECL
   ASM_WEAKEN_DECL (asm_out_file, decl, name, NULL);
 #else
@@ -4878,6 +4874,8 @@ assemble_alias (tree decl, tree target)
 	  TREE_CHAIN (alias) = target;
 #endif
 	}
+      if (TREE_PUBLIC (decl))
+	error ("weakref %q+D must have static linkage", decl);
     }
   else
     {
@@ -5619,21 +5617,29 @@ default_binds_local_p_1 (tree exp, int shlib)
   /* A non-decl is an entry in the constant pool.  */
   if (!DECL_P (exp))
     local_p = true;
+  /* Weakrefs may not bind locally, even though the weakref itself is
+     always static and therefore local.  */
+  else if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp)))
+    local_p = false;
   /* Static variables are always local.  */
   else if (! TREE_PUBLIC (exp))
     local_p = true;
-  /* A variable is local if the user explicitly tells us so.  */
-  else if (DECL_VISIBILITY_SPECIFIED (exp) && DECL_VISIBILITY (exp) != VISIBILITY_DEFAULT)
+  /* A variable is local if the user has said explicitly that it will
+     be.  */
+  else if (DECL_VISIBILITY_SPECIFIED (exp) 
+	   && DECL_VISIBILITY (exp) != VISIBILITY_DEFAULT)
     local_p = true;
-  /* Otherwise, variables defined outside this object may not be local.  */
+  /* Variables defined outside this object might not be local.  */
   else if (DECL_EXTERNAL (exp))
     local_p = false;
-  /* Linkonce and weak data are never local.  */
-  else if (DECL_ONE_ONLY (exp) || DECL_WEAK (exp))
-    local_p = false;
-  /* If none of the above and visibility is not default, make local.  */
+  /* If defined in this object and visibility is not default, must be
+     local.  */
   else if (DECL_VISIBILITY (exp) != VISIBILITY_DEFAULT)
     local_p = true;
+  /* Default visibility weak data can be overridden by a strong symbol
+     in another module and so are not local.  */
+  else if (DECL_WEAK (exp))
+    local_p = false;
   /* If PIC, then assume that any global name can be overridden by
      symbols resolved from other modules.  */
   else if (shlib)

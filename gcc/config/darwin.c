@@ -1003,6 +1003,7 @@ darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
 
   if (!DECL_EXTERNAL (decl)
       && (!TREE_PUBLIC (decl) || !DECL_WEAK (decl))
+      && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (decl))
       && ((TREE_STATIC (decl)
 	   && (!DECL_COMMON (decl) || !TREE_PUBLIC (decl)))
 	  || (!DECL_COMMON (decl) && DECL_INITIAL (decl)
