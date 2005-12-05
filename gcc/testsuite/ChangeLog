@@ -1,3 +1,16 @@
+2005-12-05  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/25247
+	* lib/target-supports-dg.exp (dg-skip-if): Fix target selector for
+	use in selector expressions.
+	(dg-xfail-if): Ditto.
+	* gcc.test-framework/dg-dot-run-sif-exp-P.c: New test.
+	* gcc.test-framework/dg-dot-run-sif-exp-U.c: New test.
+	* gcc.test-framework/dg-dot-run-xif-exp-P.c: New test.
+	* gcc.test-framework/dg-dot-run-xif-exp-XP.c: New test.
+	* gcc.test-framework/test-framework.exp: Skip generated tests if
+	CHECK_TEST_FRAMEWORK is not 1.
+
 2005-12-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR tree-optimization/24963
