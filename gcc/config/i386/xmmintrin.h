@@ -1198,8 +1198,8 @@ _mm_pause (void)
 do {									\
   __v4sf __r0 = (row0), __r1 = (row1), __r2 = (row2), __r3 = (row3);	\
   __v4sf __t0 = __builtin_ia32_unpcklps (__r0, __r1);			\
-  __v4sf __t2 = __builtin_ia32_unpcklps (__r2, __r3);			\
-  __v4sf __t1 = __builtin_ia32_unpckhps (__r0, __r1);			\
+  __v4sf __t1 = __builtin_ia32_unpcklps (__r2, __r3);			\
+  __v4sf __t2 = __builtin_ia32_unpckhps (__r0, __r1);			\
   __v4sf __t3 = __builtin_ia32_unpckhps (__r2, __r3);			\
   (row0) = __builtin_ia32_movlhps (__t0, __t1);				\
   (row1) = __builtin_ia32_movhlps (__t1, __t0);				\
