@@ -402,14 +402,14 @@ namespace __gnu_cxx
        */
       void
       reserve(size_type __res_arg = 0)
-      {	this->_M_reserve(__res_arg); }
+      { this->_M_reserve(__res_arg); }
 
       /**
        *  Erases the string, making it empty.
        */
       void
       clear()
-      { this->_M_mutate(0, this->size(), 0); }
+      { this->_M_erase(size_type(0), this->size()); }
 
       /**
        *  Returns true if the %string is empty.  Equivalent to *this == "".
@@ -529,7 +529,8 @@ namespace __gnu_cxx
        *  @return  Reference to this string.
        */
       __versa_string&
-      append(const __versa_string& __str);
+      append(const __versa_string& __str)
+      { return _M_append(__str._M_data(), __str.size()); }
 
       /**
        *  @brief  Append a substring.
@@ -544,7 +545,10 @@ namespace __gnu_cxx
        *  characters in @a str, the remainder of @a str is appended.
        */
       __versa_string&
-      append(const __versa_string& __str, size_type __pos, size_type __n);
+      append(const __versa_string& __str, size_type __pos, size_type __n)
+      { return _M_append(__str._M_data()
+			 + __str._M_check(__pos, "__versa_string::append"),
+			 __str._M_limit(__pos, __n)); }
 
       /**
        *  @brief  Append a C substring.
@@ -553,7 +557,12 @@ namespace __gnu_cxx
        *  @return  Reference to this string.
        */
       __versa_string&
-      append(const _CharT* __s, size_type __n);
+      append(const _CharT* __s, size_type __n)
+      {
+	__glibcxx_requires_string_len(__s, __n);
+	_M_check_length(size_type(0), __n, "__versa_string::append");
+	return _M_append(__s, __n);
+      }
 
       /**
        *  @brief  Append a C string.
@@ -564,7 +573,9 @@ namespace __gnu_cxx
       append(const _CharT* __s)
       {
 	__glibcxx_requires_string(__s);
-	return this->append(__s, traits_type::length(__s));
+	const size_type __n = traits_type::length(__s);
+	_M_check_length(size_type(0), __n, "__versa_string::append");
+	return _M_append(__s, __n);
       }
 
       /**
@@ -576,7 +587,8 @@ namespace __gnu_cxx
        *  Appends n copies of c to this string.
        */
       __versa_string&
-      append(size_type __n, _CharT __c);
+      append(size_type __n, _CharT __c)
+      { return _M_replace_aux(this->size(), size_type(0), __n, __c); }
 
       /**
        *  @brief  Append a range of characters.
@@ -598,11 +610,11 @@ namespace __gnu_cxx
       void
       push_back(_CharT __c)
       { 
-	const size_type __len = 1 + this->size();
-	if (__len > this->capacity() || this->_M_is_shared())
-	  this->reserve(__len);
-	traits_type::assign(this->_M_data()[this->size()], __c);
-	this->_M_set_length(__len);
+	const size_type __size = this->size();
+	if (__size + 1 > this->capacity() || this->_M_is_shared())
+	  this->_M_mutate(__size, size_type(0), 0, size_type(1));
+	traits_type::assign(this->_M_data()[__size], __c);
+	this->_M_set_length(__size + 1);
       }
 
       /**
@@ -631,9 +643,9 @@ namespace __gnu_cxx
        */
       __versa_string&
       assign(const __versa_string& __str, size_type __pos, size_type __n)
-      { return this->assign(__str._M_data()
-			    + __str._M_check(__pos, "__versa_string::assign"),
-			    __str._M_limit(__pos, __n)); }
+      { return _M_replace(size_type(0), this->size(), __str._M_data()
+			  + __str._M_check(__pos, "__versa_string::assign"),
+			  __str._M_limit(__pos, __n)); }
 
       /**
        *  @brief  Set value to a C substring.
@@ -646,7 +658,11 @@ namespace __gnu_cxx
        *  available characters in @a s, the remainder of @a s is used.
        */
       __versa_string&
-      assign(const _CharT* __s, size_type __n);
+      assign(const _CharT* __s, size_type __n)
+      {
+	__glibcxx_requires_string_len(__s, __n);
+	return _M_replace(size_type(0), this->size(), __s, __n);
+      }
 
       /**
        *  @brief  Set value to contents of a C string.
@@ -661,7 +677,8 @@ namespace __gnu_cxx
       assign(const _CharT* __s)
       {
 	__glibcxx_requires_string(__s);
-	return this->assign(__s, traits_type::length(__s));
+	return _M_replace(size_type(0), this->size(), __s,
+			  traits_type::length(__s));
       }
 
       /**
@@ -735,7 +752,8 @@ namespace __gnu_cxx
       */
       __versa_string&
       insert(size_type __pos1, const __versa_string& __str)
-      { return this->insert(__pos1, __str, size_type(0), __str.size()); }
+      { return this->replace(__pos1, size_type(0),
+			     __str._M_data(), __str.size()); }
 
       /**
        *  @brief  Insert a substring.
@@ -758,9 +776,9 @@ namespace __gnu_cxx
       __versa_string&
       insert(size_type __pos1, const __versa_string& __str,
 	     size_type __pos2, size_type __n)
-      { return this->insert(__pos1, __str._M_data()
-			    + __str._M_check(__pos2, "__versa_string::insert"),
-			    __str._M_limit(__pos2, __n)); }
+      { return this->replace(__pos1, size_type(0), __str._M_data()
+			     + __str._M_check(__pos2, "__versa_string::insert"),
+			     __str._M_limit(__pos2, __n)); }
 
       /**
        *  @brief  Insert a C substring.
@@ -779,7 +797,8 @@ namespace __gnu_cxx
        *  thrown.
       */
       __versa_string&
-      insert(size_type __pos, const _CharT* __s, size_type __n);
+      insert(size_type __pos, const _CharT* __s, size_type __n)
+      { return this->replace(__pos, size_type(0), __s, __n); }
 
       /**
        *  @brief  Insert a C string.
@@ -800,7 +819,8 @@ namespace __gnu_cxx
       insert(size_type __pos, const _CharT* __s)
       {
 	__glibcxx_requires_string(__s);
-	return this->insert(__pos, __s, traits_type::length(__s));
+	return this->replace(__pos, size_type(0), __s,
+			     traits_type::length(__s));
       }
 
       /**
@@ -843,7 +863,7 @@ namespace __gnu_cxx
 	const size_type __pos = __p - _M_ibegin();
 	_M_replace_aux(__pos, size_type(0), size_type(1), __c);
 	this->_M_set_leaked();
-	return _M_ibegin() + __pos;
+	return iterator(this->_M_data() + __pos);
       }
 
       /**
@@ -863,8 +883,8 @@ namespace __gnu_cxx
       __versa_string&
       erase(size_type __pos = 0, size_type __n = npos)
       { 
-	this->_M_mutate(_M_check(__pos, "__versa_string::erase"),
-			_M_limit(__pos, __n), size_type(0));
+	this->_M_erase(_M_check(__pos, "__versa_string::erase"),
+		       _M_limit(__pos, __n));
 	return *this;
       }
 
@@ -882,9 +902,9 @@ namespace __gnu_cxx
 	_GLIBCXX_DEBUG_PEDASSERT(__position >= _M_ibegin()
 				 && __position < _M_iend());
 	const size_type __pos = __position - _M_ibegin();
-	this->_M_mutate(__pos, size_type(1), size_type(0));
+	this->_M_erase(__pos, size_type(1));
 	this->_M_set_leaked();
-	return _M_ibegin() + __pos;
+	return iterator(this->_M_data() + __pos);
       }
 
       /**
@@ -902,9 +922,9 @@ namespace __gnu_cxx
 	_GLIBCXX_DEBUG_PEDASSERT(__first >= _M_ibegin() && __first <= __last
 				 && __last <= _M_iend());
         const size_type __pos = __first - _M_ibegin();
-	this->_M_mutate(__pos, __last - __first, size_type(0));
+	this->_M_erase(__pos, __last - __first);
 	this->_M_set_leaked();
-	return _M_ibegin() + __pos;
+	return iterator(this->_M_data() + __pos);
       }
 
       /**
@@ -974,7 +994,12 @@ namespace __gnu_cxx
       */
       __versa_string&
       replace(size_type __pos, size_type __n1, const _CharT* __s,
-	      size_type __n2);
+	      size_type __n2)
+      {
+	__glibcxx_requires_string_len(__s, __n2);
+	return _M_replace(_M_check(__pos, "__versa_string::replace"),
+			  _M_limit(__pos, __n1), __s, __n2);
+      }
 
       /**
        *  @brief  Replace characters with value of a C string.
@@ -1187,8 +1212,11 @@ namespace __gnu_cxx
 		     _CharT __c);
 
       __versa_string&
-      _M_replace_safe(size_type __pos1, size_type __n1, const _CharT* __s,
-		      size_type __n2);
+      _M_replace(size_type __pos, size_type __len1, const _CharT* __s,
+		 const size_type __len2);
+
+      __versa_string&
+      _M_append(const _CharT* __s, size_type __n);
 
     public:
 
@@ -1771,12 +1799,7 @@ namespace __gnu_cxx
 	   template <typename, typename, typename> class _Base>
     __versa_string<_CharT, _Traits, _Alloc, _Base>
     operator+(const __versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
-	      const __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
-    {
-      __versa_string<_CharT, _Traits, _Alloc, _Base> __str(__lhs);
-      __str.append(__rhs);
-      return __str;
-    }
+	      const __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs);
 
   /**
    *  @brief  Concatenate C string and string.
@@ -1810,14 +1833,9 @@ namespace __gnu_cxx
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
-    inline __versa_string<_CharT, _Traits, _Alloc, _Base>
+    __versa_string<_CharT, _Traits, _Alloc, _Base>
     operator+(const __versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
-	      const _CharT* __rhs)
-    {
-      __versa_string<_CharT, _Traits, _Alloc, _Base> __str(__lhs);
-      __str.append(__rhs);
-      return __str;
-    }
+	      const _CharT* __rhs);
 
   /**
    *  @brief  Concatenate string and character.
@@ -1827,17 +1845,9 @@ namespace __gnu_cxx
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
-    inline __versa_string<_CharT, _Traits, _Alloc, _Base>
+    __versa_string<_CharT, _Traits, _Alloc, _Base>
     operator+(const __versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
-	      _CharT __rhs)
-    {
-      typedef __versa_string<_CharT, _Traits, _Alloc, _Base>
-	                                                __string_type;
-      typedef typename __string_type::size_type		__size_type;
-      __string_type __str(__lhs);
-      __str.append(__size_type(1), __rhs);
-      return __str;
-    }
+	      _CharT __rhs);
 
   // operator ==
   /**
