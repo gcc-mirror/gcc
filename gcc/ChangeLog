@@ -1,3 +1,8 @@
+2005-12-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* doc/c-tree.texi (Function Bodies): Remove description of
+	RETURN_INIT.
+
 2005-12-05  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/libgcc.texi (__floatunsisf, __floatunsidf, __floatunsitf,
