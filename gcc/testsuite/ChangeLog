@@ -1,3 +1,17 @@
+2005-12-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR tree-optimization/24963
+	* gcc.dg/vect/vect-62.c: Remove outdated dg-line.
+
+	PR target/24108
+	* gcc.dg/vect/vect-76.c: Do not XFAIL on vect_no_align platforms.
+
+	PR target/18580
+	* gcc.dg/vect/vect-reduc-1char.c: XFAIL on vect_no_int_max platforms.
+	* gcc.dg/vect/vect-reduc-2short.c: Likewise.
+	* gcc.dg/vect/vect-reduc-1short.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2char.c: Likewise.
+
 2005-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/movq-2.c: Add -mtune=pentium4 to
