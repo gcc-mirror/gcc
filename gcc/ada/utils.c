@@ -2789,9 +2789,8 @@ convert (tree type, tree expr)
   /* If the input is a biased type, adjust first.  */
   if (ecode == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (etype))
     return convert (type, fold (build2 (PLUS_EXPR, TREE_TYPE (etype),
-					fold (build1 (NOP_EXPR,
-						      TREE_TYPE (etype),
-						      expr)),
+					fold_convert (TREE_TYPE (etype),
+						      expr),
 					TYPE_MIN_VALUE (etype))));
 
   /* If the input is a justified modular type, we need to extract the actual
@@ -2940,7 +2939,7 @@ convert (tree type, tree expr)
   else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype)
 	   || (code == INTEGER_CST && ecode == INTEGER_CST
 	       && (type == TREE_TYPE (etype) || etype == TREE_TYPE (type))))
-    return fold (build1 (NOP_EXPR, type, expr));
+    return fold_convert (type, expr);
 
   switch (code)
     {
@@ -2948,7 +2947,7 @@ convert (tree type, tree expr)
       return build1 (CONVERT_EXPR, type, expr);
 
     case BOOLEAN_TYPE:
-      return fold (build1 (NOP_EXPR, type, gnat_truthvalue_conversion (expr)));
+      return fold_convert (type, gnat_truthvalue_conversion (expr));
 
     case INTEGER_TYPE:
       if (TYPE_HAS_ACTUAL_BOUNDS_P (type)
@@ -2956,10 +2955,10 @@ convert (tree type, tree expr)
 	      || (ecode == RECORD_TYPE && TYPE_CONTAINS_TEMPLATE_P (etype))))
 	return unchecked_convert (type, expr, false);
       else if (TYPE_BIASED_REPRESENTATION_P (type))
-	return fold (build1 (CONVERT_EXPR, type,
-			     fold (build2 (MINUS_EXPR, TREE_TYPE (type),
-					   convert (TREE_TYPE (type), expr),
-					   TYPE_MIN_VALUE (type)))));
+	return fold_convert (type,
+			     fold_build2 (MINUS_EXPR, TREE_TYPE (type),
+					  convert (TREE_TYPE (type), expr),
+					  TYPE_MIN_VALUE (type)));
 
       /* ... fall through ... */
 
