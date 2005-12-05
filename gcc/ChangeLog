@@ -1,5 +1,18 @@
 2005-12-05  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/arm/arm.c (arm_cxx_determine_class_data_visibility): Preserve
+	previous behaviour.
+	* config/darwin.h (TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT): Define to
+	hook_bool_void_false.
+	(TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY): Define.
+	* config/darwin.c (darwin_cxx_determine_class_data_visibility): New.
+
+	* config/darwin.c (machopic_select_section): It's not defined
+	as weak if it's only marked as weak_import.
+	
+	* config/darwin-protos.h (darwin_cxx_determine_class_data_visibility):
+	Prototype.
+
 	* varasm.c (default_binds_local_p_1): Weakrefs don't bind locally.
 	A hidden weak object does bind locally.  Strong linkonce data
 	counts like any other strong symbol for binding.
