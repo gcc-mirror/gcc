@@ -497,9 +497,8 @@ namespace __gnu_cxx
 	    }
 	  else if (!_M_is_local())
 	    {
-	      const size_type __tmp_capacity = _M_allocated_capacity;
 	      _S_copy(_M_local_data, _M_data(), _M_length() + 1);
-	      _M_destroy(__tmp_capacity + 1);
+	      _M_destroy(__capacity + 1);
 	      _M_data(_M_local_data);
 	    }
 	}
