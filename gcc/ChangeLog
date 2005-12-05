@@ -1,3 +1,9 @@
+2005-12-05  Jan Beulich  <jbeulich@novell.com>
+
+	* libgcc2.c (__popcountSI2): Don't use wide type for iterator and
+	result.
+	(__popcountDI2): Likewise.
+
 2005-12-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25166
