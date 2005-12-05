@@ -1,3 +1,7 @@
+2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
+
+        * acx.m4 (GCC_TARGET_TOOL): New.
+
 2005-09-23  Tom Tromey  <tromey@redhat.com>
 
 	* enable.m4: New file.
@@ -5,7 +9,7 @@
 
 2005-08-12  Paolo Bonzini  <bonzini@gnu.org>
 
-	* config/acx.m4 (NCN_CHECK_TARGET_TOOL, NCN_STRICT_CHECK_TOOL,
+	* acx.m4 (NCN_CHECK_TARGET_TOOL, NCN_STRICT_CHECK_TOOL,
 	NCN_STRICT_CHECK_TARGET_TOOL): Remove.
 	(NCN_STRICT_CHECK_TOOLS, NCN_STRICT_CHECK_TARGET_TOOLS): New,
 	based on the deleted macros.

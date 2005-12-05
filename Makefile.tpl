@@ -136,7 +136,8 @@ HOST_CONFIGARGS = @host_configargs@
 # with srcdir=..
 HOST_SUBDIR = @host_subdir@
 # This is the list of variables to export in the environment when
-# configuring subdirectories for the host system.
+# configuring subdirectories for the host system.  We need to pass
+# some to the GCC configure because of its hybrid host/target nature.
 HOST_EXPORTS = \
 	$(BASE_EXPORTS) \
 	CC="$(CC)"; export CC; \
@@ -155,6 +156,13 @@ HOST_EXPORTS = \
 	WINDRES="$(WINDRES)"; export WINDRES; \
 	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
 	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	AR_FOR_TARGET="$(AR_FOR_TARGET)"; export AR_FOR_TARGET; \
+	AS_FOR_TARGET="$(AS_FOR_TARGET)"; export AS_FOR_TARGET; \
+	GCC_FOR_TARGET="$(GCC_FOR_TARGET)"; export GCC_FOR_TARGET; \
+	LD_FOR_TARGET="$(LD_FOR_TARGET)"; export LD_FOR_TARGET; \
+	NM_FOR_TARGET="$(NM_FOR_TARGET)"; export NM_FOR_TARGET; \
+	OBJDUMP_FOR_TARGET="$(OBJDUMP_FOR_TARGET)"; export OBJDUMP_FOR_TARGET; \
+	RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)"; export RANLIB_FOR_TARGET; \
 	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
@@ -186,7 +194,7 @@ TARGET_CONFIGARGS = @target_configargs@ --with-target-subdir="$(TARGET_SUBDIR)"
 BASE_TARGET_EXPORTS = \
 	$(BASE_EXPORTS) \
 	AR="$(AR_FOR_TARGET)"; export AR; \
-	AS="$(AS_FOR_TARGET)"; export AS; \
+	AS="$(COMPILER_AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
@@ -195,10 +203,10 @@ BASE_TARGET_EXPORTS = \
 	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
 	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
-	LD="$(LD_FOR_TARGET)"; export LD; \
+	LD="$(COMPILER_LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
 	LIPO="$(LIPO_FOR_TARGET)"; export LIPO; \
-	NM="$(NM_FOR_TARGET)"; export NM; \
+	NM="$(COMPILER_NM_FOR_TARGET)"; export NM; \
 	OBJDUMP="$(OBJDUMP_FOR_TARGET)"; export OBJDUMP; \
 	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
 	STRIP="$(STRIP_FOR_TARGET)"; export STRIP; \
@@ -248,47 +256,14 @@ BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 # here so that they can be overridden by Makefile fragments.
 BOOT_CFLAGS= -g -O2
 
-CONFIGURED_BISON = @CONFIGURED_BISON@
-BISON = `if [ -f $$r/$(BUILD_SUBDIR)/bison/tests/bison ] ; then \
-	    echo $$r/$(BUILD_SUBDIR)/bison/tests/bison ; \
-	 else \
-	    echo ${CONFIGURED_BISON} ; \
-	 fi`
-
-CONFIGURED_YACC = @CONFIGURED_YACC@
-YACC = `if [ -f $$r/$(BUILD_SUBDIR)/bison/tests/bison ] ; then \
-	    echo $$r/$(BUILD_SUBDIR)/bison/tests/bison -y ; \
-	elif [ -f $$r/$(BUILD_SUBDIR)/byacc/byacc ] ; then \
-	    echo $$r/$(BUILD_SUBDIR)/byacc/byacc ; \
-	else \
-	    echo ${CONFIGURED_YACC} ; \
-	fi`
-
-CONFIGURED_FLEX = @CONFIGURED_FLEX@
-FLEX = `if [ -f $$r/$(BUILD_SUBDIR)/flex/flex ] ; \
-	then echo $$r/$(BUILD_SUBDIR)/flex/flex ; \
-	else echo ${CONFIGURED_FLEX} ; fi`
-
-CONFIGURED_LEX = @CONFIGURED_LEX@
-LEX = `if [ -f $$r/$(BUILD_SUBDIR)/flex/flex ] ; \
-	then echo $$r/$(BUILD_SUBDIR)/flex/flex ; \
-	else echo ${CONFIGURED_LEX} ; fi`
-
-CONFIGURED_M4 = @CONFIGURED_M4@
-M4 = `if [ -f $$r/$(BUILD_SUBDIR)/m4/m4 ] ; \
-	then echo $$r/$(BUILD_SUBDIR)/m4/m4 ; \
-	else echo ${CONFIGURED_M4} ; fi`
-
-# For an installed makeinfo, we require it to be from texinfo 4.2 or
-# higher, else we use the "missing" dummy.  We also pass the subdirectory
-# makeinfo even if only the Makefile is there, because Texinfo builds its
-# manual when made, and it requires its own version.
-CONFIGURED_MAKEINFO = @CONFIGURED_MAKEINFO@
-MAKEINFO = `if [ -f $$r/$(BUILD_SUBDIR)/texinfo/makeinfo/Makefile ] ; \
-	then echo $$r/$(BUILD_SUBDIR)/texinfo/makeinfo/makeinfo ; \
-	else if (${CONFIGURED_MAKEINFO} --version \
-	  | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])') >/dev/null 2>&1; \
-        then echo ${CONFIGURED_MAKEINFO}; else echo $$s/missing makeinfo; fi; fi`
+BISON = @BISON@
+YACC = @YACC@
+FLEX = @FLEX@
+LEX = @LEX@
+M4 = @M4@
+MAKEINFO = @MAKEINFO@
+EXPECT = @EXPECT@
+RUNTEST = @RUNTEST@
 
 # This just becomes part of the MAKEINFO definition passed down to
 # sub-makes.  It lets flags be given on the command line while still
@@ -296,43 +271,28 @@ MAKEINFO = `if [ -f $$r/$(BUILD_SUBDIR)/texinfo/makeinfo/Makefile ] ; \
 # (Default to avoid splitting info files by setting the threshold high.)
 MAKEINFOFLAGS = --split-size=5000000
 
-# FIXME: expect may become a build tool?
-EXPECT = `if [ -f $$r/$(HOST_SUBDIR)/expect/expect ] ; \
-	then echo $$r/$(HOST_SUBDIR)/expect/expect ; \
-	else echo expect ; fi`
-
-RUNTEST = `if [ -f $$s/dejagnu/runtest ] ; \
-	then echo $$s/dejagnu/runtest ; \
-	else echo runtest ; fi`
-
 # ---------------------------------------------
 # Programs producing files for the HOST machine
 # ---------------------------------------------
 
 AS = @AS@
-
 AR = @AR@
 AR_FLAGS = rc
-
 CC = @CC@
-CFLAGS = @CFLAGS@
-LIBCFLAGS = $(CFLAGS)
-
 CXX = @CXX@
-CXXFLAGS = @CXXFLAGS@
-LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
-
 DLLTOOL = @DLLTOOL@
-
-NM = @NM@
-
 LD = @LD@
-LDFLAGS = 
-
+LIPO = @LIPO@
+NM = @NM@
 RANLIB = @RANLIB@
-
+STRIP = @STRIP@
 WINDRES = @WINDRES@
 
+CFLAGS = @CFLAGS@
+LDFLAGS = 
+LIBCFLAGS = $(CFLAGS)
+CXXFLAGS = @CXXFLAGS@
+LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
 PICFLAG = 
 
 # -----------------------------------------------
@@ -342,45 +302,31 @@ PICFLAG =
 FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
 
 AR_FOR_TARGET=@AR_FOR_TARGET@
-CONFIGURED_AR_FOR_TARGET=@CONFIGURED_AR_FOR_TARGET@
-USUAL_AR_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/binutils/ar ] ; then \
-    echo $$r/$(HOST_SUBDIR)/binutils/ar ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(AR); \
-    else \
-      echo $(CONFIGURED_AR_FOR_TARGET) ; \
-    fi; \
-  fi`
-
 AS_FOR_TARGET=@AS_FOR_TARGET@
-CONFIGURED_AS_FOR_TARGET=@CONFIGURED_AS_FOR_TARGET@
-USUAL_AS_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/gas/as-new ] ; then \
-    echo $$r/$(HOST_SUBDIR)/gas/as-new ; \
-  elif [ -f $$r/$(HOST_SUBDIR)/gcc/as ]; then \
-    echo $$r/$(HOST_SUBDIR)/gcc/as ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(AS); \
-    else \
-      echo $(CONFIGURED_AS_FOR_TARGET) ; \
-    fi; \
-  fi`
-
 CC_FOR_TARGET=$(STAGE_CC_WRAPPER) @CC_FOR_TARGET@ $(FLAGS_FOR_TARGET)
-CONFIGURED_CC_FOR_TARGET=@CONFIGURED_CC_FOR_TARGET@
-USUAL_CC_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/gcc/xgcc ] ; then \
-    echo $$r/$(HOST_SUBDIR)/gcc/xgcc -B$$r/$(HOST_SUBDIR)/gcc/ ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(CC); \
-    else \
-      echo $(CONFIGURED_CC_FOR_TARGET) ; \
-    fi; \
-  fi`
+
+# If GCC_FOR_TARGET is not overriden on the command line, then this
+# variable is passed down to the gcc Makefile, where it is used to
+# build libgcc2.a.  We define it here so that it can itself be
+# overridden on the command line.
+GCC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCC_FOR_TARGET@ $(FLAGS_FOR_TARGET)
+CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @CXX_FOR_TARGET@ $(FLAGS_FOR_TARGET)
+RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @RAW_CXX_FOR_TARGET@ $(FLAGS_FOR_TARGET)
+GCJ_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCJ_FOR_TARGET@ $(FLAGS_FOR_TARGET)
+GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) @GFORTRAN_FOR_TARGET@ $(FLAGS_FOR_TARGET)
+DLLTOOL_FOR_TARGET=@DLLTOOL_FOR_TARGET@
+LD_FOR_TARGET=@LD_FOR_TARGET@
+
+LIPO_FOR_TARGET=@LIPO_FOR_TARGET@
+NM_FOR_TARGET=@NM_FOR_TARGET@
+OBJDUMP_FOR_TARGET=@OBJDUMP_FOR_TARGET@
+RANLIB_FOR_TARGET=@RANLIB_FOR_TARGET@
+STRIP_FOR_TARGET=@STRIP_FOR_TARGET@
+WINDRES_FOR_TARGET=@WINDRES_FOR_TARGET@
+
+COMPILER_AS_FOR_TARGET=@COMPILER_AS_FOR_TARGET@
+COMPILER_LD_FOR_TARGET=@COMPILER_LD_FOR_TARGET@
+COMPILER_NM_FOR_TARGET=@COMPILER_NM_FOR_TARGET@
 
 # During gcc bootstrap, if we use some random cc for stage1 then
 # CFLAGS will be just -g.  We want to ensure that TARGET libraries
@@ -388,196 +334,10 @@ USUAL_CC_FOR_TARGET = ` \
 # prepend -O2 when setting CFLAGS_FOR_TARGET.
 CFLAGS_FOR_TARGET = -O2 $(CFLAGS) $(SYSROOT_CFLAGS_FOR_TARGET)
 SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
-
-# If GCC_FOR_TARGET is not overriden on the command line, then this
-# variable is passed down to the gcc Makefile, where it is used to
-# build libgcc2.a.  We define it here so that it can itself be
-# overridden on the command line.
-GCC_FOR_TARGET=@GCC_FOR_TARGET@
-CONFIGURED_GCC_FOR_TARGET=@CONFIGURED_GCC_FOR_TARGET@
-USUAL_GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) \
-  $$r/$(HOST_SUBDIR)/gcc/xgcc -B$$r/$(HOST_SUBDIR)/gcc/ $(FLAGS_FOR_TARGET)
-LIBCFLAGS_FOR_TARGET = $(CFLAGS_FOR_TARGET)
-
-CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @CXX_FOR_TARGET@ $(FLAGS_FOR_TARGET)
-CONFIGURED_CXX_FOR_TARGET=@CONFIGURED_CXX_FOR_TARGET@
-USUAL_CXX_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/gcc/g++ ] ; then \
-    (echo $$r/$(HOST_SUBDIR)/gcc/g++ -B$$r/$(HOST_SUBDIR)/gcc -nostdinc++; \
-    test ! -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags || $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags --build-includes; \
-    echo -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs) | tr '\015\012' '  '; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(CXX); \
-    else \
-      echo $(CONFIGURED_CXX_FOR_TARGET) ; \
-    fi; \
-  fi`
-
-RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @RAW_CXX_FOR_TARGET@ $(FLAGS_FOR_TARGET)
-USUAL_RAW_CXX_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/gcc/xgcc ] ; then \
-    echo $$r/$(HOST_SUBDIR)/gcc/xgcc -shared-libgcc -B$$r/$(HOST_SUBDIR)/gcc -nostdinc++ -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(CXX); \
-    else \
-      echo $(CONFIGURED_CXX_FOR_TARGET) ; \
-    fi; \
-  fi`
-
 CXXFLAGS_FOR_TARGET = $(CXXFLAGS) $(SYSROOT_CFLAGS_FOR_TARGET)
+LIBCFLAGS_FOR_TARGET = $(CFLAGS_FOR_TARGET)
 LIBCXXFLAGS_FOR_TARGET = $(CXXFLAGS_FOR_TARGET) -fno-implicit-templates
-
-GCJ_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCJ_FOR_TARGET@ $(FLAGS_FOR_TARGET)
-CONFIGURED_GCJ_FOR_TARGET=@CONFIGURED_GCJ_FOR_TARGET@
-USUAL_GCJ_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/gcc/gcj ] ; then \
-    echo $$r/$(HOST_SUBDIR)/gcc/gcj -B$$r/$(HOST_SUBDIR)/gcc ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(GCJ); \
-    else \
-      echo $(CONFIGURED_GCJ_FOR_TARGET) ; \
-    fi; \
-  fi`
-
-GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) @GFORTRAN_FOR_TARGET@ $(FLAGS_FOR_TARGET)
-CONFIGURED_GFORTRAN_FOR_TARGET=@CONFIGURED_GFORTRAN_FOR_TARGET@
-USUAL_GFORTRAN_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/gcc/gfortran ] ; then \
-    echo $$r/$(HOST_SUBDIR)/gcc/gfortran -B$$r/$(HOST_SUBDIR)/gcc ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(GFORTRAN); \
-    else \
-      echo $(CONFIGURED_GFORTRAN_FOR_TARGET) ; \
-    fi; \
-  fi`
-
-
-DLLTOOL_FOR_TARGET=@DLLTOOL_FOR_TARGET@
-CONFIGURED_DLLTOOL_FOR_TARGET=@CONFIGURED_DLLTOOL_FOR_TARGET@
-USUAL_DLLTOOL_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/binutils/dlltool ] ; then \
-    echo $$r/$(HOST_SUBDIR)/binutils/dlltool ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(DLLTOOL); \
-    else \
-      echo $(CONFIGURED_DLLTOOL_FOR_TARGET) ; \
-    fi; \
-  fi`
-
-LD_FOR_TARGET=@LD_FOR_TARGET@
-CONFIGURED_LD_FOR_TARGET=@CONFIGURED_LD_FOR_TARGET@
-USUAL_LD_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/ld/ld-new ] ; then \
-    echo $$r/$(HOST_SUBDIR)/ld/ld-new ; \
-  elif [ -f $$r/$(HOST_SUBDIR)/gcc/collect-ld ]; then \
-    echo $$r/$(HOST_SUBDIR)/gcc/collect-ld ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(LD); \
-    else \
-      echo $(CONFIGURED_LD_FOR_TARGET) ; \
-    fi; \
-  fi`
-
 LDFLAGS_FOR_TARGET = 
-
-LIPO_FOR_TARGET=@LIPO_FOR_TARGET@
-CONFIGURED_LIPO_FOR_TARGET=@CONFIGURED_LIPO_FOR_TARGET@
-USUAL_LIPO_FOR_TARGET = ` \
-  if [ '$(host)' = '$(target)' ] ; then \
-    if [ x'$(LIPO)' != x ]; then \
-       echo $(LIPO); \
-    else \
-       echo lipo; \
-    fi; \
-  else \
-    echo $(CONFIGURED_LIPO_FOR_TARGET) ; \
-  fi`
-
-NM_FOR_TARGET=@NM_FOR_TARGET@
-CONFIGURED_NM_FOR_TARGET=@CONFIGURED_NM_FOR_TARGET@
-USUAL_NM_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/binutils/nm-new ] ; then \
-    echo $$r/$(HOST_SUBDIR)/binutils/nm-new ; \
-  elif [ -f $$r/$(HOST_SUBDIR)/gcc/nm ]; then \
-    echo $$r/$(HOST_SUBDIR)/gcc/nm ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(NM); \
-    else \
-      echo $(CONFIGURED_NM_FOR_TARGET) ; \
-    fi; \
-  fi`
-
-OBJDUMP_FOR_TARGET=@OBJDUMP_FOR_TARGET@
-CONFIGURED_OBJDUMP_FOR_TARGET=@CONFIGURED_OBJDUMP_FOR_TARGET@
-USUAL_OBJDUMP_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/binutils/objdump ] ; then \
-    echo $$r/$(HOST_SUBDIR)/binutils/objdump ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      if [ x'$(OBJDUMP)' != x ]; then \
-         echo $(OBJDUMP); \
-      else \
-         echo objdump; \
-      fi; \
-    else \
-      echo $(CONFIGURED_OBJDUMP_FOR_TARGET) ; \
-    fi; \
-  fi`
-
-RANLIB_FOR_TARGET=@RANLIB_FOR_TARGET@
-CONFIGURED_RANLIB_FOR_TARGET=@CONFIGURED_RANLIB_FOR_TARGET@
-USUAL_RANLIB_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/binutils/ranlib ] ; then \
-    echo $$r/$(HOST_SUBDIR)/binutils/ranlib ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      if [ x'$(RANLIB)' != x ]; then \
-         echo $(RANLIB); \
-      else \
-         echo ranlib; \
-      fi; \
-    else \
-      echo $(CONFIGURED_RANLIB_FOR_TARGET) ; \
-    fi; \
-  fi`
-
-STRIP_FOR_TARGET=@STRIP_FOR_TARGET@
-CONFIGURED_STRIP_FOR_TARGET=@CONFIGURED_STRIP_FOR_TARGET@
-USUAL_STRIP_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/binutils/strip ] ; then \
-    echo $$r/$(HOST_SUBDIR)/binutils/strip ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      if [ x'$(STRIP)' != x ]; then \
-         echo $(STRIP); \
-      else \
-         echo strip; \
-      fi; \
-    else \
-      echo $(CONFIGURED_STRIP_FOR_TARGET) ; \
-    fi; \
-  fi`
-
-WINDRES_FOR_TARGET=@WINDRES_FOR_TARGET@
-CONFIGURED_WINDRES_FOR_TARGET=@CONFIGURED_WINDRES_FOR_TARGET@
-USUAL_WINDRES_FOR_TARGET = ` \
-  if [ -f $$r/$(HOST_SUBDIR)/binutils/windres ] ; then \
-    echo $$r/$(HOST_SUBDIR)/binutils/windres ; \
-  else \
-    if [ '$(host)' = '$(target)' ] ; then \
-      echo $(WINDRES); \
-    else \
-      echo $(CONFIGURED_WINDRES_FOR_TARGET) ; \
-    fi; \
-  fi`
-
 PICFLAG_FOR_TARGET = 
 
 # ------------------------------------
@@ -644,8 +404,10 @@ EXTRA_HOST_FLAGS = \
 	'CXX=$(CXX)' \
 	'DLLTOOL=$(DLLTOOL)' \
 	'LD=$(LD)' \
+	'LIPO=$(LIPO)' \
 	'NM=$(NM)' \
 	'RANLIB=$(RANLIB)' \
+	'STRIP=$(STRIP)' \
 	'WINDRES=$(WINDRES)'
 
 FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)
@@ -667,17 +429,17 @@ X11_FLAGS_TO_PASS = \
 # are set in BASE_FLAGS_TO_PASS, and the sub-make will expand them.
 EXTRA_TARGET_FLAGS = \
 	'AR=$$(AR_FOR_TARGET)' \
-	'AS=$$(AS_FOR_TARGET)' \
+	'AS=$$(COMPILER_AS_FOR_TARGET)' \
 	'CC=$$(CC_FOR_TARGET)' \
 	'CFLAGS=$$(CFLAGS_FOR_TARGET)' \
 	'CXX=$$(CXX_FOR_TARGET)' \
 	'CXXFLAGS=$$(CXXFLAGS_FOR_TARGET)' \
 	'DLLTOOL=$$(DLLTOOL_FOR_TARGET)' \
-	'LD=$$(LD_FOR_TARGET)' \
+	'LD=$$(COMPILER_LD_FOR_TARGET)' \
 	'LDFLAGS=$$(LDFLAGS_FOR_TARGET)' \
 	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET)' \
 	'LIBCXXFLAGS=$$(LIBCXXFLAGS_FOR_TARGET)' \
-	'NM=$$(NM_FOR_TARGET)' \
+	'NM=$$(COMPILER_NM_FOR_TARGET)' \
 	'OBJDUMP=$$(OBJDUMP_FOR_TARGET)' \
 	'RANLIB=$$(RANLIB_FOR_TARGET)' \
 	'WINDRES=$$(WINDRES_FOR_TARGET)'
@@ -721,28 +483,19 @@ configure-target: [+
 .PHONY: all
 all:
 @if gcc-bootstrap
+	[ -f stage_final ] || echo stage3 > stage_final
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	if [ ! -f stage_last ]; then \
-	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) bootstrap; \
-	fi
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) `cat stage_final`-bubble; \
 @endif gcc-bootstrap
 	@$(unstage)
-@if gcc-no-bootstrap
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-prebootstrap
-@endif gcc-no-bootstrap
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	if [ -f stage_last ]; then \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS) all-host; \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target; \
 	else \
-	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-host; \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-host all-target; \
 	fi
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-target
 	@$(stage)
 
 .PHONY: all-build
@@ -1436,7 +1189,7 @@ stage = :
 
 @if gcc-bootstrap
 unstage = [ -f stage_current ] || $(MAKE) `cat stage_last`-start
-stage = $(MAKE) `cat stage_current`-end
+stage = [ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 @endif gcc-bootstrap
 
 .PHONY: unstage stage
@@ -1491,7 +1244,7 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 .PHONY: stage[+id+]-start stage[+id+]-end
 
 stage[+id+]-start::
-	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
+	@$(stage); \
 	echo stage[+id+] > stage_current ; \
 	echo stage[+id+] > stage_last; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR) $(TARGET_SUBDIR)[+
@@ -1544,7 +1297,8 @@ stage[+id+]-bubble:: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +][+IF lean +]
 	else \
 	  $(MAKE) stage[+id+]-start; \
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage[+id+]; \
-	fi
+	fi[+ IF compare-target +]
+	$(MAKE) [+compare-target+][+ ENDIF compare-target +]
 
 .PHONY: all-stage[+id+] clean-stage[+id+]
 do-clean: clean-stage[+id+]
@@ -1560,7 +1314,7 @@ do-clean: clean-stage[+id+]
 	  echo Cannot compare object files as stage [+prev+] was deleted. ; \
 	  exit 0 ; \
 	fi; \
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
+	$(stage); \
 	rm -f .bad_compare ; \
 	cd stage[+id+]-gcc; \
 	files=`find . -name "*$(objext)" -print` ; \
@@ -1590,16 +1344,23 @@ do-clean: clean-stage[+id+]
 
 [+ IF bootstrap-target +]
 .PHONY: [+bootstrap-target+]
-[+bootstrap-target+]: stage[+id+]-bubble
-	[+ IF compare-target +]$(MAKE) [+compare-target+]
-	[+ ENDIF compare-target +]$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
+[+bootstrap-target+]:
+	echo stage[+id+] > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage[+id+]-bubble
+	@$(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+	@$(stage)
 [+ ENDIF bootstrap-target +]
 
 # Rules to wipe a stage and all the following ones, also used for cleanstrap
 [+ IF prev +]distclean-stage[+prev+]:: distclean-stage[+id+] [+ ENDIF prev +]
 .PHONY: distclean-stage[+id+]
 distclean-stage[+id+]::
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+	@$(stage)
 	rm -rf stage[+id+]-* [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
 
