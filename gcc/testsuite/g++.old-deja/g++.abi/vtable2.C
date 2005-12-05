@@ -127,8 +127,8 @@ extern "C" {
   /* We can use weakref here without dg-require-weak, because we know
      the symbols are defined, so we don't actually issue the .weak
      directives.  */
-  void S3_s3 () __attribute__((__weakref__ ("_ZN2S32s3Ev")));
-  void S4_s1 () __attribute__((__weakref__ ("_ZN2S42s1Ev")));
+  static void S3_s3 () __attribute__((__weakref__ ("_ZN2S32s3Ev")));
+  static void S4_s1 () __attribute__((__weakref__ ("_ZN2S42s1Ev")));
 }
 
 // IA-64 uses function descriptors not function pointers in its vtables.

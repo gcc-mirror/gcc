@@ -1554,7 +1554,7 @@ void __f () @{ /* @r{Do something.} */; @}
 void f () __attribute__ ((weak, alias ("__f")));
 @end smallexample
 
-declares @samp{f} to be a weak alias for @samp{__f}.  In C++, the
+defines @samp{f} to be a weak alias for @samp{__f}.  In C++, the
 mangled name for the target must be used.  It is an error if @samp{__f}
 is not defined in the same translation unit.
 
@@ -2376,12 +2376,12 @@ implicitly marks the declaration as @code{weak}.  Without a
 @code{weakref} is equivalent to @code{weak}.
 
 @smallexample
-extern int x() __attribute__ ((weakref ("y")));
+static int x() __attribute__ ((weakref ("y")));
 /* is equivalent to... */
-extern int x() __attribute__ ((weak, weakref, alias ("y")));
+static int x() __attribute__ ((weak, weakref, alias ("y")));
 /* and to... */
-extern int x() __attribute__ ((weakref));
-extern int x() __attribute__ ((alias ("y")));
+static int x() __attribute__ ((weakref));
+static int x() __attribute__ ((alias ("y")));
 @end smallexample
 
 A weak reference is an alias that does not by itself require a
@@ -2395,6 +2395,9 @@ The effect is equivalent to moving all references to the alias to a
 separate translation unit, renaming the alias to the aliased symbol,
 declaring it as weak, compiling the two separate translation units and
 performing a reloadable link on them.
+
+At present, a declaration to which @code{weakref} is attached can
+only be @code{static}.
 
 @item externally_visible
 @cindex @code{externally_visible} attribute.
