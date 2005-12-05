@@ -744,7 +744,7 @@ const UQItype __popcount_tab[256] =
 int
 __popcountSI2 (UWtype x)
 {
-  UWtype i, ret = 0;
+  int i, ret = 0;
 
   for (i = 0; i < W_TYPE_SIZE; i += 8)
     ret += __popcount_tab[(x >> i) & 0xff];
@@ -758,7 +758,7 @@ __popcountSI2 (UWtype x)
 int
 __popcountDI2 (UDWtype x)
 {
-  UWtype i, ret = 0;
+  int i, ret = 0;
 
   for (i = 0; i < 2*W_TYPE_SIZE; i += 8)
     ret += __popcount_tab[(x >> i) & 0xff];
