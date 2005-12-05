@@ -1,3 +1,8 @@
+2005-12-05  Dale Johannesen  <dalej@apple.com>
+
+	* config/i386/xmmintrin.h (_MM_TRANSPOSE4_PS):  Fix to match
+	what was approved (PR 24323).
+
 2005-12-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* doc/c-tree.texi (Function Bodies): Remove description of
