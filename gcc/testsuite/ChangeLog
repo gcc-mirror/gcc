@@ -1,5 +1,7 @@
 2005-12-05  Geoffrey Keating  <geoffk@apple.com>
 
+	* gcc.dg/darwin-weakimport-3.c: New.
+
 	* g++.old-deja/g++.abi/vtable2.C: Make weakrefs static.
 	* gcc.dg/attr-weakref-1.c: Modify to not try to test public weakrefs,
 	and to work on Darwin.
