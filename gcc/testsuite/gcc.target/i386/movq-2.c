@@ -1,6 +1,6 @@
 /* PR target/25199 */
 /* { dg-do compile } */
-/* { dg-options "-Os" } */
+/* { dg-options "-Os -mtune=pentium4" } */
 /* { dg-require-effective-target ilp32 } */
 
 struct S

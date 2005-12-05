@@ -1,3 +1,8 @@
+2005-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/movq-2.c: Add -mtune=pentium4 to
+	dg-options.
+
 2005-12-04  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c90-const-expr-5.c, gcc.dg/c99-const-expr-5.c: New tests.
