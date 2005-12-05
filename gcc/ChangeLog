@@ -1,3 +1,11 @@
+2005-12-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/25166
+	* pa/pa.c (pa_hpux_init_libfuncs): Add _U_Qfcnvxf_usgl_to_quad and
+	_U_Qfcnvxf_udbl_to_quad to set of initialized libfuncs.
+	* pa/quadlib.c (_U_Qfcnvxf_usgl_to_quad, _U_Qfcnvxf_udbl_to_quad): New
+	functions.
+
 2005-12-04  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-typeck.c (null_pointer_constant_p): New function.

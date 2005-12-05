@@ -5350,6 +5350,8 @@ pa_hpux_init_libfuncs (void)
 
   set_conv_libfunc (sfloat_optab, TFmode, SImode, "_U_Qfcnvxf_sgl_to_quad");
   set_conv_libfunc (sfloat_optab, TFmode, DImode, "_U_Qfcnvxf_dbl_to_quad");
+  set_conv_libfunc (ufloat_optab, TFmode, SImode, "_U_Qfcnvxf_usgl_to_quad");
+  set_conv_libfunc (ufloat_optab, TFmode, DImode, "_U_Qfcnvxf_udbl_to_quad");
 }
 #endif
 
