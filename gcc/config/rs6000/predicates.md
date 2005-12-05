@@ -407,15 +407,12 @@
        (match_test "!CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
 		    && !CONST_OK_FOR_LETTER_P (INTVAL (op), 'L')")))
 
-;; Return 1 if the operand is a non-special register or a constant that
-;; can be used as the operand of an OR or XOR.
-(define_predicate "logical_operand"
-  (match_code "reg,subreg,const_int,const_double")
+;; Return 1 if the operand is a constant that can be used as the operand
+;; of an OR or XOR.
+(define_predicate "logical_const_operand"
+  (match_code "const_int,const_double")
 {
   HOST_WIDE_INT opl, oph;
-
-  if (gpc_reg_operand (op, mode))
-    return 1;
 
   if (GET_CODE (op) == CONST_INT)
     {
@@ -440,6 +437,12 @@
   return ((opl & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0
 	  || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff0000) == 0);
 })
+
+;; Return 1 if the operand is a non-special register or a constant that
+;; can be used as the operand of an OR or XOR.
+(define_predicate "logical_operand"
+  (ior (match_operand 0 "gpc_reg_operand")
+       (match_operand 0 "logical_const_operand")))
 
 ;; Return 1 if op is a constant that is not a logical operand, but could
 ;; be split into one.
