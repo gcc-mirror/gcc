@@ -1,4 +1,4 @@
-@c Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+@c Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by Aldy Hernandez <aldy@quesejoda.com>
@@ -356,6 +356,27 @@ These functions convert @var{i}, a signed long, to floating point.
 These functions convert @var{i}, a signed long long, to floating point.
 @end deftypefn
 
+@deftypefn {Runtime Function} float __floatunsisf (unsigned int @var{i})
+@deftypefnx {Runtime Function} double __floatunsidf (unsigned int @var{i})
+@deftypefnx {Runtime Function} {long double} __floatunsitf (unsigned int @var{i})
+@deftypefnx {Runtime Function} {long double} __floatunsixf (unsigned int @var{i})
+These functions convert @var{i}, an unsigned integer, to floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __floatundisf (unsigned long @var{i})
+@deftypefnx {Runtime Function} double __floatundidf (unsigned long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatunditf (unsigned long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatundixf (unsigned long @var{i})
+These functions convert @var{i}, an unsigned long, to floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __floatuntisf (unsigned long long @var{i})
+@deftypefnx {Runtime Function} double __floatuntidf (unsigned long long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatuntitf (unsigned long long @var{i})
+@deftypefnx {Runtime Function} {long double} __floatuntixf (unsigned long long @var{i})
+These functions convert @var{i}, an unsigned long long, to floating point.
+@end deftypefn
+
 @subsection Comparison functions
 
 There are two sets of basic comparison functions.
@@ -436,6 +457,32 @@ argument is NaN, and @var{a} is less than or equal to @var{b}.
 @deftypefnx {Runtime Function} int __gttf2 (long double @var{a}, long double @var{b})
 These functions return a value greater than zero if neither argument
 is NaN, and @var{a} is strictly greater than @var{b}.
+@end deftypefn
+
+@subsection Other floating-point functions
+
+@deftypefn {Runtime Function} float __powisf2 (float @var{a}, int @var{b})
+@deftypefnx {Runtime Function} double __powidf2 (double @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long double} __powitf2 (long double @var{a}, int @var{b})
+@deftypefnx {Runtime Function} {long double} __powixf2 (long double @var{a}, int @var{b})
+These functions convert raise @var{a} to the power @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} {complex float} __mulsc3 (float @var{a}, float @var{b}, float @var{c}, float @var{d})
+@deftypefnx {Runtime Function} {complex double} __muldc3 (double @var{a}, double @var{b}, double @var{c}, double @var{d})
+@deftypefnx {Runtime Function} {complex long double} __multc3 (long double @var{a}, long double @var{b}, long double @var{c}, long double @var{d})
+@deftypefnx {Runtime Function} {complex long double} __mulxc3 (long double @var{a}, long double @var{b}, long double @var{c}, long double @var{d})
+These functions return the product of @math{@var{a} + i@var{b}} and
+@math{@var{c} + i@var{d}}, following the rules of C99 Annex G@.
+@end deftypefn
+
+@deftypefn {Runtime Function} {complex float} __divsc3 (float @var{a}, float @var{b}, float @var{c}, float @var{d})
+@deftypefnx {Runtime Function} {complex double} __divdc3 (double @var{a}, double @var{b}, double @var{c}, double @var{d})
+@deftypefnx {Runtime Function} {complex long double} __divtc3 (long double @var{a}, long double @var{b}, long double @var{c}, long double @var{d})
+@deftypefnx {Runtime Function} {complex long double} __divxc3 (long double @var{a}, long double @var{b}, long double @var{c}, long double @var{d})
+These functions return the quotient of @math{@var{a} + i@var{b}} and
+@math{@var{c} + i@var{d}} (i.e., @math{(@var{a} + i@var{b}) / (@var{c}
++ i@var{d})}), following the rules of C99 Annex G@.
 @end deftypefn
 
 @node Exception handling routines

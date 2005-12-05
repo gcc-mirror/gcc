@@ -1,3 +1,12 @@
+2005-12-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* doc/libgcc.texi (__floatunsisf, __floatunsidf, __floatunsitf,
+	__floatunsixf, __floatundisf, __floatundidf, __floatunditf,
+	__floatundixf, __floatuntisf, __floatuntidf, __floatuntitf,
+	__floatuntixf, __powisf2, __powidf2, __powixf2, __mulsc3,
+	__muldc3, __multc3, __mulxc3, __divsc3, __divdc3, __divtc3,
+	__divxc3): Document.
+
 2005-12-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/arm/arm.c (arm_cxx_determine_class_data_visibility): Preserve
