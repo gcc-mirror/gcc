@@ -1611,17 +1611,6 @@ esac
 tooldir='${exec_prefix}'/${target_alias}
 build_tooldir=${tooldir}
 
-# Generate default definitions for YACC, M4, LEX and other programs that run
-# on the build machine.  These are used if the Makefile can't locate these
-# programs in objdir.
-MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
-AC_CHECK_PROGS([CONFIGURED_BISON], [bison], [$MISSING bison])
-AC_CHECK_PROGS([CONFIGURED_YACC], ['bison -y' byacc yacc], [$MISSING bison -y])
-AC_CHECK_PROGS([CONFIGURED_M4], [gm4 gnum4 m4], [$MISSING m4])
-AC_CHECK_PROGS([CONFIGURED_FLEX], [flex], [$MISSING flex])
-AC_CHECK_PROGS([CONFIGURED_LEX], [flex lex], [$MISSING flex])
-AC_CHECK_PROGS([CONFIGURED_MAKEINFO], makeinfo, [$MISSING makeinfo])
-
 # Create a .gdbinit file which runs the one in srcdir
 # and tells GDB to look there for source files.
 
@@ -2099,13 +2088,81 @@ AC_SUBST(target_configdirs)
 AC_SUBST(CC_FOR_BUILD)
 AC_SUBST(config_shell)
 
+# Generate default definitions for YACC, M4, LEX and other programs that run
+# on the build machine.  These are used if the Makefile can't locate these
+# programs in objdir.
+MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
+
+AC_CHECK_PROGS([YACC], ['bison -y' byacc yacc], [$MISSING bison -y])
+case " $build_configdirs " in
+  *" bison "*) YACC='$$r/$(BUILD_SUBDIR)/bison/tests/bison -y' ;;
+  *" byacc "*) YACC='$$r/$(BUILD_SUBDIR)/byacc/byacc' ;;
+esac
+
+AC_CHECK_PROGS([BISON], [bison], [$MISSING bison])
+case " $build_configdirs " in
+  *" bison "*) BISON='$$r/$(BUILD_SUBDIR)/bison/tests/bison' ;;
+esac
+
+AC_CHECK_PROGS([M4], [gm4 gnum4 m4], [$MISSING m4])
+case " $build_configdirs " in
+  *" m4 "*) M4='$$r/$(BUILD_SUBDIR)/m4/m4' ;;
+esac
+
+AC_CHECK_PROGS([LEX], [flex lex], [$MISSING flex])
+case " $build_configdirs " in
+  *" flex "*) LEX='$$r/$(BUILD_SUBDIR)/flex/flex' ;;
+  *" lex "*) LEX='$$r/$(BUILD_SUBDIR)/lex/lex' ;;
+esac
+
+AC_CHECK_PROGS([FLEX], [flex], [$MISSING flex])
+case " $build_configdirs " in
+  *" flex "*) FLEX='$$r/$(BUILD_SUBDIR)/flex/flex' ;;
+esac
+
+AC_CHECK_PROGS([MAKEINFO], makeinfo, [$MISSING makeinfo])
+case " $build_configdirs " in
+  *" texinfo "*) MAKEINFO='$$r/$(BUILD_SUBDIR)/texinfo/makeinfo/makeinfo' ;;
+  *)
+changequote(,)
+    # For an installed makeinfo, we require it to be from texinfo 4.2 or
+    # higher, else we use the "missing" dummy.
+    if ${MAKEINFO} --version \
+       | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])' >/dev/null 2>&1; then
+      :
+    else
+      MAKEINFO="$MISSING makeinfo"
+    fi
+    ;;
+changequote([,])
+esac
+
+# FIXME: expect and dejagnu may become build tools?
+
+AC_CHECK_PROGS(EXPECT, expect, expect)
+case " $configdirs " in
+  *" expect "*)
+    test $host = $build && EXPECT='$$r/$(HOST_SUBDIR)/expect/expect'
+    ;;
+esac
+
+AC_CHECK_PROGS(RUNTEST, runtest, runtest)
+case " $configdirs " in
+  *" dejagnu "*)
+    test $host = $build && RUNTEST='$$r/$(HOST_SUBDIR)/dejagnu/runtest'
+    ;;
+esac
+
+
 # Host tools.
 NCN_STRICT_CHECK_TOOLS(AR, ar)
 NCN_STRICT_CHECK_TOOLS(AS, as)
 NCN_STRICT_CHECK_TOOLS(DLLTOOL, dlltool)
 NCN_STRICT_CHECK_TOOLS(LD, ld)
+NCN_STRICT_CHECK_TOOLS(LIPO, lipo)
 NCN_STRICT_CHECK_TOOLS(NM, nm)
 NCN_STRICT_CHECK_TOOLS(RANLIB, ranlib, :)
+NCN_STRICT_CHECK_TOOLS(STRIP, strip, :)
 NCN_STRICT_CHECK_TOOLS(WINDRES, windres)
 NCN_STRICT_CHECK_TOOLS(OBJCOPY, objcopy)
 NCN_STRICT_CHECK_TOOLS(OBJDUMP, objdump)
@@ -2115,8 +2172,7 @@ AC_SUBST(CFLAGS)
 AC_SUBST(CFLAGS_FOR_BUILD)
 AC_SUBST(CXXFLAGS)
 
-# Target tools.  Do the tests using the names they may have passed in
-# the environment, then move it to CONFIGURED_*_FOR_TARGET.
+# Target tools.
 NCN_STRICT_CHECK_TARGET_TOOLS(AR_FOR_TARGET, ar)
 NCN_STRICT_CHECK_TARGET_TOOLS(AS_FOR_TARGET, as)
 NCN_STRICT_CHECK_TARGET_TOOLS(CC_FOR_TARGET, cc gcc)
@@ -2133,89 +2189,57 @@ NCN_STRICT_CHECK_TARGET_TOOLS(RANLIB_FOR_TARGET, ranlib, :)
 NCN_STRICT_CHECK_TARGET_TOOLS(STRIP_FOR_TARGET, strip)
 NCN_STRICT_CHECK_TARGET_TOOLS(WINDRES_FOR_TARGET, windres)
 
-CONFIGURED_AR_FOR_TARGET="$AR_FOR_TARGET"
-CONFIGURED_AS_FOR_TARGET="$AS_FOR_TARGET"
-CONFIGURED_CC_FOR_TARGET="$CC_FOR_TARGET"
-CONFIGURED_CXX_FOR_TARGET="$CXX_FOR_TARGET"
-CONFIGURED_DLLTOOL_FOR_TARGET="$DLLTOOL_FOR_TARGET"
-CONFIGURED_GCC_FOR_TARGET="$GCC_FOR_TARGET"
-CONFIGURED_GCJ_FOR_TARGET="$GCJ_FOR_TARGET"
-CONFIGURED_GFORTRAN_FOR_TARGET="$GFORTRAN_FOR_TARGET"
-CONFIGURED_LD_FOR_TARGET="$LD_FOR_TARGET"
-CONFIGURED_LIPO_FOR_TARGET="$LIPO_FOR_TARGET"
-CONFIGURED_NM_FOR_TARGET="$NM_FOR_TARGET"
-CONFIGURED_OBJDUMP_FOR_TARGET="$OBJDUMP_FOR_TARGET"
-CONFIGURED_RANLIB_FOR_TARGET="$RANLIB_FOR_TARGET"
-CONFIGURED_STRIP_FOR_TARGET="$STRIP_FOR_TARGET"
-CONFIGURED_WINDRES_FOR_TARGET="$WINDRES_FOR_TARGET"
+RAW_CXX_FOR_TARGET="$CXX_FOR_TARGET"
 
-AC_SUBST(CONFIGURED_AR_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_AS_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_CC_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_CXX_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_DLLTOOL_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_GCC_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_GCJ_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_GFORTRAN_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_LD_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_LIPO_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_NM_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_OBJDUMP_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_RANLIB_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_STRIP_FOR_TARGET)dnl
-AC_SUBST(CONFIGURED_WINDRES_FOR_TARGET)dnl
+GCC_TARGET_TOOL(ar, AR_FOR_TARGET, AR, [binutils/ar])
+GCC_TARGET_TOOL(as, AS_FOR_TARGET, AS, [gas/as-new])
+GCC_TARGET_TOOL(cc, CC_FOR_TARGET, CC, [gcc/xgcc -B$$r/$(HOST_SUBDIR)/gcc/])
+GCC_TARGET_TOOL(c++, CXX_FOR_TARGET, CXX,
+		[gcc/g++ -B$$r/$(HOST_SUBDIR)/gcc/ -nostdinc++ `test ! -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags || $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/scripts/testsuite_flags --build-includes` -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs],
+		c++)
+GCC_TARGET_TOOL(c++ for libstdc++, RAW_CXX_FOR_TARGET, CXX,
+		[gcc/xgcc -shared-libgcc -B$$r/$(HOST_SUBDIR)/gcc -nostdinc++ -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs],
+		c++)
+GCC_TARGET_TOOL(dlltool, DLLTOOL_FOR_TARGET, DLLTOOL, [binutils/dlltool])
+GCC_TARGET_TOOL(gcc, GCC_FOR_TARGET, , [gcc/xgcc -B$$r/$(HOST_SUBDIR)/gcc/])
+GCC_TARGET_TOOL(gcj, GCJ_FOR_TARGET, GCJ,
+		[gcc/gcj -B$$r/$(HOST_SUBDIR)/gcc/], java)
+GCC_TARGET_TOOL(gfortran, GFORTRAN_FOR_TARGET, GFORTRAN,
+		[gcc/gfortran -B$$r/$(HOST_SUBDIR)/gcc/], fortran)
+GCC_TARGET_TOOL(ld, LD_FOR_TARGET, LD, [ld/ld-new])
+GCC_TARGET_TOOL(lipo, LIPO_FOR_TARGET, LIPO)
+GCC_TARGET_TOOL(nm, NM_FOR_TARGET, NM, [binutils/nm-new])
+GCC_TARGET_TOOL(objdump, OBJDUMP_FOR_TARGET, OBJDUMP, [binutils/objdump])
+GCC_TARGET_TOOL(ranlib, RANLIB_FOR_TARGET, RANLIB, [binutils/ranlib])
+GCC_TARGET_TOOL(strip, STRIP_FOR_TARGET, STRIP, [binutils/strip])
+GCC_TARGET_TOOL(windres, WINDRES_FOR_TARGET, WINDRES, [binutils/windres])
+
 AC_SUBST(FLAGS_FOR_TARGET)
-
-# Fix up target tools.
-if test "x${build}" = "x${host}" ; then
-  # In this case, the newly built tools can and should be used,
-  # so we override the results of the autoconf tests.
-  # This should really only happen when the tools are actually being built,
-  # but that's a further refinement.  The new build scheme, where
-  # tools are built into a structure paralleling where they're installed,
-  # should also eliminate all of this cleanly.
-  AR_FOR_TARGET="\$(USUAL_AR_FOR_TARGET)"
-  AS_FOR_TARGET="\$(USUAL_AS_FOR_TARGET)"
-  CC_FOR_TARGET="\$(USUAL_CC_FOR_TARGET)"
-  CXX_FOR_TARGET="\$(USUAL_CXX_FOR_TARGET)"
-  RAW_CXX_FOR_TARGET="\$(USUAL_RAW_CXX_FOR_TARGET)"
-  DLLTOOL_FOR_TARGET="\$(USUAL_DLLTOOL_FOR_TARGET)"
-  GCC_FOR_TARGET="\$(USUAL_GCC_FOR_TARGET)"
-  GCJ_FOR_TARGET="\$(USUAL_GCJ_FOR_TARGET)"
-  GFORTRAN_FOR_TARGET="\$(USUAL_GFORTRAN_FOR_TARGET)"
-  LD_FOR_TARGET="\$(USUAL_LD_FOR_TARGET)"
-  LIPO_FOR_TARGET="\$(USUAL_LIPO_FOR_TARGET)"
-  NM_FOR_TARGET="\$(USUAL_NM_FOR_TARGET)"
-  OBJDUMP_FOR_TARGET="\$(USUAL_OBJDUMP_FOR_TARGET)"
-  RANLIB_FOR_TARGET="\$(USUAL_RANLIB_FOR_TARGET)"
-  STRIP_FOR_TARGET="\$(USUAL_STRIP_FOR_TARGET)"
-  WINDRES_FOR_TARGET="\$(USUAL_WINDRES_FOR_TARGET)"
-else
-  # Just use the ones we found.
-  AR_FOR_TARGET="\$(CONFIGURED_AR_FOR_TARGET)"
-  AS_FOR_TARGET="\$(CONFIGURED_AS_FOR_TARGET)"
-  CC_FOR_TARGET="\$(CONFIGURED_CC_FOR_TARGET)"
-  CXX_FOR_TARGET="\$(CONFIGURED_CXX_FOR_TARGET)"
-  RAW_CXX_FOR_TARGET="\$(CONFIGURED_CXX_FOR_TARGET)"
-  DLLTOOL_FOR_TARGET="\$(CONFIGURED_DLLTOOL_FOR_TARGET)"
-  GCC_FOR_TARGET="\$(CONFIGURED_GCC_FOR_TARGET)"
-  GCJ_FOR_TARGET="\$(CONFIGURED_GCJ_FOR_TARGET)"
-  GFORTRAN_FOR_TARGET="\$(CONFIGURED_GFORTRAN_FOR_TARGET)"
-  LD_FOR_TARGET="\$(CONFIGURED_LD_FOR_TARGET)"
-  LIPO_FOR_TARGET="\$(CONFIGURED_LIPO_FOR_TARGET)"
-  NM_FOR_TARGET="\$(CONFIGURED_NM_FOR_TARGET)"
-  OBJDUMP_FOR_TARGET="\$(CONFIGURED_OBJDUMP_FOR_TARGET)"
-  RANLIB_FOR_TARGET="\$(CONFIGURED_RANLIB_FOR_TARGET)"
-  STRIP_FOR_TARGET="\$(CONFIGURED_STRIP_FOR_TARGET)"
-  WINDRES_FOR_TARGET="\$(CONFIGURED_WINDRES_FOR_TARGET)"  
-fi
-
 AC_SUBST(RAW_CXX_FOR_TARGET)
 
 # Certain tools may need extra flags.
 AR_FOR_TARGET=${AR_FOR_TARGET}${extra_arflags_for_target}
 RANLIB_FOR_TARGET=${RANLIB_FOR_TARGET}${extra_ranlibflags_for_target}
 NM_FOR_TARGET=${NM_FOR_TARGET}${extra_nmflags_for_target}
+
+# When building target libraries, except in a Canadian cross, we use
+# the same toolchain as the compiler we just built.
+COMPILER_AS_FOR_TARGET='$(AS_FOR_TARGET)'
+COMPILER_LD_FOR_TARGET='$(LD_FOR_TARGET)'
+COMPILER_NM_FOR_TARGET='$(NM_FOR_TARGET)'
+if test $host = $build; then
+  case " $configdirs " in
+    *" gcc "*)
+      COMPILER_AS_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/as'
+      COMPILER_LD_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/collect-ld'
+      COMPILER_NM_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/nm'${extra_nmflags_for_target}
+      ;;
+  esac
+fi
+
+AC_SUBST(COMPILER_AS_FOR_TARGET)
+AC_SUBST(COMPILER_LD_FOR_TARGET)
+AC_SUBST(COMPILER_NM_FOR_TARGET)
 
 AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
 AC_ARG_ENABLE(maintainer-mode,
