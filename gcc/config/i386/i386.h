@@ -576,7 +576,7 @@ extern int x86_prefetch_sse;
 
 /* Decide whether a variable of mode MODE should be 128 bit aligned.  */
 #define ALIGN_MODE_128(MODE) \
- ((MODE) == XFmode || (MODE) == TFmode || SSE_REG_MODE_P (MODE))
+ ((MODE) == XFmode || SSE_REG_MODE_P (MODE))
 
 /* The published ABIs say that doubles should be aligned on word
    boundaries, so lower the alignment for structure fields unless

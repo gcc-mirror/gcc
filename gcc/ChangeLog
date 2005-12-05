@@ -1,5 +1,22 @@
 2005-12-05  Jan Beulich  <jbeulich@novell.com>
 
+	* config/i386/i386.c (enum ix86_builtins): Remove IX86_BUILTIN_CMPNEPS
+	and IX86_BUILTIN_CMPNESS.
+	(ix86_init_mmx_sse_builtins): Remove ti_ftype_ti_ti.
+	* config/i386/i386.h (ALIGN_MODE_128): Don't check TFmode explicitly.
+	* config/i386/i386.md (movti_internal): Correct type attribute.
+	Simplify mode attribute.
+	(movti_rex64, movsf_1, movdf_nointeger, movdf_integer, movtf_internal):
+	Correct type attribute.
+	(absxf2): Correct operator.
+	* config/i386/mmx.md (mov<mode>_internal_rex64, mov<mode>_internal,
+	movv2sf_internal_rex64, movv2sf_internal): Correct type attribute.
+	* config/i386/sse.md (mov<mode>_internal, movv2df_internal): Simplify
+	mode attribute.
+	(sse2_vmsqrtv2df2): Correct mode attribute.
+
+2005-12-05  Jan Beulich  <jbeulich@novell.com>
+
 	* config/ia64/ia64.md (rotlsi3_internal): Don't split if rotating by
 	16 bits. Provide insn pattern for this case.
 
