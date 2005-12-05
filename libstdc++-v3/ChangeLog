@@ -1,3 +1,88 @@
+2005-12-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/vstring.h (__versa_string<>::operator+, all
+	versions): Move out of line...
+	* include/ext/vstring.tcc (__versa_string<>::operator+): ...
+	here; consistently use reserve for the benefit of sso_string_base;
+	prefer push_back to single-char append when appropriate.
+
+	* include/ext/vstring.h (__versa_string<>::push_back): Don't
+	call _M_reserve, _M_mutate instead.
+	(reserve): Just forward to _M_reserve.
+	* include/ext/vstring.tcc (__versa_string<>::_M_reserve): Remove.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_reserve): Also
+	do the initial checks (first on length, in case __res == capacity).
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_reserve:
+	Likewise; don't call _M_set_length unnecessarily.
+
+2005-12-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/vstring.h (__versa_string<>::_M_append): New.
+	(append(const __versa_string&), append(const __versa_string&,
+	size_type, size_type), append(const _CharT*, size_type),
+	append(const _CharT*)): Use it.
+	(append(size_type, _CharT)): Delegate to _M_replace_aux.
+	(assign(const __versa_string&, size_type, size_type),
+	assign(const _CharT*), replace(size_type, size_type,
+	const _CharT*, size_type)): Forward to _M_replace.
+	* include/ext/vstring.tcc (__versa_string<>::_M_append):
+	Define, core append functionality.
+	(_M_replace): Simplify, move __s == 0 case to _M_replace_aux.
+	(_M_replace_aux): Reorganize, don't call _M_replace.
+
+2005-12-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/vstring.tcc (__versa_string<>::_M_replace):
+	Perform _M_check_length at the beginning and remove it from ...
+	(replace, _M_replace_dispatch, _M_replace_aux, assign): ... here.
+	(assign): Now move inline.
+	(resize): Don't call _M_check_length redundantly, append does.
+
+2005-12-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_get_allocator):
+	Add non const version.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_get_allocator):
+	Likewise.
+	
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_erase): Add.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_erase): Likewise.
+	(_M_leak_hard): Use it.
+	* include/ext/vstring.h (__versa_string<>::clear, erase, all
+	versions): Use it.
+	* include/ext/vstring.tcc (__versa_string<>::resize): Likewise.
+
+	* include/ext/vstring.h (__versa_string<>::_M_replace_safe):
+	Remove.
+	* include/ext/vstring.h (__versa_string<>::_M_replace): New, does
+	the in-place work or delegates to _M_mutate in case of reallocation.
+	* include/ext/vstring.tcc (__versa_string<>::_M_replace_safe):
+	Remove.
+	* include/ext/vstring.tcc (__versa_string<>::_M_replace): Define.
+	(assign, replace, _M_replace_dispatch, _M_replace_aux): Use it.
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_mutate):
+	Change to manage only reallocations.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_mutate):
+	Likewise.
+
+	* include/ext/vstring.h (__versa_string<>::insert(size_type,
+	const __versa_string&), insert(size_type, const __versa_string&,
+	size_type, size_type), insert(size_type, const _CharT*, size_type),
+	insert(size_type, const _CharT*)): Delegate to replace.
+
+	* include/ext/vstring.h (__versa_string<>::reserve): Move out of
+	line.
+	* include/ext/vstring.tcc (__versa_string<>::reserve): Do the
+	checks and call _M_reserve.
+	* include/ext/vstring.h (__versa_string<>::append): Call _M_reserve
+	instead of reserve.
+	* include/ext/vstring.tcc (__versa_string<>::append, all versions):
+	Likewise.
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_reserve):
+	Adjust.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_reserve):
+	Likewise.
+
 2005-11-22  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24975

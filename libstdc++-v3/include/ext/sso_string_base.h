@@ -202,6 +202,10 @@ namespace __gnu_cxx
       ~__sso_string_base()
       { _M_dispose(); }
 
+      allocator_type&
+      _M_get_allocator()
+      { return _M_dataplus; }
+
       const allocator_type&
       _M_get_allocator() const
       { return _M_dataplus; }
@@ -216,7 +220,11 @@ namespace __gnu_cxx
       _M_reserve(size_type __res);
 
       void
-      _M_mutate(size_type __pos, size_type __len1, size_type __len2);
+      _M_mutate(size_type __pos, size_type __len1, const _CharT* __s,
+		size_type __len2);
+
+      void
+      _M_erase(size_type __pos, size_type __n);
     };
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -471,19 +479,18 @@ namespace __gnu_cxx
     __sso_string_base<_CharT, _Traits, _Alloc>::
     _M_reserve(size_type __res)
     {
+      // Make sure we don't shrink below the current size.
+      if (__res < _M_length())
+	__res = _M_length();
+
       const size_type __capacity = _M_capacity();
       if (__res != __capacity)
 	{
-	  // Make sure we don't shrink below the current size.
-	  if (__res < _M_length())
-	    __res = _M_length();
-
 	  if (__res > __capacity
 	      || __res > size_type(_S_local_capacity))
 	    {
 	      _CharT* __tmp = _M_create(__res, __capacity);
-	      if (_M_length())
-		_S_copy(__tmp, _M_data(), _M_length());
+	      _S_copy(__tmp, _M_data(), _M_length() + 1);
 	      _M_dispose();
 	      _M_data(__tmp);
 	      _M_capacity(__res);
@@ -491,49 +498,49 @@ namespace __gnu_cxx
 	  else if (!_M_is_local())
 	    {
 	      const size_type __tmp_capacity = _M_allocated_capacity;
-	      if (_M_length())
-		_S_copy(_M_local_data, _M_data(), _M_length());
+	      _S_copy(_M_local_data, _M_data(), _M_length() + 1);
 	      _M_destroy(__tmp_capacity + 1);
 	      _M_data(_M_local_data);
-	    }	  
-	  
-	  _M_set_length(_M_length());
+	    }
 	}
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
     __sso_string_base<_CharT, _Traits, _Alloc>::
-    _M_mutate(size_type __pos, size_type __len1, size_type __len2)
+    _M_mutate(size_type __pos, size_type __len1, const _CharT* __s,
+	      const size_type __len2)
     {
-      const size_type __old_size = _M_length();
-      const size_type __new_size = __old_size + __len2 - __len1;
-      const size_type __how_much = __old_size - __pos - __len1;
+      const size_type __how_much = _M_length() - __pos - __len1;
       
-      if (__new_size > _M_capacity())
-	{
-	  // Must reallocate.
-	  size_type __new_capacity = __new_size;
-	  _CharT* __r = _M_create(__new_capacity, _M_capacity());
+      size_type __new_capacity = _M_length() + __len2 - __len1;
+      _CharT* __r = _M_create(__new_capacity, _M_capacity());
 
-	  if (__pos)
-	    _S_copy(__r, _M_data(), __pos);
-	  if (__how_much)
-	    _S_copy(__r + __pos + __len2,
-		    _M_data() + __pos + __len1, __how_much);
+      if (__pos)
+	_S_copy(__r, _M_data(), __pos);
+      if (__s && __len2)
+	_S_copy(__r + __pos, __s, __len2);
+      if (__how_much)
+	_S_copy(__r + __pos + __len2,
+		_M_data() + __pos + __len1, __how_much);
+      
+      _M_dispose();
+      _M_data(__r);
+      _M_capacity(__new_capacity);
+    }
 
-	  _M_dispose();
-	  _M_data(__r);
-	  _M_capacity(__new_capacity);
-	}
-      else if (__how_much && __len1 != __len2)
-	{
-	  // Work in-place.
-	  _S_move(_M_data() + __pos + __len2,
-		  _M_data() + __pos + __len1, __how_much);
-	}
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    void
+    __sso_string_base<_CharT, _Traits, _Alloc>::
+    _M_erase(size_type __pos, size_type __n)
+    {
+      const size_type __how_much = _M_length() - __pos - __n;
 
-      _M_set_length(__new_size);
+      if (__how_much && __n)
+	_S_move(_M_data() + __pos, _M_data() + __pos + __n,
+		__how_much);
+
+      _M_set_length(_M_length() - __n);
     }
 } // namespace __gnu_cxx
 
