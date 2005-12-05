@@ -1,3 +1,8 @@
+2005-12-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/host-darwin.c (segv_handler): Unblock SEGV so
+	we don't go into an infinite loop.
+
 2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
         * config/rs6000/predicates.md (logical_const_operand): Split
