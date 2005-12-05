@@ -1,3 +1,7 @@
+2005-12-05  Richard Guenther  <rguenther@suse.de>
+
+	* utils.c (convert): Use fold_convert where appropriate.
+
 2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
         * Makefile.in (gnatlib): Fix regex, using \. instead of . when
