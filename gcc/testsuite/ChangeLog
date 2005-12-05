@@ -1,3 +1,8 @@
+2005-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/movq-2.c: Add -mtune=pentium4 to
+	dg-options.
+
 2005-12-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/20041106-1.c, gcc.dg/20030321-1.c, gcc.dg/pr17112-1.c,
