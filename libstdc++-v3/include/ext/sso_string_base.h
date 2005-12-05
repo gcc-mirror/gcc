@@ -455,22 +455,22 @@ namespace __gnu_cxx
     {
       if (this != &__rcs)
 	{
-	  size_type __size = __rcs._M_length();
+	  const size_type __rsize = __rcs._M_length();
+	  const size_type __capacity = _M_capacity();
 
-	  _CharT* __tmp = _M_local_data;
-	  if (__size > size_type(_S_local_capacity))
-	    __tmp = _M_create(__size, size_type(0));
+	  if (__rsize > __capacity)
+	    {
+	      size_type __new_capacity = __rsize;
+	      _CharT* __tmp = _M_create(__new_capacity, __capacity);
+	      _M_dispose();
+	      _M_data(__tmp);
+	      _M_capacity(__new_capacity);
+	    }
 
-	  _M_dispose();
-	  _M_data(__tmp);
+	  if (__rsize)
+	    _S_copy(_M_data(), __rcs._M_data(), __rsize);
 
-	  if (__size)
-	    _S_copy(_M_data(), __rcs._M_data(), __size);
-
-	  if (!_M_is_local())
-	    _M_capacity(__size);
-
-	  _M_set_length(__size);
+	  _M_set_length(__rsize);
 	}
     }
 
