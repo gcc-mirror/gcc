@@ -1,5 +1,10 @@
 2005-12-04  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_reserve):
+	Simplify.
+
+2005-12-04  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/vstring.h (__versa_string<>::operator+, all
 	versions): Move out of line...
 	* include/ext/vstring.tcc (__versa_string<>::operator+): ...
