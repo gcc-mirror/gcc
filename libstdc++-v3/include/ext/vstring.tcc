@@ -47,190 +47,35 @@ namespace __gnu_cxx
 
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
-    __versa_string<_CharT, _Traits, _Alloc, _Base>&
-    __versa_string<_CharT, _Traits, _Alloc, _Base>::
-    assign(const _CharT* __s, size_type __n)
-    {
-      __glibcxx_requires_string_len(__s, __n);
-      _M_check_length(this->size(), __n, "__versa_string::assign");
-      if (_M_disjunct(__s) || this->_M_is_shared())
-	return _M_replace_safe(size_type(0), this->size(), __s, __n);
-      else
-	{
-	  // Work in-place.
-	  const size_type __pos = __s - this->_M_data();
-	  if (__pos >= __n)
-	    this->_S_copy(this->_M_data(), __s, __n);
-	  else if (__pos)
-	    this->_S_move(this->_M_data(), __s, __n);
-	  this->_M_set_length(__n);
-	  return *this;
-	}
-     }
-
-  template<typename _CharT, typename _Traits, typename _Alloc,
-	   template <typename, typename, typename> class _Base>
-    __versa_string<_CharT, _Traits, _Alloc, _Base>&
-    __versa_string<_CharT, _Traits, _Alloc, _Base>::
-    append(size_type __n, _CharT __c)
-    {
-      if (__n)
-	{
-	  _M_check_length(size_type(0), __n, "__versa_string::append");	  
-	  const size_type __len = __n + this->size();
-	  if (__len > this->capacity() || this->_M_is_shared())
-	    this->reserve(__len);
-	  this->_S_assign(this->_M_data() + this->size(), __n, __c);
-	  this->_M_set_length(__len);
-	}
-      return *this;
-    }
-
-  template<typename _CharT, typename _Traits, typename _Alloc,
-	   template <typename, typename, typename> class _Base>
-    __versa_string<_CharT, _Traits, _Alloc, _Base>&
-    __versa_string<_CharT, _Traits, _Alloc, _Base>::
-    append(const _CharT* __s, size_type __n)
-    {
-      __glibcxx_requires_string_len(__s, __n);
-      if (__n)
-	{
-	  _M_check_length(size_type(0), __n, "__versa_string::append");
-	  const size_type __len = __n + this->size();
-	  if (__len > this->capacity() || this->_M_is_shared())
-	    {
-	      if (_M_disjunct(__s))
-		this->reserve(__len);
-	      else
-		{
-		  const size_type __off = __s - this->_M_data();
-		  this->reserve(__len);
-		  __s = this->_M_data() + __off;
-		}
-	    }
-	  this->_S_copy(this->_M_data() + this->size(), __s, __n);
-	  this->_M_set_length(__len);
-	}
-      return *this;
-    }
-
-  template<typename _CharT, typename _Traits, typename _Alloc,
-	   template <typename, typename, typename> class _Base>
-    __versa_string<_CharT, _Traits, _Alloc, _Base>&
-    __versa_string<_CharT, _Traits, _Alloc, _Base>::
-    append(const __versa_string& __str)
-    {
-      const size_type __size = __str.size();
-      if (__size)
-	{
-	  const size_type __len = __size + this->size();
-	  if (__len > this->capacity() || this->_M_is_shared())
-	    this->reserve(__len);
-	  this->_S_copy(this->_M_data() + this->size(), __str._M_data(),
-			__size);
-	  this->_M_set_length(__len);
-	}
-      return *this;
-    }    
-
-  template<typename _CharT, typename _Traits, typename _Alloc,
-	   template <typename, typename, typename> class _Base>
-    __versa_string<_CharT, _Traits, _Alloc, _Base>&
-    __versa_string<_CharT, _Traits, _Alloc, _Base>::
-    append(const __versa_string& __str, size_type __pos, size_type __n)
-    {
-      __str._M_check(__pos, "__versa_string::append");
-      __n = __str._M_limit(__pos, __n);
-      if (__n)
-	{
-	  const size_type __len = __n + this->size();
-	  if (__len > this->capacity() || this->_M_is_shared())
-	    this->reserve(__len);
-	  this->_S_copy(this->_M_data() + this->size(),
-			__str._M_data() + __pos, __n);
-	  this->_M_set_length(__len);	  
-	}
-      return *this;
-    }
-
-   template<typename _CharT, typename _Traits, typename _Alloc,
-	    template <typename, typename, typename> class _Base>
-     __versa_string<_CharT, _Traits, _Alloc, _Base>&
-     __versa_string<_CharT, _Traits, _Alloc, _Base>::
-     insert(size_type __pos, const _CharT* __s, size_type __n)
-     {
-       __glibcxx_requires_string_len(__s, __n);
-       _M_check(__pos, "__versa_string::insert");
-       _M_check_length(size_type(0), __n, "__versa_string::insert");
-       if (_M_disjunct(__s) || this->_M_is_shared())
-         return _M_replace_safe(__pos, size_type(0), __s, __n);
-       else
-         {
-           // Work in-place.
-           const size_type __off = __s - this->_M_data();
-           this->_M_mutate(__pos, 0, __n);
-           __s = this->_M_data() + __off;
-           _CharT* __p = this->_M_data() + __pos;
-           if (__s  + __n <= __p)
-             this->_S_copy(__p, __s, __n);
-           else if (__s >= __p)
-             this->_S_copy(__p, __s + __n, __n);
-           else
-             {
-	       const size_type __nleft = __p - __s;
-               this->_S_copy(__p, __s, __nleft);
-               this->_S_copy(__p + __nleft, __p + __n, __n - __nleft);
-             }
-           return *this;
-         }
-     }
-
-   template<typename _CharT, typename _Traits, typename _Alloc,
-	    template <typename, typename, typename> class _Base>
-     __versa_string<_CharT, _Traits, _Alloc, _Base>&
-     __versa_string<_CharT, _Traits, _Alloc, _Base>::
-     replace(size_type __pos, size_type __n1, const _CharT* __s,
-	     size_type __n2)
-     {
-       __glibcxx_requires_string_len(__s, __n2);
-       _M_check(__pos, "__versa_string::replace");
-       __n1 = _M_limit(__pos, __n1);
-       _M_check_length(__n1, __n2, "__versa_string::replace");
-       bool __left;
-       if (_M_disjunct(__s) || this->_M_is_shared())
-         return _M_replace_safe(__pos, __n1, __s, __n2);
-       else if ((__left = __s + __n2 <= this->_M_data() + __pos)
-		|| this->_M_data() + __pos + __n1 <= __s)
-	 {
-	   // Work in-place: non-overlapping case.
-	   size_type __off = __s - this->_M_data();
-	   __left ? __off : (__off += __n2 - __n1);
-	   this->_M_mutate(__pos, __n1, __n2);
-	   this->_S_copy(this->_M_data() + __pos,
-			 this->_M_data() + __off, __n2);
-	   return *this;
-	 }
-       else
-	 {
-	   // Todo: overlapping case.
-	   const __versa_string __tmp(__s, __n2);
-	   return _M_replace_safe(__pos, __n1, __tmp._M_data(), __n2);
-	 }
-     }
-
-  template<typename _CharT, typename _Traits, typename _Alloc,
-	   template <typename, typename, typename> class _Base>
     void
     __versa_string<_CharT, _Traits, _Alloc, _Base>::
     resize(size_type __n, _CharT __c)
     {
       const size_type __size = this->size();
-      _M_check_length(__size, __n, "__versa_string::resize");
       if (__size < __n)
 	this->append(__n - __size, __c);
       else if (__n < __size)
-	this->erase(__n);
-      // else nothing (in particular, avoid calling _M_mutate() unnecessarily.)
+	this->_M_erase(__n, __size - __n);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   template <typename, typename, typename> class _Base>
+    __versa_string<_CharT, _Traits, _Alloc, _Base>&
+    __versa_string<_CharT, _Traits, _Alloc, _Base>::
+    _M_append(const _CharT* __s, size_type __n)
+    {
+      const size_type __len = __n + this->size();
+
+      if (__len <= this->capacity() && !this->_M_is_shared())
+	{
+	  if (__n)
+	    this->_S_copy(this->_M_data() + this->size(), __s, __n);
+	}
+      else
+	this->_M_mutate(this->size(), size_type(0), __s, __n);
+
+      this->_M_set_length(__len);
+      return *this;
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc,
@@ -243,10 +88,8 @@ namespace __gnu_cxx
       {
 	const __versa_string __s(__k1, __k2);
 	const size_type __n1 = __i2 - __i1;
-	_M_check_length(__n1, __s.size(),
-			"__versa_string::_M_replace_dispatch");
-	return _M_replace_safe(__i1 - _M_ibegin(), __n1, __s._M_data(),
-			       __s.size());
+	return _M_replace(__i1 - _M_ibegin(), __n1, __s._M_data(),
+			  __s.size());
       }
 
   template<typename _CharT, typename _Traits, typename _Alloc,
@@ -257,9 +100,25 @@ namespace __gnu_cxx
 		   _CharT __c)
     {
       _M_check_length(__n1, __n2, "__versa_string::_M_replace_aux");
-      this->_M_mutate(__pos1, __n1, __n2);
+
+      const size_type __old_size = this->size();
+      const size_type __new_size = __old_size + __n2 - __n1;
+
+      if (__new_size <= this->capacity() && !this->_M_is_shared())
+	{
+	  _CharT* __p = this->_M_data() + __pos1;
+
+	  const size_type __how_much = __old_size - __pos1 - __n1;
+	  if (__how_much && __n1 != __n2)
+	    this->_S_move(__p + __n2, __p + __n1, __how_much);
+	}
+      else
+	this->_M_mutate(__pos1, __n1, 0, __n2);
+
       if (__n2)
 	this->_S_assign(this->_M_data() + __pos1, __n2, __c);
+
+      this->_M_set_length(__new_size);
       return *this;
     }
 
@@ -267,23 +126,77 @@ namespace __gnu_cxx
 	   template <typename, typename, typename> class _Base>
     __versa_string<_CharT, _Traits, _Alloc, _Base>&
     __versa_string<_CharT, _Traits, _Alloc, _Base>::
-    _M_replace_safe(size_type __pos1, size_type __n1, const _CharT* __s,
-		    size_type __n2)
+    _M_replace(size_type __pos, size_type __len1, const _CharT* __s,
+	       const size_type __len2)
     {
-      this->_M_mutate(__pos1, __n1, __n2);
-      if (__n2)
-	this->_S_copy(this->_M_data() + __pos1, __s, __n2);
+      _M_check_length(__len1, __len2, "__versa_string::_M_replace");
+
+      const size_type __old_size = this->size();
+      const size_type __new_size = __old_size + __len2 - __len1;
+      
+      if (__new_size <= this->capacity() && !this->_M_is_shared())
+	{
+	  _CharT* __p = this->_M_data() + __pos;
+
+	  const size_type __how_much = __old_size - __pos - __len1;
+	  if (_M_disjunct(__s))
+	    {
+	      if (__how_much && __len1 != __len2)
+		this->_S_move(__p + __len2, __p + __len1, __how_much);
+	      if (__len2)
+		this->_S_copy(__p, __s, __len2);
+	    }
+	  else
+	    {
+	      // Work in-place.
+	      if (__len2 && __len2 <= __len1)
+		this->_S_move(__p, __s, __len2);
+	      if (__how_much && __len1 != __len2)
+		this->_S_move(__p + __len2, __p + __len1, __how_much);
+	      if (__len2 > __len1)
+		{
+		  if (__s + __len2 <= __p + __len1)
+		    this->_S_move(__p, __s, __len2);
+		  else if (__s >= __p + __len1)
+		    this->_S_copy(__p, __s + __len2 - __len1, __len2);
+		  else
+		    {
+		      const size_type __nleft = (__p + __len1) - __s;
+		      this->_S_move(__p, __s, __nleft);
+		      this->_S_copy(__p + __nleft, __p + __len2,
+				    __len2 - __nleft);
+		    }
+		}
+	    }
+	}
+      else
+	this->_M_mutate(__pos, __len1, __s, __len2);
+
+      this->_M_set_length(__new_size);
       return *this;
     }
-   
+  
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   template <typename, typename, typename> class _Base>
+    __versa_string<_CharT, _Traits, _Alloc, _Base>
+    operator+(const __versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
+	      const __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
+    {
+      __versa_string<_CharT, _Traits, _Alloc, _Base> __str;
+      __str.reserve(__lhs.size() + __rhs.size());
+      __str.append(__lhs);
+      __str.append(__rhs);
+      return __str;
+    }
+
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
     __versa_string<_CharT, _Traits, _Alloc, _Base>
     operator+(const _CharT* __lhs,
-	      const __versa_string<_CharT, _Traits, _Alloc>& __rhs)
+	      const __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
     {
       __glibcxx_requires_string(__lhs);
-      typedef __versa_string<_CharT, _Traits, _Alloc> __string_type;
+      typedef __versa_string<_CharT, _Traits, _Alloc, _Base> __string_type;
       typedef typename __string_type::size_type	  __size_type;
       const __size_type __len = _Traits::length(__lhs);
       __string_type __str;
@@ -299,13 +212,40 @@ namespace __gnu_cxx
     operator+(_CharT __lhs,
 	      const __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
     {
-      typedef __versa_string<_CharT, _Traits, _Alloc> __string_type;
-      typedef typename __string_type::size_type	  __size_type;
-      __string_type __str;
-      const __size_type __len = __rhs.size();
-      __str.reserve(__len + 1);
-      __str.append(__size_type(1), __lhs);
+      __versa_string<_CharT, _Traits, _Alloc, _Base> __str;
+      __str.reserve(__rhs.size() + 1);
+      __str.push_back(__lhs);
       __str.append(__rhs);
+      return __str;
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   template <typename, typename, typename> class _Base>
+    __versa_string<_CharT, _Traits, _Alloc, _Base>
+    operator+(const __versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
+	      const _CharT* __rhs)
+    {
+      __glibcxx_requires_string(__rhs);
+      typedef __versa_string<_CharT, _Traits, _Alloc, _Base> __string_type;
+      typedef typename __string_type::size_type	  __size_type;
+      const __size_type __len = _Traits::length(__rhs);
+      __string_type __str;
+      __str.reserve(__lhs.size() + __len);
+      __str.append(__lhs);
+      __str.append(__rhs, __len);
+      return __str;
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   template <typename, typename, typename> class _Base>
+    __versa_string<_CharT, _Traits, _Alloc, _Base>
+    operator+(const __versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
+	      _CharT __rhs)
+    {
+      __versa_string<_CharT, _Traits, _Alloc, _Base> __str;
+      __str.reserve(__lhs.size() + 1);
+      __str.append(__lhs);
+      __str.push_back(__rhs);
       return __str;
     }
 
