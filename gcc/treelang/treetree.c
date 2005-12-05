@@ -259,8 +259,7 @@ tree_code_if_start (tree exp, location_t loc)
 {
   tree cond_exp, cond;
   cond_exp = fold_build2 (NE_EXPR, boolean_type_node, exp,
-			  fold_build1 (CONVERT_EXPR, TREE_TYPE (exp),
-				       integer_zero_node));
+			  build_int_cst (TREE_TYPE (exp), 0));
   SET_EXPR_LOCATION (cond_exp, loc);
   cond = build3 (COND_EXPR, void_type_node, cond_exp, NULL_TREE,
                  NULL_TREE);
@@ -526,7 +525,7 @@ tree_code_create_variable (unsigned int storage_class,
 
   /* 3a. Initialization.  */
   if (init)
-    DECL_INITIAL (var_decl) = fold_build1 (CONVERT_EXPR, var_type, init);
+    DECL_INITIAL (var_decl) = fold_convert (var_type, init);
   else
     DECL_INITIAL (var_decl) = NULL_TREE;
 
@@ -586,7 +585,7 @@ tree_code_generate_return (tree type, tree exp)
     {
       setret = fold_build2 (MODIFY_EXPR, type, 
                             DECL_RESULT (current_function_decl),
-                            fold_build1 (CONVERT_EXPR, type, exp));
+                            fold_convert (type, exp));
       TREE_SIDE_EFFECTS (setret) = 1;
       TREE_USED (setret) = 1;
       setret = build1 (RETURN_EXPR, type, setret);
@@ -663,7 +662,7 @@ tree_code_get_expression (unsigned int exp_type,
       gcc_assert (op1 && op2);
       operator = MODIFY_EXPR;
       ret1 = fold_build2 (operator, void_type_node, op1,
-                          fold_build1 (CONVERT_EXPR, TREE_TYPE (op1), op2));
+                          fold_convert (TREE_TYPE (op1), op2));
 
       break;
 
@@ -683,8 +682,8 @@ tree_code_get_expression (unsigned int exp_type,
     binary_expression:
       gcc_assert (op1 && op2);
       ret1  =  fold_build2 (operator, type,
-			    fold_build1 (CONVERT_EXPR, type, op1),
-			    fold_build1 (CONVERT_EXPR, type, op2));
+			    fold_convert (type, op1),
+			    fold_convert (type, op2));
       break;
 
       /* Reference to a variable.  This is dead easy, just return the
@@ -697,7 +696,7 @@ tree_code_get_expression (unsigned int exp_type,
       if (type == TREE_TYPE (op1))
         ret1 = build1 (NOP_EXPR, type, op1);
       else
-        ret1 = fold_build1 (CONVERT_EXPR, type, op1);
+        ret1 = fold_convert (type, op1);
       break;
 
     case EXP_FUNCTION_INVOCATION:
@@ -734,8 +733,8 @@ tree_code_add_parameter (tree list, tree proto_exp, tree exp)
 {
   tree new_exp;
   new_exp = tree_cons (NULL_TREE,
-                       fold_build1 (CONVERT_EXPR, TREE_TYPE (proto_exp),
-				    exp), NULL_TREE);
+                       fold_convert (TREE_TYPE (proto_exp),
+				     exp), NULL_TREE);
   if (!list)
     return new_exp;
   return chainon (new_exp, list);

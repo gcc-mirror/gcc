@@ -1,3 +1,9 @@
+2005-12-05  Richard Guenther  <rguenther@suse.de>
+
+	* treetree.c (tree_code_if_start, tree_code_create_variable,
+	tree_code_generate_return, tree_code_get_expression,
+	tree_code_add_parameter): Use fold_convert where appropriate.
+
 2005-11-07  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR treelang/24066
