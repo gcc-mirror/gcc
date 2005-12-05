@@ -1477,7 +1477,6 @@ This predicate holds if the function an overloaded
 @findex IF_COND
 @findex THEN_CLAUSE
 @findex ELSE_CLAUSE
-@tindex RETURN_INIT
 @tindex RETURN_STMT
 @findex RETURN_EXPR
 @tindex SUBOBJECT
@@ -1719,22 +1718,6 @@ Used to represent a label.  The @code{LABEL_DECL} declared by this
 statement can be obtained with the @code{LABEL_EXPR_LABEL} macro.  The
 @code{IDENTIFIER_NODE} giving the name of the label can be obtained from
 the @code{LABEL_DECL} with @code{DECL_NAME}.
-
-@item RETURN_INIT
-
-If the function uses the G++ ``named return value'' extension, meaning
-that the function has been defined like:
-@smallexample
-S f(int) return s @{@dots{}@}
-@end smallexample
-then there will be a @code{RETURN_INIT}.  There is never a named
-returned value for a constructor.  The first argument to the
-@code{RETURN_INIT} is the name of the object returned; the second
-argument is the initializer for the object.  The object is initialized
-when the @code{RETURN_INIT} is encountered.  The object referred to is
-the actual object returned; this extension is a manual way of doing the
-``return-value optimization''.  Therefore, the object must actually be
-constructed in the place where the object will be returned.
 
 @item RETURN_STMT
 
