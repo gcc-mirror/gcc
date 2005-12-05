@@ -51,6 +51,12 @@ dg-init
 # Run tests from the source directory.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/dg-*.c]] "" ""
 
+# Skip generated tests unless CHECK_TEST_FRAMEWORK is 1.
+if { $env(CHECK_TEST_FRAMEWORK) != 1 } {
+    verbose "skipping generated test framework tests, CHECK_TEST_FRAMEWORK is not 1" 0
+    return
+}
+
 # Generate additional tests.
 set tstobjdir "$tmpdir/gcc.test-framework"
 set generator "$srcdir/$subdir/gen_directive_tests"
