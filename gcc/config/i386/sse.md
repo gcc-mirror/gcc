@@ -81,24 +81,14 @@
 }
   [(set_attr "type" "sselog1,ssemov,ssemov")
    (set (attr "mode")
-	(cond [(eq (symbol_ref "TARGET_SSE2") (const_int 0))
-		 (const_string "V4SF")
-
-	       (eq_attr "alternative" "0,1")
-		 (if_then_else
-		   (ne (symbol_ref "optimize_size")
-		       (const_int 0))
-		   (const_string "V4SF")
-		   (const_string "TI"))
-	       (eq_attr "alternative" "2")
-		 (if_then_else
-		   (ior (ne (symbol_ref "TARGET_SSE_TYPELESS_STORES")
-			    (const_int 0))
-			(ne (symbol_ref "optimize_size")
-			    (const_int 0)))
-		   (const_string "V4SF")
-		   (const_string "TI"))]
-	       (const_string "TI")))])
+	(if_then_else
+	  (ior (ior (ne (symbol_ref "optimize_size") (const_int 0))
+		    (eq (symbol_ref "TARGET_SSE2") (const_int 0)))
+	       (and (eq_attr "alternative" "2")
+	  	    (ne (symbol_ref "TARGET_SSE_TYPELESS_STORES")
+		        (const_int 0))))
+	  (const_string "V4SF")
+	  (const_string "TI")))])
 
 (define_expand "movv4sf"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
@@ -167,23 +157,14 @@
 }
   [(set_attr "type" "sselog1,ssemov,ssemov")
    (set (attr "mode")
-	(cond [(eq (symbol_ref "TARGET_SSE2") (const_int 0))
-		 (const_string "V4SF")
-	       (eq_attr "alternative" "0,1")
-		 (if_then_else
-		   (ne (symbol_ref "optimize_size")
-		       (const_int 0))
-		   (const_string "V4SF")
-		   (const_string "V2DF"))
-	       (eq_attr "alternative" "2")
-		 (if_then_else
-		   (ior (ne (symbol_ref "TARGET_SSE_TYPELESS_STORES")
-			    (const_int 0))
-			(ne (symbol_ref "optimize_size")
-			    (const_int 0)))
-		   (const_string "V4SF")
-		   (const_string "V2DF"))]
-	       (const_string "V2DF")))])
+	(if_then_else
+	  (ior (ior (ne (symbol_ref "optimize_size") (const_int 0))
+		    (eq (symbol_ref "TARGET_SSE2") (const_int 0)))
+	       (and (eq_attr "alternative" "2")
+	  	    (ne (symbol_ref "TARGET_SSE_TYPELESS_STORES")
+		        (const_int 0))))
+	  (const_string "V4SF")
+	  (const_string "V2DF")))])
 
 (define_split
   [(set (match_operand:V2DF 0 "register_operand" "")
@@ -1525,7 +1506,7 @@
   "TARGET_SSE2"
   "sqrtsd\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
-   (set_attr "mode" "SF")])
+   (set_attr "mode" "DF")])
 
 ;; ??? For !flag_finite_math_only, the representation with SMIN/SMAX
 ;; isn't really correct, as those rtl operators aren't defined when 

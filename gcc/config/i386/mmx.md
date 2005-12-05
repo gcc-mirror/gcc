@@ -82,7 +82,7 @@
     movq\t{%1, %0|%0, %1}
     movd\t{%1, %0|%0, %1}
     movd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "imov,imov,mmxmov,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,ssemov,ssemov,ssemov,ssemov")
+  [(set_attr "type" "imov,imov,mmx,mmxmov,mmxmov,ssecvt,ssecvt,sselog1,ssemov,ssemov,ssemov,ssemov")
    (set_attr "unit" "*,*,*,*,*,mmx,mmx,*,*,*,*,*")
    (set_attr "mode" "DI")])
 
@@ -108,7 +108,7 @@
     movlps\t{%1, %0|%0, %1}
     #
     #"
-  [(set_attr "type" "mmxmov,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,ssemov,ssemov,ssemov,ssemov,ssemov,ssemov,*,*")
+  [(set_attr "type" "mmx,mmxmov,mmxmov,ssecvt,ssecvt,sselog1,ssemov,ssemov,sselog1,ssemov,ssemov,ssemov,*,*")
    (set_attr "unit" "*,*,*,mmx,mmx,*,*,*,*,*,*,*,*,*")
    (set_attr "mode" "DI,DI,DI,DI,DI,TI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
 
@@ -142,7 +142,7 @@
     movlps\t{%1, %0|%0, %1}
     movd\t{%1, %0|%0, %1}
     movd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "imov,imov,mmxmov,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,ssemov,ssemov,ssemov,ssemov,ssemov")
+  [(set_attr "type" "imov,imov,mmx,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,sselog1,ssemov,ssemov,ssemov,ssemov")
    (set_attr "unit" "*,*,*,*,*,mmx,mmx,*,*,*,*,*,*")
    (set_attr "mode" "DI,DI,DI,DI,DI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
 
@@ -165,7 +165,7 @@
     movlps\t{%1, %0|%0, %1}
     #
     #"
-  [(set_attr "type" "mmxmov,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,ssemov,ssemov,ssemov,*,*")
+  [(set_attr "type" "mmx,mmxmov,mmxmov,ssecvt,ssecvt,sselog1,ssemov,ssemov,ssemov,*,*")
    (set_attr "unit" "*,*,*,mmx,mmx,*,*,*,*,*,*")
    (set_attr "mode" "DI,DI,DI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
 

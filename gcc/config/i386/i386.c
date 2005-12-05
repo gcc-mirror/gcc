@@ -13469,7 +13469,6 @@ enum ix86_builtins
   IX86_BUILTIN_CMPNGEPS,
   IX86_BUILTIN_CMPORDPS,
   IX86_BUILTIN_CMPUNORDPS,
-  IX86_BUILTIN_CMPNEPS,
   IX86_BUILTIN_CMPEQSS,
   IX86_BUILTIN_CMPLTSS,
   IX86_BUILTIN_CMPLESS,
@@ -13480,7 +13479,6 @@ enum ix86_builtins
   IX86_BUILTIN_CMPNGESS,
   IX86_BUILTIN_CMPORDSS,
   IX86_BUILTIN_CMPUNORDSS,
-  IX86_BUILTIN_CMPNESS,
 
   IX86_BUILTIN_COMIEQSS,
   IX86_BUILTIN_COMILTSS,
@@ -14423,9 +14421,6 @@ ix86_init_mmx_sse_builtins (void)
     = build_function_type_list (integer_type_node,
 				V2DF_type_node, V2DF_type_node, NULL_TREE);
 
-  tree ti_ftype_ti_ti
-    = build_function_type_list (intTI_type_node,
-				intTI_type_node, intTI_type_node, NULL_TREE);
   tree void_ftype_pcvoid
     = build_function_type_list (void_type_node, const_ptr_type_node, NULL_TREE);
   tree v4sf_ftype_v4si
@@ -14591,9 +14586,6 @@ ix86_init_mmx_sse_builtins (void)
 	  break;
 	case V2DFmode:
 	  type = v2df_ftype_v2df_v2df;
-	  break;
-	case TImode:
-	  type = ti_ftype_ti_ti;
 	  break;
 	case V4SFmode:
 	  type = v4sf_ftype_v4sf_v4sf;
