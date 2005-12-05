@@ -75,6 +75,7 @@ FLAGS_TO_PASS = \
         "prefix=$(prefix)" \
         "STAGE_PREFIX=$(STAGE_PREFIX)" \
 	"CC=$(host_cc_for_libada)" \
+	"GCC_FOR_TARGET=$(CC)" \
         "CFLAGS=$(CFLAGS) $(WARN_CFLAGS)"
 
 # Rules to build gnatlib.

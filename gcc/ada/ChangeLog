@@ -1,3 +1,8 @@
+2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
+
+        * Makefile.in (gnatlib): Fix regex, using \. instead of . when
+	a period is meant.
+
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* trans.c (gnat_gimplify_expr): Use buildN instead of build.
