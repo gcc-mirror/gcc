@@ -1,3 +1,11 @@
+2005-12-07  Jon Grimm  <jgrimm2@us.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* include/cpplib.h (CPP_N_DFLOAT): New.
+	* expr.c (interpret_float_suffix): Identify df, dd, and dl
+	suffixes as decimal floating point constants.
+	(cpp_classify_number): Disallow hexadecimal DFP constants.
+
 2005-11-14  Gerald Pfeifer  <gerald@pfeifer.com>
             Ian Lance Taylor  <ian@airs.com>
 
