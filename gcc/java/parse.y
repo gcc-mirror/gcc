@@ -14857,8 +14857,12 @@ patch_new_array_init (tree type, tree node)
 
   /* Create a new type. We can't reuse the one we have here by
      patching its dimension because it originally is of dimension -1
-     hence reused by gcc. This would prevent triangular arrays. */
-  type = build_java_array_type (element_type, length);
+     hence reused by gcc. This would prevent triangular arrays.
+     Note that we don't pass the length here.  If we do that then the
+     length will end up in the signature of this type, and hence in
+     the signature of the anonymous constructor -- but this is not a
+     valid java signature.  */
+  type = build_java_array_type (element_type, -1);
   TREE_TYPE (init) = TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (type))));
   TREE_TYPE (node) = promote_type (type);
   TREE_CONSTANT (init) = all_constant;
