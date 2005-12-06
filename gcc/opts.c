@@ -693,7 +693,7 @@ decode_options (unsigned int argc, const char **argv)
   if (flag_unwind_tables && ! targetm.unwind_tables_default
       && flag_reorder_blocks_and_partition)
     {
-      inform ("-freorder-blocks-and-parition does not support unwind info");
+      inform ("-freorder-blocks-and-partition does not support unwind info");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
