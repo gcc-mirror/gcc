@@ -343,7 +343,8 @@ dequeue_and_dump (dump_info_p di)
 	  di->column += 6 + strlen (filename) + 8;
 	}
       /* And any declaration can be compiler-generated.  */
-      if (DECL_ARTIFICIAL (t))
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON)
+	  && DECL_ARTIFICIAL (t))
 	dump_string_field (di, "note", "artificial");
       if (TREE_CHAIN (t) && !dump_flag (di, TDF_SLIM, NULL))
 	dump_child ("chan", TREE_CHAIN (t));
@@ -475,6 +476,11 @@ dequeue_and_dump (dump_info_p di)
 
     case CONST_DECL:
       dump_child ("cnst", DECL_INITIAL (t));
+      break;
+      
+    case TYPE_MEMORY_TAG:
+    case NAME_MEMORY_TAG:
+    case STRUCT_FIELD_TAG:
       break;
 
     case VAR_DECL:

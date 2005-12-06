@@ -301,7 +301,7 @@ vect_create_data_ref_ptr (tree stmt,
 
   /* If tag is a variable (and NOT_A_TAG) than a new type alias
      tag must be created with tag added to its may alias list.  */
-  if (var_ann (tag)->mem_tag_kind == NOT_A_TAG)
+  if (!MTAG_P (tag))
     new_type_alias (vect_ptr, tag);
   else
     var_ann (vect_ptr)->type_mem_tag = tag;

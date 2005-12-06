@@ -406,7 +406,7 @@ verify_flow_insensitive_alias_info (void)
       var_ann_t ann;
       ann = var_ann (var);
 
-      if (ann->mem_tag_kind == NOT_A_TAG
+      if (!MTAG_P (var)
 	  && ann->is_alias_tag
 	  && !bitmap_bit_p (visited, DECL_UID (var)))
 	{
