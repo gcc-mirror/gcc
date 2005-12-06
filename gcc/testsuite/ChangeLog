@@ -1,3 +1,7 @@
+2005-12-06  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (cleanup-dump): Remove options from test name.
+
 2005-12-06  Roger Sayle  <roger@eyesopen.com>
 
 	* g++.dg/warn/Wstring-literal-comparison-1.C: New test case.

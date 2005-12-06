@@ -367,7 +367,9 @@ proc cleanup-dump { suffix } {
     # proc that stores the filename of the testcase in a local variable
     # "name".  A cleaner solution would require a new DejaGnu release.
     upvar 3 name testcase
-    remove-build-file "[file tail $testcase].$suffix"
+    # The name might include a list of options; extract the file name.
+    set src [file tail [lindex $testcase 0]]
+    remove-build-file "[file tail $src].$suffix"
 
     # Clean up dump files for additional source files.
     if [info exists additional_sources] {
