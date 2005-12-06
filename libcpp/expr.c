@@ -82,7 +82,7 @@ static void check_promotion (cpp_reader *, const struct op *);
 static unsigned int
 interpret_float_suffix (const uchar *s, size_t len)
 {
-  size_t f = 0, l = 0, i = 0;
+  size_t f = 0, l = 0, i = 0, d = 0;
 
   while (len--)
     switch (s[len])
@@ -91,6 +91,12 @@ interpret_float_suffix (const uchar *s, size_t len)
       case 'l': case 'L': l++; break;
       case 'i': case 'I':
       case 'j': case 'J': i++; break;
+      case 'd': case 'D': 
+	/* Disallow fd, ld suffixes.  */
+	if (d && (f || l))
+	  return 0;
+	d++;
+	break;
       default:
 	return 0;
       }
@@ -98,9 +104,14 @@ interpret_float_suffix (const uchar *s, size_t len)
   if (f + l > 1 || i > 1)
     return 0;
 
+  /* Allow dd, df, dl suffixes for decimal float constants.  */
+  if (d && ((d + f + l != 2) || i))
+    return 0;
+
   return ((i ? CPP_N_IMAGINARY : 0)
 	  | (f ? CPP_N_SMALL :
-	     l ? CPP_N_LARGE : CPP_N_MEDIUM));
+	     l ? CPP_N_LARGE : CPP_N_MEDIUM)
+	  | (d ? CPP_N_DFLOAT : 0));
 }
 
 /* Subroutine of cpp_classify_number.  S points to an integer suffix
@@ -249,6 +260,15 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
 	cpp_error (pfile, CPP_DL_WARNING,
 		   "traditional C rejects the \"%.*s\" suffix",
 		   (int) (limit - str), str);
+
+      /* Radix must be 10 for decimal floats.  */
+      if ((result & CPP_N_DFLOAT) && radix != 10)
+        {
+          cpp_error (pfile, CPP_DL_ERROR,
+                     "invalid suffix \"%.*s\" with hexadecimal floating constant",
+                     (int) (limit - str), str);
+          return CPP_N_INVALID;
+        }
 
       result |= CPP_N_FLOATING;
     }

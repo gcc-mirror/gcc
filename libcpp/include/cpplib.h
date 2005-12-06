@@ -743,6 +743,7 @@ struct cpp_num
 
 #define CPP_N_UNSIGNED	0x1000	/* Properties.  */
 #define CPP_N_IMAGINARY	0x2000
+#define CPP_N_DFLOAT	0x4000
 
 /* Classify a CPP_NUMBER token.  The return value is a combination of
    the flags from the above sets.  */
