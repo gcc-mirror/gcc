@@ -1,5 +1,12 @@
 2005-12-06  Roger Sayle  <roger@eyesopen.com>
 
+	* g++.dg/warn/Wstring-literal-comparison-1.C: New test case.
+	* g++.dg/warn/Wstring-literal-comparison-2.C: Likewise.
+	* g++.dg/warn/Wstring-literal-comparison-3.C: Likewise.
+	* g++.dg/warn/Wstring-literal-comparison-4.C: Likewise.
+
+2005-12-06  Roger Sayle  <roger@eyesopen.com>
+
 	PR c++/25263
 	* g++.dg/other/array2.C: New test case.
 
