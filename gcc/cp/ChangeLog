@@ -1,3 +1,9 @@
+2005-12-06  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/25263
+	* decl.c (compute_array_index_type): Check that itype is an
+	INTEGER_CST node before testing/clearing TREE_OVERFLOW.
+
 2005-12-05  Daniel Berlin  <dberlin@dberlin.org>
 
 	* ptree.c (cxx_print_decl): Update to check for decl_common
