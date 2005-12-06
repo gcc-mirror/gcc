@@ -1,6 +1,6 @@
 /* longlong.h -- definitions for mixed size 32/64 bit arithmetic.
-   Copyright (C) 1991, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2005 Free Software Foundation, Inc.
 
    This definition file is free software; you can redistribute it
    and/or modify it under the terms of the GNU General Public
@@ -646,7 +646,9 @@ UDItype __umulsidi3 (USItype, USItype);
      || defined (__powerpc__)	/* gcc */				\
      || defined (__POWERPC__)	/* BEOS */				\
      || defined (__ppc__)	/* Darwin */				\
-     || defined (PPC)		/* GNU/Linux, SysV */			\
+     || (defined (PPC) && ! defined (CPU_FAMILY)) /* gcc 2.7.x GNU&SysV */    \
+     || (defined (PPC) && defined (CPU_FAMILY)    /* VxWorks */               \
+         && CPU_FAMILY == PPC)                                                \
      ) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   do {									\
@@ -684,7 +686,10 @@ UDItype __umulsidi3 (USItype, USItype);
   __asm__ ("{cntlz|cntlzw} %0,%1" : "=r" (count) : "r" (x))
 #define COUNT_LEADING_ZEROS_0 32
 #if defined (_ARCH_PPC) || defined (__powerpc__) || defined (__POWERPC__) \
-  || defined (__ppc__) || defined (PPC)
+  || defined (__ppc__)                                                    \
+  || (defined (PPC) && ! defined (CPU_FAMILY)) /* gcc 2.7.x GNU&SysV */       \
+  || (defined (PPC) && defined (CPU_FAMILY)    /* VxWorks */                  \
+         && CPU_FAMILY == PPC)
 #define umul_ppmm(ph, pl, m0, m1) \
   do {									\
     USItype __m0 = (m0), __m1 = (m1);					\
