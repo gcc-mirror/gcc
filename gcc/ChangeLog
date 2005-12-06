@@ -1,3 +1,8 @@
+2005-12-06  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_convert): Do not build and fold
+	CONVERT_EXPR, but always use NOP_EXPR.
+
 2005-12-06  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/i386.c (builtin_description): Use MASK_SSE2 for

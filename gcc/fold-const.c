@@ -2017,8 +2017,7 @@ fold_convert (tree type, tree arg)
 	  return fold_build1 (FLOAT_EXPR, type, arg);
 
 	case REAL_TYPE:
-	  return fold_build1 (flag_float_store ? CONVERT_EXPR : NOP_EXPR,
-			      type, arg);
+	  return fold_build1 (NOP_EXPR, type, arg);
 
 	case COMPLEX_TYPE:
 	  tem = fold_build1 (REALPART_EXPR, TREE_TYPE (orig), arg);
@@ -2070,7 +2069,7 @@ fold_convert (tree type, tree arg)
       return fold_build1 (VIEW_CONVERT_EXPR, type, arg);
 
     case VOID_TYPE:
-      return fold_build1 (CONVERT_EXPR, type, fold_ignored_result (arg));
+      return fold_build1 (NOP_EXPR, type, fold_ignored_result (arg));
 
     default:
       gcc_unreachable ();
