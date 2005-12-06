@@ -58,11 +58,15 @@ segv_handler (int sig ATTRIBUTE_UNUSED,
 	      void *scp)
 {
   ucontext_t *uc = (ucontext_t *)scp;
+  sigset_t sigset;
   unsigned faulting_insn;
 
   /* The fault might have happened when trying to run some instruction, in
      which case the next line will segfault _again_.  Handle this case.  */
   signal (SIGSEGV, segv_crash_handler);
+  sigemptyset (&sigset);
+  sigaddset (&sigset, SIGSEGV);
+  sigprocmask (SIG_UNBLOCK, &sigset, NULL);
 
   faulting_insn = *(unsigned *)uc->uc_mcontext->ss.srr0;
 

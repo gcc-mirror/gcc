@@ -1,3 +1,8 @@
+2005-12-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/host-darwin.c (segv_handler): Unblock SEGV so
+	we don't go into an infinite loop.
+
 2005-12-04  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi, doc/standards.texi: Refer to
