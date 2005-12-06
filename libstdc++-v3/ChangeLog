@@ -1,3 +1,17 @@
+2005-12-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (insert(iterator, _CharT),
+	erase(iterator), erase(iterator, iterator)): Avoid troubles
+	with ADL, user defined operators and __normal_iterator.
+	* include/bits/stl_iterator.h (operator-(const __normal_iterator
+	<_Iterator, _Container>&, const __normal_iterator<_Iterator,
+	_Container>&)): Add overload for left and right iterators of
+	the same type.
+	* include/debug/safe_iterator.h (operator-(const _Safe_iterator
+	<_Iterator, _Sequence>&, const _Safe_iterator<_Iterator,
+	_Sequence>&)): Likewise.
+	* testsuite/21_strings/basic_string/types/1.cc: New.
+
 2005-12-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/sso_string_base.h (__sso_string_base<>::_M_assign):
