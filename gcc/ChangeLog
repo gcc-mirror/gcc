@@ -1,3 +1,9 @@
+2005-12-05  James E Wilson  <wilson@specifix.com>
+
+	PR target/24934
+	* opts.c (decode_options): Turn off partitioning if flag_unwind_tables
+	is set.
+
 2005-12-05  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* print-tree.c (print_node): Ditto.
