@@ -1,3 +1,8 @@
+2005-12-06  Alan Modra  <amodra@bigpond.net.au>
+
+	PR other/13873
+	* longlong.h: Merge PPC tests from upstream.
+
 2005-12-06  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_convert): Do not build and fold
