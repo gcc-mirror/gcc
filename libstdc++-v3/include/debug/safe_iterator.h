@@ -607,6 +607,22 @@ namespace __gnu_debug
       return __lhs.base() - __rhs.base();
     }
 
+   template<typename _Iterator, typename _Sequence>
+     inline typename _Safe_iterator<_Iterator, _Sequence>::difference_type
+     operator-(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
+	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
+     {
+       _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
+			     _M_message(__msg_distance_bad)
+			     ._M_iterator(__lhs, "lhs")
+			     ._M_iterator(__rhs, "rhs"));
+       _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
+			     _M_message(__msg_distance_different)
+			     ._M_iterator(__lhs, "lhs")
+			     ._M_iterator(__rhs, "rhs"));
+       return __lhs.base() - __rhs.base();
+     }
+
   template<typename _Iterator, typename _Sequence>
     inline _Safe_iterator<_Iterator, _Sequence>
     operator+(typename _Safe_iterator<_Iterator,_Sequence>::difference_type __n,

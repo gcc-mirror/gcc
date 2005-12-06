@@ -809,6 +809,12 @@ namespace __gnu_cxx
     { return __lhs.base() - __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
+    inline typename __normal_iterator<_Iterator, _Container>::difference_type
+    operator-(const __normal_iterator<_Iterator, _Container>& __lhs,
+	      const __normal_iterator<_Iterator, _Container>& __rhs)
+    { return __lhs.base() - __rhs.base(); }
+
+  template<typename _Iterator, typename _Container>
     inline __normal_iterator<_Iterator, _Container>
     operator+(typename __normal_iterator<_Iterator, _Container>::difference_type
 	      __n, const __normal_iterator<_Iterator, _Container>& __i)
