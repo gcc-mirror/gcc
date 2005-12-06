@@ -1,5 +1,11 @@
 2005-12-06  Roger Sayle  <roger@eyesopen.com>
 
+	* typeck.c (build_binary_op): Issue warning if either operand of a
+	comparison operator is a string literal, except for testing equality
+	or inequality against NULL.
+
+2005-12-06  Roger Sayle  <roger@eyesopen.com>
+
 	PR c++/25263
 	* decl.c (compute_array_index_type): Check that itype is an
 	INTEGER_CST node before testing/clearing TREE_OVERFLOW.
