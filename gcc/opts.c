@@ -675,7 +675,8 @@ decode_options (unsigned int argc, const char **argv)
 
   /* The optimization to partition hot and cold basic blocks into separate
      sections of the .o and executable files does not work (currently)
-     with exception handling.  If flag_exceptions is turned on we need to
+     with exception handling.  This is because there is no support for
+     generating unwind info.  If flag_exceptions is turned on we need to
      turn off the partitioning optimization.  */
 
   if (flag_exceptions && flag_reorder_blocks_and_partition)
@@ -686,8 +687,24 @@ decode_options (unsigned int argc, const char **argv)
       flag_reorder_blocks = 1;
     }
 
+  /* If user requested unwind info, then turn off the partitioning
+     optimization.  */
+
+  if (flag_unwind_tables && ! targetm.unwind_tables_default
+      && flag_reorder_blocks_and_partition)
+    {
+      inform ("-freorder-blocks-and-parition does not support unwind info");
+      flag_reorder_blocks_and_partition = 0;
+      flag_reorder_blocks = 1;
+    }
+
+  /* If the target requested unwind info, then turn off the partitioning
+     optimization with a different message.  Likewise, if the target does not
+     support named sections.  */
+
   if (flag_reorder_blocks_and_partition
-      && !targetm.have_named_sections)
+      && (!targetm.have_named_sections
+	  || (flag_unwind_tables && targetm.unwind_tables_default)))
     {
       inform 
        ("-freorder-blocks-and-partition does not work on this architecture");
