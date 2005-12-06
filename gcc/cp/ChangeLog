@@ -1,3 +1,8 @@
+2005-12-06  Aldy Hernandez  <aldyh@redhat.com>
+
+       PR C++/24138
+        * decl.c (reshape_init_array_1): Handle max_index of -1.
+
 2005-12-06  Roger Sayle  <roger@eyesopen.com>
 
 	* typeck.c (build_binary_op): Issue warning if either operand of a
