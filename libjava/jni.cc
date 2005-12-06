@@ -226,6 +226,12 @@ unwrap (T *obj)
   return reinterpret_cast<T *> (wr->get ());
 }
 
+jobject
+_Jv_UnwrapJNIweakReference (jobject obj)
+{
+  return unwrap (obj);
+}
+
 
 
 static jobject JNICALL
@@ -2305,6 +2311,13 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
   ffi_java_raw_call (&_this->jni_cif, (void (*)()) _this->function,
 		     ret, real_args);
 #endif
+
+  // We might need to unwrap a JNI weak reference here.
+  if (_this->jni_cif.rtype == &ffi_type_pointer)
+    {
+      _Jv_value *val = (_Jv_value *) ret;
+      val->object_value = unwrap (val->object_value);
+    }
 
   if (sync != NULL)
     _Jv_MonitorExit (sync);

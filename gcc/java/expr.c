@@ -2615,8 +2615,17 @@ build_jni_stub (tree method)
   /* If the JNI call returned a result, capture it here.  If we had to
      unwrap JNI object results, we would do that here.  */
   if (res_var != NULL_TREE)
-    call = build2 (MODIFY_EXPR, TREE_TYPE (TREE_TYPE (method)),
-		   res_var, call);
+    {
+      /* If the call returns an object, it may return a JNI weak
+	 reference, in which case we must unwrap it.  */
+      if (! JPRIMITIVE_TYPE_P (TREE_TYPE (TREE_TYPE (method))))
+	call = build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (method)),
+		       build_address_of (soft_unwrapjni_node),
+		       build_tree_list (NULL_TREE, call),
+		       NULL_TREE);
+      call = build2 (MODIFY_EXPR, TREE_TYPE (TREE_TYPE (method)),
+		     res_var, call);
+    }
 
   TREE_SIDE_EFFECTS (call) = 1;
   CAN_COMPLETE_NORMALLY (call) = 1;
