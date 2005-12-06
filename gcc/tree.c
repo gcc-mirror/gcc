@@ -1208,9 +1208,11 @@ integer_all_onesp (tree expr)
     return 0;
 
   uns = TYPE_UNSIGNED (TREE_TYPE (expr));
+  if (TREE_INT_CST_LOW (expr) == ~(unsigned HOST_WIDE_INT) 0
+      && TREE_INT_CST_HIGH (expr) == -1)
+    return 1;
   if (!uns)
-    return (TREE_INT_CST_LOW (expr) == ~(unsigned HOST_WIDE_INT) 0
-	    && TREE_INT_CST_HIGH (expr) == -1);
+    return 0;
 
   /* Note that using TYPE_PRECISION here is wrong.  We care about the
      actual bits, not the (arbitrary) range of the type.  */

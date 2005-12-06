@@ -1,3 +1,10 @@
+2005-12-06  Aldy Hernandez  <aldyh@redhat.com>
+
+       PR C++/24138
+        * tree.c (integer_all_onesp): Always return true if all bits on.
+
+        * testsuite/g++.dg/init/array0.C: New.
+
 2005-12-06  Adrian Straetling  <straetling@de.ibm.com>
 
 	  * doc/md.texi: Adapt to implementation.
