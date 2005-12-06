@@ -1,3 +1,7 @@
+2005-12-05  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.compile/rh174912.java: New file.
+
 2005-12-01  Alan Modra  <amodra@bigpond.net.au>
 
 	* stacktrace.cc (UnwindTraceFn): Use UNWRAP_FUNCTION_DESCRIPTOR
