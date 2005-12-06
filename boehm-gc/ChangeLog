@@ -1,3 +1,9 @@
+2005-12-06  Matthias Klose  <doko@debian.org>
+
+	2005-09-15  Kazu Hirata  <kazu@codesourcery.com>
+	* include/private/gc_locks.h (GC_test_and_set): Change the
+	constraint of the first operand to '0'.
+
 2005-11-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* include/private/gc_priv.h: Increase MAX_ROOT_SETS to 1024.
