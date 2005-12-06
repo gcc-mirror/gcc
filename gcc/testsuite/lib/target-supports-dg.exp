@@ -183,7 +183,7 @@ proc check_test_flags { args } {
 proc dg-skip-if { args } {
     set args [lreplace $args 0 0]
 
-    set selector "target [join [lindex $args 1]]"
+    set selector [list target [lindex $args 1]]
     if { [dg-process-target $selector] == "S" } {
 	# The target list matched; now check the flags.  The DejaGnu proc
 	# check_conditional_xfail will look at the options in compiler_flags,
@@ -223,7 +223,7 @@ proc dg-xfail-if { args } {
     }
 
     set args [lreplace $args 0 0]
-    set selector "target [join [lindex $args 1]]"
+    set selector [list target [lindex $args 1]]
     if { [dg-process-target $selector] == "S" } {
 	global compiler_conditional_xfail_data
 	set compiler_conditional_xfail_data [lreplace $args 1 1 "*-*-*"]
