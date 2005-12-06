@@ -137,28 +137,6 @@ enum need_phi_state {
   NEED_PHI_STATE_MAYBE
 };
 
-
-/* When computing aliasing information, we represent the memory pointed-to
-   by pointers with artificial variables called "memory tags" (MT).  There
-   are two kinds of tags: type and name.  Type tags (TMT) are used in
-   type-based alias analysis, they represent all the pointed-to locations
-   and variables of the same alias set class.  Name tags (NMT) are used in
-   flow-sensitive points-to alias analysis, they represent the variables
-   and memory locations pointed-to by a specific SSA_NAME pointer.  */
-enum mem_tag_kind {
-  /* This variable is not a memory tag.  */
-  NOT_A_TAG,
-
-  /* This variable is a type memory tag (TMT).  */
-  TYPE_TAG,
-
-  /* This variable is a name memory tag (NMT).  */
-  NAME_TAG,
-
-  /* This variable represents a structure field.  */
-  STRUCT_FIELD
-};
-
 struct subvar;
 typedef struct subvar *subvar_t;
 
@@ -188,9 +166,6 @@ struct var_ann_d GTY(())
 
   /* Used when building root_var structures in tree_ssa_live.[ch].  */
   unsigned root_var_processed : 1;
-
-  /* If nonzero, this variable is a memory tag.  */
-  ENUM_BITFIELD (mem_tag_kind) mem_tag_kind : 2;
 
   /* Nonzero if this variable is an alias tag that represents references to
      other variables (i.e., this variable appears in the MAY_ALIASES array

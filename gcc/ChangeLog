@@ -1,3 +1,53 @@
+2005-12-05  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* print-tree.c (print_node): Ditto.
+	* tree-dfa.c (add_referenced_var): Tag's don't have DECL_INITIAL.
+	* tree-dump.c (dequeue_and_dump): Check for decl_common structure
+	before accessing DECL_ARTIFICIAL. 
+	Handle new tag tree codes.
+	* tree-flow-inline.h (clear_call_clobbered): Update for tag
+	changes.
+	(unmodifiable_var_p): Ditto.
+	* tree-flow.h (mem_tag_kind): Remove.
+	(struct var_ann_d): Remove mem_tag_kind member.
+	* tree-gimple.c (is_gimple_reg): Tags are not gimple registers.
+	* tree-pretty-print.c (dump_generic_node): Handle memory tags.
+	* tree-ssa-alias.c (init_alias_info): Update for memory tag changes.
+	(group_aliases): Ditto.
+	(setup_pointers_and_addressables): Ditto.
+	(is_escape_site): Ditto.					  
+	(may_alias_p): Ditto.
+	(create_tag_raw): New function.
+	(create_memory_tag): Use it.
+	(dump_alias_info): Update for tags.
+	(may_be_aliased): Ditto.
+	(add_type_alias): Ditto.
+	(new_type_alias): Ditto.
+	(create_sft): Ditto.
+	(create_structure_vars): Ditto.
+	* tree-ssa-ccp.c (get_default_value): Ditto.
+	* tree-ssa-operands.c (get_expr_operands): Ditto.
+	(add_stmt_operand): Ditto.
+	(add_call_clobber_ops): Remove duplicated condition.
+	* tree-ssa.c (verify_flow_insensitive_alias_info): Update for
+	tags.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Ditto.
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Ditto.
+	* tree.c (init_ttree): Update structures for new tree codes.
+	(tree_code_size): Update sizes for new tree codes.
+	(make_node_stat): Don't try to set common things on minimal
+	structures.
+	(tree_node_structure): Update for tags.
+	(is_global_var): Ditto.
+	* tree.def: Add new tree codes.
+	* tree.h (MTAG_P): New macro.
+	(TREE_MEMORY_TAG_CHECK): Ditto.
+	(SSA_VAR_P): Update for tags.
+	(struct tree_memory_tag): New structure.
+	(MTAG_GLOBAL): New macro.
+	(union tree_node): Add memory tag member.
+	* treestruct.def (TS_MEMORY_TAG): New.
+	
 2005-12-05  Dale Johannesen  <dalej@apple.com>
 
 	* config/i386/xmmintrin.h (_MM_TRANSPOSE4_PS):  Fix to match

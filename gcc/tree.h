@@ -100,6 +100,14 @@ extern const enum tree_code_class tree_code_type[];
 #define DECL_P(CODE)\
         (TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_declaration)
 
+/* Nonzero if CODE represents a memory tag.  */
+
+#define MTAG_P(CODE) \
+  (TREE_CODE (CODE) == STRUCT_FIELD_TAG		\
+   || TREE_CODE (CODE) == NAME_MEMORY_TAG	\
+   || TREE_CODE (CODE) == TYPE_MEMORY_TAG)
+        
+
 /* Nonzero if DECL represents a VAR_DECL or FUNCTION_DECL.  */
 
 #define VAR_OR_FUNCTION_DECL_P(DECL)\
@@ -692,6 +700,7 @@ extern void tree_operand_check_failed (int, enum tree_code,
 
 #define TYPE_CHECK(T)		TREE_CLASS_CHECK (T, tcc_type)
 #define DECL_MINIMAL_CHECK(T)   CONTAINS_STRUCT_CHECK (T, TS_DECL_MINIMAL)
+#define TREE_MEMORY_TAG_CHECK(T)       CONTAINS_STRUCT_CHECK (T, TS_MEMORY_TAG)
 #define DECL_COMMON_CHECK(T)    CONTAINS_STRUCT_CHECK (T, TS_DECL_COMMON)
 #define DECL_WRTL_CHECK(T)      CONTAINS_STRUCT_CHECK (T, TS_DECL_WRTL)
 #define DECL_WITH_VIS_CHECK(T)  CONTAINS_STRUCT_CHECK (T, TS_DECL_WITH_VIS)
@@ -1972,14 +1981,16 @@ struct tree_binfo GTY (())
 /* Define fields and accessors for nodes representing declared names.  */
 
 /* Nonzero if DECL represents a variable for the SSA passes.  */
-#define SSA_VAR_P(DECL) \
-	(TREE_CODE (DECL) == VAR_DECL	\
-	 || TREE_CODE (DECL) == PARM_DECL \
-	 || TREE_CODE (DECL) == RESULT_DECL \
-	 || (TREE_CODE (DECL) == SSA_NAME \
-	     && (TREE_CODE (SSA_NAME_VAR (DECL)) == VAR_DECL \
-		 || TREE_CODE (SSA_NAME_VAR (DECL)) == PARM_DECL \
-		 || TREE_CODE (SSA_NAME_VAR (DECL)) == RESULT_DECL)))
+#define SSA_VAR_P(DECL)							\
+	(TREE_CODE (DECL) == VAR_DECL					\
+	 || TREE_CODE (DECL) == PARM_DECL				\
+	 || TREE_CODE (DECL) == RESULT_DECL				\
+	 || MTAG_P (DECL)						\
+	 || (TREE_CODE (DECL) == SSA_NAME				\
+	     && (TREE_CODE (SSA_NAME_VAR (DECL)) == VAR_DECL		\
+		 || TREE_CODE (SSA_NAME_VAR (DECL)) == PARM_DECL	\
+		 || TREE_CODE (SSA_NAME_VAR (DECL)) == RESULT_DECL	\
+		 || MTAG_P (SSA_NAME_VAR (DECL)))))
 
 
 
@@ -2037,6 +2048,24 @@ struct tree_decl_minimal GTY(())
   tree name;
   tree context;
 };
+
+/* When computing aliasing information, we represent the memory pointed-to
+   by pointers with artificial variables called "memory tags" (MT).  There
+   are two kinds of tags: type and name.  Type tags (TMT) are used in
+   type-based alias analysis, they represent all the pointed-to locations
+   and variables of the same alias set class.  Name tags (NMT) are used in
+   flow-sensitive points-to alias analysis, they represent the variables
+   and memory locations pointed-to by a specific SSA_NAME pointer.  */
+
+struct tree_memory_tag GTY(())
+{
+  struct tree_decl_minimal common;
+  tree parent_var;
+  unsigned int is_global:1;
+};
+
+#define MTAG_GLOBAL(NODE) (TREE_MEMORY_TAG_CHECK (NODE)->mtag.is_global)
+#define SFT_PARENT_VAR(NODE) (STRUCT_FIELD_TAG_CHECK (NODE)->mtag.parent_var)
 
 /* For any sort of a ..._DECL node, this points to the original (abstract)
    decl node which this decl is an instance of, or else it is NULL indicating
@@ -2834,6 +2863,7 @@ union tree_node GTY ((ptr_alias (union lang_tree_node),
   struct tree_statement_list GTY ((tag ("TS_STATEMENT_LIST"))) stmt_list;
   struct tree_value_handle GTY ((tag ("TS_VALUE_HANDLE"))) value_handle;
   struct tree_constructor GTY ((tag ("TS_CONSTRUCTOR"))) constructor;
+  struct tree_memory_tag GTY ((tag ("TS_MEMORY_TAG"))) mtag;
 };
 
 /* Standard named or nameless data types of the C compiler.  */

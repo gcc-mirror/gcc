@@ -41,7 +41,8 @@ cxx_print_decl (FILE *file, tree node, int indent)
       return;
     }
 
-  if (!DECL_LANG_SPECIFIC (node))
+  if (!CODE_CONTAINS_STRUCT (TREE_CODE (node), TS_DECL_COMMON)
+      || !DECL_LANG_SPECIFIC (node))
     return;
   indent_to (file, indent + 3);
   if (TREE_CODE (node) == FUNCTION_DECL

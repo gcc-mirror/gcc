@@ -358,6 +358,12 @@ DEFTREECODE (PARM_DECL, "parm_decl", tcc_declaration, 0)
 DEFTREECODE (TYPE_DECL, "type_decl", tcc_declaration, 0)
 DEFTREECODE (RESULT_DECL, "result_decl", tcc_declaration, 0)
 
+/* Memory tags used in tree-ssa to represent memory locations in
+   virtual SSA.  */
+DEFTREECODE (STRUCT_FIELD_TAG, "struct_field_tag", tcc_declaration, 0)
+DEFTREECODE (NAME_MEMORY_TAG, "name_memory_tag", tcc_declaration, 0)
+DEFTREECODE (TYPE_MEMORY_TAG, "type_memory_tag", tcc_declaration, 0)
+
 /* A namespace declaration.  Namespaces appear in DECL_CONTEXT of other
    _DECLs, providing a hierarchy of names.  */
 DEFTREECODE (NAMESPACE_DECL, "namespace_decl", tcc_declaration, 0)

@@ -492,8 +492,8 @@ init_alias_info (void)
 	     a global variable, so we *don't* clear their call clobberedness
 	     just because they are tags, though we will clear it if they
 	     aren't for global variables.  */
-	  if (ann->mem_tag_kind == NAME_TAG 
-	      || ann->mem_tag_kind == TYPE_TAG 
+	  if (TREE_CODE (var) == NAME_MEMORY_TAG
+	      || TREE_CODE (var) == TYPE_MEMORY_TAG
 	      || !is_global_var (var))
 	    clear_call_clobbered (var);
 	}
@@ -1119,8 +1119,8 @@ group_aliases (struct alias_info *ai)
 	  tree alias = VARRAY_TREE (aliases, j);
 	  var_ann_t ann = var_ann (alias);
 
-	  if ((ann->mem_tag_kind == NOT_A_TAG 
-	       || ann->mem_tag_kind == STRUCT_FIELD)
+	  if ((!MTAG_P (alias)
+	       || TREE_CODE (alias) == STRUCT_FIELD_TAG)
 	      && ann->may_aliases)
 	    {
 	      tree new_alias;
@@ -1219,8 +1219,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
          Structure fields, on the other hand, have to have some of this
          information processed for them, but it's pointless to mark them
          non-addressable (since they are fake variables anyway).  */
-      if (v_ann->mem_tag_kind != NOT_A_TAG
-	  && v_ann->mem_tag_kind != STRUCT_FIELD) 
+      if (MTAG_P (var) && TREE_CODE (var) != STRUCT_FIELD_TAG)
 	continue;
 
       /* Remove the ADDRESSABLE flag from every addressable variable whose
@@ -1464,7 +1463,6 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
 	     bool alias_set_only)
 {
   tree mem;
-  var_ann_t m_ann;
 
   alias_stats.alias_queries++;
   alias_stats.simple_queries++;
@@ -1498,9 +1496,7 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
       return false;
     }
 
-  m_ann = var_ann (mem);
-
-  gcc_assert (m_ann->mem_tag_kind == TYPE_TAG);
+  gcc_assert (TREE_CODE (mem) == TYPE_MEMORY_TAG);
 
   alias_stats.tbaa_queries++;
 
@@ -1729,6 +1725,31 @@ is_escape_site (tree stmt, struct alias_info *ai)
   return false;
 }
 
+/* Create a new memory tag of type TYPE.
+   Does NOT push it into the current binding.  */
+
+static tree
+create_tag_raw (enum tree_code code, tree type, const char *prefix)
+{
+  tree tmp_var;
+  tree new_type;
+
+  /* Make the type of the variable writable.  */
+  new_type = build_type_variant (type, 0, 0);
+  TYPE_ATTRIBUTES (new_type) = TYPE_ATTRIBUTES (type);
+
+  tmp_var = build_decl (code, create_tmp_var_name (prefix),
+			type);
+  /* Make the variable writable.  */
+  TREE_READONLY (tmp_var) = 0;
+
+  /* It doesn't start out global.  */
+  MTAG_GLOBAL (tmp_var) = 0;
+  TREE_STATIC (tmp_var) = 0;
+  TREE_USED (tmp_var) = 1;
+
+  return tmp_var;
+}
 
 /* Create a new memory tag of type TYPE.  If IS_TYPE_TAG is true, the tag
    is considered to represent all the pointers whose pointed-to types are
@@ -1739,7 +1760,8 @@ static tree
 create_memory_tag (tree type, bool is_type_tag)
 {
   var_ann_t ann;
-  tree tag = create_tmp_var_raw (type, (is_type_tag) ? "TMT" : "NMT");
+  tree tag = create_tag_raw (is_type_tag ? TYPE_MEMORY_TAG : NAME_MEMORY_TAG,
+			     type, (is_type_tag) ? "TMT" : "NMT");
 
   /* By default, memory tags are local variables.  Alias analysis will
      determine whether they should be considered globals.  */
@@ -1749,7 +1771,6 @@ create_memory_tag (tree type, bool is_type_tag)
   TREE_ADDRESSABLE (tag) = 1;
 
   ann = get_var_ann (tag);
-  ann->mem_tag_kind = (is_type_tag) ? TYPE_TAG : NAME_TAG;
   ann->type_mem_tag = NULL_TREE;
 
   /* Add the tag to the symbol table.  */
@@ -1942,8 +1963,7 @@ dump_alias_info (FILE *file)
   
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      var_ann_t ann = var_ann (var);
-      if (ann->mem_tag_kind == TYPE_TAG)
+      if (TREE_CODE (var) == TYPE_MEMORY_TAG)
 	dump_variable (file, var);
     }
 
@@ -1969,8 +1989,7 @@ dump_alias_info (FILE *file)
   
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      var_ann_t ann = var_ann (var);
-      if (ann->mem_tag_kind == NAME_TAG)
+      if (TREE_CODE (var) == NAME_MEMORY_TAG)
 	dump_variable (file, var);
     }
 
@@ -2173,7 +2192,12 @@ may_be_aliased (tree var)
 
   /* Globally visible variables can have their addresses taken by other
      translation units.  */
-  if (DECL_EXTERNAL (var) || TREE_PUBLIC (var))
+
+  if (MTAG_P (var)
+      && (MTAG_GLOBAL (var) || TREE_PUBLIC (var)))
+    return true;
+  else if (!MTAG_P (var)
+      && (DECL_EXTERNAL (var) || TREE_PUBLIC (var)))
     return true;
 
   /* Automatic variables can't have their addresses escape any other way.
@@ -2280,7 +2304,7 @@ add_type_alias (tree ptr, tree var)
 found_tag:
   /* If VAR is not already PTR's type tag, add it to the may-alias set
      for PTR's type tag.  */
-  gcc_assert (var_ann (var)->type_mem_tag == NOT_A_TAG);
+  gcc_assert (!MTAG_P (var_ann (var)->type_mem_tag));
   tag = ann->type_mem_tag;
 
   /* If VAR has subvars, add the subvars to the tag instead of the
@@ -2333,7 +2357,7 @@ new_type_alias (tree ptr, tree var)
   subvar_t svars;
 
   gcc_assert (p_ann->type_mem_tag == NULL_TREE);
-  gcc_assert (v_ann->mem_tag_kind == NOT_A_TAG);
+  gcc_assert (!MTAG_P (var));
 
   /* Add VAR to the may-alias set of PTR's new type tag.  If VAR has
      subvars, add the subvars to the tag instead of the actual var.  */
@@ -2361,7 +2385,7 @@ new_type_alias (tree ptr, tree var)
 	{
 	  tree ali = VARRAY_TREE (aliases, 0);
 
-	  if (get_var_ann (ali)->mem_tag_kind == TYPE_TAG)
+	  if (TREE_CODE (ali) == TYPE_MEMORY_TAG)
 	    {
 	      p_ann->type_mem_tag = ali;
 	      return;
@@ -2495,19 +2519,18 @@ static tree
 create_sft (tree var, tree field)
 {
   var_ann_t ann;
-  tree subvar = create_tmp_var_raw (TREE_TYPE (field), "SFT");
+  tree subvar = create_tag_raw (STRUCT_FIELD_TAG, TREE_TYPE (field), "SFT");
 
   /* We need to copy the various flags from VAR to SUBVAR, so that
      they are is_global_var iff the original variable was.  */
   DECL_CONTEXT (subvar) = DECL_CONTEXT (var);
-  DECL_EXTERNAL (subvar) = DECL_EXTERNAL (var);
+  MTAG_GLOBAL (subvar) = DECL_EXTERNAL (var);
   TREE_PUBLIC  (subvar) = TREE_PUBLIC (var);
   TREE_STATIC (subvar) = TREE_STATIC (var);
   TREE_READONLY (subvar) = TREE_READONLY (var);
 
   /* Add the new variable to REFERENCED_VARS.  */
   ann = get_var_ann (subvar);
-  ann->mem_tag_kind = STRUCT_FIELD; 
   ann->type_mem_tag = NULL;  	
   add_referenced_tmp_var (subvar);
 
@@ -2812,7 +2835,7 @@ create_structure_vars (void)
       if (var 	  
 	  && DECL_SIZE (var)
 	  && var_can_have_subvars (var)
-	  && var_ann (var)->mem_tag_kind == NOT_A_TAG
+	  && !MTAG_P (var)
 	  && TREE_CODE (DECL_SIZE (var)) == INTEGER_CST)
 	create_overlap_variables_for (var);
     }
