@@ -1,3 +1,7 @@
+2005-12-05  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (patch_new_array_init): Don't set length on array.
+
 2005-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* java-gimplify.c (java_gimplify_labeled_block_expr): Use
