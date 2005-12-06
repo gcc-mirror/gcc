@@ -4,22 +4,22 @@
 # Clytie Siddall <clytie@riverland.net.au>, 2005.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.0.1\n"
+"Project-Id-Version: cpplib 4.1-b20051125\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-11-20 16:34+0000\n"
-"PO-Revision-Date: 2005-07-12 14:30+0930\n"
+"PO-Revision-Date: 2005-12-05 14:15+1030\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0\n"
-"X-Generator: LocFactoryEditor 1.2.2\n"
+"X-Generator: BBEdit 8.2.3\n"
 
 #: charset.c:654
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
-msgstr "iconv không hỗ trợ chuyển đổi từ «%s» sang «%s»"
+msgstr "iconv không hỗ trợ việc huyển đổi từ « %s » sang « %s »"
 
 #: charset.c:657
 msgid "iconv_open"
@@ -28,12 +28,12 @@ msgstr "iconv_open (mở)"
 #: charset.c:665
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
-msgstr "chưa thi hành iconv nên không chuyển đổi được từ «%s» sang «%s»"
+msgstr "chưa thi hành iconv nên không chuyển đổi được từ « %s » sang « %s »"
 
 #: charset.c:742
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
-msgstr "ký tự «0x%lx» không trong bộ ký tự nguồn cơ bản\n"
+msgstr "ký tự « 0x%lx » không phải trong bộ ký tự nguồn cơ bản\n"
 
 #: charset.c:759 charset.c:1352
 msgid "converting to execution character set"
@@ -42,12 +42,12 @@ msgstr "đang chuyển đổi sang bộ ký tự thi hành"
 #: charset.c:765
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
-msgstr "ký tự «0x%lx» không có dạng đơn byte trong bộ ký tự thi hành"
+msgstr "ký tự « 0x%lx » không có dạng đơn byte trong bộ ký tự thi hành"
 
 #: charset.c:889
 #, c-format
 msgid "Character %x might not be NFKC"
-msgstr ""
+msgstr "Ký tự « %x » có lẽ không phải là NKFC"
 
 #: charset.c:949
 msgid "universal character names are only valid in C++ and C99"
@@ -56,35 +56,35 @@ msgstr "tên ký tự chung chỉ là hợp lệ trong ngôn ngữ C++ và C99"
 #: charset.c:952
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
-msgstr "«\\%c» có nghĩa khác trong ngôn ngữ C truyền thống"
+msgstr "« \\%c » có nghĩa khác trong ngôn ngữ C truyền thống"
 
 #: charset.c:961
 msgid "In _cpp_valid_ucn but not a UCN"
-msgstr ""
+msgstr "Trong « _cpp_valid_ucn » nhưng mà không phải lả một"
 
 #: charset.c:986
 #, c-format
 msgid "incomplete universal character name %.*s"
-msgstr "tên ký tự chung  «%.*s» chưa hoàn thành"
+msgstr "tên ký tự chung « %.*s » chưa hoàn thành"
 
 #: charset.c:998
 #, c-format
 msgid "%.*s is not a valid universal character"
-msgstr "«%.*s» không là ký tự chung hợp lệ"
+msgstr "« %.*s » không phải là ký tự chung hợp lệ"
 
 #: charset.c:1008 lex.c:472
 msgid "'$' in identifier or number"
-msgstr "có «$» trong dấu hiệu nhận hiện hay số"
+msgstr "gặp « $ » trong dấu hiệu nhận hiện hay số"
 
 #: charset.c:1018
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
-msgstr "ký tự chung «%.*s» không là hợp lệ trong một dấu hiệu nhận diện"
+msgstr "ký tự chung « %.*s » không phải là hợp lệ trong dấu hiệu nhận diện"
 
 #: charset.c:1022
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
-msgstr "ký tự chung «%.*s» không là hợp lệ tại đầu của dấu hiệu nhận diện"
+msgstr "ký tự chung « %.*s » không phải hợp lệ tại đầu của dấu hiệu nhận diện"
 
 #: charset.c:1056 charset.c:1571
 msgid "converting UCN to source character set"
@@ -96,11 +96,11 @@ msgstr "đang chuyển đổi UCN sang bộ ký tự thi hành"
 
 #: charset.c:1132
 msgid "the meaning of '\\x' is different in traditional C"
-msgstr "«\\x» có nghĩa khác trong ngôn ngữ C truyền thống"
+msgstr "« \\x » có nghĩa khác trong ngôn ngữ C truyền thống"
 
 #: charset.c:1149
 msgid "\\x used with no following hex digits"
-msgstr "«\\x» được sử dụng còn không có số hệ thâp lục phân theo sau"
+msgstr "« \\x » được sử dụng còn không có số hệ thâp lục phân theo sau"
 
 #: charset.c:1156
 msgid "hex escape sequence out of range"
@@ -112,22 +112,22 @@ msgstr "dãy thoát bát phân ở ngoài phạm vi"
 
 #: charset.c:1263
 msgid "the meaning of '\\a' is different in traditional C"
-msgstr "«\\a» có nghĩa khác trong ngôn ngữ C truyền thống"
+msgstr "« \\a » có nghĩa khác trong ngôn ngữ C truyền thống"
 
 #: charset.c:1270
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
-msgstr "dãy thoát không ISO chuẩn: «\\%c»"
+msgstr "dãy thoát không phải ISO chuẩn: « \\%c »"
 
 #: charset.c:1278
 #, c-format
 msgid "unknown escape sequence '\\%c'"
-msgstr "không biết dãy thoát: «\\%c»"
+msgstr "không biết dãy thoát: « \\%c »"
 
 #: charset.c:1286
-#, fuzzy, c-format
+#, c-format
 msgid "unknown escape sequence: '\\%s'"
-msgstr "không biết dãy thoát: «\\%c»"
+msgstr "không biết dãy thoát « \\%s »"
 
 #: charset.c:1293
 msgid "converting escape sequence to execution character set"
@@ -135,7 +135,7 @@ msgstr "đang chuyển đổi dãy thoát sang bộ ký tự thi hành"
 
 #: charset.c:1415 charset.c:1478
 msgid "character constant too long for its type"
-msgstr "hằng ký tự quá dài cho loại của nó"
+msgstr "hằng ký tự quá dài cho loại nó"
 
 #: charset.c:1418
 msgid "multi-character character constant"
@@ -148,35 +148,35 @@ msgstr "hằng ký tự trống"
 #: charset.c:1612
 #, c-format
 msgid "failure to convert %s to %s"
-msgstr "không chuyển đổi «%s» sang «%s» được"
+msgstr "việc chuyển đổi « %s » sang « %s » bị lỗi"
 
 #: directives.c:219 directives.c:245
 #, c-format
 msgid "extra tokens at end of #%s directive"
-msgstr "có hiệu bài thêm tại cuối cùng chi thị «#%s»"
+msgstr "gặp hiệu bài thêm tại cuối cùng chỉ thị « #%s »"
 
 #: directives.c:346
 #, c-format
 msgid "#%s is a GCC extension"
-msgstr "«#%s» là phần mở rộng loại GCC"
+msgstr "« #%s » là phần mở rộng loại GCC"
 
 #: directives.c:358
 msgid "suggest not using #elif in traditional C"
-msgstr "khuyên không sử dụng «#elif» trong ngôn ngữ C truyền thống"
+msgstr "khuyên bạn không sử dụng « #elif » trong ngôn ngữ C truyền thống"
 
 #: directives.c:361
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
-msgstr "ngôn ngữ C truyền thống thì bỏ qua «#%s» với «#» được thụt lề"
+msgstr "ngôn ngữ C truyền thống bỏ qua « #%s » với « # » được thụt lề"
 
 #: directives.c:365
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
-msgstr "khuyên sử dụng «#» được thụt lề để ẩn «#%s» ra ngôn ngữ C truyền thống"
+msgstr "khuyên bạn ẩn « #%s » ra ngôn ngữ C truyền thống bằng « # » được thụt lề"
 
 #: directives.c:391
 msgid "embedding a directive within macro arguments is not portable"
-msgstr "khi gắn chỉ thị vào đối số macrô thì không thể mạng đi"
+msgstr "việc gắn chỉ thị vào đối số của bộ đối số thì không mạng được"
 
 #: directives.c:411
 msgid "style of line directive is a GCC extension"
@@ -185,21 +185,21 @@ msgstr "kiểu chỉ thị dòng là phần mở rộng GCC"
 #: directives.c:461
 #, c-format
 msgid "invalid preprocessing directive #%s"
-msgstr "chỉ thị tiền xử lý không hợp lệ «#%s»"
+msgstr "chỉ thị tiền xử lý không hợp lệ « #%s »"
 
 #: directives.c:532
 msgid "\"defined\" cannot be used as a macro name"
-msgstr "không thể sử dụng «defined» (đã định nghĩa) cho tên macrô"
+msgstr "không thể sử dụng « defined » (đã định nghĩa) như tên bộ đối số"
 
 #: directives.c:538
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
-msgstr "không thể sử dụng «%s» cho tên macrô vì nó là toán tử trong ngôn ngữ C++"
+msgstr "không thể sử dụng « %s » như tên bộ đối số vì nó là toán tử trong ngôn ngữ C++"
 
 #: directives.c:541
 #, c-format
 msgid "no macro name given in #%s directive"
-msgstr "chỉ thị «#%s» không có tên macrô"
+msgstr "chỉ thị « #%s » không có tên bộ đối số"
 
 #: directives.c:544
 msgid "macro names must be identifiers"
@@ -208,112 +208,112 @@ msgstr "mọi tên bộ đối số phải là dấu hiệu nhận diện"
 #: directives.c:585
 #, c-format
 msgid "undefining \"%s\""
-msgstr "đang bỏ định nghĩa «%s»"
+msgstr "đang bỏ định nghĩa « %s »"
 
 #: directives.c:640
 msgid "missing terminating > character"
-msgstr "thiếu ký tự «>» chấm dứt"
+msgstr "thiếu ký tự « > » chấm dứt"
 
 #: directives.c:695
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
-msgstr "«#%s» ngờ «TÊN_TẬP_TIN» hay «<TÊN_TẬP_TIN>»"
+msgstr "« #%s » ngờ \"TÊN_TẬP_TIN\" hoặc <TÊN_TẬP_TIN>"
 
 #: directives.c:735
 #, c-format
 msgid "empty filename in #%s"
-msgstr "«#%s» có tên tập tin trống"
+msgstr "« #%s » có tên tập tin trống"
 
 #: directives.c:745
 msgid "#include nested too deeply"
-msgstr "«#include» (bao gồm) lồng nhau quá sâu"
+msgstr "« #include » (bao gồm) lồng nhau quá sâu"
 
 #: directives.c:786
 msgid "#include_next in primary source file"
-msgstr "có «#include_next» (bao gồm kế) trong tập tin nguồn chính"
+msgstr "gặp « #include_next » (bao gồm kế) trong tập tin nguồn chính"
 
 #: directives.c:812
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
-msgstr "chỉ thị dòng có cờ không hợp lệ «%s» "
+msgstr "gặp cờ không hợp lệ « %s »  trong chỉ thị dòng"
 
 #: directives.c:864
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
-msgstr "«%s» sau #line (dòng) không là số nguyên dương"
+msgstr "« %s » sau « #line » (dòng) không phải là số nguyên dương"
 
 #: directives.c:870
 msgid "line number out of range"
-msgstr "số dòng ở ngoài phạm vi"
+msgstr "số thứ tự dòng ở ngoài phạm vi"
 
 #: directives.c:883 directives.c:960
 #, c-format
 msgid "\"%s\" is not a valid filename"
-msgstr "«%s» không là tên tập tin hợp lệ"
+msgstr "« %s » không phải là tên tập tin hợp lệ"
 
 #: directives.c:920
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
-msgstr "«%s» sau «#» không là số nguyên dương"
+msgstr "« %s » sau « # » không phải là số nguyên dương"
 
 #: directives.c:1022
-#, fuzzy, c-format
+#, c-format
 msgid "invalid #%s directive"
-msgstr "chỉ thị «#ident» không hợp lệ"
+msgstr "chỉ thị « #%s » không hợp lệ"
 
 #: directives.c:1111
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
-msgstr "đang đăng ký «%s» là cả hai lệnh nguồn điều khiển trình biện dịch (pragma), và bô tên độc nhất của lệnh nguồn điều khiển trình biên dịch."
+msgstr "đang đăng ký « %s » là cả hai lệnh nguồn điều khiển trình biện dịch (pragma), và bô tên độc nhất của lệnh nguồn điều khiển trình biên dịch."
 
 #: directives.c:1114
 #, c-format
 msgid "#pragma %s %s is already registered"
-msgstr "đăng ký «#pragma %s %s» rồi"
+msgstr "« #pragma %s %s » đã được đăng ký"
 
 #: directives.c:1117
 #, c-format
 msgid "#pragma %s is already registered"
-msgstr "đăng ký «#pragma %s» rồi"
+msgstr "« #pragma %s » đã được đăng ký"
 
 #: directives.c:1317
 msgid "#pragma once in main file"
-msgstr "«#pragma» một lần trong tập tin chính"
+msgstr "« #pragma » một lần trong tập tin chính"
 
 #: directives.c:1340
 msgid "invalid #pragma GCC poison directive"
-msgstr "chỉ thị vộ hiệu hóa (poison) GCC «#pragma» không là hợp lệ"
+msgstr "gặp chỉ thị vộ hiệu hóa (poison) GCC «#pragma» không hợp lệ"
 
 #: directives.c:1349
 #, c-format
 msgid "poisoning existing macro \"%s\""
-msgstr "đang vô hiệu hóa macrô tồn tại «%s»"
+msgstr "đang vô hiệu hóa bộ đối số tồn tại « %s »"
 
 #: directives.c:1370
 msgid "#pragma system_header ignored outside include file"
-msgstr "bỏ qua «system_header» (đầu trang hệ thống) «#pragma» ở ngoài tập tin bao gồm"
+msgstr "« #pragma system_header » (đầu trang hệ thống) bị bỏ qua ở ngoài tập tin bao gồm"
 
 #: directives.c:1394
 #, c-format
 msgid "cannot find source file %s"
-msgstr "không tìm thấy được tập tin nguồn «%s»"
+msgstr "không tìm thấy tập tin nguồn « %s »"
 
 #: directives.c:1398
 #, c-format
 msgid "current file is older than %s"
-msgstr "tập tin hiện có là cũ hơn «%s»"
+msgstr "tập tin hiện thời là cũ hơn « %s »"
 
 #: directives.c:1512
 msgid "_Pragma takes a parenthesized string literal"
-msgstr "«_Pragma» nhận một hằng chuỗi có ngoặc"
+msgstr "« _Pragma » nhận một hằng chuỗi có ngoặc"
 
 #: directives.c:1613
 msgid "#else without #if"
-msgstr "«#else» (không nếu) không có «#if» (nếu)"
+msgstr "« #else » (nếu không) không có « #if » (nếu)"
 
 #: directives.c:1618
 msgid "#else after #else"
-msgstr "«#else» (không nếu) sau «#else» (không nếu)"
+msgstr "« #else » (nếu không) sau « #else » (nếu không)"
 
 #: directives.c:1620 directives.c:1653
 msgid "the conditional began here"
@@ -321,23 +321,23 @@ msgstr "câu điều kiện đã bắt đầu ở đây"
 
 #: directives.c:1646
 msgid "#elif without #if"
-msgstr "«#elif» (nếu không thì nếu) không có «#if» (nếu)"
+msgstr "« #elif » (nếu không thì nếu) không có « #if » (nếu)"
 
 #: directives.c:1651
 msgid "#elif after #else"
-msgstr "«#elif» (nếu không thì nếu) sau «#else» (nếu không)"
+msgstr "« #elif » (nếu không thì nếu) sau « #else » (nếu không)"
 
 #: directives.c:1681
 msgid "#endif without #if"
-msgstr "«#endif» (xong nếu) không có «#if» (nếu)"
+msgstr "« #endif » (thôi nếu) không có « #if » (nếu)"
 
 #: directives.c:1758
 msgid "missing '(' after predicate"
-msgstr "thiếu «(» sau vị ngữ"
+msgstr "thiếu « ( » sau vị ngữ"
 
 #: directives.c:1773
 msgid "missing ')' to complete answer"
-msgstr "thiếu «)» để xong trả lời"
+msgstr "thiếu « ) » để xong trả lời"
 
 #: directives.c:1793
 msgid "predicate's answer is empty"
@@ -354,12 +354,12 @@ msgstr "vị ngữ phải là dấu hiệu nhận diện"
 #: directives.c:1908
 #, c-format
 msgid "\"%s\" re-asserted"
-msgstr "đã khẳng định «%s» lại"
+msgstr "« %s » được khẳng định lại"
 
 #: directives.c:2132
 #, c-format
 msgid "unterminated #%s"
-msgstr "chưa chấm dứt «#%s»"
+msgstr "« #%s » chưa chấm dứt"
 
 #: errors.c:118
 msgid "warning: "
@@ -389,11 +389,11 @@ msgstr "quá nhiều dấu thập phân trong số"
 #: expr.c:212
 #, c-format
 msgid "invalid digit \"%c\" in octal constant"
-msgstr "có số không hợp lệ «%c» trong hằng bát phân"
+msgstr "gặp số không hợp lệ « %c » trong hằng bát phân"
 
 #: expr.c:218
 msgid "use of C99 hexadecimal floating constant"
-msgstr "sử dụng hằng trôi nổi hệ thập lục phân C99"
+msgstr "việc sử dụng hằng trôi nổi hệ thập lục phân C99"
 
 #: expr.c:227
 msgid "exponent has no digits"
@@ -406,21 +406,21 @@ msgstr "mọi hằng trôi nổi hệ thập lục phân cần đến số mũ"
 #: expr.c:240
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
-msgstr "hằng trôi nổi có hậu tố không hợp lệ «%.*s» "
+msgstr "gặp hậu tố không hợp lệ « %.*s »  trên hằng trôi nổi"
 
 #: expr.c:250 expr.c:275
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
-msgstr "ngôn ngữ C truyền thống không chấp nhận hậu tố «%.*s»"
+msgstr "ngôn ngữ C truyền thống từ chối hậu tố « %.*s »"
 
 #: expr.c:261
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
-msgstr "hằng số nguyên có hậu tố không hợp lệ «%.*s»"
+msgstr "gặp hậu tố không hợp lệ « %.*s » trên hằng số nguyên"
 
 #: expr.c:283
 msgid "use of C99 long long integer constant"
-msgstr "sử dụng hằng số nguyên dài dài C99"
+msgstr "việc sử dụng hằng số nguyên dài dài C99"
 
 #: expr.c:290
 msgid "imaginary constants are a GCC extension"
@@ -428,90 +428,90 @@ msgstr "hằng ảo là phần mở rộng GCC"
 
 #: expr.c:376
 msgid "integer constant is too large for its type"
-msgstr "hằng số nguyên quá lớn cho loại ấy"
+msgstr "hằng số nguyên quá lớn cho loại nó"
 
 #: expr.c:388
 msgid "integer constant is so large that it is unsigned"
-msgstr "hằng số nguyên không có dấu dương/âm vì lớn lắm"
+msgstr "hằng số nguyên không có dấu dương/âm vì rất lớn"
 
 #: expr.c:470
 msgid "missing ')' after \"defined\""
-msgstr "thiếu «)» sau «defined» (đã định nghĩa)"
+msgstr "thiếu « ) » sau « defined » (đã định nghĩa)"
 
 #: expr.c:477
 msgid "operator \"defined\" requires an identifier"
-msgstr "toán tử «defined» (đã định nghĩa) cần đến dấu hiệu nhận diện"
+msgstr "toán tử « defined » (đã định nghĩa) cần đến dấu hiệu nhận diện"
 
 #: expr.c:485
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
-msgstr "(«%s» là một hiệu bài thay thế cho «%s» trong ngôn ngữ C++)"
+msgstr "(« %s » là một hiệu bài thay thế cho « %s » trong ngôn ngữ C++)"
 
 #: expr.c:495
 msgid "this use of \"defined\" may not be portable"
-msgstr "có lẽ cách sử dụng «defined» (đã định nghĩa) này không có thể mạng đi"
+msgstr "việc sử dụng « defined » (đã định nghĩa) có lẽ không mạng đđược"
 
 #: expr.c:534
 msgid "floating constant in preprocessor expression"
-msgstr "hằng trôi nổi trong biểu thức tiền xử lý"
+msgstr "gặp hằng trôi nổi trong biểu thức tiền xử lý"
 
 #: expr.c:540
 msgid "imaginary number in preprocessor expression"
-msgstr "số ảo trong biểu thức tiền xử lý"
+msgstr "gặp số ảo trong biểu thức tiền xử lý"
 
 #: expr.c:585
 #, c-format
 msgid "\"%s\" is not defined"
-msgstr "chưa định nghĩa «%s» "
+msgstr "chưa định nghĩa « %s »"
 
 #: expr.c:716 expr.c:745
 #, c-format
 msgid "missing binary operator before token \"%s\""
-msgstr "thiếu toán từ nhị phân trước hiệu bài «%s»"
+msgstr "thiếu toán từ nhị phân trước hiệu bài « %s »"
 
 #: expr.c:736
 #, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
-msgstr "hiệu bài «%s» không là hợp lệ trong biểu thức tiền xử lý"
+msgstr "hiệu bài « %s » không phải là hợp lệ trong biểu thức tiền xử lý"
 
 #: expr.c:753
 msgid "missing expression between '(' and ')'"
-msgstr "thiếu biểu thức giữa «(» và «)»"
+msgstr "thiếu biểu thức giữa « ( » và « ) »"
 
 #: expr.c:756
 msgid "#if with no expression"
-msgstr "«#if» (nếu) không có biểu thức"
+msgstr "« #if » (nếu) không có biểu thức"
 
 #: expr.c:759
 #, c-format
 msgid "operator '%s' has no right operand"
-msgstr "toán tử «%s» không có tác tử bên phải"
+msgstr "toán tử « %s » không có tác tử bên phải"
 
 #: expr.c:764
 #, c-format
 msgid "operator '%s' has no left operand"
-msgstr "toán tử «%s» không có tác từ bên trái"
+msgstr "toán tử « %s » không có tác từ bên trái"
 
 #: expr.c:790
 msgid " ':' without preceding '?'"
-msgstr " «:» không có dấu «?» đi trước"
+msgstr " « : » không có dấu « ? » đi trước"
 
 #: expr.c:817
 msgid "unbalanced stack in #if"
-msgstr "đống không cân bằng trong «#if» (nếu)"
+msgstr "có đống không cân bằng trong « #if » (nếu)"
 
 #: expr.c:836
 #, c-format
 msgid "impossible operator '%u'"
-msgstr "toán từ không thể sử dụng được «%u»"
+msgstr "toán từ không thể « %u »"
 
 #: expr.c:928
 msgid "missing ')' in expression"
-msgstr "thiếu «)» trong biểu thức"
+msgstr "thiếu « ) » trong biểu thức"
 
 #: expr.c:949
 msgid "'?' without following ':'"
-msgstr "«?» không có dấu «:» đi sau"
+msgstr "« ? » không có dấu « : » đi sau"
 
 #: expr.c:959
 msgid "integer overflow in preprocessor expression"
@@ -519,74 +519,74 @@ msgstr "số nguyên tràn trong biểu thức tiền xử lý"
 
 #: expr.c:964
 msgid "missing '(' in expression"
-msgstr "thiếu «(» trong biểu thức"
+msgstr "thiếu « ( » trong biểu thức"
 
 #: expr.c:996
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
-msgstr "tác tử bên trái của «%s» thi thay đổi dấu dương/âm khi được tăng cấp"
+msgstr "tác tử bên trái của « %s » thay đổi dấu dương/âm khi được tăng cấp"
 
 #: expr.c:1001
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
-msgstr "tác tử bên phai của «%s» thì thay đổi dấu dương/âm khi đươc tăng cấp"
+msgstr "tác tử bên phai của « %s » thay đổi dấu dương/âm khi đươc tăng cấp"
 
 #: expr.c:1260
 msgid "traditional C rejects the unary plus operator"
-msgstr "ngôn ngữ truyền thống C không chấp nhận toán tử cộng chỉ có một tác tử"
+msgstr "ngôn ngữ truyền thống C từ chối toán tử cộng chỉ có một tác tử"
 
 #: expr.c:1359
 msgid "comma operator in operand of #if"
-msgstr "toán tử dấu phẩy trong tác tử của «#if» (nếu)"
+msgstr "toán tử dấu phẩy trong tác tử của « #if » (nếu)"
 
 #: expr.c:1491
 msgid "division by zero in #if"
-msgstr "chia số không trong «#if» (nếu)"
+msgstr "chia số không trong « #if » (nếu)"
 
 #: files.c:402
 msgid "NULL directory in find_file"
-msgstr "thư mục TRỐNG trong «find_file» (tìm tập tin)"
+msgstr "thư mục RỖNG trong « find_file »  (tìm tập tin)"
 
 #: files.c:440
 msgid "one or more PCH files were found, but they were invalid"
-msgstr "tìm thấy một hay nhiều tập tin PCH, nhưng không hợp lệ suốt"
+msgstr "tìm thấy một hay nhiều tập tin PCH, nhưng chúng không hợp lệ"
 
 #: files.c:443
 msgid "use -Winvalid-pch for more information"
-msgstr "hãy thử lệnh «-Winvalid-pch» để tìm thấy thông tin thêm"
+msgstr "hãy thử lệnh « -Winvalid-pch » để tìm thấy thông tin thêm"
 
 #: files.c:501
 #, c-format
 msgid "%s is a block device"
-msgstr "«%s» là một thiết bị khối"
+msgstr "« %s » là một thiết bị khối"
 
 #: files.c:518
 #, c-format
 msgid "%s is too large"
-msgstr "«%s» là quá lớn"
+msgstr "« %s » quá lớn"
 
 #: files.c:553
 #, c-format
 msgid "%s is shorter than expected"
-msgstr "ngờ «%s» dài hơn"
+msgstr "ngờ « %s » dài hơn"
 
 #: files.c:782
 #, c-format
 msgid "no include path in which to search for %s"
-msgstr "khi tìm kiếm «%s» không có đường dẫn bao gồm"
+msgstr "việc tìm kiếm « %s » không có đường dẫn bao gồm"
 
 #: files.c:1071
 msgid "Multiple include guards may be useful for:\n"
-msgstr "Có lẽ số nhiều điều bảo vệ bao gồm có ích cho:\n"
+msgstr "Nhiều điều bảo vệ bao gồm có lẽ hiệu ích cho:\n"
 
 #: init.c:400
 msgid "cppchar_t must be an unsigned type"
-msgstr "«cppchar_t» phải là loại không có dấu dương/âm"
+msgstr "« cppchar_t » phải là loại không có dấu dương/âm"
 
 #: init.c:404
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
-msgstr "toán thuật của trình tiền xử lý có tối đa sự chính xác là «%lu» bit nhưng đích cần đến «%lu» bit"
+msgstr "toán thuật của trình tiền xử lý có độ chính xác tối đa là « %lu » bit còn đích cần đến « %lu » bit"
 
 #: init.c:411
 msgid "CPP arithmetic must be at least as precise as a target int"
@@ -598,20 +598,20 @@ msgstr "độ rộng char (ký tự) đích là ít hơn 8 bit"
 
 #: init.c:418
 msgid "target wchar_t is narrower than target char"
-msgstr "độ rộng «wchar_t» đích là ít hơn char (ký tự) đích"
+msgstr "độ rộng « wchar_t » đích là ít hơn char (ký tự) đích"
 
 #: init.c:422
 msgid "target int is narrower than target char"
-msgstr "độ rộng int (số nguyên) đích là ít hơn char (ký tự) đích"
+msgstr "độ rộng int (số nguyên) đích là hẹp hơn char (ký tự) đích"
 
 #: init.c:427
 msgid "CPP half-integer narrower than CPP character"
-msgstr "độ rộng nữa số nguyên CPP là ít hơn ký tự CPP"
+msgstr "độ rộng nữa số nguyên CPP là hẹp hơn ký tự CPP"
 
 #: init.c:431
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
-msgstr "Trên máy chủ này, CPP không xử lý được hằng ký tự rộng hơn «%lu» bit, nhưng đích cần đến «%lu» bit"
+msgstr "Trên máy này, CPP không xử lý được hằng ký tự rộng hơn « %lu » bit, còn đích cần « %lu » bit"
 
 #: lex.c:271
 msgid "backslash and newline separated by space"
@@ -619,53 +619,53 @@ msgstr "xuyệc ngược và ký tự dòng mới phân cách nhau bởi chữ c
 
 #: lex.c:276
 msgid "backslash-newline at end of file"
-msgstr "xuyệc ngược - ký tự dòng mới tại kết thức tập tin"
+msgstr "gặp xuyệc ngược - ký tự dòng mới tại kết thức tập tin"
 
 #: lex.c:291
 #, c-format
 msgid "trigraph ??%c converted to %c"
-msgstr "đã chuyển đổi chữ ba «??%c» thành «%c»"
+msgstr "chữ ba « ??%c » đã được chuyển đổi thành « %c »"
 
 #: lex.c:298
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
-msgstr "đã bỏ qua chữ ba «??%c» nên hãy sư dụng tùy chon «-trigraphs» để hiệu lực được"
+msgstr "chữ ba « ??%c » bị bỏ qua nên hãy sư dụng tùy chon « -trigraphs » (chữ ba) để hiệu lực nó"
 
 #: lex.c:344
 msgid "\"/*\" within comment"
-msgstr "có «/*» ở trong chú thích"
+msgstr "gặp « /* » ở trong chú thích"
 
 #: lex.c:402
 #, c-format
 msgid "%s in preprocessing directive"
-msgstr "có «%s» trong chỉ thị tiền xử lý"
+msgstr "gặp « %s » trong chỉ thị tiền xử lý"
 
 #: lex.c:411
 msgid "null character(s) ignored"
-msgstr "đã bỏ qua mọi ký tự trống"
+msgstr "mọi ký tự rỗng bị bỏ qua"
 
 #: lex.c:448
-#, fuzzy, c-format
+#, c-format
 msgid "`%.*s' is not in NFKC"
-msgstr "chưa định nghĩa «%s» "
+msgstr "« %.*s »  không phải trong NKFC"
 
 #: lex.c:451
-#, fuzzy, c-format
+#, c-format
 msgid "`%.*s' is not in NFC"
-msgstr "chưa định nghĩa «%s» "
+msgstr "« %.*s » không phải trong NFC"
 
 #: lex.c:539
 #, c-format
 msgid "attempt to use poisoned \"%s\""
-msgstr "đã cố sử dụng «%s» bị vô hiệu hóa"
+msgstr "đã cố sử dụng « %s » bị vô hiệu hóa"
 
 #: lex.c:547
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
-msgstr "«__VA_ARGS__» chỉ có thể xuất hiện trong phần mở rộng của macrô có đối số biến thiên"
+msgstr "« __VA_ARGS__ » chỉ có thể xuất hiện trong phần mở rộng của bộ đối số biến thiên C99"
 
 #: lex.c:647
 msgid "null character(s) preserved in literal"
-msgstr "đã giữ ký tự trống trong hằng nguồn"
+msgstr "các ký tự rỗng được giữ trong hằng nguồn"
 
 #: lex.c:838
 msgid "no newline at end of file"
@@ -673,7 +673,7 @@ msgstr "không có ký tự dòng mới tại kêt thức tập tin"
 
 #: lex.c:990 traditional.c:162
 msgid "unterminated comment"
-msgstr "chú thích không chấm dứt"
+msgstr "gặp chú thích không chấm dứt"
 
 #: lex.c:1001
 msgid "C++ style comments are not allowed in ISO C90"
@@ -681,21 +681,21 @@ msgstr "không cho phép chú thích kiểu C++ trong ISO C90"
 
 #: lex.c:1003
 msgid "(this will be reported only once per input file)"
-msgstr "(chỉ sẽ thông báo điều này một lần cho mỗi tập tin nhập)"
+msgstr "(chỉ sẽ thông báo điều này một lần cho mỗi tập tin gõ"
 
 #: lex.c:1008
 msgid "multi-line comment"
-msgstr "chú thích đa dòng"
+msgstr "gặp chú thích đa dòng"
 
 #: lex.c:1331
 #, c-format
 msgid "unspellable token %s"
-msgstr "không chính tả được hiệu bài «%s»"
+msgstr "gặp hiệu bài không chính tả được « %s »"
 
 #: line-map.c:313
 #, c-format
 msgid "In file included from %s:%u"
-msgstr "Trong tập tin được bao gồm từ «%s:%u»"
+msgstr "Trong tập tin được bao gồm từ « %s:%u »"
 
 #: line-map.c:331
 #, c-format
@@ -704,17 +704,17 @@ msgid ""
 "                 from %s:%u"
 msgstr ""
 ",\n"
-"                 từ %s:%u"
+"                 từ « %s:%u »"
 
 #: macro.c:85
 #, c-format
 msgid "macro \"%s\" is not used"
-msgstr "không sử dụng macrô «%s»"
+msgstr "bộ đối số « %s » không được dùng"
 
 #: macro.c:124 macro.c:287
 #, c-format
 msgid "invalid built-in macro \"%s\""
-msgstr "bộ đối số «%s» có sẳn không là hợp lệ"
+msgstr "bộ đối số « %s » có sẳn không hợp lệ"
 
 #: macro.c:221
 msgid "could not determine date and time"
@@ -722,50 +722,50 @@ msgstr "không quyết định được ngày và giờ"
 
 #: macro.c:391
 msgid "invalid string literal, ignoring final '\\'"
-msgstr "hằng nguồn chuỗi không hợp lệ nên bỏ qua «\\» cuối cùng"
+msgstr "hằng nguồn chuỗi không hợp lệ nên bỏ qua « \\ » cuối cùng"
 
 #: macro.c:474
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
-msgstr "khi dán «%s» và «%s» không nhận hiệu bài tiền xử lý hợp lệ"
+msgstr "việc dán « %s » và « %s » không cho bài tiền xử lý hợp lệ"
 
 #: macro.c:512
 msgid "ISO C99 requires rest arguments to be used"
-msgstr "ISO C99 cần đến sử dụng đối số còn lại trong khối"
+msgstr "ISO C99 cần đến việc sử dụng đối số còn lại trong khối"
 
 #: macro.c:517
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
-msgstr "bộ đối số «%s» cần đến «%u» đối số, nhưng chỉ có «%u» thôi"
+msgstr "bộ đối số « %s » cần đến « %u » đối số, nhưng chỉ cho « %u » thôi"
 
 #: macro.c:522
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
-msgstr "macrô «%s» đã gơi %u đối số, nhưng nhận chỉ «%u» thôi"
+msgstr "bộ đối số « %s » đã gởi « %u » đối số, nhưng nhận chỉ « %u » thôi"
 
 #: macro.c:633 traditional.c:675
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
-msgstr "danh sách đối số không chấm dứt thì gọi bộ đối số «%s»"
+msgstr "danh sách đối số không chấm dứt thì gọi bộ đối số « %s »"
 
 #: macro.c:736
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
-msgstr "phải sử dụng đối số với bộ đối số giống hàm số «%s» trong ngôn ngữ C truyền thống"
+msgstr "phải sử dụng đối số với bộ đối số giống hàm số « %s » trong ngôn ngữ C truyền thống"
 
 #: macro.c:1252
 #, c-format
 msgid "duplicate macro parameter \"%s\""
-msgstr "tham số bộ đối số trùng «%s»"
+msgstr "tham số bộ đối số trùng « %s »"
 
 #: macro.c:1298
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
-msgstr "không cho phép «%s» trong danh sách tham số bộ đối số"
+msgstr "không cho phép « %s » trong danh sách tham số bộ đối số"
 
 #: macro.c:1306
 msgid "macro parameters must be comma-separated"
-msgstr "phải ngăn cách tham số macrô bằng dấu phẩy"
+msgstr "các tham số bộ đối số phải được ngăn cách bởi dấu phẩy"
 
 #: macro.c:1323
 msgid "parameter name missing"
@@ -773,15 +773,15 @@ msgstr "thiếu tên tham số"
 
 #: macro.c:1340
 msgid "anonymous variadic macros were introduced in C99"
-msgstr "C99 đã chèn macrô có số đối số biến thiên nặc danh"
+msgstr "bộ đối số biến thiên nặc danh được giới thiệu trong C99"
 
 #: macro.c:1345
 msgid "ISO C does not permit named variadic macros"
-msgstr "ISO C không cho phép macrô có số đối số biến thiên có tên"
+msgstr "ISO C không cho phép bộ đối số biến thiên có tên"
 
 #: macro.c:1354
 msgid "missing ')' in macro parameter list"
-msgstr "thiếu «)» trong danh sách tham số bộ đối số"
+msgstr "thiếu « ) » trong danh sách tham số bộ đối số"
 
 #: macro.c:1432
 msgid "ISO C99 requires whitespace after the macro name"
@@ -789,20 +789,20 @@ msgstr "ISO C99 cần đến chữ cách sau tên bộ đối số"
 
 #: macro.c:1456
 msgid "missing whitespace after the macro name"
-msgstr "thiếu chữ cách sau tên macrô"
+msgstr "thiếu chữ cách sau tên bộ đối số"
 
 #: macro.c:1486
 msgid "'#' is not followed by a macro parameter"
-msgstr "«#» không có tham số macrô đi theo"
+msgstr "« # » không có tham số bộ đối số đi theo"
 
 #: macro.c:1505
 msgid "'##' cannot appear at either end of a macro expansion"
-msgstr "không cho phép «##» hoặc trước hoặc sau phần mở rộng macrô"
+msgstr "không cho phép « ## » hoặc trước hoặc sau phần mở rộng bộ đối số"
 
 #: macro.c:1603
 #, c-format
 msgid "\"%s\" redefined"
-msgstr "đã định nghĩa «%s» lại"
+msgstr "« %s » l đã được định nghĩa lại"
 
 #: macro.c:1608
 msgid "this is the location of the previous definition"
@@ -811,44 +811,41 @@ msgstr "đây là vị trí của lời định nghĩa trước"
 #: macro.c:1658
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
-msgstr "trong ngôn ngữ C truyền thống thì chuyển đổi đốí số macrô «%s» thành chuỗi"
+msgstr "đối số bộ đối số « %s » nên được chuyển đổi thành chuỗi trong ngôn ngữ C truyền thống"
 
 #: macro.c:1681
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
-msgstr "loại băm không hợp lệ «%d» trong «cpp_macro_definition» (lời định nghĩa macrô)"
+msgstr "gặp loại băm không hợp lệ « %d » trong « cpp_macro_definition » (lời định nghĩa bộ đối số)"
 
 #: pch.c:84 pch.c:332 pch.c:354 pch.c:360
 msgid "while writing precompiled header"
-msgstr "trong khi ghi đầu trang đã biên dịch trước"
+msgstr "trong khi ghi đầu trang tiền biên dịch"
 
 #: pch.c:467
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
-msgstr "không sử dụng «%s» vì chưa định nghĩa «%.*s»"
+msgstr "không sử dụng « %s » vì chưa định nghĩa « %.*s »"
 
 #: pch.c:479
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
-msgstr "không sử dụng %s vì đã định nghĩa «%.*s» là «%s», không phải là «%.*s»"
+msgstr "không sử dụng « %s » vì đã định nghĩa « %.*s » là « %s », không phải « %.*s »"
 
 #: pch.c:520
 #, c-format
 msgid "%s: not used because `%s' is defined"
-msgstr "không sử dụng «%s» vì đã định nghĩa «%s»"
+msgstr "không sử dụng « %s » vì đã định nghĩa « %s »"
 
 #: pch.c:533 pch.c:696
 msgid "while reading precompiled header"
-msgstr "trong khi đọc đầu trang đã biên dịch trước"
+msgstr "trong khi đọc đầu trang tiền biên dịcch"
 
 #: traditional.c:745
 #, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
-msgstr "đã phát hiện điều độ qui trong khi mở rộng macrô «%s»"
+msgstr "đã phát hiện điều độ qui trong khi mở rộng bộ đối số « %s »"
 
 #: traditional.c:912
 msgid "syntax error in macro parameter list"
-msgstr "gặp lỗi cú pháp trong danh sách tham số macrô"
-
-#~ msgid "unknown escape sequence: '\\%03o'"
-#~ msgstr "không biết dãy thoát: «\\%03o»"
+msgstr "gặp lỗi cú pháp trong danh sách tham số bộ đối số"
