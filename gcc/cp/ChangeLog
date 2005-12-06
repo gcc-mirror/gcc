@@ -1,3 +1,12 @@
+2005-12-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+	2005-10-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21383
+	* name-lookup.c (arg_assoc): Template args can be null in a
+	template-id-expr.
+
 2005-12-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:
