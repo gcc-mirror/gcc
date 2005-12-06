@@ -573,7 +573,7 @@
 	 [(plus:DI (match_operand:DI 1 "nonimmediate_operand" "%0")
 		   (match_operand:DI 2 "nonimmediate_operand" "ym"))]
 	 UNSPEC_NOP))]
-  "TARGET_MMX && ix86_binary_operator_ok (PLUS, DImode, operands)"
+  "TARGET_SSE2 && ix86_binary_operator_ok (PLUS, DImode, operands)"
   "paddq\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])
@@ -614,7 +614,7 @@
 	 [(minus:DI (match_operand:DI 1 "register_operand" "0")
 		    (match_operand:DI 2 "nonimmediate_operand" "ym"))]
 	 UNSPEC_NOP))]
-  "TARGET_MMX"
+  "TARGET_SSE2"
   "psubq\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])

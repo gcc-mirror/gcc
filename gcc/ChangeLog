@@ -1,3 +1,11 @@
+2005-12-06  Jan Beulich  <jbeulich@novell.com>
+
+	* config/i386/i386.c (builtin_description): Use MASK_SSE2 for
+	__builtin_ia32_paddq and __builtin_ia32_subq.
+	(ix86_init_mmx_sse_builtins): Use MASK_SSE|MASK_3DNOW_A for
+	__builtin_ia32_pshufw.
+	* config/i386/i386.md (mmx_adddi3, mmx_subdi3): Depend on TARGET_SSE2.
+
 2005-12-05  James E Wilson  <wilson@specifix.com>
 
 	PR target/24934
