@@ -1,3 +1,9 @@
+2005-12-07  Daniel Berlin <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/25291
+	* tree-ssa-operands.c (add_call_clobber_ops): Remove
+	redundant and crashing check.
+
 2005-12-08  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/25212
