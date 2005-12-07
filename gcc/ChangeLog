@@ -1,3 +1,7 @@
+2005-12-07  Adrian Straetling  <straetling@de.ibm.com>
+
+	  * doc/md.texi: Adapt to implementation.
+
 2005-12-07  Aldy Hernandez  <aldyh@redhat.com>
 
        PR C++/24138
