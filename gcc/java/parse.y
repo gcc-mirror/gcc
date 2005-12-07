@@ -11238,6 +11238,17 @@ lookup_method_invoke (int lc, tree cl, tree class, tree name, tree arg_list)
       /* And promoted */
       if (TREE_CODE (current_arg) == RECORD_TYPE)
         current_arg = promote_type (current_arg);
+      /* If we're building an anonymous constructor call, and one of
+	 the arguments has array type, cast it to a size-less array
+	 type.  This prevents us from getting a strange gcj-specific
+	 "sized array" signature in the constructor's signature.  */
+      if (lc && ANONYMOUS_CLASS_P (class)
+	  && TREE_CODE (current_arg) == POINTER_TYPE
+	  && TYPE_ARRAY_P (TREE_TYPE (current_arg)))
+	{
+	  tree elt = TYPE_ARRAY_ELEMENT (TREE_TYPE (current_arg));
+	  current_arg = build_pointer_type (build_java_array_type (elt, -1));
+	}
       atl = tree_cons (NULL_TREE, current_arg, atl);
     }
 
@@ -14910,12 +14921,8 @@ patch_new_array_init (tree type, tree node)
 
   /* Create a new type. We can't reuse the one we have here by
      patching its dimension because it originally is of dimension -1
-     hence reused by gcc. This would prevent triangular arrays.
-     Note that we don't pass the length here.  If we do that then the
-     length will end up in the signature of this type, and hence in
-     the signature of the anonymous constructor -- but this is not a
-     valid java signature.  */
-  type = build_java_array_type (element_type, -1);
+     hence reused by gcc. This would prevent triangular arrays. */
+  type = build_java_array_type (element_type, length);
   TREE_TYPE (init) = TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (type))));
   TREE_TYPE (node) = promote_type (type);
   TREE_CONSTANT (init) = all_constant;
