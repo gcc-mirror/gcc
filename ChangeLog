@@ -1,3 +1,7 @@
+2005-12-06  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* MAINTAINERS: Change email address.
+
 2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in (CONFIGURED_BISON, CONFIGURED_YACC, CONFIGURED_M4,
