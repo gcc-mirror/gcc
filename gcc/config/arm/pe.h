@@ -93,7 +93,7 @@
 	  drectve_section ();					\
 	  fprintf (STREAM, "\t.ascii \" -export:%s\"\n",	\
 		   arm_strip_name_encoding (NAME));		\
-	  function_section (DECL);				\
+	  switch_to_section (function_section (DECL));		\
 	}							\
       ARM_DECLARE_FUNCTION_NAME (STREAM, NAME, DECL);		\
       if (TARGET_THUMB)						\
@@ -130,11 +130,11 @@
     {							\
       if (arm_dllexport_name_p (NAME))			\
 	{						\
-	  enum in_section save_section = in_section;	\
+	  section *save_section = in_section;		\
 	  drectve_section ();				\
 	  fprintf (STREAM, "\t.ascii \" -export:%s\"\n",\
 		   arm_strip_name_encoding (NAME));	\
-	  switch_to_section (save_section, (DECL));	\
+	  switch_to_section (save_section);		\
 	}						\
       ASM_OUTPUT_LABEL ((STREAM), (NAME));		\
     }							\
@@ -144,51 +144,6 @@
 
 #define DRECTVE_SECTION_ASM_OP	"\t.section .drectve"
 
-/* A list of other sections which the compiler might be "in" at any
-   given time.  */
-
-#undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_drectve
-
-/* A list of extra section function definitions.  */
-
-#undef  EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS \
-  DRECTVE_SECTION_FUNCTION	\
-  SWITCH_TO_SECTION_FUNCTION
-
-#define DRECTVE_SECTION_FUNCTION \
-void									\
-drectve_section (void)							\
-{									\
-  if (in_section != in_drectve)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DRECTVE_SECTION_ASM_OP);		\
-      in_section = in_drectve;						\
-    }									\
-}
-
-/* Switch to SECTION (an `enum in_section').
-
-   ??? This facility should be provided by GCC proper.
-   The problem is that we want to temporarily switch sections in
-   ASM_DECLARE_OBJECT_NAME and then switch back to the original section
-   afterwards.  */
-#define SWITCH_TO_SECTION_FUNCTION				\
-static void							\
-switch_to_section (enum in_section section, tree decl)		\
-{								\
-  switch (section)						\
-    {								\
-      case in_text: text_section (); break;			\
-      case in_unlikely_executed_text: unlikely_text_section (); break; \
-      case in_data: data_section (); break;			\
-      case in_named: named_section (decl, NULL, 0); break;	\
-      case in_readonly_data: readonly_data_section (); break;	\
-      case in_ctors: ctors_section (); break;			\
-      case in_dtors: dtors_section (); break;			\
-      case in_drectve: drectve_section (); break;		\
-      default: abort (); break;					\
-    }								\
-}
-
+#define drectve_section() \
+  (fprintf (asm_out_file, "%s\n", DRECTVE_SECTION_ASM_OP), \
+   in_section = NULL)

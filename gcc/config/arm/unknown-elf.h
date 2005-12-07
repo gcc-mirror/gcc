@@ -58,9 +58,9 @@
   do									\
     {									\
       if (IN_NAMED_SECTION (DECL))					\
-	named_section (DECL, NULL, 0);					\
+	switch_to_section (get_named_section (DECL, NULL, 0));		\
       else								\
-	bss_section ();							\
+	switch_to_section (bss_section);				\
       									\
       ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
 									\
@@ -75,9 +75,9 @@
   do									\
     {									\
       if ((DECL) != NULL && IN_NAMED_SECTION (DECL))			\
-	named_section (DECL, NULL, 0);					\
+	switch_to_section (get_named_section (DECL, NULL, 0));		\
       else								\
-	bss_section ();							\
+	switch_to_section (bss_section);				\
 									\
       ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\

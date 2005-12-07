@@ -127,8 +127,6 @@ extern rtx unicosmk_add_call_info_word (rtx);
 extern void unicosmk_defer_case_vector (rtx, rtx);
 extern void unicosmk_add_extern (const char *);
 extern void unicosmk_output_align (FILE *, int);
-extern char * unicosmk_text_section (void);
-extern char * unicosmk_data_section (void);
 extern void unicosmk_output_common (FILE *, const char *, int, int);
 extern int unicosmk_initial_elimination_offset (int, int);
 #endif

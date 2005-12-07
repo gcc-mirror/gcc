@@ -48,7 +48,7 @@ Boston, MA 02110-1301, USA.  */
 
 #undef ASM_OUTPUT_LOCAL
 #define ASM_OUTPUT_LOCAL(FILE,NAME,SIZE,ROUNDED)	\
-( data_section (),					\
+( switch_to_section (data_section),			\
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ":\n\t.space %u\n", (int)(ROUNDED)))
 

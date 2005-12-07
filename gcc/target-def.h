@@ -136,6 +136,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 # endif
 #endif
 
+#ifndef TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS hook_void_void
+#endif
+
 #ifdef TARGET_ASM_NAMED_SECTION
 #define TARGET_HAVE_NAMED_SECTIONS true
 #else
@@ -168,14 +172,6 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #endif
 
 #define TARGET_DWARF_REGISTER_SPAN hook_rtx_rtx_null
-
-#ifndef TARGET_ASM_EXCEPTION_SECTION
-#define TARGET_ASM_EXCEPTION_SECTION default_exception_section
-#endif
-
-#ifndef TARGET_ASM_EH_FRAME_SECTION
-#define TARGET_ASM_EH_FRAME_SECTION default_eh_frame_section
-#endif
 
 #ifndef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START default_file_start
@@ -233,9 +229,8 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 			TARGET_ASM_FUNCTION_END_PROLOGUE,	\
 			TARGET_ASM_FUNCTION_BEGIN_EPILOGUE,	\
 			TARGET_ASM_FUNCTION_EPILOGUE,		\
+			TARGET_ASM_INIT_SECTIONS,		\
 			TARGET_ASM_NAMED_SECTION,		\
-			TARGET_ASM_EXCEPTION_SECTION,		\
-			TARGET_ASM_EH_FRAME_SECTION,		\
 			TARGET_ASM_SELECT_SECTION,		\
 			TARGET_ASM_SELECT_RTX_SECTION,		\
 			TARGET_ASM_UNIQUE_SECTION,		\

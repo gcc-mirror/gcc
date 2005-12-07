@@ -17,15 +17,6 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_sbss
-
-#undef  EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS                                            \
-  SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
-  SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP)
-
-
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (MIPS, VxWorks syntax)");
 

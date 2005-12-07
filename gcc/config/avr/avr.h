@@ -47,6 +47,7 @@ extern const char *avr_extra_arch_macro;
 extern int avr_mega_p;
 extern int avr_enhanced_p;
 extern int avr_asm_only_p;
+extern GTY(()) section *progmem_section;
 
 #define AVR_MEGA (avr_mega_p && !TARGET_SHORT_CALLS)
 #define AVR_ENHANCED (avr_enhanced_p)
@@ -476,26 +477,6 @@ do {									    \
 
 #define TARGET_ASM_DESTRUCTOR avr_asm_out_dtor
 
-#define EXTRA_SECTIONS in_progmem
-
-#define EXTRA_SECTION_FUNCTIONS						      \
-									      \
-void									      \
-progmem_section (void)							      \
-{									      \
-  if (in_section != in_progmem)						      \
-    {									      \
-      fprintf (asm_out_file,						      \
-	       "\t.section .progmem.gcc_sw_table, \"%s\", @progbits\n",	      \
-	       AVR_MEGA ? "a" : "ax");					      \
-      /* Should already be aligned, this is just to be safe if it isn't.  */  \
-      fprintf (asm_out_file, "\t.p2align 1\n");				      \
-      in_section = in_progmem;						      \
-    }									      \
-}
-
-#define READONLY_DATA_SECTION data_section
-
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 
 #define ASM_COMMENT_START " ; "
@@ -506,6 +487,7 @@ progmem_section (void)							      \
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION default_elf_asm_named_section
+#define TARGET_ASM_INIT_SECTIONS avr_asm_init_sections
 
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)	 gas_output_ascii (FILE,P,SIZE)
 
@@ -682,7 +664,8 @@ sprintf (STRING, "*.%s%lu", PREFIX, (unsigned long)(NUM))
   avr_output_addr_vec_elt(STREAM, VALUE)
 
 #define ASM_OUTPUT_CASE_LABEL(STREAM, PREFIX, NUM, TABLE) \
-  progmem_section (), (*targetm.asm_out.internal_label) (STREAM, PREFIX, NUM)
+  (switch_to_section (progmem_section), \
+   (*targetm.asm_out.internal_label) (STREAM, PREFIX, NUM))
 
 #define ASM_OUTPUT_SKIP(STREAM, N)		\
 fprintf (STREAM, "\t.skip %lu,0\n", (unsigned long)(N))

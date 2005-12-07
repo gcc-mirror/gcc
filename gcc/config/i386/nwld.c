@@ -48,7 +48,7 @@ nwld_named_section_asm_out_constructor (rtx symbol, int priority)
 	   MAX_INIT_PRIORITY - priority);
 #endif
 
-  named_section_flags (section, 0);
+  switch_to_section (get_section (section, 0, NULL));
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
@@ -68,7 +68,7 @@ nwld_named_section_asm_out_destructor (rtx symbol, int priority)
 	   MAX_INIT_PRIORITY - priority);
 #endif
 
-  named_section_flags (section, 0);
+  switch_to_section (get_section (section, 0, NULL));
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }

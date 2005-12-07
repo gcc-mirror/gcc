@@ -1094,7 +1094,7 @@ do { char __buf[256];					\
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED) 	\
 do { 						\
-    data_section();				\
+    switch_to_section (data_section);				\
     if ((SIZE) >= (unsigned int) 4 ) ASM_OUTPUT_ALIGN(FILE,2);	\
     ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, SIZE);		\
     ASM_OUTPUT_LABEL (FILE, NAME);				\

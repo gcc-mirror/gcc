@@ -107,7 +107,8 @@ static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static int pa_adjust_cost (rtx, rtx, rtx, int);
 static int pa_adjust_priority (rtx, int);
 static int pa_issue_rate (void);
-static void pa_select_section (tree, int, unsigned HOST_WIDE_INT)
+static void pa_som_asm_init_sections (void) ATTRIBUTE_UNUSED;
+static section *pa_select_section (tree, int, unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
 static void pa_encode_section_info (tree, rtx, int);
 static const char *pa_strip_name_encoding (const char *);
@@ -154,6 +155,11 @@ static enum reg_class pa_secondary_reload (bool, rtx, enum reg_class,
 					   enum machine_mode,
 					   secondary_reload_info *);
 
+
+/* The following extra sections are only used for SOM.  */
+static GTY(()) section *som_readonly_data_section;
+static GTY(()) section *som_one_only_readonly_data_section;
+static GTY(()) section *som_one_only_data_section;
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -3928,7 +3934,7 @@ pa_output_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       /* We done with this subspace except possibly for some additional
 	 debug information.  Forget that we are in this subspace to ensure
 	 that the next function is output in its own subspace.  */
-      forget_section ();
+      in_section = NULL;
     }
 
   if (INSN_ADDRESSES_SET_P ())
@@ -4149,7 +4155,7 @@ output_deferred_profile_counters (void)
   if (VEC_empty (int, funcdef_nos))
    return;
 
-  data_section ();
+  switch_to_section (data_section);
   align = MIN (BIGGEST_ALIGNMENT, LONG_TYPE_SIZE);
   ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
 
@@ -5299,7 +5305,7 @@ output_deferred_plabels (void)
      deferred plabels.  */
   if (n_deferred_plabels)
     {
-      data_section ();
+      switch_to_section (data_section);
       ASM_OUTPUT_ALIGN (asm_out_file, TARGET_64BIT ? 3 : 2);
     }
 
@@ -7795,13 +7801,13 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 
   if (TARGET_SOM && flag_pic && TREE_PUBLIC (function))
     {
-      data_section ();
+      switch_to_section (data_section);
       output_asm_insn (".align 4", xoperands);
       ASM_OUTPUT_LABEL (file, label);
       output_asm_insn (".word P'%0", xoperands);
     }
   else if (TARGET_SOM && TARGET_GAS)
-    forget_section ();
+    in_section = NULL;
 
   current_thunk_number++;
   nbytes = ((nbytes + FUNCTION_BOUNDARY / BITS_PER_UNIT - 1)
@@ -7977,7 +7983,7 @@ pa_asm_output_aligned_bss (FILE *stream,
 			   unsigned HOST_WIDE_INT size,
 			   unsigned int align)
 {
-  bss_section ();
+  switch_to_section (bss_section);
   fprintf (stream, "\t.align %u\n", align / BITS_PER_UNIT);
 
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
@@ -8017,7 +8023,7 @@ pa_asm_output_aligned_common (FILE *stream,
       align = max_common_align;
     }
 
-  bss_section ();
+  switch_to_section (bss_section);
 
   assemble_name (stream, name);
   fprintf (stream, "\t.comm "HOST_WIDE_INT_PRINT_UNSIGNED"\n",
@@ -8037,7 +8043,7 @@ pa_asm_output_aligned_local (FILE *stream,
 			     unsigned HOST_WIDE_INT size,
 			     unsigned int align)
 {
-  bss_section ();
+  switch_to_section (bss_section);
   fprintf (stream, "\t.align %u\n", align / BITS_PER_UNIT);
 
 #ifdef LOCAL_ASM_OP
@@ -9029,17 +9035,16 @@ pa_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 
-/* Return a string to output before text in the current function.
+/* A get_unnamed_section callback for switching to the text section.
 
    This function is only used with SOM.  Because we don't support
    named subspaces, we can only create a new subspace or switch back
    to the default text subspace.  */
-const char *
-som_text_section_asm_op (void)
-{
-  if (!TARGET_SOM)
-    return "";
 
+static void
+som_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
+{
+  gcc_assert (TARGET_SOM);
   if (TARGET_GAS)
     {
       if (cfun && !cfun->machine->in_nsubspa)
@@ -9053,10 +9058,12 @@ som_text_section_asm_op (void)
 	  if (cfun->decl
 	      && DECL_ONE_ONLY (cfun->decl)
 	      && !DECL_WEAK (cfun->decl))
-	    return
- "\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,SORT=24,COMDAT";
-
-	  return "\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$";
+	    output_section_asm_op ("\t.SPACE $TEXT$\n"
+				   "\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,"
+				   "ACCESS=44,SORT=24,COMDAT");
+	  else
+	    output_section_asm_op ("\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$");
+	  return;
 	}
       else
 	{
@@ -9064,13 +9071,66 @@ som_text_section_asm_op (void)
 	     function has been completed.  So, we are changing to the
 	     text section to output debugging information.  Do this in
 	     the default text section.  We need to forget that we are
-	     in the text section so that the function text_section in
-	     varasm.c will call us the next time around.  */
-	  forget_section ();
+	     in the text section so that varasm.c will call us when
+	     text_section is selected again.  */
+	  in_section = NULL;
 	}
     }
+  output_section_asm_op ("\t.SPACE $TEXT$\n\t.SUBSPA $CODE$");
+}
 
-  return "\t.SPACE $TEXT$\n\t.SUBSPA $CODE$";
+/* Implement TARGET_ASM_INITIALIZE_SECTIONS  */
+
+static void
+pa_som_asm_init_sections (void)
+{
+  text_section
+    = get_unnamed_section (0, som_output_text_section_asm_op, NULL);
+
+  /* SOM puts readonly data in the default $LIT$ subspace when PIC code
+     is not being generated.  */
+  som_readonly_data_section
+    = get_unnamed_section (0, output_section_asm_op,
+			   "\t.SPACE $TEXT$\n\t.SUBSPA $LIT$");
+
+  /* When secondary definitions are not supported, SOM makes readonly
+     data one-only by creating a new $LIT$ subspace in $TEXT$ with
+     the comdat flag.  */
+  som_one_only_readonly_data_section
+    = get_unnamed_section (0, output_section_asm_op,
+			   "\t.SPACE $TEXT$\n"
+			   "\t.NSUBSPA $LIT$,QUAD=0,ALIGN=8,"
+			   "ACCESS=0x2c,SORT=16,COMDAT");
+
+
+  /* When secondary definitions are not supported, SOM makes data one-only
+     by creating a new $DATA$ subspace in $PRIVATE$ with the comdat flag.  */
+  som_one_only_data_section
+    = get_unnamed_section (SECTION_WRITE, output_section_asm_op,
+			   "\t.SPACE $PRIVATE$\n"
+			   "\t.NSUBSPA $DATA$,QUAD=1,ALIGN=8,"
+			   "ACCESS=31,SORT=24,COMDAT");
+
+  /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
+     which reference data within the $TEXT$ space (for example constant
+     strings in the $LIT$ subspace).
+
+     The assemblers (GAS and HP as) both have problems with handling
+     the difference of two symbols which is the other correct way to
+     reference constant data during PIC code generation.
+
+     So, there's no way to reference constant data which is in the
+     $TEXT$ space during PIC generation.  Instead place all constant
+     data into the $PRIVATE$ subspace (this reduces sharing, but it
+     works correctly).  */
+  readonly_data_section = flag_pic ? data_section : som_readonly_data_section;
+
+  /* We must not have a reference to an external symbol defined in a
+     shared library in a readonly section, else the SOM linker will
+     complain.
+
+     So, we force exception information into the data section.  */
+  exception_section = data_section;
 }
 
 /* On hpux10, the linker will give an error if we have a reference
@@ -9078,7 +9138,7 @@ som_text_section_asm_op (void)
    library.  Therefore, expressions that might require a reloc can
    not be placed in the read-only data section.  */
 
-static void
+static section *
 pa_select_section (tree exp, int reloc,
 		   unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
@@ -9093,19 +9153,19 @@ pa_select_section (tree exp, int reloc,
       if (TARGET_SOM
 	  && DECL_ONE_ONLY (exp)
 	  && !DECL_WEAK (exp))
-	som_one_only_readonly_data_section ();
+	return som_one_only_readonly_data_section;
       else
-	readonly_data_section ();
+	return readonly_data_section;
     }
   else if (CONSTANT_CLASS_P (exp) && !reloc)
-    readonly_data_section ();
+    return readonly_data_section;
   else if (TARGET_SOM
 	   && TREE_CODE (exp) == VAR_DECL
 	   && DECL_ONE_ONLY (exp)
 	   && !DECL_WEAK (exp))
-    som_one_only_data_section ();
+    return som_one_only_data_section;
   else
-    data_section ();
+    return data_section;
 }
 
 static void

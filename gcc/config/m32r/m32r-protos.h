@@ -23,8 +23,6 @@
    complications.  */
 #define Mmode enum machine_mode
 
-extern void   sbss_section (void);
-extern void   sdata_section (void);
 extern void   m32r_init (void);
 extern void   m32r_init_expanders (void);
 extern unsigned m32r_compute_frame_size (int);

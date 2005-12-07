@@ -153,77 +153,6 @@ extern int regno_clobbered_at_setjmp (int);
 
 /* Functions in varasm.c.  */
 
-/* Tell assembler to switch to text section.  */
-extern void text_section (void);
-
-/* Tell assembler to switch to unlikely-to-be-executed text section.  */
-extern void unlikely_text_section (void);
-
-/* Tell assembler to switch to data section.  */
-extern void data_section (void);
-
-/* Tell assembler to switch to read-only data section.  This is normally
-   the text section.  */
-extern void readonly_data_section (void);
-
-/* Determine if we're in the text section.  */
-extern int in_text_section (void);
-
-/* Determine if we're in the unlikely-to-be-executed text section.  */
-extern int in_unlikely_text_section (void);
-
-#ifdef CTORS_SECTION_ASM_OP
-extern void ctors_section (void);
-#endif
-
-#ifdef DTORS_SECTION_ASM_OP
-extern void dtors_section (void);
-#endif
-
-#ifdef BSS_SECTION_ASM_OP
-extern void bss_section (void);
-#endif
-
-#ifdef INIT_SECTION_ASM_OP
-extern void init_section (void);
-#endif
-
-#ifdef FINI_SECTION_ASM_OP
-extern void fini_section (void);
-#endif
-
-#ifdef EXPORTS_SECTION_ASM_OP
-extern void exports_section (void);
-#endif
-
-#ifdef DRECTVE_SECTION_ASM_OP
-extern void drectve_section (void);
-#endif
-
-#ifdef SDATA_SECTION_ASM_OP
-extern void sdata_section (void);
-#endif
-
-/* Tell assembler to change to section NAME for DECL.
-   If DECL is NULL, just switch to section NAME.
-   If NAME is NULL, get the name from DECL.
-   If RELOC is 1, the initializer for DECL contains relocs.  */
-extern void named_section (tree, const char *, int);
-
-/* Tell assembler to switch to the section for function DECL.  */
-extern void function_section (tree);
-
-/* Tell assembler to switch to the most recently used text section.  */
-extern void current_function_section (tree);
-
-/* Tell assembler to switch to the section for string merging.  */
-extern void mergeable_string_section (tree, unsigned HOST_WIDE_INT,
-				      unsigned int);
-
-/* Tell assembler to switch to the section for constant merging.  */
-extern void mergeable_constant_section (enum machine_mode,
-					unsigned HOST_WIDE_INT, unsigned int);
-
 /* Declare DECL to be a weak symbol.  */
 extern void declare_weak (tree);
 /* Merge weak status.  */
@@ -438,27 +367,6 @@ extern rtx this_is_asm_operands;
 extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
-enum in_section { no_section, in_text, in_unlikely_executed_text, in_data,
-                 in_named
-#ifdef BSS_SECTION_ASM_OP
-  , in_bss
-#endif
-#ifdef CTORS_SECTION_ASM_OP
-  , in_ctors
-#endif
-#ifdef DTORS_SECTION_ASM_OP
-  , in_dtors
-#endif
-#ifdef READONLY_DATA_SECTION_ASM_OP
-  , in_readonly_data
-#endif
-#ifdef EXTRA_SECTIONS
-  , EXTRA_SECTIONS
-#endif
-};
-
-extern const char *last_text_section_name;
-extern enum in_section last_text_section;
 extern bool first_function_block_is_cold;
 
 /* Decide whether DECL needs to be in a writable section.
@@ -476,13 +384,11 @@ extern const char *user_label_prefix;
 /* Default target function prologue and epilogue assembler output.  */
 extern void default_function_pro_epilogue (FILE *, HOST_WIDE_INT);
 
-/* Tell assembler to switch to the section for the exception table.  */
-extern void default_exception_section (void);
+/* Return the default value of exception_section.  */
+extern section *default_exception_section (void);
 
-/* Tell assembler to switch to the section for the EH frames.  */
-extern void named_section_eh_frame_section (void);
-extern void collect2_eh_frame_section (void);
-extern void default_eh_frame_section (void);
+/* Return the default value of eh_frame_section.  */
+extern section *default_eh_frame_section (void);
 
 /* Default target hook that outputs nothing to a stream.  */
 extern void no_asm_to_stream (FILE *);
@@ -502,7 +408,9 @@ extern void no_asm_to_stream (FILE *);
 #define SECTION_OVERRIDE 0x20000	/* allow override of default flags */
 #define SECTION_TLS	 0x40000	/* contains thread-local storage */
 #define SECTION_NOTYPE	 0x80000	/* don't output @progbits */
-#define SECTION_MACH_DEP 0x100000	/* subsequent bits reserved for target */
+#define SECTION_DECLARED 0x100000	/* section has been used */
+#define SECTION_NAMED	 0x200000	/* section has a name */
+#define SECTION_MACH_DEP 0x400000	/* subsequent bits reserved for target */
 
 /* A helper function for default_elf_select_section and
    default_elf_unique_section.  Categorizes the DECL.  */
@@ -541,12 +449,81 @@ enum section_category
   SECCAT_TBSS
 };
 
+/* Information that is provided by all instances of the section type.  */
+struct section_common GTY(()) {
+  /* The set of SECTION_* flags that apply to this section.  */
+  unsigned int flags;
+};
 
-extern bool set_named_section_flags (const char *, unsigned int);
-#define named_section_flags(NAME, FLAGS) \
-  named_section_real((NAME), (FLAGS), /*decl=*/NULL_TREE)
-extern void named_section_real (const char *, unsigned int, tree);
-extern bool named_section_first_declaration (const char *);
+/* Information that is provided by named sections.  */
+struct named_section GTY(()) {
+  struct section_common common;
+
+  /* The name of the section.  */
+  const char *name;
+
+  /* If nonnull, the VAR_DECL or FUNCTION_DECL with which the
+     section is associated.  */
+  tree decl;
+};
+
+/* A callback that writes the assembly code for switching to an unnamed
+   section.  The argument provides callback-specific data.  */
+typedef void (*unnamed_section_callback) (const void *);
+
+/* Information that is provided by unnamed sections.  */
+struct unnamed_section GTY(()) {
+  struct section_common common;
+
+  /* The callback used to switch to the section, and the data that
+     should be passed to the callback.  */
+  unnamed_section_callback GTY ((skip)) callback;
+  const void *GTY ((skip)) data;
+
+  /* The next entry in the chain of unnamed sections.  */
+  section *next;
+};
+
+/* Information about a section, which may be named or unnamed.  */
+union section GTY ((desc ("(%h).common.flags & SECTION_NAMED")))
+{
+  struct section_common GTY ((skip)) common;
+  struct named_section GTY ((tag ("SECTION_NAMED"))) named;
+  struct unnamed_section GTY ((tag ("0"))) unnamed;
+};
+
+/* Special well-known sections.  */
+extern GTY(()) section *text_section;
+extern GTY(()) section *data_section;
+extern GTY(()) section *readonly_data_section;
+extern GTY(()) section *sdata_section;
+extern GTY(()) section *ctors_section;
+extern GTY(()) section *dtors_section;
+extern GTY(()) section *bss_section;
+extern GTY(()) section *sbss_section;
+extern GTY(()) section *init_section;
+extern GTY(()) section *fini_section;
+extern GTY(()) section *exception_section;
+extern GTY(()) section *eh_frame_section;
+
+extern GTY(()) section *in_section;
+extern GTY(()) section *last_text_section;
+
+extern section *get_unnamed_section (unsigned int, void (*) (const void *),
+				     const void *);
+extern section *get_section (const char *, unsigned int, tree);
+extern section *get_named_section (tree, const char *, int);
+extern section *mergeable_constant_section (enum machine_mode,
+					    unsigned HOST_WIDE_INT,
+					    unsigned int);
+extern section *function_section (tree);
+extern section *unlikely_text_section (void);
+extern section *current_function_section (void);
+
+extern bool unlikely_text_section_p (section *);
+extern void switch_to_section (section *);
+extern void output_section_asm_op (const void *);
+
 extern unsigned int default_section_type_flags (tree, const char *, int);
 extern unsigned int default_section_type_flags_1 (tree, const char *, int, int);
 
@@ -563,18 +540,21 @@ extern void default_stabs_asm_out_constructor (rtx, int);
 extern void default_named_section_asm_out_constructor (rtx, int);
 extern void default_ctor_section_asm_out_constructor (rtx, int);
 
-extern void default_select_section (tree, int, unsigned HOST_WIDE_INT);
-extern void default_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
-extern void default_elf_select_section_1 (tree, int,
-					  unsigned HOST_WIDE_INT, int);
+extern section *default_select_section (tree, int,
+					       unsigned HOST_WIDE_INT);
+extern section *default_elf_select_section (tree, int,
+						   unsigned HOST_WIDE_INT);
+extern section *default_elf_select_section_1 (tree, int,
+						     unsigned HOST_WIDE_INT,
+						     int);
 extern void default_unique_section (tree, int);
 extern void default_unique_section_1 (tree, int, int);
-extern void default_function_rodata_section (tree);
-extern void default_no_function_rodata_section (tree);
-extern void default_select_rtx_section (enum machine_mode, rtx,
-					unsigned HOST_WIDE_INT);
-extern void default_elf_select_rtx_section (enum machine_mode, rtx,
+extern section *default_function_rodata_section (tree);
+extern section *default_no_function_rodata_section (tree);
+extern section *default_select_rtx_section (enum machine_mode, rtx,
 					    unsigned HOST_WIDE_INT);
+extern section *default_elf_select_rtx_section (enum machine_mode, rtx,
+						unsigned HOST_WIDE_INT);
 extern void default_encode_section_info (tree, rtx, int);
 extern const char *default_strip_name_encoding (const char *);
 extern bool default_binds_local_p (tree);

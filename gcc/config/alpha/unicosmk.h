@@ -244,51 +244,9 @@ do { fprintf (FILE, "\tbr $1,0\n");			\
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 /* #define DEFAULT_SIGNED_CHAR 1 */
 
-/* The Cray assembler is really weird with respect to sections. It has only
-   named sections and you can't reopen a section once it has been closed.
-   This means that we have to generate unique names whenever we want to
-   reenter the text or the data section. The following is a rather bad hack
-   as TEXT_SECTION_ASM_OP and DATA_SECTION_ASM_OP are supposed to be
-   constants.  */
-
-#undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP unicosmk_text_section ()
-
-#undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP unicosmk_data_section ()
-
 /* There are no read-only sections on Unicos/Mk.  */
 
 #undef READONLY_DATA_SECTION_ASM_OP
-#define READONLY_DATA_SECTION data_section
-
-/* Define extra sections for common data and SSIBs (static subroutine
-   information blocks). The actual section header is output by the callers
-   of these functions.  */
-
-#undef EXTRA_SECTIONS
-#undef EXTRA_SECTION_FUNCTIONS
-
-#define EXTRA_SECTIONS in_common, in_ssib
-#define EXTRA_SECTION_FUNCTIONS	\
-COMMON_SECTION			\
-SSIB_SECTION	
-
-extern void common_section (void);
-#define COMMON_SECTION		\
-void				\
-common_section (void)		\
-{				\
-  in_section = in_common;	\
-}
-
-extern void ssib_section (void);
-#define SSIB_SECTION		\
-void				\
-ssib_section (void)		\
-{				\
-  in_section = in_ssib;		\
-}
 
 /* We take care of this in unicosmk_file_start.  */
 
@@ -413,7 +371,7 @@ ssib_section (void)		\
 
 #undef ASM_OUTPUT_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN) \
-  do { data_section ();					\
+  do { switch_to_section (data_section);		\
        fprintf (FILE, "\t.align\t%d\n", floor_log2 ((ALIGN) / BITS_PER_UNIT));\
        ASM_OUTPUT_LABEL ((FILE), (NAME));		\
        fprintf (FILE, "\t.byte 0:"HOST_WIDE_INT_PRINT_UNSIGNED"\n",(SIZE));\
@@ -449,6 +407,7 @@ ssib_section (void)		\
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION unicosmk_asm_named_section
+#define TARGET_ASM_INIT_SECTIONS unicosmk_init_sections
 
 #undef ASM_OUTPUT_MAX_SKIP_ALIGN
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(STREAM,POWER,MAXSKIP)

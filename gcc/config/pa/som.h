@@ -175,37 +175,13 @@ do {								\
 	   }} while (0)
 
 #define TARGET_ASM_FILE_START pa_som_file_start
-
-/* String to output before text.  */
-#define TEXT_SECTION_ASM_OP som_text_section_asm_op ()
+#define TARGET_ASM_INIT_SECTIONS pa_som_asm_init_sections
 
 /* String to output before writable data.  */
 #define DATA_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $DATA$\n"
 
 /* String to output before uninitialized data.  */
 #define BSS_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $BSS$\n"
-
-/* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
-   which reference data within the $TEXT$ space (for example constant
-   strings in the $LIT$ subspace).
-
-   The assemblers (GAS and HP as) both have problems with handling
-   the difference of two symbols which is the other correct way to
-   reference constant data during PIC code generation.
-
-   So, there's no way to reference constant data which is in the
-   $TEXT$ space during PIC generation.  Instead place all constant
-   data into the $PRIVATE$ subspace (this reduces sharing, but it
-   works correctly).  */
-#define READONLY_DATA_SECTION \
-  (flag_pic ? data_section : som_readonly_data_section)
-
-/* We must not have a reference to an external symbol defined in a
-   shared library in a readonly section, else the SOM linker will
-   complain.
-
-   So, we force exception information into the data section.  */
-#define TARGET_ASM_EXCEPTION_SECTION data_section
 
 /* This is how to output a command to make the user-level label
    named NAME defined for reference from other files.  We use

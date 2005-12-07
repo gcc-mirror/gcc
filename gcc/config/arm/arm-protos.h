@@ -139,12 +139,9 @@ extern int arm_apply_result_size (void);
 
 #if defined AOF_ASSEMBLER
 extern rtx aof_pic_entry (rtx);
-extern char *aof_text_section (void);
-extern char *aof_data_section (void);
 extern void aof_add_import (const char *);
 extern void aof_delete_import (const char *);
 extern void zero_init_section (void);
-extern void common_section (void);
 #endif /* AOF_ASSEMBLER */
 
 #endif /* RTX_CODE */

@@ -138,7 +138,6 @@ extern int zdepi_cint_p (unsigned HOST_WIDE_INT);
 
 extern void override_options (void);
 extern void output_ascii (FILE *, const char *, int);
-extern const char * som_text_section_asm_op (void);
 extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT, int *);
 extern int and_mask_p (unsigned HOST_WIDE_INT);
 extern int cint_ok_for_move (HOST_WIDE_INT);
@@ -179,9 +178,3 @@ extern void pa_hpux_asm_output_external (FILE *, tree, const char *);
 
 extern const int magic_milli[];
 extern int shadd_constant_p (int);
-
-/* Functions in varasm.c used by pa.c.  */
-extern void som_readonly_data_section (void);
-extern void som_one_only_readonly_data_section (void);
-extern void som_one_only_data_section (void);
-extern void forget_section (void);

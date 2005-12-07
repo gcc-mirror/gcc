@@ -4688,10 +4688,8 @@ to generate it on the spot.
 @end defmac
 
 @defmac TRAMPOLINE_SECTION
-The name of a subroutine to switch to the section in which the
-trampoline template is to be placed (@pxref{Sections}).  The default is
-a value of @samp{readonly_data_section}, which places the trampoline in
-the section containing read-only data.
+Return the section into which the trampoline template is to be placed
+(@pxref{Sections}).  The default value is @code{readonly_data_section}.
 @end defmac
 
 @defmac TRAMPOLINE_SIZE
@@ -5914,9 +5912,32 @@ section}, which holds initialized writable data; and the @dfn{bss
 section}, which holds uninitialized data.  Some systems have other kinds
 of sections.
 
-The compiler must tell the assembler when to switch sections.  These
-macros control what commands to output to tell the assembler this.  You
-can also define additional sections.
+@file{varasm.c} provides several well-known sections, such as
+@code{text_section}, @code{data_section} and @code{bss_section}.
+The normal way of controlling a @code{@var{foo}_section} variable
+is to define the associated @code{@var{FOO}_SECTION_ASM_OP} macro,
+as described below.  The macros are only read once, when @file{varasm.c}
+initializes itself, so their values must be run-time constants.
+They may however depend on command-line flags.
+
+@emph{Note:} Some run-time files, such @file{crtstuff.c}, also make
+use of the @code{@var{FOO}_SECTION_ASM_OP} macros, and expect them
+to be string literals.
+
+Some assemblers require a different string to be written every time a
+section is selected.  If your assembler falls into this category, you
+should define the @code{TARGET_ASM_INIT_SECTIONS} hook and use
+@code{get_unnamed_section} to set up the sections.
+
+You must always create a @code{text_section}, either by defining
+@code{TEXT_SECTION_ASM_OP} or by initializing @code{text_section}
+in @code{TARGET_ASM_INIT_SECTIONS}.  The same is true of
+@code{data_section} and @code{DATA_SECTION_ASM_OP}.  If you do not
+create a distinct @code{readonly_data_section}, the default is to
+reuse @code{text_section}.
+
+All the other @file{varasm.c} sections are optional, and are null
+if the target does not provide them.
 
 @defmac TEXT_SECTION_ASM_OP
 A C expression whose value is a string, including spacing, containing the
@@ -5941,20 +5962,16 @@ assembler operation to identify the following data as writable initialized
 data.  Normally @code{"\t.data"} is right.
 @end defmac
 
+@defmac SDATA_SECTION_ASM_OP
+If defined, a C expression whose value is a string, including spacing,
+containing the assembler operation to identify the following data as
+initialized, writable small data.
+@end defmac
+
 @defmac READONLY_DATA_SECTION_ASM_OP
 A C expression whose value is a string, including spacing, containing the
 assembler operation to identify the following data as read-only initialized
 data.
-@end defmac
-
-@defmac READONLY_DATA_SECTION
-A macro naming a function to call to switch to the proper section for
-read-only data.  The default is to use @code{READONLY_DATA_SECTION_ASM_OP}
-if defined, else fall back to @code{text_section}.
-
-The most common definition will be @code{data_section}, if the target
-does not have a special read-only data section, and does not put data
-in the text section.
 @end defmac
 
 @defmac BSS_SECTION_ASM_OP
@@ -5965,6 +5982,12 @@ uninitialized global data.  If not defined, and neither
 uninitialized global data will be output in the data section if
 @option{-fno-common} is passed, otherwise @code{ASM_OUTPUT_COMMON} will be
 used.
+@end defmac
+
+@defmac SBSS_SECTION_ASM_OP
+If defined, a C expression whose value is a string, including spacing,
+containing the assembler operation to identify the following data as
+uninitialized, writable small data.
 @end defmac
 
 @defmac INIT_SECTION_ASM_OP
@@ -6016,23 +6039,6 @@ arbitrary boundary.  This is used to force all fragments of the
 and thus prevent the linker from having to add any padding.
 @end defmac
 
-@findex in_text
-@findex in_data
-@defmac EXTRA_SECTIONS
-A list of names for sections other than the standard two, which are
-@code{in_text} and @code{in_data}.  You need not define this macro
-on a system with no other sections (that GCC needs to use).
-@end defmac
-
-@findex text_section
-@findex data_section
-@defmac EXTRA_SECTION_FUNCTIONS
-One or more functions to be defined in @file{varasm.c}.  These
-functions should do jobs analogous to those of @code{text_section} and
-@code{data_section}, for your additional sections.  Do not define this
-macro if you do not define @code{EXTRA_SECTIONS}.
-@end defmac
-
 @defmac JUMP_TABLES_IN_TEXT_SECTION
 Define this macro to be an expression with a nonzero value if jump
 tables (for @code{tablejump} insns) should be output in the text
@@ -6042,15 +6048,23 @@ readonly data section is used.
 This macro is irrelevant if there is no separate readonly data section.
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_ASM_SELECT_SECTION (tree @var{exp}, int @var{reloc}, unsigned HOST_WIDE_INT @var{align})
-Switches to the appropriate section for output of @var{exp}.  You can
+@deftypefn {Target Hook} void TARGET_ASM_INIT_SECTIONS (void)
+Define this hook if you need to do something special to set up the
+@file{varasm.c} sections, or if your target has some special sections
+of its own that you need to create.
+
+GCC calls this hook after processing the command line, but before writing
+any assembly code, and before calling any of the section-returning hooks
+described below.
+@end deftypefn
+
+@deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_SECTION (tree @var{exp}, int @var{reloc}, unsigned HOST_WIDE_INT @var{align})
+Return the section into which @var{exp} should be placed.  You can
 assume that @var{exp} is either a @code{VAR_DECL} node or a constant of
 some sort.  @var{reloc} indicates whether the initial value of @var{exp}
 requires link-time relocations.  Bit 0 is set when variable contains
 local relocations only, while bit 1 is set for global relocations.
-Select the section by calling @code{data_section} or one of the
-alternatives for other sections.  @var{align} is the constant alignment
-in bits.
+@var{align} is the constant alignment in bits.
 
 The default version of this function takes care of putting read-only
 variables in @code{readonly_data_section}.
@@ -6079,22 +6093,21 @@ example, the function @code{foo} would be placed in @code{.text.foo}.
 Whatever the actual target object format, this is often good enough.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_RODATA_SECTION (tree @var{decl})
-Switches to a readonly data section associated with
+@deftypefn {Target Hook} {section *} TARGET_ASM_FUNCTION_RODATA_SECTION (tree @var{decl})
+Return the readonly data section associated with
 @samp{DECL_SECTION_NAME (@var{decl})}.
-The default version of this function switches to @code{.gnu.linkonce.r.name}
-section if function's section is @code{.gnu.linkonce.t.name}, to
-@code{.rodata.name} if function is in @code{.text.name} section
-and otherwise switches to the normal readonly data section.
+The default version of this function selects @code{.gnu.linkonce.r.name} if
+the function's section is @code{.gnu.linkonce.t.name}, @code{.rodata.name}
+if function is in @code{.text.name}, and the normal readonly-data section
+otherwise.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_ASM_SELECT_RTX_SECTION (enum machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
-Switches to the appropriate section for output of constant pool entry
-@var{x} in @var{mode}.  You can assume that @var{x} is some kind of
+@deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_RTX_SECTION (enum machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
+Return the section into which a constant @var{x}, of mode @var{mode},
+should be placed.  You can assume that @var{x} is some kind of
 constant in RTL@.  The argument @var{mode} is redundant except in the
-case of a @code{const_int} rtx.  Select the section by calling
-@code{readonly_data_section} or one of the alternatives for other
-sections.  @var{align} is the constant alignment in bits.
+case of a @code{const_int} rtx.  @var{align} is the constant alignment
+in bits.
 
 The default version of this function takes care of putting symbolic
 constants in @code{flag_pic} mode in @code{data_section} and everything
@@ -7741,24 +7754,6 @@ alignment if @code{STACK_GROWS_DOWNWARD} is defined, and the positive
 minimum alignment otherwise.  @xref{SDB and DWARF}.  Only applicable if
 the target supports DWARF 2 frame unwind information.
 @end defmac
-
-@deftypefn {Target Hook} void TARGET_ASM_EXCEPTION_SECTION ()
-If defined, a function that switches to the section in which the main
-exception table is to be placed (@pxref{Sections}).  The default is a
-function that switches to a section named @code{.gcc_except_table} on
-machines that support named sections via
-@code{TARGET_ASM_NAMED_SECTION}, otherwise if @option{-fpic} or
-@option{-fPIC} is in effect, the @code{data_section}, otherwise the
-@code{readonly_data_section}.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_ASM_EH_FRAME_SECTION ()
-If defined, a function that switches to the section in which the DWARF 2
-frame unwind information to be placed (@pxref{Sections}).  The default
-is a function that outputs a standard GAS section directive, if
-@code{EH_FRAME_SECTION_NAME} is defined, or else a data section
-directive followed by a synthetic label.
-@end deftypefn
 
 @deftypevar {Target Hook} bool TARGET_TERMINATE_DW2_EH_FRAME_INFO
 Contains the value true if the target should add a zero word onto the

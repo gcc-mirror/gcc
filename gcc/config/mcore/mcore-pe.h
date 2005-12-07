@@ -41,37 +41,15 @@ Boston, MA 02110-1301, USA.  */
 /* Computed in toplev.c.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 
-/* Lay out additional 'sections' where we place things like code
-   and readonly data. This gets them out of default places.  */
-
-#define SUBTARGET_SWITCH_SECTIONS 		\
-  case in_drectve: drectve_section (); break;
-
-#define DRECTVE_SECTION_ASM_OP	"\t.section .drectve"
 #define READONLY_DATA_SECTION_ASM_OP	"\t.section .rdata"
-
-#define SUBTARGET_EXTRA_SECTIONS in_drectve
-
-#define SUBTARGET_EXTRA_SECTION_FUNCTIONS \
-  DRECTVE_SECTION_FUNCTION
-
-#define DRECTVE_SECTION_FUNCTION 				\
-void								\
-drectve_section ()						\
-{								\
-  if (in_section != in_drectve)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", DRECTVE_SECTION_ASM_OP);	\
-      in_section = in_drectve;					\
-    }								\
-}
 
 #define MCORE_EXPORT_NAME(STREAM, NAME)			\
   do							\
     {							\
-      drectve_section ();				\
+      fprintf (STREAM, "\t.section .drectve\n");	\
       fprintf (STREAM, "\t.ascii \" -export:%s\"\n",	\
 	       (* targetm.strip_name_encoding) (NAME));	\
+      in_section = NULL;				\
     }							\
   while (0);
 
@@ -82,9 +60,9 @@ drectve_section ()						\
     {								\
       if (mcore_dllexport_name_p (NAME))			\
         {							\
-          enum in_section save_section = in_section;		\
+	  section *save_section = in_section;			\
 	  MCORE_EXPORT_NAME (STREAM, NAME);			\
-          switch_to_section (save_section, (DECL));		\
+	  switch_to_section (save_section);			\
         }							\
       ASM_OUTPUT_LABEL ((STREAM), (NAME));			\
     }								\
@@ -97,7 +75,7 @@ drectve_section ()						\
       if (mcore_dllexport_name_p (NAME))			\
 	{							\
           MCORE_EXPORT_NAME (STREAM, NAME);			\
-	  function_section (DECL);				\
+	  switch_to_section (function_section (DECL));		\
 	}							\
       ASM_OUTPUT_LABEL ((STREAM), (NAME));			\
     }								\

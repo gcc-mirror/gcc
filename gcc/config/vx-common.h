@@ -83,17 +83,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   sorry ("profiler support for VxWorks");		\
 } while (0)
 
-/* This section either contains dynamic relocations, or contains
-   PC-rel indirections to stubs in the data section which contain dynamic
-   relocations.  General dynamic relocations are not processed
-   for shared libraries' text segments, and PC-relative displacements
-   from the text segment to the data segment don't work.  So force
-   it to .gcc_except_section, which the linker will place in .data.  */
-
-void vxworks_exception_section (void);
-#undef TARGET_ASM_EXCEPTION_SECTION
-#define TARGET_ASM_EXCEPTION_SECTION default_exception_section
-
 /* We occasionally need to distinguish between the VxWorks variants.  */
 #define VXWORKS_KIND_NORMAL  1
 #define VXWORKS_KIND_AE      2

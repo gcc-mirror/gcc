@@ -35,7 +35,6 @@ extern void asm_globalize_label (FILE *file, const char *name);
 extern void order_regs_for_local_alloc (void);
 extern int initial_elimination_offset (int from, int to);
 extern int avr_simple_epilogue (void);
-extern void progmem_section (void);
 extern int mask_one_bit_p (HOST_WIDE_INT mask);
 extern void gas_output_limited_string (FILE *file, const char *str);
 extern void gas_output_ascii (FILE *file, const char *str, size_t length);

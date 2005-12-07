@@ -27,13 +27,6 @@
 
 extern void   expand_prologue               (void);
 extern void   expand_epilogue               (void);
-extern void   sdata_section                 (void);
-extern void   rosdata_section               (void);
-extern void   sbss_section                  (void);
-extern void   tdata_section                 (void);
-extern void   zdata_section                 (void);
-extern void   rozdata_section               (void);
-extern void   zbss_section                  (void);
 extern int    v850_handle_pragma            (int (*)(void), void (*)(int), char *);
 extern int    compute_register_save_size    (long *);
 extern int    compute_frame_size            (int, long *);

@@ -1210,7 +1210,7 @@ typedef struct xtensa_args
       }									\
     if ((SIZE) > 0)							\
       {									\
-	function_section (FUNDECL);  					\
+	switch_to_section (function_section (FUNDECL));			\
 	fprintf (FILE, "\t.literal_position\n");			\
       }									\
   } while (0)

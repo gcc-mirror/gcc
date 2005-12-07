@@ -76,6 +76,65 @@ Boston, MA 02110-1301, USA.  */
    of MACHO_SYMBOL_STATIC for the code that handles @code{static}
    symbol indirection.  */
 
+/* Define the individual section variables.  */
+#define DEF_SECTION(NAME, FLAGS, DIRECTIVE, OBJC) section *NAME;
+#include "config/darwin-sections.def"
+#undef DEF_SECTION
+
+/* A get_unnamed_section callback used to switch to an ObjC section.
+   DIRECTIVE is as for output_section_asm_op.  */
+
+static void
+output_objc_section_asm_op (const void *directive)
+{
+  static int been_here = 0;
+
+  if (been_here == 0)
+    {
+      been_here = 1;
+      /* written, cold -> hot */
+      switch_to_section (objc_cat_cls_meth_section);
+      switch_to_section (objc_cat_inst_meth_section);
+      switch_to_section (objc_string_object_section);
+      switch_to_section (objc_constant_string_object_section);
+      switch_to_section (objc_selector_refs_section);
+      switch_to_section (objc_selector_fixup_section);
+      switch_to_section (objc_cls_refs_section);
+      switch_to_section (objc_class_section);
+      switch_to_section (objc_meta_class_section);
+      /* shared, hot -> cold */
+      switch_to_section (objc_cls_meth_section);
+      switch_to_section (objc_inst_meth_section);
+      switch_to_section (objc_protocol_section);
+      switch_to_section (objc_class_names_section);
+      switch_to_section (objc_meth_var_types_section);
+      switch_to_section (objc_meth_var_names_section);
+      switch_to_section (objc_category_section);
+      switch_to_section (objc_class_vars_section);
+      switch_to_section (objc_instance_vars_section);
+      switch_to_section (objc_module_info_section);
+      switch_to_section (objc_symbols_section);
+    }
+  output_section_asm_op (directive);
+}
+
+/* Implement TARGET_ASM_INIT_SECTIONS.  */
+
+void
+darwin_init_sections (void)
+{
+#define DEF_SECTION(NAME, FLAGS, DIRECTIVE, OBJC) \
+  NAME = get_unnamed_section (FLAGS, (OBJC \
+				      ? output_objc_section_asm_op \
+				      : output_section_asm_op), \
+			      "\t" DIRECTIVE);
+#include "darwin-sections.def"
+#undef DEF_SECTION
+
+  readonly_data_section = const_section;
+  exception_section = darwin_exception_section;
+  eh_frame_section = darwin_eh_frame_section;
+}
 
 int
 name_needs_quotes (const char *name)
@@ -909,7 +968,7 @@ machopic_output_indirection (void **slot, void *data)
 	   && (machopic_symbol_defined_p (symbol)
 	       || SYMBOL_REF_LOCAL_P (symbol)))
     {
-      data_section ();
+      switch_to_section (data_section);
       assemble_align (GET_MODE_ALIGNMENT (Pmode));
       assemble_label (ptr_name);
       assemble_integer (gen_rtx_SYMBOL_REF (Pmode, sym_name),
@@ -920,7 +979,7 @@ machopic_output_indirection (void **slot, void *data)
     {
       rtx init = const0_rtx;
 
-      machopic_nl_symbol_ptr_section ();
+      switch_to_section (machopic_nl_symbol_ptr_section);
       assemble_name (asm_out_file, ptr_name);
       fprintf (asm_out_file, ":\n");
       
@@ -1022,41 +1081,38 @@ darwin_mark_decl_preserved (const char *name)
   fputc ('\n', asm_out_file);
 }
 
-void
+section *
 machopic_select_section (tree exp, int reloc,
 			 unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
-  void (*base_function)(void);
+  section *base_section;
   bool weak_p = (DECL_P (exp) && DECL_WEAK (exp)
 		 && (lookup_attribute ("weak", DECL_ATTRIBUTES (exp))
 		     || ! lookup_attribute ("weak_import",
 					    DECL_ATTRIBUTES (exp))));
-  static void (* const base_funs[][2])(void) = {
-    { text_section, text_coal_section },
-    { unlikely_text_section, text_unlikely_coal_section },
-    { readonly_data_section, const_coal_section },
-    { const_data_section, const_data_coal_section },
-    { data_section, data_coal_section }
-  };
 
-  if (reloc == 0
-      && (last_text_section == in_text_unlikely
-	  || last_text_section == in_text_unlikely_coal))
-    reloc = 1;
-    
   if (TREE_CODE (exp) == FUNCTION_DECL)
-    base_function = base_funs[reloc][weak_p];
+    {
+      if (reloc == 1
+	  || unlikely_text_section_p (last_text_section)
+	  || last_text_section == text_unlikely_coal_section)
+	base_section = (weak_p
+			? text_unlikely_coal_section
+			: unlikely_text_section ());
+      else
+	base_section = weak_p ? text_coal_section : text_section;
+    }
   else if (decl_readonly_section_1 (exp, reloc, MACHOPIC_INDIRECT))
-    base_function = base_funs[2][weak_p];
+    base_section = weak_p ? const_coal_section : const_section;
   else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
-    base_function = base_funs[3][weak_p];
+    base_section = weak_p ? const_data_coal_section : const_data_section;
   else
-    base_function = base_funs[4][weak_p];
+    base_section = weak_p ? data_coal_section : data_section;
 
   if (TREE_CODE (exp) == STRING_CST
       && ((size_t) TREE_STRING_LENGTH (exp)
 	  == strlen (TREE_STRING_POINTER (exp)) + 1))
-    cstring_section ();
+    return cstring_section;
   else if ((TREE_CODE (exp) == INTEGER_CST || TREE_CODE (exp) == REAL_CST)
 	   && flag_merge_constants)
     {
@@ -1065,13 +1121,13 @@ machopic_select_section (tree exp, int reloc,
       if (TREE_CODE (size) == INTEGER_CST &&
 	  TREE_INT_CST_LOW (size) == 4 &&
 	  TREE_INT_CST_HIGH (size) == 0)
-	literal4_section ();
+	return literal4_section;
       else if (TREE_CODE (size) == INTEGER_CST &&
 	       TREE_INT_CST_LOW (size) == 8 &&
 	       TREE_INT_CST_HIGH (size) == 0)
-	literal8_section ();
+	return literal8_section;
       else
-	base_function ();
+	return base_section;
     }
   else if (TREE_CODE (exp) == CONSTRUCTOR
 	   && TREE_TYPE (exp)
@@ -1085,12 +1141,12 @@ machopic_select_section (tree exp, int reloc,
       if (!strcmp (IDENTIFIER_POINTER (name), "__builtin_ObjCString"))
 	{
 	  if (flag_next_runtime)
-	    objc_constant_string_object_section ();
+	    return objc_constant_string_object_section;
 	  else
-	    objc_string_object_section ();
+	    return objc_string_object_section;
 	}
       else
-	base_function ();
+	return base_section;
     }
   else if (TREE_CODE (exp) == VAR_DECL &&
 	   DECL_NAME (exp) &&
@@ -1101,89 +1157,89 @@ machopic_select_section (tree exp, int reloc,
       const char *name = IDENTIFIER_POINTER (DECL_NAME (exp));
 
       if (!strncmp (name, "_OBJC_CLASS_METHODS_", 20))
-	objc_cls_meth_section ();
+	return objc_cls_meth_section;
       else if (!strncmp (name, "_OBJC_INSTANCE_METHODS_", 23))
-	objc_inst_meth_section ();
+	return objc_inst_meth_section;
       else if (!strncmp (name, "_OBJC_CATEGORY_CLASS_METHODS_", 20))
-	objc_cat_cls_meth_section ();
+	return objc_cat_cls_meth_section;
       else if (!strncmp (name, "_OBJC_CATEGORY_INSTANCE_METHODS_", 23))
-	objc_cat_inst_meth_section ();
+	return objc_cat_inst_meth_section;
       else if (!strncmp (name, "_OBJC_CLASS_VARIABLES_", 22))
-	objc_class_vars_section ();
+	return objc_class_vars_section;
       else if (!strncmp (name, "_OBJC_INSTANCE_VARIABLES_", 25))
-	objc_instance_vars_section ();
+	return objc_instance_vars_section;
       else if (!strncmp (name, "_OBJC_CLASS_PROTOCOLS_", 22))
-	objc_cat_cls_meth_section ();
+	return objc_cat_cls_meth_section;
       else if (!strncmp (name, "_OBJC_CLASS_NAME_", 17))
-	objc_class_names_section ();
+	return objc_class_names_section;
       else if (!strncmp (name, "_OBJC_METH_VAR_NAME_", 20))
-	objc_meth_var_names_section ();
+	return objc_meth_var_names_section;
       else if (!strncmp (name, "_OBJC_METH_VAR_TYPE_", 20))
-	objc_meth_var_types_section ();
+	return objc_meth_var_types_section;
       else if (!strncmp (name, "_OBJC_CLASS_REFERENCES", 22))
-	objc_cls_refs_section ();
+	return objc_cls_refs_section;
       else if (!strncmp (name, "_OBJC_CLASS_", 12))
-	objc_class_section ();
+	return objc_class_section;
       else if (!strncmp (name, "_OBJC_METACLASS_", 16))
-	objc_meta_class_section ();
+	return objc_meta_class_section;
       else if (!strncmp (name, "_OBJC_CATEGORY_", 15))
-	objc_category_section ();
+	return objc_category_section;
       else if (!strncmp (name, "_OBJC_SELECTOR_REFERENCES", 25))
-	objc_selector_refs_section ();
+	return objc_selector_refs_section;
       else if (!strncmp (name, "_OBJC_SELECTOR_FIXUP", 20))
-	objc_selector_fixup_section ();
+	return objc_selector_fixup_section;
       else if (!strncmp (name, "_OBJC_SYMBOLS", 13))
-	objc_symbols_section ();
+	return objc_symbols_section;
       else if (!strncmp (name, "_OBJC_MODULES", 13))
-	objc_module_info_section ();
+	return objc_module_info_section;
       else if (!strncmp (name, "_OBJC_IMAGE_INFO", 16))
-	objc_image_info_section ();
+	return objc_image_info_section;
       else if (!strncmp (name, "_OBJC_PROTOCOL_INSTANCE_METHODS_", 32))
-	objc_cat_inst_meth_section ();
+	return objc_cat_inst_meth_section;
       else if (!strncmp (name, "_OBJC_PROTOCOL_CLASS_METHODS_", 29))
-	objc_cat_cls_meth_section ();
+	return objc_cat_cls_meth_section;
       else if (!strncmp (name, "_OBJC_PROTOCOL_REFS_", 20))
-	objc_cat_cls_meth_section ();
+	return objc_cat_cls_meth_section;
       else if (!strncmp (name, "_OBJC_PROTOCOL_", 15))
-	objc_protocol_section ();
+	return objc_protocol_section;
       else
-	base_function ();
+	return base_section;
     }
   else
-    base_function ();
+    return base_section;
 }
 
 /* This can be called with address expressions as "rtx".
    They must go in "const".  */
 
-void
+section *
 machopic_select_rtx_section (enum machine_mode mode, rtx x,
 			     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
   if (GET_MODE_SIZE (mode) == 8
       && (GET_CODE (x) == CONST_INT
 	  || GET_CODE (x) == CONST_DOUBLE))
-    literal8_section ();
+    return literal8_section;
   else if (GET_MODE_SIZE (mode) == 4
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_DOUBLE))
-    literal4_section ();
+    return literal4_section;
   else if (MACHOPIC_INDIRECT
 	   && (GET_CODE (x) == SYMBOL_REF
 	       || GET_CODE (x) == CONST
 	       || GET_CODE (x) == LABEL_REF))
-    const_data_section ();
+    return const_data_section;
   else
-    const_section ();
+    return const_section;
 }
 
 void
 machopic_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 {
   if (MACHOPIC_INDIRECT)
-    mod_init_section ();
+    switch_to_section (mod_init_section);
   else
-    constructor_section ();
+    switch_to_section (constructor_section);
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
@@ -1195,9 +1251,9 @@ void
 machopic_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 {
   if (MACHOPIC_INDIRECT)
-    mod_term_section ();
+    switch_to_section (mod_term_section);
   else
-    destructor_section ();
+    switch_to_section (destructor_section);
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
@@ -1389,8 +1445,8 @@ darwin_file_end (void)
   machopic_finish (asm_out_file);
   if (strcmp (lang_hooks.name, "GNU C++") == 0)
     {
-      constructor_section ();
-      destructor_section ();
+      switch_to_section (constructor_section);
+      switch_to_section (destructor_section);
       ASM_OUTPUT_ALIGN (asm_out_file, 1);
     }
   fprintf (asm_out_file, "\t.subsections_via_symbols\n");

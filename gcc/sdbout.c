@@ -1050,7 +1050,7 @@ sdbout_one_type (tree type)
       && DECL_SECTION_NAME (current_function_decl) != NULL_TREE)
     ; /* Don't change section amid function.  */
   else
-    text_section ();
+    switch_to_section (text_section);
 
   switch (TREE_CODE (type))
     {

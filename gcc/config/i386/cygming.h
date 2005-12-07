@@ -108,52 +108,13 @@ Boston, MA 02110-1301, USA.  */
 union tree_node;
 #define TREE union tree_node *
 
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_drectve
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS					\
-  DRECTVE_SECTION_FUNCTION					\
-  SWITCH_TO_SECTION_FUNCTION
-
-#define DRECTVE_SECTION_FUNCTION \
-void									\
-drectve_section (void)							\
-{									\
-  if (in_section != in_drectve)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", "\t.section .drectve\n");		\
-      in_section = in_drectve;						\
-    }									\
-}
-void drectve_section (void);
+#define drectve_section() \
+  (fprintf (asm_out_file, "\t.section .drectve\n"), \
+   in_section = NULL)
 
 /* Older versions of gas don't handle 'r' as data.
    Explicitly set data flag with 'd'.  */  
 #define READONLY_DATA_SECTION_ASM_OP "\t.section .rdata,\"dr\""
-
-/* Switch to SECTION (an `enum in_section').
-
-   ??? This facility should be provided by GCC proper.
-   The problem is that we want to temporarily switch sections in
-   ASM_DECLARE_OBJECT_NAME and then switch back to the original section
-   afterwards.  */
-#define SWITCH_TO_SECTION_FUNCTION				\
-void switch_to_section (enum in_section, tree);			\
-void								\
-switch_to_section (enum in_section section, tree decl)		\
-{								\
-  switch (section)						\
-    {								\
-      case in_text: text_section (); break;			\
-      case in_unlikely_executed_text: unlikely_text_section (); break; \
-      case in_data: data_section (); break;			\
-      case in_readonly_data: readonly_data_section (); break;	\
-      case in_named: named_section (decl, NULL, 0); break;	\
-      case in_drectve: drectve_section (); break;		\
-      default: abort (); break;				\
-    }								\
-}
 
 /* Don't allow flag_pic to propagate since gas may produce invalid code
    otherwise.  */

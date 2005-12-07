@@ -7959,14 +7959,14 @@ alpha_start_function (FILE *file, const char *fnname,
 
 #if TARGET_ABI_OPEN_VMS
   /* Ifdef'ed cause link_section are only available then.  */
-  readonly_data_section ();
+  switch_to_section (readonly_data_section);
   fprintf (file, "\t.align 3\n");
   assemble_name (file, fnname); fputs ("..na:\n", file);
   fputs ("\t.ascii \"", file);
   assemble_name (file, fnname);
   fputs ("\\0\"\n", file);
   alpha_need_linkage (fnname, 1);
-  text_section ();
+  switch_to_section (text_section);
 #endif
 }
 
@@ -9355,18 +9355,18 @@ alpha_file_start (void)
 
 #ifdef OBJECT_FORMAT_ELF
 
-/* Switch to the section to which we should output X.  The only thing
-   special we do here is to honor small data.  */
+/* Return a section for X.  The only special thing we do here is to
+   honor small data.  */
 
-static void
+static section *
 alpha_elf_select_rtx_section (enum machine_mode mode, rtx x,
 			      unsigned HOST_WIDE_INT align)
 {
   if (TARGET_SMALL_DATA && GET_MODE_SIZE (mode) <= g_switch_value)
     /* ??? Consider using mergeable sdata sections.  */
-    sdata_section ();
+    return sdata_section;
   else
-    default_elf_select_rtx_section (mode, x, align);
+    return default_elf_select_rtx_section (mode, x, align);
 }
 
 #endif /* OBJECT_FORMAT_ELF */
@@ -9636,8 +9636,10 @@ alpha_write_linkage (FILE *stream, const char *funname, tree fundecl)
   splay_tree_node node;
   struct alpha_funcs *func;
 
-  link_section ();
+  fprintf (stream, "\t.link\n");
   fprintf (stream, "\t.align 3\n");
+  in_section = NULL;
+
   node = splay_tree_lookup (alpha_funcs_tree, (splay_tree_key) fundecl);
   func = (struct alpha_funcs *) node->value;
 
@@ -9717,7 +9719,7 @@ vms_asm_named_section (const char *name, unsigned int flags,
 static void
 vms_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 {
-  ctors_section ();
+  switch_to_section (ctors_section);
   assemble_align (BITS_PER_WORD);
   assemble_integer (symbol, UNITS_PER_WORD, BITS_PER_WORD, 1);
 }
@@ -9725,7 +9727,7 @@ vms_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 static void
 vms_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 {
-  dtors_section ();
+  switch_to_section (dtors_section);
   assemble_align (BITS_PER_WORD);
   assemble_integer (symbol, UNITS_PER_WORD, BITS_PER_WORD, 1);
 }
@@ -9826,7 +9828,7 @@ unicosmk_output_common (FILE *file, const char *name, int size, int align)
   tree name_tree;
   printf ("T3E__: common %s\n", name);
 
-  common_section ();
+  in_section = NULL;
   fputs("\t.endp\n\n\t.psect ", file);
   assemble_name(file, name);
   fprintf(file, ",%d,common\n", floor_log2 (align / BITS_PER_UNIT));
@@ -9840,6 +9842,43 @@ unicosmk_output_common (FILE *file, const char *name, int size, int align)
 #define SECTION_PUBLIC SECTION_MACH_DEP
 #define SECTION_MAIN (SECTION_PUBLIC << 1)
 static int current_section_align;
+
+/* A get_unnamed_section callback for switching to the text section.  */
+
+static void
+unicosmk_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
+{
+  static int count = 0;
+  fprintf (asm_out_file, "\t.endp\n\n\t.psect\tgcc@text___%d,code\n", count++);
+}
+
+/* A get_unnamed_section callback for switching to the data section.  */
+
+static void
+unicosmk_output_data_section_asm_op (const void *data ATTRIBUTE_UNUSED)
+{
+  static int count = 1;
+  fprintf (asm_out_file, "\t.endp\n\n\t.psect\tgcc@data___%d,data\n", count++);
+}
+
+/* Implement TARGET_ASM_INIT_SECTIONS.
+
+   The Cray assembler is really weird with respect to sections. It has only
+   named sections and you can't reopen a section once it has been closed.
+   This means that we have to generate unique names whenever we want to
+   reenter the text or the data section.  */
+
+static void
+unicosmk_init_sections (void)
+{
+  text_section = get_unnamed_section (SECTION_CODE,
+				      unicosmk_output_text_section_asm_op,
+				      NULL);
+  data_section = get_unnamed_section (SECTION_WRITE,
+				      unicosmk_output_data_section_asm_op,
+				      NULL);
+  readonly_data_section = data_section;
+}
 
 static unsigned int
 unicosmk_section_type_flags (tree decl, const char *name,
@@ -10004,7 +10043,7 @@ unicosmk_output_deferred_case_vectors (FILE *file)
   if (machine->addr_list == NULL_RTX)
     return;
 
-  data_section ();
+  switch_to_section (data_section);
   for (t = machine->addr_list; t; t = XEXP (t, 1))
     unicosmk_output_addr_vec (file, XEXP (t, 0));
 }
@@ -10123,7 +10162,7 @@ unicosmk_output_ssib (FILE *file, const char *fnname)
   rtx ciw;
   struct machine_function *machine = cfun->machine;
 
-  ssib_section ();
+  in_section = NULL;
   fprintf (file, "\t.endp\n\n\t.psect\t%s%s,data\n", user_label_prefix,
 	   unicosmk_ssib_name ());
 
@@ -10193,26 +10232,6 @@ unicosmk_add_call_info_word (rtx x)
 
   return GEN_INT (machine->ciw_count
 		  + strlen (current_function_name ())/8 + 5);
-}
-
-static char unicosmk_section_buf[100];
-
-char *
-unicosmk_text_section (void)
-{
-  static int count = 0;
-  sprintf (unicosmk_section_buf, "\t.endp\n\n\t.psect\tgcc@text___%d,code",
-				 count++);
-  return unicosmk_section_buf;
-}
-
-char *
-unicosmk_data_section (void)
-{
-  static int count = 1;
-  sprintf (unicosmk_section_buf, "\t.endp\n\n\t.psect\tgcc@data___%d,data",
-				 count++);
-  return unicosmk_section_buf;
 }
 
 /* The Cray assembler doesn't accept extern declarations for symbols which

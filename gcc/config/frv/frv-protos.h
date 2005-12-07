@@ -128,11 +128,6 @@ extern int frv_acc_group		(rtx);
 extern int frv_adjust_field_align	(tree, int);
 #endif
 
-extern void fixup_section		(void);
-extern void sdata_section		(void);
-extern void sbss_section		(void);
-extern void data_section		(void);
-
 #ifdef RTX_CODE
 extern int integer_register_operand	(rtx, enum machine_mode);
 extern int frv_load_operand		(rtx, enum machine_mode);

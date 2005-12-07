@@ -328,9 +328,9 @@ static void mips_restore_reg (rtx, rtx);
 static void mips_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				  HOST_WIDE_INT, tree);
 static int symbolic_expression_p (rtx);
-static void mips_select_rtx_section (enum machine_mode, rtx,
-				     unsigned HOST_WIDE_INT);
-static void mips_function_rodata_section (tree);
+static section *mips_select_rtx_section (enum machine_mode, rtx,
+					 unsigned HOST_WIDE_INT);
+static section *mips_function_rodata_section (tree);
 static bool mips_in_small_data_p (tree);
 static int mips_fpr_return_fields (tree, tree *);
 static bool mips_return_in_msb (tree);
@@ -5762,7 +5762,7 @@ mips_file_start (void)
 	default:
 	  gcc_unreachable ();
 	}
-      /* Note - we use fprintf directly rather than called named_section()
+      /* Note - we use fprintf directly rather than calling switch_to_section
 	 because in this way we can avoid creating an allocated section.  We
 	 do not want this section to take up any space in the running
 	 executable.  */
@@ -5804,9 +5804,9 @@ mips_output_aligned_bss (FILE *stream, tree decl, const char *name,
   extern tree last_assemble_variable_decl;
 
   if (mips_in_small_data_p (decl))
-    named_section (0, ".sbss", 0);
+    switch_to_section (get_named_section (NULL, ".sbss", 0));
   else
-    bss_section ();
+    switch_to_section (bss_section);
   ASM_OUTPUT_ALIGN (stream, floor_log2 (align / BITS_PER_UNIT));
   last_assemble_variable_decl = decl;
   ASM_DECLARE_OBJECT_NAME (stream, name, decl);
@@ -5875,7 +5875,7 @@ mips_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
       if (TREE_PUBLIC (decl) && DECL_NAME (decl))
 	targetm.asm_out.globalize_label (stream, name);
 
-      readonly_data_section ();
+      switch_to_section (readonly_data_section);
       ASM_OUTPUT_ALIGN (stream, floor_log2 (align / BITS_PER_UNIT));
       mips_declare_object (stream, name, "",
 			   ":\n\t.space\t" HOST_WIDE_INT_PRINT_UNSIGNED "\n",
@@ -7110,7 +7110,7 @@ symbolic_expression_p (rtx x)
 /* Choose the section to use for the constant rtx expression X that has
    mode MODE.  */
 
-static void
+static section *
 mips_select_rtx_section (enum machine_mode mode, rtx x,
 			 unsigned HOST_WIDE_INT align)
 {
@@ -7119,13 +7119,13 @@ mips_select_rtx_section (enum machine_mode mode, rtx x,
       /* In mips16 mode, the constant table always goes in the same section
          as the function, so that constants can be loaded using PC relative
          addressing.  */
-      function_section (current_function_decl);
+      return function_section (current_function_decl);
     }
   else if (TARGET_EMBEDDED_DATA)
     {
       /* For embedded applications, always put constants in read-only data,
 	 in order to reduce RAM usage.  */
-      mergeable_constant_section (mode, align, 0);
+      return mergeable_constant_section (mode, align, 0);
     }
   else
     {
@@ -7135,11 +7135,11 @@ mips_select_rtx_section (enum machine_mode mode, rtx x,
 
       if (GET_MODE_SIZE (mode) <= (unsigned) mips_section_threshold
 	  && mips_section_threshold > 0)
-	named_section (0, ".sdata", 0);
+	return get_named_section (NULL, ".sdata", 0);
       else if (flag_pic && symbolic_expression_p (x))
-	named_section (0, ".data.rel.ro", 3);
+	return get_named_section (NULL, ".data.rel.ro", 3);
       else
-	mergeable_constant_section (mode, align, 0);
+	return mergeable_constant_section (mode, align, 0);
     }
 }
 
@@ -7151,32 +7151,30 @@ mips_select_rtx_section (enum machine_mode mode, rtx x,
    cases by selecting a normal data section instead of a read-only one.
    The logic apes that in default_function_rodata_section.  */
 
-static void
+static section *
 mips_function_rodata_section (tree decl)
 {
   if (!TARGET_ABICALLS || TARGET_GPWORD)
-    default_function_rodata_section (decl);
-  else if (decl && DECL_SECTION_NAME (decl))
+    return default_function_rodata_section (decl);
+
+  if (decl && DECL_SECTION_NAME (decl))
     {
       const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
       if (DECL_ONE_ONLY (decl) && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
 	{
 	  char *rname = ASTRDUP (name);
 	  rname[14] = 'd';
-	  named_section_real (rname, SECTION_LINKONCE | SECTION_WRITE, decl);
+	  return get_section (rname, SECTION_LINKONCE | SECTION_WRITE, decl);
 	}
       else if (flag_function_sections && flag_data_sections
 	       && strncmp (name, ".text.", 6) == 0)
 	{
 	  char *rname = ASTRDUP (name);
 	  memcpy (rname + 1, "data", 4);
-	  named_section_flags (rname, SECTION_WRITE);
+	  return get_section (rname, SECTION_WRITE, decl);
 	}
-      else
-	data_section ();
     }
-  else
-    data_section ();
+  return data_section;
 }
 
 /* Implement TARGET_IN_SMALL_DATA_P.  Return true if it would be safe to
@@ -7807,7 +7805,7 @@ build_mips16_function_stub (FILE *file)
   fprintf (file, ")\n");
 
   fprintf (file, "\t.set\tnomips16\n");
-  function_section (stubdecl);
+  switch_to_section (function_section (stubdecl));
   ASM_OUTPUT_ALIGN (file, floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT));
 
   /* ??? If FUNCTION_NAME_ALREADY_DECLARED is defined, then we are
@@ -7852,7 +7850,7 @@ build_mips16_function_stub (FILE *file)
 
   fprintf (file, "\t.set\tmips16\n");
 
-  function_section (current_function_decl);
+  switch_to_section (function_section (current_function_decl));
 }
 
 /* We keep a list of functions for which we have already built stubs

@@ -1182,7 +1182,7 @@ mmix_file_start (void)
   fputs ("! mmixal:= 8H LOC Data_Section\n", asm_out_file);
 
   /* Make sure each file starts with the text section.  */
-  text_section ();
+  switch_to_section (text_section);
 }
 
 /* TARGET_ASM_FILE_END.  */
@@ -1191,7 +1191,7 @@ static void
 mmix_file_end (void)
 {
   /* Make sure each file ends with the data section.  */
-  data_section ();
+  switch_to_section (data_section);
 }
 
 /* ASM_OUTPUT_SOURCE_FILENAME.  */
@@ -1350,7 +1350,7 @@ mmix_asm_output_aligned_local (FILE *stream,
 			       int size,
 			       int align)
 {
-  data_section ();
+  switch_to_section (data_section);
 
   ASM_OUTPUT_ALIGN (stream, exact_log2 (align/BITS_PER_UNIT));
   assemble_name (stream, name);

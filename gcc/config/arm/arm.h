@@ -1527,7 +1527,7 @@ typedef struct machine_function GTY(())
 machine_function;
 
 /* As in the machine_function, a global set of call-via labels, for code 
-   that is in text_section().  */
+   that is in text_section.  */
 extern GTY(()) rtx thumb_call_via_label[14];
 
 /* A C type for declaring a variable that is used as the first argument of

@@ -230,6 +230,12 @@ static enum {
 int toc_initialized;
 char toc_label_name[10];
 
+static GTY(()) section *read_only_data_section;
+static GTY(()) section *private_data_section;
+static GTY(()) section *read_only_private_data_section;
+static GTY(()) section *sdata2_section;
+static GTY(()) section *toc_section;
+
 /* Control alignment for fields within structures.  */
 /* String from -malign-XXXXX.  */
 int rs6000_alignment_flags;
@@ -605,20 +611,23 @@ static unsigned int rs6000_elf_section_type_flags (tree, const char *, int);
 static void rs6000_elf_asm_out_constructor (rtx, int);
 static void rs6000_elf_asm_out_destructor (rtx, int);
 static void rs6000_elf_end_indicate_exec_stack (void) ATTRIBUTE_UNUSED;
-static void rs6000_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
+static void rs6000_elf_asm_init_sections (void);
+static section *rs6000_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void rs6000_elf_unique_section (tree, int);
-static void rs6000_elf_select_rtx_section (enum machine_mode, rtx,
-					   unsigned HOST_WIDE_INT);
+static section *rs6000_elf_select_rtx_section (enum machine_mode, rtx,
+					       unsigned HOST_WIDE_INT);
 static void rs6000_elf_encode_section_info (tree, rtx, int)
      ATTRIBUTE_UNUSED;
 #endif
 #if TARGET_XCOFF
 static void rs6000_xcoff_asm_globalize_label (FILE *, const char *);
+static void rs6000_xcoff_asm_init_sections (void);
 static void rs6000_xcoff_asm_named_section (const char *, unsigned int, tree);
-static void rs6000_xcoff_select_section (tree, int, unsigned HOST_WIDE_INT);
-static void rs6000_xcoff_unique_section (tree, int);
-static void rs6000_xcoff_select_rtx_section (enum machine_mode, rtx,
+static section *rs6000_xcoff_select_section (tree, int,
 					     unsigned HOST_WIDE_INT);
+static void rs6000_xcoff_unique_section (tree, int);
+static section *rs6000_xcoff_select_rtx_section
+  (enum machine_mode, rtx, unsigned HOST_WIDE_INT);
 static const char * rs6000_xcoff_strip_name_encoding (const char *);
 static unsigned int rs6000_xcoff_section_type_flags (tree, const char *, int);
 static void rs6000_xcoff_file_start (void);
@@ -1903,8 +1912,8 @@ rs6000_file_start (void)
 
   if (DEFAULT_ABI == ABI_AIX || (TARGET_ELF && flag_pic == 2))
     {
-      toc_section ();
-      text_section ();
+      switch_to_section (toc_section);
+      switch_to_section (text_section);
     }
 }
 
@@ -10806,15 +10815,14 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
   /* Special handling for SI values.  */
   if (RELOCATABLE_NEEDS_FIXUP && size == 4 && aligned_p)
     {
-      extern int in_toc_section (void);
       static int recurse = 0;
 
       /* For -mrelocatable, we mark all addresses that need to be fixed up
 	 in the .fixup section.  */
       if (TARGET_RELOCATABLE
-	  && !in_toc_section ()
-	  && !in_text_section ()
-	  && !in_unlikely_text_section ()
+	  && in_section != toc_section
+	  && in_section != text_section
+	  && unlikely_text_section_p (in_section)
 	  && !recurse
 	  && GET_CODE (x) != CONST_INT
 	  && GET_CODE (x) != CONST_DOUBLE
@@ -17323,31 +17331,74 @@ rs6000_longcall_ref (rtx call_ref)
 
 #ifdef USING_ELFOS_H
 
-/* A C statement or statements to switch to the appropriate section
-   for output of RTX in mode MODE.  You can assume that RTX is some
-   kind of constant in RTL.  The argument MODE is redundant except in
-   the case of a `const_int' rtx.  Select the section by calling
-   `text_section' or one of the alternatives for other sections.
-
-   Do not define this macro if you put all constants in the read-only
-   data section.  */
+/* A get_unnamed_section callback, used for switching to toc_section.  */
 
 static void
+rs6000_elf_output_toc_section_asm_op (const void *data ATTRIBUTE_UNUSED)
+{
+  if (DEFAULT_ABI == ABI_AIX
+      && TARGET_MINIMAL_TOC
+      && !TARGET_RELOCATABLE)
+    {
+      if (!toc_initialized)
+	{
+	  toc_initialized = 1;
+	  fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);
+	  (*targetm.asm_out.internal_label) (asm_out_file, "LCTOC", 0);
+	  fprintf (asm_out_file, "\t.tc ");
+	  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1[TC],");
+	  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1");
+	  fprintf (asm_out_file, "\n");
+
+	  fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
+	  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1");
+	  fprintf (asm_out_file, " = .+32768\n");
+	}
+      else
+	fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
+    }
+  else if (DEFAULT_ABI == ABI_AIX && !TARGET_RELOCATABLE)
+    fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);
+  else
+    {
+      fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
+      if (!toc_initialized)
+	{
+	  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1");
+	  fprintf (asm_out_file, " = .+32768\n");
+	  toc_initialized = 1;
+	}
+    }
+}
+
+/* Implement TARGET_ASM_INIT_SECTIONS.  */
+
+static void
+rs6000_elf_asm_init_sections (void)
+{
+  toc_section
+    = get_unnamed_section (0, rs6000_elf_output_toc_section_asm_op, NULL);
+
+  sdata2_section
+    = get_unnamed_section (SECTION_WRITE, output_section_asm_op,
+			   SDATA2_SECTION_ASM_OP);
+}
+
+/* Implement TARGET_SELECT_RTX_SECTION.  */
+
+static section *
 rs6000_elf_select_rtx_section (enum machine_mode mode, rtx x,
 			       unsigned HOST_WIDE_INT align)
 {
   if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x, mode))
-    toc_section ();
+    return toc_section;
   else
-    default_elf_select_rtx_section (mode, x, align);
+    return default_elf_select_rtx_section (mode, x, align);
 }
 
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  */
+/* Implement TARGET_ASM_SELECT_SECTION for ELF targets.  */
 
-static void
+static section *
 rs6000_elf_select_section (tree decl, int reloc,
 			   unsigned HOST_WIDE_INT align)
 {
@@ -17355,8 +17406,8 @@ rs6000_elf_select_section (tree decl, int reloc,
      ABI_AIX, because otherwise we end up with dynamic relocations
      in read-only sections.  This happens for function pointers,
      references to vtables in typeinfo, and probably other cases.  */
-  default_elf_select_section_1 (decl, reloc, align,
-				flag_pic || DEFAULT_ABI == ABI_AIX);
+  return default_elf_select_section_1 (decl, reloc, align,
+				       flag_pic || DEFAULT_ABI == ABI_AIX);
 }
 
 /* A C statement to build up a unique section name, expressed as a
@@ -17678,9 +17729,9 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   GEN_LAZY_PTR_NAME_FOR_SYMBOL (lazy_ptr_name, symb, length);
 
   if (flag_pic == 2)
-    machopic_picsymbol_stub1_section ();
+    switch_to_section (machopic_picsymbol_stub1_section);
   else
-    machopic_symbol_stub1_section ();
+    switch_to_section (machopic_symbol_stub1_section);
 
   if (flag_pic == 2)
     {
@@ -17720,7 +17771,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\tbctr\n");
     }
 
-  machopic_lazy_symbol_ptr_section ();
+  switch_to_section (machopic_lazy_symbol_ptr_section);
   fprintf (file, "%s:\n", lazy_ptr_name);
   fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
   fprintf (file, "%sdyld_stub_binding_helper\n",
@@ -17779,16 +17830,6 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
 
   /* Fall back on generic machopic code.  */
   return machopic_legitimize_pic_address (orig, mode, reg);
-}
-
-/* This is just a placeholder to make linking work without having to
-   add this to the generic Darwin EXTRA_SECTIONS.  If -mcall-aix is
-   ever needed for Darwin (not too likely!) this would have to get a
-   real definition.  */
-
-void
-toc_section (void)
-{
 }
 
 /* Output a .machine directive for the Darwin assembler, and call
@@ -17876,7 +17917,7 @@ rs6000_elf_asm_out_constructor (rtx symbol, int priority)
       section = buf;
     }
 
-  named_section_flags (section, SECTION_WRITE);
+  switch_to_section (get_section (section, SECTION_WRITE, NULL));
   assemble_align (POINTER_SIZE);
 
   if (TARGET_RELOCATABLE)
@@ -17905,7 +17946,7 @@ rs6000_elf_asm_out_destructor (rtx symbol, int priority)
       section = buf;
     }
 
-  named_section_flags (section, SECTION_WRITE);
+  switch_to_section (get_section (section, SECTION_WRITE, NULL));
   assemble_align (POINTER_SIZE);
 
   if (TARGET_RELOCATABLE)
@@ -18011,6 +18052,73 @@ rs6000_xcoff_asm_globalize_label (FILE *stream, const char *name)
   putc ('\n', stream);
 }
 
+/* A get_unnamed_decl callback, used for read-only sections.  PTR
+   points to the section string variable.  */
+
+static void
+rs6000_xcoff_output_readonly_section_asm_op (const void *directive)
+{
+  fprintf (asm_out_file, "\t.csect %s[RO],3\n",
+	   *(const char *const *) directive);
+}
+
+/* Likewise for read-write sections.  */
+
+static void
+rs6000_xcoff_output_readwrite_section_asm_op (const void *directive)
+{
+  fprintf (asm_out_file, "\t.csect %s[RW],3\n",
+	   *(const char *const *) directive);
+}
+
+/* A get_unnamed_section callback, used for switching to toc_section.  */
+
+static void
+rs6000_xcoff_output_toc_section_asm_op (const void *data ATTRIBUTE_UNUSED)
+{
+  if (TARGET_MINIMAL_TOC)
+    {
+      /* toc_section is always selected at least once from
+	 rs6000_xcoff_file_start, so this is guaranteed to
+	 always be defined once and only once in each file.  */
+      if (!toc_initialized)
+	{
+	  fputs ("\t.toc\nLCTOC..1:\n", asm_out_file);
+	  fputs ("\t.tc toc_table[TC],toc_table[RW]\n", asm_out_file);
+	  toc_initialized = 1;
+	}
+      fprintf (asm_out_file, "\t.csect toc_table[RW]%s\n",
+	       (TARGET_32BIT ? "" : ",3"));
+    }
+  else
+    fputs ("\t.toc\n", asm_out_file);
+}
+
+/* Implement TARGET_ASM_INIT_SECTIONS.  */
+
+static void
+rs6000_xcoff_asm_init_sections (void)
+{
+  read_only_data_section
+    = get_unnamed_section (0, rs6000_xcoff_output_readonly_section_asm_op,
+			   &xcoff_read_only_section_name);
+
+  private_data_section
+    = get_unnamed_section (SECTION_WRITE,
+			   rs6000_xcoff_output_readwrite_section_asm_op,
+			   &xcoff_private_data_section_name);
+
+  read_only_private_data_section
+    = get_unnamed_section (0, rs6000_xcoff_output_readonly_section_asm_op,
+			   &xcoff_private_data_section_name);
+
+  toc_section
+    = get_unnamed_section (0, rs6000_xcoff_output_toc_section_asm_op, NULL);
+
+  readonly_data_section = read_only_data_section;
+  exception_section = data_section;
+}
+
 static void
 rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 				tree decl ATTRIBUTE_UNUSED)
@@ -18030,23 +18138,23 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 	   name, suffix[smclass], flags & SECTION_ENTSIZE);
 }
 
-static void
+static section *
 rs6000_xcoff_select_section (tree decl, int reloc,
 			     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
   if (decl_readonly_section_1 (decl, reloc, 1))
     {
       if (TREE_PUBLIC (decl))
-	read_only_data_section ();
+	return read_only_data_section;
       else
-	read_only_private_data_section ();
+	return read_only_private_data_section;
     }
   else
     {
       if (TREE_PUBLIC (decl))
-	data_section ();
+	return data_section;
       else
-	private_data_section ();
+	return private_data_section;
     }
 }
 
@@ -18075,14 +18183,14 @@ rs6000_xcoff_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
    However, if this is being placed in the TOC it must be output as a
    toc entry.  */
 
-static void
+static section *
 rs6000_xcoff_select_rtx_section (enum machine_mode mode, rtx x,
 				 unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
   if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x, mode))
-    toc_section ();
+    return toc_section;
   else
-    read_only_private_data_section ();
+    return read_only_private_data_section;
 }
 
 /* Remove any trailing [DS] or the like from the symbol name.  */
@@ -18146,8 +18254,8 @@ rs6000_xcoff_file_start (void)
   output_quoted_string (asm_out_file, main_input_filename);
   fputc ('\n', asm_out_file);
   if (write_symbols != NO_DEBUG)
-    private_data_section ();
-  text_section ();
+    switch_to_section (private_data_section);
+  switch_to_section (text_section);
   if (profile_flag)
     fprintf (asm_out_file, "\t.extern %s\n", RS6000_MCOUNT);
   rs6000_file_start ();
@@ -18159,9 +18267,9 @@ rs6000_xcoff_file_start (void)
 static void
 rs6000_xcoff_file_end (void)
 {
-  text_section ();
+  switch_to_section (text_section);
   fputs ("_section_.text:\n", asm_out_file);
-  data_section ();
+  switch_to_section (data_section);
   fputs (TARGET_32BIT
 	 ? "\t.long _section_.text\n" : "\t.llong _section_.text\n",
 	 asm_out_file);

@@ -154,7 +154,8 @@ static enum machine_mode gpr_mode;
 /* Initialize the GCC target structure.  */
 static struct machine_function* iq2000_init_machine_status (void);
 static bool iq2000_handle_option      (size_t, const char *, int);
-static void iq2000_select_rtx_section (enum machine_mode, rtx, unsigned HOST_WIDE_INT);
+static section *iq2000_select_rtx_section (enum machine_mode, rtx,
+					   unsigned HOST_WIDE_INT);
 static void iq2000_init_builtins      (void);
 static rtx  iq2000_expand_builtin     (tree, rtx, rtx, enum machine_mode, int);
 static bool iq2000_return_in_memory   (tree, tree);
@@ -163,7 +164,7 @@ static void iq2000_setup_incoming_varargs (CUMULATIVE_ARGS *,
 					   int);
 static bool iq2000_rtx_costs          (rtx, int, int, int *);
 static int  iq2000_address_cost       (rtx);
-static void iq2000_select_section     (tree, int, unsigned HOST_WIDE_INT);
+static section *iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
 static bool iq2000_return_in_memory   (tree, tree);
 static bool iq2000_pass_by_reference  (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, bool);
@@ -2146,15 +2147,13 @@ symbolic_expression_p (rtx x)
 /* Choose the section to use for the constant rtx expression X that has
    mode MODE.  */
 
-static void
+static section *
 iq2000_select_rtx_section (enum machine_mode mode, rtx x ATTRIBUTE_UNUSED,
 			   unsigned HOST_WIDE_INT align)
 {
   /* For embedded applications, always put constants in read-only data,
      in order to reduce RAM usage.  */
-      /* For embedded applications, always put constants in read-only data,
-         in order to reduce RAM usage.  */
-  mergeable_constant_section (mode, align, 0);
+  return mergeable_constant_section (mode, align, 0);
 }
 
 /* Choose the section to use for DECL.  RELOC is true if its value contains
@@ -2164,7 +2163,7 @@ iq2000_select_rtx_section (enum machine_mode mode, rtx x ATTRIBUTE_UNUSED,
    ENCODE_SECTION_INFO in iq2000.h so that references to these symbols
    are done correctly.  */
 
-static void
+static section *
 iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 		       unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
@@ -2179,9 +2178,9 @@ iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 	       || TREE_CONSTANT (DECL_INITIAL (decl))))
 	  /* Deal with calls from output_constant_def_contents.  */
 	  || TREE_CODE (decl) != VAR_DECL)
-	readonly_data_section ();
+	return readonly_data_section;
       else
-	data_section ();
+	return data_section;
     }
   else
     {
@@ -2194,9 +2193,9 @@ iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 	       || TREE_CONSTANT (DECL_INITIAL (decl))))
 	  /* Deal with calls from output_constant_def_contents.  */
 	  || TREE_CODE (decl) != VAR_DECL)
-	readonly_data_section ();
+	return readonly_data_section;
       else
-	data_section ();
+	return data_section;
     }
 }
 /* Return register to use for a function return value with VALTYPE for function

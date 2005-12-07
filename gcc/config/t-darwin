@@ -1,7 +1,8 @@
 darwin.o: $(srcdir)/config/darwin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h     \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(REAL_H) insn-config.h         \
   conditions.h insn-flags.h output.h insn-attr.h flags.h $(TREE_H) expr.h   \
-  reload.h function.h $(GGC_H) langhooks.h $(TARGET_H) $(TM_P_H) gt-darwin.h
+  reload.h function.h $(GGC_H) langhooks.h $(TARGET_H) $(TM_P_H) gt-darwin.h \
+  config/darwin-sections.def
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/darwin.c
 
 darwin-c.o: $(srcdir)/config/darwin-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \

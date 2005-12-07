@@ -359,126 +359,8 @@ do {									\
 #define	SDATA2_SECTION_ASM_OP "\t.section\t\".sdata2\",\"a\""
 #define	SBSS_SECTION_ASM_OP "\t.section\t\".sbss\",\"aw\",@nobits"
 
-/* Besides the usual ELF sections, we need a toc section.  */
-/* Override elfos.h definition.  */
-#undef	EXTRA_SECTIONS
-#define	EXTRA_SECTIONS in_toc, in_sdata, in_sdata2, in_sbss, in_init, in_fini
-
-/* Override elfos.h definition.  */
-#undef	EXTRA_SECTION_FUNCTIONS
-#define	EXTRA_SECTION_FUNCTIONS						\
-  TOC_SECTION_FUNCTION							\
-  SDATA_SECTION_FUNCTION						\
-  SDATA2_SECTION_FUNCTION						\
-  SBSS_SECTION_FUNCTION							\
-  INIT_SECTION_FUNCTION							\
-  FINI_SECTION_FUNCTION
-
-#define	TOC_SECTION_FUNCTION						\
-void									\
-toc_section (void)							\
-{									\
-  if (in_section != in_toc)						\
-    {									\
-      in_section = in_toc;						\
-      if (DEFAULT_ABI == ABI_AIX					\
-	  && TARGET_MINIMAL_TOC						\
-	  && !TARGET_RELOCATABLE)					\
-	{								\
-	  if (! toc_initialized)					\
-	    {								\
-	      toc_initialized = 1;					\
-	      fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);	\
-	      (*targetm.asm_out.internal_label) (asm_out_file, "LCTOC", 0); \
-	      fprintf (asm_out_file, "\t.tc ");				\
-	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1[TC],"); \
-	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
-	      fprintf (asm_out_file, "\n");				\
-									\
-	      fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP); \
-	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
-	      fprintf (asm_out_file, " = .+32768\n");			\
-	    }								\
-	  else								\
-	    fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);	\
-	}								\
-      else if (DEFAULT_ABI == ABI_AIX && !TARGET_RELOCATABLE)		\
-	fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);		\
-      else								\
-	{								\
-	  fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);	\
-	  if (! toc_initialized)					\
-	    {								\
-	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
-	      fprintf (asm_out_file, " = .+32768\n");			\
-	      toc_initialized = 1;					\
-	    }								\
-	}								\
-    }									\
-}									\
-									\
-extern int in_toc_section (void);					\
-int in_toc_section (void)						\
-{									\
-  return in_section == in_toc;						\
-}
-
-#define	SDATA_SECTION_FUNCTION						\
-void									\
-sdata_section (void)							\
-{									\
-  if (in_section != in_sdata)						\
-    {									\
-      in_section = in_sdata;						\
-      fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
-    }									\
-}
-
-#define	SDATA2_SECTION_FUNCTION						\
-void									\
-sdata2_section (void)							\
-{									\
-  if (in_section != in_sdata2)						\
-    {									\
-      in_section = in_sdata2;						\
-      fprintf (asm_out_file, "%s\n", SDATA2_SECTION_ASM_OP);		\
-    }									\
-}
-
-#define	SBSS_SECTION_FUNCTION						\
-void									\
-sbss_section (void)							\
-{									\
-  if (in_section != in_sbss)						\
-    {									\
-      in_section = in_sbss;						\
-      fprintf (asm_out_file, "%s\n", SBSS_SECTION_ASM_OP);		\
-    }									\
-}
-
-#define	INIT_SECTION_FUNCTION						\
-void									\
-init_section (void)							\
-{									\
-  if (in_section != in_init)						\
-    {									\
-      in_section = in_init;						\
-      fprintf (asm_out_file, "%s\n", INIT_SECTION_ASM_OP);		\
-    }									\
-}
-
-#define	FINI_SECTION_FUNCTION						\
-void									\
-fini_section (void)							\
-{									\
-  if (in_section != in_fini)						\
-    {									\
-      in_section = in_fini;						\
-      fprintf (asm_out_file, "%s\n", FINI_SECTION_ASM_OP);		\
-    }									\
-}
-
 /* Override default elf definitions.  */
+#define TARGET_ASM_INIT_SECTIONS rs6000_elf_asm_init_sections
 #undef	TARGET_ASM_SELECT_RTX_SECTION
 #define	TARGET_ASM_SELECT_RTX_SECTION rs6000_elf_select_rtx_section
 #undef	TARGET_ASM_SELECT_SECTION
@@ -555,7 +437,7 @@ extern int rs6000_pic_labelno;
 do {									\
   if ((DECL) && rs6000_elf_in_small_data_p (DECL))			\
     {									\
-      sbss_section ();							\
+      switch_to_section (sbss_section);					\
       ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
       ASM_OUTPUT_SKIP (FILE, SIZE);					\
