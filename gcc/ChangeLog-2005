@@ -419,7 +419,7 @@
 	* config/s390/s390.h (FRAME_GROWS_DOWNWARD): Defined as 1.
 	(STARTING_FRAME_OFFSET, STACK_DYNAMIC_OFFSET): Definitions changed.
 
-2006-06-28  Ziemowit Laski  <zlaski@apple.com>
+2005-06-28  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-common.c (flag_next_runtime): Move...
 	* toplev.c (flag_next_runtime): ... here.
@@ -532,7 +532,7 @@
 	(ia64_init_builtins): Set up __fpreg as RFmode.
 	(ia64_mangle_fundamental_type): Mangle __fpreg as u7__fpreg.
 
-2006-06-28  Adrian Straetling  <straetling@de.ibm.com>
+2005-06-28  Adrian Straetling  <straetling@de.ibm.com>
 
 	* builtins.c: (expand_builtin_memset): Rewrite to support
 	'set_storage_via_setmem'.

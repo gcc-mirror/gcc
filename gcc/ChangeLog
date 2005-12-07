@@ -7944,7 +7944,7 @@
 	Use CCZ1mode instead of CCZmode.
 	* config/s390/s390-modes.def: Add CCZ1mode.  Comment new mode.
 
-2006-07-13  Adrian Strae½tling  <straetling@de.ibm.com>
+2005-07-13  Adrian Strae½tling  <straetling@de.ibm.com>
 
 	* config/s390/s390.md: ("cmpstrsi", "*cmpstr<mode>"): New
 	pattern.
