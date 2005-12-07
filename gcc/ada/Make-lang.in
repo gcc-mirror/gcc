@@ -298,7 +298,7 @@ gen-soccon: force
 	   LIBGNAT_OBJS=gen-soccon \
 	   gnatlib
 
-gt-ada-decl.h gt-ada-trans.h gt-ada-utils.h gtype-ada.h : s-gtype ; @true
+
 
 # Build hooks:
 

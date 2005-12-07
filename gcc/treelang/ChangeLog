@@ -1,3 +1,7 @@
+2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
+	* Make-lang.in: Remove all dependencies on s-gtype.
+
 2005-12-05  Richard Guenther  <rguenther@suse.de>
 
 	* treetree.c (tree_code_if_start, tree_code_create_variable,

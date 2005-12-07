@@ -429,16 +429,8 @@ generated header file should be included after everything else in the
 source file.  Don't forget to mention this file as a dependency in the
 @file{Makefile}!
 
-@item
-If a new @file{gt-@var{path}.h} file is needed, you need to arrange to
-add a @file{Makefile} rule that will ensure this file can be built.
-This is done by making it a dependency of @code{s-gtype}, like this:
-@verbatim
-gt-path.h : s-gtype ; @true
-@end verbatim
 @end enumerate
 
 For language frontends, there is another file that needs to be included
 somewhere.  It will be called @file{gtype-@var{lang}.h}, where
 @var{lang} is the name of the subdirectory the language is contained in.
-It will need @file{Makefile} rules just like the other generated files.

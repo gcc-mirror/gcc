@@ -138,8 +138,6 @@ treelang/parse.c treelang/parse.h treelang/parse.output: treelang/parse.y
 
 # -v
 
-gt-treelang-tree1.h gtype-treelang.h : s-gtype; @true
-
 #
 # Build hooks:
 
