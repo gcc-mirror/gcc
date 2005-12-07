@@ -809,7 +809,9 @@ tree
 gfc_get_symbol_decl (gfc_symbol * sym)
 {
   tree decl;
+  tree etype = NULL_TREE;
   tree length = NULL_TREE;
+  tree tmp = NULL_TREE;
   int byref;
 
   gcc_assert (sym->attr.referenced);
@@ -846,6 +848,21 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 		{
 		  gfc_finish_var_decl (length, sym);
 		  gfc_defer_symbol_init (sym);
+		}
+	    }
+
+	  /* Set the element size of automatic and assumed character length
+	     length, dummy, pointer arrays.  */
+	  if (sym->attr.pointer && sym->attr.dummy
+		&& sym->attr.dimension)
+	    {
+	      tmp = gfc_build_indirect_ref (sym->backend_decl);
+	      etype = gfc_get_element_type (TREE_TYPE (tmp));
+	      if (TYPE_SIZE_UNIT (etype) == NULL_TREE)
+		{
+		  tmp = TYPE_SIZE_UNIT (gfc_character1_type_node);
+		  tmp = fold_convert (TREE_TYPE (tmp), sym->ts.cl->backend_decl);
+		  TYPE_SIZE_UNIT (etype) = tmp;
 		}
 	    }
 	}

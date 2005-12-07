@@ -1,3 +1,15 @@
+2005-12-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/15809
+	* trans-decl.c (gfc_get_symbol_decl):  In the case of automatic
+	character length, dummy pointer arrays, build an expression for
+	unit size of the array elements, to be picked up and used in the
+	descriptor dtype.
+	* trans-io.c (gfc_trans_transfer):  Modify the detection of
+	components of derived type arrays to use the gfc_expr references
+	instead of the array descriptor dtype.  This allows the latter
+	to contain expressions.
+
 2005-12-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/23912
