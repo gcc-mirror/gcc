@@ -68,9 +68,11 @@ enum tls_model {
 struct _dont_use_rtx_here_;
 struct _dont_use_rtvec_here_;
 union _dont_use_tree_here_;
+union _dont_use_section_here_;
 #define rtx struct _dont_use_rtx_here_ *
 #define rtvec struct _dont_use_rtvec_here *
 #define tree union _dont_use_tree_here_ *
+#define section union _dont_use_section_here_
 
 #endif
 
