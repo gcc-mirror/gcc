@@ -1785,7 +1785,7 @@ sh_file_start (void)
   else
     /* Switch to the data section so that the coffsem symbol
        isn't in the text section.  */
-    data_section ();
+    switch_to_section (data_section);
 
   if (TARGET_LITTLE_ENDIAN)
     fputs ("\t.little\n", asm_out_file);

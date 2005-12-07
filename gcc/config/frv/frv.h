@@ -2272,43 +2272,6 @@ do {							\
    program so they can be changed program startup time if the program is loaded
    at a different address than linked for.  */
 #define FIXUP_SECTION_ASM_OP	"\t.section .rofixup,\"a\""
-
-/* A list of names for sections other than the standard two, which are
-   `in_text' and `in_data'.  You need not define this macro
-   on a system with no other sections (that GCC needs to use).  */
-#undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_const, in_fixup
-
-/* One or more functions to be defined in "varasm.c".  These
-   functions should do jobs analogous to those of `text_section' and
-   `data_section', for your additional sections.  Do not define this
-   macro if you do not define `EXTRA_SECTIONS'.  */
-#undef  EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS                                         \
-	SDATA_SECTION_FUNCTION						\
-	FIXUP_SECTION_FUNCTION
-
-#define SDATA_SECTION_FUNCTION						\
-void									\
-sdata_section (void)							\
-{									\
-  if (in_section != in_sdata)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
-      in_section = in_sdata;						\
-    }									\
-}
-
-#define FIXUP_SECTION_FUNCTION						\
-void									\
-fixup_section (void)							\
-{									\
-  if (in_section != in_fixup)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", FIXUP_SECTION_ASM_OP);		\
-      in_section = in_fixup;						\
-    }									\
-}
 
 /* Position Independent Code.  */
 
@@ -2394,9 +2357,9 @@ extern int size_directive_output;
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGN)	\
 do {                                                                   	\
   if ((SIZE) > 0 && (SIZE) <= g_switch_value)				\
-    named_section (0, ".sbss", 0);                                    	\
+    switch_to_section (get_named_section (NULL, ".sbss", 0));           \
   else                                                                 	\
-    bss_section ();                                                  	\
+    switch_to_section (bss_section);                                  	\
   ASM_OUTPUT_ALIGN (STREAM, floor_log2 ((ALIGN) / BITS_PER_UNIT));     	\
   ASM_DECLARE_OBJECT_NAME (STREAM, NAME, DECL);                        	\
   ASM_OUTPUT_SKIP (STREAM, (SIZE) ? (SIZE) : 1);                       	\
@@ -2652,8 +2615,8 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 #define ASM_OUTPUT_CASE_LABEL(STREAM, PREFIX, NUM, TABLE)               \
 do {                                                                    \
   if (flag_pic)                                                         \
-    function_section (current_function_decl);                           \
-  (*targetm.asm_out.internal_label) (STREAM, PREFIX, NUM);                      \
+    switch_to_section (function_section (current_function_decl));       \
+  (*targetm.asm_out.internal_label) (STREAM, PREFIX, NUM);              \
 } while (0)
 
 

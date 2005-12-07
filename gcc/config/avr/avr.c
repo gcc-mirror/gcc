@@ -69,6 +69,7 @@ static void avr_file_end (void);
 static void avr_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void avr_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void avr_insert_attributes (tree, tree *);
+static void avr_asm_init_sections (void);
 static unsigned int avr_section_type_flags (tree, const char *, int);
 
 static void avr_reorg (void);
@@ -113,6 +114,8 @@ static int jump_tables_size;
 /* Preprocessor macros to define depending on MCU type.  */
 const char *avr_base_arch_macro;
 const char *avr_extra_arch_macro;
+
+section *progmem_section;
 
 /* More than 8K of program memory: use "call" and "jmp".  */
 int avr_mega_p = 0;
@@ -4756,6 +4759,29 @@ avr_insert_attributes (tree node, tree *attributes)
     }
 }
 
+/* A get_unnamed_section callback for switching to progmem_section.  */
+
+static void
+avr_output_progmem_section_asm_op (const void *arg ATTRIBUTE_UNUSED)
+{
+  fprintf (asm_out_file,
+	   "\t.section .progmem.gcc_sw_table, \"%s\", @progbits\n",
+	   AVR_MEGA ? "a" : "ax");
+  /* Should already be aligned, this is just to be safe if it isn't.  */
+  fprintf (asm_out_file, "\t.p2align 1\n");
+}
+
+/* Implement TARGET_ASM_INIT_SECTIONS.  */
+
+static void
+avr_asm_init_sections (void)
+{
+  progmem_section = get_unnamed_section (AVR_MEGA ? 0 : SECTION_CODE,
+					 avr_output_progmem_section_asm_op,
+					 NULL);
+  readonly_data_section = data_section;
+}
+
 static unsigned int
 avr_section_type_flags (tree decl, const char *name, int reloc)
 {
@@ -5847,7 +5873,7 @@ avr_output_bld (rtx operands[], int bit_nr)
 void
 avr_output_addr_vec_elt (FILE *stream, int value)
 {
-  progmem_section ();
+  switch_to_section (progmem_section);
   if (AVR_MEGA)
     fprintf (stream, "\t.word pm(.L%d)\n", value);
   else

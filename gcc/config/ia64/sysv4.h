@@ -46,9 +46,9 @@ extern int size_directive_output;
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN) \
 do {									\
   if ((DECL) && sdata_symbolic_operand (XEXP (DECL_RTL (DECL), 0), Pmode)) \
-    sbss_section ();							\
+    switch_to_section (sbss_section);					\
   else									\
-    bss_section ();							\
+    switch_to_section (bss_section);					\
   ASM_OUTPUT_ALIGN (FILE, floor_log2 ((ALIGN) / BITS_PER_UNIT));	\
   ASM_DECLARE_OBJECT_NAME (FILE, NAME, DECL);				\
   ASM_OUTPUT_SKIP (FILE, SIZE ? SIZE : 1);				\
@@ -124,36 +124,5 @@ do {									\
 #undef	TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  ia64_select_rtx_section
 
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_sbss
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS						\
-  SDATA_SECTION_FUNCTION						\
-  SBSS_SECTION_FUNCTION
-
 #define SDATA_SECTION_ASM_OP "\t.sdata"
-
-#define SDATA_SECTION_FUNCTION						\
-void									\
-sdata_section (void)							\
-{									\
-  if (in_section != in_sdata)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
-      in_section = in_sdata;						\
-    }									\
-}
-
 #define SBSS_SECTION_ASM_OP "\t.sbss"
-
-#define SBSS_SECTION_FUNCTION						\
-void									\
-sbss_section (void)							\
-{									\
-  if (in_section != in_sbss)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", SBSS_SECTION_ASM_OP);		\
-      in_section = in_sbss;						\
-    }									\
-}

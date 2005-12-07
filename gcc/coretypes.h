@@ -43,6 +43,8 @@ struct rtvec_def;
 typedef struct rtvec_def *rtvec;
 union tree_node;
 typedef union tree_node *tree;
+union section;
+typedef union section section;
 
 /* Provide forward struct declaration so that we don't have to include
    all of cpplib.h whenever a random prototype includes a pointer.

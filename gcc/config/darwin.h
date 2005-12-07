@@ -441,7 +441,7 @@ Boston, MA 02110-1301, USA.  */
 #define NO_PROFILE_COUNTERS	1
 
 #undef	INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP
+#define HAS_INIT_SECTION
 
 #undef	INVOKE__main
 
@@ -609,233 +609,10 @@ Boston, MA 02110-1301, USA.  */
 #undef	MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT 0x8000
 
-/* Create new Mach-O sections.  */
-
-#undef	SECTION_FUNCTION
-#define SECTION_FUNCTION(FUNCTION, SECTION, DIRECTIVE, OBJC)		\
-extern void FUNCTION (void);						\
-void									\
-FUNCTION (void)								\
-{									\
-  if (in_section != SECTION)						\
-    {									\
-      if (OBJC)								\
-	objc_section_init ();						\
-      if (asm_out_file)							\
-	fputs ("\t" DIRECTIVE "\n", asm_out_file);			\
-      in_section = SECTION;						\
-      if ((SECTION == in_text_coal)                                     \
-	  || (SECTION == in_text_unlikely)                              \
-	  || (SECTION == in_text_unlikely_coal))                        \
-        last_text_section = SECTION;                                    \
-    }									\
-}									\
-
-/* Darwin uses many types of special sections.  */
-
-#undef	EXTRA_SECTIONS
-#define EXTRA_SECTIONS							\
-  in_text_coal, in_text_unlikely, in_text_unlikely_coal,		\
-  in_const, in_const_data, in_cstring, in_literal4, in_literal8,	\
-  in_const_coal, in_const_data_coal, in_data_coal,			\
-  in_constructor, in_destructor, in_mod_init, in_mod_term,		\
-  in_objc_class, in_objc_meta_class, in_objc_category,			\
-  in_objc_class_vars, in_objc_instance_vars,				\
-  in_objc_cls_meth, in_objc_inst_meth,					\
-  in_objc_cat_cls_meth, in_objc_cat_inst_meth,				\
-  in_objc_selector_refs,						\
-  in_objc_selector_fixup,						\
-  in_objc_symbols, in_objc_module_info,					\
-  in_objc_protocol, in_objc_string_object,				\
-  in_objc_constant_string_object,					\
-  in_objc_image_info,							\
-  in_objc_class_names, in_objc_meth_var_names,				\
-  in_objc_meth_var_types, in_objc_cls_refs,				\
-  in_machopic_nl_symbol_ptr,						\
-  in_machopic_lazy_symbol_ptr,						\
-  in_machopic_symbol_stub,						\
-  in_machopic_symbol_stub1,						\
-  in_machopic_picsymbol_stub,						\
-  in_machopic_picsymbol_stub1,						\
-  in_darwin_exception, in_darwin_eh_frame,				\
-  num_sections
-
-#undef	EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS					\
-static void objc_section_init (void);				\
-SECTION_FUNCTION (text_coal_section,				\
-		  in_text_coal,					\
-		  ".section __TEXT,__textcoal_nt,coalesced,"	\
-		    "pure_instructions", 0)			\
-SECTION_FUNCTION (text_unlikely_coal_section,			\
-		  in_text_unlikely_coal,			\
-		  ".section __TEXT,__text_unlikely_coal,"	\
-		    "coalesced,pure_instructions", 0)		\
-SECTION_FUNCTION (const_section,				\
-                  in_const,					\
-                  ".const", 0)					\
-SECTION_FUNCTION (const_coal_section,				\
-		  in_const_coal,				\
-		  ".section __TEXT,__const_coal,coalesced", 0)	\
-SECTION_FUNCTION (const_data_section,				\
-                  in_const_data,				\
-                  ".const_data", 0)				\
-SECTION_FUNCTION (const_data_coal_section,			\
-                  in_const_data_coal,				\
-                  ".section __DATA,__const_coal,coalesced", 0)	\
-SECTION_FUNCTION (data_coal_section,				\
-                  in_data_coal,					\
-                  ".section __DATA,__datacoal_nt,coalesced", 0)	\
-SECTION_FUNCTION (cstring_section,				\
-		  in_cstring,					\
-		  ".cstring", 0)				\
-SECTION_FUNCTION (literal4_section,				\
-		  in_literal4,					\
-		  ".literal4", 0)				\
-SECTION_FUNCTION (literal8_section,				\
-		  in_literal8,					\
-		  ".literal8", 0)				\
-SECTION_FUNCTION (constructor_section,				\
-		  in_constructor,				\
-		  ".constructor", 0)				\
-SECTION_FUNCTION (mod_init_section,				\
-		  in_mod_init,					\
-		  ".mod_init_func", 0)				\
-SECTION_FUNCTION (mod_term_section,				\
-		  in_mod_term,					\
-		  ".mod_term_func", 0)				\
-SECTION_FUNCTION (destructor_section,				\
-		  in_destructor,				\
-		  ".destructor", 0)				\
-SECTION_FUNCTION (objc_class_section,				\
-		  in_objc_class,				\
-		  ".objc_class", 1)				\
-SECTION_FUNCTION (objc_meta_class_section,			\
-		  in_objc_meta_class,				\
-		  ".objc_meta_class", 1)			\
-SECTION_FUNCTION (objc_category_section,			\
-		  in_objc_category,				\
-		".objc_category", 1)				\
-SECTION_FUNCTION (objc_class_vars_section,			\
-		  in_objc_class_vars,				\
-		  ".objc_class_vars", 1)			\
-SECTION_FUNCTION (objc_instance_vars_section,			\
-		  in_objc_instance_vars,			\
-		  ".objc_instance_vars", 1)			\
-SECTION_FUNCTION (objc_cls_meth_section,			\
-		  in_objc_cls_meth,				\
-		  ".objc_cls_meth", 1)				\
-SECTION_FUNCTION (objc_inst_meth_section,			\
-		  in_objc_inst_meth,				\
-		  ".objc_inst_meth", 1)				\
-SECTION_FUNCTION (objc_cat_cls_meth_section,			\
-		  in_objc_cat_cls_meth,				\
-		  ".objc_cat_cls_meth", 1)			\
-SECTION_FUNCTION (objc_cat_inst_meth_section,			\
-		  in_objc_cat_inst_meth,			\
-		  ".objc_cat_inst_meth", 1)			\
-SECTION_FUNCTION (objc_selector_refs_section,			\
-		  in_objc_selector_refs,			\
-		  ".objc_message_refs", 1)			\
-SECTION_FUNCTION (objc_selector_fixup_section,				     \
-		  in_objc_selector_fixup,				     \
-		  ".section __OBJC, __sel_fixup, regular, no_dead_strip", 1) \
-SECTION_FUNCTION (objc_symbols_section,					\
-		  in_objc_symbols,					\
-		  ".objc_symbols", 1)					\
-SECTION_FUNCTION (objc_module_info_section,				\
-		  in_objc_module_info,					\
-		  ".objc_module_info", 1)				\
-SECTION_FUNCTION (objc_protocol_section,				\
-		  in_objc_protocol,					\
-		  ".objc_protocol", 1)					\
-SECTION_FUNCTION (objc_string_object_section,				\
-		  in_objc_string_object,				\
-		  ".objc_string_object", 1)				\
-SECTION_FUNCTION (objc_constant_string_object_section,			\
-		  in_objc_constant_string_object,			\
-		  ".section __OBJC, __cstring_object, regular, "	\
-		    "no_dead_strip", 1)					\
-/* Fix-and-Continue image marker.  */					\
-SECTION_FUNCTION (objc_image_info_section,				\
-                  in_objc_image_info,					\
-                  ".section __OBJC, __image_info, regular, "		\
-		    "no_dead_strip", 1)					\
-SECTION_FUNCTION (objc_class_names_section,				\
-		in_objc_class_names,					\
-		".objc_class_names", 1)					\
-SECTION_FUNCTION (objc_meth_var_names_section,				\
-		in_objc_meth_var_names,					\
-		".objc_meth_var_names", 1)				\
-SECTION_FUNCTION (objc_meth_var_types_section,				\
-		in_objc_meth_var_types,					\
-		".objc_meth_var_types", 1)				\
-SECTION_FUNCTION (objc_cls_refs_section,				\
-		in_objc_cls_refs,					\
-		".objc_cls_refs", 1)					\
-\
-SECTION_FUNCTION (machopic_lazy_symbol_ptr_section,			\
-		in_machopic_lazy_symbol_ptr,				\
-		".lazy_symbol_pointer", 0)				\
-SECTION_FUNCTION (machopic_nl_symbol_ptr_section,			\
-		in_machopic_nl_symbol_ptr,				\
-		".non_lazy_symbol_pointer", 0)				\
-SECTION_FUNCTION (machopic_symbol_stub_section,				\
-		in_machopic_symbol_stub,				\
-		".symbol_stub", 0)					\
-SECTION_FUNCTION (machopic_symbol_stub1_section,			\
-		in_machopic_symbol_stub1,				\
-		".section __TEXT,__symbol_stub1,symbol_stubs,"		\
-		  "pure_instructions,16", 0)				\
-SECTION_FUNCTION (machopic_picsymbol_stub_section,			\
-		in_machopic_picsymbol_stub,				\
-		".picsymbol_stub", 0)					\
-SECTION_FUNCTION (machopic_picsymbol_stub1_section,			\
-		in_machopic_picsymbol_stub1,				\
-		".section __TEXT,__picsymbolstub1,symbol_stubs,"	\
-		  "pure_instructions,32", 0)				\
-SECTION_FUNCTION (darwin_exception_section,				\
-		in_darwin_exception,					\
-		".section __DATA,__gcc_except_tab", 0)			\
-SECTION_FUNCTION (darwin_eh_frame_section,				\
-		in_darwin_eh_frame,					\
-		".section " EH_FRAME_SECTION_NAME ",__eh_frame"		\
-		  EH_FRAME_SECTION_ATTR, 0)				\
-\
-static void					\
-objc_section_init (void)			\
-{						\
-  static int been_here = 0;			\
-						\
-  if (been_here == 0)				\
-    {						\
-      been_here = 1;				\
-          /* written, cold -> hot */		\
-      objc_cat_cls_meth_section ();		\
-      objc_cat_inst_meth_section ();		\
-      objc_string_object_section ();		\
-      objc_constant_string_object_section ();	\
-      objc_selector_refs_section ();		\
-      objc_selector_fixup_section ();		\
-      objc_cls_refs_section ();			\
-      objc_class_section ();			\
-      objc_meta_class_section ();		\
-          /* shared, hot -> cold */		\
-      objc_cls_meth_section ();			\
-      objc_inst_meth_section ();		\
-      objc_protocol_section ();			\
-      objc_class_names_section ();		\
-      objc_meth_var_types_section ();		\
-      objc_meth_var_names_section ();		\
-      objc_category_section ();			\
-      objc_class_vars_section ();		\
-      objc_instance_vars_section ();		\
-      objc_module_info_section ();		\
-      objc_symbols_section ();			\
-    }						\
-}
-
-#define READONLY_DATA_SECTION const_section
+/* Declare the section variables.  */
+#define DEF_SECTION(NAME, FLAGS, DIRECTIVE, OBJC) extern section *NAME;
+#include "darwin-sections.def"
+#undef DEF_SECTION
 
 #undef	TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION machopic_select_section
@@ -986,10 +763,6 @@ enum machopic_addr_class {
       }								\
   } while (0)
 
-#define TARGET_ASM_EXCEPTION_SECTION darwin_exception_section
-
-#define TARGET_ASM_EH_FRAME_SECTION darwin_eh_frame_section
-
 #define EH_FRAME_SECTION_NAME   "__TEXT"
 #define EH_FRAME_SECTION_ATTR ",coalesced,no_toc+strip_static_syms+live_support"
 
@@ -1020,6 +793,7 @@ enum machopic_addr_class {
 
 #define TARGET_TERMINATE_DW2_EH_FRAME_INFO false
 
+#define TARGET_ASM_INIT_SECTIONS darwin_init_sections
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION darwin_asm_named_section
 

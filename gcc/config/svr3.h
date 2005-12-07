@@ -54,7 +54,7 @@ Boston, MA 02110-1301, USA. */
   do {							\
     int align = exact_log2 (ROUNDED);			\
     if (align > 2) align = 2;				\
-    data_section ();					\
+    switch_to_section (data_section);			\
     ASM_OUTPUT_ALIGN ((FILE), align == -1 ? 2 : align);	\
     ASM_OUTPUT_LABEL ((FILE), (NAME));			\
     fprintf ((FILE), "\t.set .,.+%u\n", (int)(ROUNDED));	\
@@ -159,33 +159,3 @@ do {								\
 } while (0)
 
 #endif /* STACK_GROWS_DOWNWARD */
-
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_init, in_fini
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS					\
-  INIT_SECTION_FUNCTION						\
-  FINI_SECTION_FUNCTION
-
-#define INIT_SECTION_FUNCTION					\
-void								\
-init_section ()							\
-{								\
-  if (in_section != in_init)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", INIT_SECTION_ASM_OP);	\
-      in_section = in_init;					\
-    }								\
-}
-
-#define FINI_SECTION_FUNCTION					\
-void								\
-fini_section ()							\
-{								\
-  if (in_section != in_fini)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", FINI_SECTION_ASM_OP);	\
-      in_section = in_fini;					\
-    }								\
-}

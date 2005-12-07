@@ -110,7 +110,7 @@ Boston, MA 02110-1301, USA.  */
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
  do { if ((LOG) != 0)			\
         {				\
-          if (in_text_section ())	\
+          if (in_section == text_section) \
             fprintf (FILE, "\t%s %d,0x90\n", ALIGN_ASM_OP, (LOG)); \
           else				\
             fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG)); \

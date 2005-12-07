@@ -835,11 +835,6 @@ enum processor_type
 /* Recast the cpu class to be the cpu attribute.  */
 #define iq2000_cpu_attr ((enum attr_cpu) iq2000_tune)
 
-/* Functions to change what output section we are using.  */
-extern void		rdata_section (void);
-extern void		sdata_section (void);
-extern void		sbss_section  (void);
-
 #define BITMASK_UPPER16	((unsigned long) 0xffff << 16)	/* 0xffff0000 */
 #define BITMASK_LOWER16	((unsigned long) 0xffff)	/* 0x0000ffff */
 

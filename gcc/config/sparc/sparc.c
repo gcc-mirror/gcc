@@ -3287,7 +3287,7 @@ emit_pic_helper (void)
   const char *pic_name = reg_names[REGNO (pic_offset_table_rtx)];
   int align;
 
-  text_section ();
+  switch_to_section (text_section);
 
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
   if (align > 0)
@@ -7477,7 +7477,7 @@ sparc_output_deferred_case_vectors (void)
     return;
 
   /* Align to cache line in the function's code section.  */
-  current_function_section (current_function_decl);
+  switch_to_section (current_function_section ());
 
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
   if (align > 0)

@@ -857,36 +857,6 @@ extern const enum reg_class reg_class_from_letter[];
 #define TEXT_SECTION_ASM_OP  "\t.text"
 #define DATA_SECTION_ASM_OP  "\t.data"
 
-#undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS SUBTARGET_EXTRA_SECTIONS
-
-#undef  EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS			\
-  SUBTARGET_EXTRA_SECTION_FUNCTIONS		\
-  SWITCH_SECTION_FUNCTION
-
-/* Switch to SECTION (an `enum in_section').
-
-   ??? This facility should be provided by GCC proper.
-   The problem is that we want to temporarily switch sections in
-   ASM_DECLARE_OBJECT_NAME and then switch back to the original section
-   afterwards.  */
-#define SWITCH_SECTION_FUNCTION					\
-static void switch_to_section (enum in_section, tree);		\
-static void							\
-switch_to_section (enum in_section section, tree decl)		\
-{								\
-  switch (section)						\
-    {								\
-      case in_text: text_section (); break;			\
-      case in_unlikely_executed_text: unlikely_text_section (); break;   \
-      case in_data: data_section (); break;			\
-      case in_named: named_section (decl, NULL, 0); break;	\
-      SUBTARGET_SWITCH_SECTIONS      				\
-      default: gcc_unreachable (); 				\
-    }								\
-}
-
 /* Switch into a generic section.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  mcore_asm_named_section

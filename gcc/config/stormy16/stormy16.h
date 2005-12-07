@@ -618,29 +618,10 @@ do {							\
 #undef DTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"a\""
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"a\""
-#define EXTRA_SECTIONS in_bss100
 
-/* We define the function body in a separate macro so that if we ever
-   add another section, we can just add an entry to
-   EXTRA_SECTION_FUNCTIONS without making it difficult to read.  It is
-   not used anywhere else.  */
-#define XSTORMY16_SECTION_FUNCTION(name, in, string, bits) 			  \
-  void										  \
-  name ()									  \
-  { 										  \
-    if (in_section != in)							  \
-      { 									  \
-	fprintf (asm_out_file, "\t.section %s,\"aw\",@%sbits\n", string, bits);   \
-	in_section = in;							  \
-      }										  \
-  }
-
-#undef  EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS		\
-  XSTORMY16_SECTION_FUNCTION (bss100_section, in_bss100, ".bss_below100", "no")
+#define TARGET_ASM_INIT_SECTIONS xstormy16_asm_init_sections
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
-
 
 /* The Overall Framework of an Assembler File.  */
 

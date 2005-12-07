@@ -161,6 +161,7 @@ static void aof_dump_imports (FILE *);
 static void aof_dump_pic_table (FILE *);
 static void aof_file_start (void);
 static void aof_file_end (void);
+static void aof_asm_init_sections (void);
 #endif
 static rtx arm_struct_value_rtx (tree, int);
 static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
@@ -7297,11 +7298,7 @@ get_jump_table_size (rtx insn)
 {
   /* ADDR_VECs only take room if read-only data does into the text
      section.  */
-  if (JUMP_TABLES_IN_TEXT_SECTION
-#if !defined(READONLY_DATA_SECTION) && !defined(READONLY_DATA_SECTION_ASM_OP)
-      || 1
-#endif
-      )
+  if (JUMP_TABLES_IN_TEXT_SECTION || readonly_data_section == text_section)
     {
       rtx body = PATTERN (insn);
       int elt = GET_CODE (body) == ADDR_DIFF_VEC ? 1 : 0;
@@ -10064,7 +10061,7 @@ arm_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
 
 	  if (label != NULL)
 	    {
-	      function_section (current_function_decl);
+	      switch_to_section (function_section (current_function_decl));
 	      targetm.asm_out.internal_label (asm_out_file, "L",
 					      CODE_LABEL_NUMBER (label));
 	      asm_fprintf (asm_out_file, "\tbx\t%r\n", regno);
@@ -11281,7 +11278,7 @@ arm_elf_asm_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
     }
 
   /* Put these in the .init_array section, using a special relocation.  */
-  ctors_section ();
+  switch_to_section (ctors_section);
   assemble_align (POINTER_SIZE);
   fputs ("\t.word\t", asm_out_file);
   output_addr_const (asm_out_file, symbol);
@@ -14195,7 +14192,7 @@ thumb_call_via_reg (rtx reg)
   /* If we are in the normal text section we can use a single instance
      per compilation unit.  If we are doing function sections, then we need
      an entry per section, since we can't rely on reachability.  */
-  if (in_text_section ())
+  if (in_section == text_section)
     {
       thumb_call_reg_needed = 1;
 
@@ -14332,7 +14329,7 @@ arm_file_end (void)
   if (! thumb_call_reg_needed)
     return;
 
-  text_section ();
+  switch_to_section (text_section);
   asm_fprintf (asm_out_file, "\t.code 16\n");
   ASM_OUTPUT_ALIGN (asm_out_file, 1);
 
@@ -14407,25 +14404,56 @@ aof_dump_pic_table (FILE *f)
 
 int arm_text_section_count = 1;
 
-char *
-aof_text_section (void )
+/* A get_unnamed_section callback for switching to the text section.  */
+
+static void
+aof_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
 {
-  static char buf[100];
-  sprintf (buf, "\tAREA |C$$code%d|, CODE, READONLY",
+  fprintf (asm_out_file, "\tAREA |C$$code%d|, CODE, READONLY",
 	   arm_text_section_count++);
   if (flag_pic)
-    strcat (buf, ", PIC, REENTRANT");
-  return buf;
+    fprintf (asm_out_file, ", PIC, REENTRANT");
+  fprintf (asm_out_file, "\n");
 }
 
 static int arm_data_section_count = 1;
 
-char *
-aof_data_section (void)
+/* A get_unnamed_section callback for switching to the data section.  */
+
+static void
+aof_output_data_section_asm_op (const void *data ATTRIBUTE_UNUSED)
 {
-  static char buf[100];
-  sprintf (buf, "\tAREA |C$$data%d|, DATA", arm_data_section_count++);
-  return buf;
+  fprintf (asm_out_file, "\tAREA |C$$data%d|, DATA\n",
+	   arm_data_section_count++);
+}
+
+/* Implement TARGET_ASM_INIT_SECTIONS.
+
+   AOF Assembler syntax is a nightmare when it comes to areas, since once
+   we change from one area to another, we can't go back again.  Instead,
+   we must create a new area with the same attributes and add the new output
+   to that.  Unfortunately, there is nothing we can do here to guarantee that
+   two areas with the same attributes will be linked adjacently in the
+   resulting executable, so we have to be careful not to do pc-relative
+   addressing across such boundaries.  */
+
+static void
+aof_asm_init_sections (void)
+{
+  text_section = get_unnamed_section (SECTION_CODE,
+				      aof_output_text_section_asm_op, NULL);
+  data_section = get_unnamed_section (SECTION_WRITE,
+				      aof_output_data_section_asm_op, NULL);
+  readonly_data_section = text_section;
+}
+
+void
+zero_init_section (void)
+{
+  static int zero_init_count = 1;
+
+  fprintf (asm_out_file, "\tAREA |C$$zidata%d|,NOINIT\n", zero_init_count++);
+  in_section = NULL;
 }
 
 /* The AOF assembler is religiously strict about declarations of
@@ -14486,7 +14514,7 @@ aof_dump_imports (FILE *f)
      automagically.  */
   if (arm_main_function)
     {
-      text_section ();
+      switch_to_section (text_section);
       fputs ("\tIMPORT __main\n", f);
       fputs ("\tDCD __main\n", f);
     }
@@ -14537,7 +14565,7 @@ aof_file_start (void)
   fputs ("__f5\tFN\t5\n", asm_out_file);
   fputs ("__f6\tFN\t6\n", asm_out_file);
   fputs ("__f7\tFN\t7\n", asm_out_file);
-  text_section ();
+  switch_to_section (text_section);
 }
 
 static void

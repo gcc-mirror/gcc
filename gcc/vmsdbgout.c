@@ -1697,13 +1697,13 @@ vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
     return;
 
   /* Output a terminator label for the .text section.  */
-  text_section ();
+  switch_to_section (text_section);
   targetm.asm_out.internal_label (asm_out_file, TEXT_END_LABEL, 0);
 
   /* Output debugging information.
      Warning! Do not change the name of the .vmsdebug section without
      changing it in the assembler also.  */
-  named_section (NULL_TREE, ".vmsdebug", 0);
+  switch_to_section (get_named_section (NULL, ".vmsdebug", 0));
   ASM_OUTPUT_ALIGN (asm_out_file, 0);
 
   totsize = write_modbeg (1);

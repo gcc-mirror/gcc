@@ -3425,10 +3425,9 @@ sjlj_output_call_site_table (void)
   call_site_base += n;
 }
 
-/* Tell assembler to switch to the section for the exception handling
-   table.  */
+/* Return the default value of exception_section.  */
 
-void
+section *
 default_exception_section (void)
 {
   if (targetm.have_named_sections)
@@ -3446,12 +3445,10 @@ default_exception_section (void)
 	}
       else
 	flags = SECTION_WRITE;
-      named_section_flags (".gcc_except_table", flags);
+      return get_section (".gcc_except_table", flags, NULL);
     }
-  else if (flag_pic)
-    data_section ();
   else
-    readonly_data_section ();
+    return flag_pic ? data_section : readonly_data_section;
 }
 
 
@@ -3533,7 +3530,7 @@ output_function_exception_table (void)
   /* Note that varasm still thinks we're in the function's code section.
      The ".endp" directive that will immediately follow will take us back.  */
 #else
-  targetm.asm_out.exception_section ();
+  switch_to_section (exception_section);
 #endif
 
   have_tt_data = (VEC_length (tree, cfun->eh->ttype_data) > 0
@@ -3687,7 +3684,7 @@ output_function_exception_table (void)
 			     (i ? NULL : "Exception specification table"));
     }
 
-  current_function_section (current_function_decl);
+  switch_to_section (current_function_section ());
 }
 
 void

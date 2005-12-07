@@ -47,6 +47,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tm_p.h"
 #include "langhooks.h"
 #include "tree-gimple.h"
+#include "ggc.h"
 
 static rtx emit_addhi3_postreload (rtx, rtx, rtx);
 static void xstormy16_asm_out_constructor (rtx, int);
@@ -64,6 +65,8 @@ static bool xstormy16_return_in_memory (tree, tree);
    stored from the compare operation.  */
 struct rtx_def * xstormy16_compare_op0;
 struct rtx_def * xstormy16_compare_op1;
+
+static GTY(()) section *bss100_section;
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
@@ -1593,7 +1596,7 @@ xstormy16_asm_output_aligned_common (FILE *stream,
       const char *name2;
       int p2align = 0;
 
-      bss100_section ();
+      switch_to_section (bss100_section);
 
       while (align > 8)
 	{
@@ -1621,6 +1624,17 @@ xstormy16_asm_output_aligned_common (FILE *stream,
   fprintf (stream, "\t.comm\t");
   assemble_name (stream, name);
   fprintf (stream, ",%u,%u\n", size, align / BITS_PER_UNIT);
+}
+
+/* Implement TARGET_ASM_INIT_SECTIONS.  */
+
+static void
+xstormy16_asm_init_sections (void)
+{
+  bss100_section
+    = get_unnamed_section (SECTION_WRITE | SECTION_BSS,
+			   output_section_asm_op,
+			   "\t.section \".bss_below100\",\"aw\",@nobits");
 }
 
 /* Mark symbols with the "below100" attribute so that we can use the
@@ -1666,7 +1680,7 @@ xstormy16_asm_out_destructor (rtx symbol, int priority)
       section = buf;
     }
 
-  named_section_flags (section, 0);
+  switch_to_section (get_section (section, 0, NULL));
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
@@ -1688,7 +1702,7 @@ xstormy16_asm_out_constructor (rtx symbol, int priority)
       section = buf;
     }
 
-  named_section_flags (section, 0);
+  switch_to_section (get_section (section, 0, NULL));
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
@@ -1917,7 +1931,7 @@ xstormy16_output_addr_vec (FILE *file, rtx label ATTRIBUTE_UNUSED, rtx table)
 { 
   int vlen, idx;
   
-  current_function_section (current_function_decl);
+  switch_to_section (current_function_section ());
 
   vlen = XVECLEN (table, 0);
   for (idx = 0; idx < vlen; idx++)
@@ -2668,3 +2682,5 @@ xstormy16_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 #define TARGET_MACHINE_DEPENDENT_REORG xstormy16_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+#include "gt-stormy16.h"

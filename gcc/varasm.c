@@ -127,9 +127,6 @@ static unsigned min_align (unsigned, unsigned);
 static void output_constructor (tree, unsigned HOST_WIDE_INT, unsigned int);
 static void globalize_decl (tree);
 static void maybe_assemble_visibility (tree);
-static int in_named_entry_eq (const void *, const void *);
-static hashval_t in_named_entry_hash (const void *);
-static void initialize_cold_section_name (void);
 #ifdef BSS_SECTION_ASM_OP
 #ifdef ASM_OUTPUT_BSS
 static void asm_output_bss (FILE *, tree, const char *,
@@ -146,8 +143,35 @@ static bool asm_emit_uninitialised (tree, const char*,
 				    unsigned HOST_WIDE_INT);
 static void mark_weak (tree);
 
-static GTY(()) enum in_section in_section = no_section;
-enum in_section last_text_section;
+/* Well-known sections, each one associated with some sort of *_ASM_OP.  */
+section *text_section;
+section *data_section;
+section *readonly_data_section;
+section *sdata_section;
+section *ctors_section;
+section *dtors_section;
+section *bss_section;
+section *sbss_section;
+section *init_section;
+section *fini_section;
+
+/* The section that holds the main exception table.  */
+section *exception_section;
+
+/* The section that holds the DWARF2 frame unwind information.  If it
+   is null, we will place the unwind information in the data section
+   and emit special labels to guide collect2.  */
+section *eh_frame_section;
+
+/* asm_out_file's current section.  This is NULL if no section has yet
+   been selected or if we lose track of what the current section is.  */
+section *in_section;
+
+/* The last text section used by asm_out_file.  */
+section *last_text_section;
+
+/* A linked list of all the unnamed sections.  */
+static GTY(()) section *unnamed_sections;
 
 /* Return a nonzero value if DECL has a section attribute.  */
 #ifndef IN_NAMED_SECTION
@@ -156,25 +180,81 @@ enum in_section last_text_section;
    && DECL_SECTION_NAME (DECL) != NULL_TREE)
 #endif
 
-/* Text of section name when in_section == in_named.  */
-static GTY(()) const char *in_named_name;
-const char *last_text_section_name;
+/* Hash table of named sections.  */
+static GTY((param_is (section))) htab_t section_htab;
 
-/* Hash table of flags that have been used for a particular named section.  */
+/* Helper routines for maintaining section_htab.  */
 
-struct in_named_entry GTY(())
+static int
+section_entry_eq (const void *p1, const void *p2)
 {
-  const char *name;
-  unsigned int flags;
-  bool declared;
-};
+  const section *old = p1;
+  const char *new = p2;
 
-static GTY((param_is (struct in_named_entry))) htab_t in_named_htab;
+  return strcmp (old->named.name, new) == 0;
+}
 
-/* Define functions like text_section for any extra sections.  */
-#ifdef EXTRA_SECTION_FUNCTIONS
-EXTRA_SECTION_FUNCTIONS
-#endif
+static hashval_t
+section_entry_hash (const void *p)
+{
+  const section *old = p;
+  return htab_hash_string (old->named.name);
+}
+
+/* Return a new unnamed section with the given fields.  */
+
+section *
+get_unnamed_section (unsigned int flags, void (*callback) (const void *),
+		     const void *data)
+{
+  section *sect;
+
+  sect = ggc_alloc (sizeof (struct unnamed_section));
+  sect->unnamed.common.flags = flags;
+  sect->unnamed.callback = callback;
+  sect->unnamed.data = data;
+  sect->unnamed.next = unnamed_sections;
+
+  unnamed_sections = sect;
+  return sect;
+}
+
+/* Return the named section structure associated with NAME.  Create
+   a new section with the given fields if no such structure exists.  */
+
+section *
+get_section (const char *name, unsigned int flags, tree decl)
+{
+  section *sect, **slot;
+
+  slot = (section **)
+    htab_find_slot_with_hash (section_htab, name,
+			      htab_hash_string (name), INSERT);
+  if (*slot == NULL)
+    {
+      sect = ggc_alloc (sizeof (struct named_section));
+      sect->named.common.flags = flags | SECTION_NAMED;
+      sect->named.name = ggc_strdup (name);
+      sect->named.decl = decl;
+      *slot = sect;
+    }
+  else
+    {
+      sect = *slot;
+      if ((sect->common.flags & ~(SECTION_DECLARED | SECTION_NAMED)) != flags
+	  && ((sect->common.flags | flags) & SECTION_OVERRIDE) == 0)
+	{
+	  /* Sanity check user variables for flag changes.  */
+	  if (decl == 0)
+	    decl = sect->named.decl;
+	  if (decl)
+	    error ("%+D causes a section type conflict", decl);
+	  else
+	    gcc_unreachable ();
+	}
+    }
+  return sect;
+}
 
 static void
 initialize_cold_section_name (void)
@@ -202,22 +282,9 @@ initialize_cold_section_name (void)
     cfun->unlikely_text_section_name =  UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
 }
 
-/* Tell assembler to switch to text section.  */
-
-void
-text_section (void)
-{
-  if (in_section != in_text)
-    {
-      in_section = in_text;
-      last_text_section = in_text;
-      fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
-    }
-}
-
 /* Tell assembler to switch to unlikely-to-be-executed text section.  */
 
-void
+section *
 unlikely_text_section (void)
 {
   if (cfun)
@@ -225,225 +292,42 @@ unlikely_text_section (void)
       if (!cfun->unlikely_text_section_name)
 	initialize_cold_section_name ();
 
-      if (flag_function_sections
-	  || ((in_section != in_unlikely_executed_text)
-	      &&  (in_section != in_named 
-		   || (strcmp (in_named_name, cfun->unlikely_text_section_name) 
-		       != 0))))
-	{
-	  named_section (NULL_TREE, cfun->unlikely_text_section_name, 0);
-	  in_section = in_unlikely_executed_text;
-	  last_text_section = in_unlikely_executed_text;
-	}
+      return get_named_section (NULL, cfun->unlikely_text_section_name, 0);
     }
   else
-    {
-      named_section (NULL_TREE, UNLIKELY_EXECUTED_TEXT_SECTION_NAME, 0);
-      in_section = in_unlikely_executed_text;
-      last_text_section = in_unlikely_executed_text;
-    }
+    return get_named_section (NULL, UNLIKELY_EXECUTED_TEXT_SECTION_NAME, 0);
 }
 
-/* Tell assembler to switch to data section.  */
+/* When called within a function context, return true if the function
+   has been assigned a cold text section and if SECT is that section.
+   When called outside a function context, return true if SECT is the
+   default cold section.  */
 
-void
-data_section (void)
+bool
+unlikely_text_section_p (section *sect)
 {
-  if (in_section != in_data)
-    {
-      in_section = in_data;
-      fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);
-    }
-}
-
-/* Tell assembler to switch to read-only data section.  This is normally
-   the text section.  */
-
-void
-readonly_data_section (void)
-{
-#ifdef READONLY_DATA_SECTION
-  READONLY_DATA_SECTION ();  /* Note this can call data_section.  */
-#else
-#ifdef READONLY_DATA_SECTION_ASM_OP
-  if (in_section != in_readonly_data)
-    {
-      in_section = in_readonly_data;
-      fputs (READONLY_DATA_SECTION_ASM_OP, asm_out_file);
-      fputc ('\n', asm_out_file);
-    }
-#else
-  text_section ();
-#endif
-#endif
-}
-
-/* Determine if we're in the text section.  */
-
-int
-in_text_section (void)
-{
-  return in_section == in_text;
-}
-
-/* Determine if we're in the unlikely-to-be-executed text section.  */
-
-int
-in_unlikely_text_section (void)
-{
-  bool ret_val;
+  const char *name;
 
   if (cfun)
-    {
-      ret_val = ((in_section == in_unlikely_executed_text)
-		 || (in_section == in_named
-		     && cfun->unlikely_text_section_name
-		     && strcmp (in_named_name, 
-				cfun->unlikely_text_section_name) == 0));
-    }
+    name = cfun->unlikely_text_section_name;
   else
-    {
-      ret_val = ((in_section == in_unlikely_executed_text)
-		 || (in_section == in_named
-		     && strcmp (in_named_name,
-				UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0));
-    }
+    name = UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
 
-  return ret_val;
+  return (name
+	  && sect
+	  && (sect->common.flags & SECTION_NAMED) != 0
+	  && strcmp (name, sect->named.name) == 0);
 }
 
-/* Determine if we're in the data section.  */
+/* Return a section with a particular name and with whatever SECTION_*
+   flags section_type_flags deems appropriate.  The name of the section
+   is taken from NAME if nonnull, otherwise it is taken from DECL's
+   DECL_SECTION_NAME.  DECL is the decl associated with the section
+   (see the section comment for details) and RELOC is as for
+   section_type_flags.  */
 
-int
-in_data_section (void)
-{
-  return in_section == in_data;
-}
-
-/* Helper routines for maintaining in_named_htab.  */
-
-static int
-in_named_entry_eq (const void *p1, const void *p2)
-{
-  const struct in_named_entry *old = p1;
-  const char *new = p2;
-
-  return strcmp (old->name, new) == 0;
-}
-
-static hashval_t
-in_named_entry_hash (const void *p)
-{
-  const struct in_named_entry *old = p;
-  return htab_hash_string (old->name);
-}
-
-/* If SECTION has been seen before as a named section, return the flags
-   that were used.  Otherwise, return 0.  Note, that 0 is a perfectly valid
-   set of flags for a section to have, so 0 does not mean that the section
-   has not been seen.  */
-
-static unsigned int
-get_named_section_flags (const char *section)
-{
-  struct in_named_entry **slot;
-
-  slot = (struct in_named_entry **)
-    htab_find_slot_with_hash (in_named_htab, section,
-			      htab_hash_string (section), NO_INSERT);
-
-  return slot ? (*slot)->flags : 0;
-}
-
-/* Returns true if the section has been declared before.   Sets internal
-   flag on this section in in_named_hash so subsequent calls on this
-   section will return false.  */
-
-bool
-named_section_first_declaration (const char *name)
-{
-  struct in_named_entry **slot;
-
-  slot = (struct in_named_entry **)
-    htab_find_slot_with_hash (in_named_htab, name,
-			      htab_hash_string (name), NO_INSERT);
-  if (! (*slot)->declared)
-    {
-      (*slot)->declared = true;
-      return true;
-    }
-  else
-    {
-      return false;
-    }
-}
-
-
-/* Record FLAGS for SECTION.  If SECTION was previously recorded with a
-   different set of flags, return false.  */
-
-bool
-set_named_section_flags (const char *section, unsigned int flags)
-{
-  struct in_named_entry **slot, *entry;
-
-  slot = (struct in_named_entry **)
-    htab_find_slot_with_hash (in_named_htab, section,
-			      htab_hash_string (section), INSERT);
-  entry = *slot;
-
-  if (!entry)
-    {
-      entry = ggc_alloc (sizeof (*entry));
-      *slot = entry;
-      entry->name = ggc_strdup (section);
-      entry->flags = flags;
-      entry->declared = false;
-    }
-  else if (entry->flags != flags)
-    return false;
-
-  return true;
-}
-
-/* Tell assembler to change to section NAME with attributes FLAGS.  If
-   DECL is non-NULL, it is the VAR_DECL or FUNCTION_DECL with which
-   this section is associated.  */
-
-void
-named_section_real (const char *name, unsigned int flags, tree decl)
-{
-  if (in_section != in_named || strcmp (name, in_named_name) != 0)
-    {
-      bool unchanged = set_named_section_flags (name, flags);
-
-      gcc_assert (unchanged);
-
-      targetm.asm_out.named_section (name, flags, decl);
-
-      if (flags & SECTION_FORGET)
-	in_section = no_section;
-      else
-	{
-	  in_named_name = ggc_strdup (name);
-	  in_section = in_named;
-	}
-    }
-
-  if (in_text_section () || in_unlikely_text_section ())
-    {
-      last_text_section = in_section;
-      last_text_section_name = name;
-    }
-}
-
-/* Tell assembler to change to section NAME for DECL.
-   If DECL is NULL, just switch to section NAME.
-   If NAME is NULL, get the name from DECL.
-   If RELOC is 1, the initializer for DECL contains relocs.  */
-
-void
-named_section (tree decl, const char *name, int reloc)
+section *
+get_named_section (tree decl, const char *name, int reloc)
 {
   unsigned int flags;
 
@@ -451,26 +335,9 @@ named_section (tree decl, const char *name, int reloc)
   if (name == NULL)
     name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 
-  if (strcmp (name, UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0
-      && cfun
-      && ! cfun->unlikely_text_section_name)
-    cfun->unlikely_text_section_name = UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
-
   flags = targetm.section_type_flags (decl, name, reloc);
 
-  /* Sanity check user variables for flag changes.  Non-user
-     section flag changes will die in named_section_flags.
-     However, don't complain if SECTION_OVERRIDE is set.
-     We trust that the setter knows that it is safe to ignore
-     the default flags for this decl.  */
-  if (decl && ! set_named_section_flags (name, flags))
-    {
-      flags = get_named_section_flags (name);
-      if ((flags & SECTION_OVERRIDE) == 0)
-	error ("%+D causes a section type conflict", decl);
-    }
-
-  named_section_real (name, flags, decl);
+  return get_section (name, flags, decl);
 }
 
 /* If required, set DECL_SECTION_NAME to a unique name.  */
@@ -488,18 +355,6 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 
 #ifdef BSS_SECTION_ASM_OP
 
-/* Tell the assembler to switch to the bss section.  */
-
-void
-bss_section (void)
-{
-  if (in_section != in_bss)
-    {
-      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);
-      in_section = in_bss;
-    }
-}
-
 #ifdef ASM_OUTPUT_BSS
 
 /* Utility function for ASM_OUTPUT_BSS for targets to use if
@@ -514,7 +369,7 @@ asm_output_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 		unsigned HOST_WIDE_INT rounded)
 {
   targetm.asm_out.globalize_label (file, name);
-  bss_section ();
+  switch_to_section (bss_section);
 #ifdef ASM_DECLARE_OBJECT_NAME
   last_assemble_variable_decl = decl;
   ASM_DECLARE_OBJECT_NAME (file, name, decl);
@@ -539,7 +394,7 @@ asm_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 			const char *name, unsigned HOST_WIDE_INT size,
 			int align)
 {
-  bss_section ();
+  switch_to_section (bss_section);
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
 #ifdef ASM_DECLARE_OBJECT_NAME
   last_assemble_variable_decl = decl;
@@ -555,12 +410,12 @@ asm_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 
 #endif /* BSS_SECTION_ASM_OP */
 
-/* Switch to the section for function DECL.
+/* Return the section for function DECL.
 
-   If DECL is NULL_TREE, switch to the text section.  We can be passed
+   If DECL is NULL_TREE, return the text section.  We can be passed
    NULL_TREE under some circumstances by dbxout.c at least.  */
 
-void
+section *
 function_section (tree decl)
 {
   int reloc = 0;
@@ -569,44 +424,38 @@ function_section (tree decl)
     reloc = 1;
   
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
-  targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
+  return targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
 #else
   if (decl != NULL_TREE
       && DECL_SECTION_NAME (decl) != NULL_TREE
       && targetm.have_named_sections)
-    named_section (decl, (char *) 0, 0);
+    return get_named_section (decl, NULL, 0);
   else
-    text_section ();
+    return text_section;
 #endif
 }
 
-void
-current_function_section (tree decl)
+section *
+current_function_section (void)
 {
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
   int reloc = 0; 
 
-  if (in_unlikely_text_section () 
-      || last_text_section == in_unlikely_executed_text)
+  if (unlikely_text_section_p (last_text_section))
     reloc = 1;
  
-  targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
+  return targetm.asm_out.select_section (current_function_decl, reloc,
+					 DECL_ALIGN (current_function_decl));
 #else
-  if (last_text_section == in_unlikely_executed_text)
-    unlikely_text_section ();
-  else if (last_text_section == in_text)
-    text_section ();
-  else if (last_text_section == in_named
-	   && targetm.have_named_sections)
-    named_section (NULL_TREE, last_text_section_name, 0);
-  else
-    function_section (decl);
+  if (last_text_section)
+    return last_text_section;
+  return function_section (current_function_decl);
 #endif
 }
 
-/* Switch to read-only data section associated with function DECL.  */
+/* Return the read-only data section associated with function DECL.  */
 
-void
+section *
 default_function_rodata_section (tree decl)
 {
   if (decl != NULL_TREE && DECL_SECTION_NAME (decl))
@@ -619,9 +468,8 @@ default_function_rodata_section (tree decl)
 	  char* rname = alloca (len);
          
 	  strcpy (rname, ".rodata");
-	  strcat (rname, name + 5); 
-          named_section_real (rname, SECTION_LINKONCE, decl);
-	  return;
+	  strcat (rname, name + 5);
+	  return get_section (rname, SECTION_LINKONCE, decl);
 	}
       /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo.  */
       else if (DECL_ONE_ONLY (decl)
@@ -632,8 +480,7 @@ default_function_rodata_section (tree decl)
 
 	  memcpy (rname, name, len);
 	  rname[14] = 'r';
-	  named_section_real (rname, SECTION_LINKONCE, decl);
-	  return;
+	  return get_section (rname, SECTION_LINKONCE, decl);
 	}
       /* For .text.foo we want to use .rodata.foo.  */
       else if (flag_function_sections && flag_data_sections
@@ -644,22 +491,21 @@ default_function_rodata_section (tree decl)
 
 	  memcpy (rname, ".rodata", 7);
 	  memcpy (rname + 7, name + 5, len - 5);
-	  named_section_flags (rname, 0);
-	  return;
+	  return get_section (rname, 0, decl);
 	}
     }
 
-  readonly_data_section ();
+  return readonly_data_section;
 }
 
-/* Switch to read-only data section associated with function DECL
+/* Return the read-only data section associated with function DECL
    for targets where that section should be always the single
    readonly data section.  */
 
-void
+section *
 default_no_function_rodata_section (tree decl ATTRIBUTE_UNUSED)
 {
-  readonly_data_section ();
+  return readonly_data_section;
 }
 
 /* Switch to section for variable DECL.  RELOC is the same as the
@@ -669,14 +515,15 @@ void
 variable_section (tree decl, int reloc)
 {
   if (IN_NAMED_SECTION (decl))
-    named_section (decl, NULL, reloc);
+    switch_to_section (get_named_section (decl, NULL, reloc));
   else
-    targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
+    switch_to_section (targetm.asm_out.select_section (decl, reloc,
+						       DECL_ALIGN (decl)));
 }
 
-/* Tell assembler to switch to the section for string merging.  */
+/* Return the section to use for string merging.  */
 
-void
+static section *
 mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 			  unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED,
 			  unsigned int flags ATTRIBUTE_UNUSED)
@@ -719,37 +566,17 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 	      sprintf (name, ".rodata.str%d.%d", modesize / 8,
 		       (int) (align / 8));
 	      flags |= (modesize / 8) | SECTION_MERGE | SECTION_STRINGS;
-	      if (!i && modesize < align)
-		{
-		  /* A "" string with requested alignment greater than
-		     character size might cause a problem:
-		     if some other string required even bigger
-		     alignment than "", then linker might think the
-		     "" is just part of padding after some other string
-		     and not put it into the hash table initially.
-		     But this means "" could have smaller alignment
-		     than requested.  */
-#ifdef ASM_OUTPUT_SECTION_START
-		  named_section_flags (name, flags);
-		  ASM_OUTPUT_SECTION_START (asm_out_file);
-#else
-		  readonly_data_section ();
-#endif
-		  return;
-		}
-
-	      named_section_flags (name, flags);
-	      return;
+	      return get_section (name, flags, NULL);
 	    }
 	}
     }
 
-  readonly_data_section ();
+  return readonly_data_section;
 }
 
-/* Tell assembler to switch to the section for constant merging.  */
+/* Return the section to use for constant merging.  */
 
-void
+section *
 mergeable_constant_section (enum machine_mode mode ATTRIBUTE_UNUSED,
 			    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED,
 			    unsigned int flags ATTRIBUTE_UNUSED)
@@ -768,11 +595,9 @@ mergeable_constant_section (enum machine_mode mode ATTRIBUTE_UNUSED,
 
       sprintf (name, ".rodata.cst%d", (int) (align / 8));
       flags |= (align / 8) | SECTION_MERGE;
-      named_section_flags (name, flags);
-      return;
+      return get_section (name, flags, NULL);
     }
-
-  readonly_data_section ();
+  return readonly_data_section;
 }
 
 /* Given NAME, a putative register name, discard any customary prefixes.  */
@@ -1092,28 +917,17 @@ default_named_section_asm_out_destructor (rtx symbol, int priority)
       section = buf;
     }
 
-  named_section_flags (section, SECTION_WRITE);
+  switch_to_section (get_section (section, SECTION_WRITE, NULL));
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
 #ifdef DTORS_SECTION_ASM_OP
 void
-dtors_section (void)
-{
-  if (in_section != in_dtors)
-    {
-      in_section = in_dtors;
-      fputs (DTORS_SECTION_ASM_OP, asm_out_file);
-      fputc ('\n', asm_out_file);
-    }
-}
-
-void
 default_dtor_section_asm_out_destructor (rtx symbol,
 					 int priority ATTRIBUTE_UNUSED)
 {
-  dtors_section ();
+  switch_to_section (dtors_section);
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
@@ -1153,28 +967,17 @@ default_named_section_asm_out_constructor (rtx symbol, int priority)
       section = buf;
     }
 
-  named_section_flags (section, SECTION_WRITE);
+  switch_to_section (get_section (section, SECTION_WRITE, NULL));
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
 #ifdef CTORS_SECTION_ASM_OP
 void
-ctors_section (void)
-{
-  if (in_section != in_ctors)
-    {
-      in_section = in_ctors;
-      fputs (CTORS_SECTION_ASM_OP, asm_out_file);
-      fputc ('\n', asm_out_file);
-    }
-}
-
-void
 default_ctor_section_asm_out_constructor (rtx symbol,
 					  int priority ATTRIBUTE_UNUSED)
 {
-  ctors_section ();
+  switch_to_section (ctors_section);
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
@@ -1289,7 +1092,7 @@ assemble_start_function (tree decl, const char *fnname)
       if (!current_function_is_thunk
 	  && BB_PARTITION (ENTRY_BLOCK_PTR->next_bb) == BB_COLD_PARTITION)
 	{
-	  text_section ();
+	  switch_to_section (text_section);
 	  assemble_align (FUNCTION_BOUNDARY);
 	  ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_label);
 	  hot_label_written = true;
@@ -1311,11 +1114,11 @@ assemble_start_function (tree decl, const char *fnname)
 	first_function_block_is_cold = true;
     }
 
-  last_text_section = no_section;
+  last_text_section = NULL;
 
   /* Switch to the correct text section for the start of the function.  */
 
-  function_section (decl);
+  switch_to_section (function_section (decl));
   if (flag_reorder_blocks_and_partition 
       && !hot_label_written)
     ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_label);
@@ -1381,30 +1184,29 @@ assemble_end_function (tree decl, const char *fnname)
 #ifdef ASM_DECLARE_FUNCTION_SIZE
   /* We could have switched section in the middle of the function.  */
   if (flag_reorder_blocks_and_partition)
-    function_section (decl);
+    switch_to_section (function_section (decl));
   ASM_DECLARE_FUNCTION_SIZE (asm_out_file, fnname, decl);
 #endif
   if (! CONSTANT_POOL_BEFORE_FUNCTION)
     {
       output_constant_pool (fnname, decl);
-      function_section (decl);	/* need to switch back */
+      switch_to_section (function_section (decl)); /* need to switch back */
     }
   /* Output labels for end of hot/cold text sections (to be used by
      debug info.)  */
   if (flag_reorder_blocks_and_partition)
     {
-      enum in_section save_text_section;
+      section *save_text_section;
 
       save_text_section = in_section;
       unlikely_text_section ();
       ASM_OUTPUT_LABEL (asm_out_file, cfun->cold_section_end_label);
       if (first_function_block_is_cold)
-	text_section ();
+	switch_to_section (text_section);
       else
-	function_section (decl);
+	switch_to_section (function_section (decl));
       ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_end_label);
-      if (save_text_section == in_unlikely_executed_text)
-	unlikely_text_section ();
+      switch_to_section (save_text_section);
     }
 }
 
@@ -1420,8 +1222,7 @@ assemble_zeros (unsigned HOST_WIDE_INT size)
 #ifdef ASM_NO_SKIP_IN_TEXT
   /* The `space' pseudo in the text section outputs nop insns rather than 0s,
      so we must output 0s explicitly in the text section.  */
-  if ((ASM_NO_SKIP_IN_TEXT && in_text_section ())
-      || (ASM_NO_SKIP_IN_TEXT && in_unlikely_text_section ()))
+  if (ASM_NO_SKIP_IN_TEXT && (in_section->common.flags & SECTION_CODE) != 0)
     {
       unsigned HOST_WIDE_INT i;
       for (i = 0; i < size; i++)
@@ -1790,7 +1591,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   variable_section (decl, reloc);
 
   /* dbxout.c needs to know this.  */
-  if (in_text_section () || in_unlikely_text_section ())
+  if (in_section && (in_section->common.flags & SECTION_CODE) != 0)
     DECL_IN_TEXT_SECTION (decl) = 1;
 
   /* Output the alignment of this data.  */
@@ -2075,7 +1876,7 @@ assemble_static_space (unsigned HOST_WIDE_INT size)
 
 #if 0
   if (flag_shared_data)
-    data_section ();
+    switch_to_section (data_section);
 #endif
 
   ASM_GENERATE_INTERNAL_LABEL (name, "LF", const_labelno);
@@ -2128,9 +1929,9 @@ assemble_trampoline_template (void)
   /* By default, put trampoline templates in read-only data section.  */
 
 #ifdef TRAMPOLINE_SECTION
-  TRAMPOLINE_SECTION ();
+  switch_to_section (TRAMPOLINE_SECTION);
 #else
-  readonly_data_section ();
+  switch_to_section (readonly_data_section);
 #endif
 
   /* Write the assembler code to define one.  */
@@ -2873,9 +2674,9 @@ output_constant_def_contents (rtx symbol)
   TREE_ASM_WRITTEN (exp) = 1;
 
   if (IN_NAMED_SECTION (exp))
-    named_section (exp, NULL, reloc);
+    switch_to_section (get_named_section (exp, NULL, reloc));
   else
-    targetm.asm_out.select_section (exp, reloc, align);
+    switch_to_section (targetm.asm_out.select_section (exp, reloc, align));
 
   if (align > BITS_PER_UNIT)
     {
@@ -3346,7 +3147,8 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc)
     }
 
   /* First switch to correct section.  */
-  targetm.asm_out.select_rtx_section (desc->mode, x, desc->align);
+  switch_to_section (targetm.asm_out.select_rtx_section (desc->mode, x,
+							 desc->align));
 
 #ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
   ASM_OUTPUT_SPECIAL_POOL_ENTRY (asm_out_file, x, desc->mode,
@@ -3364,8 +3166,8 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc)
   /* Make sure all constants in SECTION_MERGE and not SECTION_STRINGS
      sections have proper size.  */
   if (desc->align > GET_MODE_BITSIZE (desc->mode)
-      && in_section == in_named
-      && get_named_section_flags (in_named_name) & SECTION_MERGE)
+      && in_section
+      && (in_section->common.flags & SECTION_MERGE))
     assemble_align (desc->align);
 
 #ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
@@ -5003,12 +4805,73 @@ make_decl_one_only (tree decl)
 void
 init_varasm_once (void)
 {
-  in_named_htab = htab_create_ggc (31, in_named_entry_hash,
-				   in_named_entry_eq, NULL);
+  section_htab = htab_create_ggc (31, section_entry_hash,
+				  section_entry_eq, NULL);
   const_desc_htab = htab_create_ggc (1009, const_desc_hash,
 				     const_desc_eq, NULL);
 
   const_alias_set = new_alias_set ();
+
+#ifdef TEXT_SECTION_ASM_OP
+  text_section = get_unnamed_section (SECTION_CODE, output_section_asm_op,
+				      TEXT_SECTION_ASM_OP);
+#endif
+
+#ifdef DATA_SECTION_ASM_OP
+  data_section = get_unnamed_section (SECTION_WRITE, output_section_asm_op,
+				      DATA_SECTION_ASM_OP);
+#endif
+
+#ifdef SDATA_SECTION_ASM_OP
+  sdata_section = get_unnamed_section (SECTION_WRITE, output_section_asm_op,
+				       SDATA_SECTION_ASM_OP);
+#endif
+
+#ifdef READONLY_DATA_SECTION_ASM_OP
+  readonly_data_section = get_unnamed_section (0, output_section_asm_op,
+					       READONLY_DATA_SECTION_ASM_OP);
+#endif
+
+#ifdef CTORS_SECTION_ASM_OP
+  ctors_section = get_unnamed_section (0, output_section_asm_op,
+				       CTORS_SECTION_ASM_OP);
+#endif
+
+#ifdef DTORS_SECTION_ASM_OP
+  dtors_section = get_unnamed_section (0, output_section_asm_op,
+				       DTORS_SECTION_ASM_OP);
+#endif
+
+#ifdef BSS_SECTION_ASM_OP
+  bss_section = get_unnamed_section (SECTION_WRITE | SECTION_BSS,
+				     output_section_asm_op,
+				     BSS_SECTION_ASM_OP);
+#endif
+
+#ifdef SBSS_SECTION_ASM_OP
+  sbss_section = get_unnamed_section (SECTION_WRITE | SECTION_BSS,
+				      output_section_asm_op,
+				      SBSS_SECTION_ASM_OP);
+#endif
+
+#ifdef INIT_SECTION_ASM_OP
+  init_section = get_unnamed_section (SECTION_CODE, output_section_asm_op,
+				      INIT_SECTION_ASM_OP);
+#endif
+
+#ifdef FINI_SECTION_ASM_OP
+  fini_section = get_unnamed_section (SECTION_CODE, output_section_asm_op,
+				      FINI_SECTION_ASM_OP);
+#endif
+
+  targetm.asm_out.init_sections ();
+
+  if (readonly_data_section == NULL)
+    readonly_data_section = text_section;
+  if (exception_section == NULL)
+    exception_section = default_exception_section ();
+  if (eh_frame_section == NULL)
+    eh_frame_section = default_eh_frame_section ();
 }
 
 enum tls_model
@@ -5135,7 +4998,7 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
      part of a COMDAT groups, in which case GAS requires the full
      declaration every time.  */
   if (!(HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
-      && ! named_section_first_declaration (name))
+      && (flags & SECTION_DECLARED))
     {
       fprintf (asm_out_file, "\t.section\t%s\n", name);
       return;
@@ -5223,16 +5086,14 @@ default_pe_asm_named_section (const char *name, unsigned int flags,
 
 /* The lame default section selector.  */
 
-void
+section *
 default_select_section (tree decl, int reloc,
 			unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
-  bool readonly = false;
-
   if (DECL_P (decl))
     {
       if (decl_readonly_section (decl, reloc))
-	readonly = true;
+	return readonly_data_section;
     }
   else if (TREE_CODE (decl) == CONSTRUCTOR)
     {
@@ -5240,17 +5101,14 @@ default_select_section (tree decl, int reloc,
 	     || !TREE_READONLY (decl)
 	     || TREE_SIDE_EFFECTS (decl)
 	     || !TREE_CONSTANT (decl)))
-	readonly = true;
+	return readonly_data_section;
     }
   else if (TREE_CODE (decl) == STRING_CST)
-    readonly = true;
+    return readonly_data_section;
   else if (! (flag_pic && reloc))
-    readonly = true;
+    return readonly_data_section;
 
-  if (readonly)
-    readonly_data_section ();
-  else
-    data_section ();
+  return data_section;
 }
 
 enum section_category
@@ -5366,14 +5224,14 @@ decl_readonly_section_1 (tree decl, int reloc, int shlib)
 
 /* Select a section based on the above categorization.  */
 
-void
+section *
 default_elf_select_section (tree decl, int reloc,
 			    unsigned HOST_WIDE_INT align)
 {
-  default_elf_select_section_1 (decl, reloc, align, flag_pic);
+  return default_elf_select_section_1 (decl, reloc, align, flag_pic);
 }
 
-void
+section *
 default_elf_select_section_1 (tree decl, int reloc,
 			      unsigned HOST_WIDE_INT align, int shlib)
 {
@@ -5384,23 +5242,18 @@ default_elf_select_section_1 (tree decl, int reloc,
       /* We're not supposed to be called on FUNCTION_DECLs.  */
       gcc_unreachable ();
     case SECCAT_RODATA:
-      readonly_data_section ();
-      return;
+      return readonly_data_section;
     case SECCAT_RODATA_MERGE_STR:
-      mergeable_string_section (decl, align, 0);
-      return;
+      return mergeable_string_section (decl, align, 0);
     case SECCAT_RODATA_MERGE_STR_INIT:
-      mergeable_string_section (DECL_INITIAL (decl), align, 0);
-      return;
+      return mergeable_string_section (DECL_INITIAL (decl), align, 0);
     case SECCAT_RODATA_MERGE_CONST:
-      mergeable_constant_section (DECL_MODE (decl), align, 0);
-      return;
+      return mergeable_constant_section (DECL_MODE (decl), align, 0);
     case SECCAT_SRODATA:
       sname = ".sdata2";
       break;
     case SECCAT_DATA:
-      data_section ();
-      return;
+      return data_section;
     case SECCAT_DATA_REL:
       sname = ".data.rel";
       break;
@@ -5420,13 +5273,10 @@ default_elf_select_section_1 (tree decl, int reloc,
       sname = ".tdata";
       break;
     case SECCAT_BSS:
-#ifdef BSS_SECTION_ASM_OP
-      bss_section ();
-      return;
-#else
+      if (bss_section)
+	return bss_section;
       sname = ".bss";
       break;
-#endif
     case SECCAT_SBSS:
       sname = ".sbss";
       break;
@@ -5439,7 +5289,7 @@ default_elf_select_section_1 (tree decl, int reloc,
 
   if (!DECL_P (decl))
     decl = NULL_TREE;
-  named_section (decl, sname, reloc);
+  return get_named_section (decl, sname, reloc);
 }
 
 /* Construct a unique section name based on the decl name and the
@@ -5512,7 +5362,7 @@ default_unique_section_1 (tree decl, int reloc, int shlib)
   DECL_SECTION_NAME (decl) = build_string (nlen + plen, string);
 }
 
-void
+section *
 default_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
 			    rtx x,
 			    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
@@ -5523,17 +5373,16 @@ default_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
       case CONST:
       case SYMBOL_REF:
       case LABEL_REF:
-	data_section ();
-	return;
+	return data_section;
 
       default:
 	break;
       }
 
-  readonly_data_section ();
+  return readonly_data_section;
 }
 
-void
+section *
 default_elf_select_rtx_section (enum machine_mode mode, rtx x,
 				unsigned HOST_WIDE_INT align)
 {
@@ -5544,18 +5393,16 @@ default_elf_select_rtx_section (enum machine_mode mode, rtx x,
       {
       case CONST:
       case SYMBOL_REF:
-	named_section (NULL_TREE, ".data.rel.ro", 3);
-	return;
+	return get_named_section (NULL, ".data.rel.ro", 3);
 
       case LABEL_REF:
-	named_section (NULL_TREE, ".data.rel.ro.local", 1);
-	return;
+	return get_named_section (NULL, ".data.rel.ro.local", 1);
 
       default:
 	break;
       }
 
-  mergeable_constant_section (mode, align, 0);
+  return mergeable_constant_section (mode, align, 0);
 }
 
 /* Set the generally applicable flags on the SYMBOL_REF for EXP.  */
@@ -5728,7 +5575,52 @@ file_end_indicate_exec_stack (void)
   if (trampolines_created)
     flags |= SECTION_CODE;
 
-  named_section_flags (".note.GNU-stack", flags);
+  switch_to_section (get_section (".note.GNU-stack", flags, NULL));
+}
+
+/* Output DIRECTIVE (a C string) followed by a newline.  This is used as
+   a get_unnamed_section callback.  */
+
+void
+output_section_asm_op (const void *directive)
+{
+  fprintf (asm_out_file, "%s\n", (const char *) directive);
+}
+
+/* Emit assembly code to switch to section NEW_SECTION.  Do nothing if
+   the current section is NEW_SECTION.  */
+
+void
+switch_to_section (section *new_section)
+{
+  if (in_section == new_section)
+    return;
+
+  if (new_section->common.flags & SECTION_FORGET)
+    in_section = NULL;
+  else
+    {
+      in_section = new_section;
+      if (new_section->common.flags & SECTION_CODE)
+	last_text_section = in_section;
+    }
+
+  if (new_section->common.flags & SECTION_NAMED)
+    {
+      if (cfun
+	  && !cfun->unlikely_text_section_name
+	  && strcmp (new_section->named.name,
+		     UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0)
+	cfun->unlikely_text_section_name = UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
+
+      targetm.asm_out.named_section (new_section->named.name,
+				     new_section->named.common.flags,
+				     new_section->named.decl);
+    }
+  else
+    new_section->unnamed.callback (new_section->unnamed.data);
+
+  new_section->common.flags |= SECTION_DECLARED;
 }
 
 #include "gt-varasm.h"

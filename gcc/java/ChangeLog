@@ -1,3 +1,8 @@
+2005-12-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* class.c (build_utf8_ref, emit_register_classes): Use
+	switch_to_section and get_section.
+
 2005-12-06  Tom Tromey  <tromey@redhat.com>
 
 	PR java/25283:

@@ -1529,9 +1529,9 @@ extern char m32r_punct_chars[256];
     {									\
       if (! TARGET_SDATA_NONE						\
           && (SIZE) > 0 && (SIZE) <= g_switch_value)			\
-        named_section (0, ".sbss", 0);					\
+        switch_to_section (get_named_section (NULL, ".sbss", 0));	\
       else								\
-        bss_section ();							\
+        switch_to_section (bss_section);				\
       ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
       last_assemble_variable_decl = DECL;				\
       ASM_DECLARE_OBJECT_NAME (FILE, NAME, DECL);			\

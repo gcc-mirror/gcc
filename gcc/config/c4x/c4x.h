@@ -1239,37 +1239,6 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
 
 #define FINI_SECTION_ASM_OP  "\t.sect\t\".fini\""
 
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_init, in_fini
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS					\
-  INIT_SECTION_FUNCTION						\
-  FINI_SECTION_FUNCTION
-
-#define INIT_SECTION_FUNCTION					\
-extern void init_section (void);				\
-void								\
-init_section (void)						\
-{								\
-  if (in_section != in_init)					\
-    {								\
-      fprintf (asm_out_file, ";\t.init\n");			\
-      in_section = in_init;					\
-    }								\
-}
-
-#define FINI_SECTION_FUNCTION					\
-void								\
-fini_section ()							\
-{								\
-  if (in_section != in_fini)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", FINI_SECTION_ASM_OP);	\
-      in_section = in_fini;					\
-    }								\
-}
-
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION c4x_asm_named_section
 

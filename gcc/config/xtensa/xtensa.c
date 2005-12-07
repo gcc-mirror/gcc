@@ -204,8 +204,8 @@ static void xtensa_function_epilogue (FILE *, HOST_WIDE_INT);
 static rtx xtensa_builtin_saveregs (void);
 static unsigned int xtensa_multibss_section_type_flags (tree, const char *,
 							int) ATTRIBUTE_UNUSED;
-static void xtensa_select_rtx_section (enum machine_mode, rtx,
-				       unsigned HOST_WIDE_INT);
+static section *xtensa_select_rtx_section (enum machine_mode, rtx,
+					   unsigned HOST_WIDE_INT);
 static bool xtensa_rtx_costs (rtx, int, int, int *);
 static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (tree, tree);
@@ -2421,12 +2421,12 @@ xtensa_multibss_section_type_flags (tree decl, const char *name, int reloc)
 
 /* The literal pool stays with the function.  */
 
-static void
+static section *
 xtensa_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
 			   rtx x ATTRIBUTE_UNUSED,
 			   unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
-  function_section (current_function_decl);
+  return function_section (current_function_decl);
 }
 
 

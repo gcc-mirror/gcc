@@ -1,3 +1,501 @@
+2005-12-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/alpha/alpha.c (alpha_start_function): Use switch_to_section.
+	(alpha_elf_select_rtx_section): Return the selected section rather
+	than emitting assembly code.
+	(alpha_write_linkage): Emit a ".link" directive directly and then
+	set in_section to NULL.
+	(vms_asm_out_constructor): Use switch_to_section.
+	(vms_asm_out_destructor): Likewise.
+	(unicosmk_output_common): Set in_section to NULL instead of calling
+	the dummy common_section function.
+	(unicosmk_text_section): Delete in favor of...
+	(unicosmk_output_text_section_asm_op): ...this new function.
+	(unicosmk_data_section): Delete in favor of...
+	(unicosmk_output_data_section_asm_op): ...this new function.
+	(unicosmk_init_sections): New function.
+	(unicosmk_output_deferred_case_vectors): Use switch_to_section.
+	(unicosmk_output_ssib): Set in_section to NULL instead of calling
+	the dummy ssib_section function.
+	(unicosmk_section_buf): Delete.
+	* config/alpha/alpha-protos.h (unicosmk_text_section): Delete.
+	(unicosmk_data_section): Delete.
+	* config/alpha/elf.h (ASM_OUTPUT_ALIGNED_LOCAL): Use switch_to_section.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, sbss_section, sdata_section)
+	(SECTION_FUNCTION_TEMPLATE): Delete.
+	* config/alpha/unicosmk.h (TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP)
+	(READONLY_DATA_SECTION, EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS)
+	(common_section, COMMON_SECTION, ssib_section, SSIB_SECTION): Delete.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Use switch_to_section.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	* config/alpha/vms.h (LINK_SECTION_ASM_OP, LITERALS_SECTION_ASM_OP)
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Delete.
+	(link_section, literals_section): Delete.
+	(ASM_OUTPUT_DEF): Emit the ".literal" directive directly and then
+	set in_section to NULL.
+
+	* config/arm/aof.h (TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP): Delete.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, ZERO_INIT_SECTION): Delete.
+	(COMMON_SECTION): Delete.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	(ASM_OUTPUT_COMMON): Set in_section to NULL rather than calling
+	the dummy common_section function.
+	* config/arm/aout.h (ASM_OUTPUT_ALIGNED_LOCAL): Use switch_to_section.
+	* config/arm/arm.c (get_jump_table_size): Use pointer comparison
+	between readonly_data_section and text_section to check whether
+	read-only data is being put in the text section.
+	(arm_output_function_epilogue): Use switch_to_section.
+	(arm_elf_asm_constructor): Likewise.
+	(thumb_call_via_reg): Replace call to in_text_section with
+	a comparison between in_section and text_section.
+	(arm_file_end): Use switch_to_section.
+	(aof_text_section): Delete in favor of...
+	(aof_output_text_section_asm_op): ...this new function.
+	(aof_data_section): Delete in favor of...
+	(aof_output_data_section_asm_op): ...this new function.
+	(aof_asm_init_sections): New function.
+	(zero_init_section): Moved from config/arm/aof.h.
+	(aof_dump_imports, aof_file_start): Use switch_to_section.
+	* config/arm/arm.h (thumb_call_via_label): Update comment.
+	* config/arm/arm-protos.h (aof_text_section, aof_data_section): Delete.
+	(common_section): Delete.
+	* config/arm/pe.h (ASM_DECLARE_FUNCTION_NAME): Use switch_to_section.
+	(ASM_DECLARE_OBJECT_NAME): Update the type of save_section.  Use the
+	global switch_to_section function instead of the old port-local one.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, DRECTVE_SECTION_FUNCTION)
+	(SWITCH_TO_SECTION_FUNCTION): Delete.
+	(drectve_section): Redefine as a macro.
+	* config/arm/unknown-elf.h (ASM_OUTPUT_ALIGNED_BSS):
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Use get_named_section and
+	switch_to_section.
+
+	* config/avr/avr.c (progmem_section): New variable.
+	(avr_output_progmem_section_asm_op): New function.
+	(avr_asm_init_sections): New function.
+	(avr_output_addr_vec_elt): Use switch_to_section.
+	* config/avr/avr.h (progmem_section): Declare.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Delete.
+	(READONLY_DATA_SECTION): Delete.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	(ASM_OUTPUT_CASE_LABEL): Use switch_to_section.
+	* config/avr/avr-protos.h (progmem_section): Delete.
+
+	* config/bfin/bfin.h (ASM_OUTPUT_LOCAL): Use switch_to_section.
+
+	* config/c4x/c4x.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS)
+	(INIT_SECTION_FUNCTION, FINI_SECTION_FUNCTION): Delete.
+
+	* config/darwin-sections.def: New file.
+	* config/darwin.c: Define all sections in darwin-sections.def.
+	(output_objc_section_asm_op, darwin_init_sections): New functions.
+	(machopic_output_indirection): Use switch_to_section.
+	(machopic_select_section): Return the selected section rather than
+	emitting assembly code.  Replace the static function table with
+	inline conditional expressions.  Update the tests of last_text_section
+	and move them into the FUNCTION_DECL block.
+	(machopic_select_rtx_section): Return the selected section rather than
+	emitting assembly code.
+	(machopic_asm_out_constructor, machopic_asm_out_destructor)
+	(darwin_file_end): Use switch_to_section.
+	* config/darwin.h: Use darwin-sections.def to declare sections.
+	(INIT_SECTION_ASM_OP): Remove empty definition.
+	(HAS_INIT_SECTION): Define this instead.
+	(SECTION_FUNCTION, EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Delete.
+	(READONLY_DATA_SECTION, TARGET_ASM_EXCEPTION_SECTION): Delete.
+	(TARGET_ASM_EH_FRAME_SECTION): Delete.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	* config/darwin-protos.h (darwin_init_sections): Declare.
+	(machopic_picsymbol_stub_section, machopic_picsymbol_stub1_section)
+	(machopic_symbol_stub_section, machopic_symbol_stub1_section): Delete.
+	(machopic_lazy_symbol_ptr_section, machopic_nl_symbol_ptr_section)
+	(constructor_section, destructor_section, mod_init_section): Delete.
+	(mod_term_section): Delete.
+	(darwin_exception_section, darwin_eh_frame_section): Delete.
+	(machopic_select_section): Return a section.
+	(machopic_select_rtx_section): Likewise.
+	(text_coal_section, text_unlikely_section, text_unlikely_coal_section)
+	(const_section, const_coal_section, const_data_section): Delete.
+	(const_data_coal_section, data_coal_section, cstring_section): Delete.
+	(literal4_section, literal8_section, constructor_section): Delete.
+	(mod_init_section, mod_term_section, destructor_section): Delete.
+	(objc_class_section, objc_meta_class_section, objc_category_section)
+	(objc_class_vars_section, objc_instance_vars_section): Delete.
+	(objc_cls_meth_section, objc_inst_meth_section): Delete.
+	(objc_cat_cls_meth_section, objc_cat_inst_meth_section): Delete.
+	(objc_selector_refs_section, objc_selector_fixup_section): Delete.
+	(objc_symbols_section, objc_module_info_section): Delete.
+	(objc_image_info_section, objc_protocol_section): Delete.
+	(objc_string_object_section, objc_constant_string_object_section)
+	(objc_class_names_section, objc_meth_var_names_section): Delete.
+	(objc_meth_var_types_section, objc_cls_refs_section): Delete.
+	(machopic_lazy_symbol_ptr_section, machopic_nl_symbol_ptr_section)
+	(machopic_symbol_stub_section, machopic_picsymbol_stub_section)
+	(darwin_exception_section, darwin_eh_frame_section): Delete.
+	* config/t-darwin (darwin.o): Depend on config/darwin-sections.def.
+
+	* config/frv/frv.c (frv_asm_out_constructor): Use switch_to_section.
+	(frv_asm_out_destructor): Likewise.
+	* config/frv/frv.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Delete.
+	(SDATA_SECTION_FUNCTION, FIXUP_SECTION_FUNCTION): Delete.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Use switch_to_section and
+	get_named_section.
+	(ASM_OUTPUT_CASE_LABEL): Use switch_to_section.
+	* config/frv/frv-protos.h (fixup_section, sdata_section, sbss_section)
+	(data_section): Delete.
+
+	* config/i386/cygming.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS)
+	(DRECTVE_SECTION_FUNCTION): Delete.
+	(drectve_section): Redefine as a macro that sets in_section after
+	emitting the directive.
+	(SWITCH_TO_SECTION_FUNCTION): Delete.
+	* config/i386/darwin.h (ASM_OUTPUT_ALIGN): Replace call to
+	in_text_section with comparison between in_section and text_section.
+	* config/i386/i386.c (x86_64_elf_select_section): Return the section
+	rather than emitting assembly code.  Use get_named_section.
+	(x86_output_aligned_bss, ix86_file_end): Use switch_to_section and
+	get_named_section.
+	(machopic_output_stub): Use switch_to_section.
+	* config/i386/nwld.c (nwld_named_section_asm_out_constructor)
+	(nwld_named_section_asm_out_destructor): Use get_section and
+	switch_to_section.
+
+	* config/ia64/ia64.c (ia64_select_rtx_section): Return the section
+	rather than emitting assembly code.
+	(ia64_rwreloc_select_section): Likewise.
+	(ia64_rwreloc_select_rtx_section): Likewise.
+	* config/ia64/ia64-protos.h (sdata_section, sbss_section): Delete.
+	* config/ia64/sysv4.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Use
+	switch_to_section.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Delete.
+	(SDATA_SECTION_FUNCTION, SBSS_SECTION_FUNCTION): Delete.
+
+	* config/iq2000/iq2000.c (iq2000_select_rtx_section): Return the
+	section rather than emitting assembly code.
+	(iq2000_select_section): Likewise.
+	* config/iq2000/iq2000.h (rdata_section, sdata_section): Delete.
+	(sbss_section): Delete.
+
+	* config/m32r/m32r.h (ASM_OUTPUT_ALIGNED_BSS): Use switch_to_section
+	and get_named_section.
+	* config/m32r/m32r-protos.h (sbss_section, sdata_section): Delete.
+
+	* config/mcore/mcore-elf.h (EXPORTS_SECTION_ASM_OP): Delete.
+	(SUBTARGET_EXTRA_SECTIONS, SUBTARGET_EXTRA_SECTION_FUNCTIONS): Delete.
+	(EXPORT_SECTION_FUNCTION, SUBTARGET_SWITCH_SECTIONS): Delete.
+	(MCORE_EXPORT_NAME): Emit the exports directive directly, then set
+	in_section to NULL.
+	(ASM_DECLARE_FUNCTION_NAME): Use switch_to_section.
+	(ASM_DECLARE_OBJECT_NAME): Update the type of save_section.  Use the
+	global switch_to_section function instead of the old port-local one.
+	* config/mcore/mcore.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS)
+	(SWITCH_SECTION_FUNCTION): Delete.
+	* config/mcore/mcore-pe.h (SUBTARGET_SWITCH_SECTIONS): Delete.
+	(DRECTVE_SECTION_ASM_OP, SUBTARGET_EXTRA_SECTIONS): Delete.
+	(SUBTARGET_EXTRA_SECTION_FUNCTIONS, DRECTVE_SECTION_FUNCTION): Delete.
+	(MCORE_EXPORT_NAME): Emit ".section .drectve" directly, then set
+	in_section to NULL.
+	(ASM_DECLARE_OBJECT_NAME): Update the type of save_section.  Use the
+	global switch_to_section function instead of the old port-local one.
+	(ASM_DECLARE_FUNCTION_NAME): Use switch_to_section.
+
+	* config/mips/mips.c (mips_file_start): Update comment.
+	(mips_output_aligned_bss): Use switch_to_section and get_named_section.
+	(mips_output_aligned_decl_common): Use switch_to_section.
+	(mips_select_rtx_section): Return the section rather than emitting
+	assembly code.  Use get_named_section.
+	(mips_function_rodata_section: Likewise get_section.
+	(build_mips16_function_stub): Use switch_to_section.
+	* config/mips/mips.h (ASM_OUTPUT_IDENT): Use switch_to_section.
+	(SDATA_SECTION_ASM_OP): Delete.
+	* config/mips/vxworks.h (EXTRA_SECTIONS): Delete.
+	(EXTRA_SECTION_FUNCTIONS): Delete.
+
+	* config/mmix/mmix.c (mmix_file_start, mmix_file_end)
+	(mmix_asm_output_aligned_local): Use switch_to_section.
+
+	* config/pa/pa.c (som_readonly_data_section, som_one_only_data_section)
+	(som_one_only_readonly_data_section): New variables.
+	(pa_output_function_epilogue): Set in_section to NULL instead of
+	calling forget_section.
+	(output_deferred_plabels): Use select_section.
+	(pa_asm_output_mi_thunk): Likewise.  Set in_section to NULL instead
+	of calling forget_section.
+	(pa_asm_output_aligned_bss, pa_asm_output_aligned_common)
+	(pa_asm_output_aligned_local): Use select_section.
+	(som_text_section_asm_op): Delete in favor of...
+	(som_output_text_section_asm_op): ...this new function.
+	(pa_som_asm_init_sections): New function.
+	(pa_select_section): Return the section rather than emitting
+	assembly code.
+	* config/pa/pa.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Delete.
+	(SOM_READONLY_DATA_SECTION_FUNCTION): Delete.
+	(SOM_ONE_ONLY_READONLY_DATA_SECTION_FUNCTION): Delete.
+	(SOM_ONE_ONLY_DATA_SECTION_FUNCTION, FORGET_SECTION_FUNCTION): Delete.
+	* config/pa/pa-protos.h (som_text_section_asm_op): Delete.
+	(som_readonly_data_section, som_one_only_readonly_data_section)
+	(som_one_only_data_section, forget_section): Delete.
+	* config/pa/som.h (TEXT_SECTION_ASM_OP): Delete.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	(READONLY_DATA_SECTION, TARGET_ASM_EXCEPTION_SECTION): Delete.
+
+	* config/rs6000/rs6000.c (read_only_data_section): New variable.
+	(private_data_section, read_only_private_data_section): New variables.
+	(sdata2_section, toc_section): New variables.
+	(rs6000_file_start): Use switch_to_section.
+	(rs6000_assemble_integer): Use comparisons against in_section
+	instead of calling in_toc_section and in_text_section.  Use
+	unlikely_text_section_p.
+	(rs6000_elf_output_toc_section_asm_op): New function, derived
+	from the old rs6000/sysv4.h toc_section function.
+	(rs6000_elf_asm_init_sections): New function.
+	(rs6000_elf_select_rtx_section, rs6000_elf_select_section): Return
+	the section rather than emitting assembly code.
+	(machopic_output_stub): Use switch_to_section.
+	(toc_section): Delete dummy function.
+	(rs6000_elf_asm_out_constructor, rs6000_elf_asm_out_destructor): Use
+	switch_to_section and get_section.
+	(rs6000_xcoff_output_readonly_section_asm_op): New function.
+	(rs6000_xcoff_output_readwrite_section_asm_op): New function.
+	(rs6000_xcoff_output_toc_section_asm_op): New function, derived from
+	the old rs6000/xcoff.h toc_section function.
+	(rs6000_xcoff_asm_init_sections): New function.
+	(rs6000_xcoff_select_section, rs6000_xcoff_select_rtx_section): Return
+	the section rather than emitting assembly code.
+	(rs6000_xcoff_file_start): Use switch_to_section.
+	(rs6000_xcoff_file_end): Likewise.
+	* config/rs6000/rs6000-protos.h (toc_section, sdata_section): Delete.
+	(sdata2_section, sbss_section, private_data_section): Delete.
+	(read_only_data_section, read_only_private_data_section): Delete.
+	* config/rs6000/sysv4.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS)
+	(TOC_SECTION_FUNCTION, SDATA_SECTION_FUNCTION, SDATA2_SECTION_FUNCTION)
+	(SBSS_SECTION_FUNCTION, INIT_SECTION_FUNCTION): Delete.
+	(FINI_SECTION_FUNCTION): Delete.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Use switch_to_section.
+	* config/rs6000/xcoff.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS)
+	(READ_ONLY_DATA_SECTION_FUNCTION, PRIVATE_DATA_SECTION_FUNCTION)
+	(READ_ONLY_PRIVATE_DATA_SECTION_FUNCTION, TOC_SECTION_FUNCTION)
+	(READONLY_DATA_SECTION): Delete.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	(ASM_DECLARE_FUNCTION_NAME): Use switch_to_section.  Set in_section
+	to NULL rather than no_section.
+	(TARGET_ASM_EXCEPTION_SECTION): Delete.
+
+	* config/sh/sh.c (sh_file_start): Use switch_to_section.
+
+	* config/sparc/sparc.c (emit_pic_helper): Use switch_to_section.
+	(sparc_output_deferred_case_vectors): Likewise.  Remove argument
+	from call to current_function_section.
+
+	* config/stormy16/stormy16.c: Include ggc.h and gt-storm16.h.
+	(bss100_section): New variable.
+	(xstormy16_asm_output_aligned_common): Use switch_to_section.
+	(xstormy16_asm_init_sections): New function.
+	(xstormy16_asm_out_destructor, xstormy16_asm_out_constructor): Use
+	switch_to_section and get_section.
+	(xstormy16_output_addr_vec): Use switch_to_section.  Remove argument
+	from calls to current_function_section.
+	* config/stormy16/stormy16.h (EXTRA_SECTIONS): Delete.
+	(XSTORMY16_SECTION_FUNCTION, EXTRA_SECTION_FUNCTIONS): Delete.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	* config/stormy16/stormy16-protos.h (bss100_section): Delete.
+
+	* config/svr3.h (ASM_OUTPUT_LOCAL): Use switch_to_section.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, INIT_SECTION_FUNCTION)
+	(FINI_SECTION_FUNCTION): Delete.
+
+	* config/v850/v850.c: Include gt-v850.h.
+	(rosdata_section, rozdata_section, tdata_section, zdata_section)
+	(zbss_section): New variables.
+	(v850_output_aligned_bss): Use switch_to_section.
+	(v850_asm_init_sections): New function.
+	(v850_select_section): Return the section rather than emitting
+	assembly code.
+	* config/v850/v850.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS)
+	(ZDATA_SECTION_ASM_OP, ZBSS_SECTION_ASM_OP, TDATA_SECTION_ASM_OP)
+	(ROSDATA_SECTION_ASM_OP, ROZDATA_SECTION_ASM_OP): Delete.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	* config/v850/v850-protos.h (sdata_section, rosdata_section): Delete.
+	(sbss_section, tdata_section, zdata_section, rozdata_section): Delete.
+	(zbss_section): Delete.
+
+	* config/vax/vaxv.h (ASM_OUTPUT_LOCAL): Use switch_to_section.
+
+	* config/vx-common.h (vxworks_exception_section): Delete.
+	(TARGET_ASM_EXCEPTION_SECTION): Delete.
+
+	* config/xtensa/xtensa.c (xtensa_select_rtx_section): Return the
+	section rather than emitting assembly code.
+	* config/xtensa/xtensa.h (ASM_OUTPUT_POOL_PROLOGUE): Use
+	switch_to_section.
+
+	* Makefile.in (GTFILES): Add $(srcdir)/output.h.
+	* coretypes.h (section): New union and typedef.
+	* dbxout.c (FORCE_TEXT): Use switch_to_section.  Remove argument
+	from call to current_function_section.
+	(dbxout_function_end, dbxout_init, dbxout_source_file, dbxout_finish)
+	(dbxout_symbol_location): Use switch_to_section.
+	* dwarf2out.c (named_section_eh_frame_section): Delete, moving
+	most of the code into...
+	(default_eh_frame_section): ...here.  Return a section.
+	(collect2_eh_frame_section): Delete, moving most of the code into..
+	(switch_to_eh_frame_section): ...this new function.
+	(debug_info_section, debug_abbrev_section, debug_aranges_section)
+	(debug_macinfo_section, debug_line_section, debug_loc_section)
+	(debug_pubnames_section, debug_str_section, debug_ranges_section): New
+	variables.
+	(output_call_frame_info): Call switch_to_eh_frame_section instead of
+	eh_frame_section.  Use switch_to_section and get_section.
+	(dwarf2out_begin_prologue): Use switch_to_section.
+	(AT_string_form): Check the flags in debug_str_section instead of
+	DEBUG_STR_SECTION_FLAGS.
+	(output_comp_unit): Use switch_to_section, get_section, and
+	debug_info_section.
+	(output_line_info, secname_for_decl): Use unlikely_text_section_p.
+	(dwarf2out_begin_block): Use switch_to_section.  Remove argument
+	from call to current_function_section.
+	(dwarf2out_var_location): Use unlikely_text_section_p.
+	(dwarf2out_source_line): Use switch_to_section.  Remove argument
+	from call to current_function_section.
+	(dwarf2out_start_source_file, dwarf2out_end_source_file)
+	(dwarf2out_define, dwarf2out_undef: Use switch_to_section and
+	debug_macinfo_section.
+	(dwarf2out_init): Initialize the new section variables.  Use them
+	instead of calls to named_section_flags.  Use switch_to_section.
+	(output_indirect_string): Use switch_to_section and debug_str_section.
+	(dwarf2out_finish): Use switch_to_section and the new section
+	variables.
+	* except.c (default_exception_section): Return the section instead
+	of emitting assembly code.
+	(output_function_exception_table): Use the global exception_section
+	variable instead of the target hook.  Use switch_to_section.  Remove
+	argument from call to current_function_section.
+	* final.c (HAVE_READONLY_DATA_SECTION): Delete.
+	(shorten_branches): Use pointer comparisons to detect whether the
+	text section is the same as readonly_data_section.
+	(profile_function): Use switch_to_section.  Remove argument from
+	call to current_function_section.
+	(final_scan_insn): Likewise.  Update use of last_text_section.
+	* gengtype.c (open_base_files): Add an include of output.h.
+	* output.h (text_section, data_section, readonly_data_section)
+	(ctors_section, dtors_section, bss_section, init_section)
+	(fini_section, sdata_section): Turn into section pointers.
+	(in_text_section, in_unlikely_text_section, exports_section)
+	(drectve_section, named_section, mergeable_string_section)
+	(last_text_section_name): Delete.
+	(default_exception_section, default_eh_frame_section): Return sections.
+	(SECTION_DECLARED, SECTION_NAMED): New macros.
+	(SECTION_MACH_DEP): Bump value.
+	(section_common, named_section, unnamed_section): New structures.
+	(unnamed_section_callback): New typedef.
+	(section): New union.
+	(sbss_section, exception_section, eh_frame_section): New variables.
+	(in_section, last_text_section): Turn into section pointers.
+	(get_unnamed_section, get_section, get_named_section): New functions.
+	(mergeable_constant_section, function_section): Return a section.
+	(unlikely_text_section): Likewise.
+	(current_function_section): Likewise.  Remove the decl argument.
+	(unlikely_text_section_p, switch_to_section): New functions.
+	(output_section_asm_op): New function.
+	(set_named_section_flags, named_section_flags, named_section_real)
+	(named_section_first_declaration): Delete.
+	(default_select_section, default_elf_select_section): Return a section.
+	(default_elf_select_section_1, default_function_rodata_section)
+	(default_no_function_rodata_section, default_select_rtx_section)
+	(default_elf_select_rtx_section): Likewise.
+	* rtl.h (in_data_section): Delete.
+	* sdbout.c (sdbout_one_type): Use switch_to_section.
+	* system.h (EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Poison.
+	(READONLY_DATA_SECTION, TARGET_ASM_EXCEPTION_SECTION): Poison.
+	(TARGET_ASM_EH_FRAME_SECTION): Poison.
+	* target-def.h (TARGET_ASM_INIT_SECTIONS): New macro.
+	(TARGET_ASM_EXCEPTION_SECTION, TARGET_ASM_EH_FRAME_SECTION): Delete.
+	(TARGET_ASM_OUT): Update after above changes.
+	* target.h (init_sections): New hook.
+	(exception_section, eh_frame_section): Delete.
+	(select_section, select_rtx_section, function_rodata_section): Return
+	a section rather than emitting assembly code.
+	* varasm.c (text_section, data_section, readonly_data_section)
+	(ctors_section, dtors_section, bss_section, init_section)
+	(fini_section): Turn into section pointers.
+	(sdata_section, sbss_section, exception_section): New variables.
+	(eh_frame_section): New variable.
+	(in_section): Make global and turn into a section pointer.
+	(last_text_section): Turn into a section pointer.
+	(unnamed_sections): New variable.
+	(in_named_name, last_text_section_name): Delete.
+	(EXTRA_SECTION_FUNCTIONS): Delete.
+	(in_named_entry): Delete.
+	(section_htab): New variable, replacing...
+	(in_named_htab): ...this deleted variable.
+	(section_entry_eq, section_entry_hash): New functions, based on...
+	(in_named_entry_eq, in_named_entry_hash): ...these deleted functions.
+	(get_unnamed_section, get_section): New functions.
+	(unlikely_text_section): Return a section instead of emitting
+	assembly code.
+	(in_text_section, in_unlikely_text_section, in_data_section): Delete.
+	(get_named_section_flags, named_section_first_declaration): Delete.
+	(unlikely_text_section_p): New function.
+	(named_section_real, named_section): Delete.
+	(get_named_section): New function.
+	(asm_output_bss, asm_output_aligned_bss): Use switch_to_section.
+	(function_section): Return a section rather than emitting
+	assembly code.
+	(current_function_section): Likewise.  Remove argument.  Use
+	last_text_section if nonnull, otherwise use function_section.
+	(default_function_rodata_section): Return a section rather than
+	emitting assembly code.  Use get_section.
+	(default_no_function_rodata_section): Return a section rather than
+	emitting assembly code.
+	(variable_section): Use switch_to_section and get_named_section.
+	(mergeable_string_section): Return a section rather than emitting
+	assembly code.  Use get_section.  Make static.  Don't take special
+	countermeasures for empty strings.
+	(mergeable_constant_section): Return a section rather than emitting
+	assembly code.  Use get_section.
+	(default_named_section_asm_out_destructor): Use switch_to_section
+	and get_section.
+	(default_dtor_section_asm_out_destructor): Use switch_to_section.
+	(default_named_section_asm_out_constructor): Use switch_to_section
+	and get_section.
+	(default_ctor_section_asm_out_constructor): Use switch_to_section.
+	(assemble_start_function): Likewise.  Set last_text_section to
+	NULL rather than no_section.  Change the type of save_section.
+	(assemble_zeros, assemble_variable): Use the section flags to detect
+	whether or not a section is text.
+	(assemble_static_space): Use switch_to_section.
+	(assemble_trampoline_template): Likewise.
+	(output_constant_def_contents): Use switch_to_section and
+	get_named_section.
+	(output_constant_pool_1): Use switch_to_section.  Use the section
+	flags to see whether sections contain mergeable data.
+	(init_varasm_once): Initialize section_htab instead of in_named_htab.
+	Initialize new section variables.  Call TARGET_ASM_INIT_SECTIONS.
+	(default_elf_asm_named_section): Use SECTION_DECLARED to detect
+	whether a section has already been declared.
+	(default_select_section, default_elf_select_section): Return a
+	section rather than emitting assembly code.
+	(default_elf_select_section_1): Likewise.  Use bss_section for
+	SECCAT_BSS if nonnull.  Use get_named_section.
+	(default_select_rtx_section): Return a section rather than
+	emitting assembly code.
+	(default_elf_select_rtx_section): Likewise.  Use get_named_section.
+	(file_end_indicate_exec_stack): Use switch_to_section and get_section.
+	(output_section_asm_op, switch_to_section): New functions.
+	* vmsdbgout.c (vmsdbgout_finish): Use switch_to_section and
+	get_named_section.
+
+	* doc/tm.texi: Expand the introduction to the sections documentation.
+	(TRAMPOLINE_SECTION): Document new interface.
+	(SDATA_SECTION_ASM_OP): Document new macro.
+	(READONLY_DATA_SECTION): Delete.
+	(SDATA_SECTION_ASM_OP): Document new macro.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Delete.
+	(TARGET_ASM_INIT_SECTIONS): Document new hook.
+	(TARGET_ASM_SELECT_SECTION, TARGET_ASM_FUNCTION_RODATA_SECTION)
+	(TARGET_ASM_SELECT_RTX_SECTION): Adjust for new interface.
+	(TARGET_EXCEPTION_SECTION, TARGET_EH_FRAME_SECTION): Delete.
+
 2005-12-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.c (init_gcc_specs): Match braces inside conditionally

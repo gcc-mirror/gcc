@@ -113,12 +113,12 @@ dwarf2out_do_frame (void)
 #define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
 #endif
 
-/* Various versions of targetm.eh_frame_section.  Note these must appear
-   outside the DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO macro guards.  */
+/* Return the default value of eh_frame_section.  Note that this function
+   must appear outside the DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO
+   macro guards.  */
 
-/* Version of targetm.eh_frame_section for systems with named sections.  */
-void
-named_section_eh_frame_section (void)
+section *
+default_eh_frame_section (void)
 {
 #ifdef EH_FRAME_SECTION_NAME
   int flags;
@@ -143,30 +143,9 @@ named_section_eh_frame_section (void)
     }
   else
     flags = SECTION_WRITE;
-  named_section_flags (EH_FRAME_SECTION_NAME, flags);
-#endif
-}
-
-/* Version of targetm.eh_frame_section for systems using collect2.  */
-void
-collect2_eh_frame_section (void)
-{
-  tree label = get_file_function_name ('F');
-
-  data_section ();
-  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
-  targetm.asm_out.globalize_label (asm_out_file, IDENTIFIER_POINTER (label));
-  ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
-}
-
-/* Default version of targetm.eh_frame_section.  */
-void
-default_eh_frame_section (void)
-{
-#ifdef EH_FRAME_SECTION_NAME
-  named_section_eh_frame_section ();
+  return get_section (EH_FRAME_SECTION_NAME, flags, NULL);
 #else
-  collect2_eh_frame_section ();
+  return NULL;
 #endif
 }
 
@@ -189,6 +168,17 @@ static GTY(()) VEC(tree,gc) *incomplete_types;
    scopes.  This table is used to find the proper place to
    define type declaration DIE's.  */
 static GTY(()) VEC(tree,gc) *decl_scope_table;
+
+/* Pointers to various DWARF2 sections.  */
+static GTY(()) section *debug_info_section;
+static GTY(()) section *debug_abbrev_section;
+static GTY(()) section *debug_aranges_section;
+static GTY(()) section *debug_macinfo_section;
+static GTY(()) section *debug_line_section;
+static GTY(()) section *debug_loc_section;
+static GTY(()) section *debug_pubnames_section;
+static GTY(()) section *debug_str_section;
+static GTY(()) section *debug_ranges_section;
 
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
@@ -1994,6 +1984,28 @@ dw_cfi_oprnd2_desc (enum dwarf_call_frame_info cfi)
 
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
+/* Switch to eh_frame_section.  If we don't have an eh_frame_section,
+   switch to the data section instead, and write out a synthetic label
+   for collect2.  */
+
+static void
+switch_to_eh_frame_section (void)
+{
+  tree label;
+
+  if (eh_frame_section)
+    switch_to_section (eh_frame_section);
+  else
+    {
+      switch_to_section (data_section);
+      label = get_file_function_name ('F');
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+      targetm.asm_out.globalize_label (asm_out_file,
+				       IDENTIFIER_POINTER (label));
+      ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
+    }
+}
+
 /* Map register numbers held in the call frame info that gcc has
    collected using DWARF_FRAME_REGNUM to those that should be output in
    .debug_frame and .eh_frame.  */
@@ -2188,9 +2200,9 @@ output_call_frame_info (int for_eh)
     app_enable ();
 
   if (for_eh)
-    targetm.asm_out.eh_frame_section ();
+    switch_to_eh_frame_section ();
   else
-    named_section_flags (DEBUG_FRAME_SECTION, SECTION_DEBUG);
+    switch_to_section (get_section (DEBUG_FRAME_SECTION, SECTION_DEBUG, NULL));
 
   ASM_GENERATE_INTERNAL_LABEL (section_start_label, FRAME_BEGIN_LABEL, for_eh);
   ASM_OUTPUT_LABEL (asm_out_file, section_start_label);
@@ -2492,7 +2504,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
     return;
 #endif
 
-  function_section (current_function_decl);
+  switch_to_section (function_section (current_function_decl));
   ASM_GENERATE_INTERNAL_LABEL (label, FUNC_BEGIN_LABEL,
 			       current_function_funcdef_no);
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, FUNC_BEGIN_LABEL,
@@ -4988,7 +5000,7 @@ AT_string_form (dw_attr_ref a)
   /* If we cannot expect the linker to merge strings in .debug_str
      section, only put it into .debug_str if it is worth even in this
      single module.  */
-  if ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) == 0
+  if ((debug_str_section->common.flags & SECTION_MERGE) == 0
       && (len - DWARF_OFFSET_SIZE) * node->refcount <= len)
     return node->form = DW_FORM_string;
 
@@ -7196,12 +7208,12 @@ output_comp_unit (dw_die_ref die, int output_if_empty)
       sprintf (tmp, ".gnu.linkonce.wi.%s", oldsym);
       secname = tmp;
       die->die_symbol = NULL;
+      switch_to_section (get_section (secname, SECTION_DEBUG, NULL));
     }
   else
-    secname = (const char *) DEBUG_INFO_SECTION;
+    switch_to_section (debug_info_section);
 
   /* Output debugging information.  */
-  named_section_flags (secname, SECTION_DEBUG);
   output_compilation_unit_header ();
   output_die (die);
 
@@ -7828,10 +7840,7 @@ output_line_info (void)
   current_file = 1;
   current_line = 1;
 
-  if (cfun
-      && (last_text_section == in_unlikely_executed_text
-	  || (last_text_section == in_named
-	      && last_text_section_name == cfun->unlikely_text_section_name)))
+  if (cfun && unlikely_text_section_p (last_text_section))
     strcpy (prev_line_label, cfun->cold_section_label);
   else
     strcpy (prev_line_label, text_section_label);
@@ -10176,11 +10185,7 @@ secname_for_decl (tree decl)
       tree sectree = DECL_SECTION_NAME (current_function_decl);
       secname = TREE_STRING_POINTER (sectree);
     }
-  else if (cfun
-	   && (last_text_section == in_unlikely_executed_text
-	       || (last_text_section == in_named
-		   && last_text_section_name
-		      == cfun->unlikely_text_section_name)))
+  else if (cfun && unlikely_text_section_p (last_text_section))
     secname = cfun->cold_section_label;
   else
     secname = text_section_label;
@@ -13383,7 +13388,7 @@ static void
 dwarf2out_begin_block (unsigned int line ATTRIBUTE_UNUSED,
 		       unsigned int blocknum)
 {
-  current_function_section (current_function_decl);
+  switch_to_section (current_function_section ());
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
 }
 
@@ -13393,7 +13398,7 @@ dwarf2out_begin_block (unsigned int line ATTRIBUTE_UNUSED,
 static void
 dwarf2out_end_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int blocknum)
 {
-  current_function_section (current_function_decl);
+  switch_to_section (current_function_section ());
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
 }
 
@@ -13550,10 +13555,7 @@ dwarf2out_var_location (rtx loc_note)
   newloc->var_loc_note = loc_note;
   newloc->next = NULL;
 
-  if (cfun
-      && (last_text_section == in_unlikely_executed_text
-	  || (last_text_section == in_named
-	      && last_text_section_name == cfun->unlikely_text_section_name)))
+  if (cfun && unlikely_text_section_p (last_text_section))
     newloc->section_label = cfun->cold_section_label;
   else
     newloc->section_label = text_section_label;
@@ -13588,7 +13590,7 @@ dwarf2out_source_line (unsigned int line, const char *filename)
   if (debug_info_level >= DINFO_LEVEL_NORMAL
       && line != 0)
     {
-      current_function_section (current_function_decl);
+      switch_to_section (current_function_section ());
 
       /* If requested, emit something human-readable.  */
       if (flag_debug_asm)
@@ -13685,7 +13687,7 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
     {
       int fileno;
 
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_macinfo_section);
       dw2_asm_output_data (1, DW_MACINFO_start_file, "Start new file");
       dw2_asm_output_data_uleb128 (lineno, "Included from line number %d",
 				   lineno);
@@ -13706,7 +13708,7 @@ dwarf2out_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_macinfo_section);
       dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
 }
@@ -13721,7 +13723,7 @@ dwarf2out_define (unsigned int lineno ATTRIBUTE_UNUSED,
 {
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_macinfo_section);
       dw2_asm_output_data (1, DW_MACINFO_define, "Define macro");
       dw2_asm_output_data_uleb128 (lineno, "At line number %d", lineno);
       dw2_asm_output_nstring (buffer, -1, "The macro");
@@ -13738,7 +13740,7 @@ dwarf2out_undef (unsigned int lineno ATTRIBUTE_UNUSED,
 {
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_macinfo_section);
       dw2_asm_output_data (1, DW_MACINFO_undef, "Undefine macro");
       dw2_asm_output_data_uleb128 (lineno, "At line number %d", lineno);
       dw2_asm_output_nstring (buffer, -1, "The macro");
@@ -13790,6 +13792,25 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 
   used_rtx_array = VEC_alloc (rtx, gc, 32);
 
+  debug_info_section = get_section (DEBUG_INFO_SECTION,
+				    SECTION_DEBUG, NULL);
+  debug_abbrev_section = get_section (DEBUG_ABBREV_SECTION,
+				      SECTION_DEBUG, NULL);
+  debug_aranges_section = get_section (DEBUG_ARANGES_SECTION,
+				       SECTION_DEBUG, NULL);
+  debug_macinfo_section = get_section (DEBUG_MACINFO_SECTION,
+				       SECTION_DEBUG, NULL);
+  debug_line_section = get_section (DEBUG_LINE_SECTION,
+				    SECTION_DEBUG, NULL);
+  debug_loc_section = get_section (DEBUG_LOC_SECTION,
+				   SECTION_DEBUG, NULL);
+  debug_pubnames_section = get_section (DEBUG_PUBNAMES_SECTION,
+					SECTION_DEBUG, NULL);
+  debug_str_section = get_section (DEBUG_STR_SECTION,
+				   DEBUG_STR_SECTION_FLAGS, NULL);
+  debug_ranges_section = get_section (DEBUG_RANGES_SECTION,
+				      SECTION_DEBUG, NULL);
+
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label,
 			       DEBUG_ABBREV_SECTION_LABEL, 0);
@@ -13804,22 +13825,22 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 			       DEBUG_LINE_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
 			       DEBUG_RANGES_SECTION_LABEL, 0);
-  named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG);
+  switch_to_section (debug_abbrev_section);
   ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
-  named_section_flags (DEBUG_INFO_SECTION, SECTION_DEBUG);
+  switch_to_section (debug_info_section);
   ASM_OUTPUT_LABEL (asm_out_file, debug_info_section_label);
-  named_section_flags (DEBUG_LINE_SECTION, SECTION_DEBUG);
+  switch_to_section (debug_line_section);
   ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_macinfo_section);
       ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
 				   DEBUG_MACINFO_SECTION_LABEL, 0);
       ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
     }
 
-  text_section ();
+  switch_to_section (text_section);
   ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
   if (flag_reorder_blocks_and_partition)
     {
@@ -13838,7 +13859,7 @@ output_indirect_string (void **h, void *v ATTRIBUTE_UNUSED)
 
   if (node->form == DW_FORM_strp)
     {
-      named_section_flags (DEBUG_STR_SECTION, DEBUG_STR_SECTION_FLAGS);
+      switch_to_section (debug_str_section);
       ASM_OUTPUT_LABEL (asm_out_file, node->label);
       assemble_string (node->str, strlen (node->str) + 1);
     }
@@ -14155,7 +14176,7 @@ dwarf2out_finish (const char *filename)
     add_sibling_attributes (node->die);
 
   /* Output a terminator label for the .text section.  */
-  text_section ();
+  switch_to_section (text_section);
   targetm.asm_out.internal_label (asm_out_file, TEXT_END_LABEL, 0);
   if (flag_reorder_blocks_and_partition)
     {
@@ -14170,7 +14191,7 @@ dwarf2out_finish (const char *filename)
      examining the file.  */
   if (! DWARF2_ASM_LINE_DEBUG_INFO)
     {
-      named_section_flags (DEBUG_LINE_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_line_section);
       output_line_info ();
     }
 
@@ -14178,7 +14199,7 @@ dwarf2out_finish (const char *filename)
   if (have_location_lists)
     {
       /* Output the location lists info.  */
-      named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_loc_section);
       ASM_GENERATE_INTERNAL_LABEL (loc_section_label,
 				   DEBUG_LOC_SECTION_LABEL, 0);
       ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
@@ -14214,13 +14235,13 @@ dwarf2out_finish (const char *filename)
   output_comp_unit (comp_unit_die, 0);
 
   /* Output the abbreviation table.  */
-  named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG);
+  switch_to_section (debug_abbrev_section);
   output_abbrev_section ();
 
   /* Output public names table if necessary.  */
   if (pubname_table_in_use)
     {
-      named_section_flags (DEBUG_PUBNAMES_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_pubnames_section);
       output_pubnames ();
     }
 
@@ -14228,14 +14249,14 @@ dwarf2out_finish (const char *filename)
      table, so don't write it out if we don't have any.  */
   if (fde_table_in_use)
     {
-      named_section_flags (DEBUG_ARANGES_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_aranges_section);
       output_aranges ();
     }
 
   /* Output ranges section if necessary.  */
   if (ranges_table_in_use)
     {
-      named_section_flags (DEBUG_RANGES_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_ranges_section);
       ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
       output_ranges ();
     }
@@ -14243,7 +14264,7 @@ dwarf2out_finish (const char *filename)
   /* Have to end the macro section.  */
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
+      switch_to_section (debug_macinfo_section);
       dw2_asm_output_data (1, 0, "End compilation unit");
     }
 

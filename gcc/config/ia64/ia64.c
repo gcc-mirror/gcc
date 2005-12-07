@@ -229,16 +229,16 @@ static void ia64_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				  HOST_WIDE_INT, tree);
 static void ia64_file_start (void);
 
-static void ia64_select_rtx_section (enum machine_mode, rtx,
-				     unsigned HOST_WIDE_INT);
+static section *ia64_select_rtx_section (enum machine_mode, rtx,
+					 unsigned HOST_WIDE_INT);
 static void ia64_output_dwarf_dtprel (FILE *, int, rtx)
      ATTRIBUTE_UNUSED;
-static void ia64_rwreloc_select_section (tree, int, unsigned HOST_WIDE_INT)
+static section *ia64_rwreloc_select_section (tree, int, unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
 static void ia64_rwreloc_unique_section (tree, int)
      ATTRIBUTE_UNUSED;
-static void ia64_rwreloc_select_rtx_section (enum machine_mode, rtx,
-					     unsigned HOST_WIDE_INT)
+static section *ia64_rwreloc_select_rtx_section (enum machine_mode, rtx,
+						 unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
 static unsigned int ia64_section_type_flags (tree, const char *, int);
 static void ia64_hpux_add_extern_decl (tree decl)
@@ -8507,27 +8507,27 @@ ia64_sysv4_init_libfuncs (void)
      glibc doesn't have them.  */
 }
 
-/* Switch to the section to which we should output X.  The only thing
-   special we do here is to honor small data.  */
+/* Return the section to use for X.  The only special thing we do here
+   is to honor small data.  */
 
-static void
+static section *
 ia64_select_rtx_section (enum machine_mode mode, rtx x,
 			 unsigned HOST_WIDE_INT align)
 {
   if (GET_MODE_SIZE (mode) > 0
       && GET_MODE_SIZE (mode) <= ia64_section_threshold)
-    sdata_section ();
+    return sdata_section;
   else
-    default_elf_select_rtx_section (mode, x, align);
+    return default_elf_select_rtx_section (mode, x, align);
 }
 
 /* It is illegal to have relocations in shared segments on AIX and HPUX.
    Pretend flag_pic is always set.  */
 
-static void
+static section *
 ia64_rwreloc_select_section (tree exp, int reloc, unsigned HOST_WIDE_INT align)
 {
-  default_elf_select_section_1 (exp, reloc, align, true);
+  return default_elf_select_section_1 (exp, reloc, align, true);
 }
 
 static void
@@ -8536,14 +8536,16 @@ ia64_rwreloc_unique_section (tree decl, int reloc)
   default_unique_section_1 (decl, reloc, true);
 }
 
-static void
+static section *
 ia64_rwreloc_select_rtx_section (enum machine_mode mode, rtx x,
 				 unsigned HOST_WIDE_INT align)
 {
+  section *sect;
   int save_pic = flag_pic;
   flag_pic = 1;
-  ia64_select_rtx_section (mode, x, align);
+  sect = ia64_select_rtx_section (mode, x, align);
   flag_pic = save_pic;
+  return sect;
 }
 
 #ifndef TARGET_RWRELOC
