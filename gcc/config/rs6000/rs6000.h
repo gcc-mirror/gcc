@@ -1723,17 +1723,14 @@ typedef struct rs6000_args
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg in the non-strict case.  */
 #define INT_REG_OK_FOR_INDEX_P(X, STRICT)			\
-  ((! (STRICT)							\
-    && (REGNO (X) <= 31						\
-	|| REGNO (X) == ARG_POINTER_REGNUM			\
-	|| REGNO (X) == FRAME_POINTER_REGNUM			\
-	|| REGNO (X) >= FIRST_PSEUDO_REGISTER))			\
-   || ((STRICT) && REGNO_OK_FOR_INDEX_P (REGNO (X))))
+  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+   || REGNO_OK_FOR_INDEX_P (REGNO (X)))
 
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg in the non-strict case.  */
 #define INT_REG_OK_FOR_BASE_P(X, STRICT)			\
-  (REGNO (X) > 0 && INT_REG_OK_FOR_INDEX_P (X, (STRICT)))
+  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+   || REGNO_OK_FOR_BASE_P (REGNO (X)))
 
 #define REG_OK_FOR_INDEX_P(X) INT_REG_OK_FOR_INDEX_P (X, REG_OK_STRICT_FLAG)
 #define REG_OK_FOR_BASE_P(X)  INT_REG_OK_FOR_BASE_P (X, REG_OK_STRICT_FLAG)
