@@ -5867,8 +5867,20 @@ force_operand (rtx value, rtx target)
     }
   if (UNARY_P (value))
     {
+      int unsignedp = 0;
+
       op1 = force_operand (XEXP (value, 0), NULL_RTX);
-      return expand_simple_unop (GET_MODE (value), code, op1, target, 0);
+      switch (code)
+	{
+	case ZERO_EXTEND: case UNSIGNED_FIX: case UNSIGNED_FLOAT:
+	  unsignedp = 1;
+	  /* fall through.  */
+	case TRUNCATE:
+	case SIGN_EXTEND: case FIX: case FLOAT:
+	  return convert_to_mode (GET_MODE (value), op1, unsignedp);
+	default:
+	  return expand_simple_unop (GET_MODE (value), code, op1, target, 0);
+	}
     }
 
 #ifdef INSN_SCHEDULING
