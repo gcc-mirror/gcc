@@ -985,7 +985,7 @@ OBJS-common = \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
  sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	   \
  simplify-rtx.o sreal.o stmt.o stor-layout.o stringpool.o		   \
- targhooks.o timevar.o toplev.o tracer.o tree.o tree-dump.o		   \
+ struct-equiv.o targhooks.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
  varasm.o varray.o vec.o version.o vmsdbgout.o xcoffout.o alloc-pool.o	   \
  et-forest.o cfghooks.o bt-load.o pretty-print.o $(GGC) web.o passes.o	   \
  tree-profile.o rtlhooks.o cfgexpand.o lambda-mat.o    			   \
@@ -2361,6 +2361,10 @@ cfgloop.o : cfgloop.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) coretypes.h $(TM_H) \
 cfgloopanal.o : cfgloopanal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(EXPR_H) coretypes.h $(TM_H) \
    $(OBSTACK_H) output.h
+struct-equiv.o : struct-equiv.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(RTL_H) hard-reg-set.h output.h $(FLAGS_H) $(RECOG_H) \
+   insn-config.h $(TARGET_H) $(TM_P_H) $(PARAMS_H) \
+   $(REGS_H) $(EMIT_RTL_H)
 loop-iv.o : loop-iv.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(BASIC_BLOCK_H) \
    hard-reg-set.h $(CFGLOOP_H) $(EXPR_H) coretypes.h $(TM_H) $(OBSTACK_H) \
    output.h intl.h
