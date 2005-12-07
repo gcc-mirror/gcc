@@ -1,5 +1,9 @@
 2005-12-07  J"orn Rennecke <joern.rennecke@st.com>
 
+	* expr.c (force_operand): Use convert_to_mode for conversions.
+
+2005-12-07  J"orn Rennecke <joern.rennecke@st.com>
+
 	* reload.h (reg_equiv_invariant): Declare.
 	* reload.c (refers_to_regno_for_reload_p): Allow R to be a pseudo
 	register also when reg_equiv_invariant[R] is set.
