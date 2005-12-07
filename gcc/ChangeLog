@@ -1,3 +1,12 @@
+2005-12-07  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_mask_and_shift, 
+	struct alignment_context, init_alignment_context, 
+	s390_expand_cs_hqi): New.
+	* config/s390/s390-protos.h (s390_expand_cs_hqi): Declare.
+	* config/s390/s390.md ("sync_compare_and_swaphi",
+	"sync_compare_and_swapqi"): New pattern.
+
 2005-12-07  Daniel Berlin <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/25291

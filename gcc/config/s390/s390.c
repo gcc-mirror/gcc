@@ -3972,6 +3972,156 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
   return false;
 }
 
+/* A subroutine of s390_expand_cs_hqi which returns a register which holds VAL
+   of mode MODE shifted by COUNT bits.  */
+
+static inline rtx
+s390_expand_mask_and_shift (rtx val, enum machine_mode mode, rtx count)
+{
+  val = expand_simple_binop (SImode, AND, val, GEN_INT (GET_MODE_MASK (mode)),
+			     NULL_RTX, 1, OPTAB_DIRECT);
+  return expand_simple_binop (SImode, ASHIFT, val, count, 
+			      NULL_RTX, 1, OPTAB_DIRECT);
+}
+
+/* Structure to hold the initial parameters for a compare_and_swap operation
+   in HImode and QImode.  */ 
+
+struct alignment_context
+{
+  rtx memsi;	  /* SI aligned memory location.  */ 
+  rtx shift;	  /* Bit offset with regard to lsb.  */
+  rtx modemask;	  /* Mask of the HQImode shifted by SHIFT bits.  */
+  rtx modemaski;  /* ~modemask */
+  bool aligned;	  /* True if memory is aliged, false else.  */
+};
+
+/* A subroutine of s390_expand_cs_hqi to initialize the structure AC for
+   transparent simplifying, if the memory alignment is known to be at least
+   32bit.  MEM is the memory location for the actual operation and MODE its
+   mode.  */
+
+static void
+init_alignment_context (struct alignment_context *ac, rtx mem,
+			enum machine_mode mode)
+{
+  ac->shift = GEN_INT (GET_MODE_SIZE (SImode) - GET_MODE_SIZE (mode));
+  ac->aligned = (MEM_ALIGN (mem) >= GET_MODE_BITSIZE (SImode));
+
+  if (ac->aligned)
+    ac->memsi = adjust_address (mem, SImode, 0); /* Memory is aligned.  */
+  else
+    {
+      /* Alignment is unknown.  */
+      rtx byteoffset, addr, align;
+
+      /* Force the address into a register.  */
+      addr = force_reg (Pmode, XEXP (mem, 0));
+
+      /* Align it to SImode.  */
+      align = expand_simple_binop (Pmode, AND, addr,
+				   GEN_INT (-GET_MODE_SIZE (SImode)),
+				   NULL_RTX, 1, OPTAB_DIRECT);
+      /* Generate MEM.  */
+      ac->memsi = gen_rtx_MEM (SImode, align);
+      MEM_VOLATILE_P (ac->memsi) = MEM_VOLATILE_P (mem);
+      set_mem_align (ac->memsi, GET_MODE_BITSIZE (SImode));
+
+      /* Calculate shiftcount.  */
+      byteoffset = expand_simple_binop (Pmode, AND, addr,
+					GEN_INT (GET_MODE_SIZE (SImode) - 1),
+					NULL_RTX, 1, OPTAB_DIRECT);
+      /* As we already have some offset, evaluate the remaining distance.  */
+      ac->shift = expand_simple_binop (SImode, MINUS, ac->shift, byteoffset,
+				      NULL_RTX, 1, OPTAB_DIRECT);
+
+    }
+  /* Shift is the byte count, but we need the bitcount.  */
+  ac->shift = expand_simple_binop (SImode, MULT, ac->shift, GEN_INT (BITS_PER_UNIT),
+				  NULL_RTX, 1, OPTAB_DIRECT);
+  /* Calculate masks.  */
+  ac->modemask = expand_simple_binop (SImode, ASHIFT, 
+				     GEN_INT (GET_MODE_MASK (mode)), ac->shift,
+				     NULL_RTX, 1, OPTAB_DIRECT);
+  ac->modemaski = expand_simple_unop (SImode, NOT, ac->modemask, NULL_RTX, 1);
+}
+
+/* Expand an atomic compare and swap operation for HImode and QImode.  MEM is
+   the memory location, CMP the old value to compare MEM with and NEW the value
+   to set if CMP == MEM.
+   CMP is never in memory for compare_and_swap_cc because
+   expand_bool_compare_and_swap puts it into a register for later compare.  */
+
+void
+s390_expand_cs_hqi (enum machine_mode mode, rtx target, rtx mem, rtx cmp, rtx new)
+{
+  struct alignment_context ac;
+  rtx cmpv, newv, val, resv, cc;
+  rtx res = gen_reg_rtx (SImode);
+  rtx csloop = gen_label_rtx ();
+  rtx csend = gen_label_rtx ();
+
+  gcc_assert (register_operand (target, VOIDmode));
+  gcc_assert (MEM_P (mem));
+
+  init_alignment_context (&ac, mem, mode);
+
+  /* Shift the values to the correct bit positions.  */
+  if (!(ac.aligned && MEM_P (cmp)))
+    cmp = s390_expand_mask_and_shift (cmp, mode, ac.shift);
+  if (!(ac.aligned && MEM_P (new)))
+    new = s390_expand_mask_and_shift (new, mode, ac.shift);
+
+  /* Load full word.  Subsequent loads are performed by CS.  */
+  val = expand_simple_binop (SImode, AND, ac.memsi, ac.modemaski,
+			     NULL_RTX, 1, OPTAB_DIRECT);
+
+  /* Start CS loop.  */
+  emit_label (csloop);
+  /* val = "<mem>00..0<mem>" 
+   * cmp = "00..0<cmp>00..0"
+   * new = "00..0<new>00..0" 
+   */
+
+  /* Patch cmp and new with val at correct position.  */
+  if (ac.aligned && MEM_P (cmp))
+    {
+      cmpv = force_reg (SImode, val);
+      store_bit_field (cmpv, GET_MODE_BITSIZE (mode), 0, SImode, cmp);
+    }
+  else
+    cmpv = force_reg (SImode, expand_simple_binop (SImode, IOR, cmp, val,
+						   NULL_RTX, 1, OPTAB_DIRECT));
+  if (ac.aligned && MEM_P (new))
+    {
+      newv = force_reg (SImode, val);
+      store_bit_field (newv, GET_MODE_BITSIZE (mode), 0, SImode, new);
+    }
+  else
+    newv = force_reg (SImode, expand_simple_binop (SImode, IOR, new, val,
+						   NULL_RTX, 1, OPTAB_DIRECT));
+
+  /* Emit compare_and_swap pattern.  */
+  emit_insn (gen_sync_compare_and_swap_ccsi (res, ac.memsi, cmpv, newv));
+      
+  /* Jump to end if we're done (likely?).  */
+  s390_emit_jump (csend, s390_emit_compare (EQ, cmpv, ac.memsi));
+
+  /* Check for changes outside mode.  */
+  resv = expand_simple_binop (SImode, AND, res, ac.modemaski, 
+			      NULL_RTX, 1, OPTAB_DIRECT);
+  cc = s390_emit_compare (NE, resv, val); 
+  emit_move_insn (val, resv);
+  /* Loop internal if so.  */
+  s390_emit_jump (csloop, cc);
+
+  emit_label (csend);
+  
+  /* Return the correct part of the bitfield.  */
+  convert_move (target, expand_simple_binop (SImode, LSHIFTRT, res, ac.shift, 
+					     NULL_RTX, 1, OPTAB_DIRECT), 1);
+}
+
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
