@@ -1,3 +1,8 @@
+2005-12-07  Aldy Hernandez  <aldyh@redhat.com>
+
+       PR C++/24138
+        * decl.c (reshape_init_array_1): Handle max_index of -1.
+
 2005-12-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24173
