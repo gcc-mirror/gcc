@@ -1,5 +1,15 @@
 2005-12-07  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.c (s390_expand_atomic): New function.
+	Adjust comment of helper functions.
+	* config/s390/s390-protos.h (s390_expand_atomic): Declare.
+	* config/s390/s390.md ("ATOMIC"): New code macro.
+	("atomic"): Corresponding new code attribute.
+	("sync_lock_test_and_set[hq]i", 
+	"sync_{new_,old_,}{and,ior,xor,add,sub,nand}[hq]i"): New pattern.
+
+2005-12-07  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.c (s390_expand_mask_and_shift, 
 	struct alignment_context, init_alignment_context, 
 	s390_expand_cs_hqi): New.

@@ -3972,8 +3972,8 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
   return false;
 }
 
-/* A subroutine of s390_expand_cs_hqi which returns a register which holds VAL
-   of mode MODE shifted by COUNT bits.  */
+/* A subroutine of s390_expand_cs_hqi and s390_expand_atomic which returns a
+   register that holds VAL of mode MODE shifted by COUNT bits.  */
 
 static inline rtx
 s390_expand_mask_and_shift (rtx val, enum machine_mode mode, rtx count)
@@ -3996,10 +3996,10 @@ struct alignment_context
   bool aligned;	  /* True if memory is aliged, false else.  */
 };
 
-/* A subroutine of s390_expand_cs_hqi to initialize the structure AC for
-   transparent simplifying, if the memory alignment is known to be at least
-   32bit.  MEM is the memory location for the actual operation and MODE its
-   mode.  */
+/* A subroutine of s390_expand_cs_hqi and s390_expand_atomic to initialize
+   structure AC for transparent simplifying, if the memory alignment is known
+   to be at least 32bit.  MEM is the memory location for the actual operation
+   and MODE its mode.  */
 
 static void
 init_alignment_context (struct alignment_context *ac, rtx mem,
@@ -4120,6 +4120,97 @@ s390_expand_cs_hqi (enum machine_mode mode, rtx target, rtx mem, rtx cmp, rtx ne
   /* Return the correct part of the bitfield.  */
   convert_move (target, expand_simple_binop (SImode, LSHIFTRT, res, ac.shift, 
 					     NULL_RTX, 1, OPTAB_DIRECT), 1);
+}
+
+/* Expand an atomic operation CODE of mode MODE.  MEM is the memory location
+   and VAL the value to play with.  If AFTER is true then store the the value
+   MEM holds after the operation, if AFTER is false then store the value MEM
+   holds before the operation.  If TARGET is zero then discard that value, else
+   store it to TARGET.  */
+
+void
+s390_expand_atomic (enum machine_mode mode, enum rtx_code code,
+		    rtx target, rtx mem, rtx val, bool after)
+{
+  struct alignment_context ac;
+  rtx cmp;
+  rtx new = gen_reg_rtx (SImode);
+  rtx orig = gen_reg_rtx (SImode);
+  rtx csloop = gen_label_rtx ();
+
+  gcc_assert (!target || register_operand (target, VOIDmode));
+  gcc_assert (MEM_P (mem));
+
+  init_alignment_context (&ac, mem, mode);
+
+  /* Shift val to the correct bit positions.
+     Preserve "icm", but prevent "ex icm".  */
+  if (!(ac.aligned && code == SET && MEM_P (val)))
+    val = s390_expand_mask_and_shift (val, mode, ac.shift);
+
+  /* Further preparation insns.  */
+  if (code == PLUS || code == MINUS)
+    emit_move_insn (orig, val);
+  else if (code == MULT || code == AND) /* val = "11..1<val>11..1" */
+    val = expand_simple_binop (SImode, XOR, val, ac.modemaski,
+			       NULL_RTX, 1, OPTAB_DIRECT);
+
+  /* Load full word.  Subsequent loads are performed by CS.  */
+  cmp = force_reg (SImode, ac.memsi);
+
+  /* Start CS loop.  */
+  emit_label (csloop);
+  emit_move_insn (new, cmp);
+
+  /* Patch new with val at correct position.  */
+  switch (code)
+    {
+    case PLUS:
+    case MINUS:
+      val = expand_simple_binop (SImode, code, new, orig,
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      val = expand_simple_binop (SImode, AND, val, ac.modemask,
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      /* FALLTHRU */
+    case SET: 
+      if (ac.aligned && MEM_P (val))
+	store_bit_field (new, GET_MODE_BITSIZE (mode), 0, SImode, val);
+      else
+	{
+	  new = expand_simple_binop (SImode, AND, new, ac.modemaski,
+				     NULL_RTX, 1, OPTAB_DIRECT);
+	  new = expand_simple_binop (SImode, IOR, new, val,
+				     NULL_RTX, 1, OPTAB_DIRECT);
+	}
+      break;
+    case AND:
+    case IOR:
+    case XOR:
+      new = expand_simple_binop (SImode, code, new, val,
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      break;
+    case MULT: /* NAND */
+      new = expand_simple_binop (SImode, XOR, new, ac.modemask,
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      new = expand_simple_binop (SImode, AND, new, val,
+				 NULL_RTX, 1, OPTAB_DIRECT);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  /* Emit compare_and_swap pattern.  */
+  emit_insn (gen_sync_compare_and_swap_ccsi (cmp, ac.memsi, cmp, new));
+
+  /* Loop until swapped (unlikely?).  */
+  s390_emit_jump (csloop, gen_rtx_fmt_ee (NE, CCZ1mode,
+					  gen_rtx_REG (CCZ1mode, CC_REGNUM),
+					  const0_rtx));
+
+  /* Return the correct part of the bitfield.  */
+  if (target)
+    convert_move (target, expand_simple_binop (SImode, LSHIFTRT,
+					       after ? new : cmp, ac.shift,
+					       NULL_RTX, 1, OPTAB_DIRECT), 1);
 }
 
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
