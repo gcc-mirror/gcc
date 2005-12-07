@@ -1868,9 +1868,7 @@ add_call_clobber_ops (tree stmt, tree callee)
 	  bool not_written
 	    = not_written_b ? bitmap_bit_p (not_written_b, u) : false;
 
-	  if ((TREE_READONLY (var)
-	       && (TREE_STATIC (var) || DECL_EXTERNAL (var)))
-	      || not_written)
+	  if (not_written)
 	    {
 	      if (!not_read)
 		add_stmt_operand (&var, &empty_ann, opf_none);
