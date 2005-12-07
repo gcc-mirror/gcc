@@ -113,7 +113,7 @@ cxx_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier,
 
     case OFFSET_REF:
       /* Offset refs should not make it through to here.  */
-      abort ();
+      gcc_unreachable ();
 
     case EMPTY_CLASS_EXPR:
       /* We don't need to generate any code for an empty class.  */
