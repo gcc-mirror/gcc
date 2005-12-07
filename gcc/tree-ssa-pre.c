@@ -555,6 +555,55 @@ bitmap_set_copy (bitmap_set_t dest, bitmap_set_t orig)
   bitmap_copy (dest->values, orig->values);
 }
 
+/* Perform bitmapped set rperation DEST &= ORIG.  */
+
+static void
+bitmap_set_and (bitmap_set_t dest, bitmap_set_t orig)
+{
+  bitmap_iterator bi;
+  unsigned int i;
+  bitmap temp = BITMAP_ALLOC (&grand_bitmap_obstack);
+
+  bitmap_and_into (dest->values, orig->values);
+  bitmap_copy (temp, dest->expressions);
+  EXECUTE_IF_SET_IN_BITMAP (temp, 0, i, bi)
+    {
+      tree name = ssa_name (i);
+      tree val = get_value_handle (name);
+      if (!bitmap_bit_p (dest->values, VALUE_HANDLE_ID (val)))
+	bitmap_clear_bit (dest->expressions, i);
+    }
+
+}
+
+/* Perform bitmapped value set operation DEST = DEST & ~ORIG.  */
+
+static void
+bitmap_set_and_compl (bitmap_set_t dest, bitmap_set_t orig)
+{
+  bitmap_iterator bi;
+  unsigned int i;
+  bitmap temp = BITMAP_ALLOC (&grand_bitmap_obstack);
+
+  bitmap_and_compl_into (dest->values, orig->values);
+  bitmap_copy (temp, dest->expressions);
+  EXECUTE_IF_SET_IN_BITMAP (temp, 0, i, bi)
+    {
+      tree name = ssa_name (i);
+      tree val = get_value_handle (name);
+      if (!bitmap_bit_p (dest->values, VALUE_HANDLE_ID (val)))
+	bitmap_clear_bit (dest->expressions, i);
+    }
+}
+
+/* Return true if the bitmap set SET is empty.  */
+
+static bool
+bitmap_set_empty_p (bitmap_set_t set)
+{
+  return bitmap_empty_p (set->values);
+}
+
 /* Copy the set ORIG to the set DEST.  */
 
 static void
@@ -2136,6 +2185,81 @@ can_value_number_call (tree stmt)
   return false;
 }
 
+/* Insert extra phis to merge values that are fully available from
+   preds of BLOCK, but have no dominating representative coming from
+   block DOM.   */
+
+static void
+insert_extra_phis (basic_block block, basic_block dom)
+{
+  
+  if (!single_pred_p (block))
+    {
+      edge e;
+      edge_iterator ei;
+      bool first = true;
+      bitmap_set_t tempset = bitmap_set_new ();
+
+      FOR_EACH_EDGE (e, ei, block->preds)
+	{
+	  if (first)
+	    {
+	      bitmap_set_copy (tempset, AVAIL_OUT (e->src));
+	      first = false;
+	    }
+	  else
+	    bitmap_set_and (tempset, AVAIL_OUT (e->src));
+	}
+
+      if (dom)
+	bitmap_set_and_compl (tempset, AVAIL_OUT (dom));
+
+      if (!bitmap_set_empty_p (tempset))
+	{
+	  unsigned int i;
+	  bitmap_iterator bi;
+
+	  EXECUTE_IF_SET_IN_BITMAP (tempset->expressions, 0, i, bi)
+	    {
+	      tree name = ssa_name (i);
+	      tree val = get_value_handle (name);
+	      tree temp = create_tmp_var (TREE_TYPE (name), "mergephitmp");
+		  
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Creating phi ");
+		  print_generic_expr (dump_file, temp, 0);
+		  fprintf (dump_file, " to merge available but not dominating values ");
+		}
+
+	      add_referenced_tmp_var (temp);
+	      temp = create_phi_node (temp, block);
+	      NECESSARY (temp) = 0; 
+	      VEC_safe_push (tree, heap, inserted_exprs, temp);
+
+	      FOR_EACH_EDGE (e, ei, block->preds)
+		{
+		  tree leader = bitmap_find_leader (AVAIL_OUT (e->src), val);
+		  
+		  gcc_assert (leader);
+		  add_phi_arg (temp, leader, e);
+
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      print_generic_expr (dump_file, leader, 0);
+		      fprintf (dump_file, " in block %d,", e->src->index);
+		    }
+		}
+
+	      vn_add (PHI_RESULT (temp), val, NULL);
+	      
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "\n");
+	    }
+	}
+    }
+}
+
 /* Given a statement STMT and its right hand side which is a load, try
    to look for the expression stored in the location for the load, and
    return true if a useful equivalence was recorded for LHS.  */
@@ -2265,6 +2389,9 @@ compute_avail (void)
       dom = get_immediate_dominator (CDI_DOMINATORS, block);
       if (dom)
 	bitmap_set_copy (AVAIL_OUT (block), AVAIL_OUT (dom));
+
+      if (!in_fre)
+	insert_extra_phis (block, dom);
 
       /* Generate values for PHI nodes.  */
       for (phi = phi_nodes (block); phi; phi = PHI_CHAIN (phi))
