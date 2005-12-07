@@ -23,7 +23,7 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-normal, foo.install-common, foo.install-man,
+# foo.install-common, foo.install-man,
 # foo.uninstall, foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -444,8 +444,6 @@ doc/gnat-style.dvi: ada/gnat-style.texi $(docdir)/include/fdl.texi
 
 # Install hooks:
 # gnat1 is installed elsewhere as part of $(COMPILERS).
-
-ada.install-normal:
 
 # Install the binder program as $(target_noncanonical)-gnatbind
 # and also as either gnatbind (if native) or $(tooldir)/bin/gnatbind

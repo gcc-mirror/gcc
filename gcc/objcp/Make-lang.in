@@ -22,8 +22,8 @@
 # This file provides the language dependent support in the main Makefile.
 # Each language makefile fragment must provide the following targets:
 #
-# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-normal, foo.install-common, foo.install-man,
+# foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.install-common, foo.install-man,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -92,7 +92,6 @@ po-generated:
 #
 # Build hooks:
 
-obj-c++.all.build:
 obj-c++.all.cross:
 obj-c++.start.encap:
 obj-c++.rest.encap:
@@ -110,8 +109,6 @@ lang_checks += check-obj-c++
 #
 # Install hooks:
 # cc1objplus is installed elsewhere as part of $(COMPILERS).
-
-obj-c++.install-normal:
 
 obj-c++.install-common:
 

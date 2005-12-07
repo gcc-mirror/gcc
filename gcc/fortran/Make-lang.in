@@ -24,9 +24,9 @@
 # This file provides the language dependent support in the main Makefile.
 # Each language makefile fragment must provide the following targets:
 #
-# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.info
-# foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
+# foo.install-common, foo.install-info, foo.install-man,
 # foo.uninstall, foo.distdir,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -112,7 +112,6 @@ gt-fortran-trans.h    : s-gtype; @true
 #
 # Build hooks:
 
-fortran.all.build: gfortran$(exeext)
 fortran.all.cross: gfortran-cross$(exeext)
 
 fortran.start.encap: gfortran$(exeext)
@@ -175,9 +174,6 @@ gfortran.pod: $(GFORTRAN_TEXI)
 #
 # Install hooks:
 # f951 is installed elsewhere as part of $(COMPILERS).
-
-# Nothing to do here.
-fortran.install-normal:
 
 # Install the driver program as $(target)-gfortran
 # and also as either gfortran (if native) or $(tooldir)/bin/gfortran.

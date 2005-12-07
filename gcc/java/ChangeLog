@@ -1,5 +1,9 @@
 2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
+	* Make-lang.in (java.all.build, java.install-normal): Remove.
+
+2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
 	* Make-lang.in: Remove all dependencies on s-gtype, except for
 	gt-java-parse.h.
 

@@ -1058,7 +1058,7 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 # The following targets define the interface between us and the languages.
 #
 # all.cross, start.encap, rest.encap,
-# install-normal, install-common, install-info, install-man,
+# install-common, install-info, install-man,
 # uninstall,
 # mostlyclean, clean, distclean, maintainer-clean,
 # stage1, stage2, stage3, stage4
@@ -3608,7 +3608,7 @@ maintainer-clean:
 # broken is small.
 install: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
     install-cpp install-man install-info install-@POSUB@ \
-    lang.install-normal install-driver
+    install-driver
 
 # Handle cpp installation.
 install-cpp: installdirs cpp$(exeext)

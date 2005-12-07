@@ -1,5 +1,9 @@
 2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
+	* Make-lang.in (objc.all.build, objc.install-normal): Remove.
+
+2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
 	* Make-lang.in: Remove all dependencies on s-gtype.
 
 2005-12-02  Richard Guenther  <rguenther@suse.de>

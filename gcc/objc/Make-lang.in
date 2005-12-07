@@ -22,8 +22,8 @@
 # This file provides the language dependent support in the main Makefile.
 # Each language makefile fragment must provide the following targets:
 #
-# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-normal, foo.install-common, foo.install-man,
+# foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.install-common, foo.install-man,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -84,7 +84,6 @@ objc.srcextra:
 #
 # Build hooks:
 
-objc.all.build:
 objc.all.cross:
 objc.start.encap:
 objc.rest.encap:
@@ -102,8 +101,6 @@ lang_checks += check-objc
 #
 # Install hooks:
 # cc1obj is installed elsewhere as part of $(COMPILERS).
-
-objc.install-normal:
 
 objc.install-common:
 

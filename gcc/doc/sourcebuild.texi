@@ -575,7 +575,6 @@ standard rule in @file{gcc/Makefile.in} to the variable
 @code{lang_checks}.
 
 @table @code
-@item all.build
 @itemx all.cross
 @itemx start.encap
 @itemx rest.encap
@@ -601,8 +600,6 @@ Build generated man pages for the front end from Texinfo manuals
 is only called if the necessary tools are available, but should ignore
 errors so as not to stop the build if errors occur; man pages are
 optional and the tools involved may be installed in a broken way.
-@item install-normal
-FIXME: what is this target for?
 @item install-common
 Install everything that is part of the front end, apart from the
 compiler executables listed in @code{compilers} in
