@@ -6223,7 +6223,7 @@ refers_to_regno_for_reload_p (unsigned int regno, unsigned int endregno,
 						 reg_equiv_memory_loc[r],
 						 (rtx*) 0);
 
-	  gcc_assert (reg_equiv_constant[r]);
+	  gcc_assert (reg_equiv_constant[r] || reg_equiv_invariant[r]);
 	  return 0;
 	}
 

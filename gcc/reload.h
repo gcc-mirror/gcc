@@ -157,6 +157,7 @@ extern int n_reloads;
 
 extern GTY (()) struct varray_head_tag *reg_equiv_memory_loc_varray;
 extern rtx *reg_equiv_constant;
+extern rtx *reg_equiv_invariant;
 extern rtx *reg_equiv_memory_loc;
 extern rtx *reg_equiv_address;
 extern rtx *reg_equiv_mem;
