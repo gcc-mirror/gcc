@@ -1,3 +1,8 @@
+2005-12-07  Adrian Straetling  <straetling@de.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_sync_char_short):
+	Add s390*.
+
 2005-12-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/15809
