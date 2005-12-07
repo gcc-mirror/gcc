@@ -1,3 +1,8 @@
+2005-12-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* coretypes.h (section): Provide dummy definition for target files.
+	* config/darwin.h: Revert previous change.
+
 2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* doc/sourcebuild.texi (all.build, install-normal): Remove.
