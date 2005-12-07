@@ -1,5 +1,11 @@
 2005-12-07  Richard Sandiford  <richard@codesourcery.com>
 
+	* coretypes.h: Revert previous change.
+	* config/darwin.h: Revert previous reversion.
+	* config/avr/avr.h (progmem_section): Guard with #ifndef IN_LIBGCC2.
+
+2005-12-07  Richard Sandiford  <richard@codesourcery.com>
+
 	* coretypes.h (section): Provide dummy definition for target files.
 	* config/darwin.h: Revert previous change.
 

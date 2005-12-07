@@ -47,7 +47,9 @@ extern const char *avr_extra_arch_macro;
 extern int avr_mega_p;
 extern int avr_enhanced_p;
 extern int avr_asm_only_p;
+#ifndef IN_LIBGCC2
 extern GTY(()) section *progmem_section;
+#endif
 
 #define AVR_MEGA (avr_mega_p && !TARGET_SHORT_CALLS)
 #define AVR_ENHANCED (avr_enhanced_p)
