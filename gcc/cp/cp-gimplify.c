@@ -247,8 +247,7 @@ gimplify_cp_loop (tree cond, tree body, tree incr, bool cond_is_first)
       if (cond && !integer_nonzerop (cond))
 	{
 	  t = build_bc_goto (bc_break);
-	  exit = build3 (COND_EXPR, void_type_node, cond, exit, t);
-	  exit = fold (exit);
+	  exit = fold_build3 (COND_EXPR, void_type_node, cond, exit, t);
 	  gimplify_stmt (&exit);
 
 	  if (cond_is_first)
