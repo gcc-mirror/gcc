@@ -23,8 +23,8 @@
 # This file provides the language dependent support in the main Makefile.
 # Each language makefile fragment must provide the following targets:
 #
-# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-normal, foo.install-common, foo.install-man,
+# foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.install-common, foo.install-man,
 # foo.uninstall, foo.distdir,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -141,7 +141,6 @@ treelang/parse.c treelang/parse.h treelang/parse.output: treelang/parse.y
 #
 # Build hooks:
 
-treelang.all.build: treelang
 treelang.all.cross:
 	_error_not_here_yet - havent even thought about it - it may even work
 
@@ -183,9 +182,6 @@ $(htmldir)/treelang/index.html: $(TEXI_TREELANG_FILES)
 
 #
 # Install hooks:
-
-# Nothing to do here.
-treelang.install-normal: treelang.install.common
 
 # Install
 .phony:treelang.install.common

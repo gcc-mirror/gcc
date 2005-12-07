@@ -26,8 +26,8 @@
 # This file provides the language dependent support in the main Makefile.
 # Each language makefile fragment must provide the following targets:
 #
-# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-normal, foo.install-common, foo.install-man,
+# foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.install-common, foo.install-man,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -160,7 +160,6 @@ jvgenmain$(exeext): $(JVGENMAIN_OBJS) $(LIBDEPS)
 #
 # Build hooks:
 
-java.all.build: $(GCJ)$(exeext)
 java.all.cross: $(GCJ)-cross$(exeext)
 java.start.encap: $(GCJ)$(exeext)
 java.rest.encap:
@@ -193,9 +192,6 @@ check-java :
 # Install hooks:
 # jc1, gcj, jvgenmain, and gcjh are installed elsewhere as part
 # of $(COMPILERS).
-
-# Nothing to do here.
-java.install-normal:
 
 # Install gcj as well as the target-independent tools.
 # For a native build, we special-case gcjh and also install

@@ -1,5 +1,12 @@
 2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
+	* doc/sourcebuild.texi (all.build, install-normal): Remove.
+	* configure.ac: Remove all.build and install-normal from target_list
+	* configure: Regenerate.
+	* Makefile.in (install): Don't depend on install-normal.
+
+2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
 	* Makefile.in: Document the use of stamps.
 
 2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>

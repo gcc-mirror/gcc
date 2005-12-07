@@ -23,8 +23,8 @@
 # This file provides the language dependent support in the main Makefile.
 # Each language makefile fragment must provide the following targets:
 #
-# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-normal, foo.install-common, foo.install-man,
+# foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.install-common, foo.install-man,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -112,7 +112,6 @@ $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
 #
 # Build hooks:
 
-c++.all.build: g++$(exeext)
 c++.all.cross: g++-cross$(exeext)
 c++.start.encap: g++$(exeext)
 c++.rest.encap:
@@ -140,9 +139,6 @@ lang_checks += check-g++
 #
 # Install hooks:
 # cc1plus is installed elsewhere as part of $(COMPILERS).
-
-# Nothing to do here.
-c++.install-normal:
 
 # Install the driver program as $(target)-g++
 # and also as either g++ (if native) or $(tooldir)/bin/g++.
