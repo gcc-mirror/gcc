@@ -1095,6 +1095,42 @@ endif
 # Rebuilding this configuration
 # -----------------------------
 
+# On the use of stamps:
+# Consider the example of tree-check.h. It is constructed with build/gencheck.
+# A simple rule to build tree-check.h would be
+# tree-check.h: build/gencheck$(build_exeext)
+#	$(RUN_GEN) build/gencheck$(build_exeext) > tree-check.h
+#
+# but tree-check.h doesn't change every time gencheck changes. It would the
+# nice if targets that depend on tree-check.h wouldn't be rebuild
+# unnecessarily when tree-check.h is unchanged. To make this, tree-check.h
+# must not be overwritten with a identical copy. One solution is to use a
+# temporary file
+# tree-check.h: build/gencheck$(build_exeext)
+#	$(RUN_GEN) build/gencheck$(build_exeext) > tree-check.h
+#	$(SHELL) $(srcdir)/../move-if-change tmp-check.h tree-check.h
+#
+# This solution has a different problem. Since the time stamp of tree-check.h
+# is unchanged, make will try to update tree-check.h every time it runs.
+# To prevent this, one can add a stamp
+# tree-check.h: s-check
+# s-check : build/gencheck$(build_exeext)
+#	$(RUN_GEN) build/gencheck$(build_exeext) > tree-check.h
+#	$(SHELL) $(srcdir)/../move-if-change tmp-check.h tree-check.h
+#	$(STAMP) s-check
+#
+# The problem with this solution is that make thinks that tree-check.h is
+# always unchanged. Make must be deceived into thinking that tree-check.h is
+# rebuild by the "a: s-a" rule. To do this, add a dummy command:
+# tree-check.h: s-check; @true
+# s-check : build/gencheck$(build_exeext)
+#	$(RUN_GEN) build/gencheck$(build_exeext) > tree-check.h
+#	$(SHELL) $(srcdir)/../move-if-change tmp-check.h tree-check.h
+#	$(STAMP) s-check
+#
+# This is what is done in this makefile. Note that mkconfig.sh has a
+# move-if-change built-in
+
 Makefile: config.status $(srcdir)/Makefile.in $(LANG_MAKEFRAGS)
 	LANGUAGES="$(CONFIG_LANGUAGES)" \
 	CONFIG_HEADERS= \
@@ -2700,9 +2736,7 @@ s-output : $(MD_DEPS) build/genoutput$(build_exeext)
 
 genrtl.o : genrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
   $(GGC_H)
-genrtl.c genrtl.h : s-genrtl
-	@true	# force gnu make to recheck modification times.
-
+genrtl.c genrtl.h : s-genrtl; @true
 s-genrtl: build/gengenrtl$(build_exeext)
 	$(RUN_GEN) build/gengenrtl$(build_exeext) -h > tmp-genrtl.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-genrtl.h genrtl.h
