@@ -81,9 +81,6 @@ objc/objc-act.o : objc/objc-act.c \
 
 objc.srcextra:
 
-gtype-objc.h : s-gtype ; @true
-gt-objc-objc-act.h : s-gtype ; @true
-
 #
 # Build hooks:
 

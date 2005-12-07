@@ -109,11 +109,6 @@ $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
 	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' -L ANSI-C \
 		$(srcdir)/cp/cfns.gperf > $(srcdir)/cp/cfns.h
 
-gtype-cp.h gt-cp-call.h gt-cp-decl.h gt-cp-decl2.h : s-gtype; @true
-gt-cp-pt.h gt-cp-repo.h gt-cp-parser.h gt-cp-method.h : s-gtype; @true
-gt-cp-tree.h gt-cp-mangle.h gt-cp-name-lookup.h gt-cp-typeck2.h: s-gtype; @true
-gt-cp-rtti.h gt-cp-cp-objcp-common.h: s-gtype ; @true
-
 #
 # Build hooks:
 

@@ -108,11 +108,7 @@ f951$(exeext): $(F95_OBJS) \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 		$(F95_OBJS) $(BACKEND) $(F95_LIBS)
 
-gt-fortran-f95-lang.h gtype-fortran.h	      : s-gtype; @true
-gt-fortran-trans-decl.h gt-fortran-trans.h    : s-gtype; @true
-gt-fortran-trans-io.h gt-fortran-trans-types.h: s-gtype; @true
-gt-fortran-trans-intrinsic.h		      : s-gtype; @true
-
+gt-fortran-trans.h    : s-gtype; @true
 #
 # Build hooks:
 

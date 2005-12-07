@@ -1,3 +1,9 @@
+2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
+	* doc/gty.texi: Remove instructions for adding a dependency on s-gtype.
+	* Makefile.in: Add code to compute some dependencies on s-gtype
+	automatically.  Remove the declaration of those dependencies.
+
 2005-12-07  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc/reload.c (push_secondary_reload): Fix typo:
@@ -516,14 +522,14 @@
 
 2005-12-06  Aldy Hernandez  <aldyh@redhat.com>
 
-       PR C++/24138
-        * tree.c (integer_all_onesp): Always return true if all bits on.
+	PR C++/24138
+	* tree.c (integer_all_onesp): Always return true if all bits on.
 
-        * testsuite/g++.dg/init/array0.C: New.
+	* testsuite/g++.dg/init/array0.C: New.
 
 2005-12-06  Adrian Straetling  <straetling@de.ibm.com>
 
-	  * doc/md.texi: Adapt to implementation.
+	* doc/md.texi: Adapt to implementation.
 
 2005-12-06  Andreas Schwab  <schwab@suse.de>
 

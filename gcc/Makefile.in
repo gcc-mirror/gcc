@@ -2776,14 +2776,25 @@ GTFILES_FILES_FILES = @all_gtfiles_files_files@
 GTFILES_LANG_DIR_NAMES = @subdirs@
 GTFILES_SRCDIR = @srcdir@
 
+GTFILES_FILES_FILES_C = $(subst $(srcdir)/,, \
+	$(filter %.c, $(GTFILES_FILES_FILES)))
+GTFILES_FILES_FILES_H = $(addprefix gt-, \
+	$(subst /,-,$(GTFILES_FILES_FILES_C:.c=.h)))
+GTFILES_LANG_DIR_NAMES_H = $(foreach d,$(GTFILES_LANG_DIR_NAMES), gtype-$(d).h)
+ALL_GTFILES_H := $(shell echo $(GTFILES_FILES_FILES_H) \
+	$(GTFILES_LANG_DIR_NAMES_H) | sed "s/ /\n/g" | sort -u)
+
+$(ALL_GTFILES_H) : s-gtype ; @true
+
+
 gt-cgraph.h gt-coverage.h gtype-desc.h gtype-desc.c gt-except.h \
 gt-function.h gt-integrate.h gt-tree.h gt-varasm.h \
 gt-emit-rtl.h gt-explow.h gt-stor-layout.h gt-regclass.h \
 gt-lists.h gt-alias.h gt-cselib.h gt-gcse.h \
 gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h gt-dojump.h \
 gt-dwarf2out.h gt-reg-stack.h gt-dwarf2asm.h \
-gt-dbxout.h gt-c-common.h gt-c-decl.h gt-c-parser.h \
-gt-c-pragma.h gtype-c.h gt-cfglayout.h \
+gt-dbxout.h \
+gtype-c.h gt-cfglayout.h \
 gt-tree-mudflap.h gt-tree-vect-generic.h \
 gt-tree-profile.h gt-tree-ssa-address.h \
 gt-tree-ssanames.h gt-tree-iterator.h gt-gimplify.h \

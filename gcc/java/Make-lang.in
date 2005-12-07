@@ -95,10 +95,7 @@ $(srcdir)/java/keyword.h: $(srcdir)/java/keyword.gperf
 	exit 1; } ; \
 	mv -f k$$$$.h keyword.h)
 
-gt-java-class.h gt-java-constants.h gt-java-decl.h : s-gtype ; @true
-gt-java-expr.h gt-java-jcf-parse.h gt-java-jcf-write.h : s-gtype ; @true
-gt-java-lang.h gt-java-mangle.h gt-java-parse.h : s-gtype ; @true
-gt-java-builtins.h gtype-java.h gt-java-resource.h : s-gtype ; @true
+gt-java-parse.h : s-gtype ; @true
 
 # Executables built by this Makefile:
 JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \

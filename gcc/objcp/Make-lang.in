@@ -89,8 +89,6 @@ objcp/objcp-act.o : objc/objc-act.c \
 
 po-generated:
 
-gtype-objcp.h : s-gtype ; @true
-
 #
 # Build hooks:
 
