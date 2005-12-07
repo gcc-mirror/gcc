@@ -1,5 +1,10 @@
 2005-12-07  Richard Sandiford  <richard@codesourcery.com>
 
+	* gcc/reload.c (push_secondary_reload): Fix typo:
+	s/insn_constraint/scratch_constraint/.
+
+2005-12-07  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/darwin.h: Guard section variables with #ifndef IN_LIBGCC2.
 
 2005-12-07  Richard Sandiford  <richard@codesourcery.com>
