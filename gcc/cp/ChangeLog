@@ -1,5 +1,13 @@
 2005-12-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/19397
+	PR c++/19762
+	PR c++/19764
+	* parser.c (cp_parser_declarator_id): Check for error_mark_node
+	before building a SCOPE_REF.
+
+2005-12-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	Backport:
 	2005-10-20  Mark Mitchell  <mark@codesourcery.com>
 
