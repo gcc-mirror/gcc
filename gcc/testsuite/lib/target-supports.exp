@@ -1380,6 +1380,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
 	     || [istarget alpha*-*-*] 
+	     || [istarget s390*-*-*] 
 	     || [istarget powerpc*-*-*] } {
            set et_sync_char_short_saved 1
         }
