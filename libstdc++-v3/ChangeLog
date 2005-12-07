@@ -1,3 +1,8 @@
+2005-12-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/configopts.html ([--enable-libstdcxx-allocator]):
+	Mention the SGI pooled allocator.
+
 2005-12-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/sso_string_base.h (__sso_string_base<>::_M_assign):
