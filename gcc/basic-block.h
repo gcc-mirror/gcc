@@ -991,4 +991,8 @@ extern basic_block get_bb_copy (basic_block);
 
 #include "cfghooks.h"
 
+/* In struct-equiv.c */
+extern bool insns_match_p (int, rtx, rtx);
+extern int flow_find_cross_jump (int, basic_block, basic_block, rtx *, rtx *);
+
 #endif /* GCC_BASIC_BLOCK_H */
