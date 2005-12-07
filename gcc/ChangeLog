@@ -1,3 +1,8 @@
+2005-12-07  Richard Sandiford  <richard@codesourcery.com>
+	    Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* config/darwin.h: Guard section variables with #ifndef USED_FOR_TARGET.
+
 2005-12-07  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (bitmap_set_and): New function.

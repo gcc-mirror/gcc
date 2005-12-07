@@ -610,7 +610,7 @@ Boston, MA 02110-1301, USA.  */
 #define MAX_OFILE_ALIGNMENT 0x8000
 
 /* Declare the section variables.  */
-#ifndef IN_LIBGCC2
+#ifndef USED_FOR_TARGET
 #define DEF_SECTION(NAME, FLAGS, DIRECTIVE, OBJC) extern section *NAME;
 #include "darwin-sections.def"
 #undef DEF_SECTION
