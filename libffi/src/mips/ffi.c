@@ -50,17 +50,17 @@ static void ffi_prep_args(char *stack,
 			  int bytes,
 			  int flags)
 {
-  register int i;
-  register void **p_argv;
-  register char *argp;
-  register ffi_type **p_arg;
+  int i;
+  void **p_argv;
+  char *argp;
+  ffi_type **p_arg;
 
 #if _MIPS_SIM == _ABIN32
   /* If more than 8 double words are used, the remainder go
      on the stack. We reorder stuff on the stack here to 
      support this easily. */
-  if (bytes > 8 * FFI_SIZEOF_ARG)
-    argp = &stack[bytes - (8 * FFI_SIZEOF_ARG)];
+  if (bytes > 8 * sizeof(ffi_arg))
+    argp = &stack[bytes - (8 * sizeof(ffi_arg))];
   else
     argp = stack;
 #else
@@ -85,102 +85,93 @@ static void ffi_prep_args(char *stack,
   for (i = ecif->cif->nargs, p_arg = ecif->cif->arg_types; i; i--, p_arg++)
     {
       size_t z;
-      unsigned short a;
+      unsigned int a;
 
-      /* Align if necessary */
+      /* Align if necessary.  */
       a = (*p_arg)->alignment;
-      if (a < FFI_SIZEOF_ARG)
-        a = FFI_SIZEOF_ARG;
+      if (a < sizeof(ffi_arg))
+        a = sizeof(ffi_arg);
       
-      if ((a - 1) & (unsigned) argp) {
-	argp = (char *) ALIGN(argp, a);
-	FIX_ARGP;
-      }
-
-#if _MIPS_SIM == _ABIO32
-#define OFFSET 0
-#else
-#define OFFSET sizeof(int)
-#endif      
-
-	  z = (*p_arg)->size;
-	  if (z < sizeof(ffi_arg))
-	    {
-	      z = sizeof(ffi_arg);
-
-	      switch ((*p_arg)->type)
-		{
-		case FFI_TYPE_SINT8:
-		  *(SINT32 *) &argp[OFFSET] = (SINT32)*(SINT8 *)(* p_argv);
-		  break;
-		  
-		case FFI_TYPE_UINT8:
-		  *(UINT32 *) &argp[OFFSET] = (UINT32)*(UINT8 *)(* p_argv);
-		  break;
-		  
-		case FFI_TYPE_SINT16:
-		  *(SINT32 *) &argp[OFFSET] = (SINT32)*(SINT16 *)(* p_argv);
-		  break;
-		  
-		case FFI_TYPE_UINT16:
-		  *(UINT32 *) &argp[OFFSET] = (UINT32)*(UINT16 *)(* p_argv);
-		  break;
-		  
-		case FFI_TYPE_SINT32:
-		  *(SINT32 *) &argp[OFFSET] = (SINT32)*(SINT32 *)(* p_argv);
-		  break;
-		  
-		case FFI_TYPE_UINT32:
-		case FFI_TYPE_POINTER:
-		  *(UINT32 *) &argp[OFFSET] = (UINT32)*(UINT32 *)(* p_argv);
-		  break;
-
-		  /* This can only happen with 64bit slots */
-		case FFI_TYPE_FLOAT:
-		  *(float *) argp = *(float *)(* p_argv);
-		  break;
-
-		  /* Handle small structures */
-		case FFI_TYPE_STRUCT:
-		  memcpy(argp, *p_argv, (*p_arg)->size);
-		  break;
-
-		default:
-		  FFI_ASSERT(0);
-		}
-	    }
-	  else
-	    {
-#if _MIPS_SIM == _ABIO32	      
-	      memcpy(argp, *p_argv, z);
-#else
-	      {
-		unsigned end = (unsigned) argp+z;
-		unsigned cap = (unsigned) stack+bytes;
-
-		/* Check if the data will fit within the register
-		   space. Handle it if it doesn't. */
-
-		if (end <= cap)
-		  memcpy(argp, *p_argv, z);
-		else
-		  {
-		    unsigned portion = end - cap;
-
-		    memcpy(argp, *p_argv, portion);
-		    argp = stack;
-		    memcpy(argp, 
-			   (void*)((unsigned)(*p_argv)+portion), z - portion);
-		  }
-	      }
-#endif
-	    }
-	  p_argv++;
-	  argp += z;
+      if ((a - 1) & (unsigned int) argp)
+	{
+	  argp = (char *) ALIGN(argp, a);
 	  FIX_ARGP;
+	}
+
+      z = (*p_arg)->size;
+      if (z <= sizeof(ffi_arg))
+	{
+	  z = sizeof(ffi_arg);
+
+	  switch ((*p_arg)->type)
+	    {
+	      case FFI_TYPE_SINT8:
+		*(ffi_arg *)argp = *(SINT8 *)(* p_argv);
+		break;
+
+	      case FFI_TYPE_UINT8:
+		*(ffi_arg *)argp = *(UINT8 *)(* p_argv);
+		break;
+		  
+	      case FFI_TYPE_SINT16:
+		*(ffi_arg *)argp = *(SINT16 *)(* p_argv);
+		break;
+		  
+	      case FFI_TYPE_UINT16:
+		*(ffi_arg *)argp = *(UINT16 *)(* p_argv);
+		break;
+		  
+	      case FFI_TYPE_SINT32:
+		*(ffi_arg *)argp = *(SINT32 *)(* p_argv);
+		break;
+		  
+	      case FFI_TYPE_UINT32:
+	      case FFI_TYPE_POINTER:
+		*(ffi_arg *)argp = *(UINT32 *)(* p_argv);
+		break;
+
+	      /* This can only happen with 64bit slots.  */
+	      case FFI_TYPE_FLOAT:
+		*(float *) argp = *(float *)(* p_argv);
+		break;
+
+	      /* Handle small structures.  */
+	      case FFI_TYPE_STRUCT:
+	      default:
+		memcpy(argp, *p_argv, (*p_arg)->size);
+		break;
+	    }
+	}
+      else
+	{
+#if _MIPS_SIM == _ABIO32
+	  memcpy(argp, *p_argv, z);
+#else
+	  {
+	    unsigned end = (unsigned) argp+z;
+	    unsigned cap = (unsigned) stack+bytes;
+
+	    /* Check if the data will fit within the register space.
+	       Handle it if it doesn't.  */
+
+	    if (end <= cap)
+	      memcpy(argp, *p_argv, z);
+	    else
+	      {
+		unsigned portion = end - cap;
+
+		memcpy(argp, *p_argv, portion);
+		argp = stack;
+		memcpy(argp,
+		       (void*)((unsigned)(*p_argv)+portion), z - portion);
+	      }
+	  }
+#endif
+      }
+      p_argv++;
+      argp += z;
+      FIX_ARGP;
     }
-  
-  return;
 }
 
 #if _MIPS_SIM == _ABIN32
@@ -524,8 +515,8 @@ ffi_prep_closure (ffi_closure *closure,
 #endif /* FFI_MIPS_O32 */
 
   tramp[0] = 0x3c190000 | (fn >> 16);     /* lui  $25,high(fn) */
-  tramp[1] = 0x3c080000 | (ctx >> 16);    /* lui  $8,high(ctx) */
-  tramp[2] = 0x37390000 | (fn & 0xffff);  /* ori  $25,low(fn)  */
+  tramp[1] = 0x37390000 | (fn & 0xffff);  /* ori  $25,low(fn)  */
+  tramp[2] = 0x3c080000 | (ctx >> 16);    /* lui  $8,high(ctx) */
   tramp[3] = 0x03200008;                  /* jr   $25          */
   tramp[4] = 0x35080000 | (ctx & 0xffff); /* ori  $8,low(ctx)  */
 
@@ -558,16 +549,18 @@ ffi_prep_closure (ffi_closure *closure,
  */
 int
 ffi_closure_mips_inner_O32 (ffi_closure *closure,
-			    void *rvalue, unsigned long *ar,
+			    void *rvalue, ffi_arg *ar,
 			    double *fpr)
 {
   ffi_cif *cif;
-  void **avalue;
+  void **avaluep;
+  ffi_arg *avalue;
   ffi_type **arg_types;
   int i, avn, argn, seen_int;
 
   cif = closure->cif;
-  avalue = alloca (cif->nargs * sizeof (void *));
+  avalue = alloca (cif->nargs * sizeof (ffi_arg));
+  avaluep = alloca (cif->nargs * sizeof (ffi_arg));
 
   seen_int = (cif->abi == FFI_O32_SOFT_FLOAT);
   argn = 0;
@@ -588,13 +581,43 @@ ffi_closure_mips_inner_O32 (ffi_closure *closure,
 	  (arg_types[i]->type == FFI_TYPE_FLOAT ||
 	   arg_types[i]->type == FFI_TYPE_DOUBLE))
 	{
-	  avalue[i] = ((char *) &fpr[i]);
+#ifdef __MIPSEB__
+	  if (arg_types[i]->type == FFI_TYPE_FLOAT)
+	    avaluep[i] = ((char *) &fpr[i]) + sizeof (float);
+	  else
+#endif
+	    avaluep[i] = (char *) &fpr[i];
 	}
       else
 	{
 	  if (arg_types[i]->alignment == 8 && (argn & 0x1))
 	    argn++;
-	  avalue[i] = ((char *) &ar[argn]);
+	  switch (arg_types[i]->type)
+	    {
+	      case FFI_TYPE_SINT8:
+		avaluep[i] = &avalue[i];
+		*(SINT8 *) &avalue[i] = (SINT8) ar[argn];
+		break;
+
+	      case FFI_TYPE_UINT8:
+		avaluep[i] = &avalue[i];
+		*(UINT8 *) &avalue[i] = (UINT8) ar[argn];
+		break;
+		  
+	      case FFI_TYPE_SINT16:
+		avaluep[i] = &avalue[i];
+		*(SINT16 *) &avalue[i] = (SINT16) ar[argn];
+		break;
+		  
+	      case FFI_TYPE_UINT16:
+		avaluep[i] = &avalue[i];
+		*(UINT16 *) &avalue[i] = (UINT16) ar[argn];
+		break;
+
+	      default:
+		avaluep[i] = (char *) &ar[argn];
+		break;
+	    }
 	  seen_int = 1;
 	}
       argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
@@ -602,7 +625,7 @@ ffi_closure_mips_inner_O32 (ffi_closure *closure,
     }
 
   /* Invoke the closure. */
-  (closure->fun) (cif, rvalue, avalue, closure->user_data);
+  (closure->fun) (cif, rvalue, avaluep, closure->user_data);
 
   if (cif->abi == FFI_O32_SOFT_FLOAT)
     {
