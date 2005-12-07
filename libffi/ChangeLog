@@ -1,3 +1,18 @@
+2005-12-07  Thiemo Seufer  <ths@networkno.de>
+
+	* src/mips/ffitarget.h: Remove obsolete sgidefs.h include. Add
+	missing parentheses.
+	* src/mips/o32.S (ffi_call_O32): Code formatting. Define
+	and use A3_OFF, FP_OFF, RA_OFF. Micro-optimizations.
+	(ffi_closure_O32): Likewise, but with newly defined A3_OFF2,
+	A2_OFF2, A1_OFF2, A0_OFF2, RA_OFF2, FP_OFF2, S0_OFF2, GP_OFF2,
+	V1_OFF2, V0_OFF2, FA_1_1_OFF2, FA_1_0_OFF2, FA_0_1_OFF2,
+	FA_0_0_OFF2.
+	* src/mips/ffi.c (ffi_prep_args): Code formatting. Fix
+	endianness bugs.
+	(ffi_prep_closure): Improve trampoline instruction scheduling.
+	(ffi_closure_mips_inner_O32): Fix endianness bugs.
+
 2005-09-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* testsuite/lib/libffi-dg.exp (libffi_target_compile): For
