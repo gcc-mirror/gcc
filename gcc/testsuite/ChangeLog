@@ -1,5 +1,9 @@
 2005-12-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/17828
+	* g++.old-deja/g++.other/comdat5.C: New test.
+	* g++.old-deja/g++.other/comdat5-aux.cc: New file.
+
 	* g++.dg/compat/struct-layout-1.exp: New file.
 	* g++.dg/compat/struct-layout-1.h: New.
 	* g++.dg/compat/struct-layout-1_generate.c: New.
