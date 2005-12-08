@@ -47,6 +47,7 @@
 #include "except.h"
 #include "target.h"
 #include "target-def.h"
+#include "basic-block.h"
 
 /* Frame pointer register mask.  */
 #define FP_MASK		 	 (1 << (GPR_FP))
@@ -68,6 +69,7 @@ struct machine_function GTY(())
   int ra_needs_full_frame;
   struct rtx_def * eh_stack_adjust;
   int interrupt_handler;
+  int has_loops;
 };
 
 /* Define the information needed to generate branch and scc insns.
@@ -811,7 +813,7 @@ ms1_override_options (void)
 	error ("bad value (%s) for -march= switch", ms1_cpu_string);
     }
   else
-    ms1_cpu = PROCESSOR_MS1_64_001;
+    ms1_cpu = PROCESSOR_MS2;
 
   if (flag_exceptions)
     {
@@ -1648,6 +1650,510 @@ ms1_pass_in_stack (enum machine_mode mode ATTRIBUTE_UNUSED, tree type)
 	       || TREE_ADDRESSABLE (type))));
 }
 
+/* Increment the counter for the number of loop instructions in the
+   current function.  */
+
+void ms1_add_loop (void)
+{
+  cfun->machine->has_loops++;
+}
+
+
+/* Maxium loop nesting depth.  */
+#define MAX_LOOP_DEPTH 4
+/* Maxium size of a loop (allows some headroom for delayed branch slot
+   filling.  */
+#define MAX_LOOP_LENGTH (200 * 4)
+
+/* We need to keep a vector of basic blocks */
+DEF_VEC_P (basic_block);
+DEF_VEC_ALLOC_P (basic_block,heap);
+
+/* And a vector of loops */
+typedef struct loop_info *loop_info;
+DEF_VEC_P (loop_info);
+DEF_VEC_ALLOC_P (loop_info,heap);
+
+/* Information about a loop we have found (or are in the process of
+   finding).  */
+struct loop_info GTY (())
+{
+  /* loop number, for dumps */
+  int loop_no;
+  
+  /* Predecessor block of the loop.   This is the one that falls into
+     the loop and contains the initialization instruction.  */
+  basic_block predecessor;
+
+  /* First block in the loop.  This is the one branched to by the dbnz
+     insn.  */
+  basic_block head;
+  
+  /* Last block in the loop (the one with the dbnz insn */
+  basic_block tail;
+
+  /* The successor block of the loop.  This is the one the dbnz insn
+     falls into.  */
+  basic_block successor;
+
+  /* The dbnz insn.  */
+  rtx dbnz;
+
+  /* The initialization insn.  */
+  rtx init;
+
+  /* The new initialization instruction.  */
+  rtx loop_init;
+
+  /* The new ending instruction. */
+  rtx loop_end;
+
+  /* The new label placed at the end of the loop. */
+  rtx end_label;
+
+  /* The nesting depth of the loop.  Set to -1 for a bad loop.  */
+  int depth;
+
+  /* The length of the loop.  */
+  int length;
+
+  /* Next loop in the graph. */
+  struct loop_info *next;
+
+  /* Vector of blocks only within the loop, (excluding those within
+     inner loops).  */
+  VEC (basic_block,heap) *blocks;
+
+  /* Vector of inner loops within this loop  */
+  VEC (loop_info,heap) *loops;
+};
+
+/* Information used during loop detection.  */
+typedef struct loop_work GTY(())
+{
+  /* Basic block to be scanned.  */
+  basic_block block;
+
+  /* Loop it will be within.  */
+  loop_info loop;
+} loop_work;
+
+/* Work list.  */
+DEF_VEC_O (loop_work);
+DEF_VEC_ALLOC_O (loop_work,heap);
+
+/* Determine the nesting and length of LOOP.  Return false if the loop
+   is bad.  */
+
+static bool
+ms1_loop_nesting (loop_info loop)
+{
+  loop_info inner;
+  unsigned ix;
+  int inner_depth = 0;
+  
+  if (!loop->depth)
+    {
+      /* Make sure we only have one entry point.  */
+      if (EDGE_COUNT (loop->head->preds) == 2)
+	{
+	  loop->predecessor = EDGE_PRED (loop->head, 0)->src;
+	  if (loop->predecessor == loop->tail)
+	    /* We wanted the other predecessor.  */
+	    loop->predecessor = EDGE_PRED (loop->head, 1)->src;
+	  
+	  /* We can only place a loop insn on a fall through edge of a
+	     single exit block.  */
+	  if (EDGE_COUNT (loop->predecessor->succs) != 1
+	      || !(EDGE_SUCC (loop->predecessor, 0)->flags & EDGE_FALLTHRU))
+	    loop->predecessor = NULL;
+	}
+
+      /* Mark this loop as bad for now.  */
+      loop->depth = -1;
+      if (loop->predecessor)
+	{
+	  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix++, inner);)
+	    {
+	      if (!inner->depth)
+		ms1_loop_nesting (inner);
+	      
+	      if (inner->depth < 0)
+		{
+		  inner_depth = -1;
+		  break;
+		}
+	      
+	      if (inner_depth < inner->depth)
+		inner_depth = inner->depth;
+	      loop->length += inner->length;
+	    }
+	  
+	  /* Set the proper loop depth, if it was good. */
+	  if (inner_depth >= 0)
+	    loop->depth = inner_depth + 1;
+	}
+    }
+  return (loop->depth > 0
+	  && loop->predecessor
+	  && loop->depth < MAX_LOOP_DEPTH
+	  && loop->length < MAX_LOOP_LENGTH);
+}
+
+/* Determine the length of block BB.  */
+
+static int
+ms1_block_length (basic_block bb)
+{
+  int length = 0;
+  rtx insn;
+
+  for (insn = BB_HEAD (bb);
+       insn != NEXT_INSN (BB_END (bb));
+       insn = NEXT_INSN (insn))
+    {
+      if (!INSN_P (insn))
+	continue;
+      if (CALL_P (insn))
+	{
+	  /* Calls are not allowed in loops.  */
+	  length = MAX_LOOP_LENGTH + 1;
+	  break;
+	}
+      
+      length += get_attr_length (insn);
+    }
+  return length;
+}
+
+/* Scan the blocks of LOOP (and its inferiors) looking for uses of
+   REG.  Return true, if we find any.  Don't count the loop's dbnz
+   insn if it matches DBNZ.  */
+
+static bool
+ms1_scan_loop (loop_info loop, rtx reg, rtx dbnz)
+{
+  unsigned ix;
+  loop_info inner;
+  basic_block bb;
+  
+  for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, bb); ix++)
+    {
+      rtx insn;
+
+      for (insn = BB_HEAD (bb);
+	   insn != NEXT_INSN (BB_END (bb));
+	   insn = NEXT_INSN (insn))
+	{
+	  if (!INSN_P (insn))
+	    continue;
+	  if (insn == dbnz)
+	    continue;
+	  if (reg_mentioned_p (reg, PATTERN (insn)))
+	    return true;
+	}
+    }
+  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, inner); ix++)
+    if (ms1_scan_loop (inner, reg, NULL_RTX))
+      return true;
+  
+  return false;
+}
+
+/* MS2 has a loop instruction which needs to be placed just before the
+   loop.  It indicates the end of the loop and specifies the number of
+   loop iterations.  It can be nested with an automatically maintained
+   stack of counter and end address registers.  It's an ideal
+   candidate for doloop.  Unfortunately, gcc presumes that loops
+   always end with an explicit instriction, and the doloop_begin
+   instruction is not a flow control instruction so it can be
+   scheduled earlier than just before the start of the loop.  To make
+   matters worse, the optimization pipeline can duplicate loop exit
+   and entrance blocks and fails to track abnormally exiting loops.
+   Thus we cannot simply use doloop.
+
+   What we do is emit a dbnz pattern for the doloop optimization, and
+   let that be optimized as normal.  Then in machine dependent reorg
+   we have to repeat the loop searching algorithm.  We use the
+   flow graph to find closed loops ending in a dbnz insn.  We then try
+   and convert it to use the loop instruction.  The conditions are,
+
+   * the loop has no abnormal exits, duplicated end conditions or
+   duplicated entrance blocks
+
+   * the loop counter register is only used in the dbnz instruction
+   within the loop
+   
+   * we can find the instruction setting the initial value of the loop
+   counter
+
+   * the loop is not executed more than 65535 times. (This might be
+   changed to 2^32-1, and would therefore allow variable initializers.)
+
+   * the loop is not nested more than 4 deep 5) there are no
+   subroutine calls in the loop.  */
+
+static void
+ms1_reorg_loops (FILE *dump_file)
+{
+  basic_block bb;
+  loop_info loops = NULL;
+  loop_info loop;
+  int nloops = 0;
+  unsigned dwork = 0;
+  VEC (loop_work,heap) *works = VEC_alloc (loop_work,heap,20);
+  loop_work *work;
+  edge e;
+  edge_iterator ei;
+  bool replaced = false;
+
+  /* Find all the possible loop tails.  This means searching for every
+     dbnz instruction.  For each one found, create a loop_info
+     structure and add the head block to the work list. */
+  FOR_EACH_BB (bb)
+    {
+      rtx tail = BB_END (bb);
+
+      while (GET_CODE (tail) == NOTE)
+	tail = PREV_INSN (tail);
+      
+      bb->aux = NULL;
+      if (recog_memoized (tail) == CODE_FOR_decrement_and_branch_until_zero)
+	{
+	  /* A possible loop end */
+
+	  loop = XNEW (struct loop_info);
+	  loop->next = loops;
+	  loops = loop;
+	  loop->tail = bb;
+	  loop->head = BRANCH_EDGE (bb)->dest;
+	  loop->successor = FALLTHRU_EDGE (bb)->dest;
+	  loop->predecessor = NULL;
+	  loop->dbnz = tail;
+	  loop->depth = 0;
+	  loop->length = ms1_block_length (bb);
+	  loop->blocks = VEC_alloc (basic_block, heap, 20);
+	  VEC_quick_push (basic_block, loop->blocks, bb);
+	  loop->loops = NULL;
+	  loop->loop_no = nloops++;
+	  
+	  loop->init = loop->end_label = NULL_RTX;
+	  loop->loop_init = loop->loop_end = NULL_RTX;
+	  
+	  work = VEC_safe_push (loop_work, heap, works, NULL);
+	  work->block = loop->head;
+	  work->loop = loop;
+
+	  bb->aux = loop;
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, ";; potential loop %d ending at\n",
+		       loop->loop_no);
+	      print_rtl_single (dump_file, tail);
+	    }
+	}
+    }
+
+  /*  Now find all the closed loops.
+      until work list empty,
+       if block's auxptr is set
+         if != loop slot
+           if block's loop's start != block
+	     mark loop as bad
+	   else
+             append block's loop's fallthrough block to worklist
+	     increment this loop's depth
+       else if block is exit block
+         mark loop as bad
+       else
+     	  set auxptr
+	  for each target of block
+     	    add to worklist */
+  while (VEC_iterate (loop_work, works, dwork++, work))
+    {
+      loop = work->loop;
+      bb = work->block;
+      if (bb == EXIT_BLOCK_PTR)
+	/* We've reached the exit block.  The loop must be bad. */
+	loop->depth = -1;
+      else if (!bb->aux)
+	{
+	  /* We've not seen this block before.  Add it to the loop's
+	     list and then add each successor to the work list.  */
+	  bb->aux = loop;
+	  loop->length += ms1_block_length (bb);
+	  VEC_safe_push (basic_block, heap, loop->blocks, bb);
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    {
+	      if (!VEC_space (loop_work, works, 1))
+		{
+		  if (dwork)
+		    {
+		      VEC_block_remove (loop_work, works, 0, dwork);
+		      dwork = 0;
+		    }
+		  else
+		    VEC_reserve (loop_work, heap, works, 1);
+		}
+	      work = VEC_quick_push (loop_work, works, NULL);
+	      work->block = EDGE_SUCC (bb, ei.index)->dest;
+	      work->loop = loop;
+	    }
+	}
+      else if (bb->aux != loop)
+	{
+	  /* We've seen this block in a different loop.  If it's not
+	     the other loop's head, then this loop must be bad.
+	     Otherwise, the other loop might be a nested loop, so
+	     continue from that loop's successor.  */
+	  loop_info other = bb->aux;
+	  
+	  if (other->head != bb)
+	    loop->depth = -1;
+	  else
+	    {
+	      VEC_safe_push (loop_info, heap, loop->loops, other);
+	      work = VEC_safe_push (loop_work, heap, works, NULL);
+	      work->loop = loop;
+	      work->block = other->successor;
+	    }
+	}
+    }
+  VEC_free (loop_work, heap, works);
+
+  /* Now optimize the loops.  */
+  for (loop = loops; loop; loop = loop->next)
+    {
+      rtx iter_reg, insn, init_insn;
+      rtx init_val, loop_end, loop_init, end_label, head_label;
+
+      if (!ms1_loop_nesting (loop))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d is bad\n", loop->loop_no);
+	  continue;
+	}
+
+      /* Get the loop iteration register.  */
+      iter_reg = SET_DEST (XVECEXP (PATTERN (loop->dbnz), 0, 1));
+      
+      if (!REG_P (iter_reg))
+	{
+	  /* Spilled */
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d has spilled iteration count\n",
+		     loop->loop_no);
+	  continue;
+	}
+
+      /* Look for the initializing insn */
+      init_insn = NULL_RTX;
+      for (insn = BB_END (loop->predecessor);
+	   insn != PREV_INSN (BB_HEAD (loop->predecessor));
+	   insn = PREV_INSN (insn))
+	{
+	  if (!INSN_P (insn))
+	    continue;
+	  if (reg_mentioned_p (iter_reg, PATTERN (insn)))
+	    {
+	      rtx set = single_set (insn);
+
+	      if (set && rtx_equal_p (iter_reg, SET_DEST (set)))
+		init_insn = insn;
+	      break;
+	    }
+	}
+
+      if (!init_insn)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d has no initializer\n",
+		     loop->loop_no);
+	  continue;
+	}
+      if (dump_file)
+	{
+	  fprintf (dump_file, ";; loop %d initialized by\n",
+		   loop->loop_no);
+	  print_rtl_single (dump_file, init_insn);
+	}
+
+      init_val = PATTERN (init_insn);
+      if (GET_CODE (init_val) == SET)
+	init_val = SET_SRC (init_val);
+      if (GET_CODE (init_val) != CONST_INT || INTVAL (init_val) >= 65535)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d has complex initializer\n",
+		     loop->loop_no);
+	  continue;
+	}
+      
+      /* Scan all the blocks to make sure they don't use iter_reg.  */
+      if (ms1_scan_loop (loop, iter_reg, loop->dbnz))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d uses iterator\n",
+		     loop->loop_no);
+	  continue;
+	}
+
+      /* The loop is good for replacement.  */
+      
+      /* loop is 1 based, dbnz is zero based.  */
+      init_val = GEN_INT (INTVAL (init_val) + 1);
+      
+      iter_reg = gen_rtx_REG (SImode, LOOP_FIRST + loop->depth - 1);
+      end_label = gen_label_rtx ();
+      head_label = XEXP (SET_SRC (XVECEXP (PATTERN (loop->dbnz), 0, 0)), 1);
+      loop_end = gen_loop_end (iter_reg, head_label);
+      loop_init = gen_loop_init (iter_reg, init_val, end_label);
+      loop->init = init_insn;
+      loop->end_label = end_label;
+      loop->loop_init = loop_init;
+      loop->loop_end = loop_end;
+      replaced = true;
+      
+      if (dump_file)
+	{
+	  fprintf (dump_file, ";; replacing loop %d initializer with\n",
+		   loop->loop_no);
+	  print_rtl_single (dump_file, loop->loop_init);
+	  fprintf (dump_file, ";; replacing loop %d terminator with\n",
+		   loop->loop_no);
+	  print_rtl_single (dump_file, loop->loop_end);
+	}
+    }
+
+  /* Now apply the optimizations.  Do it this way so we don't mess up
+     the flow graph half way through.  */
+  for (loop = loops; loop; loop = loop->next)
+    if (loop->loop_init)
+      {
+	emit_jump_insn_after (loop->loop_init, BB_END (loop->predecessor));
+	delete_insn (loop->init);
+	emit_label_before (loop->end_label, loop->dbnz);
+	emit_jump_insn_before (loop->loop_end, loop->dbnz);
+	delete_insn (loop->dbnz);
+      }
+
+  /* Free up the loop structures */
+  while (loops)
+    {
+      loop = loops;
+      loops = loop->next;
+      VEC_free (loop_info, heap, loop->loops);
+      VEC_free (basic_block, heap, loop->blocks);
+      XDELETE (loop);
+    }
+
+  if (replaced && dump_file)
+    {
+      fprintf (dump_file, ";; Replaced loops\n");
+      print_rtl (dump_file, get_insns ());
+    }
+}
 
 /* Structures to hold branch information during reorg.  */
 typedef struct branch_info
@@ -1959,6 +2465,9 @@ ms1_reorg_hazard (void)
 static void
 ms1_machine_reorg (void)
 {
+  if (cfun->machine->has_loops)
+    ms1_reorg_loops (dump_file);
+
   if (ms1_flag_delayed_branch)
     dbr_schedule (get_insns (), dump_file);
   

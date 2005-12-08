@@ -1,3 +1,21 @@
+2005-12-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/ms1/ms1.md (UNSPEC_LOOP): New constant.
+	(loop_end, loop_init, doloop_end): New insns.
+	* config/ms1/ms1.h (LOOP_FIRST, LOOP_LAST): New.
+	(SPECIAL_REG_FIRST, FIRST_PSEUDO_REGISTER): Adjust.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Adjust.
+	(REG_CLASS_CONTENTS, REGISTER_NAMES): Adjust.
+	* config/ms1/ms1.c: #include basic-block.h
+	(struct machine_function): Add has_loops field.
+	(ms1_add_loop): New.
+	(MAX_LOOP_DEPTH, MAX_LOO_LENGTH): New.
+	(struct loop_info, struct loop_work): New.
+	(ms1_loop_nesting, ms1_block_length, ms1_scan_loop): New workers.
+	(ms1_reorg_loops): New loop optimization.
+	(ms1_machine_reorg): Call it.
+	* config/ms1/ms1-protos.h (ms1_add_loop): Declare.
+
 2005-12-08  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/25248
