@@ -1,5 +1,6 @@
 2005-12-08  Andrew Haley  <aph@redhat.com>
 
+	PR libgcj/25265
 	* java-tree.h (enum java_tree_index): Add JTI_SOFT_NOSUCHFIELD_NODE.
 	(soft_abstractmethod_node): New.
 	* expr.c (build_field_ref): Add in-line check for missing field.
