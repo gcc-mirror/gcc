@@ -1042,6 +1042,7 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
   t_bool res = t_false;
   tree rhs0, rhs1;
   tree type_rhs = TREE_TYPE (rhs);
+  tree evol;
   
   /* The RHS is one of the following cases:
      - an SSA_NAME, 
@@ -1084,14 +1085,15 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 	    {
 	      /* Match an assignment under the form: 
 		 "a = b + c".  */
+	      evol = *evolution_of_loop;
 	      res = follow_ssa_edge 
 		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, 
-		 evolution_of_loop, limit);
+		 &evol, limit);
 	      
 	      if (res == t_true)
 		*evolution_of_loop = add_to_evolution 
 		  (loop->num, 
-		   chrec_convert (type_rhs, *evolution_of_loop, at_stmt), 
+		   chrec_convert (type_rhs, evol, at_stmt), 
 		   PLUS_EXPR, rhs1);
 	      
 	      else if (res == t_false)
@@ -1186,68 +1188,6 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
       
       break;
     
-    case MULT_EXPR:
-      /* This case is under the form "opnd0 = rhs0 * rhs1".  */
-      rhs0 = TREE_OPERAND (rhs, 0);
-      rhs1 = TREE_OPERAND (rhs, 1);
-      STRIP_TYPE_NOPS (rhs0);
-      STRIP_TYPE_NOPS (rhs1);
-
-      if (TREE_CODE (rhs0) == SSA_NAME)
-	{
-	  if (TREE_CODE (rhs1) == SSA_NAME)
-	    {
-	      /* Match an assignment under the form: 
-		 "a = b * c".  */
-	      res = follow_ssa_edge 
-		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, 
-		 evolution_of_loop, limit);
-	      
-	      if (res == t_true || res == t_dont_know)
-		*evolution_of_loop = chrec_dont_know;
-	      
-	      else if (res == t_false)
-		{
-		  res = follow_ssa_edge 
-		    (loop, SSA_NAME_DEF_STMT (rhs1), halting_phi, 
-		     evolution_of_loop, limit);
-		  
-		  if (res == t_true || res == t_dont_know)
-		    *evolution_of_loop = chrec_dont_know;
-		}
-	    }
-	  
-	  else
-	    {
-	      /* Match an assignment under the form: 
-		 "a = b * ...".  */
-	      res = follow_ssa_edge 
-		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, 
-		 evolution_of_loop, limit);
-	      if (res == t_true || res == t_dont_know)
-		*evolution_of_loop = chrec_dont_know;
-	    }
-	}
-      
-      else if (TREE_CODE (rhs1) == SSA_NAME)
-	{
-	  /* Match an assignment under the form: 
-	     "a = ... * c".  */
-	  res = follow_ssa_edge 
-	    (loop, SSA_NAME_DEF_STMT (rhs1), halting_phi, 
-	     evolution_of_loop, limit);
-	  if (res == t_true || res == t_dont_know)
-	    *evolution_of_loop = chrec_dont_know;
-	}
-      
-      else
-	/* Otherwise, match an assignment under the form: 
-	   "a = ... * ...".  */
-	/* And there is nothing to do.  */
-	res = t_false;
-      
-      break;
-
     case ASSERT_EXPR:
       {
 	/* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
