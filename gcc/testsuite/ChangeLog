@@ -1,3 +1,7 @@
+2005-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20050330-2.c: New test.
+
 2005-12-08  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25292
