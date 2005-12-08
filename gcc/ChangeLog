@@ -1,3 +1,20 @@
+2005-12-08  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2005-11-28  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (strict_aliasing_warning): Handle all
+	component-ref like accesses.
+
+	2005-11-24  Richard Guenther  <rguenther@suse.de>
+		Dirk Mueller <dmueller@suse.de>
+
+	PR c++/14024
+	* c-common.h (strict_aliasing_warning): Declare.
+	* c-common.c (strict_aliasing_warning): New function,
+	split out from ...
+	* c-typeck.c (build_c_cast): ... here.
+
 2005-12-08  Andreas Krebbel  <krebbel1@de.ibm.com>
             Jakub Jelinek  <jakub@redhat.com>
 

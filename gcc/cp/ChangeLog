@@ -1,3 +1,13 @@
+2005-12-08  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2005-11-24  Richard Guenther  <rguenther@suse.de>
+		Dirk Mueller <dmueller@suse.de>
+
+	PR c++/14024
+	* typeck.c (build_reinterpret_cast_1): Use
+	strict_aliasing_warning.
+
 2005-12-07  Aldy Hernandez  <aldyh@redhat.com>
 
        PR C++/24138

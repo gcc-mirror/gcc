@@ -177,7 +177,10 @@ namespace std
 
         static _Rep&
         _S_empty_rep()
-        { return *reinterpret_cast<_Rep*>(&_S_empty_rep_storage); }
+        {
+	  void* __p = reinterpret_cast<void*>(&_S_empty_rep_storage);
+	  return *reinterpret_cast<_Rep*>(__p);
+	}
 
         bool
 	_M_is_leaked() const
