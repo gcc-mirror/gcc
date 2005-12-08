@@ -1729,27 +1729,12 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 /* Decompose a RTL expression OP for a shift count into its components,
    and return the base register in BASE and the offset in OFFSET.
 
-   If BITS is non-zero, the expression is used in a context where only
-   that number to low-order bits is significant.  We then allow OP to
-   contain and outer AND that does not affect significant bits.  If BITS
-   is zero, we allow OP to contain any outer AND with a constant.
-
    Return true if OP is a valid shift count, false if not.  */
 
 bool
-s390_decompose_shift_count (rtx op, rtx *base, HOST_WIDE_INT *offset, int bits)
+s390_decompose_shift_count (rtx op, rtx *base, HOST_WIDE_INT *offset)
 {
   HOST_WIDE_INT off = 0;
-
-  /* Drop outer ANDs.  */
-  if (GET_CODE (op) == AND && GET_CODE (XEXP (op, 1)) == CONST_INT)
-    {
-      HOST_WIDE_INT mask = ((HOST_WIDE_INT)1 << bits) - 1;
-      if ((INTVAL (XEXP (op, 1)) & mask) != mask)
-	return false;
-
-      op = XEXP (op, 0);
-    }
 
   /* We can have an integer constant, an address register,
      or a sum of the two.  */
@@ -1910,7 +1895,7 @@ s390_extra_constraint_str (rtx op, int c, const char * str)
     case 'Y':
       /* Simply check for the basic form of a shift count.  Reload will
 	 take care of making sure we have a proper base register.  */
-      if (!s390_decompose_shift_count (op, NULL, NULL, 0))
+      if (!s390_decompose_shift_count (op, NULL, NULL))
 	return 0;
       break;
 
@@ -4284,7 +4269,7 @@ print_shift_count_operand (FILE *file, rtx op)
   rtx base;
 
   /* Extract base register and offset.  */
-  if (!s390_decompose_shift_count (op, &base, &offset, 0))
+  if (!s390_decompose_shift_count (op, &base, &offset))
     gcc_unreachable ();
 
   /* Sanity check.  */

@@ -1,3 +1,9 @@
+2005-12-08  Andreas Krebbel  <krebbel1@de.ibm.com>
+            Jakub Jelinek  <jakub@redhat.com>
+
+        PR target/25268
+	* gcc.c-torture/compile/20051207-1.c: New test.
+
 2005-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.dg/other/i386-1.C, gcc.c-torture/execute/990413-2.x,
