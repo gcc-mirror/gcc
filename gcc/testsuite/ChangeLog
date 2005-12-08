@@ -1,3 +1,11 @@
+2005-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/other/i386-1.C, gcc.c-torture/execute/990413-2.x,
+	gcc.dg/torture/pr18582-1.c,
+	gcc.target/i386/attributes-error.c: Also test on x86_64.
+
+	* gcc.dg/pr18928-1.c: Test on all targets supporting pic.
+
 2005-12-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/19397
