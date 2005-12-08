@@ -1,3 +1,9 @@
+2005-12-08  Matthias Klose  <doko@debian.org>
+
+	2005-11-20  Chris Burdess  <dog@gnu.org>
+        * gnu/xml/transform/TransformerImpl.java: Ensure that output stream
+	is not closed if provided in the StreamResult.
+
 2005-12-01  Anthony Green  <green@redhat.com>
 
         PR bootstrap/25207

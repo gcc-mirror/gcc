@@ -487,6 +487,7 @@ class TransformerImpl
     throws IOException
   {
     OutputStream out = null;
+    boolean created = false;
     try
       {
         out = sr.getOutputStream();
@@ -523,6 +524,7 @@ class TransformerImpl
                 URL url = new URL(systemId);
                 out = new FileOutputStream(url.getPath());
               }
+            created = true;
           }
         out = new BufferedOutputStream(out);
         StreamSerializer serializer =
@@ -539,7 +541,7 @@ class TransformerImpl
       {
         try
           {
-            if (out != null)
+            if (out != null && created)
               {
                 out.close();
               }
