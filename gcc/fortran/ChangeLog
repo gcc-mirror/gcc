@@ -1,3 +1,10 @@
+2005-12-08  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25292
+	* check.c (gfc_check_associated): Allow function results
+	as actual arguments to ASSOCIATED.  Moved a misplaced
+	comment.
+
 2005-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* io.c (gfc_resolve_open): RESOLVE_TAG access field as well.

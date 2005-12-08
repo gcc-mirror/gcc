@@ -467,20 +467,23 @@ gfc_check_associated (gfc_expr * pointer, gfc_expr * target)
   int i;
   try t;
 
-  if (variable_check (pointer, 0) == FAILURE)
-    return FAILURE;
+  if (pointer->expr_type == EXPR_VARIABLE)
+    attr = gfc_variable_attr (pointer, NULL);
+  else if (pointer->expr_type == EXPR_FUNCTION)
+    attr = pointer->symtree->n.sym->attr;
+  else
+    gcc_assert (0); /* Pointer must be a variable or a function.  */
 
-  attr = gfc_variable_attr (pointer, NULL);
   if (!attr.pointer)
     {
       must_be (pointer, 0, "a POINTER");
       return FAILURE;
     }
 
+  /* Target argument is optional.  */
   if (target == NULL)
     return SUCCESS;
 
-  /* Target argument is optional.  */
   if (target->expr_type == EXPR_NULL)
     {
       gfc_error ("NULL pointer at %L is not permitted as actual argument "
@@ -489,7 +492,13 @@ gfc_check_associated (gfc_expr * pointer, gfc_expr * target)
       return FAILURE;
     }
 
-  attr = gfc_variable_attr (target, NULL);
+  if (target->expr_type == EXPR_VARIABLE)
+    attr = gfc_variable_attr (target, NULL);
+  else if (target->expr_type == EXPR_FUNCTION)
+    attr = target->symtree->n.sym->attr;
+  else
+    gcc_assert (0); /* Target must be a variable or a function.  */
+
   if (!attr.pointer && !attr.target)
     {
       must_be (target, 1, "a POINTER or a TARGET");

@@ -1,3 +1,8 @@
+2005-12-08  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25292
+	* gfortran.dg/associated_1.f90: New.
+
 2005-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/990413-2.x, gcc.dg/torture/pr18582-1.c:
