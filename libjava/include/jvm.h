@@ -442,6 +442,10 @@ extern "C" void _Jv_ThrowBadArrayIndex (jint bad_index)
   __attribute__((noreturn));
 extern "C" void _Jv_ThrowNullPointerException (void)
   __attribute__((noreturn));
+extern "C" void _Jv_ThrowNoSuchMethodError (void)
+  __attribute__((noreturn));
+extern "C" void _Jv_ThrowNoSuchFieldError (int)
+  __attribute__((noreturn));
 extern "C" jobject _Jv_NewArray (jint type, jint size)
   __attribute__((__malloc__));
 extern "C" jobject _Jv_NewMultiArray (jclass klass, jint dims, ...)

@@ -713,6 +713,17 @@ _Jv_ThrowNoSuchMethodError ()
   throw new java::lang::NoSuchMethodError;
 }
 
+// Throw a NoSuchFieldError.  Called by compiler-generated code when
+// an otable entry is zero.  OTABLE_INDEX is the index in the caller's
+// otable that refers to the missing field.  This index may be used to
+// print diagnostic information about the field.
+void
+_Jv_ThrowNoSuchFieldError (int /* otable_index */)
+{
+  throw new java::lang::NoSuchFieldError;
+}
+
+
 // This is put in empty vtable slots.
 void
 _Jv_ThrowAbstractMethodError ()
@@ -915,12 +926,6 @@ _Jv_Linker::link_symbol_table (jclass klass)
 
       _Jv_Utf8Const *signature = sym.signature;
 
-      {
-	static char *bounce = (char *)_Jv_ThrowNoSuchMethodError;
-	ptrdiff_t offset = (char *)(klass->vtable) - bounce;
-	klass->otable->offsets[index] = offset;
-      }
-
       if (target_class == NULL)
 	throw new java::lang::NoClassDefFoundError 
 	  (_Jv_NewStringUTF (sym.class_name->chars()));
@@ -948,14 +953,41 @@ _Jv_Linker::link_symbol_table (jclass klass)
 	  meth = _Jv_LookupDeclaredMethod(target_class, sym.name, 
 					  sym.signature);
 
-	  if (meth != NULL)
+	  // Every class has a throwNoSuchMethodErrorIndex method that
+	  // it inherits from java.lang.Object.  Find its vtable
+	  // offset.
+	  static int throwNoSuchMethodErrorIndex;
+	  if (throwNoSuchMethodErrorIndex == 0)
 	    {
-	      int offset = _Jv_VTable::idx_to_offset (meth->index);
-	      if (offset == -1)
-		JvFail ("Bad method index");
-	      JvAssert (meth->index < target_class->vtable_method_count);
-	      klass->otable->offsets[index] = offset;
+	      Utf8Const* name 
+		= _Jv_makeUtf8Const ("throwNoSuchMethodError", 
+				     strlen ("throwNoSuchMethodError"));
+	      _Jv_Method* meth
+		= _Jv_LookupDeclaredMethod (&java::lang::Object::class$, 
+					    name, gcj::void_signature);
+	      throwNoSuchMethodErrorIndex 
+		= _Jv_VTable::idx_to_offset (meth->index);
 	    }
+	  
+	  // If we don't find a nonstatic method, insert the
+	  // vtable index of Object.throwNoSuchMethodError().
+	  // This defers the missing method error until an attempt
+	  // is made to execute it.	  
+	  {
+	    int offset;
+	    
+	    if (meth != NULL)
+	      offset = _Jv_VTable::idx_to_offset (meth->index);
+	    else
+	      offset = throwNoSuchMethodErrorIndex;		    
+	    
+	    if (offset == -1)
+	      JvFail ("Bad method index");
+	    JvAssert (meth->index < target_class->vtable_method_count);
+	    
+	    klass->otable->offsets[index] = offset;
+	  }
+
 	  if (debug_link)
 	    fprintf (stderr, "  offsets[%d] = %d (class %s@%p : %s(%s))\n",
 		     (int)index,
@@ -971,12 +1003,20 @@ _Jv_Linker::link_symbol_table (jclass klass)
       {
 	wait_for_state(target_class, JV_STATE_PREPARED);
 	jclass found_class;
-	_Jv_Field *the_field = find_field (klass, target_class, &found_class,
-					   sym.name, sym.signature);
-	if ((the_field->flags & java::lang::reflect::Modifier::STATIC))
-	  throw new java::lang::IncompatibleClassChangeError;
-	else
-	  klass->otable->offsets[index] = the_field->u.boffset;
+	_Jv_Field *the_field = NULL;
+	try
+	  {
+	    the_field = find_field (klass, target_class, &found_class,
+				    sym.name, sym.signature);
+	    if ((the_field->flags & java::lang::reflect::Modifier::STATIC))
+	      throw new java::lang::IncompatibleClassChangeError;
+	    else
+	      klass->otable->offsets[index] = the_field->u.boffset;
+	  }
+	catch (java::lang::NoSuchFieldError *err)
+	  {
+	    klass->otable->offsets[index] = 0;
+	  }
       }
     }
 

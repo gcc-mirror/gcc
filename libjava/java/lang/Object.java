@@ -506,6 +506,14 @@ public class Object
   // completeness (some day we'll be able to auto-generate Object.h).
   private final native void sync_init();
 
+  // If we fail to find a method at class loading time we put the
+  // vtable index of this method in its place: any attempt to call
+  // that method will result in an error.
+  void throwNoSuchMethodError()
+  {
+    throw new NoSuchMethodError("in " + getClass());
+  }
+
   // Note that we don't mention the sync_info field here.  If we do,
   // jc1 will not work correctly.
 }
