@@ -1,3 +1,28 @@
+2005-12-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_vector.h (vector<>::size, resize, capacity,
+	operator[]): Avoid troubles with ADL, user defined operators
+	and __normal_iterator.
+	(_M_erase_at_end): Fix to take a pointer.
+	(clear): Adjust call.
+	* include/bits/vector.tcc (vector<>::insert(iterator, const
+	value_type&), erase(iterator, iterator), operator=(const
+	vector<>&), _M_assign_aux(input_iterator_tag), _M_insert_aux,
+	_M_fill_insert, _M_range_insert): Likewise.
+	(_M_fill_assign, _M_assign_aux(forward_iterator_tag)): Adjust
+	_M_erase_at_end call.
+	* testsuite/23_containers/vector/types/1.cc: New.
+
+2005-12-08  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24617
+	* include/bits/stl_vector.h (vector<>::_M_erase_at_end): New.
+	(vector<>::clear, resize): Use it.
+	* include/bits/vector.tcc (vector<>::erase(iterator, iterator),
+	_M_fill_assign, _M_assign_aux): Likewise.
+
+	* testsuite/23_containers/vector/modifiers/erase/1.cc: New.
+
 2005-12-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/configopts.html ([--enable-libstdcxx-allocator]):
