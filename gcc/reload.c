@@ -2937,11 +2937,15 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	  int constmemok = 0;
 	  int earlyclobber = 0;
 
+#ifndef KEEP_UNARY_OPERATORS_AT_CONSTRAINT_CHECKING
+	  /* See comment at similar #ifndef in recog.c.  */
+
 	  /* If the predicate accepts a unary operator, it means that
 	     we need to reload the operand, but do not do this for
 	     match_operator and friends.  */
 	  if (UNARY_P (operand) && *p != 0)
 	    operand = XEXP (operand, 0);
+#endif
 
 	  /* If the operand is a SUBREG, extract
 	     the REG or MEM (or maybe even a constant) within.

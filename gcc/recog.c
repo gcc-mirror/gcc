@@ -2314,10 +2314,20 @@ constrain_operands (int strict)
 
 	  earlyclobber[opno] = 0;
 
+#ifndef KEEP_UNARY_OPERATORS_AT_CONSTRAINT_CHECKING
+	  /* This macro and the code within is slated for removal in
+	     4.2, hence not documented further than in this comment.
+	     It only makes a difference if both an insn operand
+	     predicate is absent or allows unary operators and its
+	     constraints are present.  See gcc-patches mailing list
+	     thread starting at
+	     <URL:http://gcc.gnu.org/ml/gcc-patches/2005-10/msg00940.html>.  */
+
 	  /* A unary operator may be accepted by the predicate, but it
 	     is irrelevant for matching constraints.  */
 	  if (UNARY_P (op))
 	    op = XEXP (op, 0);
+#endif
 
 	  if (GET_CODE (op) == SUBREG)
 	    {
@@ -2389,12 +2399,16 @@ constrain_operands (int strict)
 		      rtx op1 = recog_data.operand[match];
 		      rtx op2 = recog_data.operand[opno];
 
+#ifndef KEEP_UNARY_OPERATORS_AT_CONSTRAINT_CHECKING
+		      /* See comment at similar #ifndef above.  */
+
 		      /* A unary operator may be accepted by the predicate,
 			 but it is irrelevant for matching constraints.  */
 		      if (UNARY_P (op1))
 			op1 = XEXP (op1, 0);
 		      if (UNARY_P (op2))
 			op2 = XEXP (op2, 0);
+#endif
 
 		      val = operands_match_p (op1, op2);
 		    }

@@ -638,6 +638,10 @@ enum reg_class
 
 #define EXTRA_MEMORY_CONSTRAINT(X, STR) ((X) == 'Q')
 
+/* We want the unary operators visible for constraint checking.
+   (will always be the case in 4.2).  */
+#define KEEP_UNARY_OPERATORS_AT_CONSTRAINT_CHECKING
+
 #define EXTRA_CONSTRAINT_Q(X)				\
  (							\
   /* Just an indirect register (happens to also be	\
