@@ -2820,7 +2820,7 @@ GTFILES_FILES_FILES_H = $(addprefix gt-, \
 	$(subst /,-,$(GTFILES_FILES_FILES_C:.c=.h)))
 GTFILES_LANG_DIR_NAMES_H = $(foreach d,$(GTFILES_LANG_DIR_NAMES), gtype-$(d).h)
 ALL_GTFILES_H := $(shell echo $(GTFILES_FILES_FILES_H) \
-	$(GTFILES_LANG_DIR_NAMES_H) | sed "s/ /\n/g" | sort -u)
+	$(GTFILES_LANG_DIR_NAMES_H) | tr ' ' '\n'  | sort -u)
 
 $(ALL_GTFILES_H) : s-gtype ; @true
 

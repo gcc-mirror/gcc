@@ -1,3 +1,9 @@
+2005-12-08  Daniel Jacobowitz  <dan@codesourcery.com>  
+	    Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.in (ALL_GTFILES_H): Replace sed statement with more portable
+	tr expression.
+
 2005-12-07  J"orn Rennecke <joern.rennecke@st.com>
 
 	* expr.c (force_operand): Use convert_to_mode for conversions.
