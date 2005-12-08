@@ -1,5 +1,6 @@
 2005-12-08  Andrew Haley  <aph@redhat.com>
 
+	PR libgcj/25265
 	* java/lang/Object.h (throwNoSuchMethodError): New method.
 	* java/lang/Object.java (throwNoSuchMethodError): New method.
 	* include/jvm.h (_Jv_ThrowNoSuchFieldError): Declare.
