@@ -1,3 +1,9 @@
+2005-12-09  Alan Modra  <amodra@bigpond.net.au>
+
+	PR debug/24908
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Don't assert that
+	call_used_regs can't be used to save reg in another reg.
+
 2005-12-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
             Christophe Jaillet  <christophe.jaillet@wanadoo.fr>
 

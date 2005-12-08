@@ -1568,11 +1568,10 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  else
 	    {
 	      /* Saving a register in a register.  */
-	      gcc_assert (call_used_regs [REGNO (dest)]
-			  && (!fixed_regs [REGNO (dest)]
-			      /* For the SPARC and its register window.  */
-			      || DWARF_FRAME_REGNUM (REGNO (src))
-				   == DWARF_FRAME_RETURN_COLUMN));
+	      gcc_assert (!fixed_regs [REGNO (dest)]
+			  /* For the SPARC and its register window.  */
+			  || (DWARF_FRAME_REGNUM (REGNO (src))
+			      == DWARF_FRAME_RETURN_COLUMN));
 	      queue_reg_save (label, src, dest, 0);
 	    }
 	  break;
