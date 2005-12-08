@@ -1,3 +1,14 @@
+2005-12-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+            Christophe Jaillet  <christophe.jaillet@wanadoo.fr>
+
+	* ipa-type-escape.c (analyze_variable): Use gcc_assert instead of
+	abort.
+	* except.c (output_ttype): Likewise.
+	* tree-object-size.c (collect_object_sizes_for): Likewise.
+	(check_for_plus_in_loops_1): Likewise.
+	(check_for_plus_in_loops): Likewise.
+	(compute_object_sizes): Use gcc_unreachable instead of abort.
+
 2005-12-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/ms1/ms1.md (UNSPEC_LOOP): New constant.
