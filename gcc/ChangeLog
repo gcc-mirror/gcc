@@ -1,3 +1,10 @@
+2005-12-08  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/25248
+	* tree-scalar-evolution.c (follow_ssa_edge_in_rhs): Do not use
+	evolution_of_loop from the failed attempt.  Remove handling
+	of MULT_EXPR.
+
 2005-12-08  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* tree.h (DECL_EXTERNAL): Clarify documentation.
