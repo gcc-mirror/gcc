@@ -26,6 +26,7 @@ extern void	    ms1_override_options (void);
 extern int	    ms1_initial_elimination_offset (int, int);
 extern const char * ms1_asm_output_opcode (FILE *, const char *);
 extern int          ms1_epilogue_uses	 (int);
+extern void	    ms1_add_loop 	 (void);
 
 #ifdef TREE_CODE
 extern const char * ms1_cannot_inline_p	 (tree);

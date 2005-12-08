@@ -25,6 +25,7 @@
     (UNSPEC_BLOCKAGE 0)
     (UNSPEC_EI 1)
     (UNSPEC_DI 2)
+    (UNSPEC_LOOP 3)
   ])
 
 ;; Attributes
@@ -147,6 +148,58 @@
 	      (clobber (reg:SI 0))])]
   "")
 
+
+;; Loop instructions.  ms2 has a low overhead looping instructions.
+;; these take a constant or register loop count and a loop length
+;; offset.  Unfortunately the loop can only be up to 256 instructions,
+;; We deal with longer loops by moving the loop end upwards.  To do
+;; otherwise would force us to to be very pessimistic right up until
+;; the end.
+
+;; This instruction is a placeholder to make the control flow explicit.
+(define_insn "loop_end"
+  [(set (pc) (if_then_else
+			  (ne (match_operand:SI 0 "register_operand" "")
+			      (const_int 1))
+			  (label_ref (match_operand 1 "" ""))
+			  (pc)))
+   (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))
+   (unspec [(const_int 0)] UNSPEC_LOOP)]
+  "TARGET_MS2"
+  ";loop end %0,%l1"
+  [(set_attr "length" "0")])
+
+;; This is the real looping instruction.  It is placed just before the
+;; loop body.  We make it a branch insn, so it stays at the end of the
+;; block it is in.
+(define_insn "loop_init"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(match_operand:SI 1 "uns_arith_operand" "r,K"))
+   (unspec [(label_ref (match_operand 2 "" ""))] UNSPEC_LOOP)]
+  "TARGET_MS2"
+  "@
+   loop  %1,%l2 ;%0%#
+   loopi %1,%l2 ;%0%#"
+  [(set_attr "length" "4")
+   (set_attr "type" "branch")])
+
+; operand 0 is the loop count pseudo register
+; operand 1 is the number of loop iterations or 0 if it is unknown
+; operand 2 is the maximum number of loop iterations
+; operand 3 is the number of levels of enclosed loops
+; operand 4 is the label to jump to at the top of the loop
+(define_expand "doloop_end"
+  [(parallel [(set (pc) (if_then_else
+			  (ne (match_operand:SI 0 "nonimmediate_operand" "")
+			      (const_int 0))
+			  (label_ref (match_operand 4 "" ""))
+			  (pc)))
+	      (set (match_dup 0)
+		   (plus:SI (match_dup 0)
+			    (const_int -1)))
+	      (clobber (match_scratch:SI 5 ""))])]
+  "TARGET_MS1_16_003 || TARGET_MS2"
+  {ms1_add_loop ();})
 
 ;; Moves
 

@@ -41,7 +41,7 @@ extern enum processor_type ms1_cpu;
 /* A C string constant that tells the GCC driver program options to pass to
    the assembler.  */
 #undef  ASM_SPEC
-#define ASM_SPEC "%{march=*} %{!march=*: -march=ms1-16-002}"
+#define ASM_SPEC "%{march=*} %{!march=*: -march=ms2}"
 
 /* A string to pass to at the end of the command given to the linker.  */
 #undef  LIB_SPEC
@@ -55,7 +55,7 @@ march=ms1-16-003:-T 16-003.ld%s; \
 march=MS1-16-003:-T 16-003.ld%s; \
 march=ms2:-T ms2.ld%s; \
 march=MS2:-T ms2.ld%s; \
-	 : -T 16-002.ld}"
+	 : -T ms2.ld}"
 
 /* A string to pass at the very beginning of the command given to the
    linker.  */
@@ -69,7 +69,7 @@ march=ms1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s; \
 march=MS1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s; \
 march=ms2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s; \
 march=MS2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s; \
-	 :%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s} \
+	 :%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s} \
 crti.o%s crtbegin.o%s"
 
 /* A string to pass at the end of the command given to the linker.  */
@@ -83,7 +83,7 @@ march=ms1-16-003:exit-16-003.o%s; \
 march=MS1-16-003:exit-16-003.o%s; \
 march=ms2:exit-ms2.o%s; \
 march=MS2:exit-ms2.o%s; \
-	 :exit-16-002.o%s} \
+	 :exit-ms2.o%s} \
  crtend.o%s crtn.o%s"
 
 /* Run-time target specifications.  */
@@ -243,10 +243,13 @@ march=MS2:exit-ms2.o%s; \
 					   seen  by the caller */
 #define GPR_INTERRUPT_LINK 15		/* hold return addres for interrupts */
 
+#define LOOP_FIRST         (GPR_LAST + 1)
+#define LOOP_LAST	   (LOOP_FIRST + 3)
+
 /* Argument register that is eliminated in favor of the frame and/or stack
    pointer.  Also add register to point to where the return address is
    stored.  */
-#define SPECIAL_REG_FIRST		(GPR_LAST + 1)
+#define SPECIAL_REG_FIRST		(LOOP_LAST + 1)
 #define SPECIAL_REG_LAST		(SPECIAL_REG_FIRST)
 #define ARG_POINTER_REGNUM		(SPECIAL_REG_FIRST + 0)
 #define SPECIAL_REG_P(R)		((R) == SPECIAL_REG_FIRST)
@@ -258,7 +261,7 @@ march=MS2:exit-ms2.o%s; \
 /* The register used to hold functions return value */
 #define RETVAL_REGNUM		11
 
-#define FIRST_PSEUDO_REGISTER (GPR_FIRST + 17)
+#define FIRST_PSEUDO_REGISTER (SPECIAL_REG_LAST + 1)
 
 #define IS_PSEUDO_P(R)	(REGNO (R) >= FIRST_PSEUDO_REGISTER)
 
@@ -270,7 +273,7 @@ march=MS2:exit-ms2.o%s; \
    R15	IRA	interrupt return address.  */
 #define FIXED_REGISTERS { 1, 0, 0, 0, 0, 0, 0, 0, \
 			  0, 0, 0, 0, 1, 1, 1, 1, \
-			  1			  \
+			  1, 1, 1, 1, 1		  \
 			 }
 
 /* Like `FIXED_REGISTERS' but has 1 for each register that is clobbered (in
@@ -279,7 +282,7 @@ march=MS2:exit-ms2.o%s; \
    allocation of values that must live across function calls.  */
 #define CALL_USED_REGISTERS	{ 1, 1, 1, 1, 1, 0, 0, 1, \
 				  1, 1, 1, 1, 1, 1, 1, 1, \
-				  1			  \
+				  1, 1, 1, 1, 1		  \
 				}
 
 
@@ -310,9 +313,9 @@ enum reg_class
 #define REG_CLASS_NAMES {"NO_REGS", "ALL_REGS" }
 
 #define REG_CLASS_CONTENTS \
-   {									\
-     { 0x0, 0x0 },							\
-     { (((1 << (GPR_LAST + 1)) - 1) & ~(1 << GPR_FIRST)), 0x0 },	\
+   {								\
+     { 0x0 },							\
+     { 0x000fffff },						\
    }
 
 /* A C expression whose value is a register class containing hard register
@@ -736,7 +739,7 @@ extern struct ms1_frame_info current_frame_info;
 #define REGISTER_NAMES							\
 { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7",			\
   "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15",			\
-  "ap" }
+  "LOOP1", "LOOP2", "LOOP3", "LOOP4", "ap" }
 
 /* If defined, a C initializer for an array of structures containing a name and
    a register number.  This macro defines additional names for hard registers,
