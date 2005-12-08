@@ -1,3 +1,8 @@
+2005-12-08  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25292
+	* gfortran.dg/associated_1.f90: New.
+
 2005-12-08  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
