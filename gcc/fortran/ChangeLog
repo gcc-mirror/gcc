@@ -14,7 +14,7 @@
 	* Make-lang.in: Remove all dependencies on s-gtype, except for
 	gt-fortran-trans.h.
 
-2005-12-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2005-12-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/25106
 	* parse.c (next_free): Use new prototype for gfc_match_st_label.
