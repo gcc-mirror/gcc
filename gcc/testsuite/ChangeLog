@@ -1,3 +1,8 @@
+2005-12-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gfortran.dg/vect/vect-5.f90: Expect alignment forcing only on
+	ILP32 vect_no_align platforms.
+
 2005-12-08  Andreas Krebbel  <krebbel1@de.ibm.com>
             Jakub Jelinek  <jakub@redhat.com>
 
