@@ -3486,8 +3486,8 @@ output_ttype (tree type, int tt_format, int tt_format_size)
 	      public = TREE_PUBLIC (type);
 	    }
 	}
-      else if (TREE_CODE (type) != INTEGER_CST)
-	abort ();
+      else
+	gcc_assert (TREE_CODE (type) == INTEGER_CST);
     }
 
   /* Allow the target to override the type table entry format.  */

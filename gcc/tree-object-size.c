@@ -688,8 +688,7 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
   switch (TREE_CODE (stmt))
     {
     case RETURN_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 0)) != MODIFY_EXPR)
-	abort ();
+      gcc_assert (TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR);
       stmt = TREE_OPERAND (stmt, 0);
       /* FALLTHRU  */
 
@@ -815,8 +814,7 @@ check_for_plus_in_loops_1 (struct object_size_info *osi, tree var,
   switch (TREE_CODE (stmt))
     {
     case RETURN_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 0)) != MODIFY_EXPR)
-	abort ();
+      gcc_assert (TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR);
       stmt = TREE_OPERAND (stmt, 0);
       /* FALLTHRU  */
 
@@ -894,8 +892,7 @@ check_for_plus_in_loops (struct object_size_info *osi, tree var)
   switch (TREE_CODE (stmt))
     {
     case RETURN_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 0)) != MODIFY_EXPR)
-	abort ();
+      gcc_assert (TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR);
       stmt = TREE_OPERAND (stmt, 0);
       /* FALLTHRU  */
 
@@ -1045,7 +1042,7 @@ compute_object_sizes (void)
 	    }
 
 	  if (!set_rhs (stmtp, result))
-	    abort ();
+	    gcc_unreachable ();
 	  update_stmt (*stmtp);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))

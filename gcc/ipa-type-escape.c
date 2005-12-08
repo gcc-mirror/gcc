@@ -1349,13 +1349,10 @@ analyze_variable (struct cgraph_varpool_node *vnode)
   if (vnode->externally_visible)
     mark_interesting_type (type, FULL_ESCAPE);
 
-  if (TREE_CODE (global) == VAR_DECL)
-    {
-      if (DECL_INITIAL (global)) 
-	walk_tree (&DECL_INITIAL (global), scan_for_refs, 
-		   NULL, visited_nodes);
-    } 
-  else abort();
+  gcc_assert (TREE_CODE (global) == VAR_DECL);
+
+  if (DECL_INITIAL (global))
+    walk_tree (&DECL_INITIAL (global), scan_for_refs, NULL, visited_nodes);
 }
 
 /* This is the main routine for finding the reference patterns for
