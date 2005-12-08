@@ -120,6 +120,93 @@ static e_funkind funkind (tree funtype)
     return SUBROUTINE;
 }
 
+/* Legitimize PIC addresses.  If the address is already position-independent,
+   we return ORIG.  Newly generated position-independent addresses go into a
+   reg.  This is REG if nonzero, otherwise we allocate register(s) as
+   necessary.  PICREG is the register holding the pointer to the PIC offset
+   table.  */
+
+static rtx
+legitimize_pic_address (rtx orig, rtx reg, rtx picreg)
+{
+  rtx addr = orig;
+  rtx new = orig;
+
+  if (GET_CODE (addr) == SYMBOL_REF || GET_CODE (addr) == LABEL_REF)
+    {
+      if (GET_CODE (addr) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (addr))
+	reg = new = orig;
+      else
+	{
+	  if (reg == 0)
+	    {
+	      gcc_assert (!no_new_pseudos);
+	      reg = gen_reg_rtx (Pmode);
+	    }
+
+	  if (flag_pic == 2)
+	    {
+	      emit_insn (gen_movsi_high_pic (reg, addr));
+	      emit_insn (gen_movsi_low_pic (reg, reg, addr));
+	      emit_insn (gen_addsi3 (reg, reg, picreg));
+	      new = gen_const_mem (Pmode, reg);
+	    }
+	  else
+	    {
+	      rtx tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
+					UNSPEC_MOVE_PIC);
+	      new = gen_const_mem (Pmode,
+				   gen_rtx_PLUS (Pmode, picreg, tmp));
+	    }
+	  emit_move_insn (reg, new);
+	}
+      if (picreg == pic_offset_table_rtx)
+	current_function_uses_pic_offset_table = 1;
+      return reg;
+    }
+
+  else if (GET_CODE (addr) == CONST || GET_CODE (addr) == PLUS)
+    {
+      rtx base;
+
+      if (GET_CODE (addr) == CONST)
+	{
+	  addr = XEXP (addr, 0);
+	  gcc_assert (GET_CODE (addr) == PLUS);
+	}
+
+      if (XEXP (addr, 0) == picreg)
+	return orig;
+
+      if (reg == 0)
+	{
+	  gcc_assert (!no_new_pseudos);
+	  reg = gen_reg_rtx (Pmode);
+	}
+
+      base = legitimize_pic_address (XEXP (addr, 0), reg, picreg);
+      addr = legitimize_pic_address (XEXP (addr, 1),
+				     base == reg ? NULL_RTX : reg,
+				     picreg);
+
+      if (GET_CODE (addr) == CONST_INT)
+	{
+	  gcc_assert (! reload_in_progress && ! reload_completed);
+	  addr = force_reg (Pmode, addr);
+	}
+
+      if (GET_CODE (addr) == PLUS && CONSTANT_P (XEXP (addr, 1)))
+	{
+	  base = gen_rtx_PLUS (Pmode, base, XEXP (addr, 0));
+	  addr = XEXP (addr, 1);
+	}
+
+      return gen_rtx_PLUS (Pmode, base, addr);
+    }
+
+  return new;
+}
+
 /* Stack frame layout. */
 
 /* Compute the number of DREGS to save with a push_multiple operation.
@@ -429,11 +516,11 @@ bfin_initial_elimination_offset (int from, int to)
 }
 
 /* Emit code to load a constant CONSTANT into register REG; setting
-   RTX_FRAME_RELATED_P on all insns we generate.  Make sure that the insns
-   we generate need not be split.  */
+   RTX_FRAME_RELATED_P on all insns we generate if RELATED is true.
+   Make sure that the insns we generate need not be split.  */
 
 static void
-frame_related_constant_load (rtx reg, HOST_WIDE_INT constant)
+frame_related_constant_load (rtx reg, HOST_WIDE_INT constant, bool related)
 {
   rtx insn;
   rtx cst = GEN_INT (constant);
@@ -445,10 +532,12 @@ frame_related_constant_load (rtx reg, HOST_WIDE_INT constant)
       /* We don't call split_load_immediate here, since dwarf2out.c can get
 	 confused about some of the more clever sequences it can generate.  */
       insn = emit_insn (gen_movsi_high (reg, cst));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      if (related)
+	RTX_FRAME_RELATED_P (insn) = 1;
       insn = emit_insn (gen_movsi_low (reg, reg, cst));
     }
-  RTX_FRAME_RELATED_P (insn) = 1;
+  if (related)
+    RTX_FRAME_RELATED_P (insn) = 1;
 }
 
 /* Generate efficient code to add a value to the frame pointer.  We
@@ -470,7 +559,7 @@ add_to_sp (rtx spreg, HOST_WIDE_INT value, int frame)
       rtx insn;
 
       if (frame)
-	frame_related_constant_load (tmpreg, value);
+	frame_related_constant_load (tmpreg, value, TRUE);
       else
 	{
 	  insn = emit_move_insn (tmpreg, GEN_INT (value));
@@ -537,7 +626,7 @@ emit_link_insn (rtx spreg, HOST_WIDE_INT frame_size)
       /* Must use a call-clobbered PREG that isn't the static chain.  */
       rtx tmpreg = gen_rtx_REG (Pmode, REG_P1);
 
-      frame_related_constant_load (tmpreg, -frame_size);
+      frame_related_constant_load (tmpreg, -frame_size, TRUE);
       insn = emit_insn (gen_addsi3 (spreg, spreg, tmpreg));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
@@ -771,6 +860,24 @@ expand_interrupt_handler_epilogue (rtx spreg, e_funkind fkind)
   emit_jump_insn (gen_return_internal (GEN_INT (fkind)));
 }
 
+/* Used while emitting the prologue to generate code to load the correct value
+   into the PIC register, which is passed in DEST.  */
+
+static void
+bfin_load_pic_reg (rtx dest)
+{
+  rtx addr, insn;
+      
+  if (bfin_library_id_string)
+    addr = plus_constant (pic_offset_table_rtx, atoi (bfin_library_id_string));
+  else
+    addr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+			 gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+					     UNSPEC_LIBRARY_OFFSET));
+  insn = emit_insn (gen_movsi (dest, gen_rtx_MEM (Pmode, addr)));
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx, NULL);
+}
+
 /* Generate RTL for the prologue of the current function.  */
 
 void
@@ -780,6 +887,7 @@ bfin_expand_prologue (void)
   HOST_WIDE_INT frame_size = get_frame_size ();
   rtx spreg = gen_rtx_REG (Pmode, REG_SP);
   e_funkind fkind = funkind (TREE_TYPE (current_function_decl));
+  rtx pic_reg_loaded = NULL_RTX;
 
   if (fkind != SUBROUTINE)
     {
@@ -787,6 +895,39 @@ bfin_expand_prologue (void)
       return;
     }
 
+  if (current_function_limit_stack)
+    {
+      HOST_WIDE_INT offset
+	= bfin_initial_elimination_offset (ARG_POINTER_REGNUM,
+					   STACK_POINTER_REGNUM);
+      rtx lim = stack_limit_rtx;
+
+      if (GET_CODE (lim) == SYMBOL_REF)
+	{
+	  rtx p2reg = gen_rtx_REG (Pmode, REG_P2);
+	  if (TARGET_ID_SHARED_LIBRARY)
+	    {
+	      rtx p1reg = gen_rtx_REG (Pmode, REG_P1);
+	      rtx r3reg = gen_rtx_REG (Pmode, REG_R3);
+	      rtx val;
+	      pic_reg_loaded = p2reg;
+	      bfin_load_pic_reg (pic_reg_loaded);
+	      val = legitimize_pic_address (stack_limit_rtx, p1reg, p2reg);
+	      emit_move_insn (p1reg, val);
+	      frame_related_constant_load (p2reg, offset, FALSE);
+	      emit_insn (gen_addsi3 (p2reg, p2reg, p1reg));
+	      lim = p2reg;
+	    }
+	  else
+	    {
+	      rtx limit = plus_constant (stack_limit_rtx, offset);
+	      emit_move_insn (p2reg, limit);
+	      lim = p2reg;
+	    }
+	}
+      emit_insn (gen_compare_lt (bfin_cc_rtx, spreg, lim));
+      emit_insn (gen_trapifcc ());
+    }
   expand_prologue_reg_save (spreg, 0, false);
 
   do_link (spreg, frame_size, false);
@@ -794,19 +935,7 @@ bfin_expand_prologue (void)
   if (TARGET_ID_SHARED_LIBRARY
       && (current_function_uses_pic_offset_table
 	  || !current_function_is_leaf))
-    {
-      rtx addr;
-      
-      if (bfin_library_id_string)
-	addr = plus_constant (pic_offset_table_rtx, atoi (bfin_library_id_string));
-      else
-	addr = gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
-			     gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
-					     UNSPEC_LIBRARY_OFFSET));
-      insn = emit_insn (gen_movsi (pic_offset_table_rtx,
-				   gen_rtx_MEM (Pmode, addr)));
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx, NULL);
-    }
+    bfin_load_pic_reg (pic_offset_table_rtx);
 }
 
 /* Generate RTL for the epilogue of the current function.  NEED_RETURN is zero
@@ -1384,97 +1513,6 @@ initialize_trampoline (tramp, fnaddr, cxt)
   emit_move_insn (gen_rtx_MEM (HImode, addr), gen_lowpart (HImode, t2));
 }
 
-/* Legitimize PIC addresses.  If the address is already position-independent,
-   we return ORIG.  Newly generated position-independent addresses go into a
-   reg.  This is REG if nonzero, otherwise we allocate register(s) as
-   necessary.  */
-
-rtx
-legitimize_pic_address (rtx orig, rtx reg)
-{
-  rtx addr = orig;
-  rtx new = orig;
-
-  if (GET_CODE (addr) == SYMBOL_REF || GET_CODE (addr) == LABEL_REF)
-    {
-      if (GET_CODE (addr) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (addr))
-	reg = new = orig;
-      else
-	{
-	  if (reg == 0)
-	    {
-	      if (no_new_pseudos)
-		abort ();
-	      reg = gen_reg_rtx (Pmode);
-	    }
-
-	  if (flag_pic == 2)
-	    {
-	      emit_insn (gen_movsi_high_pic (reg, addr));
-	      emit_insn (gen_movsi_low_pic (reg, reg, addr));
-	      emit_insn (gen_addsi3 (reg, reg, pic_offset_table_rtx));
-	      new = gen_rtx_MEM (Pmode, reg);
-	    }
-	  else
-	    {
-	      rtx tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
-					UNSPEC_MOVE_PIC);
-	      new = gen_rtx_MEM (Pmode,
-				 gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
-					       tmp));
-	    }
-	  emit_move_insn (reg, new);
-	}
-      current_function_uses_pic_offset_table = 1;
-      return reg;
-    }
-
-  else if (GET_CODE (addr) == CONST || GET_CODE (addr) == PLUS)
-    {
-      rtx base;
-
-      if (GET_CODE (addr) == CONST)
-	{
-	  addr = XEXP (addr, 0);
-	  if (GET_CODE (addr) != PLUS)
-	    abort ();
-	}
-
-      if (XEXP (addr, 0) == pic_offset_table_rtx)
-	return orig;
-
-      if (reg == 0)
-	{
-	  if (no_new_pseudos)
-	    abort ();
-	  reg = gen_reg_rtx (Pmode);
-	}
-
-      base = legitimize_pic_address (XEXP (addr, 0), reg);
-      addr = legitimize_pic_address (XEXP (addr, 1),
-				     base == reg ? NULL_RTX : reg);
-
-      if (GET_CODE (addr) == CONST_INT)
-	{
-	  if (! reload_in_progress && ! reload_completed)
-	    addr = force_reg (Pmode, addr);
-	  else
-	    /* If we reach here, then something is seriously wrong.  */
-	    abort ();
-	}
-
-      if (GET_CODE (addr) == PLUS && CONSTANT_P (XEXP (addr, 1)))
-	{
-	  base = gen_rtx_PLUS (Pmode, base, XEXP (addr, 0));
-	  addr = XEXP (addr, 1);
-	}
-
-      return gen_rtx_PLUS (Pmode, base, addr);
-    }
-
-  return new;
-}
-
 /* Emit insns to move operands[1] into operands[0].  */
 
 void
@@ -1485,7 +1523,8 @@ emit_pic_move (rtx *operands, enum machine_mode mode ATTRIBUTE_UNUSED)
   if (GET_CODE (operands[0]) == MEM && SYMBOLIC_CONST (operands[1]))
     operands[1] = force_reg (SImode, operands[1]);
   else
-    operands[1] = legitimize_pic_address (operands[1], temp);
+    operands[1] = legitimize_pic_address (operands[1], temp,
+					  pic_offset_table_rtx);
 }
 
 /* Expand a move operation in mode MODE.  The operands are in OPERANDS.  */

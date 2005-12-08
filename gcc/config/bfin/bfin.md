@@ -1435,7 +1435,7 @@
   DONE;
 })
 
-(define_insn ""
+(define_insn "compare_eq"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (eq:BI (match_operand:SI 1 "validreg_operand" "d,a")
                (match_operand:SI 2 "nonmemory_operand" "dKs3,aKs3")))]
@@ -1443,7 +1443,7 @@
   "cc =%1==%2;"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_ne"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (ne:BI (match_operand:SI 1 "validreg_operand" "d,a")
                (match_operand:SI 2 "nonmemory_operand" "dKs3,aKs3")))]
@@ -1451,7 +1451,7 @@
   "cc =%1!=%2;"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_lt"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (lt:BI (match_operand:SI 1 "validreg_operand" "d,a")
                (match_operand:SI 2 "nonmemory_operand" "dKs3,aKs3")))]
@@ -1459,7 +1459,7 @@
   "cc =%1<%2;"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_le"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (le:BI (match_operand:SI 1 "validreg_operand" "d,a")
                (match_operand:SI 2 "nonmemory_operand" "dKs3,aKs3")))]
@@ -1467,7 +1467,7 @@
   "cc =%1<=%2;"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_leu"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (leu:BI (match_operand:SI 1 "validreg_operand" "d,a")
                 (match_operand:SI 2 "nonmemory_operand" "dKu3,aKu3")))]
@@ -1475,7 +1475,7 @@
   "cc =%1<=%2 (iu);"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_ltu"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (ltu:BI (match_operand:SI 1 "validreg_operand" "d,a")
                 (match_operand:SI 2 "nonmemory_operand" "dKu3,aKu3")))]
@@ -1928,6 +1928,13 @@
   "excpt 3;"
   [(set_attr "type" "misc")
    (set_attr "length" "2")])
+
+(define_insn "trapifcc"
+  [(trap_if (reg:BI REG_CC) (const_int 3))]
+  ""
+  "if !cc jump 4 (bp); excpt 3;"
+  [(set_attr "type" "misc")
+   (set_attr "length" "4")])
 
 ;;; Vector instructions
 
