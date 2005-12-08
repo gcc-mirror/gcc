@@ -1,5 +1,13 @@
 2005-12-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/compat/struct-layout-1.exp: New file.
+	* g++.dg/compat/struct-layout-1.h: New.
+	* g++.dg/compat/struct-layout-1_generate.c: New.
+	* g++.dg/compat/struct-layout-1_x1.h: New.
+	* g++.dg/compat/struct-layout-1_x2.h: New.
+	* g++.dg/compat/struct-layout-1_y1.h: New.
+	* g++.dg/compat/struct-layout-1_y2.h: New.
+
 	* gcc.dg/20050330-2.c: New test.
 
 2005-12-08  Erik Edelmann  <eedelman@gcc.gnu.org>
