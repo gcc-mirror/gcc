@@ -1,3 +1,29 @@
+2005-12-08  Andreas Krebbel  <krebbel1@de.ibm.com>
+            Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/25268
+	* config/s390/s390.c (s390_decompose_shift_count): Remove BITS
+	argument.  Don't drop outer ANDs.
+	(s390_extra_constraint_str, print_shift_count_operand): Adjust callers.
+	* config/s390/s390-protos.h (s390_decompose_shift_count): Adjust
+	prototype.
+	* config/s390/predicates.md (setmem_operand): Remove.
+	(shift_count_operand): Rename to...
+	(shift_count_or_setmem_operand): ... this.  Adjust
+	s390_decompose_shift_count caller.
+	* config/s390/s390.md (<shift>di3_31_and, <shift>di3_64_and,
+	ashrdi3_cc_31_and, ashrdi3_cconly_31_and, ashrdi3_31_and,
+	ashrdi3_cc_64_and, ashrdi3_cconly_64_and, ashrdi3_64_and,
+	<shift>si3_and, ashrsi3_cc_and, ashrsi3_cconly_and, ashrsi3_and,
+	rotl<mode>3_and, setmem_long_and): New insns.
+	(<shift>di3_31, <shift>di3_64, ashrdi3_cc_31, ashrdi3_cconly_31,
+	ashrdi3_31, ashrdi3_cc_64, ashrdi3_cconly_64, ashrdi3_64,
+	<shift>si3, ashrsi3_cc, ashrsi3_cconly, ashrsi3, rotl<mode>3,
+	<shift>di3, ashrdi3): Use shift_count_or_setmem_operand instead
+	of shift_count_operand.
+	(setmem_long): Use shift_count_or_setmem_operand instead of
+	setmem_operand.
+
 2005-12-08  Daniel Jacobowitz  <dan@codesourcery.com>  
 	    Andreas Tobler  <a.tobler@schweiz.ch>
 
