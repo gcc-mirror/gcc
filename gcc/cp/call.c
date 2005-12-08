@@ -3278,7 +3278,8 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 	  || (conv2 && conv2->kind == ck_ambig)
 	  || (conv3 && conv3->kind == ck_ambig))
 	{
-	  error ("operands to ?: have different types");
+	  error ("operands to ?: have different types %qT and %qT",
+             arg2_type, arg3_type);
 	  result = error_mark_node;
 	}
       else if (conv2 && (!conv2->bad_p || !conv3))
@@ -3488,7 +3489,8 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 
   if (!result_type)
     {
-      error ("operands to ?: have different types");
+	  error ("operands to ?: have different types %qT and %qT",
+             arg2_type, arg3_type);
       return error_mark_node;
     }
 
