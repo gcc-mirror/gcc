@@ -24,8 +24,16 @@
 # BASENAME is a basename to use for temporary files.
 # TYPE is the type of compilation to perform (see target_compile).
 # CONTENTS gives the contents of the input file.
-proc get_compiler_messages {basename type contents} {
+# The rest is optional:
+# OPTIONS: additional compiler options to use.
+proc get_compiler_messages {basename type contents args} {
     global tool
+
+    if { [llength $args] > 0 } {
+	set options "additional_flags=[lindex $args 0]"
+    } else {
+	set options ""
+    }
 
     set src ${basename}[pid].c
     switch $type {
@@ -35,7 +43,7 @@ proc get_compiler_messages {basename type contents} {
     set f [open $src "w"]
     puts $f $contents
     close $f
-    set lines [${tool}_target_compile $src $output $type ""]
+    set lines [${tool}_target_compile $src $output $type "$options"]
     file delete $src
     remote_file build delete $output
 
@@ -293,6 +301,55 @@ proc check_profiling_available { test_what } {
     }
 
     return $profiling_available_saved
+}
+
+# Return 1 if -fpic and -fPIC are supported, as in no warnings or errors
+# emitted, 0 otherwise.  Whether a shared library can actually be built is
+# out of scope for this test.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_fpic { } {
+    global et_fpic_saved
+    global et_fpic_target_name
+
+    if { ![info exists et_fpic_target_name] } {
+	set et_fpic_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_fpic_target_name } {
+	verbose "check_effective_target_fpic: `$et_fpic_target_name'" 2
+	set et_fpic_target_name $current_target
+	if [info exists et_fpic_saved] {
+	    verbose "check_effective_target_fpic: removing cached result" 2
+	    unset et_fpic_saved
+	}
+    }
+
+    if [info exists et_fpic_saved] {
+	verbose "check_effective_target_fpic: using cached result" 2
+    } else {
+	verbose "check_effective_target_fpic: compiling source" 2
+
+	# Note that M68K has a multilib that supports -fpic but not
+	# -fPIC, so we need to check both.  We test with a program that
+	# requires GOT references.
+	set et_fpic_saved [string match "" [get_compiler_messages fpic object {
+	    extern int foo (void); extern int bar;
+	    int baz (void) { return foo () + bar; }
+	} "-fpic"]]
+
+	if { $et_fpic_saved != 0 } {
+	    set et_fpic_saved [string match "" [get_compiler_messages fpic object {
+		extern int foo (void); extern int bar;
+		int baz (void) { return foo () + bar; }
+	    } "-fPIC"]]
+	}
+    }
+    verbose "check_effective_target_fpic: returning $et_fpic_saved" 2
+    return $et_fpic_saved
 }
 
 # Return true if iconv is supported on the target. In particular IBM-1047.

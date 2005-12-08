@@ -1,3 +1,12 @@
+2005-12-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2005-04-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/target-supports.exp (get_compiler_messages): Support
+	optional arguments, the fourth being compiler options.
+	(check_effective_target_fpic): New proc.
+
 2005-12-08  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25292
