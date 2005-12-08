@@ -2144,7 +2144,12 @@ struct tree_memory_tag GTY(())
 #define DECL_LANG_SPECIFIC(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.lang_specific)
 
 /* In a VAR_DECL or FUNCTION_DECL, nonzero means external reference:
-   do not allocate storage, and refer to a definition elsewhere.  */
+   do not allocate storage, and refer to a definition elsewhere.  Note that
+   this does not necessarily imply the entity represented by NODE
+   has no program source-level definition in this translation unit.  For
+   example, for a FUNCTION_DECL, DECL_SAVED_TREE may be non-NULL and
+   DECL_EXTERNAL may be true simultaneously; that can be the case for
+   a C99 "extern inline" function.  */
 #define DECL_EXTERNAL(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.decl_flag_2)
 
 /* In a VAR_DECL for a RECORD_TYPE, sets number for non-init_priority

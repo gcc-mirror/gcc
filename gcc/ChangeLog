@@ -1,3 +1,7 @@
+2005-12-08  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* tree.h (DECL_EXTERNAL): Clarify documentation.
+
 2005-12-08  Andreas Krebbel  <krebbel1@de.ibm.com>
             Jakub Jelinek  <jakub@redhat.com>
 
