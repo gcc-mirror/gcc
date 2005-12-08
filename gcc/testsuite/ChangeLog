@@ -1,5 +1,10 @@
 2005-12-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/19317
+	* g++.dg/opt/pr19317-1.C: New test.
+	* g++.dg/opt/pr19317-2.C: New test.
+	* g++.dg/opt/pr19317-3.C: New test.
+
 	PR target/19005
 	* gcc.c-torture/execute/pr19005.c: New test.
 
