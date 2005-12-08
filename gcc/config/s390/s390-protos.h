@@ -100,7 +100,7 @@ extern rtx s390_load_got (void);
 extern rtx s390_get_thread_pointer (void);
 extern void s390_emit_tpf_eh_return (rtx);
 extern bool s390_legitimate_address_without_index_p (rtx);
-extern bool s390_decompose_shift_count (rtx, rtx *, HOST_WIDE_INT *, int);
+extern bool s390_decompose_shift_count (rtx, rtx *, HOST_WIDE_INT *);
 extern int s390_branch_condition_mask (rtx);
 
 #endif /* RTX_CODE */
