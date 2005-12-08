@@ -1,3 +1,15 @@
+2005-12-08  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/Object.h (throwNoSuchMethodError): New method.
+	* java/lang/Object.java (throwNoSuchMethodError): New method.
+	* include/jvm.h (_Jv_ThrowNoSuchFieldError): Declare.
+	* link.cc (_Jv_ThrowNoSuchFieldError): New.
+	(link_symbol_table): Don't throw a NoSuchFieldError if a field is
+	missing.  Instead, set the otable entry to zero.
+	(link_symbol_table): If we don't find a nonstatic method, insert
+	the vtable offset of Object.throwNoSuchMethodError() into the
+	otable.
+
 2005-12-05  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libjava.compile/rh174912.java: New file.

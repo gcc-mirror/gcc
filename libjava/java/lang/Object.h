@@ -83,6 +83,9 @@ private:
 
     // Initialize the sync_info field.  Not called with JV_HASH_SYNCHRONIZATION.
     void sync_init (void);
+
+public:
+  virtual void throwNoSuchMethodError (void);
 };
 
 #endif /* __JAVA_LANG_OBJECT_H__ */
