@@ -1703,6 +1703,17 @@ build_field_ref (tree self_value, tree self_class, tree name)
 		      NULL_TREE, NULL_TREE);
 	  tree address;
 
+	  if (DECL_CONTEXT (field_decl) != output_class)
+	    field_offset
+	      = build3 (COND_EXPR, TREE_TYPE (field_offset),
+			build2 (EQ_EXPR, boolean_type_node,
+				field_offset, integer_zero_node),
+			build3 (CALL_EXPR, void_type_node, 
+				build_address_of (soft_nosuchfield_node),
+				build_tree_list (NULL_TREE, otable_index), 
+				NULL_TREE),
+			field_offset);
+	  
 	  field_offset = fold (convert (sizetype, field_offset));
 	  address 
 	    = fold_build2 (PLUS_EXPR, 

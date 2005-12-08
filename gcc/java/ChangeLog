@@ -1,3 +1,10 @@
+2005-12-08  Andrew Haley  <aph@redhat.com>
+
+	* java-tree.h (enum java_tree_index): Add JTI_SOFT_NOSUCHFIELD_NODE.
+	(soft_abstractmethod_node): New.
+	* expr.c (build_field_ref): Add in-line check for missing field.
+	* decl.c (java_init_decl_processing): Add soft_nosuchfield_node.
+
 2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (java.all.build, java.install-normal): Remove.
