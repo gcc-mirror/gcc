@@ -214,6 +214,12 @@ begin
    Write_Str ("  -Tn       Set time slice value to n milliseconds (n >= 0)");
    Write_Eol;
 
+   --  Line for -u switch
+
+   Write_Str ("  -un       Enable dynamic stack analysis, with n results ");
+   Write_Str ("stored");
+   Write_Eol;
+
    --  Line for -v switch
 
    Write_Str ("  -v        Verbose mode. Error messages, ");

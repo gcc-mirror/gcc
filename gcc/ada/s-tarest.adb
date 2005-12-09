@@ -45,6 +45,9 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
 --  tasking operations. It causes infinite loops and other problems.
 
+with Ada.Exceptions;
+--  used for Exception_Occurrence
+
 with System.Parameters;
 --  used for Size_Type
 --           Single_Lock
@@ -82,6 +85,8 @@ package body System.Tasking.Restricted.Stages is
    package SSL  renames System.Soft_Links;
    package SSE  renames System.Storage_Elements;
    package SST  renames System.Secondary_Stack;
+
+   use Ada.Exceptions;
 
    use Parameters;
    use Task_Primitives.Operations;
@@ -133,8 +138,15 @@ package body System.Tasking.Restricted.Stages is
    ---------------
 
    procedure Task_Lock is
+      Self_ID : constant Task_Id := STPO.Self;
+
    begin
-      STPO.Write_Lock (Global_Task_Lock'Access, Global_Lock => True);
+      Self_ID.Common.Global_Task_Lock_Nesting :=
+        Self_ID.Common.Global_Task_Lock_Nesting + 1;
+
+      if Self_ID.Common.Global_Task_Lock_Nesting = 1 then
+         STPO.Write_Lock (Global_Task_Lock'Access, Global_Lock => True);
+      end if;
    end Task_Lock;
 
    -----------------
@@ -142,8 +154,16 @@ package body System.Tasking.Restricted.Stages is
    -----------------
 
    procedure Task_Unlock is
+      Self_ID : constant Task_Id := STPO.Self;
+
    begin
-      STPO.Unlock (Global_Task_Lock'Access, Global_Lock => True);
+      pragma Assert (Self_ID.Common.Global_Task_Lock_Nesting > 0);
+      Self_ID.Common.Global_Task_Lock_Nesting :=
+        Self_ID.Common.Global_Task_Lock_Nesting - 1;
+
+      if Self_ID.Common.Global_Task_Lock_Nesting = 0 then
+         STPO.Unlock (Global_Task_Lock'Access, Global_Lock => True);
+      end if;
    end Task_Unlock;
 
    ------------------
@@ -162,21 +182,40 @@ package body System.Tasking.Restricted.Stages is
    procedure Task_Wrapper (Self_ID : Task_Id) is
       ID : Task_Id := Self_ID;
       pragma Volatile (ID);
-
       pragma Warnings (Off, ID);
-      --  Turn off warnings (stand alone volatile constant has to be
-      --  imported, so we cannot just make ID constant).
-
-      --  Do not delete this variable.
-      --  In some targets, we need this variable to implement a fast Self.
+      --  Variable used on some targets to implement a fast self. We turn off
+      --  warnings because a stand alone volatile constant has to be imported,
+      --  so we don't want warnings about ID not being referenced, and volatile
+      --  having no effect.
+      --
+      --  DO NOT delete ID. As noted, it is needed on some targets.
 
       use type System.Parameters.Size_Type;
       use type SSE.Storage_Offset;
 
       Secondary_Stack : aliased SSE.Storage_Array
         (1 .. Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
-           SSE.Storage_Offset (Parameters.Sec_Stack_Ratio) / 100);
+                SSE.Storage_Offset (Parameters.Sec_Stack_Ratio) / 100);
+
+      pragma Warnings (Off);
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
+      pragma Warnings (On);
+      --  Address of secondary stack. In the fixed secondary stack case, this
+      --  value is not modified, causing a warning, hence the bracketing with
+      --  Warnings (Off/On).
+
+      Cause : Cause_Of_Termination := Normal;
+      --  Indicates the reason why this task terminates. Normal corresponds to
+      --  a task terminating due to completing the last statement of its body.
+      --  If the task terminates because of an exception raised by the
+      --  execution of its task body, then Cause is set to Unhandled_Exception.
+      --  Aborts are not allowed in the restriced profile to which this file
+      --  belongs.
+
+      EO : Exception_Occurrence;
+      --  If the task terminates because of an exception raised by the
+      --  execution of its task body, then EO will contain the associated
+      --  exception occurrence. Otherwise, it will contain Null_Occurrence.
 
    begin
       if not Parameters.Sec_Stack_Dynamic then
@@ -190,25 +229,53 @@ package body System.Tasking.Restricted.Stages is
 
       Enter_Task (Self_ID);
 
-      --  Call the task body procedure.
+      --  Call the task body procedure
 
       begin
          --  We are separating the following portion of the code in order to
-         --  place the exception handlers in a different block.
-         --  In this way we do not call Set_Jmpbuf_Address (which needs
-         --  Self) before we set Self in Enter_Task.
+         --  place the exception handlers in a different block. In this way we
+         --  do not call Set_Jmpbuf_Address (which needs Self) before we set
+         --  Self in Enter_Task.
+
          --  Note that in the case of Ravenscar HI-E where there are no
          --  exception handlers, the exception handler is suppressed.
 
-         --  Call the task body procedure.
+         --  Call the task body procedure
 
          Self_ID.Common.Task_Entry_Point (Self_ID.Common.Task_Arg);
-         Terminate_Task (Self_ID);
+
+         --  Normal task termination
+
+         Cause := Normal;
+         Save_Occurrence (EO, Ada.Exceptions.Null_Occurrence);
 
       exception
-         when others =>
-            Terminate_Task (Self_ID);
+         when E : others =>
+
+            --  Task terminating because of an unhandled exception
+
+            Cause := Unhandled_Exception;
+            Save_Occurrence (EO, E);
       end;
+
+      --  Look for a fall-back handler. It can be either in the task itself
+      --  or in the environment task. Note that this code is always executed
+      --  by a task whose master is the environment task. The task termination
+      --  code for the environment task is executed by
+      --  SSL.Task_Termination_Handler.
+
+      --  This package is part of the restricted run time which supports
+      --  neither task hierarchies (No_Task_Hierarchy) nor specific task
+      --  termination handlers (No_Specific_Termination_Handlers).
+
+      if Self_ID.Common.Fall_Back_Handler /= null then
+         Self_ID.Common.Fall_Back_Handler.all (Cause, Self_ID, EO);
+      elsif Self_ID.Common.Parent.Common.Fall_Back_Handler /= null then
+         Self_ID.Common.Parent.Common.Fall_Back_Handler.all
+           (Cause, Self_ID, EO);
+      end if;
+
+      Terminate_Task (Self_ID);
    end Task_Wrapper;
 
    -----------------------
@@ -219,11 +286,11 @@ package body System.Tasking.Restricted.Stages is
    -- Activate_Restricted_Tasks --
    -------------------------------
 
-   --  Note that locks of activator and activated task are both locked
-   --  here. This is necessary because C.State and Self.Wait_Count
-   --  have to be synchronized. This is safe from deadlock because
-   --  the activator is always created before the activated task.
-   --  That satisfies our in-order-of-creation ATCB locking policy.
+   --  Note that locks of activator and activated task are both locked here.
+   --  This is necessary because C.State and Self.Wait_Count have to be
+   --  synchronized. This is safe from deadlock because the activator is always
+   --  created before the activated task. That satisfies our
+   --  in-order-of-creation ATCB locking policy.
 
    procedure Activate_Restricted_Tasks
      (Chain_Access : Activation_Chain_Access)
@@ -241,14 +308,13 @@ package body System.Tasking.Restricted.Stages is
          Lock_RTS;
       end if;
 
-      --  Lock self, to prevent activated tasks
-      --  from racing ahead before we finish activating the chain.
+      --  Lock self, to prevent activated tasks from racing ahead before we
+      --  finish activating the chain.
 
       Write_Lock (Self_ID);
 
-      --  Activate all the tasks in the chain.
-      --  Creation of the thread of control was deferred until
-      --  activation. So create it now.
+      --  Activate all the tasks in the chain. Creation of the thread of
+      --  control was deferred until activation. So create it now.
 
       C := Chain_Access.T_ID;
 
@@ -286,9 +352,8 @@ package body System.Tasking.Restricted.Stages is
 
       Self_ID.Common.State := Activator_Sleep;
 
-      --  Wait for the activated tasks to complete activation.
-      --  It is unsafe to abort any of these tasks until the count goes to
-      --  zero.
+      --  Wait for the activated tasks to complete activation. It is unsafe to
+      --  abort any of these tasks until the count goes to zero.
 
       loop
          exit when Self_ID.Common.Wait_Count = 0;
@@ -302,7 +367,7 @@ package body System.Tasking.Restricted.Stages is
          Unlock_RTS;
       end if;
 
-      --  Remove the tasks from the chain.
+      --  Remove the tasks from the chain
 
       Chain_Access.T_ID := null;
    end Activate_Restricted_Tasks;
@@ -328,14 +393,13 @@ package body System.Tasking.Restricted.Stages is
       Write_Lock (Activator);
       Write_Lock (Self_ID);
 
-      --  Remove dangling reference to Activator,
-      --  since a task may outlive its activator.
+      --  Remove dangling reference to Activator, since a task may outlive its
+      --  activator.
 
       Self_ID.Common.Activator := null;
 
-      --  Wake up the activator, if it is waiting for a chain
-      --  of tasks to activate, and we are the last in the chain
-      --  to complete activation
+      --  Wake up the activator, if it is waiting for a chain of tasks to
+      --  activate, and we are the last in the chain to complete activation
 
       if Activator.Common.State = Activator_Sleep then
          Activator.Common.Wait_Count := Activator.Common.Wait_Count - 1;
@@ -352,9 +416,9 @@ package body System.Tasking.Restricted.Stages is
          Unlock_RTS;
       end if;
 
-      --  After the activation, active priority should be the same
-      --  as base priority. We must unlock the Activator first,
-      --  though, since it should not wait if we have lower priority.
+      --  After the activation, active priority should be the same as base
+      --  priority. We must unlock the Activator first, though, since it should
+      --  not wait if we have lower priority.
 
       if Get_Priority (Self_ID) /= Self_ID.Common.Base_Priority then
          Set_Priority (Self_ID, Self_ID.Common.Base_Priority);
@@ -391,8 +455,8 @@ package body System.Tasking.Restricted.Stages is
       Success       : Boolean;
 
    begin
-      --  Stack is not preallocated on this target, so that
-      --  Stack_Address must be null.
+      --  Stack is not preallocated on this target, so that Stack_Address must
+      --  be null.
 
       pragma Assert (Stack_Address = Null_Address);
 
@@ -415,9 +479,9 @@ package body System.Tasking.Restricted.Stages is
         (Self_ID, State, Discriminants, Self_ID, Elaborated, Base_Priority,
          Task_Info, Size, Created_Task, Success);
 
-      --  If we do our job right then there should never be any failures,
-      --  which was probably said about the Titanic; so just to be safe,
-      --  let's retain this code for now
+      --  If we do our job right then there should never be any failures, which
+      --  was probably said about the Titanic; so just to be safe, let's retain
+      --  this code for now
 
       if not Success then
          Unlock (Self_ID);
@@ -467,6 +531,22 @@ package body System.Tasking.Restricted.Stages is
       if Single_Lock then
          Lock_RTS;
       end if;
+
+      --  Handle normal task termination by the environment task, but only for
+      --  the normal task termination. In the case of Abnormal and
+      --  Unhandled_Exception they must have been handled before, and the task
+      --  termination soft link must have been changed so the task termination
+      --  routine is not executed twice.
+
+      --  Note that in the "normal" implementation in s-tassta.adb the task
+      --  termination procedure for the environment task should be executed
+      --  after termination of library-level tasks. However, this
+      --  implementation is to be used when the Ravenscar restrictions are in
+      --  effect, and AI-394 says that if there is a fall-back handler set for
+      --  the partition it should be called when the first task (including the
+      --  environment task) attempts to terminate.
+
+      SSL.Task_Termination_Handler.all (Ada.Exceptions.Null_Occurrence);
 
       Write_Lock (Self_ID);
       Sleep (Self_ID, Master_Completion_Sleep);

@@ -286,6 +286,18 @@ package body Switch.B is
             Scan_Nat (Switch_Chars, Max, Ptr, Time_Slice_Value, C);
             Time_Slice_Value := Time_Slice_Value * 1_000;
 
+         --  Processing for u switch
+
+         when 'u' =>
+            Ptr := Ptr + 1;
+            Dynamic_Stack_Measurement := True;
+            Scan_Nat
+              (Switch_Chars,
+               Max,
+               Ptr,
+               Dynamic_Stack_Measurement_Array_Size,
+               C);
+
          --  Processing for v switch
 
          when 'v' =>

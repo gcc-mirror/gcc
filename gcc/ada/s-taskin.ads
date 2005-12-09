@@ -37,7 +37,8 @@
 --  Any changes to this interface may require corresponding compiler changes.
 
 with Ada.Exceptions;
---  Used for:  Exception_Id
+--  Used for Exception_Id
+--           Exception_Occurrence
 
 with System.Parameters;
 --  used for Size_Type
@@ -50,6 +51,9 @@ with System.Soft_Links;
 
 with System.Task_Primitives;
 --  used for Private_Data
+
+with System.Stack_Usage;
+--  used for Stack_Analyzer
 
 with Unchecked_Conversion;
 
@@ -329,6 +333,32 @@ package System.Tasking is
    end record;
    pragma Suppress_Initialization (Restricted_Entry_Call_Record);
 
+   -------------------------------------------
+   -- Task termination procedure definition --
+   -------------------------------------------
+
+   --  We need to redefine here these types (already defined in
+   --  Ada.Task_Termination) for avoiding circular dependencies.
+
+   type Cause_Of_Termination is (Normal, Abnormal, Unhandled_Exception);
+   --  Possible causes for task termination:
+   --
+   --    Normal means that the task terminates due to completing the
+   --    last sentence of its body, or as a result of waiting on a
+   --    terminate alternative.
+
+   --    Abnormal means that the task terminates because it is being aborted
+
+   --    handled_Exception means that the task terminates because of exception
+   --    raised by by the execution of its task_body.
+
+   type Termination_Handler is access protected procedure
+     (Cause : in Cause_Of_Termination;
+      T     : in Task_Id;
+      X     : in Ada.Exceptions.Exception_Occurrence);
+   --  Used to represent protected procedures to be executed when task
+   --  terminates.
+
    ------------------------------------
    -- Task related other definitions --
    ------------------------------------
@@ -539,6 +569,32 @@ package System.Tasking is
       Task_Info : System.Task_Info.Task_Info_Type;
       --  System-specific attributes of the task as specified by the
       --  Task_Info pragma.
+
+      Analyzer  : System.Stack_Usage.Stack_Analyzer;
+      --  For storing informations used to measure the stack usage.
+
+      Global_Task_Lock_Nesting : Natural;
+      --  This is the current nesting level of calls to
+      --  System.Tasking.Initialization.Lock_Task. This allows a task to call
+      --  Lock_Task multiple times without deadlocking. A task only locks
+      --  Global_Task_Lock when its Global_Task_Lock_Nesting goes from 0 to 1,
+      --  and only unlocked when it goes from 1 to 0.
+      --
+      --  Protection: Only accessed by Self
+
+      Fall_Back_Handler : Termination_Handler;
+      pragma Atomic (Fall_Back_Handler);
+      --  This is the fall-back handler that applies to the dependent tasks of
+      --  the task.
+      --
+      --  Protection: atomic access
+
+      Specific_Handler : Termination_Handler;
+      pragma Atomic (Specific_Handler);
+      --  This is the specific handler that applies only to this task, and not
+      --  any of its dependent tasks.
+      --
+      --  Protection: atomic access
    end record;
 
    ---------------------------------------
@@ -795,15 +851,6 @@ package System.Tasking is
       --  New value for Base_Priority (for dynamic priorities package)
       --
       --  Protection: Self.L
-
-      Global_Task_Lock_Nesting : Natural := 0;
-      --  This is the current nesting level of calls to
-      --  System.Tasking.Stages.Lock_Task_T. This allows a task to call
-      --  Lock_Task_T multiple times without deadlocking. A task only locks
-      --  All_Task_Lock when its All_Tasks_Nesting goes from 0 to 1, and only
-      --  unlocked when it goes from 1 to 0.
-      --
-      --  Protection: Only accessed by Self
 
       Open_Accepts : Accept_List_Access;
       --  This points to the Open_Accepts array of accept alternatives passed

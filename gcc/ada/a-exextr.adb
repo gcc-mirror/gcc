@@ -88,7 +88,7 @@ package body Exception_Traces is
    --  Hook for GDB to support "break exception unhandled"
 
    --  For "break exception", GDB uses __gnat_raise_nodefer_with_msg, which
-   --  is not in this section because it fullfills other purposes than a mere
+   --  is not in this section because it functions as more than simply a
    --  debugger interface.
 
    --------------------------------
@@ -161,8 +161,18 @@ package body Exception_Traces is
    --------------------------------
 
    procedure Notify_Unhandled_Exception is
+      Excep : constant EOA := Get_Current_Excep.all;
+
    begin
-      Notify_Exception (Get_Current_Excep.all, Is_Unhandled => True);
+      --  Check whether there is any termination handler to be executed for
+      --  the environment task, and execute it if needed. Here we handle both
+      --  the Abnormal and Unhandled_Exception task termination. Normal
+      --  task termination routine is executed elsewhere (either in the
+      --  Task_Wrapper or in the Adafinal routine for the environment task).
+
+      Task_Termination_Handler.all (Excep.all);
+
+      Notify_Exception (Excep, Is_Unhandled => True);
       Unhandled_Exception;
    end Notify_Unhandled_Exception;
 

@@ -594,6 +594,6 @@ package body System.Finalization_Implementation is
 --  Initialization of package, set Adafinal soft link
 
 begin
-   SSL.Adafinal := Finalize_Global_List'Access;
+   SSL.Finalize_Global_List := Finalize_Global_List'Access;
 
 end System.Finalization_Implementation;

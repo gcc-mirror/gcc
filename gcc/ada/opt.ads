@@ -344,6 +344,17 @@ package Opt is
    --  Set True for dynamic elaboration checking mode, as set by the -gnatE
    --  switch or by the use of pragma Elaboration_Checks (Dynamic).
 
+   Dynamic_Stack_Measurement : Boolean := False;
+   --  GNATBIND
+   --  Set True to enable dynamic stack measurement (-u flag for gnatbind)
+
+   Dynamic_Stack_Measurement_Array_Size : Nat := 100;
+   --  GNATBIND
+   --  Number of measurements we want to store during dynamic stack analysis.
+   --  When the buffer is full, non-storable results will be output on the fly.
+   --  The value is relevant only if Dynamic_Stack_Measurement is set. Set
+   --  by processing of -u flag for gnatbind.
+
    Elab_Dependency_Output : Boolean := False;
    --  GNATBIND
    --  Set to True to output complete list of elaboration constraints
@@ -686,15 +697,6 @@ package Opt is
    --  Maximum number of characters allowed in a file name, not counting the
    --  extension, as set by the appropriate switch. If no switch is given,
    --  then this value is initialized by Osint to the appropriate value.
-
-   Max_Line_Length : Int := Hostparm.Max_Line_Length;
-   --  This is a copy of Max_Line_Length used by the scanner. It is usually
-   --  set to be a copy of Hostparm.Max_Line_Length, and is used to check
-   --  the maximum line length in the scanner when style checking is inactive.
-   --  The only time it is set to a different value is during the scanning of
-   --  configuration pragma files, where we want to turn off all checking and
-   --  in particular we want to allow long lines. So we reset this value to
-   --  Column_Number'Last during scanning of configuration pragma files.
 
    Maximum_Processes : Positive := 1;
    --  GNATMAKE, GPRMAKE

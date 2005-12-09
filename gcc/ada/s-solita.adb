@@ -46,11 +46,24 @@ with System.Task_Primitives.Operations;
 
 with System.Tasking;
 --  Used for Task_Id
+--           Cause_Of_Termination
+
+with Ada.Exceptions;
+--  Used for Exception_Id
+--           Exception_Occurrence
+--           Save_Occurrence
+
+with Ada.Exceptions.Is_Null_Occurrence;
 
 package body System.Soft_Links.Tasking is
 
    package STPO renames System.Task_Primitives.Operations;
    package SSL  renames System.Soft_Links;
+
+   use Ada.Exceptions;
+
+   use type System.Tasking.Task_Id;
+   use type System.Tasking.Termination_Handler;
 
    ----------------
    -- Local Data --
@@ -77,6 +90,9 @@ package body System.Soft_Links.Tasking is
 
    procedure Timed_Delay_T (Time : Duration; Mode : Integer);
    --  Task-safe version of SSL.Timed_Delay
+
+   procedure Task_Termination_Handler_T  (Excep : SSL.EO);
+   --  Task-safe version of the task termination procedure
 
    --------------------------
    -- Soft-Link Get Bodies --
@@ -134,6 +150,48 @@ package body System.Soft_Links.Tasking is
       end if;
    end Timed_Delay_T;
 
+   --------------------------------
+   -- Task_Termination_Handler_T --
+   --------------------------------
+
+   procedure Task_Termination_Handler_T (Excep : SSL.EO) is
+      Self_Id : constant System.Tasking.Task_Id := STPO.Self;
+      Cause   : System.Tasking.Cause_Of_Termination;
+      EO      : Ada.Exceptions.Exception_Occurrence;
+
+   begin
+      --  We can only be here because we are terminating the environment task.
+      --  Task termination for the rest of the tasks is handled in the
+      --  Task_Wrapper.
+
+      pragma Assert (Self_Id = STPO.Environment_Task);
+
+      --  Normal task termination
+
+      if Is_Null_Occurrence (Excep) then
+         Cause := System.Tasking.Normal;
+         Ada.Exceptions.Save_Occurrence (EO, Ada.Exceptions.Null_Occurrence);
+
+      --  Abnormal task termination
+
+      elsif Exception_Identity (Excep) = Standard'Abort_Signal'Identity then
+         Cause := System.Tasking.Abnormal;
+         Ada.Exceptions.Save_Occurrence (EO, Ada.Exceptions.Null_Occurrence);
+
+      --  Termination because of an unhandled exception
+
+      else
+         Cause := System.Tasking.Unhandled_Exception;
+         Ada.Exceptions.Save_Occurrence (EO, Excep);
+      end if;
+
+      if Self_Id.Common.Specific_Handler /= null then
+         Self_Id.Common.Specific_Handler.all (Cause, Self_Id, EO);
+      elsif Self_Id.Common.Fall_Back_Handler /= null then
+         Self_Id.Common.Fall_Back_Handler.all (Cause, Self_Id, EO);
+      end if;
+   end Task_Termination_Handler_T;
+
    -----------------------------
    -- Init_Tasking_Soft_Links --
    -----------------------------
@@ -151,12 +209,13 @@ package body System.Soft_Links.Tasking is
          --  The application being executed uses tasking so that the tasking
          --  version of the following soft links need to be used.
 
-         SSL.Get_Jmpbuf_Address     := Get_Jmpbuf_Address'Access;
-         SSL.Set_Jmpbuf_Address     := Set_Jmpbuf_Address'Access;
-         SSL.Get_Sec_Stack_Addr     := Get_Sec_Stack_Addr'Access;
-         SSL.Set_Sec_Stack_Addr     := Set_Sec_Stack_Addr'Access;
-         SSL.Get_Current_Excep      := Get_Current_Excep'Access;
-         SSL.Timed_Delay            := Timed_Delay_T'Access;
+         SSL.Get_Jmpbuf_Address       := Get_Jmpbuf_Address'Access;
+         SSL.Set_Jmpbuf_Address       := Set_Jmpbuf_Address'Access;
+         SSL.Get_Sec_Stack_Addr       := Get_Sec_Stack_Addr'Access;
+         SSL.Set_Sec_Stack_Addr       := Set_Sec_Stack_Addr'Access;
+         SSL.Get_Current_Excep        := Get_Current_Excep'Access;
+         SSL.Timed_Delay              := Timed_Delay_T'Access;
+         SSL.Task_Termination_Handler := Task_Termination_Handler_T'Access;
 
          --  No need to create a new Secondary Stack, since we will use the
          --  default one created in s-secsta.adb

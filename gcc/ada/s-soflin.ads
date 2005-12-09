@@ -62,6 +62,7 @@ package System.Soft_Links is
 
    type No_Param_Proc     is access procedure;
    type Addr_Param_Proc   is access procedure (Addr : Address);
+   type EO_Param_Proc     is access procedure (Excep : EO);
 
    type Get_Address_Call  is access function return Address;
    type Set_Address_Call  is access procedure (Addr : Address);
@@ -92,6 +93,7 @@ package System.Soft_Links is
 
    pragma Suppress (Access_Check, No_Param_Proc);
    pragma Suppress (Access_Check, Addr_Param_Proc);
+   pragma Suppress (Access_Check, EO_Param_Proc);
    pragma Suppress (Access_Check, Get_Address_Call);
    pragma Suppress (Access_Check, Set_Address_Call);
    pragma Suppress (Access_Check, Set_Address_Call2);
@@ -139,9 +141,15 @@ package System.Soft_Links is
    procedure Task_Unlock_NT;
    --  Release lock set by Task_Lock (non-tasking case, does nothing)
 
-   procedure Null_Adafinal;
-   --  Shuts down the runtime system (non-tasking no-finalization case,
-   --  does nothing)
+   procedure Task_Termination_NT (Excep : EO);
+   --  Handle task termination routines for the environment task (non-tasking
+   --  case, does nothing).
+
+   procedure Null_Finalize_Global_List;
+   --  Finalize global list for controlled objects (does nothing)
+
+   procedure Adafinal_NT;
+   --  Shuts down the runtime system (non-tasking case)
 
    Abort_Defer : No_Param_Proc := Abort_Defer_NT'Access;
    pragma Suppress (Access_Check, Abort_Defer);
@@ -197,7 +205,13 @@ package System.Soft_Links is
    --  This ensures that the lock is not left set if an exception is raised
    --  explicitly or implicitly during the critical locked region.
 
-   Adafinal : No_Param_Proc := Null_Adafinal'Access;
+   Task_Termination_Handler : EO_Param_Proc := Task_Termination_NT'Access;
+   --  Handle task termination routines (task/non-task case as appropriate)
+
+   Finalize_Global_List : No_Param_Proc := Null_Finalize_Global_List'Access;
+   --  Performs finalization of global list for controlled objects
+
+   Adafinal : No_Param_Proc := Adafinal_NT'Access;
    --  Performs the finalization of the Ada Runtime
 
    function  Get_Jmpbuf_Address_NT return  Address;
