@@ -1,4 +1,5 @@
-// { dg-do run { target i?86-*-linux* i?86-*-freebsd* } }
+// { dg-do run { target i?86-*-linux* x86_64-*-linux* i?86-*-freebsd* } }
+// { dg-require-effective-target ilp32 }
 // { dg-options "-malign-double" }
 // Origin: Alex Samuel <samuel@codesourcery.com>
 
