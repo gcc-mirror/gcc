@@ -38,6 +38,7 @@ with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
+with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -4056,9 +4057,21 @@ package body Sem_Eval is
          end;
 
       elsif Is_Access_Type (T1) then
-         return Subtypes_Statically_Match
-                  (Designated_Type (T1),
-                   Designated_Type (T2));
+         if Can_Never_Be_Null (T1) /= Can_Never_Be_Null (T2) then
+            return False;
+
+         elsif Ekind (T1) = E_Access_Subprogram_Type then
+            return
+              Subtype_Conformant
+                (Designated_Type (T1),
+                 Designated_Type (T1));
+         else
+            return
+              Subtypes_Statically_Match
+                (Designated_Type (T1),
+                 Designated_Type (T2))
+              and then Is_Access_Constant (T1) = Is_Access_Constant (T2);
+         end if;
 
       --  All other types definitely match
 
