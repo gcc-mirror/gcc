@@ -127,7 +127,6 @@ begin
 
       Opt.Style_Check := False;
       Style_Check := False;
-      Opt.Max_Line_Length := Int (Column_Number'Last);
 
       --  Capture current suppress options, which may get modified
 
@@ -191,7 +190,6 @@ begin
       --  Restore style check, but if config file turned on checks, leave on!
 
       Opt.Style_Check := Save_Style_Check or Style_Check;
-      Opt.Max_Line_Length := Hostparm.Max_Line_Length;
 
       --  Capture any modifications to suppress options from config pragmas
 
