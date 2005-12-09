@@ -24,7 +24,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Opt; use Opt;
+with Hostparm; use Hostparm;
+with Opt;      use Opt;
 
 package body Stylesw is
 
@@ -166,6 +167,7 @@ package body Stylesw is
       EC : Natural;
    begin
       Set_Style_Check_Options (Options, OK, EC);
+      pragma Assert (OK);
    end Set_Style_Check_Options;
 
    --  Normal version with error checking
@@ -175,19 +177,53 @@ package body Stylesw is
       OK       : out Boolean;
       Err_Col  : out Natural)
    is
-      J : Natural;
       C : Character;
 
+      procedure Add_Img (N : Natural);
+      --  Concatenates image of N at end of Style_Msg_Buf
+
+      procedure Bad_Style_Switch (Msg : String);
+      --  Called if bad style switch found. Msg is mset in Style_Msg_Buf and
+      --  Style_Msg_Len. OK is set False.
+
+      -------------
+      -- Add_Img --
+      -------------
+
+      procedure Add_Img (N : Natural) is
+      begin
+         if N >= 10 then
+            Add_Img (N / 10);
+         end if;
+
+         Style_Msg_Len := Style_Msg_Len + 1;
+         Style_Msg_Buf (Style_Msg_Len) :=
+           Character'Val (N mod 10 + Character'Pos ('0'));
+      end Add_Img;
+
+      ----------------------
+      -- Bad_Style_Switch --
+      ----------------------
+
+      procedure Bad_Style_Switch (Msg : String) is
+      begin
+         OK := False;
+         Style_Msg_Len := Msg'Length;
+         Style_Msg_Buf (1 .. Style_Msg_Len) := Msg;
+      end Bad_Style_Switch;
+
+   --  Start of processing for Set_Style_Check_Options
+
    begin
-      J := Options'First;
-      while J <= Options'Last loop
-         C := Options (J);
-         J := J + 1;
+      Err_Col := Options'First;
+      while Err_Col <= Options'Last loop
+         C := Options (Err_Col);
+         Err_Col := Err_Col + 1;
 
          case C is
             when '1' .. '9' =>
-               Style_Check_Indentation
-                  := Character'Pos (C) - Character'Pos ('0');
+               Style_Check_Indentation :=
+                 Character'Pos (C) - Character'Pos ('0');
 
             when 'a' =>
                Style_Check_Attribute_Casing    := True;
@@ -222,28 +258,27 @@ package body Stylesw is
             when 'L' =>
                Style_Max_Nesting_Level := 0;
 
-               if J > Options'Last
-                 or else Options (J) not in '0' .. '9'
+               if Err_Col > Options'Last
+                 or else Options (Err_Col) not in '0' .. '9'
                then
-                  OK := False;
-                  Err_Col := J;
+                  Bad_Style_Switch ("invalid nesting level");
                   return;
                end if;
 
                loop
                   Style_Max_Nesting_Level :=
                     Style_Max_Nesting_Level * 10 +
-                      Character'Pos (Options (J)) - Character'Pos ('0');
+                      Character'Pos (Options (Err_Col)) - Character'Pos ('0');
 
                   if Style_Max_Nesting_Level > 999 then
-                     OK := False;
-                     Err_Col := J;
+                     Bad_Style_Switch
+                       ("max nesting level (999) exceeded in style check");
                      return;
                   end if;
 
-                  J := J + 1;
-                  exit when J > Options'Last
-                    or else Options (J) not in '0' .. '9';
+                  Err_Col := Err_Col + 1;
+                  exit when Err_Col > Options'Last
+                    or else Options (Err_Col) not in '0' .. '9';
                end loop;
 
                Style_Check_Max_Nesting_Level := Style_Max_Nesting_Level /= 0;
@@ -252,40 +287,42 @@ package body Stylesw is
                Style_Check_Max_Line_Length     := True;
                Style_Max_Line_Length           := 79;
 
-            when 'n' =>
-               Style_Check_Standard            := True;
-
-            when 'N' =>
-               Reset_Style_Check_Options;
-
             when 'M' =>
                Style_Max_Line_Length := 0;
 
-               if J > Options'Last
-                 or else Options (J) not in '0' .. '9'
+               if Err_Col > Options'Last
+                 or else Options (Err_Col) not in '0' .. '9'
                then
-                  OK := False;
-                  Err_Col := J;
+                  Bad_Style_Switch
+                    ("invalid line length in style check");
                   return;
                end if;
 
                loop
                   Style_Max_Line_Length :=
                     Style_Max_Line_Length * 10 +
-                      Character'Pos (Options (J)) - Character'Pos ('0');
+                      Character'Pos (Options (Err_Col)) - Character'Pos ('0');
 
-                  if Style_Max_Line_Length > Int (Column_Number'Last) then
+                  if Style_Max_Line_Length > Int (Max_Line_Length) then
                      OK := False;
-                     Err_Col := J;
+                     Style_Msg_Buf (1 .. 27) := "max line length allowed is ";
+                     Style_Msg_Len := 27;
+                     Add_Img (Natural (Max_Line_Length));
                      return;
                   end if;
 
-                  J := J + 1;
-                  exit when J > Options'Last
-                    or else Options (J) not in '0' .. '9';
+                  Err_Col := Err_Col + 1;
+                  exit when Err_Col > Options'Last
+                    or else Options (Err_Col) not in '0' .. '9';
                end loop;
 
                Style_Check_Max_Line_Length   := Style_Max_Line_Length /= 0;
+
+            when 'n' =>
+               Style_Check_Standard            := True;
+
+            when 'N' =>
+               Reset_Style_Check_Options;
 
             when 'o' =>
                Style_Check_Order_Subprograms   := True;
@@ -312,15 +349,16 @@ package body Stylesw is
                null;
 
             when others =>
-               OK      := False;
-               Err_Col := J - 1;
+               Err_Col := Err_Col - 1;
+               Style_Msg_Buf (1 .. 21) := "invalid style switch:";
+               Style_Msg_Len := 22;
+               Style_Msg_Buf (Style_Msg_Len) := C;
+               OK := False;
                return;
          end case;
       end loop;
 
       Style_Check := True;
       OK := True;
-      Err_Col := Options'Last + 1;
    end Set_Style_Check_Options;
-
 end Stylesw;

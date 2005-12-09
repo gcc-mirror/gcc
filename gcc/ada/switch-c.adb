@@ -852,11 +852,18 @@ package body Switch.C is
                        (Switch_Chars (Ptr .. Max), OK, Ptr);
 
                      if not OK then
-                        Bad_Switch (C);
+                        declare
+                           R : String (1 .. Style_Msg_Len + 20);
+                        begin
+                           R (1 .. 19) := "bad -gnaty switch (";
+                           R (20 .. R'Last - 1) :=
+                             Style_Msg_Buf (1 .. Style_Msg_Len);
+                           R (R'Last) := ')';
+                           Osint.Fail (R);
+                        end;
                      end if;
 
                      Ptr := First_Char + 1;
-
                      while Ptr <= Max loop
                         Last_Stored := First_Stored + 1;
                         Storing (Last_Stored) := Switch_Chars (Ptr);

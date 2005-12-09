@@ -254,24 +254,31 @@ package Stylesw is
    --  This procedure is called to set the default style checking options
    --  in response to a -gnaty switch with no suboptions.
 
+   Style_Msg_Buf : String (1 .. 80);
+   Style_Msg_Len : Natural;
+   --  Used to return
+
    procedure Set_Style_Check_Options
      (Options  : String;
       OK       : out Boolean;
       Err_Col  : out Natural);
-   --  This procedure is called to set the style check options that
-   --  correspond to the characters in the given Options string. If
-   --  all options are valid, they are set in an additive manner:
-   --  any previous options are retained unless overridden. If any
-   --  invalid character is found, then OK is False on exit, and
-   --  Err_Col is the index in options of the bad character. If all
-   --  options are valid, OK is True on return, and Err_Col is set
-   --  to Options'Last + 1.
+   --  This procedure is called to set the style check options that correspond
+   --  to the characters in the given Options string. If all options are valid,
+   --  they are set in an additive manner: any previous options are retained
+   --  unless overridden.
+   --
+   --  If all options given are valid, then OK is True, Err_Col is set to
+   --  Options'Last + 1, and Style_Msg_Buf/Style_Msg_Len are unchanged.
+   --
+   --  If an invalid character is found, then OK is False on exit, and Err_Col
+   --  is the index in options of the bad character. In this case Style_Msg_Len
+   --  is set and Style_Msg_Buf (1 .. Style_Msg_Len) has a detailed message
+   --  describing the error.
 
    procedure Set_Style_Check_Options (Options : String);
-   --  Like the above procedure, except that the call is simply ignored if
-   --  there are any error conditions, this is for example appopriate for
-   --  calls where the string is known to be valid, e.g. because it was
-   --  obtained by Save_Style_Check_Options.
+   --  Like the above procedure, but used when the Options string is known to
+   --  be valid. This is for example appopriate for calls where the string ==
+   --  was obtained by Save_Style_Check_Options.
 
    procedure Reset_Style_Check_Options;
    --  Sets all style check options to off

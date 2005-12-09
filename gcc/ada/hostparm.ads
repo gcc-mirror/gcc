@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,8 @@
 --  are parameters that are relevant to the host machine on which the
 --  compiler is running, and thus this package is part of the compiler.
 
+with Types;
+
 package Hostparm is
 
    -----------------------
@@ -61,13 +63,15 @@ package Hostparm is
    Normalized_CWD : constant String := "./";
    --  Normalized string to access current directory
 
-   Max_Line_Length : constant := 255;
-   --  Maximum source line length. This can be set to any value up to
-   --  2**15 - 1, a limit imposed by the assumption that column numbers
-   --  can be stored in 16 bits (see Types.Column_Number). A value of
-   --  200 is the minimum value required (RM 2.2(15)), but we use 255
-   --  for most GNAT targets since this is DEC Ada compatible. The value
-   --  set here can be overridden by the explicit use of -gnatyM.
+   Max_Line_Length : constant := Types.Column_Number'Pred
+                       (Types.Column_Number'Last);
+   --  Maximum source line length. By default we set it to the maximum
+   --  value that can be supported, which is given by the range of the
+   --  Column_Number type. We subtract 1 because need to be able to
+   --  have a valid Column_Number equal to Max_Line_Length to represent
+   --  the location of a "line too long" error.
+   --  200 is the minimum value required (RM 2.2(15)). The value set here
+   --  can be reduced by the explicit use of the -gnatyM style switch.
 
    Max_Name_Length : constant := 1024;
    --  Maximum length of unit name (including all dots, and " (spec)") and

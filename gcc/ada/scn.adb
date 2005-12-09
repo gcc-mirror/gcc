@@ -26,6 +26,7 @@
 
 with Atree;    use Atree;
 with Csets;    use Csets;
+with Hostparm; use Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Restrict; use Restrict;
@@ -104,7 +105,7 @@ package body Scn is
    begin
       if Style_Check then
          Style.Check_Line_Terminator (Len);
-      elsif Len > Opt.Max_Line_Length then
+      elsif Len > Max_Line_Length then
          Error_Long_Line;
       end if;
    end Check_End_Of_Line;
@@ -266,7 +267,7 @@ package body Scn is
    begin
       Error_Msg
         ("this line is too long",
-         Current_Line_Start + Source_Ptr (Opt.Max_Line_Length));
+         Current_Line_Start + Source_Ptr (Max_Line_Length));
    end Error_Long_Line;
 
    ------------------------
