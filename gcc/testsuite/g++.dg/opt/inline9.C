@@ -3,7 +3,7 @@
 // Testcase by Alan Modra <amodra@bigpond.net.au>
 // { dg-do run }
 // { dg-options "-O" }
-// { dg-options "-O -mtune=i686" { target i?86-*-* } }
+// { dg-options "-O -mtune=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
 
 struct thread_info
 {

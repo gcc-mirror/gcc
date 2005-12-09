@@ -1,6 +1,17 @@
 2005-12-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/20772
+	* g++.dg/eh/simd-1.C, g++.dg/eh/simd-2.C, g++.dg/opt/inline9.C,
+	gcc.dg/20020418-1.c, gcc.dg/20031102-1.c, gcc.dg/ia64-sync-1.c,
+	gcc.dg/ia64-sync-2.c, gcc.dg/ia64-sync-3.c, gcc.dg/ia64-sync-4.c,
+	gcc.dg/ifcvt-fabs-1.c, gcc.dg/loop-3.c, gcc.dg/nested-calls-1.c,
+	gcc.dg/pr20017.c, gcc.dg/smod-1.c, gcc.dg/sync-2.c,
+	gcc.dg/tls/opt-3.c, gcc.dg/torture/badshift.c: Add x86_64 cases
+	and/or merge with i?86 cases.
+
+	* gcc.dg/tls/opt-3.c: Require effective target fpic.
+
+	PR testsuite/20772
 	* g++.dg/opt/life1.C, g++.old-deja/g++.abi/aggregates.C,
 	g++.old-deja/g++.abi/align.C, g++.old-deja/g++.abi/bitfields.C,
 	g++.old-deja/g++.law/weak.C, g++.old-deja/g++.pt/asm2.C,
