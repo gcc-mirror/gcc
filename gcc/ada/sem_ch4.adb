@@ -4379,9 +4379,9 @@ package body Sem_Ch4 is
             --  If either operand is a junk operand (e.g. package name), then
             --  post appropriate error messages, but do not complain further.
 
-            --  Note that the use of OR in this test instead of OR ELSE
-            --  is quite deliberate, we may as well check both operands
-            --  in the binary operator case.
+            --  Note that the use of OR in this test instead of OR ELSE is
+            --  quite deliberate, we may as well check both operands in the
+            --  binary operator case.
 
             elsif Junk_Operand (R)
               or (Nkind (N) in N_Binary_Op and then Junk_Operand (L))
@@ -4389,10 +4389,10 @@ package body Sem_Ch4 is
                return;
 
             --  If we have a logical operator, one of whose operands is
-            --  Boolean, then we know that the other operand cannot resolve
-            --  to Boolean (since we got no interpretations), but in that
-            --  case we pretty much know that the other operand should be
-            --  Boolean, so resolve it that way (generating an error)
+            --  Boolean, then we know that the other operand cannot resolve to
+            --  Boolean (since we got no interpretations), but in that case we
+            --  pretty much know that the other operand should be Boolean, so
+            --  resolve it that way (generating an error)
 
             elsif Nkind (N) = N_Op_And
                     or else
@@ -4476,10 +4476,10 @@ package body Sem_Ch4 is
                return;
             end if;
 
-            --  If we fall through then just give general message. Note
-            --  that in the following messages, if the operand is overloaded
-            --  we choose an arbitrary type to complain about, but that is
-            --  probably more useful than not giving a type at all.
+            --  If we fall through then just give general message. Note that in
+            --  the following messages, if the operand is overloaded we choose
+            --  an arbitrary type to complain about, but that is probably more
+            --  useful than not giving a type at all.
 
             if Nkind (N) in N_Unary_Op then
                Error_Msg_Node_2 := Etype (R);
@@ -4543,23 +4543,21 @@ package body Sem_Ch4 is
       It           : Interp;
       Abstract_Op  : Entity_Id := Empty;
 
-      --  AI-310: If overloaded, remove abstract non-dispatching
-      --  operations. We activate this if either extensions are
-      --  enabled, or if the abstract operation in question comes
-      --  from a predefined file. This latter test allows us to
-      --  use abstract to make operations invisible to users. In
-      --  particular, if type Address is non-private and abstract
-      --  subprograms are used to hide its operators, they will be
-      --  truly hidden.
+      --  AI-310: If overloaded, remove abstract non-dispatching operations. We
+      --  activate this if either extensions are enabled, or if the abstract
+      --  operation in question comes from a predefined file. This latter test
+      --  allows us to use abstract to make operations invisible to users. In
+      --  particular, if type Address is non-private and abstract subprograms
+      --  are used to hide its operators, they will be truly hidden.
 
       type Operand_Position is (First_Op, Second_Op);
       Univ_Type : constant Entity_Id := Universal_Interpretation (N);
 
       procedure Remove_Address_Interpretations (Op : Operand_Position);
-      --  Ambiguities may arise when the operands are literal and the
-      --  address operations in s-auxdec are visible. In that case, remove
-      --  the interpretation of a literal as Address, to retain the semantics
-      --  of Address as a private type.
+      --  Ambiguities may arise when the operands are literal and the address
+      --  operations in s-auxdec are visible. In that case, remove the
+      --  interpretation of a literal as Address, to retain the semantics of
+      --  Address as a private type.
 
       ------------------------------------
       -- Remove_Address_Interpretations --
@@ -4627,10 +4625,11 @@ package body Sem_Ch4 is
                      Present (Universal_Interpretation (Left_Opnd (N)));
 
                begin
-                  if U1 and then not U2 then
+                  if U1 then
                      Remove_Address_Interpretations (Second_Op);
+                  end if;
 
-                  elsif U2 and then not U1 then
+                  if U2 then
                      Remove_Address_Interpretations (First_Op);
                   end if;
 
@@ -4655,15 +4654,17 @@ package body Sem_Ch4 is
                     and then Present (Univ_Type)
                   then
                      --  If both operands have a universal interpretation,
-                     --  select the predefined operator and discard others.
+                     --  it is still necessary to remove interpretations that
+                     --  yield Address. Any remaining ambiguities will be
+                     --  removed in Disambiguate.
 
                      Get_First_Interp (N, I, It);
                      while Present (It.Nam) loop
-                        if Scope (It.Nam) = Standard_Standard then
-                           Set_Etype (N, Univ_Type);
+                        if Is_Descendent_Of_Address (It.Typ) then
+                           Remove_Interp (I);
+
+                        elsif not Is_Type (It.Nam) then
                            Set_Entity (N, It.Nam);
-                           Set_Is_Overloaded (N, False);
-                           exit;
                         end if;
 
                         Get_Next_Interp (I, It);
@@ -4690,10 +4691,11 @@ package body Sem_Ch4 is
                         Present (Universal_Interpretation (Next (Arg1)));
 
             begin
-               if U1 and then not U2 then
+               if U1 then
                   Remove_Address_Interpretations (First_Op);
+               end if;
 
-               elsif U2 and then not U1 then
+               if U2 then
                   Remove_Address_Interpretations (Second_Op);
                end if;
 
