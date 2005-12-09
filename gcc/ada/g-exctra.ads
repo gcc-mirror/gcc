@@ -44,7 +44,7 @@
 --  The default backtrace is in the form of absolute code locations which may
 --  be converted to corresponding source locations using the addr2line utility
 --  or from within GDB. Please refer to GNAT.Traceback for information about
---  what is necessary to be able to exploit thisg possibility.
+--  what is necessary to be able to exploit this possibility.
 
 --  The backtrace output can also be customized by way of a "decorator" which
 --  may return any string output in association with a provided call chain.

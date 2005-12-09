@@ -192,10 +192,12 @@ package body Exp_Ch4 is
    --  this by using Convert_To_Actual_Subtype if necessary).
 
    procedure Rewrite_Comparison (N : Node_Id);
-   --  N is the node for a compile time comparison. If this outcome of this
-   --  comparison can be determined at compile time, then the node N can be
-   --  rewritten with True or False. If the outcome cannot be determined at
-   --  compile time, the call has no effect.
+   --  if N is the node for a comparison whose outcome can be determined at
+   --  compile time, then the node N can be rewritten with True or False. If
+   --  the outcome cannot be determined at compile time, the call has no
+   --  effect. If N is a type conversion, then this processing is applied to
+   --  its expression. If N is neither comparison nor a type conversion, the
+   --  call has no effect.
 
    function Tagged_Membership (N : Node_Id) return Node_Id;
    --  Construct the expression corresponding to the tagged membership test.
@@ -372,6 +374,12 @@ package body Exp_Ch4 is
       Node   : Node_Id;
       Temp   : Entity_Id;
 
+      TagT : Entity_Id := Empty;
+      --  Type used as source for tag assignment
+
+      TagR : Node_Id := Empty;
+      --  Target reference for tag assignment
+
       Aggr_In_Place : constant Boolean := Is_Delayed_Aggregate (Exp);
 
       Tag_Assign : Node_Id;
@@ -484,61 +492,46 @@ package body Exp_Ch4 is
                  Reason => PE_Accessibility_Check_Failed));
          end if;
 
-         --  Suppress the tag assignment when Java_VM because JVM tags
-         --  are represented implicitly in objects.
+         if Java_VM then
 
-         if Is_Tagged_Type (T)
-           and then not Is_Class_Wide_Type (T)
-           and then not Java_VM
+            --  Suppress the tag assignment when Java_VM because JVM tags
+            --  are represented implicitly in objects.
+
+            null;
+
+         elsif Is_Tagged_Type (T) and then not Is_Class_Wide_Type (T) then
+            TagT := T;
+            TagR := New_Reference_To (Temp, Loc);
+
+         elsif Is_Private_Type (T)
+           and then Is_Tagged_Type (Underlying_Type (T))
          then
+            TagT := Underlying_Type (T);
+            TagR := Unchecked_Convert_To (Underlying_Type (T),
+                      Make_Explicit_Dereference (Loc,
+                        New_Reference_To (Temp, Loc)));
+
+         end if;
+
+         if Present (TagT) then
             Tag_Assign :=
               Make_Assignment_Statement (Loc,
                 Name =>
                   Make_Selected_Component (Loc,
-                    Prefix => New_Reference_To (Temp, Loc),
+                    Prefix => TagR,
                     Selector_Name =>
-                      New_Reference_To (First_Tag_Component (T), Loc)),
+                      New_Reference_To (First_Tag_Component (TagT), Loc)),
 
                 Expression =>
                   Unchecked_Convert_To (RTE (RE_Tag),
                     New_Reference_To
-                      (Elists.Node (First_Elmt (Access_Disp_Table (T))),
+                      (Elists.Node (First_Elmt (Access_Disp_Table (TagT))),
                        Loc)));
 
             --  The previous assignment has to be done in any case
 
             Set_Assignment_OK (Name (Tag_Assign));
             Insert_Action (N, Tag_Assign);
-
-         elsif Is_Private_Type (T)
-           and then Is_Tagged_Type (Underlying_Type (T))
-           and then not Java_VM
-         then
-            declare
-               Utyp : constant Entity_Id := Underlying_Type (T);
-               Ref  : constant Node_Id :=
-                        Unchecked_Convert_To (Utyp,
-                          Make_Explicit_Dereference (Loc,
-                            New_Reference_To (Temp, Loc)));
-
-            begin
-               Tag_Assign :=
-                 Make_Assignment_Statement (Loc,
-                   Name =>
-                     Make_Selected_Component (Loc,
-                       Prefix => Ref,
-                       Selector_Name =>
-                         New_Reference_To (First_Tag_Component (Utyp), Loc)),
-
-                   Expression =>
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To (
-                         Elists.Node (First_Elmt (Access_Disp_Table (Utyp))),
-                         Loc)));
-
-               Set_Assignment_OK (Name (Tag_Assign));
-               Insert_Action (N, Tag_Assign);
-            end;
          end if;
 
          if Controlled_Type (DesigT)
@@ -3530,7 +3523,6 @@ package body Exp_Ch4 is
             Parnt := Parent (Child);
          end loop;
       end;
-
    end Expand_N_Indexed_Component;
 
    ---------------------
@@ -4570,12 +4562,9 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      --  If we still have an equality comparison (i.e. it was not rewritten
-      --  in some way), then we can test if result is known at compile time).
+      --  Test if result is known at compile time
 
-      if Nkind (N) = N_Op_Eq then
-         Rewrite_Comparison (N);
-      end if;
+      Rewrite_Comparison (N);
 
       --  If we still have comparison for Vax_Float, process it
 
@@ -8010,78 +7999,91 @@ package body Exp_Ch4 is
    ------------------------
 
    procedure Rewrite_Comparison (N : Node_Id) is
-      Typ : constant Entity_Id := Etype (N);
-      Op1 : constant Node_Id   := Left_Opnd (N);
-      Op2 : constant Node_Id   := Right_Opnd (N);
-
-      Res : constant Compare_Result := Compile_Time_Compare (Op1, Op2);
-      --  Res indicates if compare outcome can be determined at compile time
-
-      True_Result  : Boolean;
-      False_Result : Boolean;
-
    begin
-      case N_Op_Compare (Nkind (N)) is
-         when N_Op_Eq =>
-            True_Result  := Res = EQ;
-            False_Result := Res = LT or else Res = GT or else Res = NE;
+      if Nkind (N) = N_Type_Conversion then
+         Rewrite_Comparison (Expression (N));
 
-         when N_Op_Ge =>
-            True_Result  := Res in Compare_GE;
-            False_Result := Res = LT;
+      elsif Nkind (N) not in N_Op_Compare then
+         null;
 
-            if Res = LE
-              and then Constant_Condition_Warnings
-              and then Comes_From_Source (Original_Node (N))
-              and then Nkind (Original_Node (N)) = N_Op_Ge
-              and then not In_Instance
-              and then not Warnings_Off (Etype (Left_Opnd (N)))
-              and then Is_Integer_Type (Etype (Left_Opnd (N)))
-            then
-               Error_Msg_N
-                 ("can never be greater than, could replace by ""'=""?", N);
+      else
+         declare
+            Typ : constant Entity_Id := Etype (N);
+            Op1 : constant Node_Id   := Left_Opnd (N);
+            Op2 : constant Node_Id   := Right_Opnd (N);
+
+            Res : constant Compare_Result := Compile_Time_Compare (Op1, Op2);
+            --  Res indicates if compare outcome can be compile time determined
+
+            True_Result  : Boolean;
+            False_Result : Boolean;
+
+         begin
+            case N_Op_Compare (Nkind (N)) is
+            when N_Op_Eq =>
+               True_Result  := Res = EQ;
+               False_Result := Res = LT or else Res = GT or else Res = NE;
+
+            when N_Op_Ge =>
+               True_Result  := Res in Compare_GE;
+               False_Result := Res = LT;
+
+               if Res = LE
+                 and then Constant_Condition_Warnings
+                 and then Comes_From_Source (Original_Node (N))
+                 and then Nkind (Original_Node (N)) = N_Op_Ge
+                 and then not In_Instance
+                 and then not Warnings_Off (Etype (Left_Opnd (N)))
+                 and then Is_Integer_Type (Etype (Left_Opnd (N)))
+               then
+                  Error_Msg_N
+                    ("can never be greater than, could replace by ""'=""?", N);
+               end if;
+
+            when N_Op_Gt =>
+               True_Result  := Res = GT;
+               False_Result := Res in Compare_LE;
+
+            when N_Op_Lt =>
+               True_Result  := Res = LT;
+               False_Result := Res in Compare_GE;
+
+            when N_Op_Le =>
+               True_Result  := Res in Compare_LE;
+               False_Result := Res = GT;
+
+               if Res = GE
+                 and then Constant_Condition_Warnings
+                 and then Comes_From_Source (Original_Node (N))
+                 and then Nkind (Original_Node (N)) = N_Op_Le
+                 and then not In_Instance
+                 and then not Warnings_Off (Etype (Left_Opnd (N)))
+                 and then Is_Integer_Type (Etype (Left_Opnd (N)))
+               then
+                  Error_Msg_N
+                    ("can never be less than, could replace by ""'=""?", N);
+               end if;
+
+            when N_Op_Ne =>
+               True_Result  := Res = NE or else Res = GT or else Res = LT;
+               False_Result := Res = EQ;
+            end case;
+
+            if True_Result then
+               Rewrite (N,
+                 Convert_To (Typ,
+                   New_Occurrence_Of (Standard_True, Sloc (N))));
+               Analyze_And_Resolve (N, Typ);
+               Warn_On_Known_Condition (N);
+
+            elsif False_Result then
+               Rewrite (N,
+                 Convert_To (Typ,
+                   New_Occurrence_Of (Standard_False, Sloc (N))));
+               Analyze_And_Resolve (N, Typ);
+               Warn_On_Known_Condition (N);
             end if;
-
-         when N_Op_Gt =>
-            True_Result  := Res = GT;
-            False_Result := Res in Compare_LE;
-
-         when N_Op_Lt =>
-            True_Result  := Res = LT;
-            False_Result := Res in Compare_GE;
-
-         when N_Op_Le =>
-            True_Result  := Res in Compare_LE;
-            False_Result := Res = GT;
-
-            if Res = GE
-              and then Constant_Condition_Warnings
-              and then Comes_From_Source (Original_Node (N))
-              and then Nkind (Original_Node (N)) = N_Op_Le
-              and then not In_Instance
-              and then not Warnings_Off (Etype (Left_Opnd (N)))
-              and then Is_Integer_Type (Etype (Left_Opnd (N)))
-            then
-               Error_Msg_N
-                 ("can never be less than, could replace by ""'=""?", N);
-            end if;
-
-         when N_Op_Ne =>
-            True_Result  := Res = NE or else Res = GT or else Res = LT;
-            False_Result := Res = EQ;
-      end case;
-
-      if True_Result then
-         Rewrite (N,
-           Convert_To (Typ, New_Occurrence_Of (Standard_True, Sloc (N))));
-         Analyze_And_Resolve (N, Typ);
-         Warn_On_Known_Condition (N);
-
-      elsif False_Result then
-         Rewrite (N,
-           Convert_To (Typ, New_Occurrence_Of (Standard_False, Sloc (N))));
-         Analyze_And_Resolve (N, Typ);
-         Warn_On_Known_Condition (N);
+         end;
       end if;
    end Rewrite_Comparison;
 

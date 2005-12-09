@@ -40,12 +40,13 @@ with Unchecked_Conversion;
 package body System.Bit_Ops is
 
    subtype Bits_Array is System.Unsigned_Types.Packed_Bytes1 (Positive);
-   --  Constrained array used to interpret the address values. We use the
+   --  Dummy array type used to interpret the address values. We use the
    --  unaligned version always, since this will handle both the aligned and
    --  unaligned cases, and we always do these operations by bytes anyway.
    --  Note: we use a ones origin array here so that the computations of the
    --  length in bytes work correctly (give a non-negative value) for the
-   --  case of zero length bit strings).
+   --  case of zero length bit strings). Note that we never allocate any
+   --  objects of this type (we can't because they would be absurdly big).
 
    type Bits is access Bits_Array;
    --  This is the actual type into which address values are converted

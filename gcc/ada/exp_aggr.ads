@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,12 +43,9 @@ package Exp_Aggr is
    --  Decl is an access N_Object_Declaration (produced during
    --  allocator expansion), Aggr is the initial expression aggregate
    --  of an allocator. This procedure perform in-place aggregate
-   --  assignent in the newly allocated object.
+   --  assignment in the newly allocated object.
 
    procedure Convert_Aggr_In_Assignment (N : Node_Id);
-   --  Decl is an access N_Object_Declaration (produced during
-   --  allocator expansion), Aggr is the initial expression aggregate
-   --  of an allocator. This procedure perform in-place aggregate
-   --  assignent in the newly allocated object.
+   --  ??? documentation needed
 
 end Exp_Aggr;

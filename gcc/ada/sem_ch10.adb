@@ -777,7 +777,7 @@ package body Sem_Ch10 is
          declare
             Save_Style_Check : constant Boolean := Style_Check;
             Save_Warning     : constant Warning_Mode_Type := Warning_Mode;
-            Options : Style_Check_Options;
+            Options          : Style_Check_Options;
 
          begin
             Save_Style_Check_Options (Options);

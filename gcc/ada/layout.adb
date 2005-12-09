@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -107,7 +107,7 @@ package body Layout is
    --  dynamic sizes in storage units. If the argument N is anything other
    --  than an integer literal, it is returned unchanged, but if it is an
    --  integer literal, then it is taken as a size in bits, and is replaced
-   --  by the corresponding size in bytes.
+   --  by the corresponding size in storage units.
 
    function Compute_Length (Lo : Node_Id; Hi : Node_Id) return Node_Id;
    --  Given expressions for the low bound (Lo) and the high bound (Hi),
@@ -154,7 +154,7 @@ package body Layout is
    --  resolved (which may not be the case yet if we build the expression
    --  in this unit).
 
-   function Get_Max_Size (E : Entity_Id) return Node_Id;
+   function Get_Max_SU_Size (E : Entity_Id) return Node_Id;
    --  E is an array type or subtype that has at least one index bound that
    --  is the value of a record discriminant. For such an array, the function
    --  computes an expression that yields the maximum possible size of the
@@ -222,7 +222,7 @@ package body Layout is
          Esize_Set := Has_Size_Clause (E);
       end if;
 
-      --  If size is known it must be a multiple of the byte size
+      --  If size is known it must be a multiple of the storage unit size
 
       if Esize (E) mod SSU /= 0 then
 
@@ -230,10 +230,11 @@ package body Layout is
 
          if Esize_Set then
             Error_Msg_NE
-              ("size for& not a multiple of byte size", Size_Clause (E), E);
+              ("size for& not a multiple of storage unit size",
+               Size_Clause (E), E);
             return;
 
-         --  Otherwise bump up size to a byte boundary
+         --  Otherwise bump up size to a storage unit boundary
 
          else
             Set_Esize (E, (Esize (E) + SSU - 1) / SSU * SSU);
@@ -270,7 +271,7 @@ package body Layout is
 
       --  In this situation, the initial alignment of t is 4, copied from
       --  the Integer base type, but it is safe to reduce it to 1 at this
-      --  stage, since we will only be loading a single byte.
+      --  stage, since we will only be loading a single storage unit.
 
       if Is_Discrete_Type (Etype (E))
         and then not Has_Alignment_Clause (E)
@@ -652,11 +653,11 @@ package body Layout is
       end if;
    end Expr_From_SO_Ref;
 
-   ------------------
-   -- Get_Max_Size --
-   ------------------
+   ---------------------
+   -- Get_Max_SU_Size --
+   ---------------------
 
-   function Get_Max_Size (E : Entity_Id) return Node_Id is
+   function Get_Max_SU_Size (E : Entity_Id) return Node_Id is
       Loc  : constant Source_Ptr := Sloc (E);
       Indx : Node_Id;
       Ityp : Entity_Id;
@@ -725,7 +726,7 @@ package body Layout is
          end if;
       end Min_Discrim;
 
-   --  Start of processing for Get_Max_Size
+   --  Start of processing for Get_Max_SU_Size
 
    begin
       pragma Assert (Size_Depends_On_Discriminant (E));
@@ -859,10 +860,10 @@ package body Layout is
       end loop;
 
       --  Here after processing all bounds to set sizes. If the value is
-      --  a constant, then it is bits, and we just return the value.
+      --  a constant, then it is bits, so we convert to storage units.
 
       if Size.Status = Const then
-         return Make_Integer_Literal (Loc, Size.Val);
+         return Bits_To_SU (Make_Integer_Literal (Loc, Size.Val));
 
       --  Case where the value is dynamic
 
@@ -884,7 +885,7 @@ package body Layout is
 
          return Size.Nod;
       end if;
-   end Get_Max_Size;
+   end Get_Max_SU_Size;
 
    -----------------------
    -- Layout_Array_Type --
@@ -1480,7 +1481,7 @@ package body Layout is
                --  Get maximum size of previous component
 
                if Size_Depends_On_Discriminant (Etype (Prev_Comp)) then
-                  Old_Maxsz := Get_Max_Size (Etype (Prev_Comp));
+                  Old_Maxsz := Get_Max_SU_Size (Etype (Prev_Comp));
                else
                   Old_Maxsz := Expr_From_SO_Ref (Loc, Old_Esiz, Prev_Comp);
                end if;
@@ -2556,7 +2557,7 @@ package body Layout is
 
                --  For scalar types, increase Object_Size to power of 2,
                --  but not less than a storage unit in any case (i.e.,
-               --  normally this means it will be byte addressable).
+               --  normally this means it will be storage-unit addressable).
 
                if Is_Scalar_Type (E) then
                   if Size <= System_Storage_Unit then
@@ -2717,7 +2718,8 @@ package body Layout is
 
          --  Size is known, alignment is not set
 
-         --  Reset alignment to match size if size is exactly 2, 4, or 8 bytes
+         --  Reset alignment to match size if size is exactly 2, 4, or 8
+         --  storage units.
 
          if Siz = 2 * System_Storage_Unit then
             Align := 2;
