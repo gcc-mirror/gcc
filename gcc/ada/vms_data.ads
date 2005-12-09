@@ -665,6 +665,145 @@ package VMS_Data is
       S_Bind_WarnX   'Access,
       S_Bind_Zero    'Access);
 
+   -----------------------------
+   -- Switches for GNAT CHECK --
+   -----------------------------
+
+   S_Check_All    : aliased constant S := "/ALL "                         &
+                                            "-a";
+   --        /NOALL (D)
+   --        /ALL
+   --
+   --   Also check the components of the GNAT run time and process the needed
+   --  components of the GNAT RTL when building and analyzing the global
+   --  structure for checking the global rules.
+
+   S_Check_Ext     : aliased constant S := "/EXTERNAL_REFERENCE=" & '"'   &
+                                             "-X" & '"';
+   --       /EXTERNAL_REFERENCE="name=val"
+   --
+   --   Specifies an external reference to the project manager. Useful only if
+   --   /PROJECT_FILE is used.
+   --
+   --   Example:
+   --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Check_Files  : aliased constant S := "/FILES=@"                      &
+                                             "-files=@";
+   --      /FILES=filename
+   --
+   --   Take as arguments the files that are listed in the specified
+   --   text file.
+
+   S_Check_Help   : aliased constant S := "/HELP "                        &
+                                            "-h";
+   --        /NOHELP (D)
+   --        /HELP
+   --
+   --   Print information about currently implemented checks.
+
+   S_Check_Locs   : aliased constant S := "/LOCS "                        &
+                                            "-l";
+   --        /NOLOCS (D)
+   --        /LOCS
+   --
+   --   Use full source locations referebces in the report file.
+
+   S_Check_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="      &
+                                             "DEFAULT "                   &
+                                                "-vP0 "                   &
+                                             "MEDIUM "                    &
+                                                "-vP1 "                   &
+                                             "HIGH "                      &
+                                                "-vP2";
+   --        /MESSAGES_PROJECT_FILE[=messages-option]
+   --
+   --   Specifies the "verbosity" of the parsing of project files.
+   --   messages-option may be one of the following:
+   --
+   --      DEFAULT (D)  No messages are output if there is no error or warning.
+   --
+   --      MEDIUM       A small number of messages are output.
+   --
+   --      HIGH         A great number of messages are output, most of them not
+   --                   being useful for the user.
+
+   S_Check_Project : aliased constant S := "/PROJECT_FILE=<"              &
+                                             "-P>";
+   --        /PROJECT_FILE=filename
+   --
+   --   Specifies the main project file to be used. The project files rooted
+   --   at the main project file will be parsed before the invocation of the
+   --   gnatcheck. The source directories to be searched will be communicated
+   --   to gnatcheck through logical name ADA_PRJ_INCLUDE_FILE.
+
+   S_Check_Quiet  : aliased constant S := "/QUIET "                       &
+                                            "-q";
+   --        /NOQUIET (D)
+   --        /QUIET
+   --
+   --   Work quietly, only output warnings and errors.
+
+   S_Check_Sections : aliased constant S := "/SECTIONS= "                 &
+                                            "DEFAULT "                    &
+                                               "-s123 "                   &
+                                            "COMPILER_STYLE "             &
+                                               "-s1 "                     &
+                                            "BY_RULES "                   &
+                                               "-s2 "                     &
+                                            "BY_FILES_BY_RULES "          &
+                                               "-s3 ";
+   --        /SECTIONS[=section-option, section-option, ...]
+   --
+   --   Specify what sections should be included into the report file.
+   --   By default, all three section (diagnises in the format correcponding
+   --   to compiler error and warning messages, diagnoses grouped by rules and
+   --   then - by files, diagnoses grouped by files and then - by rules) are
+   --   included in the report file.
+   --
+   --   section-option may be one of the following:
+   --
+   --      COMPILER_STYLE      Include diagnoses in compile-style format
+   --                          (diagoses are grouped by files, for each file
+   --                          they are ordered according to the references
+   --                          into the source)
+   --      BY_RULES            Include diagnoses grouped first by rules and
+   --                          then by files
+   --      BY_FILES_BY_RULES   Include diagnoses grouped first by files and
+   --                          then by rules
+   --
+   --   If one of these options is specified, then the report file contains
+   --   only sections set by these options
+
+   S_Check_Short  : aliased constant S := "/SHORT "                       &
+                                            "-s";
+   --        /NOSHORT (D)
+   --        /SHORT
+   --
+   --   Generate a short form of the report file.
+
+   S_Check_Verb   : aliased constant S := "/VERBOSE "                     &
+                                            "-v";
+   --        /NOVERBOSE (D)
+   --        /VERBOSE
+   --
+   --   The version number and copyright notice are output, as well as exact
+   --   copies of the gnat1 commands spawned to obtain the chop control
+   --   information.
+
+   Check_Switches : aliased constant Switches :=
+                      (S_Check_All      'Access,
+                       S_Check_Ext      'Access,
+                       S_Check_Files    'Access,
+                       S_Check_Help     'Access,
+                       S_Check_Locs     'Access,
+                       S_Check_Mess     'Access,
+                       S_Check_Project  'Access,
+                       S_Check_Quiet    'Access,
+                       S_Check_Sections 'Access,
+                       S_Check_Short    'Access,
+                       S_Check_Verb     'Access);
+
    ----------------------------
    -- Switches for GNAT CHOP --
    ----------------------------
@@ -2961,12 +3100,50 @@ package VMS_Data is
    --
    --        Look for source files in the default directory.
 
+   S_Elim_Ext     : aliased constant S := "/EXTERNAL_REFERENCE=" & '"'     &
+                                             "-X" & '"';
+   --       /EXTERNAL_REFERENCE="name=val"
+   --
+   --   Specifies an external reference to the project manager. Useful only if
+   --   /PROJECT_FILE is used.
+   --
+   --   Example:
+   --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
    S_Elim_GNATMAKE : aliased constant S := "/GNATMAKE=@"                   &
                                             "--GNATMAKE=@";
    --        /GNATMAKE=path_name
    --
    --   Instructs GNAT MAKE to use a specific gnatmake instead of one available
    --   on the path.
+
+   S_Elim_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="        &
+                                             "DEFAULT "                    &
+                                                "-vP0 "                    &
+                                             "MEDIUM "                     &
+                                                "-vP1 "                    &
+                                             "HIGH "                       &
+                                                "-vP2";
+   --        /MESSAGES_PROJECT_FILE[=messages-option]
+   --
+   --   Specifies the "verbosity" of the parsing of project files.
+   --   messages-option may be one of the following:
+   --
+   --      DEFAULT (D)  No messages are output if there is no error or warning.
+   --
+   --      MEDIUM       A small number of messages are output.
+   --
+   --      HIGH         A great number of messages are output, most of them not
+   --                   being useful for the user.
+
+   S_Elim_Project : aliased constant S := "/PROJECT_FILE=<"                &
+                                             "-P>";
+   --        /PROJECT_FILE=filename
+   --
+   --   Specifies the main project file to be used. The project files rooted
+   --   at the main project file will be parsed before the invocation of the
+   --   gnatelim. The source directories to be searched will be communicated
+   --   to gnatelim through logical name ADA_PRJ_INCLUDE_FILE.
 
    S_Elim_Quiet  : aliased constant S := "/QUIET "                         &
                                             "-q";
@@ -2994,15 +3171,18 @@ package VMS_Data is
    --   being processed.
 
    Elim_Switches : aliased constant Switches :=
-     (S_Elim_All     'Access,
-      S_Elim_Bind    'Access,
-      S_Elim_Comp    'Access,
-      S_Elim_Config  'Access,
-      S_Elim_Current 'Access,
-      S_Elim_GNATMAKE'Access,
-      S_Elim_Quiet   'Access,
-      S_Elim_Search  'Access,
-      S_Elim_Verb    'Access);
+                     (S_Elim_All     'Access,
+                      S_Elim_Bind    'Access,
+                      S_Elim_Comp    'Access,
+                      S_Elim_Config  'Access,
+                      S_Elim_Current 'Access,
+                      S_Elim_Ext     'Access,
+                      S_Elim_GNATMAKE'Access,
+                      S_Elim_Mess    'Access,
+                      S_Elim_Project 'Access,
+                      S_Elim_Quiet   'Access,
+                      S_Elim_Search  'Access,
+                      S_Elim_Verb    'Access);
 
    ----------------------------
    -- Switches for GNAT FIND --

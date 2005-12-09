@@ -161,6 +161,12 @@ package body Prj.Attr is
      "Ladefault_switches#" &
      "Lbswitches#" &
 
+   --  package Check
+
+     "Pcheck#" &
+     "Ladefault_switches#" &
+     "Lbswitches#" &
+
    --  package Eliminate
 
      "Peliminate#" &
