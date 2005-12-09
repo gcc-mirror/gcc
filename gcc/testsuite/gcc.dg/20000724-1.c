@@ -1,5 +1,6 @@
-/* { dg-do run { target i?86-*-linux* } } */
+/* { dg-do run { target i?86-*-linux* x86_64-*-linux* } } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
+/* { dg-require-effective-target ilp32 } */
 
 extern void abort (void);
 extern void exit (int);
