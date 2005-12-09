@@ -438,18 +438,10 @@ package body Ada.Containers.Hashed_Maps is
       --------------
 
       function New_Node (Next : Node_Access) return Node_Access is
-         Node : Node_Access := new Node_Type; --  Ada 2005 aggregate possible?
-
       begin
-         Node.Key := Key;
-         Node.Next := Next;
-
-         return Node;
-
-      exception
-         when others =>
-            Free (Node);
-            raise;
+         return new Node_Type'(Key     => Key,
+                               Element => <>,
+                               Next    => Next);
       end New_Node;
 
       HT : Hash_Table_Type renames Container.HT;
@@ -490,9 +482,8 @@ package body Ada.Containers.Hashed_Maps is
       --------------
 
       function New_Node (Next : Node_Access) return Node_Access is
-         Node : constant Node_Access := new Node_Type'(Key, New_Item, Next);
       begin
-         return Node;
+         return new Node_Type'(Key, New_Item, Next);
       end New_Node;
 
       HT : Hash_Table_Type renames Container.HT;

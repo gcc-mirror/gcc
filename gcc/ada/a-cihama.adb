@@ -237,6 +237,10 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          raise Constraint_Error;
       end if;
 
+      if Position.Node.Element = null then
+         raise Program_Error;
+      end if;
+
       return Position.Node.Element.all;
    end Element;
 
@@ -267,6 +271,12 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          raise Constraint_Error;
       end if;
 
+      if Left.Node.Key = null
+        or else Right.Node.Key = null
+      then
+         raise Program_Error;
+      end if;
+
       return Equivalent_Keys (Left.Node.Key.all, Right.Node.Key.all);
    end Equivalent_Keys;
 
@@ -281,6 +291,10 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          raise Constraint_Error;
       end if;
 
+      if Left.Node.Key = null then
+         raise Program_Error;
+      end if;
+
       return Equivalent_Keys (Left.Node.Key.all, Right);
    end Equivalent_Keys;
 
@@ -293,6 +307,10 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
       if Right.Node = null then
          raise Constraint_Error;
+      end if;
+
+      if Right.Node.Key = null then
+         raise Program_Error;
       end if;
 
       return Equivalent_Keys (Left, Right.Node.Key.all);
@@ -595,6 +613,10 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          raise Constraint_Error;
       end if;
 
+      if Position.Node.Key = null then
+         raise Program_Error;
+      end if;
+
       return Position.Node.Key.all;
    end Key;
 
@@ -641,6 +663,12 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          return No_Element;
       end if;
 
+      if Position.Node.Key = null
+        or else Position.Node.Element = null
+      then
+         raise Program_Error;
+      end if;
+
       declare
          HT   : Hash_Table_Type renames Position.Container.HT;
          Node : constant Node_Access := HT_Ops.Next (HT, Position.Node);
@@ -668,6 +696,12 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
       if Position.Node = null then
          raise Constraint_Error;
+      end if;
+
+      if Position.Node.Key = null
+        or else Position.Node.Element = null
+      then
+         raise Program_Error;
       end if;
 
       declare
@@ -807,6 +841,12 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          raise Constraint_Error;
       end if;
 
+      if Position.Node.Key = null
+        or else Position.Node.Element = null
+      then
+         raise Program_Error;
+      end if;
+
       if Position.Container /= Container'Unrestricted_Access then
          raise Program_Error;
       end if;
@@ -860,6 +900,12 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
       if Position.Node = null then
          raise Constraint_Error;
+      end if;
+
+      if Position.Node.Key = null
+        or else Position.Node.Element = null
+      then
+         raise Program_Error;
       end if;
 
       if Position.Container /= Container'Unrestricted_Access then

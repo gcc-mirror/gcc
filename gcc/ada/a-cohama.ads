@@ -212,17 +212,17 @@ private
          Node      : Node_Access;
       end record;
 
-   procedure Write
-     (Stream : access Root_Stream_Type'Class;
-      Item   : Cursor);
-
-   for Cursor'Write use Write;
-
    procedure Read
      (Stream : access Root_Stream_Type'Class;
       Item   : out Cursor);
 
    for Cursor'Read use Read;
+
+   procedure Write
+     (Stream : access Root_Stream_Type'Class;
+      Item   : Cursor);
+
+   for Cursor'Write use Write;
 
    No_Element : constant Cursor := (Container => null, Node => null);
 

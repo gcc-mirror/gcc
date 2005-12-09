@@ -145,9 +145,9 @@ package Ada.Containers.Doubly_Linked_Lists is
       Position : in out Cursor);
 
    procedure Splice
-     (Target   : in out List;
-      Before   : Cursor;
-      Position : Cursor);
+     (Container : in out List;
+      Before    : Cursor;
+      Position  : in out Cursor);
 
    function First (Container : List) return Cursor;
 

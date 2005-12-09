@@ -514,10 +514,18 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          LI := First (Target);
          RI := First (Source);
          while RI.Node /= null loop
+            pragma Assert (RI.Node.Next = null
+                             or else not (RI.Node.Next.Element.all <
+                                          RI.Node.Element.all));
+
             if LI.Node = null then
                Splice (Target, No_Element, Source);
                return;
             end if;
+
+            pragma Assert (LI.Node.Next = null
+                             or else not (LI.Node.Next.Element.all <
+                                          LI.Node.Element.all));
 
             if RI.Node.Element.all < LI.Node.Element.all then
                declare
@@ -1333,13 +1341,13 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    end Splice;
 
    procedure Splice
-     (Target   : in out List;
-      Before   : Cursor;
-      Position : Cursor)
+     (Container : in out List;
+      Before    : Cursor;
+      Position  : in out Cursor)
    is
    begin
       if Before.Container /= null then
-         if Before.Container /= Target'Unchecked_Access then
+         if Before.Container /= Container'Unchecked_Access then
             raise Program_Error;
          end if;
 
@@ -1360,7 +1368,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          raise Program_Error;
       end if;
 
-      if Position.Container /= Target'Unrestricted_Access then
+      if Position.Container /= Container'Unrestricted_Access then
          raise Program_Error;
       end if;
 
@@ -1372,59 +1380,59 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          return;
       end if;
 
-      pragma Assert (Target.Length >= 2);
+      pragma Assert (Container.Length >= 2);
 
-      if Target.Busy > 0 then
+      if Container.Busy > 0 then
          raise Program_Error;
       end if;
 
       if Before.Node = null then
-         pragma Assert (Position.Node /= Target.Last);
+         pragma Assert (Position.Node /= Container.Last);
 
-         if Position.Node = Target.First then
-            Target.First := Position.Node.Next;
-            Target.First.Prev := null;
+         if Position.Node = Container.First then
+            Container.First := Position.Node.Next;
+            Container.First.Prev := null;
          else
             Position.Node.Prev.Next := Position.Node.Next;
             Position.Node.Next.Prev := Position.Node.Prev;
          end if;
 
-         Target.Last.Next := Position.Node;
-         Position.Node.Prev := Target.Last;
+         Container.Last.Next := Position.Node;
+         Position.Node.Prev := Container.Last;
 
-         Target.Last := Position.Node;
-         Target.Last.Next := null;
+         Container.Last := Position.Node;
+         Container.Last.Next := null;
 
          return;
       end if;
 
-      if Before.Node = Target.First then
-         pragma Assert (Position.Node /= Target.First);
+      if Before.Node = Container.First then
+         pragma Assert (Position.Node /= Container.First);
 
-         if Position.Node = Target.Last then
-            Target.Last := Position.Node.Prev;
-            Target.Last.Next := null;
+         if Position.Node = Container.Last then
+            Container.Last := Position.Node.Prev;
+            Container.Last.Next := null;
          else
             Position.Node.Prev.Next := Position.Node.Next;
             Position.Node.Next.Prev := Position.Node.Prev;
          end if;
 
-         Target.First.Prev := Position.Node;
-         Position.Node.Next := Target.First;
+         Container.First.Prev := Position.Node;
+         Position.Node.Next := Container.First;
 
-         Target.First := Position.Node;
-         Target.First.Prev := null;
+         Container.First := Position.Node;
+         Container.First.Prev := null;
 
          return;
       end if;
 
-      if Position.Node = Target.First then
-         Target.First := Position.Node.Next;
-         Target.First.Prev := null;
+      if Position.Node = Container.First then
+         Container.First := Position.Node.Next;
+         Container.First.Prev := null;
 
-      elsif Position.Node = Target.Last then
-         Target.Last := Position.Node.Prev;
-         Target.Last.Next := null;
+      elsif Position.Node = Container.Last then
+         Container.Last := Position.Node.Prev;
+         Container.Last.Next := null;
 
       else
          Position.Node.Prev.Next := Position.Node.Next;
@@ -1437,8 +1445,8 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Before.Node.Prev := Position.Node;
       Position.Node.Next := Before.Node;
 
-      pragma Assert (Target.First.Prev = null);
-      pragma Assert (Target.Last.Next = null);
+      pragma Assert (Container.First.Prev = null);
+      pragma Assert (Container.Last.Next = null);
    end Splice;
 
    procedure Splice
@@ -1631,23 +1639,26 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
       declare
          I_Next : constant Cursor := Next (I);
+         J_Copy : Cursor := J;
 
       begin
          if I_Next = J then
-            Splice (Container, Before => I, Position => J);
+            Splice (Container, Before => I, Position => J_Copy);
 
          else
             declare
                J_Next : constant Cursor := Next (J);
+               I_Copy : Cursor := I;
+
             begin
                if J_Next = I then
-                  Splice (Container, Before => J, Position => I);
+                  Splice (Container, Before => J, Position => I_Copy);
 
                else
                   pragma Assert (Container.Length >= 3);
 
-                  Splice (Container, Before => I_Next, Position => J);
-                  Splice (Container, Before => J_Next, Position => I);
+                  Splice (Container, Before => I_Next, Position => J_Copy);
+                  Splice (Container, Before => J_Next, Position => I_Copy);
                end if;
             end;
          end if;
