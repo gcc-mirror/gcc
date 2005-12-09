@@ -772,10 +772,10 @@ build_builtin_fntypes (tree * fntype, tree type)
   tree tmp;
 
   /* type (*) (type) */
-  tmp = tree_cons (NULL_TREE, float_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, type, void_list_node);
   fntype[0] = build_function_type (type, tmp);
   /* type (*) (type, type) */
-  tmp = tree_cons (NULL_TREE, float_type_node, tmp);
+  tmp = tree_cons (NULL_TREE, type, tmp);
   fntype[1] = build_function_type (type, tmp);
   /* type (*) (int, type) */
   tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
