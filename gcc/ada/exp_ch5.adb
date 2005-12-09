@@ -1705,13 +1705,44 @@ package body Exp_Ch5 is
 
                begin
                   --  If the assignment is dispatching, make sure to use the
-                  --  ??? where is rest of this comment ???
+                  --  proper type.
 
                   if Is_Class_Wide_Type (Typ) then
                      F_Typ := Class_Wide_Type (F_Typ);
                   end if;
 
-                  L := New_List (
+                  L := New_List;
+
+                  --  In case of assignment to a class-wide tagged type, before
+                  --  the assignment we generate run-time check to ensure that
+                  --  the tag of the Target is covered by the tag of the source
+
+                  if Is_Class_Wide_Type (Typ)
+                    and then Is_Tagged_Type (Typ)
+                    and then Is_Tagged_Type (Underlying_Type (Etype (Rhs)))
+                  then
+                     Append_To (L,
+                       Make_Raise_Constraint_Error (Loc,
+                         Condition =>
+                           Make_Op_Not (Loc,
+                             Make_Function_Call (Loc,
+                               Name => New_Reference_To
+                                         (RTE (RE_CW_Membership), Loc),
+                               Parameter_Associations => New_List (
+                                 Make_Selected_Component (Loc,
+                                   Prefix =>
+                                     Duplicate_Subexpr (Lhs),
+                                   Selector_Name =>
+                                     Make_Identifier (Loc, Name_uTag)),
+                                 Make_Selected_Component (Loc,
+                                   Prefix =>
+                                     Duplicate_Subexpr (Rhs),
+                                   Selector_Name =>
+                                     Make_Identifier (Loc, Name_uTag))))),
+                         Reason => CE_Tag_Check_Failed));
+                  end if;
+
+                  Append_To (L,
                     Make_Procedure_Call_Statement (Loc,
                       Name => New_Reference_To (Op, Loc),
                       Parameter_Associations => New_List (
