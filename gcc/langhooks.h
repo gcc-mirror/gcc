@@ -415,7 +415,7 @@ struct lang_hooks
   /* Used to set up the tree_contains_structure array for a frontend. */
   void (*init_ts) (void);
 
-  /* Called by recompute_tree_invarant_for_addr_expr to go from EXPR
+  /* Called by recompute_tree_invariant_for_addr_expr to go from EXPR
      to a contained expression or DECL, possibly updating *TC, *TI or
      *SE if in the process TREE_CONSTANT, TREE_INVARIANT or
      TREE_SIDE_EFFECTS need updating.  */

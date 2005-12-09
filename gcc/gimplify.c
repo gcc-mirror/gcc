@@ -3611,7 +3611,7 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 
 	  /* Make sure TREE_INVARIANT, TREE_CONSTANT, and TREE_SIDE_EFFECTS
 	     is set properly.  */
-	  recompute_tree_invarant_for_addr_expr (expr);
+	  recompute_tree_invariant_for_addr_expr (expr);
 
 	  /* Mark the RHS addressable.  */
 	  lang_hooks.mark_addressable (TREE_OPERAND (expr, 0));

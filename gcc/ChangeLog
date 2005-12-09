@@ -1,3 +1,9 @@
+2005-12-09  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree.c (recompute_tree_invariant_for_addr_expr): Rename from
+	recompute_tree_invarant_for_addr_expr.
+	Update uses everywhere.
+
 2005-12-09  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/ms1/t-ms1 (MULTILIB_OPTIONS): Define.
