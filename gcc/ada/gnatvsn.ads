@@ -74,7 +74,7 @@ package Gnatvsn is
    --  value should never be decreased in the future, but it would be
    --  OK to increase it if absolutely necessary.
 
-   Library_Version : constant String := "4.1";
+   Library_Version : constant String := "4.2";
    --  Library version. This value must be updated whenever any change to the
    --  compiler affects the library formats in such a way as to obsolete
    --  previously compiled library modules.
@@ -85,7 +85,7 @@ package Gnatvsn is
    Verbose_Library_Version : constant String := "GNAT Lib v" & Library_Version;
    --  Version string stored in e.g. ALI files.
 
-   ASIS_Version_Number : constant := 4;
+   ASIS_Version_Number : constant := 5;
    --  ASIS Version. This is used to check for consistency between the compiler
    --  used to generate trees, and an ASIS application that is reading the
    --  trees. It must be updated (incremented) whenever a change is made to
