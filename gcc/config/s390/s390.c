@@ -8574,7 +8574,7 @@ s390_function_ok_for_sibcall (tree decl, tree exp)
 
   /* The 31 bit PLT code uses register 12 (GOT pointer - caller saved)
      which would have to be restored before the sibcall.  */
-  if (!TARGET_64BIT && flag_pic && decl && TREE_PUBLIC (decl))
+  if (!TARGET_64BIT && flag_pic && decl && !targetm.binds_local_p (decl))
     return false;
 
   /* Register 6 on s390 is available as an argument register but unfortunately
