@@ -191,6 +191,7 @@ AdaCore@*
 * Using the GNU make Utility::
 @end ifclear
 * Memory Management Issues::
+* Stack Related Tools::
 * Creating Sample Bodies Using gnatstub::
 * Other Utility Programs::
 * Running and Debugging Ada Programs::
@@ -272,7 +273,6 @@ Switches for gcc
 * Validity Checking::
 * Style Checking::
 * Run-Time Checks::
-* Stack Overflow Checking::
 * Using gcc for Syntax Checking::
 * Using gcc for Semantic Checking::
 * Compiling Different Versions of Ada::
@@ -460,6 +460,12 @@ Memory Management Issues
 @ifclear vms
 * The gnatmem Tool::
 @end ifclear
+
+Stack Related Tools
+
+* Stack Overflow Checking::
+* Static Stack Usage Analysis::
+* Dynamic Stack Usage Analysis::
 
 Some Useful Memory Pools
 
@@ -782,6 +788,10 @@ memory references.
 It also describes @command{gnatmem}, a utility that monitors dynamic
 allocation and deallocation and helps detect ``memory leaks''.
 @end ifclear
+
+@item
+@ref{Stack Related Tools}, describes some useful tools associated to stack.
+In particular, dynamic and statick usage measurements.
 
 @item
 @ref{Creating Sample Bodies Using gnatstub}, discusses @code{gnatstub},
@@ -3653,7 +3663,6 @@ compilation units.
 * Validity Checking::
 * Style Checking::
 * Run-Time Checks::
-* Stack Overflow Checking::
 * Using gcc for Syntax Checking::
 * Using gcc for Semantic Checking::
 * Compiling Different Versions of Ada::
@@ -5552,7 +5561,7 @@ a single character (however many bytes are needed in the encoding).
 @emph{Set maximum line length.}
 If the sequence ^M^MAX_LENGTH=^nnn, where nnn is a decimal number, appears in
 the string after @option{-gnaty} then the length of lines must not exceed the
-given value.
+given value. The maximum value that can be specified is 32767.
 
 @item ^n^STANDARD_CASING^
 @emph{Check casing of entities in Standard.}
@@ -5840,62 +5849,6 @@ The setting of these switches only controls the default setting of the
 checks. You may modify them using either @code{Suppress} (to remove
 checks) or @code{Unsuppress} (to add back suppressed checks) pragmas in
 the program source.
-
-@node Stack Overflow Checking
-@subsection Stack Overflow Checking
-@cindex Stack Overflow Checking
-@cindex -fstack-check
-
-@noindent
-For most operating systems, @command{gcc} does not perform stack overflow
-checking by default. This means that if the main environment task or
-some other task exceeds the available stack space, then unpredictable
-behavior will occur.
-
-To activate stack checking, compile all units with the gcc option
-@option{-fstack-check}. For example:
-
-@smallexample
-gcc -c -fstack-check package1.adb
-@end smallexample
-
-@noindent
-Units compiled with this option will generate extra instructions to check
-that any use of the stack (for procedure calls or for declaring local
-variables in declare blocks) do not exceed the available stack space.
-If the space is exceeded, then a @code{Storage_Error} exception is raised.
-
-For declared tasks, the stack size is always controlled by the size
-given in an applicable @code{Storage_Size} pragma (or is set to
-the default size if no pragma is used.
-
-For the environment task, the stack size depends on
-system defaults and is unknown to the compiler. The stack
-may even dynamically grow on some systems, precluding the
-normal Ada semantics for stack overflow. In the worst case,
-unbounded stack usage, causes unbounded stack expansion
-resulting in the system running out of virtual memory.
-
-The stack checking may still work correctly if a fixed
-size stack is allocated, but this cannot be guaranteed.
-To ensure that a clean exception is signalled for stack
-overflow, set the environment variable
-@code{GNAT_STACK_LIMIT} to indicate the maximum
-stack area that can be used, as in:
-@cindex GNAT_STACK_LIMIT
-
-@smallexample
-SET GNAT_STACK_LIMIT 1600
-@end smallexample
-
-@noindent
-The limit is given in kilobytes, so the above declaration would
-set the stack limit of the environment task to 1.6 megabytes.
-Note that the only purpose of this usage is to limit the amount
-of stack used by the environment task. If it is necessary to
-increase the amount of stack for the environment task, then this
-is an operating systems issue, and must be addressed with the
-appropriate operating systems commands.
 
 @node Using gcc for Syntax Checking
 @subsection Using @command{gcc} for Syntax Checking
@@ -6338,6 +6291,10 @@ integers without any kind of scaling.
 
 @item free @var{expr} [storage_pool = @var{xxx}]
 Shows the storage pool associated with a @code{free} statement.
+
+@item [subtype or type declaration]
+Used to list an equivalent declaration for an internally generated
+type that is referenced elsewhere in the listing.
 
 @item freeze @var{typename} [@var{actions}]
 Shows the point at which @var{typename} is frozen, with possible
@@ -7123,6 +7080,27 @@ Check only, no generation of binder output file.
 @item ^-C^/BIND_FILE=C^
 @cindex @option{^-C^/BIND_FILE=C^} (@command{gnatbind})
 Generate binder program in C
+
+@item ^-D^/DEFAULT_SECONDARY_STACK_SIZE=nnnnn^
+@cindex @option{^-D^/DEFAULT_SECONDARY_STACK_SIZE=nnnnn^} (@command{gnatbind})
+This switch can be used to change the default secondary stack size value
+to a specified size, where nnnnn is the size in bytes.
+
+The secondary stack is used to deal with functions that return a variable
+sized result, for example a function returning an unconstrained
+String. There are two ways in which this secondary stack is allocated.
+
+For most targets, the secondary stack is allocated as a chain of blocks
+in the heap, and in this case the size of the chunk allocated is the minimum
+of the default secondary stack size value,
+and the actual size needed for the current allocation request.
+
+For certain targets, notably bare board targets and the VxWorks 653 target,
+the secondary stack is allocated by carving off a fixed ratio chunk of the
+primary task stack. For such targets, the environment task is special, and
+in this case the default value is used to carve out a section of the
+environment task stack.
+
 
 @item ^-e^/ELABORATION_DEPENDENCIES^
 @cindex @option{^-e^/ELABORATION_DEPENDENCIES^} (@command{gnatbind})
@@ -10182,10 +10160,12 @@ recognized by @code{GNAT}:
    External_Name_Casing
    Float_Representation
    Initialize_Scalars
+   Interrupt_State
    License
    Locking_Policy
    Long_Float
    Normalize_Scalars
+   Persistent_BSS
    Polling
    Profile
    Profile_Warnings
@@ -18656,6 +18636,164 @@ The allocation root #1 of the first example has been split in 2 roots #1
 and #3 thanks to the more precise associated backtrace.
 
 @end ifclear
+
+@node Stack Related Tools
+@chapter Stack Related Tools
+
+@noindent
+This chapter describes some useful tools associated to stack. In
+particular, dynamic and static usage measurements.
+
+@menu
+* Stack Overflow Checking::
+* Static Stack Usage Analysis::
+* Dynamic Stack Usage Analysis::
+@end menu
+
+@node Stack Overflow Checking
+@section Stack Overflow Checking
+@cindex Stack Overflow Checking
+@cindex -fstack-check
+
+@noindent
+For most operating systems, @command{gcc} does not perform stack overflow
+checking by default. This means that if the main environment task or
+some other task exceeds the available stack space, then unpredictable
+behavior will occur.
+
+To activate stack checking, compile all units with the gcc option
+@option{-fstack-check}. For example:
+
+@smallexample
+gcc -c -fstack-check package1.adb
+@end smallexample
+
+@noindent
+Units compiled with this option will generate extra instructions to check
+that any use of the stack (for procedure calls or for declaring local
+variables in declare blocks) do not exceed the available stack space.
+If the space is exceeded, then a @code{Storage_Error} exception is raised.
+
+For declared tasks, the stack size is always controlled by the size
+given in an applicable @code{Storage_Size} pragma (or is set to
+the default size if no pragma is used.
+
+For the environment task, the stack size depends on
+system defaults and is unknown to the compiler. The stack
+may even dynamically grow on some systems, precluding the
+normal Ada semantics for stack overflow. In the worst case,
+unbounded stack usage, causes unbounded stack expansion
+resulting in the system running out of virtual memory.
+
+The stack checking may still work correctly if a fixed
+size stack is allocated, but this cannot be guaranteed.
+To ensure that a clean exception is signalled for stack
+overflow, set the environment variable
+@code{GNAT_STACK_LIMIT} to indicate the maximum
+stack area that can be used, as in:
+@cindex GNAT_STACK_LIMIT
+
+@smallexample
+SET GNAT_STACK_LIMIT 1600
+@end smallexample
+
+@noindent
+The limit is given in kilobytes, so the above declaration would
+set the stack limit of the environment task to 1.6 megabytes.
+Note that the only purpose of this usage is to limit the amount
+of stack used by the environment task. If it is necessary to
+increase the amount of stack for the environment task, then this
+is an operating systems issue, and must be addressed with the
+appropriate operating systems commands.
+
+@node Static Stack Usage Analysis
+@section Static Stack Usage Analysis
+@cindex Static Stack Usage Analysis
+@cindex -fstack-usage
+
+@noindent
+Units compiled with -fstack-usage will generate an extra file containing
+the maximum amount of stack used on a per-function basis. The filename for
+the dump is made by appending
+@file{.su} to the AUXNAME.  AUXNAME is generated from the name of
+the output file, if explicitly specified and it is not an executable,
+otherwise it is the basename of the source file.  An entry is made up
+of three fields:
+
+@itemize
+@item
+The name of the function.
+@item
+A number of bytes.
+@item
+One or more qualifiers: @code{static}, @code{dynamic}, @code{bounded}.
+@end itemize
+
+The qualifier @code{static} means that the function manipulates the stack
+statically: a fixed number of bytes are allocated for the frame on function
+entry and released on function exit; no stack adjustments are otherwise made
+in the function.  The second field is this fixed number of bytes.
+
+The qualifier @code{dynamic} means that the function manipulates the stack
+dynamically: in addition to the static allocation described above, stack
+adjustments are made in the body of the function, for example to push/pop
+arguments around function calls.  If the qualifier @code{bounded} is also
+present, the amount of these adjustments is bounded at compile-time and
+the second field is an upper bound of the total amount of stack used by
+the function.  If it is not present, the amount of these adjustments is
+not bounded at compile-time and the second field only represents the
+bounded part.
+
+@node Dynamic Stack Usage Analysis
+@section Dynamic Stack Usage Analysis
+
+@noindent
+It is possible to measure the maximum amount of stack used by a task, by
+adding a switch to @command{gnatbind}, as:
+
+@smallexample
+$ gnatbind -u0 file
+@end smallexample
+
+@noindent
+Here, as soon as a task ends, its stack usage will be printed on stderr. It's
+also possible to store a certain number of results to display them only at the
+end of the execution. The following command will display the 100 first results
+at the end of the programm, and others on the fly:
+
+@smallexample
+$ gnatbind -u100 file
+@end smallexample
+
+@noindent
+Results are displayed in the folowing format:
+
+@noindent
+INDEX | TASK NAME | STACK SIZE | MAX USAGE
+
+@noindent
+where:
+
+@table @emph
+@item INDEX
+is a number associated with each task. Numbers before n parameter given
+with -u flag correspond to stored results.
+
+@item TASK NAME
+is the name of the task analyzed.
+
+@item STACK SIZE
+is the maximum size for the stack. In order to prevent overflowed,
+this value is a little smaller than the real limit.
+
+@item MAX USAGE
+is the measure done by the stack analyzer.
+
+@end table
+
+@noindent
+The environment task stack, e.g. the stack that contains the main unit, is
+only processed when the environment variable GNAT_STACK_LIMIT is set.
 
 @node Creating Sample Bodies Using gnatstub
 @chapter Creating Sample Bodies Using @command{gnatstub}

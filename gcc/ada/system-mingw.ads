@@ -167,39 +167,22 @@ private
    pragma Suppress_Initialization (Priorities_Mapping);
    --  Suppress initialization in case gnat.adc specifies Normalize_Scalars
 
+   Underlying_Priorities : constant Priorities_Mapping :=
+     (Priority'First .. 1        => -15,
+      2 .. Default_Priority - 2  => -2,
+      Default_Priority - 1       => -1,
+      Default_Priority           => 0,
+      Default_Priority + 1 .. 19 => 1,
+      20 .. Priority'Last        => 2,
+      Interrupt_Priority         => 15);
    --  On NT, the default mapping preserves the standard 31 priorities
    --  of the Ada model, but maps them using compression onto the 7
    --  priority levels available in NT.
 
    --  To replace the default values of the Underlying_Priorities mapping,
    --  copy this source file into your build directory, edit the file to
-   --  reflect your desired behavior, and recompile with the command:
-
-   --     $ gcc -c -O3 -gnatpgn system.ads
-
-   --  then recompile the run-time parts that depend on this package:
-
-   --     $ gnatmake -a -gnatn -O3 <your application>
-
-   --  then force rebuilding your application if you need different options:
-
-   --     $ gnatmake -f <your options> <your application>
-
-   Underlying_Priorities : constant Priorities_Mapping :=
-
-     (Priority'First .. 1        => -15,
-
-      2 .. Default_Priority - 2  => -2,
-
-      Default_Priority - 1       => -1,
-
-      Default_Priority           => 0,
-
-      Default_Priority + 1 .. 19 => 1,
-
-      20 .. Priority'Last        => 2,
-
-      Interrupt_Priority         => 15);
+   --  reflect your desired behavior, and recompile using Makefile.adalib
+   --  which can be found under the adalib directory of your gnat installation
 
    pragma Linker_Options ("-Wl,--stack=0x2000000");
    --  This is used to change the default stack (32 MB) size for non tasking

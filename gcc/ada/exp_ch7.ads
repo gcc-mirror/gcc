@@ -115,7 +115,9 @@ package Exp_Ch7 is
    --  type (Is_Controlled) or a type with controlled components
    --  (Has_Controlled).  With_Attach is an integer expression representing
    --  the level of attachment, see Attach_To_Final_List's Nb_Link param
-   --  documentation in s-finimp.ads.
+   --  documentation in s-finimp.ads. Note: if Typ is Finalize_Storage_Only
+   --  and the object is at library level, then With_Attach will be ignored,
+   --  and a zero link level will be passed to Attach_To_Final_List.
    --
    --  This function will generate the appropriate calls to make
    --  sure that the objects referenced by Ref are adjusted. The generated

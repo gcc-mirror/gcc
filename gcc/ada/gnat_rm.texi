@@ -110,6 +110,7 @@ Implementation Defined Pragmas
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Warning::
+* Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
 * Pragma Convention_Identifier::
@@ -281,6 +282,11 @@ The GNAT Library
 * Ada.Text_IO.C_Streams (a-tiocst.ads)::
 * Ada.Wide_Text_IO.C_Streams (a-wtcstr.ads)::
 * Ada.Wide_Wide_Text_IO.C_Streams (a-ztcstr.ads)::
+* GNAT.Altivec (g-altive.ads)::
+* GNAT.Altivec.Conversions (g-altcon.ads)::
+* GNAT.Altivec.Vector_Operations (g-alveop.ads)::
+* GNAT.Altivec.Vector_Types (g-alvety.ads)::
+* GNAT.Altivec.Vector_Views (g-alvevi.ads)::
 * GNAT.Array_Split (g-arrspl.ads)::
 * GNAT.AWK (g-awk.ads)::
 * GNAT.Bounded_Buffers (g-boubuf.ads)::
@@ -644,6 +650,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Warning::
+* Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
 * Pragma Convention_Identifier::
@@ -1039,6 +1046,25 @@ If these conditions are met, a warning message is generated using
 the value given as the second argument. This string value may contain
 embedded ASCII.LF characters to break the message into multiple lines.
 
+@node Pragma Complete_Representation
+@unnumberedsec Pragma Complete_Representation
+@findex Complete_Representation
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Complete_Representation;
+@end smallexample
+
+@noindent
+This pragma must appear immediately within a record representation
+clause. Typical placements are before the first component clause
+or after the last component clause. The effect is to give an error
+message if any component is missing a component clause. This pragma
+may be used to ensure that a record representation clause is
+complete, and that this invariant is maintained if fields are
+added to the record in the future.
+
 @node Pragma Complex_Representation
 @unnumberedsec Pragma Complex_Representation
 @findex Complex_Representation
@@ -1356,7 +1382,7 @@ See @ref{Interfacing to C++} for related information.
 Syntax:
 
 @smallexample @c ada
-pragma Debug (PROCEDURE_CALL_WITHOUT_SEMICOLON);
+pragma Debug ([CONDITION, ]PROCEDURE_CALL_WITHOUT_SEMICOLON);
 
 PROCEDURE_CALL_WITHOUT_SEMICOLON ::=
   PROCEDURE_NAME
@@ -1364,18 +1390,17 @@ PROCEDURE_CALL_WITHOUT_SEMICOLON ::=
 @end smallexample
 
 @noindent
-The argument has the syntactic form of an expression, meeting the
-syntactic requirements for pragmas.
+The procedure call argument has the syntactic form of an expression, meeting
+the syntactic requirements for pragmas.
 
-If debug pragmas are not enabled, this pragma has no
-effect.  If debug pragmas are enabled, the semantics of the pragma is exactly
-equivalent to the procedure call statement corresponding to the argument
-with a terminating semicolon.  Pragmas are permitted in sequences of
-declarations, so you can use pragma @code{Debug} to intersperse calls to
-debug procedures in the middle of declarations.  Debug pragmas can be
-enabled either by use of the command line switch @code{-gnata} or by use
-of the configuration pragma @code{Debug_Policy}.
-
+If debug pragmas are not enabled or if the condition is present and evaluates
+to False, this pragma has no effect. If debug pragmas are enabled, the
+semantics of the pragma is exactly equivalent to the procedure call statement
+corresponding to the argument with a terminating semicolon. Pragmas are
+permitted in sequences of declarations, so you can use pragma @code{Debug} to
+intersperse calls to debug procedures in the middle of declarations. Debug
+pragmas can be enabled either by use of the command line switch @code{-gnata}
+or by use of the configuration pragma @code{Debug_Policy}.
 
 @node Pragma Debug_Policy
 @unnumberedsec Pragma Debug_Policy
@@ -1392,20 +1417,6 @@ If the argument is @code{CHECK}, then pragma @code{DEBUG} is enabled.
 If the argument is @code{IGNORE}, then pragma @code{DEBUG} is ignored.
 This pragma overrides the effect of the @code{-gnata} switch on the
 command line.
-
-If debug pragmas are not enabled, this pragma has no
-effect.  If debug pragmas are enabled, the semantics of the pragma is exactly
-equivalent to the procedure call statement corresponding to the argument
-with a terminating semicolon.  Pragmas are permitted in sequences of
-declarations, so you can use pragma @code{Debug} to intersperse calls to
-debug procedures in the middle of declarations.  Debug pragmas can be
-enabled either by use of the command line switch @code{-gnata} or by use
-of the configuration pragma @code{Debug_Policy}.
-
-
-
-
-
 
 @node Pragma Detect_Blocking
 @unnumberedsec Pragma Detect_Blocking
@@ -7257,7 +7268,7 @@ See the definition and documentation in file @file{s-maccod.ads}.
 @end cartouche
 @noindent
 Unchecked conversion between types of the same size
-and results in an uninterpreted transmission of the bits from one type
+results in an uninterpreted transmission of the bits from one type
 to the other.  If the types are of unequal sizes, then in the case of
 discrete types, a shorter source is first zero or sign extended as
 necessary, and a shorter target is simply truncated on the left.
@@ -7265,7 +7276,10 @@ For all non-discrete types, the source is first copied if necessary
 to ensure that the alignment requirements of the target are met, then
 a pointer is constructed to the source value, and the result is obtained
 by dereferencing this pointer after converting it to be a pointer to the
-target type.
+target type. Unchecked conversions where the target subtype is an
+unconstrained array are not permitted. If the target alignment is
+greater than the source alignment, then a copy of the result is
+made with appropriate alignment
 
 @sp 1
 @cartouche
@@ -8079,7 +8093,7 @@ of delay expirations for lower priority tasks.
 @noindent
 @c SGI info:
 @ignore
-Tasks map to IRIX threads, and the dispatching policy is as defied by
+Tasks map to IRIX threads, and the dispatching policy is as defined by
 the IRIX implementation of threads.
 @end ignore
 The policy is the same as that of the underlying threads implementation.
@@ -11078,9 +11092,9 @@ streams by mixed language programs. Note though that system level buffering is
 explictly enabled at elaboration of the standard I/O packages and that can have
 an impact on mixed language programs, in particular those using I/O before
 calling the Ada elaboration routine (e.g. adainit). It is recommended to call
-the Ada elaboration routine before performing any I/O or when impractical, flush
-the common I/O streams and in particular Standard_Output before elaborating the
-Ada code.
+the Ada elaboration routine before performing any I/O or when impractical,
+flush the common I/O streams and in particular Standard_Output before
+elaborating the Ada code.
 
 @node FORM Strings
 @section FORM Strings
@@ -12154,6 +12168,11 @@ of GNAT, and will generate a warning message.
 * Ada.Text_IO.C_Streams (a-tiocst.ads)::
 * Ada.Wide_Text_IO.C_Streams (a-wtcstr.ads)::
 * Ada.Wide_Wide_Text_IO.C_Streams (a-ztcstr.ads)::
+* GNAT.Altivec (g-altive.ads)::
+* GNAT.Altivec.Conversions (g-altcon.ads)::
+* GNAT.Altivec.Vector_Operations (g-alveop.ads)::
+* GNAT.Altivec.Vector_Types (g-alvety.ads)::
+* GNAT.Altivec.Vector_Views (g-alvevi.ads)::
 * GNAT.Array_Split (g-arrspl.ads)::
 * GNAT.AWK (g-awk.ads)::
 * GNAT.Bounded_Buffers (g-boubuf.ads)::
@@ -12451,6 +12470,55 @@ C streams and @code{Wide_Wide_Text_IO}.  The stream identifier can be
 extracted from a file opened on the Ada side, and an Ada file
 can be constructed from a stream opened on the C side.
 
+@node GNAT.Altivec (g-altive.ads)
+@section @code{GNAT.Altivec} (@file{g-altive.ads})
+@cindex @code{GNAT.Altivec} (@file{g-altive.ads})
+@cindex AltiVec
+
+@noindent
+This is the root package of the GNAT AltiVec binding. It provides
+definitions of constants and types common to all the versions of the
+binding.
+
+@node GNAT.Altivec.Conversions (g-altcon.ads)
+@section @code{GNAT.Altivec.Conversions} (@file{g-altcon.ads})
+@cindex @code{GNAT.Altivec.Conversions} (@file{g-altcon.ads})
+@cindex AltiVec
+
+@noindent
+This package provides the Vector/View conversion routines.
+
+@node GNAT.Altivec.Vector_Operations (g-alveop.ads)
+@section @code{GNAT.Altivec.Vector_Operations} (@file{g-alveop.ads})
+@cindex @code{GNAT.Altivec.Vector_Operations} (@file{g-alveop.ads})
+@cindex AltiVec
+
+@noindent
+This package exposes the Ada interface to the AltiVec operations on
+vector objects. A soft emulation is included by default in the GNAT
+library. The hard binding is provided as a separate package. This unit
+is common to both bindings.
+
+@node GNAT.Altivec.Vector_Types (g-alvety.ads)
+@section @code{GNAT.Altivec.Vector_Types} (@file{g-alvety.ads})
+@cindex @code{GNAT.Altivec.Vector_Types} (@file{g-alvety.ads})
+@cindex AltiVec
+
+@noindent 
+This package exposes the various vector types part of the Ada binding
+to AltiVec facilities.
+
+@node GNAT.Altivec.Vector_Views (g-alvevi.ads)
+@section @code{GNAT.Altivec.Vector_Views} (@file{g-alvevi.ads})
+@cindex @code{GNAT.Altivec.Vector_Views} (@file{g-alvevi.ads})
+@cindex AltiVec
+
+@noindent
+This package provides public 'View' data types from/to which private
+vector representations can be converted via
+GNAT.Altivec.Conversions. This allows convenient access to individual
+vector elements and provides a simple way to initialize vector
+objects.
 
 @node GNAT.Array_Split (g-arrspl.ads)
 @section @code{GNAT.Array_Split} (@file{g-arrspl.ads})
