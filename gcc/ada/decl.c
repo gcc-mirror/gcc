@@ -765,14 +765,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       the renamed entity or if we need to make a pointer.  */
 	    else
 	      {
-		bool stabilized;
+		bool stabilized = false;
 		tree maybe_stable_expr = NULL_TREE;
 
 		/* Case 2: If the renaming entity need not be materialized and
 		   the renamed expression is something we can stabilize, use
-		   that for the renaming after forcing the evaluation of any
-		   SAVE_EXPR.  At the global level, we can only do this if we
-		   know no SAVE_EXPRs will be made.  */
+		   that for the renaming.  At the global level, we can only do
+		   this if we know no SAVE_EXPRs need be made, because the
+		   expression we return might be used in arbitrary conditional
+		   branches so we must force the SAVE_EXPRs evaluation
+		   immediately and this requires a function context.  */
 		if (!Materialize_Entity (gnat_entity)
 		    && (!global_bindings_p ()
 			|| (staticp (gnu_expr)
@@ -812,21 +814,35 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   object, we just make a "bare" pointer, and the renamed
 		   entity is always accessed indirectly through it.  */
 		{
-		  bool has_side_effects = TREE_SIDE_EFFECTS (gnu_expr);
+		  bool expr_has_side_effects = TREE_SIDE_EFFECTS (gnu_expr);
+
 		  inner_const_flag = TREE_READONLY (gnu_expr);
 		  const_flag = true;
 		  gnu_type = build_reference_type (gnu_type);
 
-		  /* If a previous attempt at unrestricted
-		     stabilization failed, there is no point trying
-		     again and we can reuse the result without
-		     attaching it to the pointer.  */
+		  /* If a previous attempt at unrestricted stabilization
+		     failed, there is no point trying again and we can reuse
+		     the result without attaching it to the pointer.  */
 		  if (maybe_stable_expr)
 		    ;
 
 		  /* Otherwise, try to stabilize now, restricting to
 		     lvalues only, and attach the expression to the pointer
-		     if the stabilization succeeds.  */
+		     if the stabilization succeeds.
+
+		     Note that this might introduce SAVE_EXPRs and we don't
+		     check whether we're at the global level or not.  This is
+		     fine since we are building a pointer initializer and
+		     neither the pointer nor the initializing expression can
+		     be accessed before the pointer elaboration has taken
+		     place in a correct program.
+
+		     SAVE_EXPRs will be evaluated at the right spots by either
+		     create_var_decl->expand_decl_init for the non-global case
+		     or build_unit_elab for the global case, and will be
+		     attached to the elaboration procedure by the RTL expander
+		     in the latter case.  We have no need to force an early
+		     evaluation here.  */
 		  else
 		    {
 		      maybe_stable_expr
@@ -842,15 +858,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_expr
 		    = build_unary_op (ADDR_EXPR, gnu_type, maybe_stable_expr);
 
-		  if (!global_bindings_p ())
-		    {
-		      /* If the original expression had side effects, put a
-			 SAVE_EXPR around this whole thing.  */
-		      if (has_side_effects)
-			gnu_expr = save_expr (gnu_expr);
-
-		      add_stmt (gnu_expr);
-		    }
+		  /* If the initial expression has side effects, we might
+		     still have an unstabilized version at this point (for
+		     instance if it involves a function call).  Wrap the
+		     result into a SAVE_EXPR now, in case it happens to be
+		     referenced several times.  */
+		  if (expr_has_side_effects && ! stabilized)
+		    gnu_expr = save_expr (gnu_expr);
 
 		  gnu_size = NULL_TREE;
 		  used_by_ref = true;
@@ -1001,16 +1015,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    gnu_alloc_type
 		      = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_alloc_type)));
 
-		    if (TREE_CODE (gnu_expr) == CONSTRUCTOR
-			&& VEC_length (constructor_elt,
-				       CONSTRUCTOR_ELTS (gnu_expr)) == 1)
-		      gnu_expr = 0;
-		    else
-		      gnu_expr
-			= build_component_ref
-			  (gnu_expr, NULL_TREE,
-			  TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr))),
-			      false);
+                   if (TREE_CODE (gnu_expr) == CONSTRUCTOR
+		       && 1 == VEC_length (constructor_elt,
+					    CONSTRUCTOR_ELTS (gnu_expr)))
+                     gnu_expr = 0;
+                   else
+                     gnu_expr
+                       = build_component_ref
+                         (gnu_expr, NULL_TREE,
+                          TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr))),
+			  false);
 		  }
 
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
@@ -5676,27 +5690,22 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 
   /* If we have any items in our rep'ed field list, it is not the case that all
      the fields in the record have rep clauses, and P_REP_LIST is nonzero,
-     set it and ignore the items.  Otherwise, sort the fields by bit position
-     and put them into their own record if we have any fields without
-     rep clauses. */
+     set it and ignore the items.  */
   if (gnu_our_rep_list && p_gnu_rep_list && !all_rep)
     *p_gnu_rep_list = chainon (*p_gnu_rep_list, gnu_our_rep_list);
   else if (gnu_our_rep_list)
     {
+      /* Otherwise, sort the fields by bit position and put them into their
+	 own record if we have any fields without rep clauses. */
       tree gnu_rep_type
 	= (gnu_field_list ? make_node (RECORD_TYPE) : gnu_record_type);
       int len = list_length (gnu_our_rep_list);
       tree *gnu_arr = (tree *) alloca (sizeof (tree) * len);
       int i;
 
-      /* Set/abuse DECL_FCONTEXT to increasing integers so we have a
-	 stable sort.  */
       for (i = 0, gnu_field = gnu_our_rep_list; gnu_field;
 	   gnu_field = TREE_CHAIN (gnu_field), i++)
-	{
-	  gnu_arr[i] = gnu_field;
-	  DECL_FCONTEXT (gnu_field) = size_int (i);
-	}
+	gnu_arr[i] = gnu_field;
 
       qsort (gnu_arr, len, sizeof (tree), compare_field_bitpos);
 
@@ -5708,7 +5717,6 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 	  TREE_CHAIN (gnu_arr[i]) = gnu_our_rep_list;
 	  gnu_our_rep_list = gnu_arr[i];
 	  DECL_CONTEXT (gnu_arr[i]) = gnu_rep_type;
-	  DECL_FCONTEXT (gnu_arr[i]) = NULL_TREE;
 	}
 
       if (gnu_field_list)
@@ -5734,7 +5742,8 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 }
 
 /* Called via qsort from the above.  Returns -1, 1, depending on the
-   bit positions and ordinals of the two fields.  */
+   bit positions and ordinals of the two fields.  Use DECL_UID to ensure
+   a stable sort.  */
 
 static int
 compare_field_bitpos (const PTR rt1, const PTR rt2)
@@ -5743,9 +5752,7 @@ compare_field_bitpos (const PTR rt1, const PTR rt2)
   tree *t2 = (tree *) rt2;
 
   if (tree_int_cst_equal (bit_position (*t1), bit_position (*t2)))
-    return
-      (tree_int_cst_lt (DECL_FCONTEXT (*t1), DECL_FCONTEXT (*t2))
-       ? -1 : 1);
+    return DECL_UID (*t1) < DECL_UID (*t2) ? -1 : 1;
   else if (tree_int_cst_lt (bit_position (*t1), bit_position (*t2)))
     return -1;
   else
