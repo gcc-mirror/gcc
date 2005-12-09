@@ -2201,8 +2201,7 @@ package body Sem_Util is
             Ent := Defining_Identifier (Ent);
          end if;
 
-         --  Compute recursively the qualification. Only "Standard" has no
-         --  scope.
+         --  Compute qualification recursively (only "Standard" has no scope)
 
          if Present (Scope (Scope (Ent))) then
             Parent_Name := Internal_Full_Qualified_Name (Scope (Ent));
@@ -2227,7 +2226,7 @@ package body Sem_Util is
 
          --  Generates the entity name in upper case
 
-         Get_Name_String (Chars (Ent));
+         Get_Decoded_Name_String (Chars (Ent));
          Set_All_Upper_Case;
          Store_String_Chars (Name_Buffer (1 .. Name_Len));
          return End_String;
@@ -5235,26 +5234,26 @@ package body Sem_Util is
    -- Normalize_Actuals --
    -----------------------
 
-   --  Chain actuals according to formals of subprogram. If there are
-   --  no named associations, the chain is simply the list of Parameter
-   --  Associations, since the order is the same as the declaration order.
-   --  If there are named associations, then the First_Named_Actual field
-   --  in the N_Procedure_Call_Statement node or N_Function_Call node
-   --  points to the Parameter_Association node for the parameter that
-   --  comes first in declaration order. The remaining named parameters
-   --  are then chained in declaration order using Next_Named_Actual.
+   --  Chain actuals according to formals of subprogram. If there are no named
+   --  associations, the chain is simply the list of Parameter Associations,
+   --  since the order is the same as the declaration order. If there are named
+   --  associations, then the First_Named_Actual field in the N_Function_Call
+   --  or N_Procedure_Call_Statement node points to the Parameter_Association
+   --  node for the parameter that comes first in declaration order. The
+   --  remaining named parameters are then chained in declaration order using
+   --  Next_Named_Actual.
 
-   --  This routine also verifies that the number of actuals is compatible
-   --  with the number and default values of formals, but performs no type
-   --  checking (type checking is done by the caller).
+   --  This routine also verifies that the number of actuals is compatible with
+   --  the number and default values of formals, but performs no type checking
+   --  (type checking is done by the caller).
 
-   --  If the matching succeeds, Success is set to True, and the caller
-   --  proceeds with type-checking. If the match is unsuccessful, then
-   --  Success is set to False, and the caller attempts a different
-   --  interpretation, if there is one.
+   --  If the matching succeeds, Success is set to True and the caller proceeds
+   --  with type-checking. If the match is unsuccessful, then Success is set to
+   --  False, and the caller attempts a different interpretation, if there is
+   --  one.
 
-   --  If the flag Report is on, the call is not overloaded, and a failure
-   --  to match can be reported here, rather than in the caller.
+   --  If the flag Report is on, the call is not overloaded, and a failure to
+   --  match can be reported here, rather than in the caller.
 
    procedure Normalize_Actuals
      (N       : Node_Id;
@@ -5488,7 +5487,7 @@ package body Sem_Util is
          Next_Formal (Formal);
       end loop;
 
-      if  Formals_To_Match = 0 and then Actuals_To_Match = 0 then
+      if Formals_To_Match = 0 and then Actuals_To_Match = 0 then
          Success := True;
          return;
 
