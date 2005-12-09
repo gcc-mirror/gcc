@@ -1,3 +1,717 @@
+2005-12-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatvsn.ads (Library_Version): Bump to version 4.2
+	(ASIS_Version_Number): Bumped.
+
+2005-12-09  Doug Rupp  <rupp@adacore.com>
+
+	* mlib-tgt-vms-ia64.adb, mlib-tgt-vms-alpha.adb (Is_Interface): Change
+	Ada bind file prefix on VMS from b$ to b__.
+	(Build_Dynamic_Library): Change Init file suffix on VMS from $init to
+	__init.
+
+	* prj-nmsc.adb: Change some Hostparm.OpenVMS checks to
+	Targparm.OpenVMS_On_Target.
+	(Object_Suffix): Initialize with target object suffix.
+	(Get_Unit): Change Ada bind file prefix on VMS from b$ to b__.
+
+	* butil.adb: Change some Hostparm.OpenVMS checks to
+	Targparm.OpenVMS_On_Target.
+
+	* clean.adb: Change some Hostparm.OpenVMS checks to
+	Targparm.OpenVMS_On_Target.
+	(Object_Suffix): Initialize with call to Get_Target_Object_Suffix.
+	({declaraction},Delete_Binder_Generated_Files,{initialization}): Change
+	Ada bind file prefix on VMS from b$ to b__.
+
+	* gnatlink.adb (Process_Args): Call Add_Src_Search_Dir for -I in
+	--GCC so that Get_Target_Parameters can find system.ads.
+	(Gnatlink): Call Get_Target_Parameters in mainline.
+	Initialize standard packages for Targparm.
+	Change some Hostparm.OpenVMS checks to Targparm.OpenVMS_On_Target.
+	(Process_Args): Also Check for object files with target object
+	extension.
+	(Make_Binder_File_Names): Create with target object extension.
+	(Make_Binder_File_Names): Change Ada bind file prefix on VMS from b$
+	to b__.
+
+	* mlib-prj.adb: Change some Hostparm.OpenVMS checks to
+	Targparm.OpenVMS_On_Target.
+	({declaration},Build_Library,Check_Library): Change Ada bind file
+	prefix on VMS from b$ to b__.
+
+	* osint-b.adb: Change some Hostparm.OpenVMS checks to
+	Targparm.OpenVMS_On_Target.
+	(Create_Binder_Output): Change Ada bind file prefix on VMS from b$ to
+	b__.
+
+	* targext.c: New file.
+
+	* Makefile.in: add support for vxworks653 builds
+	(../../vxaddr2line): gnatlink with targext.o.
+	(TOOLS_LIBS): Move targext.o to precede libgnat.
+	(init.o, initialize.o): Minor clean up in dependencies.
+	(GNATLINK_OBJS): Add targparm.o, snames.o
+	Add rules fo building targext.o and linking it explicitly with all
+	tools.
+	Also add targext.o to gnatlib.
+
+	* Make-lang.in: Add rules for building targext.o and linking it in
+	with gnat1 and gnatbind.
+	Add entry for exp_sel.o.
+
+	* osint.adb Change some Hostparm.OpenVMS checks to
+	Targparm.OpenVMS_On_Target.
+	(Object_File_Name): Use target object suffix.
+
+	* osint.ads (Object_Suffix): Remove, no longer used.
+	(Target_Object_Suffix): Initialize with target object suffix.
+
+	* rident.ads: Add special exception to license.
+
+	* targparm.adb (Get_Target_Parameters): Set the value of
+	Multi_Unit_Index_Character after OpenVMS_On_Target gets its definitive
+	value.
+	(Get_Target_Parameters): Set OpenVMS_On_Target if openvms.
+	
+	* targparm.ads: Add special exception to license.
+
+	* g-os_lib.ads, g-os_lib.adb (Get_Target_Debuggable_Suffix): New
+	function.
+	(Copy_File): Make sure from file is closed if error on to file
+	(Get_Target_Executable_Suffix, Get_Target_Object_Suffix): New functions.
+
+	* make.adb (Object_Suffix): Intialize with Get_Target_Object_Suffix.
+	(Executable_Suffix): Intialize with Get_Target_Executable_Suffix.
+
+	* osint-c.adb (Set_Output_Object_File_Name): Initialize extension with
+	target object suffix.
+
+2005-12-09  Jose Ruiz  <ruiz@adacore.com>
+	    Quentin Ochem  <ochem@adacore.com>
+	    Florian Villoing  <villoing@adacore.com>
+
+        * a-taster.ads, a-taster.adb: New files.
+
+	* a-elchha.adb (Last_Chance_Handler): Change the task termination soft
+	link to the version that does nothing. This way the task termination
+	routine is not executed twice for the environment task when finishing
+	because of an unhandled exception.
+
+	* a-exextr.adb (Notify_Unhandled_Exception): Call the task termination
+	handler because of an unhandled exception.
+
+	* a-taside.adb (Abort_Tasks): Call the Abort_Tasks procedure from
+	System.Tasking.Utilities instead of that in System.Tasking.Stages.
+
+	* s-finimp.adb (initialization code): Modify the soft link for the
+	finalization of the global list instead of Adafinal.
+
+	* s-soflin.ads, s-soflin.adb (Task_Termination_NT): Add this
+	non-tasking version of the soft link for task termination. We do
+	nothing since if we are using the non-tasking version it
+	means that the task termination functionality is not used.
+	(Null_Finalize_Global_List): Add this null version for the procedure
+	in charge of finalizing the global list for controlled objects.
+	(Null_Adafinal): Remove this procedure. Adafinal_NT has been created
+	instead for handling run-time termination in a more flexible way.
+	(Adafinal_NT): This new procedure will take care of finalizing the
+	global list for controlled objects if needed, but no tasking
+	finalization.
+
+	* s-tarest.adb (Task_Lock): Do not try to lock again the
+	Global_Task_Lock if we already own it. Otherwise, we get blocked in
+	some run-time operations.
+	(Task_Unlock): Do not try to actually unlock the Global_Task_Lock
+	until all nested locks have been released.
+	(Task_Wrapper): Call the fall-back task termination handler. It
+	applies to all tasks but the environment task.
+	(Finalize_Global_Tasks): Add the call for the task termination
+	procedure for the environment task.
+	(Task_Wrapper): suppress warnings around declaration of
+	Secondary_Stack_Address.
+
+	* s-tasini.adb (Final_Task_Unlock): Global_Task_Lock_Nesting has been
+	moved to the Common_ATCB record.
+	(Task_Lock): Global_Task_Lock_Nesting has been moved to the
+	Common_ATCB record.
+	(Task_Unlock): Global_Task_Lock_Nesting has been moved to the
+	Common_ATCB record.
+
+	* s-taskin.adb (Initialize_ATCB): Initialize Global_Task_Lock_Nesting,
+	Fall_Back_Handler, and Specific_Handler.
+
+	* s-taskin.ads (Cause_Of_Termination): Redefine this type here, already
+	defined in Ada.Task_Termination, to avoid circular dependencies.
+	(Termination_Handler): Redefine this type here, alredy defined in
+	Ada.Task_Termination, for avoiding circular dependencies.
+	(Common_ATCB): Add the Fall_Back_Handler and Specific_Handler required
+	for storing task termination handlers. In addition,
+	Global_Task_Lock_Nesting has been moved from Ada_Task_Control_Block to
+	Common_ATCB because it is used by both the regular and the restricted
+	run times.
+	(Ada_Task_Control_Block): Move Global_Task_Lock_Nesting from here to
+	Common_ATCB because it is used by both the regular and the restricted
+	run times.
+	(Common_ATCB): Added a dynamic task analyzer field.
+
+	* s-tassta.adb (Abort_Tasks): Move the code in charge of checking
+	potentially blocking operations to System.Tasking.Utilities.Abort_Tasks.
+	(Task_Wrapper): Call the task termination handler. It applies to all
+	tasks but the environment task.
+	(Finalize_Global_Tasks): Call the task termination procedure for the
+	environment task. The call to Finalize_Global_List is now performed
+	using the soft links mechanism.
+	(Task_Wrapper): added dynamic stack analysis.
+
+	* s-tasuti.adb (Abort_Tasks): The code in charge of checking
+	potentially blocking operations has been moved from
+	System.Tasking.Stages.Abort_Tasks to this procedure. There can be
+	direct calls to System.Tasking.Utilities.Abort_Tasks that do not pass
+	through System.Tasking.Stages.Abort_Tasks, and we do not want to miss
+	this run-time check.
+
+	* s-solita.adb (Task_Termination_Handler_T): Add this task-safe version
+	of task termination procedure.
+	(Init_Tasking_Soft_Links): Install the task-safe version of the soft
+	link for the task termination procedure.
+
+	* bindusg.adb: (Bindusg): Added documentation for -u option.
+
+	* bindgen.adb (Get_Main_Ada) Added handling of dynamic stack analysis.
+	(Get_Main_C): Add handling of dynamic stack analysis.
+	(Gen_Output_File_C): Add external functions for dynamic stack analysis.
+
+	* Makefile.rtl: Add entry for a-taster (Ada.Task_Termination).
+	(GNATRTL_NONTASKING_OBJS) Added entries for dynamic stack analysis
+	(GNATRTL_NONTASKING_OBJS): Add AltiVec files.
+
+	* opt.ads: Added flags used by dynamic stack measurement.
+	(Max_Line_Length): Remove (not used anymore)
+
+	* s-io.ads, s-io.adb (Standard_Error): new subprogram
+	(Standart_Output): new subprogram
+	(Set_Output): new subprogram
+	(Put): now uses the value of Current_Out to know if the output has to be
+	send to stderr or stdout.
+	
+	* s-stausa.ads: Complete implementation.
+
+	* switch-b.adb: Added handling of -u switch for dynamic stack analysis.
+	
+	* impunit.adb (Non_Imp_File_Names_05): Add Ada.Task_Termination to the
+	list of Ada 05 files.
+	(GNAT Library Units): Add AltiVec files.
+
+	* g-allein.ads, g-alleve.adb, g-alleve.ads, g-altcon.adb,
+	g-altcon.ads, g-altive.ads, g-alveop.adb, g-alveop.ads
+	g-alvety.ads, g-alvevi.ads: New files providing altivec API.
+
+2005-12-09  Nicolas Setton  <setton@adacore.com>
+
+	* adaint.c (__gnat_locate_regular_file): Return immediately if
+	file_name is empty.
+
+2005-12-09  Javier Miranda  <miranda@adacore.com>
+	    Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-tags.ads, a-tags.adb (Offset_To_Top): Moved from the package body
+	to the specification because the frontend generates code that uses this
+	subprogram.
+	(Set_Interface_Table): Add missing assertion.
+	Update documentation describing the run-time structure.
+	(Displace): New subprogram that displaces the pointer to the object
+	to reference one of its secondary dispatch tables.
+	(IW_Membership): Modified to use the new table of interfaces.
+	(Inherit_TSD): Modified to use the new table of interfaces.
+	(Register_Interface_Tag): Use the additional formal to fill the
+	contents of the new table of interfaces.
+	(Set_Interface_Table): New subprogram that stores in the TSD the
+	pointer to the table of interfaces.
+	(Set_Offset_To_Top): Use the additional formal to save copy of
+	the offset value in the table of interfaces.
+	Update structure of GNAT Primary and Secondary dispatch table diagram.
+	Add comment section on GNAT dispatch table prologue.
+	(Offset_To_Signature): Update the constant value of the Signature field.
+	(Dispatch_Table): Update comment on hidden fields in the prologue.
+	(Get_Entry_Index, Get_Prim_Op_Kind, Get_Offset_Index, OSD,
+	Set_Entry_Index, Set_Offset_Index, Set_Prim_Op_Kind, SSD, TSD): Change
+	the type of formal parameter T to Tag, introduce additional assertions.
+	(Get_Num_Prim_Ops, Set_Num_Prim_Ops): Remove an unnecessary type
+	conversion.
+	(Get_Tagged_Kind, Set_Tagged_Kind): New bodies.
+
+	* exp_ch6.adb (Register_Interface_DT_Entry): Remove the Thunk_Id actual
+	in all the calls to Expand_Interface_Thunk. Instead of referencing the
+	record component containing the tag of the secondary dispatch table we
+	have to use the Offset_To_Top run-time function to get this information;
+	otherwise if the pointer to the base of the object has been displace
+	we get a wrong value if we use the 'position attribute.
+
+	* exp_disp.adb (Expand_Interface_Thunk): Remove the Thunk_Id actual in
+	all the calls to Expand_Interface_Thunk.
+	(Make_Secondary_DT): Secondary dispatch tables do not have a table of
+	interfaces; hence the call to Set_Interface_Table was clearly wrong.
+	(Collect_All_Interfaces): Modify the internal subprogram Collect to
+	ensure that the interfaces implemented by the ancestors are placed
+	at the header of the generated list.
+	(Expand_Interface_Conversion): Handle the case in which the displacement
+	associated with the interface conversion is not statically known. In
+	this case we generate a call to the new run-time subprogram Displace.
+	(Make_DT): Generate and fill the new table of interfaces.
+	(Ada_Actions, Action_Is_Proc, Action_Nb_Arg): Add entries for
+	Get_Tagged_Kind and Set_Tagged_Kind.
+	(Tagged_Kind): New function that determines the tagged kind of a type
+	with respect to limitedness and concurrency and returns a reference to
+	RE_Tagged_Kind.
+	(Make_Disp_Asynchronous_Select_Body, Make_Disp_Conditional_Select_Body,
+	Make_Disp_Timed_Select_Body): Correctly retrieve the pointer to the
+	primary dispatch table for a type.
+	(Make_DT, Make_Secondary_DT): Set the tagged kind in the primary and
+	secondary dispatch table respectively of a tagged type.
+
+	* exp_disp.ads (Expand_Interface_Thunk): Remove Thunk_Id formal.
+	(Expand_Interface_Conversion): New subprogram to indicate if the
+	displacement of the type conversion is statically known.
+	(DT_Access_Action): Add values Get_Tagged_Kind and Set_Tagged_Kind.
+
+	* rtsfind.ads (RE_Offset_To_Top): New entity
+	(RTU_Id): Add Ada_Task_Termination to the list so that it is made
+	accessible to users.
+	(Re_Displace): New entity
+	(RE_Interface_Data): New entity
+	(RE_Set_Interface_Data): New_Entity
+	(RE_Id, RE_Unit_Table): Add entry for RE_Get_Tagged_Kind,
+	Set_Tagged_Kind, RE_Tagged_Kind, RE_TK_Abstract_Limited_Tagged,
+	RE_TK_Abstract_Tagged, RE_TK_Limited_Tagged, RE_TK_Protected,
+	RE_TK_Tagged, RE_TK_Task.
+
+	* exp_ch3.adb (Init_Secondary_Tags): Modify the subprogram
+	Init_Secondary_Tags_Internal to allow its use with interface types and
+	also to generate the code for the new additional actual required
+	by Set_Offset_To_Top.
+	(Build_Init_Statements): In case of components associated with abstract
+	interface types there is no need to generate a call to its IP.
+	(Freeze_Record_Type): Generate Select Specific Data tables only for
+	concurrent types.
+	(Make_Predefined_Primitive_Specs, Predefined_Primitive_Bodies): Generate
+	the bodies and specifications of the predefined primitive operations
+	dealing with dispatching selects and abort, 'Callable, 'Terminated only
+	for concurrent types.
+
+        * exp_sel.ads, exp_sel.adb: New files.
+
+	* exp_ch9.adb (Build_Protected_Entry, Expand_N_Protected_Body,
+	Expand_N_Protected_Type_Declaration, Make_Initialize_Protection): Handle
+	properly protected objects and attach handler in the case of the
+	restricted profile.
+	Move embeded package Select_Expansion_Utilities into a separate external
+	package.
+	(Expand_N_Asynchronous_Select, Expand_N_Conditional_Select,
+	Expand_N_Timed_Entry_Call): Correct calls external package Exp_Sel.
+	(Build_K, Build_S_Assignment): New subprograms, part of the select
+	expansion utilities.
+	(Expand_N_Asynchronous_Select, Expand_N_Conditional_Entry_Call,
+	Expand_N_Timed_Entry_Call): Optimize expansion of select statements
+	where the trigger is a dispatching procedure of a limited tagged type.
+
+2005-12-09  Olivier Hainque  <hainque@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity, renaming object case): Don't early expand
+	pointer initialization values. Make a SAVE_EXPR instead. Add comments
+	about the use and expansion of SAVE_EXPRs in the various possible
+	renaming handling cases.
+	(components_to_record, compare_field_bitpos): Sort by DECL_UID, not by
+	abusing DECL_FCONTEXT.
+
+2005-12-09  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.adb (Merge): Added assertions to check whether vector params
+	are sorted.
+
+	* a-coinve.adb (Merge): Added assertions to check whether vector params
+	are sorted.
+
+	* a-cohama.ads (Cursor'Write): raises Program_Error per latest AI-302
+	draft.
+	(Cursor'Read): raises PE
+
+	* a-cohama.adb (Insert.New_Node): Uses box-style syntax to init elem
+	to its default value.
+
+	* a-cihama.adb: Manually check whether cursor's key and elem are
+	non-null
+
+	* a-cidlli.ads, a-cidlli.adb (Splice): Changed param name and param mode
+	(Merge): Assert that target and source lists are in order
+	(Swap): Declare non-const temporaries, to pass to Splice
+
+	* a-cdlili.ads: (Splice): Changed param name and param mode
+
+	* a-cdlili.adb: (Splice): Changed param name and param mode
+	(Merge): Assert that target and source lists are in order
+	(Swap): Declare non-const temporaries, to pass to Splice
+
+	* a-ciorma.ads, a-coorma.ads: (Read): declare Stream param as not null
+	(Write): declare Stream param as not null
+
+	* a-ciorma.adb, a-coorma.adb: All explicit raise statements now include
+	an exception message.
+
+2005-12-09  Thomas Quinot  <quinot@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+
+	* hostparm.ads (Max_Line_Length): Set to Types.Column_Number'Last - 1,
+	which is the absolute maximum length we can support.
+
+	* frontend.adb: For the processing of configuration pragma files,
+	remove references to Opt.Max_Line_Length, which is not checked anymore.
+
+	* namet.ads (Name_Buffer): Adjust size to reflect increase on max line
+	length.
+
+	* scn.adb, scng.adb: 
+	Always check line length against the absolute supported maximum,
+	Hostparm.Max_Line_Length.
+
+	* stylesw.adb (Set_Style_Check_Options, case M): The maximum supported
+	value for the maximum line length is Max_Line_Length (not
+	Column_Number'Last).
+	Minor error msg update
+	(Set_Style_Check_Options): New interface returning error msg
+	Minor code reorganization (processing for 'M' was out of alpha order)
+
+	* switch-c.adb: New interface for Set_Style_Check_Options
+
+	* stylesw.ads (Set_Style_Check_Options): New interface returning error
+	msg.
+
+2005-12-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Default-initialialized records
+	with IP subprogram were only supported if there were limited types.
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): Default-initialialized
+	records with IP subprogram were only supported if there were limited
+	types.
+
+2005-12-09  Olivier Hainque  <hainque@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (tree_transform, emit_check): Adjust calls to
+	build_call_raise, passing the now expected GNAT_NODE argument.
+
+	* gigi.h (build_call_raise): Add a GNAT_NODE argument to convey better
+	source line information than what the current global locus indicates
+	when appropriate.
+
+	* utils2.c (build_simple_component_ref): Return 0 if the offset of the
+	field has overflowed.
+	(build_call_raise): Add a GNAT_NODE argument to convey better source
+	line information than what the current global locus indicates when
+	appropriate.
+	(build_component_ref): Adjust call to build_call_raise.
+
+2005-12-09  Pascal Obry  <obry@adacore.com>
+
+	* g-diopit.adb (Find): Fix test to exit the iterator and make sure that
+	the iterator is quitting iteration on parent directory.
+
+2005-12-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): In case of tagged types
+	and the assignment to a class-wide object, before the assignment we
+	generate a run-time check to ensure that the tag of the Target is
+	covered by the tag of the source.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+
+	* exp_imgv.adb (Expand_Image_Attribute): Generate extra boolean
+	parameter in call to Image_Wide_Character.
+
+	* s-imgwch.ads, s-imgwch.adb (Image_Wide_Character): Add boolean
+	parameter Ada_2005 to deal with annoying FFFE/FFFF inconsistency.
+	(Image_Wide_Character): Add boolean parameter Ada_2005 to deal with
+	annoying FFFE/FFFF inconsistency.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+	    Javier Miranda  <miranda@adacore.com>
+	    Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Is_Ref_To_Bit_Packed_Slice): Handle case
+	of type conversion.
+	(Find_Interface): New subprogram that given a tagged type and one of its
+	component associated with the secondary table of an abstract interface
+	type, return the entity associated with such abstract interface type.
+	(Make_Subtype_From_Expr): If type has unknown discriminants, always use
+	base type to create anonymous subtype, because entity may be a locally
+	declared subtype or generic actual.
+	(Find_Interface): New subprogram that given a tagged type and one of its
+	component associated with the secondary table of an abstract interface
+	type, return the entity associated with such abstract interface type.
+
+	* sem_res.adb (Resolve_Type_Conversion): Handle the case in which the
+	conversion cannot be handled at compile time. In this case we pass this
+	information to the expander to generate the appropriate code.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+	    Ed Schonberg  <schonberg@adacore.com>
+	    Gary Dismukes  <dismukes@adacore.com>
+	    Javier Miranda  <miranda@adacore.com>
+	    Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Itype_Printed): New flag
+	(Is_Limited_Type): Derived types do not inherit limitedness from
+	interface progenitors.
+	(Is_Return_By_Reference_Type): Predicate does not apply to limited
+	interfaces.
+
+	* einfo.ads (Itype_Printed): New flag
+	Move Is_Wrapper_Package to proper section
+	Add missing Inline for Is_Volatile
+
+	* output.ads, output.adb (Write_Erase_Char): New procedure
+	(Save/Restore_Output_Buffer): New procedures
+	(Save/Restore_Output_Buffer): New procedures
+
+	* sprint.ads, sprint.adb (Write_Itype): Handle case of record itypes
+	Add missing support for anonymous access type
+	(Write_Id): Insert calls to Write_Itype
+	(Write_Itype): New procedure to output itypes
+
+	* par-ch12.adb (P_Formal_Derived_Type_Definition): In Ada 2005, handle
+	use of "limited" in declaration.
+
+	* sinfo.ads, sinfo.adb: 
+	Formal derived types can carry an explicit "limited" indication.
+
+	* sem_ch3.adb: Add with and use of Targparm.
+	(Create_Component): If Frontend_Layout_On_Target is True and the
+	copied component does not have a known static Esize, then reset
+	the size and positional fields of the new component.
+	(Analyze_Component_Declaration): A limited component is
+	legal within a protected type that implements an interface.
+	(Collect_Interfaces): Do not add to the list the interfaces that
+	are implemented by the ancestors.
+	(Derived_Type_Declaration): If the parent of the full-view is an
+	interface perform a transformation of the tree to ensure that it has
+	the same parent than the partial-view. This simplifies the job of the
+	expander in order to generate the correct object layout, and it is
+	needed because the list of interfaces of the full-view can be given in
+	any order.
+	(Process_Full_View): The parent of the full-view does not need to be
+	a descendant of the parent of the partial view if both parents are
+	interfaces.
+	(Analyze_Private_Extension_Declaration): If declaration has an explicit
+	"limited" the parent must be a limited type.
+	(Build_Derived_Record_Type): A derived type that is explicitly limited
+	must have limited ancestor and progenitors.
+	(Build_Derived_Type): Ditto.
+	(Process_Full_View): Verify that explicit uses of "limited" in partial
+	and full declarations are consistent.
+	(Find_Ancestor_Interface): Remove function.
+	(Collect_Implemented_Interfaces): New procedure used to gather all
+	implemented interfaces by a type.
+	(Contain_Interface): New function used to check whether an interface is
+	present in a list.
+	(Find_Hidden_Interface): New function used to determine whether two
+	lists of interfaces constitute a set equality. If not, the first
+	differing interface is returned.
+	(Process_Full_View): Improve the check for the "no hidden interface"
+	rule as defined by AI-396.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Only test for useless pack on record
+	types, not on record subtypes.
+	(Freeze_Entity): Code cleanup. Add barrier to the loop
+	that generates the references for primitive operations. This allows to
+	remove an unnecessary exception handler.
+	Code reformatting and comment clean ups.
+
+2005-12-09  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): GNAT CHECK accepts switch -U
+	If GNAT CHECK is called with a project file, but with no
+	source on the command line, call gnatcheck with all the compilable
+	sources of the project.
+	Take into account the new command Check, for gnatcheck. Treat as for
+	other ASIS tools: take into account project, specific package Check and
+	Compiler switches.
+	For ASIS tools, add the switches in package Compiler for
+	the invocation of the compiler.
+
+	* prj-attr.adb: Add package Check and its attributes
+
+	* vms_conv.ads (Command_Type): New command Check, for gnatcheck
+
+	* vms_conv.adb (Initialize): Change Params of command Check to
+	unlimited files.
+	Change some Hostparm.OpenVMS checks to Targparm.OpenVMS_On_Target.
+	Add data for new command Check
+
+	* vms_data.ads: Add project related qualifiers for GNAT CHECK and GNAT
+	ELIM.
+	Add qualifiers for Check command options
+	(Command_Type): New command Check
+
+2005-12-09  Thomas Quinot  <quinot@adacore.com>
+
+	* mlib-utl.adb (Ar): Use Output.Buffer_Max to determine whether a
+	command line switch overruns the output buffer.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Processing for new pragma Complete_Representation
+	(Analyze_Pragma, case Debug): Implement two argument form.
+
+	* par-prag.adb: Entry for new pragma Complete_Representation
+	(Prag, case Debug): Recognize two argument form of pragma Debug
+	New interface for Set_Style_Check_Options.
+
+	* sem_ch13.adb: Implement new pragma Complete_Representation.
+
+	* snames.adb, snames.ads, snames.h: Entry for new pragma
+	Complete_Representation.
+
+2005-12-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_cat.adb (Validate_RCI_Subprogram_Declaration): Revise test for
+	available user-specified stream attributes on limited parameters to
+	also test the type directly rather than only its underlying type (for
+	Ada 95) and, in the case of Ada 2005, to check that the user-specified
+	attributes are visible at the point of the subprogram declaration.
+	For Ada 2005, the error message is modified to indicate that the
+	type's stream attributes must be visible (again, only for -gnat05).
+
+2005-12-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Subtypes_Match): Handle properly Ada05 arrays of
+	anonymous access types.
+
+	* sem_eval.adb (Subtypes_Statically_Match): Implement new rules for
+	matching of anonymous access types and anonymous access to subprogram
+	types. 'R'M 4.9.1 (2/2).
+
+2005-12-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Remove_Abstract_Operations): Do not apply preference
+	rule prematurely when operands are universal, remaining ambiguities
+	will be removed during resolution.
+	Code cleanup.
+
+	* sem_type.adb (Disambiguate): In Ada95 mode, discard interpretations
+	that are Ada 2005 functions.
+	(Has_Abstract_Interpretation): Subsidiary to
+	Remove_Conversions, to remove ambiguities caused by abstract operations
+	on numeric types when operands are universal.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body): Properly check categorization
+	for case where spec is categorized.
+
+2005-12-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Find_Type): In case of tagged types that are concurrent
+	types use the corresponding record type. This was not needed before
+	the implementation of Ada 2005 synchronized types because
+	concurrent types were never tagged types in Ada 95.
+
+2005-12-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Analyze_Delay_Alternative, Analyze_Delay_Until): Use the
+	first subtype of the type of the expression to verify that it is a
+	legal Time type.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Full_Qualified_Name): Now provides
+	decoded names.
+
+2005-12-09  Quentin Ochem  <ochem@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+	    Ed Falis  <falis@adacore.com>
+	    Florian Villoing  <villoing@adacore.com>
+	    Thomas Quinot  <quinot@adacore.com>
+	    Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Created section "Stack Related Tools"
+	Moved "Stack Overflow Checking" subsection from "Switches for gcc" to
+	"Stack Related Tools"
+	Added subsection "Static Stack Usage Analysis"
+	Added subsection "Dynamic Stack Usage Analysis"
+	Include documentation of itypes in sprint listing (-gnatG)
+	Documented gnatbind -D switch (default sec stack size for fixed sec
+	stacks).
+	Added Interrupt_State and Persistent_BSS to list of configuration
+	pragmas.
+	Add missing doc for maximum value of nnn in -gnatyMnnn
+
+	* gnat_rm.texi: Document the AltiVec binding.
+	Add documentation for pragma Complete_Representation
+	Shortened an overly long line (> 79 chars)
+	Clarify documentation of unchecked conversion in implementation
+	defined cases.
+	Document two argument form of pragma Debug
+
+	* types.ads (Column_Number): Update documentation.
+
+	* exp_ch7.ads (Make_Adjust_Call): Document the special processing for
+	library level Finalize_Storage_Only objects (these are not attached to
+	any finalization list).
+
+	* system-mingw.ads: (Underlying_Priorities): Update comment.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+
+	* i-c.adb, i-cexten.ads, i-cobol.adb, i-cobol.ads, i-cpoint.ads,
+        i-cpp.adb, i-cpp.ads, i-cstrea.ads, i-cstrin.adb, i-cstrin.ads,
+	inline.adb, interfac.ads, i-os2err.ads, i-os2lib.ads, i-os2syn.ads,
+	i-os2thr.ads, itypes.adb, itypes.adb, itypes.ads, krunch.ads,
+	krunch.adb, lib.adb, lib.ads, lib-list.adb, lib-load.adb,
+	lib-load.ads, lib-sort.adb, live.adb, make.ads, i-cstrea-vms.adb,
+	interfac-vms.ads, makegpr.adb, indepsw-gnu.adb, indepsw.ads,
+	s-wchcon.ads, sdefault.ads, sem_ch10.adb, sem_eval.ads: Minor
+	reformatting.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+
+	* s-vaflop-vms-alpha.adb: (Ne_F): New function
+	(Ne_G): New function
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Factor duplicated code
+	for tag assignment.
+	(Rewrite_Comparison): Handle case where operation is not a comparison
+	and ignore, and also handle type conversion case.
+
+2005-12-09  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_aggr.ads: Fix typo in comment.
+	???-mark Convert_Aggr_In_Assignment as needing documentation.
+
+2005-12-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* layout.adb: Replace various uses of byte by storage unit throughout.
+	(Get_Max_SU_Size): Name changed from Get_Max_Size. In the case of a
+	static size, convert to storage units before returning, to conform to
+	spec.
+
+2005-12-09  Matthew Gingell  <gingell@adacore.com>
+
+	* g-exctra.ads: Fix typo in comment.
+
+2005-12-09  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* utils.c: Minor reformatting.
+
+2005-12-09  Robert Dewar  <dewar@adacore.com>
+
+	* g-soccon.ads: 
+	Further comment fixes to make the status of the default file clear
+
+	* s-bitops.adb: Clarify comment for Bits_Array
+
 2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (ada.install-normal): Remove.
