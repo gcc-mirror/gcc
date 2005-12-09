@@ -4289,8 +4289,7 @@ package body Exp_Ch6 is
                     Expand_Interface_Thunk
                       (N           => Prim,
                        Thunk_Alias => Alias (Prim),
-                       Thunk_Id    => Thunk_Id,
-                       Thunk_Tag   => Iface_Tag);
+                       Thunk_Id    => Thunk_Id);
 
                   Insert_After (N, New_Thunk);
 
@@ -4341,8 +4340,7 @@ package body Exp_Ch6 is
                  Expand_Interface_Thunk
                    (N           => Ancestor_Iface_Prim,
                     Thunk_Alias => Prim_Op,
-                    Thunk_Id    => Thunk_Id,
-                    Thunk_Tag   => Iface_Tag);
+                    Thunk_Id    => Thunk_Id);
 
                Insert_After (N, New_Thunk);
 
@@ -4401,8 +4399,7 @@ package body Exp_Ch6 is
                  Expand_Interface_Thunk
                   (N           => Prim,
                    Thunk_Alias => Prim,
-                   Thunk_Id    => Thunk_Id,
-                   Thunk_Tag   => Iface_Tag);
+                   Thunk_Id    => Thunk_Id);
 
                Insert_After (N, New_Thunk);
                Insert_After (New_Thunk,
