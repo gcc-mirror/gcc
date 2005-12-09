@@ -329,27 +329,34 @@ begin
       --  semantically we treat it as a procedure call (which has exactly the
       --  same syntactic form, so that's why we can get away with this!)
 
-      when Pragma_Debug =>
-         Check_Arg_Count (1);
-         Check_No_Identifier (Arg1);
+      when Pragma_Debug => Debug : declare
+         Expr : Node_Id;
 
-         declare
-            Expr : constant Node_Id := New_Copy (Expression (Arg1));
+      begin
+         if Arg_Count = 2 then
+            Check_No_Identifier (Arg1);
+            Check_No_Identifier (Arg2);
+            Expr := New_Copy (Expression (Arg2));
 
-         begin
-            if Nkind (Expr) /= N_Indexed_Component
-              and then Nkind (Expr) /= N_Function_Call
-              and then Nkind (Expr) /= N_Identifier
-              and then Nkind (Expr) /= N_Selected_Component
-            then
-               Error_Msg
-                 ("argument of pragma% is not procedure call", Sloc (Expr));
-               raise Error_Resync;
-            else
-               Set_Debug_Statement
-                 (Pragma_Node, P_Statement_Name (Expr));
-            end if;
-         end;
+         else
+            Check_Arg_Count (1);
+            Check_No_Identifier (Arg1);
+            Expr := New_Copy (Expression (Arg1));
+         end if;
+
+         if Nkind (Expr) /= N_Indexed_Component
+           and then Nkind (Expr) /= N_Function_Call
+           and then Nkind (Expr) /= N_Identifier
+           and then Nkind (Expr) /= N_Selected_Component
+         then
+            Error_Msg
+              ("argument of pragma% is not procedure call", Sloc (Expr));
+            raise Error_Resync;
+         else
+            Set_Debug_Statement
+              (Pragma_Node, P_Statement_Name (Expr));
+         end if;
+      end Debug;
 
       -------------------------------
       -- Extensions_Allowed (GNAT) --
@@ -929,7 +936,7 @@ begin
 
                   if not OK then
                      Error_Msg
-                       ("invalid style check option",
+                       (Style_Msg_Buf (1 .. Style_Msg_Len),
                         Sloc (Expression (Arg1)) + Source_Ptr (Ptr));
                      raise Error_Resync;
                   end if;
@@ -1013,6 +1020,7 @@ begin
            Pragma_C_Pass_By_Copy               |
            Pragma_Comment                      |
            Pragma_Common_Object                |
+           Pragma_Complete_Representation      |
            Pragma_Complex_Representation       |
            Pragma_Component_Alignment          |
            Pragma_Controlled                   |

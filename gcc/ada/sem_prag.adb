@@ -4967,6 +4967,21 @@ package body Sem_Prag is
             end if;
          end Compile_Time_Warning;
 
+         -----------------------------
+         -- Complete_Representation --
+         -----------------------------
+
+         --  pragma Complete_Representation;
+
+         when Pragma_Complete_Representation =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+
+            if Nkind (Parent (N)) /= N_Record_Representation_Clause then
+               Error_Pragma
+                 ("pragma & must appear within record representation clause");
+            end if;
+
          ----------------------------
          -- Complex_Representation --
          ----------------------------
@@ -5573,18 +5588,39 @@ package body Sem_Prag is
          -- Debug --
          -----------
 
-         --  pragma Debug (PROCEDURE_CALL_STATEMENT);
+         --  pragma Debug ([boolean_EXPRESSION,] PROCEDURE_CALL_STATEMENT);
 
-         when Pragma_Debug => Debug : begin
+         when Pragma_Debug => Debug : declare
+               Cond : Node_Id;
+
+         begin
             GNAT_Pragma;
 
-            --  Rewrite into a conditional with a static condition
+            Cond :=
+              New_Occurrence_Of
+                (Boolean_Literals (Debug_Pragmas_Enabled and Expander_Active),
+                 Loc);
+
+            if Arg_Count = 2 then
+               Cond :=
+                 Make_And_Then (Loc,
+                   Left_Opnd   => Relocate_Node (Cond),
+                   Right_Opnd  => Expression (Arg1));
+            end if;
+
+            --  Rewrite into a conditional with an appropriate condition. We
+            --  wrap the procedure call in a block so that overhead from e.g.
+            --  use of the secondary stack does not generate execution overhead
+            --  for suppressed conditions.
 
             Rewrite (N, Make_Implicit_If_Statement (N,
-              Condition => New_Occurrence_Of (Boolean_Literals (
-                Debug_Pragmas_Enabled and Expander_Active), Loc),
-              Then_Statements => New_List (
-                Relocate_Node (Debug_Statement (N)))));
+              Condition => Cond,
+                 Then_Statements => New_List (
+                   Make_Block_Statement (Loc,
+                     Handled_Statement_Sequence =>
+                       Make_Handled_Sequence_Of_Statements (Loc,
+                         Statements => New_List (
+                           Relocate_Node (Debug_Statement (N))))))));
             Analyze (N);
          end Debug;
 
@@ -9587,17 +9623,20 @@ package body Sem_Prag is
                         exit when not In_Character_Range (C);
                         Options (J) := Get_Character (C);
 
+                        --  If at end of string, set options. As per discussion
+                        --  above, no need to check for errors, since we issued
+                        --  them in the parser.
+
                         if J = Slen then
                            Set_Style_Check_Options (Options);
                            exit;
-                        else
-                           J := J + 1;
                         end if;
+
+                        J := J + 1;
                      end loop;
                   end;
 
                elsif Nkind (A) = N_Identifier then
-
                   if Chars (A) = Name_All_Checks then
                      Set_Default_Style_Check_Options;
 
@@ -9606,7 +9645,6 @@ package body Sem_Prag is
 
                   elsif Chars (A) = Name_Off then
                      Style_Check := False;
-
                   end if;
                end if;
             end if;
@@ -10664,6 +10702,7 @@ package body Sem_Prag is
       Pragma_Comment                      =>  0,
       Pragma_Common_Object                => -1,
       Pragma_Compile_Time_Warning         => -1,
+      Pragma_Complete_Representation      =>  0,
       Pragma_Complex_Representation       =>  0,
       Pragma_Component_Alignment          => -1,
       Pragma_Controlled                   =>  0,

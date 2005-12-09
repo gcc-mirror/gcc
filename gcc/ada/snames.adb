@@ -229,6 +229,7 @@ package body Snames is
      "attach_handler#" &
      "comment#" &
      "common_object#" &
+     "complete_representation#" &
      "complex_representation#" &
      "controlled#" &
      "convention#" &
