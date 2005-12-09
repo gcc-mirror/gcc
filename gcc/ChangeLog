@@ -10,7 +10,7 @@
 	* recog.c (constrain_operands): Strip unary operators
 	only ifndef KEEP_UNARY_OPERATORS_AT_CONSTRAINT_CHECKING.
 	* reload.c (find_reloads): Ditto.
-        * config/cris/cris.h (KEEP_UNARY_OPERATORS_AT_CONSTRAINT_CHECKING):
+	* config/cris/cris.h (KEEP_UNARY_OPERATORS_AT_CONSTRAINT_CHECKING):
 	Define.
 
 2005-12-08  Zdenek Dvorak  <dvorakz@suse.cz>
