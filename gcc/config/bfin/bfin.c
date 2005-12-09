@@ -45,6 +45,7 @@
 #include "recog.h"
 #include "ggc.h"
 #include "integrate.h"
+#include "cgraph.h"
 #include "langhooks.h"
 #include "bfin-protos.h"
 #include "tm-preds.h"
@@ -863,10 +864,19 @@ expand_interrupt_handler_epilogue (rtx spreg, e_funkind fkind)
 /* Used while emitting the prologue to generate code to load the correct value
    into the PIC register, which is passed in DEST.  */
 
-static void
+static rtx
 bfin_load_pic_reg (rtx dest)
 {
+  struct cgraph_local_info *i = NULL;
   rtx addr, insn;
+ 
+  if (flag_unit_at_a_time)
+    i = cgraph_local_info (current_function_decl);
+ 
+  /* Functions local to the translation unit don't need to reload the
+     pic reg, since the caller always passes a usable one.  */
+  if (i && i->local)
+    return pic_offset_table_rtx;
       
   if (bfin_lib_id_given)
     addr = plus_constant (pic_offset_table_rtx, -4 - bfin_library_id * 4);
@@ -876,6 +886,7 @@ bfin_load_pic_reg (rtx dest)
 					 UNSPEC_LIBRARY_OFFSET));
   insn = emit_insn (gen_movsi (dest, gen_rtx_MEM (Pmode, addr)));
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx, NULL);
+  return dest;
 }
 
 /* Generate RTL for the prologue of the current function.  */
@@ -908,11 +919,10 @@ bfin_expand_prologue (void)
 	  if (TARGET_ID_SHARED_LIBRARY)
 	    {
 	      rtx p1reg = gen_rtx_REG (Pmode, REG_P1);
-	      rtx r3reg = gen_rtx_REG (Pmode, REG_R3);
 	      rtx val;
-	      pic_reg_loaded = p2reg;
-	      bfin_load_pic_reg (pic_reg_loaded);
-	      val = legitimize_pic_address (stack_limit_rtx, p1reg, p2reg);
+	      pic_reg_loaded = bfin_load_pic_reg (p2reg);
+	      val = legitimize_pic_address (stack_limit_rtx, p1reg,
+					    pic_reg_loaded);
 	      emit_move_insn (p1reg, val);
 	      frame_related_constant_load (p2reg, offset, FALSE);
 	      emit_insn (gen_addsi3 (p2reg, p2reg, p1reg));
