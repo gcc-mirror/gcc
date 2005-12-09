@@ -525,6 +525,7 @@ package body Sem_Ch9 is
 
    procedure Analyze_Delay_Alternative (N : Node_Id) is
       Expr : Node_Id;
+      Typ  : Entity_Id;
 
    begin
       Tasking_Used := True;
@@ -549,9 +550,11 @@ package body Sem_Ch9 is
             Pre_Analyze_And_Resolve (Expr);
          end if;
 
+         Typ := First_Subtype (Etype (Expr));
+
          if Nkind (Delay_Statement (N)) = N_Delay_Until_Statement
-           and then not Is_RTE (Base_Type (Etype (Expr)), RO_CA_Time)
-           and then not Is_RTE (Base_Type (Etype (Expr)), RO_RT_Time)
+           and then not Is_RTE (Typ, RO_CA_Time)
+           and then not Is_RTE (Typ, RO_RT_Time)
          then
             Error_Msg_N ("expect Time types for `DELAY UNTIL`", Expr);
          end if;
@@ -592,16 +595,18 @@ package body Sem_Ch9 is
    -------------------------
 
    procedure Analyze_Delay_Until (N : Node_Id) is
-      E : constant Node_Id := Expression (N);
+      E   : constant Node_Id := Expression (N);
+      Typ : Entity_Id;
 
    begin
       Tasking_Used := True;
       Check_Restriction (No_Delay, N);
       Check_Potentially_Blocking_Operation (N);
       Analyze (E);
+      Typ := First_Subtype (Etype (E));
 
-      if not Is_RTE (Base_Type (Etype (E)), RO_CA_Time) and then
-         not Is_RTE (Base_Type (Etype (E)), RO_RT_Time)
+      if not Is_RTE (Typ, RO_CA_Time) and then
+         not Is_RTE (Typ, RO_RT_Time)
       then
          Error_Msg_N ("expect Time types for `DELAY UNTIL`", E);
       end if;
