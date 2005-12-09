@@ -36,8 +36,12 @@
 package System.Img_WChar is
    pragma Pure;
 
-   function Image_Wide_Character (V : Wide_Character) return String;
-   --  Computes Wide_Character'Image (V) and returns the computed result
+   function Image_Wide_Character
+     (V        : Wide_Character;
+      Ada_2005 : Boolean) return String;
+   --  Computes Wide_Character'Image (V) and returns the computed result. The
+   --  parameter Ada_2005 is True if operating in Ada 2005 mode (or beyond).
+   --  This is needed for the annoying FFFE/FFFF incompatibility.
 
    function Image_Wide_Wide_Character (V : Wide_Wide_Character) return String;
    --  Computes Wide_Wide_Character'Image (V) and returns the computed result
