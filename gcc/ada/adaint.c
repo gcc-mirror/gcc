@@ -1960,6 +1960,11 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
   char *file_path = alloca (strlen (file_name) + 1);
   int absolute;
 
+  /* Return immediately if file_name is empty */
+
+  if (*file_name == '\0')
+    return 0;
+
   /* Remove quotes around file_name if present */
 
   ptr = file_name;
