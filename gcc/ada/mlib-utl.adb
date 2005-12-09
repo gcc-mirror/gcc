@@ -85,9 +85,7 @@ package body MLib.Utl is
 
             --  Make sure the Output buffer does not overflow
 
-            if Line_Length + 1 + Arguments (J)'Length >
-                 Integer (Opt.Max_Line_Length)
-            then
+            if Line_Length + 1 + Arguments (J)'Length > Buffer_Max then
                Write_Eol;
                Line_Length := 0;
             end if;
