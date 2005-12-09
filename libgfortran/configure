@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT multi_basedir toolexecdir toolexeclibdir CC ac_ct_CC EXEEXT OBJEXT AM_FCFLAGS AM_CFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB LN_S LIBTOOL enable_shared enable_static FC FCFLAGS LDFLAGS ac_ct_FC extra_ldflags_libgfortran CPP CPPFLAGS EGREP FPU_HOST_HEADER LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_subdir host_subdir target_subdir host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT multi_basedir toolexecdir toolexeclibdir CC ac_ct_CC EXEEXT OBJEXT AM_FCFLAGS AM_CFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB LN_S LIBTOOL enable_shared enable_static FC FCFLAGS LDFLAGS ac_ct_FC extra_ldflags_libgfortran CPP CPPFLAGS EGREP FPU_HOST_HEADER LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1328,45 +1328,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
           ac_config_headers="$ac_config_headers config.h"
 
-
-# -------
-# Options
-# -------
-
-echo "$as_me:$LINENO: checking for --enable-version-specific-runtime-libs" >&5
-echo $ECHO_N "checking for --enable-version-specific-runtime-libs... $ECHO_C" >&6
-# Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
-if test "${enable_version_specific_runtime_libs+set}" = set; then
-  enableval="$enable_version_specific_runtime_libs"
-  case "$enableval" in
- yes) version_specific_libs=yes ;;
- no)  version_specific_libs=no ;;
- *)   { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable version-specific libs" >&5
-echo "$as_me: error: Unknown argument to enable/disable version-specific libs" >&2;}
-   { (exit 1); exit 1; }; };;
- esac
-else
-  version_specific_libs=no
-fi;
-echo "$as_me:$LINENO: result: $version_specific_libs" >&5
-echo "${ECHO_T}$version_specific_libs" >&6
-
-
-# Gets build, host, target, *_vendor, *_cpu, *_os, etc.
-#
-# You will slowly go insane if you do not grok the following fact:  when
-# building this library, the top-level /target/ becomes the library's /host/.
-#
-# configure then causes --target to default to --host, exactly like any
-# other package using autoconf.  Therefore, 'target' and 'host' will
-# always be the same.  This makes sense both for native and cross compilers
-# just think about it for a little while.  :-)
-#
-# Also, if this library is being configured as part of a cross compiler, the
-# top-level configure script will pass the "real" host as $with_cross_host.
-#
-# Do not delete or change the following two lines.  For why, see
-# http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
 ac_aux_dir=
 for ac_dir in $srcdir $srcdir/.. $srcdir/../..; do
   if test -f $ac_dir/install-sh; then
@@ -1424,6 +1385,72 @@ build_vendor=`echo $ac_cv_build | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
 build_os=`echo $ac_cv_build | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 
 
+ case ${build_alias} in
+  "") build_noncanonical=${build} ;;
+  *) build_noncanonical=${build_alias} ;;
+esac
+
+ case ${host_alias} in
+  "") host_noncanonical=${build_noncanonical} ;;
+  *) host_noncanonical=${host_alias} ;;
+esac
+
+ case ${target_alias} in
+  "") target_noncanonical=${host_noncanonical} ;;
+  *) target_noncanonical=${target_alias} ;;
+esac
+
+  # Prefix 'build-' so this never conflicts with target_subdir.
+build_subdir="build-${build_noncanonical}"
+# --srcdir=. covers the toplevel, while "test -d" covers the subdirectories
+if ( test $srcdir = . && test -d gcc ) \
+   || test -d $srcdir/../host-${host_noncanonical}; then
+  host_subdir="host-${host_noncanonical}"
+else
+  host_subdir=.
+fi
+# No prefix.
+target_subdir=${target_noncanonical}
+
+
+# -------
+# Options
+# -------
+
+echo "$as_me:$LINENO: checking for --enable-version-specific-runtime-libs" >&5
+echo $ECHO_N "checking for --enable-version-specific-runtime-libs... $ECHO_C" >&6
+# Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
+if test "${enable_version_specific_runtime_libs+set}" = set; then
+  enableval="$enable_version_specific_runtime_libs"
+  case "$enableval" in
+ yes) version_specific_libs=yes ;;
+ no)  version_specific_libs=no ;;
+ *)   { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable version-specific libs" >&5
+echo "$as_me: error: Unknown argument to enable/disable version-specific libs" >&2;}
+   { (exit 1); exit 1; }; };;
+ esac
+else
+  version_specific_libs=no
+fi;
+echo "$as_me:$LINENO: result: $version_specific_libs" >&5
+echo "${ECHO_T}$version_specific_libs" >&6
+
+
+# Gets build, host, target, *_vendor, *_cpu, *_os, etc.
+#
+# You will slowly go insane if you do not grok the following fact:  when
+# building this library, the top-level /target/ becomes the library's /host/.
+#
+# configure then causes --target to default to --host, exactly like any
+# other package using autoconf.  Therefore, 'target' and 'host' will
+# always be the same.  This makes sense both for native and cross compilers
+# just think about it for a little while.  :-)
+#
+# Also, if this library is being configured as part of a cross compiler, the
+# top-level configure script will pass the "real" host as $with_cross_host.
+#
+# Do not delete or change the following two lines.  For why, see
+# http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
 echo "$as_me:$LINENO: checking host system type" >&5
 echo $ECHO_N "checking host system type... $ECHO_C" >&6
 if test "${ac_cv_host+set}" = set; then
@@ -4122,7 +4149,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4125 "configure"' > conftest.$ac_ext
+  echo '#line 4152 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4512,7 +4539,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:4515:" \
+echo "$as_me:4542:" \
      "checking for Fortran compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -21744,6 +21771,9 @@ s,@build@,$build,;t t
 s,@build_cpu@,$build_cpu,;t t
 s,@build_vendor@,$build_vendor,;t t
 s,@build_os@,$build_os,;t t
+s,@build_subdir@,$build_subdir,;t t
+s,@host_subdir@,$host_subdir,;t t
+s,@target_subdir@,$target_subdir,;t t
 s,@host@,$host,;t t
 s,@host_cpu@,$host_cpu,;t t
 s,@host_vendor@,$host_vendor,;t t

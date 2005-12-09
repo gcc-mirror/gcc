@@ -1,3 +1,13 @@
+2005-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/24991
+	* acinclude.m4: Include acx.m4 and no-executables.m4.
+	* configure.ac: Add GCC_TOPLEVEL_SUBDIRS.
+	* configure: Rebuilt.
+	* Makefile.am (AM_CPPFLAGS): Use $(host_subdir) in build dir
+	path.
+	* Makefile.in: Rebuilt.
+
 2005-12-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25039
