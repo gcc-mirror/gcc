@@ -4684,7 +4684,13 @@ package body Sem_Ch8 is
             --  Case of tagged type
 
             else
-               C := Class_Wide_Type (Entity (Prefix (N)));
+               if Is_Concurrent_Type (T) then
+                  C := Class_Wide_Type
+                         (Corresponding_Record_Type (Entity (Prefix (N))));
+               else
+                  C := Class_Wide_Type (Entity (Prefix (N)));
+               end if;
+
                Set_Entity_With_Style_Check (N, C);
                Generate_Reference (C, N);
                Set_Etype (N, C);
