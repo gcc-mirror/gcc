@@ -558,8 +558,8 @@ private
    --  No_File, that indicates that the file whose name was returned by the
    --  last call to Next_Main_Source (and stored here) is to be read.
 
-   Object_Suffix : constant String := Get_Object_Suffix.all;
-   --  The suffix used for the object files
+   Target_Object_Suffix : constant String := Get_Target_Object_Suffix.all;
+   --  The suffix used for the target object files
 
    Output_FD : File_Descriptor;
    --  The file descriptor for the current library info, tree or binder output

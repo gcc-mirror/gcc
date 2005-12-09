@@ -384,7 +384,11 @@ package body GNAT.OS_Lib is
          procedure Free is new Unchecked_Deallocation (Buf, Buf_Ptr);
 
       begin
-         if From = Invalid_FD or else To = Invalid_FD then
+         if From = Invalid_FD then
+            raise Copy_Error;
+
+         elsif To = Invalid_FD then
+            Close (From, Status_From);
             raise Copy_Error;
          end if;
 
@@ -903,6 +907,36 @@ package body GNAT.OS_Lib is
       return Result;
    end Get_Debuggable_Suffix;
 
+   ----------------------------------
+   -- Get_Target_Debuggable_Suffix --
+   ----------------------------------
+
+   function Get_Target_Debuggable_Suffix return String_Access is
+      Target_Exec_Ext_Ptr : Address;
+      pragma Import
+        (C, Target_Exec_Ext_Ptr, "__gnat_target_debuggable_extension");
+
+      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
+      pragma Import (C, Strncpy, "strncpy");
+
+      function Strlen (Cstring : Address) return Integer;
+      pragma Import (C, Strlen, "strlen");
+
+      Suffix_Length : Integer;
+      Result        : String_Access;
+
+   begin
+      Suffix_Length := Strlen (Target_Exec_Ext_Ptr);
+
+      Result := new String (1 .. Suffix_Length);
+
+      if Suffix_Length > 0 then
+         Strncpy (Result.all'Address, Target_Exec_Ext_Ptr, Suffix_Length);
+      end if;
+
+      return Result;
+   end Get_Target_Debuggable_Suffix;
+
    ---------------------------
    -- Get_Executable_Suffix --
    ---------------------------
@@ -930,6 +964,36 @@ package body GNAT.OS_Lib is
       return Result;
    end Get_Executable_Suffix;
 
+   ----------------------------------
+   -- Get_Target_Executable_Suffix --
+   ----------------------------------
+
+   function Get_Target_Executable_Suffix return String_Access is
+      Target_Exec_Ext_Ptr : Address;
+      pragma Import
+        (C, Target_Exec_Ext_Ptr, "__gnat_target_executable_extension");
+
+      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
+      pragma Import (C, Strncpy, "strncpy");
+
+      function Strlen (Cstring : Address) return Integer;
+      pragma Import (C, Strlen, "strlen");
+
+      Suffix_Length : Integer;
+      Result        : String_Access;
+
+   begin
+      Suffix_Length := Strlen (Target_Exec_Ext_Ptr);
+
+      Result := new String (1 .. Suffix_Length);
+
+      if Suffix_Length > 0 then
+         Strncpy (Result.all'Address, Target_Exec_Ext_Ptr, Suffix_Length);
+      end if;
+
+      return Result;
+   end Get_Target_Executable_Suffix;
+
    -----------------------
    -- Get_Object_Suffix --
    -----------------------
@@ -956,6 +1020,36 @@ package body GNAT.OS_Lib is
 
       return Result;
    end Get_Object_Suffix;
+
+   ------------------------------
+   -- Get_Target_Object_Suffix --
+   ------------------------------
+
+   function Get_Target_Object_Suffix return String_Access is
+      Target_Object_Ext_Ptr : Address;
+      pragma Import
+        (C, Target_Object_Ext_Ptr, "__gnat_target_object_extension");
+
+      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
+      pragma Import (C, Strncpy, "strncpy");
+
+      function Strlen (Cstring : Address) return Integer;
+      pragma Import (C, Strlen, "strlen");
+
+      Suffix_Length : Integer;
+      Result        : String_Access;
+
+   begin
+      Suffix_Length := Strlen (Target_Object_Ext_Ptr);
+
+      Result := new String (1 .. Suffix_Length);
+
+      if Suffix_Length > 0 then
+         Strncpy (Result.all'Address, Target_Object_Ext_Ptr, Suffix_Length);
+      end if;
+
+      return Result;
+   end Get_Target_Object_Suffix;
 
    ------------
    -- Getenv --

@@ -24,11 +24,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Csets;  use Csets;
-with Namet;  use Namet;
-with Opt;    use Opt;
-with Osint;  use Osint;
-with Output; use Output;
+with Csets;    use Csets;
+with Namet;    use Namet;
+with Opt;      use Opt;
+with Osint;    use Osint;
+with Output;   use Output;
 
 package body Targparm is
    use ASCII;
@@ -154,7 +154,6 @@ package body Targparm is
    procedure Set_Profile_Restrictions (P : Profile_Name) is
       R : Restriction_Flags  renames Profile_Info (P).Set;
       V : Restriction_Values renames Profile_Info (P).Value;
-
    begin
       for J in R'Range loop
          if R (J) then
@@ -602,6 +601,13 @@ package body Targparm is
             raise Unrecoverable_Error;
          end if;
       end loop Line_Loop;
+
+      --  Now that OpenVMS_On_Target has been given its definitive value,
+      --  change the multi-unit index character from '~' to '$' for OpenVMS.
+
+      if OpenVMS_On_Target then
+         Multi_Unit_Index_Character := '$';
+      end if;
 
       --  Check no missing target parameter settings (skip for compiler vsn)
 

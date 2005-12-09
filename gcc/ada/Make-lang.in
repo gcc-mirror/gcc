@@ -121,10 +121,10 @@ GNAT_ADA_OBJS = ada/ada.o ada/a-charac.o ada/a-chlat1.o ada/a-except.o \
  ada/exp_ch4.o ada/exp_ch5.o ada/exp_ch6.o ada/exp_ch7.o ada/exp_ch8.o \
  ada/exp_ch9.o ada/exp_code.o ada/exp_dbug.o ada/exp_disp.o ada/exp_dist.o \
  ada/exp_fixd.o ada/exp_aggr.o ada/exp_imgv.o ada/exp_intr.o ada/exp_pakd.o \
- ada/exp_prag.o ada/exp_smem.o ada/exp_strm.o ada/exp_tss.o ada/exp_util.o \
- ada/exp_vfpt.o ada/expander.o ada/fname.o ada/fname-uf.o ada/fmap.o \
- ada/freeze.o ada/frontend.o ada/gnat.o ada/g-hesora.o ada/g-htable.o \
- ada/g-os_lib.o ada/g-speche.o ada/g-string.o ada/g-utf_32.o \
+ ada/exp_prag.o ada/exp_sel.o ada/exp_smem.o ada/exp_strm.o ada/exp_tss.o \
+ ada/exp_util.o ada/exp_vfpt.o ada/expander.o ada/fname.o ada/fname-uf.o \
+ ada/fmap.o ada/freeze.o ada/frontend.o ada/gnat.o ada/g-hesora.o \
+ ada/g-htable.o ada/g-os_lib.o ada/g-speche.o ada/g-string.o ada/g-utf_32.o \
  ada/s-crc32.o ada/get_targ.o \
  ada/gnatvsn.o ada/hlo.o ada/hostparm.o ada/impunit.o ada/interfac.o \
  ada/itypes.o ada/inline.o ada/krunch.o ada/lib.o ada/layout.o ada/lib-load.o \
@@ -148,7 +148,7 @@ GNAT_ADA_OBJS = ada/ada.o ada/a-charac.o ada/a-chlat1.o ada/a-except.o \
  ada/stylesw.o ada/validsw.o ada/system.o ada/table.o ada/targparm.o \
  ada/tbuild.o ada/tree_gen.o ada/tree_io.o ada/treepr.o ada/treeprs.o \
  ada/ttypef.o ada/ttypes.o ada/types.o ada/uintp.o ada/uname.o ada/urealp.o \
- ada/usage.o ada/widechar.o ada/s-crtl.o ada/seh_init.o
+ ada/usage.o ada/widechar.o ada/s-crtl.o ada/seh_init.o ada/targext.o
 
 # Object files for gnat executables
 GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o
@@ -166,6 +166,7 @@ GNATBIND_OBJS = \
  ada/initialize.o \
  ada/seh_init.o   \
  ada/link.o       \
+ ada/targext.o    \
  ada/raise.o      \
  ada/tracebak.o   \
  ada/a-except.o   \
@@ -491,7 +492,7 @@ ada.install-common:
 	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
 	       rm -f $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext); \
 	       $(INSTALL_PROGRAM) gnatchop-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext); \
-            fi; \
+	    fi ; \
 	  else \
 	    $(RM) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
 	    $(INSTALL_PROGRAM) gnatchop$(exeext) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
@@ -1017,6 +1018,11 @@ ada/exit.o     : ada/exit.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/final.o    : ada/final.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h
 ada/link.o     : ada/link.c
 
+
+ada/targext.o : ada/targext.c $(SYSTEM_H) coretypes.h $(TM_H)
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$< $(OUTPUT_OPTION)
+
 ada/cio.o     : ada/cio.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
@@ -1050,7 +1056,7 @@ ada/decl.o : ada/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    gt-ada-decl.h $(EXPR_H)
 
 ada/misc.o : ada/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-   $(RTL_H) $(EXPR_H) insn-codes.h insn-flags.h recog.h flags.h \
+   $(RTL_H) $(EXPR_H) insn-codes.h insn-flags.h insn-config.h recog.h flags.h \
    diagnostic.h output.h except.h $(TM_P_H) langhooks.h debug.h \
    $(LANGHOOKS_DEF_H) libfuncs.h $(OPTABS_H) ada/ada.h ada/types.h \
    ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h \

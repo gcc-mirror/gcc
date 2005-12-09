@@ -27,7 +27,6 @@
 with ALI;      use ALI;
 with Csets;
 with Gnatvsn;
-with Hostparm;
 with Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with Namet;    use Namet;
@@ -41,6 +40,7 @@ with Prj.Pars;
 with Prj.Util; use Prj.Util;
 with Snames;
 with Table;
+with Targparm; use Targparm;
 with Types;    use Types;
 
 with Ada.Command_Line;          use Ada.Command_Line;
@@ -60,16 +60,16 @@ package body Clean is
    Assembly_Suffix : constant String := ".s";
    ALI_Suffix      : constant String := ".ali";
    Tree_Suffix     : constant String := ".adt";
-   Object_Suffix   : constant String := Get_Object_Suffix.all;
+   Object_Suffix   : constant String := Get_Target_Object_Suffix.all;
    Debug_Suffix    : String          := ".dg";
    --  Changed to "_dg" for VMS in the body of the package
 
    Repinfo_Suffix  : String := ".rep";
    --  Changed to "_rep" for VMS in the body of the package
 
-   B_Start : String := "b~";
-   --  Prefix of binder generated file.
-   --  Changed to "b$" for VMS in the body of the package.
+   B_Start : String_Ptr := new String'("b~");
+   --  Prefix of binder generated file, and number of actual characters used.
+   --  Changed to "b__" for VMS in the body of the package.
 
    Object_Directory_Path : String_Access := null;
    --  The path name of the object directory, set with switch -D
@@ -1240,7 +1240,7 @@ package body Clean is
 
       --  Build the file name (before the extension)
 
-      File_Name (1 .. B_Start'Length) := B_Start;
+      File_Name (1 .. B_Start'Length) := B_Start.all;
       File_Name (B_Start'Length + 1 .. Last) := Source_Name;
 
       --  Spec
@@ -1899,9 +1899,9 @@ package body Clean is
    end Usage;
 
 begin
-   if Hostparm.OpenVMS then
+   if OpenVMS_On_Target then
       Debug_Suffix (Debug_Suffix'First) := '_';
       Repinfo_Suffix (Repinfo_Suffix'First) := '_';
-      B_Start (B_Start'Last) := '$';
+      B_Start := new String'("b__");
    end if;
 end Clean;

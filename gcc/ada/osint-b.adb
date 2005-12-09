@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,9 +24,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Hostparm;
-with Namet;   use Namet;
-with Opt;     use Opt;
+with Namet;    use Namet;
+with Opt;      use Opt;
+with Targparm; use Targparm;
 
 package body Osint.B is
 
@@ -71,6 +71,10 @@ package body Osint.B is
       Findex2   : Natural;
       Flength   : Natural;
 
+      Bind_File_Prefix_Len : Natural := 2;
+      --  Length of binder file prefix (normally set to 2 for b~, but gets
+      --  reset to 3 for VMS for b__).
+
    begin
       if Output_File_Name /= "" then
          Name_Buffer (Output_File_Name'Range) := Output_File_Name;
@@ -112,16 +116,24 @@ package body Osint.B is
 
          if Maximum_File_Name_Length > 0 then
 
+            if OpenVMS_On_Target and then Typ /= 'c' then
+               Bind_File_Prefix_Len := 3;
+            end if;
+
             --  Make room for the extra two characters in "b?"
 
-            while Int (Flength) > Maximum_File_Name_Length - 2 loop
+            while Int (Flength) >
+              Maximum_File_Name_Length - Nat (Bind_File_Prefix_Len)
+            loop
                Findex2 := Findex2 - 1;
                Flength := Findex2 - Findex1;
             end loop;
          end if;
 
-         Name_Buffer (3 .. Flength + 2) := File_Name (Findex1 .. Findex2 - 1);
-         Name_Buffer (Flength + 3) := '.';
+         Name_Buffer
+           (Bind_File_Prefix_Len + 1 .. Flength + Bind_File_Prefix_Len) :=
+              File_Name (Findex1 .. Findex2 - 1);
+         Name_Buffer (Flength + Bind_File_Prefix_Len + 1) := '.';
 
          --  C bind file, name is b_xxx.c
 
@@ -132,20 +144,21 @@ package body Osint.B is
             Name_Len := Flength + 4;
 
          --  Ada bind file, name is b~xxx.adb or b~xxx.ads
-         --  (with $ instead of ~ in VMS)
+         --  (with __ instead of ~ in VMS)
 
          else
-            if Hostparm.OpenVMS then
-               Name_Buffer (2) := '$';
+            if OpenVMS_On_Target then
+               Name_Buffer (2) := '_';
+               Name_Buffer (3) := '_';
             else
                Name_Buffer (2) := '~';
             end if;
 
-            Name_Buffer (Flength + 4) := 'a';
-            Name_Buffer (Flength + 5) := 'd';
-            Name_Buffer (Flength + 6) := Typ;
-            Name_Buffer (Flength + 7) := ASCII.NUL;
-            Name_Len := Flength + 6;
+            Name_Buffer (Flength + Bind_File_Prefix_Len + 2) := 'a';
+            Name_Buffer (Flength + Bind_File_Prefix_Len + 3) := 'd';
+            Name_Buffer (Flength + Bind_File_Prefix_Len + 4) := Typ;
+            Name_Buffer (Flength + Bind_File_Prefix_Len + 5) := ASCII.NUL;
+            Name_Len := Flength + Bind_File_Prefix_Len + 4;
          end if;
       end if;
 

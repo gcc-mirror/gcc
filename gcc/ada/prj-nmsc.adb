@@ -38,6 +38,7 @@ with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
 with Table;    use Table;
+with Targparm; use Targparm;
 
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Strings;                use Ada.Strings;
@@ -56,7 +57,7 @@ package body Prj.Nmsc is
    ALI_Suffix   : constant String := ".ali";
    --  File suffix for ali files
 
-   Object_Suffix : constant String := Get_Object_Suffix.all;
+   Object_Suffix : constant String := Get_Target_Object_Suffix.all;
    --  File suffix for object files
 
    type Name_Location is record
@@ -3902,6 +3903,7 @@ package body Prj.Nmsc is
                declare
                   S1 : constant Character := Src (Src'First);
                   S2 : constant Character := Src (Src'First + 1);
+                  S3 : constant Character := Src (Src'First + 2);
 
                begin
                   if S1 = 'a' or else S1 = 'g'
@@ -3909,8 +3911,11 @@ package body Prj.Nmsc is
                   then
                      --  Children or separates of packages A, G, I or S
 
-                     if (Hostparm.OpenVMS and then S2 = '$')
-                       or else (not Hostparm.OpenVMS and then S2 = '~')
+                     if (OpenVMS_On_Target
+                         and then S2 = '_'
+                         and then S3 = '_')
+                        or else
+                         S2 = '~'
                      then
                         Src (Src'First + 1) := '.';
 

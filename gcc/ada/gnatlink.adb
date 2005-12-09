@@ -27,6 +27,7 @@
 --  Gnatlink usage: please consult the gnat documentation
 
 with ALI;      use ALI;
+with Csets;
 with Gnatvsn;  use Gnatvsn;
 with Hostparm;
 with Indepsw;  use Indepsw;
@@ -34,9 +35,11 @@ with Namet;    use Namet;
 with Opt;
 with Osint;    use Osint;
 with Output;   use Output;
+with Snames;
 with Switch;   use Switch;
 with System;   use System;
 with Table;
+with Targparm; use Targparm;
 with Types;
 
 with Ada.Command_Line;     use Ada.Command_Line;
@@ -301,9 +304,7 @@ procedure Gnatlink is
                  new String'(Arg);
 
             elsif Arg'Length /= 0 and then Arg (1) = '-' then
-               if Arg'Length > 4
-                 and then Arg (2 .. 5) =  "gnat"
-               then
+               if Arg'Length > 4 and then Arg (2 .. 5) =  "gnat" then
                   Exit_With_Error
                     ("invalid switch: """ & Arg & """ (gnat not needed here)");
                end if;
@@ -335,6 +336,7 @@ procedure Gnatlink is
                elsif Arg'Length >= 3 and then Arg (2) = 'M' then
                   declare
                      Switches : String_List_Access;
+
                   begin
                      Convert (Map_File, Arg (3 .. Arg'Last), Switches);
 
@@ -461,7 +463,6 @@ procedure Gnatlink is
                     Linker_Options.Table (Linker_Options.Last);
 
                elsif Arg'Length >= 7 and then Arg (1 .. 7) = "--LINK=" then
-
                   if Arg'Length = 7 then
                      Exit_With_Error ("Missing argument for --LINK=");
                   end if;
@@ -500,6 +501,15 @@ procedure Gnatlink is
                               then
                                  Debug_Flag_Present := True;
                               end if;
+                           end if;
+
+                           --  Add directory to source search dirs so that
+                           --  Get_Target_Parameters can find system.ads
+
+                           if Arg (AF .. AF + 1) = "-I"
+                             and then Arg'Length > 2
+                           then
+                              Add_Src_Search_Dir (Arg (AF + 2 .. Arg'Last));
                            end if;
 
                            --  Pass to gcc for compiling binder generated file
@@ -546,7 +556,20 @@ procedure Gnatlink is
                      Exit_With_Error ("cannot handle more than one ALI file");
                   end if;
 
-               --  If object file, record object file
+               --  If target object file, record object file
+
+               elsif Arg'Length > Get_Target_Object_Suffix.all'Length
+                 and then Arg
+                   (Arg'Last -
+                    Get_Target_Object_Suffix.all'Length + 1 .. Arg'Last)
+                   = Get_Target_Object_Suffix.all
+               then
+                  Linker_Objects.Increment_Last;
+                  Linker_Objects.Table (Linker_Objects.Last) :=
+                    new String'(Arg);
+
+               --  If host object file, record object file
+               --  e.g. accept foo.o as well as foo.obj on VMS target
 
                elsif Arg'Length > Get_Object_Suffix.all'Length
                  and then Arg
@@ -1012,7 +1035,7 @@ procedure Gnatlink is
             --  The following test needs comments, why is it VMS specific.
             --  The above comment looks out of date ???
 
-            elsif not (Hostparm.OpenVMS
+            elsif not (OpenVMS_On_Target
                          and then
                        Is_Option_Present (Next_Line (Nfirst .. Nlast)))
             then
@@ -1424,17 +1447,24 @@ begin
 
    if not Is_Regular_File (Ali_File_Name.all) then
       Exit_With_Error (Ali_File_Name.all & " not found");
+   end if;
+
+   --  Get target parameters
+
+   Namet.Initialize;
+   Csets.Initialize;
+   Snames.Initialize;
+   Osint.Add_Default_Search_Dirs;
+   Targparm.Get_Target_Parameters;
 
    --  Read the ALI file of the main subprogram if the binder generated
    --  file needs to be compiled and no --GCC= switch has been specified.
    --  Fetch the back end switches from this ALI file and use these switches
    --  to compile the binder generated file
 
-   elsif Compile_Bind_File and then Standard_Gcc then
-      --  Do some initializations
+   if Compile_Bind_File and then Standard_Gcc then
 
       Initialize_ALI;
-      Namet.Initialize;
       Name_Len := Ali_File_Name'Length;
       Name_Buffer (1 .. Name_Len) := Ali_File_Name.all;
 
@@ -1445,7 +1475,6 @@ begin
          A : ALI_Id;
 
       begin
-         --  Osint.Add_Default_Search_Dirs;
          --  Load the ALI file
 
          T := Read_Library_Info (F, True);
@@ -1494,10 +1523,9 @@ begin
    --  If no output name specified, then use the base name of .ali file name
 
    if Output_File_Name = null then
-
       Output_File_Name :=
         new String'(Base_Name (Ali_File_Name.all)
-                       & Get_Debuggable_Suffix.all);
+                       & Get_Target_Debuggable_Suffix.all);
 
       Linker_Options.Increment_Last;
       Linker_Options.Table (Linker_Options.Last) :=
@@ -1506,7 +1534,6 @@ begin
       Linker_Options.Increment_Last;
       Linker_Options.Table (Linker_Options.Last) :=
         new String'(Output_File_Name.all);
-
    end if;
 
    --  Warn if main program is called "test", as that may be a built-in command
@@ -1554,63 +1581,49 @@ begin
                         "__gnat_get_maximum_file_name_length");
 
       Maximum_File_Name_Length : constant Integer :=
-        Get_Maximum_File_Name_Length;
+                                   Get_Maximum_File_Name_Length;
 
-      Second_Char : Character;
-      --  Second character of name of files
+      Bind_File_Prefix : Types.String_Ptr;
+      --  Contains prefix used for bind files
 
    begin
-      --  Set proper second character of file name
+      --  Set prefix
 
       if not Ada_Bind_File then
-         Second_Char := '_';
-
-      elsif Hostparm.OpenVMS then
-         Second_Char := '$';
-
+         Bind_File_Prefix := new String'("b_");
+      elsif OpenVMS_On_Target then
+         Bind_File_Prefix := new String'("b__");
       else
-         Second_Char := '~';
+         Bind_File_Prefix := new String'("b~");
       end if;
 
       --  If the length of the binder file becomes too long due to
       --  the addition of the "b?" prefix, then truncate it.
 
       if Maximum_File_Name_Length > 0 then
-         while Fname_Len > Maximum_File_Name_Length - 2 loop
+         while Fname_Len >
+                 Maximum_File_Name_Length - Bind_File_Prefix.all'Length
+         loop
             Fname_Len := Fname_Len - 1;
          end loop;
       end if;
 
-      if Ada_Bind_File then
-         Binder_Spec_Src_File :=
-           new String'('b'
-                       & Second_Char
-                       & Fname (Fname'First .. Fname'First + Fname_Len - 1)
-                       & ".ads");
-         Binder_Body_Src_File :=
-           new String'('b'
-                       & Second_Char
-                       & Fname (Fname'First .. Fname'First + Fname_Len - 1)
-                       & ".adb");
-         Binder_Ali_File :=
-           new String'('b'
-                       & Second_Char
-                       & Fname (Fname'First .. Fname'First + Fname_Len - 1)
-                       & ".ali");
+      declare
+         Fnam : constant String :=
+                  Bind_File_Prefix.all &
+                    Fname (Fname'First .. Fname'First + Fname_Len - 1);
 
-      else
-         Binder_Body_Src_File :=
-           new String'('b'
-                       & Second_Char
-                       & Fname (Fname'First .. Fname'First + Fname_Len - 1)
-                       & ".c");
-      end if;
+      begin
+         if Ada_Bind_File then
+            Binder_Spec_Src_File := new String'(Fnam & ".ads");
+            Binder_Body_Src_File := new String'(Fnam & ".adb");
+            Binder_Ali_File      := new String'(Fnam & ".ali");
+         else
+            Binder_Body_Src_File := new String'(Fnam & ".c");
+         end if;
 
-      Binder_Obj_File :=
-        new String'('b'
-                    & Second_Char
-                    & Fname (Fname'First .. Fname'First + Fname_Len - 1)
-                    & Get_Object_Suffix.all);
+         Binder_Obj_File := new String'(Fnam & Get_Target_Object_Suffix.all);
+      end;
 
       if Fname_Len /= Fname'Length then
          Binder_Options.Increment_Last;
@@ -1618,7 +1631,6 @@ begin
          Binder_Options.Increment_Last;
          Binder_Options.Table (Binder_Options.Last) := Binder_Obj_File;
       end if;
-
    end Make_Binder_File_Names;
 
    Process_Binder_File (Binder_Body_Src_File.all & ASCII.NUL);
