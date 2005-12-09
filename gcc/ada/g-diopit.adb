@@ -51,6 +51,7 @@ package body GNAT.Directory_Operations.Iteration is
    is
       File_Regexp : constant Regexp.Regexp := Regexp.Compile (File_Pattern);
       Index       : Natural := 0;
+      Quit        : Boolean;
 
       procedure Read_Directory (Directory : Dir_Name_Str);
       --  Open Directory and read all entries. This routine is called
@@ -80,7 +81,6 @@ package body GNAT.Directory_Operations.Iteration is
          Dir    : Dir_Type;
          Buffer : String (1 .. 2_048);
          Last   : Natural;
-         Quit   : Boolean;
 
       begin
          Open (Dir, Directory);
@@ -96,7 +96,6 @@ package body GNAT.Directory_Operations.Iteration is
 
             begin
                if Regexp.Match (Dir_Entry, File_Regexp) then
-                  Quit  := False;
                   Index := Index + 1;
 
                   begin
@@ -116,6 +115,7 @@ package body GNAT.Directory_Operations.Iteration is
                  and then OS_Lib.Is_Directory (Pathname)
                then
                   Read_Directory (Pathname);
+                  exit when Quit;
                end if;
             end;
          end loop;
@@ -124,6 +124,7 @@ package body GNAT.Directory_Operations.Iteration is
       end Read_Directory;
 
    begin
+      Quit := False;
       Read_Directory (Root_Directory);
    end Find;
 
