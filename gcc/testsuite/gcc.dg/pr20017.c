@@ -6,7 +6,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O1" } */
-/* { dg-options "-O1 -march=i386" { target { i?86-*-* && ilp32 } } } */
+/* { dg-options "-O1 -march=i386" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 int
 foo (int *buf, int *p)
