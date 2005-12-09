@@ -193,7 +193,7 @@ package body Sprint is
    --  declarations that can have discriminants.
 
    procedure Write_Ekind (E : Entity_Id);
-   --  Write the String corresponding to the Ekind without "E_".
+   --  Write the String corresponding to the Ekind without "E_"
 
    procedure Write_Id (N : Node_Id);
    --  N is a node with a Chars field. This procedure writes the name that
@@ -203,7 +203,8 @@ package body Sprint is
    --  the name associated with the entity (since it may have been encoded).
    --  One other special case is that an entity has an active external name
    --  (i.e. an external name present with no address clause), then this
-   --  external name is output.
+   --  external name is output. This procedure also deals with outputting
+   --  declarations of referenced itypes, if not output earlier.
 
    function Write_Identifiers (Node : Node_Id) return Boolean;
    --  Handle node where the grammar has a list of defining identifiers, but
@@ -238,6 +239,10 @@ package body Sprint is
    --  the Sloc of the current node is set to the first non-blank character
    --  in the string S.
 
+   procedure Write_Itype (Typ : Entity_Id);
+   --  If Typ is an Itype that has not been written yet, write it. If Typ is
+   --  any other kind of entity or tree node, the call is ignored.
+
    procedure Write_Name_With_Col_Check (N : Name_Id);
    --  Write name (using Write_Name) with initial column check, and possible
    --  initial Write_Indent (to get new line) if current line is too full.
@@ -271,6 +276,11 @@ package body Sprint is
    procedure Write_Str_With_Col_Check_Sloc (S : String);
    --  Like Write_Str_WIth_Col_Check, but sets debug Sloc of current debug
    --  node to first non-blank character if a current debug node is active.
+
+   procedure Write_Uint_With_Col_Check (U : Uint; Format : UI_Format);
+   --  Write Uint (using UI_Write) with initial column check, and possible
+   --  initial Write_Indent (to get new line) if current line is too full.
+   --  The format parameter determines the output format (see UI_Write).
 
    procedure Write_Uint_With_Col_Check_Sloc (U : Uint; Format : UI_Format);
    --  Write Uint (using UI_Write) with initial column check, and possible
@@ -417,7 +427,7 @@ package body Sprint is
          Write_Eol;
       end Underline;
 
-   --  Start of processing for Tree_Dump.
+   --  Start of processing for Tree_Dump
 
    begin
       Dump_Generated_Only := Debug_Flag_G or
@@ -1078,7 +1088,6 @@ package body Sprint is
                Condition : constant Node_Id := First (Expressions (Node));
                Then_Expr : constant Node_Id := Next (Condition);
                Else_Expr : constant Node_Id := Next (Then_Expr);
-
             begin
                Write_Str_With_Col_Check_Sloc ("(if ");
                Sprint_Node (Condition);
@@ -2344,7 +2353,6 @@ package body Sprint is
 
             declare
                Alt_Node : Node_Id;
-
             begin
                Alt_Node := First (Select_Alternatives (Node));
                loop
@@ -2607,7 +2615,6 @@ package body Sprint is
 
             declare
                Node1 : Node_Id;
-
             begin
                Node1 := First (Subtype_Marks (Node));
                loop
@@ -2808,9 +2815,7 @@ package body Sprint is
 
          if Dump_Original_Only then
             N := First (List);
-
             while Present (N) loop
-
                if not Is_Rewrite_Insertion (N) then
                   Node_Exists := True;
                   exit;
@@ -2944,6 +2949,19 @@ package body Sprint is
 
    procedure Write_Id (N : Node_Id) is
    begin
+      --  Deal with outputting Itype
+
+      --  Note: if we are printing the full tree with -gnatds, then we may
+      --  end up picking up the Associated_Node link from a generic template
+      --  here which overlaps the Entity field, but as documented, Write_Itype
+      --  is defended against junk calls.
+
+      if Nkind (N) in N_Entity then
+         Write_Itype (N);
+      elsif Nkind (N) in N_Has_Entity then
+         Write_Itype (Entity (N));
+      end if;
+
       --  Case of a defining identifier
 
       if Nkind (N) = N_Defining_Identifier then
@@ -3022,7 +3040,6 @@ package body Sprint is
             Write_Str_With_Col_Check (" (");
 
             Ind := First_Index (E);
-
             while Present (Ind) loop
                Sprint_Node (Ind);
                Next_Index (Ind);
@@ -3153,6 +3170,266 @@ package body Sprint is
       Write_Str_Sloc (S);
    end Write_Indent_Str_Sloc;
 
+   -----------------
+   -- Write_Itype --
+   -----------------
+
+   procedure Write_Itype (Typ : Entity_Id) is
+
+      procedure Write_Header (T : Boolean := True);
+      --  Write type if T is True, subtype if T is false
+
+      ------------------
+      -- Write_Header --
+      ------------------
+
+      procedure Write_Header (T : Boolean := True) is
+      begin
+         if T then
+            Write_Str ("[type ");
+         else
+            Write_Str ("[subtype ");
+         end if;
+
+         Write_Name_With_Col_Check (Chars (Typ));
+         Write_Str (" is ");
+      end Write_Header;
+
+   --  Start of processing for Write_Itype
+
+   begin
+      if Nkind (Typ) in N_Entity
+        and then Is_Itype (Typ)
+        and then not Itype_Printed (Typ)
+      then
+         --  Itype to be printed
+
+         declare
+            B : constant Node_Id := Etype (Typ);
+            X : Node_Id;
+            P : constant Node_Id := Parent (Typ);
+
+            S : constant Saved_Output_Buffer := Save_Output_Buffer;
+            --  Save current output buffer
+
+         begin
+            --  Write indentation at start of line
+
+            for J in 1 .. Indent loop
+               Write_Char (' ');
+            end loop;
+
+            --  If we have a constructed declaration, print it
+
+            if Present (P) and then Nkind (P) in N_Declaration then
+
+               --  We must set Itype_Printed true before the recursive call to
+               --  print the node, otherwise we get an infinite recursion!
+
+               Set_Itype_Printed (Typ, True);
+
+               --  Write the declaration enclosed in [], avoiding new line
+               --  at start of declaration, and semicolon at end.
+
+               Write_Char ('[');
+               Indent_Annull_Flag := True;
+               Sprint_Node (P);
+               Write_Erase_Char (';');
+
+            --  If no constructed declaration, then we have to concoct the
+            --  source corresponding to the type entity that we have at hand.
+
+            else
+               case Ekind (Typ) is
+
+                  --  Access types and subtypes
+
+                  when Access_Kind =>
+                     Write_Header (Ekind (Typ) = E_Access_Type);
+                     Write_Str ("access ");
+
+                     if Is_Access_Constant (Typ) then
+                        Write_Str ("constant ");
+                     elsif Can_Never_Be_Null (Typ) then
+                        Write_Str ("not null ");
+                     end if;
+
+                     Write_Id (Directly_Designated_Type (Typ));
+
+                     --  Array types and string types
+
+                  when E_Array_Type | E_String_Type =>
+                     Write_Header;
+                     Write_Str ("array (");
+
+                     X := First_Index (Typ);
+                     loop
+                        Sprint_Node (X);
+
+                        if not Is_Constrained (Typ) then
+                           Write_Str (" range <>");
+                        end if;
+
+                        Next_Index (X);
+                        exit when No (X);
+                        Write_Str (", ");
+                     end loop;
+
+                     Write_Str (") of ");
+                     Sprint_Node (Component_Type (Typ));
+
+                     --  Array subtypes and string subtypes
+
+                  when E_Array_Subtype | E_String_Subtype =>
+                     Write_Header (False);
+                     Write_Id (Etype (Typ));
+                     Write_Str (" (");
+
+                     X := First_Index (Typ);
+                     loop
+                        Sprint_Node (X);
+                        Next_Index (X);
+                        exit when No (X);
+                        Write_Str (", ");
+                     end loop;
+
+                     Write_Char (')');
+
+                     --  Signed integer types, and modular integer subtypes
+
+                  when E_Signed_Integer_Type     |
+                       E_Signed_Integer_Subtype  |
+                       E_Modular_Integer_Subtype =>
+
+                     Write_Header (Ekind (Typ) = E_Signed_Integer_Type);
+
+                     if Ekind (Typ) = E_Signed_Integer_Type then
+                        Write_Str ("new ");
+                     end if;
+
+                     Write_Id (B);
+
+                     --  Print bounds if not different from base type
+
+                     declare
+                        L  : constant Node_Id := Type_Low_Bound (Typ);
+                        H  : constant Node_Id := Type_High_Bound (Typ);
+                        LE : constant Node_Id := Type_Low_Bound (B);
+                        HE : constant Node_Id := Type_High_Bound (B);
+
+                     begin
+                        if Nkind (L) = N_Integer_Literal
+                          and then Nkind (H) = N_Integer_Literal
+                          and then Nkind (LE) = N_Integer_Literal
+                          and then Nkind (HE) = N_Integer_Literal
+                          and then UI_Eq (Intval (L), Intval (LE))
+                          and then UI_Eq (Intval (H), Intval (HE))
+                        then
+                           null;
+
+                        else
+                           Write_Str (" range ");
+                           Sprint_Node (Type_Low_Bound (Typ));
+                           Write_Str (" .. ");
+                           Sprint_Node (Type_High_Bound (Typ));
+                        end if;
+                     end;
+
+                     --  Modular integer types
+
+                  when E_Modular_Integer_Type =>
+                     Write_Header;
+                     Write_Str (" mod ");
+                     Write_Uint_With_Col_Check (Modulus (Typ), Auto);
+
+                     --  Floating point types and subtypes
+
+                  when E_Floating_Point_Type    |
+                       E_Floating_Point_Subtype =>
+
+                     Write_Header (Ekind (Typ) = E_Floating_Point_Type);
+
+                     if Ekind (Typ) = E_Floating_Point_Type then
+                        Write_Str ("new ");
+                     end if;
+
+                     Write_Id (Etype (Typ));
+
+                     if Digits_Value (Typ) /= Digits_Value (Etype (Typ)) then
+                        Write_Str (" digits ");
+                        Write_Uint_With_Col_Check
+                          (Digits_Value (Typ), Decimal);
+                     end if;
+
+                     --  Print bounds if not different from base type
+
+                     declare
+                        L  : constant Node_Id := Type_Low_Bound (Typ);
+                        H  : constant Node_Id := Type_High_Bound (Typ);
+                        LE : constant Node_Id := Type_Low_Bound (B);
+                        HE : constant Node_Id := Type_High_Bound (B);
+
+                     begin
+                        if Nkind (L) = N_Real_Literal
+                          and then Nkind (H) = N_Real_Literal
+                          and then Nkind (LE) = N_Real_Literal
+                          and then Nkind (HE) = N_Real_Literal
+                          and then UR_Eq (Realval (L), Realval (LE))
+                          and then UR_Eq (Realval (H), Realval (HE))
+                        then
+                           null;
+
+                        else
+                           Write_Str (" range ");
+                           Sprint_Node (Type_Low_Bound (Typ));
+                           Write_Str (" .. ");
+                           Sprint_Node (Type_High_Bound (Typ));
+                        end if;
+                     end;
+
+                  --  Record subtypes
+
+                  when E_Record_Subtype =>
+                     Write_Header (False);
+                     Write_Str ("record");
+                     Indent_Begin;
+
+                     declare
+                        C : Entity_Id;
+                     begin
+                        C := First_Entity (Typ);
+                        while Present (C) loop
+                           Write_Indent;
+                           Write_Id (C);
+                           Write_Str (" : ");
+                           Write_Id (Etype (C));
+                           Next_Entity (C);
+                        end loop;
+                     end;
+
+                     Indent_End;
+                     Write_Indent_Str (" end record");
+
+                     --  For all other Itypes, print ??? (fill in later)
+
+                  when others =>
+                     Write_Header (True);
+                     Write_Str ("???");
+
+               end case;
+            end if;
+
+            --  Add terminating bracket and restore output buffer
+
+            Write_Char (']');
+            Write_Eol;
+            Restore_Output_Buffer (S);
+         end;
+
+         Set_Itype_Printed (Typ);
+      end if;
+   end Write_Itype;
+
    -------------------------------
    -- Write_Name_With_Col_Check --
    -------------------------------
@@ -3167,7 +3444,6 @@ package body Sprint is
       --  name by three dots (e.g. R7b becomes R...b).
 
       if Debug_Flag_II and then Name_Buffer (1) in 'A' .. 'Z' then
-
          J := 2;
          while J < Name_Len loop
             exit when Name_Buffer (J) not in 'A' .. 'Z';
@@ -3354,6 +3630,16 @@ package body Sprint is
          Write_Str_Sloc (S);
       end if;
    end Write_Str_With_Col_Check_Sloc;
+
+   -------------------------------
+   -- Write_Uint_With_Col_Check --
+   -------------------------------
+
+   procedure Write_Uint_With_Col_Check (U : Uint; Format : UI_Format) is
+   begin
+      Col_Check (UI_Decimal_Digits_Hi (U));
+      UI_Write (U, Format);
+   end Write_Uint_With_Col_Check;
 
    ------------------------------------
    -- Write_Uint_With_Col_Check_Sloc --

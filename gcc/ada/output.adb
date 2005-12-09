@@ -42,29 +42,6 @@ package body Output is
    --  Record argument to last call to Set_Special_Output. If this is
    --  non-null, then we are in special output mode.
 
-   -------------------------
-   -- Line Buffer Control --
-   -------------------------
-
-   --  Note: the following buffer and column position are maintained by
-   --  the subprograms defined in this package, and are not normally
-   --  directly modified or accessed by a client. However, a client is
-   --  permitted to modify these values, using the knowledge that only
-   --  Write_Eol actually generates any output.
-
-   Buffer_Max : constant := 8192;
-   Buffer     : String (1 .. Buffer_Max + 1);
-   --  Buffer used to build output line. We do line buffering because it
-   --  is needed for the support of the debug-generated-code option (-gnatD).
-   --  Historically it was first added because on VMS, line buffering is
-   --  needed with certain file formats. So in any case line buffering must
-   --  be retained for this purpose, even if other reasons disappear. Note
-   --  any attempt to write more output to a line than can fit in the buffer
-   --  will be silently ignored.
-
-   Next_Column : Pos range 1 .. Buffer'Length + 1 := 1;
-   --  Column about to be written
-
    -----------------------
    -- Local_Subprograms --
    -----------------------
@@ -86,7 +63,7 @@ package body Output is
    ------------------
 
    procedure Flush_Buffer is
-      Len : constant Natural := Natural (Next_Column - 1);
+      Len : constant Natural := Next_Col - 1;
 
    begin
       if Len /= 0 then
@@ -111,7 +88,7 @@ package body Output is
 
             else
                Current_FD := Standerr;
-               Next_Column := 1;
+               Next_Col := 1;
                Write_Line ("fatal error: disk full");
                OS_Exit (2);
             end if;
@@ -119,7 +96,7 @@ package body Output is
 
          --  Buffer is now empty
 
-         Next_Column := 1;
+         Next_Col := 1;
       end if;
    end Flush_Buffer;
 
@@ -127,10 +104,33 @@ package body Output is
    -- Column --
    ------------
 
-   function Column return Nat is
+   function Column return Pos is
    begin
-      return Next_Column;
+      return Pos (Next_Col);
    end Column;
+
+   ---------------------------
+   -- Restore_Output_Buffer --
+   ---------------------------
+
+   procedure Restore_Output_Buffer (S : Saved_Output_Buffer) is
+   begin
+      Next_Col := S.Next_Col;
+      Buffer (1 .. Next_Col - 1) := S.Buffer (1 .. Next_Col - 1);
+   end Restore_Output_Buffer;
+
+   ------------------------
+   -- Save_Output_Buffer --
+   ------------------------
+
+   function Save_Output_Buffer return Saved_Output_Buffer is
+      S : Saved_Output_Buffer;
+   begin
+      S.Buffer (1 .. Next_Col - 1) := Buffer (1 .. Next_Col - 1);
+      S.Next_Col := Next_Col;
+      Next_Col := 1;
+      return S;
+   end Save_Output_Buffer;
 
    ------------------------
    -- Set_Special_Output --
@@ -149,7 +149,7 @@ package body Output is
    begin
       if Special_Output_Proc = null then
          Flush_Buffer;
-         Next_Column := 1;
+         Next_Col := 1;
       end if;
 
       Current_FD := Standerr;
@@ -163,7 +163,7 @@ package body Output is
    begin
       if Special_Output_Proc = null then
          Flush_Buffer;
-         Next_Column := 1;
+         Next_Col := 1;
       end if;
 
       Current_FD := Standout;
@@ -236,12 +236,12 @@ package body Output is
 
    procedure Write_Char (C : Character) is
    begin
-      if Next_Column = Buffer'Length then
+      if Next_Col = Buffer'Length then
          Write_Eol;
       end if;
 
-      Buffer (Natural (Next_Column)) := C;
-      Next_Column := Next_Column + 1;
+      Buffer (Next_Col) := C;
+      Next_Col := Next_Col + 1;
    end Write_Char;
 
    ---------------
@@ -250,10 +250,21 @@ package body Output is
 
    procedure Write_Eol is
    begin
-      Buffer (Natural (Next_Column)) := ASCII.LF;
-      Next_Column := Next_Column + 1;
+      Buffer (Next_Col) := ASCII.LF;
+      Next_Col := Next_Col + 1;
       Flush_Buffer;
    end Write_Eol;
+
+   ----------------------
+   -- Write_Erase_Char --
+   ----------------------
+
+   procedure Write_Erase_Char (C : Character) is
+   begin
+      if Next_Col /= 1 and then Buffer (Next_Col - 1) = C then
+         Next_Col := Next_Col - 1;
+      end if;
+   end Write_Erase_Char;
 
    ---------------
    -- Write_Int --

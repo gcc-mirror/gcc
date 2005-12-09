@@ -32,8 +32,8 @@
 ------------------------------------------------------------------------------
 
 --  This package defines the structure of the abstract syntax tree. The Tree
---  package provides a basic tree structure. Sinfo describes how this
---  structure is used to represent the syntax of an Ada program.
+--  package provides a basic tree structure. Sinfo describes how this structure
+--  is used to represent the syntax of an Ada program.
 
 --  Note: the grammar used here is taken from Version 5.95 of the RM, dated
 --  November 1994. The grammar in the RM is followed very closely in the tree
@@ -43,12 +43,12 @@
 --  program, but also the results of semantic analysis. In particular, the
 --  nodes for defining identifiers, defining character literals and defining
 --  operator symbols, collectively referred to as entities, represent what
---  would normally be regarded as the symbol table information. In addition
---  a number of the tree nodes contain semantic information.
+--  would normally be regarded as the symbol table information. In addition a
+--  number of the tree nodes contain semantic information.
 
---  WARNING: There is a C version of this package. Any changes to this
---  source file must be properly reflected in this C header file sinfo.h
---  which is created automatically from sinfo.ads using xsinfo.adb.
+--  WARNING: There is a C version of this package. Any changes to this source
+--  file must be properly reflected in this C header file sinfo.h which is
+--  created automatically from sinfo.ads using xsinfo.adb.
 
 with Types;  use Types;
 with Uintp;  use Uintp;
@@ -61,8 +61,8 @@ package Sinfo is
    ---------------------------------
 
    --  If changes are made to this file, a number of related steps must be
-   --  carried out to ensure consistency. First, if a field access function
-   --  is added, it appears in seven places:
+   --  carried out to ensure consistency. First, if a field access function is
+   --  added, it appears in seven places:
 
    --    The documentation associated with the node
    --    The spec of the access function in sinfo.ads
@@ -72,9 +72,9 @@ package Sinfo is
    --    The body of the set procedure in sinfo.adb
    --    The pragma Inline at the end of sinfo.ads for the set procedure
 
-   --  The field chosen must be consistent in all places, and, for a node
-   --  that is a subexpression, must not overlap any of the standard
-   --  expression fields.
+   --  The field chosen must be consistent in all places, and, for a node that
+   --  is a subexpression, must not overlap any of the standard expression
+   --  fields.
 
    --  In addition, if any of the standard expression fields is changed, then
    --  the utiliy program which creates the Treeprs spec (in file treeprs.ads)
@@ -99,52 +99,52 @@ package Sinfo is
 
    --  Finally, four utility programs must be run:
 
-   --    Run CSinfo to check that you have made the changes consistently.
-   --     It checks most of the rules given above, with clear error messages.
-   --     This utility reads sinfo.ads and sinfo.adb and generates a report
-   --     to standard output.
+   --    Run CSinfo to check that you have made the changes consistently. It
+   --     checks most of the rules given above, with clear error messages. This
+   --     utility reads sinfo.ads and sinfo.adb and generates a report to
+   --     standard output.
 
    --    Run XSinfo to create a-sinfo.h, the corresponding C header. This
-   --     utility reads sinfo.ads and generates a-sinfo.h. Note that it
-   --     does not need to read sinfo.adb, since the contents of the body
-   --     are algorithmically determinable from the spec.
+   --     utility reads sinfo.ads and generates a-sinfo.h. Note that it does
+   --     not need to read sinfo.adb, since the contents of the body are
+   --     algorithmically determinable from the spec.
 
-   --    Run XTreeprs to create treeprs.ads, an updated version of
-   --     the module that is used to drive the tree print routine. This
-   --     utility reads (but does not modify) treeprs.adt, the template
-   --     that provides the basic structure of the file, and then fills
-   --     in the data from the comments in sinfo.ads.
+   --    Run XTreeprs to create treeprs.ads, an updated version of the module
+   --     that is used to drive the tree print routine. This utility reads (but
+   --     does not modify) treeprs.adt, the template that provides the basic
+   --     structure of the file, and then fills in the data from the comments
+   --     in sinfo.ads.
 
-   --    Run XNmake to create nmake.ads and nmake.adb, the package body
-   --     and spec of the Nmake package which contains functions for
-   --     constructing nodes.
+   --    Run XNmake to create nmake.ads and nmake.adb, the package body and
+   --     spec of the Nmake package which contains functions for constructing
+   --     nodes.
 
-   --  Note: sometime we could write a utility that actually generated the
-   --  body of sinfo from the spec instead of simply checking it, since, as
-   --  noted above, the contents of the body can be determined from the spec.
+   --  Note: sometime we could write a utility that actually generated the body
+   --  of sinfo from the spec instead of simply checking it, since, as noted
+   --  above, the contents of the body can be determined from the spec.
 
    --------------------------------
    -- Implicit Nodes in the Tree --
    --------------------------------
 
-   --  Generally the structure of the tree very closely follows the grammar
-   --  as defined in the RM. However, certain nodes are omitted to save
-   --  space and simplify semantic processing. Two general classes of such
-   --  omitted nodes are as follows:
+   --  Generally the structure of the tree very closely follows the grammar as
+   --  defined in the RM. However, certain nodes are omitted to save space and
+   --  simplify semantic processing. Two general classes of such omitted nodes
+   --  are as follows:
 
    --   If the only possibilities for a non-terminal are one or more other
-   --   non terminals (i.e. the rule is a "skinny" rule), then usually the
+   --   non-terminals (i.e. the rule is a "skinny" rule), then usually the
    --   corresponding node is omitted from the tree, and the target construct
-   --   appears directly. For example, a real type definition is either a
-   --   floating point definition or a fixed point definition. No explicit
-   --   node appears for real type definition. Instead either the floating
-   --   point definition or fixed point definition appears directly.
+   --   appears directly. For example, a real type definition is either
+   --   floating point definition or a fixed point definition. No explicit node
+   --   appears for real type definition. Instead either the floating point
+   --   definition or fixed point definition appears directly.
 
    --   If a non-terminal corresponds to a list of some other non-terminal
-   --   (possibly with separating punctuation), then usually it is omitted
-   --   from the tree, and a list of components appears instead. For
-   --   example, sequence of statements does not appear explicitly in the
-   --   tree. Instead a list of statements appears directly.
+   --   (possibly with separating punctuation), then usually it is omitted from
+   --   the tree, and a list of components appears instead. For example,
+   --   sequence of statements does not appear explicitly in the tree. Instead
+   --   a list of statements appears directly.
 
    --  Some additional cases of omitted nodes occur and are documented
    --  individually. In particular, many nodes are omitted in the tree
@@ -155,23 +155,22 @@ package Sinfo is
    -------------------------------------------
 
    --  In several declarative forms in the syntax, lists of defining
-   --  identifiers appear (object declarations, component declarations,
-   --  number declarations etc.)
+   --  identifiers appear (object declarations, component declarations, number
+   --  declarations etc.)
 
-   --  The semantics of such statements are equivalent to a series of
-   --  identical declarations of single defining identifiers (except that
-   --  conformance checks require the same grouping of identifiers in the
-   --  parameter case).
+   --  The semantics of such statements are equivalent to a series of identical
+   --  declarations of single defining identifiers (except that conformance
+   --  checks require the same grouping of identifiers in the parameter case).
 
    --  To simplify semantic processing, the parser breaks down such multiple
    --  declaration cases into sequences of single declarations, duplicating
-   --  type and initialization information as required. The flags More_Ids
-   --  and Prev_Ids are used to record the original form of the source in
-   --  the case where the original source used a list of names, More_Ids
-   --  being set on all but the last name and Prev_Ids being set on all
-   --  but the first name. These flags are used to reconstruct the original
-   --  source (e.g. in the Sprint package), and also are included in the
-   --  conformance checks, but otherwise have no semantic significance.
+   --  type and initialization information as required. The flags More_Ids and
+   --  Prev_Ids are used to record the original form of the source in the case
+   --  where the original source used a list of names, More_Ids being set on
+   --  all but the last name and Prev_Ids being set on all but the first name.
+   --  These flags are used to reconstruct the original source (e.g. in the
+   --  Sprint package), and also are included in the conformance checks, but
+   --  otherwise have no semantic significance.
 
    --  Note: the reason that we use More_Ids and Prev_Ids rather than
    --  First_Name and Last_Name flags is so that the flags are off in the
@@ -182,20 +181,20 @@ package Sinfo is
    -----------------------
 
    --  With a few exceptions, if a construction of the form {non-terminal}
-   --  appears in the tree, lists are used in the corresponding tree node
-   --  (see package Nlists for handling of node lists). In this case a field
-   --  of the parent node points to a list of nodes for the non-terminal. The
-   --  field name for such fields has a plural name which always ends in "s".
-   --  For example, a case statement has a field Alternatives pointing to a
-   --  list of case statement alternative nodes.
+   --  appears in the tree, lists are used in the corresponding tree node (see
+   --  package Nlists for handling of node lists). In this case a field of the
+   --  parent node points to a list of nodes for the non-terminal. The field
+   --  name for such fields has a plural name which always ends in "s". For
+   --  example, a case statement has a field Alternatives pointing to list of
+   --  case statement alternative nodes.
 
-   --  Only fields pointing to lists have names ending in "s", so generally
-   --  the structure is strongly typed, fields not ending in s point to
-   --  single nodes, and fields ending in s point to lists.
+   --  Only fields pointing to lists have names ending in "s", so generally the
+   --  structure is strongly typed, fields not ending in s point to single
+   --  nodes, and fields ending in s point to lists.
 
    --  The following example shows how a traversal of a list is written. We
-   --  suppose here that Stmt points to a N_Case_Statement node which has
-   --  a list field called Alternatives:
+   --  suppose here that Stmt points to a N_Case_Statement node which has a
+   --  list field called Alternatives:
 
    --   Alt := First (Alternatives (Stmt));
    --   while Present (Alt) loop
@@ -205,8 +204,8 @@ package Sinfo is
    --      Alt := Next (Alt);
    --   end loop;
 
-   --  The Present function tests for Empty, which in this case signals the
-   --  end of the list. First returns Empty immediately if the list is empty.
+   --  The Present function tests for Empty, which in this case signals the end
+   --  of the list. First returns Empty immediately if the list is empty.
    --  Present is defined in Atree, First and Next are defined in Nlists.
 
    --  The exceptions to this rule occur with {DEFINING_IDENTIFIERS} in all
@@ -219,25 +218,25 @@ package Sinfo is
    -- Pragmas --
    -------------
 
-   --  Pragmas can appear in many different context, but are not included
-   --  in the grammar. Still they must appear in the tree, so they can be
-   --  properly processed.
+   --  Pragmas can appear in many different context, but are not included in
+   --  the grammar. Still they must appear in the tree, so they can be properly
+   --  processed.
 
-   --  Two approaches are used. In some cases, an extra field is defined
-   --  in an appropriate node that contains a list of pragmas appearing
-   --  in the expected context. For example pragmas can appear before an
+   --  Two approaches are used. In some cases, an extra field is defined in an
+   --  appropriate node that contains a list of pragmas appearing in the
+   --  expected context. For example pragmas can appear before an
    --  Accept_Alternative in a Selective_Accept_Statement, and these pragmas
    --  appear in the Pragmas_Before field of the N_Accept_Alternative node.
 
    --  The other approach is to simply allow pragmas to appear in syntactic
    --  lists where the grammar (of course) does not include the possibility.
-   --  For example, the Variants field of an N_Variant_Part node points to
-   --  a list that can contain both N_Pragma and N_Variant nodes.
+   --  For example, the Variants field of an N_Variant_Part node points to a
+   --  list that can contain both N_Pragma and N_Variant nodes.
 
    --  To make processing easier in the latter case, the Nlists package
    --  provides a set of routines (First_Non_Pragma, Last_Non_Pragma,
-   --  Next_Non_Pragma, Prev_Non_Pragma) that allow such lists to be
-   --  handled ignoring all pragmas.
+   --  Next_Non_Pragma, Prev_Non_Pragma) that allow such lists to be handled
+   --  ignoring all pragmas.
 
    --  In the case of the variants list, we can either write:
 
@@ -255,30 +254,30 @@ package Sinfo is
    --         Variant := Next_Non_Pragma (Variant);
    --      end loop;
 
-   --  In the first form of the loop, Variant can either be an N_Pragma or
-   --  an N_Variant node. In the second form, Variant can only be N_Variant
-   --  since all pragmas are skipped.
+   --  In the first form of the loop, Variant can either be an N_Pragma or an
+   --  N_Variant node. In the second form, Variant can only be N_Variant since
+   --  all pragmas are skipped.
 
    ---------------------
    -- Optional Fields --
    ---------------------
 
    --  Fields which correspond to a section of the syntax enclosed in square
-   --  brackets are generally omitted (and the corresponding field set to
-   --  Empty for a node, or No_List for a list). The documentation of such
-   --  fields notes these cases. One exception to this rule occurs in the
-   --  case of possibly empty statement sequences (such as the sequence of
-   --  statements in an entry call alternative). Such cases appear in the
-   --  syntax rules as [SEQUENCE_OF_STATEMENTS] and the fields corresponding
-   --  to such optional statement sequences always contain an empty list (not
-   --  No_List) if no statements are present.
+   --  brackets are generally omitted (and the corresponding field set to Empty
+   --  for a node, or No_List for a list). The documentation of such fields
+   --  notes these cases. One exception to this rule occurs in the case of
+   --  possibly empty statement sequences (such as the sequence of statements
+   --  in an entry call alternative). Such cases appear in the syntax rules as
+   --  [SEQUENCE_OF_STATEMENTS] and the fields corresponding to such optional
+   --  statement sequences always contain an empty list (not No_List) if no
+   --  statements are present.
 
-   --  Note: the utility program that constructs the body and spec of the
-   --  Nmake package relies on the format of the comments to determine if
-   --  a field should have a default value in the corresponding make routine.
-   --  The rule is that if the first line of the description of the field
-   --  contains the string "(set to xxx if", then a default value of xxx is
-   --  provided for this field in the corresponding Make_yyy routine.
+   --  Note: the utility program that constructs the body and spec of the Nmake
+   --  package relies on the format of the comments to determine if a field
+   --  should have a default value in the corresponding make routine. The rule
+   --  is that if the first line of the description of the field contains the
+   --  string "(set to xxx if", then a default value of xxx is provided for
+   --  this field in the corresponding Make_yyy routine.
 
    -----------------------------------
    -- Note on Body/Spec Terminology --
@@ -287,33 +286,33 @@ package Sinfo is
    --  In informal discussions about Ada, it is customary to refer to package
    --  and subprogram specs and bodies. However, this is not technically
    --  correct, what is normally referred to as a spec or specification is in
-   --  fact a package declaration or subprogram declaration. We are careful
-   --  in GNAT to use the correct terminology and in particular, the full
-   --  word specification is never used as an incorrect substitute for
-   --  declaration. The structure and terminology used in the tree also
-   --  reflects the grammar and thus uses declaration and specification in
-   --  the technically correct manner.
+   --  fact a package declaration or subprogram declaration. We are careful in
+   --  GNAT to use the correct terminology and in particular, the full word
+   --  specification is never used as an incorrect substitute for declaration.
+   --  The structure and terminology used in the tree also reflects the grammar
+   --  and thus uses declaration and specification in the technically correct
+   --  manner.
 
-   --  However, there are contexts in which the informal terminology is
-   --  useful. We have the word "body" to refer to the Interp_Etype declared by
-   --  the declaration of a unit body, and in some contexts we need a
-   --  similar term to refer to the entity declared by the package or
-   --  subprogram declaration, and simply using declaration can be confusing
-   --  since the body also has a declaration.
+   --  However, there are contexts in which the informal terminology is useful.
+   --  We have the word "body" to refer to the Interp_Etype declared by the
+   --  declaration of a unit body, and in some contexts we need similar term to
+   --  refer to the entity declared by the package or subprogram declaration,
+   --  and simply using declaration can be confusing since the body also has a
+   --  declaration.
 
-   --  An example of such a context is the link between the package body
-   --  and its declaration. With_Declaration is confusing, since
-   --  the package body itself is a declaration.
+   --  An example of such a context is the link between the package body and
+   --  its declaration. With_Declaration is confusing, since the package body
+   --  itself is a declaration.
 
-   --  To deal with this problem, we reserve the informal term Spec, i.e.
-   --  the popular abbreviation used in this context, to refer to the entity
+   --  To deal with this problem, we reserve the informal term Spec, i.e. the
+   --  popular abbreviation used in this context, to refer to the entity
    --  declared by the package or subprogram declaration. So in the above
    --  example case, the field in the body is called With_Spec.
 
    --  Another important context for the use of the word Spec is in error
-   --  messages, where a hyper-correct use of declaration would be confusing
-   --  to a typical Ada programmer, and even for an expert programmer can
-   --  cause confusion since the body has a declaration as well.
+   --  messages, where a hyper-correct use of declaration would be confusing to
+   --  a typical Ada programmer, and even for an expert programmer can cause
+   --  confusion since the body has a declaration as well.
 
    --  So, to summarize:
 
@@ -340,8 +339,8 @@ package Sinfo is
    -- Internal Use Nodes --
    ------------------------
 
-   --  These are Node_Kind settings used in the internal implementation
-   --  which are not logically part of the specification.
+   --  These are Node_Kind settings used in the internal implementation which
+   --  are not logically part of the specification.
 
    --  N_Unused_At_Start
    --  Completely unused entry at the start of the enumeration type. This
@@ -352,24 +351,24 @@ package Sinfo is
    --  Completely unused entry at the end of the enumeration type. This is
    --  handy so that arrays with Node_Kind as the index type have an extra
    --  entry at the end (see for example the use of the Pchar_Pos_Array in
-   --  Treepr, where the extra entry provides the limit value when dealing
-   --  with the last used entry in the array).
+   --  Treepr, where the extra entry provides the limit value when dealing with
+   --  the last used entry in the array).
 
    -----------------------------------------
    -- Note on the settings of Sloc fields --
    -----------------------------------------
 
-   --  The Sloc field of nodes that come from the source is set by the
-   --  parser. For internal nodes, and nodes generated during expansion
-   --  the Sloc is usually set in the call to the constructor for the node.
-   --  In general the Sloc value chosen for an internal node is the Sloc of
-   --  the source node whose processing is responsible for the expansion. For
-   --  example, the Sloc of an inherited primitive operation is the Sloc of
-   --  the corresponding derived type declaration.
+   --  The Sloc field of nodes that come from the source is set by the parser.
+   --  For internal nodes, and nodes generated during expansion the Sloc is
+   --  usually set in the call to the constructor for the node. In general the
+   --  Sloc value chosen for an internal node is the Sloc of the source node
+   --  whose processing is responsible for the expansion. For example, the Sloc
+   --  of an inherited primitive operation is the Sloc of the corresponding
+   --  derived type declaration.
 
-   --  For the nodes of a generic instantiation, the Sloc value is encoded
-   --  to represent both the original Sloc in the generic unit, and the Sloc
-   --  of the instantiation itself. See Sinput.ads for details.
+   --  For the nodes of a generic instantiation, the Sloc value is encoded to
+   --  represent both the original Sloc in the generic unit, and the Sloc of
+   --  the instantiation itself. See Sinput.ads for details.
 
    --  Subprogram instances create two callable entities: one is the visible
    --  subprogram instance, and the other is an anonymous subprogram nested
@@ -383,12 +382,12 @@ package Sinfo is
 
    --  In the following node definitions, all fields, both syntactic and
    --  semantic, are documented. The one exception is in the case of entities
-   --  (defining indentifiers, character literals and operator symbols),
-   --  where the usage of the fields depends on the entity kind. Entity
-   --  fields are fully documented in the separate package Einfo.
+   --  (defining indentifiers, character literals and operator symbols), where
+   --  the usage of the fields depends on the entity kind. Entity fields are
+   --  fully documented in the separate package Einfo.
 
-   --  In the node definitions, three common sets of fields are abbreviated
-   --  to save both space in the documentation, and also space in the string
+   --  In the node definitions, three common sets of fields are abbreviated to
+   --  save both space in the documentation, and also space in the string
    --  (defined in Tree_Print_Strings) used to print trees. The following
    --  abbreviations are used:
 
@@ -427,15 +426,14 @@ package Sinfo is
    --  Note: see under (EXPRESSION) for further details on the use of
    --  the Paren_Count field to record the number of parentheses levels.
 
-   --  Node_Kind is the type used in the Nkind field to indicate the node
-   --  kind. The actual definition of this type is given later (the reason
-   --  for this is that we want the descriptions ordered by logical chapter
-   --  in the RM, but the type definition is reordered to facilitate the
-   --  definition of some subtype ranges. The individual descriptions of
-   --  the nodes show how the various fields are used in each node kind,
-   --  as well as providing logical names for the fields. Functions and
-   --  procedures are provided for accessing and setting these fields
-   --  using these logical names.
+   --  Node_Kind is the type used in the Nkind field to indicate the node kind.
+   --  The actual definition of this type is given later (the reason for this
+   --  is that we want the descriptions ordered by logical chapter in the RM,
+   --  but the type definition is reordered to facilitate the definition of
+   --  some subtype ranges. The individual descriptions of the nodes show how
+   --  the various fields are used in each node kind, as well as providing
+   --  logical names for the fields. Functions and procedures are provided for
+   --  accessing and setting these fields using these logical names.
 
    -----------------------
    -- Gigi Restrictions --
@@ -458,118 +456,115 @@ package Sinfo is
    --  The following flag fields appear in all nodes
 
    --  Analyzed (Flag1)
-   --    This flag is used to indicate that a node (and all its children
-   --    have been analyzed. It is used to avoid reanalysis of a node that
-   --    has already been analyzed, both for efficiency and functional
-   --    correctness reasons.
+   --    This flag is used to indicate that a node (and all its children have
+   --    been analyzed. It is used to avoid reanalysis of a node that has
+   --    already been analyzed, both for efficiency and functional correctness
+   --    reasons.
 
    --  Comes_From_Source (Flag2)
-   --    This flag is on for any nodes built by the scanner or parser from
-   --    the source program, and off for any nodes built by the analyzer or
+   --    This flag is on for any nodes built by the scanner or parser from the
+   --    source program, and off for any nodes built by the analyzer or
    --    expander. It indicates that a node comes from the original source.
    --    This flag is defined in Atree.
 
    --  Error_Posted (Flag3)
-   --    This flag is used to avoid multiple error messages being posted
-   --    on or referring to the same node. This flag is set if an error
-   --    message refers to a node or is posted on its source location,
-   --    and has the effect of inhibiting further messages involving
-   --    this same node.
+   --    This flag is used to avoid multiple error messages being posted on or
+   --    referring to the same node. This flag is set if an error message
+   --    refers to a node or is posted on its source location, and has the
+   --    effect of inhibiting further messages involving this same node.
 
    --  Has_Dynamic_Length_Check (Flag10-Sem)
-   --    This flag is present on all nodes. It is set to indicate that one
-   --    of the routines in unit Checks has generated a length check action
-   --    which has been inserted at the flagged node. This is used to avoid
-   --    the generation of duplicate checks.
+   --    This flag is present on all nodes. It is set to indicate that one of
+   --    the routines in unit Checks has generated a length check action which
+   --    has been inserted at the flagged node. This is used to avoid the
+   --    generation of duplicate checks.
 
    --  Has_Dynamic_Range_Check (Flag12-Sem)
-   --    This flag is present on all nodes. It is set to indicate that one
-   --    of the routines in unit Checks has generated a range check action
-   --    which has been inserted at the flagged node. This is used to avoid
-   --    the generation of duplicate checks.
+   --    This flag is present on all nodes. It is set to indicate that one of
+   --    the routines in unit Checks has generated a range check action which
+   --    has been inserted at the flagged node. This is used to avoid the
+   --    generation of duplicate checks.
 
    ------------------------------------
    -- Description of Semantic Fields --
    ------------------------------------
 
-   --  The meaning of the syntactic fields is generally clear from their
-   --  names without any further description, since the names are chosen
-   --  to correspond very closely to the syntax in the reference manual.
-   --  This section describes the usage of the semantic fields, which are
-   --  used to contain additional information determined during semantic
-   --  analysis.
+   --  The meaning of the syntactic fields is generally clear from their names
+   --  without any further description, since the names are chosen to
+   --  correspond very closely to the syntax in the reference manual. This
+   --  section describes the usage of the semantic fields, which are used to
+   --  contain additional information determined during semantic analysis.
 
    --  ABE_Is_Certain (Flag18-Sem)
-   --    This flag is set in an instantiation node or a call node is
-   --    determined to be sure to raise an ABE. This is used to trigger
-   --    special handling of such cases, particularly in the instantiation
-   --    case where we avoid instantiating the body if this flag is set.
-   --    This flag is also present in an N_Formal_Package_Declaration_Node
-   --    since formal package declarations are treated like instantiations,
-   --    but it is always set to False in this context.
+   --    This flag is set in an instantiation node or a call node is determined
+   --    to be sure to raise an ABE. This is used to trigger special handling
+   --    of such cases, particularly in the instantiation case where we avoid
+   --    instantiating the body if this flag is set. This flag is also present
+   --    in an N_Formal_Package_Declaration_Node since formal package
+   --    declarations are treated like instantiations, but it is always set to
+   --    False in this context.
 
    --  Accept_Handler_Records (List5-Sem)
-   --    This field is present only in an N_Accept_Alternative node. It is
-   --    used to temporarily hold the exception handler records from an
-   --    accept statement in a selective accept. These exception handlers
-   --    will eventually be placed in the Handler_Records list of the
-   --    procedure built for this accept (see Expand_N_Selective_Accept
-   --    procedure in Exp_Ch9 for further details).
+   --    This field is present only in an N_Accept_Alternative node. It is used
+   --    to temporarily hold the exception handler records from an accept
+   --    statement in a selective accept. These exception handlers will
+   --    eventually be placed in the Handler_Records list of the procedure
+   --    built for this accept (see Expand_N_Selective_Accept procedure in
+   --    Exp_Ch9 for further details).
 
    --  Access_Types_To_Process (Elist2-Sem)
    --    Present in N_Freeze_Entity nodes for Incomplete or private types.
-   --    Contains the list of access types which may require specific
-   --    treatment when the nature of the type completion is completely
-   --    known. An example of such treatement is the generation of the
-   --    associated_final_chain.
+   --    Contains the list of access types which may require specific treatment
+   --    when the nature of the type completion is completely known. An example
+   --    of such treatement is the generation of the associated_final_chain.
 
    --  Actions (List1-Sem)
-   --    This field contains a sequence of actions that are associated
-   --    with the node holding the field. See the individual node types
-   --    for details of how this field is used, as well as the description
-   --    of the specific use for a particular node type.
+   --    This field contains a sequence of actions that are associated with the
+   --    node holding the field. See the individual node types for details of
+   --    how this field is used, as well as the description of the specific use
+   --    for a particular node type.
 
    --  Activation_Chain_Entity (Node3-Sem)
    --    This is used in tree nodes representing task activators (blocks,
    --    subprogram bodies, package declarations, and task bodies). It is
    --    initially Empty, and then gets set to point to the entity for the
    --    declared Activation_Chain variable when the first task is declared.
-   --    When tasks are declared in the corresponding declarative region
-   --    this entity is located by name (its name is always _Chain) and
-   --    the declared tasks are added to the chain.
+   --    When tasks are declared in the corresponding declarative region this
+   --    entity is located by name (its name is always _Chain) and the declared
+   --    tasks are added to the chain.
 
    --  Acts_As_Spec (Flag4-Sem)
-   --    A flag set in the N_Subprogram_Body node for a subprogram body
-   --    which is acting as its own spec. This flag also appears in the
-   --    compilation unit node at the library level for such a subprogram
-   --    (see further description in spec of Lib package).
+   --    A flag set in the N_Subprogram_Body node for a subprogram body which
+   --    is acting as its own spec. This flag also appears in the compilation
+   --    unit node at the library level for such a subprogram (see further
+   --    description in spec of Lib package).
 
    --  Actual_Designated_Subtype (Node2-Sem)
-   --    Present in N_Free_Statement and N_Explicit_Dereference nodes. If
-   --    GIGI needs to known the dynamic constrained subtype of the designated
+   --    Present in N_Free_Statement and N_Explicit_Dereference nodes. If gigi
+   --    needs to known the dynamic constrained subtype of the designated
    --    object, this attribute is set to that type. This is done for
    --    N_Free_Statements for access-to-classwide types and access to
-   --    unconstrained packed array types, and for N_Explicit_Dereference
-   --    when the designated type is an unconstrained packed array and the
+   --    unconstrained packed array types, and for N_Explicit_Dereference when
+   --    the designated type is an unconstrained packed array and the
    --    dereference is the prefix of a 'Size attribute reference.
 
    --  Aggregate_Bounds (Node3-Sem)
    --    Present in array N_Aggregate nodes. If the aggregate contains
    --    component associations this field points to an N_Range node whose
    --    bounds give the lowest and highest discrete choice values. If the
-   --    named aggregate contains a dynamic or null choice this field is
-   --    empty. If the aggregate contains positional elements this field
-   --    points to an N_Integer_Literal node giving the number of positional
-   --    elements. Note that if the aggregate contains positional elements
-   --    and an other choice the N_Integer_Literal only accounts for the
-   --    number of positional elements.
+   --    named aggregate contains a dynamic or null choice this field is empty.
+   --    If the aggregate contains positional elements this field points to an
+   --    N_Integer_Literal node giving the number of positional elements. Note
+   --    that if the aggregate contains positional elements and an other choice
+   --    the N_Integer_Literal only accounts for the number of positional
+   --    elements.
 
    --  All_Others (Flag11-Sem)
-   --    Present in an N_Others_Choice node. This flag is set in the case
-   --    of an others exception where all exceptions are to be caught, even
-   --    those that are not normally handled (in particular the tasking abort
-   --    signal). This is used for translation of the at end handler into
-   --    a normal exception handler.
+   --    Present in an N_Others_Choice node. This flag is set in the case of an
+   --    others exception where all exceptions are to be caught, even those
+   --    that are not normally handled (in particular the tasking abort
+   --    signal). This is used for translation of the at end handler into a
+   --    normal exception handler.
 
    --  Assignment_OK (Flag15-Sem)
    --    This flag is set in a subexpression node for an object, indicating
@@ -580,37 +575,37 @@ package Sinfo is
    --    limited type objects (such as tasks), setting discriminant fields,
    --    setting tag values, etc. N_Object_Declaration nodes also have this
    --    flag defined. Here it is used to indicate that an initialization
-   --    expression is valid, even where it would normally not be allowed
-   --    (e.g. where the type involved is limited).
+   --    expression is valid, even where it would normally not be allowed (e.g.
+   --    where the type involved is limited).
 
    --  Associated_Node (Node4-Sem)
    --    Present in nodes that can denote an entity: identifiers, character
    --    literals, operator symbols, expanded names, operator nodes, and
-   --    attribute reference nodes (all these nodes have an Entity field).
-   --    This field is also present in N_Aggregate, N_Selected_Component,
-   --    and N_Extension_Aggregate nodes. This field is used in generic
-   --    processing to create links between the generic template and the
-   --    generic copy. See Sem_Ch12.Get_Associated_Node for full details.
-   --    Note that this field overlaps Entity, which is fine, since, as
-   --    explained in Sem_Ch12, the normal function of Entity is not
-   --    required at the point where the Associated_Node is set. Note
-   --    also, that in generic templates, this means that the Entity field
-   --    does not necessarily point to an Entity. Since the back end is
-   --    expected to ignore generic templates, this is harmless.
+   --    attribute reference nodes (all these nodes have an Entity field). This
+   --    field is also present in N_Aggregate, N_Selected_Component, and
+   --    N_Extension_Aggregate nodes. This field is used in generic processing
+   --    to create links between the generic template and the generic copy. See
+   --    Sem_Ch12.Get_Associated_Node for full details. Note that this field
+   --    overlaps Entity, which is fine, since, as explained in Sem_Ch12, the
+   --    normal function of Entity is not required at the point where the
+   --    Associated_Node is set. Note also, that in generic templates, this
+   --    means that the Entity field does not necessarily point to an Entity.
+   --    Since the back end is expected to ignore generic templates, this is
+   --    harmless.
 
    --  At_End_Proc (Node1)
-   --    This field is present in an N_Handled_Sequence_Of_Statements node.
-   --    It contains an identifier reference for the cleanup procedure to
-   --    be called. See description of this node for further details.
+   --    This field is present in an N_Handled_Sequence_Of_Statements node. It
+   --    contains an identifier reference for the cleanup procedure to be
+   --    called. See description of this node for further details.
 
    --  Backwards_OK (Flag6-Sem)
-   --    A flag present in the N_Assignment_Statement node. It is used only
-   --    if the type being assigned is an array type, and is set if analysis
+   --    A flag present in the N_Assignment_Statement node. It is used only if
+   --    the type being assigned is an array type, and is set if analysis
    --    determines that it is definitely safe to do the copy backwards, i.e.
-   --    starting at the highest addressed element. Note that if neither of
-   --    the flags Forwards_OK or Backwards_OK is set, it means that the
-   --    front end could not determine that either direction is definitely
-   --    safe, and a runtime check is required.
+   --    starting at the highest addressed element. Note that if neither of the
+   --    flags Forwards_OK or Backwards_OK is set, it means that the front end
+   --    could not determine that either direction is definitely safe, and a
+   --    runtime check is required.
 
    --  Body_To_Inline (Node3-Sem)
    --    present in subprogram declarations. Denotes analyzed but unexpanded
@@ -621,68 +616,68 @@ package Sinfo is
    --    which is used directly in later calls to the original subprogram.
 
    --  Body_Required (Flag13-Sem)
-   --    A flag that appears in the N_Compilation_Unit node indicating that
-   --    the corresponding unit requires a body. For the package case, this
-   --    indicates that a completion is required. In Ada 95, if the flag
-   --    is not set for the package case, then a body may not be present.
-   --    In Ada 83, if the flag is not set for the package case, then a
-   --    body is optional. For a subprogram declaration, the flag is set
-   --    except in the case where a pragma Import or Interface applies,
-   --    in which case no body is permitted (in Ada 83 or Ada 95).
+   --    A flag that appears in the N_Compilation_Unit node indicating that the
+   --    corresponding unit requires a body. For the package case, this
+   --    indicates that a completion is required. In Ada 95, if the flag is not
+   --    set for the package case, then a body may not be present. In Ada 83,
+   --    if the flag is not set for the package case, then body is optional.
+   --    For a subprogram declaration, the flag is set except in the case where
+   --    a pragma Import or Interface applies, in which case no body is
+   --    permitted (in Ada 83 or Ada 95).
 
    --  By_Ref (Flag5-Sem)
    --    A flag present in the N_Return_Statement_Node. It is set when the
-   --    returned expression is already allocated on the secondary stack
-   --    and thus the result is passed by reference rather than copied
-   --    another time.
+   --    returned expression is already allocated on the secondary stack and
+   --    thus the result is passed by reference rather than copied another
+   --    time.
 
    --  Check_Address_Alignment (Flag11-Sem)
    --    A flag present in N_Attribute_Definition clause for a 'Address
-   --    attribute definition. This flag is set if a dynamic check should
-   --    be generated at the freeze point for the entity to which this
-   --    address clause applies. The reason that we need this flag is that
-   --    we want to check for range checks being suppressed at the point
-   --    where the attribute definition clause is given, rather than
-   --    testing this at the freeze point.
+   --    attribute definition. This flag is set if a dynamic check should be
+   --    generated at the freeze point for the entity to which this address
+   --    clause applies. The reason that we need this flag is that we want to
+   --    check for range checks being suppressed at the point where the
+   --    attribute definition clause is given, rather than testing this at the
+   --    freeze point.
 
    --  Compile_Time_Known_Aggregate (Flag18-Sem)
-   --    Present in N_Aggregate nodes. Set for aggregates which can be
-   --    fully evaluated at compile time without raising constraint error.
-   --    Such aggregates can be passed as is to Gigi without any expansion.
-   --    See Sem_Aggr for the specific conditions under which an aggregate
-   --    has this flag set. See also the flag Static_Processing_OK.
+   --    Present in N_Aggregate nodes. Set for aggregates which can be fully
+   --    evaluated at compile time without raising constraint error. Such
+   --    aggregates can be passed as is to Gigi without any expansion. See
+   --    Sem_Aggr for the specific conditions under which an aggregate has this
+   --    flag set. See also the flag Static_Processing_OK.
 
    --  Condition_Actions (List3-Sem)
-   --    This field appears in else-if nodes and in the iteration scheme
-   --    node for while loops. This field is only used during semantic
-   --    processing to temporarily hold actions inserted into the tree.
-   --    In the tree passed to gigi, the condition actions field is always
-   --    set to No_List. For details on how this field is used, see the
-   --    routine Insert_Actions in package Exp_Util, and also the expansion
-   --    routines for the relevant nodes.
+   --    This field appears in else-if nodes and in the iteration scheme node
+   --    for while loops. This field is only used during semantic processing to
+   --    temporarily hold actions inserted into the tree. In the tree passed to
+   --    gigi, the condition actions field is always set to No_List. For
+   --    details on how this field is used, see the routine Insert_Actions in
+   --    package Exp_Util, and also the expansion routines for the relevant
+   --    nodes.
 
    --  Controlling_Argument (Node1-Sem)
-   --    This field is set in procedure and function call nodes if the call
-   --    is a dispatching call (it is Empty for a non-dispatching call).
-   --    It indicates the source of the controlling tag for the call. For
-   --    Procedure calls, the Controlling_Argument is one of the actuals.
-   --    For a function that has a dispatching result, it is an entity in
-   --    the context of the call that can provide a tag, or else it is the
-   --    tag of the root type of the class. It can also specify a tag
-   --    directly rather than being a tagged object. The latter is needed
-   --    by the implementations of AI-239 and AI-260.
+   --    This field is set in procedure and function call nodes if the call is
+   --    a dispatching call (it is Empty for a non-dispatching call). It
+   --    indicates the source of the call's controlling tag. For procedure
+   --    calls, the Controlling_Argument is one of the actuals. For function
+   --    that has a dispatching result, it is an entity in the context of the
+   --    call that can provide a tag, or else it is the tag of the root type of
+   --    the class. It can also specify a tag directly rather than being a
+   --    tagged object. The latter is needed by the implementations of AI-239
+   --    and AI-260.
 
    --  Conversion_OK (Flag14-Sem)
-   --    A flag set on type conversion nodes to indicate that the conversion
-   --    is to be considered as being valid, even though it is the case that
-   --    the conversion is not valid Ada. This is used for the Enum_Rep,
-   --    Fixed_Value and Integer_Value attributes, for internal conversions
-   --    done for fixed-point operations, and for certain conversions for
-   --    calls to initialization procedures. If Conversion_OK is set, then
-   --    Etype must be set (the analyzer assumes that Etype has been set).
-   --    For the case of fixed-point operands, it also indicates that the
-   --    conversion is to be a direct conversion of the underlying integer
-   --    result, with no regard to the small operand.
+   --    A flag set on type conversion nodes to indicate that the conversion is
+   --    to be considered as being valid, even though it is the case that the
+   --    conversion is not valid Ada. This is used for Enum_Rep, Fixed_Value
+   --    and Integer_Value attributes, for internal conversions done for
+   --    fixed-point operations, and for certain conversions for calls to
+   --    initialization procedures. If Conversion_OK is set, then Etype must be
+   --    set (the analyzer assumes that Etype has been set). For the case of
+   --    fixed-point operands, it also indicates that the conversion is to be
+   --    direct conversion of the underlying integer result, with no regard to
+   --    the small operand.
 
    --  Corresponding_Body (Node5-Sem)
    --    This field is set in subprogram declarations, package declarations,
@@ -714,11 +709,11 @@ package Sinfo is
    --  Corresponding_Spec (Node5-Sem)
    --    This field is set in subprogram, package, task, and protected body
    --    nodes, where it points to the defining entity in the corresponding
-   --    spec. The attribute is also set in N_With_Clause nodes, where
-   --    it points to the defining entity for the with'ed spec, and in
-   --    a subprogram renaming declaration when it is a Renaming_As_Body.
-   --    The field is Empty if there is no corresponding spec, as in the
-   --    case of a subprogram body that serves as its own spec.
+   --    spec. The attribute is also set in N_With_Clause nodes, where it
+   --    points to the defining entity for the with'ed spec, and in a
+   --    subprogram renaming declaration when it is a Renaming_As_Body. The
+   --    field is Empty if there is no corresponding spec, as in the case of a
+   --    subprogram body that serves as its own spec.
 
    --  Corresponding_Stub (Node3-Sem)
    --    This field is present in an N_Subunit node. It holds the node in
@@ -732,29 +727,28 @@ package Sinfo is
    --    for the discriminant checking function for the variant.
 
    --  Debug_Statement (Node3)
-   --    This field is present in an N_Pragma node. It is used only for
-   --    a Debug pragma or pragma Assert with a second parameter. The
-   --    parameter is of the form of an expression, as required by the
-   --    pragma syntax, but is actually a procedure call. To simplify
+   --    This field is present in an N_Pragma node. It is used only for a Debug
+   --    pragma. The parameter is of the form of an expression, as required by
+   --    the pragma syntax, but is actually a procedure call. To simplify
    --    semantic processing, the parser creates a copy of the argument
    --    rearranged into a procedure call statement and places it in the
-   --    Debug_Statement field. Note that this field is considered a
-   --    syntactic field, since it is created by the parser.
+   --    Debug_Statement field. Note that this field is considered syntactic
+   --    field, since it is created by the parser.
 
    --  Default_Expression (Node5-Sem)
-   --    This field is Empty if there is no default expression. If there
-   --    is a simple default expression (one with no side effects), then
-   --    this field simply contains a copy of the Expression field (both
-   --    point to the tree for the default expression). Default_Expression
-   --    is used for conformance checking.
+   --    This field is Empty if there is no default expression. If there is a
+   --    simple default expression (one with no side effects), then this field
+   --    simply contains a copy of the Expression field (both point to the tree
+   --    for the default expression). Default_Expression is used for
+   --    conformance checking.
 
    --  Delay_Finalize_Attach (Flag14-Sem)
    --    This flag is present in an N_Object_Declaration node. If it is set,
    --    then in the case of a controlled type being declared and initialized,
    --    the normal code for attaching the result to the appropriate local
    --    finalization list is suppressed. This is used for functions that
-   --    return controlled types without using the secondary stack, where
-   --    it is the caller who must do the attachment.
+   --    return controlled types without using the secondary stack, where it is
+   --    the caller who must do the attachment.
 
    --  Discr_Check_Funcs_Built (Flag11-Sem)
    --    This flag is present in N_Full_Type_Declaration nodes. It is set when
@@ -783,16 +777,16 @@ package Sinfo is
    --    is required. It is not determined who deals with this flag (???).
 
    --  Do_Overflow_Check (Flag17-Sem)
-   --    This flag is set on an operator where an overflow check is required
-   --    on the operation. The actual check is dealt with by the backend
-   --    (all the front end does is to set the flag). The other cases where
-   --    this flag is used is on a Type_Conversion node and for attribute
-   --    reference nodes. For a type conversion, it means that the conversion
-   --    is from one base type to another, and the value may not fit in the
-   --    target base type. See also the description of Do_Range_Check for
-   --    this case. The only attribute references which use this flag are
-   --    Pred and Succ, where it means that the result should be checked
-   --    for going outside the base range.
+   --    This flag is set on an operator where an overflow check is required on
+   --    the operation. The actual check is dealt with by the backend (all the
+   --    front end does is to set the flag). The other cases where this flag is
+   --    used is on a Type_Conversion node and for attribute reference nodes.
+   --    For a type conversion, it means that the conversion is from one base
+   --    type to another, and the value may not fit in the target base type.
+   --    See also the description of Do_Range_Check for this case. The only
+   --    attribute references which use this flag are Pred and Succ, where it
+   --    means that the result should be checked for going outside the base
+   --    range.
 
    --  Do_Range_Check (Flag9-Sem)
    --    This flag is set on an expression which appears in a context where
@@ -808,27 +802,27 @@ package Sinfo is
    --      target type is determined from the type of the array, which is
    --      referenced by the Prefix of the N_Indexed_Component node.
 
-   --      Argument expression for a parameter, appearing either directly
-   --      in the Parameter_Associations list of a call or as the Expression
-   --      of an N_Parameter_Association node that appears in this list. In
-   --      either case, the check is against the type of the formal. Note
-   --      that the flag is relevant only in IN and IN OUT parameters, and
-   --      will be ignored for OUT parameters, where no check is required
-   --      in the call, and if a check is required on the return, it is
-   --      generated explicitly with a type conversion.
+   --      Argument expression for a parameter, appearing either directly in
+   --      the Parameter_Associations list of a call or as the Expression of an
+   --      N_Parameter_Association node that appears in this list. In either
+   --      case, the check is against the type of the formal. Note that the
+   --      flag is relevant only in IN and IN OUT parameters, and will be
+   --      ignored for OUT parameters, where no check is required in the call,
+   --      and if a check is required on the return, it is generated explicitly
+   --      with a type conversion.
 
    --      Initialization expression for the initial value in an object
    --      declaration. In this case the Do_Range_Check flag is set on
    --      the initialization expression, and the check is against the
    --      range of the type of the object being declared.
 
-   --      The expression of a type conversion. In this case the range check
-   --      is against the target type of the conversion. See also the use of
-   --      Do_Overflow_Check on a type conversion. The distinction is that
-   --      the overflow check protects against a value that is outside the
-   --      range of the target base type, whereas a range check checks that
-   --      the resulting value (which is a value of the base type of the
-   --      target type), satisfies the range constraint of the target type.
+   --      The expression of a type conversion. In this case the range check is
+   --      against the target type of the conversion. See also the use of
+   --      Do_Overflow_Check on a type conversion. The distinction is that the
+   --      overflow check protects against a value that is outside the range of
+   --      the target base type, whereas a range check checks that the
+   --      resulting value (which is a value of the base type of the target
+   --      type), satisfies the range constraint of the target type.
 
    --    Note: when a range check is required in contexts other than those
    --    listed above (e.g. in a return statement), an additional type
@@ -836,11 +830,11 @@ package Sinfo is
 
    --  Do_Storage_Check (Flag17-Sem)
    --    This flag is set in an N_Allocator node to indicate that a storage
-   --    check is required for the allocation, or in an N_Subprogram_Body
-   --    node to indicate that a stack check is required in the subprogram
-   --    prolog. The N_Allocator case is handled by the routine that expands
-   --    the call to the runtime routine. The N_Subprogram_Body case is
-   --    handled by the backend, and all the semantics does is set the flag.
+   --    check is required for the allocation, or in an N_Subprogram_Body node
+   --    to indicate that a stack check is required in the subprogram prolog.
+   --    The N_Allocator case is handled by the routine that expands the call
+   --    to the runtime routine. The N_Subprogram_Body case is handled by the
+   --    backend, and all the semantics does is set the flag.
 
    --  Do_Tag_Check (Flag13-Sem)
    --    This flag is set on an N_Assignment_Statement, N_Function_Call,
@@ -879,10 +873,10 @@ package Sinfo is
    --    actions at an appropriate place in the tree to get elaborated at the
    --    right time. For conditional expressions, we have to be sure that the
    --    actions for the Else branch are only elaborated if the condition is
-   --    False. The Else_Actions field is used as a temporary parking place
-   --    for these actions. The final tree is always rewritten to eliminate
-   --    the need for this field, so in the tree passed to Gigi, this field
-   --    is always set to No_List.
+   --    False. The Else_Actions field is used as a temporary parking place for
+   --    these actions. The final tree is always rewritten to eliminate the
+   --    need for this field, so in the tree passed to Gigi, this field is
+   --    always set to No_List.
 
    --  Enclosing_Variant (Node2-Sem)
    --    This field is present in the N_Variant node and identifies the
@@ -891,142 +885,137 @@ package Sinfo is
    --    processing of the variant part of a record type.
 
    --  Entity (Node4-Sem)
-   --    Appears in all direct names (identifier, character literal,
-   --    operator symbol), as well as expanded names, and attributes that
-   --    denote entities, such as 'Class. Points to the entity for the
-   --    corresponding defining occurrence. Set after name resolution.
-   --    In the case of identifiers in a WITH list, the corresponding
-   --    defining occurrence is in a separately compiled file, and this
-   --    pointer must be set using the library Load procedure. Note that
-   --    during name resolution, the value in Entity may be temporarily
-   --    incorrect (e.g. during overload resolution, Entity is initially
-   --    set to the first possible correct interpretation, and then later
-   --    modified if necessary to contain the correct value after resolution).
-   --    Note that this field overlaps Associated_Node, which is used during
-   --    generic processing (see Sem_Ch12 for details). Note also that in
-   --    generic templates, this means that the Entity field does not always
-   --    point to an Entity. Since the back end is expected to ignore
-   --    generic templates, this is harmless.
+   --    Appears in all direct names (identifier, character literal, operator
+   --    symbol), as well as expanded names, and attributes that denote
+   --    entities, such as 'Class. Points to the entity for the corresponding
+   --    defining occurrence. Set after name resolution. In the case of
+   --    identifiers in a WITH list, the corresponding defining occurrence is
+   --    in a separately compiled file, and this pointer must be set using the
+   --    library Load procedure. Note that during name resolution, the value in
+   --    Entity may be temporarily incorrect (e.g. during overload resolution,
+   --    Entity is initially set to the first possible correct interpretation,
+   --    and then later modified if necessary to contain the correct value
+   --    after resolution). Note that this field overlaps Associated_Node,
+   --    which is used during generic processing (see Sem_Ch12 for details).
+   --    Note also that in generic templates, this means that the Entity field
+   --    does not always point to an Entity. Since the back end is expected to
+   --    ignore generic templates, this is harmless.
 
    --  Entity_Or_Associated_Node (Node4-Sem)
-   --    A synonym for both Entity and Associated_Node. Used by convention
-   --    in the code when referencing this field in cases where it is not
-   --    known whether the field contains an Entity or an Associated_Node.
+   --    A synonym for both Entity and Associated_Node. Used by convention in
+   --    the code when referencing this field in cases where it is not known
+   --    whether the field contains an Entity or an Associated_Node.
 
    --  Etype (Node5-Sem)
-   --    Appears in all expression nodes, all direct names, and all
-   --    entities. Points to the entity for the related type. Set after
-   --    type resolution. Normally this is the actual subtype of the
-   --    expression. However, in certain contexts such as the right side
-   --    of an assignment, subscripts, arguments to calls, returned value
-   --    in a function, initial value etc. it is the desired target type.
-   --    In the event that this is different from the actual type, the
-   --    Do_Range_Check flag will be set if a range check is required.
-   --    Note: if the Is_Overloaded flag is set, then Etype points to
-   --    an essentially arbitrary choice from the possible set of types.
+   --    Appears in all expression nodes, all direct names, and all entities.
+   --    Points to the entity for the related type. Set after type resolution.
+   --    Normally this is the actual subtype of the expression. However, in
+   --    certain contexts such as the right side of an assignment, subscripts,
+   --    arguments to calls, returned value in a function, initial value etc.
+   --    it is the desired target type. In the event that this is different
+   --    from the actual type, the Do_Range_Check flag will be set if a range
+   --    check is required. Note: if the Is_Overloaded flag is set, then Etype
+   --    points to an essentially arbitrary choice from the possible set of
+   --    types.
 
    --  Exception_Junk (Flag7-Sem)
-   --    This flag is set in a various nodes appearing in a statement
-   --    sequence to indicate that the corresponding node is an artifact
-   --    of the generated code for exception handling, and should be
-   --    ignored when analyzing the control flow of the relevant sequence
-   --    of statements (e.g. to check that it does not end with a bad
-   --    return statement).
+   --    This flag is set in a various nodes appearing in a statement sequence
+   --    to indicate that the corresponding node is an artifact of the
+   --    generated code for exception handling, and should be ignored when
+   --    analyzing the control flow of the relevant sequence of statements
+   --    (e.g. to check that it does not end with a bad return statement).
 
    --  Expansion_Delayed (Flag11-Sem)
-   --    Set on aggregates and extension aggregates that need a top-down
-   --    rather than bottom up expansion. Typically aggregate expansion
-   --    happens bottom up. For nested aggregates the expansion is delayed
-   --    until the enclosing aggregate itself is expanded, e.g. in the context
-   --    of a declaration. To delay it we set this flag. This is done to
-   --    avoid creating a temporary for each level of a nested aggregates,
-   --    and also to prevent the premature generation of constraint checks.
-   --    This is also a requirement if we want to generate the proper
-   --    attachment to the internal finalization lists (for record with
-   --    controlled components). Top down expansion of aggregates is also
-   --    used for in-place array aggregate assignment or initialization.
-   --    When the full context is known, the target of the assignment or
-   --    initialization is used to generate the left-hand side of individual
-   --    assignment to each sub-component.
+   --    Set on aggregates and extension aggregates that need a top-down rather
+   --    than bottom up expansion. Typically aggregate expansion happens bottom
+   --    up. For nested aggregates the expansion is delayed until the enclosing
+   --    aggregate itself is expanded, e.g. in the context of a declaration. To
+   --    delay it we set this flag. This is done to avoid creating a temporary
+   --    for each level of a nested aggregates, and also to prevent the
+   --    premature generation of constraint checks. This is also a requirement
+   --    if we want to generate the proper attachment to the internal
+   --    finalization lists (for record with controlled components). Top down
+   --    expansion of aggregates is also used for in-place array aggregate
+   --    assignment or initialization. When the full context is known, the
+   --    target of the assignment or initialization is used to generate the
+   --    left-hand side of individual assignment to each sub-component.
 
    --  First_Inlined_Subprogram (Node3-Sem)
-   --    Present in the N_Compilation_Unit node for the main program. Points
-   --    to a chain of entities for subprograms that are to be inlined. The
+   --    Present in the N_Compilation_Unit node for the main program. Points to
+   --    a chain of entities for subprograms that are to be inlined. The
    --    Next_Inlined_Subprogram field of these entities is used as a link
-   --    pointer with Empty marking the end of the list. This field is Empty
-   --    if there are no inlined subprograms or inlining is not active.
+   --    pointer with Empty marking the end of the list. This field is Empty if
+   --    there are no inlined subprograms or inlining is not active.
 
    --  First_Named_Actual (Node4-Sem)
-   --    Present in procedure call statement and function call nodes, and
-   --    also in Intrinsic nodes. Set during semantic analysis to point to
-   --    the first named parameter where parameters are ordered by declaration
-   --    order (as opposed to the actual order in the call which may be
-   --    different due to named associations). Note: this field points to the
-   --    explicit actual parameter itself, not the N_Parameter_Association
-   --    node (its parent).
+   --    Present in procedure call statement and function call nodes, and also
+   --    in Intrinsic nodes. Set during semantic analysis to point to the first
+   --    named parameter where parameters are ordered by declaration order (as
+   --    opposed to the actual order in the call which may be different due to
+   --    named associations). Note: this field points to the explicit actual
+   --    parameter itself, not the N_Parameter_Association node (its parent).
 
    --  First_Real_Statement (Node2-Sem)
    --    Present in N_Handled_Sequence_Of_Statements node. Normally set to
-   --    Empty. Used only when declarations are moved into the statement
-   --    part of a construct as a result of wrapping an AT END handler that
-   --    is required to cover the declarations. In this case, this field is
-   --    used to remember the location in the statements list of the first
-   --    real statement, i.e. the statement that used to be first in the
-   --    statement list before the declarations were prepended.
+   --    Empty. Used only when declarations are moved into the statement part
+   --    of a construct as a result of wrapping an AT END handler that is
+   --    required to cover the declarations. In this case, this field is used
+   --    to remember the location in the statements list of the first real
+   --    statement, i.e. the statement that used to be first in the statement
+   --    list before the declarations were prepended.
 
    --  First_Subtype_Link (Node5-Sem)
-   --    Present in N_Freeze_Entity node for an anonymous base type that
-   --    is implicitly created by the declaration of a first subtype. It
-   --    points to the entity for the first subtype.
+   --    Present in N_Freeze_Entity node for an anonymous base type that is
+   --    implicitly created by the declaration of a first subtype. It points to
+   --    the entity for the first subtype.
 
    --  Float_Truncate (Flag11-Sem)
-   --    A flag present in type conversion nodes. This is used for float
-   --    to integer conversions where truncation is required rather than
-   --    rounding. Note that Gigi does not handle type conversions from real
-   --    to integer with rounding (see Expand_N_Type_Conversion).
+   --    A flag present in type conversion nodes. This is used for float to
+   --    integer conversions where truncation is required rather than rounding.
+   --    Note that Gigi does not handle type conversions from real to integer
+   --    with rounding (see Expand_N_Type_Conversion).
 
    --  Forwards_OK (Flag5-Sem)
-   --    A flag present in the N_Assignment_Statement node. It is used only
-   --    if the type being assigned is an array type, and is set if analysis
+   --    A flag present in the N_Assignment_Statement node. It is used only if
+   --    the type being assigned is an array type, and is set if analysis
    --    determines that it is definitely safe to do the copy forwards, i.e.
-   --    starting at the lowest addressed element. Note that if neither of
-   --    the flags Forwards_OK or Backwards_OK is set, it means that the
-   --    front end could not determine that either direction is definitely
-   --    safe, and a runtime check is required.
+   --    starting at the lowest addressed element. Note that if neither of the
+   --    flags Forwards_OK or Backwards_OK is set, it means that the front end
+   --    could not determine that either direction is definitely safe, and a
+   --    runtime check is required.
 
    --  From_At_Mod (Flag4-Sem)
    --    This flag is set on the attribute definition clause node that is
    --    generated by a transformation of an at mod phrase in a record
-   --    representation clause. This is used to give slightly different
-   --    (Ada 83 compatible) semantics to such a clause, namely it is
-   --    used to specify a minimum acceptable alignment for the base type
-   --    and all subtypes. In Ada 95 terms, the actual alignment of the
-   --    base type and all subtypes must be a multiple of the given value,
-   --    and the representation clause is considered to be type specific
-   --    instead of subtype specific.
+   --    representation clause. This is used to give slightly different (Ada 83
+   --    compatible) semantics to such a clause, namely it is used to specify a
+   --    minimum acceptable alignment for the base type and all subtypes. In
+   --    Ada 95 terms, the actual alignment of the base type and all subtypes
+   --    must be a multiple of the given value, and the representation clause
+   --    is considered to be type specific instead of subtype specific.
 
    --  From_Default (Flag6-Sem)
-   --    This flag is set on the subprogram renaming declaration created in
-   --    an instance for a formal subprogram, when the formal is declared
-   --    with a box, and there is no explicit actual. If the flag is present,
-   --    the declaration is treated as an implicit reference to the formal in
-   --    the ali file.
+   --    This flag is set on the subprogram renaming declaration created in an
+   --    instance for a formal subprogram, when the formal is declared with a
+   --    box, and there is no explicit actual. If the flag is present, the
+   --    declaration is treated as an implicit reference to the formal in the
+   --    ali file.
 
    --  Generic_Parent (Node5-Sem)
-   --    Generic_parent is defined on declaration nodes that are instances.
-   --    The value of Generic_Parent is the generic entity from which the
-   --    instance is obtained. Generic_Parent is also defined for the renaming
+   --    Generic_parent is defined on declaration nodes that are instances. The
+   --    value of Generic_Parent is the generic entity from which the instance
+   --    is obtained. Generic_Parent is also defined for the renaming
    --    declarations and object declarations created for the actuals in an
    --    instantiation. The generic parent of such a declaration is the
    --    corresponding generic association in the Instantiation node.
 
    --  Generic_Parent_Type (Node4-Sem)
-   --    Generic_Parent_Type is defined on Subtype_Declaration nodes for
-   --    the actuals of formal private and derived types. Within the instance,
-   --    the operations on the actual are those inherited from the parent.
-   --    For a formal private type, the parent type is the generic type
-   --    itself. The Generic_Parent_Type is also used in an instance to
-   --    determine whether a private operation overrides an inherited one.
+   --    Generic_Parent_Type is defined on Subtype_Declaration nodes for the
+   --    actuals of formal private and derived types. Within the instance, the
+   --    operations on the actual are those inherited from the parent. For a
+   --    formal private type, the parent type is the generic type itself. The
+   --    Generic_Parent_Type is also used in an instance to determine whether a
+   --    private operation overrides an inherited one.
 
    --  Handler_List_Entry (Node2-Sem)
    --    This field is present in N_Object_Declaration nodes. It is set only
@@ -1037,75 +1026,75 @@ package Sinfo is
    --    this is required, see Exp_Ch11.Remove_Handler_Entries.
 
    --  Has_No_Elaboration_Code (Flag17-Sem)
-   --    A flag that appears in the N_Compilation_Unit node to indicate
-   --    whether or not elaboration code is present for this unit. It is
-   --    initially set true for subprogram specs and bodies and for all
-   --    generic units and false for non-generic package specs and bodies.
-   --    Gigi may set the flag in the non-generic package case if it
-   --    determines that no elaboration code is generated. Note that this
-   --    flag is not related to the Is_Preelaborated status, there can be
-   --    preelaborated packages that generate elaboration code, and non-
-   --    preelaborated packages which do not generate elaboration code.
+   --    A flag that appears in the N_Compilation_Unit node to indicate whether
+   --    or not elaboration code is present for this unit. It is initially set
+   --    true for subprogram specs and bodies and for all generic units and
+   --    false for non-generic package specs and bodies. Gigi may set the flag
+   --    in the non-generic package case if it determines that no elaboration
+   --    code is generated. Note that this flag is not related to the
+   --    Is_Preelaborated status, there can be preelaborated packages that
+   --    generate elaboration code, and non- preelaborated packages which do
+   --    not generate elaboration code.
 
    --  Has_Priority_Pragma (Flag6-Sem)
    --    A flag present in N_Subprogram_Body, N_Task_Definition and
-   --    N_Protected_Definition nodes to flag the presence of either
-   --    a Priority or Interrupt_Priority pragma in the declaration
-   --    sequence (public or private in the task and protected cases)
+   --    N_Protected_Definition nodes to flag the presence of either a Priority
+   --    or Interrupt_Priority pragma in the declaration sequence (public or
+   --    private in the task and protected cases)
 
    --  Has_Private_View (Flag11-Sem)
-   --    A flag present in generic nodes that have an entity, to indicate
-   --    that the node has a private type. Used to exchange private
-   --    and full declarations if the visibility at instantiation is
-   --    different from the visibility at generic definition.
+   --    A flag present in generic nodes that have an entity, to indicate that
+   --    the node has a private type. Used to exchange private and full
+   --    declarations if the visibility at instantiation is different from the
+   --    visibility at generic definition.
 
    --  Has_Storage_Size_Pragma (Flag5-Sem)
-   --    A flag present in an N_Task_Definition node to flag the presence
-   --    of a Storage_Size pragma
+   --    A flag present in an N_Task_Definition node to flag the presence of a
+   --    Storage_Size pragma.
 
    --  Has_Task_Info_Pragma (Flag7-Sem)
-   --    A flag present in an N_Task_Definition node to flag the presence
-   --    of a Task_Info pragma. Used to detect duplicate pragmas.
+   --    A flag present in an N_Task_Definition node to flag the presence of a
+   --    Task_Info pragma. Used to detect duplicate pragmas.
 
    --  Has_Task_Name_Pragma (Flag8-Sem)
-   --    A flag present in N_Task_Definition nodes to flag the presence
-   --    of a Task_Name pragma in the declaration sequence for the task.
+   --    A flag present in N_Task_Definition nodes to flag the presence of a
+   --    Task_Name pragma in the declaration sequence for the task.
 
    --  Has_Wide_Character (Flag11-Sem)
-   --    Present in string literals, set if any wide character (i.e. a
-   --    character code outside the Character range) appears in the string.
+   --    Present in string literals, set if any wide character (i.e. character
+   --    code outside the Character range) appears in the string.
 
    --  Hidden_By_Use_Clause (Elist4-Sem)
    --     An entity list present in use clauses that appear within
    --     instantiations. For the resolution of local entities, entities
-   --     introduced by these use clauses have priority over global ones,
-   --     and outer entities must be explicitly hidden/restored on exit.
+   --     introduced by these use clauses have priority over global ones, and
+   --     outer entities must be explicitly hidden/restored on exit.
 
    --  Implicit_With (Flag16-Sem)
    --    This flag is set in the N_With_Clause node that is implicitly
-   --    generated for runtime units that are loaded by the expander, and
-   --    also for package System, if it is loaded implicitly by a use of
-   --    the 'Address or 'Tag attribute
+   --    generated for runtime units that are loaded by the expander, and also
+   --    for package System, if it is loaded implicitly by a use of the
+   --    'Address or 'Tag attribute.
 
    --  Includes_Infinities (Flag11-Sem)
-   --    This flag is present in N_Range nodes. It is set for the range
-   --    of unconstrained float types defined in Standard, which include
-   --    not only the given range of values, but also legtitimately can
-   --    include infinite values. This flag is false for any float type
-   --    for which an explicit range is given by the programmer, even if
-   --    that range is identical to the range for float.
+   --    This flag is present in N_Range nodes. It is set for the range of
+   --    unconstrained float types defined in Standard, which include not only
+   --    the given range of values, but also legtitimately can include infinite
+   --    values. This flag is false for any float type for which an explicit
+   --    range is given by the programmer, even if that range is identical to
+   --    the range for Float.
 
    --  Instance_Spec (Node5-Sem)
    --    This field is present in generic instantiation nodes, and also in
    --    formal package declaration nodes (formal package declarations are
-   --    treated in a manner very similar to package instantiations). It
-   --    points to the node for the spec of the instance, inserted as part
-   --    of the semantic processing for instantiations in Sem_Ch12.
+   --    treated in a manner very similar to package instantiations). It points
+   --    to the node for the spec of the instance, inserted as part of the
+   --    semantic processing for instantiations in Sem_Ch12.
 
    --  Is_Asynchronous_Call_Block (Flag7-Sem)
    --    A flag set in a Block_Statement node to indicate that it is the
-   --    expansion of an asynchronous entry call. Such a block needs a
-   --    cleanup handler to assure that the call is cancelled.
+   --    expansion of an asynchronous entry call. Such a block needs cleanup
+   --    handler to assure that the call is cancelled.
 
    --  Is_Component_Left_Opnd  (Flag13-Sem)
    --  Is_Component_Right_Opnd (Flag14-Sem)
@@ -1114,59 +1103,59 @@ package Sinfo is
    --    concatenation nodes in instances.
 
    --  Is_Controlling_Actual (Flag16-Sem)
-   --    This flag is set on in an expression that is a controlling argument
-   --    in a dispatching call. It is off in all other cases. See Sem_Disp
-   --    for details of its use.
+   --    This flag is set on in an expression that is a controlling argument in
+   --    a dispatching call. It is off in all other cases. See Sem_Disp for
+   --    details of its use.
 
    --  Is_In_Discriminant_Check (Flag11-Sem)
-   --    This flag is present in a selected component, and is used to
-   --    indicate that the reference occurs within a discriminant check.
-   --    The significance is that optimizations based on assuming that
-   --    the discriminant check has a correct value cannot be performed
-   --    in this case (or the disriminant check may be optimized away!)
+   --    This flag is present in a selected component, and is used to indicate
+   --    that the reference occurs within a discriminant check. The
+   --    significance is that optimizations based on assuming that the
+   --    discriminant check has a correct value cannot be performed in this
+   --    case (or the disriminant check may be optimized away!)
 
    --  Is_Machine_Number (Flag11-Sem)
-   --    This flag is set in an N_Real_Literal node to indicate that the
-   --    value is a machine number. This avoids some unnecessary cases
-   --    of converting real literals to machine numbers.
+   --    This flag is set in an N_Real_Literal node to indicate that the value
+   --    is a machine number. This avoids some unnecessary cases of converting
+   --    real literals to machine numbers.
 
    --  Is_Null_Loop (Flag16-Sem)
-   --    This flag is set in an N_Loop_Statement node if the corresponding
-   --    loop can be determined to be null at compile time. This is used to
-   --    suppress any warnings that would otherwise be issued inside the
-   --    loop since they are probably not useful.
+   --    This flag is set in an N_Loop_Statement node if the corresponding loop
+   --    can be determined to be null at compile time. This is used to suppress
+   --    any warnings that would otherwise be issued inside the loop since they
+   --    are probably not useful.
 
    --  Is_Overloaded (Flag5-Sem)
    --    A flag present in all expression nodes. Used temporarily during
-   --    overloading determination. The setting of this flag is not
-   --    relevant once overloading analysis is complete.
+   --    overloading determination. The setting of this flag is not relevant
+   --    once overloading analysis is complete.
 
    --  Is_Power_Of_2_For_Shift (Flag13-Sem)
    --    A flag present only in N_Op_Expon nodes. It is set when the
-   --    exponentiation is of the forma 2 ** N, where the type of N is
-   --    an unsigned integral subtype whose size does not exceed the size
-   --    of Standard_Integer (i.e. a type that can be safely converted to
-   --    Natural), and the exponentiation appears as the right operand of
-   --    an integer multiplication or an integer division where the dividend
-   --    is unsigned. It is also required that overflow checking is off for
-   --    both the exponentiation and the multiply/divide node. If this set
-   --    of conditions holds, and the flag is set, then the division or
+   --    exponentiation is of the forma 2 ** N, where the type of N is an
+   --    unsigned integral subtype whose size does not exceed the size of
+   --    Standard_Integer (i.e. a type that can be safely converted to
+   --    Natural), and the exponentiation appears as the right operand of an
+   --    integer multiplication or an integer division where the dividend is
+   --    unsigned. It is also required that overflow checking is off for both
+   --    the exponentiation and the multiply/divide node. If this set of
+   --    conditions holds, and the flag is set, then the division or
    --    multiplication can be (and is) converted to a shift.
 
    --  Is_Overloaded (Flag5-Sem)
    --    A flag present in all expression nodes. Used temporarily during
-   --    overloading determination. The setting of this flag is not
-   --    relevant once overloading analysis is complete.
+   --    overloading determination. The setting of this flag is not relevant
+   --    once overloading analysis is complete.
 
    --  Is_Protected_Subprogram_Body (Flag7-Sem)
    --    A flag set in a Subprogram_Body block to indicate that it is the
-   --    implemenation of a protected subprogram. Such a body needs a
-   --    cleanup handler to make sure that the associated protected object
-   --    is unlocked when the subprogram completes.
+   --    implemenation of a protected subprogram. Such a body needs cleanup
+   --    handler to make sure that the associated protected object is unlocked
+   --    when the subprogram completes.
 
    --  Is_Static_Expression (Flag6-Sem)
-   --    Indicates that an expression is a static expression (RM 4.9). See
-   --    spec of package Sem_Eval for full details on the use of this flag.
+   --    Indicates that an expression is a static expression (RM 4.9). See spec
+   --    of package Sem_Eval for full details on the use of this flag.
 
    --  Is_Subprogram_Descriptor (Flag16-Sem)
    --    Present in N_Object_Declaration, and set only for the object
@@ -1181,19 +1170,19 @@ package Sinfo is
    --    allocated but not activated when the allocator completes abnormally.
 
    --  Is_Task_Master (Flag5-Sem)
-   --    A flag set in a Subprogram_Body, Block_Statement or Task_Body node
-   --    to indicate that the construct is a task master (i.e. has declared
-   --    tasks or declares an access to a task type).
+   --    A flag set in a Subprogram_Body, Block_Statement or Task_Body node to
+   --    indicate that the construct is a task master (i.e. has declared tasks
+   --    or declares an access to a task type).
 
    --  Itype (Node1-Sem)
-   --    Used in N_Itype_Reference node to reference an itype for which it
-   --    is important to ensure that it is defined. See description of this
-   --    node for further details.
+   --    Used in N_Itype_Reference node to reference an itype for which it is
+   --    important to ensure that it is defined. See description of this node
+   --    for further details.
 
    --  Kill_Range_Check (Flag11-Sem)
    --    Used in an N_Unchecked_Type_Conversion node to indicate that the
-   --    result should not be subjected to range checks. This is used for
-   --    the implementation of Normalize_Scalars.
+   --    result should not be subjected to range checks. This is used for the
+   --    implementation of Normalize_Scalars.
 
    --  Label_Construct (Node2-Sem)
    --    Used in an N_Implicit_Label_Declaration node. Refers to an N_Label,
@@ -1202,36 +1191,35 @@ package Sinfo is
    --    itself, but it is useful in the implementation of ASIS queries.
 
    --  Library_Unit (Node4-Sem)
-   --    In a stub node, the Library_Unit field points to the compilation unit
-   --    node of the corresponding subunit.
+   --    In a stub node, Library_Unit points to the compilation unit node of
+   --    the corresponding subunit.
    --
-   --    In a with clause node, the Library_Unit field points to the spec
-   --    of the with'ed unit.
+   --    In a with clause node, Library_Unit points to the spec of the with'ed
+   --    unit.
    --
-   --    In a compilation unit node, the use of this field depends on
-   --    the unit type:
+   --    In a compilation unit node, the usage depends on the unit type:
    --
-   --     For a subprogram body, the Library_Unit field points to the
-   --     compilation unit node of the corresponding spec, unless
-   --     Acts_As_Spec is set, in which case it points to itself.
+   --     For a subprogram body, Library_Unit points to the compilation unit
+   --     node of the corresponding spec, unless Acts_As_Spec is set, in which
+   --     case it points to itself.
    --
-   --     For a package body, the Library_Unit field points to the
-   --     compilation unit node of the corresponding spec.
+   --     For a package body, Library_Unit points to the compilation unit of
+   --     the corresponding package spec.
    --
-   --     For a subprogram spec to which pragma Inline applies, the
-   --     Library_Unit field points to the compilation unit node of
-   --     the corresponding body, if inlining is active.
+   --     For a subprogram spec to which pragma Inline applies, Library_Unit
+   --     points to the compilation unit node of the corresponding body, if
+   --     inlining is active.
    --
-   --     For a generic declaration, the Library_Unit field points
-   --     to the compilation unit node of the corresponding generic body.
+   --     For a generic declaration, Library_Unit points to the compilation
+   --     unit node of the corresponding generic body.
    --
-   --     For a subunit, the Library_Unit field points to the compilation
-   --     unit node of the parent body.
+   --     For a subunit, Library_Unit points to the compilation unit node of
+   --     the parent body.
    --
-   --    Note that this field is not used to hold the parent pointer for a
-   --    child unit (which might in any case need to use it for some other
-   --    purpose as described above). Instead for a child unit, implicit
-   --    with's are generated for all parents.
+   --    Note that this field is not used to hold the parent pointer for child
+   --    unit (which might in any case need to use it for some other purpose as
+   --    described above). Instead for a child unit, implicit with's are
+   --    generated for all parents.
 
    --  Loop_Actions (List2-Sem)
    --    A list present in Component_Association nodes in array aggregates.
@@ -1239,76 +1227,75 @@ package Sinfo is
    --    they may need to be evaluated anew each time through.
 
    --  Limited_View_Installed (Flag18-Sem)
-   --    Present in With_Clauses and in package specifications. If set on a
+   --    Present in With_Clauses and in package specifications. If set on
    --    with_clause, it indicates that this clause has created the current
-   --    limited view of the designated package. On a package specification,
-   --    it indicates that the limited view has already been created because
-   --    the package is mentioned in a limited_with_clause in the closure of
-   --    the unit being compiled.
+   --    limited view of the designated package. On a package specification, it
+   --    indicates that the limited view has already been created because the
+   --    package is mentioned in a limited_with_clause in the closure of the
+   --    unit being compiled.
 
    --  Must_Be_Byte_Aligned (Flag14-Sem)
    --    This flag is present in N_Attribute_Reference nodes. It can be set
    --    only for the Address and Unrestricted_Access attributes. If set it
-   --    means that the object for which the address/access is given must be
-   --    on a byte (more accurately a storage unit) boundary. If necessary,
-   --    a copy of the object is to be made before taking the address (this
-   --    copy is in the current scope on the stack frame). This is used for
-   --    certain cases of code generated by the expander that passes
-   --    parameters by address.
+   --    means that the object for which the address/access is given must be on
+   --    a byte (more accurately a storage unit) boundary. If necessary, a copy
+   --    of the object is to be made before taking the address (this copy is in
+   --    the current scope on the stack frame). This is used for certain cases
+   --    of code generated by the expander that passes parameters by address.
    --
-   --    The reason the copy is not made by the front end is that the back
-   --    end has more information about type layout and may be able to (but
-   --    is not guaranteed to) prevent making unnecessary copies.
+   --    The reason the copy is not made by the front end is that the back end
+   --    has more information about type layout and may be able to (but is not
+   --    guaranteed to) prevent making unnecessary copies.
 
    --  Must_Not_Freeze (Flag8-Sem)
    --    A flag present in all expression nodes. Normally expressions cause
-   --    freezing as described in the RM. If this flag is set, then this
-   --    is inhibited. This is used by the analyzer and expander to label
-   --    nodes that are created by semantic analysis or expansion and which
-   --    must not cause freezing even though they normally would. This flag
-   --    is also present in an N_Subtype_Indication node, since we also use
-   --    these in calls to Freeze_Expression.
+   --    freezing as described in the RM. If this flag is set, then this is
+   --    inhibited. This is used by the analyzer and expander to label nodes
+   --    that are created by semantic analysis or expansion and which must not
+   --    cause freezing even though they normally would. This flag is also
+   --    present in an N_Subtype_Indication node, since we also use these in
+   --    calls to Freeze_Expression.
 
    --  Next_Entity (Node2-Sem)
    --    Present in defining identifiers, defining character literals and
-   --    defining operator symbols (i.e. in all entities). The entities of
-   --    a scope are chained, and this field is used as the forward pointer
-   --    for this list. See Einfo for further details.
+   --    defining operator symbols (i.e. in all entities). The entities of a
+   --    scope are chained, and this field is used as the forward pointer for
+   --    this list. See Einfo for further details.
 
    --  Next_Named_Actual (Node4-Sem)
-   --    Present in parameter association node. Set during semantic
-   --    analysis to point to the next named parameter, where parameters
-   --    are ordered by declaration order (as opposed to the actual order
-   --    in the call, which may be different due to named associations).
-   --    Not that this field points to the explicit actual parameter itself,
-   --    not to the N_Parameter_Association node (its parent).
+   --    Present in parameter association node. Set during semantic analysis to
+   --    point to the next named parameter, where parameters are ordered by
+   --    declaration order (as opposed to the actual order in the call, which
+   --    may be different due to named associations). Not that this field
+   --    points to the explicit actual parameter itself, not to the
+   --    N_Parameter_Association node (its parent).
 
    --  Next_Rep_Item (Node4-Sem)
-   --    Present in pragma nodes and attribute definition nodes. Used to
-   --    link representation items that apply to an entity. See description
-   --    of First_Rep_Item field in Einfo for full details.
+   --    Present in pragma nodes and attribute definition nodes. Used to link
+   --    representation items that apply to an entity. See description of
+   --    First_Rep_Item field in Einfo for full details.
 
    --  Next_Use_Clause (Node3-Sem)
-   --    While use clauses are active during semantic processing, they
-   --    are chained from the scope stack entry, using Next_Use_Clause
-   --    as a link pointer, with Empty marking the end of the list. The
-   --    head pointer is in the scope stack entry (First_Use_Clause). At
-   --    the end of semantic processing (i.e. when Gigi sees the tree,
-   --    the contents of this field is undefined and should not be read).
+   --    While use clauses are active during semantic processing, they are
+   --    chained from the scope stack entry, using Next_Use_Clause as a link
+   --    pointer, with Empty marking the end of the list. The head pointer is
+   --    in the scope stack entry (First_Use_Clause). At the end of semantic
+   --    processing (i.e. when Gigi sees the tree, the contents of this field
+   --    is undefined and should not be read).
 
    --  No_Ctrl_Actions (Flag7-Sem)
-   --    Present in N_Assignment_Statement to indicate that no finalize nor
-   --    nor adjust should take place on this assignment eventhough the rhs
-   --    is controlled. This is used in init procs and aggregate expansions
-   --    where the generated assignments are more initialisations than real
+   --    Present in N_Assignment_Statement to indicate that no finalize nor nor
+   --    adjust should take place on this assignment eventhough the rhs is
+   --    controlled. This is used in init procs and aggregate expansions where
+   --    the generated assignments are more initialisations than real
    --    assignments.
 
    --  No_Elaboration_Check (Flag14-Sem)
    --    Present in N_Function_Call and N_Procedure_Call_Statement. Indicates
-   --    that no elaboration check is needed on the call, because it appears
-   --    in the context of a local Suppress pragma. This is used on calls
-   --    within task bodies, where the actual elaboration checks are applied
-   --    after analysis, when the local scope stack is not present.
+   --    that no elaboration check is needed on the call, because it appears in
+   --    the context of a local Suppress pragma. This is used on calls within
+   --    task bodies, where the actual elaboration checks are applied after
+   --    analysis, when the local scope stack is not present.
 
    --  No_Entities_Ref_In_Spec (Flag8-Sem)
    --    Present in N_With_Clause nodes. Set if the with clause is on the
@@ -1319,12 +1306,12 @@ package Sinfo is
    --    full details)
 
    --  No_Initialization (Flag13-Sem)
-   --    Present in N_Object_Declaration & N_Allocator to indicate
-   --    that the object must not be initialized (by Initialize or a
-   --    call to an init proc). This is needed for controlled aggregates.
-   --    When the Object declaration has an expression, this flag means
-   --    that this expression should not be taken into account (needed
-   --    for in place initialization with aggregates)
+   --    Present in N_Object_Declaration & N_Allocator to indicate that the
+   --    object must not be initialized (by Initialize or call to an init
+   --    proc). This is needed for controlled aggregates. When the Object
+   --    declaration has an expression, this flag means that this expression
+   --    should not be taken into account (needed for in place initialization
+   --    with aggregates)
 
    --  No_Truncation (Flag17-Sem)
    --    Present in N_Unchecked_Type_Conversion node. This flag has an effect
@@ -1332,51 +1319,51 @@ package Sinfo is
    --    target for scalar operands. Normally in such a case we truncate some
    --    higher order bits of the source, and then sign/zero extend the result
    --    to form the output value. But if this flag is set, then we do not do
-   --    any truncation, so for example, if an 8 bit input is converted to a
-   --    5 bit result which is in fact stored in 8 bits, then the high order
+   --    any truncation, so for example, if an 8 bit input is converted to 5
+   --    bit result which is in fact stored in 8 bits, then the high order
    --    three bits of the target result will be copied from the source. This
    --    is used for properly setting out of range values for use by pragmas
    --    Initialize_Scalars and Normalize_Scalars.
 
    --  Original_Discriminant (Node2-Sem)
    --    Present in identifiers. Used in references to discriminants that
-   --    appear in generic units. Because the names of the discriminants
-   --    may be different in an instance, we use this field to recover the
-   --    position of the discriminant in the original type, and replace it
-   --    with the discriminant at the same position in the instantiated type.
+   --    appear in generic units. Because the names of the discriminants may be
+   --    different in an instance, we use this field to recover the position of
+   --    the discriminant in the original type, and replace it with the
+   --    discriminant at the same position in the instantiated type.
 
    --  Original_Entity (Node2-Sem)
-   --    Present in numeric literals. Used to denote the named number that
-   --    has been constant-folded into the given literal. If literal is from
+   --    Present in numeric literals. Used to denote the named number that has
+   --    been constant-folded into the given literal. If literal is from
    --    source, or the result of some other constant-folding operation, then
    --    Original_Entity is empty. This field is needed to handle properly
    --    named numbers in generic units, where the Associated_Node field
-   --    interferes with the Entity field, making it impossible to preserve
-   --    the original entity at the point of instantiation (ASIS problem).
+   --    interferes with the Entity field, making it impossible to preserve the
+   --    original entity at the point of instantiation (ASIS problem).
 
    --  Others_Discrete_Choices (List1-Sem)
    --    When a case statement or variant is analyzed, the semantic checks
    --    determine the actual list of choices that correspond to an others
-   --    choice. This list is materialized for later use by the expander
-   --    and the Others_Discrete_Choices field of an N_Others_Choice node
-   --    points to this materialized list of choices, which is in standard
-   --    format for a list of discrete choices, except that of course it
-   --    cannot contain an N_Others_Choice entry.
+   --    choice. This list is materialized for later use by the expander and
+   --    the Others_Discrete_Choices field of an N_Others_Choice node points to
+   --    this materialized list of choices, which is in standard format for a
+   --    list of discrete choices, except that of course it cannot contain an
+   --    N_Others_Choice entry.
 
    --  Parameter_List_Truncated (Flag17-Sem)
-   --    Present in N_Function_Call and N_Procedure_Call_Statement nodes.
-   --    Set (for OpenVMS ports of GNAT only) if the parameter list is
-   --    truncated as a result of a First_Optional_Parameter specification
-   --    in an Import_Function, Import_Procedure, or Import_Valued_Procedure
-   --    pragma. The truncation is done by the expander by removing trailing
-   --    parameters from the argument list, in accordance with the set of
-   --    rules allowing such parameter removal. In particular, parameters
-   --    can be removed working from the end of the parameter list backwards
-   --    up to and including the entry designated by First_Optional_Parameter
-   --    in the Import pragma. Parameters can be removed if they are implicit
-   --    and the default value is a known-at-compile-time value, including
-   --    the use of the Null_Parameter attribute, or if explicit parameter
-   --    values are present that match the corresponding defaults.
+   --    Present in N_Function_Call and N_Procedure_Call_Statement nodes. Set
+   --    (for OpenVMS ports of GNAT only) if the parameter list is truncated as
+   --    a result of a First_Optional_Parameter specification in an
+   --    Import_Function, Import_Procedure, or Import_Valued_Procedure pragma.
+   --    The truncation is done by the expander by removing trailing parameters
+   --    from the argument list, in accordance with the set of rules allowing
+   --    such parameter removal. In particular, parameters can be removed
+   --    working from the end of the parameter list backwards up to and
+   --    including the entry designated by First_Optional_Parameter in the
+   --    Import pragma. Parameters can be removed if they are implicit and the
+   --    default value is a known-at-compile-time value, including the use of
+   --    the Null_Parameter attribute, or if explicit parameter values are
+   --    present that match the corresponding defaults.
 
    --  Parent_Spec (Node4-Sem)
    --    For a library unit that is a child unit spec (package or subprogram
@@ -1387,67 +1374,67 @@ package Sinfo is
 
    --  Present_Expr (Uint3-Sem)
    --    Present in an N_Variant node. This has a meaningful value only after
-   --    Gigi has back annotated the tree with representation information.
-   --    At this point, it contains a reference to a gcc expression that
-   --    depends on the values of one or more discriminants. Give a set of
-   --    discriminant values, this expression evaluates to False (zero) if
-   --    variant is not present, and True (non-zero) if it is present. See
-   --    unit Repinfo for further details on gigi back annotation. This
-   --    field is used during ASIS processing (data decomposition annex)
-   --    to determine if a field is present or not.
+   --    Gigi has back annotated the tree with representation information. At
+   --    this point, it contains a reference to a gcc expression that depends
+   --    on the values of one or more discriminants. Give a set of discriminant
+   --    values, this expression evaluates to False (zero) if variant is not
+   --    present, and True (non-zero) if it is present. See unit Repinfo for
+   --    further details on gigi back annotation. This field is used during
+   --    ASIS processing (data decomposition annex) to determine if a field is
+   --    present or not.
 
    --  Print_In_Hex (Flag13-Sem)
-   --    Set on an N_Integer_Literal node to indicate that the value should
-   --    be printed in hexadecimal in the sprint listing. Has no effect on
-   --    legality or semantics of program, only on the displayed output.
-   --    This is used to clarify output from the packed array cases.
+   --    Set on an N_Integer_Literal node to indicate that the value should be
+   --    printed in hexadecimal in the sprint listing. Has no effect on
+   --    legality or semantics of program, only on the displayed output. This
+   --    is used to clarify output from the packed array cases.
 
    --  Procedure_To_Call (Node4-Sem)
    --    Present in N_Allocator, N_Free_Statement, and N_Return_Statement
-   --    nodes. References the entity for the declaration of the procedure
-   --    to be called to accomplish the required operation (i.e. for the
-   --    Allocate procedure in the case of N_Allocator and N_Return_Statement
-   --    (for allocating the return value), and for the Deallocate procedure
-   --    in the case of N_Free_Statement.
+   --    nodes. References the entity for the declaration of the procedure to
+   --    be called to accomplish the required operation (i.e. for the Allocate
+   --    procedure in the case of N_Allocator and N_Return_Statement (for
+   --    allocating the return value), and for the Deallocate procedure in the
+   --    case of N_Free_Statement.
 
    --  Raises_Constraint_Error (Flag7-Sem)
-   --    Set on an expression whose evaluation will definitely fail a
-   --    constraint error check. In the case of static expressions, this
-   --    flag must be set accurately (and if it is set, the expression is
-   --    typically illegal unless it appears as a non-elaborated branch of
-   --    a short-circuit form). For a non-static expression, this flag may
-   --    be set whenever an expression (e.g. an aggregate) is known to raise
-   --    constraint error. If set, the expression definitely will raise CE
-   --    if elaborated at runtime. If not set, the expression may or may
-   --    not raise CE. In other words, on static expressions, the flag is
-   --    set accurately, on non-static expressions it is set conservatively.
+   --    Set on an expression whose evaluation will definitely fail constraint
+   --    error check. In the case of static expressions, this flag must be set
+   --    accurately (and if it is set, the expression is typically illegal
+   --    unless it appears as a non-elaborated branch of a short-circuit form).
+   --    For a non-static expression, this flag may be set whenever an
+   --    expression (e.g. an aggregate) is known to raise constraint error. If
+   --    set, the expression definitely will raise CE if elaborated at runtime.
+   --    If not set, the expression may or may not raise CE. In other words, on
+   --    static expressions, the flag is set accurately, on non-static
+   --    expressions it is set conservatively.
 
    --  Redundant_Use (Flag13-Sem)
-   --    A flag present in nodes that can appear as an operand in a use
-   --    clause or use type clause (identifiers, expanded names, attribute
-   --    references). Set to indicate that a use is redundant (and therefore
-   --    need not be undone on scope exit).
+   --    Present in nodes that can appear as an operand in a use clause or use
+   --    type clause (identifiers, expanded names, attribute references). Set
+   --    to indicate that a use is redundant (and therefore need not be undone
+   --    on scope exit).
 
    --  Return_Type (Node2-Sem)
-   --    Present in N_Return_Statement node. For a procedure, this is set
-   --    to Standard_Void_Type. For a function it references the entity
-   --    for the returned type.
+   --    Present in N_Return_Statement node. For a procedure, this is set to
+   --    Standard_Void_Type. For a function it references the entity for the
+   --    returned type.
 
    --  Rounded_Result (Flag18-Sem)
    --    Present in N_Type_Conversion, N_Op_Divide and N_Op_Multiply nodes.
    --    Used in the fixed-point cases to indicate that the result must be
-   --    rounded as a result of the use of the 'Round attribute. Also used
-   --    for integer N_Op_Divide nodes to indicate that the result should
-   --    be rounded to the nearest integer (breaking ties away from zero),
-   --    rather than truncated towards zero as usual. These rounded integer
-   --    operations are the result of expansion of rounded fixed-point
-   --    divide, conversion and multiplication operations.
+   --    rounded as a result of the use of the 'Round attribute. Also used for
+   --    integer N_Op_Divide nodes to indicate that the result should be
+   --    rounded to the nearest integer (breaking ties away from zero), rather
+   --    than truncated towards zero as usual. These rounded integer operations
+   --    are the result of expansion of rounded fixed-point divide, conversion
+   --    and multiplication operations.
 
    --  Scope (Node3-Sem)
    --    Present in defining identifiers, defining character literals and
-   --    defining operator symbols (i.e. in all entities). The entities of
-   --    a scope all use this field to reference the corresponding scope
-   --    entity. See Einfo for further details.
+   --    defining operator symbols (i.e. in all entities). The entities of a
+   --    scope all use this field to reference the corresponding scope entity.
+   --    See Einfo for further details.
 
    --  Shift_Count_OK (Flag4-Sem)
    --    A flag present in shift nodes to indicate that the shift count is
@@ -1464,29 +1451,29 @@ package Sinfo is
    --  Static_Processing_OK (Flag4-Sem)
    --    Present in N_Aggregate nodes. When the Compile_Time_Known_Aggregate
    --    flag is set, the full value of the aggregate can be determined at
-   --    compile time and the aggregate can be passed as is to the back-end.
-   --    In this event it is irrelevant whether this flag is set or not.
-   --    However, if the Compile_Time_Known_Aggregate flag is not set but
+   --    compile time and the aggregate can be passed as is to the back-end. In
+   --    this event it is irrelevant whether this flag is set or not. However,
+   --    if the Compile_Time_Known_Aggregate flag is not set but
    --    Static_Processing_OK is set, the aggregate can (but need not) be
-   --    converted into a compile time known aggregate by the expander.
-   --    See Sem_Aggr for the specific conditions under which an aggregate
-   --    has its Static_Processing_OK flag set.
+   --    converted into a compile time known aggregate by the expander. See
+   --    Sem_Aggr for the specific conditions under which an aggregate has its
+   --    Static_Processing_OK flag set.
 
    --  Storage_Pool (Node1-Sem)
-   --    Present in N_Allocator, N_Free_Statement and N_Return_Statement
-   --    nodes. References the entity for the storage pool to be used for
-   --    the allocate or free call or for the allocation of the returned
-   --    value from a function. Empty indicates that the global default
-   --    default pool is to be used. Note that in the case of a return
-   --    statement, this field is set only if the function returns a
-   --    value of a type whose size is not known at compile time on the
-   --    secondary stack. It is never set on targets for which the target
-   --    parameter Targparm.Functions_Return_By_DSP_On_Target is True.
+   --    Present in N_Allocator, N_Free_Statement and N_Return_Statement nodes.
+   --    References the entity for the storage pool to be used for the allocate
+   --    or free call or for the allocation of the returned value from a
+   --    function. Empty indicates that the global default default pool is to
+   --    be used. Note that in the case of a return statement, this field is
+   --    set only if the function returns value of a type whose size is not
+   --    known at compile time on the secondary stack. It is never set on
+   --    targets for which the parameter Functions_Return_By_DSP_On_Target in
+   --    Targparm is True.
 
    --  Target_Type (Node2-Sem)
-   --    Used in an N_Validate_Unchecked_Conversion node to point to the
-   --    target type entity for the unchecked conversion instantiation
-   --    which gigi must do size validation for.
+   --    Used in an N_Validate_Unchecked_Conversion node to point to the target
+   --    type entity for the unchecked conversion instantiation which gigi must
+   --    do size validation for.
 
    --  Then_Actions (List3-Sem)
    --    This field is present in conditional expression nodes. During code
@@ -1494,55 +1481,55 @@ package Sinfo is
    --    actions at an appropriate place in the tree to get elaborated at the
    --    right time. For conditional expressions, we have to be sure that the
    --    actions for the Then branch are only elaborated if the condition is
-   --    True. The Then_Actions field is used as a temporary parking place
-   --    for these actions. The final tree is always rewritten to eliminate
-   --    the need for this field, so in the tree passed to Gigi, this field
-   --    is always set to No_List.
+   --    True. The Then_Actions field is used as a temporary parking place for
+   --    these actions. The final tree is always rewritten to eliminate the
+   --    need for this field, so in the tree passed to Gigi, this field is
+   --    always set to No_List.
 
    --  Treat_Fixed_As_Integer (Flag14-Sem)
-   --    This flag appears in operator nodes for divide, multiply, mod and
-   --    rem on fixed-point operands. It indicates that the operands are
-   --    to be treated as integer values, ignoring small values. This flag
-   --    is only set as a result of expansion of fixed-point operations.
-   --    Typically a fixed-point multplication in the source generates
-   --    subsidiary multiplication and division operations that work with
-   --    the underlying integer values and have this flag set. Note that
-   --    this flag is not needed on other arithmetic operations (add, neg,
-   --    subtract etc) since in these cases it is always the case that fixed
-   --    is treated as integer. The Etype field MUST be set if this flag
-   --    is set. The analyzer knows to leave such nodes alone, and whoever
-   --    makes them must set the correct Etype value.
+   --    This flag appears in operator nodes for divide, multiply, mod and rem
+   --    on fixed-point operands. It indicates that the operands are to be
+   --    treated as integer values, ignoring small values. This flag is only
+   --    set as a result of expansion of fixed-point operations. Typically a
+   --    fixed-point multplication in the source generates subsidiary
+   --    multiplication and division operations that work with the underlying
+   --    integer values and have this flag set. Note that this flag is not
+   --    needed on other arithmetic operations (add, neg, subtract etc) since
+   --    in these cases it is always the case that fixed is treated as integer.
+   --    The Etype field MUST be set if this flag is set. The analyzer knows to
+   --    leave such nodes alone, and whoever makes them must set the correct
+   --    Etype value.
 
    --  TSS_Elist (Elist3-Sem)
    --    Present in N_Freeze_Entity nodes. Holds an element list containing
    --    entries for each TSS (type support subprogram) associated with the
    --    frozen type. The elements of the list are the entities for the
-   --    subprograms (see package Exp_TSS for further details). Set to
-   --    No_Elist if there are no type support subprograms for the type
-   --    or if the freeze node is not for a type.
+   --    subprograms (see package Exp_TSS for further details). Set to No_Elist
+   --    if there are no type support subprograms for the type or if the freeze
+   --    node is not for a type.
 
    --  Unreferenced_In_Spec (Flag7-Sem)
    --    Present in N_With_Clause nodes. Set if the with clause is on the
    --    package or subprogram spec where the main unit is the corresponding
-   --    body, and is not referenced by the spec (it may still be referenced
-   --    by the body, so this flag is used to generate the proper message
-   --    (see Sem_Util.Check_Unused_Withs for details)
+   --    body, and is not referenced by the spec (it may still be referenced by
+   --    the body, so this flag is used to generate the proper message (see
+   --    Sem_Util.Check_Unused_Withs for details)
 
    --  Was_Originally_Stub (Flag13-Sem)
-   --    This flag is set in the node for a proper body that replaces a
-   --    stub. During the analysis procedure, stubs in some situations
-   --    get rewritten by the corresponding bodies, and we set this flag
-   --    to remember that this happened. Note that it is not good enough
-   --    to rely on the use of Original_Node here because of the case of
-   --    nested instantiations where the substituted node can be copied.
+   --    This flag is set in the node for a proper body that replaces stub.
+   --    During the analysis procedure, stubs in some situations get rewritten
+   --    by the corresponding bodies, and we set this flag to remember that
+   --    this happened. Note that it is not good enough to rely on the use of
+   --    Original_Node here because of the case of nested instantiations where
+   --    the substituted node can be copied.
 
    --  Zero_Cost_Handling (Flag5-Sem)
    --    This flag is set in all handled sequence of statement and exception
    --    handler nodes if eceptions are to be handled using the zero-cost
    --    mechanism (see Ada.Exceptions and System.Exceptions in files
-   --    a-except.ads/adb and s-except.ads for full details). What gigi
-   --    needs to do for such a handler is simply to put the code in the
-   --    handler somewhere. The front end has generated all necessary labels.
+   --    a-except.ads/adb and s-except.ads for full details). What gigi needs
+   --    to do for such a handler is simply to put the code in the handler
+   --    somewhere. The front end has generated all necessary labels.
 
    --------------------------------------------------
    -- Note on Use of End_Label and End_Span Fields --
@@ -1569,46 +1556,43 @@ package Sinfo is
    --    Record Definition          end record;
    --    Enumeration Definition     );
 
-   --  The End_Label and End_Span fields are used to mark the locations
-   --  of these lines, and also keep track of the label in the case where
-   --  a label is present.
+   --  The End_Label and End_Span fields are used to mark the locations of
+   --  these lines, and also keep track of the label in the case where a label
+   --  is present.
 
-   --  For the first group above, the End_Label field of the corresponding
-   --  node is used to point to the label identifier. In the case where
-   --  there is no label in the source, the parser supplies a dummy
-   --  identifier (with Comes_From_Source set to False), and the Sloc
-   --  of this dummy identifier marks the location of the token following
-   --  the END token.
+   --  For the first group above, the End_Label field of the corresponding node
+   --  is used to point to the label identifier. In the case where there is no
+   --  label in the source, the parser supplies a dummy identifier (with
+   --  Comes_From_Source set to False), and the Sloc of this dummy identifier
+   --  marks the location of the token following the END token.
 
-   --  For the second group, the use of End_Label is similar, but the
-   --  End_Label is found in the N_Handled_Sequence_Of_Statements node.
-   --  This is done simply because in some cases there is no room in
-   --  the parent node.
+   --  For the second group, the use of End_Label is similar, but the End_Label
+   --  is found in the N_Handled_Sequence_Of_Statements node. This is done
+   --  simply because in some cases there is no room in the parent node.
 
-   --  For the third group, there is never any label, and instead of
-   --  using End_Label, we use the End_Span field which gives the
-   --  location of the token following END, relative to the starting
-   --  Sloc of the construct, i.e. add Sloc (Node) + End_Span (Node)
-   --  to get the Sloc of the IF or CASE following the End_Label.
+   --  For the third group, there is never any label, and instead of using
+   --  End_Label, we use the End_Span field which gives the location of the
+   --  token following END, relative to the starting Sloc of the construct,
+   --  i.e. add Sloc (Node) + End_Span (Node) to get the Sloc of the IF or CASE
+   --  following the End_Label.
 
-   --  The record definition case is handled specially, we treat it
-   --  as though it required an optional label which is never present,
-   --  and so the parser always builds a dummy identifier with Comes
-   --  From Source set False. The reason we do this, rather than using
-   --  End_Span in this case, is that we want to generate a cross-ref
-   --  entry for the end of a record, since it represents a scope for
-   --  name declaration purposes.
+   --  The record definition case is handled specially, we treat it as though
+   --  it required an optional label which is never present, and so the parser
+   --  always builds a dummy identifier with Comes From Source set False. The
+   --  reason we do this, rather than using End_Span in this case, is that we
+   --  want to generate a cross-ref entry for the end of a record, since it
+   --  represents a scope for name declaration purposes.
 
-   --  The enumeration definition case is handled in an exactly similar
-   --  manner, building a dummy identifier to get a cross-reference.
+   --  The enumeration definition case is handled in an exactly similar manner,
+   --  building a dummy identifier to get a cross-reference.
 
-   --  Note: the reason we store the difference as a Uint, instead of
-   --  storing the Source_Ptr value directly, is that Source_Ptr values
-   --  cannot be distinguished from other types of values, and we count
-   --  on all general use fields being self describing. To make things
-   --  easier for clients, note that we provide function End_Location,
-   --  and procedure Set_End_Location to allow access to the logical
-   --  value (which is the Source_Ptr value for the end token).
+   --  Note: the reason we store the difference as a Uint, instead of storing
+   --  the Source_Ptr value directly, is that Source_Ptr values cannot be
+   --  distinguished from other types of values, and we count on all general
+   --  use fields being self describing. To make things easier for clients,
+   --  note that we provide function End_Location, and procedure
+   --  Set_End_Location to allow access to the logical value (which is the
+   --  Source_Ptr value for the end token).
 
    ---------------------
    -- Syntactic Nodes --
@@ -1623,23 +1607,23 @@ package Sinfo is
 
       --  An IDENTIFIER shall not be a reserved word
 
-      --  In the Ada grammar identifiers are the bottom level tokens which
-      --  have very few semantics. Actual program identifiers are direct
-      --  names. If we were being 100% honest with the grammar, then we would
-      --  have a node called N_Direct_Name which would point to an identifier.
-      --  However, that's too many extra nodes, so we just use the N_Identifier
-      --  node directly as a direct name, and it contains the expression fields
-      --  and Entity field that correspond to its use as a direct name. In
-      --  those few cases where identifiers appear in contexts where they are
-      --  not direct names (pragmas, pragma argument associations, attribute
+      --  In the Ada grammar identifiers are the bottom level tokens which have
+      --  very few semantics. Actual program identifiers are direct names. If
+      --  we were being 100% honest with the grammar, then we would have a node
+      --  called N_Direct_Name which would point to an identifier. However,
+      --  that's too many extra nodes, so we just use the N_Identifier node
+      --  directly as a direct name, and it contains the expression fields and
+      --  Entity field that correspond to its use as a direct name. In those
+      --  few cases where identifiers appear in contexts where they are not
+      --  direct names (pragmas, pragma argument associations, attribute
       --  references and attribute definition clauses), the Chars field of the
       --  node contains the Name_Id for the identifier name.
 
-      --  Note: in GNAT, a reserved word can be treated as an identifier
-      --  in two cases. First, an incorrect use of a reserved word as an
-      --  identifier is diagnosed and then treated as a normal identifier.
-      --  Second, an attribute designator of the form of a reserved word
-      --  (access, delta, digits, range) is treated as an identifier.
+      --  Note: in GNAT, a reserved word can be treated as an identifier in two
+      --  cases. First, an incorrect use of a reserved word as an identifier is
+      --  diagnosed and then treated as a normal identifier. Second, an
+      --  attribute designator of the form of a reserved word (access, delta,
+      --  digits, range) is treated as an identifier.
 
       --  Note: The set of letters that is permitted in an identifier depends
       --  on the character set in use. See package Csets for full details.
@@ -1735,12 +1719,12 @@ package Sinfo is
       --  Has_Private_View (Flag11-Sem) set in generic units.
       --  plus fields for expression
 
-      --  Note: the Entity field will be missing (and set to Empty) for
-      --  character literals whose type is Standard.Wide_Character or
-      --  Standard.Character or a type derived from one of these two.
-      --  In this case the character literal stands for its own coding.
-      --  The reason we take this irregular short cut is to avoid the
-      --  need to build lots of junk defining character literal nodes.
+      --  Note: the Entity field will be missing (set to Empty) for character
+      --  literals whose type is Standard.Wide_Character or Standard.Character
+      --  or a type derived from one of these two. In this case the character
+      --  literal stands for its own coding. The reason we take this irregular
+      --  short cut is to avoid the need to build lots of junk defining
+      --  character literal nodes.
 
       -------------------------
       -- 2.6  String Literal --
@@ -5701,7 +5685,8 @@ package Sinfo is
       --------------------------------------------
 
       --  FORMAL_DERIVED_TYPE_DEFINITION ::=
-      --    [abstract] new SUBTYPE_MARK [[and INTERFACE_LIST] with private]
+      --    [abstract] [limited]
+      --       new SUBTYPE_MARK [[and INTERFACE_LIST] with private]
       --  Note: this construct is not allowed in Ada 83 mode
 
       --  N_Formal_Derived_Type_Definition
@@ -5709,6 +5694,7 @@ package Sinfo is
       --  Subtype_Mark (Node4)
       --  Private_Present (Flag15)
       --  Abstract_Present (Flag4)
+      --  Limited_Present (Flag17)
       --  Interface_List (List2) (set to No_List if none)
 
       ---------------------------------------------
