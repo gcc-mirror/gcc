@@ -1,8 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target sync_int_long } */
 /* { dg-options "-O2 -finline-functions" } */
-/* { dg-options "-march=i486" { target i?86-*-* } } */
-/* { dg-options "-march=i486" { target { x86_64-*-* && ilp32 } } } */
+/* { dg-options "-march=i486" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 /* Test inlining __sync_bool_compare_and_swap.  */
 

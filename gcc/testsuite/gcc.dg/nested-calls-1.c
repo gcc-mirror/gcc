@@ -3,7 +3,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-std=c99 -O -fno-inline" } */
-/* { dg-options "-std=c99 -O -fno-inline -mtune=i686" { target { i?86-*-* && ilp32 } } } */
+/* { dg-options "-std=c99 -O -fno-inline -mtune=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 #include <limits.h>
 
