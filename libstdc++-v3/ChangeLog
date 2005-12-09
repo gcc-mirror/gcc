@@ -1,3 +1,20 @@
+2005-12-09  Paolo Carlini  <pcarlini@suse.de>
+	    Howard Hinnant  <hhinnant@apple.com>
+
+	PR libstdc++/25288
+	* include/bits/stl_list.h (list<>::_M_insert_dispatch, _M_fill_insert):
+	Remove.
+	(_M_initialize_dispatch, _M_fill_initialize): Add.
+	(list(size_type, const value_type&, const allocator_type&),
+	list(const list&), list(_InputIterator, _InputIterator,
+	const allocator_type&): Use the latter.
+	(insert(iterator, size_type, const value_type&), insert(iterator,
+	_InputIterator, _InputIterator)): Use construction & splice.
+	* testsuite/23_containers/list/modifiers/insert/25288.cc: New.
+	* testsuite/testsuite_allocator.h (class throw_allocator): Add.
+
+	* include/bits/stl_list.h (list<>::insert, erase): Fix wrong comments.
+
 2005-12-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_vector.h (vector<>::size, resize, capacity,

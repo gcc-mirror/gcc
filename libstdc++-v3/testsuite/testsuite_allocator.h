@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -229,6 +229,81 @@ namespace __gnu_test
 	}
       throw;
     }
+
+  template<typename Tp>
+    class throw_allocator
+    {
+    public:
+      typedef std::size_t                         size_type;
+      typedef std::ptrdiff_t                      difference_type;
+      typedef Tp*                                 pointer;
+      typedef const Tp*                           const_pointer;
+      typedef Tp&                                 reference;
+      typedef const Tp&                           const_reference;
+      typedef Tp                                  value_type;
+      
+      template<typename Tp1>
+        struct rebind
+	{ typedef throw_allocator<Tp1> other; };
+
+      throw_allocator() throw()
+      : count(size_type(-1)) { }
+
+      throw_allocator(size_type c) throw()
+      : count(c) { }
+      
+      template<typename Tp1>
+        throw_allocator(const throw_allocator<Tp1>& b) throw()
+	: count(b.get_count()) { }
+
+      size_type get_count() const { return count; }
+      
+      pointer
+      address(reference x) const { return &x; }
+    
+      const_pointer
+      address(const_reference x) const { return &x; }
+    
+      pointer
+      allocate(size_type n, const void* = 0)
+      {
+        if (count == 0)
+	  throw std::bad_alloc();
+	
+	if (count != size_type(-1))
+	  --count;
+        
+	return static_cast<Tp*>(::operator new(n * sizeof(Tp)));
+      }
+      
+      void
+      deallocate(pointer p, size_type)
+      { ::operator delete(p); }
+      
+      size_type
+      max_size() const throw() 
+      { return size_type(-1) / sizeof(Tp); }
+      
+      void 
+      construct(pointer p, const Tp& val) 
+      { ::new(p) Tp(val); }
+    
+      void 
+      destroy(pointer p) { p->~Tp(); }
+
+    private:
+      template<typename Tp1>
+        friend inline bool
+        operator==(const throw_allocator&, const throw_allocator<Tp1>&)
+        { return true; }
+
+      template<typename Tp1>
+        friend inline bool
+        operator!=(const throw_allocator&, const throw_allocator<Tp1>&)
+        { return false; }
+      
+      size_type count;
+    };
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H
