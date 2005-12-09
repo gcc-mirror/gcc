@@ -1559,8 +1559,8 @@ package body Sem_Res is
 
       if Nkind (N) = N_Attribute_Reference
         and then (Attribute_Name (N) = Name_Access
-          or else Attribute_Name (N) = Name_Unrestricted_Access
-          or else Attribute_Name (N) = Name_Unchecked_Access)
+                    or else Attribute_Name (N) = Name_Unrestricted_Access
+                    or else Attribute_Name (N) = Name_Unchecked_Access)
         and then Comes_From_Source (N)
         and then Is_Entity_Name (Prefix (N))
         and then Is_Subprogram (Entity (Prefix (N)))
@@ -2091,11 +2091,9 @@ package body Sem_Res is
 
                         Get_First_Interp (Name (N), Index, It);
                         while Present (It.Nam) loop
-                              Error_Msg_Sloc := Sloc (It.Nam);
-                              Error_Msg_Node_2 := It.Typ;
-                              Error_Msg_NE ("\&  declared#, type&",
-                                N, It.Nam);
-
+                           Error_Msg_Sloc := Sloc (It.Nam);
+                           Error_Msg_Node_2 := It.Typ;
+                           Error_Msg_NE ("\&  declared#, type&", N, It.Nam);
                            Get_Next_Interp (Index, It);
                         end loop;
                      end;
@@ -2591,15 +2589,15 @@ package body Sem_Res is
             --  If the formal is Out or In_Out, do not resolve and expand the
             --  conversion, because it is subsequently expanded into explicit
             --  temporaries and assignments. However, the object of the
-            --  conversion can be resolved. An exception is the case of a
-            --  tagged type conversion with a class-wide actual. In that case
-            --  we want the tag check to occur and no temporary will be needed
-            --  (no representation change can occur) and the parameter is
-            --  passed by reference, so we go ahead and resolve the type
-            --  conversion. Another excpetion is the case of reference to a
-            --  component or subcomponent of a bit-packed array, in which case
-            --  we want to defer expansion to the point the in and out
-            --  assignments are performed.
+            --  conversion can be resolved. An exception is the case of tagged
+            --  type conversion with a class-wide actual. In that case we want
+            --  the tag check to occur and no temporary will be needed (no
+            --  representation change can occur) and the parameter is passed by
+            --  reference, so we go ahead and resolve the type conversion.
+            --  Another excpetion is the case of reference to component or
+            --  subcomponent of a bit-packed array, in which case we want to
+            --  defer expansion to the point the in and out assignments are
+            --  performed.
 
             if Ekind (F) /= E_In_Parameter
               and then Nkind (A) = N_Type_Conversion
@@ -6660,34 +6658,50 @@ package body Sem_Res is
                Opnd_Type := Directly_Designated_Type (Opnd_Type);
             end if;
 
-            if Is_Class_Wide_Type (Opnd_Type) then
-               Opnd_Type := Etype (Opnd_Type);
-            end if;
+            declare
+               Save_Typ : constant Entity_Id := Opnd_Type;
 
-            if not Interface_Present_In_Ancestor
-                     (Typ   => Opnd_Type,
-                      Iface => Target_Type)
-            then
-               Error_Msg_NE
-                 ("(Ada 2005) does not implement interface }",
-                  Operand, Target_Type);
-
-            else
-               --  If a conversion to an interface type appears as an actual in
-               --  a source call, it will be expanded when the enclosing call
-               --  itself is examined in Expand_Interface_Formals. Otherwise,
-               --  generate the proper conversion code now, using the tag of
-               --  the interface.
-
-               if (Nkind (Parent (N)) = N_Procedure_Call_Statement
-                     or else Nkind (Parent (N)) = N_Function_Call)
-                 and then Comes_From_Source (N)
-               then
-                  null;
-               else
-                  Expand_Interface_Conversion (N);
+            begin
+               if Is_Class_Wide_Type (Opnd_Type) then
+                  Opnd_Type := Etype (Opnd_Type);
                end if;
-            end if;
+
+               if not Interface_Present_In_Ancestor
+                        (Typ   => Opnd_Type,
+                         Iface => Target_Type)
+               then
+                  --  The static analysis is not enough to know if the
+                  --  interface is implemented or not. Hence we must pass the
+                  --  work to the expander to generate the required code to
+                  --  evaluate the conversion at run-time.
+
+                  if Is_Class_Wide_Type (Save_Typ)
+                    and then Is_Interface (Save_Typ)
+                  then
+                     Expand_Interface_Conversion (N, Is_Static => False);
+                  else
+                     Error_Msg_NE
+                       ("(Ada 2005) does not implement interface }",
+                        Operand, Target_Type);
+                  end if;
+
+               else
+                  --  If a conversion to an interface type appears as an actual
+                  --  in a source call, it will be expanded when the enclosing
+                  --  call itself is examined in Expand_Interface_Formals.
+                  --  Otherwise, generate the proper conversion code now, using
+                  --  the tag of the interface.
+
+                  if (Nkind (Parent (N)) = N_Procedure_Call_Statement
+                        or else Nkind (Parent (N)) = N_Function_Call)
+                    and then Comes_From_Source (N)
+                  then
+                     null;
+                  else
+                     Expand_Interface_Conversion (N);
+                  end if;
+               end if;
+            end;
          end if;
       end if;
    end Resolve_Type_Conversion;

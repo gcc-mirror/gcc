@@ -1447,7 +1447,7 @@ package body Exp_Util is
       Iface : Entity_Id) return Entity_Id
    is
       ADT   : Elmt_Id;
-      Found : Boolean := False;
+      Found : Boolean   := False;
       Typ   : Entity_Id := T;
 
       procedure Find_Secondary_Table (Typ : Entity_Id);
@@ -1544,9 +1544,9 @@ package body Exp_Util is
       procedure Find_Tag (Typ : in Entity_Id);
       --  Internal subprogram used to recursively climb to the ancestors
 
-      -----------------
-      -- Find_AI_Tag --
-      -----------------
+      --------------
+      -- Find_Tag --
+      --------------
 
       procedure Find_Tag (Typ : in Entity_Id) is
          AI_Elmt : Elmt_Id;
@@ -1641,6 +1641,101 @@ package body Exp_Util is
       pragma Assert (Found);
       return AI_Tag;
    end Find_Interface_Tag;
+
+   --------------------
+   -- Find_Interface --
+   --------------------
+
+   function Find_Interface
+     (T      : Entity_Id;
+      Comp   : Entity_Id) return Entity_Id
+   is
+      AI_Tag : Entity_Id;
+      Found  : Boolean := False;
+      Iface  : Entity_Id;
+      Typ    : Entity_Id := T;
+
+      procedure Find_Iface (Typ : in Entity_Id);
+      --  Internal subprogram used to recursively climb to the ancestors
+
+      ----------------
+      -- Find_Iface --
+      ----------------
+
+      procedure Find_Iface (Typ : in Entity_Id) is
+         AI_Elmt : Elmt_Id;
+
+      begin
+         --  Climb to the root type
+
+         if Etype (Typ) /= Typ then
+            Find_Iface (Etype (Typ));
+         end if;
+
+         --  Traverse the list of interfaces implemented by the type
+
+         if not Found
+           and then Present (Abstract_Interfaces (Typ))
+           and then not (Is_Empty_Elmt_List (Abstract_Interfaces (Typ)))
+         then
+            --  Skip the tag associated with the primary table
+
+            pragma Assert (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
+            AI_Tag := Next_Tag_Component (First_Tag_Component (Typ));
+            pragma Assert (Present (AI_Tag));
+
+            AI_Elmt := First_Elmt (Abstract_Interfaces (Typ));
+            while Present (AI_Elmt) loop
+               if AI_Tag = Comp then
+                  Iface := Node (AI_Elmt);
+                  Found := True;
+                  return;
+               end if;
+
+               AI_Tag := Next_Tag_Component (AI_Tag);
+               Next_Elmt (AI_Elmt);
+            end loop;
+         end if;
+      end Find_Iface;
+
+   --  Start of processing for Find_Interface
+
+   begin
+      --  Handle private types
+
+      if Has_Private_Declaration (Typ)
+        and then Present (Full_View (Typ))
+      then
+         Typ := Full_View (Typ);
+      end if;
+
+      --  Handle access types
+
+      if Is_Access_Type (Typ) then
+         Typ := Directly_Designated_Type (Typ);
+      end if;
+
+      --  Handle task and protected types implementing interfaces
+
+      if Is_Concurrent_Type (Typ) then
+         Typ := Corresponding_Record_Type (Typ);
+      end if;
+
+      if Is_Class_Wide_Type (Typ) then
+         Typ := Etype (Typ);
+      end if;
+
+      --  Handle entities from the limited view
+
+      if Ekind (Typ) = E_Incomplete_Type then
+         pragma Assert (Present (Non_Limited_View (Typ)));
+         Typ := Non_Limited_View (Typ);
+      end if;
+
+      Find_Iface (Typ);
+      pragma Assert (Found);
+      return Iface;
+   end Find_Interface;
 
    ------------------
    -- Find_Prim_Op --
@@ -3050,14 +3145,16 @@ package body Exp_Util is
 
    function Is_Ref_To_Bit_Packed_Slice (N : Node_Id) return Boolean is
    begin
-      if Is_Entity_Name (N)
+      if Nkind (N) = N_Type_Conversion then
+         return Is_Ref_To_Bit_Packed_Slice (Expression (N));
+
+      elsif Is_Entity_Name (N)
         and then Is_Object (Entity (N))
         and then Present (Renamed_Object (Entity (N)))
       then
          return Is_Ref_To_Bit_Packed_Slice (Renamed_Object (Entity (N)));
-      end if;
 
-      if Nkind (N) = N_Slice
+      elsif Nkind (N) = N_Slice
         and then Is_Bit_Packed_Array (Etype (Prefix (N)))
       then
          return True;
@@ -3500,7 +3597,8 @@ package body Exp_Util is
         and then Has_Unknown_Discriminants (Unc_Typ)
       then
          --  Prepare the subtype completion, Go to base type to
-         --  find underlying type.
+         --  find underlying type, because the type may be a generic
+         --  actual or an explicit subtype.
 
          Utyp        := Underlying_Type (Base_Type (Unc_Typ));
          Full_Subtyp := Make_Defining_Identifier (Loc,
@@ -3521,7 +3619,7 @@ package body Exp_Util is
          --  Define the dummy private subtype
 
          Set_Ekind          (Priv_Subtyp, Subtype_Kind (Ekind (Unc_Typ)));
-         Set_Etype          (Priv_Subtyp, Unc_Typ);
+         Set_Etype          (Priv_Subtyp, Base_Type (Unc_Typ));
          Set_Scope          (Priv_Subtyp, Full_Subtyp);
          Set_Is_Constrained (Priv_Subtyp);
          Set_Is_Tagged_Type (Priv_Subtyp, Is_Tagged_Type (Unc_Typ));
@@ -3585,7 +3683,7 @@ package body Exp_Util is
             return New_Occurrence_Of (CW_Subtype, Loc);
          end;
 
-      --  Indefinite record type with discriminants.
+      --  Indefinite record type with discriminants
 
       else
          D := First_Discriminant (Unc_Typ);
