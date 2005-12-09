@@ -36,11 +36,12 @@
 --  directly with'ed by an applications program.
 
 --  WARNING! This file is a default version that must be replaced for
---  each platform.
---  The values below were computed from a i686-pc-linux-gnu environment.
+--  each platform by running gen-soccon.c which automatically generates
+--  the appropriate target specific values.
 
---  This file is generated automatically, do not modify it by hand! Instead,
---  make changes to gen-soccon.c and re-run it on each target.
+--  The values below were computed from a i686-pc-linux-gnu environment,
+--  but are for illustration purposes only. As noted above, part of a port
+--  to a new target is to replace this file appropriately.
 
 package GNAT.Sockets.Constants is
 

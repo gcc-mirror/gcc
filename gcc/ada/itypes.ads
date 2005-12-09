@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,8 +85,7 @@ package Itypes is
       Related_Id   : Entity_Id := Empty;
       Suffix       : Character := ' ';
       Suffix_Index : Nat       := 0;
-      Scope_Id     : Entity_Id := Current_Scope)
-      return         Entity_Id;
+      Scope_Id     : Entity_Id := Current_Scope) return Entity_Id;
    --  Used to create a new Itype.
    --
    --   Related_Nod is the node for which this Itype was created.  It is

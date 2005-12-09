@@ -3094,9 +3094,10 @@ remove_conversions (tree exp, bool true_address)
       if (true_address
 	  && TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
 	  && TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (exp)))
-	return remove_conversions (VEC_index (constructor_elt,
-					      CONSTRUCTOR_ELTS (exp), 0)->value,
-				   true);
+	return
+	  remove_conversions (VEC_index (constructor_elt,
+					 CONSTRUCTOR_ELTS (exp), 0)->value,
+			      true);
       break;
 
     case COMPONENT_REF:
