@@ -37,6 +37,7 @@
 #include "types.h"
 #include "atree.h"
 #include "stringt.h"
+#include "namet.h"
 #include "uintp.h"
 #include "fe.h"
 #include "elists.h"
@@ -854,7 +855,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	       && TREE_CODE (right_operand) == CONSTRUCTOR
 	       && integer_zerop (VEC_index (constructor_elt,
 					    CONSTRUCTOR_ELTS (right_operand),
-					    0)->value))
+					    0)
+				 ->value))
 	{
 	  right_operand = build_component_ref (left_operand, NULL_TREE,
 					       TYPE_FIELDS (left_base_type),
@@ -1107,13 +1109,13 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	     a pointer to our type.  */
 	  if (TREE_CODE (type) == RECORD_TYPE && TYPE_IS_PADDING_P (type))
 	    {
-	      result = VEC_index (constructor_elt,
-				  CONSTRUCTOR_ELTS (operand),
-				  0)->value;
-	      result
-		= build_unary_op (ADDR_EXPR, NULL_TREE, result);
+	      result = (VEC_index (constructor_elt,
+				   CONSTRUCTOR_ELTS (operand),
+				   0)
+			->value);
+
 	      result = convert (build_pointer_type (TREE_TYPE (operand)),
-				result);
+				build_unary_op (ADDR_EXPR, NULL_TREE, result));
 	      break;
 	    }
 
@@ -1443,16 +1445,33 @@ build_call_0_expr (tree fundecl)
 }
 
 /* Call a function that raises an exception and pass the line number and file
-   name, if requested.  MSG says which exception function to call.  */
+   name, if requested.  MSG says which exception function to call.
+
+   GNAT_NODE is the gnat node conveying the source location for which the
+   error should be signaled, or Empty in which case the error is signaled on
+   the current ref_file_name/input_line.  */
 
 tree
-build_call_raise (int msg)
+build_call_raise (int msg, Node_Id gnat_node)
 {
   tree fndecl = gnat_raise_decls[msg];
+
   const char *str
-    = (Debug_Flag_NN || Exception_Locations_Suppressed) ? "" : ref_filename;
+    = (Debug_Flag_NN || Exception_Locations_Suppressed)
+      ? ""
+      : (gnat_node != Empty)
+        ? IDENTIFIER_POINTER
+          (get_identifier (Get_Name_String
+			   (Debug_Source_Name
+			    (Get_Source_File_Index (Sloc (gnat_node))))))
+        : ref_filename;
+
   int len = strlen (str) + 1;
   tree filename = build_string (len, str);
+
+  int line_number
+    = (gnat_node != Empty)
+      ? Get_Logical_Line_Number (Sloc(gnat_node)) : input_line;
 
   TREE_TYPE (filename)
     = build_array_type (char_type_node,
@@ -1462,7 +1481,7 @@ build_call_raise (int msg)
     build_call_2_expr (fndecl,
 		       build1 (ADDR_EXPR, build_pointer_type (char_type_node),
 			       filename),
-		       build_int_cst (NULL_TREE, input_line));
+		       build_int_cst (NULL_TREE, line_number));
 }
 
 /* qsort comparer for the bit positions of two constructor elements
@@ -1631,6 +1650,14 @@ build_simple_component_ref (tree record_variable, tree component,
   if (!field)
     return NULL_TREE;
 
+  /* If the field's offset has overflowed, do not attempt to access it
+     as doing so may trigger sanity checks deeper in the back-end.
+     Note that we don't need to warn since this will be done on trying
+     to declare the object.  */
+  if (TREE_CODE (DECL_FIELD_OFFSET (field)) == INTEGER_CST
+      && TREE_CONSTANT_OVERFLOW (DECL_FIELD_OFFSET (field)))
+    return NULL_TREE;
+
   /* It would be nice to call "fold" here, but that can lose a type
      we need to tag a PLACEHOLDER_EXPR with, so we can't do it.  */
   ref = build3 (COMPONENT_REF, TREE_TYPE (field), record_variable, field,
@@ -1663,7 +1690,7 @@ build_component_ref (tree record_variable, tree component,
      abort.  */
   gcc_assert (field);
   return build1 (NULL_EXPR, TREE_TYPE (field),
-		 build_call_raise (CE_Discriminant_Check_Failed));
+		 build_call_raise (CE_Discriminant_Check_Failed, Empty));
 }
 
 /* Build a GCC tree to call an allocation or deallocation function.
