@@ -4386,8 +4386,13 @@ override_options (void)
 			 && size <= UNITS_PER_FPVALUE)
 			/* Allow integer modes that fit into a single
 			   register.  We need to put integers into FPRs
-			   when using instructions like cvt and trunc.  */
-			|| (class == MODE_INT && size <= UNITS_PER_FPREG)
+			   when using instructions like cvt and trunc.
+			   We can't allow sizes smaller than a word,
+			   the FPU has no appropriate load/store
+			   instructions for those.  */
+			|| (class == MODE_INT
+			    && size >= MIN_UNITS_PER_WORD
+			    && size <= UNITS_PER_FPREG)
 			/* Allow TFmode for CCmode reloads.  */
 			|| (ISA_HAS_8CC && mode == TFmode));
 
