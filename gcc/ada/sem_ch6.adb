@@ -955,7 +955,7 @@ package body Sem_Ch6 is
                end if;
 
             else
-               --  Create a subprogram declaration, to make treatment uniform.
+               --  Create a subprogram declaration, to make treatment uniform
 
                declare
                   Subp : constant Entity_Id :=
@@ -1449,14 +1449,13 @@ package body Sem_Ch6 is
 
       if Present (Spec_Id) then
 
-         --  If a parent unit is categorized, the context of a subunit must
-         --  conform to the categorization. Conversely, if a child unit is
-         --  categorized, the parents themselves must conform.
+         --  We must conform to the categorization of our spec
 
-         if Nkind (Parent (N)) = N_Subunit then
-            Validate_Categorization_Dependency (N, Spec_Id);
+         Validate_Categorization_Dependency (N, Spec_Id);
 
-         elsif Is_Child_Unit (Spec_Id) then
+         --  And if this is a child unit, the parent units must conform
+
+         if Is_Child_Unit (Spec_Id) then
             Validate_Categorization_Dependency
               (Unit_Declaration_Node (Spec_Id), Spec_Id);
          end if;
