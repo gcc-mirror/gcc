@@ -58,6 +58,7 @@ package Sprint is
    --    Freeze entity with freeze actions   freeze entityname [ actions ]
    --    Interpretation                      interpretation type [, entity]
    --    Intrinsic calls                     function-name!(arg, arg, arg)
+   --    Itype declaration                   [(sub)type declaration without ;]
    --    Itype reference                     reference itype
    --    Label declaration                   labelname : label
    --    Mod wi Treat_Fixed_As_Integer       x #mod y

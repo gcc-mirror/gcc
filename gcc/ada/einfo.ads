@@ -2469,6 +2469,10 @@ package Einfo is
 --       Present in package entities. Indicates that the package has been
 --       created as a wrapper for a subprogram instantiation.
 
+--    Itype_Printed (Flag202)
+--       Set in Itypes if the Itype has been printed by Sprint. This is used to
+--       avoid printing an Itype more than once.
+
 --    Kill_Elaboration_Checks (Flag32)
 --       Present in all entities. Set by the expander to kill elaboration
 --       checks which are known not to be needed. Equivalent in effect to
@@ -4166,6 +4170,7 @@ package Einfo is
    --    Is_Tagged_Type                (Flag55)
    --    Is_Unsigned_Type              (Flag144)
    --    Is_Volatile                   (Flag16)
+   --    Itype_Printed                 (Flag202)  (itypes only)
    --    Must_Be_On_Byte_Boundary      (Flag183)
    --    Size_Depends_On_Discriminant  (Flag177)
    --    Size_Known_At_Compile_Time    (Flag92)
@@ -5363,7 +5368,6 @@ package Einfo is
    function Is_Potentially_Use_Visible         (Id : E) return B;
    function Is_Preelaborated                   (Id : E) return B;
    function Is_Primitive_Wrapper               (Id : E) return B;
-
    function Is_Private_Composite               (Id : E) return B;
    function Is_Private_Descendant              (Id : E) return B;
    function Is_Protected_Interface             (Id : E) return B;
@@ -5387,7 +5391,7 @@ package Einfo is
    function Is_Valued_Procedure                (Id : E) return B;
    function Is_Visible_Child_Unit              (Id : E) return B;
    function Is_Volatile                        (Id : E) return B;
-   function Is_Wrapper_Package                 (Id : E) return B;
+   function Itype_Printed                      (Id : E) return B;
    function Kill_Elaboration_Checks            (Id : E) return B;
    function Kill_Range_Checks                  (Id : E) return B;
    function Kill_Tag_Checks                    (Id : E) return B;
@@ -5567,6 +5571,7 @@ package Einfo is
    function Is_Return_By_Reference_Type        (Id : E) return B;
    function Is_String_Type                     (Id : E) return B;
    function Is_Task_Record_Type                (Id : E) return B;
+   function Is_Wrapper_Package                 (Id : E) return B;
    function Next_Component                     (Id : E) return E;
    function Next_Discriminant                  (Id : E) return E;
    function Next_Formal                        (Id : E) return E;
@@ -5890,6 +5895,7 @@ package Einfo is
    procedure Set_Is_Valued_Procedure           (Id : E; V : B := True);
    procedure Set_Is_Visible_Child_Unit         (Id : E; V : B := True);
    procedure Set_Is_Volatile                   (Id : E; V : B := True);
+   procedure Set_Itype_Printed                 (Id : E; V : B := True);
    procedure Set_Kill_Elaboration_Checks       (Id : E; V : B := True);
    procedure Set_Kill_Range_Checks             (Id : E; V : B := True);
    procedure Set_Kill_Tag_Checks               (Id : E; V : B := True);
@@ -6445,7 +6451,6 @@ package Einfo is
    pragma Inline (Is_Potentially_Use_Visible);
    pragma Inline (Is_Preelaborated);
    pragma Inline (Is_Primitive_Wrapper);
-
    pragma Inline (Is_Private_Composite);
    pragma Inline (Is_Private_Descendant);
    pragma Inline (Is_Private_Type);
@@ -6477,6 +6482,7 @@ package Einfo is
    pragma Inline (Is_VMS_Exception);
    pragma Inline (Is_Valued_Procedure);
    pragma Inline (Is_Visible_Child_Unit);
+   pragma Inline (Itype_Printed);
    pragma Inline (Kill_Elaboration_Checks);
    pragma Inline (Kill_Range_Checks);
    pragma Inline (Kill_Tag_Checks);
@@ -6788,7 +6794,6 @@ package Einfo is
    pragma Inline (Set_Is_Potentially_Use_Visible);
    pragma Inline (Set_Is_Preelaborated);
    pragma Inline (Set_Is_Primitive_Wrapper);
-
    pragma Inline (Set_Is_Private_Composite);
    pragma Inline (Set_Is_Private_Descendant);
    pragma Inline (Set_Is_Protected_Interface);
@@ -6812,6 +6817,7 @@ package Einfo is
    pragma Inline (Set_Is_Valued_Procedure);
    pragma Inline (Set_Is_Visible_Child_Unit);
    pragma Inline (Set_Is_Volatile);
+   pragma Inline (Set_Itype_Printed);
    pragma Inline (Set_Kill_Elaboration_Checks);
    pragma Inline (Set_Kill_Range_Checks);
    pragma Inline (Set_Kill_Tag_Checks);
@@ -6909,6 +6915,7 @@ package Einfo is
    --  access/set format that can be handled by xeinfo.
 
    pragma Inline (Is_Package_Or_Generic_Package);
+   pragma Inline (Is_Volatile);
    pragma Inline (Is_Wrapper_Package);
    pragma Inline (Known_RM_Size);
    pragma Inline (Known_Static_Component_Bit_Offset);

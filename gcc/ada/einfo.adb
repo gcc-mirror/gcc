@@ -452,8 +452,8 @@ package body Einfo is
    --    Is_Task_Interface              Flag200
 
    --    Has_Anon_Block_Suffix          Flag201
+   --    Itype_Printed                  Flag202
 
-   --    (unused)                       Flag202
    --    (unused)                       Flag203
    --    (unused)                       Flag204
    --    (unused)                       Flag205
@@ -1877,12 +1877,19 @@ package body Einfo is
    function Is_Volatile (Id : E) return B is
    begin
       pragma Assert (Nkind (Id) in N_Entity);
+
       if Is_Type (Id) then
          return Flag16 (Base_Type (Id));
       else
          return Flag16 (Id);
       end if;
    end Is_Volatile;
+
+   function Itype_Printed (Id : E) return B is
+   begin
+      pragma Assert (Is_Itype (Id));
+      return Flag202 (Id);
+   end Itype_Printed;
 
    function Kill_Elaboration_Checks (Id : E) return B is
    begin
@@ -4016,6 +4023,12 @@ package body Einfo is
       Set_Flag16 (Id, V);
    end Set_Is_Volatile;
 
+   procedure Set_Itype_Printed (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Itype (Id));
+      Set_Flag202 (Id, V);
+   end Set_Itype_Printed;
+
    procedure Set_Kill_Elaboration_Checks (Id : E; V : B := True) is
    begin
       Set_Flag32 (Id, V);
@@ -5722,6 +5735,7 @@ package body Einfo is
 
    function Is_Limited_Type (Id : E) return B is
       Btype : constant E := Base_Type (Id);
+      Rtype : constant E := Root_Type (Btype);
 
    begin
       if not Is_Type (Id) then
@@ -5744,11 +5758,17 @@ package body Einfo is
          return False;
 
       elsif Is_Record_Type (Btype) then
-         if Is_Limited_Record (Root_Type (Btype)) then
-            return True;
+
+         --  AI-419: limitedness is not inherited from a limited interface
+
+         if Is_Limited_Record (Rtype) then
+            return not Is_Interface (Rtype)
+              or else Is_Protected_Interface (Rtype)
+              or else Is_Synchronized_Interface (Rtype)
+              or else Is_Task_Interface (Rtype);
 
          elsif Is_Class_Wide_Type (Btype) then
-            return Is_Limited_Type (Root_Type (Btype));
+            return Is_Limited_Type (Rtype);
 
          else
             declare
@@ -5813,6 +5833,8 @@ package body Einfo is
    -- Is_Return_By_Reference_Type --
    ---------------------------------
 
+   --  Note: this predicate has disappeared from Ada 2005: see AI-318-2
+
    function Is_Return_By_Reference_Type (Id : E) return B is
       Btype : constant Entity_Id := Base_Type (Id);
 
@@ -5820,7 +5842,6 @@ package body Einfo is
       if Is_Private_Type (Btype) then
          declare
             Utyp : constant Entity_Id := Underlying_Type (Btype);
-
          begin
             if No (Utyp) then
                return False;
@@ -5834,7 +5855,10 @@ package body Einfo is
 
       elsif Is_Record_Type (Btype) then
          if Is_Limited_Record (Btype) then
-            return True;
+            return not Is_Interface (Btype)
+              or else Is_Protected_Interface (Btype)
+              or else Is_Synchronized_Interface (Btype)
+              or else Is_Task_Interface (Btype);
 
          elsif Is_Class_Wide_Type (Btype) then
             return Is_Return_By_Reference_Type (Root_Type (Btype));
@@ -6700,6 +6724,7 @@ package body Einfo is
       W ("Is_Valued_Procedure",           Flag127 (Id));
       W ("Is_Visible_Child_Unit",         Flag116 (Id));
       W ("Is_Volatile",                   Flag16  (Id));
+      W ("Itype_Printed",                 Flag202 (Id));
       W ("Kill_Elaboration_Checks",       Flag32  (Id));
       W ("Kill_Range_Checks",             Flag33  (Id));
       W ("Kill_Tag_Checks",               Flag34  (Id));

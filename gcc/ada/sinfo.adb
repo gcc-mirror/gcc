@@ -1692,6 +1692,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Derived_Type_Definition
+        or else NT (N).Nkind = N_Formal_Derived_Type_Definition
         or else NT (N).Nkind = N_Formal_Private_Type_Definition
         or else NT (N).Nkind = N_Private_Extension_Declaration
         or else NT (N).Nkind = N_Private_Type_Declaration
@@ -4278,6 +4279,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Derived_Type_Definition
+        or else NT (N).Nkind = N_Formal_Derived_Type_Definition
         or else NT (N).Nkind = N_Formal_Private_Type_Definition
         or else NT (N).Nkind = N_Private_Extension_Declaration
         or else NT (N).Nkind = N_Private_Type_Declaration

@@ -519,6 +519,9 @@ package body Ch12 is
          --  exception is ABSTRACT, where we have to scan ahead to see if we
          --  have a formal derived type or a formal private type definition.
 
+         --  In addition, in Ada 2005 LIMITED may appear after abstract, so
+         --  that the lookahead must be extended by one more token.
+
          when Tok_Abstract =>
             Save_Scan_State (Scan_State);
             Scan; -- past ABSTRACT
@@ -526,6 +529,18 @@ package body Ch12 is
             if Token = Tok_New then
                Restore_Scan_State (Scan_State); -- to ABSTRACT
                return P_Formal_Derived_Type_Definition;
+
+            elsif Token = Tok_Limited then
+               Scan;  --  past LIMITED
+
+               if Token = Tok_New then
+                  Restore_Scan_State (Scan_State); -- to ABSTRACT
+                  return P_Formal_Derived_Type_Definition;
+
+               else
+                  Restore_Scan_State (Scan_State); -- to ABSTRACT
+                  return P_Formal_Private_Type_Definition;
+               end if;
 
             else
                Restore_Scan_State (Scan_State); -- to ABSTRACT
@@ -560,7 +575,25 @@ package body Ch12 is
                Set_Limited_Present (Typedef_Node);
                return Typedef_Node;
 
+            elsif Token = Tok_New then
+               Restore_Scan_State (Scan_State); -- to LIMITED
+               return P_Formal_Derived_Type_Definition;
+
             else
+               if Token = Tok_Abstract then
+                  Error_Msg_SC ("ABSTRACT must come before LIMITED");
+                  Scan;  --  past improper ABSTRACT
+
+                  if Token = Tok_New then
+                     Restore_Scan_State (Scan_State); -- to LIMITED
+                     return P_Formal_Derived_Type_Definition;
+
+                  else
+                     Restore_Scan_State (Scan_State);
+                     return P_Formal_Private_Type_Definition;
+                  end if;
+               end if;
+
                Restore_Scan_State (Scan_State);
                return P_Formal_Private_Type_Definition;
             end if;
@@ -666,6 +699,20 @@ package body Ch12 is
          Scan; -- past LIMITED
       end if;
 
+      if Token = Tok_Abstract then
+         if Prev_Token = Tok_Tagged then
+            Error_Msg_SC ("ABSTRACT must come before TAGGED");
+         elsif Prev_Token = Tok_Limited then
+            Error_Msg_SC ("ABSTRACT must come before LIMITED");
+         end if;
+
+         Resync_Past_Semicolon;
+
+      elsif Token = Tok_Tagged then
+         Error_Msg_SC ("TAGGED must come before LIMITED");
+         Resync_Past_Semicolon;
+      end if;
+
       Set_Sloc (Def_Node, Token_Ptr);
       T_Private;
       return Def_Node;
@@ -676,9 +723,11 @@ package body Ch12 is
    --------------------------------------------
 
    --  FORMAL_DERIVED_TYPE_DEFINITION ::=
-   --    [abstract] new SUBTYPE_MARK [[AND interface_list] with private]
+   --    [abstract] [limited]
+   --         new SUBTYPE_MARK [[AND interface_list] with private]
 
-   --  The caller has checked the initial token(s) is/are NEW or ASTRACT NEW
+   --  The caller has checked the initial token(s) is/are NEW, ASTRACT NEW
+   --  LIMITED NEW, or ABSTRACT LIMITED NEW
 
    --  Error recovery: cannot raise Error_Resync
 
@@ -691,6 +740,22 @@ package body Ch12 is
       if Token = Tok_Abstract then
          Set_Abstract_Present (Def_Node);
          Scan; -- past ABSTRACT
+      end if;
+
+      if Token = Tok_Limited then
+         Set_Limited_Present (Def_Node);
+         Scan;  --  past Limited
+
+         if Ada_Version < Ada_05 then
+            Error_Msg_SP
+              ("LIMITED in derived type is an Ada 2005 extension");
+            Error_Msg_SP
+              ("\unit must be compiled with -gnat05 switch");
+         end if;
+
+         if Token = Tok_Abstract then
+            Scan;  --  past ABSTRACT. diagnosed already in caller.
+         end if;
       end if;
 
       Scan; -- past NEW;
