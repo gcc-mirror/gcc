@@ -24,9 +24,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Hostparm; use Hostparm;
 with Namet;    use Namet;
 with Output;   use Output;
+with Targparm; use Targparm;
 
 package body Butil is
 
@@ -45,11 +45,11 @@ package body Butil is
                                or else
                              Name_Buffer (1 .. 5) = "gnat."))
         or else
-          (OpenVMS
-             and then Name_Len > 3
-             and then (Name_Buffer (1 .. 4) = "dec%"
-                         or else
-                       Name_Buffer (1 .. 4) = "dec."));
+          (OpenVMS_On_Target
+           and then Name_Len > 3
+           and then (Name_Buffer (1 .. 4) = "dec%"
+                      or else
+                     Name_Buffer (1 .. 4) = "dec."));
 
    end Is_Internal_Unit;
 

@@ -628,8 +628,8 @@ package body Make is
    GNAT_Flag         : constant String_Access := new String'("-gnatpg");
    Do_Not_Check_Flag : constant String_Access := new String'("-x");
 
-   Object_Suffix     : constant String := Get_Object_Suffix.all;
-   Executable_Suffix : constant String := Get_Executable_Suffix.all;
+   Object_Suffix     : constant String := Get_Target_Object_Suffix.all;
+   Executable_Suffix : constant String := Get_Target_Executable_Suffix.all;
 
    Syntax_Only : Boolean := False;
    --  Set to True when compiling with -gnats

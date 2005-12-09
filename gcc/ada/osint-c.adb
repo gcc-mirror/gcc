@@ -319,7 +319,7 @@ package body Osint.C is
    ---------------------------------
 
    procedure Set_Output_Object_File_Name (Name : String) is
-      Ext : constant String := Object_Suffix;
+      Ext : constant String  := Target_Object_Suffix;
       NL  : constant Natural := Name'Length;
       EL  : constant Natural := Ext'Length;
 

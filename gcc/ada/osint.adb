@@ -32,6 +32,7 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Sdefault; use Sdefault;
 with Table;
+with Targparm; use Targparm;
 
 with System.Case_Util; use System.Case_Util;
 
@@ -1776,9 +1777,9 @@ package body Osint is
       Get_Name_String (N);
       Name_Len := Name_Len - ALI_Suffix'Length - 1;
 
-      for J in Object_Suffix'Range loop
+      for J in Target_Object_Suffix'Range loop
          Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Object_Suffix (J);
+         Name_Buffer (Name_Len) := Target_Object_Suffix (J);
       end loop;
 
       return Name_Enter;
@@ -2292,7 +2293,7 @@ package body Osint is
       Library (3 + Name'Length)                 := '-';
       Library (4 + Name'Length .. Library'Last) := Library_Version;
 
-      if Hostparm.OpenVMS then
+      if OpenVMS_On_Target then
          for K in Library'First + 2 .. Library'Last loop
             if Library (K) = '.' or else Library (K) = '-' then
                Library (K) := '_';
@@ -2798,13 +2799,6 @@ begin
    begin
       Identifier_Character_Set := Get_Default_Identifier_Character_Set;
       Maximum_File_Name_Length := Get_Maximum_File_Name_Length;
-
-      --  On VMS, '~' is not allowed in file names. Change the multi unit
-      --  index character to '$'.
-
-      if Hostparm.OpenVMS then
-         Multi_Unit_Index_Character := '$';
-      end if;
 
       --  Following should be removed by having above function return
       --  Integer'Last as indication of no maximum instead of -1 ???

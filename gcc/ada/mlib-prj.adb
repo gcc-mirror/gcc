@@ -26,7 +26,6 @@
 
 with ALI;      use ALI;
 with Gnatvsn;  use Gnatvsn;
-with Hostparm;
 with MLib.Fil; use MLib.Fil;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl; use MLib.Utl;
@@ -40,6 +39,7 @@ with Sinput.P;
 with Snames;   use Snames;
 with Switch;   use Switch;
 with Table;
+with Targparm; use Targparm;
 
 with Ada.Characters.Handling;
 
@@ -55,12 +55,13 @@ package body MLib.Prj is
    pragma Import (C, Prj_Add_Obj_Files, "__gnat_prj_add_obj_files");
    Add_Object_Files : constant Boolean := Prj_Add_Obj_Files /= 0;
    --  Indicates if object files in pragmas Linker_Options (found in the
-   --  binder generated file) should be taken when linking aq stand-alone
-   --  library.
-   --  False for Windows, True for other platforms.
+   --  binder generated file) should be taken when linking a stand-alone
+   --  library. False for Windows, True for other platforms.
 
    ALI_Suffix : constant String := ".ali";
-   B_Start    : String := "b~";
+
+   B_Start : String_Ptr := new String'("b~");
+   --  Prefix of bind file, changed to b__ for VMS
 
    S_Osinte_Ads : Name_Id := No_Name;
    --  Name_Id for "s-osinte.ads"
@@ -515,7 +516,7 @@ package body MLib.Prj is
 
       begin
          if not Libgnarl_Needed or
-           (Hostparm.OpenVMS and then
+           (OpenVMS_On_Target and then
               ((not Libdecgnat_Needed) or
                (not Gtrasymobj_Needed)))
          then
@@ -542,7 +543,7 @@ package body MLib.Prj is
                if ALI.Sdep.Table (Index).Sfile = S_Osinte_Ads then
                   Libgnarl_Needed := True;
 
-               elsif Hostparm.OpenVMS then
+               elsif OpenVMS_On_Target then
                   if ALI.Sdep.Table (Index).Sfile = S_Dec_Ads then
                      Libdecgnat_Needed := True;
 
@@ -799,18 +800,18 @@ package body MLib.Prj is
                Arguments := new String_List (1 .. Initial_Argument_Max);
             end if;
 
-            --  Add "-n -o b~<lib>.adb (b$<lib>.adb on VMS) -L<lib>"
+            --  Add "-n -o b~<lib>.adb (b__<lib>.adb on VMS) -L<lib>"
 
             Argument_Number := 2;
             Arguments (1) := No_Main;
             Arguments (2) := Output_Switch;
 
-            if Hostparm.OpenVMS then
-               B_Start (B_Start'Last) := '$';
+            if OpenVMS_On_Target then
+               B_Start := new String'("b__");
             end if;
 
             Add_Argument
-              (B_Start & Get_Name_String (Data.Library_Name) & ".adb");
+              (B_Start.all & Get_Name_String (Data.Library_Name) & ".adb");
             Add_Argument ("-L" & Get_Name_String (Data.Library_Name));
 
             if Data.Lib_Auto_Init and then SALs_Use_Constructors then
@@ -1006,7 +1007,7 @@ package body MLib.Prj is
                In_Tree             => In_Tree,
                Including_Libraries => True);
 
-            --  Invoke <gcc> -c b$$<lib>.adb
+            --  Invoke <gcc> -c b__<lib>.adb
 
             --  Allocate Arguments, if it is the first time we see a standalone
             --  library.
@@ -1018,12 +1019,12 @@ package body MLib.Prj is
             Argument_Number := 1;
             Arguments (1) := Compile_Switch;
 
-            if Hostparm.OpenVMS then
-               B_Start (B_Start'Last) := '$';
+            if OpenVMS_On_Target then
+               B_Start := new String'("b__");
             end if;
 
             Add_Argument
-              (B_Start & Get_Name_String (Data.Library_Name) & ".adb");
+              (B_Start.all & Get_Name_String (Data.Library_Name) & ".adb");
 
             --  If necessary, add the PIC option
 
@@ -1160,7 +1161,7 @@ package body MLib.Prj is
 
          --  Add the objects found in the object directory and the object
          --  directories of the extended files, if any, except for generated
-         --  object files (b~.. or B$..) from extended projects.
+         --  object files (b~.. or B__..) from extended projects.
          --  When there are one or more extended files, only add an object file
          --  if no object file with the same name have already been added.
 
@@ -1203,7 +1204,7 @@ package body MLib.Prj is
 
                         if In_Main_Object_Directory
                           or else Last < 5
-                          or else Filename (1 .. B_Start'Length) /= B_Start
+                          or else Filename (1 .. B_Start'Length) /= B_Start.all
                         then
                            Name_Len := Last;
                            Name_Buffer (1 .. Name_Len) := Filename (1 .. Last);
@@ -1790,8 +1791,8 @@ package body MLib.Prj is
                Object_Dir : Dir_Type;
 
             begin
-               if Hostparm.OpenVMS then
-                  B_Start (B_Start'Last) := '$';
+               if OpenVMS_On_Target then
+                  B_Start := new String'("b__");
                end if;
 
                --  If the library file does not exist, then the time stamp will
@@ -1810,7 +1811,7 @@ package body MLib.Prj is
                   --  generated file.
 
                   if Is_Obj (Name_Buffer (1 .. Name_Len))
-                    and then Name_Buffer (1 .. B_Start'Length) /= B_Start
+                    and then Name_Buffer (1 .. B_Start'Length) /= B_Start.all
                   then
                      --  Get the object file time stamp
 

@@ -247,7 +247,7 @@ LIBS = $(LIBINTL) $(LIBIBERTY) $(SYSLIBS)
 LIBDEPS = $(LIBINTL_DEP) $(LIBIBERTY)
 # Default is no TGT_LIB; one might be passed down or something
 TGT_LIB =
-TOOLS_LIBS = $(LIBGNAT) $(EXTRA_GNATTOOLS_OBJS) link.o ../../../libiberty/libiberty.a $(SYSLIBS) $(TGT_LIB)
+TOOLS_LIBS = $(EXTRA_GNATTOOLS_OBJS) targext.o link.o $(LIBGNAT) ../../../libiberty/libiberty.a $(SYSLIBS) $(TGT_LIB)
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -296,10 +296,11 @@ Makefile: ../config.status $(srcdir)/Makefile.in $(srcdir)/../version.c
 # Lists of files for various purposes.
 
 GNATLINK_OBJS = gnatlink.o \
- a-except.o ali.o alloc.o butil.o casing.o csets.o debug.o fmap.o fname.o gnatvsn.o \
- hostparm.o indepsw.o interfac.o i-c.o i-cstrin.o namet.o opt.o osint.o output.o rident.o \
- s-exctab.o s-secsta.o s-stalib.o s-stoele.o sdefault.o stylesw.o switch.o system.o \
- table.o tree_io.o types.o validsw.o widechar.o
+ a-except.o ali.o alloc.o butil.o casing.o csets.o debug.o fmap.o fname.o \
+ gnatvsn.o hostparm.o indepsw.o interfac.o i-c.o i-cstrin.o namet.o opt.o \
+ osint.o output.o rident.o s-exctab.o s-secsta.o s-stalib.o s-stoele.o \
+ sdefault.o snames.o stylesw.o switch.o system.o table.o targparm.o tree_io.o \
+ types.o validsw.o widechar.o
 
 GNATMAKE_OBJS = a-except.o ctrl_c.o ali.o ali-util.o s-casuti.o \
  alloc.o atree.o binderr.o butil.o casing.o csets.o debug.o elists.o einfo.o\
@@ -593,6 +594,56 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
 
   EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+endif
+
+# vxworksae / vxworks 653
+ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
+  # target pairs for kernel + vthreads runtime
+  LIBGNAT_TARGET_PAIRS = \
+  a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
+  a-intnam.ads<a-intnam-vxworks.ads \
+  a-numaux.ads<a-numaux-vxworks.ads \
+  a-sytaco.ads<1asytaco.ads \
+  a-sytaco.adb<1asytaco.adb \
+  g-io.adb<g-io-vxworks-ppc-cert.adb \
+  g-io.ads<g-io-vxworks-ppc-cert.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-interr.adb<s-interr-vxworks.adb \
+  s-intman.ads<s-intman-vxworks.ads \
+  s-intman.adb<s-intman-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.ads<s-osinte-vxworks.ads \
+  s-osprim.adb<s-osprim-vxworks.adb \
+  s-parame.ads<s-parame-ae653.ads \
+  s-taprop.adb<s-taprop-vxworks.adb \
+  s-taspri.ads<s-taspri-vxworks.ads \
+  s-tpopsp.adb<s-tpopsp-vxworks.adb \
+  s-vxwork.ads<s-vxwork-ppc.ads \
+  g-soccon.ads<g-soccon-vxworks.ads \
+  g-socthi.ads<g-socthi-vxworks.ads \
+  g-socthi.adb<g-socthi-vxworks.adb \
+  system.ads<system-vxworks-ppc-vthread.ads
+
+  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-vxwexc.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+
+  # Extra pairs for the vthreads runtime
+  ifeq ($(strip $(filter-out vthreads,$(THREAD_KIND))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-thread.adb<s-thread-ae653.adb
+    EXTRA_GNATRTL_NONTASKING_OBJS += s-thread.o
+  endif
+
+  ifeq ($(strip $(filter-out yes,$(TRACE))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-traces.adb<s-traces-default.adb \
+    s-trafor.adb<s-trafor-default.adb \
+    s-trafor.ads<s-trafor-default.ads \
+    s-tratas.adb<s-tratas-default.adb \
+    s-tfsetr.adb<s-tfsetr-vxworks.adb
+  endif
 endif
 
 ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
@@ -1335,11 +1386,11 @@ LIBGNAT_SRCS = ada.h adaint.c adaint.h argv.c cio.c cstreams.c \
   errno.c exit.c cal.c ctrl_c.c \
   raise.h raise.c sysdep.c aux-io.c init.c initialize.c seh_init.c \
   final.c tracebak.c tb-alvms.c tb-alvxw.c expect.c mkdir.c socket.c gsocket.h \
-  $(EXTRA_LIBGNAT_SRCS)
+  targext.c $(EXTRA_LIBGNAT_SRCS)
 
 LIBGNAT_OBJS = adaint.o argv.o cio.o cstreams.o ctrl_c.o errno.o exit.o \
   raise.o sysdep.o aux-io.o init.o initialize.o seh_init.o cal.o \
-  final.o tracebak.o expect.o mkdir.o socket.o $(EXTRA_LIBGNAT_OBJS)
+  final.o tracebak.o expect.o mkdir.o socket.o targext.o $(EXTRA_LIBGNAT_OBJS)
 
 # NOTE ??? - when the -I option for compiling Ada code is made to work,
 #  the library installation will change and there will be a
@@ -1445,12 +1496,12 @@ endif
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../vxaddr2line$(exeext): 
+../../vxaddr2line$(exeext): targext.o
 	$(GNATMAKE) -c  $(ADA_INCLUDES) vxaddr2line --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxaddr2line 
-	$(GNATLINK) -v vxaddr2line -o $@ --GCC=$(GCC_LINK) $(CLIB)
+	$(GNATLINK) -v vxaddr2line -o $@ --GCC=$(GCC_LINK) targext.o $(CLIB)
 
-gnatmake-re:  link.o
+gnatmake-re:  link.o targext.o
 	$(GNATMAKE) $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatmake 
@@ -1459,7 +1510,7 @@ gnatmake-re:  link.o
 
 # Note the use of the "mv" command in order to allow gnatlink to be linked with
 # with the former version of gnatlink itself which cannot override itself.
-gnatlink-re:  link.o
+gnatlink-re:  link.o targext.o
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlink 
 	$(GNATLINK) -v gnatlink -o ../../gnatlinknew$(exeext) \
@@ -1471,11 +1522,11 @@ gnatlink-re:  link.o
 #  stamp target in the parent directory whenever gnat1 is rebuilt
 
 # Likewise for the tools
-../../gnatmake$(exeext): $(P) b_gnatm.o link.o $(GNATMAKE_OBJS)
+../../gnatmake$(exeext): $(P) b_gnatm.o link.o targext.o $(GNATMAKE_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) \
 	      $(TOOLS_LIBS)
 
-../../gnatlink$(exeext): $(P) b_gnatl.o link.o $(GNATLINK_OBJS)
+../../gnatlink$(exeext): $(P) b_gnatl.o link.o targext.o $(GNATLINK_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) \
 	      $(TOOLS_LIBS)
 
@@ -1869,13 +1920,18 @@ cio.o     : cio.c
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-init.o    : init.c ada.h types.h raise.h
+init.o    : init.c adaint.h raise.h
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-initialize.o : initialize.c
+initialize.o : initialize.c raise.h
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+
+targext.o : targext.c
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+		$(ALL_CPPFLAGS) $(INCLUDES_FOR_SUBDIR) \
+		$< $(OUTPUT_OPTION)
 
 # No optimization to compile this file as optimizations (-O1 or above) breaks
 # the SEH handling on Windows. The reasons are not clear.
