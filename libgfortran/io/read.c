@@ -244,7 +244,9 @@ read_a (st_parameter_dt *dtp, const fnode *f, char *p, int length)
   if (w == -1) /* '(A)' edit descriptor  */
     w = length;
 
+  dtp->u.p.sf_read_comma = 0;
   source = read_block (dtp, &w);
+  dtp->u.p.sf_read_comma = 1;
   if (source == NULL)
     return;
   if (w > length)
@@ -843,6 +845,9 @@ read_x (st_parameter_dt *dtp, int n)
       && dtp->u.p.current_unit->bytes_left < n)
     n = dtp->u.p.current_unit->bytes_left;
 
+  dtp->u.p.sf_read_comma = 0;
   if (n > 0)
     read_block (dtp, &n);
+  dtp->u.p.sf_read_comma = 1;
+
 }

@@ -210,6 +210,16 @@ read_sf (st_parameter_dt *dtp, int *length)
 	  dtp->u.p.sf_seen_eor = (crlf ? 2 : 1);
 	  break;
 	}
+      /*  Short circuit the read if a comma is found during numeric input.
+	  The flag is set to zero during character reads so that commas in
+	  strings are not ignored  */
+      if (*q == ',')
+	if (dtp->u.p.sf_read_comma == 1)
+	  {
+	    notify_std (GFC_STD_GNU, "Comma in formatted numeric read.");
+	    *length = n;
+	    break;
+	  }
 
       n++;
       *p++ = *q;
@@ -526,6 +536,11 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
      by doing nothing.  */
   if (dtp->u.p.eor_condition)
     return;
+
+  /* Set this flag so that commas in reads cause the read to complete before
+     the entire field has been read.  The next read field will start right after
+     the comma in the stream.  (Set to 0 for character reads).  */
+  dtp->u.p.sf_read_comma = 1;
 
   dtp->u.p.line_buffer = scratch;
   for (;;)

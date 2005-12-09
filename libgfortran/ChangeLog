@@ -1,3 +1,14 @@
+2005-12-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25039
+	* io/io.h: Create a new flag sf_read_comma to control comma
+	separators in numeric reads.
+	* io/transfer.c (formatted_transfer_scalar): Initialize the flag.
+	(read_sf): Check for commas coming in and if the flag is set,
+	shortcut the read.
+	* io/read.c (read_a) (read_x): Clear the flag for character reads and
+	reset it after the reads.
+
 2005-12-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* io/format.c: Removing unused code.
