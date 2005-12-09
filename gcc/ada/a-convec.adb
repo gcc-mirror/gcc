@@ -660,6 +660,10 @@ package body Ada.Containers.Vectors is
 
          J := Target.Last;
          while Source.Last >= Index_Type'First loop
+            pragma Assert (Source.Last <= Index_Type'First
+                             or else not (Source.Elements (Source.Last) <
+                                          Source.Elements (Source.Last - 1)));
+
             if I < Index_Type'First then
                Target.Elements (Index_Type'First .. J) :=
                  Source.Elements (Index_Type'First .. Source.Last);
@@ -667,6 +671,10 @@ package body Ada.Containers.Vectors is
                Source.Last := No_Index;
                return;
             end if;
+
+            pragma Assert (I <= Index_Type'First
+                             or else not (Target.Elements (I) <
+                                          Target.Elements (I - 1)));
 
             if Source.Elements (Source.Last) < Target.Elements (I) then
                Target.Elements (J) := Target.Elements (I);
@@ -1923,7 +1931,6 @@ package body Ada.Containers.Vectors is
       B : Natural renames V.Busy;
 
    begin
-
       B := B + 1;
 
       begin
@@ -1937,7 +1944,6 @@ package body Ada.Containers.Vectors is
       end;
 
       B := B - 1;
-
    end Reverse_Iterate;
 
    ----------------

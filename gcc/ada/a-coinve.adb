@@ -895,6 +895,12 @@ package body Ada.Containers.Indefinite_Vectors is
 
          J := Target.Last;
          while Source.Last >= Index_Type'First loop
+            pragma Assert
+              (Source.Last <= Index_Type'First
+                 or else not (Is_Less
+                                (Source.Elements (Source.Last),
+                                 Source.Elements (Source.Last - 1))));
+
             if I < Index_Type'First then
                declare
                   Src : Elements_Type renames
@@ -908,6 +914,12 @@ package body Ada.Containers.Indefinite_Vectors is
                Source.Last := No_Index;
                return;
             end if;
+
+            pragma Assert
+              (I <= Index_Type'First
+                 or else not (Is_Less
+                                (Target.Elements (I),
+                                 Target.Elements (I - 1))));
 
             declare
                Src : Element_Access renames Source.Elements (Source.Last);
