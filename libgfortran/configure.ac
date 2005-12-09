@@ -4,6 +4,7 @@
 AC_PREREQ(2.59)
 AC_INIT([GNU Fortran Runtime Library], 0.2,,[libgfortran])
 AC_CONFIG_HEADER(config.h)
+GCC_TOPLEV_SUBDIRS
 
 # -------
 # Options

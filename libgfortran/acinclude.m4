@@ -1,3 +1,6 @@
+m4_include(../config/acx.m4)
+m4_include(../config/no-executables.m4)
+
 dnl Check:
 dnl * If we have gettimeofday;
 dnl * If we have struct timezone for use in calling it;
