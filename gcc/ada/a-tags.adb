@@ -41,46 +41,52 @@ package body Ada.Tags is
 
 --  Structure of the GNAT Primary Dispatch Table
 
---           +-----------------------+
---           |       Signature       |
---           +-----------------------+
---           |     Offset_To_Top     |
---           +-----------------------+
---           | Typeinfo_Ptr/TSD_Ptr  | ---> Type Specific Data
---  Tag ---> +-----------------------+      +-------------------+
---           |        table of       |      | inheritance depth |
---           :     primitive ops     :      +-------------------+
---           |        pointers       |      |   access level    |
---           +-----------------------+      +-------------------+
---                                          |   expanded name   |
---                                          +-------------------+
---                                          |   external tag    |
---                                          +-------------------+
---                                          |   hash table link |
---                                          +-------------------+
---                                          | remotely callable |
---                                          +-------------------+
---                                          | rec ctrler offset |
---                                          +-------------------+
---                                          |   num prim ops    |
---                                          +-------------------+
---                                          |  num interfaces   |
---                                          +-------------------+
---           Select Specific Data      <--- |     SSD_Ptr       |
---           +-----------------------+      +-------------------+
---           | table of primitive    |      | table of          |
---           :    operation          :      :    ancestor       :
---           |       kinds           |      |       tags        |
---           +-----------------------+      +-------------------+
---           | table of              |      | table of          |
---           :    entry              :      :    interface      :
---           |       indices         |      |       tags        |
---           +-----------------------+      +-------------------+
+--           +----------------------+
+--           |       Signature      |
+--           +----------------------+
+--           |      Tagged_Kind     |
+--           +----------------------+
+--           |     Offset_To_Top    |
+--           +----------------------+
+--           | Typeinfo_Ptr/TSD_Ptr ---> Type Specific Data
+--  Tag ---> +----------------------+   +-------------------+
+--           |       table of       |   | inheritance depth |
+--           :    primitive ops     :   +-------------------+
+--           |       pointers       |   |   access level    |
+--           +----------------------+   +-------------------+
+--                                      |   expanded name   |
+--                                      +-------------------+
+--                                      |   external tag    |
+--                                      +-------------------+
+--                                      |   hash table link |
+--                                      +-------------------+
+--                                      | remotely callable |
+--                                      +-------------------+
+--                                      | rec ctrler offset |
+--                                      +-------------------+
+--                                      |   num prim ops    |
+--                                      +-------------------+
+--                                      |  num interfaces   |
+--                                      +-------------------+
+--                                      |  Ifaces_Table_Ptr --> Interface Data
+--                                      +-------------------+   +------------+
+--            Select Specific Data  <----     SSD_Ptr       |   |  table     |
+--           +--------------------+     +-------------------+   :    of      :
+--           | table of primitive |     | table of          |   | interfaces |
+--           :    operation       :     :    ancestor       :   +------------+
+--           |       kinds        |     |       tags        |
+--           +--------------------+     +-------------------+
+--           | table of           |
+--           :    entry           :
+--           |       indices      |
+--           +--------------------+
 
 --  Structure of the GNAT Secondary Dispatch Table
 
 --           +-----------------------+
 --           |       Signature       |
+--           +-----------------------+
+--           |      Tagged_Kind      |
 --           +-----------------------+
 --           |     Offset_To_Top     |
 --           +-----------------------+
@@ -93,10 +99,77 @@ package body Ada.Tags is
 --                                          |    op offsets |
 --                                          +---------------+
 
-   Offset_To_Signature : constant SSE.Storage_Count :=
-                           DT_Typeinfo_Ptr_Size
-                             + DT_Offset_To_Top_Size
-                             + DT_Signature_Size;
+   ----------------------------------
+   -- GNAT Dispatch Table Prologue --
+   ----------------------------------
+
+   --  GNAT's Dispatch Table prologue contains several fields which are hidden
+   --  in order to preserve compatibility with C++. These fields are accessed
+   --  by address calculations performed in the following manner:
+
+   --     Field : Field_Type :=
+   --               (To_Address (Tag) - Sum_Of_Preceding_Field_Sizes).all;
+
+   --  The bracketed subtraction shifts the pointer (Tag) from the table of
+   --  primitive operations (or thunks) to the field in question. Since the
+   --  result of the subtraction is an address, dereferencing it will obtain
+   --  the actual value of the field.
+
+   --  Guidelines for addition of new hidden fields
+
+   --     Define a Field_Type and Field_Type_Ptr (access to Field_Type) in
+   --     A-Tags.ads for the newly introduced field.
+
+   --     Defined the size of the new field as a constant Field_Name_Size
+
+   --     Introduce an Unchecked_Conversion from System.Address to
+   --     Field_Type_Ptr in A-Tags.ads.
+
+   --     Define the specifications of Get_<Field_Name> and Set_<Field_Name>
+   --     in A-Tags.ads.
+
+   --     Update the GNAT Dispatch Table structure in A-Tags.adb
+
+   --     Provide bodies to the Get_<Field_Name> and Set_<Field_Name> routines.
+   --     The profile of a Get_<Field_Name> routine should resemble:
+
+   --        function Get_<Field_Name> (T : Tag; ...) return Field_Type is
+   --           Field : constant System.Address :=
+   --                     To_Address (T) - <Sum_Of_Previous_Field_Sizes>;
+   --        begin
+   --           pragma Assert (Check_Signature (T, <Applicable_DT>));
+   --           <Additional_Assertions>
+
+   --           return To_Field_Type_Ptr (Field).all;
+   --        end Get_<Field_Name>;
+
+   --     The profile of a Set_<Field_Name> routine should resemble:
+
+   --        procedure Set_<Field_Name> (T : Tag; ..., Value : Field_Type) is
+   --           Field : constant System.Address :=
+   --                     To_Address (T) - <Sum_Of_Previous_Field_Sizes>;
+   --           begin
+   --           pragma Assert (Check_Signature (T, <Applicable_DT>));
+   --           <Additional_Assertions>
+
+   --           To_Field_Type_Ptr (Field).all := Value;
+   --        end Set_<Field_Name>;
+
+   --  NOTE: For each field in the prologue which precedes the newly added
+   --  one, find and update its respective Sum_Of_Previous_Field_Sizes by
+   --  subtractind Field_Name_Size from it. Falure to do so will clobber the
+   --  previous prologue field.
+
+   K_Typeinfo      : constant SSE.Storage_Count := DT_Typeinfo_Ptr_Size;
+
+   K_Offset_To_Top : constant SSE.Storage_Count :=
+                       K_Typeinfo + DT_Offset_To_Top_Size;
+
+   K_Tagged_Kind   : constant SSE.Storage_Count :=
+                       K_Offset_To_Top + DT_Tagged_Kind_Size;
+
+   K_Signature     : constant SSE.Storage_Count :=
+                       K_Tagged_Kind + DT_Signature_Size;
 
    subtype Cstring is String (Positive);
    type Cstring_Ptr is access all Cstring;
@@ -107,6 +180,20 @@ package body Ada.Tags is
    type Tag_Table is array (Natural range <>) of Tag;
    pragma Suppress_Initialization (Tag_Table);
    pragma Suppress (Index_Check, On => Tag_Table);
+
+   --  Declarations for the table of interfaces
+
+   type Interface_Data_Element is record
+      Iface_Tag : Tag;
+      Offset    : System.Storage_Elements.Storage_Offset;
+   end record;
+
+   type Interfaces_Array is
+     array (Natural range <>) of Interface_Data_Element;
+
+   type Interface_Data (Nb_Ifaces : Positive) is record
+      Table : Interfaces_Array (1 .. Nb_Ifaces);
+   end record;
 
    --  Object specific data types
 
@@ -171,16 +258,15 @@ package body Ada.Tags is
       --  Controller Offset: Used to give support to tagged controlled objects
       --  (see Get_Deep_Controller at s-finimp)
 
+      Ifaces_Table_Ptr : System.Address;
+      --  Pointer to the table of interface tags. It is used to implement the
+      --  membership test associated with interfaces and also for backward
+      --  abstract interface type conversions (Ada 2005:AI-251)
+
       Num_Prim_Ops : Natural;
       --  Number of primitive operations of the dispatch table. This field is
       --  used for additional run-time checks when the run-time is compiled
       --  with assertions enabled.
-
-      Num_Interfaces : Natural;
-      --  Number of abstract interface types implemented by the tagged type.
-      --  The value Idepth+Num_Interfaces indicates the end of the second table
-      --  stored in the Tags_Table component. It is used to implement the
-      --  membership test associated with interfaces (Ada 2005:AI-251).
 
       SSD_Ptr : System.Address;
       --  Pointer to a table of records used in dispatching selects. This
@@ -210,6 +296,8 @@ package body Ada.Tags is
       --  enough space for these additional components, and generates code that
       --  displaces the _Tag to point after these components.
 
+      --  Signature     : Signature_Kind;
+      --  Tagged_Kind   : Tagged_Kind;
       --  Offset_To_Top : Natural;
       --  Typeinfo_Ptr  : System.Address;
 
@@ -304,11 +392,6 @@ package body Ada.Tags is
    function Length (Str : Cstring_Ptr) return Natural;
    --  Length of string represented by the given pointer (treating the string
    --  as a C-style string, which is Nul terminated).
-
-   function Offset_To_Top
-     (T : Tag) return System.Storage_Elements.Storage_Offset;
-   --  Returns the current value of the offset_to_top component available in
-   --  the prologue of the dispatch table.
 
    function Typeinfo_Ptr (T : Tag) return System.Address;
    --  Returns the current value of the typeinfo_ptr component available in
@@ -425,21 +508,20 @@ package body Ada.Tags is
    ---------------------
 
    function Check_Signature (T : Tag; Kind : Signature_Type) return Boolean is
-      Offset_To_Top_Ptr : constant Storage_Offset_Ptr :=
-                            To_Storage_Offset_Ptr (To_Address (T)
-                              - Offset_To_Signature);
+      Signature : constant Storage_Offset_Ptr :=
+                    To_Storage_Offset_Ptr (To_Address (T) - K_Signature);
 
-      Signature : constant Signature_Values :=
-                    To_Signature_Values (Offset_To_Top_Ptr.all);
+      Sig_Values : constant Signature_Values :=
+                     To_Signature_Values (Signature.all);
 
       Signature_Id : Signature_Kind;
 
    begin
-      if Signature (1) /= Valid_Signature then
+      if Sig_Values (1) /= Valid_Signature then
          Signature_Id := Unknown;
 
-      elsif Signature (2) in Primary_DT .. Abstract_Interface then
-         Signature_Id := Signature (2);
+      elsif Sig_Values (2) in Primary_DT .. Abstract_Interface then
+         Signature_Id := Sig_Values (2);
 
       else
          Signature_Id := Unknown;
@@ -522,6 +604,54 @@ package body Ada.Tags is
       return Pos >= 0 and then TSD (Obj_Tag).Tags_Table (Pos) = Typ_Tag;
    end CW_Membership;
 
+   --------------
+   -- Displace --
+   --------------
+
+   function Displace
+     (This : System.Address;
+      T    : Tag) return System.Address
+   is
+      Curr_DT     : constant Tag := To_Tag_Ptr (This).all;
+      Iface_Table : Interface_Data_Ptr;
+      Obj_Base    : System.Address;
+      Obj_DT      : Tag;
+      Obj_TSD     : Type_Specific_Data_Ptr;
+
+   begin
+      pragma Assert
+        (Check_Signature (Curr_DT, Must_Be_Primary_Or_Secondary_DT));
+      pragma Assert
+        (Check_Signature (T, Must_Be_Interface));
+
+      Obj_Base    := This - Offset_To_Top (Curr_DT);
+      Obj_DT      := To_Tag_Ptr (Obj_Base).all;
+
+      pragma Assert
+        (Check_Signature (Obj_DT, Must_Be_Primary_DT));
+
+      Obj_TSD     := TSD (Obj_DT);
+      Iface_Table := To_Interface_Data_Ptr (Obj_TSD.Ifaces_Table_Ptr);
+
+      if Iface_Table /= null then
+         for Id in 1 .. Iface_Table.Nb_Ifaces loop
+            if Iface_Table.Table (Id).Iface_Tag = T then
+               Obj_Base := Obj_Base + Iface_Table.Table (Id).Offset;
+               Obj_DT   := To_Tag_Ptr (Obj_Base).all;
+
+               pragma Assert
+                 (Check_Signature (Obj_DT, Must_Be_Secondary_DT));
+
+               return Obj_Base;
+            end if;
+         end loop;
+      end if;
+
+      --  If the object does not implement the interface we must raise CE
+
+      raise Constraint_Error;
+   end Displace;
+
    -------------------
    -- IW_Membership --
    -------------------
@@ -537,12 +667,12 @@ package body Ada.Tags is
    --  that are contained in the dispatch table referenced by Obj'Tag.
 
    function IW_Membership (This : System.Address; T : Tag) return Boolean is
-      Curr_DT  : constant Tag := To_Tag_Ptr (This).all;
-      Id       : Natural;
-      Last_Id  : Natural;
-      Obj_Base : System.Address;
-      Obj_DT   : Tag;
-      Obj_TSD  : Type_Specific_Data_Ptr;
+      Curr_DT     : constant Tag := To_Tag_Ptr (This).all;
+      Iface_Table : Interface_Data_Ptr;
+      Last_Id     : Natural;
+      Obj_Base    : System.Address;
+      Obj_DT      : Tag;
+      Obj_TSD     : Type_Specific_Data_Ptr;
 
    begin
       pragma Assert
@@ -554,28 +684,31 @@ package body Ada.Tags is
       Obj_DT   := To_Tag_Ptr (Obj_Base).all;
 
       pragma Assert
-        (Check_Signature (Curr_DT, Must_Be_Primary_DT));
+        (Check_Signature (Obj_DT, Must_Be_Primary_DT));
 
       Obj_TSD := TSD (Obj_DT);
-      Last_Id := Obj_TSD.Idepth + Obj_TSD.Num_Interfaces;
+      Last_Id := Obj_TSD.Idepth;
 
-      if Obj_TSD.Num_Interfaces > 0 then
+      --  Look for the tag in the table of interfaces
 
-         --  Traverse the ancestor tags table plus the interface tags table.
-         --  The former part is required for:
+      Iface_Table := To_Interface_Data_Ptr (Obj_TSD.Ifaces_Table_Ptr);
 
-         --     Iface_CW in Typ'Class
-
-         Id := 0;
-         loop
-            if Obj_TSD.Tags_Table (Id) = T then
+      if Iface_Table /= null then
+         for Id in 1 .. Iface_Table.Nb_Ifaces loop
+            if Iface_Table.Table (Id).Iface_Tag = T then
                return True;
             end if;
-
-            Id := Id + 1;
-            exit when Id > Last_Id;
          end loop;
       end if;
+
+      --  Look for the tag in the ancestor tags table. This is required for:
+      --     Iface_CW in Typ'Class
+
+      for Id in 0 .. Last_Id loop
+         if Obj_TSD.Tags_Table (Id) = T then
+            return True;
+         end if;
+      end loop;
 
       return False;
    end IW_Membership;
@@ -652,6 +785,7 @@ package body Ada.Tags is
       Index : constant Integer := Position - Default_Prim_Op_Count;
    begin
       pragma Assert (Check_Signature (T, Must_Be_Primary_DT));
+      pragma Assert (Check_Index (T, Position));
       pragma Assert (Index > 0);
       return SSD (T).SSD_Table (Index).Index;
    end Get_Entry_Index;
@@ -677,7 +811,7 @@ package body Ada.Tags is
       if Is_Primary_DT (T) then
          return TSD (T).Num_Prim_Ops;
       else
-         return OSD (Interface_Tag (T)).Num_Prim_Ops;
+         return OSD (T).Num_Prim_Ops;
       end if;
    end Get_Num_Prim_Ops;
 
@@ -706,6 +840,7 @@ package body Ada.Tags is
       Index : constant Integer := Position - Default_Prim_Op_Count;
    begin
       pragma Assert (Check_Signature (T, Must_Be_Primary_DT));
+      pragma Assert (Check_Index (T, Position));
       pragma Assert (Index > 0);
       return SSD (T).SSD_Table (Index).Kind;
    end Get_Prim_Op_Kind;
@@ -715,12 +850,13 @@ package body Ada.Tags is
    ----------------------
 
    function Get_Offset_Index
-     (T        : Interface_Tag;
+     (T        : Tag;
       Position : Positive) return Positive
    is
       Index : constant Integer := Position - Default_Prim_Op_Count;
    begin
-      pragma Assert (Check_Signature (Tag (T), Must_Be_Secondary_DT));
+      pragma Assert (Check_Signature (T, Must_Be_Secondary_DT));
+      pragma Assert (Check_Index (T, Position));
       pragma Assert (Index > 0);
       return OSD (T).OSD_Table (Index);
    end Get_Offset_Index;
@@ -745,6 +881,18 @@ package body Ada.Tags is
       return TSD (T).Remotely_Callable;
    end Get_Remotely_Callable;
 
+   ---------------------
+   -- Get_Tagged_Kind --
+   ---------------------
+
+   function Get_Tagged_Kind (T : Tag) return Tagged_Kind is
+      Tagged_Kind_Ptr : constant System.Address :=
+                          To_Address (T) - K_Tagged_Kind;
+   begin
+      pragma Assert (Check_Signature (T, Must_Be_Primary_Or_Secondary_DT));
+      return To_Tagged_Kind_Ptr (Tagged_Kind_Ptr).all;
+   end Get_Tagged_Kind;
+
    ----------------
    -- Inherit_DT --
    ----------------
@@ -766,8 +914,10 @@ package body Ada.Tags is
    -----------------
 
    procedure Inherit_TSD (Old_Tag : Tag; New_Tag : Tag) is
-      New_TSD_Ptr : Type_Specific_Data_Ptr;
-      Old_TSD_Ptr : Type_Specific_Data_Ptr;
+      New_TSD_Ptr         : Type_Specific_Data_Ptr;
+      New_Iface_Table_Ptr : Interface_Data_Ptr;
+      Old_TSD_Ptr         : Type_Specific_Data_Ptr;
+      Old_Iface_Table_Ptr : Interface_Data_Ptr;
 
    begin
       pragma Assert (Check_Signature (New_Tag, Must_Be_Primary_Or_Interface));
@@ -778,18 +928,29 @@ package body Ada.Tags is
            (Check_Signature (Old_Tag, Must_Be_Primary_Or_Interface));
          Old_TSD_Ptr := TSD (Old_Tag);
          New_TSD_Ptr.Idepth := Old_TSD_Ptr.Idepth + 1;
-         New_TSD_Ptr.Num_Interfaces := Old_TSD_Ptr.Num_Interfaces;
 
          --  Copy the "table of ancestor tags" plus the "table of interfaces"
          --  of the parent.
 
-         New_TSD_Ptr.Tags_Table
-           (1 .. New_TSD_Ptr.Idepth + New_TSD_Ptr.Num_Interfaces) :=
-             Old_TSD_Ptr.Tags_Table
-               (0 .. Old_TSD_Ptr.Idepth + Old_TSD_Ptr.Num_Interfaces);
+         New_TSD_Ptr.Tags_Table (1 .. New_TSD_Ptr.Idepth) :=
+           Old_TSD_Ptr.Tags_Table (0 .. Old_TSD_Ptr.Idepth);
+
+         --  Copy the table of interfaces of the parent
+
+         if not System."=" (Old_TSD_Ptr.Ifaces_Table_Ptr,
+                            System.Null_Address)
+         then
+            Old_Iface_Table_Ptr :=
+              To_Interface_Data_Ptr (Old_TSD_Ptr.Ifaces_Table_Ptr);
+            New_Iface_Table_Ptr :=
+              To_Interface_Data_Ptr (New_TSD_Ptr.Ifaces_Table_Ptr);
+
+            New_Iface_Table_Ptr.Table (1 .. Old_Iface_Table_Ptr.Nb_Ifaces) :=
+              Old_Iface_Table_Ptr.Table (1 .. Old_Iface_Table_Ptr.Nb_Ifaces);
+         end if;
+
       else
-         New_TSD_Ptr.Idepth         := 0;
-         New_TSD_Ptr.Num_Interfaces := 0;
+         New_TSD_Ptr.Idepth := 0;
       end if;
 
       New_TSD_Ptr.Tags_Table (0) := New_Tag;
@@ -845,13 +1006,12 @@ package body Ada.Tags is
    -------------------
 
    function Is_Primary_DT (T : Tag) return Boolean is
-      Offset_To_Top_Ptr : constant Storage_Offset_Ptr :=
-                            To_Storage_Offset_Ptr (To_Address (T)
-                              - Offset_To_Signature);
-      Signature         : constant Signature_Values :=
-                            To_Signature_Values (Offset_To_Top_Ptr.all);
+      Signature  : constant Storage_Offset_Ptr :=
+                     To_Storage_Offset_Ptr (To_Address (T) - K_Signature);
+      Sig_Values : constant Signature_Values :=
+                     To_Signature_Values (Signature.all);
    begin
-      return Signature (2) = Primary_DT;
+      return Sig_Values (2) = Primary_DT;
    end Is_Primary_DT;
 
    ------------
@@ -876,26 +1036,22 @@ package body Ada.Tags is
    function Offset_To_Top
      (T : Tag) return System.Storage_Elements.Storage_Offset
    is
-      Offset_To_Top_Ptr : constant Storage_Offset_Ptr :=
-                            To_Storage_Offset_Ptr (To_Address (T)
-                              - DT_Typeinfo_Ptr_Size
-                              - DT_Offset_To_Top_Size);
-
+      Offset_To_Top : constant Storage_Offset_Ptr :=
+                        To_Storage_Offset_Ptr
+                          (To_Address (T) - K_Offset_To_Top);
    begin
-      return Offset_To_Top_Ptr.all;
+      return Offset_To_Top.all;
    end Offset_To_Top;
 
    ---------
    -- OSD --
    ---------
 
-   function OSD
-     (T : Interface_Tag) return Object_Specific_Data_Ptr
-   is
-      OSD_Ptr : Addr_Ptr;
-
+   function OSD (T : Tag) return Object_Specific_Data_Ptr is
+      OSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - K_Typeinfo);
    begin
-      OSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+      pragma Assert (Check_Signature (T, Must_Be_Secondary_DT));
       return To_Object_Specific_Data_Ptr (OSD_Ptr.all);
    end OSD;
 
@@ -952,39 +1108,24 @@ package body Ada.Tags is
    -- Register_Interface_Tag --
    ----------------------------
 
-   procedure Register_Interface_Tag (T : Tag; Interface_T : Tag) is
-      New_T_TSD : Type_Specific_Data_Ptr;
-      Index     : Natural;
+   procedure Register_Interface_Tag
+     (T           : Tag;
+      Interface_T : Tag;
+      Position    : Positive)
+   is
+      New_T_TSD   : Type_Specific_Data_Ptr;
+      Iface_Table : Interface_Data_Ptr;
 
    begin
       pragma Assert (Check_Signature (T, Must_Be_Primary_DT));
       pragma Assert (Check_Signature (Interface_T, Must_Be_Interface));
 
-      New_T_TSD := TSD (T);
+      New_T_TSD   := TSD (T);
+      Iface_Table := To_Interface_Data_Ptr (New_T_TSD.Ifaces_Table_Ptr);
 
-      --  Check if the interface is already registered
+      pragma Assert (Position <= Iface_Table.Nb_Ifaces);
 
-      if New_T_TSD.Num_Interfaces > 0 then
-         declare
-            Id      : Natural          := New_T_TSD.Idepth + 1;
-            Last_Id : constant Natural := New_T_TSD.Idepth
-                                            + New_T_TSD.Num_Interfaces;
-
-         begin
-            loop
-               if New_T_TSD.Tags_Table (Id) = Interface_T then
-                  return;
-               end if;
-
-               Id := Id + 1;
-               exit when Id > Last_Id;
-            end loop;
-         end;
-      end if;
-
-      New_T_TSD.Num_Interfaces := New_T_TSD.Num_Interfaces + 1;
-      Index := New_T_TSD.Idepth + New_T_TSD.Num_Interfaces;
-      New_T_TSD.Tags_Table (Index) := Interface_T;
+      Iface_Table.Table (Position).Iface_Tag := Interface_T;
    end Register_Interface_Tag;
 
    ------------------
@@ -1016,9 +1157,9 @@ package body Ada.Tags is
       Value    : Positive)
    is
       Index : constant Integer := Position - Default_Prim_Op_Count;
-
    begin
       pragma Assert (Check_Signature (T, Must_Be_Primary_DT));
+      pragma Assert (Check_Index (T, Position));
       pragma Assert (Index > 0);
       SSD (T).SSD_Table (Index).Index := Value;
    end Set_Entry_Index;
@@ -1044,6 +1185,16 @@ package body Ada.Tags is
       TSD (T).External_Tag := To_Cstring_Ptr (Value);
    end Set_External_Tag;
 
+   -------------------------
+   -- Set_Interface_Table --
+   -------------------------
+
+   procedure Set_Interface_Table (T : Tag; Value : System.Address) is
+   begin
+      pragma Assert (Check_Signature (T, Must_Be_Primary_DT));
+      TSD (T).Ifaces_Table_Ptr := Value;
+   end Set_Interface_Table;
+
    ----------------------
    -- Set_Num_Prim_Ops --
    ----------------------
@@ -1055,7 +1206,7 @@ package body Ada.Tags is
       if Is_Primary_DT (T) then
          TSD (T).Num_Prim_Ops := Value;
       else
-         OSD (Interface_Tag (T)).Num_Prim_Ops := Value;
+         OSD (T).Num_Prim_Ops := Value;
       end if;
    end Set_Num_Prim_Ops;
 
@@ -1064,13 +1215,14 @@ package body Ada.Tags is
    ----------------------
 
    procedure Set_Offset_Index
-     (T        : Interface_Tag;
+     (T        : Tag;
       Position : Positive;
       Value    : Positive)
    is
       Index : constant Integer := Position - Default_Prim_Op_Count;
    begin
-      pragma Assert (Check_Signature (Tag (T), Must_Be_Secondary_DT));
+      pragma Assert (Check_Signature (T, Must_Be_Secondary_DT));
+      pragma Assert (Check_Index (T, Position));
       pragma Assert (Index > 0);
       OSD (T).OSD_Table (Index) := Value;
    end Set_Offset_Index;
@@ -1080,27 +1232,78 @@ package body Ada.Tags is
    -----------------------
 
    procedure Set_Offset_To_Top
-     (T     : Tag;
-      Value : System.Storage_Elements.Storage_Offset)
+     (This          : System.Address;
+      Interface_T   : Tag;
+      Offset_Value  : System.Storage_Elements.Storage_Offset)
    is
-      Offset_To_Top_Ptr : constant Storage_Offset_Ptr :=
-                            To_Storage_Offset_Ptr (To_Address (T)
-                              - DT_Typeinfo_Ptr_Size
-                              - DT_Offset_To_Top_Size);
+      Prim_DT       : Tag;
+      Sec_Base      : System.Address;
+      Sec_DT        : Tag;
+      Offset_To_Top : Storage_Offset_Ptr;
+      Iface_Table   : Interface_Data_Ptr;
+      Obj_TSD       : Type_Specific_Data_Ptr;
    begin
-      pragma Assert (Check_Signature (T, Must_Be_Primary_Or_Secondary_DT));
-      Offset_To_Top_Ptr.all := Value;
+      if System."=" (This, System.Null_Address) then
+         pragma Assert
+           (Check_Signature (Interface_T, Must_Be_Primary_DT));
+         pragma Assert (Offset_Value = 0);
+
+         Offset_To_Top :=
+           To_Storage_Offset_Ptr (To_Address (Interface_T) - K_Offset_To_Top);
+         Offset_To_Top.all := Offset_Value;
+         return;
+      end if;
+
+      --  "This" points to the primary DT and we must save Offset_Value in the
+      --  Offset_To_Top field of the corresponding secondary dispatch table.
+
+      Prim_DT := To_Tag_Ptr (This).all;
+
+      pragma Assert
+        (Check_Signature (Prim_DT, Must_Be_Primary_DT));
+
+      Sec_Base := This + Offset_Value;
+      Sec_DT   := To_Tag_Ptr (Sec_Base).all;
+      Offset_To_Top :=
+        To_Storage_Offset_Ptr (To_Address (Sec_DT) - K_Offset_To_Top);
+
+      pragma Assert
+        (Check_Signature (Sec_DT, Must_Be_Primary_Or_Secondary_DT));
+
+      Offset_To_Top.all := Offset_Value;
+
+      --  Save Offset_Value in the table of interfaces of the primary DT. This
+      --  data will be used by the subprogram "Displace" to give support to
+      --  backward abstract interface type conversions.
+
+      Obj_TSD     := TSD (Prim_DT);
+      Iface_Table := To_Interface_Data_Ptr (Obj_TSD.Ifaces_Table_Ptr);
+
+      --  Register the offset in the table of interfaces
+
+      if Iface_Table /= null then
+         for Id in 1 .. Iface_Table.Nb_Ifaces loop
+            if Iface_Table.Table (Id).Iface_Tag = Interface_T then
+               Iface_Table.Table (Id).Offset := Offset_Value;
+               return;
+            end if;
+         end loop;
+      end if;
+
+      --  If we arrive here there is some error in the run-time data structure
+
+      raise Program_Error;
    end Set_Offset_To_Top;
 
    -------------
    -- Set_OSD --
    -------------
 
-   procedure Set_OSD (T : Interface_Tag; Value : System.Address) is
-      OSD_Ptr : Addr_Ptr;
+   procedure Set_OSD (T : Tag; Value : System.Address) is
+      OSD_Ptr : constant Addr_Ptr :=
+                  To_Addr_Ptr (To_Address (T) - K_Typeinfo);
    begin
-      pragma Assert (Check_Signature (Tag (T), Must_Be_Secondary_DT));
-      OSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+      pragma Assert (Check_Signature (T, Must_Be_Secondary_DT));
       OSD_Ptr.all := Value;
    end Set_OSD;
 
@@ -1131,6 +1334,7 @@ package body Ada.Tags is
       Index : constant Integer := Position - Default_Prim_Op_Count;
    begin
       pragma Assert (Check_Signature (T, Must_Be_Primary_DT));
+      pragma Assert (Check_Index (T, Position));
       pragma Assert (Index > 0);
       SSD (T).SSD_Table (Index).Kind := Value;
    end Set_Prim_Op_Kind;
@@ -1165,6 +1369,18 @@ package body Ada.Tags is
       TSD (T).SSD_Ptr := Value;
    end Set_SSD;
 
+   ---------------------
+   -- Set_Tagged_Kind --
+   ---------------------
+
+   procedure Set_Tagged_Kind (T : Tag; Value : Tagged_Kind) is
+      Tagged_Kind_Ptr : constant System.Address :=
+                          To_Address (T) - K_Tagged_Kind;
+   begin
+      pragma Assert (Check_Signature (T, Must_Be_Primary_Or_Secondary_DT));
+      To_Tagged_Kind_Ptr (Tagged_Kind_Ptr).all := Value;
+   end Set_Tagged_Kind;
+
    -------------
    -- Set_TSD --
    -------------
@@ -1173,7 +1389,7 @@ package body Ada.Tags is
       TSD_Ptr : Addr_Ptr;
    begin
       pragma Assert (Check_Signature (T, Must_Be_Primary_Or_Interface));
-      TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+      TSD_Ptr := To_Addr_Ptr (To_Address (T) - K_Typeinfo);
       TSD_Ptr.all := Value;
    end Set_TSD;
 
@@ -1183,6 +1399,7 @@ package body Ada.Tags is
 
    function SSD (T : Tag) return Select_Specific_Data_Ptr is
    begin
+      pragma Assert (Check_Signature (T, Must_Be_Primary_DT));
       return To_Select_Specific_Data_Ptr (TSD (T).SSD_Ptr);
    end SSD;
 
@@ -1192,7 +1409,7 @@ package body Ada.Tags is
 
    function Typeinfo_Ptr (T : Tag) return System.Address is
       TSD_Ptr : constant Addr_Ptr :=
-                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+                  To_Addr_Ptr (To_Address (T) - K_Typeinfo);
    begin
       return TSD_Ptr.all;
    end Typeinfo_Ptr;
@@ -1203,8 +1420,9 @@ package body Ada.Tags is
 
    function TSD (T : Tag) return Type_Specific_Data_Ptr is
       TSD_Ptr : constant Addr_Ptr :=
-                  To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+                  To_Addr_Ptr (To_Address (T) - K_Typeinfo);
    begin
+      pragma Assert (Check_Signature (T, Must_Be_Primary_Or_Interface));
       return To_Type_Specific_Data_Ptr (TSD_Ptr.all);
    end TSD;
 

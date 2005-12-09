@@ -120,6 +120,7 @@ package Rtsfind is
       Ada_Streams,
       Ada_Tags,
       Ada_Task_Identification,
+      Ada_Task_Termination,
 
       --  Children of Ada.Calendar
 
@@ -488,10 +489,12 @@ package Rtsfind is
 
      RE_Stream_Access,                   -- Ada.Streams.Stream_IO
 
+     RE_Abstract_Interface,              -- Ada.Tags
      RE_Addr_Ptr,                        -- Ada.Tags
+     RE_Address_Array,                   -- Ada.Tags
      RE_CW_Membership,                   -- Ada.Tags
-     RE_IW_Membership,                   -- Ada.Tags
      RE_Descendant_Tag,                  -- Ada.Tags
+     RE_Displace,                        -- Ada.Tags
      RE_DT_Entry_Size,                   -- Ada.Tags
      RE_DT_Prologue_Size,                -- Ada.Tags
      RE_External_Tag,                    -- Ada.Tags
@@ -503,11 +506,16 @@ package Rtsfind is
      RE_Get_Prim_Op_Kind,                -- Ada.Tags
      RE_Get_RC_Offset,                   -- Ada.Tags
      RE_Get_Remotely_Callable,           -- Ada.Tags
+     RE_Get_Tagged_Kind,                 -- Ada.Tags
      RE_Inherit_DT,                      -- Ada.Tags
      RE_Inherit_TSD,                     -- Ada.Tags
+     RE_Interface_Data,                  -- Ada.Tags
+     RE_Interface_Tag,                   -- Ada.Tags
      RE_Internal_Tag,                    -- Ada.Tags
      RE_Is_Descendant_At_Same_Level,     -- Ada.Tags
+     RE_IW_Membership,                   -- Ada.Tags
      RE_Object_Specific_Data,            -- Ada.Tags
+     RE_Offset_To_Top,                   -- Ada.Tags
      RE_POK_Function,                    -- Ada.Tags
      RE_POK_Procedure,                   -- Ada.Tags
      RE_POK_Protected_Entry,             -- Ada.Tags
@@ -517,13 +525,16 @@ package Rtsfind is
      RE_POK_Task_Function,               -- Ada.Tags
      RE_POK_Task_Procedure,              -- Ada.Tags
      RE_Prim_Op_Kind,                    -- Ada.Tags
+     RE_Primary_DT,                      -- Ada.Tags
      RE_Register_Interface_Tag,          -- Ada.Tags
      RE_Register_Tag,                    -- Ada.Tags
+     RE_Secondary_DT,                    -- Ada.Tags
      RE_Select_Specific_Data,            -- Ada.Tags
      RE_Set_Access_Level,                -- Ada.Tags
      RE_Set_Entry_Index,                 -- Ada.Tags
      RE_Set_Expanded_Name,               -- Ada.Tags
      RE_Set_External_Tag,                -- Ada.Tags
+     RE_Set_Interface_Table,             -- Ada.Tags
      RE_Set_Num_Prim_Ops,                -- Ada.Tags
      RE_Set_Offset_Index,                -- Ada.Tags
      RE_Set_Offset_To_Top,               -- Ada.Tags
@@ -533,17 +544,20 @@ package Rtsfind is
      RE_Set_RC_Offset,                   -- Ada.Tags
      RE_Set_Remotely_Callable,           -- Ada.Tags
      RE_Set_SSD,                         -- Ada.Tags
+     RE_Set_Tagged_Kind,                 -- Ada.Tags
      RE_Set_TSD,                         -- Ada.Tags
+     RE_Tag,                             -- Ada.Tags
      RE_Tag_Error,                       -- Ada.Tags
+     RE_Tagged_Kind,                     -- Ada.Tags
      RE_TSD_Entry_Size,                  -- Ada.Tags
      RE_TSD_Prologue_Size,               -- Ada.Tags
-     RE_Interface_Tag,                   -- Ada.Tags
-     RE_Tag,                             -- Ada.Tags
-     RE_Address_Array,                   -- Ada.Tags
+     RE_TK_Abstract_Limited_Tagged,      -- Ada.Tags
+     RE_TK_Abstract_Tagged,              -- Ada.Tags
+     RE_TK_Limited_Tagged,               -- Ada.Tags
+     RE_TK_Protected,                    -- Ada.Tags
+     RE_TK_Tagged,                       -- Ada.Tags
+     RE_TK_Task,                         -- Ada.Tags
      RE_Valid_Signature,                 -- Ada.Tags
-     RE_Primary_DT,                      -- Ada.Tags
-     RE_Secondary_DT,                    -- Ada.Tags
-     RE_Abstract_Interface,              -- Ada.Tags
 
      RE_Abort_Task,                      -- Ada.Task_Identification
      RE_Current_Task,                    -- Ada.Task_Identification
@@ -1629,10 +1643,12 @@ package Rtsfind is
 
      RE_Stream_Access                    => Ada_Streams_Stream_IO,
 
+     RE_Abstract_Interface               => Ada_Tags,
      RE_Addr_Ptr                         => Ada_Tags,
+     RE_Address_Array                    => Ada_Tags,
      RE_CW_Membership                    => Ada_Tags,
-     RE_IW_Membership                    => Ada_Tags,
      RE_Descendant_Tag                   => Ada_Tags,
+     RE_Displace                         => Ada_Tags,
      RE_DT_Entry_Size                    => Ada_Tags,
      RE_DT_Prologue_Size                 => Ada_Tags,
      RE_External_Tag                     => Ada_Tags,
@@ -1644,11 +1660,16 @@ package Rtsfind is
      RE_Get_Prim_Op_Kind                 => Ada_Tags,
      RE_Get_RC_Offset                    => Ada_Tags,
      RE_Get_Remotely_Callable            => Ada_Tags,
+     RE_Get_Tagged_Kind                  => Ada_Tags,
      RE_Inherit_DT                       => Ada_Tags,
      RE_Inherit_TSD                      => Ada_Tags,
+     RE_Interface_Data                   => Ada_Tags,
+     RE_Interface_Tag                    => Ada_Tags,
      RE_Internal_Tag                     => Ada_Tags,
      RE_Is_Descendant_At_Same_Level      => Ada_Tags,
+     RE_IW_Membership                    => Ada_Tags,
      RE_Object_Specific_Data             => Ada_Tags,
+     RE_Offset_To_Top                    => Ada_Tags,
      RE_POK_Function                     => Ada_Tags,
      RE_POK_Procedure                    => Ada_Tags,
      RE_POK_Protected_Entry              => Ada_Tags,
@@ -1658,13 +1679,16 @@ package Rtsfind is
      RE_POK_Task_Function                => Ada_Tags,
      RE_POK_Task_Procedure               => Ada_Tags,
      RE_Prim_Op_Kind                     => Ada_Tags,
+     RE_Primary_DT                       => Ada_Tags,
      RE_Register_Interface_Tag           => Ada_Tags,
      RE_Register_Tag                     => Ada_Tags,
+     RE_Secondary_DT                     => Ada_Tags,
      RE_Select_Specific_Data             => Ada_Tags,
      RE_Set_Access_Level                 => Ada_Tags,
      RE_Set_Entry_Index                  => Ada_Tags,
      RE_Set_Expanded_Name                => Ada_Tags,
      RE_Set_External_Tag                 => Ada_Tags,
+     RE_Set_Interface_Table              => Ada_Tags,
      RE_Set_Num_Prim_Ops                 => Ada_Tags,
      RE_Set_Offset_Index                 => Ada_Tags,
      RE_Set_Offset_To_Top                => Ada_Tags,
@@ -1674,17 +1698,20 @@ package Rtsfind is
      RE_Set_RC_Offset                    => Ada_Tags,
      RE_Set_Remotely_Callable            => Ada_Tags,
      RE_Set_SSD                          => Ada_Tags,
+     RE_Set_Tagged_Kind                  => Ada_Tags,
      RE_Set_TSD                          => Ada_Tags,
+     RE_Tag                              => Ada_Tags,
      RE_Tag_Error                        => Ada_Tags,
+     RE_Tagged_Kind                      => Ada_Tags,
      RE_TSD_Entry_Size                   => Ada_Tags,
      RE_TSD_Prologue_Size                => Ada_Tags,
-     RE_Interface_Tag                    => Ada_Tags,
-     RE_Tag                              => Ada_Tags,
-     RE_Address_Array                    => Ada_Tags,
+     RE_TK_Abstract_Limited_Tagged       => Ada_Tags,
+     RE_TK_Abstract_Tagged               => Ada_Tags,
+     RE_TK_Limited_Tagged                => Ada_Tags,
+     RE_TK_Protected                     => Ada_Tags,
+     RE_TK_Tagged                        => Ada_Tags,
+     RE_TK_Task                          => Ada_Tags,
      RE_Valid_Signature                  => Ada_Tags,
-     RE_Primary_DT                       => Ada_Tags,
-     RE_Secondary_DT                     => Ada_Tags,
-     RE_Abstract_Interface               => Ada_Tags,
 
      RE_Abort_Task                       => Ada_Task_Identification,
      RE_Current_Task                     => Ada_Task_Identification,

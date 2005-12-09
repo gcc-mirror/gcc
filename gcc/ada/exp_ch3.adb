@@ -1760,20 +1760,18 @@ package body Exp_Ch3 is
             procedure Init_Secondary_Tags_Internal (Typ : Entity_Id) is
                E     : Entity_Id;
                Aux_N : Node_Id;
+               Iface : Entity_Id;
 
             begin
-               if not Is_Interface (Typ) then
+               --  Climb to the ancestor (if any) handling private types
 
-                  --  Climb to the ancestor (if any) handling private types
-
-                  if Present (Full_View (Etype (Typ))) then
-                     if Full_View (Etype (Typ)) /= Typ then
-                        Init_Secondary_Tags_Internal (Full_View (Etype (Typ)));
-                     end if;
-
-                  elsif Etype (Typ) /= Typ then
-                     Init_Secondary_Tags_Internal (Etype (Typ));
+               if Present (Full_View (Etype (Typ))) then
+                  if Full_View (Etype (Typ)) /= Typ then
+                     Init_Secondary_Tags_Internal (Full_View (Etype (Typ)));
                   end if;
+
+               elsif Etype (Typ) /= Typ then
+                  Init_Secondary_Tags_Internal (Etype (Typ));
                end if;
 
                if Present (Abstract_Interfaces (Typ))
@@ -1786,6 +1784,8 @@ package body Exp_Ch3 is
                      then
                         Aux_N := Node (ADT);
                         pragma Assert (Present (Aux_N));
+
+                        Iface := Find_Interface (Typ, E);
 
                         --  Initialize the pointer to the secondary DT
                         --  associated with the interface
@@ -1801,15 +1801,23 @@ package body Exp_Ch3 is
                               New_Reference_To (Aux_N, Loc)));
 
                         --  Generate:
-                        --    Set_Offset_To_Top (DT_Ptr, n);
+                        --    Set_Offset_To_Top (Init, Iface'Tag, n);
 
                         Append_To (Body_Stmts,
                           Make_Procedure_Call_Statement (Loc,
                             Name => New_Reference_To
                                       (RTE (RE_Set_Offset_To_Top), Loc),
                             Parameter_Associations => New_List (
+                              Make_Attribute_Reference (Loc,
+                                Prefix => Make_Identifier (Loc, Name_uInit),
+                                Attribute_Name => Name_Address),
+
                               Unchecked_Convert_To (RTE (RE_Tag),
-                                New_Reference_To (Aux_N, Loc)),
+                                New_Reference_To
+                                  (Node (First_Elmt
+                                         (Access_Disp_Table (Iface))),
+                                   Loc)),
+
                               Unchecked_Convert_To (RTE (RE_Storage_Offset),
                                 Make_Attribute_Reference (Loc,
                                   Prefix         =>
@@ -2118,7 +2126,9 @@ package body Exp_Ch3 is
 
                --  Case of composite component with its own Init_Proc
 
-               elsif Has_Non_Null_Base_Init_Proc (Typ) then
+               elsif not Is_Interface (Typ)
+                 and then Has_Non_Null_Base_Init_Proc (Typ)
+               then
                   Stmts :=
                     Build_Initialization_Call
                       (Loc,
@@ -4743,18 +4753,15 @@ package body Exp_Ch3 is
          Append_Freeze_Actions (Def_Id, Predef_List);
 
          --  Populate the two auxiliary tables used for dispatching
-         --  asynchronous, conditional and timed selects for tagged
+         --  asynchronous, conditional and timed selects for synchronized
          --  types that implement a limited interface.
 
          if Ada_Version >= Ada_05
-           and then not Is_Interface  (Def_Id)
-           and then not Is_Abstract   (Def_Id)
-           and then not Is_Controlled (Def_Id)
-           and then
-             Implements_Interface
-               (Typ          => Def_Id,
-                Kind         => Any_Limited_Interface,
-                Check_Parent => True)
+           and then Is_Concurrent_Record_Type (Def_Id)
+           and then Implements_Interface (
+                      Typ          => Def_Id,
+                      Kind         => Any_Limited_Interface,
+                      Check_Parent => True)
          then
             Append_Freeze_Actions (Def_Id,
               Make_Select_Specific_Data_Table (Def_Id));
@@ -5950,26 +5957,25 @@ package body Exp_Ch3 is
       end if;
 
       --  Generate the declarations for the following primitive operations:
+
       --    disp_asynchronous_select
       --    disp_conditional_select
       --    disp_get_prim_op_kind
       --    disp_get_task_id
       --    disp_timed_select
-      --  for limited interfaces and tagged types that implement a limited
-      --  interface.
+
+      --  for limited interfaces and synchronized types that implement a
+      --  limited interface.
 
       if Ada_Version >= Ada_05
         and then
-            ((Is_Interface (Tag_Typ)
-                and then Is_Limited_Record (Tag_Typ))
-          or else
-             (not Is_Abstract (Tag_Typ)
-                and then not Is_Controlled (Tag_Typ)
-              and then
-                Implements_Interface
-                  (Typ          => Tag_Typ,
-                   Kind         => Any_Limited_Interface,
-                   Check_Parent => True)))
+          ((Is_Interface (Tag_Typ) and then Is_Limited_Record (Tag_Typ))
+              or else
+                (Is_Concurrent_Record_Type (Tag_Typ)
+                   and then Implements_Interface (
+                              Typ          => Tag_Typ,
+                              Kind         => Any_Limited_Interface,
+                              Check_Parent => True)))
       then
          Append_To (Res,
            Make_Subprogram_Declaration (Loc,
@@ -6360,20 +6366,18 @@ package body Exp_Ch3 is
       --    disp_get_task_id
       --    disp_timed_select
 
-      --  for limited interfaces and tagged types that implement a limited
-      --  interface. The interface versions will have null bodies.
+      --  for limited interfaces and synchronized types that implement a
+      --  limited interface. The interface versions will have null bodies.
 
       if Ada_Version >= Ada_05
         and then
           ((Is_Interface (Tag_Typ) and then Is_Limited_Record (Tag_Typ))
               or else
-                (not Is_Abstract (Tag_Typ)
-                   and then not Is_Controlled (Tag_Typ)
-                   and then
-                     Implements_Interface
-                       (Typ          => Tag_Typ,
-                        Kind         => Any_Limited_Interface,
-                        Check_Parent => True)))
+                (Is_Concurrent_Record_Type (Tag_Typ)
+                   and then Implements_Interface (
+                              Typ          => Tag_Typ,
+                              Kind         => Any_Limited_Interface,
+                              Check_Parent => True)))
       then
          Append_To (Res, Make_Disp_Asynchronous_Select_Body (Tag_Typ));
          Append_To (Res, Make_Disp_Conditional_Select_Body  (Tag_Typ));
