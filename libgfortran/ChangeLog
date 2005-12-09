@@ -1,3 +1,9 @@
+2005-12-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/25116
+	* io/transfer.c (data_transfer_init): Don't set the default for
+	namelist I/O on preconnected files to UNFORMATTED.
+
 2005-12-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* io/format.c: Removing unused code.
