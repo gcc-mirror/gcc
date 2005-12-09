@@ -1188,6 +1188,7 @@ package body Sem_Cat is
       Param_Spec      : Node_Id;
       Param_Type      : Entity_Id;
       Base_Param_Type : Entity_Id;
+      Base_Under_Type : Entity_Id;
       Type_Decl       : Node_Id;
       Error_Node      : Node_Id := N;
 
@@ -1257,32 +1258,69 @@ package body Sem_Cat is
                           and then not (Has_Private_Declaration (Param_Type))
                           and then Comes_From_Source (N)))
             then
-               --  A limited parameter is legal only if user-specified
-               --  Read and Write attributes exist for it.
-               --  second part of RM E.2.3 (14)
+               --  A limited parameter is legal only if user-specified Read and
+               --  Write attributes exist for it. Second part of RM E.2.3 (14).
 
                if No (Full_View (Param_Type))
                  and then Ekind (Param_Type) /= E_Record_Type
                then
-                  --  Type does not have completion yet, so if declared in
-                  --  in the current RCI scope it is illegal, and will be
-                  --  flagged subsequently.
+                  --  Type does not have completion yet, so if declared in in
+                  --  the current RCI scope it is illegal, and will be flagged
+                  --  subsequently.
+
                   return;
                end if;
 
-               Base_Param_Type := Base_Type (Underlying_Type (Param_Type));
+               --  In Ada 95 the rules permit using a limited type that has
+               --  user-specified Read and Write attributes that are specified
+               --  in the private part of the package, whereas Ada 2005
+               --  (AI-240) revises this to require the attributes to be
+               --  "available" (implying that the attribute clauses must be
+               --  visible to the RCI client). The Ada 95 rules violate the
+               --  contract model for privacy, but we support both semantics
+               --  for now for compatibility (note that ACATS test BXE2009
+               --  checks a case that conforms to the Ada 95 rules but is
+               --  illegal in Ada 2005).
 
-               if No (TSS (Base_Param_Type, TSS_Stream_Read))
-                    or else
-                  No (TSS (Base_Param_Type, TSS_Stream_Write))
+               Base_Param_Type := Base_Type (Param_Type);
+               Base_Under_Type := Base_Type (Underlying_Type
+                                              (Base_Param_Type));
+
+               if (Ada_Version < Ada_05
+                     and then
+                       (No (TSS (Base_Param_Type, TSS_Stream_Read))
+                          or else
+                        No (TSS (Base_Param_Type, TSS_Stream_Write)))
+                     and then
+                       (No (TSS (Base_Under_Type, TSS_Stream_Read))
+                          or else
+                        No (TSS (Base_Under_Type, TSS_Stream_Write))))
+                 or else
+                   (Ada_Version >= Ada_05
+                      and then
+                        (No (TSS (Base_Param_Type, TSS_Stream_Read))
+                           or else
+                         No (TSS (Base_Param_Type, TSS_Stream_Write))
+                           or else
+                         Is_Hidden (TSS (Base_Param_Type, TSS_Stream_Read))
+                           or else
+                         Is_Hidden (TSS (Base_Param_Type, TSS_Stream_Write))))
                then
                   if K = N_Subprogram_Declaration then
                      Error_Node := Param_Spec;
                   end if;
 
-                  Error_Msg_N
-                    ("limited parameter in rci unit "
-                       & "must have read/write attributes ", Error_Node);
+                  if Ada_Version >= Ada_05 then
+                     Error_Msg_N
+                       ("limited parameter in rci unit "
+                          & "must have visible read/write attributes ",
+                        Error_Node);
+                  else
+                     Error_Msg_N
+                       ("limited parameter in rci unit "
+                          & "must have read/write attributes ",
+                        Error_Node);
+                  end if;
                   Explain_Limited_Type (Param_Type, Error_Node);
                end if;
             end if;
