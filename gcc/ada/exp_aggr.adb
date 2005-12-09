@@ -2358,10 +2358,11 @@ package body Exp_Aggr is
       while Present (Comp) loop
          Selector := Entity (First (Choices (Comp)));
 
-         --  Ada 2005 (AI-287): Default initialization of a limited component
+         --  Ada 2005 (AI-287): For each default-initialized component genarate
+         --  a call to the corresponding IP subprogram if available.
 
          if Box_Present (Comp)
-            and then Is_Limited_Type (Etype (Selector))
+           and then Has_Non_Null_Base_Init_Proc (Etype (Selector))
          then
             --  Ada 2005 (AI-287): If the component type has tasks then
             --  generate the activation chain and master entities (except
