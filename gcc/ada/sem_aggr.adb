@@ -29,6 +29,7 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
@@ -2984,11 +2985,15 @@ package body Sem_Aggr is
          Component := Node (Component_Elmt);
          Expr := Get_Value (Component, Component_Associations (N), True);
 
-         --  Ada 2005 (AI-287): Default initialized limited component are
-         --  passed to the expander, that will generate calls to the
-         --  corresponding IP.
+         --  Ada 2005 (AI-287): Although the default initialization by means
+         --  of the mbox was initially added to Ada 2005 for limited types, it
+         --  is not constrained to limited types. Therefore if the component
+         --  has some initialization procedure (IP) we pass the component to
+         --  the expander, which will generate the call to such IP.
 
-         if Mbox_Present and then Is_Limited_Type (Etype (Component)) then
+         if Mbox_Present
+           and then Has_Non_Null_Base_Init_Proc (Etype (Component))
+         then
             Add_Association
               (Component   => Component,
                Expr        => Empty,
