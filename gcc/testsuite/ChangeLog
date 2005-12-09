@@ -1,3 +1,12 @@
+2005-12-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR testsuite/20772
+	* g++.dg/opt/life1.C, g++.old-deja/g++.abi/aggregates.C,
+	g++.old-deja/g++.abi/align.C, g++.old-deja/g++.abi/bitfields.C,
+	g++.old-deja/g++.law/weak.C, g++.old-deja/g++.pt/asm2.C,
+	gcc.dg/20000724-1.c, gcc.dg/pragma-align.c: Also test on
+	x86_64-*-linux*.
+
 2005-12-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/25311

@@ -1,6 +1,7 @@
-// { dg-do assemble { target i?86-*-linux* } }
+// { dg-do assemble { target i?86-*-linux* x86_64-*-linux* } }
+// { dg-require-effective-target ilp32 }
 // We'd use ebx with -fpic/-fPIC, so skip.
-// { dg-skip-if "" { i?86-*-* } { "-fpic" "-fPIC" } { "" } }
+// { dg-skip-if "" { *-*-* } { "-fpic" "-fPIC" } { "" } }
 // Origin: "Weidmann, Nicholas" <nicholas.weidmann@swx.ch>
 
 typedef void (function_ptr)(int);
