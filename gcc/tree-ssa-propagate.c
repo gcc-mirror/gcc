@@ -1160,7 +1160,7 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 
 	      rhs = get_rhs (stmt);
 	      if (TREE_CODE (rhs) == ADDR_EXPR)
-		recompute_tree_invarant_for_addr_expr (rhs);
+		recompute_tree_invariant_for_addr_expr (rhs);
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{

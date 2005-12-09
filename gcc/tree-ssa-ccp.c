@@ -1958,7 +1958,7 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
       /* Set TREE_INVARIANT properly so that the value is properly
 	 considered constant, and so gets propagated as expected.  */
       if (*changed_p)
-        recompute_tree_invarant_for_addr_expr (expr);
+        recompute_tree_invariant_for_addr_expr (expr);
       return NULL_TREE;
 
     case PLUS_EXPR:

@@ -452,7 +452,7 @@ tidy_after_forward_propagate_addr (tree stmt)
     cfg_changed = true;
 
   if (TREE_CODE (TREE_OPERAND (stmt, 1)) == ADDR_EXPR)
-     recompute_tree_invarant_for_addr_expr (TREE_OPERAND (stmt, 1));
+     recompute_tree_invariant_for_addr_expr (TREE_OPERAND (stmt, 1));
 
   update_stmt (stmt);
 }
