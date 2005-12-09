@@ -209,6 +209,7 @@ struct s390_address
   rtx indx;
   rtx disp;
   bool pointer;
+  bool literal_pool;
 };
 
 /* Which cpu are we tuning for.  */
@@ -1473,6 +1474,14 @@ s390_decompose_address (rtx addr, struct s390_address *out)
   bool pointer = false;
   bool base_ptr = false;
   bool indx_ptr = false;
+  bool literal_pool = false;
+
+  /* We may need to substitute the literal pool base register into the address
+     below.  However, at this point we do not know which register is going to
+     be used as base, so we substitute the arg pointer register.  This is going
+     to be treated as holding a pointer below -- it shouldn't be used for any
+     other purpose.  */
+  rtx fake_pool_base = gen_rtx_REG (Pmode, ARG_POINTER_REGNUM);
 
   /* Decompose address into base + index + displacement.  */
 
@@ -1545,9 +1554,9 @@ s390_decompose_address (rtx addr, struct s390_address *out)
     {
       /* Either base or index must be free to hold the base register.  */
       if (!base)
-        base = gen_rtx_REG (Pmode, BASE_REGNUM);
+        base = fake_pool_base, literal_pool = true;
       else if (!indx)
-        indx = gen_rtx_REG (Pmode, BASE_REGNUM);
+        indx = fake_pool_base, literal_pool = true;
       else
         return false;
 
@@ -1570,11 +1579,14 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 	    else
 	      return false;
 
-	    base = gen_rtx_REG (Pmode, BASE_REGNUM);
+	    base = XVECEXP (base, 0, 1);
 	    break;
 
 	  case UNSPEC_LTREL_BASE:
-	    base = gen_rtx_REG (Pmode, BASE_REGNUM);
+	    if (XVECLEN (base, 0) == 1)
+	      base = fake_pool_base, literal_pool = true;
+	    else
+	      base = XVECEXP (base, 0, 1);
 	    break;
 
 	  default:
@@ -1584,8 +1596,7 @@ s390_decompose_address (rtx addr, struct s390_address *out)
       if (GET_CODE (base) != REG || GET_MODE (base) != Pmode)
 	return false;
 
-      if (REGNO (base) == BASE_REGNUM
-	  || REGNO (base) == STACK_POINTER_REGNUM
+      if (REGNO (base) == STACK_POINTER_REGNUM
 	  || REGNO (base) == FRAME_POINTER_REGNUM
 	  || ((reload_completed || reload_in_progress)
 	      && frame_pointer_needed
@@ -1594,6 +1605,10 @@ s390_decompose_address (rtx addr, struct s390_address *out)
           || (flag_pic
               && REGNO (base) == PIC_OFFSET_TABLE_REGNUM))
         pointer = base_ptr = true;
+
+      if ((reload_completed || reload_in_progress)
+	  && base == cfun->machine->base_reg)
+        pointer = base_ptr = literal_pool = true;
     }
 
   /* Validate index register.  */
@@ -1610,11 +1625,14 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 	    else
 	      return false;
 
-	    indx = gen_rtx_REG (Pmode, BASE_REGNUM);
+	    indx = XVECEXP (indx, 0, 1);
 	    break;
 
 	  case UNSPEC_LTREL_BASE:
-	    indx = gen_rtx_REG (Pmode, BASE_REGNUM);
+	    if (XVECLEN (indx, 0) == 1)
+	      indx = fake_pool_base, literal_pool = true;
+	    else
+	      indx = XVECEXP (indx, 0, 1);
 	    break;
 
 	  default:
@@ -1624,8 +1642,7 @@ s390_decompose_address (rtx addr, struct s390_address *out)
       if (GET_CODE (indx) != REG || GET_MODE (indx) != Pmode)
 	return false;
 
-      if (REGNO (indx) == BASE_REGNUM
-	  || REGNO (indx) == STACK_POINTER_REGNUM
+      if (REGNO (indx) == STACK_POINTER_REGNUM
 	  || REGNO (indx) == FRAME_POINTER_REGNUM
 	  || ((reload_completed || reload_in_progress)
 	      && frame_pointer_needed
@@ -1634,6 +1651,10 @@ s390_decompose_address (rtx addr, struct s390_address *out)
           || (flag_pic
               && REGNO (indx) == PIC_OFFSET_TABLE_REGNUM))
         pointer = indx_ptr = true;
+
+      if ((reload_completed || reload_in_progress)
+	  && indx == cfun->machine->base_reg)
+        pointer = indx_ptr = literal_pool = true;
     }
 
   /* Prefer to use pointer as base, not index.  */
@@ -1721,6 +1742,7 @@ s390_decompose_address (rtx addr, struct s390_address *out)
       out->indx = indx;
       out->disp = orig_disp;
       out->pointer = pointer;
+      out->literal_pool = literal_pool;
     }
 
   return true;
@@ -1809,9 +1831,7 @@ s390_extra_constraint_str (rtx op, int c, const char * str)
 	return 0;
       if (!s390_decompose_address (XEXP (op, 0), &addr))
 	return 0;
-      if (addr.base && REG_P (addr.base) && REGNO (addr.base) == BASE_REGNUM)
-	return 0;
-      if (addr.indx && REG_P (addr.indx) && REGNO (addr.indx) == BASE_REGNUM)
+      if (addr.literal_pool)
 	return 0;
 
       c = str[1];

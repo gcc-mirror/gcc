@@ -1,3 +1,11 @@
+2005-12-09  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/25311
+	* config/s390/s390.c (struct s390_address): New field literal_pool.
+	(s390_decompose_address): Compute literal_pool field.  Do not 
+	assume register %r13 is always (and solely) used as pool base.
+	(s390_extra_constraint_str): Use literal_pool field.
+
 2005-12-09  Thiemo Seufer  <ths@networkno.de>
 
 	* config/mips/mips.c (override_options): Don't allow too small
