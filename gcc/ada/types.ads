@@ -172,8 +172,9 @@ package Types is
 
    type Column_Number is range 0 .. 32767;
    for Column_Number'Size use 16;
-   --  Column number (assume that 2**15 is large enough, see declaration of
-   --  Hostparm.Max_Line_Length, and also processing for -gnatyM in Stylesw)
+   --  Column number (assume that 2**15 - 1 is large enough). The range for
+   --  this type is used to compute Hostparm.Max_Line_Length. See also the
+   --  processing for -gnatyM in Stylesw).
 
    No_Column_Number : constant Column_Number := 0;
    --  Special value used to indicate no column number
