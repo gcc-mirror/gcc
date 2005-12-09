@@ -1,5 +1,5 @@
 # Makefile.rtl for GNU Ada Compiler (GNAT).
-#   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+#   Copyright (C) 2003-2005, Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -35,6 +35,7 @@ GNATRTL_TASKING_OBJS= \
   a-sytaco$(objext) \
   a-tasatt$(objext) \
   a-taside$(objext) \
+  a-taster$(objext) \
   g-boubuf$(objext) \
   g-boumai$(objext) \
   g-semaph$(objext) \
@@ -279,6 +280,13 @@ GNATRTL_NONTASKING_OBJS= \
   a-zzunio$(objext) \
   ada$(objext) \
   calendar$(objext) \
+  g-allein$(objext) \
+  g-alleve$(objext) \
+  g-altcon$(objext) \
+  g-altive$(objext) \
+  g-alveop$(objext) \
+  g-alvety$(objext) \
+  g-alvevi$(objext) \
   g-arrspl$(objext) \
   g-awk$(objext) \
   g-bubsor$(objext) \
@@ -497,6 +505,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-sopco4$(objext) \
   s-sopco5$(objext) \
   s-stache$(objext) \
+  s-stausa$(objext) \
   s-stchop$(objext) \
   s-stalib$(objext) \
   s-stoele$(objext) \

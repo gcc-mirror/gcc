@@ -1268,6 +1268,22 @@ package body Bindgen is
          WBI ("      pragma Import (C, finalize, ""__gnat_finalize"");");
       end if;
 
+      --  If we want to analyze the stack, we have to import corresponding
+      --  symbols
+
+      if Dynamic_Stack_Measurement then
+         WBI ("");
+         WBI ("      procedure Output_Results;");
+         WBI ("      pragma Import (C, Output_Results, " &
+              """__gnat_stack_usage_output_results"");");
+
+         WBI ("");
+         WBI ("      " &
+              "procedure Initialize_Stack_Analysis (Buffer_Size : Natural);");
+         WBI ("      pragma Import (C, Initialize_Stack_Analysis, " &
+              """__gnat_stack_usage_initialize"");");
+      end if;
+
       --  Deal with declarations for main program case
 
       if not No_Main_Subprogram then
@@ -1360,6 +1376,13 @@ package body Bindgen is
          Write_Statement_Buffer;
       end if;
 
+      if Dynamic_Stack_Measurement then
+         Set_String ("      Initialize_Stack_Analysis (");
+         Set_Int (Dynamic_Stack_Measurement_Array_Size);
+         Set_String (");");
+         Write_Statement_Buffer;
+      end if;
+
       if not Cumulative_Restrictions.Set (No_Finalization) then
 
          if not No_Main_Subprogram
@@ -1396,6 +1419,12 @@ package body Bindgen is
          else
             WBI ("      Do_Finalize;");
          end if;
+      end if;
+
+      --  Prints the result of static stack analysis
+
+      if Dynamic_Stack_Measurement then
+         WBI ("      Output_Results;");
       end if;
 
       --  Finalize is only called if we have a run time
@@ -1506,6 +1535,15 @@ package body Bindgen is
          Write_Statement_Buffer;
       end if;
 
+      --  Initializes dynamic stack measurement if needed
+
+      if Dynamic_Stack_Measurement then
+         Set_String ("   __gnat_stack_usage_initialize (");
+         Set_Int (Dynamic_Stack_Measurement_Array_Size);
+         Set_String (");");
+         Write_Statement_Buffer;
+      end if;
+
       --  The __gnat_initialize routine is used only if we have a run-time
 
       if not Suppress_Standard_Library_On_Target then
@@ -1550,6 +1588,12 @@ package body Bindgen is
       if not Cumulative_Restrictions.Set (No_Finalization) then
          WBI (" ");
          WBI ("   system__standard_library__adafinal ();");
+      end if;
+
+      --  Outputs the dynamic stack measurement if needed
+
+      if Dynamic_Stack_Measurement then
+         WBI ("   __gnat_stack_usage_output_results ();");
       end if;
 
       --  The finalize routine is used only if we have a run-time
@@ -1681,7 +1725,7 @@ package body Bindgen is
                --  filename object is seen. Multiply defined symbols will
                --  result.
 
-               if Hostparm.OpenVMS
+               if OpenVMS_On_Target
                  and then Is_Internal_File_Name
                   (ALIs.Table
                    (Units.Table (Elab_Order.Table (E)).My_ALI).Sfile)
@@ -2244,6 +2288,12 @@ package body Bindgen is
          WBI ("extern void __gnat_install_handler (void);");
       end if;
 
+      if Dynamic_Stack_Measurement then
+         WBI ("");
+         WBI ("extern void __gnat_stack_usage_output_results (void);");
+         WBI ("extern void __gnat_stack_usage_initialize (int size);");
+      end if;
+
       WBI ("");
 
       Gen_Elab_Defs_C;
@@ -2780,7 +2830,7 @@ package body Bindgen is
             With_GNARL := True;
          end if;
 
-         if Hostparm.OpenVMS and then Name_Buffer (1 .. 5) = "dec%s" then
+         if OpenVMS_On_Target and then Name_Buffer (1 .. 5) = "dec%s" then
             With_DECGNAT := True;
          end if;
       end loop;

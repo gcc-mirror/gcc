@@ -117,9 +117,6 @@ package body System.Tasking.Utilities is
    -- Abort_Tasks --
    -----------------
 
-   --  Compiler interface only: Do not call from within the RTS,
-
-   --  except in the implementation of Ada.Task_Identification.
    --  This must be called to implement the abort statement.
    --  Much of the actual work of the abort is done by the abortee,
    --  via the Abort_Handler signal handler, and propagation of the
@@ -131,6 +128,17 @@ package body System.Tasking.Utilities is
       P       : Task_Id;
 
    begin
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if System.Tasking.Detect_Blocking
+        and then Self_Id.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       Initialization.Defer_Abort_Nestable (Self_Id);
 
       --  ?????

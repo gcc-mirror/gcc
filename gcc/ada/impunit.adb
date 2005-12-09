@@ -195,6 +195,11 @@ package body Impunit is
    -- GNAT Library Units --
    ------------------------
 
+     "g-altive",    -- GNAT.Altivec
+     "g-alvety",    -- GNAT.Altivec.Vector_Types
+     "g-alvevi",    -- GNAT.Altivec.Vector_Views
+     "g-alveop",    -- GNAT.Altivec.Vector_Operations
+     "g-altcon",    -- GNAT.Altivec.Conversions
      "g-arrspl",    -- GNAT.Array_Split
      "g-awk   ",    -- GNAT.AWK
      "g-boubuf",    -- GNAT.Bounded_Buffers
@@ -359,12 +364,13 @@ package body Impunit is
      "a-stzmap",    -- Ada.Strings.Wide_Wide_Maps
      "a-stzunb",    -- Ada.Strings.Wide_Wide_Unbounded
      "a-swuwha",    -- Ada.Strings.Wide_Unbounded.Wide_Hash
-     "a-szmzco",    -- Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants;
+     "a-szmzco",    -- Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants
      "a-szuzha",    -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Hash
-     "a-tgdico",    -- Ada.Tags.Generic_Dispatching_Constructor;
-     "a-tiunio",    -- Ada.Text_IO.Unbounded_IO;
+     "a-taster",    -- Ada.Task_Termination
+     "a-tgdico",    -- Ada.Tags.Generic_Dispatching_Constructor
+     "a-tiunio",    -- Ada.Text_IO.Unbounded_IO
      "a-wichun",    -- Ada.Wide_Characters.Unicode
-     "a-wwunio",    -- Ada.Wide_Text_IO.Wide_Unbounded_IO;
+     "a-wwunio",    -- Ada.Wide_Text_IO.Wide_Unbounded_IO
      "a-zchara",    -- Ada.Wide_Wide_Characters
      "a-zttest",    -- Ada.Wide_Wide_Text_IO.Text_Streams
      "a-ztexio",    -- Ada.Wide_Wide_Text_IO

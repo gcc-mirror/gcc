@@ -38,6 +38,11 @@
 --  Default version for most targets
 
 with System.Standard_Library; use System.Standard_Library;
+--  Used for Adafinal
+
+with System.Soft_Links;
+--  Used for Task_Termination_Handler
+--           Task_Termination_NT
 
 procedure Ada.Exceptions.Last_Chance_Handler
   (Except : Exception_Occurrence)
@@ -72,6 +77,14 @@ is
    --  Convenient shortcut
 
 begin
+   --  Do not execute any task termination code when shutting down the system.
+   --  The Adafinal procedure would execute the task termination routine for
+   --  normal termination, but we have already executed the task termination
+   --  procedure because of an unhandled exception.
+
+   System.Soft_Links.Task_Termination_Handler :=
+     System.Soft_Links.Task_Termination_NT'Access;
+
    --  Let's shutdown the runtime now. The rest of the procedure needs to be
    --  careful not to use anything that would require runtime support. In
    --  particular, functions returning strings are banned since the sec stack

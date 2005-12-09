@@ -83,6 +83,25 @@ package body System.Soft_Links is
       null;
    end Abort_Undefer_NT;
 
+   -----------------
+   -- Adafinal_NT --
+   -----------------
+
+   procedure Adafinal_NT is
+   begin
+      --  Handle normal task termination by the environment task, but only
+      --  for the normal task termination. In the case of Abnormal and
+      --  Unhandled_Exception they must have been handled before, and the
+      --  task termination soft link must have been changed so the task
+      --  termination routine is not executed twice.
+
+      Task_Termination_Handler.all (Ada.Exceptions.Null_Occurrence);
+
+      --  Finalize the global list for controlled objects if needed
+
+      Finalize_Global_List.all;
+   end Adafinal_NT;
+
    ---------------------------
    -- Check_Abort_Status_NT --
    ---------------------------
@@ -226,14 +245,14 @@ package body System.Soft_Links is
       return NT_TSD.Pri_Stack_Info'Access;
    end Get_Stack_Info_NT;
 
-   -------------------
-   -- Null_Adafinal --
-   -------------------
+   -------------------------------
+   -- Null_Finalize_Global_List --
+   -------------------------------
 
-   procedure Null_Adafinal is
+   procedure Null_Finalize_Global_List is
    begin
       null;
-   end Null_Adafinal;
+   end Null_Finalize_Global_List;
 
    ---------------------------
    -- Set_Jmpbuf_Address_NT --
@@ -284,6 +303,16 @@ package body System.Soft_Links is
    begin
       null;
    end Task_Unlock_NT;
+
+   -------------------------
+   -- Task_Termination_NT --
+   -------------------------
+
+   procedure Task_Termination_NT (Excep : EO) is
+      pragma Warnings (Off, Excep);
+   begin
+      null;
+   end Task_Termination_NT;
 
    -------------------------
    -- Update_Exception_NT --

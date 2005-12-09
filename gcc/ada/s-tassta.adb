@@ -68,7 +68,7 @@ with System.Soft_Links;
 --  specific data. In the absence of tasking, these routines refer to global
 --  data. In the presense of tasking, they must be replaced with pointers to
 --  task-specific versions. Also used for Create_TSD, Destroy_TSD,
---  Get_Current_Excep
+--  Get_Current_Excep, Finalize_Global_List, Task_Termination, Handler.
 
 with System.Tasking.Initialization;
 --  Used for Remove_From_All_Tasks_List
@@ -84,6 +84,7 @@ pragma Elaborate_All (System.Tasking.Initialization);
 with System.Tasking.Utilities;
 --  Used for Make_Passive
 --           Abort_One_Task
+--           Abort_Tasks
 
 with System.Tasking.Queuing;
 --  Used for Dequeue_Head
@@ -93,9 +94,6 @@ with System.Tasking.Rendezvous;
 
 with System.OS_Primitives;
 --  Used for Delay_Modes
-
-with System.Finalization_Implementation;
---  Used for System.Finalization_Implementation.Finalize_Global_List
 
 with System.Secondary_Stack;
 --  Used for SS_Init
@@ -114,6 +112,8 @@ with System.Traces.Tasking;
 
 with Unchecked_Deallocation;
 --  To recover from failure of ATCB initialization
+
+with System.Stack_Usage;
 
 package body System.Tasking.Stages is
 
@@ -232,17 +232,6 @@ package body System.Tasking.Stages is
 
    procedure Abort_Tasks (Tasks : Task_List) is
    begin
-      --  If pragma Detect_Blocking is active then Program_Error must be
-      --  raised if this potentially blocking operation is called from a
-      --  protected action.
-
-      if System.Tasking.Detect_Blocking
-        and then STPO.Self.Common.Protected_Action_Nesting > 0
-      then
-         Ada.Exceptions.Raise_Exception
-           (Program_Error'Identity, "potentially blocking operation");
-      end if;
-
       Utilities.Abort_Tasks (Tasks);
    end Abort_Tasks;
 
@@ -826,7 +815,19 @@ package body System.Tasking.Stages is
 
       Vulnerable_Complete_Task (Self_ID);
 
-      System.Finalization_Implementation.Finalize_Global_List;
+      --  Handle normal task termination by the environment task, but only
+      --  for the normal task termination. In the case of Abnormal and
+      --  Unhandled_Exception they must have been handled before, and the
+      --  task termination soft link must have been changed so the task
+      --  termination routine is not executed twice.
+
+      SSL.Task_Termination_Handler.all (Ada.Exceptions.Null_Occurrence);
+
+      --  Finalize the global list for controlled objects if needed
+
+      SSL.Finalize_Global_List.all;
+
+      --  Reset the soft links to non-tasking
 
       SSL.Abort_Defer        := SSL.Abort_Defer_NT'Access;
       SSL.Abort_Undefer      := SSL.Abort_Undefer_NT'Access;
@@ -890,13 +891,31 @@ package body System.Tasking.Stages is
       use type System.Parameters.Size_Type;
       use type SSE.Storage_Offset;
       use System.Standard_Library;
+      use System.Stack_Usage;
+
+      Bottom_Of_Stack : aliased Integer;
+
+      Secondary_Stack_Size :
+        constant SSE.Storage_Offset :=
+          Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
+          SSE.Storage_Offset (Parameters.Sec_Stack_Ratio) / 100;
 
       Secondary_Stack :
         aliased SSE.Storage_Array
-          (1 .. Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
-                  SSE.Storage_Offset (Parameters.Sec_Stack_Ratio) / 100);
+           (1 .. Secondary_Stack_Size);
 
+      pragma Warnings (Off);
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
+
+      Overflow_Guard          : constant := 16#1_000#;
+
+      Size :
+        Natural := Natural (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size);
+
+      pragma Warnings (On);
+      --  Address of secondary stack. In the fixed secondary stack case, this
+      --  value is not modified, causing a warning, hence the bracketing with
+      --  Warnings (Off/On).
 
       SEH_Table : aliased SSE.Storage_Array (1 .. 8);
       --  Structured Exception Registration table (2 words)
@@ -905,6 +924,43 @@ package body System.Tasking.Stages is
       pragma Import (C, Install_SEH_Handler, "__gnat_install_SEH_handler");
       --  Install the SEH (Structured Exception Handling) handler
 
+      Cause : Cause_Of_Termination := Normal;
+      --  Indicates the reason why this task terminates. Normal corresponds to
+      --  a task terminating due to completing the last statement of its body,
+      --  or as a result of waiting on a terminate alternative. If the task
+      --  terminates because it is being aborted then Cause will be set to
+      --  Abnormal. If the task terminates because of an exception raised by
+      --  the execution of its task body, then Cause is set to
+      --  Unhandled_Exception.
+
+      EO : Exception_Occurrence;
+      --  If the task terminates because of an exception raised by the
+      --  execution of its task body, then EO will contain the associated
+      --  exception occurrence. Otherwise, it will contain Null_Occurrence.
+
+      procedure Search_Fall_Back_Handler (ID : Task_Id);
+      --  Procedure that searches recursively a fall-back handler through the
+      --  master relationship.
+
+      procedure Search_Fall_Back_Handler (ID : Task_Id) is
+      begin
+         --  If there is a fall back handler, execute it
+
+         if ID.Common.Fall_Back_Handler /= null then
+            ID.Common.Fall_Back_Handler.all (Cause, Self_ID, EO);
+
+         --  Otherwise look for a fall back handler in the parent
+
+         elsif ID.Common.Parent /= null then
+            Search_Fall_Back_Handler (ID.Common.Parent);
+
+         --  Otherwise, do nothing
+
+         else
+            return;
+         end if;
+      end Search_Fall_Back_Handler;
+
    begin
       pragma Assert (Self_ID.Deferral_Level = 1);
 
@@ -912,10 +968,24 @@ package body System.Tasking.Stages is
          Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
            Secondary_Stack'Address;
          SST.SS_Init (Secondary_Stack_Address, Integer (Secondary_Stack'Last));
+         Size := Size - Natural (Secondary_Stack_Size);
       end if;
 
-      --  Set the guard page at the bottom of the stack. The call to
-      --  unprotect the page is done in Terminate_Task
+      Size := Size - Overflow_Guard;
+
+      if System.Stack_Usage.Is_Enabled then
+         STPO.Lock_RTS;
+         Initialize_Analyzer (Self_ID.Common.Analyzer,
+                              Self_ID.Common.Task_Image
+                                (1 .. Self_ID.Common.Task_Image_Len),
+                              Size,
+                              SSE.To_Integer (Bottom_Of_Stack'Address));
+         STPO.Unlock_RTS;
+         Fill_Stack (Self_ID.Common.Analyzer);
+      end if;
+
+      --  Set the guard page at the bottom of the stack. The call to unprotect
+      --  the page is done in Terminate_Task
 
       Stack_Guard (Self_ID, True);
 
@@ -930,9 +1000,13 @@ package body System.Tasking.Stages is
 
       Install_SEH_Handler (SEH_Table'Address);
 
-      --  We lock RTS_Lock to wait for activator to finish activating
-      --  the rest of the chain, so that everyone in the chain comes out
-      --  in priority order.
+      --  Initialize exception occurrence
+
+      Save_Occurrence (EO, Ada.Exceptions.Null_Occurrence);
+
+      --  We lock RTS_Lock to wait for activator to finish activating the rest
+      --  of the chain, so that everyone in the chain comes out in priority
+      --  order.
 
       --  This also protects the value of
       --    Self_ID.Common.Activator.Common.Wait_Count.
@@ -980,6 +1054,17 @@ package body System.Tasking.Stages is
          when Standard'Abort_Signal =>
             Initialization.Defer_Abort_Nestable (Self_ID);
 
+            --  Update the cause that motivated the task termination so that
+            --  the appropriate information is passed to the task termination
+            --  procedure. Task termination as a result of waiting on a
+            --  terminate alternative is a normal termination, although it is
+            --  implemented using the abort mechanisms.
+
+            if Self_ID.Terminate_Alternative then
+               Cause := Normal;
+            else
+               Cause := Abnormal;
+            end if;
          when others =>
             --  ??? Using an E : others here causes CD2C11A  to fail on
             --      DEC Unix, see 7925-005.
@@ -998,7 +1083,32 @@ package body System.Tasking.Stages is
             if Exception_Trace = Unhandled_Raise then
                Trace_Unhandled_Exception_In_Task (Self_ID);
             end if;
+
+            --  Update the cause that motivated the task termination so that
+            --  the appropriate information is passed to the task termination
+            --  procedure, as well as the associated Exception_Occurrence.
+
+            Cause := Unhandled_Exception;
+            Save_Occurrence (EO, SSL.Get_Current_Excep.all.all);
       end;
+
+      --  Look for a task termination handler. This code is for all tasks but
+      --  the environment task. The task termination code for the environment
+      --  task is executed by SSL.Task_Termination_Handler.
+
+      if Self_ID.Common.Specific_Handler /= null then
+         Self_ID.Common.Specific_Handler.all (Cause, Self_ID, EO);
+      else
+         --  Look for a fall-back handler following the master relationship
+         --  for the task.
+
+         Search_Fall_Back_Handler (Self_ID);
+      end if;
+
+      if System.Stack_Usage.Is_Enabled then
+         Compute_Result (Self_ID.Common.Analyzer);
+         Report_Result (Self_ID.Common.Analyzer);
+      end if;
 
       Terminate_Task (Self_ID);
    end Task_Wrapper;
@@ -1021,16 +1131,16 @@ package body System.Tasking.Stages is
    --  We can't call Destroy_TSD while we are holding any other locks, because
    --  it locks Global_Task_Lock, and our deadlock prevention rules require
    --  that to be the outermost lock. Our first "solution" was to just lock
-   --  Global_Task_Lock in addition to the other locks, and force the parent
-   --  to also lock this lock between its wakeup and its freeing of the ATCB.
-   --  See Complete_Task for the parent-side of the code that has the matching
+   --  Global_Task_Lock in addition to the other locks, and force the parent to
+   --  also lock this lock between its wakeup and its freeing of the ATCB. See
+   --  Complete_Task for the parent-side of the code that has the matching
    --  calls to Task_Lock and Task_Unlock. That was not really a solution,
    --  since the operation Task_Unlock continued to access the ATCB after
-   --  unlocking, after which the parent was observed to race ahead,
-   --  deallocate the ATCB, and then reallocate it to another task. The
-   --  call to Undefer_Abortion in Task_Unlock by the "terminated" task was
-   --  overwriting the data of the new task that reused the ATCB! To solve
-   --  this problem, we introduced the new operation Final_Task_Unlock.
+   --  unlocking, after which the parent was observed to race ahead, deallocate
+   --  the ATCB, and then reallocate it to another task. The call to
+   --  Undefer_Abortion in Task_Unlock by the "terminated" task was overwriting
+   --  the data of the new task that reused the ATCB! To solve this problem, we
+   --  introduced the new operation Final_Task_Unlock.
 
    procedure Terminate_Task (Self_ID : Task_Id) is
       Environment_Task : constant Task_Id := STPO.Environment_Task;

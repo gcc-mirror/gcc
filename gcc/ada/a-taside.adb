@@ -44,7 +44,8 @@ pragma Warnings (Off);
 --  package will be categorized as Preelaborate. See AI-362 for details.
 --  It is safe in the context of the run-time to violate the rules!
 
-with System.Tasking.Stages;
+with System.Tasking.Utilities;
+--  Used for Abort_Tasks
 
 pragma Warnings (On);
 
@@ -81,7 +82,7 @@ package body Ada.Task_Identification is
       if T = Null_Task_Id then
          raise Program_Error;
       else
-         System.Tasking.Stages.Abort_Tasks
+         System.Tasking.Utilities.Abort_Tasks
            (System.Tasking.Task_List'(1 => Convert_Ids (T)));
       end if;
    end Abort_Task;

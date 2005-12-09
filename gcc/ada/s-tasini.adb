@@ -323,7 +323,7 @@ package body System.Tasking.Initialization is
 
    procedure Final_Task_Unlock (Self_ID : Task_Id) is
    begin
-      pragma Assert (Self_ID.Global_Task_Lock_Nesting = 1);
+      pragma Assert (Self_ID.Common.Global_Task_Lock_Nesting = 1);
       Unlock (Global_Task_Lock'Access, Global_Lock => True);
    end Final_Task_Unlock;
 
@@ -624,9 +624,10 @@ package body System.Tasking.Initialization is
 
    procedure Task_Lock (Self_ID : Task_Id) is
    begin
-      Self_ID.Global_Task_Lock_Nesting := Self_ID.Global_Task_Lock_Nesting + 1;
+      Self_ID.Common.Global_Task_Lock_Nesting :=
+        Self_ID.Common.Global_Task_Lock_Nesting + 1;
 
-      if Self_ID.Global_Task_Lock_Nesting = 1 then
+      if Self_ID.Common.Global_Task_Lock_Nesting = 1 then
          Defer_Abort_Nestable (Self_ID);
          Write_Lock (Global_Task_Lock'Access, Global_Lock => True);
       end if;
@@ -654,10 +655,11 @@ package body System.Tasking.Initialization is
 
    procedure Task_Unlock (Self_ID : Task_Id) is
    begin
-      pragma Assert (Self_ID.Global_Task_Lock_Nesting > 0);
-      Self_ID.Global_Task_Lock_Nesting := Self_ID.Global_Task_Lock_Nesting - 1;
+      pragma Assert (Self_ID.Common.Global_Task_Lock_Nesting > 0);
+      Self_ID.Common.Global_Task_Lock_Nesting :=
+        Self_ID.Common.Global_Task_Lock_Nesting - 1;
 
-      if Self_ID.Global_Task_Lock_Nesting = 0 then
+      if Self_ID.Common.Global_Task_Lock_Nesting = 0 then
          Unlock (Global_Task_Lock'Access, Global_Lock => True);
          Undefer_Abort_Nestable (Self_ID);
       end if;
