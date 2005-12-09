@@ -1019,6 +1019,10 @@ package body Sem_Type is
       --  pathology in the other direction with calls whose multiple overloaded
       --  actuals make them truly unresolvable.
 
+      --  The new rules concerning abstract operations create additional
+      --  for special handling of expressions with universal operands, See
+      --  comments to Has_Abstract_Interpretation below.
+
       ------------------------
       --  In_Generic_Actual --
       ------------------------
@@ -1105,12 +1109,43 @@ package body Sem_Type is
          Act1 : Node_Id;
          Act2 : Node_Id;
 
+         function Has_Abstract_Interpretation (N : Node_Id) return Boolean;
+         --  If an operation has universal operands the universal operation
+         --  is present among its interpretations. If there is an abstract
+         --  interpretation for the operator, with a numeric result, this
+         --  interpretation was already removed in sem_ch4, but the universal
+         --  one is still visible. We must rescan the list of operators and
+         --  remove the universal interpretation to resolve the ambiguity.
+
+         ---------------------------------
+         -- Has_Abstract_Interpretation --
+         ---------------------------------
+
+         function Has_Abstract_Interpretation (N : Node_Id) return Boolean is
+            E : Entity_Id;
+
+         begin
+            E := Current_Entity (N);
+            while Present (E) loop
+               if Is_Abstract (E)
+                 and then Is_Numeric_Type (Etype (E))
+               then
+                  return True;
+               else
+                  E := Homonym (E);
+               end if;
+            end loop;
+
+            return False;
+         end Has_Abstract_Interpretation;
+
+      --  Start of processing for Remove_ConversionsMino
+
       begin
          It1 := No_Interp;
 
          Get_First_Interp (N, I, It);
          while Present (It.Typ) loop
-
             if not Is_Overloadable (It.Nam) then
                return No_Interp;
             end if;
@@ -1184,6 +1219,19 @@ package body Sem_Type is
 
                   else
                      It1 := It;
+                  end if;
+
+               elsif Nkind (Act1) in N_Op
+                 and then Is_Overloaded (Act1)
+                 and then Present (Universal_Interpretation (Act1))
+                 and then Is_Numeric_Type (Etype (F1))
+                 and then Ada_Version >= Ada_05
+                 and then Has_Abstract_Interpretation (Act1)
+               then
+                  if It = Disambiguate.It1 then
+                     return Disambiguate.It2;
+                  elsif It = Disambiguate.It2 then
+                     return Disambiguate.It1;
                   end if;
                end if;
             end if;
@@ -1266,6 +1314,19 @@ package body Sem_Type is
 
       It2  := It;
       Nam2 := It.Nam;
+
+      if Ada_Version < Ada_05 then
+
+         --  Check whether one of the entities is an Ada 2005 entity and we are
+         --  operating in an earlier mode, in which case we discard the Ada
+         --  2005 entity, so that we get proper Ada 95 overload resolution.
+
+         if Is_Ada_2005 (Nam1) then
+            return It2;
+         elsif Is_Ada_2005 (Nam2) then
+            return It1;
+         end if;
+      end if;
 
       --  If the context is universal, the predefined operator is preferred.
       --  This includes bounds in numeric type declarations, and expressions
@@ -1912,6 +1973,7 @@ package body Sem_Type is
          if Present (Interface_List (Parent (Target_Typ))) then
             declare
                AI : Node_Id;
+
             begin
                AI := First (Interface_List (Parent (Target_Typ)));
                while Present (AI) loop
