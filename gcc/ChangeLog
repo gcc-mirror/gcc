@@ -1,3 +1,8 @@
+2005-12-09  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/ms1/t-ms1 (MULTILIB_OPTIONS): Define.
+        (MULTILIB_DIRNAMES): Define.
+
 2005-12-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/25311
