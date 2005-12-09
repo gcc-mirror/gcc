@@ -32,6 +32,7 @@ with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem_Res;  use Sem_Res;
 with Sinfo;    use Sinfo;
@@ -148,7 +149,6 @@ package body Exp_Imgv is
               Make_Aggregate (Loc,
                 Expressions => Ind))),
         Suppress => All_Checks);
-
    end Build_Enumeration_Image_Tables;
 
    ----------------------------
@@ -191,6 +191,7 @@ package body Exp_Imgv is
    --    For types whose root type is Wide_Character
    --      xx = Wide_Character
    --      tv = Wide_Character (Expr)
+   --      pm = Boolean, true if Ada 2005 mode, False otherwise
 
    --    For types whose root type is Wide_Wide_Character
    --      xx = Wide_Wide_haracter
@@ -398,6 +399,12 @@ package body Exp_Imgv is
 
          Set_Conversion_OK (First (Arglist));
          Set_Etype (First (Arglist), Tent);
+
+         --  For Wide_Character, append Ada 2005 indication
+
+      elsif Rtyp = Standard_Wide_Character then
+         Append_To (Arglist,
+           New_Reference_To (Boolean_Literals (Ada_Version >= Ada_05), Loc));
       end if;
 
       Rewrite (N,

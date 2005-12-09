@@ -42,9 +42,24 @@ package body System.Img_WChar is
    --------------------------
 
    function Image_Wide_Character
-     (V : Wide_Character) return String
+     (V        : Wide_Character;
+      Ada_2005 : Boolean) return String
    is
    begin
+      --  Annoying Ada 95 incompatibility with FFFE/FFFF
+
+      if V >= Wide_Character'Val (16#FFFE#)
+        and then not Ada_2005
+      then
+         if V = Wide_Character'Val (16#FFFE#) then
+            return "FFFE";
+         else
+            return "FFFF";
+         end if;
+      end if;
+
+      --  Normal case, same as Wide_Wide_Character
+
       return
         Image_Wide_Wide_Character
           (Wide_Wide_Character'Val (Wide_Character'Pos (V)));
