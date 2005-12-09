@@ -710,8 +710,12 @@ extern tree build_call_2_expr (tree fundecl, tree arg1, tree arg2);
 extern tree build_call_0_expr (tree fundecl);
 
 /* Call a function that raises an exception and pass the line number and file
-   name, if requested.  MSG says which exception function to call.  */
-extern tree build_call_raise (int msg);
+   name, if requested.  MSG says which exception function to call.
+
+   GNAT_NODE is the gnat node conveying the source location for which the
+   error should be signaled, or Empty in which case the error is signaled on
+   the current ref_file_name/input_line.  */
+extern tree build_call_raise (int msg, Node_Id gnat_node);
 
 /* Return a CONSTRUCTOR of TYPE whose list is LIST.  This is not the
    same as build_constructor in the language-independent tree.c.  */

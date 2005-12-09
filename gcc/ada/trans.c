@@ -1546,14 +1546,18 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	   gnat_actual = Next_Actual (gnat_actual))
 	add_stmt (gnat_to_gnu (gnat_actual));
 
-      if (Nkind (gnat_node) == N_Function_Call && !gnu_target)
-	{
-	  *gnu_result_type_p = TREE_TYPE (gnu_subprog_type);
-	  return build1 (NULL_EXPR, *gnu_result_type_p,
-			 build_call_raise (PE_Stubbed_Subprogram_Called));
-	}
-      else
-	return build_call_raise (PE_Stubbed_Subprogram_Called);
+      {
+	tree call_expr
+	  = build_call_raise (PE_Stubbed_Subprogram_Called, gnat_node);
+
+	if (Nkind (gnat_node) == N_Function_Call && !gnu_target)
+	  {
+	    *gnu_result_type_p = TREE_TYPE (gnu_subprog_type);
+	    return build1 (NULL_EXPR, *gnu_result_type_p, call_expr);
+	  }
+	else
+	  return call_expr;
+      }
     }
 
   /* If we are calling by supplying a pointer to a target, set up that
@@ -2515,7 +2519,7 @@ gnat_to_gnu (Node_Id gnat_node)
       && Nkind (gnat_node) != N_Identifier
       && !Compile_Time_Known_Value (gnat_node))
     return build1 (NULL_EXPR, get_unpadded_type (Etype (gnat_node)),
-		   build_call_raise (CE_Range_Check_Failed));
+		   build_call_raise (CE_Range_Check_Failed, gnat_node));
 
   /* If this is a Statement and we are at top level, it must be part of the
      elaboration procedure, so mark us as being in that procedure and push our
@@ -3463,7 +3467,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	 Storage_Error: execution shouldn't have gotten here anyway.  */
       if (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (gnu_lhs))) == INTEGER_CST
 	   && TREE_OVERFLOW (TYPE_SIZE_UNIT (TREE_TYPE (gnu_lhs))))
-	gnu_result = build_call_raise (SE_Object_Too_Large);
+	gnu_result = build_call_raise (SE_Object_Too_Large, gnat_node);
       else if (Nkind (Expression (gnat_node)) == N_Function_Call
 	       && !Do_Range_Check (Expression (gnat_node)))
 	gnu_result = call_to_gnu (Expression (gnat_node),
@@ -4037,7 +4041,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	}
 
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
-      gnu_result = build_call_raise (UI_To_Int (Reason (gnat_node)));
+      gnu_result
+	= build_call_raise (UI_To_Int (Reason (gnat_node)), gnat_node);
 
       /* If the type is VOID, this is a statement, so we need to
 	 generate the code for the call.  Handle a Condition, if there
@@ -4148,7 +4153,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
       gnu_result
 	= build1 (NULL_EXPR, gnu_result_type,
-		  build_call_raise (CE_Overflow_Check_Failed));
+		  build_call_raise (CE_Overflow_Check_Failed, gnat_node));
     }
 
   /* If our result has side-effects and is of an unconstrained type,
@@ -5207,7 +5212,7 @@ emit_check (tree gnu_cond, tree gnu_expr, int reason)
   tree gnu_call;
   tree gnu_result;
 
-  gnu_call = build_call_raise (reason);
+  gnu_call = build_call_raise (reason, Empty);
 
   /* Use an outer COMPOUND_EXPR to make sure that GNU_EXPR will get evaluated
      in front of the comparison in case it ends up being a SAVE_EXPR.  Put the
