@@ -1,3 +1,11 @@
+2005-12-09  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c: Include "cgraph.h".
+	(bfin_load_pic_reg): Omit loading pic reg if in a local function.
+	Return the reg that holds the pointer to the GOT.
+	(bfin_expand_prologue): Use return value of bfin_load_pic_reg when
+	doing stack checking.
+
 2005-12-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/25311
