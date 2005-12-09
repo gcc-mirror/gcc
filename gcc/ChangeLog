@@ -1,3 +1,8 @@
+2005-12-09  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_function_ok_for_sibcall): Use
+	targetm.binds_local_p to check for local function calls.
+
 2005-12-09  Alan Modra  <amodra@bigpond.net.au>
 
 	PR debug/24908
