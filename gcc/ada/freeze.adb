@@ -207,7 +207,6 @@ package body Freeze is
       After : in out Node_Id)
    is
       Body_Node : constant Node_Id := Build_Renamed_Body (Decl, New_S);
-
    begin
       Insert_After (After, Body_Node);
       Mark_Rewrite_Insertion (Body_Node);
@@ -1554,7 +1553,6 @@ package body Freeze is
 
          Comp := First_Entity (Rec);
          Prev := Empty;
-
          while Present (Comp) loop
 
             --  First handle the (real) component case
@@ -1883,26 +1881,37 @@ package body Freeze is
             Error_Msg_N ("\?since no component clauses were specified", ADC);
          end if;
 
-         --  Check for useless pragma Pack when all components placed
+         --  Check for useless pragma Pack when all components placed. We only
+         --  do this check for record types, not subtypes, since a subtype may
+         --  have all its components placed, and it still makes perfectly good
+         --  sense to pack other subtypes or the parent type.
 
-         if Is_Packed (Rec)
+         if Ekind (Rec) = E_Record_Type
+           and then Is_Packed (Rec)
            and then not Unplaced_Component
-           and then Warn_On_Redundant_Constructs
          then
-            Error_Msg_N
-              ("?pragma Pack has no effect, no unplaced components",
-               Get_Rep_Pragma (Rec, Name_Pack));
+            --  Reset packed status. Probably not necessary, but we do it
+            --  so that there is no chance of the back end doing something
+            --  strange with this redundant indication of packing.
+
             Set_Is_Packed (Rec, False);
+
+            --  Give warning if redundant constructs warnings on
+
+            if Warn_On_Redundant_Constructs then
+               Error_Msg_N
+                 ("?pragma Pack has no effect, no unplaced components",
+                  Get_Rep_Pragma (Rec, Name_Pack));
+            end if;
          end if;
 
-         --  If this is the record corresponding to a remote type,
-         --  freeze the remote type here since that is what we are
-         --  semantically freezing. This prevents having the freeze
-         --  node for that type in an inner scope.
+         --  If this is the record corresponding to a remote type, freeze the
+         --  remote type here since that is what we are semantically freezing.
+         --  This prevents the freeze node for that type in an inner scope.
 
          --  Also, Check for controlled components and unchecked unions.
-         --  Finally, enforce the restriction that access attributes with
-         --  a current instance prefix can only apply to limited types.
+         --  Finally, enforce the restriction that access attributes with a
+         --  current instance prefix can only apply to limited types.
 
          if  Ekind (Rec) = E_Record_Type then
             if Present (Corresponding_Remote_Type (Rec)) then
@@ -1932,9 +1941,8 @@ package body Freeze is
                if Has_Per_Object_Constraint (Comp)
                  and then not Is_Limited_Type (Rec)
                then
-                  --  Scan component declaration for likely misuses of
-                  --  current instance, either in a constraint or in a
-                  --  default expression.
+                  --  Scan component declaration for likely misuses of current
+                  --  instance, either in a constraint or a default expression.
 
                   Check_Current_Instance (Parent (Comp));
                end if;
@@ -1945,11 +1953,11 @@ package body Freeze is
 
          Set_Component_Alignment_If_Not_Set (Rec);
 
-         --  For first subtypes, check if there are any fixed-point
-         --  fields with component clauses, where we must check the size.
-         --  This is not done till the freeze point, since for fixed-point
-         --  types, we do not know the size until the type is frozen.
-         --  Similar processing applies to bit packed arrays.
+         --  For first subtypes, check if there are any fixed-point fields with
+         --  component clauses, where we must check the size. This is not done
+         --  till the freeze point, since for fixed-point types, we do not know
+         --  the size until the type is frozen. Similar processing applies to
+         --  bit packed arrays.
 
          if Is_First_Subtype (Rec) then
             Comp := First_Component (Rec);
@@ -2103,12 +2111,12 @@ package body Freeze is
                if Nkind (Expr) = N_Aggregate then
                   Expand_Atomic_Aggregate (Expr, Etype (E));
 
-               --  If the expression is a reference to a record or array
-               --  object entity, then reset Is_True_Constant to False so
-               --  that the compiler will not optimize away the intermediate
-               --  object, which we need in this case for the same reason
-               --  (to ensure that the actual assignment is atomic, rather
-               --  than component-wise).
+               --  If the expression is a reference to a record or array object
+               --  entity, then reset Is_True_Constant to False so that the
+               --  compiler will not optimize away the intermediate object,
+               --  which we need in this case for the same reason (to ensure
+               --  that the actual assignment is atomic, rather than
+               --  component-wise).
 
                elsif Is_Entity_Name (Expr)
                  and then (Is_Record_Type (Etype (Expr))
@@ -2854,23 +2862,21 @@ package body Freeze is
                Next_Entity (Comp);
             end loop;
 
-         --  Private types are required to point to the same freeze node
-         --  as their corresponding full views. The freeze node itself
-         --  has to point to the partial view of the entity (because
-         --  from the partial view, we can retrieve the full view, but
-         --  not the reverse). However, in order to freeze correctly,
-         --  we need to freeze the full view. If we are freezing at the
-         --  end of a scope (or within the scope of the private type),
-         --  the partial and full views will have been swapped, the
-         --  full view appears first in the entity chain and the swapping
-         --  mechanism ensures that the pointers are properly set (on
-         --  scope exit).
+         --  Private types are required to point to the same freeze node as
+         --  their corresponding full views. The freeze node itself has to
+         --  point to the partial view of the entity (because from the partial
+         --  view, we can retrieve the full view, but not the reverse).
+         --  However, in order to freeze correctly, we need to freeze the full
+         --  view. If we are freezing at the end of a scope (or within the
+         --  scope of the private type), the partial and full views will have
+         --  been swapped, the full view appears first in the entity chain and
+         --  the swapping mechanism ensures that the pointers are properly set
+         --  (on scope exit).
 
-         --  If we encounter the partial view before the full view
-         --  (e.g. when freezing from another scope), we freeze the
-         --  full view, and then set the pointers appropriately since
-         --  we cannot rely on swapping to fix things up (subtypes in an
-         --  outer scope might not get swapped).
+         --  If we encounter the partial view before the full view (e.g. when
+         --  freezing from another scope), we freeze the full view, and then
+         --  set the pointers appropriately since we cannot rely on swapping to
+         --  fix things up (subtypes in an outer scope might not get swapped).
 
          elsif Is_Incomplete_Or_Private_Type (E)
            and then not Is_Generic_Type (E)
@@ -2879,8 +2885,8 @@ package body Freeze is
 
             if Present (Full_View (E)) then
 
-               --  If full view has already been frozen, then no
-               --  further processing is required
+               --  If full view has already been frozen, then no further
+               --  processing is required
 
                if Is_Frozen (Full_View (E)) then
 
@@ -2888,9 +2894,8 @@ package body Freeze is
                   Set_Freeze_Node (E, Empty);
                   Check_Debug_Info_Needed (E);
 
-               --  Otherwise freeze full view and patch the pointers
-               --  so that the freeze node will elaborate both views
-               --  in the back-end.
+               --  Otherwise freeze full view and patch the pointers so that
+               --  the freeze node will elaborate both views in the back-end.
 
                else
                   declare
@@ -2926,11 +2931,11 @@ package body Freeze is
                   Check_Debug_Info_Needed (E);
                end if;
 
-               --  AI-117 requires that the convention of a partial view
-               --  be the same as the convention of the full view. Note
-               --  that this is a recognized breach of privacy, but it's
-               --  essential for logical consistency of representation,
-               --  and the lack of a rule in RM95 was an oversight.
+               --  AI-117 requires that the convention of a partial view be the
+               --  same as the convention of the full view. Note that this is a
+               --  recognized breach of privacy, but it's essential for logical
+               --  consistency of representation, and the lack of a rule in
+               --  RM95 was an oversight.
 
                Set_Convention (E, Convention (Full_View (E)));
 
@@ -2940,10 +2945,10 @@ package body Freeze is
                --  Size information is copied from the full view to the
                --  incomplete or private view for consistency
 
-               --  We skip this is the full view is not a type. This is
-               --  very strange of course, and can only happen as a result
-               --  of certain illegalities, such as a premature attempt to
-               --  derive from an incomplete type.
+               --  We skip this is the full view is not a type. This is very
+               --  strange of course, and can only happen as a result of
+               --  certain illegalities, such as a premature attempt to derive
+               --  from an incomplete type.
 
                if Is_Type (Full_View (E)) then
                   Set_Size_Info (E, Full_View (E));
@@ -3003,9 +3008,9 @@ package body Freeze is
                  ("(Ada 2005): invalid use of tagged incomplete type", E);
             end if;
 
-         --  For access to a protected subprogram, freeze the equivalent
-         --  type (however this is not set if we are not generating code
-         --  or if this is an anonymous type used just for resolution).
+         --  For access to a protected subprogram, freeze the equivalent type
+         --  (however this is not set if we are not generating code or if this
+         --  is an anonymous type used just for resolution).
 
          elsif Ekind (E) = E_Access_Protected_Subprogram_Type then
 
@@ -3053,9 +3058,9 @@ package body Freeze is
          if Is_Fixed_Point_Type (E) then
             Freeze_Fixed_Point_Type (E);
 
-            --  Some error checks required for ordinary fixed-point type.
-            --  Defer these till the freeze-point since we need the small
-            --  and range values. We only do these checks for base types
+            --  Some error checks required for ordinary fixed-point type. Defer
+            --  these till the freeze-point since we need the small and range
+            --  values. We only do these checks for base types
 
             if Is_Ordinary_Fixed_Point_Type (E)
               and then E = Base_Type (E)
@@ -3117,13 +3122,13 @@ package body Freeze is
             --  inherit the convention of the full view of the type. Inherited
             --  and overriding operations are defined to inherit the convention
             --  of their parent or overridden subprogram (also specified in
-            --  AI-117), and that will have occurred earlier (in
-            --  Derive_Subprogram and New_Overloaded_Entity). Here we set the
-            --  convention of primitives that are still convention Ada, which
-            --  will ensure that any new primitives inherit the type's
-            --  convention. Class-wide types can have a foreign convention
-            --  inherited from their specific type, but are excluded from this
-            --  since they don't have any associated primitives.
+            --  AI-117), which will have occurred earlier (in Derive_Subprogram
+            --  and New_Overloaded_Entity). Here we set the convention of
+            --  primitives that are still convention Ada, which will ensure
+            --  that any new primitives inherit the type's convention.
+            --  Class-wide types can have a foreign convention inherited from
+            --  their specific type, but are excluded from this since they
+            --  don't have any associated primitives.
 
             if Is_Tagged_Type (E)
               and then not Is_Class_Wide_Type (E)
@@ -3178,35 +3183,30 @@ package body Freeze is
 
                --  Loop to generate references for primitive operations
 
-               Prim := First_Elmt (Prim_List);
-               while Present (Prim) loop
-                  Ent := Node (Prim);
+               if Present (Prim_List) then
+                  Prim := First_Elmt (Prim_List);
+                  while Present (Prim) loop
 
-                  --  If the operation is derived, get the original for cross-
-                  --  reference purposes (it is the original for which we want
-                  --  the xref, and for which the comes from source test needs
-                  --  to be performed).
+                     --  If the operation is derived, get the original for
+                     --  cross-reference purposes (it is the original for
+                     --  which we want the xref, and for which the comes
+                     --  from source test needs to be performed).
 
-                  while Present (Alias (Ent)) loop
-                     Ent := Alias (Ent);
+                     Ent := Node (Prim);
+                     while Present (Alias (Ent)) loop
+                        Ent := Alias (Ent);
+                     end loop;
+
+                     Generate_Reference (E, Ent, 'p', Set_Ref => False);
+                     Next_Elmt (Prim);
                   end loop;
-
-                  Generate_Reference (E, Ent, 'p', Set_Ref => False);
-                  Next_Elmt (Prim);
-               end loop;
-
-            --  If we get an exception, then something peculiar has happened
-            --  probably as a result of a previous error. Since this is only
-            --  for non-critical cross-references, ignore the error.
-
-            exception
-               when others => null;
+               end if;
             end;
          end if;
 
-         --  Now that all types from which E may depend are frozen, see
-         --  if the size is known at compile time, if it must be unsigned,
-         --  or if strict alignent is required
+         --  Now that all types from which E may depend are frozen, see if the
+         --  size is known at compile time, if it must be unsigned, or if
+         --  strict alignent is required
 
          Check_Compile_Time_Size (E);
          Check_Unsigned_Type (E);
@@ -3509,11 +3509,11 @@ package body Freeze is
 
       --  For an allocator freeze designated type if not frozen already
 
-      --  For an aggregate whose component type is an access type, freeze
-      --  the designated type now, so that its freeze  does not appear within
-      --  the loop that might be created in the expansion of the aggregate.
-      --  If the designated type is a private type without full view, the
-      --  expression cannot contain an allocator, so the type is not frozen.
+      --  For an aggregate whose component type is an access type, freeze the
+      --  designated type now, so that its freeze does not appear within the
+      --  loop that might be created in the expansion of the aggregate. If the
+      --  designated type is a private type without full view, the expression
+      --  cannot contain an allocator, so the type is not frozen.
 
       Desig_Typ := Empty;
 
@@ -3567,11 +3567,11 @@ package body Freeze is
       loop
          Parent_P := Parent (P);
 
-         --  If we don't have a parent, then we are not in a well-formed
-         --  tree. This is an unusual case, but there are some legitimate
-         --  situations in which this occurs, notably when the expressions
-         --  in the range of a type declaration are resolved. We simply
-         --  ignore the freeze request in this case. Is this right ???
+         --  If we don't have a parent, then we are not in a well-formed tree.
+         --  This is an unusual case, but there are some legitimate situations
+         --  in which this occurs, notably when the expressions in the range of
+         --  a type declaration are resolved. We simply ignore the freeze
+         --  request in this case. Is this right ???
 
          if No (Parent_P) then
             return;
@@ -3636,9 +3636,9 @@ package body Freeze is
                   then
                      return;
 
-                  --  If enumeration literal appears as the name of a
-                  --  function which is the choice, then also do not freeze.
-                  --  This happens in the overloaded literal case, where the
+                  --  If enumeration literal appears as the name of function
+                  --  which is the choice, then also do not freeze. This
+                  --  happens in the overloaded literal case, where the
                   --  enumeration literal is temporarily changed to a function
                   --  call for overloading analysis purposes.
 
@@ -3710,9 +3710,9 @@ package body Freeze is
                   exit;
                end if;
 
-            --  If parent is a body or a spec or a block, then the current
-            --  node is a statement or declaration and we can insert the
-            --  freeze node before it.
+            --  If parent is a body or a spec or a block, then the current node
+            --  is a statement or declaration and we can insert the freeze node
+            --  before it.
 
             when N_Package_Specification |
                  N_Package_Body          |
@@ -3746,9 +3746,9 @@ package body Freeze is
             --  appears in the source can never be frozen in a loop (this
             --  occurs only because of a loop expanded by the expander), so we
             --  keep on going. Otherwise we terminate the search. Same is true
-            --  of any entity which comes from source. (if they have a
-            --  predefined type, that type does not appear to come from source,
-            --  but the entity should not be frozen here).
+            --  of any entity which comes from source. (if they have predefined
+            --  type, that type does not appear to come from source, but the
+            --  entity should not be frozen here).
 
             when N_Loop_Statement =>
                exit when not Comes_From_Source (Etype (N))
@@ -3779,14 +3779,14 @@ package body Freeze is
       --  the outer record type so they can eventually be placed in the
       --  enclosing declaration list.
 
-      --  The other case requiring this special handling is if we are in
-      --  a default expression, since in that case we are about to freeze
-      --  a static type, and the freeze scope needs to be the outer scope,
-      --  not the scope of the subprogram with the default parameter.
+      --  The other case requiring this special handling is if we are in a
+      --  default expression, since in that case we are about to freeze a
+      --  static type, and the freeze scope needs to be the outer scope, not
+      --  the scope of the subprogram with the default parameter.
 
       --  For default expressions in generic units, the Move_Freeze_Nodes
-      --  mechanism (see sem_ch12.adb) takes care of placing them at the
-      --  proper place, after the generic unit.
+      --  mechanism (see sem_ch12.adb) takes care of placing them at the proper
+      --  place, after the generic unit.
 
       if (In_Def_Exp and not Inside_A_Generic)
         or else Freeze_Outside
@@ -3837,13 +3837,12 @@ package body Freeze is
 
       --  Now we have the right place to do the freezing. First, a special
       --  adjustment, if we are in default expression analysis mode, these
-      --  freeze actions must not be thrown away (normally all inserted
-      --  actions are thrown away in this mode. However, the freeze actions
-      --  are from static expressions and one of the important reasons we
-      --  are doing this special analysis is to get these freeze actions.
-      --  Therefore we turn off the In_Default_Expression mode to propagate
-      --  these freeze actions. This also means they get properly analyzed
-      --  and expanded.
+      --  freeze actions must not be thrown away (normally all inserted actions
+      --  are thrown away in this mode. However, the freeze actions are from
+      --  static expressions and one of the important reasons we are doing this
+      --  special analysis is to get these freeze actions. Therefore we turn
+      --  off the In_Default_Expression mode to propagate these freeze actions.
+      --  This also means they get properly analyzed and expanded.
 
       In_Default_Expression := False;
 
@@ -3928,9 +3927,9 @@ package body Freeze is
          end if;
       end if;
 
-      --  Immediate return if the range is already analyzed. This means
-      --  that the range is already set, and does not need to be computed
-      --  by this routine.
+      --  Immediate return if the range is already analyzed. This means that
+      --  the range is already set, and does not need to be computed by this
+      --  routine.
 
       if Analyzed (Rng) then
          return;
@@ -3952,16 +3951,16 @@ package body Freeze is
       if Is_Ordinary_Fixed_Point_Type (Typ) then
 
          --  For the ordinary fixed-point case, we are allowed to fudge the
-         --  end-points up or down by small. Generally we prefer to fudge
-         --  up, i.e. widen the bounds for non-model numbers so that the
-         --  end points are included. However there are cases in which this
-         --  cannot be done, and indeed cases in which we may need to narrow
-         --  the bounds. The following circuit makes the decision.
+         --  end-points up or down by small. Generally we prefer to fudge up,
+         --  i.e. widen the bounds for non-model numbers so that the end points
+         --  are included. However there are cases in which this cannot be
+         --  done, and indeed cases in which we may need to narrow the bounds.
+         --  The following circuit makes the decision.
 
-         --  Note: our terminology here is that Incl_EP means that the
-         --  bounds are widened by Small if necessary to include the end
-         --  points, and Excl_EP means that the bounds are narrowed by
-         --  Small to exclude the end-points if this reduces the size.
+         --  Note: our terminology here is that Incl_EP means that the bounds
+         --  are widened by Small if necessary to include the end points, and
+         --  Excl_EP means that the bounds are narrowed by Small to exclude the
+         --  end-points if this reduces the size.
 
          --  Note that in the Incl case, all we care about is including the
          --  end-points. In the Excl case, we want to narrow the bounds as
@@ -4045,11 +4044,11 @@ package body Freeze is
                Hival_Excl_EP := Hival_Incl_EP;
             end if;
 
-            --  One further adjustment is needed. In the case of subtypes,
-            --  we cannot go outside the range of the base type, or we get
+            --  One further adjustment is needed. In the case of subtypes, we
+            --  cannot go outside the range of the base type, or we get
             --  peculiarities, and the base type range is already set. This
-            --  only applies to the Incl values, since clearly the Excl
-            --  values are already as restricted as they are allowed to be.
+            --  only applies to the Incl values, since clearly the Excl values
+            --  are already as restricted as they are allowed to be.
 
             if Typ /= Btyp then
                Loval_Incl_EP := UR_Max (Loval_Incl_EP, Realval (BLo));
@@ -4334,10 +4333,10 @@ package body Freeze is
       --  static. This happens if the type depends on non-global objects.
 
       procedure Ensure_Expression_Is_SA (N : Node_Id);
-      --  Called to ensure that an expression used as part of a type
-      --  definition is statically allocatable, which means that the type
-      --  of the expression is statically allocatable, and the expression
-      --  is either static, or a reference to a library level constant.
+      --  Called to ensure that an expression used as part of a type definition
+      --  is statically allocatable, which means that the expression type is
+      --  statically allocatable, and the expression is either static, or a
+      --  reference to a library level constant.
 
       procedure Ensure_Type_Is_SA (Typ : Entity_Id);
       --  Called to mark a type as static, checking that it is possible
@@ -4386,8 +4385,8 @@ package body Freeze is
             return;
          end if;
 
-         --  We are also OK if the type is already marked as statically
-         --  allocated, which means we processed it before.
+         --  We are also OK if the type already marked as statically allocated,
+         --  which means we processed it before.
 
          if Is_Statically_Allocated (Typ) then
             return;
@@ -4521,10 +4520,10 @@ package body Freeze is
 
       --  Reset the Pure indication on an imported subprogram unless an
       --  explicit Pure_Function pragma was present. We do this because
-      --  otherwise it is an insidious error to call a non-pure function
-      --  from pure unit and have calls mysteriously optimized away. What
-      --  happens here is that the Import can bypass the normal check to
-      --  ensure that pure units call only pure subprograms.
+      --  otherwise it is an insidious error to call a non-pure function from
+      --  pure unit and have calls mysteriously optimized away. What happens
+      --  here is that the Import can bypass the normal check to ensure that
+      --  pure units call only pure subprograms.
 
       if Is_Imported (E)
         and then Is_Pure (E)
@@ -4659,8 +4658,8 @@ package body Freeze is
       elsif Is_Record_Type (T)
         and not Is_Private_Type (T)
       then
-         --  Verify that the record type has no components with
-         --  private types without completion.
+         --  Verify that the record type has no components with private types
+         --  without completion.
 
          declare
             Comp : Entity_Id;
@@ -4700,10 +4699,10 @@ package body Freeze is
    begin
       Set_Default_Expressions_Processed (E);
 
-      --  A subprogram instance and its associated anonymous subprogram
-      --  share their signature. The default expression functions are defined
-      --  in the wrapper packages for the anonymous subprogram, and should
-      --  not be generated again for the instance.
+      --  A subprogram instance and its associated anonymous subprogram share
+      --  their signature. The default expression functions are defined in the
+      --  wrapper packages for the anonymous subprogram, and should not be
+      --  generated again for the instance.
 
       if Is_Generic_Instance (E)
         and then Present (Alias (E))
@@ -4743,11 +4742,10 @@ package body Freeze is
             then
 
                --  If there is no default function, we must still do a full
-               --  analyze call on the default value, to ensure that all
-               --  error checks are performed, e.g. those associated with
-               --  static evaluation. Note that this branch will always be
-               --  taken if the analyzer is turned off (but we still need the
-               --  error checks).
+               --  analyze call on the default value, to ensure that all error
+               --  checks are performed, e.g. those associated with static
+               --  evaluation. Note: this branch will always be taken if the
+               --  analyzer is turned off (but we still need the error checks).
 
                --  Note: the setting of parent here is to meet the requirement
                --  that we can only analyze the expression while attached to
@@ -4927,13 +4925,13 @@ package body Freeze is
       --  Full_View or Corresponding_Record_Type to have one either.
 
       --  ??? Fundamentally, this whole handling is a kludge. What we really
-      --  want is to be sure that for an Itype that's part of record R and is
-      --  a subtype of type T, that it's frozen after the later of the freeze
+      --  want is to be sure that for an Itype that's part of record R and is a
+      --  subtype of type T, that it's frozen after the later of the freeze
       --  points of R and T. We have no way of doing that directly, so what we
       --  do is force most such Itypes to be frozen as part of freezing R via
       --  this procedure and only delay the ones that need to be delayed
-      --  (mostly the designated types of access types that are defined as
-      --  part of the record).
+      --  (mostly the designated types of access types that are defined as part
+      --  of the record).
 
       if Is_Private_Type (T)
         and then Present (Full_View (T))
@@ -5013,9 +5011,9 @@ package body Freeze is
                return;
             end if;
 
-         --  A function call (most likely to To_Address) is probably not
-         --  an overlay, so skip warning. Ditto if the function call was
-         --  inlined and transformed into an entity.
+         --  A function call (most likely to To_Address) is probably not an
+         --  overlay, so skip warning. Ditto if the function call was inlined
+         --  and transformed into an entity.
 
          elsif Nkind (Original_Node (Expr)) = N_Function_Call then
             return;
