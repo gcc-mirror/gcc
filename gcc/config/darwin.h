@@ -441,7 +441,7 @@ Boston, MA 02110-1301, USA.  */
 #define NO_PROFILE_COUNTERS	1
 
 #undef	INIT_SECTION_ASM_OP
-#define HAS_INIT_SECTION
+#define INIT_SECTION_ASM_OP
 
 #undef	INVOKE__main
 

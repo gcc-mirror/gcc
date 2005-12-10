@@ -1,5 +1,10 @@
 2005-12-10  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/darwin.h (HAS_INIT_SECTION): Remove definition.
+	(INIT_SECTION_ASM_OP): Restore empty definition from before 2005-12-07.
+
+2005-12-10  Richard Sandiford  <richard@codesourcery.com>
+
 	* output.h (init_section, fini_section): Delete.
 	* varasm.c (init_section, fini_section): Delete.
 	(init_varasm_once): Don't initialize them.
