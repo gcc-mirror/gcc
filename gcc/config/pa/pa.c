@@ -9037,19 +9037,17 @@ som_text_section_asm_op (void)
 	      && !DECL_WEAK (cfun->decl))
 	    return
  "\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,SORT=24,COMDAT";
-
-	  return "\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$";
 	}
       else
 	{
 	  /* There isn't a current function or the body of the current
 	     function has been completed.  So, we are changing to the
-	     text section to output debugging information.  Do this in
-	     the default text section.  We need to forget that we are
-	     in the text section so that the function text_section in
-	     varasm.c will call us the next time around.  */
+	     text section to output debugging information.  We need to
+	     forget that we are in the text section so that the function
+	     text_section in varasm.c will call us the next time around.  */
 	  forget_section ();
 	}
+      return "\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$";
     }
 
   return "\t.SPACE $TEXT$\n\t.SUBSPA $CODE$";
