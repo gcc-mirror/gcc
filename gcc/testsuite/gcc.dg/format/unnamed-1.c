@@ -2,8 +2,8 @@
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
 /* { dg-options "-Wformat" } */
-/* { dg-options "-Wformat -msse" { target { i?86-*-* && ilp32 } } } */
-/* { dg-options "-Wformat -msse" { target { x86_64-*-* && ilp32 } } } */
+/* { dg-options "-Wformat -msse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+
 
 #include "format.h"
 

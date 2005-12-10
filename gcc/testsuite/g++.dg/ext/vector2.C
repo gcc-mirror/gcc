@@ -1,7 +1,6 @@
 // PR c++/23337; caused an ICE in component_ref_field_offset
 // { dg-options "" }
-// { dg-options "-mmmx" { target { i?86-*-* && ilp32 } } } */
-// { dg-options "-mmmx" { target { x86_64-*-* && ilp32 } } } */
+// { dg-options "-mmmx" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 typedef int vec __attribute__ ((vector_size (8)));
 extern int bar (vec);
 int

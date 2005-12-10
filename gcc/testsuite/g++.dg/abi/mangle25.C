@@ -6,8 +6,7 @@
 // Origin: Joseph Myers <joseph@codesourcery.com>
 // { dg-do compile { target i?86-*-* x86_64-*-* ia64-*-* } } */
 // { dg-options "" } */
-// { dg-options "-mmmx" { target { i?86-*-* && ilp32 } } } */
-// { dg-options "-mmmx" { target { x86_64-*-* && ilp32 } } } */
+// { dg-options "-mmmx" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 // { dg-final { scan-assembler "_Z1fg" { target i?86-*-* x86_64-*-* } } } */
 // { dg-final { scan-assembler "_Z1fg" { target { ia64-*-* && { ! "ia64-*-hpux*" } } } } } */
 // { dg-final { scan-assembler "_Z1fe" { target ia64-*-hpux* } } } */
