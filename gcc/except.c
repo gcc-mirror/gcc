@@ -3425,6 +3425,7 @@ sjlj_output_call_site_table (void)
   call_site_base += n;
 }
 
+#ifndef TARGET_UNWIND_INFO
 /* Switch to the section that should be used for exception tables.  */
 
 static void
@@ -3454,6 +3455,7 @@ switch_to_exception_section (void)
     }
   switch_to_section (exception_section);
 }
+#endif
 
 
 /* Output a reference from an exception table to the type_info object TYPE.
