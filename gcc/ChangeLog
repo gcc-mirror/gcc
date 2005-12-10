@@ -1,3 +1,8 @@
+2005-12-10  Andreas Schwab  <schwab@suse.de>
+
+	* except.c (switch_to_exception_section): Only define if
+	TARGET_UNWIND_INFO is not defined.
+
 2005-12-10  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/darwin.h (HAS_INIT_SECTION): Remove definition.
