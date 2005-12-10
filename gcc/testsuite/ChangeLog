@@ -1,6 +1,11 @@
 2005-12-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/20772
+	* g++.old-deja/g++.pt/asm1.C, gcc.c-torture/compile/20000804-1.c,
+	gcc.target/i386/asm-3.c, gcc.target/i386/clobbers.c: Use ilp32 in
+	dg-skip-if target selector.
+
+	PR testsuite/20772
 	* g++.dg/eh/simd-1.C, g++.dg/eh/simd-2.C, g++.dg/opt/inline9.C,
 	gcc.dg/20020418-1.c, gcc.dg/20031102-1.c, gcc.dg/ia64-sync-1.c,
 	gcc.dg/ia64-sync-2.c, gcc.dg/ia64-sync-3.c, gcc.dg/ia64-sync-4.c,
