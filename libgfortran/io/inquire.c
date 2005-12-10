@@ -283,6 +283,29 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 
       cf_strcpy (iqp->pad, iqp->pad_len, p);
     }
+ 
+  if ((cf & IOPARM_INQUIRE_HAS_CONVERT) != 0)
+    {
+      if (u == NULL)
+	p = undefined;
+      else
+	switch (u->flags.convert)
+	  {
+	    /*  l8_to_l4_offset is 0 for little-endian, 1 for big-endian.  */
+	  case CONVERT_NATIVE:
+	    p = l8_to_l4_offset ? "BIG_ENDIAN" : "LITTLE_ENDIAN";
+	    break;
+
+	  case CONVERT_SWAP:
+	    p = l8_to_l4_offset ? "LITTLE_ENDIAN" : "BIG_ENDIAN";
+	    break;
+
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad convert");
+	  }
+
+      cf_strcpy (iqp->convert, iqp->convert_len, p);
+    }
 }
 
 

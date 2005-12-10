@@ -1,3 +1,21 @@
+2005-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/23815
+	* io.c (top level):  Add convert to io_tag.
+	(resolve_tag):  convert is GFC_STD_GNU.
+	(match_open_element):  Add convert.
+	(gfc_free_open):  Likewise.
+	(gfc_resolve_open):  Likewise.
+	(gfc_free_inquire):  Likewise.
+	(match_inquire_element):  Likewise.
+	* dump-parse-tree.c (gfc_show_code_node):  Add
+	convet for open and inquire.
+	gfortran.h: Add convert to gfc_open and gfc_inquire.
+	* trans-io.c (gfc_trans_open):  Add convert.
+	(gfc_trans_inquire):  Likewise.
+	* ioparm.def:  Add convert to open and inquire.
+	* gfortran.texi:  Document CONVERT.
+
 2005-12-09  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/22527

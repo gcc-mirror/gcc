@@ -1309,7 +1309,7 @@ gfc_alloc;
 typedef struct
 {
   gfc_expr *unit, *file, *status, *access, *form, *recl,
-    *blank, *position, *action, *delim, *pad, *iostat, *iomsg;
+    *blank, *position, *action, *delim, *pad, *iostat, *iomsg, *convert;
   gfc_st_label *err;
 }
 gfc_open;
@@ -1336,7 +1336,7 @@ typedef struct
   gfc_expr *unit, *file, *iostat, *exist, *opened, *number, *named,
     *name, *access, *sequential, *direct, *form, *formatted,
     *unformatted, *recl, *nextrec, *blank, *position, *action, *read,
-    *write, *readwrite, *delim, *pad, *iolength, *iomsg;
+    *write, *readwrite, *delim, *pad, *iolength, *iomsg, *convert;
 
   gfc_st_label *err;
 
