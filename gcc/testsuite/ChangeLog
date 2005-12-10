@@ -1,3 +1,23 @@
+2005-12-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR testsuite/20772
+	* g++.dg/abi/mangle24.C, g++.dg/abi/mangle25.C,
+	g++.dg/ext/vector2.C, g++.dg/opt/longbranch2.C, g++.dg/opt/mmx1.C,
+	g++.dg/opt/reg-stack4.C, gcc.dg/20020108-1.c, gcc.dg/20020122-2.c,
+	gcc.dg/20020122-3.c, gcc.dg/20020206-1.c, gcc.dg/20020310-1.c,
+	gcc.dg/20020411-1.c, gcc.dg/20020418-2.c, gcc.dg/20020426-2.c,
+	gcc.dg/20020517-1.c, gcc.dg/20030204-1.c, gcc.dg/20030826-2.c,
+	gcc.dg/20031202-1.c, gcc.dg/format/unnamed-1.c, gcc.dg/setjmp-2.c,
+	gcc.dg/short-compare-1.c, gcc.dg/short-compare-2.c,
+	gcc.dg/tls/opt-1.c, gcc.dg/tls/opt-2.c,
+	gcc.dg/torture/fp-int-convert-float128-timode.c,
+	gcc.dg/torture/fp-int-convert-float128.c,
+	gcc.dg/torture/fp-int-convert-float80-timode.c,
+	gcc.dg/torture/fp-int-convert-float80.c, gcc.dg/unroll-1.c,
+	gcc.target/i386/20030926-1.c: Merge i?86 and x86_64 cases.
+
+	* gcc.dg/tls/opt-1.c: Require effective target fpic.
+
 2005-12-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	* g++.old-deja/g++.other/comdat5.C: Gate on target fpic.
@@ -85,6 +105,7 @@
 
 2005-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	PR testsuite/20772
 	* g++.dg/other/i386-1.C, gcc.c-torture/execute/990413-2.x,
 	gcc.dg/torture/pr18582-1.c,
 	gcc.target/i386/attributes-error.c: Also test on x86_64.

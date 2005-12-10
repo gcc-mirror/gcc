@@ -3,8 +3,7 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* ia64-*-* } } */
 /* { dg-xfail-if "" { i?86-*-* x86_64-*-* } { "*" } { "" } } */
 /* { dg-options "" } */
-/* { dg-options "-mmmx" { target { i?86-*-* && ilp32 } } } */
-/* { dg-options "-mmmx" { target { x86_64-*-* && ilp32 } } } */
+/* { dg-options "-mmmx" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 #include "fp-int-convert.h"
 
