@@ -1,3 +1,20 @@
+2005-12-10  Richard Sandiford  <richard@codesourcery.com>
+
+	* dwarf2out.c (default_eh_frame_section): Delete, moving handling
+	of EH_FRAME_SECTION_NAME into...
+	(switch_to_eh_frame_section): ...here.  Try to set eh_frame_section
+	if it is still null.
+	* except.c (default_exception_section): Delete, moving most
+	of the code to...
+	(switch_to_exception_section): ...this new function.  Set
+	exception_section if it is still null, then switch to it.
+	(output_function_exception_table): Use switch_to_exception_section.
+	* varasm.c (exception_section, eh_frame_section): Update comments.
+	(get_section): Hoist use of SECTION_NAMED.
+	(init_varasm_once): Don't set exception_section and eh_frame_section.
+	* output.h (default_exception_section): Delete.
+	(default_eh_frame_section): Delete.
+
 2005-12-09  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c: Include "cgraph.h".
