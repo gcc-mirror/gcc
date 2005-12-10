@@ -3425,30 +3425,34 @@ sjlj_output_call_site_table (void)
   call_site_base += n;
 }
 
-/* Return the default value of exception_section.  */
+/* Switch to the section that should be used for exception tables.  */
 
-section *
-default_exception_section (void)
+static void
+switch_to_exception_section (void)
 {
-  if (targetm.have_named_sections)
+  if (exception_section == 0)
     {
-      int flags;
-
-      if (EH_TABLES_CAN_BE_READ_ONLY)
+      if (targetm.have_named_sections)
 	{
-	  int tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
-	  
-	  flags = (! flag_pic
-		   || ((tt_format & 0x70) != DW_EH_PE_absptr
-		       && (tt_format & 0x70) != DW_EH_PE_aligned))
-	    ? 0 : SECTION_WRITE;
+	  int flags;
+
+	  if (EH_TABLES_CAN_BE_READ_ONLY)
+	    {
+	      int tt_format =
+		ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
+	      flags = ((! flag_pic
+			|| ((tt_format & 0x70) != DW_EH_PE_absptr
+			    && (tt_format & 0x70) != DW_EH_PE_aligned))
+		       ? 0 : SECTION_WRITE);
+	    }
+	  else
+	    flags = SECTION_WRITE;
+	  exception_section = get_section (".gcc_except_table", flags, NULL);
 	}
       else
-	flags = SECTION_WRITE;
-      return get_section (".gcc_except_table", flags, NULL);
+	exception_section = flag_pic ? data_section : readonly_data_section;
     }
-  else
-    return flag_pic ? data_section : readonly_data_section;
+  switch_to_section (exception_section);
 }
 
 
@@ -3530,7 +3534,7 @@ output_function_exception_table (void)
   /* Note that varasm still thinks we're in the function's code section.
      The ".endp" directive that will immediately follow will take us back.  */
 #else
-  switch_to_section (exception_section);
+  switch_to_exception_section ();
 #endif
 
   have_tt_data = (VEC_length (tree, cfun->eh->ttype_data) > 0

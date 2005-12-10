@@ -113,42 +113,6 @@ dwarf2out_do_frame (void)
 #define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
 #endif
 
-/* Return the default value of eh_frame_section.  Note that this function
-   must appear outside the DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO
-   macro guards.  */
-
-section *
-default_eh_frame_section (void)
-{
-#ifdef EH_FRAME_SECTION_NAME
-  int flags;
-
-  if (EH_TABLES_CAN_BE_READ_ONLY)
-    {
-      int fde_encoding;
-      int per_encoding;
-      int lsda_encoding;
-
-      fde_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/1, /*global=*/0);
-      per_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/2, /*global=*/1);
-      lsda_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/0);
-      flags = (! flag_pic
-	       || ((fde_encoding & 0x70) != DW_EH_PE_absptr
-		   && (fde_encoding & 0x70) != DW_EH_PE_aligned
-		   && (per_encoding & 0x70) != DW_EH_PE_absptr
-		   && (per_encoding & 0x70) != DW_EH_PE_aligned
-		   && (lsda_encoding & 0x70) != DW_EH_PE_absptr
-		   && (lsda_encoding & 0x70) != DW_EH_PE_aligned))
-	      ? 0 : SECTION_WRITE;
-    }
-  else
-    flags = SECTION_WRITE;
-  return get_section (EH_FRAME_SECTION_NAME, flags, NULL);
-#else
-  return NULL;
-#endif
-}
-
 DEF_VEC_P(rtx);
 DEF_VEC_ALLOC_P(rtx,gc);
 
@@ -1992,10 +1956,44 @@ switch_to_eh_frame_section (void)
 {
   tree label;
 
+#ifdef EH_FRAME_SECTION_NAME
+  if (eh_frame_section == 0)
+    {
+      int flags;
+
+      if (EH_TABLES_CAN_BE_READ_ONLY)
+	{
+	  int fde_encoding;
+	  int per_encoding;
+	  int lsda_encoding;
+
+	  fde_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/1,
+						       /*global=*/0);
+	  per_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/2,
+						       /*global=*/1);
+	  lsda_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0,
+							/*global=*/0);
+	  flags = ((! flag_pic
+		    || ((fde_encoding & 0x70) != DW_EH_PE_absptr
+			&& (fde_encoding & 0x70) != DW_EH_PE_aligned
+			&& (per_encoding & 0x70) != DW_EH_PE_absptr
+			&& (per_encoding & 0x70) != DW_EH_PE_aligned
+			&& (lsda_encoding & 0x70) != DW_EH_PE_absptr
+			&& (lsda_encoding & 0x70) != DW_EH_PE_aligned))
+		   ? 0 : SECTION_WRITE);
+	}
+      else
+	flags = SECTION_WRITE;
+      eh_frame_section = get_section (EH_FRAME_SECTION_NAME, flags, NULL);
+    }
+#endif
+
   if (eh_frame_section)
     switch_to_section (eh_frame_section);
   else
     {
+      /* We have no special eh_frame section.  Put the information in
+	 the data section and emit special labels to guide collect2.  */
       switch_to_section (data_section);
       label = get_file_function_name ('F');
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));

@@ -1,3 +1,9 @@
+2005-12-10  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/20051207-1.c,
+	* gcc.dg/20051207-2.c,
+	* gcc.dg/20051207-3.c: New tests.
+
 2005-12-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/20772
