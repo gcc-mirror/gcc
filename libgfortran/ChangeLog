@@ -1,3 +1,10 @@
+2005-12-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* Makefile.am: Enable loop unrolling for matmul.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+
 2005-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/23815
