@@ -3,7 +3,7 @@
    expected the callee to pop up the hidden return structure pointer,
    while callee was actually not poping it up (as the hidden argument
    was passed in register).  */
-/* { dg-do run { target i?86-*-* } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 
 extern void abort (void);

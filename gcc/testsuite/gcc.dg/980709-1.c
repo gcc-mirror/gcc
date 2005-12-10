@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options -O2 } */
 
 extern __inline__ int test_and_set_bit(int nr, volatile void * addr)

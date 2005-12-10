@@ -1,10 +1,10 @@
 // Test for oversized bitfield alignment in structs on IA-32
-// { dg-do run { target i?86-*-* } }
+// { dg-do run { target i?86-*-* x86_64-*-* } }
 // { dg-options "-O2" }
 // Cygwin and mingw32 default to MASK_ALIGN_DOUBLE. Override to ensure
 // 4-byte alignment.
 // { dg-options "-mno-align-double" { target i?86-*-cygwin* i?86-*-mingw* } }
-// { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } }
+// { dg-require-effective-target ilp32 }
 
 struct A
 {

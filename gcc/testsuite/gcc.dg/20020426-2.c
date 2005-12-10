@@ -2,8 +2,7 @@
    Distilled from zlib sources.  */
 /* { dg-do run } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -frename-registers -fomit-frame-pointer -fPIC -mtune=i686" { target i?86-*-* } } */
-/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
+/* { dg-options "-O2 -frename-registers -fomit-frame-pointer -fPIC -mtune=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-bogus "\[Uu\]nresolved symbol .(_GLOBAL_OFFSET_TABLE_|\[_.A-Za-z\]\[_.0-9A-Za-z\]*@(PLT|GOT|GOTOFF))" "PIC unsupported" { xfail *-*-netware* } 0 } */
 
 extern void exit (int);

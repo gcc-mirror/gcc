@@ -1,5 +1,5 @@
-/* { dg-do run { target i?86-*-* } } */
-/* { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O -ffast-math -mtune=i486" } */
 
 /* Test that floating point greater-than tests are compiled correctly with

@@ -5,8 +5,7 @@
 // deleted a valid edge.
 
 // { dg-do compile }
-// { dg-options "-mtune=i586 -O2" { target i?86-*-* } }
-// { dg-skip-if "" { i?86-*-* } { "-m64" } { "" } }
+// { dg-options "-mtune=i586 -O2" { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
 
 struct array {
   double data;
