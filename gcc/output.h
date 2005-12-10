@@ -495,8 +495,6 @@ extern GTY(()) section *ctors_section;
 extern GTY(()) section *dtors_section;
 extern GTY(()) section *bss_section;
 extern GTY(()) section *sbss_section;
-extern GTY(()) section *init_section;
-extern GTY(()) section *fini_section;
 extern GTY(()) section *exception_section;
 extern GTY(()) section *eh_frame_section;
 
