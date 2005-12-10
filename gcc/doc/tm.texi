@@ -5994,14 +5994,16 @@ uninitialized, writable small data.
 If defined, a C expression whose value is a string, including spacing,
 containing the assembler operation to identify the following data as
 initialization code.  If not defined, GCC will assume such a section does
-not exist.
+not exist.  This section has no corresponding @code{init_section}
+variable; it is used entirely in runtime code.
 @end defmac
 
 @defmac FINI_SECTION_ASM_OP
 If defined, a C expression whose value is a string, including spacing,
 containing the assembler operation to identify the following data as
 finalization code.  If not defined, GCC will assume such a section does
-not exist.
+not exist.  This section has no corresponding @code{fini_section}
+variable; it is used entirely in runtime code.
 @end defmac
 
 @defmac INIT_ARRAY_SECTION_ASM_OP

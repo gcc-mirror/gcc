@@ -152,8 +152,6 @@ section *ctors_section;
 section *dtors_section;
 section *bss_section;
 section *sbss_section;
-section *init_section;
-section *fini_section;
 
 /* The section that holds the main exception table, when known.  The section
    is set either by the target's init_sections hook or by the first call to
@@ -4855,16 +4853,6 @@ init_varasm_once (void)
   sbss_section = get_unnamed_section (SECTION_WRITE | SECTION_BSS,
 				      output_section_asm_op,
 				      SBSS_SECTION_ASM_OP);
-#endif
-
-#ifdef INIT_SECTION_ASM_OP
-  init_section = get_unnamed_section (SECTION_CODE, output_section_asm_op,
-				      INIT_SECTION_ASM_OP);
-#endif
-
-#ifdef FINI_SECTION_ASM_OP
-  fini_section = get_unnamed_section (SECTION_CODE, output_section_asm_op,
-				      FINI_SECTION_ASM_OP);
 #endif
 
   targetm.asm_out.init_sections ();

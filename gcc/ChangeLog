@@ -1,5 +1,13 @@
 2005-12-10  Richard Sandiford  <richard@codesourcery.com>
 
+	* output.h (init_section, fini_section): Delete.
+	* varasm.c (init_section, fini_section): Delete.
+	(init_varasm_once): Don't initialize them.
+	* doc/tm.texi (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP): Say that
+	there are no corresponding varasm.c variables.
+
+2005-12-10  Richard Sandiford  <richard@codesourcery.com>
+
 	* dwarf2out.c (default_eh_frame_section): Delete, moving handling
 	of EH_FRAME_SECTION_NAME into...
 	(switch_to_eh_frame_section): ...here.  Try to set eh_frame_section
