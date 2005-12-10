@@ -1,7 +1,7 @@
 /* PR inline-asm/6806 */
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2" } */
-/* { dg-skip-if "" { i?86-*-* } { "-fpic" "-fPIC" } { "" } } */
+/* { dg-skip-if "" { ilp32 } { "-fpic" "-fPIC" } { "" } } */
 
 extern void abort (void);
 
