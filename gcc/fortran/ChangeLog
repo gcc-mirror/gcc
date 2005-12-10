@@ -1,3 +1,8 @@
+2005-12-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/25068
+	* io.c (resolve_tag): Add correct diagnostic for F2003 feature.
+
 2005-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/23815
