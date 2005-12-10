@@ -1046,12 +1046,22 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
 	  gfc_error ("%s tag at %L must be scalar", tag->name, &e->where);
 	  return FAILURE;
 	}
+
       if (tag == &tag_iomsg)
 	{
 	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: IOMSG tag at %L",
 			      &e->where) == FAILURE)
 	    return FAILURE;
 	}
+
+      if (tag == &tag_iostat && e->ts.kind != gfc_default_integer_kind)
+	{
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Non-default "
+			      "integer kind in IOSTAT tag at %L",
+			      &e->where) == FAILURE)
+	    return FAILURE;
+	}
+
       if (tag == &tag_convert)
 	{
 	  if (gfc_notify_std (GFC_STD_GNU, "Extension: CONVERT tag at %L",
