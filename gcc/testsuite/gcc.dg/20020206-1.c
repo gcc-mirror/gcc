@@ -4,8 +4,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -mtune=pentium3 -w" { target { i?86-*-* && ilp32 } } } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -mtune=pentium3 -w" { target { x86_64-*-* && ilp32 } } } */
+/* { dg-options "-O2 -fprefetch-loop-arrays -mtune=pentium3 -w" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 
 struct reload

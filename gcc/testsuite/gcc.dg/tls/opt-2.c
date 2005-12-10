@@ -4,8 +4,7 @@
    on IA-32.  */
 /* { dg-do link } */
 /* { dg-options "-O2 -ftls-model=initial-exec" } */
-/* { dg-options "-O2 -ftls-model=initial-exec -march=i686" { target { i?86-*-* && ilp32 } } } */
-/* { dg-options "-O2 -ftls-model=initial-exec -march=i686" { target { x86_64-*-* && ilp32 } } } */
+/* { dg-options "-O2 -ftls-model=initial-exec -march=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-require-effective-target tls } */
 
 __thread int thr;
