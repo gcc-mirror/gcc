@@ -98,6 +98,14 @@ static const st_option pad_opt[] =
   { NULL, 0}
 };
 
+static const st_option convert_opt[] =
+{
+  { "native", CONVERT_NATIVE},
+  { "swap", CONVERT_SWAP},
+  { "big_endian", CONVERT_BIG},
+  { "little_endian", CONVERT_LITTLE},
+  { NULL, 0}
+};
 
 /* Given a unit, test to see if the file is positioned at the terminal
    point, and if so, change state from NO_ENDFILE flag to AT_ENDFILE.
@@ -530,6 +538,36 @@ st_open (st_parameter_open *opp)
   flags.status = !(cf & IOPARM_OPEN_HAS_STATUS) ? STATUS_UNSPECIFIED :
     find_option (&opp->common, opp->status, opp->status_len,
 		 status_opt, "Bad STATUS parameter in OPEN statement");
+
+  if (cf & IOPARM_OPEN_HAS_CONVERT)
+    {
+      unit_convert conv;
+      conv = find_option (&opp->common, opp->convert, opp->convert_len,
+			  convert_opt, "Bad CONVERT parameter in OPEN statement");
+      /* We use l8_to_l4_offset, which is 0 on little-endian machines
+ 	 and 1 on big-endian machines.  */
+      switch (conv)
+ 	{
+ 	case CONVERT_NATIVE:
+ 	case CONVERT_SWAP:
+ 	  break;
+	  
+ 	case CONVERT_BIG:
+ 	  conv = l8_to_l4_offset ? CONVERT_NATIVE : CONVERT_SWAP;
+ 	  break;
+	  
+ 	case CONVERT_LITTLE:
+ 	  conv = l8_to_l4_offset ? CONVERT_SWAP : CONVERT_NATIVE;
+ 	  break;
+ 
+ 	default:
+ 	  internal_error (&opp->common,	"Illegal value for CONVERT");
+ 	  break;
+ 	}
+      flags.convert = conv;
+    }
+  else
+    flags.convert = CONVERT_NATIVE;
 
   if (opp->common.unit < 0)
     generate_error (&opp->common, ERROR_BAD_OPTION,

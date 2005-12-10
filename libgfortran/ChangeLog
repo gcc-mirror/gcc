@@ -1,3 +1,30 @@
+2005-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/23815
+	* io/file_pos.c (unformatted_backspace):  If flags.convert
+	does not equal CONVERT_NATIVE, reverse the record marker.
+	* io/open.c:  Add convert_opt[].
+	(st_open):  If no convert option is given, set CONVERT_NATIVE.
+	If CONVERT_BIG or CONVERT_LITTLE are given, set flags.convert to
+	CONVERT_NATIVE or CONVERT_SWAP (depending on wether we have
+	a big- or little-endian system).
+	* io/transfer.c (unformatted_read):  Remove unused attribute
+	from arguments.
+	If we need to reverse
+	bytes, break up large transfers into a loop.  Split complex
+	numbers into its two parts.
+	(unformatted_write):  Likewise.
+	(us_read):  If flags.convert does not equal CONVERT_NATIVE,
+	reverse the record marker.
+	(next_record_w): Likewise.
+	(reverse_memcpy):  New function.
+	* io/inquire.c (inquire_via_unit):  Implement convert.
+	* io/io.h (top level):  Add enum unit_convert.
+	Add convert to st_parameter_open and st_parameter_inquire.
+	Define IOPARM_OPEN_HAS_CONVERT and IOPARM_INQUIRE_HAS_CONVERT.
+	Increase padding for st_parameter_dt.
+	Declare reverse_memcpy().
+
 2005-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/24991

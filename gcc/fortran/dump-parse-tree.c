@@ -1148,6 +1148,11 @@ gfc_show_code_node (int level, gfc_code * c)
 	  gfc_status (" PAD=");
 	  gfc_show_expr (open->pad);
 	}
+      if (open->convert)
+	{
+	  gfc_status (" CONVERT=");
+	  gfc_show_expr (open->convert);
+	}
       if (open->err != NULL)
 	gfc_status (" ERR=%d", open->err->value);
 
@@ -1348,6 +1353,11 @@ gfc_show_code_node (int level, gfc_code * c)
 	{
 	  gfc_status (" PAD=");
 	  gfc_show_expr (i->pad);
+	}
+      if (i->convert)
+	{
+	  gfc_status (" CONVERT=");
+	  gfc_show_expr (i->convert);
 	}
 
       if (i->err != NULL)
