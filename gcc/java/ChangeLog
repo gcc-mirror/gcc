@@ -1,3 +1,11 @@
+2005-12-10  Terry Laurenzo  <tlaurenzo@gmail.com>
+
+	PR java/9861
+	* mangle.c (mangle_method_decl): Mangle Java methods by prepending 'J'
+	to bare_function_type and including the return type
+	* builtins.c (initialize_builtins) : Change builtin mangled name
+	constants to conform to new mangling scheme
+
 2005-12-08  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/25265

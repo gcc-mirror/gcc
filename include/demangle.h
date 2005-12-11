@@ -35,6 +35,8 @@ extern "C" {
 #define DMGL_JAVA	 (1 << 2)	/* Demangle as Java rather than C++. */
 #define DMGL_VERBOSE	 (1 << 3)	/* Include implementation details.  */
 #define DMGL_TYPES	 (1 << 4)	/* Also try to demangle type encodings.  */
+#define DMGL_RET_POSTFIX (1 << 5)       /* Print function return types (when
+                                           present) after function signature */
 
 #define DMGL_AUTO	 (1 << 8)
 #define DMGL_GNU	 (1 << 9)

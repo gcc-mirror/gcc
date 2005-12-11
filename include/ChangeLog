@@ -1,3 +1,9 @@
+2005-12-10  Terry Laurenzo  <tlaurenzo@gmail.com>
+
+	PR java/9861
+	* demangle.h : Add DMGL_RET_POSTFIX define to enable alternative
+	output format for return types
+
 2005-10-31  Mark Kettenis  <kettenis@gnu.org>
 
 	* floatformat.h (enum floatformat_byteorders): Add

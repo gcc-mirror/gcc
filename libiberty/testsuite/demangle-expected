@@ -11,6 +11,7 @@
 #    --is-v3-ctor        Calls is_gnu_v3_mangled_ctor on input; expected
 #                        output is an integer representing ctor_kind.
 #    --is-v3-dtor        Likewise, but for dtors.
+#    --ret-postfix       Passes the DMGL_RET_POSTFIX option
 #
 #  For compatibility, just in case it matters, the options line may be
 #  empty, to mean --format=auto.  If it doesn't start with --, then it
@@ -3781,3 +3782,26 @@ _test_array__L_1__B23b___clean.6
 --format=java
 _ZGAN4java4lang5Class7forNameEPNS0_6StringE
 hidden alias for java.lang.Class.forName(java.lang.String)
+#
+# Test cases to verify encoding that determines if a return type is present
+# Related to PR9861
+--format=java
+_ZN4java4lang4Math4acosEJdd
+java.lang.Math.acos(double)double
+#
+--format=auto
+_ZN4java4lang4Math4acosEJdd
+double java::lang::Math::acos(double)
+#
+--format=auto
+_ZN4java4lang4Math4acosEJvd
+void java::lang::Math::acos(double)
+#
+--format=auto --ret-postfix
+_ZN4java4lang4Math4acosEJdd
+java::lang::Math::acos(double)double
+#
+--format=gnu-v3 --no-params --ret-postfix
+_Z4makeI7FactoryiET_IT0_Ev
+make<Factory, int>()Factory<int>
+make<Factory, int>

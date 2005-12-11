@@ -1858,16 +1858,38 @@ write_function_type (const tree type)
    is mangled before the parameter types.  If non-NULL, DECL is
    FUNCTION_DECL for the function whose type is being emitted.
 
-     <bare-function-type> ::= </signature/ type>+  */
+   If DECL is a member of a Java type, then a literal 'J'
+   is output and the return type is mangled as if INCLUDE_RETURN_TYPE
+   were nonzero.
+
+     <bare-function-type> ::= [J]</signature/ type>+  */
 
 static void
 write_bare_function_type (const tree type, const int include_return_type_p,
 			  const tree decl)
 {
+  int java_method_p;
+
   MANGLE_TRACE_TREE ("bare-function-type", type);
 
+  /* Detect Java methods and emit special encoding.  */
+  if (decl != NULL
+      && DECL_FUNCTION_MEMBER_P (decl)
+      && TYPE_FOR_JAVA (DECL_CONTEXT (decl))
+      && !DECL_CONSTRUCTOR_P (decl)
+      && !DECL_DESTRUCTOR_P (decl)
+      && !DECL_CONV_FN_P (decl))
+    {
+      java_method_p = 1;
+      write_char ('J');
+    }
+  else
+    {
+      java_method_p = 0;
+    }
+
   /* Mangle the return type, if requested.  */
-  if (include_return_type_p)
+  if (include_return_type_p || java_method_p)
     write_type (TREE_TYPE (type));
 
   /* Now mangle the types of the arguments.  */
