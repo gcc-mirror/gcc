@@ -69,6 +69,7 @@ struct objc_method_description
 #define _C_FLT      'f'
 #define _C_DBL      'd'
 #define _C_BFLD     'b'
+#define _C_BOOL	    'B'
 #define _C_VOID     'v'
 #define _C_UNDEF    '?'
 #define _C_PTR      '^'

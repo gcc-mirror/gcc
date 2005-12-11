@@ -1,3 +1,11 @@
+2005-12-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libobjc/25346
+	* objc/objc-api.h (_C_BOOL): New define.
+	* encoding.c (objc_sizeof_type): Handle _C_BOOL.
+	(objc_alignof_type): Likewise.
+	(objc_skip_typespec): Likewise.
+
 2005-11-20  David Ayers  <d.ayers@inode.at>
 
 	PR libobjc/19024
