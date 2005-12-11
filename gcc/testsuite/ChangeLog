@@ -1,3 +1,8 @@
+2005-12-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25010
+	* g++.dg/opt/inline10.C: New test.
+
 2005-12-11  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/g77/19981216-0.f: Fix for fortran/25068.
