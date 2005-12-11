@@ -29,7 +29,7 @@ c { dg-do compile }
 
         name = 'blah'
         open(unit=8,status='unknown',file=name,form='formatted',
-     F       iostat=ios)
+     F       iostat=ios) ! { dg-warning "integer kind in IOSTAT" }
 
       END
 * -------------------------------------------
