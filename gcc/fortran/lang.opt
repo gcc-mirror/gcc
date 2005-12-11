@@ -110,11 +110,11 @@ Fortran
 Use f2c calling convention
 
 ffixed-form
-Fortran
+Fortran RejectNegative
 Assume that the source file is fixed form
 
 ffree-form
-Fortran
+Fortran RejectNegative
 Assume that the source file is free form
 
 funderscoring

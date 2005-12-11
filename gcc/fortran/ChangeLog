@@ -1,3 +1,7 @@
+2005-12-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * lang.opt: Add RejectNegative to ffixed-form and ffree-form.
+
 2005-12-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/25068
