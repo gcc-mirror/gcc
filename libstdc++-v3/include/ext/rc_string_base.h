@@ -334,6 +334,10 @@ namespace __gnu_cxx
       
       void
       _M_erase(size_type __pos, size_type __n);
+
+      bool
+      _M_compare(const __rc_string_base&) const
+      { return false; }
     };
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -669,6 +673,28 @@ namespace __gnu_cxx
 	}
 
       _M_rep()->_M_set_length(__new_size);      
+    }
+
+  template<>
+    inline bool
+    __rc_string_base<char, std::char_traits<char>,
+		     std::allocator<char> >::
+    _M_compare(const __rc_string_base& __rcs) const
+    {
+      if (_M_rep() == __rcs._M_rep())
+	return true;
+      return false;
+    }
+
+  template<>
+    inline bool
+    __rc_string_base<wchar_t, std::char_traits<wchar_t>,
+		     std::allocator<wchar_t> >::
+    _M_compare(const __rc_string_base& __rcs) const
+    {
+      if (_M_rep() == __rcs._M_rep())
+	return true;
+      return false;
     }
 } // namespace __gnu_cxx
 

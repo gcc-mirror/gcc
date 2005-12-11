@@ -1665,6 +1665,9 @@ namespace __gnu_cxx
       int
       compare(const __versa_string& __str) const
       {
+	if (this->_M_compare(__str))
+	  return 0;
+
 	const size_type __size = this->size();
 	const size_type __osize = __str.size();
 	const size_type __len = std::min(__size, __osize);
