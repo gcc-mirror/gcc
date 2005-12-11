@@ -1,3 +1,7 @@
+2005-12-11  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/g77/19981216-0.f: Fix for fortran/25068.
+
 2005-12-11  Bernhard Fischer  <rep.nop@aon.at>
 
 	* gfortran.dg/substring_equivalence.f90: typo in comment
