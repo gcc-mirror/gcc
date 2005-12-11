@@ -46,6 +46,7 @@ DEFTIMEVAR (TV_IPA_CONSTANT_PROP     , "ipa cp")
 DEFTIMEVAR (TV_IPA_REFERENCE         , "ipa reference")
 DEFTIMEVAR (TV_IPA_PURE_CONST        , "ipa pure const")
 DEFTIMEVAR (TV_IPA_TYPE_ESCAPE       , "ipa type escape")
+DEFTIMEVAR (TV_IPA_PTA               , "ipa points-to")
 /* Time spent by constructing CFG.  */
 DEFTIMEVAR (TV_CFG                   , "cfg construction")
 /* Time spent by cleaning up CFG.  */
