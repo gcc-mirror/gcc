@@ -123,6 +123,10 @@ objc_sizeof_type (const char *type)
     }
 
   switch (*type) {
+  case _C_BOOL:
+    return sizeof (_Bool);
+    break;
+
   case _C_ID:
     return sizeof (id);
     break;
@@ -273,6 +277,10 @@ objc_alignof_type (const char *type)
 	/* do nothing */;
     }
   switch (*type) {
+  case _C_BOOL:
+    return __alignof__ (_Bool);
+    break;
+
   case _C_ID:
     return __alignof__ (id);
     break;
@@ -496,6 +504,7 @@ objc_skip_typespec (const char *type)
   case _C_INT:
   case _C_UINT:
   case _C_LNG:
+  case _C_BOOL:
   case _C_ULNG:
   case _C_LNG_LNG:
   case _C_ULNG_LNG:
