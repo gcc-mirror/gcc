@@ -188,6 +188,14 @@ mangle_method_decl (tree mdecl)
   if (TREE_CODE (TREE_TYPE (mdecl)) == METHOD_TYPE)
     arglist = TREE_CHAIN (arglist);
   
+  /* Output literal 'J' and mangle the return type IF not a 
+     constructor.  */
+  if (!ID_INIT_P (method_name))
+    {
+      obstack_1grow (mangle_obstack, 'J');
+      mangle_type(TREE_TYPE(TREE_TYPE(mdecl)));
+    }
+  
   /* No arguments is easy. We shortcut it. */
   if (arglist == end_params_node)
     obstack_1grow (mangle_obstack, 'v');

@@ -1,3 +1,17 @@
+2005-12-10  Terry Laurenzo  <tlaurenzo@gmail.com>
+
+	PR java/9861
+	* cp-demangle.c (d_bare_function_type): Recognize new 'J' qualifer
+	and include return type when found.
+	(d_print_comp)[DEMANGLE_COMPONENT_FUNCTION_TYPE]: Add
+	conditional logic to change printing order of return type.when
+	the DMGL_RET_POSTFIX option is present.
+	(java_demangle_v3): Add DMGL_RET_POSTFIX option to d_demangle
+	call.
+	* testsuite/test-demangle.c (main): Recognize option --ret-postfix
+	* testsuite/demangle-expected: Test cases to verify extended encoding.
+	Updated comment to document --ret-postfix option.
+	
 2005-11-06  Richard Guenther  <rguenther@suse.de>
 
 	* splay-tree.c (rotate_left): New function.

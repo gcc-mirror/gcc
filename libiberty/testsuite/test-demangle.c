@@ -114,6 +114,7 @@ exp: %s\n",
      --is-v3-ctor        Calls is_gnu_v3_mangled_ctor on input; expected
                          output is an integer representing ctor_kind.
      --is-v3-dtor        Likewise, but for dtors.
+     --ret-postfix       Passes the DMGL_RET_POSTFIX option
 
    For compatibility, just in case it matters, the options line may be
    empty, to mean --format=auto.  If it doesn't start with --, then it
@@ -129,6 +130,7 @@ main(argc, argv)
   int no_params;
   int is_v3_ctor;
   int is_v3_dtor;
+  int ret_postfix;
   struct line format;
   struct line input;
   struct line expect;
@@ -158,6 +160,7 @@ main(argc, argv)
       tests++;
 
       no_params = 0;
+      ret_postfix = 0;
       is_v3_ctor = 0;
       is_v3_dtor = 0;
       if (format.data[0] == '\0')
@@ -212,6 +215,8 @@ main(argc, argv)
 		is_v3_ctor = 1;
 	      else if (strcmp (opt, "--is-v3-dtor") == 0)
 		is_v3_dtor = 1;
+	      else if (strcmp (opt, "--ret-postfix") == 0)
+		ret_postfix = 1;
 	      else
 		{
 		  printf ("FAIL at line %d: unrecognized option %s\n",
@@ -255,7 +260,8 @@ main(argc, argv)
       cplus_demangle_set_style (style);
 
       result = cplus_demangle (input.data,
-			       DMGL_PARAMS|DMGL_ANSI|DMGL_TYPES);
+			       DMGL_PARAMS|DMGL_ANSI|DMGL_TYPES
+			       |(ret_postfix ? DMGL_RET_POSTFIX : 0));
 
       if (result
 	  ? strcmp (result, expect.data)

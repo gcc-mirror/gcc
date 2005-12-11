@@ -1,3 +1,9 @@
+2005-12-10  Terry Laurenzo  <tlaurenzo@gmail.com>
+
+	PR java/9861
+	* mangle.c (write_bare_function_type): Mangle return type for
+	methods of Java classes
+
 2005-12-08  Théodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 	
 	* call.c (build_conditional_expr): Print types in error messages.
