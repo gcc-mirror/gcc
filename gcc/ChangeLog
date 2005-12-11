@@ -1,3 +1,79 @@
+2005-12-11  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (process_constraint): Remove code to
+	transform addressofs into scalar.
+	(create_variable_info_for): In whole-program IPA, globals don't
+	point to ANYTHING by default.
+
+2005-12-11  Daniel Berlin  <dberlin@dberlin.org>
+
+	* timevar.def (TV_IPA_PTA): New.
+	* tree-pass.h (pass_ipa_pta): New
+	* tree-ssa-structalias.c: Include cgraph.h
+	(in_ipa_mode): New.
+	(predbitmap_obstack): New.
+	(EXECUTE_IF_IN_NONNULL_BITMAP): New.
+	(struct constraint_stats): Add num_edges.
+	(new_var_info): Don't call bitmap_clear.
+	(struct constraint_edge): Update docs.
+	(new_constraint_edge): Remove src param.
+	(struct constraint_graph): Add zero_weight_succs,
+	zero_weight_preds.  Update docs.
+	(constraint_expr_equal): Reformat.
+	(constraint_edge_equal): Update for removal of src.
+	(constraint_edge_less): Ditto.
+	(constraint_edge_vec_find): Ditto.
+	(erase_graph_self_edge): Update for removal of src and and zero
+	weight bitmap.
+	(clear_edges_for_node): Ditto.
+	(add_graph_edge): Ditto.
+	(get_graph_weights): Ditto.
+	(allocate_graph_weights): Ditto.
+	(merge_graph_nodes): Ditto.
+	(int_add_graph_edge): Ditto.
+	(valid_graph_edge): Ditto.
+	(valid_weighted_graph_edge): Ditto.
+	(build_constraint_graph): Ditto.
+	(scc_visit): Ditto.
+	(collapse_nodes): Ditto.
+	(process_unification_queue): Ditto.
+	(topo_visit): Ditto.
+	(solve_graph): Ditto.
+	(do_structure_copy): Ditto.
+	(perform_var_substitution): Ditto.
+	Init and release obstack.
+	(handle_ptr_arith): Try to resolve directly.
+	(find_func_aliases): Don't call update_alias_info here
+	Handle RETURN_EXPR, and CALL_EXPR's in IPA mode.
+	(do_sd_constraint): Add code for propagating faster.
+	Update.
+	(do_ds_constraint): Ditto.
+	(count_num_arguments): New function.
+	(create_function_info_for): Ditto.
+	(create_variable_info_for): Handle FUNCTION_DECL.
+	(intra_create_variable_infos): Use make_constraint_to_anything.
+	(init_alias_vars): Init obstacks here.
+	(need_to_solve): Handle zero weight graph changes.
+	(compute_points_to_sets): Call update_alias_info here.
+	(delete_points_to_sets): Free zero weight preds/succs here.
+	(gate_ipa_pta): New.
+	(ipa_pta_execute): New
+
+2005-12-11  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (var_anyoffset): Removed.
+	(anyoffset_tree): Ditto.
+	(anyoffset_id): Ditto.
+	(do_deref): Take vector of constraints, no return value.
+	Update to work on vector.		 
+	(get_constraint_for): Ditto.
+	(get_constraint_for_component_ref): Ditto.
+	(do_structure_copy): Ditto.
+	(handle_ptr_arith): Ditto.
+	(find_func_aliases): Ditto.
+	(set_uids_in_ptset): Remove anyoffset handling.
+	(init_base_vars): Ditto.
+
 2005-12-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25010
