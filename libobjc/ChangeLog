@@ -1,5 +1,15 @@
 2005-12-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR libobjc/25347
+	* encoding.c (objc_sizeof_type): Don't handle _C_UNION_B special
+	but use the struct layout functions.
+	(objc_alignof_type): Likewise.
+	(objc_layout_structure): Handle _C_UNION_B also.
+	(objc_layout_structure_next_member): Likewise.
+	(objc_layout_finish_structure): Likewise.
+
+2005-12-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR libobjc/25346
 	* objc/objc-api.h (_C_BOOL): New define.
 	* encoding.c (objc_sizeof_type): Handle _C_BOOL.
