@@ -102,7 +102,7 @@ namespace __gnu_cxx
       _M_dispose()
       {
 	if (!_M_is_local())
-	  _M_destroy(_M_allocated_capacity + 1);
+	  _M_destroy(_M_allocated_capacity);
       }
 
       void
@@ -225,13 +225,17 @@ namespace __gnu_cxx
 
       void
       _M_erase(size_type __pos, size_type __n);
+
+      bool
+      _M_compare(const __sso_string_base&) const
+      { return false; }
     };
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
     __sso_string_base<_CharT, _Traits, _Alloc>::
     _M_destroy(size_type __size) throw()
-    { _CharT_alloc_type(_M_get_allocator()).deallocate(_M_data(), __size); }
+    { _CharT_alloc_type(_M_get_allocator()).deallocate(_M_data(), __size + 1); }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
@@ -498,7 +502,7 @@ namespace __gnu_cxx
 	  else if (!_M_is_local())
 	    {
 	      _S_copy(_M_local_data, _M_data(), _M_length() + 1);
-	      _M_destroy(__capacity + 1);
+	      _M_destroy(__capacity);
 	      _M_data(_M_local_data);
 	    }
 	}
@@ -540,6 +544,28 @@ namespace __gnu_cxx
 		__how_much);
 
       _M_set_length(_M_length() - __n);
+    }
+
+  template<>
+    inline bool
+    __sso_string_base<char, std::char_traits<char>,
+		      std::allocator<char> >::
+    _M_compare(const __sso_string_base& __rcs) const
+    {
+      if (this == &__rcs)
+	return true;
+      return false;
+    }
+
+  template<>
+    inline bool
+    __sso_string_base<wchar_t, std::char_traits<wchar_t>,
+		      std::allocator<wchar_t> >::
+    _M_compare(const __sso_string_base& __rcs) const
+    {
+      if (this == &__rcs)
+	return true;
+      return false;
     }
 } // namespace __gnu_cxx
 

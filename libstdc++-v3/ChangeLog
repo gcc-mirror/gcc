@@ -1,3 +1,16 @@
+2005-12-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_compare):
+	Add, specialized for char and wchar_t to immediately return true
+	when a string is compared to itself.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_compare):
+	Likewise, for the same _Rep.
+	* include/ext/vstring.h (compare(const string&)): Use it.
+
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_destroy):
+	Deallocate passed size + 1.
+	(_M_dispose, _M_reserve): Adjust.
+
 2005-12-08  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
