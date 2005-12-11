@@ -1,3 +1,7 @@
+2005-12-11  Bernhard Fischer  <rep.nop@aon.at>
+
+	* gfortran.dg/substring_equivalence.f90: typo in comment
+
 2005-12-10  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/25068
