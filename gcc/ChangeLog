@@ -1,3 +1,9 @@
+2005-12-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25010
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Do not assume that
+	DECL_EXTERNAL functions have no bodies.  Tidy.
+
 2005-12-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25258

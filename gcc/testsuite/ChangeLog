@@ -1,3 +1,8 @@
+2005-12-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25010
+	* g++.dg/opt/inline10.C: New test.
+
 2005-12-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/20772

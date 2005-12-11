@@ -115,24 +115,26 @@ cgraph_estimate_size_after_inlining (int times, struct cgraph_node *to,
 void
 cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate, bool update_original)
 {
-  struct cgraph_node *n;
-
-  /* We may eliminate the need for out-of-line copy to be output.  In that
-     case just go ahead and re-use it.  */
-  if (!e->callee->callers->next_caller
-      && (!e->callee->needed || DECL_EXTERNAL (e->callee->decl))
-      && duplicate
-      && flag_unit_at_a_time)
+  if (duplicate)
     {
-      gcc_assert (!e->callee->global.inlined_to);
-      if (!DECL_EXTERNAL (e->callee->decl))
-        overall_insns -= e->callee->global.insns, nfunctions_inlined++;
-      duplicate = 0;
-    }
-   else if (duplicate)
-    {
-      n = cgraph_clone_node (e->callee, e->count, e->loop_nest, update_original);
-      cgraph_redirect_edge_callee (e, n);
+      /* We may eliminate the need for out-of-line copy to be output.
+	 In that case just go ahead and re-use it.  */
+      if (!e->callee->callers->next_caller
+	  && !e->callee->needed
+	  && flag_unit_at_a_time)
+	{
+	  gcc_assert (!e->callee->global.inlined_to);
+	  if (DECL_SAVED_TREE (e->callee->decl))
+	    overall_insns -= e->callee->global.insns, nfunctions_inlined++;
+	  duplicate = false;
+	}
+      else
+	{
+	  struct cgraph_node *n;
+	  n = cgraph_clone_node (e->callee, e->count, e->loop_nest, 
+				 update_original);
+	  cgraph_redirect_edge_callee (e, n);
+	}
     }
 
   if (e->caller->global.inlined_to)
