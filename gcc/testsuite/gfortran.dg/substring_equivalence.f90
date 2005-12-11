@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! Tests fix for PR24223 - ICE on equivalence staement.
+! Tests fix for PR24223 - ICE on equivalence statement.
 !
 module FLAGS
   character(len=5) :: Encodings
