@@ -1,3 +1,7 @@
+2005-12-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.in (mingw section): Remove EH_MECHANISM setting.
+
 2005-12-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnatvsn.ads (Library_Version): Bump to version 4.2
