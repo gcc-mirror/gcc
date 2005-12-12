@@ -2723,7 +2723,7 @@ ada/s-unstyp.o : ada/system.ads ada/s-unstyp.ads
 ada/s-wchcnv.o : ada/interfac.ads ada/system.ads ada/s-wchcnv.ads \
    ada/s-wchcnv.adb ada/s-wchcon.ads ada/s-wchjis.ads 
 
-ada/s-wchcon.o : ada/system.ads ada/s-wchcon.ads ada/s-wchcon.adb 
+ada/s-wchcon.o : ada/system.ads ada/s-wchcon.ads
 
 ada/s-wchjis.o : ada/system.ads ada/s-wchjis.ads ada/s-wchjis.adb 
 
