@@ -1,5 +1,9 @@
 2005-12-12  Arnaud Charlet  <charlet@adacore.com>
 
+	* Make-lang.in: Update dependencies
+
+2005-12-12  Arnaud Charlet  <charlet@adacore.com>
+
 	* Make-lang.in: Add rule for ada/exp_sel.o
 
 2005-12-12  Arnaud Charlet  <charlet@adacore.com>
