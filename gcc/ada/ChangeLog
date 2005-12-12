@@ -1,5 +1,9 @@
 2005-12-12  Arnaud Charlet  <charlet@adacore.com>
 
+	* Make-lang.in: Add rule for ada/exp_sel.o
+
+2005-12-12  Arnaud Charlet  <charlet@adacore.com>
+
 	* Makefile.in (mingw section): Remove EH_MECHANISM setting.
 
 2005-12-09  Arnaud Charlet  <charlet@adacore.com>
