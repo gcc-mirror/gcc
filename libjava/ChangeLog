@@ -1,3 +1,8 @@
+2005-12-12  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/VMCompiler.java: Directly generate a new instance of
+	gnu.java.security.provider.MD5.
+
 2005-12-08  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/25265
