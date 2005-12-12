@@ -8777,6 +8777,7 @@ tsubst_copy_and_build (tree t,
     case COMPONENT_REF:
       {
 	tree object;
+	tree object_type;
 	tree member;
 
 	object = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
@@ -8784,6 +8785,7 @@ tsubst_copy_and_build (tree t,
 	/* Remember that there was a reference to this entity.  */
 	if (DECL_P (object))
 	  mark_used (object);
+	object_type = TREE_TYPE (object);
 
 	member = TREE_OPERAND (t, 1);
 	if (BASELINK_P (member))
@@ -8795,7 +8797,7 @@ tsubst_copy_and_build (tree t,
 
 	if (member == error_mark_node)
 	  return error_mark_node;
-	else if (!CLASS_TYPE_P (TREE_TYPE (object)))
+	else if (TREE_TYPE (object) && !CLASS_TYPE_P (TREE_TYPE (object)))
 	  {
 	    if (TREE_CODE (member) == BIT_NOT_EXPR)
 	      return finish_pseudo_destructor_expr (object, 
