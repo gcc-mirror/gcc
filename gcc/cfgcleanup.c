@@ -956,28 +956,28 @@ condjump_equiv_p (basic_block bb1, basic_block bb2)
       int prob2;
 
       if (b1->dest == b2->dest)
-        prob2 = b2->probability;
+	prob2 = b2->probability;
       else
-        /* Do not use f2 probability as f2 may be forwarded.  */
-        prob2 = REG_BR_PROB_BASE - b2->probability;
+	/* Do not use f2 probability as f2 may be forwarded.  */
+	prob2 = REG_BR_PROB_BASE - b2->probability;
 
       /* Fail if the difference in probabilities is greater than 50%.
-         This rules out two well-predicted branches with opposite
-         outcomes.  */
+	 This rules out two well-predicted branches with opposite
+	 outcomes.  */
       if (abs (b1->probability - prob2) > REG_BR_PROB_BASE / 2)
-        {
-          if (dump_file)
-            fprintf (dump_file,
-                     "Outcomes of branch in bb %i and %i differ too much (%i %i)\n",
-                     bb1->index, bb2->index, b1->probability, prob2);
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Outcomes of branch in bb %i and %i differ too much (%i %i)\n",
+		     bb1->index, bb2->index, b1->probability, prob2);
 
-          return false;
-        }
+	  return false;
+	}
     }
 
   if (dump_file && match)
     fprintf (dump_file, "Conditionals in bb %i and %i match.\n",
-             bb1->index, bb2->index);
+	     bb1->index, bb2->index);
 
   return match;
 }
@@ -1173,12 +1173,12 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   newpos1 = newpos2 = NULL_RTX;
 
   /* If we have partitioned hot/cold basic blocks, it is a bad idea
-     to try this optimization. 
+     to try this optimization.
 
      Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really 
-     must be left untouched (they are required to make it safely across 
-     partition boundaries).  See the comments at the top of 
+     be optimizable (or blocks that appear to be mergeable), but which really
+     must be left untouched (they are required to make it safely across
+     partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if (flag_reorder_blocks_and_partition && no_new_pseudos)

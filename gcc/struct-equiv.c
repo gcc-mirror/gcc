@@ -69,7 +69,7 @@ merge_memattrs (rtx x, rtx y)
 	MEM_ATTRS (y) = 0;
       else if (! MEM_ATTRS (y))
 	MEM_ATTRS (x) = 0;
-      else 
+      else
 	{
 	  rtx mem_size;
 
@@ -78,7 +78,7 @@ merge_memattrs (rtx x, rtx y)
 	      set_mem_alias_set (x, 0);
 	      set_mem_alias_set (y, 0);
 	    }
-	  
+
 	  if (! mem_expr_equal_p (MEM_EXPR (x), MEM_EXPR (y)))
 	    {
 	      set_mem_expr (x, 0);
@@ -91,7 +91,7 @@ merge_memattrs (rtx x, rtx y)
 	      set_mem_offset (x, 0);
 	      set_mem_offset (y, 0);
 	    }
-	 
+
 	  if (!MEM_SIZE (x))
 	    mem_size = NULL_RTX;
 	  else if (!MEM_SIZE (y))
@@ -106,7 +106,7 @@ merge_memattrs (rtx x, rtx y)
 	  set_mem_align (y, MEM_ALIGN (x));
 	}
     }
-  
+
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
@@ -143,8 +143,8 @@ death_notes_match_p (rtx i1 ATTRIBUTE_UNUSED, rtx i2 ATTRIBUTE_UNUSED,
   if ((mode & CLEANUP_POST_REGSTACK) && stack_regs_mentioned (i1))
     {
       /* If register stack conversion has already been done, then
-         death notes must also be compared before it is certain that
-         the two instruction streams match.  */
+	 death notes must also be compared before it is certain that
+	 the two instruction streams match.  */
 
       rtx note;
       HARD_REG_SET i1_regset, i2_regset;
@@ -200,7 +200,7 @@ insns_match_p (int mode, rtx i1, rtx i2)
 
   if (CALL_P (i1)
       && (!rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
-		        CALL_INSN_FUNCTION_USAGE (i2))
+			CALL_INSN_FUNCTION_USAGE (i2))
 	  || SIBLING_CALL_P (i1) != SIBLING_CALL_P (i2)))
     return false;
 
