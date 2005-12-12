@@ -1,3 +1,9 @@
+2005-12-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/25167
+	PR testsuite/24478
+	* gcc.dg/weak/weak-14.c: Add dg-require-alias.
+
 2005-12-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25300
