@@ -3522,11 +3522,15 @@ write_classfile (tree clas)
     {
       FILE *stream;
       char *temporary_file_name;
+      char pid [sizeof (long) * 2 + 2];
 
-      /* The .class file is initially written to a ".tmp" file so that
+      /* The .class file is initially written to a ".PID" file so that
 	 if multiple instances of the compiler are running at once
-	 they do not see partially formed class files. */
-      temporary_file_name = concat (class_file_name, ".tmp", NULL);
+	 they do not see partially formed class files nor override
+	 each other, which may happen in libjava with parallel build.
+       */
+      sprintf (pid, ".%lx", (unsigned long) getpid ());
+      temporary_file_name = concat (class_file_name, pid, NULL);
       stream = fopen (temporary_file_name, "wb");
       if (stream == NULL)
 	fatal_error ("can't open %s for writing: %m", temporary_file_name);
@@ -3548,7 +3552,9 @@ write_classfile (tree clas)
 
       if (rename (temporary_file_name, class_file_name) == -1)
 	{
+	  int errno_saved = errno;
 	  remove (temporary_file_name);
+	  errno = errno_saved;
 	  fatal_error ("can't create %s: %m", class_file_name);
 	}
       free (temporary_file_name);
