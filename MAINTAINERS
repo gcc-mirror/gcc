@@ -67,7 +67,8 @@ mips port		Richard Sandiford	richard@codesourcery.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
-ms1 port		Aldy Hernandez		aldyh@redhat.com
+mt port			Aldy Hernandez		aldyh@redhat.com
+mt port			Nathan Sidwell		nathan@codesourcery.com
 pdp11 port		Paul Koning		ni1d@arrl.net
 rs6000 port		Geoff Keating		geoffk@geoffk.org
 rs6000 port		David Edelsohn		dje@watson.ibm.com
