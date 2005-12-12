@@ -1,3 +1,16 @@
+2005-12-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR testsuite/20772
+	* g++.old-deja/g++.eh/tmpl2.C: Remove xfail.
+	* gcc.dg/asm-b.c: Fix typo.
+	* gcc.dg/torture/pr20314-2.c: Test on i?86 lp64.
+	* gcc.dg/tree-ssa/stdarg-2.c, gcc.dg/tree-ssa/stdarg-3.c,
+	gcc.dg/tree-ssa/stdarg-4.c, gcc.dg/tree-ssa/stdarg-5.c: Test on
+	i?86 lp64 and x86_64 ilp32.
+	* gcc.target/i386/amd64-abi-1.c, gcc.target/i386/pr23943.c: Test
+	on i?86 lp64.
+	* gfortran.dg/g77/20010216-1.f: Test on x86_64 ilp32.
+
 2005-12-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25300

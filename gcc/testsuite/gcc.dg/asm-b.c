@@ -1,4 +1,4 @@
-/* { dg-do run  { target powerpc-*-* i?386-*-* x86_64-*-* } } */
+/* { dg-do run  { target powerpc-*-* i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O1" } */
 /* Test to make sure that inline-asm causes the tree optimizers to get the
    V_MAY_DEFs and clobber memory.  */
