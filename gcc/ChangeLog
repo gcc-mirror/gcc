@@ -1,3 +1,11 @@
+2005-12-11 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+
+        * tree-flow.h: Allow compilation with a C++ compiler.
+        (struct edge_prediction): Prefix all field names  with "ep_".
+        * predict.c (tree_predicted_by_p): Likewise for struct edge_prediction.
+        (tree_predict_edge, combine_predictions_for_bb): Likewise.
+        (remove_predictions_associated_with_edge): Likewise.
+	
 2005-12-12  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Remove

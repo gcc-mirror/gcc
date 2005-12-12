@@ -172,8 +172,8 @@ bool
 tree_predicted_by_p (basic_block bb, enum br_predictor predictor)
 {
   struct edge_prediction *i;
-  for (i = bb->predictions; i; i = i->next)
-    if (i->predictor == predictor)
+  for (i = bb->predictions; i; i = i->ep_next)
+    if (i->ep_predictor == predictor)
       return true;
   return false;
 }
@@ -237,11 +237,11 @@ tree_predict_edge (edge e, enum br_predictor predictor, int probability)
     {
       struct edge_prediction *i = ggc_alloc (sizeof (struct edge_prediction));
 
-      i->next = e->src->predictions;
+      i->ep_next = e->src->predictions;
       e->src->predictions = i;
-      i->probability = probability;
-      i->predictor = predictor;
-      i->edge = e;
+      i->ep_probability = probability;
+      i->ep_predictor = predictor;
+      i->ep_edge = e;
     }
 }
 
@@ -255,10 +255,10 @@ remove_predictions_associated_with_edge (edge e)
       struct edge_prediction **prediction = &e->src->predictions;
       while (*prediction)
 	{
-	  if ((*prediction)->edge == e)
-	    *prediction = (*prediction)->next;
+	  if ((*prediction)->ep_edge == e)
+	    *prediction = (*prediction)->ep_next;
 	  else
-	    prediction = &((*prediction)->next);
+	    prediction = &((*prediction)->ep_next);
 	}
     }
 }
@@ -523,12 +523,12 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
 
   /* We implement "first match" heuristics and use probability guessed
      by predictor with smallest index.  */
-  for (pred = bb->predictions; pred; pred = pred->next)
+  for (pred = bb->predictions; pred; pred = pred->ep_next)
     {
-      int predictor = pred->predictor;
-      int probability = pred->probability;
+      int predictor = pred->ep_predictor;
+      int probability = pred->ep_probability;
 
-      if (pred->edge != first)
+      if (pred->ep_edge != first)
 	probability = REG_BR_PROB_BASE - probability;
 
       found = true;
@@ -569,12 +569,12 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
     combined_probability = best_probability;
   dump_prediction (file, PRED_COMBINED, combined_probability, bb, true);
 
-  for (pred = bb->predictions; pred; pred = pred->next)
+  for (pred = bb->predictions; pred; pred = pred->ep_next)
     {
-      int predictor = pred->predictor;
-      int probability = pred->probability;
+      int predictor = pred->ep_predictor;
+      int probability = pred->ep_probability;
 
-      if (pred->edge != EDGE_SUCC (bb, 0))
+      if (pred->ep_edge != EDGE_SUCC (bb, 0))
 	probability = REG_BR_PROB_BASE - probability;
       dump_prediction (file, predictor, probability, bb,
 		       !first_match || best_predictor == predictor);
