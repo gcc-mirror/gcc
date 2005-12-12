@@ -7920,9 +7920,12 @@ encode_array (tree type, int curtype, int format)
       return;
     }
 
-  sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC,
-		   (TREE_INT_CST_LOW (an_int_cst)
-		    / TREE_INT_CST_LOW (TYPE_SIZE (array_of))));
+  if (TREE_INT_CST_LOW (TYPE_SIZE (array_of)) == 0)
+   sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)0);
+  else 
+    sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC,
+	     TREE_INT_CST_LOW (an_int_cst)
+	      / TREE_INT_CST_LOW (TYPE_SIZE (array_of)));
 
   obstack_grow (&util_obstack, buffer, strlen (buffer));
   encode_type (array_of, curtype, format);
