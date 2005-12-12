@@ -1164,7 +1164,6 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   mlib-tgt.adb<mlib-tgt-mingw.adb \
   indepsw.adb<indepsw-mingw.adb
 
-  EH_MECHANISM=-gcc
   MISCLIB = -lwsock32
   GMEM_LIB = gmemlib
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
