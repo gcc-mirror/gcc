@@ -1,7 +1,7 @@
 C Test for bug in reg-stack handling conditional moves.
 C Reported by Tim Prince <tprince@computer.org>
 C
-C { dg-do run { target "i[6789]86-*-*" } }
+C { dg-do run { target { { i[6789]86-*-* x86_64-*-* } && ilp32 } } }
 C { dg-options "-ffast-math -march=pentiumpro" }
 
       double precision function foo(x, y)

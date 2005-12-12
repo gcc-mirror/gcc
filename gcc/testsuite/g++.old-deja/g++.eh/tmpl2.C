@@ -1,4 +1,4 @@
-// { dg-do assemble { xfail i*86-*-linux* } }
+// { dg-do assemble }
 // { dg-options "-O" }
 
 // Posted by H. J. Lu <hjl@lucon.org>
