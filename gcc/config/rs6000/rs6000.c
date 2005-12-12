@@ -2513,7 +2513,10 @@ rs6000_special_round_type_align (tree type, int computed, int specified)
   while (field != NULL && TREE_CODE (field) != FIELD_DECL)
     field = TREE_CHAIN (field);
 
-  if (field == NULL || field == type || DECL_MODE (field) != DFmode)
+  if (field == NULL || field == type
+      || TYPE_MODE (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
+		    ? get_inner_array_type (field)
+		    : TREE_TYPE (field)) != DFmode)
     return MAX (computed, specified);
 
   return MAX (MAX (computed, specified), 64);
