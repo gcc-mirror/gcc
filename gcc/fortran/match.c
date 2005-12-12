@@ -2599,6 +2599,7 @@ gfc_match_equivalence (void)
   match m;
   gfc_common_head *common_head = NULL;
   bool common_flag;
+  int cnt;
 
   tail = NULL;
 
@@ -2616,6 +2617,7 @@ gfc_match_equivalence (void)
 
       set = eq;
       common_flag = FALSE;
+      cnt = 0;
 
       for (;;)
 	{
@@ -2624,6 +2626,9 @@ gfc_match_equivalence (void)
 	    goto cleanup;
 	  if (m == MATCH_NO)
 	    goto syntax;
+
+	  /*  count the number of objects.  */
+	  cnt++;
 
 	  if (gfc_match_char ('%') == MATCH_YES)
 	    {
@@ -2655,11 +2660,18 @@ gfc_match_equivalence (void)
 
 	  if (gfc_match_char (')') == MATCH_YES)
 	    break;
+
 	  if (gfc_match_char (',') != MATCH_YES)
 	    goto syntax;
 
 	  set->eq = gfc_get_equiv ();
 	  set = set->eq;
+	}
+
+      if (cnt < 2)
+	{
+	  gfc_error ("EQUIVALENCE at %C requires two or more objects");
+	  goto cleanup;
 	}
 
       /* If one of the members of an equivalence is in common, then

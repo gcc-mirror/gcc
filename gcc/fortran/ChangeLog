@@ -1,3 +1,8 @@
+2005-12-12  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/25078
+	* match.c (gfc_match_equivalence):  Count number of objects.
+
 2005-12-11  Aldy Hernandez  <aldyh@redhat.com>
 
         * lang.opt: Add RejectNegative to ffixed-form and ffree-form.
