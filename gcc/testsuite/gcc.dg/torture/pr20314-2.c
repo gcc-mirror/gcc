@@ -1,5 +1,5 @@
 /* PR inline-asm/20314 */
-/* { dg-do compile { target { x86_64-*-* && lp64 } } } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 /* { dg-do compile { target ia64-*-* powerpc*-*-* } } */
 
 int a, b, c, d, e, f, g, h, i, j, k, l;
