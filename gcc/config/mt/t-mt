@@ -25,10 +25,10 @@ CROSS_LIBGCC1 =
 # Alternatively if assembler functions *are* needed then define the
 # entries below:
 # CROSS_LIBGCC1 = libgcc1-asm.a
-# LIB1ASMSRC    = ms1/lib1funcs.asm
+# LIB1ASMSRC    = mt/lib1funcs.asm
 # LIB1ASMFUNCS  = _udivsi3 etc...
 
-LIB2FUNCS_EXTRA = $(srcdir)/config/ms1/lib2extra-funcs.c
+LIB2FUNCS_EXTRA = $(srcdir)/config/mt/lib2extra-funcs.c
 
 # If any special flags are necessary when building libgcc2 put them here.
 #
@@ -49,11 +49,11 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c > dp-bit.c
 
 # Assemble startup files.
-crti.o: $(srcdir)/config/ms1/crti.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crti.o -x assembler $(srcdir)/config/ms1/crti.asm
+crti.o: $(srcdir)/config/mt/crti.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crti.o -x assembler $(srcdir)/config/mt/crti.asm
  
-crtn.o: $(srcdir)/config/ms1/crtn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler $(srcdir)/config/ms1/crtn.asm
+crtn.o: $(srcdir)/config/mt/crtn.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler $(srcdir)/config/mt/crtn.asm
 
 # Enable the following if multilibs are needed.
 # See gcc/genmultilib, gcc/gcc.texi and gcc/tm.texi for a
