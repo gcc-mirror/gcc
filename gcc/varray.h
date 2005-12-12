@@ -65,49 +65,49 @@ enum varray_data_enum {
 /* Union of various array types that are used.  */
 typedef union varray_data_tag GTY (()) {
   char			  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_C")))		c[1];
+				tag ("VARRAY_DATA_C")))		vdt_c[1];
   unsigned char		  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_UC")))	uc[1];
+				tag ("VARRAY_DATA_UC")))	vdt_uc[1];
   short			  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_S")))		s[1];
+				tag ("VARRAY_DATA_S")))		vdt_s[1];
   unsigned short	  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_US")))	us[1];
+				tag ("VARRAY_DATA_US")))	vdt_us[1];
   int			  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_I")))		i[1];
+				tag ("VARRAY_DATA_I")))		vdt_i[1];
   unsigned int		  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_U")))		u[1];
+				tag ("VARRAY_DATA_U")))		vdt_u[1];
   long			  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_L")))		l[1];
+				tag ("VARRAY_DATA_L")))		vdt_l[1];
   unsigned long		  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_UL")))	ul[1];
+				tag ("VARRAY_DATA_UL")))	vdt_ul[1];
   HOST_WIDE_INT		  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_HINT")))	hint[1];
+				tag ("VARRAY_DATA_HINT")))	vdt_hint[1];
   unsigned HOST_WIDE_INT  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_UHINT")))	uhint[1];
+				tag ("VARRAY_DATA_UHINT")))	vdt_uhint[1];
   PTR			  GTY ((length ("%0.num_elements"), use_param,
-				tag ("VARRAY_DATA_GENERIC")))	generic[1];
+				tag ("VARRAY_DATA_GENERIC")))	vdt_generic[1];
   PTR			  GTY ((length ("%0.num_elements"), skip (""),
-				tag ("VARRAY_DATA_GENERIC_NOGC")))	generic_nogc[1];
+				tag ("VARRAY_DATA_GENERIC_NOGC")))	vdt_generic_nogc[1];
   char			 *GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_CPTR")))	cptr[1];
+				tag ("VARRAY_DATA_CPTR")))	vdt_cptr[1];
   rtx			  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_RTX")))	rtx[1];
+				tag ("VARRAY_DATA_RTX")))	vdt_rtx[1];
   rtvec			  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_RTVEC")))	rtvec[1];
+				tag ("VARRAY_DATA_RTVEC")))	vdt_rtvec[1];
   tree			  GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_TREE")))	tree[1];
+				tag ("VARRAY_DATA_TREE")))	vdt_tree[1];
   struct bitmap_head_def *GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_BITMAP")))	bitmap[1];
+				tag ("VARRAY_DATA_BITMAP")))	vdt_bitmap[1];
   struct reg_info_def	 *GTY ((length ("%0.num_elements"), skip,
-				tag ("VARRAY_DATA_REG")))	reg[1];
+				tag ("VARRAY_DATA_REG")))	vdt_reg[1];
   struct basic_block_def *GTY ((length ("%0.num_elements"), skip,
-				tag ("VARRAY_DATA_BB")))	bb[1];
+				tag ("VARRAY_DATA_BB")))	vdt_bb[1];
   struct elt_list	 *GTY ((length ("%0.num_elements"),
-				tag ("VARRAY_DATA_TE")))	te[1];
+				tag ("VARRAY_DATA_TE")))	vdt_te[1];
   struct edge_def        *GTY ((length ("%0.num_elements"),
-	                        tag ("VARRAY_DATA_EDGE")))	e[1];
+	                        tag ("VARRAY_DATA_EDGE")))	vdt_e[1];
   tree                   *GTY ((length ("%0.num_elements"), skip (""),
-	                        tag ("VARRAY_DATA_TREE_PTR")))	tp[1];
+	                        tag ("VARRAY_DATA_TREE_PTR")))	vdt_tp[1];
 } varray_data;
 
 /* Virtual array of pointers header.  */
@@ -250,75 +250,75 @@ extern void varray_underflow (varray_type, const char *, int, const char *)
     }							\
   while (0)
 
-#define VARRAY_CHAR(VA, N)		VARRAY_CHECK (VA, N, c)
-#define VARRAY_UCHAR(VA, N)		VARRAY_CHECK (VA, N, uc)
-#define VARRAY_SHORT(VA, N)		VARRAY_CHECK (VA, N, s)
-#define VARRAY_USHORT(VA, N)		VARRAY_CHECK (VA, N, us)
-#define VARRAY_INT(VA, N)		VARRAY_CHECK (VA, N, i)
-#define VARRAY_UINT(VA, N)		VARRAY_CHECK (VA, N, u)
-#define VARRAY_LONG(VA, N)		VARRAY_CHECK (VA, N, l)
-#define VARRAY_ULONG(VA, N)		VARRAY_CHECK (VA, N, ul)
-#define VARRAY_WIDE_INT(VA, N)		VARRAY_CHECK (VA, N, hint)
-#define VARRAY_UWIDE_INT(VA, N)		VARRAY_CHECK (VA, N, uhint)
-#define VARRAY_GENERIC_PTR(VA,N)	VARRAY_CHECK (VA, N, generic)
-#define VARRAY_GENERIC_PTR_NOGC(VA,N)	VARRAY_CHECK (VA, N, generic_nogc)
-#define VARRAY_CHAR_PTR(VA,N)		VARRAY_CHECK (VA, N, cptr)
-#define VARRAY_RTX(VA, N)		VARRAY_CHECK (VA, N, rtx)
-#define VARRAY_RTVEC(VA, N)		VARRAY_CHECK (VA, N, rtvec)
-#define VARRAY_TREE(VA, N)		VARRAY_CHECK (VA, N, tree)
-#define VARRAY_BITMAP(VA, N)		VARRAY_CHECK (VA, N, bitmap)
-#define VARRAY_REG(VA, N)		VARRAY_CHECK (VA, N, reg)
-#define VARRAY_BB(VA, N)		VARRAY_CHECK (VA, N, bb)
-#define VARRAY_ELT_LIST(VA, N)		VARRAY_CHECK (VA, N, te)
-#define VARRAY_EDGE(VA, N)		VARRAY_CHECK (VA, N, e)
-#define VARRAY_TREE_PTR(VA, N)		VARRAY_CHECK (VA, N, tp)
+#define VARRAY_CHAR(VA, N)		VARRAY_CHECK (VA, N, vdt_c)
+#define VARRAY_UCHAR(VA, N)		VARRAY_CHECK (VA, N, vdt_uc)
+#define VARRAY_SHORT(VA, N)		VARRAY_CHECK (VA, N, vdt_s)
+#define VARRAY_USHORT(VA, N)		VARRAY_CHECK (VA, N, vdt_us)
+#define VARRAY_INT(VA, N)		VARRAY_CHECK (VA, N, vdt_i)
+#define VARRAY_UINT(VA, N)		VARRAY_CHECK (VA, N, vdt_u)
+#define VARRAY_LONG(VA, N)		VARRAY_CHECK (VA, N, vdt_l)
+#define VARRAY_ULONG(VA, N)		VARRAY_CHECK (VA, N, vdt_ul)
+#define VARRAY_WIDE_INT(VA, N)		VARRAY_CHECK (VA, N, vdt_hint)
+#define VARRAY_UWIDE_INT(VA, N)		VARRAY_CHECK (VA, N, vdt_uhint)
+#define VARRAY_GENERIC_PTR(VA,N)	VARRAY_CHECK (VA, N, vdt_generic)
+#define VARRAY_GENERIC_PTR_NOGC(VA,N)	VARRAY_CHECK (VA, N, vdt_generic_nogc)
+#define VARRAY_CHAR_PTR(VA,N)		VARRAY_CHECK (VA, N, vdt_cptr)
+#define VARRAY_RTX(VA, N)		VARRAY_CHECK (VA, N, vdt_rtx)
+#define VARRAY_RTVEC(VA, N)		VARRAY_CHECK (VA, N, vdt_rtvec)
+#define VARRAY_TREE(VA, N)		VARRAY_CHECK (VA, N, vdt_tree)
+#define VARRAY_BITMAP(VA, N)		VARRAY_CHECK (VA, N, vdt_bitmap)
+#define VARRAY_REG(VA, N)		VARRAY_CHECK (VA, N, vdt_reg)
+#define VARRAY_BB(VA, N)		VARRAY_CHECK (VA, N, vdt_bb)
+#define VARRAY_ELT_LIST(VA, N)		VARRAY_CHECK (VA, N, vdt_te)
+#define VARRAY_EDGE(VA, N)		VARRAY_CHECK (VA, N, vdt_e)
+#define VARRAY_TREE_PTR(VA, N)		VARRAY_CHECK (VA, N, vdt_tp)
 
 /* Push a new element on the end of VA, extending it if necessary.  */
-#define VARRAY_PUSH_CHAR(VA, X)		VARRAY_PUSH (VA, c, X)
-#define VARRAY_PUSH_UCHAR(VA, X)	VARRAY_PUSH (VA, uc, X)
-#define VARRAY_PUSH_SHORT(VA, X)	VARRAY_PUSH (VA, s, X)
-#define VARRAY_PUSH_USHORT(VA, X)	VARRAY_PUSH (VA, us, X)
-#define VARRAY_PUSH_INT(VA, X)		VARRAY_PUSH (VA, i, X)
-#define VARRAY_PUSH_UINT(VA, X)		VARRAY_PUSH (VA, u, X)
-#define VARRAY_PUSH_LONG(VA, X)		VARRAY_PUSH (VA, l, X)
-#define VARRAY_PUSH_ULONG(VA, X)	VARRAY_PUSH (VA, ul, X)
-#define VARRAY_PUSH_WIDE_INT(VA, X)	VARRAY_PUSH (VA, hint, X)
-#define VARRAY_PUSH_UWIDE_INT(VA, X)	VARRAY_PUSH (VA, uhint, X)
-#define VARRAY_PUSH_GENERIC_PTR(VA, X)	VARRAY_PUSH (VA, generic, X)
-#define VARRAY_PUSH_GENERIC_PTR_NOGC(VA, X)	VARRAY_PUSH (VA, generic_nogc, X)
-#define VARRAY_PUSH_CHAR_PTR(VA, X)	VARRAY_PUSH (VA, cptr, X)
-#define VARRAY_PUSH_RTX(VA, X)		VARRAY_PUSH (VA, rtx, X)
-#define VARRAY_PUSH_RTVEC(VA, X)	VARRAY_PUSH (VA, rtvec, X)
-#define VARRAY_PUSH_TREE(VA, X)		VARRAY_PUSH (VA, tree, X)
-#define VARRAY_PUSH_BITMAP(VA, X)	VARRAY_PUSH (VA, bitmap, X)
-#define VARRAY_PUSH_REG(VA, X)		VARRAY_PUSH (VA, reg, X)
-#define VARRAY_PUSH_BB(VA, X)		VARRAY_PUSH (VA, bb, X)
-#define VARRAY_PUSH_EDGE(VA, X)		VARRAY_PUSH (VA, e, X)
-#define VARRAY_PUSH_TREE_PTR(VA, X)	VARRAY_PUSH (VA, tp, X)
+#define VARRAY_PUSH_CHAR(VA, X)		VARRAY_PUSH (VA, vdt_c, X)
+#define VARRAY_PUSH_UCHAR(VA, X)	VARRAY_PUSH (VA, vdt_uc, X)
+#define VARRAY_PUSH_SHORT(VA, X)	VARRAY_PUSH (VA, vdt_s, X)
+#define VARRAY_PUSH_USHORT(VA, X)	VARRAY_PUSH (VA, vdt_us, X)
+#define VARRAY_PUSH_INT(VA, X)		VARRAY_PUSH (VA, vdt_i, X)
+#define VARRAY_PUSH_UINT(VA, X)		VARRAY_PUSH (VA, vdt_u, X)
+#define VARRAY_PUSH_LONG(VA, X)		VARRAY_PUSH (VA, vdt_l, X)
+#define VARRAY_PUSH_ULONG(VA, X)	VARRAY_PUSH (VA, vdt_ul, X)
+#define VARRAY_PUSH_WIDE_INT(VA, X)	VARRAY_PUSH (VA, vdt_hint, X)
+#define VARRAY_PUSH_UWIDE_INT(VA, X)	VARRAY_PUSH (VA, vdt_uhint, X)
+#define VARRAY_PUSH_GENERIC_PTR(VA, X)	VARRAY_PUSH (VA, vdt_generic, X)
+#define VARRAY_PUSH_GENERIC_PTR_NOGC(VA, X)	VARRAY_PUSH (VA, vdt_generic_nogc, X)
+#define VARRAY_PUSH_CHAR_PTR(VA, X)	VARRAY_PUSH (VA, vdt_cptr, X)
+#define VARRAY_PUSH_RTX(VA, X)		VARRAY_PUSH (VA, vdt_rtx, X)
+#define VARRAY_PUSH_RTVEC(VA, X)	VARRAY_PUSH (VA, vdt_rtvec, X)
+#define VARRAY_PUSH_TREE(VA, X)		VARRAY_PUSH (VA, vdt_tree, X)
+#define VARRAY_PUSH_BITMAP(VA, X)	VARRAY_PUSH (VA, vdt_bitmap, X)
+#define VARRAY_PUSH_REG(VA, X)		VARRAY_PUSH (VA, vdt_reg, X)
+#define VARRAY_PUSH_BB(VA, X)		VARRAY_PUSH (VA, vdt_bb, X)
+#define VARRAY_PUSH_EDGE(VA, X)		VARRAY_PUSH (VA, vdt_e, X)
+#define VARRAY_PUSH_TREE_PTR(VA, X)	VARRAY_PUSH (VA, vdt_tp, X)
 
 /* Return the last element of VA.  */
 #define VARRAY_TOP(VA, T) VARRAY_CHECK(VA, (VA)->elements_used - 1, T)
 
-#define VARRAY_TOP_CHAR(VA)		VARRAY_TOP (VA, c)
-#define VARRAY_TOP_UCHAR(VA)	        VARRAY_TOP (VA, uc)
-#define VARRAY_TOP_SHORT(VA)	        VARRAY_TOP (VA, s)
-#define VARRAY_TOP_USHORT(VA)	        VARRAY_TOP (VA, us)
-#define VARRAY_TOP_INT(VA)		VARRAY_TOP (VA, i)
-#define VARRAY_TOP_UINT(VA)		VARRAY_TOP (VA, u)
-#define VARRAY_TOP_LONG(VA)		VARRAY_TOP (VA, l)
-#define VARRAY_TOP_ULONG(VA)	        VARRAY_TOP (VA, ul)
-#define VARRAY_TOP_WIDE_INT(VA)	        VARRAY_TOP (VA, hint)
-#define VARRAY_TOP_UWIDE_INT(VA)	VARRAY_TOP (VA, uhint)
-#define VARRAY_TOP_GENERIC_PTR(VA)	VARRAY_TOP (VA, generic)
-#define VARRAY_TOP_GENERIC_PTR_NOGC(VA)	VARRAY_TOP (VA, generic_nogc)
-#define VARRAY_TOP_CHAR_PTR(VA)		VARRAY_TOP (VA, cptr)
-#define VARRAY_TOP_RTX(VA)		VARRAY_TOP (VA, rtx)
-#define VARRAY_TOP_RTVEC(VA)	        VARRAY_TOP (VA, rtvec)
-#define VARRAY_TOP_TREE(VA)		VARRAY_TOP (VA, tree)
-#define VARRAY_TOP_BITMAP(VA)	        VARRAY_TOP (VA, bitmap)
-#define VARRAY_TOP_REG(VA)		VARRAY_TOP (VA, reg)
-#define VARRAY_TOP_BB(VA)		VARRAY_TOP (VA, bb)
-#define VARRAY_TOP_EDGE(VA)		VARRAY_TOP (VA, e)
-#define VARRAY_TOP_TREE_PTR(VA)		VARRAY_TOP (VA, tp)
+#define VARRAY_TOP_CHAR(VA)		VARRAY_TOP (VA, vdt_c)
+#define VARRAY_TOP_UCHAR(VA)	        VARRAY_TOP (VA, vdt_uc)
+#define VARRAY_TOP_SHORT(VA)	        VARRAY_TOP (VA, vdt_s)
+#define VARRAY_TOP_USHORT(VA)	        VARRAY_TOP (VA, vdt_us)
+#define VARRAY_TOP_INT(VA)		VARRAY_TOP (VA, vdt_i)
+#define VARRAY_TOP_UINT(VA)		VARRAY_TOP (VA, vdt_u)
+#define VARRAY_TOP_LONG(VA)		VARRAY_TOP (VA, vdt_l)
+#define VARRAY_TOP_ULONG(VA)	        VARRAY_TOP (VA, vdt_ul)
+#define VARRAY_TOP_WIDE_INT(VA)	        VARRAY_TOP (VA, vdt_hint)
+#define VARRAY_TOP_UWIDE_INT(VA)	VARRAY_TOP (VA, vdt_uhint)
+#define VARRAY_TOP_GENERIC_PTR(VA)	VARRAY_TOP (VA, vdt_generic)
+#define VARRAY_TOP_GENERIC_PTR_NOGC(VA)	VARRAY_TOP (VA, vdt_generic_nogc)
+#define VARRAY_TOP_CHAR_PTR(VA)		VARRAY_TOP (VA, vdt_cptr)
+#define VARRAY_TOP_RTX(VA)		VARRAY_TOP (VA, vdt_rtx)
+#define VARRAY_TOP_RTVEC(VA)	        VARRAY_TOP (VA, vdt_rtvec)
+#define VARRAY_TOP_TREE(VA)		VARRAY_TOP (VA, vdt_tree)
+#define VARRAY_TOP_BITMAP(VA)	        VARRAY_TOP (VA, vdt_bitmap)
+#define VARRAY_TOP_REG(VA)		VARRAY_TOP (VA, vdt_reg)
+#define VARRAY_TOP_BB(VA)		VARRAY_TOP (VA, vdt_bb)
+#define VARRAY_TOP_EDGE(VA)		VARRAY_TOP (VA, vdt_e)
+#define VARRAY_TOP_TREE_PTR(VA)		VARRAY_TOP (VA, vdt_tp)
 
 #endif /* ! GCC_VARRAY_H */
