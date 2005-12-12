@@ -1,5 +1,10 @@
 2005-12-12  Arnaud Charlet  <charlet@adacore.com>
 
+	* Makefile.in: Remove dummy setting of GCC_FOR_TARGET, no longer
+	needed.
+
+2005-12-12  Arnaud Charlet  <charlet@adacore.com>
+
 	* Make-lang.in: Update dependencies
 
 2005-12-12  Arnaud Charlet  <charlet@adacore.com>
