@@ -1,3 +1,8 @@
+2005-12-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25300
+	* g++.dg/template/inherit.C: Do not use a generic error message.
+
 2005-12-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25337

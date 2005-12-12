@@ -1,3 +1,9 @@
+2005-12-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25300
+	* tree.c (build_qualified_name): Return error_mark_node for
+	erroneous input.
+
 2005-12-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25337 

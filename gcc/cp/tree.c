@@ -817,6 +817,10 @@ tree
 build_qualified_name (tree type, tree scope, tree name, bool template_p)
 {
   tree t;
+  if (type == error_mark_node
+      || scope == error_mark_node
+      || name == error_mark_node)
+    return error_mark_node;
   t = build2 (SCOPE_REF, type, scope, name);
   QUALIFIED_NAME_IS_TEMPLATE (t) = template_p;
   return t;
