@@ -1,3 +1,10 @@
+2005-12-12  J"orn Rennecke <joern.rennecke@st.com>
+
+	* cfgcleanup.c (condjump_equiv_p, try_crossjump_to_edge):
+	Fix whitespace in vincinity of to-be-installed changes.
+	* struct-equiv.c (merge_memattrs, death_notes_match_p): Fix whitespace.
+	(insns_match_p): Likewise.
+
 2005-12-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config.gcc (ms1): Replace with ...
