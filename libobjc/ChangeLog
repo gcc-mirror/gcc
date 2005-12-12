@@ -1,3 +1,12 @@
+2005-12-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* encoding.c (TYPE_FIELDS): Fix to skip over just _C_STRUCT_B and
+	the name.
+	(get_inner_array_type): Fix to skip over _C_ARY_B and size.
+	(rs6000_special_round_type_align): Update for the ABI fix.
+	(objc_layout_finish_structure): Correct the encoding which is passed to
+	ROUND_TYPE_ALIGN.
+
 2005-12-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR libobjc/25347
