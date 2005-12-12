@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-require-weak "" }
+// { dg-require-alias "" }
 // { dg-options "-O2 -fno-common" }
 
 // Copyright 2005 Free Software Foundation, Inc.
