@@ -1,3 +1,8 @@
+2005-12-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/25348
+	* objc.dg/encode-9.m: New test.
+
 2005-12-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/20772
