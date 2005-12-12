@@ -1633,11 +1633,6 @@ install-gnatlib: ../stamp-gnatlib
 # Example: cd rts; ar rc libfoo.a $(LONG_LIST_OF_OBJS)
 # is guaranteed to overflow the buffer.
 
-# ??? GCC_FOR_TARGET is supposed to be passed from the top level
-# Makefile, but this is not the case from e.g. libada, so provide a suitable
-# default
-GCC_FOR_TARGET=./xgcc -B./ $(FLAGS_FOR_TARGET)
-
 gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 	$(MAKE) -C rts \
 		CC="`echo \"$(GCC_FOR_TARGET)\" \
