@@ -1,3 +1,16 @@
+2005-12-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (pa_output_function_epilogue): Set cfun->machine->in_nsubspa to
+	indicate function epilogue has been output.
+	(pa_asm_output_mi_thunk): Likewise.
+	(output_deferred_plabels): Put plabels in readonly data section when
+	not generating PIC code.
+	(som_output_text_section_asm_op): Use .NSUBSPA to output debug
+	information.  Add assert.
+	(som_output_comdat_data_section_asm_op): New function.
+	(pa_som_asm_init_sections): Use som_output_comdat_data_section_asm_op
+	instead of output_section_asm_op for COMDAT sections.
+
 2005-12-12  J"orn Rennecke <joern.rennecke@st.com>
 
 	* cfgcleanup.c (condjump_equiv_p, try_crossjump_to_edge):
