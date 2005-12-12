@@ -3935,6 +3935,7 @@ pa_output_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	 debug information.  Forget that we are in this subspace to ensure
 	 that the next function is output in its own subspace.  */
       in_section = NULL;
+      cfun->machine->in_nsubspa = 2;
     }
 
   if (INSN_ADDRESSES_SET_P ())
@@ -5300,12 +5301,13 @@ static void
 output_deferred_plabels (void)
 {
   size_t i;
-  /* If we have deferred plabels, then we need to switch into the data
-     section and align it to a 4 byte boundary before we output the
-     deferred plabels.  */
+
+  /* If we have some deferred plabels, then we need to switch into the
+     data or readonly data section, and align it to a 4 byte boundary
+     before outputing the deferred plabels.  */
   if (n_deferred_plabels)
     {
-      switch_to_section (data_section);
+      switch_to_section (flag_pic ? data_section : readonly_data_section);
       ASM_OUTPUT_ALIGN (asm_out_file, TARGET_64BIT ? 3 : 2);
     }
 
@@ -7799,6 +7801,15 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 
   fprintf (file, "\t.EXIT\n\t.PROCEND\n");
 
+  if (TARGET_SOM && TARGET_GAS)
+    {
+      /* We done with this subspace except possibly for some additional
+	 debug information.  Forget that we are in this subspace to ensure
+	 that the next function is output in its own subspace.  */
+      in_section = NULL;
+      cfun->machine->in_nsubspa = 2;
+    }
+
   if (TARGET_SOM && flag_pic && TREE_PUBLIC (function))
     {
       switch_to_section (data_section);
@@ -7806,8 +7817,6 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
       ASM_OUTPUT_LABEL (file, label);
       output_asm_insn (".word P'%0", xoperands);
     }
-  else if (TARGET_SOM && TARGET_GAS)
-    in_section = NULL;
 
   current_thunk_number++;
   nbytes = ((nbytes + FUNCTION_BOUNDARY / BITS_PER_UNIT - 1)
@@ -9058,25 +9067,37 @@ som_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
 	  if (cfun->decl
 	      && DECL_ONE_ONLY (cfun->decl)
 	      && !DECL_WEAK (cfun->decl))
-	    output_section_asm_op ("\t.SPACE $TEXT$\n"
-				   "\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,"
-				   "ACCESS=44,SORT=24,COMDAT");
-	  else
-	    output_section_asm_op ("\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$");
-	  return;
+	    {
+	      output_section_asm_op ("\t.SPACE $TEXT$\n"
+				     "\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,"
+				     "ACCESS=44,SORT=24,COMDAT");
+	      return;
+	    }
 	}
       else
 	{
 	  /* There isn't a current function or the body of the current
 	     function has been completed.  So, we are changing to the
-	     text section to output debugging information.  Do this in
-	     the default text section.  We need to forget that we are
-	     in the text section so that varasm.c will call us when
-	     text_section is selected again.  */
+	     text section to output debugging information.  Thus, we
+	     need to forget that we are in the text section so that
+	     varasm.c will call us when text_section is selected again.  */
+	  gcc_assert (!cfun || cfun->machine->in_nsubspa == 2);
 	  in_section = NULL;
 	}
+      output_section_asm_op ("\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$");
+      return;
     }
   output_section_asm_op ("\t.SPACE $TEXT$\n\t.SUBSPA $CODE$");
+}
+
+/* A get_unnamed_section callback for switching to comdat data
+   sections.  This function is only used with SOM.  */
+
+static void
+som_output_comdat_data_section_asm_op (const void *data)
+{
+  in_section = NULL;
+  output_section_asm_op (data);
 }
 
 /* Implement TARGET_ASM_INITIALIZE_SECTIONS  */
@@ -9097,7 +9118,7 @@ pa_som_asm_init_sections (void)
      data one-only by creating a new $LIT$ subspace in $TEXT$ with
      the comdat flag.  */
   som_one_only_readonly_data_section
-    = get_unnamed_section (0, output_section_asm_op,
+    = get_unnamed_section (0, som_output_comdat_data_section_asm_op,
 			   "\t.SPACE $TEXT$\n"
 			   "\t.NSUBSPA $LIT$,QUAD=0,ALIGN=8,"
 			   "ACCESS=0x2c,SORT=16,COMDAT");
@@ -9106,7 +9127,8 @@ pa_som_asm_init_sections (void)
   /* When secondary definitions are not supported, SOM makes data one-only
      by creating a new $DATA$ subspace in $PRIVATE$ with the comdat flag.  */
   som_one_only_data_section
-    = get_unnamed_section (SECTION_WRITE, output_section_asm_op,
+    = get_unnamed_section (SECTION_WRITE,
+			   som_output_comdat_data_section_asm_op,
 			   "\t.SPACE $PRIVATE$\n"
 			   "\t.NSUBSPA $DATA$,QUAD=1,ALIGN=8,"
 			   "ACCESS=31,SORT=24,COMDAT");
