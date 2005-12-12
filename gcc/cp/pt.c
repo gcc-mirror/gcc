@@ -8873,6 +8873,7 @@ tsubst_copy_and_build (tree t,
     case COMPONENT_REF:
       {
 	tree object;
+	tree object_type;
 	tree member;
 
 	object = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
@@ -8880,6 +8881,7 @@ tsubst_copy_and_build (tree t,
 	/* Remember that there was a reference to this entity.  */
 	if (DECL_P (object))
 	  mark_used (object);
+	object_type = TREE_TYPE (object);
 
 	member = TREE_OPERAND (t, 1);
 	if (BASELINK_P (member))
@@ -8888,20 +8890,20 @@ tsubst_copy_and_build (tree t,
 				    args, complain, in_decl);
 	else
 	  member = tsubst_copy (member, args, complain, in_decl);
-
 	if (member == error_mark_node)
 	  return error_mark_node;
-	else if (!CLASS_TYPE_P (TREE_TYPE (object)))
+
+	if (object_type && !CLASS_TYPE_P (object_type))
 	  {
 	    if (TREE_CODE (member) == BIT_NOT_EXPR)
 	      return finish_pseudo_destructor_expr (object,
 						    NULL_TREE,
-						    TREE_TYPE (object));
+						    object_type);
 	    else if (TREE_CODE (member) == SCOPE_REF
 		     && (TREE_CODE (TREE_OPERAND (member, 1)) == BIT_NOT_EXPR))
 	      return finish_pseudo_destructor_expr (object,
 						    object,
-						    TREE_TYPE (object));
+						    object_type);
 	  }
 	else if (TREE_CODE (member) == SCOPE_REF
 		 && TREE_CODE (TREE_OPERAND (member, 1)) == TEMPLATE_ID_EXPR)
@@ -8923,12 +8925,11 @@ tsubst_copy_and_build (tree t,
 			      args);
 		member = (adjust_result_of_qualified_name_lookup
 			  (member, BINFO_TYPE (BASELINK_BINFO (member)),
-			   TREE_TYPE (object)));
+			   object_type));
 	      }
 	    else
 	      {
-		qualified_name_lookup_error (TREE_TYPE (object), tmpl,
-					     member);
+		qualified_name_lookup_error (object_type, tmpl, member);
 		return error_mark_node;
 	      }
 	  }
