@@ -1,3 +1,9 @@
+2005-12-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR java/25330
+	* jcf-write.c (write_classfile): Use PID in temporary class
+	file. Save/restore errno when reporting error.
+
 2005-12-10  Terry Laurenzo  <tlaurenzo@gmail.com>
 
 	PR java/9861
