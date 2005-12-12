@@ -538,6 +538,7 @@ init_optimization_passes (void)
      propagate away the degenerate PHI nodes.  */
   NEXT_PASS (pass_phi_only_copy_prop);
 
+  NEXT_PASS (pass_reassoc);
   NEXT_PASS (pass_dce);
   NEXT_PASS (pass_dse);
   NEXT_PASS (pass_may_alias);
@@ -553,10 +554,10 @@ init_optimization_passes (void)
   NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_cse_reciprocals);
   NEXT_PASS (pass_split_crit_edges);
-  NEXT_PASS (pass_reassoc);
   NEXT_PASS (pass_pre);
   NEXT_PASS (pass_sink_code);
   NEXT_PASS (pass_tree_loop);
+  NEXT_PASS (pass_reassoc);
   NEXT_PASS (pass_dominator);
 
   /* The only copy propagation opportunities left after DOM

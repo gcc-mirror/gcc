@@ -1975,7 +1975,8 @@ tree-ssa-alias.o : tree-ssa-alias.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
 tree-ssa-reassoc.o : tree-ssa-reassoc.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(GGC_H) $(DIAGNOSTIC_H) errors.h $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) tree-pass.h $(FLAGS_H) tree-iterator.h\
-   $(BASIC_BLOCK_H) $(HASHTAB_H) $(TREE_GIMPLE_H) tree-inline.h
+   $(BASIC_BLOCK_H) $(TREE_GIMPLE_H) tree-inline.h vec.h \
+   alloc-pool.h
 tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) output.h $(DIAGNOSTIC_H) \
    $(FLAGS_H) $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) toplev.h \

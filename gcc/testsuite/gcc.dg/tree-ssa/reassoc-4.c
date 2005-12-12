@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized -ffast-math" } */
 float a, b, c, d;
 extern int printf (const char *, ...);
 int main(void)
@@ -14,5 +14,5 @@ int main(void)
   printf ("%f %f\n", e, f);
 }
 
-/* { dg-final { scan-tree-dump-times "\\\+" 4 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "\\\+" 2 "optimized"} } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

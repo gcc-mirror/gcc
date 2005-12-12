@@ -1,18 +1,6 @@
-/* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-optimized -ffast-math" } */
-float a, b, c, d;
-extern int printf (const char *, ...);
-int main(void)
+int main(int a, int b, int c, int d)
 {
-  float e;
-  float f;
-  /* We should be able to transform these into the same expression, and only have two additions.  */
-  e = a + b;
-  e = e + c;
-  f = c + a;
-  f = f + b;
-  printf ("%f %f\n", e, f);
+  int e = (a & ~b) & (~c & d);
+  int f = (~c & a) & (b & ~d);
+ return (e & f);
 }
-
-/* { dg-final { scan-tree-dump-times "\\\+" 2 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
