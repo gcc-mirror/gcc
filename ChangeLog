@@ -1,5 +1,7 @@
 2005-12-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* MAINTAINERS: Add myself as mt maintainer.
+
 	* config.sub: Replace ms1 with mt.  Allow ms1 as an alias.
 
 2005-12-06  Adam Nemet  <anemet@caviumnetworks.com>
