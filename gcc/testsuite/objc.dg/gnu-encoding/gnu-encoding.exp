@@ -1,0 +1,73 @@
+# GCC Objective-C testsuite that uses the `dg.exp' driver.
+#   Copyright (C) 1997, 2001 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  
+
+# Load support procs.
+load_lib objc-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS "-fgnu-runtime"
+}
+
+# Initialize `dg'.
+dg-init
+
+#
+# gnu-encoding tests
+#
+set tstobjdir "$tmpdir/objc.dg-struct-layout-encoding-1"
+set generator "$tmpdir/objc.dg-struct-layout-encoding-1_generate"
+
+set generator_src "$srcdir/$subdir/struct-layout-encoding-1_generate.c"
+set generator_src "$generator_src $srcdir/$subdir/generate-random.c"
+set generator_src "$generator_src $srcdir/$subdir/generate-random_r.c"
+set generator_cmd "-o $generator $generator_src"
+set status [remote_exec host "$HOSTCC $HOSTCFLAGS $generator_cmd"]
+set status [lindex $status 0]
+if { $status == 0 } then {
+    file delete -force $tstobjdir
+    file mkdir $tstobjdir
+    set generator_args "-s $srcdir/$subdir -d $tstobjdir"
+#    set generator_args "$generator_args -n 15000"
+    set status [remote_exec host "$generator $generator_args"]
+    set status [lindex $status 0]
+    if { $status == 0 } then {
+        foreach src [lsort [find $tstobjdir *_main.m]] {
+            # If we're only testing specific files and this isn't one
+            # of them, skip it.
+            if ![runtest_file_p $runtests $src] then {
+                continue
+            }
+
+            dg-runtest $src "" $DEFAULT_CFLAGS
+        }
+    } else {
+        warning "Could not execute objc.dg/gnu-encoding/struct-layout-encoding-1 generator"
+    }
+} else {
+    warning "Could not compile objc.dg/gnu-encoding/struct-layout-encoding-1 generator"
+}
+
+
+
+
+
+
+# All done.
+dg-finish
+

@@ -67,14 +67,24 @@ Boston, MA 02110-1301, USA.  */
 
 #define VECTOR_TYPE	_C_VECTOR
 
-#define TYPE_FIELDS(TYPE)     objc_skip_typespec (TYPE)
+#define TYPE_FIELDS(TYPE)           ({const char *_field = (TYPE)+1; \
+    while (*_field != _C_STRUCT_E && *_field != _C_STRUCT_B \
+           && *_field != _C_UNION_B && *_field++ != '=') \
+    /* do nothing */; \
+    _field;})
 
 #define DECL_MODE(TYPE) *(TYPE)
 #define TYPE_MODE(TYPE) *(TYPE)
 
 #define DFmode          _C_DBL
 
-#define get_inner_array_type(TYPE)      ((TYPE) + 1)
+#define get_inner_array_type(TYPE)      ({const char *_field = (TYPE); \
+  while (*_field == _C_ARY_B)\
+    {\
+      while (isdigit ((unsigned char)*++_field))\
+	;\
+    }\
+    _field;})
 
 /* Some ports (eg ARM) allow the structure size boundary to be
    selected at compile-time.  We override the normal definition with
@@ -103,10 +113,13 @@ static int __attribute__ ((__unused__)) not_target_flags = 0;
     is only way around without really rewritting this file,
     should look after the branch of 3.4 to fix this.  */
 #define rs6000_special_round_type_align(STRUCT, COMPUTED, SPECIFIED)	\
-  ((TYPE_FIELDS (STRUCT) != 0						\
-    && DECL_MODE (TYPE_FIELDS (STRUCT)) == DFmode)			\
+  ({ const char *_fields = TYPE_FIELDS (STRUCT);				\
+  ((_fields != 0							\
+    && TYPE_MODE (TREE_CODE (TREE_TYPE (_fields)) == ARRAY_TYPE		\
+		    ? get_inner_array_type (_fields)			\
+		    : TREE_TYPE (_fields)) == DFmode)			\
    ? MAX (MAX (COMPUTED, SPECIFIED), 64)				\
-   : MAX (COMPUTED, SPECIFIED))
+   : MAX (COMPUTED, SPECIFIED));})
 
 /*
   return the size of an object specified by type
@@ -901,9 +914,8 @@ void objc_layout_finish_structure (struct objc_struct_layout *layout,
       /* Work out the alignment of the record as one expression and store
          in the record type.  Round it up to a multiple of the record's
          alignment. */
-
 #if defined (ROUND_TYPE_ALIGN) && ! defined (__sparc__)
-      layout->record_align = ROUND_TYPE_ALIGN (layout->original_type,
+      layout->record_align = ROUND_TYPE_ALIGN (layout->original_type-1,
                                                1,
                                                layout->record_align);
 #else

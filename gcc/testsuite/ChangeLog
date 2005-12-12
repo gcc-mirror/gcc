@@ -1,3 +1,17 @@
+2005-12-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libobjc/25354
+	* objc.dg/gnu-encoding: New directory.
+	* objc.dg/gnu-encoding/compat-common.h: New file.
+	* objc.dg/gnu-encoding/struct-layout-1.h: New file.
+	* objc.dg/gnu-encoding/struct-layout-1_test.h: New file.
+	* objc.dg/gnu-encoding/vector-defs.h: New file.
+	* objc.dg/gnu-encoding/gnu-encoding.exp: New file.
+	* objc.dg/gnu-encoding/generate-random.c: New file.
+	* objc.dg/gnu-encoding/generate-random_r.c: New file.
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c: New file.
+	* objc.dg/gnu-encoding/generate-random.h: New file.
+
 2005-12-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25337
