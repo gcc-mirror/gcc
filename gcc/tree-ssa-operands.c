@@ -1047,7 +1047,6 @@ swap_tree_operands (tree stmt, tree *exp0, tree *exp1)
   *exp1 = op0;
 }
 
-
 /* Recursively scan the expression pointed to by EXPR_P in statement referred
    to by INFO.  FLAGS is one of the OPF_* constants modifying how to interpret
    the operands found.  */
@@ -1260,39 +1259,6 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case ASSERT_EXPR:
     do_binary:
       {
-	tree op0 = TREE_OPERAND (expr, 0);
-	tree op1 = TREE_OPERAND (expr, 1);
-
-	/* If it would be profitable to swap the operands, then do so to
-	   canonicalize the statement, enabling better optimization.
-
-	   By placing canonicalization of such expressions here we
-	   transparently keep statements in canonical form, even
-	   when the statement is modified.  */
-	if (tree_swap_operands_p (op0, op1, false))
-	  {
-	    /* For relationals we need to swap the operands
-	       and change the code.  */
-	    if (code == LT_EXPR
-		|| code == GT_EXPR
-		|| code == LE_EXPR
-		|| code == GE_EXPR)
-	      {
-		TREE_SET_CODE (expr, swap_tree_comparison (code));
-		swap_tree_operands (stmt,
-				    &TREE_OPERAND (expr, 0),			
-				    &TREE_OPERAND (expr, 1));
-	      }
-	  
-	    /* For a commutative operator we can just swap the operands.  */
-	    else if (commutative_tree_code (code))
-	      {
-		swap_tree_operands (stmt,
-				    &TREE_OPERAND (expr, 0),			
-				    &TREE_OPERAND (expr, 1));
-	      }
-	  }
-
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 1), flags);
 	return;

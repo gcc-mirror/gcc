@@ -873,4 +873,6 @@ void delete_alias_heapvars (void);
 
 #include "tree-flow-inline.h"
 
+void swap_tree_operands (tree, tree *, tree *);
+
 #endif /* _TREE_FLOW_H  */

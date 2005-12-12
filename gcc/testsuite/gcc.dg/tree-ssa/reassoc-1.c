@@ -14,5 +14,5 @@ int main(void)
   printf ("%d %d\n", e, f);
 }
 
-/* { dg-final { scan-tree-dump-times "a \\\+ b" 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "b \\\+ a" 1 "optimized"} } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

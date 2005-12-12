@@ -1,3 +1,23 @@
+2005-12-12  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Remove
+	reassociation code.
+	* passes.c (init_optimization_passes): Run reassociation again
+	after loop optimizations.
+
+2005-12-12  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-dom.c (thread_across_edge): Canonicalize condition
+	if necessary.
+	(optimize_stmt): Ditto.
+	(canonicalize_comparison): New function.
+	* tree-ssa-operands.c (swap_tree_operands): Make external.
+	(get_expr_operands): Stop auto-canonicalization.
+	* tree-ssa-reassoc.c: Rewrite.
+	(init_optimization_passes): 
+	* tree-flow.h (swap_tree_operands): Prototype.
+	* Makefile.in (tree-ssa-reassoc.o): Update dependencies.
+
 2005-12-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_output_function_epilogue): Set cfun->machine->in_nsubspa to
