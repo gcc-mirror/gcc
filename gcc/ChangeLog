@@ -1,3 +1,10 @@
+2005-12-12  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/25299
+	* config/rs6000/rs6000.c (rs6000_special_round_type_align): Increase
+	alignment to doubleword if the first field is a double array.
+	* config/rs6000/linux64.h (TARGET_ALIGN_NATURAL): Define.
+
 2005-12-11  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (process_constraint): Remove code to
