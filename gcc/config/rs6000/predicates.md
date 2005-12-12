@@ -353,25 +353,6 @@
 					   || reload_in_progress,
 					   mode, XEXP (op, 0))")))
 
-;; Return 1 if the operand is an indexed or indirect memory operand.
-(define_predicate "indexed_or_indirect_operand"
-  (match_operand 0 "memory_operand")
-{
-  rtx tmp = XEXP (op, 0);
-
-  if (TARGET_ALTIVEC
-      && ALTIVEC_VECTOR_MODE (mode)
-      && GET_CODE (tmp) == AND
-      && GET_CODE (XEXP (tmp, 1)) == CONST_INT
-      && INTVAL (XEXP (tmp, 1)) == -16)
-    tmp = XEXP (tmp, 0);
-
-    return REG_P (tmp)
-		  || (GET_CODE (tmp) == PLUS
-		      && REG_P (XEXP (tmp, 0)) 
-		      && REG_P (XEXP (tmp, 1)));
-})
-
 ;; Return 1 if the operand is a memory operand with an address divisible by 4
 (define_predicate "word_offset_memref_operand"
   (and (match_operand 0 "memory_operand")
@@ -380,13 +361,28 @@
 		    || GET_CODE (XEXP (XEXP (op, 0), 1)) != CONST_INT
 		    || INTVAL (XEXP (XEXP (op, 0), 1)) % 4 == 0")))
 
+;; Return 1 if the operand is an indexed or indirect memory operand.
+(define_predicate "indexed_or_indirect_operand"
+  (match_code "mem")
+{
+  op = XEXP (op, 0);
+  if (TARGET_ALTIVEC
+      && ALTIVEC_VECTOR_MODE (mode)
+      && GET_CODE (op) == AND
+      && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && INTVAL (XEXP (op, 1)) == -16)
+    op = XEXP (op, 0);
+
+  return indexed_or_indirect_address (op, mode);
+})
+
 ;; Return 1 if the operand is an indexed or indirect address.
-(define_predicate "indexed_or_indirect_address"
-  (and (match_operand 0 "address_operand")
-       (match_test "REG_P (op)
+(define_special_predicate "indexed_or_indirect_address"
+  (and (match_test "REG_P (op)
 		    || (GET_CODE (op) == PLUS
-			&& REG_P (XEXP (op, 0)) 
-			&& REG_P (XEXP (op, 1)))")))
+			/* Omit testing REG_P (XEXP (op, 0)).  */
+			&& REG_P (XEXP (op, 1)))")
+       (match_operand 0 "address_operand")))
 
 ;; Used for the destination of the fix_truncdfsi2 expander.
 ;; If stfiwx will be used, the result goes to memory; otherwise,
