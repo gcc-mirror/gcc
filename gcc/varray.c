@@ -176,7 +176,7 @@ varray_grow (varray_type va, size_t n)
 	va = xrealloc (va, VARRAY_HDR_SIZE + data_size);
       va->num_elements = n;
       if (n > old_elements)
-	memset (&va->data.c[old_data_size], 0, data_size - old_data_size);
+	memset (&va->data.vdt_c[old_data_size], 0, data_size - old_data_size);
 #ifdef GATHER_STATISTICS
       if (oldva != va)
         desc->copied++;
@@ -192,7 +192,7 @@ varray_clear (varray_type va)
 {
   size_t data_size = element[va->type].size * va->num_elements;
 
-  memset (va->data.c, 0, data_size);
+  memset (va->data.vdt_c, 0, data_size);
   va->elements_used = 0;
 }
 
