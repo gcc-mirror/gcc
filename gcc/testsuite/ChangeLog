@@ -1,3 +1,9 @@
+2005-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/25023
+	PR target/25293
+	* gcc.target/i386/pr25293.c: New test.
+
 2005-12-13  Petr Machata  <machata@post.cz>
 
 	PR c++/24907

@@ -2852,6 +2852,19 @@ emit_move_resolve_push (enum machine_mode mode, rtx x)
 #endif
   if (code == PRE_DEC || code == POST_DEC)
     adjust = -adjust;
+  else if (code == PRE_MODIFY || code == POST_MODIFY)
+    {
+      rtx expr = XEXP (XEXP (x, 0), 1);
+      HOST_WIDE_INT val;
+
+      gcc_assert (GET_CODE (expr) == PLUS || GET_CODE (expr) == MINUS);
+      gcc_assert (GET_CODE (XEXP (expr, 1)) == CONST_INT);
+      val = INTVAL (XEXP (expr, 1));
+      if (GET_CODE (expr) == MINUS)
+	val = -val;
+      gcc_assert (adjust == val || adjust == -val);
+      adjust = val;
+    }
 
   /* Do not use anti_adjust_stack, since we don't want to update
      stack_pointer_delta.  */
@@ -2865,13 +2878,13 @@ emit_move_resolve_push (enum machine_mode mode, rtx x)
     {
     case PRE_INC:
     case PRE_DEC:
+    case PRE_MODIFY:
       temp = stack_pointer_rtx;
       break;
     case POST_INC:
-      temp = plus_constant (stack_pointer_rtx, -GET_MODE_SIZE (mode));
-      break;
     case POST_DEC:
-      temp = plus_constant (stack_pointer_rtx, GET_MODE_SIZE (mode));
+    case POST_MODIFY:
+      temp = plus_constant (stack_pointer_rtx, -adjust);
       break;
     default:
       gcc_unreachable ();
