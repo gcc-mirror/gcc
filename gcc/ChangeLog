@@ -1,3 +1,8 @@
+2005-12-13  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/bpabi.h (SUBTARGET_EXTRA_ASM_SPEC): Pass -meabi=gnu for
+	apcs/atpcs.
+
 2005-12-13  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (TARGET_ALIGN_NATURAL): Define.
