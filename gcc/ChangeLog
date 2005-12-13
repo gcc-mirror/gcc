@@ -1,3 +1,7 @@
+2005-12-13  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (TARGET_ALIGN_NATURAL): Define.
+
 2005-12-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25258

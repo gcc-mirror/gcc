@@ -244,6 +244,12 @@
    ? rs6000_special_round_type_align (STRUCT, COMPUTED, SPECIFIED)	\
    : MAX ((COMPUTED), (SPECIFIED)))
 
+/* Use the default for compiling target libs.  */
+#ifdef IN_TARGET_LIBS
+#undef TARGET_ALIGN_NATURAL
+#define TARGET_ALIGN_NATURAL 1
+#endif
+
 /* Indicate that jump tables go in the text section.  */
 #undef  JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION TARGET_64BIT
