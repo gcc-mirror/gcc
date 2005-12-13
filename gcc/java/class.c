@@ -2085,6 +2085,9 @@ maybe_layout_super_class (tree super_class, tree this_class)
 	     we give it one.  */
 	  tree this_wrap = NULL_TREE;
 
+	  /* Set the correct context for class resolution.  */
+	  current_class = this_class;
+
 	  if (this_class)
 	    {
 	      tree this_decl = TYPE_NAME (this_class);
