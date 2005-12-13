@@ -1,3 +1,8 @@
+2005-12-13  J"orn Rennecke <joern.rennecke@st.com>
+
+	* rtlhooks.c (gen_lowpart_general): Handle SUBREGs of floating point
+	values.
+
 2005-12-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/mt/t-mt (MULTILIB_OPTIONS): Add ms2
