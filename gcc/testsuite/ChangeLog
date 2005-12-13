@@ -1,3 +1,7 @@
+2005-12-13  Carlos O'Donell <carlos@codesourcery.com>
+
+	* gcc.dg/single-precision-constant.c: New test.
+
 2005-12-13  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/980523-1.c, gcc.dg/980526-1.c, gcc.dg/20020103-1.c,

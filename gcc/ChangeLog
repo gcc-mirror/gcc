@@ -1,3 +1,12 @@
+2005-12-13  Carlos O'Donell <carlos@codesourcery.com>
+
+	* c-cppbuiltin.c (builtin_define_float_constants): Add
+	fp_cast parameter, pass to builtin_define_with_hex_fp_value.
+	Define __FLT_HAS_DENORM__, __DBL_HAS_DENORM__, __LDBL_HAS_DENORM__.
+	(builtin_define_with_hex_fp_value): Use fp_cast when building macro.
+	(c_cpp_builtins): If flag_single_precision_constant then set fp_cast
+	to "((double)%sL)" otherwise "%s".
+
 2005-12-13  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/bpabi.h (SUBTARGET_EXTRA_ASM_SPEC): Pass -meabi=gnu for
