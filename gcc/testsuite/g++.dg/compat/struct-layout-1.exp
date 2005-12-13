@@ -127,10 +127,7 @@ set generator "$tmpdir/g++.dg-struct-layout-1_generate"
 set generator_src "$srcdir/$subdir/struct-layout-1_generate.c"
 set generator_src "$generator_src $srcdir/$subdir/../../gcc.dg/compat/generate-random.c"
 set generator_src "$generator_src $srcdir/$subdir/../../gcc.dg/compat/generate-random_r.c"
-set generator_inc "-I$srcdir/$subdir -I$srcdir/../../include"
-set generator_inc "$generator_inc -I$rootme/../libiberty"
-set generator_lib "-L$rootme/../libiberty -liberty"
-set generator_cmd "-o $generator $generator_src $generator_inc $generator_lib"
+set generator_cmd "-o $generator $generator_src"
 
 set status [remote_exec host "$HOSTCC $HOSTCFLAGS $generator_cmd"]
 set status [lindex $status 0]
