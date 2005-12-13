@@ -53,11 +53,14 @@ static void builtin_define_with_value_n (const char *, const char *,
 static void builtin_define_with_int_value (const char *, HOST_WIDE_INT);
 static void builtin_define_with_hex_fp_value (const char *, tree,
 					      int, const char *,
+					      const char *,
 					      const char *);
 static void builtin_define_stdint_macros (void);
 static void builtin_define_type_max (const char *, tree, int);
 static void builtin_define_type_precision (const char *, tree);
-static void builtin_define_float_constants (const char *, const char *,
+static void builtin_define_float_constants (const char *, 
+					    const char *,
+					    const char *,
 					    tree);
 static void define__GNUC__ (void);
 
@@ -68,9 +71,13 @@ builtin_define_type_precision (const char *name, tree type)
   builtin_define_with_int_value (name, TYPE_PRECISION (type));
 }
 
-/* Define the float.h constants for TYPE using NAME_PREFIX and FP_SUFFIX.  */
+/* Define the float.h constants for TYPE using NAME_PREFIX, FP_SUFFIX,
+   and FP_CAST. */
 static void
-builtin_define_float_constants (const char *name_prefix, const char *fp_suffix, tree type)
+builtin_define_float_constants (const char *name_prefix, 
+		                const char *fp_suffix, 
+				const char *fp_cast, 
+				tree type)
 {
   /* Used to convert radix-based values to base 10 values in several cases.
 
@@ -208,13 +215,13 @@ builtin_define_float_constants (const char *name_prefix, const char *fp_suffix, 
       }
   }
   sprintf (name, "__%s_MAX__", name_prefix);
-  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
+  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix, fp_cast);
 
   /* The minimum normalized positive floating-point number,
      b**(emin-1).  */
   sprintf (name, "__%s_MIN__", name_prefix);
   sprintf (buf, "0x1p%d", (fmt->emin - 1) * fmt->log2_b);
-  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
+  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix, fp_cast);
 
   /* The difference between 1 and the least value greater than 1 that is
      representable in the given floating point type, b**(1-p).  */
@@ -225,7 +232,7 @@ builtin_define_float_constants (const char *name_prefix, const char *fp_suffix, 
       sprintf (buf, "0x1p%d", (fmt->emin - fmt->p) * fmt->log2_b);
     else      
       sprintf (buf, "0x1p%d", (1 - fmt->p) * fmt->log2_b);
-  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
+  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix, fp_cast);
 
   /* For C++ std::numeric_limits<T>::denorm_min.  The minimum denormalized
      positive floating-point number, b**(emin-p).  Zero for formats that
@@ -235,13 +242,16 @@ builtin_define_float_constants (const char *name_prefix, const char *fp_suffix, 
     {
       sprintf (buf, "0x1p%d", (fmt->emin - fmt->p) * fmt->log2_b);
       builtin_define_with_hex_fp_value (name, type, decimal_dig,
-					buf, fp_suffix);
+					buf, fp_suffix, fp_cast);
     }
   else
     {
       sprintf (buf, "0.0%s", fp_suffix);
       builtin_define_with_value (name, buf, 0);
     }
+
+  sprintf (name, "__%s_HAS_DENORM__", name_prefix);
+  builtin_define_with_value (name, fmt->has_denorm ? "1" : "0", 0);
 
   /* For C++ std::numeric_limits<T>::has_infinity.  */
   sprintf (name, "__%s_HAS_INFINITY__", name_prefix);
@@ -382,9 +392,16 @@ c_cpp_builtins (cpp_reader *pfile)
   builtin_define_with_int_value ("__FLT_EVAL_METHOD__",
 				 TARGET_FLT_EVAL_METHOD);
 
-  builtin_define_float_constants ("FLT", "F", float_type_node);
-  builtin_define_float_constants ("DBL", "", double_type_node);
-  builtin_define_float_constants ("LDBL", "L", long_double_type_node);
+  builtin_define_float_constants ("FLT", "F", "%s", float_type_node);
+  /* Cast the double precision constants when single precision constants are
+     specified. The correct result is computed by the compiler when using 
+     macros that include a cast. This has the side-effect of making the value 
+     unusable in const expressions. */
+  if (flag_single_precision_constant)
+    builtin_define_float_constants ("DBL", "L", "((double)%s)", double_type_node);
+  else
+    builtin_define_float_constants ("DBL", "", "%s", double_type_node);
+  builtin_define_float_constants ("LDBL", "L", "%s", long_double_type_node);
 
   /* For use in assembly language.  */
   builtin_define_with_value ("__REGISTER_PREFIX__", REGISTER_PREFIX, 0);
@@ -580,10 +597,12 @@ builtin_define_with_int_value (const char *macro, HOST_WIDE_INT value)
 static void
 builtin_define_with_hex_fp_value (const char *macro,
 				  tree type ATTRIBUTE_UNUSED, int digits,
-				  const char *hex_str, const char *fp_suffix)
+				  const char *hex_str, 
+				  const char *fp_suffix,
+				  const char *fp_cast)
 {
   REAL_VALUE_TYPE real;
-  char dec_str[64], buf[256];
+  char dec_str[64], buf1[256], buf2[256];
 
   /* Hex values are really cool and convenient, except that they're
      not supported in strict ISO C90 mode.  First, the "p-" sequence
@@ -598,8 +617,13 @@ builtin_define_with_hex_fp_value (const char *macro,
   real_from_string (&real, hex_str);
   real_to_decimal (dec_str, &real, sizeof (dec_str), digits, 0);
 
-  sprintf (buf, "%s=%s%s", macro, dec_str, fp_suffix);
-  cpp_define (parse_in, buf);
+  /* Assemble the macro in the following fashion
+     macro = fp_cast [dec_str fp_suffix] */
+  sprintf (buf1, "%s%s", dec_str, fp_suffix);
+  sprintf (buf2, fp_cast, buf1);
+  sprintf (buf1, "%s=%s", macro, buf2);
+  
+  cpp_define (parse_in, buf1);
 }
 
 /* Define MAX for TYPE based on the precision of the type.  IS_LONG is

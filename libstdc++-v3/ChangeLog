@@ -1,3 +1,8 @@
+2005-12-13  Carlos O'Donell <carlos@codesourcery.com>
+
+	* include/std/std_limits.h (struct numeric_limits):
+	Use __DBL_HAS_DENORM__, __FLT_HAS_DENORM__, __LDBL_HAS_DENORM__.
+
 2005-12-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/sso_string_base.h (__sso_string_base<>::_M_compare):
