@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc-*-linux* powerpc-*-sysv* powerpc-*-eabi* } } */
+/* { dg-do compile { target { { powerpc*-*-linux* && ilp32 } || { powerpc-*-sysv* powerpc-*-eabi* } } } } */
 /* { dg-options "-O2 -fno-common -G 8 -meabi -msdata=eabi" } */
 /* { dg-final { scan-assembler "\\.section\[ \t\]\\.sdata," } } */
 /* { dg-final { scan-assembler "\\.section\[ \t\]\\.sdata2," } } */

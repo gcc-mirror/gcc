@@ -12,6 +12,6 @@ int f(_Bool x)
 
 /* There should be no adde for powerpc. Checking if we actually optimizated
    away the comparision.  */
-/* { dg-final { scan-assembler-times "adde" 0 { target powerpc-*-* } } } */
+/* { dg-final { scan-assembler-times "adde" 0 { target powerpc*-*-* } } } */
 
 /* { dg-final { cleanup-tree-dump "optimized" } } */

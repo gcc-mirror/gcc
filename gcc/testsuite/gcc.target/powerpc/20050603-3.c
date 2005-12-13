@@ -1,4 +1,4 @@
-/* { dg-do compile { target "powerpc-*-*" } } */
+/* { dg-do compile { target { ilp32 } } } */
 /* { dg-options "-O2" } */
 struct Q 
 {

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-maltivec" { target powerpc-*-* } } */
+/* { dg-options "-maltivec" { target powerpc*-*-* } } */
 
 __attribute__ ((vector_size (2))) signed char v1, v2, v3;
 void

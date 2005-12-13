@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "-mminimal-toc" { target { powerpc64-*-* && lp64 } } } */
+/* { dg-options "-mminimal-toc" { target { powerpc*-*-* && lp64 } } } */
 
 char *strchr (const char *, int);
 

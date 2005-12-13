@@ -1,5 +1,4 @@
-/* { dg-do compile { target powerpc64-*-* } } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-options "-O2" } */
 
 /* { dg-final { scan-assembler "rlwinm \[0-9\]+,\[0-9\]+,0,0,30"  } } */

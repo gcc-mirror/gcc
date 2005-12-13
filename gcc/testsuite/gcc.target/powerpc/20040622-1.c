@@ -1,5 +1,5 @@
 /* { dg-options "-Os -mlong-double-128" } */
-/* { dg-do compile { target rs6000-*-* powerpc-*-* } } */
+/* { dg-do compile { target { { rs6000-*-* } || { powerpc*-*-* && lp64 } } } } */
 /* Make sure compiler doesn't generate [reg+reg] address mode
    for long doubles. */
 union arg {
