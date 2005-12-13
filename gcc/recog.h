@@ -76,6 +76,7 @@ extern int asm_operand_ok (rtx, const char *);
 extern int validate_change (rtx, rtx *, rtx, int);
 extern int validate_change_maybe_volatile (rtx, rtx *, rtx);
 extern int insn_invalid_p (rtx);
+extern int verify_changes (int);
 extern void confirm_change_group (void);
 extern int apply_change_group (void);
 extern int num_validated_changes (void);

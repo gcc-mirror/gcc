@@ -1,5 +1,48 @@
 2005-12-13  J"orn Rennecke <joern.rennecke@st.com>
 
+	PR rtl-optimization/20070 / part1
+	* flow.c (update_life_info): If PROP_POST_REGSTACK is set, call
+	count_or_remove_death_notes with kill == -1.
+	(mark_set_1): Don't add REG_DEAD / REG_UNUSED notes for stack
+	registers if PROP_POST_REGSTACK is set.
+	(mark_used_reg): Likewise.
+	(count_or_remove_death_notes): If kill is -1, don't remove REG_DEAD /
+	REG_UNUSED notes for stack regs.
+	* cfgcleanup.c (condjump_equiv_p): Change parameters and processing
+	to match rtx_equiv_p machinery.  Change caller.
+	(outgoing_edges_match): Likewise.
+	(try_crossjump_to_edge): Use struct_equiv_block_eq
+	instead of flow_find_cross_jump.
+	* basic-block.h (PROP_POST_REGSTACK, STRUCT_EQUIV_START): Define.
+	(STRUCT_EQUIV_RERUN, STRUCT_EQUIV_FINAL): Likewise.
+	(STRUCT_EQUIV_NEED_FULL_BLOCK, STRUCT_EQUIV_MATCH_JUMPS): Likewise.
+	(STRUCT_EQUIV_MAX_LOCAL): Likewise.
+	(struct struct_equiv_checkpoint, struct equiv_info): Likewise.
+	(insns_match_p): Update prototype.
+	(flow_find_cross_jump): Remove prototype.
+	(struct_equiv_block_eq, struct_equiv_init): Declare.
+	(rtx_equiv_p, condjump_equiv_p): Likewise.
+	* struct-equiv.c: Include reload.h.
+	(IMPOSSIBLE_MOVE_FACTOR): Define.
+	(assign_reg_reg_set, struct_equiv_make_checkpoint): New functions.
+	(struct_equiv_improve_checkpoint): Likewise.
+	(struct_equiv_restore_checkpoint, rtx_equiv_p): Likewise.
+	(set_dest_equiv_p, set_dest_addr_equiv_p, struct_equiv_init): Likewise.
+	(struct_equiv_merge, find_dying_input): Likewise.
+	(resolve_input_conflict, note_local_live): Likewise.
+	(death_notes_match_p): Change parameters and processing
+	to match rtx_equiv_p machinery.  Change caller.
+	(insns_match_p): Likewise.
+	(flow_find_cross_jump): Replace with:
+	(struct_equiv_block_eq).
+
+	Back out this change:
+	2005-03-07  Kazu Hirata  <kazu@cs.umass.edu>
+          * recog.c (verify_changes): Make it static.
+          * recog.h: Remove the corresponding prototype.
+
+2005-12-13  J"orn Rennecke <joern.rennecke@st.com>
+
 	* rtlhooks.c (gen_lowpart_general): Handle SUBREGs of floating point
 	values.
 
