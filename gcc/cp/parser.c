@@ -7142,7 +7142,16 @@ cp_parser_simple_declaration (cp_parser* parser,
       bool function_definition_p;
       tree decl;
 
-      saw_declarator = true;
+      if (saw_declarator)
+	{
+	  /* If we are processing next declarator, coma is expected */
+	  token = cp_lexer_peek_token (parser->lexer);
+	  gcc_assert (token->type == CPP_COMMA);
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      else
+	saw_declarator = true;
+
       /* Parse the init-declarator.  */
       decl = cp_parser_init_declarator (parser, &decl_specifiers,
 					function_definition_allowed_p,
@@ -7177,7 +7186,7 @@ cp_parser_simple_declaration (cp_parser* parser,
       token = cp_lexer_peek_token (parser->lexer);
       /* If it's a `,', there are more declarators to come.  */
       if (token->type == CPP_COMMA)
-	cp_lexer_consume_token (parser->lexer);
+	/* will be consumed next time around */;
       /* If it's a `;', we are done.  */
       else if (token->type == CPP_SEMICOLON)
 	break;

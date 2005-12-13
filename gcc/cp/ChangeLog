@@ -1,3 +1,10 @@
+2005-12-13  Petr Machata  <machata@post.cz>
+
+	PR c++/24907
+	* parser.c (cp_parser_simple_declaration): Require comma at the
+	beginning of processing second and later declarators, instead of
+	allowing the comma at the end of each iteration.
+
 2005-12-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25300

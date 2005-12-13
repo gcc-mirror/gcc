@@ -1,3 +1,8 @@
+2005-12-13  Petr Machata  <machata@post.cz>
+
+	PR c++/24907
+	* g++.dg/parse/comma2.C: New test.
+
 2005-12-13  Mark Mitchell  <mark@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
