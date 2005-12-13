@@ -1,3 +1,11 @@
+2005-12-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/mt/t-mt (MULTILIB_OPTIONS): Add ms2
+	(MULTILIB_DIRNAMES): Add ms2.  Prefix ms1 dirs with 'ms1'.
+	* config/mt/mt.c (ms1_final_prescan): Use TARGET_MS2,
+	TARGET_MS1_64_001 appropriately.
+	(ms1_machine_reorg): Use TARGET_MS2.
+
 2005-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/25023

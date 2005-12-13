@@ -221,7 +221,7 @@ ms1_final_prescan_insn (rtx   insn,
   ms1_nop_reasons = "";
 
   /* ms2 constraints are dealt with in reorg.  */
-  if (ms1_cpu == PROCESSOR_MS2)
+  if (TARGET_MS2)
     return;
   
   /* Only worry about real instructions.  */
@@ -257,7 +257,7 @@ ms1_final_prescan_insn (rtx   insn,
     case TYPE_STORE:
       /* Avoid consecutive memory operation.  */
       if  ((prev_attr == TYPE_LOAD || prev_attr == TYPE_STORE)
-	   && ms1_cpu == PROCESSOR_MS1_64_001)
+	   && TARGET_MS1_64_001)
 	{
 	  ms1_nops_required = 1;
 	  ms1_nop_reasons = "consecutive mem ops";
@@ -279,8 +279,7 @@ ms1_final_prescan_insn (rtx   insn,
     case TYPE_BRANCH:
       if (insn_dependent_p (prev_i, insn))
 	{
-	  if (prev_attr == TYPE_ARITH
-	      && ms1_cpu == PROCESSOR_MS1_64_001)
+	  if (prev_attr == TYPE_ARITH && TARGET_MS1_64_001)
 	    {
 	      /* One cycle of delay between arith
 		 instructions and branch dependent on arith.  */
@@ -291,7 +290,7 @@ ms1_final_prescan_insn (rtx   insn,
 	    {
 	      /* Two cycles of delay are required
 		 between load and dependent branch.  */
-	      if (ms1_cpu == PROCESSOR_MS1_64_001)
+	      if (TARGET_MS1_64_001)
 		ms1_nops_required = 2;
 	      else
 		ms1_nops_required = 1;
@@ -2465,13 +2464,13 @@ ms1_reorg_hazard (void)
 static void
 ms1_machine_reorg (void)
 {
-  if (cfun->machine->has_loops)
+  if (cfun->machine->has_loops && TARGET_MS2)
     ms1_reorg_loops (dump_file);
 
   if (ms1_flag_delayed_branch)
     dbr_schedule (get_insns (), dump_file);
   
-  if (ms1_cpu == PROCESSOR_MS2)
+  if (TARGET_MS2)
     ms1_reorg_hazard ();
 }
 
