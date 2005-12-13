@@ -1,3 +1,8 @@
+2005-12-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/mt/t-mt (crti.o, crtn.o): Add multilib options.
+	(EXTRA_MULTILIB_PARTS): Define.
+
 2005-12-13  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR rtl-optimization/20070 / part1
