@@ -1,3 +1,8 @@
+2005-12-13  Paul Brook  <paul@codesourcery.com>
+
+	* config/m68k/fpgnulib.c (__unordsf2, __unorddf2, __unordxf2,
+	__floatunsidf, __floatunsisf, __floatunsixf): New functions.
+
 2005-12-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/mt/t-mt (crti.o, crtn.o): Add multilib options.
