@@ -1,3 +1,13 @@
+2005-12-14  Ben Elliston  <bje@au.ibm.com>
+
+	* c-common.c (c_common_truthvalue_conversion): Generalise warning
+	for addresses converted to booleans; not just function addresses.
+	* c-typeck.c (build_binary_op): Warn for address comparisons which
+	can never be NULL (eg. func == NULL or &var == NULL).
+	* common.opt (Walways-true): New option.
+	* c-opts.c (c_common_handle_option): Set it with -Wall.
+	* doc/invoke.texi: Document it.
+
 2005-12-13  Paul Brook  <paul@codesourcery.com>
 
 	* config/m68k/fpgnulib.c (__unordsf2, __unorddf2, __unordxf2,

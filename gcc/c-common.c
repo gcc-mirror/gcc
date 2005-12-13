@@ -2407,12 +2407,12 @@ c_common_truthvalue_conversion (tree expr)
 
     case ADDR_EXPR:
       {
-	if (TREE_CODE (TREE_OPERAND (expr, 0)) == FUNCTION_DECL
+	if (DECL_P (TREE_OPERAND (expr, 0))
 	    && !DECL_WEAK (TREE_OPERAND (expr, 0)))
 	  {
 	    /* Common Ada/Pascal programmer's mistake.  We always warn
 	       about this since it is so bad.  */
-	    warning (0, "the address of %qD, will always evaluate as %<true%>",
+	    warning (OPT_Walways_true, "the address of %qD, will always evaluate as %<true%>",
 		     TREE_OPERAND (expr, 0));
 	    return truthvalue_true_node;
 	  }

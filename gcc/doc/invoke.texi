@@ -222,7 +222,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wextra  -Wall  -Waggregate-return -Wno-attributes @gol
+-w  -Wextra  -Wall  -Waggregate-return -Walways-true -Wno-attributes @gol
 -Wc++-compat -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  -Wno-endif-labels @gol
@@ -3111,6 +3111,11 @@ of @option{-Wextra} without this warning, use @samp{-Wextra -Wno-sign-compare}.
 Warn if any functions that return structures or unions are defined or
 called.  (In languages where you can return an array, this also elicits
 a warning.)
+
+@item -Walways-true
+@opindex Walways-true
+Warn about comparisons which are always true such as testing if unsigned
+values are greater than zero.
 
 @item -Wno-attributes
 @opindex Wno-attributes
