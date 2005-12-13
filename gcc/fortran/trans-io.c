@@ -791,6 +791,10 @@ gfc_trans_open (gfc_code * code)
   if (p->err)
     mask |= IOPARM_common_err;
 
+  if (p->convert)
+    mask |= set_string (&block, &post_block, var, IOPARM_open_convert,
+			p->convert);
+
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
   tmp = gfc_build_addr_expr (NULL_TREE, var);
@@ -1072,6 +1076,10 @@ gfc_trans_inquire (gfc_code * code)
 
   if (p->err)
     mask |= IOPARM_common_err;
+
+  if (p->convert)
+    mask |= set_string (&block, &post_block, var, IOPARM_inquire_convert,
+			p->convert);
 
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 

@@ -389,26 +389,89 @@ write_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 /* Master function for unformatted reads.  */
 
 static void
-unformatted_read (st_parameter_dt *dtp, bt type __attribute__((unused)),
-		  void *dest, int kind __attribute__((unused)),
+unformatted_read (st_parameter_dt *dtp, bt type,
+		  void *dest, int kind,
 		  size_t size, size_t nelems)
 {
-  size *= nelems;
-
-  read_block_direct (dtp, dest, &size);
+  /* Currently, character implies size=1.  */
+  if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE
+      || size == 1 || type == BT_CHARACTER)
+    {
+      size *= nelems;
+      read_block_direct (dtp, dest, &size);
+    }
+  else
+    {
+      char buffer[16];
+      char *p;
+      size_t i, sz;
+      
+      /* Break up complex into its constituent reals.  */
+      if (type == BT_COMPLEX)
+	{
+	  nelems *= 2;
+	  size /= 2;
+	}
+      p = dest;
+      
+      /* By now, all complex variables have been split into their
+	 constituent reals.  For types with padding, we only need to
+	 read kind bytes.  We don't care about the contents
+	 of the padding.  */
+      
+      sz = kind;
+      for (i=0; i<nelems; i++)
+	{
+ 	  read_block_direct (dtp, buffer, &sz);
+ 	  reverse_memcpy (p, buffer, sz);
+ 	  p += size;
+ 	}
+    }
 }
 
 
 /* Master function for unformatted writes.  */
 
 static void
-unformatted_write (st_parameter_dt *dtp, bt type __attribute__((unused)),
-		   void *source, int kind __attribute__((unused)),
+unformatted_write (st_parameter_dt *dtp, bt type,
+		   void *source, int kind,
 		   size_t size, size_t nelems)
 {
-  size *= nelems;
+  if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE ||
+      size == 1 || type == BT_CHARACTER)
+    {
+      size *= nelems;
 
-  write_block_direct (dtp, source, &size);
+      write_block_direct (dtp, source, &size);
+    }
+  else
+    {
+      char buffer[16];
+      char *p;
+      size_t i, sz;
+  
+      /* Break up complex into its constituent reals.  */
+      if (type == BT_COMPLEX)
+	{
+	  nelems *= 2;
+	  size /= 2;
+	}      
+
+      p = source;
+
+      /* By now, all complex variables have been split into their
+	 constituent reals.  For types with padding, we only need to
+	 read kind bytes.  We don't care about the contents
+	 of the padding.  */
+
+      sz = kind;
+      for (i=0; i<nelems; i++)
+	{
+	  reverse_memcpy(buffer, p, size);
+ 	  p+= size;
+	  write_block_direct (dtp, buffer, &sz);
+	}
+    }
 }
 
 
@@ -1139,7 +1202,12 @@ us_read (st_parameter_dt *dtp)
       return;
     }
 
-  memcpy (&i, p, sizeof (gfc_offset));
+  /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
+  if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE)
+    memcpy (&i, p, sizeof (gfc_offset));
+  else
+    reverse_memcpy (&i, p, sizeof (gfc_offset));
+    
   dtp->u.p.current_unit->bytes_left = i;
 }
 
@@ -1707,7 +1775,12 @@ next_record_w (st_parameter_dt *dtp)
       if (p == NULL)
 	goto io_error;
 
-      memcpy (p, &m, sizeof (gfc_offset));
+      /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
+      if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE)
+	memcpy (p, &m, sizeof (gfc_offset));
+      else
+	reverse_memcpy (p, &m, sizeof (gfc_offset));
+      
       if (sfree (dtp->u.p.current_unit->s) == FAILURE)
 	goto io_error;
 
@@ -1718,7 +1791,12 @@ next_record_w (st_parameter_dt *dtp)
       if (p == NULL)
 	generate_error (&dtp->common, ERROR_OS, NULL);
 
-      memcpy (p, &m, sizeof (gfc_offset));
+      /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
+      if (dtp->u.p.current_unit->flags.convert == CONVERT_NATIVE)
+	memcpy (p, &m, sizeof (gfc_offset));
+      else
+	reverse_memcpy (p, &m, sizeof (gfc_offset));
+	
       if (sfree (dtp->u.p.current_unit->s) == FAILURE)
 	goto io_error;
 
@@ -2145,4 +2223,20 @@ st_set_nml_var_dim (st_parameter_dt *dtp, GFC_INTEGER_4 n_dim,
   nml->dim[n].stride = (ssize_t)stride;
   nml->dim[n].lbound = (ssize_t)lbound;
   nml->dim[n].ubound = (ssize_t)ubound;
+}
+
+/* Reverse memcpy - used for byte swapping.  */
+
+void reverse_memcpy (void *dest, const void *src, size_t n)
+{
+  char *d, *s;
+  size_t i;
+
+  d = (char *) dest;
+  s = (char *) src + n - 1;
+
+  /* Write with ascending order - this is likely faster
+     on modern architectures because of write combining.  */
+  for (i=0; i<n; i++)
+      *(d++) = *(s--);
 }

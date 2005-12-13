@@ -114,7 +114,12 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
   if (p == NULL)
     goto io_error;
 
-  memcpy (&m, p, sizeof (gfc_offset));
+  /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
+  if (u->flags.convert == CONVERT_NATIVE)
+    memcpy (&m, p, sizeof (gfc_offset));
+  else
+    reverse_memcpy (&m, p, sizeof (gfc_offset));
+
   new = file_position (u->s) - m - 2*length;
   if (sseek (u->s, new) == FAILURE)
     goto io_error;

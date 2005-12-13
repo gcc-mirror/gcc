@@ -1,3 +1,10 @@
+2005-12-13  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/23815
+	* gfortran.dg/unf_io_convert_1.f90:  New test.
+	* gfortran.dg/unf_io_convert_2.f90:  New test.
+	* gfortran.dg/unf_io_convert_3.f90:  New test.
+
 2005-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/25023
