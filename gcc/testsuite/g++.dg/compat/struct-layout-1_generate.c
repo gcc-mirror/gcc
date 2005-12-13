@@ -19,23 +19,15 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
-/* Compile with gcc -I$(srcdir)/../include -{I,L}$(objdir)/../libiberty/ \
-   -o struct-layout-1_generate{,.c} generate_random{,_r}.c -liberty */
+/* Compile with gcc -o struct-layout-1_generate{,.c} generate_random{,_r}.c */
 
-#include "config.h"
-#ifdef HAVE_LIMITS_H
+/* N.B. -- This program cannot use libiberty as that will not work
+   when testing an installed compiler.  */
 #include <limits.h>
-#endif
-#include "libiberty.h"
 #include <stdio.h>
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
-#ifdef HAVE_STRING_H
 #include <string.h>
-#endif
-#include "hashtab.h"
-#include "getopt.h"
+#include <stddef.h>
 /* We use our own pseudo-random number generator, so that it gives the same
    values on all hosts.  */
 #include "../../gcc.dg/compat/generate-random.h"
@@ -43,6 +35,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #if LLONG_MAX != 9223372036854775807LL && __LONG_LONG_MAX__ != 9223372036854775807LL
 # error Need 64-bit long long
 #endif
+
+typedef unsigned int hashval_t;
 
 enum TYPE
 {
@@ -390,6 +384,8 @@ struct entry
   unsigned char arr_len;
   struct types *type;
   const char *attrib;
+  /* Used to chain together entries in the hash table.  */
+  struct entry *next;
 };
 struct types attrib_array_types[] = {
 { "Talx1char", TYPE_UINT, 127, 'C' },
@@ -478,6 +474,10 @@ struct types attrib_array_types[] = {
 #define NAATYPES2 (sizeof (attrib_array_types) / sizeof (attrib_array_types[0]))
 };
 
+/* A prime number giving the number of slots in the hash table.  */
+#define HASH_SIZE 32749
+static struct entry *hash_table[HASH_SIZE];
+
 static int idx, limidx, output_one;
 static const char *destdir;
 static const char *srcdir;
@@ -499,7 +499,9 @@ switchfiles (int fields)
   if (destbuf == NULL)
     {
       size_t len = strlen (destdir);
-      destbuf = xmalloc (len + 20);
+      destbuf = malloc (len + 20);
+      if (!destbuf)
+	abort ();
       memcpy (destbuf, destdir, len);
       if (!len || destbuf[len - 1] != '/')
 	destbuf[len++] = '/';
@@ -916,6 +918,130 @@ subvalues (struct entry *e, char *p, char *letter)
     }
 }
 
+/* DERIVED FROM:
+--------------------------------------------------------------------
+lookup2.c, by Bob Jenkins, December 1996, Public Domain.
+hash(), hash2(), hash3, and mix() are externally useful functions.
+Routines to test the hash are included if SELF_TEST is defined.
+You can use this free for any purpose.  It has no warranty.
+--------------------------------------------------------------------
+*/
+
+/*
+--------------------------------------------------------------------
+mix -- mix 3 32-bit values reversibly.
+For every delta with one or two bit set, and the deltas of all three
+  high bits or all three low bits, whether the original value of a,b,c
+  is almost all zero or is uniformly distributed,
+* If mix() is run forward or backward, at least 32 bits in a,b,c
+  have at least 1/4 probability of changing.
+* If mix() is run forward, every bit of c will change between 1/3 and
+  2/3 of the time.  (Well, 22/100 and 78/100 for some 2-bit deltas.)
+mix() was built out of 36 single-cycle latency instructions in a 
+  structure that could supported 2x parallelism, like so:
+      a -= b; 
+      a -= c; x = (c>>13);
+      b -= c; a ^= x;
+      b -= a; x = (a<<8);
+      c -= a; b ^= x;
+      c -= b; x = (b>>13);
+      ...
+  Unfortunately, superscalar Pentiums and Sparcs can't take advantage 
+  of that parallelism.  They've also turned some of those single-cycle
+  latency instructions into multi-cycle latency instructions.  Still,
+  this is the fastest good hash I could find.  There were about 2^^68
+  to choose from.  I only looked at a billion or so.
+--------------------------------------------------------------------
+*/
+/* same, but slower, works on systems that might have 8 byte hashval_t's */
+#define mix(a,b,c) \
+{ \
+  a -= b; a -= c; a ^= (c>>13); \
+  b -= c; b -= a; b ^= (a<< 8); \
+  c -= a; c -= b; c ^= ((b&0xffffffff)>>13); \
+  a -= b; a -= c; a ^= ((c&0xffffffff)>>12); \
+  b -= c; b -= a; b = (b ^ (a<<16)) & 0xffffffff; \
+  c -= a; c -= b; c = (c ^ (b>> 5)) & 0xffffffff; \
+  a -= b; a -= c; a = (a ^ (c>> 3)) & 0xffffffff; \
+  b -= c; b -= a; b = (b ^ (a<<10)) & 0xffffffff; \
+  c -= a; c -= b; c = (c ^ (b>>15)) & 0xffffffff; \
+}
+
+/*
+--------------------------------------------------------------------
+hash() -- hash a variable-length key into a 32-bit value
+  k     : the key (the unaligned variable-length array of bytes)
+  len   : the length of the key, counting by bytes
+  level : can be any 4-byte value
+Returns a 32-bit value.  Every bit of the key affects every bit of
+the return value.  Every 1-bit and 2-bit delta achieves avalanche.
+About 36+6len instructions.
+
+The best hash table sizes are powers of 2.  There is no need to do
+mod a prime (mod is sooo slow!).  If you need less than 32 bits,
+use a bitmask.  For example, if you need only 10 bits, do
+  h = (h & hashmask(10));
+In which case, the hash table should have hashsize(10) elements.
+
+If you are hashing n strings (ub1 **)k, do it like this:
+  for (i=0, h=0; i<n; ++i) h = hash( k[i], len[i], h);
+
+By Bob Jenkins, 1996.  bob_jenkins@burtleburtle.net.  You may use this
+code any way you wish, private, educational, or commercial.  It's free.
+
+See http://burtleburtle.net/bob/hash/evahash.html
+Use for hash table lookup, or anything where one collision in 2^32 is
+acceptable.  Do NOT use for cryptographic purposes.
+--------------------------------------------------------------------
+*/
+
+static hashval_t
+iterative_hash (const void *k_in /* the key */,
+		register size_t  length /* the length of the key */,
+		register hashval_t initval /* the previous hash, or
+					      an arbitrary value */)
+{
+  register const unsigned char *k = (const unsigned char *)k_in;
+  register hashval_t a,b,c,len;
+
+  /* Set up the internal state */
+  len = length;
+  a = b = 0x9e3779b9;  /* the golden ratio; an arbitrary value */
+  c = initval;	   /* the previous hash value */
+
+  /*---------------------------------------- handle most of the key */
+    while (len >= 12)
+      {
+	a += (k[0] +((hashval_t)k[1]<<8) +((hashval_t)k[2]<<16) +((hashval_t)k[3]<<24));
+	b += (k[4] +((hashval_t)k[5]<<8) +((hashval_t)k[6]<<16) +((hashval_t)k[7]<<24));
+	c += (k[8] +((hashval_t)k[9]<<8) +((hashval_t)k[10]<<16)+((hashval_t)k[11]<<24));
+	mix(a,b,c);
+	k += 12; len -= 12;
+      }
+
+  /*------------------------------------- handle the last 11 bytes */
+  c += length;
+  switch(len)	      /* all the case statements fall through */
+    {
+    case 11: c+=((hashval_t)k[10]<<24);
+    case 10: c+=((hashval_t)k[9]<<16);
+    case 9 : c+=((hashval_t)k[8]<<8);
+      /* the first byte of c is reserved for the length */
+    case 8 : b+=((hashval_t)k[7]<<24);
+    case 7 : b+=((hashval_t)k[6]<<16);
+    case 6 : b+=((hashval_t)k[5]<<8);
+    case 5 : b+=k[4];
+    case 4 : a+=((hashval_t)k[3]<<24);
+    case 3 : a+=((hashval_t)k[2]<<16);
+    case 2 : a+=((hashval_t)k[1]<<8);
+    case 1 : a+=k[0];
+      /* case 0: nothing left to add */
+    }
+  mix(a,b,c);
+  /*-------------------------------------------- report the result */
+  return c;
+}
+
 hashval_t
 e_hash (const void *a)
 {
@@ -961,24 +1087,45 @@ e_eq (const void *a, const void *b)
   return 1;
 }
 
-htab_t hasht;
+static int 
+e_exists (const struct entry *e) 
+{
+  struct entry *h;
+  hashval_t hval;
+
+  hval = e_hash (e);
+  for (h = hash_table[hval % HASH_SIZE]; h; h = h->next)
+    if (e_eq (e, h))
+      return 1;
+  return 0;
+}
+
+static void
+e_insert (struct entry *e)
+{
+  hashval_t hval;
+
+  hval = e_hash (e);
+  e->next = hash_table[hval % HASH_SIZE];
+  hash_table[hval % HASH_SIZE] = e;
+}
 
 void
 output (struct entry *e)
 {
   int i;
   char c;
-  void **p;
+  struct entry *n;
 
   if (e[0].etype != ETYPE_STRUCT && e[0].etype != ETYPE_UNION)
     abort ();
 
-  p = htab_find_slot (hasht, e, INSERT);
-  if (*p != NULL)
+  if (e_exists (e))
     return;
 
-  *p = malloc ((e[0].len + 1) * sizeof (struct entry));
-  memcpy (*p, e, (e[0].len + 1) * sizeof (struct entry));
+  n = (struct entry *) malloc ((e[0].len + 1) * sizeof (struct entry));
+  memcpy (n, e, (e[0].len + 1) * sizeof (struct entry));
+  e_insert (n);
 
   if (idx == limidx)
     switchfiles (e[0].len);
@@ -1357,29 +1504,41 @@ int
 main (int argc, char **argv)
 {
   int i, j, count, c, n = 3000;
+  char *optarg;
 
   if (sizeof (int) != 4 || sizeof (long long) != 8)
     return 1;
-
-  while ((c = getopt (argc, argv, "d:i:n:s:")) != -1)
-    switch (c)
-      {
-      case 'n':
-	n = atoi (optarg);
-	break;
-      case 'd':
-	destdir = optarg;
-	break;
-      case 's':
-	srcdir = optarg;
-	break;
-      case 'i':
-	output_one = 1;
-	limidx = atoi (optarg);
-	break;
-      default:
+  
+  i = 1;
+  while (i < argc) 
+    {
+      c = '\0';
+      if (argv[i][0] == '-' && argv[i][2] == '\0')
+	c = argv[i][1];
+      optarg = argv[i + 1];
+      if (!optarg)
 	goto usage;
+      switch (c)
+	{
+	case 'n':
+	  n = atoi (optarg);
+	  break;
+	case 'd':
+	  destdir = optarg;
+	  break;
+	case 's':
+	  srcdir = optarg;
+	  break;
+	case 'i':
+	  output_one = 1;
+	  limidx = atoi (optarg);
+	  break;
+	default:
+	  fprintf (stderr, "unrecognized option %s\n", argv[i]);
+	  goto usage;
       }
+      i += 2;
+    }
 
   if (output_one)
     {
@@ -1404,7 +1563,6 @@ Either -s srcdir -d destdir or -i idx must be used\n", argv[0]);
   if (srcdir == NULL && !output_one)
     goto usage;
 
-  hasht = htab_create (40000, e_hash, e_eq, NULL);
   for (i = 0; i < NTYPES2; ++i)
     if (base_types[i].bitfld)
       bitfld_types[n_bitfld_types++] = base_types[i];
