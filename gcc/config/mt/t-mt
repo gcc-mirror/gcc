@@ -59,8 +59,8 @@ crtn.o: $(srcdir)/config/mt/crtn.asm $(GCC_PASSES)
 # See gcc/genmultilib, gcc/gcc.texi and gcc/tm.texi for a
 # description of the options and their values.
 #
-MULTILIB_OPTIONS    = march=ms1-64-001/march=ms1-16-002/march=ms1-16-003
-MULTILIB_DIRNAMES   = 64-001 16-002 16-003
+MULTILIB_OPTIONS    = march=ms1-64-001/march=ms1-16-002/march=ms1-16-003/march=ms2
+MULTILIB_DIRNAMES   = ms1-64-001 ms1-16-002 ms1-16-003 ms2
 # MULTILIB_MATCHES    =
 # MULTILIB_EXCEPTIONS =
 # MULTILIB_EXTRA_OPTS = 
