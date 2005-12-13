@@ -1,10 +1,15 @@
+2005-12-13  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/bpabi.h (SUBTARGET_EXTRA_ASM_SPEC): Pass -meabi=gnu for
+	apcs/atpcs.
+
 2005-12-11 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
 
-        * tree-flow.h: Allow compilation with a C++ compiler.
-        (struct edge_prediction): Prefix all field names  with "ep_".
-        * predict.c (tree_predicted_by_p): Likewise for struct edge_prediction.
-        (tree_predict_edge, combine_predictions_for_bb): Likewise.
-        (remove_predictions_associated_with_edge): Likewise.
+	* tree-flow.h: Allow compilation with a C++ compiler.
+	(struct edge_prediction): Prefix all field names  with "ep_".
+	* predict.c (tree_predicted_by_p): Likewise for struct edge_prediction.
+	(tree_predict_edge, combine_predictions_for_bb): Likewise.
+	(remove_predictions_associated_with_edge): Likewise.
 	
 2005-12-12  Jeff Law  <law@redhat.com>
 
