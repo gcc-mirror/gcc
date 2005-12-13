@@ -18,7 +18,7 @@ libgfortranbegin_la_LDFLAGS = -static
 ## use -iquote
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(srcdir)/$(MULTISRCTOP)../gcc/config \
-	      -I$(MULTIBUILDTOP)../../gcc -D_GNU_SOURCE
+	      -I$(MULTIBUILDTOP)../../$(host_subdir)/gcc -D_GNU_SOURCE
 
 gfor_io_src= \
 io/close.c \
