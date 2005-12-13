@@ -1,3 +1,7 @@
+2005-12-14  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/warn-addr-cmp.c: New test.
+
 2005-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/25023

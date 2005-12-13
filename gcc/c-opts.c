@@ -387,6 +387,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       warn_switch = value;
       warn_strict_aliasing = value;
       warn_string_literal_comparison = value;
+      warn_always_true = value;
 
       /* Only warn about unknown pragmas that are not in system
 	 headers.  */
