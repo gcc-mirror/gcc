@@ -44,9 +44,12 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
 
   if (result)
     return result;
-  else if (REG_P (x))
+  /* If it's a REG, it must be a hard reg that's not valid in MODE.  */
+  else if (REG_P (x)
+	   /* Or we could have a subreg of a floating point value.  */
+	   || (GET_CODE (x) == SUBREG
+	       && FLOAT_MODE_P (GET_MODE (SUBREG_REG (x)))))
     {
-      /* Must be a hard reg that's not valid in MODE.  */
       result = gen_lowpart_common (mode, copy_to_reg (x));
       gcc_assert (result != 0);
       return result;
