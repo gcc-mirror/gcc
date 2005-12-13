@@ -60,7 +60,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 static bool first_pass;
 static bool try_crossjump_to_edge (int, edge, edge);
 static bool try_crossjump_bb (int, basic_block);
-static bool outgoing_edges_match (int, basic_block, basic_block);
+static bool outgoing_edges_match (int *, struct equiv_info *);
 
 static void merge_blocks_move_predecessor_nojumps (basic_block, basic_block);
 static void merge_blocks_move_successor_nojumps (basic_block, basic_block);
@@ -879,19 +879,19 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 }
 
 /* Return true iff the condbranches at the end of BB1 and BB2 match.  */
-static bool
-condjump_equiv_p (basic_block bb1, basic_block bb2)
+bool
+condjump_equiv_p (struct equiv_info *info, bool call_init)
 {
-  edge b1, f1, b2, f2;
+  basic_block bb1 = info->x_block;
+  basic_block bb2 = info->y_block;
+  edge b1 = BRANCH_EDGE (bb1);
+  edge b2 = BRANCH_EDGE (bb2);
+  edge f1 = FALLTHRU_EDGE (bb1);
+  edge f2 = FALLTHRU_EDGE (bb2);
   bool reverse, match;
   rtx set1, set2, cond1, cond2;
+  rtx src1, src2;
   enum rtx_code code1, code2;
-
-
-  b1 = BRANCH_EDGE (bb1);
-  b2 = BRANCH_EDGE (bb2);
-  f1 = FALLTHRU_EDGE (bb1);
-  f2 = FALLTHRU_EDGE (bb2);
 
   /* Get around possible forwarders on fallthru edges.  Other cases
      should be optimized out already.  */
@@ -923,8 +923,10 @@ condjump_equiv_p (basic_block bb1, basic_block bb2)
       != (XEXP (SET_SRC (set2), 1) == pc_rtx))
     reverse = !reverse;
 
-  cond1 = XEXP (SET_SRC (set1), 0);
-  cond2 = XEXP (SET_SRC (set2), 0);
+  src1 = SET_SRC (set1);
+  src2 = SET_SRC (set2);
+  cond1 = XEXP (src1, 0);
+  cond2 = XEXP (src2, 0);
   code1 = GET_CODE (cond1);
   if (reverse)
     code2 = reversed_comparison_code (cond2, BB_END (bb2));
@@ -934,15 +936,35 @@ condjump_equiv_p (basic_block bb1, basic_block bb2)
   if (code2 == UNKNOWN)
     return false;
 
+  if (call_init && !struct_equiv_init (STRUCT_EQUIV_START | info->mode, info))
+    gcc_unreachable ();
+  /* Make the sources of the pc sets unreadable so that when we call
+     insns_match_p it won't process them.
+     The death_notes_match_p from insns_match_p won't see the local registers
+     used for the pc set, but that could only cause missed optimizations when
+     there are actually condjumps that use stack registers.  */
+  SET_SRC (set1) = pc_rtx;
+  SET_SRC (set2) = pc_rtx;
   /* Verify codes and operands match.  */
-  match = ((code1 == code2
-            && rtx_renumbered_equal_p (XEXP (cond1, 0), XEXP (cond2, 0))
-            && rtx_renumbered_equal_p (XEXP (cond1, 1), XEXP (cond2, 1)))
-           || (code1 == swap_condition (code2)
-               && rtx_renumbered_equal_p (XEXP (cond1, 1),
-                                          XEXP (cond2, 0))
-               && rtx_renumbered_equal_p (XEXP (cond1, 0),
-                                          XEXP (cond2, 1))));
+  if (code1 == code2)
+    {
+      match = (insns_match_p (BB_END (bb1), BB_END (bb2), info)
+	       && rtx_equiv_p (&XEXP (cond1, 0), XEXP (cond2, 0), 1, info)
+	       && rtx_equiv_p (&XEXP (cond1, 1), XEXP (cond2, 1), 1, info));
+
+    }
+  else if (code1 == swap_condition (code2))
+    {
+      match = (insns_match_p (BB_END (bb1), BB_END (bb2), info)
+	       && rtx_equiv_p (&XEXP (cond1, 1), XEXP (cond2, 0), 1, info)
+	       && rtx_equiv_p (&XEXP (cond1, 0), XEXP (cond2, 1), 1, info));
+
+    }
+  else
+    match = false;
+  SET_SRC (set1) = src1;
+  SET_SRC (set2) = src2;
+  match &= verify_changes (0);
 
   /* If we return true, we will join the blocks.  Which means that
      we will only have one branch prediction bit to work with.  Thus
@@ -971,7 +993,7 @@ condjump_equiv_p (basic_block bb1, basic_block bb2)
 		     "Outcomes of branch in bb %i and %i differ too much (%i %i)\n",
 		     bb1->index, bb2->index, b1->probability, prob2);
 
-	  return false;
+	  match = false;
 	}
     }
 
@@ -979,17 +1001,25 @@ condjump_equiv_p (basic_block bb1, basic_block bb2)
     fprintf (dump_file, "Conditionals in bb %i and %i match.\n",
 	     bb1->index, bb2->index);
 
+  if (!match)
+    cancel_changes (0);
   return match;
 }
-/* Return true iff outgoing edges of BB1 and BB2 match, together with
-   the branch instruction.  This means that if we commonize the control
-   flow before end of the basic block, the semantic remains unchanged.
+
+/* Return true iff outgoing edges of INFO->y_block and INFO->x_block match,
+   together with the branch instruction.  This means that if we commonize the
+   control flow before end of the basic block, the semantic remains unchanged.
+   If we need to compare jumps, we set STRUCT_EQUIV_MATCH_JUMPS in *MODE,
+   and pass *MODE to struct_equiv_init or assign it to INFO->mode, as
+   appropriate.
 
    We may assume that there exists one edge with a common destination.  */
 
 static bool
-outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
+outgoing_edges_match (int *mode, struct equiv_info *info)
 {
+  basic_block bb1 = info->y_block;
+  basic_block bb2 = info->x_block;
   int nehedges1 = 0, nehedges2 = 0;
   edge fallthru1 = 0, fallthru2 = 0;
   edge e1, e2;
@@ -1005,6 +1035,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 		& (EDGE_COMPLEX | EDGE_FAKE)) == 0
 	    && (!JUMP_P (BB_END (bb2)) || simplejump_p (BB_END (bb2))));
 
+  *mode |= STRUCT_EQUIV_MATCH_JUMPS;
   /* Match conditional jumps - this may get tricky when fallthru and branch
      edges are crossed.  */
   if (EDGE_COUNT (bb1->succs) == 2
@@ -1015,7 +1046,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	  || !any_condjump_p (BB_END (bb2))
 	  || !onlyjump_p (BB_END (bb2)))
 	return false;
-      return condjump_equiv_p (bb1, bb2);
+      info->mode = *mode;
+      return condjump_equiv_p (info, true);
     }
 
   /* Generic case - we are seeing a computed jump, table jump or trapping
@@ -1063,30 +1095,21 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 		      identical = false;
 		}
 
-	      if (identical)
+	      if (identical
+		  && struct_equiv_init (STRUCT_EQUIV_START | *mode, info))
 		{
-		  replace_label_data rr;
 		  bool match;
 
-		  /* Temporarily replace references to LABEL1 with LABEL2
+		  /* Indicate that LABEL1 is to be replaced with LABEL2
 		     in BB1->END so that we could compare the instructions.  */
-		  rr.r1 = label1;
-		  rr.r2 = label2;
-		  rr.update_label_nuses = false;
-		  for_each_rtx (&BB_END (bb1), replace_label, &rr);
+		  info->y_label = label1;
+		  info->x_label = label2;
 
-		  match = insns_match_p (mode, BB_END (bb1), BB_END (bb2));
+		  match = insns_match_p (BB_END (bb1), BB_END (bb2), info);
 		  if (dump_file && match)
 		    fprintf (dump_file,
 			     "Tablejumps in bb %i and %i match.\n",
 			     bb1->index, bb2->index);
-
-		  /* Set the original label in BB1->END because when deleting
-		     a block whose end is a tablejump, the tablejump referenced
-		     from the instruction is deleted too.  */
-		  rr.r1 = label2;
-		  rr.r2 = label1;
-		  for_each_rtx (&BB_END (bb1), replace_label, &rr);
 
 		  return match;
 		}
@@ -1097,7 +1120,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 
   /* First ensure that the instructions match.  There may be many outgoing
      edges so this test is generally cheaper.  */
-  if (!insns_match_p (mode, BB_END (bb1), BB_END (bb2)))
+  if (!struct_equiv_init (STRUCT_EQUIV_START | *mode, info)
+      || !insns_match_p (BB_END (bb1), BB_END (bb2), info))
     return false;
 
   /* Search the outgoing edges, ensure that the counts do match, find possible
@@ -1163,14 +1187,13 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 static bool
 try_crossjump_to_edge (int mode, edge e1, edge e2)
 {
-  int nmatch;
+  int nmatch, i;
   basic_block src1 = e1->src, src2 = e2->src;
   basic_block redirect_to, redirect_from, to_remove;
-  rtx newpos1, newpos2;
   edge s;
   edge_iterator ei;
-
-  newpos1 = newpos2 = NULL_RTX;
+  struct equiv_info info;
+  rtx x_active, y_active;
 
   /* If we have partitioned hot/cold basic blocks, it is a bad idea
      to try this optimization.
@@ -1217,19 +1240,66 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
     return false;
 
   /* Look for the common insn sequence, part the first ...  */
-  if (!outgoing_edges_match (mode, src1, src2))
+  info.x_block = src2;
+  info.y_block = src1;
+  if (!outgoing_edges_match (&mode, &info))
     return false;
 
   /* ... and part the second.  */
-  nmatch = flow_find_cross_jump (mode, src1, src2, &newpos1, &newpos2);
+  info.input_cost = optimize_size ? COSTS_N_INSNS (1) : -1;
+  nmatch = struct_equiv_block_eq (STRUCT_EQUIV_START | mode, &info);
 
   /* Don't proceed with the crossjump unless we found a sufficient number
      of matching instructions or the 'from' block was totally matched
      (such that its predecessors will hopefully be redirected and the
      block removed).  */
-  if ((nmatch < PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS))
-      && (newpos1 != BB_HEAD (src1)))
+  if (!nmatch)
     return false;
+  if ((nmatch -info.cur.input_count < PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS))
+      && (info.cur.y_start != BB_HEAD (src1)))
+    return false;
+  while (info.need_rerun)
+    {
+      nmatch = struct_equiv_block_eq (STRUCT_EQUIV_RERUN | mode, &info);
+      if (!nmatch)
+	return false;
+      if ((nmatch -info.cur.input_count < PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS))
+	   && (info.cur.y_start != BB_HEAD (src1)))
+	return false;
+    }
+  nmatch = struct_equiv_block_eq (STRUCT_EQUIV_FINAL | mode, &info);
+  if ((nmatch -info.cur.input_count < PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS))
+      && (info.cur.y_start != BB_HEAD (src1)))
+    return false;
+
+  /* Skip possible basic block header.  */
+  x_active = info.cur.x_start;
+  if (LABEL_P (x_active))
+    x_active = NEXT_INSN (x_active);
+  if (NOTE_P (x_active))
+    x_active = NEXT_INSN (x_active);
+
+  y_active = info.cur.y_start;
+  if (LABEL_P (y_active))
+    y_active = NEXT_INSN (y_active);
+  if (NOTE_P (y_active))
+    y_active = NEXT_INSN (y_active);
+
+  /* In order for this code to become active, either we have to be called
+     before reload, or struct_equiv_block_eq needs to add register scavenging
+     code to allocate input_reg after reload.  */
+  if (info.input_reg)
+    {
+      emit_insn_before (gen_move_insn (info.input_reg, info.x_input),
+			x_active);
+      emit_insn_before (gen_move_insn (info.input_reg, info.y_input),
+			y_active);
+    }
+
+  for (i = 0; i < info.cur.local_count; i++)
+    if (info.local_rvalue[i])
+      emit_insn_before (gen_move_insn (info.x_local[i], info.y_local[i]),
+			y_active);
 
   /* Here we know that the insns in the end of SRC1 which are common with SRC2
      will be deleted.
@@ -1265,30 +1335,36 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   /* Avoid splitting if possible.  We must always split when SRC2 has
      EH predecessor edges, or we may end up with basic blocks with both
      normal and EH predecessor edges.  */
-  if (newpos2 == BB_HEAD (src2)
+  if (info.cur.x_start == BB_HEAD (src2)
       && !(EDGE_PRED (src2, 0)->flags & EDGE_EH))
     redirect_to = src2;
   else
     {
-      if (newpos2 == BB_HEAD (src2))
+      if (info.cur.x_start == BB_HEAD (src2))
 	{
 	  /* Skip possible basic block header.  */
-	  if (LABEL_P (newpos2))
-	    newpos2 = NEXT_INSN (newpos2);
-	  if (NOTE_P (newpos2))
-	    newpos2 = NEXT_INSN (newpos2);
+	  if (LABEL_P (info.cur.x_start))
+	    info.cur.x_start = NEXT_INSN (info.cur.x_start);
+	  if (NOTE_P (info.cur.x_start))
+	    info.cur.x_start = NEXT_INSN (info.cur.x_start);
 	}
 
       if (dump_file)
 	fprintf (dump_file, "Splitting bb %i before %i insns\n",
 		 src2->index, nmatch);
-      redirect_to = split_block (src2, PREV_INSN (newpos2))->dest;
+      redirect_to = split_block (src2, PREV_INSN (info.cur.x_start))->dest;
+      COPY_REG_SET (info.y_block->il.rtl->global_live_at_end,
+		    info.x_block->il.rtl->global_live_at_end);
     }
 
   if (dump_file)
-    fprintf (dump_file,
-	     "Cross jumping from bb %i to bb %i; %i common insns\n",
-	     src1->index, src2->index, nmatch);
+    {
+      fprintf (dump_file, "Cross jumping from bb %i to bb %i; %i common insns",
+	       src1->index, src2->index, nmatch);
+      if (info.cur.local_count)
+	fprintf (dump_file, ", %i local registers", info.cur.local_count);
+       fprintf (dump_file, "\n");
+    }
 
   redirect_to->count += src1->count;
   redirect_to->frequency += src1->frequency;
@@ -1352,14 +1428,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
 
   /* Edit SRC1 to go to REDIRECT_TO at NEWPOS1.  */
 
-  /* Skip possible basic block header.  */
-  if (LABEL_P (newpos1))
-    newpos1 = NEXT_INSN (newpos1);
-
-  if (NOTE_P (newpos1))
-    newpos1 = NEXT_INSN (newpos1);
-
-  redirect_from = split_block (src1, PREV_INSN (newpos1))->src;
+  redirect_from = split_block (src1, PREV_INSN (y_active))->src;
   to_remove = single_succ (redirect_from);
 
   redirect_edge_and_branch_force (single_succ_edge (redirect_from), redirect_to);

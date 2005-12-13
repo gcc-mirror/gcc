@@ -339,7 +339,7 @@ num_changes_pending (void)
 /* Tentatively apply the changes numbered NUM and up.
    Return 1 if all changes are valid, zero otherwise.  */
 
-static int
+int
 verify_changes (int num)
 {
   int i;

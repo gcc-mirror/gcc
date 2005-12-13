@@ -643,7 +643,8 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
 
       /* If asked, remove notes from the blocks we'll update.  */
       if (extent == UPDATE_LIFE_GLOBAL_RM_NOTES)
-	count_or_remove_death_notes (blocks, 1);
+	count_or_remove_death_notes (blocks,
+				     prop_flags & PROP_POST_REGSTACK ? -1 : 1);
     }
 
   /* Clear log links in case we are asked to (re)compute them.  */
@@ -2926,7 +2927,13 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 	      if (flags & PROP_REG_INFO)
 		REG_N_DEATHS (regno_first) += 1;
 
-	      if (flags & PROP_DEATH_NOTES)
+	      if (flags & PROP_DEATH_NOTES
+#ifdef STACK_REGS
+		  && (!(flags & PROP_POST_REGSTACK)
+		      || !IN_RANGE (REGNO (reg), FIRST_STACK_REG,
+				    LAST_STACK_REG))
+#endif
+		  )
 		{
 		  /* Note that dead stores have already been deleted
 		     when possible.  If we get here, we have found a
@@ -2939,7 +2946,13 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 	    }
 	  else
 	    {
-	      if (flags & PROP_DEATH_NOTES)
+	      if (flags & PROP_DEATH_NOTES
+#ifdef STACK_REGS
+		  && (!(flags & PROP_POST_REGSTACK)
+		      || !IN_RANGE (REGNO (reg), FIRST_STACK_REG,
+				    LAST_STACK_REG))
+#endif
+		  )
 		{
 		  /* This is a case where we have a multi-word hard register
 		     and some, but not all, of the words of the register are
@@ -2998,7 +3011,12 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
      here and count it.  */
   else if (GET_CODE (reg) == SCRATCH)
     {
-      if (flags & PROP_DEATH_NOTES)
+      if (flags & PROP_DEATH_NOTES
+#ifdef STACK_REGS
+	  && (!(flags & PROP_POST_REGSTACK)
+	      || !IN_RANGE (REGNO (reg), FIRST_STACK_REG, LAST_STACK_REG))
+#endif
+	  )
 	REG_NOTES (insn)
 	  = alloc_EXPR_LIST (REG_UNUSED, reg, REG_NOTES (insn));
     }
@@ -3764,6 +3782,10 @@ mark_used_reg (struct propagate_block_info *pbi, rtx reg,
       if (! some_was_live)
 	{
 	  if ((pbi->flags & PROP_DEATH_NOTES)
+#ifdef STACK_REGS
+	      && (!(pbi->flags & PROP_POST_REGSTACK)
+		  || !IN_RANGE (REGNO (reg), FIRST_STACK_REG, LAST_STACK_REG))
+#endif
 	      && ! find_regno_note (insn, REG_DEAD, regno_first))
 	    REG_NOTES (insn)
 	      = alloc_EXPR_LIST (REG_DEAD, reg, REG_NOTES (insn));
@@ -4385,7 +4407,9 @@ struct tree_opt_pass pass_recompute_reg_usage =
 
 /* Optionally removes all the REG_DEAD and REG_UNUSED notes from a set of
    blocks.  If BLOCKS is NULL, assume the universal set.  Returns a count
-   of the number of registers that died.  */
+   of the number of registers that died.
+   If KILL is 1, remove old REG_DEAD / REG_UNUSED notes.  If it is 0, don't.
+   if it is -1, remove them unless they pertain to a stack reg.  */
 
 int
 count_or_remove_death_notes (sbitmap blocks, int kill)
@@ -4457,7 +4481,14 @@ count_or_remove_death_notes_bb (basic_block bb, int kill)
 		  /* Fall through.  */
 
 		case REG_UNUSED:
-		  if (kill)
+		  if (kill > 0
+		      || (kill
+#ifdef STACK_REGS
+			  && (!REG_P (XEXP (link, 0))
+			      || !IN_RANGE (REGNO (XEXP (link, 0)),
+					    FIRST_STACK_REG, LAST_STACK_REG))
+#endif
+			  ))
 		    {
 		      rtx next = XEXP (link, 1);
 		      free_EXPR_LIST_node (link);
