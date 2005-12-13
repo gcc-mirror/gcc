@@ -2894,7 +2894,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
   name = &expr->value.function.name[2];
 
-  if (expr->rank > 0)
+  if (expr->rank > 0 && !expr->inline_noncopying_intrinsic)
     {
       lib = gfc_is_intrinsic_libcall (expr);
       if (lib != 0)
@@ -3117,6 +3117,16 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_LBOUND:
       gfc_conv_intrinsic_bound (se, expr, 0);
+      break;
+
+    case GFC_ISYM_TRANSPOSE:
+      if (se->ss && se->ss->useflags)
+	{
+	  gfc_conv_tmp_array_ref (se);
+	  gfc_advance_se_ss_chain (se);
+	}
+      else
+	gfc_conv_array_transpose (se, expr->value.function.actual->expr);
       break;
 
     case GFC_ISYM_LEN:

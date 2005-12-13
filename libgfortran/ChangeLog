@@ -1,3 +1,13 @@
+2005-12-13  Richard Sandiford  <richard@codesourcery.com>
+	    Victor Leikehman  <LEI@il.ibm.com>
+
+	* m4/matmul.m4: Use a different order in the special case of a
+	transposed first argument.
+	* generated/matmul_c4.c, generated/matmul_c8.c, generated/matmul_c10.c,
+	* generated/matmul_c16.c, generated/matmul_i4.c, generated/matmul_i8.c,
+	* generated/matmul_i10.c, generated/matmul_r4.c, generated/matmul_r8.c
+	* generated/matmul_r10.c, generated/matmul_r16.c: Regenerated.
+
 2005-12-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* Makefile.am: Enable loop unrolling for matmul.
