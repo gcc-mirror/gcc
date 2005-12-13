@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc-*-* rs6000-*-* }  } */
+/* { dg-do compile { target { ilp32 } } } */
 /* { dg-options "-O3 -mcpu=power2 -fno-schedule-insns -w -mhard-float" } */
 /* This used to ICE as the peephole was not checking to see
    if the register is a floating point one (I think this cannot

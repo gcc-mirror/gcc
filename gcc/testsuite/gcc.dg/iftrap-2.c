@@ -1,6 +1,6 @@
 /* Verify that we optimize to conditional traps.  */
 /* { dg-options "-O" } */
-/* { dg-do compile { target rs6000-*-* powerpc-*-* sparc*-*-* ia64-*-* } } */
+/* { dg-do compile { target rs6000-*-* powerpc*-*-* sparc*-*-* ia64-*-* } } */
 /* { dg-final { scan-assembler-not "^\t(trap|ta|break)\[ \t\]" } } */
 
 extern void abort(void);

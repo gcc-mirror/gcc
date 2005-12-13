@@ -1,6 +1,6 @@
 /* Verify that constant equivalences get reloaded properly, either by being
    spilled to the stack, or regenerated, but not dropped to memory.  */
-/* { dg-do compile { target i?86-*-* powerpc-*-* rs6000-*-* alpha*-*-* x86_64-*-*} } */
+/* { dg-do compile { target { { i?86-*-* rs6000-*-* alpha*-*-* x86_64-*-* } || { powerpc*-*-* && ilp32 } } } } */
 /* { dg-options "-O2 -fpic -fno-omit-frame-pointer -fno-asynchronous-unwind-tables" } */
 /* { dg-final { scan-assembler-not "LC\[0-9\]" } } */
 

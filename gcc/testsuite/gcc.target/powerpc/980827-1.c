@@ -1,4 +1,4 @@
-/* { dg-do run { target rs6000-*-linux* powerpc-*-linux*} } */
+/* { dg-do run { target { *-*-linux* && ilp32 } } } */
 /* { dg-options -O2 } */
 
 extern void exit (int);

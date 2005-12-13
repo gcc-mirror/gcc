@@ -2,7 +2,7 @@
    If so, "bdnz" will be generated on ppc; if not,
    you will get "ble" or "blt" or "bge".  */
 
-/* { dg-do compile { target powerpc-*-* } } */
+/* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-options "-O2" } */
 void foo (int count, char* pca, char* pcb) {
     int i;

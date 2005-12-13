@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
-/* { dg-options "-mminimal-toc" { target powerpc64-*-* powerpc-ibm-aix* } } */
+/* { dg-options "-mminimal-toc" { target { { powerpc*-*-* && lp64 } || { powerpc-ibm-aix* } } } } */
 
 extern void abort (void);
 extern void exit (int);

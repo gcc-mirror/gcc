@@ -12,6 +12,6 @@ _Bool f1(_Bool x)
 
 /* There should be no subfe for powerpc. Checking if we actually optimizated
    away the comparision.  */
-/* { dg-final { scan-assembler-times "subfe" 0 { target powerpc-*-* } } } */
+/* { dg-final { scan-assembler-times "subfe" 0 { target powerpc*-*-* } } } */
 
 /* { dg-final { cleanup-tree-dump "optimized" } } */

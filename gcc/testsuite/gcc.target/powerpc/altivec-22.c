@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc-*-* } } */
+/* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
 /* { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } } */
 /* { dg-options "-O3 -maltivec" } */
 /* { dg-final { scan-assembler-not "mfcr" } } */

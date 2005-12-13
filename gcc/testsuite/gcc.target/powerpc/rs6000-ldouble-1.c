@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc*-*-darwin* powerpc*-*-aix* powerpc64-*-linux rs6000-*-* } } */
+/* { dg-do run { target { { powerpc*-*-darwin* powerpc*-*-aix* rs6000-*-* } || { powerpc*-*-linux && lp64 } } } } */
 /* { dg-options "-mlong-double-128" } */
 
 /* Check that long double values are rounded correctly when being converted

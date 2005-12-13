@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc-*-linux* powerpc-*-sysv* } } */
+/* { dg-do run { target powerpc*-*-linux* powerpc-*-sysv* } } */
 /* { dg-options {} } */
 
 /* Test stack pointer alignment against variable alloca.  */

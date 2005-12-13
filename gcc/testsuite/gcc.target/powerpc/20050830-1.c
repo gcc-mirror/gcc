@@ -1,5 +1,5 @@
 /* Make sure the doloop optimization is done for this loop. */
-/* { dg-do compile { target powerpc-*-* } } */
+/* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler "bdn" } } */
 extern int a[];
