@@ -1374,9 +1374,10 @@ enum reg_class
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
-   On 386 pushw decrements by exactly 2 no matter what the position was.
-   On the 386 there is no pushb; we use pushw instead, and this
-   has the effect of rounding up to 2.
+   On 386, we have pushw instruction that decrements by exactly 2 no
+   matter what the position was, there is no pushb.
+   But as CIE data alignment factor on this arch is -4, we need to make
+   sure all stack pointer adjustments are in multiple of 4.
 
    For 64bit ABI we round up to 8 bytes.
  */
@@ -1384,7 +1385,7 @@ enum reg_class
 #define PUSH_ROUNDING(BYTES) \
   (TARGET_64BIT		     \
    ? (((BYTES) + 7) & (-8))  \
-   : (((BYTES) + 1) & (-2)))
+   : (((BYTES) + 3) & (-4)))
 
 /* If defined, the maximum amount of space required for outgoing arguments will
    be computed and placed into the variable

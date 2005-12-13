@@ -1,3 +1,16 @@
+2005-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/25023
+	PR target/25293
+	* expr.c (emit_move_resolve_push): Handle PRE_MODIFY
+	and POST_MODIFY with CONST_INT adjustment equal to PUSH_ROUNDING.
+	Fix POST_INC/POST_DEC handling if PUSH_ROUNDING is not identity.
+	* config/i386/i386.md (pushhi2, pushqi2): Use pushl instead of pushw.
+	Set mode to SI, adjust constraints.
+	(pushhi2_rex64, pushqi2_rex64): Set mode to DI.
+	* config/i386/i386.h (PUSH_ROUNDING): Round up to 4 instead of 2 for
+	32-bit code.
+
 2005-12-13  Carlos O'Donell <carlos@codesourcery.com>
 
 	* c-cppbuiltin.c (builtin_define_float_constants): Add
