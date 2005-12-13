@@ -175,6 +175,32 @@ gfc_is_same_range (gfc_array_ref * ar1, gfc_array_ref * ar2, int n, int def)
 }
 
 
+/* Some array-returning intrinsics can be implemented by reusing the
+   data from one of the array arguments.  For example, TRANPOSE does
+   not necessarily need to allocate new data: it can be implemented
+   by copying the original array's descriptor and simply swapping the
+   two dimension specifications.
+
+   If EXPR is a call to such an intrinsic, return the argument
+   whose data can be reused, otherwise return NULL.  */
+
+gfc_expr *
+gfc_get_noncopying_intrinsic_argument (gfc_expr * expr)
+{
+  if (expr->expr_type != EXPR_FUNCTION || !expr->value.function.isym)
+    return NULL;
+
+  switch (expr->value.function.isym->generic_id)
+    {
+    case GFC_ISYM_TRANSPOSE:
+      return expr->value.function.actual->expr;
+
+    default:
+      return NULL;
+    }
+}
+
+
 /* Return true if the result of reference REF can only be constructed
    using a temporary array.  */
 
@@ -214,23 +240,82 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 }
 
 
-/* Dependency checking for direct function return by reference.
-   Returns true if the arguments of the function depend on the
-   destination.  This is considerably less conservative than other
-   dependencies because many function arguments will already be
-   copied into a temporary.  */
+/* Return true if array variable VAR could be passed to the same function
+   as argument EXPR without interfering with EXPR.  INTENT is the intent
+   of VAR.
+
+   This is considerably less conservative than other dependencies
+   because many function arguments will already be copied into a
+   temporary.  */
+
+static int
+gfc_check_argument_var_dependency (gfc_expr * var, sym_intent intent,
+				   gfc_expr * expr)
+{
+  gcc_assert (var->expr_type == EXPR_VARIABLE);
+  gcc_assert (var->rank > 0);
+
+  switch (expr->expr_type)
+    {
+    case EXPR_VARIABLE:
+      return (gfc_ref_needs_temporary_p (expr->ref)
+	      || gfc_check_dependency (var, expr, NULL, 0));
+
+    case EXPR_ARRAY:
+      return gfc_check_dependency (var, expr, NULL, 0);
+
+    case EXPR_FUNCTION:
+      if (intent != INTENT_IN && expr->inline_noncopying_intrinsic)
+	{
+	  expr = gfc_get_noncopying_intrinsic_argument (expr);
+	  return gfc_check_argument_var_dependency (var, intent, expr);
+	}
+      return 0;
+
+    default:
+      return 0;
+    }
+}
+  
+  
+/* Like gfc_check_argument_var_dependency, but extended to any
+   array expression OTHER, not just variables.  */
+
+static int
+gfc_check_argument_dependency (gfc_expr * other, sym_intent intent,
+			       gfc_expr * expr)
+{
+  switch (other->expr_type)
+    {
+    case EXPR_VARIABLE:
+      return gfc_check_argument_var_dependency (other, intent, expr);
+
+    case EXPR_FUNCTION:
+      if (other->inline_noncopying_intrinsic)
+	{
+	  other = gfc_get_noncopying_intrinsic_argument (other);
+	  return gfc_check_argument_dependency (other, INTENT_IN, expr);
+	}
+      return 0;
+
+    default:
+      return 0;
+    }
+}
+
+
+/* Like gfc_check_argument_dependency, but check all the arguments in ACTUAL.
+   FNSYM is the function being called, or NULL if not known.  */
 
 int
-gfc_check_fncall_dependency (gfc_expr * dest, gfc_expr * fncall)
+gfc_check_fncall_dependency (gfc_expr * other, sym_intent intent,
+			     gfc_symbol * fnsym, gfc_actual_arglist * actual)
 {
-  gfc_actual_arglist *actual;
+  gfc_formal_arglist *formal;
   gfc_expr *expr;
 
-  gcc_assert (dest->expr_type == EXPR_VARIABLE
-	  && fncall->expr_type == EXPR_FUNCTION);
-  gcc_assert (fncall->rank > 0);
-
-  for (actual = fncall->value.function.actual; actual; actual = actual->next)
+  formal = fnsym ? fnsym->formal : NULL;
+  for (; actual; actual = actual->next, formal = formal ? formal->next : NULL)
     {
       expr = actual->expr;
 
@@ -238,23 +323,14 @@ gfc_check_fncall_dependency (gfc_expr * dest, gfc_expr * fncall)
       if (!expr)
 	continue;
 
-      /* Non-variable expressions will be allocated temporaries anyway.  */
-      switch (expr->expr_type)
-	{
-	case EXPR_VARIABLE:
-	  if (!gfc_ref_needs_temporary_p (expr->ref)
-	      && gfc_check_dependency (dest, expr, NULL, 0))
-	    return 1;
-	  break;
+      /* Skip intent(in) arguments if OTHER itself is intent(in).  */
+      if (formal
+	  && intent == INTENT_IN
+	  && formal->sym->attr.intent == INTENT_IN)
+	continue;
 
-	case EXPR_ARRAY:
-	  if (gfc_check_dependency (dest, expr, NULL, 0))
-	    return 1;
-	  break;
-
-	default:
-	  break;
-	}
+      if (gfc_check_argument_dependency (other, intent, expr))
+	return 1;
     }
 
   return 0;

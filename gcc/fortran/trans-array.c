@@ -673,6 +673,95 @@ gfc_trans_allocate_temp_array (stmtblock_t * pre, stmtblock_t * post,
 }
 
 
+/* Generate code to tranpose array EXPR by creating a new descriptor
+   in which the dimension specifications have been reversed.  */
+
+void
+gfc_conv_array_transpose (gfc_se * se, gfc_expr * expr)
+{
+  tree dest, src, dest_index, src_index;
+  gfc_loopinfo *loop;
+  gfc_ss_info *dest_info, *src_info;
+  gfc_ss *dest_ss, *src_ss;
+  gfc_se src_se;
+  int n;
+
+  loop = se->loop;
+
+  src_ss = gfc_walk_expr (expr);
+  dest_ss = se->ss;
+
+  src_info = &src_ss->data.info;
+  dest_info = &dest_ss->data.info;
+
+  /* Get a descriptor for EXPR.  */
+  gfc_init_se (&src_se, NULL);
+  gfc_conv_expr_descriptor (&src_se, expr, src_ss);
+  gfc_add_block_to_block (&se->pre, &src_se.pre);
+  gfc_add_block_to_block (&se->post, &src_se.post);
+  src = src_se.expr;
+
+  /* Allocate a new descriptor for the return value.  */
+  dest = gfc_create_var (TREE_TYPE (src), "atmp");
+  dest_info->descriptor = dest;
+  se->expr = dest;
+
+  /* Copy across the dtype field.  */
+  gfc_add_modify_expr (&se->pre,
+		       gfc_conv_descriptor_dtype (dest),
+		       gfc_conv_descriptor_dtype (src));
+
+  /* Copy the dimension information, renumbering dimension 1 to 0 and
+     0 to 1.  */
+  gcc_assert (dest_info->dimen == 2);
+  gcc_assert (src_info->dimen == 2);
+  for (n = 0; n < 2; n++)
+    {
+      dest_info->delta[n] = integer_zero_node;
+      dest_info->start[n] = integer_zero_node;
+      dest_info->stride[n] = integer_one_node;
+      dest_info->dim[n] = n;
+
+      dest_index = gfc_rank_cst[n];
+      src_index = gfc_rank_cst[1 - n];
+
+      gfc_add_modify_expr (&se->pre,
+			   gfc_conv_descriptor_stride (dest, dest_index),
+			   gfc_conv_descriptor_stride (src, src_index));
+
+      gfc_add_modify_expr (&se->pre,
+			   gfc_conv_descriptor_lbound (dest, dest_index),
+			   gfc_conv_descriptor_lbound (src, src_index));
+
+      gfc_add_modify_expr (&se->pre,
+			   gfc_conv_descriptor_ubound (dest, dest_index),
+			   gfc_conv_descriptor_ubound (src, src_index));
+
+      if (!loop->to[n])
+        {
+	  gcc_assert (integer_zerop (loop->from[n]));
+	  loop->to[n] = build2 (MINUS_EXPR, gfc_array_index_type,
+				gfc_conv_descriptor_ubound (dest, dest_index),
+				gfc_conv_descriptor_lbound (dest, dest_index));
+        }
+    }
+
+  /* Copy the data pointer.  */
+  dest_info->data = gfc_conv_descriptor_data_get (src);
+  gfc_conv_descriptor_data_set (&se->pre, dest, dest_info->data);
+
+  /* Copy the offset.  This is not changed by transposition: the top-left
+     element is still at the same offset as before.  */
+  dest_info->offset = gfc_conv_descriptor_offset (src);
+  gfc_add_modify_expr (&se->pre,
+		       gfc_conv_descriptor_offset (dest),
+		       dest_info->offset);
+
+  if (dest_info->dimen > loop->temp_dim)
+    loop->temp_dim = dest_info->dimen;
+}
+
+
 /* Return the number of iterations in a loop that starts at START,
    ends at END, and has step STEP.  */
 

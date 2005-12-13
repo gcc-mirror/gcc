@@ -1129,6 +1129,9 @@ typedef struct gfc_expr
 
   /* True if it is converted from Hollerith constant.  */
   unsigned int from_H : 1;
+  /* True if the expression is a call to a function that returns an array,
+     and if we have decided not to allocate temporary data for that array.  */
+  unsigned int inline_noncopying_intrinsic : 1;
 
   union
   {

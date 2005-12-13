@@ -1,3 +1,32 @@
+2005-12-13  Richard Sandiford  <richard@codesourcery.com>
+
+	* Make-lang.in (fortran/trans-resolve.o): Depend on
+	fortran/dependency.h.
+	* gfortran.h (gfc_expr): Add an "inline_noncopying_intrinsic" flag.
+	* dependency.h (gfc_get_noncopying_intrinsic_argument): Declare.
+	(gfc_check_fncall_dependency): Change prototype.
+	* dependency.c (gfc_get_noncopying_intrinsic_argument): New function.
+	(gfc_check_argument_var_dependency): New function, split from
+	gfc_check_fncall_dependency.
+	(gfc_check_argument_dependency): New function.
+	(gfc_check_fncall_dependency): Replace the expression parameter with
+	separate symbol and argument list parameters.  Generalize the function
+	to handle dependencies for any type of expression, not just variables.
+	Accept a further argument giving the intent of the expression being
+	tested.  Ignore	intent(in) arguments if that expression is also
+	intent(in).
+	* resolve.c: Include dependency.h.
+	(find_noncopying_intrinsics): New function.
+	(resolve_function, resolve_call): Call it on success.
+	* trans-array.h (gfc_conv_array_transpose): Declare.
+	(gfc_check_fncall_dependency): Remove prototype.
+	* trans-array.c (gfc_conv_array_transpose): New function.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Don't use the
+	libcall handling if the expression is to be evaluated inline.
+	Add a case for handling inline transpose()s.
+	* trans-expr.c (gfc_trans_arrayfunc_assign): Adjust for the new
+	interface provided by gfc_check_fncall_dependency.
+
 2005-12-12  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/25078

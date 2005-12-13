@@ -91,6 +91,8 @@ void gfc_conv_tmp_ref (gfc_se *);
 void gfc_conv_expr_descriptor (gfc_se *, gfc_expr *, gfc_ss *);
 /* Convert an array for passing as an actual function parameter.  */
 void gfc_conv_array_parameter (gfc_se *, gfc_expr *, gfc_ss *, int);
+/* Evaluate and transpose a matrix expression.  */
+void gfc_conv_array_transpose (gfc_se *, gfc_expr *);
 
 /* These work with both descriptors and descriptorless arrays.  */
 tree gfc_conv_array_data (tree);
@@ -112,8 +114,6 @@ tree gfc_conv_descriptor_ubound (tree, tree);
 
 /* Dependency checking for WHERE and FORALL.  */
 int gfc_check_dependency (gfc_expr *, gfc_expr *, gfc_expr **, int);
-/* Dependency checking for function calls.  */
-int gfc_check_fncall_dependency (gfc_expr *, gfc_expr *);
 
 /* Add pre-loop scalarization code for intrinsic functions which require
    special handling.  */
