@@ -32,6 +32,8 @@
 	(output): Use, instead of libiberty hashtable functions.
 	(main): Do not use getopt.  Do not call htab_create.
 
+2005-12-13  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/25331
 	* gcc.dg/compat/struct-layout-1_generate.c (subfield): Don't
 	put atal* and atpaal* attributes on array elements.
