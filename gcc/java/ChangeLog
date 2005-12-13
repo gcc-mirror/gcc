@@ -1,3 +1,10 @@
+2005-12-13  Andrew Haley  <aph@redhat.com>
+
+	PR java/25366
+	PR java/25368
+	* class.c (maybe_layout_super_class): Update current_class before
+	calling do_resolve_class.
+
 2005-12-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR java/25330
