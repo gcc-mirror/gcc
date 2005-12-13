@@ -49,11 +49,13 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c > dp-bit.c
 
 # Assemble startup files.
-crti.o: $(srcdir)/config/mt/crti.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crti.o -x assembler $(srcdir)/config/mt/crti.asm
+$(T)crti.o: $(srcdir)/config/mt/crti.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	  -c -o $(T)crti.o -x assembler $(srcdir)/config/mt/crti.asm
  
-crtn.o: $(srcdir)/config/mt/crtn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler $(srcdir)/config/mt/crtn.asm
+$(T)crtn.o: $(srcdir)/config/mt/crtn.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	  -c -o $(T)crtn.o -x assembler $(srcdir)/config/mt/crtn.asm
 
 # Enable the following if multilibs are needed.
 # See gcc/genmultilib, gcc/gcc.texi and gcc/tm.texi for a
@@ -63,7 +65,8 @@ MULTILIB_OPTIONS    = march=ms1-64-001/march=ms1-16-002/march=ms1-16-003/march=m
 MULTILIB_DIRNAMES   = ms1-64-001 ms1-16-002 ms1-16-003 ms2
 # MULTILIB_MATCHES    =
 # MULTILIB_EXCEPTIONS =
-# MULTILIB_EXTRA_OPTS = 
+# MULTILIB_EXTRA_OPTS =
+EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 #
 # LIBGCC = stmp-multilib
 # INSTALL_LIBGCC = install-multilib
