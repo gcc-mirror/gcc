@@ -789,6 +789,13 @@ subfield (struct entry *e, char *letter)
 	    snprintf (buf, 20, "%c[]", *letter);
 	  else
 	    snprintf (buf, 20, "%c[%d]", *letter, e[0].arr_len);
+	  /* If this is an array type, do not put aligned attributes on
+	     elements.  Aligning elements to a value greater than their
+	     size will result in a compiler error.  */
+	  if (type == 1
+	      && ((strncmp (e[0].attrib, "atal", 4) == 0)
+		   || strncmp (e[0].attrib, "atpaal", 6) == 0))
+	    type = 2;
 	}
       else
         {
@@ -845,18 +852,32 @@ subfield (struct entry *e, char *letter)
         }
       ++*letter;
       if (e[0].attrib)
-	switch (generate_random () % 3)
-          {
-          case 0:
-            fprintf (outfile, "%s %s %s;", e[0].attrib, e[0].type->name, buf);
-            break;
-          case 1:
-            fprintf (outfile, "%s %s %s;", e[0].type->name, e[0].attrib, buf);
-            break;
-          case 2:
-            fprintf (outfile, "%s %s %s;", e[0].type->name, buf, e[0].attrib);
-            break;
-          }
+	{
+	  /* If this is an array type, do not put aligned attributes on
+	     elements.  Aligning elements to a value greater than their
+	     size will result in a compiler error.  */
+	  if (e[0].etype == ETYPE_ARRAY
+              && ((strncmp (e[0].attrib, "atal", 4) == 0)
+                   || strncmp (e[0].attrib, "atpaal", 6) == 0))
+	    type = 2;
+	  else
+            type = generate_random () % 3;
+	  switch (type)
+	    {
+	    case 0:
+	      fprintf (outfile, "%s %s %s;", e[0].attrib, e[0].type->name,
+		       buf);
+	      break;
+	    case 1:
+	      fprintf (outfile, "%s %s %s;", e[0].type->name, e[0].attrib,
+		       buf);
+	      break;
+	    case 2:
+	      fprintf (outfile, "%s %s %s;", e[0].type->name, buf,
+		       e[0].attrib);
+	      break;
+	    }
+	}
       else
 	fprintf (outfile, "%s %s;", e[0].type->name, buf);
       return 1;
@@ -1746,15 +1767,6 @@ generate_fields (enum FEATURE features, struct entry *e, struct entry *parent,
 		  || (e[n].type >= &aligned_bitfld_types[0]
 		      && e[n].type < &aligned_bitfld_types[n_aligned_bitfld_types])))
 	    e[n].attrib = NULL;
-
-	  /* If this is an array type, do not put aligned attributes on
-	     elements.  Aligning elements to a value greater than their
-	     size will result in a compiler error.  */
-
-	  if ((e[n].etype == ETYPE_ARRAY)
-	      && e[n].attrib != NULL
-	      && (strncmp (e[n].attrib, "atal", 4) == 0))
-            e[n].attrib = NULL;
 	}
     }
 }
