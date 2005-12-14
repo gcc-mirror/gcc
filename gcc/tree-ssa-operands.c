@@ -791,27 +791,7 @@ parse_ssa_operands (tree stmt)
     }
 }
 
-/* Create an operands cache for STMT, returning it in NEW_OPS. OLD_OPS are the
-   original operands, and if ANN is non-null, appropriate stmt flags are set
-   in the stmt's annotation.  If ANN is NULL, this is not considered a "real"
-   stmt, and none of the operands will be entered into their respective
-   immediate uses tables.  This is to allow stmts to be processed when they
-   are not actually in the CFG.
-
-   Note that some fields in old_ops may change to NULL, although none of the
-   memory they originally pointed to will be destroyed.  It is appropriate
-   to call free_stmt_operands() on the value returned in old_ops.
-
-   The rationale for this: Certain optimizations wish to examine the difference
-   between new_ops and old_ops after processing.  If a set of operands don't
-   change, new_ops will simply assume the pointer in old_ops, and the old_ops
-   pointer will be set to NULL, indicating no memory needs to be cleared.  
-   Usage might appear something like:
-
-       old_ops_copy = old_ops = stmt_ann(stmt)->operands;
-       build_ssa_operands (stmt, NULL, &old_ops, &new_ops);
-          <* compare old_ops_copy and new_ops *>
-       free_ssa_operands (old_ops);					*/
+/* Create an operands cache for STMT.  */
 
 static void
 build_ssa_operands (tree stmt)
