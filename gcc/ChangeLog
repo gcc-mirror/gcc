@@ -1,3 +1,7 @@
+2005-12-14  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-ssa-operands.c (build_ssa_operands): Update leading comment.
+
 2005-12-14  J"orn Rennecke <joern.rennecke@st.com>
 
 	* struct-equiv.c (rtx_equiv_p): Allow arbitrary RVALUE values for
