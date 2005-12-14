@@ -3005,30 +3005,38 @@ eliminate_regs_in_insn (rtx insn, int replace)
     {
       if (GET_CODE (SET_SRC (old_set)) == PLUS)
 	plus_src = SET_SRC (old_set);
-      /* First see if the source is of the form (plus (reg) CST).  */
+      /* First see if the source is of the form (plus (...) CST).  */
       if (plus_src
-	  && REG_P (XEXP (plus_src, 0))
-	  && GET_CODE (XEXP (plus_src, 1)) == CONST_INT
-	  && REGNO (XEXP (plus_src, 0)) < FIRST_PSEUDO_REGISTER)
+	  && GET_CODE (XEXP (plus_src, 1)) == CONST_INT)
 	plus_cst_src = plus_src;
       else if (REG_P (SET_SRC (old_set))
 	       || plus_src)
 	{
 	  /* Otherwise, see if we have a REG_EQUAL note of the form
-	     (plus (reg) CST).  */
+	     (plus (...) CST).  */
 	  rtx links;
 	  for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
 	    {
 	      if (REG_NOTE_KIND (links) == REG_EQUAL
 		  && GET_CODE (XEXP (links, 0)) == PLUS
-		  && REG_P (XEXP (XEXP (links, 0), 0))
-		  && GET_CODE (XEXP (XEXP (links, 0), 1)) == CONST_INT
-		  && REGNO (XEXP (XEXP (links, 0), 0)) < FIRST_PSEUDO_REGISTER)
+		  && GET_CODE (XEXP (XEXP (links, 0), 1)) == CONST_INT)
 		{
 		  plus_cst_src = XEXP (links, 0);
 		  break;
 		}
 	    }
+	}
+
+      /* Check that the first operand of the PLUS is a hard reg or
+	 the lowpart subreg of one.  */
+      if (plus_cst_src)
+	{
+	  rtx reg = XEXP (plus_cst_src, 0);
+	  if (GET_CODE (reg) == SUBREG && subreg_lowpart_p (reg))
+	    reg = SUBREG_REG (reg);
+
+	  if (!REG_P (reg) || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+	    plus_cst_src = 0;
 	}
     }
   if (plus_cst_src)
@@ -3036,11 +3044,18 @@ eliminate_regs_in_insn (rtx insn, int replace)
       rtx reg = XEXP (plus_cst_src, 0);
       HOST_WIDE_INT offset = INTVAL (XEXP (plus_cst_src, 1));
 
+      if (GET_CODE (reg) == SUBREG)
+	reg = SUBREG_REG (reg);
+
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	if (ep->from_rtx == reg && ep->can_eliminate)
 	  {
+	    rtx to_rtx = ep->to_rtx;
 	    offset += ep->offset;
 
+	    if (GET_CODE (XEXP (plus_cst_src, 0)) == SUBREG)
+	      to_rtx = gen_lowpart (GET_MODE (XEXP (plus_cst_src, 0)),
+				    to_rtx);
 	    if (offset == 0)
 	      {
 		int num_clobbers;
@@ -3050,7 +3065,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		   There's not much we can do if that doesn't work.  */
 		PATTERN (insn) = gen_rtx_SET (VOIDmode,
 					      SET_DEST (old_set),
-					      ep->to_rtx);
+					      to_rtx);
 		num_clobbers = 0;
 		INSN_CODE (insn) = recog (PATTERN (insn), insn, &num_clobbers);
 		if (num_clobbers)
@@ -3080,7 +3095,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		PATTERN (insn) = new_body;
 		old_set = single_set (insn);
 
-		XEXP (SET_SRC (old_set), 0) = ep->to_rtx;
+		XEXP (SET_SRC (old_set), 0) = to_rtx;
 		XEXP (SET_SRC (old_set), 1) = GEN_INT (offset);
 	      }
 	    else

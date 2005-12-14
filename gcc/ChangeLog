@@ -1,3 +1,9 @@
+2005-12-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR rtl-optimization/25310
+	* reload1.c (eliminate_regs_in_insn): Handle lowpart SUBREGs
+	of the eliminable register when substituting into a PLUS.
+
 2005-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/25023
