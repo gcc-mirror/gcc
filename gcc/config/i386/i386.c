@@ -1703,6 +1703,7 @@ x86_64_elf_select_section (tree decl, int reloc,
       && ix86_in_large_data_p (decl))
     {
       const char *sname = NULL;
+      unsigned int flags = SECTION_WRITE;
       switch (categorize_decl_for_section (decl, reloc, flag_pic))
 	{
 	case SECCAT_DATA:
@@ -1722,12 +1723,14 @@ x86_64_elf_select_section (tree decl, int reloc,
 	  break;
 	case SECCAT_BSS:
 	  sname = ".lbss";
+	  flags |= SECTION_BSS;
 	  break;
 	case SECCAT_RODATA:
 	case SECCAT_RODATA_MERGE_STR:
 	case SECCAT_RODATA_MERGE_STR_INIT:
 	case SECCAT_RODATA_MERGE_CONST:
 	  sname = ".lrodata";
+	  flags = 0;
 	  break;
 	case SECCAT_SRODATA:
 	case SECCAT_SDATA:
@@ -1742,7 +1745,13 @@ x86_64_elf_select_section (tree decl, int reloc,
 	}
       if (sname)
 	{
-          named_section (decl, sname, reloc);
+	  /* We might get called with string constants, but named_section
+	     doesn't like them as they are not DECLs.  Also, we need to set
+	     flags in that case.  */
+	  if (!DECL_P (decl))
+	    named_section_flags (sname, flags);
+	  else
+	    named_section (decl, sname, reloc);
 	  return;
 	}
     }

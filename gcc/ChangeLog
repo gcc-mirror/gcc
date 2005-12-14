@@ -1,3 +1,11 @@
+2005-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/25254
+	PR target/24188
+	* config/i386/i386.c (x86_64_elf_select_section): If DECL is not
+	DECL_P, call named_section_flags rather than named_section.  Supply
+	section flags to it.
+
 2005-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/25023
