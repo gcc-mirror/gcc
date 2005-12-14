@@ -1,3 +1,15 @@
+2005-12-14  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-ccp.c (fold_stmt_r): DATA argument is now a pointer
+	to a structure containing state rather than a pointer to bool.
+	(case ARRAY_REF): New code to handle folding some array references.
+	(case ADDR_EXPR): Note when we are processing expressions found
+	within an ADDRE_EXPR.
+	(fold_stmt, fold_stmt_inplace): Pass in a structure to fold_stmt_r
+	for state variables rather than just a pointer to a boolean.
+	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Remove
+	handling of constant string references.
+
 2005-12-14  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.md ("*tstdi_extimm", "*tstsi_extimm"): Merge.

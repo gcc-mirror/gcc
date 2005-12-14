@@ -1,3 +1,7 @@
+2005-12-14  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/foldstring-1.c: New test.
+
 2005-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25254

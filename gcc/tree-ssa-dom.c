@@ -1837,16 +1837,6 @@ simplify_rhs_and_lookup_avail_expr (tree stmt, int insert)
 	}
     }
 
-  /* Optimize *"foo" into 'f'.  This is done here rather than
-     in fold to avoid problems with stuff like &*"foo".  */
-  if (TREE_CODE (rhs) == INDIRECT_REF || TREE_CODE (rhs) == ARRAY_REF)
-    {
-      tree t = fold_read_from_constant_string (rhs);
-
-      if (t)
-        result = update_rhs_and_lookup_avail_expr (stmt, t, insert);
-    }
-
   return result;
 }
 
