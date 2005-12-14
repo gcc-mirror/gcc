@@ -434,7 +434,11 @@ public class File implements Serializable, Comparable
     if (!uri.getScheme().equals("file"))
 	throw new IllegalArgumentException("invalid uri protocol");
 
-    path = normalizePath(uri.getPath());
+    String name = uri.getPath();
+    if (name == null)
+      throw new IllegalArgumentException("URI \"" + uri
+                     + "\" is not hierarchical");
+    path = normalizePath(name);
   }
 
   /**
