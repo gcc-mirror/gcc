@@ -1,5 +1,15 @@
 2005-12-14  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.md ("extend<mode>di2", "extend<mode>si2"): Merge.
+	("*extendqidi2_extimm", "*extendqisi2_extimm"): Merge.
+	("*extendqidi2", "*extendqisi2") Merge.
+	("*extendqidi2_short_displ", "*extendqisi2_short_displ"): Merge.
+	("zero_extendhidi2", "zero_extendqidi2"): Merge.
+	("*zero_extend<mode>di2_extimm", "*zero_extend<mode>si2_extimm"): Merge.
+	Move some patterns to retain partial ordering.
+
+2005-12-14  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.md ("atype", "length"): Rewrite.
 	("*insv<mode>_reg_imm", "*insv<mode>_reg_extimm"): Add mode.
 
