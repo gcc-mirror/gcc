@@ -15800,9 +15800,8 @@ ix86_force_to_memory (enum machine_mode mode, rtx operand)
 	  }
 	  break;
 	case HImode:
-	  /* It is better to store HImodes as SImodes.  */
-	  if (!TARGET_PARTIAL_REG_STALL)
-	    operand = gen_lowpart (SImode, operand);
+	  /* Store HImodes as SImodes.  */
+	  operand = gen_lowpart (SImode, operand);
 	  /* FALLTHRU */
 	case SImode:
 	  emit_insn (
@@ -15830,8 +15829,6 @@ ix86_free_from_memory (enum machine_mode mode)
 
       if (mode == DImode || TARGET_64BIT)
 	size = 8;
-      else if (mode == HImode && TARGET_PARTIAL_REG_STALL)
-	size = 2;
       else
 	size = 4;
       /* Use LEA to deallocate stack space.  In peephole2 it will be converted

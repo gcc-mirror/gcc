@@ -1,5 +1,10 @@
 2005-12-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/25023
+	* config/i386/i386.c (ix86_force_to_memory): Always use
+	SImode push for HImode in -m32.
+	(ix86_free_from_memory): Likewise.
+
 	PR target/25254
 	PR target/24188
 	* config/i386/i386.c (x86_64_elf_select_section): If DECL is not
