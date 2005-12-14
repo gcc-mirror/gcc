@@ -1,4 +1,4 @@
-// { dg-do assemble { xfail *-*-* } }
+// { dg-do assemble }
 // { dg-options "-O2" }
 // Origin: scott snyder <snyder@fnal.gov>
 

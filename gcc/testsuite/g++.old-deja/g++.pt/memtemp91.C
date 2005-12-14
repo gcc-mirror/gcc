@@ -1,4 +1,4 @@
-// { dg-do assemble { xfail *-*-* } }
+// { dg-do assemble }
 // regression test -
 
 // simplified from bug report by Leon Bottou <leonb@research.att.com>
