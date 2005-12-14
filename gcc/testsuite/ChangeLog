@@ -1,3 +1,11 @@
+2005-12-14  Kean Johnston  <jkj@sco.com>
+            Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/sibcall-6.c: Skip in -fPIC mode on X86 ilp32.
+	* gcc.dg/20020523-1.c: Ditto.
+	* gcc.dg/i386-ssetype-3.c: Make magic* static to work with -fPIC.
+	* gcc.dg/i386-ssetype-5.c: Ditto.
+
 2005-12-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.old-deja/g++.oliva/stkalign.C: Remove xfail.
