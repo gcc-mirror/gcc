@@ -1,3 +1,7 @@
+2005-12-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.old-deja/g++.oliva/stkalign.C: Remove xfail.
+
 2005-12-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/20772
