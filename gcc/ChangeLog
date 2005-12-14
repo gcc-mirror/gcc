@@ -1,6 +1,11 @@
 2005-12-14  Sebastian Pop  <pop@cri.ensmp.fr>
 
-        * loop-unswitch.c (unswitch_loop): Free zero_bitmap before returning.
+	* cfgloopmanip.c (lv_adjust_loop_entry_edge): Adjust the type of
+	cond_expr parameter.
+
+2005-12-14  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* loop-unswitch.c (unswitch_loop): Free zero_bitmap before returning.
 
 2005-12-14  J"orn Rennecke <joern.rennecke@st.com>
 
