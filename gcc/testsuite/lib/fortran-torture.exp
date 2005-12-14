@@ -77,13 +77,13 @@ proc fortran-torture-compile { src option } {
  
     if [string match "$fatal_signal 6" $comp_output] then {
 	gfortran_fail $testcase "Got Signal 6, $option"
-	remote_file build delete $output
+	catch { remote_file build delete $output }
 	return
     }
 
     if [string match "$fatal_signal 11" $comp_output] then {
 	gfortran_fail $testcase "Got Signal 11, $option"
-	remote_file build delete $output
+	catch { remote_file build delete $output }
 	return
     }
 
@@ -92,7 +92,7 @@ proc fortran-torture-compile { src option } {
 	warning "$testcase: (with warnings) $option"
 	send_log "$comp_output\n"
 	unresolved "$testcase, $option"
-	remote_file build delete $output
+	catch { remote_file build delete $output }
 	return
     }
 
@@ -103,7 +103,7 @@ proc fortran-torture-compile { src option } {
     set unsupported_message [gfortran_check_unsupported_p $comp_output]
     if { $unsupported_message != "" } {
 	unsupported "$testcase: $unsupported_message"
-	remote_file build delete $output
+	catch { remote_file build delete $output }
 	return
     }
 
@@ -113,12 +113,12 @@ proc fortran-torture-compile { src option } {
     # If any message remains, we fail.
     if ![string match "" $comp_output] then {
 	gfortran_fail $testcase $option
-	remote_file build delete $output
+	catch { remote_file build delete $output }
 	return
     }
 
     gfortran_pass $testcase $option
-    remote_file build delete $output
+    catch { remote_file build delete $output }
 }
 
 
@@ -195,13 +195,13 @@ proc fortran-torture-execute { src } {
 	
 	if [string match "$fatal_signal 6" $comp_output] then {
 	    gfortran_fail $testcase "Got Signal 6, $option"
-	    remote_file build delete $executable
+	    catch { remote_file build delete $executable }
 	    continue
 	}
 	
 	if [string match "$fatal_signal 11" $comp_output] then {
 	    gfortran_fail $testcase "Got Signal 11, $option"
-	    remote_file build delete $executable
+	    catch { remote_file build delete $executable }
 	    continue
 	}
 	
@@ -210,7 +210,7 @@ proc fortran-torture-execute { src } {
 	    warning "$testcase: (with warnings) $option"
 	    send_log "$comp_output\n"
 	    unresolved "$testcase, $option"
-	    remote_file build delete $executable
+	    catch { remote_file build delete $executable }
 	    continue
 	}
 	
@@ -265,7 +265,7 @@ proc fortran-torture-execute { src } {
 	set status [lindex $result 0]
 	set output [lindex $result 1]
         if { $status == "pass" } {
-	    remote_file build delete $executable
+	    catch { remote_file build delete $executable }
         }
 	$status "$testcase execution, $option"
     }
