@@ -1,3 +1,10 @@
+2005-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/25254
+	PR target/24188
+	* gcc.target/i386/pr25254.c: New test.
+	* gfortran.dg/PR24188.f: New test.
+
 2005-12-14  David Billinghurst  (David.Billinghurst@riotinto.com)
 
 	* lib/fortran-torture.exp:  Catch remaining uses of 
