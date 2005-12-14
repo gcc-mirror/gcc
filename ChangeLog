@@ -1,3 +1,21 @@
+2005-12-14  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.tpl: Throughout the file, use : $(MAKE) along with
+	$(stage) and $(unstage).
+	(EXTRA_TARGET_FLAGS): Correct double-quoting.
+	(all): Remove stray semicolon.
+	(local-distclean): Don't handle multilib.tmp and multilib.out.
+	(install.all): Set $s for consistency.
+	(configure-[+prefix+][+module+]): Instead of [+deps+], handle
+	check_multilibs setting.  Always make the install directory.
+	(configure-stage[+id+]-[+prefix+][+module+]): Likewise.
+	Correct @if/@endif.
+	(all-stage[+id+]-[+prefix+][+module+]): Correct @if/@endif.
+	($(TARGET_SUBDIR)/[+module+]/multilib.out): Remove.
+	(stage[+id+]-start, stage[+id+]-end): Stage $(TARGET_SUBDIR).
+	(multilib.out): Remove.
+	* Makefile.in: Regenerated.
+
 2005-12-12  Carlos O'Donell <carlos@codesourcery.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
