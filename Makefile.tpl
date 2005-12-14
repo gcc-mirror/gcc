@@ -425,21 +425,22 @@ X11_FLAGS_TO_PASS = \
 	'X11_EXTRA_LIBS=$(X11_EXTRA_LIBS)'
 
 # Flags to pass down to makes which are built with the target environment.
-# The double $ decreases the length of the command line; the variables
-# are set in BASE_FLAGS_TO_PASS, and the sub-make will expand them.
+# The double $ decreases the length of the command line; those variables
+# are set in BASE_FLAGS_TO_PASS, and the sub-make will expand them.  The
+# COMPILER_ prefixed variables are not passed down so we expand them here.
 EXTRA_TARGET_FLAGS = \
 	'AR=$$(AR_FOR_TARGET)' \
-	'AS=$$(COMPILER_AS_FOR_TARGET)' \
+	'AS=$(COMPILER_AS_FOR_TARGET)' \
 	'CC=$$(CC_FOR_TARGET)' \
 	'CFLAGS=$$(CFLAGS_FOR_TARGET)' \
 	'CXX=$$(CXX_FOR_TARGET)' \
 	'CXXFLAGS=$$(CXXFLAGS_FOR_TARGET)' \
 	'DLLTOOL=$$(DLLTOOL_FOR_TARGET)' \
-	'LD=$$(COMPILER_LD_FOR_TARGET)' \
+	'LD=$(COMPILER_LD_FOR_TARGET)' \
 	'LDFLAGS=$$(LDFLAGS_FOR_TARGET)' \
 	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET)' \
 	'LIBCXXFLAGS=$$(LIBCXXFLAGS_FOR_TARGET)' \
-	'NM=$$(COMPILER_NM_FOR_TARGET)' \
+	'NM=$(COMPILER_NM_FOR_TARGET)' \
 	'OBJDUMP=$$(OBJDUMP_FOR_TARGET)' \
 	'RANLIB=$$(RANLIB_FOR_TARGET)' \
 	'WINDRES=$$(WINDRES_FOR_TARGET)'
@@ -486,9 +487,9 @@ all:
 	[ -f stage_final ] || echo stage3 > stage_final
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) `cat stage_final`-bubble; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) `cat stage_final`-bubble
 @endif gcc-bootstrap
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	if [ -f stage_last ]; then \
@@ -496,7 +497,7 @@ all:
 	else \
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-host all-target; \
 	fi
-	@$(stage)
+	@: $(MAKE); $(stage)
 
 .PHONY: all-build
 all-build: [+
@@ -521,12 +522,12 @@ all-target: [+
 [+ FOR recursive_targets +]
 .PHONY: do-[+make_target+]
 do-[+make_target+]:
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) [+make_target+]-host \
 	  [+make_target+]-target
-	@$(stage)
+	@: $(MAKE); $(stage)
 
 
 .PHONY: [+make_target+]-host
@@ -567,7 +568,7 @@ local-clean:
 
 local-distclean:
 	-rm -f Makefile config.status config.cache mh-frag mt-frag
-	-rm -f multilib.out multilib.tmp maybedep.tmp serdep.tmp
+	-rm -f maybedep.tmp serdep.tmp
 	-if [ "$(TARGET_SUBDIR)" != "." ]; then \
 	  rm -rf $(TARGET_SUBDIR); \
 	else true; fi
@@ -616,11 +617,11 @@ check-target: [+
   ENDFOR target_modules +]
 
 do-check:
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) check-host check-target
-	@$(stage)
+	@: $(MAKE); $(stage)
 
 # Automated reporting of test results.
 
@@ -647,11 +648,11 @@ mail-report-with-warnings.log: warning.log
 
 .PHONY: install uninstall
 install:
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) installdirs install-host install-target
-	@$(stage)
+	@: $(MAKE); $(stage)
 
 .PHONY: install-host-nogcc
 install-host-nogcc: [+
@@ -678,6 +679,7 @@ uninstall:
 install.all: install-no-fixedincludes
 	@if [ -f ./gcc/Makefile ] ; then \
 		r=`${PWD_COMMAND}` ; export r ; \
+		s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 		$(HOST_EXPORTS) \
 		(cd ./gcc && \
 		$(MAKE) $(FLAGS_TO_PASS) install-headers) ; \
@@ -730,10 +732,26 @@ TAGS: do-TAGS
 maybe-configure-[+prefix+][+module+]:
 @if [+prefix+][+module+]
 maybe-configure-[+prefix+][+module+]: configure-[+prefix+][+module+]
-configure-[+prefix+][+module+]: [+deps+]
+configure-[+prefix+][+module+]:
 	@[+ IF bootstrap +]test -f stage_last && exit 0; \
-	[+ ELSE bootstrap +]$(unstage)
-	@[+ ENDIF bootstrap +]test ! -f [+subdir+]/[+module+]/Makefile || exit 0; \
+	[+ ELSE bootstrap +]: $(MAKE); $(unstage)
+	@[+ ENDIF bootstrap +][+ IF check_multilibs
+	+]r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for [+module+]..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+] ; \
+	$(CC_FOR_TARGET) --print-multi-lib > [+subdir+]/[+module+]/multilib.tmp 2> /dev/null ; \
+	if test -r [+subdir+]/[+module+]/multilib.out; then \
+	  if cmp -s [+subdir+]/[+module+]/multilib.tmp [+subdir+]/[+module+]/multilib.out; then \
+	    rm -f [+subdir+]/[+module+]/multilib.tmp; \
+	  else \
+	    rm -f [+subdir+]/[+module+]/Makefile; \
+	    mv [+subdir+]/[+module+]/multilib.tmp [+subdir+]/[+module+]/multilib.out; \
+	  fi; \
+	else \
+	  mv [+subdir+]/[+module+]/multilib.tmp [+subdir+]/[+module+]/multilib.out; \
+	fi
+	@[+ ENDIF check_multilibs +]test ! -f [+subdir+]/[+module+]/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+] ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -757,16 +775,31 @@ configure-[+prefix+][+module+]: [+deps+]
 [+ FOR bootstrap_stage +]
 .PHONY: configure-stage[+id+]-[+prefix+][+module+] maybe-configure-stage[+id+]-[+prefix+][+module+]
 maybe-configure-stage[+id+]-[+prefix+][+module+]:
-@if [+module+]-bootstrap
+@if [+prefix+][+module+]-bootstrap
 maybe-configure-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
-configure-stage[+id+]-[+prefix+][+module+]: [+deps+]
+configure-stage[+id+]-[+prefix+][+module+]:
 	@[ `cat stage_current` = stage[+id+] ] || $(MAKE) stage[+id+]-start
-	@[ -f [+subdir+]/[+module+]/Makefile ] && exit 0 || : ; \
-	r=`${PWD_COMMAND}`; export r; \
+	@$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+]
+	[+ IF check_multilibs
+	+]@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for [+module+]..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > [+subdir+]/[+module+]/multilib.tmp 2> /dev/null ; \
+	if test -r [+subdir+]/[+module+]/multilib.out; then \
+	  if cmp -s [+subdir+]/[+module+]/multilib.tmp [+subdir+]/[+module+]/multilib.out; then \
+	    rm -f [+subdir+]/[+module+]/multilib.tmp; \
+	  else \
+	    rm -f [+subdir+]/[+module+]/Makefile; \
+	    mv [+subdir+]/[+module+]/multilib.tmp [+subdir+]/[+module+]/multilib.out; \
+	  fi; \
+	else \
+	  mv [+subdir+]/[+module+]/multilib.tmp [+subdir+]/[+module+]/multilib.out; \
+	fi
+	@[+ ENDIF check_multilibs +]test ! -f [+subdir+]/[+module+]/Makefile || exit 0; \
 	[+exports+][+ IF prev +] \
 	[+poststage1_exports+][+ ENDIF prev +] \
 	echo Configuring stage [+id+] in [+subdir+]/[+module+] ; \
+	$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+] ; \
 	cd [+subdir+]/[+module+] || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
@@ -778,7 +811,7 @@ configure-stage[+id+]-[+prefix+][+module+]: [+deps+]
 	$(SHELL) $${libsrcdir}/configure \
 	  [+args+] $${srcdiroption} \
 	  [+stage_configure_flags+] [+extra_configure_flags+]
-@endif [+module+]-bootstrap
+@endif [+prefix+][+module+]-bootstrap
 [+ ENDFOR bootstrap_stage +]
 [+ ENDIF bootstrap +]
 [+ ENDDEF +]
@@ -792,7 +825,7 @@ TARGET-[+prefix+][+module+]=[+
 maybe-all-[+prefix+][+module+]: all-[+prefix+][+module+]
 all-[+prefix+][+module+]: configure-[+prefix+][+module+]
 	@[+ IF bootstrap +]test -f stage_last && exit 0; \
-	[+ ELSE bootstrap +]$(unstage)
+	[+ ELSE bootstrap +]: $(MAKE); $(unstage)
 	@[+ ENDIF bootstrap +]r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	[+exports+] \
@@ -806,7 +839,7 @@ all-[+prefix+][+module+]: configure-[+prefix+][+module+]
 .PHONY: clean-stage[+id+]-[+prefix+][+module+] maybe-clean-stage[+id+]-[+prefix+][+module+]
 maybe-all-stage[+id+]-[+prefix+][+module+]:
 maybe-clean-stage[+id+]-[+prefix+][+module+]:
-@if [+module+]-bootstrap
+@if [+prefix+][+module+]-bootstrap
 maybe-all-stage[+id+]-[+prefix+][+module+]: all-stage[+id+]-[+prefix+][+module+]
 all-stage[+id+]: all-stage[+id+]-[+prefix+][+module+]
 TARGET-stage[+id+]-[+prefix+][+module+] = $(TARGET-[+prefix+][+module+])
@@ -832,7 +865,7 @@ clean-stage[+id+]-[+prefix+][+module+]:
 	$(MAKE) [+args+] [+ IF prev +] \
 		[+poststage1_args+] [+ ENDIF prev +] \
 		[+stage_make_flags+] [+extra_make_flags+] clean
-@endif [+module+]-bootstrap
+@endif [+prefix+][+module+]-bootstrap
 
 [+ ENDFOR bootstrap_stage +]
 [+ ENDIF bootstrap +]
@@ -872,7 +905,7 @@ check-[+module+]:
 [+ ELIF no_check_cross +]
 # This module is only tested in a native toolchain.
 check-[+module+]:
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@if [ '$(host)' = '$(target)' ] ; then \
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -882,7 +915,7 @@ check-[+module+]:
 	fi
 [+ ELSE check +]
 check-[+module+]:
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -899,7 +932,7 @@ maybe-install-[+module+]: install-[+module+]
 install-[+module+]:
 [+ ELSE install +]
 install-[+module+]: installdirs
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -922,7 +955,7 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
   FOR depend +]\
     [+depend+]-[+module+] [+
   ENDFOR depend +]
-	@[+ IF bootstrap +][+ ELSE +]$(unstage)
+	@[+ IF bootstrap +][+ ELSE +]: $(MAKE); $(unstage)
 	@[+ ENDIF bootstrap +][ -f ./[+module+]/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -948,17 +981,9 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 # ---------------------------------------
 [+ FOR target_modules +]
 
-# There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
-@if target-[+module+]
-$(TARGET_SUBDIR)/[+module+]/multilib.out: multilib.out
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/[+module+] ; \
-	rm -f $(TARGET_SUBDIR)/[+module+]/Makefile || : ; \
-	cp multilib.out $(TARGET_SUBDIR)/[+module+]/multilib.out
-@endif target-[+module+]
-
 [+ IF raw_cxx +]
 [+ configure prefix="target-" subdir="$(TARGET_SUBDIR)"
-	     deps=(string-append "$(TARGET_SUBDIR)/" (get "module") "/multilib.out")
+	     check_multilibs=true
 	     exports="$(RAW_CXX_TARGET_EXPORTS)"
 	     args="$(TARGET_CONFIGARGS)" no-config-site=true +]
 
@@ -967,7 +992,7 @@ $(TARGET_SUBDIR)/[+module+]/multilib.out: multilib.out
        args="$(TARGET_FLAGS_TO_PASS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'" +]
 [+ ELSE +]
 [+ configure prefix="target-" subdir="$(TARGET_SUBDIR)"
-	     deps=(string-append "$(TARGET_SUBDIR)/" (get "module") "/multilib.out")
+	     check_multilibs=true
 	     exports="$(NORMAL_TARGET_EXPORTS)"
 	     args="$(TARGET_CONFIGARGS)" no-config-site=true +]
 
@@ -985,7 +1010,7 @@ maybe-check-target-[+module+]: check-target-[+module+]
 check-target-[+module+]:
 [+ ELSE check +]
 check-target-[+module+]:
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
 IF raw_cxx +]
@@ -1011,7 +1036,7 @@ maybe-install-target-[+module+]: install-target-[+module+]
 install-target-[+module+]:
 [+ ELSE install +]
 install-target-[+module+]: installdirs
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
 IF raw_cxx +]
@@ -1038,7 +1063,7 @@ maybe-[+make_target+]-target-[+module+]: [+make_target+]-target-[+module+]
   FOR depend +]\
     [+depend+]-target-[+module+] [+
   ENDFOR depend +]
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@[ -f $(TARGET_SUBDIR)/[+module+]/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
@@ -1181,8 +1206,10 @@ gcc-no-fixedincludes:
 # are dummy when toplevel bootstrap is not active.
 
 # While making host and target tools, symlinks to the final stage must be
-# there, so $(MAKE) $(unstage) should be run at various points.  To avoid
-# excessive recursive invocations of make, we "inline" them using a variable.
+# there, so $(unstage) should be run at various points.  To avoid excessive
+# recursive invocations of make, we "inline" them using a variable.  These
+# must be referenced as ": $(MAKE) ; $(unstage)" rather than "$(unstage)"
+# to avoid warnings from the GNU Make job server.
 
 unstage = :
 stage = :
@@ -1194,16 +1221,16 @@ stage = [ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
 
 .PHONY: unstage stage
 unstage:
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 stage:
-	@$(stage)
+	@: $(MAKE); $(stage)
 
 # We name the build directories for the various stages "stage1-gcc",
 # "stage2-gcc","stage3-gcc", etc.
 
 # Since the 'compare' process will fail (on debugging information) if any
 # directory names are different, we need to link the gcc directory for
-# the previous stage to a constant name ('gcc-prev'), and to make the name of
+# the previous stage to a constant name ('prev-gcc'), and to make the name of
 # the build directories constant as well. For the latter, we use naked names
 # like 'gcc', because the scripts in that directory assume it.  We use
 # mv on platforms where symlinks to directories do not work or are not
@@ -1244,10 +1271,10 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 .PHONY: stage[+id+]-start stage[+id+]-end
 
 stage[+id+]-start::
-	@$(stage); \
+	@: $(MAKE); $(stage); \
 	echo stage[+id+] > stage_current ; \
 	echo stage[+id+] > stage_last; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR) $(TARGET_SUBDIR)[+
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)[+
    FOR host_modules +][+ IF bootstrap +]
 @if [+ module +]
 	@cd $(HOST_SUBDIR); [ -d stage[+id+]-[+module+] ] || \
@@ -1256,36 +1283,34 @@ stage[+id+]-start::
 	@CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
 	set stage[+prev+]-[+module+] prev-[+module+] ; \
 	@CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
-@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +][+
-   FOR target_modules +][+ IF bootstrap +]
-@if target-[+ module +]
-	@cd $(TARGET_SUBDIR); [ -d stage[+id+]-[+module+] ] || \
-	  mkdir stage[+id+]-[+module+]; \
-	set stage[+id+]-[+module+] [+module+] ; \
+@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
+	@[ -d stage[+id+]-$(TARGET_SUBDIR) ] || \
+	  mkdir stage[+id+]-$(TARGET_SUBDIR); \
+	set stage[+id+]-$(TARGET_SUBDIR) $(TARGET_SUBDIR) ; \
 	@CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
-	set stage[+prev+]-[+module+] prev-[+module+] ; \
+	set stage[+prev+]-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) ; \
 	@CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
-@endif target-[+ module +][+ ENDIF bootstrap +][+ ENDFOR target_modules +]
 
 stage[+id+]-end::
 	@rm -f stage_current[+ FOR host_modules +][+ IF bootstrap +]
 @if [+ module +]
-	@cd $(HOST_SUBDIR); set [+module+] stage[+id+]-[+module+] ; \
+	@if test -d $(HOST_SUBDIR) ; then \
+	cd $(HOST_SUBDIR); set [+module+] stage[+id+]-[+module+] ; \
 	@UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
 	set prev-[+module+] stage[+prev+]-[+module+] ; \
-	@UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
-@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +][+
-   FOR target_modules +][+ IF bootstrap +]
-@if target-[+ module +]
-	@cd $(HOST_SUBDIR); set [+module+] stage[+id+]-[+module+] ; \
-	@UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
-	set prev-[+module+] stage[+prev+]-[+module+] ; \
-	@UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
-@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR target_modules +]
+	@UNDO_LINK_TO_DIR@ [+ ENDIF prev +] ; \
+	fi
+@endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
+	@if test -d $(TARGET_SUBDIR) ; then \
+	  set $(TARGET_SUBDIR) stage[+id+]-$(TARGET_SUBDIR) ; \
+	  @UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
+	  set prev-$(TARGET_SUBDIR) stage[+prev+]-$(TARGET_SUBDIR) ; \
+	  @UNDO_LINK_TO_DIR@ [+ ENDIF prev +] ; \
+	fi
 
-# Bubble a bugfix through all the stages up to stage [+id+].  They
-# are remade, but not reconfigured.  The next stage (if any) will not
-# be reconfigured as well.
+# Bubble a bugfix through all the stages up to stage [+id+].  They are
+# remade, but not reconfigured.  The next stage (if any) will not be
+# reconfigured as well.
 .PHONY: stage[+id+]-bubble
 stage[+id+]-bubble:: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +][+IF lean +]
 	@bootstrap_lean@-rm -rf stage[+lean+]-* ; $(STAMP) stage[+lean+]-lean[+ ENDIF lean +]
@@ -1314,7 +1339,7 @@ do-clean: clean-stage[+id+]
 	  echo Cannot compare object files as stage [+prev+] was deleted. ; \
 	  exit 0 ; \
 	fi; \
-	$(stage); \
+	: $(MAKE); $(stage); \
 	rm -f .bad_compare ; \
 	cd stage[+id+]-gcc; \
 	files=`find . -name "*$(objext)" -print` ; \
@@ -1349,18 +1374,18 @@ do-clean: clean-stage[+id+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage[+id+]-bubble
-	@$(unstage)
+	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
-	@$(stage)
+	@: $(MAKE); $(stage)
 [+ ENDIF bootstrap-target +]
 
 # Rules to wipe a stage and all the following ones, also used for cleanstrap
 [+ IF prev +]distclean-stage[+prev+]:: distclean-stage[+id+] [+ ENDIF prev +]
 .PHONY: distclean-stage[+id+]
 distclean-stage[+id+]::
-	@$(stage)
+	@: $(MAKE); $(stage)
 	rm -rf stage[+id+]-* [+
 	  IF compare-target +][+compare-target+] [+ ENDIF compare-target +]
 
@@ -1528,17 +1553,6 @@ install-gdb: $(INSTALL_GDB_TK)
 # --------------------------------
 # Regenerating top level configury
 # --------------------------------
-
-# Multilib.out tells target dirs what multilibs they should build.
-# There is really only one copy.  We use the 'timestamp' method to
-# work around various timestamp bugs on some systems.
-# We use move-if-change so that it's only considered updated when it
-# actually changes, because it has to depend on a phony target.
-multilib.out: maybe-all-gcc
-	@r=`${PWD_COMMAND}`; export r; \
-	echo "Checking multilib configuration..."; \
-	$(CC_FOR_TARGET) --print-multi-lib > multilib.tmp 2> /dev/null ; \
-	$(SHELL) $(srcdir)/move-if-change multilib.tmp multilib.out ; \
 
 # Rebuilding Makefile.in, using autogen.
 AUTOGEN = autogen
