@@ -1,3 +1,9 @@
+2005-12-14  Tom Tromey  <tromey@redhat.com>
+
+	PR classpath/25389:
+	* java/io/File.java (File): Throw IllegalArgumentException if URI is
+	non-hierarchical.
+
 2005-12-12  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/VMCompiler.java: Directly generate a new instance of
