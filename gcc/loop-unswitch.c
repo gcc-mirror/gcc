@@ -426,8 +426,11 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
   sbitmap_zero (zero_bitmap);
   if (!duplicate_loop_to_header_edge (loop, entry, loops, 1,
 	zero_bitmap, NULL, NULL, NULL, 0))
-    return NULL;
-  free (zero_bitmap);
+    {
+      sbitmap_free (zero_bitmap);
+      return NULL;
+    }
+  sbitmap_free (zero_bitmap);
   entry->flags |= irred_flag;
 
   /* Record the block with condition we unswitch on.  */
