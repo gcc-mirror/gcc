@@ -1,3 +1,12 @@
+2005-12-14  Kean Johnston  <jkj@sco.com>
+            Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/sibcall-6.c: Skip in -fPIC mode on X86 ilp32.
+	* gcc.target/i386/20020523-1.c: Ditto.
+	* gcc.target/i386/tailcall-1.c: Ditto.
+	* gcc.target/i386/ssetype-3.c: Make magic* static to work with -fPIC.
+	* gcc.target/i386/ssetype-5.c: Ditto.
+
 2005-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25254
