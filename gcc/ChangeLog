@@ -1,5 +1,12 @@
 2005-12-14  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.md ("*tstdi_extimm", "*tstsi_extimm"): Merge.
+	("*tstdi_cconly_extimm", "*tstsi_cconly_extimm"): Merge.
+	("*tstdi_cconly2", "*tstsi_cconly2"): Merge.
+	Move other tst* patterns to retain partial order.
+
+2005-12-14  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.md ("d0", "1"): New mode attributes.
 	("<shift>di3", "<shift>si3"): Merge.
 	("*<shift>di3_and", "*<shift>si3_and"): Merge.
