@@ -1,4 +1,4 @@
-// { dg-do assemble { xfail *-*-* } }
+// { dg-do assemble }
 
 // Simplified from testcase by Christophe Boyanique <boyan@imac.u-paris2.fr>
 
