@@ -1,3 +1,12 @@
+2005-12-14  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR bootstrap/25397:
+
+	* struct-equiv.c (struct_equiv_init): Fix off-by-one error in clearing
+	of STACK_REGS bits.
+
+	* struct-euiv.c (rtx_equiv_p): Remove SUBREG case.
+
 2005-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25254

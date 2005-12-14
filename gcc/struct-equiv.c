@@ -367,10 +367,6 @@ rtx_equiv_p (rtx *xp, rtx y, int rvalue, struct equiv_info *info)
   /* ??? could extend to allow CONST_INT inputs.  */
   switch (code)
     {
-    case SUBREG:
-      gcc_assert (!reload_completed
-		  || !info->live_update);
-      break;
     case REG:
       {
 	unsigned x_regno = REGNO (x);
@@ -1001,7 +997,7 @@ struct_equiv_init (int mode, struct equiv_info *info)
 	 these regs are not necessarily all dead - we swap random bogosity
 	 against constant bogosity.  However, clearing these bits at
 	 least makes the regsets comparable.  */
-      for (rn = FIRST_STACK_REG; rn < LAST_STACK_REG; rn++)
+      for (rn = FIRST_STACK_REG; rn <= LAST_STACK_REG; rn++)
 	{
 	  CLEAR_REGNO_REG_SET (info->x_block->il.rtl->global_live_at_end, rn);
 	  CLEAR_REGNO_REG_SET (info->y_block->il.rtl->global_live_at_end, rn);
