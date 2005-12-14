@@ -1,3 +1,8 @@
+2005-12-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR rtl-optimization/25310
+	* gcc.c-torture/compile/pr25310.c: New test.
+
 2005-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/25023
