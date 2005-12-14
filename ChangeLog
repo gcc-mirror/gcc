@@ -1,3 +1,8 @@
+2005-12-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.in: Flip the top-level bootstrap switch.
+	* configure: Regenerate.
+
 2005-12-14  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.tpl: Throughout the file, use : $(MAKE) along with
