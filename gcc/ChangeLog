@@ -1,3 +1,8 @@
+2005-12-14  J"orn Rennecke <joern.rennecke@st.com>
+
+	* struct-equiv.c (rtx_equiv_p): Allow arbitrary RVALUE values for
+	PARALLELs with a mode.
+
 2005-12-14  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* cfgloopmanip.c (lv_adjust_loop_entry_edge): Adjust the type of

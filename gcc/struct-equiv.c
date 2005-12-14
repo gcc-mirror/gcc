@@ -637,7 +637,10 @@ rtx_equiv_p (rtx *xp, rtx y, int rvalue, struct equiv_info *info)
       return (rtx_equiv_p (&XEXP (x, 0), XEXP (y, 0), 0, info)
 	      && rtx_equiv_p (&XEXP (x, 0), XEXP (y, 0), 1, info));
     case PARALLEL:
-      gcc_assert (rvalue < 0);
+      /* If this is a top-level PATTERN PARALLEL, we expect the caller to 
+	 have handled the SET_DESTs.  A complex or vector PARALLEL can be
+	 identified by having a mode.  */
+      gcc_assert (rvalue < 0 || GET_MODE (x) != VOIDmode);
       break;
     case LABEL_REF:
       /* Check special tablejump match case.  */
