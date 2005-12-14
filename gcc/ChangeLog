@@ -1,3 +1,11 @@
+2005-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/25254
+	PR target/24188
+	* config/i386/i386.c (x86_64_elf_select_section): If DECL is not
+	DECL_P, call get_section rather than get_named_section.  Supply
+	section flags to it.
+
 2005-12-14  Ben Elliston  <bje@au.ibm.com>
 
 	* c-common.c (c_common_truthvalue_conversion): Generalise warning
