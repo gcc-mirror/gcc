@@ -1,3 +1,8 @@
+2005-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/25023
+	* gcc.dg/pr25023.c: New test.
+
 2005-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.old-deja/g++.brendan/redecl1.C,
