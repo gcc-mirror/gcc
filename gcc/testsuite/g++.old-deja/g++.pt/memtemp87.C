@@ -1,4 +1,4 @@
-// { dg-do assemble { xfail *-*-* } }
+// { dg-do assemble }
 
 // by Paul Burchard <burchard@pobox.com>, Level Set Systems, Inc.
 // Copyright (C) 1999, 2002 Free Software Foundation

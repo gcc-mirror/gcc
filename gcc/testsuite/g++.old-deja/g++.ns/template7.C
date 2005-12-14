@@ -1,4 +1,4 @@
-// { dg-do assemble { xfail *-*-* } }
+// { dg-do assemble }
 
 
 // Based on bug report by Eric NICOLAS <nicolas@bnp-eng.remcomp.com>
