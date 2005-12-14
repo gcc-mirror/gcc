@@ -89,10 +89,27 @@ public abstract class CompilerProcess extends Compiler
     String[] args = computeArguments (name);
     Process p = Runtime.getRuntime ().exec (args);
 
-    /* Print compiler output to System.out. */
-    InputStream procin = p.getInputStream();
-    for (int ch = procin.read(); ch != -1; ch = procin.read())
-      System.out.print((char) ch);
+    /* Print compiler output to System.out.  Do this asynchronously so
+       that the compiler never blocks writing to its stdout.  */
+    {
+      final InputStream procin = p.getInputStream();
+      final Thread copier = new Thread() 
+	{
+	  public void run()
+	  {
+	    try
+	      {
+		for (int ch = procin.read(); ch != -1; ch = procin.read())
+		  System.out.print((char) ch);
+	      }
+	    catch (java.io.IOException _)
+	      {
+	      }
+	  }
+	};
+
+      copier.start();
+    }
 
     /* Collect compiler error output in a buffer.
      * If compilation fails, it will be used for an error message.
