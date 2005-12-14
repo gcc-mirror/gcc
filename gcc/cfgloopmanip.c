@@ -1404,7 +1404,7 @@ static basic_block
 lv_adjust_loop_entry_edge (basic_block first_head,
 			   basic_block second_head,
 			   edge e,
-			   tree cond_expr)
+			   void *cond_expr)
 {
   basic_block new_head = NULL;
   edge e1;
