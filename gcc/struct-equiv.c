@@ -309,10 +309,17 @@ struct_equiv_restore_checkpoint (struct struct_equiv_checkpoint *p,
 static int
 note_local_live (struct equiv_info *info, rtx x, rtx y, int rvalue)
 {
+  unsigned x_regno = REGNO (x);
+  unsigned y_regno = REGNO (y);
+  int x_nominal_nregs = (x_regno >= FIRST_PSEUDO_REGISTER
+			 ? 1 : hard_regno_nregs[x_regno][GET_MODE (x)]);
+  int y_nominal_nregs = (y_regno >= FIRST_PSEUDO_REGISTER
+			 ? 1 : hard_regno_nregs[y_regno][GET_MODE (y)]);
   int x_change = assign_reg_reg_set (info->x_local_live, x, rvalue);
   int y_change = assign_reg_reg_set (info->y_local_live, y, rvalue);
 
-  gcc_assert (x_change == y_change);
+  gcc_assert (x_nominal_nregs && y_nominal_nregs);
+  gcc_assert (x_change * y_nominal_nregs == y_change * x_nominal_nregs);
   if (y_change)
     {
       if (reload_completed)
