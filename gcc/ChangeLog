@@ -1,3 +1,7 @@
+2005-12-14  Sebastian Pop  <pop@cri.ensmp.fr>
+
+        * loop-unswitch.c (unswitch_loop): Free zero_bitmap before returning.
+
 2005-12-14  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR bootstrap/25397:
