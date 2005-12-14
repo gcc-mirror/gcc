@@ -75,7 +75,7 @@ objcp/objcp-lang.o : objcp/objcp-lang.c \
 objcp/objcp-decl.o : objcp/objcp-decl.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_TREE_H) \
    toplev.h $(GGC_H) c-pragma.h input.h flags.h output.h objc/objc-act.h \
-   objcp/objcp-decl.h tree-gimple.h
+   objcp/objcp-decl.h tree-gimple.h $(EXPR_H)
 
 # The following must be an explicit rule; please keep in sync with the implicit
 # one in Makefile.in.
