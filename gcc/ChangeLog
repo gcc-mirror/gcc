@@ -1,3 +1,8 @@
+2005-12-14  J"orn Rennecke <joern.rennecke@st.com>
+
+	* struct-equiv.c (note_local_live): Handle hard regs with different
+	hard_regno_nregs.
+
 2005-12-14  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-ccp.c (fold_stmt_r): DATA argument is now a pointer
