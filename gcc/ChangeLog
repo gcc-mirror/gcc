@@ -1,5 +1,18 @@
 2005-12-14  Adrian Straetling  <straetling@de.ibm.com>
 
+	* config/s390/s390.md ("d0", "1"): New mode attributes.
+	("<shift>di3", "<shift>si3"): Merge.
+	("*<shift>di3_and", "*<shift>si3_and"): Merge.
+	("ashrdi3", "ashrsi3"): Merge.
+	("*ashrdi3_cc", "*ashrsi3_cc"): Merge.
+	("*ashrdi3_cc_and", "*ashrsi3_cc_and"): Merge.
+	("*ashrdi3_cconly", "*ashrsi3_cconly"): Merge.
+	("*ashrdi3_cconly_and", "*ashrsi3_cconly_and"): Merge.
+	("*ashrdi3", "*ashrsi3"): Merge.
+	("*ashrdi3_and", "*ashrsi3_and"): Merge.
+
+2005-12-14  Adrian Straetling  <straetling@de.ibm.com>
+
 	* config/s390/s390.md ("extend<mode>di2", "extend<mode>si2"): Merge.
 	("*extendqidi2_extimm", "*extendqisi2_extimm"): Merge.
 	("*extendqidi2", "*extendqisi2") Merge.
