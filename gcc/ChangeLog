@@ -1,3 +1,10 @@
+2005-12-15  Paolo Bonzini  <bonzini@gnu.org>
+
+        * combine.c: Remove force_to_mode's fourth parameter.
+        (force_to_mode): Do not handle REG.
+        (canon_reg_for_combine): New.
+        (make_field_assignment): Use it where the removed argument was non-NULL.
+
 2005-12-15  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/25406
