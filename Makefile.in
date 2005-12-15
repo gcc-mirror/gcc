@@ -646,7 +646,6 @@ all:
 	else \
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-host all-target; \
 	fi
-	@: $(MAKE); $(stage)
 
 .PHONY: all-build
 all-build:  \
@@ -761,7 +760,6 @@ do-info:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) info-host \
 	  info-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: info-host
@@ -864,7 +862,6 @@ do-dvi:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) dvi-host \
 	  dvi-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: dvi-host
@@ -967,7 +964,6 @@ do-html:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) html-host \
 	  html-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: html-host
@@ -1070,7 +1066,6 @@ do-TAGS:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) TAGS-host \
 	  TAGS-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: TAGS-host
@@ -1173,7 +1168,6 @@ do-install-info:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) install-info-host \
 	  install-info-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: install-info-host
@@ -1276,7 +1270,6 @@ do-installcheck:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) installcheck-host \
 	  installcheck-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: installcheck-host
@@ -1379,7 +1372,6 @@ do-mostlyclean:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) mostlyclean-host \
 	  mostlyclean-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: mostlyclean-host
@@ -1482,7 +1474,6 @@ do-clean:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) clean-host \
 	  clean-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: clean-host
@@ -1585,7 +1576,6 @@ do-distclean:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) distclean-host \
 	  distclean-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: distclean-host
@@ -1688,7 +1678,6 @@ do-maintainer-clean:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) maintainer-clean-host \
 	  maintainer-clean-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: maintainer-clean-host
@@ -1944,7 +1933,6 @@ do-check:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) check-host check-target
-	@: $(MAKE); $(stage)
 
 # Automated reporting of test results.
 
@@ -1975,7 +1963,6 @@ install:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) installdirs install-host install-target
-	@: $(MAKE); $(stage)
 
 .PHONY: install-host-nogcc
 install-host-nogcc:  \
@@ -36150,7 +36137,6 @@ bootstrap2:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
-	@: $(MAKE); $(stage)
 
 
 # Rules to wipe a stage and all the following ones, also used for cleanstrap
@@ -36432,7 +36418,6 @@ bootstrap:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
-	@: $(MAKE); $(stage)
 
 
 # Rules to wipe a stage and all the following ones, also used for cleanstrap
@@ -36717,7 +36702,6 @@ bootstrap4:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
-	@: $(MAKE); $(stage)
 
 
 # Rules to wipe a stage and all the following ones, also used for cleanstrap
@@ -37197,7 +37181,6 @@ profiledbootstrap:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
-	@: $(MAKE); $(stage)
 
 
 # Rules to wipe a stage and all the following ones, also used for cleanstrap
