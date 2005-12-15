@@ -1,3 +1,10 @@
+2005-12-15  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/25421
+	* config/locale/gnu/c_locale.cc (_S_destroy_c_locale): Check
+	for null argument.
+	* testsuite/22_locale/facet/25421.cc: New.
+
 2005-12-13  Carlos O'Donell <carlos@codesourcery.com>
 
 	* include/std/std_limits.h (struct numeric_limits):
