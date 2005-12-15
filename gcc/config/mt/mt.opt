@@ -1,4 +1,4 @@
-; Options for the ms1 port of the compiler
+; Options for the mt port of the compiler
 ;
 ; Copyright (C) 2005 Free Software Foundation, Inc.
 ;
@@ -52,5 +52,5 @@ Target RejectNegative Mask(DEBUG)
 Internal debug switch
 
 march=
-Target RejectNegative Joined Var(ms1_cpu_string)
+Target RejectNegative Joined Var(mt_cpu_string)
 Specify CPU for code generation purposes

@@ -1,4 +1,4 @@
-# crti.asm for ms1
+# crti.asm for mt
 #
 #   Copyright (C) 2005 Free Software Foundation, Inc.
 # 
