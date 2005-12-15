@@ -1271,7 +1271,8 @@ public abstract class DomNode
 
     void detach()
     {
-      current.detach();
+      if (current != null)
+        current.detach();
       current = null;
       
       DomNode.this.removeEventListener("DOMNodeInserted", this, true);

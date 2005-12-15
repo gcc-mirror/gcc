@@ -1,3 +1,9 @@
+2005-12-15  Caolan McNamara  <caolanm@redhat.com>
+
+	PR classpath/25426:
+	* gnu/xml/dom/DomNode.java (detach): Check whether current is
+	already null.
+
 2005-12-08  Matthias Klose  <doko@debian.org>
 
 	2005-11-20  Chris Burdess  <dog@gnu.org>
