@@ -1,3 +1,14 @@
+2005-12-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (okay_component_ref_for_subvars): Remove.
+	(get_ref_base_and_extent): Declare.
+	* tree-dfa.c (okay_component_ref_for_subvars): Remove.
+	(get_ref_base_and_extent): New function.
+	* tree-ssa-alias.c (find_used_portions): Use it.
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+
 2005-12-15  Paolo Bonzini  <bonzini@gnu.org>
 
         * combine.c: Remove force_to_mode's fourth parameter.

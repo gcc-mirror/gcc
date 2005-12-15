@@ -2695,16 +2695,14 @@ find_used_portions (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case COMPONENT_REF:
       {
 	HOST_WIDE_INT bitsize;
+	HOST_WIDE_INT bitmaxsize;
 	HOST_WIDE_INT bitpos;
-	tree offset;
-	enum machine_mode mode;
-	int unsignedp;
-	int volatilep;	
 	tree ref;
-	ref = get_inner_reference (*tp, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &volatilep, false);
-	if (DECL_P (ref) && offset == NULL && bitsize != -1)
-	  {	    
+	ref = get_ref_base_and_extent (*tp, &bitpos, &bitsize, &bitmaxsize);
+	if (DECL_P (ref)
+	    && var_can_have_subvars (ref)
+	    && bitmaxsize != -1)
+	  {
 	    size_t uid = DECL_UID (ref);
 	    used_part_t up;
 
@@ -2712,36 +2710,17 @@ find_used_portions (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
 	    if (bitpos <= up->minused)
 	      up->minused = bitpos;
-	    if ((bitpos + bitsize >= up->maxused))
-	      up->maxused = bitpos + bitsize;	    
+	    if ((bitpos + bitmaxsize >= up->maxused))
+	      up->maxused = bitpos + bitmaxsize;
 
-	    up->explicit_uses = true;
+	    if (bitsize == bitmaxsize)
+	      up->explicit_uses = true;
+	    else
+	      up->implicit_uses = true;
 	    up_insert (uid, up);
 
 	    *walk_subtrees = 0;
 	    return NULL_TREE;
-	  }
-	else if (DECL_P (ref))
-	  {
-	    if (DECL_SIZE (ref)
-		&& var_can_have_subvars (ref)
-		&& TREE_CODE (DECL_SIZE (ref)) == INTEGER_CST)
-	      {
-		used_part_t up;
-		size_t uid = DECL_UID (ref);
-
-		up = get_or_create_used_part_for (uid);
-
-		up->minused = 0;
-		up->maxused = TREE_INT_CST_LOW (DECL_SIZE (ref));
-
-		up->implicit_uses = true;
-
-		up_insert (uid, up);
-
-		*walk_subtrees = 0;
-		return NULL_TREE;
-	      }
 	  }
       }
       break;
