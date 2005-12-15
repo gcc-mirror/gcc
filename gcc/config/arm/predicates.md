@@ -110,6 +110,14 @@
         "offsettable_address_p (reload_completed | reload_in_progress,
 				mode, XEXP (op, 0))")))
 
+;; True if the operand is a memory operand that does not have an
+;; automodified base register (and thus will not generate output reloads).
+(define_predicate "call_memory_operand"
+  (and (match_code "mem")
+       (and (match_test "GET_RTX_CLASS (GET_CODE (XEXP (op, 0)))
+			 != RTX_AUTOINC")
+	    (match_operand 0 "memory_operand"))))
+
 (define_predicate "arm_reload_memory_operand"
   (and (match_code "mem,reg,subreg")
        (match_test "(!CONSTANT_P (op)

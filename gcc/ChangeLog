@@ -1,3 +1,8 @@
+2005-12-15  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/arm/predicates.md (call_memory_operand): New.
+	* config/arm/arm.md (*call_mem, *call_value_mem): Use it.
+
 2005-12-15  Andrew Haley  <aph@redhat.com>
 
 	* unwind-dw2-fde-glibc.c (_Unwind_IteratePhdrCallback): Guard
