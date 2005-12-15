@@ -1,3 +1,14 @@
+2005-12-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/mt/mt.c (mt_override_options): Require lower case
+	architectures.  Revert accidental default to ms2.
+	* config/mt/mt.h (ASM_SPEC, LIBSPEC, STARTFILE_SPEC,
+	ENDFILE_SPEC): Require lower case architectures.  Revert default
+	to ms2.
+
+	* doc/invoke.texi (MT Options): Rename and update.
+	* doc/md.texi (MorphoTech family): Rename and update.
+
 2005-12-15  Olivier Hainque  <hainque@adacore.com>
 
 	* stor-layout.c (layout_type): Don't complain about a too small
