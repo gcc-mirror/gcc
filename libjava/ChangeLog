@@ -1,3 +1,8 @@
+2005-12-15  Alan Modra  <amodra@bigpond.net.au>
+
+	* testsuite/lib/libjava.exp: Revert 2005-12-01.
+	* testsuite/libjava.lang/Array_3.xfail: Delete.
+
 2005-12-14  Andrew Haley  <aph@redhat.com>
 
 	* gnu/java/rmi/rmic/CompilerProcess.java: Use a new thread to
