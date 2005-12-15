@@ -1548,6 +1548,20 @@ anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
 is 128 then the default is 1, otherwise it is 0.
 @end defmac
 
+@defmac SF_SIZE
+@defmacx DF_SIZE
+@defmacx XF_SIZE
+@defmacx TF_SIZE
+Define these macros to be the size in bits of the mantissa of
+@code{SFmode}, @code{DFmode}, @code{XFmode} and @code{TFmode} values,
+if the defaults in @file{libgcc2.h} are inappropriate.  By default,
+@code{FLT_MANT_DIG} is used for @code{SF_SIZE}, @code{LDBL_MANT_DIG}
+for @code{XF_SIZE} and @code{TF_SIZE}, and @code{DBL_MANT_DIG} or
+@code{LDBL_MANT_DIG} for @code{DF_SIZE} according to whether
+@code{LIBGCC2_DOUBLE_TYPE_SIZE} or
+@code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is 64.
+@end defmac
+
 @defmac TARGET_FLT_EVAL_METHOD
 A C expression for the value for @code{FLT_EVAL_METHOD} in @file{float.h},
 assuming, if applicable, that the floating-point control word is in its

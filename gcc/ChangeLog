@@ -1,3 +1,22 @@
+2005-12-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR other/25028
+	* libgcc2.h (SF_SIZE, DF_SIZE, XF_SIZE, TF_SIZE): Define.
+	* libgcc2.c (__floatdixf, __floatundixf, __floatditf,
+	__floatunditf): Use #error if type sizes don't match requirements
+	of implementation.
+	(__floatdisf, __floatdidf): Unify.  Possibly use XFmode or TFmode
+	as wider floating-point type.  Use #error if type sizes don't
+	match requirements of implementation.  Avoid overflow in computing
+	Wtype_MAXp1_F * Wtype_MAXp1_F.  When special casing conversion,
+	shift one more bit.  Cast 1 to DWtype or UDWtype for shifting.
+	(__floatundisf, __floatundidf): Likewise.
+	* config/ia64/hpux.h (XF_SIZE, TF_SIZE): Define.
+	* config/ia64/ia64.c (ia64_init_libfuncs): Use
+	_U_Qfcnvfxt_quad_to_quad and _U_Qfcnvxf_quad_to_quad for
+	TFmode-TImode conversions.
+	* doc/tm.texi (SF_SIZE, DF_SIZE, XF_SIZE, TF_SIZE): Document.
+
 2005-12-14  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* freebsd-spec.h (FBSD_TARGET_OS_CPP_BUILTINS):

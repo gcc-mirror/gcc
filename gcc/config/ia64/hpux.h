@@ -195,10 +195,12 @@ do {								\
 /* Put all *xf routines in libgcc, regardless of long double size.  */
 #undef LIBGCC2_HAS_XF_MODE
 #define LIBGCC2_HAS_XF_MODE 1
+#define XF_SIZE 64
 
 /* Put all *tf routines in libgcc, regardless of long double size.  */
 #undef LIBGCC2_HAS_TF_MODE
 #define LIBGCC2_HAS_TF_MODE 1
+#define TF_SIZE 113
 
 /* HP-UX headers are C++-compatible.  */
 #define NO_IMPLICIT_EXTERN_C

@@ -1,6 +1,6 @@
 /* Test floating-point conversions.  TImode types.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
-/* { dg-do run { xfail lp64 } } */
+/* { dg-do run { xfail { ia64-*-hpux* && lp64 } } } */
 /* { dg-options "" } */
 
 #include <float.h>
