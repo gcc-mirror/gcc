@@ -1,3 +1,7 @@
+2005-12-15  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* MAINTAINERS: Update my email address.
+
 2005-12-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (all, do-[+make_target+], do-check, install,
