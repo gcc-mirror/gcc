@@ -105,14 +105,13 @@ extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);
 extern HOST_WIDE_INT rs6000_initial_elimination_offset (int, int);
 
-extern rtx rs6000_machopic_legitimize_pic_address (rtx orig,
-						   enum machine_mode mode,
-						   rtx reg);
-
+extern rtx rs6000_machopic_legitimize_pic_address (rtx, enum machine_mode,
+						   rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern unsigned int rs6000_special_round_type_align (tree, int, int);
+extern unsigned int rs6000_special_round_type_align (tree, unsigned int,
+						     unsigned int);
 extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, int, int);
 extern int function_arg_boundary (enum machine_mode, tree);
