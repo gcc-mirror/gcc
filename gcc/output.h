@@ -499,7 +499,7 @@ extern GTY(()) section *exception_section;
 extern GTY(()) section *eh_frame_section;
 
 extern GTY(()) section *in_section;
-extern GTY(()) section *last_text_section;
+extern GTY(()) bool in_cold_section_p;
 
 extern section *get_unnamed_section (unsigned int, void (*) (const void *),
 				     const void *);

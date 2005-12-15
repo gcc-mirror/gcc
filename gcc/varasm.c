@@ -167,8 +167,9 @@ section *eh_frame_section;
    been selected or if we lose track of what the current section is.  */
 section *in_section;
 
-/* The last text section used by asm_out_file.  */
-section *last_text_section;
+/* True if code for the current function is currently being directed
+   at the cold section.  */
+bool in_cold_section_p;
 
 /* A linked list of all the unnamed sections.  */
 static GTY(()) section *unnamed_sections;
@@ -411,6 +412,22 @@ asm_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 
 #endif /* BSS_SECTION_ASM_OP */
 
+#ifndef USE_SELECT_SECTION_FOR_FUNCTIONS
+/* Return the hot section for function DECL.  Return text_section for
+   null DECLs.  */
+
+static section *
+hot_function_section (tree decl)
+{
+  if (decl != NULL_TREE
+      && DECL_SECTION_NAME (decl) != NULL_TREE
+      && targetm.have_named_sections)
+    return get_named_section (decl, NULL, 0);
+  else
+    return text_section;
+}
+#endif
+
 /* Return the section for function DECL.
 
    If DECL is NULL_TREE, return the text section.  We can be passed
@@ -427,12 +444,7 @@ function_section (tree decl)
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
   return targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
 #else
-  if (decl != NULL_TREE
-      && DECL_SECTION_NAME (decl) != NULL_TREE
-      && targetm.have_named_sections)
-    return get_named_section (decl, NULL, 0);
-  else
-    return text_section;
+  return hot_function_section (decl);
 #endif
 }
 
@@ -440,17 +452,13 @@ section *
 current_function_section (void)
 {
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
-  int reloc = 0; 
-
-  if (unlikely_text_section_p (last_text_section))
-    reloc = 1;
- 
-  return targetm.asm_out.select_section (current_function_decl, reloc,
+  return targetm.asm_out.select_section (current_function_decl,
+					 in_cold_section_p,
 					 DECL_ALIGN (current_function_decl));
 #else
-  if (last_text_section)
-    return last_text_section;
-  return function_section (current_function_decl);
+  return (in_cold_section_p
+	  ? unlikely_text_section ()
+	  : hot_function_section (current_function_decl));
 #endif
 }
 
@@ -1083,7 +1091,7 @@ assemble_start_function (tree decl, const char *fnname)
 
   if (flag_reorder_blocks_and_partition)
     {
-      unlikely_text_section ();
+      switch_to_section (unlikely_text_section ());
       assemble_align (FUNCTION_BOUNDARY);
       ASM_OUTPUT_LABEL (asm_out_file, cfun->cold_section_label);
 
@@ -1115,7 +1123,7 @@ assemble_start_function (tree decl, const char *fnname)
 	first_function_block_is_cold = true;
     }
 
-  last_text_section = NULL;
+  in_cold_section_p = first_function_block_is_cold;
 
   /* Switch to the correct text section for the start of the function.  */
 
@@ -1200,7 +1208,7 @@ assemble_end_function (tree decl, const char *fnname)
       section *save_text_section;
 
       save_text_section = in_section;
-      unlikely_text_section ();
+      switch_to_section (unlikely_text_section ());
       ASM_OUTPUT_LABEL (asm_out_file, cfun->cold_section_end_label);
       if (first_function_block_is_cold)
 	switch_to_section (text_section);
@@ -5586,11 +5594,7 @@ switch_to_section (section *new_section)
   if (new_section->common.flags & SECTION_FORGET)
     in_section = NULL;
   else
-    {
-      in_section = new_section;
-      if (new_section->common.flags & SECTION_CODE)
-	last_text_section = in_section;
-    }
+    in_section = new_section;
 
   if (new_section->common.flags & SECTION_NAMED)
     {

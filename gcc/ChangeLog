@@ -1,3 +1,25 @@
+2005-12-15  Richard Sandiford  <richard@codesourcery.com>
+
+	* final.c (final_scan_insn): Flip in_cold_section_p when changing
+	between the hot and cold sections.  Use current_function_section
+	to get the new section.
+	* dwarf2out.c (output_line_info): Use in_cold_section_p to
+	determine whether we are assembling hot or cold code.
+	(secname_for_decl, dwarf2out_var_location): Likewise.
+	(dwarf2out_init, dwarf2out_finish): Use switch_to_section.
+	* varasm.c (last_text_section): Delete.
+	(in_cold_section_p): New variable.
+	(hot_function_section): New function.
+	(current_function_section): Pass in_cold_section_p as the
+	reloc argument to select_section.  Use it to decide between
+	unlikely_function_section and hot_function_section.
+	(assemble_start_function): Use switch_to_section.  Set
+	in_cold_section_p instead of last_text_section.
+	(assemble_end_function): Use switch_to_section.
+	(switch_to_section): Don't set last_text_section.
+	* config/darwin/darwin.c (machopic_select_section): Trust the reloc
+	argument to make the right choice between hot and cold sections.
+
 2005-12-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Second part of MS1->MT renaming
