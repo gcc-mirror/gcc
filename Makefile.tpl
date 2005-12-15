@@ -497,7 +497,6 @@ all:
 	else \
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-host all-target; \
 	fi
-	@: $(MAKE); $(stage)
 
 .PHONY: all-build
 all-build: [+
@@ -527,7 +526,6 @@ do-[+make_target+]:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) [+make_target+]-host \
 	  [+make_target+]-target
-	@: $(MAKE); $(stage)
 
 
 .PHONY: [+make_target+]-host
@@ -621,7 +619,6 @@ do-check:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) check-host check-target
-	@: $(MAKE); $(stage)
 
 # Automated reporting of test results.
 
@@ -652,7 +649,6 @@ install:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) installdirs install-host install-target
-	@: $(MAKE); $(stage)
 
 .PHONY: install-host-nogcc
 install-host-nogcc: [+
@@ -1378,7 +1374,6 @@ do-clean: clean-stage[+id+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
-	@: $(MAKE); $(stage)
 [+ ENDIF bootstrap-target +]
 
 # Rules to wipe a stage and all the following ones, also used for cleanstrap
