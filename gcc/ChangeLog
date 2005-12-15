@@ -1,3 +1,7 @@
+2005-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/t-darwin (darwin-c.o): Depend on $(TREE_H) instead of tree.h.
+
 2005-12-15  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/arm/predicates.md (call_memory_operand): New.
