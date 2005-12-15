@@ -5320,11 +5320,20 @@ default_unique_section_1 (tree decl, int reloc, int shlib)
       prefix = one_only ? ".gnu.linkonce.s2." : ".sdata2.";
       break;
     case SECCAT_DATA:
-    case SECCAT_DATA_REL:
-    case SECCAT_DATA_REL_LOCAL:
-    case SECCAT_DATA_REL_RO:
-    case SECCAT_DATA_REL_RO_LOCAL:
       prefix = one_only ? ".gnu.linkonce.d." : ".data.";
+      break;
+    case SECCAT_DATA_REL:
+      prefix = one_only ? ".gnu.linkonce.d.rel." : ".data.rel.";
+      break;
+    case SECCAT_DATA_REL_LOCAL:
+      prefix = one_only ? ".gnu.linkonce.d.rel.local." : ".data.rel.local.";
+      break;
+    case SECCAT_DATA_REL_RO:
+      prefix = one_only ? ".gnu.linkonce.d.rel.ro." : ".data.rel.ro.";
+      break;
+    case SECCAT_DATA_REL_RO_LOCAL:
+      prefix = one_only ? ".gnu.linkonce.d.rel.ro.local."
+	       : ".data.rel.ro.local.";
       break;
     case SECCAT_SDATA:
       prefix = one_only ? ".gnu.linkonce.s." : ".sdata.";
