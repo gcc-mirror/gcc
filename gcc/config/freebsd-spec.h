@@ -51,22 +51,7 @@ Boston, MA 02110-1301, USA.  */
 #define FBSD_TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\
-	if (FBSD_MAJOR == 9)						\
-	  builtin_define ("__FreeBSD__=9");			       	\
-	else if (FBSD_MAJOR == 8)					\
-	  builtin_define ("__FreeBSD__=8");			       	\
-	if (FBSD_MAJOR == 7)						\
-	  builtin_define ("__FreeBSD__=7");			       	\
-	else if (FBSD_MAJOR == 6)					\
-	  builtin_define ("__FreeBSD__=6");			       	\
-	else if (FBSD_MAJOR == 5)	       				\
-	  builtin_define ("__FreeBSD__=5");			       	\
-	else if (FBSD_MAJOR == 4)			       		\
-	  builtin_define ("__FreeBSD__=4");			       	\
-	else if (FBSD_MAJOR == 3)	       				\
-	  builtin_define ("__FreeBSD__=3");			       	\
-	else								\
-	  builtin_define ("__FreeBSD__");			       	\
+	builtin_define_with_int_value ("__FreeBSD__", FBSD_MAJOR);	\
 	builtin_define_std ("unix");					\
 	builtin_define ("__KPRINTF_ATTRIBUTE__");		       	\
 	builtin_assert ("system=unix");					\

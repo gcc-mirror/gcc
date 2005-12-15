@@ -1,3 +1,9 @@
+2005-12-14  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* freebsd-spec.h (FBSD_TARGET_OS_CPP_BUILTINS):
+	Use builtin_define_with_int_value() instead of
+	adding a new check for every new major FreeBSD version.
+
 2005-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/t-darwin (darwin-c.o): Depend on $(TREE_H) instead of tree.h.
