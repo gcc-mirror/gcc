@@ -39,19 +39,26 @@ adopts it -- it is not enough to inherit them.  The flag
 `-Wprotocols' is the default which requires them defined.
 
 
++load
+===========
+This method, if defined, is called for each class and category
+implementation when the class is loaded into the runtime.  This method
+is not inherited, and is thus not called for a subclass that doesn't
+define it itself.  Thus, each +load method is called exactly once by
+the runtime.  The runtime invocation of this method is thread safe.
+
+
 +initialize 
 ===========
 
 This method, if defined, is called before any other instance or class
-methods of that particular class.  This method is not inherited, and
-is thus not called as initializer for a subclass that doesn't define
-it itself.  Thus, each +initialize method is called exactly once (or
-never if no methods of that particular class is never called).
-Besides this, it is allowed to have several +initialize methods, one
-for each category.  The order in which these (multiple methods) are
-called is not well defined.  I am not completely certain what the
-semantics of this method is for other implementations, but this is
-how it works for GNU Objective C.
+methods of that particular class.  For the GNU runtime, this method is 
+not inherited, and is thus not called as initializer for a subclass that 
+doesn't define it itself.  Thus, each +initialize method is called exactly 
+once by the runtime (or never if no methods of that particular class is 
+never called).  It is wise to guard against multiple invocations anyway 
+to remain portable with the NeXT runtime.  The runtime invocation of 
+this method is thread safe.
 
 
 Passivation/Activation/Typedstreams
