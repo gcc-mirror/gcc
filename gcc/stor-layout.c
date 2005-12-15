@@ -1816,8 +1816,13 @@ layout_type (tree type)
 		TYPE_MODE (type) = BLKmode;
 	      }
 	  }
+	/* When the element size is constant, check that it is at least as
+	   large as the element alignment.  */
 	if (TYPE_SIZE_UNIT (element)
 	    && TREE_CODE (TYPE_SIZE_UNIT (element)) == INTEGER_CST
+	    /* If TYPE_SIZE_UNIT overflowed, then it is certainly larger than
+	       TYPE_ALIGN_UNIT.  */
+	    && !TREE_CONSTANT_OVERFLOW (TYPE_SIZE_UNIT (element))
 	    && !integer_zerop (TYPE_SIZE_UNIT (element))
 	    && compare_tree_int (TYPE_SIZE_UNIT (element),
 			  	 TYPE_ALIGN_UNIT (element)) < 0)
