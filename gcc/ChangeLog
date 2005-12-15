@@ -1,3 +1,8 @@
+2005-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.c (default_unique_section_1): Use special section
+	names for SECCAT_DATA_REL{,_RO}{,_LOCAL}.
+
 2005-12-15  Jan Hubicka  <jh@suse.cz>
 
 	PR target/24969
