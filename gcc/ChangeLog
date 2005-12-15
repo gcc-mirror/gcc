@@ -1,3 +1,13 @@
+2005-12-15  Zdenek Dvorak <dvorakz@suse.cz>
+	    Steven Bosscher <stevenb@suse.de>
+
+	* loop-invariant.c (df): New global variable.
+	(find_defs, check_dependencies, find_invariant_insn, record_uses,
+	find_invariants_bb, find_invariants_body, find_invariants,
+	find_invariants_to_move, move_invariants, free_inv_motion_data,
+	move_single_loop_invariants, move_loop_invariants): Do not pass df in
+	arguments.
+
 2005-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* varasm.c (default_unique_section_1): Use special section
