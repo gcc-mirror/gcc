@@ -296,3 +296,34 @@ fi
 AC_SUBST(LN)dnl
 ])
 
+dnl GCC_TARGET_TOOL(PROGRAM, TARGET-VAR, HOST-VAR, IN-TREE-TOOL, LANGUAGE)
+AC_DEFUN([GCC_TARGET_TOOL],
+[AC_MSG_CHECKING(where to find the target $1)
+if test "x${build}" != "x${host}" ; then
+  # Canadian cross, just use what we found
+  AC_MSG_RESULT(pre-installed)
+else
+  ifelse([$4],,,
+  [ok=yes
+  case " ${configdirs} " in
+    *" patsubst([$4], [/.*], []) "*) ;;
+    *) ok=no ;;
+  esac
+  ifelse([$5],,, 
+  [case ,${enable_languages}, in
+    *,$5,*) ;;
+    *) ok=no ;;
+  esac])
+  if test $ok = yes; then
+    # An in-tree tool is available and we can use it
+    $2='$$r/$(HOST_SUBDIR)/$4'
+    AC_MSG_RESULT(just compiled)
+  el])if test "x$target" = "x$host"; then
+    # We can use an host tool
+    $2='$($3)'
+    AC_MSG_RESULT(host tool)
+  else
+    # We need a cross tool
+    AC_MSG_RESULT(pre-installed)
+  fi
+fi])
