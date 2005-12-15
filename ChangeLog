@@ -1,5 +1,9 @@
 2005-12-14  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.in: Regenerate.
+
+2005-12-14  Paolo Bonzini  <bonzini@gnu.org>
+
 	* configure.in (CONFIGURED_BISON, CONFIGURED_YACC, CONFIGURED_M4,
 	CONFIGURED_FLEX, CONFIGURED_LEX, CONFIGURED_MAKEINFO): Remove
 	"CONFIGURED_" from the AC_CHECK_PROGS invocation.  Move below.
