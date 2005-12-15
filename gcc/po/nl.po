@@ -1,13 +1,13 @@
-# Dutch messages for gcc 4.0.1.
+# Dutch messages for gcc 4.1.
 # Copyright (C) 1999, 2000, 2002, 2003, 2005 Free Software Foundation, Inc.
 # Tim Van Holder <tim.van.holder@telenet.be>, 1999, 2000, 2002, 2003, 2005.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.0.1-b20050607\n"
+"Project-Id-Version: gcc 4.1-b20051125\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-11-20 16:33+0000\n"
-"PO-Revision-Date: 2005-06-21 20:13+0200\n"
+"PO-Revision-Date: 2005-12-14 15:03+0100\n"
 "Last-Translator: Tim Van Holder <tim.van.holder@telenet.be>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
@@ -270,7 +270,7 @@ msgstr "dubbele folder \"%s\" wordt genegeerd\n"
 #: c-incpath.c:73
 #, c-format
 msgid "  as it is a non-system directory that duplicates a system directory\n"
-msgstr ""
+msgstr "  omdat het een niet-systeemfolder is die reeds als systeemfolder wordt gebruikt\n"
 
 #: c-incpath.c:77
 #, c-format
@@ -294,11 +294,11 @@ msgstr "Einde van opzoekingslijst.\n"
 
 #: c-opts.c:1329
 msgid "<built-in>"
-msgstr ""
+msgstr "<ingebouwd>"
 
 #: c-opts.c:1345
 msgid "<command line>"
-msgstr ""
+msgstr "<commandolijn>"
 
 #: c-typeck.c:2226 c-typeck.c:4613 c-typeck.c:4615 c-typeck.c:4623
 #: c-typeck.c:4653 c-typeck.c:6032
@@ -371,11 +371,11 @@ msgstr "accolades rond scalaire beginwaarde"
 
 #: c-typeck.c:5287
 msgid "initialization of flexible array member in a nested context"
-msgstr ""
+msgstr "initialisatie van flexibel array-lid in een geneste context"
 
 #: c-typeck.c:5289
 msgid "initialization of a flexible array member"
-msgstr ""
+msgstr "initialisatie van flexibel array-lid"
 
 #: c-typeck.c:5316
 msgid "missing initializer"
@@ -564,9 +564,9 @@ msgid "cannot find 'nm'"
 msgstr "kan 'nm' niet vinden"
 
 #: collect2.c:2066
-#, fuzzy, c-format
+#, c-format
 msgid "can't open nm output"
-msgstr "kan bestand '%s' niet openen"
+msgstr "kan uitvoer van nm niet openen"
 
 #: collect2.c:2110
 #, c-format
@@ -579,9 +579,9 @@ msgid "fini function found in object %s"
 msgstr "fini-functie gevonden in object %s"
 
 #: collect2.c:2221
-#, fuzzy, c-format
+#, c-format
 msgid "can't open ldd output"
-msgstr "kan bestand '%s' niet openen"
+msgstr "kan uitvoer van ldd niet openen"
 
 #: collect2.c:2224
 #, c-format
@@ -813,14 +813,12 @@ msgid ""
 msgstr ""
 
 #: gcc.c:2848
-#, fuzzy
 msgid "failed to get exit status"
-msgstr "ld gaf exit-status %d terug"
+msgstr "kon exit-status niet ophalen"
 
 #: gcc.c:2854
-#, fuzzy
 msgid "failed to get process times"
-msgstr "kan klasse '%s' niet vinden"
+msgstr "kon procestijden niet ophalen"
 
 #: gcc.c:2877
 #, c-format
@@ -833,7 +831,7 @@ msgstr ""
 #: gcc.c:2905
 #, c-format
 msgid "# %s %.2f %.2f\n"
-msgstr ""
+msgstr "# %s %.2f %.2f\n"
 
 #: gcc.c:3041
 #, c-format
@@ -842,7 +840,7 @@ msgstr "Gebruik: %s [opties] bestand...\n"
 
 #: gcc.c:3042
 msgid "Options:\n"
-msgstr ""
+msgstr "Opties:\n"
 
 #: gcc.c:3044
 msgid "  -pass-exit-codes         Exit with highest error code from a phase\n"
@@ -1246,24 +1244,24 @@ msgid "multilib exclusion '%s' is invalid"
 msgstr "multilib exclusion '%s' is ongeldig"
 
 #: gcc.c:7653 gcc.c:7658
-#, fuzzy, c-format
+#, c-format
 msgid "invalid version number `%s'"
-msgstr "Ongeldige optie %qs"
+msgstr "ongeldig versienummer `%s'"
 
 #: gcc.c:7701
-#, fuzzy, c-format
+#, c-format
 msgid "too few arguments to %%:version-compare"
-msgstr "te weinig argumenten voor functie"
+msgstr "te weinig argumenten voor %%:version-compare"
 
 #: gcc.c:7707
-#, fuzzy, c-format
+#, c-format
 msgid "too many arguments to %%:version-compare"
-msgstr "te veel argumenten voor functie"
+msgstr "te veel argumenten voor %%:version-compare"
 
 #: gcc.c:7748
 #, c-format
 msgid "unknown operator '%s' in %%:version-compare"
-msgstr ""
+msgstr "onbekende operator '%s' in %%:version-compare"
 
 #: gcov.c:388
 #, c-format
@@ -1583,34 +1581,34 @@ msgstr "syntaxfout: kan niet terugkeren"
 #: gengtype-yacc.c:1085 gengtype-yacc.c:1846 java/parse-scan.c:2471
 #: java/parse-scan.c:3359 java/parse.c:3464 java/parse.c:6451
 msgid "memory exhausted"
-msgstr ""
+msgstr "geheugen opgebruikt"
 
 #. This is so xgettext sees the translatable formats that are
 #. constructed on the fly.
 #: gengtype-yacc.c:1653 java/parse-scan.c:3166 java/parse.c:6258
-#, fuzzy, c-format
+#, c-format
 msgid "syntax error, unexpected %s"
-msgstr "%s voor %qs"
+msgstr "syntaxfout, %s onverwacht"
 
 #: gengtype-yacc.c:1654 java/parse-scan.c:3167 java/parse.c:6259
-#, fuzzy, c-format
+#, c-format
 msgid "syntax error, unexpected %s, expecting %s"
-msgstr "%s voor %qs"
+msgstr "syntaxfout, %s onverwacht, %s verwacht"
 
 #: gengtype-yacc.c:1655 java/parse-scan.c:3168 java/parse.c:6260
 #, c-format
 msgid "syntax error, unexpected %s, expecting %s or %s"
-msgstr ""
+msgstr "syntaxfout, %s onverwacht, %s of %s verwacht"
 
 #: gengtype-yacc.c:1656 java/parse-scan.c:3169 java/parse.c:6261
 #, c-format
 msgid "syntax error, unexpected %s, expecting %s or %s or %s"
-msgstr ""
+msgstr "syntaxfout, %s onverwacht, %s of %s of %s verwacht"
 
 #: gengtype-yacc.c:1657 java/parse-scan.c:3170 java/parse.c:6262
 #, c-format
 msgid "syntax error, unexpected %s, expecting %s or %s or %s or %s"
-msgstr ""
+msgstr "syntaxfout, %s onverwacht, %s of %s of %s of %s verwacht"
 
 #. Depending on the version of Bison used to compile this grammar,
 #. it may issue generic diagnostics spelled "syntax error" or
@@ -1626,16 +1624,15 @@ msgstr ""
 msgid "syntax error"
 msgstr "syntaxfout"
 
-# Niet helemaal zeker hier - de unicode aanhalingstekens (‘’) gebruiken, maar dan is utf-8 nodig, of «», of gewoon zo laten?
 #. Opening quotation mark.
 #: intl.c:58
 msgid "`"
-msgstr "`"
+msgstr "‘"
 
 #. Closing quotation mark.
 #: intl.c:61
 msgid "'"
-msgstr "'"
+msgstr "’"
 
 #: ipa-inline.c:273
 msgid "--param large-function-growth limit reached"
@@ -1646,9 +1643,8 @@ msgid "--param max-inline-insns-single limit reached"
 msgstr "limiet van --param max-inline-insns-single bereikt"
 
 #: ipa-inline.c:312
-#, fuzzy
 msgid "--param max-inline-insns-auto limit reached"
-msgstr "limiet van --param max-inline-insns-single bereikt"
+msgstr "limiet van --param max-inline-insns-auto bereikt"
 
 #: ipa-inline.c:338 ipa-inline.c:764
 msgid "recursive inlining"
@@ -1656,7 +1652,7 @@ msgstr "recursieve inlining"
 
 #: ipa-inline.c:777
 msgid "call is unlikely"
-msgstr ""
+msgstr "oproep is onwaarschijnlijk"
 
 #: ipa-inline.c:848
 msgid "--param inline-unit-growth limit reached"
@@ -2112,19 +2108,18 @@ msgid "unrecoverable error"
 msgstr "onherstelbare fout"
 
 #: toplev.c:1114
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s%s%s version %s (%s)\n"
 "%s\tcompiled by GNU C version %s.\n"
 msgstr ""
 "%s%s%s versie %s (%s)\n"
 "%s\tgecompileerd door GNU C versie %s.\n"
-"%s%s%s versie %s (%s) gecompileerd door CC.\n"
 
 #: toplev.c:1116
 #, c-format
 msgid "%s%s%s version %s (%s) compiled by CC.\n"
-msgstr ""
+msgstr "%s%s%s versie %s (%s) gecompileerd door CC.\n"
 
 #: toplev.c:1120
 #, c-format
@@ -2505,7 +2500,7 @@ msgstr ""
 #: config/alpha/alpha.c:5069
 #, c-format
 msgid "invalid %%H value"
-msgstr ""
+msgstr "ongeldige waarde voor %%H"
 
 #: config/alpha/alpha.c:5090 config/bfin/bfin.c:1181
 #, c-format
@@ -2796,89 +2791,73 @@ msgid "unexpected base-type in cris_print_base"
 msgstr ""
 
 #: config/cris/cris.c:674
-#, fuzzy
 msgid "invalid operand for 'b' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'b' modifier"
 
 #: config/cris/cris.c:691
-#, fuzzy
 msgid "invalid operand for 'o' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'o' modifier"
 
 #: config/cris/cris.c:710
-#, fuzzy
 msgid "invalid operand for 'O' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'O' modifier"
 
 #: config/cris/cris.c:743
-#, fuzzy
 msgid "invalid operand for 'p' modifier"
-msgstr "ongeldige operand voor %p-code"
+msgstr "ongeldige operand voor 'p' modifier"
 
 #: config/cris/cris.c:782
-#, fuzzy
 msgid "invalid operand for 'z' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'z' modifier"
 
 #: config/cris/cris.c:836 config/cris/cris.c:866
-#, fuzzy
 msgid "invalid operand for 'H' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'H' modifier"
 
-# of is het 'slechte register-uitbreidingscode'?
 #: config/cris/cris.c:842
-#, fuzzy
 msgid "bad register"
-msgstr "Slechte code voor registeruitbreiding"
+msgstr "slecht register"
 
 #: config/cris/cris.c:880
-#, fuzzy
 msgid "invalid operand for 'e' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'e' modifier"
 
 #: config/cris/cris.c:897
-#, fuzzy
 msgid "invalid operand for 'm' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'm' modifier"
 
 #: config/cris/cris.c:922
-#, fuzzy
 msgid "invalid operand for 'A' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'A' modifier"
 
 #: config/cris/cris.c:945
-#, fuzzy
 msgid "invalid operand for 'D' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'D' modifier"
 
 #: config/cris/cris.c:959
-#, fuzzy
 msgid "invalid operand for 'T' modifier"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor 'T' modifier"
 
 #: config/cris/cris.c:968
-#, fuzzy
 msgid "invalid operand modifier letter"
-msgstr "ongeldige operand van %s"
+msgstr "ongeldige letter gebruikt als operand-modifier"
 
 #: config/cris/cris.c:1025
 msgid "unexpected multiplicative operand"
 msgstr ""
 
 #: config/cris/cris.c:1045
-#, fuzzy
 msgid "unexpected operand"
-msgstr "ongeldige operand van %s"
+msgstr "onverwachte operand"
 
 #: config/cris/cris.c:1078 config/cris/cris.c:1088
-#, fuzzy
 msgid "unrecognized address"
-msgstr "geen argumenten"
+msgstr "adres niet herkend"
 
+# betere vertaling voor "supposed"?  "denkelijk"?
 #: config/cris/cris.c:2014
-#, fuzzy
 msgid "unrecognized supposed constant"
-msgstr "signature-string niet herkend"
+msgstr "vermoedelijke constante niet herkend"
 
 #: config/cris/cris.c:2370 config/cris/cris.c:2415
 msgid "unexpected side-effects in address"
@@ -2901,39 +2880,39 @@ msgid "fr30_print_operand_address: unhandled address"
 msgstr ""
 
 #: config/fr30/fr30.c:488
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: unrecognized %%p code"
-msgstr "ongeldige operand voor %N-code"
+msgstr "fr30_print_operand: %%p-code niet herkend"
 
 #: config/fr30/fr30.c:508
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: unrecognized %%b code"
-msgstr "ongeldige operand voor %N-code"
+msgstr "fr30_print_operand: %%b-code niet herkend"
 
 #: config/fr30/fr30.c:529
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: unrecognized %%B code"
-msgstr "ongeldige operand voor %N-code"
+msgstr "fr30_print_operand: %%B-code niet herkend"
 
 #: config/fr30/fr30.c:537
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: invalid operand to %%A code"
-msgstr "ongeldige operand voor %N-code"
+msgstr "fr30_print_operand: ongeldige operand voor %%A-code"
 
 #: config/fr30/fr30.c:554
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: invalid %%x code"
-msgstr "ongeldige operand voor %N-code"
+msgstr "fr30_print_operand: ongeldige %%x-code"
 
 #: config/fr30/fr30.c:561
-#, fuzzy, c-format
+#, c-format
 msgid "fr30_print_operand: invalid %%F code"
-msgstr "ongeldige operand voor %N-code"
+msgstr "fr30_print_operand: ongeldige %%F-code"
 
 #: config/fr30/fr30.c:578
 #, c-format
 msgid "fr30_print_operand: unknown code"
-msgstr ""
+msgstr "fr30_print_operand: onbekende code"
 
 #: config/fr30/fr30.c:606 config/fr30/fr30.c:615 config/fr30/fr30.c:626
 #: config/fr30/fr30.c:639
@@ -2942,99 +2921,83 @@ msgid "fr30_print_operand: unhandled MEM"
 msgstr ""
 
 #: config/frv/frv.c:2541
-#, fuzzy
 msgid "bad insn to frv_print_operand_address:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn gegeven aan frv_print_operand_address:"
 
 #: config/frv/frv.c:2552
-#, fuzzy
 msgid "bad register to frv_print_operand_memory_reference_reg:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slecht register gegeven aan frv_print_operand_memory_reference_reg:"
 
 #: config/frv/frv.c:2591 config/frv/frv.c:2601 config/frv/frv.c:2610
 #: config/frv/frv.c:2631 config/frv/frv.c:2636
-#, fuzzy
 msgid "bad insn to frv_print_operand_memory_reference:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn gegeven aan frv_print_memory_reference:"
 
-# of is het 'slechte register-uitbreidingscode'?
 #: config/frv/frv.c:2722
-#, fuzzy, c-format
+#, c-format
 msgid "bad condition code"
-msgstr "Slechte code voor registeruitbreiding"
+msgstr "slechte conditiecode"
 
 #: config/frv/frv.c:2797
-#, fuzzy
 msgid "bad insn in frv_print_operand, bad const_double"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operandm slechte const_double"
 
 #: config/frv/frv.c:2858
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'e' modifier:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, 'e' modifier:"
 
 #: config/frv/frv.c:2866
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'F' modifier:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, 'F' modifier:"
 
 #: config/frv/frv.c:2882
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'f' modifier:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, 'f' modifier:"
 
 #: config/frv/frv.c:2896
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'g' modifier:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, 'g' modifier:"
 
 #: config/frv/frv.c:2944
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'L' modifier:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, 'L' modifier:"
 
 #: config/frv/frv.c:2957
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'M/N' modifier:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, 'M/N' modifier:"
 
 #: config/frv/frv.c:2978
-#, fuzzy
 msgid "bad insn to frv_print_operand, 'O' modifier:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, 'O' modifier:"
 
 #: config/frv/frv.c:2996
-#, fuzzy
 msgid "bad insn to frv_print_operand, P modifier:"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, P modifier:"
 
+# gaat "case" hier wel over "geval"?
 #: config/frv/frv.c:3016
-#, fuzzy
 msgid "bad insn in frv_print_operand, z case"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, z-geval"
 
 #: config/frv/frv.c:3047
-#, fuzzy
 msgid "bad insn in frv_print_operand, 0 case"
-msgstr "ongeldige operand voor %N-code"
+msgstr "slechte insn in frv_print_operand, 0-geval"
 
 #: config/frv/frv.c:3052
-#, fuzzy
 msgid "frv_print_operand: unknown code"
-msgstr "ongeldige operand voor %N-code"
+msgstr "frv_print_operand: onbekende code"
 
 #: config/frv/frv.c:4421
 msgid "bad output_move_single operand"
-msgstr ""
+msgstr "ongeldige output_move_single operand"
 
 #: config/frv/frv.c:4548
-#, fuzzy
 msgid "bad output_move_double operand"
-msgstr "ongeldige const_double operand"
+msgstr "ongeldige output_move_double operand"
 
 #: config/frv/frv.c:4690
 msgid "bad output_condmove_single operand"
-msgstr ""
+msgstr "ongeldige output_condmove_single operand"
 
 #. This macro is a C statement to print on `stderr' a string describing the
 #. particular machine description choice.  Every machine description should
@@ -3048,7 +3011,7 @@ msgstr ""
 #: config/frv/frv.h:329
 #, c-format
 msgid " (frv)"
-msgstr ""
+msgstr " (frv)"
 
 #: config/i386/i386.c:6676
 #, c-format
@@ -3058,22 +3021,22 @@ msgstr "ongeldige UNSPEC als operand"
 #: config/i386/i386.c:7258
 #, c-format
 msgid "operand is neither a constant nor a condition code, invalid operand code 'c'"
-msgstr ""
+msgstr "operand is noch een constante, noch een conditiecode ⇒ ongeldige operandcode 'c'"
 
 #: config/i386/i386.c:7311
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand code '%c'"
-msgstr "ongeldige operand van %s"
+msgstr "ongeldige operand voor '%c'"
 
+# "constraints" hier te vertalen ("beperkingen"/"restricties") of niet?
 #: config/i386/i386.c:7354
-#, fuzzy, c-format
+#, c-format
 msgid "invalid constraints for operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige constraints voor operand"
 
 #: config/i386/i386.c:12948
-#, fuzzy
 msgid "unknown insn mode"
-msgstr "onbekende machine-modus %qs"
+msgstr "onbekende insn-modus"
 
 #. If the environment variable DJDIR is not defined, then DJGPP is not        installed correctly and GCC will quickly become confused with the        default prefix settings. Report the problem now so the user doesn't        receive deceptive "file not found" error messages later.
 #. DJDIR is automatically defined by the DJGPP environment config            file pointed to by the environment variable DJGPP. Examine DJGPP            to try and figure out what's wrong.
@@ -3095,81 +3058,78 @@ msgstr ""
 #: config/ia64/ia64.c:4647
 #, c-format
 msgid "ia64_print_operand: unknown code"
-msgstr ""
+msgstr "ia64_print_operand: onbekende code"
 
 #: config/ia64/ia64.c:8918
-#, fuzzy
 msgid "invalid conversion from %<__fpreg%>"
-msgstr "ongeldige registernaam voor %qs"
+msgstr "ongeldige conversie van %<__fpreg%>"
 
 #: config/ia64/ia64.c:8921
-#, fuzzy
 msgid "invalid conversion to %<__fpreg%>"
-msgstr "ongeldige registernaam voor %qs"
+msgstr "ongeldige conversie naar %<__fpreg%>"
 
 #: config/ia64/ia64.c:8934 config/ia64/ia64.c:8945
-#, fuzzy
 msgid "invalid operation on %<__fpreg%>"
-msgstr "ongeldige operand voor %p-code"
+msgstr "ongeldige bewerking met %<__fpreg%>"
 
 #: config/iq2000/iq2000.c:3125
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%P operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige operand voor %%P"
 
 #: config/iq2000/iq2000.c:3133 config/rs6000/rs6000.c:10322
 #, c-format
 msgid "invalid %%p value"
-msgstr ""
+msgstr "ongeldige waarde voor %%p"
 
 #: config/iq2000/iq2000.c:3189 config/mips/mips.c:5532
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of %%d, %%x, or %%X"
-msgstr "ongeldig gebruik van een void-expressie"
+msgstr "ongeldig gebruik van %%d, %%x, of %%X"
 
 #: config/m32r/m32r.c:1775
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%s code"
-msgstr "ongeldige operand voor %s-code"
+msgstr "ongeldige operand voor %%s-code"
 
 #: config/m32r/m32r.c:1782
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%p code"
-msgstr "ongeldige operand voor %p-code"
+msgstr "ongeldige operand voor %%p-code"
 
 #: config/m32r/m32r.c:1837
 msgid "bad insn for 'A'"
-msgstr ""
+msgstr "slechte insn voor 'A'"
 
 #: config/m32r/m32r.c:1884
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%T/%%B code"
-msgstr "ongeldige operand voor %T/%B-code"
+msgstr "ongeldige operand voor %%T/%%B-code"
 
 #: config/m32r/m32r.c:1907
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%N code"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor %%N-code"
 
+# pre-increment vertalen? zoja, als wat?
 #: config/m32r/m32r.c:1940
-#, fuzzy
 msgid "pre-increment address is not a register"
-msgstr "operand %<%d%> is geen register"
+msgstr "pre-increment adres is geen register"
 
+# pre-decrement vertalen? zoja, als wat?
 #: config/m32r/m32r.c:1947
-#, fuzzy
 msgid "pre-decrement address is not a register"
-msgstr "operand %<%d%> is geen register"
+msgstr "pre-decrement adres is geen register"
 
+# post-increment vertalen? zoja, als wat?
 #: config/m32r/m32r.c:1954
-#, fuzzy
 msgid "post-increment address is not a register"
-msgstr "switch-waarde is geen integer"
+msgstr "post-increment adres is geen register"
 
 #: config/m32r/m32r.c:2030 config/m32r/m32r.c:2044
 #: config/rs6000/rs6000.c:17547
 msgid "bad address"
-msgstr ""
+msgstr "slecht adres"
 
 #: config/m32r/m32r.c:2049
 msgid "lo_sum not of register"
@@ -3177,48 +3137,41 @@ msgstr ""
 
 #. !!!! SCz wrong here.
 #: config/m68hc11/m68hc11.c:3189 config/m68hc11/m68hc11.c:3567
-#, fuzzy
 msgid "move insn not handled"
-msgstr "onvolledige CASE - %s niet opgevangen"
+msgstr "move insn niet opgevangen"
 
 #: config/m68hc11/m68hc11.c:3413 config/m68hc11/m68hc11.c:3497
 #: config/m68hc11/m68hc11.c:3770
-#, fuzzy
 msgid "invalid register in the move instruction"
-msgstr "Ongeldig register in ybase-addressering"
+msgstr "ongeldig register in de move-instructie"
 
 #: config/m68hc11/m68hc11.c:3447
-#, fuzzy
 msgid "invalid operand in the instruction"
-msgstr "ongeldige operand voor %s-code"
+msgstr "ongeldige operand in de instructie"
 
 #: config/m68hc11/m68hc11.c:3744
-#, fuzzy
 msgid "invalid register in the instruction"
-msgstr "Ongeldig register in ybase-addressering"
+msgstr "ongeldig register in de instructie"
 
 #: config/m68hc11/m68hc11.c:3777
-#, fuzzy
 msgid "operand 1 must be a hard register"
-msgstr "operand %<%d%> is geen register"
+msgstr "operand 1 moet een hard register zijn"
 
 #: config/m68hc11/m68hc11.c:3791
-#, fuzzy
 msgid "invalid rotate insn"
-msgstr "ongeldig karakter in naam van macro-parameter"
+msgstr "ongeldige rotate insn"
 
 #: config/m68hc11/m68hc11.c:4215
 msgid "registers IX, IY and Z used in the same INSN"
-msgstr ""
+msgstr "registers IX, IY en Z gebruikt in dezelfde INSN"
 
 #: config/m68hc11/m68hc11.c:4552 config/m68hc11/m68hc11.c:4852
 msgid "cannot do z-register replacement"
-msgstr ""
+msgstr "kan geen z-register vervanging uitvoeren"
 
 #: config/m68hc11/m68hc11.c:4915
-#, fuzzy
 msgid "invalid Z register replacement for insn"
-msgstr "ongeldige registernaam voor %qs"
+msgstr "ongeldige Z-register vervanging voor insn"
 
 #: config/mips/mips.c:5200
 msgid "mips_debugger_offset called with non stack/frame/arg pointer"
@@ -3245,9 +3198,9 @@ msgid "PRINT_OPERAND, invalid insn for %%W"
 msgstr ""
 
 #: config/mips/mips.c:5466
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%Y value"
-msgstr "ongeldige waarde voor %%O"
+msgstr "ongeldige waarde voor %%Y"
 
 #: config/mips/mips.c:5483 config/mips/mips.c:5491
 #, c-format
@@ -3296,9 +3249,8 @@ msgid "MMIX Internal: What is the CC of this?"
 msgstr ""
 
 #: config/mmix/mmix.c:2725
-#, fuzzy
 msgid "MMIX Internal: This is not a constant:"
-msgstr "gevraagd alignment is geen constante"
+msgstr "MMIX Intern: Dit is geen constante:"
 
 #: config/ms1/ms1.c:302
 msgid "ms1_final_prescan_insn, invalid insn #1"
@@ -3353,9 +3305,9 @@ msgid "invalid %%k value"
 msgstr ""
 
 #: config/rs6000/rs6000.c:10245 config/xtensa/xtensa.c:1677
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%K value"
-msgstr "ongeldige waarde voor %%E"
+msgstr "ongeldige waarde voor %%K"
 
 #: config/rs6000/rs6000.c:10312
 #, c-format
@@ -3363,9 +3315,9 @@ msgid "invalid %%O value"
 msgstr "ongeldige waarde voor %%O"
 
 #: config/rs6000/rs6000.c:10359
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%q value"
-msgstr "ongeldige waarde voor %q"
+msgstr "ongeldige waarde voor %%q"
 
 #: config/rs6000/rs6000.c:10403
 #, c-format
@@ -3388,103 +3340,101 @@ msgid "invalid %%v value"
 msgstr ""
 
 #: config/rs6000/rs6000.c:19064
-#, fuzzy
 msgid "AltiVec argument passed to unprototyped function"
-msgstr "te weinig argumenten voor functie"
+msgstr "AltiVec argument doorgegeven aan functie zonder prototype"
 
+# Betere vertaling voor 'decompose'?
 #: config/s390/s390.c:4175
-#, fuzzy, c-format
+#, c-format
 msgid "cannot decompose address"
-msgstr "open %s"
+msgstr "kan adres niet ontleden"
 
 #: config/s390/s390.c:4385
 msgid "UNKNOWN in print_operand !?"
 msgstr ""
 
 #: config/sh/sh.c:768
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%R"
-msgstr "ongeldige operand voor %%R-code"
+msgstr "ongeldige operand voor %%R"
 
 #: config/sh/sh.c:795
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%S"
-msgstr "ongeldige operand voor %N-code"
+msgstr "ongeldige operand voor %%N"
 
 #: config/sh/sh.c:7661
-#, fuzzy
 msgid "created and used with different architectures / ABIs"
-msgstr "%qs als ander soort symbool geherdeclareerd"
+msgstr "aangemaakt en gebruikt met verschillende architecturen / ABIs"
 
 #: config/sh/sh.c:7663
-#, fuzzy
 msgid "created and used with different ABIs"
-msgstr "%qs als ander soort symbool geherdeclareerd"
+msgstr "aangemaakt en gebruikt met verschillende ABIs"
 
+# Vertaling voor "endianness"? Of niet nodig?
 #: config/sh/sh.c:7665
-#, fuzzy
 msgid "created and used with different endianness"
-msgstr "%qs als ander soort symbool geherdeclareerd"
+msgstr "aangemaakt en gebruikt met verschillende \"endianness\""
 
 #: config/sparc/sparc.c:6610 config/sparc/sparc.c:6616
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%Y operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige operand voor %%Y"
 
 #: config/sparc/sparc.c:6686
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%A operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige operand voor %%A"
 
 #: config/sparc/sparc.c:6696
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%B operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige operand voor %%B"
 
 #: config/sparc/sparc.c:6735
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%c operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige operand voor %%c"
 
 #: config/sparc/sparc.c:6736
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%C operand"
-msgstr "Ongeldige operand voor %%C"
+msgstr "ongeldige operand voor %%C"
 
 #: config/sparc/sparc.c:6757
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%d operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige operand voor %%d"
 
 #: config/sparc/sparc.c:6758
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%D operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige operand voor %%D"
 
 #: config/sparc/sparc.c:6774
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%f operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige operand voor %%f"
 
 #: config/sparc/sparc.c:6788
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%s operand"
-msgstr "ongeldige operand voor %P"
+msgstr "ongeldige operand voor %%s"
 
 #: config/sparc/sparc.c:6842
 #, c-format
 msgid "long long constant not a valid immediate operand"
-msgstr ""
+msgstr "een long long constante is geen geldige onmiddellijke operand"
 
 #: config/sparc/sparc.c:6845
 #, c-format
 msgid "floating point constant not a valid immediate operand"
-msgstr ""
+msgstr "een floating-point constante is geen geldige onmiddellijke operand"
 
 #: config/stormy16/stormy16.c:1764 config/stormy16/stormy16.c:1835
-#, fuzzy, c-format
+#, c-format
 msgid "'B' operand is not constant"
-msgstr "operand %<%d%> is geen register"
+msgstr "'B' operand is geen constante"
 
 #: config/stormy16/stormy16.c:1791
 #, c-format
@@ -3492,9 +3442,9 @@ msgid "'B' operand has multiple bits set"
 msgstr ""
 
 #: config/stormy16/stormy16.c:1817
-#, fuzzy, c-format
+#, c-format
 msgid "'o' operand is not constant"
-msgstr "operand %<%d%> is geen register"
+msgstr "'o' operand is geen constante"
 
 #: config/stormy16/stormy16.c:1849
 #, c-format
@@ -3503,103 +3453,97 @@ msgstr ""
 
 #: config/v850/v850.c:360
 msgid "const_double_split got a bad insn:"
-msgstr ""
+msgstr "const_double_split kreeg een slechte insn:"
 
 #: config/v850/v850.c:924
 msgid "output_move_single:"
-msgstr ""
+msgstr "output_move_single:"
 
 #: config/xtensa/xtensa.c:748 config/xtensa/xtensa.c:780
 #: config/xtensa/xtensa.c:789
 msgid "bad test"
-msgstr ""
+msgstr "slechte test"
 
 #: config/xtensa/xtensa.c:1635
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%D value"
-msgstr "ongeldige waarde voor %D"
+msgstr "ongeldige waarde voor %%D"
 
-# (%s = 'parameter <NUM>')
 #: config/xtensa/xtensa.c:1672
-#, fuzzy
 msgid "invalid mask"
-msgstr "ongeldige %s"
+msgstr "ongeldig masker"
 
 #: config/xtensa/xtensa.c:1698
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%x value"
-msgstr "ongeldige waarde voor %x/X"
+msgstr "ongeldige waarde voor %%x"
 
 #: config/xtensa/xtensa.c:1705
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%d value"
-msgstr "ongeldige waarde voor %%O"
+msgstr "ongeldige waarde voor %%d"
 
 #: config/xtensa/xtensa.c:1726 config/xtensa/xtensa.c:1736
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%t/%%b value"
-msgstr "ongeldige waarde voor %s/S"
+msgstr "ongeldige waarde voor %%t/%%b"
 
 #: config/xtensa/xtensa.c:1778
-#, fuzzy
 msgid "invalid address"
-msgstr "Ongeldige addresseringsmodus"
+msgstr "ongeldig adres"
 
 #: config/xtensa/xtensa.c:1803
-#, fuzzy
 msgid "no register in address"
-msgstr "Ongeldig register in ybase-addressering"
+msgstr "geen register in adres"
 
 #: config/xtensa/xtensa.c:1811
-#, fuzzy
 msgid "address offset not a constant"
-msgstr "het argument van %<asm%> is geen constante string"
+msgstr "adres-offset is geen constante"
 
 #: cp/call.c:2444
 msgid "candidates are:"
-msgstr ""
+msgstr "kandidaten zijn:"
 
 #: cp/call.c:6216
 msgid "candidate 1:"
-msgstr ""
+msgstr "kandidaat 1:"
 
 #: cp/call.c:6217
 msgid "candidate 2:"
-msgstr ""
+msgstr "kandidaat 2:"
 
 #: cp/decl2.c:695
 msgid "candidates are: %+#D"
-msgstr ""
+msgstr "kandidaten zijn: %+#D"
 
 #: cp/decl2.c:697
 msgid "candidate is: %+#D"
-msgstr ""
+msgstr "kandidaat is: %+#D"
 
 #: cp/g++spec.c:238 java/jvspec.c:417
-#, fuzzy, c-format
+#, c-format
 msgid "argument to '%s' missing\n"
-msgstr "argument van %qs moet van een integraal type zijn."
+msgstr "argument van '%s' ontbreekt\n"
 
 #: fortran/arith.c:141
 msgid "Arithmetic OK at %L"
-msgstr ""
+msgstr "Arithmetische OK op %L"
 
 #: fortran/arith.c:144
 msgid "Arithmetic overflow at %L"
-msgstr ""
+msgstr "Arithmetische overflow op %L"
 
 #: fortran/arith.c:147
 msgid "Arithmetic underflow at %L"
-msgstr ""
+msgstr "Arithmetische underflow op %L"
 
 #: fortran/arith.c:150
 msgid "Arithmetic NaN at %L"
-msgstr ""
+msgstr "Arithmetische NaN op %L"
 
 #: fortran/arith.c:153
-#, fuzzy
 msgid "Division by zero at %L"
-msgstr "deling door nul"
+msgstr "Deling door nul op %L"
 
 #: fortran/arith.c:156
 msgid "Array operands are incommensurate at %L"
@@ -3609,10 +3553,10 @@ msgstr ""
 msgid "Integer outside symmetric range implied by Standard Fortran at %L"
 msgstr ""
 
+# Is 'elementair' wel een goede vertaling voor 'elemental'?
 #: fortran/arith.c:1384
-#, fuzzy
 msgid "Elemental binary operation"
-msgstr "lege declaratie"
+msgstr "Elementaire binaire operatie"
 
 #: fortran/arith.c:1914
 #, no-c-format
@@ -3622,12 +3566,12 @@ msgstr ""
 #: fortran/arith.c:1918
 #, no-c-format
 msgid "Arithmetic overflow converting %s to %s at %L"
-msgstr ""
+msgstr "Arithmetische overflow bij conversie van %s naar %s op %L"
 
 #: fortran/arith.c:1922
 #, no-c-format
 msgid "Arithmetic underflow converting %s to %s at %L"
-msgstr ""
+msgstr "Arithmetische underflow bij conversie van %s naar %s op %L"
 
 #: fortran/arith.c:1926
 #, no-c-format
@@ -3635,9 +3579,9 @@ msgid "Arithmetic NaN converting %s to %s at %L"
 msgstr ""
 
 #: fortran/arith.c:1930
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Division by zero converting %s to %s at %L"
-msgstr "deling door nul in %<#if%>"
+msgstr "Deling door nul bij conversie van %s naar %s op %L"
 
 #: fortran/arith.c:1934
 #, no-c-format
@@ -3661,19 +3605,20 @@ msgid "Enumerator exceeds the C integer type at %C"
 msgstr ""
 
 #: fortran/array.c:97
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected array subscript at %C"
-msgstr "array subscript is van het type %<char%>"
+msgstr "Array subscript verwacht op %C"
 
+# Wet niet zeker of dit wel de betekenis is...
 #: fortran/array.c:124
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected array subscript stride at %C"
-msgstr "array subscript is van het type %<char%>"
+msgstr "Array subscript-stap verwacht op %C"
 
 #: fortran/array.c:167
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid form of array reference at %C"
-msgstr "Ongeldige modus voor gen_tst_reg"
+msgstr "Ongeldige vorm van arrayverwijzing op %C"
 
 #: fortran/array.c:172
 #, no-c-format
@@ -3721,9 +3666,9 @@ msgid "Array specification at %C has more than %d dimensions"
 msgstr ""
 
 #: fortran/array.c:627
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "duplicated initializer"
-msgstr "ongeldige beginwaarde"
+msgstr "herhaalde beginwaarde"
 
 #: fortran/array.c:720
 #, no-c-format
@@ -3741,9 +3686,9 @@ msgid "New in Fortran 2003: [...] style array constructors at %C"
 msgstr ""
 
 #: fortran/array.c:891
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Empty array constructor at %C is not allowed"
-msgstr "kan het %qs attribuut niet instellen na een definitie"
+msgstr "Lege array-constructor op %C is niet toegestaan"
 
 #: fortran/array.c:976
 #, no-c-format
@@ -3755,10 +3700,11 @@ msgstr ""
 msgid "Iterator step at %L cannot be zero"
 msgstr ""
 
+# vertaling voor 'intrinsic'? 'intrinsiek(e) xxx', maar wat als xxx te gebruiken?
 #: fortran/check.c:44
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be %s"
-msgstr "argument voor %<__builtin_args_info%> moet een constante zijn"
+msgstr "'%s' argument voor intrinsic '%s' op %L moet %s zijn"
 
 #: fortran/check.c:60
 #, no-c-format
@@ -3776,14 +3722,15 @@ msgid "'%s' argument of '%s' intrinsic at %L must be REAL or COMPLEX"
 msgstr ""
 
 #: fortran/check.c:118
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be a constant"
-msgstr "argument voor %<__builtin_args_info%> moet een constante zijn"
+msgstr "'%s' argument voor intrinsic '%s' op %L moet een constante zijn"
 
+# Ongeldig soort wat?
 #: fortran/check.c:126
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid kind for %s at %L"
-msgstr "ongeldige registernaam voor %qs"
+msgstr "Ongeldige soort voor %s op %L"
 
 #: fortran/check.c:146
 #, no-c-format
@@ -3796,14 +3743,14 @@ msgid "'%s' argument of '%s' intrinsic at %L must be a logical array"
 msgstr ""
 
 #: fortran/check.c:180
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be an array"
-msgstr "argument voor %<__builtin_args_info%> moet een constante zijn"
+msgstr "'%s' argument voor intrinsic '%s' op %L moet een array zijn"
 
 #: fortran/check.c:195
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be a scalar"
-msgstr "argument voor %<__builtin_args_info%> moet een constante zijn"
+msgstr "'%s' argument voor intrinsic '%s' op %L moet een scalair zijn"
 
 #: fortran/check.c:210
 #, no-c-format
@@ -3902,9 +3849,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be a non-derived type"
 msgstr ""
 
 #: fortran/check.c:1315
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Intrinsic '%s' at %L must have at least two arguments"
-msgstr "%qs neemt ofwel geen, ofwel twee argumenten"
+msgstr "Intrinsic '%s' op %L moet minstens twee argumenten hebben"
 
 #: fortran/check.c:1349
 #, no-c-format
@@ -3952,24 +3899,25 @@ msgid "'shape' argument of 'reshape' intrinsic at %L has more than %d elements"
 msgstr ""
 
 #: fortran/check.c:1910
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing arguments to %s intrinsic at %L"
-msgstr "Bestandsnaam ontbreekt na %qs optie"
+msgstr "Ontbrekende argumenten voor intrinsic %s op %L"
 
 #: fortran/check.c:1951
 #, no-c-format
 msgid "'source' argument of 'shape' intrinsic at %L must not be an assumed size array"
 msgstr ""
 
+# rank -> rang: correct in Fortran-context?
 #: fortran/check.c:2013
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be less than rank %d"
-msgstr "kan het %qs attribuut niet instellen na een definitie"
+msgstr "'%s' argument voor intrinsic '%s' op %L moet kleiner dan rang %d zijn"
 
 #: fortran/check.c:2470 fortran/check.c:2490
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Too many arguments to %s at %L"
-msgstr "te veel argumenten voor %s %q+#D"
+msgstr "Te veel argumenten voor %s op %L"
 
 #: fortran/check.c:2618 fortran/check.c:2980 fortran/check.c:3004
 #, no-c-format
@@ -3987,14 +3935,14 @@ msgid "'%s' and '%s' arguments of '%s' intrinsic at %L must have the same type"
 msgstr ""
 
 #: fortran/data.c:63
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "non-constant array in DATA statement %L."
-msgstr "niet-constante array-index in beginwaarde"
+msgstr "niet-constante array in DATA statement %L."
 
 #: fortran/data.c:327
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: re-initialization of '%s' at %L"
-msgstr "%s: definitie van '%s' gevonden op %s(%d)\n"
+msgstr "Extensie: herinitialisatie van '%s' op %L"
 
 #: fortran/decl.c:208
 #, no-c-format
@@ -4042,9 +3990,9 @@ msgid "Initializer not allowed for COMMON variable '%s' at %C"
 msgstr ""
 
 #: fortran/decl.c:798
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PARAMETER at %L is missing an initializer"
-msgstr "beginwaarde ontbreekt"
+msgstr "beginwaarde ontbreekt in PARAMETER op %L"
 
 #: fortran/decl.c:809
 #, no-c-format
@@ -4087,9 +4035,9 @@ msgid "Duplicate array spec for Cray pointee at %C."
 msgstr ""
 
 #: fortran/decl.c:1141
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function name '%s' not allowed at %C"
-msgstr "%Jsectie-attribuut is niet toegestaan voor %qD"
+msgstr "Functienaam '%s' niet toegestaan op %C"
 
 #: fortran/decl.c:1157
 #, no-c-format
@@ -4097,9 +4045,9 @@ msgid "Extension: Old-style initialization at %C"
 msgstr ""
 
 #: fortran/decl.c:1173
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initialization at %C isn't for a pointer variable"
-msgstr "%s maakt integer van pointer zonder een cast"
+msgstr "Initialisatie op %C is niet voor een pointervariable"
 
 #: fortran/decl.c:1181
 #, fuzzy, no-c-format
@@ -10131,9 +10079,8 @@ msgid "Generate inline integer division, optimize for throughput"
 msgstr ""
 
 #: config/ia64/ia64.opt:65
-#, fuzzy
 msgid "Do not inline integer division"
-msgstr "Ongeldige addresseringsmodus"
+msgstr "Maak deling van gehele getallen niet \"inline\""
 
 #: config/ia64/ia64.opt:69
 msgid "Generate inline square root, optimize for latency"
@@ -11643,9 +11590,8 @@ msgid "Disable FP regs"
 msgstr ""
 
 #: config/pa/pa.opt:44
-#, fuzzy
 msgid "Disable indexed addressing"
-msgstr "Ongeldige addresseringsmodus"
+msgstr "Schakel geïndexeerde adressering uit"
 
 #: config/pa/pa.opt:48
 msgid "Generate fast indirect calls"
@@ -11981,9 +11927,8 @@ msgid "Specify the register allocation order"
 msgstr ""
 
 #: config/m68hc11/m68hc11.opt:87
-#, fuzzy
 msgid "Do not use direct addressing mode for soft registers"
-msgstr "Ongeldige addresseringsmodus"
+msgstr "Gebruik geen directe adressering voor zachte registers"
 
 #: config/m68hc11/m68hc11.opt:91
 msgid "Compile with 16-bit integer mode"
@@ -12139,9 +12084,8 @@ msgid "Use H8/300 alignment rules"
 msgstr ""
 
 #: config/v850/v850.opt:24
-#, fuzzy
 msgid "Use registers r2 and r5"
-msgstr "Ongeldig register in ybase-addressering"
+msgstr "Gebruik registers r2 en r5"
 
 #: config/v850/v850.opt:28
 msgid "Use 4 byte entries in switch tables"
@@ -15445,7 +15389,7 @@ msgstr "%qs wordt gedeclareerd als een array van functies"
 #: c-decl.c:4139
 #, gcc-internal-format
 msgid "invalid use of structure with flexible array member"
-msgstr "ongeldig gebruik van strcture met flexibele array als lid"
+msgstr "ongeldig gebruik van strcture met flexibel array-lid"
 
 #: c-decl.c:4159
 #, gcc-internal-format
@@ -15480,7 +15424,7 @@ msgstr "omvang van array %qs is te groot"
 #: c-decl.c:4240
 #, gcc-internal-format
 msgid "ISO C90 does not support flexible array members"
-msgstr "ISO C90 ondersteunt geen flexibele arrays als structure-leden"
+msgstr "ISO C90 ondersteunt geen flexibele array-leden"
 
 #: c-decl.c:4250
 #, gcc-internal-format
@@ -15702,22 +15646,22 @@ msgstr "struct heeft geen leden"
 #: c-decl.c:5365
 #, gcc-internal-format
 msgid "%Jflexible array member in union"
-msgstr "%Jflexibele array als lid van union"
+msgstr "%Jflexibel array-lid in union"
 
 #: c-decl.c:5370
 #, gcc-internal-format
 msgid "%Jflexible array member not at end of struct"
-msgstr "%Jflexibele array niet laatste lid van struct"
+msgstr "%Jflexibel array-lid niet aan het eind van de struct"
 
 #: c-decl.c:5375
 #, gcc-internal-format
 msgid "%Jflexible array member in otherwise empty struct"
-msgstr "%Jflexibele array als lid van overigens lege struct"
+msgstr "%Jflexibel array-lid in overigens lege struct"
 
 #: c-decl.c:5382
 #, gcc-internal-format
 msgid "%Jinvalid use of structure with flexible array member"
-msgstr "%Jongeldig gebruik van structure met flexibele array als lid"
+msgstr "%Jongeldig gebruik van structure met flexibel array-lid"
 
 #: c-decl.c:5493
 #, gcc-internal-format
@@ -17180,9 +17124,9 @@ msgid "invalid use of void expression"
 msgstr "ongeldig gebruik van een void-expressie"
 
 #: c-typeck.c:186
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of flexible array member"
-msgstr "ongeldig gebruik van array die geen lvalue is"
+msgstr "ongeldig gebruik van flexibel array-lid"
 
 #: c-typeck.c:192
 #, gcc-internal-format
@@ -21876,9 +21820,9 @@ msgid "passing arg %d of %qE discards qualifiers frompointer target type"
 msgstr "cast laat qualifiers van doeltype van pointer vallen"
 
 #: config/rs6000/rs6000-c.c:2573
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid parameter combination for AltiVec intrinsic"
-msgstr "Ongeldig register in ybase-addressering"
+msgstr ""
 
 #: config/rs6000/rs6000.c:1250
 #, gcc-internal-format
@@ -29761,318 +29705,6 @@ msgid "Address of register variable %qD requested."
 msgstr "Adres van registervariabele %qD gevraagd."
 
 #: treelang/treetree.c:1214
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD attribute ignored"
-msgstr "het %qs attribuut wordt genegeerd"
-
-# 'parser' en 'stack overflow' vertalen?
-#~ msgid "parser stack overflow"
-#~ msgstr "stack overflow in parser"
-
-#~ msgid "redirecting stdout: %s"
-#~ msgstr "bij het herleiden van standaarduitvoer: %s"
-
-#~ msgid "pipe"
-#~ msgstr "pipe"
-
-#~ msgid "fdopen"
-#~ msgstr "fdopen"
-
-#~ msgid "dup2 %d 1"
-#~ msgstr "dup2 %d 1"
-
-#~ msgid "close %d"
-#~ msgstr "close %d"
-
-#~ msgid "execv %s"
-#~ msgstr "execv %s"
-
-#~ msgid ""
-#~ ";; Combiner statistics: %d attempts, %d substitutions (%d requiring new space),\n"
-#~ ";; %d successes.\n"
-#~ "\n"
-#~ msgstr ""
-#~ ";; Combiner-statistieken: %d pogingen, %d vervangingen (%d hadden nieuwe ruimte\n"
-#~ ";;  nodig), %d successen.\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "\n"
-#~ ";; Combiner totals: %d attempts, %d substitutions (%d requiring new space),\n"
-#~ ";; %d successes.\n"
-#~ msgstr ""
-#~ "\n"
-#~ ";; Combiner-totalen: %d pogingen, %d vervangingen (%d hadden nieuwe ruimte\n"
-#~ ";;  nodig), %d successen.\n"
-
-#~ msgid "mode not QImode"
-#~ msgstr "modus is niet QImode"
-
-#, fuzzy
-#~ msgid "Don't force constants into registers"
-#~ msgstr "numerieke constante zonder cijfers"
-
-#, fuzzy
-#~ msgid "invalid operand for 'v' modifier"
-#~ msgstr "ongeldige operand voor %N-code"
-
-#, fuzzy
-#~ msgid "invalid operand for 'P' modifier"
-#~ msgstr "ongeldige operand voor %N-code"
-
-#, fuzzy
-#~ msgid "Do not return values of functions in FPU registers"
-#~ msgstr "grootte van teruggeefwaarde van %qs is %u bytes"
-
-#, fuzzy
-#~ msgid "Do not inline all known string operations"
-#~ msgstr "ISO C staat het testen van asserties niet toe"
-
-#, fuzzy
-#~ msgid "Do not support MMX built-in functions"
-#~ msgstr "conflicterende types voor ingebouwde functie %qs"
-
-#, fuzzy
-#~ msgid "Do not support 3DNow! built-in functions"
-#~ msgstr "conflicterende types voor ingebouwde functie %qs"
-
-#, fuzzy
-#~ msgid "Do not support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
-#~ msgstr "conflicterende types voor ingebouwde functie %qs"
-
-#, fuzzy
-#~ msgid "Generate code which uses the FPU"
-#~ msgstr "case-label niet in een switch-statement"
-
-#, fuzzy
-#~ msgid "FP exceptions are not enabled"
-#~ msgstr "ingeschakelde opties: "
-
-#, fuzzy
-#~ msgid "\"Small register classes\" kludge"
-#~ msgstr "Ongeldige registerklasse-letter %c"
-
-#, fuzzy
-#~ msgid "No \"Small register classes\" kludge"
-#~ msgstr "Ongeldige registerklasse-letter %c"
-
-#, fuzzy
-#~ msgid "Do not disable indexed addressing"
-#~ msgstr "Ongeldige addresseringsmodus"
-
-#, fuzzy
-#~ msgid "Do not use portable calling conventions"
-#~ msgstr "Onbeëindigde stringconstante"
-
-#, fuzzy
-#~ msgid "Do not emit long load/store sequences"
-#~ msgstr "niet-beëindigde commentaar"
-
-#, fuzzy
-#~ msgid "Do not use PowerPC-64 instruction set"
-#~ msgstr "ongeldig gebruik van %<restrict%>"
-
-#, fuzzy
-#~ msgid "Do not use AltiVec instructions"
-#~ msgstr "ongeldig gebruik van %<restrict%>"
-
-#, fuzzy
-#~ msgid "Do not generate single field mfcr instruction"
-#~ msgstr "interne fout - slechte ingebouwde functie %qs"
-
-#, fuzzy
-#~ msgid "Disable fused multiply/add instructions"
-#~ msgstr "ongeldig gebruik van %<restrict%>"
-
-#~ msgid "-pg or -p and -fomit-frame-pointer are incompatible"
-#~ msgstr "-pg of -p en -fomit-frame-pointer zijn niet compatibel"
-
-# zowel "bitfield" als "structure member" slaan op %qs; nogal lastig om die twee samen proper te vertalen...
-#~ msgid "attempt to take address of bit-field structure member %qs"
-#~ msgstr "poging tot het nemen van het adres van bitveld %qs (lid van een structure)"
-
-#~ msgid "%Jlabel %qD used but not defined"
-#~ msgstr "%Jlabel %qD gebruikt maar niet gedefinieerd"
-
-#~ msgid "%Jlabel %qD defined but not used"
-#~ msgstr "%Jlabel %qD gedefinieerd maar niet gebruikt"
-
-#~ msgid "%J%qD redeclared as different kind of symbol"
-#~ msgstr "%J%qD als ander soort symbool geherdeclareerd"
-
-#~ msgid "%Jdeclaration of %qD shadows a parameter"
-#~ msgstr "%Jdeclaratie van %qD verbergt een parameter"
-
-#~ msgid "%Jdeclaration of %qD shadows a global declaration"
-#~ msgstr "%Jdeclaratie van %qD verbergt een globale declaratie"
-
-#~ msgid "%Jdeclaration of %qD shadows a previous local"
-#~ msgstr "%Jdeclaratie van %qD verbergt een eerdere locale declaratie"
-
-#~ msgid "label %qs referenced outside of any function"
-#~ msgstr "naar label %qs gerefereerd buiten enige functie"
-
-#~ msgid "%Jinitializer fails to determine size of %qD"
-#~ msgstr "%Jbeginwaarde legt grootte van %qD niet vast"
-
-#~ msgid "%Jarray size missing in %qD"
-#~ msgstr "%Jarray-grootte ontbreekt in %qD"
-
-#~ msgid "%Jstorage size of %qD isn%'t known"
-#~ msgstr "%Jopslaggrootte van %qD is onbekend"
-
-#~ msgid "%Jstorage size of %qD isn%'t constant"
-#~ msgstr "%Jopslaggrootte van %qD is niet constant"
-
-#~ msgid "-Wmissing-format-attribute ignored without -Wformat"
-#~ msgstr "-Wmissing-format-attribute genegeerd zonder -Wformat"
-
-#, fuzzy
-#~ msgid "%qT has no member named %qs"
-#~ msgstr "union heeft geen lid dat %qs heet"
-
-#, fuzzy
-#~ msgid "invalid option %qs"
-#~ msgstr "Ongeldige optie %qs"
-
-#, fuzzy
-#~ msgid "value-based profiling not yet implemented in trees."
-#~ msgstr "profileren wordt niet ondersteund wanneer -mg gebruikt wordt\n"
-
-#, fuzzy
-#~ msgid "-fspeculative-prefetching not supported for this target"
-#~ msgstr "sectie-attributen worden niet ondersteund voor dit doelsysteem"
-
-#, fuzzy
-#~ msgid "-fspeculative-prefetching not supported for this target (try -march switches)"
-#~ msgstr "-f%sleading-underscore wordt niet ondersteund op deze doelmachine"
-
-#, fuzzy
-#~ msgid "control may reach end of non-void function %qD being inlined"
-#~ msgstr "einde van niet-void functie werd bereikt zonder teruggeefwaarde"
-
-#, fuzzy
-#~ msgid "unsupported defining stmt"
-#~ msgstr "niet-ondersteunde versie"
-
-#~ msgid "invalid initializer for bit string"
-#~ msgstr "ongeldige beginwaarde voor bit-string"
-
-#, fuzzy
-#~ msgid "volatile register variables don%'t work as you might wish"
-#~ msgstr "'volatile' registervariabelen werken niet zoals U zou willen"
-
-#~ msgid "bad value (%s) for -mcpu switch"
-#~ msgstr "slechte waarde (%s) voor optie -mcpu"
-
-#, fuzzy
-#~ msgid "bad value (%s) for -tune= switch"
-#~ msgstr "slechte waarde (%s) voor de -march= optie"
-
-#~ msgid "bad value (%s) for -mcpu= switch"
-#~ msgstr "slechte waarde (%s) voor de -march= optie"
-
-#, fuzzy
-#~ msgid "The compiler does not support -march=%s."
-#~ msgstr "%s ondersteunt %s niet"
-
-#~ msgid "bad value (%s) for -mmodel switch"
-#~ msgstr "slechte waarde (%s) voor optie -mmodel"
-
-#~ msgid "bad value (%s) for -msdata switch"
-#~ msgstr "slechte waarde (%s) voor optie -msdata"
-
-#, fuzzy
-#~ msgid "bad value (%s) for -flush-trap=n (0=<n<=15)"
-#~ msgstr "slechte waarde (%s) voor optie -msdata"
-
-#, fuzzy
-#~ msgid "invalid option %<-mstack-increment=%s%>"
-#~ msgstr "Pngeldige optie %<-%s%>"
-
-#~ msgid "bad value (%s) for -mabi= switch"
-#~ msgstr "slechte waarde (%s) voor optie -mabi="
-
-#, fuzzy
-#~ msgid "unrecognized option %<-mfix-vr4130%s%>"
-#~ msgstr "onbekende formaatspecificatie"
-
-#, fuzzy
-#~ msgid "bad value (%s) for %s"
-#~ msgstr "slechte waarde (%s) foor optie %s"
-
-#, fuzzy
-#~ msgid "invalid value for -mwarn-framesize"
-#~ msgstr "slechte waarde (%s) voor optie -mcpu"
-
-#, fuzzy
-#~ msgid "invalid value for -mstack-size"
-#~ msgstr "slechte waarde (%s) voor optie -msdata"
-
-#, fuzzy
-#~ msgid "invalid value for -mstack-guard"
-#~ msgstr "slechte waarde (%s) voor optie -msdata"
-
-#, fuzzy
-#~ msgid "%H function '%D' is defined after prior declaration as dllimport: attribute ignored"
-#~ msgstr "functie %qs geherdeclareerd met noinline attribuut"
-
-#, fuzzy
-#~ msgid "%Hvariable %qD definition is marked dllimport."
-#~ msgstr "statische variable %qs is als dllimport aangeduid"
-
-#, fuzzy
-#~ msgid "%s=%s is not numeric"
-#~ msgstr "%qs is geen iterator"
-
-#, fuzzy
-#~ msgid "%s=%s is too large"
-#~ msgstr "bestand %qs is te groot"
-
-#, fuzzy
-#~ msgid "%qD invalid in %qT"
-#~ msgstr "Ongeldige optie %qs"
-
-#, fuzzy
-#~ msgid "than previous declaration %qF"
-#~ msgstr "geen eerdere declaratie voor %qs"
-
-#, fuzzy
-#~ msgid "brace-enclosed initializer used to initialize %qT"
-#~ msgstr "geen beginwaarde voor variant-veld %qs"
-
-#, fuzzy
-#~ msgid "namespace %qT undeclared"
-#~ msgstr "%qs tevoren hier gedeclareerd"
-
-#, fuzzy
-#~ msgid "  first declared as %q#D here"
-#~ msgstr "%qs tevoren hier gedeclareerd"
-
-#, fuzzy
-#~ msgid "  also declared as %q#D here"
-#~ msgstr "%qs tevoren hier gedeclareerd"
-
-#, fuzzy
-#~ msgid "ignoring extra initializers for %qT"
-#~ msgstr "niet-constante beginwaarde voor %qs"
-
-#, fuzzy
-#~ msgid "variable-sized object of type %qT may not be initialized"
-#~ msgstr "object van variabele lengte mag geen beginwaarde krijgen"
-
-#, fuzzy
-#~ msgid "%Jlabel '%D' used but not defined"
-#~ msgstr "label %qs gebruikt maar niet gedefinieerd"
-
-#, fuzzy
-#~ msgid "%Jlabel '%D' defined but not used"
-#~ msgstr "label %qs gedefinieerd maar niet gebruikt"
-
-#, fuzzy
-#~ msgid "can't mangle %s"
-#~ msgstr "close %s"
-
-#, fuzzy
-#~ msgid "%Jprevious declaration of '%D'"
-#~ msgstr "eerdere declaratie van %qs"
+msgstr "het %qD attribuut wordt genegeerd"
