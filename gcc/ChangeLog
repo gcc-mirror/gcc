@@ -1,3 +1,9 @@
+2005-12-15  Jan Hubicka  <jh@suse.cz>
+
+	PR target/24969
+	* i386.c (classify_argument): Properly adjust offset of bitfield for
+	substructures.
+
 2005-12-15  Richard Sandiford  <richard@codesourcery.com>
 
 	* final.c (final_scan_insn): Flip in_cold_section_p when changing
