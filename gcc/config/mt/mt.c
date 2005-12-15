@@ -796,19 +796,19 @@ mt_override_options (void)
 {
   if (mt_cpu_string != NULL)
     {
-      if (!strcasecmp (mt_cpu_string, "MS1-64-001"))
+      if (!strcmp (mt_cpu_string, "ms1-64-001"))
 	mt_cpu = PROCESSOR_MS1_64_001;
-      else if (!strcasecmp (mt_cpu_string, "MS1-16-002"))
+      else if (!strcmp (mt_cpu_string, "ms1-16-002"))
 	mt_cpu = PROCESSOR_MS1_16_002;
-      else if  (!strcasecmp (mt_cpu_string, "MS1-16-003"))
+      else if  (!strcmp (mt_cpu_string, "ms1-16-003"))
 	mt_cpu = PROCESSOR_MS1_16_003;
-      else if (!strcasecmp (mt_cpu_string, "MS2"))
+      else if (!strcmp (mt_cpu_string, "ms2"))
 	mt_cpu = PROCESSOR_MS2;
       else
 	error ("bad value (%s) for -march= switch", mt_cpu_string);
     }
   else
-    mt_cpu = PROCESSOR_MS2;
+    mt_cpu = PROCESSOR_MS1_16_002;
 
   if (flag_exceptions)
     {
