@@ -79,6 +79,44 @@ extern short int __get_eh_table_version (struct exception_descriptor *);
   (BITS_PER_UNIT == 8 && LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128)
 #endif
 
+#ifndef SF_SIZE
+#if LIBGCC2_HAS_SF_MODE
+#define SF_SIZE FLT_MANT_DIG
+#else
+#define SF_SIZE 0
+#endif
+#endif
+
+#ifndef DF_SIZE
+#if LIBGCC2_HAS_DF_MODE
+#if LIBGCC2_DOUBLE_TYPE_SIZE == 64
+#define DF_SIZE DBL_MANT_DIG
+#elif LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 64
+#define DF_SIZE LDBL_MANT_DIG
+#else
+#define DF_SIZE 0
+#endif
+#else
+#define DF_SIZE 0
+#endif
+#endif
+
+#ifndef XF_SIZE
+#if LIBGCC2_HAS_XF_MODE
+#define XF_SIZE LDBL_MANT_DIG
+#else
+#define XF_SIZE 0
+#endif
+#endif
+
+#ifndef TF_SIZE
+#if LIBGCC2_HAS_TF_MODE
+#define TF_SIZE LDBL_MANT_DIG
+#else
+#define TF_SIZE 0
+#endif
+#endif
+
 #ifndef MIN_UNITS_PER_WORD
 #define MIN_UNITS_PER_WORD UNITS_PER_WORD
 #endif

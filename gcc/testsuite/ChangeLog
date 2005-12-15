@@ -1,3 +1,9 @@
+2005-12-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR other/25028
+	* gcc.dg/torture/fp-int-convert-timode.c: Only XFAIL for LP64 IA64
+	HP-UX.
+
 2005-12-15  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.dg/20051215-1.c: New file.
