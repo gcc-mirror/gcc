@@ -1708,22 +1708,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_SWITCH_TEXT_SECTIONS:
-	  
-	  /* The presence of this note indicates that this basic block
-	     belongs in the "cold" section of the .o file.  If we are
-	     not already writing to the cold section we need to change
-	     to it.  */
-
-	  if (last_text_section == text_section)
-	    {
-	      (*debug_hooks->switch_text_section) ();
-	      switch_to_section (unlikely_text_section ());
-	    }
-	  else
-	    {
-	      (*debug_hooks->switch_text_section) ();
-	      switch_to_section (text_section);
-	    }
+	  in_cold_section_p = !in_cold_section_p;
+	  (*debug_hooks->switch_text_section) ();
+	  switch_to_section (current_function_section ());
 	  break;
 	  
 	case NOTE_INSN_BASIC_BLOCK:

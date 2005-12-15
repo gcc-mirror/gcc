@@ -1093,9 +1093,7 @@ machopic_select_section (tree exp, int reloc,
 
   if (TREE_CODE (exp) == FUNCTION_DECL)
     {
-      if (reloc == 1
-	  || unlikely_text_section_p (last_text_section)
-	  || last_text_section == text_unlikely_coal_section)
+      if (reloc == 1)
 	base_section = (weak_p
 			? text_unlikely_coal_section
 			: unlikely_text_section ());

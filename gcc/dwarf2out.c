@@ -7837,7 +7837,7 @@ output_line_info (void)
   current_file = 1;
   current_line = 1;
 
-  if (cfun && unlikely_text_section_p (last_text_section))
+  if (cfun && in_cold_section_p)
     strcpy (prev_line_label, cfun->cold_section_label);
   else
     strcpy (prev_line_label, text_section_label);
@@ -10182,7 +10182,7 @@ secname_for_decl (tree decl)
       tree sectree = DECL_SECTION_NAME (current_function_decl);
       secname = TREE_STRING_POINTER (sectree);
     }
-  else if (cfun && unlikely_text_section_p (last_text_section))
+  else if (cfun && in_cold_section_p)
     secname = cfun->cold_section_label;
   else
     secname = text_section_label;
@@ -13552,7 +13552,7 @@ dwarf2out_var_location (rtx loc_note)
   newloc->var_loc_note = loc_note;
   newloc->next = NULL;
 
-  if (cfun && unlikely_text_section_p (last_text_section))
+  if (cfun && in_cold_section_p)
     newloc->section_label = cfun->cold_section_label;
   else
     newloc->section_label = text_section_label;
@@ -13841,7 +13841,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
   if (flag_reorder_blocks_and_partition)
     {
-      unlikely_text_section ();
+      switch_to_section (unlikely_text_section ());
       ASM_OUTPUT_LABEL (asm_out_file, cold_text_section_label);
     }
 }
@@ -14177,7 +14177,7 @@ dwarf2out_finish (const char *filename)
   targetm.asm_out.internal_label (asm_out_file, TEXT_END_LABEL, 0);
   if (flag_reorder_blocks_and_partition)
     {
-      unlikely_text_section ();
+      switch_to_section (unlikely_text_section ());
       targetm.asm_out.internal_label (asm_out_file, COLD_END_LABEL, 0);
     }
 
