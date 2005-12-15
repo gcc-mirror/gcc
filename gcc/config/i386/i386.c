@@ -2661,8 +2661,8 @@ classify_argument (enum machine_mode mode, tree type,
 		     misaligned integers.  */
 		  if (DECL_BIT_FIELD (field))
 		    {
-		      for (i = int_bit_position (field) / 8 / 8;
-			   i < (int_bit_position (field)
+		      for (i = (int_bit_position (field) + (bit_offset % 64)) / 8 / 8;
+			   i < ((int_bit_position (field) + (bit_offset % 64))
 			        + tree_low_cst (DECL_SIZE (field), 0)
 				+ 63) / 8 / 8; i++)
 			classes[i] =
