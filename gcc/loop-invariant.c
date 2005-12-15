@@ -1,28 +1,28 @@
-/* Rtl-level loop invariant motion.
+/* RTL-level loop invariant motion.
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 2, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
 /* This implements the loop invariant motion pass.  It is very simple
-   (no calls, libcalls, etc.).  This should be sufficient to cleanup things like
-   address arithmetics -- other more complicated invariants should be
+   (no calls, libcalls, etc.).  This should be sufficient to cleanup things
+   like address arithmetics -- other more complicated invariants should be
    eliminated on tree level either in tree-ssa-loop-im.c or in tree-ssa-pre.c.
-   
+
    We proceed loop by loop -- it is simpler than trying to handle things
    globally and should not lose much.  First we inspect all sets inside loop
    and create a dependency graph on insns (saying "to move this insn, you must
@@ -31,7 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    We then need to determine what to move.  We estimate the number of registers
    used and move as many invariants as possible while we still have enough free
    registers.  We prefer the expensive invariants.
-   
+
    Then we move the selected invariants out of the loop, creating a new
    temporaries for them if necessary.  */
 
@@ -103,7 +103,7 @@ struct invariant
   /* Whether to move the invariant.  */
   bool move;
 
-  /* Cost if the invariant.  */
+  /* Cost of the invariant.  */
   unsigned cost;
 
   /* The invariants it depends on.  */
@@ -127,6 +127,10 @@ DEF_VEC_ALLOC_P(invariant_p, heap);
 /* The invariants.  */
 
 static VEC(invariant_p,heap) *invariants;
+
+/* The dataflow object.  */
+
+static struct df *df;
 
 /* Test for possibility of invariantness of X.  */
 
@@ -259,7 +263,7 @@ find_exits (struct loop *loop, basic_block *body,
 	    }
 	  continue;
 	}
-     
+
       /* Use the data stored for the subloop to decide whether we may exit
 	 through it.  It is sufficient to do this for header of the loop,
 	 as other basic blocks inside it must be dominated by it.  */
@@ -298,11 +302,11 @@ may_assign_reg_p (rtx x)
 	      || REGNO_REG_CLASS (REGNO (x)) != NO_REGS));
 }
 
-/* Finds definitions that may correspond to invariants in LOOP with body BODY.
-   DF is the dataflow object.  */
+/* Finds definitions that may correspond to invariants in LOOP with body
+   BODY.  */
 
 static void
-find_defs (struct loop *loop, basic_block *body, struct df *df)
+find_defs (struct loop *loop, basic_block *body)
 {
   unsigned i;
   bitmap blocks = BITMAP_ALLOC (NULL);
@@ -374,10 +378,10 @@ record_use (struct def *def, rtx *use, rtx insn)
 }
 
 /* Finds the invariants INSN depends on and store them to the DEPENDS_ON
-   bitmap.  DF is the dataflow object.  */
+   bitmap.  */
 
 static bool
-check_dependencies (rtx insn, struct df *df, bitmap depends_on)
+check_dependencies (rtx insn, bitmap depends_on)
 {
   struct df_link *uses, *defs;
   struct ref *use, *def;
@@ -412,12 +416,10 @@ check_dependencies (rtx insn, struct df *df, bitmap depends_on)
 
 /* Finds invariant in INSN.  ALWAYS_REACHED is true if the insn is always
    executed.  ALWAYS_EXECUTED is true if the insn is always executed,
-   unless the program ends due to a function call.  DF is the dataflow
-   object.  */
+   unless the program ends due to a function call.  */
 
 static void
-find_invariant_insn (rtx insn, bool always_reached, bool always_executed,
-		     struct df *df)
+find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
 {
   struct ref *ref;
   struct def *def;
@@ -430,7 +432,7 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed,
       || find_reg_note (insn, REG_LIBCALL, NULL_RTX)
       || find_reg_note (insn, REG_NO_CONFLICT, NULL_RTX))
     return;
-      
+ 
   set = single_set (insn);
   if (!set)
     return;
@@ -456,7 +458,7 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed,
     }
 
   depends_on = BITMAP_ALLOC (NULL);
-  if (!check_dependencies (insn, df, depends_on))
+  if (!check_dependencies (insn, depends_on))
     {
       BITMAP_FREE (depends_on);
       return;
@@ -474,11 +476,10 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed,
   create_new_invariant (def, insn, depends_on, always_executed);
 }
 
-/* Record registers used in INSN that have a unique invariant definition.
-   DF is the dataflow object.  */
+/* Record registers used in INSN that have a unique invariant definition.  */
 
 static void
-record_uses (rtx insn, struct df *df)
+record_uses (rtx insn)
 {
   struct df_link *uses, *defs;
   struct ref *use, *def;
@@ -505,25 +506,22 @@ record_uses (rtx insn, struct df *df)
 
 /* Finds invariants in INSN.  ALWAYS_REACHED is true if the insn is always
    executed.  ALWAYS_EXECUTED is true if the insn is always executed,
-   unless the program ends due to a function call.  DF is the dataflow
-   object.  */
+   unless the program ends due to a function call.  */
 
 static void
-find_invariants_insn (rtx insn, bool always_reached, bool always_executed,
-		      struct df *df)
+find_invariants_insn (rtx insn, bool always_reached, bool always_executed)
 {
-  find_invariant_insn (insn, always_reached, always_executed, df);
-  record_uses (insn, df);
+  find_invariant_insn (insn, always_reached, always_executed);
+  record_uses (insn);
 }
 
 /* Finds invariants in basic block BB.  ALWAYS_REACHED is true if the
    basic block is always executed.  ALWAYS_EXECUTED is true if the basic
    block is always executed, unless the program ends due to a function
-   call.  DF is the dataflow object.  */
+   call.  */
 
 static void
-find_invariants_bb (basic_block bb, bool always_reached, bool always_executed,
-		    struct df *df)
+find_invariants_bb (basic_block bb, bool always_reached, bool always_executed)
 {
   rtx insn;
 
@@ -532,7 +530,7 @@ find_invariants_bb (basic_block bb, bool always_reached, bool always_executed,
       if (!INSN_P (insn))
 	continue;
 
-      find_invariants_insn (insn, always_reached, always_executed, df);
+      find_invariants_insn (insn, always_reached, always_executed);
 
       if (always_reached
 	  && CALL_P (insn)
@@ -544,26 +542,24 @@ find_invariants_bb (basic_block bb, bool always_reached, bool always_executed,
 /* Finds invariants in LOOP with body BODY.  ALWAYS_REACHED is the bitmap of
    basic blocks in BODY that are always executed.  ALWAYS_EXECUTED is the
    bitmap of basic blocks in BODY that are always executed unless the program
-   ends due to a function call.  DF is the dataflow object.  */
+   ends due to a function call.  */
 
 static void
 find_invariants_body (struct loop *loop, basic_block *body,
-		      bitmap always_reached, bitmap always_executed,
-		      struct df *df)
+		      bitmap always_reached, bitmap always_executed)
 {
   unsigned i;
 
   for (i = 0; i < loop->num_nodes; i++)
     find_invariants_bb (body[i],
 			bitmap_bit_p (always_reached, i),
-			bitmap_bit_p (always_executed, i),
-			df);
+			bitmap_bit_p (always_executed, i));
 }
 
-/* Finds invariants in LOOP.  DF is the dataflow object.  */
+/* Finds invariants in LOOP.  */
 
 static void
-find_invariants (struct loop *loop, struct df *df)
+find_invariants (struct loop *loop)
 {
   bitmap may_exit = BITMAP_ALLOC (NULL);
   bitmap always_reached = BITMAP_ALLOC (NULL);
@@ -575,8 +571,8 @@ find_invariants (struct loop *loop, struct df *df)
   compute_always_reached (loop, body, may_exit, always_reached);
   compute_always_reached (loop, body, has_exit, always_executed);
 
-  find_defs (loop, body, df);
-  find_invariants_body (loop, body, always_reached, always_executed, df);
+  find_defs (loop, body);
+  find_invariants_body (loop, body, always_reached, always_executed);
 
   BITMAP_FREE (always_reached);
   BITMAP_FREE (always_executed);
@@ -721,10 +717,10 @@ set_move_mark (unsigned invno)
     }
 }
 
-/* Determines which invariants to move.  DF is the dataflow object.  */
+/* Determines which invariants to move.  */
 
 static void
-find_invariants_to_move (struct df *df)
+find_invariants_to_move (void)
 {
   unsigned i, regs_used, n_inv_uses, regs_needed = 0, new_regs;
   struct invariant *inv = NULL;
@@ -764,10 +760,10 @@ find_invariants_to_move (struct df *df)
     }
 }
 
-/* Move invariant INVNO out of the LOOP.  DF is the dataflow object.  */
+/* Move invariant INVNO out of the LOOP.  */
 
 static void
-move_invariant_reg (struct loop *loop, unsigned invno, struct df *df)
+move_invariant_reg (struct loop *loop, unsigned invno)
 {
   struct invariant *inv = VEC_index (invariant_p, invariants, invno);
   unsigned i;
@@ -784,7 +780,7 @@ move_invariant_reg (struct loop *loop, unsigned invno, struct df *df)
     {
       EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, i, bi)
 	{
-	  move_invariant_reg (loop, i, df);
+	  move_invariant_reg (loop, i);
 	}
     }
 
@@ -828,10 +824,10 @@ move_invariant_reg (struct loop *loop, unsigned invno, struct df *df)
 }
 
 /* Move selected invariant out of the LOOP.  Newly created regs are marked
-   in TEMPORARY_REGS.  DF is the dataflow object.  */
+   in TEMPORARY_REGS.  */
 
 static void
-move_invariants (struct loop *loop, struct df *df)
+move_invariants (struct loop *loop)
 {
   struct invariant *inv;
   unsigned i;
@@ -839,7 +835,7 @@ move_invariants (struct loop *loop, struct df *df)
   for (i = 0; VEC_iterate (invariant_p, invariants, i, inv); i++)
     {
       if (inv->move)
-	move_invariant_reg (loop, i, df);
+	move_invariant_reg (loop, i);
     }
 }
 
@@ -853,11 +849,10 @@ init_inv_motion_data (void)
   invariants = VEC_alloc (invariant_p, heap, 100);
 }
 
-/* Frees the data allocated by invariant motion.  DF is the dataflow
-   object.  */
+/* Frees the data allocated by invariant motion.  */
 
 static void
-free_inv_motion_data (struct df *df)
+free_inv_motion_data (void)
 {
   unsigned i;
   struct def *def;
@@ -885,18 +880,18 @@ free_inv_motion_data (struct df *df)
   VEC_free (invariant_p, heap, invariants);
 }
 
-/* Move the invariants out of the LOOP.  DF is the dataflow object.  */
+/* Move the invariants out of the LOOP.  */
 
 static void
-move_single_loop_invariants (struct loop *loop, struct df *df)
+move_single_loop_invariants (struct loop *loop)
 {
   init_inv_motion_data ();
 
-  find_invariants (loop, df);
-  find_invariants_to_move (df);
-  move_invariants (loop, df);
+  find_invariants (loop);
+  find_invariants_to_move ();
+  move_invariants (loop);
 
-  free_inv_motion_data (df);
+  free_inv_motion_data ();
 }
 
 /* Releases the auxiliary data for LOOP.  */
@@ -917,7 +912,8 @@ move_loop_invariants (struct loops *loops)
 {
   struct loop *loop;
   unsigned i;
-  struct df *df = df_init ();
+
+  df = df_init ();
 
   /* Process the loops, innermost first.  */
   loop = loops->tree_root;
@@ -926,7 +922,7 @@ move_loop_invariants (struct loops *loops)
 
   while (loop != loops->tree_root)
     {
-      move_single_loop_invariants (loop, df);
+      move_single_loop_invariants (loop);
 
       if (loop->next)
 	{
