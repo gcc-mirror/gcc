@@ -1,3 +1,12 @@
+2005-12-15  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/25406
+	* config/rs6000/rs6000.c (rs6000_special_round_type_align): Handle
+	error_mark_node.  Make alignment params unsigned.
+	* config/rs6000/rs6000-protos.h
+	(rs6000_special_round_type_align): Update prototype.
+	(rs6000_machopic_legitimize_pic_address): Remove arg names.
+
 2005-12-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR rtl-optimization/25310
