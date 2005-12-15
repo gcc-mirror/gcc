@@ -1,3 +1,8 @@
+2005-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/rtti/repo1.C: Call cleanup-repo-files.
+	* gcc.dg/20050330-2.c: Call cleanup-coverage-files.
+
 2005-12-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR rtl-optimization/25310
