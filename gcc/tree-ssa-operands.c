@@ -1133,25 +1133,26 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case IMAGPART_EXPR:
       {
 	tree ref;
-	unsigned HOST_WIDE_INT offset, size;
+	HOST_WIDE_INT offset, size, maxsize;
  	/* This component ref becomes an access to all of the subvariables
 	   it can touch,  if we can determine that, but *NOT* the real one.
 	   If we can't determine which fields we could touch, the recursion
 	   will eventually get to a variable and add *all* of its subvars, or
 	   whatever is the minimum correct subset.  */
 
-	ref = okay_component_ref_for_subvars (expr, &offset, &size);
-	if (ref)
+	ref = get_ref_base_and_extent (expr, &offset, &size, &maxsize);
+	if (SSA_VAR_P (ref) && get_subvars_for_var (ref))
 	  {	  
 	    subvar_t svars = get_subvars_for_var (ref);
 	    subvar_t sv;
 	    for (sv = svars; sv; sv = sv->next)
 	      {
 		bool exact;		
-		if (overlap_subvar (offset, size, sv, &exact))
+		if (overlap_subvar (offset, maxsize, sv, &exact))
 		  {
 	            int subvar_flags = flags;
-		    if (!exact)
+		    if (!exact
+			|| size != maxsize)
 		      subvar_flags &= ~opf_kill_def;
 		    add_stmt_operand (&sv->var, s_ann, subvar_flags);
 		  }

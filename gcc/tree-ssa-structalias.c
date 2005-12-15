@@ -2348,11 +2348,8 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
 {
   tree orig_t = t;
   HOST_WIDE_INT bitsize = -1;
+  HOST_WIDE_INT bitmaxsize = -1;
   HOST_WIDE_INT bitpos;
-  tree offset = NULL_TREE;
-  enum machine_mode mode;
-  int unsignedp;
-  int volatilep;
   tree forzero;
   struct constraint_expr *result;
   unsigned int beforelength = VEC_length (ce_s, *results);
@@ -2374,8 +2371,7 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
       return;
     }
  
-  t = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
-			   &unsignedp, &volatilep, false);
+  t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize);
   get_constraint_for (t, results, anyoffset);
   result = VEC_last (ce_s, *results);
 
@@ -2386,11 +2382,11 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
     result->type = SCALAR;
   
   /* If we know where this goes, then yay. Otherwise, booo. */
-
-  if (offset == NULL && bitsize != -1)
+  if (bitmaxsize != -1
+      && bitsize == bitmaxsize)
     {
       result->offset = bitpos;
-    }	
+    }
   /* FIXME: Handle the DEREF case.  */
   else if (anyoffset && result->type != DEREF)
     {
