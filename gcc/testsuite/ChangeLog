@@ -1,3 +1,8 @@
+2005-12-14  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/18197
+	* gfortran.dg/dummy_functions_1.f90: New.
+
 2005-12-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR rtl-optimization/25310
@@ -38939,3 +38944,4 @@ rlsruhe.de>
 	correspond to c-torture	1.11.
 
 	* New file.
+
