@@ -1,3 +1,8 @@
+2005-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/rtti/repo1.C: Call cleanup-repo-files.
+	* gcc.dg/20050330-2.c: Call cleanup-coverage-files.
+
 2005-12-14  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/18197
