@@ -1,3 +1,9 @@
+2005-12-15  Olivier Hainque  <hainque@adacore.com>
+
+	* stor-layout.c (layout_type): Don't complain about a too small
+	an array element type size compared to its alignment when the
+	size overflows.
+
 2005-12-15  Jan Hubicka  <jh@suse.cz>
 
 	PR target/24969
