@@ -91,7 +91,11 @@ namespace _GLIBCXX_STD
     public:
       typedef _Alloc allocator_type;
 
-      _Tp_alloc_type
+      _Tp_alloc_type&
+      _M_get_Tp_allocator()
+      { return *static_cast<_Tp_alloc_type*>(&this->_M_impl); }
+
+      const _Tp_alloc_type&
       _M_get_Tp_allocator() const
       { return *static_cast<const _Tp_alloc_type*>(&this->_M_impl); }
 
