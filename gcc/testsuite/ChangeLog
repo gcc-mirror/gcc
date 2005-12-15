@@ -1,3 +1,7 @@
+2005-12-15  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/20051215-1.c: New file.
+
 2005-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.dg/rtti/repo1.C: Call cleanup-repo-files.
