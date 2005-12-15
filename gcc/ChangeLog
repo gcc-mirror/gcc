@@ -1,3 +1,10 @@
+2005-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/18659
+	PR ada/18819
+	* doc/invoke.texi (Optimize Options): Document that
+	-ftree-sra is not automatically enabled for the Ada compiler.
+
 2005-12-15  Olivier Hainque  <hainque@adacore.com>
 
 	* stor-layout.c (layout_type): Don't complain about a too small

@@ -323,11 +323,15 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
   return 1;
 }
 
+static bool tree_sra_requested = false;
+
 /* Initialize for option processing.  */
 
 static unsigned int
 gnat_init_options (unsigned int argc, const char **argv)
 {
+  int i;
+
   /* Initialize gnat_argv with save_argv size.  */
   gnat_argv = (char **) xmalloc ((argc + 1) * sizeof (argv[0]));
   gnat_argv[0] = xstrdup (argv[0]);     /* name of the command */
@@ -338,6 +342,16 @@ gnat_init_options (unsigned int argc, const char **argv)
 
   /* Uninitialized really means uninitialized in Ada.  */
   flag_zero_initialized_in_bss = 0;
+
+  /* Find last option mentioning Tree-SRA.  */
+  for (i = argc - 1; i > 0; i--)
+    if (strcmp(argv[i], "-ftree-sra") == 0)
+      {
+	tree_sra_requested = true;
+	break;
+      }
+    else if (strcmp(argv[i], "-fno-tree-sra") == 0)
+      break;
 
   return CL_Ada;
 }
@@ -355,6 +369,11 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     flag_inline_trees = 2;
 
   flag_tree_salias = 0;
+
+  /* Do not enable Tree-SRA unless specifically requested as it
+     is known to badly interact with some Ada constructs.  */
+  if (!tree_sra_requested)
+    flag_tree_sra = 0;
 
   return false;
 }

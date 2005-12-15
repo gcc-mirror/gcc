@@ -4363,6 +4363,10 @@ compilation time.
 @option{-O} also turns on @option{-fomit-frame-pointer} on machines
 where doing so does not interfere with debugging.
 
+@option{-O} doesn't turn on @option{-ftree-sra} for the Ada compiler.
+This option must be explicitly specified on the command line to be
+enabled for the Ada compiler.
+
 @item -O2
 @opindex O2
 Optimize even more.  GCC performs nearly all supported optimizations
