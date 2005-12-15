@@ -100,7 +100,7 @@ namespace std
   void
   locale::facet::_S_destroy_c_locale(__c_locale& __cloc)
   {
-    if (_S_get_c_locale() != __cloc)
+    if (__cloc && _S_get_c_locale() != __cloc)
       __freelocale(__cloc); 
   }
 
