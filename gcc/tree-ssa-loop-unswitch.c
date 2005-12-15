@@ -253,7 +253,10 @@ tree_unswitch_single_loop (struct loops *loops, struct loop *loop, int num)
   /* Unswitch the loop on this condition.  */
   nloop = tree_unswitch_loop (loops, loop, bbs[i], cond);
   if (!nloop)
-    return changed;
+    {
+      free_original_copy_tables ();
+      return changed;
+    }
 
   /* Update the SSA form after unswitching.  */
   update_ssa (TODO_update_ssa);
