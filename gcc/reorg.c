@@ -963,7 +963,7 @@ static int
 mostly_true_jump (rtx jump_insn, rtx condition)
 {
   rtx target_label = JUMP_LABEL (jump_insn);
-  rtx insn, note;
+  rtx note;
   int rare_dest, rare_fallthrough;
 
   /* If branch probabilities are available, then use that number since it

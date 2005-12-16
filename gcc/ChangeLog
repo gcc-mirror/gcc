@@ -1,5 +1,8 @@
 2005-12-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR middle-end/25457
+	* reorg.c (mostly_true_jump): Remove unused variable 'insn'.
+
 	PR target/25447
 	* config/pa/pa.c (pa_scalar_mode_supported_p): Handle
 	MODE_DECIMAL_FLOAT.
