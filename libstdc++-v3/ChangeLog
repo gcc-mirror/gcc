@@ -1,3 +1,8 @@
+2005-12-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/tr1/4_metaprogramming/type_properties/is_empty/is_empty.cc:
+	Fix class NonEmptyClassTwo.
+
 2005-12-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_vector.h (vector<>::_M_get_Tp_allocator): Change
