@@ -51,7 +51,7 @@ march=ms1-64-001:-T 64-001.ld%s; \
 march=ms1-16-002:-T 16-002.ld%s; \
 march=ms1-16-003:-T 16-003.ld%s; \
 march=ms2:-T ms2.ld%s; \
-	 :-T ms1-16-002.ld}"
+	 :-T 16-002.ld}"
 
 /* A string to pass at the very beginning of the command given to the
    linker.  */
@@ -61,7 +61,7 @@ march=ms1-64-001:%{!mno-crt0:crt0-64-001.o%s} startup-64-001.o%s; \
 march=ms1-16-002:%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s; \
 march=ms1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s; \
 march=ms2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s; \
-	 :%{!mno-crt0:crt0-ms2.o%s} startup-16-002.o%s} \
+	 :%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s} \
 crti.o%s crtbegin.o%s"
 
 /* A string to pass at the end of the command given to the linker.  */
@@ -71,7 +71,7 @@ march=ms1-64-001:exit-64-001.o%s; \
 march=ms1-16-002:exit-16-002.o%s; \
 march=ms1-16-003:exit-16-003.o%s; \
 march=ms2:exit-ms2.o%s; \
-	 :exit-ms1-16-002.o%s} \
+	 :exit-16-002.o%s} \
  crtend.o%s crtn.o%s"
 
 /* Run-time target specifications.  */

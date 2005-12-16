@@ -1,3 +1,8 @@
+2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/mt/mt.h (LIB_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): Correct
+	names of ms1-16-002 files.
+
 2005-12-16  Alan Modra  <amodra@bigpond.net.au>
 
 	PR driver/20425
