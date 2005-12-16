@@ -188,7 +188,7 @@ gfc_conv_descriptor_data_addr (tree desc)
   gcc_assert (DATA_FIELD == 0);
 
   t = build3 (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
-  return gfc_build_addr_expr (NULL, t);
+  return build_fold_addr_expr (t);
 }
 
 tree
@@ -519,7 +519,7 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 	  tmp = build_array_type (gfc_get_element_type (TREE_TYPE (desc)),
 				  tmp);
 	  tmp = gfc_create_var (tmp, "A");
-	  tmp = gfc_build_addr_expr (NULL, tmp);
+	  tmp = build_fold_addr_expr (tmp);
 	  gfc_conv_descriptor_data_set (pre, desc, tmp);
 	}
       else
@@ -1159,8 +1159,8 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	      tmp = gfc_conv_descriptor_data_get (desc);
 	      tmp = gfc_build_indirect_ref (tmp);
 	      tmp = gfc_build_array_ref (tmp, *poffset);
-	      tmp = gfc_build_addr_expr (NULL, tmp);
-	      init = gfc_build_addr_expr (NULL, init);
+	      tmp = build_fold_addr_expr (tmp);
+	      init = build_fold_addr_expr (init);
 
 	      size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
 	      bound = build_int_cst (NULL_TREE, n * size);
@@ -1670,7 +1670,7 @@ gfc_conv_array_data (tree descriptor)
       else
         {
           /* Descriptorless arrays.  */
-	  return gfc_build_addr_expr (NULL, descriptor);
+	  return build_fold_addr_expr (descriptor);
         }
     }
   else
@@ -3830,7 +3830,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    {
 	      /* We pass full arrays directly.  This means that pointers and
 		 allocatable arrays should also work.  */
-	      se->expr = gfc_build_addr_expr (NULL_TREE, desc);
+	      se->expr = build_fold_addr_expr (desc);
 	    }
 	  else
 	    {
@@ -3861,7 +3861,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
 	  /* For pointer assignments pass the descriptor directly.  */
 	  se->ss = secss;
-	  se->expr = gfc_build_addr_expr (NULL, se->expr);
+	  se->expr = build_fold_addr_expr (se->expr);
 	  gfc_conv_expr (se, expr);
 	  return;
 	}
@@ -4144,7 +4144,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
     {
       /* Get a pointer to the new descriptor.  */
       if (se->want_pointer)
-	se->expr = gfc_build_addr_expr (NULL, desc);
+	se->expr = build_fold_addr_expr (desc);
       else
 	se->expr = desc;
     }
@@ -4187,7 +4187,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
           if (sym->attr.dummy || POINTER_TYPE_P (TREE_TYPE (tmp)))
             se->expr = tmp;
           else
-	    se->expr = gfc_build_addr_expr (NULL, tmp);
+	    se->expr = build_fold_addr_expr (tmp);
 	  return;
         }
       if (sym->attr.allocatable)

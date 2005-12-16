@@ -3135,7 +3135,7 @@ gfc_trans_allocate (gfc_code * code)
       tree gfc_int4_type_node = gfc_get_int_type (4);
 
       stat = gfc_create_var (gfc_int4_type_node, "stat");
-      pstat = gfc_build_addr_expr (NULL, stat);
+      pstat = build_fold_addr_expr (stat);
 
       error_label = gfc_build_label_decl (NULL_TREE);
       TREE_USED (error_label) = 1;
@@ -3253,11 +3253,11 @@ gfc_trans_deallocate (gfc_code * code)
 
       /* Variable used with the library call.  */
       stat = gfc_create_var (gfc_int4_type_node, "stat");
-      pstat = gfc_build_addr_expr (NULL, stat);
+      pstat = build_fold_addr_expr (stat);
 
       /* Running total of possible deallocation failures.  */
       astat = gfc_create_var (gfc_int4_type_node, "astat");
-      apstat = gfc_build_addr_expr (NULL, astat);
+      apstat = build_fold_addr_expr (astat);
 
       /* Initialize astat to 0.  */
       gfc_add_modify_expr (&block, astat, build_int_cst (TREE_TYPE (astat), 0));
