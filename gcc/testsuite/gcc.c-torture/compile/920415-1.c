@@ -1,3 +1,6 @@
+extern void abort (void);
+extern void exit (int);
+
 #ifndef NO_LABEL_VALUES
 f ()
 {
