@@ -1,3 +1,30 @@
+2005-12-16  Alan Modra  <amodra@bigpond.net.au>
+
+	PR driver/20425
+	* gcc.c (for_each_path): New function.
+	(add_to_obstack, file_at_path): New functions.
+	(struct file_at_path_info, struct add_to_obstack_info): New.
+	(build_search_list): Rewrite using for_each_path.  Constify struct
+	path_prefix pointer.  Add do_multi param.  Adjust all callers.
+	(find_a_file): Similarly, but just change existing param to bool.
+	(putenv_from_prefixes): Add do_multi param, make "paths" const.
+	(do_spec_path): Delete.
+	(struct spec_path_info): New.
+	(spec_path): New function.
+	(do_spec_1): Use for_each_path for %D and %I.
+	(find_file): Adjust for find_a_file changes.
+	(main): Search multilibs for specs.  Print multilib lib path for
+	-print-search-dirs.  Likewise add multilibs to LIBRARY_PATH_ENV.
+	(read_specs): Search multilibs for %include and %include_noerr.
+	(is_directory): Remove second string param.  Change last param
+	to a bool.  Don't use concat.  Remove SMALL_ARG_MAX test, always
+	check path is a dir.  Update all callers.
+	* doc/hostconfig.texi (SMALL_ARG_MAX): Remove mention.
+	* system.h (SMALL_ARG_MAX): Poison.
+	* config.gcc: Don't define SMALL_ARG_MAX.
+	* config.host: Likewise.
+	* config.build: Likewise.
+
 2005-12-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (combine_simplify_rtx <case NOT, NEG, TRUNCATE,
