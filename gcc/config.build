@@ -90,15 +90,10 @@ case $build in
     build_install_headers_dir=install-headers-cpio
     ;;
   i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4* )
-    build_xm_defines="SMALL_ARG_MAX"
     build_install_headers_dir=install-headers-cpio
-    ;;
-  i[34567]86-*-solaris2*)
-    build_xm_defines="SMALL_ARG_MAX"
     ;;
   i[34567]86-*-sysv4*) 
     # Intel x86 running system V r4
-    build_xm_defines="SMALL_ARG_MAX"
     build_install_headers_dir=install-headers-cpio
     ;;
   i[34567]86-*-udk*) 

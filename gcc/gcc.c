@@ -287,10 +287,12 @@ static char *load_specs (const char *);
 static void read_specs (const char *, int);
 static void set_spec (const char *, const char *);
 static struct compiler *lookup_compiler (const char *, size_t, const char *);
-static char *build_search_list (struct path_prefix *, const char *, int);
-static void putenv_from_prefixes (struct path_prefix *, const char *);
+static char *build_search_list (const struct path_prefix *, const char *,
+				bool, bool);
+static void putenv_from_prefixes (const struct path_prefix *, const char *,
+				  bool);
 static int access_check (const char *, int);
-static char *find_a_file (struct path_prefix *, const char *, int, int);
+static char *find_a_file (const struct path_prefix *, const char *, int, bool);
 static void add_prefix (struct path_prefix *, const char *, const char *,
 			int, int, int);
 static void add_sysrooted_prefix (struct path_prefix *, const char *,
@@ -313,13 +315,12 @@ static const char *eval_spec_function (const char *, const char *);
 static const char *handle_spec_function (const char *);
 static char *save_string (const char *, int);
 static void set_collect_gcc_options (void);
-static void do_spec_path (struct prefix_list *, const char *, int, int, int, const char *, const char *);
 static int do_spec_1 (const char *, int, const char *);
 static int do_spec_2 (const char *);
 static void do_option_spec (const char *, const char *);
 static void do_self_spec (const char *);
 static const char *find_file (const char *);
-static int is_directory (const char *, const char *, int);
+static int is_directory (const char *, bool);
 static const char *validate_switches (const char *);
 static void validate_all_switches (void);
 static inline void validate_switches_from_spec (const char *);
@@ -2041,7 +2042,7 @@ read_specs (const char *filename, int main_p)
 		       (long) (p1 - buffer + 1));
 
 	      p[-2] = '\0';
-	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK, 0);
+	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK, true);
 	      read_specs (new_filename ? new_filename : p1, FALSE);
 	      continue;
 	    }
@@ -2060,7 +2061,7 @@ read_specs (const char *filename, int main_p)
 		       (long) (p1 - buffer + 1));
 
 	      p[-2] = '\0';
-	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK, 0);
+	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK, true);
 	      if (new_filename)
 		read_specs (new_filename, FALSE);
 	      else if (verbose_flag)
@@ -2357,64 +2358,213 @@ clear_failure_queue (void)
   failure_delete_queue = 0;
 }
 
+/* Call CALLBACK for each path in PATHS, breaking out early if CALLBACK
+   returns non-NULL.
+   If DO_MULTI is true iterate over the paths twice, first with multilib
+   suffix then without, otherwise iterate over the paths once without
+   adding a multilib suffix.  When DO_MULTI is true, some attempt is made
+   to avoid visiting the same path twice, but we could do better.  For
+   instance, /usr/lib/../lib is considered different from /usr/lib.
+   At least EXTRA_SPACE chars past the end of the path passed to
+   CALLBACK are available for use by the callback.
+   CALLBACK_INFO allows extra parameters to be passed to CALLBACK.
+
+   Returns the value returned by CALLBACK.  */
+
+static void *
+for_each_path (const struct path_prefix *paths,
+	       bool do_multi,
+	       size_t extra_space,
+	       void *(*callback) (char *, void *),
+	       void *callback_info)
+{
+  struct prefix_list *pl;
+  const char *multi_dir = NULL;
+  const char *multi_os_dir = NULL;
+  const char *multi_suffix;
+  const char *just_multi_suffix;
+  char *path = NULL;
+  void *ret = NULL;
+  bool skip_multi_dir = false;
+  bool skip_multi_os_dir = false;
+
+  multi_suffix = machine_suffix;
+  just_multi_suffix = just_machine_suffix;
+  if (do_multi && multilib_dir && strcmp (multilib_dir, ".") != 0)
+    {
+      multi_dir = concat (multilib_dir, dir_separator_str, NULL);
+      multi_suffix = concat (multi_suffix, multi_dir, NULL);
+      just_multi_suffix = concat (just_multi_suffix, multi_dir, NULL);
+    }
+  if (do_multi && multilib_os_dir && strcmp (multilib_os_dir, ".") != 0)
+    multi_os_dir = concat (multilib_os_dir, dir_separator_str, NULL);
+
+  while (1)
+    {
+      size_t multi_dir_len = 0;
+      size_t multi_os_dir_len = 0;
+      size_t suffix_len;
+      size_t just_suffix_len;
+      size_t len;
+
+      if (multi_dir)
+	multi_dir_len = strlen (multi_dir);
+      if (multi_os_dir)
+	multi_os_dir_len = strlen (multi_os_dir);
+      suffix_len = strlen (multi_suffix);
+      just_suffix_len = strlen (just_multi_suffix);
+
+      if (path == NULL)
+	{
+	  len = paths->max_len + extra_space + 1;
+	  if (suffix_len > multi_os_dir_len)
+	    len += suffix_len;
+	  else
+	    len += multi_os_dir_len;
+	  path = xmalloc (len);
+	}
+
+      for (pl = paths->plist; pl != 0; pl = pl->next)
+	{
+	  len = strlen (pl->prefix);
+	  memcpy (path, pl->prefix, len);
+
+	  /* Look first in MACHINE/VERSION subdirectory.  */
+	  if (!skip_multi_dir)
+	    {
+	      memcpy (path + len, multi_suffix, suffix_len + 1);
+	      ret = callback (path, callback_info);
+	      if (ret)
+		break;
+	    }
+
+	  /* Some paths are tried with just the machine (ie. target)
+	     subdir.  This is used for finding as, ld, etc.  */
+	  if (!skip_multi_dir
+	      && pl->require_machine_suffix == 2)
+	    {
+	      memcpy (path + len, just_multi_suffix, just_suffix_len + 1);
+	      ret = callback (path, callback_info);
+	      if (ret)
+		break;
+	    }
+
+	  /* Now try the base path.  */
+	  if (!pl->require_machine_suffix
+	      && !(pl->os_multilib ? skip_multi_os_dir : skip_multi_dir))
+	    {
+	      const char *this_multi;
+	      size_t this_multi_len;
+
+	      if (pl->os_multilib)
+		{
+		  this_multi = multi_os_dir;
+		  this_multi_len = multi_os_dir_len;
+		}
+	      else
+		{
+		  this_multi = multi_dir;
+		  this_multi_len = multi_dir_len;
+		}
+
+	      if (this_multi_len)
+		memcpy (path + len, this_multi, this_multi_len + 1);
+	      else
+		path[len] = '\0';
+
+	      ret = callback (path, callback_info);
+	      if (ret)
+		break;
+	    }
+	}
+      if (pl)
+	break;
+
+      if (multi_dir == NULL && multi_os_dir == NULL)
+	break;
+
+      /* Run through the paths again, this time without multilibs.
+	 Don't repeat any we have already seen.  */
+      if (multi_dir)
+	{
+	  free ((char *) multi_dir);
+	  multi_dir = NULL;
+	  free ((char *) multi_suffix);
+	  multi_suffix = machine_suffix;
+	  free ((char *) just_multi_suffix);
+	  just_multi_suffix = just_machine_suffix;
+	}
+      else
+	skip_multi_dir = true;
+      if (multi_os_dir)
+	{
+	  free ((char *) multi_os_dir);
+	  multi_os_dir = NULL;
+	}
+      else
+	skip_multi_os_dir = true;
+    }
+
+  if (multi_dir)
+    {
+      free ((char *) multi_dir);
+      free ((char *) multi_suffix);
+      free ((char *) just_multi_suffix);
+    }
+  if (multi_os_dir)
+    free ((char *) multi_os_dir);
+  if (ret != path)
+    free (path);
+  return ret;
+}
+
+/* Callback for build_search_list.  Adds path to obstack being built.  */
+
+struct add_to_obstack_info {
+  struct obstack *ob;
+  bool check_dir;
+  bool first_time;
+};
+
+static void *
+add_to_obstack (char *path, void *data)
+{
+  struct add_to_obstack_info *info = data;
+
+  if (info->check_dir && !is_directory (path, false))
+    return NULL;
+
+  if (!info->first_time)
+    obstack_1grow (info->ob, PATH_SEPARATOR);
+
+  obstack_grow (info->ob, path, strlen (path));
+
+  info->first_time = false;
+  return NULL;
+}
+
 /* Build a list of search directories from PATHS.
    PREFIX is a string to prepend to the list.
-   If CHECK_DIR_P is nonzero we ensure the directory exists.
+   If CHECK_DIR_P is true we ensure the directory exists.
+   If DO_MULTI is true, multilib paths are output first, then
+   non-multilib paths.
    This is used mostly by putenv_from_prefixes so we use `collect_obstack'.
    It is also used by the --print-search-dirs flag.  */
 
 static char *
-build_search_list (struct path_prefix *paths, const char *prefix,
-		   int check_dir_p)
+build_search_list (const struct path_prefix *paths, const char *prefix,
+		   bool check_dir, bool do_multi)
 {
-  int suffix_len = (machine_suffix) ? strlen (machine_suffix) : 0;
-  int just_suffix_len
-    = (just_machine_suffix) ? strlen (just_machine_suffix) : 0;
-  int first_time = TRUE;
-  struct prefix_list *pprefix;
+  struct add_to_obstack_info info;
+
+  info.ob = &collect_obstack;
+  info.check_dir = check_dir;
+  info.first_time = true;
 
   obstack_grow (&collect_obstack, prefix, strlen (prefix));
   obstack_1grow (&collect_obstack, '=');
 
-  for (pprefix = paths->plist; pprefix != 0; pprefix = pprefix->next)
-    {
-      int len = strlen (pprefix->prefix);
-
-      if (machine_suffix
-	  && (! check_dir_p
-	      || is_directory (pprefix->prefix, machine_suffix, 0)))
-	{
-	  if (!first_time)
-	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
-
-	  first_time = FALSE;
-	  obstack_grow (&collect_obstack, pprefix->prefix, len);
-	  obstack_grow (&collect_obstack, machine_suffix, suffix_len);
-	}
-
-      if (just_machine_suffix
-	  && pprefix->require_machine_suffix == 2
-	  && (! check_dir_p
-	      || is_directory (pprefix->prefix, just_machine_suffix, 0)))
-	{
-	  if (! first_time)
-	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
-
-	  first_time = FALSE;
-	  obstack_grow (&collect_obstack, pprefix->prefix, len);
-	  obstack_grow (&collect_obstack, just_machine_suffix,
-			just_suffix_len);
-	}
-
-      if (! pprefix->require_machine_suffix)
-	{
-	  if (! first_time)
-	    obstack_1grow (&collect_obstack, PATH_SEPARATOR);
-
-	  first_time = FALSE;
-	  obstack_grow (&collect_obstack, pprefix->prefix, len);
-	}
-    }
+  for_each_path (paths, do_multi, 0, add_to_obstack, &info);
 
   obstack_1grow (&collect_obstack, '\0');
   return XOBFINISH (&collect_obstack, char *);
@@ -2424,9 +2574,10 @@ build_search_list (struct path_prefix *paths, const char *prefix,
    for collect.  */
 
 static void
-putenv_from_prefixes (struct path_prefix *paths, const char *env_var)
+putenv_from_prefixes (const struct path_prefix *paths, const char *env_var,
+		      bool do_multi)
 {
-  putenv (build_search_list (paths, env_var, 1));
+  putenv (build_search_list (paths, env_var, true, do_multi));
 }
 
 /* Check whether NAME can be accessed in MODE.  This is like access,
@@ -2447,20 +2598,53 @@ access_check (const char *name, int mode)
   return access (name, mode);
 }
 
+/* Callback for find_a_file.  Appends the file name to the directory
+   path.  If the resulting file exists in the right mode, return the
+   full pathname to the file.  */
+
+struct file_at_path_info {
+  const char *name;
+  const char *suffix;
+  int name_len;
+  int suffix_len;
+  int mode;
+};
+
+static void *
+file_at_path (char *path, void *data)
+{
+  struct file_at_path_info *info = data;
+  size_t len = strlen (path);
+
+  memcpy (path + len, info->name, info->name_len);
+  len += info->name_len;
+
+  /* Some systems have a suffix for executable files.
+     So try appending that first.  */
+  if (info->suffix_len)
+    {
+      memcpy (path + len, info->suffix, info->suffix_len + 1);
+      if (access_check (path, info->mode) == 0)
+	return path;
+    }
+
+  path[len] = '\0';
+  if (access_check (path, info->mode) == 0)
+    return path;
+
+  return NULL;
+}
+
 /* Search for NAME using the prefix list PREFIXES.  MODE is passed to
-   access to check permissions.
+   access to check permissions.  If DO_MULTI is true, search multilib
+   paths then non-multilib paths, otherwise do not search multilib paths.
    Return 0 if not found, otherwise return its name, allocated with malloc.  */
 
 static char *
-find_a_file (struct path_prefix *pprefix, const char *name, int mode,
-	     int multilib)
+find_a_file (const struct path_prefix *pprefix, const char *name, int mode,
+	     bool do_multi)
 {
-  char *temp;
-  const char *const file_suffix =
-    ((mode & X_OK) != 0 ? HOST_EXECUTABLE_SUFFIX : "");
-  struct prefix_list *pl;
-  int len = pprefix->max_len + strlen (name) + strlen (file_suffix) + 1;
-  const char *multilib_name, *multilib_os_name;
+  struct file_at_path_info info;
 
 #ifdef DEFAULT_ASSEMBLER
   if (! strcmp (name, "as") && access (DEFAULT_ASSEMBLER, mode) == 0)
@@ -2472,112 +2656,24 @@ find_a_file (struct path_prefix *pprefix, const char *name, int mode,
     return xstrdup (DEFAULT_LINKER);
 #endif
 
-  if (machine_suffix)
-    len += strlen (machine_suffix);
-
-  multilib_name = name;
-  multilib_os_name = name;
-  if (multilib && multilib_os_dir)
-    {
-      int len1 = multilib_dir ? strlen (multilib_dir) + 1 : 0;
-      int len2 = strlen (multilib_os_dir) + 1;
-
-      len += len1 > len2 ? len1 : len2;
-      if (multilib_dir)
-	multilib_name = ACONCAT ((multilib_dir, dir_separator_str, name,
-				  NULL));
-      if (strcmp (multilib_os_dir, ".") != 0)
-	multilib_os_name = ACONCAT ((multilib_os_dir, dir_separator_str, name,
-				    NULL));
-    }
-
-  temp = xmalloc (len);
-
   /* Determine the filename to execute (special case for absolute paths).  */
 
   if (IS_ABSOLUTE_PATH (name))
     {
       if (access (name, mode) == 0)
-	{
-	  strcpy (temp, name);
-	  return temp;
-	}
+	return xstrdup (name);
+
+      return NULL;
     }
-  else
-    for (pl = pprefix->plist; pl; pl = pl->next)
-      {
-	const char *this_name
-	  = pl->os_multilib ? multilib_os_name : multilib_name;
 
-	if (machine_suffix)
-	  {
-	    /* Some systems have a suffix for executable files.
-	       So try appending that first.  */
-	    if (file_suffix[0] != 0)
-	      {
-		strcpy (temp, pl->prefix);
-		strcat (temp, machine_suffix);
-		strcat (temp, multilib_name);
-		strcat (temp, file_suffix);
-		if (access_check (temp, mode) == 0)
-		  return temp;
-	      }
+  info.name = name;
+  info.suffix = (mode & X_OK) != 0 ? HOST_EXECUTABLE_SUFFIX : "";
+  info.name_len = strlen (info.name);
+  info.suffix_len = strlen (info.suffix);
+  info.mode = mode;
 
-	    /* Now try just the multilib_name.  */
-	    strcpy (temp, pl->prefix);
-	    strcat (temp, machine_suffix);
-	    strcat (temp, multilib_name);
-	    if (access_check (temp, mode) == 0)
-	      return temp;
-	  }
-
-	/* Certain prefixes are tried with just the machine type,
-	   not the version.  This is used for finding as, ld, etc.  */
-	if (just_machine_suffix && pl->require_machine_suffix == 2)
-	  {
-	    /* Some systems have a suffix for executable files.
-	       So try appending that first.  */
-	    if (file_suffix[0] != 0)
-	      {
-		strcpy (temp, pl->prefix);
-		strcat (temp, just_machine_suffix);
-		strcat (temp, multilib_name);
-		strcat (temp, file_suffix);
-		if (access_check (temp, mode) == 0)
-		  return temp;
-	      }
-
-	    strcpy (temp, pl->prefix);
-	    strcat (temp, just_machine_suffix);
-	    strcat (temp, multilib_name);
-	    if (access_check (temp, mode) == 0)
-	      return temp;
-	  }
-
-	/* Certain prefixes can't be used without the machine suffix
-	   when the machine or version is explicitly specified.  */
-	if (! pl->require_machine_suffix)
-	  {
-	    /* Some systems have a suffix for executable files.
-	       So try appending that first.  */
-	    if (file_suffix[0] != 0)
-	      {
-		strcpy (temp, pl->prefix);
-		strcat (temp, this_name);
-		strcat (temp, file_suffix);
-		if (access_check (temp, mode) == 0)
-		  return temp;
-	      }
-
-	    strcpy (temp, pl->prefix);
-	    strcat (temp, this_name);
-	    if (access_check (temp, mode) == 0)
-	      return temp;
-	  }
-      }
-
-  free (temp);
-  return 0;
+  return for_each_path (pprefix, do_multi, info.name_len + info.suffix_len,
+			file_at_path, &info);
 }
 
 /* Ranking of prefixes in the sort list. -B prefixes are put before
@@ -2696,7 +2792,7 @@ execute (void)
 
   commands[0].prog = argbuf[0]; /* first command.  */
   commands[0].argv = &argbuf[0];
-  string = find_a_file (&exec_prefixes, commands[0].prog, X_OK, 0);
+  string = find_a_file (&exec_prefixes, commands[0].prog, X_OK, false);
 
   if (string)
     commands[0].argv[0] = string;
@@ -2711,7 +2807,7 @@ execute (void)
 	commands[n_commands].prog = argbuf[i + 1];
 	commands[n_commands].argv = &argbuf[i + 1];
 	string = find_a_file (&exec_prefixes, commands[n_commands].prog,
-			      X_OK, 0);
+			      X_OK, false);
 	if (string)
 	  commands[n_commands].argv[0] = string;
 	n_commands++;
@@ -3649,7 +3745,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 		   if appending a directory separator actually makes a
 		   valid directory name.  */
 		if (! IS_DIR_SEPARATOR (value [len - 1])
-		    && is_directory (value, "", 0))
+		    && is_directory (value, false))
 		  {
 		    char *tmp = xmalloc (len + 2);
 		    strcpy (tmp, value);
@@ -4397,108 +4493,55 @@ do_self_spec (const char *spec)
     }
 }
 
-void
-do_spec_path (struct prefix_list *pl, const char *option,
-	      int omit_if_relative, int separate_options,
-	      int only_subdir,
-	      const char *dir_for_machine_suffix,
-	      const char *dir_for_no_suffix)
+/* Callback for processing %D and %I specs.  */
+
+struct spec_path_info {
+  const char *option;
+  const char *append;
+  size_t append_len;
+  bool omit_relative;
+  bool separate_options;
+};
+
+static void *
+spec_path (char *path, void *data)
 {
-  static size_t bufsize = 0;
-  static char *buffer;
-  int idx;
-  bool multilib_p = false;
+  struct spec_path_info *info = data;
+  size_t len = 0;
+  char save = 0;
 
-  /* Used on systems which record the specified -L dirs
-     and use them to search for dynamic linking.  */
-  /* Relative directories always come from -B,
-     and it is better not to use them for searching
-     at run time.  In particular, stage1 loses.  */
-  if (omit_if_relative
-      && !IS_ABSOLUTE_PATH (pl->prefix))
-    return;
+  if (info->omit_relative && !IS_ABSOLUTE_PATH (path))
+    return NULL;
 
-  /* Try subdirectory if there is one.  */
-  if (machine_suffix && dir_for_machine_suffix)
+  if (info->append_len != 0)
     {
-      if (strlen (pl->prefix) + strlen (machine_suffix)
-	  >= bufsize)
-	bufsize = (strlen (pl->prefix)
-		  + strlen (machine_suffix)) * 2 + 1;
-      buffer = xrealloc (buffer, bufsize);
-      strcpy (buffer, pl->prefix);
-      strcat (buffer, machine_suffix);
-      if (is_directory (buffer, dir_for_machine_suffix, 1))
-	{
-	  multilib_p = true;
-	  do_spec_1 (option, separate_options, NULL);
-	  if (separate_options)
-	    do_spec_1 (" ", 0, NULL);
-	  do_spec_1 (buffer, 1, NULL);
-	  do_spec_1 (dir_for_machine_suffix, 1, NULL);
-	  /* Make this a separate argument.  */
-	  do_spec_1 (" ", 0, NULL);
-	}
-    }
-  if (!pl->require_machine_suffix && dir_for_no_suffix)
-    {
-      if (is_directory (pl->prefix, dir_for_no_suffix, 1))
-	{
-	  multilib_p = true;
-	  do_spec_1 (option, separate_options, NULL);
-	  if (separate_options)
-	    do_spec_1 (" ", 0, NULL);
-	  do_spec_1 (pl->prefix, 1, NULL);
-	  do_spec_1 (dir_for_no_suffix, 1, NULL);
-	  /* Make this a separate argument.  */
-	  do_spec_1 (" ", 0, NULL);
-	}
+      len = strlen (path);
+      memcpy (path + len, info->append, info->append_len + 1);
     }
 
-  if (only_subdir || multilib_p)
-    return;
+  if (!is_directory (path, true))
+    return NULL;
 
-  if (machine_suffix)
+  do_spec_1 (info->option, 1, NULL);
+  if (info->separate_options)
+    do_spec_1 (" ", 0, NULL);
+
+  if (info->append_len == 0)
     {
-      if (is_directory (pl->prefix, machine_suffix, 1))
-	{
-	  do_spec_1 (option, separate_options, NULL);
-	  if (separate_options)
-	    do_spec_1 (" ", 0, NULL);
-	  do_spec_1 (pl->prefix, 1, NULL);
-	  /* Remove slash from machine_suffix.  */
-	  if (strlen (machine_suffix) >= bufsize)
-	    bufsize = strlen (machine_suffix) * 2 + 1;
-	  buffer = xrealloc (buffer, bufsize);
-	  strcpy (buffer, machine_suffix);
-	  idx = strlen (buffer);
-	  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
-	    buffer[idx - 1] = 0;
-	  do_spec_1 (buffer, 1, NULL);
-	  /* Make this a separate argument.  */
-	  do_spec_1 (" ", 0, NULL);
-	}
+      len = strlen (path);
+      save = path[len - 1];
+      if (IS_DIR_SEPARATOR (path[len - 1]))
+	path[len - 1] = '\0';
     }
-  if (!pl->require_machine_suffix)
-    {
-      if (is_directory (pl->prefix, "", 1))
-	{
-	  do_spec_1 (option, separate_options, NULL);
-	  if (separate_options)
-	    do_spec_1 (" ", 0, NULL);
-	  /* Remove slash from pl->prefix.  */
-	  if (strlen (pl->prefix) >= bufsize)
-	    bufsize = strlen (pl->prefix) * 2 + 1;
-	  buffer = xrealloc (buffer, bufsize);
-	  strcpy (buffer, pl->prefix);
-	  idx = strlen (buffer);
-	  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
-	    buffer[idx - 1] = 0;
-	  do_spec_1 (buffer, 1, NULL);
-	  /* Make this a separate argument.  */
-	  do_spec_1 (" ", 0, NULL);
-	}
-    }
+
+  do_spec_1 (path, 1, NULL);
+  do_spec_1 (" ", 0, NULL);
+
+  /* Must not damage the original path.  */
+  if (info->append_len == 0)
+    path[len - 1] = save;
+
+  return NULL;
 }
 
 /* Process the sub-spec SPEC as a portion of a larger spec.
@@ -4636,23 +4679,23 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	     that we search for startfiles.  */
 	  case 'D':
 	    {
-	      struct prefix_list *pl = startfile_prefixes.plist;
+	      struct spec_path_info info;
 
-	      for (; pl; pl = pl->next)
-		{
-		  const char *no_suffix_multilib_dir;
-
-		  no_suffix_multilib_dir = pl->os_multilib ? multilib_os_dir
-					   : multilib_dir;
-		  /* Do not separate options, include non-multilibbed variant.  */
-		  do_spec_path (pl, "-L",
+	      info.option = "-L";
+	      info.append_len = 0;
 #ifdef RELATIVE_PREFIX_NOT_LINKDIR
-				1,
+	      /* Used on systems which record the specified -L dirs
+		 and use them to search for dynamic linking.
+		 Relative directories always come from -B,
+		 and it is better not to use them for searching
+		 at run time.  In particular, stage1 loses.  */
+	      info.omit_relative = true;
 #else
-				0,
+	      info.omit_relative = false;
 #endif
-				0, 0, multilib_dir, no_suffix_multilib_dir);
-		}
+	      info.separate_options = false;
+
+	      for_each_path (&startfile_prefixes, true, 0, spec_path, &info);
 	    }
 	    break;
 
@@ -4889,7 +4932,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	  case 'I':
 	    {
-	      struct prefix_list *pl = include_prefixes.plist;
+	      struct spec_path_info info;
 
 	      if (gcc_exec_prefix)
 		{
@@ -4912,9 +4955,14 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		  do_spec_1 (" ", 0, NULL);
 		}
 
-	      for (; pl; pl = pl->next)
-		/* Separate options, don't include non-suffixed variant.  */
-		do_spec_path (pl, "-isystem", 0, 1, 1, "include", "include");
+	      info.option = "-isystem";
+	      info.append = "include";
+	      info.append_len = strlen (info.append);
+	      info.omit_relative = false;
+	      info.separate_options = true;
+
+	      for_each_path (&include_prefixes, false, info.append_len,
+			     spec_path, &info);
 	    }
 	    break;
 
@@ -5900,48 +5948,27 @@ give_switch (int switchnum, int omit_first_word)
 static const char *
 find_file (const char *name)
 {
-  char *newname;
-
-  /* Try multilib_dir if it is defined.  */
-  if (multilib_os_dir != NULL)
-    {
-      newname = find_a_file (&startfile_prefixes, name, R_OK, 1);
-
-      /* If we don't find it in the multi library dir, then fall
-	 through and look for it in the normal places.  */
-      if (newname != NULL)
-	return newname;
-    }
-
-  newname = find_a_file (&startfile_prefixes, name, R_OK, 0);
+  char *newname = find_a_file (&startfile_prefixes, name, R_OK, true);
   return newname ? newname : name;
 }
 
 /* Determine whether a directory exists.  If LINKER, return 0 for
-   certain fixed names not needed by the linker.  If not LINKER, it is
-   only important to return 0 if the host machine has a small ARG_MAX
-   limit.  */
+   certain fixed names not needed by the linker.  */
 
 static int
-is_directory (const char *path1, const char *path2, int linker)
+is_directory (const char *path1, bool linker)
 {
-  int len1 = strlen (path1);
-  int len2 = strlen (path2);
-  char *path = alloca (3 + len1 + len2);
+  int len1;
+  char *path;
   char *cp;
   struct stat st;
 
-#ifndef SMALL_ARG_MAX
-  if (! linker)
-    return 1;
-#endif
-
-  /* Construct the path from the two parts.  Ensure the string ends with "/.".
-     The resulting path will be a directory even if the given path is a
-     symbolic link.  */
+  /* Ensure the string ends with "/.".  The resulting path will be a
+     directory even if the given path is a symbolic link.  */
+  len1 = strlen (path1);
+  path = alloca (3 + len1);
   memcpy (path, path1, len1);
-  memcpy (path + len1, path2, len2);
-  cp = path + len1 + len2;
+  cp = path + len1;
   if (!IS_DIR_SEPARATOR (cp[-1]))
     *cp++ = DIR_SEPARATOR;
   *cp++ = '.';
@@ -5949,13 +5976,13 @@ is_directory (const char *path1, const char *path2, int linker)
 
   /* Exclude directories that the linker is known to search.  */
   if (linker
+      && IS_DIR_SEPARATOR (path[0])
       && ((cp - path == 6
-	   && strcmp (path, concat (dir_separator_str, "lib",
-				    dir_separator_str, ".", NULL)) == 0)
+	   && strncmp (path + 1, "lib", 3) == 0)
 	  || (cp - path == 10
-	      && strcmp (path, concat (dir_separator_str, "usr",
-				       dir_separator_str, "lib",
-				       dir_separator_str, ".", NULL)) == 0)))
+	      && strncmp (path + 1, "usr", 3) == 0
+	      && IS_DIR_SEPARATOR (path[4])
+	      && strncmp (path + 5, "lib", 3) == 0)))
     return 0;
 
   return (stat (path, &st) >= 0 && S_ISDIR (st.st_mode));
@@ -6147,7 +6174,7 @@ main (int argc, char **argv)
 			   spec_version, dir_separator_str, NULL);
   just_machine_suffix = concat (spec_machine, dir_separator_str, NULL);
 
-  specs_file = find_a_file (&startfile_prefixes, "specs", R_OK, 0);
+  specs_file = find_a_file (&startfile_prefixes, "specs", R_OK, true);
   /* Read the specs file unless it is a default one.  */
   if (specs_file != 0 && strcmp (specs_file, "specs"))
     read_specs (specs_file, TRUE);
@@ -6283,7 +6310,7 @@ main (int argc, char **argv)
   for (uptr = user_specs_head; uptr; uptr = uptr->next)
     {
       char *filename = find_a_file (&startfile_prefixes, uptr->filename,
-				    R_OK, 0);
+				    R_OK, true);
       read_specs (filename ? filename : uptr->filename, FALSE);
     }
 
@@ -6312,8 +6339,10 @@ main (int argc, char **argv)
   if (print_search_dirs)
     {
       printf (_("install: %s%s\n"), standard_exec_prefix, machine_suffix);
-      printf (_("programs: %s\n"), build_search_list (&exec_prefixes, "", 0));
-      printf (_("libraries: %s\n"), build_search_list (&startfile_prefixes, "", 0));
+      printf (_("programs: %s\n"),
+	      build_search_list (&exec_prefixes, "", false, false));
+      printf (_("libraries: %s\n"),
+	      build_search_list (&startfile_prefixes, "", false, true));
       return (0);
     }
 
@@ -6630,14 +6659,14 @@ main (int argc, char **argv)
       /* We'll use ld if we can't find collect2.  */
       if (! strcmp (linker_name_spec, "collect2"))
 	{
-	  char *s = find_a_file (&exec_prefixes, "collect2", X_OK, 0);
+	  char *s = find_a_file (&exec_prefixes, "collect2", X_OK, false);
 	  if (s == NULL)
 	    linker_name_spec = "ld";
 	}
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
 	 for collect.  */
-      putenv_from_prefixes (&exec_prefixes, "COMPILER_PATH");
-      putenv_from_prefixes (&startfile_prefixes, LIBRARY_PATH_ENV);
+      putenv_from_prefixes (&exec_prefixes, "COMPILER_PATH", false);
+      putenv_from_prefixes (&startfile_prefixes, LIBRARY_PATH_ENV, true);
 
       value = do_spec (link_command_spec);
       if (value < 0)

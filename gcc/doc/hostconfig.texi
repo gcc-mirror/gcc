@@ -208,11 +208,6 @@ initialization when @code{collect2} is being initialized.
 If defined, a C statement (sans semicolon) that performs host-dependent
 initialization when a compilation driver is being initialized.
 
-@item SMALL_ARG_MAX
-Define this macro if the host system has a small limit on the total
-size of an argument vector.  This causes the driver to take more care
-not to pass unnecessary arguments to subprocesses.
-
 @item HOST_LONG_LONG_FORMAT
 If defined, the string used to indicate an argument of type @code{long
 long} to functions like @code{printf}.  The default value is

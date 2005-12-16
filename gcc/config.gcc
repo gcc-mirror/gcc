@@ -984,7 +984,6 @@ i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4*)
 	then
 		tm_file="${tm_file} usegas.h"
 	fi
-	xm_defines="SMALL_ARG_MAX"
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ptx4.h i386/ptx4-i.h"
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
@@ -1115,7 +1114,6 @@ i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 	use_fixproto=yes
 	;;
 i[34567]86-*-solaris2*)
-	xm_defines="SMALL_ARG_MAX"
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h sol2.h"
 	case ${target} in
 	*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*)
@@ -1182,7 +1180,6 @@ i[34567]86-*-sysv5*)           # Intel x86 on System V Release 5
 	use_fixproto=yes
        ;;
 i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
-	xm_defines="SMALL_ARG_MAX"
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h i386/sysv4-cpp.h"
 	if test x$stabs = xyes
 	then

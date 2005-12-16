@@ -132,16 +132,9 @@ case ${host} in
   i370-*-opened* | i370-*-mvs* ) # IBM 360/370/390 Architecture
     host_xm_defines='FATAL_EXIT_CODE=12'
     ;;
-  i[34567]86-sequent-ptx4*)
-    host_xm_defines="SMALL_ARG_MAX"
-    ;;
   i[34567]86-*-solaris2*)
-    host_xm_defines="SMALL_ARG_MAX"
     out_host_hook_obj=host-solaris.o
     host_xmake_file=x-solaris
-    ;;
-  i[34567]86-*-sysv4*) # Intel 80386's running System V Release 4
-    host_xm_defines="SMALL_ARG_MAX"
     ;;
   i[34567]86-pc-msdosdjgpp*)
     host_xm_file=i386/xm-djgpp.h
