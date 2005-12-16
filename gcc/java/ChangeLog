@@ -1,3 +1,10 @@
+2005-12-15  Tom Tromey  <tromey@redhat.com>
+	    Andrew Haley  <aph@redhat.com>
+
+	PR java/25429
+	* parse.y (resolve_expression_name): Don't generate accessor
+	methods for constant fields.
+
 2005-12-13  Andrew Haley  <aph@redhat.com>
 
 	PR java/25366

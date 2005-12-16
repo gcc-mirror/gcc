@@ -1,3 +1,13 @@
+2005-12-16  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jacks/jacks.xfail
+	(8.5.2-accessible-static-member-usage-3): Removed.
+
+2005-12-15  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.compile/rh175833.java: New file.
+	* testsuite/libjava.compile/pr25429.java: New file.
+
 2005-12-14  Andrew Haley  <aph@redhat.com>
 
 	* gnu/java/rmi/rmic/CompilerProcess.java: Use a new thread to
