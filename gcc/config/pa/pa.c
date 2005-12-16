@@ -5928,6 +5928,9 @@ pa_scalar_mode_supported_p (enum machine_mode mode)
 	return true;
       return false;
 
+    case MODE_DECIMAL_FLOAT:
+      return false;
+
     default:
       gcc_unreachable ();
     }
