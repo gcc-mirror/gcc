@@ -911,6 +911,12 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
     pp_character (pp, 'f');
   else if (TREE_TYPE (r) == long_double_type_node)
     pp_character (pp, 'l');
+  else if (TREE_TYPE (r) == dfloat128_type_node)
+    pp_string (pp, "dl");
+  else if (TREE_TYPE (r) == dfloat64_type_node)
+    pp_string (pp, "dd");
+  else if (TREE_TYPE (r) == dfloat32_type_node)
+    pp_string (pp, "df");
 }
 
 /* Pretty-print a compound literal expression.  GNU extensions include

@@ -431,6 +431,18 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
 #endif
 
+#ifndef DECIMAL32_TYPE_SIZE
+#define DECIMAL32_TYPE_SIZE 32
+#endif 
+
+#ifndef DECIMAL64_TYPE_SIZE 
+#define DECIMAL64_TYPE_SIZE 64
+#endif 
+
+#ifndef DECIMAL128_TYPE_SIZE
+#define DECIMAL128_TYPE_SIZE 128
+#endif
+
 /* Width in bits of a pointer.  Mind the value of the macro `Pmode'.  */
 #ifndef POINTER_SIZE
 #define POINTER_SIZE BITS_PER_WORD
@@ -694,6 +706,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #ifndef TARGET_FLT_EVAL_METHOD
 #define TARGET_FLT_EVAL_METHOD 0
+#endif
+
+#ifndef TARGET_DEC_EVAL_METHOD
+#define TARGET_DEC_EVAL_METHOD 2
 #endif
 
 #ifndef HOT_TEXT_SECTION_NAME

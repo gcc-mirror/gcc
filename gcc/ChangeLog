@@ -1,3 +1,81 @@
+2005-12-16  Jon Grimm  <jgrimm2@us.ibm.com>
+	    Janis Johnson  <janis187@us.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* target-def.h (TARGET_DECIMAL_FLOAT_SUPPORTED_P): New.
+	(TARGET_INITIALIZER): Add TARGET_DECIMAL_FLOAT_P.
+	* target.h (struct gcc_target): Add decimal_float_supported_p.
+	* targhooks.c (default_scalar_mode_supported_p): Handle
+	MODE_DECIMAL_FLOAT.
+	* builtins.def: Add new builtins for 32, 64 and 128 bit variants
+	of inf, nan, finite, isinf and isnan.
+	* builtin-types.def (BT_DFLOAT32, BT_DFLOAT64, BT_DFLOAT128,
+	BT_DFLOAT32_PTR, BT_DFLOAT64_PTR, BT_DFLOAT128_PTR,
+	BT_FN_DFLOAT32, BT_FN_DFLOAT64, BT_FN_DFLOAT128,
+	BT_FN_INT_DFLOAT32, BT_FN_INT_DFLOAT64, BT_FN_INT_DFLOAT128,
+	BT_FN_DFLOAT32_CONST_STRING, BT_FN_DFLOAT64_CONST_STRING,
+	BT_FN_DFLOAT32_CONST_STRING, BT_FN_DFLOAT32_DFLOAT32,
+	BT_FN_DFLOAT64_DFLOAT64, BT_FN_DFLOAT128_DFLOAT128): New.
+	* c-decl.c (declspecs_add_type): Verify combos on type qualifiers.
+	Pedwarn if decimal floating point types are used.  Error if
+	decimal floating point is not supported by the target.
+	(finish_declspecs): Return type from DFP typespec_word.
+	* c-typeck.c (c_common_type): Choose the decimal floating point
+	type with the greater precision when determining a common type.
+	(convert_arguments): Warn if there is a mismatch between argument
+	and prototype for decimal float types.  Warn of conversions with
+	binary float types and of precision narrowing due to prototype.
+	* c-parser.c (reswords): Add _Decimal32, _Decimal64, _Decimal128.
+	(c_token_starts_typename): Handle RID_DFLOAT32/64/128.
+	(c_token_starts_declspecs): Likewise.
+	(c_parser_attributes): Likewise.
+	* c-common.h (enum rid): Add new enumeration values RID_DFLOAT32,
+	RID_DFLOAT64, RID_DFLOAT128.
+	(T_D32, TEX_D32, T_D64, TEX_D64, T_D128, TEX_D128): New macros.
+	* c-common.c (c_common_type_for_mode): Handle decimal float modes.
+	(shorten_compare): Convert DFP/BFP operands to a common type.
+	(c_common_modes_and_builtins): Register built-in decimal float
+	types if the target supports them.
+	(handle_mode_addtribute): Handle MODE_DECIMAL_FLOAT.
+	* builtins.c (fold_builtin_1): Handle 32, 64 and 128 bit cases of
+	inf, nan, finite, isinf and isnan builtins.
+	* c-cppbuiltin.c (builtin_define_decimal_float_constants): New.
+	(builtin_define_float_constants): Assert non-decimal radix.
+	(c_cpp_builtins): Register built-in __DEC_EVAL_METHOD__ define.
+	Call builtin_define_decimal_float_constants for each type.
+	* c-lex.c (interpret_float): Decode decimal float types from CPP_N
+	flags.  Use real_from_string3, which can handle binary or decimal
+	floats.
+	* c-tree.h (enum c_typespec_keyword): Add cts_dfloat32,
+	cts_dfloat64, cts_dfloat128.
+	* tree.c (build_common_tree_nodes_2): Add decimal float types.
+	* tree.h (enum tree_index): Add new enumeration values
+	TI_DFLOAT32_TYPE, TI_DFLOAT64_TYPE, TI_DFLOAT128_TYPE,
+	TI_DFLOAT32_PTR_TYPE, TI_DFLOAT64_PTR_TYPE, TI_DFLOAT128_PTR_TYPE.
+	(dfloat32_type_node): New macro.
+	(dfloat64_type_node, dfloat128_type_node): Likewise.
+	(dfloat32_ptr_type_node, dfloat64_ptr_type_node): Likewise.
+	(dfloat128_ptr_type_node): Likewise.
+	* c-pretty-print.c (pp_c_floating_constant): Append 32, 64 and 128
+	bit decimal floating point types with "df", "dd" and "dl".
+	* c-format.h (enum format_lengths): Add new enumeration values
+	FMT_LEN_H, FMT_LEN_D and FMT_LEN_DD.
+	* c-format.c (printf_length_specs, scanf_length_specs): Add
+	entries for H, D, DD.
+	(print_char_table, scan_char_table): Use new entries.
+	(asm_fprintf_char_table, gcc_diag_char_table,
+	gcc_cdiag_char_table, gcc_cxxdiag_char_table): Adjust for longer
+	length arrays.
+	* defaults.h (DECIMAL32_TYPE_SIZE): Define.
+	(DECIMAL64_TYPE_SIZE): Likewise.
+	(DECIMAL128_TYPE_SIZE): Likewise.
+	(TARGET_DEC_EVAL_METHOD): Likewise.
+	* doc/extend.texi (Decimal Float): New node.
+	(Constructing Calls): Document decimal float built-ins.
+	* doc/tm.texi: Document TARGET_DECIMAL_FLOAT_SUPPORTED_P hook.
+	* Makefile.in (USER_H): Add $(srcdir)/ginclude/decfloat.h.
+	* ginclude/decfloat.h: New file.
+
 2005-12-16  Alan Modra  <amodra@bigpond.net.au>
 
 	* reload.c (find_reloads): Fix comment typo.

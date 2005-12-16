@@ -35,6 +35,9 @@ enum format_lengths
   FMT_LEN_z,
   FMT_LEN_t,
   FMT_LEN_j,
+  FMT_LEN_H,
+  FMT_LEN_D,
+  FMT_LEN_DD,
   FMT_LEN_MAX
 };
 
@@ -295,5 +298,11 @@ typedef struct
 #define T99_IM	{ STD_C99, "intmax_t", T_IM }
 #define T_UIM   &uintmax_type_node
 #define T99_UIM	{ STD_C99, "uintmax_t", T_UIM }
+#define T_D32   &dfloat32_type_node
+#define TEX_D32 { STD_EXT, "_Decimal32", T_D32 }
+#define T_D64   &dfloat64_type_node
+#define TEX_D64 { STD_EXT, "_Decimal64", T_D64 }
+#define T_D128  &dfloat128_type_node
+#define TEX_D128 { STD_EXT, "_Decimal128", T_D128 }
 
 #endif /* GCC_C_FORMAT_H */
