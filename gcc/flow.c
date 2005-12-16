@@ -3879,6 +3879,92 @@ mark_used_reg (struct propagate_block_info *pbi, rtx reg,
     }
 }
 
+/* Scan expression X for registers which have to be marked used in PBI.  
+   X is considered to be the SET_DEST rtx of SET.  TRUE is returned if
+   X could be handled by this function.  */
+
+static bool
+mark_used_dest_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
+{
+  int regno;
+  bool mark_dest = false;
+  rtx dest = x;
+  
+  /* On some platforms calls return values spread over several 
+     locations.  These locations are wrapped in a EXPR_LIST rtx
+     together with a CONST_INT offset.  */
+  if (GET_CODE (x) == EXPR_LIST
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    x = XEXP (x, 0);
+  
+  if (x == NULL_RTX)
+    return false;
+
+  /* If storing into MEM, don't show it as being used.  But do
+     show the address as being used.  */
+  if (MEM_P (x))
+    {
+#ifdef AUTO_INC_DEC
+      if (pbi->flags & PROP_AUTOINC)
+	find_auto_inc (pbi, x, insn);
+#endif
+      mark_used_regs (pbi, XEXP (x, 0), cond, insn);
+      return true;
+    }
+	    
+  /* Storing in STRICT_LOW_PART is like storing in a reg
+     in that this SET might be dead, so ignore it in TESTREG.
+     but in some other ways it is like using the reg.
+     
+     Storing in a SUBREG or a bit field is like storing the entire
+     register in that if the register's value is not used
+	       then this SET is not needed.  */
+  while (GET_CODE (x) == STRICT_LOW_PART
+	 || GET_CODE (x) == ZERO_EXTRACT
+	 || GET_CODE (x) == SUBREG)
+    {
+#ifdef CANNOT_CHANGE_MODE_CLASS
+      if ((pbi->flags & PROP_REG_INFO) && GET_CODE (x) == SUBREG)
+	record_subregs_of_mode (x);
+#endif
+      
+      /* Modifying a single register in an alternate mode
+	 does not use any of the old value.  But these other
+	 ways of storing in a register do use the old value.  */
+      if (GET_CODE (x) == SUBREG
+	  && !((REG_BYTES (SUBREG_REG (x))
+		+ UNITS_PER_WORD - 1) / UNITS_PER_WORD
+	       > (REG_BYTES (x)
+		  + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+	;
+      else
+	mark_dest = true;
+      
+      x = XEXP (x, 0);
+    }
+  
+  /* If this is a store into a register or group of registers,
+     recursively scan the value being stored.  */
+  if (REG_P (x)
+      && (regno = REGNO (x),
+	  !(regno == FRAME_POINTER_REGNUM
+	    && (!reload_completed || frame_pointer_needed)))
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+      && !(regno == HARD_FRAME_POINTER_REGNUM
+	   && (!reload_completed || frame_pointer_needed))
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      && !(regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+#endif
+      )
+    {
+      if (mark_dest)
+	mark_used_regs (pbi, dest, cond, insn);
+      return true;
+    }
+  return false;
+}
+
 /* Scan expression X and store a 1-bit in NEW_LIVE for each reg it uses.
    This is done assuming the registers needed from X are those that
    have 1-bits in PBI->REG_LIVE.
@@ -3890,7 +3976,6 @@ static void
 mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
 {
   RTX_CODE code;
-  int regno;
   int flags = pbi->flags;
 
  retry:
@@ -3991,73 +4076,18 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
 
     case SET:
       {
-	rtx testreg = SET_DEST (x);
-	int mark_dest = 0;
+	rtx dest = SET_DEST (x);
+	int i;
+	bool ret = false;
 
-	/* If storing into MEM, don't show it as being used.  But do
-	   show the address as being used.  */
-	if (MEM_P (testreg))
+	if (GET_CODE (dest) == PARALLEL)
+	  for (i = 0; i < XVECLEN (dest, 0); i++)
+	    ret |= mark_used_dest_regs (pbi, XVECEXP (dest, 0, i), cond, insn);
+	else
+	  ret = mark_used_dest_regs (pbi, dest, cond, insn);
+	
+	if (ret)
 	  {
-#ifdef AUTO_INC_DEC
-	    if (flags & PROP_AUTOINC)
-	      find_auto_inc (pbi, testreg, insn);
-#endif
-	    mark_used_regs (pbi, XEXP (testreg, 0), cond, insn);
-	    mark_used_regs (pbi, SET_SRC (x), cond, insn);
-	    return;
-	  }
-
-	/* Storing in STRICT_LOW_PART is like storing in a reg
-	   in that this SET might be dead, so ignore it in TESTREG.
-	   but in some other ways it is like using the reg.
-
-	   Storing in a SUBREG or a bit field is like storing the entire
-	   register in that if the register's value is not used
-	   then this SET is not needed.  */
-	while (GET_CODE (testreg) == STRICT_LOW_PART
-	       || GET_CODE (testreg) == ZERO_EXTRACT
-	       || GET_CODE (testreg) == SUBREG)
-	  {
-#ifdef CANNOT_CHANGE_MODE_CLASS
-	    if ((flags & PROP_REG_INFO) && GET_CODE (testreg) == SUBREG)
-	      record_subregs_of_mode (testreg);
-#endif
-
-	    /* Modifying a single register in an alternate mode
-	       does not use any of the old value.  But these other
-	       ways of storing in a register do use the old value.  */
-	    if (GET_CODE (testreg) == SUBREG
-		&& !((REG_BYTES (SUBREG_REG (testreg))
-		      + UNITS_PER_WORD - 1) / UNITS_PER_WORD
-		     > (REG_BYTES (testreg)
-			+ UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-	      ;
-	    else
-	      mark_dest = 1;
-
-	    testreg = XEXP (testreg, 0);
-	  }
-
-	/* If this is a store into a register or group of registers,
-	   recursively scan the value being stored.  */
-
-	if ((GET_CODE (testreg) == PARALLEL
-	     && GET_MODE (testreg) == BLKmode)
-	    || (REG_P (testreg)
-		&& (regno = REGNO (testreg),
-		    ! (regno == FRAME_POINTER_REGNUM
-		       && (! reload_completed || frame_pointer_needed)))
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-		&& ! (regno == HARD_FRAME_POINTER_REGNUM
-		      && (! reload_completed || frame_pointer_needed))
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
-#endif
-		))
-	  {
-	    if (mark_dest)
-	      mark_used_regs (pbi, SET_DEST (x), cond, insn);
 	    mark_used_regs (pbi, SET_SRC (x), cond, insn);
 	    return;
 	  }
