@@ -1582,9 +1582,9 @@ mn10300-*-*)
 	use_collect2=no
 	use_fixproto=yes
 	;;
-ms1-*-elf)
+mt-*-elf)
         tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
-        tmake_file="${tmake_file} ms1/t-ms1"
+        tmake_file="${tmake_file} mt/t-mt"
         ;;
 ns32k-*-netbsdelf*)
 	echo "GCC does not yet support the ${target} target"; exit 1
