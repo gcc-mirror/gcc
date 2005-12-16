@@ -40,8 +40,10 @@ match_kind_param (int *kind)
   gfc_symbol *sym;
   const char *p;
   match m;
+  int cnt;
 
-  m = gfc_match_small_literal_int (kind);
+  /* cnt is unused, here.  */
+  m = gfc_match_small_literal_int (kind, &cnt);
   if (m != MATCH_NO)
     return m;
 

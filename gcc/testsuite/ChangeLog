@@ -1,3 +1,7 @@
+2005-12-16  Steven G. Kargl <kargls@comcast.net>
+
+	gfortran.dg/label_1.f90: New test.
+
 2005-12-15  Ben Elliston  <bje@au.ibm.com>
 
 	PR testsuite/25422

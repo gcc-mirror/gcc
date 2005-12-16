@@ -309,7 +309,7 @@ static gfc_statement
 next_free (void)
 {
   match m;
-  int c, d;
+  int c, d, cnt;
 
   gfc_gobble_whitespace ();
 
@@ -323,11 +323,13 @@ next_free (void)
       d = gfc_peek_char ();
       if (m != MATCH_YES || !gfc_is_whitespace (d))
 	{
-	  gfc_match_small_literal_int (&c);
+	  gfc_match_small_literal_int (&c, &cnt);
+
+          if (cnt > 5)
+	    gfc_error_now ("Too many digits in statement label at %C");
+	  
 	  if (c == 0)
 	    gfc_error_now ("Statement label at %C is zero");
-	  else
-	    gfc_error_now ("Statement label at %C is out of range");
 
 	  do
 	    c = gfc_next_char ();
