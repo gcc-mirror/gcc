@@ -1,5 +1,9 @@
 2005-12-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/24899
+	* loop.c (strength_reduce): Don't reduce giv that is not always
+	computable and where add_val or mult_val can trap.
+
 	* doc/invoke.texi (-fdump-tree-*): Remove note about C/C++ only.
 
 2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
