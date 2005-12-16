@@ -81,32 +81,10 @@ struct types base_types[] = {
 { "int *", TYPE_PTR, 0, 0 },
 { "float", TYPE_FLOAT, 0, 0 },
 { "double", TYPE_FLOAT, 0, 0 },
-//{ "long double", TYPE_FLOAT, 0, 0 }, //disabled as double and long double are encoded thee same
-// currently
+/*{ "long double", TYPE_FLOAT, 0, 0 },*/
+/* Disabled as double and long double
+   are encoded thee same, currently  */
 #define NTYPES1 16
-/* objc encoding does not handle attributes at all.   */
-#if 0
-{ "Tchar", TYPE_UINT, 127, 'C' },
-{ "Tschar", TYPE_INT, 127, 'C' },
-{ "Tuchar", TYPE_UINT, 255, 'C' },
-{ "Tshort", TYPE_INT, 32767, 'S' },
-{ "Tushort", TYPE_UINT, 65535, 'S' },
-{ "Tint", TYPE_INT, 2147483647, 'I' },
-{ "Tuint", TYPE_UINT, 4294967295U, 'I' },
-{ "Tlong", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Tulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Tllong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Tullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Tbool", TYPE_UINT, 1, 'B' },
-{ "size_t", TYPE_UINT, 18446744073709551615ULL, 0 },
-{ "Tptr", TYPE_PTR, 0, 0 },
-{ "Tcptr", TYPE_PTR, 0, 0 },
-{ "Tiptr", TYPE_PTR, 0, 0 },
-{ "Tfnptr", TYPE_FNPTR, 0, 0 },
-{ "Tfloat", TYPE_FLOAT, 0, 0 },
-{ "Tdouble", TYPE_FLOAT, 0, 0 },
-{ "Tldouble", TYPE_FLOAT, 0, 0 },
-#endif
 #if 0
 /* enums are disabled for now as it seems like their encoding is broken, we should
    just encode them using their underlaying type but we don't.   */
@@ -120,25 +98,6 @@ struct types base_types[] = {
 { "enum E7", TYPE_SENUM, 2147483647, ' ' },
 { "enum E8", TYPE_UENUM, 4294967295U, ' ' },
 { "enum E9", TYPE_SENUM, 1099511627775LL, ' ' },
-{ "TE0", TYPE_UENUM, 0, ' ' },
-{ "TE1", TYPE_UENUM, 1, ' ' },
-{ "TE2", TYPE_SENUM, 3, ' ' },
-{ "TE3", TYPE_SENUM, 127, ' ' },
-{ "TE4", TYPE_UENUM, 255, ' ' },
-{ "TE5", TYPE_SENUM, 32767, ' ' },
-{ "TE6", TYPE_UENUM, 65535, ' ' },
-{ "TE7", TYPE_SENUM, 2147483647, ' ' },
-{ "TE8", TYPE_UENUM, 4294967295U, ' ' },
-{ "TE9", TYPE_SENUM, 1099511627775LL, ' ' },
-#endif
-#if 0
-/* vector-defs.h typedefs */
-{ "qi", TYPE_INT, 127, 0 },
-{ "hi", TYPE_INT, 32767, 0 },
-{ "si", TYPE_INT, 2147483647, 0 },
-{ "di", TYPE_INT, 9223372036854775807LL, 0 },
-{ "sf", TYPE_FLOAT, 0, 0 },
-{ "df", TYPE_FLOAT, 0, 0 }
 #endif
 #define NTYPES2 (sizeof (base_types) / sizeof (base_types[0]))
 };
@@ -156,21 +115,8 @@ struct types complex_types[] = {
 { "_Complex unsigned long long int", TYPE_CUINT, 18446744073709551615ULL, 0 },
 { "_Complex float", TYPE_CFLOAT, 0, 0 },
 { "_Complex double", TYPE_CFLOAT, 0, 0 },
-{ "_Complex long double", TYPE_CFLOAT, 0, 0 },
-{ "Tcchar", TYPE_CUINT, 127, 0 },
-{ "Tcschar", TYPE_CINT, 127, 0 },
-{ "Tcuchar", TYPE_CUINT, 255, 0 },
-{ "Tcshort", TYPE_CINT, 32767, 0 },
-{ "Tcushort", TYPE_CUINT, 65535, 0 },
-{ "Tcint", TYPE_CINT, 2147483647, 0 },
-{ "Tcuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Tclong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tculong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tcllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tcullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tcfloat", TYPE_CFLOAT, 0, 0 },
-{ "Tcdouble", TYPE_CFLOAT, 0, 0 },
-{ "Tcldouble", TYPE_CFLOAT, 0, 0 }
+/*{ "_Complex long double", TYPE_CFLOAT, 0, 0 }, */
+/* Disable until long doubles are encoded correctly.   */
 #define NCTYPES2 (sizeof (complex_types) / sizeof (complex_types[0]))
 };
 struct types vector_types[] = {
@@ -205,448 +151,9 @@ struct types vector_types[] = {
 { "__m128", TYPE_OTHER, 0, 0 }
 #define NVTYPES2 (sizeof (vector_types) / sizeof (vector_types[0]))
 };
-struct types attrib_types[] = {
-#if 0
-{ "Talchar", TYPE_UINT, 127, 'C' },
-{ "Talschar", TYPE_INT, 127, 'C' },
-{ "Taluchar", TYPE_UINT, 255, 'C' },
-{ "Talshort", TYPE_INT, 32767, 'S' },
-{ "Talushort", TYPE_UINT, 65535, 'S' },
-{ "Talint", TYPE_INT, 2147483647, 'I' },
-{ "Taluint", TYPE_UINT, 4294967295U, 'I' },
-{ "Tallong", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Talulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Talllong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Talullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Talbool", TYPE_UINT, 1, 'B' },
-{ "Talptr", TYPE_PTR, 0, 0 },
-{ "Talcptr", TYPE_PTR, 0, 0 },
-{ "Taliptr", TYPE_PTR, 0, 0 },
-{ "Talfloat", TYPE_FLOAT, 0, 0 },
-{ "Taldouble", TYPE_FLOAT, 0, 0 },
-{ "Talldouble", TYPE_FLOAT, 0, 0 },
-{ "TalE0", TYPE_UENUM, 0, ' ' },
-{ "TalE1", TYPE_UENUM, 1, ' ' },
-{ "TalE2", TYPE_SENUM, 3, ' ' },
-{ "TalE3", TYPE_SENUM, 127, ' ' },
-{ "TalE4", TYPE_UENUM, 255, ' ' },
-{ "TalE5", TYPE_SENUM, 32767, ' ' },
-{ "TalE6", TYPE_UENUM, 65535, ' ' },
-{ "TalE7", TYPE_SENUM, 2147483647, ' ' },
-{ "TalE8", TYPE_UENUM, 4294967295U, ' ' },
-{ "TalE9", TYPE_SENUM, 1099511627775LL, ' ' },
-{ "Tal1char", TYPE_UINT, 127, 'C' },
-{ "Tal1schar", TYPE_INT, 127, 'C' },
-{ "Tal1uchar", TYPE_UINT, 255, 'C' },
-{ "Tal1short", TYPE_INT, 32767, 'S' },
-{ "Tal1ushort", TYPE_UINT, 65535, 'S' },
-{ "Tal1int", TYPE_INT, 2147483647, 'I' },
-{ "Tal1uint", TYPE_UINT, 4294967295U, 'I' },
-{ "Tal1long", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Tal1ulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Tal1llong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Tal1ullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Tal1bool", TYPE_UINT, 1, 'B' },
-{ "Tal1ptr", TYPE_PTR, 0, 0 },
-{ "Tal1cptr", TYPE_PTR, 0, 0 },
-{ "Tal1iptr", TYPE_PTR, 0, 0 },
-{ "Tal1float", TYPE_FLOAT, 0, 0 },
-{ "Tal1double", TYPE_FLOAT, 0, 0 },
-{ "Tal1ldouble", TYPE_FLOAT, 0, 0 },
-{ "Tal1E0", TYPE_UENUM, 0, ' ' },
-{ "Tal1E1", TYPE_UENUM, 1, ' ' },
-{ "Tal1E2", TYPE_SENUM, 3, ' ' },
-{ "Tal1E3", TYPE_SENUM, 127, ' ' },
-{ "Tal1E4", TYPE_UENUM, 255, ' ' },
-{ "Tal1E5", TYPE_SENUM, 32767, ' ' },
-{ "Tal1E6", TYPE_UENUM, 65535, ' ' },
-{ "Tal1E7", TYPE_SENUM, 2147483647, ' ' },
-{ "Tal1E8", TYPE_UENUM, 4294967295U, ' ' },
-{ "Tal1E9", TYPE_SENUM, 1099511627775LL, ' ' },
-{ "Tal2char", TYPE_UINT, 127, 'C' },
-{ "Tal2schar", TYPE_INT, 127, 'C' },
-{ "Tal2uchar", TYPE_UINT, 255, 'C' },
-{ "Tal2short", TYPE_INT, 32767, 'S' },
-{ "Tal2ushort", TYPE_UINT, 65535, 'S' },
-{ "Tal2int", TYPE_INT, 2147483647, 'I' },
-{ "Tal2uint", TYPE_UINT, 4294967295U, 'I' },
-{ "Tal2long", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Tal2ulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Tal2llong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Tal2ullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Tal2bool", TYPE_UINT, 1, 'B' },
-{ "Tal2ptr", TYPE_PTR, 0, 0 },
-{ "Tal2cptr", TYPE_PTR, 0, 0 },
-{ "Tal2iptr", TYPE_PTR, 0, 0 },
-{ "Tal2float", TYPE_FLOAT, 0, 0 },
-{ "Tal2double", TYPE_FLOAT, 0, 0 },
-{ "Tal2ldouble", TYPE_FLOAT, 0, 0 },
-{ "Tal2E0", TYPE_UENUM, 0, ' ' },
-{ "Tal2E1", TYPE_UENUM, 1, ' ' },
-{ "Tal2E2", TYPE_SENUM, 3, ' ' },
-{ "Tal2E3", TYPE_SENUM, 127, ' ' },
-{ "Tal2E4", TYPE_UENUM, 255, ' ' },
-{ "Tal2E5", TYPE_SENUM, 32767, ' ' },
-{ "Tal2E6", TYPE_UENUM, 65535, ' ' },
-{ "Tal2E7", TYPE_SENUM, 2147483647, ' ' },
-{ "Tal2E8", TYPE_UENUM, 4294967295U, ' ' },
-{ "Tal2E9", TYPE_SENUM, 1099511627775LL, ' ' },
-{ "Tal4char", TYPE_UINT, 127, 'C' },
-{ "Tal4schar", TYPE_INT, 127, 'C' },
-{ "Tal4uchar", TYPE_UINT, 255, 'C' },
-{ "Tal4short", TYPE_INT, 32767, 'S' },
-{ "Tal4ushort", TYPE_UINT, 65535, 'S' },
-{ "Tal4int", TYPE_INT, 2147483647, 'I' },
-{ "Tal4uint", TYPE_UINT, 4294967295U, 'I' },
-{ "Tal4long", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Tal4ulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Tal4llong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Tal4ullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Tal4bool", TYPE_UINT, 1, 'B' },
-{ "Tal4ptr", TYPE_PTR, 0, 0 },
-{ "Tal4cptr", TYPE_PTR, 0, 0 },
-{ "Tal4iptr", TYPE_PTR, 0, 0 },
-{ "Tal4float", TYPE_FLOAT, 0, 0 },
-{ "Tal4double", TYPE_FLOAT, 0, 0 },
-{ "Tal4ldouble", TYPE_FLOAT, 0, 0 },
-{ "Tal4E0", TYPE_UENUM, 0, ' ' },
-{ "Tal4E1", TYPE_UENUM, 1, ' ' },
-{ "Tal4E2", TYPE_SENUM, 3, ' ' },
-{ "Tal4E3", TYPE_SENUM, 127, ' ' },
-{ "Tal4E4", TYPE_UENUM, 255, ' ' },
-{ "Tal4E5", TYPE_SENUM, 32767, ' ' },
-{ "Tal4E6", TYPE_UENUM, 65535, ' ' },
-{ "Tal4E7", TYPE_SENUM, 2147483647, ' ' },
-{ "Tal4E8", TYPE_UENUM, 4294967295U, ' ' },
-{ "Tal4E9", TYPE_SENUM, 1099511627775LL, ' ' },
-{ "Tal8char", TYPE_UINT, 127, 'C' },
-{ "Tal8schar", TYPE_INT, 127, 'C' },
-{ "Tal8uchar", TYPE_UINT, 255, 'C' },
-{ "Tal8short", TYPE_INT, 32767, 'S' },
-{ "Tal8ushort", TYPE_UINT, 65535, 'S' },
-{ "Tal8int", TYPE_INT, 2147483647, 'I' },
-{ "Tal8uint", TYPE_UINT, 4294967295U, 'I' },
-{ "Tal8long", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Tal8ulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Tal8llong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Tal8ullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Tal8bool", TYPE_UINT, 1, 'B' },
-{ "Tal8ptr", TYPE_PTR, 0, 0 },
-{ "Tal8cptr", TYPE_PTR, 0, 0 },
-{ "Tal8iptr", TYPE_PTR, 0, 0 },
-{ "Tal8float", TYPE_FLOAT, 0, 0 },
-{ "Tal8double", TYPE_FLOAT, 0, 0 },
-{ "Tal8ldouble", TYPE_FLOAT, 0, 0 },
-{ "Tal8E0", TYPE_UENUM, 0, ' ' },
-{ "Tal8E1", TYPE_UENUM, 1, ' ' },
-{ "Tal8E2", TYPE_SENUM, 3, ' ' },
-{ "Tal8E3", TYPE_SENUM, 127, ' ' },
-{ "Tal8E4", TYPE_UENUM, 255, ' ' },
-{ "Tal8E5", TYPE_SENUM, 32767, ' ' },
-{ "Tal8E6", TYPE_UENUM, 65535, ' ' },
-{ "Tal8E7", TYPE_SENUM, 2147483647, ' ' },
-{ "Tal8E8", TYPE_UENUM, 4294967295U, ' ' },
-{ "Tal8E9", TYPE_SENUM, 1099511627775LL, ' ' },
-{ "Tal16char", TYPE_UINT, 127, 'C' },
-{ "Tal16schar", TYPE_INT, 127, 'C' },
-{ "Tal16uchar", TYPE_UINT, 255, 'C' },
-{ "Tal16short", TYPE_INT, 32767, 'S' },
-{ "Tal16ushort", TYPE_UINT, 65535, 'S' },
-{ "Tal16int", TYPE_INT, 2147483647, 'I' },
-{ "Tal16uint", TYPE_UINT, 4294967295U, 'I' },
-{ "Tal16long", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Tal16ulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Tal16llong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Tal16ullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Tal16bool", TYPE_UINT, 1, 'B' },
-{ "Tal16ptr", TYPE_PTR, 0, 0 },
-{ "Tal16cptr", TYPE_PTR, 0, 0 },
-{ "Tal16iptr", TYPE_PTR, 0, 0 },
-{ "Tal16float", TYPE_FLOAT, 0, 0 },
-{ "Tal16double", TYPE_FLOAT, 0, 0 },
-{ "Tal16ldouble", TYPE_FLOAT, 0, 0 },
-{ "Tal16E0", TYPE_UENUM, 0, ' ' },
-{ "Tal16E1", TYPE_UENUM, 1, ' ' },
-{ "Tal16E2", TYPE_SENUM, 3, ' ' },
-{ "Tal16E3", TYPE_SENUM, 127, ' ' },
-{ "Tal16E4", TYPE_UENUM, 255, ' ' },
-{ "Tal16E5", TYPE_SENUM, 32767, ' ' },
-{ "Tal16E6", TYPE_UENUM, 65535, ' ' },
-{ "Tal16E7", TYPE_SENUM, 2147483647, ' ' },
-{ "Tal16E8", TYPE_UENUM, 4294967295U, ' ' },
-{ "Tal16E9", TYPE_SENUM, 1099511627775LL, ' ' }
-#endif
-#define NATYPES2 (sizeof (attrib_types) / sizeof (attrib_types[0]))
-};
-struct types complex_attrib_types[] = {
-#if 0
-{ "Talcchar", TYPE_CUINT, 127, 0 },
-{ "Talcschar", TYPE_CINT, 127, 0 },
-{ "Talcuchar", TYPE_CUINT, 255, 0 },
-{ "Talcshort", TYPE_CINT, 32767, 0 },
-{ "Talcushort", TYPE_CUINT, 65535, 0 },
-{ "Talcint", TYPE_CINT, 2147483647, 0 },
-{ "Talcuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Talclong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talculong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talcllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talcullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talcfloat", TYPE_CFLOAT, 0, 0 },
-{ "Talcdouble", TYPE_CFLOAT, 0, 0 },
-{ "Talcldouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal1cchar", TYPE_CUINT, 127, 0 },
-{ "Tal1cschar", TYPE_CINT, 127, 0 },
-{ "Tal1cuchar", TYPE_CUINT, 255, 0 },
-{ "Tal1cshort", TYPE_CINT, 32767, 0 },
-{ "Tal1cushort", TYPE_CUINT, 65535, 0 },
-{ "Tal1cint", TYPE_CINT, 2147483647, 0 },
-{ "Tal1cuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Tal1clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal1culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal1cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal1cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal1cfloat", TYPE_CFLOAT, 0, 0 },
-{ "Tal1cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal1cldouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal2cchar", TYPE_CUINT, 127, 0 },
-{ "Tal2cschar", TYPE_CINT, 127, 0 },
-{ "Tal2cuchar", TYPE_CUINT, 255, 0 },
-{ "Tal2cshort", TYPE_CINT, 32767, 0 },
-{ "Tal2cushort", TYPE_CUINT, 65535, 0 },
-{ "Tal2cint", TYPE_CINT, 2147483647, 0 },
-{ "Tal2cuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Tal2clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal2culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal2cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal2cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal2cfloat", TYPE_CFLOAT, 0, 0 },
-{ "Tal2cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal2cldouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal4cchar", TYPE_CUINT, 127, 0 },
-{ "Tal4cschar", TYPE_CINT, 127, 0 },
-{ "Tal4cuchar", TYPE_CUINT, 255, 0 },
-{ "Tal4cshort", TYPE_CINT, 32767, 0 },
-{ "Tal4cushort", TYPE_CUINT, 65535, 0 },
-{ "Tal4cint", TYPE_CINT, 2147483647, 0 },
-{ "Tal4cuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Tal4clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal4culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal4cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal4cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal4cfloat", TYPE_CFLOAT, 0, 0 },
-{ "Tal4cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal4cldouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal8cchar", TYPE_CUINT, 127, 0 },
-{ "Tal8cschar", TYPE_CINT, 127, 0 },
-{ "Tal8cuchar", TYPE_CUINT, 255, 0 },
-{ "Tal8cshort", TYPE_CINT, 32767, 0 },
-{ "Tal8cushort", TYPE_CUINT, 65535, 0 },
-{ "Tal8cint", TYPE_CINT, 2147483647, 0 },
-{ "Tal8cuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Tal8clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal8culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal8cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal8cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal8cfloat", TYPE_CFLOAT, 0, 0 },
-{ "Tal8cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal8cldouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal16cchar", TYPE_CUINT, 127, 0 },
-{ "Tal16cschar", TYPE_CINT, 127, 0 },
-{ "Tal16cuchar", TYPE_CUINT, 255, 0 },
-{ "Tal16cshort", TYPE_CINT, 32767, 0 },
-{ "Tal16cushort", TYPE_CUINT, 65535, 0 },
-{ "Tal16cint", TYPE_CINT, 2147483647, 0 },
-{ "Tal16cuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Tal16clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal16culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal16cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Tal16cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Tal16cfloat", TYPE_CFLOAT, 0, 0 },
-{ "Tal16cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Tal16cldouble", TYPE_CFLOAT, 0, 0 }
-#endif
-#define NCATYPES2 (sizeof (complex_attrib_types) / sizeof (complex_attrib_types[0]))
-};
-struct types attrib_array_types[] = {
-#if 0
-{ "Talx1char", TYPE_UINT, 127, 'C' },
-{ "Talx1schar", TYPE_INT, 127, 'C' },
-{ "Talx1uchar", TYPE_UINT, 255, 'C' },
-{ "Talx1short", TYPE_INT, 32767, 'S' },
-{ "Talx1ushort", TYPE_UINT, 65535, 'S' },
-{ "Talx1int", TYPE_INT, 2147483647, 'I' },
-{ "Talx1uint", TYPE_UINT, 4294967295U, 'I' },
-{ "Talx1long", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Talx1ulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Talx1llong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Talx1ullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Talx1bool", TYPE_UINT, 1, 'B' },
-{ "Talx1ptr", TYPE_PTR, 0, 0 },
-{ "Talx1cptr", TYPE_PTR, 0, 0 },
-{ "Talx1iptr", TYPE_PTR, 0, 0 },
-{ "Talx1float", TYPE_FLOAT, 0, 0 },
-{ "Talx1double", TYPE_FLOAT, 0, 0 },
-{ "Talx1ldouble", TYPE_FLOAT, 0, 0 },
-{ "Talx1E0", TYPE_UENUM, 0, ' ' },
-{ "Talx1E1", TYPE_UENUM, 1, ' ' },
-{ "Talx1E2", TYPE_SENUM, 3, ' ' },
-{ "Talx1E3", TYPE_SENUM, 127, ' ' },
-{ "Talx1E4", TYPE_UENUM, 255, ' ' },
-{ "Talx1E5", TYPE_SENUM, 32767, ' ' },
-{ "Talx1E6", TYPE_UENUM, 65535, ' ' },
-{ "Talx1E7", TYPE_SENUM, 2147483647, ' ' },
-{ "Talx1E8", TYPE_UENUM, 4294967295U, ' ' },
-{ "Talx1E9", TYPE_SENUM, 1099511627775LL, ' ' },
-{ "Talx2short", TYPE_INT, 32767, 'S' },
-{ "Talx2ushort", TYPE_UINT, 65535, 'S' },
-{ "Talx2int", TYPE_INT, 2147483647, 'I' },
-{ "Talx2uint", TYPE_UINT, 4294967295U, 'I' },
-{ "Talx2long", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Talx2ulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Talx2llong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Talx2ullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Talx2ptr", TYPE_PTR, 0, 0 },
-{ "Talx2cptr", TYPE_PTR, 0, 0 },
-{ "Talx2iptr", TYPE_PTR, 0, 0 },
-{ "Talx2float", TYPE_FLOAT, 0, 0 },
-{ "Talx2double", TYPE_FLOAT, 0, 0 },
-{ "Talx2ldouble", TYPE_FLOAT, 0, 0 },
-{ "Talx2E0", TYPE_UENUM, 0, ' ' },
-{ "Talx2E1", TYPE_UENUM, 1, ' ' },
-{ "Talx2E2", TYPE_SENUM, 3, ' ' },
-{ "Talx2E3", TYPE_SENUM, 127, ' ' },
-{ "Talx2E4", TYPE_UENUM, 255, ' ' },
-{ "Talx2E5", TYPE_SENUM, 32767, ' ' },
-{ "Talx2E6", TYPE_UENUM, 65535, ' ' },
-{ "Talx2E7", TYPE_SENUM, 2147483647, ' ' },
-{ "Talx2E8", TYPE_UENUM, 4294967295U, ' ' },
-{ "Talx2E9", TYPE_SENUM, 1099511627775LL, ' ' },
-{ "Talx4int", TYPE_INT, 2147483647, 'I' },
-{ "Talx4uint", TYPE_UINT, 4294967295U, 'I' },
-{ "Talx4long", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Talx4ulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Talx4llong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Talx4ullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Talx4ptr", TYPE_PTR, 0, 0 },
-{ "Talx4cptr", TYPE_PTR, 0, 0 },
-{ "Talx4iptr", TYPE_PTR, 0, 0 },
-{ "Talx4float", TYPE_FLOAT, 0, 0 },
-{ "Talx4double", TYPE_FLOAT, 0, 0 },
-{ "Talx4ldouble", TYPE_FLOAT, 0, 0 },
-{ "Talx4E0", TYPE_UENUM, 0, ' ' },
-{ "Talx4E1", TYPE_UENUM, 1, ' ' },
-{ "Talx4E2", TYPE_SENUM, 3, ' ' },
-{ "Talx4E3", TYPE_SENUM, 127, ' ' },
-{ "Talx4E4", TYPE_UENUM, 255, ' ' },
-{ "Talx4E5", TYPE_SENUM, 32767, ' ' },
-{ "Talx4E6", TYPE_UENUM, 65535, ' ' },
-{ "Talx4E7", TYPE_SENUM, 2147483647, ' ' },
-{ "Talx4E8", TYPE_UENUM, 4294967295U, ' ' },
-{ "Talx4E9", TYPE_SENUM, 1099511627775LL, ' ' },
-{ "Taly8long", TYPE_INT, 9223372036854775807LL, 'L' },
-{ "Taly8ulong", TYPE_UINT, 18446744073709551615ULL, 'L' },
-{ "Talx8llong", TYPE_INT, 9223372036854775807LL, 'Q' },
-{ "Talx8ullong", TYPE_UINT, 18446744073709551615ULL, 'Q' },
-{ "Taly8ptr", TYPE_PTR, 0, 0 },
-{ "Taly8cptr", TYPE_PTR, 0, 0 },
-{ "Taly8iptr", TYPE_PTR, 0, 0 },
-{ "Talx8double", TYPE_FLOAT, 0, 0 },
-{ "Talx8ldouble", TYPE_FLOAT, 0, 0 }
-#endif
-#define NAATYPES2 (sizeof (attrib_array_types) / sizeof (attrib_array_types[0]))
-};
-struct types complex_attrib_array_types[] = {
-#if 0
-{ "Talx1cchar", TYPE_CUINT, 127, 0 },
-{ "Talx1cschar", TYPE_CINT, 127, 0 },
-{ "Talx1cuchar", TYPE_CUINT, 255, 0 },
-{ "Talx1cshort", TYPE_CINT, 32767, 0 },
-{ "Talx1cushort", TYPE_CUINT, 65535, 0 },
-{ "Talx1cint", TYPE_CINT, 2147483647, 0 },
-{ "Talx1cuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Talx1clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talx1culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx1cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talx1cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx1cfloat", TYPE_CFLOAT, 0, 0 },
-{ "Talx1cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Talx1cldouble", TYPE_CFLOAT, 0, 0 },
-{ "Talx2cchar", TYPE_CUINT, 127, 0 },
-{ "Talx2cschar", TYPE_CINT, 127, 0 },
-{ "Talx2cuchar", TYPE_CUINT, 255, 0 },
-{ "Talx2cshort", TYPE_CINT, 32767, 0 },
-{ "Talx2cushort", TYPE_CUINT, 65535, 0 },
-{ "Talx2cint", TYPE_CINT, 2147483647, 0 },
-{ "Talx2cuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Talx2clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talx2culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx2cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talx2cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx2cfloat", TYPE_CFLOAT, 0, 0 },
-{ "Talx2cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Talx2cldouble", TYPE_CFLOAT, 0, 0 },
-{ "Talx4cshort", TYPE_CINT, 32767, 0 },
-{ "Talx4cushort", TYPE_CUINT, 65535, 0 },
-{ "Talx4cint", TYPE_CINT, 2147483647, 0 },
-{ "Talx4cuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Talx4clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talx4culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx4cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talx4cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx4cfloat", TYPE_CFLOAT, 0, 0 },
-{ "Talx4cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Talx4cldouble", TYPE_CFLOAT, 0, 0 },
-{ "Talx8cint", TYPE_CINT, 2147483647, 0 },
-{ "Talx8cuint", TYPE_CUINT, 4294967295U, 0 },
-{ "Talx8clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talx8culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx8cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talx8cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx8cfloat", TYPE_CFLOAT, 0, 0 },
-{ "Talx8cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Talx8cldouble", TYPE_CFLOAT, 0, 0 },
-{ "Taly16clong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Taly16culong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx16cllong", TYPE_CINT, 9223372036854775807LL, 0 },
-{ "Talx16cullong", TYPE_CUINT, 18446744073709551615ULL, 0 },
-{ "Talx16cdouble", TYPE_CFLOAT, 0, 0 },
-{ "Talx16cldouble", TYPE_CFLOAT, 0, 0 }
-#endif
-#define NCAATYPES2 (sizeof (complex_attrib_array_types) / sizeof (complex_attrib_array_types[0]))
-};
 
 struct types bitfld_types[NTYPES2];
 int n_bitfld_types;
-struct types aligned_bitfld_types[NATYPES2];
-int n_aligned_bitfld_types;
-
-const char *attributes[] = {
-#if 0
-"atal", 
-"atpa", 
-"atal1", 
-"atal2", 
-"atal4", 
-"atal8", 
-"atal16", 
-#endif
-#define NATTRIBS1 0
-#if 0
-"atalpa", 
-"atpaal", 
-"atal1pa", 
-"atal2pa", 
-"atal4pa", 
-"atal8pa", 
-"atal16pa", 
-"atpaal1", 
-"atpaal2", 
-"atpaal4", 
-"atpaal8", 
-"atpaal16"
-#endif
-#define NATTRIBS2 (sizeof (attributes) / sizeof (attributes[0]))
-};
 
 enum ETYPE
 {
@@ -1399,11 +906,10 @@ enum FEATURE
 {
   FEATURE_VECTOR = 1,
   FEATURE_COMPLEX = 2,
-  FEATURE_ALIGNEDPACKED = 4,
   FEATURE_ZEROARRAY = 8,
   FEATURE_ZEROBITFLD = 16,
   ALL_FEATURES = FEATURE_COMPLEX | FEATURE_VECTOR | FEATURE_ZEROARRAY
-		 | FEATURE_ALIGNEDPACKED | FEATURE_ZEROBITFLD
+		 | FEATURE_ZEROBITFLD
 };
 
 void
@@ -1416,16 +922,6 @@ singles (enum FEATURE features)
   output (e);
   e[0].etype = ETYPE_UNION;
   output (e);
-  for (i = 0;
-       i < ((features & FEATURE_ALIGNEDPACKED) ? NATTRIBS2 : NATTRIBS1);
-       ++i)
-    {
-      e[0].attrib = attributes[i];
-      e[0].etype = ETYPE_STRUCT;
-      output (e);
-      e[0].etype = ETYPE_UNION;
-      output (e);
-    }
   e[0].len = 1;
   e[0].attrib = NULL;
   for (i = 0; i < NTYPES2; ++i)
@@ -1469,21 +965,6 @@ choose_type (enum FEATURE features, struct entry *e, int r, int in_array)
     i += NCTYPES2;
   if (features & FEATURE_VECTOR)
     i += NVTYPES2;
-  if ((r & 3) == 0)
-    {
-      if (in_array)
-	{
-	  i += NAATYPES2;
-	  if (features & FEATURE_COMPLEX)
-	    i += NCAATYPES2;
-	}
-      else
-	{
-	  i += NATYPES2;
-	  if (features & FEATURE_COMPLEX)
-	    i += NCATYPES2;
-	}
-    }
   r >>= 2;
   r %= i;
   if (r < NTYPES2 - NTYPES1)
@@ -1501,31 +982,7 @@ choose_type (enum FEATURE features, struct entry *e, int r, int in_array)
 	e->type = &vector_types[r];
       r -= NVTYPES2;
     }
-  if (e->type == NULL && !in_array)
-    {
-      if (r < NATYPES2)
-	e->type = &attrib_types[r];
-      r -= NATYPES2;
-    }
-  if (e->type == NULL && !in_array && (features & FEATURE_COMPLEX))
-    {
-      if (r < NCATYPES2)
-	e->type = &complex_attrib_types[r];
-      r -= NCATYPES2;
-    }
-  if (e->type == NULL && in_array)
-    {
-      if (r < NAATYPES2)
-	e->type = &attrib_array_types[r];
-      r -= NAATYPES2;
-    }
-  if (e->type == NULL && in_array && (features & FEATURE_COMPLEX))
-    {
-      if (r < NCAATYPES2)
-	e->type = &complex_attrib_array_types[r];
-      r -= NCAATYPES2;
-    }
-  if (e->type == NULL)
+    if (e->type == NULL)
     abort ();
 }
 
@@ -1562,7 +1019,7 @@ generate_fields (enum FEATURE features, struct entry *e, struct entry *parent,
       incr = 1;
       switch (i)
 	{
-	case 6: /* BITfields disabled for now. */
+	case 6: /* BITfields disabled for now as _Bool bitfields are broken. */
 	case 0:
 	case 1:
 	case 2:
@@ -1631,15 +1088,9 @@ generate_fields (enum FEATURE features, struct entry *e, struct entry *parent,
 	      e[j].etype = ETYPE_BITFLD;
 	      if (j == n || !sametype)
 		{
-		  int k;
 		  r = generate_random ();
-		  k = r & 3;
 		  r >>= 2;
-		  if (!k)
-		    e[j].type
-		      = &aligned_bitfld_types[r % n_aligned_bitfld_types];
-		  else
-		    e[j].type
+		  e[j].type
 		      = &bitfld_types[r % n_bitfld_types];
 		}
 	      else
@@ -1744,35 +1195,6 @@ generate_fields (enum FEATURE features, struct entry *e, struct entry *parent,
 	    }
 	  break;
 	}
-      r = generate_random ();
-      if (0 && (r & 7) == 0)
-	{
-	  r >>= 3;
-	  i = (features & FEATURE_ALIGNEDPACKED) ? NATTRIBS2 : NATTRIBS1;
-	  e[n].attrib = attributes[r % i];
-	  if (! (features & FEATURE_ALIGNEDPACKED)
-	      && strcmp (e[n].attrib, "atpa") == 0
-	      && ((e[n].type >= &attrib_types[0]
-		   && e[n].type < &attrib_types[NATYPES2])
-		  || (e[n].type >= &complex_attrib_types[0]
-		      && e[n].type < &complex_attrib_types[NCATYPES2])
-		  || (e[n].type >= &attrib_array_types[0]
-		      && e[n].type < &attrib_array_types[NAATYPES2])
-		  || (e[n].type >= &complex_attrib_array_types[0]
-		      && e[n].type < &complex_attrib_array_types[NAATYPES2])
-		  || (e[n].type >= &aligned_bitfld_types[0]
-		      && e[n].type < &aligned_bitfld_types[n_aligned_bitfld_types])))
-	    e[n].attrib = NULL;
-
-	  /* If this is an array type, do not put aligned attributes on
-	     elements.  Aligning elements to a value greater than their
-	     size will result in a compiler error.  */
-
-	  if ((e[n].etype == ETYPE_ARRAY)
-	      && e[n].attrib != NULL
-	      && (strncmp (e[n].attrib, "atal", 4) == 0))
-            e[n].attrib = NULL;
-	}
     }
 }
 
@@ -1791,15 +1213,6 @@ generate_random_tests (enum FEATURE features, int len)
     e[0].etype = ETYPE_STRUCT;
   r >>= 3;
   e[0].len = len;
-  if (0 && (r & 31) == 0)
-    {
-      r >>= 5;
-      if (features & FEATURE_ALIGNEDPACKED)
-	r %= NATTRIBS2;
-      else
-	r %= NATTRIBS1;
-      e[0].attrib = attributes[r];
-    }
   generate_fields (features, &e[1], &e[0], len);
   output (e);
 }
@@ -1809,13 +1222,9 @@ features[] = {
 { "normal", 0 },
 { "complex", FEATURE_COMPLEX },
 { "vector", FEATURE_VECTOR },
-/*
 { "[0] :0", FEATURE_ZEROARRAY | FEATURE_ZEROBITFLD },
 { "complex vector [0]",
-  FEATURE_COMPLEX | FEATURE_VECTOR | FEATURE_ZEROARRAY },
-{ "aligned packed complex vector [0] :0",
-  FEATURE_COMPLEX | FEATURE_VECTOR | FEATURE_ZEROARRAY
-  | FEATURE_ALIGNEDPACKED | FEATURE_ZEROBITFLD },*/
+  FEATURE_COMPLEX | FEATURE_VECTOR | FEATURE_ZEROARRAY }
 };
 
 int
@@ -1884,9 +1293,6 @@ Either -s srcdir -d destdir or -i idx must be used\n", argv[0]);
   for (i = 0; i < NTYPES2; ++i)
     if (base_types[i].bitfld)
       bitfld_types[n_bitfld_types++] = base_types[i];
-  for (i = 0; i < NATYPES2; ++i)
-    if (attrib_types[i].bitfld)
-      aligned_bitfld_types[n_aligned_bitfld_types++] = attrib_types[i];
   for (i = 0; i < sizeof (features) / sizeof (features[0]); ++i)
     {
       int startidx = idx;
@@ -1931,8 +1337,8 @@ Either -s srcdir -d destdir or -i idx must be used\n", argv[0]);
     }
   if (! output_one)
     limidx = idx;
- // while (idx < n)
- //   generate_random_tests (ALL_FEATURES, 1 + (generate_random () % 25));
+  while (idx < n)
+    generate_random_tests (ALL_FEATURES, 1 + (generate_random () % 25));
   fclose (outfile);
   return 0;
 }
