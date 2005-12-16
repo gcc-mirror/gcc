@@ -1,5 +1,10 @@
 2005-12-16  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/Class.java (getPackage): Get package from
+	VMClassLoader if needed.
+
+2005-12-16  Tom Tromey  <tromey@redhat.com>
+
 	* testsuite/libjava.jacks/jacks.xfail
 	(8.5.2-accessible-static-member-usage-3): Removed.
 
