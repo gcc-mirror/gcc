@@ -195,3 +195,8 @@
   (ior (match_operand 0 "m32c_r0_operand")
        (ior (match_operand 0 "m32c_mem0_operand")
 	    (match_code "parallel"))))
+
+; TRUE for constants we can multiply pointers by
+(define_predicate "m32c_psi_scale"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "m32c_const_ok_for_constraint_p(INTVAL(op), 'I', \"Ilb\")")))

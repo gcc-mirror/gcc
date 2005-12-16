@@ -1,3 +1,9 @@
+2005-12-15  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/predicates.md (m32c_psi_scale): New.
+	* config/m32c/m32c.c (m32c_expand_neg_mulpsi3): New.
+	* config/m32c/muldiv.md (mulpsi3): Support negative constants.
+
 2005-12-16  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/25224

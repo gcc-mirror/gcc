@@ -127,14 +127,27 @@
 
 
 ; GCC expects to be able to multiply pointer-sized integers too, but
-; fortunately it only multiplies by powers of two.
-(define_insn "mulpsi3"
+; fortunately it only multiplies by powers of two, although sometimes
+; they're negative.
+(define_insn "mulpsi3_op"
   [(set (match_operand:PSI 0 "mra_operand" "=RsiSd")
 	(mult:PSI (match_operand:PSI 1 "mra_operand" "%0")
-		  (match_operand 2 "const_int_operand" "Ilb")))]
+		  (match_operand 2 "m32c_psi_scale" "Ilb")))]
   "TARGET_A24"
   "shl.l\t%b2,%0"
   [(set_attr "flags" "szc")]
+  )
+
+(define_expand "mulpsi3"
+  [(set (match_operand:PSI 0 "mra_operand" "=RsiSd")
+	(mult:PSI (match_operand:PSI 1 "mra_operand" "%0")
+		  (match_operand 2 "m32c_psi_scale" "Ilb")))]
+  "TARGET_A24"
+  "if (INTVAL(operands[2]) < 0)
+     {
+       m32c_expand_neg_mulpsi3 (operands);
+       DONE;
+     }"
   )
 
 
