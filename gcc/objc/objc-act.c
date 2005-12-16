@@ -8119,6 +8119,12 @@ encode_type (tree type, int curtype, int format)
 
   else if (code == FUNCTION_TYPE) /* '?' */
     obstack_1grow (&util_obstack, '?');
+    
+  else if (code == COMPLEX_TYPE)
+    {
+      obstack_1grow (&util_obstack, 'j');
+      encode_type (TREE_TYPE (type), curtype, format);
+    }
 }
 
 static void

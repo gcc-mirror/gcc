@@ -248,6 +248,68 @@ objc_sizeof_type (const char *type)
 
       return size;
     }
+    
+  case _C_COMPLEX:
+    {
+      type++; /* Skip after the 'j'. */
+      switch (*type)
+        {
+	    case _C_CHR:
+	      return sizeof (_Complex char);
+	      break;
+
+	    case _C_UCHR:
+	      return sizeof (_Complex unsigned char);
+	      break;
+
+	    case _C_SHT:
+	      return sizeof (_Complex short);
+	      break;
+
+	    case _C_USHT:
+	      return sizeof (_Complex unsigned short);
+	      break;
+
+	    case _C_INT:
+	      return sizeof (_Complex int);
+	      break;
+
+	    case _C_UINT:
+	      return sizeof (_Complex unsigned int);
+	      break;
+
+	    case _C_LNG:
+	      return sizeof (_Complex long);
+	      break;
+
+	    case _C_ULNG:
+	      return sizeof (_Complex unsigned long);
+	      break;
+
+	    case _C_LNG_LNG:
+	      return sizeof (_Complex long long);
+	      break;
+
+	    case _C_ULNG_LNG:
+	      return sizeof (_Complex unsigned long long);
+	      break;
+
+	    case _C_FLT:
+	      return sizeof (_Complex float);
+	      break;
+
+	    case _C_DBL:
+	      return sizeof (_Complex double);
+	      break;
+	    
+	    default:
+	      {
+		objc_error (nil, OBJC_ERR_BAD_TYPE, "unknown complex type %s\n",
+			    type);
+		return 0;
+	      }
+	}
+    }
 
   default:
     {
@@ -359,6 +421,69 @@ objc_alignof_type (const char *type)
       objc_layout_finish_structure (&layout, NULL, &align);
 
       return align;
+    }
+    
+    
+  case _C_COMPLEX:
+    {
+      type++; /* Skip after the 'j'. */
+      switch (*type)
+        {
+	    case _C_CHR:
+	      return __alignof__ (_Complex char);
+	      break;
+
+	    case _C_UCHR:
+	      return __alignof__ (_Complex unsigned char);
+	      break;
+
+	    case _C_SHT:
+	      return __alignof__ (_Complex short);
+	      break;
+
+	    case _C_USHT:
+	      return __alignof__ (_Complex unsigned short);
+	      break;
+
+	    case _C_INT:
+	      return __alignof__ (_Complex int);
+	      break;
+
+	    case _C_UINT:
+	      return __alignof__ (_Complex unsigned int);
+	      break;
+
+	    case _C_LNG:
+	      return __alignof__ (_Complex long);
+	      break;
+
+	    case _C_ULNG:
+	      return __alignof__ (_Complex unsigned long);
+	      break;
+
+	    case _C_LNG_LNG:
+	      return __alignof__ (_Complex long long);
+	      break;
+
+	    case _C_ULNG_LNG:
+	      return __alignof__ (_Complex unsigned long long);
+	      break;
+
+	    case _C_FLT:
+	      return __alignof__ (_Complex float);
+	      break;
+
+	    case _C_DBL:
+	      return __alignof__ (_Complex double);
+	      break;
+	    
+	    default:
+	      {
+		objc_error (nil, OBJC_ERR_BAD_TYPE, "unknown complex type %s\n",
+			    type);
+		return 0;
+	      }
+	}
     }
 
   default:
@@ -490,6 +615,10 @@ objc_skip_typespec (const char *type)
   case _C_VOID:
   case _C_UNDEF:
     return ++type;
+    break;
+    
+  case _C_COMPLEX:
+    return type + 2;
     break;
 
   case _C_ARY_B:
