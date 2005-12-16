@@ -1,3 +1,12 @@
+2005-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25264
+	PR libgfortran/25349
+	* io/unit.c (get_unit): Delete code that cleared the string when the
+	unit was opened, which is too soon.
+	* io/transfer.c (next_record_w): Pass done flag in.  Change logic for
+	setting max_pos.  Add code to position unit and pad record as needed.
+
 2005-12-13  Richard Sandiford  <richard@codesourcery.com>
 	    Victor Leikehman  <LEI@il.ibm.com>
 

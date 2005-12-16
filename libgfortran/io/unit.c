@@ -384,9 +384,6 @@ get_unit (st_parameter_dt *dtp, int do_create)
       internal_unit.maxrec=0;
       internal_unit.current_record=0;
 
-      if (dtp->u.p.mode==WRITING && !is_array_io (dtp))
-        empty_internal_buffer (internal_unit.s);
-
       /* Set flags for the internal unit */
 
       internal_unit.flags.access = ACCESS_SEQUENTIAL;
