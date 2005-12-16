@@ -1,3 +1,10 @@
+2005-12-16  Steven Bosscher  <stevenb@suse.de>
+
+	* reorg.c (mostly_true_jump): Clean up code depending on
+	LABEL_OUTSIDE_LOOP_P and loop notes.  Remove code doing
+	poor man's branch prediction, instead rely on REG_BR_PROB
+	notes to be available.
+
 2005-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/24899
