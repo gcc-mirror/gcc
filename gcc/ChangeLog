@@ -1,3 +1,9 @@
+2005-12-16  Steven Bosscher  <stevenb@suse.de>
+
+	PR rtl-optimization/23837
+	* optabs.c (expand_binop): For a multi-word rotate, never emit
+	a REG_NO_CONFLICT block.
+
 2005-12-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/25457
