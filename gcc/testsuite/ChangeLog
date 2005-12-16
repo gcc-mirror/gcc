@@ -1,3 +1,8 @@
+2005-12-16  Mike Stump  <mrs@apple.com>
+
+	* gcc.c-torture/compile/920415-1.c: Add declaration for abort and
+	exit.
+
 2005-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25264
