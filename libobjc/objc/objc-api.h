@@ -82,6 +82,7 @@ struct objc_method_description
 #define _C_STRUCT_B '{'
 #define _C_STRUCT_E '}'
 #define _C_VECTOR   '!'
+#define _C_COMPLEX   'j'
 
 
 /*

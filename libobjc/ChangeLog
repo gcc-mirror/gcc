@@ -1,3 +1,11 @@
+2005-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/25360
+        * objc/objc-api.c (_C_COMPLEX): New define.
+        * encoding.c (objc_sizeof_type): Handle _C_Complex.
+        (objc_alignof_type): Likewise.
+        (objc_skip_typespec): Likewise.
+
 2005-12-15  David Ayers  <d.ayers@inode.at>
 
 	PR libobjc/14382
