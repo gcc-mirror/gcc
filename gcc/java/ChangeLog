@@ -1,3 +1,8 @@
+2005-12-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* jcf-parse.c (set_source_filename): Set the decl source location
+	even when returning early.
+
 2005-12-15  Tom Tromey  <tromey@redhat.com>
 	    Andrew Haley  <aph@redhat.com>
 

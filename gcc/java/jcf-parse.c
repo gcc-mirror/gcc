@@ -142,7 +142,13 @@ set_source_filename (JCF *jcf, int index)
 	  && strcmp (sfname, old_filename + old_len - new_len) == 0
 	  && (old_filename[old_len - new_len - 1] == '/'
 	      || old_filename[old_len - new_len - 1] == '\\'))
-	return;
+	{
+#ifndef USE_MAPPED_LOCATION
+	  DECL_SOURCE_LOCATION (TYPE_NAME (current_class)) = input_location;
+	  file_start_location = input_location;
+#endif
+	  return;
+	}
     }
   if (strchr (sfname, '/') == NULL && strchr (sfname, '\\') == NULL)
     {
