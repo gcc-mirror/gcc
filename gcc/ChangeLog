@@ -1,3 +1,7 @@
+2005-12-16  Ben Elliston  <bje@au.ibm.com>
+
+	* real.c (decimal_quad_format): Correct values for emin, emax.
+
 2005-12-15  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/predicates.md (m32c_psi_scale): New.
