@@ -1,3 +1,4 @@
+/* { dg-options "-Walways-true" } */
 /* Origin: Andrew Morton <akpm@osdl.org> */
 /* Warn if a function addres of a non-weak function is used
    as a truth value.  */
