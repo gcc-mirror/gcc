@@ -4027,7 +4027,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
     {
       /* We only do this on the last pass through reload, because it is
 	 possible for some data (like reg_equiv_address) to be changed during
-	 later passes.  Moreover, we loose the opportunity to get a useful
+	 later passes.  Moreover, we lose the opportunity to get a useful
 	 reload_{in,out}_reg when we do these replacements.  */
 
       if (replace)

@@ -133,7 +133,7 @@ extern int if_test_bypass_p (rtx, rtx);
 
    This function is the normal interface to instruction recognition.
    The automatically-generated function `recog' is normally called
-   through this one.  (The only exception is in combine.c.)  */
+   through this one.  */
 
 static inline int
 recog_memoized (rtx insn)
