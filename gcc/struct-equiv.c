@@ -54,7 +54,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    the number of inputs an miss an input conflict.  Sufficient information
    is gathered so that when we make another pass, we won't have to backtrack
    at the same point.
-   Another issue is that information in memory atttributes and/or REG_NOTES
+   Another issue is that information in memory attributes and/or REG_NOTES
    might have to be merged or discarded to make a valid match.  We don't want
    to discard such information when we are not certain that we want to merge
    the two (partial) blocks.
@@ -99,7 +99,7 @@ static bool resolve_input_conflict (struct equiv_info *info);
    SECONDARY_MEMORY_NEEDED, cannot be done directly.  For our purposes, we
    consider them impossible to generate after reload (even though some
    might be synthesized when you throw enough code at them).
-   Since we don't know while procesing a cross-jump if a local register
+   Since we don't know while processing a cross-jump if a local register
    that is currently live will eventually be live and thus be an input,
    we keep track of potential inputs that would require an impossible move
    by using a prohibitively high cost for them.
@@ -201,7 +201,7 @@ merge_memattrs (rtx x, rtx y)
 }
 
 /* In SET, assign the bit for the register number of REG the value VALUE.
-   If REG is a hard register, do so for all its consituent registers.
+   If REG is a hard register, do so for all its constituent registers.
    Return the number of registers that have become included (as a positive
    number) or excluded (as a negative number).  */
 static int
@@ -1128,7 +1128,7 @@ struct_equiv_block_eq (int mode, struct equiv_info *info)
 
   if (mode & STRUCT_EQUIV_MATCH_JUMPS)
     {
-      /* The caller is expected to have comapred the jumps already, but we
+      /* The caller is expected to have compared the jumps already, but we
 	 need to match them again to get any local registers and inputs.  */
       gcc_assert (!info->cur.x_start == !info->cur.y_start);
       if (info->cur.x_start)

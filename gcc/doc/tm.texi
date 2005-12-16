@@ -3032,7 +3032,7 @@ The final value should conincide with that calculated by
 Normally the CFA is calculated as an offset from the argument pointer,
 via @code{ARG_POINTER_CFA_OFFSET}, but if the argument pointer is 
 variable due to the ABI, this may not be possible.  If this macro is
-defined, it imples that the virtual register instantiation should be
+defined, it implies that the virtual register instantiation should be
 based on the frame pointer instead of the argument pointer.  Only one
 of @code{FRAME_POINTER_CFA_OFFSET} and @code{ARG_POINTER_CFA_OFFSET}
 should be defined.

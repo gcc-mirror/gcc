@@ -6809,7 +6809,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
       if (TREE_TYPE (op0) == type)
 	return op0;
       
-      /* If we have (type) (a CMP b) and type is an integal type, return
+      /* If we have (type) (a CMP b) and type is an integral type, return
          new expression involving the new type.  */
       if (COMPARISON_CLASS_P (op0) && INTEGRAL_TYPE_P (type))
 	return fold_build2 (TREE_CODE (op0), type, TREE_OPERAND (op0, 0),
@@ -8408,7 +8408,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    }
 
  	  /* Optimize tan(x)/sin(x) as 1.0/cos(x) if we don't care about
-	     NaNs or Infintes.  */
+	     NaNs or Infinities.  */
  	  if (((fcode0 == BUILT_IN_TAN && fcode1 == BUILT_IN_SIN)
  	       || (fcode0 == BUILT_IN_TANF && fcode1 == BUILT_IN_SINF)
  	       || (fcode0 == BUILT_IN_TANL && fcode1 == BUILT_IN_SINL)))

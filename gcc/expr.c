@@ -8090,7 +8090,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	else
 	  comparison_code = unsignedp ? LEU : LE;
 
-	/* Canonicalize to comparsions against 0.  */
+	/* Canonicalize to comparisons against 0.  */
 	if (op1 == const1_rtx)
 	  {
 	    /* Converting (a >= 1 ? a : 1) into (a > 0 ? a : 1)

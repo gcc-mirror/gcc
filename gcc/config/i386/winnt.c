@@ -155,7 +155,7 @@ i386_pe_dllimport_p (tree decl)
 
   /* The DECL_DLLIMPORT_P flag was set for decls in the class definition
      by  targetm.cxx.adjust_class_at_definition.  Check again to emit
-     warnings if the class attribute has been overriden by an
+     warnings if the class attribute has been overridden by an
      out-of-class definition.  */
   if (associated_type (decl)
       && lookup_attribute ("dllimport",

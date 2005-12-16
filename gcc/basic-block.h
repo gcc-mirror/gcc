@@ -1115,7 +1115,7 @@ struct equiv_info
      NEED_RERUN is set.  This has to be tested by the caller to re-run
      the comparison if the match appears otherwise sound.  The state kept in
      x_start, y_start, equiv_used and check_input_conflict ensures that
-     we won't loop indefinetly.  */
+     we won't loop indefinitely.  */
   bool need_rerun;
   /* If there is indication of an input conflict at the end,
      CHECK_INPUT_CONFLICT is set so that we'll check for input conflicts
@@ -1156,7 +1156,7 @@ struct equiv_info
      that are being compared.  A final jump insn will not be included.  */
   rtx x_end, y_end;
 
-  /* If we are matching tablejumps, X_LABEL in X_BLOCK coresponds to
+  /* If we are matching tablejumps, X_LABEL in X_BLOCK corresponds to
      Y_LABEL in Y_BLOCK.  */
   rtx x_label, y_label;
 

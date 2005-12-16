@@ -69,7 +69,7 @@ Boston, MA 02110-1301, USA.  */
 
     In order to promote the most redundancy elimination, you want
     binary expressions whose operands are the same rank (or
-    preferrably, the same value) exposed to the redundancy eliminator,
+    preferably, the same value) exposed to the redundancy eliminator,
     for possible elimination.
 
     So the way to do this if we really cared, is to build the new op

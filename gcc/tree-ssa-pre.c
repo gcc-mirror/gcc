@@ -555,7 +555,7 @@ bitmap_set_copy (bitmap_set_t dest, bitmap_set_t orig)
   bitmap_copy (dest->values, orig->values);
 }
 
-/* Perform bitmapped set rperation DEST &= ORIG.  */
+/* Perform bitmapped set operation DEST &= ORIG.  */
 
 static void
 bitmap_set_and (bitmap_set_t dest, bitmap_set_t orig)

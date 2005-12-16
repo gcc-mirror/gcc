@@ -276,7 +276,7 @@ debug_lattice_value (prop_value_t val)
 /* The regular is_gimple_min_invariant does a shallow test of the object.
    It assumes that full gimplification has happened, or will happen on the
    object.  For a value coming from DECL_INITIAL, this is not true, so we
-   have to be more strict outselves.  */
+   have to be more strict ourselves.  */
 
 static bool
 ccp_decl_initial_min_invariant (tree t)

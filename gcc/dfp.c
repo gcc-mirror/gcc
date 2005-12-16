@@ -333,7 +333,7 @@ decimal_from_binary (REAL_VALUE_TYPE *to, const REAL_VALUE_TYPE *from)
 }
 
 /* Helper function to real.c:do_compare() to handle decimal internal
-   represenation including when one of the operands is still in the
+   representation including when one of the operands is still in the
    binary internal representation.  */
 
 int

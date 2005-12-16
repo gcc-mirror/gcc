@@ -5304,7 +5304,7 @@ output_deferred_plabels (void)
 
   /* If we have some deferred plabels, then we need to switch into the
      data or readonly data section, and align it to a 4 byte boundary
-     before outputing the deferred plabels.  */
+     before outputting the deferred plabels.  */
   if (n_deferred_plabels)
     {
       switch_to_section (flag_pic ? data_section : readonly_data_section);
