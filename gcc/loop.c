@@ -6486,6 +6486,17 @@ strength_reduce (struct loop *loop, int flags)
 	      v->ignore = 1;
 	      bl->all_reduced = 0;
 	    }
+	  else if (!v->always_computable
+		   && (may_trap_or_fault_p (v->add_val)
+		       || may_trap_or_fault_p (v->mult_val)))
+	    {
+	      if (loop_dump_stream)
+		fprintf (loop_dump_stream,
+			 "giv of insn %d: not always computable.\n",
+			 INSN_UID (v->insn));
+	      v->ignore = 1;
+	      bl->all_reduced = 0;
+	    }
 	  else
 	    {
 	      /* Check that we can increment the reduced giv without a
