@@ -2735,7 +2735,7 @@ cp_parser_translation_unit (cp_parser* parser)
    ADDRESS_P is true iff this expression was immediately preceded by
    "&" and therefore might denote a pointer-to-member.  CAST_P is true
    iff this expression is the target of a cast.  TEMPLATE_ARG_P is
-   true iff this expression is a tempalte argument.
+   true iff this expression is a template argument.
 
    Returns a representation of the expression.  Upon return, *IDK
    indicates what kind of id-expression (if any) was present.  */
@@ -14521,7 +14521,7 @@ cp_parser_label_declaration (cp_parser* parser)
    types.
 
    If AMBIGUOUS_DECLS is non-NULL, *AMBIGUOUS_DECLS is set to a
-   TREE_LIST of candiates if name-lookup results in an ambiguity, and
+   TREE_LIST of candidates if name-lookup results in an ambiguity, and
    NULL_TREE otherwise.  */ 
 
 static tree
