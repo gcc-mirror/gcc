@@ -1746,13 +1746,14 @@ next_record_r (st_parameter_dt *dtp)
 /* Position to the next record in write mode.  */
 
 static void
-next_record_w (st_parameter_dt *dtp)
+next_record_w (st_parameter_dt *dtp, int done)
 {
-  gfc_offset c, m, record;
-  int bytes_left, length;
+  gfc_offset c, m, record, max_pos;
+  int length;
   char *p;
 
   /* Zero counters for X- and T-editing.  */
+  max_pos = dtp->u.p.max_pos;
   dtp->u.p.max_pos = dtp->u.p.skips = dtp->u.p.pending_spaces = 0;
 
   switch (current_mode (dtp))
@@ -1831,18 +1832,31 @@ next_record_w (st_parameter_dt *dtp)
 	{
 	  if (is_array_io (dtp))
 	    {
-	      bytes_left = (int) dtp->u.p.current_unit->bytes_left;
-	      p = salloc_w (dtp->u.p.current_unit->s, &bytes_left);
+	      length = (int) dtp->u.p.current_unit->bytes_left;
+	      
+	      /* If the farthest position reached is greater than current
+	      position, adjust the position and set length to pad out
+	      whats left.  Otherwise just pad whats left.
+	      (for character array unit) */
+	      m = dtp->u.p.current_unit->recl
+			- dtp->u.p.current_unit->bytes_left;
+	      if (max_pos > m)
+		{
+		  length = (int) (max_pos - m);
+		  p = salloc_w (dtp->u.p.current_unit->s, &length);
+		  length = (int) (dtp->u.p.current_unit->recl - max_pos);
+		}
+
+	      p = salloc_w (dtp->u.p.current_unit->s, &length);
 	      if (p == NULL)
 		{
 		  generate_error (&dtp->common, ERROR_END, NULL);
 		  return;
 		}
-	      memset(p, ' ', bytes_left);
+	      memset(p, ' ', length);
 
 	      /* Now that the current record has been padded out,
 		 determine where the next record in the array is. */
-
 	      record = next_array_record (dtp, dtp->u.p.current_unit->ls);
 
 	      /* Now seek to this record */
@@ -1856,13 +1870,47 @@ next_record_w (st_parameter_dt *dtp)
 	  else
 	    {
 	      length = 1;
+
+	      /* If this is the last call to next_record move to the farthest
+		 position reached and set length to pad out the remainder
+		 of the record. (for character scaler unit) */
+	      if (done)
+		{
+		  m = dtp->u.p.current_unit->recl
+			- dtp->u.p.current_unit->bytes_left;
+		  if (max_pos > m)
+		    {
+		      length = (int) (max_pos - m);
+		      p = salloc_w (dtp->u.p.current_unit->s, &length);
+		      length = (int) (dtp->u.p.current_unit->recl - max_pos);
+		    }
+		  else
+		    length = (int) dtp->u.p.current_unit->bytes_left;
+		}
 	      p = salloc_w (dtp->u.p.current_unit->s, &length);
 	      if (p == NULL)
-		goto io_error;
+		{
+		  generate_error (&dtp->common, ERROR_END, NULL);
+		  return;
+		}
+	      memset (p, ' ', length);
 	    }
- 	}
+	}
       else
 	{
+	  /* If this is the last call to next_record move to the farthest
+	  position reached in preparation for completing the record.
+	  (for file unit) */
+	  if (done)
+	    {
+	      m = dtp->u.p.current_unit->recl -
+			dtp->u.p.current_unit->bytes_left;
+	      if (max_pos > m)
+		{
+		  length = (int) (max_pos - m);
+		  p = salloc_w (dtp->u.p.current_unit->s, &length);
+		}
+ 	    }
 #ifdef HAVE_CRLF
 	  length = 2;
 #else
@@ -1905,7 +1953,7 @@ next_record (st_parameter_dt *dtp, int done)
   if (dtp->u.p.mode == READING)
     next_record_r (dtp);
   else
-    next_record_w (dtp);
+    next_record_w (dtp, done);
 
   /* keep position up to date for INQUIRE */
   dtp->u.p.current_unit->flags.position = POSITION_ASIS;
