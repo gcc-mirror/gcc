@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of GCC.
@@ -15,8 +15,8 @@
 
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING.  If not, write to
-   the Free Software Foundation, 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
 /* As a special exception, if you link this library with other files,
    some of which are compiled with GCC, to produce an executable,
@@ -257,7 +257,10 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 
   if (size >= sizeof (struct ext_dl_phdr_info))
     {
-      if (last_cache_entry != NULL)
+      /* Move the cache entry we're about to overwrite to the head of
+	 the list.  If either last_cache_entry or prev_cache_entry are
+	 NULL, that cache entry is already at the head.  */
+      if (last_cache_entry != NULL && prev_cache_entry != NULL)
 	{
 	  prev_cache_entry->link = last_cache_entry->link;
 	  last_cache_entry->link = frame_hdr_cache_head;
