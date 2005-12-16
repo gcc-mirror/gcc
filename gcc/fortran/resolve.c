@@ -288,7 +288,7 @@ resolve_contained_fntype (gfc_symbol * sym, gfc_namespace * ns)
 
   /*Fortran 95 Draft Standard, page 51, Section 5.1.1.5, on the Character type,
     lists the only ways a character length value of * can be used: dummy arguments
-    of proceedures, named constants, and function results in external functions.
+    of procedures, named constants, and function results in external functions.
     Internal function results are not on that list; ergo, not permitted.  */
 
   if (sym->ts.type == BT_CHARACTER)

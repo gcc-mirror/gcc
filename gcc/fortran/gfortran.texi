@@ -962,7 +962,7 @@ The value of the conversion can be queried by using
 
 @code{CONVERT} works between big- and little-endian for
 @code{INTEGER} values of all supported kinds and for @code{REAL}
-on IEEE sytems of kinds 4 and 8.  Conversion between different
+on IEEE systems of kinds 4 and 8.  Conversion between different
 ``extended double'' types on different architectures such as
 m68k and x86_64, which gfortran
 supports as @code{REAL(KIND=10)} will probably not work.

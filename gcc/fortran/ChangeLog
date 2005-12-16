@@ -1,3 +1,8 @@
+2005-12-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* dependency.c, resolve.c, trans-array.c: Fix comment typos.
+	* gfortran.texi: Fix typos.
+
 2005-12-14  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/18197

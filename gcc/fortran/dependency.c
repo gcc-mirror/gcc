@@ -176,7 +176,7 @@ gfc_is_same_range (gfc_array_ref * ar1, gfc_array_ref * ar2, int n, int def)
 
 
 /* Some array-returning intrinsics can be implemented by reusing the
-   data from one of the array arguments.  For example, TRANPOSE does
+   data from one of the array arguments.  For example, TRANSPOSE does
    not necessarily need to allocate new data: it can be implemented
    by copying the original array's descriptor and simply swapping the
    two dimension specifications.
