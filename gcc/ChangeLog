@@ -1,3 +1,8 @@
+2005-12-16  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dse.c (dse_optimize_stmt): Correctly handle PHI nodes which
+	represent a use and definition of the same SSA_NAME.
+
 2005-12-16  Jon Grimm  <jgrimm2@us.ibm.com>
 	    Janis Johnson  <janis187@us.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>

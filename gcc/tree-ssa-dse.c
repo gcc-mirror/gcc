@@ -309,6 +309,15 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	     && TREE_CODE (use_stmt) == PHI_NODE
 	     && bitmap_bit_p (dse_gd->stores, get_stmt_uid (use_stmt)))
 	{
+	  /* A PHI node can both define and use the same SSA_NAME if
+	     the PHI is at the top of a loop and the PHI_RESULT is
+	     a loop invariant and copies have not been fully propagated.
+
+	     The safe thing to do is exit assuming no optimization is
+	     possible.  */
+	  if (SSA_NAME_DEF_STMT (PHI_RESULT (use_stmt)) == use_stmt)
+	    return;
+
 	  /* Skip past this PHI and loop again in case we had a PHI
 	     chain.  */
 	  if (single_imm_use (PHI_RESULT (use_stmt), &use_p, &use_stmt))
