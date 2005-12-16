@@ -1,3 +1,13 @@
+2005-12-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (combine_simplify_rtx <case NOT, NEG, TRUNCATE,
+	FLOAT_TRUNCATE, FLOAT_EXTEND, PLUS, MINUS, AND, IOR, XOR,
+	ABS, VEC_SELECT, POPCOUNT, PARITY, FFS, FLOAT>,
+	simplify_logical): Move simplifications that do not require
+	additional infrastructure...
+	* simplify-rtx.c (simplify_unary_operation_1,
+	simplify_binary_operation_1): ... here.
+
 2005-12-16  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR 24823
