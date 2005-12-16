@@ -2798,6 +2798,30 @@ m32c_prepare_shift (rtx * operands, int scale, int bits)
   return 0;
 }
 
+/* The m32c has a limited range of operations that work on PSImode
+   values; we have to expand to SI, do the math, and truncate back to
+   PSI.  Yes, this is expensive, but hopefully gcc will learn to avoid
+   those cases.  */
+void
+m32c_expand_neg_mulpsi3 (rtx * operands)
+{
+  /* operands: a = b * i */
+  rtx temp1; /* b as SI */
+  rtx temp2; /* -b as SI */
+  rtx temp3; /* -b as PSI */
+  rtx scale;
+
+  temp1 = gen_reg_rtx (SImode);
+  temp2 = gen_reg_rtx (SImode);
+  temp3 = gen_reg_rtx (PSImode);
+  scale = GEN_INT (- INTVAL (operands[2]));
+
+  emit_insn (gen_zero_extendpsisi2 (temp1, operands[1]));
+  emit_insn (gen_negsi2 (temp2, temp1));
+  emit_insn (gen_truncsipsi2 (temp3, temp2));
+  emit_insn (gen_mulpsi3 (operands[0], temp3, scale));
+}
+
 /* Pattern Output Functions */
 
 /* Returns TRUE if the current function is a leaf, and thus we can
