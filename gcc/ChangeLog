@@ -1,3 +1,9 @@
+2005-12-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/25447
+	* config/pa/pa.c (pa_scalar_mode_supported_p): Handle
+	MODE_DECIMAL_FLOAT.
+
 2005-12-16  Steven Bosscher  <stevenb@suse.de>
 
 	* loop-invariant.c (move_loop_invariants): Add missing hunk from
