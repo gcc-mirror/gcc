@@ -1,3 +1,7 @@
+2005-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-fdump-tree-*): Remove note about C/C++ only.
+
 2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/mt/mt.h (LIB_SPEC, STARTFILE_SPEC, ENDFILE_SPEC): Correct
