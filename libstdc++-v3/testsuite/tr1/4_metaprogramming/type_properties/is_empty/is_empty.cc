@@ -37,7 +37,10 @@ class NonEmptyClassOne
 { int data; };
 
 class NonEmptyClassTwo
-{ virtual int f(); };
+{
+  virtual int f();
+  virtual ~NonEmptyClassTwo();
+};
 
 void test01()
 {
