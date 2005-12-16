@@ -4426,8 +4426,8 @@ const struct real_format decimal_quad_format =
     1,  /* log10 */
     34,
     34,
-    -6414,
-    6413,
+    -6143,
+    6144,
     127,
     127,
     true,
