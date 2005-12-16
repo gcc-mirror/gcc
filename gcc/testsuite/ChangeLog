@@ -1,3 +1,8 @@
+2005-12-16  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR 24823
+	* gfortran.dg/pr24823.f: New test.
+
 2005-12-14  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/23838
