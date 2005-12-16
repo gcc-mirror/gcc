@@ -1,3 +1,7 @@
+2005-12-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* parser.c, pt.c: Fix comment typos.
+
 2005-12-13  Petr Machata  <machata@post.cz>
 
 	PR c++/24907

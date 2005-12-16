@@ -1194,7 +1194,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend)
 
   	           An explicit specialization of a function template
 		   is inline only if it is explicitly declared to be,
-		   and independently of whether its function tempalte
+		   and independently of whether its function template
 		   is.
 
 		to the primary function; now copy the inline bits to
