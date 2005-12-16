@@ -1,22 +1,22 @@
 2005-12-16  Richard Guenther  <rguenther@suse.de>
 
-	(gfc_conv_descriptor_data_addr): Use build_fold_addr_expr where
-	appropriate.
+	* trans-array.c (gfc_conv_descriptor_data_addr): Use
+	build_fold_addr_expr where appropriate.
 	(gfc_trans_allocate_array_storage): Likewise.
 	(gfc_trans_array_constructor_value): Likewise.
 	(gfc_conv_array_data): Likewise.
 	(gfc_conv_expr_descriptor): Likewise.
 	(gfc_conv_array_parameter): Likewise.
-	(gfc_conv_variable): Likewise.
+	* trans-expr.c (gfc_conv_variable): Likewise.
 	(gfc_conv_function_val): Likewise.
 	(gfc_conv_function_call): Likewise.
 	(gfc_conv_expr_reference): Likewise.
-	(gfc_conv_intrinsic_ctime): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_ctime): Likewise.
 	(gfc_conv_intrinsic_fdate): Likewise.
 	(gfc_conv_intrinsic_ttynam): Likewise.
 	(gfc_conv_intrinsic_si_kind): Likewise.
 	(gfc_conv_intrinsic_trim): Likewise.
-	(set_parameter_ref): Likewise.
+	* trans-io.c (set_parameter_ref): Likewise.
 	(gfc_convert_array_to_string): Likewise.
 	(gfc_trans_open): Likewise.
 	(gfc_trans_close): Likewise.
@@ -30,7 +30,7 @@
 	(transfer_expr): Likewise.
 	(transfer_array_desc): Likewise.
 	(gfc_trans_transfer): Likewise.
-	(gfc_trans_allocate): Likewise.
+	* trans-stmt.c (gfc_trans_allocate): Likewise.
 	(gfc_trans_deallocate): Likewise.
 
 2005-12-16  Kazu Hirata  <kazu@codesourcery.com>
