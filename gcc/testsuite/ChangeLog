@@ -1,6 +1,11 @@
+2005-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/24268
+	* gfortran.dg/fmt_white.f: New test.
+
 2005-12-16  Steven G. Kargl <kargls@comcast.net>
 
-	gfortran.dg/label_1.f90: New test.
+	* gfortran.dg/label_1.f90: New test.
 
 2005-12-15  Ben Elliston  <bje@au.ibm.com>
 
