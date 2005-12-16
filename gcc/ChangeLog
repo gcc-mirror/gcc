@@ -1,3 +1,13 @@
+2005-12-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline:
+	2004-11-01  Mike Stump  <mrs@apple.com>
+
+	* inclhack.def (stdio_va_list): Break out clients from here...
+	(stdio_va_list_clients): ...to here.  Also, don't fix if stdarg.h is
+	included or ifdef va_start.
+	* fixincl.x: Regenerate.
+	
 2005-12-13  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (TARGET_ALIGN_NATURAL): Define.

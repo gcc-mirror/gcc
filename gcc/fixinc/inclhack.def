@@ -2942,6 +2942,56 @@ fix = {
 
 
 /*
+ *  Fix headers that use va_list from stdio.h to use the updated
+ *  va_list from the stdio_va_list change.  Note _BSD_VA_LIST_ is
+ *  dealt with elsewhere.  The presence of __gnuc_va_list,
+ *  __DJ_va_list, or _G_va_list is taken to indicate that the header
+ *  knows what it's doing.
+ */
+fix = {
+    hackname = stdio_va_list_clients;
+    files    = com_err.h;
+    files    = cps.h;
+    files    = curses.h;
+    files    = krb5.h;
+    files    = lc_core.h;
+    files    = pfmt.h;
+    files    = wchar.h;
+    files    = curses_colr/curses.h;
+    bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list';
+    /* Don't fix, if we use va_list from stdarg.h, or if the use is
+       otherwise protected.  */
+    bypass   = 'include <stdarg\.h>|#ifdef va_start';
+
+    /*
+     * Use __gnuc_va_list in arg types in place of va_list.
+     * On 386BSD use __gnuc_va_list instead of _VA_LIST_.  On Tru64 UNIX V5.1A
+     * use __gnuc_va_list instead of __VA_LIST__.  We're hoping the
+     * trailing parentheses and semicolon save all other systems from this.
+     * Define __not_va_list__ (something harmless and unused)
+     * instead of va_list.
+     * Don't claim to have defined va_list.
+     */
+    sed = "s@[ \t]va_list\\([ \t)]\\)@ __gnuc_va_list\\1@\n"
+	  "s@(va_list)&@(__gnuc_va_list)\\&@\n"
+          "s@ _VA_LIST_));@ __gnuc_va_list));@\n"
+          "s@ __VA_LIST__));@ __gnuc_va_list));@\n"
+          "s@ va_list@ __not_va_list__@\n"
+          "s@\\*va_list@*__not_va_list__@\n"
+          "s@ __va_list)@ __gnuc_va_list)@\n"
+          "s@typedef[ \t]\\(.*\\)[ \t]va_list[ \t]*;"
+           "@typedef \\1 __not_va_list__;@\n"
+	  "s@typedef[ \t]*__va_list__@typedef __gnuc_va_list@\n"
+          "s@GNUC_VA_LIST@GNUC_Va_LIST@\n"
+          "s@_VA_LIST_DEFINED@_Va_LIST_DEFINED@\n"
+          "s@_NEED___VA_LIST@_NEED___Va_LIST@\n"
+          "s@VA_LIST@DUMMY_VA_LIST@\n"
+          "s@_Va_LIST@_VA_LIST@";
+    test_text = "extern void mumble( va_list);";
+};
+
+
+/*
  *  "!__STDC__" or "__STDC__==0" or "__STDC__!=1" or "__STDC__-0==0"
  *  is "!defined( __STRICT_ANSI__ )"
  */
