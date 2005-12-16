@@ -1420,7 +1420,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       && ashl_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
       && lshr_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
-      rtx insns, equiv_value;
+      rtx insns;
       rtx into_target, outof_target;
       rtx into_input, outof_input;
       rtx inter;
@@ -1520,20 +1520,12 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       if (inter != 0)
 	{
-	  if (binoptab->code != UNKNOWN)
-	    equiv_value = gen_rtx_fmt_ee (binoptab->code, mode, op0, op1);
-	  else
-	    equiv_value = 0;
-
-	  /* We can't make this a no conflict block if this is a word swap,
-	     because the word swap case fails if the input and output values
-	     are in the same register.  */
-	  if (shift_count != BITS_PER_WORD)
-	    emit_no_conflict_block (insns, target, op0, op1, equiv_value);
-	  else
-	    emit_insn (insns);
-
-
+	  /* One may be tempted to wrap the insns in a REG_NO_CONFLICT
+	     block to help the register allocator a bit.  But a multi-word
+	     rotate will need all the input bits when setting the output
+	     bits, so there clearly is a conflict between the input and
+	     output registers.  So we can't use a no-conflict block here.  */
+	  emit_insn (insns);
 	  return target;
 	}
     }
