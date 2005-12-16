@@ -402,7 +402,11 @@ typedef struct st_parameter_dt
 	     to flag read errors and return, so that an attempt can be
 	     made to read a new object name.  */
 	  unsigned nml_read_error : 1;
-	  /* 20 unused bits.  */
+	  /* A sequential formatted read specific flag used to signal that a
+	     character string is being read so don't use commas to shorten a
+	     formatted field width.  */
+	  unsigned sf_read_comma : 1;
+	  /* 19 unused bits.  */
 
 	  char last_char;
 	  char nml_delim;
