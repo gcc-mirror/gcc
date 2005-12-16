@@ -673,7 +673,7 @@ gfc_trans_allocate_temp_array (stmtblock_t * pre, stmtblock_t * post,
 }
 
 
-/* Generate code to tranpose array EXPR by creating a new descriptor
+/* Generate code to transpose array EXPR by creating a new descriptor
    in which the dimension specifications have been reversed.  */
 
 void
