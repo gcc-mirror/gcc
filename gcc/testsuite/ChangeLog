@@ -1,3 +1,8 @@
+2005-12-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR testsuite/25215
+	* gcc.dg/20050503-1.c: Skip on x86 ilp32 with -fpic/-fPIC.
+
 2005-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/24899
