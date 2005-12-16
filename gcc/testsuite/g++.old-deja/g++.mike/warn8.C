@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-options "-Walways-true" }
 
 struct foo {
   bool test();

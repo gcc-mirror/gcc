@@ -1,3 +1,10 @@
+2005-12-15  Ben Elliston  <bje@au.ibm.com>
+
+	PR testsuite/25422
+	* gcc.dg/20031012-1.c: Add -Walways-true option.
+	* gcc.dg/weak/weak-3.c: Likewise.
+	* g++.old-deja/g++.mike/warn8.C: Likewise.
+
 2005-12-16  Mike Stump  <mrs@apple.com>
 
 	* gcc.c-torture/compile/920415-1.c: Add declaration for abort and
