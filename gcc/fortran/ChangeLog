@@ -1,5 +1,71 @@
 2005-12-16  Richard Guenther  <rguenther@suse.de>
 
+	* trans.h (tree): Remove declaration of gfc_build_function_call.
+	* trans.c (gfc_build_function_call): Remove.
+	(gfc_build_array_ref): Use build_function_call_expr.
+	(gfc_trans_runtime_check): Likewise.
+	* trans-array.c (gfc_trans_allocate_array_storage): Likewise.
+	(gfc_grow_array): Likewise.
+	(gfc_trans_array_ctor_element): Likewise.
+	(gfc_trans_array_constructor_value): Likewise.
+	(gfc_array_allocate): Likewise.
+	(gfc_array_deallocate): Likewise.
+	(gfc_trans_auto_array_allocation): Likewise.
+	(gfc_trans_dummy_array_bias): Likewise.
+	(gfc_conv_array_parameter): Likewise.
+	* trans-expr.c (gfc_conv_power_op): Likewise.
+	(gfc_conv_string_tmp): Likewise.
+	(gfc_conv_concat_op): Likewise.
+	(gfc_conv_expr_op): Likewise.
+	(gfc_trans_string_copy): Likewise.
+	* trans-decl.c (build_entry_thunks): Likewise.
+	(gfc_generate_function_code): Likewise.
+	(gfc_generate_constructors): Likewise.
+	* trans-io.c (gfc_trans_open): Likewise.
+	(gfc_trans_close): Likewise.
+	(build_filepos): Likewise.
+	(gfc_trans_inquire): Likewise.
+	(transfer_namelist_element): Likewise.
+	(build_dt): Likewise.
+	(gfc_trans_dt_end): Likewise.
+	(transfer_expr): Likewise.
+	(transfer_array_desc): Likewise.
+	* trans-stmt.c (gfc_trans_pause): Likewise.
+	(gfc_trans_stop): Likewise.
+	(gfc_trans_character_select): Likewise.
+	(gfc_do_allocate): Likewise.
+	(gfc_trans_assign_need_temp): Likewise.
+	(gfc_trans_pointer_assign_need_temp): Likewise.
+	(gfc_trans_forall_1): Likewise.
+	(gfc_trans_where): Likewise.
+	(gfc_trans_allocate): Likewise.
+	(gfc_trans_deallocate): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_aint): Likewise.
+	(gfc_conv_intrinsic_lib_function): Likewise.
+	(gfc_conv_intrinsic_exponent): Likewise.
+	(gfc_conv_intrinsic_abs): Likewise.
+	(gfc_conv_intrinsic_sign): Likewise.
+	(gfc_conv_intrinsic_ctime): Likewise.
+	(gfc_conv_intrinsic_fdate): Likewise.
+	(gfc_conv_intrinsic_ttynam): Likewise.
+	(gfc_conv_intrinsic_ishftc): Likewise.
+	(gfc_conv_intrinsic_len_trim): Likewise.
+	(gfc_conv_intrinsic_index): Likewise.
+	(gfc_conv_intrinsic_size): Likewise.
+	(gfc_conv_intrinsic_strcmp): Likewise.
+	(gfc_conv_intrinsic_adjust): Likewise.
+	(gfc_conv_associated): Likewise.
+	(gfc_conv_intrinsic_scan): Likewise.
+	(gfc_conv_intrinsic_verify): Likewise.
+	(call_builtin_clz): Likewise.
+	(gfc_conv_intrinsic_si_kind): Likewise.
+	(gfc_conv_intrinsic_sr_kind): Likewise.
+	(gfc_conv_intrinsic_trim): Likewise.
+	(gfc_conv_intrinsic_repeat): Likewise.
+	(gfc_conv_intrinsic_iargc): Likewise.
+
+2005-12-16  Richard Guenther  <rguenther@suse.de>
+
 	* trans.h (gfc_build_indirect_ref): Remove declaration.
 	* trans.c (gfc_build_indirect_ref): Remove.
 	* trans-array.c (gfc_trans_array_ctor_element): Use

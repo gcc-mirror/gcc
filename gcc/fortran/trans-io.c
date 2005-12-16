@@ -799,7 +799,7 @@ gfc_trans_open (gfc_code * code)
 
   tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
-  tmp = gfc_build_function_call (iocall[IOCALL_OPEN], tmp);
+  tmp = build_function_call_expr (iocall[IOCALL_OPEN], tmp);
   gfc_add_expr_to_block (&block, tmp);
 
   gfc_add_block_to_block (&block, &post_block);
@@ -852,7 +852,7 @@ gfc_trans_close (gfc_code * code)
 
   tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
-  tmp = gfc_build_function_call (iocall[IOCALL_CLOSE], tmp);
+  tmp = build_function_call_expr (iocall[IOCALL_CLOSE], tmp);
   gfc_add_expr_to_block (&block, tmp);
 
   gfc_add_block_to_block (&block, &post_block);
@@ -903,7 +903,7 @@ build_filepos (tree function, gfc_code * code)
 
   tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
-  tmp = gfc_build_function_call (function, tmp);
+  tmp = build_function_call_expr (function, tmp);
   gfc_add_expr_to_block (&block, tmp);
 
   gfc_add_block_to_block (&block, &post_block);
@@ -1085,7 +1085,7 @@ gfc_trans_inquire (gfc_code * code)
 
   tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
-  tmp = gfc_build_function_call (iocall[IOCALL_INQUIRE], tmp);
+  tmp = build_function_call_expr (iocall[IOCALL_INQUIRE], tmp);
   gfc_add_expr_to_block (&block, tmp);
 
   gfc_add_block_to_block (&block, &post_block);
@@ -1299,7 +1299,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
     NML_ADD_ARG (convert (gfc_charlen_type_node, integer_zero_node));
 
   NML_ADD_ARG (dtype);
-  tmp = gfc_build_function_call (iocall[IOCALL_SET_NML_VAL], args);
+  tmp = build_function_call_expr (iocall[IOCALL_SET_NML_VAL], args);
   gfc_add_expr_to_block (block, tmp);
 
   /* If the object is an array, transfer rank times:
@@ -1312,7 +1312,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
       NML_ADD_ARG (GFC_TYPE_ARRAY_STRIDE (dt, n_dim));
       NML_ADD_ARG (GFC_TYPE_ARRAY_LBOUND (dt, n_dim));
       NML_ADD_ARG (GFC_TYPE_ARRAY_UBOUND (dt, n_dim));
-      tmp = gfc_build_function_call (iocall[IOCALL_SET_NML_VAL_DIM], args);
+      tmp = build_function_call_expr (iocall[IOCALL_SET_NML_VAL_DIM], args);
       gfc_add_expr_to_block (block, tmp);
     }
 
@@ -1467,7 +1467,7 @@ build_dt (tree function, gfc_code * code)
 
   tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
-  tmp = gfc_build_function_call (function, tmp);
+  tmp = build_function_call_expr (function, tmp);
   gfc_add_expr_to_block (&block, tmp);
 
   gfc_add_block_to_block (&block, &post_block);
@@ -1546,7 +1546,7 @@ gfc_trans_dt_end (gfc_code * code)
 
   tmp = build_fold_addr_expr (dt_parm);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
-  tmp = gfc_build_function_call (function, tmp);
+  tmp = build_function_call_expr (function, tmp);
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, dt_post_end_block);
   gfc_init_block (dt_post_end_block);
@@ -1735,7 +1735,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
   args = gfc_chainon_list (args, addr_expr);
   args = gfc_chainon_list (args, arg2);
 
-  tmp = gfc_build_function_call (function, args);
+  tmp = build_function_call_expr (function, args);
   gfc_add_expr_to_block (&se->pre, tmp);
   gfc_add_block_to_block (&se->pre, &se->post);
 
@@ -1762,7 +1762,7 @@ transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
   args = gfc_chainon_list (args, addr_expr);
   args = gfc_chainon_list (args, kind_arg);
   args = gfc_chainon_list (args, charlen_arg);
-  tmp = gfc_build_function_call (iocall[IOCALL_X_ARRAY], args);
+  tmp = build_function_call_expr (iocall[IOCALL_X_ARRAY], args);
   gfc_add_expr_to_block (&se->pre, tmp);
   gfc_add_block_to_block (&se->pre, &se->post);
 }

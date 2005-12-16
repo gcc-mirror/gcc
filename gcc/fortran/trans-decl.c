@@ -1545,7 +1545,7 @@ build_entry_thunks (gfc_namespace * ns)
       args = nreverse (args);
       args = chainon (args, nreverse (string_args));
       tmp = ns->proc_name->backend_decl;
-      tmp = gfc_build_function_call (tmp, args);
+      tmp = build_function_call_expr (tmp, args);
       if (ns->proc_name->attr.mixed_entry_master)
 	{
 	  tree union_decl, field;
@@ -2602,7 +2602,7 @@ gfc_generate_function_code (gfc_namespace * ns)
       arglist = gfc_chainon_list (arglist,
 				  build_int_cst (gfc_int4_type_node,
 						 gfc_option.allow_std));
-      tmp = gfc_build_function_call (gfor_fndecl_set_std, arglist);
+      tmp = build_function_call_expr (gfor_fndecl_set_std, arglist);
       gfc_add_expr_to_block (&body, tmp);
     }
 
@@ -2617,7 +2617,7 @@ gfc_generate_function_code (gfc_namespace * ns)
       arglist = gfc_chainon_list (NULL_TREE,
 				  build_int_cst (gfc_c_int_type_node,
 						 gfc_option.fpe));
-      tmp = gfc_build_function_call (gfor_fndecl_set_fpe, arglist);
+      tmp = build_function_call_expr (gfor_fndecl_set_fpe, arglist);
       gfc_add_expr_to_block (&body, tmp);
     }
 
@@ -2764,7 +2764,7 @@ gfc_generate_constructors (void)
   for (; gfc_static_ctors; gfc_static_ctors = TREE_CHAIN (gfc_static_ctors))
     {
       tmp =
-	gfc_build_function_call (TREE_VALUE (gfc_static_ctors), NULL_TREE);
+	build_function_call_expr (TREE_VALUE (gfc_static_ctors), NULL_TREE);
       DECL_SAVED_TREE (fndecl) = build_stmt (EXPR_STMT, tmp);
     }
 
