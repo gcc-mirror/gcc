@@ -1,3 +1,9 @@
+2005-12-15  Andrew Haley  <aph@redhat.com>
+
+	* unwind-dw2-fde-glibc.c (_Unwind_IteratePhdrCallback): Guard
+	against prev_cache_entry == NULL when moving a cache entry to the
+	head of the list.
+	
 2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/ms1/ms1.c (ms1_reorg_hazard): Don't count noop moves.

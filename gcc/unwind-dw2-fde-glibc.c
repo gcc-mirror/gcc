@@ -257,7 +257,10 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 
   if (size >= sizeof (struct ext_dl_phdr_info))
     {
-      if (last_cache_entry != NULL)
+      /* Move the cache entry we're about to overwrite to the head of
+	 the list.  If either last_cache_entry or prev_cache_entry are
+	 NULL, that cache entry is already at the head.  */
+      if (last_cache_entry != NULL && prev_cache_entry != NULL)
 	{
 	  prev_cache_entry->link = last_cache_entry->link;
 	  last_cache_entry->link = frame_hdr_cache_head;
