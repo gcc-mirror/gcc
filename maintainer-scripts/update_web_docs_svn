@@ -3,6 +3,8 @@
 # Generate HTML documentation from GCC Texinfo docs.
 # This version is for GCC 3.1 and later versions.
 
+set -e
+
 # Run this from /tmp.
 SVNROOT=${SVNROOT:-"file:///svn/gcc"}
 export SVNROOT
@@ -78,42 +80,27 @@ fi
 
 WORKDIR=/tmp/gcc-doc-update.$$
 
-/bin/rm -rf $WORKDIR
-/bin/mkdir $WORKDIR
+rm -rf $WORKDIR
+mkdir $WORKDIR
 cd $WORKDIR
-# Find all the texi files in the repository, except those in directories
-# we do not care about (texinfo, etc).
 if [ "$RELEASE" = "trunk" ]; then
-  svn ls -R $SVNROOT/$RELEASE/gcc | grep "\.texi$" |fgrep -v -f/home/gccadmin/scripts/doc_exclude > FILES
-  # SVN export doesn't function like CVS, in that it doesn't create an entire empty path structure
-  # Thus, it's easiest to just export the entire tree
   svn -q export $SVNROOT/$RELEASE gcc
-#  # Checkout all the texi files.
-#  for i in `cat FILES`; do
-#    svn -q export $SVNROOT/$RELEASE/gcc/$i
-#  done
-#  svn -q export $SVNROOT/$RELEASE/gcc/doc/install.texi2html 
-#  svn -q export $SVNROOT/$RELEASE/gcc/doc/include/texinfo.tex 
-#  svn -q export $SVNROOT/$RELEASE/gcc/ada/xgnatugn.adb 
-#  svn -q export $SVNROOT/$RELEASE/gcc/ada/ug_words
-#  svn -q export $SVNROOT/$RELEASE/gcc/BASE-VER
-#  svn -q export $SVNROOT/$RELEASE/gcc/DEV-PHASE
 else
-  svn ls -R $SVNROOT/tags/$RELEASE/gcc | grep "\.texi$" |fgrep -v -f/home/gccadmin/scripts/doc_exclude > FILES
-  # SVN export doesn't function like CVS, in that it doesn't create an entire empty path structure
-  # Thus, it's easiest to just export the entire tree
   svn -q export $SVNROOT/tags/$RELEASE gcc
-#  # Checkout all the texi files.
-#  for i in `cat FILES`; do
-#    svn -q export $SVNROOT/tags/$RELEASE/gcc/$i
-#  done
-#  svn -q export $SVNROOT/tags/$RELEASE/gcc/doc/install.texi2html 
-#  svn -q export $SVNROOT/tags/$RELEASE/gcc/doc/include/texinfo.tex 
-#  svn -q export $SVNROOT/tags/$RELEASE/gcc/ada/xgnatugn.adb 
-#  svn -q export $SVNROOT/tags/$RELEASE/gcc/ada/ug_words
-#  svn -q export $SVNROOT/tags/$RELEASE/gcc/BASE-VER
-#  svn -q export $SVNROOT/tags/$RELEASE/gcc/DEV-PHASE
 fi
+
+# Remove all unwanted files.  This is needed (a) to build the Ada
+# generator programs with the installed library, not the new one and
+# (b) to avoid packaging all the sources instead of only documentation
+# sources.
+find gcc -type f \( -name '*.texi' \
+  -o -path gcc/gcc/doc/install.texi2html \
+  -o -path gcc/gcc/doc/include/texinfo.tex \
+  -o -path gcc/gcc/ada/xgnatugn.adb \
+  -o -path gcc/gcc/ada/ug_words \
+  -o -path gcc/gcc/BASE-VER \
+  -o -path gcc/gcc/DEV-PHASE \
+  -o -print0 \) | xargs -0 rm -f
 
 # Build a tarball of the sources.
 tar cf docs-sources.tar gcc
@@ -166,15 +153,17 @@ today=`date +%d`
 if test $today = 15; then
   find $DOCSDIR -type f -maxdepth 1 -print | grep -v index.html | xargs rm
   for m in $MANUALS; do
-    rm $DOCSDIR/$m/*.html $DOCSDIR/$m/*.html.gz
+    rm -f $DOCSDIR/$m/*.html $DOCSDIR/$m/*.html.gz
   done
 fi
 
 # And copy the resulting files to the web server
 for file in */*.html *.ps *.pdf *.tar; do
-  cat $DOCSDIR/$file | 
-    sed -e '/^<meta name=generator/d' \
-        -e '/^%DVIPSSource:/d' > file1
+  if [ -f $DOCSDIR/$file ]; then
+    cat $DOCSDIR/$file | 
+      sed -e '/^<meta name=generator/d' \
+          -e '/^%DVIPSSource:/d' > file1
+  fi
   cat $file |
     sed -e '/^<meta name=generator/d' \
         -e '/^%DVIPSSource:/d' > file2
