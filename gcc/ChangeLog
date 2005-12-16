@@ -1,3 +1,8 @@
+2005-12-17  Alan Modra  <amodra@bigpond.net.au>
+
+	* simplify-rtx.c (simplify_binary_operation_1 <IOR>): Correct bug
+	introduced 2005-12-16.
+
 2005-12-16  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/23837
