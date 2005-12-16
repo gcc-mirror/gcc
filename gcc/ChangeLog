@@ -1,3 +1,7 @@
+2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/ms1/ms1.c (ms1_reorg_hazard): Don't count noop moves.
+
 2005-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/24899

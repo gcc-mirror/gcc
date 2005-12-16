@@ -1915,7 +1915,16 @@ ms1_reorg_hazard (void)
 		      break;
 		    }
 		}
-	      count -= INSN_CODE (prev) >= 0;
+
+	      if (INSN_CODE (prev) >= 0)
+		{
+		  rtx set = single_set (prev);
+
+		  /* A noop set will get deleted in a later split pass,
+	     	     so we can't count on it for hazard avoidance.  */
+		  if (!set || !set_noop_p (set))
+		    count--;
+		}
 	    }
 
 	  if (rescan)
