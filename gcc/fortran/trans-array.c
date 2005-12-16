@@ -932,7 +932,7 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
   gfc_conv_expr (se, expr);
 
   /* Store the value.  */
-  tmp = gfc_build_indirect_ref (gfc_conv_descriptor_data_get (desc));
+  tmp = build_fold_indirect_ref (gfc_conv_descriptor_data_get (desc));
   tmp = gfc_build_array_ref (tmp, offset);
   if (expr->ts.type == BT_CHARACTER)
     {
@@ -1157,7 +1157,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 
 	      /* Use BUILTIN_MEMCPY to assign the values.  */
 	      tmp = gfc_conv_descriptor_data_get (desc);
-	      tmp = gfc_build_indirect_ref (tmp);
+	      tmp = build_fold_indirect_ref (tmp);
 	      tmp = gfc_build_array_ref (tmp, *poffset);
 	      tmp = build_fold_addr_expr (tmp);
 	      init = build_fold_addr_expr (init);
@@ -1827,7 +1827,7 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 			       index, gfc_conv_array_stride (desc, 0));
 
 	  /* Read the vector to get an index into info->descriptor.  */
-	  data = gfc_build_indirect_ref (gfc_conv_array_data (desc));
+	  data = build_fold_indirect_ref (gfc_conv_array_data (desc));
 	  index = gfc_build_array_ref (data, index);
 	  index = gfc_evaluate_now (index, &se->pre);
 
@@ -1891,7 +1891,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
      dimensions.  */
   index = fold_build2 (PLUS_EXPR, gfc_array_index_type, index, info->offset);
 
-  tmp = gfc_build_indirect_ref (info->data);
+  tmp = build_fold_indirect_ref (info->data);
   se->expr = gfc_build_array_ref (tmp, index);
 }
 
@@ -1980,7 +1980,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar)
       
   /* Access the calculated element.  */
   tmp = gfc_conv_array_data (se->expr);
-  tmp = gfc_build_indirect_ref (tmp);
+  tmp = build_fold_indirect_ref (tmp);
   se->expr = gfc_build_array_ref (tmp, index);
 }
 
@@ -3482,7 +3482,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
   type = TREE_TYPE (tmpdesc);
   gcc_assert (GFC_ARRAY_TYPE_P (type));
   dumdesc = GFC_DECL_SAVED_DESCRIPTOR (tmpdesc);
-  dumdesc = gfc_build_indirect_ref (dumdesc);
+  dumdesc = build_fold_indirect_ref (dumdesc);
   gfc_start_block (&block);
 
   if (sym->ts.type == BT_CHARACTER
@@ -3707,7 +3707,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
       stmt = gfc_finish_block (&cleanup);
 	
       /* Only do the cleanup if the array was repacked.  */
-      tmp = gfc_build_indirect_ref (dumdesc);
+      tmp = build_fold_indirect_ref (dumdesc);
       tmp = gfc_conv_descriptor_data_get (tmp);
       tmp = build2 (NE_EXPR, boolean_type_node, tmp, tmpdesc);
       stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
@@ -3961,7 +3961,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       if (expr->ts.type == BT_CHARACTER)
 	{
 	  gfc_conv_expr (&rse, expr);
-	  rse.expr = gfc_build_indirect_ref (rse.expr);
+	  rse.expr = build_fold_indirect_ref (rse.expr);
 	}
       else
         gfc_conv_expr_val (&rse, expr);
@@ -4119,7 +4119,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       /* Point the data pointer at the first element in the section.  */
       tmp = gfc_conv_array_data (desc);
-      tmp = gfc_build_indirect_ref (tmp);
+      tmp = build_fold_indirect_ref (tmp);
       tmp = gfc_build_array_ref (tmp, offset);
       offset = gfc_build_addr_expr (gfc_array_dataptr_type (desc), tmp);
       gfc_conv_descriptor_data_set (&loop.pre, parm, offset);
@@ -4228,7 +4228,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
       gfc_init_block (&block);
       /* Only if it was repacked.  This code needs to be executed before the
          loop cleanup code.  */
-      tmp = gfc_build_indirect_ref (desc);
+      tmp = build_fold_indirect_ref (desc);
       tmp = gfc_conv_array_data (tmp);
       tmp = build2 (NE_EXPR, boolean_type_node, ptr, tmp);
       tmp = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());

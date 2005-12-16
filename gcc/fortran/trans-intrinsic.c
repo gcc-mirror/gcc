@@ -2177,7 +2177,7 @@ gfc_conv_intrinsic_ichar (gfc_se * se, gfc_expr * expr)
   arg = build1 (NOP_EXPR, pchar_type_node, arg);
   type = gfc_typenode_for_spec (&expr->ts);
 
-  se->expr = gfc_build_indirect_ref (arg);
+  se->expr = build_fold_indirect_ref (arg);
   se->expr = convert (type, se->expr);
 }
 
@@ -2341,7 +2341,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
     }
   else
     {
-      se->expr = gfc_build_indirect_ref (ptr);
+      se->expr = build_fold_indirect_ref (ptr);
     }
 }
 

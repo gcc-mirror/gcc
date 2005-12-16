@@ -1164,7 +1164,7 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
 
   dummy_arg_flagged = POINTER_TYPE_P (TREE_TYPE(tmp));
 
-  itmp = (dummy_arg_flagged) ? gfc_build_indirect_ref (tmp) : tmp;
+  itmp = (dummy_arg_flagged) ? build_fold_indirect_ref (tmp) : tmp;
 
   /* If an array, set flag and use indirect ref. if built.  */
 
@@ -1196,7 +1196,7 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
   /* If scalar dummy, resolve indirect reference now.  */
 
   if (dummy_arg_flagged && !array_flagged)
-    tmp = gfc_build_indirect_ref (tmp);
+    tmp = build_fold_indirect_ref (tmp);
 
   gcc_assert (tmp && POINTER_TYPE_P (TREE_TYPE (tmp)));
 
@@ -1322,7 +1322,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 
       /* Provide the RECORD_TYPE to build component references.  */
 
-      tree expr = gfc_build_indirect_ref (addr_expr);
+      tree expr = build_fold_indirect_ref (addr_expr);
 
       for (cmp = ts->derived->components; cmp; cmp = cmp->next)
 	{
@@ -1692,7 +1692,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 	arg2 = se->string_length;
       else
 	{
-	  tmp = gfc_build_indirect_ref (addr_expr);
+	  tmp = build_fold_indirect_ref (addr_expr);
 	  gcc_assert (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE);
 	  arg2 = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tmp)));
 	}
@@ -1702,7 +1702,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
     case BT_DERIVED:
       /* Recurse into the elements of the derived type.  */
       expr = gfc_evaluate_now (addr_expr, &se->pre);
-      expr = gfc_build_indirect_ref (expr);
+      expr = build_fold_indirect_ref (expr);
 
       for (c = ts->derived->components; c; c = c->next)
 	{

@@ -282,22 +282,6 @@ gfc_build_addr_expr (tree type, tree t)
 }
 
 
-/* Build an INDIRECT_REF with its natural type.  */
-
-tree
-gfc_build_indirect_ref (tree t)
-{
-  tree type = TREE_TYPE (t);
-  gcc_assert (POINTER_TYPE_P (type));
-  type = TREE_TYPE (type);
-
-  if (TREE_CODE (t) == ADDR_EXPR)
-    return TREE_OPERAND (t, 0);
-  else
-    return build1 (INDIRECT_REF, type, t);
-}
-
-
 /* Build an ARRAY_REF with its natural type.  */
 
 tree
