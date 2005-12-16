@@ -9584,8 +9584,15 @@ resolve_expression_name (tree id, tree *orig)
 
 	      /* If we're processing an inner class and we're trying
 		 to access a field belonging to an outer class, build
-		 the access to the field.  */
-	      if (nested_member_access_p (current_class, decl))
+		 the access to the field.
+		 As usual, we have to treat initialized static final
+		 variables as a special case.  */
+              if (nested_member_access_p (current_class, decl)
+                  && ! (JDECL_P (decl) && CLASS_FINAL_VARIABLE_P (decl)
+                        && DECL_INITIAL (decl) != NULL_TREE
+			&& (JSTRING_TYPE_P (TREE_TYPE (decl))
+			    || JNUMERIC_TYPE_P (TREE_TYPE (decl)))
+			&& TREE_CONSTANT (DECL_INITIAL (decl))))
 		{
 		  if (!fs && CLASS_STATIC (TYPE_NAME (current_class)))
 		    {

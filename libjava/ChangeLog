@@ -1,3 +1,8 @@
+2005-12-15  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.compile/rh175833.java: New file.
+	* testsuite/libjava.compile/pr25429.java: New file.
+
 2005-12-15  Alan Modra  <amodra@bigpond.net.au>
 
 	* testsuite/lib/libjava.exp: Revert 2005-12-01.
