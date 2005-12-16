@@ -207,7 +207,10 @@ enum c_typespec_keyword {
   cts_char,
   cts_int,
   cts_float,
-  cts_double
+  cts_double,
+  cts_dfloat32,
+  cts_dfloat64,
+  cts_dfloat128
 };
 
 /* A sequence of declaration specifiers in C.  */

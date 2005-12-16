@@ -93,6 +93,9 @@ static const struct resword reswords[] =
 {
   { "_Bool",		RID_BOOL,	0 },
   { "_Complex",		RID_COMPLEX,	0 },
+  { "_Decimal32",       RID_DFLOAT32,  D_EXT },
+  { "_Decimal64",       RID_DFLOAT64,  D_EXT },
+  { "_Decimal128",      RID_DFLOAT128, D_EXT },
   { "__FUNCTION__",	RID_FUNCTION_NAME, 0 },
   { "__PRETTY_FUNCTION__", RID_PRETTY_FUNCTION_NAME, 0 },
   { "__alignof",	RID_ALIGNOF,	0 },
@@ -461,6 +464,9 @@ c_token_starts_typename (c_token *token)
 	case RID_FLOAT:
 	case RID_DOUBLE:
 	case RID_VOID:
+	case RID_DFLOAT32:
+	case RID_DFLOAT64:
+	case RID_DFLOAT128:
 	case RID_BOOL:
 	case RID_ENUM:
 	case RID_STRUCT:
@@ -532,6 +538,9 @@ c_token_starts_declspecs (c_token *token)
 	case RID_FLOAT:
 	case RID_DOUBLE:
 	case RID_VOID:
+	case RID_DFLOAT32:
+	case RID_DFLOAT64:
+	case RID_DFLOAT128:
 	case RID_BOOL:
 	case RID_ENUM:
 	case RID_STRUCT:
@@ -1396,6 +1405,9 @@ c_parser_asm_definition (c_parser *parser)
 
    type-specifier:
      typeof-specifier
+     _Decimal32
+     _Decimal64
+     _Decimal128
 
    Objective-C:
 
@@ -1494,6 +1506,9 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_FLOAT:
 	case RID_DOUBLE:
 	case RID_VOID:
+	case RID_DFLOAT32:
+	case RID_DFLOAT64:
+	case RID_DFLOAT128:
 	case RID_BOOL:
 	  if (!typespec_ok)
 	    goto out;
@@ -2714,6 +2729,9 @@ c_parser_attributes (c_parser *parser)
 		case RID_FLOAT:
 		case RID_DOUBLE:
 		case RID_VOID:
+		case RID_DFLOAT32:
+		case RID_DFLOAT64:
+		case RID_DFLOAT128:
 		case RID_BOOL:
 		  ok = true;
 		  break;

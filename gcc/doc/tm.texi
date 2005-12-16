@@ -1421,6 +1421,11 @@ precedence for that field, but the alignment of the rest of the structure
 may affect its placement.
 @end deftypefn
 
+@deftypefn {Target Hook} {bool} TARGET_DECIMAL_FLOAT_SUPPORTED_P (void)
+Returns true if the target supports decimal floating point.
+The default version of this hook always returns false.
+@end deftypefn
+
 @deftypefn {Target Hook} {const char *} TARGET_MANGLE_FUNDAMENTAL_TYPE (tree @var{type})
 If your target defines any fundamental types, define this hook to
 return the appropriate encoding for these types as part of a C++
