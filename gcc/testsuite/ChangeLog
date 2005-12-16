@@ -1,3 +1,29 @@
+2005-12-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c (base_types):
+	Change C++ style comments to C style comments.
+	Remove aligned types from the array.
+	Keep Enums disabled.
+	(complex_types): Remove aligned types from the array.
+	Comment out "_Complex long double".
+	(attrib_types): Remove.
+	(complex_attrib_types): Remove.
+	(attrib_array_types): Remove.
+	(complex_attrib_array_types): Remove.
+	(aligned_bitfld_types): Remove.
+	(n_aligned_bitfld_types): Remove.
+	(FEATURE_ALIGNEDPACKED): Delete.
+	(ALL_FEATURES): Remove FEATURE_ALIGNEDPACKED.
+	(singles): Remove support for adding attributes.
+	(choose_type): Remove support for attributed types.
+	(generate_fields): Remove support for attributed bit-fields.
+	Remove support for adding attributes.
+	(generate_random_tests): Remove support for adding attributes.
+	(features): Add back "[0] :0" and "complex vector [0]".
+	(main): Remove support for attributed bit-fields.
+	Uncomment the calling of generate_random_tests for the rests of
+	the tests.
+
 2005-12-16  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/combine/pr25224.c: New.
