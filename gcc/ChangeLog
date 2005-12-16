@@ -1,3 +1,8 @@
+2005-12-16  Alan Modra  <amodra@bigpond.net.au>
+
+	* reload.c (find_reloads): Fix comment typo.
+	* recog.h (recog_memoized): Correct comment.
+
 2005-12-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* basic-block.h, config/i386/winnt.c, config/pa/pa.c,
