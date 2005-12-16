@@ -1,4 +1,4 @@
-2005-11-23  Mark Mitchell  <mark@codesourcery.com>
+2005-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* update_web_docs_svn: Set @srcdir in gcc-vers.texi. 
 	

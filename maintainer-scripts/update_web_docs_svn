@@ -140,6 +140,7 @@ fi
    else
       echo "@clear DEVELOPMENT"
    fi
+   echo "@set srcdir $WORKDIR/gcc/gcc"
 ) > $includedir/gcc-vers.texi
 
 # Now convert the relevant files from texi to HTML, PDF and PostScript.
