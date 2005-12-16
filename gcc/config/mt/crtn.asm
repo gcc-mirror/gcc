@@ -1,4 +1,4 @@
-# crtn.asm for ms1
+# crtn.asm for mt
 
 #   Copyright (C) 2005 Free Software Foundation, Inc.
 # 

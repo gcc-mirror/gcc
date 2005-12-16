@@ -1,5 +1,76 @@
 2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
-	
+
+	Second part of MS1->MT renaming
+	* config/mt/mt.md (doloop_end): Call mt_add_loop.
+	(movqi, movhi): Call mt_set_memflags.
+	(*movdf_internal): Call mt_split_words. 
+	(reload_inqi, reload_outqi, reload_inhi, reload_outhi): Call
+	mt_set_memflags.
+	(cmpsi): Store to mt_compare_op[01].
+	(beq, bne, bge, bgt, ble, blt, bgeu, bgtu, bleu, bltu, bunge,
+	bungt, bunle, bunlt): Call mt_emit_cbranch.
+	(prologue): Call mt_expand_prologue.
+	(epilogu): Call mt_expend_epilogue.
+	(eh_return): Call mt_expand_eh_return.
+	(eh_epilogue): Call me_emit_eh_epilogue.
+	(conditional_trap): Store to mt_compare_op[01].
+	* config/mt/crti.asm: Adjust comment.
+	* config/mt/crtn.asm: Adjust comment.
+	* config/mt/mt.c (MT_INT_ARG_FIRST): Renamed.
+	(mt_compare_op0, mt_compare_op1): Renamed.
+	(current_frame_info, zero_frame_info): Adjust type.
+	(mt_ucmpsi3_libcall): Renamed.
+	(mt_flag_delayed_branch): Renamed.
+	(mt_struct_value_rtx, mt_return_addr_rtx): Renamed.
+	(mt_nops_required, mt_nop_reasons): Renamed.
+	(mt_asm_output_opcode, mt_get_attr_type, mt_final_prescan_insn,
+	mt_debug_stack, mt_print_operand_simple_address,
+	mt_print_operand_address, mt_print_operand): Renamed, adjusted.
+	(mt_init_cumulative_args, mt_function_arg_slotno, mt_function_arg,
+	mt_function_arg_advance, mt_arg_partial_bytes,
+	mt_pass_by_reference, mt_function_arg_boundary,
+	mt_reg_ok_for_base_p, mt_legitimate_simple_address_p,
+	mt_legitimate_address_p): Renamed, adjusted.
+	(mt_cpu): Renamed.
+	(mt_init_machine_status, mt_override_options, mt_builtin_saveregs,
+	mt_va_start, mt_compute_frame_size, mt_emit_save_restore,
+	mt_emit_save_fp, mt_emit_save_regs, mt_interrupt_function_p, 
+	mt_expand_prologue, mt_epilogue_uses, mt_expand_epilogue,
+	mt_expand_eh_return, mt_emit_eh_prologue,
+	mt_handl_interrupt_attribute): Renamed, adjusted.
+	(mt_attribute_table): Renamed, adjusted.
+	(mt_initial_elimination_offset, mt_generate_compare,
+	mt_emit_cbranch, mt_set_memflags_1, mt_set_memflags,
+	mt_secondary_reload_class, mt_function_value, mt_split_words,
+	mt_pass_in_stack, mt_add_loop, mt_loop_nesting, mt_block_length,
+	mt_scan_loop, mt_reorg_loops): Renamed, adjusted.
+	(mt_labels): Renamed.
+	(mt_add_branches, mt_check_delay_slot, mt_reorg_hazard,
+	mt_machine_reorg): Renamed, adjusted.
+	(mt_attribute_table: Renamed.
+	(TARGET_ATTRIBUTE_TABLE, TARGET_STRUCT_VALUE_RTX,
+	TARGET_PASS_BY_REFERENCE, TARGET_MUST_PASS_IN_STACK,
+	TARGET_ARG_PARTIAL_BYTES, TARGET_MACHINE_DEPENDENT_REORG): Adjust.
+	* config/mt/mt.opt (march): Set mt_cpu_string.
+	* config/mt/mt.h (mt_ucmpsi3_libcall, mt_cpu): Renamed.
+	(TARGET_CPU_CPP_BUILTINS): Adjust.
+	(TARGET_MS1_64_001, TARGET_MS1_16_002, TARGET_MS1_16_003,
+	TARGET_MS2): Adjust.
+	(TARGET_VERSION, OVERRIDE_OPTIONS, SECONDARY_RELOAD_CLASS): Adjust.
+	(MT_MIN_INT): Renamed.
+	(RETURN_ADDR_RTX): Adjust.
+	(struct mt_frame_info): Renamed.
+	(current_frame_info): Adjust type.
+	(INITIAL_ELIMINATION_OFFSET): Adjust.
+	(MT_NUM_ARG_REGS): Renamed.
+	(REG_PARM_STACK_SPACE, FUNCTION_ARG, INIT_CUMULATVE_ARGS,
+	FUNCTION_ARG_ADVANCE, FUNCTION_ARG_BOUNDARY, FUNCTION_VALUE,
+	LIBCALL_VALUE, EPILOGUE_USES, EXPAND_BUILTIN_VA_START,
+	GO_IF_LEGITIMATE_ADDRESS, REG_OK_FOR_BASE_P, ASM_OUTPUT_OPCODE,
+	FINAL_REPSCAN_INSN, PRINT_OPERAND, PRINT_OPERAND_ADDRESS): Adjust.
+	(mt_compare_op0, mt_compare_op1): Renamed.
+	* config/mt/mt-protos.h: Rename prototypes.
+
 	* config/mt/mt.c (mt_override_options): Require lower case
 	architectures.  Revert accidental default to ms2.
 	* config/mt/mt.h (ASM_SPEC, LIBSPEC, STARTFILE_SPEC,

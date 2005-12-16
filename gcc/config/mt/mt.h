@@ -19,7 +19,7 @@
    Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301, USA.  */
 
-extern struct rtx_def * ms1_ucmpsi3_libcall;
+extern struct rtx_def * mt_ucmpsi3_libcall;
 
 enum processor_type
 {
@@ -35,7 +35,7 @@ enum epilogue_type
   NORMAL_EPILOGUE
 };
 
-extern enum processor_type ms1_cpu;
+extern enum processor_type mt_cpu;
 
 
 /* A C string constant that tells the GCC driver program options to pass to
@@ -79,19 +79,19 @@ march=ms2:exit-ms2.o%s; \
 #define TARGET_CPU_CPP_BUILTINS() 		\
   do						\
     {						\
-      builtin_define_std ("ms1");		\
-      builtin_assert ("machine=ms1");	\
+      builtin_define_std ("mt");		\
+      builtin_assert ("machine=mt");		\
     }						\
   while (0)
 
-#define TARGET_MS1_64_001 (ms1_cpu == PROCESSOR_MS1_64_001)
-#define TARGET_MS1_16_002 (ms1_cpu == PROCESSOR_MS1_16_002)
-#define TARGET_MS1_16_003 (ms1_cpu == PROCESSOR_MS1_16_003)
-#define TARGET_MS2 (ms1_cpu == PROCESSOR_MS2)
+#define TARGET_MS1_64_001 (mt_cpu == PROCESSOR_MS1_64_001)
+#define TARGET_MS1_16_002 (mt_cpu == PROCESSOR_MS1_16_002)
+#define TARGET_MS1_16_003 (mt_cpu == PROCESSOR_MS1_16_003)
+#define TARGET_MS2 (mt_cpu == PROCESSOR_MS2)
 
-#define TARGET_VERSION  fprintf (stderr, " (ms1)");
+#define TARGET_VERSION  fprintf (stderr, " (mt)");
 
-#define OVERRIDE_OPTIONS ms1_override_options ()
+#define OVERRIDE_OPTIONS mt_override_options ()
 
 #define CAN_DEBUG_WITHOUT_FP 1
 
@@ -328,7 +328,7 @@ enum reg_class
 #define PREFERRED_RELOAD_CLASS(X, CLASS) (CLASS)
 
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,X) \
-  ms1_secondary_reload_class((CLASS), (MODE), (X))
+  mt_secondary_reload_class((CLASS), (MODE), (X))
 
 /* A C expression for the maximum number of consecutive registers of
    class CLASS needed to hold a value of mode MODE.  */
@@ -387,8 +387,8 @@ enum reg_class
    (`G', `H') that specify particular ranges of `const_double' values.  */
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) 0
 
-/* Most negative value represent on ms1 */
-#define MS1_MIN_INT 0x80000000
+/* Most negative value represent on mt */
+#define MT_MIN_INT 0x80000000
 
 /* Basic Stack Layout.  */
 
@@ -439,7 +439,7 @@ enum save_direction
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 
 #define RETURN_ADDR_RTX(COUNT, FRAMEADDR) 				\
-    ms1_return_addr_rtx (COUNT)
+    mt_return_addr_rtx (COUNT)
 
 /* A C expression whose value is RTL representing the location of the incoming
    return address at the beginning of any function, before the prologue.  This
@@ -478,7 +478,7 @@ enum save_direction
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
 
-struct ms1_frame_info
+struct mt_frame_info
 {
   unsigned int total_size;      /* # Bytes that the entire frame takes up.  */
   unsigned int pretend_size;    /* # Bytes we push and pretend caller did.  */
@@ -493,7 +493,7 @@ struct ms1_frame_info
   int          initialized;     /* Nonzero if frame size already calculated.  */
 }; 
 
-extern struct ms1_frame_info current_frame_info;
+extern struct mt_frame_info current_frame_info;
 
 /* If defined, this macro specifies a table of register pairs used to eliminate
    unneeded registers that point into the stack frame.  */
@@ -516,7 +516,7 @@ extern struct ms1_frame_info current_frame_info;
    registers.  This macro must be defined if `ELIMINABLE_REGS' is
    defined.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
-  (OFFSET) = ms1_initial_elimination_offset (FROM, TO)
+  (OFFSET) = mt_initial_elimination_offset (FROM, TO)
 
 /* If defined, the maximum amount of space required for outgoing
    arguments will be computed and placed into the variable
@@ -528,11 +528,11 @@ extern struct ms1_frame_info current_frame_info;
 #define OUTGOING_REG_PARM_STACK_SPACE
 
 /* The number of register assigned to holding function arguments.  */
-#define MS1_NUM_ARG_REGS        4
+#define MT_NUM_ARG_REGS        4
 
 /* Define this if it is the responsibility of the caller to allocate
    the area reserved for arguments passed in registers.  */
-#define REG_PARM_STACK_SPACE(FNDECL) (MS1_NUM_ARG_REGS * UNITS_PER_WORD)
+#define REG_PARM_STACK_SPACE(FNDECL) (MT_NUM_ARG_REGS * UNITS_PER_WORD)
 
 /* Define this macro if `REG_PARM_STACK_SPACE' is defined, but the stack
    parameters don't skip the area specified by it.  */
@@ -545,18 +545,18 @@ extern struct ms1_frame_info current_frame_info;
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-   ms1_function_arg (& (CUM), (MODE), (TYPE), (NAMED), FALSE)
+   mt_function_arg (& (CUM), (MODE), (TYPE), (NAMED), FALSE)
 
 #define CUMULATIVE_ARGS int
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS)	\
-    ms1_init_cumulative_args (& (CUM), FNTYPE, LIBNAME, FNDECL, FALSE)
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
+    mt_init_cumulative_args (& (CUM), FNTYPE, LIBNAME, FNDECL, FALSE)
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-    ms1_function_arg_advance (&CUM, MODE, TYPE, NAMED)
+    mt_function_arg_advance (&CUM, MODE, TYPE, NAMED)
 
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
-    ms1_function_arg_boundary (MODE, TYPE)
+    mt_function_arg_boundary (MODE, TYPE)
 
 #define FUNCTION_ARG_REGNO_P(REGNO)					\
   ((REGNO) >= FIRST_ARG_REGNUM && ((REGNO) <= LAST_ARG_REGNUM))
@@ -564,10 +564,10 @@ extern struct ms1_frame_info current_frame_info;
 #define RETURN_VALUE_REGNUM	RETVAL_REGNUM
      
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-   ms1_function_value (VALTYPE, TYPE_MODE(VALTYPE), FUNC)
+   mt_function_value (VALTYPE, TYPE_MODE(VALTYPE), FUNC)
 
 #define LIBCALL_VALUE(MODE) \
-   ms1_function_value (NULL_TREE, MODE, NULL_TREE)
+   mt_function_value (NULL_TREE, MODE, NULL_TREE)
 
 #define FUNCTION_VALUE_REGNO_P(REGNO) ((REGNO) == RETURN_VALUE_REGNUM)
 
@@ -585,7 +585,7 @@ extern struct ms1_frame_info current_frame_info;
    adjust the stack pointer before a return from the function.  */
 #define EXIT_IGNORE_STACK 1
 
-#define EPILOGUE_USES(REGNO) ms1_epilogue_uses(REGNO)
+#define EPILOGUE_USES(REGNO) mt_epilogue_uses(REGNO)
 
 /* Define this macro if the function epilogue contains delay slots to which
    instructions from the rest of the function can be "moved".  */
@@ -598,7 +598,7 @@ extern struct ms1_frame_info current_frame_info;
 #define FUNCTION_PROFILER(FILE, LABELNO) gcc_unreachable ()
 
 #define EXPAND_BUILTIN_VA_START(VALIST, NEXTARG)		\
-  ms1_va_start (VALIST, NEXTARG)
+  mt_va_start (VALIST, NEXTARG)
 
 /* Trampolines are not implemented.  */
 #define TRAMPOLINE_SIZE 0
@@ -622,21 +622,21 @@ extern struct ms1_frame_info current_frame_info;
 #ifdef REG_OK_STRICT
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
 {						\
-  if (ms1_legitimate_address_p (MODE, X, 1))	\
+  if (mt_legitimate_address_p (MODE, X, 1))	\
     goto ADDR;					\
 }
 #else
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
 {						\
-  if (ms1_legitimate_address_p (MODE, X, 0))	\
+  if (mt_legitimate_address_p (MODE, X, 0))	\
     goto ADDR;					\
 }
 #endif
 
 #ifdef REG_OK_STRICT
-#define REG_OK_FOR_BASE_P(X) ms1_reg_ok_for_base_p (X, 1)
+#define REG_OK_FOR_BASE_P(X) mt_reg_ok_for_base_p (X, 1)
 #else
-#define REG_OK_FOR_BASE_P(X) ms1_reg_ok_for_base_p (X, 0)
+#define REG_OK_FOR_BASE_P(X) mt_reg_ok_for_base_p (X, 0)
 #endif
 
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
@@ -744,19 +744,19 @@ extern struct ms1_frame_info current_frame_info;
    desire, and increment the variable PTR to point at the end of the opcode so
    that it will not be output twice.  */
 #define ASM_OUTPUT_OPCODE(STREAM, PTR) \
-   (PTR) = ms1_asm_output_opcode (STREAM, PTR)
+   (PTR) = mt_asm_output_opcode (STREAM, PTR)
 
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) \
-  ms1_final_prescan_insn (INSN, OPVEC, NOPERANDS)
+  mt_final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
-#define PRINT_OPERAND(STREAM, X, CODE) ms1_print_operand (STREAM, X, CODE)
+#define PRINT_OPERAND(STREAM, X, CODE) mt_print_operand (STREAM, X, CODE)
 
 /* A C expression which evaluates to true if CODE is a valid punctuation
    character for use in the `PRINT_OPERAND' macro.  */
 /* #:  Print nop for delay slot.  */
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '#')
 
-#define PRINT_OPERAND_ADDRESS(STREAM, X) ms1_print_operand_address (STREAM, X)
+#define PRINT_OPERAND_ADDRESS(STREAM, X) mt_print_operand_address (STREAM, X)
 
 /* If defined, C string expressions to be used for the `%R', `%L', `%U', and
    `%I' options of `asm_fprintf' (see `final.c').  These are useful when a
@@ -859,6 +859,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */
 
-extern struct rtx_def * ms1_compare_op0;
-extern struct rtx_def * ms1_compare_op1;
+extern struct rtx_def * mt_compare_op0;
+extern struct rtx_def * mt_compare_op1;
 

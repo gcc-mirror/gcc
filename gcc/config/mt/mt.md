@@ -67,8 +67,8 @@
 
 ;; Delay Slots
 
-;; The ms1 does not allow branches in the delay slot.
-;; The ms1 does not allow back to back memory or io instruction.
+;; The mt does not allow branches in the delay slot.
+;; The mt does not allow back to back memory or io instruction.
 ;; The compiler does not know what the type of instruction is at
 ;; the destination of the branch.  Thus, only type that will be acceptable
 ;; (safe) is the arith type.
@@ -241,7 +241,7 @@
 	start_sequence ();
 	emit_insn (gen_storeqi (gen_lowpart (SImode, data), address,
 				scratch1, scratch2, scratch3));
-	ms1_set_memflags (operands[0]);
+	mt_set_memflags (operands[0]);
 	seq = get_insns ();
 	end_sequence ();
 	emit_insn (seq);
@@ -260,7 +260,7 @@
 
 	start_sequence ();
 	emit_insn (gen_loadqi (gen_lowpart (SImode, data), address, scratch1));
-	ms1_set_memflags (operands[1]);
+	mt_set_memflags (operands[1]);
 	seq = get_insns ();
 	end_sequence ();
 	emit_insn (seq);
@@ -280,7 +280,7 @@
 
 	start_sequence ();
 	emit_insn (gen_movsi (gen_lowpart (SImode, data), address));
-	ms1_set_memflags (operands[1]);
+	mt_set_memflags (operands[1]);
 	seq = get_insns ();
 	end_sequence ();
 	emit_insn (seq);
@@ -414,7 +414,7 @@
 	start_sequence ();
 	emit_insn (gen_storehi (gen_lowpart (SImode, data), address,
 			        scratch1, scratch2, scratch3));
-	ms1_set_memflags (operands[0]);
+	mt_set_memflags (operands[0]);
 	seq = get_insns ();
 	end_sequence ();
 	emit_insn (seq);
@@ -434,7 +434,7 @@
 	start_sequence ();
 	emit_insn (gen_loadhi (gen_lowpart (SImode, data), address,
 			       scratch1));
-	ms1_set_memflags (operands[1]);
+	mt_set_memflags (operands[1]);
 	seq = get_insns ();
 	end_sequence ();
 	emit_insn (seq);
@@ -453,7 +453,7 @@
 
 	start_sequence ();
 	emit_insn (gen_movsi (gen_lowpart (SImode, data), address));
-	ms1_set_memflags (operands[1]);
+	mt_set_memflags (operands[1]);
 	seq = get_insns ();
 	end_sequence ();
 	emit_insn (seq);
@@ -663,7 +663,7 @@
 
   "{
     /* figure out what precisely to put into operands 2, 3, 4, and 5 */
-    ms1_split_words (SImode, DFmode, operands);
+    mt_split_words (SImode, DFmode, operands);
   }"
 )
 
@@ -704,7 +704,7 @@
 
   start_sequence ();
   emit_insn (gen_loadqi (gen_lowpart (SImode, data), address, scratch1));
-  ms1_set_memflags (operands[1]);
+  mt_set_memflags (operands[1]);
   seq = get_insns ();
   end_sequence ();
   emit_insn (seq);
@@ -733,7 +733,7 @@
   start_sequence ();
   emit_insn (gen_storeqi (gen_lowpart (SImode, data), address, 
 			  scratch1, scratch2, scratch3));
-  ms1_set_memflags (operands[0]);
+  mt_set_memflags (operands[0]);
   seq = get_insns ();
   end_sequence ();
   emit_insn (seq);
@@ -771,7 +771,7 @@
   start_sequence ();
   emit_insn (gen_loadhi (gen_lowpart (SImode, data), address,
 		         scratch1));
-  ms1_set_memflags (operands[1]);
+  mt_set_memflags (operands[1]);
   seq = get_insns ();
   end_sequence ();
   emit_insn (seq);
@@ -800,7 +800,7 @@
   start_sequence ();
   emit_insn (gen_storehi (gen_lowpart (SImode, data), address,
 		          scratch1, scratch2, scratch3));
-  ms1_set_memflags (operands[0]);
+  mt_set_memflags (operands[0]);
   seq = get_insns ();
   end_sequence ();
   emit_insn (seq);
@@ -961,8 +961,8 @@
   ""
   "
 {
-  ms1_compare_op0 = operands[0];
-  ms1_compare_op1 = operands[1];
+  mt_compare_op0 = operands[0];
+  mt_compare_op1 = operands[1];
   DONE;
 }")
 
@@ -973,8 +973,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (EQ, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (EQ, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -982,8 +982,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (NE, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (NE, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -991,8 +991,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (GE, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (GE, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1000,8 +1000,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (GT, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (GT, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1009,8 +1009,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (LE, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (LE, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1018,8 +1018,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (LT, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (LT, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1027,8 +1027,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (GEU, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (GEU, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1036,8 +1036,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (GTU, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (GTU, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1045,8 +1045,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (LEU, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (LEU, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1054,8 +1054,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (LTU, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (LTU, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1063,8 +1063,8 @@
   [(use (match_operand 0 "" ""))]
   ""
   "
-{  ms1_emit_cbranch (GEU, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+{
+  mt_emit_cbranch (GEU, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1073,8 +1073,7 @@
   ""
   "
 {
-  ms1_emit_cbranch (GTU, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+  mt_emit_cbranch (GTU, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1083,8 +1082,7 @@
   ""
   "
 {
-  ms1_emit_cbranch (LEU, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+  mt_emit_cbranch (LEU, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1093,8 +1091,7 @@
   ""
   "
 {
-  ms1_emit_cbranch (LTU, operands[0],
-	ms1_compare_op0, ms1_compare_op1);
+  mt_emit_cbranch (LTU, operands[0], mt_compare_op0, mt_compare_op1);
   DONE;
 }")
 
@@ -1231,7 +1228,7 @@
   [(set_attr "length" "4")
    (set_attr "type" "branch")])
 
-;; No unsigned operators on Morpho ms1.  All the unsigned operations are
+;; No unsigned operators on Morpho mt.  All the unsigned operations are
 ;; converted to the signed operations above.
 
 
@@ -1239,7 +1236,7 @@
 
 ;; "seq", "sne", "slt", "sle", "sgt", "sge", "sltu", "sleu",
 ;; "sgtu", and "sgeu" don't exist as regular instruction on the
-;; ms1, so these are not defined
+;; mt, so these are not defined
 
 ;; Call and branch instructions
 
@@ -1349,7 +1346,7 @@
   ""
   "
 {
-  ms1_expand_prologue ();
+  mt_expand_prologue ();
   DONE;
 }")
 
@@ -1358,7 +1355,7 @@
   ""
   "
 {
-  ms1_expand_epilogue (NORMAL_EPILOGUE);
+  mt_expand_epilogue (NORMAL_EPILOGUE);
   DONE;
 }")
 
@@ -1368,7 +1365,7 @@
   ""
   "
 {
-  ms1_expand_eh_return (operands);
+  mt_expand_eh_return (operands);
   DONE;
 }")
 
@@ -1379,7 +1376,7 @@
   "#"
   "reload_completed"
   [(const_int 1)]
-  "ms1_emit_eh_epilogue (operands); DONE;"
+  "mt_emit_eh_epilogue (operands); DONE;"
 )
 
 ;; No operation, needed in case the user uses -g but not -O.
@@ -1426,8 +1423,8 @@
   ""
   "
 {
-  operands[2] = ms1_compare_op0;
-  operands[3] = ms1_compare_op1;
+  operands[2] = mt_compare_op0;
+  operands[3] = mt_compare_op1;
 }")
 
 ;; Templates to control handling of interrupts

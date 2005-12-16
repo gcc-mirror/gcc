@@ -55,7 +55,7 @@
 #define LINK_MASK	 	 (1 << (GPR_LINK))
 
 /* First GPR.  */
-#define MS1_INT_ARG_FIRST 1
+#define MT_INT_ARG_FIRST 1
 
 /* Given a SIZE in bytes, advance to the next word.  */
 #define ROUND_ADVANCE(SIZE) (((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
@@ -72,23 +72,23 @@ struct machine_function GTY(())
 
 /* Define the information needed to generate branch and scc insns.
    This is stored from the compare operation.  */
-struct rtx_def * ms1_compare_op0;
-struct rtx_def * ms1_compare_op1;
+struct rtx_def * mt_compare_op0;
+struct rtx_def * mt_compare_op1;
 
 /* Current frame information calculated by compute_frame_size.  */
-struct ms1_frame_info current_frame_info;
+struct mt_frame_info current_frame_info;
 
 /* Zero structure to initialize current_frame_info.  */
-struct ms1_frame_info zero_frame_info;
+struct mt_frame_info zero_frame_info;
 
-/* ms1 doesn't have unsigned compares need a library call for this.  */
-struct rtx_def * ms1_ucmpsi3_libcall;
+/* mt doesn't have unsigned compares need a library call for this.  */
+struct rtx_def * mt_ucmpsi3_libcall;
 
-static int ms1_flag_delayed_branch;
+static int mt_flag_delayed_branch;
 
 
 static rtx
-ms1_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED,
+mt_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED,
 			 int incoming ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (Pmode, RETVAL_REGNUM);
@@ -96,7 +96,7 @@ ms1_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED,
 
 /* Implement RETURN_ADDR_RTX.  */
 rtx
-ms1_return_addr_rtx (int count)
+mt_return_addr_rtx (int count)
 {
   if (count != 0)
     return NULL_RTX;
@@ -107,21 +107,21 @@ ms1_return_addr_rtx (int count)
 /* The following variable value indicates the number of nops required
    between the current instruction and the next instruction to avoid
    any pipeline hazards.  */
-static int ms1_nops_required = 0;
-static const char * ms1_nop_reasons = "";
+static int mt_nops_required = 0;
+static const char * mt_nop_reasons = "";
 
 /* Implement ASM_OUTPUT_OPCODE.  */
 const char *
-ms1_asm_output_opcode (FILE *f ATTRIBUTE_UNUSED, const char *ptr)
+mt_asm_output_opcode (FILE *f ATTRIBUTE_UNUSED, const char *ptr)
 {
-  if (ms1_nops_required)
+  if (mt_nops_required)
     fprintf (f, ";# need %d nops because of %s\n\t",
-	     ms1_nops_required, ms1_nop_reasons);
+	     mt_nops_required, mt_nop_reasons);
   
-  while (ms1_nops_required)
+  while (mt_nops_required)
     {
       fprintf (f, "or r0, r0, r0\n\t");
-      -- ms1_nops_required;
+      -- mt_nops_required;
     }
   
   return ptr;
@@ -130,7 +130,7 @@ ms1_asm_output_opcode (FILE *f ATTRIBUTE_UNUSED, const char *ptr)
 /* Given an insn, return whether it's a memory operation or a branch
    operation, otherwise return TYPE_ARITH.  */
 static enum attr_type
-ms1_get_attr_type (rtx complete_insn)
+mt_get_attr_type (rtx complete_insn)
 {
   rtx insn = PATTERN (complete_insn);
 
@@ -204,19 +204,19 @@ insn_true_dependent_p (rtx x, rtx y)
 
 /* The following determines the number of nops that need to be
    inserted between the previous instructions and current instruction
-   to avoid pipeline hazards on the ms1 processor.  Remember that
+   to avoid pipeline hazards on the mt processor.  Remember that
    the function is not called for asm insns.  */
 
 void
-ms1_final_prescan_insn (rtx   insn,
+mt_final_prescan_insn (rtx   insn,
 			rtx * opvec ATTRIBUTE_UNUSED,
 			int   noperands ATTRIBUTE_UNUSED)
 {
   rtx prev_i;
   enum attr_type prev_attr;
 
-  ms1_nops_required = 0;
-  ms1_nop_reasons = "";
+  mt_nops_required = 0;
+  mt_nop_reasons = "";
 
   /* ms2 constraints are dealt with in reorg.  */
   if (TARGET_MS2)
@@ -243,13 +243,13 @@ ms1_final_prescan_insn (rtx   insn,
   if (prev_i == NULL || ! INSN_P (prev_i))
     return;
 
-  prev_attr = ms1_get_attr_type (prev_i);
+  prev_attr = mt_get_attr_type (prev_i);
   
   /* Delayed branch slots already taken care of by delay branch scheduling.  */
   if (prev_attr == TYPE_BRANCH)
     return;
 
-  switch (ms1_get_attr_type (insn))
+  switch (mt_get_attr_type (insn))
     {
     case TYPE_LOAD:
     case TYPE_STORE:
@@ -257,8 +257,8 @@ ms1_final_prescan_insn (rtx   insn,
       if  ((prev_attr == TYPE_LOAD || prev_attr == TYPE_STORE)
 	   && TARGET_MS1_64_001)
 	{
-	  ms1_nops_required = 1;
-	  ms1_nop_reasons = "consecutive mem ops";
+	  mt_nops_required = 1;
+	  mt_nop_reasons = "consecutive mem ops";
 	}
       /* Drop through.  */
 
@@ -269,8 +269,8 @@ ms1_final_prescan_insn (rtx   insn,
       if (prev_attr == TYPE_LOAD
 	  && insn_true_dependent_p (prev_i, insn))
 	{
-	  ms1_nops_required = 1;
-	  ms1_nop_reasons = "load->arith dependency delay";
+	  mt_nops_required = 1;
+	  mt_nop_reasons = "load->arith dependency delay";
 	}
       break;
 
@@ -281,31 +281,31 @@ ms1_final_prescan_insn (rtx   insn,
 	    {
 	      /* One cycle of delay between arith
 		 instructions and branch dependent on arith.  */
-	      ms1_nops_required = 1;
-	      ms1_nop_reasons = "arith->branch dependency delay";
+	      mt_nops_required = 1;
+	      mt_nop_reasons = "arith->branch dependency delay";
 	    }
 	  else if (prev_attr == TYPE_LOAD)
 	    {
 	      /* Two cycles of delay are required
 		 between load and dependent branch.  */
 	      if (TARGET_MS1_64_001)
-		ms1_nops_required = 2;
+		mt_nops_required = 2;
 	      else
-		ms1_nops_required = 1;
-	      ms1_nop_reasons = "load->branch dependency delay";
+		mt_nops_required = 1;
+	      mt_nop_reasons = "load->branch dependency delay";
 	    }
 	}
       break;
 
     default:
-      fatal_insn ("ms1_final_prescan_insn, invalid insn #1", insn);
+      fatal_insn ("mt_final_prescan_insn, invalid insn #1", insn);
       break;
     }
 }
 
 /* Print debugging information for a frame.  */
 static void
-ms1_debug_stack (struct ms1_frame_info * info)
+mt_debug_stack (struct mt_frame_info * info)
 {
   int regno;
 
@@ -345,7 +345,7 @@ ms1_debug_stack (struct ms1_frame_info * info)
 /* Print a memory address as an operand to reference that memory location.  */
 
 static void
-ms1_print_operand_simple_address (FILE * file, rtx addr)
+mt_print_operand_simple_address (FILE * file, rtx addr)
 {
   if (!addr)
     error ("PRINT_OPERAND_ADDRESS, null pointer");
@@ -400,19 +400,19 @@ ms1_print_operand_simple_address (FILE * file, rtx addr)
 
 /* Implement PRINT_OPERAND_ADDRESS.  */
 void
-ms1_print_operand_address (FILE * file, rtx addr)
+mt_print_operand_address (FILE * file, rtx addr)
 {
   if (GET_CODE (addr) == AND
       && GET_CODE (XEXP (addr, 1)) == CONST_INT
       && INTVAL (XEXP (addr, 1)) == -3)
-    ms1_print_operand_simple_address (file, XEXP (addr, 0));
+    mt_print_operand_simple_address (file, XEXP (addr, 0));
   else
-    ms1_print_operand_simple_address (file, addr);
+    mt_print_operand_simple_address (file, addr);
 }
 
 /* Implement PRINT_OPERAND.  */
 void
-ms1_print_operand (FILE * file, rtx x, int code)
+mt_print_operand (FILE * file, rtx x, int code)
 {
   switch (code)
     {
@@ -450,7 +450,7 @@ ms1_print_operand (FILE * file, rtx x, int code)
       break;
 
     default:
-      /* output_operand_lossage ("ms1_print_operand: unknown code"); */
+      /* output_operand_lossage ("mt_print_operand: unknown code"); */
       fprintf (file, "unknown code");
       return;
     }
@@ -467,7 +467,7 @@ ms1_print_operand (FILE * file, rtx x, int code)
       break;
 
     case MEM:
-      ms1_print_operand_address(file, XEXP (x,0));
+      mt_print_operand_address(file, XEXP (x,0));
       break;
 
     case LABEL_REF:
@@ -485,14 +485,14 @@ ms1_print_operand (FILE * file, rtx x, int code)
 
 /* Implement INIT_CUMULATIVE_ARGS.  */
 void
-ms1_init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype, rtx libname,
-			     tree fndecl ATTRIBUTE_UNUSED, int incoming)
+mt_init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype, rtx libname,
+			 tree fndecl ATTRIBUTE_UNUSED, int incoming)
 {
   *cum = 0;
 
   if (TARGET_DEBUG_ARG)
     {
-      fprintf (stderr, "\nms1_init_cumulative_args:");
+      fprintf (stderr, "\nmt_init_cumulative_args:");
 
       if (incoming)
 	fputs (" incoming", stderr);
@@ -529,20 +529,20 @@ ms1_init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype, rtx libname,
    *PREGNO records the register number to use if scalar type.  */
 
 static int
-ms1_function_arg_slotno (const CUMULATIVE_ARGS * cum,
-			    enum machine_mode mode,
-			    tree type,
-			    int named ATTRIBUTE_UNUSED,
-			    int incoming_p ATTRIBUTE_UNUSED,
-			    int * pregno)
+mt_function_arg_slotno (const CUMULATIVE_ARGS * cum,
+			enum machine_mode mode,
+			tree type,
+			int named ATTRIBUTE_UNUSED,
+			int incoming_p ATTRIBUTE_UNUSED,
+			int * pregno)
 {
-  int regbase = MS1_INT_ARG_FIRST;
+  int regbase = MT_INT_ARG_FIRST;
   int slotno  = * cum;
 
   if (mode == VOIDmode || targetm.calls.must_pass_in_stack (mode, type))
     return -1;
 
-  if (slotno >= MS1_NUM_ARG_REGS)
+  if (slotno >= MT_NUM_ARG_REGS)
     return -1;
 
   * pregno = regbase + slotno;
@@ -552,17 +552,16 @@ ms1_function_arg_slotno (const CUMULATIVE_ARGS * cum,
 
 /* Implement FUNCTION_ARG.  */
 rtx
-ms1_function_arg (const CUMULATIVE_ARGS * cum,
-		  enum machine_mode mode,
-		  tree type,
-		  int named,
-		  int incoming_p)
+mt_function_arg (const CUMULATIVE_ARGS * cum,
+		 enum machine_mode mode,
+		 tree type,
+		 int named,
+		 int incoming_p)
 {
   int slotno, regno;
   rtx reg;
 
-  slotno = ms1_function_arg_slotno (cum, mode, type, named, incoming_p, 
-				       & regno);
+  slotno = mt_function_arg_slotno (cum, mode, type, named, incoming_p, &regno);
 
   if (slotno == -1)
     reg = NULL_RTX;
@@ -574,15 +573,15 @@ ms1_function_arg (const CUMULATIVE_ARGS * cum,
 
 /* Implement FUNCTION_ARG_ADVANCE.  */
 void
-ms1_function_arg_advance (CUMULATIVE_ARGS * cum,
-			  enum machine_mode mode,
-			  tree type ATTRIBUTE_UNUSED,
-			  int named)
+mt_function_arg_advance (CUMULATIVE_ARGS * cum,
+			 enum machine_mode mode,
+			 tree type ATTRIBUTE_UNUSED,
+			 int named)
 {
   int slotno, regno;
 
   /* We pass 0 for incoming_p here, it doesn't matter.  */
-  slotno = ms1_function_arg_slotno (cum, mode, type, named, 0, &regno);
+  slotno = mt_function_arg_slotno (cum, mode, type, named, 0, &regno);
 
   * cum += (mode != BLKmode
 	    ? ROUND_ADVANCE (GET_MODE_SIZE (mode))
@@ -590,7 +589,7 @@ ms1_function_arg_advance (CUMULATIVE_ARGS * cum,
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
-	     "ms1_function_arg_advance: words = %2d, mode = %4s, named = %d, size = %3d\n",
+	     "mt_function_arg_advance: words = %2d, mode = %4s, named = %d, size = %3d\n",
 	     *cum, GET_MODE_NAME (mode), named, 
 	     (*cum) * UNITS_PER_WORD);
 }
@@ -602,7 +601,7 @@ ms1_function_arg_advance (CUMULATIVE_ARGS * cum,
    that are passed entirely in registers or that are entirely pushed
    on the stack.  */
 static int
-ms1_arg_partial_bytes (CUMULATIVE_ARGS * pcum,
+mt_arg_partial_bytes (CUMULATIVE_ARGS * pcum,
 		       enum machine_mode mode,
 		       tree type,
 		       bool named ATTRIBUTE_UNUSED)
@@ -616,11 +615,11 @@ ms1_arg_partial_bytes (CUMULATIVE_ARGS * pcum,
   else
     words = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
-  if (! targetm.calls.pass_by_reference (& cum, mode, type, named)
-      && cum < MS1_NUM_ARG_REGS
-      && (cum + words) > MS1_NUM_ARG_REGS)
+  if (! targetm.calls.pass_by_reference (&cum, mode, type, named)
+      && cum < MT_NUM_ARG_REGS
+      && (cum + words) > MT_NUM_ARG_REGS)
     {
-      int bytes = (MS1_NUM_ARG_REGS - cum) * UNITS_PER_WORD; 
+      int bytes = (MT_NUM_ARG_REGS - cum) * UNITS_PER_WORD; 
 
       if (TARGET_DEBUG)
 	fprintf (stderr, "function_arg_partial_nregs = %d\n", bytes);
@@ -633,7 +632,7 @@ ms1_arg_partial_bytes (CUMULATIVE_ARGS * pcum,
 
 /* Implement TARGET_PASS_BY_REFERENCE hook.  */
 static bool
-ms1_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
+mt_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
 		       enum machine_mode mode ATTRIBUTE_UNUSED,
 		       tree type,
 		       bool named ATTRIBUTE_UNUSED)
@@ -643,7 +642,7 @@ ms1_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
 
 /* Implement FUNCTION_ARG_BOUNDARY.  */
 int
-ms1_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
+mt_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
 			   tree type ATTRIBUTE_UNUSED)
 {
   return BITS_PER_WORD;
@@ -651,19 +650,18 @@ ms1_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Implement REG_OK_FOR_BASE_P.  */
 int
-ms1_reg_ok_for_base_p (rtx x, int strict)
+mt_reg_ok_for_base_p (rtx x, int strict)
 {
   if (strict)
     return  (((unsigned) REGNO (x)) < FIRST_PSEUDO_REGISTER);
   return 1;
 }
 
-/* Helper function of ms1_legitimate_address_p.  Return true if XINSN
+/* Helper function of mt_legitimate_address_p.  Return true if XINSN
    is a simple address, otherwise false.  */
 static bool
-ms1_legitimate_simple_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
-				 rtx xinsn,
-				 int strict)
+mt_legitimate_simple_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+				rtx xinsn, int strict)
 {
   if (TARGET_DEBUG)						
     {									
@@ -672,12 +670,12 @@ ms1_legitimate_simple_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
       debug_rtx (xinsn);
     }
 
-  if (GET_CODE (xinsn) == REG && ms1_reg_ok_for_base_p (xinsn, strict))
+  if (GET_CODE (xinsn) == REG && mt_reg_ok_for_base_p (xinsn, strict))
     return true;
 
   if (GET_CODE (xinsn) == PLUS
       && GET_CODE (XEXP (xinsn, 0)) == REG
-      && ms1_reg_ok_for_base_p (XEXP (xinsn, 0), strict)
+      && mt_reg_ok_for_base_p (XEXP (xinsn, 0), strict)
       && GET_CODE (XEXP (xinsn, 1)) == CONST_INT
       && SMALL_INT (XEXP (xinsn, 1)))
     return true;
@@ -687,20 +685,18 @@ ms1_legitimate_simple_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 
 /* Helper function of GO_IF_LEGITIMATE_ADDRESS.  Return non-zero if
-   XINSN is a legitimate address on MS1.  */
+   XINSN is a legitimate address on MT.  */
 int
-ms1_legitimate_address_p (enum machine_mode mode,
-			  rtx xinsn,
-			  int strict)
+mt_legitimate_address_p (enum machine_mode mode, rtx xinsn, int strict)
 {
-  if (ms1_legitimate_simple_address_p (mode, xinsn, strict))
+  if (mt_legitimate_simple_address_p (mode, xinsn, strict))
     return 1;
 
   if ((mode) == SImode
       && GET_CODE (xinsn) == AND
       && GET_CODE (XEXP (xinsn, 1)) == CONST_INT
       && INTVAL (XEXP (xinsn, 1)) == -3)
-    return ms1_legitimate_simple_address_p (mode, XEXP (xinsn, 0), strict);
+    return mt_legitimate_simple_address_p (mode, XEXP (xinsn, 0), strict);
   else
     return 0;
 }
@@ -780,10 +776,10 @@ single_const_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 /* True if the current function is an interrupt handler
    (either via #pragma or an attribute specification).  */
 int interrupt_handler;
-enum processor_type ms1_cpu;
+enum processor_type mt_cpu;
 
 static struct machine_function *
-ms1_init_machine_status (void)
+mt_init_machine_status (void)
 {
   struct machine_function *f;
 
@@ -794,9 +790,9 @@ ms1_init_machine_status (void)
 
 /* Implement OVERRIDE_OPTIONS.  */
 void
-ms1_override_options (void)
+mt_override_options (void)
 {
-  if (ms1_cpu_string != NULL)
+  if (mt_cpu_string != NULL)
     {
       if (!strcmp (mt_cpu_string, "ms1-64-001"))
 	mt_cpu = PROCESSOR_MS1_64_001;
@@ -807,10 +803,10 @@ ms1_override_options (void)
       else if (!strcmp (mt_cpu_string, "ms2"))
 	mt_cpu = PROCESSOR_MS2;
       else
-	error ("bad value (%s) for -march= switch", ms1_cpu_string);
+	error ("bad value (%s) for -march= switch", mt_cpu_string);
     }
   else
-    ms1_cpu = PROCESSOR_MS1_64_001;
+    mt_cpu = PROCESSOR_MS1_64_001;
 
   if (flag_exceptions)
     {
@@ -819,10 +815,10 @@ ms1_override_options (void)
     }
 
   /* We do delayed branch filling in machine dependent reorg */
-  ms1_flag_delayed_branch = flag_delayed_branch;
+  mt_flag_delayed_branch = flag_delayed_branch;
   flag_delayed_branch = 0;
 
-  init_machine_status = ms1_init_machine_status;
+  init_machine_status = mt_init_machine_status;
 }
 
 /* Do what is necessary for `va_start'.  We look at the current function
@@ -830,19 +826,20 @@ ms1_override_options (void)
    first unnamed parameter.  */
 
 static rtx
-ms1_builtin_saveregs (void)
+mt_builtin_saveregs (void)
 {
   int first_reg = 0;
   rtx address;
   int regno;
 
-  for (regno = first_reg; regno < MS1_NUM_ARG_REGS; regno ++)
-    emit_move_insn (gen_rtx_MEM (word_mode,
-				 gen_rtx_PLUS (Pmode,
-					       gen_rtx_REG (SImode, ARG_POINTER_REGNUM),
-					       GEN_INT (UNITS_PER_WORD * regno))),
-		    gen_rtx_REG (word_mode,
-				 MS1_INT_ARG_FIRST + regno));
+  for (regno = first_reg; regno < MT_NUM_ARG_REGS; regno ++)
+    emit_move_insn
+      (gen_rtx_MEM (word_mode,
+		    gen_rtx_PLUS (Pmode,
+				  gen_rtx_REG (SImode, ARG_POINTER_REGNUM),
+				  GEN_INT (UNITS_PER_WORD * regno))),
+       gen_rtx_REG (word_mode,
+		    MT_INT_ARG_FIRST + regno));
 
   address = gen_rtx_PLUS (Pmode,
 			  gen_rtx_REG (SImode, ARG_POINTER_REGNUM),
@@ -853,9 +850,9 @@ ms1_builtin_saveregs (void)
 /* Implement `va_start'.  */
 
 void
-ms1_va_start (tree valist, rtx nextarg)
+mt_va_start (tree valist, rtx nextarg)
 {
-  ms1_builtin_saveregs ();
+  mt_builtin_saveregs ();
   std_expand_builtin_va_start (valist, nextarg);
 }
 
@@ -864,7 +861,7 @@ ms1_va_start (tree valist, rtx nextarg)
    needed for local variables.  */
 
 unsigned int
-ms1_compute_frame_size (int size)
+mt_compute_frame_size (int size)
 {
   int           regno;
   unsigned int  total_size;
@@ -926,10 +923,8 @@ ms1_compute_frame_size (int size)
    STACK_OFFSET is the offset from the SP where the save will happen.
    This function sets the REG_FRAME_RELATED_EXPR note accordingly.  */
 static void
-ms1_emit_save_restore (enum save_direction direction,
-		       rtx reg,
-		       rtx mem,
-		       int stack_offset)
+mt_emit_save_restore (enum save_direction direction,
+		      rtx reg, rtx mem, int stack_offset)
 {
   if (direction == FROM_PROCESSOR_TO_MEM)
     {
@@ -938,15 +933,15 @@ ms1_emit_save_restore (enum save_direction direction,
       insn = emit_move_insn (mem, reg);
       RTX_FRAME_RELATED_P (insn) = 1;
       REG_NOTES (insn)
-	= gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			     gen_rtx_SET (VOIDmode,
-					  gen_rtx_MEM
-					  (SImode,
-					   gen_rtx_PLUS (SImode,
-							 stack_pointer_rtx,
-							 GEN_INT (stack_offset))),
-					  reg),
-			     REG_NOTES (insn));
+	= gen_rtx_EXPR_LIST
+	(REG_FRAME_RELATED_EXPR,
+	 gen_rtx_SET (VOIDmode,
+		      gen_rtx_MEM (SImode,
+				   gen_rtx_PLUS (SImode,
+						 stack_pointer_rtx,
+						 GEN_INT (stack_offset))),
+		      reg),
+	 REG_NOTES (insn));
     }
   else
     emit_move_insn (reg, mem);
@@ -957,8 +952,8 @@ ms1_emit_save_restore (enum save_direction direction,
    frame pointer in epilogue.  */
 
 static void
-ms1_emit_save_fp (enum save_direction direction,
-		  struct ms1_frame_info info)
+mt_emit_save_fp (enum save_direction direction,
+		  struct mt_frame_info info)
 {
   rtx base_reg;
   int reg_mask = info.reg_mask  & ~(FP_MASK | LINK_MASK);
@@ -984,10 +979,11 @@ ms1_emit_save_fp (enum save_direction direction,
     {
       offset -= UNITS_PER_WORD;
       stack_offset -= UNITS_PER_WORD;
-      ms1_emit_save_restore (direction, gen_rtx_REG (SImode, GPR_FP),
-	     gen_rtx_MEM (SImode, 
-			  gen_rtx_PLUS (SImode, base_reg, GEN_INT (offset))),
-	     stack_offset);
+      mt_emit_save_restore
+	(direction, gen_rtx_REG (SImode, GPR_FP),
+	 gen_rtx_MEM (SImode,
+		      gen_rtx_PLUS (SImode, base_reg, GEN_INT (offset))),
+	 stack_offset);
     }
 }
 
@@ -995,8 +991,8 @@ ms1_emit_save_fp (enum save_direction direction,
    in epilogue.  */
 
 static void
-ms1_emit_save_regs (enum save_direction direction,
-		    struct ms1_frame_info info)
+mt_emit_save_regs (enum save_direction direction,
+		    struct mt_frame_info info)
 {
   rtx base_reg;
   int regno;
@@ -1022,7 +1018,7 @@ ms1_emit_save_regs (enum save_direction direction,
   if (info.save_fp)
     {
       /* This just records the space for it, the actual move generated in
-	 ms1_emit_save_fp ().  */
+	 mt_emit_save_fp ().  */
       offset -= UNITS_PER_WORD;
       stack_offset -= UNITS_PER_WORD;
     }
@@ -1031,10 +1027,11 @@ ms1_emit_save_regs (enum save_direction direction,
     {
       offset -= UNITS_PER_WORD;
       stack_offset -= UNITS_PER_WORD;
-      ms1_emit_save_restore (direction, gen_rtx_REG (SImode, GPR_LINK), 
-		gen_rtx_MEM (SImode,
-			     gen_rtx_PLUS (SImode, base_reg, GEN_INT (offset))),
-		stack_offset);
+      mt_emit_save_restore
+	(direction, gen_rtx_REG (SImode, GPR_LINK), 
+	 gen_rtx_MEM (SImode,
+		      gen_rtx_PLUS (SImode, base_reg, GEN_INT (offset))),
+	 stack_offset);
     }
 
   /* Save any needed call-saved regs.  */
@@ -1044,17 +1041,18 @@ ms1_emit_save_regs (enum save_direction direction,
 	{
 	  offset -= UNITS_PER_WORD;
 	  stack_offset -= UNITS_PER_WORD;
-	  ms1_emit_save_restore (direction, gen_rtx_REG (SImode, regno),
-				    gen_rtx_MEM (SImode,
-						 gen_rtx_PLUS (SImode, base_reg, GEN_INT (offset))),
-				    stack_offset);
+	  mt_emit_save_restore
+	    (direction, gen_rtx_REG (SImode, regno),
+	     gen_rtx_MEM (SImode,
+			  gen_rtx_PLUS (SImode, base_reg, GEN_INT (offset))),
+	     stack_offset);
 	}
     }
 }
 
 /* Return true if FUNC is a function with the 'interrupt' attribute.  */
 static bool
-ms1_interrupt_function_p (tree func)
+mt_interrupt_function_p (tree func)
 {
   tree a;
 
@@ -1067,22 +1065,22 @@ ms1_interrupt_function_p (tree func)
 
 /* Generate prologue code.  */
 void
-ms1_expand_prologue (void)
+mt_expand_prologue (void)
 {
   rtx size_rtx, insn;
   unsigned int frame_size;
 
-  if (ms1_interrupt_function_p (current_function_decl))
+  if (mt_interrupt_function_p (current_function_decl))
     {
       interrupt_handler = 1;
       if (cfun->machine)
 	cfun->machine->interrupt_handler = 1;
     }
 
-  ms1_compute_frame_size (get_frame_size ());
+  mt_compute_frame_size (get_frame_size ());
 
   if (TARGET_DEBUG_STACK)
-    ms1_debug_stack (&current_frame_info);
+    mt_debug_stack (&current_frame_info);
 
   /* Compute size of stack adjustment.  */
   frame_size = current_frame_info.total_size;
@@ -1121,13 +1119,14 @@ ms1_expand_prologue (void)
 			     REG_NOTES (insn));
     }
 
-  /* Set R9 to point to old sp if required for access to register save area.  */
+  /* Set R9 to point to old sp if required for access to register save
+     area.  */
   if ( current_frame_info.reg_size != 0
        && !CONST_OK_FOR_LETTER_P (frame_size, 'O'))
       emit_insn (gen_addsi3 (size_rtx, size_rtx, stack_pointer_rtx));
   
   /* Save the frame pointer.  */
-  ms1_emit_save_fp (FROM_PROCESSOR_TO_MEM, current_frame_info);
+  mt_emit_save_fp (FROM_PROCESSOR_TO_MEM, current_frame_info);
 
   /* Now put the frame pointer into the frame pointer register.  */
   if (frame_pointer_needed)
@@ -1137,7 +1136,7 @@ ms1_expand_prologue (void)
     }
 
   /* Save the registers.  */
-  ms1_emit_save_regs (FROM_PROCESSOR_TO_MEM, current_frame_info);
+  mt_emit_save_regs (FROM_PROCESSOR_TO_MEM, current_frame_info);
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  */
@@ -1147,7 +1146,7 @@ ms1_expand_prologue (void)
 
 /* Implement EPILOGUE_USES.  */
 int
-ms1_epilogue_uses (int regno)
+mt_epilogue_uses (int regno)
 {
   if (cfun->machine && cfun->machine->interrupt_handler && reload_completed)
     return 1;
@@ -1158,15 +1157,15 @@ ms1_epilogue_uses (int regno)
    function epilogue, or EH_EPILOGUE when generating an EH
    epilogue.  */
 void
-ms1_expand_epilogue (enum epilogue_type eh_mode)
+mt_expand_epilogue (enum epilogue_type eh_mode)
 {
   rtx size_rtx, insn;
   unsigned frame_size;
 
-  ms1_compute_frame_size (get_frame_size ());
+  mt_compute_frame_size (get_frame_size ());
 
   if (TARGET_DEBUG_STACK)
-    ms1_debug_stack (& current_frame_info);
+    mt_debug_stack (& current_frame_info);
 
   /* Compute size of stack adjustment.  */
   frame_size = current_frame_info.total_size;
@@ -1194,8 +1193,8 @@ ms1_expand_epilogue (enum epilogue_type eh_mode)
     insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
 
   /* Restore the registers.  */
-  ms1_emit_save_fp (FROM_MEM_TO_PROCESSOR, current_frame_info);
-  ms1_emit_save_regs (FROM_MEM_TO_PROCESSOR, current_frame_info);
+  mt_emit_save_fp (FROM_MEM_TO_PROCESSOR, current_frame_info);
+  mt_emit_save_regs (FROM_MEM_TO_PROCESSOR, current_frame_info);
 
   /* Make stack adjustment and use scratch register if constant too
      large to fit as immediate.  */
@@ -1248,7 +1247,7 @@ ms1_expand_epilogue (enum epilogue_type eh_mode)
 
 /* Generate code for the "eh_return" pattern.  */
 void
-ms1_expand_eh_return (rtx * operands)
+mt_expand_eh_return (rtx * operands)
 {
   if (GET_CODE (operands[0]) != REG
       || REGNO (operands[0]) != EH_RETURN_STACKADJ_REGNO)
@@ -1264,15 +1263,15 @@ ms1_expand_eh_return (rtx * operands)
 
 /* Generate code for the "eh_epilogue" pattern.  */
 void
-ms1_emit_eh_epilogue (rtx * operands ATTRIBUTE_UNUSED)
+mt_emit_eh_epilogue (rtx * operands ATTRIBUTE_UNUSED)
 {
   cfun->machine->eh_stack_adjust = EH_RETURN_STACKADJ_RTX; /* operands[0]; */
-  ms1_expand_epilogue (EH_EPILOGUE);
+  mt_expand_epilogue (EH_EPILOGUE);
 }
 
 /* Handle an "interrupt" attribute.  */
 static tree
-ms1_handle_interrupt_attribute (tree * node,
+mt_handle_interrupt_attribute (tree * node,
 			  tree   name,
 			  tree   args  ATTRIBUTE_UNUSED,
 			  int    flags ATTRIBUTE_UNUSED,
@@ -1290,18 +1289,18 @@ ms1_handle_interrupt_attribute (tree * node,
 }
 
 /* Table of machine attributes.  */
-const struct attribute_spec ms1_attribute_table[] =
+const struct attribute_spec mt_attribute_table[] =
 {
   /* name,        min, max, decl?, type?, func?, handler  */
-  { "interrupt",  0,   0,   false, false, false, ms1_handle_interrupt_attribute },
+  { "interrupt",  0,   0,   false, false, false, mt_handle_interrupt_attribute },
   { NULL,         0,   0,   false, false, false, NULL }
 };
 
 /* Implement INITIAL_ELIMINATION_OFFSET.  */
 int
-ms1_initial_elimination_offset (int from, int to)
+mt_initial_elimination_offset (int from, int to)
 {
-  ms1_compute_frame_size (get_frame_size ());
+  mt_compute_frame_size (get_frame_size ());
 
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return 0;
@@ -1320,7 +1319,7 @@ ms1_initial_elimination_offset (int from, int to)
    represents the result of the compare.  */
 
 static rtx
-ms1_generate_compare (enum rtx_code code, rtx op0, rtx op1)
+mt_generate_compare (enum rtx_code code, rtx op0, rtx op1)
 {
   rtx scratch0, scratch1, const_scratch;
 
@@ -1333,7 +1332,7 @@ ms1_generate_compare (enum rtx_code code, rtx op0, rtx op1)
       /* Need to adjust ranges for faking unsigned compares.  */
       scratch0 = gen_reg_rtx (SImode);
       scratch1 = gen_reg_rtx (SImode);
-      const_scratch = force_reg (SImode, GEN_INT(MS1_MIN_INT));
+      const_scratch = force_reg (SImode, GEN_INT(MT_MIN_INT));
       emit_insn (gen_addsi3 (scratch0, const_scratch, op0));
       emit_insn (gen_addsi3 (scratch1, const_scratch, op1));
       break;
@@ -1366,7 +1365,7 @@ ms1_generate_compare (enum rtx_code code, rtx op0, rtx op1)
 /* Emit a branch of kind CODE to location LOC.  */
 
 void
-ms1_emit_cbranch (enum rtx_code code, rtx loc, rtx op0, rtx op1)
+mt_emit_cbranch (enum rtx_code code, rtx loc, rtx op0, rtx op1)
 {
   rtx condition_rtx, loc_ref;
 
@@ -1376,7 +1375,7 @@ ms1_emit_cbranch (enum rtx_code code, rtx loc, rtx op0, rtx op1)
   if (! reg_or_0_operand (op1, SImode))
     op1 = copy_to_mode_reg (SImode, op1);
 
-  condition_rtx = ms1_generate_compare (code, op0, op1);
+  condition_rtx = mt_generate_compare (code, op0, op1);
   loc_ref = gen_rtx_LABEL_REF (VOIDmode, loc);
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
 			       gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
@@ -1387,7 +1386,7 @@ ms1_emit_cbranch (enum rtx_code code, rtx loc, rtx op0, rtx op1)
    found in part of X.  */
 
 static void
-ms1_set_memflags_1 (rtx x, int in_struct_p, int volatile_p)
+mt_set_memflags_1 (rtx x, int in_struct_p, int volatile_p)
 {
   int i;
 
@@ -1396,16 +1395,16 @@ ms1_set_memflags_1 (rtx x, int in_struct_p, int volatile_p)
     case SEQUENCE:
     case PARALLEL:
       for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-	ms1_set_memflags_1 (XVECEXP (x, 0, i), in_struct_p, volatile_p);
+	mt_set_memflags_1 (XVECEXP (x, 0, i), in_struct_p, volatile_p);
       break;
 
     case INSN:
-      ms1_set_memflags_1 (PATTERN (x), in_struct_p, volatile_p);
+      mt_set_memflags_1 (PATTERN (x), in_struct_p, volatile_p);
       break;
 
     case SET:
-      ms1_set_memflags_1 (SET_DEST (x), in_struct_p, volatile_p);
-      ms1_set_memflags_1 (SET_SRC (x), in_struct_p, volatile_p);
+      mt_set_memflags_1 (SET_DEST (x), in_struct_p, volatile_p);
+      mt_set_memflags_1 (SET_SRC (x), in_struct_p, volatile_p);
       break;
 
     case MEM:
@@ -1429,7 +1428,7 @@ ms1_set_memflags_1 (rtx x, int in_struct_p, int volatile_p)
    If REF is not a MEM, don't do anything.  */
 
 void
-ms1_set_memflags (rtx ref)
+mt_set_memflags (rtx ref)
 {
   rtx insn;
   int in_struct_p, volatile_p;
@@ -1440,19 +1439,19 @@ ms1_set_memflags (rtx ref)
   in_struct_p = MEM_IN_STRUCT_P (ref);
   volatile_p = MEM_VOLATILE_P (ref);
 
-  /* This is only called from ms1.md, after having had something 
+  /* This is only called from mt.md, after having had something 
      generated from one of the insn patterns.  So if everything is
      zero, the pattern is already up-to-date.  */
   if (! in_struct_p && ! volatile_p)
     return;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    ms1_set_memflags_1 (insn, in_struct_p, volatile_p);
+    mt_set_memflags_1 (insn, in_struct_p, volatile_p);
 }
 
 /* Implement SECONDARY_RELOAD_CLASS.  */
 enum reg_class
-ms1_secondary_reload_class (enum reg_class class ATTRIBUTE_UNUSED,
+mt_secondary_reload_class (enum reg_class class ATTRIBUTE_UNUSED,
 			    enum machine_mode mode,
 			    rtx x)
 {
@@ -1473,7 +1472,7 @@ ms1_secondary_reload_class (enum reg_class class ATTRIBUTE_UNUSED,
 /* Handle FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE, and LIBCALL_VALUE
    macros.  */
 rtx
-ms1_function_value (tree valtype, enum machine_mode mode, tree func_decl ATTRIBUTE_UNUSED)
+mt_function_value (tree valtype, enum machine_mode mode, tree func_decl ATTRIBUTE_UNUSED)
 {
   if ((mode) == DImode || (mode) == DFmode)
     return gen_rtx_MEM (mode, gen_rtx_REG (mode, RETURN_VALUE_REGNUM));
@@ -1491,7 +1490,7 @@ ms1_function_value (tree valtype, enum machine_mode mode, tree func_decl ATTRIBU
    and OPERANDS[5].  */
 
 void
-ms1_split_words (enum machine_mode nmode,
+mt_split_words (enum machine_mode nmode,
 		 enum machine_mode omode,
 		 rtx *operands)
 {
@@ -1640,7 +1639,7 @@ ms1_split_words (enum machine_mode nmode,
 
 /* Implement TARGET_MUST_PASS_IN_STACK hook.  */
 static bool
-ms1_pass_in_stack (enum machine_mode mode ATTRIBUTE_UNUSED, tree type)
+mt_pass_in_stack (enum machine_mode mode ATTRIBUTE_UNUSED, tree type)
 {
   return (((type) != 0
 	   && (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
@@ -1664,13 +1663,13 @@ typedef struct label_info
 } label_info;
 
 /* Chain of labels found in current function, used during reorg.  */
-static label_info *ms1_labels;
+static label_info *mt_labels;
 
 /* If *X is a label, add INSN to the list of branches for that
    label.  */
 
 static int
-ms1_add_branches (rtx *x, void *insn)
+mt_add_branches (rtx *x, void *insn)
 {
   if (GET_CODE (*x) == LABEL_REF)
     {
@@ -1678,15 +1677,15 @@ ms1_add_branches (rtx *x, void *insn)
       rtx label = XEXP (*x, 0);
       label_info *info;
 
-      for (info = ms1_labels; info; info = info->next)
+      for (info = mt_labels; info; info = info->next)
 	if (info->label == label)
 	  break;
 
       if (!info)
 	{
 	  info = xmalloc (sizeof (*info));
-	  info->next = ms1_labels;
-	  ms1_labels = info;
+	  info->next = mt_labels;
+	  mt_labels = info;
 	  
 	  info->label = label;
 	  info->branches = NULL;
@@ -1706,7 +1705,7 @@ ms1_add_branches (rtx *x, void *insn)
    In that case, the caller must insert nops at the branch target.  */
 
 static rtx
-ms1_check_delay_slot (rtx branch, rtx insn)
+mt_check_delay_slot (rtx branch, rtx insn)
 {
   rtx slot;
   rtx tmp;
@@ -1760,7 +1759,7 @@ ms1_check_delay_slot (rtx branch, rtx insn)
    delay slot.  */
 
 static void
-ms1_reorg_hazard (void)
+mt_reorg_hazard (void)
 {
   rtx insn, next;
 
@@ -1789,7 +1788,7 @@ ms1_reorg_hazard (void)
 	     jmp = NEXT_INSN (jmp))
 	  continue;
 
-      for_each_rtx (&PATTERN (jmp), ms1_add_branches, insn);
+      for_each_rtx (&PATTERN (jmp), mt_add_branches, insn);
     }
 
   /* Now scan for dependencies.  */
@@ -1861,7 +1860,7 @@ ms1_reorg_hazard (void)
 		  label_info *label;
 		  branch_info *branch;
 
-		  for (label = ms1_labels;
+		  for (label = mt_labels;
 		       label;
 		       label = label->next)
 		    if (label->label == prev)
@@ -1870,7 +1869,7 @@ ms1_reorg_hazard (void)
 			     branch;
 			     branch = branch->next)
 			  {
-			    tmp = ms1_check_delay_slot (branch->insn, jmp);
+			    tmp = mt_check_delay_slot (branch->insn, jmp);
 
 			    if (tmp == branch->insn)
 			      {
@@ -1891,7 +1890,7 @@ ms1_reorg_hazard (void)
 	      if (GET_CODE (PATTERN (prev)) == SEQUENCE)
 		{
 		  /* Look at the delay slot.  */
-		  tmp = ms1_check_delay_slot (prev, jmp);
+		  tmp = mt_check_delay_slot (prev, jmp);
 		  if (tmp == prev)
 		    nops = count;
 		  break;
@@ -1937,12 +1936,12 @@ ms1_reorg_hazard (void)
     }
 
   /* Free the data structures.  */
-  while (ms1_labels)
+  while (mt_labels)
     {
-      label_info *label = ms1_labels;
+      label_info *label = mt_labels;
       branch_info *branch, *next;
       
-      ms1_labels = label->next;
+      mt_labels = label->next;
       for (branch = label->branches; branch; branch = next)
 	{
 	  next = branch->next;
@@ -1956,35 +1955,32 @@ ms1_reorg_hazard (void)
    scheduling hazards.  */
 
 static void
-ms1_machine_reorg (void)
+mt_machine_reorg (void)
 {
-  if (cfun->machine->has_loops && TARGET_MS2)
-    ms1_reorg_loops (dump_file);
-
-  if (ms1_flag_delayed_branch)
+  if (mt_flag_delayed_branch)
     dbr_schedule (get_insns (), dump_file);
   
   if (TARGET_MS2)
-    ms1_reorg_hazard ();
+    mt_reorg_hazard ();
 }
 
 /* Initialize the GCC target structure.  */
-const struct attribute_spec ms1_attribute_table[];
+const struct attribute_spec mt_attribute_table[];
 
 #undef  TARGET_ATTRIBUTE_TABLE
-#define TARGET_ATTRIBUTE_TABLE 		ms1_attribute_table
+#define TARGET_ATTRIBUTE_TABLE 		mt_attribute_table
 #undef  TARGET_STRUCT_VALUE_RTX
-#define TARGET_STRUCT_VALUE_RTX		ms1_struct_value_rtx
+#define TARGET_STRUCT_VALUE_RTX		mt_struct_value_rtx
 #undef  TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES	hook_bool_tree_true
 #undef  TARGET_PASS_BY_REFERENCE
-#define TARGET_PASS_BY_REFERENCE	ms1_pass_by_reference
+#define TARGET_PASS_BY_REFERENCE	mt_pass_by_reference
 #undef  TARGET_MUST_PASS_IN_STACK
-#define TARGET_MUST_PASS_IN_STACK       ms1_pass_in_stack
+#define TARGET_MUST_PASS_IN_STACK       mt_pass_in_stack
 #undef  TARGET_ARG_PARTIAL_BYTES
-#define TARGET_ARG_PARTIAL_BYTES	ms1_arg_partial_bytes
+#define TARGET_ARG_PARTIAL_BYTES	mt_arg_partial_bytes
 #undef  TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG  ms1_machine_reorg
+#define TARGET_MACHINE_DEPENDENT_REORG  mt_machine_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
