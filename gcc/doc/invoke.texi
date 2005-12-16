@@ -613,8 +613,8 @@ Objective-C and Objective-C++ Dialects}.
 -mreturn-pointer-on-d0 @gol
 -mno-crt0  -mrelax}
 
-@emph{MS1 Options}
-@gccoptlist{-mno-crt0 -mmul -mbacc -msim @gol
+@emph{MT Options}
+@gccoptlist{-mno-crt0 -mbacc -msim @gol
 -march=@var{cpu-type} }
 
 @emph{PDP-11 Options}
@@ -7128,7 +7128,7 @@ platform.
 * MIPS Options::
 * MMIX Options::
 * MN10300 Options::
-* MS1 Options::
+* MT Options::
 * PDP-11 Options::
 * PowerPC Options::
 * RS/6000 and PowerPC Options::
@@ -10668,11 +10668,11 @@ has an effect when used on the command line for the final link step.
 This option makes symbolic debugging impossible.
 @end table
 
-@node MS1 Options
-@subsection MS1 Options
-@cindex MS1 options
+@node MT Options
+@subsection MT Options
+@cindex MT options
 
-These @option{-m} options are defined for Morpho MS1 architectures:
+These @option{-m} options are defined for Morpho MT architectures:
 
 @table @gcctabopt
 
@@ -10680,18 +10680,10 @@ These @option{-m} options are defined for Morpho MS1 architectures:
 @opindex march
 Generate code that will run on @var{cpu-type}, which is the name of a system
 representing a certain processor type.  Possible values for
-@var{cpu-type} are @samp{MS1-64-001}, @samp{MS1-16-002}, and
-@samp{MS1-16-003}.
+@var{cpu-type} are @samp{ms1-64-001}, @samp{ms1-16-002},
+@samp{ms1-16-003} and @samp{ms2}.
 
-When this option is not used, the default is @option{-march=MS1-16-003}.
-
-@item -mmul
-@opindex mmul
-Generate multiply instructions.
-
-@item -mno-mul
-@opindex mno-mul
-Do not generate multiply instructions.
+When this option is not used, the default is @option{-march=ms1-16-002}.
 
 @item -mbacc
 @opindex mbacc

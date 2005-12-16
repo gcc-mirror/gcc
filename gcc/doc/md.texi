@@ -1858,7 +1858,7 @@ Constant suitable as a 32-bit mask operand
 System V Release 4 small data area reference
 @end table
 
-@item MorphoRISC family---@file{ms1.h}
+@item MorphoTech family---@file{mt.h}
 @table @code
 @item I
 Constant for an arithmetic insn (16-bit signed integer).

@@ -1,4 +1,26 @@
 2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+	
+	* config/mt/mt.c (mt_override_options): Require lower case
+	architectures.  Revert accidental default to ms2.
+	* config/mt/mt.h (ASM_SPEC, LIBSPEC, STARTFILE_SPEC,
+	ENDFILE_SPEC): Require lower case architectures.  Revert default
+	to ms2.
+
+	* doc/invoke.texi (MT Options): Rename and update.
+	* doc/md.texi (MorphoTech family): Rename and update.
+
+	* config/mt/t-mt (crti.o, crtn.o): Add multilib options.
+	(EXTRA_MULTILIB_PARTS): Define.
+
+	* config/mt/t-mt (MULTILIB_OPTIONS): Add ms2
+	(MULTILIB_DIRNAMES): Add ms2.  Prefix ms1 dirs with 'ms1'.
+	* config/mt/mt.c (ms1_final_prescan): Use TARGET_MS2,
+	TARGET_MS1_64_001 appropriately.
+	(ms1_machine_reorg): Use TARGET_MS2.
+
+	2005-12-09  Aldy Hernandez  <aldyh@redhat.com>
+	* config/mt/t-mt (MULTILIB_OPTIONS): Define.
+	(MULTILIB_DIRNAMES): Define.
 
 	* config.gcc (ms1): Replace with ...
 	(mt): ... this.

@@ -48,27 +48,19 @@ extern enum processor_type ms1_cpu;
 #define LIB_SPEC "--start-group -lc -lsim --end-group \
 %{msim: ; \
 march=ms1-64-001:-T 64-001.ld%s; \
-march=MS1-64-001:-T 64-001.ld%s; \
 march=ms1-16-002:-T 16-002.ld%s; \
-march=MS1-16-002:-T 16-002.ld%s; \
 march=ms1-16-003:-T 16-003.ld%s; \
-march=MS1-16-003:-T 16-003.ld%s; \
 march=ms2:-T ms2.ld%s; \
-march=MS2:-T ms2.ld%s; \
-	 : -T 16-002.ld}"
+	 :-T 16-002.ld}"
 
 /* A string to pass at the very beginning of the command given to the
    linker.  */
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "%{msim:crt0.o%s;\
 march=ms1-64-001:%{!mno-crt0:crt0-64-001.o%s} startup-64-001.o%s; \
-march=MS1-64-001:%{!mno-crt0:crt0-64-001.o%s} startup-64-001.o%s; \
 march=ms1-16-002:%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s; \
-march=MS1-16-002:%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s; \
 march=ms1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s; \
-march=MS1-16-003:%{!mno-crt0:crt0-16-003.o%s} startup-16-003.o%s; \
 march=ms2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s; \
-march=MS2:%{!mno-crt0:crt0-ms2.o%s} startup-ms2.o%s; \
 	 :%{!mno-crt0:crt0-16-002.o%s} startup-16-002.o%s} \
 crti.o%s crtbegin.o%s"
 
@@ -76,13 +68,9 @@ crti.o%s crtbegin.o%s"
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "%{msim:exit.o%s; \
 march=ms1-64-001:exit-64-001.o%s; \
-march=MS1-64-001:exit-64-001.o%s; \
 march=ms1-16-002:exit-16-002.o%s; \
-march=MS1-16-002:exit-16-002.o%s; \
 march=ms1-16-003:exit-16-003.o%s; \
-march=MS1-16-003:exit-16-003.o%s; \
 march=ms2:exit-ms2.o%s; \
-march=MS2:exit-ms2.o%s; \
 	 :exit-16-002.o%s} \
  crtend.o%s crtn.o%s"
 
