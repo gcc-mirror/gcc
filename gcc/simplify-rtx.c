@@ -1972,7 +1972,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
           && (INTVAL (XEXP (SUBREG_REG (opleft), 1)) + INTVAL (XEXP (opright, 1))
               == GET_MODE_BITSIZE (mode)))
         return gen_rtx_ROTATE (mode, XEXP (opright, 0),
-                               XEXP (SUBREG_REG (opright), 1));
+                               XEXP (SUBREG_REG (opleft), 1));
 
       /* If we have (ior (and (X C1) C2)), simplify this by making
 	 C1 as small as possible if C1 actually changes.  */
