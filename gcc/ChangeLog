@@ -1,5 +1,10 @@
 2005-12-16  Steven Bosscher  <stevenb@suse.de>
 
+	* loop-invariant.c (move_loop_invariants): Add missing hunk from
+	the previous patch, to nullify df.
+
+2005-12-16  Steven Bosscher  <stevenb@suse.de>
+
 	* reorg.c (mostly_true_jump): Clean up code depending on
 	LABEL_OUTSIDE_LOOP_P and loop notes.  Remove code doing
 	poor man's branch prediction, instead rely on REG_BR_PROB

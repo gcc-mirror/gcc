@@ -939,6 +939,7 @@ move_loop_invariants (struct loops *loops)
       free_loop_data (loops->parray[i]);
 
   df_finish (df);
+  df = NULL;
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
