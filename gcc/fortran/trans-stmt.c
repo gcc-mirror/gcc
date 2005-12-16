@@ -317,7 +317,7 @@ gfc_trans_pause (gfc_code * code)
       fndecl = gfor_fndecl_pause_string;
     }
 
-  tmp = gfc_build_function_call (fndecl, args);
+  tmp = build_function_call_expr (fndecl, args);
   gfc_add_expr_to_block (&se.pre, tmp);
 
   gfc_add_block_to_block (&se.pre, &se.post);
@@ -357,7 +357,7 @@ gfc_trans_stop (gfc_code * code)
       fndecl = gfor_fndecl_stop_string;
     }
 
-  tmp = gfc_build_function_call (fndecl, args);
+  tmp = build_function_call_expr (fndecl, args);
   gfc_add_expr_to_block (&se.pre, tmp);
 
   gfc_add_block_to_block (&se.pre, &se.post);
@@ -1283,7 +1283,7 @@ gfc_trans_character_select (gfc_code *code)
 
   gfc_add_block_to_block (&block, &se.pre);
 
-  tmp = gfc_build_function_call (gfor_fndecl_select_string, args);
+  tmp = build_function_call_expr (gfor_fndecl_select_string, args);
   tmp = build1 (GOTO_EXPR, void_type_node, tmp);
   gfc_add_expr_to_block (&block, tmp);
 
@@ -1534,7 +1534,7 @@ gfc_do_allocate (tree bytesize, tree size, tree * pdata, stmtblock_t * pblock,
 	tmp = gfor_fndecl_internal_malloc64;
       else
 	gcc_unreachable ();
-      tmp = gfc_build_function_call (tmp, args);
+      tmp = build_function_call_expr (tmp, args);
       tmp = convert (TREE_TYPE (tmpvar), tmp);
       gfc_add_modify_expr (pblock, tmpvar, tmp);
     }
@@ -2019,7 +2019,7 @@ gfc_trans_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2, tree wheremask,
     {
       /* Free the temporary.  */
       tmp = gfc_chainon_list (NULL_TREE, ptemp1);
-      tmp = gfc_build_function_call (gfor_fndecl_internal_free, tmp);
+      tmp = build_function_call_expr (gfor_fndecl_internal_free, tmp);
       gfc_add_expr_to_block (block, tmp);
     }
 }
@@ -2177,7 +2177,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
   if (ptemp1)
     {
       tmp = gfc_chainon_list (NULL_TREE, ptemp1);
-      tmp = gfc_build_function_call (gfor_fndecl_internal_free, tmp);
+      tmp = build_function_call_expr (gfor_fndecl_internal_free, tmp);
       gfc_add_expr_to_block (block, tmp);
     }
 }
@@ -2468,7 +2468,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 
               /* Free the temporary.  */
               args = gfc_chainon_list (NULL_TREE, temp->temporary);
-              tmp = gfc_build_function_call (gfor_fndecl_internal_free, args);
+              tmp = build_function_call_expr (gfor_fndecl_internal_free, args);
               gfc_add_expr_to_block (&block, tmp);
 
               p = temp;
@@ -2524,7 +2524,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
     {
       /* Free the temporary for the mask.  */
       tmp = gfc_chainon_list (NULL_TREE, pmask);
-      tmp = gfc_build_function_call (gfor_fndecl_internal_free, tmp);
+      tmp = build_function_call_expr (gfor_fndecl_internal_free, tmp);
       gfc_add_expr_to_block (&block, tmp);
     }
   if (maskindex)
@@ -3068,7 +3068,7 @@ gfc_trans_where (gfc_code * code)
   while (temp)
     {
       args = gfc_chainon_list (NULL_TREE, temp->temporary);
-      tmp = gfc_build_function_call (gfor_fndecl_internal_free, args);
+      tmp = build_function_call_expr (gfor_fndecl_internal_free, args);
       gfc_add_expr_to_block (&block, tmp);
 
       p = temp;
@@ -3185,7 +3185,7 @@ gfc_trans_allocate (gfc_code * code)
 	  parm = gfc_chainon_list (NULL_TREE, val);
 	  parm = gfc_chainon_list (parm, tmp);
 	  parm = gfc_chainon_list (parm, pstat);
-	  tmp = gfc_build_function_call (gfor_fndecl_allocate, parm);
+	  tmp = build_function_call_expr (gfor_fndecl_allocate, parm);
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
 	  if (code->expr)
@@ -3291,7 +3291,7 @@ gfc_trans_deallocate (gfc_code * code)
 
 	  parm = gfc_chainon_list (NULL_TREE, var);
 	  parm = gfc_chainon_list (parm, pstat);
-	  tmp = gfc_build_function_call (gfor_fndecl_deallocate, parm);
+	  tmp = build_function_call_expr (gfor_fndecl_deallocate, parm);
 	}
 
       gfc_add_expr_to_block (&se.pre, tmp);

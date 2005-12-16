@@ -298,24 +298,6 @@ gfc_build_array_ref (tree base, tree offset)
 }
 
 
-/* Given a function declaration FNDECL and an argument list ARGLIST,
-   build a CALL_EXPR.  */
-
-tree
-gfc_build_function_call (tree fndecl, tree arglist)
-{
-  tree fn;
-  tree call;
-
-  fn = gfc_build_addr_expr (NULL, fndecl);
-  call = build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fndecl)), 
-		 fn, arglist, NULL);
-  TREE_SIDE_EFFECTS (call) = 1;
-
-  return call;
-}
-
-
 /* Generate a runtime error if COND is true.  */
 
 void
@@ -347,7 +329,7 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
   tmp = build_int_cst (NULL_TREE, input_line);
   args = gfc_chainon_list (args, tmp);
 
-  tmp = gfc_build_function_call (gfor_fndecl_runtime_error, args);
+  tmp = build_function_call_expr (gfor_fndecl_runtime_error, args);
   gfc_add_expr_to_block (&block, tmp);
 
   body = gfc_finish_block (&block);
@@ -361,7 +343,7 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
       /* Tell the compiler that this isn't likely.  */
       tmp = gfc_chainon_list (NULL_TREE, cond);
       tmp = gfc_chainon_list (tmp, integer_zero_node);
-      cond = gfc_build_function_call (built_in_decls[BUILT_IN_EXPECT], tmp);
+      cond = build_function_call_expr (built_in_decls[BUILT_IN_EXPECT], tmp);
 
       tmp = build3_v (COND_EXPR, cond, body, build_empty_stmt ());
       gfc_add_expr_to_block (pblock, tmp);
