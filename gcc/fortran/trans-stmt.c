@@ -1471,7 +1471,7 @@ gfc_trans_nested_forall_loop (forall_info * nested_forall_info, tree body,
                 {
                   /* If a mask was specified make the assignment conditional.  */
                   if (pmask)
-		    tmp = gfc_build_indirect_ref (mask);
+		    tmp = build_fold_indirect_ref (mask);
                   else
                     tmp = mask;
                   tmp = gfc_build_array_ref (tmp, maskindex);
@@ -1890,7 +1890,7 @@ allocate_temp_for_forall_nest_1 (tree type, tree size, stmtblock_t * block,
   temp1 = gfc_do_allocate (bytesize, size, ptemp1, block, type);
 
   if (*ptemp1)
-    tmp = gfc_build_indirect_ref (temp1);
+    tmp = build_fold_indirect_ref (temp1);
   else
     tmp = temp1;
 
@@ -2404,7 +2404,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       se.expr = convert (smallest_boolean_type_node, se.expr);
 
       if (pmask)
-	tmp = gfc_build_indirect_ref (mask);
+	tmp = build_fold_indirect_ref (mask);
       else
 	tmp = mask;
       tmp = gfc_build_array_ref (tmp, maskindex);

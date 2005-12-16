@@ -368,7 +368,7 @@ gfc_finish_cray_pointee (tree decl, gfc_symbol *sym)
 
   /* Parameters need to be dereferenced.  */
   if (sym->cp_pointer->attr.dummy) 
-    ptr_decl = gfc_build_indirect_ref (ptr_decl);
+    ptr_decl = build_fold_indirect_ref (ptr_decl);
 
   /* Check to see if we're dealing with a variable-sized array.  */
   if (sym->attr.dimension
@@ -382,7 +382,7 @@ gfc_finish_cray_pointee (tree decl, gfc_symbol *sym)
     {
       ptr_decl = convert (build_pointer_type (TREE_TYPE (decl)),
 			  ptr_decl);
-      value = gfc_build_indirect_ref (ptr_decl);
+      value = build_fold_indirect_ref (ptr_decl);
     }
 
   SET_DECL_VALUE_EXPR (decl, value);
@@ -856,7 +856,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  if (sym->attr.pointer && sym->attr.dummy
 		&& sym->attr.dimension)
 	    {
-	      tmp = gfc_build_indirect_ref (sym->backend_decl);
+	      tmp = build_fold_indirect_ref (sym->backend_decl);
 	      etype = gfc_get_element_type (TREE_TYPE (tmp));
 	      if (TYPE_SIZE_UNIT (etype) == NULL_TREE)
 		{

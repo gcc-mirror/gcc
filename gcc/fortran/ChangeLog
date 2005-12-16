@@ -1,5 +1,34 @@
 2005-12-16  Richard Guenther  <rguenther@suse.de>
 
+	* trans.h (gfc_build_indirect_ref): Remove declaration.
+	* trans.c (gfc_build_indirect_ref): Remove.
+	* trans-array.c (gfc_trans_array_ctor_element): Use
+	build_fold_indirect_ref instead of gfc_build_indirect_ref.
+	(gfc_trans_array_constructor_value): Likewise.
+	(gfc_conv_array_index_offset): Likewise.
+	(gfc_conv_scalarized_array_ref): Likewise.
+	(gfc_conv_array_ref): Likewise.
+	(gfc_trans_dummy_array_bias): Likewise.
+	(gfc_conv_expr_descriptor): Likewise.
+	(gfc_conv_array_parameter): Likewise.
+	* trans-decl.c (gfc_finish_cray_pointee): Likewise.
+	(gfc_get_symbol_decl): Likewise.
+	* trans-expr.c (gfc_conv_substring): Likewise.
+	(gfc_conv_component_ref): Likewise.
+	(gfc_conv_variable): Likewise.
+	(gfc_add_interface_mapping): Likewise.
+	(gfc_conv_function_call): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_ichar): Likewise.
+	(gfc_conv_intrinsic_transfer): Likewise.
+	* trans-io.c (nml_get_addr_expr): Likewise.
+	(transfer_namelist_element): Likewise.
+	(transfer_expr): Likewise.
+	* trans-stmt.c (gfc_trans_nested_forall_loop): Likewise.
+	(allocate_temp_for_forall_nest_1): Likewise.
+	(gfc_trans_forall_1): Likewise.
+
+2005-12-16  Richard Guenther  <rguenther@suse.de>
+
 	* trans-array.c (gfc_conv_descriptor_data_addr): Use
 	build_fold_addr_expr where appropriate.
 	(gfc_trans_allocate_array_storage): Likewise.
