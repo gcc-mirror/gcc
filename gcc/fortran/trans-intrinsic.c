@@ -1053,8 +1053,8 @@ gfc_conv_intrinsic_ctime (gfc_se * se, gfc_expr * expr)
   len = gfc_create_var (gfc_int8_type_node, "len");
 
   tmp = gfc_conv_intrinsic_function_args (se, expr);
-  arglist = gfc_chainon_list (NULL_TREE, gfc_build_addr_expr (NULL, var));
-  arglist = gfc_chainon_list (arglist, gfc_build_addr_expr (NULL, len));
+  arglist = gfc_chainon_list (NULL_TREE, build_fold_addr_expr (var));
+  arglist = gfc_chainon_list (arglist, build_fold_addr_expr (len));
   arglist = chainon (arglist, tmp);
 
   tmp = gfc_build_function_call (gfor_fndecl_ctime, arglist);
@@ -1089,8 +1089,8 @@ gfc_conv_intrinsic_fdate (gfc_se * se, gfc_expr * expr)
   len = gfc_create_var (gfc_int4_type_node, "len");
 
   tmp = gfc_conv_intrinsic_function_args (se, expr);
-  arglist = gfc_chainon_list (NULL_TREE, gfc_build_addr_expr (NULL, var));
-  arglist = gfc_chainon_list (arglist, gfc_build_addr_expr (NULL, len));
+  arglist = gfc_chainon_list (NULL_TREE, build_fold_addr_expr (var));
+  arglist = gfc_chainon_list (arglist, build_fold_addr_expr (len));
   arglist = chainon (arglist, tmp);
 
   tmp = gfc_build_function_call (gfor_fndecl_fdate, arglist);
@@ -1127,8 +1127,8 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
   len = gfc_create_var (gfc_int4_type_node, "len");
 
   tmp = gfc_conv_intrinsic_function_args (se, expr);
-  arglist = gfc_chainon_list (NULL_TREE, gfc_build_addr_expr (NULL, var));
-  arglist = gfc_chainon_list (arglist, gfc_build_addr_expr (NULL, len));
+  arglist = gfc_chainon_list (NULL_TREE, build_fold_addr_expr (var));
+  arglist = gfc_chainon_list (arglist, build_fold_addr_expr (len));
   arglist = chainon (arglist, tmp);
 
   tmp = gfc_build_function_call (gfor_fndecl_ttynam, arglist);
@@ -2721,7 +2721,7 @@ gfc_conv_intrinsic_si_kind (gfc_se * se, gfc_expr * expr)
 
   args = gfc_conv_intrinsic_function_args (se, expr);
   args = TREE_VALUE (args);
-  args = gfc_build_addr_expr (NULL, args);
+  args = build_fold_addr_expr (args);
   args = tree_cons (NULL_TREE, args, NULL_TREE);
   se->expr = gfc_build_function_call (gfor_fndecl_si_kind, args);
 }
@@ -2776,7 +2776,7 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
   len = gfc_create_var (gfc_int4_type_node, "len");
 
   tmp = gfc_conv_intrinsic_function_args (se, expr);
-  arglist = gfc_chainon_list (arglist, gfc_build_addr_expr (NULL, len));
+  arglist = gfc_chainon_list (arglist, build_fold_addr_expr (len));
   arglist = gfc_chainon_list (arglist, addr);
   arglist = chainon (arglist, tmp);
 

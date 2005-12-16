@@ -414,7 +414,7 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
   if (TYPE_MODE (TREE_TYPE (se.expr))
       == TYPE_MODE (TREE_TYPE (TREE_TYPE (p->field))))
     addr = convert (TREE_TYPE (p->field),
-		    gfc_build_addr_expr (NULL, se.expr));
+		    build_fold_addr_expr (se.expr));
   else
     {
       /* The type used by the library has different size
@@ -423,7 +423,7 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
       tree tmpvar
 	= gfc_create_var (TREE_TYPE (TREE_TYPE (p->field)),
 			  st_parameter_field[type].name);
-      addr = gfc_build_addr_expr (NULL, tmpvar);
+      addr = build_fold_addr_expr (tmpvar);
       tmp = convert (TREE_TYPE (se.expr), tmpvar);
       gfc_add_modify_expr (postblock, se.expr, tmp);
     }
@@ -491,7 +491,7 @@ gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
     {
       size = fold_build2 (MINUS_EXPR, gfc_array_index_type, size,
 		TREE_OPERAND (se->expr, 1));
-      se->expr = gfc_build_addr_expr (NULL, se->expr);
+      se->expr = build_fold_addr_expr (se->expr);
     }
 
   tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
@@ -797,7 +797,7 @@ gfc_trans_open (gfc_code * code)
 
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
-  tmp = gfc_build_addr_expr (NULL_TREE, var);
+  tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
   tmp = gfc_build_function_call (iocall[IOCALL_OPEN], tmp);
   gfc_add_expr_to_block (&block, tmp);
@@ -850,7 +850,7 @@ gfc_trans_close (gfc_code * code)
 
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
-  tmp = gfc_build_addr_expr (NULL_TREE, var);
+  tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
   tmp = gfc_build_function_call (iocall[IOCALL_CLOSE], tmp);
   gfc_add_expr_to_block (&block, tmp);
@@ -901,7 +901,7 @@ build_filepos (tree function, gfc_code * code)
 
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
-  tmp = gfc_build_addr_expr (NULL_TREE, var);
+  tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
   tmp = gfc_build_function_call (function, tmp);
   gfc_add_expr_to_block (&block, tmp);
@@ -1083,7 +1083,7 @@ gfc_trans_inquire (gfc_code * code)
 
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
-  tmp = gfc_build_addr_expr (NULL_TREE, var);
+  tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
   tmp = gfc_build_function_call (iocall[IOCALL_INQUIRE], tmp);
   gfc_add_expr_to_block (&block, tmp);
@@ -1191,7 +1191,7 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
 
   /* Now build the address expression.  */
 
-  tmp = gfc_build_addr_expr (NULL, tmp);
+  tmp = build_fold_addr_expr (tmp);
 
   /* If scalar dummy, resolve indirect reference now.  */
 
@@ -1287,7 +1287,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
      The call for the scalar part transfers:
      (address, name, type, kind or string_length, dtype)  */
 
-  dt_parm_addr = gfc_build_addr_expr (NULL_TREE, dt_parm);
+  dt_parm_addr = build_fold_addr_expr (dt_parm);
   NML_FIRST_ARG (dt_parm_addr);
   NML_ADD_ARG (addr_expr);
   NML_ADD_ARG (string);
@@ -1465,7 +1465,7 @@ build_dt (tree function, gfc_code * code)
   else
     set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
-  tmp = gfc_build_addr_expr (NULL_TREE, var);
+  tmp = build_fold_addr_expr (var);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
   tmp = gfc_build_function_call (function, tmp);
   gfc_add_expr_to_block (&block, tmp);
@@ -1544,7 +1544,7 @@ gfc_trans_dt_end (gfc_code * code)
       gcc_unreachable ();
     }
 
-  tmp = gfc_build_addr_expr (NULL_TREE, dt_parm);
+  tmp = build_fold_addr_expr (dt_parm);
   tmp = gfc_chainon_list (NULL_TREE, tmp);
   tmp = gfc_build_function_call (function, tmp);
   gfc_add_expr_to_block (&block, tmp);
@@ -1629,7 +1629,7 @@ transfer_array_component (tree expr, gfc_component * cm)
 
   /* Now se.expr contains an element of the array.  Take the address and pass
      it to the IO routines.  */
-  tmp = gfc_build_addr_expr (NULL, se.expr);
+  tmp = build_fold_addr_expr (se.expr);
   transfer_expr (&se, &cm->ts, tmp);
 
   /* We are done now with the loop body.  Wrap up the scalarizer and
@@ -1720,7 +1720,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
           else
             {
               if (!c->pointer)
-                tmp = gfc_build_addr_expr (NULL, tmp);
+                tmp = build_fold_addr_expr (tmp);
               transfer_expr (se, &c->ts, tmp);
             }
 	}
@@ -1730,7 +1730,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
       internal_error ("Bad IO basetype (%d)", ts->type);
     }
 
-  tmp = gfc_build_addr_expr (NULL_TREE, dt_parm);
+  tmp = build_fold_addr_expr (dt_parm);
   args = gfc_chainon_list (NULL_TREE, tmp);
   args = gfc_chainon_list (args, addr_expr);
   args = gfc_chainon_list (args, arg2);
@@ -1757,7 +1757,7 @@ transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 
   kind_arg = build_int_cst (NULL_TREE, ts->kind);
 
-  tmp = gfc_build_addr_expr (NULL_TREE, dt_parm);
+  tmp = build_fold_addr_expr (dt_parm);
   args = gfc_chainon_list (NULL_TREE, tmp);
   args = gfc_chainon_list (args, addr_expr);
   args = gfc_chainon_list (args, kind_arg);
@@ -1812,7 +1812,7 @@ gfc_trans_transfer (gfc_code * code)
 	{
 	  /* Get the descriptor.  */
 	  gfc_conv_expr_descriptor (&se, expr, ss);
-	  tmp = gfc_build_addr_expr (NULL, se.expr);
+	  tmp = build_fold_addr_expr (se.expr);
 	  transfer_array_desc (&se, &expr->ts, tmp);
 	  goto finish_block_label;
 	}
