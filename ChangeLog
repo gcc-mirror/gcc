@@ -1,3 +1,9 @@
+2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.in: Replace ms1 with mt.
+	* configure: Rebuilt.
+	* config.sub: Replace ms1 with mt.  Allow ms1 as an alias.
+
 2005-12-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in: Regenerate.

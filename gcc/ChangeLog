@@ -1,4 +1,14 @@
-2005-12-15  Andrew Haley  <aph@redhat.com>
+2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config.gcc (ms1): Replace with ...
+	(mt): ... this.
+	* config/ms1: Rename to ...
+	* config/mt: ... here.  Rename ms1 files to mt.
+	* config/mt/mt.c: Adjust gt-mt.h #include.
+	* config/mt/t-mt (LIB1ASMSRCS, LIB2FUNCS_EXTRA): Adjust.
+	(crti.o, crtn.o): Adjust file names.
+
+2005-12-16  Andrew Haley  <aph@redhat.com>
 
 	* unwind-dw2-fde-glibc.c (_Unwind_IteratePhdrCallback): Guard
 	against prev_cache_entry == NULL when moving a cache entry to the

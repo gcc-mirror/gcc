@@ -1986,4 +1986,4 @@ const struct attribute_spec ms1_attribute_table[];
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-#include "gt-ms1.h"
+#include "gt-mt.h"
