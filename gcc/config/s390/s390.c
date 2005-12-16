@@ -3998,7 +3998,7 @@ struct alignment_context
   rtx shift;	  /* Bit offset with regard to lsb.  */
   rtx modemask;	  /* Mask of the HQImode shifted by SHIFT bits.  */
   rtx modemaski;  /* ~modemask */
-  bool aligned;	  /* True if memory is aliged, false else.  */
+  bool aligned;	  /* True if memory is aligned, false else.  */
 };
 
 /* A subroutine of s390_expand_cs_hqi and s390_expand_atomic to initialize

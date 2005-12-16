@@ -5853,7 +5853,7 @@ A, the growth of unit is 300\% and yet such inlining is very sane.  For very
 large units consisting of small inlininable functions however the overall unit
 growth limit is needed to avoid exponential explosion of code size.  Thus for
 smaller units, the size is increased to @option{--param large-unit-insns}
-before aplying @option{--param inline-unit-growth}.  The default is 10000
+before applying @option{--param inline-unit-growth}.  The default is 10000
 
 @item inline-unit-growth
 Specifies maximal overall growth of the compilation unit caused by inlining.

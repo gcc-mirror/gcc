@@ -321,7 +321,7 @@ DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
    the other loops cold that is not usually the case.  So we need to artificially
    flatten the profile.  
 
-   We need to cut the maximal predicted iterations to large enought iterations
+   We need to cut the maximal predicted iterations to large enough iterations
    so the loop appears important, but safely within HOT_BB_COUNT_FRACTION
    range.  */
 

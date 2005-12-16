@@ -366,7 +366,7 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
       gcc_assert (insn_data[(int) icode].n_operands == 3);
 
       /* ??? We currently have no way to represent a reload that needs
-	 an icode to reload from an intermediate tertiaty reload register.
+	 an icode to reload from an intermediate tertiary reload register.
 	 We should probably have a new field in struct reload to tag a
 	 chain of scratch operand reloads onto.   */
       gcc_assert (class == NO_REGS);

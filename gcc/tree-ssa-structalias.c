@@ -3294,7 +3294,7 @@ find_func_aliases (tree origt)
 	  gcc_assert (found);
 	}
 
-      /* Assign all the passed arguments to the approriate incoming
+      /* Assign all the passed arguments to the appropriate incoming
 	 parameters of the function.  */
       fi = get_varinfo (varid);
       arglist = TREE_OPERAND (rhsop, 1);
@@ -3683,7 +3683,7 @@ create_function_info_for (tree decl, const char *name)
   
   arg = DECL_ARGUMENTS (decl);
 
-  /* Set up varirables for each argument.  */
+  /* Set up variables for each argument.  */
   for (i = 1; i < vi->fullsize; i++)
     {      
       varinfo_t argvi;

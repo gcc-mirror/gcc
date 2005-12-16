@@ -1,3 +1,11 @@
+2005-12-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* basic-block.h, config/i386/winnt.c, config/pa/pa.c,
+	config/s390/s390.c, dfp.c, expr.c, fold-const.c, params.def,
+	reload.c, struct-equiv.c, tree-ssa-ccp.c, tree-ssa-pre.c,
+	tree-ssa-reassoc.c, tree-ssa-structalias.c: Fix comment typos.
+	* doc/invoke.texi, doc/tm.texi: Fix typos.
+
 2005-12-16  Ben Elliston  <bje@au.ibm.com>
 
 	* real.c (decimal_quad_format): Correct values for emin, emax.
