@@ -1,3 +1,9 @@
+2005-12-14  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/18197
+	* resolve.c (resolve_formal_arglist): Remove code to set
+	the type of a function symbol from it's result symbol.
+
 2005-12-12  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/25078

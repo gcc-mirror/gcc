@@ -136,16 +136,6 @@ resolve_formal_arglist (gfc_symbol * proc)
 	{
 	  if (!sym->attr.function || sym->result == sym)
 	    gfc_set_default_type (sym, 1, sym->ns);
-	  else
-	    {
-              /* Set the type of the RESULT, then copy.  */
-	      if (sym->result->ts.type == BT_UNKNOWN)
-		gfc_set_default_type (sym->result, 1, sym->result->ns);
-
-	      sym->ts = sym->result->ts;
-	      if (sym->as == NULL)
-		sym->as = gfc_copy_array_spec (sym->result->as);
-	    }
 	}
 
       gfc_resolve_array_spec (sym->as, 0);
