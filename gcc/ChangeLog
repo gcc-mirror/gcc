@@ -1,3 +1,7 @@
+2005-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-fdump-tree-*): Remove note about C/C++ only.
+
 2005-12-15  Jan Hubicka  <jh@suse.cz>
 
 	PR target/24969
