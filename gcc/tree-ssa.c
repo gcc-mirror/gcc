@@ -801,6 +801,7 @@ init_tree_ssa (void)
 {
   referenced_vars = htab_create_ggc (20, int_tree_map_hash, 
 				     int_tree_map_eq, NULL);
+  default_defs = htab_create_ggc (20, int_tree_map_hash, int_tree_map_eq, NULL);
   call_clobbered_vars = BITMAP_ALLOC (NULL);
   addressable_vars = BITMAP_ALLOC (NULL);
   init_alias_heapvars ();
@@ -862,6 +863,8 @@ delete_tree_ssa (void)
   fini_phinodes ();
 
   global_var = NULL_TREE;
+  
+  htab_delete (default_defs);
   BITMAP_FREE (call_clobbered_vars);
   call_clobbered_vars = NULL;
   BITMAP_FREE (addressable_vars);

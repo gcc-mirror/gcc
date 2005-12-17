@@ -85,6 +85,12 @@ static void add_referenced_var (tree, struct walk_state *);
 /* Array of all variables referenced in the function.  */
 htab_t referenced_vars;
 
+/* Default definition for this symbols.  If set for symbol, it
+   means that the first reference to this variable in the function is a
+   USE or a VUSE.  In those cases, the SSA renamer creates an SSA name
+   for this variable with an empty defining statement.  */
+htab_t default_defs;
+
 
 /*---------------------------------------------------------------------------
 			Dataflow analysis (DFA) routines
@@ -607,6 +613,55 @@ referenced_var_insert (unsigned int uid, tree to)
   h->to = to;
   loc = htab_find_slot_with_hash (referenced_vars, h, uid, INSERT);
   *(struct int_tree_map **)  loc = h;
+}
+
+/* Lookup VAR UID in the default_defs hashtable and return the associated
+   variable.  */
+
+tree 
+default_def (tree var)
+{
+  struct int_tree_map *h, in;
+  gcc_assert (SSA_VAR_P (var));
+  in.uid = DECL_UID (var);
+  h = htab_find_with_hash (default_defs, &in, DECL_UID (var));
+  if (h)
+    return h->to;
+  return NULL_TREE;
+}
+
+/* Insert the pair VAR's UID, DEF into the default_defs hashtable.  */
+
+void
+set_default_def (tree var, tree def)
+{ 
+  struct int_tree_map in;
+  struct int_tree_map *h;
+  void **loc;
+
+  gcc_assert (SSA_VAR_P (var));
+  in.uid = DECL_UID (var);
+  if (!def && default_def (var))
+    {
+      loc = htab_find_slot_with_hash (default_defs, &in, DECL_UID (var), INSERT);
+      htab_remove_elt (default_defs, *loc);
+      return;
+    }
+  gcc_assert (TREE_CODE (def) == SSA_NAME);
+  loc = htab_find_slot_with_hash (default_defs, &in, DECL_UID (var), INSERT);
+  /* Default definition might be changed by tail call optimization.  */
+  if (!*loc)
+    {
+      h = ggc_alloc (sizeof (struct int_tree_map));
+      h->uid = DECL_UID (var);
+      h->to = def;
+      *(struct int_tree_map **)  loc = h;
+    }
+   else
+    {
+      h = *loc;
+      h->to = def;
+    }
 }
 
 /* Add VAR to the list of dereferenced variables.

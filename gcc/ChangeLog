@@ -1,3 +1,13 @@
+2005-12-17  Jan Hubicka  <jh@suse.cz>
+
+	* tree-flow-inline.h (set_default_def, default_def): Kill.
+	* tree-dfa.c (default_defs): New global variable.
+	(default_def, set_default_def): New functions.
+	* tree-ssa.c (init_tree_ssa, delete_tree_ssa): Add default_def hash.
+	* tree-flow.h (struct var_ann_d): Kill default_def field.
+	(set_default_def, default_def): Update prototype.
+	(default_defs): Declare.
+
 2005-12-16  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (update_rhs_and_lookup_avail_expr): Kill.
