@@ -1563,7 +1563,7 @@ fix_loop_structure (struct loops *loops, bitmap changed_bbs)
     }
 
   /* Remove the dead loops from structures.  */
-  loops->tree_root->num_nodes = n_basic_blocks + 2;
+  loops->tree_root->num_nodes = n_basic_blocks; 
   for (i = 1; i < loops->num; i++)
     {
       loop = loops->parray[i];

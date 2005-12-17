@@ -155,9 +155,6 @@ struct df
   int *dfs_order;		/* DFS order -> block number.  */
   int *rc_order;		/* Reverse completion order -> block number.  */
   int *rts_order;		/* Reverse top sort order -> block number.  */
-  int *inverse_rc_map;		/* Block number -> reverse completion order.  */
-  int *inverse_dfs_map;		/* Block number -> DFS order.  */
-  int *inverse_rts_map;		/* Block number -> reverse top-sort order.  */
 };
 
 

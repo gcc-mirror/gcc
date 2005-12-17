@@ -138,7 +138,7 @@ control_flow_insn_p (rtx insn)
 static int
 count_basic_blocks (rtx f)
 {
-  int count = 0;
+  int count = NUM_FIXED_BLOCKS;
   bool saw_insn = false;
   rtx insn;
 
@@ -164,10 +164,10 @@ count_basic_blocks (rtx f)
 
   /* The rest of the compiler works a bit smoother when we don't have to
      check for the edge case of do-nothing functions with no basic blocks.  */
-  if (count == 0)
+  if (count == NUM_FIXED_BLOCKS)
     {
       emit_insn (gen_rtx_USE (VOIDmode, const0_rtx));
-      count = 1;
+      count = NUM_FIXED_BLOCKS + 1;
     }
 
   return count;
@@ -529,9 +529,10 @@ find_basic_blocks (rtx f)
     }
 
   n_basic_blocks = count_basic_blocks (f);
-  last_basic_block = 0;
+  last_basic_block = NUM_FIXED_BLOCKS;
   ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
   EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
+
 
   /* Size the basic block table.  The actual structures will be allocated
      by find_basic_blocks_1, since we want to keep the structure pointers
@@ -542,6 +543,8 @@ find_basic_blocks (rtx f)
      actually lay them out.  */
 
   VARRAY_BB_INIT (basic_block_info, n_basic_blocks, "basic_block_info");
+  BASIC_BLOCK (ENTRY_BLOCK) = ENTRY_BLOCK_PTR;
+  BASIC_BLOCK (EXIT_BLOCK) = EXIT_BLOCK_PTR;
 
   find_basic_blocks_1 (f);
 

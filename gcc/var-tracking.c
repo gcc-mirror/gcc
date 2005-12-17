@@ -1638,10 +1638,10 @@ vt_find_locations (void)
 
   /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
-  rc_order = xmalloc (n_basic_blocks * sizeof (int));
+  rc_order = xmalloc ((n_basic_blocks - NUM_FIXED_BLOCKS) * sizeof (int));
   bb_order = xmalloc (last_basic_block * sizeof (int));
   flow_depth_first_order_compute (NULL, rc_order);
-  for (i = 0; i < n_basic_blocks; i++)
+  for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
     bb_order[rc_order[i]] = i;
   free (rc_order);
 

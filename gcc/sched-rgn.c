@@ -999,7 +999,7 @@ compute_trg_info (int trg)
   sp->is_speculative = 0;
   sp->src_prob = 100;
 
-  visited = sbitmap_alloc (last_basic_block - (INVALID_BLOCK + 1));
+  visited = sbitmap_alloc (last_basic_block);
 
   for (i = trg + 1; i < current_nr_blocks; i++)
     {
@@ -1044,8 +1044,7 @@ compute_trg_info (int trg)
 	      block = el.first_member[j]->src;
 	      FOR_EACH_EDGE (e, ei, block->succs)
 		{
-		  if (!TEST_BIT (visited,
-				 e->dest->index - (INVALID_BLOCK + 1)))
+		  if (!TEST_BIT (visited, e->dest->index))
 		    {
 		      for (k = 0; k < el.nr_members; k++)
 			if (e == el.first_member[k])
@@ -1054,8 +1053,7 @@ compute_trg_info (int trg)
 		      if (k >= el.nr_members)
 			{
 			  bblst_table[bblst_last++] = e->dest;
-			  SET_BIT (visited,
-				   e->dest->index - (INVALID_BLOCK + 1));
+			  SET_BIT (visited, e->dest->index);
 			  update_idx++;
 			}
 		    }
@@ -2469,7 +2467,7 @@ init_regions (void)
 
   /* Compute regions for scheduling.  */
   if (reload_completed
-      || n_basic_blocks == 1
+      || n_basic_blocks == NUM_FIXED_BLOCKS + 1
       || !flag_schedule_interblock
       || is_cfg_nonregular ())
     {
@@ -2526,18 +2524,16 @@ schedule_insns (FILE *dump_file)
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
-  if (n_basic_blocks == 0)
+  if (n_basic_blocks == NUM_FIXED_BLOCKS)
     return;
 
   nr_inter = 0;
   nr_spec = 0;
-
   sched_init (dump_file);
 
   init_regions ();
 
   current_sched_info = &region_sched_info;
-
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
     schedule_region (rgn);

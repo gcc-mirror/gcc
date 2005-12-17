@@ -1894,7 +1894,7 @@ reorder_basic_blocks (unsigned int flags)
   int i;
   struct trace *traces;
 
-  if (n_basic_blocks <= 1)
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
     return;
 
   if (targetm.cannot_modify_jumps_p ())
@@ -1986,7 +1986,7 @@ duplicate_computed_gotos (void)
   bitmap candidates;
   int max_size;
 
-  if (n_basic_blocks <= 1)
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
     return;
 
   if (targetm.cannot_modify_jumps_p ())
@@ -2169,7 +2169,7 @@ partition_hot_cold_basic_blocks (void)
   int n_crossing_edges;
   int max_edges = 2 * last_basic_block;
   
-  if (n_basic_blocks <= 1)
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
     return;
   
   crossing_edges = xcalloc (max_edges, sizeof (edge));
@@ -2177,8 +2177,8 @@ partition_hot_cold_basic_blocks (void)
   cfg_layout_initialize (0);
   
   FOR_EACH_BB (cur_bb)
-    if (cur_bb->index >= 0
- 	&& cur_bb->next_bb->index >= 0)
+    if (cur_bb->index >= NUM_FIXED_BLOCKS
+ 	&& cur_bb->next_bb->index >= NUM_FIXED_BLOCKS)
       cur_bb->aux = cur_bb->next_bb;
   
   find_rarely_executed_basic_blocks_and_crossing_edges (crossing_edges, 

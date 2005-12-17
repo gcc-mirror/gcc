@@ -484,10 +484,11 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p)
   memset ((void *)dfa_stats_p, 0, sizeof (struct dfa_stats_d));
 
   /* Walk all the trees in the function counting references.  Start at
-     basic block 0, but don't stop at block boundaries.  */
+     basic block NUM_FIXED_BLOCKS, but don't stop at block boundaries.  */
   pset = pointer_set_create ();
 
-  for (i = bsi_start (BASIC_BLOCK (0)); !bsi_end_p (i); bsi_next (&i))
+  for (i = bsi_start (BASIC_BLOCK (NUM_FIXED_BLOCKS));
+       !bsi_end_p (i); bsi_next (&i))
     walk_tree (bsi_stmt_ptr (i), collect_dfa_stats_r, (void *) dfa_stats_p,
 	       pset);
 

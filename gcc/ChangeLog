@@ -1,3 +1,60 @@
+2005-12-17  Danny Berlin <dberlin@dberlin.org>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* basic-block.h: Changed basic block numbering so that the entry
+	block is 0 and the exit block is 1.  Changed insn iterators so
+	that they are tolerant of blocks with no insns.
+	* regrename.c (copyprop_hardreg_forward): Changed basic block
+	numbering so that the entry block is 0 and the exit block is 1.
+	* sched-ebb.c (sehedule_ebbs): Ditto.
+	* tracer.c (branch_ratio_cutoff): Ditto.
+	* cfgloopmanip.c (fix_loop_structure): Ditto.
+	* cfghooks.c (verify_flow_info): Ditto.
+	* cfg.c (compact_blocks): Ditto.
+	* reorg.c (dbr_schedule): Ditto.
+	* flow.c (calculate_global_regs_live, libcall_dead_p): Ditto.
+	* dominance.c (calc_dfs_tree_nonrec, calc_dfs_tree,
+	calculate_dominance_info): Ditto.
+	* cfganal.c (create_edge_list, print_edge_list,
+	flow_depth_first_order_compute, flow_dfs_compute_reverse_init,
+	flow_dfs_compute_reverse_add_bb, flow_dfs_compute_reverse_execute,
+	dfs_enumerate_from): Ditto.
+	* global.c (global_alloc, set_up_bb_rts_numbers): Ditto.
+	* ifcvt.c (find_if_case_2): Ditto.
+	* cfgbuild.c (control_flow_insn_p, count_basic_blocks,
+	find_basic_blocks): Ditto.
+	* predict.c (predict_loops, tree_bb_level_predictions,
+	predict_paths_leading_to, propagate_freq): Ditto.
+	* lcm.c (compute_antinout_edge, compute_laterin,
+	compute_available): Ditto.
+	* function.c (thread_prologue_and_epilogue_insns): Ditto.
+	* gcse.c (gcse_main, bypass_jumps): Ditto.
+	* profile.c (compute_branch_probabilities,
+	compute_value_histograms, branch_prob): Ditto.
+	* tree-flow-inline.h (bsi_start, bsi_after_labels,
+	bsi_last): Ditto.
+	* tree-ssa-phiopt.c (tree_ssa_phiopt,
+	blocks_in_phiopt_order): Ditto.
+	* bt-load.c (compute_defs_uses_and_gen, compute_kill,
+	compute_out, link_btr_uses, migrate_btr_defs): Ditto.
+	* tree-dfa.c (collect_dfa_stats): Ditto.
+	* cfgcleanup.c (try_forward_edges, try_optimize_cfg): Ditto.
+	* cfglayout.c (fixup_reorder_chain): Ditto.
+	* bb-reorder.c (reorder_basic_blocks, duplicate_computed_gotos,
+	partition_hot_cold_basic_blocks): Ditto.
+	* var-tracking.c (vt_find_locations): Ditto.
+	* cfgloop.c (flow_loops_cfg_dump, flow_loops_find, get_loop_body): Ditto.
+	* sched-rgn.c (compute_trg_info, init_regions, schedule_insns): Ditto.
+	* tree-cfg.c (init_empty_tree_cfg, build_tree_cfg, make_edges
+	label_to_block_fn, print_loop_ir, tree_flow_call_edges_add): Ditto.
+	* tree-ssa-reassoc.c (init_reassoc): Ditto.
+	* cfgrtl.c (entry_of_function, rtl_verify_flow_info,
+	rtl_flow_call_edges_add, rtl_flow_call_edges_add): Ditto.
+	* df.c (df_analyze_1, hybrid_search, iterative_dataflow): Ditto
+	and removed unused reverse orders.
+	* df.h (): Ditto.
+	* combine.c: Fix document typo.
+
 2005-12-17  Jan Hubicka  <jh@suse.cz>
 
 	* tree-flow-inline.h (set_default_def, default_def): Kill.

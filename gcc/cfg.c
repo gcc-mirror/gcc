@@ -163,8 +163,11 @@ compact_blocks (void)
   int i;
   basic_block bb;
 
-  i = 0;
-  FOR_EACH_BB (bb)
+  BASIC_BLOCK (ENTRY_BLOCK) = ENTRY_BLOCK_PTR;
+  BASIC_BLOCK (EXIT_BLOCK) = EXIT_BLOCK_PTR;
+
+  i = NUM_FIXED_BLOCKS;
+  FOR_EACH_BB (bb) 
     {
       BASIC_BLOCK (i) = bb;
       bb->index = i;

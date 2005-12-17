@@ -441,7 +441,7 @@ try_forward_edges (int mode, basic_block b)
 	}
 
       target = first = e->dest;
-      counter = 0;
+      counter = NUM_FIXED_BLOCKS;
 
       /* If we are partitioning hot/cold basic_blocks, we don't want to mess
 	 up jumps that cross between hot/cold sections.
@@ -503,7 +503,7 @@ try_forward_edges (int mode, basic_block b)
 		  if (t->dest == b)
 		    break;
 
-		  gcc_assert (nthreaded_edges < n_basic_blocks);
+		  gcc_assert (nthreaded_edges < n_basic_blocks - NUM_FIXED_BLOCKS);
 		  threaded_edges[nthreaded_edges++] = t;
 
 		  new_target = t->dest;
@@ -1676,7 +1676,7 @@ try_optimize_cfg (int mode)
 		  /* Note that forwarder_block_p true ensures that
 		     there is a successor for this block.  */
 		  && (single_succ_edge (b)->flags & EDGE_FALLTHRU)
-		  && n_basic_blocks > 1)
+		  && n_basic_blocks > NUM_FIXED_BLOCKS + 1)
 		{
 		  if (dump_file)
 		    fprintf (dump_file,

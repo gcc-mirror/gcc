@@ -55,7 +55,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    - reg_live_length is not updated
    - reg_n_refs is not adjusted in the rare case when a register is
      no longer required in a computation
-   - there are extremely rare cases (see distribute_regnotes) when a
+   - there are extremely rare cases (see distribute_notes) when a
      REG_DEAD note is lost
    - a LOG_LINKS entry that refers to an insn with multiple SETs may be
      removed because there is no way to know which register it was

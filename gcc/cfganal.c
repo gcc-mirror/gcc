@@ -345,7 +345,7 @@ create_edge_list (void)
   basic_block bb;
   edge_iterator ei;
 
-  block_count = n_basic_blocks + 2;   /* Include the entry and exit blocks.  */
+  block_count = n_basic_blocks; /* Include the entry and exit blocks.  */
 
   num_edges = 0;
 
@@ -391,7 +391,7 @@ print_edge_list (FILE *f, struct edge_list *elist)
   int x;
 
   fprintf (f, "Compressed edge list, %d BBs + entry & exit, and %d edges\n",
-	   elist->num_blocks - 2, elist->num_edges);
+	   elist->num_blocks, elist->num_edges);
 
   for (x = 0; x < elist->num_edges; x++)
     {
@@ -721,7 +721,7 @@ flow_depth_first_order_compute (int *dfs_order, int *rc_order)
   edge_iterator *stack;
   int sp;
   int dfsnum = 0;
-  int rcnum = n_basic_blocks - 1;
+  int rcnum = n_basic_blocks - 1 - NUM_FIXED_BLOCKS;
   sbitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
@@ -786,8 +786,9 @@ flow_depth_first_order_compute (int *dfs_order, int *rc_order)
   free (stack);
   sbitmap_free (visited);
 
-  /* The number of nodes visited should be the number of blocks.  */
-  gcc_assert (dfsnum == n_basic_blocks);
+  /* The number of nodes visited should be the number of blocks minus
+     the entry and exit blocks which are not visited here.  */
+  gcc_assert (dfsnum == n_basic_blocks - NUM_FIXED_BLOCKS);
 
   return dfsnum;
 }
@@ -826,12 +827,11 @@ static void
 flow_dfs_compute_reverse_init (depth_first_search_ds data)
 {
   /* Allocate stack for back-tracking up CFG.  */
-  data->stack = xmalloc ((n_basic_blocks - (INVALID_BLOCK + 1))
-			 * sizeof (basic_block));
+  data->stack = xmalloc (n_basic_blocks * sizeof (basic_block));
   data->sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  data->visited_blocks = sbitmap_alloc (last_basic_block - (INVALID_BLOCK + 1));
+  data->visited_blocks = sbitmap_alloc (last_basic_block);
 
   /* None of the nodes in the CFG have been visited yet.  */
   sbitmap_zero (data->visited_blocks);
@@ -847,7 +847,7 @@ static void
 flow_dfs_compute_reverse_add_bb (depth_first_search_ds data, basic_block bb)
 {
   data->stack[data->sp++] = bb;
-  SET_BIT (data->visited_blocks, bb->index - (INVALID_BLOCK + 1));
+  SET_BIT (data->visited_blocks, bb->index);
 }
 
 /* Continue the depth-first search through the reverse graph starting with the
@@ -869,14 +869,13 @@ flow_dfs_compute_reverse_execute (depth_first_search_ds data,
 
       /* Perform depth-first search on adjacent vertices.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
-	if (!TEST_BIT (data->visited_blocks,
-		       e->src->index - (INVALID_BLOCK + 1)))
+	if (!TEST_BIT (data->visited_blocks, e->src->index))
 	  flow_dfs_compute_reverse_add_bb (data, e->src);
     }
 
   /* Determine if there are unvisited basic blocks.  */
   FOR_BB_BETWEEN (bb, last_unvisited, NULL, prev_bb)
-    if (!TEST_BIT (data->visited_blocks, bb->index - (INVALID_BLOCK + 1)))
+    if (!TEST_BIT (data->visited_blocks, bb->index))
       return bb;
 
   return NULL;
@@ -912,12 +911,12 @@ dfs_enumerate_from (basic_block bb, int reverse,
   static sbitmap visited;
   static unsigned v_size;
 
-#define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index + 2))
-#define UNMARK_VISITED(BB) (RESET_BIT (visited, (BB)->index + 2))
-#define VISITED_P(BB) (TEST_BIT (visited, (BB)->index + 2))
+#define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index)) 
+#define UNMARK_VISITED(BB) (RESET_BIT (visited, (BB)->index)) 
+#define VISITED_P(BB) (TEST_BIT (visited, (BB)->index)) 
 
   /* Resize the VISITED sbitmap if necessary.  */
-  size = last_basic_block + 2;
+  size = last_basic_block; 
   if (size < 10)
     size = 10;
 

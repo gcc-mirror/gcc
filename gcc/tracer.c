@@ -72,7 +72,7 @@ static int branch_ratio_cutoff;
 static bool
 ignore_bb_p (basic_block bb)
 {
-  if (bb->index < 0)
+  if (bb->index < NUM_FIXED_BLOCKS)
     return true;
   if (!maybe_hot_bb_p (bb))
     return true;
@@ -363,7 +363,7 @@ layout_superblocks (void)
 void
 tracer (unsigned int flags)
 {
-  if (n_basic_blocks <= 1)
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
     return;
 
   cfg_layout_initialize (flags);

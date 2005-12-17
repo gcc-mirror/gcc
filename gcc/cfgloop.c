@@ -73,7 +73,7 @@ flow_loops_cfg_dump (const struct loops *loops, FILE *file)
   if (loops->cfg.dfs_order)
     {
       fputs (";; DFS order: ", file);
-      for (i = 0; i < n_basic_blocks; i++)
+      for (i = NUM_FIXED_BLOCKS; i < n_basic_blocks; i++)
 	fprintf (file, "%d ", loops->cfg.dfs_order[i]);
 
       fputs ("\n", file);
@@ -83,7 +83,7 @@ flow_loops_cfg_dump (const struct loops *loops, FILE *file)
   if (loops->cfg.rc_order)
     {
       fputs (";; RC order: ", file);
-      for (i = 0; i < n_basic_blocks; i++)
+      for (i = NUM_FIXED_BLOCKS; i < n_basic_blocks; i++)
 	fprintf (file, "%d ", loops->cfg.rc_order[i]);
 
       fputs ("\n", file);
@@ -610,7 +610,7 @@ flow_loops_find (struct loops *loops)
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
-  if (n_basic_blocks == 0)
+  if (n_basic_blocks == NUM_FIXED_BLOCKS)
     return 0;
 
   dfs_order = NULL;
@@ -676,7 +676,7 @@ flow_loops_find (struct loops *loops)
   loops->parray[0]->outer = NULL;
   loops->parray[0]->depth = 0;
   loops->parray[0]->pred = NULL;
-  loops->parray[0]->num_nodes = n_basic_blocks + 2;
+  loops->parray[0]->num_nodes = n_basic_blocks;
   loops->parray[0]->latch = EXIT_BLOCK_PTR;
   loops->parray[0]->header = ENTRY_BLOCK_PTR;
   ENTRY_BLOCK_PTR->loop_father = loops->parray[0];
@@ -704,7 +704,7 @@ flow_loops_find (struct loops *loops)
 
       num_loops = 1;
 
-      for (b = 0; b < n_basic_blocks; b++)
+      for (b = 0; b < n_basic_blocks - NUM_FIXED_BLOCKS; b++)
 	{
 	  struct loop *loop;
 	  edge_iterator ei;
@@ -804,7 +804,7 @@ get_loop_body (const struct loop *loop)
   if (loop->latch == EXIT_BLOCK_PTR)
     {
       /* There may be blocks unreachable from EXIT_BLOCK.  */
-      gcc_assert (loop->num_nodes == (unsigned) n_basic_blocks + 2);
+      gcc_assert (loop->num_nodes == (unsigned) n_basic_blocks);
       FOR_EACH_BB (bb)
 	tovisit[tv++] = bb;
       tovisit[tv++] = EXIT_BLOCK_PTR;

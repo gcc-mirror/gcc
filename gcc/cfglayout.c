@@ -601,7 +601,7 @@ fixup_reorder_chain (void)
   /* First do the bulk reordering -- rechain the blocks without regard to
      the needed changes to jumps and labels.  */
 
-  for (bb = ENTRY_BLOCK_PTR->next_bb, index = 0;
+  for (bb = ENTRY_BLOCK_PTR->next_bb, index = NUM_FIXED_BLOCKS;
        bb != 0;
        bb = bb->aux, index++)
     {
@@ -818,7 +818,7 @@ fixup_reorder_chain (void)
   if (dump_file)
     {
       fprintf (dump_file, "Reordered sequence:\n");
-      for (bb = ENTRY_BLOCK_PTR->next_bb, index = 0;
+      for (bb = ENTRY_BLOCK_PTR->next_bb, index = NUM_FIXED_BLOCKS;
 	   bb;
 	   bb = bb->aux, index++)
 	{
@@ -837,7 +837,7 @@ fixup_reorder_chain (void)
 
   prev_bb = ENTRY_BLOCK_PTR;
   bb = ENTRY_BLOCK_PTR->next_bb;
-  index = 0;
+  index = NUM_FIXED_BLOCKS;
 
   for (; bb; prev_bb = bb, bb = bb->aux, index ++)
     {

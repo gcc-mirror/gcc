@@ -234,7 +234,6 @@ operand_entry_eq (const void *p1, const void *p2)
   return vr1->op == vr2->op;
 }
 
-
 /* Given an expression E, return the rank of the expression.  */
 
 static unsigned int
@@ -1452,7 +1451,7 @@ init_reassoc (void)
     }
 
   /* Set up rank for each BB  */
-  for (i = 0; i < n_basic_blocks; i++)
+  for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
     bb_rank[bbs[i]] = ++rank  << 16;
 
   free (bbs);
