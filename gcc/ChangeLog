@@ -1,3 +1,9 @@
+2005-12-17  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR rtl-optimization/25456
+	* struct-equiv.c (struct_equiv_improve_checkpoint): Replace
+	info->x_start with p->x_start.
+
 2005-12-17  Alan Modra  <amodra@bigpond.net.au>
 
 	* simplify-rtx.c (simplify_binary_operation_1 <IOR>): Correct bug
