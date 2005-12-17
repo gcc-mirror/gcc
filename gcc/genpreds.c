@@ -43,7 +43,7 @@ process_define_predicate (rtx defn)
       return;
     }
 
-  pred = xcalloc (sizeof (struct pred_data), 1);
+  pred = XCNEW (struct pred_data);
   pred->name    = XSTR (defn, 0);
   pred->exp     = XEXP (defn, 1);
   pred->c_block = XSTR (defn, 2);

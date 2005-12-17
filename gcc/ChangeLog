@@ -1,3 +1,56 @@
+2005-12-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* tree-inline.c (copy_body_r): Use explicit cast when converting
+	from void *.
+	(copy_bb): Likewise.
+	(copy_edges_for_bb): Likewise.
+	(remap_decl_1): Likewise.
+	(estimate_num_insns_1): Likewise.
+	* cgraph.c (hash_node): Use explicit cast when converting from
+	void *.
+	(eq_node): Likewise.
+	(cgraph_create_node): Use GGC_CNEW.
+	(cgraph_create_edge): Use GGC_NEW.
+	(cgraph_remove_node): Use explicit cast when converting from void *.
+	(hash_varpool_node): Likewise.
+	(eq_varpool_node): Likewise.
+	(cgraph_varpool_node): Use GGC_CNEW.
+	* lambda.h (lambda_vector_new): Use GGC_CNEWVEC.
+	* tree-scalar-evolution.c (new_scev_info_str): Use XNEW.
+	(eq_scev_info): Use explicit cast when converting from void *.
+	(find_var_scev_info): Likewise.
+	(set_instantiated_value): Likewise.
+	(gather_stats_on_scev_database_1): Likewise.
+	* cfgloop.h (simple_loop_desc): Use explicit cast when converting
+	from void *.
+	* c-pch.c (c_common_write_pch): Use XNEWVEC.
+	(c_common_read_pch): Likewise.
+	* prefix.c (save_string): Use XNEWVEC.
+	(translate_name): Use explicit cast when converting from void *.
+	* c-ppoutput.c (print_line): Use explicit cast when converting
+	from void *.
+	(pp_dir_change): Likewise.
+	* c-cppbuiltin.c (builtin_define_std): Likewise.
+	(builtin_define_with_value): Likewise.
+	(builtin_define_with_value_n): Likewise.
+	(builtin_define_with_int_value): Likewise.
+	(builtin_define_type_max): Likewise.
+	* c-incpath.c (add_env_var_paths): Use XNEWVEC.
+	(add_path): Use XNEW.
+	* c-format.c (check_format_info_main): Use GGC_NEW.
+	(format_type_warning): Use explicit cast when converting from void *.
+	* c-typeck.c (alloc_tagged_tu_seen_cache): Use XNEW instead of
+	xmalloc. 
+	(start_init): Likewise.
+	* tree-flow-inline.h (first_referenced_var): Use explicit cast
+	when converting from void *.
+	(next_referenced_var): Likewise.
+	* c-pragma.c (push_alignment): Use GGC_NEW instead of ggc_alloc.
+	* gensupport.c (lookup_predicate): Use explicit cast to convert
+	from void *.
+	(init_predicate_table): Use XCNEW instead of xcalloc.
+	* genpreds.c (process_define_predicate): Likewise.
+
 2005-12-17  Danny Berlin <dberlin@dberlin.org>
 	    Kenneth Zadeck <zadeck@naturalbridge.com>
 

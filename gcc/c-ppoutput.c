@@ -246,7 +246,8 @@ print_line (source_location src_loc, const char *special_flags)
       const struct line_map *map = linemap_lookup (&line_table, src_loc);
 
       size_t to_file_len = strlen (map->to_file);
-      unsigned char *to_file_quoted = alloca (to_file_len * 4 + 1);
+      unsigned char *to_file_quoted =
+         (unsigned char *) alloca (to_file_len * 4 + 1);
       unsigned char *p;
 
       print.src_line = SOURCE_LINE (map, src_loc);
@@ -368,7 +369,8 @@ void
 pp_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
 {
   size_t to_file_len = strlen (dir);
-  unsigned char *to_file_quoted = alloca (to_file_len * 4 + 1);
+  unsigned char *to_file_quoted =
+     (unsigned char *) alloca (to_file_len * 4 + 1);
   unsigned char *p;
 
   /* cpp_quote_string does not nul-terminate, so we have to do it ourselves.  */

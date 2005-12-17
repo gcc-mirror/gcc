@@ -296,7 +296,7 @@ new_scev_info_str (tree var)
 {
   struct scev_info_str *res;
   
-  res = xmalloc (sizeof (struct scev_info_str));
+  res = XNEW (struct scev_info_str);
   res->var = var;
   res->chrec = chrec_not_analyzed_yet;
   
@@ -316,8 +316,8 @@ hash_scev_info (const void *elt)
 static int
 eq_scev_info (const void *e1, const void *e2)
 {
-  const struct scev_info_str *elt1 = e1;
-  const struct scev_info_str *elt2 = e2;
+  const struct scev_info_str *elt1 = (const struct scev_info_str *) e1;
+  const struct scev_info_str *elt2 = (const struct scev_info_str *) e2;
 
   return elt1->var == elt2->var;
 }
@@ -346,7 +346,7 @@ find_var_scev_info (tree var)
 
   if (!*slot)
     *slot = new_scev_info_str (var);
-  res = *slot;
+  res = (struct scev_info_str *) *slot;
 
   return &res->chrec;
 }
@@ -1886,10 +1886,9 @@ set_instantiated_value (htab_t cache, tree version, tree val)
   pattern.var = version;
   slot = htab_find_slot (cache, &pattern, INSERT);
 
-  if (*slot)
-    info = *slot;
-  else
-    info = *slot = new_scev_info_str (version);
+  if (!*slot)
+    *slot = new_scev_info_str (version);
+  info = (struct scev_info_str *) *slot;
   info->chrec = val;
 }
 
@@ -2479,9 +2478,9 @@ analyze_scalar_evolution_for_all_loop_phi_nodes (VEC(tree,heap) **exit_condition
 static int
 gather_stats_on_scev_database_1 (void **slot, void *stats)
 {
-  struct scev_info_str *entry = *slot;
+  struct scev_info_str *entry = (struct scev_info_str *) *slot;
 
-  gather_chrec_stats (entry->chrec, stats);
+  gather_chrec_stats (entry->chrec, (struct chrec_stats *) stats);
 
   return 1;
 }

@@ -78,7 +78,8 @@ static inline tree
 first_referenced_var (referenced_var_iterator *iter)
 {
   struct int_tree_map *itm;
-  itm = first_htab_element (&iter->hti, referenced_vars);
+  itm = (struct int_tree_map *) first_htab_element (&iter->hti,
+                                                    referenced_vars);
   if (!itm) 
     return NULL;
   return itm->to;
@@ -100,7 +101,7 @@ static inline tree
 next_referenced_var (referenced_var_iterator *iter)
 {
   struct int_tree_map *itm;
-  itm = next_htab_element (&iter->hti);
+  itm = (struct int_tree_map *) next_htab_element (&iter->hti);
   if (!itm) 
     return NULL;
   return itm->to;

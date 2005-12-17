@@ -109,7 +109,7 @@ add_env_var_paths (const char *env_var, int chain)
 	path = xstrdup (".");
       else
 	{
-	  path = xmalloc (q - p + 1);
+	  path = XNEWVEC (char, q - p + 1);
 	  memcpy (path, p, q - p);
 	  path[q - p] = '\0';
 	}
@@ -340,7 +340,7 @@ add_path (char *path, int chain, int cxx_aware, bool user_supplied_p)
     if (*c == '\\') *c = '/';
 #endif
 
-  p = xmalloc (sizeof (cpp_dir));
+  p = XNEW (cpp_dir);
   p->next = NULL;
   p->name = path;
   if (chain == SYSTEM || chain == AFTER)

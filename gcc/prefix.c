@@ -115,7 +115,7 @@ get_key_value (char *key)
 static char *
 save_string (const char *s, int len)
 {
-  char *result = xmalloc (len + 1);
+  char *result = XNEWVEC (char, len + 1);
 
   memcpy (result, s, len);
   result[len] = 0;
@@ -201,7 +201,7 @@ translate_name (char *name)
 	   keylen++)
 	;
 
-      key = alloca (keylen + 1);
+      key = (char *) alloca (keylen + 1);
       strncpy (key, &name[1], keylen);
       key[keylen] = 0;
 

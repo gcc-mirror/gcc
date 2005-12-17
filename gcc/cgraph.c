@@ -146,7 +146,7 @@ static int eq_node (const void *, const void *);
 static hashval_t
 hash_node (const void *p)
 {
-  const struct cgraph_node *n = p;
+  const struct cgraph_node *n = (const struct cgraph_node *) p;
   return (hashval_t) DECL_UID (n->decl);
 }
 
@@ -155,7 +155,8 @@ hash_node (const void *p)
 static int
 eq_node (const void *p1, const void *p2)
 {
-  const struct cgraph_node *n1 = p1, *n2 = p2;
+  const struct cgraph_node *n1 = (const struct cgraph_node *) p1;
+  const struct cgraph_node *n2 = (const struct cgraph_node *) p2;
   return DECL_UID (n1->decl) == DECL_UID (n2->decl);
 }
 
@@ -165,7 +166,7 @@ cgraph_create_node (void)
 {
   struct cgraph_node *node;
 
-  node = ggc_alloc_cleared (sizeof (*node));
+  node = GGC_CNEW (struct cgraph_node);
   node->next = cgraph_nodes;
   node->uid = cgraph_max_uid++;
   if (cgraph_nodes)
@@ -286,7 +287,7 @@ struct cgraph_edge *
 cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
 		    tree call_stmt, gcov_type count, int nest)
 {
-  struct cgraph_edge *edge = ggc_alloc (sizeof (struct cgraph_edge));
+  struct cgraph_edge *edge = GGC_NEW (struct cgraph_edge);
 #ifdef ENABLE_CHECKING
   struct cgraph_edge *e;
 
@@ -472,7 +473,7 @@ cgraph_remove_node (struct cgraph_node *node)
      */
   if (!kill_body && *slot)
     {
-      struct cgraph_node *n = *slot;
+      struct cgraph_node *n = (struct cgraph_node *) *slot;
       if (!n->next_clone && !n->global.inlined_to
 	  && (cgraph_global_info_ready
 	      && (TREE_ASM_WRITTEN (n->decl) || DECL_EXTERNAL (n->decl))))
@@ -697,7 +698,7 @@ dump_varpool (FILE *f)
 static hashval_t
 hash_varpool_node (const void *p)
 {
-  const struct cgraph_varpool_node *n = p;
+  const struct cgraph_varpool_node *n = (const struct cgraph_varpool_node *) p;
   return (hashval_t) DECL_UID (n->decl);
 }
 
@@ -706,7 +707,10 @@ hash_varpool_node (const void *p)
 static int
 eq_varpool_node (const void *p1, const void *p2)
 {
-  const struct cgraph_varpool_node *n1 = p1, *n2 = p2;
+  const struct cgraph_varpool_node *n1 =
+    (const struct cgraph_varpool_node *) p1;
+  const struct cgraph_varpool_node *n2 =
+    (const struct cgraph_varpool_node *) p2;
   return DECL_UID (n1->decl) == DECL_UID (n2->decl);
 }
 
@@ -726,7 +730,7 @@ cgraph_varpool_node (tree decl)
     htab_find_slot (cgraph_varpool_hash, &key, INSERT);
   if (*slot)
     return *slot;
-  node = ggc_alloc_cleared (sizeof (*node));
+  node = GGC_CNEW (struct cgraph_varpool_node);
   node->decl = decl;
   node->next = cgraph_varpool_nodes;
   cgraph_varpool_nodes = node;
