@@ -1,4 +1,11 @@
 2005-12-17  Steven G. Kargl  <kargls@comcast.net>
+	    Tobias Schlueter <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/25458
+	* simplify.c (gfc_simplify_ibset, gfc_simplify_not): Add call to
+	twos_complement.
+
+2005-12-17  Steven G. Kargl  <kargls@comcast.net>
 
 	* decl.c (gfc_match_old_kind_spec,match_type_spec): Use gfc_std_notify
 	to report nonstandard intrinsic type declarations.

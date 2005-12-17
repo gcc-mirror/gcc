@@ -1348,6 +1348,9 @@ gfc_simplify_ibset (gfc_expr * x, gfc_expr * y)
   result = gfc_copy_expr (x);
 
   mpz_setbit (result->value.integer, pos);
+
+  twos_complement (result->value.integer, gfc_integer_kinds[k].bit_size);
+
   return range_check (result, "IBSET");
 }
 
@@ -2513,6 +2516,8 @@ gfc_simplify_not (gfc_expr * e)
 
   mpz_and (result->value.integer, result->value.integer,
 	   gfc_integer_kinds[i].max_int);
+
+  twos_complement (result->value.integer, gfc_integer_kinds[i].bit_size);
 
   return range_check (result, "NOT");
 }
