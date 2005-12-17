@@ -1,3 +1,9 @@
+2005-12-17  Paul Brook  <paul@codesourcery.com>
+
+	* config/m68k/m68k.md (m68k_output_function_prologue): Always call
+	dwarf2out_def_cfa. Only add space for frame pointer to cfa_offset
+	when frame_pointer_needed. 
+
 2005-12-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* tree-inline.c (copy_body_r): Use explicit cast when converting
