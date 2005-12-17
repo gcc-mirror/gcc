@@ -703,6 +703,41 @@ forward_propagate_addr_expr (tree stmt)
   return all;
 }
 
+/* If we have lhs = ~x (STMT), look and see if earlier we had x = ~y.
+   If so, we can change STMT into lhs = y which can later be copy
+   propagated.  Similarly for negation. 
+
+   This could trivially be formulated as a forward propagation 
+   to immediate uses.  However, we already had an implementation
+   from DOM which used backward propagation via the use-def links.
+
+   It turns out that backward propagation is actually faster as
+   there's less work to do for each NOT/NEG expression we find.
+   Backwards propagation needs to look at the statement in a single
+   backlink.  Forward propagation needs to look at potentially more
+   than one forward link.  */
+
+static void
+simplify_not_neg_expr (tree stmt)
+{
+  tree rhs = TREE_OPERAND (stmt, 1);
+  tree rhs_def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
+
+  /* See if the RHS_DEF_STMT has the same form as our statement.  */
+  if (TREE_CODE (rhs_def_stmt) == MODIFY_EXPR
+      && TREE_CODE (TREE_OPERAND (rhs_def_stmt, 1)) == TREE_CODE (rhs))
+    {
+      tree rhs_def_operand = TREE_OPERAND (TREE_OPERAND (rhs_def_stmt, 1), 0);
+
+      /* Verify that RHS_DEF_OPERAND is a suitable SSA_NAME.  */
+      if (TREE_CODE (rhs_def_operand) == SSA_NAME
+	  && ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs_def_operand))
+	{
+	  TREE_OPERAND (stmt, 1) = rhs_def_operand;
+	  update_stmt (stmt);
+	}
+    }
+}
 
 /* Main entry point for the forward propagation optimizer.  */
 
@@ -724,12 +759,32 @@ tree_ssa_forward_propagate_single_use_vars (void)
 
 	  /* If this statement sets an SSA_NAME to an address,
 	     try to propagate the address into the uses of the SSA_NAME.  */
-	  if (TREE_CODE (stmt) == MODIFY_EXPR
-	      && TREE_CODE (TREE_OPERAND (stmt, 1)) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME)
+	  if (TREE_CODE (stmt) == MODIFY_EXPR)
 	    {
-	      if (forward_propagate_addr_expr (stmt))
-		bsi_remove (&bsi);
+	      tree lhs = TREE_OPERAND (stmt, 0);
+	      tree rhs = TREE_OPERAND (stmt, 1);
+
+
+	      if (TREE_CODE (lhs) != SSA_NAME)
+		{
+		  bsi_next (&bsi);
+		  continue;
+		}
+
+	      if (TREE_CODE (rhs) == ADDR_EXPR)
+		{
+		  if (forward_propagate_addr_expr (stmt))
+		    bsi_remove (&bsi);
+		  else
+		    bsi_next (&bsi);
+		}
+	      else if ((TREE_CODE (rhs) == BIT_NOT_EXPR
+		        || TREE_CODE (rhs) == NEGATE_EXPR)
+		       && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
+		{
+		  simplify_not_neg_expr (stmt);
+		  bsi_next (&bsi);
+		}
 	      else
 		bsi_next (&bsi);
 	    }

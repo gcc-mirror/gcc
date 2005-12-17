@@ -1,3 +1,15 @@
+2005-12-16  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (update_rhs_and_lookup_avail_expr): Kill.
+	(simplify_rhs_and_lookup_avail_expr): Kill.  Remnants moved
+	into tree-ssa-forwprop.c.
+	(eliminate_redundant_computations): Do not call
+	simplify_rhs_and_lookup_avail_expr anymore.
+	* tree-ssa-forwprop.c (simplify_not_neg_expr): New function
+	extracted from remnants of simplify_rhs_and_lookup_avail_expr.
+	(tree_ssa_forward_propagate_single_use_vars): Call
+	simplify_not_neg_expr appropriately.
+
 2005-12-16  Bernd Trog  <berndtrog@yahoo.com>
 
 	PR target/20016

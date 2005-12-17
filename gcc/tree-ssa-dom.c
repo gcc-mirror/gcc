@@ -273,8 +273,6 @@ static void htab_statistics (FILE *, htab_t);
 static void record_cond (tree, tree);
 static void record_const_or_copy (tree, tree);
 static void record_equality (tree, tree);
-static tree update_rhs_and_lookup_avail_expr (tree, tree, bool);
-static tree simplify_rhs_and_lookup_avail_expr (tree, int);
 static tree simplify_cond_and_lookup_avail_expr (tree, stmt_ann_t, int);
 static tree simplify_switch_and_lookup_avail_expr (tree, int);
 static tree find_equivalent_equality_comparison (tree);
@@ -1795,51 +1793,6 @@ simple_iv_increment_p (tree stmt)
   return false;
 }
 
-/* STMT is a MODIFY_EXPR for which we were unable to find RHS in the
-   hash tables.  Try to simplify the RHS using whatever equivalences
-   we may have recorded.
-
-   If we are able to simplify the RHS, then lookup the simplified form in
-   the hash table and return the result.  Otherwise return NULL.  */
-
-static tree
-simplify_rhs_and_lookup_avail_expr (tree stmt, int insert)
-{
-  tree rhs = TREE_OPERAND (stmt, 1);
-  enum tree_code rhs_code = TREE_CODE (rhs);
-  tree result = NULL;
-
-  /* If we have lhs = ~x, look and see if we earlier had x = ~y.
-     In which case we can change this statement to be lhs = y.
-     Which can then be copy propagated. 
-
-     Similarly for negation.  */
-  if ((rhs_code == BIT_NOT_EXPR || rhs_code == NEGATE_EXPR)
-      && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
-    {
-      /* Get the definition statement for our RHS.  */
-      tree rhs_def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
-
-      /* See if the RHS_DEF_STMT has the same form as our statement.  */
-      if (TREE_CODE (rhs_def_stmt) == MODIFY_EXPR
-	  && TREE_CODE (TREE_OPERAND (rhs_def_stmt, 1)) == rhs_code)
-	{
-	  tree rhs_def_operand;
-
-	  rhs_def_operand = TREE_OPERAND (TREE_OPERAND (rhs_def_stmt, 1), 0);
-
-	  /* Verify that RHS_DEF_OPERAND is a suitable SSA variable.  */
-	  if (TREE_CODE (rhs_def_operand) == SSA_NAME
-	      && ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs_def_operand))
-	    result = update_rhs_and_lookup_avail_expr (stmt,
-						       rhs_def_operand,
-						       insert);
-	}
-    }
-
-  return result;
-}
-
 /* COND is a condition of the form:
 
      x == const or x != const
@@ -2516,15 +2469,9 @@ eliminate_redundant_computations (tree stmt, stmt_ann_t ann)
   /* Check if the expression has been computed before.  */
   cached_lhs = lookup_avail_expr (stmt, insert);
 
-  /* If this is an assignment and the RHS was not in the hash table,
-     then try to simplify the RHS and lookup the new RHS in the
-     hash table.  */
-  if (! cached_lhs && TREE_CODE (stmt) == MODIFY_EXPR)
-    cached_lhs = simplify_rhs_and_lookup_avail_expr (stmt, insert);
-  /* Similarly if this is a COND_EXPR and we did not find its
-     expression in the hash table, simplify the condition and
-     try again.  */
-  else if (! cached_lhs && TREE_CODE (stmt) == COND_EXPR)
+  /* If this is a COND_EXPR and we did not find its expression in
+     the hash table, simplify the condition and try again.  */
+  if (! cached_lhs && TREE_CODE (stmt) == COND_EXPR)
     cached_lhs = simplify_cond_and_lookup_avail_expr (stmt, ann, insert);
   /* Similarly for a SWITCH_EXPR.  */
   else if (!cached_lhs && TREE_CODE (stmt) == SWITCH_EXPR)
@@ -2989,64 +2936,6 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
   if (may_have_exposed_new_symbols)
     VEC_safe_push (tree, heap, stmts_to_rescan, bsi_stmt (si));
-}
-
-/* Replace the RHS of STMT with NEW_RHS.  If RHS can be found in the
-   available expression hashtable, then return the LHS from the hash
-   table.
-
-   If INSERT is true, then we also update the available expression
-   hash table to account for the changes made to STMT.  */
-
-static tree
-update_rhs_and_lookup_avail_expr (tree stmt, tree new_rhs, bool insert)
-{
-  tree cached_lhs = NULL;
-
-  /* Remove the old entry from the hash table.  */
-  if (insert)
-    {
-      struct expr_hash_elt element;
-
-      initialize_hash_element (stmt, NULL, &element);
-      htab_remove_elt_with_hash (avail_exprs, &element, element.hash);
-    }
-
-  /* Now update the RHS of the assignment.  */
-  TREE_OPERAND (stmt, 1) = new_rhs;
-
-  /* Now lookup the updated statement in the hash table.  */
-  cached_lhs = lookup_avail_expr (stmt, insert);
-
-  /* We have now called lookup_avail_expr twice with two different
-     versions of this same statement, once in optimize_stmt, once here.
-
-     We know the call in optimize_stmt did not find an existing entry
-     in the hash table, so a new entry was created.  At the same time
-     this statement was pushed onto the AVAIL_EXPRS_STACK vector. 
-
-     If this call failed to find an existing entry on the hash table,
-     then the new version of this statement was entered into the
-     hash table.  And this statement was pushed onto BLOCK_AVAIL_EXPR
-     for the second time.  So there are two copies on BLOCK_AVAIL_EXPRs
-
-     If this call succeeded, we still have one copy of this statement
-     on the BLOCK_AVAIL_EXPRs vector.
-
-     For both cases, we need to pop the most recent entry off the
-     BLOCK_AVAIL_EXPRs vector.  For the case where we never found this
-     statement in the hash tables, that will leave precisely one
-     copy of this statement on BLOCK_AVAIL_EXPRs.  For the case where
-     we found a copy of this statement in the second hash table lookup
-     we want _no_ copies of this statement in BLOCK_AVAIL_EXPRs.  */
-  if (insert)
-    VEC_pop (tree, avail_exprs_stack);
-
-  /* And make sure we record the fact that we modified this
-     statement.  */
-  mark_stmt_modified (stmt);
-
-  return cached_lhs;
 }
 
 /* Search for an existing instance of STMT in the AVAIL_EXPRS table.  If
