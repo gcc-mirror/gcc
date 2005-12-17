@@ -143,7 +143,7 @@ floatformat_i387_ext_is_valid (const struct floatformat *fmt, const void *from)
      nor ~0, the intbit must also be set.  Only if the exponent is
      zero can it be zero, and then it must be zero.  */
   unsigned long exponent, int_bit;
-  const unsigned char *ufrom = from;
+  const unsigned char *ufrom = (const unsigned char *) from;
 
   exponent = get_field (ufrom, fmt->byteorder, fmt->totalsize,
 			fmt->exp_start, fmt->exp_len);
@@ -295,7 +295,7 @@ void
 floatformat_to_double (const struct floatformat *fmt,
                        const void *from, double *to)
 {
-  const unsigned char *ufrom = from;
+  const unsigned char *ufrom = (const unsigned char *) from;
   double dto;
   long exponent;
   unsigned long mant;
@@ -471,7 +471,7 @@ floatformat_from_double (const struct floatformat *fmt,
   double mant;
   unsigned int mant_bits, mant_off;
   int mant_bits_left;
-  unsigned char *uto = to;
+  unsigned char *uto = (unsigned char *) to;
 
   dfrom = *from;
   memset (uto, 0, fmt->totalsize / FLOATFORMAT_CHAR_BIT);
