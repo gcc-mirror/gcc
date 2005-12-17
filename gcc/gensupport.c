@@ -1200,7 +1200,7 @@ lookup_predicate (const char *name)
 {
   struct pred_data key;
   key.name = name;
-  return htab_find (predicate_table, &key);
+  return (struct pred_data *) htab_find (predicate_table, &key);
 }
 
 void
@@ -1268,7 +1268,7 @@ init_predicate_table (void)
 
   for (i = 0; i < NUM_KNOWN_STD_PREDS; i++)
     {
-      pred = xcalloc (sizeof (struct pred_data), 1);
+      pred = XCNEW (struct pred_data);
       pred->name = std_preds[i].name;
       pred->special = std_preds[i].special;
 

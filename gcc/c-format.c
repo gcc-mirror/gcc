@@ -2077,7 +2077,7 @@ check_format_info_main (format_check_results *res,
 	      fci = fci->chain;
 	      if (fci)
 		{
-		  wanted_type_ptr = ggc_alloc (sizeof (main_wanted_type));
+		  wanted_type_ptr = GGC_NEW (format_wanted_type);
 		  arg_num++;
 		  wanted_type = *fci->types[length_chars_val].type;
 		  wanted_type_name = fci->types[length_chars_val].name;
@@ -2286,7 +2286,7 @@ format_type_warning (const char *descr, const char *format_start,
      this is adequate, but formats taking pointers to functions or
      arrays would require the full type to be built up in order to
      print it with %T.  */
-  p = alloca (pointer_count + 2);
+  p = (char *) alloca (pointer_count + 2);
   if (pointer_count == 0)
     p[0] = 0;
   else if (c_dialect_cxx ())

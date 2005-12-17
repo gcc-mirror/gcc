@@ -417,7 +417,7 @@ extern void free_simple_loop_desc (struct loop *loop);
 static inline struct niter_desc *
 simple_loop_desc (struct loop *loop)
 {
-  return loop->aux;
+  return (struct niter_desc *) loop->aux;
 }
 
 /* The properties of the target.  */

@@ -544,7 +544,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
       else /* Else the RETURN_EXPR returns no value.  */
 	{
 	  *tp = NULL;
-	  return (void *)1;
+	  return (tree) (void *)1;
 	}
     }
 
@@ -724,7 +724,8 @@ copy_bb (inline_data *id, basic_block bb, int frequency_scale, int count_scale)
 
   /* create_basic_block() will append every new block to
      basic_block_info automatically.  */
-  copy_basic_block = create_basic_block (NULL, (void *) 0, bb->prev_bb->aux);
+  copy_basic_block = create_basic_block (NULL, (void *) 0,
+                                         (basic_block) bb->prev_bb->aux);
   copy_basic_block->count = bb->count * count_scale / REG_BR_PROB_BASE;
   copy_basic_block->frequency = (bb->frequency
 				     * frequency_scale / REG_BR_PROB_BASE);
@@ -827,7 +828,7 @@ copy_bb (inline_data *id, basic_block bb, int frequency_scale, int count_scale)
 static void
 copy_edges_for_bb (basic_block bb, int count_scale)
 {
-  basic_block new_bb = bb->aux;
+  basic_block new_bb = (basic_block) bb->aux;
   edge_iterator ei;
   edge old_edge;
   block_stmt_iterator bsi;
@@ -846,7 +847,7 @@ copy_edges_for_bb (basic_block bb, int count_scale)
 	if (old_edge->dest->index == EXIT_BLOCK && !old_edge->flags
 	    && old_edge->dest->aux != EXIT_BLOCK_PTR)
 	  flags |= EDGE_FALLTHRU;
-	new = make_edge (new_bb, old_edge->dest->aux, flags);
+	new = make_edge (new_bb, (basic_block) old_edge->dest->aux, flags);
 	new->count = old_edge->count * count_scale / REG_BR_PROB_BASE;
 	new->probability = old_edge->probability;
       }
@@ -895,7 +896,7 @@ copy_edges_for_bb (basic_block bb, int count_scale)
 static tree
 remap_decl_1 (tree decl, void *data)
 {
-  return remap_decl (decl, data);
+  return remap_decl (decl, (inline_data *) data);
 }
 
 /* Make a copy of the body of FN so that it can be inserted inline in
@@ -1614,7 +1615,7 @@ estimate_move_cost (tree type)
 static tree
 estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 {
-  int *count = data;
+  int *count = (int *) data;
   tree x = *tp;
 
   if (IS_TYPE_OR_DECL_P (x))
