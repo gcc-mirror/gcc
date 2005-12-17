@@ -3,10 +3,10 @@
 
   character*1 :: i, j(10)
   character*8 :: buffer
-  integer*1 :: ii, jj(10)
+  integer(kind=1) :: ii, jj(10)
   type :: mytype
-    real*8 :: x
-    integer*1 :: i
+    real(kind=8) :: x
+    integer(kind=1) :: i
     character*15 :: ch
   end type mytype
   type(mytype) :: iii, jjj(10)

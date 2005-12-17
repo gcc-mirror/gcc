@@ -2,7 +2,7 @@ c { dg-do compile }
 C Derived from lapack
       SUBROUTINE ZGELSX( M, N, NRHS, A, LDA, B, LDB, JPVT, RCOND, RANK,
      $                   WORK, RWORK, INFO )
-      COMPLEX*16         WORK( * )
+      COMPLEX(kind=8)         WORK( * )
 c     Following declaration added on transfer to gfortran testsuite.
 c     It is present in original lapack source
       integer rank

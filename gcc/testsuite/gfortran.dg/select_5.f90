@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! Test mismatched type kinds in a select statement.
 program select_5
-  integer*1 i          ! kind = 1, -128 <= i < 127
+  integer(kind=1) i          ! kind = 1, -128 <= i < 127
   do i = 1, 3
     select case (i)     
     case (1_4)         ! kind = 4, reachable

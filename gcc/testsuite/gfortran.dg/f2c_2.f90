@@ -2,7 +2,7 @@
 ! -ff2c
 !
 ! Once the library has support for f2c calling conventions (i.e. passing
-! a REAL*4 or COMPLEX-valued intrinsic as procedure argument works), we
+! a REAL(kind=4) or COMPLEX-valued intrinsic as procedure argument works), we
 ! can simply add -ff2c to the list of options to cycle through, and get
 ! complete coverage.  As of 2005-03-05 this doesn't work.
 ! { dg-do run }

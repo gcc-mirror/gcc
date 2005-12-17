@@ -1,6 +1,6 @@
 c { dg-do compile }
-      REAL*8 A,B,C
-      REAL*4 RARRAY(19)
+      REAL(kind=8) A,B,C
+      REAL(kind=4) RARRAY(19)
       DATA RARRAY /19*-1/
       INTEGER BOTTOM,RIGHT
       INTEGER IARRAY(19)

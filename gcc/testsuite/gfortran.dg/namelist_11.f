@@ -7,8 +7,8 @@ c provided by Paul Thomas - pault@gcc.gnu.org
 
       program namelist_1
 
-      REAL*4 x(10)
-      REAL*8 xx
+      REAL x(10)
+      REAL(kind=8) xx
       integer ier
       namelist /mynml/ x, xx
 

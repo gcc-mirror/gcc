@@ -29,4 +29,3 @@
 !
   write(6,*) st1 (1), fi (2), dshpfunc (1.0_8)
   END
-

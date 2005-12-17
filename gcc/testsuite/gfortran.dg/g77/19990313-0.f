@@ -8,11 +8,11 @@ c { dg-do run }
 * User-Agent: Gnus/5.07007 (Pterodactyl Gnus v0.70) Emacs/20.3
 * X-UIDL: d442bafe961c2a6ec6904f492e05d7b0
 * 
-* ISTM that there is a real problem printing integer*8 (on x86):
+* ISTM that there is a real problem printing integer(kind=8) (on x86):
 * 
 * $ cat x.f
 *[modified for test suite]
-        integer *8 foo, bar
+        integer(kind=8) foo, bar
         data r/4e10/
         foo = 4e10
         bar = r
