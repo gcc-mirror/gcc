@@ -1,5 +1,10 @@
 2005-12-17  Steven G. Kargl  <kargls@comcast.net>
 
+	* PR fortran/25458
+	* gfortran.dg/chkbits.f90: New test.
+
+2005-12-17  Steven G. Kargl  <kargls@comcast.net>
+
 	*gfortran.dg/enum_5.f:  Revert to previous version.
 
 2005-12-17  Steven G. Kargl  <kargls@comcast.net>
