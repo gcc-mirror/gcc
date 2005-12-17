@@ -205,12 +205,6 @@ struct var_ann_d GTY(())
   /* Used by the root-var object in tree-ssa-live.[ch].  */
   unsigned root_index;
 
-  /* Default definition for this symbol.  If this field is not NULL, it
-     means that the first reference to this variable in the function is a
-     USE or a VUSE.  In those cases, the SSA renamer creates an SSA name
-     for this variable with an empty defining statement.  */
-  tree default_def;
-
   /* During into-ssa and the dominator optimizer, this field holds the
      current version of this variable (an SSA_NAME).  */
   tree current_def;
@@ -327,8 +321,6 @@ static inline const char *get_filename (tree);
 static inline bool is_exec_stmt (tree);
 static inline bool is_label_stmt (tree);
 static inline bitmap addresses_taken (tree);
-static inline void set_default_def (tree, tree);
-static inline tree default_def (tree);
 
 /*---------------------------------------------------------------------------
                   Structure representing predictions in tree level.
@@ -395,6 +387,9 @@ typedef struct
 
 /* Array of all variables referenced in the function.  */
 extern GTY((param_is (struct int_tree_map))) htab_t referenced_vars;
+
+/* Default defs for undefined symbols. */
+extern GTY((param_is (struct int_tree_map))) htab_t default_defs;
 
 extern tree referenced_var_lookup (unsigned int);
 extern tree referenced_var_lookup_if_exists (unsigned int);
@@ -560,6 +555,9 @@ extern void mark_new_vars_to_rename (tree);
 extern void find_new_referenced_vars (tree *);
 
 extern tree make_rename_temp (tree, const char *);
+extern void set_default_def (tree, tree);
+extern tree default_def (tree);
+extern tree default_def_fn (struct function *, tree);
 
 /* In tree-phinodes.c  */
 extern void reserve_phi_args_for_new_edge (basic_block);
