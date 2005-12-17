@@ -1,5 +1,9 @@
 2005-12-17  Steven G. Kargl  <kargls@comcast.net>
 
+	*gfortran.dg/enum_5.f:  Revert to previous version.
+
+2005-12-17  Steven G. Kargl  <kargls@comcast.net>
+
 	* gfortran.dg/imag_1.f: Fix nonstandard type declarations.
 	* gfortran.dg/nested_modules_1.f90: Ditto.
 	* gfortran.dg/hollerith_f95.f90: Ditto.
