@@ -440,7 +440,8 @@ struct tree_opt_pass pass_free_cfg =
 rtx
 entry_of_function (void)
 {
-  return (n_basic_blocks ? BB_HEAD (ENTRY_BLOCK_PTR->next_bb) : get_insns ());
+  return (n_basic_blocks > NUM_FIXED_BLOCKS ? 
+	  BB_HEAD (ENTRY_BLOCK_PTR->next_bb) : get_insns ());
 }
 
 /* Update insns block within BB.  */
@@ -2258,7 +2259,7 @@ rtl_verify_flow_info (void)
 	curr_bb = NULL;
     }
 
-  if (num_bb_notes != n_basic_blocks)
+  if (num_bb_notes != n_basic_blocks - NUM_FIXED_BLOCKS)
     internal_error
       ("number of bb notes in insn chain (%d) != n_basic_blocks (%d)",
        num_bb_notes, n_basic_blocks);
@@ -2913,7 +2914,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
   int last_bb = last_basic_block;
   bool check_last_block = false;
 
-  if (n_basic_blocks == 0)
+  if (n_basic_blocks == NUM_FIXED_BLOCKS)
     return 0;
 
   if (! blocks)
@@ -2960,7 +2961,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
      calls since there is no way that we can determine if they will
      return or not...  */
 
-  for (i = 0; i < last_bb; i++)
+  for (i = NUM_FIXED_BLOCKS; i < last_bb; i++)
     {
       basic_block bb = BASIC_BLOCK (i);
       rtx insn;

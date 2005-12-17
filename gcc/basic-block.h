@@ -430,12 +430,12 @@ extern bool rediscover_loops_after_threading;
 /* For iterating over insns in basic block.  */
 #define FOR_BB_INSNS(BB, INSN)			\
   for ((INSN) = BB_HEAD (BB);			\
-       (INSN) != NEXT_INSN (BB_END (BB));	\
+       (INSN) && (INSN) != NEXT_INSN (BB_END (BB));	\
        (INSN) = NEXT_INSN (INSN))
 
 #define FOR_BB_INSNS_REVERSE(BB, INSN)		\
   for ((INSN) = BB_END (BB);			\
-       (INSN) != PREV_INSN (BB_HEAD (BB));	\
+       (INSN) && (INSN) != PREV_INSN (BB_HEAD (BB));	\
        (INSN) = PREV_INSN (INSN))
 
 /* Cycles through _all_ basic blocks, even the fake ones (entry and
@@ -467,11 +467,12 @@ extern bitmap_obstack reg_obstack;
 #define BB_END(B)       (B)->il.rtl->end_
 
 /* Special block numbers [markers] for entry and exit.  */
-#define ENTRY_BLOCK (-1)
-#define EXIT_BLOCK (-2)
+#define ENTRY_BLOCK (0)
+#define EXIT_BLOCK (1)
 
-/* Special block number not valid for any block.  */
-#define INVALID_BLOCK (-3)
+/* The two blocks that are always in the cfg.  */
+#define NUM_FIXED_BLOCKS (2)
+
 
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 #define set_block_for_insn(INSN, BB)  (BLOCK_FOR_INSN (INSN) = BB)

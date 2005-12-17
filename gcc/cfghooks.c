@@ -77,8 +77,8 @@ verify_flow_info (void)
   basic_block *last_visited;
 
   timevar_push (TV_CFG_VERIFY);
-  last_visited = xcalloc (last_basic_block + 2, sizeof (basic_block));
-  edge_checksum = xcalloc (last_basic_block + 2, sizeof (size_t));
+  last_visited = xcalloc (last_basic_block, sizeof (basic_block));
+  edge_checksum = xcalloc (last_basic_block, sizeof (size_t));
 
   /* Check bb chain & numbers.  */
   last_bb_seen = ENTRY_BLOCK_PTR;
@@ -122,7 +122,7 @@ verify_flow_info (void)
 	}
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  if (last_visited [e->dest->index + 2] == bb)
+	  if (last_visited [e->dest->index] == bb)
 	    {
 	      error ("verify_flow_info: Duplicate edge %i->%i",
 		     e->src->index, e->dest->index);
@@ -141,7 +141,7 @@ verify_flow_info (void)
 	      err = 1;
 	    }
 
-	  last_visited [e->dest->index + 2] = bb;
+	  last_visited [e->dest->index] = bb;
 
 	  if (e->flags & EDGE_FALLTHRU)
 	    n_fallthru++;
@@ -158,7 +158,7 @@ verify_flow_info (void)
 	      err = 1;
 	    }
 
-	  edge_checksum[e->dest->index + 2] += (size_t) e;
+	  edge_checksum[e->dest->index] += (size_t) e;
 	}
       if (n_fallthru > 1)
 	{
@@ -192,7 +192,7 @@ verify_flow_info (void)
 	      err = 1;
 	    }
 
-	  edge_checksum[e->dest->index + 2] -= (size_t) e;
+	  edge_checksum[e->dest->index] -= (size_t) e;
 	}
     }
 
@@ -202,14 +202,14 @@ verify_flow_info (void)
     edge_iterator ei;
 
     FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-      edge_checksum[e->dest->index + 2] += (size_t) e;
+      edge_checksum[e->dest->index] += (size_t) e;
 
     FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-      edge_checksum[e->dest->index + 2] -= (size_t) e;
+      edge_checksum[e->dest->index] -= (size_t) e;
   }
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    if (edge_checksum[bb->index + 2])
+    if (edge_checksum[bb->index])
       {
 	error ("basic block %i edge lists are corrupted", bb->index);
 	err = 1;

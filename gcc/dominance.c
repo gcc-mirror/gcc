@@ -51,8 +51,7 @@ enum dom_state dom_computed[2];
    'undefined' or 'end of list'.  The name of each node is given by the dfs
    number of the corresponding basic block.  Please note, that we include the
    artificial ENTRY_BLOCK (or EXIT_BLOCK in the post-dom case) in our lists to
-   support multiple entry points.  As it has no real basic block index we use
-   'last_basic_block' for that.  Its dfs number is of course 1.  */
+   support multiple entry points.  Its dfs number is of course 1.  */
 
 /* Type of Basic Block aka. TBB */
 typedef unsigned int TBB;
@@ -149,9 +148,7 @@ static unsigned n_bbs_in_dom_tree[2];
 static void
 init_dom_info (struct dom_info *di, enum cdi_direction dir)
 {
-  /* We need memory for n_basic_blocks nodes and the ENTRY_BLOCK or
-     EXIT_BLOCK.  */
-  unsigned int num = n_basic_blocks + 1 + 1;
+  unsigned int num = n_basic_blocks;
   init_ar (di->dfs_parent, TBB, num, 0);
   init_ar (di->path_min, TBB, num, i);
   init_ar (di->key, TBB, num, i);
@@ -216,7 +213,7 @@ calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb,
   /* Ending block.  */
   basic_block ex_block;
 
-  stack = xmalloc ((n_basic_blocks + 3) * sizeof (edge_iterator));
+  stack = xmalloc ((n_basic_blocks + 1) * sizeof (edge_iterator));
   sp = 0;
 
   /* Initialize our border blocks, and the first edge.  */
@@ -372,8 +369,8 @@ calc_dfs_tree (struct dom_info *di, enum cdi_direction reverse)
 
   di->nodes = di->dfsnum - 1;
 
-  /* Make sure there is a path from ENTRY to EXIT at all.  */
-  gcc_assert (di->nodes == (unsigned int) n_basic_blocks + 1);
+  /* This aborts e.g. when there is _no_ path from ENTRY to EXIT at all.  */
+  gcc_assert (di->nodes == (unsigned int) n_basic_blocks - 1);
 }
 
 /* Compress the path from V to the root of its set and update path_min at the
@@ -627,7 +624,7 @@ calculate_dominance_info (enum cdi_direction dir)
 	{
 	  b->dom[dir] = et_new_tree (b);
 	}
-      n_bbs_in_dom_tree[dir] = n_basic_blocks + 2;
+      n_bbs_in_dom_tree[dir] = n_basic_blocks;
 
       init_dom_info (&di, dir);
       calc_dfs_tree (&di, dir);

@@ -1054,17 +1054,14 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
       SET_REGNO_REG_SET (invalidated_by_call, i);
 
   /* Allocate space for the sets of local properties.  */
-  local_sets = xcalloc (last_basic_block - (INVALID_BLOCK + 1),
-			sizeof (regset));
-  cond_local_sets = xcalloc (last_basic_block - (INVALID_BLOCK + 1),
-			     sizeof (regset));
+  local_sets = xcalloc (last_basic_block, sizeof (regset));
+  cond_local_sets = xcalloc (last_basic_block, sizeof (regset));
 
-  /* Create a worklist.  Allocate an extra slot for ENTRY_BLOCK, and one
-     because the `head == tail' style test for an empty queue doesn't
-     work with a full queue.  */
-  queue = xmalloc ((n_basic_blocks - (INVALID_BLOCK + 1)) * sizeof (*queue));
+  /* Create a worklist.  Allocate an extra slot for the `head == tail'
+     style test for an empty queue doesn't work with a full queue.  */
+  queue = xmalloc ((n_basic_blocks + 1) * sizeof (*queue));
   qtail = queue;
-  qhead = qend = queue + n_basic_blocks - (INVALID_BLOCK + 1);
+  qhead = qend = queue + n_basic_blocks;
 
   /* Queue the blocks set in the initial mask.  Do this in reverse block
      number order so that we are more likely for the first round to do
@@ -1245,12 +1242,10 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
          basic block.  On subsequent passes, we get to skip out early if
 	 live_at_end wouldn't have changed.  */
 
-      if (local_sets[bb->index - (INVALID_BLOCK + 1)] == NULL)
+      if (local_sets[bb->index] == NULL)
 	{
-	  local_sets[bb->index - (INVALID_BLOCK + 1)]
-	    = ALLOC_REG_SET (&reg_obstack);
-	  cond_local_sets[bb->index - (INVALID_BLOCK + 1)]
-	    = ALLOC_REG_SET (&reg_obstack);
+	  local_sets[bb->index] = ALLOC_REG_SET (&reg_obstack);
+	  cond_local_sets[bb->index] = ALLOC_REG_SET (&reg_obstack);
 	  rescan = 1;
 	}
       else
@@ -1274,7 +1269,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 		  successor block.  We can miss changes in those sets if
 		  we only compare the new live_at_end against the
 		  previous one.  */
-	      cond_local_set = cond_local_sets[bb->index - (INVALID_BLOCK + 1)];
+	      cond_local_set = cond_local_sets[bb->index];
 	      rescan = bitmap_intersect_p (new_live_at_end, cond_local_set);
 	    }
 
@@ -1290,7 +1285,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
   
 	      /* If any of the changed bits overlap with local_sets[bb],
  		 we'll have to rescan the block.  */
-	      local_set = local_sets[bb->index - (INVALID_BLOCK + 1)];
+	      local_set = local_sets[bb->index];
 	      rescan = bitmap_intersect_p (tmp, local_set);
 	    }
 	}
@@ -1319,8 +1314,8 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	  /* Rescan the block insn by insn to turn (a copy of) live_at_end
 	     into live_at_start.  */
 	  propagate_block (bb, new_live_at_end,
-			   local_sets[bb->index - (INVALID_BLOCK + 1)],
-			   cond_local_sets[bb->index - (INVALID_BLOCK + 1)],
+			   local_sets[bb->index],
+			   cond_local_sets[bb->index],
 			   flags);
 
 	  /* If live_at start didn't change, no need to go farther.  */
@@ -1366,11 +1361,11 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 			SET_BIT (blocks_out, pbb->index);
 
 		      /* Makes sure to really rescan the block.  */
-		      if (local_sets[pbb->index - (INVALID_BLOCK + 1)])
+		      if (local_sets[pbb->index])
 			{
-			  FREE_REG_SET (local_sets[pbb->index - (INVALID_BLOCK + 1)]);
-			  FREE_REG_SET (cond_local_sets[pbb->index - (INVALID_BLOCK + 1)]);
-			  local_sets[pbb->index - (INVALID_BLOCK + 1)] = 0;
+			  FREE_REG_SET (local_sets[pbb->index]);
+			  FREE_REG_SET (cond_local_sets[pbb->index]);
+			  local_sets[pbb->index] = 0;
 			}
 
 		      /* Add it to the queue.  */
@@ -1416,16 +1411,16 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
       EXECUTE_IF_SET_IN_SBITMAP (blocks_out, 0, i, sbi)
 	{
 	  basic_block bb = BASIC_BLOCK (i);
-	  FREE_REG_SET (local_sets[bb->index - (INVALID_BLOCK + 1)]);
-	  FREE_REG_SET (cond_local_sets[bb->index - (INVALID_BLOCK + 1)]);
+ 	  FREE_REG_SET (local_sets[bb->index]);
+ 	  FREE_REG_SET (cond_local_sets[bb->index]);
 	};
     }
   else
     {
       FOR_EACH_BB (bb)
 	{
-	  FREE_REG_SET (local_sets[bb->index - (INVALID_BLOCK + 1)]);
-	  FREE_REG_SET (cond_local_sets[bb->index - (INVALID_BLOCK + 1)]);
+ 	  FREE_REG_SET (local_sets[bb->index]);
+ 	  FREE_REG_SET (cond_local_sets[bb->index]);
 	}
     }
 
@@ -2472,7 +2467,7 @@ libcall_dead_p (struct propagate_block_info *pbi, rtx note, rtx insn)
 int
 regno_clobbered_at_setjmp (int regno)
 {
-  if (n_basic_blocks == 0)
+  if (n_basic_blocks == NUM_FIXED_BLOCKS)
     return 0;
 
   return ((REG_N_SETS (regno) > 1

@@ -1776,20 +1776,19 @@ copyprop_hardreg_forward (void)
 
   all_vd = xmalloc (sizeof (struct value_data) * last_basic_block);
 
-  visited = sbitmap_alloc (last_basic_block - (INVALID_BLOCK + 1));
+  visited = sbitmap_alloc (last_basic_block);
   sbitmap_zero (visited);
 
   FOR_EACH_BB (bb)
     {
-      SET_BIT (visited, bb->index - (INVALID_BLOCK + 1));
+      SET_BIT (visited, bb->index);
 
       /* If a block has a single predecessor, that we've already
 	 processed, begin with the value data that was live at
 	 the end of the predecessor block.  */
       /* ??? Ought to use more intelligent queuing of blocks.  */
-      if (single_pred_p (bb)
-	  && TEST_BIT (visited,
-		       single_pred (bb)->index - (INVALID_BLOCK + 1))
+      if (single_pred_p (bb) 
+	  && TEST_BIT (visited, single_pred (bb)->index)
 	  && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
 	all_vd[bb->index] = all_vd[single_pred (bb)->index];
       else

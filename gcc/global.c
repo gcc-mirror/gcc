@@ -621,7 +621,7 @@ global_alloc (FILE *file)
 
 #if 0 /* We need to eliminate regs even if there is no rtl code,
 	 for the sake of debugging information.  */
-  if (n_basic_blocks > 0)
+  if (n_basic_blocks > NUM_FIXED_BLOCKS)
 #endif
     {
       build_insn_chain (get_insns ());
@@ -2281,9 +2281,9 @@ set_up_bb_rts_numbers (void)
   int i;
   int *rts_order;
   
-  rts_order = xmalloc (sizeof (int) * n_basic_blocks);
+  rts_order = xmalloc (sizeof (int) * (n_basic_blocks - NUM_FIXED_BLOCKS));
   flow_reverse_top_sort_order_compute (rts_order);
-  for (i = 0; i < n_basic_blocks; i++)
+  for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
     BB_INFO_BY_INDEX (rts_order [i])->rts_number = i;
   free (rts_order);
 }

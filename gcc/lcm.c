@@ -122,8 +122,8 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
     }
 
   qin = worklist;
-  qend = &worklist[n_basic_blocks];
-  qlen = n_basic_blocks;
+  qend = &worklist[n_basic_blocks - NUM_FIXED_BLOCKS];
+  qlen = n_basic_blocks - NUM_FIXED_BLOCKS;
 
   /* Mark blocks which are predecessors of the exit block so that we
      can easily identify them below.  */
@@ -260,7 +260,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
   qin = qout = worklist
-    = xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
+    = xmalloc (sizeof (basic_block) * n_basic_blocks);
 
   /* Initialize a mapping from each edge to its index.  */
   for (i = 0; i < num_edges; i++)
@@ -294,11 +294,10 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
     }
 
   /* Note that we do not use the last allocated element for our queue,
-     as EXIT_BLOCK is never inserted into it. In fact the above allocation
-     of n_basic_blocks + 1 elements is not necessary.  */
+     as EXIT_BLOCK is never inserted into it. */
   qin = worklist;
-  qend = &worklist[n_basic_blocks];
-  qlen = n_basic_blocks;
+  qend = &worklist[n_basic_blocks - NUM_FIXED_BLOCKS];
+  qlen = n_basic_blocks - NUM_FIXED_BLOCKS;
 
   /* Iterate until the worklist is empty.  */
   while (qlen)
@@ -485,7 +484,8 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  qin = qout = worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  qin = qout = worklist = 
+    xmalloc (sizeof (basic_block) * (n_basic_blocks - NUM_FIXED_BLOCKS));
 
   /* We want a maximal solution.  */
   sbitmap_vector_ones (avout, last_basic_block);
@@ -499,8 +499,8 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
     }
 
   qin = worklist;
-  qend = &worklist[n_basic_blocks];
-  qlen = n_basic_blocks;
+  qend = &worklist[n_basic_blocks - NUM_FIXED_BLOCKS];
+  qlen = n_basic_blocks - NUM_FIXED_BLOCKS;
 
   /* Mark blocks which are successors of the entry block so that we
      can easily identify them below.  */

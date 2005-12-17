@@ -1926,7 +1926,6 @@ df_analyze_1 (struct df *df, bitmap blocks, int flags, int update)
 {
   int aflags;
   int dflags;
-  int i;
   basic_block bb;
   struct dataflow dflow;
 
@@ -1996,18 +1995,9 @@ df_analyze_1 (struct df *df, bitmap blocks, int flags, int update)
   df->dfs_order = xmalloc (sizeof (int) * n_basic_blocks);
   df->rc_order = xmalloc (sizeof (int) * n_basic_blocks);
   df->rts_order = xmalloc (sizeof (int) * n_basic_blocks);
-  df->inverse_dfs_map = xmalloc (sizeof (int) * last_basic_block);
-  df->inverse_rc_map = xmalloc (sizeof (int) * last_basic_block);
-  df->inverse_rts_map = xmalloc (sizeof (int) * last_basic_block);
 
   flow_depth_first_order_compute (df->dfs_order, df->rc_order);
   flow_reverse_top_sort_order_compute (df->rts_order);
-  for (i = 0; i < n_basic_blocks; i++)
-    {
-      df->inverse_dfs_map[df->dfs_order[i]] = i;
-      df->inverse_rc_map[df->rc_order[i]] = i;
-      df->inverse_rts_map[df->rts_order[i]] = i;
-    }
   if (aflags & DF_RD)
     {
       /* Compute the sets of gens and kills for the defs of each bb.  */
@@ -2137,9 +2127,6 @@ df_analyze_1 (struct df *df, bitmap blocks, int flags, int update)
   free (df->dfs_order);
   free (df->rc_order);
   free (df->rts_order);
-  free (df->inverse_rc_map);
-  free (df->inverse_dfs_map);
-  free (df->inverse_rts_map);
 }
 
 
@@ -3923,8 +3910,7 @@ hybrid_search (basic_block bb, struct dataflow *dataflow,
    DATAFLOW, producing the in and out sets.  Only the part of the cfg
    induced by blocks in DATAFLOW->order is taken into account.
 
-   For forward problems, you probably want to pass in a mapping of
-   block number to rc_order (like df->inverse_rc_map).  */
+   For forward problems, you probably want to pass in rc_order.  */
 
 void
 iterative_dataflow (struct dataflow *dataflow)
@@ -3939,7 +3925,7 @@ iterative_dataflow (struct dataflow *dataflow)
   sbitmap_zero (visited);
   sbitmap_zero (considered);
 
-  for (i = 0; i < dataflow->n_blocks; i++)
+  for (i = 0; i < dataflow->n_blocks - NUM_FIXED_BLOCKS; i++)
     {
       idx = dataflow->order[i];
       SET_BIT (pending, idx);
@@ -3954,7 +3940,7 @@ iterative_dataflow (struct dataflow *dataflow)
 
   while (1)
     {
-      for (i = 0; i < dataflow->n_blocks; i++)
+      for (i = 0; i < dataflow->n_blocks - NUM_FIXED_BLOCKS ; i++)
 	{
 	  idx = dataflow->order[i];
 
