@@ -1,3 +1,15 @@
+2005-12-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* include/bits/valarray_after.h (_Expr<>::operator[](slice)): 
+	Don't assume the closure implements general indexing, as a matter
+	of fact, most of them don't.
+	(_Expr<>::operator[](const gslice&)): Likewise.
+	(_Expr<>::operator[](const valarray<bool>&)): Likewise.
+	(_Expr<>::operator[](const valarray<size_t>&)): Likewise.
+	(_Expr<>::shift): Fix thinko.
+	(_Expr<>::cshift): Likewise.
+	(_Expr<>::apply): Likewise.
+
 2005-12-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/tr1/4_metaprogramming/type_properties/is_empty/is_empty.cc:
