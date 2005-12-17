@@ -8,22 +8,22 @@
 !
   type   :: numeric_type
     sequence
-    integer  :: i
-    real     :: x
-    real*8   :: d
-    complex  :: z
-    logical  :: l
+    integer      :: i
+    real         :: x
+    real(kind=8) :: d
+    complex      :: z
+    logical      :: l
   end type numeric_type
 
   type (numeric_type) :: my_num, thy_num
 
   type   :: numeric_type2
     sequence
-    integer  :: i
-    real     :: x
-    real*8   :: d
-    complex  :: z
-    logical  :: l
+    integer      :: i
+    real         :: x
+    real(kind=8) :: d
+    complex      :: z
+    logical      :: l
   end type numeric_type2
 
   type (numeric_type2) :: his_num
@@ -38,16 +38,16 @@
 
   type       :: mixed_type
     sequence
-    integer*4 :: i(4)
+    integer     :: i(4)
     character*4 :: cha (6)
   end type mixed_type
 
   type (mixed_type) ::  my_mixed, thy_mixed
 
   character(len=4) :: ch
-  integer :: num
-  integer*8 :: non_def
-  complex*16 :: my_z, thy_z
+  integer         :: num
+  integer(kind=8) :: non_def
+  complex(kind=8) :: my_z, thy_z
 
 ! Permitted: character with character sequence
 !            numeric with numeric sequence

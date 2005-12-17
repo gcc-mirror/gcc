@@ -1,14 +1,14 @@
 ! Testcases for the AND, OR and XOR functions (GNU intrinsics).
 ! { dg-do run }
 ! { dg-options "-ffixed-line-length-none" }
-      integer*1 i1, j1
-      integer*2 i2, j2
-      integer*4 i4, j4
-      integer*8 i8, j8
-      logical*1 l1, k1
-      logical*2 l2, k2
-      logical*4 l4, k4
-      logical*8 l8, k8
+      integer(kind=1) i1, j1
+      integer(kind=2) i2, j2
+      integer         i4, j4
+      integer(kind=8) i8, j8
+      logical(kind=1) l1, k1
+      logical(kind=2) l2, k2
+      logical         l4, k4
+      logical(kind=8) l8, k8
 
 #define TEST_INTEGER(u,ukind,v,vkind) \
       ukind = u;\

@@ -2,7 +2,7 @@
 ! { dg-options "-std=f95" }
       program bug
       implicit none
-      double complex z
+      complex(kind=8) z
       double precision x
       z = cmplx(1.e0_8, 2.e0_8)
       x = imag(z)         ! { dg-error "has no IMPLICIT type" "" }

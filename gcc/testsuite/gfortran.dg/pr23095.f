@@ -4,9 +4,9 @@
       ! GCSE after reload made a stack register live across an abnormal
       ! edges for one of the computed jumps.  This bombed in reg-stack.
       function foo(n) 
-      real*8 foo 
+      real(kind=8) foo 
       integer ix, n, next 
-      real*8 xmax, absx 
+      real(kind=8) xmax, absx 
       foo  = 0.0d0 
       assign 20 to next 
       do ix = 1,n 

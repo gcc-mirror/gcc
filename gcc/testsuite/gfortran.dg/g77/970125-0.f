@@ -26,9 +26,9 @@ C ../../egcs/gcc/expr.c:7291: Internal compiler error in function expand_expr
 
 c     Frontend bug fixed by JCB 1998-06-01 com.c &c changes.
 
-        integer*4 i4
-        integer*8 i8
-        integer*8 max4
+        integer i4
+        integer(kind=8) i8
+        integer(kind=8) max4
         data max4/2147483647/
         i4 = %loc(i4)
         i8 = %loc(i8)
@@ -39,7 +39,7 @@ c     Frontend bug fixed by JCB 1998-06-01 com.c &c changes.
         end
         subroutine foo(i4, i4a, i8, i8a)
         integer(kind=7) i4a, i8a
-        integer*8 i8
+        integer(kind=8) i8
         print *, i4, i4a
         print *, i8, i8a
         end

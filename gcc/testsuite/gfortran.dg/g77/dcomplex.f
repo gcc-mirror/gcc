@@ -1,6 +1,6 @@
 c { dg-do run }
       program foo
-      complex*16      z0, z1, z2
+      complex(kind=8)      z0, z1, z2
 
       z0 = dcmplx(0.,.5)
       z1 = 1./z0

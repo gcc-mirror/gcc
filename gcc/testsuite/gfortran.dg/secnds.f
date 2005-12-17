@@ -7,10 +7,10 @@ C
 C Contributed by Paul Thomas  <pault@gcc.gnu.org>
 C
       character*20 dum1, dum2, dum3
-      real*4 t1, t2
-      real*4 dat1, dat2
-      real*4 dt
-      integer*4 i, j, values(8)
+      real t1, t2
+      real dat1, dat2
+      real dt
+      integer i, j, values(8)
       dt = 40e-3
       t1 = secnds (0.0)
       call date_and_time (dum1, dum2, dum3, values)

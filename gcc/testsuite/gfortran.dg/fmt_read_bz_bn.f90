@@ -6,7 +6,7 @@ program test_bn
         
 integer I1(2,2), I2(2,2,2)
 real A1(5)
-real*8 A2(0:3)
+real(kind=8) A2(0:3)
 character*80 :: IDATA1="111 2 2 3 3. 3E-1  44 5 5 6 . 67 . 78 8. 8E-1"
 character*80 :: IDATA2="2345 1 34512 45123 51234 2345 1 34512 45123 5"
 character*80 :: IDATA3="-8.0D0  1.0D-4  0.50D0  0.250D0"

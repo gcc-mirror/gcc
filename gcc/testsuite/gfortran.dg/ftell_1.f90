@@ -1,5 +1,5 @@
 ! { dg-do run }
-  integer*8 o, o2
+  integer(kind=8) o, o2
 
   open (10, status="scratch")
   call ftell (10, o)

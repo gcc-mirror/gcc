@@ -4,7 +4,7 @@ c { dg-do compile }
 * Too small to worry about copyright issues, IMO, since it
 * doesn't do anything substantive.
       SUBROUTINE OUTDNS(A,B,LCONV)
-      IMPLICIT REAL*8(A-H,O-Z),INTEGER*4(I-N)
+      IMPLICIT REAL(kind=8) (A-H,O-Z),INTEGER(I-N)
       COMMON/ARRAYS/Z(64,8),AB(30,30),PAIRS(9,9),T(9,9),TEMP(9,9),C1(3),
      >  C2(3),AA(30),BB(30)
       EQUIVALENCE (X1,C1(1)),(Y1,C1(2)),(Z1,C1(3))
@@ -13,7 +13,7 @@ c { dg-do compile }
      >  SHIFT,CONV,SCION,DIVERG,
      >  IOPT,KCNDO,KINDO,KMINDO,I2EINT,KOHNO,KSLATE,
      >  N,NG,NUMAT,NSEK,NELECS,NIT,OCCA,OCCB,NOLDAT,NOLDFN
-      INTEGER*4 OCCA,OCCB
+      INTEGER OCCA,OCCB
       DIMENSION W(N),A(N,N),B(N,N)
       DIMENSION BUF(100)
       occb=5

@@ -35,7 +35,7 @@ c     COS - Section 13.13.22
       call c_d(COS(1.d0),0.54030231d0,'COS(double)')
       call c_c(COS((1.,0.)),(0.54030231,0.),'COS(complex)')
       call c_z(COS((1.d0,0.d0)),(0.54030231d0,0.d0),
-     $     'COS(double complex)')
+     $     'COS(complex(kind=8))')
 
 c     COSH - Section 13.13.23
       call c_r(COSH(1.0),1.5430806,'COSH(real)')
@@ -46,14 +46,14 @@ c     EXP - Section 13.13.34
       call c_d(EXP(1.d0),2.7182818d0,'EXP(double)')
       call c_c(EXP((1.,0.)),(2.7182818,0.),'EXP(complex)')
       call c_z(EXP((1.d0,0.d0)),(2.7182818d0,0.d0),
-     $     'EXP(double complex)')
+     $     'EXP(complex(kind=8))')
 
 c     LOG - Section 13.13.59
       call c_r(LOG(10.0),2.3025851,'LOG(real)')
       call c_d(LOG(10.d0),2.3025851d0,'LOG(double)')
       call c_c(LOG((10.,0.)),(2.3025851,0.),'LOG(complex)')
       call c_z(LOG((10.d0,0.)),(2.3025851d0,0.d0),
-     $     'LOG(double complex)')
+     $     'LOG(complex(kind=8))')
 
 c     LOG10 - Section 13.13.60
       call c_r(LOG10(10.0),1.0,'LOG10(real)')
@@ -64,7 +64,7 @@ c     SIN - Section 13.13.97
       call c_d(SIN(1.d0),0.84147098d0,'SIN(double)')
       call c_c(SIN((1.,0.)),(0.84147098,0.),'SIN(complex)')
       call c_z(SIN((1.d0,0.d0)),(0.84147098d0,0.d0),
-     $     'SIN(double complex)')
+     $     'SIN(complex(kind=8))')
 
 c     SINH - Section 13.13.98
       call c_r(SINH(1.0),1.175201,'SINH(real)')
@@ -75,7 +75,7 @@ c     SQRT - Section 13.13.102
       call c_d(SQRT(4.d0),2.d0,'SQRT(double)')
       call c_c(SQRT((4.,0.)),(2.,0.),'SQRT(complex)')
       call c_z(SQRT((4.d0,0.)),(2.d0,0.),
-     $     'SQRT(double complex)')
+     $     'SQRT(complex(kind=8))')
  
 c     TAN - Section 13.13.105
       call c_r(TAN(1.0),1.5574077,'TAN(real)')
@@ -129,7 +129,7 @@ c     Check if COMPLEX a equals b, and fail otherwise
 
       subroutine c_z(a,b,label)
 c     Check if COMPLEX a equals b, and fail otherwise
-      double complex a, b
+      complex(kind=8) a, b
       character*(*) label
       if ( abs(a-b) .gt. 1.0d-5 ) then
          call failure(label)

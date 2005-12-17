@@ -2,7 +2,7 @@
 ! PR 18710 : We used to not read and write the imaginary part of 
 ! complex numbers
        COMPLEX C, D
-       DOUBLE COMPLEX E, F
+       COMPLEX(KIND=8) E, F
 
        OPEN(UNIT=9,FILE='PR18710',ACCESS='DIRECT',RECL=132)
 

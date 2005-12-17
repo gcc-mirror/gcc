@@ -9,9 +9,9 @@ c
       real x, a
       double precision dx, da
       integer i
-      integer*2 j
-      integer*1 k
-      integer*8 m
+      integer(kind=2) j
+      integer(kind=1) k
+      integer(kind=8) m
       logical fail
       common /flags/ fail
       fail = .false.
@@ -40,14 +40,14 @@ c     BESJN  - Bessel function of first kind of order N
       a = 0.3528340
       da = a
       call c_r(BESJN(i,x),a,'BESJN(integer,real)')
-      call c_r(BESJN(j,x),a,'BESJN(integer*2,real)')
-      call c_r(BESJN(k,x),a,'BESJN(integer*1,real)')
+      call c_r(BESJN(j,x),a,'BESJN(integer(2),real)')
+      call c_r(BESJN(k,x),a,'BESJN(integer(1),real)')
       call c_d(BESJN(i,dx),da,'BESJN(integer,double)')
-      call c_d(BESJN(j,dx),da,'BESJN(integer*2,double)')
-      call c_d(BESJN(k,dx),da,'BESJN(integer*1,double)')
+      call c_d(BESJN(j,dx),da,'BESJN(integer(2),double)')
+      call c_d(BESJN(k,dx),da,'BESJN(integer(1),double)')
       call c_d(DBESJN(i,dx),da,'DBESJN(integer,double)')
-      call c_d(DBESJN(j,dx),da,'DBESJN(integer*2,double)')
-      call c_d(DBESJN(k,dx),da,'DBESJN(integer*1,double)')
+      call c_d(DBESJN(j,dx),da,'DBESJN(integer(2),double)')
+      call c_d(DBESJN(k,dx),da,'DBESJN(integer(1),double)')
 
 c     BESY0  - Bessel function of second kind of order zero
       a = 0.51037567
@@ -67,14 +67,14 @@ c     BESYN  - Bessel function of second kind of order N
       a = -0.6174081
       da = a
       call c_r(BESYN(i,x),a,'BESYN(integer,real)')
-      call c_r(BESYN(j,x),a,'BESYN(integer*2,real)')
-      call c_r(BESYN(k,x),a,'BESYN(integer*1,real)')
+      call c_r(BESYN(j,x),a,'BESYN(integer(2),real)')
+      call c_r(BESYN(k,x),a,'BESYN(integer(1),real)')
       call c_d(BESYN(i,dx),da,'BESYN(integer,double)')
-      call c_d(BESYN(j,dx),da,'BESYN(integer*2,double)')
-      call c_d(BESYN(k,dx),da,'BESYN(integer*1,double)')
+      call c_d(BESYN(j,dx),da,'BESYN(integer(2),double)')
+      call c_d(BESYN(k,dx),da,'BESYN(integer(1),double)')
       call c_d(DBESYN(i,dx),da,'DBESYN(integer,double)')
-      call c_d(DBESYN(j,dx),da,'DBESYN(integer*2,double)')
-      call c_d(DBESYN(k,dx),da,'DBESYN(integer*1,double)')
+      call c_d(DBESYN(j,dx),da,'DBESYN(integer(2),double)')
+      call c_d(DBESYN(k,dx),da,'DBESYN(integer(1),double)')
 
       if ( fail ) call abort()
       end

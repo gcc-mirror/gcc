@@ -17,8 +17,8 @@ return
 entry e2 ()
 e2 (:, :, :) = 2
 end function
-integer*8 function f3 ()		! { dg-error "can't be of type" }
-complex*16 e3				! { dg-error "can't be of type" }
+integer(kind=8) function f3 ()		! { dg-error "can't be of type" }
+complex(kind=8) e3		        ! { dg-error "can't be of type" }
 f3 = 1
 return
 entry e3 ()
