@@ -1,3 +1,9 @@
+2005-12-17  Steven Bosscher  <stevenb@suse.de>
+
+	PR rtl-optimization/23837
+	* optabs.c (expand_binop): For a multi-word rotate, never emit
+	a REG_NO_CONFLICT block.
+
 2005-12-15  Andrew Haley  <aph@redhat.com>
 
 	* unwind-dw2-fde-glibc.c (_Unwind_IteratePhdrCallback): Guard
