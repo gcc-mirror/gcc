@@ -1,3 +1,8 @@
+2005-12-16  Bernd Trog  <berndtrog@yahoo.com>
+
+	PR target/20016
+	* config/avr/t-avr: Add -Os to TARGET_LIBGCC2_CFLAGS.
+
 2005-12-17  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR rtl-optimization/25456
