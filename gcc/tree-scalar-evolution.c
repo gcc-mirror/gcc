@@ -1867,7 +1867,7 @@ get_instantiated_value (htab_t cache, tree version)
   struct scev_info_str *info, pattern;
   
   pattern.var = version;
-  info = htab_find (cache, &pattern);
+  info = (struct scev_info_str *) htab_find (cache, &pattern);
 
   if (info)
     return info->chrec;

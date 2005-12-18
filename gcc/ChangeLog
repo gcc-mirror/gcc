@@ -6,6 +6,58 @@
 
 2005-12-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* tree-vn.c (vn_add): Use XNEW.
+	* tree-ssa-ccp.c (ccp_initialize): Use XNEWVEC.
+	(ccp_fold): Likewise.
+	(fold_stmt_r): Use explicit cast to convert from void *.
+	* tree-outof-ssa.c (new_temp_expr_table): Use XCNEWVEC.
+	(new_temp_expr_table): Likewise.
+	* gimplify.c (lookup_tmp_var): Use XNEW.
+	(gimplify_asm_expr): Use explcit cast to convert from void *.
+	* tree-into-ssa.c (get_ssa_name_ann): Likewise.
+	(get_def_blocks_for): Use XNEW.
+	(add_to_repl_tbl): Likewise.
+	(mark_def_sites): Use explicit cast to convert from void *.
+	(def_blocks_free): Likewise.
+	(mark_def_sites_initialize_block): Likewise.
+	(update_ssa): Use XNEWVEC.
+	* tree-dfa.c (create_var_ann): Use GGC_NEW.
+	(create_stmt_ann): Likewise.
+	(create_tree_ann): Likewise.
+	(referenced_var_insert): Likewise.
+	(set_default_def): Likewise.
+	(referenced_var_lookup_if_exists): Use explicit cast to convert
+	from void *.
+	(referenced_var_lookup): Likewise.
+	(default_def): Likewise.
+	(set_default_def): Likewise.
+	* tree-cfg.c (create_bb): Likewise.
+	(edge_to_cases_cleanup): Likewise.
+	(verify_node_sharing): Likewise.
+	(record_switch_edge): Use XNEW.
+	(cleanup_dead_labels): Use XCNEWVEC.
+	(tree_duplicate_sese_region): Use XNEWVEC.
+	* tree-scalar-evolution.c (get_instantiated_value): Likewise.
+	* tree-ssa.c (verify_ssa): Use XCNEWVEC.
+	(int_tree_map_eq): Use explicit cast to convert from void *.
+	* libgcov.c (gcov_exit): Use explicit cast to convert from void *.
+	(__gcov_execl): Likewise.
+	(__gcov_execlp): Likewise.
+	(__gcov_execle): Likewise.
+	* tree-eh.c (struct_ptr_eq): Likewise.
+	(struct_ptr_hash): Likewise.
+	(lookup_stmt_eh_region_fn): Likewise.
+	(outside_finally_tree): Likewise.
+	(find_goto_replacement): Likewise.
+	(make_eh_edge): Likewise.
+	(mark_eh_edge): Likewise.
+	(add_stmt_to_eh_region_fn): Use GGC_NEW.
+	(record_in_finally_tree): Use XNEW.
+	(maybe_record_in_goto_queue): Use XRESIZEVEC.
+	(lower_try_finally_copy): Use XCNEWVEC.
+
+2005-12-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* tree-inline.c (copy_body_r): Use explicit cast when converting
 	from void *.
 	(copy_bb): Likewise.

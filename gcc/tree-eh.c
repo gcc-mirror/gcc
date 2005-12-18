@@ -57,15 +57,15 @@ using_eh_for_cleanups (void)
 static int
 struct_ptr_eq (const void *a, const void *b)
 {
-  const void * const * x = a;
-  const void * const * y = b;
+  const void * const * x = (const void * const *) a;
+  const void * const * y = (const void * const *) b;
   return *x == *y;
 }
 
 static hashval_t
 struct_ptr_hash (const void *a)
 {
-  const void * const * x = a;
+  const void * const * x = (const void * const *) a;
   return (size_t)*x >> 4;
 }
 
@@ -100,7 +100,7 @@ add_stmt_to_eh_region_fn (struct function *ifun, tree t, int num)
   gcc_assert (num >= 0);
   gcc_assert (TREE_CODE (t) != RESX_EXPR);
 
-  n = ggc_alloc (sizeof (*n));
+  n = GGC_NEW (struct throw_stmt_node);
   n->stmt = t;
   n->region_nr = num;
 
@@ -168,7 +168,8 @@ lookup_stmt_eh_region_fn (struct function *ifun, tree t)
     return -2;
 
   n.stmt = t;
-  p = htab_find (get_eh_throw_stmt_table (ifun), &n);
+  p = (struct throw_stmt_node *) htab_find (get_eh_throw_stmt_table (ifun),
+                                            &n);
 
   return (p ? p->region_nr : -1);
 }
@@ -202,7 +203,7 @@ record_in_finally_tree (tree child, tree parent)
   struct finally_tree_node *n;
   void **slot;
 
-  n = xmalloc (sizeof (*n));
+  n = XNEW (struct finally_tree_node);
   n->child = child;
   n->parent = parent;
 
@@ -266,7 +267,7 @@ outside_finally_tree (tree start, tree target)
   do
     {
       n.child = start;
-      p = htab_find (finally_tree, &n);
+      p = (struct finally_tree_node *) htab_find (finally_tree, &n);
       if (!p)
 	return true;
       start = p->parent;
@@ -369,7 +370,8 @@ find_goto_replacement (struct leh_tf_state *tf, tree stmt)
 {
   struct goto_queue_node tmp, *ret;
   tmp.stmt = stmt;
-  ret = bsearch (&tmp, tf->goto_queue, tf->goto_queue_active,
+  ret = (struct goto_queue_node *)
+     bsearch (&tmp, tf->goto_queue, tf->goto_queue_active,
 		 sizeof (struct goto_queue_node), goto_queue_cmp);
   return (ret ? ret->repl_stmt : NULL);
 }
@@ -537,7 +539,7 @@ maybe_record_in_goto_queue (struct leh_state *state, tree stmt)
       size = (size ? size * 2 : 32);
       tf->goto_queue_size = size;
       tf->goto_queue
-	= xrealloc (tf->goto_queue, size * sizeof (struct goto_queue_node));
+         = XRESIZEVEC (struct goto_queue_node, tf->goto_queue, size);
     }
 
   q = &tf->goto_queue[active];
@@ -1058,14 +1060,14 @@ lower_try_finally_copy (struct leh_state *state, struct leh_tf_state *tf)
       struct goto_queue_node *q, *qe;
       tree return_val = NULL;
       int return_index, index;
-      struct
+      struct labels_s
       {
 	struct goto_queue_node *q;
 	tree label;
       } *labels;
 
       return_index = VEC_length (tree, tf->dest_array);
-      labels = xcalloc (sizeof (*labels), return_index + 1);
+      labels = XCNEWVEC (struct labels_s, return_index + 1);
 
       q = tf->goto_queue;
       qe = q + tf->goto_queue_active;
@@ -1713,7 +1715,7 @@ make_eh_edge (struct eh_region *region, void *data)
   tree stmt, lab;
   basic_block src, dst;
 
-  stmt = data;
+  stmt = (tree) data;
   lab = get_eh_region_tree_label (region);
 
   src = bb_for_stmt (stmt);
@@ -1755,7 +1757,7 @@ mark_eh_edge (struct eh_region *region, void *data)
   basic_block src, dst;
   edge e;
 
-  stmt = data;
+  stmt = (tree) data;
   lab = get_eh_region_tree_label (region);
 
   src = bb_for_stmt (stmt);
