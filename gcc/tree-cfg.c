@@ -4717,7 +4717,7 @@ tree_flow_call_edges_add (sbitmap blocks)
       if (!bsi_end_p (bsi))
 	t = bsi_stmt (bsi);
 
-      if (need_fake_edge_p (t))
+      if (t && need_fake_edge_p (t))
 	{
 	  edge e;
 

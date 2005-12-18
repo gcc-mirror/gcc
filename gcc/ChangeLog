@@ -1,3 +1,7 @@
+2005-12-18  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* tree-cfg.c (tree_flow_call_edges_add): Check for empty basic blocks.
+
 2005-12-18  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/25224
