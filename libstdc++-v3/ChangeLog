@@ -1,3 +1,25 @@
+2005-12-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/post: New.
+	* config/abi/*-linux-gnu: Move to..
+	* config/abi/post/*-linux-gnu: ... here.	
+	* config/abi/pre: New.
+	* config/linker-map.gnu: Move to ..
+	* config/abi/pre/gnu.ver: ... here.	
+	* config/linker-map.dummy: Move to..
+	* config/abi/pre/none.ver: ... here.
+	* src/Makefile.am: Use ENABLE_SYMVERS_GNU,
+	ENABLE_SYMVERS_DARWIN, ENABLE_SYMVERS_GNU_NAMESPACE.
+	Use libstdc++-symbols.ver instead of libstdc++-symbol.ver.
+	* src/Makefile.in: Regnerate.
+	* acinclude.m4 (GLIBCXX_CONFIGURE_TESTSUITE): Adjust paths for new
+	placement of abi baseline files.
+	(GLIBCXX_ENABLE_SYMVERS): Add ENABLE_SYMVERS, ENABLE_SYMVERS_GNU,
+	ENABLE_SYMVERS_DARWIN.  SYMVER_MAP to SYMVER_FILE.
+	* configure: Regnerate.
+	* config.h.in: Regnerate.
+	* src/compatibility.cc: Adjust macro usage.
+	
 2005-12-17  Benjamin Kosnik  <bkoz@redhat.com>
 
         * src/io-inst.cc: Separate instantiations into...

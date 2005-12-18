@@ -30,7 +30,7 @@
 
 #include <bits/c++config.h>
 
-#if defined(_GLIBCXX_SYMVER) && defined(PIC)
+#if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC)
 #define istreambuf_iterator istreambuf_iteratorXX
 #define basic_fstream basic_fstreamXX
 #define basic_ifstream basic_ifstreamXX
@@ -188,7 +188,7 @@ namespace std
 
 // NB: These symbols renames should go into the shared library only,
 // and only those shared libraries that support versioning.
-#if defined(_GLIBCXX_SYMVER) && defined(PIC)
+#if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC)
 
 /* gcc-3.4.4
 _ZNSt19istreambuf_iteratorIcSt11char_traitsIcEEppEv
@@ -362,7 +362,7 @@ namespace std
 
 #endif
 
-#ifdef __APPLE__
+#ifdef _GLIBCXX_SYMVER_DARWIN
 #if (defined(__ppc__) || defined (__ppc64__)) && defined (PIC)
 /* __eprintf shouldn't have been made visible from libstdc++, or
    anywhere, but on Mac OS X 10.4 it was defined in
@@ -385,4 +385,4 @@ __eprintf (const char *string, const char *expression,
   abort ();
 }
 #endif
-#endif /* __APPLE__ */
+#endif
