@@ -1,3 +1,7 @@
+2005-12-18  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/20051201-1.c: New test.
+
 2005-12-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25018
