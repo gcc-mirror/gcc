@@ -17736,9 +17736,9 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   GEN_LAZY_PTR_NAME_FOR_SYMBOL (lazy_ptr_name, symb, length);
 
   if (flag_pic == 2)
-    switch_to_section (machopic_picsymbol_stub1_section);
+    switch_to_section (darwin_sections[machopic_picsymbol_stub1_section]);
   else
-    switch_to_section (machopic_symbol_stub1_section);
+    switch_to_section (darwin_sections[machopic_symbol_stub1_section]);
 
   if (flag_pic == 2)
     {
@@ -17778,7 +17778,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\tbctr\n");
     }
 
-  switch_to_section (machopic_lazy_symbol_ptr_section);
+  switch_to_section (darwin_sections[machopic_lazy_symbol_ptr_section]);
   fprintf (file, "%s:\n", lazy_ptr_name);
   fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
   fprintf (file, "%sdyld_stub_binding_helper\n",

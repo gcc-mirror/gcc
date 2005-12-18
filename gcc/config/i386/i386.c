@@ -16586,9 +16586,9 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   sprintf (lazy_ptr_name, "L%d$lz", label);
 
   if (MACHOPIC_PURE)
-    switch_to_section (machopic_picsymbol_stub_section);
+    switch_to_section (darwin_sections[machopic_picsymbol_stub_section]);
   else
-    switch_to_section (machopic_symbol_stub_section);
+    switch_to_section (darwin_sections[machopic_symbol_stub_section]);
 
   fprintf (file, "%s:\n", stub);
   fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
@@ -16614,7 +16614,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
 
   fprintf (file, "\tjmp dyld_stub_binding_helper\n");
 
-  switch_to_section (machopic_lazy_symbol_ptr_section);
+  switch_to_section (darwin_sections[machopic_lazy_symbol_ptr_section]);
   fprintf (file, "%s:\n", lazy_ptr_name);
   fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
   fprintf (file, "\t.long %s\n", binder_name);
