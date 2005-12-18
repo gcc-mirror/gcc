@@ -1,3 +1,7 @@
+2005-12-18  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* doc/objc.texi (Type encoding): Fix typo.
+
 2005-12-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* tree-tailcall.c (find_tail_calls): Use XNEW.
