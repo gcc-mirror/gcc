@@ -2822,12 +2822,44 @@ vect_transform_loop (loop_vec_info loop_vinfo,
       tree cond_expr_stmt_list = NULL_TREE;
       basic_block condition_bb;
       block_stmt_iterator cond_exp_bsi;
+      basic_block merge_bb;
+      basic_block new_exit_bb;
+      edge new_exit_e, e;
+      tree orig_phi, new_phi, arg;
 
       cond_expr = vect_create_cond_for_align_checks (loop_vinfo,
                                                      &cond_expr_stmt_list);
       initialize_original_copy_tables ();
       nloop = loop_version (loops, loop, cond_expr, &condition_bb, true);
       free_original_copy_tables();
+
+      /** Loop versioning violates an assumption we try to maintain during 
+	 vectorization - that the loop exit block has a single predecessor.
+	 After versioning, the exit block of both loop versions is the same
+	 basic block (i.e. it has two predecessors). Just in order to simplify
+	 following transformations in the vectorizer, we fix this situation
+	 here by adding a new (empty) block on the exit-edge of the loop,
+	 with the proper loop-exit phis to maintain loop-closed-form.  **/
+      
+      merge_bb = loop->single_exit->dest;
+      gcc_assert (EDGE_COUNT (merge_bb->preds) == 2);
+      new_exit_bb = split_edge (loop->single_exit);
+      add_bb_to_loop (new_exit_bb, loop->outer);
+      new_exit_e = loop->single_exit;
+      e = EDGE_SUCC (new_exit_bb, 0);
+
+      for (orig_phi = phi_nodes (merge_bb); orig_phi; 
+	   orig_phi = PHI_CHAIN (orig_phi))
+	{
+          new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
+				     new_exit_bb);
+          arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
+          add_phi_arg (new_phi, arg, new_exit_e);
+	  SET_PHI_ARG_DEF (orig_phi, e->dest_idx, PHI_RESULT (new_phi));
+	} 
+
+      /** end loop-exit-fixes after versioning  **/
+
       update_ssa (TODO_update_ssa);
       cond_exp_bsi = bsi_last (condition_bb);
       bsi_insert_before (&cond_exp_bsi, cond_expr_stmt_list, BSI_SAME_STMT);

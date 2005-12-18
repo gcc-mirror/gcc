@@ -1,3 +1,9 @@
+2005-12-18  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/24378
+	* tree-vect-transform.c (vect_transform_loop): Create single-predecessor
+	basic-block after loop-versioning.
+
 2005-12-17  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/23837
