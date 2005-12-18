@@ -1,3 +1,9 @@
+2005-12-18  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/25224
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Free copy
+	tables.
+
 2005-12-18  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/24378
