@@ -1,3 +1,24 @@
+2005-12-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h: Don't include darwin-sections.def to declare
+	global variables; instead create darwin_section_enum.
+	(darwin_section_enum): New.
+	(darwin_sections): New.
+	* config/darwin.c: Don't include darwin-sections.def to define
+	global variables.
+	(darwin_sections): New.
+	(output_objc_section_asm_op): Rewrite to take advantage of
+	darwin_sections.
+	(darwin_init_sections): Rewrite to use darwin_sections.
+	(machopic_output_indirection): Update for darwin_sections array.
+	(machopic_select_section): Likewise.
+	(machopic_select_rtx_section): Likewise.
+	(machopic_asm_out_constructor): Likewise.
+	(machopic_asm_out_destructor): Likewise.
+	(darwin_file_end): Likewise.
+	* config/rs6000/rs6000.c (machopic_output_stub): Likewise.
+	* config/i386/i386.c (machopic_output_stub): Likewise.
+
 2005-12-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/25481

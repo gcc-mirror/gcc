@@ -611,9 +611,13 @@ Boston, MA 02110-1301, USA.  */
 
 /* Declare the section variables.  */
 #ifndef USED_FOR_TARGET
-#define DEF_SECTION(NAME, FLAGS, DIRECTIVE, OBJC) extern section *NAME;
+enum darwin_section_enum {
+#define DEF_SECTION(NAME, FLAGS, DIRECTIVE, OBJC) NAME,
 #include "darwin-sections.def"
 #undef DEF_SECTION
+  NUM_DARWIN_SECTIONS
+};
+extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 #endif
 
 #undef	TARGET_ASM_SELECT_SECTION
