@@ -3077,6 +3077,7 @@ output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
   switch (GET_MODE_CLASS (mode))
     {
     case MODE_FLOAT:
+    case MODE_DECIMAL_FLOAT:
       {
 	REAL_VALUE_TYPE r;
 	

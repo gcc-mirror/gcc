@@ -8124,7 +8124,10 @@ base_type_die (tree type)
       break;
 
     case REAL_TYPE:
-      encoding = DW_ATE_float;
+      if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type)))
+	encoding = DW_ATE_decimal_float;
+      else
+	encoding = DW_ATE_float;
       break;
 
       /* Dwarf2 doesn't know anything about complex ints, so use

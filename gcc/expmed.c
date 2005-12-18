@@ -3383,6 +3383,8 @@ extract_high_half (enum machine_mode mode, rtx op)
   if (mode == word_mode)
     return gen_highpart (mode, op);
 
+  gcc_assert (!SCALAR_FLOAT_MODE_P (mode));
+
   wider_mode = GET_MODE_WIDER_MODE (mode);
   op = expand_shift (RSHIFT_EXPR, wider_mode, op,
 		     build_int_cst (NULL_TREE, GET_MODE_BITSIZE (mode)), 0, 1);
@@ -3401,6 +3403,8 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
   optab moptab;
   rtx tem;
   int size;
+
+  gcc_assert (!SCALAR_FLOAT_MODE_P (mode));
 
   wider_mode = GET_MODE_WIDER_MODE (mode);
   size = GET_MODE_BITSIZE (mode);
@@ -3512,6 +3516,7 @@ expand_mult_highpart (enum machine_mode mode, rtx op0, rtx op1,
   struct algorithm alg;
   rtx tem;
 
+  gcc_assert (!SCALAR_FLOAT_MODE_P (mode));
   /* We can't support modes wider than HOST_BITS_PER_INT.  */
   gcc_assert (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT);
 

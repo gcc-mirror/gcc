@@ -640,6 +640,9 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       break;
 
     case FLOAT_TRUNCATE:
+      if (DECIMAL_FLOAT_MODE_P (mode))
+	break;
+
       /* (float_truncate:SF (float_extend:DF foo:SF)) = foo:SF.  */
       if (GET_CODE (op) == FLOAT_EXTEND
 	  && GET_MODE (XEXP (op, 0)) == mode)
@@ -693,6 +696,9 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       break;
 
     case FLOAT_EXTEND:
+      if (DECIMAL_FLOAT_MODE_P (mode))
+	break;
+
       /*  (float_extend (float_extend x)) is (float_extend x)
 
 	  (float_extend (float x)) is (float x) assuming that double
@@ -4284,6 +4290,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	  break;
       
 	case MODE_FLOAT:
+	case MODE_DECIMAL_FLOAT:
 	  {
 	    REAL_VALUE_TYPE r;
 	    long tmp[max_bitsize / 32];

@@ -5151,6 +5151,8 @@ gen_const_vector (enum machine_mode mode, int constant)
   units = GET_MODE_NUNITS (mode);
   inner = GET_MODE_INNER (mode);
 
+  gcc_assert (!DECIMAL_FLOAT_MODE_P (inner));
+
   v = rtvec_alloc (units);
 
   /* We need to call this function after we set the scalar const_tiny_rtx
@@ -5227,7 +5229,8 @@ init_emit_once (int line_numbers)
   word_mode = VOIDmode;
   double_mode = VOIDmode;
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+       mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
       if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
@@ -5239,7 +5242,8 @@ init_emit_once (int line_numbers)
 	word_mode = mode;
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+       mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
       if (GET_MODE_BITSIZE (mode) == DOUBLE_TYPE_SIZE
@@ -5324,14 +5328,22 @@ init_emit_once (int line_numbers)
       REAL_VALUE_TYPE *r =
 	(i == 0 ? &dconst0 : i == 1 ? &dconst1 : &dconst2);
 
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+	   mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	const_tiny_rtx[i][(int) mode] =
+	  CONST_DOUBLE_FROM_REAL_VALUE (*r, mode);
+
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_DECIMAL_FLOAT);
+	   mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	const_tiny_rtx[i][(int) mode] =
 	  CONST_DOUBLE_FROM_REAL_VALUE (*r, mode);
 
       const_tiny_rtx[i][(int) VOIDmode] = GEN_INT (i);
 
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
 
