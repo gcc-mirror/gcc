@@ -1,3 +1,33 @@
+2005-12-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (__copy_normal::copy_n): Uglify
+	to __copy_n.
+	(__copy_backward::copy_b): Likewise to __copy_b.
+	(__copy_backward_normal::copy_b_n): Likewise to __copy_b_n.
+	(copy, __copy_backward_aux, copy_backward): Adjust.
+
+2005-12-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (partial_sort_copy): Add
+	_BinaryPredicateConcept<_Compare, _InputValueType, _OutputValueType>
+	(merge, set_union, set_symmetric_difference): Add
+	_OutputIteratorConcept<_OutputIterator, _ValueType2>.
+	(binary_search): Remove redundant _BinaryPredicateConcept<_Compare,
+	_ValueType, _Tp>, taken care by lower_bound.
+	* include/bits/stl_algo.h: Cosmetic changes.
+
+2005-12-18  Paolo Carlini  <pcarlini@suse.de>
+	    Howard Hinnant  <hhinnant@apple.com>
+
+	* include/bits/stl_algo.h (merge, includes, set_union,
+	set_intersection, set_difference, set_symmetric_difference):
+	Fix concept checks.
+
+2005-12-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (partial_sort_copy, lower_bound,
+	upper_bound, equal_range, binary_search): Fix concept checks.
+
 2005-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/abi/post: New.
