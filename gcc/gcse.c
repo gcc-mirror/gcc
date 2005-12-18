@@ -691,7 +691,8 @@ gcse_main (rtx f ATTRIBUTE_UNUSED, FILE *file)
     dump_flow_info (file);
 
   /* Return if there's nothing to do, or it is too expensive.  */
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1 || is_too_expensive (_("GCSE disabled")))
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
+      || is_too_expensive (_("GCSE disabled")))
     return 0;
 
   gcc_obstack_init (&gcse_obstack);
@@ -6519,8 +6520,8 @@ bypass_jumps (FILE *file)
     dump_flow_info (file);
 
   /* Return if there's nothing to do, or it is too expensive.  */
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1 || 
-      is_too_expensive (_ ("jump bypassing disabled")))
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
+      || is_too_expensive (_ ("jump bypassing disabled")))
     return 0;
 
   gcc_obstack_init (&gcse_obstack);

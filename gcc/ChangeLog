@@ -1,3 +1,8 @@
+2005-12-18  Steven Bosscher  <stevenb@suse.de>
+
+	* gcse.c (gcse_main, bypass_jumps): Fix non-GNU-isms from
+	the 2005-12-17 patch to renumber the entry and exit blocks.
+
 2005-12-18  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* doc/objc.texi (Type encoding): Fix typo.
