@@ -526,7 +526,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   if (!tail_recursion && (m || a))
     return;
 
-  nw = xmalloc (sizeof (struct tailcall));
+  nw = XNEW (struct tailcall);
 
   nw->call_block = bb;
   nw->call_bsi = bsi;

@@ -455,7 +455,7 @@ init_alias_info (void)
   tree var;
 
   bitmap_obstack_initialize (&alias_obstack);
-  ai = xcalloc (1, sizeof (struct alias_info));
+  ai = XCNEW (struct alias_info);
   ai->ssa_names_visited = sbitmap_alloc (num_ssa_names);
   sbitmap_zero (ai->ssa_names_visited);
   VARRAY_TREE_INIT (ai->processed_ptrs, 50, "processed_ptrs");
@@ -1148,7 +1148,7 @@ static void
 create_alias_map_for (tree var, struct alias_info *ai)
 {
   struct alias_map_d *alias_map;
-  alias_map = xcalloc (1, sizeof (*alias_map));
+  alias_map = XCNEW (struct alias_map_d);
   alias_map->var = var;
   alias_map->set = get_alias_set (var);
   ai->addressable_vars[ai->num_addressable_vars++] = alias_map;
@@ -1194,9 +1194,8 @@ setup_pointers_and_addressables (struct alias_info *ai)
      because some TREE_ADDRESSABLE variables will be marked
      non-addressable below and only pointers with unique type tags are
      going to be added to POINTERS.  */
-  ai->addressable_vars = xcalloc (num_addressable_vars,
-				  sizeof (struct alias_map_d *));
-  ai->pointers = xcalloc (num_pointers, sizeof (struct alias_map_d *));
+  ai->addressable_vars = XCNEWVEC (struct alias_map_d *, num_addressable_vars);
+  ai->pointers = XCNEWVEC (struct alias_map_d *, num_pointers);
   ai->num_addressable_vars = 0;
   ai->num_pointers = 0;
 
@@ -1857,7 +1856,7 @@ get_tmt_for (tree ptr, struct alias_info *ai)
       /* Add PTR to the POINTERS array.  Note that we are not interested in
 	 PTR's alias set.  Instead, we cache the alias set for the memory that
 	 PTR points to.  */
-      alias_map = xcalloc (1, sizeof (*alias_map));
+      alias_map = XCNEW (struct alias_map_d);
       alias_map->var = ptr;
       alias_map->set = tag_set;
       ai->pointers[ai->num_pointers++] = alias_map;
@@ -2019,7 +2018,7 @@ get_ptr_info (tree t)
   pi = SSA_NAME_PTR_INFO (t);
   if (pi == NULL)
     {
-      pi = ggc_alloc (sizeof (*pi));
+      pi = GGC_NEW (struct ptr_info_def);
       memset ((void *)pi, 0, sizeof (*pi));
       SSA_NAME_PTR_INFO (t) = pi;
     }
@@ -2439,7 +2438,8 @@ struct used_part_map
 static int
 used_part_map_eq (const void *va, const void *vb)
 {
-  const struct used_part_map  *a = va, *b = vb;
+  const struct used_part_map *a = (const struct used_part_map *) va;
+  const struct used_part_map *b = (const struct used_part_map *) vb;
   return (a->uid == b->uid);
 }
 
@@ -2467,7 +2467,7 @@ up_lookup (unsigned int uid)
 {
   struct used_part_map *h, in;
   in.uid = uid;
-  h = htab_find_with_hash (used_portions, &in, uid);
+  h = (struct used_part_map *) htab_find_with_hash (used_portions, &in, uid);
   if (!h)
     return NULL;
   return h->to;
@@ -2481,7 +2481,7 @@ up_insert (unsigned int uid, used_part_t to)
   struct used_part_map *h;
   void **loc;
 
-  h = xmalloc (sizeof (struct used_part_map));
+  h = XNEW (struct used_part_map);
   h->uid = uid;
   h->to = to;
   loc = htab_find_slot_with_hash (used_portions, h,
@@ -2501,7 +2501,7 @@ get_or_create_used_part_for (size_t uid)
   used_part_t up;
   if ((up = up_lookup (uid)) == NULL)
     {
-      up = xcalloc (1, sizeof (struct used_part));
+      up = XCNEW (struct used_part);
       up->minused = INT_MAX;
       up->maxused = 0;
       up->explicit_uses = false;
@@ -2643,7 +2643,7 @@ create_overlap_variables_for (tree var)
 		  && fosize == lastfosize
 		  && currfotype == lastfotype))
 	    continue;
-	  sv = ggc_alloc (sizeof (struct subvar));
+	  sv = GGC_NEW (struct subvar);
 	  sv->offset = fo->offset;
 	  sv->size = fosize;
 	  sv->next = *subvars;

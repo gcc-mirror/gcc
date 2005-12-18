@@ -401,7 +401,7 @@ static inline void
 phi_trans_add (tree e, tree v, basic_block pred)
 {
   void **slot;
-  expr_pred_trans_t new_pair = xmalloc (sizeof (*new_pair));
+  expr_pred_trans_t new_pair = XNEW (struct expr_pred_trans_d);
   new_pair->e = e;
   new_pair->pred = pred;
   new_pair->v = v;
@@ -476,7 +476,7 @@ value_insert_into_set_bitmap (value_set_t set, tree v)
 static bitmap_set_t 
 bitmap_set_new (void)
 {
-  bitmap_set_t ret = pool_alloc (bitmap_set_pool);
+  bitmap_set_t ret = (bitmap_set_t) pool_alloc (bitmap_set_pool);
   ret->expressions = BITMAP_ALLOC (&grand_bitmap_obstack);
   ret->values = BITMAP_ALLOC (&grand_bitmap_obstack);
   return ret;
@@ -488,7 +488,7 @@ static value_set_t
 set_new  (bool indexed)
 {
   value_set_t ret;
-  ret = pool_alloc (value_set_pool);
+  ret = (value_set_t) pool_alloc (value_set_pool);
   ret->head = ret->tail = NULL;
   ret->length = 0;
   ret->indexed = indexed;
@@ -519,7 +519,7 @@ bitmap_insert_into_set (bitmap_set_t set, tree expr)
 static void
 insert_into_set (value_set_t set, tree expr)
 {
-  value_set_node_t newnode = pool_alloc (value_set_node_pool);
+  value_set_node_t newnode = (value_set_node_t) pool_alloc (value_set_node_pool);
   tree val = get_value_handle (expr);
   gcc_assert (val);
   
@@ -920,7 +920,7 @@ pool_copy_list (tree list)
 
   if (list == 0)
     return 0;
-  head = pool_alloc (list_node_pool);
+  head = (tree) pool_alloc (list_node_pool);
   
   memcpy (head, list, tree_size (list));
   prev = head;
@@ -928,7 +928,7 @@ pool_copy_list (tree list)
   next = TREE_CHAIN (list);
   while (next)
     {
-      TREE_CHAIN (prev) = pool_alloc (list_node_pool);
+      TREE_CHAIN (prev) = (tree) pool_alloc (list_node_pool);
       memcpy (TREE_CHAIN (prev), next, tree_size (next));
       prev = TREE_CHAIN (prev);
       next = TREE_CHAIN (next);
@@ -1030,7 +1030,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	    
 	    if (listchanged || (newop0 != oldop0) || (oldop2 != newop2))
 	      {
-		newexpr = pool_alloc (expression_node_pool);
+		newexpr = (tree) pool_alloc (expression_node_pool);
 		memcpy (newexpr, expr, tree_size (expr));
 		TREE_OPERAND (newexpr, 0) = newop0 == oldop0 ? oldop0 : get_value_handle (newop0);
 		TREE_OPERAND (newexpr, 1) = listchanged ? newarglist : oldarglist;
@@ -1068,7 +1068,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	if (newop1 != oldop1 || newop2 != oldop2)
 	  {
 	    tree t;
-	    newexpr = pool_alloc (binary_node_pool);
+	    newexpr = (tree) pool_alloc (binary_node_pool);
 	    memcpy (newexpr, expr, tree_size (expr));
 	    TREE_OPERAND (newexpr, 0) = newop1 == oldop1 ? oldop1 : get_value_handle (newop1);
 	    TREE_OPERAND (newexpr, 1) = newop2 == oldop2 ? oldop2 : get_value_handle (newop2);
@@ -1102,7 +1102,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	if (newop1 != oldop1)
 	  {
 	    tree t;
-	    newexpr = pool_alloc (unary_node_pool);
+	    newexpr = (tree) pool_alloc (unary_node_pool);
 	    memcpy (newexpr, expr, tree_size (expr));
 	    TREE_OPERAND (newexpr, 0) = get_value_handle (newop1);
 	    t = fully_constant_expression (newexpr);
@@ -1868,7 +1868,7 @@ insert_aux (basic_block block)
 			  continue;
 			}
 					      
-		      avail = xcalloc (last_basic_block, sizeof (tree));
+		      avail = XCNEWVEC (tree, last_basic_block);
 		      FOR_EACH_EDGE (pred, ei, block->preds)
 			{
 			  tree vprime;
@@ -2072,7 +2072,7 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
       pool = expression_node_pool;
     }
 
-  vexpr = pool_alloc (pool);
+  vexpr = (tree) pool_alloc (pool);
   memcpy (vexpr, expr, tree_size (expr));
   
   /* This case is only for TREE_LIST's that appear as part of
@@ -2365,7 +2365,7 @@ compute_avail (void)
     }
 
   /* Allocate the worklist.  */
-  worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  worklist = XNEWVEC (basic_block, n_basic_blocks);
 
   /* Seed the algorithm by putting the dominator children of the entry
      block on the worklist.  */
