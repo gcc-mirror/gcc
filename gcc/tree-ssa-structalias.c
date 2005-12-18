@@ -3184,9 +3184,13 @@ handle_ptr_arith (VEC (ce_s, heap) *lhsc, tree expr)
 	if (c2->type == ADDRESSOF && rhsoffset != 0)
 	  {
 	    varinfo_t temp = get_varinfo (c2->var);
-	    
-	    gcc_assert (first_vi_for_offset (temp, rhsoffset) != NULL);
-	    c2->var = first_vi_for_offset (temp, rhsoffset)->id;
+
+	    /* An access one after the end of an array is valid,
+	       so simply punt on accesses we cannot resolve.  */
+	    temp = first_vi_for_offset (temp, rhsoffset);
+	    if (temp == NULL)
+	      continue;
+	    c2->var = temp->id;
 	    c2->offset = 0;
 	  }
 	else

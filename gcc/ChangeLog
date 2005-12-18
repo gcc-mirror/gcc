@@ -1,3 +1,9 @@
+2005-12-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/25481
+	* tree-ssa-structalias.c (handle_ptr_arith): Handle
+	accesses we don't have a varinfo for.
+
 2005-12-17  Jon Grimm  <jgrimm2@us.ibm.com>
 	    Janis Johnson  <janis187@us.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
