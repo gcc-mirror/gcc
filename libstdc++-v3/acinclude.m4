@@ -577,7 +577,7 @@ AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
   fi
   
   # Export file names for ABI checking.
-  baseline_dir="$glibcxx_srcdir/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)"
+  baseline_dir="$glibcxx_srcdir/config/abi/post/${abi_baseline_pair}\$(MULTISUBDIR)"
   AC_SUBST(baseline_dir)
 ])
 
@@ -1685,7 +1685,7 @@ AC_DEFUN([GLIBCXX_ENABLE_SYMVERS], [
 
 GLIBCXX_ENABLE(symvers,$1,[=STYLE],
   [enables symbol versioning of the shared library],
-  [permit yes|no|gnu|darwin-export])
+  [permit yes|no|gnu|darwin|darwin-export])
 
 # If we never went through the GLIBCXX_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
@@ -1693,22 +1693,25 @@ AC_REQUIRE([GLIBCXX_CHECK_LINKER_FEATURES])
 
 # Turn a 'yes' into a suitable default.
 if test x$enable_symvers = xyes ; then
-  if test $enable_shared = no ||
-     test "x$LD" = x ; then
+  if test $enable_shared = no || test "x$LD" = x ; then
     enable_symvers=no
-  elif test $with_gnu_ld = yes ; then
-    enable_symvers=gnu
   else
-    case ${target_os} in
-      darwin*)
-	enable_symvers=darwin-export ;;
-      *)
-      AC_MSG_WARN([=== You have requested some kind of symbol versioning, but])
-      AC_MSG_WARN([=== you are not using a supported linker.])
-      AC_MSG_WARN([=== Symbol versioning will be disabled.])
-	enable_symvers=no ;;
-    esac
+    if test $with_gnu_ld = yes ; then
+      enable_symvers=gnu
+    else
+      case ${target_os} in
+        darwin*)
+	  enable_symvers=darwin ;;
+        *)
+          enable_symvers=no ;;
+      esac
+    fi
   fi
+fi
+
+# Check to see if 'darwin' or 'darwin-export' can win.
+if test x$enable_symvers = xdarwin-export ; then
+    enable_symvers=darwin
 fi
 
 # Check to see if 'gnu' can win.
@@ -1768,18 +1771,33 @@ fi
 # Everything parsed; figure out what file to use.
 case $enable_symvers in
   no)
-    SYMVER_MAP=config/linker-map.dummy
+    SYMVER_FILE=config/abi/pre/none.ver
     ;;
   gnu)
-    SYMVER_MAP=config/linker-map.gnu
-    AC_DEFINE(_GLIBCXX_SYMVER, 1, 
-              [Define to use GNU symbol versioning in the shared library.])
+    SYMVER_FILE=config/abi/pre/gnu.ver
+    AC_DEFINE(_GLIBCXX_SYMVER_GNU, 1, 
+              [Define to use GNU versioning in the shared library.])
     ;;
-  darwin-export)
-    SYMVER_MAP=config/linker-map.gnu
+  darwin)
+    SYMVER_FILE=config/abi/pre/gnu.ver
+    AC_DEFINE(_GLIBCXX_SYMVER_DARWIN, 1, 
+              [Define to use darwin versioning in the shared library.])
     ;;
 esac
 
+if test x$enable_symvers != xno ; then
+  AC_DEFINE(_GLIBCXX_SYMVER, 1,
+	 [Define to use symbol versioning in the shared library.])
+fi
+
+AC_SUBST(SYMVER_FILE)
+AC_SUBST(port_specific_symbol_files)
+GLIBCXX_CONDITIONAL(ENABLE_SYMVERS, test $enable_symvers != no)
+GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_GNU, test $enable_symvers = gnu)
+GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_DARWIN, test $enable_symvers = darwin)
+AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
+
+# Now, set up compatibility support, if any.
 # In addition, need this to deal with std::size_t mangling in
 # src/compatibility.cc.  In a perfect world, could use
 # typeid(std::size_t).name()[0] to do direct substitution.
@@ -1804,13 +1822,6 @@ if test "$glibcxx_ptrdiff_t_is_i" = yes; then
   AC_DEFINE(_GLIBCXX_PTRDIFF_T_IS_INT, 1, [Define if ptrdiff_t is int.])
 fi
 AC_MSG_RESULT([$glibcxx_ptrdiff_t_is_i])
-
-AC_SUBST(SYMVER_MAP)
-AC_SUBST(port_specific_symbol_files)
-GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_GNU, test $enable_symvers = gnu)
-GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_DARWIN_EXPORT, dnl
-  test $enable_symvers = darwin-export)
-AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
 ])
 
 

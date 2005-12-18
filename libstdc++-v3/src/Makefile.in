@@ -133,10 +133,12 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
-ENABLE_SYMVERS_DARWIN_EXPORT_FALSE = @ENABLE_SYMVERS_DARWIN_EXPORT_FALSE@
-ENABLE_SYMVERS_DARWIN_EXPORT_TRUE = @ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@
+ENABLE_SYMVERS_DARWIN_FALSE = @ENABLE_SYMVERS_DARWIN_FALSE@
+ENABLE_SYMVERS_DARWIN_TRUE = @ENABLE_SYMVERS_DARWIN_TRUE@
+ENABLE_SYMVERS_FALSE = @ENABLE_SYMVERS_FALSE@
 ENABLE_SYMVERS_GNU_FALSE = @ENABLE_SYMVERS_GNU_FALSE@
 ENABLE_SYMVERS_GNU_TRUE = @ENABLE_SYMVERS_GNU_TRUE@
+ENABLE_SYMVERS_TRUE = @ENABLE_SYMVERS_TRUE@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GLIBCXX_BUILD_DEBUG_FALSE = @GLIBCXX_BUILD_DEBUG_FALSE@
@@ -185,7 +187,7 @@ SECTION_LDFLAGS = @SECTION_LDFLAGS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-SYMVER_MAP = @SYMVER_MAP@
+SYMVER_FILE = @SYMVER_FILE@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
@@ -275,12 +277,12 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
 # Cross compiler support.
 toolexeclib_LTLIBRARIES = libstdc++.la
-@ENABLE_SYMVERS_DARWIN_EXPORT_FALSE@@ENABLE_SYMVERS_GNU_FALSE@version_arg = 
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@version_arg = -Wl,-exported_symbols_list,libstdc++-symbol.explist
-@ENABLE_SYMVERS_GNU_TRUE@version_arg = -Wl,--version-script=libstdc++-symbol.ver
-@ENABLE_SYMVERS_DARWIN_EXPORT_FALSE@@ENABLE_SYMVERS_GNU_FALSE@version_dep = 
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@version_dep = libstdc++-symbol.explist
-@ENABLE_SYMVERS_GNU_TRUE@version_dep = libstdc++-symbol.ver
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,-exported_symbols_list,libstdc++-symbols.explist
+@ENABLE_SYMVERS_FALSE@version_arg = 
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.explist
+@ENABLE_SYMVERS_FALSE@version_dep = 
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
 
 # Source files linked in via configuration/make substitution for a
 # particular host.
@@ -670,27 +672,24 @@ uninstall-am: uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 
 
 # Symbol versioning for shared libraries.
-# This could be conditional on
-# ENABLE_SYMVERS_GNU || ENABLE_SYMVERS_DARWIN_EXPORT
-# but automake doesn't support OR operations in conditionals.
-libstdc++-symbol.ver:  ${glibcxx_srcdir}/$(SYMVER_MAP) \
-		$(port_specific_symbol_files)
-	cp ${glibcxx_srcdir}/$(SYMVER_MAP) ./libstdc++-symbol.ver
-	if test "x$(port_specific_symbol_files)" != x; then \
-	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
-	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
-	  cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
-	  rm tmp.top tmp.bottom; \
-	fi
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@libstdc++-symbol.explist : libstdc++-symbol.ver \
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@		${glibcxx_srcdir}/scripts/make_exports.pl \
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@		$(libstdc___la_OBJECTS) $(libstdc___la_LIBADD)
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	perl ${glibcxx_srcdir}/scripts/make_exports.pl \
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	  libstdc++-symbol.ver \
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	  $(libstdc___la_OBJECTS:%.lo=.libs/%.o) \
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	 `echo $(libstdc___la_LIBADD) | \
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
-@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	 > $@ || (rm -f $@ ; exit 1)
+@ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
+@ENABLE_SYMVERS_TRUE@		$(port_specific_symbol_files)
+@ENABLE_SYMVERS_TRUE@	cp ${glibcxx_srcdir}/$(SYMVER_FILE) ./libstdc++-symbols.ver
+@ENABLE_SYMVERS_TRUE@	if test "x$(port_specific_symbol_files)" != x; then \
+@ENABLE_SYMVERS_TRUE@	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
+@ENABLE_SYMVERS_TRUE@	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
+@ENABLE_SYMVERS_TRUE@	  cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
+@ENABLE_SYMVERS_TRUE@	  rm tmp.top tmp.bottom; \
+@ENABLE_SYMVERS_TRUE@	fi
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@libstdc++-symbols.explist : libstdc++-symbols.ver \
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@		${glibcxx_srcdir}/scripts/make_exports.pl \
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@		$(libstdc___la_OBJECTS) $(libstdc___la_LIBADD)
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	perl ${glibcxx_srcdir}/scripts/make_exports.pl \
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	  libstdc++-symbols.ver \
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	  $(libstdc___la_OBJECTS:%.lo=.libs/%.o) \
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	 `echo $(libstdc___la_LIBADD) | \
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+@ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCODECVT_CC) . || true

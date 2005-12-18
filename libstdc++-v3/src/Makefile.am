@@ -28,12 +28,10 @@ include $(top_srcdir)/fragment.am
 toolexeclib_LTLIBRARIES = libstdc++.la
 
 # Symbol versioning for shared libraries.
-# This could be conditional on
-# ENABLE_SYMVERS_GNU || ENABLE_SYMVERS_DARWIN_EXPORT
-# but automake doesn't support OR operations in conditionals.
-libstdc++-symbol.ver:  ${glibcxx_srcdir}/$(SYMVER_MAP) \
+if ENABLE_SYMVERS
+libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 		$(port_specific_symbol_files)
-	cp ${glibcxx_srcdir}/$(SYMVER_MAP) ./libstdc++-symbol.ver
+	cp ${glibcxx_srcdir}/$(SYMVER_FILE) ./libstdc++-symbols.ver
 	if test "x$(port_specific_symbol_files)" != x; then \
 	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
 	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
@@ -42,25 +40,25 @@ libstdc++-symbol.ver:  ${glibcxx_srcdir}/$(SYMVER_MAP) \
 	fi
 
 if ENABLE_SYMVERS_GNU
-version_arg = -Wl,--version-script=libstdc++-symbol.ver
-version_dep = libstdc++-symbol.ver
-else
-if ENABLE_SYMVERS_DARWIN_EXPORT
-version_arg = -Wl,-exported_symbols_list,libstdc++-symbol.explist
-version_dep = libstdc++-symbol.explist
-libstdc++-symbol.explist : libstdc++-symbol.ver \
+version_arg = -Wl,--version-script=libstdc++-symbols.ver
+version_dep = libstdc++-symbols.ver
+endif
+if ENABLE_SYMVERS_DARWIN
+version_arg = -Wl,-exported_symbols_list,libstdc++-symbols.explist
+version_dep = libstdc++-symbols.explist
+libstdc++-symbols.explist : libstdc++-symbols.ver \
 		${glibcxx_srcdir}/scripts/make_exports.pl \
 		$(libstdc___la_OBJECTS) $(libstdc___la_LIBADD)
 	perl ${glibcxx_srcdir}/scripts/make_exports.pl \
-	  libstdc++-symbol.ver \
+	  libstdc++-symbols.ver \
 	  $(libstdc___la_OBJECTS:%.lo=.libs/%.o) \
 	 `echo $(libstdc___la_LIBADD) | \
 	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
 	 > $@ || (rm -f $@ ; exit 1)
+endif
 else
 version_arg =
 version_dep =
-endif
 endif
 
 

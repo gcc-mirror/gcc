@@ -670,8 +670,14 @@
 /* Define if the compiler is configured for setjmp/longjmp exceptions. */
 #undef _GLIBCXX_SJLJ_EXCEPTIONS
 
-/* Define to use GNU symbol versioning in the shared library. */
+/* Define to use symbol versioning in the shared library. */
 #undef _GLIBCXX_SYMVER
+
+/* Define to use darwin versioning in the shared library. */
+#undef _GLIBCXX_SYMVER_DARWIN
+
+/* Define to use GNU versioning in the shared library. */
+#undef _GLIBCXX_SYMVER_GNU
 
 /* Define if C99 functions or macros from <wchar.h>, <math.h>, <complex.h>,
    <stdio.h>, and <stdlib.h> can be used or exposed. */
