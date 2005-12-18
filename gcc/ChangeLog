@@ -1,3 +1,28 @@
+2005-12-17  Jon Grimm  <jgrimm2@us.ibm.com>
+	    Janis Johnson  <janis187@us.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* optabs.c (init_floating_libfuncs): Handle decimal float modes.
+	(init_optabs): Handle libfuncs for decimal float.
+	* genopinit.c (gen_insn): Handle MODE_DECIMAL_FLOAT.
+	* stor-layout.c (int_mode_for_mode): Likewise.
+	* simplify-rtx.c (simplify_immed_subreg): Likewise.
+	(simplify_unary_operation_1): Skip optimisations for decimal float
+	modes.
+	* varasm.c (output_constant_pool_2): Handle MODE_DECIMAL_FLOAT.
+	* emit-rtl.c (gen_const_vector): Add assertion check.
+	(init_emit_once): Populate const_tiny_rtx with constants in each
+	decimal float mode.
+	* expmed.c (extract_high_half, expand_mult_highpart_optab,
+	expand_mult_highpart): Assert that mode is not a scalar float
+	mode.
+	* expr.c (convert_move): Handle conversion between decimal and
+	binary floats of the same size.
+	* convert.c (convert_to_real): Consider decimal float types when
+	folding.
+	* dwarf2out.c (base_type_die): Use DW_ATE_decimal_float to
+	describe decimal floating point types.
+	
 2005-12-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR rtl-optimization/21041
