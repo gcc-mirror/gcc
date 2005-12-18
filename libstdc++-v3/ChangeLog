@@ -1,3 +1,21 @@
+2005-12-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * src/io-inst.cc: Separate instantiations into...
+        * src/ios-inst.cc: .. this.
+        * src/iostream-inst.cc: ... and this.
+        * src/Makefile.am (sources): Update.
+        * src/Makefile.in: Regenerate.	
+
+2005-12-17  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	PR libstdc++/25472
+        * include/c_std/std_cstdlib.h: Fix for freestanding.
+
+2005-12-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/libstdc++-dg/normal.exp: Rename to..
+	* testsuite/libstdc++-dg/conformance.exp: ... this.
+
 2005-12-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_vector.h (vector(const vector&)): Use
