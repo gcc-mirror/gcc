@@ -5,6 +5,6 @@ c { dg-do compile }
 * Date: Mon, 15 Jun 1998 21:54:32 -0500
 * From: Ian A Watson <WATSON_IAN_A@lilly.com>
 * Subject: Mangler Crash
-      EQUIVALENCE(I,glerf(P)) ! { dg-error "cannot appear"  "cannot appear" }
+      EQUIVALENCE(I,glerf(P)) ! { dg-error "is a variable"  "is a variable" }
       COMMON /foo/ glerf(3)
 c { dg-error "end of file" "end of file" { target *-*-* } 0 }

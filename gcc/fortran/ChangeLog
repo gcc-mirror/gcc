@@ -1,3 +1,14 @@
+2005-12-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25018
+	*expr.c(check_inquiry): Return FAILURE if there is no symtree to
+	provide a name. Error/warning for assumed character length argument
+	to LEN for an initialization expression, using GFC_GNU_STD. Add an
+	argument to flag that the expression is not restricted.
+	(check_init_expr): Improve the message for a failing variable.
+	(gfc_match_init_expr): Call check_enquiry again to make sure that
+	unsimplified expressions are not causing unnecessary errors.
+
 2005-12-17  Steven G. Kargl  <kargls@comcast.net>
 	    Tobias Schlueter <tobias.schlueter@physik.uni-muenchen.de>
 

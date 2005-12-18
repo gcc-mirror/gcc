@@ -1,3 +1,10 @@
+2005-12-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25018
+	*gfortran.dg/initialization_1.f90: New test.
+	*gfortran.dg/enum_5.f90: Change dg-error to new message.
+	*gfortran.dg/g77/980616-0.f: The same.
+
 2005-12-17  Steven G. Kargl  <kargls@comcast.net>
 
 	* PR fortran/25458
