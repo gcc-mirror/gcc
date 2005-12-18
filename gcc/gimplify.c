@@ -473,7 +473,7 @@ lookup_tmp_var (tree val, bool is_formal)
       slot = htab_find_slot (gimplify_ctxp->temp_htab, (void *)&elt, INSERT);
       if (*slot == NULL)
 	{
-	  elt_p = xmalloc (sizeof (*elt_p));
+	  elt_p = XNEW (elt_t);
 	  elt_p->val = val;
 	  elt_p->temp = ret = create_tmp_from_val (val);
 	  *slot = (void *) elt_p;
@@ -3705,7 +3705,7 @@ gimplify_asm_expr (tree *expr_p, tree *pre_p, tree *post_p)
 			break;
 		    }
 
-		  str = alloca (len);
+		  str = (char *) alloca (len);
 		  for (beg = p + 1, dst = str;;)
 		    {
 		      const char *tem;

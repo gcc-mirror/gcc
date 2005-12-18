@@ -218,7 +218,7 @@ gcov_exit (void)
     prefix_length = 0;
   
   /* Allocate and initialize the filename scratch space.  */
-  gi_filename = alloca (prefix_length + gcov_max_filename + 1);
+  gi_filename = (char *) alloca (prefix_length + gcov_max_filename + 1);
   if (prefix_length)
     memcpy (gi_filename, gcov_prefix, prefix_length);
   gi_filename_up = gi_filename + prefix_length;
@@ -786,7 +786,7 @@ __gcov_execl (const char *path, const char *arg, ...)
     length++;
   va_end (ap);
 
-  args = alloca (length * sizeof (void *));
+  args = (char **) alloca (length * sizeof (void *));
   args[0] = (char *) arg;
   for (i = 1; i < length; i++)
     args[i] = va_arg (aq, char *);
@@ -817,7 +817,7 @@ __gcov_execlp (const char *path, const char *arg, ...)
     length++;
   va_end (ap);
 
-  args = alloca (length * sizeof (void *));
+  args = (char **) alloca (length * sizeof (void *));
   args[0] = (char *) arg;
   for (i = 1; i < length; i++)
     args[i] = va_arg (aq, char *);
@@ -849,7 +849,7 @@ __gcov_execle (const char *path, const char *arg, ...)
     length++;
   va_end (ap);
 
-  args = alloca (length * sizeof (void *));
+  args = (char **) alloca (length * sizeof (void *));
   args[0] = (char *) arg;
   for (i = 1; i < length; i++)
     args[i] = va_arg (aq, char *);

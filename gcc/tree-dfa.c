@@ -157,7 +157,7 @@ create_var_ann (tree t)
   gcc_assert (DECL_P (t));
   gcc_assert (!t->common.ann || t->common.ann->common.type == VAR_ANN);
 
-  ann = ggc_alloc (sizeof (*ann));
+  ann = GGC_NEW (struct var_ann_d);
   memset ((void *) ann, 0, sizeof (*ann));
 
   ann->common.type = VAR_ANN;
@@ -178,7 +178,7 @@ create_stmt_ann (tree t)
   gcc_assert (is_gimple_stmt (t));
   gcc_assert (!t->common.ann || t->common.ann->common.type == STMT_ANN);
 
-  ann = ggc_alloc (sizeof (*ann));
+  ann = GGC_NEW (struct stmt_ann_d);
   memset ((void *) ann, 0, sizeof (*ann));
 
   ann->common.type = STMT_ANN;
@@ -201,7 +201,7 @@ create_tree_ann (tree t)
   gcc_assert (t);
   gcc_assert (!t->common.ann || t->common.ann->common.type == TREE_ANN_COMMON);
 
-  ann = ggc_alloc (sizeof (*ann));
+  ann = GGC_NEW (union tree_ann_d);
   memset ((void *) ann, 0, sizeof (*ann));
 
   ann->common.type = TREE_ANN_COMMON;
@@ -580,7 +580,7 @@ referenced_var_lookup_if_exists (unsigned int uid)
 {
   struct int_tree_map *h, in;
   in.uid = uid;
-  h = htab_find_with_hash (referenced_vars, &in, uid);
+  h = (struct int_tree_map *) htab_find_with_hash (referenced_vars, &in, uid);
   if (h)
     return h->to;
   return NULL_TREE;
@@ -594,7 +594,7 @@ referenced_var_lookup (unsigned int uid)
 {
   struct int_tree_map *h, in;
   in.uid = uid;
-  h = htab_find_with_hash (referenced_vars, &in, uid);
+  h = (struct int_tree_map *) htab_find_with_hash (referenced_vars, &in, uid);
   gcc_assert (h || uid == 0);
   if (h)
     return h->to;
@@ -609,7 +609,7 @@ referenced_var_insert (unsigned int uid, tree to)
   struct int_tree_map *h;
   void **loc;
 
-  h = ggc_alloc (sizeof (struct int_tree_map));
+  h = GGC_NEW (struct int_tree_map);
   h->uid = uid;
   h->to = to;
   loc = htab_find_slot_with_hash (referenced_vars, h, uid, INSERT);
@@ -625,7 +625,8 @@ default_def (tree var)
   struct int_tree_map *h, in;
   gcc_assert (SSA_VAR_P (var));
   in.uid = DECL_UID (var);
-  h = htab_find_with_hash (default_defs, &in, DECL_UID (var));
+  h = (struct int_tree_map *) htab_find_with_hash (default_defs, &in,
+                                                   DECL_UID (var));
   if (h)
     return h->to;
   return NULL_TREE;
@@ -653,14 +654,14 @@ set_default_def (tree var, tree def)
   /* Default definition might be changed by tail call optimization.  */
   if (!*loc)
     {
-      h = ggc_alloc (sizeof (struct int_tree_map));
+      h = GGC_NEW (struct int_tree_map);
       h->uid = DECL_UID (var);
       h->to = def;
       *(struct int_tree_map **)  loc = h;
     }
    else
     {
-      h = *loc;
+      h = (struct int_tree_map *) *loc;
       h->to = def;
     }
 }

@@ -374,7 +374,7 @@ create_bb (void *h, void *e, basic_block after)
 
   bb->index = last_basic_block;
   bb->flags = BB_NEW;
-  bb->stmt_list = h ? h : alloc_stmt_list ();
+  bb->stmt_list = h ? (tree) h : alloc_stmt_list ();
 
   /* Add the new block to the linked list of blocks.  */
   link_block (bb, after);
@@ -640,7 +640,7 @@ edge_to_cases_eq (const void *p1, const void *p2)
 static void
 edge_to_cases_cleanup (void *p)
 {
-  struct edge_to_cases_elt *elt = p;
+  struct edge_to_cases_elt *elt = (struct edge_to_cases_elt *) p;
   tree t, next;
 
   for (t = elt->case_labels; t; t = next)
@@ -691,7 +691,7 @@ record_switch_edge (edge e, tree case_label)
 
   /* Build a hash table element so we can see if E is already
      in the table.  */
-  elt = xmalloc (sizeof (struct edge_to_cases_elt));
+  elt = XNEW (struct edge_to_cases_elt);
   elt->e = e;
   elt->case_labels = case_label;
 
@@ -942,7 +942,7 @@ void
 cleanup_dead_labels (void)
 {
   basic_block bb;
-  label_for_bb = xcalloc (last_basic_block, sizeof (tree));
+  label_for_bb = XCNEWVEC (tree, last_basic_block);
 
   /* Find a suitable label for each block.  We use the first user-defined
      label if there is one, or otherwise just the first label we see.  */
@@ -3453,7 +3453,7 @@ verify_node_sharing (tree * tp, int *walk_subtrees, void *data)
 
   slot = htab_find_slot (htab, *tp, INSERT);
   if (*slot)
-    return *slot;
+    return (tree) *slot;
   *slot = *tp;
 
   return NULL;
@@ -4343,7 +4343,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
 
   if (!region_copy)
     {
-      region_copy = xmalloc (sizeof (basic_block) * n_region);
+      region_copy = XNEWVEC (basic_block, n_region);
       free_region_copy = true;
     }
 
@@ -4351,7 +4351,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
 
   /* Record blocks outside the region that are dominated by something
      inside.  */
-  doms = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  doms = XNEWVEC (basic_block, n_basic_blocks);
   initialize_original_copy_tables ();
 
   n_doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region, doms);

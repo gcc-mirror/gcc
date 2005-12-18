@@ -538,7 +538,7 @@ ccp_initialize (void)
 {
   basic_block bb;
 
-  const_val = xmalloc (num_ssa_names * sizeof (*const_val));
+  const_val = XNEWVEC (prop_value_t, num_ssa_names);
   memset (const_val, 0, num_ssa_names * sizeof (*const_val));
 
   /* Initialize simulation flags for PHI nodes and statements.  */
@@ -935,7 +935,7 @@ ccp_fold (tree stmt)
 	  use_operand_p var_p;
 
 	  /* Preserve the original values of every operand.  */
-	  orig = xmalloc (sizeof (tree) *  NUM_SSA_OPERANDS (stmt, SSA_OP_USE));
+	  orig = XNEWVEC (tree,  NUM_SSA_OPERANDS (stmt, SSA_OP_USE));
 	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
 	    orig[i++] = var;
 
@@ -1937,7 +1937,7 @@ struct fold_stmt_r_data
 static tree
 fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 {
-  struct fold_stmt_r_data *fold_stmt_r_data = data;
+  struct fold_stmt_r_data *fold_stmt_r_data = (struct fold_stmt_r_data *) data;
   bool *inside_addr_expr_p = fold_stmt_r_data->inside_addr_expr_p;
   bool *changed_p = fold_stmt_r_data->changed_p;
   tree expr = *expr_p, t;

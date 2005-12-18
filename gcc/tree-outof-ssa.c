@@ -1340,12 +1340,12 @@ new_temp_expr_table (var_map map)
 {
   temp_expr_table_p t;
 
-  t = (temp_expr_table_p) xmalloc (sizeof (struct temp_expr_table_d));
+  t = XNEW (struct temp_expr_table_d);
   t->map = map;
 
-  t->version_info = xcalloc (num_ssa_names + 1, sizeof (void *));
-  t->partition_dep_list = xcalloc (num_var_partitions (map) + 1, 
-				   sizeof (value_expr_p));
+  t->version_info = XCNEWVEC (void *, num_ssa_names + 1);
+  t->partition_dep_list = XCNEWVEC (value_expr_p,
+                                    num_var_partitions (map) + 1);
 
   t->replaceable = BITMAP_ALLOC (NULL);
   t->partition_in_use = BITMAP_ALLOC (NULL);

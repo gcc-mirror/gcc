@@ -201,7 +201,7 @@ vn_add (tree expr, tree val, tree stmt)
   void **slot;
   val_expr_pair_t new_pair;
   
-  new_pair = xmalloc (sizeof (struct val_expr_pair_d));
+  new_pair = XNEW (struct val_expr_pair_d);
   new_pair->e = expr;
   new_pair->v = val;
   new_pair->stmt = stmt;
