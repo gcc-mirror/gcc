@@ -739,6 +739,61 @@ simplify_not_neg_expr (tree stmt)
     }
 }
 
+/* STMT is a SWITCH_EXPR for which we attempt to find equivalent forms of
+   the condition which we may be able to optimize better.  */
+
+static void
+simplify_switch_expr (tree stmt)
+{
+  tree cond = SWITCH_COND (stmt);
+  tree def, to, ti;
+
+  /* The optimization that we really care about is removing unnecessary
+     casts.  That will let us do much better in propagating the inferred
+     constant at the switch target.  */
+  if (TREE_CODE (cond) == SSA_NAME)
+    {
+      def = SSA_NAME_DEF_STMT (cond);
+      if (TREE_CODE (def) == MODIFY_EXPR)
+	{
+	  def = TREE_OPERAND (def, 1);
+	  if (TREE_CODE (def) == NOP_EXPR)
+	    {
+	      int need_precision;
+	      bool fail;
+
+	      def = TREE_OPERAND (def, 0);
+
+#ifdef ENABLE_CHECKING
+	      /* ??? Why was Jeff testing this?  We are gimple...  */
+	      gcc_assert (is_gimple_val (def));
+#endif
+
+	      to = TREE_TYPE (cond);
+	      ti = TREE_TYPE (def);
+
+	      /* If we have an extension that preserves value, then we
+		 can copy the source value into the switch.  */
+
+	      need_precision = TYPE_PRECISION (ti);
+	      fail = false;
+	      if (TYPE_UNSIGNED (to) && !TYPE_UNSIGNED (ti))
+		fail = true;
+	      else if (!TYPE_UNSIGNED (to) && TYPE_UNSIGNED (ti))
+		need_precision += 1;
+	      if (TYPE_PRECISION (to) < need_precision)
+		fail = true;
+
+	      if (!fail)
+		{
+		  SWITCH_COND (stmt) = def;
+		  update_stmt (stmt);
+		}
+	    }
+	}
+    }
+}
+
 /* Main entry point for the forward propagation optimizer.  */
 
 static void
@@ -787,6 +842,11 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		}
 	      else
 		bsi_next (&bsi);
+	    }
+	  else if (TREE_CODE (stmt) == SWITCH_EXPR)
+	    {
+	      simplify_switch_expr (stmt);
+	      bsi_next (&bsi);
 	    }
 	  else if (TREE_CODE (stmt) == COND_EXPR)
 	    {
