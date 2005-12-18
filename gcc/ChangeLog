@@ -1,3 +1,8 @@
+2005-12-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* doc/objc.texi (Type encoding): Add documentation about encoding
+	complex types and _Bool.
+
 2005-12-17  Paul Brook  <paul@codesourcery.com>
 
 	* config/m68k/m68k.md (m68k_output_function_prologue): Always call

@@ -179,6 +179,8 @@ The types are encoded in the following way:
 @c @sp 1
 
 @multitable @columnfractions .25 .75
+@item @code{_Bool}
+@tab @code{B}
 @item @code{char}
 @tab @code{c}
 @item @code{unsigned char}
@@ -215,6 +217,8 @@ The types are encoded in the following way:
 @tab @code{*}
 @item unknown type
 @tab @code{?}
+@item Complex types
+@tab @code {j} followed by the inner type.  For an example _Complex double is encoded as "jd".
 @item bit-fields
 @tab @code{b} followed by the starting position of the bit-field, the type of the bit-field and the size of the bit-field (the bit-fields encoding was changed from the NeXT's compiler encoding, see below)
 @end multitable
