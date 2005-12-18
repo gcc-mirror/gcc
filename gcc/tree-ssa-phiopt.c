@@ -247,7 +247,7 @@ static basic_block *
 blocks_in_phiopt_order (void)
 {
   basic_block x, y;
-  basic_block *order = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  basic_block *order = XNEWVEC (basic_block, n_basic_blocks);
   unsigned n = n_basic_blocks - NUM_FIXED_BLOCKS; 
   unsigned np, i;
   sbitmap visited = sbitmap_alloc (last_basic_block); 

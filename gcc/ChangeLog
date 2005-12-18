@@ -1,3 +1,64 @@
+2005-12-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* tree-tailcall.c (find_tail_calls): Use XNEW.
+	* tree-ssa-dom.c (allocate_edge_info): Use XCNEW.
+	(free_all_edge_infos): Use explicit cast to convert from void *.
+	(vrp_free): Likewise.
+	(dom_opt_finalize_block): Likewise.
+	(record_equivalences_from_incoming_edge): Likewise.
+	(thread_across_edge): Likewise.  Use XCNEWVEC.
+	(record_cond): Use XCNEW.
+	(record_conditions): Use XNEWVEC.
+	(record_edge_info): Use XCNEWVEC.
+	(lookup_avail_expr): Use XNEW.
+	(record_range): Likewise.  Use GGC_NEW.
+	* tree-nested.c (var_map_hash): Use explicit cast to convert from
+	void *.
+	(var_map_eq): Likewise.
+	(lookup_field_for_decl): Likewise.
+	(convert_nonlocal_reference): Likewise.
+	(convert_local_reference): Likewise.
+	(convert_nl_goto_reference): Likewise.
+	(convert_nl_goto_receiver): Likewise.
+	(convert_call_expr): Likewise.
+	(convert_tramp_reference): Likewise.
+	(lookup_tramp_for_decl): Likewise.Use GGC_NEW.
+	(convert_nl_goto_reference): Likewise.
+	(lookup_field_for_decl): Use GGC_NEW.
+	(create_nesting_tree): Use GGC_CNEW.
+	* tree-ssa-phiopt.c (blocks_in_phiopt_order): Use XNEWVEC.
+	* tree-ssa-alias.c (init_alias_info): Use XCNEW.
+	(create_alias_map_for): Likewise.
+	(setup_pointers_and_addressables): Use XCNEWVEC.
+	(get_ptr_info): Use GGC_NEW.
+	(used_part_map_eq): Use explicit cast to convert from void *.
+	(up_lookup): Likewise.
+	(up_insert): Use XNEW.
+	(get_or_create_used_part_for): Use XCNEW.
+	(get_tmt_for): Likewise.
+	* tree-ssa-operands.c (ssa_operand_alloc): Use GGC_NEW.
+	* tree-ssa-pre.c (phi_trans_add): Use XNEW.
+	(bitmap_set_new): Use explicit cast to convert from void *.
+	(set_new): Likewise.
+	(insert_into_set): Likewise.
+	(pool_copy_list): Likewise.
+	(phi_translate): Likewise.
+	(create_value_expr_from): Likewise.
+	(insert_aux): Use XCNEWVEC.
+	(compute_avail): Use XNEWVEC.
+	* tree-ssa-live.c (calculate_live_on_entry): Likewise.
+	(sort_coalesce_list): Likewise.
+	(build_tree_conflict_graph): Use XCNEWVEC.
+	* tree-ssa-dce.c (tree_dce_init): Use XNEWVEC.
+	* tree-ssa-copy.c (init_copy_prop): Likewise.
+	(fini_copy_prop): Likewise.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Use XNEW
+	and XCNEWVEC.
+	(record_equiv): Use XNEW.
+	(uncprop_into_successor_phis): Use explicit cast to convert from
+	void *.
+	(uncprop_initialize_block): Likewise.
+
 2005-12-18  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/24378	

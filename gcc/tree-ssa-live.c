@@ -639,7 +639,7 @@ calculate_live_on_entry (var_map map)
 	}
     }
 
-  stack = xmalloc (sizeof (int) * last_basic_block);
+  stack = XNEWVEC (int, last_basic_block);
   EXECUTE_IF_SET_IN_BITMAP (live->global, 0, i, bi)
     {
       live_worklist (live, stack, i);
@@ -1224,7 +1224,7 @@ sort_coalesce_list (coalesce_list_p cl)
   /* Only call qsort if there are more than 2 items.  */
   if (num > 2)
     {
-      list = xmalloc (sizeof (partition_pair_p) * num);
+      list = XNEWVEC (partition_pair_p, num);
       count = 0;
       for (p = chain; p != NULL; p = p->next)
 	list[count++] = p;
@@ -1345,8 +1345,8 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 
   live = BITMAP_ALLOC (NULL);
 
-  partition_link = xcalloc (num_var_partitions (map) + 1, sizeof (int));
-  tpa_nodes = xcalloc (tpa_num_trees (tpa), sizeof (int));
+  partition_link = XCNEWVEC (int, num_var_partitions (map) + 1);
+  tpa_nodes = XCNEWVEC (int, tpa_num_trees (tpa));
   tpa_to_clear = VEC_alloc (int, heap, 50);
 
   FOR_EACH_BB (bb)

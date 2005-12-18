@@ -847,10 +847,10 @@ init_copy_prop (bool phis_only)
 {
   basic_block bb;
 
-  copy_of = xmalloc (num_ssa_names * sizeof (*copy_of));
+  copy_of = XNEWVEC (prop_value_t, num_ssa_names);
   memset (copy_of, 0, num_ssa_names * sizeof (*copy_of));
 
-  cached_last_copy_of = xmalloc (num_ssa_names * sizeof (*cached_last_copy_of));
+  cached_last_copy_of = XNEWVEC (tree, num_ssa_names);
   memset (cached_last_copy_of, 0, num_ssa_names * sizeof (*cached_last_copy_of));
 
   FOR_EACH_BB (bb)
@@ -902,7 +902,7 @@ fini_copy_prop (void)
   
   /* Set the final copy-of value for each variable by traversing the
      copy-of chains.  */
-  tmp = xmalloc (num_ssa_names * sizeof (*tmp));
+  tmp = XNEWVEC (prop_value_t, num_ssa_names);
   memset (tmp, 0, num_ssa_names * sizeof (*tmp));
   for (i = 1; i < num_ssa_names; i++)
     {

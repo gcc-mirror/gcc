@@ -837,8 +837,7 @@ tree_dce_init (bool aggressive)
     {
       int i;
 
-      control_dependence_map 
-	= xmalloc (last_basic_block * sizeof (bitmap));
+      control_dependence_map = XNEWVEC (bitmap, last_basic_block);
       for (i = 0; i < last_basic_block; ++i)
 	control_dependence_map[i] = BITMAP_ALLOC (NULL);
 

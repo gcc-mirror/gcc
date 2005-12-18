@@ -279,7 +279,7 @@ ssa_operand_alloc (unsigned size)
   if (operand_memory_index + size >= SSA_OPERAND_MEMORY_SIZE)
     {
       struct ssa_operand_memory_d *ptr;
-      ptr = ggc_alloc (sizeof (struct ssa_operand_memory_d));
+      ptr = GGC_NEW (struct ssa_operand_memory_d);
       ptr->next = operand_memory;
       operand_memory = ptr;
       operand_memory_index = 0;
