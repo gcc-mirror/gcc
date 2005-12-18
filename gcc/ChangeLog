@@ -1,3 +1,10 @@
+2005-12-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR rtl-optimization/21041
+	* reload.c (find_reloads_subreg_address): Replace paradoxical
+	subreg of MEM by widened access only if the resulting memory
+	is properly aligned, even on !STRICT_ALIGNMENT targets.
+
 2005-12-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* tree-cfg.c (tree_flow_call_edges_add): Check for empty basic blocks.
