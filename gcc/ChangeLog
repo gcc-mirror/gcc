@@ -1,3 +1,11 @@
+2005-12-18  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (simplify_switch_and_lookup_avail_expr): Code
+	to simplify SWITCH_EXPR_CODE moved from here to ...
+	* tree-ssa-forwprop.c (simplify_switch_expr): Here.
+	(tree-ssa-forward_propagate_single_use_vars): Call
+	simplify_switch_expr when appropriate.
+
 2005-12-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* doc/objc.texi (Type encoding): Add documentation about encoding
