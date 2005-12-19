@@ -205,7 +205,11 @@ flags_to_pass = { flag= SHELL ; };
 flags_to_pass = { flag= YACC ; };
 
 // Host tools
+flags_to_pass = { flag= ADAFLAGS ; };
 flags_to_pass = { flag= AR_FLAGS ; };
+flags_to_pass = { flag= BOOT_ADAFLAGS ; };
+flags_to_pass = { flag= BOOT_CFLAGS ; };
+flags_to_pass = { flag= BOOT_LDFLAGS ; };
 flags_to_pass = { flag= CFLAGS ; };
 flags_to_pass = { flag= CXXFLAGS ; };
 flags_to_pass = { flag= LDFLAGS ; };
@@ -213,6 +217,7 @@ flags_to_pass = { flag= LIBCFLAGS ; };
 flags_to_pass = { flag= LIBCXXFLAGS ; };
 
 // Target tools
+flags_to_pass = { flag= ADAFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= AR_FOR_TARGET ; };
 flags_to_pass = { flag= AS_FOR_TARGET ; };
 flags_to_pass = { flag= CC_FOR_TARGET ; };
