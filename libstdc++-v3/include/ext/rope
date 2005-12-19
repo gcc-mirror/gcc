@@ -66,8 +66,8 @@
 
 #include <ext/memory> // For uninitialized_copy_n
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using std::size_t;
   using std::ptrdiff_t;
   using std::allocator;
@@ -2894,7 +2894,7 @@ protected:
       }
     };
 
-} // namespace __gnu_cxx
+_GLIBCXX_END_NAMESPACE
 
 # include <ext/ropeimpl.h>
 

@@ -63,8 +63,8 @@
 
 #include <bits/concept_check.h>
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   // Forward declarations of operators < and ==, needed for friend declaration.
   template<class _Key, class _Compare = std::less<_Key>,
 	   class _Alloc = std::allocator<_Key> >
@@ -587,6 +587,6 @@ namespace _GLIBCXX_STD
     swap(set<_Key, _Compare, _Alloc>& __x, set<_Key, _Compare, _Alloc>& __y)
     { __x.swap(__y); }
 
-} // namespace std
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif /* _SET_H */

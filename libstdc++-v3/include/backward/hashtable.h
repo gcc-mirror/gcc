@@ -70,7 +70,3 @@ using __gnu_cxx::hash;
 using __gnu_cxx::hashtable;
 
 #endif /* _BACKWARD_HASHTABLE_H */
-
-// Local Variables:
-// mode:C++
-// End:

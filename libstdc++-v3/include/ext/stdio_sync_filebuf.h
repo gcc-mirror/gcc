@@ -1,6 +1,6 @@
 // Iostreams wrapper for stdio FILE* -*- C++ -*-
 
-// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,8 +44,8 @@
 #include <cwchar>
 #endif
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   /// @brief  class stdio_sync_filebuf.
   template<typename _CharT, typename _Traits = std::char_traits<_CharT> >
     class stdio_sync_filebuf : public std::basic_streambuf<_CharT, _Traits>
@@ -277,6 +277,7 @@ namespace __gnu_cxx
   extern template class stdio_sync_filebuf<wchar_t>;
 #endif
 #endif
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

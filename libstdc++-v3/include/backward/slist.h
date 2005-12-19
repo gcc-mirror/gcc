@@ -50,7 +50,3 @@
 using __gnu_cxx::slist;
 
 #endif /* _BACKWARD_SLIST_H */
-
-// Local Variables:
-// mode:C++
-// End:

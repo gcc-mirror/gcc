@@ -55,8 +55,8 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/concept_check.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using std::size_t;
   using std::ptrdiff_t;
   using std::_Construct;
@@ -1023,13 +1023,12 @@ namespace __gnu_cxx
 	  }
       }
 
-} // namespace __gnu_cxx
+_GLIBCXX_END_NAMESPACE
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Specialization of insert_iterator so that insertions will be constant
   // time rather than linear time.
-
   template <class _Tp, class _Alloc>
     class insert_iterator<__gnu_cxx::slist<_Tp, _Alloc> >
     {
@@ -1073,7 +1072,8 @@ namespace std
       insert_iterator<_Container>&
       operator++(int)
       { return *this; }
-};
+    };
 
-} // namespace std
+_GLIBCXX_END_NAMESPACE
+
 #endif

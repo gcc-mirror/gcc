@@ -22,7 +22,7 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-using __gnu_debug::map;
+using debug::map;
 using std::advance;
 
 bool test = true;

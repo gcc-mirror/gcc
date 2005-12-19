@@ -64,7 +64,3 @@ using std::setprecision;
 using std::setw;
 
 #endif
-
-// Local Variables:
-// mode:C++
-// End:

@@ -46,7 +46,3 @@ using std::wstreampos;
 #endif
 
 #endif
-
-// Local Variables:
-// mode:C++
-// End:

@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,14 +23,13 @@
 // libstdc++/14648
 void test01() 
 { 
-  using namespace std; 
   using namespace __gnu_cxx;
 
-  typedef hash_map<char, crope, hash<char>, equal_to<char> > maptype; 
+  typedef hash_map<char, crope, hash<char>, std::equal_to<char> > maptype; 
   maptype m; 
   m['l'] = "50";
   m['x'] = "10";
-  cout << "m['x'] = " << m['x'] << endl; 
+  std::cout << "m['x'] = " << m['x'] << std::endl; 
 }  
 
 int main()

@@ -35,8 +35,8 @@
 #include <iostream>
 #include <iomanip>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template class _Setfill<char>;
   template _Setfill<char> setfill(char);
   template class basic_iostream<char>;
@@ -46,4 +46,5 @@ namespace std
   template _Setfill<wchar_t> setfill(wchar_t);
   template class basic_iostream<wchar_t>; 
 #endif
-}
+
+_GLIBCXX_END_NAMESPACE

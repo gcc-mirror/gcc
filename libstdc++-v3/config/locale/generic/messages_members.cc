@@ -1,6 +1,6 @@
 // std::messages implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,8 +35,8 @@
 
 #include <locale>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Specializations
   template<>
     string
@@ -49,4 +49,5 @@ namespace std
     messages<wchar_t>::do_get(catalog, int, int, const wstring& __dfault) const
     { return __dfault; }
 #endif
-}
+
+_GLIBCXX_END_NAMESPACE

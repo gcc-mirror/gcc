@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,8 +50,8 @@
 
 #include <stdexcept>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   /**
    *  @brief  A meta-allocator with debugging bits, as per [20.4].
    *
@@ -120,6 +120,7 @@ namespace __gnu_cxx
 	  throw std::runtime_error("debug_allocator::deallocate null pointer");
       }
     };
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

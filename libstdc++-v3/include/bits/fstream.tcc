@@ -42,8 +42,8 @@
 
 #pragma GCC system_header
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
@@ -899,6 +899,7 @@ namespace std
   extern template class basic_fstream<wchar_t>;
 #endif
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

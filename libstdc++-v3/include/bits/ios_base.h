@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -46,8 +46,8 @@
 #include <bits/localefwd.h>
 #include <bits/locale_classes.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // The following definitions of bitmask types are enums, not ints,
   // as permitted (but not required) in the standard, in order to provide
   // better type safety in iostream calls.  A side effect is that
@@ -961,7 +961,8 @@ namespace std
     __base.setf(ios_base::scientific, ios_base::floatfield);
     return __base;
   }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _IOS_BASE_H */
 

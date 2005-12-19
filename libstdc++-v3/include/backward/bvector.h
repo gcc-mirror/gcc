@@ -62,7 +62,3 @@
 typedef std::vector<bool, std::allocator<bool> > bit_vector;
 
 #endif /* _BACKWARD_BVECTOR_H */
-
-// Local Variables:
-// mode:C++
-// End:

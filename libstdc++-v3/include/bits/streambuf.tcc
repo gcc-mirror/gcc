@@ -42,8 +42,8 @@
 
 #pragma GCC system_header
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _CharT, typename _Traits>
     streamsize
     basic_streambuf<_CharT, _Traits>::
@@ -149,6 +149,7 @@ namespace std
     __copy_streambufs(basic_streambuf<wchar_t>*, basic_streambuf<wchar_t>*);
 #endif
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

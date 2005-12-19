@@ -33,8 +33,8 @@
 
 #include <streambuf>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<>
     streamsize
     __copy_streambufs(basic_streambuf<char>* __sbin,
@@ -100,4 +100,5 @@ namespace std
       return __ret;
     }
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

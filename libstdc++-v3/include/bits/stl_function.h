@@ -61,8 +61,8 @@
 #ifndef _FUNCTION_H
 #define _FUNCTION_H 1
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // 20.3.1 base classes
   /** @defgroup s20_3_1_base Functor Base Classes
    *  Function objects, or @e functors, are objects with an @c operator()
@@ -750,10 +750,6 @@ namespace std
 
   /** @}  */
 
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _FUNCTION_H */
-
-// Local Variables:
-// mode:C++
-// End:

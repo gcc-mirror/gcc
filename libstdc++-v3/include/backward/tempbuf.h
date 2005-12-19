@@ -72,7 +72,3 @@ using std::return_temporary_buffer;
 using __gnu_cxx::temporary_buffer;
 
 #endif /* _BACKWARD_TEMPBUF_H */
-
-// Local Variables:
-// mode:C++
-// End:

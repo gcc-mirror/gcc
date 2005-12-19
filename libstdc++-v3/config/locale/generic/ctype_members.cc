@@ -1,6 +1,6 @@
 // std::ctype implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,8 +35,8 @@
 
 #include <locale>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // NB: The other ctype<char> specializations are in src/locale.cc and
   // various /config/os/* files.
   template<>
@@ -264,4 +264,5 @@ namespace std
       }  
   }
 #endif //  _GLIBCXX_USE_WCHAR_T
-}
+
+_GLIBCXX_END_NAMESPACE

@@ -47,16 +47,18 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
 #include <signal.h>
 
 // Get rid of those macros defined in <signal.h> in lieu of real functions.
 #undef raise
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::sig_atomic_t;
   using ::signal;
   using ::raise;
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

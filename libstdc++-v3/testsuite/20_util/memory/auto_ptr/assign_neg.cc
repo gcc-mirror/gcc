@@ -47,4 +47,4 @@ main()
   return 0;
 }
 // { dg-error "candidates" "" { target *-*-* } 223 } 
-// { dg-error "std::auto_ptr" "" { target *-*-* } 353 } 
+// { dg-error "::auto_ptr" "" { target *-*-* } 353 } 

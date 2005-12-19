@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -35,8 +35,8 @@
 #include <ostream>
 #include <iomanip>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // ostream
   template class basic_ostream<char>;
   template ostream& endl(ostream&);
@@ -73,4 +73,5 @@ namespace std
   template wostream& operator<<(wostream&, _Setprecision);
   template wostream& operator<<(wostream&, _Setw);
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

@@ -44,8 +44,8 @@
 
 #include <locale>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>::sentry::
     sentry(basic_ostream<_CharT, _Traits>& __os)
@@ -818,6 +818,7 @@ namespace std
   extern template wostream& operator<<(wostream&, const char*);
 #endif
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

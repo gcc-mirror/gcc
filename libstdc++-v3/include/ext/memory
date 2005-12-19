@@ -1,6 +1,6 @@
 // Memory extensions -*- C++ -*-
 
-// Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,8 +66,8 @@
 #include <memory>
 #include <bits/stl_tempbuf.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using std::ptrdiff_t;
   using std::pair;
   using std::__iterator_category;
@@ -192,7 +192,8 @@ namespace __gnu_cxx
       /// Destroys objects and frees storage.
       ~temporary_buffer() { }
     };
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif
 

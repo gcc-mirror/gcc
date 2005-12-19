@@ -40,8 +40,8 @@
 #include <bits/gthr.h>
 #include <bits/atomicity.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   typedef void (*__destroy_handler)(void*);
 
   /// @brief  Base class for pool object.
@@ -729,6 +729,7 @@ namespace __gnu_cxx
     { return false; }
 
 #undef __thread_default
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

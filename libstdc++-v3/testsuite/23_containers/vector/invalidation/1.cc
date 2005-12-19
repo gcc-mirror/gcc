@@ -28,7 +28,7 @@
 #include <debug/vector>
 #include <testsuite_hooks.h>
 
-using __gnu_debug::vector;
+using debug::vector;
 
 bool test = true;
 

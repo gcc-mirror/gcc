@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: x86, x >= 4 version  -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,8 @@
 
 #include <bits/atomicity.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   _Atomic_word 
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
@@ -49,5 +49,6 @@ namespace __gnu_cxx
     __asm__ __volatile__ ("lock; add{l} {%1,%0|%0,%1}"
 			  : "=m" (*__mem) : "ir" (__val), "m" (*__mem));
   }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 

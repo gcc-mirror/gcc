@@ -45,8 +45,8 @@
 
 #pragma GCC system_header
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _Type>
     inline bool
     __is_null_pointer(_Type* __ptr)
@@ -993,6 +993,7 @@ namespace std
     getline(basic_istream<wchar_t>&, wstring&);
 #endif
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

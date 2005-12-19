@@ -46,8 +46,8 @@
 #ifndef TYPELIST_HPP
 #define TYPELIST_HPP
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   // XXX namespace typelist
   // struct typelist -> struct node 
 
@@ -87,11 +87,12 @@ namespace __gnu_cxx
 
   template<typename Typelist, template<typename T> class Transform>
     struct transform;
-}
+
+_GLIBCXX_END_NAMESPACE
 
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
 namespace detail
 {
   // #include <ext/detail/type_utils.h>
@@ -264,11 +265,12 @@ namespace detail
       typedef typename append<Hd, typelist<rest> >::type::root type;
     };
 } // namespace detail
-}
+
+_GLIBCXX_END_NAMESPACE
 
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   template<typename Fn, typename Typelist>
     struct apply
     {
@@ -345,7 +347,8 @@ namespace __gnu_cxx
     public:
       typedef typelist<typename transform_type::type> 		type;
     };
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 
 #define _GLIBCXX_TYPELIST_CHAIN1(X0) __gnu_cxx::chain<X0, __gnu_cxx::null_type>

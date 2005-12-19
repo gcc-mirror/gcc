@@ -41,8 +41,8 @@
 
 namespace std
 {
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
  // An implementation specific class which is used in the tuple class
  // when the tuple is not maximum possible size.
  struct _NullClass { };
@@ -267,7 +267,8 @@ namespace tr1
 #include <tr1/repeat.h>
 #undef _GLIBCXX_REPEAT_HEADER
 #undef _SHORT_REPEAT
-}
+
+_GLIBCXX_END_NAMESPACE
 }
 
 #include <tr1/functional>

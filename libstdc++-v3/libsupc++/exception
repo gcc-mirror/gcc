@@ -1,6 +1,6 @@
 // Exception Handling support header for -*- C++ -*-
 
-// Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002
+// Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2005
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -38,6 +38,8 @@
 #define __EXCEPTION__
 
 #pragma GCC visibility push(default)
+
+#include <bits/c++config.h>
 
 extern "C++" {
 
@@ -102,8 +104,8 @@ namespace std
   bool uncaught_exception() throw();
 } // namespace std
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   /** A replacement for the standard terminate_handler which prints more
       information about the terminating exception (if any) on stderr.  Call
       @code
@@ -115,7 +117,8 @@ namespace __gnu_cxx
       In 3.4 and later, this is on by default.
   */
   void __verbose_terminate_handler ();
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
   
 } // extern "C++"
 

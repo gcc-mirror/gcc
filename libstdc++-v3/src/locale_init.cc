@@ -93,8 +93,8 @@ namespace __gnu_internal
   static __glibcxx_mutex_define_initialized(locale_mutex);
 } // namespace __gnu_internal
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using namespace __gnu_internal;
 
   locale::locale() throw() : _M_impl(0)
@@ -344,4 +344,5 @@ namespace std
     _M_caches[__timepunct<wchar_t>::id._M_id()] = __tpw;
 #endif
   }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

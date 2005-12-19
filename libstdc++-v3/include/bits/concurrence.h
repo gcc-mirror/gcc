@@ -1,6 +1,6 @@
 // Support for concurrent programing -*- C++ -*-
 
-// Copyright (C) 2003, 2004
+// Copyright (C) 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -72,8 +72,8 @@ __gthread_mutex_lock(&NAME)
 
 #endif
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   typedef __glibcxx_mutex_type mutex_type;
   
   /// @brief  Scoped lock idiom.
@@ -95,6 +95,7 @@ namespace __gnu_cxx
     lock(const lock&);
     lock& operator=(const lock&);
   };
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

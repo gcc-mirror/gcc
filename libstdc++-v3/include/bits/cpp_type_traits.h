@@ -84,17 +84,18 @@ namespace __gnu_internal
 } // namespace __gnu_internal
 
 // Forward declaration hack, should really include this from somewhere.
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   template<typename _Iterator, typename _Container>
     class __normal_iterator;
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 struct __true_type { };
 struct __false_type { };
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<bool>
     struct __truth_type
     { typedef __false_type __type; };
@@ -384,6 +385,6 @@ namespace std
 	};
     };
 
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #endif //_CPP_TYPE_TRAITS_H

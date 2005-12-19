@@ -1685,7 +1685,7 @@ AC_DEFUN([GLIBCXX_ENABLE_SYMVERS], [
 
 GLIBCXX_ENABLE(symvers,$1,[=STYLE],
   [enables symbol versioning of the shared library],
-  [permit yes|no|gnu|darwin|darwin-export])
+  [permit yes|no|gnu|gnu-versioned-namespace|darwin|darwin-export])
 
 # If we never went through the GLIBCXX_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
@@ -1715,7 +1715,7 @@ if test x$enable_symvers = xdarwin-export ; then
 fi
 
 # Check to see if 'gnu' can win.
-if test $enable_symvers = gnu; then
+if test $enable_symvers = gnu || test $enable_symvers = gnu-versioned-namespace; then
   # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
   AC_MSG_CHECKING([for shared libgcc])
   ac_save_CFLAGS="$CFLAGS"
@@ -1778,6 +1778,11 @@ case $enable_symvers in
     AC_DEFINE(_GLIBCXX_SYMVER_GNU, 1, 
               [Define to use GNU versioning in the shared library.])
     ;;
+  gnu-versioned-namespace)
+    SYMVER_FILE=config/abi/pre/gnu-versioned-namespace.ver
+    AC_DEFINE(_GLIBCXX_SYMVER_GNU_NAMESPACE, 1, 
+              [Define to use GNU namespace versioning in the shared library.])
+    ;;
   darwin)
     SYMVER_FILE=config/abi/pre/gnu.ver
     AC_DEFINE(_GLIBCXX_SYMVER_DARWIN, 1, 
@@ -1794,6 +1799,7 @@ AC_SUBST(SYMVER_FILE)
 AC_SUBST(port_specific_symbol_files)
 GLIBCXX_CONDITIONAL(ENABLE_SYMVERS, test $enable_symvers != no)
 GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_GNU, test $enable_symvers = gnu)
+GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_GNU_NAMESPACE, test $enable_symvers = gnu-versioned-namespace)
 GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_DARWIN, test $enable_symvers = darwin)
 AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
 

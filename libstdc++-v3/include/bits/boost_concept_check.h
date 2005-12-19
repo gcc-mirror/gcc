@@ -1,4 +1,6 @@
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// -*- C++ -*-
+
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,8 +50,7 @@
 #include <bits/stl_iterator_base_types.h>    // for traits and tags
 #include <utility>                           // for pair<>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #define _IsUnused __attribute__ ((__unused__))
 
@@ -923,7 +924,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
 
   // HashedAssociativeContainer
 
-} // namespace __gnu_cxx
+_GLIBCXX_END_NAMESPACE
 
 #undef _IsUnused
 

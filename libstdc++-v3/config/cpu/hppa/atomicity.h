@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: PA-RISC version  -*- C++ -*-
 
-// Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,8 +30,8 @@
 #include <bits/c++config.h>
 #include <bits/atomicity.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   template<int _Inst>
     struct _Atomicity_lock
     {
@@ -94,4 +94,5 @@ namespace __gnu_cxx
     __asm__ __volatile__ ("stw,ma %1,0(%0)"
 			  : : "r" (&lock), "r" (tmp) : "memory");
   }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE

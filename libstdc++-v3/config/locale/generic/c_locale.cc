@@ -43,8 +43,8 @@
 #include <ieeefp.h>
 #endif
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Specializations for all types used in num_get.
   template<>
     void
@@ -149,10 +149,11 @@ namespace std
   __c_locale
   locale::facet::_S_clone_c_locale(__c_locale&)
   { return __c_locale(); }
-} // namespace std
 
-namespace __gnu_cxx
-{
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   const char* const category_names[6 + _GLIBCXX_NUM_CATEGORIES] =
     {
       "LC_CTYPE", 
@@ -162,9 +163,11 @@ namespace __gnu_cxx
       "LC_MONETARY",
       "LC_MESSAGES"
     };
-}  
 
-namespace std
-{
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   const char* const* const locale::_S_categories = __gnu_cxx::category_names;
-}  // namespace std
+
+_GLIBCXX_END_NAMESPACE

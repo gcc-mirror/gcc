@@ -63,7 +63,3 @@
 using std::multimap;
 
 #endif /* _BACKWARD_MULTIMAP_H */
-
-// Local Variables:
-// mode:C++
-// End:

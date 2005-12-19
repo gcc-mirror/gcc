@@ -1,6 +1,6 @@
 // Debugging hash_multiset implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,6 +34,8 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
+namespace std
+{
 namespace __gnu_debug_def
 {
   template<typename _Value,
@@ -232,5 +234,6 @@ template<typename _Value, typename _HashFcn, typename _EqualKey, typename _Alloc
        hash_multiset<_Value, _HashFcn, _EqualKey, _Alloc>& __y)
   { __x.swap(__y); }
 } // namespace __gnu_debug_def
+} // namespace std
 
 #endif

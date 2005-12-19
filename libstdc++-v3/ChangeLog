@@ -1,3 +1,336 @@
+2005-12-18  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* include/bits/c++config: Add in revised namespace associations.
+	_GLIBCXX_BEGIN_NAMESPACE: New macro.
+	_GLIBCXX_END_NAMESPACE: Same.
+	_GLIBCXX_BEGIN_NESTED_NAMESPACE: Same.
+	_GLIBCXX_END_NESTED_NAMESPACE: Same.
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS]): Add gnu-versioned-namespace.
+	* configure: Regenerated.
+	* config.h.in: Same.
+	* config/abi/pre/gnu-versioned-namespace.ver: New.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.7): Add exports for nested
+	debug mode items. 
+	* include/Makefile.am (${host_builddir}/c++config.h): Fill in
+	values for __GLIBCXX__ and _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION.
+	* include/Makefile.in: Regnerate.
+	* src/compatibility.cc: Alias new, nested definitions to exported
+	symbols from non-nested __gnu_debug.
+	* src/Makefile.am:  Add in ENABLE_SYMVERS_GNU_NAMESPACE.
+	* src/Makefile.in: Regenerate.
+	
+	* docs/html/debug_mode.html: Revise for nested design.
+	* docs/html/debug.html: Use debug qualifications instead of
+	__gnu_debug.
+	* docs/html/configopts.html: Revise documentation for
+	--enable-symvers.
+	
+	* include/debug/formatter: Simplify namespace qualifications for
+	current, nested-only reality. Add top-level namespace alias,
+	namespace debug, for debug-mode containers.
+	* include/debug/safe_iterator.h: Same.	
+	* include/debug/set.h: Same.
+	* include/debug/hash_multimap.h: Same.
+	* include/debug/hash_set.h: Same.
+	* include/debug/bitset
+	* include/debug/safe_sequence.h: Same.
+	* include/debug/multiset.h: Same.
+	* include/debug/safe_base.h: Same.
+	* include/debug/functions.h: Same.
+	* include/debug/safe_iterator.tcc
+	* include/debug/hash_multiset.h: Same.
+	* include/debug/vector
+	* include/debug/map.h: Same.
+	* include/debug/deque
+	* include/debug/hash_map.h: Same.
+	* include/debug/string
+	* include/debug/macros.h: Same.
+	* include/debug/list
+	* include/debug/debug.h: Same.
+	* include/debug/multimap.h: Same.	
+	* src/debug.cc: Same.
+	* testsuite/23_containers/vector/invalidation/1.cc: Cleanups.
+	* testsuite/23_containers/vector/invalidation/2.cc: Same.
+	* testsuite/23_containers/vector/invalidation/3.cc: Same.
+	* testsuite/23_containers/vector/invalidation/4.cc: Same.
+	* testsuite/23_containers/deque/invalidation/1.cc: Same.
+	* testsuite/23_containers/deque/invalidation/2.cc: Same.
+	* testsuite/23_containers/deque/invalidation/3.cc: Same.
+	* testsuite/23_containers/deque/invalidation/4.cc: Same.
+	* testsuite/23_containers/multiset/invalidation/1.cc: Same.
+	* testsuite/23_containers/multiset/invalidation/2.cc: Same.
+	* testsuite/23_containers/multimap/invalidation/1.cc: Same.
+	* testsuite/23_containers/multimap/invalidation/2.cc: Same.
+	* testsuite/23_containers/bitset/invalidation/1.cc: Same.
+	* testsuite/23_containers/bitset/cons/16020.cc: Same.
+	* testsuite/23_containers/bitset/operations/13838.cc: Same.
+	* testsuite/23_containers/list/invalidation/1.cc: Same.
+	* testsuite/23_containers/list/invalidation/2.cc: Same.
+	* testsuite/23_containers/list/invalidation/3.cc: Same.
+	* testsuite/23_containers/list/invalidation/4.cc: Same.
+	* testsuite/23_containers/set/invalidation/1.cc: Same.
+	* testsuite/23_containers/set/invalidation/2.cc: Same.
+	* testsuite/23_containers/map/invalidation/1.cc: Same.
+	* testsuite/23_containers/map/invalidation/2.cc: Same.
+	* testsuite/23_containers/map/insert/16813.cc: Same.
+	
+	* include/bits/basic_ios.h: Use _GLIBCXX_BEGIN_NAMESPACE(std) and
+	friends.	
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/localefwd.h: Same.
+	* include/bits/valarray_array.tcc: Same.
+	* include/bits/valarray_after.h: Same.
+	* include/bits/gslice_array.h: Same.
+	* include/bits/stl_queue.h: Same.
+	* include/bits/gslice.h: Same.
+	* include/bits/locale_facets.tcc: Same.
+	* include/bits/locale_classes.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/stl_stack.h: Same.
+	* include/bits/stl_iterator_base_types.h: Same.
+	* include/bits/stl_heap.h: Same.
+	* include/bits/indirect_array.h: Same.
+	* include/bits/atomicity.h: Same.
+	* include/bits/stream_iterator.h: Same.
+	* include/bits/concurrence.h: Same.
+	* include/bits/basic_string.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_pair.h: Same.
+	* include/bits/basic_ios.tcc: Same.
+	* include/bits/stl_raw_storage_iter.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/stl_numeric.h: Same.
+	* include/bits/ios_base.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/istream.tcc: Same.
+	* include/bits/postypes.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/mask_array.h: Same.
+	* include/bits/stl_uninitialized.h: Same.
+	* include/bits/ostream.tcc: Same.
+	* include/bits/slice_array.h: Same.
+	* include/bits/boost_concept_check.h: Same.
+	* include/bits/sstream.tcc: Same.
+	* include/bits/stl_iterator_base_funcs.h: Same.
+	* include/bits/char_traits.h: Same.
+	* include/bits/stl_algo.h: Same.
+	* include/bits/stringfwd.h: Same.
+	* include/bits/c++config
+	* include/bits/stl_iterator.h: Same.
+	* include/bits/valarray_array.h: Same.
+	* include/bits/stl_tempbuf.h: Same.
+	* include/bits/vector.tcc: Same.
+	* include/bits/deque.tcc: Same.
+	* include/bits/stl_bvector.h: Same.
+	* include/bits/basic_string.tcc: Same.
+	* include/bits/list.tcc: Same.
+	* include/bits/streambuf_iterator.h: Same.
+	* include/bits/valarray_before.h: Same.
+	* include/bits/stl_construct.h: Same.
+	* include/bits/stl_function.h: Same.
+	* include/bits/cpp_type_traits.h: Same.
+	* include/bits/streambuf.tcc: Same.
+	* include/bits/allocator.h: Same.
+	* include/bits/stl_tree.h: Same.
+	* include/bits/fstream.tcc: Same.
+	* include/bits/stl_relops.h: Same.
+	* include/bits/functexcept.h: Same.
+	* include/std/std_valarray.h: Same.
+	* include/std/std_iostream.h: Same.
+	* include/std/std_streambuf.h: Same.
+	* include/std/std_bitset.h: Same.
+	* include/std/std_iosfwd.h: Same.
+	* include/std/std_iomanip.h: Same.
+	* include/std/std_fstream.h: Same.
+	* include/std/std_limits.h: Same.
+	* include/std/std_stdexcept.h: Same.
+	* include/std/std_istream.h: Same.
+	* include/std/std_complex.h: Same.
+	* include/std/std_memory.h: Same.
+	* include/std/std_ostream.h: Same.
+	* include/std/std_sstream.h: Same.
+	* include/c_std/std_csignal.h: Same.
+	* include/c_std/std_cstdlib.h: Same.
+	* include/c_std/std_cstdio.h: Same.
+	* include/c_std/std_cstdarg.h: Same.
+	* include/c_std/std_cctype.h: Same.
+	* include/c_std/std_cmath.h: Same.
+	* include/c_std/std_ctime.h: Same.
+	* include/c_std/std_clocale.h: Same.
+	* include/c_std/std_csetjmp.h: Same.
+	* include/c_std/std_cwchar.h: Same.
+	* include/c_std/std_cstring.h: Same.
+	* include/c_std/std_cstddef.h: Same.
+	* include/c_std/std_cwctype.h: Same.
+	* include/backward/iterator.h: Same.
+	* include/backward/set.h: Same.
+	* include/backward/hashtable.h: Same.
+	* include/backward/fstream.h: Same.
+	* include/backward/tempbuf.h: Same.
+	* include/backward/istream.h: Same.
+	* include/backward/bvector.h: Same.
+	* include/backward/stack.h: Same.
+	* include/backward/rope.h: Same.
+	* include/backward/complex.h: Same.
+	* include/backward/ostream.h: Same.
+	* include/backward/heap.h: Same.
+	* include/backward/iostream.h: Same.
+	* include/backward/function.h: Same.
+	* include/backward/multimap.h: Same.
+	* include/backward/pair.h: Same.
+	* include/backward/stream.h: Same.
+	* include/backward/iomanip.h: Same.
+	* include/backward/strstream
+	* include/backward/slist.h: Same.
+	* include/backward/tree.h: Same.
+	* include/backward/vector.h: Same.
+	* include/backward/deque.h: Same.
+	* include/backward/multiset.h: Same.
+	* include/backward/list.h: Same.
+	* include/backward/map.h: Same.
+	* include/backward/algobase.h: Same.
+	* include/backward/hash_map.h: Same.
+	* include/backward/algo.h: Same.
+	* include/backward/queue.h: Same.
+	* include/backward/streambuf.h: Same.
+	* src/allocator-inst.cc: Same.
+	* src/complex_io.cc: Same.
+	* src/localename.cc: Same.
+	* src/limits.cc: Same.
+	* src/ios_failure.cc: Same.
+	* src/locale-misc-inst.cc: Same.
+	* src/streambuf-inst.cc: Same.
+	* src/misc-inst.cc: Same.
+	* src/concept-inst.cc: Same.
+	* src/ios_locale.cc: Same.
+	* src/pool_allocator.cc: Same.
+	* src/fstream-inst.cc: Same.
+	* src/istream-inst.cc: Same.
+	* src/string-inst.cc: Same.
+	* src/locale_init.cc: Same.
+	* src/ctype.cc: Same.
+	* src/strstream.cc: Same.
+	* src/ostream-inst.cc: Same.
+	* src/functexcept.cc: Same.
+	* src/streambuf.cc: Same.
+	* src/sstream-inst.cc: Same.
+	* src/ios.cc: Same.
+	* src/valarray-inst.cc: Same.
+	* src/locale.cc: Same.
+	* src/tree.cc: Same.
+	* src/stdexcept.cc: Same.
+	* src/istream.cc: Same.
+	* src/compatibility.cc: Same.
+	* src/locale-inst.cc: Same.
+	* src/globals_io.cc: Same.
+	* src/list.cc: Same.
+	* src/ios_init.cc: Same.
+	* src/locale_facets.cc: Same.
+	* src/codecvt.cc: Same.
+
+	* include/tr1/unordered_map: Use _GLIBCXX_BEGIN_NAMESPACE(tr1).
+	* include/tr1/boost_shared_ptr.h: Same.
+	* include/tr1/tuple
+	* include/tr1/hashtable
+	* include/tr1/type_traits_fwd.h: Same.
+	* include/tr1/unordered_set
+	* include/tr1/functional
+	* include/tr1/ref_fwd.h: Same.
+	* include/tr1/utility
+	* include/tr1/type_traits
+	* include/tr1/array
+
+	* include/ext/hashtable.h: Use _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx).
+	* include/ext/typelist.h: Same.
+	* include/ext/hash_map: Same.
+	* include/ext/rc_string_base.h: Same.
+	* include/ext/pool_allocator.h: Same.
+	* include/ext/iterator: Same.
+	* include/ext/rb_tree: Same.
+	* include/ext/numeric: Same.
+	* include/ext/vstring.tcc: Same.
+	* include/ext/sso_string_base.h: Same.
+	* include/ext/stdio_filebuf.h: Same.
+	* include/ext/algorithm: Same.
+	* include/ext/codecvt_specializations.h: Same.
+	* include/ext/new_allocator.h: Same.
+	* include/ext/array_allocator.h: Same.
+	* include/ext/vstring_util.h: Same.
+	* include/ext/vstring_fwd.h: Same.
+	* include/ext/mt_allocator.h: Same.
+	* include/ext/debug_allocator.h: Same.
+	* include/ext/slist: Same.
+	* include/ext/stdio_sync_filebuf.h: Same.
+	* include/ext/hash_fun.h: Same.
+	* include/ext/malloc_allocator.h: Same.
+	* include/ext/functional: Same.
+	* include/ext/bitmap_allocator.h: Same.
+	* include/ext/pod_char_traits.h: Same.
+	* include/ext/vstring.h: Same.
+	* include/ext/ropeimpl.h: Same.
+	* include/ext/hash_set: Same.
+	* include/ext/memory: Same.
+	* include/ext/rope: Same.
+	* include/bits/boost_concept_check.h: Same.
+	* include/bits/stl_iterator.h: Same.
+	* include/bits/char_traits.h: Same.
+	* include/bits/cpp_type_traits.h: Same.
+	* include/bits/concurrence.h: Same.
+	* include/bits/atomicity.h: Same.
+	* config/locale/gnu/numeric_members.cc: Same.
+	* config/locale/gnu/collate_members.cc: Same.
+	* config/locale/gnu/ctype_members.cc: Same.
+	* config/locale/gnu/c_locale.cc: Same.
+	* config/locale/gnu/codecvt_members.cc: Same.
+	* config/locale/gnu/messages_members.cc: Same.
+	* config/locale/gnu/c_locale.h: Same.
+	* config/locale/gnu/monetary_members.cc: Same.
+	* config/locale/gnu/time_members.cc: Same.
+	* config/locale/ieee_1003.1-2001/c_locale.h: Same.
+	* config/locale/generic/numeric_members.cc: Same.
+	* config/locale/generic/collate_members.cc: Same.
+	* config/locale/generic/ctype_members.cc: Same.
+	* config/locale/generic/c_locale.cc: Same.
+	* config/locale/generic/codecvt_members.cc: Same.
+	* config/locale/generic/messages_members.cc: Same.
+	* config/locale/generic/c_locale.h: Same.
+	* config/locale/generic/monetary_members.cc: Same.
+	* config/locale/generic/time_members.cc: Same.
+	* config/os/aix/atomicity.h: Same.
+	* config/os/irix/atomicity.h: Same.
+	* config/cpu/powerpc/atomicity.h: Same.
+	* config/cpu/cris/atomicity.h: Same.
+	* config/cpu/ia64/atomicity.h: Same.
+	* config/cpu/alpha/atomicity.h: Same.
+	* config/cpu/m68k/atomicity.h: Same.
+	* config/cpu/hppa/atomicity.h: Same.
+	* config/cpu/mips/atomicity.h: Same.
+	* config/cpu/sparc/atomicity.h: Same.
+	* config/cpu/i386/atomicity.h: Same.
+	* config/cpu/i486/atomicity.h: Same.
+	* config/cpu/sh/atomicity.h: Same.
+	* config/cpu/generic/atomicity.h: Same.
+	* config/cpu/s390/atomicity.h: Same.
+	* config/io/c_io_stdio.h: Same.
+	* config/io/basic_file_stdio.cc: Same.
+	* config/io/basic_file_stdio.h: Same.	
+	* src/misc-inst.cc: Same.
+	* src/concept-inst.cc: Same.
+	* src/ext-inst.cc: Same.
+	* src/string-inst.cc: Same.
+	* src/pool_allocator.cc: Same.
+	* src/bitmap_allocator.cc: Same.
+	* src/mt_allocator.cc: Same.
+	* libsupc++/exception: Same.
+	* libsupc++/vterminate.cc: Same.
+	* testsuite/ext/hash_map/1.cc: Explicitly qualify __gnu_cxx::hash_map.
+	* testsuite/ext/hash_map/14648.cc: Same.	
+
+	* libsupc++/eh_alloc.cc: Correct comment line spacing.
+		
 2005-12-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (__copy_normal::copy_n): Uglify

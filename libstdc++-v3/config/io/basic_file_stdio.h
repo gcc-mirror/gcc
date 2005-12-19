@@ -1,6 +1,7 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,8 +45,8 @@
 #include <bits/c++config.h>
 #include <ios>
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Generic declaration.
   template<typename _CharT>
     class __basic_file; 
@@ -105,6 +106,7 @@ namespace std
       streamsize
       showmanyc();
     };
-}  // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif	

@@ -50,14 +50,15 @@
 #define _GLIBCXX_NUM_CATEGORIES 6
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   extern "C" __typeof(uselocale) __uselocale;
-}
+
+_GLIBCXX_END_NAMESPACE
 #endif
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   typedef __locale_t		__c_locale;
 
   // Convert numeric value of type _Tv to string and return length of
@@ -96,6 +97,7 @@ namespace std
 #endif
       return __ret;
     }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

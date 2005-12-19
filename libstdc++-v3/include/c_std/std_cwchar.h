@@ -67,10 +67,11 @@ extern "C"
 }
 #endif
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::mbstate_t;
-}
+
+_GLIBCXX_END_NAMESPACE
 
 // Get rid of those macros defined in <wchar.h> in lieu of real functions.
 #undef btowc
@@ -139,8 +140,9 @@ namespace std
 #undef wscanf
 
 #if _GLIBCXX_USE_WCHAR_T
-namespace std
-{
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::wint_t;
 
   using ::btowc;
@@ -232,7 +234,8 @@ namespace std
   inline wchar_t*
   wmemchr(wchar_t* __p, wchar_t __c, size_t __n)
   { return wmemchr(const_cast<const wchar_t*>(__p), __c, __n); }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #if _GLIBCXX_USE_C99
 
@@ -240,8 +243,8 @@ namespace std
 #undef wcstoll
 #undef wcstoull
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
   extern "C" long double
     (wcstold)(const wchar_t * restrict, wchar_t ** restrict);
@@ -259,14 +262,17 @@ namespace __gnu_cxx
   using ::wcstoll;
   using ::wcstoull;
 #endif
-}
 
-namespace std
-{
-  using __gnu_cxx::wcstold;
-  using __gnu_cxx::wcstoll;
-  using __gnu_cxx::wcstoull;
-}
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  using ::__gnu_cxx::wcstold;
+  using ::__gnu_cxx::wcstoll;
+  using ::__gnu_cxx::wcstoull;
+
+_GLIBCXX_END_NAMESPACE
+
 #endif
 
 #endif //_GLIBCXX_USE_WCHAR_T

@@ -67,8 +67,8 @@
 
 #include <bits/cpp_type_traits.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // 24.4.1 Reverse iterators
   /**
    *  "Bidirectional and random access iterators have corresponding reverse
@@ -616,10 +616,11 @@ namespace std
       return insert_iterator<_Container>(__x,
 					 typename _Container::iterator(__i));
     }
-} // namespace std
 
-namespace __gnu_cxx
-{
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   // This iterator adapter is 'normal' in the sense that it does not
   // change the semantics of any of the operators of its iterator
   // parameter.  Its primary purpose is to convert an iterator that is
@@ -819,10 +820,7 @@ namespace __gnu_cxx
     operator+(typename __normal_iterator<_Iterator, _Container>::difference_type
 	      __n, const __normal_iterator<_Iterator, _Container>& __i)
     { return __normal_iterator<_Iterator, _Container>(__i.base() + __n); }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif
-
-// Local Variables:
-// mode:C++
-// End:

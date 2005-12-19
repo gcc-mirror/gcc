@@ -1,6 +1,6 @@
 // Debugging iterator implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2003, 2004
+// Copyright (C) 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,6 +36,8 @@
 #ifndef _GLIBCXX_DEBUG_SAFE_ITERATOR_TCC
 #define _GLIBCXX_DEBUG_SAFE_ITERATOR_TCC 1
 
+namespace std
+{
 namespace __gnu_debug
 {
   template<typename _Iterator, typename _Sequence>
@@ -135,6 +137,7 @@ namespace __gnu_debug
 	}
     }
 } // namespace __gnu_debug
+} // namespace std
 
 #endif
 

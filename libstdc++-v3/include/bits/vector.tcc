@@ -61,8 +61,8 @@
 #ifndef _VECTOR_TCC
 #define _VECTOR_TCC 1
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   template<typename _Tp, typename _Alloc>
     void
     vector<_Tp, _Alloc>::
@@ -490,6 +490,7 @@ namespace _GLIBCXX_STD
 	      }
 	  }
       }
-} // namespace std
+
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif /* _VECTOR_TCC */

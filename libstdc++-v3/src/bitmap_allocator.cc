@@ -29,8 +29,8 @@
 
 #include <ext/bitmap_allocator.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   namespace balloc
   {
     template class __mini_vector<std::pair
@@ -124,4 +124,5 @@ namespace __gnu_cxx
   // Instantiations.
   template class bitmap_allocator<char>;
   template class bitmap_allocator<wchar_t>;
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE

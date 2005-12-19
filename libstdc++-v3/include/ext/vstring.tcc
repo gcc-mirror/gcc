@@ -38,8 +38,8 @@
 
 #pragma GCC system_header
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
     const typename __versa_string<_CharT, _Traits, _Alloc, _Base>::size_type
@@ -536,10 +536,10 @@ namespace __gnu_cxx
       return __r;
     }
 
-} // namespace __gnu_cxx
+_GLIBCXX_END_NAMESPACE
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _CharT, typename _Traits, typename _Alloc,
            template <typename, typename, typename> class _Base>
     basic_istream<_CharT, _Traits>&
@@ -714,6 +714,6 @@ namespace std
       return __in;
     }      
   
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #endif // _VSTRING_TCC

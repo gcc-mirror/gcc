@@ -42,8 +42,8 @@
 # define C char
 #endif
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   typedef basic_string<C> S;
 
   template class basic_string<C>;
@@ -81,11 +81,12 @@ namespace std
   template
     const C*
     search(const C*, const C*, const C*, const C*, bool(*)(const C&, const C&));
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using std::S;
   template bool operator==(const S::iterator&, const S::iterator&);
   template bool operator==(const S::const_iterator&, const S::const_iterator&);
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE

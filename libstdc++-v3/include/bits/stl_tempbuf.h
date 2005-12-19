@@ -63,8 +63,8 @@
 
 #include <memory>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  @if maint
    *  This class is used in two places: stl_algo.h and ext/memory,
@@ -164,7 +164,8 @@ namespace std
 	  __throw_exception_again;
 	}
     }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _TEMPBUF_H */
 

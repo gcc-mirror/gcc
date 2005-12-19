@@ -821,19 +821,30 @@ stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
 	$(STAMP) stamp-host
 
 # Host includes dynamic.
-${host_builddir}/c++config.h: ${top_builddir}/config.h \
-				${glibcxx_srcdir}/include/bits/c++config \
-				stamp-${host_alias} \
-				${toplevel_srcdir}/gcc/DATESTAMP
-	@cat ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
-	sed -e 's/^/#define __GLIBCXX__ /' \
-            < ${toplevel_srcdir}/gcc/DATESTAMP >> $@ ;\
+if ENABLE_SYMVERS_GNU_NAMESPACE
+stamp-namespace-version:
+	echo 1 > stamp-namespace-version
+else
+stamp-namespace-version:
+	echo 0 > stamp-namespace-version
+endif
+${host_builddir}/c++config.h: ${CONFIG_HEADER} \
+			      ${glibcxx_srcdir}/include/bits/c++config \
+			      stamp-${host_alias} \
+			      ${toplevel_srcdir}/gcc/DATESTAMP \
+			      stamp-namespace-version
+	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
+	nsa_version=`cat stamp-namespace-version` ;\
+	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
+	-e "s,define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION, define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION $$nsa_version," \
+            < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
 	    -e 's/PACKAGE/_GLIBCXX_PACKAGE/g' \
 	    -e 's/VERSION/_GLIBCXX_VERSION/g' \
 	    -e 's/WORDS_/_GLIBCXX_WORDS_/g' \
 	    < ${CONFIG_HEADER} >> $@ ;\
-	echo "#endif // _CXXCONFIG_" >>$@
+	echo "" >> $@ ;\
+	echo "#endif // _CXXCONFIG_" >> $@
 
 # Host includes for threads
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]

@@ -39,8 +39,8 @@
 
 #include <string>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   // POD character abstraction.
   // NB: The char_type parameter is a subset of int_type, as to allow
   // int_type to properly hold the full range of char_type values as
@@ -83,10 +83,11 @@ namespace __gnu_cxx
     inline bool
     operator<(const character<V, I, S>& lhs, const character<V, I, S>& rhs)
     { return lhs.value < rhs.value; }
-} // namespace __gnu_cxx
 
-namespace std
-{
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /// char_traits<__gnu_cxx::character> specialization.
   template<typename V, typename I, typename S>
     struct char_traits<__gnu_cxx::character<V, I, S> >
@@ -180,6 +181,7 @@ namespace std
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? int_type() : __c; }
     };
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

@@ -50,6 +50,3 @@
 using __gnu_cxx::rb_tree;
 
 #endif
-// Local Variables:
-// mode:C++
-// End:

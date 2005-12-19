@@ -38,10 +38,11 @@
 #ifndef _FUNCTEXCEPT_H
 #define _FUNCTEXCEPT_H 1
 
+#include <bits/c++config.h>
 #include <exception_defines.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Helper for exception objects in <except>
   void
   __throw_bad_exception(void) __attribute__((__noreturn__));
@@ -88,6 +89,7 @@ namespace std
   // Helpers for exception objects in basic_ios
   void
   __throw_ios_failure(const char*) __attribute__((__noreturn__));
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

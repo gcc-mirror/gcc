@@ -54,7 +54,3 @@ using std::ends;
 using std::flush;
 
 #endif
-
-// Local Variables:
-// mode:C++
-// End:

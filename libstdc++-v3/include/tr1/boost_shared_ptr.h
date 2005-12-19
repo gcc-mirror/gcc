@@ -57,8 +57,7 @@
 // namespace std::tr1
 namespace std
 {
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 class bad_weak_ptr : public std::exception
 {
@@ -977,7 +976,7 @@ template<typename _Tp>
     mutable weak_ptr<_Tp> _M_weak_this;
   };
 
-} // namespace tr1
+_GLIBCXX_END_NAMESPACE
 } // namespace std
 
 #endif

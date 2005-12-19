@@ -1,6 +1,6 @@
 // std::numpunct implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,8 @@
 #include <locale>
 #include <bits/c++locale_internal.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<> 
     void
     numpunct<char>::_M_initialize_numpunct(__c_locale __cloc)
@@ -148,4 +148,5 @@ namespace std
     numpunct<wchar_t>::~numpunct()
     { delete _M_data; }
  #endif
-}
+
+_GLIBCXX_END_NAMESPACE

@@ -45,8 +45,8 @@ using std::free;
 using std::malloc;
 using std::memcpy;
 #else
-// In a freestanding environment, these functions may not be
-// available -- but for now, we assume that they are.
+// In a freestanding environment, these functions may not be available
+// -- but for now, we assume that they are.
 extern "C" void *malloc (std::size_t);
 extern "C" void free(void *);
 extern "C" int memset (void *, int, std::size_t);

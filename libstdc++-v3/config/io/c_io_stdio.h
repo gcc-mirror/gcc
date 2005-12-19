@@ -1,6 +1,7 @@
-// underlying io library  -*- C++ -*-
+// Underlying io library details -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +37,8 @@
 #include <cstddef>
 #include <bits/gthr.h>
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   typedef __gthread_mutex_t __c_lock;
 
   // for basic_file.h
@@ -81,6 +82,7 @@ namespace std
     static const __int_type _S_out =		0x10;
     static const __int_type _S_trunc =		0x20;
   };
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

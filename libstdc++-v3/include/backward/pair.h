@@ -64,7 +64,3 @@ using std::pair;
 using std::make_pair;
 
 #endif /* _BACKWARD_PAIR_H */
-
-// Local Variables:
-// mode:C++
-// End:

@@ -38,8 +38,8 @@
 
 namespace std
 {
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
   template<class _Tp> class tuple_size;
   template<int _Int, class _Tp> class tuple_element;
 
@@ -92,7 +92,8 @@ namespace tr1
      const typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
      get(const pair<_Tp1, _Tp2>& __in)
      { return __pair_get<_Int>::__const_get(__in); }
-}
+
+_GLIBCXX_END_NAMESPACE
 } 
 
 #endif

@@ -44,8 +44,8 @@
 
 #define _Instantiate(...) template void __function_requires< __VA_ARGS__ > ()
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   template void __aux_require_boolean_expr<bool>(bool const&);
 
   _Instantiate(_ConvertibleConcept<unsigned, unsigned> );
@@ -105,7 +105,8 @@ namespace __gnu_cxx
 
   _Instantiate(_RandomAccessIteratorConcept<wchar_t const*> );
 #endif
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #undef _Instantiate
 

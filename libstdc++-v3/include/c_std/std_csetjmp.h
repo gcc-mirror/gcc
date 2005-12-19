@@ -47,6 +47,7 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
 #include <setjmp.h>
 
 // Get rid of those macros defined in <setjmp.h> in lieu of real functions.
@@ -57,10 +58,11 @@
 #define setjmp(env) setjmp (env)
 #endif
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::jmp_buf;
   using ::longjmp;
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

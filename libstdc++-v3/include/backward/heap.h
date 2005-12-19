@@ -65,7 +65,3 @@ using std::make_heap;
 using std::sort_heap;
 
 #endif /* _BACKWARD_HEAP_H */
-
-// Local Variables:
-// mode:C++
-// End:

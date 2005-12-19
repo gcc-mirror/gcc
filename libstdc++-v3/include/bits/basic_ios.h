@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -43,8 +43,8 @@
 #include <bits/locale_classes.h>
 #include <bits/locale_facets.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // 27.4.5  Template class basic_ios
   /**
    *  @brief  Virtual base class for all stream classes.
@@ -458,7 +458,8 @@ namespace std
       void
       _M_cache_locale(const locale& __loc);
     };
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 #include <bits/basic_ios.tcc>

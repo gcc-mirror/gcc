@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,8 @@
 
 #include <valarray>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Some explicit instantiations.
   template void
      __valarray_fill(size_t* __restrict__, size_t, const size_t&);
@@ -112,4 +112,5 @@ namespace std
   : _M_count(1), _M_start(__o), _M_size(__l), _M_stride(__s),
     _M_index(__l.size() == 0 ? 0 : __valarray_product(__l))
   { __gslice_to_index(__o, __l, __s, _M_index); }  
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

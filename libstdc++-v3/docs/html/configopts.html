@@ -277,14 +277,18 @@ options</a></h1>
  </dd>
 
  <dt><code>--enable-symvers[=style]  </code></dt>
+
  <dd><p>In 3.1 and later, tries to turn on symbol versioning in the
-        shared library (if a shared library has been requested).  The
-        only 'style' currently supported is 'gnu' which requires that
-        a recent version of the GNU linker be in use.  With no style
-        given, the configure script will try to guess if the 'gnu'
-        style can be used, and if so, will turn it on.  Hopefully
-        people will volunteer to do other 'style' options.
+        shared library (if a shared library has been
+        requested). Values for 'style' that are currently supported
+        are 'gnu', 'gnu-versioned-namespace', 'darwin', and
+        'darwin-export'. Both gnu- options require that a recent
+        version of the GNU linker be in use. Both darwin options are
+        equivalent. With no style given, the configure script will try
+        to guess if the 'gnu' style can be used, and if so, will turn
+        it on.
      </p>
+
  </dd>
 
  <dt><code>--enable-libstdcxx-pch  </code></dt>

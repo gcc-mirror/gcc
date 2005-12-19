@@ -63,7 +63,3 @@
 using std::map;
 
 #endif /* _BACKWARD_MAP_H */
-
-// Local Variables:
-// mode:C++
-// End:

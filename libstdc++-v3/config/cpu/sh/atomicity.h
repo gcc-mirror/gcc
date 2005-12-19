@@ -1,4 +1,4 @@
-// Low-level functions for atomic operations: Generic version  -*- C++ -*-
+// Low-level functions for atomic operations: sh version  -*- C++ -*-
 
 // Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
@@ -82,8 +82,8 @@ namespace __gnu_internal
   __glibcxx_mutex_define_initialized(atomic_mutex);
 } // namespace __gnu_internal
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
@@ -100,7 +100,8 @@ namespace __gnu_cxx
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val)
   { __exchange_and_add(__mem, __val); }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* !__SH4A__ */
 

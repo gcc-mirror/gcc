@@ -39,8 +39,8 @@ namespace __gnu_internal
   const int min_len = __gnu_cxx::_Rope_constants::_S_max_rope_depth + 1;
 }
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using namespace __gnu_internal;
 
   template
@@ -66,4 +66,5 @@ namespace __gnu_cxx
 
   template class stdio_filebuf<wchar_t>;
 #endif
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE

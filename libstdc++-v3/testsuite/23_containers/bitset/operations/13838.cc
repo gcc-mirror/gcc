@@ -22,7 +22,7 @@
 // libstdc++/13838
 void test01()
 {
-  using __gnu_debug::bitset;
+  using debug::bitset;
   bool test __attribute__((unused)) = true;
 
   bitset<4>  b0, b1;

@@ -35,7 +35,3 @@ using std::queue;
 using std::priority_queue;
 
 #endif
-
-// Local Variables:
-// mode:C++
-// End:

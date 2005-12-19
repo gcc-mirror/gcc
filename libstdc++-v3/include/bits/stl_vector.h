@@ -65,8 +65,8 @@
 #include <bits/functexcept.h>
 #include <bits/concept_check.h>
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   /**
    *  @if maint
    *  See bits/stl_deque.h's _Deque_base for an explanation.
@@ -985,6 +985,7 @@ namespace _GLIBCXX_STD
     inline void
     swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>& __y)
     { __x.swap(__y); }
-} // namespace std
+
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif /* _VECTOR_H */

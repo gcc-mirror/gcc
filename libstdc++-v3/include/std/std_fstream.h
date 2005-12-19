@@ -48,8 +48,8 @@
 #include <bits/basic_file.h>
 #include <bits/gthr.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // [27.8.1.1] template class basic_filebuf
   /**
    *  @brief  The actual work of input and output (for files).
@@ -776,7 +776,8 @@ namespace std
 	  this->setstate(ios_base::failbit);
       }
     };
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/fstream.tcc>

@@ -36,6 +36,8 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
+namespace std
+{
 namespace __gnu_debug_def
 {
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
@@ -296,7 +298,7 @@ namespace __gnu_debug_def
       splice(iterator __position, list& __x)
       {
 	_GLIBCXX_DEBUG_VERIFY(&__x != this,
-			      _M_message(::__gnu_debug::__msg_self_splice)
+			      _M_message(__gnu_debug::__msg_self_splice)
 			      ._M_sequence(*this, "this"));
 	this->splice(__position, __x, __x.begin(), __x.end());
       }
@@ -306,13 +308,13 @@ namespace __gnu_debug_def
       {
 	__glibcxx_check_insert(__position);
 	_GLIBCXX_DEBUG_VERIFY(__x.get_allocator() == this->get_allocator(),
-			      _M_message(::__gnu_debug::__msg_splice_alloc)
+			      _M_message(__gnu_debug::__msg_splice_alloc)
 			    ._M_sequence(*this)._M_sequence(__x, "__x"));
 	_GLIBCXX_DEBUG_VERIFY(__i._M_dereferenceable(),
-			      _M_message(::__gnu_debug::__msg_splice_bad)
+			      _M_message(__gnu_debug::__msg_splice_bad)
 			      ._M_iterator(__i, "__i"));
 	_GLIBCXX_DEBUG_VERIFY(__i._M_attached_to(&__x),
-			      _M_message(::__gnu_debug::__msg_splice_other)
+			      _M_message(__gnu_debug::__msg_splice_other)
 			     ._M_iterator(__i, "__i")._M_sequence(__x, "__x"));
 
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -327,17 +329,17 @@ namespace __gnu_debug_def
 	__glibcxx_check_insert(__position);
 	__glibcxx_check_valid_range(__first, __last);
 	_GLIBCXX_DEBUG_VERIFY(__first._M_attached_to(&__x),
-			      _M_message(::__gnu_debug::__msg_splice_other)
+			      _M_message(__gnu_debug::__msg_splice_other)
 			      ._M_sequence(__x, "x")
 			      ._M_iterator(__first, "first"));
 	_GLIBCXX_DEBUG_VERIFY(__x.get_allocator() == this->get_allocator(),
-			      _M_message(::__gnu_debug::__msg_splice_alloc)
+			      _M_message(__gnu_debug::__msg_splice_alloc)
 			      ._M_sequence(*this)._M_sequence(__x));
 
 	for (iterator __tmp = __first; __tmp != __last; )
 	  {
 	    _GLIBCXX_DEBUG_VERIFY(&__x != this || __tmp != __position,
-				_M_message(::__gnu_debug::__msg_splice_overlap)
+				_M_message(__gnu_debug::__msg_splice_overlap)
 				  ._M_iterator(__tmp, "position")
 				  ._M_iterator(__first, "first")
 				  ._M_iterator(__last, "last"));
@@ -501,5 +503,6 @@ namespace __gnu_debug_def
     swap(list<_Tp, _Alloc>& __lhs, list<_Tp, _Alloc>& __rhs)
     { __lhs.swap(__rhs); }
 } // namespace __gnu_debug_def
+} // namespace std
 
 #endif

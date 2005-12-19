@@ -36,8 +36,8 @@
 #ifndef _SSO_STRING_BASE_H
 #define _SSO_STRING_BASE_H 1
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     class __sso_string_base
     : protected __vstring_utility<_CharT, _Traits, _Alloc>
@@ -567,6 +567,7 @@ namespace __gnu_cxx
 	return true;
       return false;
     }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _SSO_STRING_BASE_H */

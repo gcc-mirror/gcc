@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- internal _Array helper class.
 
-// Copyright (C) 1997, 1998, 1999, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,8 +37,8 @@
 #ifndef _VALARRAY_ARRAY_TCC
 #define _VALARRAY_ARRAY_TCC 1
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _Tp>
     void
     __valarray_fill(_Array<_Tp> __a, size_t __n, _Array<bool> __m,
@@ -240,6 +240,7 @@ namespace std
 	  new (__q) _Tp(*__p);
 	}
     }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _VALARRAY_ARRAY_TCC */

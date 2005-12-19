@@ -45,8 +45,8 @@
 #include <locale>
 #include <ostream> // For flush()
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>::sentry::
     sentry(basic_istream<_CharT, _Traits>& __in, bool __noskip) : _M_ok(false)
@@ -1281,6 +1281,7 @@ namespace std
   extern template class basic_iostream<wchar_t>;
 #endif
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,8 +61,8 @@
 #ifndef _STL_RAW_STORAGE_ITERATOR_H
 #define _STL_RAW_STORAGE_ITERATOR_H 1
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  This iterator class lets algorithms store their results into
    *  uninitialized memory.
@@ -104,10 +104,7 @@ namespace std
 	return __tmp;
       }
     };
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif
-
-// Local Variables:
-// mode:C++
-// End:

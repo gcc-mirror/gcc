@@ -40,8 +40,8 @@
 // namespace std::tr1
 namespace std
 {
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
   // For use in __in_array and elsewhere.
   struct __sfinae_types
   {
@@ -687,7 +687,7 @@ namespace tr1
 #undef _DEFINE_SPEC
 #undef _DEFINE_SPEC_BODY
 
-}
+_GLIBCXX_END_NAMESPACE
 }
 
 #endif

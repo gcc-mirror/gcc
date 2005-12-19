@@ -33,8 +33,8 @@
 
 #include <istream>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<>
     basic_istream<char>&
     basic_istream<char>::
@@ -643,4 +643,5 @@ namespace std
       return __in;
     }
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

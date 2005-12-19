@@ -37,33 +37,98 @@
 // Pick up any CPU-specific definitions.
 #include <bits/cpu_defines.h>
 
-// Debug mode support. Debug mode basic_string is not allowed to be
-// associated with std, because of locale and exception link
-// dependence.
-namespace __gnu_debug_def { }
+// The current version of the C++ library in compressed ISO date format.
+#define __GLIBCXX__ 
 
-namespace __gnu_debug 
-{ 
-  using namespace __gnu_debug_def;
-}
-
+// Macros for various namespace association schemes and modes.
 #ifdef _GLIBCXX_DEBUG
-# define _GLIBCXX_STD __gnu_norm
-# define _GLIBCXX_EXTERN_TEMPLATE 0
-namespace __gnu_norm 
-{ 
-  using namespace std; 
-}
+# define _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG 1
+#endif
+
+#define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION 
+
+// Macros for namespaces.
+// _GLIBCXX_BEGIN_NAMESPACE
+// _GLIBCXX_END_NAMESPACE
+// _GLIBCXX_BEGIN_NESTED_NAMESPACE
+// _GLIBCXX_END_NESTED_NAMESPACE
+#if _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION
+# define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) namespace X { namespace Y {
+# define _GLIBCXX_END_NESTED_NAMESPACE } }
+# define _GLIBCXX_BEGIN_NAMESPACE(X) _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, _6)
+# define _GLIBCXX_END_NAMESPACE _GLIBCXX_END_NESTED_NAMESPACE
+#else
+# define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X { 
+# define _GLIBCXX_END_NAMESPACE } 
+# if _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG
+#  define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) namespace X { namespace Y {
+#  define _GLIBCXX_END_NESTED_NAMESPACE  } }
+# else
+#  define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) _GLIBCXX_BEGIN_NAMESPACE(X)
+#  define _GLIBCXX_END_NESTED_NAMESPACE _GLIBCXX_END_NAMESPACE
+# endif
+#endif
+
+// Namespace associations for versioning mode.
+#if _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION
 namespace std
 {
-  using namespace __gnu_debug_def __attribute__ ((strong));
+  namespace _6 { }
+  using namespace _6 __attribute__ ((strong));
 }
+
+// In addition, other supported namespace configurations.
+namespace __gnu_cxx 
+{ 
+  namespace _6 { }
+  using namespace _6 __attribute__ ((strong));
+}
+
+namespace __gnu_ext
+{ 
+  namespace _6 { }
+  using namespace _6 __attribute__ ((strong));
+}
+
+namespace std
+{
+  namespace tr1 
+  { 
+    namespace _6 { }
+    using namespace _6 __attribute__ ((strong));
+  }
+}
+#endif
+
+// Namespace associations for debug mode.
+#if _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG
+namespace std
+{ 
+  namespace __gnu_norm { }
+
+#if 1
+  namespace __gnu_debug_def { }
+  namespace __gnu_debug { using namespace __gnu_debug_def; } 
+  using namespace __gnu_debug_def __attribute__ ((strong));
+#else
+  namespace __gnu_debug { namespace detail { } }
+  using namespace __gnu_debug __attribute__ ((strong));
+#endif
+}
+
+# define _GLIBCXX_STD __gnu_norm
+# define _GLIBCXX_EXTERN_TEMPLATE 0
 # if __NO_INLINE__ && !__GXX_WEAK__
 #  warning debug mode without inlining may fail due to lack of weak symbols
 # endif
 #else
+#if _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION
+# define _GLIBCXX_STD _6
+#else
 # define _GLIBCXX_STD std
 #endif
+#endif
+
 
 // Allow use of "export template." This is currently not a feature
 // that g++ supports.
@@ -78,6 +143,7 @@ namespace std
 #ifndef _GLIBCXX_EXTERN_TEMPLATE
 # define _GLIBCXX_EXTERN_TEMPLATE 1
 #endif
+
 
 // Certain function definitions that are meant to be overridable from
 // user code are decorated with this macro.  For some targets, this

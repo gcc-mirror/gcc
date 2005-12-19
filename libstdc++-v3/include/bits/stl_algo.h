@@ -67,8 +67,8 @@
 
 // See concept_check.h for the __glibcxx_*_requires macros.
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  @brief Find the median of three values.
    *  @param  a  A value.
@@ -5337,6 +5337,6 @@ namespace std
 			     __comp);
     }
 
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _ALGO_H */

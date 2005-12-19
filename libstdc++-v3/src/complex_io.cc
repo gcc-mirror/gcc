@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,8 @@
 
 #include <complex>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template
     basic_istream<char, char_traits<char> >&
     operator>>(basic_istream<char, char_traits<char> >&, complex<float>&);
@@ -90,4 +90,5 @@ namespace std
     operator<<(basic_ostream<wchar_t, char_traits<wchar_t> >&,
                const complex<long double>&);
 #endif //_GLIBCXX_USE_WCHAR_T
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

@@ -42,8 +42,8 @@
 #include <typeinfo>		// For bad_cast.
 #include <bits/streambuf_iterator.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _Facet>
     locale
     locale::combine(const locale& __other) const
@@ -2761,6 +2761,7 @@ namespace std
     has_facet<messages<wchar_t> >(const locale&);
 #endif
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

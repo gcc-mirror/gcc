@@ -39,16 +39,27 @@
  *  standard library algorithms.
 */
 
+
+namespace std 
+{ 
+  namespace __gnu_debug_def { } 
+  namespace __gnu_debug { using namespace __gnu_debug_def; } 
+}
+
+namespace debug = std::__gnu_debug;
+
 #ifdef _GLIBCXX_DEBUG
 
-# include <debug/macros.h>
 # include <cstdlib>
 # include <cstdio>
+# include <debug/macros.h>
 
-// Avoid the use of assert, because we're trying to keep the <cassert>
-// include out of the mix.
+namespace std
+{
 namespace __gnu_debug
 { 
+  // Avoid the use of assert, because we're trying to keep the <cassert>
+  // include out of the mix.
   inline void
   __replacement_assert(const char* __file, int __line, const char* __function,
 		       const char* __condition)
@@ -57,12 +68,13 @@ namespace __gnu_debug
 		__function, __condition);
     std::abort();
   }
-}
+} // namespace __gnu_debug
+} // namespace std
 
 #define _GLIBCXX_DEBUG_ASSERT(_Condition)                               \
   do {                                                                  \
     if (! (_Condition))                                                 \
-      ::__gnu_debug::__replacement_assert(__FILE__, __LINE__,           \
+      std::__gnu_debug::__replacement_assert(__FILE__, __LINE__,           \
 				   __PRETTY_FUNCTION__,                 \
 				   #_Condition);                        \
   } while (false)

@@ -1,6 +1,6 @@
 // Forwarding declarations -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -49,8 +49,8 @@
 #include <bits/postypes.h>
 #include <bits/functexcept.h>
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class basic_ios;
 
@@ -162,6 +162,7 @@ namespace std
   typedef basic_fstream<wchar_t> 	wfstream;	///< @isiosfwd
 #endif
   /** @}  */
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _GLIBCXX_IOSFWD */

@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- mask_array class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005
 //  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -40,8 +40,8 @@
 
 #pragma GCC system_header
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  @brief  Reference to selected subset of an array.
    *
@@ -199,10 +199,6 @@ _DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_OPERATOR
 
-} // std::
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _MASK_ARRAY_H */
-
-// Local Variables:
-// mode:c++
-// End:

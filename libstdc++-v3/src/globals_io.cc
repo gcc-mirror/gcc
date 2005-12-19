@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,8 +49,8 @@
 // In macro form:
 // _GLIBCXX_ASM_SYMVER(currentname, oldname, GLIBCXX_3.2)
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Standard stream objects.
   // NB: Iff <iostream> is included, these definitions become wonky.
   typedef char fake_istream[sizeof(istream)]
@@ -72,7 +72,8 @@ namespace std
   fake_wostream wcerr;
   fake_wostream wclog;
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 namespace __gnu_internal
 {

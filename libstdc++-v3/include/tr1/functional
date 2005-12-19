@@ -47,8 +47,8 @@
 
 namespace std
 {
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
   template<typename _MemberPointer>
     class _Mem_fn;
 
@@ -1274,7 +1274,8 @@ namespace tr1
 	return result;
       }
     };
-}
+
+_GLIBCXX_END_NAMESPACE
 }
 
 #endif

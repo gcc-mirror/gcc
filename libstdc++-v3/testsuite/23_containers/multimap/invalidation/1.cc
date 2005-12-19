@@ -23,7 +23,7 @@
 #include <testsuite_hooks.h>
 #include <utility>
 
-using __gnu_debug::multimap;
+using debug::multimap;
 using std::advance;
 
 bool test = true;

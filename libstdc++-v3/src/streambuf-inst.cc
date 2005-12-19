@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -35,22 +35,22 @@
 #include <ios>
 #include <streambuf>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // streambuf
   template class basic_streambuf<char>;
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template class basic_streambuf<wchar_t>;
-#endif
 
   template
     streamsize
-    __copy_streambufs(basic_streambuf<char>*,
-		      basic_streambuf<char>*); 
+    __copy_streambufs(basic_streambuf<char>*, basic_streambuf<char>*); 
+
 #ifdef _GLIBCXX_USE_WCHAR_T
+  // wstreambuf
+  template class basic_streambuf<wchar_t>;
+
   template
     streamsize
-    __copy_streambufs(basic_streambuf<wchar_t>*,
-		      basic_streambuf<wchar_t>*); 
+    __copy_streambufs(basic_streambuf<wchar_t>*, basic_streambuf<wchar_t>*); 
 #endif
-} //std
+
+_GLIBCXX_END_NAMESPACE

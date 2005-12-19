@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -48,8 +48,8 @@
 #include <bits/atomicity.h>
 #include <bits/gthr.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // 22.1.1 Class locale
   /**
    *  @brief  Container class for localization functionality.
@@ -577,6 +577,7 @@ namespace std
       delete [] _M_impl->_M_names[0];
       _M_impl->_M_names[0] = 0;   // Unnamed.
     }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif
