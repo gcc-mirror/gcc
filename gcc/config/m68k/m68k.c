@@ -599,18 +599,18 @@ m68k_output_function_prologue (FILE *stream,
     {
       if (frame_pointer_needed)
 	{
-	 cfa_offset += current_frame.size + 4;
-	 char *l;
+	  char *l;
 	  l = (char *) dwarf2out_cfi_label ();
-	 cfa_offset += 4;                                                      +         dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_offset);
-	 dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, cfa_offset);
-	 cfa_offset += current_frame.size;
-       }
+	  cfa_offset += 4;
+	  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_offset);
+	  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, cfa_offset);
+	  cfa_offset += current_frame.size;
+        }
       else
-       {
-	 cfa_offset += current_frame.size;
-	 dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
-       }
+        {
+	  cfa_offset += current_frame.size;
+	  dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
+        }
     }
 
   if (current_frame.fpu_mask)
