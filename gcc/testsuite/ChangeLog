@@ -1,3 +1,7 @@
+2005-12-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.dg/mt-loopi1.c: New.
+
 2005-12-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/25481
