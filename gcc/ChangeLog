@@ -1,3 +1,12 @@
+2005-12-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/25180
+        * config/rs6000/predicates.md (logical_const_operand): Split
+        out of logical_operand.
+        (logical_operand): Use it.
+        * config/rs6000/rs6000.md (cmp -> xor peephole2): Use
+        logical_const_operand.
+
 2005-12-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/mt/mt.md (decrement_and_branch_until_zero): Add another
