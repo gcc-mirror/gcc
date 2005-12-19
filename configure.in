@@ -967,6 +967,12 @@ case "${host}" in
   powerpc-*-darwin*)
     host_makefile_frag="config/mh-ppc-darwin"
     ;;
+  powerpc-*-aix*)
+    host_makefile_frag="config/mh-ppc-aix"
+    ;;
+  rs6000-*-aix*)
+    host_makefile_frag="config/mh-ppc-aix"
+    ;;
   *-*-lynxos*)
     # /bin/cc is less than useful for our purposes.  Always use GCC
     tentative_cc="/bin/gcc"
@@ -1513,6 +1519,7 @@ case "${target}" in
     # harmless if we're using GNU nm or ar.
     extra_arflags_for_target=" -X32_64"
     extra_nmflags_for_target=" -B -X32_64"
+    target_makefile_frag="config/mt-ppc-aix"
     ;;
   *-*-darwin*)
     # ranlib from Darwin requires the -c flag to look at common symbols.

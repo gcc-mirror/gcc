@@ -252,6 +252,8 @@ BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 # Flags to pass to stage2 and later makes.  They are defined
 # here so that they can be overridden by Makefile fragments.
 BOOT_CFLAGS= -g -O2
+BOOT_ADAFLAGS=
+BOOT_LDFLAGS=
 
 BISON = @BISON@
 YACC = @YACC@
@@ -431,12 +433,17 @@ BASE_FLAGS_TO_PASS = \
 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
 	"SHELL=$(SHELL)" \
 	"YACC=$(YACC)" \
+	"ADAFLAGS=$(ADAFLAGS)" \
 	"AR_FLAGS=$(AR_FLAGS)" \
+	"BOOT_ADAFLAGS=$(BOOT_ADAFLAGS)" \
+	"BOOT_CFLAGS=$(BOOT_CFLAGS)" \
+	"BOOT_LDFLAGS=$(BOOT_LDFLAGS)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"LIBCXXFLAGS=$(LIBCXXFLAGS)" \
+	"ADAFLAGS_FOR_TARGET=$(ADAFLAGS_FOR_TARGET)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"AS_FOR_TARGET=$(AS_FOR_TARGET)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
@@ -497,6 +504,7 @@ X11_FLAGS_TO_PASS = \
 # are set in BASE_FLAGS_TO_PASS, and the sub-make will expand them.  The
 # COMPILER_ prefixed variables are not passed down so we expand them here.
 EXTRA_TARGET_FLAGS = \
+	'ADAFLAGS=$$(ADAFLAGS_FOR_TARGET)' \
 	'AR=$$(AR_FOR_TARGET)' \
 	'AS=$(COMPILER_AS_FOR_TARGET)' \
 	'CC=$$(CC_FOR_TARGET)' \
@@ -35667,7 +35675,7 @@ stage = :
 
 @if gcc-bootstrap
 unstage = [ -f stage_current ] || $(MAKE) `cat stage_last`-start
-stage = [ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+stage = if [ -f stage_current ]; then $(MAKE) `cat stage_current`-end || exit 1; else :; fi
 @endif gcc-bootstrap
 
 .PHONY: unstage stage
@@ -35707,6 +35715,8 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 	STAGE_PREFIX=$$r/prev-gcc/ \
 	CFLAGS="$(BOOT_CFLAGS)" \
+	ADAFLAGS="$(BOOT_ADAFLAGS)" \
+	LDFLAGS="$(BOOT_LDFLAGS)" \
 	ADAC="\$$(CC)"
 
 # For stage 1:
@@ -36363,7 +36373,7 @@ stage3-bubble:: stage2-bubble
 	  $(MAKE) stage3-start; \
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage3; \
 	fi
-	$(MAKE) compare
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) compare
 
 .PHONY: all-stage3 clean-stage3
 do-clean: clean-stage3
@@ -36647,7 +36657,7 @@ stage4-bubble:: stage3-bubble
 	  $(MAKE) stage4-start; \
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage4; \
 	fi
-	$(MAKE) compare3
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) compare3
 
 .PHONY: all-stage4 clean-stage4
 do-clean: clean-stage4

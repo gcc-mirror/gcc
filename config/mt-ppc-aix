@@ -1,0 +1,6 @@
+
+# Compile Ada files with minimal-toc.  The primary focus is gnatlib, so
+# that the library does not use nearly the entire TOC of applications
+# until gnatlib is built as a shared library on AIX.  Compiling the
+# compiler with -mminimal-toc does not cause any harm.
+ADAFLAGS_FOR_TARGET = -mminimal-toc
