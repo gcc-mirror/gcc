@@ -1,0 +1,228 @@
+#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+# If the target does not match the required effective target, skip this test.
+
+proc dg-require-effective-target { args } {
+    set args [lreplace $args 0 0]
+    if { ![is-effective-target [lindex $args 0]] } {
+	upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
+# Check the flags with which the test will be run against options in
+# a test directive that will skip or xfail that test.  The DejaGnu proc
+# check_conditional_xfail will look at the options in compiler_flags, so
+# set that up for this test based on flags we know about.
+
+proc check_test_flags { args } {
+    global compiler_flags
+    upvar 2 dg-extra-tool-flags extra_tool_flags
+
+    # Pull the args out of the enclosing list.
+    set args [lindex $args 0]
+
+    # Start the list with a dummy tool name so the list will match "*"
+    # if there are no flags.
+    set compiler_flags " toolname "
+    append compiler_flags $extra_tool_flags
+    set dest [target_info name]
+    if [board_info $dest exists multilib_flags] {
+	append compiler_flags "[board_info $dest multilib_flags] "
+    }
+
+    set answer [check_conditional_xfail $args]
+
+    # Any value in this variable originally was left over from an earlier test.
+    set compiler_flags ""
+
+    verbose "check_test_flags: $args $answer" 2
+    return $answer
+}
+
+# Skip the test (report it as UNSUPPORTED) if the target list and
+# included flags are matched and the excluded flags are not matched.
+#
+# The first argument is the line number of the dg-skip-if directive
+# within the test file.   Remaining arguments are as for xfail lists:
+# message { targets } { include } { exclude }
+#
+# This tests against multilib flags plus either the default flags for this
+# group of tests or flags specified with a previous dg-options command.
+
+proc dg-skip-if { args } {
+    set args [lreplace $args 0 0]
+
+    set selector [list target [lindex $args 1]]
+    if { [dg-process-target $selector] == "S" } {
+	# The target list matched; now check the flags.  The DejaGnu proc
+	# check_conditional_xfail will look at the options in compiler_flags,
+	# so set that up for this test based on flags we know about.  Start
+	# the list with a dummy tool name so the list will match "*" if
+	# there are no flags.
+
+	global compiler_flags
+	upvar dg-extra-tool-flags extra_tool_flags
+
+	set compiler_flags " toolname "
+	append compiler_flags $extra_tool_flags
+	set dest [target_info name]
+	if [board_info $dest exists multilib_flags] {
+	    append compiler_flags "[board_info $dest multilib_flags] "
+	}
+
+	# The target list might be an effective-target keyword, so replace
+	# the original list with "*-*-*".
+	if [check_conditional_xfail [lreplace $args 1 1 "*-*-*"]] {
+	    upvar dg-do-what dg-do-what
+            set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	}
+
+	# Any value in this variable was left over from an earlier test.
+	set compiler_flags ""
+    }
+}
+
+# Like check_conditional_xfail, but callable from a dg test.
+
+proc dg-xfail-if { args } {
+    # Don't change anything if we're already skipping the test.
+    upvar dg-do-what dg-do-what
+    if { [lindex ${dg-do-what} 1] == "N" } {
+      return
+    }
+
+    set args [lreplace $args 0 0]
+    set selector [list target [lindex $args 1]]
+    if { [dg-process-target $selector] == "S" } {
+	global compiler_conditional_xfail_data
+	set compiler_conditional_xfail_data [lreplace $args 1 1 "*-*-*"]
+    }
+}
+
+# Intercept the call to the DejaGnu version of dg-process-target to
+# support use of an effective-target keyword in place of a list of
+# target triplets to xfail or skip a test.
+#
+# selector is one of:
+#    xfail target-triplet-1 ...
+#    xfail effective-target-keyword
+#    xfail selector-expression
+#    target target-triplet-1 ...
+#    target effective-target-keyword
+#    target selector-expression
+#
+# For a target list the result is "S" if the target is selected, "N" otherwise.
+# For an xfail list the result is "F" if the target is affected, "P" otherwise.
+#
+# A selector expression appears within curly braces and uses a single logical
+# operator: !, &&, or ||.  An operand is another selector expression, an
+# effective-target keyword, or a list of target triplets within quotes or
+# curly braces.
+
+if { [info procs saved-dg-process-target] == [list] } {
+    rename dg-process-target saved-dg-process-target
+
+    # Evaluate an operand within a selector expression.
+    proc selector_opd { op } {
+	set selector "target"
+	lappend selector $op
+	set answer [ expr { [dg-process-target $selector] == "S" } ]
+	verbose "selector_opd: `$op' $answer" 2
+	return $answer
+    }
+
+    # Evaluate a target triplet list within a selector expression.
+    # Unlike other operands, this needs to be expanded from a list to
+    # the same string as "target".
+    proc selector_list { op } {
+	set selector "target [join $op]"
+	set answer [ expr { [dg-process-target $selector] == "S" } ]
+	verbose "selector_list: `$op' $answer" 2
+	return $answer
+    }
+
+    # Evaluate a selector expression.
+    proc selector_expression { exp } {
+	if { [llength $exp] == 2 } {
+	    if [string match "!" [lindex $exp 0]] {
+		set op1 [lindex $exp 1]
+		set answer [expr { ! [selector_opd $op1] }]
+	    } else {
+		# Assume it's a list of target triplets.
+		set answer [selector_list $exp]
+	    }
+	} elseif { [llength $exp] == 3 } {
+	    set op1 [lindex $exp 0]
+	    set opr [lindex $exp 1]
+	    set op2 [lindex $exp 2]
+	    if [string match "&&" $opr] {
+		set answer [expr { [selector_opd $op1] && [selector_opd $op2] }]
+	    } elseif [string match "||" $opr] {
+		set answer [expr { [selector_opd $op1] || [selector_opd $op2] }]
+	    } else {
+		# Assume it's a list of target triplets.
+		set answer [selector_list $exp]
+	    }
+	} else {
+	    # Assume it's a list of target triplets.
+	    set answer [selector_list $exp]
+	}
+
+	verbose "selector_expression: `$exp' $answer" 2
+	return $answer
+    }
+
+    proc dg-process-target { args } {
+	verbose "replacement dg-process-target: `$args'" 2
+	
+	# Extract the 'what' keyword from the argument list.
+	set selector [string trim [lindex $args 0]]
+	if [regexp "^xfail " $selector] {
+	    set what "xfail"
+	} elseif [regexp "^target " $selector] {
+	    set what "target"
+	} else {
+	    error "syntax error in target selector \"$selector\""
+	}
+
+	# Extract the rest of the list, which might be a keyword.
+	regsub "^${what}" $selector "" rest
+	set rest [string trim $rest]
+
+	if [is-effective-target-keyword $rest] {
+	    # The selector is an effective target keyword.
+	    if [is-effective-target $rest] {
+		return [expr { $what == "xfail" ? "F" : "S" }]
+	    } else {
+		return [expr { $what == "xfail" ? "P" : "N" }]
+	    }
+	}
+
+	if [string match "{*}" $rest] {
+	    if [selector_expression [lindex $rest 0]] {
+		return [expr { $what == "xfail" ? "F" : "S" }]
+	    } else {
+		return [expr { $what == "xfail" ? "P" : "N" }]
+	    }
+	}
+
+	# The selector is not an effective-target keyword, so process
+	# the list of target triplets.
+	return [saved-dg-process-target $selector]
+    }
+}

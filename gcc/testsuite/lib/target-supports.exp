@@ -289,3 +289,161 @@ proc check_vmx_hw_available { } {
 
     return $vmx_hw_available_saved
 }
+
+# Return 1 if -fpic and -fPIC are supported, as in no warnings or errors
+# emitted, 0 otherwise.  Whether a shared library can actually be built is
+# out of scope for this test.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_fpic { } {
+    global et_fpic_saved
+    global et_fpic_target_name
+
+    if { ![info exists et_fpic_target_name] } {
+	set et_fpic_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_fpic_target_name } {
+	verbose "check_effective_target_fpic: `$et_fpic_target_name'" 2
+	set et_fpic_target_name $current_target
+	if [info exists et_fpic_saved] {
+	    verbose "check_effective_target_fpic: removing cached result" 2
+	    unset et_fpic_saved
+	}
+    }
+
+    if [info exists et_fpic_saved] {
+	verbose "check_effective_target_fpic: using cached result" 2
+    } else {
+	verbose "check_effective_target_fpic: compiling source" 2
+
+	# Note that M68K has a multilib that supports -fpic but not
+	# -fPIC, so we need to check both.  We test with a program that
+	# requires GOT references.
+	set et_fpic_saved [string match "" [get_compiler_messages fpic object {
+	    extern int foo (void); extern int bar;
+	    int baz (void) { return foo () + bar; }
+	} "-fpic"]]
+
+	if { $et_fpic_saved != 0 } {
+	    set et_fpic_saved [string match "" [get_compiler_messages fpic object {
+		extern int foo (void); extern int bar;
+		int baz (void) { return foo () + bar; }
+	    } "-fPIC"]]
+	}
+    }
+    verbose "check_effective_target_fpic: returning $et_fpic_saved" 2
+    return $et_fpic_saved
+}
+
+# Return 1 if we're generating 32-bit code using default options, 0
+# otherwise.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_ilp32 { } {
+    global et_ilp32_saved
+    global et_ilp32_target_name
+
+    if { ![info exists et_ilp32_target_name] } {
+	set et_ilp32_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_ilp32_target_name } {
+	verbose "check_effective_target_ilp32: `$et_ilp32_target_name' `$current_target'" 2
+	set et_ilp32_target_name $current_target
+	if { [info exists et_ilp32_saved] } {
+	    verbose "check_effective_target_ilp32: removing cached result" 2
+	    unset et_ilp32_saved
+	}
+    }
+
+    if [info exists et_ilp32_saved] {
+	verbose "check-effective_target_ilp32: using cached result" 2
+    } else {
+	verbose "check_effective_target_ilp32: compiling source" 2
+	set et_ilp32_saved [string match "" [get_compiler_messages ilp32 object {
+	    int dummy[(sizeof (int) == 4 && sizeof (void *) == 4 && sizeof (long) == 4 ) ? 1 : -1];
+	}]]
+    }
+    verbose "check_effective_target_ilp32: returning $et_ilp32_saved" 2
+    return $et_ilp32_saved
+}
+
+# Return 1 if we're generating 64-bit code using default options, 0
+# otherwise.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_lp64 { } {
+    global et_lp64_saved
+    global et_lp64_target_name
+
+    if { ![info exists et_lp64_target_name] } {
+	set et_lp64_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_lp64_target_name } {
+	verbose "check_effective_target_lp64: `$et_lp64_target_name' `$current_target'" 2
+	set et_lp64_target_name $current_target
+	if [info exists et_lp64_saved] {
+	    verbose "check_effective_target_lp64: removing cached result" 2
+	    unset et_lp64_saved
+	}
+    }
+
+    if [info exists et_lp64_saved] {
+	verbose "check_effective_target_lp64: using cached result" 2
+    } else {
+	verbose "check_effective_target_lp64: compiling source" 2
+	set et_lp64_saved [string match "" [get_compiler_messages lp64 object {
+	    int dummy[(sizeof (int) == 4 && sizeof (void *) == 8 && sizeof (long) == 8 ) ? 1 : -1];
+	}]]
+    }
+    verbose "check_effective_target_lp64: returning $et_lp64_saved" 2
+    return $et_lp64_saved
+}
+
+# Return 1 if the target matches the effective target 'arg', 0 otherwise.
+# This can be used with any check_* proc that takes no argument and
+# returns only 1 or 0.  It could be used with check_* procs that take
+# arguments with keywords that pass particular arguments.
+
+proc is-effective-target { arg } {
+    set selected 0
+    if { [info procs check_effective_target_${arg}] != [list] } {
+	set selected [check_effective_target_${arg}]
+    } else {
+	switch $arg {
+	  "vmx_hw"         { set selected [check_vmx_hw_available] }
+	  "named_sections" { set selected [check_named_sections_available] }
+	  "gc_sections"    { set selected [check_gc_sections_available] }
+	  default          { error "unknown effective target keyword `$arg'" }
+	}
+    }
+    verbose "is-effective-target: $arg $selected" 2
+    return $selected
+}
+
+# Return 1 if the argument is an effective-target keyword, 0 otherwise.
+
+proc is-effective-target-keyword { arg } {
+    if { [info procs check_effective_target_${arg}] != [list] } {
+	return 1
+    } else {
+	# These have different names for their check_* procs.
+	switch $arg {
+	  "vmx_hw"         { return 1 }
+	  "named_sections" { return 1 }
+	  "gc_sections"    { return 1 }
+	  default          { return 0 }
+	}
+    }
+}

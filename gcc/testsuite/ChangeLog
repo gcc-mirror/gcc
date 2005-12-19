@@ -1,3 +1,36 @@
+2005-12-19  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport:
+
+	2005-02-11  Janis Johnson  <janis187@us.ibm.com>
+	* lib/gcc-dg.exp: (dg-require-effective-target, dg-skip-if,
+	dg-xfail-if, selector_opd, selector_list, selector_expression,
+	dg-process-target): Move to new file target-supports-dg.exp.
+	* lib/target-supports-dg.exp: New.
+
+	2005-01-24  Janis Johnson  <janis187@us.ibm.com>
+	* lib/target-supports.exp (current_target_name): New.
+	(check_effective_target_ilp32, check_effective_target_lp64):
+	Cache the result to use as long as the current target, with
+	multilib flags, remains the same.
+
+	2004-12-01  Janis Johnson  <janis187@us.ibm.com>
+	* lib/gcc-dg.exp (dg-process-target): Wrapper for dg function to
+	handle effective-target-keyword.
+	(dg-skip-if): Support effective-target keyword as target list.
+	(dg-xfail-if): Ditto.
+	* lib/target-supports.exp (is-effective-target-keyword): New proc.
+
+	2004-11-30  Janis Johnson  <janis187@us.ibm.com>
+	* lib/target-supports.exp (is-effective-target): Simplify.
+
+	2004-11-11  Janis Johnson  <janis187@us.ibm.com>
+	* lib/target-supports.exp (get-compiler_messages): New.
+	(check_effective_target_ilp32): New.
+	(check_effective_target_lp64): New.
+	(is-effective-target): New.
+	* lib/gcc-dg.exp (dg-require-effective-target): New.
+
 2005-12-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/20552
