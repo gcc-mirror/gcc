@@ -3007,11 +3007,9 @@ update_alias_info (tree stmt, struct alias_info *ai)
       var = SSA_NAME_VAR (op);
       v_ann = var_ann (var);
 
-      /* If the operand's variable may be aliased, keep track of how
-	 many times we've referenced it.  This is used for alias
-	 grouping in compute_flow_insensitive_aliasing.  */
-      if (may_be_aliased (var))
-	NUM_REFERENCES_INC (v_ann);
+      /* The base variable of an ssa name must be a GIMPLE register, and thus
+	 it cannot be aliased.  */
+      gcc_assert (!may_be_aliased (var));
 
       /* We are only interested in pointers.  */
       if (!POINTER_TYPE_P (TREE_TYPE (op)))
