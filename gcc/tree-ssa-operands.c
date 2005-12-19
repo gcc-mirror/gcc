@@ -1601,7 +1601,7 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
     }
   else
     {
-      varray_type aliases;
+      VEC(tree,gc) *aliases;
 
       /* The variable is not a GIMPLE register.  Add it (or its aliases) to
 	 virtual operands, unless the caller has specifically requested
@@ -1639,11 +1639,12 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 	}
       else
 	{
-	  size_t i;
+	  unsigned i;
+	  tree al;
 
 	  /* The variable is aliased.  Add its aliases to the virtual
 	     operands.  */
-	  gcc_assert (VARRAY_ACTIVE_SIZE (aliases) != 0);
+	  gcc_assert (VEC_length (tree, aliases) != 0);
 
 	  if (flags & opf_is_def)
 	    {
@@ -1654,8 +1655,8 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 	      if (v_ann->is_alias_tag)
 		append_v_may_def (var);
 
-	      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
-		append_v_may_def (VARRAY_TREE (aliases, i));
+	      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+		append_v_may_def (al);
 	    }
 	  else
 	    {
@@ -1664,8 +1665,8 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 	      if (v_ann->is_alias_tag)
 		append_vuse (var);
 
-	      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
-		append_vuse (VARRAY_TREE (aliases, i));
+	      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+		append_vuse (al);
 	    }
 	}
     }

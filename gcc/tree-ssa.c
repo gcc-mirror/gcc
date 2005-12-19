@@ -381,15 +381,14 @@ verify_flow_insensitive_alias_info (void)
     {
       size_t j;
       var_ann_t ann;
-      varray_type may_aliases;
+      VEC(tree,gc) *may_aliases;
+      tree alias;
 
       ann = var_ann (var);
       may_aliases = ann->may_aliases;
 
-      for (j = 0; may_aliases && j < VARRAY_ACTIVE_SIZE (may_aliases); j++)
+      for (j = 0; VEC_iterate (tree, may_aliases, j, alias); j++)
 	{
-	  tree alias = VARRAY_TREE (may_aliases, j);
-
 	  bitmap_set_bit (visited, DECL_UID (alias));
 
 	  if (!may_be_aliased (alias))
@@ -545,13 +544,12 @@ verify_name_tags (void)
       if (tmt)
 	{
 	  size_t i;
-	  varray_type aliases = var_ann (tmt)->may_aliases;
+	  VEC(tree,gc) *aliases = var_ann (tmt)->may_aliases;
+	  tree alias;
+
 	  bitmap_clear (type_aliases);
-	  for (i = 0; aliases && i < VARRAY_ACTIVE_SIZE (aliases); i++)
-	    {
-	      tree alias = VARRAY_TREE (aliases, i);
-	      bitmap_set_bit (type_aliases, DECL_UID (alias));
-	    }
+	  for (i = 0; VEC_iterate (tree, aliases, i, alias); i++)
+	    bitmap_set_bit (type_aliases, DECL_UID (alias));
 
 	  /* When grouping, we may have added PTR's type tag into the
 	     alias set of PTR's name tag.  To prevent a false
