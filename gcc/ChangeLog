@@ -1,5 +1,10 @@
 2005-12-19  J"orn Rennecke <joern.rennecke@st.com>
 
+	* cfgcleanup.c: Temporarily revert patches for PR 20070 till Bernd
+	comes back.
+
+2005-12-19  J"orn Rennecke <joern.rennecke@st.com>
+
 	* struct-equiv.c (struct_equiv_improve_checkpoint): Fix sets_cc0_p
 	check.
 
