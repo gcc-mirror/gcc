@@ -1,3 +1,11 @@
+2005-12-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20552
+	Backport:
+	2004-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (duplicate_decls): Don't check IDENTIFIER_ERROR_LOCUS.
+
 2005-12-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/19397

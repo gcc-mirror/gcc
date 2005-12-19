@@ -1,3 +1,8 @@
+2005-12-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20552
+	* g++.dg/ext/typeof10.C: New test.
+
 2005-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.old-deja/g++.brendan/redecl1.C,

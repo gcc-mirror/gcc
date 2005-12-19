@@ -1380,10 +1380,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  else
 	    return NULL_TREE;
 	}
-
-      /* Already complained about this, so don't do so again.  */
-      else if (current_class_type == NULL_TREE
-	  || IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl)) != current_class_type)
+      else
 	{
 	  error ("conflicting declaration '%#D'", newdecl);
 	  cp_error_at ("'%D' has a previous declaration as `%#D'",
