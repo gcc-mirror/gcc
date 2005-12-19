@@ -40,8 +40,7 @@
 
 namespace std
 {
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 template<typename _Tp>
   class reference_wrapper;
@@ -54,6 +53,7 @@ template<typename _Tp>
 template<typename _Tp>
   reference_wrapper<const _Tp>
   cref(const _Tp& __t);
-}
+
+_GLIBCXX_END_NAMESPACE
 }
 #endif

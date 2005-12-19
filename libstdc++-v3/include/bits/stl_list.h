@@ -63,8 +63,8 @@
 
 #include <bits/concept_check.h>
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   // Supporting structures are split into common and templated types; the
   // latter publicly inherits from the former in an effort to reduce code
   // duplication.  This results in some "needless" static_cast'ing later on,
@@ -1221,7 +1221,8 @@ namespace _GLIBCXX_STD
     inline void
     swap(list<_Tp, _Alloc>& __x, list<_Tp, _Alloc>& __y)
     { __x.swap(__y); }
-} // namespace std
+
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif /* _LIST_H */
 

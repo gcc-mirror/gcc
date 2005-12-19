@@ -59,12 +59,13 @@
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   extern "C" void abort(void);
   extern "C" int atexit(void (*)());
   extern "C" void exit(int);
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #else
 
@@ -100,8 +101,8 @@ namespace std
 #undef wcstombs
 #undef wctomb
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::div_t;
   using ::ldiv_t;
 
@@ -143,7 +144,8 @@ namespace std
 
   inline ldiv_t
   div(long __i, long __j) { return ldiv(__i, __j); }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #if _GLIBCXX_USE_C99
 
@@ -156,8 +158,8 @@ namespace std
 #undef strtof
 #undef strtold
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::lldiv_t;
 #endif
@@ -195,10 +197,11 @@ namespace __gnu_cxx
 #endif
   using ::strtof;
   using ::strtold;
-}
 
-namespace std
-{
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::__gnu_cxx::lldiv_t;
 #endif
@@ -214,7 +217,8 @@ namespace std
   using ::__gnu_cxx::strtoll;
   using ::__gnu_cxx::strtoull;
   using ::__gnu_cxx::strtold;
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif // _GLIBCXX_USE_C99
 

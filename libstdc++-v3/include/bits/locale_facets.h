@@ -48,8 +48,8 @@
 #include <bits/ios_base.h>  // For ios_base, ios_base::iostate
 #include <streambuf>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // NB: Don't instantiate required wchar_t facets if no wchar_t support.
 #ifdef _GLIBCXX_USE_WCHAR_T
 # define  _GLIBCXX_NUM_FACETS 28
@@ -4573,6 +4573,7 @@ namespace std
     inline _CharT
     tolower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

@@ -43,14 +43,14 @@
 #define _GLIBCXX_DEBUG_VERIFY(_Condition,_ErrorMessage)		        \
   do {									\
     if (! (_Condition))							\
-      ::__gnu_debug::_Error_formatter::_M_at(__FILE__, __LINE__)	\
+      std::__gnu_debug::_Error_formatter::_M_at(__FILE__, __LINE__)	\
 	  ._ErrorMessage._M_error();					\
   } while (false)
 
 // Verify that [_First, _Last) forms a valid iterator range.
 #define __glibcxx_check_valid_range(_First,_Last)			\
-_GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__valid_range(_First, _Last),	\
-		      _M_message(::__gnu_debug::__msg_valid_range)	\
+_GLIBCXX_DEBUG_VERIFY(std::__gnu_debug::__valid_range(_First, _Last),	\
+		      _M_message(std::__gnu_debug::__msg_valid_range)	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
@@ -63,11 +63,11 @@ _GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__valid_range(_First, _Last),	\
 */
 #define __glibcxx_check_insert(_Position)				\
 _GLIBCXX_DEBUG_VERIFY(!_Position._M_singular(),				\
-		      _M_message(::__gnu_debug::__msg_insert_singular) \
+		      _M_message(std::__gnu_debug::__msg_insert_singular) \
 		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position));		\
 _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
-		      _M_message(::__gnu_debug::__msg_insert_different) \
+		      _M_message(std::__gnu_debug::__msg_insert_different) \
 		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position))
 
@@ -87,11 +87,11 @@ _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
 #define __glibcxx_check_insert_range(_Position,_First,_Last)		\
 __glibcxx_check_valid_range(_First,_Last);				\
 _GLIBCXX_DEBUG_VERIFY(!_Position._M_singular(),				\
-		      _M_message(::__gnu_debug::__msg_insert_singular) \
+		      _M_message(std::__gnu_debug::__msg_insert_singular) \
                       ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position));		\
 _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
-		      _M_message(::__gnu_debug::__msg_insert_different) \
+		      _M_message(std::__gnu_debug::__msg_insert_different) \
 		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position))
 
@@ -101,11 +101,11 @@ _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
 */
 #define __glibcxx_check_erase(_Position)				\
 _GLIBCXX_DEBUG_VERIFY(_Position._M_dereferenceable(),			\
-		      _M_message(::__gnu_debug::__msg_erase_bad)	\
+		      _M_message(std::__gnu_debug::__msg_erase_bad)	\
                       ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position));		\
 _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
-		      _M_message(::__gnu_debug::__msg_erase_different) \
+		      _M_message(std::__gnu_debug::__msg_erase_different) \
 		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position))
 
@@ -116,7 +116,7 @@ _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
 #define __glibcxx_check_erase_range(_First,_Last)			\
 __glibcxx_check_valid_range(_First,_Last);				\
 _GLIBCXX_DEBUG_VERIFY(_First._M_attached_to(this),			\
-		      _M_message(::__gnu_debug::__msg_erase_different) \
+		      _M_message(std::__gnu_debug::__msg_erase_different) \
                       ._M_sequence(*this, "this")			\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
@@ -124,7 +124,7 @@ _GLIBCXX_DEBUG_VERIFY(_First._M_attached_to(this),			\
 // Verify that the subscript _N is less than the container's size.
 #define __glibcxx_check_subscript(_N)					\
 _GLIBCXX_DEBUG_VERIFY(_N < this->size(),				\
-		      _M_message(::__gnu_debug::__msg_subscript_oob) \
+		      _M_message(std::__gnu_debug::__msg_subscript_oob) \
                       ._M_sequence(*this, "this")			\
 		      ._M_integer(_N, #_N)				\
 		      ._M_integer(this->size(), "size"))
@@ -132,7 +132,7 @@ _GLIBCXX_DEBUG_VERIFY(_N < this->size(),				\
 // Verify that the container is nonempty
 #define __glibcxx_check_nonempty()					\
 _GLIBCXX_DEBUG_VERIFY(! this->empty(),					\
-		      _M_message(::__gnu_debug::__msg_empty)	\
+		      _M_message(std::__gnu_debug::__msg_empty)	\
                       ._M_sequence(*this, "this"))
 
 // Verify that the < operator for elements in the sequence is a
@@ -150,8 +150,8 @@ _GLIBCXX_DEBUG_ASSERT(_First == _Last || !_Pred(*_First, *_First))
 #define __glibcxx_check_sorted(_First,_Last)				\
 __glibcxx_check_valid_range(_First,_Last);				\
 __glibcxx_check_strict_weak_ordering(_First,_Last);			\
-_GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_sorted(_First, _Last),	\
-		      _M_message(::__gnu_debug::__msg_unsorted)	\
+_GLIBCXX_DEBUG_VERIFY(std::__gnu_debug::__check_sorted(_First, _Last),	\
+		      _M_message(std::__gnu_debug::__msg_unsorted)	\
                       ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
@@ -160,8 +160,8 @@ _GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_sorted(_First, _Last),	\
 #define __glibcxx_check_sorted_pred(_First,_Last,_Pred)			\
 __glibcxx_check_valid_range(_First,_Last);				\
 __glibcxx_check_strict_weak_ordering_pred(_First,_Last,_Pred);	        \
-_GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_sorted(_First, _Last, _Pred), \
-		      _M_message(::__gnu_debug::__msg_unsorted_pred) \
+_GLIBCXX_DEBUG_VERIFY(std::__gnu_debug::__check_sorted(_First, _Last, _Pred), \
+		      _M_message(std::__gnu_debug::__msg_unsorted_pred) \
                       ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred))
@@ -170,9 +170,9 @@ _GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_sorted(_First, _Last, _Pred), \
     w.r.t. the value _Value. */
 #define __glibcxx_check_partitioned(_First,_Last,_Value)		\
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_partitioned(_First, _Last,	\
-							 _Value),	\
-		      _M_message(::__gnu_debug::__msg_unpartitioned) \
+_GLIBCXX_DEBUG_VERIFY(std::__gnu_debug::__check_partitioned(_First, _Last, \
+							    _Value),	\
+		      _M_message(std::__gnu_debug::__msg_unpartitioned) \
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Value))
@@ -181,9 +181,9 @@ _GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_partitioned(_First, _Last,	\
     w.r.t. the value _Value and predicate _Pred. */
 #define __glibcxx_check_partitioned_pred(_First,_Last,_Value,_Pred)	\
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_partitioned(_First, _Last,	\
+_GLIBCXX_DEBUG_VERIFY(std::__gnu_debug::__check_partitioned(_First, _Last, \
 							 _Value, _Pred), \
-		      _M_message(::__gnu_debug::__msg_unpartitioned_pred) \
+		      _M_message(std::__gnu_debug::__msg_unpartitioned_pred) \
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred)				\
@@ -192,8 +192,8 @@ _GLIBCXX_DEBUG_VERIFY(::__gnu_debug::__check_partitioned(_First, _Last,	\
 // Verify that the iterator range [_First, _Last) is a heap
 #define __glibcxx_check_heap(_First,_Last)				\
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(::std::__is_heap(_First, _Last),		\
-		      _M_message(::__gnu_debug::__msg_not_heap)	\
+_GLIBCXX_DEBUG_VERIFY(std::__is_heap(_First, _Last),		\
+		      _M_message(std::__gnu_debug::__msg_not_heap)	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
@@ -201,8 +201,8 @@ _GLIBCXX_DEBUG_VERIFY(::std::__is_heap(_First, _Last),		\
     w.r.t. the predicate _Pred. */
 #define __glibcxx_check_heap_pred(_First,_Last,_Pred)			\
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(::std::__is_heap(_First, _Last, _Pred),		\
-		      _M_message(::__gnu_debug::__msg_not_heap_pred) \
+_GLIBCXX_DEBUG_VERIFY(std::__is_heap(_First, _Last, _Pred),		\
+		      _M_message(std::__gnu_debug::__msg_not_heap_pred) \
                       ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred))

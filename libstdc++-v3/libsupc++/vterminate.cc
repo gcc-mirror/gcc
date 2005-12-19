@@ -1,6 +1,6 @@
 // Verbose terminate_handler -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation
+// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,6 +28,7 @@
 // the GNU General Public License.
 
 #include <bits/c++config.h>
+
 #if _GLIBCXX_HOSTED
 #include <cstdlib>
 #include <exception>
@@ -38,8 +39,8 @@
 using namespace std;
 using namespace abi;
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   // A replacement for the standard terminate_handler which prints
   // more information about the terminating exception (if any) on
   // stderr.
@@ -96,5 +97,7 @@ namespace __gnu_cxx
     
     abort();
   }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
+
 #endif

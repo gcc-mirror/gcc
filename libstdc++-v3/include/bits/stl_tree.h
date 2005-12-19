@@ -69,8 +69,8 @@
 #include <bits/stl_function.h>
 #include <bits/cpp_type_traits.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Red-black tree class, designed for use in implementing STL
   // associative containers (set, multiset, map, and multimap). The
   // insertion and deletion algorithms are based on those in Cormen,
@@ -1492,6 +1492,7 @@ namespace std
 	return false;
       return true;
     }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

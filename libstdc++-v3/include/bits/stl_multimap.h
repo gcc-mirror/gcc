@@ -63,8 +63,8 @@
 
 #include <bits/concept_check.h>
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   // Forward declaration of operators < and ==, needed for friend declaration.
 
   template <typename _Key, typename _Tp,
@@ -679,6 +679,7 @@ namespace _GLIBCXX_STD
     swap(multimap<_Key, _Tp, _Compare, _Alloc>& __x,
          multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     { __x.swap(__y); }
-} // namespace std
+
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif /* _MULTIMAP_H */

@@ -44,8 +44,8 @@
 #include <istream>
 #include <ostream>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // [27.7.1] template class basic_stringbuf
   /**
    *  @brief  The actual work of input and output (for std::string).
@@ -608,7 +608,8 @@ namespace std
       str(const __string_type& __s)
       { _M_stringbuf.str(__s); }
     };
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/sstream.tcc>

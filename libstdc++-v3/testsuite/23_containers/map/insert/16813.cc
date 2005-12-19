@@ -22,7 +22,7 @@
 // libstdc++/16813
 void test01()
 {
-  using __gnu_debug::map;
+  using debug::map;
   bool test __attribute__((unused)) = true;
 
   map<int, float> m1, m2;

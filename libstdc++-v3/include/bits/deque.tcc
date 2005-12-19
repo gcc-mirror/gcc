@@ -61,8 +61,8 @@
 #ifndef _DEQUE_TCC
 #define _DEQUE_TCC 1
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   template <typename _Tp, typename _Alloc>
     deque<_Tp, _Alloc>&
     deque<_Tp, _Alloc>::
@@ -744,6 +744,7 @@ namespace _GLIBCXX_STD
       this->_M_impl._M_start._M_set_node(__new_nstart);
       this->_M_impl._M_finish._M_set_node(__new_nstart + __old_num_nodes - 1);
     }
-} // namespace std
+
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif

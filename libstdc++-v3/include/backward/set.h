@@ -63,7 +63,3 @@
 using std::set;
 
 #endif /* _BACKWARD_SET_H */
-
-// Local Variables:
-// mode:C++
-// End:

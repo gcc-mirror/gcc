@@ -69,8 +69,8 @@
 #endif
 
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
 #if defined __GTHREADS
   namespace
   {
@@ -1286,8 +1286,7 @@ namespace __gnu_cxx
     bitmap_allocator<_Tp>::_S_mut;
 #endif
 
-
-}
+_GLIBCXX_END_NAMESPACE
 
 #endif 
 

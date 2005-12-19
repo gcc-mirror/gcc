@@ -61,8 +61,8 @@
 #ifndef _BVECTOR_H
 #define _BVECTOR_H 1
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   typedef unsigned long _Bit_type;
   enum { _S_word_bit = int(CHAR_BIT * sizeof(_Bit_type)) };
 
@@ -397,13 +397,14 @@ namespace _GLIBCXX_STD
 			     _M_impl._M_end_of_storage - _M_impl._M_start._M_p);
       }
     };
-} // namespace std
+
+_GLIBCXX_END_NESTED_NAMESPACE
 
 // Declare a partial specialization of vector<T, Alloc>.
 #include <bits/stl_vector.h>
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   /**
    *  @brief  A specialization of vector for booleans which offers fixed time
    *  access to individual elements in any order.
@@ -953,6 +954,7 @@ template<typename _Alloc>
     clear()
     { erase(begin(), end()); }
   };
-} // namespace std
+
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif

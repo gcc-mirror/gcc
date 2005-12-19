@@ -1,6 +1,6 @@
 // Backward-compat support -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,8 +55,8 @@
 #include <ostream>
 #include <string>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Class strstreambuf, a streambuf class that manages an array of char.
   // Note that this class is not a template.
   class strstreambuf : public basic_streambuf<char, char_traits<char> >
@@ -175,5 +175,7 @@ namespace std
   private:
     strstreambuf _M_buf;
   };
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
+
 #endif

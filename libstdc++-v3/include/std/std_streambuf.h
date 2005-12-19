@@ -46,8 +46,8 @@
 #include <bits/localefwd.h>
 #include <bits/ios_base.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  @if maint
    *  Does stuff.
@@ -800,7 +800,8 @@ namespace std
     __copy_streambufs(basic_streambuf<wchar_t>* __sbin,
 		      basic_streambuf<wchar_t>* __sbout);
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/streambuf.tcc>

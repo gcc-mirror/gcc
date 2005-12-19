@@ -64,8 +64,8 @@
 #include <ext/hashtable.h>
 #include <bits/concept_check.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using std::equal_to;
   using std::allocator;
   using std::pair;
@@ -490,10 +490,10 @@ public:
 	 hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs2)
     { __hs1.swap(__hs2); }
 
-} // namespace __gnu_cxx
+_GLIBCXX_END_NAMESPACE
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Specialization of insert_iterator so that it will work for hash_set
   // and hash_multiset.
 
@@ -582,7 +582,8 @@ namespace std
       insert_iterator<_Container>&
       operator++(int) { return *this; }
     };
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/hash_set>

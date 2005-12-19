@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,10 +35,11 @@
 #ifndef _GLIBCXX_ATOMICITY_H
 #define _GLIBCXX_ATOMICITY_H	1
 
+#include <bits/c++config.h>
 #include <bits/atomic_word.h>
-  
-namespace __gnu_cxx
-{
+
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   _Atomic_word 
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val);
@@ -46,7 +47,8 @@ namespace __gnu_cxx
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val);
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 /* Even if the CPU doesn't need a memory barrier, we need to ensure that
    the compiler doesn't reorder memory accesses across the barriers.  */

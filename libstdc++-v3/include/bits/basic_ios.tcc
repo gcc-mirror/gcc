@@ -1,6 +1,7 @@
 // basic_ios member functions -*- C++ -*-
 
-// Copyright (C) 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,8 +38,8 @@
 
 #pragma GCC system_header
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<typename _CharT, typename _Traits>
     void
     basic_ios<_CharT, _Traits>::clear(iostate __state)
@@ -195,6 +196,7 @@ namespace std
   extern template class basic_ios<wchar_t>;
 #endif
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

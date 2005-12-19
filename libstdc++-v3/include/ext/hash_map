@@ -64,8 +64,8 @@
 #include <ext/hashtable.h>
 #include <bits/concept_check.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using std::equal_to;
   using std::allocator;
   using std::pair;
@@ -438,7 +438,7 @@ namespace __gnu_cxx
       end() const
       { return _M_ht.end(); }
 
-public:
+    public:
       iterator
       insert(const value_type& __obj)
       { return _M_ht.insert_equal(__obj); }
@@ -504,7 +504,7 @@ public:
       size_type
       elems_in_bucket(size_type __n) const
       { return _M_ht.elems_in_bucket(__n); }
-};
+    };
 
   template <class _Key, class _Tp, class _HF, class _EqKey, class _Alloc>
     inline bool
@@ -524,13 +524,12 @@ public:
 	 hash_multimap<_Key, _Tp, _HashFcn, _EqlKey, _Alloc>& __hm2)
     { __hm1.swap(__hm2); }
 
-} // namespace __gnu_cxx
+_GLIBCXX_END_NAMESPACE
 
-namespace std
-{
-// Specialization of insert_iterator so that it will work for hash_map
-// and hash_multimap.
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
+  // Specialization of insert_iterator so that it will work for hash_map
+  // and hash_multimap.
   template <class _Key, class _Tp, class _HashFn,  class _EqKey, class _Alloc>
     class insert_iterator<__gnu_cxx::hash_map<_Key, _Tp, _HashFn,
 					      _EqKey, _Alloc> >
@@ -616,7 +615,8 @@ namespace std
       operator++(int)
       { return *this; }
     };
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/hash_map>

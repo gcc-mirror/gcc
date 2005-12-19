@@ -1,6 +1,6 @@
 // Standard stream manipulators -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -45,8 +45,8 @@
 #include <istream>
 #include <functional>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // [27.6.3] standard manipulators
   // Also see DR 183.
 
@@ -294,6 +294,7 @@ namespace std
   extern template wistream& operator>>(wistream&, _Setw);
 #endif
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _GLIBCXX_IOMANIP */

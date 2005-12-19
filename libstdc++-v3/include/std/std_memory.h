@@ -1,6 +1,6 @@
 // <memory> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,8 +59,8 @@
 #include <debug/debug.h>
 #include <limits>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  @if maint
    *  This is a helper function.  The unused second parameter exists to
@@ -368,6 +368,7 @@ namespace std
         operator auto_ptr<_Tp1>() throw()
         { return auto_ptr<_Tp1>(this->release()); }
   };
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _GLIBCXX_MEMORY */

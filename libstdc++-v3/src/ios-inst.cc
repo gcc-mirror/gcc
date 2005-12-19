@@ -34,11 +34,12 @@
 
 #include <ios>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template class basic_ios<char>;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template class basic_ios<wchar_t>;
 #endif
-}
+
+_GLIBCXX_END_NAMESPACE

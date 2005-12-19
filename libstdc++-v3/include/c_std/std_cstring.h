@@ -47,8 +47,8 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
 #include <cstddef>
-
 #include <string.h>
 
 // Get rid of those macros defined in <string.h> in lieu of real functions.
@@ -75,8 +75,8 @@
 #undef strerror
 #undef strlen
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::memcpy;
   using ::memmove;
   using ::strcpy;
@@ -124,6 +124,7 @@ namespace std
   inline char*
   strstr(char* __s1, const char* __s2)
   { return __builtin_strstr(const_cast<const char*>(__s1), __s2); }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

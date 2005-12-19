@@ -64,7 +64,3 @@
 using std::deque;
 
 #endif /* _BACKWARD_DEQUE_H */
-
-// Local Variables:
-// mode:C++
-// End:

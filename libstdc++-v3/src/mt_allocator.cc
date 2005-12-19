@@ -76,8 +76,8 @@ namespace __gnu_internal
 #endif
 }
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   void
   __pool<false>::_M_destroy() throw()
   {
@@ -781,4 +781,5 @@ namespace __gnu_cxx
   // Instantiations.
   template class __mt_alloc<char>;
   template class __mt_alloc<wchar_t>;
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE

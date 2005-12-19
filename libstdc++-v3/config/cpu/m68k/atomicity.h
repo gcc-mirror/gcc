@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: m68k version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,8 @@
 
 #include <bits/atomicity.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
 #if ( defined(__mc68020__) || defined(__mc68030__) \
       || defined(__mc68040__) || defined(__mc68060__) ) \
     && !defined(__mcpu32__)
@@ -130,4 +130,5 @@ namespace __gnu_cxx
     // architecturally guaranteed to be atomic.
     __exchange_and_add(__mem, __val);
   }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE

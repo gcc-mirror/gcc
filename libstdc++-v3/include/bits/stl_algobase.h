@@ -75,8 +75,7 @@
 #include <bits/concept_check.h>
 #include <debug/debug.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief Swaps two values.
@@ -909,6 +908,6 @@ namespace std
 #endif /* CHAR_MAX == SCHAR_MAX */
   }
 
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #endif

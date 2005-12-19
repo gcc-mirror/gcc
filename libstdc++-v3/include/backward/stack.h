@@ -66,7 +66,3 @@
 using std::stack;
 
 #endif /* _BACKWARD_STACK_H */
-
-// Local Variables:
-// mode:C++
-// End:

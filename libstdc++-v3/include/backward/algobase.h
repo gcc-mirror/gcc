@@ -89,7 +89,3 @@ using __gnu_cxx::lexicographical_compare_3way;
 using __gnu_cxx::uninitialized_copy_n;
 
 #endif /* _BACKWARD_ALGOBASE_H */
-
-// Local Variables:
-// mode:C++
-// End:

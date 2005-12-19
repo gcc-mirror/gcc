@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -41,8 +41,8 @@ namespace __gnu_internal
   static __glibcxx_mutex_define_initialized(locale_cache_mutex);
 }
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Definitions for static const data members of locale.
   const locale::category 	locale::none;
   const locale::category 	locale::ctype;
@@ -401,6 +401,7 @@ namespace std
       _M_index = 1 + __gnu_cxx::__exchange_and_add(&_S_refcount, 1);
     return _M_index - 1;
   }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 

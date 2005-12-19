@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: IRIX version  -*- C++ -*-
 
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,8 +30,8 @@
 #include <mutex.h>
 #include <bits/atomicity.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   _Atomic_word
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   { return (_Atomic_word) test_then_add((unsigned long*) const_cast<_Atomic_word*>(__mem), __val); }
@@ -39,4 +39,5 @@ namespace __gnu_cxx
   void
   __atomic_add(volatile _Atomic_word* __mem, int __val)
   { __exchange_and_add(__mem, __val); }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE

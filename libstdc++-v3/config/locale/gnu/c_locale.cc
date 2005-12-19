@@ -40,8 +40,8 @@
 #include <langinfo.h>
 #include <bits/c++locale_internal.h>
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template<>
     void
     __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
@@ -107,10 +107,11 @@ namespace std
   __c_locale
   locale::facet::_S_clone_c_locale(__c_locale& __cloc)
   { return __duplocale(__cloc); }
-} // namespace std
 
-namespace __gnu_cxx
-{
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   const char* const category_names[6 + _GLIBCXX_NUM_CATEGORIES] =
     {
       "LC_CTYPE", 
@@ -126,9 +127,11 @@ namespace __gnu_cxx
       "LC_MEASUREMENT", 
       "LC_IDENTIFICATION" 
     };
-}
 
-namespace std
-{
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   const char* const* const locale::_S_categories = __gnu_cxx::category_names;
-}  // namespace std
+
+_GLIBCXX_END_NAMESPACE

@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,9 @@
 #include <iconv.h>		// For codecvt using iconv, iconv_t
 #include <nl_types.h> 		// For messages
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   typedef int*			__c_locale;
-}
+
+_GLIBCXX_END_NAMESPACE
+

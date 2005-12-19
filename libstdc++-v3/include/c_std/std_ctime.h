@@ -48,7 +48,6 @@
 #pragma GCC system_header
 
 #include <cstddef>
-
 #include <time.h>
 
 // Get rid of those macros defined in <time.h> in lieu of real functions.
@@ -62,8 +61,8 @@
 #undef localtime
 #undef strftime
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::clock_t;
   using ::time_t;
   using ::tm;
@@ -77,6 +76,7 @@ namespace std
   using ::gmtime;
   using ::localtime;
   using ::strftime;
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

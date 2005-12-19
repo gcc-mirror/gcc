@@ -63,8 +63,8 @@
  ((__n) < 1 ? 0 : ((__n) + _GLIBCXX_BITSET_BITS_PER_WORD - 1) \
                   / _GLIBCXX_BITSET_BITS_PER_WORD)
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   /**
    *  @if maint
    *  Base class, general case.  It is a class inveriant that _Nw will be
@@ -1291,7 +1291,8 @@ namespace _GLIBCXX_STD
       return __os << __tmp;
     }
   //@}
-} // namespace std
+
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #undef _GLIBCXX_BITSET_WORDS
 #undef _GLIBCXX_BITSET_BITS_PER_WORD

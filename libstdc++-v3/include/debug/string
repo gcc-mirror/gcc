@@ -35,9 +35,11 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
+namespace std
+{
 namespace __gnu_debug
 {
-template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
+  template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
             typename _Allocator = std::allocator<_CharT> >
     class basic_string
     : public std::basic_string<_CharT, _Traits, _Allocator>,
@@ -204,7 +206,7 @@ template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
     operator[](size_type __pos) const
     {
       _GLIBCXX_DEBUG_VERIFY(__pos <= this->size(),
-			    _M_message(::__gnu_debug::__msg_subscript_oob)
+			    _M_message(__gnu_debug::__msg_subscript_oob)
 			    ._M_sequence(*this, "this")
 			    ._M_integer(__pos, "__pos")
 			    ._M_integer(this->size(), "size"));
@@ -219,7 +221,7 @@ template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
 #else
       // as an extension v3 allows s[s.size()] when s is non-const.
       _GLIBCXX_DEBUG_VERIFY(__pos <= this->size(),
-			    _M_message(::__gnu_debug::__msg_subscript_oob)
+			    _M_message(__gnu_debug::__msg_subscript_oob)
 			    ._M_sequence(*this, "this")
 			    ._M_integer(__pos, "__pos")
 			    ._M_integer(this->size(), "size"));
@@ -1014,5 +1016,6 @@ template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
 #endif
 
 } // namespace __gnu_debug
+} // namespace std
 
 #endif

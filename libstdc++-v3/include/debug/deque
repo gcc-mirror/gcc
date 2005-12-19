@@ -35,6 +35,8 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
+namespace std
+{
 namespace __gnu_debug_def
 {
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
@@ -382,5 +384,6 @@ namespace __gnu_debug_def
     swap(deque<_Tp, _Alloc>& __lhs, deque<_Tp, _Alloc>& __rhs)
     { __lhs.swap(__rhs); }
 } // namespace __gnu_debug_def
+} // namespace std
 
 #endif

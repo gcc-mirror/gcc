@@ -1,4 +1,4 @@
-// The template and inlines for the -*- C++ -*- numeric_limits classes.
+// The template and inlines for the numeric_limits classes. -*- C++ -*- 
 
 // Copyright (C) 1999, 2000, 2001, 2002, 2003, 2005 
 // Free Software Foundation, Inc.
@@ -147,8 +147,8 @@
   (__glibcxx_digits (T) * 643 / 2136)
 
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  @brief Describes the rounding style for floating-point types.
    *
@@ -1149,7 +1149,7 @@ namespace std
 #undef __glibcxx_long_double_traps
 #undef __glibcxx_long_double_tinyness_before
 
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #undef __glibcxx_signed
 #undef __glibcxx_min

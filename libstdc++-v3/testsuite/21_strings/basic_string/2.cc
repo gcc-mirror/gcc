@@ -32,5 +32,5 @@
 // { dg-do compile }
 
 // libstdc++/21770
-template class __gnu_debug::basic_string<int, std::char_traits<int>,
-					 std::allocator<char> >;
+template class debug::basic_string<int, std::char_traits<int>, 
+				   std::allocator<char> >;

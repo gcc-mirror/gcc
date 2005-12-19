@@ -330,68 +330,56 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
 <p>In release mode, we define only the release-mode version of the
   component with its standard name and do not include the debugging
   component at all. The release mode version is defined within the
-  namespace <code>__gnu_norm</code>, and then associated with namespace
-  <code>std</code> via a "strong using" directive. Minus the
-  namespace associations, this method leaves the behavior of release
-  mode completely unchanged from its behavior prior to the
-  introduction of the libstdc++ debug mode. Here's an example of what
-  this ends up looking like, in C++.</p>
+  namespace <code>std</code>. Minus the namespace associations, this
+  method leaves the behavior of release mode completely unchanged from
+  its behavior prior to the introduction of the libstdc++ debug
+  mode. Here's an example of what this ends up looking like, in
+  C++.</p>
 
 <pre>
-namespace __gnu_norm
+namespace std
 {
-  using namespace std; 
-  
   template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
     class list
     {
       // ...
-    };
-} // namespace __gnu_norm
-
-namespace std
-{
-  using namespace __gnu_norm __attribute__ ((strong));
-}
+     };
+} // namespace std
 </pre>
   
-<p>In debug mode we include the release-mode container and also the
-debug-mode container. The release mode version is defined exactly as
-before, and the debug-mode container is defined within the namespace
-<code>__gnu_debug</code>, which is associated with namespace
+<p>In debug mode we include the release-mode container (which is now
+defined in in the namespace <code>__gnu_norm</code>) and also the
+debug-mode container. The debug-mode container is defined within the
+namespace <code>__gnu_debug</code>, which is associated with namespace
 <code>std</code> via a "strong using" directive.  This method allows
 the debug- and release-mode versions of the same component to coexist
-at compile-time without causing an unreasonable maintenance burden,
-while minimizing confusion. Again, this boils down to C++ code as
-follows:</p>
+at compile-time and link-time without causing an unreasonable
+maintenance burden, while minimizing confusion. Again, this boils down
+to C++ code as follows:</p>
 
 <pre>
-namespace __gnu_norm
-{
-  using namespace std; 
-  
-  template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
-    class list
-    {
-      // ...
-    };
-} // namespace __gnu_norm
-
-namespace __gnu_debug
-{
-  using namespace std; 
-  
-  template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
-    class list
-    : public __gnu_norm::list&lt;_Tp, _Alloc&gt;,
-      public __gnu_debug::_Safe_sequence&lt;list&lt;_Tp, _Alloc&gt; &gt;
-    {
-      // ...
-    };
-} // namespace __gnu_norm
-
 namespace std
 {
+  namespace __gnu_norm
+  {
+    template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
+      class list
+      {
+        // ...
+      };
+  } // namespace __gnu_norm
+
+  namespace __gnu_debug
+  {
+    template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
+      class list
+      : public __gnu_norm::list&lt;_Tp, _Alloc&gt;,
+        public __gnu_debug::_Safe_sequence&lt;list&lt;_Tp, _Alloc&gt; &gt;
+      {
+        // ...
+      };
+  } // namespace __gnu_norm
+
   using namespace __gnu_debug __attribute__ ((strong));
 }
 </pre>

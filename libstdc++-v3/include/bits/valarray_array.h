@@ -46,8 +46,8 @@
 #include <cstring>
 #include <new>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   //
   // Helper functions on raw pointers
   //
@@ -682,7 +682,8 @@ namespace std
    _DEFINE_ARRAY_FUNCTION(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_FUNCTION
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/valarray_array.tcc>

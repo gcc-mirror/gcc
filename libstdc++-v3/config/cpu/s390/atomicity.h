@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: S/390 version  -*- C++ -*-
 
-// Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,8 @@
 
 #include <bits/atomicity.h>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   _Atomic_word 
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
@@ -40,4 +40,5 @@ namespace __gnu_cxx
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val)
   { __sync_fetch_and_add(__mem, __val); }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE

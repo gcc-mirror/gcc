@@ -21,7 +21,7 @@
 #include <debug/bitset>
 #include <testsuite_hooks.h>
 
-using __gnu_debug::bitset;
+using debug::bitset;
 
 bool test = true;
 

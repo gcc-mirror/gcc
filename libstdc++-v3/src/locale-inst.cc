@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -39,8 +39,8 @@
 # define C char
 #endif
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // moneypunct, money_get, and money_put
   template class moneypunct<C, false>;
   template class moneypunct<C, true>;
@@ -313,4 +313,5 @@ namespace std
     __int_to_char(C*, unsigned long long, const C*, 
 		  ios_base::fmtflags, bool);
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

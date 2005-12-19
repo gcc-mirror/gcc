@@ -32,12 +32,3 @@
 #include "iostream.h"
 
 #endif
-
-// Local Variables:
-// mode:C++
-// End:
-
-
-
-
-

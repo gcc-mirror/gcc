@@ -31,10 +31,13 @@
 #ifndef _GLIBCXX_DEBUG_FUNCTIONS_H
 #define _GLIBCXX_DEBUG_FUNCTIONS_H 1
 
+#include <bits/c++config.h>
 #include <stddef.h>                       // for ptrdiff_t
 #include <bits/stl_iterator_base_types.h> // for iterator_traits, categories
 #include <bits/cpp_type_traits.h>         // for __is_integer
 
+namespace std
+{
 namespace __gnu_debug
 {
   template<typename _Iterator, typename _Sequence>
@@ -49,7 +52,7 @@ namespace __gnu_debug
   template<typename _Iterator>
     inline bool
     __check_singular(_Iterator& __x)
-    { return __gnu_debug::__check_singular_aux(&__x); }
+    { return __check_singular_aux(&__x); }
 
   /** Non-NULL pointers are nonsingular. */
   template<typename _Tp>
@@ -121,7 +124,7 @@ namespace __gnu_debug
   {
     typedef typename std::iterator_traits<_InputIterator>::iterator_category
       _Category;
-    return __gnu_debug::__valid_range_aux2(__first, __last, _Category());
+    return __valid_range_aux2(__first, __last, _Category());
   }
 
   /** Don't know what these iterators are, or if they are even
@@ -134,7 +137,7 @@ namespace __gnu_debug
     __valid_range(const _InputIterator& __first, const _InputIterator& __last)
     {
       typedef typename std::__is_integer<_InputIterator>::__type _Integral;
-      return __gnu_debug::__valid_range_aux(__first, __last, _Integral());
+      return __valid_range_aux(__first, __last, _Integral());
     }
 
   /** Safe iterators know how to check if they form a valid range. */
@@ -153,7 +156,7 @@ namespace __gnu_debug
     __check_valid_range(const _InputIterator& __first,
 			const _InputIterator& __last)
     {
-      _GLIBCXX_DEBUG_ASSERT(__gnu_debug::__valid_range(__first, __last));
+      _GLIBCXX_DEBUG_ASSERT(__valid_range(__first, __last));
       return __first;
     }
 
@@ -240,7 +243,7 @@ namespace __gnu_debug
     {
       typedef typename std::iterator_traits<_InputIterator>::iterator_category
         _Category;
-      return __gnu_debug::__check_sorted_aux(__first, __last, _Category());
+      return __check_sorted_aux(__first, __last, _Category());
     }
 
   template<typename _InputIterator, typename _Predicate>
@@ -250,7 +253,7 @@ namespace __gnu_debug
     {
       typedef typename std::iterator_traits<_InputIterator>::iterator_category
         _Category;
-      return __gnu_debug::__check_sorted_aux(__first, __last, __pred,
+      return __check_sorted_aux(__first, __last, __pred,
 					     _Category());
     }
 
@@ -282,5 +285,6 @@ namespace __gnu_debug
       return __first == __last;
     }
 } // namespace __gnu_debug
+} // namespace std
 
 #endif

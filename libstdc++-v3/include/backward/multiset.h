@@ -63,7 +63,3 @@
 using std::multiset;
 
 #endif /* _BACKWARD_MULTISET_H */
-
-// Local Variables:
-// mode:C++
-// End:

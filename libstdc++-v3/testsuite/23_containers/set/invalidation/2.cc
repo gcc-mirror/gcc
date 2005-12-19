@@ -22,7 +22,7 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-using __gnu_debug::set;
+using debug::set;
 using std::advance;
 
 // Erase

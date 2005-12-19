@@ -1,6 +1,6 @@
 // Pair implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,8 +61,8 @@
 #ifndef _PAIR_H
 #define _PAIR_H 1
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /// pair holds two objects of arbitrary type.
   template<class _T1, class _T2>
     struct pair
@@ -143,6 +143,7 @@ namespace std
     inline pair<_T1, _T2>
     make_pair(_T1 __x, _T2 __y)
     { return pair<_T1, _T2>(__x, __y); }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _PAIR_H */

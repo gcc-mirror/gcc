@@ -66,7 +66,3 @@ using __gnu_cxx::hash_map;
 using __gnu_cxx::hash_multimap;
 
 #endif /* _BACKWARD_HASH_MAP_H */
-
-// Local Variables:
-// mode:C++
-// End:

@@ -1,6 +1,6 @@
 // SGI's rope class implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,8 +53,8 @@
 #include <ext/memory> // For uninitialized_copy_n
 #include <ext/numeric> // For power
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using std::size_t;
   using std::printf;
   using std::basic_ostream;
@@ -1699,8 +1699,4 @@ namespace __gnu_cxx
   { _Rope_rotate(__first, __middle, __last); }
 # endif
 
-} // namespace __gnu_cxx
-
-// Local Variables:
-// mode:C++
-// End:
+_GLIBCXX_END_NAMESPACE

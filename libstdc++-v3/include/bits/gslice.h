@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- gslice class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -40,8 +40,8 @@
 
 #pragma GCC system_header
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  @brief  Class defining multi-dimensional subset of an array.
    *
@@ -165,10 +165,6 @@ namespace std
     return *this;
   }
 
-} // std::
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _GSLICE_H */
-
-// Local Variables:
-// mode:c++
-// End:

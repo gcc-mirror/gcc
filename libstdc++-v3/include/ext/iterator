@@ -1,6 +1,6 @@
 // HP/SGI iterator extensions -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,8 +66,8 @@
 #include <bits/concept_check.h>
 #include <iterator>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   // There are two signatures for distance.  In addition to the one
   // taking two iterators and returning a result, there is another
   // taking two iterators and a reference-to-result variable, and
@@ -111,7 +111,8 @@ namespace __gnu_cxx
       // concept requirements -- taken care of in __distance
       __distance(__first, __last, __n, std::__iterator_category(__first));
     }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif
 

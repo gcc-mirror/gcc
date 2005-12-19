@@ -43,6 +43,10 @@ if ENABLE_SYMVERS_GNU
 version_arg = -Wl,--version-script=libstdc++-symbols.ver
 version_dep = libstdc++-symbols.ver
 endif
+if ENABLE_SYMVERS_GNU_NAMESPACE
+version_arg = -Wl,--version-script=libstdc++-symbols.ver
+version_dep = libstdc++-symbols.ver
+endif
 if ENABLE_SYMVERS_DARWIN
 version_arg = -Wl,-exported_symbols_list,libstdc++-symbols.explist
 version_dep = libstdc++-symbols.explist

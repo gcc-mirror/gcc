@@ -40,8 +40,7 @@
 
 namespace std
 { 
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
 
   // XXX When we get typedef templates these class definitions
   // will be unnecessary.
@@ -159,7 +158,7 @@ namespace tr1
 	 unordered_multiset<Value, Hash, Pred, Alloc, cache_hash_code>& y)
    { x.swap(y); }
 
-}
+_GLIBCXX_END_NAMESPACE
 }
 
 #endif /* GNU_LIBSTDCXX_TR1_UNORDERED_SET_ */

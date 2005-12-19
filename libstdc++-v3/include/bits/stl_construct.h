@@ -64,8 +64,8 @@
 #include <bits/cpp_type_traits.h>
 #include <new>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    * @if maint
    * Constructs an object in existing memory by invoking an allocated
@@ -181,9 +181,8 @@ namespace std
     {
       _Destroy(__first, __last);
     }
-   
 
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _STL_CONSTRUCT_H */
 

@@ -37,7 +37,3 @@ typedef complex<double>		double_complex;
 typedef complex<long double>	long_double_complex;
 
 #endif
-
-// Local Variables:
-// mode:C++
-// End:

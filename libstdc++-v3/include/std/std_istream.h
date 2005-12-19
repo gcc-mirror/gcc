@@ -44,8 +44,8 @@
 #include <ios>
 #include <limits> // For numeric_limits
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // [27.6.1.1] Template class basic_istream
   /**
    *  @brief  Controlling input.
@@ -813,7 +813,8 @@ namespace std
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>& 
     ws(basic_istream<_CharT, _Traits>& __is);
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/istream.tcc>

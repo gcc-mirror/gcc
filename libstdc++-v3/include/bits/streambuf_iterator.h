@@ -1,6 +1,6 @@
 // Streambuf iterators
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -43,8 +43,8 @@
 
 // NB: Should specialize copy, find algorithms for streambuf iterators.
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // 24.5.3 Template class istreambuf_iterator
   /// Provides input iterator semantics for streambufs.
   template<typename _CharT, typename _Traits>
@@ -254,5 +254,7 @@ namespace std
 	return *this;
       }
     };
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
+
 #endif

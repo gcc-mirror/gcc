@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,7 @@
 #include <new>
 #include <typeinfo>
 #include <ios>
+
 #ifdef _GLIBCXX_USE_NLS
 # include <libintl.h>
 # define _(msgid)   gettext (msgid)
@@ -39,8 +40,8 @@
 # define _(msgid)   (msgid)
 #endif
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
 #if __EXCEPTIONS
   void
   __throw_bad_exception(void)
@@ -154,4 +155,5 @@ namespace std
   __throw_ios_failure(const char*)
   { abort(); }
 #endif //__EXCEPTIONS
-}
+
+_GLIBCXX_END_NAMESPACE

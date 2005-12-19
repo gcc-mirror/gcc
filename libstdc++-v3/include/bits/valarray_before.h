@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- internal _Meta class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -42,8 +42,8 @@
 
 #include <bits/slice_array.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   //
   // Implementing a loosened valarray return value is tricky.
   // First we need to meet 26.3.1/3: we should not add more than
@@ -730,10 +730,6 @@ namespace std
       _SClos (_Array<_Tp> __a, const slice& __s) : _Base (__a, __s) {}
     };
 
-} // std::
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _CPP_VALARRAY_BEFORE_H */
-
-// Local Variables:
-// mode:c++
-// End:

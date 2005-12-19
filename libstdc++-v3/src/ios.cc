@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,8 +36,8 @@
 #include <limits>
 #include <bits/atomicity.h>
 
-namespace std 
-{  
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // XXX GLIBCXX_ABI Deprecated
    // Definitions for static const data members of __ios_flags.
   const __ios_flags::__int_type __ios_flags::_S_boolalpha;
@@ -225,4 +225,5 @@ namespace std
       }
     _M_callbacks = 0;
   }
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

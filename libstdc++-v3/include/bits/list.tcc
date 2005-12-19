@@ -61,8 +61,8 @@
 #ifndef _LIST_TCC
 #define _LIST_TCC 1
 
-namespace _GLIBCXX_STD
-{
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+
   template<typename _Tp, typename _Alloc>
     void
     _List_base<_Tp, _Alloc>::
@@ -373,7 +373,8 @@ namespace _GLIBCXX_STD
 	    swap(*(__fill - 1));
 	  }
       }
-} // namespace std
+
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif /* _LIST_TCC */
 

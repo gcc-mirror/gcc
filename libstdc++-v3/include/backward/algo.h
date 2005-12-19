@@ -143,7 +143,3 @@ using __gnu_cxx::power;
 using __gnu_cxx::iota;
 
 #endif /* _BACKWARD_ALGO_H */
-
-// Local Variables:
-// mode:C++
-// End:

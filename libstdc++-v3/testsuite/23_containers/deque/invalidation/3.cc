@@ -21,7 +21,7 @@
 #include <debug/deque>
 #include <testsuite_hooks.h>
 
-using __gnu_debug::deque;
+using debug::deque;
 
 bool test = true;
 

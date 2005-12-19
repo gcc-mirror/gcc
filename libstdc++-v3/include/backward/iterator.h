@@ -185,7 +185,3 @@ template <class _ForwardIterator>
 using std::raw_storage_iterator;
 
 #endif /* _BACKWARD_ITERATOR_H */
-
-// Local Variables:
-// mode:C++
-// End:

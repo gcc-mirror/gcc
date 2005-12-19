@@ -1,6 +1,6 @@
 // Numeric functions implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,8 +63,7 @@
 
 #include <debug/debug.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  Accumulate values in a range.
@@ -335,6 +334,6 @@ namespace std
       return ++__result;
     }
 
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _STL_NUMERIC_H */

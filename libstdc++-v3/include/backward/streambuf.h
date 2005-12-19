@@ -34,7 +34,3 @@
 using std::streambuf;
 
 #endif
-
-// Local Variables:
-// mode:C++
-// End:

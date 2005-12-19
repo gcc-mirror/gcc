@@ -124,7 +124,3 @@ using __gnu_cxx::mem_fun1;
 using __gnu_cxx::mem_fun1_ref;
 
 #endif /* _BACKWARD_FUNCTION_H */
-
-// Local Variables:
-// mode:C++
-// End:

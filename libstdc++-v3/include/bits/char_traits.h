@@ -46,8 +46,8 @@
 #include <bits/stl_algobase.h>// For copy, lexicographical_compare, fill_n
 #include <bits/postypes.h>    // For streampos
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   /**
    *  @brief  Mapping from character type to associated types.
    *
@@ -204,10 +204,11 @@ namespace __gnu_cxx
       std::fill_n(__s, __n, __a);
       return __s;
     }
-}
 
-namespace std
-{
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // 21.1
   /**
    *  @brief  Basis for explicit traits specializations.
@@ -361,6 +362,6 @@ namespace std
   };
 #endif //_GLIBCXX_USE_WCHAR_T
 
-} // namespace std
+_GLIBCXX_END_NAMESPACE
 
 #endif

@@ -1,6 +1,6 @@
 // Static data members of -*- C++ -*- numeric_limits classes
 
-// Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,8 @@
 
 #include <limits>
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   const bool __numeric_limits_base::is_specialized;
   const int  __numeric_limits_base::digits;
   const int  __numeric_limits_base::digits10;
@@ -446,4 +446,5 @@ namespace std
   const bool numeric_limits<long double>::traps;
   const bool numeric_limits<long double>::tinyness_before;
   const float_round_style numeric_limits<long double>::round_style;
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

@@ -1,6 +1,6 @@
 // Functional extensions -*- C++ -*-
 
-// Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -65,8 +65,8 @@
 
 #include <functional>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using std::unary_function;
   using std::binary_function;
   using std::mem_fun1_t;
@@ -74,11 +74,11 @@ namespace __gnu_cxx
   using std::mem_fun1_ref_t;
   using std::const_mem_fun1_ref_t;
 
-  /** The @c identity_element functions are not part of the C++ standard; SGI
-   *  provided them as an extension.  Its argument is an operation, and its
-   *  return value is the identity element for that operation.  It is overloaded
-   *  for addition and multiplication, and you can overload it for your own
-   *  nefarious operations.
+  /** The @c identity_element functions are not part of the C++
+   *  standard; SGI provided them as an extension.  Its argument is an
+   *  operation, and its return value is the identity element for that
+   *  operation.  It is overloaded for addition and multiplication,
+   *  and you can overload it for your own nefarious operations.
    *
    *  @addtogroup SGIextensions
    *  @{
@@ -420,6 +420,8 @@ namespace __gnu_cxx
     inline const_mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun1_ref(_Ret (_Tp::*__f)(_Arg) const)
     { return const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
+
 #endif
 

@@ -42,8 +42,8 @@
 #include <bits/char_traits.h>
 #include <memory> 	// For allocator.
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   template<typename _CharT, typename _Traits, typename _Alloc>
     class __sso_string_base;
 
@@ -69,6 +69,7 @@ namespace __gnu_cxx
   __versa_string<wchar_t, std::char_traits<wchar_t>,
 		 std::allocator<wchar_t>, __rc_string_base> __wrc_string;
 #endif  
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _VSTRING_FWD_H */

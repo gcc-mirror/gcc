@@ -1,6 +1,6 @@
 // std::rel_ops implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,8 +71,8 @@
 #ifndef _STL_RELOPS_H
 #define _STL_RELOPS_H 1
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   namespace rel_ops
   {
     /** @namespace std::rel_ops
@@ -132,6 +132,7 @@ namespace std
       { return !(__x < __y); }
 
   } // namespace rel_ops
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _STL_RELOPS_H */

@@ -1,6 +1,6 @@
 // 'struct hash' from SGI -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,8 +63,8 @@
 
 #include <cstddef>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   using std::size_t;
 
   template<class _Key>
@@ -166,6 +166,7 @@ namespace __gnu_cxx
       operator()(unsigned long __x) const
       { return __x; }
     };
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

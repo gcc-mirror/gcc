@@ -54,7 +54,3 @@ using __gnu_cxx::crope;
 using __gnu_cxx::wrope;
 
 #endif /* _BACKWARD_ROPE_H */
-
-// Local Variables:
-// mode:C++
-// End:

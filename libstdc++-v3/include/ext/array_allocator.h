@@ -39,8 +39,8 @@
 #include <bits/functexcept.h>
 #include <tr1/array>
 
-namespace __gnu_cxx
-{
+_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
   /// @brief  Base class.
  template<typename _Tp>
     class array_allocator_base
@@ -140,6 +140,7 @@ namespace __gnu_cxx
     operator!=(const array_allocator<_Tp, _Array>&, 
 	       const array_allocator<_Tp, _Array>&)
     { return false; }
-} // namespace __gnu_cxx
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

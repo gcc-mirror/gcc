@@ -33,10 +33,10 @@
 #include <typeinfo>
 #include <debug/debug.h>
 
+namespace std
+{
 namespace __gnu_debug
 {
-  using std::type_info;
-
   /** Determine if the two types are the same. */
   template<typename _Type1, typename _Type2>
     struct __is_same
@@ -386,5 +386,6 @@ namespace __gnu_debug
     { return _Error_formatter(__file, __line); }
   };
 } // namespace __gnu_debug
+} // namespace std
 
 #endif

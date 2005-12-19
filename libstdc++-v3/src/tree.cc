@@ -1,6 +1,6 @@
 // RB tree utilities implementation -*- C++ -*-
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -57,8 +57,8 @@
 
 #include <bits/stl_tree.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   _Rb_tree_node_base*
   _Rb_tree_increment(_Rb_tree_node_base* __x)
   {
@@ -428,4 +428,5 @@ namespace std
     while (1);
     return __sum;
   }
-} // namespace std 
+
+_GLIBCXX_END_NAMESPACE

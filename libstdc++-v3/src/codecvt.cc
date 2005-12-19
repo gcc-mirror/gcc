@@ -29,8 +29,8 @@
 
 #include <locale>
 
-namespace std 
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Definitions for locale::id of standard facets that are specialized.
  locale::id codecvt<char, char, mbstate_t>::id;
 
@@ -149,4 +149,5 @@ namespace std
   do_always_noconv() const throw()
   { return false; }
 #endif //  _GLIBCXX_USE_WCHAR_T
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE

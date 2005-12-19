@@ -39,11 +39,10 @@
 #include <bits/stl_pair.h>
 #include <bits/cpp_type_traits.h>
 
+namespace std
+{
 namespace __gnu_debug
 {
-  using std::iterator_traits;
-  using std::pair;
-
   /** Iterators that derive from _Safe_iterator_base but that aren't
    *  _Safe_iterators can be determined singular or non-singular via
    *  _Safe_iterator_base.
@@ -629,6 +628,7 @@ namespace __gnu_debug
 	      const _Safe_iterator<_Iterator, _Sequence>& __i)
     { return __i + __n; }
 } // namespace __gnu_debug
+} // namespace std
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 #  include <debug/safe_iterator.tcc>

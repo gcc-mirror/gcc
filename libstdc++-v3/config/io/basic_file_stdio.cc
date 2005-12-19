@@ -174,8 +174,9 @@ namespace __gnu_internal
 #endif
 } // namespace __gnu_internal
 
-namespace std 
-{
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Definitions for __basic_file<char>.
   __basic_file<char>::__basic_file(__c_lock* /*__lock*/) 
   : _M_cfile(NULL), _M_cfile_created(false) { }
@@ -370,4 +371,6 @@ namespace std
 #endif
     return 0;
   }
-}  // namespace std
+
+_GLIBCXX_END_NAMESPACE
+

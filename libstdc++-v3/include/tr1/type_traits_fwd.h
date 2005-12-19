@@ -40,8 +40,8 @@
 // namespace std::tr1
 namespace std
 {
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
   /// @brief  helper classes [4.3].
   template<typename _Tp, _Tp __v>
     struct integral_constant;
@@ -219,7 +219,8 @@ namespace tr1
   /// @brief  other transformations [4.8].
   template<std::size_t _Len, std::size_t _Align>
     struct aligned_storage;
-}
+
+_GLIBCXX_END_NAMESPACE
 }
 
 #endif

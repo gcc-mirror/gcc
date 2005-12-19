@@ -679,6 +679,9 @@
 /* Define to use GNU versioning in the shared library. */
 #undef _GLIBCXX_SYMVER_GNU
 
+/* Define to use GNU namespace versioning in the shared library. */
+#undef _GLIBCXX_SYMVER_GNU_NAMESPACE
+
 /* Define if C99 functions or macros from <wchar.h>, <math.h>, <complex.h>,
    <stdio.h>, and <stdlib.h> can be used or exposed. */
 #undef _GLIBCXX_USE_C99

@@ -47,17 +47,19 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
 #include <locale.h>
 
 // Get rid of those macros defined in <locale.h> in lieu of real functions.
 #undef setlocale
 #undef localeconv
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::lconv;
   using ::setlocale;
   using ::localeconv;
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

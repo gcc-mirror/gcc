@@ -23,11 +23,10 @@
 #include <ext/hash_map>
 #include <testsuite_hooks.h>
 
-using namespace std;
-using namespace __gnu_cxx;
-
 namespace __gnu_cxx 
 {
+  using std::string;
+
   inline size_t hash_string(const char* s)
   {
     unsigned long h; 
@@ -63,19 +62,22 @@ namespace __gnu_cxx
   };
 }
 
-
-const int Size = 5;
-
 void test01()
 {
+  const int Size = 5;
   bool test __attribute__((unused)) = true;
+
+  using std::string;
+  using std::pair;
+  using std::vector;
+  using __gnu_cxx::hash_map;
 
   for (int i = 0; i < 10; i++)
   {
-    hash_map<string,int> a;
-    hash_map<string,int> b;
+    hash_map<string, int> a;
+    hash_map<string, int> b;
     
-    vector<pair<string,int> > contents (Size);
+    vector<pair<string, int> > contents (Size);
     for (int j = 0; j < Size; j++)
     {
       string s;

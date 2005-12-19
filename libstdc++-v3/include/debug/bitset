@@ -35,6 +35,8 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
+namespace std
+{
 namespace __gnu_debug_def
 {
   template<size_t _Nb>
@@ -68,7 +70,7 @@ namespace __gnu_debug_def
 	operator=(bool __x)
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
-			      _M_message(::__gnu_debug::__msg_bad_bitset_write)
+			      _M_message(__gnu_debug::__msg_bad_bitset_write)
 				._M_iterator(*this));
 	  *static_cast<_Base_ref*>(this) = __x;
 	  return *this;
@@ -78,10 +80,10 @@ namespace __gnu_debug_def
 	operator=(const reference& __x)
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! __x._M_singular(),
-			       _M_message(::__gnu_debug::__msg_bad_bitset_read)
+			       _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(__x));
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
-			      _M_message(::__gnu_debug::__msg_bad_bitset_write)
+			      _M_message(__gnu_debug::__msg_bad_bitset_write)
 				._M_iterator(*this));
 	  *static_cast<_Base_ref*>(this) = __x;
 	  return *this;
@@ -91,7 +93,7 @@ namespace __gnu_debug_def
 	operator~() const
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
-			       _M_message(::__gnu_debug::__msg_bad_bitset_read)
+			       _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(*this));
 	  return ~(*static_cast<const _Base_ref*>(this));
 	}
@@ -99,7 +101,7 @@ namespace __gnu_debug_def
 	operator bool() const
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
-			      _M_message(::__gnu_debug::__msg_bad_bitset_read)
+			      _M_message(__gnu_debug::__msg_bad_bitset_read)
 				._M_iterator(*this));
 	  return *static_cast<const _Base_ref*>(this);
 	}
@@ -108,7 +110,7 @@ namespace __gnu_debug_def
 	flip()
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
-			      _M_message(::__gnu_debug::__msg_bad_bitset_flip)
+			      _M_message(__gnu_debug::__msg_bad_bitset_flip)
 				._M_iterator(*this));
 	  _Base_ref::flip();
 	  return *this;
@@ -317,5 +319,6 @@ namespace __gnu_debug_def
 	       const bitset<_Nb>& __x)
     { return __os << __x._M_base(); }
 } // namespace __gnu_debug_def
+} // namespace std
 
 #endif

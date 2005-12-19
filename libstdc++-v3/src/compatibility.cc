@@ -43,6 +43,8 @@
 #define _M_set_length_and_sharable(a) _M_set_length_and_sharableXX(a)
 #define ignore ignoreXX
 #define eq eqXX
+#define _List_node_base _List_node_baseXX
+#define __gnu_debug __gnu_debugXX
 #endif
 
 #include <string>
@@ -50,10 +52,9 @@
 #include <fstream>
 #include <sstream>
 
-namespace std
-{
-  // std::istream ignore explicit specializations.
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
+  // std::istream ignore explicit specializations.
   template<>
     basic_istream<char>&
     basic_istream<char>::
@@ -82,7 +83,7 @@ namespace std
 		    {
 		      streamsize __size = std::min(streamsize(__sb->egptr()
 							      - __sb->gptr()),
-						   streamsize(__n - _M_gcount));
+					          streamsize(__n - _M_gcount));
 		      if (__size > 1)
 			{
 			  __sb->gbump(__size);
@@ -147,7 +148,7 @@ namespace std
 		    {
 		      streamsize __size = std::min(streamsize(__sb->egptr()
 							      - __sb->gptr()),
-						   streamsize(__n - _M_gcount));
+						  streamsize(__n - _M_gcount));
 		      if (__size > 1)
 			{
 			  __sb->gbump(__size);
@@ -184,7 +185,9 @@ namespace std
       return *this;
     }
 #endif
-}
+
+_GLIBCXX_END_NAMESPACE
+
 
 // NB: These symbols renames should go into the shared library only,
 // and only those shared libraries that support versioning.
@@ -194,8 +197,9 @@ namespace std
 _ZNSt19istreambuf_iteratorIcSt11char_traitsIcEEppEv
 _ZNSt19istreambuf_iteratorIwSt11char_traitsIwEEppEv
  */
-namespace std
-{
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template
     istreambuf_iterator<char>&
     istreambuf_iterator<char>::operator++();
@@ -205,7 +209,9 @@ namespace std
     istreambuf_iterator<wchar_t>&
     istreambuf_iterator<wchar_t>::operator++();
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
+
 
 /* gcc-4.0.0
 _ZNSs4_Rep26_M_set_length_and_sharableEj
@@ -236,8 +242,8 @@ _ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEv
 _ZNSt11char_traitsIcE2eqERKcS2_
 _ZNSt11char_traitsIwE2eqERKwS2_
  */
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // std::char_traits is explicitly specialized
   bool (* __p1)(const char&, const char&) = &char_traits<char>::eq;
 
@@ -329,7 +335,8 @@ namespace std
     bool
     basic_ofstream<wchar_t>::is_open() const;
 #endif
-}
+
+_GLIBCXX_END_NAMESPACE
 
 // The rename syntax for default exported names is
 //   asm (".symver name1,exportedname@GLIBCXX_3.4")
@@ -360,6 +367,107 @@ namespace std
 #include <bits/compatibility.h>
 #undef _GLIBCXX_APPLY_SYMVER
 
+/* gcc-3.4.0
+_ZN10__gnu_norm15_List_node_base4hookEPS0_;
+_ZN10__gnu_norm15_List_node_base4swapERS0_S1_;
+_ZN10__gnu_norm15_List_node_base6unhookEv;
+_ZN10__gnu_norm15_List_node_base7reverseEv;
+_ZN10__gnu_norm15_List_node_base8transferEPS0_S1_;
+_ZN11__gnu_debug19_Safe_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
+_ZN11__gnu_debug19_Safe_iterator_base9_M_detachEv;
+_ZNK11__gnu_debug19_Safe_iterator_base11_M_singularEv;
+_ZNK11__gnu_debug19_Safe_iterator_base14_M_can_compareERKS0_;
+_ZN11__gnu_debug19_Safe_sequence_base13_M_detach_allEv;
+_ZN11__gnu_debug19_Safe_sequence_base18_M_detach_singularEv;
+_ZN11__gnu_debug19_Safe_sequence_base22_M_revalidate_singularEv;
+_ZN11__gnu_debug19_Safe_sequence_base7_M_swapERS0_;
+_ZNK11__gnu_debug16_Error_formatter8_M_errorEv;
+_ZNK11__gnu_debug16_Error_formatter10_M_messageENS_13_Debug_msg_idE;
+_ZNK11__gnu_debug16_Error_formatter10_Parameter14_M_print_fieldEPKS0_PKc;
+_ZNK11__gnu_debug16_Error_formatter10_Parameter20_M_print_descriptionEPKS0_;
+_ZNK11__gnu_debug16_Error_formatter13_M_print_wordEPKc;
+_ZNK11__gnu_debug16_Error_formatter15_M_print_stringEPKc;
+*/
+#include "debug_list.cc"
+#include "debug.cc"
+
+_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX4hookEPS_, \
+_ZN10__gnu_norm15_List_node_base4hookEPS0_, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX4swapERS_S0_, \
+_ZN10__gnu_norm15_List_node_base4swapERS0_S1_, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX6unhookEv, \
+_ZN10__gnu_norm15_List_node_base6unhookEv, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX7reverseEv, \
+_ZN10__gnu_norm15_List_node_base7reverseEv, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX8transferEPS_S0_, \
+_ZN10__gnu_norm15_List_node_base8transferEPS0_S1_, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb, \
+_ZN11__gnu_debug19_Safe_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb, \
+		    GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_iterator_base9_M_detachEv, \
+_ZN11__gnu_debug19_Safe_iterator_base9_M_detachEv, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX19_Safe_iterator_base11_M_singularEv,\
+_ZNK11__gnu_debug19_Safe_iterator_base11_M_singularEv, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX19_Safe_iterator_base14_M_can_compareERKS0_, \
+_ZNK11__gnu_debug19_Safe_iterator_base14_M_can_compareERKS0_, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_sequence_base13_M_detach_allEv, \
+_ZN11__gnu_debug19_Safe_sequence_base13_M_detach_allEv, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_sequence_base18_M_detach_singularEv, \
+_ZN11__gnu_debug19_Safe_sequence_base18_M_detach_singularEv, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_sequence_base22_M_revalidate_singularEv, \
+_ZN11__gnu_debug19_Safe_sequence_base22_M_revalidate_singularEv, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNSt13__gnu_debugXX19_Safe_sequence_base7_M_swapERS0_, \
+_ZN11__gnu_debug19_Safe_sequence_base7_M_swapERS0_, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter8_M_errorEv, \
+_ZNK11__gnu_debug16_Error_formatter8_M_errorEv, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter10_M_messageENS_13_Debug_msg_idE, \
+_ZNK11__gnu_debug16_Error_formatter10_M_messageENS_13_Debug_msg_idE, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter10_Parameter14_M_print_fieldEPKS0_PKc, \
+_ZNK11__gnu_debug16_Error_formatter10_Parameter14_M_print_fieldEPKS0_PKc, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter10_Parameter20_M_print_descriptionEPKS0_, \
+_ZNK11__gnu_debug16_Error_formatter10_Parameter20_M_print_descriptionEPKS0_, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter13_M_print_wordEPKc, \
+_ZNK11__gnu_debug16_Error_formatter13_M_print_wordEPKc, \
+GLIBCXX_3.4)
+
+_GLIBCXX_ASM_SYMVER(_ZNKSt13__gnu_debugXX16_Error_formatter15_M_print_stringEPKc, \
+_ZNK11__gnu_debug16_Error_formatter15_M_print_stringEPKc, \
+GLIBCXX_3.4)
+
+
 #endif
 
 #ifdef _GLIBCXX_SYMVER_DARWIN
@@ -377,12 +485,12 @@ namespace std
 using namespace std;
 
 extern "C" void
-__eprintf (const char *string, const char *expression,
-	   unsigned int line, const char *filename)
+__eprintf(const char *string, const char *expression,
+	  unsigned int line, const char *filename)
 {
-  fprintf (stderr, string, expression, line, filename);
-  fflush (stderr);
-  abort ();
+  fprintf(stderr, string, expression, line, filename);
+  fflush(stderr);
+  abort();
 }
 #endif
 #endif

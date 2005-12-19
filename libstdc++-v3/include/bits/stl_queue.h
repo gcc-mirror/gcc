@@ -1,6 +1,7 @@
 // Queue implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,8 +65,8 @@
 #include <bits/concept_check.h>
 #include <debug/debug.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // Forward declarations of operators < and ==, needed for friend declaration.
   template<typename _Tp, typename _Sequence = deque<_Tp> >
     class queue;
@@ -465,6 +466,7 @@ namespace std
     };
 
   // No equality/comparison operators are provided for priority_queue.
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _QUEUE_H */

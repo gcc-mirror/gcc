@@ -47,12 +47,14 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
 #include <stddef.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::ptrdiff_t;
   using ::size_t;
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

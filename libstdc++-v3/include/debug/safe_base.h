@@ -1,6 +1,6 @@
 // Safe sequence/iterator base implementation  -*- C++ -*-
 
-// Copyright (C) 2003, 2004
+// Copyright (C) 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -31,6 +31,8 @@
 #ifndef _GLIBCXX_DEBUG_SAFE_BASE_H
 #define _GLIBCXX_DEBUG_SAFE_BASE_H 1
 
+namespace std
+{
 namespace __gnu_debug
 {
   class _Safe_sequence_base;
@@ -203,5 +205,6 @@ namespace __gnu_debug
     { if (++_M_version == 0) _M_version = 1; }
   };
 } // namespace __gnu_debug
+} // namespace std
 
 #endif

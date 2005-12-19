@@ -74,7 +74,8 @@ namespace __gnu_test
   typedef character<unsigned int, unsigned long>	   	pod_uint;  
 }
 
-namespace __gnu_cxx {
+namespace __gnu_cxx 
+{
   // Specializations.
   // pod_char
   template<>

@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -44,8 +44,8 @@
 
 #include <sstream>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   template <class _CharT, class _Traits, class _Alloc>
     typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type
     basic_stringbuf<_CharT, _Traits, _Alloc>::
@@ -233,6 +233,7 @@ namespace std
   extern template class basic_stringstream<wchar_t>;
 #endif
 #endif
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif

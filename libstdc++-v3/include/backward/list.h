@@ -64,7 +64,3 @@
 using std::list;
 
 #endif /* _BACKWARD_LIST_H */
-
-// Local Variables:
-// mode:C++
-// End:

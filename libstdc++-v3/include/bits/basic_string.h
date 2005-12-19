@@ -45,8 +45,8 @@
 #include <bits/atomicity.h>
 #include <debug/debug.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /**
    *  @class basic_string basic_string.h <string>
    *  @brief  Managing sequences of characters and character-like objects.
@@ -2443,6 +2443,7 @@ namespace std
     getline(basic_istream<wchar_t>& __in, basic_string<wchar_t>& __str,
 	    wchar_t __delim);
 #endif  
-} // namespace std
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _BASIC_STRING_H */

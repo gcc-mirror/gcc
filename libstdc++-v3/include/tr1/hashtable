@@ -879,8 +879,8 @@ namespace Internal
 
 namespace std
 { 
-namespace tr1
-{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
   //----------------------------------------------------------------------
   // Class template hashtable, class definition.
   
@@ -1853,7 +1853,8 @@ namespace tr1
 	  __throw_exception_again;
 	}
     }
-}
+
+_GLIBCXX_END_NAMESPACE
 }				// Namespace std::tr1
 
 #endif /* GNU_LIBSTDCXX_TR1_HASHTABLE_ */

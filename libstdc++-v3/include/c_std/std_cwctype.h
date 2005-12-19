@@ -76,8 +76,9 @@
 #undef wctype
 
 #if _GLIBCXX_USE_WCHAR_T
-namespace std
-{
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   using ::wint_t;	  // cwchar
 
   using ::wctype_t;
@@ -103,7 +104,9 @@ namespace std
   using ::towupper;
   using ::wctrans;
   using ::wctype;
-}
+
+_GLIBCXX_END_NAMESPACE
+
 #endif //_GLIBCXX_USE_WCHAR_T
 
 #endif
