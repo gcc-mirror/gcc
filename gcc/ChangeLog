@@ -1,5 +1,10 @@
 2005-12-19  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* tree-ssa-structalias.c (update_alias_info): Remove handling
+	of may_be_aliased (SSA_NAME_VAR (op)) case.
+
+2005-12-19  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* tree-flow.h (struct stmt_ann_d): Remove
 	makes_aliased_loads and makes_aliased_stores fields.
 	* tree-ssa-ccp.c (likely_value): Do not use makes_aliased_stores
