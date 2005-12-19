@@ -1,3 +1,23 @@
+2005-12-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/mt/mt.md (decrement_and_branch_until_zero): Add another
+	scratch.  Correct its reload split. Adjust its peephole.
+	(doloop_end): Add additional scratch.
+	(nop): Use 'nop'.
+	* config/mt/mt.c (MT_INT_ARG_FIRST): Remove.
+	(mt_asm_output_opcode, mt_print_operand): Use 'nop'.
+	(mt_function_arg_slotno): Use FIRST_ARG_REGNUM.
+	(mt_builtin_saveregs): Replace with ...
+	(mt_setup_incoming_varargs): ... here.  Save just the varadic
+	args.
+	(mt_va_start): Remove.
+	(mt_reorg_hazard): Ignore USE insns.  Don't call set_noop_p.
+	(mt_machine_reorg): Split all insns here.
+	(TARGET_SETUP_INCOMING_VARARGS): Override.
+	* config/mt/mt.h (TARGET_CPU_CPP_BUILTINS): Define __mt__ only.
+	Set to CPU type.
+	(EXPAND_BUILTIN_VA_START): Remove.
+
 2005-12-17  Kenneth Zadeck <zadeck@naturalbridge.com>
 
         * flow.c (update_life_info, count_or_remove_death_notes): Fixed
@@ -906,9 +926,6 @@
 
 2005-12-13  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* sim/common/sim-signal.c (sim_signal_to_target): Add missing ':'.
-	* sim/common/sim-signal.h (sim_signal_to_target): Return an int.
-
 	* config/mt/t-mt (crti.o, crtn.o): Add multilib options.
 	(EXTRA_MULTILIB_PARTS): Define.
 
@@ -1222,8 +1239,8 @@
 
 2005-12-09  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/ms1/t-ms1 (MULTILIB_OPTIONS): Define.
-        (MULTILIB_DIRNAMES): Define.
+	* config/ms1/t-ms1 (MULTILIB_OPTIONS): Define.
+	(MULTILIB_DIRNAMES): Define.
 
 2005-12-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
