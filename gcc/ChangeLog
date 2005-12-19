@@ -1,3 +1,8 @@
+2005-12-19  Kenneth Zadeck <zadeck@naturalbridge.com>
+	* df.c (df_analyze_1, df_analyze_subcfg, iterative_dataflow):
+	Corrected basic block number calculations for changes in entry and
+	exit numbering.
+	
 2005-12-19  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-flow.h (struct var_ann_d): Change type of
