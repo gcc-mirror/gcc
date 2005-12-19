@@ -19,6 +19,47 @@
 
 # This file defines procs for determining features supported by the target.
 
+# Try to compile some code and return the messages printed by the compiler.
+#
+# BASENAME is a basename to use for temporary files.
+# TYPE is the type of compilation to perform (see target_compile).
+# CONTENTS gives the contents of the input file.
+# The rest is optional:
+# OPTIONS: additional compiler options to use.
+proc get_compiler_messages {basename type contents args} {
+    global tool
+
+    if { [llength $args] > 0 } {
+	set options "additional_flags=[lindex $args 0]"
+    } else {
+	set options ""
+    }
+
+    set src ${basename}[pid].c
+    switch $type {
+	assembly { set output ${basename}[pid].s }
+	object { set output ${basename}[pid].o }
+    }
+    set f [open $src "w"]
+    puts $f $contents
+    close $f
+    set lines [${tool}_target_compile $src $output $type "$options"]
+    file delete $src
+    remote_file build delete $output
+
+    return $lines
+}
+
+proc current_target_name { } {
+    global target_info
+    if [info exists target_info(target,name)] {
+	set answer $target_info(target,name)
+    } else {
+	set answer ""
+    }
+    return $answer
+}
+
 ###############################
 # proc check_weak_available { }
 ###############################

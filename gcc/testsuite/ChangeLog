@@ -1,5 +1,10 @@
 2005-12-19  Janis Johnson  <janis187@us.ibm.com>
 
+	Backport (missed in previous batch):
+
+	* lib/target-supports.exp (get_compiler_messages,
+	current_target_name): New (missed in backport).
+
 	Backport:
 
 	2005-02-11  Janis Johnson  <janis187@us.ibm.com>
