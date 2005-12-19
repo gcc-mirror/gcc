@@ -79,7 +79,7 @@ march=ms2:exit-ms2.o%s; \
 #define TARGET_CPU_CPP_BUILTINS() 		\
   do						\
     {						\
-      builtin_define_std ("mt");		\
+      builtin_define_with_int_value ("__mt__", mt_cpu);	\
       builtin_assert ("machine=mt");		\
     }						\
   while (0)
@@ -596,9 +596,6 @@ extern struct mt_frame_info current_frame_info;
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN, N) 0
 
 #define FUNCTION_PROFILER(FILE, LABELNO) gcc_unreachable ()
-
-#define EXPAND_BUILTIN_VA_START(VALIST, NEXTARG)		\
-  mt_va_start (VALIST, NEXTARG)
 
 /* Trampolines are not implemented.  */
 #define TRAMPOLINE_SIZE 0

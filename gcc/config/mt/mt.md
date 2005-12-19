@@ -88,7 +88,8 @@
     (set (match_dup 0)
 	 (plus:SI (match_dup 0)
 		  (const_int -1)))
-    (clobber (match_scratch:SI 2 "=X,&r"))]
+    (clobber (match_scratch:SI 2 "=X,&r"))
+    (clobber (match_scratch:SI 3 "=X,&r"))]
   "TARGET_MS1_16_003 || TARGET_MS2"
   "@
    dbnz\t%0, %l1%#
@@ -109,11 +110,12 @@
     (set (match_dup 0)
 	 (plus:SI (match_dup 0)
 		  (const_int -1)))
-    (clobber (match_scratch:SI 2 ""))]
+    (clobber (match_scratch:SI 2 ""))
+    (clobber (match_scratch:SI 3 ""))]
   "TARGET_MS1_16_003 || TARGET_MS2"
   [(set (match_dup 2) (match_dup 0))
-   (set (match_dup 2) (plus:SI (match_dup 2) (const_int -1)))
-   (set (match_dup 0) (match_dup 2))
+   (set (match_dup 3) (plus:SI (match_dup 2) (const_int -1)))
+   (set (match_dup 0) (match_dup 3))
    (set (pc)
 	(if_then_else
 	 (ne (match_dup 2)
@@ -144,6 +146,7 @@
 	              (pc)))
               (set (match_dup 0)
 	           (plus:SI (match_dup 0) (const_int -1)))
+	      (clobber (reg:SI 0))
 	      (clobber (reg:SI 0))])]
   "")
 
@@ -1383,7 +1386,7 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "or	r0,r0,r0"
+  "nop"
   [(set_attr "length" "4")
    (set_attr "type" "arith")])
 

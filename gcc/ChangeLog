@@ -1,3 +1,22 @@
+2005-12-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/mt/mt.md (decrement_and_branch_until_zero): Add another
+	scratch.  Correct its reload split. Adjust its peephole.
+	(nop): Use 'nop'.
+	* config/mt/mt.c (MT_INT_ARG_FIRST): Remove.
+	(mt_asm_output_opcode, mt_print_operand): Use 'nop'.
+	(mt_function_arg_slotno): Use FIRST_ARG_REGNUM.
+	(mt_builtin_saveregs): Replace with ...
+	(mt_setup_incoming_varargs): ... here.  Save just the varadic
+	args.
+	(mt_va_start): Remove.
+	(mt_reorg_hazard): Ignore USE insns.  Don't call set_noop_p.
+	(mt_machine_reorg): Split all insns here.
+	(TARGET_SETUP_INCOMING_VARARGS): Override.
+	* config/mt/mt.h (TARGET_CPU_CPP_BUILTINS): Define __mt__ only.
+	Set to CPU type.
+	(EXPAND_BUILTIN_VA_START): Remove.
+
 2005-12-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* tree-cfg.c (tree_flow_call_edges_add): Check for empty basic blocks.
