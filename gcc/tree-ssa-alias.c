@@ -1108,15 +1108,15 @@ group_aliases (struct alias_info *ai)
       size_t j;
       tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
       tree name_tag = SSA_NAME_PTR_INFO (ptr)->name_mem_tag;
-      varray_type aliases;
+      VEC(tree,gc) *aliases;
+      tree alias;
       
       if (name_tag == NULL_TREE)
 	continue;
 
       aliases = var_ann (name_tag)->may_aliases;
-      for (j = 0; aliases && j < VARRAY_ACTIVE_SIZE (aliases); j++)
+      for (j = 0; VEC_iterate (tree, aliases, j, alias); j++)
 	{
-	  tree alias = VARRAY_TREE (aliases, j);
 	  var_ann_t ann = var_ann (alias);
 
 	  if ((!MTAG_P (alias)
@@ -1125,9 +1125,9 @@ group_aliases (struct alias_info *ai)
 	    {
 	      tree new_alias;
 
-	      gcc_assert (VARRAY_ACTIVE_SIZE (ann->may_aliases) == 1);
+	      gcc_assert (VEC_length (tree, ann->may_aliases) == 1);
 
-	      new_alias = VARRAY_TREE (ann->may_aliases, 0);
+	      new_alias = VEC_index (tree, ann->may_aliases, 0);
 	      replace_may_alias (name_tag, j, new_alias);
 	    }
 	}
@@ -1578,6 +1578,7 @@ add_may_alias (tree var, tree alias)
   size_t i;
   var_ann_t v_ann = get_var_ann (var);
   var_ann_t a_ann = get_var_ann (alias);
+  tree al;
 
   /* Don't allow self-referential aliases.  */
   gcc_assert (var != alias);
@@ -1590,11 +1591,11 @@ add_may_alias (tree var, tree alias)
 #endif
 
   if (v_ann->may_aliases == NULL)
-    VARRAY_TREE_INIT (v_ann->may_aliases, 2, "aliases");
+    v_ann->may_aliases = VEC_alloc (tree, gc, 2);
 
   /* Avoid adding duplicates.  */
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (v_ann->may_aliases); i++)
-    if (alias == VARRAY_TREE (v_ann->may_aliases, i))
+  for (i = 0; VEC_iterate (tree, v_ann->may_aliases, i, al); i++)
+    if (alias == al)
       return;
 
   /* If VAR is a call-clobbered variable, so is its new ALIAS.
@@ -1607,7 +1608,7 @@ add_may_alias (tree var, tree alias)
   else if (is_call_clobbered (alias))
     mark_call_clobbered (var);
 
-  VARRAY_PUSH_TREE (v_ann->may_aliases, alias);
+  VEC_safe_push (tree, gc, v_ann->may_aliases, alias);
   a_ann->is_alias_tag = 1;
 }
 
@@ -1618,7 +1619,7 @@ static void
 replace_may_alias (tree var, size_t i, tree new_alias)
 {
   var_ann_t v_ann = var_ann (var);
-  VARRAY_TREE (v_ann->may_aliases, i) = new_alias;
+  VEC_replace (tree, v_ann->may_aliases, i, new_alias);
 
   /* If VAR is a call-clobbered variable, so is NEW_ALIAS.
      FIXME, call-clobbering should only depend on whether an address
@@ -2152,7 +2153,7 @@ debug_points_to_info (void)
 void
 dump_may_aliases_for (FILE *file, tree var)
 {
-  varray_type aliases;
+  VEC(tree, gc) *aliases;
   
   if (TREE_CODE (var) == SSA_NAME)
     var = SSA_NAME_VAR (var);
@@ -2161,10 +2162,11 @@ dump_may_aliases_for (FILE *file, tree var)
   if (aliases)
     {
       size_t i;
+      tree al;
       fprintf (file, "{ ");
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
+      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
 	{
-	  print_generic_expr (file, VARRAY_TREE (aliases, i), dump_flags);
+	  print_generic_expr (file, al, dump_flags);
 	  fprintf (file, " ");
 	}
       fprintf (file, "}");
@@ -2223,7 +2225,8 @@ bool
 is_aliased_with (tree tag, tree sym)
 {
   size_t i;
-  varray_type aliases;
+  VEC(tree,gc) *aliases;
+  tree al;
 
   if (var_ann (sym)->is_alias_tag)
     {
@@ -2232,8 +2235,8 @@ is_aliased_with (tree tag, tree sym)
       if (aliases == NULL)
 	return false;
 
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
-	if (VARRAY_TREE (aliases, i) == sym)
+      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+	if (al == sym)
 	  return true;
     }
   else
@@ -2243,8 +2246,8 @@ is_aliased_with (tree tag, tree sym)
       if (aliases == NULL)
 	return false;
 
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
-	if (VARRAY_TREE (aliases, i) == tag)
+      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+	if (al == tag)
 	  return true;
     }
 
@@ -2258,11 +2261,12 @@ is_aliased_with (tree tag, tree sym)
 void
 add_type_alias (tree ptr, tree var)
 {
-  varray_type aliases;
-  tree tag;
+  VEC(tree, gc) *aliases;
+  tree tag, al;
   var_ann_t ann = var_ann (ptr);
   subvar_t svars;
   VEC (tree, heap) *varvec = NULL;  
+  unsigned i;
 
   if (ann->type_mem_tag == NULL_TREE)
     {
@@ -2322,9 +2326,8 @@ found_tag:
   mark_sym_for_renaming (tag);
   if ((aliases = var_ann (tag)->may_aliases) != NULL)
     {
-      size_t i;
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
-	mark_sym_for_renaming (VARRAY_TREE (aliases, i));
+      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+	mark_sym_for_renaming (al);
     }
 
   /* If we had grouped aliases, VAR may have aliases of its own.  Mark
@@ -2332,9 +2335,8 @@ found_tag:
      aliases of VAR will need to be updated.  */
   if ((aliases = var_ann (var)->may_aliases) != NULL)
     {
-      size_t i;
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
-	mark_sym_for_renaming (VARRAY_TREE (aliases, i));
+      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+	mark_sym_for_renaming (al);
     }
   VEC_free (tree, heap, varvec);
 }
@@ -2377,12 +2379,12 @@ new_type_alias (tree ptr, tree var)
 	 same defs/uses/vdefs/vuses will be found after replacing a reference
 	 to var (or ARRAY_REF to var) with an INDIRECT_REF to ptr whose value
 	 is the address of var.  */
-      varray_type aliases = v_ann->may_aliases;
+      VEC(tree, gc) *aliases = v_ann->may_aliases;
 
       if ((aliases != NULL)
-	  && (VARRAY_ACTIVE_SIZE (aliases) == 1))
+	  && (VEC_length (tree, aliases) == 1))
 	{
-	  tree ali = VARRAY_TREE (aliases, 0);
+	  tree ali = VEC_index (tree, aliases, 0);
 
 	  if (TREE_CODE (ali) == TYPE_MEMORY_TAG)
 	    {
@@ -2398,10 +2400,11 @@ new_type_alias (tree ptr, tree var)
 	add_may_alias (tag, var);
       else
 	{
-	  size_t i;
+	  unsigned i;
+	  tree al;
 
-	  for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
-	    add_may_alias (tag, VARRAY_TREE (aliases, i));
+	  for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+	    add_may_alias (tag, al);
 	}
     }    
 }

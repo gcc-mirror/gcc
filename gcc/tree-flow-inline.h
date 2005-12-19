@@ -182,7 +182,7 @@ bb_for_stmt (tree t)
 
 /* Return the may_aliases varray for variable VAR, or NULL if it has
    no may aliases.  */
-static inline varray_type
+static inline VEC(tree, gc) *
 may_aliases (tree var)
 {
   var_ann_t ann = var_ann (var);

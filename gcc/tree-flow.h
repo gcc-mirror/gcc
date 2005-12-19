@@ -196,7 +196,7 @@ struct var_ann_d GTY(())
   tree type_mem_tag;
 
   /* Variables that may alias this variable.  */
-  varray_type may_aliases;
+  VEC(tree, gc) *may_aliases;
 
   /* Used when going out of SSA form to indicate which partition this
      variable represents storage for.  */
@@ -309,7 +309,7 @@ extern void set_bb_for_stmt (tree, basic_block);
 static inline bool noreturn_call_p (tree);
 static inline void update_stmt (tree);
 static inline bool stmt_modified_p (tree);
-static inline varray_type may_aliases (tree);
+static inline VEC(tree, gc) *may_aliases (tree);
 static inline int get_lineno (tree);
 static inline const char *get_filename (tree);
 static inline bool is_exec_stmt (tree);

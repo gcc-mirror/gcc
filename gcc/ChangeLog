@@ -1,3 +1,17 @@
+2005-12-19  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-flow.h (struct var_ann_d): Change type of
+	may_aliases field to VEC(tree, gc) *.
+	(may_aliases): Declaration changed.
+	* tree-ssa-alias.c (group_aliases, add_may_alias,
+	replace_may_alias, dump_may_aliases_for,
+	is_aliased_with, add_type_alias, new_type_alias):
+	Work with VEC(tree, gc) * instead of varray.
+	* tree-flow-inline.h (may_aliases): Ditto.
+	* tree-ssa.c (verify_flow_insensitive_alias_info,
+	verify_name_tags): Ditto.
+	* tree-ssa-operands.c (add_stmt_operand): Ditto.
+
 2005-12-19  J"orn Rennecke <joern.rennecke@st.com>
 
 	* cfgcleanup.c: Temporarily revert patches for PR 20070 till Bernd
