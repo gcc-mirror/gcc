@@ -1,3 +1,8 @@
+2005-12-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20552
+	* g++.dg/ext/typeof10.C: New test.
+
 2005-12-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/mt-loopi1.c: New.
