@@ -256,12 +256,6 @@ struct stmt_ann_d GTY(())
      need to be scanned again).  */
   unsigned modified : 1;
 
-  /* Nonzero if the statement makes aliased loads.  */
-  unsigned makes_aliased_loads : 1;
-
-  /* Nonzero if the statement makes aliased stores.  */
-  unsigned makes_aliased_stores : 1;
-
   /* Nonzero if the statement makes references to volatile storage.  */
   unsigned has_volatile_ops : 1;
 

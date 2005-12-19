@@ -730,15 +730,6 @@ verify_ssa (bool check_modified_stmt)
 		}
 	    }
 
-
-	  if (stmt_ann (stmt)->makes_aliased_stores 
-	      && ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF))
-	    {
-	      error ("statement makes aliased stores, but has no V_MAY_DEFS");
-	      print_generic_stmt (stderr, stmt, TDF_VOPS);
-	      goto err;
-	    }
-
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter,
 	                            SSA_OP_ALL_USES | SSA_OP_ALL_KILLS)
 	    {
