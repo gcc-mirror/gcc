@@ -1,3 +1,11 @@
+2005-12-17  Danny Berlin <dberlin@dberlin.org>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+        * flow.c (update_life_info, count_or_remove_death_notes): Fixed
+	latent bug that could happen if update_life_info was called with a
+	blocks parameter and the call to cleanup_cfg actually deleted one
+	of those blocks. 
+
 2005-12-19  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-ssa-structalias.c (update_alias_info): Remove handling
@@ -988,7 +996,7 @@
 	* config/arm/bpabi.h (SUBTARGET_EXTRA_ASM_SPEC): Pass -meabi=gnu for
 	apcs/atpcs.
 
-2005-12-11 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2005-12-11 Rafael vila de Espndola <rafael.espindola@gmail.com>
 
 	* tree-flow.h: Allow compilation with a C++ compiler.
 	(struct edge_prediction): Prefix all field names  with "ep_".
@@ -1397,18 +1405,18 @@
 	* coretypes.h (section): Provide dummy definition for target files.
 	* config/darwin.h: Revert previous change.
 
-2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael vila de Espndola  <rafael.espindola@gmail.com>
 
 	* doc/sourcebuild.texi (all.build, install-normal): Remove.
 	* configure.ac: Remove all.build and install-normal from target_list
 	* configure: Regenerate.
 	* Makefile.in (install): Don't depend on install-normal.
 
-2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael vila de Espndola  <rafael.espindola@gmail.com>
 
 	* Makefile.in: Document the use of stamps.
 
-2005-12-07  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+2005-12-07  Rafael vila de Espndola  <rafael.espindola@gmail.com>
 
 	* doc/gty.texi: Remove instructions for adding a dependency on s-gtype.
 	* Makefile.in: Add code to compute some dependencies on s-gtype
@@ -10991,7 +10999,7 @@
 	* gcc.c (main): Compare language[0] with '*' when iterating over
 	the infiles.
 
-2005-07-13  Adrian StraeÂ½tling  <straetling@de.ibm.com>
+2005-07-13  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.c: (s390_cc_modes_compatible): Move before
 	"s390_emit_compare".  Add handling of CCZ1mode.
@@ -11004,7 +11012,7 @@
 	Use CCZ1mode instead of CCZmode.
 	* config/s390/s390-modes.def: Add CCZ1mode.  Comment new mode.
 
-2005-07-13  Adrian StraeÂ½tling  <straetling@de.ibm.com>
+2005-07-13  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.md: ("cmpstrsi", "*cmpstr<mode>"): New
 	pattern.
