@@ -1,3 +1,7 @@
+2005-12-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	* mt-ppc-aix, mh-ppc-aix: New.
+
 2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
         * acx.m4 (GCC_TARGET_TOOL): New.
