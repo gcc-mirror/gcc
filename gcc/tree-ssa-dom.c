@@ -2394,8 +2394,7 @@ eliminate_redundant_computations (tree stmt, stmt_ann_t ann)
 
   /* Certain expressions on the RHS can be optimized away, but can not
      themselves be entered into the hash tables.  */
-  if (ann->makes_aliased_stores
-      || ! def
+  if (! def
       || TREE_CODE (def) != SSA_NAME
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def)
       || !ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF)

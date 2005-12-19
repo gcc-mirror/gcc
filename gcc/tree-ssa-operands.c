@@ -127,9 +127,6 @@ bool ssa_ro_call_cache_valid;
 static VEC(tree,heap) *clobbered_v_may_defs;
 static VEC(tree,heap) *clobbered_vuses;
 static VEC(tree,heap) *ro_call_vuses;
-static bool clobbered_aliased_loads;
-static bool clobbered_aliased_stores;
-static bool ro_call_aliased_loads;
 static bool ops_active = false;
 
 static GTY (()) struct ssa_operand_memory_d *operand_memory = NULL;
@@ -798,14 +795,9 @@ build_ssa_operands (tree stmt)
 {
   stmt_ann_t ann = get_stmt_ann (stmt);
   
-  /* Initially assume that the statement has no volatile operands, nor
-     makes aliased loads or stores.  */
+  /* Initially assume that the statement has no volatile operands.  */
   if (ann)
-    {
-      ann->has_volatile_ops = false;
-      ann->makes_aliased_stores = false;
-      ann->makes_aliased_loads = false;
-    }
+    ann->has_volatile_ops = false;
 
   start_ssa_stmt_operands ();
 
@@ -1643,11 +1635,7 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 		}
 	    }
 	  else
-	    {
-	      append_vuse (var);
-	      if (s_ann && v_ann->is_alias_tag)
-		s_ann->makes_aliased_loads = 1;
-	    }
+	    append_vuse (var);
 	}
       else
 	{
@@ -1668,9 +1656,6 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 
 	      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
 		append_v_may_def (VARRAY_TREE (aliases, i));
-
-	      if (s_ann)
-		s_ann->makes_aliased_stores = 1;
 	    }
 	  else
 	    {
@@ -1681,9 +1666,6 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 
 	      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
 		append_vuse (VARRAY_TREE (aliases, i));
-
-	      if (s_ann)
-		s_ann->makes_aliased_loads = 1;
 	    }
 	}
     }
@@ -1792,11 +1774,6 @@ add_call_clobber_ops (tree stmt, tree callee)
 	  var_ann (t)->in_v_may_def_list = 1;
 	  VEC_safe_push (tree, heap, build_v_may_defs, (tree)t);
 	}
-      if (s_ann)
-	{
-	  s_ann->makes_aliased_loads = clobbered_aliased_loads;
-	  s_ann->makes_aliased_stores = clobbered_aliased_stores;
-	}
       return;
     }
 
@@ -1828,16 +1805,6 @@ add_call_clobber_ops (tree stmt, tree callee)
   if ((!not_read_b || bitmap_empty_p (not_read_b))
       && (!not_written_b || bitmap_empty_p (not_written_b)))
     {
-      clobbered_aliased_loads = empty_ann.makes_aliased_loads;
-      clobbered_aliased_stores = empty_ann.makes_aliased_stores;
-
-      /* Set the flags for a stmt's annotation.  */
-      if (s_ann)
-	{
-	  s_ann->makes_aliased_loads = empty_ann.makes_aliased_loads;
-	  s_ann->makes_aliased_stores = empty_ann.makes_aliased_stores;
-	}
-
       /* Prepare empty cache vectors.  */
       VEC_truncate (tree, clobbered_vuses, 0);
       VEC_truncate (tree, clobbered_v_may_defs, 0);
@@ -1893,8 +1860,6 @@ add_call_read_ops (tree stmt)
 	  var_ann (t)->in_vuse_list = 1;
 	  VEC_safe_push (tree, heap, build_vuses, (tree)t);
 	}
-      if (s_ann)
-	s_ann->makes_aliased_loads = ro_call_aliased_loads;
       return;
     }
 
@@ -1906,10 +1871,6 @@ add_call_read_ops (tree stmt)
       tree var = referenced_var (u);
       add_stmt_operand (&var, &empty_ann, opf_none | opf_non_specific);
     }
-
-  ro_call_aliased_loads = empty_ann.makes_aliased_loads;
-  if (s_ann)
-    s_ann->makes_aliased_loads = empty_ann.makes_aliased_loads;
 
   /* Prepare empty cache vectors.  */
   VEC_truncate (tree, ro_call_vuses, 0);

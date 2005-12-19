@@ -482,9 +482,7 @@ likely_value (tree stmt)
   /* If we are not doing store-ccp, statements with loads
      and/or stores will never fold into a constant.  */
   if (!do_store_ccp
-      && (ann->makes_aliased_stores
-	  || ann->makes_aliased_loads
-	  || !ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS)))
+      && !ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
     return VARYING;
 
 

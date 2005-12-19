@@ -1,3 +1,19 @@
+2005-12-19  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-flow.h (struct stmt_ann_d): Remove
+	makes_aliased_loads and makes_aliased_stores fields.
+	* tree-ssa-ccp.c (likely_value): Do not use makes_aliased_stores
+	and makes_aliased_loads fields.
+	* tree-ssa-dom.c (eliminate_redundant_computations): Do not
+	use makes_aliased_stores.
+	* tree-ssa-operands.c (clobbered_aliased_loads,
+	clobbered_aliased_stores, ro_call_aliased_loads): Removed.
+	(build_ssa_operands, add_stmt_operand, add_call_clobber_ops,
+	add_call_read_ops): Do not set makes_aliased_stores and
+	makes_aliased_loads fields.
+	* tree-ssa.c (verify_ssa): Do not verify makes_aliased_stores
+	field.
+
 2005-12-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h: Don't include darwin-sections.def to declare
