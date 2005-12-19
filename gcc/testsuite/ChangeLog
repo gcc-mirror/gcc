@@ -8,6 +8,11 @@
 	PR rtl-optimization/21041
 	* gcc.dg/pr21041.c: New test.
 
+2005-12-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25463
+	* gfortran.dg/advance.f90: New test.
+
 2005-12-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20051201-1.c: New test.
