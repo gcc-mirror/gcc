@@ -1,5 +1,4 @@
-2005-12-17  Danny Berlin <dberlin@dberlin.org>
-	    Kenneth Zadeck <zadeck@naturalbridge.com>
+2005-12-17  Kenneth Zadeck <zadeck@naturalbridge.com>
 
         * flow.c (update_life_info, count_or_remove_death_notes): Fixed
 	latent bug that could happen if update_life_info was called with a
