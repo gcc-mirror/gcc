@@ -1,3 +1,11 @@
+2005-12-18  Anthony Green  <green@redhat.com>
+
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc (getLocalAddress): 
+	New helper function.
+	(setOption): Use getLocalAddress.  Don't downcast value to
+	InetAddress.
+	(getOption): Use getLocalAddress.
+
 2005-12-16  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libjava.jacks/jacks.xfail
