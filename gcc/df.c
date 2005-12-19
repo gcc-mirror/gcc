@@ -1992,9 +1992,9 @@ df_analyze_1 (struct df *df, bitmap blocks, int flags, int update)
       df_reg_use_chain_create (df, blocks, false);
     }
 
-  df->dfs_order = xmalloc (sizeof (int) * n_basic_blocks);
-  df->rc_order = xmalloc (sizeof (int) * n_basic_blocks);
-  df->rts_order = xmalloc (sizeof (int) * n_basic_blocks);
+  df->dfs_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
+  df->rc_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
+  df->rts_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
 
   flow_depth_first_order_compute (df->dfs_order, df->rc_order);
   flow_reverse_top_sort_order_compute (df->rts_order);
@@ -2019,7 +2019,7 @@ df_analyze_1 (struct df *df, bitmap blocks, int flags, int update)
       dflow.dir = DF_FORWARD;
       dflow.conf_op = DF_UNION;
       dflow.transfun = df_rd_transfer_function;
-      dflow.n_blocks = n_basic_blocks;
+      dflow.n_blocks = n_basic_blocks - NUM_FIXED_BLOCKS;
       dflow.order = df->rc_order;
       dflow.data = NULL;
 
@@ -2062,7 +2062,7 @@ df_analyze_1 (struct df *df, bitmap blocks, int flags, int update)
       dflow.dir = DF_BACKWARD;
       dflow.conf_op = DF_UNION;
       dflow.transfun = df_ru_transfer_function;
-      dflow.n_blocks = n_basic_blocks;
+      dflow.n_blocks = n_basic_blocks - NUM_FIXED_BLOCKS;
       dflow.order = df->rts_order;
       dflow.data = NULL;
 
@@ -2108,7 +2108,7 @@ df_analyze_1 (struct df *df, bitmap blocks, int flags, int update)
       dflow.dir = DF_BACKWARD;
       dflow.conf_op = DF_UNION;
       dflow.transfun = df_lr_transfer_function;
-      dflow.n_blocks = n_basic_blocks;
+      dflow.n_blocks = n_basic_blocks - NUM_FIXED_BLOCKS;
       dflow.order = df->rts_order;
       dflow.data = NULL;
 
@@ -2420,16 +2420,16 @@ df_analyze_subcfg (struct df *df, bitmap blocks, int flags)
       df_reg_use_chain_create (df, blocks, true);
     }
 
-  df->dfs_order = xmalloc (sizeof (int) * n_basic_blocks);
-  df->rc_order = xmalloc (sizeof (int) * n_basic_blocks);
-  df->rts_order = xmalloc (sizeof (int) * n_basic_blocks);
+  df->dfs_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
+  df->rc_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
+  df->rts_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
 
   flow_depth_first_order_compute (df->dfs_order, df->rc_order);
   flow_reverse_top_sort_order_compute (df->rts_order);
 
-  n_blocks = prune_to_subcfg (df->dfs_order, n_basic_blocks, blocks);
-  prune_to_subcfg (df->rc_order, n_basic_blocks, blocks);
-  prune_to_subcfg (df->rts_order, n_basic_blocks, blocks);
+  n_blocks = prune_to_subcfg (df->dfs_order, n_basic_blocks - NUM_FIXED_BLOCKS, blocks);
+  prune_to_subcfg (df->rc_order, n_basic_blocks - NUM_FIXED_BLOCKS, blocks);
+  prune_to_subcfg (df->rts_order, n_basic_blocks - NUM_FIXED_BLOCKS, blocks);
 
   dflow.in = xmalloc (sizeof (bitmap) * last_basic_block);
   dflow.out = xmalloc (sizeof (bitmap) * last_basic_block);
@@ -3925,7 +3925,7 @@ iterative_dataflow (struct dataflow *dataflow)
   sbitmap_zero (visited);
   sbitmap_zero (considered);
 
-  for (i = 0; i < dataflow->n_blocks - NUM_FIXED_BLOCKS; i++)
+  for (i = 0; i < dataflow->n_blocks; i++)
     {
       idx = dataflow->order[i];
       SET_BIT (pending, idx);
@@ -3940,7 +3940,7 @@ iterative_dataflow (struct dataflow *dataflow)
 
   while (1)
     {
-      for (i = 0; i < dataflow->n_blocks - NUM_FIXED_BLOCKS ; i++)
+      for (i = 0; i < dataflow->n_blocks; i++)
 	{
 	  idx = dataflow->order[i];
 
