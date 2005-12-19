@@ -249,7 +249,8 @@ struct_equiv_improve_checkpoint (struct struct_equiv_checkpoint *p,
 				 struct equiv_info *info)
 {
 #ifdef HAVE_cc0
-  if (reg_mentioned_p (cc0_rtx, p->x_start) && !sets_cc0_p (p->x_start))
+  if (reg_mentioned_p (cc0_rtx, info->cur.x_start)
+      && !sets_cc0_p (info->cur.x_start))
     return;
 #endif
   if (info->cur.input_count >= IMPOSSIBLE_MOVE_FACTOR)
