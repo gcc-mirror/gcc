@@ -1277,7 +1277,7 @@ omitted from @file{libgcc.a} on the assumption that it will be provided by
 @samp{newlib}.
 @end table
 
-@subheading Fortran-specific Option
+@subheading Fortran-Specific Options
 
 The following options apply to the build of the Fortran front end.
 
