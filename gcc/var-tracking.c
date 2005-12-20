@@ -485,7 +485,7 @@ bb_stack_adjust_offset (basic_block bb)
 
 /* Compute stack adjustments for all blocks by traversing DFS tree.
    Return true when the adjustments on all incoming edges are consistent.
-   Heavily borrowed from flow_depth_first_order_compute.  */
+   Heavily borrowed from pre_and_rev_post_order_compute.  */
 
 static bool
 vt_stack_adjustments (void)
@@ -1640,7 +1640,7 @@ vt_find_locations (void)
      so that the data-flow runs faster.  */
   rc_order = xmalloc ((n_basic_blocks - NUM_FIXED_BLOCKS) * sizeof (int));
   bb_order = xmalloc (last_basic_block * sizeof (int));
-  flow_depth_first_order_compute (NULL, rc_order);
+  pre_and_rev_post_order_compute (NULL, rc_order, false);
   for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
     bb_order[rc_order[i]] = i;
   free (rc_order);

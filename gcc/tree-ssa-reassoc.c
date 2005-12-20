@@ -1424,7 +1424,7 @@ init_reassoc (void)
 
   /* Reverse RPO (Reverse Post Order) will give us something where
      deeper loops come later.  */
-  flow_depth_first_order_compute (NULL, bbs);
+  pre_and_rev_post_order_compute (NULL, bbs, false);
   bb_rank = xcalloc (last_basic_block + 1, sizeof (unsigned int));
   
   operand_rank = htab_create (511, operand_entry_hash,

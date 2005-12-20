@@ -1996,8 +1996,8 @@ df_analyze_1 (struct df *df, bitmap blocks, int flags, int update)
   df->rc_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
   df->rts_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
 
-  flow_depth_first_order_compute (df->dfs_order, df->rc_order);
-  flow_reverse_top_sort_order_compute (df->rts_order);
+  pre_and_rev_post_order_compute (df->dfs_order, df->rc_order, false);
+  post_order_compute (df->rts_order, false);
   if (aflags & DF_RD)
     {
       /* Compute the sets of gens and kills for the defs of each bb.  */
@@ -2424,8 +2424,8 @@ df_analyze_subcfg (struct df *df, bitmap blocks, int flags)
   df->rc_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
   df->rts_order = xmalloc (sizeof (int) * n_basic_blocks - NUM_FIXED_BLOCKS);
 
-  flow_depth_first_order_compute (df->dfs_order, df->rc_order);
-  flow_reverse_top_sort_order_compute (df->rts_order);
+  pre_and_rev_post_order_compute (df->dfs_order, df->rc_order, false);
+  post_order_compute (df->rts_order, false);
 
   n_blocks = prune_to_subcfg (df->dfs_order, n_basic_blocks - NUM_FIXED_BLOCKS, blocks);
   prune_to_subcfg (df->rc_order, n_basic_blocks - NUM_FIXED_BLOCKS, blocks);

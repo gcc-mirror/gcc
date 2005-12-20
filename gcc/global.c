@@ -2282,7 +2282,7 @@ set_up_bb_rts_numbers (void)
   int *rts_order;
   
   rts_order = xmalloc (sizeof (int) * (n_basic_blocks - NUM_FIXED_BLOCKS));
-  flow_reverse_top_sort_order_compute (rts_order);
+  post_order_compute (rts_order, false);
   for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
     BB_INFO_BY_INDEX (rts_order [i])->rts_number = i;
   free (rts_order);
