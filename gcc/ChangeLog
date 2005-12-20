@@ -1,3 +1,11 @@
+2005-12-20  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2005-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (mark_used_vars): New function.
+	(dump_function_to_file): Dump only used VAR_DECLs.
+
 2005-12-19  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (try_combine): Improve splitting of binary operators
