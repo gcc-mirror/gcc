@@ -5438,14 +5438,16 @@ decStrEq (const char *str1, const char *str2)
 {
   for (;; str1++, str2++)
     {
-      if (*str1 == *str2)
+      unsigned char u1 = (unsigned char) *str1;
+      unsigned char u2 = (unsigned char) *str2;
+      if (u1 == u2)
 	{
-	  if (*str1 == '\0')
+	  if (u1 == '\0')
 	    break;
 	}
       else
 	{
-	  if (tolower ((int) *str1) != tolower ((int) *str2))
+	  if (tolower (u1) != tolower (u2))
 	    return 0;
 	}
     }				/* stepping */
