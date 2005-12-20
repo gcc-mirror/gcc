@@ -4076,7 +4076,8 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   /* ... otherwise out of the overflow area.  */
 
   /* Care for on-stack alignment if needed.  */
-  if (FUNCTION_ARG_BOUNDARY (VOIDmode, type) <= 64)
+  if (FUNCTION_ARG_BOUNDARY (VOIDmode, type) <= 64
+      || integer_zerop (TYPE_SIZE (type)))
     t = ovf;
   else
     {

@@ -1,3 +1,10 @@
+2005-12-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/24306
+	* builtins.c (std_gimplify_va_arg_expr): Do not align
+	va frame for zero sized types.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Likewise.
+
 2005-12-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/22313
