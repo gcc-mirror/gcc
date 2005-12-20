@@ -1,0 +1,693 @@
+#! /bin/bash
+
+########################################################################
+#
+# File:    generate_framework_tests
+# Author:  Janis Johnson
+# Date:    2004/11/02
+#
+# Generate tests of GCC's test framework.  Each test has encoded in
+# its name the dg commands that are used in the test and the expected
+# result of the test, *-1.c.  Each test is followed by a test ending
+# in *-2.c that is expected to pass.
+#
+# This script has evolved and could be rewritten to be more compact.
+#
+#
+# Copyright (c) 2004, 2005 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+#
+########################################################################
+
+cd $1
+
+GOOD0='*-*-*'
+GOOD1="yes"
+GOOD2='empty-*-* *-*-empty *-*-*'
+BAD0='empty-empty-empty'
+BAD1="no"
+BAD2='empty-*-* *-empty-* *-*-empty'
+
+# Programs used in the tests: good compile and run, bad compile, and
+# bad run.
+GOOD_PROG="int main () { return 0; }"
+BADC_PROG="int missing_body () }"
+BADR_PROG="extern void abort (void); int main () { abort (); }"
+
+# dg-do commands with a target list.
+DOT_S0="{ dg-do compile { target ${GOOD0} } }"
+DOT_S1="{ dg-do compile { target ${GOOD1} } }"
+DOT_N0="{ dg-do compile { target ${BAD0} } }"
+DOT_N1="{ dg-do compile { target ${BAD1} } }"
+
+# dg-do commands with an xfail list; the xfail list is ignored for
+# everything but "run".
+DOX_P0="{ dg-do run { xfail ${BAD0} } }"
+DOX_P1="{ dg-do run { xfail ${BAD1} } }"
+DOX_F0="{ dg-do run { xfail ${GOOD0} } }"
+DOX_F1="{ dg-do run { xfail ${GOOD1} } }"
+
+# dg-xfail-if commands.
+XIF_P0="{ dg-xfail-if \"target not matched\" { ${BAD0} } { \"-DY1\" } { \"-DY2\" } }"
+XIF_P1="{ dg-xfail-if \"target not matched\" { ${BAD0} } { \"-DY1\" } { \"-DN\" } }"
+XIF_P2="{ dg-xfail-if \"target not matched\" { ${BAD0} } { \"-DN\" } { \"-DY1\" } }"
+XIF_P3="{ dg-xfail-if \"target not matched\" { ${BAD0} } { \"-DN1\" } { \"-DN2\" } }"
+XIF_P4="{ dg-xfail-if \"exclude option matched\" { ${GOOD0} } { \"-DY1\" } { \"-DY2\" } }"
+XIF_P5="{ dg-xfail-if \"include option not matched\" { ${GOOD0} } { \"-DN\" } { \"-DY1\" } }"
+XIF_P6="{ dg-xfail-if \"include option not matched\" { ${GOOD0} } { \"-DN1\" } { \"-DN2\" } }"
+XIF_F0="{ dg-xfail-if \"all matches succeed\" { ${GOOD0} } { \"-DY1\" } { \"-DN\" } }"
+XIF_F1="{ dg-xfail-if \"all matches succeed\" { ${GOOD0} } { \"*\" } { \"-DN\" } }"
+XIF_F2="{ dg-xfail-if \"all matches succeed\" { ${GOOD0} } { \"-DY1\" } { \"\" } }"
+XIF_F3="{ dg-xfail-if \"all matches succeed\" { ${GOOD0} } { \"*\" } { \"\" } }"
+
+XIF_P7="{ dg-xfail-if \"target not matched\" { ${BAD1} } { \"-DY1\" } { \"-DY2\" } }"
+XIF_P8="{ dg-xfail-if \"target not matched\" { ${BAD1} } { \"-DY1\" } { \"-DN\" } }"
+XIF_P9="{ dg-xfail-if \"target not matched\" { ${BAD1} } { \"-DN\" } { \"-DY1\" } }"
+XIF_P10="{ dg-xfail-if \"target not matched\" { ${BAD1} } { \"-DN1\" } { \"-DN2\" } }"
+XIF_P11="{ dg-xfail-if \"exclude option matched\" { ${GOOD1} } { \"-DY1\" } { \"-DY2\" } }"
+XIF_P12="{ dg-xfail-if \"include option not matched\" { ${GOOD1} } { \"-DN\" } { \"-DY1\" } }"
+XIF_P13="{ dg-xfail-if \"include option not matched\" { ${GOOD1} } { \"-DN1\" } { \"-DN2\" } }"
+XIF_F4="{ dg-xfail-if \"all matches succeed\" { ${GOOD1} } { \"-DY1\" } { \"-DN\" } }"
+XIF_F5="{ dg-xfail-if \"all matches succeed\" { ${GOOD1} } { \"*\" } { \"-DN\" } }"
+XIF_F6="{ dg-xfail-if \"all matches succeed\" { ${GOOD1} } { \"-DY1\" } { \"\" } }"
+XIF_F7="{ dg-xfail-if \"all matches succeed\" { ${GOOD1} } { \"*\" } { \"\" } }"
+
+
+# dg-skip-if commands.
+SIF_S0="{ dg-skip-if \"target not matched\" { ${BAD0} } { \"-DY1\" } { \"-DY2\" } }"
+SIF_S1="{ dg-skip-if \"target not matched\" { ${BAD0} } { \"-DY1\" } { \"-DN\" } }"
+SIF_S2="{ dg-skip-if \"target not matched\" { ${BAD0} } { \"-DN\" } { \"-DY1\" } }"
+SIF_S3="{ dg-skip-if \"target not matched\" { ${BAD0} } { \"-DN1\" } { \"-DN2\" } }"
+SIF_S4="{ dg-skip-if \"exclude option matched\" { ${GOOD0} } { \"-DY1\" } { \"-DY2\" } }"
+SIF_S5="{ dg-skip-if \"include option not matched\" { ${GOOD0} } { \"-DN\" } { \"-DY1\" } }"
+SIF_S6="{ dg-skip-if \"include option not matched\" { ${GOOD0} } { \"-DN1\" } { \"-DN2\" } }"
+SIF_N0="{ dg-skip-if \"all matches succeed\" { ${GOOD0} } { \"-DY1\" } { \"-DN\" } }"
+SIF_N1="{ dg-skip-if \"all matches succeed\" { ${GOOD0} } { \"*\" } { \"-DN\" } }"
+SIF_N2="{ dg-skip-if \"all matches succeed\" { ${GOOD0} } { \"-DY1\" } { \"\" } }"
+SIF_N3="{ dg-skip-if \"all matches succeed\" { ${GOOD0} } { \"*\" } { \"\" } }"
+SIF_S7="{ dg-skip-if \"target not matched\" { ${BAD1} } { \"-DY1\" } { \"-DY2\" } }"
+SIF_S8="{ dg-skip-if \"target not matched\" { ${BAD1} } { \"-DY1\" } { \"-DN\" } }"
+SIF_S9="{ dg-skip-if \"target not matched\" { ${BAD1} } { \"-DN\" } { \"-DY1\" } }"
+SIF_S10="{ dg-skip-if \"target not matched\" { ${BAD1} } { \"-DN1\" } { \"-DN2\" } }"
+SIF_S11="{ dg-skip-if \"exclude option matched\" { ${GOOD1} } { \"-DY1\" } { \"-DY2\" } }"
+SIF_S12="{ dg-skip-if \"include option not matched\" { ${GOOD1} } { \"-DN\" } { \"-DY1\" } }"
+SIF_S13="{ dg-skip-if \"include option not matched\" { ${GOOD1} } { \"-DN1\" } { \"-DN2\" } }"
+SIF_N4="{ dg-skip-if \"all matches succeed\" { ${GOOD1} } { \"-DY1\" } { \"-DN\" } }"
+SIF_N5="{ dg-skip-if \"all matches succeed\" { ${GOOD1} } { \"*\" } { \"-DN\" } }"
+SIF_N6="{ dg-skip-if \"all matches succeed\" { ${GOOD1} } { \"-DY1\" } { \"\" } }"
+SIF_N7="{ dg-skip-if \"all matches succeed\" { ${GOOD1} } { \"*\" } { \"\" } }"
+
+# dg-require-* commands, using procedures defined for this set of tests.
+REQ_S0="{ dg-require-true \"\" }"    # do not skip the test
+REQ_N0="{ dg-require-false \"\" }"   # skip the test
+
+# scan-assembler-not, which is hoped to be representative of commands
+# used with dg-final, with a target list.
+SAT_N0="{ dg-final { scan-assembler-not \"unexpected gargage\" { target ${BAD0} } } }"
+SAT_N1="{ dg-final { scan-assembler-not \"unexpected gargage\" { target ${BAD1} } } }"
+SAT_S0="{ dg-final { scan-assembler-not \"unexpected gargage\" { target ${GOOD0} } } }"
+SAT_S1="{ dg-final { scan-assembler-not \"unexpected gargage\" { target ${GOOD1} } } }"
+
+# scan-assembler-not, which is hoped to be representative of commands
+# used with dg-final, with an xfail list.
+SAX_P0="{ dg-final { scan-assembler-not \"unexpected gargage\" { xfail ${BAD0} } } }"
+SAX_P1="{ dg-final { scan-assembler-not \"unexpected gargage\" { xfail ${BAD1} } } }"
+SAX_F0="{ dg-final { scan-assembler-not \"unexpected gargage\" { xfail ${GOOD0} } } }"
+SAX_F1="{ dg-final { scan-assembler-not \"unexpected gargage\" { xfail ${GOOD1} } } }"
+
+KIND_LIST=""
+
+# Expected result of the *-1.c test, encoded into the file name.
+EXP_PASS="exp-P"
+EXP_XPASS="exp-XP"
+EXP_SKIP="exp-U"
+EXP_FAIL="exp-F"
+EXP_XFAIL="exp-XF"
+
+get_list() {
+    KIND=$1
+    case $KIND in
+      "dots") KIND_LIST="dots0 dots1";;
+      "dotn") KIND_LIST="dotn0 dotn1";;
+      "doxp") KIND_LIST="doxp0 doxp1";;
+      "doxf") KIND_LIST="doxf0 doxf1";;
+      "sifs") KIND_LIST="sifs0 sifs1 sifs2 sifs3 sifs4 sifs5 sifs6 sifs7 sifs8 sifs9 sifs10 sifs11 sifs12 sifs13";;
+      "sifn") KIND_LIST="sifn0 sifn1 sifn2 sifn3 sifn4 sifn5 sifn6 sifn7";;
+      "xifp") KIND_LIST="xifp0 xifp1 xifp2 xifp3 xifp4 xifp5 xifp6 xifp7 xifp8 xifp9 xifp10 xifp11 xifp12 xifp13";;
+      "xiff") KIND_LIST="xiff0 xiff1 xiff2 xiff3 xiff4 xiff5 xiff6 xiff7";;
+      "sats") KIND_LIST="sats0 sats1";;
+      "satn") KIND_LIST="satn0 satn1";;
+      "saxp") KIND_LIST="saxp0 saxp1";;
+      "saxf") KIND_LIST="saxf0 saxf1";;
+      "reqs") KIND_LIST="reqs0";;
+      "reqn") KIND_LIST="reqn0";;
+      *) echo "oops: $KIND"; exit 1;;
+    esac
+}
+
+cmd() {
+    KIND=$1
+    FILE=$2
+
+    case $KIND in
+      "dots") echo '/*' "${DOT_S0}" '*/' >> $FILE;;
+      "dots0") echo '/*' "${DOT_S0}" '*/' >> $FILE;;
+      "dots1") echo '/*' "${DOT_S1}" '*/' >> $FILE;;
+      "dots2") echo '/*' "${DOT_S2}" '*/' >> $FILE;;
+      "dots3") echo '/*' "${DOT_S3}" '*/' >> $FILE;;
+      "dots4") echo '/*' "${DOT_S4}" '*/' >> $FILE;;
+      "dotn") echo '/*' "${DOT_N0}" '*/' >> $FILE;;
+      "dotn0") echo '/*' "${DOT_N0}" '*/' >> $FILE;;
+      "dotn1") echo '/*' "${DOT_N1}" '*/' >> $FILE;;
+      "dotn2") echo '/*' "${DOT_N2}" '*/' >> $FILE;;
+      "dotn3") echo '/*' "${DOT_N3}" '*/' >> $FILE;;
+      "dotn4") echo '/*' "${DOT_N4}" '*/' >> $FILE;;
+      "doxp") echo '/*' "${DOX_P0}" '*/' >> $FILE;;
+      "doxp0") echo '/*' "${DOX_P0}" '*/' >> $FILE;;
+      "doxp1") echo '/*' "${DOX_P1}" '*/' >> $FILE;;
+      "doxp2") echo '/*' "${DOX_P2}" '*/' >> $FILE;;
+      "doxp3") echo '/*' "${DOX_P3}" '*/' >> $FILE;;
+      "doxp4") echo '/*' "${DOX_P4}" '*/' >> $FILE;;
+      "doxf") echo '/*' "${DOX_F0}" '*/' >> $FILE;;
+      "doxf0") echo '/*' "${DOX_F0}" '*/' >> $FILE;;
+      "doxf1") echo '/*' "${DOX_F1}" '*/' >> $FILE;;
+      "doxf2") echo '/*' "${DOX_F2}" '*/' >> $FILE;;
+      "doxf3") echo '/*' "${DOX_F3}" '*/' >> $FILE;;
+      "doxf4") echo '/*' "${DOX_F4}" '*/' >> $FILE;;
+      "sifs") echo '/*' "${SIF_S0}" '*/' >> $FILE;;
+      "sifs0") echo '/*' "${SIF_S0}" '*/' >> $FILE;;
+      "sifs1") echo '/*' "${SIF_S1}" '*/' >> $FILE;;
+      "sifs2") echo '/*' "${SIF_S2}" '*/' >> $FILE;;
+      "sifs3") echo '/*' "${SIF_S3}" '*/' >> $FILE;;
+      "sifs4") echo '/*' "${SIF_S4}" '*/' >> $FILE;;
+      "sifs5") echo '/*' "${SIF_S5}" '*/' >> $FILE;;
+      "sifs6") echo '/*' "${SIF_S6}" '*/' >> $FILE;;
+      "sifs7") echo '/*' "${SIF_S7}" '*/' >> $FILE;;
+      "sifs8") echo '/*' "${SIF_S8}" '*/' >> $FILE;;
+      "sifs9") echo '/*' "${SIF_S9}" '*/' >> $FILE;;
+      "sifs10") echo '/*' "${SIF_S10}" '*/' >> $FILE;;
+      "sifs11") echo '/*' "${SIF_S11}" '*/' >> $FILE;;
+      "sifs12") echo '/*' "${SIF_S12}" '*/' >> $FILE;;
+      "sifs13") echo '/*' "${SIF_S13}" '*/' >> $FILE;;
+      "sifn") echo '/*' "${SIF_N0}" '*/' >> $FILE;;
+      "sifn0") echo '/*' "${SIF_N0}" '*/' >> $FILE;;
+      "sifn1") echo '/*' "${SIF_N1}" '*/' >> $FILE;;
+      "sifn2") echo '/*' "${SIF_N2}" '*/' >> $FILE;;
+      "sifn3") echo '/*' "${SIF_N3}" '*/' >> $FILE;;
+      "sifn4") echo '/*' "${SIF_N4}" '*/' >> $FILE;;
+      "sifn5") echo '/*' "${SIF_N5}" '*/' >> $FILE;;
+      "sifn6") echo '/*' "${SIF_N6}" '*/' >> $FILE;;
+      "sifn7") echo '/*' "${SIF_N7}" '*/' >> $FILE;;
+      "xifp") echo '/*' "${XIF_P0}" '*/' >> $FILE;;
+      "xifp0") echo '/*' "${XIF_P0}" '*/' >> $FILE;;
+      "xifp1") echo '/*' "${XIF_P1}" '*/' >> $FILE;;
+      "xifp2") echo '/*' "${XIF_P2}" '*/' >> $FILE;;
+      "xifp3") echo '/*' "${XIF_P3}" '*/' >> $FILE;;
+      "xifp4") echo '/*' "${XIF_P4}" '*/' >> $FILE;;
+      "xifp5") echo '/*' "${XIF_P5}" '*/' >> $FILE;;
+      "xifp6") echo '/*' "${XIF_P6}" '*/' >> $FILE;;
+      "xifp7") echo '/*' "${XIF_P7}" '*/' >> $FILE;;
+      "xifp8") echo '/*' "${XIF_P8}" '*/' >> $FILE;;
+      "xifp9") echo '/*' "${XIF_P9}" '*/' >> $FILE;;
+      "xifp10") echo '/*' "${XIF_P10}" '*/' >> $FILE;;
+      "xifp11") echo '/*' "${XIF_P11}" '*/' >> $FILE;;
+      "xifp12") echo '/*' "${XIF_P12}" '*/' >> $FILE;;
+      "xifp13") echo '/*' "${XIF_P13}" '*/' >> $FILE;;
+      "xiff") echo '/*' "${XIF_F0}" '*/' >> $FILE;;
+      "xiff0") echo '/*' "${XIF_F0}" '*/' >> $FILE;;
+      "xiff1") echo '/*' "${XIF_F1}" '*/' >> $FILE;;
+      "xiff2") echo '/*' "${XIF_F2}" '*/' >> $FILE;;
+      "xiff3") echo '/*' "${XIF_F3}" '*/' >> $FILE;;
+      "xiff4") echo '/*' "${XIF_F4}" '*/' >> $FILE;;
+      "xiff5") echo '/*' "${XIF_F5}" '*/' >> $FILE;;
+      "xiff6") echo '/*' "${XIF_F6}" '*/' >> $FILE;;
+      "xiff7") echo '/*' "${XIF_F7}" '*/' >> $FILE;;
+      "satn") echo '/*' "${SAT_N0}" '*/' >> $FILE;;
+      "satn0") echo '/*' "${SAT_N0}" '*/' >> $FILE;;
+      "satn1") echo '/*' "${SAT_N1}" '*/' >> $FILE;;
+      "satn2") echo '/*' "${SAT_N2}" '*/' >> $FILE;;
+      "satn3") echo '/*' "${SAT_N3}" '*/' >> $FILE;;
+      "satn4") echo '/*' "${SAT_N4}" '*/' >> $FILE;;
+      "sats") echo '/*' "${SAT_S0}" '*/' >> $FILE;;
+      "sats0") echo '/*' "${SAT_S0}" '*/' >> $FILE;;
+      "sats1") echo '/*' "${SAT_S1}" '*/' >> $FILE;;
+      "sats2") echo '/*' "${SAT_S2}" '*/' >> $FILE;;
+      "sats3") echo '/*' "${SAT_S3}" '*/' >> $FILE;;
+      "sats4") echo '/*' "${SAT_S4}" '*/' >> $FILE;;
+      "saxp") echo '/*' "${SAX_P0}" '*/' >> $FILE;;
+      "saxp0") echo '/*' "${SAX_P0}" '*/' >> $FILE;;
+      "saxp1") echo '/*' "${SAX_P1}" '*/' >> $FILE;;
+      "saxp2") echo '/*' "${SAX_P2}" '*/' >> $FILE;;
+      "saxp3") echo '/*' "${SAX_P3}" '*/' >> $FILE;;
+      "saxp4") echo '/*' "${SAX_P4}" '*/' >> $FILE;;
+      "saxf") echo '/*' "${SAX_F0}" '*/' >> $FILE;;
+      "saxf0") echo '/*' "${SAX_F0}" '*/' >> $FILE;;
+      "saxf1") echo '/*' "${SAX_F1}" '*/' >> $FILE;;
+      "saxf2") echo '/*' "${SAX_F2}" '*/' >> $FILE;;
+      "saxf3") echo '/*' "${SAX_F3}" '*/' >> $FILE;;
+      "saxf4") echo '/*' "${SAX_F4}" '*/' >> $FILE;;
+      "reqs") echo '/*' "${REQ_S0}" '*/' >> $FILE;;
+      "reqs0") echo '/*' "${REQ_S0}" '*/' >> $FILE;;
+      "reqn") echo '/*' "${REQ_N0}" '*/' >> $FILE;;
+      "reqn0") echo '/*' "${REQ_N0}" '*/' >> $FILE;;
+      *) echo "oops: $KIND"; exit 1;;
+    esac
+}
+
+# Generate a test using a single dg- command.  If requested, generate a
+# second version that will fail.
+one() {
+    KIND=$1
+    EXP=$2
+    FAIL_VERSION=$3
+
+    NAME=${KIND}-${EXP}
+    FILE1=${NAME}-1.c
+    FILE2=${NAME}-2.c
+    rm -f $FILE1
+    touch $FILE1
+    cmd $KIND $FILE1
+    echo "${GOOD_PROG}" >> $FILE1
+    echo "${GOOD_PROG}" > $FILE2
+
+    if [ "${FAIL_VERSION}" == "yes" ]; then
+	if [ "${EXP}" == "${EXP_PASS}" ]; then
+	    NAME=${KIND}-${EXP_FAIL}
+	else
+	    NAME=${KIND}-${EXP_XFAIL}
+	fi
+
+	FILE1=${NAME}-1.c
+	FILE2=${NAME}-2.c
+	rm -f $FILE1
+	touch $FILE1
+	cmd $KIND $FILE1
+	case $KIND in
+	dox*)	echo "${BADR_PROG}" >> $FILE1;;
+	*)	echo "${BADC_PROG}" >> $FILE1;;
+	esac
+	echo "${GOOD_PROG}" > $FILE2
+    fi
+}
+
+# Generate a test using two dg- commands.  If requested, generate a
+# second version that will fail.
+two() {
+    KIND1=$1
+    KIND2=$2
+    EXP=$3
+    FAIL_VERSION=$4
+
+    NAME=${KIND1}-${KIND2}-${EXP}
+    FILE1=${NAME}-1.c
+    FILE2=${NAME}-2.c
+
+    rm -f $FILE1
+    touch $FILE1
+    cmd $KIND1 $FILE1
+    cmd $KIND2 $FILE1
+    echo "${GOOD_PROG}" >> $FILE1
+    echo "${GOOD_PROG}" > $FILE2
+
+    if [ "${FAIL_VERSION}" == "yes" ]; then
+	if [ "${EXP}" == "${EXP_PASS}" ]; then
+	    NAME=${KIND1}-${KIND2}-${EXP_FAIL}
+	else
+	    NAME=${KIND1}-${KIND2}-${EXP_XFAIL}
+	fi
+
+	FILE1=${NAME}-1.c
+	FILE2=${NAME}-2.c
+	rm -f $FILE1
+	touch $FILE1
+	cmd $KIND1 $FILE1
+	cmd $KIND2 $FILE1
+	# dg-do with an xfail list is only used as the first command.
+	case $KIND1 in
+	dox*)	echo "${BADR_PROG}" >> $FILE1;;
+	*)	echo "${BADC_PROG}" >> $FILE1;;
+	esac
+	echo "${GOOD_PROG}" > $FILE2
+    fi
+}
+
+# Generate a test using three dg- commands.  If requested generate a
+# second version that will fail.
+three() {
+    KIND1=$1
+    KIND2=$2
+    KIND3=$3
+    EXP=$4
+    FAIL_VERSION=$5
+
+    NAME=${KIND1}-${KIND2}-${KIND3}-${EXP}
+    FILE1=${NAME}-1.c
+    FILE2=${NAME}-2.c
+    rm -f $FILE1
+    touch $FILE1
+    cmd $KIND1 $FILE1
+    cmd $KIND2 $FILE1
+    cmd $KIND3 $FILE1
+    echo "${GOOD_PROG}" >> $FILE1
+    echo "${GOOD_PROG}" > $FILE2
+
+    if [ "${FAIL_VERSION}" == "${yes}" ]; then
+	if [ "${EXP}" == "${EXP_PASS}" ]; then
+	    NAME=${KIND1}-${KIND2}-${KIND3}-${EXP_FAIL}
+	else
+	    NAME=${KIND1}-${KIND2}-${KIND3}-${EXP_XFAIL}
+	fi
+
+	FILE1=${NAME}-1.c
+	FILE2=${NAME}-2.c
+	rm -f $FILE1
+	touch $FILE1
+	cmd $KIND1 $FILE1
+	cmd $KIND2 $FILE1
+	cmd $KIND3 $FILE1
+	# dg-do with an xfail list is only used as the first command.
+	case $KIND1 in
+	dox*)	echo "${BADR_PROG}" >> $FILE1;;
+	*)	echo "${BADC_PROG}" >> $FILE1;;
+	esac
+	echo "${GOOD_PROG}" > $FILE2
+    fi
+}
+
+# Generate tests using one dg- command.  Generate a test for each variant
+# of KIND.
+one_all() {
+    KIND=$1
+    EXP=$2
+    FAIL_VERSION=$3
+
+    get_list $KIND
+    for k in $KIND_LIST; do
+	one $k $EXP $FAIL_VERSION
+    done
+}
+
+# Generate tests using two dg- commands.  For each KIND, generate
+# a test for each of its variants.
+two_all() {
+    KIND1=$1
+    KIND2=$2
+    EXP=$3
+    FAIL_VERSION=$4
+
+    get_list $KIND1
+    KIND_LIST1="$KIND_LIST"
+    get_list $KIND2
+    KIND_LIST2="$KIND_LIST"
+    for k1 in $KIND_LIST1; do
+	for k2 in $KIND_LIST2; do
+	    two $k1 $k2 $EXP $FAIL_VERSION
+	done
+    done
+}
+
+# Generate tests using three dg- commands.  For each KIND, generate
+# a test for each of its variants.
+three_all() {
+    KIND1=$1
+    KIND2=$2
+    KIND3=$3
+    EXP=$4
+    FAIL_VERSION=$5
+
+    get_list $KIND1
+    KIND_LIST1="$KIND_LIST"
+    get_list $KIND2
+    KIND_LIST2="$KIND_LIST"
+    get_list $KIND3
+    KIND_LIST3="$KIND_LIST"
+    for k1 in $KIND_LIST1; do
+	for k2 in $KIND_LIST2; do
+	    for k3 in $KIND_LIST3; do
+		three $k1 $k2 $k3 $EXP $FAIL_VERSION
+	    done
+	done
+    done
+}
+
+# Generate a test that uses a dg-do directive with a selector expression.
+dgdo_progs() {
+    WHAT=$1
+    KIND=$2
+    PROG="$3"
+    NAME="$4"
+    XPR="$5"
+    
+    FILE1=${NAME}-1.c
+    FILE2=${NAME}-2.c
+    rm -f $FILE1
+    touch $FILE1
+    echo '/* { dg-do' $WHAT '{' $KIND "$XPR" '} } */' >> $FILE1
+    echo "${PROG}" >> $FILE1
+    echo "${GOOD_PROG}" > $FILE2
+}
+
+# Use various selector-expressions that evaluate to TRUE in dg-do directives.
+selector_good() {
+    NUM=101
+    for xpr in \
+        "$GOOD0" \
+        "$GOOD1" \
+        "$GOOD2" \
+        "{ ! $BAD0 }" \
+        "{ ! $BAD1 }" \
+	"{ ! { $BAD2 } }" \
+	"{ ! \"${BAD2}\" }" \
+        "{ $GOOD1 || $GOOD0 }"  \
+        "{ $BAD1 || $GOOD0 }" \
+        "{ $GOOD0 && $GOOD1 }"  \
+        "{ $BAD1 || { \"${GOOD2}\" && $GOOD1 } }" \
+        "{ { $BAD0 || $GOOD0 } && $GOOD0 }" \
+        "{ $GOOD1 && { \"${GOOD2}\" || $BAD1 } }" \
+        "{ \"${GOOD2}\" && { $GOOD1 || $BAD1 } }"
+    do
+        dgdo_progs compile target "$GOOD_PROG" "dots${NUM}-exp-P" "$xpr"
+        dgdo_progs compile target "$BADC_PROG" "dots${NUM}-exp-F" "$xpr"
+        dgdo_progs run xfail "$GOOD_PROG" "doxf${NUM}-exp-XP" "$xpr"
+        dgdo_progs run xfail "$BADR_PROG" "doxf${NUM}-exp-XF" "$xpr"
+        let NUM=NUM+1
+    done
+}
+
+# Use various selector-expressions that evaluate to FALSE in dg-do directives.
+selector_bad() {
+    NUM=101
+    for xpr in \
+        "$BAD0" \
+        "$BAD1" \
+        "$BAD2" \
+        "{ ! $GOOD0 }" \
+        "{ ! $GOOD1 }" \
+	"{ ! { $GOOD2 } }" \
+	"{ ! \"${GOOD2}\" }" \
+        "{ $BAD1 || $BAD0 }" \
+        "{ $BAD0 && $GOOD1 }" \
+        "{ $GOOD1 && $BAD0 }" \
+        "{ $BAD1 || { $GOOD1 && $BAD0 } }" \
+        "{ { $GOOD1 || $BAD1 } && $BAD0 }" \
+        "{ $BAD1 || { \"${BAD2}\" && $GOOD1 } }" \
+        "{ \"${BAD2}\" && { $GOOD1 || $BAD1 } }"
+    do
+        dgdo_progs compile target "$GOOD_PROG" "dotn${NUM}-exp-U" "$xpr"
+        dgdo_progs run xfail "$GOOD_PROG" "doxp${NUM}-exp-P" "$xpr"
+        dgdo_progs run xfail "$BADR_PROG" "doxp${NUM}-exp-F" "$xpr"
+        let NUM=NUM+1
+    done
+}
+
+# Write a test whose directive is too long and messy to do as one string.
+deep_progs() {
+    PROG="$1"
+    NAME=$2
+    CMD1="$3"
+    CMD2="$4"
+    CMD3="$5"
+
+    FILE1=${NAME}-1.c
+    FILE2=${NAME}-2.c
+    rm -f $FILE1
+    touch $FILE1
+    echo "$CMD1" "$CMD2" "$CMD3" > $FILE1
+    echo "$PROG" >> $FILE1
+    echo "$GOOD_PROG" > $FILE2
+}
+
+# Use nested expressions in various test directives.
+selector_deep() {
+    GOODXPR="{ \"${GOOD2}\" && { ! { $BAD0 || $BAD1 } } }"
+    BADXPR="{ ! { \"${GOOD2}\" || { $GOOD1 && $BAD1 } } }"
+    NUM=100
+    dgdo_progs compile target "$GOOD_PROG" "dots${NUM}-exp-P" "$GOODXPR"
+    dgdo_progs compile target "$GOOD_PROG" "dotn${NUM}-exp-U" "$BADXPR"
+
+    deep_progs "$BADC_PROG" "xiff-100-exp-XF" \
+      '/* { dg-xfail-if "match" { ' "{ $GOODXPR }" ' } { "*" } { "" } } */'
+    deep_progs "$GOOD_PROG" "xifp-100-exp-P" \
+      '/* { dg-xfail-if "no match" { ' "{ $BADXPR }" ' } { "*" } { "" } } */'
+    deep_progs "$BADC_PROG" "xifn-100-exp-U" \
+      '/* { dg-skip-if "match" { ' "{ $GOODXPR }" ' } { "*" } { "" } } */'
+    deep_progs "$GOOD_PROG" "xifs-100-exp-P" \
+      '/* { dg-skip-if "match" { ' "{ $BADXPR }" ' } { "*" } { "" } } */'
+    deep_progs "$GOOD_PROG" "satn-100-exp-P" \
+      '/* { dg-final { scan-assembler-not "unexpected garbage" { target ' \
+      "$GOODXPR" ' } } } */'
+    deep_progs "$GOOD_PROG" "satn-100-exp-U" \
+      '/* { dg-final { scan-assembler-not "unexpected garbage" { target ' \
+      "$BADXPR" ' } } } */'
+    deep_progs "$GOOD_PROG" "satf-100-exp-XP" \
+      '/* { dg-final { scan-assembler-not "unexpected garbage" { xfail ' \
+      "$GOODXPR" ' } } } */'
+    deep_progs "$GOOD_PROG" "satp-100-exp-P" \
+      '/* { dg-final { scan-assembler-not "unexpected garbage" { xfail ' \
+      "$BADXPR" ' } } } */'
+}
+
+selector_good
+selector_bad
+selector_deep
+
+one_all saxp $EXP_PASS no
+one_all saxf $EXP_XPASS no
+one_all sats $EXP_PASS no
+one_all satn $EXP_SKIP no
+one_all dots $EXP_PASS yes
+one_all dotn $EXP_SKIP no
+one_all doxp $EXP_PASS yes
+one_all doxf $EXP_XPASS yes
+one_all sifs $EXP_PASS yes
+one_all sifn $EXP_SKIP no
+one_all xifp $EXP_PASS yes
+one_all xiff $EXP_XPASS yes
+one_all reqs $EXP_PASS yes
+one_all reqn $EXP_SKIP no
+
+two_all dots xifp $EXP_PASS yes
+two_all dots xiff $EXP_XPASS yes
+two_all dots sifs $EXP_PASS yes
+two_all dots sifn $EXP_SKIP no
+two_all dotn xifp $EXP_SKIP no
+two_all dotn sifs $EXP_SKIP no
+two_all dotn sifn $EXP_SKIP no
+two_all dotn xiff $EXP_SKIP no
+two_all dots reqs $EXP_PASS yes
+two_all dots reqn $EXP_SKIP no
+two_all dotn reqs $EXP_SKIP no
+two_all dotn reqn $EXP_SKIP no
+
+two_all doxp xifp $EXP_PASS yes
+two_all doxp xiff $EXP_PASS yes   # dg-xfail-if applies to compile, not run
+two_all doxp sifs $EXP_PASS yes
+two_all doxp sifn $EXP_SKIP no
+two_all doxf xifp $EXP_XPASS yes
+two_all doxf xiff $EXP_XPASS yes
+two_all doxf sifs $EXP_XPASS yes
+two_all doxf sifn $EXP_SKIP no
+
+two_all doxp reqs $EXP_PASS yes
+two_all doxp reqn $EXP_SKIP no
+two_all doxf reqs $EXP_XPASS yes
+two_all doxf reqn $EXP_SKIP no
+
+two_all reqs xifp $EXP_PASS yes
+two_all reqs xiff $EXP_XPASS yes
+two_all reqs sifs $EXP_PASS yes
+two_all reqs sifn $EXP_SKIP no
+two_all reqn xifp $EXP_SKIP no
+two_all reqn xiff $EXP_SKIP no
+two_all reqn sifs $EXP_SKIP no
+two_all reqn sifn $EXP_SKIP no
+
+two_all xifp reqs $EXP_PASS yes
+two_all xiff reqs $EXP_XPASS yes
+two_all sifs reqs $EXP_PASS yes
+two_all sifn reqs $EXP_SKIP no
+two_all xifp reqn $EXP_SKIP no
+two_all xiff reqn $EXP_SKIP no
+two_all sifs reqn $EXP_SKIP no
+two_all sifn reqn $EXP_SKIP no
+
+three_all dots reqs xifp $EXP_PASS yes
+three_all dots reqs xiff $EXP_XPASS yes
+three_all dots reqs sifs $EXP_PASS yes
+three_all dots reqs sifn $EXP_SKIP no
+three_all dots reqn xifp $EXP_SKIP no
+three_all dots reqn xiff $EXP_SKIP no
+three_all dots reqn sifs $EXP_SKIP no
+three_all dots reqn sifn $EXP_SKIP no
+three_all dotn reqs xifp $EXP_SKIP no
+three_all dotn reqs xiff $EXP_SKIP no
+three_all dotn reqs sifs $EXP_SKIP no
+three_all dotn reqs sifn $EXP_SKIP no
+three_all dotn reqn xifp $EXP_SKIP no
+three_all dotn reqn xiff $EXP_SKIP no
+three_all dotn reqn sifs $EXP_SKIP no
+three_all dotn reqn sifn $EXP_SKIP no
+#
+three_all dots xifp reqs $EXP_PASS yes
+three_all dots xiff reqs $EXP_XPASS yes
+three_all dots sifs reqs $EXP_PASS yes
+three_all dots sifn reqs $EXP_SKIP no
+three_all dots xifp reqn $EXP_SKIP no
+three_all dots xiff reqn $EXP_SKIP no
+three_all dots sifs reqn $EXP_SKIP no
+three_all dots sifn reqn $EXP_SKIP no
+three_all dotn xifp reqs $EXP_SKIP no
+three_all dotn xiff reqs $EXP_SKIP no
+three_all dotn sifs reqs $EXP_SKIP no
+three_all dotn sifn reqs $EXP_SKIP no
+three_all dotn xifp reqn $EXP_SKIP no
+three_all dotn xiff reqn $EXP_SKIP no
+three_all dotn sifs reqn $EXP_SKIP no
+three_all dotn sifn reqn $EXP_SKIP no
+
+three_all doxp reqs xifp $EXP_PASS yes
+three_all doxp reqs xiff $EXP_PASS yes # dg-xfail-if applies to compile, not run
+three_all doxp reqs sifs $EXP_PASS yes
+three_all doxp reqs sifn $EXP_SKIP no
+three_all doxp reqn xifp $EXP_SKIP no
+three_all doxp reqn xiff $EXP_SKIP no
+three_all doxp reqn sifs $EXP_SKIP no
+three_all doxp reqn sifn $EXP_SKIP no
+three_all doxf reqs xifp $EXP_XPASS yes
+three_all doxf reqs xiff $EXP_XPASS yes
+three_all doxf reqs sifs $EXP_XPASS yes
+three_all doxf reqs sifn $EXP_SKIP no
+three_all doxf reqn xifp $EXP_SKIP no
+three_all doxf reqn xiff $EXP_SKIP no
+three_all doxf reqn sifs $EXP_SKIP no
+three_all doxf reqn sifn $EXP_SKIP no
+
+three_all doxp xifp reqs $EXP_PASS yes
+three_all doxp xiff reqs $EXP_PASS yes # dg-xfail-if applies to compile, not run
+three_all doxp sifs reqs $EXP_PASS yes
+three_all doxp sifn reqs $EXP_SKIP no
+three_all doxp xifp reqn $EXP_SKIP no
+three_all doxp xiff reqn $EXP_SKIP no
+three_all doxp sifs reqn $EXP_SKIP no
+three_all doxp sifn reqn $EXP_SKIP no
+three_all doxf xifp reqs $EXP_XPASS yes
+three_all doxf xiff reqs $EXP_XPASS yes
+three_all doxf sifs reqs $EXP_XPASS yes
+three_all doxf sifn reqs $EXP_SKIP no
+three_all doxf xifp reqn $EXP_SKIP no
+three_all doxf xiff reqn $EXP_SKIP no
+three_all doxf sifs reqn $EXP_SKIP no
+three_all doxf sifn reqn $EXP_SKIP no

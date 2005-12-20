@@ -1,6 +1,45 @@
 2005-12-20  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport:
+	2005-12-06  Janis Johnson  <janis187@us.ibm.com>
+	* gcc.test-framework/dg-dot-run-sif-exp-P.c: New test.
+	* gcc.test-framework/dg-dot-run-sif-exp-U.c: New test.
+	* gcc.test-framework/dg-dot-run-xif-exp-P.c: New test.
+	* gcc.test-framework/dg-dot-run-xif-exp-XP.c: New test.
+
+	Backport:
+	2005-02-01  Janis Johnson  <janis187@us.ibm.com>
+	* gcc.test-framework/dg-bogus-exp-P.c: New test.
+	* gcc.test-framework/dg-bogus-exp-XF.c: New test.
+	* gcc.test-framework/dg-do-assemble-exp-P.c: New test.
+	* gcc.test-framework/dg-do-compile-exp-P.c: New test.
+	* gcc.test-framework/dg-do-link-exp-P.c: New test.
+	* gcc.test-framework/dg-do-run-exp-P.c: New test.
+	* gcc.test-framework/dg-dot-run-exp-P.c: New test.
+	* gcc.test-framework/dg-dot-run-exp-U.c: New test.
+	* gcc.test-framework/dg-dox-run-exp-XF.c: New test.
+	* gcc.test-framework/dg-error-exp-P.c: New test.
+	* gcc.test-framework/dg-error-exp-XP.c: New test.
+	* gcc.test-framework/dg-excess-errors-exp-XF.c: New test.
+	* gcc.test-framework/dg-excess-errors-exp-XP.c: New test.
+	* gcc.test-framework/dg-output-exp-P.c: New test.
+	* gcc.test-framework/dg-output-exp-XF.c: New test.
+	* gcc.test-framework/dg-warning-exp-P.c: New test.
+	* gcc.misc-tests/dg-1.c, gcc.misc-tests/dg-2.c, gcc.misc-tests/dg-3.c,
+        gcc.misc-tests/dg-4.c, gcc.misc-tests/dg-5.c, gcc.misc-tests/dg-6.c,
+        gcc.misc-tests/dg-7.c, gcc.misc-tests/dg-8.c, gcc.misc-tests/dg-9.c,
+        gcc.misc-tests/dg-10.c, gcc.misc-tests/dg-11.c, gcc.misc-tests/dg-12.c,
+        gcc.misc-tests/dg-test.exp: Remove.
+
+	Backport:
+	2005-02-01  Janis Johnson  <janis187@us.ibm.com>
+	* gcc.test-framwork: New directory.
+	* gcc.test-framework/README: New.
+	* gcc.test-framework/test-framework.exp
+	* gcc.test-framework/gen_directive_tests
+	* gcc.test-framework/test-framework.awk
+
+	Backport:
 	2005-01-24  Janis Johnson  <janis187@us.ibm.com>
 	* lib/gcc-dg.exp: Clear xfail data in dg-test
 

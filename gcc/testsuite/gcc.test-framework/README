@@ -1,0 +1,25 @@
+Check the test directives used in GCC's testsuite by generating and
+running tests that use combinations of those commands or that stress
+the selector expressions that can be used in those directives.  Also
+run a few tests of specific functionality from the source directory.
+                                                                                
+Each generated test has two parts: a file ending in "-1.c" whose
+expected result is encoded in the filename after "-exp-", and a file
+ending in "-2.c" which is always expected to pass.
+                                                                                
+This test directory is normally skipped and is not meant to be run at
+the same time as other parts of the testsuite; it's only of interest to
+people who are modifying the test directives or their support in GCC's
+.exp files.
+
+To run these tests:
+                                                                                
+    CHECK_TEST_FRAMEWORK=1 make -k check RUNTESTFLAGS="test-framework.exp"
+                                                                                
+To check the results:
+                                                                                
+    TF=${SRC}/gcc/testsuite/gcc.test-framework
+    awk -f ${TF}/test-framework.awk gcc/testsuite/gcc.sum
+                                                                                
+The awk script prints unexpected results followed by the number of tests
+that passed and failed.

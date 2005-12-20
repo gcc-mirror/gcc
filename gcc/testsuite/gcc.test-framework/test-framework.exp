@@ -1,0 +1,75 @@
+# Copyright (c) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+# Based on gcc/testsuite/gcc.dg/dg.exp.
+
+# Don't run these tests unless an environment variable is defined.
+if { ![info exists env(CHECK_TEST_FRAMEWORK)] } {
+    verbose "skipping test framework tests, CHECK_TEST_FRAMEWORK is not defined" 0
+    return
+}
+
+load_lib gcc-dg.exp
+
+proc dg-require-true { args } {
+    verbose "dg-require-true" 2
+}
+
+proc dg-require-false { args } {
+    verbose "dg-require-false" 2
+    upvar dg-do-what dg-do-what
+    set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+}
+
+proc check_effective_target_yes { args } {
+    return 1
+}
+
+proc check_effective_target_no { args } {
+    return 0
+}
+
+global dg-do-what-default
+set save-dg-do-what-default ${dg-do-what-default}
+set dg-do-what-default compile
+
+dg-init
+
+# Run tests from the source directory.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/dg-*.c]] "" ""
+
+# Skip generated tests unless CHECK_TEST_FRAMEWORK is 1.
+if { $env(CHECK_TEST_FRAMEWORK) != 1 } {
+    verbose "skipping generated test framework tests, CHECK_TEST_FRAMEWORK is not 1" 0
+    return
+}
+
+# Generate additional tests.
+set tstobjdir "$tmpdir/gcc.test-framework"
+set generator "$srcdir/$subdir/gen_directive_tests"
+file delete -force $tstobjdir
+file mkdir $tstobjdir
+set status [remote_exec host "$generator $tstobjdir"]
+set status [lindex $status 0]
+if { $status == 0 } {
+    # Run the generated tests.
+    dg-runtest [lsort [find $tstobjdir *.c]] "" "-DY1 -DY2"
+} else {
+    warning "Could not generate test framework tests"
+}
+
+dg-finish
+set dg-do-what-default ${save-dg-do-what-default}
