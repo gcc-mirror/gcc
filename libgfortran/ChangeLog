@@ -1,6 +1,6 @@
 2005-12-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR fortran/25305
+	PR libgfortran/25305
 	* io/transfer.c (write_block): Revert previous commit. 
 
 2005-11-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
