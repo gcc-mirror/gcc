@@ -746,6 +746,7 @@ merge_phi_nodes (void)
       else
 	{
 	  tree phi;
+	  unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
 
 	  /* BB dominates DEST.  There may be many users of the PHI
 	     nodes in BB.  However, there is still a trivial case we
@@ -767,7 +768,8 @@ merge_phi_nodes (void)
 	      /* Get the single use of the result of this PHI node.  */
   	      if (!single_imm_use (result, &imm_use, &use_stmt)
 		  || TREE_CODE (use_stmt) != PHI_NODE
-		  || bb_for_stmt (use_stmt) != dest)
+		  || bb_for_stmt (use_stmt) != dest
+		  || PHI_ARG_DEF (use_stmt, dest_idx) != result)
 		break;
 	    }
 
