@@ -982,9 +982,10 @@ add_method (tree type, tree method, tree using_decl)
       for (fns = current_fns; fns; fns = OVL_NEXT (fns))
 	{
 	  tree fn = OVL_CURRENT (fns);
+	  tree fn_type;
+	  tree method_type;
 	  tree parms1;
 	  tree parms2;
-	  bool same = 1;
 
 	  if (TREE_CODE (fn) != TREE_CODE (method))
 	    continue;
@@ -999,8 +1000,10 @@ add_method (tree type, tree method, tree using_decl)
 	     functions in the derived class override and/or hide member
 	     functions with the same name and parameter types in a base
 	     class (rather than conflicting).  */
-	  parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn));
-	  parms2 = TYPE_ARG_TYPES (TREE_TYPE (method));
+	  fn_type = TREE_TYPE (fn);
+	  method_type = TREE_TYPE (method);
+	  parms1 = TYPE_ARG_TYPES (fn_type);
+	  parms2 = TYPE_ARG_TYPES (method_type);
 
 	  /* Compare the quals on the 'this' parm.  Don't compare
 	     the whole types, as used functions are treated as
@@ -1009,23 +1012,26 @@ add_method (tree type, tree method, tree using_decl)
 	      && ! DECL_STATIC_FUNCTION_P (method)
 	      && (TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms1)))
 		  != TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms2)))))
-	    same = 0;
+	    continue;
 
-	  /* For templates, the template parms must be identical.  */
+	  /* For templates, the return type and template parameters
+	     must be identical.  */
 	  if (TREE_CODE (fn) == TEMPLATE_DECL
-	      && !comp_template_parms (DECL_TEMPLATE_PARMS (fn),
-				       DECL_TEMPLATE_PARMS (method)))
-	    same = 0;
+	      && (!same_type_p (TREE_TYPE (fn_type),
+				TREE_TYPE (method_type))
+		  || !comp_template_parms (DECL_TEMPLATE_PARMS (fn),
+					   DECL_TEMPLATE_PARMS (method))))
+	    continue;
 
 	  if (! DECL_STATIC_FUNCTION_P (fn))
 	    parms1 = TREE_CHAIN (parms1);
 	  if (! DECL_STATIC_FUNCTION_P (method))
 	    parms2 = TREE_CHAIN (parms2);
 
-	  if (same && compparms (parms1, parms2)
+	  if (compparms (parms1, parms2)
 	      && (!DECL_CONV_FN_P (fn)
-		  || same_type_p (TREE_TYPE (TREE_TYPE (fn)),
-				  TREE_TYPE (TREE_TYPE (method)))))
+		  || same_type_p (TREE_TYPE (fn_type),
+				  TREE_TYPE (method_type))))
 	    {
 	      if (using_decl)
 		{
