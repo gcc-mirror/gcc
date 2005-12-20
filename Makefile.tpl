@@ -255,7 +255,6 @@ BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 # Flags to pass to stage2 and later makes.  They are defined
 # here so that they can be overridden by Makefile fragments.
 BOOT_CFLAGS= -g -O2
-BOOT_ADAFLAGS=
 BOOT_LDFLAGS=
 
 BISON = @BISON@
@@ -431,7 +430,6 @@ X11_FLAGS_TO_PASS = \
 # are set in BASE_FLAGS_TO_PASS, and the sub-make will expand them.  The
 # COMPILER_ prefixed variables are not passed down so we expand them here.
 EXTRA_TARGET_FLAGS = \
-	'ADAFLAGS=$$(ADAFLAGS_FOR_TARGET)' \
 	'AR=$$(AR_FOR_TARGET)' \
 	'AS=$(COMPILER_AS_FOR_TARGET)' \
 	'CC=$$(CC_FOR_TARGET)' \
@@ -1255,7 +1253,6 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 	STAGE_PREFIX=$$r/prev-gcc/ \
 	CFLAGS="$(BOOT_CFLAGS)" \
-	ADAFLAGS="$(BOOT_ADAFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
 	ADAC="\$$(CC)"
 

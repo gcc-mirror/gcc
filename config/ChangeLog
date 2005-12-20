@@ -1,3 +1,9 @@
+2005-12-20  Paolo Bonzini  <bonzini@gnu.org>
+
+	Revert Ada-related part of the previous change.
+
+	* mt-ppc-aix: Delete.
+
 2005-12-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	* mt-ppc-aix, mh-ppc-aix: New.

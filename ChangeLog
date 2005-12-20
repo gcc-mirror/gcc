@@ -1,3 +1,14 @@
+2005-12-20  Paolo Bonzini  <bonzini@gnu.org>
+
+	Revert Ada-related part of the previous change.
+
+	* Makefile.def (ADAFLAGS, BOOT_ADAFLAGS, ADAFLAGS_FOR_TARGET):
+	Do not pass.
+	* Makefile.tpl (BOOT_ADAFLAGS): Do not define.
+	* Makefile.in: Regenerate.
+	* configure.in: Do not include mt-ppc-aix target fragment.
+	* configure: Regenerate.
+
 2005-12-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in: Select appropriate fragments for PowerPC/AIX.

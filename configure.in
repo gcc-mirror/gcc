@@ -1519,7 +1519,6 @@ case "${target}" in
     # harmless if we're using GNU nm or ar.
     extra_arflags_for_target=" -X32_64"
     extra_nmflags_for_target=" -B -X32_64"
-    target_makefile_frag="config/mt-ppc-aix"
     ;;
   *-*-darwin*)
     # ranlib from Darwin requires the -c flag to look at common symbols.
