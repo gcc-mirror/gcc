@@ -5445,7 +5445,7 @@ decStrEq (const char *str1, const char *str2)
 	}
       else
 	{
-	  if (tolower (*str1) != tolower (*str2))
+	  if (tolower ((int) *str1) != tolower ((int) *str2))
 	    return 0;
 	}
     }				/* stepping */
