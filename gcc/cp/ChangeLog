@@ -1,3 +1,10 @@
+2005-12-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21228
+	* decl.c (use_eh_spec_block): New function.
+	(store_parm_decls): Use it.
+	(finish_function): Likewise.
+	
 2005-12-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24278
