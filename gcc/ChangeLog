@@ -1,3 +1,10 @@
+2005-12-20  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Handle the
+	ambiguity between -seg_addr_table and -seg_addr_table_filename.
+	(WORD_SWITCH_TAKES_ARG): Likewise.
+	(LINK_SPEC): Likewise.
+
 2005-12-20  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* cfganal.c (flow_reverse_top_sort_order_compute):
