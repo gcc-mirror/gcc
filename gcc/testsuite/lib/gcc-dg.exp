@@ -17,6 +17,7 @@
 load_lib dg.exp
 load_lib file-format.exp
 load_lib target-supports.exp
+load_lib target-supports-dg.exp
 load_lib scanasm.exp
 load_lib prune.exp
 

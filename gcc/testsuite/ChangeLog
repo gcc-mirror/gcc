@@ -1,3 +1,7 @@
+2005-12-20  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp: Include target-supports-dg.exp.
+	
 2005-12-19  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/ppc-eabi.c: Test on ilp32.
