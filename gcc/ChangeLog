@@ -1,3 +1,12 @@
+2005-12-19  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (thread_across_edge): Do not use local_fold.
+	Strip away all type conversions after simplifying the
+	condition.
+
+        * tree-cfgcleanup.c (merge_phi_nodes): Allow merging in some
+        cases the forwarder block dominates the destination.
+
 2005-12-19  DJ Delorie  <dj@redhat.com>
 
 	* reload1.c (spill_failure): Dump reload data to dump file.

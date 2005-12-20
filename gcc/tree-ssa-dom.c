@@ -892,9 +892,14 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	      TREE_OPERAND (COND_EXPR_COND (dummy_cond), 1) = op1;
 	    }
 
-	  /* If the conditional folds to an invariant, then we are done,
-	     otherwise look it up in the hash tables.  */
-	  cached_lhs = local_fold (COND_EXPR_COND (dummy_cond));
+	  /* We absolutely do not care about any type conversions
+	     we only care about a zero/nonzero value.  */
+	  cached_lhs = fold (COND_EXPR_COND (dummy_cond));
+	  while (TREE_CODE (cached_lhs) == NOP_EXPR
+		 || TREE_CODE (cached_lhs) == CONVERT_EXPR
+		 || TREE_CODE (cached_lhs) == NON_LVALUE_EXPR)
+	    cached_lhs = TREE_OPERAND (cached_lhs, 0);
+	    
 	  if (! is_gimple_min_invariant (cached_lhs))
 	    {
 	      cached_lhs = lookup_avail_expr (dummy_cond, false);
