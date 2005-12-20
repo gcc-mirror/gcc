@@ -1,5 +1,11 @@
 2005-12-19  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/24278
+	* init.c (expand_member_init): Print messages about baseclasses
+	using %T rather than %D.
+
+2005-12-19  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/24915
 	* class.c (add_method): Do not treat templates as identical unless
 	their return types are the same.
