@@ -1720,11 +1720,23 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  if (last_text_section == in_text)
 	    {
 	      (*debug_hooks->switch_text_section) ();
+#if defined (DWARF2_UNWIND_INFO)
+	        if (write_symbols != DWARF2_DEBUG 
+		    && write_symbols != VMS_AND_DWARF2_DEBUG
+	 	    && dwarf2out_do_frame ())
+	 	  dwarf2out_switch_text_section ();
+#endif
 	      unlikely_text_section ();
 	    }
 	  else
 	    {
 	      (*debug_hooks->switch_text_section) ();
+#if defined (DWARF2_UNWIND_INFO)
+	        if (write_symbols != DWARF2_DEBUG
+		    && write_symbols != VMS_AND_DWARF2_DEBUG
+	 	    && dwarf2out_do_frame ())
+	 	  dwarf2out_switch_text_section ();
+#endif
 	      text_section ();
 	    }
 	  break;
