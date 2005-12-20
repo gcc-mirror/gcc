@@ -14,6 +14,105 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+# If this target does not support weak symbols, skip this test.
+
+proc dg-require-weak { args } {
+    upvar dg-do-what dg-do-what
+    upvar name name
+
+    set weak_available [ check_weak_available ]
+    if { $weak_available == -1 } {
+	unresolved "$name"
+    }
+    if { $weak_available != 1 } {
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+}
+
+# If this target does not support the "visibility" attribute, skip this
+# test.
+
+proc dg-require-visibility { args } {
+    upvar dg-do-what dg-do-what
+    upvar name name
+
+    set visibility_available [ check_visibility_available ]
+    if { $visibility_available == -1 } {
+	unresolved "$name"
+    }
+    if { $visibility_available != 1 } {
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+}
+
+# If this target does not support the "alias" attribute, skip this
+# test.
+
+proc dg-require-alias { args } {
+    upvar dg-do-what dg-do-what
+    upvar name name
+
+    set alias_available [ check_alias_available ]
+    if { $alias_available == -1 } {
+	unresolved "$name"
+    }
+    if { $alias_available < 2 } {
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+}
+
+# If this target's linker does not support the --gc-sections flag,
+# skip this test.
+
+proc dg-require-gc-sections { args } {
+    if { ![ check_gc_sections_available ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+}
+
+# If this target does not support profiling, skip this test.
+
+proc dg-require-profiling { args } {
+    if { ![ check_profiling_available ${args} ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+}
+
+# If this target does not support DLL attributes skip this test.
+
+proc dg-require-dll { args } { 
+    global target_triplet
+    # As a special case, the mcore-*-elf supports dllimport/dllexport.
+    if { [string match "mcore-*-elf" $target_triplet] } {
+	return
+    }
+    # PE/COFF targets support dllimport/dllexport.
+    if { [gcc_target_object_format] == "pe" } {
+	return
+    }
+
+    upvar dg-do-what dg-do-what
+    set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+}
+
+# If this target does not support named sections skip this test.
+
+proc dg-require-named-sections { args } {
+   upvar name name
+
+   if { ![ check_named_sections_available ] } {
+       upvar dg-do-what dg-do-what
+       set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+   }
+}
+
 # If the target does not match the required effective target, skip this test.
 
 proc dg-require-effective-target { args } {

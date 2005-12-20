@@ -1,6 +1,13 @@
 2005-12-20  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport:
+	2005-02-11  Janis Johnson  <janis187@us.ibm.com>
+	* lib/gcc-dg.exp (dg-require-weak, dg-require-visibility,
+	dg-require-alias, dg-require-gc-sections, dg-require-profiling,
+	dg-require-dll, dg-require-named-sections): Move from here ...
+	* lib/target-supports-dg.exp: ... to here.
+
+	Backport:
 	2005-12-06  Janis Johnson  <janis187@us.ibm.com>
 	* gcc.test-framework/dg-dot-run-sif-exp-P.c: New test.
 	* gcc.test-framework/dg-dot-run-sif-exp-U.c: New test.
