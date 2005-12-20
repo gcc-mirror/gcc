@@ -360,49 +360,6 @@ proc dg-require-named-sections { args } {
    }
 }
 
-# Skip the test (report it as UNSUPPORTED) if the target list and
-# included flags are matched and the excluded flags are not matched.
-#
-# The first argument is the line number of the dg-skip-if directive
-# within the test file.   Remaining arguments are as for xfail lists:
-# message { targets } { include } { exclude }
-#
-# This tests against multilib flags plus either the default flags for this
-# group of tests or flags specified with a previous dg-options command.
-
-proc dg-skip-if { args } {
-    set args [lreplace $args 0 0]
-
-    set selector "target [join [lindex $args 1]]"
-    if { [dg-process-target $selector] == "S" } {
-	# The target list matched; now check the flags.  The DejaGnu proc
-	# check_conditional_xfail will look at the options in compiler_flags,
-	# so set that up for this test based on flags we know about.  Start
-	# the list with a dummy tool name so the list will match "*" if
-	# there are no flags.
-
-	global compiler_flags
-	upvar dg-extra-tool-flags extra_tool_flags
-
-	set compiler_flags " toolname "
-	append compiler_flags $extra_tool_flags
-	set dest [target_info name]
-	if [board_info $dest exists multilib_flags] {
-	    append compiler_flags "[board_info $dest multilib_flags] "
-	}
-
-	# The target list might be an effective-target keyword, so replace
-	# the original list with "*-*-*".
-	if [check_conditional_xfail [lreplace $args 1 1 "*-*-*"]] {
-	    upvar dg-do-what dg-do-what
-            set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
-	}
-
-	# Any value in this variable was left over from an earlier test.
-	set compiler_flags ""
-    }
-}
-
 # Prune any messages matching ARGS[1] (a regexp) from test output.
 proc dg-prune-output { args } {
     global additional_prunes
@@ -414,18 +371,6 @@ proc dg-prune-output { args } {
 
     lappend additional_prunes [lindex $args 1]
 }
-
-# Like check_conditional_xfail, but callable from a dg test.
-
-proc dg-xfail-if { args } {
-    set args [lreplace $args 0 0]
-    set selector "target [join [lindex $args 1]]"
-    if { [dg-process-target $selector] == "S" } {
-	global compiler_conditional_xfail_data
-	set compiler_conditional_xfail_data $args
-    }
-}
-
 
 # We need to make sure that additional_* are cleared out after every
 # test.  It is not enough to clear them out *before* the next test run
