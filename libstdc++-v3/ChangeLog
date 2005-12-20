@@ -1,3 +1,16 @@
+2005-12-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_deque.h (deque<>::resize, _M_fill_assign):
+	Avoid troubles with ADL, user defined operators and _Deque_iterator.
+	(operator-(const _Deque_iterator<>&, const _Deque_iterator<>&):
+	Add overload for left and right iterators of the same type.
+	* include/bits/deque.tcc (erase(iterator)): Avoid troubles with ADL,
+	user defined operators and _Deque_iterator.
+	* testsuite/23_containers/deque/types/1.cc: Add.
+	
+	* include/bits/deque.tcc (_M_insert_aux(iterator, size_type,
+	const value_type&)): Qualify with std:: fill call.
+
 2005-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* include/bits/c++config: Add in revised namespace associations.
