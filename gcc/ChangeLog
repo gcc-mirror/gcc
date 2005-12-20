@@ -1,5 +1,6 @@
 2005-12-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR middle-end/22313
 	* dwarf2out.c (dwarf2out_switch_text_section): Export.
 	* debug.h (dwarf2out_switch_text_section): Prototype.
 	* final.c (final_scan_insn): Call dwarf2out_switch_text_section
