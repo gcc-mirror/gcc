@@ -743,6 +743,39 @@ merge_phi_nodes (void)
 	     nodes at BB.  */
 	  *current++ = bb;
 	}
+      else
+	{
+	  tree phi;
+
+	  /* BB dominates DEST.  There may be many users of the PHI
+	     nodes in BB.  However, there is still a trivial case we
+	     can handle.  If the result of every PHI in BB is used
+	     only by a PHI in DEST, then we can trivially merge the
+	     PHI nodes from BB into DEST.  */
+	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	    {
+	      tree result = PHI_RESULT (phi);
+	      int num_uses = num_imm_uses (result);
+	      use_operand_p imm_use;
+	      tree use_stmt;
+
+	      /* If the PHI's result is never used, then we can just
+		 ignore it.  */
+	      if (num_uses == 0)
+		continue;
+
+	      /* Get the single use of the result of this PHI node.  */
+  	      if (!single_imm_use (result, &imm_use, &use_stmt)
+		  || TREE_CODE (use_stmt) != PHI_NODE
+		  || bb_for_stmt (use_stmt) != dest)
+		break;
+	    }
+
+	  /* If the loop above iterated thorugh all the PHI nodes
+	     in BB, then we can merge the PHIs from BB into DEST.  */
+	  if (!phi)
+	    *current++ = bb;
+	}
     }
 
   /* Now let's drain WORKLIST.  */
