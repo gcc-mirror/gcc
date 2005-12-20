@@ -1,3 +1,7 @@
+2005-12-20  Geoffrey Keating  <geoffk@apple.com>
+
+	* btest-gcc.sh: Support -j option.
+
 2005-11-28  Geoffrey Keating  <geoffk@geoffk.org>
 
 	* GCC Regression Tester.wdgt: Rename to GCC_Regression_Tester.wdgt.
