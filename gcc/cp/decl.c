@@ -10480,6 +10480,30 @@ start_function (cp_decl_specifier_seq *declspecs,
   return 1;
 }
 
+/* Returns true iff an EH_SPEC_BLOCK should be created in the body of
+   FN.  */
+
+static bool
+use_eh_spec_block (tree fn)
+{
+  return (flag_exceptions && flag_enforce_eh_specs
+	  && !processing_template_decl
+	  && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn))
+	  /* We insert the EH_SPEC_BLOCK only in the original
+	     function; then, it is copied automatically to the
+	     clones.  */
+	  && !DECL_CLONED_FUNCTION_P (fn)
+	  /* Implicitly-generated constructors and destructors have
+	     exception specifications.  However, those specifications
+	     are the union of the possible exceptions specified by the
+	     constructors/destructors for bases and members, so no
+	     unallowed exception will ever reach this function.  By
+	     not creating the EH_SPEC_BLOCK we save a little memory,
+	     and we avoid spurious warnings about unreachable
+	     code.  */
+	  && !DECL_ARTIFICIAL (fn));
+}
+
 /* Store the parameter declarations into the current function declaration.
    This is called after parsing the parameter declarations, before
    digesting the body of the function.
@@ -10550,16 +10574,8 @@ store_parm_decls (tree current_function_parms)
      DECL_ARGUMENTS is not modified.  */
   current_binding_level->names = chainon (nonparms, DECL_ARGUMENTS (fndecl));
 
-  /* For a cloned function, we've already got all the code we need;
-     there's no need to add any extra bits.  */
-  if (!DECL_CLONED_FUNCTION_P (fndecl))
-    {
-      /* Do the starting of the exception specifications, if we have any.  */
-      if (flag_exceptions && !processing_template_decl
-	  && flag_enforce_eh_specs
-	  && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
-	current_eh_spec_block = begin_eh_spec_block ();
-    }
+  if (use_eh_spec_block (current_function_decl))
+    current_eh_spec_block = begin_eh_spec_block ();
 }
 
 
@@ -10846,10 +10862,7 @@ finish_function (int flags)
 #endif
 	}
 
-      /* Finish dealing with exception specifiers.  */
-      if (flag_exceptions && !processing_template_decl
-	  && flag_enforce_eh_specs
-	  && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
+      if (use_eh_spec_block (current_function_decl))
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (current_function_decl)),
 			      current_eh_spec_block);
