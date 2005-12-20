@@ -1,5 +1,9 @@
 2005-12-20  Janis Johnson  <janis187@us.ibm.com>
 
+	Backport:
+	2005-01-24  Janis Johnson  <janis187@us.ibm.com>
+	* lib/gcc-dg.exp: Clear xfail data in dg-test
+
 	* lib/gcc-dg.exp: Remove dg-skip-if and dg-xfail-if, now in
 	target-supports-dg.exp.
 

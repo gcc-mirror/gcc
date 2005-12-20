@@ -388,17 +388,24 @@ if { [info procs saved-dg-test] == [list] } {
 	global additional_sources
 	global additional_prunes
 	global errorInfo
+	global compiler_conditional_xfail_data
 
 	if { [ catch { eval saved-dg-test $args } errmsg ] } {
 	    set saved_info $errorInfo
 	    set additional_files ""
 	    set additional_sources ""
 	    set additional_prunes ""
+	    if [info exists compiler_conditional_xfail_data] {
+		unset compiler_conditional_xfail_data
+	    }
 	    error $errmsg $saved_info
 	}
 	set additional_files ""
 	set additional_sources ""
 	set additional_prunes ""
+	if [info exists compiler_conditional_xfail_data] {
+	    unset compiler_conditional_xfail_data
+	}
     }
 }
 set additional_prunes ""
