@@ -1,3 +1,8 @@
+2005-12-20  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/25501
+	* testsuite/gcc.dg/tree-ssa/pr25501.c: New.
+
 2005-12-20  Richard Guenther  <rguenther@suse.de>
 
 	Revert

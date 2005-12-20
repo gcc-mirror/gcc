@@ -1,3 +1,10 @@
+2005-12-20  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/25501
+	* tree-cfgcleanup.c (merge_phi_nodes): Check that RESULT is
+	used in the PHI argument corresponding to the edge from BB to
+	DEST.
+
 2005-12-20  Richard Guenther  <rguenther@suse.de>
 
 	Revert
