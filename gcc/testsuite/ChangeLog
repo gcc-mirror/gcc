@@ -1,5 +1,9 @@
 2005-12-19  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/ppc-eabi.c: Test on ilp32.
+	* gcc.dg/ppc64-abi-1.c, gcc.dg/ppc64-abi-2.c, gcc.dg/ppc64-abi-3.c:
+	Test on lp64.
+
 	Backport (missed in previous batch):
 
 	* lib/target-supports.exp (get_compiler_messages,

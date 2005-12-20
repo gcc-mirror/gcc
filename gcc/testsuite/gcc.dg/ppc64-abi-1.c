@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc64-*-* } } */
+/* { dg-do run { target { powerpc*-*-* && lp64 } } } */
 /* { dg-options "-O2" } */
 #include <stdarg.h>
 #include <signal.h>

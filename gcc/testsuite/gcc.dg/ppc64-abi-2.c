@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc64-*-linux* } } */
+/* { dg-do run { target { powerpc*-*-linux* && lp64 } } } */
 /* { dg-options "-O2 -fprofile -mprofile-kernel -maltivec -mabi=altivec" } */
 #include <stdarg.h>
 #include <signal.h>
