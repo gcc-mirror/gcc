@@ -1,3 +1,28 @@
+2005-12-20  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* cfganal.c (flow_reverse_top_sort_order_compute):
+	Renamed to post_order_compute and additional parameter added which
+	allows the inclusion of entry and exit blocks into list.
+	(mark_dfs_back_edges): Fixed comment.
+	(flow_depth_first_order_compute): Renamed to
+	pre_and_rev_post_order_compute additional parameter added which
+	allows the inclusion of entry and exit blocks into list.
+	* global.c (set_up_bb_rts_numbers): Call to
+	flow_reverse_top_sort_order_compute renamed to
+	post_order_compute.
+	* var-tracking.c (vt_stack_adjustments): Fixed comment.
+	(vt_find_locations): Call to
+	flow_depth_first_order_compute renamed to
+	pre_and_rev_post_order_compute.
+	* cfgloop.c (flow_find_loops): Ditto.
+	* tree-ssa-reassoc.c (init_reassoc): Ditto.
+	* df.c (df_analyze_1, df_analyze_subcfg): Calls to
+	flow_reverse_top_sort_order_compute renamed to post_order_compute
+	and calls to flow_reverse_top_sort_order_compute renamed to
+	post_order_compute.
+	* basic_block.h: Ditto.
+
+
 2005-12-20  Roger Sayle  <roger@eyesopen.com>
 	    Paolo Bonzini  <bonzini@gnu.org>
 

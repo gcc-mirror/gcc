@@ -696,7 +696,7 @@ flow_loops_find (struct loops *loops)
 	 natural loops will be found before inner natural loops.  */
       dfs_order = xmalloc (n_basic_blocks * sizeof (int));
       rc_order = xmalloc (n_basic_blocks * sizeof (int));
-      flow_depth_first_order_compute (dfs_order, rc_order);
+      pre_and_rev_post_order_compute (dfs_order, rc_order, false);
 
       /* Save CFG derived information to avoid recomputing it.  */
       loops->cfg.dfs_order = dfs_order;
