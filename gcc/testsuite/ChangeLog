@@ -1,3 +1,8 @@
+2005-12-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24915
+	* g++.dg/template/overload8.C: New test.
+
 2005-12-19  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* gcc.c-torture/compile/pr25483 : New test.
