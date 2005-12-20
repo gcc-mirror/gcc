@@ -1,3 +1,8 @@
+2005-12-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25305
+	* gfortran.dg/read_write.f: New test.
+
 2005-12-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24278
