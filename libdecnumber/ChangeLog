@@ -1,5 +1,10 @@
 2005-12-20  Roger Sayle  <roger@eyesopen.com>
 
+	* decNumber.c (decStrEq): Cast string contents to unsigned char
+	instead of int before calling tolower.
+
+2005-12-20  Roger Sayle  <roger@eyesopen.com>
+
 	* decNumber.c (decStrEq): Cast operands to int before calling
 	tolower to avoid compilation warnings on Tru64.
 
