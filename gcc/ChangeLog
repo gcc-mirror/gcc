@@ -1,3 +1,8 @@
+2005-12-19  DJ Delorie  <dj@redhat.com>
+
+	* reload1.c (spill_failure): Dump reload data to dump file.
+	(find_reload_regs): Likewise.
+
 2005-12-19  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/24793
