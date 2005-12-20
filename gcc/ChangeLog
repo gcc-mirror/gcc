@@ -1,3 +1,8 @@
+2005-12-19  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (try_combine): Improve splitting of binary operators
+	by taking advantage of reassociative transformations.
+
 2005-12-19  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (thread_across_edge): Do not use local_fold.
