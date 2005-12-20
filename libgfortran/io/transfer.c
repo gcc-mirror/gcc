@@ -292,7 +292,7 @@ write_block (int length)
 {
   char *dest;
 
-  if (current_unit->bytes_left < length)
+  if (!is_internal_unit() && current_unit->bytes_left < length)
     {
       generate_error (ERROR_EOR, NULL);
       return NULL;
