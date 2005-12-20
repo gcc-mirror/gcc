@@ -1,3 +1,11 @@
+2005-12-20  Roger Sayle  <roger@eyesopen.com>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/25115
+	* gcse.c (pre_insert_copy_insn): Fall back to the sole
+	SET in the insn if there is no SET for an
+	expression that is equivalent to EXPR.
+
 2005-12-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/24306

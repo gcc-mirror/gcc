@@ -4219,7 +4219,7 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
   int regno = REGNO (reg);
   int indx = expr->bitmap_index;
   rtx pat = PATTERN (insn);
-  rtx set, new_insn;
+  rtx set, first_set, new_insn;
   rtx old_reg;
   int i;
 
@@ -4233,17 +4233,29 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
     case PARALLEL:
       /* Search through the parallel looking for the set whose
 	 source was the expression that we're interested in.  */
+      first_set = NULL_RTX;
       set = NULL_RTX;
       for (i = 0; i < XVECLEN (pat, 0); i++)
 	{
 	  rtx x = XVECEXP (pat, 0, i);
-	  if (GET_CODE (x) == SET
-	      && expr_equiv_p (SET_SRC (x), expr->expr))
+	  if (GET_CODE (x) == SET)
 	    {
-	      set = x;
-	      break;
+	      /* If the source was a REG_EQUAL or REG_EQUIV note, we
+		 may not find an equivalent expression, but in this
+		 case the PARALLEL will have a single set.  */
+	      if (first_set == NULL_RTX)
+		first_set = x;
+	      if (expr_equiv_p (SET_SRC (x), expr->expr))
+	        {
+	          set = x;
+	          break;
+	        }
 	    }
 	}
+
+      gcc_assert (first_set);
+      if (set == NULL_RTX)
+        set = first_set;
       break;
 
     default:
