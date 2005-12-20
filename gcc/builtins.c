@@ -4162,7 +4162,8 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 
   /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
      requires greater alignment, we must perform dynamic alignment.  */
-  if (boundary > align)
+  if (boundary > align
+      && !integer_zerop (TYPE_SIZE (type)))
     {
       t = fold_convert (TREE_TYPE (valist), size_int (boundary - 1));
       t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
