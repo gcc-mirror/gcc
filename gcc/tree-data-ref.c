@@ -786,7 +786,7 @@ estimate_niter_from_size_of_data (struct loop *loop,
       && TREE_CODE (step) == INTEGER_CST)
     {
       tree i_plus_s = fold_build2 (PLUS_EXPR, integer_type_node, init, step);
-      tree sign = fold_build2 (GT_EXPR, boolean_type_node, i_plus_s, init);
+      tree sign = fold_binary (GT_EXPR, boolean_type_node, i_plus_s, init);
 
       if (sign == boolean_true_node)
 	estimation = fold_build2 (CEIL_DIV_EXPR, integer_type_node,

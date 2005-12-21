@@ -1,3 +1,12 @@
+2005-12-21  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-data-ref.c (estimate_niter_from_size_of_data): Replace
+	fold_build2 with fold_binary.
+	* tree-ssa-ccp.c (visit_assignment, maybe_fold_stmt_addition):
+	Replace fold_build1 with fold_unary.
+	* tree-ssa-reassoc.c (optimize_ops_list): Replace fold_build2
+	with fold_binary.
+
 2005-12-21  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/25196
