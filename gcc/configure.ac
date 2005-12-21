@@ -639,6 +639,38 @@ AC_ARG_ENABLE(__cxa_atexit,
 [  --enable-__cxa_atexit   enable __cxa_atexit for C++],
 [], [])
 
+# Enable C extension for decimal float if target supports it.
+AC_ARG_ENABLE(decimal-float,
+[  --enable-decimal-float  enable decimal float extension to C],
+[
+  if test x$enablevar = xyes ; then
+    case $target in
+    powerpc*-*-linux* | i?86*-*-linux*)
+      ;;
+    *)
+      AC_MSG_WARN(decimal float is not supported for this target, ignored)
+      enable_decimal_float=no
+      ;;
+    esac
+  fi
+],
+[
+  case $target in
+  powerpc*-*-linux*)
+    enable_decimal_float=yes
+    ;;
+  *)
+    enable_decimal_float=no
+    ;;
+  esac
+])
+
+AC_SUBST(enable_decimal_float)
+
+dfp=`if test $enable_decimal_float = yes; then echo 1; else echo 0; fi`
+AC_DEFINE_UNQUOTED(ENABLE_DECIMAL_FLOAT, $dfp,
+[Define to 1 to enable decimal float extension to C.])
+
 # Enable threads
 # Pass with no value to take the default
 # Pass with a value to specify a thread package

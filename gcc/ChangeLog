@@ -1,3 +1,11 @@
+2005-12-21  Janis Johnson  <janis187@us.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* configure.ac: Enable C extension for decimal float if invoked
+	with --enable-decimal-float.
+	* doc/install.texi (Configuration): Document it.
+	* configure, config.in: Regenerate.
+
 2005-12-20  Mike Stump  <mrs@apple.com>
 
 	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Handle the
@@ -192,10 +200,10 @@
 2005-12-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/25481
-	* tree-ssa-structalias.c (handle_ptr_arith): Handle
-	accesses we don't have a varinfo for.
+	* tree-ssa-structalias.c (handle_ptr_arith): Handle accesses we
+	don't have a varinfo for.
 
-2005-12-17  Jon Grimm  <jgrimm2@us.ibm.com>
+2005-12-18  Jon Grimm  <jgrimm2@us.ibm.com>
 	    Janis Johnson  <janis187@us.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
 
