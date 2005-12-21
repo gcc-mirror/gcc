@@ -1,3 +1,9 @@
+2005-12-21  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25423
+	* parse.c (parse_where_block): break instead of "fall
+	through" after parsing nested WHERE construct.
+
 2005-12-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/24268
@@ -8851,3 +8857,4 @@
 	(g95_conv_intrinsic_anyall): New function.
 	* iresolve.c (g95_resolve_any, g95_resolve_all): Include rank in
 	mangled name
+
