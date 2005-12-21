@@ -671,10 +671,18 @@ record_last_set_info (rtx dest, rtx setter ATTRIBUTE_UNUSED, void *data)
 
   if (REG_P (dest))
     record_last_reg_set_info (last_set_insn, REGNO (dest));
-  else if (MEM_P (dest)
-	   /* Ignore pushes, they clobber nothing.  */
-	   && ! push_operand (dest, GET_MODE (dest)))
-    record_last_mem_set_info (last_set_insn);
+  else if (MEM_P (dest))
+    {
+      /* Ignore pushes, they don't clobber memory.  They may still
+	 clobber the stack pointer though.  Some targets do argument
+	 pushes without adding REG_INC notes.  See e.g. PR25196,
+	 where a pushsi2 on i386 doesn't have REG_INC notes.  Note
+	 such changes here too.  */
+      if (! push_operand (dest, GET_MODE (dest)))
+	record_last_mem_set_info (last_set_insn);
+      else
+	record_last_reg_set_info (last_set_insn, STACK_POINTER_REGNUM);
+    }
 }
 
 
