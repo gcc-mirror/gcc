@@ -1,3 +1,8 @@
+2005-12-21  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25423
+	gfortran.dg/where_nested_1.f90: New.
+
 2005-12-21  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/25382.
