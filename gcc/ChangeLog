@@ -1,3 +1,9 @@
+2005-12-21  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR middle-end/24998
+	* config/arm/t-arm-elf (LIB1ASMFUNCS): Add _floatundidf and
+	_floatundisf.
+
 2005-12-21  Andrew Haley  <aph@redhat.com>
 
 	PR middle-end/25121
