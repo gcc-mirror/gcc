@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fschedule-insns2 -fsched2-use-traces" } */
-/* { dg-skip-if "No scheduling" { mmix-*-* cris-*-* } { "*" } { "" } } */
+/* { dg-skip-if "No scheduling" { mmix-*-* cris-*-* m68k-*-* } { "*" } { "" } } */
 
 extern double f (double x);
 
