@@ -1,4 +1,4 @@
-# Copyright (C) 2002 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -147,22 +147,52 @@ proc compat-run { testname objlist dest optall optfile optstr } {
 }
 
 #
-# compat-get-options -- get special tool flags to use for a source file
+# compat-get-options-main -- get target requirements for a test and
+# options for the primary source file and the test as a whole
 #
-# SRC is the full patchname of the source file.
+# SRC is the full pathname of the primary source file.
+#
+proc compat-get-options-main { src } {
+    # dg-options sets a variable called dg-extra-tool-flags.
+    set dg-extra-tool-flags ""
+
+    # dg-require-* sets dg-do-what.
+    upvar dg-do-what dg-do-what 
+
+    set tmp [dg-get-options $src]
+    foreach op $tmp {
+	set cmd [lindex $op 0]
+	if { ![string compare "dg-options" $cmd] \
+	     || [string match "dg-require-*" $cmd]  } {
+	    set status [catch "$op" errmsg]
+	    if { $status != 0 } {
+		perror "src: $errmsg for \"$op\"\n"
+		unresolved "$src: $errmsg for \"$op\""
+		return
+	    }
+	} elseif { ![string compare "dg-xfail-if" $cmd] } {
+	    warning "compat.exp does not support $cmd in primary source file"
+	} else {
+	    # Ignore unrecognized dg- commands, but warn about them.
+	    warning "compat.exp does not support $cmd"
+	}
+    }
+
+    # Return flags to use for compiling the primary source file and for
+    # linking.
+    return ${dg-extra-tool-flags}
+}
+
+#
+# compat-get-options -- get special tool flags to use for a secondary
+# source file
+#
+# SRC is the full pathname of the source file.
 # The result is a list of options to use.
 #
 # This code is copied from proc dg-test in dg.exp from DejaGNU.
 #
 proc compat-get-options { src } {
-    # Define our own special function `unknown` so we catch spelling errors.
-    # But first rename the existing one so we can restore it afterwards.
-    catch {rename dg-save-unknown ""}
-    rename unknown dg-save-unknown
-    proc unknown { args } {
-	return -code error "unknown dg option: $args"
-    }
-
     # dg-options sets a variable called dg-extra-tool-flags.
     set dg-extra-tool-flags ""
 
@@ -170,25 +200,27 @@ proc compat-get-options { src } {
     global compiler_conditional_xfail_data
     set compiler_conditional_xfail_data ""
 
+    # dg-xfail-if needs access to dg-do-what.
+    upvar dg-do-what dg-do-what 
+
     set tmp [dg-get-options $src]
     foreach op $tmp {
 	set cmd [lindex $op 0]
-	if { ![string compare "dg-options" $cmd] || ![string compare "dg-xfail-if" $cmd] } {
+	if { ![string compare "dg-options" $cmd] \
+	     || ![string compare "dg-xfail-if" $cmd] } {
 	    set status [catch "$op" errmsg]
 	    if { $status != 0 } {
 		perror "src: $errmsg for \"$op\"\n"
 		unresolved "$src: $errmsg for \"$op\""
 		return
 	    }
+	} elseif { [string match "dg-require-*" $cmd] } {
+	    warning "compat.exp does not support $cmd in secondary source files"
 	} else {
 	    # Ignore unrecognized dg- commands, but warn about them.
 	    warning "compat.exp does not support $cmd"
 	}
     }
-
-    # Restore normal error handling.
-    rename unknown ""
-    rename dg-save-unknown unknown
 
     return ${dg-extra-tool-flags}
 }
@@ -209,6 +241,21 @@ proc compat-execute { src1 sid use_alt } {
     global testcase
     global gluefile
     global compiler_conditional_xfail_data
+    global dg-do-what-default
+
+    # Get extra flags for this test from the primary source file, and
+    # process other dg-* options that this suite supports.  Warn about
+    # unsupported flags.
+    verbose "compat-execute: $src1" 1
+    set dg-do-what [list ${dg-do-what-default} "" P]
+    set extra_flags_1 [compat-get-options-main $src1]
+
+    # Check whether this test is supported for this target.
+    if { [lindex ${dg-do-what} 1 ] == "N" } {
+	unsupported "$src1"
+	verbose "$src1 not supported on this target, skipping it" 3
+	return
+    }
 
     # Set up the names of the other source files.
     regsub "_main.*" $src1 "" base
@@ -219,7 +266,6 @@ proc compat-execute { src1 sid use_alt } {
     # Use the dg-options mechanism to specify extra flags for this test. 
     # The extra flags in each file are used to compile that file, and the
     # extra flags in *_main.* are also used for linking.
-    set extra_flags_1 [compat-get-options $src1]
     set extra_flags_2 [compat-get-options $src2]
     set compile_xfail_2 $compiler_conditional_xfail_data
     set extra_flags_3 [compat-get-options $src3]
@@ -240,6 +286,10 @@ proc compat-execute { src1 sid use_alt } {
     # that would be more complicated that this approach.) 
     if {[string first "$srcdir/" "$src1"] == 0} {
 	set testcase [string range "$src1" [string length "$srcdir/"] end]
+    }
+    if {[string first "$tmpdir/" "$testcase"] == 0} {
+	set testcase [string range "$testcase" [string length "$tmpdir/"] end]
+	set testcase "tmpdir-$testcase"
     }
     regsub "_main.*" $testcase "" testcase
     # Set up the base name of executable files so they'll be unique.
@@ -285,15 +335,19 @@ proc compat-execute { src1 sid use_alt } {
 	# later.  Skip this if we don't have an alternate compiler.
 	if { $use_alt != 0 } then {
 	    compat-use-alt-compiler
-	    compat-obj "$src2" "$obj2_alt" $alt_option $extra_flags_2 $optstr $compile_xfail_2
-	    compat-obj "$src3" "$obj3_alt" $alt_option $extra_flags_3 $optstr $compile_xfail_3
+	    compat-obj "$src2" "$obj2_alt" $alt_option $extra_flags_2 \
+		       $optstr $compile_xfail_2
+	    compat-obj "$src3" "$obj3_alt" $alt_option $extra_flags_3 \
+		       $optstr $compile_xfail_3
 	}
 
 	# Compile pieces with the compiler under test.
 	compat-use-tst-compiler
 	compat-obj "$src1" "$obj1" $tst_option $extra_flags_1 $optstr ""
-	compat-obj "$src2" "$obj2_tst" $tst_option $extra_flags_2 $optstr $compile_xfail_2
-	compat-obj "$src3" "$obj3_tst" $tst_option $extra_flags_3 $optstr $compile_xfail_3
+	compat-obj "$src2" "$obj2_tst" $tst_option $extra_flags_2 \
+		   $optstr $compile_xfail_2
+	compat-obj "$src3" "$obj3_tst" $tst_option $extra_flags_3 \
+		   $optstr $compile_xfail_3
 
 	# Link (using the compiler under test), run, and clean up tests.
 	compat-run "${obj2_tst}-${obj3_tst}" \

@@ -1,3 +1,15 @@
+2005-12-21  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport:
+	2004-11-30  Janis Johnson  <janis187@us.ibm.com>
+	* lib/compat.exp (compat-get-options): Fix for use with dg-xfail-if.
+	2004-05-25  Janis Johnson  <janis187@us.ibm.com>
+	* lib/compat.exp (compat-get-options-main): New.
+	(compat-get-options): Remove unneeded code, warn for ignored
+	command.
+	(compat-execute): Check flag set by dg-require-* commands, break up
+	long lines.
+
 2005-12-20  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport:
