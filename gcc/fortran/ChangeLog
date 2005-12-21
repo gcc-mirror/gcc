@@ -1,3 +1,9 @@
+2005-12-21  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25423
+	* parse.c (parse_where_block): break instead of "fall
+	through" after parsing nested WHERE construct.
+
 2005-12-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25018
