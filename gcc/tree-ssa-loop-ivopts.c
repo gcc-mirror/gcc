@@ -5490,10 +5490,18 @@ unshare_and_remove_ssa_names (tree ref)
    and extracts this single useful piece of information.  */
 
 static tree
-get_ref_tag (tree ref)
+get_ref_tag (tree ref, tree orig)
 {
   tree var = get_base_address (ref);
-  tree tag;
+  tree tag, sv;
+  unsigned HOST_WIDE_INT offset, size;
+
+  for (sv = orig; handled_component_p (sv); sv = TREE_OPERAND (sv, 0))
+    if (okay_component_ref_for_subvars (sv, &offset, &size))
+      break;
+
+  if (handled_component_p (sv))
+    return unshare_expr (sv);
 
   if (!var)
     return NULL_TREE;
@@ -5540,8 +5548,8 @@ copy_ref_info (tree new_ref, tree old_ref)
     copy_mem_ref_info (new_ref, old_ref);
   else
     {
-      TMR_TAG (new_ref) = get_ref_tag (old_ref);
       TMR_ORIGINAL (new_ref) = unshare_and_remove_ssa_names (old_ref);
+      TMR_TAG (new_ref) = get_ref_tag (old_ref, TMR_ORIGINAL (new_ref));
     }
 }
 

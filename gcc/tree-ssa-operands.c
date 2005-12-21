@@ -1523,7 +1523,10 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags)
 static void
 get_tmr_operands (tree stmt, tree expr, int flags)
 {
-  tree tag = TMR_TAG (expr);
+  tree tag = TMR_TAG (expr), ref;
+  unsigned HOST_WIDE_INT offset, size;
+  subvar_t svars, sv;
+  stmt_ann_t s_ann = stmt_ann (stmt);
 
   /* First record the real operands.  */
   get_expr_operands (stmt, &TMR_BASE (expr), opf_none);
@@ -1538,11 +1541,33 @@ get_tmr_operands (tree stmt, tree expr, int flags)
       add_to_addressable_set (TMR_SYMBOL (expr), &ann->addresses_taken);
     }
 
-  if (tag)
-    get_expr_operands (stmt, &tag, flags);
-  else
-    /* Something weird, so ensure that we will be careful.  */
-    stmt_ann (stmt)->has_volatile_ops = true;
+  if (!tag)
+    {
+      /* Something weird, so ensure that we will be careful.  */
+      stmt_ann (stmt)->has_volatile_ops = true;
+      return;
+    }
+
+  if (DECL_P (tag))
+    {
+      get_expr_operands (stmt, &tag, flags);
+      return;
+    }
+
+  ref = okay_component_ref_for_subvars (tag, &offset, &size);
+  gcc_assert (ref != NULL_TREE);
+  svars = get_subvars_for_var (ref);
+  for (sv = svars; sv; sv = sv->next)
+    {
+      bool exact;		
+      if (overlap_subvar (offset, size, sv, &exact))
+	{
+	  int subvar_flags = flags;
+	  if (!exact)
+	    subvar_flags &= ~opf_kill_def;
+	  add_stmt_operand (&sv->var, s_ann, subvar_flags);
+	}
+    }
 }
 
 /* A subroutine of get_expr_operands to handle CALL_EXPR.  */

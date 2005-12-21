@@ -1,3 +1,10 @@
+2005-12-20  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/24793
+	* tree-ssa-loop-ivopts.c (get_ref_tag): Remember the
+	original reference if there are subvars.
+	* tree-ssa-operands.c (get_tmr_operands): Handle subvars.
+
 2005-12-21  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/25196
