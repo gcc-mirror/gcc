@@ -1,3 +1,10 @@
+2005-12-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR debug/25518
+	* dwarf2out.c (dwarf2out_switch_text_section): Declare when
+	DWARF2_UNWIND_INFO is defined or when DWARF2_DEBUGGING_INFO is
+	defined.
+
 2005-12-20  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/24793
