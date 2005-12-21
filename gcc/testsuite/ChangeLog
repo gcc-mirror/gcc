@@ -1,3 +1,7 @@
+2005-12-21  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/pr19340.c: Skip on m68k targets.
+
 2005-12-21  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/25196
