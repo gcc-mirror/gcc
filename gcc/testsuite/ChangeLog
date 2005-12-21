@@ -1,7 +1,7 @@
 2005-12-21  Steven Bosscher  <stevenb@suse.de>
 
-	PR rtl-optimization/25130
-	* gcc.dg/pr25130.c: New test.
+	PR rtl-optimization/25196
+	* gcc.dg/pr25196.c: New test.
 
 2005-12-21  Erik Edelmann  <eedelman@gcc.gnu.org>
 
