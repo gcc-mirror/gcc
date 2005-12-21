@@ -46,6 +46,12 @@
 #endif
 
 
+/* Define to 1 to enable decimal float extension to C. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_DECIMAL_FLOAT
+#endif
+
+
 /* Define if you want fold checked that it never destructs its argument. This
    is quite expensive. */
 #ifndef USED_FOR_TARGET

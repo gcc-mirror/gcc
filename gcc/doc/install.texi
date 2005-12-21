@@ -1212,6 +1212,14 @@ error message.
 All support for systems which have been obsoleted in one release of GCC
 is removed entirely in the next major release, unless someone steps
 forward to maintain the port.
+
+@item --enable-decimal-float
+@itemx --disable-decimal-float
+Enable (or disable) support for the C decimal floating point
+extension.  This is enabled by default only on PowerPC GNU/Linux
+systems.  Other systems may also support it, but require the user to
+specifically enable it.
+
 @end table
 
 @subheading Cross-Compiler-Specific Options
