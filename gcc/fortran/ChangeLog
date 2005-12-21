@@ -1,10 +1,14 @@
+2005-12-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/24268
+	* io.c (format_lex): Allow whitespace within text of format specifier.
+
 2005-12-20  Steven G. Kargl  <kargls@comcast.net>
             Tobias Schlueter <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/25458
 	* simplify.c (gfc_simplify_ibset, gfc_simplify_not): Add call to
 	twos_complement.
-
 
 2005-12-14  Erik Edelmann  <eedelman@gcc.gnu.org>
 

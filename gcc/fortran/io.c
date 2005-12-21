@@ -233,7 +233,7 @@ format_lex (void)
           if (ISDIGIT (c))
             value = 10 * value + c - '0';
 	}
-      while (ISDIGIT (c));
+      while (ISDIGIT (c) || gfc_is_whitespace(c));
 
       unget_char ();
       token = zflag ? FMT_ZERO : FMT_POSINT;
