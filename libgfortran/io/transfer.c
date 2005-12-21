@@ -2017,6 +2017,7 @@ finalize_transfer (st_parameter_dt *dtp)
     finish_list_read (dtp);
   else
     {
+      dtp->u.p.current_unit->current_record = 0;
       if (dtp->u.p.advance_status == ADVANCE_NO || dtp->u.p.seen_dollar)
 	{
 	  /* Most systems buffer lines, so force the partial record
@@ -2027,7 +2028,6 @@ finalize_transfer (st_parameter_dt *dtp)
 	}
 
       next_record (dtp, 1);
-      dtp->u.p.current_unit->current_record = 0;
     }
 
   sfree (dtp->u.p.current_unit->s);
