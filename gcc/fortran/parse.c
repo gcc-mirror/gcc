@@ -1653,7 +1653,7 @@ parse_where_block (void)
 
 	case ST_WHERE_BLOCK:
 	  parse_where_block ();
-	  /* Fall through */
+          break;
 
 	case ST_ASSIGNMENT:
 	case ST_WHERE:
