@@ -3118,8 +3118,18 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 	      propagate_one_insn (pbi, insn);
 	      COPY_REG_SET (peep2_insn_data[peep2_current].live_before, live);
 
-	      /* Match the peephole.  */
-	      try = peephole2_insns (PATTERN (insn), insn, &match_len);
+	      if (RTX_FRAME_RELATED_P (insn))
+		{
+		  /* If an insn has RTX_FRAME_RELATED_P set, peephole
+		     substitution would lose the
+		     REG_FRAME_RELATED_EXPR that is attached.  */
+		  peep2_current_count = 0;
+		  try = NULL;
+		}
+	      else
+		/* Match the peephole.  */
+		try = peephole2_insns (PATTERN (insn), insn, &match_len);
+
 	      if (try != NULL)
 		{
 		  /* If we are splitting a CALL_INSN, look for the CALL_INSN
@@ -3567,3 +3577,4 @@ struct tree_opt_pass pass_split_before_regstack =
   TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
+
