@@ -1,6 +1,6 @@
 2005-12-21  Steven Bosscher  <stevenb@suse.de>
 
-	PR rtl-optimization/25130
+	PR rtl-optimization/25196
 	* postreload-gcse.c (record_last_set_info): Notice stack pointer
 	changes in push insns without REG_INC notes.
 
