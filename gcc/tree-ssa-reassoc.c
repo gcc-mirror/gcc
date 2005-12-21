@@ -755,10 +755,10 @@ optimize_ops_list (enum tree_code opcode,
 	  && lang_hooks.types_compatible_p (TREE_TYPE (oelm1->op),
 					    TREE_TYPE (oelast->op)))
 	{
-	  tree folded = fold_build2 (opcode, TREE_TYPE (oelm1->op),
+	  tree folded = fold_binary (opcode, TREE_TYPE (oelm1->op),
 				     oelm1->op, oelast->op);
 
-	  if (is_gimple_min_invariant (folded))
+	  if (folded && is_gimple_min_invariant (folded))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Merging constants\n");
