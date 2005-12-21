@@ -1,3 +1,9 @@
+2005-12-21  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/25382.
+	* tree-vrp.c (extract_range_from_binary_expr): Extract a range
+	from BIT_AND_EXPR.
+
 2005-12-21  Janis Johnson  <janis187@us.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
 

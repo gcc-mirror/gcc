@@ -1,3 +1,8 @@
+2005-12-21  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/25382.
+	* gcc.dg/tree-ssa/pr25382.c: New.
+
 2005-12-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/24306

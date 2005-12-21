@@ -1184,6 +1184,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
       && code != ROUND_DIV_EXPR
       && code != MIN_EXPR
       && code != MAX_EXPR
+      && code != BIT_AND_EXPR
       && code != TRUTH_ANDIF_EXPR
       && code != TRUTH_ORIF_EXPR
       && code != TRUTH_AND_EXPR
@@ -1220,13 +1221,16 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
     }
 
   /* Refuse to operate on VARYING ranges, ranges of different kinds
-     and symbolic ranges.  TODO, we may be able to derive anti-ranges
-     in some cases.  */
-  if (vr0.type == VR_VARYING
-      || vr1.type == VR_VARYING
-      || vr0.type != vr1.type
-      || symbolic_range_p (&vr0)
-      || symbolic_range_p (&vr1))
+     and symbolic ranges.  As an exception, we allow BIT_AND_EXPR
+     because we may be able to derive a useful range even if one of
+     the operands is VR_VARYING or symbolic range.  TODO, we may be
+     able to derive anti-ranges in some cases.  */
+  if (code != BIT_AND_EXPR
+      && (vr0.type == VR_VARYING
+	  || vr1.type == VR_VARYING
+	  || vr0.type != vr1.type
+	  || symbolic_range_p (&vr0)
+	  || symbolic_range_p (&vr1)))
     {
       set_value_range_to_varying (vr);
       return;
@@ -1405,6 +1409,31 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	 each range.  */
       min = vrp_int_const_binop (code, vr0.min, vr1.max);
       max = vrp_int_const_binop (code, vr0.max, vr1.min);
+    }
+  else if (code == BIT_AND_EXPR)
+    {
+      if (vr0.type == VR_RANGE
+	  && vr0.min == vr0.max
+	  && tree_expr_nonnegative_p (vr0.max)
+	  && TREE_CODE (vr0.max) == INTEGER_CST)
+	{
+	  min = fold_convert (TREE_TYPE (expr), integer_zero_node);
+	  max = vr0.max;
+	}
+      else if (vr1.type == VR_RANGE
+	  && vr1.min == vr1.max
+	  && tree_expr_nonnegative_p (vr1.max)
+	  && TREE_CODE (vr1.max) == INTEGER_CST)
+	{
+	  vr0.type = VR_RANGE;
+	  min = fold_convert (TREE_TYPE (expr), integer_zero_node);
+	  max = vr1.max;
+	}
+      else
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
     }
   else
     gcc_unreachable ();
