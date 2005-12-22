@@ -1,3 +1,9 @@
+2005-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25307
+	* io/list_read.c (next_char): Handle end-of-file conditions for
+	internal units and add support for internal character array units.
+
 2005-12-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25463
