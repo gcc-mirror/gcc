@@ -3232,8 +3232,8 @@ eliminate_regs_in_insn (rtx insn, int replace)
 	      || GET_CODE (SET_SRC (old_set)) == PLUS))
 	{
 	  int new_icode = recog (PATTERN (insn), insn, 0);
-	  if (new_icode < 0)
-	    INSN_CODE (insn) = icode;
+	  if (new_icode >= 0)
+	    INSN_CODE (insn) = new_icode;
 	}
     }
 
