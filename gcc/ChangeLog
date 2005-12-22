@@ -1,3 +1,13 @@
+2005-12-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (tree_fold_gcd): Use build_int_cst where appropriate.
+	* tree-ssa-loop-ivcanon.c (create_canonical_iv): Likewise.
+	* varasm.c (array_size_for_constructor): Likewise.
+	* fold-const.c (size_diffop, invert_truthvalue,
+	optimize_bit_field_compare, make_range, build_range_check,
+	fold_cond_expr_with_comparison, fold_truthop,
+	fold_single_bit_test_into_sign_test, fold_binary): Likewise.
+
 2005-12-22  Dale Johannesen  <dalej@apple.com>
 
 	* config/i386/sse.md (sse_movhlps):  Reverse operands for

@@ -100,7 +100,7 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
 		       build_int_cst (type, 1));
   incr_at = bsi_last (in->src);
   create_iv (niter,
-	     fold_convert (type, integer_minus_one_node),
+	     build_int_cst (type, -1),
 	     NULL_TREE, loop,
 	     &incr_at, false, NULL, &var);
 
