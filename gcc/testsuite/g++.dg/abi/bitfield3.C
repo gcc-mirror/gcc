@@ -1,6 +1,7 @@
 // Test for oversized bitfield alignment in structs on IA-32
-// { dg-do run { target i?86-*-* } }
+// { dg-do run { target i?86-*-* x86_64-*-* } }
 // { dg-options "-O2" }
+// { dg-require-effective-target ilp32 }
 
 struct A
 {

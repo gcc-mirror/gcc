@@ -10,7 +10,7 @@
 /* Verify that we generate proper instruction with memory operand.  */
 
 #include <xmmintrin.h>
-__m128i magic_a, magic_b;
+static __m128i magic_a, magic_b;
 __m128i
 t1(void)
 {

@@ -2,7 +2,7 @@
    This testcase was miscompiled because of an rtx sharing bug.  */
 /* { dg-do run } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -mtune=i586" { target i?86-*-* } } */
+/* { dg-options "-O2 -mtune=i586" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 struct A
 {

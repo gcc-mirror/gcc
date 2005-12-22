@@ -1,5 +1,6 @@
 /* PR optimization/8746 */
-/* { dg-do run { target i?86-*-* } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O1 -mtune=i586" } */
 
 extern void abort (void);

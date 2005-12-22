@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
-/* { dg-options "-O2 -fomit-frame-pointer -march=i386" { target i?86-*-* } } */
+/* { dg-options "-O2 -fomit-frame-pointer -march=i386" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 extern void abort (void);
 extern void exit (int);

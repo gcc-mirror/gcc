@@ -1,6 +1,6 @@
 // This testcase caused ICE on IA-32 in simplify_unary_operation
 // CSE did not assume SUBREGs changing mode from integral to floating.
-// { dg-do run { target i?86-*-* sparc*-*-* } }
+// { dg-do run { target i?86-*-* sparc*-*-* x86_64-*-* } }
 // { dg-options "-O2" }
 
 struct A

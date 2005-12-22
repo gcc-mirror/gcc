@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile } */
 
 struct x {
   int selector;

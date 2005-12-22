@@ -1,8 +1,12 @@
 /* PR target/11044 */
 /* Originator: Tim McGrath <misty-@charter.net> */
 /* Testcase contributed by Eric Botcazou <ebotcazou@libertysurf.fr> */
-/* { dg-do run { target i?86-*-* } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-mtune=k6 -O3 -ffast-math -funroll-loops" } */
+
+extern void *memset (void *, int, __SIZE_TYPE__);
+extern void abort (void);
 
 typedef struct
 {

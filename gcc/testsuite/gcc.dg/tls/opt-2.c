@@ -4,7 +4,7 @@
    on IA-32.  */
 /* { dg-do link } */
 /* { dg-options "-O2 -ftls-model=initial-exec" } */
-/* { dg-options "-O2 -ftls-model=initial-exec -march=i686" { target i?86-*-* } } */
+/* { dg-options "-O2 -ftls-model=initial-exec -march=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 __thread int thr;
 

@@ -1,6 +1,6 @@
 /* PR optimization/11304 */
 /* Originator: <manuel.serrano@sophia.inria.fr> */
-/* { dg-do run { target i?86-*-* } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O -fomit-frame-pointer" } */
 
 /* Verify that %eax is always restored after a call.  */

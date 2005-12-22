@@ -1,5 +1,6 @@
 /* Verify that -march overrides -mno-fancy-math-387.  */
-/* { dg-do compile { target "i?86-*-*" } } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O -ffast-math -mfpmath=387 -march=i686 -mno-fancy-math-387" } */
 /* { dg-final { scan-assembler "fsin" } } */
 /* { dg-final { scan-assembler "fcos" } } */
