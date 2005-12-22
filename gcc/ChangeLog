@@ -1,3 +1,9 @@
+2005-12-23  Alan Modra  <amodra@bigpond.net.au>
+
+	PR rtl-optimization/25432
+	* reload1.c (eliminate_regs_in_insn): Update insn code on
+	successfully re-recognizing modified insn.
+
 2005-12-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (tree_fold_gcd): Use build_int_cst where appropriate.
