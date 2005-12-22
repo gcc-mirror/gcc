@@ -1,3 +1,82 @@
+2005-12-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20889
+	*resolve.c(resolve_structure_cons): Do not attempt to convert
+	the type of mismatched pointer type components, except when
+	the constructor component is BT_UNKNOWN; emit error instead.
+
+	PR fortran/25029
+	PR fortran/21256
+	*resolve.c(check_assumed_size_reference): New function to check for upper
+	bound in assumed size array references.
+	(resolve_assumed_size_actual): New function to do a very restricted scan
+	of actual argument expressions of those procedures for which incomplete
+	assumed size array references are not allowed.
+	(resolve_function, resolve_call): Switch off assumed size checking of
+	actual arguments, except for elemental procedures and array valued
+	intrinsics; excepting LBOUND.
+	(resolve_variable): Call check_assumed_size_reference.
+
+	PR fortran/19362
+	PR fortran/20244
+	PR fortran/20864
+	PR fortran/25391
+	*interface.c(gfc_compare_types): Broken into two.
+	(gfc_compare_derived_types): Second half of gfc_compare_types with
+	corrections for a missing check that module name is non-NULL and
+	a check for private components.
+	*symbol.c(gfc_free_dt_list): New function.
+	(gfc_free_namespace): Call gfc_free_dt_list.
+	*resolve.c(resolve_symbol): Build the list of derived types in the
+	symbols namespace.
+	*gfortran.h: Define the structure type gfc_dt_list.  Add a new field,
+	derived_types to gfc_namespace.  Provide a prototye for the new
+	function gfc_compare_derived_types.
+	*trans_types.c(gfc_get_derived_type): Test for the derived type being
+	available in the host namespace. In this case, the host backend
+	declaration is used for the structure and its components.  If an
+	unbuilt, equal structure that is not use associated is found in the
+	host namespace, build it there and then.  On exit,traverse the
+	namespace of the derived type to see if there are equal but unbuilt.
+	If so, copy the structure and its component declarations.
+	(copy_dt_decls_ifequal): New functions to copy declarations to other
+	equal structure types.
+
+	PR fortran/20862
+	* io.c (gfc_match_format): Make the appearance of a format statement
+	in a module specification block an error.
+
+	PR fortran/23152
+	* match.c (gfc_match_namelist): Set assumed shape arrays in
+	namelists as std=GFC_STD_GNU and assumed size arrays as an
+	unconditional error.
+
+	PR fortran/25069
+	* match.c (gfc_match_namelist): Set the respecification of a USE
+	associated namelist group as std=GFC_STD_GNU.  Permit the concatenation
+	on no error.
+
+	PR fortran/25053
+	PR fortran/25063
+	PR fortran/25064
+	PR fortran/25066
+	PR fortran/25067
+	PR fortran/25068
+	PR fortran/25307
+	* io.c (resolve_tag): Change std on IOSTAT != default integer to
+	GFC_STD_GNU and change message accordingly.  Add same error for
+	SIZE.
+	(match_dt_element, gfortran.h): Add field err_where to gfc_dt and
+	set it when tags are being matched.
+	(gfc_resolve_dt): Remove tests that can be done before resolution
+	and add some of the new ones here.
+	(check_io_constraints): New function that checks for most of the
+	data transfer constraints. Some of these were previously done in
+	match_io, from where this function is called, and some were done
+	in gfc_resolve_dt.
+	(match_io): Remove most of the tests of constraints and add the
+	call to check_io_constraints.
+
 2005-12-21  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25423

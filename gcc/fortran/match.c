@@ -2503,6 +2503,14 @@ gfc_match_namelist (void)
 	  return MATCH_ERROR;
 	}
 
+      if (group_name->attr.flavor == FL_NAMELIST
+	    && group_name->attr.use_assoc
+	    && gfc_notify_std (GFC_STD_GNU, "Namelist group name '%s' "
+			       "at %C already is USE associated and can"
+			       "not be respecified.", group_name->name)
+		 == FAILURE)
+	return MATCH_ERROR;
+
       if (group_name->attr.flavor != FL_NAMELIST
 	  && gfc_add_flavor (&group_name->attr, FL_NAMELIST,
 			     group_name->name, NULL) == FAILURE)
@@ -2519,6 +2527,21 @@ gfc_match_namelist (void)
 	  if (sym->attr.in_namelist == 0
 	      && gfc_add_in_namelist (&sym->attr, sym->name, NULL) == FAILURE)
 	    goto error;
+
+	  /* Use gfc_error_check here, rather than goto error, so that this
+	     these are the only errors for the next two lines.  */
+	  if (sym->as && sym->as->type == AS_ASSUMED_SIZE)
+	    {
+	      gfc_error ("Assumed size array '%s' in namelist '%s'at "
+		         "%C is not allowed.", sym->name, group_name->name);
+	      gfc_error_check ();
+	    }
+
+	  if (sym->as && sym->as->type == AS_ASSUMED_SHAPE
+		&& gfc_notify_std (GFC_STD_GNU, "Assumed shape array '%s' in "
+				   "namelist '%s' at %C is an extension.",
+				   sym->name, group_name->name) == FAILURE)
+	    gfc_error_check ();
 
 	  nl = gfc_get_namelist ();
 	  nl->sym = sym;

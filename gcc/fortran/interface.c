@@ -320,42 +320,38 @@ gfc_match_end_interface (void)
 }
 
 
-/* Compare two typespecs, recursively if necessary.  */
+/* Compare two derived types using the criteria in 4.4.2 of the standard,
+   recursing through gfc_compare_types for the components.  */
 
 int
-gfc_compare_types (gfc_typespec * ts1, gfc_typespec * ts2)
+gfc_compare_derived_types (gfc_symbol * derived1, gfc_symbol * derived2)
 {
   gfc_component *dt1, *dt2;
-
-  if (ts1->type != ts2->type)
-    return 0;
-  if (ts1->type != BT_DERIVED)
-    return (ts1->kind == ts2->kind);
-
-  /* Compare derived types.  */
-  if (ts1->derived == ts2->derived)
-    return 1;
 
   /* Special case for comparing derived types across namespaces.  If the
      true names and module names are the same and the module name is
      nonnull, then they are equal.  */
-  if (strcmp (ts1->derived->name, ts2->derived->name) == 0
-      && ((ts1->derived->module == NULL && ts2->derived->module == NULL)
-	  || (ts1->derived != NULL && ts2->derived != NULL
-	      && strcmp (ts1->derived->module, ts2->derived->module) == 0)))
+  if (strcmp (derived1->name, derived2->name) == 0
+	&& derived1 != NULL && derived2 != NULL
+	&& derived1->module != NULL && derived2->module != NULL
+	&& strcmp (derived1->module, derived2->module) == 0)
     return 1;
 
   /* Compare type via the rules of the standard.  Both types must have
      the SEQUENCE attribute to be equal.  */
 
-  if (strcmp (ts1->derived->name, ts2->derived->name))
+  if (strcmp (derived1->name, derived2->name))
     return 0;
 
-  dt1 = ts1->derived->components;
-  dt2 = ts2->derived->components;
-
-  if (ts1->derived->attr.sequence == 0 || ts2->derived->attr.sequence == 0)
+  if (derived1->component_access == ACCESS_PRIVATE
+	|| derived2->component_access == ACCESS_PRIVATE)
     return 0;
+
+  if (derived1->attr.sequence == 0 || derived2->attr.sequence == 0)
+    return 0;
+
+  dt1 = derived1->components;
+  dt2 = derived2->components;
 
   /* Since subtypes of SEQUENCE types must be SEQUENCE types as well, a
      simple test can speed things up.  Otherwise, lots of things have to
@@ -387,6 +383,24 @@ gfc_compare_types (gfc_typespec * ts1, gfc_typespec * ts2)
     }
 
   return 1;
+}
+
+/* Compare two typespecs, recursively if necessary.  */
+
+int
+gfc_compare_types (gfc_typespec * ts1, gfc_typespec * ts2)
+{
+
+  if (ts1->type != ts2->type)
+    return 0;
+  if (ts1->type != BT_DERIVED)
+    return (ts1->kind == ts2->kind);
+
+  /* Compare derived types.  */
+  if (ts1->derived == ts2->derived)
+    return 1;
+
+  return gfc_compare_derived_types (ts1->derived ,ts2->derived);
 }
 
 
