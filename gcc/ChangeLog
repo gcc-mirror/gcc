@@ -1,3 +1,10 @@
+2005-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/25328
+	* c-typeck.c (comptypes): If objc_comptypes returned < 0,
+	but TYPE_MODE or TYPE_REF_CAN_ALIAS_ALL differs between t1
+	and t2, make sure 0 is returned.
+
 2005-12-17  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/23837

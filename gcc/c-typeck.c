@@ -699,9 +699,14 @@ comptypes (tree type1, tree type2)
     {
     case POINTER_TYPE:
       /* We must give ObjC the first crack at comparing pointers, since
-	   protocol qualifiers may be involved.  */
-      if (c_dialect_objc () && (val = objc_comptypes (t1, t2, 0)) >= 0)
-	break;
+	 protocol qualifiers may be involved.  */
+      if (c_dialect_objc ())
+	{
+	  val = objc_comptypes (t1, t2, 0);
+	  if (val >= 0)
+	    break;
+	  val = 0;
+	}
       /* Do not remove mode or aliasing information.  */
       if (TYPE_MODE (t1) != TYPE_MODE (t2)
 	  || TYPE_REF_CAN_ALIAS_ALL (t1) != TYPE_REF_CAN_ALIAS_ALL (t2))
