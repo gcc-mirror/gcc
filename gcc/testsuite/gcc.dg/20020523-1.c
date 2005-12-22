@@ -1,7 +1,7 @@
 /* PR target/6753
    This testcase was miscompiled because sse_mov?fcc_const0*
    patterns were missing earlyclobber.  */
-/* { dg-do run { target i386-*-* x86_64-*-* } } */
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-skip-if "" { ilp32 } { "-fpic" "-fPIC" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-march=pentium3 -msse -ffast-math -O2" } */
