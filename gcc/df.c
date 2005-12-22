@@ -451,14 +451,11 @@ df_bitmaps_alloc (struct df *df, bitmap blocks, int flags)
 static void
 df_bitmaps_free (struct df *df, int flags)
 {
-  basic_block bb;
+  unsigned i;
 
-  FOR_EACH_BB (bb)
+  for (i = 0; i < df->n_bbs; i++)
     {
-      struct bb_info *bb_info = DF_BB_INFO (df, bb);
-
-      if (!bb_info)
-	continue;
+      struct bb_info *bb_info = &df->bbs[i];
 
       if ((flags & DF_RD) && bb_info->rd_in)
 	{
@@ -2636,7 +2633,7 @@ static void
 df_bb_modify (struct df *df, basic_block bb)
 {
   if ((unsigned) bb->index >= df->n_bbs)
-    df_bb_table_realloc (df, df->n_bbs);
+    df_bb_table_realloc (df, bb->index);
 
   bitmap_set_bit (df->bbs_modified, bb->index);
 }
@@ -3032,9 +3029,32 @@ df_find_def (struct df *df, rtx insn, rtx reg)
 {
   struct df_link *defs;
 
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+  gcc_assert (REG_P (reg));
+
   for (defs = DF_INSN_DEFS (df, insn); defs; defs = defs->next)
-    if (rtx_equal_p (DF_REF_REG (defs->ref), reg))
+    if (rtx_equal_p (DF_REF_REAL_REG (defs->ref), reg))
       return defs->ref;
+
+  return NULL;
+}
+
+/* Finds the reference corresponding to the use of REG in INSN.
+   DF is the dataflow object.  */
+
+struct ref *
+df_find_use (struct df *df, rtx insn, rtx reg)
+{
+  struct df_link *uses;
+
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+  gcc_assert (REG_P (reg));
+
+  for (uses = DF_INSN_USES (df, insn); uses; uses = uses->next)
+    if (rtx_equal_p (DF_REF_REAL_REG (uses->ref), reg))
+      return uses->ref;
 
   return NULL;
 }
@@ -3044,13 +3064,7 @@ df_find_def (struct df *df, rtx insn, rtx reg)
 int
 df_reg_used (struct df *df, rtx insn, rtx reg)
 {
-  struct df_link *uses;
-
-  for (uses = DF_INSN_USES (df, insn); uses; uses = uses->next)
-    if (rtx_equal_p (DF_REF_REG (uses->ref), reg))
-      return 1; 
-
-  return 0;
+  return df_find_use (df, insn, reg) != NULL;
 }
 
 static int

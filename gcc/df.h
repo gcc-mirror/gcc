@@ -290,6 +290,8 @@ extern struct ref *df_bb_regno_last_def_find (struct df *, basic_block, unsigned
 
 extern struct ref *df_find_def (struct df *, rtx, rtx);
 
+extern struct ref *df_find_use (struct df *, rtx, rtx);
+
 extern int df_reg_used (struct df *, rtx, rtx);
 
 /* Functions for debugging from GDB.  */
