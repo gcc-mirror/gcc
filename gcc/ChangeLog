@@ -1,3 +1,8 @@
+2005-12-22  Dale Johannesen  <dalej@apple.com>
+
+	* config/i386/sse.md (sse_movhlps):  Reverse operands for
+	2nd and 3rd alternatives.
+
 2005-12-22  Andrew Pinski <pinskia@physics.uc.edu>
 
 	PR tree-opt/25513

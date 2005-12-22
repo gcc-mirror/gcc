@@ -1,3 +1,7 @@
+2005-12-22  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.target/i386/sse-17.c:  New.
+
 2005-12-22  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/tree-ssa/loop-1.c: Look for jump/branch on m68k.
