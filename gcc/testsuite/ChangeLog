@@ -1,3 +1,7 @@
+2005-12-21  Mike Stump  <mrs@apple.com>
+
+	* gcc.dg/attr-weakref-1.c: Really skip on darwin.
+
 2005-12-21  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/pr19340.c: Skip on m68k targets.
