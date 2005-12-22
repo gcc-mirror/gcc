@@ -1,3 +1,8 @@
+2005-12-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23333
+	* g++.dg/parse/error25.C: Add more tests.
+
 2005-12-22  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18990

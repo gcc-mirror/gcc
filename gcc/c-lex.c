@@ -333,6 +333,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
   static bool no_more_pch;
   const cpp_token *tok;
   enum cpp_ttype type;
+  unsigned char add_flags = 0;
 
   timevar_push (TV_CPP);
  retry:
@@ -366,6 +367,10 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
 	    break;
 
 	  case CPP_N_INTEGER:
+	    /* C++ uses '0' to mark virtual functions as pure.
+	       Set PURE_ZERO to pass this information to the C++ parser.  */
+	    if (tok->val.str.len == 1 && *tok->val.str.text == '0')
+	      add_flags = PURE_ZERO;
 	    *value = interpret_integer (tok, flags);
 	    break;
 
@@ -472,7 +477,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
     }
 
   if (cpp_flags)
-    *cpp_flags = tok->flags;
+    *cpp_flags = tok->flags | add_flags;
 
   if (!no_more_pch)
     {
