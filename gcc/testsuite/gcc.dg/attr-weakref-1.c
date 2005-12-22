@@ -1,7 +1,7 @@
 // { dg-do run }
 // { dg-require-weak "" }
 // On darwin, we use attr-weakref-1-darwin.c
-// { dg-skip-if "" { "*-*-darwin*" } "*" { "*" } }
+// { dg-skip-if "" { "*-*-darwin*" } "*" { "" } }
 // { dg-options "-O2" }
 // { dg-additional-sources "attr-weakref-1a.c" }
 
