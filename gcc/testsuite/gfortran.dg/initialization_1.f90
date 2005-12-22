@@ -29,7 +29,6 @@ contains
     integer :: m2(2) = shape (x)  ! { dg-error "assumed size array" }
 
 ! These are warnings because they are gfortran extensions.
-    integer :: m3 = size (x, 1)   ! { dg-warning "Evaluation of nonstandard initialization" }
     integer :: m4(2) = shape (z)  ! { dg-warning "Evaluation of nonstandard initialization" }
 
 ! This does not depend on non-constant properties.
