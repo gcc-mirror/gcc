@@ -1,3 +1,9 @@
+2005-12-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23333
+	* parser.c (cp_parser_pure_specifier): Check for PURE_ZERO to
+	identify a single '0'.
+
 2005-12-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21228

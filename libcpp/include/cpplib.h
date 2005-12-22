@@ -172,6 +172,8 @@ struct cpp_string GTY(())
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define NO_EXPAND	(1 << 5) /* Do not macro-expand this token.  */
 #define BOL		(1 << 6) /* Token at beginning of line.  */
+#define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
+				    set in c-lex.c.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 

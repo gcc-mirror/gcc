@@ -13648,18 +13648,13 @@ cp_parser_pure_specifier (cp_parser* parser)
     return error_mark_node;
   /* Look for the `0' token.  */
   token = cp_lexer_consume_token (parser->lexer);
-  if (token->type != CPP_NUMBER || !integer_zerop (token->value))
-    {
-      cp_parser_error (parser,
-		       "invalid pure specifier (only `= 0' is allowed)");
-      cp_parser_skip_to_end_of_statement (parser);
-      return error_mark_node;
-    }
+  /* c_lex_with_flags marks a single digit '0' with PURE_ZERO.  */
+  if (token->type == CPP_NUMBER && (token->flags & PURE_ZERO))
+    return integer_zero_node;
 
-  /* FIXME: Unfortunately, this will accept `0L' and `0x00' as well.
-     We need to get information from the lexer about how the number
-     was spelled in order to fix this problem.  */
-  return integer_zero_node;
+  cp_parser_error (parser, "invalid pure specifier (only `= 0' is allowed)");
+  cp_parser_skip_to_end_of_statement (parser);
+  return error_mark_node;
 }
 
 /* Parse a constant-initializer.

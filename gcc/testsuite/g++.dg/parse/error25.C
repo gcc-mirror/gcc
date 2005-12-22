@@ -11,6 +11,7 @@ class foo
   virtual void bar2 () = __null;  // { dg-error "invalid pure specifier" }
   virtual void bar3 () = 4;       // { dg-error "invalid pure specifier" }
   virtual void bar4 () = A::f;    // { dg-error "invalid pure specifier" }
+  virtual void bar5 () = 0l;      // { dg-error "invalid pure specifier" }
+  virtual void bar6 () = 00;      // { dg-error "invalid pure specifier" }
+  virtual void bar7 () = 0x0;     // { dg-error "invalid pure specifier" }
 };
-
-
