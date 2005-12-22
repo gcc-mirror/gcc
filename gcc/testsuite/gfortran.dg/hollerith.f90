@@ -1,15 +1,15 @@
 ! { dg-do run }
 ! PR15966, PR18781 & PR16531
 implicit none
-complex*16 x(2) 
-complex*8 a(2,2)
+complex(kind=8) x(2) 
+complex a(2,2)
 character*4 z
 character z1(4)
 character*4 z2(2,2)
 character*80 line
-integer*4 i
-logical*4 l
-real*4 r
+integer i
+logical l
+real r
 character*8 c
 
 data x /16Habcdefghijklmnop, 16Hqrstuvwxyz012345/
@@ -52,7 +52,7 @@ call test (8h   hello)
 end
 
 subroutine test (h)
-integer*8 h
+integer(kind=8) h
 character*80 line
 
 write (line, '(8a)') h

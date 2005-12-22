@@ -2,7 +2,7 @@
        ! Program to test Hollerith constant.
        Program test
        implicit none
-       integer* 4 i,j
+       integer i,j
        real r, x, y
        parameter (i = 4h1234)
        parameter (r = 4hdead)

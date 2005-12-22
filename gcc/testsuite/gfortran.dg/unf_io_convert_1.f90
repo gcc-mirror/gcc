@@ -14,7 +14,7 @@ program main
 ! set debug to true for help in debugging failures.
   integer m(2)
   integer n
-  real*4 r(size)
+  real r(size)
   integer i
   character*4 str
 

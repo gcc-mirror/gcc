@@ -1,11 +1,11 @@
 c { dg-do compile }
 c { dg-options "-O2" }
-       LOGICAL*1 l1
-       LOGICAL*2 l2
-       LOGICAL*4 l4
-       INTEGER*1 i1
-       INTEGER*2 i2
-       INTEGER*4 i4
+       LOGICAL(kind=1) l1
+       LOGICAL(kind=2) l2
+       LOGICAL         l4
+       INTEGER(kind=1) i1
+       INTEGER(kind=2) i2
+       INTEGER         i4
 
        i1 = .TRUE.  ! { dg-warning "Extension: Conversion" }
        i2 = .TRUE.  ! { dg-warning "Extension: Conversion" }

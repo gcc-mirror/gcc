@@ -8,8 +8,8 @@ c Provided by Paul Thomas - pault@gcc.gnu.org
 
       program namelist_12
 
-      integer*4 x(10)
-      integer*8 xx
+      integer x(10)
+      integer(kind=8) xx
       integer ier
       character*10 ch , check
       namelist /mynml/ x, xx, ch

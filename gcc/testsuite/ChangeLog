@@ -1,5 +1,9 @@
 2005-12-22  Steven G. Kargl  <kargls@comcast.net>
 
+	* Finishing committing the last commit.
+
+2005-12-22  Steven G. Kargl  <kargls@comcast.net>
+
 	* gfortran.dg/assign_1.f90: Fix nonstandard declarations.
 	* gfortran.dg/common_4.f90: Ditto.
 	* gfortran.dg/direct_io_3.f90: Ditto.
