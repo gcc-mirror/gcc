@@ -28,9 +28,11 @@ void xxx(void)
 /* Because hppa and ia64 targets include an external declaration for foo as
    well as the calls we need to look for something more specific then just
    foo in order to count only the calls and not the declaration.  */
+/* m68k sometimes puts the address in a register, depending on CPU and PIC.  */
 
-/* { dg-final { scan-assembler-times "foo" 5 { xfail hppa*-*-* ia64*-*-* } } } */
+/* { dg-final { scan-assembler-times "foo" 5 { xfail hppa*-*-* ia64*-*-* m68k-*-* } } } */
 /* { dg-final { scan-assembler-times "foo,%r" 5 { target hppa*-*-* } } } */
 /* { dg-final { scan-assembler-times "= foo"  5 { target ia64*-*-* } } } */
+/* { dg-final { scan-assembler-times "\[jb\]sr" 5 { target m68k-*-* } } } */
 
 
