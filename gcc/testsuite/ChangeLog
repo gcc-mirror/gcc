@@ -1,5 +1,8 @@
 2005-12-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/25432
+	* gcc.c-torture/compile/20051216-1.c: New test.
+
 	PR objc/25328
 	* objc/execute/pr25328.m: New test.
 
