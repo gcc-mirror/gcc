@@ -98,7 +98,7 @@ struct ptr_info_def GTY(())
 /*---------------------------------------------------------------------------
 		   Tree annotations stored in tree_common.ann
 ---------------------------------------------------------------------------*/
-enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, STMT_ANN };
+enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, FUNCTION_ANN, STMT_ANN };
 
 struct tree_ann_common_d GTY(())
 {
@@ -209,16 +209,21 @@ struct var_ann_d GTY(())
      current version of this variable (an SSA_NAME).  */
   tree current_def;
   
-  /* Pointer to the structure that contains the sets of global
-     variables modified by function calls.  This field is only used
-     for FUNCTION_DECLs.  */
-  ipa_reference_vars_info_t GTY ((skip)) reference_vars_info;
 
   /* If this variable is a structure, this fields holds a list of
      symbols representing each of the fields of the structure.  */
   subvar_t subvars;
 };
 
+struct function_ann_d GTY(())
+{
+  struct tree_ann_common_d common;
+
+  /* Pointer to the structure that contains the sets of global
+     variables modified by function calls.  This field is only used
+     for FUNCTION_DECLs.  */
+  ipa_reference_vars_info_t GTY ((skip)) reference_vars_info;
+};
 
 typedef struct immediate_use_iterator_d
 {
@@ -287,7 +292,8 @@ struct stmt_ann_d GTY(())
 union tree_ann_d GTY((desc ("ann_type ((tree_ann_t)&%h)")))
 {
   struct tree_ann_common_d GTY((tag ("TREE_ANN_COMMON"))) common;
-  struct var_ann_d GTY((tag ("VAR_ANN"))) decl;
+  struct var_ann_d GTY((tag ("VAR_ANN"))) vdecl;
+  struct function_ann_d GTY((tag ("FUNCTION_ANN"))) fdecl;
   struct stmt_ann_d GTY((tag ("STMT_ANN"))) stmt;
 };
 
@@ -295,12 +301,15 @@ extern GTY(()) VEC(tree,gc) *modified_noreturn_calls;
 
 typedef union tree_ann_d *tree_ann_t;
 typedef struct var_ann_d *var_ann_t;
+typedef struct function_ann_d *function_ann_t;
 typedef struct stmt_ann_d *stmt_ann_t;
 
 static inline tree_ann_t tree_ann (tree);
 static inline tree_ann_t get_tree_ann (tree);
 static inline var_ann_t var_ann (tree);
 static inline var_ann_t get_var_ann (tree);
+static inline function_ann_t function_ann (tree);
+static inline function_ann_t get_function_ann (tree);
 static inline stmt_ann_t stmt_ann (tree);
 static inline stmt_ann_t get_stmt_ann (tree);
 static inline enum tree_ann_type ann_type (tree_ann_t);
@@ -533,6 +542,7 @@ extern void dump_generic_bb (FILE *, basic_block, int, int);
 
 /* In tree-dfa.c  */
 extern var_ann_t create_var_ann (tree);
+extern function_ann_t create_function_ann (tree);
 extern stmt_ann_t create_stmt_ann (tree);
 extern tree_ann_t create_tree_ann (tree);
 extern void dump_dfa_stats (FILE *);
