@@ -1,3 +1,8 @@
+2005-12-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/23518
+	* testsuite/gcc.dg/pr23518.c: New.
+
 2005-12-21  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/attr-weakref-1.c: Really skip on darwin.
