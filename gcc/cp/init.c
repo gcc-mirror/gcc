@@ -1332,112 +1332,40 @@ get_type_value (tree name)
    @@ This function should be rewritten and placed in search.c.  */
 
 tree
-build_offset_ref (tree type, tree name, bool address_p)
+build_offset_ref (tree type, tree member, bool address_p)
 {
   tree decl;
-  tree member;
   tree basebinfo = NULL_TREE;
-  tree orig_name = name;
 
   /* class templates can come in as TEMPLATE_DECLs here.  */
-  if (TREE_CODE (name) == TEMPLATE_DECL)
-    return name;
+  if (TREE_CODE (member) == TEMPLATE_DECL)
+    return member;
 
-  if (dependent_type_p (type) || type_dependent_expression_p (name))
-    return build_qualified_name (NULL_TREE, type, name, 
+  if (dependent_type_p (type) || type_dependent_expression_p (member))
+    return build_qualified_name (NULL_TREE, type, member, 
 				 /*template_p=*/false);
 
-  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
-    {
-      /* If the NAME is a TEMPLATE_ID_EXPR, we are looking at
-	 something like `a.template f<int>' or the like.  For the most
-	 part, we treat this just like a.f.  We do remember, however,
-	 the template-id that was used.  */
-      name = TREE_OPERAND (orig_name, 0);
-
-      if (DECL_P (name))
-	name = DECL_NAME (name);
-      else
-	{
-	  if (TREE_CODE (name) == COMPONENT_REF)
-	    name = TREE_OPERAND (name, 1);
-	  if (TREE_CODE (name) == OVERLOAD)
-	    name = DECL_NAME (OVL_CURRENT (name));
-	}
-
-      gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
-    }
-
-  if (type == NULL_TREE)
-    return error_mark_node;
-
-  /* Handle namespace names fully here.  */
-  if (TREE_CODE (type) == NAMESPACE_DECL)
-    {
-      tree t = lookup_namespace_name (type, name);
-      if (t == error_mark_node)
-	return t;
-      if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
-	/* Reconstruct the TEMPLATE_ID_EXPR.  */
-	t = build2 (TEMPLATE_ID_EXPR, TREE_TYPE (t),
-		    t, TREE_OPERAND (orig_name, 1));
-      if (! type_unknown_p (t))
-	{
-	  mark_used (t);
-	  t = convert_from_reference (t);
-	}
-      return t;
-    }
-
+  gcc_assert (TYPE_P (type));
   if (! is_aggr_type (type, 1))
     return error_mark_node;
 
-  if (TREE_CODE (name) == BIT_NOT_EXPR)
-    {
-      if (! check_dtor_name (type, name))
-	error ("qualified type %qT does not match destructor name %<~%T%>",
-		  type, TREE_OPERAND (name, 0));
-      name = dtor_identifier;
-    }
+  gcc_assert (DECL_P (member) || BASELINK_P (member));
+  /* Callers should call mark_used before this point.  */
+  gcc_assert (!DECL_P (member) || TREE_USED (member));
 
   if (!COMPLETE_TYPE_P (complete_type (type))
       && !TYPE_BEING_DEFINED (type))
     {
-      error ("incomplete type %qT does not have member %qD", type, name);
+      error ("incomplete type %qT does not have member %qD", type, member);
       return error_mark_node;
     }
 
-  /* Set up BASEBINFO for member lookup.  */
-  decl = maybe_dummy_object (type, &basebinfo);
-
-  if (BASELINK_P (name) || DECL_P (name))
-    member = name;
-  else
-    {
-      member = lookup_member (basebinfo, name, 1, 0);
-
-      if (member == error_mark_node)
-	return error_mark_node;
-    }
-
-  if (!member)
-    {
-      error ("%qD is not a member of type %qT", name, type);
-      return error_mark_node;
-    }
-
+  /* Entities other than non-static members need no further
+     processing.  */ 
   if (TREE_CODE (member) == TYPE_DECL)
-    {
-      TREE_USED (member) = 1;
-      return member;
-    }
-  /* static class members and class-specific enum
-     values can be returned without further ado.  */
+    return member;
   if (TREE_CODE (member) == VAR_DECL || TREE_CODE (member) == CONST_DECL)
-    {
-      mark_used (member);
-      return convert_from_reference (member);
-    }
+    return convert_from_reference (member);
 
   if (TREE_CODE (member) == FIELD_DECL && DECL_C_BIT_FIELD (member))
     {
@@ -1445,35 +1373,15 @@ build_offset_ref (tree type, tree name, bool address_p)
       return error_mark_node;
     }
 
+  /* Set up BASEBINFO for member lookup.  */
+  decl = maybe_dummy_object (type, &basebinfo);
+
   /* A lot of this logic is now handled in lookup_member.  */
   if (BASELINK_P (member))
     {
       /* Go from the TREE_BASELINK to the member function info.  */
       tree fnfields = member;
       tree t = BASELINK_FUNCTIONS (fnfields);
-
-      if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
-	{
-	  /* The FNFIELDS are going to contain functions that aren't
-	     necessarily templates, and templates that don't
-	     necessarily match the explicit template parameters.  We
-	     save all the functions, and the explicit parameters, and
-	     then figure out exactly what to instantiate with what
-	     arguments in instantiate_type.  */
-
-	  if (TREE_CODE (t) != OVERLOAD)
-	    /* The code in instantiate_type which will process this
-	       expects to encounter OVERLOADs, not raw functions.  */
-	    t = ovl_cons (t, NULL_TREE);
-
-	  t = build2 (TEMPLATE_ID_EXPR, TREE_TYPE (t), t,
-		      TREE_OPERAND (orig_name, 1));
-	  t = build2 (OFFSET_REF, unknown_type_node, decl, t);
-
-	  PTRMEM_OK_P (t) = 1;
-
-	  return t;
-	}
 
       if (TREE_CODE (t) != TEMPLATE_ID_EXPR && !really_overloaded_fn (t))
 	{
@@ -1494,7 +1402,6 @@ build_offset_ref (tree type, tree name, bool address_p)
 	  else
 	    perform_or_defer_access_check (basebinfo, t);
 
-	  mark_used (t);
 	  if (DECL_STATIC_FUNCTION_P (t))
 	    return t;
 	  member = t;
