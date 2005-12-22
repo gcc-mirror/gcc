@@ -1,3 +1,9 @@
+2005-12-22  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_NewArrayClass): Don't
+	reference NUM_OBJECT_METHODS.
+	* include/jvm.h (NUM_OBJECT_METHODS): Removed.
+
 2005-12-18  Anthony Green  <green@redhat.com>
 
 	* gnu/java/net/natPlainDatagramSocketImplPosix.cc (getLocalAddress): 

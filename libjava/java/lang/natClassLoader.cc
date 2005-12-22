@@ -415,8 +415,6 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
 
   // Note that `vtable_method_count' doesn't include the initial
   // gc_descr slot.
-  JvAssert (java::lang::Object::class$.vtable_method_count
-	    == NUM_OBJECT_METHODS);
   int dm_count = java::lang::Object::class$.vtable_method_count;
 
   // Create a new vtable by copying Object's vtable.
