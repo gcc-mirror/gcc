@@ -1044,8 +1044,8 @@
   [(set (match_operand:V4SF 0 "nonimmediate_operand"     "=x,x,m")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
-	    (match_operand:V4SF 1 "nonimmediate_operand" " 0,o,x")
-	    (match_operand:V4SF 2 "nonimmediate_operand" " x,0,0"))
+	    (match_operand:V4SF 1 "nonimmediate_operand" " 0,0,0")
+	    (match_operand:V4SF 2 "nonimmediate_operand" " x,o,x"))
 	  (parallel [(const_int 6)
 		     (const_int 7)
 		     (const_int 2)
@@ -1053,8 +1053,8 @@
   "TARGET_SSE && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    movhlps\t{%2, %0|%0, %2}
-   movlps\t{%H1, %0|%0, %H1}
-   movhps\t{%1, %0|%0, %1}"
+   movlps\t{%H2, %0|%0, %H2}
+   movhps\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V4SF,V2SF,V2SF")])
 
