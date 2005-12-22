@@ -1768,6 +1768,8 @@ check_restricted (gfc_expr * e)
 try
 gfc_specification_expr (gfc_expr * e)
 {
+  if (e == NULL)
+    return SUCCESS;
 
   if (e->ts.type != BT_INTEGER)
     {
