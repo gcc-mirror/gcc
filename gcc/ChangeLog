@@ -1,5 +1,12 @@
 2005-12-22  Kazu Hirata  <kazu@codesourcery.com>
 
+	PR tree-optimization/23518
+	* fold-const.c (make_range): Don't move a constant to the
+	other side of the comparison if the type is signed and -fwrapv
+	is given.
+
+2005-12-22  Kazu Hirata  <kazu@codesourcery.com>
+
 	* tree-vrp.c (extract_range_from_binary_expr): Clean up uses
 	of vr0.type.
 

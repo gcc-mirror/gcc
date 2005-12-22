@@ -3836,6 +3836,11 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh)
 	  if (TREE_CODE (arg1) != INTEGER_CST)
 	    break;
 
+	  /* If flag_wrapv and ARG0_TYPE is signed, then we cannot
+	     move a constant to the other side.  */
+	  if (flag_wrapv && !TYPE_UNSIGNED (arg0_type))
+	    break;
+
 	  /* If EXP is signed, any overflow in the computation is undefined,
 	     so we don't worry about it so long as our computations on
 	     the bounds don't overflow.  For unsigned, overflow is defined
