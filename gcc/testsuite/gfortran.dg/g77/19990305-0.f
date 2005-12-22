@@ -34,7 +34,7 @@ C-----------------------------------------------------------------------
 C     Integral  LOG(A-EPSI-BY(1-Y))/(Y-Y0)
 C-----------------------------------------------------------------------
       IMPLICIT NONE
-      DOUBLE COMPLEX HWUCI2,HWULI2,EPSI,Y1,Y2,Z1,Z2,Z3,Z4
+      complex(kind=8) HWUCI2,HWULI2,EPSI,Y1,Y2,Z1,Z2,Z3,Z4
       DOUBLE PRECISION A,B,Y0,ZERO,ONE,FOUR,HALF
       EXTERNAL HWULI2
       COMMON/SMALL/EPSI

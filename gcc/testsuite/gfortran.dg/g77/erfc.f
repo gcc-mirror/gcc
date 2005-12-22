@@ -1,7 +1,7 @@
 c { dg-do run }
 c============================================== test.f
       real x, y
-      real*8 x1, y1
+      real(kind=8) x1, y1
       x=0.
       y = erfc(x)
       if (y .ne. 1.) call abort

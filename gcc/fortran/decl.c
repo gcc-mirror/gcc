@@ -1309,6 +1309,10 @@ gfc_match_old_kind_spec (gfc_typespec * ts)
       return MATCH_ERROR;
     }
 
+  if (gfc_notify_std (GFC_STD_GNU, "Nonstandard type declaration %s*%d at %C",
+		      gfc_basic_typename (ts->type), original_kind) == FAILURE)
+    return MATCH_ERROR;
+
   return MATCH_YES;
 }
 
@@ -1614,6 +1618,10 @@ match_type_spec (gfc_typespec * ts, int implicit_flag)
 
   if (gfc_match (" double complex") == MATCH_YES)
     {
+      if (gfc_notify_std (GFC_STD_GNU, "DOUBLE COMPLEX at %C does not "
+			  "conform to the Fortran 95 standard") == FAILURE)
+	return MATCH_ERROR;
+
       ts->type = BT_COMPLEX;
       ts->kind = gfc_default_double_kind;
       return MATCH_YES;

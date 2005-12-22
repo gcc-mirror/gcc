@@ -1,6 +1,6 @@
 c { dg-do compile }
       SUBROUTINE MIST(N, BETA)
-      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT REAL(kind=8) (A-H,O-Z)
       INTEGER  IA, IQ, M1
       DIMENSION BETA(N)
       DO 80 IQ=1,M1

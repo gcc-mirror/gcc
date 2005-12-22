@@ -1,5 +1,5 @@
 ! { dg-do run }
-  integer*8 o
+  integer(kind=8) o
   open (10, status="scratch")
   if (ftell(10) /= 0) call abort
   write (10,"(A)") "1234567"

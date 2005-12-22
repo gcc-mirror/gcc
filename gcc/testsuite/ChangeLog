@@ -1,3 +1,69 @@
+2005-12-22  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/assign_1.f90: Fix nonstandard declarations.
+	* gfortran.dg/common_4.f90: Ditto.
+	* gfortran.dg/direct_io_3.f90: Ditto.
+	* gfortran.dg/e_d_fmt.f90: Ditto.
+	* gfortran.dg/entry_4.f90: Ditto.
+	* gfortran.dg/equiv_constraint_2.f90: Ditto.
+	* gfortran.dg/f2c_2.f90: Ditto.
+	* gfortran.dg/fmt_read_bz_bn.f90: Ditto.
+	* gfortran.dg/ftell_1.f90: Ditto.
+	* gfortran.dg/ftell_2.f90: Ditto.
+	* gfortran.dg/g77/19981216-0.f: Ditto.
+	* gfortran.dg/g77/19990305-0.f: Ditto.
+	* gfortran.dg/g77/19990313-0.f: Ditto.
+	* gfortran.dg/g77/19990313-1.f: Ditto.
+	* gfortran.dg/g77/19990313-2.f: Ditto.
+	* gfortran.dg/g77/19990313-3.f: Ditto.
+	* gfortran.dg/g77/19990502-1.f: Ditto.
+	* gfortran.dg/g77/19990905-2.f: Ditto.
+	* gfortran.dg/g77/20000629-1.f: Ditto.
+	* gfortran.dg/g77/20010426.f: Ditto.
+	* gfortran.dg/g77/20010519-1.f: Ditto.
+	* gfortran.dg/g77/20020307-1.f: Ditto.
+	* gfortran.dg/g77/8485.f: Ditto.
+	* gfortran.dg/g77/947.f: Ditto.
+	* gfortran.dg/g77/970125-0.f: Ditto.
+	* gfortran.dg/g77/990115-1.f: Ditto.
+	* gfortran.dg/g77/alpha1.f: Ditto.
+	* gfortran.dg/g77/cabs.f: Ditto.
+	* gfortran.dg/g77/dcomplex.f: Ditto.
+	* gfortran.dg/g77/erfc.f: Ditto.
+	* gfortran.dg/g77/f90-intrinsic-bit.f: Ditto.
+	* gfortran.dg/g77/f90-intrinsic-mathematical.f: Ditto.
+	* gfortran.dg/g77/f90-intrinsic-numeric.f: Ditto.
+	* gfortran.dg/g77/int8421.f: Ditto.
+	* gfortran.dg/g77/intrinsic-unix-bessel.f: Ditto.
+	* gfortran.dg/g77_intrinsics_funcs.f: Ditto.
+	* gfortran.dg/g77_intrinsics_sub.f: Ditto.
+	* gfortran.dg/gnu_logical_1.F
+	* gfortran.dg/hollerith.f90: Ditto.
+	* gfortran.dg/hollerith2.f90: Ditto.
+	* gfortran.dg/hollerith_f95.f90: Ditto.
+	* gfortran.dg/hollerith_legacy.f90: Ditto.
+	* gfortran.dg/imag_1.f: Ditto.
+	* gfortran.dg/imag_2.f: Ditto.
+	* gfortran.dg/logint-1.f: Ditto.
+	* gfortran.dg/logint-2.f: Ditto.
+	* gfortran.dg/logint-3.f: Ditto.
+	* gfortran.dg/malloc_free_1.f90: Ditto.
+	* gfortran.dg/modulo_1.f90: Ditto.
+	* gfortran.dg/namelist_11.f: Ditto.
+	* gfortran.dg/namelist_12.f: Ditto.
+	* gfortran.dg/namelist_14.f90: Ditto.
+	* gfortran.dg/nested_modules_1.f90: Ditto.
+	* gfortran.dg/pr17143.f90: Ditto.
+	* gfortran.dg/pr23095.f: Ditto.
+	* gfortran.dg/read_float_1.f90: Ditto.
+	* gfortran.dg/recursive_statement_functions.f90: Ditto.
+	* gfortran.dg/scale_1.f90: Ditto.
+	* gfortran.dg/secnds.f: Ditto.
+	* gfortran.dg/select_5.f90: Ditto.
+	* gfortran.dg/spread_scalar_source.f90: Ditto.
+	* gfortran.dg/unf_io_convert_1.f90: Ditto.
+
+
 2005-12-21  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/pr19340.c: Skip on m68k targets.

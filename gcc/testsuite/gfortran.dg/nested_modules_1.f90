@@ -4,7 +4,7 @@
 ! Contributed by Paul Thomas  <pault@gcc.gnu.org>
 !
        module mod0
-         double complex FOO, KANGA
+         complex(kind=8) FOO, KANGA
          common /bar/ FOO, KANGA
        contains
          subroutine eyeore ()    
@@ -20,12 +20,12 @@
        module mod2
          use mod0
          use mod1
-         real*8 re1, im1, re2, im2, re, im
+         real(kind=8) re1, im1, re2, im2, re, im
          common /bar/ re1, im1, re2, im2
          equivalence (re1, re), (im1, im)
        contains
          subroutine tigger (w)
-           double complex w
+           complex(kind=8) w
            if (FOO.ne.(1.0d0, 1.0d0)) call abort ()
            if (KANGA.ne.(-1.0d0, -1.0d0)) call abort ()
            if (ROBIN.ne.(99.0d0, 99.0d0)) CALL abort ()
