@@ -1477,6 +1477,13 @@ finish_qualified_id_expr (tree qualifying_class, tree expr, bool done,
   if (error_operand_p (expr))
     return error_mark_node;
 
+  if (DECL_P (expr))
+    mark_used (expr);
+  else if (BASELINK_P (expr)
+	   && TREE_CODE (BASELINK_FUNCTIONS (expr)) != TEMPLATE_ID_EXPR
+	   && !really_overloaded_fn (BASELINK_FUNCTIONS (expr)))
+    mark_used (OVL_CURRENT (BASELINK_FUNCTIONS (expr)));
+  
   /* If EXPR occurs as the operand of '&', use special handling that
      permits a pointer-to-member.  */
   if (address_p && done)
@@ -2682,7 +2689,11 @@ finish_id_expression (tree id_expression,
 
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    mark_used (decl);
-
+	  else if (BASELINK_P (decl)
+		   && TREE_CODE (BASELINK_FUNCTIONS (decl)) != TEMPLATE_ID_EXPR
+		   && !really_overloaded_fn (BASELINK_FUNCTIONS (decl)))
+	    mark_used (OVL_CURRENT (BASELINK_FUNCTIONS (decl)));
+	  
 	  if (TREE_CODE (decl) == FIELD_DECL || BASELINK_P (decl))
 	    *qualifying_class = scope;
 	  else

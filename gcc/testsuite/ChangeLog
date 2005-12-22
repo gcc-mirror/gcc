@@ -1,3 +1,8 @@
+2005-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25364
+	* g++.dg/template/call4.C: New test.
+
 2005-12-22  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/weak/typeof-2.c: Skip assembly test on m68k.
