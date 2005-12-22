@@ -6770,11 +6770,11 @@ tree_fold_gcd (tree a, tree b)
 
   if (tree_int_cst_sgn (a) == -1)
     a = fold_build2 (MULT_EXPR, type, a,
-		     convert (type, integer_minus_one_node));
+		     build_int_cst (type, -1));
 
   if (tree_int_cst_sgn (b) == -1)
     b = fold_build2 (MULT_EXPR, type, b,
-		     convert (type, integer_minus_one_node));
+		     build_int_cst (type, -1));
 
   while (1)
     {

@@ -3883,7 +3883,7 @@ array_size_for_constructor (tree val)
   i = size_binop (MINUS_EXPR, convert (sizetype, max_index),
 		  convert (sizetype,
 			   TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)))));
-  i = size_binop (PLUS_EXPR, i, convert (sizetype, integer_one_node));
+  i = size_binop (PLUS_EXPR, i, build_int_cst (sizetype, 1));
 
   /* Multiply by the array element unit size to find number of bytes.  */
   i = size_binop (MULT_EXPR, i, TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
