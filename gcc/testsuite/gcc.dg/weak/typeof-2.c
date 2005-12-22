@@ -37,4 +37,6 @@ int bar3 (int x)
 // { dg-final { if [string match s390*-*-* $target_triplet ] {return} } }
 // Likewise for CRIS targets.
 // { dg-final { if [string match cris-*-* $target_triplet ] {return} } }
+// Likewise for m68k targets.
+// { dg-final { if [string match m68k-*-* $target_triplet ] {return} } }
 // { dg-final { scan-assembler "baz3.*baz3.*baz3.*baz3.*baz3.*baz3" } }
