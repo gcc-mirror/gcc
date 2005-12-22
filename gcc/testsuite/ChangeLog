@@ -1,3 +1,8 @@
+2005-12-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR testsuite/20772
+	* gcc.dg/20020523-1.c: Change run target i386 to i?86.
+
 2005-12-21  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25423
