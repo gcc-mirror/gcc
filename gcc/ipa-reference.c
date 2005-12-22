@@ -111,7 +111,7 @@ tree memory_identifier_string;
 static inline ipa_reference_vars_info_t
 get_reference_vars_info_from_cgraph (struct cgraph_node * node)
 {
-  return get_var_ann (node->decl)->reference_vars_info;
+  return get_function_ann (node->decl)->reference_vars_info;
 }
 
 /* Get a bitmap that contains all of the locally referenced static
@@ -119,7 +119,7 @@ get_reference_vars_info_from_cgraph (struct cgraph_node * node)
 static ipa_reference_local_vars_info_t
 get_local_reference_vars_info (tree fn) 
 {
-  ipa_reference_vars_info_t info = get_var_ann (fn)->reference_vars_info;
+  ipa_reference_vars_info_t info = get_function_ann (fn)->reference_vars_info;
 
   if (info)
     return info->local;
@@ -134,7 +134,7 @@ get_local_reference_vars_info (tree fn)
 static ipa_reference_global_vars_info_t
 get_global_reference_vars_info (tree fn) 
 {
-  ipa_reference_vars_info_t info = get_var_ann (fn)->reference_vars_info;
+  ipa_reference_vars_info_t info = get_function_ann (fn)->reference_vars_info;
 
   if (info)
     return info->global;
@@ -790,7 +790,7 @@ analyze_function (struct cgraph_node *fn)
   tree decl = fn->decl;
 
   /* Add the info to the tree's annotation.  */
-  get_var_ann (fn->decl)->reference_vars_info = info;
+  get_function_ann (fn->decl)->reference_vars_info = info;
 
   info->local = l;
   l->statics_read = BITMAP_ALLOC (&ipa_obstack);
@@ -874,8 +874,8 @@ clean_function (struct cgraph_node *fn)
     }
 
   
-  free (get_var_ann (fn->decl)->reference_vars_info);
-  get_var_ann (fn->decl)->reference_vars_info = NULL;
+  free (get_function_ann (fn->decl)->reference_vars_info);
+  get_function_ann (fn->decl)->reference_vars_info = NULL;
 }
 
 

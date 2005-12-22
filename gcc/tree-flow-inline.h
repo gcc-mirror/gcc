@@ -126,6 +126,7 @@ var_ann (tree t)
 {
   gcc_assert (t);
   gcc_assert (DECL_P (t));
+  gcc_assert (TREE_CODE (t) != FUNCTION_DECL);
   gcc_assert (!t->common.ann || t->common.ann->common.type == VAR_ANN);
 
   return (var_ann_t) t->common.ann;
@@ -138,6 +139,27 @@ get_var_ann (tree var)
 {
   var_ann_t ann = var_ann (var);
   return (ann) ? ann : create_var_ann (var);
+}
+
+/* Return the function annotation for T, which must be a FUNCTION_DECL node.
+   Return NULL if the function annotation doesn't already exist.  */
+static inline function_ann_t
+function_ann (tree t)
+{
+  gcc_assert (t);
+  gcc_assert (TREE_CODE (t) == FUNCTION_DECL);
+  gcc_assert (!t->common.ann || t->common.ann->common.type == FUNCTION_ANN);
+
+  return (function_ann_t) t->common.ann;
+}
+
+/* Return the function annotation for T, which must be a FUNCTION_DECL node.
+   Create the function annotation if it doesn't exist.  */
+static inline function_ann_t
+get_function_ann (tree var)
+{
+  function_ann_t ann = function_ann (var);
+  return (ann) ? ann : create_function_ann (var);
 }
 
 /* Return the statement annotation for T, which must be a statement
