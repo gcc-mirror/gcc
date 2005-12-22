@@ -121,6 +121,7 @@ static char
 next_char (st_parameter_dt *dtp)
 {
   int length;
+  gfc_offset record;
   char c, *p;
 
   if (dtp->u.p.last_char != '\0')
@@ -133,26 +134,64 @@ next_char (st_parameter_dt *dtp)
 
   length = 1;
 
-  p = salloc_r (dtp->u.p.current_unit->s, &length);
-  if (p == NULL)
+  /* Handle the end-of-record condition for internal array unit */
+  if (is_array_io(dtp) && dtp->u.p.current_unit->bytes_left == 0)
     {
-      generate_error (&dtp->common, ERROR_OS, NULL);
-      return '\0';
+      c = '\n';
+      record = next_array_record (dtp, dtp->u.p.current_unit->ls);
+
+      /* Check for "end-of-file" condition */      
+      if (record == 0)
+	longjmp (*dtp->u.p.eof_jump, 1);
+
+      record *= dtp->u.p.current_unit->recl;
+      
+      if (sseek (dtp->u.p.current_unit->s, record) == FAILURE)
+	longjmp (*dtp->u.p.eof_jump, 1);
+
+      dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
+      goto done;
     }
 
-  if (length == 0)
+  /* Get the next character and handle end-of-record conditions */
+  p = salloc_r (dtp->u.p.current_unit->s, &length);
+
+  if (is_internal_unit(dtp))
     {
-      /* For internal files return a newline instead of signalling EOF.  */
-      /* ??? This isn't quite right, but we don't handle internal files
-	 with multiple records.  */
-      if (is_internal_unit (dtp))
-	c = '\n';
+      if (is_array_io(dtp))
+	{
+	  /* End of record is handled in the next pass through, above.  The
+	     check for NULL here is cautionary. */
+	  if (p == NULL)
+	    {
+	      generate_error (&dtp->common, ERROR_OS, NULL);
+	      return '\0';
+	    }
+
+	  dtp->u.p.current_unit->bytes_left--;
+	  c = *p;
+	}
       else
-	longjmp (*dtp->u.p.eof_jump, 1);
+	{
+	  if (p == NULL)
+	    longjmp (*dtp->u.p.eof_jump, 1);
+	  if (length == 0)
+	    c = '\n';
+	  else
+	    c = *p;
+	}
     }
   else
-    c = *p;
-
+    {
+      if (p == NULL)
+	{
+	  generate_error (&dtp->common, ERROR_OS, NULL);
+	  return '\0';
+	}
+      if (length == 0)
+	longjmp (*dtp->u.p.eof_jump, 1);
+      c = *p;
+    }
 done:
   dtp->u.p.at_eol = (c == '\n' || c == '\r');
   return c;
