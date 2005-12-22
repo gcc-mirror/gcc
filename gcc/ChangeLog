@@ -1,3 +1,9 @@
+2005-12-22  Andrew Pinski <pinskia@physics.uc.edu>
+
+	PR tree-opt/25513
+	* tree-dfa.c (make_rename_temp): Set DECL_COMPLEX_GIMPLE_REG_P complex
+	variables.
+
 2005-12-22  Zdenek Dvorak <dvorakz@suse.cz>
 	    Steven Bosscher <stevenb@suse.de>
 

@@ -236,6 +236,10 @@ tree
 make_rename_temp (tree type, const char *prefix)
 {
   tree t = create_tmp_var (type, prefix);
+
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    DECL_COMPLEX_GIMPLE_REG_P (t) = 1;
+
   if (referenced_vars)
     {
       add_referenced_tmp_var (t);

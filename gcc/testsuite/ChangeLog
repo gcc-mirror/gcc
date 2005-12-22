@@ -1,3 +1,8 @@
+2005-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/25513
+	* gcc.c-torture/compile/pr25513.c: New test.
+
 2005-12-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23333
