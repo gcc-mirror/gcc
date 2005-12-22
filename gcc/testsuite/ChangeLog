@@ -1,3 +1,8 @@
+2005-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/25328
+	* objc/execute/pr25328.m: New test.
+
 2005-12-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25364
