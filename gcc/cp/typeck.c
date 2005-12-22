@@ -4117,10 +4117,11 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	     is used here to remove this const from the diagnostics
 	     and the created OFFSET_REF.  */
 	  tree base = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg, 0)));
-	  tree name = DECL_NAME (get_first_fn (TREE_OPERAND (arg, 1)));
+	  tree fn = get_first_fn (TREE_OPERAND (arg, 1));
 
 	  if (! flag_ms_extensions)
 	    {
+	      tree name = DECL_NAME (fn);
 	      if (current_class_type
 		  && TREE_OPERAND (arg, 0) == current_class_ref)
 		/* An expression like &memfn.  */
@@ -4134,7 +4135,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 			 "  Say %<&%T::%D%>",
 			 base, name);
 	    }
-	  arg = build_offset_ref (base, name, /*address_p=*/true);
+	  arg = build_offset_ref (base, fn, /*address_p=*/true);
 	}
 
     offset_ref:

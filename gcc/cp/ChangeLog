@@ -1,3 +1,13 @@
+2005-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25364
+	* typeck.c (build_unary_op): Pass DECLs not names to
+	build_offset_refs.
+	* init.c (build_offset_ref): Do not do name lookup.  Do not call
+	mark_used.
+	* call.c (build_call): Simplify and tidy.
+	* semantics.c (finish_qualified_id_expr): Call mark_used.
+
 2005-12-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23333
