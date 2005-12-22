@@ -1,3 +1,26 @@
+2005-12-22  Zdenek Dvorak <dvorakz@suse.cz>
+	    Steven Bosscher <stevenb@suse.de>
+
+	* df.c (df_bitmaps_free): Only work for bbs for that structures are
+	allocated.
+	(df_bb_modify): Realloc tables to the new index.
+	(df_find_use): New function.
+	(df_find_def, df_reg_used): Handle subregs.
+	* df.h (df_find_use): Declare.
+
+	* loop-invariant.c: Include hashtab.h.
+	(struct invariant): Remove processed field, add eqto and reg fields.
+	(struct invariant_expr_entry): New.
+	(invariant_for_use, hash_invariant_expr_1, invariant_expr_equal_p,
+	hash_invariant_expr, eq_invariant_expr, find_or_insert_inv,
+	find_identical_invariants, merge_identical_invariants): New functions.
+	(create_new_invariant): Return the new invariant.  Initialize new
+	fields.
+	(find_invariants): Call merge_identical_invariants.
+	(get_inv_cost, best_gain_for_invariant, set_move_mark,
+	move_invariant_reg): Handle equivalent invariants.
+	* Makefile.in (loop-invariant.o): Add HASHTAB_H dependency.
+
 2005-12-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23333

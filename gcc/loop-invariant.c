@@ -46,10 +46,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "expr.h"
+#include "recog.h"
 #include "output.h"
 #include "function.h"
 #include "flags.h"
 #include "df.h"
+#include "hashtab.h"
 
 /* The data stored for the loop.  */
 
@@ -88,8 +90,12 @@ struct invariant
   /* The number of the invariant.  */
   unsigned invno;
 
-  /* Whether we already processed the invariant.  */
-  bool processed;
+  /* The number of the invariant with the same value.  */
+  unsigned eqto;
+
+  /* If we moved the invariant out of the loop, the register that contains its
+     value.  */
+  rtx reg;
 
   /* The definition of the invariant.  */
   struct def *def;
@@ -112,6 +118,23 @@ struct invariant
   /* Used for detecting already visited invariants during determining
      costs of movements.  */
   unsigned stamp;
+};
+
+/* Entry for hash table of invariant expressions.  */
+
+struct invariant_expr_entry
+{
+  /* The invariant.  */
+  struct invariant *inv;
+
+  /* Its value.  */
+  rtx expr;
+
+  /* Its mode.  */
+  enum machine_mode mode;
+
+  /* Its hash.  */
+  hashval_t hash;
 };
 
 /* The actual stamp for marking already visited invariants during determining
@@ -197,6 +220,269 @@ check_maybe_invariant (rtx x)
     }
 
   return true;
+}
+
+/* Returns the invariant definition for USE, or NULL if USE is not
+   invariant.  */
+
+static struct invariant *
+invariant_for_use (struct ref *use)
+{
+  struct df_link *defs;
+  struct ref *def;
+  basic_block bb = BLOCK_FOR_INSN (use->insn), def_bb;
+
+  defs = DF_REF_CHAIN (use);
+  if (!defs || defs->next)
+    return NULL;
+  def = defs->ref;
+  if (!DF_REF_DATA (def))
+    return NULL;
+
+  def_bb = DF_REF_BB (def);
+  if (!dominated_by_p (CDI_DOMINATORS, bb, def_bb))
+    return NULL;
+  return DF_REF_DATA (def);
+}
+
+/* Computes hash value for invariant expression X in INSN.  */
+
+static hashval_t
+hash_invariant_expr_1 (rtx insn, rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  int i, j;
+  const char *fmt;
+  hashval_t val = code;
+  int do_not_record_p;
+  struct ref *use;
+  struct invariant *inv;
+
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case CONST:
+    case LABEL_REF:
+      return hash_rtx (x, GET_MODE (x), &do_not_record_p, NULL, false);
+
+    case REG:
+      use = df_find_use (df, insn, x);
+      if (!use)
+	return hash_rtx (x, GET_MODE (x), &do_not_record_p, NULL, false);
+      inv = invariant_for_use (use);
+      if (!inv)
+	return hash_rtx (x, GET_MODE (x), &do_not_record_p, NULL, false);
+
+      gcc_assert (inv->eqto != ~0u);
+      return inv->eqto;
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	val ^= hash_invariant_expr_1 (insn, XEXP (x, i));
+      else if (fmt[i] == 'E')
+	{
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    val ^= hash_invariant_expr_1 (insn, XVECEXP (x, i, j));
+	}
+    }
+
+  return val;
+}
+
+/* Returns true if the invariant expressions E1 and E2 used in insns INSN1
+   and INSN2 have always the same value.  */
+
+static bool
+invariant_expr_equal_p (rtx insn1, rtx e1, rtx insn2, rtx e2)
+{
+  enum rtx_code code = GET_CODE (e1);
+  int i, j;
+  const char *fmt;
+  struct ref *use1, *use2;
+  struct invariant *inv1 = NULL, *inv2 = NULL;
+  rtx sub1, sub2;
+
+  /* If mode of only one of the operands is VOIDmode, it is not equivalent to
+     the other one.  If both are VOIDmode, we rely on the caller of this
+     function to verify that their modes are the same.  */
+  if (code != GET_CODE (e2) || GET_MODE (e1) != GET_MODE (e2))
+    return false;
+
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case CONST:
+    case LABEL_REF:
+      return rtx_equal_p (e1, e2);
+
+    case REG:
+      use1 = df_find_use (df, insn1, e1);
+      use2 = df_find_use (df, insn2, e2);
+      if (use1)
+	inv1 = invariant_for_use (use1);
+      if (use2)
+	inv2 = invariant_for_use (use2);
+
+      if (!inv1 && !inv2)
+	return rtx_equal_p (e1, e2);
+
+      if (!inv1 || !inv2)
+	return false;
+
+      gcc_assert (inv1->eqto != ~0u);
+      gcc_assert (inv2->eqto != ~0u);
+      return inv1->eqto == inv2->eqto;
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  sub1 = XEXP (e1, i);
+	  sub2 = XEXP (e2, i);
+
+	  if (!invariant_expr_equal_p (insn1, sub1, insn2, sub2))
+	    return false;
+	}
+
+      else if (fmt[i] == 'E')
+	{
+	  if (XVECLEN (e1, i) != XVECLEN (e2, i))
+	    return false;
+
+	  for (j = 0; j < XVECLEN (e1, i); j++)
+	    {
+	      sub1 = XVECEXP (e1, i, j);
+	      sub2 = XVECEXP (e2, i, j);
+
+	      if (!invariant_expr_equal_p (insn1, sub1, insn2, sub2))
+		return false;
+	    }
+	}
+    }
+
+  return true;
+}
+
+/* Returns hash value for invariant expression entry E.  */
+
+static hashval_t
+hash_invariant_expr (const void *e)
+{
+  const struct invariant_expr_entry *entry = e;
+
+  return entry->hash;
+}
+
+/* Compares invariant expression entries E1 and E2.  */
+
+static int
+eq_invariant_expr (const void *e1, const void *e2)
+{
+  const struct invariant_expr_entry *entry1 = e1;
+  const struct invariant_expr_entry *entry2 = e2;
+
+  if (entry1->mode != entry2->mode)
+    return 0;
+
+  return invariant_expr_equal_p (entry1->inv->insn, entry1->expr,
+				 entry2->inv->insn, entry2->expr);
+}
+
+/* Checks whether invariant with value EXPR in machine mode MODE is
+   recorded in EQ.  If this is the case, return the invariant.  Otherwise
+   insert INV to the table for this expression and return INV.  */
+
+static struct invariant *
+find_or_insert_inv (htab_t eq, rtx expr, enum machine_mode mode,
+		    struct invariant *inv)
+{
+  hashval_t hash = hash_invariant_expr_1 (inv->insn, expr);
+  struct invariant_expr_entry *entry;
+  struct invariant_expr_entry pentry;
+  PTR *slot;
+
+  pentry.expr = expr;
+  pentry.inv = inv;
+  pentry.mode = mode;
+  slot = htab_find_slot_with_hash (eq, &pentry, hash, INSERT);
+  entry = *slot;
+
+  if (entry)
+    return entry->inv;
+
+  entry = xmalloc (sizeof (struct invariant_expr_entry));
+  entry->inv = inv;
+  entry->expr = expr;
+  entry->mode = mode;
+  entry->hash = hash;
+  *slot = entry;
+
+  return inv;
+}
+
+/* Finds invariants identical to INV and records the equivalence.  EQ is the
+   hash table of the invariants.  */
+
+static void
+find_identical_invariants (htab_t eq, struct invariant *inv)
+{
+  unsigned depno;
+  bitmap_iterator bi;
+  struct invariant *dep;
+  rtx expr, set;
+  enum machine_mode mode;
+
+  if (inv->eqto != ~0u)
+    return;
+
+  EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, depno, bi)
+    {
+      dep = VEC_index (invariant_p, invariants, depno);
+      find_identical_invariants (eq, dep);
+    }
+
+  set = single_set (inv->insn);
+  expr = SET_SRC (set);
+  mode = GET_MODE (expr);
+  if (mode == VOIDmode)
+    mode = GET_MODE (SET_DEST (set));
+  inv->eqto = find_or_insert_inv (eq, expr, mode, inv)->invno;
+
+  if (dump_file && inv->eqto != inv->invno)
+    fprintf (dump_file,
+	     "Invariant %d is equivalent to invariant %d.\n ",
+	     inv->invno, inv->eqto);
+}
+
+/* Find invariants with the same value and record the equivalences.  */
+
+static void
+merge_identical_invariants (void)
+{
+  unsigned i;
+  struct invariant *inv;
+  htab_t eq = htab_create (VEC_length (invariant_p, invariants),
+			   hash_invariant_expr, eq_invariant_expr, free);
+
+  for (i = 0; VEC_iterate (invariant_p, invariants, i, inv); i++)
+    find_identical_invariants (eq, inv);
+
+  htab_delete (eq);
 }
 
 /* Determines the basic blocks inside LOOP that are always executed and
@@ -320,9 +606,10 @@ find_defs (struct loop *loop, basic_block *body)
 
 /* Creates a new invariant for definition DEF in INSN, depending on invariants
    in DEPENDS_ON.  ALWAYS_EXECUTED is true if the insn is always executed,
-   unless the program ends due to a function call.  */
+   unless the program ends due to a function call.  The newly created invariant
+   is returned.  */
 
-static void
+static struct invariant *
 create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
 		      bool always_executed)
 {
@@ -341,11 +628,12 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
     inv->cost = rtx_cost (SET_SRC (set), SET);
 
   inv->move = false;
-  inv->processed = false;
+  inv->reg = NULL_RTX;
   inv->stamp = 0;
   inv->insn = insn;
 
   inv->invno = VEC_length (invariant_p, invariants);
+  inv->eqto = ~0u;
   if (def)
     def->invno = inv->invno;
   VEC_safe_push (invariant_p, heap, invariants, inv);
@@ -357,6 +645,8 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
 	       INSN_UID (insn), inv->invno, inv->cost);
       dump_bitmap (dump_file, inv->depends_on);
     }
+
+  return inv;
 }
 
 /* Record USE at DEF.  */
@@ -387,7 +677,8 @@ check_dependencies (rtx insn, bitmap depends_on)
   struct ref *use, *def;
   basic_block bb = BLOCK_FOR_INSN (insn), def_bb;
   struct def *def_data;
-  
+  struct invariant *inv;
+
   for (uses = DF_INSN_USES (df, insn); uses; uses = uses->next)
     {
       use = uses->ref;
@@ -400,11 +691,17 @@ check_dependencies (rtx insn, bitmap depends_on)
 	return false;
 
       def = defs->ref;
-      def_data = DF_REF_DATA (def);
-      if (!def_data)
+      inv = DF_REF_DATA (def);
+      if (!inv)
 	return false;
 
+      def_data = inv->def;
+      gcc_assert (def_data != NULL);
+
       def_bb = DF_REF_BB (def);
+      /* Note that in case bb == def_bb, we know that the definition dominates
+	 insn, because def has DF_REF_DATA defined and we process the insns
+	 in the basic block bb sequentially.  */
       if (!dominated_by_p (CDI_DOMINATORS, bb, def_bb))
 	return false;
 
@@ -426,13 +723,14 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
   bitmap depends_on;
   rtx set, dest;
   bool simple = true;
+  struct invariant *inv;
 
   /* Until we get rid of LIBCALLS.  */
   if (find_reg_note (insn, REG_RETVAL, NULL_RTX)
       || find_reg_note (insn, REG_LIBCALL, NULL_RTX)
       || find_reg_note (insn, REG_NO_CONFLICT, NULL_RTX))
     return;
- 
+
   set = single_set (insn);
   if (!set)
     return;
@@ -465,15 +763,17 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
     }
 
   if (simple)
-    {
-      ref = df_find_def (df, insn, dest);
-      def = xcalloc (1, sizeof (struct def));
-      DF_REF_DATA (ref) = def;
-    }
+    def = xcalloc (1, sizeof (struct def));
   else
     def = NULL;
 
-  create_new_invariant (def, insn, depends_on, always_executed);
+  inv = create_new_invariant (def, insn, depends_on, always_executed);
+
+  if (simple)
+    {
+      ref = df_find_def (df, insn, dest);
+      DF_REF_DATA (ref) = inv;
+    }
 }
 
 /* Record registers used in INSN that have a unique invariant definition.  */
@@ -481,26 +781,16 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
 static void
 record_uses (rtx insn)
 {
-  struct df_link *uses, *defs;
-  struct ref *use, *def;
-  basic_block bb = BLOCK_FOR_INSN (insn), def_bb;
-  
+  struct df_link *uses;
+  struct ref *use;
+  struct invariant *inv;
+
   for (uses = DF_INSN_USES (df, insn); uses; uses = uses->next)
     {
       use = uses->ref;
-
-      defs = DF_REF_CHAIN (use);
-      if (!defs || defs->next)
-	continue;
-      def = defs->ref;
-      if (!DF_REF_DATA (def))
-	continue;
-
-      def_bb = DF_REF_BB (def);
-      if (!dominated_by_p (CDI_DOMINATORS, bb, def_bb))
-	continue;
-
-      record_use (DF_REF_DATA (def), DF_REF_LOC (use), DF_REF_INSN (use));
+      inv = invariant_for_use (use);
+      if (inv)
+	record_use (inv->def, DF_REF_LOC (use), DF_REF_INSN (use));
     }
 }
 
@@ -573,6 +863,7 @@ find_invariants (struct loop *loop)
 
   find_defs (loop, body);
   find_invariants_body (loop, body, always_reached, always_executed);
+  merge_identical_invariants ();
 
   BITMAP_FREE (always_reached);
   BITMAP_FREE (always_executed);
@@ -606,6 +897,9 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
   unsigned depno;
   struct invariant *dep;
   bitmap_iterator bi;
+
+  /* Find the representative of the class of the equivalent invariants.  */
+  inv = VEC_index (invariant_p, invariants, inv->eqto);
 
   *comp_cost = 0;
   *regs_needed = 0;
@@ -683,6 +977,10 @@ best_gain_for_invariant (struct invariant **best, unsigned *regs_needed,
       if (inv->move)
 	continue;
 
+      /* Only consider the "representatives" of equivalent invariants.  */
+      if (inv->eqto != inv->invno)
+	continue;
+
       again = gain_for_invariant (inv, &aregs_needed,
 				  new_regs, regs_used, n_inv_uses);
       if (again > gain)
@@ -703,6 +1001,9 @@ set_move_mark (unsigned invno)
 {
   struct invariant *inv = VEC_index (invariant_p, invariants, invno);
   bitmap_iterator bi;
+
+  /* Find the representative of the class of the equivalent invariants.  */
+  inv = VEC_index (invariant_p, invariants, inv->eqto);
 
   if (inv->move)
     return;
@@ -766,49 +1067,67 @@ static void
 move_invariant_reg (struct loop *loop, unsigned invno)
 {
   struct invariant *inv = VEC_index (invariant_p, invariants, invno);
+  struct invariant *repr = VEC_index (invariant_p, invariants, inv->eqto);
   unsigned i;
   basic_block preheader = loop_preheader_edge (loop)->src;
   rtx reg, set;
   struct use *use;
   bitmap_iterator bi;
 
-  if (inv->processed)
+  if (inv->reg
+      || !repr->move)
     return;
-  inv->processed = true;
 
-  if (inv->depends_on)
+  /* If this is a representative of the class of equivalent invariants,
+     really move the invariant.  Otherwise just replace its use with
+     the register used for the representative.  */
+  if (inv == repr)
     {
-      EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, i, bi)
+      if (inv->depends_on)
 	{
-	  move_invariant_reg (loop, i);
+	  EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, i, bi)
+	    {
+	      move_invariant_reg (loop, i);
+	    }
 	}
-    }
 
-  /* Move the set out of the loop.  If the set is always executed (we could
-     omit this condition if we know that the register is unused outside of the
-     loop, but it does not seem worth finding out) and it has no uses that
-     would not be dominated by it, we may just move it (TODO).  Otherwise we
-     need to create a temporary register.  */
-  set = single_set (inv->insn);
-  reg = gen_reg_rtx (GET_MODE (SET_DEST (set)));
-  df_pattern_emit_after (df, gen_move_insn (SET_DEST (set), reg),
-			 BLOCK_FOR_INSN (inv->insn), inv->insn);
+      /* Move the set out of the loop.  If the set is always executed (we could
+	 omit this condition if we know that the register is unused outside of the
+	 loop, but it does not seem worth finding out) and it has no uses that
+	 would not be dominated by it, we may just move it (TODO).  Otherwise we
+	 need to create a temporary register.  */
+      set = single_set (inv->insn);
+      reg = gen_reg_rtx (GET_MODE (SET_DEST (set)));
+      df_pattern_emit_after (df, gen_move_insn (SET_DEST (set), reg),
+			     BLOCK_FOR_INSN (inv->insn), inv->insn);
 
-  /* If the SET_DEST of the invariant insn is a reg, we can just move
-     the insn out of the loop.  Otherwise, we have to use gen_move_insn
-     to let emit_move_insn produce a valid instruction stream.  */
-  if (REG_P (SET_DEST (set)))
-    {
-      SET_DEST (set) = reg;
-      reorder_insns (inv->insn, inv->insn, BB_END (preheader));
-      df_insn_modify (df, preheader, inv->insn);
+      /* If the SET_DEST of the invariant insn is a reg, we can just move
+	 the insn out of the loop.  Otherwise, we have to use gen_move_insn
+	 to let emit_move_insn produce a valid instruction stream.  */
+      if (REG_P (SET_DEST (set)))
+	{
+	  SET_DEST (set) = reg;
+	  reorder_insns (inv->insn, inv->insn, BB_END (preheader));
+	  df_insn_modify (df, preheader, inv->insn);
+	}
+      else
+	{
+	  df_pattern_emit_after (df, gen_move_insn (reg, SET_SRC (set)),
+				 preheader, BB_END (preheader));
+	  df_insn_delete (df, BLOCK_FOR_INSN (inv->insn), inv->insn);
+	}
     }
   else
     {
-      df_pattern_emit_after (df, gen_move_insn (reg, SET_SRC (set)),
-			     preheader, BB_END (preheader));
+      move_invariant_reg (loop, repr->invno);
+      reg = repr->reg;
+      set = single_set (inv->insn);
+      df_pattern_emit_after (df, gen_move_insn (SET_DEST (set), reg),
+			     BLOCK_FOR_INSN (inv->insn), inv->insn);
       df_insn_delete (df, BLOCK_FOR_INSN (inv->insn), inv->insn);
     }
+
+  inv->reg = reg;
 
   /* Replace the uses we know to be dominated.  It saves work for copy
      propagation, and also it is necessary so that dependent invariants
@@ -833,10 +1152,7 @@ move_invariants (struct loop *loop)
   unsigned i;
 
   for (i = 0; VEC_iterate (invariant_p, invariants, i, inv); i++)
-    {
-      if (inv->move)
-	move_invariant_reg (loop, i);
-    }
+    move_invariant_reg (loop, i);
 }
 
 /* Initializes invariant motion data.  */
@@ -863,9 +1179,11 @@ free_inv_motion_data (void)
       if (!df->defs[i])
 	continue;
 
-      def = DF_REF_DATA (df->defs[i]);
-      if (!def)
+      inv = DF_REF_DATA (df->defs[i]);
+      if (!inv)
 	continue;
+      def = inv->def;
+      gcc_assert (def != NULL);
 
       free_use_list (def->uses);
       free (def);
