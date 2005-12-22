@@ -1514,6 +1514,13 @@ finish_qualified_id_expr (tree qualifying_class,
   if (template_p)
     check_template_keyword (expr);
 
+  if (DECL_P (expr))
+    mark_used (expr);
+  else if (BASELINK_P (expr)
+	   && TREE_CODE (BASELINK_FUNCTIONS (expr)) != TEMPLATE_ID_EXPR
+	   && !really_overloaded_fn (BASELINK_FUNCTIONS (expr)))
+    mark_used (OVL_CURRENT (BASELINK_FUNCTIONS (expr)));
+  
   /* If EXPR occurs as the operand of '&', use special handling that
      permits a pointer-to-member.  */
   if (address_p && done)
