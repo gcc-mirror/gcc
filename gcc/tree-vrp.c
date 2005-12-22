@@ -1167,6 +1167,7 @@ static void
 extract_range_from_binary_expr (value_range_t *vr, tree expr)
 {
   enum tree_code code = TREE_CODE (expr);
+  enum value_range_type type;
   tree op0, op1, min, max;
   int cmp;
   value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
@@ -1219,6 +1220,9 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
       set_value_range_to_undefined (vr);
       return;
     }
+
+  /* The type of the resulting value range defaults to VR0.TYPE.  */
+  type = vr0.type;
 
   /* Refuse to operate on VARYING ranges, ranges of different kinds
      and symbolic ranges.  As an exception, we allow BIT_AND_EXPR
@@ -1425,7 +1429,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	  && tree_expr_nonnegative_p (vr1.max)
 	  && TREE_CODE (vr1.max) == INTEGER_CST)
 	{
-	  vr0.type = VR_RANGE;
+	  type = VR_RANGE;
 	  min = fold_convert (TREE_TYPE (expr), integer_zero_node);
 	  max = vr1.max;
 	}
@@ -1455,7 +1459,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
       set_value_range_to_varying (vr);
     }
   else
-    set_value_range (vr, vr0.type, min, max, NULL);
+    set_value_range (vr, type, min, max, NULL);
 }
 
 
