@@ -1,3 +1,12 @@
+2005-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/25005
+	* regrename.c (replace_oldest_value_reg): Use validate_change with
+	IN_GROUP set to 1 instead of doing direct modifications.
+	(copyprop_hardreg_forward_1): Likewise.  If any replace_oldest_*
+	replacements have been performed on an instruction, use
+	apply_change_group ().
+
 2005-12-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR rtl-optimization/25432
