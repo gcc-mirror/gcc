@@ -394,11 +394,14 @@ static int rtx_equal_for_field_assignment_p (rtx, rtx);
 static rtx make_field_assignment (rtx);
 static rtx apply_distributive_law (rtx);
 static rtx distribute_and_simplify_rtx (rtx, int);
+static rtx simplify_and_const_int_1 (enum machine_mode, rtx,
+				     unsigned HOST_WIDE_INT);
 static rtx simplify_and_const_int (rtx, enum machine_mode, rtx,
 				   unsigned HOST_WIDE_INT);
 static int merge_outer_ops (enum rtx_code *, HOST_WIDE_INT *, enum rtx_code,
 			    HOST_WIDE_INT, enum machine_mode, int *);
-static rtx simplify_shift_const	(rtx, enum rtx_code, enum machine_mode, rtx,
+static rtx simplify_shift_const_1 (enum rtx_code, enum machine_mode, rtx, int);
+static rtx simplify_shift_const (rtx, enum rtx_code, enum machine_mode, rtx,
 				 int);
 static int recog_for_combine (rtx *, rtx, rtx *);
 static rtx gen_lowpart_for_combine (enum machine_mode, rtx);
@@ -6984,7 +6987,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
       if (GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) >= 0
 	  && INTVAL (XEXP (x, 1)) < HOST_BITS_PER_WIDE_INT)
 	{
-	  int i = -1;
+	  int i;
 
 	  /* If the considered data is wider than HOST_WIDE_INT, we can't
 	     represent a mask for all its bits in a single scalar.
@@ -7011,13 +7014,19 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	      nonzero >>= INTVAL (XEXP (x, 1));
 	    }
 
-	  if ((mask & ~nonzero) == 0
-	      || (i = exact_log2 (mask)) >= 0)
+	  if ((mask & ~nonzero) == 0)
+	    {
+	      x = simplify_shift_const (x, LSHIFTRT, GET_MODE (x),
+					XEXP (x, 0), INTVAL (XEXP (x, 1)));
+	      if (GET_CODE (x) != ASHIFTRT)
+		return force_to_mode (x, mode, mask, next_select);
+	    }
+
+	  else if ((i = exact_log2 (mask)) >= 0)
 	    {
 	      x = simplify_shift_const
-		(x, LSHIFTRT, GET_MODE (x), XEXP (x, 0),
-		 i < 0 ? INTVAL (XEXP (x, 1))
-		 : GET_MODE_BITSIZE (GET_MODE (x)) - 1 - i);
+		  (NULL_RTX, LSHIFTRT, GET_MODE (x), XEXP (x, 0),
+		   GET_MODE_BITSIZE (GET_MODE (x)) - 1 - i);
 
 	      if (GET_CODE (x) != ASHIFTRT)
 		return force_to_mode (x, mode, mask, next_select);
@@ -7904,18 +7913,23 @@ distribute_and_simplify_rtx (rtx x, int n)
   return NULL_RTX;
 }
 
-/* We have X, a logical `and' of VAROP with the constant CONSTOP, to be done
-   in MODE.
-
-   Return an equivalent form, if different from X.  Otherwise, return X.  If
-   X is zero, we are to always construct the equivalent form.  */
+/* Simplify a logical `and' of VAROP with the constant CONSTOP, to be done
+   in MODE.  Return an equivalent form, if different from (and VAROP
+   (const_int CONSTOP)).  Otherwise, return NULL_RTX.  */
 
 static rtx
-simplify_and_const_int (rtx x, enum machine_mode mode, rtx varop,
-			unsigned HOST_WIDE_INT constop)
+simplify_and_const_int_1 (enum machine_mode mode, rtx varop,
+			  unsigned HOST_WIDE_INT constop)
 {
   unsigned HOST_WIDE_INT nonzero;
+  unsigned HOST_WIDE_INT orig_constop;
+  rtx orig_varop;
   int i;
+
+  orig_varop = varop;
+  orig_constop = constop;
+  if (GET_CODE (varop) == CLOBBER)
+    return NULL_RTX;
 
   /* Simplify VAROP knowing that we will be only looking at some of the
      bits in it.
@@ -7995,40 +8009,42 @@ simplify_and_const_int (rtx x, enum machine_mode mode, rtx varop,
 	return o0;
     }
 
-  /* Get VAROP in MODE.  Try to get a SUBREG if not.  Don't make a new SUBREG
-     if we already had one (just check for the simplest cases).  */
-  if (x && GET_CODE (XEXP (x, 0)) == SUBREG
-      && GET_MODE (XEXP (x, 0)) == mode
-      && SUBREG_REG (XEXP (x, 0)) == varop)
-    varop = XEXP (x, 0);
-  else
-    varop = gen_lowpart (mode, varop);
-
-  /* If we can't make the SUBREG, try to return what we were given.  */
-  if (GET_CODE (varop) == CLOBBER)
-    return x ? x : varop;
+  /* Make a SUBREG if necessary.  If we can't make it, fail.  */
+  varop = gen_lowpart (mode, varop);
+  if (varop == NULL_RTX || GET_CODE (varop) == CLOBBER)
+    return NULL_RTX;
 
   /* If we are only masking insignificant bits, return VAROP.  */
   if (constop == nonzero)
-    x = varop;
-  else
-    {
-      /* Otherwise, return an AND.  */
-      constop = trunc_int_for_mode (constop, mode);
-      /* See how much, if any, of X we can use.  */
-      if (x == 0 || GET_CODE (x) != AND || GET_MODE (x) != mode)
-	x = simplify_gen_binary (AND, mode, varop, GEN_INT (constop));
+    return varop;
 
-      else
-	{
-	  if (GET_CODE (XEXP (x, 1)) != CONST_INT
-	      || (unsigned HOST_WIDE_INT) INTVAL (XEXP (x, 1)) != constop)
-	    SUBST (XEXP (x, 1), GEN_INT (constop));
+  if (varop == orig_varop && constop == orig_constop)
+    return NULL_RTX;
 
-	  SUBST (XEXP (x, 0), varop);
-	}
-    }
+  /* Otherwise, return an AND.  */
+  constop = trunc_int_for_mode (constop, mode);
+  return simplify_gen_binary (AND, mode, varop, GEN_INT (constop));
+}
 
+
+/* We have X, a logical `and' of VAROP with the constant CONSTOP, to be done
+   in MODE.
+
+   Return an equivalent form, if different from X.  Otherwise, return X.  If
+   X is zero, we are to always construct the equivalent form.  */
+
+static rtx
+simplify_and_const_int (rtx x, enum machine_mode mode, rtx varop,
+			unsigned HOST_WIDE_INT constop)
+{
+  rtx tem = simplify_and_const_int_1 (mode, varop, constop);
+  if (tem)
+    return tem;
+
+  if (!x)
+    x = simplify_gen_binary (AND, GET_MODE (varop), varop, GEN_INT (constop));
+  if (GET_MODE (x) != mode)
+    x = gen_lowpart (mode, x);
   return x;
 }
 
@@ -8304,21 +8320,20 @@ merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1,
 }
 
 /* Simplify a shift of VAROP by COUNT bits.  CODE says what kind of shift.
-   The result of the shift is RESULT_MODE.  X, if nonzero, is an expression
-   that we started with.
+   The result of the shift is RESULT_MODE.  Return NULL_RTX if we cannot
+   simplify it.  Otherwise, return a simplified value.
 
    The shift is normally computed in the widest mode we find in VAROP, as
    long as it isn't a different number of words than RESULT_MODE.  Exceptions
-   are ASHIFTRT and ROTATE, which are always done in their original mode,  */
+   are ASHIFTRT and ROTATE, which are always done in their original mode.  */
 
 static rtx
-simplify_shift_const (rtx x, enum rtx_code code,
-		      enum machine_mode result_mode, rtx varop,
-		      int orig_count)
+simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
+			rtx varop, int orig_count)
 {
   enum rtx_code orig_code = code;
-  unsigned int count;
-  int signed_count;
+  rtx orig_varop = varop;
+  int count;
   enum machine_mode mode = result_mode;
   enum machine_mode shift_mode, tmode;
   unsigned int mode_words
@@ -8326,9 +8341,8 @@ simplify_shift_const (rtx x, enum rtx_code code,
   /* We form (outer_op (code varop count) (outer_const)).  */
   enum rtx_code outer_op = UNKNOWN;
   HOST_WIDE_INT outer_const = 0;
-  rtx const_rtx;
   int complement_p = 0;
-  rtx new;
+  rtx new, x;
 
   /* Make sure and truncate the "natural" shift on the way in.  We don't
      want to do this inside the loop as it makes it more difficult to
@@ -8340,12 +8354,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
      what was requested.  */
 
   if (orig_count < 0 || orig_count >= (int) GET_MODE_BITSIZE (mode))
-    {
-      if (x)
-	return x;
-
-      return gen_rtx_fmt_ee (code, mode, varop, GEN_INT (orig_count));
-    }
+    return NULL_RTX;
 
   count = orig_count;
 
@@ -8354,10 +8363,9 @@ simplify_shift_const (rtx x, enum rtx_code code,
 
   while (count != 0)
     {
-      /* If we have an operand of (clobber (const_int 0)), just return that
-	 value.  */
+      /* If we have an operand of (clobber (const_int 0)), fail.  */
       if (GET_CODE (varop) == CLOBBER)
-	return varop;
+	return NULL_RTX;
 
       /* If we discovered we had to complement VAROP, leave.  Making a NOT
 	 here would cause an infinite loop.  */
@@ -8393,7 +8401,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	 multiple operations, each of which are defined, we know what the
 	 result is supposed to be.  */
 
-      if (count > (unsigned int) (GET_MODE_BITSIZE (shift_mode) - 1))
+      if (count > (GET_MODE_BITSIZE (shift_mode) - 1))
 	{
 	  if (code == ASHIFTRT)
 	    count = GET_MODE_BITSIZE (shift_mode) - 1;
@@ -8567,7 +8575,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	     interpreted as the sign bit in a narrower mode, so, if
 	     the result is narrower, don't discard the shift.  */
 	  if (code == LSHIFTRT
-	      && count == (unsigned int) (GET_MODE_BITSIZE (result_mode) - 1)
+	      && count == (GET_MODE_BITSIZE (result_mode) - 1)
 	      && (GET_MODE_BITSIZE (result_mode)
 		  >= GET_MODE_BITSIZE (GET_MODE (varop))))
 	    {
@@ -8601,8 +8609,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 		 (ashiftrt:M1 (ashift:M1 (and:M1 (subreg:M1 FOO 0 C2) C3) C1).
 		 This simplifies certain SIGN_EXTEND operations.  */
 	      if (code == ASHIFT && first_code == ASHIFTRT
-		  && count == (unsigned int)
-			      (GET_MODE_BITSIZE (result_mode)
+		  && count == (GET_MODE_BITSIZE (result_mode)
 			       - GET_MODE_BITSIZE (GET_MODE (varop))))
 		{
 		  /* C3 has the low-order C1 bits zero.  */
@@ -8632,12 +8639,12 @@ simplify_shift_const (rtx x, enum rtx_code code,
 		      > first_count))
 		{
 		  varop = XEXP (varop, 0);
-
-		  signed_count = count - first_count;
-		  if (signed_count < 0)
-		    count = -signed_count, code = ASHIFT;
-		  else
-		    count = signed_count;
+		  count -= first_count;
+		  if (count < 0)
+		    {
+		      count = -count;
+		      code = ASHIFT;
+		    }
 
 		  continue;
 		}
@@ -8685,8 +8692,8 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	      mask_rtx = GEN_INT (nonzero_bits (varop, GET_MODE (varop)));
 
 	      mask_rtx
-		= simplify_binary_operation (code, result_mode, mask_rtx,
-					     GEN_INT (count));
+		= simplify_const_binary_operation (code, result_mode, mask_rtx,
+						   GEN_INT (count));
 
 	      /* Give up if we can't compute an outer operation to use.  */
 	      if (mask_rtx == 0
@@ -8698,25 +8705,22 @@ simplify_shift_const (rtx x, enum rtx_code code,
 
 	      /* If the shifts are in the same direction, we add the
 		 counts.  Otherwise, we subtract them.  */
-	      signed_count = count;
 	      if ((code == ASHIFTRT || code == LSHIFTRT)
 		  == (first_code == ASHIFTRT || first_code == LSHIFTRT))
-		signed_count += first_count;
+		count += first_count;
 	      else
-		signed_count -= first_count;
+		count -= first_count;
 
 	      /* If COUNT is positive, the new shift is usually CODE,
 		 except for the two exceptions below, in which case it is
 		 FIRST_CODE.  If the count is negative, FIRST_CODE should
 		 always be used  */
-	      if (signed_count > 0
+	      if (count > 0
 		  && ((first_code == ROTATE && code == ASHIFT)
 		      || (first_code == ASHIFTRT && code == LSHIFTRT)))
-		code = first_code, count = signed_count;
-	      else if (signed_count < 0)
-		code = first_code, count = -signed_count;
-	      else
-		count = signed_count;
+		code = first_code;
+	      else if (count < 0)
+		code = first_code, count = -count;
 
 	      varop = XEXP (varop, 0);
 	      continue;
@@ -8727,12 +8731,12 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	     B is not a constant.  */
 
 	  else if (GET_CODE (varop) == code
-		   && GET_CODE (XEXP (varop, 1)) != CONST_INT
-		   && 0 != (new
-			    = simplify_binary_operation (code, mode,
-							 XEXP (varop, 0),
-							 GEN_INT (count))))
+		   && GET_CODE (XEXP (varop, 0)) == CONST_INT
+		   && GET_CODE (XEXP (varop, 1)) != CONST_INT)
 	    {
+	      rtx new = simplify_const_binary_operation (code, mode,
+							 XEXP (varop, 0),
+							 GEN_INT (count));
 	      varop = gen_rtx_fmt_ee (code, mode, new, XEXP (varop, 1));
 	      count = 0;
 	      continue;
@@ -8759,8 +8763,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	      && XEXP (XEXP (varop, 0), 1) == constm1_rtx
 	      && (STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	      && (code == LSHIFTRT || code == ASHIFTRT)
-	      && count == (unsigned int)
-			  (GET_MODE_BITSIZE (GET_MODE (varop)) - 1)
+	      && count == (GET_MODE_BITSIZE (GET_MODE (varop)) - 1)
 	      && rtx_equal_p (XEXP (XEXP (varop, 0), 0), XEXP (varop, 1)))
 	    {
 	      count = 0;
@@ -8785,9 +8788,9 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	      && !(code == ASHIFTRT && GET_CODE (varop) == XOR
 		   && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
 					      shift_mode))
-	      && (new = simplify_binary_operation (code, result_mode,
-						   XEXP (varop, 1),
-						   GEN_INT (count))) != 0
+	      && (new = simplify_const_binary_operation (code, result_mode,
+						         XEXP (varop, 1),
+						         GEN_INT (count))) != 0
 	      && GET_CODE (new) == CONST_INT
 	      && merge_outer_ops (&outer_op, &outer_const, GET_CODE (varop),
 				  INTVAL (new), result_mode, &complement_p))
@@ -8827,11 +8830,9 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	  if (code == LSHIFTRT
 	      && XEXP (varop, 1) == const0_rtx
 	      && GET_MODE (XEXP (varop, 0)) == result_mode
-	      && count == (unsigned int) (GET_MODE_BITSIZE (result_mode) - 1)
+	      && count == (GET_MODE_BITSIZE (result_mode) - 1)
 	      && GET_MODE_BITSIZE (result_mode) <= HOST_BITS_PER_WIDE_INT
-	      && ((STORE_FLAG_VALUE
-		   & ((HOST_WIDE_INT) 1
-		      < (GET_MODE_BITSIZE (result_mode) - 1))))
+	      && STORE_FLAG_VALUE == -1
 	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1
 	      && merge_outer_ops (&outer_op, &outer_const, XOR,
 				  (HOST_WIDE_INT) 1, result_mode,
@@ -8847,7 +8848,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	  /* (lshiftrt (neg A) C) where A is either 0 or 1 and C is one less
 	     than the number of bits in the mode is equivalent to A.  */
 	  if (code == LSHIFTRT
-	      && count == (unsigned int) (GET_MODE_BITSIZE (result_mode) - 1)
+	      && count == (GET_MODE_BITSIZE (result_mode) - 1)
 	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1)
 	    {
 	      varop = XEXP (varop, 0);
@@ -8872,7 +8873,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	     is one less than the number of bits in the mode is
 	     equivalent to (xor A 1).  */
 	  if (code == LSHIFTRT
-	      && count == (unsigned int) (GET_MODE_BITSIZE (result_mode) - 1)
+	      && count == (GET_MODE_BITSIZE (result_mode) - 1)
 	      && XEXP (varop, 1) == constm1_rtx
 	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1
 	      && merge_outer_ops (&outer_op, &outer_const, XOR,
@@ -8915,10 +8916,9 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	  /* (ashift (plus foo C) N) is (plus (ashift foo N) C').  */
 	  if (code == ASHIFT
 	      && GET_CODE (XEXP (varop, 1)) == CONST_INT
-	      && (new = simplify_binary_operation (ASHIFT, result_mode,
-						   XEXP (varop, 1),
-						   GEN_INT (count))) != 0
-	      && GET_CODE (new) == CONST_INT
+	      && (new = simplify_const_binary_operation (ASHIFT, result_mode,
+						         XEXP (varop, 1),
+						         GEN_INT (count))) != 0
 	      && merge_outer_ops (&outer_op, &outer_const, PLUS,
 				  INTVAL (new), result_mode, &complement_p))
 	    {
@@ -8934,10 +8934,9 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	  if (code == LSHIFTRT
 	      && GET_CODE (XEXP (varop, 1)) == CONST_INT
 	      && mode_signbit_p (result_mode, XEXP (varop, 1))
-	      && (new = simplify_binary_operation (code, result_mode,
-						   XEXP (varop, 1),
-						   GEN_INT (count))) != 0
-	      && GET_CODE (new) == CONST_INT
+	      && (new = simplify_const_binary_operation (code, result_mode,
+						         XEXP (varop, 1),
+						         GEN_INT (count))) != 0
 	      && merge_outer_ops (&outer_op, &outer_const, XOR,
 				  INTVAL (new), result_mode, &complement_p))
 	    {
@@ -8957,12 +8956,10 @@ simplify_shift_const (rtx x, enum rtx_code code,
 
 	  if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	      && GET_CODE (XEXP (varop, 0)) == ASHIFTRT
-	      && count == (unsigned int)
-			  (GET_MODE_BITSIZE (GET_MODE (varop)) - 1)
+	      && count == (GET_MODE_BITSIZE (GET_MODE (varop)) - 1)
 	      && (code == LSHIFTRT || code == ASHIFTRT)
 	      && GET_CODE (XEXP (XEXP (varop, 0), 1)) == CONST_INT
-	      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (varop, 0), 1))
-		 == count
+	      && INTVAL (XEXP (XEXP (varop, 0), 1)) == count
 	      && rtx_equal_p (XEXP (XEXP (varop, 0), 0), XEXP (varop, 1)))
 	    {
 	      count = 0;
@@ -9019,44 +9016,31 @@ simplify_shift_const (rtx x, enum rtx_code code,
      a shift of type CODE with SHIFT_MODE shifting VAROP COUNT places.  If
      OUTER_OP is non-UNKNOWN, it is an operation that needs to be applied
      to the result of the shift.  OUTER_CONST is the relevant constant,
-     but we must turn off all bits turned off in the shift.
+     but we must turn off all bits turned off in the shift.  */
 
-     If we were passed a value for X, see if we can use any pieces of
-     it.  If not, make new rtx.  */
+  if (outer_op == UNKNOWN
+      && orig_code == code && orig_count == count
+      && varop == orig_varop
+      && shift_mode == GET_MODE (varop))
+    return NULL_RTX;
 
-  if (x && GET_RTX_CLASS (GET_CODE (x)) == RTX_BIN_ARITH
-      && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (x, 1)) == count)
-    const_rtx = XEXP (x, 1);
-  else
-    const_rtx = GEN_INT (count);
-
-  if (x && GET_CODE (XEXP (x, 0)) == SUBREG
-      && GET_MODE (XEXP (x, 0)) == shift_mode
-      && SUBREG_REG (XEXP (x, 0)) == varop)
-    varop = XEXP (x, 0);
-  else if (GET_MODE (varop) != shift_mode)
-    varop = gen_lowpart (shift_mode, varop);
-
-  /* If we can't make the SUBREG, try to return what we were given.  */
-  if (GET_CODE (varop) == CLOBBER)
-    return x ? x : varop;
-
-  new = simplify_binary_operation (code, shift_mode, varop, const_rtx);
-  if (new != 0)
-    x = new;
-  else
-    x = gen_rtx_fmt_ee (code, shift_mode, varop, const_rtx);
+  /* Make a SUBREG if necessary.  If we can't make it, fail.  */
+  varop = gen_lowpart (shift_mode, varop);
+  if (varop == NULL_RTX || GET_CODE (varop) == CLOBBER)
+    return NULL_RTX;
 
   /* If we have an outer operation and we just made a shift, it is
      possible that we could have simplified the shift were it not
      for the outer operation.  So try to do the simplification
      recursively.  */
 
-  if (outer_op != UNKNOWN && GET_CODE (x) == code
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
-    x = simplify_shift_const (x, code, shift_mode, XEXP (x, 0),
-			      INTVAL (XEXP (x, 1)));
+  if (outer_op != UNKNOWN)
+    x = simplify_shift_const_1 (code, shift_mode, varop, count);
+  else
+    x = NULL_RTX;
+
+  if (x == NULL_RTX)
+    x = simplify_gen_binary (code, shift_mode, varop, GEN_INT (count));
 
   /* If we were doing an LSHIFTRT in a wider mode than it was originally,
      turn off all the bits that the shift would have turned off.  */
@@ -9092,6 +9076,31 @@ simplify_shift_const (rtx x, enum rtx_code code,
 
   return x;
 }
+
+/* Simplify a shift of VAROP by COUNT bits.  CODE says what kind of shift.
+   The result of the shift is RESULT_MODE.  If we cannot simplify it,
+   return X or, if it is NULL, synthesize the expression with
+   simplify_gen_binary.  Otherwise, return a simplified value.
+
+   The shift is normally computed in the widest mode we find in VAROP, as
+   long as it isn't a different number of words than RESULT_MODE.  Exceptions
+   are ASHIFTRT and ROTATE, which are always done in their original mode.  */
+
+static rtx
+simplify_shift_const (rtx x, enum rtx_code code, enum machine_mode result_mode,
+		      rtx varop, int count)
+{
+  rtx tem = simplify_shift_const_1 (code, result_mode, varop, count);
+  if (tem)
+    return tem;
+
+  if (!x)
+    x = simplify_gen_binary (code, GET_MODE (varop), varop, GEN_INT (count));
+  if (GET_MODE (x) != result_mode)
+    x = gen_lowpart (result_mode, x);
+  return x;
+}
+
 
 /* Like recog, but we receive the address of a pointer to a new pattern.
    We try to match the rtx that the pointer points to.
@@ -10096,9 +10105,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && XEXP (XEXP (op0, 0), 0) == const1_rtx)
 	    {
 	      op0 = simplify_and_const_int
-		(op0, mode, gen_rtx_LSHIFTRT (mode,
-					      XEXP (op0, 1),
-					      XEXP (XEXP (op0, 0), 1)),
+		(NULL_RTX, mode, gen_rtx_LSHIFTRT (mode,
+					           XEXP (op0, 1),
+					           XEXP (XEXP (op0, 0), 1)),
 		 (HOST_WIDE_INT) 1);
 	      continue;
 	    }
