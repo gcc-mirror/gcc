@@ -1231,7 +1231,9 @@ resolve_function (gfc_expr * expr)
 
   else if (expr->value.function.actual != NULL
       && expr->value.function.isym != NULL
-      && strcmp (expr->value.function.isym->name, "lbound"))
+      && strcmp (expr->value.function.isym->name, "lbound")
+      && strcmp (expr->value.function.isym->name, "ubound")
+      && strcmp (expr->value.function.isym->name, "size"))
     {
       /* Array instrinsics must also have the last upper bound of an
 	 asumed size array argument.  */
