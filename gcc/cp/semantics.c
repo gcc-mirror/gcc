@@ -1513,12 +1513,8 @@ finish_qualified_id_expr (tree qualifying_class,
   if (error_operand_p (expr))
     return error_mark_node;
 
-  if (DECL_P (expr))
+  if (DECL_P (expr) || BASELINK_P (expr))
     mark_used (expr);
-  else if (BASELINK_P (expr)
-	   && TREE_CODE (BASELINK_FUNCTIONS (expr)) != TEMPLATE_ID_EXPR
-	   && !really_overloaded_fn (BASELINK_FUNCTIONS (expr)))
-    mark_used (OVL_CURRENT (BASELINK_FUNCTIONS (expr)));
 
   if (template_p)
     check_template_keyword (expr);
