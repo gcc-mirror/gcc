@@ -1,3 +1,10 @@
+2005-12-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR rtl-optimization/21041
+	* reload.c (find_reloads_subreg_address): Replace paradoxical
+	subreg of MEM by widened access only if the resulting memory
+	is properly aligned, even on !STRICT_ALIGNMENT targets.
+
 2005-12-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR objc/25328
