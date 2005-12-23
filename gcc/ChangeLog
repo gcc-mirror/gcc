@@ -1,3 +1,10 @@
+2005-12-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/24342
+	* config/cris/cris.c (cris_split_movdx): Add REG_INC notes for
+	emitted insns with post-increments.
+	(cris_expand_epilogue): Ditto.
+
 2005-12-22  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 
