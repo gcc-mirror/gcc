@@ -144,7 +144,6 @@ static void check_specialization_scope (void);
 static tree process_partial_specialization (tree);
 static void set_current_access_from_decl (tree);
 static void check_default_tmpl_args (tree, tree, int, int);
-static tree tsubst_call_declarator_parms (tree, tree, tsubst_flags_t, tree);
 static tree get_template_base (tree, tree, tree, tree);
 static int verify_class_unification (tree, tree, tree);
 static tree try_class_unification (tree, tree, tree, tree);
@@ -6946,39 +6945,6 @@ tsubst_exception_specification (tree fntype,
   return new_specs;
 }
 
-/* Substitute into the PARMS of a call-declarator.  */
-
-static tree
-tsubst_call_declarator_parms (tree parms,
-			      tree args,
-			      tsubst_flags_t complain,
-			      tree in_decl)
-{
-  tree new_parms;
-  tree type;
-  tree defarg;
-
-  if (!parms || parms == void_list_node)
-    return parms;
-
-  new_parms = tsubst_call_declarator_parms (TREE_CHAIN (parms),
-					    args, complain, in_decl);
-
-  /* Figure out the type of this parameter.  */
-  type = tsubst (TREE_VALUE (parms), args, complain, in_decl);
-
-  /* Figure out the default argument as well.  Note that we use
-     tsubst_expr since the default argument is really an expression.  */
-  defarg = tsubst_expr (TREE_PURPOSE (parms), args, complain, in_decl);
-
-  /* Chain this parameter on to the front of those we have already
-     processed.  We don't use hash_tree_cons because that function
-     doesn't check TREE_PARMLIST.  */
-  new_parms = tree_cons (defarg, type, new_parms);
-
-  return new_parms;
-}
-
 /* Take the tree structure T and replace template parameters used
    therein with the argument vector ARGS.  IN_DECL is an associated
    decl for diagnostics.  If an error occurs, returns ERROR_MARK_NODE.
@@ -8110,6 +8076,10 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 generation.  Instead, they should be built during instantiation
 	 in response to the saved STMT_IS_FULL_EXPR_P setting.  */
       gcc_unreachable ();
+
+    case OFFSET_REF:
+      mark_used (TREE_OPERAND (t, 1));
+      return t;
 
     default:
       return t;
