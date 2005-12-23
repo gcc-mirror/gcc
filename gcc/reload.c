@@ -5970,7 +5970,7 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	      /* If this was a paradoxical subreg that we replaced, the
 		 resulting memory must be sufficiently aligned to allow
 		 us to widen the mode of the memory.  */
-	      if (outer_size > inner_size && STRICT_ALIGNMENT)
+	      if (outer_size > inner_size)
 		{
 		  rtx base;
 
