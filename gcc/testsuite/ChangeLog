@@ -1,3 +1,7 @@
+2005-12-22  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/sse-7.c: Use -msse2.
+
 2005-12-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/25432

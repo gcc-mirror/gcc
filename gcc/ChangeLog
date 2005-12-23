@@ -1,3 +1,9 @@
+2005-12-22  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/mmintrin.h (_mm_add_si64): Only define for SSE2.
+	(_mm_sub_si64): Likewise.
+	* config/i386/xmmintrin.h (_mm_shuffle_pi16, _m_pshufw): Likewise.
+
 2005-12-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR rtl-optimization/25432
@@ -2213,7 +2219,7 @@
 2005-12-06  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/i386.c (builtin_description): Use MASK_SSE2 for
-	__builtin_ia32_paddq and __builtin_ia32_subq.
+	__builtin_ia32_paddq and __builtin_ia32_psubq.
 	(ix86_init_mmx_sse_builtins): Use MASK_SSE|MASK_3DNOW_A for
 	__builtin_ia32_pshufw.
 	* config/i386/i386.md (mmx_adddi3, mmx_subdi3): Depend on TARGET_SSE2.

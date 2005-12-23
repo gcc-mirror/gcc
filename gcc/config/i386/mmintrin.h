@@ -274,11 +274,13 @@ _m_paddd (__m64 __m1, __m64 __m2)
 }
 
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
+#ifdef __SSE2__
 static __inline __m64 __attribute__((__always_inline__))
 _mm_add_si64 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_paddq ((long long)__m1, (long long)__m2);
 }
+#endif
 
 /* Add the 8-bit values in M1 to the 8-bit values in M2 using signed
    saturated arithmetic.  */
@@ -376,11 +378,13 @@ _m_psubd (__m64 __m1, __m64 __m2)
 }
 
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
+#ifdef __SSE2__
 static __inline __m64 __attribute__((__always_inline__))
 _mm_sub_si64 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_psubq ((long long)__m1, (long long)__m2);
 }
+#endif
 
 /* Subtract the 8-bit values in M2 from the 8-bit values in M1 using signed
    saturating arithmetic.  */
