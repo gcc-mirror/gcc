@@ -1,3 +1,8 @@
+2005-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24671
+	* pt.c (instantiate_template): Handle SFINAE.
+
 2005-12-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25369
