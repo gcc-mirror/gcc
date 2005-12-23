@@ -1075,6 +1075,7 @@ _m_pmulhuw (__m64 __A, __m64 __B)
 
 /* Return a combination of the four 16-bit values in A.  The selector
    must be an immediate.  */
+#ifdef __SSE2__
 #if 0
 static __inline __m64 __attribute__((__always_inline__))
 _mm_shuffle_pi16 (__m64 __A, int __N)
@@ -1091,6 +1092,7 @@ _m_pshufw (__m64 __A, int __N)
 #define _mm_shuffle_pi16(A, N) \
   ((__m64) __builtin_ia32_pshufw ((__v4hi)(A), (N)))
 #define _m_pshufw(A, N)		_mm_shuffle_pi16 ((A), (N))
+#endif
 #endif
 
 /* Conditionally store byte elements of A into P.  The high bit of each
