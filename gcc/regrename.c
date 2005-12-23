@@ -1408,7 +1408,7 @@ replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx insn,
 	fprintf (dump_file, "insn %u: replaced reg %u with %u\n",
 		 INSN_UID (insn), REGNO (*loc), REGNO (new));
 
-      *loc = new;
+      validate_change (insn, loc, new, 1);
       return true;
     }
   return false;
@@ -1574,8 +1574,9 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
   for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
       int n_ops, i, alt, predicated;
-      bool is_asm;
+      bool is_asm, any_replacements;
       rtx set;
+      bool replaced[MAX_RECOG_OPERANDS];
 
       if (! INSN_P (insn))
 	{
@@ -1687,11 +1688,13 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	}
       no_move_special_case:
 
+      any_replacements = false;
+
       /* For each input operand, replace a hard register with the
 	 eldest live copy that's in an appropriate register class.  */
       for (i = 0; i < n_ops; i++)
 	{
-	  bool replaced = false;
+	  replaced[i] = false;
 
 	  /* Don't scan match_operand here, since we've no reg class
 	     information to pass down.  Any operands that we could
@@ -1708,37 +1711,57 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  if (recog_data.operand_type[i] == OP_IN)
 	    {
 	      if (recog_op_alt[i][alt].is_address)
-		replaced
+		replaced[i]
 		  = replace_oldest_value_addr (recog_data.operand_loc[i],
 					       recog_op_alt[i][alt].cl,
 					       VOIDmode, insn, vd);
 	      else if (REG_P (recog_data.operand[i]))
-		replaced
+		replaced[i]
 		  = replace_oldest_value_reg (recog_data.operand_loc[i],
 					      recog_op_alt[i][alt].cl,
 					      insn, vd);
 	      else if (MEM_P (recog_data.operand[i]))
-		replaced = replace_oldest_value_mem (recog_data.operand[i],
-						     insn, vd);
+		replaced[i] = replace_oldest_value_mem (recog_data.operand[i],
+							insn, vd);
 	    }
 	  else if (MEM_P (recog_data.operand[i]))
-	    replaced = replace_oldest_value_mem (recog_data.operand[i],
-						 insn, vd);
+	    replaced[i] = replace_oldest_value_mem (recog_data.operand[i],
+						    insn, vd);
 
 	  /* If we performed any replacement, update match_dups.  */
-	  if (replaced)
+	  if (replaced[i])
 	    {
 	      int j;
 	      rtx new;
-
-	      changed = true;
 
 	      new = *recog_data.operand_loc[i];
 	      recog_data.operand[i] = new;
 	      for (j = 0; j < recog_data.n_dups; j++)
 		if (recog_data.dup_num[j] == i)
-		  *recog_data.dup_loc[j] = new;
+		  validate_change (insn, recog_data.dup_loc[j], new, 1);
+
+	      any_replacements = true;
 	    }
+	}
+
+      if (any_replacements)
+	{
+	  if (! apply_change_group ())
+	    {
+	      for (i = 0; i < n_ops; i++)
+		if (replaced[i])
+		  {
+		    rtx old = *recog_data.operand_loc[i];
+		    recog_data.operand[i] = old;
+		  }
+
+	      if (dump_file)
+		fprintf (dump_file,
+			 "insn %u: reg replacements not verified\n",
+			 INSN_UID (insn));
+	    }
+	  else
+	    changed = true;
 	}
 
     did_replacement:
