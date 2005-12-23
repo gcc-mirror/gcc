@@ -1,3 +1,24 @@
+2005-12-23  Paolo Bonzini  <bonzini@gnu.org>
+
+        * combine.c (simplify_shift_const): Fix typo.  Use, whenever
+	applicable, simplify_const_binary_operation.
+
+        (simplify_shift_const): Leave only the fallback
+        case when no simplification is possible.  Extract to...
+        (simplify_shift_const_1): ... here.  Always create a new
+        RTX instead of substituting.  Remove the signed_count variable.
+        Return NULL_RTX if no substitution is possible.
+
+        (simplify_and_const_int): Leave only the fallback
+        case when no simplification is possible.  Extract to...
+        (simplify_and_const_int_1): ... here.  Always create a new
+        RTX instead of substituting.  Return NULL_RTX if no substitution
+        is possible.
+
+        (force_to_mode, simplify_comparison): Don't pass a non-NULL first
+        parameter to simplify_and_const_int and simplify_shift_const,
+        unless it is equal to the expected non-simplified result.
+
 2005-12-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25005
