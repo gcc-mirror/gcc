@@ -1,3 +1,8 @@
+2005-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25369
+	* g++.dg/template/ptrmem16.C: New test.
+
 2005-12-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR objc/25328
