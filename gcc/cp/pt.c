@@ -8127,6 +8127,10 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 in response to the saved STMT_IS_FULL_EXPR_P setting.  */
       gcc_unreachable ();
 
+    case OFFSET_REF:
+      mark_used (TREE_OPERAND (t, 1));
+      return t;
+
     default:
       return t;
     }
