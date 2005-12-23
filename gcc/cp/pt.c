@@ -9198,6 +9198,8 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
   /* Substitute template parameters.  */
   fndecl = tsubst (DECL_TEMPLATE_RESULT (gen_tmpl),
 		   targ_ptr, complain, gen_tmpl);
+  if (fndecl == error_mark_node)
+    return error_mark_node;
 
   /* Now we know the specialization, compute access previously
      deferred.  */
