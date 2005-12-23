@@ -2,7 +2,8 @@
    Contributed by Axis Communications.
    Written by Hans-Peter Nilsson <hp@axis.se>, c:a 1992.
 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002,
+   2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -62,7 +63,8 @@ struct quot_rem
  };
 
 /* This is the worker function for div and mod.  It is inlined into the
-   respective library function.  */
+   respective library function.  Parameter A must have bit 31 == 0.  */
+
 static __inline__ struct quot_rem
 do_31div (unsigned long a, unsigned long b)
      __attribute__ ((__const__, __always_inline__));
@@ -155,19 +157,10 @@ do_31div (unsigned long a, unsigned long b)
   }
 }
 
-/* Note that unsigned and signed division both build when L_divsi3, but
-   the unsigned variant is then inlined, as with do_31div above.  */
-#if defined (L_udivsi3) || defined (L_divsi3)
-#ifndef L_udivsi3
-static __inline__
-#endif
+#ifdef L_udivsi3
 unsigned long
-__Udiv (unsigned long a, unsigned long b)
-     __attribute__ ((__const__, __always_inline__));
+__Udiv (unsigned long a, unsigned long b) __attribute__ ((__const__));
 
-#ifndef L_udivsi3
-static __inline__
-#endif
 unsigned long
 __Udiv (unsigned long a, unsigned long b)
 {
@@ -208,7 +201,7 @@ __Udiv (unsigned long a, unsigned long b)
 
   return do_31div (a, b).quot+extra;
 }
-
+#endif /* L_udivsi3 */
 
 #ifdef L_divsi3
 long
@@ -217,35 +210,40 @@ __Div (long a, long b) __attribute__ ((__const__));
 long
 __Div (long a, long b)
 {
-  long sign;
-  long result;
+  long extra = 0;
+  long sign = (b < 0) ? -1 : 1;
 
-  /* Do *not* call do_31div since abs (-2147483648) == 2147483648
-     <=> abs (-0x80000000) == 0x80000000
-     which is still 32 bits.  */
+  /* We need to handle a == -2147483648 as expected and must while
+     doing that avoid producing a sequence like "abs (a) < 0" as GCC
+     may optimize out the test.  That sequence may not be obvious as
+     we call inline functions.  Testing for a being negative and
+     handling (presumably much rarer than positive) enables us to get
+     a bit of optimization for an (accumulated) reduction of the
+     penalty of the 0x80000000 special-case.  */
+  if (a < 0)
+    {
+      sign = -sign;
 
-  sign = a ^ b;
-  result = __Udiv (__builtin_labs (a), __builtin_labs (b));
+      if ((a & 0x7fffffff) == 0)
+	{
+	  /* We're at 0x80000000.  Tread carefully.  */
+	  a -= b * sign;
+	  extra = sign;
+	}
+      a = -a;
+    }
 
-  return  (sign < 0) ? -result : result;
+  /* We knowingly penalize pre-v10 models by multiplication with the
+     sign.  */
+  return sign * do_31div (a, __builtin_labs (b)).quot + extra;
 }
 #endif /* L_divsi3 */
-#endif /* L_udivsi3 || L_divsi3 */
 
 
-/* Note that unsigned and signed modulus both build when L_modsi3, but
-   then the unsigned variant is inlined, as with do_31div above.  */
-#if defined (L_umodsi3) || defined (L_modsi3)
-#ifndef L_umodsi3
-static __inline__
-#endif
+#ifdef L_umodsi3
 unsigned long
-__Umod (unsigned long a, unsigned long b)
-     __attribute__ ((__const__, __always_inline__));
+__Umod (unsigned long a, unsigned long b) __attribute__ ((__const__));
 
-#ifndef L_umodsi3
-static __inline__
-#endif
 unsigned long
 __Umod (unsigned long a, unsigned long b)
 {
@@ -279,6 +277,7 @@ __Umod (unsigned long a, unsigned long b)
 
   return do_31div (a, b).rem;
 }
+#endif /* L_umodsi3 */
 
 #ifdef L_modsi3
 long
@@ -287,14 +286,27 @@ __Mod (long a, long b) __attribute__ ((__const__));
 long
 __Mod (long a, long b)
 {
-  long	result;
+  long sign = 1;
 
-  result = __Umod (__builtin_labs (a), __builtin_labs (b));
+  /* We need to handle a == -2147483648 as expected and must while
+     doing that avoid producing a sequence like "abs (a) < 0" as GCC
+     may optimize out the test.  That sequence may not be obvious as
+     we call inline functions.  Testing for a being negative and
+     handling (presumably much rarer than positive) enables us to get
+     a bit of optimization for an (accumulated) reduction of the
+     penalty of the 0x80000000 special-case.  */
+  if (a < 0)
+    {
+      sign = -1;
+      if ((a & 0x7fffffff) == 0)
+	/* We're at 0x80000000.  Tread carefully.  */
+	a += __builtin_labs (b);
+      a = -a;
+    }
 
-  return (a < 0) ? -result : result;
+  return sign * do_31div (a, __builtin_labs (b)).rem;
 }
 #endif /* L_modsi3 */
-#endif /* L_umodsi3 || L_modsi3 */
 #endif /* L_udivsi3 || L_divsi3 || L_umodsi3 || L_modsi3 */
 
 /*

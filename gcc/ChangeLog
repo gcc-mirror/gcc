@@ -1,5 +1,11 @@
 2005-12-23  Hans-Peter Nilsson  <hp@axis.com>
 
+	* config/cris/arit.c (do_31div): Clarify what "31" refers to.
+	[L_divsi3] (__Udiv): Don't use as inline function.
+	[L_modsi3] (__Umod): Ditto.
+	(__Div): Rearrange to call do_31div directly instead of __Udiv.
+	(__Mod): Similarly regarding __Umod.
+
 	PR target/24342
 	* config/cris/cris.c (cris_split_movdx): Add REG_INC notes for
 	emitted insns with post-increments.
