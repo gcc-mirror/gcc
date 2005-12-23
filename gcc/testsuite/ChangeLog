@@ -1,3 +1,8 @@
+2005-12-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25307
+	* gfortran.dg/list_read_5.f90: New test.
+
 2005-12-22  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/sse-7.c: Use -msse2.
