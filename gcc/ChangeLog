@@ -1,3 +1,47 @@
+2005-12-22  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	Merge from gomp-branch.
+	* builtins.def: Move all DEF_SYNC_BUILTIN to ...
+	* sync-builtins.def: ... new file.
+	(BUILT_IN_FETCH_AND_ADD_16,
+	BUILT_IN_FETCH_AND_SUB_16, BUILT_IN_FETCH_AND_OR_16,
+	BUILT_IN_FETCH_AND_AND_16, BUILT_IN_FETCH_AND_XOR_16,
+	BUILT_IN_FETCH_AND_NAND_16, BUILT_IN_ADD_AND_FETCH_16,
+	BUILT_IN_SUB_AND_FETCH_16, BUILT_IN_OR_AND_FETCH_16,
+	BUILT_IN_AND_AND_FETCH_16, BUILT_IN_XOR_AND_FETCH_16,
+	BUILT_IN_NAND_AND_FETCH_16, BUILT_IN_BOOL_COMPARE_AND_SWAP_16,
+	BUILT_IN_VAL_COMPARE_AND_SWAP_16, BUILT_IN_LOCK_TEST_AND_SET_16,
+	BUILT_IN_LOCK_RELEASE_16): New builtins.
+	* builtin-types.def (BT_I16, BT_FN_I16_VPTR_I16,
+	BT_FN_BOOL_VPTR_I16_I16, BT_FN_I16_VPTR_I16_I16): Add.
+	* builtins.c (expand_builtin): Handle sync BUILT_IN_*_16 builtins.
+	* c-common.c (enum c_builtin_type): Move to top-level from
+	c_common_nodes_and_builtins enum builtin_type.
+	(builtin_types): Move from c_common_nodes_and_builtins.
+	(def_fn_type): New.
+	(c_common_nodes_and_builtins): Use it.
+	(def_builtin_1): Check for error_mark_node.
+	(sync_resolve_size): Handle also 128 bit sync builtins.
+	* Makefile.in (BUILTINS_DEF): New.  Use it instead of builtins.def.
+
+	* config/i386/i386.h (x86_cmpxchg8b, x86_cmpxchg16b): New decls.
+	(TARGET_CMPXCHG8B, TARGET_CMPXCHG16B): Define.
+	* config/i386/i386.c (x86_cmpxchg8b, x86_cmpxchg16b): New variables.
+	* config/i386/sync.md (CASMODE, DCASMODE): New mode macros.
+	(doublemodesuffix, DCASHMODE): New mode attrs.
+	(sync_compare_and_swap<mode>): Change into expand, use CASMODE
+	instead of IMODE, if mode is wider than a word, expand into
+	sync_double_compare_and_swap*.
+	(*sync_compare_and_swap<mode>): New insn.
+	(sync_double_compare_and_swap<mode>): Likewise.
+	(*sync_double_compare_and_swapdi_pic): Likewise.
+	(sync_compare_and_swap_cc<mode>): Use CASMODE instead of IMODE, if
+	mode is wider than a word, expand into
+	sync_double_compare_and_swap_cc*.
+	(sync_double_compare_and_swap_cc<mode>): New insn.
+	(*sync_double_compare_and_swap_ccdi_pic): Likewise.
+
 2005-12-22  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/mmintrin.h (_mm_add_si64): Only define for SSE2.
@@ -186,8 +230,8 @@
 	Strip away all type conversions after simplifying the
 	condition.
 
-        * tree-cfgcleanup.c (merge_phi_nodes): Allow merging in some
-        cases the forwarder block dominates the destination.
+	* tree-cfgcleanup.c (merge_phi_nodes): Allow merging in some
+	cases the forwarder block dominates the destination.
 
 2005-12-19  DJ Delorie  <dj@redhat.com>
 
@@ -257,7 +301,7 @@
 
 2005-12-17  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-        * flow.c (update_life_info, count_or_remove_death_notes): Fixed
+	* flow.c (update_life_info, count_or_remove_death_notes): Fixed
 	latent bug that could happen if update_life_info was called with a
 	blocks parameter and the call to cleanup_cfg actually deleted one
 	of those blocks. 
@@ -1027,10 +1071,10 @@
 
 2005-12-15  Paolo Bonzini  <bonzini@gnu.org>
 
-        * combine.c: Remove force_to_mode's fourth parameter.
-        (force_to_mode): Do not handle REG.
-        (canon_reg_for_combine): New.
-        (make_field_assignment): Use it where the removed argument was non-NULL.
+	* combine.c: Remove force_to_mode's fourth parameter.
+	(force_to_mode): Do not handle REG.
+	(canon_reg_for_combine): New.
+	(make_field_assignment): Use it where the removed argument was non-NULL.
 
 2005-12-15  Alan Modra  <amodra@bigpond.net.au>
 
@@ -1206,8 +1250,8 @@
 
 	Back out this change:
 	2005-03-07  Kazu Hirata  <kazu@cs.umass.edu>
-          * recog.c (verify_changes): Make it static.
-          * recog.h: Remove the corresponding prototype.
+	  * recog.c (verify_changes): Make it static.
+	  * recog.h: Remove the corresponding prototype.
 
 2005-12-13  J"orn Rennecke <joern.rennecke@st.com>
 
@@ -1504,7 +1548,7 @@
 	call_used_regs can't be used to save reg in another reg.
 
 2005-12-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
-            Christophe Jaillet  <christophe.jaillet@wanadoo.fr>
+	    Christophe Jaillet  <christophe.jaillet@wanadoo.fr>
 
 	* ipa-type-escape.c (analyze_variable): Use gcc_assert instead of
 	abort.
@@ -1544,7 +1588,7 @@
 	* tree.h (DECL_EXTERNAL): Clarify documentation.
 
 2005-12-08  Andreas Krebbel  <krebbel1@de.ibm.com>
-            Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25268
 	* config/s390/s390.c (s390_decompose_shift_count): Remove BITS
@@ -2340,11 +2384,11 @@
 
 2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
-        * config/rs6000/predicates.md (logical_const_operand): Split
-        out of logical_operand.
-        (logical_operand): Use it.
-        * config/rs6000/rs6000.md (cmp -> xor peephole2): Use
-        logical_const_operand.
+	* config/rs6000/predicates.md (logical_const_operand): Split
+	out of logical_operand.
+	(logical_operand): Use it.
+	* config/rs6000/rs6000.md (cmp -> xor peephole2): Use
+	logical_const_operand.
 
 2005-12-05  Jan Beulich  <jbeulich@novell.com>
 
@@ -2715,7 +2759,7 @@
 
 2005-12-01  Ben Elliston  <bje@au.ibm.com>
 
-        * mklibgcc.in: Parameterise the script to build soft float
+	* mklibgcc.in: Parameterise the script to build soft float
 	functions by iterating over each type, rather than cloning the
 	code for each type.
 
@@ -2756,7 +2800,7 @@
 	(tree_expr_nonnegative_p): Likewise.
 
 2005-11-30  Dale Johannesen  <dalej@apple.com>
-            Andrew Pinski  <pinskia@physics.uc.edu>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* combine.c (find_split_point):  Sign extend bitmask
 	when changing bitfield assignment to IOR of AND.
