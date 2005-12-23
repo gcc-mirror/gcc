@@ -1,3 +1,8 @@
+2005-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24671
+	* g++.dg/template/sfinae3.C: New test.
+
 2005-12-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* g++.dg/other/friend4.C: New test.
