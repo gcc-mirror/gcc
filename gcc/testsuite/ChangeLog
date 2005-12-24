@@ -1,3 +1,8 @@
+2005-12-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23171
+	* g++.dg/opt/init1.C: New test.
+
 2005-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24671

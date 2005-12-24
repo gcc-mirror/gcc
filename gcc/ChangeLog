@@ -1,3 +1,9 @@
+2005-12-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23171
+	* varasm.c (initializer_constant_valid_p): An ADDR_EXPR of a
+	CONSTRUCTOR is invalid.
+
 2005-12-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR rtl-optimization/21041
