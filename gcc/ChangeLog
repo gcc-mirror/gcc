@@ -1,3 +1,13 @@
+2005-12-23  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-pass.h (pass_eliminate_useless_stores): Remove.
+	* tree-ssa-pre.c (is_copy_stmt): Ditto.
+	(follow_copies_till_vuse): Ditto.
+	(do_eustore): Ditto.
+	(gate_eustores): Ditto.
+	(pass_eliminate_useless_stores): Ditto.
+	* passes.c (init_optimization_passes): Ditto.
+
 2005-12-23  Paolo Bonzini  <bonzini@gnu.org>
 
         * combine.c (simplify_shift_const): Fix typo.  Use, whenever
