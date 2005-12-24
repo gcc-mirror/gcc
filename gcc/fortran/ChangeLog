@@ -1,3 +1,12 @@
+2005-12-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25029
+	PR fortran/21256
+	* resolve.c (check_assumed_size_reference, resolve_assumed_size_actual):
+	Remove because of regressions caused by patch.
+	(resolve_function, resolve_call, resolve_variable): Remove assumed size
+	checks because of regressionscaused by patch.
+
 2005-12-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25029
