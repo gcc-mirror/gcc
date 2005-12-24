@@ -1,3 +1,12 @@
+2005-12-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/18990
+	* gfortran.h (gfc_charlen): Add resolved field.
+	* expr.c (gfc_specification_expr): Accept NULL argument.
+	* resolve.c (gfc_resolve_charlen, gfc_resolve_derived): New.
+	(gfc_resolve_symbol): Resolve derived type definitions.  Use
+	resolve_charlen to resolve character lengths.
+
 2005-12-22  Steven G. Kargl  <kargls@comcast.net>
 
 	* decl.c (gfc_match_old_kind_spec,match_type_spec): Use gfc_std_notify
