@@ -1,3 +1,16 @@
+2005-12-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (fill(const _Deque_iterator&,
+	const _Deque_iterator&, const _Tp&)): Deal, correctly, only
+	with iterators (leave const_iterators alone).
+
+2005-12-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (fill(const _Deque_iterator<>&,
+	const _Deque_iterator<>&, const _Tp&)): Add.
+
+	* testsuite/23_containers/deque/cons/assign/1.cc: New.
+
 2005-12-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_deque.h (deque<>::resize, _M_fill_assign):
