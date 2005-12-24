@@ -1,3 +1,21 @@
+2005-12-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2005-02-09  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* g++.dg/rtti/tinfo1.C: Allow newline after assembler label.
+
+	2004-11-28  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18489
+	* g++.dg/rtti/tinfo1.C: In pattern for label definition ending
+	delimeter, match space and TAB as well as ":".
+
+	Backport portions of:
+	2004-11-04  Ben Elliston  <bje@au.ibm.com>
+
+	* g++.dg/rtti/tinfo1.C: Remove xfails.
+
 2005-12-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/20772
