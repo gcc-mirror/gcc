@@ -5805,15 +5805,6 @@ force_operand (rtx value, rtx target)
       return subtarget;
     }
 
-  if (code == ZERO_EXTEND || code == SIGN_EXTEND)
-    {
-      if (!target)
-	target = gen_reg_rtx (GET_MODE (value));
-      convert_move (target, force_operand (XEXP (value, 0), NULL),
-		    code == ZERO_EXTEND);
-      return target;
-    }
-
   if (ARITHMETIC_P (value))
     {
       op2 = XEXP (value, 1);
@@ -5885,17 +5876,27 @@ force_operand (rtx value, rtx target)
     }
   if (UNARY_P (value))
     {
-      int unsignedp = 0;
-
+      if (!target)
+	target = gen_reg_rtx (GET_MODE (value));
       op1 = force_operand (XEXP (value, 0), NULL_RTX);
       switch (code)
 	{
-	case ZERO_EXTEND: case UNSIGNED_FIX: case UNSIGNED_FLOAT:
-	  unsignedp = 1;
-	  /* fall through.  */
+	case ZERO_EXTEND:
+	case SIGN_EXTEND:
 	case TRUNCATE:
-	case SIGN_EXTEND: case FIX: case FLOAT:
-	  return convert_to_mode (GET_MODE (value), op1, unsignedp);
+	  convert_move (target, op1, code == ZERO_EXTEND);
+	  return target;
+
+	case FIX:
+	case UNSIGNED_FIX:
+	  expand_fix (target, op1, code == UNSIGNED_FIX);
+	  return target;
+
+	case FLOAT:
+	case UNSIGNED_FLOAT:
+	  expand_float (target, op1, code == UNSIGNED_FLOAT);
+	  return target;
+
 	default:
 	  return expand_simple_unop (GET_MODE (value), code, op1, target, 0);
 	}
