@@ -23,9 +23,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef GCC_OUTPUT_H
 #define GCC_OUTPUT_H
 
-/* Compute branch alignments based on frequency information in the CFG.  */
-extern void compute_alignments (void);
-
 /* Initialize data in final at the beginning of a compilation.  */
 extern void init_final (const char *);
 

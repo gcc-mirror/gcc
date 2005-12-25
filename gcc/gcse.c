@@ -660,7 +660,7 @@ static bool is_too_expensive (const char *);
    F is the first instruction in the function.  Return nonzero if a
    change is mode.  */
 
-int
+static int
 gcse_main (rtx f ATTRIBUTE_UNUSED, FILE *file)
 {
   int changed, pass;
@@ -6510,7 +6510,7 @@ store_motion (void)
 
 /* Entry point for jump bypassing optimization pass.  */
 
-int
+static int
 bypass_jumps (FILE *file)
 {
   int changed;

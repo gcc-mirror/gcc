@@ -232,7 +232,7 @@ replace_ref (struct ref *ref, rtx reg)
 
 /* Main entry point.  */
 
-void
+static void
 web_main (void)
 {
   struct df *df;
