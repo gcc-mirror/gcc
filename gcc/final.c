@@ -676,7 +676,10 @@ insn_current_reference_address (rtx branch)
 }
 #endif /* HAVE_ATTR_length */
 
-void
+/* Compute branch alignments based on frequency information in the
+   CFG.  */
+
+static void
 compute_alignments (void)
 {
   int log, max_skip, max_log;

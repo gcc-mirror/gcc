@@ -1,3 +1,12 @@
+2005-12-25  Kazu Hirata  <kazu@codesourcery.com>
+
+	* final.c (compute_alignments): Make it static.
+	* gcse.c (gcse_main, bypass_jumps): Likewise.
+	* web.c (web_main): Likewise.
+	* output.h: Remove the prototype for compute_alignments.
+	* rtl.h: Remove the prototypes for web_main, gcse_main, and
+	bypass_jumps.
+
 2005-12-24  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (force_operand): Use expand_fix and expand_float to
