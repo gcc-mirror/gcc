@@ -93,13 +93,13 @@ template<_GLIBCXX_TEMPLATE_PARAMS>
 
 #else
 
-    tuple(const tuple& __in)
+    tuple(const tuple&)
     { }
 
 #endif
 
     tuple&
-    operator=(const tuple& __in)
+    operator=(const tuple& __in __attribute__((__unused__)) )
     {
       _GLIBCXX_TUPLE_ASSIGN
         return *this;

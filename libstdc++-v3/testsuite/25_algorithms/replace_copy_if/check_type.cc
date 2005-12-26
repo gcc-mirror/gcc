@@ -34,11 +34,11 @@ struct Z
 {
   Z&
   operator=(const X&)
-  { }
+  { return *this; }
 
   Z&
   operator=(const Y&)
-  { }
+  { return *this; }
 };
 
 bool

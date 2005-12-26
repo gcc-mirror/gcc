@@ -75,7 +75,7 @@ template<typename Container>
 
 template<typename Container>
   void
-  test_container(Container obj, bool run_threaded = false)
+  test_container(Container, bool run_threaded = false)
   {
     do_loop<Container>();
     std::ostringstream comment;

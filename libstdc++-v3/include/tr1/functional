@@ -1156,7 +1156,7 @@ namespace tr1
       static std::size_t
       hash(const char* first, std::size_t length)
       {
-	std::size_t result = 2166136261UL;
+	std::size_t result = static_cast<std::size_t>(2166136261UL);
 	for (; length > 0; --length)
 	  {
 	    result ^= (std::size_t)*first++;
@@ -1172,7 +1172,7 @@ namespace tr1
       static std::size_t
       hash(const char* first, std::size_t length)
       {
-	std::size_t result = 14695981039346656037ULL;
+	std::size_t result = static_cast<std::size_t>(14695981039346656037ULL);
 	for (; length > 0; --length)
 	  {
 	    result ^= (std::size_t)*first++;

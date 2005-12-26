@@ -31,7 +31,7 @@ public:
 
 protected:
   iter_type do_put(iter_type s, std::ios_base&, char_type fill,
-		   const std::tm* t, char format, char modifier) const
+		   const std::tm*, char, char) const
   {
     fill_chars.push_back(fill);
     return s;

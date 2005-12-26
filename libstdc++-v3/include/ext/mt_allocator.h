@@ -631,7 +631,7 @@ namespace __gnu_cxx
       __mt_alloc(const __mt_alloc&) throw() { }
 
       template<typename _Tp1, typename _Poolp1>
-        __mt_alloc(const __mt_alloc<_Tp1, _Poolp1>& obj) throw() { }
+        __mt_alloc(const __mt_alloc<_Tp1, _Poolp1>&) throw() { }
 
       ~__mt_alloc() throw() { }
 

@@ -322,7 +322,7 @@ namespace std
       { }
 
       virtual bool
-      do_is(mask m, char_type c) const
+      do_is(mask, char_type) const
       { return false; }
 
       virtual const char_type*
@@ -333,11 +333,11 @@ namespace std
       }
 
       virtual const char_type*
-      do_scan_is(mask m, const char_type* low, const char_type* high) const
+      do_scan_is(mask, const char_type*, const char_type* high) const
       { return high; }
 
       virtual const char_type*
-      do_scan_not(mask m, const char_type* low, const char_type* high) const
+      do_scan_not(mask, const char_type* low, const char_type*) const
       { return low; }
 
       virtual char_type
@@ -345,7 +345,7 @@ namespace std
       { return c; }
 
       virtual const char_type*
-      do_toupper(char_type*  low, const char_type*  high) const
+      do_toupper(char_type*, const char_type*  high) const
       { return high; }
 
       virtual char_type
@@ -353,7 +353,7 @@ namespace std
       { return c; }
 
       virtual const char_type*
-      do_tolower(char_type*  low, const char_type*  high) const
+      do_tolower(char_type*, const char_type*  high) const
       { return high; }
 
       virtual char_type
