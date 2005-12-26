@@ -214,7 +214,7 @@ namespace __gnu_test
 
     protected:
       iter_type 
-      do_get(iter_type a, iter_type, ios_base&, ios_base::iostate&, bool&) const
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const
       { throw facet_error(); return iter_type(); }
 
       virtual iter_type 
@@ -222,49 +222,49 @@ namespace __gnu_test
       { throw facet_error(); return iter_type(); }
       
       virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 	     unsigned short&) const
       { throw facet_error(); return iter_type(); }
       
       virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 	     unsigned int&) const
       { throw facet_error(); return iter_type(); }
       
       virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 	     unsigned long&) const
       { throw facet_error(); return iter_type(); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG 
       virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 	     long long&) const
       { throw facet_error(); return iter_type(); }
       
       virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 	     unsigned long long&) const
       { throw facet_error(); return iter_type(); }
 #endif
 
       virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 	     float&) const
       { throw facet_error(); return iter_type(); }
       
       virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 	     double&) const
       { throw facet_error(); return iter_type(); }
       
       virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 	     long double&) const
       { throw facet_error(); return iter_type(); }
       
       virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 	     void*&) const
       { throw facet_error(); return iter_type(); }
     };
@@ -284,37 +284,37 @@ namespace __gnu_test
 
     protected:
       iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, bool __v) const
+      do_put(iter_type, ios_base&, char_type, bool) const
       { throw facet_error(); return iter_type(NULL); }
       
       virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, long __v) const
+      do_put(iter_type, ios_base&, char_type, long) const
       { throw facet_error(); return iter_type(NULL); }
 
       virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, unsigned long) const
+      do_put(iter_type, ios_base&, char_type, unsigned long) const
       { throw facet_error(); return iter_type(NULL); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG 
       virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, long long __v) const
+      do_put(iter_type, ios_base&, char_type, long long) const
       { throw facet_error(); return iter_type(NULL); }
 
       virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, unsigned long long) const
+      do_put(iter_type, ios_base&, char_type, unsigned long long) const
       { throw facet_error(); return iter_type(NULL); }
 #endif
       
       virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, double __v) const
+      do_put(iter_type, ios_base&, char_type, double) const
       { throw facet_error(); return iter_type(NULL); }
 
       virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, long double __v) const
+      do_put(iter_type, ios_base&, char_type, long double) const
       { throw facet_error(); return iter_type(NULL); }
       
       virtual iter_type 
-      do_put(iter_type, ios_base&, char_type __fill, const void* __v) const
+      do_put(iter_type, ios_base&, char_type, const void*) const
       { throw facet_error(); return iter_type(NULL); }
     };
 

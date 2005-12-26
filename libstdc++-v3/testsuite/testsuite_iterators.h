@@ -144,6 +144,7 @@ namespace __gnu_test
     {
       ptr = in.ptr;
       SharedInfo = in.SharedInfo;
+      return *this;
     }
 
     output_iterator_wrapper&
@@ -394,6 +395,7 @@ namespace __gnu_test
     {
       this->ptr = in.ptr;
       this->SharedInfo = in.SharedInfo;
+      return *this;
     }
 
     random_access_iterator_wrapper&

@@ -47,7 +47,7 @@ test2()
 int int_swap_count;
 
 struct X {};
-void swap(X& i, X& j)
+void swap(X&, X&)
 { ++int_swap_count; }
 
 void

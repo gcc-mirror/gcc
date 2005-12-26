@@ -53,7 +53,7 @@ void test01()
   // The constant 20 comes from __pool_alloc_base::_M_refill. See
   // also __pool_alloc_base::_M_allocate_chunk.
   __pool_alloc<small> alloc_small;
-  for (int i = 0; i < 20 * sizeof(big) / sizeof(small) + 1; ++i)
+  for (unsigned int i = 0; i < 20 * sizeof(big) / sizeof(small) + 1; ++i)
     alloc_small.allocate(1);
 }
 

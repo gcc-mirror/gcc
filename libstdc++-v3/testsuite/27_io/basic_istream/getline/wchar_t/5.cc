@@ -51,7 +51,8 @@ check(wistream& stream, const wstring& str, unsigned nchunks, wchar_t delim)
   while (stream.getline(buf, sizeof(buf) / sizeof(wchar_t), delim))
     {
       index_new = str.find(delim, index);
-      VERIFY( stream.gcount() == index_new - index + 1 );
+      VERIFY( static_cast<string::size_type>(stream.gcount()) ==
+	       index_new - index + 1 );
       VERIFY( !str.compare(index, index_new - index, buf) );
       index = index_new + 1;
       ++n;

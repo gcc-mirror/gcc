@@ -44,7 +44,7 @@ struct reset_count_struct
 // 2.2.3.3 shared_ptr assignment [tr.util.smartptr.shared.assign]
 
 // Assignment from shared_ptr<Y>
-int
+void
 test01()
 {
   reset_count_struct __attribute__((unused)) reset;

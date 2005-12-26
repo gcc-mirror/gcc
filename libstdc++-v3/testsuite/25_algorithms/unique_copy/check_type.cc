@@ -30,7 +30,7 @@ struct S1 { };
 
 struct S2
 {
-  S2(const S1& s1) {}
+  S2(const S1&) {}
 };
 
 bool 
@@ -40,7 +40,7 @@ struct X1 { };
 
 struct X2
 {
-  X2(const X1& x1) {}
+  X2(const X1&) {}
 };
 
 bool 

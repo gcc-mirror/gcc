@@ -24,8 +24,8 @@ using namespace std;
 
 template<typename InputIterator, typename Tp>
   InputIterator
-  find(InputIterator first, InputIterator last,
-       const Tp& val, input_iterator_tag)
+  find(InputIterator first, InputIterator,
+       const Tp&, input_iterator_tag)
   { return first; }
 
 // libstdc++/17441
