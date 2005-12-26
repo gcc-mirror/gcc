@@ -27,12 +27,12 @@ struct s
 {
   void f_void_int_const(int) const {}
   void f_void_int(int) {}
-  int f_int_int_const(int) const {}
-  int f_int_int(int) {}
+  int f_int_int_const(int) const { return 1; }
+  int f_int_int(int) {return 1; }
   void f_void_void_const() const {}
   void f_void_void() {}
-  int f_int_void_const() const {}
-  int f_int_void() {}
+  int f_int_void_const() const { return 1; }
+  int f_int_void() { return 1; }
 };
 
 void test01(s& a)

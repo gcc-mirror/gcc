@@ -37,11 +37,11 @@ template<typename T>
     clear_alloc() throw()
     { }
     
-    clear_alloc(clear_alloc const& _wa) throw()
+    clear_alloc(clear_alloc const&) throw() : new_allocator<T>() 
     { }
     
     template<typename T1>
-    clear_alloc(clear_alloc<T1> const& _wa) throw()
+    clear_alloc(clear_alloc<T1> const&) throw()
       { }
 
     virtual ~clear_alloc() throw()

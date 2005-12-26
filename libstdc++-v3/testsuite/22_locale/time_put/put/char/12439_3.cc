@@ -29,8 +29,8 @@ public:
   mutable std::string format_chars;
 
 protected:
-  iter_type do_put(iter_type s, std::ios_base&, char_type fill,
-		   const std::tm* t, char format, char modifier) const
+  iter_type do_put(iter_type s, std::ios_base&, char_type,
+		   const std::tm*, char format, char) const
   {
     format_chars.push_back(format);
     return s;

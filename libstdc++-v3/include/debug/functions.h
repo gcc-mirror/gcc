@@ -154,7 +154,8 @@ namespace __gnu_debug
   template<typename _InputIterator>
     inline _InputIterator
     __check_valid_range(const _InputIterator& __first,
-			const _InputIterator& __last)
+			const _InputIterator& __last
+			__attribute__((__unused__)))
     {
       _GLIBCXX_DEBUG_ASSERT(__valid_range(__first, __last));
       return __first;
@@ -163,7 +164,8 @@ namespace __gnu_debug
   /** Checks that __s is non-NULL or __n == 0, and then returns __s. */
   template<typename _CharT, typename _Integer>
     inline const _CharT*
-    __check_string(const _CharT* __s, const _Integer& __n)
+    __check_string(const _CharT* __s,
+		   const _Integer& __n __attribute__((__unused__)))
     {
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
       _GLIBCXX_DEBUG_ASSERT(__s != 0 || __n == 0);

@@ -1103,7 +1103,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       { return local_iterator(m_buckets[n]); }
   
       local_iterator
-      end(size_type n)
+      end(size_type)
       { return local_iterator(0); }
   
       const_local_iterator
@@ -1111,7 +1111,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       { return const_local_iterator(m_buckets[n]); }
   
       const_local_iterator
-      end(size_type n) const
+      end(size_type) const
       { return const_local_iterator(0); }
 
       float

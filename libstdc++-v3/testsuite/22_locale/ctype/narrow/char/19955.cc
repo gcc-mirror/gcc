@@ -36,7 +36,7 @@ class Ctype1
 protected:
   const char*
   do_narrow(const char* lo, const char* hi,
-	    char dflt, char* to) const 
+	    char, char* to) const 
   {
     for (int i = 0; lo != hi; ++lo, ++to, ++i)
       *to = *lo + i;

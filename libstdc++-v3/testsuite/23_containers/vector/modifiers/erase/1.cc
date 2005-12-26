@@ -29,12 +29,12 @@ const int A2[] = {0, 2, 3, 4, 10, 11, 12, 13, 14, 15};
 const int A3[] = {0, 2, 3, 4, 10, 11};
 const int A4[] = {4, 10, 11};
 const int A5[] = {4, 10};
-const int  N = sizeof(A)  / sizeof(int);
-const int N1 = sizeof(A1) / sizeof(int);
-const int N2 = sizeof(A2) / sizeof(int);
-const int N3 = sizeof(A3) / sizeof(int);
-const int N4 = sizeof(A4) / sizeof(int);
-const int N5 = sizeof(A5) / sizeof(int);
+const unsigned int  N = sizeof(A)  / sizeof(int);
+const unsigned int N1 = sizeof(A1) / sizeof(int);
+const unsigned int N2 = sizeof(A2) / sizeof(int);
+const unsigned int N3 = sizeof(A3) / sizeof(int);
+const unsigned int N4 = sizeof(A4) / sizeof(int);
+const unsigned int N5 = sizeof(A5) / sizeof(int);
 
 void
 test01()
@@ -85,17 +85,17 @@ test02()
   typedef vec_type::iterator          iterator_type;
 
   vec_type v, v1, v2, v3, v4, v5;
-  for (int i = 0; i < N; ++i)
+  for (unsigned int i = 0; i < N; ++i)
     v.push_back(std::vector<int>(1, A[i]));
-  for (int i = 0; i < N1; ++i)
+  for (unsigned int i = 0; i < N1; ++i)
     v1.push_back(std::vector<int>(1, A1[i]));
-  for (int i = 0; i < N2; ++i)
+  for (unsigned int i = 0; i < N2; ++i)
     v2.push_back(std::vector<int>(1, A2[i]));
-  for (int i = 0; i < N3; ++i)
+  for (unsigned int i = 0; i < N3; ++i)
     v3.push_back(std::vector<int>(1, A3[i]));
-  for (int i = 0; i < N4; ++i)
+  for (unsigned int i = 0; i < N4; ++i)
     v4.push_back(std::vector<int>(1, A4[i]));
-  for (int i = 0; i < N5; ++i)
+  for (unsigned int i = 0; i < N5; ++i)
     v5.push_back(std::vector<int>(1, A5[i]));
   
   iterator_type it1 = v.erase(v.begin() + 1);

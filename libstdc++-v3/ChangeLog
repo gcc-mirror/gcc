@@ -1,3 +1,93 @@
+2005-12-26  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/ext/mt_allocator.h (__mt_alloc::__mt_alloc): Remove
+	name of unused parameter.
+	* include/bits/stream_iterator.h (istream_iterator::istream_iterator):
+	Construct _M_value.
+	* include/debug/functions.h (__check_valid_range): Add
+	__attribute__((unused)).
+	* include/tr1/hashtable (hashtable::end): Remove name of unused
+	parameter.
+	* include/tr1/tuple_iterate.h (tuple::tuple): Likewise.
+	(tuple::operator=): Add __attribute__((unused)).
+	* include/tr1/functional (Fnv_hash<4>::hash): Add static_cast.
+	(Fnv_hash<8>::hash): Likewise.
+
+	* testsuite/25_algorithms/iter_swap/20577.cc (swap): Remove name of
+	unused parameter.
+	* testsuite/25_algorithms/unique_copy/check_type.cc (S2::S2,X2::X2):
+	Likewise.
+	* testsuite/22_locale/ctype/narrow/char/19955.cc (do_narrow): Likewise.
+	* testsuite/22_locale/ctype/is/char/9858.cc (Derived::do_is, 
+	Derived::do_scan_is, Derived::do_scan_not, Derived2::do_is,
+	Derived2::do_scan_is, Derived2::do_scan_not): Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_1.cc (TP::do_put):
+	Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_3.cc (TP::do_put):
+	Likewise.
+	* testsuite/22_locale/time_put/put/char/12439_1.cc (TP::do_put):
+	Likewise.
+	* testsuite/22_locale/time_put/put/char/12439_3.cc (TP::do_put):
+	Likewise.
+	* testsuite/testsuite_io.h (fail_num_get::do_get, fail_num_put::do_put):
+	Likewise.
+	* testsuite/25_algorithms/find/17441.cc (find): Likewise.
+	* testsuite/23_containers/vector/cons/clear_allocator.cc
+	(clear_alloc::clear_alloc): Likewise.
+	* testsuite/23_containers/vector/bool/clear_allocator.cc
+	(clear_alloc::clear_alloc): Likewise.
+	* testsuite/23_containers/list/cons/clear_allocator.cc
+	(clear_alloc::clear_alloc): Likewise.
+	* testsuite/23_containers/set/modifiers/16728.cc (test_container):
+	Likewise.
+	* testsuite/27_io/basic_ios/cons/char/3.cc (char_traits::to_char_type,
+	to_int_type): Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/12206.cc (codecvt::do_out, do_in,
+	do_unshift, do_length): Likewise.
+	* testsuite/21_strings/basic_string/capacity/1.cc 
+	(operator==(A<T>,A<T>), operator<(A<T>,A<T>),
+	char_traits::to_char_type, char_traits::to_int_type): Likewise
+	* testsuite/testsuite_character.h (ctype::do_is, ctype::do_scan_is,
+	ctype::do_scan_not, do_toupper, do_tolower): Likewise.
+	* testsuite/25_algorithms/replace_copy/check_type.cc (Z::operator=):
+	Add missing return statement.
+	* testsuite/25_algorithms/replace_copy_if/check_type.cc (Z::operator=):
+	Likewise.
+	* testsuite/testsuite_iterators.h (output_iterator_wrapper::operator=,
+	random_access_iterator_wrapper::operator==): Likewise.
+	* testsuite/20_util/functional/binders/1.cc (s::f_int_int_const,
+	s::f_int_int, s::f_int_void_const, s::f_int_void): Likewise.
+	* testsuite/27_io/types/1.cc (test01): Likewise.
+	* testsuite/27_io/basic_ostream/write/wchar_t/1.cc (test01): Likewise.
+	* testsuite/27_io/basic_ostream/write/char/1.cc (test01): Likewise.
+	* testsuite/21_strings/c_strings/wchar_t/24559.cc (main): Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/2.cc (check): Add static
+	cast.
+	* testsuite/27_io/basic_istream/ignore/char/2.cc (check): Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/5.cc (check): Likewise.
+	* testsuite/27_io/basic_istream/getline/char/5.cc (check): Likewise.
+	* testsuite/testsuite_allocator.h (check_new): Likewise.
+	(check_deallocate_null): Add missing return value.
+	* testsuite/ext/pool_allocator/allocate_chunk.cc (test01):
+	Make variable unsigned.
+	* testsuite/23_containers/vector/modifiers/erase/1.cc (N,N1,N2,N3,N4,
+	N5,test01): Likewise.
+	* testsuite/26_numerics/valarray/valarray_subset_assignment.cc
+	(check_array): Likewise.
+	(main): Removed unused variable.
+	* testsuite/27_io/basic_streambuf/in_avail/wchar_t/1.cc (test05):
+	Removed unused variable.
+	* testsuite/27_io/basic_ostream/flush/wchar_t/1.cc (test01): Likewise.
+	* testsuite/27_io/basic_ostream/flush/char/1.cc (test01): Likewise.
+	* testsuite/27_io/basic_ostream/endl/wchar_t/1.cc (test01): Likewise.
+	* testsuite/27_io/basic_ostream/endl/char/1.cc (test01): Likewise.
+	* testsuite/27_io/basic_ostream/ends/wchar_t/1.cc (test01): Likewise.
+	* testsuite/27_io/basic_ostream/ends/char/1.cc (test01): Likewise.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/
+	assign/shared_ptr.cc (test01): Correct return type.	
+	* testsuite/27_io/basic_filebuf/close/char/2.cc (test_02):
+	Add default value to close_num.
+
 2005-12-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (fill(const _Deque_iterator&,

@@ -65,21 +65,21 @@ namespace std
     static locale::id id;
     
   protected:
-    virtual result do_out(mbstate_t&, const Char* from,
-			  const Char* from_end,
-			  const Char*& from_next, char* to,
-			  char* to_limit, char*& to_next) const
+    virtual result do_out(mbstate_t&, const Char*,
+			  const Char*,
+			  const Char*&, char*,
+			  char*, char*&) const
     { return ok; }
-    virtual result do_in(mbstate_t&, const char* from,
-			 const char* from_end,
-			 const char*& from_next, Char* to,
-			 Char* to_limit, Char*& to_next) const
+    virtual result do_in(mbstate_t&, const char*,
+			 const char*,
+			 const char*&, Char*,
+			 Char*, Char*&) const
     { return ok; }
-    virtual result do_unshift(mbstate_t&, char* to, char*,
-			      char*& to_next) const
+    virtual result do_unshift(mbstate_t&, char*, char*,
+			      char*&) const
     { return noconv; }
-    virtual int do_length(mbstate_t&, const char* from,
-			  const char* from_end, size_t max) const
+    virtual int do_length(mbstate_t&, const char*,
+			  const char*, size_t) const
     { return 1; }
     virtual int do_encoding() const throw()
     { return 1; }

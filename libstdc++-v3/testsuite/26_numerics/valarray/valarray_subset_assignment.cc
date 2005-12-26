@@ -35,14 +35,13 @@
 
 bool check_array(std::valarray<double>& a, double b[])
 {
-  for (int i=0; i < a.size(); i++)
+  for (unsigned int i=0; i < a.size(); i++)
     if (a[i] != b[i]) return false;
   return true;
 }
 
 int main()
 {
-  double dvar = 1.0;
   std::valarray<double> val_d(10);  //  0 1 2 3 4 5 6 7 8 9 
   std::valarray<double> val_d1(10); // 10 9 8 7 6 5 4 3 2 1
 

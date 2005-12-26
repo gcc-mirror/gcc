@@ -39,7 +39,7 @@ void test05()
   typedef size_t 			size_type;
 
   bool test __attribute__((unused)) = true;
-  std::streamoff  			strmof_1, strmof_2;
+  std::streamoff  			strmof_1;
   testbuf	sb01;
 
   // int in_avail()

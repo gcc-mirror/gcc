@@ -60,7 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     public:
       ///  Construct end of input stream iterator.
       istream_iterator()
-      : _M_stream(0), _M_ok(false) {}
+      : _M_stream(0), _M_value(), _M_ok(false) {}
 
       ///  Construct start of input stream iterator.
       istream_iterator(istream_type& __s)
