@@ -2307,6 +2307,21 @@ free_sym_tree (gfc_symtree * sym_tree)
 }
 
 
+/* Free a derived type list.  */
+
+static void
+gfc_free_dt_list (gfc_dt_list * dt)
+{
+  gfc_dt_list *n;
+
+  for (; dt; dt = n)
+    {
+      n = dt->next;
+      gfc_free (dt);
+    }
+}
+
+
 /* Free a namespace structure and everything below it.  Interface
    lists associated with intrinsic operators are not freed.  These are
    taken care of when a specific name is freed.  */
@@ -2342,6 +2357,8 @@ gfc_free_namespace (gfc_namespace * ns)
   free_st_labels (ns->st_labels);
 
   gfc_free_equiv (ns->equiv);
+
+  gfc_free_dt_list (ns->derived_types);
 
   for (i = GFC_INTRINSIC_BEGIN; i != GFC_INTRINSIC_END; i++)
     gfc_free_interface (ns->operator[i]);

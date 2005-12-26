@@ -835,6 +835,16 @@ typedef struct gfc_symtree
 }
 gfc_symtree;
 
+/* A linked list of derived types in the namespace.  */
+typedef struct gfc_dt_list
+{
+  struct gfc_symbol *derived;
+  struct gfc_dt_list *next;
+}
+gfc_dt_list;
+
+#define gfc_get_dt_list() gfc_getmem(sizeof(gfc_dt_list))
+
 
 /* A namespace describes the contents of procedure, module or
    interface block.  */
@@ -893,6 +903,9 @@ typedef struct gfc_namespace
 
   /* A list of all alternate entry points to this procedure (or NULL).  */
   gfc_entry_list *entries;
+
+  /* A list of all derived types in this procedure (or NULL).  */
+  gfc_dt_list *derived_types;
 
   /* Set to 1 if namespace is a BLOCK DATA program unit.  */
   int is_block_data;
@@ -1355,7 +1368,7 @@ typedef struct
   gfc_st_label *format_label;
   gfc_st_label *err, *end, *eor;
 
-  locus eor_where, end_where;
+  locus eor_where, end_where, err_where;
 }
 gfc_dt;
 
@@ -1894,6 +1907,7 @@ int gfc_is_compile_time_shape (gfc_array_spec *);
 
 /* interface.c -- FIXME: some of these should be in symbol.c */
 void gfc_free_interface (gfc_interface *);
+int gfc_compare_derived_types (gfc_symbol *, gfc_symbol *);
 int gfc_compare_types (gfc_typespec *, gfc_typespec *);
 void gfc_check_interfaces (gfc_namespace *);
 void gfc_procedure_use (gfc_symbol *, gfc_actual_arglist **, locus *);

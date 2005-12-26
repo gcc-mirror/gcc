@@ -1395,13 +1395,44 @@ gfc_add_field_to_struct (tree *fieldlist, tree context,
 }
 
 
-/* Build a tree node for a derived type.  */
+/* Copy the backend_decl and component backend_decls if
+   the two derived type symbols are "equal", as described
+   in 4.4.2 and resolved by gfc_compare_derived_types.  */
+
+static int
+copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to)
+{
+  gfc_component *to_cm;
+  gfc_component *from_cm;
+
+  if (from->backend_decl == NULL
+	|| !gfc_compare_derived_types (from, to))
+    return 0;
+
+  to->backend_decl = from->backend_decl;
+
+  to_cm = to->components;
+  from_cm = from->components;
+
+  for (; to_cm; to_cm = to_cm->next, from_cm = from_cm->next)
+    to_cm->backend_decl = from_cm->backend_decl;
+
+  return 1;
+}
+
+
+/* Build a tree node for a derived type.  If there are equal
+   derived types, with different local names, these are built
+   at the same time.  If an equal derived type has been built
+   in a parent namespace, this is used.  */
 
 static tree
 gfc_get_derived_type (gfc_symbol * derived)
 {
   tree typenode, field, field_type, fieldlist;
   gfc_component *c;
+  gfc_dt_list *dt;
+  gfc_namespace * ns;
 
   gcc_assert (derived && derived->attr.flavor == FL_DERIVED);
 
@@ -1417,6 +1448,29 @@ gfc_get_derived_type (gfc_symbol * derived)
     }
   else
     {
+      /* In a module, if an equal derived type is already available in the
+	 specification block, use its backend declaration and those of its
+	 components, rather than building anew so that potential dummy and
+	 actual arguments use the same TREE_TYPE.  Non-module structures,
+	 need to be built, if found, because the order of visits to the 
+	 namespaces is different.  */
+
+      for (ns = derived->ns->parent; ns; ns = ns->parent)
+	{
+	  for (dt = ns->derived_types; dt; dt = dt->next)
+	    {
+	      if (derived->module == NULL
+		    && dt->derived->backend_decl == NULL
+		    && gfc_compare_derived_types (dt->derived, derived))
+		gfc_get_derived_type (dt->derived);
+
+	      if (copy_dt_decls_ifequal (dt->derived, derived))
+		break;
+	    }
+	  if (derived->backend_decl)
+	    goto other_equal_dts;
+	}
+
       /* We see this derived type first time, so build the type node.  */
       typenode = make_node (RECORD_TYPE);
       TYPE_NAME (typenode) = get_identifier (derived->name);
@@ -1495,9 +1549,16 @@ gfc_get_derived_type (gfc_symbol * derived)
 
   derived->backend_decl = typenode;
 
-  return typenode;
+other_equal_dts:
+  /* Add this backend_decl to all the other, equal derived types and
+     their components in this namespace.  */
+  for (dt = derived->ns->derived_types; dt; dt = dt->next)
+    copy_dt_decls_ifequal (derived, dt->derived);
+
+  return derived->backend_decl;
 }
-
+
+
 int
 gfc_return_by_reference (gfc_symbol * sym)
 {

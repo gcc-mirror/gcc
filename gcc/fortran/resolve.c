@@ -582,9 +582,18 @@ resolve_structure_cons (gfc_expr * expr)
 
       /* If we don't have the right type, try to convert it.  */
 
-      if (!gfc_compare_types (&cons->expr->ts, &comp->ts)
-	  && gfc_convert_type (cons->expr, &comp->ts, 1) == FAILURE)
-	t = FAILURE;
+      if (!gfc_compare_types (&cons->expr->ts, &comp->ts))
+	{
+	  t = FAILURE;
+	  if (comp->pointer && cons->expr->ts.type != BT_UNKNOWN)
+	    gfc_error ("The element in the derived type constructor at %L, "
+		       "for pointer component '%s', is %s but should be %s",
+		       &cons->expr->where, comp->name,
+		       gfc_basic_typename (cons->expr->ts.type),
+		       gfc_basic_typename (comp->ts.type));
+	  else
+	    t = gfc_convert_type (cons->expr, &comp->ts, 1);
+	}
     }
 
   return t;
@@ -4607,6 +4616,17 @@ resolve_symbol (gfc_symbol * sym)
 			   &sym->declared_at);
 	    }
 	}
+      break;
+
+    case FL_DERIVED:
+      /* Add derived type to the derived type list.  */
+      {
+	gfc_dt_list * dt_list;
+	dt_list = gfc_get_dt_list ();
+	dt_list->next = sym->ns->derived_types;
+	dt_list->derived = sym;
+	sym->ns->derived_types = dt_list;
+      }
       break;
 
     default:

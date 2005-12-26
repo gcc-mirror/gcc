@@ -1365,7 +1365,7 @@ not_numeric:
    this problem here.  */
 
 static try
-check_inquiry (gfc_expr * e)
+check_inquiry (gfc_expr * e, int not_restricted)
 {
   const char *name;
 
@@ -1378,6 +1378,10 @@ check_inquiry (gfc_expr * e)
   };
 
   int i;
+
+  /* An undeclared parameter will get us here (PR25018).  */
+  if (e->symtree == NULL)
+    return FAILURE;
 
   name = e->symtree->n.sym->name;
 
@@ -1406,6 +1410,15 @@ check_inquiry (gfc_expr * e)
 
       e->ts = e->symtree->n.sym->ts;
     }
+
+  /* Assumed character length will not reduce to a constant expression
+     with LEN,as required by the standard.  */
+  if (i == 4 && not_restricted
+	&& e->symtree->n.sym->ts.type == BT_CHARACTER
+	&& e->symtree->n.sym->ts.cl->length == NULL)
+    gfc_notify_std (GFC_STD_GNU, "The F95 does not permit the assumed character "
+		    "length variable '%s' in constant expression at %L.",
+		    e->symtree->n.sym->name, &e->where);
 
   return SUCCESS;
 }
@@ -1440,7 +1453,7 @@ check_init_expr (gfc_expr * e)
     case EXPR_FUNCTION:
       t = SUCCESS;
 
-      if (check_inquiry (e) != SUCCESS)
+      if (check_inquiry (e, 1) != SUCCESS)
 	{
 	  t = SUCCESS;
 	  for (ap = e->value.function.actual; ap; ap = ap->next)
@@ -1478,7 +1491,8 @@ check_init_expr (gfc_expr * e)
 	  break;
 	}
 
-      gfc_error ("Variable '%s' at %L cannot appear in an initialization "
+      gfc_error ("Parameter '%s' at %L has not been declared or is "
+		 "a variable, which does not reduce to a constant "
 		 "expression", e->symtree->n.sym->name, &e->where);
       t = FAILURE;
       break;
@@ -1557,8 +1571,14 @@ gfc_match_init_expr (gfc_expr ** result)
       return MATCH_ERROR;
     }
 
-  if (!gfc_is_constant_expr (expr))
-    gfc_internal_error ("Initialization expression didn't reduce %C");
+  /* Not all inquiry functions are simplified to constant expressions
+     so it is necessary to call check_inquiry again.  */ 
+  if (!gfc_is_constant_expr (expr)
+	&& check_inquiry (expr, 1) == FAILURE)
+    {
+      gfc_error ("Initialization expression didn't reduce %C");
+      return MATCH_ERROR;
+    }
 
   *result = expr;
 
@@ -1637,7 +1657,7 @@ static try
 restricted_intrinsic (gfc_expr * e)
 {
   /* TODO: Check constraints on inquiry functions.  7.1.6.2 (7).  */
-  if (check_inquiry (e) == SUCCESS)
+  if (check_inquiry (e, 0) == SUCCESS)
     return SUCCESS;
 
   return restricted_args (e->value.function.actual);
@@ -1986,6 +2006,26 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
       gfc_error ("Pointer assignment with vector subscript "
 		 "on rhs at %L", &rvalue->where);
       return FAILURE;
+    }
+
+  if (rvalue->symtree->n.sym
+	&& rvalue->symtree->n.sym->as
+	&& rvalue->symtree->n.sym->as->type == AS_ASSUMED_SIZE)
+    {
+      gfc_ref * ref;
+      int dim = 0;
+      int last = 0;
+      for (ref = rvalue->ref; ref; ref = ref->next)
+	if (ref->type == REF_ARRAY)
+	  for (dim = 0;dim < ref->u.ar.as->rank; dim++)
+	    last = ref->u.ar.end[dim] == NULL;
+      if (last)
+	{
+	  gfc_error ("The upper bound in the last dimension of the "
+		     "assumed_size array on the rhs of the pointer "
+		     "assignment at %L must be set", &rvalue->where);
+	  return FAILURE;
+	}
     }
 
   return SUCCESS;

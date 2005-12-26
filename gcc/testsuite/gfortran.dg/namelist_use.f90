@@ -15,7 +15,8 @@ end module global
 program namelist_use
   use global
   real    :: rrr
-  namelist /nml2/ ii, rrr    ! Concatenate use and host associated variables.
+! Concatenating use and host associated variables is an extension.
+  namelist /nml2/ ii, rrr ! { dg-warning "already is USE associated" }
   open (10, status="scratch")
   write (10,*) "&NML1 aa='lmno' ii=1 rr=2.5 /"
   write (10,*) "&NML2 aa='pqrs' ii=2 rrr=3.5 /"
