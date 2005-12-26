@@ -1,3 +1,10 @@
+2005-12-26  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/25125
+	* convert.c (convert_to_integer): Don't narrow the type of a
+	PLUX_EXPR or MINUS_EXPR if !flag_wrapv and the unwidened type
+	is signed.
+
 2005-12-26  Graham Stott  <graham.stott@btinternet.com>
 
 	PR middle-end/25568
