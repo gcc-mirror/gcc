@@ -1,3 +1,9 @@
+2005-12-26  Graham Stott  <graham.stott@btinternet.com>
+
+	PR middle-end/25568
+	* combine.c (simplify_shift_const_1 <case PLUS>):Fix enable-checking
+	rtl bootstrap failure.
+
 2005-12-25  Kazu Hirata  <kazu@codesourcery.com>
 
 	* final.c (compute_alignments): Make it static.

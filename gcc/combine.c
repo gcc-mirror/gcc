@@ -8919,6 +8919,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	      && (new = simplify_const_binary_operation (ASHIFT, result_mode,
 						         XEXP (varop, 1),
 						         GEN_INT (count))) != 0
+	      && GET_CODE (new) == CONST_INT
 	      && merge_outer_ops (&outer_op, &outer_const, PLUS,
 				  INTVAL (new), result_mode, &complement_p))
 	    {
@@ -8937,6 +8938,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	      && (new = simplify_const_binary_operation (code, result_mode,
 						         XEXP (varop, 1),
 						         GEN_INT (count))) != 0
+	      && GET_CODE (new) == CONST_INT
 	      && merge_outer_ops (&outer_op, &outer_const, XOR,
 				  INTVAL (new), result_mode, &complement_p))
 	    {
