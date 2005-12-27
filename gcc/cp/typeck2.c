@@ -712,8 +712,7 @@ digest_init (tree type, tree init)
       return process_init_constructor (type, init);
   else
     {
-      if (TREE_HAS_CONSTRUCTOR (init)
-	  && TREE_CODE (type) == ARRAY_TYPE)
+      if (COMPOUND_LITERAL_P (init) && TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  error ("cannot initialize aggregate of type %qT with "
 		 "a compound literal", type);

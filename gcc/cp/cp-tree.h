@@ -2440,6 +2440,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define BRACE_ENCLOSED_INITIALIZER_P(NODE) \
   (TREE_CODE (NODE) == CONSTRUCTOR && !TREE_TYPE (NODE))
 
+/* True if NODE is a compound-literal, i.e., a brace-enclosed
+   initializer cast to a particular type.  */
+#define COMPOUND_LITERAL_P(NODE) \
+  (TREE_CODE (NODE) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (NODE))
+
 #define EMPTY_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == CONSTRUCTOR \
 				   && VEC_empty (constructor_elt, \
 						 CONSTRUCTOR_ELTS (NODE)) \
@@ -3864,6 +3869,7 @@ extern const char *cxx_comdat_group		(tree);
 extern bool cp_missing_noreturn_ok_p		(tree);
 extern void initialize_artificial_var		(tree, tree);
 extern tree check_var_type			(tree, tree);
+extern tree reshape_init (tree, tree);
 
 extern bool have_extern_spec;
 

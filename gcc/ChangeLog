@@ -1,3 +1,12 @@
+2005-12-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23171, c++/23172, c++/25417.
+	* c-decl.c (compound_literal_number): Remove.
+	(build_compound_literal): Use set_compound_literal_name.
+	* c-common.c (compound_literal_number): New variable.
+	(set_compound_literal_name): New function.
+	* c-common.h (set_compound_literal_name): Declare.
+	
 2005-12-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23171
