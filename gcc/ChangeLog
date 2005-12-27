@@ -1,3 +1,14 @@
+2005-12-27  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (int_const_binop): Return NULL_TREE when an expression
+	can't be evaluated at compile-time (instead of calling abort).
+	Return NULL_TREE for division (and modulus) by zero.
+	(const_binop):  Return NULL_TREE for floating point operators that
+	aren't handled by real_arithmetic.
+	(fold_binary):  Eliminate "wins" variable, and "binary" label, by
+	folding operators with constant operands early.  Assert that
+	operands are non-NULL.
+
 2005-12-27  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-vrp.c (extract_range_from_binary_expr): Use
