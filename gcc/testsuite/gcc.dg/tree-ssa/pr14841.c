@@ -10,7 +10,7 @@ struct car {
   int tire_pressure[4];
 };
 
-const struct car cars[] = {
+static const struct car cars[] = {
   { 75, { 10, 20, 30, 40 } },
   { 35, { 12, 34, 56, 78 } },
   { 40, { 19, 28, 37, 46 } }
