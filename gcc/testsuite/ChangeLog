@@ -1,3 +1,7 @@
+2005-12-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/rtti/tinfo1.C: Scan for ".global" also.
+
 2005-12-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25439
