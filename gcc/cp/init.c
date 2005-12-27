@@ -1271,11 +1271,10 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags)
      as TARGET_EXPRs.  */
 
   if (init && TREE_CODE (exp) == VAR_DECL
-      && TREE_CODE (init) == CONSTRUCTOR
-      && TREE_HAS_CONSTRUCTOR (init))
+      && COMPOUND_LITERAL_P (init))
     {
       /* If store_init_value returns NULL_TREE, the INIT has been
-	 record in the DECL_INITIAL for EXP.  That means there's
+	 recorded as the DECL_INITIAL for EXP.  That means there's
 	 nothing more we have to do.  */
       init = store_init_value (exp, init);
       if (init)

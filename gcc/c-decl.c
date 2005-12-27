@@ -3601,8 +3601,6 @@ mark_forward_parm_decls (void)
       TREE_ASM_WRITTEN (b->decl) = 1;
 }
 
-static GTY(()) int compound_literal_number;
-
 /* Build a COMPOUND_LITERAL_EXPR.  TYPE is the type given in the compound
    literal, which may be an incomplete array type completed by the
    initializer; INIT is a CONSTRUCTOR that initializes the compound
@@ -3652,14 +3650,8 @@ build_compound_literal (tree type, tree init)
 
   if (TREE_STATIC (decl))
     {
-      /* This decl needs a name for the assembler output.  We also need
-	 a unique suffix to be added to the name.  */
-      char *name;
-
-      ASM_FORMAT_PRIVATE_NAME (name, "__compound_literal",
-			       compound_literal_number);
-      compound_literal_number++;
-      DECL_NAME (decl) = get_identifier (name);
+      /* This decl needs a name for the assembler output.  */
+      set_compound_literal_name (decl);
       DECL_DEFER_OUTPUT (decl) = 1;
       DECL_COMDAT (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;

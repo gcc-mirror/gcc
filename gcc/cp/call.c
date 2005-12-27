@@ -6430,10 +6430,7 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
   tree var;
 
   /* Create the variable.  */
-  var = build_decl (VAR_DECL, NULL_TREE, type);
-  DECL_ARTIFICIAL (var) = 1;
-  DECL_IGNORED_P (var) = 1;
-  TREE_USED (var) = 1;
+  var = create_temporary_var (type);
 
   /* Register the variable.  */
   if (TREE_STATIC (decl))
@@ -6448,12 +6445,8 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       var = pushdecl_top_level (var);
     }
   else
-    {
-      /* Create a new cleanup level if necessary.  */
-      maybe_push_cleanup_level (type);
-      /* Don't push unnamed temps.  Do set DECL_CONTEXT, though.  */
-      DECL_CONTEXT (var) = current_function_decl;
-    }
+    /* Create a new cleanup level if necessary.  */
+    maybe_push_cleanup_level (type);
 
   return var;
 }
