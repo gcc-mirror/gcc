@@ -1,3 +1,17 @@
+2005-12-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/rtti/tinfo1.C: Scan for ".global" also.
+	
+	PR testsuite/25442
+	* gcc.dg/ipa/ipa-1.c, gcc.dg/ipa/ipa-2.c, gcc.dg/ipa/ipa-3.c,
+	gcc.dg/ipa/ipa-4.c, gcc.dg/ipa/ipa-5.c: Skip if -fpic/-fPIC.
+
+	PR testsuite/25441
+	* gcc.dg/pr23911.c: Make test variable static.
+
+	PR testsuite/25444
+	* gcc.dg/tree-ssa/pr14841.c: Likewise.
+
 2005-12-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25439
