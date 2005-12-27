@@ -4,7 +4,7 @@
 /* { dg-options "-O2 -fdump-tree-store_ccp" } */
 
 double _Complex *a; 
-const double _Complex b[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}; 
+static const double _Complex b[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}; 
  
 void 
 test (void) 
