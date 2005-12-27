@@ -1,3 +1,9 @@
+2005-12-27  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR/25494
+	* g77.texi: Corrected entry about catching
+	Floating Point Exceptions.
+
 2005-11-30  Release Manager
 
 	* GCC 3.4.5 released.

@@ -9415,12 +9415,13 @@ trapfpe ()
 @}
 @end smallexample
 
-A convenient trick is to compile this something like:
+Assuming the above source is in file @file{trapfpe.c},
+then compile this routine as follows:
 @smallexample
-gcc -o libtrapfpe.a trapfpe.c
+gcc -c trapfpe.c
 @end smallexample
-and then use it by adding @option{-trapfpe} to the @command{g77} command line
-when linking.
+and subsequently use it by adding @file{trapfpe.o} to the @command{g77}
+command line when linking.
 
 @node Nonportable Conversions
 @subsection Nonportable Conversions
