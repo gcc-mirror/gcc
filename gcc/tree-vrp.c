@@ -1421,7 +1421,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	  && tree_expr_nonnegative_p (vr0.max)
 	  && TREE_CODE (vr0.max) == INTEGER_CST)
 	{
-	  min = fold_convert (TREE_TYPE (expr), integer_zero_node);
+	  min = build_int_cst (TREE_TYPE (expr), 0);
 	  max = vr0.max;
 	}
       else if (vr1.type == VR_RANGE
@@ -1430,7 +1430,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	  && TREE_CODE (vr1.max) == INTEGER_CST)
 	{
 	  type = VR_RANGE;
-	  min = fold_convert (TREE_TYPE (expr), integer_zero_node);
+	  min = build_int_cst (TREE_TYPE (expr), 0);
 	  max = vr1.max;
 	}
       else
