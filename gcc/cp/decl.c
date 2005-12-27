@@ -6531,10 +6531,6 @@ grokdeclarator (const cp_declarator *declarator,
 		else if (TREE_CODE (qualifying_scope) == NAMESPACE_DECL)
 		  in_namespace = qualifying_scope;
 	      }
-	    if (TREE_CODE (decl) == BASELINK)
-	      decl = BASELINK_FUNCTIONS (decl);
-	    if (decl == error_mark_node)
-	      return error_mark_node;
 	    switch (TREE_CODE (decl))
 	      {
 	      case BIT_NOT_EXPR:
@@ -6596,11 +6592,6 @@ grokdeclarator (const cp_declarator *declarator,
 		    else
 		      name = "<invalid operator>";
 		  }
-		break;
-
-	      case TYPE_DECL:
-		dname = constructor_name (TREE_TYPE (decl));
-		name = IDENTIFIER_POINTER (dname);
 		break;
 
 	      default:
@@ -7068,18 +7059,11 @@ grokdeclarator (const cp_declarator *declarator,
   else
     {
       unqualified_id = id_declarator->u.id.unqualified_name;
-      if (TREE_CODE (unqualified_id) == BASELINK)
-	unqualified_id = BASELINK_FUNCTIONS (unqualified_id);
       switch (TREE_CODE (unqualified_id))
 	{
 	case BIT_NOT_EXPR:
 	  unqualified_id
 	    = constructor_name (TREE_OPERAND (unqualified_id, 0));
-	  break;
-
-	case TYPE_DECL:
-	  unqualified_id
-	    = constructor_name (TREE_TYPE (unqualified_id));
 	  break;
 
 	case IDENTIFIER_NODE:

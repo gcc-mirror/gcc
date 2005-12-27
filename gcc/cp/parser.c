@@ -800,12 +800,15 @@ make_declarator (cp_declarator_kind kind)
   return declarator;
 }
 
-/* Make a declarator for a generalized identifier.  If non-NULL, the
-   identifier is QUALIFYING_SCOPE::UNQUALIFIED_NAME; otherwise, it is
-   just UNQUALIFIED_NAME.  */
+/* Make a declarator for a generalized identifier.  If
+   QUALIFYING_SCOPE is non-NULL, the identifier is
+   QUALIFYING_SCOPE::UNQUALIFIED_NAME; otherwise, it is just
+   UNQUALIFIED_NAME.  SFK indicates the kind of special function this
+   is, if any.   */
 
 static cp_declarator *
-make_id_declarator (tree qualifying_scope, tree unqualified_name)
+make_id_declarator (tree qualifying_scope, tree unqualified_name,
+		    special_function_kind sfk)
 {
   cp_declarator *declarator;
 
@@ -822,10 +825,14 @@ make_id_declarator (tree qualifying_scope, tree unqualified_name)
   if (qualifying_scope && TYPE_P (qualifying_scope))
     qualifying_scope = TYPE_MAIN_VARIANT (qualifying_scope);
 
+  gcc_assert (TREE_CODE (unqualified_name) == IDENTIFIER_NODE
+	      || TREE_CODE (unqualified_name) == BIT_NOT_EXPR
+	      || TREE_CODE (unqualified_name) == TEMPLATE_ID_EXPR);
+
   declarator = make_declarator (cdk_id);
   declarator->u.id.qualifying_scope = qualifying_scope;
   declarator->u.id.unqualified_name = unqualified_name;
-  declarator->u.id.sfk = sfk_none;
+  declarator->u.id.sfk = sfk;
 
   return declarator;
 }
@@ -11215,6 +11222,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	{
 	  tree qualifying_scope;
 	  tree unqualified_name;
+	  special_function_kind sfk;
 
 	  /* Parse a declarator-id */
 	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER)
@@ -11272,8 +11280,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      qualifying_scope = type;
 	    }
 
-	  declarator = make_id_declarator (qualifying_scope, 
-					   unqualified_name);
+	  sfk = sfk_none;
 	  if (unqualified_name)
 	    {
 	      tree class_type;
@@ -11284,39 +11291,60 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      else
 		class_type = current_class_type;
 
-	      if (class_type)
+	      if (TREE_CODE (unqualified_name) == TYPE_DECL)
 		{
-		  if (TREE_CODE (unqualified_name) == BIT_NOT_EXPR)
-		    declarator->u.id.sfk = sfk_destructor;
-		  else if (IDENTIFIER_TYPENAME_P (unqualified_name))
-		    declarator->u.id.sfk = sfk_conversion;
-		  else if (/* There's no way to declare a constructor
-			      for an anonymous type, even if the type
-			      got a name for linkage purposes.  */
-			   !TYPE_WAS_ANONYMOUS (class_type)
-			   && (constructor_name_p (unqualified_name,
-						   class_type)
-			       || (TREE_CODE (unqualified_name) == TYPE_DECL
-				   && (same_type_p 
-				       (TREE_TYPE (unqualified_name),
-					class_type)))))
-		    declarator->u.id.sfk = sfk_constructor;
-
-		  if (ctor_dtor_or_conv_p && declarator->u.id.sfk != sfk_none)
-		    *ctor_dtor_or_conv_p = -1;
-		  if (qualifying_scope
-		      && TREE_CODE (unqualified_name) == TYPE_DECL
+		  if (qualifying_scope 
 		      && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (unqualified_name)))
 		    {
 		      error ("invalid use of constructor as a template");
 		      inform ("use %<%T::%D%> instead of %<%T::%T%> to name "
-                              "the constructor in a qualified name",
-                              class_type,
+			      "the constructor in a qualified name",
+			      class_type,
 			      DECL_NAME (TYPE_TI_TEMPLATE (class_type)),
 			      class_type, class_type);
+		      declarator = cp_error_declarator;
+		      break;
+		    }
+		  else if (class_type
+			   && same_type_p (TREE_TYPE (unqualified_name),
+					   class_type))
+		    unqualified_name = constructor_name (class_type);
+		  else
+		    {
+		      /* We do not attempt to print the declarator
+			 here because we do not have enough
+			 information about its original syntactic
+			 form.  */
+		      error ("invalid declarator");
+		      declarator = cp_error_declarator;
+		      break;
 		    }
 		}
+
+	      if (class_type) 
+		{
+		  if (TREE_CODE (unqualified_name) == BIT_NOT_EXPR)
+		    sfk = sfk_destructor;
+		  else if (IDENTIFIER_TYPENAME_P (unqualified_name))
+		    sfk = sfk_conversion;
+		  else if (/* There's no way to declare a constructor
+			      for an anonymous type, even if the type
+			      got a name for linkage purposes.  */
+			   !TYPE_WAS_ANONYMOUS (class_type)
+			   && constructor_name_p (unqualified_name,
+						  class_type))
+		    {
+		      unqualified_name = constructor_name (class_type);
+		      sfk = sfk_constructor;
+		    }
+
+		  if (ctor_dtor_or_conv_p && sfk != sfk_none)
+		    *ctor_dtor_or_conv_p = -1;
+		}
 	    }
+	  declarator = make_id_declarator (qualifying_scope, 
+					   unqualified_name,
+					   sfk);
 
 	handle_declarator:;
 	  scope = get_scope_of_declarator (declarator);
@@ -11526,6 +11554,7 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
 static tree
 cp_parser_declarator_id (cp_parser* parser)
 {
+  tree id;
   /* The expression must be an id-expression.  Assume that qualified
      names are the names of types so that:
 
@@ -11540,11 +11569,14 @@ cp_parser_declarator_id (cp_parser* parser)
        int S<T>::R<T>::i = 3;
 
      will work, too.  */
-  return cp_parser_id_expression (parser,
-				  /*template_keyword_p=*/false,
-				  /*check_dependency_p=*/false,
-				  /*template_p=*/NULL,
-				  /*declarator_p=*/true);
+  id = cp_parser_id_expression (parser,
+				/*template_keyword_p=*/false,
+				/*check_dependency_p=*/false,
+				/*template_p=*/NULL,
+				/*declarator_p=*/true);
+  if (BASELINK_P (id))
+    id = BASELINK_FUNCTIONS (id);
+  return id;
 }
 
 /* Parse a type-id.
@@ -13280,7 +13312,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      /* Create the bitfield declaration.  */
 	      decl = grokbitfield (identifier
 				   ? make_id_declarator (NULL_TREE,
-							 identifier)
+							 identifier,
+							 sfk_none)
 				   : NULL,
 				   &decl_specifiers,
 				   width);
