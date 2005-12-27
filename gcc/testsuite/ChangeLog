@@ -1,3 +1,9 @@
+2005-12-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25439
+	* g++.dg/parse/crash17.C: Adjust error markers.
+	* g++.dg/template/error20.C: New test.
+
 2005-12-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20889
