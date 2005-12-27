@@ -1,3 +1,8 @@
+2005-12-27  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr): Use
+	build_int_cst instead of fold_convert.
+
 2005-12-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23171, c++/23172, c++/25417.
