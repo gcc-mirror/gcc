@@ -4192,75 +4192,93 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  break;
 	}
 
-      /* Allow the address of a constructor if all the elements
-	 are constant.  */
-      if (TREE_CODE (arg) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (arg)
-	  && TREE_CONSTANT (arg))
-	;
       /* Anything not already handled and not a true memory reference
 	 is an error.  */
-      else if (TREE_CODE (argtype) != FUNCTION_TYPE
-	       && TREE_CODE (argtype) != METHOD_TYPE
-	       && TREE_CODE (arg) != OFFSET_REF
-	       && !lvalue_or_else (arg, lv_addressof))
+      if (TREE_CODE (argtype) != FUNCTION_TYPE
+	  && TREE_CODE (argtype) != METHOD_TYPE
+	  && TREE_CODE (arg) != OFFSET_REF
+	  /* Permit users to take the address of a compound-literal
+	     with sufficient simple elements.  */
+	  && !(COMPOUND_LITERAL_P (arg) && TREE_STATIC (arg))
+	  && !lvalue_or_else (arg, lv_addressof))
 	return error_mark_node;
 
       if (argtype != error_mark_node)
 	argtype = build_pointer_type (argtype);
 
-      {
-	tree addr;
+      /* In a template, we are processing a non-dependent expression
+	 so we can just form an ADDR_EXPR with the correct type.  */
+      if (processing_template_decl)
+	{
+	  val = build_address (arg);
+	  if (TREE_CODE (arg) == OFFSET_REF)
+	    PTRMEM_OK_P (val) = PTRMEM_OK_P (arg);
+	  return val;
+	}
 
-	if (TREE_CODE (arg) != COMPONENT_REF
-	    /* Inside a template, we are processing a non-dependent
-	       expression so we can just form an ADDR_EXPR with the
-	       correct type.  */
-	    || processing_template_decl)
-	  {
-	    addr = build_address (arg);
-	    if (TREE_CODE (arg) == OFFSET_REF)
-	      PTRMEM_OK_P (addr) = PTRMEM_OK_P (arg);
-	  }
-	else if (TREE_CODE (TREE_OPERAND (arg, 1)) == BASELINK)
-	  {
-	    tree fn = BASELINK_FUNCTIONS (TREE_OPERAND (arg, 1));
+      /* If the user has taken the address of the compound literal,
+	 create a variable to contain the value of the literal and
+	 then return the address of that variable.  */
+      if (COMPOUND_LITERAL_P (arg))
+	{
+	  tree var;
+	  gcc_assert (TREE_STATIC (arg));
+	  var = create_temporary_var (TREE_TYPE (arg));
+	  TREE_STATIC (var) = 1;
+	  set_compound_literal_name (var); 
+	  initialize_artificial_var (var, arg);
+	  arg = pushdecl (var);
+	  /* Since each compound literal is unique, pushdecl should
+	     never find a pre-existing variable with the same
+	     name.  */
+	  gcc_assert (arg == var);
+	}
+      
+      if (TREE_CODE (arg) != COMPONENT_REF)
+	{
+	  val = build_address (arg);
+	  if (TREE_CODE (arg) == OFFSET_REF)
+	    PTRMEM_OK_P (val) = PTRMEM_OK_P (arg);
+	}
+      else if (TREE_CODE (TREE_OPERAND (arg, 1)) == BASELINK)
+	{
+	  tree fn = BASELINK_FUNCTIONS (TREE_OPERAND (arg, 1));
 
-	    /* We can only get here with a single static member
-	       function.  */
-	    gcc_assert (TREE_CODE (fn) == FUNCTION_DECL
-			&& DECL_STATIC_FUNCTION_P (fn));
-	    mark_used (fn);
-	    addr = build_address (fn);
-	    if (TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
-	      /* Do not lose object's side effects.  */
-	      addr = build2 (COMPOUND_EXPR, TREE_TYPE (addr),
-			     TREE_OPERAND (arg, 0), addr);
-	  }
-	else if (DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
-	  {
-	    error ("attempt to take address of bit-field structure member %qD",
-		   TREE_OPERAND (arg, 1));
-	    return error_mark_node;
-	  }
-	else
-	  {
-	    tree object = TREE_OPERAND (arg, 0);
-	    tree field = TREE_OPERAND (arg, 1);
-	    gcc_assert (same_type_ignoring_top_level_qualifiers_p
-			(TREE_TYPE (object), decl_type_context (field)));
-	    addr = build_address (arg);
-	  }
+	  /* We can only get here with a single static member
+	     function.  */
+	  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL
+		      && DECL_STATIC_FUNCTION_P (fn));
+	  mark_used (fn);
+	  val = build_address (fn);
+	  if (TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
+	    /* Do not lose object's side effects.  */
+	    val = build2 (COMPOUND_EXPR, TREE_TYPE (val),
+			  TREE_OPERAND (arg, 0), val);
+	}
+      else if (DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
+	{
+	  error ("attempt to take address of bit-field structure member %qD",
+		 TREE_OPERAND (arg, 1));
+	  return error_mark_node;
+	}
+      else
+	{
+	  tree object = TREE_OPERAND (arg, 0);
+	  tree field = TREE_OPERAND (arg, 1);
+	  gcc_assert (same_type_ignoring_top_level_qualifiers_p
+		      (TREE_TYPE (object), decl_type_context (field)));
+	  val = build_address (arg);
+	}
 
-	if (TREE_CODE (argtype) == POINTER_TYPE
-	    && TREE_CODE (TREE_TYPE (argtype)) == METHOD_TYPE)
-	  {
-	    build_ptrmemfunc_type (argtype);
-	    addr = build_ptrmemfunc (argtype, addr, 0,
-				     /*c_cast_p=*/false);
-	  }
+      if (TREE_CODE (argtype) == POINTER_TYPE
+	  && TREE_CODE (TREE_TYPE (argtype)) == METHOD_TYPE)
+	{
+	  build_ptrmemfunc_type (argtype);
+	  val = build_ptrmemfunc (argtype, val, 0,
+				  /*c_cast_p=*/false);
+	}
 
-	return addr;
-      }
+      return val;
 
     default:
       break;

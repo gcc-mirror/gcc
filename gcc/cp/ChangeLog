@@ -1,3 +1,21 @@
+2005-12-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23171, c++/23172, c++/25417.
+	* typeck.c (build_unary_op): Create temporary variables for
+	compound literals whose addresses are taken.
+	* init.c (expand_aggr_init_1): Use COMPOUND_LITERAL_P.
+	* decl.c (reshape_init_vector): Likewise.
+	(reshape_init): Give it external linkage.
+	(check_initializer): Use COMPOUND_LITERAL_P.
+	(initialize_artificial_var): Allow the initializer to be a
+	CONSTRUCTOR.
+	* call.c (make_temporary_var_for_ref_to_temp): Use
+	create_temporary_var.
+	* cp-tree.h (COMPOUND_LITERAL_P): New macro.
+	(rehape_init): Declare.
+	* typeck2.c (digest_init): Use COMPOUND_LITERAL_P.
+	* semantics.c (finish_compound_literal): Use reshape_init.
+
 2005-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24671

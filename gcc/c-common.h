@@ -679,6 +679,8 @@ extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
 
 extern void disable_builtin_function (const char *);
 
+extern void set_compound_literal_name (tree decl);
+
 extern tree build_va_arg (tree, tree);
 
 extern unsigned int c_common_init_options (unsigned int, const char **);
