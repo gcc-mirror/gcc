@@ -1,6 +1,6 @@
 # Top level makefile fragment for TREELANG For GCC. -*- makefile -*-
 
-#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005
 #   Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -25,7 +25,7 @@
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-common, foo.install-man,
-# foo.uninstall, foo.distdir,
+# foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -271,11 +271,6 @@ treelang.stagefeedback: stagefeedback-start
 	-mv treelang/*$(objext) stagefeedback/treelang
 #
 # Maintenance hooks:
-
-# This target creates the files that can be rebuilt, but go in the
-# distribution anyway.  It then copies the files to the distdir directory.
-treelang.distdir:
-#	not here yet sorry not sure if this is needed or not???
 
 # test hook
 
