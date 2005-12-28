@@ -1,3 +1,8 @@
+2005-12-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR fortran/25587
+	* trans-io.c (gfc_build_st_parameter): Correct off by one error.
+
 2005-12-28  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in: Remove distdir from comment.
