@@ -1,3 +1,8 @@
+2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25419
+	* gfortran.dg/comma.f: New test.
+
 2005-12-28  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* lib/gfortran-dg.exp: Remove trailing whitespace.
