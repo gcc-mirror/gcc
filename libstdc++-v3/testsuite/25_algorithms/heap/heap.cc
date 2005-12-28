@@ -1,4 +1,4 @@
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,7 +19,6 @@
 // 25.3.6 Heap operations [lib.alg.heap.operations]
 
 #include <algorithm>
-//#include <cmath>
 #include <testsuite_hooks.h>
 
 bool test __attribute__((unused)) = true;
@@ -29,24 +28,24 @@ const int B[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
 const int C[] = {17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 const int N = sizeof(A) / sizeof(int);
 
-// This functor has the equivalent functionality of std::geater<>,
+// This functor has the equivalent functionality of std::greater<>,
 // but there is no dependency on <functional> and it also tracks the
 // number of invocations since creation.
 class Gt
 {
 public:
-    static int count() { return itsCount; }
-    static void reset() { itsCount = 0; }
-
-    bool
-    operator()(const int& x, const int& y)
-    {
-        ++itsCount;
-        return x > y; 
-    }
+  static int count() { return itsCount; }
+  static void reset() { itsCount = 0; }
+  
+  bool
+  operator()(const int& x, const int& y)
+  {
+    ++itsCount;
+    return x > y; 
+  }
 
 private:
-    static int itsCount;
+  static int itsCount;
 };
 
 int Gt::itsCount = 0;
@@ -57,27 +56,27 @@ int Gt::itsCount = 0;
 void
 test01()
 {
-    // sort array s1 using push_heap/pop_heap
-    int s1[N];
-    std::copy(A, A + N, s1);
-    VERIFY(std::equal(s1, s1 + N, A));
+  // sort array s1 using push_heap/pop_heap
+  int s1[N];
+  std::copy(A, A + N, s1);
+  VERIFY(std::equal(s1, s1 + N, A));
+  
+  for (int i = 2; i <= N; ++i)
+    std::push_heap(s1, s1 + i);
+  
+  for (int i = N; i >= 2; --i)
+    std::pop_heap(s1, s1 + i);
+  
+  VERIFY(std::equal(s1, s1 + N, B));
 
-    for (int i = 2; i <= N; ++i) {
-        std::push_heap(s1, s1 + i);
-    }
-    for (int i = N; i >= 2; --i) {
-        std::pop_heap(s1, s1 + i);
-    }
-    VERIFY(std::equal(s1, s1 + N, B));
-
-    // sort array s2 using make_heap/sort_heap
-    int s2[N];
-    std::copy(A, A + N, s2);
-    VERIFY(std::equal(s2, s2 + N, A));
-
-    std::make_heap(s2, s2 + N);
-    std::sort_heap(s2, s2 + N);
-    VERIFY(std::equal(s2, s2 + N, B));
+  // sort array s2 using make_heap/sort_heap
+  int s2[N];
+  std::copy(A, A + N, s2);
+  VERIFY(std::equal(s2, s2 + N, A));
+  
+  std::make_heap(s2, s2 + N);
+  std::sort_heap(s2, s2 + N);
+  VERIFY(std::equal(s2, s2 + N, B));
 }
 
 // Perform same tests as above but with the comparison predicate
@@ -85,49 +84,43 @@ test01()
 void
 test02()
 {
-    Gt gt;
+  Gt gt;
 //    const int logN = static_cast<int>(std::log(static_cast<double>(N)) + 0.5);
-    const int logN = 3;
-
-    int s1[N];
-    std::copy(A, A + N, s1);
-    VERIFY(std::equal(s1, s1 + N, A));
-
-    for (int i = 2; i <= N; ++i) {
-        std::push_heap(s1, s1 + i, gt);
-#ifndef _GLIBCXX_DEBUG
-        VERIFY(gt.count() <= logN);
-#endif
-        gt.reset();
+  const int logN = 3;
+  
+  int s1[N];
+  std::copy(A, A + N, s1);
+  VERIFY(std::equal(s1, s1 + N, A));
+  
+  for (int i = 2; i <= N; ++i)
+    {
+      std::push_heap(s1, s1 + i, gt);
+      VERIFY(gt.count() <= logN);
+      gt.reset();
     }
 
-    for (int i = N; i >= 2; --i) {
-        std::pop_heap(s1, s1 + i, gt);
-#ifndef _GLIBCXX_DEBUG
-        VERIFY(gt.count() <= 2 * logN);
-#endif
-        gt.reset();
+  for (int i = N; i >= 2; --i)
+    {
+      std::pop_heap(s1, s1 + i, gt);
+      VERIFY(gt.count() <= 2 * logN);
+      gt.reset();
     }
 
-    VERIFY(std::equal(s1, s1 + N, C));
+  VERIFY(std::equal(s1, s1 + N, C));
+  
+  // sort array s2 using make_heap/sort_heap
+  int s2[N];
+  std::copy(A, A + N, s2);
+  VERIFY(std::equal(s2, s2 + N, A));
+  
+  std::make_heap(s2, s2 + N, gt);
+  VERIFY(gt.count() <= 3 * N);
+  gt.reset();
 
-    // sort array s2 using make_heap/sort_heap
-    int s2[N];
-    std::copy(A, A + N, s2);
-    VERIFY(std::equal(s2, s2 + N, A));
-
-    std::make_heap(s2, s2 + N, gt);
-#ifndef _GLIBCXX_DEBUG
-    VERIFY(gt.count() <= 3 * N);
-#endif
-    gt.reset();
-
-    std::sort_heap(s2, s2 + N, gt);
-#ifndef _GLIBCXX_DEBUG
-    VERIFY(gt.count() <= N * logN);
-#endif
-
-    VERIFY(std::equal(s2, s2 + N, C));
+  std::sort_heap(s2, s2 + N, gt);
+  VERIFY(gt.count() <= N * logN);
+  
+  VERIFY(std::equal(s2, s2 + N, C));
 }
 
 int
@@ -135,6 +128,5 @@ main()
 {
   test01();
   test02();
-
   return 0;
 }

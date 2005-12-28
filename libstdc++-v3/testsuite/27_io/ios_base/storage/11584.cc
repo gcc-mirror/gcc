@@ -1,6 +1,6 @@
 // 2004-01-25 jlquinn@gcc.gnu.org
 
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,21 +42,22 @@ void operator delete[] (void *p) throw() { operator delete(p); }
 int main ()
 {
   bool test __attribute__((unused)) = true;
-  const int i = std::ios::xalloc ();
+  const int i = std::ios::xalloc();
+  VERIFY( i >= 0 );
 
   new_fails = 1;
   
   // Successive accesses to failure storage clears to zero.
-  std::cout.iword(100) = 0xdeadbeef;
-  VERIFY(std::cout.iword(100) == 0);
+  std::cout.iword(100) = 69;
+  VERIFY( std::cout.iword(100) == 0 );
   
   // Access to pword failure storage shouldn't clear iword pword storage.
   long& lr = std::cout.iword(100);
-  lr = 0xdeadbeef;
+  lr = 69;
   
   void* pv = std::cout.pword(100);
-  VERIFY(pv == 0);
-  VERIFY(lr == 0xdeadbeef);
+  VERIFY( pv == 0 );
+  VERIFY( lr == 69 );
   
   return 0;
 }

@@ -104,10 +104,9 @@ namespace __gnu_test
   // bitmask_operators
   template<typename bitmask_type>
     void
-    bitmask_operators()
+    bitmask_operators(bitmask_type a = bitmask_type(),
+		      bitmask_type b = bitmask_type())
     {
-      bitmask_type a;
-      bitmask_type b;
       a | b;
       a & b;
       a ^ b;
@@ -168,13 +167,13 @@ namespace __gnu_test
   };
  
   inline bool
-  operator==(const NonDefaultConstructible& lhs,
-	     const NonDefaultConstructible& rhs)
+  operator==(const NonDefaultConstructible&,
+	     const NonDefaultConstructible&)
   { return false; }
 
   inline bool
-  operator<(const NonDefaultConstructible& lhs,
-	    const NonDefaultConstructible& rhs)
+  operator<(const NonDefaultConstructible&,
+	    const NonDefaultConstructible&)
   { return false; }
 
 

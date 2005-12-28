@@ -1,8 +1,8 @@
 // { dg-do compile }
 
-// 2005-2-17  Matt Austern  <austern@apple.com>
+// 2005-02-17  Matt Austern  <austern@apple.com>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,13 +25,10 @@
 #include <string>
 #include <tr1/unordered_map>
 
-int main()
-{
-  using namespace std;
-  using namespace std::tr1;
+using namespace std;
+using namespace std::tr1;
 
-  unordered_map<string, float> m1;
-  unordered_map<string, float,
-                hash<string>, equal_to<string>, 
-                allocator<pair<const string, float> >, true> s2;
-}
+template class unordered_map<string, float>;
+template class unordered_map<string, float,
+			     hash<string>, equal_to<string>, 
+			     allocator<pair<const string, float> >, true>;

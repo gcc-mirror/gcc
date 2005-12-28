@@ -1,4 +1,4 @@
-// Copyright (C) 2002, 2004 Free Software Foundation
+// Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,8 @@
 // Annex D, deprecated.
 void test01()
 {
-  std::ios_base::streampos spos;
-  std::ios_base::streamoff soff;
+  typedef std::ios_base::streampos streampos_type;
+  typedef std::ios_base::streamoff streamoff_type;
 }
 
 int main(void)

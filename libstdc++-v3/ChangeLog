@@ -1,3 +1,57 @@
+2005-12-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_bitset.h (bitset<>::_M_copy_from_string,
+	bitset<>::_M_copy_to_string, bitset<>::operator>>): Reverse loop.
+
+	* testsuite/25_algorithms/heap/heap.cc (test01): Always enable
+	complexity checks.
+	* testsuite/18_support/numeric_limits/specialization.cc: Avoid
+	unused parameter warning.
+	* testsuite/18_support/numeric_limits/traps.cc: Acoid unused variable
+	warning.
+	* testsuite/ext/malloc_allocator/deallocate_global.cc: Fix format
+	string.
+	* testsuite/ext/malloc_allocator/deallocate_local.cc: Likewise.
+	* testsuite/ext/array_allocator/2.cc: Remove unused variable.
+	* testsuite/tr1/3_function_objects/mem_fn.cc: Avoid unused variable
+	warnings.
+	* testsuite/tr1/6_containers/unordered/instantiate/set.cc: Just
+	instantiate.
+	* testsuite/tr1/6_containers/unordered/instantiate/map.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered/instantiate/hash.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered/instantiate/multiset.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered/instantiate/multimap.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/cons/aggregate_initialization.cc:
+	Avoid unused variable warnings.
+	* testsuite/tr1/6_containers/array/requirements/zero_sized_arrays.cc:
+	Likewise.
+	* testsuite/thread/18185.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/11584.cc: Likewise; avoid comparison
+	between signed and unsigned warning.
+	* testsuite/27_io/types/1.cc: Avoid unused variable warnings.
+	* testsuite/testsuite_allocator.h (check_new): Likewise.
+	(check_deallocate_null): Adjust return type.
+	* testsuite/testsuite_hooks.h (bitmask_operators): Avoid unused
+	variable warnings.
+	* testsuite/21_strings/c_strings/wchar_t/24559.cc: Avoid unused
+	variable warning.
+
+2005-12-28  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/std/std_bitset.h (bitset<0>::set, bitset<0>::reset,
+	bitset<0>::flip, bitset<0>::test): Add inline specializations for
+	bitset<0>.
+
+	* testsuite/tr1/6_containers/unordered/insert/multiset_range.cc
+	(test01): Add static cast.
+	* testsuite/tr1/6_containers/unordered/insert/set_range.cc
+	(test01): Likewise.
+	* testsuite/testsuite_hooks.h (operator==(NonDefaultConstructible,
+	NonDefaultConstructible), operator<(NonDefaultConstructible,
+	NonDefaultConstrictible)): Avoid unused parameter warning.
+
 2005-12-26  Chris Jefferson  <chris@bubblescope.net>
 
 	* include/ext/mt_allocator.h (__mt_alloc::__mt_alloc): Remove

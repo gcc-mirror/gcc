@@ -1,7 +1,7 @@
 // Expected execution error for PR19495.
 // { dg-do run { xfail powerpc*-*-linux* } }
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,7 +47,6 @@ void test01()
   typedef __gnu_cxx::array_allocator<char_type, array_type> allocator_type;
   typedef basic_string<char_type, traits_type, allocator_type> string_type;
 
-  size_t index = array_type::_S_index;
   allocator_type a(&extern_array);
   string_type s(a);
     

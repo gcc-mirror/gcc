@@ -23,10 +23,10 @@
 // { dg-do compile }
 
 // libstdc++/24559
+void test01(wchar_t* (*) (wchar_t *, const wchar_t*)) { }
+
 int main()
 {
-  typedef wchar_t* (*pf)(wchar_t *, const wchar_t*);
-  pf p1 = std::wcspbrk;
-
+  test01(std::wcspbrk);
   return 0;
 }
