@@ -38,6 +38,11 @@ enum epilogue_type
 extern enum processor_type mt_cpu;
 
 
+/* Support for a compile-time default CPU, et cetera.  The rules are:
+   --with-arch is ignored if -march is specified.  */
+#define OPTION_DEFAULT_SPECS \
+  {"arch", "%{!march=*:-march=%(VALUE)}" }
+
 /* A C string constant that tells the GCC driver program options to pass to
    the assembler.  */
 #undef  ASM_SPEC
