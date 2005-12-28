@@ -2301,9 +2301,6 @@ rpost_cmp (const void *bb1, const void *bb2)
 /* Temporary bitmap used for live_pavin, live_pavout calculation.  */
 static bitmap temp_bitmap;
 
-DEF_VEC_P(basic_block);
-DEF_VEC_ALLOC_P(basic_block,heap);
-
 /* The function calculates partial register availability according to
    the following equations:
 

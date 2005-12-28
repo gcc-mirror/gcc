@@ -1,3 +1,9 @@
+2005-12-27  Kazu Hirata  <kazu@codesourcery.com>
+
+	* global.c, tree-ssa-pre.c: Move DEF_VEC_P(basic_block) and
+	DEF_VEC_ALLOC_P(basic_block,{gc,heap}) to ...
+	* basic-block.h: ... here.
+
 2005-12-27  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (int_const_binop): Return NULL_TREE when an expression
