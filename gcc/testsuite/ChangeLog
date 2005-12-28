@@ -1,5 +1,10 @@
 2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/25550
+	* gfortran.dg/endfile.f: New test.
+
+2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/25419
 	* gfortran.dg/comma.f: New test.
 
