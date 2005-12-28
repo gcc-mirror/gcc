@@ -1,5 +1,11 @@
 2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/25550
+	* io/file_pos.c (st_rewind): Reset bytes left so no error occurs in
+	next_record_r.
+
+2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/25419
 	* io/list_read.c (list_formatted_read_scalar): Allow comma to return a
 	null value (default).

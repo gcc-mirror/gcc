@@ -255,6 +255,7 @@ st_rewind (st_parameter_filepos *fpp)
 
 	  u->endfile = NO_ENDFILE;
 	  u->current_record = 0;
+	  u->bytes_left = 0;
 	  test_endfile (u);
 	}
       /* Update position for INQUIRE.  */
