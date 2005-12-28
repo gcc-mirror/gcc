@@ -1,3 +1,7 @@
+2005-12-28  Chris Jefferson  <chris@bubblescope.net>
+
+	* testsuite/testsuite_allocator.h (check_deallocate_null): Return true.
+
 2005-12-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_bitset.h (bitset<>::_M_copy_from_string,
