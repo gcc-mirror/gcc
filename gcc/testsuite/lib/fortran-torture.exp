@@ -34,7 +34,7 @@ if ![info exists TORTURE_OPTIONS] {
 	{ -O0 } { -O1 } { -O2 } \
 	{ -O2 -fomit-frame-pointer -finline-functions } \
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
-	{ -O2 -fomit-frame-pointer -finline-functions -funroll-all-loops } \
+	{ -O2 -fbounds-check } \
 	{ -O2 -fno-repack-arrays } \
 	{ -O3 -g } \
 	{ -Os }]

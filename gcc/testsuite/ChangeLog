@@ -1,3 +1,9 @@
+2005-12-28  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* lib/gfortran-dg.exp: Remove trailing whitespace.
+	* lib/fortran-torture.exp: Test with -fbounds-check instead of
+	-funroll-all-loops.
+
 2005-12-28  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/torture/fp-int-convert-timode.c: Don't test IBM
