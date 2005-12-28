@@ -201,13 +201,14 @@ namespace __gnu_test
     }
 
   template<typename Alloc>
-    void 
+    bool
     check_deallocate_null()
     {
       // Let's not core here...
       Alloc  a;
       a.deallocate(NULL, 1);
       a.deallocate(NULL, 10);
+      return true;
     }
 
   template<typename Alloc>
