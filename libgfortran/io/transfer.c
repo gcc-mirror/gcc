@@ -1702,7 +1702,7 @@ next_record_r (st_parameter_dt *dtp)
 	      record = record * dtp->u.p.current_unit->recl;
 	      if (sseek (dtp->u.p.current_unit->s, record) == FAILURE)
 		{
-		  generate_error (&dtp->common, ERROR_OS, NULL);
+		  generate_error (&dtp->common, ERROR_INTERNAL_UNIT, NULL);
 		  break;
 		}
 	      dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
@@ -1863,7 +1863,10 @@ next_record_w (st_parameter_dt *dtp, int done)
 	      record = record * dtp->u.p.current_unit->recl;
 
 	      if (sseek (dtp->u.p.current_unit->s, record) == FAILURE)
-		goto io_error;
+		{
+		  generate_error (&dtp->common, ERROR_INTERNAL_UNIT, NULL);
+		  return;
+		}
 
 	      dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
 	    }
