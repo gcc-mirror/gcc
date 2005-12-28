@@ -1,5 +1,10 @@
 2005-12-28  Anthony Green  <green@redhat.com>
 
+	* gnu/java/net/natPlainSocketImplWin32.cc (connect): Same 
+	as previous patch, but for win32.
+
+2005-12-28  Anthony Green  <green@redhat.com>
+
 	* gnu/java/net/natPlainSocketImplPosix.cc (connect): Record
 	address and port before attempting anything.
 
