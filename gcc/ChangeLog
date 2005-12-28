@@ -1,3 +1,12 @@
+2005-12-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config.gcc (mt-*-*): Add --with-arch support.
+	(--with): Print accepted options on error.
+	* config/mt/mt.h (OPTION_DEFAULT_SPECS): Define.
+
+	* config/mt/mt.c (DEF_VEC_P(basic_block),
+	DEF_VEC_ALLOC_P(basic_bloc,heap)): Remove from here.
+
 2005-12-28  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/25394

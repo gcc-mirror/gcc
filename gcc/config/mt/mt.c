@@ -1654,11 +1654,7 @@ void mt_add_loop (void)
    filling.  */
 #define MAX_LOOP_LENGTH (200 * 4)
 
-/* We need to keep a vector of basic blocks */
-DEF_VEC_P (basic_block);
-DEF_VEC_ALLOC_P (basic_block,heap);
-
-/* And a vector of loops */
+/* We need to keep a vector of loops */
 typedef struct loop_info *loop_info;
 DEF_VEC_P (loop_info);
 DEF_VEC_ALLOC_P (loop_info,heap);
