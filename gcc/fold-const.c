@@ -10498,13 +10498,16 @@ recursive_label:
 	fold_checksum_tree (TREE_OPERAND (expr, i), ctx, ht);
       break;
     case tcc_declaration:
-      fold_checksum_tree (DECL_SIZE (expr), ctx, ht);
-      fold_checksum_tree (DECL_SIZE_UNIT (expr), ctx, ht);
       fold_checksum_tree (DECL_NAME (expr), ctx, ht);
       fold_checksum_tree (DECL_CONTEXT (expr), ctx, ht);
-      fold_checksum_tree (DECL_INITIAL (expr), ctx, ht);
-      fold_checksum_tree (DECL_ABSTRACT_ORIGIN (expr), ctx, ht);
-      fold_checksum_tree (DECL_ATTRIBUTES (expr), ctx, ht);
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (expr), TS_DECL_COMMON))
+	{
+	  fold_checksum_tree (DECL_SIZE (expr), ctx, ht);
+	  fold_checksum_tree (DECL_SIZE_UNIT (expr), ctx, ht);
+	  fold_checksum_tree (DECL_INITIAL (expr), ctx, ht);
+	  fold_checksum_tree (DECL_ABSTRACT_ORIGIN (expr), ctx, ht);
+	  fold_checksum_tree (DECL_ATTRIBUTES (expr), ctx, ht);
+	}
       if (CODE_CONTAINS_STRUCT (TREE_CODE (expr), TS_DECL_WITH_VIS))
 	fold_checksum_tree (DECL_SECTION_NAME (expr), ctx, ht);
 	  

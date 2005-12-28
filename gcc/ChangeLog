@@ -1,3 +1,9 @@
+2005-12-28  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/25394
+	* fold-const.c (fold_checksum_tree): Guard 
+	portions of checksumming with correct structure checks.
+
 2005-12-27  Kazu Hirata  <kazu@codesourcery.com>
 
 	* global.c, tree-ssa-pre.c: Move DEF_VEC_P(basic_block) and
