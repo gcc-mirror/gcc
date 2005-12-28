@@ -601,7 +601,7 @@ fd_truncate (unix_stream * s)
     }
 
   s->physical_offset = s->file_length = s->logical_offset;
-
+  s->active = 0;
   return SUCCESS;
 }
 

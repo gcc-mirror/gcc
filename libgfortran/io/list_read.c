@@ -164,7 +164,7 @@ next_char (st_parameter_dt *dtp)
 	     check for NULL here is cautionary. */
 	  if (p == NULL)
 	    {
-	      generate_error (&dtp->common, ERROR_OS, NULL);
+	      generate_error (&dtp->common, ERROR_INTERNAL_UNIT, NULL);
 	      return '\0';
 	    }
 

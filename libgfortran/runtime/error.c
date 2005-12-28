@@ -423,6 +423,14 @@ translate_error (int code)
       p = "Numeric overflow on read";
       break;
 
+    case ERROR_INTERNAL:
+      p = "Internal error in run-time library";
+      break;
+
+    case ERROR_INTERNAL_UNIT:
+      p = "Internal unit I/O error";
+      break;
+
     default:
       p = "Unknown error code";
       break;
