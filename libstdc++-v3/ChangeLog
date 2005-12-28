@@ -1,3 +1,7 @@
+2005-12-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 40.
+
 2005-12-28  Chris Jefferson  <chris@bubblescope.net>
 
 	* testsuite/testsuite_allocator.h (check_deallocate_null): Return true.

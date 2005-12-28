@@ -1,15 +1,18 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
-<html><head><title>C++ Standard Library Active Issues List</title></head>
+<html><head><title>C++ Standard Library Active Issues List</title>
+
+<style>ins {background-color:#FFFFA0}
+del {background-color:#FFFFA0}</style></head>
 
 <body bgcolor="#ffffff" text="#000000">
 <table>
 <tbody><tr>
 <td align="left">Doc. no.</td>
-<td align="left">N1908=05-0168</td>
+<td align="left">N1926=05-0186</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">2005-10-23</td>
+<td align="left">2005-12-16</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -20,7 +23,7 @@
 <td align="left">Howard Hinnant &lt;howard.hinnant@gmail.com&gt;</td>
 </tr>
 </tbody></table>
-<h1>C++ Standard Library Active Issues List (Revision R39)</h1>
+<h1>C++ Standard Library Active Issues List (Revision R40)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
   <ul>
@@ -88,6 +91,10 @@
   directory as the issues list files.  </p>
 <h2>Revision History</h2>
 <ul>
+<li>R40: 
+2005-12-16 mid-term mailing.
+Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#529">529</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#535">535</a>.
+</li>
 <li>R39: 
 2005-10-14 post-Mont Tremblant mailing.
 Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#526">526</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#528">528</a>.
@@ -901,7 +908,7 @@ intended here is that the copy constructors can't fail.</p>
 <hr>
 <a name="258"><h3>258.&nbsp;Missing allocator requirement</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;22 Aug 2000</p>
 <p>
-&gt;From lib-7752:
+From lib-7752:
 </p>
 
 <p>
@@ -2408,7 +2415,7 @@ object throws.
   might reasonably swallow the exception, or call abort, or do
   something even more drastic.]</i></p>
 <hr>
-<a name="419"><h3>419.&nbsp;istream extractors not setting failbit if eofbit is already set</h3></a><p><b>Section:</b>&nbsp;27.6.1.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<a name="419"></a><h3><a name="419">419.&nbsp;istream extractors not setting failbit if eofbit is already set</a></h3><p><b>Section:</b>&nbsp;27.6.1.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream::sentry"> [lib.istream::sentry]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
         <p>
 
 27.6.1.1.2, p2 says that istream::sentry ctor prepares for input if is.good()
@@ -2726,7 +2733,7 @@ ostream::write().
   negative.  Martin will do that review.]</i></p>
 
 <hr>
-<a name="424"><h3>424.&nbsp;normative notes</h3></a><p><b>Section:</b>&nbsp;17.3.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.structure.summary"> [lib.structure.summary]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<a name="424"></a><h3><a name="424">424.&nbsp;normative notes</a></h3><p><b>Section:</b>&nbsp;17.3.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.structure.summary"> [lib.structure.summary]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
 
 <p>
 The text in 17.3.1.1, p1 says:
@@ -2838,7 +2845,7 @@ object (e.g., slice (2, 1, 1) for a valarray of size 1).
   performance, so we don't want to require specific checking.  We
   need wording to express this decision.]</i></p>
 <hr>
-<a name="431"><h3>431.&nbsp;Swapping containers with unequal allocators</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 25 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Sep 2003</p>
+<a name="431"></a><h3><a name="431">431.&nbsp;Swapping containers with unequal allocators</a></h3><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 25 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Sep 2003</p>
 <p>Clause 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> paragraph 4 says that implementations
   are permitted to supply containers that are unable to cope with
   allocator instances and that container implementations may assume
@@ -3101,7 +3108,7 @@ operational semantics for this column to:
 </code>
 
 <hr>
-<a name="459"></a><h3><a name="459">459.&nbsp;Requirement for widening in stage 2 is overspecification</a></h3><p><b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;16 Mar 2004</p>
+<a name="459"><h3>459.&nbsp;Requirement for widening in stage 2 is overspecification</h3></a><p><b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;16 Mar 2004</p>
 <p>When parsing strings of wide-character digits, the standard
   requires the library to widen narrow-character "atoms" and compare
   the widened atoms against the characters that are being parsed.
@@ -3812,7 +3819,7 @@ list&lt;double&gt; &gt; should not take O(1).</p>
   provide wording.]</i></p>
 
 <hr>
-<a name="484"><h3>484.&nbsp;Convertible to T</h3></a><p><b>Section:</b>&nbsp;24.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.input.iterators"> [lib.input.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Chris&nbsp; <b>Date:</b>&nbsp;16 Sep 2004</p>
+<a name="484"><h3>484.&nbsp;Convertible to T</h3></a><p><b>Section:</b>&nbsp;24.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.input.iterators"> [lib.input.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Chris Jefferson&nbsp; <b>Date:</b>&nbsp;16 Sep 2004</p>
 <p>From comp.std.c++:</p>
 
 <p>
@@ -3856,7 +3863,7 @@ class I expect?</p>
  overloads. It's a minor problem but a real one. So leave open for
  now, hope we solve it as part of iterator redesign.]</i></p>
 <hr>
-<a name="485"><h3>485.&nbsp;output iterator insufficently constrained</h3></a><p><b>Section:</b>&nbsp;24.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.output.iterators"> [lib.output.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Chris&nbsp; <b>Date:</b>&nbsp;13 Oct 2004</p>
+<a name="485"><h3>485.&nbsp;output iterator insufficently constrained</h3></a><p><b>Section:</b>&nbsp;24.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.output.iterators"> [lib.output.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Chris Jefferson&nbsp; <b>Date:</b>&nbsp;13 Oct 2004</p>
 <p>
 The note on 24.1.2 Output iterators insufficently limits what can be
 performed on output iterators. While it requires that each iterator is
@@ -4826,7 +4833,7 @@ in each case as having some real type.
 <blockquote><pre>typedef  RealType  input_type;
 </pre></blockquote>
 <hr>
-<a name="512"></a><h3><a name="512">512.&nbsp;Seeding subtract_with_carry_01 from a single unsigned long</a></h3><p><b>Section:</b>&nbsp;TR1 5.1.4.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.rand.eng.sub1"> [tr.rand.eng.sub1]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Walter Brown&nbsp; <b>Date:</b>&nbsp;3 Jul 2005</p>
+<a name="512"><h3>512.&nbsp;Seeding subtract_with_carry_01 from a single unsigned long</h3></a><p><b>Section:</b>&nbsp;TR1 5.1.4.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.rand.eng.sub1"> [tr.rand.eng.sub1]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Walter Brown&nbsp; <b>Date:</b>&nbsp;3 Jul 2005</p>
 <p>
 Paragraph 8 specifies the algorithm by which a subtract_with_carry_01  engine
 is to be seeded given a single unsigned long.  This algorithm is seriously
@@ -5117,7 +5124,7 @@ function's cv-qualifiers); the type T1 is cv T0*
 </blockquote>
 <p><b>Proposed resolution:</b></p>
 <hr>
-<a name="522"></a><h3><a name="522">522.&nbsp;Tuple doesn't define swap</a></h3><p><b>Section:</b>&nbsp;TR1 6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.tuple"> [tr.tuple]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Andy Koenig&nbsp; <b>Date:</b>&nbsp;3 Jul 2005</p>
+<a name="522"><h3>522.&nbsp;Tuple doesn't define swap</h3></a><p><b>Section:</b>&nbsp;TR1 6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.tuple"> [tr.tuple]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Andy Koenig&nbsp; <b>Date:</b>&nbsp;3 Jul 2005</p>
 <p>
 Tuple doesn't define swap().  It should.
 </p>
@@ -5301,7 +5308,7 @@ seem to be lacking a definition.
 </p>
 <p><b>Proposed resolution:</b></p>
 <hr>
-<a name="526"></a><h3><a name="526">526.&nbsp;Is it undefined if a function in the standard changes in parameters?</a></h3><p><b>Section:</b>&nbsp;23.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Chris Jefferson&nbsp; <b>Date:</b>&nbsp;14 Sep 2005</p>
+<a name="526"><h3>526.&nbsp;Is it undefined if a function in the standard changes in parameters?</h3></a><p><b>Section:</b>&nbsp;23.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Chris Jefferson&nbsp; <b>Date:</b>&nbsp;14 Sep 2005</p>
 <p>
 Problem: There are a number of places in the C++ standard library where
 it is possible to write what appear to be sensible ways of calling
@@ -5463,5 +5470,300 @@ same type, those signatures that become otherwise indistinguishable
 collapse into a single signature.</ins>
 </p>
 
+<hr>
+<a name="529"><h3>529.&nbsp;The standard encourages redundant and confusing preconditions</h3></a><p><b>Section:</b>&nbsp;17.4.3.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.res.on.required"> [lib.res.on.required]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;David Abrahams&nbsp; <b>Date:</b>&nbsp;25 Oct 2005</p>
+<p>
+17.4.3.8/1 says:
+</p>
+
+<blockquote>
+Violation of the preconditions specified in a function's 
+Required behavior: paragraph results in undefined behavior unless the 
+function's Throws: paragraph specifies throwing an exception when the 
+precondition is violated.
+</blockquote>
+
+<p>
+This implies that a precondition violation can lead to defined
+behavior.  That conflicts with the only reasonable definition of
+precondition: that a violation leads to undefined behavior.  Any other
+definition muddies the waters when it comes to analyzing program
+correctness, because precondition violations may be routinely done in
+correct code (e.g. you can use std::vector::at with the full
+expectation that you'll get an exception when your index is out of
+range, catch the exception, and continue).  Not only is it a bad
+example to set, but it encourages needless complication and redundancy
+in the standard.  For example:
+</p>
+
+<blockquote><pre>  21 Strings library 
+  21.3.3 basic_string capacity
+
+  void resize(size_type n, charT c);
+
+  5 Requires: n &lt;= max_size()
+  6 Throws: length_error if n &gt; max_size().
+  7 Effects: Alters the length of the string designated by *this as follows:
+</pre></blockquote>
+
+<p>
+The Requires clause is entirely redundant and can be dropped.  We
+could make that simplifying change (and many others like it) even
+without changing 17.4.3.8/1; the wording there just seems to encourage
+the redundant and error-prone Requires: clause.
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+1. Change 17.4.3.8/1 to read:
+</p>
+
+<blockquote>
+Violation of the preconditions specified in a function's
+<i>Required behavior:</i> paragraph results in undefined behavior
+<del>unless the function's <i>Throws:</i> paragraph specifies throwing
+an exception when the precondition is violated</del>.
+</blockquote>
+
+<p>
+2. Go through and remove redundant Requires: clauses.  Specifics to be
+   provided by Dave A.
+</p>
+<hr>
+<a name="530"><h3>530.&nbsp;Must elements of a string be contiguous?</h3></a><p><b>Section:</b>&nbsp;21.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;15 Nov 2005</p>
+<p>Issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#69">69</a>, which was incorporated into C++03, mandated
+&nbsp;&nbsp; that the elements of a vector must be stored in contiguous memory.
+&nbsp;&nbsp; Should the same also apply to <tt>basic_string</tt>?</p>
+
+<p>We almost require contiguity already. Clause 23.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.multiset"> [lib.multiset]</a>
+&nbsp; defines <tt>operator[]</tt> as <tt>data()[pos]</tt>. What's missing
+&nbsp; is a similar guarantee if we access the string's elements via the
+&nbsp; iterator interface.</p>
+
+<p>Given the existence of <tt>data()</tt>, and the definition of
+&nbsp; <tt>operator[]</tt> and <tt>at</tt> in terms of <tt>data</tt>,
+&nbsp; I don't believe it's possible to write a useful and standard-
+&nbsp; conforming <tt>basic_string</tt> that isn't contiguous. I'm not
+&nbsp; aware of any non-contiguous implementation. We should just require
+&nbsp; it.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>Add the following text to the end of 23.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.associative"> [lib.associative]</a>,
+paragraph 2. </p>
+
+<blockquote>
+&nbsp; <p>The characters in a string are stored contiguously, meaning that if
+&nbsp; <tt>s</tt> is a <tt>basic_string&lt;charT, Allocator&gt;</tt>, then
+&nbsp; it obeys the identity
+&nbsp; <tt>&amp;*(s.begin() + n) == &amp;*s.begin() + n</tt>
+&nbsp; for all <tt>0 &lt;= n &lt; s.size()</tt>.
+  </p>
+</blockquote>
+<hr>
+<a name="531"><h3>531.&nbsp;array forms of unformatted input functions</h3></a><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;23 Nov 2005</p>
+<p>
+The array forms of unformatted input functions don't seem to have well-defined
+semantics for zero-element arrays in a couple of cases. The affected ones
+(<tt>istream::get()</tt> and <tt>istream::getline()</tt>) are supposed to
+terminate when <tt>(n - 1)</tt> characters are stored, which obviously can
+never be true when <tt>(n == 0)</tt> holds to start with. See
+c++std-lib-16071.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+I suggest changing 27.6.1.3, p7 (<tt>istream::get()</tt>), bullet 1 to read:
+</p>
+        <p>
+            </p><ul>
+                <li>
+                    <tt>(n &lt; 1)</tt> is true or <tt>(n - 1)</tt> characters
+                    are stored;
+                </li>
+            </ul>
+        <p></p>
+        <p>
+
+and similarly p17 (<tt>istream::getline()</tt>), bullet 3 to:
+
+        </p>
+        <p>
+            </p><ul>
+                <li>
+                    <tt>(n &lt; 1)</tt> is true or <tt>(n - 1)</tt> characters
+                    are stored (in which case the function calls
+                    <tt>setstate(failbit)</tt>).
+                </li>
+            </ul>
+        <p></p>
+
+        <p>
+
+In addition, to clarify that <tt>istream::getline()</tt> must not store the
+terminating NUL character unless the the array has non-zero size, Robert
+Klarer suggests in c++std-lib-16082 to change 27.6.1.3, p20 to read:
+
+        </p>
+        <p>
+            </p><blockquote>
+
+In any case, provided <tt>(n &gt; 0)</tt> is true, it then stores a null character
+(using charT()) into the next successive location of the array.
+
+            </blockquote>
+        <p></p>
+<hr>
+<a name="532"><h3>532.&nbsp;Tuple comparison</h3></a><p><b>Section:</b>&nbsp;TR1 6.1.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.tuple.rel"> [tr.tuple.rel]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;David Abrahams&nbsp; <b>Date:</b>&nbsp;29 Nov 2005</p>
+<p>
+Where possible, tuple comparison operators &lt;,&lt;=,=&gt;, and &gt; ought to be
+defined in terms of std::less rather than operator&lt;, in order to
+support comparison of tuples of pointers.  
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+change 6.1.3.5/5 from:
+</p>
+
+<blockquote>
+  Returns: The result of a lexicographical comparison between t and
+  u. The result is defined as: (bool)(get&lt;0&gt;(t) &lt; get&lt;0&gt;(u)) ||
+  (!(bool)(get&lt;0&gt;(u) &lt; get&lt;0&gt;(t)) &amp;&amp; ttail &lt; utail), where rtail for
+  some tuple r is a tuple containing all but the first element of
+  r. For any two zero-length tuples e and f, e &lt; f returns false.
+</blockquote>
+
+<p>
+to:
+</p>
+
+<blockquote>
+<p>
+  Returns: The result of a lexicographical comparison between t and
+  u. For any two zero-length tuples e and f, e &lt; f returns false.
+  Otherwise, the result is defined as: cmp( get&lt;0&gt;(t), get&lt;0&gt;(u)) ||
+  (!cmp(get&lt;0&gt;(u), get&lt;0&gt;(t)) &amp;&amp; ttail &lt; utail), where rtail for some
+  tuple r is a tuple containing all but the first element of r, and
+  cmp(x,y) is an unspecified function template defined as follows.
+</p>
+<p>
+  Where T is the type of x and U is the type of y:
+</p>
+
+<p>
+     if T and U are pointer types and T is convertible to U, returns
+     less&lt;U&gt;()(x,y)
+</p>
+
+<p>
+     otherwise, if T and U are pointer types, returns less&lt;T&gt;()(x,y)
+</p>
+
+<p>
+     otherwise, returns (bool)(x &lt; y)
+</p>
+</blockquote>
+<hr>
+<a name="533"><h3>533.&nbsp;typo in 2.2.3.10/1</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3.10 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.getdeleter"> [tr.util.smartptr.getdeleter]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Paolo Carlini&nbsp; <b>Date:</b>&nbsp;9 Nov 2005</p>
+<p>
+I'm seeing something that looks like a typo. The Return of <tt>get_deleter</tt>
+says:
+</p>
+<blockquote>
+If <tt>*this</tt> <i>owns</i> a deleter <tt>d</tt>...
+</blockquote>
+<p>
+but <tt>get_deleter</tt> is a free function!
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Therefore, I think should be:
+</p>
+<blockquote>
+If <tt><del>*this</del> <ins>p</ins></tt> <i>owns</i> a deleter <tt>d</tt>...
+</blockquote>
+<hr>
+<a name="534"><h3>534.&nbsp;Missing basic_string members</h3></a><p><b>Section:</b>&nbsp;21.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Alisdair Meredith&nbsp; <b>Date:</b>&nbsp;16 Nov 2005</p>
+<p>
+OK, we all know std::basic_string is bloated and already has way too
+many members.  However, I propose it is missing 3 useful members that
+are often expected by users believing it is a close approximation of the
+container concept.  All 3 are listed in table 71 as 'optional'
+</p>
+
+<p>
+i/  pop_back.
+</p>
+
+<p>
+This is the one I feel most strongly about, as I only just discovered it
+was missing as we are switching to a more conforming standard library
+&lt;g&gt;
+</p>
+
+<p>
+I find it particularly inconsistent to support push_back, but not
+pop_back.
+</p>
+
+<p>
+ii/ back.
+</p>
+
+<p>
+There are certainly cases where I want to examine the last character of
+a string before deciding to append, or to trim trailing path separators
+from directory names etc.  *rbegin() somehow feels inelegant.
+</p>
+
+<p>
+iii/ front
+</p>
+
+<p>
+This one I don't feel strongly about, but if I can get the first two,
+this one feels that it should be added as a 'me too' for consistency.
+</p>
+
+<p>
+I believe this would be similarly useful to the data() member recently
+added to vector, or at() member added to the maps.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="535"><h3>535.&nbsp;std::string::swap specification poorly worded</h3></a><p><b>Section:</b>&nbsp;21.3.5.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-strings.html#lib.string::swap"> [lib.string::swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;14 Dec 2005</p>
+<p>
+std::string::swap currently says for effects and postcondition:
+</p>
+
+<blockquote>
+<p>
+<i>Effects:</i> Swaps the contents of the two strings.
+</p>
+
+<p>
+<i>Postcondition:</i> <tt>*this</tt> contains the characters that were in <tt><i>s</i></tt>,
+<tt><i>s</i></tt> contains the characters that were in <tt>*this</tt>.
+</p>
+</blockquote>
+
+<p>
+Specifying both Effects and Postcondition seems redundant, and the postcondition
+needs to be made stronger. Users would be unhappy if the characters were not in
+the same order after the swap.
+</p>
+<p><b>Proposed resolution:</b></p>
+<blockquote>
+<p>
+<del><i>Effects:</i> Swaps the contents of the two strings.</del>
+</p>
+
+<p>
+<i>Postcondition:</i> <tt>*this</tt> contains the <ins>same sequence of</ins>
+characters that <del>were</del> <ins>was</ins> in <tt><i>s</i></tt>,
+<tt><i>s</i></tt> contains the <ins>same sequence of</ins> characters that
+<del>were</del> <ins>was</ins> in <tt>*this</tt>.
+</p>
+</blockquote>
 <p>----- End of document -----</p>
 </body></html>
