@@ -1334,8 +1334,6 @@ clean (value_set_t set)
     }
 }
 
-DEF_VEC_P (basic_block);
-DEF_VEC_ALLOC_P (basic_block, heap);
 static sbitmap has_abnormal_preds;
 
 /* Compute the ANTIC set for BLOCK.
