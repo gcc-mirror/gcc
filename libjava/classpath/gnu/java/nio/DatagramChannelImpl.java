@@ -201,7 +201,7 @@ public final class DatagramChannelImpl extends DatagramChannel
     try
       {
         DatagramPacket packet;
-        int len = dst.capacity() - dst.position();
+        int len = dst.remaining();
         
         if (dst.hasArray())
           {
