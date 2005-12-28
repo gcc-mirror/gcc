@@ -43,6 +43,7 @@ import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.AbstractSelector;
 import java.nio.channels.spi.SelectorProvider;
@@ -284,19 +285,18 @@ public class SelectorImpl extends AbstractSelector
                 // Set new ready write ops
                 for (int i = 0; i < write.length; i++)
                   {
-                    if (key.getNativeFD() == write[i])
-                      {
-                        ops = ops | SelectionKey.OP_WRITE;
-
-        //                 if (key.channel ().isConnected ())
-        //                   {
-        //                     ops = ops | SelectionKey.OP_WRITE;
-        //                   }
-        //                 else
-        //                   {
-        //                     ops = ops | SelectionKey.OP_CONNECT;
-        //                   }
-                     }
+		    if (key.getNativeFD() == write[i])
+		      {
+			if (key.channel() instanceof SocketChannel)
+			  {
+			    if (((SocketChannel) key.channel ()).isConnected ())
+			      ops = ops | SelectionKey.OP_WRITE;
+			    else
+			      ops = ops | SelectionKey.OP_CONNECT;
+			  }
+			else
+			  ops = ops | SelectionKey.OP_WRITE;
+		      }
                   }
 
                 // FIXME: We dont handle exceptional file descriptors yet.

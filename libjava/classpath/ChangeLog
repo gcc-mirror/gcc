@@ -1,3 +1,19 @@
+2005-12-27  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/nio/SelectorImpl.java: Added import.
+
+2005-12-26  Anthony Green  <green@redhat.com>
+
+        * java/net/Socket.java (connect): Don't close the socket on
+        exceptions.
+
+        * gnu/java/nio/SocketChannelImpl.java (read): Compute the right amount
+        of data to read (dst.remaining()).
+        * gnu/java/nio/DatagramChannelImpl.java (receive): Ditto.
+
+        * gnu/java/nio/SelectorImpl.java (select): Handle OP_CONNECT
+        properly.
+
 2005-11-17  Roman Kennke  <kennke@aicas.com>
 
 	* javax/swing/JEditorPane.java
