@@ -1353,10 +1353,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 	{			/* Found a null value.  */
 	  eat_separator (dtp);
 	  dtp->u.p.repeat_count = 0;
-	  if (dtp->u.p.at_eol)
-	    finish_separator (dtp);
-          else
-	    goto cleanup;
+	  goto cleanup;
 	}
 
     }
