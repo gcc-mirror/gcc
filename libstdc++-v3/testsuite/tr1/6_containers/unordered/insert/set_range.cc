@@ -27,7 +27,7 @@
 #include <iterator>
 #include <algorithm>
 #include <tr1/unordered_set>
-#include "testsuite_hooks.h"
+#include <testsuite_hooks.h>
 
 bool test __attribute__((unused)) = true;
 
@@ -42,7 +42,7 @@ void test01()
 			     "magenta", "yellow", "orange", "pink", "gray" };
 
   s.insert(A+0, A+N);
-  VERIFY(s.size() == N);
+  VERIFY(s.size() == static_cast<unsigned int>(N));
   VERIFY(std::distance(s.begin(), s.end()) == N);
 
   for (int i = 0; i < N; ++i) {

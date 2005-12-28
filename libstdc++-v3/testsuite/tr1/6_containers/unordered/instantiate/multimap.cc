@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2005-2-17  Matt Austern  <austern@apple.com>
+// 2005-02-17  Matt Austern  <austern@apple.com>
 //
 // Copyright (C) 2005 Free Software Foundation, Inc.
 //
@@ -25,13 +25,10 @@
 #include <string>
 #include <tr1/unordered_map>
 
-int main()
-{
-  using namespace std;
-  using namespace std::tr1;
+using namespace std;
+using namespace std::tr1;
 
-  unordered_multimap<string, float> m1;
-  unordered_multimap<string, float,
-                     hash<string>, equal_to<string>, 
-                     allocator<pair<const string, float> >, true> s2;
-}
+template class unordered_multimap<string, float>;
+template class unordered_multimap<string, float,
+				  hash<string>, equal_to<string>, 
+				  allocator<pair<const string, float> >, true>;

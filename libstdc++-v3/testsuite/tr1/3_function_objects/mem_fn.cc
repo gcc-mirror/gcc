@@ -39,7 +39,7 @@ struct dumb_ptr
 };
 
 // Test mem_fn with a data member
-void test01()
+void test01(int r = 0)
 {
   using std::tr1::mem_fn;
 
@@ -69,6 +69,9 @@ void test01()
   const int& bypc = mem_fn(&X::bar)(ypc);
   const int& byd = mem_fn(&X::bar)(yd);
   const int& bydc = mem_fn(&X::bar)(ydc);
+  
+  // Avoid unused variable warnings.
+  r = bx + bxc + bxp + bxpc + bxd + bxdc + by + byc + byp + bypc + byd + bydc;
 }
 
 int main()

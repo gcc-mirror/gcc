@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,8 @@
 #include <string>
 #include <pthread.h>
 
-static void *
-foo (void *p)
+static void*
+foo (void*)
 {
   typedef std::char_traits<char> traits_type;
   typedef __gnu_cxx::new_allocator<char> allocator_type;
@@ -47,7 +47,7 @@ int
 main ()
 {
   pthread_t t;
-  int j = pthread_create (&t, 0, foo, 0);
-  int i = pthread_join (t, 0);
+  pthread_create (&t, 0, foo, 0);
+  pthread_join (t, 0);
   return 0;
 }

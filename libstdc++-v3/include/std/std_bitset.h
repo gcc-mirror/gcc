@@ -1144,19 +1144,20 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
   template<size_t _Nb>
     template<class _CharT, class _Traits, class _Alloc>
       void
-      bitset<_Nb>::_M_copy_from_string(const std::basic_string<_CharT, _Traits,
-				       _Alloc>& __s, size_t __pos, size_t __n)
+      bitset<_Nb>::
+      _M_copy_from_string(const std::basic_string<_CharT, _Traits,
+			  _Alloc>& __s, size_t __pos, size_t __n)
       {
 	reset();
 	const size_t __nbits = std::min(_Nb, std::min(__n, __s.size() - __pos));
-	for (size_t __i = 0; __i < __nbits; ++__i)
+	for (size_t __i = __nbits; __i > 0; --__i)
 	  {
-	    switch(__s[__pos + __nbits - __i - 1])
+	    switch(__s[__pos + __nbits - __i])
 	      {
 	      case '0':
 		break;
 	      case '1':
-		set(__i);
+		set(__i - 1);
 		break;
 	      default:
 		__throw_invalid_argument(__N("bitset::_M_copy_from_string"));
@@ -1167,13 +1168,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
   template<size_t _Nb>
     template<class _CharT, class _Traits, class _Alloc>
       void
-      bitset<_Nb>::_M_copy_to_string(std::basic_string<_CharT, _Traits,
-				     _Alloc>& __s) const
+      bitset<_Nb>::
+      _M_copy_to_string(std::basic_string<_CharT, _Traits, _Alloc>& __s) const
       {
 	__s.assign(_Nb, '0');
-	for (size_t __i = 0; __i < _Nb; ++__i)
-	  if (_Unchecked_test(__i))
-	    __s[_Nb - 1 - __i] = '1';
+	for (size_t __i = _Nb; __i > 0; --__i)
+	  if (_Unchecked_test(__i - 1))
+	    __s[_Nb - __i] = '1';
       }
 
   // 23.3.5.3 bitset operations:
@@ -1242,7 +1243,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	      // 303. Bitset input operator underspecified
 	      const char_type __zero = __is.widen('0');
 	      const char_type __one = __is.widen('1');
-	      for (size_t __i = 0; __i < _Nb; ++__i)
+	      for (size_t __i = _Nb; __i > 0; --__i)
 		{
 		  static typename _Traits::int_type __eof = _Traits::eof();
 		  
@@ -1289,6 +1290,44 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       std::basic_string<_CharT, _Traits> __tmp;
       __x._M_copy_to_string(__tmp);
       return __os << __tmp;
+    }
+
+  // Specializations for zero-sized bitsets, to avoid "unsigned comparison
+  // with zero" warnings.
+  template<>
+    inline bitset<0>&
+    bitset<0>::
+    set(size_t, bool)
+    {
+      __throw_out_of_range(__N("bitset::set"));
+      return *this;
+    }
+      
+  template<>
+    inline bitset<0>&
+    bitset<0>::
+    reset(size_t)
+    {
+      __throw_out_of_range(__N("bitset::reset"));
+      return *this;
+    }
+      
+  template<>
+    inline bitset<0>&
+    bitset<0>::
+    flip(size_t)
+    {
+      __throw_out_of_range(__N("bitset::flip"));
+      return *this;
+    }
+      
+  template<>
+    inline bool
+    bitset<0>::
+    test(size_t) const
+    {
+      __throw_out_of_range(__N("bitset::test"));
+      return false;
     }
   //@}
 
