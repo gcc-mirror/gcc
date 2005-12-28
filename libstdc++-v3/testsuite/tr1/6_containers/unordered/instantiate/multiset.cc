@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2005-2-17  Matt Austern  <austern@apple.com>
+// 2005-02-17  Matt Austern  <austern@apple.com>
 //
 // Copyright (C) 2005 Free Software Foundation, Inc.
 //
@@ -24,11 +24,9 @@
 
 #include <tr1/unordered_set>
 
-int main()
-{
-  using namespace std;
-  using namespace std::tr1;
+using namespace std;
+using namespace std::tr1;
 
-  unordered_multiset<int> s1;
-  unordered_multiset<int, hash<int>, equal_to<int>, allocator<int>, true> s2;
-}
+template class unordered_multiset<int>;
+template class unordered_multiset<int, hash<int>, equal_to<int>,
+				  allocator<int>, true>;

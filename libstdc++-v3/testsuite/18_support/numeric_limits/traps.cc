@@ -26,14 +26,14 @@
 
 template<typename T>
   void 
-  test_traps()
+  test_traps(T r = T(0))
   {
     typedef T value_type;
     volatile value_type i(5);
     volatile value_type j(0);
     
     if (!std::numeric_limits<value_type>::traps)
-      value_type r = i/j;
+      r = i / j;
   }
 
 // libstdc++/22203

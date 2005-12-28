@@ -2,7 +2,7 @@
 
 // 2004-10-20  Benjamin Kosnik  <bkoz@redhat.com>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,8 @@ test01()
 
   array_type a = { 0, 1, 2, 3, 4 };
   array_type b = { 0, 1, 2, 3 };
+
+  a = b;
 }
 
 int main()

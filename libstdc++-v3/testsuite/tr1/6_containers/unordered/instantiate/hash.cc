@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2005-2-17  Matt Austern  <austern@apple.com>
+// 2005-02-17  Matt Austern  <austern@apple.com>
 //
 // Copyright (C) 2005 Free Software Foundation, Inc.
 //
@@ -25,30 +25,27 @@
 #include <string>
 #include <tr1/functional>
 
-int main()
-{
-  using namespace std::tr1;
+using namespace std::tr1;
 
-  // Verify that we can instantiate hash for every required type.
-
-  hash<bool> hb;
-  hash<char> hc;
-  hash<signed char> hsc;
-  hash<unsigned char> huc;
-  hash<short> hs;
-  hash<int> hi;
-  hash<long> hl;
-  hash<unsigned short> hus;
-  hash<unsigned int> hui;
-  hash<unsigned long> hul;
-  hash<float> hf;
-  hash<double> hd;
-  hash<long double> hld;
-  hash<void*> hp;
-  hash<std::string> hstr;
+// Verify that we can instantiate hash for every required type.
+template class hash<bool>;
+template class hash<char>;
+template class hash<signed char>;
+template class hash<unsigned char>;
+template class hash<short>;
+template class hash<int>;
+template class hash<long>;
+template class hash<unsigned short>;
+template class hash<unsigned int>;
+template class hash<unsigned long>;
+template class hash<float>;
+template class hash<double>;
+template class hash<long double>;
+template class hash<void*>;
+template class hash<std::string>;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  hash<wchar_t> hw;
-  hash<std::wstring> hwstr;
+template class hash<wchar_t>;
+template class hash<std::wstring>;
 #endif
-}
+
