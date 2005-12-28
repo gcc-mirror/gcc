@@ -27,7 +27,7 @@
 # foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.info
 # foo.install-common, foo.install-info, foo.install-man,
-# foo.uninstall, foo.distdir,
+# foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
