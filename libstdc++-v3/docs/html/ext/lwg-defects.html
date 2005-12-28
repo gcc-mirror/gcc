@@ -1,15 +1,18 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
-<html><head><title>C++ Standard Library Defect Report List</title></head>
+<html><head><title>C++ Standard Library Defect Report List</title>
+
+<style>ins {background-color:#FFFFA0}
+del {background-color:#FFFFA0}</style></head>
 
 <body bgcolor="#ffffff" text="#000000">
 <table>
 <tbody><tr>
 <td align="left">Doc. no.</td>
-<td align="left">N1909=05-0169</td>
+<td align="left">N1927=05-0187</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">2005-10-23</td>
+<td align="left">2005-12-16</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -20,7 +23,7 @@
 <td align="left">Howard Hinnant &lt;howard.hinnant@gmail.com&gt;</td>
 </tr>
 </tbody></table>
-<h1>C++ Standard Library Defect Report List (Revision R39)</h1>
+<h1>C++ Standard Library Defect Report List (Revision R40)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
     <ul>
@@ -42,6 +45,10 @@
   document.</p>
 <h2>Revision History</h2>
 <ul>
+<li>R40: 
+2005-12-16 mid-term mailing.
+Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#529">529</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#535">535</a>.
+</li>
 <li>R39: 
 2005-10-14 post-Mont Tremblant mailing.
 Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#526">526</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#528">528</a>.
@@ -642,7 +649,7 @@ list maintainer's note: the IS is the same.]</p>
 <p>See 99-0040/N1216, October 22, 1999, by Stephen D. Clamage for the analysis
 supporting to the proposed resolution.</p>
 <hr>
-<a name="11"><h3>11.&nbsp;Bitset minor problems</h3></a><p><b>Section:</b>&nbsp;23.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.template.bitset"> [lib.template.bitset]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;22 Jan 1998</p>
+<a name="11"></a><h3><a name="11">11.&nbsp;Bitset minor problems</a></h3><p><b>Section:</b>&nbsp;23.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.template.bitset"> [lib.template.bitset]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;22 Jan 1998</p>
 <p>(1) bitset&lt;&gt;::operator[] is mentioned in the class synopsis (23.3.5), but it is
 not documented in 23.3.5.2. </p>
 
@@ -731,7 +738,7 @@ lists. </p>
 <tt>do_narrow</tt> and <tt>do_widen</tt> should be copied 
 from 22.2.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.ctype.special"> [lib.facet.ctype.special]</a>.</p>
 <hr>
-<a name="17"><h3>17.&nbsp;Bad bool parsing</h3></a><p><b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="17"></a><h3><a name="17">17.&nbsp;Bad bool parsing</a></h3><p><b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>This section describes the process of parsing a text boolean value from the input
 stream. It does not say it recognizes either of the sequences "true" or
 "false" and returns the corresponding bool value; instead, it says it recognizes
@@ -810,7 +817,7 @@ change "&amp;&amp;" to "&amp;".</p>
   <tt>err==str.failbit</tt>. --end example]</p>
 </blockquote>
 <hr>
-<a name="18"><h3>18.&nbsp;Get(...bool&amp;) omitted</h3></a><p><b>Section:</b>&nbsp;22.2.2.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.members"> [lib.facet.num.get.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="18"></a><h3><a name="18">18.&nbsp;Get(...bool&amp;) omitted</a></h3><p><b>Section:</b>&nbsp;22.2.2.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.members"> [lib.facet.num.get.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In the list of num_get&lt;&gt; non-virtual members on page 22-23, the member
 that parses bool values was omitted from the list of definitions of non-virtual
 members, though it is listed in the class definition and the corresponding
@@ -894,7 +901,7 @@ one case.  The resolution of this issue clarifies what the LWG
 believes to have been the original intent.</p>
 
 <hr>
-<a name="24"></a><h3><a name="24">24.&nbsp;"do_convert" doesn't exist</a></h3><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="24"><h3>24.&nbsp;"do_convert" doesn't exist</h3></a><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The description of codecvt&lt;&gt;::do_out and do_in mentions a
 symbol "do_convert" which is not defined in the
 standard. This is a leftover from an edit, and should be "do_in
@@ -2068,7 +2075,7 @@ character"
 </p>
 
 <p>
-In 27.6.1.3, [lib.istream.unformatted], paragraph 5.  Change the
+In 27.6.1.3, [lib.istream.unformatted], paragraph 7.  Change the
 beginning of the first sentence of the effects clause from "Extracts
 characters" to "Behaves as an unformatted input function (as described
 in 27.6.1.3, paragraph 1).  After constructing a sentry object, extracts
@@ -2246,7 +2253,7 @@ unformatted output function (as described in 27.6.2.6, paragraph 1)."
 by Judy Ward and Matt Austern.  This proposed resolution is section
 VI of that paper.</p>
 <hr>
-<a name="61"><h3>61.&nbsp;Ambiguity in iostreams exception policy</h3></a><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="61"></a><h3><a name="61">61.&nbsp;Ambiguity in iostreams exception policy</a></h3><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The introduction to the section on unformatted input (27.6.1.3)
 says that every unformatted input function catches all exceptions that
 were thrown during input, sets badbit, and then conditionally rethrows
@@ -2340,7 +2347,7 @@ elaboration of the first. </p>
   (27.4.4.3), then the caught exception is rethrown. </p>
 </blockquote>
 <hr>
-<a name="66"><h3>66.&nbsp;Strstreambuf::setbuf</h3></a><p><b>Section:</b>&nbsp;D.7.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/future.html#depr.strstreambuf.virtuals"> [depr.strstreambuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;18 Aug 1998</p>
+<a name="66"></a><h3><a name="66">66.&nbsp;Strstreambuf::setbuf</a></h3><p><b>Section:</b>&nbsp;D.7.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/future.html#depr.strstreambuf.virtuals"> [depr.strstreambuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;18 Aug 1998</p>
 <p>D.7.1.3, paragraph 19, says that strstreambuf::setbuf
 "Performs an operation that is defined separately for each class
 derived from strstreambuf". This is obviously an incorrect
@@ -2752,7 +2759,7 @@ returning eof or by throwing an exception; there are no other
 possibilities.  The proposed resolution makes it clear that these two
 functions do get characters from a streambuf.</p>
 <hr>
-<a name="92"></a><h3><a name="92">92.&nbsp;Incomplete Algorithm Requirements</a></h3><p><b>Section:</b>&nbsp;25 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<a name="92"><h3>92.&nbsp;Incomplete Algorithm Requirements</h3></a><p><b>Section:</b>&nbsp;25 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
 <p>The standard does not state, how often a function object is copied,
 called, or the order of calls inside an algorithm. This may lead to
 surprising/buggy behavior. Consider the following example: </p>
@@ -3662,7 +3669,7 @@ to return a const char* not a const charT*. </p>
 <tt>do_scan_not()</tt> to return a <tt> const
 charT*</tt>. </p>
 <hr>
-<a name="125"></a><h3><a name="125">125.&nbsp;valarray&lt;T&gt;::operator!() return type is inconsistent</a></h3><p><b>Section:</b>&nbsp;26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
+<a name="125"><h3>125.&nbsp;valarray&lt;T&gt;::operator!() return type is inconsistent</h3></a><p><b>Section:</b>&nbsp;26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
 <p>In Section 26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a> valarray&lt;T&gt;::operator!() is
 declared to return a valarray&lt;T&gt;, but in Section 26.3.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.unary"> [lib.valarray.unary]</a> it is declared to return a valarray&lt;bool&gt;. The
 latter appears to be correct. </p>
@@ -6450,7 +6457,7 @@ resolution is the one proposed by Howard.]</i></p>
   to <tt>swap</tt>.  Also, in 26.3.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.transcend"> [lib.valarray.transcend]</a> paragraph 1,
   state that the valarray transcendentals use unqualified lookup.</p>
 <hr>
-<a name="227"><h3>227.&nbsp;std::swap() should require CopyConstructible or DefaultConstructible arguments</h3></a><p><b>Section:</b>&nbsp;25.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.swap"> [lib.alg.swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;09 Apr 2000</p>
+<a name="227"></a><h3><a name="227">227.&nbsp;std::swap() should require CopyConstructible or DefaultConstructible arguments</a></h3><p><b>Section:</b>&nbsp;25.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.swap"> [lib.alg.swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;09 Apr 2000</p>
 <p>25.2.2 reads:</p>
 <blockquote>
   <p><tt>  template&lt;class T&gt; void swap(T&amp; a, T&amp; b);</tt><br>
@@ -7029,7 +7036,7 @@ minor as not to require re-review.
 ]</i></p>
 
 <hr>
-<a name="242"><h3>242.&nbsp;Side effects of function objects</h3></a><p><b>Section:</b>&nbsp;25.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.transform"> [lib.alg.transform]</a>, 26.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numeric.ops"> [lib.numeric.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;May 15 2000</p>
+<a name="242"></a><h3><a name="242">242.&nbsp;Side effects of function objects</a></h3><p><b>Section:</b>&nbsp;25.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.transform"> [lib.alg.transform]</a>, 26.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numeric.ops"> [lib.numeric.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;May 15 2000</p>
 <p>The algorithms transform(), accumulate(), inner_product(),
 partial_sum(), and adjacent_difference() require that the function
 object supplied to them shall not have any side effects.</p>
@@ -7330,7 +7337,7 @@ iterators into *this, not into x.
 <p>The original proposed resolution said that iterators and references
 would remain "valid".  The new proposed resolution clarifies what that
 means.  Note that this only applies to the case of equal allocators.
-&gt;From 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> paragraph 4, the behavior of list when
+From 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> paragraph 4, the behavior of list when
 allocators compare nonequal is outside the scope of the standard.</p>
 <hr>
 <a name="251"><h3>251.&nbsp;basic_stringbuf missing allocator_type</h3></a><p><b>Section:</b>&nbsp;27.7.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.stringbuf"> [lib.stringbuf]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jul 2000</p>
@@ -10598,7 +10605,7 @@ parameter name conveys real normative meaning.
 <hr>
 <a name="338"><h3>338.&nbsp; is whitespace allowed between `-' and a digit?</h3></a><p><b>Section:</b>&nbsp;22.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.categories"> [lib.locale.categories]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;17 Sep 2001</p>
 <p>
-&gt;From Stage 2 processing in 22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>, p8 and 9 (the
+From Stage 2 processing in 22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>, p8 and 9 (the
 original text or the text corrected by the proposed resolution of
 issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#221">221</a>) it seems clear that no whitespace is allowed
 within a number, but 22.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.numpunct"> [lib.locale.numpunct]</a>, p2, which gives the
@@ -11080,7 +11087,7 @@ key greater than k, or a.end() if such an element is not found.
 <p><i>[Curaçao: LWG reviewed PR.]</i></p>
 
 <hr>
-<a name="355"></a><h3><a name="355">355.&nbsp;Operational semantics for a.back()</a></h3><p><b>Section:</b>&nbsp;23.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Yaroslav Mironov&nbsp; <b>Date:</b>&nbsp;23 Jan 2002</p>
+<a name="355"><h3>355.&nbsp;Operational semantics for a.back()</h3></a><p><b>Section:</b>&nbsp;23.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.sequence.reqmts"> [lib.sequence.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Yaroslav Mironov&nbsp; <b>Date:</b>&nbsp;23 Jan 2002</p>
 
 <p>Table 68 "Optional Sequence Operations" in 23.1.1/12
 specifies operational semantics for "a.back()" as
@@ -11149,8 +11156,8 @@ LWG would like a new issue opened.]</i></p>
 "*tmp" to "return *tmp;"]</i></p>
 
 <hr>
-<a name="358"></a><h3><a name="358">358.&nbsp;interpreting <tt>thousands_sep</tt> after a <tt>decimal_point</tt>
-</a></h3><p><b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;12 Mar 2002</p>
+<a name="358"><h3>358.&nbsp;interpreting <tt>thousands_sep</tt> after a <tt>decimal_point</tt>
+</h3></a><p><b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;12 Mar 2002</p>
 <p>
 I don't think <tt>thousands_sep</tt> is being treated correctly after
 decimal_point has been seen. Since grouping applies only to the
@@ -11432,7 +11439,7 @@ with the following signature:</p>
 <p><b>Rationale:</b></p>
 <p>Fixes an obvious typo.</p>
 <hr>
-<a name="373"></a><h3><a name="373">373.&nbsp;Are basic_istream and basic_ostream to use (exceptions()&amp;badbit) != 0 ?</a></h3><p><b>Section:</b>&nbsp;27.6.1.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.formatted.reqmts"> [lib.istream.formatted.reqmts]</a>, 27.6.2.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.formatted.reqmts"> [lib.ostream.formatted.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Keith Baker&nbsp; <b>Date:</b>&nbsp;23 Jul 2002</p>
+<a name="373"><h3>373.&nbsp;Are basic_istream and basic_ostream to use (exceptions()&amp;badbit) != 0 ?</h3></a><p><b>Section:</b>&nbsp;27.6.1.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.formatted.reqmts"> [lib.istream.formatted.reqmts]</a>, 27.6.2.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.formatted.reqmts"> [lib.ostream.formatted.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Keith Baker&nbsp; <b>Date:</b>&nbsp;23 Jul 2002</p>
 
 <p>
 In 27.6.1.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.formatted.reqmts"> [lib.istream.formatted.reqmts]</a> and 27.6.2.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.formatted.reqmts"> [lib.ostream.formatted.reqmts]</a>
@@ -11449,7 +11456,7 @@ In 27.6.1.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams
 <p><b>Rationale:</b></p>
 <p>Fixes an obvious typo.</p>
 <hr>
-<a name="375"></a><h3><a name="375">375.&nbsp;basic_ios should be ios_base in 27.7.1.3</a></h3><p><b>Section:</b>&nbsp;27.7.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Ray Lischner&nbsp; <b>Date:</b>&nbsp;14 Aug 2002</p>
+<a name="375"><h3>375.&nbsp;basic_ios should be ios_base in 27.7.1.3</h3></a><p><b>Section:</b>&nbsp;27.7.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Ray Lischner&nbsp; <b>Date:</b>&nbsp;14 Aug 2002</p>
 <p>
 In Section 27.7.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.stringbuf.virtuals"> [lib.stringbuf.virtuals]</a>: Table 90, Table 91, and paragraph
 14 all contain references to "basic_ios::" which should be
@@ -11531,7 +11538,7 @@ heading Meaning, to "space for more than (to_limit - to) destination
 elements was needed to terminate a sequence given the value of state."
 </p>
 <hr>
-<a name="381"></a><h3><a name="381">381.&nbsp;detection of invalid mbstate_t in codecvt</a></h3><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
+<a name="381"><h3>381.&nbsp;detection of invalid mbstate_t in codecvt</h3></a><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
 <p>
 All but one codecvt member functions that take a state_type argument
 list as one of their preconditions that the state_type argument have
@@ -12743,7 +12750,7 @@ longer allowable since [pbase(), epptr()) may now contain
 uninitialized characters.  Positioning is only allowable over the
 initialized range.</p>
 <hr>
-<a name="434"><h3>434.&nbsp;bitset::to_string() hard to use</h3></a><p><b>Section:</b>&nbsp;23.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
+<a name="434"></a><h3><a name="434">434.&nbsp;bitset::to_string() hard to use</a></h3><p><b>Section:</b>&nbsp;23.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
 <p>
 It has been pointed out a number of times that the bitset to_string() member
 function template is tedious to use since callers must explicitly specify the
@@ -13788,7 +13795,7 @@ imposed by Table 37 on compare() when char is signed.
   Post-Redmond: Martin provided wording.]</i></p>
 
 <hr>
-<a name="468"><h3>468.&nbsp;unexpected consequences of ios_base::operator void*()</h3></a><p><b>Section:</b>&nbsp;27.4.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
+<a name="468"></a><h3><a name="468">468.&nbsp;unexpected consequences of ios_base::operator void*()</a></h3><p><b>Section:</b>&nbsp;27.4.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
 
 <p>The program below is required to compile but when run it typically
 produces unexpected results due to the user-defined conversion from
