@@ -241,13 +241,13 @@ __extendsfdf2 (float a1)
 
   fl1.f = a1;
 
-  if (!fl1.l)
+  dl.l.upper = SIGN (fl1.l);
+  if ((fl1.l & ~SIGNBIT) == 0)
     {
-      dl.l.upper = dl.l.lower = 0;
+      dl.l.lower = 0;
       return dl.d;
     }
 
-  dl.l.upper = SIGN (fl1.l);
   exp = EXP(fl1.l);
   mant = MANT (fl1.l) & ~HIDDEN;
   if (exp == 0)
@@ -280,8 +280,11 @@ __truncdfsf2 (double a1)
 
   dl1.d = a1;
 
-  if (!dl1.l.upper && !dl1.l.lower)
-    return 0;
+  if ((dl1.l.upper & ~SIGNBIT) == 0 && !dl1.l.lower)
+    {
+      fl.l = SIGND(dl1);
+      return fl.f;
+    }
 
   exp = EXPD (dl1) - EXCESSD + EXCESS;
 
@@ -398,10 +401,14 @@ __extenddfxf2 (double d)
   dl.d = d;
   /*printf ("dfxf in: %g\n", d);*/
 
-  if (!dl.l.upper && !dl.l.lower)
-    return 0;
-
   ldl.l.upper = SIGND (dl);
+  if ((dl.l.upper & ~SIGNBIT) == 0 && !dl.l.lower)
+    {
+      ldl.l.middle = 0;
+      ldl.l.lower = 0;
+      return ldl.ld;
+    }
+
   exp = EXPD (dl) - EXCESSD + EXCESSX;
   ldl.l.upper |= exp << 16;
   ldl.l.middle = HIDDENX;
@@ -427,14 +434,17 @@ __truncxfdf2 (long double ld)
   ldl.ld = ld;
   /*printf ("xfdf in: %s\n", dumpxf (ld));*/
 
-  if (!ldl.l.upper && !ldl.l.middle && !ldl.l.lower)
-    return 0;
+  dl.l.upper = SIGNX (ldl);
+  if ((ldl.l.upper & ~SIGNBIT) == 0 && !ldl.l.middle && !ldl.l.lower)
+    {
+      dl.l.lower = 0;
+      return dl.d;
+    }
 
   exp = EXPX (ldl) - EXCESSX + EXCESSD;
   /* ??? quick and dirty: keep `exp' sane */
   if (exp >= EXPDMASK)
     exp = EXPDMASK - 1;
-  dl.l.upper = SIGNX (ldl);
   dl.l.upper |= exp << (32 - (EXPDBITS + 1));
   /* +1-1: add one for sign bit, but take one off for explicit-integer-bit */
   dl.l.upper |= (ldl.l.middle & MANTXMASK) >> (EXPDBITS + 1 - 1);

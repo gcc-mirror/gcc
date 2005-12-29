@@ -1285,7 +1285,12 @@ Ladddf$b:
 | Return b (if a is zero)
 	movel	d2,d0
 	movel	d3,d1
-	bra	1f
+	bne	1f			| Check if b is -0
+	cmpl	IMM (0x80000000),d0
+	bne	1f
+	andl	IMM (0x80000000),d7	| Use the sign of a
+	clrl	d0
+	bra	Ladddf$ret
 Ladddf$a:
 	movel	a6@(8),d0
 	movel	a6@(12),d1
@@ -2570,15 +2575,12 @@ SYM (__addsf3):
 #endif
 	movel	a6@(8),d0	| get first operand
 	movel	a6@(12),d1	| get second operand
-	movel	d0,d6		| get d0's sign bit '
+	movel	d0,a0		| get d0's sign bit '
 	addl	d0,d0		| check and clear sign bit of a
 	beq	Laddsf$b	| if zero return second operand
-	movel	d1,d7		| save b's sign bit '
+	movel	d1,a1		| save b's sign bit '
 	addl	d1,d1		| get rid of sign bit
 	beq	Laddsf$a	| if zero return first operand
-
-	movel	d6,a0		| save signs in address registers
-	movel	d7,a1		| so we can use d6 and d7
 
 | Get the exponents and check for denormalized and/or infinity.
 
@@ -2950,7 +2952,12 @@ Laddsf$b$den:
 Laddsf$b:
 | Return b (if a is zero).
 	movel	a6@(12),d0
-	bra	1f
+	cmpl	IMM (0x80000000),d0	| Check if b is -0
+	bne	1f
+	movel	a0,d7
+	andl	IMM (0x80000000),d7	| Use the sign of a
+	clrl	d0
+	bra	Laddsf$ret
 Laddsf$a:
 | Return a (if b is zero).
 	movel	a6@(8),d0
