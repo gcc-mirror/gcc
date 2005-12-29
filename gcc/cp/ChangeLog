@@ -1,3 +1,9 @@
+2005-12-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* method.c (make_thunk): Don't set comdat_linkage here.
+	(use_thunk): Make thunk one only here, if thunk target is
+	DECL_ONE_ONLY.
+
 2005-12-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25439

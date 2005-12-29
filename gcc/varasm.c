@@ -249,10 +249,8 @@ get_section (const char *name, unsigned int flags, tree decl)
 	  /* Sanity check user variables for flag changes.  */
 	  if (decl == 0)
 	    decl = sect->named.decl;
-	  if (decl)
-	    error ("%+D causes a section type conflict", decl);
-	  else
-	    gcc_unreachable ();
+	  gcc_assert (decl);
+	  error ("%+D causes a section type conflict", decl);
 	}
     }
   return sect;
