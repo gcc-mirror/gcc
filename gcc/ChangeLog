@@ -1,3 +1,13 @@
+2005-12-29  Daniel Jacobowitz  <dan@codesourcery.com>
+	Paul Brook  <paul@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_output_pic_call): Don't use bsr.l for
+	!TARGET_68020.
+	* config/m68k/t-m68kelf (EXTRA_PARTS): Remove.
+	(EXTRA_MULTILIB_PARTS): Set.
+	* config/m68k/t-uclinux (EXTRA_PARTS): Remove.
+	(EXTRA_MULTILIB_PARTS): Set.
+
 2005-12-29  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/25572

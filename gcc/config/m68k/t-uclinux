@@ -21,4 +21,4 @@ LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
 # We don't use crtbegin.o and crtend.o
-EXTRA_PARTS=
+EXTRA_MULTILIB_PARTS=
