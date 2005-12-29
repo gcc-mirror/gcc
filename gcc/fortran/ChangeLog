@@ -1,3 +1,10 @@
+2005-12-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25532
+	* trans-types.c (copy_dt_decls_ifequal): Copy declarations for
+	components of derived type components by recursing into
+	gfc_get_derived_type.
+
 2005-12-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/25587
