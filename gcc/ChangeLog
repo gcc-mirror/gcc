@@ -1,3 +1,12 @@
+2005-12-29  Paul Brook  <paul@codesourcery.com>
+
+	* config/m68k/fpgnulib.c (__extendsfdf2): Handle negative zero.
+	(__truncdfsf2): Ditto.
+	(__extenddfxf2): Ditto.
+	(__truncxfdf2): Ditto.
+	* config/m68k/lb1sf68.asm (__addsf3): Return -0.0 for -0.0 + -0.0.
+	(__adddf3): Ditto.
+
 2005-12-29  Daniel Jacobowitz  <dan@codesourcery.com>
 	Paul Brook  <paul@codesourcery.com>
 
