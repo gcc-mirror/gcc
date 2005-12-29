@@ -1,3 +1,8 @@
+2005-12-29  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/25572
+	* config/rs6000/rs6000.c (create_TOC_reference): Set regs_ever_live.
+
 2005-12-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23171, c++/23172, c++/25417.
