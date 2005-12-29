@@ -599,6 +599,7 @@ ROUND_TO_MINUS    = 3 | round result towards minus infinity
 	.globl SYM (__divdf3)
 	.globl SYM (__negdf2)
 	.globl SYM (__cmpdf2)
+	.globl SYM (__cmpdf2_internal)
 
 	.text
 	.even
@@ -2223,8 +2224,8 @@ GREATER =  1
 LESS    = -1
 EQUAL   =  0
 
-| int __cmpdf2(double, double);
-SYM (__cmpdf2):
+| int __cmpdf2_internal(double, double, int);
+SYM (__cmpdf2_internal):
 #ifndef __mcoldfire__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@- 	| save registers
@@ -2243,15 +2244,15 @@ SYM (__cmpdf2):
 	bclr	IMM (31),d0	| and clear signs in d0 and d2
 	movel	d2,d7		|
 	bclr	IMM (31),d2	|
-	cmpl	IMM (0x7fff0000),d0 | check for a == NaN
-	bhi	Ld$inop		| if d0 > 0x7ff00000, a is NaN
+	cmpl	IMM (0x7ff00000),d0 | check for a == NaN
+	bhi	Lcmpd$inop		| if d0 > 0x7ff00000, a is NaN
 	beq	Lcmpdf$a$nf	| if equal can be INFINITY, so check d1
 	movel	d0,d4		| copy into d4 to test for zero
 	orl	d1,d4		|
 	beq	Lcmpdf$a$0	|
 Lcmpdf$0:
-	cmpl	IMM (0x7fff0000),d2 | check for b == NaN
-	bhi	Ld$inop		| if d2 > 0x7ff00000, b is NaN
+	cmpl	IMM (0x7ff00000),d2 | check for b == NaN
+	bhi	Lcmpd$inop		| if d2 > 0x7ff00000, b is NaN
 	beq	Lcmpdf$b$nf	| if equal can be INFINITY, so check d3
 	movel	d2,d4		|
 	orl	d3,d4		|
@@ -2340,6 +2341,24 @@ Lcmpdf$b$nf:
 	tstl	d3
 	bne	Ld$inop
 	bra	Lcmpdf$1
+
+Lcmpd$inop:
+	movl	a6@(24),d0
+	movew	IMM (INEXACT_RESULT+INVALID_OPERATION),d7
+	moveq	IMM (DOUBLE_FLOAT),d6
+	PICJUMP	$_exception_handler
+
+| int __cmpdf2(double, double);
+SYM (__cmpdf2):
+	link	a6,IMM (0)
+	pea	1
+	movl	a6@(20),sp@-
+	movl	a6@(16),sp@-
+	movl	a6@(12),sp@-
+	movl	a6@(8),sp@-
+	bsr	SYM (__cmpdf2_internal)
+	unlk	a6
+	rts
 
 |=============================================================================
 |                           rounding routines
@@ -2488,6 +2507,7 @@ ROUND_TO_MINUS    = 3 | round result towards minus infinity
 	.globl SYM (__divsf3)
 	.globl SYM (__negsf2)
 	.globl SYM (__cmpsf2)
+	.globl SYM (__cmpsf2_internal)
 
 | These are common routines to return and signal exceptions.	
 
@@ -3633,8 +3653,8 @@ GREATER =  1
 LESS    = -1
 EQUAL   =  0
 
-| int __cmpsf2(float, float);
-SYM (__cmpsf2):
+| int __cmpsf2_internal(float, float, int);
+SYM (__cmpsf2_internal):
 #ifndef __mcoldfire__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@- 	| save registers
@@ -3652,13 +3672,13 @@ SYM (__cmpsf2):
 	andl	IMM (0x7fffffff),d0
 	beq	Lcmpsf$a$0
 	cmpl	IMM (0x7f800000),d0
-	bhi	Lf$inop
+	bhi	Lcmpf$inop
 Lcmpsf$1:
 	movel	d1,d7
 	andl	IMM (0x7fffffff),d1
 	beq	Lcmpsf$b$0
 	cmpl	IMM (0x7f800000),d1
-	bhi	Lf$inop
+	bhi	Lcmpf$inop
 Lcmpsf$2:
 | Check the signs
 	eorl	d6,d7
@@ -3723,6 +3743,22 @@ Lcmpsf$a$0:
 Lcmpsf$b$0:
 	bclr	IMM (31),d7
 	bra	Lcmpsf$2
+
+Lcmpf$inop:
+	movl	a6@(16),d0
+	movew	IMM (INEXACT_RESULT+INVALID_OPERATION),d7
+	moveq	IMM (SINGLE_FLOAT),d6
+	PICJUMP	$_exception_handler
+
+| int __cmpsf2(float, float);
+SYM (__cmpsf2):
+	link	a6,IMM (0)
+	pea	1
+	movl	a6@(12),sp@-
+	movl	a6@(8),sp@-
+	bsr (__cmpsf2_internal)
+	unlk	a6
+	rts
 
 |=============================================================================
 |                           rounding routines
@@ -3808,6 +3844,8 @@ Lround$to$minus:
 | simply calls __cmpdf2.  It would be more efficient to give the
 | __cmpdf2 routine several names, but separating them out will make it
 | easier to write efficient versions of these routines someday.
+| If the operands recompare unordered unordered __gtdf2 and __gedf2 return -1.
+| The other routines return 1.
 
 #ifdef  L_eqdf2
 	.text
@@ -3815,11 +3853,12 @@ Lround$to$minus:
 	.globl	SYM (__eqdf2)
 SYM (__eqdf2):
 	link	a6,IMM (0)
+	pea	1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2_internal)
 	unlk	a6
 	rts
 #endif /* L_eqdf2 */
@@ -3830,11 +3869,12 @@ SYM (__eqdf2):
 	.globl	SYM (__nedf2)
 SYM (__nedf2):
 	link	a6,IMM (0)
+	pea	1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2_internal)
 	unlk	a6
 	rts
 #endif /* L_nedf2 */
@@ -3845,11 +3885,12 @@ SYM (__nedf2):
 	.globl	SYM (__gtdf2)
 SYM (__gtdf2):
 	link	a6,IMM (0)
+	pea	-1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2_internal)
 	unlk	a6
 	rts
 #endif /* L_gtdf2 */
@@ -3860,11 +3901,12 @@ SYM (__gtdf2):
 	.globl	SYM (__gedf2)
 SYM (__gedf2):
 	link	a6,IMM (0)
+	pea	-1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2_internal)
 	unlk	a6
 	rts
 #endif /* L_gedf2 */
@@ -3875,11 +3917,12 @@ SYM (__gedf2):
 	.globl	SYM (__ltdf2)
 SYM (__ltdf2):
 	link	a6,IMM (0)
+	pea	1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2_internal)
 	unlk	a6
 	rts
 #endif /* L_ltdf2 */
@@ -3890,11 +3933,12 @@ SYM (__ltdf2):
 	.globl	SYM (__ledf2)
 SYM (__ledf2):
 	link	a6,IMM (0)
+	pea	1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpdf2)
+	PICCALL	SYM (__cmpdf2_internal)
 	unlk	a6
 	rts
 #endif /* L_ledf2 */
@@ -3908,9 +3952,10 @@ SYM (__ledf2):
 	.globl	SYM (__eqsf2)
 SYM (__eqsf2):
 	link	a6,IMM (0)
+	pea	1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2_internal)
 	unlk	a6
 	rts
 #endif /* L_eqsf2 */
@@ -3921,9 +3966,10 @@ SYM (__eqsf2):
 	.globl	SYM (__nesf2)
 SYM (__nesf2):
 	link	a6,IMM (0)
+	pea	1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2_internal)
 	unlk	a6
 	rts
 #endif /* L_nesf2 */
@@ -3934,9 +3980,10 @@ SYM (__nesf2):
 	.globl	SYM (__gtsf2)
 SYM (__gtsf2):
 	link	a6,IMM (0)
+	pea	-1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2_internal)
 	unlk	a6
 	rts
 #endif /* L_gtsf2 */
@@ -3947,9 +3994,10 @@ SYM (__gtsf2):
 	.globl	SYM (__gesf2)
 SYM (__gesf2):
 	link	a6,IMM (0)
+	pea	-1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2_internal)
 	unlk	a6
 	rts
 #endif /* L_gesf2 */
@@ -3960,9 +4008,10 @@ SYM (__gesf2):
 	.globl	SYM (__ltsf2)
 SYM (__ltsf2):
 	link	a6,IMM (0)
+	pea	1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2_internal)
 	unlk	a6
 	rts
 #endif /* L_ltsf2 */
@@ -3973,9 +4022,10 @@ SYM (__ltsf2):
 	.globl	SYM (__lesf2)
 SYM (__lesf2):
 	link	a6,IMM (0)
+	pea	1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
-	PICCALL	SYM (__cmpsf2)
+	PICCALL	SYM (__cmpsf2_internal)
 	unlk	a6
 	rts
 #endif /* L_lesf2 */
