@@ -1,3 +1,9 @@
+2005-12-29  Mike Stump  <mrs@apple.com>
+
+	* doc/invoke.texi (Objective-C and Objective-C++ Dialect Options
+	-fobjc-exceptions): Don't imply this doesn't work with the GNU
+	runtime.
+
 2005-12-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* varasm.c (get_section): Use gcc_assert.
