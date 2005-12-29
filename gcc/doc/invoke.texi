@@ -1988,8 +1988,9 @@ accomplished via the comm page.
 @item -fobjc-exceptions
 @opindex fobjc-exceptions
 Enable syntactic support for structured exception handling in Objective-C,
-similar to what is offered by C++ and Java.  Currently, this option is only
-available in conjunction with the NeXT runtime on Mac OS X 10.3 and later.
+similar to what is offered by C++ and Java.  This option is
+unavailable in conjunction with the NeXT runtime on Mac OS X 10.2 and
+earlier.
 
 @smallexample
   @@try @{
