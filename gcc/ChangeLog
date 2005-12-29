@@ -1,5 +1,11 @@
 2005-12-29  Paul Brook  <paul@codesourcery.com>
 
+	* config/m68k/m68k.h (RETURN_ADDR_RTX): Define.
+	* config/m68k/m68k.c (m68k_initial_elimination_offset): Remove FIXME.
+	Include offset due to FIRST_PARM_OFFSET.
+
+2005-12-29  Paul Brook  <paul@codesourcery.com>
+
 	* config/m68k/lb1sf68.asm (__cmpdf2): Fix typo in immediate mask.
 	Create wrapper and rename body...
 	(__cmpdf2_internal): ... to this.  Return correct value for unordered

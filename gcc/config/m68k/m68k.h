@@ -890,6 +890,12 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
 
+/* After the prologue, RA is at 4(AP) in the current frame.  */
+#define RETURN_ADDR_RTX(COUNT, FRAME)					   \
+  ((COUNT) == 0								   \
+   ? gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, UNITS_PER_WORD)) \
+   : gen_rtx_MEM (Pmode, plus_constant (FRAME, UNITS_PER_WORD)))
+
 /* We must not use the DBX register numbers for the DWARF 2 CFA column
    numbers because that maps to numbers beyond FIRST_PSEUDO_REGISTER.
    Instead use the identity mapping.  */
