@@ -1,5 +1,19 @@
 2005-12-29  Paul Brook  <paul@codesourcery.com>
 
+	* config/m68k/lb1sf68.asm (__cmpdf2): Fix typo in immediate mask.
+	Create wrapper and rename body...
+	(__cmpdf2_internal): ... to this.  Return correct value for unordered
+	result.
+	(__cmpsf2): Create wrapper and rename body...
+	(__cmpsf2_internal): ... to this.  Return corerct value for unordered
+	result.
+	(__eqdf2, __nedf2, __gtdf2, __gedf2, __ltdf2, __ledf2): Use
+	__cmpdf2_internal.
+	(__eqsf2, __nesf2, __gtsf2, __gesf2, __ltsf2, __lesf2): Use
+	__cmpsf2_internal.
+
+2005-12-29  Paul Brook  <paul@codesourcery.com>
+
 	* config/m68k/fpgnulib.c (__extendsfdf2): Handle negative zero.
 	(__truncdfsf2): Ditto.
 	(__extenddfxf2): Ditto.
