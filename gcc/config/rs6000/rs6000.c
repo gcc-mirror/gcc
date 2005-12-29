@@ -13499,6 +13499,8 @@ uses_TOC (void)
 rtx
 create_TOC_reference (rtx symbol)
 {
+  if (no_new_pseudos)
+    regs_ever_live[TOC_REGISTER] = 1;
   return gen_rtx_PLUS (Pmode,
 	   gen_rtx_REG (Pmode, TOC_REGISTER),
 	     gen_rtx_CONST (Pmode,
