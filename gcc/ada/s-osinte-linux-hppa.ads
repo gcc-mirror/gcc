@@ -508,7 +508,7 @@ private
       lock : lock_array;
    end record;
    pragma Convention (C, atomic_lock_t);
-   for atomic_lock_t'Alignment use 8 * 16;
+   for atomic_lock_t'Alignment use 16;
 
    type struct_pthread_fast_lock is record
       spinlock : atomic_lock_t;
