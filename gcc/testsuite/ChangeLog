@@ -1,3 +1,10 @@
+2005-12-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25532
+	*gfortran.dg/host_used_types_1.f90: New test. Check that host
+	associated derived type components of derived types are
+	properly declared in contained procedures.
+
 2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25139
