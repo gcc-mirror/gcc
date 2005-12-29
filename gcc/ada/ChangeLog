@@ -1,3 +1,7 @@
+2005-12-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* s-osinte-linux-hppa.ads: Correct alignment of atomic_lock_t.
+
 2005-12-12  Arnaud Charlet  <charlet@adacore.com>
 
 	* Makefile.in: Remove dummy setting of GCC_FOR_TARGET, no longer
