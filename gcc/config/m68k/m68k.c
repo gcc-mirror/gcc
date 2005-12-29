@@ -1047,16 +1047,14 @@ m68k_output_pic_call(rtx dest)
 
   if (!(GET_CODE (dest) == MEM && GET_CODE (XEXP (dest, 0)) == SYMBOL_REF))
     out = "jsr %0";
-      /* We output a BSR instruction if we're using -fpic or we're building for
-       * a target that supports long branches.  If we're building -fPIC on the
-       * 68000, 68010 or ColdFire we generate one of two sequences:
-       * a shorter one that uses a GOT entry or a longer one that doesn't.
-       * We'll use the -Os command-line flag to decide which to generate.
-       * Both sequences take the same time to execute on the ColdFire.
-       */
+      /* We output a BSR instruction if we're building for a target that
+         supports long branches.  Otherwise we generate one of two sequences:
+         a shorter one that uses a GOT entry or a longer one that doesn't.
+         We use the -Os command-line flag to decide which to generate.
+         Both sequences take the same time to execute on the ColdFire.  */
   else if (TARGET_PCREL)
     out = "bsr.l %o0";
-  else if ((flag_pic == 1) || TARGET_68020)
+  else if (TARGET_68020)
 #if defined(USE_GAS)
     out = "bsr.l %0@PLTPC";
 #else
