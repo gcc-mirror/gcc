@@ -24,6 +24,6 @@ LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
 # from ../t-svr4
-EXTRA_PARTS=crtbegin.o crtend.o
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o
 # no pic for now
 #CRTSTUFF_T_CFLAGS=-fpic
