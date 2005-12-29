@@ -1,3 +1,7 @@
+2005-12-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* varasm.c (get_section): Use gcc_assert.
+
 2005-12-29  Paul Brook  <paul@codesourcery.com>
 
 	* config/m68k/m68k.h (RETURN_ADDR_RTX): Define.
