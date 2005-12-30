@@ -1,3 +1,11 @@
+2005-12-30  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/22607
+	* gfortran-dg/pure_byref_3.f90: New.
+
+	fortran/PR 25396
+	* gfortran.dg/userdef_operator_1.f90: New.
+
 2005-12-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/abi/thunk3.C: New.
