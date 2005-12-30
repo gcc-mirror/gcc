@@ -1718,6 +1718,7 @@ gfc_extend_expr (gfc_expr * e)
   e->value.function.actual = actual;
   e->value.function.esym = NULL;
   e->value.function.isym = NULL;
+  e->value.function.name = NULL;
 
   if (gfc_pure (NULL) && !gfc_pure (sym))
     {

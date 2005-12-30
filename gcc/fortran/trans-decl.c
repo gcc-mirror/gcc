@@ -1093,7 +1093,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
      sense.  */
   if (sym->attr.pure || sym->attr.elemental)
     {
-      if (sym->attr.function)
+      if (sym->attr.function && !gfc_return_by_reference (sym))
 	DECL_IS_PURE (fndecl) = 1;
       /* TODO: check if pure SUBROUTINEs don't have INTENT(OUT)
 	 parameters and don't use alternate returns (is this
