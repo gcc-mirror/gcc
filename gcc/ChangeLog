@@ -1,3 +1,9 @@
+2005-12-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR fortran/25586
+	* pa.md: Remove REG_POINTER check from REG+REG peephole2 floating-point
+	store patterns.
+
 2005-12-29  Mike Stump  <mrs@apple.com>
 
 	* doc/invoke.texi (Objective-C and Objective-C++ Dialect Options
