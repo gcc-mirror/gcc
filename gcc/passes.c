@@ -554,6 +554,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_cse_reciprocals);
   NEXT_PASS (pass_split_crit_edges);
   NEXT_PASS (pass_pre);
+  NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_sink_code);
   NEXT_PASS (pass_tree_loop);
   NEXT_PASS (pass_reassoc);
