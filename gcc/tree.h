@@ -2814,6 +2814,9 @@ struct tree_statement_list
 #define VALUE_HANDLE_EXPR_SET(NODE)	\
   (VALUE_HANDLE_CHECK (NODE)->value_handle.expr_set)
 
+#define VALUE_HANDLE_VUSES(NODE)        \
+  (VALUE_HANDLE_CHECK (NODE)->value_handle.vuses)
+
 /* Defined and used in tree-ssa-pre.c.  */
 struct value_set;
 
@@ -2828,6 +2831,9 @@ struct tree_value_handle GTY(())
      conveniently dense form starting at 0, so that we can make
      bitmaps of value handles.  */
   unsigned int id;
+
+  /* Set of virtual uses represented by this handle.  */
+  VEC (tree, gc) *vuses;
 };
 
 /* Define the overall contents of a tree node.

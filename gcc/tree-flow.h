@@ -776,10 +776,14 @@ void print_value_expressions (FILE *, tree);
 /* In tree-vn.c  */
 bool expressions_equal_p (tree, tree);
 tree get_value_handle (tree);
-hashval_t vn_compute (tree, hashval_t, tree);
+hashval_t vn_compute (tree, hashval_t);
+void sort_vuses (VEC (tree, gc) *);
 tree vn_lookup_or_add (tree, tree);
-void vn_add (tree, tree, tree);
+tree vn_lookup_or_add_with_vuses (tree, VEC (tree, gc) *);
+void vn_add (tree, tree);
+void vn_add_with_vuses (tree, tree, VEC (tree, gc) *);
 tree vn_lookup (tree, tree);
+tree vn_lookup_with_vuses (tree, VEC (tree, gc) *);
 void vn_init (void);
 void vn_delete (void);
 

@@ -1,3 +1,95 @@
+2005-12-29  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree.h (VALUE_HANDLE_VUSES): New.
+	(struct tree_value_handle): Add vuses.
+
+	* tree-vn.c (struct val_expr_pair_d): Remove stmt, add vuses.
+	(vn_compute): Remove stmt argument.
+	Don't use vuses in hash value computation.
+	(val_expr_pair_eq): Compare vuse lists.
+	(copy_vuses_from_stmt): New function.
+	(shared_vuses_from_stmt): Ditto.
+	(vn_add): Rewrite in terms of vn_add_with_vuses.
+	(vn_add_with_vuses): New function.
+	(vn_lookup): Rewrite in terms of vn_lookup_with_vuses.
+	(vn_lookup_with_vuses): New function.
+	(vuses_compare): New function.
+	(print_creation_to_file): Ditto.
+	(vn_lookup_or_add): Rewrite to handle vuses.
+	(sort_vuses): New function.
+	(vn_lookup_or_add_with_vuses): Ditto.
+	(vn_init): Initialize shared_lookup_vuses.
+	(vn_delete): Free shared_lookup_vuses.
+
+	* tree-ssa-pre.c: Update todo list.
+	(bb_value_sets_t): Add rvuse_in, rvuse_out, rvuse_gen, and
+	rvuse_kill.
+	(RVUSE_IN): New macro.
+	(RVUSE_GEN): Ditto.
+	(RVUSE_KILL): Ditto.
+	(RVUSE_OUT): Ditto.
+	(modify_expr_node_pool): New function.
+	(pretemp): New.
+	(storetemp): Ditto.
+	(mergephitemp): Ditto.
+	(prephitemp): Ditto.
+	(struct expr_pred_trans_d): Add vuses member.
+	(expr_pred_trans_eq): Compare vuses.
+	(phi_trans_lookup): Add vuses argument.
+	(phi_trans_add): Ditto.
+	(translate_vuses_through_block): New function.
+	(phi_translate): Use vuses to ask about those expressions that can
+	have vuses.
+	Properly translate virtual uses through phis, and use
+	vn_lookup_or_add_with vuses.  Handle tcc_reference.
+	(phi_translate_set): Don't add pointless translations to the
+	cache.
+	(get_representative): New function.
+	(vuses_dies_in_block_x): Ditto.
+	(valid_in_set): Add block argument.  Check virtual use validity.
+	(clean): Add block argument. Update call to valid_in_set
+	(compute_antic_aux): Update call to clean.
+	(dump_bitmap_of_names): New function.
+	(compute_vuse_representatives): Ditto.
+	(compute_rvuse): Ditto.
+	(can_value_number_call): Modified to accept calls with vuses.
+	(can_value_number_operation): New function.
+	(can_PRE_operation): Ditto.
+	(need_creation): New vector of stores that may need creation.
+	(find_or_generate_expression): use can_PRE_operation.
+	(create_expression_by_pieces): Handle INDIRECT_REF.
+	Only create one temp until we have to change types.
+	Mark new vars for renaming.
+	(insert_into_preds_of_block): Ignore loopiness of loads.
+	Use can_PRE_operation.
+	Only create one temp until we have to chnge types.
+	(insert_aux): Use can_PRE_operation.
+	Don't pass name to insert_into_preds_of_block.
+	(insert_extra_phis): Only use one temp until we have to change
+	types.
+	(poolify_tree): New function.
+	(modify_expr_template): New var.
+	(poolify_modify_expr): New function.
+	(insert_fake_stores): Ditto.
+	(realify_fake_stores): Ditto.
+	(compute_avail): Use can_value_number_operation.
+	(mark_operand_necessary): Return NULL for non-SSA names.
+	(remove_dead_inserted_code): Update comment.
+	(init_pre): Initialize pretemp, need_creation, storetemp,
+	mergephitemp, prephitemp.
+	Create modify_expr_node_pool.
+	(fini_pre): Free modify_expr_node_pool and need_creation array.
+	(execute_pre): Call insert_fake_stores, compute_rvuse, and
+	realify_fake_stores. 
+	* tree-flow.h (vn_compute): Fix prototype.
+	(vn_add): Ditto.
+	(vn_lookup): Ditto.
+	(sort_vuses): New.
+	(vn_lookup_or_add_with_vuses): Ditto.
+	(vn_add_with_vuses): Ditto.
+	(vn_lookup_with_vuses): Ditto.
+	* passes.c (pass_may_alias): Add.
+
 2005-12-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.h (struct c_pretty_print_info): Add new member
