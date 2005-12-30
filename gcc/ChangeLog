@@ -1,3 +1,10 @@
+2005-12-30  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-outof-ssa.c (_elim_graph): Change the type of STACK to
+	VEC(int,heap).
+	(new_elim_graph, delete_elim_graph, elim_forward,
+	eliminate_phi): Use the VEC API on STACK.
+
 2005-12-29  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree.h (VALUE_HANDLE_VUSES): New.
