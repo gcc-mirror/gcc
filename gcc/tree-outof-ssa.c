@@ -91,7 +91,7 @@ typedef struct _elim_graph {
   sbitmap visited;
 
   /* Stack for visited nodes.  */
-  varray_type stack;
+  VEC(int,heap) *stack;
   
   /* The variable partition map.  */
   var_map map;
@@ -224,7 +224,7 @@ new_elim_graph (int size)
   g->nodes = VEC_alloc (tree, heap, 30);
   g->const_copies = VEC_alloc (tree, heap, 20);
   g->edge_list = VEC_alloc (int, heap, 20);
-  VARRAY_INT_INIT (g->stack, 30, " Elimination Stack");
+  g->stack = VEC_alloc (int, heap, 30);
   
   g->visited = sbitmap_alloc (size);
 
@@ -248,6 +248,7 @@ static inline void
 delete_elim_graph (elim_graph g)
 {
   sbitmap_free (g->visited);
+  VEC_free (int, heap, g->stack);
   VEC_free (int, heap, g->edge_list);
   VEC_free (tree, heap, g->const_copies);
   VEC_free (tree, heap, g->nodes);
@@ -418,7 +419,7 @@ elim_forward (elim_graph g, int T)
       if (!TEST_BIT (g->visited, S))
         elim_forward (g, S);
     });
-  VARRAY_PUSH_INT (g->stack, T);
+  VEC_safe_push (int, heap, g->stack, T);
 }
 
 
@@ -514,7 +515,7 @@ eliminate_phi (edge e, elim_graph g)
       tree var;
 
       sbitmap_zero (g->visited);
-      VARRAY_POP_ALL (g->stack);
+      VEC_truncate (int, g->stack, 0);
 
       for (x = 0; VEC_iterate (tree, g->nodes, x, var); x++)
         {
@@ -524,10 +525,9 @@ eliminate_phi (edge e, elim_graph g)
 	}
        
       sbitmap_zero (g->visited);
-      while (VARRAY_ACTIVE_SIZE (g->stack) > 0)
+      while (VEC_length (int, g->stack) > 0)
 	{
-	  x = VARRAY_TOP_INT (g->stack);
-	  VARRAY_POP (g->stack);
+	  x = VEC_pop (int, g->stack);
 	  if (!TEST_BIT (g->visited, x))
 	    elim_create (g, x);
 	}
