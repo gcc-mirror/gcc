@@ -1,3 +1,14 @@
+2005-12-30  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/22607
+	* trans-decl.c(gfc_get_extern_function_decl): Don't set
+	DECL_IS_PURE (fndecl) = 1 for return-by-reference
+	functions.
+
+	fortran/PR 25396
+	* interface.c (gfc_extend_expr): Initialize
+	e->value.function.name to NULL.
+
 2005-12-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25532
