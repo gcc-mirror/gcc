@@ -1,3 +1,10 @@
+2005-12-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (struct c_pretty_print_info): Add new member
+	"constant". 
+	(pp_constant): New macro.
+	* c-pretty-print.c (pp_c_pretty_printer_init): Set pp->constant.
+
 2005-12-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR fortran/25586

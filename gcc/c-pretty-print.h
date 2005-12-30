@@ -80,6 +80,7 @@ struct c_pretty_print_info
 
   c_pretty_print_fn statement;
 
+  c_pretty_print_fn constant;
   c_pretty_print_fn id_expression;
   c_pretty_print_fn primary_expression;
   c_pretty_print_fn postfix_expression;
@@ -129,6 +130,8 @@ struct c_pretty_print_info
 #define pp_statement(PPI, S)                      \
   pp_c_base (PPI)->statement (pp_c_base (PPI), S)
 
+#define pp_constant(PP, E) \
+  pp_c_base (PP)->constant (pp_c_base (PP), E)
 #define pp_id_expression(PP, E)  \
   pp_c_base (PP)->id_expression (pp_c_base (PP), E)
 #define pp_primary_expression(PPI, E)             \

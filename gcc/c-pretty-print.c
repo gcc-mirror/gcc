@@ -2001,6 +2001,7 @@ pp_c_pretty_printer_init (c_pretty_printer *pp)
 
   pp->statement                 = pp_c_statement;
 
+  pp->constant                  = pp_c_constant;
   pp->id_expression             = pp_c_id_expression;
   pp->primary_expression        = pp_c_primary_expression;
   pp->postfix_expression        = pp_c_postfix_expression;
