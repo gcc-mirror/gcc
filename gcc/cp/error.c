@@ -1318,17 +1318,10 @@ dump_expr (tree t, int flags)
       dump_decl (t, (flags & ~TFF_DECL_SPECIFIERS) | TFF_NO_FUNCTION_ARGUMENTS);
       break;
 
-    case STRING_CST:
-      if (PAREN_STRING_LITERAL_P (t))
-	pp_cxx_left_paren (cxx_pp);
-      pp_c_constant (pp_c_base (cxx_pp), t);
-      if (PAREN_STRING_LITERAL_P (t))
-	pp_cxx_right_paren (cxx_pp);
-      break;
-
     case INTEGER_CST:
     case REAL_CST:
-       pp_c_constant (pp_c_base (cxx_pp), t);
+    case STRING_CST:
+      pp_constant (cxx_pp, t);
       break;
 
     case THROW_EXPR:
