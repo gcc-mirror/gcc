@@ -1,3 +1,8 @@
+2005-12-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/25213
+	* gcc.dg/pr23098.c: Backport testcase from mainline.
+
 2005-12-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.dg/rtti/tinfo1.C: Scan for ".global" also.

@@ -1639,6 +1639,7 @@ extern rtx simplify_gen_subreg (enum machine_mode, rtx, enum machine_mode,
 extern rtx simplify_replace_rtx (rtx, rtx, rtx);
 extern rtx simplify_rtx (rtx);
 extern rtx avoid_constant_pool_reference (rtx);
+extern bool constant_pool_reference_p (rtx);
 
 /* In function.c  */
 extern rtx gen_mem_addressof (rtx, tree, int);
