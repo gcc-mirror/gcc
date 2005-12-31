@@ -3086,6 +3086,19 @@ compute_avail (void)
 	}
     }
 
+  /* Likewise for the static chain decl. */
+  if (cfun->static_chain_decl)
+    {
+      param = cfun->static_chain_decl;
+      if (default_def (param) != NULL)
+        {
+          tree def = default_def (param);
+          vn_lookup_or_add (def, NULL);
+          bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR), def);
+          bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR), def);
+        }
+    }
+
   /* Allocate the worklist.  */
   worklist = XNEWVEC (basic_block, n_basic_blocks);
 

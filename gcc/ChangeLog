@@ -1,3 +1,9 @@
+2005-12-31  Andrew Pinski  <pinskia@ohysics.uc.edu>
+
+	PR tree-opt/25612
+	* tree-ssa-pre.c (compute_avail): Treat the static chain decl as a
+	parameter and pretend that it is defined in the entry basic block.
+
 2005-12-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-outof-ssa.c (_elim_graph): Change the type of STACK to
