@@ -1,3 +1,20 @@
+2005-12-31  Steven G. Kargl <kargls@comcast.net>
+ 
+	PR fortran/25106
+	PR fortran/25055
+	* io.c (match_dt_format): Remove second arg in gfc_match_st_label.
+	* match.c (gfc_match_small_literal_int): Add cnt argument;
+	(gfc_match_st_label,gfc_match_stopcode): Account for cnt argument.
+	(gfc_match_st_label): Remove allow_zero (second argument), and use
+	cnt for errors.
+	(gfc_match_do,gfc_match_goto):  Remove second arg in gfc_match_st_label
+	* match.h (gfc_match_small_literal_int,gfc_match_st_label):
+	Update prototypes.
+	* decl.c (match_char_length,gfc_match_old_kind_spec): Account for cnt.
+	* parse.c (next_free): Account for cnt; Remove second arg in
+	gfc_match_st_label
+	* primary.c (match_kind_param): Ditto.
+
 2005-12-30  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/22607

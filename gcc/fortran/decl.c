@@ -508,14 +508,15 @@ char_len_param_value (gfc_expr ** expr)
 static match
 match_char_length (gfc_expr ** expr)
 {
-  int length;
+  int length, cnt;
   match m;
 
   m = gfc_match_char ('*');
   if (m != MATCH_YES)
     return m;
 
-  m = gfc_match_small_literal_int (&length);
+  /* cnt is unused, here.  */
+  m = gfc_match_small_literal_int (&length, &cnt);
   if (m == MATCH_ERROR)
     return m;
 
@@ -1279,12 +1280,13 @@ match
 gfc_match_old_kind_spec (gfc_typespec * ts)
 {
   match m;
-  int original_kind;
+  int original_kind, cnt;
 
   if (gfc_match_char ('*') != MATCH_YES)
     return MATCH_NO;
 
-  m = gfc_match_small_literal_int (&ts->kind);
+  /* cnt is unused, here.  */
+  m = gfc_match_small_literal_int (&ts->kind, &cnt);
   if (m != MATCH_YES)
     return MATCH_ERROR;
 

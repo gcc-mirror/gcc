@@ -40,8 +40,10 @@ match_kind_param (int *kind)
   gfc_symbol *sym;
   const char *p;
   match m;
+  int cnt;
 
-  m = gfc_match_small_literal_int (kind);
+  /* cnt is unused, here.  */
+  m = gfc_match_small_literal_int (kind, &cnt);
   if (m != MATCH_NO)
     return m;
 
@@ -1474,7 +1476,7 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist ** argp)
 
       if (sub_flag && gfc_match_char ('*') == MATCH_YES)
 	{
-	  m = gfc_match_st_label (&label, 0);
+	  m = gfc_match_st_label (&label);
 	  if (m == MATCH_NO)
 	    gfc_error ("Expected alternate return label at %C");
 	  if (m != MATCH_YES)

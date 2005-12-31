@@ -141,11 +141,11 @@ gfc_match_eos (void)
    old-style character length specifications.  */
 
 match
-gfc_match_small_literal_int (int *value)
+gfc_match_small_literal_int (int *value, int *cnt)
 {
   locus old_loc;
   char c;
-  int i;
+  int i, j;
 
   old_loc = gfc_current_locus;
 
@@ -159,6 +159,7 @@ gfc_match_small_literal_int (int *value)
     }
 
   i = c - '0';
+  j = 1;
 
   for (;;)
     {
@@ -169,6 +170,7 @@ gfc_match_small_literal_int (int *value)
 	break;
 
       i = 10 * i + c - '0';
+      j++;
 
       if (i > 99999999)
 	{
@@ -180,6 +182,7 @@ gfc_match_small_literal_int (int *value)
   gfc_current_locus = old_loc;
 
   *value = i;
+  *cnt = j;
   return MATCH_YES;
 }
 
@@ -217,25 +220,35 @@ gfc_match_small_int (int *value)
    do most of the work.  */
 
 match
-gfc_match_st_label (gfc_st_label ** label, int allow_zero)
+gfc_match_st_label (gfc_st_label ** label)
 {
   locus old_loc;
   match m;
-  int i;
+  int i, cnt;
 
   old_loc = gfc_current_locus;
 
-  m = gfc_match_small_literal_int (&i);
+  m = gfc_match_small_literal_int (&i, &cnt);
   if (m != MATCH_YES)
     return m;
 
-  if (((i == 0) && allow_zero) || i <= 99999)
+  if (cnt > 5)
     {
-      *label = gfc_get_st_label (i);
-      return MATCH_YES;
+      gfc_error ("Too many digits in statement label at %C");
+      goto cleanup;
     }
 
-  gfc_error ("Statement label at %C is out of range");
+  if (i == 0)
+    {
+      gfc_error ("Statement label at %C is zero");
+      goto cleanup;
+    }
+
+  *label = gfc_get_st_label (i);
+  return MATCH_YES;
+
+cleanup:
+
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -690,7 +703,7 @@ loop:
 
 	case 'l':
 	  label = va_arg (argp, gfc_st_label **);
-	  n = gfc_match_st_label (label, 0);
+	  n = gfc_match_st_label (label);
 	  if (n != MATCH_YES)
 	    {
 	      m = n;
@@ -1242,7 +1255,7 @@ gfc_match_do (void)
   if (gfc_match (" do") != MATCH_YES)
     return MATCH_NO;
 
-  m = gfc_match_st_label (&label, 0);
+  m = gfc_match_st_label (&label);
   if (m == MATCH_ERROR)
     goto cleanup;
 
@@ -1275,7 +1288,7 @@ gfc_match_do (void)
   gfc_match_label ();		/* This won't error */
   gfc_match (" do ");		/* This will work */
 
-  gfc_match_st_label (&label, 0);	/* Can't error out */
+  gfc_match_st_label (&label);	/* Can't error out */
   gfc_match_char (',');		/* Optional comma */
 
   m = gfc_match_iterator (&iter, 0);
@@ -1404,19 +1417,20 @@ gfc_match_stopcode (gfc_statement st)
   int stop_code;
   gfc_expr *e;
   match m;
+  int cnt;
 
   stop_code = -1;
   e = NULL;
 
   if (gfc_match_eos () != MATCH_YES)
     {
-      m = gfc_match_small_literal_int (&stop_code);
+      m = gfc_match_small_literal_int (&stop_code, &cnt);
       if (m == MATCH_ERROR)
         goto cleanup;
 
-      if (m == MATCH_YES && stop_code > 99999)
+      if (m == MATCH_YES && cnt > 5)
         {
-          gfc_error ("STOP code out of range at %C");
+          gfc_error ("Too many digits in STOP code at %C");
           goto cleanup;
         }
 
@@ -1585,7 +1599,7 @@ gfc_match_goto (void)
 
       do
 	{
-	  m = gfc_match_st_label (&label, 0);
+	  m = gfc_match_st_label (&label);
 	  if (m != MATCH_YES)
 	    goto syntax;
 
@@ -1631,7 +1645,7 @@ gfc_match_goto (void)
 
   do
     {
-      m = gfc_match_st_label (&label, 0);
+      m = gfc_match_st_label (&label);
       if (m != MATCH_YES)
 	goto syntax;
 

@@ -40,8 +40,8 @@ extern gfc_st_label *gfc_statement_label;
 /* Generic match subroutines */
 match gfc_match_space (void);
 match gfc_match_eos (void);
-match gfc_match_small_literal_int (int *);
-match gfc_match_st_label (gfc_st_label **, int);
+match gfc_match_small_literal_int (int *, int *);
+match gfc_match_st_label (gfc_st_label **);
 match gfc_match_label (void);
 match gfc_match_small_int (int *);
 int gfc_match_strings (mstring *);
