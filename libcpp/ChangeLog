@@ -1,3 +1,10 @@
+2006-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/25294
+	* directives.c (do_pragma): If pragma line ends with multi-line
+	block comment, end the saved deferred pragma string before that
+	comment.  Handle embedded '\0' chars on the pragma line.
+
 2005-12-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23333
