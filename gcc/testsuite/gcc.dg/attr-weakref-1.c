@@ -1,5 +1,9 @@
 // { dg-do run }
 // { dg-require-weak "" }
+// This test requires support for undefined weak symbols.  This support
+// is not available on hppa*-*-hpux*.  The test is skipped rather than
+// xfailed to suppress the warning that would otherwise arise.
+// { dg-skip-if "" { "hppa*-*-hpux*" } "*" { "" } }
 // { dg-options "-O2" }
 // { dg-additional-sources "attr-weakref-1a.c" }
 
