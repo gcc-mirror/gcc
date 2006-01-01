@@ -1,3 +1,15 @@
+2005-01-01  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc.dg/tree-ssa/loadpre1.c: New;
+	* gcc.dg/tree-ssa/loadpre2.c: New;
+	* gcc.dg/tree-ssa/loadpre3.c: New;
+	* gcc.dg/tree-ssa/loadpre4.c: New;
+	* gcc.dg/tree-ssa/loadpre5.c: New;
+	* gcc.dg/tree-ssa/loadpre6.c: New;
+	* gcc.dg/tree-ssa/loadpre7.c: New;
+	* gcc.dg/tree-ssa/loadpre8.c: New;
+	* gcc.dg/tree-ssa/loadpre9.c: New;
+
 2006-01-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/abi/thunk3.C: Adjust regexp to be 64bit safe.
