@@ -1,3 +1,10 @@
+2005-12-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25594
+	PR libgfortran/25419
+	* io/list_read.c (list_formatted_read_scalar): Test for comma to return
+	a null value (default). Revert patch of 25419 on 2005-12-28.  
+
 2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25139
