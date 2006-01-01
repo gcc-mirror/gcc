@@ -1,3 +1,13 @@
+2005-12-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25139
+	* io/unix.c (fd_truncate): Set s->active to zero.
+	PR libgfortran/25510
+	* libgfortran.h: Add ERROR_INTERNAL and ERROR_INTERNAL_UNIT.
+	* runtime/error.c (translate_error): Add messages for new errors.
+	* io/list_read.c (next_char): Use new errors.
+	* io/transfer.c (next_record_r) (next_record_w): Use new errors.
+
 2005-12-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25307
