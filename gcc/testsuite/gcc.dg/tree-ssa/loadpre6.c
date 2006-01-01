@@ -50,7 +50,7 @@ remove_useless_vars (tree *unexpanded_var_list, int dump_file)
       cell = &((*cell)->common.chain);
     }
 }
-extern void *malloc (int) __attribute__ ((malloc));
+extern void *malloc (__SIZE_TYPE__) __attribute__ ((malloc));
 
 int
 main (void)
