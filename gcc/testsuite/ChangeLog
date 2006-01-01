@@ -1,3 +1,8 @@
+2006-01-01  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/tree-ssa/loadpre6.c: Fix prototype of malloc to be
+	portable.
+
 2006-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/25294
