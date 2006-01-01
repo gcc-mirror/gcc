@@ -1,4 +1,4 @@
-// { dg-final { scan-assembler ".weak\t_ZThn4_N7Derived3FooEv" } }
+// { dg-final { scan-assembler ".weak\t_ZThn._N7Derived3FooEv" } }
 
 struct Base 
 {
