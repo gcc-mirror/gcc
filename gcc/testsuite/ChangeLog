@@ -1,3 +1,8 @@
+2006-01-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/abi/thunk3.C: Adjust regexp to be 64bit safe.
+	* g++.dg/abi/thunk4.C: Likewise.
+
 2006-01-01  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/tree-ssa/loadpre6.c: Fix prototype of malloc to be
