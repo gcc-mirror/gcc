@@ -1,6 +1,7 @@
 /* CPP Library. (Directive handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1280,15 +1281,59 @@ do_pragma (cpp_reader *pfile)
 	  /* Squirrel away the pragma text.  Pragmas are
 	     newline-terminated. */
 	  const uchar *line_end;
-	  uchar *s;
+	  uchar *s, c, cc;
 	  cpp_string body;
 	  cpp_token *ptok;
 
-	  line_end = ustrchr (line_start, '\n');
+	  for (line_end = line_start; (c = *line_end) != '\n'; line_end++)
+	    if (c == '"' || c == '\'')
+	      {
+		/* Skip over string literal.  */
+		do
+		  {
+		    cc = *++line_end;
+		    if (cc == '\\' && line_end[1] != '\n')
+		      line_end++;
+		    else if (cc == '\n')
+		      {
+			line_end--;
+			break;
+		      }
+		  }
+		while (cc != c);
+	      }
+	    else if (c == '/')
+	      {
+		if (line_end[1] == '*')
+		  {
+		    /* Skip over C block comment, unless it is multi-line.
+		       When encountering multi-line block comment, terminate
+		       the pragma token right before that block comment.  */
+		    const uchar *le = line_end + 2;
+		    while (*le != '\n')
+		      if (*le++ == '*' && *le == '/')
+			{
+			  line_end = le;
+			  break;
+			}
+		    if (line_end < le)
+		      break;
+		  }
+		else if (line_end[1] == '/'
+			 && (CPP_OPTION (pfile, cplusplus_comments)
+			     || cpp_in_system_header (pfile)))
+		  {
+		    line_end += 2;
+		    while (*line_end != '\n')
+		      line_end++;
+		    break;
+		  }
+	      }
 
 	  body.len = (line_end - line_start) + 1;
 	  s = _cpp_unaligned_alloc (pfile, body.len + 1);
-	  memcpy (s, line_start, body.len);
+	  memcpy (s, line_start, body.len - 1);
+	  s[body.len - 1] = '\n';
 	  s[body.len] = '\0';
 	  body.text = s;
 
