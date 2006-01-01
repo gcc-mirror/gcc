@@ -1,0 +1,60 @@
+2002-12-29  Paul Brook  <paul@nowt.org>
+
+	* intrinsics/reshape.*: New files.
+	* gcc_config.patch: Update to new GCC configure system.
+
+2002-10-10  Paul Brook  <paul@nowt.org>
+
+	* intrinsics/size.c: New file.
+	* intrinsics/shape.m4: New file.
+	* Makefile.am: Add above files.
+
+2002-10-02  Paul Brook  <paul@nowt.org>
+
+	* fmain.c (main): Move here.
+	* libgfor.c: From here.
+	* libgfor.h (gfor_init, gfor_runtime_cleanup): Declare.
+	* Makefile.am: Build libgforbegin.
+	* gcc_config.patch: Remove stray -march=athlon.
+	* dotprodl.m4: Fix use of L8_TO_L4 macro.
+	* ifunction.m4: Move variable declarations to allow compilation with
+	gcc < 3.0
+	* specific.m4, specific4.m4: Fix typo typecode->type_code.
+	* README: Document use of patch -p1.
+
+2002-09-12  Paul Brook  <paul@nowt.org>
+
+	* math/*: Add complex math library functions.
+	* intrinsics/specific(2).m4: Generate Specific intrinsic functions.
+	* Makefile.am: Add details for above.
+	* configure.in: Use AC_PROG_F95.  Test for the presence of csin.
+
+2002-09-09  Paul Brook  <paul@nowt.org>
+
+	* libgfor.c (determine_endianness): Use an array rather than a struct.
+	* intrinsics/dotprod*, matmul*: Implement DOT_PRODUCT and MATMUL.
+
+2002-09-09  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* libgfor.c: Add fatal signal handler.
+	Romove superfluous abort() calls.
+
+2002-09-07  Paul Brook <paul@nowt.org>
+
+	* Makefile.am, intrinsics: Major rewrite.
+
+2002-09-02  Paul Brook <paul@nowt.org>
+
+	* Makefile.am: Added -I$(srcdir) to m4 rule.
+
+2002-08-30  Paul Brook <paul@nowt.org>
+
+	* io/*: Integrated libgforio.
+	* Makefile.am, configure.in: Make compatable with GCC. Build code for
+	intrinsics in the intrisics directory.
+	* intrinsics/intrinsics.m4: Move here. Strip directories from the
+	filename. Add 'and' and 'all' intrinsics.
+
+2002-08-17  Paul Brook <paul@nowt.org>
+
+	* ALL: First release as more than just a single file
