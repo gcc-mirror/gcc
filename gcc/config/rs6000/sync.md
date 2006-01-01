@@ -86,6 +86,52 @@
   DONE;
 })
 
+(define_expand "sync_compare_and_swaphi"
+  [(match_operand:HI 0 "gpc_reg_operand" "")
+   (match_operand:HI 1 "memory_operand" "")
+   (match_operand:HI 2 "gpc_reg_operand" "")
+   (match_operand:HI 3 "gpc_reg_operand" "")]
+  "TARGET_POWERPC"
+{
+  rs6000_expand_compare_and_swapqhi (operands[0], operands[1],
+				     operands[2], operands[3]);
+  DONE;
+})
+
+(define_expand "sync_compare_and_swapqi"
+  [(match_operand:QI 0 "gpc_reg_operand" "")
+   (match_operand:QI 1 "memory_operand" "")
+   (match_operand:QI 2 "gpc_reg_operand" "")
+   (match_operand:QI 3 "gpc_reg_operand" "")]
+  "TARGET_POWERPC"
+{
+  rs6000_expand_compare_and_swapqhi (operands[0], operands[1],
+				     operands[2], operands[3]);
+  DONE;
+})
+
+(define_insn_and_split "sync_compare_and_swapqhi_internal"
+  [(set (match_operand:SI 0 "gpc_reg_operand" "=&r")
+	(match_operand:SI 4 "memory_operand" "+Z"))
+   (set (match_dup 4)
+        (unspec:SI
+          [(match_operand:SI 1 "gpc_reg_operand" "r")
+           (match_operand:SI 2 "gpc_reg_operand" "r")
+           (match_operand:SI 3 "gpc_reg_operand" "r")]
+          UNSPEC_CMPXCHG))
+   (clobber (match_scratch:SI 5 "=&r"))
+   (clobber (match_scratch:CC 6 "=&x"))]
+  "TARGET_POWERPC"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rs6000_split_compare_and_swapqhi (operands[0], operands[1],
+				    operands[2], operands[3], operands[4],
+				    operands[5]);
+  DONE;
+})
+
 (define_insn_and_split "sync_lock_test_and_set<mode>"
   [(set (match_operand:GPR 0 "gpc_reg_operand" "=&r")
 	(match_operand:GPR 1 "memory_operand" "+Z"))
