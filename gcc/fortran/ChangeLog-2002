@@ -1,0 +1,333 @@
+2002-12-29  Paul Brook  <paul@nowt.org>
+
+	* trans-array.c: Document calling convention for arrays.
+
+2002-12-19  Paul Brook  <paul@nowt.org>
+
+	* trans-intrinsic.c (g95_conv_intrsinsic_function): Remove incorrect
+	assertion. Remove intrinsic subroutine G95_ISYM_* cases. Always pass
+	optional parameters for some intrinsics.
+	(g95_is_intrinsic_libcall): Add G95_ISYM_RESHAPE.
+	* trans-expr.c (g95_conv_function_call): Pass NULL for absent
+	optional parameters.
+	* trans.h (g95_se): Add ignore_optional flag.
+
+2002-12-15  Paul Brook  <paul@nowt.org>
+
+	* trans-array.c (g95_conv_array_parameter): Fix partial rank sections.
+	* trans-decl.c (g95_generate_function_code): Use TDI_original.
+
+2002-12-14  Paul Brook  <paul@nowt.org>
+
+	* trans-stmt.c (g95_trans_call): Use resolved symbol name.
+
+2002-12-12  Paul Brook  <paul@nowt.org>
+
+	* trans-array.c (g95_trans_array_constructor_subarray): Fully
+	initialize the scalarizer.
+	(various): Update to new format of g95_expr->value.constructor.
+
+2002-12-08  Paul Brook  <paul@nowt.org>
+
+	* trans-array.c (g95_put_offset_into_var): New function.
+	(g95_trans_array_constructor_subarray): New function.
+	(g95_trans_array_constructor_value): Use it.
+	(g95_array_cons_size): Don't abort() on array components.
+
+2002-12-08  Paul Brook  <paul@nowt.org>
+
+	* Make-lang.in (F95_ADDITIONAL_OBJS): Remove tree-dchain.o.
+	* support.c: Update #includes.
+	(statement_code_p, c_size_in_bytes, s_size_type_node): Remove.
+	* trans-array.c: Update #includes.
+	* trans.c: Ditto.
+	* trans-const.c: Ditto.
+	* trans-io.c: Ditto.
+	* trans-types.c: Ditto.
+	(g95_init_types): Set size_type_node.
+	* trans-decl.c: Update #includes.
+	(gfor_fndecl_adjust{l,r}): Declare and initialize.
+	* trans-stmt.c: Update #includes.
+	(g95_trans_do_while): Generate LABEL_EXPR, not GOTO_EXPR.
+	(g95_trans_select): Fix check for unbounded ranges.
+	* trans-expr.c: Update #includes.
+	(g95_conv_string_tmp): New function.
+	(g95_conv_concat_op): Use it.
+	* trans.h (g95_conv_string_tmp, gfor_fndecl_adjust{l,r}): Declare.
+	* Trans-intrisic.c: Update #includes.
+	(g95_conv_intrinsic_strcmp): New function.
+	(g95_conv_intrinsic_adjust): Ditto.
+	(g95_conv_intrinsic_function: Use them.
+
+2002-11-30  Paul Brook  <paul@nowt.org>
+
+	* trans-array.c (g95_walk_function_expr): Handle non-array return by
+	reference.
+	* trans-dec.c (g95_build_function_decl): Handle character return
+	parammeters.
+	(g95_get_fake_result_decl): Ditto.
+	(g95_trans_deferred_vars): Ditto.
+	* trans-expr.c (g95_conv_function_call): Ditto.
+	(g95_trans_arrayfunc_assign) Limit to array valued functions.
+	* trans-intrinsic.c (g95_conv_intrinsic_char): New function.
+	(g95_conv_intrinsic_function): Use it.
+	* trans-types.c (g95_sym_type): Handle functions returning strings.
+	(g95_return_by_reference): Ditto.
+	(g95_get_function_type): Ditto.
+
+2002-11-18  Paul Brook  <paul@nowt.org>
+
+	* trans-stmt.c (g95_trans_if): Fix IF statements when the condition
+	requires a temporary.
+	(g95_trans_select): Handle computed gotos.
+	* trans-types.c (g95_build_array_type): Warn about non-functional
+	assumed shape arrays.
+	* trans-expr.c (g95_trans_scalar_assign): Correctly handle post
+	blocks.
+	* trans-intrinsic.c (g95_conv_intrinsic_round): New function.
+	(g95_conv_intrinsic_int): New function.
+	(g95_conv_intrinsic_mod): New function.
+	(g95_conv_intrinsic_ichar): New function.
+	(g95_conv_intrinsic_function): Use them.
+	(g95_conv_intrinsic_dim): Use g95_evaluate_now.
+
+2002-11-17  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* trans-types.c (g95_build_array_type): Assumed
+	sized arrays can have rank > 1.
+	* trans.c (g95_trans_code): Remove erroneous
+	warning about CONTINUE.
+	* trans-expr.c (g95_conv_variable): Remove
+	erroneous assert.
+
+2002-11-15  Paul Brook  <paul@nowt.org>
+
+	* trans-array.c (g95_conv_array_parameter): Check for NULL stride.
+
+2002-10-31  Paul Brook  <paul@nowt.org>
+
+	* f95-tree.c: Remove tree copying stuff that's now in gimple.c
+	* trans-expr.c (g95_conv_component_ref): Handle character string
+	components.
+	(g95_conv_string_parameter): Ditto.
+	* trans-types.c (g95_get_derived_type): Add length decl to caracter
+	string components.
+
+2002-10-10  Paul Brook  <paul@nowt.org>
+
+	* trans-decl.c (gfor_fndecl_size?): Declare and initialize.
+	* trans-expr.c (g95_conv_function_call): Remove unreliable return value
+	check.
+	* trans-intrinsic.c (g95_conv_intrinsic_size): New function.
+	(g95_conv_intrinsic_function): Handle size and shape intrinsics.
+	(g95_is_intrinsic_libcall): Add G95_ISYM_SHAPE.
+	* trans-types.c (pvoid_type_node): Declare and initialize.
+	* trans-array.c: Fix typo COMPONENT_REF->REF_COMPONENT
+	(g95_array_allocate): Fix when base==data.
+	(g95_conv_array_parameter): Correctly handle reduced rank sections.
+	* trans-io.c (g95_trans_write): Correctly handle string modifiers.
+
+2002-10-09  Paul Brook  <paul@nowt.org>
+
+	* (g95_conv_expr_reference): Handle character strings correctly.
+
+2002-10-07  Paul Brook  <paul@nowt.org>
+
+	(g95_expand_decl): Rename from f95_expand_decl_stmt and use as
+	langhook.
+	* trans-array.c (g95_build_array_initializer): Remove.
+	(g95_conv_array_initializer): New Function.
+	(g95_trans_auto_arry_allocation): Cleanup.
+	(g95_trans_init_character_array): Remove.
+	* g95spec.c: Link in libgforbegin.
+	* trans.c (g95_generate_code): Rename main function to MAIN__.
+	(g95_create_var): New function.
+	(g95_create_var_np): New function.
+	(g95_evaluate_now): New function.
+	(g95_start_block): New function.
+	(g95_finish_block): New function.
+	(g95_add_expr_to_block): New function.
+	(g95_add_block_to_block): New function.
+	* trans-expr.c (g95_conv_componen_ref): New function.
+	* Make-lang.in (F95_ADDITIONAL_OBJS): Add gimplify.o.
+	(F95_OBJS): Add dependency.o.
+	* f95-lang.c (g95_is_simple_stmt): Remove.
+	* f95-tree.c (mark_not_simple): New function.
+	(unshare_all_trees): New function.
+	(create_tmp_var, create_tmp_alias_var): Remove.
+	* support.c (declare_tmp_vars, tree_last_decl): Remove.
+	* trans*: Convert to new IR using GENERIC trees.  Don't bother about
+	SIMPLE/GIMPLE rules, this is now done by Lang-independant code.
+
+2002-10-01  Paul Brook  <paul@nowt.org>
+
+	* trans-array.c: Add support for descriptorless arrays.
+	(g95_conv_array_data): New function.
+	(g95_conv_array_base): New function.
+	* trans-array.h: Declare these here.
+	* trans-decl.c(g95_create_mopdule_variable): Perform variable
+	initialization and creation here.
+	(g95_create_module_vars): Instead of here.
+	* trans.h (G95_TYPE_ARRAY_*: Rename from G95_TYPE_DESCRIPTOR_*.
+	* trans-intrinsic.c: Ditto.
+	* trans-types.c (g95_is_nodesc_array): New function.
+	(g95_get_nodesc_array_type): New function.
+	(g95_sym_type, g95_get_derived_type): Use them.
+	* trans-const.c (g95_conv_mpf_to_tree): Remove workaround.
+
+2002-09-28  Paul Brook  <paul@nowt.org>
+
+	* trans-const.c (g95_conv_mpf_to_tree): Work around backend bug.
+	* trans-intrinsic.c (g95_conv_intrinsic_abs): Correctly detect complex
+	parameters.
+
+2002-09-24  Paul Brook  <paul@nowt.org>
+
+	* f95-lang.c (listify): Remove declaration.
+	(expand_function_body): Use optimize >=1 instead of flag_tree_saa.
+	(listify)
+	* f95-tree.c (get_name): New function.
+	* trans.c (module_namespace): Remove.
+	* trans-decl.c: Use g95_chainon_list rather than chainon(listify()).
+	* trans-types.c: Ditto.
+
+2002-09-19  Paul Brook  <paul@nowt.org>
+
+	* trans-array.c (g95_get_array_cons_size): New Function.
+	(g95_con_ss_startstride): Handle Array constructors.
+	(g95_conv_loop_setup): Ditto.
+	(g95_conv_array_parameter): Ditto.
+	* tras-decl.c (g95_finish_var_decl): Make initializes variables
+	static.
+
+2002-09-19  Paul Brook  <paul@nowt.org>
+
+	* trans.c (g95_simple_fold_tmp): Detect variables inside
+	NON_LVALUE_EXPR.
+	* trans-stmt.c (g95_trans_arithmetic_if): Implement this.
+
+2002-09-18  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* Make-lang.in (F95_ADDITIONAL_OBJS): Add tree-ssa-dce.o
+
+2002-09-14  Paul Brook  <paul@nowt.org>
+
+	* trans.c (g95_create_module_variable): Move to trans-decl.c.
+	* trans-const.c (g95_conv_string_init): New Function.
+	* trans-const.h: Declare it.
+	* trans-decl.c (g95_get_symbol_decl): Handle initializers for static
+	variables. Don't bail on intrinsic symbols.
+	(get_extern_function_decl): Handle specific intrinsic functions.
+	* trans-types.c (g95_sym_type): Dummy functions don't return
+	reference types.
+	* trans-array.c (g95_build_array_initializer): New Function.
+	(g95_trans_auto_array_allocation): Build initializer for static decls.
+	Don't use mpz_addmul, it's GMP4 only.
+
+2002-09-12  Paul Brook  <paul@nowt.org>
+
+	* trans-decl.c (g95_generate_code): Fix thinko with return variable.
+	(g95_get_extern_function_decl, g95_build_function_decl): Mangle
+	assembler names for module procedures.
+
+2002-09-11  Tobias Schlueter  <Tobias.Schlueter@physik.uni-muenchen.de>
+
+	* trans-array.c,h trans-expr.c, trans-stmt.c: Correct spelling of
+	dependency/
+
+2002-09-10  Paul Brook  <paul@nowt.org>
+
+	* trans-array.c: Change format of G95_SS_TEMP strictures.
+	(g95_check_fncall_dependancy): New function.
+	(trans_dummy_array_bias): stride[n], not stride[n-1]. for calculating
+	offsets.
+	* trans-decl.c (g95_get_symbol_decl): move assertion after handling of
+	result variables.
+	(g95_build_function_decl): Don't assume result arrays are packed.
+	(g95_trans-deferred-vars): Handle array result variables.
+	(g95_generate_fuction_code): Clear saved_function_decls.
+	* trans-expr.c (g95_conv_fnction_call): Handle direct array return by
+	reference.
+	(g95_trans_arrayfunc_assign): New function.
+	(g95_trans_assignment): Use it.
+	* trans.h (g95_ss): Add temp struct for G95_SS_TEMP.
+	(g95_se): Add direct_byref.
+	* trans-types.c: Use sym->result rather than sym where appropriate.
+	* trans-intrinsic.c (g95_conv_intrinsic_funcall): New function.
+	Update other functions to use this.
+	(g95_is_intrinsic_libcall): New function.
+	(g95_conv_intrinsic_function): Add MATMUL and PRODUCT intrinsics.
+	(g95_walk_intrinsic_function): Ditto.
+
+2002-09-08  Paul Brook  <paul@nowt.org>
+
+	* trans-types.c: Change rank field to dtype field in array descriptor.
+	* trans-array.c: Implement filling of dtype array descriptor field.
+	* trans-intrinsic.c: Fix broken LEN intrinsic.
+
+2002-09-07  Paul Brook  <paul@nowt.org>
+
+	* trans-intrinsic.c: Remove outdated todo intrinsic list.
+	(g95_get_symbol_for_expr): Remove hack for fortran based intrinsics.
+	(g95_walk_intrinsic_function): Add MINLOC and MAXLOC.
+
+2002-09-06  Paul Brook  <paul@nowt.org>
+
+	* Make-lang.in (F95_ADDITIONAL_OBJS): Add tree_alias_comon.o.
+	(gt-f95-trans-types.h): Add dependancy information.
+	* config-lang.in (gtfiles): Add trans-types.c
+	* f95-lang.c (g95_be_parse_file): Pass error and warning counts
+	back to top-level code.
+	* trans-array.c, trans-types.c: Change format of array descriptor.
+	(g95_conv_descriptor_dimension): New function.
+	* trans-types.h (g95_conv_descriptor_rank): define.
+	* trans-intrinsic.c: Implement PRODUCT, COUNT. MINLOC and MAXLOC
+	intrinsics.
+
+2002-09-02  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* trans-array.c, trans-types.c:	Add rank information to descriptor.
+
+2002-09-06  Tobias Schlueter  <Tobias.Schlueter@physik.uni-muenchen.de>
+
+	* trans-stmt.c (g95_trans_allocate): Fix when ref==NULL.
+
+2002-09-04  Paul Brook  <paul@nowt.org>
+
+	* f95-lang.c (g95_create_decls): New function.
+	(g95_init):  Move initialization of external decls to above, and call
+	from g95_be_parse_file.
+	* trans.c (g95_finish_stmt): Don't amputate the decl chain.
+	* trans-types.c (g95_init_types): Always name integer and char types.
+	(g95_get_array_type_bounds): TYPE_NAME may be a TYPE_DECL.
+
+2002-09-02  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* Make-lang.in: Add options.c to F95_PARSER_OBJS
+
+2002-09-02  Paul Brook  <paul@nowt.org>
+
+	* g95_generate_code: Clear the attr for __fortran_main.
+	* trans-types.c (g95_finish_type): New function.
+	* g95_init_io_state_type: Use g95_finish_type.
+	* g95_conv_intrinsic_anyall: Fix thinko in result initialization.
+
+2002-09-01  Paul Brook  <paul@nowt.org>
+
+	* README.backend: Warn about the dangers of extra config.h files.
+	Remove obsolete libgfor stuff.
+	* config-lang.in: Add target-libgfor dependancy.
+	* g95_conv_mpf_to_tree: Use & free allocated buffer p rather than buff.
+
+2002-09-01  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g95_conv_mpz_to_tree: Free storage pointed to by q,
+	not by buff.
+
+2002-08-30  Paul Brook  <paul@nowt.org>
+
+	* trans-intrinsic.c (g95_conv_intrinsic_function,
+	g95_walk_intrinsic_function): Added ANY and ALL.
+	(g95_conv_intrinsic_anyall): New function.
+	* iresolve.c (g95_resolve_any, g95_resolve_all): Include rank in
+	mangled name
