@@ -12275,6 +12275,96 @@ rs6000_split_lock_test_and_set (rtx retval, rtx mem, rtx val, rtx scratch)
   emit_insn (gen_isync ());
 }
 
+void
+rs6000_expand_compare_and_swapqhi (rtx dst, rtx mem, rtx oldval, rtx newval)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx addrSI, align, wdst, shift, mask;
+  HOST_WIDE_INT shift_mask = mode == QImode ? 0x18 : 0x10;
+  HOST_WIDE_INT imask = GET_MODE_MASK (mode);
+
+  /* Shift amount for subword relative to aligned word.  */
+  addrSI = force_reg (SImode, gen_lowpart_common (SImode, XEXP (mem, 0)));
+  shift = gen_reg_rtx (SImode);
+  emit_insn (gen_rlwinm (shift, addrSI, GEN_INT (3),
+			 GEN_INT (shift_mask)));
+  emit_insn (gen_xorsi3 (shift, shift, GEN_INT (shift_mask)));
+
+  /* Shift and mask old value into position within word.  */
+  oldval = convert_modes (SImode, mode, oldval, 1);
+  oldval = expand_binop (SImode, and_optab,
+			 oldval, GEN_INT (imask), NULL_RTX,
+			 1, OPTAB_LIB_WIDEN);
+  emit_insn (gen_ashlsi3 (oldval, oldval, shift));
+
+  /* Shift and mask new value into position within word.  */
+  newval = convert_modes (SImode, mode, newval, 1);
+  newval = expand_binop (SImode, and_optab,
+			 newval, GEN_INT (imask), NULL_RTX,
+			 1, OPTAB_LIB_WIDEN);
+  emit_insn (gen_ashlsi3 (newval, newval, shift));
+
+  /* Mask for insertion.  */
+  mask = gen_reg_rtx (SImode);
+  emit_move_insn (mask, GEN_INT (imask));
+  emit_insn (gen_ashlsi3 (mask, mask, shift));
+
+  /* Address of aligned word containing subword.  */
+  align = expand_binop (Pmode, and_optab, XEXP (mem, 0), GEN_INT (-4),
+			NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  mem = change_address (mem, SImode, align);
+  set_mem_align (mem, 32);
+  MEM_VOLATILE_P (mem) = 1;
+
+  wdst = gen_reg_rtx (SImode);
+  emit_insn (gen_sync_compare_and_swapqhi_internal (wdst, mask,
+						    oldval, newval, mem));
+
+  emit_move_insn (dst, gen_lowpart (mode, wdst));
+}
+
+void
+rs6000_split_compare_and_swapqhi (rtx dest, rtx mask,
+				  rtx oldval, rtx newval, rtx mem,
+				  rtx scratch)
+{
+  rtx label1, label2, x, cond = gen_rtx_REG (CCmode, CR0_REGNO);
+
+  emit_insn (gen_memory_barrier ());
+  label1 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+  label2 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+  emit_label (XEXP (label1, 0));
+
+  emit_load_locked (SImode, scratch, mem);
+
+  /* Mask subword within loaded value for comparison with oldval.
+     Use UNSPEC_AND to avoid clobber.*/
+  emit_insn (gen_rtx_SET (SImode, dest,
+			  gen_rtx_UNSPEC (SImode,
+					  gen_rtvec (2, scratch, mask),
+					  UNSPEC_AND)));
+
+  x = gen_rtx_COMPARE (CCmode, dest, oldval);
+  emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+  emit_unlikely_jump (x, label2);
+
+  /* Clear subword within loaded value for insertion of new value.  */
+  emit_insn (gen_rtx_SET (SImode, scratch,
+			  gen_rtx_AND (SImode,
+				       gen_rtx_NOT (SImode, mask), scratch)));
+  emit_insn (gen_iorsi3 (scratch, scratch, newval));
+  emit_store_conditional (SImode, cond, mem, scratch);
+
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+  emit_unlikely_jump (x, label1);
+
+  emit_insn (gen_isync ());
+  emit_label (XEXP (label2, 0));
+}
+
+
   /* Emit instructions to move SRC to DST.  Called by splitters for
    multi-register moves.  It will emit at most one instruction for
    each register that is accessed; that is, it won't emit li/lis pairs
