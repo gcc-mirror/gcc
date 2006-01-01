@@ -1,4 +1,4 @@
-2005-01-01  Daniel Berlin  <dberlin@dberlin.org>
+2006-01-01  Daniel Berlin  <dberlin@dberlin.org>
 
 	* gcc.dg/tree-ssa/loadpre1.c: New;
 	* gcc.dg/tree-ssa/loadpre2.c: New;
