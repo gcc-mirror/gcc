@@ -1353,9 +1353,15 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 	{			/* Found a null value.  */
 	  eat_separator (dtp);
 	  dtp->u.p.repeat_count = 0;
+
+	  /* eat_separator sets this flag if the separator was a comma */
+	  if (dtp->u.p.comma_flag)
+	    goto cleanup;
+
+	  /* eat_separator sets this flag if the separator was a \n or \r */
 	  if (dtp->u.p.at_eol)
 	    finish_separator (dtp);
-          else
+	  else
 	    goto cleanup;
 	}
 
