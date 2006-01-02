@@ -3012,10 +3012,13 @@ for module in ${build_configdirs} ; do
 /^@endif build-$module-$bootstrap_suffix\$/d"
 done
 for module in ${configdirs} ; do
-  if test -z "${no_recursion}" \
-     && test -f ${module}/Makefile; then
-    echo 1>&2 "*** removing ${module}/Makefile to force reconfigure"
-    rm -f ${module}/Makefile
+  if test -z "${no_recursion}"; then
+    for file in stage*-${module}/Makefile ${module}/Makefile; do
+      if test -f ${file}; then
+	echo 1>&2 "*** removing ${file} to force reconfigure"
+	rm -f ${file}
+      fi
+    done
   fi
   extrasub="$extrasub
 /^@if $module\$/d
