@@ -1,3 +1,11 @@
+2006-01-02  Eric Botcazou  <ebotcazou@adacore.com>
+            Jan Hubicka  <jh@suse.cz>
+
+	* cfglayout.c (fixup_reorder_chain): Remove kludge for the
+	case of conditional jump jumping to the next instruction.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Accept all
+	cases of conditional jump jumping to the next instruction.
+
 2006-01-02  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (*_cost): Add COSTS_N_INSNS.
