@@ -1,3 +1,8 @@
+2006-01-02  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (*_cost): Add COSTS_N_INSNS.
+	(ix86_rtx_costs): Do not use COSTS_N_INSNS.
+
 2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
 
         PR target/25259
