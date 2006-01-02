@@ -1,5 +1,5 @@
 /* Decimal Context module header for the decNumber C Library
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
    Contributed by IBM Corporation.  Author Mike Cowlishaw.
 
    This file is part of GCC.
@@ -40,9 +40,7 @@
 #define DECCFULLNAME "Decimal Context Descriptor"	/* Verbose name */
 #define DECCAUTHOR   "Mike Cowlishaw"	/* Who to blame */
 
-#ifdef HAVE_STDINT_H
-#include <stdint.h>		/* C99 standard integers */
-#endif
+#include "gstdint.h"		/* C99 standard integers */
 #include <signal.h>		/* for traps */
 
 

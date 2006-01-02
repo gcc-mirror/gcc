@@ -1,8 +1,9 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-# 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+# Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996,
+# 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+# Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -300,7 +301,7 @@ CPPINC = -I$(srcdir)/../libcpp/include
 
 # Where to find decNumber
 DECNUM = $(srcdir)/../libdecnumber
-DECNUMINC = -I$(DECNUM)
+DECNUMINC = -I$(DECNUM) -I../libdecnumber
 LIBDECNUMBER = ../libdecnumber/libdecnumber.a
 
 # Substitution type for target's getgroups 2nd arg.

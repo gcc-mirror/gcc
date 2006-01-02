@@ -1,3 +1,8 @@
+2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR target/25259
+        * Makefile.in (DECNUMINC): Include libdecnumber's build directory.
+
 2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* config/arm/arm.c (all_fpus): Fix comment typo.
