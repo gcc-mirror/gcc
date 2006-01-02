@@ -1,3 +1,27 @@
+2006-01-02  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24645
+	* include/std/std_istream.h (basic_istream<>::_M_extract): New.
+	(operator>>(bool&), operator>>(short&), operator>>(unsigned short&),
+	operator>>(int&), operator>>(unsigned int&), operator>>(long&),
+	operator>>(unsigned long&), operator>>(long long&), operator>>
+	(unsigned long long&), operator>>(float&), operator>>(double&),
+	operator>>(long double&), operator>>(void*&)): Use it.
+	* include/bits/istream.tcc (basic_istream<>::_M_extract): Define.
+	* include/std/std_ostream.h (basic_ostream<>::_M_insert): New.
+	(operator<<(long), operator<<(unsigned long), operator<<(bool),
+	operator<<(short), operator<<(unsigned short), operator<<(int),
+	operator<<(unsigned int), operator<<(long long), operator<<
+	(unsigned long long), operator<<(double), operator<<(float),
+	operator<<(long double), operator<<(const void*): Use it.
+	* include/bits/ostream.tcc (basic_ostream<>::_M_insert): Define.
+	* src/istream-inst.cc: Add _M_insert instantiations.
+	* src/ostream-inst.cc: Add _M_extract instantiations.
+	* config/abi/pre/gnu.ver: Export the new symbols @GLIBCXX_3.4.7;
+	detail existing @GLIBCXX_3.4 exports of basic_ostream, num_put,
+	money_put, etc., symbols to avoid exporting _M_insert symbols
+	@GLIBCXX_3.4.
+
 2005-12-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 40.
