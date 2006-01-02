@@ -3233,7 +3233,7 @@ check_default_args (tree x)
     }
 }
 
-/* Mark DECL (eithet a _DECL or a BASELINK) as "used" in the program.
+/* Mark DECL (either a _DECL or a BASELINK) as "used" in the program.
    If DECL is a specialization or implicitly declared class member,
    generate the actual definition.  */
 
