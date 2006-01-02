@@ -1014,9 +1014,6 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
      by creating a basic block afterwards to redirect fallthru edge.  */
   if (e->src != ENTRY_BLOCK_PTR && e->dest != EXIT_BLOCK_PTR
       && any_condjump_p (BB_END (e->src))
-      /* When called from cfglayout, fallthru edges do not
-         necessarily go to the next block.  */
-      && e->src->next_bb == e->dest
       && JUMP_LABEL (BB_END (e->src)) == BB_HEAD (e->dest))
     {
       rtx note;
