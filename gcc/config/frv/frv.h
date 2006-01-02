@@ -1808,7 +1808,7 @@ typedef struct frv_stack {
 
 /* How Large Values are Returned.  */
 
-/* The number of the register that is used to to pass the structure
+/* The number of the register that is used to pass the structure
    value address.  */
 #define FRV_STRUCT_VALUE_REGNUM (GPR_FIRST + 3)
 

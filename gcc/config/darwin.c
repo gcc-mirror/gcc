@@ -53,7 +53,7 @@ Boston, MA 02110-1301, USA.  */
    able to do easily.  These changes allow gdb to load in
    recompilation of a translation unit that has been changed into a
    running program and replace existing functions and methods of that
-   translation unit with with versions of those functions and methods
+   translation unit with versions of those functions and methods
    from the newly compiled translation unit.  The new functions access
    the existing static symbols from the old translation unit, if the
    symbol existed in the unit to be replaced, and from the new

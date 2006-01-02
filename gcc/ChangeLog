@@ -1,3 +1,11 @@
+2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* config/arm/arm.c (all_fpus): Fix comment typo.
+	* config/darwin.c: Likewise.
+	* config/frv/frv.h (FRV_STRUCT_VALUE_REGNUM): Likewise.
+	* config/h8300/h8300.md (extendqisi2_h8300hs): Likewise.
+	* config/m68hc11/m68hc11.c (m68hc11_reload_operands): Likewise.
+
 2006-01-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_expand_compare_and_swapqhi): New.

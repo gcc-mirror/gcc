@@ -822,7 +822,7 @@ m68hc11_reload_operands (rtx operands[])
 	}
 
       /* If the offset is out of range, we have to compute the address
-         with a separate add instruction.  We try to do with with an 8-bit
+         with a separate add instruction.  We try to do this with an 8-bit
          add on the A register.  This is possible only if the lowest part
          of the offset (i.e., big_offset % 256) is a valid constant offset
          with respect to the mode.  If it's not, we have to generate a
