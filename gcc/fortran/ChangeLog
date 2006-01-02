@@ -1,3 +1,9 @@
+2006-01-02  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/24640
+	* parse.c (next_free): Check for whitespace after the label.
+	* match.c (gfc_match_small_literal_int): Initialize cnt variable.
+
 2006-01-01  Steven G. Kargl  <kargls@comcast.net>
 
 	* ChangeLog: Split previous years into ...

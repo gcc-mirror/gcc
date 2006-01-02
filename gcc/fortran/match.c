@@ -151,6 +151,7 @@ gfc_match_small_literal_int (int *value, int *cnt)
 
   gfc_gobble_whitespace ();
   c = gfc_next_char ();
+  *cnt = 0;
 
   if (!ISDIGIT (c))
     {
