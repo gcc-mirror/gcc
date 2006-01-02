@@ -638,7 +638,7 @@ struct fpu_desc
 };
 
 
-/* Available values for for -mfpu=.  */
+/* Available values for -mfpu=.  */
 
 static const struct fpu_desc all_fpus[] =
 {
