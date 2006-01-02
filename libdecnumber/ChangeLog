@@ -1,3 +1,11 @@
+2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR target/25259
+        * configure.ac: Use GCC_HEADER_STDINT.
+        * decContext.h: Include gstdint.h.
+        * aclocal.m4: Regenerate.
+        * configure: Regenerate.
+
 2005-12-20  Roger Sayle  <roger@eyesopen.com>
 
 	* decNumber.c (decStrEq): Cast string contents to unsigned char

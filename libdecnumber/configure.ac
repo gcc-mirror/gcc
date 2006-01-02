@@ -1,7 +1,7 @@
 # configure.ac for libdecnumber			-*- Autoconf -*-
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright 2005 Free Software Foundation, Inc.
+# Copyright 2005, 2006 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -49,6 +49,7 @@ ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])
 
 # Checks for header files.
 AC_CHECK_HEADERS(ctype.h stddef.h string.h stdio.h)
+GCC_HEADER_STDINT(gstdint.h)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
