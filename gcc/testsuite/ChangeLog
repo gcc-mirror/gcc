@@ -1,3 +1,7 @@
+2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* g++.dg/lookup/using12.C: Tighten error marker.
+
 2006-01-01  Andreas Tobler  <a.tobler@schweiz.ch>
 	    Andrew Pinski <pinskia@physics.uc.edu>
 

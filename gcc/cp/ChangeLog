@@ -1,3 +1,8 @@
+2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* parser.c (cp_parser_using_declaration): Skip name-lookup on
+	invalid scope.
+
 2005-12-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.c (pp_cxx_constant): New.  Print

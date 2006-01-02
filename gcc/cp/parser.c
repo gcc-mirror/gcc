@@ -10486,7 +10486,7 @@ cp_parser_using_declaration (cp_parser* parser)
 
   /* The function we call to handle a using-declaration is different
      depending on what scope we are in.  */
-  if (identifier == error_mark_node)
+  if (qscope == error_mark_node || identifier == error_mark_node)
     ;
   else if (TREE_CODE (identifier) != IDENTIFIER_NODE
 	   && TREE_CODE (identifier) != BIT_NOT_EXPR)
