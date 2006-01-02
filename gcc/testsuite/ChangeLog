@@ -1,5 +1,9 @@
 2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* g++.dg/lookup/using12.C: Tighten error marker.
+
+2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* g++.dg/other/friend4.C: New test.
 
 2005-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>

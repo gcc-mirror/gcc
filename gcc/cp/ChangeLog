@@ -1,5 +1,10 @@
 2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* parser.c (cp_parser_using_declaration): Skip name-lookup on
+	invalid scope.
+
+2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* decl.c (grokdeclarator): Improve diagnostic for friend
 	declarations of class members.
 
