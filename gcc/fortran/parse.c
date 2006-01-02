@@ -334,6 +334,10 @@ next_free (void)
 	  do
 	    c = gfc_next_char ();
 	  while (ISDIGIT(c));
+
+	  if (!gfc_is_whitespace (c))
+	    gfc_error_now ("Non-numeric character in statement label at %C");
+
 	}
       else
 	{
