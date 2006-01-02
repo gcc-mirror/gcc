@@ -1,3 +1,9 @@
+2006-01-02  Andreas Schwab  <schwab@suse.de>
+
+	* configure.in: When reconfiguring remove Makefile in
+	all stage directories.
+	* configure: Regenerate.
+
 2005-12-27  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* MAINTAINERS: Update my email address.
