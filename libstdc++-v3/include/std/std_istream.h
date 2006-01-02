@@ -166,45 +166,86 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @c num_get facet) to parse the input data.
       */
       __istream_type& 
-      operator>>(bool& __n);
+      operator>>(bool& __n)
+      { return _M_extract(__n); }
       
       __istream_type& 
-      operator>>(short& __n);
+      operator>>(short& __n)
+      {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 118. basic_istream uses nonexistent num_get member functions.
+	long __l;
+	_M_extract(__l);
+	if (!this->fail())
+	  {
+	    if (numeric_limits<short>::min() <= __l
+		&& __l <= numeric_limits<short>::max())
+	      __n = __l;
+	    else
+	      this->setstate(ios_base::failbit);
+	  }
+	return *this;
+      }
       
       __istream_type& 
-      operator>>(unsigned short& __n);
+      operator>>(unsigned short& __n)
+      { return _M_extract(__n); }
 
       __istream_type& 
-      operator>>(int& __n);
-      
+      operator>>(int& __n)
+      {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 118. basic_istream uses nonexistent num_get member functions.
+	long __l;
+	_M_extract(__l);
+	if (!this->fail())
+	  {
+	    if (numeric_limits<int>::min() <= __l
+		&& __l <= numeric_limits<int>::max())
+	      __n = __l;
+	    else
+	      this->setstate(ios_base::failbit);
+	  }
+	return *this;
+      }
+     
       __istream_type& 
-      operator>>(unsigned int& __n);
+      operator>>(unsigned int& __n)
+      { return _M_extract(__n); }
 
       __istream_type& 
-      operator>>(long& __n);
+      operator>>(long& __n)
+      { return _M_extract(__n); }
       
       __istream_type& 
-      operator>>(unsigned long& __n);
+      operator>>(unsigned long& __n)
+      { return _M_extract(__n); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
       __istream_type& 
-      operator>>(long long& __n);
+      operator>>(long long& __n)
+      { return _M_extract(__n); }
 
       __istream_type& 
-      operator>>(unsigned long long& __n);
+      operator>>(unsigned long long& __n)
+      { return _M_extract(__n); }
 #endif
 
       __istream_type& 
-      operator>>(float& __f);
+      operator>>(float& __f)
+      { return _M_extract(__f); }
 
       __istream_type& 
-      operator>>(double& __f);
+      operator>>(double& __f)
+      { return _M_extract(__f); }
 
       __istream_type& 
-      operator>>(long double& __f);
+      operator>>(long double& __f)
+      { return _M_extract(__f); }
 
       __istream_type& 
-      operator>>(void*& __p);
+      operator>>(void*& __p)
+      { return _M_extract(__p); }
 
       /**
        *  @brief  Extracting into another streambuf.
@@ -572,6 +613,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       explicit 
       basic_istream(): _M_gcount(streamsize(0)) { }
+
+      template<typename _ValueT>
+        __istream_type&
+        _M_extract(_ValueT& __v);
     };
 
   // Explicit specialization declarations, defined in src/istream.cc.

@@ -53,6 +53,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template istream& operator>>(istream&, _Setprecision);
   template istream& operator>>(istream&, _Setw);
 
+  template istream& istream::_M_extract(unsigned short&);
+  template istream& istream::_M_extract(unsigned int&);  
+  template istream& istream::_M_extract(long&);
+  template istream& istream::_M_extract(unsigned long&);
+  template istream& istream::_M_extract(bool&);
+#ifdef _GLIBCXX_USE_LONG_LONG
+  template istream& istream::_M_extract(long long&);
+  template istream& istream::_M_extract(unsigned long long&);
+#endif
+  template istream& istream::_M_extract(float&);
+  template istream& istream::_M_extract(double&);
+  template istream& istream::_M_extract(long double&);
+  template istream& istream::_M_extract(void*&);
+
 #ifdef _GLIBCXX_USE_WCHAR_T
   template class basic_istream<wchar_t>;
   template wistream& ws(wistream&);
@@ -65,6 +79,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template wistream& operator>>(wistream&, _Setbase);
   template wistream& operator>>(wistream&, _Setprecision);
   template wistream& operator>>(wistream&, _Setw);
+
+  template wistream& wistream::_M_extract(unsigned short&);
+  template wistream& wistream::_M_extract(unsigned int&);  
+  template wistream& wistream::_M_extract(long&);
+  template wistream& wistream::_M_extract(unsigned long&);
+  template wistream& wistream::_M_extract(bool&);
+#ifdef _GLIBCXX_USE_LONG_LONG
+  template wistream& wistream::_M_extract(long long&);
+  template wistream& wistream::_M_extract(unsigned long long&);
+#endif
+  template wistream& wistream::_M_extract(float&);
+  template wistream& wistream::_M_extract(double&);
+  template wistream& wistream::_M_extract(long double&);
+  template wistream& wistream::_M_extract(void*&);
 #endif
 
 _GLIBCXX_END_NAMESPACE
