@@ -1,4 +1,5 @@
-// { dg-final { scan-assembler ".weak\t_ZThn._N7Derived3FooEv" } }
+// { dg-require-weak "" }
+// { dg-final { scan-assembler ".weak\[ \t\]_?_ZThn\[8.\]_N7Derived3FooEv" } }
 
 struct Base 
 {
