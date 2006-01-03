@@ -1,3 +1,11 @@
+2006-01-03  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (reg_subword_p): New predicate to test whether the
+	destination of a set refers to a subword/piece of a register.
+	(try_combine): Generalize the code to merge the setting of a
+	pseudo to a constant followed by a set of a subword of that
+	register to a constant.
+
 2006-01-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* basic-block.h (control_flow_graph): Change the type of
