@@ -1706,6 +1706,27 @@ can_change_dest_mode (rtx x, int added_sets, enum machine_mode mode)
 	  && !REG_USERVAR_P (x));
 }
 
+
+/* Check whether X, the destination of a set, refers to part of
+   the register specified by REG.  */
+
+static bool
+reg_subword_p (rtx x, rtx reg)
+{
+  /* Check that reg is an integer mode register.  */
+  if (!REG_P (reg) || GET_MODE_CLASS (GET_MODE (reg)) != MODE_INT)
+    return false;
+
+  if (GET_CODE (x) == STRICT_LOW_PART
+      || GET_CODE (x) == ZERO_EXTRACT)
+    x = XEXP (x, 0);
+
+  return GET_CODE (x) == SUBREG
+	 && SUBREG_REG (x) == reg
+	 && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT;
+}
+
+
 /* Try to combine the insns I1 and I2 into I3.
    Here I1 and I2 appear earlier than I3.
    I1 can be zero; then we combine just I2 into I3.
@@ -1870,74 +1891,140 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	    }
     }
 
-  /* If I2 is setting a double-word pseudo to a constant and I3 is setting
-     one of those words to another constant, merge them by making a new
+  /* If I2 is setting a pseudo to a constant and I3 is setting some
+     sub-part of it to another constant, merge them by making a new
      constant.  */
   if (i1 == 0
       && (temp = single_set (i2)) != 0
       && (GET_CODE (SET_SRC (temp)) == CONST_INT
 	  || GET_CODE (SET_SRC (temp)) == CONST_DOUBLE)
-      && REG_P (SET_DEST (temp))
-      && GET_MODE_CLASS (GET_MODE (SET_DEST (temp))) == MODE_INT
-      && GET_MODE_SIZE (GET_MODE (SET_DEST (temp))) == 2 * UNITS_PER_WORD
       && GET_CODE (PATTERN (i3)) == SET
-      && GET_CODE (SET_DEST (PATTERN (i3))) == SUBREG
-      && SUBREG_REG (SET_DEST (PATTERN (i3))) == SET_DEST (temp)
-      && GET_MODE_CLASS (GET_MODE (SET_DEST (PATTERN (i3)))) == MODE_INT
-      && GET_MODE_SIZE (GET_MODE (SET_DEST (PATTERN (i3)))) == UNITS_PER_WORD
-      && GET_CODE (SET_SRC (PATTERN (i3))) == CONST_INT)
+      && (GET_CODE (SET_SRC (PATTERN (i3))) == CONST_INT
+	  || GET_CODE (SET_SRC (PATTERN (i3))) == CONST_DOUBLE)
+      && reg_subword_p (SET_DEST (PATTERN (i3)), SET_DEST (temp)))
     {
-      HOST_WIDE_INT lo, hi;
+      rtx dest = SET_DEST (PATTERN (i3));
+      int offset = -1;
+      int width = 0;
 
-      if (GET_CODE (SET_SRC (temp)) == CONST_INT)
-	lo = INTVAL (SET_SRC (temp)), hi = lo < 0 ? -1 : 0;
-      else
+      if (GET_CODE (dest) == STRICT_LOW_PART)
 	{
-	  lo = CONST_DOUBLE_LOW (SET_SRC (temp));
-	  hi = CONST_DOUBLE_HIGH (SET_SRC (temp));
+	  width = GET_MODE_BITSIZE (GET_MODE (XEXP (dest, 0)));
+	  offset = 0;
+	}
+      else if (GET_CODE (dest) == ZERO_EXTRACT)
+	{
+	  if (GET_CODE (XEXP (dest, 1)) == CONST_INT
+	      && GET_CODE (XEXP (dest, 2)) == CONST_INT)
+	    {
+	      width = INTVAL (XEXP (dest, 1));
+	      offset = INTVAL (XEXP (dest, 2));
+
+	      if (BITS_BIG_ENDIAN)
+		offset = GET_MODE_BITSIZE (GET_MODE (XEXP (dest, 0)))
+			 - width - offset;
+	    }
+	}
+      else if (subreg_lowpart_p (dest))
+	{
+	  width = GET_MODE_BITSIZE (GET_MODE (dest));
+	  offset = 0;
+	}
+      /* ??? Preserve the original logic to handle setting the high word
+	 of double-word pseudos, where inner is half the size of outer
+	 but not the lowpart.  This could be generalized by handling
+	 SUBREG_BYTE, WORDS_BIG_ENDIAN and BYTES_BIG_ENDIAN ourselves.
+	 Unfortunately this logic is tricky to get right and probably
+	 not worth the effort.  */
+      else if (GET_MODE_BITSIZE (GET_MODE (SET_DEST (temp)))
+	       == 2 * GET_MODE_BITSIZE (GET_MODE (dest)))
+	{
+	  width = GET_MODE_BITSIZE (GET_MODE (dest));
+	  offset = width;
 	}
 
-      if (subreg_lowpart_p (SET_DEST (PATTERN (i3))))
+      if (offset >= 0)
 	{
-	  /* We don't handle the case of the target word being wider
-	     than a host wide int.  */
-	  gcc_assert (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD);
+	  HOST_WIDE_INT mhi, ohi, ihi;
+	  HOST_WIDE_INT mlo, olo, ilo;
+	  rtx inner = SET_SRC (PATTERN (i3));
+	  rtx outer = SET_SRC (temp);
 
-	  lo &= ~(UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1);
-	  lo |= (INTVAL (SET_SRC (PATTERN (i3)))
-		 & (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1));
+	  if (GET_CODE (outer) == CONST_INT)
+	    {
+	      olo = INTVAL (outer);
+	      ohi = olo < 0 ? -1 : 0;
+	    }
+	  else
+	    {
+	      olo = CONST_DOUBLE_LOW (outer);
+	      ohi = CONST_DOUBLE_HIGH (outer);
+	    }
+
+	  if (GET_CODE (inner) == CONST_INT)
+	    {
+	      ilo = INTVAL (inner);
+	      ihi = ilo < 0 ? -1 : 0;
+	    }
+	  else
+	    {
+	      ilo = CONST_DOUBLE_LOW (inner);
+	      ihi = CONST_DOUBLE_HIGH (inner);
+	    }
+
+	  if (width < HOST_BITS_PER_WIDE_INT)
+	    {
+	      mlo = ((unsigned HOST_WIDE_INT) 1 << width) - 1;
+	      mhi = 0;
+	    }
+	  else if (width < HOST_BITS_PER_WIDE_INT * 2)
+	    {
+	      mhi = ((unsigned HOST_WIDE_INT) 1
+		     << (width - HOST_BITS_PER_WIDE_INT)) - 1;
+	      mlo = -1;
+	    }
+	  else
+	    {
+	      mlo = -1;
+	      mhi = -1;
+	    }
+
+	  ilo &= mlo;
+	  ihi &= mhi;
+
+	  if (offset >= HOST_BITS_PER_WIDE_INT)
+	    {
+	      mhi = mlo << (offset - HOST_BITS_PER_WIDE_INT);
+	      mlo = 0;
+	      ihi = ilo << (offset - HOST_BITS_PER_WIDE_INT);
+	      ilo = 0;
+	    }
+	  else if (offset > 0)
+	    {
+	      mhi = (mhi << offset) | ((unsigned HOST_WIDE_INT) mlo
+		     		       >> (HOST_BITS_PER_WIDE_INT - offset));
+	      mlo = mlo << offset;
+	      ihi = (ihi << offset) | ((unsigned HOST_WIDE_INT) ilo
+		     		       >> (HOST_BITS_PER_WIDE_INT - offset));
+	      ilo = ilo << offset;
+	    }
+
+	  olo = (olo & ~mlo) | ilo;
+	  ohi = (ohi & ~mhi) | ihi;
+
+	  combine_merges++;
+	  subst_insn = i3;
+	  subst_low_cuid = INSN_CUID (i2);
+	  added_sets_2 = added_sets_1 = 0;
+	  i2dest = SET_DEST (temp);
+	  i2dest_killed = dead_or_set_p (i2, i2dest);
+
+	  SUBST (SET_SRC (temp),
+		 immed_double_const (olo, ohi, GET_MODE (SET_DEST (temp))));
+
+	  newpat = PATTERN (i2);
+	  goto validate_replacement;
 	}
-      else if (HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-	hi = INTVAL (SET_SRC (PATTERN (i3)));
-      else if (HOST_BITS_PER_WIDE_INT >= 2 * BITS_PER_WORD)
-	{
-	  int sign = -(int) ((unsigned HOST_WIDE_INT) lo
-			     >> (HOST_BITS_PER_WIDE_INT - 1));
-
-	  lo &= ~ (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD
-		   (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1));
-	  lo |= (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD
-		 (INTVAL (SET_SRC (PATTERN (i3)))));
-	  if (hi == sign)
-	    hi = lo < 0 ? -1 : 0;
-	}
-      else
-	/* We don't handle the case of the higher word not fitting
-	   entirely in either hi or lo.  */
-	gcc_unreachable ();
-
-      combine_merges++;
-      subst_insn = i3;
-      subst_low_cuid = INSN_CUID (i2);
-      added_sets_2 = added_sets_1 = 0;
-      i2dest = SET_DEST (temp);
-      i2dest_killed = dead_or_set_p (i2, i2dest);
-
-      SUBST (SET_SRC (temp),
-	     immed_double_const (lo, hi, GET_MODE (SET_DEST (temp))));
-
-      newpat = PATTERN (i2);
-      goto validate_replacement;
     }
 
 #ifndef HAVE_cc0
