@@ -5,6 +5,11 @@
 	* tree-cfg.c (init_empty_tree_cfg, label_to_block_fn,
 	set_bb_for_stmt): Adjust the uses of x_label_to_block_map.
 
+	* tree-ssa-propagate.c (cfg_blocks): Change the type to
+	VEC(basic_block,heap) *.
+	(cfg_blocks_add, cfg_blocks_get, ssa_prop_init,
+	ssa_prop_fini): Adjust the uses of cfg_blocks.
+
 2006-01-03  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* fold-const.c (operand_equal_p): Accept a NULL operand 0 for

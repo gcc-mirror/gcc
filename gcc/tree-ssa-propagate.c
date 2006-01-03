@@ -130,7 +130,7 @@ static ssa_prop_visit_phi_fn ssa_prop_visit_phi;
 static sbitmap executable_blocks;
 
 /* Array of control flow edges on the worklist.  */
-static GTY(()) varray_type cfg_blocks = NULL;
+static VEC(basic_block,heap) *cfg_blocks;
 
 static unsigned int cfg_blocks_num = 0;
 static int cfg_blocks_tail;
@@ -187,19 +187,23 @@ cfg_blocks_add (basic_block bb)
   else
     {
       cfg_blocks_num++;
-      if (cfg_blocks_num > VARRAY_SIZE (cfg_blocks))
+      if (cfg_blocks_num > VEC_length (basic_block, cfg_blocks))
 	{
-	  /* We have to grow the array now.  Adjust to queue to occupy the
-	     full space of the original array.  */
-	  cfg_blocks_tail = VARRAY_SIZE (cfg_blocks);
+	  /* We have to grow the array now.  Adjust to queue to occupy
+	     the full space of the original array.  We do not need to
+	     initialize the newly allocated portion of the array
+	     because we keep track of CFG_BLOCKS_HEAD and
+	     CFG_BLOCKS_HEAD.  */
+	  cfg_blocks_tail = VEC_length (basic_block, cfg_blocks);
 	  cfg_blocks_head = 0;
-	  VARRAY_GROW (cfg_blocks, 2 * VARRAY_SIZE (cfg_blocks));
+	  VEC_safe_grow (basic_block, heap, cfg_blocks, 2 * cfg_blocks_tail);
 	}
       else
-	cfg_blocks_tail = (cfg_blocks_tail + 1) % VARRAY_SIZE (cfg_blocks);
+	cfg_blocks_tail = ((cfg_blocks_tail + 1)
+			   % VEC_length (basic_block, cfg_blocks));
     }
 
-  VARRAY_BB (cfg_blocks, cfg_blocks_tail) = bb;
+  VEC_replace (basic_block, cfg_blocks, cfg_blocks_tail, bb);
   SET_BIT (bb_in_list, bb->index);
 }
 
@@ -211,12 +215,13 @@ cfg_blocks_get (void)
 {
   basic_block bb;
 
-  bb = VARRAY_BB (cfg_blocks, cfg_blocks_head);
+  bb = VEC_index (basic_block, cfg_blocks, cfg_blocks_head);
 
   gcc_assert (!cfg_blocks_empty_p ());
   gcc_assert (bb);
 
-  cfg_blocks_head = (cfg_blocks_head + 1) % VARRAY_SIZE (cfg_blocks);
+  cfg_blocks_head = ((cfg_blocks_head + 1)
+		     % VEC_length (basic_block, cfg_blocks));
   --cfg_blocks_num;
   RESET_BIT (bb_in_list, bb->index);
 
@@ -473,7 +478,8 @@ ssa_prop_init (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_immediate_uses (dump_file);
 
-  VARRAY_BB_INIT (cfg_blocks, 20, "cfg_blocks");
+  cfg_blocks = VEC_alloc (basic_block, heap, 20);
+  VEC_safe_grow (basic_block, heap, cfg_blocks, 20);
 
   /* Initialize the values for every SSA_NAME.  */
   for (i = 1; i < num_ssa_names; i++)
@@ -507,6 +513,7 @@ ssa_prop_fini (void)
 {
   VEC_free (tree, gc, interesting_ssa_edges);
   VEC_free (tree, gc, varying_ssa_edges);
+  VEC_free (basic_block, heap, cfg_blocks);
   cfg_blocks = NULL;
   sbitmap_free (bb_in_list);
   sbitmap_free (executable_blocks);
