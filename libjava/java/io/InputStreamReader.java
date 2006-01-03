@@ -39,6 +39,8 @@ exception statement from your version. */
 package java.io;
 
 import gnu.gcj.convert.*;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 
 /**
  * This class reads characters from a byte input stream.   The characters
@@ -129,6 +131,25 @@ public class InputStreamReader extends Reader
     throws UnsupportedEncodingException
   {
     this(in, BytesToUnicode.getDecoder(encoding_name));
+  }
+
+  /**
+   * Creates an InputStreamReader that uses a decoder of the given
+   * charset to decode the bytes in the InputStream into
+   * characters.
+   */
+  public InputStreamReader(InputStream in, Charset charset)
+  {
+    this(in, new BytesToCharsetAdaptor(charset));
+  }
+
+  /**
+   * Creates an InputStreamReader that uses the given charset decoder
+   * to decode the bytes in the InputStream into characters.
+   */
+  public InputStreamReader(InputStream in, CharsetDecoder decoder)
+  {
+    this(in, new BytesToCharsetAdaptor(decoder));
   }
 
   private InputStreamReader(InputStream in, BytesToUnicode decoder)
