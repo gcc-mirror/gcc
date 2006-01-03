@@ -1,3 +1,19 @@
+2006-01-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (have_switched_text_section): Delete.
+	(have_multiple_function_sections): New.
+	(have_location_lists): Make 'bool'.
+	(add_AT_loc_list): Use 'true' not '1'.
+	(dwarf2out_switch_text_section): Set have_multiple_function_sections.
+	(output_loc_list): Use have_multiple_function_sections.
+	(output_ranges): Likewise.
+	(dwarf2out_begin_function): Set have_multiple_function_sections if
+	necessary.
+	(dwarf2out_source_line): Don't fake separate_line_info_table_in_use.
+	Check function_section rather than DECL_SECTION_NAME.
+	(dwarf2out_finish): Use have_multiple_function_sections.
+	Don't clear have_location_lists.
+
 2006-01-02  Eric Botcazou  <ebotcazou@adacore.com>
             Jan Hubicka  <jh@suse.cz>
 

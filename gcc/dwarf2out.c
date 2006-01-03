@@ -3845,8 +3845,8 @@ static GTY(()) unsigned line_info_table_allocated;
 /* Number of elements in line_info_table currently in use.  */
 static GTY(()) unsigned line_info_table_in_use;
 
-/* True if the compilation unit contains more than one .text section.  */
-static GTY(()) bool have_switched_text_section = false;
+/* True if the compilation unit places functions in more than one section.  */
+static GTY(()) bool have_multiple_function_sections = false;
 
 /* A pointer to the base of a table that contains line information
    for each source code line outside of .text in the compilation unit.  */
@@ -3904,7 +3904,7 @@ static GTY(()) unsigned ranges_table_in_use;
 #define RANGES_TABLE_INCREMENT 64
 
 /* Whether we have location lists that need outputting */
-static GTY(()) unsigned have_location_lists;
+static GTY(()) bool have_location_lists;
 
 /* Unique label counter.  */
 static GTY(()) unsigned int loclabel_num;
@@ -5102,7 +5102,7 @@ add_AT_loc_list (dw_die_ref die, enum dwarf_attribute attr_kind, dw_loc_list_ref
   attr->dw_attr_val.val_class = dw_val_class_loc_list;
   attr->dw_attr_val.v.val_loc_list = loc_list;
   add_dwarf_attr (die, attr);
-  have_location_lists = 1;
+  have_location_lists = true;
 }
 
 static inline dw_loc_list_ref
@@ -6920,7 +6920,7 @@ dwarf2out_switch_text_section (void)
   fde->dw_fde_hot_section_end_label = cfun->hot_section_end_label;
   fde->dw_fde_unlikely_section_label = cfun->cold_section_label;
   fde->dw_fde_unlikely_section_end_label = cfun->cold_section_end_label;
-  have_switched_text_section = true;
+  have_multiple_function_sections = true;
 }
 
 /* Output the location list given to us.  */
@@ -6936,7 +6936,7 @@ output_loc_list (dw_loc_list_ref list_head)
   for (curr = list_head; curr != NULL; curr = curr->dw_loc_next)
     {
       unsigned long size;
-      if (!separate_line_info_table_in_use && !have_switched_text_section)
+      if (!have_multiple_function_sections)
 	{
 	  dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->begin, curr->section,
 				"Location list begin address (%s)",
@@ -7445,7 +7445,7 @@ output_ranges (void)
 	  /* If all code is in the text section, then the compilation
 	     unit base address defaults to DW_AT_low_pc, which is the
 	     base of the text section.  */
-	  if (!separate_line_info_table_in_use && !have_switched_text_section)
+	  if (!have_multiple_function_sections)
 	    {
 	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, blabel,
 				    text_section_label,
@@ -13571,13 +13571,16 @@ dwarf2out_var_location (rtx loc_note)
 
 /* We need to reset the locations at the beginning of each
    function. We can't do this in the end_function hook, because the
-   declarations that use the locations won't have been outputted when
-   that hook is called.  */
+   declarations that use the locations won't have been output when
+   that hook is called.  Also compute have_multiple_function_sections here.  */
 
 static void
-dwarf2out_begin_function (tree unused ATTRIBUTE_UNUSED)
+dwarf2out_begin_function (tree fun)
 {
   htab_empty (decl_loc_table);
+  
+  if (function_section (fun) != text_section)
+    have_multiple_function_sections = true;
 }
 
 /* Output a label to mark the beginning of a source code line entry
@@ -13608,12 +13611,8 @@ dwarf2out_source_line (unsigned int line, const char *filename)
 
 	  /* Indicate that line number info exists.  */
 	  line_info_table_in_use++;
-
-	  /* Indicate that multiple line number tables exist.  */
-	  if (DECL_SECTION_NAME (current_function_decl))
-	    separate_line_info_table_in_use++;
 	}
-      else if (DECL_SECTION_NAME (current_function_decl))
+      else if (function_section (current_function_decl) != text_section)
 	{
 	  dw_separate_line_info_ref line_info;
 	  targetm.asm_out.internal_label (asm_out_file, SEPARATE_LINE_CODE_LABEL,
@@ -14195,21 +14194,9 @@ dwarf2out_finish (const char *filename)
       output_line_info ();
     }
 
-  /* Output location list section if necessary.  */
-  if (have_location_lists)
-    {
-      /* Output the location lists info.  */
-      switch_to_section (debug_loc_section);
-      ASM_GENERATE_INTERNAL_LABEL (loc_section_label,
-				   DEBUG_LOC_SECTION_LABEL, 0);
-      ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
-      output_location_lists (die);
-      have_location_lists = 0;
-    }
-
   /* We can only use the low/high_pc attributes if all of the code was
      in .text.  */
-  if (!separate_line_info_table_in_use && !have_switched_text_section)
+  if (!have_multiple_function_sections)
     {
       add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, text_section_label);
       add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
@@ -14219,6 +14206,17 @@ dwarf2out_finish (const char *filename)
      "base address".  Use zero so that these addresses become absolute.  */
   else if (have_location_lists || ranges_table_in_use)
     add_AT_addr (comp_unit_die, DW_AT_entry_pc, const0_rtx);
+
+  /* Output location list section if necessary.  */
+  if (have_location_lists)
+    {
+      /* Output the location lists info.  */
+      switch_to_section (debug_loc_section);
+      ASM_GENERATE_INTERNAL_LABEL (loc_section_label,
+				   DEBUG_LOC_SECTION_LABEL, 0);
+      ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
+      output_location_lists (die);
+    }
 
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     add_AT_lbl_offset (comp_unit_die, DW_AT_stmt_list,
