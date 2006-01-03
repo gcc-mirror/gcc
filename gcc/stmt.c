@@ -2104,10 +2104,12 @@ add_case_node (struct case_node *head, tree type, tree low, tree high,
     }
 
 
-  /* Add this label to the chain.  */
+  /* Add this label to the chain.  Make sure to drop overflow flags.  */
   r = ggc_alloc (sizeof (struct case_node));
-  r->low = low;
-  r->high = high;
+  r->low = build_int_cst_wide (TREE_TYPE (low), TREE_INT_CST_LOW (low),
+			       TREE_INT_CST_HIGH (low));
+  r->high = build_int_cst_wide (TREE_TYPE (high), TREE_INT_CST_LOW (high),
+				TREE_INT_CST_HIGH (high));
   r->code_label = label;
   r->parent = r->left = NULL;
   r->right = head;

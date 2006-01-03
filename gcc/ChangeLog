@@ -1,3 +1,9 @@
+2006-01-03  Richard Guenther  <rguenther@suse.de>
+
+	PR c/25183
+	* stmt.c (add_case_node): Make sure to clear overflow flags
+	from ranges.
+
 2006-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Merge from gomp-branch.
