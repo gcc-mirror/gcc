@@ -470,3 +470,9 @@
 ;; and (xor ... (not ...)) to (not (xor ...)).  */
 (define_predicate "cc_arith_not_operator"
   (match_code "and,ior"))
+
+;; Return true if OP is memory operand with just [%reg] addressing mode.
+(define_predicate "memory_reg_operand"
+  (and (match_code "mem")
+       (and (match_operand 0 "memory_operand")
+	    (match_test "REG_P (XEXP (op, 0))"))))
