@@ -1,3 +1,7 @@
+2006-01-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* libtool-ldflags: New script.
+
 2006-01-02  Andreas Schwab  <schwab@suse.de>
 
 	* configure.in: When reconfiguring remove Makefile in
