@@ -1,5 +1,37 @@
 2006-01-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/25635
+	* class.c (add_method): Set TYPE_HAS_CONVERSION for classes with a
+	conversion operator.
+	* decl.c (grokdeclarator): Do not set TYPE_HAS_CONVERSION here.
+
+	PR c++/25638
+	* class.c (add_method): Never associate more than one destructor
+	with a single class.
+
+	PR c++/25637
+	* cp-tree.h (do_friend): Adjust prototype.
+	* decl.c (grokfndecl): Make funcdef_flag a bool, not an int.
+	(grokdeclarator): Likewise.  Refine check for invalid
+	declarations/definitions of member functions outside of their own
+	class.
+	* friend.c (do_friend): Make funcdef_flag a bool, not an int.
+
+	PR c++/25633
+	* parser.c (cp_parser_mem_initializer_list): Check result of
+	cp_parser_mem_initializer against error_mark_node, not NULL_TREE.
+	(cp_parser_mem_initializer): Return error_mark_node for failure.
+
+	PR c++/25634
+	* parser.c (cp_parser_template_parameter_list): Call
+	begin_template_parm_list and end_template_parm_list here.
+	(cp_parser_type_parameter): Not here.
+	(cp_parser_template_declaration_after_export): Or here.
+	(cp_parser_elaborated_type_specifier): Call
+	cp_parser_check_template_parameters.
+
+	* tree.c (build_target_expr_with_type): Use force_target_expr.
+
 	* decl2.c (mark_used): Fix typo in comment.
 
 2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>

@@ -408,7 +408,7 @@ tree
 do_friend (tree ctype, tree declarator, tree decl,
 	   tree attrlist, enum overload_flags flags,
 	   cp_cv_quals quals,
-	   int funcdef_flag)
+	   bool funcdef_flag)
 {
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;

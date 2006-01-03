@@ -3935,7 +3935,7 @@ extern tree cplus_expand_constant		(tree);
 extern int is_friend				(tree, tree);
 extern void make_friend_class			(tree, tree, bool);
 extern void add_friend				(tree, tree, bool);
-extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, cp_cv_quals, int);
+extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, cp_cv_quals, bool);
 
 /* in init.c */
 extern tree expand_member_init			(tree);
