@@ -1,3 +1,7 @@
+2006-01-04  Ben Elliston  <bje@au.ibm.com>
+
+	* MAINTAINERS (libdecnumber): Add myself.
+
 2006-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* libtool-ldflags: New script.
