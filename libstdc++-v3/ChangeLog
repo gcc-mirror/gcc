@@ -1,5 +1,27 @@
 2006-01-03  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_list.h (_List_base<>::_M_get_Node_allocator): Add.
+	(_M_get_Tp_allocator, get_allocator): Tidy.
+	(list<>::list(const list&), insert(iterator, size_type, const
+	value_type&), insert(iterator, _InputIterator, _InputIterator)):
+	Use _M_get_Node_allocator.
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_get_Node_allocator()): Add.
+	(_Rb_tree(const _Rb_tree<>&): Use it.
+	* include/bits/stl_deque.h (_Deque_base<>::_M_get_map_allocator,
+	get_allocator): Tidy.
+	* include/bits/stl_vector.h (_Vector_base<>::get_allocator): Tidy.
+	* testsuite/23_containers/map/operators/1_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/23_containers/set/operators/1_neg.cc: Likewise.
+	
+	* testsuite/testsuite_allocator.h (uneq_allocator<>::swap): Fix.
+
+	* testsuite/testsuite_allocator.h (class uneq_allocator): A simple
+	non-empty testing allocator which can be endowed of a "personality"
+	at construction time.
+
+2006-01-03  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/27_io/basic_stringstream/str/char/1.cc: Initialize vars.
 	* testsuite/27_io/basic_stringstream/str/wchar_t/1.cc: Likewise.
 	* testsuite/27_io/basic_istringstream/str/char/1.cc: Likewise, tidy.
