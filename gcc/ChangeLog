@@ -1,3 +1,16 @@
+2006-01-03  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* fold-const.c (operand_equal_p): Accept a NULL operand 0 for
+	COMPONENT_REFs.
+	* emit-rtl.c (mem_attrs_htab_eq): Use iterative_hash_expr for
+	hashing trees instead of a pointer hash.
+	(mem_attrs_htab_eq): Do a deep compare instead of a pointer
+	compare for MEM_EXPR.
+
+	PR rtl-optimization/25130
+	* cse.c (exp_equiv_p): Compare MEM_ATTRS instead of MEM_ALIAS_SET
+	when comparing MEMs for GCSE
+
 2006-01-03  Ben Elliston  <bje@au.ibm.com>
 
 	* targhooks.h (default_decimal_float_supported_p): Declare.
