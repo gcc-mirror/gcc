@@ -2635,8 +2635,11 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 		  && OP_SAME_WITH_NULL (3));
 
 	case COMPONENT_REF:
-	  /* Handle operand 2 the same as for ARRAY_REF.  */
-	  return OP_SAME (0) && OP_SAME (1) && OP_SAME_WITH_NULL (2);
+	  /* Handle operand 2 the same as for ARRAY_REF.  Operand 0
+	     may be NULL when we're called to compare MEM_EXPRs.  */
+	  return OP_SAME_WITH_NULL (0)
+		 && OP_SAME (1)
+		 && OP_SAME_WITH_NULL (2);
 
 	case BIT_FIELD_REF:
 	  return OP_SAME (0) && OP_SAME (1) && OP_SAME (2);
