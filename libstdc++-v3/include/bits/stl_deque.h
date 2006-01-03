@@ -1,6 +1,7 @@
 // Deque implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -369,7 +370,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
       allocator_type
       get_allocator() const
-      { return _M_get_Tp_allocator(); }
+      { return allocator_type(_M_get_Tp_allocator()); }
 
       typedef _Deque_iterator<_Tp, _Tp&, _Tp*>             iterator;
       typedef _Deque_iterator<_Tp, const _Tp&, const _Tp*> const_iterator;
@@ -416,7 +417,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
       _Map_alloc_type
       _M_get_map_allocator() const
-      { return _M_get_Tp_allocator(); }
+      { return _Map_alloc_type(_M_get_Tp_allocator()); }
 
       _Tp*
       _M_allocate_node()

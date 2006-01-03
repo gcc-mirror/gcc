@@ -1,6 +1,7 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -348,9 +349,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef ptrdiff_t difference_type;
       typedef _Alloc allocator_type;
 
-      allocator_type 
-      get_allocator() const
+      _Node_allocator&
+      _M_get_Node_allocator()
+      { return *static_cast<_Node_allocator*>(&this->_M_impl); }
+      
+      const _Node_allocator&
+      _M_get_Node_allocator() const
       { return *static_cast<const _Node_allocator*>(&this->_M_impl); }
+
+      allocator_type
+      get_allocator() const
+      { return allocator_type(_M_get_Node_allocator()); }
 
     protected:
       _Rb_tree_node*
@@ -563,7 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { }
 
       _Rb_tree(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x)
-      : _M_impl(__x.get_allocator(), __x._M_impl._M_key_compare)
+      : _M_impl(__x._M_get_Node_allocator(), __x._M_impl._M_key_compare)
       {
 	if (__x._M_root() != 0)
 	  {

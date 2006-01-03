@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,8 @@
 
 #include <cstddef>
 #include <limits>
+#include <tr1/unordered_map>
+#include <cassert>
 
 namespace 
 {
@@ -230,6 +232,137 @@ namespace __gnu_test
 	}
       throw;
     }
+
+
+  // A simple allocator which can be constructed endowed of a given
+  // "personality" (an integer), queried in operator== to simulate the
+  // behavior of realworld "unequal" allocators (i.e., not exploiting
+  // the provision in 20.1.5/4, first bullet).  A global unordered_map,
+  // filled at allocation time with (pointer, personality) pairs, is
+  // then consulted to enforce the requirements in Table 32 about
+  // deallocation vs allocator equality.  Note that this allocator is
+  // swappable, not assignable, consistently with Option 3 of DR 431
+  // (see N1599).
+  struct uneq_allocator_base
+  {
+    typedef std::tr1::unordered_map<void*, int>   map_type;
+
+    // Avoid static initialization troubles and/or bad interactions
+    // with tests linking testsuite_allocator.o and playing globally
+    // with operator new/delete.
+    static map_type&
+    get_map()
+    {
+      static map_type alloc_map;
+      return alloc_map;
+    }
+  };
+
+  template<typename Tp>
+    class uneq_allocator
+    : private uneq_allocator_base
+    {
+    public:
+      typedef size_t                              size_type;
+      typedef ptrdiff_t                           difference_type;
+      typedef Tp*                                 pointer;
+      typedef const Tp*                           const_pointer;
+      typedef Tp&                                 reference;
+      typedef const Tp&                           const_reference;
+      typedef Tp                                  value_type;
+      
+      template<typename Tp1>
+        struct rebind
+	{ typedef uneq_allocator<Tp1> other; };
+
+      uneq_allocator() throw()
+      : personality(0) { }
+
+      uneq_allocator(int person) throw()
+      : personality(person) { }
+      
+      template<typename Tp1>
+        uneq_allocator(const uneq_allocator<Tp1>& b) throw()
+	: personality(b.get_personality()) { }
+
+      int get_personality() const { return personality; }
+      
+      pointer
+      address(reference x) const { return &x; }
+    
+      const_pointer
+      address(const_reference x) const { return &x; }
+    
+      pointer
+      allocate(size_type n, const void* = 0)
+      { 
+	if (__builtin_expect(n > this->max_size(), false))
+	  std::__throw_bad_alloc();
+	
+	pointer p = static_cast<Tp*>(::operator new(n * sizeof(Tp)));
+	try
+	  {
+	    get_map().insert(map_type::value_type(reinterpret_cast<void*>(p),
+						  personality));
+	  }
+	catch(...)
+	  {
+	    ::operator delete(p);
+	    __throw_exception_again;
+	  }
+	return p;
+      }
+      
+      void
+      deallocate(pointer p, size_type)
+      {
+	assert( p );
+	
+	map_type::iterator it = get_map().find(reinterpret_cast<void*>(p));
+	assert( it != get_map().end() );
+
+	// Enforce requirements in Table 32 about deallocation vs
+	// allocator equality.
+	assert( it->second == personality );
+	
+	get_map().erase(it);
+	::operator delete(p);
+      }
+      
+      size_type
+      max_size() const throw() 
+      { return size_t(-1) / sizeof(Tp); }
+      
+      void 
+      construct(pointer p, const Tp& val) 
+      { ::new(p) Tp(val); }
+    
+      void 
+      destroy(pointer p) { p->~Tp(); }
+
+    private:
+      // Not assignable...
+      uneq_allocator&
+      operator=(const uneq_allocator&);
+
+      // ... yet swappable!
+      friend inline void
+      swap(uneq_allocator& a, uneq_allocator& b)
+      { std::swap(a.personality, b.personality); } 
+      
+      template<typename Tp1>
+        friend inline bool
+        operator==(const uneq_allocator& a, const uneq_allocator<Tp1>& b)
+        { return a.personality == b.personality; }
+
+      template<typename Tp1>
+        friend inline bool
+        operator!=(const uneq_allocator& a, const uneq_allocator<Tp1>& b)
+        { return !(a == b); }
+      
+      int personality;
+    };
+
 
   template<typename Tp>
     class throw_allocator
