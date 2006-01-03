@@ -1,3 +1,7 @@
+2006-01-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/debug/debug9.C: New.
+
 2006-01-02  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/24640
