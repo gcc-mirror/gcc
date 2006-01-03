@@ -39,6 +39,9 @@ exception statement from your version. */
 package java.io;
 
 import gnu.gcj.convert.UnicodeToBytes;
+import gnu.gcj.convert.CharsetToBytesAdaptor;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 
 /**
  * This class writes characters to an output stream that is byte oriented
@@ -126,6 +129,31 @@ public class OutputStreamWriter extends Writer
   public OutputStreamWriter (OutputStream out)
   {
     this(out, UnicodeToBytes.getDefaultEncoder());
+  }
+
+  /**
+   * This method initializes a new instance of <code>OutputStreamWriter</code>
+   * to write to the specified stream using a given <code>Charset</code>.
+   *
+   * @param out The <code>OutputStream</code> to write to
+   * @param cs The <code>Charset</code> of the encoding to use
+   */
+  public OutputStreamWriter(OutputStream out, Charset cs)
+  {
+    this(out, new CharsetToBytesAdaptor(cs));
+  }
+
+  /**
+   * This method initializes a new instance of <code>OutputStreamWriter</code>
+   * to write to the specified stream using a given
+   * <code>CharsetEncoder</code>.
+   *
+   * @param out The <code>OutputStream</code> to write to
+   * @param enc The <code>CharsetEncoder</code> to encode the output with
+   */
+  public OutputStreamWriter(OutputStream out, CharsetEncoder enc)
+  {
+    this(out, new CharsetToBytesAdaptor(enc));
   }
 
   /**
