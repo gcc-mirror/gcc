@@ -1537,11 +1537,20 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
      isn't common, and shouldn't be handled as such.  */
   if (DECL_SECTION_NAME (decl) || dont_output_data)
     ;
-  /* We don't implement common thread-local data at present.  */
   else if (DECL_THREAD_LOCAL_P (decl))
     {
       if (DECL_COMMON (decl))
-	sorry ("thread-local COMMON data not implemented");
+	{
+#ifdef ASM_OUTPUT_TLS_COMMON
+	  unsigned HOST_WIDE_INT size;
+
+	  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  ASM_OUTPUT_TLS_COMMON (asm_out_file, decl, name, size);
+	  return;
+#else
+	  sorry ("thread-local COMMON data not implemented");
+#endif
+	}
     }
   else if (DECL_INITIAL (decl) == 0
 	   || DECL_INITIAL (decl) == error_mark_node
