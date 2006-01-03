@@ -1423,7 +1423,6 @@ may affect its placement.
 
 @deftypefn {Target Hook} {bool} TARGET_DECIMAL_FLOAT_SUPPORTED_P (void)
 Returns true if the target supports decimal floating point.
-The default version of this hook always returns false.
 @end deftypefn
 
 @deftypefn {Target Hook} {const char *} TARGET_MANGLE_FUNDAMENTAL_TYPE (tree @var{type})

@@ -1,3 +1,11 @@
+2006-01-03  Ben Elliston  <bje@au.ibm.com>
+
+	* targhooks.h (default_decimal_float_supported_p): Declare.
+	* targhooks.c (default_decimal_float_supported_p): Define.
+	* target-def.h (TARGET_DECIMAL_FLOAT_SUPPORTED_P): Redefine to
+	`default_decimal_float_supported_p'.
+	* doc/tm.texi (TARGET_DECIMAL_FLOAT_SUPPORTED_P): Update.
+
 2006-01-02  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (apply_distributive_law <SUBREG>): Check
