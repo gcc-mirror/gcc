@@ -1,3 +1,8 @@
+2006-01-02  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* combine.c (apply_distributive_law <SUBREG>): Check
+	TRULY_NOOP_TRUNCATION.
+
 2006-01-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* dwarf2out.c (have_switched_text_section): Delete.
