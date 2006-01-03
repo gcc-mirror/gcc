@@ -380,7 +380,7 @@ struct control_flow_graph GTY(())
 
   /* Mapping of labels to their associated blocks.  At present
      only used for the tree CFG.  */
-  varray_type x_label_to_block_map;
+  VEC(basic_block,gc) *x_label_to_block_map;
 
   enum profile_status {
     PROFILE_ABSENT,

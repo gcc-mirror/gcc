@@ -1,3 +1,10 @@
+2006-01-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* basic-block.h (control_flow_graph): Change the type of
+	x_label_to_block_map to VEC(basic_block,gc) *.
+	* tree-cfg.c (init_empty_tree_cfg, label_to_block_fn,
+	set_bb_for_stmt): Adjust the uses of x_label_to_block_map.
+
 2006-01-03  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* fold-const.c (operand_equal_p): Accept a NULL operand 0 for

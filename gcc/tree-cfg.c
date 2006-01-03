@@ -134,8 +134,10 @@ init_empty_tree_cfg (void)
   VARRAY_BB_INIT (basic_block_info, initial_cfg_capacity, "basic_block_info");
 
   /* Build a mapping of labels to their associated blocks.  */
-  VARRAY_BB_INIT (label_to_block_map, initial_cfg_capacity,
-		  "label to block map");
+  label_to_block_map = VEC_alloc (basic_block, gc, initial_cfg_capacity);
+  VEC_safe_grow (basic_block, gc, label_to_block_map, initial_cfg_capacity);
+  memset (VEC_address (basic_block, label_to_block_map),
+	  0, sizeof (basic_block) * initial_cfg_capacity);
 
   BASIC_BLOCK (ENTRY_BLOCK) = ENTRY_BLOCK_PTR;
   BASIC_BLOCK (EXIT_BLOCK) = EXIT_BLOCK_PTR;
@@ -804,9 +806,10 @@ label_to_block_fn (struct function *ifun, tree dest)
       bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
       uid = LABEL_DECL_UID (dest);
     }
-  if (VARRAY_SIZE (ifun->cfg->x_label_to_block_map) <= (unsigned int)uid)
+  if (VEC_length (basic_block, ifun->cfg->x_label_to_block_map)
+      <= (unsigned int) uid)
     return NULL;
-  return VARRAY_BB (ifun->cfg->x_label_to_block_map, uid);
+  return VEC_index (basic_block, ifun->cfg->x_label_to_block_map, uid);
 }
 
 /* Create edges for a goto statement at block BB.  */
@@ -2714,15 +2717,26 @@ set_bb_for_stmt (tree t, basic_block bb)
 	  uid = LABEL_DECL_UID (t);
 	  if (uid == -1)
 	    {
+	      unsigned old_len = VEC_length (basic_block, label_to_block_map);
 	      LABEL_DECL_UID (t) = uid = cfun->last_label_uid++;
-	      if (VARRAY_SIZE (label_to_block_map) <= (unsigned) uid)
-		VARRAY_GROW (label_to_block_map, 3 * uid / 2);
+	      if (old_len <= (unsigned) uid)
+		{
+		  basic_block *addr;
+		  unsigned new_len = 3 * uid / 2;
+
+		  VEC_safe_grow (basic_block, gc, label_to_block_map,
+				 new_len);
+		  addr = VEC_address (basic_block, label_to_block_map);
+		  memset (&addr[old_len],
+			  0, sizeof (basic_block) * (new_len - old_len));
+		}
 	    }
 	  else
 	    /* We're moving an existing label.  Make sure that we've
 		removed it from the old block.  */
-	    gcc_assert (!bb || !VARRAY_BB (label_to_block_map, uid));
-	  VARRAY_BB (label_to_block_map, uid) = bb;
+	    gcc_assert (!bb
+			|| !VEC_index (basic_block, label_to_block_map, uid));
+	  VEC_replace (basic_block, label_to_block_map, uid, bb);
 	}
     }
 }
