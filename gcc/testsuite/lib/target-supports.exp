@@ -1356,7 +1356,9 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget x86_64-*-*]
 	     || [istarget alpha*-*-*] 
 	     || [istarget s390*-*-*] 
-	     || [istarget powerpc*-*-*] } {
+	     || [istarget powerpc*-*-*]
+	     || [istarget sparc64-*-*]
+	     || [istarget sparcv9-*-*] } {
            set et_sync_int_long_saved 1
         }
     }
@@ -1381,7 +1383,9 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget x86_64-*-*]
 	     || [istarget alpha*-*-*] 
 	     || [istarget s390*-*-*] 
-	     || [istarget powerpc*-*-*] } {
+	     || [istarget powerpc*-*-*]
+	     || [istarget sparc64-*-*]
+	     || [istarget sparcv9-*-*] } {
            set et_sync_char_short_saved 1
         }
     }

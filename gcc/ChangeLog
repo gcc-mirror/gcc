@@ -1,3 +1,14 @@
+2006-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Merge from gomp-branch.
+	* config/sparc/sync.md: New file.
+	* config/sparc/sparc.md (UNSPECV_MEMBAR, UNSPECV_CAS, UNSPECV_SWAP,
+	UNSPECV_LDSTUB): New constants.
+	* config/sparc/sparc.c (sparc_expand_compare_and_swap_12): New function.
+	* config/sparc/predicates.md (memory_reg_operand): New predicate.
+	* config/sparc/sparc-protos.h (sparc_expand_compare_and_swap_12): New
+	prototype.
+
 2006-01-03  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (reg_subword_p): New predicate to test whether the

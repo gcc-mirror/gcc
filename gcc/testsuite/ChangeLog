@@ -1,3 +1,14 @@
+2006-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Merge from gomp-branch.
+	* gcc.dg/ia64-sync-1.c: On sparc*-*-*, pass -mcpu=v9.
+	* gcc.dg/ia64-sync-2.c: Likewise.
+	* gcc.dg/ia64-sync-3.c: Likewise.
+	* gcc.dg/ia64-sync-4.c: Likewise.
+	* gcc.dg/sync-2.c: Likewise.
+	* lib/target-supports.exp (sync_char_short, sync_int_long): Indicate
+	that sparc64-*-* and sparcv9-*-* supports sync builtins.
+
 2006-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25635

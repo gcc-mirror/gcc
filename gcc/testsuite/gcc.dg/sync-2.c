@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target sync_char_short } */
 /* { dg-options "-march=i486" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-mcpu=v9" { target sparc*-*-* } } */
 
 /* Test functionality of the intrinsics for 'short' and 'char'.  */
 

@@ -8710,4 +8710,106 @@ sparc_file_end (void)
     file_end_indicate_exec_stack ();
 }
 
+/* Expand code to perform a 8 or 16-bit compare and swap by doing 32-bit
+   compare and swap on the word containing the byte or half-word.  */
+
+void
+sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
+{
+  rtx addr1 = force_reg (Pmode, XEXP (mem, 0));
+  rtx addr = gen_reg_rtx (Pmode);
+  rtx off = gen_reg_rtx (SImode);
+  rtx oldv = gen_reg_rtx (SImode);
+  rtx newv = gen_reg_rtx (SImode);
+  rtx oldvalue = gen_reg_rtx (SImode);
+  rtx newvalue = gen_reg_rtx (SImode);
+  rtx res = gen_reg_rtx (SImode);
+  rtx resv = gen_reg_rtx (SImode);
+  rtx memsi, val, mask, end_label, loop_label, cc;
+
+  emit_insn (gen_rtx_SET (VOIDmode, addr,
+			  gen_rtx_AND (Pmode, addr1, GEN_INT (-4))));
+
+  if (Pmode != SImode)
+    addr1 = gen_lowpart (SImode, addr1);
+  emit_insn (gen_rtx_SET (VOIDmode, off,
+			  gen_rtx_AND (SImode, addr1, GEN_INT (3))));
+
+  memsi = gen_rtx_MEM (SImode, addr);
+  MEM_VOLATILE_P (memsi) = MEM_VOLATILE_P (mem);
+
+  val = force_reg (SImode, memsi);
+
+  emit_insn (gen_rtx_SET (VOIDmode, off,
+			  gen_rtx_XOR (SImode, off,
+				       GEN_INT (GET_MODE (mem) == QImode
+						? 3 : 2))));
+
+  emit_insn (gen_rtx_SET (VOIDmode, off,
+			  gen_rtx_ASHIFT (SImode, off, GEN_INT (3))));
+
+  if (GET_MODE (mem) == QImode)
+    mask = force_reg (SImode, GEN_INT (0xff));
+  else
+    mask = force_reg (SImode, GEN_INT (0xffff));
+
+  emit_insn (gen_rtx_SET (VOIDmode, mask,
+			  gen_rtx_ASHIFT (SImode, mask, off)));
+
+  emit_insn (gen_rtx_SET (VOIDmode, val,
+			  gen_rtx_AND (SImode, gen_rtx_NOT (SImode, mask),
+				       val)));
+
+  oldval = gen_lowpart (SImode, oldval);
+  emit_insn (gen_rtx_SET (VOIDmode, oldv,
+			  gen_rtx_ASHIFT (SImode, oldval, off)));
+
+  newval = gen_lowpart_common (SImode, newval);
+  emit_insn (gen_rtx_SET (VOIDmode, newv,
+			  gen_rtx_ASHIFT (SImode, newval, off)));
+
+  emit_insn (gen_rtx_SET (VOIDmode, oldv,
+			  gen_rtx_AND (SImode, oldv, mask)));
+
+  emit_insn (gen_rtx_SET (VOIDmode, newv,
+			  gen_rtx_AND (SImode, newv, mask)));
+
+  end_label = gen_label_rtx ();
+  loop_label = gen_label_rtx ();
+  emit_label (loop_label);
+
+  emit_insn (gen_rtx_SET (VOIDmode, oldvalue,
+			  gen_rtx_IOR (SImode, oldv, val)));
+
+  emit_insn (gen_rtx_SET (VOIDmode, newvalue,
+			  gen_rtx_IOR (SImode, newv, val)));
+
+  emit_insn (gen_sync_compare_and_swapsi (res, memsi, oldvalue, newvalue));
+
+  emit_cmp_and_jump_insns (res, oldvalue, EQ, NULL, SImode, 0, end_label);
+
+  emit_insn (gen_rtx_SET (VOIDmode, resv,
+			  gen_rtx_AND (SImode, gen_rtx_NOT (SImode, mask),
+				       res)));
+
+  sparc_compare_op0 = resv;
+  sparc_compare_op1 = val;
+  cc = gen_compare_reg (NE);
+
+  emit_insn (gen_rtx_SET (VOIDmode, val, resv));
+
+  sparc_compare_emitted = cc;
+  emit_jump_insn (gen_bne (loop_label));
+
+  emit_label (end_label);
+
+  emit_insn (gen_rtx_SET (VOIDmode, res,
+			  gen_rtx_AND (SImode, res, mask)));
+
+  emit_insn (gen_rtx_SET (VOIDmode, res,
+			  gen_rtx_LSHIFTRT (SImode, res, off)));
+
+  emit_move_insn (result, gen_lowpart (GET_MODE (result), res));
+}
+
 #include "gt-sparc.h"
