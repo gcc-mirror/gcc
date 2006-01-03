@@ -1,3 +1,10 @@
+2006-01-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/25578
+	* combine.c (combine_simplify_rtx, force_to_mode): Don't
+	pass a parameter to simplify_shift_const if changing ASHIFTRT
+	to LSHIFTRT.
+
 2006-01-03  Adrian Straetling  <straetling@de.ibm.com>
 
 	* gcc/builtins.c (get_builtin_sync_mem): New function.
