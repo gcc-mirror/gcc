@@ -7348,8 +7348,6 @@ grokdeclarator (const cp_declarator *declarator,
 		&& (friendp == 0 || dname == current_class_name))
 	      ctype = current_class_type;
 
-	    if (ctype && sfk == sfk_conversion)
-	      TYPE_HAS_CONVERSION (ctype) = 1;
 	    if (ctype && (sfk == sfk_constructor
 			  || sfk == sfk_destructor))
 	      {
@@ -7603,22 +7601,25 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  tree sname = declarator->u.id.unqualified_name;
 
+	  if (current_class_type
+	      && (!friendp || funcdef_flag))
+	    {
+	      error (funcdef_flag
+		     ? "cannot define member function %<%T::%s%> within %<%T%>"
+		     : "cannot declare member function %<%T::%s%> within %<%T%>",
+		     ctype, name, current_class_type);
+	      return error_mark_node;
+	    }
+
 	  if (TREE_CODE (sname) == IDENTIFIER_NODE
 	      && NEW_DELETE_OPNAME_P (sname))
 	    /* Overloaded operator new and operator delete
 	       are always static functions.  */
 	    ;
-	  else if (current_class_type == NULL_TREE || friendp)
-	    type
-	      = build_method_type_directly (ctype,
-					    TREE_TYPE (type),
-					    TYPE_ARG_TYPES (type));
 	  else
-	    {
-	      error ("cannot declare member function %<%T::%s%> within %<%T%>",
-		     ctype, name, current_class_type);
-	      return error_mark_node;
-	    }
+	    type = build_method_type_directly (ctype,
+					       TREE_TYPE (type),
+					       TYPE_ARG_TYPES (type));
 	}
       else if (declspecs->specs[(int)ds_typedef]
 	       || COMPLETE_TYPE_P (complete_type (ctype)))
