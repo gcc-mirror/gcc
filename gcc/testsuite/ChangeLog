@@ -2,8 +2,8 @@
 
 	* g++.dg/abi/thunk3.C, g++.dg/abi/thunk4.C: Gate on
 	dg-require-weak.  Adjust regexp to handle leading-underscore
-	targets, NO_DOT_IN_LABEL targets and space as well as TAB after
-	.weak.
+	targets and space as well as TAB after .weak.  Change previous
+	64-bit fix to not use naked dot.
 
 2006-01-03  Paolo Bonzini  <bonzini@gnu.org>
 
