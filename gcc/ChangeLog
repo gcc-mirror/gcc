@@ -1,3 +1,10 @@
+2006-01-03  Adrian Straetling  <straetling@de.ibm.com>
+
+	* gcc/builtins.c (get_builtin_sync_mem): New function.
+	(expand_builtin_sync_operation, expand_builtin_compare_and_swap,
+	expand_builtin_lock_test_and_set, expand_builtin_lock_release):
+	Call get_builtin_sync_mem to generate mem rtx.
+
 2006-01-03  Richard Guenther  <rguenther@suse.de>
 
 	PR c/25183
