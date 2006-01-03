@@ -1,3 +1,10 @@
+2006-01-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_stringstream/str/char/1.cc: Initialize vars.
+	* testsuite/27_io/basic_stringstream/str/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istringstream/str/char/1.cc: Likewise, tidy.
+	* testsuite/27_io/basic_istringstream/str/wchar_t/1.cc: Likewise.
+
 2006-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* src/Makefile.am (LTLDFLAGS): New variable. 
