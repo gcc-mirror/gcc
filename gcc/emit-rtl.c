@@ -254,7 +254,7 @@ mem_attrs_htab_hash (const void *x)
   return (p->alias ^ (p->align * 1000)
 	  ^ ((p->offset ? INTVAL (p->offset) : 0) * 50000)
 	  ^ ((p->size ? INTVAL (p->size) : 0) * 2500000)
-	  ^ (size_t) p->expr);
+	  ^ (size_t) iterative_hash_expr (p->expr, 0));
 }
 
 /* Returns nonzero if the value represented by X (which is really a
@@ -267,8 +267,11 @@ mem_attrs_htab_eq (const void *x, const void *y)
   mem_attrs *p = (mem_attrs *) x;
   mem_attrs *q = (mem_attrs *) y;
 
-  return (p->alias == q->alias && p->expr == q->expr && p->offset == q->offset
-	  && p->size == q->size && p->align == q->align);
+  return (p->alias == q->alias && p->offset == q->offset
+	  && p->size == q->size && p->align == q->align
+	  && (p->expr == q->expr
+	      || (p->expr != NULL_TREE && q->expr != NULL_TREE
+		  && operand_equal_p (p->expr, q->expr, 0))));
 }
 
 /* Allocate a new mem_attrs structure and insert it into the hash table if
