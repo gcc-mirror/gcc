@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,10 +29,9 @@ void test01()
   const std::wstring str01 = L"123";
   std::wstring str02;
   const int i01 = 123;
-  int a, b;
+  int a = 0, b = 0;
 
-  std::ios_base::iostate state1, state2, statefail, stateeof;
-  statefail = std::ios_base::failbit;
+  std::ios_base::iostate state1, state2, stateeof;
   stateeof = std::ios_base::eofbit;
 
   // string str() const
