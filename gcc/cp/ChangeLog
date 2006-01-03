@@ -1,3 +1,28 @@
+2006-01-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25635
+	* class.c (add_method): Set TYPE_HAS_CONVERSION for classes with a
+	conversion operator.
+	* decl.c (grokdeclarator): Do not set TYPE_HAS_CONVERSION here.
+
+	PR c++/25638
+	* class.c (add_method): Never associate more than one destructor
+	with a single class.
+
+	PR c++/25637
+	* decl.c (grokdeclarator): Refine check for invalid
+	declarations/definitions of member functions outside of their own
+	class.
+
+	PR c++/25633
+	* parser.c (cp_parser_mem_initializer_list): Check result of
+	cp_parser_mem_initializer against error_mark_node, not NULL_TREE.
+	(cp_parser_mem_initializer): Return error_mark_node for failure.
+
+	PR c++/25634
+	* parser.c (cp_parser_elaborated_type_specifier): Call
+	cp_parser_check_template_parameters.
+
 2005-12-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25439
