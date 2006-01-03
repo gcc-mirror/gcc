@@ -2509,7 +2509,9 @@ gfc_resolve_iterator (gfc_iterator * iter, bool real_ok)
 }
 
 
-/* Resolve a list of FORALL iterators.  */
+/* Resolve a list of FORALL iterators.  The FORALL index-name is constrained
+   to be a scalar INTEGER variable.  The subscripts and stride are scalar
+   INTEGERs, and if stride is a constant it must be nonzero.  */
 
 static void
 resolve_forall_iterators (gfc_forall_iterator * iter)
@@ -2518,28 +2520,35 @@ resolve_forall_iterators (gfc_forall_iterator * iter)
   while (iter)
     {
       if (gfc_resolve_expr (iter->var) == SUCCESS
-	  && iter->var->ts.type != BT_INTEGER)
-	gfc_error ("FORALL Iteration variable at %L must be INTEGER",
+	  && (iter->var->ts.type != BT_INTEGER || iter->var->rank != 0))
+	gfc_error ("FORALL index-name at %L must be a scalar INTEGER",
 		   &iter->var->where);
 
       if (gfc_resolve_expr (iter->start) == SUCCESS
-	  && iter->start->ts.type != BT_INTEGER)
-	gfc_error ("FORALL start expression at %L must be INTEGER",
+	  && (iter->start->ts.type != BT_INTEGER || iter->start->rank != 0))
+	gfc_error ("FORALL start expression at %L must be a scalar INTEGER",
 		   &iter->start->where);
       if (iter->var->ts.kind != iter->start->ts.kind)
 	gfc_convert_type (iter->start, &iter->var->ts, 2);
 
       if (gfc_resolve_expr (iter->end) == SUCCESS
-	  && iter->end->ts.type != BT_INTEGER)
-	gfc_error ("FORALL end expression at %L must be INTEGER",
+	  && (iter->end->ts.type != BT_INTEGER || iter->end->rank != 0))
+	gfc_error ("FORALL end expression at %L must be a scalar INTEGER",
 		   &iter->end->where);
       if (iter->var->ts.kind != iter->end->ts.kind)
 	gfc_convert_type (iter->end, &iter->var->ts, 2);
 
-      if (gfc_resolve_expr (iter->stride) == SUCCESS
-	  && iter->stride->ts.type != BT_INTEGER)
-	gfc_error ("FORALL Stride expression at %L must be INTEGER",
-		   &iter->stride->where);
+      if (gfc_resolve_expr (iter->stride) == SUCCESS)
+	{
+	  if (iter->stride->ts.type != BT_INTEGER || iter->stride->rank != 0)
+	    gfc_error ("FORALL stride expression at %L must be a scalar %s",
+		        &iter->stride->where, "INTEGER");
+
+	  if (iter->stride->expr_type == EXPR_CONSTANT
+	      && mpz_cmp_ui(iter->stride->value.integer, 0) == 0)
+	    gfc_error ("FORALL stride expression at %L cannot be zero",
+		       &iter->stride->where);
+	}
       if (iter->var->ts.kind != iter->stride->ts.kind)
 	gfc_convert_type (iter->stride, &iter->var->ts, 2);
 

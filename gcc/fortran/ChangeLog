@@ -1,3 +1,9 @@
+2006-01-03  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/25101
+	* resolve.c (resolve_forall_iterators):  Check for scalar variables;
+	Check stride is nonzero.
+
 2006-01-02  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/24640
