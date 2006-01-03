@@ -1,3 +1,10 @@
+2006-01-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* g++.dg/abi/thunk3.C, g++.dg/abi/thunk4.C: Gate on
+	dg-require-weak.  Adjust regexp to handle leading-underscore
+	targets, NO_DOT_IN_LABEL targets and space as well as TAB after
+	.weak.
+
 2006-01-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/25578
