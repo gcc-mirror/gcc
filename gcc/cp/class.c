@@ -1059,10 +1059,16 @@ add_method (tree type, tree method, tree using_decl)
 	}
     }
 
+  /* A class should never have more than one destructor.  */ 
+  if (current_fns && DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
+    return false;
+
   /* Add the new binding.  */
   overload = build_overload (method, current_fns);
 
-  if (!conv_p && slot >= CLASSTYPE_FIRST_CONVERSION_SLOT && !complete_p)
+  if (conv_p)
+    TYPE_HAS_CONVERSION (type) = 1;
+  else if (slot >= CLASSTYPE_FIRST_CONVERSION_SLOT && !complete_p)
     push_class_level_binding (DECL_NAME (method), overload);
 
   if (insert_p)

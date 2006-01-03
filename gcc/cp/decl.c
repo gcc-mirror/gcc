@@ -5697,7 +5697,7 @@ grokfndecl (tree ctype,
 	    int publicp,
 	    int inlinep,
 	    special_function_kind sfk,
-	    int funcdef_flag,
+	    bool funcdef_flag,
 	    int template_count,
 	    tree in_namespace,
 	    tree* attrlist)
@@ -5918,7 +5918,7 @@ grokfndecl (tree ctype,
 
   decl = check_explicit_specialization (orig_declarator, decl,
 					template_count,
-					2 * (funcdef_flag != 0) +
+					2 * funcdef_flag +
 					4 * (friendp != 0));
   if (decl == error_mark_node)
     return NULL_TREE;
@@ -5940,26 +5940,25 @@ grokfndecl (tree ctype,
 				 > template_class_depth (ctype))
 				? current_template_parms
 				: NULL_TREE);
-
-      if (old_decl && TREE_CODE (old_decl) == TEMPLATE_DECL)
-	/* Because grokfndecl is always supposed to return a
-	   FUNCTION_DECL, we pull out the DECL_TEMPLATE_RESULT
-	   here.  We depend on our callers to figure out that its
-	   really a template that's being returned.  */
-	old_decl = DECL_TEMPLATE_RESULT (old_decl);
-
-      if (old_decl && DECL_STATIC_FUNCTION_P (old_decl)
-	  && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	/* Remove the `this' parm added by grokclassfn.
-	   XXX Isn't this done in start_function, too?  */
-	revert_static_member_fn (decl);
-      if (old_decl && DECL_ARTIFICIAL (old_decl))
-	error ("definition of implicitly-declared %qD", old_decl);
-
       if (old_decl)
 	{
 	  tree ok;
 	  tree pushed_scope;
+
+	  if (TREE_CODE (old_decl) == TEMPLATE_DECL)
+	    /* Because grokfndecl is always supposed to return a
+	       FUNCTION_DECL, we pull out the DECL_TEMPLATE_RESULT
+	       here.  We depend on our callers to figure out that its
+	       really a template that's being returned.  */
+	    old_decl = DECL_TEMPLATE_RESULT (old_decl);
+
+	  if (DECL_STATIC_FUNCTION_P (old_decl)
+	      && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
+	    /* Remove the `this' parm added by grokclassfn.
+	       XXX Isn't this done in start_function, too?  */
+	    revert_static_member_fn (decl);
+	  if (DECL_ARTIFICIAL (old_decl))
+	    error ("definition of implicitly-declared %qD", old_decl);
 
 	  /* Since we've smashed OLD_DECL to its
 	     DECL_TEMPLATE_RESULT, we must do the same to DECL.  */
@@ -6627,7 +6626,8 @@ grokdeclarator (const cp_declarator *declarator,
   tree typedef_decl = NULL_TREE;
   const char *name = NULL;
   tree typedef_type = NULL_TREE;
-  int funcdef_flag = 0;
+  /* True if this declarator is a function definition.  */
+  bool funcdef_flag = false;
   cp_declarator_kind innermost_code = cdk_error;
   int bitfield = 0;
 #if 0
@@ -6674,9 +6674,9 @@ grokdeclarator (const cp_declarator *declarator,
   thread_p = declspecs->specs[(int)ds_thread];
 
   if (decl_context == FUNCDEF)
-    funcdef_flag = 1, decl_context = NORMAL;
+    funcdef_flag = true, decl_context = NORMAL;
   else if (decl_context == MEMFUNCDEF)
-    funcdef_flag = -1, decl_context = FIELD;
+    funcdef_flag = true, decl_context = FIELD;
   else if (decl_context == BITFIELD)
     bitfield = 1, decl_context = FIELD;
 
@@ -7349,8 +7349,6 @@ grokdeclarator (const cp_declarator *declarator,
 		&& (friendp == 0 || dname == current_class_name))
 	      ctype = current_class_type;
 
-	    if (ctype && sfk == sfk_conversion)
-	      TYPE_HAS_CONVERSION (ctype) = 1;
 	    if (ctype && (sfk == sfk_constructor
 			  || sfk == sfk_destructor))
 	      {
@@ -7604,22 +7602,25 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  tree sname = declarator->u.id.unqualified_name;
 
+	  if (current_class_type
+	      && (!friendp || funcdef_flag))
+	    {
+	      error (funcdef_flag
+		     ? "cannot define member function %<%T::%s%> within %<%T%>"
+		     : "cannot declare member function %<%T::%s%> within %<%T%>",
+		     ctype, name, current_class_type);
+	      return error_mark_node;
+	    }
+
 	  if (TREE_CODE (sname) == IDENTIFIER_NODE
 	      && NEW_DELETE_OPNAME_P (sname))
 	    /* Overloaded operator new and operator delete
 	       are always static functions.  */
 	    ;
-	  else if (current_class_type == NULL_TREE || friendp)
-	    type
-	      = build_method_type_directly (ctype,
-					    TREE_TYPE (type),
-					    TYPE_ARG_TYPES (type));
 	  else
-	    {
-	      error ("cannot declare member function %<%T::%s%> within %<%T%>",
-		     ctype, name, current_class_type);
-	      return error_mark_node;
-	    }
+	    type = build_method_type_directly (ctype,
+					       TREE_TYPE (type),
+					       TYPE_ARG_TYPES (type));
 	}
       else if (declspecs->specs[(int)ds_typedef]
 	       || COMPLETE_TYPE_P (complete_type (ctype)))
@@ -8179,7 +8180,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    decl = check_explicit_specialization
 		      (unqualified_id, decl, template_count,
-		       2 * (funcdef_flag != 0) + 4);
+		       2 * funcdef_flag + 4);
 		    if (decl == error_mark_node)
 		      return error_mark_node;
 		  }

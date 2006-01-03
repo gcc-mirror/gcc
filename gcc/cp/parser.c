@@ -7808,7 +7808,7 @@ cp_parser_mem_initializer_list (cp_parser* parser)
       /* Parse the mem-initializer.  */
       mem_initializer = cp_parser_mem_initializer (parser);
       /* Add it to the list, unless it was erroneous.  */
-      if (mem_initializer)
+      if (mem_initializer != error_mark_node)
 	{
 	  TREE_CHAIN (mem_initializer) = mem_initializer_list;
 	  mem_initializer_list = mem_initializer;
@@ -7837,7 +7837,8 @@ cp_parser_mem_initializer_list (cp_parser* parser)
 
    Returns a TREE_LIST.  The TREE_PURPOSE is the TYPE (for a base
    class) or FIELD_DECL (for a non-static data member) to initialize;
-   the TREE_VALUE is the expression-list.  */
+   the TREE_VALUE is the expression-list.  An empty initialization
+   list is represented by void_list_node.  */
 
 static tree
 cp_parser_mem_initializer (cp_parser* parser)
@@ -7862,12 +7863,14 @@ cp_parser_mem_initializer (cp_parser* parser)
     = cp_parser_parenthesized_expression_list (parser, false,
 					       /*cast_p=*/false,
 					       /*non_constant_p=*/NULL);
+  if (expression_list == error_mark_node)
+    return error_mark_node;
   if (!expression_list)
     expression_list = void_type_node;
 
   in_base_initializer = 0;
 
-  return member ? build_tree_list (member, expression_list) : NULL_TREE;
+  return member ? build_tree_list (member, expression_list) : error_mark_node;
 }
 
 /* Parse a mem-initializer-id.
@@ -8277,6 +8280,7 @@ cp_parser_template_parameter_list (cp_parser* parser)
 {
   tree parameter_list = NULL_TREE;
 
+  begin_template_parm_list ();
   while (true)
     {
       tree parameter;
@@ -8299,7 +8303,7 @@ cp_parser_template_parameter_list (cp_parser* parser)
       cp_lexer_consume_token (parser->lexer);
     }
 
-  return parameter_list;
+  return end_template_parm_list (parameter_list);
 }
 
 /* Parse a template-parameter.
@@ -8447,10 +8451,7 @@ cp_parser_type_parameter (cp_parser* parser)
 	/* Look for the `<'.  */
 	cp_parser_require (parser, CPP_LESS, "`<'");
 	/* Parse the template-parameter-list.  */
-	begin_template_parm_list ();
-	parameter_list
-	  = cp_parser_template_parameter_list (parser);
-	parameter_list = end_template_parm_list (parameter_list);
+	parameter_list = cp_parser_template_parameter_list (parser);
 	/* Look for the `>'.  */
 	cp_parser_require (parser, CPP_GREATER, "`>'");
 	/* Look for the `class' keyword.  */
@@ -10112,6 +10113,11 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	    (parser->num_template_parameter_lists
 	     && (cp_parser_next_token_starts_class_definition_p (parser)
 		 || cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)));
+	  /* An unqualified name was used to reference this type, so
+	     there were no qualifying templates.  */
+	  if (!cp_parser_check_template_parameters (parser, 
+						    /*num_templates=*/0))
+	    return error_mark_node;
 	  type = xref_tag (tag_type, identifier, ts, template_p);
 	}
     }
@@ -15259,12 +15265,8 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
       parameter_list = NULL_TREE;
     }
   else
-    {
-      /* Parse the template parameters.  */
-      begin_template_parm_list ();
-      parameter_list = cp_parser_template_parameter_list (parser);
-      parameter_list = end_template_parm_list (parameter_list);
-    }
+    /* Parse the template parameters.  */
+    parameter_list = cp_parser_template_parameter_list (parser);
 
   /* Look for the `>'.  */
   cp_parser_skip_until_found (parser, CPP_GREATER, "`>'");

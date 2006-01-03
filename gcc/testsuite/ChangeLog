@@ -1,3 +1,20 @@
+2006-01-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25635
+	* g++.dg/parse/operator6.C: New test.
+
+	PR c++/25637
+	* g++.dg/parse/error29.C: New test.
+
+	PR c++/25638
+	* g++.dg/parse/dtor6.C: New test.
+
+	PR c++/25633
+	* g++.dg/parse/ctor3.C: New test.
+
+	PR c++/25634
+	* g++.dg/template/class3.C: New test.
+
 2006-01-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/debug/debug9.C: New.
