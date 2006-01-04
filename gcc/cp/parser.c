@@ -3517,7 +3517,6 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 				     bool is_declaration)
 {
   bool success = false;
-  tree access_check = NULL_TREE;
   cp_token_position start = 0;
   cp_token *token;
 
@@ -3537,9 +3536,10 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 
   /* Remember where the nested-name-specifier starts.  */
   if (cp_parser_uncommitted_to_tentative_parse_p (parser))
-    start = cp_lexer_token_position (parser->lexer, false);
-
-  push_deferring_access_checks (dk_deferred);
+    {
+      start = cp_lexer_token_position (parser->lexer, false);
+      push_deferring_access_checks (dk_deferred);
+    }
 
   while (true)
     {
@@ -3718,10 +3718,6 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       parser->scope = new_scope;
     }
 
-  /* Retrieve any deferred checks.  Do not pop this access checks yet
-     so the memory will not be reclaimed during token replacing below.  */
-  access_check = get_deferred_access_checks ();
-
   /* If parsing tentatively, replace the sequence of tokens that makes
      up the nested-name-specifier with a CPP_NESTED_NAME_SPECIFIER
      token.  That way, should we re-parse the token stream, we will
@@ -3729,19 +3725,27 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
      we issue duplicate error messages.  */
   if (success && start)
     {
-      cp_token *token = cp_lexer_token_at (parser->lexer, start);
+      cp_token *token;
+      tree access_checks;
 
+      token = cp_lexer_token_at (parser->lexer, start);
       /* Reset the contents of the START token.  */
       token->type = CPP_NESTED_NAME_SPECIFIER;
-      token->value = build_tree_list (access_check, parser->scope);
+      /* Retrieve any deferred checks.  Do not pop this access checks yet
+	 so the memory will not be reclaimed during token replacing below.  */
+      access_checks = get_deferred_access_checks ();
+      token->value = build_tree_list (copy_list (access_checks),
+				      parser->scope);
       TREE_TYPE (token->value) = parser->qualifying_scope;
       token->keyword = RID_MAX;
 
       /* Purge all subsequent tokens.  */
       cp_lexer_purge_tokens_after (parser->lexer, start);
     }
+  
+  if (start)
+    pop_to_parent_deferring_access_checks ();
 
-  pop_deferring_access_checks ();
   return success ? parser->scope : NULL_TREE;
 }
 

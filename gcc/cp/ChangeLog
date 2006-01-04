@@ -1,3 +1,9 @@
+2006-01-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24782
+	* parser.c (cp_parser_nested_name_specifier_opt): Preserve access
+	checks, even when parsing tentatively.
+
 2006-01-04  Richard Henderson  <rth@redhat.com>
 
 	Merge from gomp branch.
