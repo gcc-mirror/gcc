@@ -1516,7 +1516,8 @@ c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) $(TM_P_H)
 c-parser.o : c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(GGC_H) $(TIMEVAR_H) $(C_TREE_H) input.h $(FLAGS_H) toplev.h output.h \
-    $(CPPLIB_H) gt-c-parser.h langhooks.h $(C_COMMON_H) $(C_PRAGMA_H)
+    $(CPPLIB_H) gt-c-parser.h langhooks.h $(C_COMMON_H) $(C_PRAGMA_H) \
+    vec.h $(TARGET_H)
 
 srcextra: gcc.srcextra lang.srcextra
 
@@ -2811,6 +2812,7 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
   $(srcdir)/ipa-reference.c $(srcdir)/tree-ssa-structalias.h \
   $(srcdir)/tree-ssa-structalias.c \
+  $(srcdir)/c-pragma.h \
   $(srcdir)/targhooks.c $(out_file) \
   @all_gtfiles@
 

@@ -767,24 +767,24 @@ _cpp_lex_token (cpp_reader *pfile)
 	      /* 6.10.3 p 11: Directives in a list of macro arguments
 		 gives undefined behavior.  This implementation
 		 handles the directive as normal.  */
-	      && pfile->state.parsing_args != 1
-	      && _cpp_handle_directive (pfile, result->flags & PREV_WHITE))
+	      && pfile->state.parsing_args != 1)
 	    {
-	      if (pfile->directive_result.type == CPP_PADDING)
-		continue;
-	      else
+	      if (_cpp_handle_directive (pfile, result->flags & PREV_WHITE))
 		{
+		  if (pfile->directive_result.type == CPP_PADDING)
+		    continue;
 		  result = &pfile->directive_result;
-		  break;
 		}
 	    }
+	  else if (pfile->state.in_deferred_pragma)
+	    result = &pfile->directive_result;
 
 	  if (pfile->cb.line_change && !pfile->state.skipping)
 	    pfile->cb.line_change (pfile, result, pfile->state.parsing_args);
 	}
 
       /* We don't skip tokens in directives.  */
-      if (pfile->state.in_directive)
+      if (pfile->state.in_directive || pfile->state.in_deferred_pragma)
 	break;
 
       /* Outside a directive, invalidate controlling macros.  At file
@@ -878,6 +878,14 @@ _cpp_lex_direct (cpp_reader *pfile)
   buffer = pfile->buffer;
   if (buffer->need_line)
     {
+      if (pfile->state.in_deferred_pragma)
+	{
+	  result->type = CPP_PRAGMA_EOL;
+	  pfile->state.in_deferred_pragma = false;
+	  if (!pfile->state.pragma_allow_expansion)
+	    pfile->state.prevent_expansion--;
+	  return result;
+	}
       if (!_cpp_get_fresh_line (pfile))
 	{
 	  result->type = CPP_EOF;
@@ -1697,7 +1705,7 @@ cpp_token_val_index (cpp_token *tok)
       else if (tok->type == CPP_PADDING)
 	return CPP_TOKEN_FLD_SOURCE;
       else if (tok->type == CPP_PRAGMA)
-	return CPP_TOKEN_FLD_STR;
+	return CPP_TOKEN_FLD_PRAGMA;
       /* else fall through */
     default:
       return CPP_TOKEN_FLD_NONE;

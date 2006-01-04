@@ -55,6 +55,8 @@ typedef struct cp_token GTY (())
   ENUM_BITFIELD (rid) keyword : 8;
   /* Token flags.  */
   unsigned char flags;
+  /* Identifier for the pragma.  */
+  ENUM_BITFIELD (pragma_kind) pragma_kind : 6;
   /* True if this token is from a system header.  */
   BOOL_BITFIELD in_system_header : 1;
   /* True if this token is from a context where it is implicitly extern "C" */
@@ -76,7 +78,7 @@ DEF_VEC_ALLOC_P (cp_token_position,heap);
 
 static const cp_token eof_token =
 {
-  CPP_EOF, RID_MAX, 0, 0, 0, false, NULL_TREE,
+  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, 0, 0, false, NULL_TREE,
 #if USE_MAPPED_LOCATION
   0
 #else
@@ -112,11 +114,15 @@ typedef struct cp_lexer GTY (())
      tokens.  */
   VEC(cp_token_position,heap) *GTY ((skip)) saved_tokens;
 
+  /* The next lexer in a linked list of lexers.  */
+  struct cp_lexer *next;
+
   /* True if we should output debugging information.  */
   bool debugging_p;
 
-  /* The next lexer in a linked list of lexers.  */
-  struct cp_lexer *next;
+  /* True if we're in the context of parsing a pragma, and should not
+     increment past the end-of-line marker.  */
+  bool in_pragma;
 } cp_lexer;
 
 /* cp_token_cache is a range of tokens.  There is no need to represent
@@ -166,8 +172,6 @@ static void cp_lexer_purge_token
   (cp_lexer *);
 static void cp_lexer_purge_tokens_after
   (cp_lexer *, cp_token_position);
-static void cp_lexer_handle_pragma
-  (cp_lexer *);
 static void cp_lexer_save_tokens
   (cp_lexer *);
 static void cp_lexer_commit_tokens
@@ -195,6 +199,9 @@ static void cp_lexer_stop_debugging
 
 static cp_token_cache *cp_token_cache_new
   (cp_token *, cp_token *);
+
+static void cp_parser_initial_pragma
+  (cp_token *);
 
 /* Manifest constants.  */
 #define CP_LEXER_BUFFER_SIZE 10000
@@ -244,17 +251,12 @@ cp_lexer_new_main (void)
   size_t space;
   cp_token *buffer;
 
-  /* It's possible that lexing the first token will load a PCH file,
-     which is a GC collection point.  So we have to grab the first
-     token before allocating any memory.  Pragmas must not be deferred
-     as -fpch-preprocess can generate a pragma to load the PCH file in
-     the preprocessed output used by -save-temps.  */
-  cp_lexer_get_preprocessor_token (NULL, &first_token);
+  /* It's possible that parsing the first pragma will load a PCH file,
+     which is a GC collection point.  So we have to do that before
+     allocating any memory.  */
+  cp_parser_initial_pragma (&first_token);
 
-  /* Tell cpplib we want CPP_PRAGMA tokens.  */
-  cpp_get_options (parse_in)->defer_pragmas = true;
-
-  /* Tell pragma_lex not to merge string constants.  */
+  /* Tell c_lex_with_flags not to merge string constants.  */
   c_lex_return_raw_strings = true;
 
   c_common_no_more_pch ();
@@ -295,11 +297,6 @@ cp_lexer_new_main (void)
   lexer->buffer_length = alloc - space;
   lexer->last_token = pos;
   lexer->next_token = lexer->buffer_length ? buffer : (cp_token *)&eof_token;
-
-  /* Pragma processing (via cpp_handle_deferred_pragma) may result in
-     direct calls to pragma_lex.  Those callers all expect pragma_lex
-     to do string constant concatenation.  */
-  c_lex_return_raw_strings = false;
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
@@ -395,6 +392,8 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
    /* Get a new token from the preprocessor.  */
   token->type
     = c_lex_with_flags (&token->value, &token->location, &token->flags);
+  token->keyword = RID_MAX;
+  token->pragma_kind = PRAGMA_NONE;
   token->in_system_header = in_system_header;
 
   /* On some systems, some header files are surrounded by an
@@ -442,8 +441,12 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
 	default: token->keyword = C_RID_CODE (token->value);
 	}
     }
-  else
-    token->keyword = RID_MAX;
+  else if (token->type == CPP_PRAGMA)
+    {
+      /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
+      token->pragma_kind = TREE_INT_CST_LOW (token->value);
+      token->value = NULL;
+    }
 }
 
 /* Update the globals input_location and in_system_header from TOKEN.  */
@@ -553,6 +556,7 @@ cp_lexer_consume_token (cp_lexer* lexer)
   cp_token *token = lexer->next_token;
 
   gcc_assert (token != &eof_token);
+  gcc_assert (!lexer->in_pragma || token->type != CPP_PRAGMA_EOL);
 
   do
     {
@@ -628,25 +632,6 @@ cp_lexer_purge_tokens_after (cp_lexer *lexer, cp_token *tok)
       tok->value = NULL_TREE;
       tok->keyword = RID_MAX;
     }
-}
-
-/* Consume and handle a pragma token.  */
-static void
-cp_lexer_handle_pragma (cp_lexer *lexer)
-{
-  cpp_string s;
-  cp_token *token = cp_lexer_consume_token (lexer);
-  gcc_assert (token->type == CPP_PRAGMA);
-  gcc_assert (token->value);
-
-  s.len = TREE_STRING_LENGTH (token->value);
-  s.text = (const unsigned char *) TREE_STRING_POINTER (token->value);
-
-  cpp_handle_deferred_pragma (parse_in, &s);
-
-  /* Clearing token->value here means that we will get an ICE if we
-     try to process this #pragma again (which should be impossible).  */
-  token->value = NULL;
 }
 
 /* Begin saving tokens.  All tokens consumed after this point will be
@@ -731,7 +716,6 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
 
     case CPP_STRING:
     case CPP_WSTRING:
-    case CPP_PRAGMA:
       fprintf (stream, " \"%s\"", TREE_STRING_POINTER (token->value));
       break;
 
@@ -1463,9 +1447,9 @@ static tree cp_parser_builtin_offsetof
 /* Statements [gram.stmt.stmt]  */
 
 static void cp_parser_statement
-  (cp_parser *, tree);
+  (cp_parser *, tree, bool);
 static tree cp_parser_labeled_statement
-  (cp_parser *, tree);
+  (cp_parser *, tree, bool);
 static tree cp_parser_expression_statement
   (cp_parser *, tree);
 static tree cp_parser_compound_statement
@@ -1685,6 +1669,10 @@ static bool cp_parser_extension_opt
 static void cp_parser_label_declaration
   (cp_parser *);
 
+enum pragma_context { pragma_external, pragma_stmt, pragma_compound };
+static bool cp_parser_pragma
+  (cp_parser *, enum pragma_context);
+
 /* Objective-C++ Productions */
 
 static tree cp_parser_objc_message_receiver
@@ -1828,6 +1816,8 @@ static void cp_parser_skip_to_closing_brace
   (cp_parser *);
 static void cp_parser_skip_until_found
   (cp_parser *, enum cpp_ttype, const char *);
+static void cp_parser_skip_to_pragma_eol
+  (cp_parser*, cp_token *);
 static bool cp_parser_error_occurred
   (cp_parser *);
 static bool cp_parser_allow_gnu_extensions_p
@@ -1888,12 +1878,14 @@ cp_parser_error (cp_parser* parser, const char* message)
       /* This diagnostic makes more sense if it is tagged to the line
 	 of the token we just peeked at.  */
       cp_lexer_set_source_position_from_token (token);
+
       if (token->type == CPP_PRAGMA)
 	{
 	  error ("%<#pragma%> is not allowed here");
-	  cp_lexer_purge_token (parser->lexer);
+	  cp_parser_skip_to_pragma_eol (parser, token);
 	  return;
 	}
+
       c_parse_error (message,
 		     /* Because c_parser_error does not understand
 			CPP_KEYWORD, keywords are treated like
@@ -2187,7 +2179,6 @@ cp_parser_skip_to_closing_parenthesis (cp_parser *parser,
 {
   unsigned paren_depth = 0;
   unsigned brace_depth = 0;
-  int result;
 
   if (recovering && !or_comma
       && cp_parser_uncommitted_to_tentative_parse_p (parser))
@@ -2195,62 +2186,55 @@ cp_parser_skip_to_closing_parenthesis (cp_parser *parser,
 
   while (true)
     {
-      cp_token *token;
+      cp_token * token = cp_lexer_peek_token (parser->lexer);
 
-      /* If we've run out of tokens, then there is no closing `)'.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+      switch (token->type)
 	{
-	  result = 0;
+	case CPP_EOF:
+	case CPP_PRAGMA_EOL:
+	  /* If we've run out of tokens, then there is no closing `)'.  */
+	  return 0;
+
+	case CPP_SEMICOLON:
+	  /* This matches the processing in skip_to_end_of_statement.  */
+	  if (!brace_depth)
+	    return 0;
 	  break;
-	}
 
-      token = cp_lexer_peek_token (parser->lexer);
-
-      /* This matches the processing in skip_to_end_of_statement.  */
-      if (token->type == CPP_SEMICOLON && !brace_depth)
-	{
-	  result = 0;
+	case CPP_OPEN_BRACE:
+	  ++brace_depth;
 	  break;
-	}
-      if (token->type == CPP_OPEN_BRACE)
-	++brace_depth;
-      if (token->type == CPP_CLOSE_BRACE)
-	{
+	case CPP_CLOSE_BRACE:
 	  if (!brace_depth--)
-	    {
-	      result = 0;
-	      break;
-	    }
-	}
-      if (recovering && or_comma && token->type == CPP_COMMA
-	  && !brace_depth && !paren_depth)
-	{
-	  result = -1;
+	    return 0;
 	  break;
-	}
 
-      if (!brace_depth)
-	{
-	  /* If it is an `(', we have entered another level of nesting.  */
-	  if (token->type == CPP_OPEN_PAREN)
+	case CPP_COMMA:
+	  if (recovering && or_comma && !brace_depth && !paren_depth)
+	    return -1;
+	  break;
+
+	case CPP_OPEN_PAREN:
+	  if (!brace_depth)
 	    ++paren_depth;
-	  /* If it is a `)', then we might be done.  */
-	  else if (token->type == CPP_CLOSE_PAREN && !paren_depth--)
+	  break;
+
+	case CPP_CLOSE_PAREN:
+	  if (!brace_depth && !paren_depth--)
 	    {
 	      if (consume_paren)
 		cp_lexer_consume_token (parser->lexer);
-	      {
-		result = 1;
-		break;
-	      }
+	      return 1;
 	    }
+	  break;
+
+	default:
+	  break;
 	}
 
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
     }
-
-  return result;
 }
 
 /* Consume tokens until we reach the end of the current statement.
@@ -2264,31 +2248,34 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 
   while (true)
     {
-      cp_token *token;
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
 
-      /* Peek at the next token.  */
-      token = cp_lexer_peek_token (parser->lexer);
-      /* If we've run out of tokens, stop.  */
-      if (token->type == CPP_EOF)
-	break;
-      /* If the next token is a `;', we have reached the end of the
-	 statement.  */
-      if (token->type == CPP_SEMICOLON && !nesting_depth)
-	break;
-      /* If the next token is a non-nested `}', then we have reached
-	 the end of the current block.  */
-      if (token->type == CPP_CLOSE_BRACE)
+      switch (token->type)
 	{
-	  /* If this is a non-nested `}', stop before consuming it.
+	case CPP_EOF:
+	case CPP_PRAGMA_EOL:
+	  /* If we've run out of tokens, stop.  */
+	  return;
+
+	case CPP_SEMICOLON:
+	  /* If the next token is a `;', we have reached the end of the
+	     statement.  */
+	  if (!nesting_depth)
+	    return;
+	  break;
+
+	case CPP_CLOSE_BRACE:
+	  /* If this is a non-nested '}', stop before consuming it.
 	     That way, when confronted with something like:
 
 	       { 3 + }
 
-	     we stop before consuming the closing `}', even though we
+	     we stop before consuming the closing '}', even though we
 	     have not yet reached a `;'.  */
 	  if (nesting_depth == 0)
-	    break;
-	  /* If it is the closing `}' for a block that we have
+	    return;
+
+	  /* If it is the closing '}' for a block that we have
 	     scanned, stop -- but only after consuming the token.
 	     That way given:
 
@@ -2301,13 +2288,17 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	  if (--nesting_depth == 0)
 	    {
 	      cp_lexer_consume_token (parser->lexer);
-	      break;
+	      return;
 	    }
+
+	case CPP_OPEN_BRACE:
+	  ++nesting_depth;
+	  break;
+
+	default:
+	  break;
 	}
-      /* If it the next token is a `{', then we are entering a new
-	 block.  Consume the entire block.  */
-      else if (token->type == CPP_OPEN_BRACE)
-	++nesting_depth;
+
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
     }
@@ -2344,15 +2335,12 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
     {
       cp_token *token = cp_lexer_peek_token (parser->lexer);
 
-      if (token->type == CPP_EOF)
-	break;
-
       switch (token->type)
 	{
 	case CPP_EOF:
+	case CPP_PRAGMA_EOL:
 	  /* If we've run out of tokens, stop.  */
-	  nesting_depth = -1;
-	  continue;
+	  return;
 
 	case CPP_SEMICOLON:
 	  /* Stop if this is an unnested ';'. */
@@ -2379,7 +2367,6 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
-
     }
 }
 
@@ -2393,24 +2380,54 @@ cp_parser_skip_to_closing_brace (cp_parser *parser)
 
   while (true)
     {
-      cp_token *token;
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
 
-      /* Peek at the next token.  */
-      token = cp_lexer_peek_token (parser->lexer);
-      /* If we've run out of tokens, stop.  */
-      if (token->type == CPP_EOF)
-	break;
-      /* If the next token is a non-nested `}', then we have reached
-	 the end of the current block.  */
-      if (token->type == CPP_CLOSE_BRACE && nesting_depth-- == 0)
-	break;
-      /* If it the next token is a `{', then we are entering a new
-	 block.  Consume the entire block.  */
-      else if (token->type == CPP_OPEN_BRACE)
-	++nesting_depth;
+      switch (token->type)
+	{
+	case CPP_EOF:
+	case CPP_PRAGMA_EOL:
+	  /* If we've run out of tokens, stop.  */
+	  return;
+
+	case CPP_CLOSE_BRACE:
+	  /* If the next token is a non-nested `}', then we have reached
+	     the end of the current block.  */
+	  if (nesting_depth-- == 0)
+	    return;
+	  break;
+
+	case CPP_OPEN_BRACE:
+	  /* If it the next token is a `{', then we are entering a new
+	     block.  Consume the entire block.  */
+	  ++nesting_depth;
+	  break;
+
+	default:
+	  break;
+	}
+
       /* Consume the token.  */
       cp_lexer_consume_token (parser->lexer);
     }
+}
+
+/* Consume tokens until we reach the end of the pragma.  The PRAGMA_TOK
+   parameter is the PRAGMA token, allowing us to purge the entire pragma
+   sequence.  */
+
+static void
+cp_parser_skip_to_pragma_eol (cp_parser* parser, cp_token *pragma_tok)
+{
+  cp_token *token;
+
+  parser->lexer->in_pragma = false;
+
+  do
+    token = cp_lexer_consume_token (parser->lexer);
+  while (token->type != CPP_PRAGMA_EOL && token->type != CPP_EOF);
+
+  /* Ensure that the pragma is not parsed again.  */
+  cp_lexer_purge_tokens_after (parser->lexer, pragma_tok);
 }
 
 /* This is a simple wrapper around make_typename_type. When the id is
@@ -6005,15 +6022,20 @@ cp_parser_builtin_offsetof (cp_parser *parser)
      iteration-statement
      jump-statement
      declaration-statement
-     try-block  */
+     try-block
+
+  IN_COMPOUND is true when the statement is nested inside a 
+  cp_parser_compound_statement; this matters for certain pragmas.  */
 
 static void
-cp_parser_statement (cp_parser* parser, tree in_statement_expr)
+cp_parser_statement (cp_parser* parser, tree in_statement_expr,
+		     bool in_compound)
 {
   tree statement;
   cp_token *token;
   location_t statement_location;
 
+ restart:
   /* There is no statement yet.  */
   statement = NULL_TREE;
   /* Peek at the next token.  */
@@ -6030,8 +6052,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
 	{
 	case RID_CASE:
 	case RID_DEFAULT:
-	  statement = cp_parser_labeled_statement (parser,
-						   in_statement_expr);
+	  statement = cp_parser_labeled_statement (parser, in_statement_expr,
+						   in_compound);
 	  break;
 
 	case RID_IF:
@@ -6077,7 +6099,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
 	 labeled-statement.  */
       token = cp_lexer_peek_nth_token (parser->lexer, 2);
       if (token->type == CPP_COLON)
-	statement = cp_parser_labeled_statement (parser, in_statement_expr);
+	statement = cp_parser_labeled_statement (parser, in_statement_expr,
+						 in_compound);
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
@@ -6086,7 +6109,15 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
      a statement all its own.  */
   else if (token->type == CPP_PRAGMA)
     {
-      cp_lexer_handle_pragma (parser->lexer);
+      /* Only certain OpenMP pragmas are attached to statements, and thus
+	 are considered statements themselves.  All others are not.  In
+	 the context of a compound, accept the pragma as a "statement" and
+	 return so that we can check for a close brace.  Otherwise we 
+	 require a real statement and must go back and read one.  */
+      if (in_compound)
+	cp_parser_pragma (parser, pragma_compound);
+      else if (!cp_parser_pragma (parser, pragma_stmt))
+	goto restart;
       return;
     }
   else if (token->type == CPP_EOF)
@@ -6132,10 +6163,14 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
      case constant-expression ... constant-expression : statement
 
    Returns the new CASE_LABEL_EXPR, for a `case' or `default' label.
-   For an ordinary label, returns a LABEL_EXPR.  */
+   For an ordinary label, returns a LABEL_EXPR.
+
+   IN_COMPOUND is as for cp_parser_statement: true when we're nested
+   inside a compound.  */
 
 static tree
-cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
+cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr,
+			     bool in_compound)
 {
   cp_token *token;
   tree statement = error_mark_node;
@@ -6178,20 +6213,21 @@ cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
 	else
 	  expr_hi = NULL_TREE;
 
-	if (!parser->in_switch_statement_p)
-	  error ("case label %qE not within a switch statement", expr);
-	else
+	if (parser->in_switch_statement_p)
 	  statement = finish_case_label (expr, expr_hi);
+	else
+	  error ("case label %qE not within a switch statement", expr);
       }
       break;
 
     case RID_DEFAULT:
       /* Consume the `default' token.  */
       cp_lexer_consume_token (parser->lexer);
-      if (!parser->in_switch_statement_p)
-	error ("case label not within a switch statement");
-      else
+
+      if (parser->in_switch_statement_p)
 	statement = finish_case_label (NULL_TREE, NULL_TREE);
+      else
+	error ("case label not within a switch statement");
       break;
 
     default:
@@ -6203,7 +6239,7 @@ cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
   /* Require the `:' token.  */
   cp_parser_require (parser, CPP_COLON, "`:'");
   /* Parse the labeled statement.  */
-  cp_parser_statement (parser, in_statement_expr);
+  cp_parser_statement (parser, in_statement_expr, in_compound);
 
   /* Return the label, in the case of a `case' or `default' label.  */
   return statement;
@@ -6285,13 +6321,16 @@ cp_parser_statement_seq_opt (cp_parser* parser, tree in_statement_expr)
   /* Scan statements until there aren't any more.  */
   while (true)
     {
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+
       /* If we're looking at a `}', then we've run out of statements.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE)
-	  || cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+      if (token->type == CPP_CLOSE_BRACE
+	  || token->type == CPP_EOF
+	  || token->type == CPP_PRAGMA_EOL)
 	break;
 
       /* Parse the statement.  */
-      cp_parser_statement (parser, in_statement_expr);
+      cp_parser_statement (parser, in_statement_expr, true);
     }
 }
 
@@ -6788,7 +6827,7 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser)
       /* Create a compound-statement.  */
       statement = begin_compound_stmt (0);
       /* Parse the dependent-statement.  */
-      cp_parser_statement (parser, false);
+      cp_parser_statement (parser, NULL_TREE, false);
       /* Finish the dummy compound-statement.  */
       finish_compound_stmt (statement);
     }
@@ -6810,13 +6849,13 @@ cp_parser_already_scoped_statement (cp_parser* parser)
 {
   /* If the token is a `{', then we must take special action.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
-    cp_parser_statement (parser, false);
+    cp_parser_statement (parser, NULL_TREE, false);
   else
     {
       /* Avoid calling cp_parser_compound_statement, so that we
 	 don't create a new scope.  Do everything else by hand.  */
       cp_parser_require (parser, CPP_OPEN_BRACE, "`{'");
-      cp_parser_statement_seq_opt (parser, false);
+      cp_parser_statement_seq_opt (parser, NULL_TREE);
       cp_parser_require (parser, CPP_CLOSE_BRACE, "`}'");
     }
 }
@@ -6839,7 +6878,8 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
       token = cp_lexer_peek_token (parser->lexer);
 
       if (token->type == CPP_CLOSE_BRACE
-	  || token->type == CPP_EOF)
+	  || token->type == CPP_EOF
+	  || token->type == CPP_PRAGMA_EOL)
 	break;
 
       if (token->type == CPP_SEMICOLON)
@@ -6871,7 +6911,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	     A nested declaration cannot, so this is done here and not
 	     in cp_parser_declaration.  (A #pragma at block scope is
 	     handled in cp_parser_statement.)  */
-	  cp_lexer_handle_pragma (parser->lexer);
+	  cp_parser_pragma (parser, pragma_external);
 	  continue;
 	}
 
@@ -12207,6 +12247,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 
 		  /* If we run out of tokens, issue an error message.  */
 		case CPP_EOF:
+		case CPP_PRAGMA_EOL:
 		  error ("file ends in default argument");
 		  done = true;
 		  break;
@@ -13242,7 +13283,9 @@ cp_parser_member_specification_opt (cp_parser* parser)
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
       /* If it's a `}', or EOF then we've seen all the members.  */
-      if (token->type == CPP_CLOSE_BRACE || token->type == CPP_EOF)
+      if (token->type == CPP_CLOSE_BRACE
+	  || token->type == CPP_EOF
+	  || token->type == CPP_PRAGMA_EOL)
 	break;
 
       /* See if this token is a keyword.  */
@@ -13264,7 +13307,7 @@ cp_parser_member_specification_opt (cp_parser* parser)
 	  /* Accept #pragmas at class scope.  */
 	  if (token->type == CPP_PRAGMA)
 	    {
-	      cp_lexer_handle_pragma (parser->lexer);
+	      cp_parser_pragma (parser, pragma_external);
 	      break;
 	    }
 
@@ -15185,9 +15228,15 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
       /* Issue an error message.  */
       error ("named return values are no longer supported");
       /* Skip tokens until we reach the start of the function body.  */
-      while (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE)
-	     && cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
-	cp_lexer_consume_token (parser->lexer);
+      while (true)
+	{
+	  cp_token *token = cp_lexer_peek_token (parser->lexer);
+	  if (token->type == CPP_OPEN_BRACE
+	      || token->type == CPP_EOF
+	      || token->type == CPP_PRAGMA_EOL)
+	    break;
+	  cp_lexer_consume_token (parser->lexer);
+	}
     }
   /* The `extern' in `extern "C" void f () { ... }' does not apply to
      anything declared inside `f'.  */
@@ -16002,27 +16051,38 @@ cp_parser_skip_until_found (cp_parser* parser,
     {
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
-      /* If we've reached the token we want, consume it and
-	 stop.  */
+
+      /* If we've reached the token we want, consume it and stop.  */
       if (token->type == type && !nesting_depth)
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  return;
 	}
-      /* If we've run out of tokens, stop.  */
-      if (token->type == CPP_EOF)
-	return;
-      if (token->type == CPP_OPEN_BRACE
-	  || token->type == CPP_OPEN_PAREN
-	  || token->type == CPP_OPEN_SQUARE)
-	++nesting_depth;
-      else if (token->type == CPP_CLOSE_BRACE
-	       || token->type == CPP_CLOSE_PAREN
-	       || token->type == CPP_CLOSE_SQUARE)
+
+      switch (token->type)
 	{
+	case CPP_EOF:
+	case CPP_PRAGMA_EOL:
+	  /* If we've run out of tokens, stop.  */
+	  return;
+
+	case CPP_OPEN_BRACE:
+	case CPP_OPEN_PAREN:
+	case CPP_OPEN_SQUARE:
+	  ++nesting_depth;
+	  break;
+
+	case CPP_CLOSE_BRACE:
+	case CPP_CLOSE_PAREN:
+	case CPP_CLOSE_SQUARE:
 	  if (nesting_depth-- == 0)
 	    return;
+	  break;
+
+	default:
+	  break;
 	}
+
       /* Consume this token.  */
       cp_lexer_consume_token (parser->lexer);
     }
@@ -16241,7 +16301,9 @@ cp_parser_cache_group (cp_parser *parser,
 	  && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	return;
       /* If we've reached the end of the file, stop.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF)
+	  || (end != CPP_PRAGMA_EOL
+	      && cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA_EOL)))
 	return;
       /* Consume the next token.  */
       token = cp_lexer_consume_token (parser->lexer);
@@ -16254,6 +16316,8 @@ cp_parser_cache_group (cp_parser *parser,
 	}
       else if (token->type == CPP_OPEN_PAREN)
 	cp_parser_cache_group (parser, CPP_CLOSE_PAREN, depth + 1);
+      else if (token->type == CPP_PRAGMA)
+	cp_parser_cache_group (parser, CPP_PRAGMA_EOL, depth + 1);
       else if (token->type == end)
 	return;
     }
@@ -16990,7 +17054,7 @@ cp_parser_objc_interstitial_code (cp_parser* parser)
     cp_parser_linkage_specification (parser);
   /* Handle #pragma, if any.  */
   else if (token->type == CPP_PRAGMA)
-    cp_lexer_handle_pragma (parser->lexer);
+    cp_parser_pragma (parser, pragma_external);
   /* Allow stray semicolons.  */
   else if (token->type == CPP_SEMICOLON)
     cp_lexer_consume_token (parser->lexer);
@@ -17482,11 +17546,111 @@ cp_parser_objc_statement (cp_parser * parser) {
 
   return error_mark_node;
 }
-
 /* The parser.  */
 
 static GTY (()) cp_parser *the_parser;
 
+
+/* Special handling for the first token or line in the file.  The first
+   thing in the file might be #pragma GCC pch_preprocess, which loads a
+   PCH file, which is a GC collection point.  So we need to handle this
+   first pragma without benefit of an existing lexer structure.
+
+   Always returns one token to the caller in *FIRST_TOKEN.  This is 
+   either the true first token of the file, or the first token after
+   the initial pragma.  */
+
+static void
+cp_parser_initial_pragma (cp_token *first_token)
+{
+  tree name = NULL;
+
+  cp_lexer_get_preprocessor_token (NULL, first_token);
+  if (first_token->pragma_kind != PRAGMA_GCC_PCH_PREPROCESS)
+    return;
+
+  cp_lexer_get_preprocessor_token (NULL, first_token);
+  if (first_token->type == CPP_STRING)
+    {
+      name = first_token->value;
+
+      cp_lexer_get_preprocessor_token (NULL, first_token);
+      if (first_token->type != CPP_PRAGMA_EOL)
+	error ("junk at end of %<#pragma GCC pch_preprocess%>");
+    }
+  else
+    error ("expected string literal");
+
+  /* Skip to the end of the pragma.  */
+  while (first_token->type != CPP_PRAGMA_EOL && first_token->type != CPP_EOF)
+    cp_lexer_get_preprocessor_token (NULL, first_token);
+
+  /* Read one more token to return to our caller.  */
+  cp_lexer_get_preprocessor_token (NULL, first_token);
+
+  /* Now actually load the PCH file.  */
+  if (name)
+    c_common_pch_pragma (parse_in, TREE_STRING_POINTER (name));
+}
+
+/* Normal parsing of a pragma token.  Here we can (and must) use the
+   regular lexer.  */
+
+static bool
+cp_parser_pragma (cp_parser *parser, enum pragma_context context ATTRIBUTE_UNUSED)
+{
+  cp_token *pragma_tok;
+  unsigned int id;
+
+  pragma_tok = cp_lexer_consume_token (parser->lexer);
+  gcc_assert (pragma_tok->type == CPP_PRAGMA);
+  parser->lexer->in_pragma = true;
+
+  id = pragma_tok->pragma_kind;
+  switch (id)
+    {
+    case PRAGMA_GCC_PCH_PREPROCESS:
+      error ("%<#pragma GCC pch_preprocess%> must be first");
+      break;
+
+    default:
+      gcc_assert (id >= PRAGMA_FIRST_EXTERNAL);
+      c_invoke_pragma_handler (id);
+      break;
+    }
+
+  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+  return false;
+}
+
+/* The interface the pragma parsers have to the lexer.  */
+
+enum cpp_ttype
+pragma_lex (tree *value)
+{
+  cp_token *tok;
+  enum cpp_ttype ret;
+
+  tok = cp_lexer_peek_token (the_parser->lexer);
+
+  ret = tok->type;
+  *value = tok->value;
+
+  if (ret == CPP_PRAGMA_EOL || ret == CPP_EOF)
+    ret = CPP_EOF;
+  else if (ret == CPP_STRING)
+    *value = cp_parser_string_literal (the_parser, false, false);
+  else
+    {
+      cp_lexer_consume_token (the_parser->lexer);
+      if (ret == CPP_KEYWORD)
+	ret = CPP_NAME;
+    }
+
+  return ret;
+}
+
+
 /* External interface.  */
 
 /* Parse one entire translation unit.  */

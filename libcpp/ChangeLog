@@ -1,3 +1,38 @@
+2006-01-04  Dmitry Kurochkin <dmitry.kurochkin@gmail.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	Merge from gomp branch:
+	* directives.c (struct pragma_entry): Add is_deferred.  Add ident
+	entry to value union.
+	(end_directive): Don't eat the line if in_deferred_pragma.
+	(run_directive): Remove pragma hacks.
+	(insert_pragma_entry): Remove.
+	(new_pragma_entry): New.
+	(register_pragma_1): Split out of register_pragma.  Only handle
+	the lookup tree and return the new entry.
+	(cpp_register_pragma): Fill in the pragma entry here.
+	(cpp_register_deferred_pragma): New.
+	(register_pragma_internal): New.
+	(_cpp_init_internal_pragmas): Use register_pragma_internal.
+	(do_pragma): Allow pragma expansion after namespace.  For deferred
+	pragmas, don't slurp the line into a string.
+	(destringize_and_run): Save tokens for deferred pragmas.
+	(cpp_handle_deferred_pragma): Remove.
+	* macro.c (builtin_macro): Remove pragma token hack.
+	(_cpp_push_token_context): Rename from push_token_context and export.
+	* internal.h (struct lexer_state): Add pragma_allow_expansion.
+	(_cpp_push_token_context): Declare.
+	* lex.c (_cpp_lex_token): Allow _cpp_handle_directive to return
+	a token.  Update the line number correctly if so.
+	(_cpp_lex_direct): Emit CPP_PRAGMA_EOL tokens.
+	(cpp_token_val_index): Return CPP_TOKEN_FLD_PRAGMA for pragmas.
+	* include/cpplib.h (PRAGMA_EOL): New.
+	(CPP_TOKEN_FLD_PRAGMA): New.
+	(struct cpp_token): Add val.pragma.
+	(struct cpp_options): Remove defer_pragmas.
+	(cpp_handle_deferred_pragma): Remove.
+	(cpp_register_deferred_pragma): Declare.
+
 2006-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/25294
@@ -19,7 +54,7 @@
 	(cpp_classify_number): Disallow hexadecimal DFP constants.
 
 2005-11-14  Gerald Pfeifer  <gerald@pfeifer.com>
-            Ian Lance Taylor  <ian@airs.com>
+	    Ian Lance Taylor  <ian@airs.com>
 
 	* include/cpplib.h (struct cpp_callbacks): Annotate error with
 	ATTRIBUTE_FPTR_PRINTF(3,0) instead of ATTRIBUTE_PRINTF(3,0).

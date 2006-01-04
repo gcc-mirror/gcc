@@ -441,17 +441,9 @@ c_common_no_more_pch (void)
 #endif
 
 void
-c_common_pch_pragma (cpp_reader *pfile)
+c_common_pch_pragma (cpp_reader *pfile, const char *name)
 {
-  tree name_t;
-  const char *name;
   int fd;
-
-  if (pragma_lex (&name_t) != CPP_STRING)
-    {
-      error ("malformed #pragma GCC pch_preprocess, ignored");
-      return;
-    }
 
   if (!cpp_get_options (pfile)->preprocessed)
     {
@@ -460,8 +452,6 @@ c_common_pch_pragma (cpp_reader *pfile)
       return;
     }
 
-  name = TREE_STRING_POINTER (name_t);
-  
   fd = open (name, O_RDONLY | O_BINARY, 0666);
   if (fd == -1)
     fatal_error ("%s: couldn%'t open PCH file: %m", name);

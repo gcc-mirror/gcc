@@ -42,8 +42,6 @@ struct macro_arg
 
 static int enter_macro_context (cpp_reader *, cpp_hashnode *);
 static int builtin_macro (cpp_reader *, cpp_hashnode *);
-static void push_token_context (cpp_reader *, cpp_hashnode *,
-				const cpp_token *, unsigned int);
 static void push_ptoken_context (cpp_reader *, cpp_hashnode *, _cpp_buff *,
 				 const cpp_token **, unsigned int);
 static _cpp_buff *collect_args (cpp_reader *, const cpp_hashnode *);
@@ -261,13 +259,6 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
 	return 0;
 
       _cpp_do__Pragma (pfile);
-      if (pfile->directive_result.type == CPP_PRAGMA) 
-	{
-	  cpp_token *tok = _cpp_temp_token (pfile);
-	  *tok = pfile->directive_result;
-	  push_token_context (pfile, NULL, tok, 1);
-	}
-
       return 1;
     }
 
@@ -282,7 +273,7 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
 
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
   pfile->cur_token = _cpp_temp_token (pfile);
-  push_token_context (pfile, NULL, _cpp_lex_direct (pfile), 1);
+  _cpp_push_token_context (pfile, NULL, _cpp_lex_direct (pfile), 1);
   if (pfile->buffer->cur != pfile->buffer->rlimit)
     cpp_error (pfile, CPP_DL_ICE, "invalid built-in macro \"%s\"",
 	       NODE_NAME (node));
@@ -480,7 +471,7 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
   while (rhs->flags & PASTE_LEFT);
 
   /* Put the resulting token in its own context.  */
-  push_token_context (pfile, NULL, lhs, 1);
+  _cpp_push_token_context (pfile, NULL, lhs, 1);
 }
 
 /* Returns TRUE if the number of arguments ARGC supplied in an
@@ -694,7 +685,7 @@ funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node)
 	 too difficult.  We re-insert it in its own context.  */
       _cpp_backup_tokens (pfile, 1);
       if (padding)
-	push_token_context (pfile, NULL, padding, 1);
+	_cpp_push_token_context (pfile, NULL, padding, 1);
     }
 
   return NULL;
@@ -750,7 +741,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node)
       macro->used = 1;
 
       if (macro->paramc == 0)
-	push_token_context (pfile, node, macro->exp.tokens, macro->count);
+	_cpp_push_token_context (pfile, node, macro->exp.tokens, macro->count);
 
       return 1;
     }
@@ -943,9 +934,9 @@ push_ptoken_context (cpp_reader *pfile, cpp_hashnode *macro, _cpp_buff *buff,
 }
 
 /* Push a list of tokens.  */
-static void
-push_token_context (cpp_reader *pfile, cpp_hashnode *macro,
-		    const cpp_token *first, unsigned int count)
+void
+_cpp_push_token_context (cpp_reader *pfile, cpp_hashnode *macro,
+			 const cpp_token *first, unsigned int count)
 {
   cpp_context *context = next_context (pfile);
 

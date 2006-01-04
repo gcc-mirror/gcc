@@ -1,3 +1,49 @@
+2006-01-04  Richard Henderson  <rth@redhat.com>
+
+	Merge from gomp branch:
+	* c-lex.c (c_lex_with_flags) <CPP_PRAGMA>: Smuggle pragma id
+	via integer constant.
+	(pragma_lex): Remove.
+	* c-pch.c (c_common_pch_pragma): Accept the name as an argument,
+	rather than parsing it.
+	* c-pragma.c (handle_pragma_weak, handle_pragma_redefine_extname,
+	handle_pragma_extern_prefix): Add %< %> quotes.
+	(registered_pragmas): New.
+	(c_register_pragma_1): New.
+	(c_register_pragma): Use it.
+	(c_register_pragma_with_expansion): Likewise.
+	(c_invoke_pragma_handler): New.
+	(init_pragma): Use cpp_register_deferred_pragma directly for
+	pch_preprocess.
+	* c-pragma.h (enum pragma_kind): New.
+	(pragma_handler): New.
+	(c_invoke_pragma_handler): Declare.
+	* c-common.c (c_parse_error): Pretty print CPP_PRAGMA and
+	CPP_PRAGMA_EOL.
+	* c-common.h (c_common_pch_pragma): Update decl.
+	* Makefile.in (c-parser.o): Update dependencies.
+	(GTFILES): Add c-pragma.h.
+	* c-parser.c (struct c_token): Add pragma_kind.
+	(struct c_parser): Add in_pragma.
+	(c_lex_one_token): Always initialize keyword and pragma_kind.
+	Extract data for CPP_PRAGMA.
+	(c_parser_peek_2nd_token): Deny CPP_PRAGMA_EOL.
+	(c_parser_consume_token): Don't allow CPP_PRAGMA unless errors.
+	Don't allow CPP_PRAGMA_EOL if in_pragma.
+	(c_parser_consume_pragma): New.
+	(c_parser_skip_until_found): Stop on CPP_PRAGMA_EOL.
+	(c_parser_skip_to_end_of_parameter): Likewise.
+	(c_parser_skip_to_end_of_block_or_statement): Likewise.
+	(c_parser_skip_to_pragma_eol): New.
+	(c_parser_external_declaration): Handle CPP_PRAGMA.
+	(c_parser_compound_statement_nostart): Likewise.
+	(c_parser_statement_after_labels): Likewise.
+	(c_parser_pragma): New.
+	(pragma_lex): Likewise.
+	(c_parser_pragma_pch_preprocess): New.
+	(c_parser_new): Merge into ...
+	(c_parse_file): ... here.  Call c_parser_pragma_pch_preprocess.
+
 2005-01-04  Jeff Law  <law@redhat.com>
 
 	PR ada/24994
