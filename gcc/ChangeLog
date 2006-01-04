@@ -1,5 +1,8 @@
 2006-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/pmm_malloc.h (posix_memalign): If __cplusplus,
+	make the prototype extern "C" and add throw ().
+
 	PR target/25554
 	* config/i386/i386.md (testqi_ext_3): Ensure len is positive
 	and pos non-negative and pos + len <= 32.

@@ -1,4 +1,4 @@
-/* Copyright (C) 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -31,7 +31,11 @@
 
 /* We can't depend on <stdlib.h> since the prototype of posix_memalign
    may not be visible.  */
+#ifndef __cplusplus
 extern int posix_memalign (void **, size_t, size_t);
+#else
+extern "C" int posix_memalign (void **, size_t, size_t) throw ();
+#endif
 
 static __inline void *
 _mm_malloc (size_t size, size_t alignment)
