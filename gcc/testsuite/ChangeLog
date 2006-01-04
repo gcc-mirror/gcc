@@ -1,5 +1,8 @@
 2006-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/25554
+	* gcc.c-torture/compile/20051228-1.c: New test.
+
 	PR c/25559
 	* gcc.dg/pr25559.c: New test.
 
@@ -14,7 +17,7 @@
 2006-01-03  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/25101
-	* gfortran.dg/forall_2.f90:  New test.
+	* gfortran.dg/forall_2.f90: New test.
 
 2006-01-03  Hans-Peter Nilsson  <hp@bitrange.com>
 
@@ -242,7 +245,7 @@
 
 	PR fortran/25029
 	PR fortran/21256
-	*gfortran.dg/initialization_1.f90: Add test of SIZE.
+	* gfortran.dg/initialization_1.f90: Add test of SIZE.
 
 2005-12-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -268,7 +271,7 @@
 
 2005-12-22  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.target/i386/sse-17.c:  New.
+	* gcc.target/i386/sse-17.c: New.
 
 2005-12-22  Paul Brook  <paul@codesourcery.com>
 
@@ -296,31 +299,31 @@
 2005-12-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20889
-	*gfortran.dg/pointer_component_type_1.f90: New test.
+	* gfortran.dg/pointer_component_type_1.f90: New test.
 
 	PR fortran/25029
 	PR fortran/21256
-	*gfortran.dg/assumed_size_refs.f90: New test for the conditions that
+	* gfortran.dg/assumed_size_refs.f90: New test for the conditions that
 	should give an error with assumed size array refernces and checks those
 	that should not.
-	*gfortran.dg/gfortran.dg/pr15140.f90: Give the assumed size array
+	* gfortran.dg/gfortran.dg/pr15140.f90: Give the assumed size array
 	reference an upper bound so that it does not generate an error.
 
 	PR fortran/19362
 	PR fortran/20244
 	PR fortran/20864
 	PR fortran/25391
-	*gfortran.dg/used_dummy_types_1.f90: New test.
-	*gfortran.dg/used_dummy_types_2.f90: New test.
-	*gfortran.dg/used_dummy_types_3.f90: New test.
-	*gfortran.dg/used_dummy_types_4.f90: New test.
-	*gfortran.dg/used_dummy_types_5.f90: New test.
+	* gfortran.dg/used_dummy_types_1.f90: New test.
+	* gfortran.dg/used_dummy_types_2.f90: New test.
+	* gfortran.dg/used_dummy_types_3.f90: New test.
+	* gfortran.dg/used_dummy_types_4.f90: New test.
+	* gfortran.dg/used_dummy_types_5.f90: New test.
 
 	PR fortran/23152
-	*gfortran.dg/namelist_use.f90: Add trap for warning on NAMELIST
+	* gfortran.dg/namelist_use.f90: Add trap for warning on NAMELIST
 	group already being USE associated.
-	*gfortran.dg/assumed_shape_nml.f90: New test.
-	*gfortran.dg/assumed_size_nml.f90: New test.
+	* gfortran.dg/assumed_shape_nml.f90: New test.
+	* gfortran.dg/assumed_size_nml.f90: New test.
 
 	PR fortran/20862
 	PR fortran/25053
@@ -333,7 +336,7 @@
 	* gfortran.dg/io_constraints_1.f90: New test.
 	* gfortran.dg/io_constraints_1.f90: New test.
 	* gfortran.dg/iostat_3.f90: Change wording of warning.
-	 * gfortran.dg/g77/19981216-0.f:  the same.
+	* gfortran.dg/g77/19981216-0.f: The same.
 
 2005-12-22  Kazu Hirata  <kazu@codesourcery.com>
 
@@ -428,9 +431,9 @@
 2005-12-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25018
-	*gfortran.dg/initialization_1.f90: New test.
-	*gfortran.dg/enum_5.f90: Change dg-error to new message.
-	*gfortran.dg/g77/980616-0.f: The same.
+	* gfortran.dg/initialization_1.f90: New test.
+	* gfortran.dg/enum_5.f90: Change dg-error to new message.
+	* gfortran.dg/g77/980616-0.f: The same.
 
 2005-12-17  Steven G. Kargl  <kargls@comcast.net>
 
@@ -439,7 +442,7 @@
 
 2005-12-17  Steven G. Kargl  <kargls@comcast.net>
 
-	*gfortran.dg/enum_5.f:  Revert to previous version.
+	* gfortran.dg/enum_5.f: Revert to previous version.
 
 2005-12-17  Steven G. Kargl  <kargls@comcast.net>
 
@@ -658,7 +661,7 @@
 
 2005-12-14  David Billinghurst  (David.Billinghurst@riotinto.com)
 
-	* lib/fortran-torture.exp:  Catch remaining uses of
+	* lib/fortran-torture.exp: Catch remaining uses of
 	remote_file build delete.
 
 2005-12-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -767,7 +770,7 @@
 2005-12-12  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/25078
-	gfortran.dg/equiv_5.f90:  New test.
+	gfortran.dg/equiv_5.f90: New test.
 
 2005-12-12  Daniel Berlin  <dberlin@dberlin.org>
 
@@ -845,9 +848,9 @@
 2005-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/23815
-	* gfortran.dg/unf_io_convert_1.f90:  New test.
-	* gfortran.dg/unf_io_convert_2.f90:  New test.
-	* gfortran.dg/unf_io_convert_3.f90:  New test.
+	* gfortran.dg/unf_io_convert_1.f90: New test.
+	* gfortran.dg/unf_io_convert_2.f90: New test.
+	* gfortran.dg/unf_io_convert_3.f90: New test.
 
 2005-12-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1160,7 +1163,7 @@
 
 2005-11-30  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.c-torture/compile/pr24930.c:  New.
+	* gcc.c-torture/compile/pr24930.c: New.
 
 2005-11-30  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -1596,7 +1599,7 @@
 
 2005-11-14  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.c-torture/execute/20051113-1.c:  New.
+	* gcc.c-torture/execute/20051113-1.c: New.
 
 2005-11-14  Mark Mitchell  <mark@codesourcery.com>
 
@@ -2006,7 +2009,7 @@
 	gcc.target/i386/ssetype-2.c, gcc.target/i386/ssetype-3.c,
 	gcc.target/i386/ssetype-4.c, gcc.target/i386/ssetype-5.c,
 	gcc.target/i386/unroll-1.c, gcc.target/i386/volatile-1.c,
-	gcc.target/i386/xorps.c:  Move from gcc.dg/i386-*.
+	gcc.target/i386/xorps.c: Move from gcc.dg/i386-*.
 	* gcc.target/i386/pr23376.c: Move from gcc.target/x86_64/pr23376.c.
 	* gcc.target/i386/asm-5.c: Move from gcc.dg/asm-1.c.
 	* gcc.target/i386/sse-13.c: Move from gcc.dg/i386-sse-1.c.
@@ -2888,7 +2891,7 @@
 
 2005-10-06  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.c-torture/execute/20030125-1.c:  Correct.
+	* gcc.c-torture/execute/20030125-1.c: Correct.
 
 2005-10-06  Richard Guenther  <rguenther@suse.de>
 
@@ -2913,7 +2916,7 @@
 
 2005-10-05  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.c-torture/execute/float-floor.c:  New.
+	* gcc.c-torture/execute/float-floor.c: New.
 
 2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -3541,7 +3544,7 @@
 
 2005-09-09  David Daney <ddaney@avtrex.com>
 
-	* gcc.c-torture/execute/20010124-1.c:  Removed and split into two new
+	* gcc.c-torture/execute/20010124-1.c: Removed and split into two new
 	files which are ...
 	* gcc.c-torture/execute/builtins/20010124-1: ... here and ...
 	* gcc.c-torture/execute/builtins/20010124-1-lib.c: ... here.
@@ -3559,7 +3562,7 @@
 
 2005-09-09  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	* gfortran.dg/iomsg_1.f90:  New test case.
+	* gfortran.dg/iomsg_1.f90: New test case.
 
 2005-09-09  Richard Guenther  <rguenther@suse.de>
 
@@ -3673,13 +3676,13 @@
 
 2005-09-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	* gfortran.dg/parameter+save.f90:  Rename to
+	* gfortran.dg/parameter+save.f90: Rename to
 	* gfortran.dg/parameter_save.f90: .. this.
 
 2005-09-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/20848
-	* gfortran.dg/parameter+save.f90:  New test case.
+	* gfortran.dg/parameter+save.f90: New test case.
 
 2005-09-06  Richard Sandiford  <richard@codesourcery.com>
 
@@ -3763,7 +3766,7 @@
 2005-09-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23321
-	* gfortran.dg/direct_io_4.f90:  New test case.
+	* gfortran.dg/direct_io_4.f90: New test case.
 
 2005-09-04  Andrew Pinski  <pinskia@physics.uc.edu>
 	    Rasmus Hahn  <rassahah@neofonie.de>
@@ -3863,7 +3866,7 @@
 
 2005-08-31  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.dg/20050830-1.c:  New.
+	* gcc.dg/20050830-1.c: New.
 
 2005-08-31  Josh Conner  <jconner@apple.com>
 
@@ -3931,7 +3934,7 @@
 2005-08-29  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23598
-	* gfortran.dg/iostat_1.f90:  New test.
+	* gfortran.dg/iostat_1.f90: New test.
 
 2005-08-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -3986,8 +3989,8 @@
 
 2005-08-26  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.dg/20030711-1.c:  Modify to work on Darwin.
-	* gcc.dg/20050826-1.c:  New.
+	* gcc.dg/20030711-1.c: Modify to work on Darwin.
+	* gcc.dg/20050826-1.c: New.
 
 2005-08-26  Mark Mitchell  <mark@codesourcery.com>
 
@@ -4163,12 +4166,12 @@
 
 2005-08-16  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	* gfortran.dg/inquire-complex.f90:  Correct mangled testcase.
+	* gfortran.dg/inquire-complex.f90: Correct mangled testcase.
 
 2005-08-16  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23428
-	* gfortran.dg/inquire-complex.f90:  New test case.
+	* gfortran.dg/inquire-complex.f90: New test case.
 
 2005-08-16  James E Wilson  <wilson@specifix.com>
 
@@ -4289,7 +4292,7 @@
 
 2005-08-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	* gfortran.dg/eoshift.f90:  Correct format.
+	* gfortran.dg/eoshift.f90: Correct format.
 
 2005-08-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
@@ -4340,7 +4343,7 @@
 2005-08-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/22143
-	* gfortran.dg/shift-kind.f90:  New testcase.
+	* gfortran.dg/shift-kind.f90: New testcase.
 
 2005-08-10  Richard Sandiford  <richard@codesourcery.com>
 
@@ -4563,12 +4566,12 @@
 
 2005-07-30  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	* gfortran.dg/comma_format_extension_4.f:  Adjust length
+	* gfortran.dg/comma_format_extension_4.f: Adjust length
 	of string for format.
-	* gfortran.dg/der_array_io_1.f:  Replace illegal internal
+	* gfortran.dg/der_array_io_1.f: Replace illegal internal
 	print statement with internal write.
-	* gfortran.dg/der_array_io_2.f:  Likewise.
-	* gfortran.dg/der_array_io_3.f:  Likewise.
+	* gfortran.dg/der_array_io_2.f: Likewise.
+	* gfortran.dg/der_array_io_3.f: Likewise.
 
 2005-07-30  James A. Morrison  <phython@gcc.gnu.org>
 
@@ -4592,7 +4595,7 @@
 
 2005-07-29  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	* gfortran.dg/matmul_1.f90:  Correct LHS of matmul test (it
+	* gfortran.dg/matmul_1.f90: Correct LHS of matmul test (it
 	used to have the wrong bounds).
 
 2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
@@ -5105,23 +5108,23 @@
 2005-07-11  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21593
-	gfortran.dg/dev_null.f90:  Remove outdated comment about
+	gfortran.dg/dev_null.f90: Remove outdated comment about
 	PR libfortran/21593.
 
 
 2005-07-12  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.target/i386/compress-float-sse.c:  New.
-	* gcc.target/i386/compress-float-sse-pic.c:  New.
-	* gcc.target/i386/compress-float-387.c:  New.
-	* gcc.target/i386/compress-float-387-pic.c:  New.
-	* gcc.dg/compress-float-ppc.c:  New.
-	* gcc.dg/compress-float-ppc-pic.c:  New.
+	* gcc.target/i386/compress-float-sse.c: New.
+	* gcc.target/i386/compress-float-sse-pic.c: New.
+	* gcc.target/i386/compress-float-387.c: New.
+	* gcc.target/i386/compress-float-387-pic.c: New.
+	* gcc.dg/compress-float-ppc.c: New.
+	* gcc.dg/compress-float-ppc-pic.c: New.
 
 2005-07-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21593
-	gfortran.dg/dev_null.f90:  Remove targets.
+	gfortran.dg/dev_null.f90: Remove targets.
 
 2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -5163,7 +5166,7 @@
 2005-07-09  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/22217
-	* gfortran.dg/negative-z-descriptor.f90:  New test.
+	* gfortran.dg/negative-z-descriptor.f90: New test.
 
 2005-07-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -5543,7 +5546,7 @@
 2005-06-25  Thomas Koenig <Thomas.Koenig@online.de>
 
 	PR libfortran/22144
-	* gfortran.dg/shift-alloc.f90:  New testcase.
+	* gfortran.dg/shift-alloc.f90: New testcase.
 
 2005-06-25  Kelley Cook  <kcook@gcc.gnu.org>
 
@@ -5605,8 +5608,8 @@
 
 2005-06-23  David Billinghurst  <David.Billinghurst@riotinto.com>
 
-	* gfortran.dg/f2c_4.f90:  Add tests for complex functions
-	* gfortran.dg/f2c_4.c: Likewise
+	* gfortran.dg/f2c_4.f90: Add tests for complex functions
+	* gfortran.dg/f2c_4.c: Likewise.
 
 2005-06-22 Paul Brook  <paul@codesourcery.com>
 
@@ -5891,11 +5894,11 @@
 
 	PR fortran/17792
 	PR fortran/21375
-	* gfortran.dg/deallocate_stat.f90:  New test.
+	* gfortran.dg/deallocate_stat.f90: New test.
 
 2005-06-11  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	* gfortran.fortran-torture/execute/in-pack.f90:  New test.
+	* gfortran.fortran-torture/execute/in-pack.f90: New test.
 
 2005-06-10  Dorit Nuzman  <dorit@il.ibm.com>
 
@@ -5920,7 +5923,7 @@
 2005-06-09  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21480
-	* gfortran.dg/reshape-complex.f90:  Add a test for a packed
+	* gfortran.dg/reshape-complex.f90: Add a test for a packed
 	complex array.
 
 2005-06-09  Nathan Sidwell  <nathan@codesourcery.com>
@@ -5966,11 +5969,11 @@
 
 2005-06-07  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.target/i386/movq.c:  New.
+	* gcc.target/i386/movq.c: New.
 
 2005-06-07  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.dg/20050607-1.c:  New.
+	* gcc.dg/20050607-1.c: New.
 
 2005-06-07  Jakub Jelinek  <jakub@redhat.com>
 
@@ -6046,8 +6049,8 @@
 
 2005-06-05  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.c-torture/execute/20050603-1.c:  Move to gcc.dg.
-	* gcc.c-torture/execute/20050603-2.c:  Ditto.
+	* gcc.c-torture/execute/20050603-1.c: Move to gcc.dg.
+	* gcc.c-torture/execute/20050603-2.c: Ditto.
 
 2005-06-05  Dorit Nuzman  <dorit@il.ibm.com>
 
@@ -6058,9 +6061,9 @@
 
 2005-06-04  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.c-torture/execute/20050603-1.c:  New.
-	* gcc.c-torture/execute/20050603-2.c:  New.
-	* gcc.dg/20050603-3.c:  New.
+	* gcc.c-torture/execute/20050603-1.c: New.
+	* gcc.c-torture/execute/20050603-2.c: New.
+	* gcc.dg/20050603-3.c: New.
 
 2005-06-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
@@ -6741,7 +6744,7 @@
 2005-05-18  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21127
-	* gfortran.dg/reshape-complex.f90:  New test.
+	* gfortran.dg/reshape-complex.f90: New test.
 
 2005-05-18  Erik Edelmann  <erik.edelmann@iki.fi>
 
@@ -7036,7 +7039,7 @@
 2005-05-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21354
-	gfortran.dg/in_pack_rank7.f90:  New test.
+	gfortran.dg/in_pack_rank7.f90: New test.
 
 2005-05-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -7071,20 +7074,20 @@
 
 2005-05-03  David Billinghurst  <David.Billinghurst@riotinto.com>
 
-	* gcc.dg/vect/pr20122.c:  Clean up .vect file.
-	* gcc.dg/vect/vect-92.c: Likewise
-	* gcc.dg/vect/vect-93.c: Likewise
-	* gcc.dg/vect/vect-dv-1.c: Likewise
-	* gcc.dg/vect/vect-dv-2.c: Likewise
-	* gcc.dg/vect/vect-ifcvt-10.c: Likewise
+	* gcc.dg/vect/pr20122.c: Clean up .vect file.
+	* gcc.dg/vect/vect-92.c: Likewise.
+	* gcc.dg/vect/vect-93.c: Likewise.
+	* gcc.dg/vect/vect-dv-1.c: Likewise.
+	* gcc.dg/vect/vect-dv-2.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-10.c: Likewise.
 
 2005-05-03  David Billinghurst  <David.Billinghurst@riotinto.com>
 
-	* gfortran.dg/vect/vect-1.f90:  Clean up .vect file.
-	* gfortran.dg/vect/vect-2.f90:  Likewise
-	* gfortran.dg/vect/vect-3.f90:  Likewise
-	* gfortran.dg/vect/vect-4.f90:  Likewise
-	* gfortran.dg/vect/vect-5.f90:  Likewise
+	* gfortran.dg/vect/vect-1.f90: Clean up .vect file.
+	* gfortran.dg/vect/vect-2.f90: Likewise.
+	* gfortran.dg/vect/vect-3.f90: Likewise.
+	* gfortran.dg/vect/vect-4.f90: Likewise.
+	* gfortran.dg/vect/vect-5.f90: Likewise.
 
 2005-05-02  Geoffrey Keating  <geoffk@apple.com>
 
@@ -7138,7 +7141,7 @@
 2005-04-30  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/18958
-	* gfortran.dg/eoshift.f90:  New test case.
+	* gfortran.dg/eoshift.f90: New test case.
 
 2005-04-30  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -7621,7 +7624,7 @@
 
 2005-04-13  Dale Johannesen  <dalej@apple.com>
 
-	* objc.dg/objc-fast-4.m:  New.
+	* objc.dg/objc-fast-4.m: New.
 
 2005-04-13  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -7657,9 +7660,9 @@
 	PR libfortran/19016
 	* gfortran.fortran-torture/execute/intrinsic_mmloc.f90:
 	Add tests with mask generated by expression.
-	* gfortran.fortran-torture/execute/intrinsic_mmval.f90:  Likewise.
-	* gfortran.fortran-torture/execute/intrinsic_product.f90:  Likewise.
-	* gfortran.fortran-torture/execute/intrinsic_sum.f90:  Likewise.
+	* gfortran.fortran-torture/execute/intrinsic_mmval.f90: Likewise.
+	* gfortran.fortran-torture/execute/intrinsic_product.f90: Likewise.
+	* gfortran.fortran-torture/execute/intrinsic_sum.f90: Likewise.
 
 2005-04-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -7774,7 +7777,7 @@
 
 2005-04-09  Steven G. Kargl  <kargls@comcast.net>
 
-	* gfortran.dg/nint_1.f90:  Fix dg-do directive
+	* gfortran.dg/nint_1.f90: Fix dg-do directive.
 
 2005-04-09  Steven G. Kargl  <kargls@comcast.net>
 
@@ -7793,7 +7796,7 @@
 2005-04-09  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/20163
-	* gfortran.dg/open-options-blanks.f:  New test.
+	* gfortran.dg/open-options-blanks.f: New test.
 
 2005-04-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -7864,8 +7867,8 @@
 
 2005-04-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	* gfortran.dg/eor_1.f90:  Fix dg-do run line
-	* gfortran.dg/open_new.f90:  Fix dg-do run line
+	* gfortran.dg/eor_1.f90: Fix dg-do run line
+	* gfortran.dg/open_new.f90: Fix dg-do run line
 
 2005-04-07  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -8325,7 +8328,7 @@
 
 2005-03-30  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.dg/20020919-1.c:  Remove unnecessary conditional.
+	* gcc.dg/20020919-1.c: Remove unnecessary conditional.
 
 2005-03-30  Janis Johnson  <janis187@us.ibm.com>
 
@@ -8357,7 +8360,7 @@
 
 2005-03-26  Steven G. Kargl  <kargls@comcast.net>
 
-	* gfortran.dg/promotion.f90:  New test.
+	* gfortran.dg/promotion.f90: New test.
 
 2005-03-29  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -8413,7 +8416,7 @@
 
 2005-03-26  Steven G. Kargl  <kargls@comcast.net>
 
-	* gfortran.dg/underflow.f90:  New test.
+	* gfortran.dg/underflow.f90: New test.
 	* gfortran.dg/g77/20030326-1.f: Fix illegal code.
 
 2005-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -8466,7 +8469,7 @@
 
 2005-03-24  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.dg/20020919-1.c:  Fix for x86 Darwin.
+	* gcc.dg/20020919-1.c: Fix for x86 Darwin.
 
 2005-03-24  Geoffrey Keating  <geoffk@apple.com>
 
@@ -8511,7 +8514,7 @@
 
 2005-03-23  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.dg/20020312-2.c:  Fix for non-PowerPC Darwin.
+	* gcc.dg/20020312-2.c: Fix for non-PowerPC Darwin.
 
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
 
@@ -8825,7 +8828,7 @@
 
 2005-03-11  Per Bothner  <per@bothner.com>
 
-	* gcc.dg/decl-2.c:  Add extra line breaks.  That way we can verify
+	* gcc.dg/decl-2.c: Add extra line breaks.  That way we can verify
 	that diagnotics refer to correct token.
 	* gcc.dg/unused-3.c: Likewise.
 
@@ -9076,7 +9079,7 @@
 
 2005-03-04  David Billinghurst  <David.Billinghurst@riotinto.com>
 
-	* gcc.dg/cpp/assert4.c:  Fix for cygwin
+	* gcc.dg/cpp/assert4.c: Fix for cygwin.
 
 2005-03-02  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -9131,7 +9134,7 @@
 
 2005-02-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	* gfortran.dg/ishft.f90:  Remove kind suffix from BOZ constant
+	* gfortran.dg/ishft.f90: Remove kind suffix from BOZ constant
 	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90: Ditto.
 
 2005-02-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
@@ -9860,7 +9863,7 @@
 
 2005-01-31  Dale Johannesen  <dalej@apple.com>
 
-	* g++.dg/opt/pr19650.C:  New test.
+	* g++.dg/opt/pr19650.C: New test.
 
 2005-01-31  Richard Henderson  <rth@redhat.com>
 
@@ -9919,7 +9922,7 @@
 2005-01-29  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/19595
-	* gfortran.dg/eor_1.f90:  New test.
+	* gfortran.dg/eor_1.f90: New test.
 
 2005-01-29  Steven G. Kargl  <kargls@comcast.net>
 
@@ -10054,7 +10057,7 @@
 2005-01-22  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/19451
-	* open_readonly_1.f90:  New test.
+	* open_readonly_1.f90: New test.
 
 2005-01-22  Thomas Koenig  <Thomas.Koenig@online.de>
 
@@ -10113,7 +10116,7 @@
 
 2005-01-20  Steve Ellcey  <sje@cup.hp.com>
 
-	* gcc.dg/tree-ssa/loop-1.c:  Fix target names on xfail.
+	* gcc.dg/tree-ssa/loop-1.c: Fix target names on xfail.
 
 2005-01-19  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -10128,7 +10131,7 @@
 
 2005-01-19  Steve Ellcey  <sje@cup.hp.com>
 
-	* gcc.dg/tree-ssa/loop-1.c:  Ignore declaration when
+	* gcc.dg/tree-ssa/loop-1.c: Ignore declaration when
 	counting function calls on ia64.
 
 2005-01-19  Jakub Jelinek  <jakub@redhat.com>
@@ -10882,7 +10885,7 @@
 
 2004-12-17  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.dg/20041213-1.c:  New.
+	* gcc.dg/20041213-1.c: New.
 
 2004-12-17  Ziemowit Laski  <zlaski@apple.com>
 
@@ -11724,7 +11727,7 @@
 
 2004-11-22  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.dg/20041111-1.c:  New.
+	* gcc.dg/20041111-1.c: New.
 
 2004-11-19  Dorit Naishlos  <dorit@il.ibm.com>
 
@@ -12978,7 +12981,7 @@
 
 2004-10-15  Steve Ellcey  <sje@cup.hp.com>
 
-	* gcc.dg/compat/struct-layout-1_generate.c (switchfiles):  Use
+	* gcc.dg/compat/struct-layout-1_generate.c (switchfiles): Use
 	-fno-common when on HPPA HP-UX platforms.
 
 2004-10-15  Jakub Jelinek  <jakub@redhat.com>
@@ -14026,7 +14029,7 @@
 
 2004-09-13  Dale Johannesen  <dalej@apple.com>
 
-	* gcc.c-torture/compile/pr17408.c:  New test case.
+	* gcc.c-torture/compile/pr17408.c: New test case.
 
 2004-09-13  Mark Mitchell  <mark@codesourcery.com>
 
@@ -15740,16 +15743,16 @@
 2004-07-13  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/README: New file
-	* gfortran.dg/g77/19981216-0.f:  Copy from
+	* gfortran.dg/g77/19981216-0.f: Copy from
 	g77.f-torture/noncompile.  Add "dg-do compile" and
 	dg-error as required.
-	* gfortran.dg/g77/19990218-1.f: Likewise
-	* gfortran.dg/g77/19990905-1.f: Likewise
-	* gfortran.dg/g77/9263.f: Likewise
-	* gfortran.dg/g77/980615-0.f: Likewise
-	* gfortran.dg/g77/980616-0.f: Likewise
-	* gfortran.dg/g77/check0.f: Likewise
-	* gfortran.dg/g77/select_no_compile.f: Likewise
+	* gfortran.dg/g77/19990218-1.f: Likewise.
+	* gfortran.dg/g77/19990905-1.f: Likewise.
+	* gfortran.dg/g77/9263.f: Likewise.
+	* gfortran.dg/g77/980615-0.f: Likewise.
+	* gfortran.dg/g77/980616-0.f: Likewise.
+	* gfortran.dg/g77/check0.f: Likewise.
+	* gfortran.dg/g77/select_no_compile.f: Likewise.
 
 2004-07-13  David Billinghurst <David.Billinghurst@riotinto.com>
 
@@ -15770,7 +15773,7 @@
 
 	* gfortran.dg/g77/cpp.F: Copy from g77.f-torture/compile.
 	Add {dg-do compile} directive.
-	* gfortran.dg/g77/cpp2.F: Likewise
+	* gfortran.dg/g77/cpp2.F: Likewise.
 
 2004-07-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
@@ -15792,44 +15795,44 @@
 
 	* gfortran.dg/g77/12002.f: Copy from g77.f-torture/compile.
 	Add {dg-do compile} directive.
-	* gfortran.dg/g77/13060.f: Likewise
-	* gfortran.dg/g77/19990218-0.f: Likewise
-	* gfortran.dg/g77/19990305-0.f: Likewise
-	* gfortran.dg/g77/19990419-0.f: Likewise
-	* gfortran.dg/g77/19990502-0.f: Likewise
-	* gfortran.dg/g77/19990502-1.f: Likewise
-	* gfortran.dg/g77/19990525-0.f: Likewise
-	* gfortran.dg/g77/19990826-1.f: Likewise
-	* gfortran.dg/g77/19990826-3.f: Likewise
-	* gfortran.dg/g77/19990905-2.f: Likewise
-	* gfortran.dg/g77/20000412-1.f: Likewise
-	* gfortran.dg/g77/20000511-1.f: Likewise
-	* gfortran.dg/g77/20000511-2.f: Likewise
-	* gfortran.dg/g77/20000518.f: Likewise
-	* gfortran.dg/g77/20000601-1.f: Likewise
-	* gfortran.dg/g77/20000601-2.f: Likewise
-	* gfortran.dg/g77/20000629-1.f: Likewise
-	* gfortran.dg/g77/20000630-2.f: Likewise
-	* gfortran.dg/g77/20010115.f: Likewise
-	* gfortran.dg/g77/20010321-1.f: Likewise
-	* gfortran.dg/g77/20010426.f: Likewise
-	* gfortran.dg/g77/20020307-1.f: Likewise
-	* gfortran.dg/g77/8485.f: Likewise
-	* gfortran.dg/g77/960317-1.f: Likewise
-	* gfortran.dg/g77/970915-0.f: Likewise
-	* gfortran.dg/g77/980310-1.f: Likewise
-	* gfortran.dg/g77/980310-2.f: Likewise
-	* gfortran.dg/g77/980310-3.f: Likewise
-	* gfortran.dg/g77/980310-4.f: Likewise
-	* gfortran.dg/g77/980310-6.f: Likewise
-	* gfortran.dg/g77/980310-7.f: Likewise
-	* gfortran.dg/g77/980310-8.f: Likewise
-	* gfortran.dg/g77/980419-2.f: Likewise
-	* gfortran.dg/g77/980424-0.f: Likewise
-	* gfortran.dg/g77/980427-0.f: Likewise
-	* gfortran.dg/g77/980729-0.f: Likewise
-	* gfortran.dg/g77/981117-1.f: Likewise
-	* gfortran.dg/g77/toon_1.f: Likewise
+	* gfortran.dg/g77/13060.f: Likewise.
+	* gfortran.dg/g77/19990218-0.f: Likewise.
+	* gfortran.dg/g77/19990305-0.f: Likewise.
+	* gfortran.dg/g77/19990419-0.f: Likewise.
+	* gfortran.dg/g77/19990502-0.f: Likewise.
+	* gfortran.dg/g77/19990502-1.f: Likewise.
+	* gfortran.dg/g77/19990525-0.f: Likewise.
+	* gfortran.dg/g77/19990826-1.f: Likewise.
+	* gfortran.dg/g77/19990826-3.f: Likewise.
+	* gfortran.dg/g77/19990905-2.f: Likewise.
+	* gfortran.dg/g77/20000412-1.f: Likewise.
+	* gfortran.dg/g77/20000511-1.f: Likewise.
+	* gfortran.dg/g77/20000511-2.f: Likewise.
+	* gfortran.dg/g77/20000518.f: Likewise.
+	* gfortran.dg/g77/20000601-1.f: Likewise.
+	* gfortran.dg/g77/20000601-2.f: Likewise.
+	* gfortran.dg/g77/20000629-1.f: Likewise.
+	* gfortran.dg/g77/20000630-2.f: Likewise.
+	* gfortran.dg/g77/20010115.f: Likewise.
+	* gfortran.dg/g77/20010321-1.f: Likewise.
+	* gfortran.dg/g77/20010426.f: Likewise.
+	* gfortran.dg/g77/20020307-1.f: Likewise.
+	* gfortran.dg/g77/8485.f: Likewise.
+	* gfortran.dg/g77/960317-1.f: Likewise.
+	* gfortran.dg/g77/970915-0.f: Likewise.
+	* gfortran.dg/g77/980310-1.f: Likewise.
+	* gfortran.dg/g77/980310-2.f: Likewise.
+	* gfortran.dg/g77/980310-3.f: Likewise.
+	* gfortran.dg/g77/980310-4.f: Likewise.
+	* gfortran.dg/g77/980310-6.f: Likewise.
+	* gfortran.dg/g77/980310-7.f: Likewise.
+	* gfortran.dg/g77/980310-8.f: Likewise.
+	* gfortran.dg/g77/980419-2.f: Likewise.
+	* gfortran.dg/g77/980424-0.f: Likewise.
+	* gfortran.dg/g77/980427-0.f: Likewise.
+	* gfortran.dg/g77/980729-0.f: Likewise.
+	* gfortran.dg/g77/981117-1.f: Likewise.
+	* gfortran.dg/g77/toon_1.f: Likewise.
 
 2004-07-12  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
@@ -15884,12 +15887,12 @@
 2004-07-10  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/ffixed-form-1.f: Copy from g77.dg
-	* gfortran.dg/g77/ffixed-form-2.f: Likewise
-	* gfortran.dg/g77/ffree-form-1.f: Likewise
-	* gfortran.dg/g77/ffree-form-2.f: Likewise
-	* gfortran.dg/g77/ffree-form-3.f: Likewise
-	* gfortran.dg/g77/fno-underscoring.f: Likewise
-	* gfortran.dg/g77/funderscoring.f: Likewise
+	* gfortran.dg/g77/ffixed-form-2.f: Likewise.
+	* gfortran.dg/g77/ffree-form-1.f: Likewise.
+	* gfortran.dg/g77/ffree-form-2.f: Likewise.
+	* gfortran.dg/g77/ffree-form-3.f: Likewise.
+	* gfortran.dg/g77/fno-underscoring.f: Likewise.
+	* gfortran.dg/g77/funderscoring.f: Likewise.
 	* gfortran.dg/g77/pr9258.f: Likewise.  Add dg-warning lines.
 
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
@@ -15958,7 +15961,7 @@
 
 2004-07-09  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* lib/gfortran-dg.exp (gfortran-dg-test):  Adapt regular
+	* lib/gfortran-dg.exp (gfortran-dg-test): Adapt regular
 	expression to match gfortran warning/error messages
 	* gfortran.dg/g77/12632.f: Copy from g77.dg and fix
 	dg-error text.
@@ -15983,25 +15986,25 @@
 
 	* gfortran.dg/g77/f77-edit-i-in.f: Copy from g77.dg and
 	change X to 1X in format.
-	* gfortran.dg/g77/20010216-1.f:  Copy from g77.dg and
+	* gfortran.dg/g77/20010216-1.f: Copy from g77.dg and
 	add data statements to conform to standard.
 
 2004-07-09  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/f77-edit-s-out.f: Copy from g77.dg. XFAIL
-	* gfortran.dg/g77/f77-edit-t-in.f: Likewise
-	* gfortran.dg/g77/f77-edit-x-out.f: Likewise
+	* gfortran.dg/g77/f77-edit-t-in.f: Likewise.
+	* gfortran.dg/g77/f77-edit-x-out.f: Likewise.
 
 2004-07-09  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/7388.f: Copy from g77.dg
-	* gfortran.dg/g77/f77-edit-i-out.f: Likewise
-	* gfortran.dg/g77/f77-edit-apostrophe-out.f: Likewise
-	* gfortran.dg/g77/f77-edit-slash-out.f: Likewise
-	* gfortran.dg/g77/f77-edit-colon-out.f: Likewise
-	* gfortran.dg/g77/f77-edit-t-out.f: Likewise
-	* gfortran.dg/g77/f77-edit-h-out.f: Likewise
-	* gfortran.dg/g77/strlen0.f: Likewise
+	* gfortran.dg/g77/f77-edit-i-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-apostrophe-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-slash-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-colon-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-t-out.f: Likewise.
+	* gfortran.dg/g77/f77-edit-h-out.f: Likewise.
+	* gfortran.dg/g77/strlen0.f: Likewise.
 
 2004-07-09   David Billinghurst <David.Billinghurst@riotinto.com>
 
@@ -16554,10 +16557,10 @@
 
 	PR other/16043
 	* lib/g++.exp (g++_version): Tweak regexp for version
-	* lib/g77.exp (g77_version): Likewise
-	* lib/gfortran.exp (gfortran_version): Likewise
-	* lib/objc.exp (objc_version): Likewise
-	* lib/treelang.exp (treelang_version): Likewise
+	* lib/g77.exp (g77_version): Likewise.
+	* lib/gfortran.exp (gfortran_version): Likewise.
+	* lib/objc.exp (objc_version): Likewise.
+	* lib/treelang.exp (treelang_version): Likewise.
 
 2004-06-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -17388,7 +17391,7 @@
 
 2004-05-07  Uros Bizjak  <uros@kss-loka.si>
 
-	* gcc.dg/builtins-33.c:  Also check log1p*.
+	* gcc.dg/builtins-33.c: Also check log1p*.
 
 2004-05-07  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -18599,7 +18602,7 @@
 	argument to determine whether we support a profiling type.
 	* lib/gcc-dg.exp (dg-require-profiling): Pass argument to
 	check_profiling_available.
-	* g++.dg/bprob/bprob.exp: Likewise
+	* g++.dg/bprob/bprob.exp: Likewise.
 	* g77.dg/bprob/bprob.exp: Likewise.
 	* gcc.misc-tests/bprob.exp: Likewise.
 	* g++.old-deja/g++.law/profile1.C: Pass profiling type to
@@ -19926,7 +19929,7 @@
 	    Dan Kegel <dank@kegel.com>
 
 	PR other/12009
-	* g++.dg/compat/compat.exp:  Do not set LD_LIBRARY_PATH when
+	* g++.dg/compat/compat.exp: Do not set LD_LIBRARY_PATH when
 	testing a cross compiler, it causes spurious compile failures.
 	* lib/g++.exp: Likewise.
 
@@ -20437,7 +20440,7 @@
 
 2003-11-12  Catherine Moore  <clm@redhat.com>
 
-	* gcc.c-torture/execute/20020720-1.x:  Add xfail for frv-*-*.
+	* gcc.c-torture/execute/20020720-1.x: Add xfail for frv-*-*.
 
 2003-11-12  Andreas Jaeger  <aj@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
@@ -20685,8 +20688,8 @@
 
 2003-10-20  Phil Edwards  <phil@codesourcery.com>
 
-	* gcc.dg/20021014-1.c:  XFAIL for *-*-windiss targets.
-	* gcc.dg/nest.c:  Likewise.
+	* gcc.dg/20021014-1.c: XFAIL for *-*-windiss targets.
+	* gcc.dg/nest.c: Likewise.
 
 2003-10-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
@@ -22532,7 +22535,7 @@
 2003-06-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* g++.old-deja/g++.benjamin/16077.C: Add -Wconversion  option.
-	* g++.old-deja/g++.other/conv7.C: Likewise
+	* g++.old-deja/g++.other/conv7.C: Likewise.
 	* g++.old-deja/g++.other/overcnv2.C: Likewise.
 	* g++.old-deja/g++.other/overload14.C: Likewise.
 
@@ -24074,7 +24077,7 @@
 
 2003-03-28  Roger Sayle  <roger@eyesopen.com>
 
-	* gcc.c-torture/execute/ieee/fp-cmp-6.c:  Correct test for -O0.
+	* gcc.c-torture/execute/ieee/fp-cmp-6.c: Correct test for -O0.
 
 2003-03-28  Mark Mitchell  <mark@codesourcery.com>
 
@@ -24445,7 +24448,7 @@
 2003-03-07  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-local2.c: Fix problems with certain versions of dejagnu.
-	* gcc.dg/inline-3.c:  New test.
+	* gcc.dg/inline-3.c: New test.
 
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
@@ -24782,7 +24785,7 @@
 
 2003-02-10  Jan Hubicka  <jh@suse.cz>
 
-	* gcc.dg/i386-fpcvt-1.c:  New test.
+	* gcc.dg/i386-fpcvt-1.c: New test.
 
 2002-02-09  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -24875,11 +24878,11 @@
 
 2003-02-04  Jan Hubicka  <jh@suse.cz>
 
-	* gcc.dg/i386-cadd.c:  Compile using -march=k8.
-	* gcc.dg/i386-cmov?.c:  Likewise.
-	* gcc.dg/i386-fpcvt-?.c:  Likewise.
-	* gcc.dg/i386-ssefp-1.c:  Likewise.
-	* gcc.dg/i386-ssetype-?.c:  Likewise; fix for register passing
+	* gcc.dg/i386-cadd.c: Compile using -march=k8.
+	* gcc.dg/i386-cmov?.c: Likewise.
+	* gcc.dg/i386-fpcvt-?.c: Likewise.
+	* gcc.dg/i386-ssefp-1.c: Likewise.
+	* gcc.dg/i386-ssetype-?.c: Likewise; fix for register passing
 	conventions.
 
 2003-02-03  Mark Mitchell  <mark@codesourcery.com>
@@ -24940,7 +24943,7 @@
 
 2003-01-28  Jan Hubicka  <jh@suse.cz>
 
-	* gcc.dg/i386-cmov5.c:  New test.
+	* gcc.dg/i386-cmov5.c: New test.
 
 2003-01-28  D.Venkatasubramanian   <dvenkat@noida.hcltech.com>
 
@@ -25117,8 +25120,8 @@
 
 2003-01-21  Jan Hubicka  <jh@suse.cz>
 
-	* gcc.c-torture/execute/990208-1.c:  Add noinline attributes as needed.
-	* gcc.c-torture/execute/eeprof-1.c:  Likewise.
+	* gcc.c-torture/execute/990208-1.c: Add noinline attributes as needed.
+	* gcc.c-torture/execute/eeprof-1.c: Likewise.
 	* gcc.c-torture/execute/stdio-opt-*.c: Likewise.
 	* gcc.c-torture/execute/string-opt-*.c: Likewise.
 
@@ -25373,54 +25376,54 @@
 2003-01-08  Larin Hennessey  <larin@science.oregonstate.edu>
 
 	* g++.old-deja/g++.mike/dyncast1.C: Remove reference to AMD A29K
-	* g++.old-deja/g++.mike/dyncast2.C: Likewise
-	* g++.old-deja/g++.mike/dyncast3.C: Likewise
-	* g++.old-deja/g++.mike/eh2.C: Likewise
-	* g++.old-deja/g++.mike/eh3.C: Likewise
-	* g++.old-deja/g++.mike/eh5.C: Likewise
-	* g++.old-deja/g++.mike/eh6.C: Likewise
-	* g++.old-deja/g++.mike/eh7.C: Likewise
-	* g++.old-deja/g++.mike/eh8.C: Likewise
-	* g++.old-deja/g++.mike/eh9.C: Likewise
-	* g++.old-deja/g++.mike/eh10.C: Likewise
-	* g++.old-deja/g++.mike/eh12.C: Likewise
-	* g++.old-deja/g++.mike/eh13.C: Likewise
-	* g++.old-deja/g++.mike/eh14.C: Likewise
-	* g++.old-deja/g++.mike/eh16.C: Likewise
-	* g++.old-deja/g++.mike/eh17.C: Likewise
-	* g++.old-deja/g++.mike/eh18.C: Likewise
-	* g++.old-deja/g++.mike/eh21.C: Likewise
-	* g++.old-deja/g++.mike/eh23.C: Likewise
-	* g++.old-deja/g++.mike/eh24.C: Likewise
-	* g++.old-deja/g++.mike/eh25.C: Likewise
-	* g++.old-deja/g++.mike/eh26.C: Likewise
-	* g++.old-deja/g++.mike/eh27.C: Likewise
-	* g++.old-deja/g++.mike/eh28.C: Likewise
-	* g++.old-deja/g++.mike/eh29.C: Likewise
-	* g++.old-deja/g++.mike/eh31.C: Likewise
-	* g++.old-deja/g++.mike/eh33.C: Likewise
-	* g++.old-deja/g++.mike/eh34.C: Likewise
-	* g++.old-deja/g++.mike/eh35.C: Likewise
-	* g++.old-deja/g++.mike/eh36.C: Likewise
-	* g++.old-deja/g++.mike/eh37.C: Likewise
-	* g++.old-deja/g++.mike/eh38.C: Likewise
-	* g++.old-deja/g++.mike/eh39.C: Likewise
-	* g++.old-deja/g++.mike/eh40.C: Likewise
-	* g++.old-deja/g++.mike/eh41.C: Likewise
-	* g++.old-deja/g++.mike/eh42.C: Likewise
-	* g++.old-deja/g++.mike/eh44.C: Likewise
-	* g++.old-deja/g++.mike/eh46.C: Likewise
-	* g++.old-deja/g++.mike/eh47.C: Likewise
-	* g++.old-deja/g++.mike/eh48.C: Likewise
-	* g++.old-deja/g++.mike/eh49.C: Likewise
-	* g++.old-deja/g++.mike/eh50.C: Likewise
-	* g++.old-deja/g++.mike/eh51.C: Likewise
-	* g++.old-deja/g++.mike/eh53.C: Likewise
-	* g++.old-deja/g++.mike/eh55.C: Likewise
-	* g++.old-deja/g++.mike/p7912.C: Likewise
-	* g++.old-deja/g++.mike/p9706.C: Likewise
-	* g++.old-deja/g++.mike/p10416.C: Likewise
-	* g++.old-deja/g++.mike/p11667.C: Likewise
+	* g++.old-deja/g++.mike/dyncast2.C: Likewise.
+	* g++.old-deja/g++.mike/dyncast3.C: Likewise.
+	* g++.old-deja/g++.mike/eh2.C: Likewise.
+	* g++.old-deja/g++.mike/eh3.C: Likewise.
+	* g++.old-deja/g++.mike/eh5.C: Likewise.
+	* g++.old-deja/g++.mike/eh6.C: Likewise.
+	* g++.old-deja/g++.mike/eh7.C: Likewise.
+	* g++.old-deja/g++.mike/eh8.C: Likewise.
+	* g++.old-deja/g++.mike/eh9.C: Likewise.
+	* g++.old-deja/g++.mike/eh10.C: Likewise.
+	* g++.old-deja/g++.mike/eh12.C: Likewise.
+	* g++.old-deja/g++.mike/eh13.C: Likewise.
+	* g++.old-deja/g++.mike/eh14.C: Likewise.
+	* g++.old-deja/g++.mike/eh16.C: Likewise.
+	* g++.old-deja/g++.mike/eh17.C: Likewise.
+	* g++.old-deja/g++.mike/eh18.C: Likewise.
+	* g++.old-deja/g++.mike/eh21.C: Likewise.
+	* g++.old-deja/g++.mike/eh23.C: Likewise.
+	* g++.old-deja/g++.mike/eh24.C: Likewise.
+	* g++.old-deja/g++.mike/eh25.C: Likewise.
+	* g++.old-deja/g++.mike/eh26.C: Likewise.
+	* g++.old-deja/g++.mike/eh27.C: Likewise.
+	* g++.old-deja/g++.mike/eh28.C: Likewise.
+	* g++.old-deja/g++.mike/eh29.C: Likewise.
+	* g++.old-deja/g++.mike/eh31.C: Likewise.
+	* g++.old-deja/g++.mike/eh33.C: Likewise.
+	* g++.old-deja/g++.mike/eh34.C: Likewise.
+	* g++.old-deja/g++.mike/eh35.C: Likewise.
+	* g++.old-deja/g++.mike/eh36.C: Likewise.
+	* g++.old-deja/g++.mike/eh37.C: Likewise.
+	* g++.old-deja/g++.mike/eh38.C: Likewise.
+	* g++.old-deja/g++.mike/eh39.C: Likewise.
+	* g++.old-deja/g++.mike/eh40.C: Likewise.
+	* g++.old-deja/g++.mike/eh41.C: Likewise.
+	* g++.old-deja/g++.mike/eh42.C: Likewise.
+	* g++.old-deja/g++.mike/eh44.C: Likewise.
+	* g++.old-deja/g++.mike/eh46.C: Likewise.
+	* g++.old-deja/g++.mike/eh47.C: Likewise.
+	* g++.old-deja/g++.mike/eh48.C: Likewise.
+	* g++.old-deja/g++.mike/eh49.C: Likewise.
+	* g++.old-deja/g++.mike/eh50.C: Likewise.
+	* g++.old-deja/g++.mike/eh51.C: Likewise.
+	* g++.old-deja/g++.mike/eh53.C: Likewise.
+	* g++.old-deja/g++.mike/eh55.C: Likewise.
+	* g++.old-deja/g++.mike/p7912.C: Likewise.
+	* g++.old-deja/g++.mike/p9706.C: Likewise.
+	* g++.old-deja/g++.mike/p10416.C: Likewise.
+	* g++.old-deja/g++.mike/p11667.C: Likewise.
 	* g77.f-torture/compile/20010519-1.f: Remove reference to Convex.
 	Remove redundant reference to Iris.
 	* gcc.dg/20020312-2.c: Remove references to AMD A29K, Clipper, Convex,
@@ -25717,7 +25720,7 @@
 	syntax.
 	* g++.old-deja/g++.jason/template37.C: Likewise.
 	* g++.old-deja/g++.law/access4.C: Change error messages.
-	* g++.old-deja/g++.law/arm13.C:  Remove incorrect
+	* g++.old-deja/g++.law/arm13.C: Remove incorrect
 	pseudo-destructor names.
 	* g++.old-deja/g++.law/code-gen5.C: Remove stray semicolon.
 	* g++.old-deja/g++.law/ctors9.C: Likewise.
@@ -26662,7 +26665,7 @@
 
 2002-10-04  Roger Sayle  <roger@eyesopen.com>
 
-	* gcc.c-torture/execute/20020720-1.x:  XFAIL instead of skipping
+	* gcc.c-torture/execute/20020720-1.x: XFAIL instead of skipping
 	the test on failing platforms.  Mark sparcv9-*-*, sparc64-*-*
 	and sparc-*-* with -m64 as expected failures.  See PR 8087.
 
@@ -27879,17 +27882,17 @@
 
 2002-05-19  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* gcc.dg/weak-2.c:  xfail warnings for platforms that don't
+	* gcc.dg/weak-2.c: xfail warnings for platforms that don't
 	support weak symbols.
-	* gcc.dg/weak-4.c: Likewise
-	* gcc.dg/weak-6.c: Likewise
+	* gcc.dg/weak-4.c: Likewise.
+	* gcc.dg/weak-6.c: Likewise.
 
 2002-05-16  David.Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gcc.dg/weak-3.c: Add dg-excess-error comment for
 	cygwin, coff and h8300-*-hms targets
-	* gcc.dg/weak-5.c: Likewise
-	* gcc.dg/weak-7.c: Likewise
+	* gcc.dg/weak-5.c: Likewise.
+	* gcc.dg/weak-7.c: Likewise.
 
 2002-05-16  Jason Merrill  <jason@redhat.com>
 
@@ -28211,7 +28214,7 @@
 2002-04-13  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR c/6277
-	* gcc.dg/i386-387-1.c:  Allow optional leading underscore
+	* gcc.dg/i386-387-1.c: Allow optional leading underscore
 	in scan-assembler function name
 
 2002-04-13  Hans-Peter Nilsson  <hp@bitrange.com>
@@ -28454,7 +28457,7 @@
 2002-03-26  Phil Edwards  <pme@gcc.gnu.org>
 
 	* gcc.dg/cpp/endif-pedantic1.c,
-	gcc.dg/cpp/endif-pedantic2.c:  New tests.
+	gcc.dg/cpp/endif-pedantic2.c: New tests.
 
 2002-03-26  Mark Mitchell  <mark@codesourcery.com>
 
@@ -28522,14 +28525,14 @@
 
 2002-03-25  David Billinghurst  <David.Billinghurst@riotinto.com>
 
-	* gcc.dg/weak-1.c:  Early return from dg-final on platforms
+	* gcc.dg/weak-1.c: Early return from dg-final on platforms
 	that do not support weak symbols
 
 2002-03-25  David Billinghurst  <David.Billinghurst@riotinto.com>
 
-	* lib/g++.exp:  Fix handling of LD_LIBRARY_PATH et al
-	* lib/g77.exp:  Likewise
-	* lib/objc.exp: Likewise
+	* lib/g++.exp: Fix handling of LD_LIBRARY_PATH et al
+	* lib/g77.exp: Likewise.
+	* lib/objc.exp: Likewise.
 
 2002-03-23  Andrew Cagney  <ac131313@redhat.com>
 
@@ -28562,7 +28565,7 @@
 
 2002-03-22  Phil Edwards  <pme@gcc.gnu.org>
 
-	* gcc.dg/cpp/extratokens2.c:  New file.
+	* gcc.dg/cpp/extratokens2.c: New file.
 
 2002-03-21  David Edelsohn  <edelsohn@gnu.org>
 
@@ -28602,11 +28605,11 @@
 
 	* g++.dg/template/qualttp20.C: Revert previous change.
 	* g++.dg/template/qualttp3.C: Likewise.
-	* g++.dg/template/qualttp4.C: Likewise
-	* g++.dg/template/qualttp5.C: Likewise
-	* g++.dg/template/qualttp6.C: Likewise
-	* g++.dg/template/qualttp7.C: Likewise
-	* g++.dg/template/qualttp8.C: Likewise
+	* g++.dg/template/qualttp4.C: Likewise.
+	* g++.dg/template/qualttp5.C: Likewise.
+	* g++.dg/template/qualttp6.C: Likewise.
+	* g++.dg/template/qualttp7.C: Likewise.
+	* g++.dg/template/qualttp8.C: Likewise.
 	* g++.dg/template/recurse.C: Likewise.
 
 2002-03-17  Neil Booth  <neil@daikokuya.demon.co.uk>
@@ -28624,11 +28627,11 @@
 
 	* g++.dg/template/qualttp20.C: Remove unnecessary error tags.
 	* g++.dg/template/qualttp3.C: Likewise.
-	* g++.dg/template/qualttp4.C: Likewise
-	* g++.dg/template/qualttp5.C: Likewise
-	* g++.dg/template/qualttp6.C: Likewise
-	* g++.dg/template/qualttp7.C: Likewise
-	* g++.dg/template/qualttp8.C: Likewise
+	* g++.dg/template/qualttp4.C: Likewise.
+	* g++.dg/template/qualttp5.C: Likewise.
+	* g++.dg/template/qualttp6.C: Likewise.
+	* g++.dg/template/qualttp7.C: Likewise.
+	* g++.dg/template/qualttp8.C: Likewise.
 	* g++.dg/template/recurse.C: Likewise.
 
 2002-03-15  Mark Mitchell  <mark@codesourcery.com>
@@ -29067,7 +29070,7 @@
 
 2002-02-05  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* g77.dg/pr5473.f:  New test
+	* g77.dg/pr5473.f: New test
 
 2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -29172,7 +29175,7 @@
 
 2002-01-30  David Billinghurst  <David.Billinghurst@riotinto.com>
 
-	* g77.dg/f77-edit-i-out.f:  Escape \. Allow \r\n and \r.
+	* g77.dg/f77-edit-i-out.f: Escape \. Allow \r\n and \r.
 
 2002-01-29  Richard Henderson  <rth@redhat.com>
 
@@ -29749,7 +29752,7 @@
 
 2001-12-19  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* gcc.dg/special/ecos.exp:  wkali-1.c unsupported if
+	* gcc.dg/special/ecos.exp: wkali-1.c unsupported if
 	target does not support weak symbols.
 
 2001-12-19  Jakub Jelinek  <jakub@redhat.com>
@@ -30563,7 +30566,7 @@
 
 2001-08-14  David Billinghurst  <David.Billinghurst@riotinto.com>
 
-	* lib/g77-dg.exp:  Use prune.exp for common procedures
+	* lib/g77-dg.exp: Use prune.exp for common procedures
 	(g77-dg-prune): Replace prune_g77_output with prune_gcc_output
 	* lib/g77.exp: (g77-dg-prune) Remove
 
@@ -30583,7 +30586,7 @@
 
 	* g77.f-torture/execute/f90-intrinsic-bit.x: XFAIL on irix6.* and
 	solaris2.*
-	* g77.f-torture/compile/pr3743.x: Likewise
+	* g77.f-torture/compile/pr3743.x: Likewise.
 
 2001-08-05  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
@@ -30625,7 +30628,7 @@
 
 2001-08-01  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* lib/g77.exp:  Load gcc-defs.exp for common procedures
+	* lib/g77.exp: Load gcc-defs.exp for common procedures
 	(g77_pass, g77_fail, g77_finish, g77_exit,
 	${tool}_check_unsupported_p} Now redundant.  Deleted.
 
@@ -30784,7 +30787,7 @@
 
 2001-07-20  David Billinghurst <David.Billinghurst@riotinto.org>
 
-	* g77.f-torture/compile/pr3743.f:  New test
+	* g77.f-torture/compile/pr3743.f: New test
 
 2001-07-20  David Billinghurst <David.Billinghurst@riotinto.com>
 
@@ -31110,7 +31113,7 @@
 
 2001-05-23  David.Billinghurst <David.Billinghurst@riotinto.com>
 
-	* gcc.misc-tests/linkage.exp:  Pass appropriate flags to
+	* gcc.misc-tests/linkage.exp: Pass appropriate flags to
 	native compiler for irix6.5.
 
 Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
@@ -32518,7 +32521,7 @@ Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 2000-12-30  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* lib/g++.exp:  Use sh to exec ${odir_v3}/tests_flags
+	* lib/g++.exp: Use sh to exec ${odir_v3}/tests_flags
 
 2000-12-29  Richard Henderson  <rth@redhat.com>
 
@@ -34308,7 +34311,7 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-07-12  David Billinghurst  <David Billinghurst@riotinto.com.au>
 
-	* g77.f-torture/compile/20000630-2.f:  New test.
+	* g77.f-torture/compile/20000630-2.f: New test.
 	* g77.f-torture/compile/20000630-2.x
 
 2000-07-11  David Billinghurst  <David.Billinghurst@riotinto.com.au>
@@ -34805,7 +34808,7 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-06-03  David Billinghurst  <David Billinghurst@riotinto.com.au>
 
-	* g77.f-torture/compile/20000601-1.f:  New test.
+	* g77.f-torture/compile/20000601-1.f: New test.
 
 2000-06-03  Richard Henderson  <rth@cygnus.com>
 
@@ -34945,7 +34948,7 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-05-18  David Billinghurst  <David.Billinghurst@riotinto.com.au>
 
-	* g77.f-torture/compile/200005018.f:  New test.
+	* g77.f-torture/compile/200005018.f: New test.
 
 2000-05-17  Jeffrey A Law  (law@cygnus.com)
 
@@ -34997,7 +35000,7 @@ Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-05-05  David Billinghurst  <David Billinghurst@riotinto.com.au>
 
-	  * g77.f-torture/execute/20000503-1.f:  New test.
+	  * g77.f-torture/execute/20000503-1.f: New test.
 
 2000-05-04  Andreas Jaeger  <aj@suse.de>
 
@@ -35137,7 +35140,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 2000-04-06  Neil Booth  <NeilB@earthling.net>
 
 	* cpp-ifparen.c, cpp-missingop.c, cpp-missingparen.c,
-	cpp-shift.c, cpp-shortcircuit.c, cpp-unary.c:  Add FSF
+	cpp-shift.c, cpp-shortcircuit.c, cpp-unary.c: Add FSF
 	copyright.
 
 2000-04-05  Hans-Peter Nilsson  <hp@axis.com>
@@ -35874,7 +35877,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	what is permitted and what we want.
 	* g++.old-deja/g++.jason/rfg4.C: Rework to remove ill-formed
 	overload use.
-	* g++.old-deja/g++.jason/rfg5.C: Likewise
+	* g++.old-deja/g++.jason/rfg5.C: Likewise.
 
 1999-09-08  Geoffrey Keating  <geoffk@cygnus.com>
 
@@ -36015,8 +36018,8 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 1999-08-03  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.brendan/crash63.C: Expect a POD warning
-	* g++.old-deja/g++.brendan/crash64.C: Likewise
-	* g++.old-deja/g++.brendan/overload8.C: Likewise
+	* g++.old-deja/g++.brendan/crash64.C: Likewise.
+	* g++.old-deja/g++.brendan/overload8.C: Likewise.
 
 1999-08-03  Nathan Sidwell  <nathan@acm.org>
 
@@ -37004,7 +37007,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 1998-08-31  Catherine Moore  <clm@cygnus.com>
 
-	* gcc.c-torture/execute/941014-1.x:  New file.
+	* gcc.c-torture/execute/941014-1.x: New file.
 
 1998-08-31  Nick Clifton  <nickc@cygnus.com>
 
@@ -37159,7 +37162,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* g77.f-torture/noncompile/980616-0.f: New test.
 
-	* g77.f-torture/execute/970816-3.f:  New test from Craig.
+	* g77.f-torture/execute/970816-3.f: New test from Craig.
 
 1998-07-10 Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
 
@@ -37175,7 +37178,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* g++.ns/{alias2.C, alias5.C, koenig4.C, lookup3.C ns13.C,
 	ns14.C, ns15.C, template3.C, undef1.C, using4.C, using5.C,
-	using6.C, using7.C}:  New namespace tests.
+	using6.C, using7.C}: New namespace tests.
 
 1998-07-09  Alexandre Oliva   <oliva@dcc.unicamp.br>
 
@@ -37267,7 +37270,7 @@ rlsruhe.de>
 
 1998-06-19  Robert Lipe  <robertl@dgii.com>
 
-	*lib/g77.exp: Replace search for libf2c.a with search for newly
+	* lib/g77.exp: Replace search for libf2c.a with search for newly
 	renamed libg2c.a
 
 1998-06-17  Jeffrey A Law  (law@cygnus.com)
@@ -37873,7 +37876,7 @@ rlsruhe.de>
 
 1996-11-12  Jeffrey A Law  (law@cygnus.com)
 
-	* gcc.c-torture/execute/{loop-2e.c,loop-2f.c}:  If MAP_ANON
+	* gcc.c-torture/execute/{loop-2e.c,loop-2f.c}: If MAP_ANON
 	isn't defined, then define it to MAP_ANONYMOUS.
 
 1996-11-12  Jeffrey A Law  (law@cygnus.com)
@@ -39309,7 +39312,7 @@ rlsruhe.de>
 
 1993-08-23  Per Bothner  (bothner@kalessin.cygnus.com)
 
-	* rts.c:  Get malloc() from <stdlib.h>, not <malloc.h>.
+	* rts.c: Get malloc() from <stdlib.h>, not <malloc.h>.
 	* Makefil: Renamed to Makefile.in.
 	* configure.in: New.
 
@@ -39508,7 +39511,7 @@ rlsruhe.de>
 
 1993-03-25  Rob Savoye  (rob at darkstar.cygnus.com)
 
-	* lib/udi.exp:  Fixed mondfe and mondfe_download.
+	* lib/udi.exp: Fixed mondfe and mondfe_download.
 	* config/udi-gcc.exp: Fixed misc bugs, works with expect 4.x.
 	* config/abug-gcc.exp: Fixed misc bugs, works with expect 4.x.
 
