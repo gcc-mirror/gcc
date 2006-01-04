@@ -1,6 +1,6 @@
 // Class.h - Header file for java.lang.Class.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -21,6 +21,21 @@ details.  */
 #include <java/lang/reflect/Modifier.h>
 #include <java/security/ProtectionDomain.h>
 #include <java/lang/Package.h>
+
+// Avoid including SystemClassLoader.h.
+extern "Java"
+{
+  namespace gnu
+  {
+    namespace gcj
+    {
+      namespace runtime
+      {
+        class SystemClassLoader;
+      }
+    }
+  }
+}
 
 // We declare these here to avoid including gcj/cni.h.
 extern "C" void _Jv_InitClass (jclass klass);
@@ -237,7 +252,7 @@ jclass _Jv_GetArrayClass (jclass klass, java::lang::ClassLoader *loader);
 jboolean _Jv_IsInterpretedClass (jclass);
 jboolean _Jv_IsBinaryCompatibilityABI (jclass);
 
-void _Jv_CopyClassesToSystemLoader (java::lang::ClassLoader *);
+void _Jv_CopyClassesToSystemLoader (gnu::gcj::runtime::SystemClassLoader *);
 
 #ifdef INTERPRETER
 void _Jv_InitField (jobject, jclass, int);
@@ -498,7 +513,7 @@ private:
 
   friend void *::_Jv_ResolvePoolEntry (jclass this_class, jint index);
 
-  friend void ::_Jv_CopyClassesToSystemLoader (java::lang::ClassLoader *);
+  friend void ::_Jv_CopyClassesToSystemLoader (gnu::gcj::runtime::SystemClassLoader *);
 
   // Chain for class pool.  This also doubles as the ABI version
   // number.  It is only used for this purpose at class registration
