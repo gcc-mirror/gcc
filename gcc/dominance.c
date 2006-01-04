@@ -842,7 +842,7 @@ nearest_common_dominator_for_set (enum cdi_direction dir, bitmap blocks)
    because we must hit A in the dominator tree *before* B on the walk
    down, and we will hit A *after* B on the walk back up
    
-   2. Node A is below node B (and thus, node B dominates node B)
+   2. Node A is below node B (and thus, node B dominates node A)
    
    
      B
