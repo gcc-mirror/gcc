@@ -1590,6 +1590,22 @@ instantiate_decl (rtx x)
   for_each_rtx (&XEXP (x, 0), instantiate_virtual_regs_in_rtx, NULL);
 }
 
+/* Helper for instantiate_decls called via walk_tree: Process all decls
+   in the given DECL_VALUE_EXPR.  */
+
+static tree
+instantiate_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+{
+  tree t = *tp;
+  if (! EXPR_P (t))
+    {
+      *walk_subtrees = 0;
+      if (DECL_P (t) && DECL_RTL_SET_P (t))
+	instantiate_decl (DECL_RTL (t));
+    }
+  return NULL;
+}
+
 /* Subroutine of instantiate_decls: Process all decls in the given
    BLOCK node and all its subblocks.  */
 
@@ -1599,8 +1615,15 @@ instantiate_decls_1 (tree let)
   tree t;
 
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
-    if (DECL_RTL_SET_P (t))
-      instantiate_decl (DECL_RTL (t));
+    {
+      if (DECL_RTL_SET_P (t))
+	instantiate_decl (DECL_RTL (t));
+      if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
+	{
+	  tree v = DECL_VALUE_EXPR (t);
+	  walk_tree (&v, instantiate_expr, NULL, NULL);
+	}
+    }
 
   /* Process all subblocks.  */
   for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
@@ -1620,6 +1643,11 @@ instantiate_decls (tree fndecl)
     {
       instantiate_decl (DECL_RTL (decl));
       instantiate_decl (DECL_INCOMING_RTL (decl));
+      if (DECL_HAS_VALUE_EXPR_P (decl))
+	{
+	  tree v = DECL_VALUE_EXPR (decl);
+	  walk_tree (&v, instantiate_expr, NULL, NULL);
+	}
     }
 
   /* Now process all variables defined in the function or its subblocks.  */

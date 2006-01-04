@@ -1,3 +1,13 @@
+2006-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/25562
+	* function.c (instantiate_expr): New function.
+	(instantiate_decls_1, instantiate_decls): If DECL_HAS_VALUE_EXPR_P,
+	walk its DECL_VALUE_EXPR with instantiate_expr.
+
+	* dwarf2out.c (loc_descriptor_from_tree_1): Don't add
+	DW_OP_deref{,_size} if address isn't going to be added.
+
 2006-01-04  Ben Elliston  <bje@au.ibm.com>
 
 	* config/fp-bit.h: Use top-of-file comment from libgcc2.c.
