@@ -149,6 +149,10 @@
 /*      -ve -- negative                                               */
 /* ------------------------------------------------------------------ */
 
+/* Some of glibc's string inlines cause warnings.  Plus we'd rather
+   rely on (and therefore test) GCC's string builtins.  */
+#define __NO_STRING_INLINES
+
 #include <stdlib.h>		/* for malloc, free, etc. */
 #include <stdio.h>		/* for printf [if needed] */
 #include <string.h>		/* for strcpy */
