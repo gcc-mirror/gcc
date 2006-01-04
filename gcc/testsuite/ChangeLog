@@ -1,3 +1,9 @@
+2006-01-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24782
+	* g++.dg/parse/access9.C: New test.
+	* g++.dg/tc1/dr52.C: Tweak error markers.
+
 2006-01-04  Richard Henderson  <rth@redhat.com>
 
 	Merge from gomp branch.
