@@ -1,5 +1,8 @@
 2006-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/25554
+	* gcc.c-torture/compile/20051228-1.c: New test.
+
 	PR c/25559
 	* gcc.dg/pr25559.c: New test.
 
