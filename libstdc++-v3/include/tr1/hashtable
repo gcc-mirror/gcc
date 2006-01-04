@@ -1,6 +1,6 @@
 // Internal header for TR1 unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,6 +55,7 @@
 #define GNU_LIBSTDCXX_TR1_HASHTABLE_
 
 #include <utility>		// For std::pair
+#include <memory>
 #include <iterator>
 #include <cstddef>
 #include <cstdlib>
@@ -1443,8 +1444,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       // have different members.
       Internal::hash_code_base<K, V, Ex, Eq, H1, H2, H, c>::m_swap(x);
 
-      // open LWG issue 431
-      // std::swap(m_node_allocator, x.m_node_allocator);
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 431. Swapping containers with unequal allocators.
+      std::__alloc_swap<node_allocator_t>::_S_do_it(m_node_allocator,
+						    x.m_node_allocator);
+
       std::swap(m_rehash_policy, x.m_rehash_policy);
       std::swap(m_buckets, x.m_buckets);
       std::swap(m_bucket_count, x.m_bucket_count);

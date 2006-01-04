@@ -1,0 +1,162 @@
+// 2005-12-20  Paolo Carlini  <pcarlini@suse.de>
+
+// Copyright (C) 2005 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// 23.2.2.3 list::swap
+
+#include <list>
+#include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
+
+// uneq_allocator, two different personalities.
+void
+test01()
+{
+  bool test __attribute__((unused)) = true;
+  using namespace std;
+
+  typedef __gnu_test::uneq_allocator<char> my_alloc;
+  typedef list<char, my_alloc> my_list;
+
+  const char title01[] = "Rivers of sand";
+  const char title02[] = "Concret PH";
+  const char title03[] = "Sonatas and Interludes for Prepared Piano";
+  const char title04[] = "never as tired as when i'm waking up";
+
+  const size_t N1 = sizeof(title01);
+  const size_t N2 = sizeof(title02);
+  const size_t N3 = sizeof(title03);
+  const size_t N4 = sizeof(title04);
+
+  my_list::size_type size01, size02;
+
+  my_alloc alloc01(1), alloc02(2);
+  int personality01, personality02;
+
+  my_list lis01(alloc01);
+  size01 = lis01.size();
+  personality01 = lis01.get_allocator().get_personality();
+  my_list lis02(alloc02);
+  size02 = lis02.size();
+  personality02 = lis02.get_allocator().get_personality();
+
+  lis01.swap(lis02);
+  VERIFY( lis01.size() == size02 );
+  VERIFY( lis01.empty() );
+  VERIFY( lis02.size() == size01 );
+  VERIFY( lis02.empty() );
+  VERIFY( lis01.get_allocator().get_personality() == personality02 );
+  VERIFY( lis02.get_allocator().get_personality() == personality01 );
+
+  my_list lis03(alloc02);
+  size01 = lis03.size();
+  personality01 = lis03.get_allocator().get_personality();
+  my_list lis04(title02, title02 + N2, alloc01);
+  size02 = lis04.size();
+  personality02 = lis04.get_allocator().get_personality();
+
+  lis03.swap(lis04);
+  VERIFY( lis03.size() == size02 );
+  VERIFY( equal(lis03.begin(), lis03.end(), title02) );
+  VERIFY( lis04.size() == size01 );
+  VERIFY( lis04.empty() );
+  VERIFY( lis03.get_allocator().get_personality() == personality02 );
+  VERIFY( lis04.get_allocator().get_personality() == personality01 );
+  
+  my_list lis05(title01, title01 + N1, alloc01);
+  size01 = lis05.size();
+  personality01 = lis05.get_allocator().get_personality();
+  my_list lis06(title02, title02 + N2, alloc02);
+  size02 = lis06.size();
+  personality02 = lis06.get_allocator().get_personality();
+
+  lis05.swap(lis06);
+  VERIFY( lis05.size() == size02 );
+  VERIFY( equal(lis05.begin(), lis05.end(), title02) );
+  VERIFY( lis06.size() == size01 );
+  VERIFY( equal(lis06.begin(), lis06.end(), title01) );
+  VERIFY( lis05.get_allocator().get_personality() == personality02 );
+  VERIFY( lis06.get_allocator().get_personality() == personality01 );
+
+  my_list lis07(title01, title01 + N1, alloc02);
+  size01 = lis07.size();
+  personality01 = lis07.get_allocator().get_personality();
+  my_list lis08(title03, title03 + N3, alloc01);
+  size02 = lis08.size();
+  personality02 = lis08.get_allocator().get_personality();
+
+  lis07.swap(lis08);
+  VERIFY( lis07.size() == size02 );
+  VERIFY( equal(lis07.begin(), lis07.end(), title03) );
+  VERIFY( lis08.size() == size01 );
+  VERIFY( equal(lis08.begin(), lis08.end(), title01) );
+  VERIFY( lis07.get_allocator().get_personality() == personality02 );
+  VERIFY( lis08.get_allocator().get_personality() == personality01 );
+
+  my_list lis09(title03, title03 + N3, alloc01);
+  size01 = lis09.size();
+  personality01 = lis09.get_allocator().get_personality();
+  my_list lis10(title04, title04 + N4, alloc02);
+  size02 = lis10.size();
+  personality02 = lis10.get_allocator().get_personality();
+
+  lis09.swap(lis10);
+  VERIFY( lis09.size() == size02 );
+  VERIFY( equal(lis09.begin(), lis09.end(), title04) );
+  VERIFY( lis10.size() == size01 );
+  VERIFY( equal(lis10.begin(), lis10.end(), title03) );
+  VERIFY( lis09.get_allocator().get_personality() == personality02 );
+  VERIFY( lis10.get_allocator().get_personality() == personality01 );
+
+  my_list lis11(title04, title04 + N4, alloc02);
+  size01 = lis11.size();
+  personality01 = lis11.get_allocator().get_personality();
+  my_list lis12(title01, title01 + N1, alloc01);
+  size02 = lis12.size();
+  personality02 = lis12.get_allocator().get_personality();
+
+  lis11.swap(lis12);
+  VERIFY( lis11.size() == size02 );
+  VERIFY( equal(lis11.begin(), lis11.end(), title01) );
+  VERIFY( lis12.size() == size01 );
+  VERIFY( equal(lis12.begin(), lis12.end(), title04) );
+  VERIFY( lis11.get_allocator().get_personality() == personality02 );
+  VERIFY( lis12.get_allocator().get_personality() == personality01 );
+
+  my_list lis13(title03, title03 + N3, alloc01);
+  size01 = lis13.size();
+  personality01 = lis13.get_allocator().get_personality();
+  my_list lis14(title03, title03 + N3, alloc02);
+  size02 = lis14.size();
+  personality02 = lis14.get_allocator().get_personality();
+
+  lis13.swap(lis14);
+  VERIFY( lis13.size() == size02 );
+  VERIFY( equal(lis13.begin(), lis13.end(), title03) );
+  VERIFY( lis14.size() == size01 );
+  VERIFY( equal(lis14.begin(), lis14.end(), title03) );
+  VERIFY( lis13.get_allocator().get_personality() == personality02 );
+  VERIFY( lis14.get_allocator().get_personality() == personality01 );
+}
+
+int main()
+{ 
+  test01();
+  return 0;
+}

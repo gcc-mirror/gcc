@@ -888,7 +888,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
        */
       void
       swap(list& __x)
-      { _List_node_base::swap(this->_M_impl._M_node, __x._M_impl._M_node); }
+      {
+	_List_node_base::swap(this->_M_impl._M_node, __x._M_impl._M_node);
+
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 431. Swapping containers with unequal allocators.
+	std::__alloc_swap<typename _Base::_Node_alloc_type>::
+	  _S_do_it(_M_get_Node_allocator(), __x._M_get_Node_allocator());
+      }
 
       /**
        *  Erases all the elements.  Note that this function only erases
