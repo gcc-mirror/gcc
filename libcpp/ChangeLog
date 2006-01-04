@@ -1,3 +1,10 @@
+2006-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/25294
+	* directives.c (do_pragma): If pragma line ends with multi-line
+	block comment, end the saved deferred pragma string before that
+	comment.  Handle embedded '\0' chars on the pragma line.
+
 2005-11-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* errors.c (cpp_error): Use cpplib's notion of pedantic_errors
