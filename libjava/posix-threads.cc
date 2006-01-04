@@ -338,8 +338,10 @@ _Jv_InitThreads (void)
     // Bigger default on 64-bit systems.
     min_ss *= 2;
 
+#ifdef PTHREAD_STACK_MIN
   if (min_ss < PTHREAD_STACK_MIN)
     min_ss = PTHREAD_STACK_MIN;
+#endif
   
   if (gcj::stack_size > 0 && gcj::stack_size < min_ss)
     gcj::stack_size = min_ss;
