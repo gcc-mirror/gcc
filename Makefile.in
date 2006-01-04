@@ -3,7 +3,7 @@
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -282,6 +282,7 @@ DLLTOOL = @DLLTOOL@
 LD = @LD@
 LIPO = @LIPO@
 NM = @NM@
+OBJDUMP = @OBJDUMP@
 RANLIB = @RANLIB@
 STRIP = @STRIP@
 WINDRES = @WINDRES@
@@ -440,6 +441,8 @@ BASE_FLAGS_TO_PASS = \
 	"LDFLAGS=$(LDFLAGS)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"LIBCXXFLAGS=$(LIBCXXFLAGS)" \
+	"STAGE1_CFLAGS=$(STAGE1_CFLAGS)" \
+	"STAGE1_LANGUAGES=$(STAGE1_LANGUAGES)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"AS_FOR_TARGET=$(AS_FOR_TARGET)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
@@ -460,6 +463,7 @@ BASE_FLAGS_TO_PASS = \
 	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"STRIP_FOR_TARGET=$(STRIP_FOR_TARGET)" \
 	"WINDRES_FOR_TARGET=$(WINDRES_FOR_TARGET)" \
+	"LEAN=$(LEAN)" \
 	"CONFIG_SHELL=$(SHELL)" \
 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 
 
@@ -477,6 +481,7 @@ EXTRA_HOST_FLAGS = \
 	'LD=$(LD)' \
 	'LIPO=$(LIPO)' \
 	'NM=$(NM)' \
+	'OBJDUMP=$(OBJDUMP)' \
 	'RANLIB=$(RANLIB)' \
 	'STRIP=$(STRIP)' \
 	'WINDRES=$(WINDRES)'
@@ -534,8 +539,6 @@ EXTRA_GCC_FLAGS = \
 	"`echo 'LIBGCC2_CFLAGS=$(LIBGCC2_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
 	"`echo 'LIBGCC2_DEBUG_CFLAGS=$(LIBGCC2_DEBUG_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
 	"`echo 'LIBGCC2_INCLUDES=$(LIBGCC2_INCLUDES)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
-	"`echo 'STAGE1_CFLAGS=$(STAGE1_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
-	"`echo 'BOOT_CFLAGS=$(BOOT_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
 	"`echo 'BOOT_ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS)
@@ -35679,6 +35682,9 @@ unstage:
 stage:
 	@: $(MAKE); $(stage)
 
+# Disable commands for lean bootstrap.
+LEAN = false
+
 # We name the build directories for the various stages "stage1-gcc",
 # "stage2-gcc","stage3-gcc", etc.
 
@@ -35733,146 +35739,122 @@ stage1-start::
 @if bfd
 	@cd $(HOST_SUBDIR); [ -d stage1-bfd ] || \
 	  mkdir stage1-bfd; \
-	set stage1-bfd bfd ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-bfd bfd 
 @endif bfd
 @if opcodes
 	@cd $(HOST_SUBDIR); [ -d stage1-opcodes ] || \
 	  mkdir stage1-opcodes; \
-	set stage1-opcodes opcodes ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-opcodes opcodes 
 @endif opcodes
 @if binutils
 	@cd $(HOST_SUBDIR); [ -d stage1-binutils ] || \
 	  mkdir stage1-binutils; \
-	set stage1-binutils binutils ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-binutils binutils 
 @endif binutils
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stage1-gas ] || \
 	  mkdir stage1-gas; \
-	set stage1-gas gas ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-gas gas 
 @endif gas
 @if gcc
 	@cd $(HOST_SUBDIR); [ -d stage1-gcc ] || \
 	  mkdir stage1-gcc; \
-	set stage1-gcc gcc ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-gcc gcc 
 @endif gcc
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage1-intl ] || \
 	  mkdir stage1-intl; \
-	set stage1-intl intl ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-intl intl 
 @endif intl
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stage1-ld ] || \
 	  mkdir stage1-ld; \
-	set stage1-ld ld ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-ld ld 
 @endif ld
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stage1-libcpp ] || \
 	  mkdir stage1-libcpp; \
-	set stage1-libcpp libcpp ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-libcpp libcpp 
 @endif libcpp
 @if libdecnumber
 	@cd $(HOST_SUBDIR); [ -d stage1-libdecnumber ] || \
 	  mkdir stage1-libdecnumber; \
-	set stage1-libdecnumber libdecnumber ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-libdecnumber libdecnumber 
 @endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stage1-libiberty ] || \
 	  mkdir stage1-libiberty; \
-	set stage1-libiberty libiberty ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-libiberty libiberty 
 @endif libiberty
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage1-zlib ] || \
 	  mkdir stage1-zlib; \
-	set stage1-zlib zlib ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-zlib zlib 
 @endif zlib
 	@[ -d stage1-$(TARGET_SUBDIR) ] || \
 	  mkdir stage1-$(TARGET_SUBDIR); \
-	set stage1-$(TARGET_SUBDIR) $(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage1-$(TARGET_SUBDIR) $(TARGET_SUBDIR) 
 
-stage1-end::
-	@rm -f stage_current
+stage1-end:: 
 @if bfd
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set bfd stage1-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/bfd ; then \
+	  cd $(HOST_SUBDIR); mv bfd stage1-bfd  ; \
 	fi
 @endif bfd
 @if opcodes
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set opcodes stage1-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/opcodes ; then \
+	  cd $(HOST_SUBDIR); mv opcodes stage1-opcodes  ; \
 	fi
 @endif opcodes
 @if binutils
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set binutils stage1-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/binutils ; then \
+	  cd $(HOST_SUBDIR); mv binutils stage1-binutils  ; \
 	fi
 @endif binutils
 @if gas
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gas stage1-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gas ; then \
+	  cd $(HOST_SUBDIR); mv gas stage1-gas  ; \
 	fi
 @endif gas
 @if gcc
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gcc stage1-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gcc ; then \
+	  cd $(HOST_SUBDIR); mv gcc stage1-gcc  ; \
 	fi
 @endif gcc
 @if intl
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set intl stage1-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/intl ; then \
+	  cd $(HOST_SUBDIR); mv intl stage1-intl  ; \
 	fi
 @endif intl
 @if ld
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set ld stage1-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/ld ; then \
+	  cd $(HOST_SUBDIR); mv ld stage1-ld  ; \
 	fi
 @endif ld
 @if libcpp
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libcpp stage1-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libcpp ; then \
+	  cd $(HOST_SUBDIR); mv libcpp stage1-libcpp  ; \
 	fi
 @endif libcpp
 @if libdecnumber
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libdecnumber stage1-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libdecnumber ; then \
+	  cd $(HOST_SUBDIR); mv libdecnumber stage1-libdecnumber  ; \
 	fi
 @endif libdecnumber
 @if libiberty
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libiberty stage1-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libiberty ; then \
+	  cd $(HOST_SUBDIR); mv libiberty stage1-libiberty  ; \
 	fi
 @endif libiberty
 @if zlib
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set zlib stage1-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/zlib ; then \
+	  cd $(HOST_SUBDIR); mv zlib stage1-zlib  ; \
 	fi
 @endif zlib
 	@if test -d $(TARGET_SUBDIR) ; then \
-	  set $(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
+	  mv $(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR)  ; \
 	fi
+	rm -f stage_current
 
 # Bubble a bugfix through all the stages up to stage 1.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
@@ -35919,194 +35901,146 @@ stage2-start::
 @if bfd
 	@cd $(HOST_SUBDIR); [ -d stage2-bfd ] || \
 	  mkdir stage2-bfd; \
-	set stage2-bfd bfd ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-bfd prev-bfd ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-bfd bfd  ; \
+	mv stage1-bfd prev-bfd || test -f stage1-lean 
 @endif bfd
 @if opcodes
 	@cd $(HOST_SUBDIR); [ -d stage2-opcodes ] || \
 	  mkdir stage2-opcodes; \
-	set stage2-opcodes opcodes ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-opcodes prev-opcodes ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-opcodes opcodes  ; \
+	mv stage1-opcodes prev-opcodes || test -f stage1-lean 
 @endif opcodes
 @if binutils
 	@cd $(HOST_SUBDIR); [ -d stage2-binutils ] || \
 	  mkdir stage2-binutils; \
-	set stage2-binutils binutils ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-binutils prev-binutils ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-binutils binutils  ; \
+	mv stage1-binutils prev-binutils || test -f stage1-lean 
 @endif binutils
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stage2-gas ] || \
 	  mkdir stage2-gas; \
-	set stage2-gas gas ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-gas prev-gas ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-gas gas  ; \
+	mv stage1-gas prev-gas || test -f stage1-lean 
 @endif gas
 @if gcc
 	@cd $(HOST_SUBDIR); [ -d stage2-gcc ] || \
 	  mkdir stage2-gcc; \
-	set stage2-gcc gcc ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-gcc prev-gcc ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-gcc gcc  ; \
+	mv stage1-gcc prev-gcc || test -f stage1-lean 
 @endif gcc
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage2-intl ] || \
 	  mkdir stage2-intl; \
-	set stage2-intl intl ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-intl prev-intl ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-intl intl  ; \
+	mv stage1-intl prev-intl || test -f stage1-lean 
 @endif intl
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stage2-ld ] || \
 	  mkdir stage2-ld; \
-	set stage2-ld ld ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-ld prev-ld ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-ld ld  ; \
+	mv stage1-ld prev-ld || test -f stage1-lean 
 @endif ld
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stage2-libcpp ] || \
 	  mkdir stage2-libcpp; \
-	set stage2-libcpp libcpp ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-libcpp prev-libcpp ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-libcpp libcpp  ; \
+	mv stage1-libcpp prev-libcpp || test -f stage1-lean 
 @endif libcpp
 @if libdecnumber
 	@cd $(HOST_SUBDIR); [ -d stage2-libdecnumber ] || \
 	  mkdir stage2-libdecnumber; \
-	set stage2-libdecnumber libdecnumber ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-libdecnumber prev-libdecnumber ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-libdecnumber libdecnumber  ; \
+	mv stage1-libdecnumber prev-libdecnumber || test -f stage1-lean 
 @endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stage2-libiberty ] || \
 	  mkdir stage2-libiberty; \
-	set stage2-libiberty libiberty ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-libiberty prev-libiberty ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-libiberty libiberty  ; \
+	mv stage1-libiberty prev-libiberty || test -f stage1-lean 
 @endif libiberty
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage2-zlib ] || \
 	  mkdir stage2-zlib; \
-	set stage2-zlib zlib ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-zlib prev-zlib ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-zlib zlib  ; \
+	mv stage1-zlib prev-zlib || test -f stage1-lean 
 @endif zlib
 	@[ -d stage2-$(TARGET_SUBDIR) ] || \
 	  mkdir stage2-$(TARGET_SUBDIR); \
-	set stage2-$(TARGET_SUBDIR) $(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage2-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
+	mv stage1-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) || test -f stage1-lean 
 
-stage2-end::
-	@rm -f stage_current
+stage2-end:: 
 @if bfd
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set bfd stage2-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-bfd stage1-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/bfd ; then \
+	  cd $(HOST_SUBDIR); mv bfd stage2-bfd ; \
+	  mv prev-bfd stage1-bfd ; :  ; \
 	fi
 @endif bfd
 @if opcodes
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set opcodes stage2-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-opcodes stage1-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/opcodes ; then \
+	  cd $(HOST_SUBDIR); mv opcodes stage2-opcodes ; \
+	  mv prev-opcodes stage1-opcodes ; :  ; \
 	fi
 @endif opcodes
 @if binutils
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set binutils stage2-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-binutils stage1-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/binutils ; then \
+	  cd $(HOST_SUBDIR); mv binutils stage2-binutils ; \
+	  mv prev-binutils stage1-binutils ; :  ; \
 	fi
 @endif binutils
 @if gas
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gas stage2-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gas stage1-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gas ; then \
+	  cd $(HOST_SUBDIR); mv gas stage2-gas ; \
+	  mv prev-gas stage1-gas ; :  ; \
 	fi
 @endif gas
 @if gcc
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gcc stage2-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gcc stage1-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gcc ; then \
+	  cd $(HOST_SUBDIR); mv gcc stage2-gcc ; \
+	  mv prev-gcc stage1-gcc ; :  ; \
 	fi
 @endif gcc
 @if intl
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set intl stage2-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-intl stage1-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/intl ; then \
+	  cd $(HOST_SUBDIR); mv intl stage2-intl ; \
+	  mv prev-intl stage1-intl ; :  ; \
 	fi
 @endif intl
 @if ld
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set ld stage2-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-ld stage1-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/ld ; then \
+	  cd $(HOST_SUBDIR); mv ld stage2-ld ; \
+	  mv prev-ld stage1-ld ; :  ; \
 	fi
 @endif ld
 @if libcpp
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libcpp stage2-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libcpp stage1-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libcpp ; then \
+	  cd $(HOST_SUBDIR); mv libcpp stage2-libcpp ; \
+	  mv prev-libcpp stage1-libcpp ; :  ; \
 	fi
 @endif libcpp
 @if libdecnumber
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libdecnumber stage2-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libdecnumber stage1-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libdecnumber ; then \
+	  cd $(HOST_SUBDIR); mv libdecnumber stage2-libdecnumber ; \
+	  mv prev-libdecnumber stage1-libdecnumber ; :  ; \
 	fi
 @endif libdecnumber
 @if libiberty
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libiberty stage2-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libiberty stage1-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libiberty ; then \
+	  cd $(HOST_SUBDIR); mv libiberty stage2-libiberty ; \
+	  mv prev-libiberty stage1-libiberty ; :  ; \
 	fi
 @endif libiberty
 @if zlib
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set zlib stage2-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-zlib stage1-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/zlib ; then \
+	  cd $(HOST_SUBDIR); mv zlib stage2-zlib ; \
+	  mv prev-zlib stage1-zlib ; :  ; \
 	fi
 @endif zlib
 	@if test -d $(TARGET_SUBDIR) ; then \
-	  set $(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
-	  set prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
+	  mv $(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR)  ; \
+	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; :  ; \
 	fi
+	rm -f stage_current
 
 # Bubble a bugfix through all the stages up to stage 2.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
@@ -36131,12 +36065,22 @@ do-clean: clean-stage2
 
 
 
-.PHONY: bootstrap2
+.PHONY: bootstrap2 bootstrap2-lean
 bootstrap2:
 	echo stage2 > stage_final
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage2-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+bootstrap2-lean:
+	echo stage2 > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LEAN=: stage2-bubble
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -36164,207 +36108,162 @@ stage3-start::
 @if bfd
 	@cd $(HOST_SUBDIR); [ -d stage3-bfd ] || \
 	  mkdir stage3-bfd; \
-	set stage3-bfd bfd ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-bfd prev-bfd ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-bfd bfd  ; \
+	mv stage2-bfd prev-bfd || test -f stage2-lean 
 @endif bfd
 @if opcodes
 	@cd $(HOST_SUBDIR); [ -d stage3-opcodes ] || \
 	  mkdir stage3-opcodes; \
-	set stage3-opcodes opcodes ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-opcodes prev-opcodes ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-opcodes opcodes  ; \
+	mv stage2-opcodes prev-opcodes || test -f stage2-lean 
 @endif opcodes
 @if binutils
 	@cd $(HOST_SUBDIR); [ -d stage3-binutils ] || \
 	  mkdir stage3-binutils; \
-	set stage3-binutils binutils ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-binutils prev-binutils ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-binutils binutils  ; \
+	mv stage2-binutils prev-binutils || test -f stage2-lean 
 @endif binutils
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stage3-gas ] || \
 	  mkdir stage3-gas; \
-	set stage3-gas gas ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-gas prev-gas ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-gas gas  ; \
+	mv stage2-gas prev-gas || test -f stage2-lean 
 @endif gas
 @if gcc
 	@cd $(HOST_SUBDIR); [ -d stage3-gcc ] || \
 	  mkdir stage3-gcc; \
-	set stage3-gcc gcc ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-gcc prev-gcc ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-gcc gcc  ; \
+	mv stage2-gcc prev-gcc || test -f stage2-lean 
 @endif gcc
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage3-intl ] || \
 	  mkdir stage3-intl; \
-	set stage3-intl intl ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-intl prev-intl ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-intl intl  ; \
+	mv stage2-intl prev-intl || test -f stage2-lean 
 @endif intl
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stage3-ld ] || \
 	  mkdir stage3-ld; \
-	set stage3-ld ld ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-ld prev-ld ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-ld ld  ; \
+	mv stage2-ld prev-ld || test -f stage2-lean 
 @endif ld
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stage3-libcpp ] || \
 	  mkdir stage3-libcpp; \
-	set stage3-libcpp libcpp ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-libcpp prev-libcpp ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-libcpp libcpp  ; \
+	mv stage2-libcpp prev-libcpp || test -f stage2-lean 
 @endif libcpp
 @if libdecnumber
 	@cd $(HOST_SUBDIR); [ -d stage3-libdecnumber ] || \
 	  mkdir stage3-libdecnumber; \
-	set stage3-libdecnumber libdecnumber ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-libdecnumber prev-libdecnumber ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-libdecnumber libdecnumber  ; \
+	mv stage2-libdecnumber prev-libdecnumber || test -f stage2-lean 
 @endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stage3-libiberty ] || \
 	  mkdir stage3-libiberty; \
-	set stage3-libiberty libiberty ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-libiberty prev-libiberty ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-libiberty libiberty  ; \
+	mv stage2-libiberty prev-libiberty || test -f stage2-lean 
 @endif libiberty
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage3-zlib ] || \
 	  mkdir stage3-zlib; \
-	set stage3-zlib zlib ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-zlib prev-zlib ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-zlib zlib  ; \
+	mv stage2-zlib prev-zlib || test -f stage2-lean 
 @endif zlib
 	@[ -d stage3-$(TARGET_SUBDIR) ] || \
 	  mkdir stage3-$(TARGET_SUBDIR); \
-	set stage3-$(TARGET_SUBDIR) $(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage2-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage3-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
+	mv stage2-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) || test -f stage2-lean 
 
-stage3-end::
-	@rm -f stage_current
+stage3-end:: 
 @if bfd
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set bfd stage3-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-bfd stage2-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/bfd ; then \
+	  cd $(HOST_SUBDIR); mv bfd stage3-bfd ; \
+	  mv prev-bfd stage2-bfd ; :  ; \
 	fi
 @endif bfd
 @if opcodes
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set opcodes stage3-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-opcodes stage2-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/opcodes ; then \
+	  cd $(HOST_SUBDIR); mv opcodes stage3-opcodes ; \
+	  mv prev-opcodes stage2-opcodes ; :  ; \
 	fi
 @endif opcodes
 @if binutils
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set binutils stage3-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-binutils stage2-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/binutils ; then \
+	  cd $(HOST_SUBDIR); mv binutils stage3-binutils ; \
+	  mv prev-binutils stage2-binutils ; :  ; \
 	fi
 @endif binutils
 @if gas
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gas stage3-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gas stage2-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gas ; then \
+	  cd $(HOST_SUBDIR); mv gas stage3-gas ; \
+	  mv prev-gas stage2-gas ; :  ; \
 	fi
 @endif gas
 @if gcc
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gcc stage3-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gcc stage2-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gcc ; then \
+	  cd $(HOST_SUBDIR); mv gcc stage3-gcc ; \
+	  mv prev-gcc stage2-gcc ; :  ; \
 	fi
 @endif gcc
 @if intl
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set intl stage3-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-intl stage2-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/intl ; then \
+	  cd $(HOST_SUBDIR); mv intl stage3-intl ; \
+	  mv prev-intl stage2-intl ; :  ; \
 	fi
 @endif intl
 @if ld
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set ld stage3-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-ld stage2-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/ld ; then \
+	  cd $(HOST_SUBDIR); mv ld stage3-ld ; \
+	  mv prev-ld stage2-ld ; :  ; \
 	fi
 @endif ld
 @if libcpp
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libcpp stage3-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libcpp stage2-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libcpp ; then \
+	  cd $(HOST_SUBDIR); mv libcpp stage3-libcpp ; \
+	  mv prev-libcpp stage2-libcpp ; :  ; \
 	fi
 @endif libcpp
 @if libdecnumber
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libdecnumber stage3-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libdecnumber stage2-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libdecnumber ; then \
+	  cd $(HOST_SUBDIR); mv libdecnumber stage3-libdecnumber ; \
+	  mv prev-libdecnumber stage2-libdecnumber ; :  ; \
 	fi
 @endif libdecnumber
 @if libiberty
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libiberty stage3-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libiberty stage2-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libiberty ; then \
+	  cd $(HOST_SUBDIR); mv libiberty stage3-libiberty ; \
+	  mv prev-libiberty stage2-libiberty ; :  ; \
 	fi
 @endif libiberty
 @if zlib
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set zlib stage3-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-zlib stage2-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/zlib ; then \
+	  cd $(HOST_SUBDIR); mv zlib stage3-zlib ; \
+	  mv prev-zlib stage2-zlib ; :  ; \
 	fi
 @endif zlib
 	@if test -d $(TARGET_SUBDIR) ; then \
-	  set $(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
-	  set prev-$(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
+	  mv $(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR)  ; \
+	  mv prev-$(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR) ; :  ; \
 	fi
+	rm -f stage_current
 
 # Bubble a bugfix through all the stages up to stage 3.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stage3-bubble
 stage3-bubble:: stage2-bubble
-	@bootstrap_lean@-rm -rf stage1-* ; $(STAMP) stage1-lean
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	if test -f stage3-lean || test -f stage2-lean  ; then \
 	  echo Skipping rebuild of stage3 ; \
 	else \
 	  $(MAKE) stage3-start; \
+	  if $(LEAN); then \
+	    rm -rf stage1-* ; \
+	    $(STAMP) stage1-lean ; \
+	  fi; \
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage3; \
 	fi
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) compare
@@ -36408,16 +36307,29 @@ compare:
 	  true; \
 	fi ; \
 	$(STAMP) compare
-	@bootstrap_lean@-rm -rf stage2-* ; $(STAMP) stage2-lean
+	if $(LEAN); then \
+	  rm -rf stage2-*; \
+	  $(STAMP) stage2-lean; \
+	fi
 
 
 
-.PHONY: bootstrap
+.PHONY: bootstrap bootstrap-lean
 bootstrap:
 	echo stage3 > stage_final
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage3-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+bootstrap-lean:
+	echo stage3 > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LEAN=: stage3-bubble
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -36448,207 +36360,162 @@ stage4-start::
 @if bfd
 	@cd $(HOST_SUBDIR); [ -d stage4-bfd ] || \
 	  mkdir stage4-bfd; \
-	set stage4-bfd bfd ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-bfd prev-bfd ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-bfd bfd  ; \
+	mv stage3-bfd prev-bfd || test -f stage3-lean 
 @endif bfd
 @if opcodes
 	@cd $(HOST_SUBDIR); [ -d stage4-opcodes ] || \
 	  mkdir stage4-opcodes; \
-	set stage4-opcodes opcodes ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-opcodes prev-opcodes ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-opcodes opcodes  ; \
+	mv stage3-opcodes prev-opcodes || test -f stage3-lean 
 @endif opcodes
 @if binutils
 	@cd $(HOST_SUBDIR); [ -d stage4-binutils ] || \
 	  mkdir stage4-binutils; \
-	set stage4-binutils binutils ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-binutils prev-binutils ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-binutils binutils  ; \
+	mv stage3-binutils prev-binutils || test -f stage3-lean 
 @endif binutils
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stage4-gas ] || \
 	  mkdir stage4-gas; \
-	set stage4-gas gas ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-gas prev-gas ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-gas gas  ; \
+	mv stage3-gas prev-gas || test -f stage3-lean 
 @endif gas
 @if gcc
 	@cd $(HOST_SUBDIR); [ -d stage4-gcc ] || \
 	  mkdir stage4-gcc; \
-	set stage4-gcc gcc ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-gcc prev-gcc ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-gcc gcc  ; \
+	mv stage3-gcc prev-gcc || test -f stage3-lean 
 @endif gcc
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage4-intl ] || \
 	  mkdir stage4-intl; \
-	set stage4-intl intl ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-intl prev-intl ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-intl intl  ; \
+	mv stage3-intl prev-intl || test -f stage3-lean 
 @endif intl
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stage4-ld ] || \
 	  mkdir stage4-ld; \
-	set stage4-ld ld ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-ld prev-ld ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-ld ld  ; \
+	mv stage3-ld prev-ld || test -f stage3-lean 
 @endif ld
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stage4-libcpp ] || \
 	  mkdir stage4-libcpp; \
-	set stage4-libcpp libcpp ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-libcpp prev-libcpp ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-libcpp libcpp  ; \
+	mv stage3-libcpp prev-libcpp || test -f stage3-lean 
 @endif libcpp
 @if libdecnumber
 	@cd $(HOST_SUBDIR); [ -d stage4-libdecnumber ] || \
 	  mkdir stage4-libdecnumber; \
-	set stage4-libdecnumber libdecnumber ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-libdecnumber prev-libdecnumber ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-libdecnumber libdecnumber  ; \
+	mv stage3-libdecnumber prev-libdecnumber || test -f stage3-lean 
 @endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stage4-libiberty ] || \
 	  mkdir stage4-libiberty; \
-	set stage4-libiberty libiberty ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-libiberty prev-libiberty ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-libiberty libiberty  ; \
+	mv stage3-libiberty prev-libiberty || test -f stage3-lean 
 @endif libiberty
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stage4-zlib ] || \
 	  mkdir stage4-zlib; \
-	set stage4-zlib zlib ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-zlib prev-zlib ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-zlib zlib  ; \
+	mv stage3-zlib prev-zlib || test -f stage3-lean 
 @endif zlib
 	@[ -d stage4-$(TARGET_SUBDIR) ] || \
 	  mkdir stage4-$(TARGET_SUBDIR); \
-	set stage4-$(TARGET_SUBDIR) $(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage3-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stage4-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
+	mv stage3-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) || test -f stage3-lean 
 
-stage4-end::
-	@rm -f stage_current
+stage4-end:: 
 @if bfd
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set bfd stage4-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-bfd stage3-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/bfd ; then \
+	  cd $(HOST_SUBDIR); mv bfd stage4-bfd ; \
+	  mv prev-bfd stage3-bfd ; :  ; \
 	fi
 @endif bfd
 @if opcodes
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set opcodes stage4-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-opcodes stage3-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/opcodes ; then \
+	  cd $(HOST_SUBDIR); mv opcodes stage4-opcodes ; \
+	  mv prev-opcodes stage3-opcodes ; :  ; \
 	fi
 @endif opcodes
 @if binutils
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set binutils stage4-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-binutils stage3-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/binutils ; then \
+	  cd $(HOST_SUBDIR); mv binutils stage4-binutils ; \
+	  mv prev-binutils stage3-binutils ; :  ; \
 	fi
 @endif binutils
 @if gas
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gas stage4-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gas stage3-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gas ; then \
+	  cd $(HOST_SUBDIR); mv gas stage4-gas ; \
+	  mv prev-gas stage3-gas ; :  ; \
 	fi
 @endif gas
 @if gcc
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gcc stage4-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gcc stage3-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gcc ; then \
+	  cd $(HOST_SUBDIR); mv gcc stage4-gcc ; \
+	  mv prev-gcc stage3-gcc ; :  ; \
 	fi
 @endif gcc
 @if intl
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set intl stage4-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-intl stage3-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/intl ; then \
+	  cd $(HOST_SUBDIR); mv intl stage4-intl ; \
+	  mv prev-intl stage3-intl ; :  ; \
 	fi
 @endif intl
 @if ld
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set ld stage4-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-ld stage3-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/ld ; then \
+	  cd $(HOST_SUBDIR); mv ld stage4-ld ; \
+	  mv prev-ld stage3-ld ; :  ; \
 	fi
 @endif ld
 @if libcpp
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libcpp stage4-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libcpp stage3-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libcpp ; then \
+	  cd $(HOST_SUBDIR); mv libcpp stage4-libcpp ; \
+	  mv prev-libcpp stage3-libcpp ; :  ; \
 	fi
 @endif libcpp
 @if libdecnumber
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libdecnumber stage4-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libdecnumber stage3-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libdecnumber ; then \
+	  cd $(HOST_SUBDIR); mv libdecnumber stage4-libdecnumber ; \
+	  mv prev-libdecnumber stage3-libdecnumber ; :  ; \
 	fi
 @endif libdecnumber
 @if libiberty
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libiberty stage4-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libiberty stage3-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libiberty ; then \
+	  cd $(HOST_SUBDIR); mv libiberty stage4-libiberty ; \
+	  mv prev-libiberty stage3-libiberty ; :  ; \
 	fi
 @endif libiberty
 @if zlib
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set zlib stage4-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-zlib stage3-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/zlib ; then \
+	  cd $(HOST_SUBDIR); mv zlib stage4-zlib ; \
+	  mv prev-zlib stage3-zlib ; :  ; \
 	fi
 @endif zlib
 	@if test -d $(TARGET_SUBDIR) ; then \
-	  set $(TARGET_SUBDIR) stage4-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
-	  set prev-$(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
+	  mv $(TARGET_SUBDIR) stage4-$(TARGET_SUBDIR)  ; \
+	  mv prev-$(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR) ; :  ; \
 	fi
+	rm -f stage_current
 
 # Bubble a bugfix through all the stages up to stage 4.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stage4-bubble
 stage4-bubble:: stage3-bubble
-	@bootstrap_lean@-rm -rf stage2-* ; $(STAMP) stage2-lean
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	if test -f stage4-lean || test -f stage3-lean  ; then \
 	  echo Skipping rebuild of stage4 ; \
 	else \
 	  $(MAKE) stage4-start; \
+	  if $(LEAN); then \
+	    rm -rf stage2-* ; \
+	    $(STAMP) stage2-lean ; \
+	  fi; \
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage4; \
 	fi
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) compare3
@@ -36692,16 +36559,29 @@ compare3:
 	  true; \
 	fi ; \
 	$(STAMP) compare3
-	@bootstrap_lean@-rm -rf stage3-* ; $(STAMP) stage3-lean
+	if $(LEAN); then \
+	  rm -rf stage3-*; \
+	  $(STAMP) stage3-lean; \
+	fi
 
 
 
-.PHONY: bootstrap4
+.PHONY: bootstrap4 bootstrap4-lean
 bootstrap4:
 	echo stage4 > stage_final
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage4-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+bootstrap4-lean:
+	echo stage4 > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LEAN=: stage4-bubble
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -36729,194 +36609,146 @@ stageprofile-start::
 @if bfd
 	@cd $(HOST_SUBDIR); [ -d stageprofile-bfd ] || \
 	  mkdir stageprofile-bfd; \
-	set stageprofile-bfd bfd ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-bfd prev-bfd ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-bfd bfd  ; \
+	mv stage1-bfd prev-bfd || test -f stage1-lean 
 @endif bfd
 @if opcodes
 	@cd $(HOST_SUBDIR); [ -d stageprofile-opcodes ] || \
 	  mkdir stageprofile-opcodes; \
-	set stageprofile-opcodes opcodes ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-opcodes prev-opcodes ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-opcodes opcodes  ; \
+	mv stage1-opcodes prev-opcodes || test -f stage1-lean 
 @endif opcodes
 @if binutils
 	@cd $(HOST_SUBDIR); [ -d stageprofile-binutils ] || \
 	  mkdir stageprofile-binutils; \
-	set stageprofile-binutils binutils ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-binutils prev-binutils ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-binutils binutils  ; \
+	mv stage1-binutils prev-binutils || test -f stage1-lean 
 @endif binutils
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stageprofile-gas ] || \
 	  mkdir stageprofile-gas; \
-	set stageprofile-gas gas ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-gas prev-gas ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-gas gas  ; \
+	mv stage1-gas prev-gas || test -f stage1-lean 
 @endif gas
 @if gcc
 	@cd $(HOST_SUBDIR); [ -d stageprofile-gcc ] || \
 	  mkdir stageprofile-gcc; \
-	set stageprofile-gcc gcc ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-gcc prev-gcc ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-gcc gcc  ; \
+	mv stage1-gcc prev-gcc || test -f stage1-lean 
 @endif gcc
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stageprofile-intl ] || \
 	  mkdir stageprofile-intl; \
-	set stageprofile-intl intl ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-intl prev-intl ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-intl intl  ; \
+	mv stage1-intl prev-intl || test -f stage1-lean 
 @endif intl
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stageprofile-ld ] || \
 	  mkdir stageprofile-ld; \
-	set stageprofile-ld ld ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-ld prev-ld ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-ld ld  ; \
+	mv stage1-ld prev-ld || test -f stage1-lean 
 @endif ld
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stageprofile-libcpp ] || \
 	  mkdir stageprofile-libcpp; \
-	set stageprofile-libcpp libcpp ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-libcpp prev-libcpp ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-libcpp libcpp  ; \
+	mv stage1-libcpp prev-libcpp || test -f stage1-lean 
 @endif libcpp
 @if libdecnumber
 	@cd $(HOST_SUBDIR); [ -d stageprofile-libdecnumber ] || \
 	  mkdir stageprofile-libdecnumber; \
-	set stageprofile-libdecnumber libdecnumber ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-libdecnumber prev-libdecnumber ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-libdecnumber libdecnumber  ; \
+	mv stage1-libdecnumber prev-libdecnumber || test -f stage1-lean 
 @endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stageprofile-libiberty ] || \
 	  mkdir stageprofile-libiberty; \
-	set stageprofile-libiberty libiberty ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-libiberty prev-libiberty ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-libiberty libiberty  ; \
+	mv stage1-libiberty prev-libiberty || test -f stage1-lean 
 @endif libiberty
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stageprofile-zlib ] || \
 	  mkdir stageprofile-zlib; \
-	set stageprofile-zlib zlib ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-zlib prev-zlib ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-zlib zlib  ; \
+	mv stage1-zlib prev-zlib || test -f stage1-lean 
 @endif zlib
 	@[ -d stageprofile-$(TARGET_SUBDIR) ] || \
 	  mkdir stageprofile-$(TARGET_SUBDIR); \
-	set stageprofile-$(TARGET_SUBDIR) $(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stageprofile-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
+	mv stage1-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) || test -f stage1-lean 
 
-stageprofile-end::
-	@rm -f stage_current
+stageprofile-end:: 
 @if bfd
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set bfd stageprofile-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-bfd stage1-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/bfd ; then \
+	  cd $(HOST_SUBDIR); mv bfd stageprofile-bfd ; \
+	  mv prev-bfd stage1-bfd ; :  ; \
 	fi
 @endif bfd
 @if opcodes
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set opcodes stageprofile-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-opcodes stage1-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/opcodes ; then \
+	  cd $(HOST_SUBDIR); mv opcodes stageprofile-opcodes ; \
+	  mv prev-opcodes stage1-opcodes ; :  ; \
 	fi
 @endif opcodes
 @if binutils
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set binutils stageprofile-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-binutils stage1-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/binutils ; then \
+	  cd $(HOST_SUBDIR); mv binutils stageprofile-binutils ; \
+	  mv prev-binutils stage1-binutils ; :  ; \
 	fi
 @endif binutils
 @if gas
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gas stageprofile-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gas stage1-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gas ; then \
+	  cd $(HOST_SUBDIR); mv gas stageprofile-gas ; \
+	  mv prev-gas stage1-gas ; :  ; \
 	fi
 @endif gas
 @if gcc
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gcc stageprofile-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gcc stage1-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gcc ; then \
+	  cd $(HOST_SUBDIR); mv gcc stageprofile-gcc ; \
+	  mv prev-gcc stage1-gcc ; :  ; \
 	fi
 @endif gcc
 @if intl
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set intl stageprofile-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-intl stage1-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/intl ; then \
+	  cd $(HOST_SUBDIR); mv intl stageprofile-intl ; \
+	  mv prev-intl stage1-intl ; :  ; \
 	fi
 @endif intl
 @if ld
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set ld stageprofile-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-ld stage1-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/ld ; then \
+	  cd $(HOST_SUBDIR); mv ld stageprofile-ld ; \
+	  mv prev-ld stage1-ld ; :  ; \
 	fi
 @endif ld
 @if libcpp
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libcpp stageprofile-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libcpp stage1-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libcpp ; then \
+	  cd $(HOST_SUBDIR); mv libcpp stageprofile-libcpp ; \
+	  mv prev-libcpp stage1-libcpp ; :  ; \
 	fi
 @endif libcpp
 @if libdecnumber
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libdecnumber stageprofile-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libdecnumber stage1-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libdecnumber ; then \
+	  cd $(HOST_SUBDIR); mv libdecnumber stageprofile-libdecnumber ; \
+	  mv prev-libdecnumber stage1-libdecnumber ; :  ; \
 	fi
 @endif libdecnumber
 @if libiberty
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libiberty stageprofile-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libiberty stage1-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libiberty ; then \
+	  cd $(HOST_SUBDIR); mv libiberty stageprofile-libiberty ; \
+	  mv prev-libiberty stage1-libiberty ; :  ; \
 	fi
 @endif libiberty
 @if zlib
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set zlib stageprofile-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-zlib stage1-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/zlib ; then \
+	  cd $(HOST_SUBDIR); mv zlib stageprofile-zlib ; \
+	  mv prev-zlib stage1-zlib ; :  ; \
 	fi
 @endif zlib
 	@if test -d $(TARGET_SUBDIR) ; then \
-	  set $(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
-	  set prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
+	  mv $(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR)  ; \
+	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; :  ; \
 	fi
+	rm -f stage_current
 
 # Bubble a bugfix through all the stages up to stage profile.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
@@ -36963,194 +36795,146 @@ stagefeedback-start::
 @if bfd
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-bfd ] || \
 	  mkdir stagefeedback-bfd; \
-	set stagefeedback-bfd bfd ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-bfd prev-bfd ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-bfd bfd  ; \
+	mv stageprofile-bfd prev-bfd || test -f stageprofile-lean 
 @endif bfd
 @if opcodes
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-opcodes ] || \
 	  mkdir stagefeedback-opcodes; \
-	set stagefeedback-opcodes opcodes ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-opcodes prev-opcodes ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-opcodes opcodes  ; \
+	mv stageprofile-opcodes prev-opcodes || test -f stageprofile-lean 
 @endif opcodes
 @if binutils
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-binutils ] || \
 	  mkdir stagefeedback-binutils; \
-	set stagefeedback-binutils binutils ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-binutils prev-binutils ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-binutils binutils  ; \
+	mv stageprofile-binutils prev-binutils || test -f stageprofile-lean 
 @endif binutils
 @if gas
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-gas ] || \
 	  mkdir stagefeedback-gas; \
-	set stagefeedback-gas gas ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-gas prev-gas ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-gas gas  ; \
+	mv stageprofile-gas prev-gas || test -f stageprofile-lean 
 @endif gas
 @if gcc
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-gcc ] || \
 	  mkdir stagefeedback-gcc; \
-	set stagefeedback-gcc gcc ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-gcc prev-gcc ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-gcc gcc  ; \
+	mv stageprofile-gcc prev-gcc || test -f stageprofile-lean 
 @endif gcc
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-intl ] || \
 	  mkdir stagefeedback-intl; \
-	set stagefeedback-intl intl ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-intl prev-intl ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-intl intl  ; \
+	mv stageprofile-intl prev-intl || test -f stageprofile-lean 
 @endif intl
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-ld ] || \
 	  mkdir stagefeedback-ld; \
-	set stagefeedback-ld ld ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-ld prev-ld ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-ld ld  ; \
+	mv stageprofile-ld prev-ld || test -f stageprofile-lean 
 @endif ld
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-libcpp ] || \
 	  mkdir stagefeedback-libcpp; \
-	set stagefeedback-libcpp libcpp ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-libcpp prev-libcpp ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-libcpp libcpp  ; \
+	mv stageprofile-libcpp prev-libcpp || test -f stageprofile-lean 
 @endif libcpp
 @if libdecnumber
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-libdecnumber ] || \
 	  mkdir stagefeedback-libdecnumber; \
-	set stagefeedback-libdecnumber libdecnumber ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-libdecnumber prev-libdecnumber ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-libdecnumber libdecnumber  ; \
+	mv stageprofile-libdecnumber prev-libdecnumber || test -f stageprofile-lean 
 @endif libdecnumber
 @if libiberty
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-libiberty ] || \
 	  mkdir stagefeedback-libiberty; \
-	set stagefeedback-libiberty libiberty ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-libiberty prev-libiberty ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-libiberty libiberty  ; \
+	mv stageprofile-libiberty prev-libiberty || test -f stageprofile-lean 
 @endif libiberty
 @if zlib
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-zlib ] || \
 	  mkdir stagefeedback-zlib; \
-	set stagefeedback-zlib zlib ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-zlib prev-zlib ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-zlib zlib  ; \
+	mv stageprofile-zlib prev-zlib || test -f stageprofile-lean 
 @endif zlib
 	@[ -d stagefeedback-$(TARGET_SUBDIR) ] || \
 	  mkdir stagefeedback-$(TARGET_SUBDIR); \
-	set stagefeedback-$(TARGET_SUBDIR) $(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@  ; \
-	set stageprofile-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@ 
+	mv stagefeedback-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
+	mv stageprofile-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) || test -f stageprofile-lean 
 
-stagefeedback-end::
-	@rm -f stage_current
+stagefeedback-end:: 
 @if bfd
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set bfd stagefeedback-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-bfd stageprofile-bfd ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/bfd ; then \
+	  cd $(HOST_SUBDIR); mv bfd stagefeedback-bfd ; \
+	  mv prev-bfd stageprofile-bfd ; :  ; \
 	fi
 @endif bfd
 @if opcodes
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set opcodes stagefeedback-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-opcodes stageprofile-opcodes ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/opcodes ; then \
+	  cd $(HOST_SUBDIR); mv opcodes stagefeedback-opcodes ; \
+	  mv prev-opcodes stageprofile-opcodes ; :  ; \
 	fi
 @endif opcodes
 @if binutils
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set binutils stagefeedback-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-binutils stageprofile-binutils ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/binutils ; then \
+	  cd $(HOST_SUBDIR); mv binutils stagefeedback-binutils ; \
+	  mv prev-binutils stageprofile-binutils ; :  ; \
 	fi
 @endif binutils
 @if gas
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gas stagefeedback-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gas stageprofile-gas ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gas ; then \
+	  cd $(HOST_SUBDIR); mv gas stagefeedback-gas ; \
+	  mv prev-gas stageprofile-gas ; :  ; \
 	fi
 @endif gas
 @if gcc
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set gcc stagefeedback-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gcc stageprofile-gcc ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/gcc ; then \
+	  cd $(HOST_SUBDIR); mv gcc stagefeedback-gcc ; \
+	  mv prev-gcc stageprofile-gcc ; :  ; \
 	fi
 @endif gcc
 @if intl
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set intl stagefeedback-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-intl stageprofile-intl ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/intl ; then \
+	  cd $(HOST_SUBDIR); mv intl stagefeedback-intl ; \
+	  mv prev-intl stageprofile-intl ; :  ; \
 	fi
 @endif intl
 @if ld
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set ld stagefeedback-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-ld stageprofile-ld ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/ld ; then \
+	  cd $(HOST_SUBDIR); mv ld stagefeedback-ld ; \
+	  mv prev-ld stageprofile-ld ; :  ; \
 	fi
 @endif ld
 @if libcpp
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libcpp stagefeedback-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libcpp stageprofile-libcpp ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libcpp ; then \
+	  cd $(HOST_SUBDIR); mv libcpp stagefeedback-libcpp ; \
+	  mv prev-libcpp stageprofile-libcpp ; :  ; \
 	fi
 @endif libcpp
 @if libdecnumber
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libdecnumber stagefeedback-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libdecnumber stageprofile-libdecnumber ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libdecnumber ; then \
+	  cd $(HOST_SUBDIR); mv libdecnumber stagefeedback-libdecnumber ; \
+	  mv prev-libdecnumber stageprofile-libdecnumber ; :  ; \
 	fi
 @endif libdecnumber
 @if libiberty
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set libiberty stagefeedback-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libiberty stageprofile-libiberty ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/libiberty ; then \
+	  cd $(HOST_SUBDIR); mv libiberty stagefeedback-libiberty ; \
+	  mv prev-libiberty stageprofile-libiberty ; :  ; \
 	fi
 @endif libiberty
 @if zlib
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set zlib stagefeedback-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
-	set prev-zlib stageprofile-zlib ; \
-	@UNDO_LINK_TO_DIR@  ; \
+	@if test -d $(HOST_SUBDIR)/zlib ; then \
+	  cd $(HOST_SUBDIR); mv zlib stagefeedback-zlib ; \
+	  mv prev-zlib stageprofile-zlib ; :  ; \
 	fi
 @endif zlib
 	@if test -d $(TARGET_SUBDIR) ; then \
-	  set $(TARGET_SUBDIR) stagefeedback-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
-	  set prev-$(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@  ; \
+	  mv $(TARGET_SUBDIR) stagefeedback-$(TARGET_SUBDIR)  ; \
+	  mv prev-$(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR) ; :  ; \
 	fi
+	rm -f stage_current
 
 # Bubble a bugfix through all the stages up to stage feedback.  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
@@ -37175,12 +36959,22 @@ do-clean: clean-stagefeedback
 
 
 
-.PHONY: profiledbootstrap
+.PHONY: profiledbootstrap profiledbootstrap-lean
 profiledbootstrap:
 	echo stagefeedback > stage_final
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stagefeedback-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+profiledbootstrap-lean:
+	echo stagefeedback > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LEAN=: stagefeedback-bubble
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
