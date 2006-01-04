@@ -6,7 +6,7 @@ in
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -285,6 +285,7 @@ DLLTOOL = @DLLTOOL@
 LD = @LD@
 LIPO = @LIPO@
 NM = @NM@
+OBJDUMP = @OBJDUMP@
 RANLIB = @RANLIB@
 STRIP = @STRIP@
 WINDRES = @WINDRES@
@@ -407,6 +408,7 @@ EXTRA_HOST_FLAGS = \
 	'LD=$(LD)' \
 	'LIPO=$(LIPO)' \
 	'NM=$(NM)' \
+	'OBJDUMP=$(OBJDUMP)' \
 	'RANLIB=$(RANLIB)' \
 	'STRIP=$(STRIP)' \
 	'WINDRES=$(WINDRES)'
@@ -464,8 +466,6 @@ EXTRA_GCC_FLAGS = \
 	"`echo 'LIBGCC2_CFLAGS=$(LIBGCC2_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
 	"`echo 'LIBGCC2_DEBUG_CFLAGS=$(LIBGCC2_DEBUG_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
 	"`echo 'LIBGCC2_INCLUDES=$(LIBGCC2_INCLUDES)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
-	"`echo 'STAGE1_CFLAGS=$(STAGE1_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
-	"`echo 'BOOT_CFLAGS=$(BOOT_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
 	"`echo 'BOOT_ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS)
@@ -1222,6 +1222,9 @@ unstage:
 stage:
 	@: $(MAKE); $(stage)
 
+# Disable commands for lean bootstrap.
+LEAN = false
+
 # We name the build directories for the various stages "stage1-gcc",
 # "stage2-gcc","stage3-gcc", etc.
 
@@ -1277,48 +1280,43 @@ stage[+id+]-start::
 @if [+ module +]
 	@cd $(HOST_SUBDIR); [ -d stage[+id+]-[+module+] ] || \
 	  mkdir stage[+id+]-[+module+]; \
-	set stage[+id+]-[+module+] [+module+] ; \
-	@CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
-	set stage[+prev+]-[+module+] prev-[+module+] ; \
-	@CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
+	mv stage[+id+]-[+module+] [+module+] [+ IF prev +] ; \
+	mv stage[+prev+]-[+module+] prev-[+module+] || test -f stage[+prev+]-lean [+ ENDIF prev +]
 @endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 	@[ -d stage[+id+]-$(TARGET_SUBDIR) ] || \
 	  mkdir stage[+id+]-$(TARGET_SUBDIR); \
-	set stage[+id+]-$(TARGET_SUBDIR) $(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
-	set stage[+prev+]-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) ; \
-	@CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
+	mv stage[+id+]-$(TARGET_SUBDIR) $(TARGET_SUBDIR) [+ IF prev +] ; \
+	mv stage[+prev+]-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) || test -f stage[+prev+]-lean [+ ENDIF prev +]
 
-stage[+id+]-end::
-	@rm -f stage_current[+ FOR host_modules +][+ IF bootstrap +]
+stage[+id+]-end:: [+ FOR host_modules +][+ IF bootstrap +]
 @if [+ module +]
-	@if test -d $(HOST_SUBDIR) ; then \
-	cd $(HOST_SUBDIR); set [+module+] stage[+id+]-[+module+] ; \
-	@UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
-	set prev-[+module+] stage[+prev+]-[+module+] ; \
-	@UNDO_LINK_TO_DIR@ [+ ENDIF prev +] ; \
+	@if test -d $(HOST_SUBDIR)/[+module+] ; then \
+	  cd $(HOST_SUBDIR); mv [+module+] stage[+id+]-[+module+] [+ IF prev +]; \
+	  mv prev-[+module+] stage[+prev+]-[+module+] ; : [+ ENDIF prev +] ; \
 	fi
 @endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 	@if test -d $(TARGET_SUBDIR) ; then \
-	  set $(TARGET_SUBDIR) stage[+id+]-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
-	  set prev-$(TARGET_SUBDIR) stage[+prev+]-$(TARGET_SUBDIR) ; \
-	  @UNDO_LINK_TO_DIR@ [+ ENDIF prev +] ; \
+	  mv $(TARGET_SUBDIR) stage[+id+]-$(TARGET_SUBDIR) [+ IF prev +] ; \
+	  mv prev-$(TARGET_SUBDIR) stage[+prev+]-$(TARGET_SUBDIR) ; : [+ ENDIF prev +] ; \
 	fi
+	rm -f stage_current
 
 # Bubble a bugfix through all the stages up to stage [+id+].  They are
 # remade, but not reconfigured.  The next stage (if any) will not be
 # reconfigured as well.
 .PHONY: stage[+id+]-bubble
-stage[+id+]-bubble:: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +][+IF lean +]
-	@bootstrap_lean@-rm -rf stage[+lean+]-* ; $(STAMP) stage[+lean+]-lean[+ ENDIF lean +]
+stage[+id+]-bubble:: [+ IF prev +]stage[+prev+]-bubble[+ ENDIF +]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	if test -f stage[+id+]-lean [+
 	  IF prev +]|| test -f stage[+prev+]-lean [+ ENDIF prev +] ; then \
 	  echo Skipping rebuild of stage[+id+] ; \
 	else \
-	  $(MAKE) stage[+id+]-start; \
+	  $(MAKE) stage[+id+]-start; \[+IF lean +]
+	  if $(LEAN); then \
+	    rm -rf stage[+lean+]-* ; \
+	    $(STAMP) stage[+lean+]-lean ; \
+	  fi; \[+ ENDIF lean +]
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage[+id+]; \
 	fi[+ IF compare-target +]
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) [+compare-target+][+ ENDIF compare-target +]
@@ -1362,16 +1360,29 @@ do-clean: clean-stage[+id+]
 	  true; \
 	fi ; \
 	$(STAMP) [+compare-target+][+ IF prev +]
-	@bootstrap_lean@-rm -rf stage[+prev+]-* ; $(STAMP) stage[+prev+]-lean[+ ENDIF prev +]
+	if $(LEAN); then \
+	  rm -rf stage[+prev+]-*; \
+	  $(STAMP) stage[+prev+]-lean; \
+	fi[+ ENDIF prev +]
 [+ ENDIF compare-target +]
 
 [+ IF bootstrap-target +]
-.PHONY: [+bootstrap-target+]
+.PHONY: [+bootstrap-target+] [+bootstrap-target+]-lean
 [+bootstrap-target+]:
 	echo stage[+id+] > stage_final
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage[+id+]-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+[+bootstrap-target+]-lean:
+	echo stage[+id+] > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LEAN=: stage[+id+]-bubble
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \

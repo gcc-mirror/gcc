@@ -1,5 +1,5 @@
-#   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
+#   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+#   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -1736,7 +1736,7 @@ INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 # not to nest @if/@endif pairs, because configure will not warn you at all.
 
 AC_ARG_ENABLE([bootstrap],
-[  --enable-bootstrap[=lean]     Enable bootstrapping [no]],,
+[  --enable-bootstrap           Enable bootstrapping [yes if native build]],,
 enable_bootstrap=default)
 
 # Issue errors and warnings for invalid/strange bootstrap combinations.
@@ -1757,17 +1757,17 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
     enable_bootstrap=no ;;
 
   # We have a compiler and we are in a native configuration, bootstrap is ok
-  yes:$build:$build:yes | yes:$build:$build:lean)
+  yes:$build:$build:yes)
     ;;
 
   # Other configurations, but we have a compiler.  Assume the user knows
   # what he's doing.
-  yes:*:*:yes | yes:*:*:lean)
+  yes:*:*:yes)
     AC_MSG_WARN([trying to bootstrap a cross compiler])
     ;;
 
   # No compiler: if they passed --enable-bootstrap explicitly, fail
-  no:*:*:yes | no:*:*:lean)
+  no:*:*:yes)
     AC_MSG_ERROR([cannot bootstrap without a compiler]) ;;
 
   # Fail if wrong command line
@@ -1779,15 +1779,10 @@ esac
 # Adjust the toplevel makefile according to whether bootstrap was selected.
 case "$enable_bootstrap" in
   yes)
-    bootstrap_lean='#'
-    bootstrap_suffix=bootstrap ;;
-  lean)
-    bootstrap_lean=''
     bootstrap_suffix=bootstrap ;;
   no)
     bootstrap_suffix=no-bootstrap ;;
 esac
-AC_SUBST(bootstrap_lean)
 
 for module in ${build_configdirs} ; do
   if test -z "${no_recursion}" \
@@ -2289,36 +2284,6 @@ case $build in
     ;;
 esac
 AC_SUBST(stage1_cflags)
-
-# It makes debugging easier if we create as symlinks the stage directories
-# gcc for stageN-gcc and stagePREV-gcc for stage(N-1).  In case this is not
-# possible, however, we can resort to mv.
-AC_CACHE_CHECK([if symbolic links between directories work],
-[gcc_cv_prog_ln_s_dir],
-[if test "${LN_S}" = "ln -s" \
-   && mkdir confdir.s1 \
-   && ln -s confdir.s1 confdir.s2 \
-   && echo timestamp1 > confdir.s1/conftest.1 \
-   && cmp confdir.s1/conftest.1 confdir.s2/conftest.1 \
-   && echo timestamp2 > confdir.s2/conftest.2 \
-   && cmp confdir.s1/conftest.2 confdir.s1/conftest.2 \
-   && rm -f confdir.s2; then
-  gcc_cv_prog_ln_s_dir=yes
-else
-  gcc_cv_prog_ln_s_dir=no
-fi
-rm -rf confdir.s1 confdir.s2])
-
-case ${gcc_cv_prog_ln_s_dir} in
-  yes)
-    CREATE_LINK_TO_DIR='ln -s $$1 $$2'
-    UNDO_LINK_TO_DIR='rm -f $$1' ;;
-  *)
-    CREATE_LINK_TO_DIR='mv $$1 $$2'
-    UNDO_LINK_TO_DIR='mv $$1 $$2' ;;
-esac
-AC_SUBST(CREATE_LINK_TO_DIR)
-AC_SUBST(UNDO_LINK_TO_DIR)
 
 # Enable -Werror in bootstrap stage2 and later.
 # Change the default to "no" on release branches.

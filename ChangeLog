@@ -1,3 +1,31 @@
+2006-01-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/24252
+
+	* Makefile.def (flags_to_pass): Add STAGE1_CFLAGS and STAGE1_LANGUAGES.
+	* Makefile.tpl (OBJDUMP): New.
+	(EXTRA_HOST_FLAGS): Add it.
+	(EXTRA_GCC_FLAGS): Remove flags already specified in flags_to_pass.
+
+        * Makefile.tpl (stage[+id+]-start, stage[+id+]-end): Do not try
+        to use symbolic links between directories.  Avoid race conditions
+        or make them harmless.
+        * configure.in: Do not try to use symbolic links between directories.
+
+	* Makefile.def (LEAN): Pass.
+	* Makefile.tpl (LEAN): Define.
+	(stage[+id+]-start): Accept that the previous directory does not
+	exist, if the bootstrap is lean.
+	(stage[+id+]-bubble): Invoke lean bootstrap commands after
+	stage[+id+]-start.  Use a makefile variable and an `if' instead of a
+	configure substitution.
+	([+compare-target+]): Likewise.
+	([+bootstrap-target+]-lean): New.
+	* configure.in: Remove lean bootstrap support from here.
+
+        * Makefile.in: Regenerate.
+        * configure: Regenerate.
+
 2006-01-04  Ben Elliston  <bje@au.ibm.com>
 
 	* MAINTAINERS (libdecnumber): Add myself.
