@@ -1,3 +1,66 @@
+2006-01-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_dataplus):
+	Use _CharT_alloc_type as base class.
+	(_M_get_allocator, _M_swap, _M_create, _M_destroy): Adjust.
+	* include/ext/vstring.h (get_allocator): Tidy.
+
+2006-01-04  Paolo Carlini  <pcarlini@suse.de>
+
+	Implement Option 3 of DR 431 for all the containers.
+	* include/bits/allocator.h (struct __alloc_swap): Add, swaps
+	allocators, optimized to nothing in case they are empty.
+	* include/bits/stl_deque.h (deque<>::swap): Use it.
+	* include/bits/stl_list.h (list<>::swap): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree<>::swap): Likewise.
+	* include/bits/stl_vector.h (vector<>::swap): Likewise.
+	* include/tr1/hashtable (hashtable<>::swap): Likewise.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_swap):
+	Likewise.
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_swap):
+	Likewise.
+	* include/ext/vstring_util.h (__vstring_utility<>::_Alloc_hider):
+	Clean-up (now vstring uses the generic __alloc_swap facility).
+	* include/tr1/unordered_map: Adjust includes.
+	* include/tr1/unordered_set: Likewise.
+	* docs/html/ext/howto.html: Add an entry for DR 431.
+	* testsuite/23_containers/deque/modifiers/swap.cc: Move to...
+	* testsuite/23_containers/deque/modifiers/swap/1.cc: ... here.		
+	* testsuite/23_containers/deque/modifiers/swap/2.cc: New.
+	* testsuite/23_containers/deque/modifiers/swap/3.cc: New.
+	* testsuite/23_containers/list/modifiers/swap.cc: Move to...
+	* testsuite/23_containers/list/modifiers/swap/1.cc: ... here.		
+	* testsuite/23_containers/list/modifiers/swap/2.cc: New.
+	* testsuite/23_containers/list/modifiers/swap/3.cc: New.
+	* testsuite/23_containers/vector/modifiers/swap.cc: Move to...
+	* testsuite/23_containers/vector/modifiers/swap/1.cc: ... here.		
+	* testsuite/23_containers/vector/modifiers/swap/2.cc: New.
+	* testsuite/23_containers/vector/modifiers/swap/3.cc: New.
+	* testsuite/23_containers/set/modifiers/swap.cc: Move to...
+	* testsuite/23_containers/set/modifiers/swap/1.cc: ... here.		
+	* testsuite/23_containers/set/modifiers/swap/2.cc: New.
+	* testsuite/23_containers/set/modifiers/swap/3.cc: New.
+	* testsuite/23_containers/map/modifiers/swap.cc: Move to...
+	* testsuite/23_containers/map/modifiers/swap/1.cc: ... here.		
+	* testsuite/23_containers/map/modifiers/swap/2.cc: New.
+	* testsuite/23_containers/map/modifiers/swap/3.cc: New.
+	* testsuite/23_containers/multiset/modifiers/swap.cc: Move to...
+	* testsuite/23_containers/multiset/modifiers/swap/1.cc: ... here.		
+	* testsuite/23_containers/multiset/modifiers/swap/2.cc: New.
+	* testsuite/23_containers/multiset/modifiers/swap/3.cc: New.
+	* testsuite/23_containers/multimap/modifiers/swap.cc: Move to...
+	* testsuite/23_containers/multimap/modifiers/swap/1.cc: ... here.		
+	* testsuite/23_containers/multimap/modifiers/swap/2.cc: New.
+	* testsuite/23_containers/multimap/modifiers/swap/3.cc: New.
+	* testsuite/tr1/6_containers/unordered/swap/unordered_set/1.cc: New.	
+	* testsuite/tr1/6_containers/unordered/swap/unordered_set/2.cc: New.
+	* testsuite/tr1/6_containers/unordered/swap/unordered_map/1.cc: New.	
+	* testsuite/tr1/6_containers/unordered/swap/unordered_map/2.cc: New.
+	* testsuite/tr1/6_containers/unordered/swap/unordered_multiset/1.cc: New.	
+	* testsuite/tr1/6_containers/unordered/swap/unordered_multiset/2.cc: New.
+	* testsuite/tr1/6_containers/unordered/swap/unordered_multimap/1.cc: New.	
+	* testsuite/tr1/6_containers/unordered/swap/unordered_multimap/2.cc: New.
+
 2006-01-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_list.h (_List_base<>::_M_get_Node_allocator): Add.
@@ -53,8 +116,8 @@
 	(unsigned long long), operator<<(double), operator<<(float),
 	operator<<(long double), operator<<(const void*): Use it.
 	* include/bits/ostream.tcc (basic_ostream<>::_M_insert): Define.
-	* src/istream-inst.cc: Add _M_insert instantiations.
-	* src/ostream-inst.cc: Add _M_extract instantiations.
+	* src/istream-inst.cc: Add _M_extract instantiations.
+	* src/ostream-inst.cc: Add _M_insert instantiations.
 	* config/abi/pre/gnu.ver: Export the new symbols @GLIBCXX_3.4.7;
 	detail existing @GLIBCXX_3.4 exports of basic_ostream, num_put,
 	money_put, etc., symbols to avoid exporting _M_insert symbols
