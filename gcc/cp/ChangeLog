@@ -1,3 +1,8 @@
+2002-01-04  Dirk Mueller <dmueller@suse.com>
+
+	* decl.c (finish_constructor_body): create simple
+	compound stmt instead of a if(1) { } construct.
+
 2006-01-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25492
