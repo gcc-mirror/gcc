@@ -458,11 +458,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
 	  type = lex_string (tok, value, false);
 	  break;
 	}
-      
-      /* FALLTHROUGH */
-
-    case CPP_PRAGMA:
       *value = build_string (tok->val.str.len, (char *) tok->val.str.text);
+      break;
+      
+    case CPP_PRAGMA:
+      *value = build_int_cst (NULL, tok->val.pragma);
       break;
 
       /* These tokens should not be visible outside cpplib.  */
@@ -488,13 +488,6 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
   timevar_pop (TV_CPP);
   
   return type;
-}
-
-enum cpp_ttype
-pragma_lex (tree *value)
-{
-  location_t loc;
-  return c_lex_with_flags (value, &loc, NULL);
 }
 
 /* Returns the narrowest C-visible unsigned type, starting with the

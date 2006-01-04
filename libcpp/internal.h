@@ -205,9 +205,6 @@ struct lexer_state
   /* Nonzero to prevent macro expansion.  */
   unsigned char prevent_expansion;
 
-  /* Nonzero when handling a deferred pragma.  */
-  unsigned char in_deferred_pragma;
-
   /* Nonzero when parsing arguments to a function-like macro.  */
   unsigned char parsing_args;
 
@@ -217,6 +214,12 @@ struct lexer_state
 
   /* Nonzero to skip evaluating part of an expression.  */
   unsigned int skip_eval;
+
+  /* Nonzero when handling a deferred pragma.  */
+  unsigned char in_deferred_pragma;
+
+  /* Nonzero if the deferred pragma being handled allows macro expansion.  */
+  unsigned char pragma_allow_expansion;
 };
 
 /* Special nodes - identifiers with predefined significance.  */
@@ -496,7 +499,10 @@ extern bool _cpp_arguments_ok (cpp_reader *, cpp_macro *, const cpp_hashnode *,
 			       unsigned int);
 extern const unsigned char *_cpp_builtin_macro_text (cpp_reader *,
 						     cpp_hashnode *);
-int _cpp_warn_if_unused_macro (cpp_reader *, cpp_hashnode *, void *);
+extern int _cpp_warn_if_unused_macro (cpp_reader *, cpp_hashnode *, void *);
+extern void _cpp_push_token_context (cpp_reader *, cpp_hashnode *,
+				     const cpp_token *, unsigned int);
+
 /* In identifiers.c */
 extern void _cpp_init_hashtable (cpp_reader *, hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);

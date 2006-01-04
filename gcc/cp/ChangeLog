@@ -1,4 +1,41 @@
-2002-01-04  Dirk Mueller <dmueller@suse.com>
+2006-01-04  Richard Henderson  <rth@redhat.com>
+
+	Merge from gomp branch.
+	* lex.c (handle_pragma_java_exceptions): Fix whitespace.
+	* parser.c (struct cp_token): Add pragma_kind.
+	(eof_token): Update to match.
+	(struct cp_lexer): Add in_pragma; rearrange next for better packing.
+	(cp_parser_initial_pragma): New.
+	(cp_lexer_new_main): Use it.  Don't bother clearing
+	c_lex_return_raw_strings.
+	(cp_lexer_get_preprocessor_token): Always initialize keyword
+	and pragma_kind fields.  Handle CPP_PRAGMA.
+	(cp_lexer_consume_token): Don't allow CPP_PRAGMA_EOL when 
+	in_pragma is set.
+	(cp_lexer_handle_pragma): Remove.  Update callers to cp_parser_pragma.
+	(cp_lexer_print_token) <CPP_PRAGMA>: Don't print as a string.
+	(cp_parser_skip_to_pragma_eol): New.
+	(cp_parser_error): Use it.
+	(cp_parser_skip_to_closing_parenthesis): Stop at CPP_PRAGMA_EOL;
+	rearrange with switch statement.
+	(cp_parser_skip_to_end_of_statement): Likewise.
+	(cp_parser_skip_to_end_of_block_or_statement): Likewise.
+	(cp_parser_skip_to_closing_brace): Likewise.
+	(cp_parser_skip_until_found): Likewise.
+	(cp_parser_statement): Add in_compound argument; update callers.
+	Use it to decide how to handle pragma parsing.
+	(cp_parser_labeled_statement): Add in_compound argument; pass
+	it on to cp_parser_statement.
+	(cp_parser_statement_seq_opt): Stop at CPP_PRAGMA_EOL.
+	(cp_parser_declaration_seq_opt): Likewise.
+	(cp_parser_parameter_declaration): Likewise.
+	(cp_parser_member_specification_opt): Likewise.
+	(cp_parser_function_definition_after_decl): Likewise.
+	(cp_parser_cache_group): Handle CPP_PRAGMA/CPP_PRAGMA_EOL pairs.
+	(cp_parser_pragma): New.
+	(pragma_lex): New.
+
+2006-01-04  Dirk Mueller <dmueller@suse.com>
 
 	* decl.c (finish_constructor_body): create simple
 	compound stmt instead of a if(1) { } construct.

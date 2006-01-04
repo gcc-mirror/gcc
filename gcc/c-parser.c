@@ -42,6 +42,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "rtl.h"
 #include "langhooks.h"
 #include "input.h"
 #include "cpplib.h"
@@ -53,6 +54,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "toplev.h"
 #include "ggc.h"
 #include "c-common.h"
+#include "vec.h"
+#include "target.h"
 
 
 /* Miscellaneous data and functions needed for the parser.  */
@@ -266,6 +269,9 @@ typedef struct c_token GTY (())
   /* If this token is a keyword, this value indicates which keyword.
      Otherwise, this value is RID_MAX.  */
   ENUM_BITFIELD (rid) keyword : 8;
+  /* If this token is a CPP_PRAGMA, this indicates the pragma that
+     was seen.  Otherwise it is PRAGMA_NONE.  */
+  ENUM_BITFIELD (pragma_kind) pragma_kind : 7;
   /* True if this token is from a system header.  */
   BOOL_BITFIELD in_system_header : 1;
   /* The value associated with this token, if any.  */
@@ -287,7 +293,17 @@ typedef struct c_parser GTY(())
      c_parser_error sets this flag.  It should clear this flag when
      enough tokens have been consumed to recover from the error.  */
   BOOL_BITFIELD error : 1;
+  /* True if we're processing a pragma, and shouldn't automatically
+     consume CPP_PRAGMA_EOL.  */
+  BOOL_BITFIELD in_pragma : 1;
 } c_parser;
+
+
+/* The actual parser and external interface.  ??? Does this need to be
+   garbage-collected?  */
+
+static GTY (()) c_parser *the_parser;
+
 
 /* Read in and lex a single token, storing it in *TOKEN.  */
 
@@ -295,13 +311,16 @@ static void
 c_lex_one_token (c_token *token)
 {
   timevar_push (TV_LEX);
+
   token->type = c_lex_with_flags (&token->value, &token->location, NULL);
+  token->id_kind = C_ID_NONE;
+  token->keyword = RID_MAX;
+  token->pragma_kind = PRAGMA_NONE;
   token->in_system_header = in_system_header;
+
   switch (token->type)
     {
     case CPP_NAME:
-      token->id_kind = C_ID_NONE;
-      token->keyword = RID_MAX;
       {
 	tree decl;
 
@@ -358,13 +377,12 @@ c_lex_one_token (c_token *token)
 		break;
 	      }
 	  }
+        token->id_kind = C_ID_ID;
       }
-      token->id_kind = C_ID_ID;
       break;
     case CPP_AT_NAME:
       /* This only happens in Objective-C; it must be a keyword.  */
       token->type = CPP_KEYWORD;
-      token->id_kind = C_ID_NONE;
       token->keyword = C_RID_CODE (token->value);
       break;
     case CPP_COLON:
@@ -374,12 +392,13 @@ c_lex_one_token (c_token *token)
       /* These tokens may affect the interpretation of any identifiers
 	 following, if doing Objective-C.  */
       OBJC_NEED_RAW_IDENTIFIER (0);
-      token->id_kind = C_ID_NONE;
-      token->keyword = RID_MAX;
+      break;
+    case CPP_PRAGMA:
+      /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
+      token->pragma_kind = TREE_INT_CST_LOW (token->value);
+      token->value = NULL;
       break;
     default:
-      token->id_kind = C_ID_NONE;
-      token->keyword = RID_MAX;
       break;
     }
   timevar_pop (TV_LEX);
@@ -582,6 +601,7 @@ c_parser_peek_2nd_token (c_parser *parser)
     return &parser->tokens[1];
   gcc_assert (parser->tokens_avail == 1);
   gcc_assert (parser->tokens[0].type != CPP_EOF);
+  gcc_assert (parser->tokens[0].type != CPP_PRAGMA_EOL);
   c_lex_one_token (&parser->tokens[1]);
   parser->tokens_avail = 2;
   return &parser->tokens[1];
@@ -592,14 +612,28 @@ c_parser_peek_2nd_token (c_parser *parser)
 static void
 c_parser_consume_token (c_parser *parser)
 {
+  gcc_assert (parser->tokens_avail >= 1);
+  gcc_assert (parser->tokens[0].type != CPP_EOF);
+  gcc_assert (!parser->in_pragma || parser->tokens[0].type != CPP_PRAGMA_EOL);
+  gcc_assert (parser->error || parser->tokens[0].type != CPP_PRAGMA);
   if (parser->tokens_avail == 2)
     parser->tokens[0] = parser->tokens[1];
-  else
-    {
-      gcc_assert (parser->tokens_avail == 1);
-      gcc_assert (parser->tokens[0].type != CPP_EOF);
-    }
   parser->tokens_avail--;
+}
+
+/* Expect the current token to be a #pragma.  Consume it and remember
+   that we've begun parsing a pragma.  */
+
+static void
+c_parser_consume_pragma (c_parser *parser)
+{
+  gcc_assert (!parser->in_pragma);
+  gcc_assert (parser->tokens_avail >= 1);
+  gcc_assert (parser->tokens[0].type == CPP_PRAGMA);
+  if (parser->tokens_avail == 2)
+    parser->tokens[0] = parser->tokens[1];
+  parser->tokens_avail--;
+  parser->in_pragma = true;
 }
 
 /* Update the globals input_location and in_system_header from
@@ -612,23 +646,6 @@ c_parser_set_source_position_from_token (c_token *token)
       input_location = token->location;
       in_system_header = token->in_system_header;
     }
-}
-
-/* Allocate a new parser.  */
-
-static c_parser *
-c_parser_new (void)
-{
-  /* Use local storage to lex the first token because loading a PCH
-     file may cause garbage collection.  */
-  c_parser tparser;
-  c_parser *ret;
-  memset (&tparser, 0, sizeof tparser);
-  c_lex_one_token (&tparser.tokens[0]);
-  tparser.tokens_avail = 1;
-  ret = GGC_NEW (c_parser);
-  memcpy (ret, &tparser, sizeof tparser);
-  return ret;
 }
 
 /* Issue a diagnostic of the form
@@ -732,8 +749,11 @@ c_parser_skip_until_found (c_parser *parser,
 	  c_parser_consume_token (parser);
 	  break;
 	}
+
       /* If we've run out of tokens, stop.  */
       if (token->type == CPP_EOF)
+	return;
+      if (token->type == CPP_PRAGMA_EOL && parser->in_pragma)
 	return;
       if (token->type == CPP_OPEN_BRACE
 	  || token->type == CPP_OPEN_PAREN
@@ -769,6 +789,8 @@ c_parser_skip_to_end_of_parameter (c_parser *parser)
       /* If we've run out of tokens, stop.  */
       if (token->type == CPP_EOF)
 	return;
+      if (token->type == CPP_PRAGMA_EOL && parser->in_pragma)
+	return;
       if (token->type == CPP_OPEN_BRACE
 	  || token->type == CPP_OPEN_PAREN
 	  || token->type == CPP_OPEN_SQUARE)
@@ -803,6 +825,8 @@ c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
       /* If we've run out of tokens, stop.  */
       if (token->type == CPP_EOF)
 	return;
+      if (token->type == CPP_PRAGMA_EOL && parser->in_pragma)
+	return;
       /* If the next token is a ';', we have reached the end of the
 	 statement.  */
       if (token->type == CPP_SEMICOLON && !nesting_depth)
@@ -828,6 +852,31 @@ c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
   parser->error = false;
 }
 
+/* Expect to be at the end of the pragma directive and consume an
+   end of line marker.  */
+
+static void
+c_parser_skip_to_pragma_eol (c_parser *parser)
+{
+  gcc_assert (parser->in_pragma);
+  parser->in_pragma = false;
+
+  if (!c_parser_require (parser, CPP_PRAGMA_EOL, "expected end of line"))
+    while (true)
+      {
+	c_token *token = c_parser_peek_token (parser);
+	if (token->type == CPP_EOF)
+	  break;
+	if (token->type == CPP_PRAGMA_EOL)
+	  {
+	    c_parser_consume_token (parser);
+	    break;
+	  }
+	c_parser_consume_token (parser);
+      }
+
+  parser->error = false;
+}
 
 /* Save the warning flags which are controlled by __extension__.  */
 
@@ -931,6 +980,9 @@ static struct c_expr c_parser_postfix_expression_after_primary (c_parser *,
 static struct c_expr c_parser_expression (c_parser *);
 static struct c_expr c_parser_expression_conv (c_parser *);
 static tree c_parser_expr_list (c_parser *, bool);
+
+enum pragma_context { pragma_external, pragma_stmt, pragma_compound };
+static bool c_parser_pragma (c_parser *, enum pragma_context);
 
 /* These Objective-C parser functions are only ever called when
    compiling Objective-C.  */
@@ -1063,6 +1115,9 @@ c_parser_external_declaration (c_parser *parser)
 	pedwarn ("ISO C does not allow extra %<;%> outside of a function");
       c_parser_consume_token (parser);
       break;
+    case CPP_PRAGMA:
+      c_parser_pragma (parser, pragma_external);
+      break;
     case CPP_PLUS:
     case CPP_MINUS:
       if (c_dialect_objc ())
@@ -1081,6 +1136,7 @@ c_parser_external_declaration (c_parser *parser)
       break;
     }
 }
+
 
 /* Parse a declaration or function definition (C90 6.5, 6.7.1, C99
    6.7, 6.9.1).  If FNDEF_OK is true, a function definition is
@@ -1142,6 +1198,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok, bool empty_ok,
   tree prefix_attrs;
   tree all_prefix_attrs;
   bool diagnosed_no_specs = false;
+
   specs = build_null_declspecs ();
   c_parser_declspecs (parser, specs, true, true, start_attr_ok);
   if (parser->error)
@@ -1807,6 +1864,12 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	    {
 	      c_parser_consume_token (parser);
 	      break;
+	    }
+	  /* Accept #pragmas at struct scope.  */
+	  if (c_parser_next_token_is (parser, CPP_PRAGMA))
+	    {
+	      c_parser_pragma (parser, pragma_external);
+	      continue;
 	    }
 	  /* Parse some comma-separated declarations, but not the
 	     trailing semicolon if any.  */
@@ -3268,11 +3331,6 @@ c_parser_compound_statement_nostart (c_parser *parser)
   while (c_parser_next_token_is_not (parser, CPP_CLOSE_BRACE))
     {
       location_t loc = c_parser_peek_token (parser)->location;
-      if (c_parser_next_token_is (parser, CPP_EOF))
-	{
-	  c_parser_error (parser, "expected declaration or statement");
-	  return;
-	}
       if (c_parser_next_token_is_keyword (parser, RID_CASE)
 	  || c_parser_next_token_is_keyword (parser, RID_DEFAULT)
 	  || (c_parser_next_token_is (parser, CPP_NAME)
@@ -3324,6 +3382,21 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	    }
 	  else
 	    goto statement;
+	}
+      else if (c_parser_next_token_is (parser, CPP_PRAGMA))
+	{
+	  /* External pragmas, and some omp pragmas, are not associated
+	     with regular c code, and so are not to be considered statements
+	     syntactically.  This ensures that the user doesn't put them
+	     places that would turn into syntax errors if the directive
+	     were ignored.  */
+	  if (c_parser_pragma (parser, pragma_compound))
+	    last_label = false, last_stmt = true;
+	}
+      else if (c_parser_next_token_is (parser, CPP_EOF))
+	{
+	  c_parser_error (parser, "expected declaration or statement");
+	  return;
 	}
       else
 	{
@@ -3577,6 +3650,9 @@ c_parser_statement_after_labels (c_parser *parser)
 	 it to proceed further.  */
       c_parser_error (parser, "expected statement");
       c_parser_consume_token (parser);
+      break;
+    case CPP_PRAGMA:
+      c_parser_pragma (parser, pragma_stmt);
       break;
     default:
     expr_stmt:
@@ -5558,6 +5634,12 @@ c_parser_objc_class_instance_variables (c_parser *parser)
 	  objc_set_visibility (1);
 	  continue;
 	}
+      else if (c_parser_next_token_is (parser, CPP_PRAGMA))
+	{
+	  c_parser_pragma (parser, pragma_external);
+	  continue;
+	}
+
       /* Parse some comma-separated declarations.  */
       decls = c_parser_struct_declaration (parser);
       {
@@ -6262,17 +6344,101 @@ c_parser_objc_keywordexpr (c_parser *parser)
 }
 
 
-/* The actual parser and external interface.  ??? Does this need to be
-   garbage-collected?  */
+/* Handle pragmas.  ALLOW_STMT is true if we're within the context of
+   a function and such pragmas are to be allowed.  Returns true if we
+   actually parsed such a pragma.  */
 
-static GTY (()) c_parser *the_parser;
+static bool
+c_parser_pragma (c_parser *parser, enum pragma_context context ATTRIBUTE_UNUSED)
+{
+  unsigned int id;
 
+  id = c_parser_peek_token (parser)->pragma_kind;
+  gcc_assert (id != PRAGMA_NONE);
+
+  switch (id)
+    {
+    case PRAGMA_GCC_PCH_PREPROCESS:
+      c_parser_error (parser, "%<#pragma GCC pch_preprocess%> must be first");
+      c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+      return false;
+
+    default:
+      gcc_assert (id >= PRAGMA_FIRST_EXTERNAL);
+      break;
+    }
+
+  c_parser_consume_pragma (parser);
+  c_invoke_pragma_handler (id);
+
+  /* Skip to EOL, but suppress any error message.  Those will have been 
+     generated by the handler routine through calling error, as opposed
+     to calling c_parser_error.  */
+  parser->error = true;
+  c_parser_skip_to_pragma_eol (parser);
+
+  return false;
+}
+
+/* The interface the pragma parsers have to the lexer.  */
+
+enum cpp_ttype
+pragma_lex (tree *value)
+{
+  c_token *tok = c_parser_peek_token (the_parser);
+  enum cpp_ttype ret = tok->type;
+
+  *value = tok->value;
+  if (ret == CPP_PRAGMA_EOL || ret == CPP_EOF)
+    ret = CPP_EOF;
+  else
+    {
+      if (ret == CPP_KEYWORD)
+	ret = CPP_NAME;
+      c_parser_consume_token (the_parser);
+    }
+
+  return ret;
+}
+
+static void
+c_parser_pragma_pch_preprocess (c_parser *parser)
+{
+  tree name = NULL;
+
+  c_parser_consume_pragma (parser);
+  if (c_parser_next_token_is (parser, CPP_STRING))
+    {
+      name = c_parser_peek_token (parser)->value;
+      c_parser_consume_token (parser);
+    }
+  else
+    c_parser_error (parser, "expected string literal");
+  c_parser_skip_to_pragma_eol (parser);
+
+  if (name)
+    c_common_pch_pragma (parse_in, TREE_STRING_POINTER (name));
+}
+
 /* Parse a single source file.  */
 
 void
 c_parse_file (void)
 {
-  the_parser = c_parser_new ();
+  /* Use local storage to begin.  If the first token is a pragma, parse it.
+     If it is #pragma GCC pch_preprocess, then this will load a PCH file
+     which will cause garbage collection.  */
+  c_parser tparser;
+
+  memset (&tparser, 0, sizeof tparser);
+  the_parser = &tparser;
+
+  if (c_parser_peek_token (&tparser)->pragma_kind == PRAGMA_GCC_PCH_PREPROCESS)
+    c_parser_pragma_pch_preprocess (&tparser);
+
+  the_parser = GGC_NEW (c_parser);
+  *the_parser = tparser;
+
   c_parser_translation_unit (the_parser);
   the_parser = NULL;
 }
