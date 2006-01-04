@@ -1,3 +1,7 @@
+2006-01-04  Paul Brook  <paul@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_output_mi_thunk): Use jmp, not jsr.
+
 2006-01-04  Daniel Berlin  <dberlin@dberlin.org>
 
 	* lambda-code.c (can_put_in_inner_loop): Relax

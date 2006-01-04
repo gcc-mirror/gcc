@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
    Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005
+   2001, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -3314,7 +3314,7 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       else if (optimize_size || TARGET_ID_SHARED_LIBRARY)
         fmt = "move.l %0@GOT(%%a5), %%a1\n\tjmp (%%a1)";
       else
-        fmt = "lea %0-.-8,%%a1\n\tjsr 0(%%pc,%%a1)";
+        fmt = "lea %0-.-8,%%a1\n\tjmp 0(%%pc,%%a1)";
     }
   else
     {
