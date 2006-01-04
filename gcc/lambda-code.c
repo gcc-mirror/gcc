@@ -2201,23 +2201,20 @@ exit_phi_for_loop_p (struct loop *loop, tree stmt)
   return true;
 }
 
-/* Return true if STMT can be put back into INNER, a loop by moving it to the 
-   beginning of that loop.  */
+/* Return true if STMT can be put back into the loop INNER, by
+   copying it to the beginning of that loop and changing the uses.  */
 
 static bool
 can_put_in_inner_loop (struct loop *inner, tree stmt)
 {
   imm_use_iterator imm_iter;
   use_operand_p use_p;
-  basic_block use_bb = NULL;
   
   gcc_assert (TREE_CODE (stmt) == MODIFY_EXPR);
   if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS)
       || !expr_invariant_in_loop_p (inner, TREE_OPERAND (stmt, 1)))
     return false;
   
-  /* We require that the basic block of all uses be the same, or the use be an
-     exit phi.  */
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, TREE_OPERAND (stmt, 0))
     {
       if (!exit_phi_for_loop_p (inner, USE_STMT (use_p)))
@@ -2226,15 +2223,37 @@ can_put_in_inner_loop (struct loop *inner, tree stmt)
 
 	  if (!flow_bb_inside_loop_p (inner, immbb))
 	    return false;
-	  if (use_bb == NULL)
-	    use_bb = immbb;
-	  else if (immbb != use_bb)
+	}
+    }
+  return true;  
+}
+
+/* Return true if STMT can be put *after* the inner loop of LOOP.  */
+static bool
+can_put_after_inner_loop (struct loop *loop, tree stmt)
+{
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+
+  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
+    return false;
+  
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, TREE_OPERAND (stmt, 0))
+    {
+      if (!exit_phi_for_loop_p (loop, USE_STMT (use_p)))
+	{
+	  basic_block immbb = bb_for_stmt (USE_STMT (use_p));
+	  
+	  if (!dominated_by_p (CDI_DOMINATORS,
+			       immbb,
+			       loop->inner->header)
+	      && !can_put_in_inner_loop (loop->inner, stmt))
 	    return false;
 	}
     }
   return true;
-  
 }
+
 
 
 /* Return TRUE if LOOP is an imperfect nest that we can convert to a perfect
@@ -2277,18 +2296,20 @@ can_convert_to_perfect_nest (struct loop *loop,
 		if (stmt_uses_op (stmt, iv))
 		  goto fail;
 	      
-	      /* If this is a simple operation like a cast that is invariant
-		 in the inner loop, only used there, and we can place it
-		 there, then it's not going to hurt us.
-		 This means that we will propagate casts and other cheap
-		 invariant operations *back*
-		 into the inner loop if we can interchange the loop, on the
-		 theory that we are going to gain a lot more by interchanging
-		 the loop than we are by leaving some invariant code there for
-		 some other pass to clean up.  */
+	      /* If this is a simple operation like a cast that is
+		 invariant in the inner loop, or after the inner loop,
+		 then see if we can place it back where it came from.
+		 This means that we will propagate casts and other
+		 cheap invariant operations *back* into or after
+		 the inner loop if we can interchange the loop, on the
+		 theory that we are going to gain a lot more by
+		 interchanging the loop than we are by leaving some
+		 invariant code there for some other pass to clean
+		 up.  */
 	      if (TREE_CODE (stmt) == MODIFY_EXPR
 		  && is_gimple_cast (TREE_OPERAND (stmt, 1))
-		  && can_put_in_inner_loop (loop->inner, stmt))
+		  && (can_put_in_inner_loop (loop->inner, stmt)
+		      || can_put_after_inner_loop (loop, stmt)))
 		continue;
 
 	      /* Otherwise, if the bb of a statement we care about isn't
@@ -2515,23 +2536,33 @@ perfect_nestify (struct loops *loops,
 			bsi_prev (&bsi);
 		      continue;
 		    }
-		  /* Move this statement back into the inner loop.
-		     This looks a bit confusing, but we are really just
-		     finding the first non-exit phi use and moving the
-		     statement to the beginning of that use's basic
-		     block.  */
+		  
+		  /* Make copies of this statement to put it back next
+		     to its uses. */
 		  FOR_EACH_IMM_USE_SAFE (use_p, imm_iter, 
 					 TREE_OPERAND (stmt, 0))
 		    {
 		      tree imm_stmt = USE_STMT (use_p);
 		      if (!exit_phi_for_loop_p (loop->inner, imm_stmt))
 			{
-			  block_stmt_iterator tobsi = bsi_after_labels (bb_for_stmt (imm_stmt));
-			  bsi_move_after (&bsi, &tobsi);
-			  update_stmt (stmt);
-			  BREAK_FROM_SAFE_IMM_USE (imm_iter);
+			  block_stmt_iterator tobsi;
+			  tree newname;
+			  tree newstmt;
+			 
+			  newstmt  = unshare_expr (stmt);
+			  tobsi = bsi_after_labels (bb_for_stmt (imm_stmt));
+			  newname = TREE_OPERAND (newstmt, 0);
+			  newname = SSA_NAME_VAR (newname);
+			  newname = make_ssa_name (newname, newstmt);
+			  TREE_OPERAND (newstmt, 0) = newname;
+			  SET_USE (use_p, TREE_OPERAND (newstmt, 0));
+			  bsi_insert_after (&tobsi, newstmt, BSI_SAME_STMT);
+			  update_stmt (newstmt);
+			  update_stmt (imm_stmt);
 			} 
 		    }
+		  if (!bsi_end_p (bsi))
+		    bsi_prev (&bsi);			  
 		}
 	    }
 	  else
