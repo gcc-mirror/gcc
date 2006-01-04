@@ -5199,6 +5199,18 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
+  if (vecsize % tree_low_cst (TYPE_SIZE_UNIT (type), 1))
+    {
+      error ("vector size not an integral multiple of component size");
+      return NULL;
+    }
+
+  if (vecsize == 0)
+    {
+      error ("zero vector size");
+      return NULL;
+    }
+
   /* Calculate how many units fit in the vector.  */
   nunits = vecsize / tree_low_cst (TYPE_SIZE_UNIT (type), 1);
   if (nunits & (nunits - 1))
