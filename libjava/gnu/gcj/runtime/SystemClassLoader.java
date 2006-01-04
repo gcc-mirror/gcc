@@ -1,4 +1,4 @@
-/* Copyright (C) 2005  Free Software Foundation
+/* Copyright (C) 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -19,6 +19,25 @@ public final class SystemClassLoader extends URLClassLoader
   SystemClassLoader(ClassLoader parent)
   {
     super(new URL[0], parent);
+  }
+
+  // This is called to register a native class which was linked into
+  // the application but which is registered with the system class
+  // loader after the VM is initialized.
+  void addClass(Class klass)
+  {
+    String packageName = null;
+    String className = klass.getName();
+    int lastDot = className.lastIndexOf('.');
+    if (lastDot != -1)
+      packageName = className.substring(0, lastDot);
+    if (packageName != null && getPackage(packageName) == null)
+      {
+	// Should have some way to store this information in a
+	// precompiled manifest.
+	definePackage(packageName, null, null, null, null, null, null, null);
+      }
+    loadedClasses.put(className, klass);
   }
 
   // We add the URLs to the system class loader late.  The reason for
