@@ -1,3 +1,10 @@
+2006-01-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (_Jv_CopyClassesToSystemLoader): Updated.
+	* java/lang/natClassLoader.cc (_Jv_CopyClassesToSystemLoader):
+	Changed argument type.  Use SystemClassLoader.addClass.
+	* gnu/gcj/runtime/SystemClassLoader.java (addClass): New method.
+
 2005-12-24  David Daney <ddaney@avtrex.com>
 	    Tom Tromey  <tromey@redhat.com>
 

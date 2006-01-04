@@ -1,6 +1,6 @@
 // natClassLoader.cc - Implementation of java.lang.ClassLoader native methods.
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -43,6 +43,7 @@ details.  */
 #include <java/lang/Cloneable.h>
 #include <java/util/HashMap.h>
 #include <gnu/gcj/runtime/BootClassLoader.h>
+#include <gnu/gcj/runtime/SystemClassLoader.h>
 
 // Size of local hash table.
 #define HASH_LEN 1013
@@ -253,14 +254,14 @@ _Jv_RegisterClass (jclass klass)
 // This is used during initialization to register all compiled-in
 // classes that are not part of the core with the system class loader.
 void
-_Jv_CopyClassesToSystemLoader (java::lang::ClassLoader *loader)
+_Jv_CopyClassesToSystemLoader (gnu::gcj::runtime::SystemClassLoader *loader)
 {
   for (jclass klass = system_class_list;
        klass;
        klass = klass->next_or_version)
     {
       klass->loader = loader;
-      loader->loadedClasses->put(klass->name->toString(), klass);
+      loader->addClass(klass);
     }
   system_class_list = SYSTEM_LOADER_INITIALIZED;
 }
