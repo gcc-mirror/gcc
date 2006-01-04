@@ -1,3 +1,8 @@
+2006-01-03  Daniel Berlin  <dberlin@dberlin.org>
+
+	* dominance.c: Add comment about why we use DFS numbering
+	of dominance tree.
+
 2006-01-03  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 
