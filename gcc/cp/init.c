@@ -1503,7 +1503,7 @@ constant_value_1 (tree decl, bool integral_p)
 	  mark_used (decl);
 	  init = DECL_INITIAL (decl);
 	}
-      if (!(init || init == error_mark_node)
+      if (!init || init == error_mark_node
 	  || !TREE_TYPE (init)
 	  || (integral_p
 	      ? !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (init))
@@ -1516,7 +1516,7 @@ constant_value_1 (tree decl, bool integral_p)
 		 || TREE_CODE (init) == CONSTRUCTOR
 		 || TREE_CODE (init) == STRING_CST)))
 	break;
-      decl = init;
+      decl = unshare_expr (init);
     }
   return decl;
 }
