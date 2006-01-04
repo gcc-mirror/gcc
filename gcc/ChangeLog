@@ -1,5 +1,12 @@
 2006-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/25554
+	* config/i386/i386.md (testqi_ext_3): Ensure len is positive
+	and pos non-negative and pos + len <= 32.
+	(testqi_ext_3_rex64): Ensure len is positive and pos non-negative,
+	drop pos + len < HOST_BITS_PER_WIDE_INT test.
+	(testqi_ext_3* splitter): Handle pos + len == HOST_BITS_PER_WIDE_INT.
+
 	PR c/25559
 	* c-common.c (handle_vector_size_attribute): Reject zero vector size
 	as well as sizes not multiple of component size.
