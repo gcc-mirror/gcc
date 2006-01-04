@@ -912,6 +912,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // No need to swap header's color as it does not change.
       std::swap(this->_M_impl._M_node_count, __t._M_impl._M_node_count);
       std::swap(this->_M_impl._M_key_compare, __t._M_impl._M_key_compare);
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 431. Swapping containers with unequal allocators.
+      std::__alloc_swap<_Node_allocator>::
+	_S_do_it(_M_get_Node_allocator(), __t._M_get_Node_allocator());
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,

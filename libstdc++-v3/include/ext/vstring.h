@@ -1,6 +1,6 @@
 // Versatile string -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1271,7 +1271,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       */
       allocator_type
       get_allocator() const
-      { return this->_M_get_allocator(); }
+      { return allocator_type(this->_M_get_allocator()); }
 
       /**
        *  @brief  Find position of a C substring.
