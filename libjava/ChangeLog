@@ -1,3 +1,7 @@
+2006-01-04  Krister Walfridsson  <cato@df.lth.se>
+
+	* posix-threads.cc (_Jv_InitThreads): #ifdef PTHREAD_STACK_MIN
+
 2006-01-04  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.h (_Jv_CopyClassesToSystemLoader): Updated.
