@@ -1,3 +1,9 @@
+2005-01-04  Jeff Law  <law@redhat.com>
+
+	PR ada/24994
+	* tree-cfg.c (bsi_replace): Remove the original statement
+	from the EH throw statement table.
+
 2006-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/pmm_malloc.h (posix_memalign): If __cplusplus,
