@@ -1,3 +1,11 @@
+2006-01-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25492
+	* g++.dg/lookup/friend9.C: New test.
+
+	PR c++/25625
+	* g++.dg/template/repo5.C: New test.
+
 2006-01-03  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/25101

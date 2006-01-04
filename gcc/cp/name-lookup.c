@@ -2669,7 +2669,13 @@ push_class_level_binding (tree name, tree x)
 	      INHERITED_VALUE_BINDING_P (binding) = 0;
 	    }
 	  else
-	    old_decl = bval;
+	    {
+	      old_decl = bval;
+	      /* Any inherited type declaration is hidden by the type
+		 declaration in the derived class.  */
+	      if (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x))
+		binding->type = NULL_TREE;
+	    }
 	}
       else if (TREE_CODE (x) == OVERLOAD && is_overloaded_fn (bval))
 	old_decl = bval;
