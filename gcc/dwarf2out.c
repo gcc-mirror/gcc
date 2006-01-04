@@ -9420,7 +9420,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
     return 0;
 
   /* If we've got an address and don't want one, dereference.  */
-  if (!want_address && have_address)
+  if (!want_address && have_address && ret)
     {
       HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (loc));
 
