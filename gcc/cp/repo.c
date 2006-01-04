@@ -298,6 +298,12 @@ repo_emit_p (tree decl)
 	  && (!TYPE_LANG_SPECIFIC (type)
 	      || !CLASSTYPE_TEMPLATE_INSTANTIATION (type)))
 	return 2;
+      /* Static data members initialized by constant expressions must
+	 be processed where needed so that their definitions are
+	 available.  */
+      if (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
+	  && DECL_CLASS_SCOPE_P (decl))
+	return 2;
     }
   else if (!DECL_TEMPLATE_INSTANTIATION (decl))
     return 2;
