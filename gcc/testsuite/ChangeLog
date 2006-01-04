@@ -1,5 +1,7 @@
 2006-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/other/i386-2.C: New test.
+
 	PR target/25554
 	* gcc.c-torture/compile/20051228-1.c: New test.
 
