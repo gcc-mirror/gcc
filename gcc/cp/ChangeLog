@@ -1,3 +1,15 @@
+2006-01-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25492
+	* name-lookup.c (push_class_level_binding): When a derived class
+	provides a type binding, eliminate any type binding from a base
+	class. 
+
+	PR c++/25625
+	* repo.c (repo_emit_p): Always instantiate static data members
+	initialized by constant expressions, so that there values are
+	available.
+
 2006-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25635
