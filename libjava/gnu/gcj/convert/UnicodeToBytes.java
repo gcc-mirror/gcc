@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000, 2001, 2003  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -7,6 +7,8 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package gnu.gcj.convert; 
+
+import java.nio.charset.Charset;
 
 public abstract class UnicodeToBytes extends IOConverter
 {
@@ -99,10 +101,22 @@ public abstract class UnicodeToBytes extends IOConverter
     catch (Throwable ex) 
       { 
 	try
-	  {
+          {
 	    // We pass the original name to iconv and let it handle
-	    // its own aliasing.
+	    // its own aliasing.  Note that we intentionally prefer
+	    // iconv over nio.
 	    return new Output_iconv (encoding);
+          }
+        catch (Throwable _)
+          {
+            // Ignore, and try the next method.
+          }
+	try
+	  {
+            // Try using finding java.nio.charset.Charset and using
+            // the adaptor.  Use the original name as Charsets have
+            // their own canonical names.
+            return new CharsetToBytesAdaptor(Charset.forName(encoding));
 	  }
 	catch (Throwable _)
 	  {

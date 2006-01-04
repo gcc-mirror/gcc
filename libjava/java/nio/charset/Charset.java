@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.nio.charset;
 
+import gnu.classpath.ServiceFactory;
+import gnu.classpath.SystemProperties;
 import gnu.java.nio.charset.Provider;
 
 import java.io.BufferedReader;
@@ -116,6 +118,53 @@ public abstract class Charset implements Comparable
       }
   }
 
+  /**
+   * Returns the system default charset.
+   *
+   * This may be set by the user or VM with the file.encoding
+   * property.
+   *
+   * @since 1.5
+   */
+  public static Charset defaultCharset()
+  {
+    String encoding;
+    
+    try 
+      {
+	encoding = SystemProperties.getProperty("file.encoding");
+      }
+    catch(SecurityException e)
+      {
+	// Use fallback.
+	encoding = "ISO-8859-1";
+      }
+    catch(IllegalArgumentException e)
+      {
+	// Use fallback.
+	encoding = "ISO-8859-1";
+      }
+
+    try
+      {
+	return forName(encoding);
+      }
+    catch(UnsupportedCharsetException e)
+      {
+	// Ignore.
+      }
+    catch(IllegalCharsetNameException e)
+      {
+	// Ignore.
+      }
+    catch(IllegalArgumentException e)
+      {
+	// Ignore.
+      }
+    
+    throw new IllegalStateException("Can't get default charset!");
+  }
+
   public static boolean isSupported (String charsetName)
   {
     return charsetForName (charsetName) != null;
@@ -155,13 +204,19 @@ public abstract class Charset implements Comparable
   private static Charset charsetForName(String charsetName)
   {
     checkName (charsetName);
-    Charset cs = null;
-    CharsetProvider[] providers = providers2();
-    for (int i = 0; i < providers.length; i++)
+    // Try the default provider first
+    // (so we don't need to load external providers unless really necessary)
+    // if it is an exotic charset try loading the external providers.
+    Charset cs = provider().charsetForName(charsetName);
+    if (cs == null)
       {
-        cs = providers[i].charsetForName(charsetName);
-        if (cs != null)
-	  break;
+	CharsetProvider[] providers = providers2();
+	for (int i = 0; i < providers.length; i++)
+	  {
+	    cs = providers[i].charsetForName(charsetName);
+	    if (cs != null)
+	      break;
+	  }
       }
     return cs;
   }
@@ -169,6 +224,11 @@ public abstract class Charset implements Comparable
   public static SortedMap availableCharsets()
   {
     TreeMap charsets = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+    for (Iterator i = provider().charsets(); i.hasNext(); )
+      {
+	Charset cs = (Charset) i.next();
+	charsets.put(cs.name(), cs);
+      }
 
     CharsetProvider[] providers = providers2();
     for (int j = 0; j < providers.length; j++)
@@ -206,7 +266,7 @@ public abstract class Charset implements Comparable
   /**
    * We need to support multiple providers, reading them from
    * java.nio.charset.spi.CharsetProvider in the resource directory
-   * META-INF/services.
+   * META-INF/services. This returns the "extra" charset providers.
    */
   private static CharsetProvider[] providers2()
   {
@@ -214,24 +274,10 @@ public abstract class Charset implements Comparable
       {
         try
           {
-            Enumeration en = ClassLoader.getSystemResources
-	      ("META-INF/services/java.nio.charset.spi.CharsetProvider");
+            Iterator i = ServiceFactory.lookupProviders(CharsetProvider.class);
             LinkedHashSet set = new LinkedHashSet();
-            set.add(provider());
-            while (en.hasMoreElements())
-              {
-                BufferedReader rdr = new BufferedReader(new InputStreamReader
-                  (((URL) (en.nextElement())).openStream()));
-                while (true)
-                  {
-                    String s = rdr.readLine();
-                    if (s == null)
-		      break;
-                    CharsetProvider p =
-		      (CharsetProvider) ((Class.forName(s)).newInstance());
-                    set.add(p);
-                  }
-               }
+            while (i.hasNext())
+              set.add(i.next());
 
             providers = new CharsetProvider[set.size()];
             set.toArray(providers);

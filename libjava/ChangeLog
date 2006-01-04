@@ -1,3 +1,28 @@
+2005-12-24  David Daney <ddaney@avtrex.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/9715, PR libgcj/19132:
+	* java/nio/charset/Charset.java (charsetForName): Try default
+	provider first.
+	(availableCharsets): Re-merged.
+	(providers2): Likewise.
+	(defaultCharset): Likewise.
+	* sources.am, Makefile.in: Rebuilt.
+	* gnu/java/nio/charset/Provider.java: Removed.
+	* java/io/OutputStreamWriter.java
+	(OutputStreamWriter(OutputStream,Charset)): New constructor.
+	(OutputStreamWriter(OutputStream,CharsetEncoder)): Likewise.
+	* java/io/InputStreamReader.java
+	(InputStreamReader(InputStream,CharsetDecoder)): New constructor.
+	(InputStreamReader(InputStream,Charset)): Likewise.
+	* gnu/gcj/convert/BytesToUnicode.java (getDecoder): Try a
+	BytesToCharsetAdaptor.
+	* gnu/gcj/convert/UnicodeToBytes.java (getEncoder): Try a
+	CharsetToBytesAdaptor.
+	* gnu/gcj/convert/CharsetToBytesAdaptor.java: New file.
+	* gnu/gcj/convert/BytesToCharsetAdaptor.java: New file.
+	* mauve-libgcj: Remove getEncoding exclusion.
+
 2005-12-28  Anthony Green  <green@redhat.com>
 
 	* gnu/java/net/natPlainSocketImplWin32.cc (connect): Same 

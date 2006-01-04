@@ -23,4 +23,3 @@ JDBC2.0
 !java.awt.event.MouseEvent.modifiersEx
 !org.omg.
 !javax.rmi
-!java.io.InputStreamReader.getEncoding

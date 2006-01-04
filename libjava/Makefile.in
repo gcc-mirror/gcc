@@ -1138,7 +1138,9 @@ gnu/gcj/RawDataManaged.java
 
 gnu_gcj_header_files = $(patsubst %.java,%.h,$(gnu_gcj_source_files))
 gnu_gcj_convert_source_files = \
+gnu/gcj/convert/BytesToCharsetAdaptor.java \
 gnu/gcj/convert/BytesToUnicode.java \
+gnu/gcj/convert/CharsetToBytesAdaptor.java \
 gnu/gcj/convert/Convert.java \
 gnu/gcj/convert/IOConverter.java \
 gnu/gcj/convert/Input_8859_1.java \
@@ -1712,7 +1714,7 @@ classpath/gnu/java/nio/charset/MacRomania.java \
 classpath/gnu/java/nio/charset/MacSymbol.java \
 classpath/gnu/java/nio/charset/MacThai.java \
 classpath/gnu/java/nio/charset/MacTurkish.java \
-gnu/java/nio/charset/Provider.java \
+classpath/gnu/java/nio/charset/Provider.java \
 classpath/gnu/java/nio/charset/US_ASCII.java \
 classpath/gnu/java/nio/charset/UTF_16.java \
 classpath/gnu/java/nio/charset/UTF_16BE.java \
