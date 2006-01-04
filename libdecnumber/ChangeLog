@@ -1,3 +1,9 @@
+2006-01-03  Roger Sayle  <roger@eyesopen.com>
+	    Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decNumber.c (__NO_STRING_INLINES): Define to prevent glibc macro
+	definition of strcpy from generating compilation warnings.
+
 2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
 
         PR target/25259
