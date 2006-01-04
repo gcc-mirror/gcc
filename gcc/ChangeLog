@@ -1,3 +1,8 @@
+2006-01-04  Ben Elliston  <bje@au.ibm.com>
+
+	* config/fp-bit.h: Use top-of-file comment from libgcc2.c.
+	* config/fp-bit.c: Likewise.
+
 2006-01-03  Daniel Berlin  <dberlin@dberlin.org>
 
 	* dominance.c: Add comment about why we use DFS numbering
