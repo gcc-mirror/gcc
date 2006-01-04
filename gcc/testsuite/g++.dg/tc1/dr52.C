@@ -17,7 +17,7 @@ struct B1 : B {};
 struct B2 : B {};
 
 struct C
-{
+{ // { dg-error "C" }
   void foo(void);
 };
 
@@ -29,6 +29,6 @@ public:
   void bar(void)
   {
     this->B::foo();  // { dg-error "" }
-    this->C::foo();  // { dg-error "" }
+    this->C::foo();  // { dg-error "inaccessible|context" }
   }
 };
