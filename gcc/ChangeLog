@@ -1,3 +1,11 @@
+2006-01-04  Daniel Berlin  <dberlin@dberlin.org>
+
+	* lambda-code.c (can_put_in_inner_loop): Relax
+	restrictions.
+	(can_put_after_inner_loop): New function.
+	(can_convert_to_perfect_nest): Use can_put_after_inner_loop as well.
+	(perfect_nestify): Change to make copies and modify uses.
+
 2006-01-04  Richard Henderson  <rth@redhat.com>
 
 	Merge from gomp branch:
