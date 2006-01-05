@@ -2,7 +2,7 @@
    see PR 22442.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-vars" } */
+/* { dg-options "-O1 -fdump-tree-optimized" } */
 
 void bar (unsigned);
 
@@ -18,11 +18,11 @@ void foo (void)
 
 /* Final value of a gets replaced.  */
 
-/* { dg-final { scan-tree-dump-times "\\(16\\)" 1 "vars" } } */
+/* { dg-final { scan-tree-dump-times "\\(16\\)" 1 "optimized" } } */
 
 /* And the empty loop is removed.  */
 
-/* { dg-final { scan-tree-dump-times "if " 0 "vars" } } */
+/* { dg-final { scan-tree-dump-times "if " 0 "optimized" } } */
 
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
 

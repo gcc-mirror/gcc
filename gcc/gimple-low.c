@@ -55,7 +55,6 @@ static void lower_stmt (tree_stmt_iterator *, struct lower_data *);
 static void lower_bind_expr (tree_stmt_iterator *, struct lower_data *);
 static void lower_cond_expr (tree_stmt_iterator *, struct lower_data *);
 static void lower_return_expr (tree_stmt_iterator *, struct lower_data *);
-static bool expand_var_p (tree);
 
 /* Lowers the body of current_function_decl.  */
 
@@ -533,82 +532,6 @@ record_vars (tree vars)
     }
 }
 
-/* Check whether to expand a variable VAR.  */
-
-static bool
-expand_var_p (tree var)
-{
-  struct var_ann_d *ann;
-
-  if (TREE_CODE (var) != VAR_DECL)
-    return true;
-
-  /* Leave statics and externals alone.  */
-  if (TREE_STATIC (var) || DECL_EXTERNAL (var))
-    return true;
-
-  /* Remove all unused local variables.  */
-  ann = var_ann (var);
-  if (!ann || !ann->used)
-    return false;
-
-  return true;
-}
-
-/* Throw away variables that are unused.  */
-
-static void
-remove_useless_vars (void)
-{
-  tree var, *cell;
-  FILE *df = NULL;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      df = dump_file;
-      fputs ("Discarding as unused:\n", df);
-    }
-
-  for (cell = &cfun->unexpanded_var_list; *cell; )
-    {
-      var = TREE_VALUE (*cell);
-
-      if (!expand_var_p (var))
-	{
-	  if (df)
-	    {
-	      fputs ("  ", df);
-	      print_generic_expr (df, var, dump_flags);
-	      fputc ('\n', df);
-	    }
-
-	  *cell = TREE_CHAIN (*cell);
-	  continue;
-	}
-
-      cell = &TREE_CHAIN (*cell);
-    }
-
-  if (df)
-    fputc ('\n', df);
-}
-
-struct tree_opt_pass pass_remove_useless_vars = 
-{
-  "vars",				/* name */
-  NULL,					/* gate */
-  remove_useless_vars,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  0,					/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
-  0					/* letter */
-};
 
 /* Mark BLOCK used if it has a used variable in it, then recurse over its
    subblocks.  */

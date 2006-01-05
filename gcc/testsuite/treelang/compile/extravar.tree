@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fdump-tree-vars -O1 -Wunused-variable" }
+// { dg-options "-fdump-tree-optimized -O1 -Wunused-variable" }
 external_definition int bar (int aaa, int ddd);
 
 static int foo = -3;  // { dg-warning "defined but not used" }
@@ -10,5 +10,5 @@ bar
 
 	return aaa + ddd + +3;
 }
-// { dg-final { scan-tree-dump-not "ccc" "vars" } }
-// { dg-final { cleanup-tree-dump "vars" } }
+// { dg-final { scan-tree-dump-not "ccc" "optimized" } }
+// { dg-final { cleanup-tree-dump "optimized" } }

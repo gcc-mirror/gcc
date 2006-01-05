@@ -200,6 +200,11 @@ struct dump_file_info
    renaming are processed.  */
 #define TODO_update_ssa_only_virtuals	(1 << 10)
 
+/* Some passes leave unused local variables that can be removed from
+   cfun->unexpanded_var_list.  This reduces the size of dump files and
+   the memory footprint for VAR_DECLs.  */
+#define TODO_remove_unused_locals	(1 << 11)
+
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
      | TODO_update_ssa_no_phi		\
@@ -267,7 +272,6 @@ extern struct tree_opt_pass pass_forwprop;
 extern struct tree_opt_pass pass_redundant_phi;
 extern struct tree_opt_pass pass_dse;
 extern struct tree_opt_pass pass_nrv;
-extern struct tree_opt_pass pass_remove_useless_vars;
 extern struct tree_opt_pass pass_mark_used_blocks;
 extern struct tree_opt_pass pass_rename_ssa_copies;
 extern struct tree_opt_pass pass_expand;

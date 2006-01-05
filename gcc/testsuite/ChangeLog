@@ -1,3 +1,26 @@
+2006-01-05  Richard Guenther  <rguenther@suse.de>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/tree-ssa/loop-11.c: Deal with removed vars pass.
+	* gcc.dg/tree-ssa/loop-8.c: Likewise.
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr23294.c: Likewise.
+	* gcc.dg/tree-ssa/pr21985.c: Likewise.
+	* gcc.dg/tree-ssa/loop-14.c: Likewise.
+	* gcc.dg/tree-ssa/loop-2.c: Likewise.
+	* gcc.dg/tree-ssa/loop-3.c: Likewise.
+	* gcc.dg/tree-ssa/loop-4.c: Likewise.
+	* gcc.dg/tree-ssa/pr21171.c: Likewise.
+	* gcc.dg/tree-ssa/loop-5.c: Likewise.
+	* gcc.dg/tree-ssa/loop-10.c: Likewise.
+	* gcc.dg/tree-ssa/loop-6.c: Likewise.
+	* treelang/compile/extravar.tree: Likewise.
+	* g++.dg/tree-ssa/ssa-cast-1.C: Likewise.
+	* g++.dg/tree-ssa/pointer-reference-alias.C: Likewise.
+	* g++.dg/tree-ssa/ssa-sra-1.C: Likewise.
+	* g++.dg/tree-ssa/ssa-sra-2.C: Likewise.
+	* gcc.dg/tree-ssa/20031106-6.c: Disable SRA.
+
 2006-01-05  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* g++.dg/abi/thunk3.C, g++.dg/abi/thunk4.C: Revert unnecessary fix

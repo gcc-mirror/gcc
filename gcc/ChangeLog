@@ -1,4 +1,19 @@
 2006-01-05  Richard Guenther  <rguenther@suse.de>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-pass.h (TODO_remove_unused_locals): Define.
+	* gimple-low.c (expand_var_p, remove_useless_vars,
+	pass_remove_useless_vars): Remove.  Update all users.
+	* tree-ssa-live.c (mark_all_vars_used_1): Handle SSA names.
+	(remove_unused_locals): New function.
+	* tree-flow.h (remove_unused_locals): Declare.
+	* passes.c (execute_todo): Call remove_unused_locals if
+	TODO_remove_unused_locals is set.
+	* tree-into-ssa.c (pass_build_ssa): Add TODO_remove_unused_locals.
+	* tree-ssa-dce.c (pass_dce): Likewise.
+	* tree-outof-ssa.c (pass_del_ssa): Likewise.
+
+2006-01-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (struct fieldoff): Decompose field to
 	type, size and decl.

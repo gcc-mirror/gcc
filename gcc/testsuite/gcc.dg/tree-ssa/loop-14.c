@@ -1,6 +1,6 @@
 /* A test for final value replacement.  */
 
-/* { dg-options "-O2 -fdump-tree-vars" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 int foo(void);
 
@@ -15,5 +15,5 @@ int bla(void)
   return j;
 }
 
-/* { dg-final { scan-tree-dump-times "\\+ 100" 1 "vars" } } */
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { scan-tree-dump-times "\\+ 100" 1 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

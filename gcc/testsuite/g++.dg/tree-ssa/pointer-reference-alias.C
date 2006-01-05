@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-vars" } */
+/* { dg-options "-O1 -fdump-tree-optimized" } */
 
 int f(int *a)
 {
@@ -9,5 +9,5 @@ int f(int *a)
 }
 
 /* There should be only one dereferencing of a. */
-/* { dg-final { scan-tree-dump-times "\\*a" 1 "vars" } } */
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { scan-tree-dump-times "\\*a" 1 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

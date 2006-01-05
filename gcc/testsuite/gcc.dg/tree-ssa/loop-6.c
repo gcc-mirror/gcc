@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -funswitch-loops -fdump-tree-unswitch-details -fdump-tree-vars" } */
+/* { dg-options "-O1 -funswitch-loops -fdump-tree-unswitch-details -fdump-tree-optimized" } */
 
 int ch;
 int a[100];
@@ -24,5 +24,5 @@ void xxx(void)
 
 /* In effect there should be exactly three conditional jumps in the final program.  */
 
-/* { dg-final { scan-tree-dump-times "else" 3 "vars" } } */
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { scan-tree-dump-times "else" 3 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

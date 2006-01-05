@@ -979,7 +979,8 @@ struct tree_opt_pass pass_dce =
     | TODO_update_ssa
     | TODO_cleanup_cfg
     | TODO_ggc_collect
-    | TODO_verify_ssa,			/* todo_flags_finish */
+    | TODO_verify_ssa
+    | TODO_remove_unused_locals,	/* todo_flags_finish */
   0					/* letter */
 };
 

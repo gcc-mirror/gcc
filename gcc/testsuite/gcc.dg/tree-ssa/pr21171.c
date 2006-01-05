@@ -1,6 +1,6 @@
 /* PR 21171.  Ivopts should not rewrite references to volatile memory.  */
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-vars" } */
+/* { dg-options "-O1 -fdump-tree-optimized" } */
 
 typedef	unsigned int u_int32_t;
 typedef	unsigned char u_int8_t;
@@ -25,5 +25,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "SVR" 1 "vars"} } */
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { scan-tree-dump-times "SVR" 1 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

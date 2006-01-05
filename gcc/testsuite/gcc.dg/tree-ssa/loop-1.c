@@ -1,15 +1,15 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-vars" } */
+/* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-optimized" } */
 
 /* On 31-bit S/390 the function address will be stored (once) in the literal pool,
    so scan-assembler-times "foo" will return 1 even if the loop is fully unrolled.
    -msmall-exec avoids this by enabling a call instruction with immediate operand.  */
-/* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-vars -msmall-exec" { target s390-*-* } } */
+/* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-optimized -msmall-exec" { target s390-*-* } } */
 
 /* On Darwin, we call extern functions via a stub in PIC mode which is default and
    the stub is named after the function.  To avoid this we use -static to go out
    of PIC mode.  */
-/* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-vars -static" { target *-*-darwin* } } */
+/* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-optimized -static" { target *-*-darwin* } } */
 
 void xxx(void)
 {
@@ -25,8 +25,8 @@ void xxx(void)
 /* { dg-final { cleanup-tree-dump "ivcanon" } } */
 /* { dg-final { scan-tree-dump-times "Unrolled loop 1 completely" 1 "cunroll"} } */
 /* { dg-final { cleanup-tree-dump "cunroll" } } */
-/* { dg-final { scan-tree-dump-times "foo" 5 "vars"} } */
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { scan-tree-dump-times "foo" 5 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
 
 /* Because hppa and ia64 targets include an external declaration for foo as
    well as the calls we need to look for something more specific then just

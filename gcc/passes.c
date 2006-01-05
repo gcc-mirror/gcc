@@ -586,7 +586,6 @@ init_optimization_passes (void)
   NEXT_PASS (pass_uncprop);
   NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);
-  NEXT_PASS (pass_remove_useless_vars);
   NEXT_PASS (pass_mark_used_blocks);
   NEXT_PASS (pass_cleanup_cfg_post_optimizing);
   *p = NULL;
@@ -702,7 +701,6 @@ init_optimization_passes (void)
 }
 
 static unsigned int last_verified;
-
 static void
 execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
 {
@@ -737,6 +735,9 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
       unsigned update_flags = flags & TODO_update_ssa_any;
       update_ssa (update_flags);
     }
+
+  if (flags & TODO_remove_unused_locals)
+    remove_unused_locals ();
 
   if ((flags & TODO_dump_func)
       && dump_file && current_function_decl)
