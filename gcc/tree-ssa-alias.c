@@ -2515,14 +2515,14 @@ get_or_create_used_part_for (size_t uid)
 }
 
 
-/* Create and return a structure sub-variable for field FIELD of
+/* Create and return a structure sub-variable for field type FIELD of
    variable VAR.  */
 
 static tree
 create_sft (tree var, tree field)
 {
   var_ann_t ann;
-  tree subvar = create_tag_raw (STRUCT_FIELD_TAG, TREE_TYPE (field), "SFT");
+  tree subvar = create_tag_raw (STRUCT_FIELD_TAG, field, "SFT");
 
   /* We need to copy the various flags from VAR to SUBVAR, so that
      they are is_global_var iff the original variable was.  */
@@ -2578,9 +2578,9 @@ create_overlap_variables_for (tree var)
 
       for (i = 0; VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
 	{
-	  if (!DECL_SIZE (fo->field) 
-	      || TREE_CODE (DECL_SIZE (fo->field)) != INTEGER_CST
-	      || TREE_CODE (TREE_TYPE (fo->field)) == ARRAY_TYPE
+	  if (!fo->size
+	      || TREE_CODE (fo->size) != INTEGER_CST
+	      || TREE_CODE (fo->type) == ARRAY_TYPE
 	      || fo->offset < 0)
 	    {
 	      notokay = true;
@@ -2632,8 +2632,8 @@ create_overlap_variables_for (tree var)
 	  HOST_WIDE_INT fosize;
 	  tree currfotype;
 
-	  fosize = TREE_INT_CST_LOW (DECL_SIZE (fo->field));
-	  currfotype = TREE_TYPE (fo->field);
+	  fosize = TREE_INT_CST_LOW (fo->size);
+	  currfotype = fo->type;
 
 	  /* If this field isn't in the used portion,
 	     or it has the exact same offset and size as the last
@@ -2650,7 +2650,7 @@ create_overlap_variables_for (tree var)
 	  sv->offset = fo->offset;
 	  sv->size = fosize;
 	  sv->next = *subvars;
-	  sv->var = create_sft (var, fo->field);
+	  sv->var = create_sft (var, fo->type);
 
 	  if (dump_file)
 	    {
