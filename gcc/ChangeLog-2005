@@ -116,6 +116,19 @@
 	* pa.md: Remove REG_POINTER check from REG+REG peephole2 floating-point
 	store patterns.
 
+2005-12-29 Kenneth Zadeck <zadeck@naturalbridge.com>
+
+        * bitmap.c (bitmap_element_free, bitmap_element_link,
+        bitmap_elt_insert_after, bitmap_and, bitmap_and_compl,
+        bitmap_and_compl, bitmap_ior, bitmap_ior_into, bitmap_xor,
+        bitmap_xor_into): Added code to properly maintain the variants
+        associated with the CURRENT and HEAD fields.
+        (bitmap_popcount, bitmap_clear_range, bitmap_compl_and_into): New
+        functions. 
+	* bitmap.h: Added defs for bitmap_popcount, bitmap_clear_range,
+	and bitmap_compl_and_into.
+
+
 2005-12-29  Mike Stump  <mrs@apple.com>
 
 	* doc/invoke.texi (Objective-C and Objective-C++ Dialect Options
