@@ -1,3 +1,7 @@
+2006-01-05  Richard Henderson  <rth@redhat.com>
+
+	* c-parser.c (c_parser_objc_methodprotolist): Handle CPP_PRAGMA.
+
 2006-01-05  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* c-typeck.c: Update copyright date.
