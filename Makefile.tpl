@@ -857,7 +857,7 @@ clean-stage[+id+]: clean-stage[+id+]-[+prefix+][+module+]
 clean-stage[+id+]-[+prefix+][+module+]:
 	@[ -f [+subdir+]/[+module+]/Makefile ] || [ -f [+subdir+]/stage[+id+]-[+module+]/Makefile ] \
 	  || exit 0 ; \
-	@[ `cat stage_current` = stage[+id+] ] || $(MAKE) stage[+id+]-start
+	[ `cat stage_current` = stage[+id+] ] || $(MAKE) stage[+id+]-start
 	cd [+subdir+]/[+module+] && \
 	$(MAKE) [+args+] [+ IF prev +] \
 		[+poststage1_args+] [+ ENDIF prev +] \
