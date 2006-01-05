@@ -2,6 +2,7 @@
 # difference.  It is then pointless adding debugging.
 TARGET_LIBGCC2_CFLAGS = -fomit-frame-pointer -fpic
 LIBGCC2_DEBUG_CFLAGS = -g0
+LIB2FUNCS_EXTRA = $(srcdir)/config/floatunsidf.c $(srcdir)/config/floatunsisf.c
 
 # Build a shared libgcc library.
 SHLIB_EXT = .so
