@@ -1,3 +1,9 @@
+2006-01-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.tpl (clean-stage[+id+]-[+prefix+][+module+]): Remove
+	@ from continuation.
+	* Makefile.in: Rebuilt.
+
 2006-01-04  Chris Lattner  <sabre@gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
