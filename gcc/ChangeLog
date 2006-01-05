@@ -1,5 +1,9 @@
 2006-01-05  Carlos O'Donell  <carlos@codesourcery.com>
 
+	* c-typeck.c: Update copyright date.
+
+2006-01-05  Carlos O'Donell  <carlos@codesourcery.com>
+
 	* c-typeck.c (build_c_cast): Always warn when casting
 	from a pointer to an integer of different size, even if
 	the node was constant.
