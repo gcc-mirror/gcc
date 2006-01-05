@@ -1,5 +1,6 @@
 /* Perform type resolution on the various stuctures.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, 
+   Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1142,6 +1143,16 @@ resolve_function (gfc_expr * expr)
 		     "procedure within a PURE procedure", name, &expr->where);
 	  t = FAILURE;
 	}
+    }
+
+  /* Character lengths of use associated functions may contains references to
+     symbols not referenced from the current program unit otherwise.  Make sure
+     those symbols are marked as referenced.  */
+
+  if (expr->ts.type == BT_CHARACTER && expr->value.function.esym 
+      && expr->value.function.esym->attr.use_assoc)
+    {
+      gfc_expr_set_symbols_referenced (expr->ts.cl->length);
     }
 
   return t;

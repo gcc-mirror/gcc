@@ -1,6 +1,6 @@
 /* Routines for manipulation of expression nodes.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software 
+   Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2130,3 +2130,73 @@ gfc_get_variable_expr (gfc_symtree * var)
   return e;
 }
 
+
+/* Traverse expr, marking all EXPR_VARIABLE symbols referenced.  */
+
+void
+gfc_expr_set_symbols_referenced (gfc_expr * expr)
+{
+  gfc_actual_arglist *arg;
+  gfc_constructor *c;
+  gfc_ref *ref;
+  int i;
+
+  if (!expr) return;
+
+  switch (expr->expr_type)
+    {
+    case EXPR_OP:
+      gfc_expr_set_symbols_referenced (expr->value.op.op1);
+      gfc_expr_set_symbols_referenced (expr->value.op.op2);
+      break;
+
+    case EXPR_FUNCTION:
+      for (arg = expr->value.function.actual; arg; arg = arg->next)
+        gfc_expr_set_symbols_referenced (arg->expr);
+      break;
+
+    case EXPR_VARIABLE:
+      gfc_set_sym_referenced (expr->symtree->n.sym);
+      break;
+
+    case EXPR_CONSTANT:
+    case EXPR_NULL:
+    case EXPR_SUBSTRING:
+      break;
+
+    case EXPR_STRUCTURE:
+    case EXPR_ARRAY:
+      for (c = expr->value.constructor; c; c = c->next)
+        gfc_expr_set_symbols_referenced (c->expr);
+      break;
+
+    default:
+      gcc_unreachable ();
+      break;
+    }
+
+    for (ref = expr->ref; ref; ref = ref->next)
+      switch (ref->type)
+        {
+        case REF_ARRAY:
+          for (i = 0; i < ref->u.ar.dimen; i++)
+            {
+              gfc_expr_set_symbols_referenced (ref->u.ar.start[i]);
+              gfc_expr_set_symbols_referenced (ref->u.ar.end[i]);
+              gfc_expr_set_symbols_referenced (ref->u.ar.stride[i]);
+            }
+          break;
+           
+        case REF_COMPONENT:
+          break;
+           
+        case REF_SUBSTRING:
+          gfc_expr_set_symbols_referenced (ref->u.ss.start);
+          gfc_expr_set_symbols_referenced (ref->u.ss.end);
+          break;
+           
+        default:
+          gcc_unreachable ();
+          break;
+        }
+}

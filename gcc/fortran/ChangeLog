@@ -1,3 +1,12 @@
+2006-01-05  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/23675
+	* expr.c (gfc_expr_set_symbols_referenced): New function.
+	* gfortran.h: Add a function prototype for it.
+	* resolve.c (resolve_function): Use it for
+	use associated character functions lengths.
+	* expr.c, gfortran.h, resolve.c: Updated copyright years.
+
 2005-12-31  Steven G. Kargl <kargls@comcast.net>
  
 	PR fortran/25106
