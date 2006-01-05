@@ -1,3 +1,8 @@
+2006-01-05  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/23675
+	gfortran.dg/char_result_11.f90: New.
+
 2006-01-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24782
