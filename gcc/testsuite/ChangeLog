@@ -1,3 +1,11 @@
+2006-01-05  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* gcc.dg/cast-1.c: Add new warning.
+	* gcc.dg/cast-2.c: Likewise.
+	* gcc.dg/cast-3.c: Likewise.
+	* gcc.dg/format/cast-1.c: Likewise.
+	* gcc.dg/cast-4.c: New testcase.
+
 2006-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/22555

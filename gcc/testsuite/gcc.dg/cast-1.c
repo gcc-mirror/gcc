@@ -37,5 +37,5 @@ f (void)
   (void *) c; /* { dg-warning "warning: cast to pointer from integer of different size" } */
   (void *) (char) 1;
   (char) p; /* { dg-warning "warning: cast from pointer to integer of different size" } */
-  (char) (void *) 1;
+  (char) (void *) 1; /* { dg-warning "warning: cast from pointer to integer of different size" } */
 }
