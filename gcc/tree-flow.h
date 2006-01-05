@@ -863,7 +863,9 @@ tree maybe_fold_tmr (tree);
 
 struct fieldoff
 {
-  tree field;
+  tree type;
+  tree size;
+  tree decl;
   HOST_WIDE_INT offset;  
 };
 typedef struct fieldoff fieldoff_s;

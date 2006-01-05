@@ -3540,8 +3540,8 @@ fieldoff_compare (const void *pa, const void *pb)
   if (foa->offset != fob->offset)
     return foa->offset - fob->offset;
 
-  foasize = TREE_INT_CST_LOW (DECL_SIZE (foa->field));
-  fobsize = TREE_INT_CST_LOW (DECL_SIZE (fob->field));
+  foasize = TREE_INT_CST_LOW (foa->size);
+  fobsize = TREE_INT_CST_LOW (fob->size);
   return foasize - fobsize;
 }
 
@@ -3597,7 +3597,9 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    fieldoff_s *pair;
 
 	    pair = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
-	    pair->field = field;
+	    pair->type = TREE_TYPE (field);
+	    pair->size = DECL_SIZE (field);
+	    pair->decl = field;
 	    pair->offset = offset + bitpos_of_field (field);
 	    count++;
 	  }
@@ -3842,12 +3844,11 @@ create_variable_info_for (tree decl, const char *name)
       unsigned int newindex = VEC_length (varinfo_t, varmap);
       fieldoff_s *fo = NULL;
       unsigned int i;
-      tree field;
 
       for (i = 0; !notokay && VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
 	{
-	  if (!DECL_SIZE (fo->field) 
-	      || TREE_CODE (DECL_SIZE (fo->field)) != INTEGER_CST
+	  if (! fo->size
+	      || TREE_CODE (fo->size) != INTEGER_CST
 	      || fo->offset < 0)
 	    {
 	      notokay = true;
@@ -3882,8 +3883,7 @@ create_variable_info_for (tree decl, const char *name)
 	  return index;
 	}
       
-      field = fo->field;
-      vi->size = TREE_INT_CST_LOW (DECL_SIZE (field));
+      vi->size = TREE_INT_CST_LOW (fo->size);
       vi->offset = fo->offset;
       for (i = 1; VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
 	{
@@ -3891,14 +3891,16 @@ create_variable_info_for (tree decl, const char *name)
 	  const char *newname;
 	  char *tempname;
 
-	  field = fo->field;
 	  newindex = VEC_length (varinfo_t, varmap);
-	  asprintf (&tempname, "%s.%s", vi->name, alias_get_name (field));
+	  if (fo->decl)
+	    asprintf (&tempname, "%s.%s", vi->name, alias_get_name (fo->decl));
+	  else
+	    asprintf (&tempname, "%s." HOST_WIDE_INT_PRINT_DEC, vi->name, fo->offset);
 	  newname = ggc_strdup (tempname);
 	  free (tempname);
 	  newvi = new_var_info (decl, newindex, newname, newindex);
 	  newvi->offset = fo->offset;
-	  newvi->size = TREE_INT_CST_LOW (DECL_SIZE (field));
+	  newvi->size = TREE_INT_CST_LOW (fo->size);
 	  newvi->fullsize = vi->fullsize;
 	  insert_into_field_list (vi, newvi);
 	  VEC_safe_push (varinfo_t, heap, varmap, newvi);

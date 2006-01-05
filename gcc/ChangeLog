@@ -1,3 +1,16 @@
+2006-01-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (struct fieldoff): Decompose field to
+	type, size and decl.
+	* tree-ssa-alias.c (create_sft): Take type as parameter.
+	(create_overlap_variables_for): Store type, size and decl
+	in the fieldoff structure.
+	* tree-ssa-structalias.c (fieldoff_compare): Adjust users
+	of struct fieldoff.
+	(push_fields_onto_fieldstack): Likewise.
+	(create_variable_info_for): Likewise.  Use offset for the
+	SFT name if the decl is not available.
+
 2006-01-04  Paul Brook  <paul@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_output_mi_thunk): Use jmp, not jsr.
