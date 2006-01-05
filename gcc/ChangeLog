@@ -1,3 +1,15 @@
+2006-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/22555
+	* tree-ssa-alias.c (create_overlap_variables_for): Do not give up,
+	if one structure field is an array.
+	* tree-ssa-operands.c (get_expr_operands): Continue scanning
+	operands even if we found a subvar, but ignore VOPs in this
+	case.
+	* tree-ssa-loop-ivopts.c (rewrite_use): Mark new vars in stmt
+	for renaming.
+	* tree-ssa-loop.c (pass_iv_optimize): Schedule TODO_update_ssa.
+
 2006-01-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR middle-end/24998
