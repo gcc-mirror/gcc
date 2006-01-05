@@ -1,4 +1,9 @@
 2006-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/22555
+	* gcc.dg/tree-ssa/alias-3.c: New testcase.
+
+2006-01-05  Richard Guenther  <rguenther@suse.de>
 	    Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.dg/tree-ssa/loop-11.c: Deal with removed vars pass.

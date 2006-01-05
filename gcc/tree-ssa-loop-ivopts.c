@@ -5825,7 +5825,7 @@ rewrite_use (struct ivopts_data *data,
       default:
 	gcc_unreachable ();
     }
-  update_stmt (use->stmt);
+  mark_new_vars_to_rename (use->stmt);
 }
 
 /* Rewrite the uses using the selected induction variables.  */
