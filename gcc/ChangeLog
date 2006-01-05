@@ -1,3 +1,8 @@
+2006-01-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR middle-end/24998
+	* arm/t-netbsd (LIB2FUNCS_EXTRA): Define.
+
 2006-01-05  Richard Guenther  <rguenther@suse.de>
 	    Diego Novillo  <dnovillo@redhat.com>
 
