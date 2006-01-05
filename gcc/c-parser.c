@@ -5866,6 +5866,9 @@ c_parser_objc_methodprotolist (c_parser *parser)
 	case CPP_MINUS:
 	  c_parser_objc_methodproto (parser);
 	  break;
+	case CPP_PRAGMA:
+	  c_parser_pragma (parser, pragma_external);
+	  break;
 	case CPP_EOF:
 	  return;
 	default:
