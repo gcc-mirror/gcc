@@ -194,7 +194,7 @@ update-po: $(CATALOGS:.gmo=.pox)
 # Dependency rule.
 COMPILE.base = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c
 ifeq ($(DEPMODE),depmode=gcc3)
-COMPILE = $(COMPILE.base) -o $@ -MT $@ -MD -MP -MF $(DEPDIR)/$*.Po
+COMPILE = $(COMPILE.base) -o $@ -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Po
 else
 COMPILE = source='$<' object='$@' libtool=no DEPDIR=$(DEPDIR) $(DEPMODE) \
 	  $(depcomp) $(COMPILE.base)

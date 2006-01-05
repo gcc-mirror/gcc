@@ -1,3 +1,7 @@
+2006-02-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in: Use -MMD instead of -MD.
+
 2006-01-04  Dmitry Kurochkin <dmitry.kurochkin@gmail.com>
 	    Richard Henderson  <rth@redhat.com>
 
