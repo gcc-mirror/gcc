@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-vars" } */
+/* { dg-options "-O1 -fdump-tree-optimized" } */
 
 int bar (void);
 
@@ -26,7 +26,7 @@ void foo (void)
     ;
 }
 
-/* { dg-final { scan-tree-dump-times "if " 3 "vars" } } */
-/* { dg-final { scan-tree-dump-times "bar " 2 "vars" } } */
+/* { dg-final { scan-tree-dump-times "if " 3 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "bar " 2 "optimized" } } */
 
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

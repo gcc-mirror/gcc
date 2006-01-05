@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-vars" } */
+/* { dg-options "-O1 -fdump-tree-optimized" } */
 
 int &f(int *a)
 {
@@ -8,5 +8,5 @@ int &f(int *a)
 
 /* There should be no cast as pointer and references are
    considered the same type. */
-/* { dg-final { scan-tree-dump-times "\\(int &\\)" 0 "vars"} } */
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { scan-tree-dump-times "\\(int &\\)" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

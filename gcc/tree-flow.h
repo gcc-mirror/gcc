@@ -815,6 +815,9 @@ tree force_gimple_operand_bsi (block_stmt_iterator *, tree, bool, tree);
 /* In tree-ssa-structalias.c */
 bool find_what_p_points_to (tree);
 
+/* In tree-ssa-live.c */
+extern void remove_unused_locals (void);
+
 /* In tree-ssa-address.c  */
 
 /* Affine combination of trees.  We keep track of at most MAX_AFF_ELTS elements

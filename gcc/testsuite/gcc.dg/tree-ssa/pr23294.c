@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-vars" } */
+/* { dg-options "-O -fdump-tree-optimized" } */
 
 int f1(int a)
 {
@@ -31,8 +31,8 @@ int f6(int a, int b)
   return 6*a - 2*b;
 }
 
-/* { dg-final { scan-tree-dump-times "a \\\* 5" 3 "vars" } } */
-/* { dg-final { scan-tree-dump "\\\(b \\\* 3 \\\+ a\\\) \\\* 2" "vars" } } */
-/* { dg-final { scan-tree-dump "\\\(a - b \\\* 3\\\) \\\* 2" "vars" } } */
-/* { dg-final { scan-tree-dump "\\\(a \\\* 3 - b\\\) \\\* 2" "vars" } } */
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { scan-tree-dump-times "a \\\* 5" 3 "optimized" } } */
+/* { dg-final { scan-tree-dump "\\\(b \\\* 3 \\\+ a\\\) \\\* 2" "optimized" } } */
+/* { dg-final { scan-tree-dump "\\\(a - b \\\* 3\\\) \\\* 2" "optimized" } } */
+/* { dg-final { scan-tree-dump "\\\(a \\\* 3 - b\\\) \\\* 2" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
