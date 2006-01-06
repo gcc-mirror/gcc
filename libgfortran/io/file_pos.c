@@ -120,7 +120,9 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
   else
     reverse_memcpy (&m, p, sizeof (gfc_offset));
 
-  new = file_position (u->s) - m - 2*length;
+  if ((new = file_position (u->s) - m - 2*length) < 0)
+    new = 0;
+
   if (sseek (u->s, new) == FAILURE)
     goto io_error;
 
@@ -179,6 +181,7 @@ st_backspace (st_parameter_filepos *fpp)
 
       u->endfile = NO_ENDFILE;
       u->current_record = 0;
+      u->bytes_left = 0;
     }
 
  done:
