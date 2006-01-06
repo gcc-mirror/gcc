@@ -1,3 +1,8 @@
+2006-01-06  Gabriel Dos Reis  <gdr@integrablesolutions.net>
+
+	* parser.c (cp_parser_primary_expression): Document the grammar
+	for the built-in offsetof, a GNU extension.
+
 2005-01-04  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR c++/25632
