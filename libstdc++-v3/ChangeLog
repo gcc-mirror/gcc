@@ -1,3 +1,32 @@
+2006-01-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h (vector<bool>::erase(iterator,
+	iterator)): Just use _M_erase_at_end.
+
+2006-01-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h (class vector<bool>): Move all the
+	helpers under protected access mode, consistently with the primary
+	vector template.
+	(vector<bool>::_M_erase_at_end): Add.
+	(erase(iterator, iterator), clear, resize, _M_fill_assign,
+	_M_assign_aux): Use it.
+	* testsuite/23_containers/vector/bool/modifiers/erase/1.cc: New.
+
+2006-01-06  Paolo Carlini  <pcarlini@suse.de>
+
+	Implement Option 3 of DR 431 for vector<bool>.
+	* include/bits/stl_bvector.h (class _Bvector_base): Change to
+	a struct, consistently with the primary vector template.
+	(class vector<bool>): Adjust to protected inheritance, tidy
+	typedefs.
+	(_Bvector_base<>::_M_get_Bit_allocator): Add.
+	(vector<bool>::vector(const vector&)): Use it.
+	(_Bvector_base<>::get_allocator): Tidy.
+	(vector<bool>::swap): Use __alloc_swap.
+	* testsuite/23_containers/vector/bool/modifiers/swap/1.cc: New.
+	* testsuite/23_containers/vector/bool/modifiers/swap/2.cc: New.
+
 2006-01-05  Paolo Carlini  <pcarlini@suse.de>
 	
 	* testsuite/testsuite_hooks.h (test_tm(unsigned)): Change to
@@ -32,7 +61,7 @@
 	* testsuite/22_locale/time_get/get_monthname/wchar_t/1.cc: Likewise.
 	* testsuite/22_locale/time_get/get_monthname/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_monthname/char/1.cc: Likewise.
- 	* testsuite/22_locale/time_get/get_monthname/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/1.cc: Likewise.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/3.cc: Likewise.
