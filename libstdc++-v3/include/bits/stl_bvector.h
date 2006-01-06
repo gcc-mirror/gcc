@@ -1,6 +1,7 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -354,12 +355,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
   { return __x + __n; }
 
   template<class _Alloc>
-    class _Bvector_base
+    struct _Bvector_base
     {
       typedef typename _Alloc::template rebind<_Bit_type>::other
         _Bit_alloc_type;
       
-      struct _Bvector_impl : public _Bit_alloc_type
+      struct _Bvector_impl
+      : public _Bit_alloc_type
       {
 	_Bit_iterator 	_M_start;
 	_Bit_iterator 	_M_finish;
@@ -372,9 +374,17 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
     public:
       typedef _Alloc allocator_type;
 
+      _Bit_alloc_type&
+      _M_get_Bit_allocator()
+      { return *static_cast<_Bit_alloc_type*>(&this->_M_impl); }
+
+      const _Bit_alloc_type&
+      _M_get_Bit_allocator() const
+      { return *static_cast<const _Bit_alloc_type*>(&this->_M_impl); }
+
       allocator_type
       get_allocator() const
-      { return *static_cast<const _Bit_alloc_type*>(&this->_M_impl); }
+      { return allocator_type(_M_get_Bit_allocator()); }
 
       _Bvector_base(const allocator_type& __a) : _M_impl(__a) { }
 
@@ -424,139 +434,96 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
    *  also provided as with C-style arrays.
   */
 template<typename _Alloc>
-  class vector<bool, _Alloc> : public _Bvector_base<_Alloc>
+  class vector<bool, _Alloc> : protected _Bvector_base<_Alloc>
   {
+    typedef _Bvector_base<_Alloc>			 _Base;
+
   public:
-    typedef bool value_type;
-    typedef size_t size_type;
-    typedef ptrdiff_t difference_type;
-    typedef _Bit_reference reference;
-    typedef bool const_reference;
-    typedef _Bit_reference* pointer;
-    typedef const bool* const_pointer;
-
-    typedef _Bit_iterator                iterator;
-    typedef _Bit_const_iterator          const_iterator;
-
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-    typedef std::reverse_iterator<iterator> reverse_iterator;
-
-    typedef typename _Bvector_base<_Alloc>::allocator_type allocator_type;
+    typedef bool                                         value_type;
+    typedef size_t                                       size_type;
+    typedef ptrdiff_t                                    difference_type;
+    typedef _Bit_reference                               reference;
+    typedef bool                                         const_reference;
+    typedef _Bit_reference*                              pointer;
+    typedef const bool*                                  const_pointer;
+    typedef _Bit_iterator                                iterator;
+    typedef _Bit_const_iterator                          const_iterator;
+    typedef std::reverse_iterator<const_iterator>        const_reverse_iterator;
+    typedef std::reverse_iterator<iterator>              reverse_iterator;
+    typedef _Alloc                        		 allocator_type;
 
     allocator_type get_allocator() const
-    { return _Bvector_base<_Alloc>::get_allocator(); }
+    { return _Base::get_allocator(); }
 
   protected:
-    using _Bvector_base<_Alloc>::_M_allocate;
-    using _Bvector_base<_Alloc>::_M_deallocate;
-
-  protected:
-    void
-    _M_initialize(size_type __n)
-    {
-      _Bit_type* __q = this->_M_allocate(__n);
-      this->_M_impl._M_end_of_storage = (__q
-					 + ((__n + int(_S_word_bit) - 1)
-					    / int(_S_word_bit)));
-      this->_M_impl._M_start = iterator(__q, 0);
-      this->_M_impl._M_finish = this->_M_impl._M_start + difference_type(__n);
-    }
-
-    void
-    _M_insert_aux(iterator __position, bool __x)
-    {
-      if (this->_M_impl._M_finish._M_p != this->_M_impl._M_end_of_storage)
-	{
-	  std::copy_backward(__position, this->_M_impl._M_finish, 
-			     this->_M_impl._M_finish + 1);
-	  *__position = __x;
-	  ++this->_M_impl._M_finish;
-	}
-      else
-	{
-	  const size_type __len = size() ? 2 * size()
-	                                 : static_cast<size_type>(_S_word_bit);
-	  _Bit_type * __q = this->_M_allocate(__len);
-	  iterator __i = std::copy(begin(), __position, iterator(__q, 0));
-	  *__i++ = __x;
-	  this->_M_impl._M_finish = std::copy(__position, end(), __i);
-	  this->_M_deallocate();
-	  this->_M_impl._M_end_of_storage = (__q + ((__len
-						     + int(_S_word_bit) - 1)
-						    / int(_S_word_bit)));
-	  this->_M_impl._M_start = iterator(__q, 0);
-	}
-    }
-
-    template<class _InputIterator>
-      void
-      _M_initialize_range(_InputIterator __first, _InputIterator __last,
-			  std::input_iterator_tag)
-      {
-	this->_M_impl._M_start = iterator();
-	this->_M_impl._M_finish = iterator();
-	this->_M_impl._M_end_of_storage = 0;
-	for (; __first != __last; ++__first)
-	  push_back(*__first);
-      }
-
-    template<class _ForwardIterator>
-      void
-      _M_initialize_range(_ForwardIterator __first, _ForwardIterator __last,
-			  std::forward_iterator_tag)
-      {
-	const size_type __n = std::distance(__first, __last);
-	_M_initialize(__n);
-	std::copy(__first, __last, this->_M_impl._M_start);
-      }
-
-    template<class _InputIterator>
-      void
-      _M_insert_range(iterator __pos, _InputIterator __first, 
-		      _InputIterator __last, std::input_iterator_tag)
-      {
-	for (; __first != __last; ++__first)
-	  {
-	    __pos = insert(__pos, *__first);
-	    ++__pos;
-	  }
-      }
-
-    template<class _ForwardIterator>
-      void
-      _M_insert_range(iterator __position, _ForwardIterator __first, 
-		      _ForwardIterator __last, std::forward_iterator_tag)
-      {
-	if (__first != __last)
-	  {
-	    size_type __n = std::distance(__first, __last);
-	    if (capacity() - size() >= __n)
-	      {
-		std::copy_backward(__position, end(),
-				   this->_M_impl._M_finish
-				   + difference_type(__n));
-		std::copy(__first, __last, __position);
-		this->_M_impl._M_finish += difference_type(__n);
-	      }
-	    else
-	      {
-		const size_type __len = size() + std::max(size(), __n);
-		_Bit_type * __q = this->_M_allocate(__len);
-		iterator __i = std::copy(begin(), __position,
-					 iterator(__q, 0));
-		__i = std::copy(__first, __last, __i);
-		this->_M_impl._M_finish = std::copy(__position, end(), __i);
-		this->_M_deallocate();
-		this->_M_impl._M_end_of_storage = (__q
-						   + ((__len
-						       + int(_S_word_bit) - 1)
-						      / int(_S_word_bit)));
-		this->_M_impl._M_start = iterator(__q, 0);
-	      }
-	  }
-      }
+    using _Base::_M_allocate;
+    using _Base::_M_deallocate;
+    using _Base::_M_get_Bit_allocator;
 
   public:
+    explicit
+    vector(const allocator_type& __a = allocator_type())
+    : _Base(__a) { }
+
+    explicit
+    vector(size_type __n, const bool& __value = bool(), 
+	   const allocator_type& __a = allocator_type())
+    : _Base(__a)
+    {
+      _M_initialize(__n);
+      std::fill(this->_M_impl._M_start._M_p, this->_M_impl._M_end_of_storage, 
+		__value ? ~0 : 0);
+    }
+
+    vector(const vector& __x)
+    : _Base(__x._M_get_Bit_allocator())
+    {
+      _M_initialize(__x.size());
+      std::copy(__x.begin(), __x.end(), this->_M_impl._M_start);
+    }
+
+    template<class _InputIterator>
+      vector(_InputIterator __first, _InputIterator __last,
+	     const allocator_type& __a = allocator_type())
+      : _Base(__a)
+      {
+	typedef typename std::__is_integer<_InputIterator>::__type _Integral;
+	_M_initialize_dispatch(__first, __last, _Integral());
+      }
+
+    ~vector() { }
+
+    vector&
+    operator=(const vector& __x)
+    {
+      if (&__x == this)
+	return *this;
+      if (__x.size() > capacity())
+	{
+	  this->_M_deallocate();
+	  _M_initialize(__x.size());
+	}
+      std::copy(__x.begin(), __x.end(), begin());
+      this->_M_impl._M_finish = begin() + difference_type(__x.size());
+      return *this;
+    }
+
+    // assign(), a generalized assignment member function.  Two
+    // versions: one that takes a count, and one that takes a range.
+    // The range version is a member template, so we dispatch on whether
+    // or not the type is an integer.
+    void
+    assign(size_type __n, const bool& __x)
+    { _M_fill_assign(__n, __x); }
+
+    template<class _InputIterator>
+      void
+      assign(_InputIterator __first, _InputIterator __last)
+      {
+	typedef typename std::__is_integer<_InputIterator>::__type _Integral;
+	_M_assign_dispatch(__first, __last, _Integral());
+      }
+
     iterator
     begin()
     { return this->_M_impl._M_start; }
@@ -601,6 +568,7 @@ template<typename _Alloc>
     capacity() const
     { return size_type(const_iterator(this->_M_impl._M_end_of_storage, 0)
 		       - begin()); }
+
     bool
     empty() const
     { return begin() == end(); }
@@ -613,6 +581,7 @@ template<typename _Alloc>
     operator[](size_type __n) const
     { return *(begin() + difference_type(__n)); }
 
+  protected:
     void
     _M_range_check(size_type __n) const
     {
@@ -620,6 +589,7 @@ template<typename _Alloc>
         __throw_out_of_range(__N("vector<bool>::_M_range_check"));
     }
 
+  public:
     reference
     at(size_type __n)
     { _M_range_check(__n); return (*this)[__n]; }
@@ -627,154 +597,6 @@ template<typename _Alloc>
     const_reference
     at(size_type __n) const
     { _M_range_check(__n); return (*this)[__n]; }
-
-    explicit
-    vector(const allocator_type& __a = allocator_type())
-    : _Bvector_base<_Alloc>(__a) { }
-
-    vector(size_type __n, bool __value, 
-	   const allocator_type& __a = allocator_type())
-    : _Bvector_base<_Alloc>(__a)
-    {
-      _M_initialize(__n);
-      std::fill(this->_M_impl._M_start._M_p, this->_M_impl._M_end_of_storage, 
-		__value ? ~0 : 0);
-    }
-
-    explicit
-    vector(size_type __n)
-    : _Bvector_base<_Alloc>(allocator_type())
-    {
-      _M_initialize(__n);
-      std::fill(this->_M_impl._M_start._M_p, 
-		this->_M_impl._M_end_of_storage, 0);
-    }
-
-    vector(const vector& __x)
-    : _Bvector_base<_Alloc>(__x.get_allocator())
-    {
-      _M_initialize(__x.size());
-      std::copy(__x.begin(), __x.end(), this->_M_impl._M_start);
-    }
-
-    // Check whether it's an integral type.  If so, it's not an iterator.
-    template<class _Integer>
-      void
-      _M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
-      {
-	_M_initialize(__n);
-	std::fill(this->_M_impl._M_start._M_p, 
-		  this->_M_impl._M_end_of_storage, __x ? ~0 : 0);
-      }
-
-    template<class _InputIterator>
-      void 
-      _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
-			     __false_type)
-      { _M_initialize_range(__first, __last, 
-			    std::__iterator_category(__first)); }
-
-    template<class _InputIterator>
-      vector(_InputIterator __first, _InputIterator __last,
-	     const allocator_type& __a = allocator_type())
-      : _Bvector_base<_Alloc>(__a)
-      {
-	typedef typename std::__is_integer<_InputIterator>::__type _Integral;
-	_M_initialize_dispatch(__first, __last, _Integral());
-      }
-
-    ~vector() { }
-
-    vector&
-    operator=(const vector& __x)
-    {
-      if (&__x == this)
-	return *this;
-      if (__x.size() > capacity())
-	{
-	  this->_M_deallocate();
-	  _M_initialize(__x.size());
-	}
-      std::copy(__x.begin(), __x.end(), begin());
-      this->_M_impl._M_finish = begin() + difference_type(__x.size());
-      return *this;
-    }
-
-    // assign(), a generalized assignment member function.  Two
-    // versions: one that takes a count, and one that takes a range.
-    // The range version is a member template, so we dispatch on whether
-    // or not the type is an integer.
-
-    void
-    _M_fill_assign(size_t __n, bool __x)
-    {
-      if (__n > size())
-	{
-	  std::fill(this->_M_impl._M_start._M_p, 
-		    this->_M_impl._M_end_of_storage, __x ? ~0 : 0);
-	  insert(end(), __n - size(), __x);
-	}
-      else
-	{
-	  erase(begin() + __n, end());
-	  std::fill(this->_M_impl._M_start._M_p, 
-		    this->_M_impl._M_end_of_storage, __x ? ~0 : 0);
-	}
-    }
-
-    void
-    assign(size_t __n, bool __x)
-    { _M_fill_assign(__n, __x); }
-
-    template<class _InputIterator>
-      void
-      assign(_InputIterator __first, _InputIterator __last)
-      {
-	typedef typename std::__is_integer<_InputIterator>::__type _Integral;
-	_M_assign_dispatch(__first, __last, _Integral());
-      }
-
-    template<class _Integer>
-      void
-      _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
-      { _M_fill_assign((size_t) __n, (bool) __val); }
-
-    template<class _InputIterator>
-      void
-      _M_assign_dispatch(_InputIterator __first, _InputIterator __last,
-			 __false_type)
-      { _M_assign_aux(__first, __last, std::__iterator_category(__first)); }
-
-    template<class _InputIterator>
-      void
-      _M_assign_aux(_InputIterator __first, _InputIterator __last,
-		    std::input_iterator_tag)
-      {
-	iterator __cur = begin();
-	for (; __first != __last && __cur != end(); ++__cur, ++__first)
-	  *__cur = *__first;
-	if (__first == __last)
-	  erase(__cur, end());
-	else
-	  insert(end(), __first, __last);
-      }
-    
-    template<class _ForwardIterator>
-      void
-      _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
-		    std::forward_iterator_tag)
-      {
-	const size_type __len = std::distance(__first, __last);
-	if (__len < size())
-	  erase(std::copy(__first, __last, begin()), end());
-	else
-	  {
-	    _ForwardIterator __mid = __first;
-	    std::advance(__mid, size());
-	    std::copy(__first, __mid, begin());
-	    insert(end(), __mid, __last);
-	  }
-      }
 
     void
     reserve(size_type __n)
@@ -833,6 +655,11 @@ template<typename _Alloc>
       std::swap(this->_M_impl._M_finish, __x._M_impl._M_finish);
       std::swap(this->_M_impl._M_end_of_storage, 
 		__x._M_impl._M_end_of_storage);
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 431. Swapping containers with unequal allocators.
+      std::__alloc_swap<typename _Base::_Bit_alloc_type>::
+	_S_do_it(_M_get_Bit_allocator(), __x._M_get_Bit_allocator());
     }
 
     // [23.2.5]/1, third-to-last entry in synopsis listing
@@ -845,7 +672,7 @@ template<typename _Alloc>
     }
 
     iterator
-    insert(iterator __position, bool __x = bool())
+    insert(iterator __position, const bool& __x = bool())
     {
       const difference_type __n = __position - begin();
       if (this->_M_impl._M_finish._M_p != this->_M_impl._M_end_of_storage
@@ -856,8 +683,173 @@ template<typename _Alloc>
       return begin() + __n;
     }
 
-    // Check whether it's an integral type.  If so, it's not an iterator.
+    template<class _InputIterator>
+      void
+      insert(iterator __position,
+	     _InputIterator __first, _InputIterator __last)
+      {
+	typedef typename std::__is_integer<_InputIterator>::__type _Integral;
+	_M_insert_dispatch(__position, __first, __last, _Integral());
+      }
 
+    void
+    insert(iterator __position, size_type __n, const bool& __x)
+    { _M_fill_insert(__position, __n, __x); }
+
+    void
+    pop_back()
+    { --this->_M_impl._M_finish; }
+
+    iterator
+    erase(iterator __position)
+    {
+      if (__position + 1 != end())
+        std::copy(__position + 1, end(), __position);
+      --this->_M_impl._M_finish;
+      return __position;
+    }
+
+    iterator
+    erase(iterator __first, iterator __last)
+    {
+      _M_erase_at_end(std::copy(__last, end(), __first));
+      return __first;
+    }
+
+    void
+    resize(size_type __new_size, bool __x = bool())
+    {
+      if (__new_size < size())
+        _M_erase_at_end(begin() + difference_type(__new_size));
+      else
+        insert(end(), __new_size - size(), __x);
+    }
+
+    void
+    flip()
+    {
+      for (_Bit_type * __p = this->_M_impl._M_start._M_p;
+	   __p != this->_M_impl._M_end_of_storage; ++__p)
+        *__p = ~*__p;
+    }
+
+    void
+    clear()
+    { _M_erase_at_end(begin()); }
+
+   
+  protected:
+
+    void
+    _M_initialize(size_type __n)
+    {
+      _Bit_type* __q = this->_M_allocate(__n);
+      this->_M_impl._M_end_of_storage = (__q
+					 + ((__n + int(_S_word_bit) - 1)
+					    / int(_S_word_bit)));
+      this->_M_impl._M_start = iterator(__q, 0);
+      this->_M_impl._M_finish = this->_M_impl._M_start + difference_type(__n);
+    }
+
+    // Check whether it's an integral type.  If so, it's not an iterator.
+    template<class _Integer>
+      void
+      _M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
+      {
+	_M_initialize(__n);
+	std::fill(this->_M_impl._M_start._M_p, 
+		  this->_M_impl._M_end_of_storage, __x ? ~0 : 0);
+      }
+
+    template<class _InputIterator>
+      void 
+      _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
+			     __false_type)
+      { _M_initialize_range(__first, __last, 
+			    std::__iterator_category(__first)); }
+
+    template<class _InputIterator>
+      void
+      _M_initialize_range(_InputIterator __first, _InputIterator __last,
+			  std::input_iterator_tag)
+      {
+	this->_M_impl._M_start = iterator();
+	this->_M_impl._M_finish = iterator();
+	this->_M_impl._M_end_of_storage = 0;
+	for (; __first != __last; ++__first)
+	  push_back(*__first);
+      }
+
+    template<class _ForwardIterator>
+      void
+      _M_initialize_range(_ForwardIterator __first, _ForwardIterator __last,
+			  std::forward_iterator_tag)
+      {
+	const size_type __n = std::distance(__first, __last);
+	_M_initialize(__n);
+	std::copy(__first, __last, this->_M_impl._M_start);
+      }
+
+    template<class _Integer>
+      void
+      _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
+      { _M_fill_assign((size_t) __n, (bool) __val); }
+
+    template<class _InputIterator>
+      void
+      _M_assign_dispatch(_InputIterator __first, _InputIterator __last,
+			 __false_type)
+      { _M_assign_aux(__first, __last, std::__iterator_category(__first)); }
+
+    void
+    _M_fill_assign(size_t __n, bool __x)
+    {
+      if (__n > size())
+	{
+	  std::fill(this->_M_impl._M_start._M_p, 
+		    this->_M_impl._M_end_of_storage, __x ? ~0 : 0);
+	  insert(end(), __n - size(), __x);
+	}
+      else
+	{
+	  _M_erase_at_end(begin() + __n);
+	  std::fill(this->_M_impl._M_start._M_p, 
+		    this->_M_impl._M_end_of_storage, __x ? ~0 : 0);
+	}
+    }
+
+    template<class _InputIterator>
+      void
+      _M_assign_aux(_InputIterator __first, _InputIterator __last,
+		    std::input_iterator_tag)
+      {
+	iterator __cur = begin();
+	for (; __first != __last && __cur != end(); ++__cur, ++__first)
+	  *__cur = *__first;
+	if (__first == __last)
+	  _M_erase_at_end(__cur);
+	else
+	  insert(end(), __first, __last);
+      }
+    
+    template<class _ForwardIterator>
+      void
+      _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
+		    std::forward_iterator_tag)
+      {
+	const size_type __len = std::distance(__first, __last);
+	if (__len < size())
+	  _M_erase_at_end(std::copy(__first, __last, begin()));
+	else
+	  {
+	    _ForwardIterator __mid = __first;
+	    std::advance(__mid, size());
+	    std::copy(__first, __mid, begin());
+	    insert(end(), __mid, __last);
+	  }
+      }
+
+    // Check whether it's an integral type.  If so, it's not an iterator.
     template<class _Integer>
       void
       _M_insert_dispatch(iterator __pos, _Integer __n, _Integer __x,
@@ -871,15 +863,6 @@ template<typename _Alloc>
 			 __false_type)
       { _M_insert_range(__pos, __first, __last,
 			std::__iterator_category(__first)); }
-
-    template<class _InputIterator>
-      void
-      insert(iterator __position,
-	     _InputIterator __first, _InputIterator __last)
-      {
-	typedef typename std::__is_integer<_InputIterator>::__type _Integral;
-	_M_insert_dispatch(__position, __first, __last, _Integral());
-      }
 
     void
     _M_fill_insert(iterator __position, size_type __n, bool __x)
@@ -909,50 +892,81 @@ template<typename _Alloc>
 	}
     }
 
-    void
-    insert(iterator __position, size_type __n, bool __x)
-    { _M_fill_insert(__position, __n, __x); }
+    template<class _InputIterator>
+      void
+      _M_insert_range(iterator __pos, _InputIterator __first, 
+		      _InputIterator __last, std::input_iterator_tag)
+      {
+	for (; __first != __last; ++__first)
+	  {
+	    __pos = insert(__pos, *__first);
+	    ++__pos;
+	  }
+      }
+
+    template<class _ForwardIterator>
+      void
+      _M_insert_range(iterator __position, _ForwardIterator __first, 
+		      _ForwardIterator __last, std::forward_iterator_tag)
+      {
+	if (__first != __last)
+	  {
+	    size_type __n = std::distance(__first, __last);
+	    if (capacity() - size() >= __n)
+	      {
+		std::copy_backward(__position, end(),
+				   this->_M_impl._M_finish
+				   + difference_type(__n));
+		std::copy(__first, __last, __position);
+		this->_M_impl._M_finish += difference_type(__n);
+	      }
+	    else
+	      {
+		const size_type __len = size() + std::max(size(), __n);
+		_Bit_type * __q = this->_M_allocate(__len);
+		iterator __i = std::copy(begin(), __position,
+					 iterator(__q, 0));
+		__i = std::copy(__first, __last, __i);
+		this->_M_impl._M_finish = std::copy(__position, end(), __i);
+		this->_M_deallocate();
+		this->_M_impl._M_end_of_storage = (__q
+						   + ((__len
+						       + int(_S_word_bit) - 1)
+						      / int(_S_word_bit)));
+		this->_M_impl._M_start = iterator(__q, 0);
+	      }
+	  }
+      }
 
     void
-    pop_back()
-    { --this->_M_impl._M_finish; }
-
-    iterator
-    erase(iterator __position)
+    _M_insert_aux(iterator __position, bool __x)
     {
-      if (__position + 1 != end())
-        std::copy(__position + 1, end(), __position);
-      --this->_M_impl._M_finish;
-      return __position;
-    }
-
-    iterator
-    erase(iterator __first, iterator __last)
-    {
-      this->_M_impl._M_finish = std::copy(__last, end(), __first);
-      return __first;
-    }
-
-    void
-    resize(size_type __new_size, bool __x = bool())
-    {
-      if (__new_size < size())
-        erase(begin() + difference_type(__new_size), end());
+      if (this->_M_impl._M_finish._M_p != this->_M_impl._M_end_of_storage)
+	{
+	  std::copy_backward(__position, this->_M_impl._M_finish, 
+			     this->_M_impl._M_finish + 1);
+	  *__position = __x;
+	  ++this->_M_impl._M_finish;
+	}
       else
-        insert(end(), __new_size - size(), __x);
+	{
+	  const size_type __len = size() ? 2 * size()
+	                                 : static_cast<size_type>(_S_word_bit);
+	  _Bit_type * __q = this->_M_allocate(__len);
+	  iterator __i = std::copy(begin(), __position, iterator(__q, 0));
+	  *__i++ = __x;
+	  this->_M_impl._M_finish = std::copy(__position, end(), __i);
+	  this->_M_deallocate();
+	  this->_M_impl._M_end_of_storage = (__q + ((__len
+						     + int(_S_word_bit) - 1)
+						    / int(_S_word_bit)));
+	  this->_M_impl._M_start = iterator(__q, 0);
+	}
     }
 
     void
-    flip()
-    {
-      for (_Bit_type * __p = this->_M_impl._M_start._M_p;
-	   __p != this->_M_impl._M_end_of_storage; ++__p)
-        *__p = ~*__p;
-    }
-
-    void
-    clear()
-    { erase(begin(), end()); }
+    _M_erase_at_end(iterator __pos)
+    { this->_M_impl._M_finish = __pos; }
   };
 
 _GLIBCXX_END_NESTED_NAMESPACE
