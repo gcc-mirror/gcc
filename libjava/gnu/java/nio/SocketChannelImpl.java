@@ -1,5 +1,5 @@
 /* SocketChannelImpl.java -- 
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -225,7 +225,7 @@ public final class SocketChannelImpl extends SocketChannel
     int offset = 0;
     InputStream input = socket.getInputStream();
     int available = input.available();
-    int len = dst.capacity() - dst.position();
+    int len = dst.remaining();
 	
     if ((! isBlocking()) && available == 0)
       return 0;
@@ -263,7 +263,7 @@ public final class SocketChannelImpl extends SocketChannel
 	}
       else
         {
-          dst.put (data, offset, len);
+          dst.put (data, offset, readBytes);
         }
 
     return readBytes;
