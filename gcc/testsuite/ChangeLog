@@ -1,3 +1,7 @@
+2005-01-06  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-15.c: New test.
+
 2005-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25598
