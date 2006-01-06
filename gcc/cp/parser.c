@@ -2747,6 +2747,7 @@ cp_parser_translation_unit (cp_parser* parser)
    primary-expression:
      ( compound-statement )
      __builtin_va_arg ( assignment-expression , type-id )
+     __builtin_offsetof ( type-id , offsetof-expression )
 
    Objective-C++ Extension:
 
