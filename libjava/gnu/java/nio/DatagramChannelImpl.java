@@ -1,5 +1,5 @@
 /* DatagramChannelImpl.java -- 
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -206,7 +206,7 @@ public final class DatagramChannelImpl extends DatagramChannel
     try
       {
         DatagramPacket packet;
-        int len = dst.capacity() - dst.position();
+        int len = dst.remaining();
         
         if (dst.hasArray())
           {

@@ -1,3 +1,16 @@
+2005-12-26  Anthony Green  <green@redhat.com>
+
+	* gnu/java/nio/SocketChannelImpl.java (read): Compute the right amount
+	of data to read (dst.remaining()).
+	* gnu/java/nio/DatagramChannelImpl.java (receive): Ditto.
+
+2005-11-11  Mark Wielaard  <mark@klomp.org>
+
+	Reported by john.zigman@anu.edu.au as bug #24608.
+	* gnu/java/nio/SocketChannelImpl.java (read): Put readBytes in
+	destination ByteBuffer when it doesn't have an array instead of len
+	bytes.
+
 2006-01-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natThread.cc (finish_): Don't clear 'group'.
