@@ -1,4 +1,4 @@
-2006-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2006-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/24268
 	* io.c (next_char_not_space): New function that returns the next
