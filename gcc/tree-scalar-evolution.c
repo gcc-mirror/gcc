@@ -1831,19 +1831,28 @@ analyze_scalar_evolution (struct loop *loop, tree var)
 
 /* Analyze scalar evolution of use of VERSION in USE_LOOP with respect to
    WRTO_LOOP (which should be a superloop of both USE_LOOP and definition
-   of VERSION).  */
+   of VERSION).
+
+   FOLDED_CASTS is set to true if resolve_mixers used
+   chrec_convert_aggressive (TODO -- not really, we are way too conservative
+   at the moment in order to keep things simple).  */
 
 static tree
 analyze_scalar_evolution_in_loop (struct loop *wrto_loop, struct loop *use_loop,
-				  tree version)
+				  tree version, bool *folded_casts)
 {
   bool val = false;
-  tree ev = version;
+  tree ev = version, tmp;
 
+  if (folded_casts)
+    *folded_casts = false;
   while (1)
     {
-      ev = analyze_scalar_evolution (use_loop, ev);
-      ev = resolve_mixers (use_loop, ev);
+      tmp = analyze_scalar_evolution (use_loop, ev);
+      ev = resolve_mixers (use_loop, tmp);
+
+      if (folded_casts && tmp != ev)
+	*folded_casts = true;
 
       if (use_loop == wrto_loop)
 	return ev;
@@ -2561,33 +2570,38 @@ scev_reset (void)
 }
 
 /* Checks whether OP behaves as a simple affine iv of LOOP in STMT and returns
-   its BASE and STEP if possible.  If ALLOW_NONCONSTANT_STEP is true, we
-   want STEP to be invariant in LOOP.  Otherwise we require it to be an
-   integer constant.  */
+   its base and step in IV if possible.  If ALLOW_NONCONSTANT_STEP is true, we
+   want step to be invariant in LOOP.  Otherwise we require it to be an
+   integer constant.  IV->no_overflow is set to true if we are sure the iv cannot
+   overflow (e.g.  because it is computed in signed arithmetics).  */
 
 bool
-simple_iv (struct loop *loop, tree stmt, tree op, tree *base, tree *step,
+simple_iv (struct loop *loop, tree stmt, tree op, affine_iv *iv,
 	   bool allow_nonconstant_step)
 {
   basic_block bb = bb_for_stmt (stmt);
   tree type, ev;
+  bool folded_casts;
 
-  *base = NULL_TREE;
-  *step = NULL_TREE;
+  iv->base = NULL_TREE;
+  iv->step = NULL_TREE;
+  iv->no_overflow = false;
 
   type = TREE_TYPE (op);
   if (TREE_CODE (type) != INTEGER_TYPE
       && TREE_CODE (type) != POINTER_TYPE)
     return false;
 
-  ev = analyze_scalar_evolution_in_loop (loop, bb->loop_father, op);
+  ev = analyze_scalar_evolution_in_loop (loop, bb->loop_father, op,
+					 &folded_casts);
   if (chrec_contains_undetermined (ev))
     return false;
 
   if (tree_does_not_contain_chrecs (ev)
       && !chrec_contains_symbols_defined_in_loop (ev, loop->num))
     {
-      *base = ev;
+      iv->base = ev;
+      iv->no_overflow = true;
       return true;
     }
 
@@ -2595,21 +2609,24 @@ simple_iv (struct loop *loop, tree stmt, tree op, tree *base, tree *step,
       || CHREC_VARIABLE (ev) != (unsigned) loop->num)
     return false;
 
-  *step = CHREC_RIGHT (ev);
+  iv->step = CHREC_RIGHT (ev);
   if (allow_nonconstant_step)
     {
-      if (tree_contains_chrecs (*step, NULL)
-	  || chrec_contains_symbols_defined_in_loop (*step, loop->num))
+      if (tree_contains_chrecs (iv->step, NULL)
+	  || chrec_contains_symbols_defined_in_loop (iv->step, loop->num))
 	return false;
     }
-  else if (TREE_CODE (*step) != INTEGER_CST)
+  else if (TREE_CODE (iv->step) != INTEGER_CST)
     return false;
 
-  *base = CHREC_LEFT (ev);
-  if (tree_contains_chrecs (*base, NULL)
-      || chrec_contains_symbols_defined_in_loop (*base, loop->num))
+  iv->base = CHREC_LEFT (ev);
+  if (tree_contains_chrecs (iv->base, NULL)
+      || chrec_contains_symbols_defined_in_loop (iv->base, loop->num))
     return false;
 
+  iv->no_overflow = (!folded_casts
+		     && !flag_wrapv
+		     && !TYPE_UNSIGNED (type));
   return true;
 }
 
@@ -2722,7 +2739,7 @@ scev_const_prop (void)
   for (i = current_loops->num - 1; i > 0; i--)
     {
       edge exit;
-      tree def, rslt, ass;
+      tree def, rslt, ass, niter;
       block_stmt_iterator bsi;
 
       loop = current_loops->parray[i];
@@ -2732,8 +2749,14 @@ scev_const_prop (void)
       /* If we do not know exact number of iterations of the loop, we cannot
 	 replace the final value.  */
       exit = loop->single_exit;
-      if (!exit
-	  || number_of_iterations_in_loop (loop) == chrec_dont_know)
+      if (!exit)
+	continue;
+
+      niter = number_of_iterations_in_loop (loop);
+      if (niter == chrec_dont_know
+	  /* If computing the number of iterations is expensive, it may be
+	     better not to introduce computations involving it.  */
+	  || expression_expensive_p (niter))
 	continue;
 
       /* Ensure that it is possible to insert new statements somewhere.  */
@@ -2756,15 +2779,10 @@ scev_const_prop (void)
 	      && !INTEGRAL_TYPE_P (TREE_TYPE (def)))
 	    continue;
 
-	  def = analyze_scalar_evolution_in_loop (ex_loop, loop, def);
+	  def = analyze_scalar_evolution_in_loop (ex_loop, loop, def, NULL);
 	  def = compute_overall_effect_of_inner_loop (ex_loop, def);
 	  if (!tree_does_not_contain_chrecs (def)
 	      || chrec_contains_symbols_defined_in_loop (def, ex_loop->num))
-	    continue;
-
-	  /* If computing the expression is expensive, let it remain in the
-	     loop.  */
-	  if (expression_expensive_p (def))
 	    continue;
 
 	  /* Eliminate the phi node and replace it by a computation outside

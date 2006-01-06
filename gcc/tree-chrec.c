@@ -533,10 +533,9 @@ chrec_apply (unsigned var,
       /* When the symbols are defined in an outer loop, it is possible
 	 to symbolically compute the apply, since the symbols are
 	 constants with respect to the varying loop.  */
-      || chrec_contains_symbols_defined_in_loop (chrec, var)
-      || chrec_contains_symbols (x))
+      || chrec_contains_symbols_defined_in_loop (chrec, var))
     return chrec_dont_know;
-  
+ 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(chrec_apply \n");
 
@@ -546,14 +545,10 @@ chrec_apply (unsigned var,
   if (evolution_function_is_affine_p (chrec))
     {
       /* "{a, +, b} (x)"  ->  "a + b*x".  */
-      if (TREE_CODE (CHREC_LEFT (chrec)) == INTEGER_CST
-	  && integer_zerop (CHREC_LEFT (chrec)))
-	res = chrec_fold_multiply (type, CHREC_RIGHT (chrec), x);
-      
-      else
-	res = chrec_fold_plus (type, CHREC_LEFT (chrec), 
-			       chrec_fold_multiply (type, 
-						    CHREC_RIGHT (chrec), x));
+      x = chrec_convert (type, x, NULL_TREE);
+      res = chrec_fold_multiply (type, CHREC_RIGHT (chrec), x);
+      if (!integer_zerop (CHREC_LEFT (chrec)))
+	res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
     }
   
   else if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
@@ -563,7 +558,6 @@ chrec_apply (unsigned var,
 	   && tree_int_cst_sgn (x) == 1)
     /* testsuite/.../ssa-chrec-38.c.  */
     res = chrec_evaluate (var, chrec, x, 0);
-
   else
     res = chrec_dont_know;
   
