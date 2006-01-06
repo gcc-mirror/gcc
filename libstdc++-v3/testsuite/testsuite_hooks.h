@@ -385,6 +385,10 @@ namespace __gnu_test
 
     pid_t pid_;
   };
+
+  // For use in 22_locale/time_get and time_put.
+  tm test_tm(unsigned);
+
 } // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_HOOKS_H
