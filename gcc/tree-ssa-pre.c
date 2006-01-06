@@ -3407,7 +3407,7 @@ remove_dead_inserted_code (void)
 	  else
 	    {
 	      bsi = bsi_for_stmt (t);
-	      bsi_remove (&bsi);
+	      bsi_remove (&bsi, true);
 	      release_defs (t);
 	    }
 	}

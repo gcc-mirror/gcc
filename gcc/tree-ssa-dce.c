@@ -799,7 +799,7 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
       tree def = DEF_FROM_PTR (def_p);
       mark_sym_for_renaming (SSA_NAME_VAR (def));
     }
-  bsi_remove (i);  
+  bsi_remove (i, true);  
   release_defs (t); 
 }
 

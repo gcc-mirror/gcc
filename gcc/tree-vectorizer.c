@@ -805,7 +805,7 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   bsi_insert_before (&loop_cond_bsi, cond_stmt, BSI_SAME_STMT);
 
   /* Remove old loop exit test:  */
-  bsi_remove (&loop_cond_bsi);
+  bsi_remove (&loop_cond_bsi, true);
 
   loop_loc = find_loop_location (loop);
   if (dump_file && (dump_flags & TDF_DETAILS))

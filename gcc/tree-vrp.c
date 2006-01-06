@@ -3026,7 +3026,7 @@ remove_range_assertions (void)
 	      }
 
 	    /* And finally, remove the copy, it is not needed.  */
-	    bsi_remove (&si);
+	    bsi_remove (&si, true);
 	  }
 	else
 	  bsi_next (&si);

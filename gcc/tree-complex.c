@@ -1124,7 +1124,7 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
 	 t1 = build2 (MODIFY_EXPR, inner_type, ri, ti);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
-	 bsi_remove (bsi);
+	 bsi_remove (bsi, true);
        }
     }
 
@@ -1163,7 +1163,7 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
 	 t1 = build2 (MODIFY_EXPR, inner_type, ri, ti);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
-	 bsi_remove (bsi);
+	 bsi_remove (bsi, true);
        }
     }
 

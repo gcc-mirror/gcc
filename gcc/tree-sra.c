@@ -1825,7 +1825,7 @@ static void
 sra_replace (block_stmt_iterator *bsi, tree list)
 {
   sra_insert_before (bsi, list);
-  bsi_remove (bsi);
+  bsi_remove (bsi, false);
   if (bsi_end_p (*bsi))
     *bsi = bsi_last (bsi->bb);
   else

@@ -5326,7 +5326,7 @@ remove_statement (tree stmt, bool including_defined_name)
     {
       block_stmt_iterator bsi = bsi_for_stmt (stmt);
 
-      bsi_remove (&bsi);
+      bsi_remove (&bsi, true);
     }
 }
 
