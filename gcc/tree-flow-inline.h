@@ -1490,13 +1490,28 @@ get_subvar_at (tree var, unsigned HOST_WIDE_INT offset)
 
 /* Return true if V is a tree that we can have subvars for.
    Normally, this is any aggregate type, however, due to implementation
-   limitations ATM, we exclude array types as well.  */
+   limitations ATM, we exclude array types as well.  Also complex
+   types which are not gimple registers can have subvars.  */
 
 static inline bool
 var_can_have_subvars (tree v)
 {
-  return (AGGREGATE_TYPE_P (TREE_TYPE (v)) &&
-	  TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE);
+  /* Non decls or memory tags can never have subvars.  */
+  if (!DECL_P (v) || MTAG_P (v))
+    return false;
+
+  /* Aggregates besides arrays can have subvars.  */
+  if (AGGREGATE_TYPE_P (TREE_TYPE (v))
+      && TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE)
+    return true;
+
+  /* Complex types variables which are not also a gimple register can
+    have subvars. */
+  if (TREE_CODE (TREE_TYPE (v)) == COMPLEX_TYPE
+      && !DECL_COMPLEX_GIMPLE_REG_P (v))
+    return true;
+
+  return false;
 }
 
   

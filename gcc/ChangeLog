@@ -1,3 +1,18 @@
+2006-01-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/25528
+	* tree-ssa-alias.c (find_used_portions): Handle REALPART_EXPR
+	and IMAGPART_EXPR.
+	* tree-flow-inline.h (var_can_have_subvars): Handle complex types
+	on non gimple variables.  Also add checks at the top for decls and
+	mtags.
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Handle
+	complex types.
+	* tree-ssa-operands.c (parse_ssa_operands): Handle REALPART_EXPR
+	and IMAGPART_EXPR for creating MUST_DEFs.
+	(get_expr_operands): Handle SSA_NAME, STRUCT_FIELD_TAG, TYPE_MEMORY_TAG,
+	and NAME_MEMORY_TAG separately from the DECLs.
+
 2006-01-06  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (mark_new_vars_to_rename): Create stmt
