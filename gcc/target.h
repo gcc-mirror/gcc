@@ -102,6 +102,10 @@ struct gcc_target
        this is only a placeholder for an omitted FDE.  */
     void (* unwind_label) (FILE *, tree, int, int);
 
+    /* Output code that will emit a label to divide up the exception
+       table.  */
+    void (* except_table_label) (FILE *);
+
     /* Emit any directives required to unwind this instruction.  */
     void (* unwind_emit) (FILE *, rtx);
 
@@ -373,7 +377,7 @@ struct gcc_target
 
   /* Fold a target-specific builtin.  */
   tree (* fold_builtin) (tree fndecl, tree arglist, bool ignore);
-  
+
   /* For a vendor-specific fundamental TYPE, return a pointer to
      a statically-allocated string containing the C++ mangling for
      TYPE.  In all other cases, return NULL.  */
@@ -569,7 +573,7 @@ struct gcc_target
      specified.  Use this hook if the target needs to add extra validation
      checks to  handle_dll_attribute ().  */
   bool (* valid_dllimport_attribute_p) (tree decl);
-    
+
   /* Functions relating to calls - argument passing, returns, etc.  */
   struct calls {
     bool (*promote_function_args) (tree fntype);
@@ -620,7 +624,7 @@ struct gcc_target
 
     /* Return the diagnostic message string if function without a prototype
        is not allowed for this 'val' argument; NULL otherwise. */
-    const char *(*invalid_arg_for_unprototyped_fn) (tree typelist, 
+    const char *(*invalid_arg_for_unprototyped_fn) (tree typelist,
 					     	    tree funcdecl, tree val);
 
     /* Return an rtx for the return value location of the function
@@ -677,7 +681,7 @@ struct gcc_target
        visibility has been explicitly specified.  If the target needs
        to specify a visibility other than that of the containing class,
        use this hook to set DECL_VISIBILITY and
-       DECL_VISIBILITY_SPECIFIED.  */ 
+       DECL_VISIBILITY_SPECIFIED.  */
     void (*determine_class_data_visibility) (tree decl);
     /* Returns true (the default) if virtual tables and other
        similar implicit class data objects are always COMDAT if they
@@ -691,7 +695,7 @@ struct gcc_target
     /* TYPE is a C++ class (i.e., RECORD_TYPE or UNION_TYPE) that
        has just been defined.  Use this hook to make adjustments to the
        class  (eg, tweak visibility or perform any other required
-       target modifications).  */  
+       target modifications).  */
     void (*adjust_class_at_definition) (tree type);
   } cxx;
 

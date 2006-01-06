@@ -1530,7 +1530,7 @@ default is @code{LONG_DOUBLE_TYPE_SIZE}.
 @end defmac
 
 @defmac LIBGCC2_HAS_DF_MODE
-Define this macro if neither @code{LIBGCC2_DOUBLE_TYPE_SIZE} nor 
+Define this macro if neither @code{LIBGCC2_DOUBLE_TYPE_SIZE} nor
 @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is
 @code{DFmode} but you want @code{DFmode} routines in @file{libgcc2.a}
 anyway.  If you don't define this and either @code{LIBGCC2_DOUBLE_TYPE_SIZE}
@@ -1539,14 +1539,14 @@ otherwise it is 0.
 @end defmac
 
 @defmac LIBGCC2_HAS_XF_MODE
-Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not 
+Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not
 @code{XFmode} but you want @code{XFmode} routines in @file{libgcc2.a}
 anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
 is 80 then the default is 1, otherwise it is 0.
 @end defmac
 
 @defmac LIBGCC2_HAS_TF_MODE
-Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not 
+Define this macro if @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE} is not
 @code{TFmode} but you want @code{TFmode} routines in @file{libgcc2.a}
 anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
 is 128 then the default is 1, otherwise it is 0.
@@ -2504,7 +2504,7 @@ forwarding logic, you can set @code{sri->extra_cost} to a negative amount.
 @defmac SECONDARY_RELOAD_CLASS (@var{class}, @var{mode}, @var{x})
 @defmacx SECONDARY_INPUT_RELOAD_CLASS (@var{class}, @var{mode}, @var{x})
 @defmacx SECONDARY_OUTPUT_RELOAD_CLASS (@var{class}, @var{mode}, @var{x})
-These macros are obsolete, new ports should use the target hook 
+These macros are obsolete, new ports should use the target hook
 @code{TARGET_SECONDARY_RELOAD} instead.
 
 These are obsolete macros, replaced by the @code{TARGET_SECONDARY_RELOAD}
@@ -2901,10 +2901,10 @@ machines.  See @file{function.c} for details.
 
 @defmac INITIAL_FRAME_ADDRESS_RTX
 A C expression whose value is RTL representing the address of the initial
-stack frame. This address is passed to @code{RETURN_ADDR_RTX} and 
+stack frame. This address is passed to @code{RETURN_ADDR_RTX} and
 @code{DYNAMIC_CHAIN_ADDRESS}.  If you don't define this macro, a reasonable
 default value will be used.  Define this macro in order to make frame pointer
-elimination work in the presence of @code{__builtin_frame_address (count)} and 
+elimination work in the presence of @code{__builtin_frame_address (count)} and
 @code{__builtin_return_address (count)} for @code{count} not equal to zero.
 @end defmac
 
@@ -3034,7 +3034,7 @@ The final value should conincide with that calculated by
 @code{INCOMING_FRAME_SP_OFFSET}.
 
 Normally the CFA is calculated as an offset from the argument pointer,
-via @code{ARG_POINTER_CFA_OFFSET}, but if the argument pointer is 
+via @code{ARG_POINTER_CFA_OFFSET}, but if the argument pointer is
 variable due to the ABI, this may not be possible.  If this macro is
 defined, it implies that the virtual register instantiation should be
 based on the frame pointer instead of the argument pointer.  Only one
@@ -4487,7 +4487,7 @@ may vary greatly between different architectures.
 
 @deftypefn {Target Hook} tree TARGET_STACK_PROTECT_GUARD (void)
 This hook returns a @code{DECL} node for the external variable to use
-for the stack protection guard.  This variable is initialized by the 
+for the stack protection guard.  This variable is initialized by the
 runtime to some random value and is used to initialize the guard value
 that is placed at the top of the local stack frame.  The type of this
 variable must be @code{ptr_type_node}.
@@ -4502,7 +4502,7 @@ stack protect guard variable has been modified.  This expression should
 involve a call to a @code{noreturn} function.
 
 The default version of this hook invokes a function called
-@samp{__stack_chk_fail}, taking no arguments.  This function is 
+@samp{__stack_chk_fail}, taking no arguments.  This function is
 normally defined in @file{libgcc2.c}.
 @end deftypefn
 
@@ -5201,7 +5201,7 @@ of TLS symbols for various targets.
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD (void)
 This hook should return the DECL of a function @var{f} that given an
 address @var{addr} as an argument returns a mask @var{m} that can be
-used to extract from two vectors the relevant data that resides in 
+used to extract from two vectors the relevant data that resides in
 @var{addr} in case @var{addr} is not properly aligned.
 
 The autovectrizer, when vectorizing a load operation from an address
@@ -5212,15 +5212,15 @@ two loaded vectors. The first two arguments to @code{REALIGN_LOAD},
 @var{v1} and @var{v2}, are the two vectors, each of size @var{VS}, and
 the third argument, @var{OFF}, defines how the data will be extracted
 from these two vectors: if @var{OFF} is 0, then the returned vector is
-@var{v2}; otherwise, the returned vector is composed from the last 
-@var{VS}-@var{OFF} elements of @var{v1} concatenated to the first 
+@var{v2}; otherwise, the returned vector is composed from the last
+@var{VS}-@var{OFF} elements of @var{v1} concatenated to the first
 @var{OFF} elements of @var{v2}.
 
 If this hook is defined, the autovectorizer will generate a call
 to @var{f} (using the DECL tree that this hook returns) and will
 use the return value of @var{f} as the argument @var{OFF} to
 @code{REALIGN_LOAD}. Therefore, the mask @var{m} returned by @var{f}
-should comply with the semantics expected by @code{REALIGN_LOAD} 
+should comply with the semantics expected by @code{REALIGN_LOAD}
 described above.
 If this hook is not defined, then @var{addr} will be used as
 the argument @var{OFF} to @code{REALIGN_LOAD}, in which case the low
@@ -6031,7 +6031,7 @@ part of the @code{.init_array} (or equivalent) section.  If not
 defined, GCC will assume such a section does not exist.  Do not define
 both this macro and @code{INIT_SECTION_ASM_OP}.
 @end defmac
- 
+
 @defmac FINI_ARRAY_SECTION_ASM_OP
 If defined, a C expression whose value is a string, including spacing,
 containing the assembler operation to identify the following data as
@@ -7687,7 +7687,15 @@ true if this is a placeholder label for an omitted FDE@.
 The default is that FDEs are not given nonlocal labels.
 @end deftypefn
 
-@deftypefn {Taget Hook} void TARGET_UNWIND_EMIT (FILE * @var{stream}, rtx @var{insn})
+@deftypefn {Target Hook} void TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL (@var{stream})
+This target hook emits a label at the beginning of the exception table.
+It should be defined on targets where it is desirable for the table
+to be broken up according to function.
+
+The default is that no label is emitted.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_UNWIND_EMIT (FILE * @var{stream}, rtx @var{insn})
 This target hook emits and assembly directives required to unwind the
 given instruction.  This is only used when TARGET_UNWIND_INFO is set.
 @end deftypefn
@@ -9480,9 +9488,9 @@ low-overhead loop, otherwise return a string why doloop could not be applied.
 
 Many targets use special registers for low-overhead looping. For any
 instruction that clobbers these this function should return a string indicating
-the reason why the doloop could not be applied. 
+the reason why the doloop could not be applied.
 By default, the RTL loop optimizer does not use a present doloop pattern for
-loops containing function calls or branch on table instructions.  
+loops containing function calls or branch on table instructions.
 @end deftypefn
 
 @defmac MD_CAN_REDIRECT_BRANCH (@var{branch1}, @var{branch2})
@@ -9661,8 +9669,8 @@ and ia64.  The default is @code{false}.
 @end deftypefn
 
 @deftypefn {Target Hook} const char *TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN (tree @var{typelist}, tree @var{funcdecl}, tree @var{val})
-If defined, this macro returns the diagnostic message when it is 
-illegal to pass argument @var{val} to function @var{funcdecl} 
+If defined, this macro returns the diagnostic message when it is
+illegal to pass argument @var{val} to function @var{funcdecl}
 with prototype @var{typelist}.
 @end deftypefn
 
