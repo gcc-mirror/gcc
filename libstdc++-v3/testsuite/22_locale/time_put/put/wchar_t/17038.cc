@@ -2,7 +2,7 @@
 
 // 2004-08-25  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004, 2005 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   // create "C" time objects
-  tm time1 = { 0, 0, 12, 4, 3, 71, 0, 93, 0 };
+  const tm time1 = __gnu_test::test_tm(0);
 
   // basic construction
   locale loc_c = locale::classic();

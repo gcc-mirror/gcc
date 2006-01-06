@@ -302,4 +302,27 @@ namespace __gnu_test
       std::__throw_runtime_error("could not wait for semaphore");
 #endif    
   }
+
+  // For use in 22_locale/time_get and time_put.
+  tm
+  test_tm(unsigned index)
+  {
+    const int data[5][9] = { { 0, 0, 12, 4, 3, 71, 0, 93, 0 },
+			     { 0, 0, 12, 26, 5, 97, 2, 0, 0 },
+			     { 0, 0, 12, 2, 9, 103, 4, 274, -1 },
+			     { 0, 0, 12, 26, 9, 103, 0, 298, -1 },
+			     { 60, 0, 12, 4, 3, 71, 0, 93, 0 } };
+
+    static tm tmp;
+    tmp.tm_sec = data[index][0];
+    tmp.tm_min = data[index][1];
+    tmp.tm_hour = data[index][2];
+    tmp.tm_mday = data[index][3];
+    tmp.tm_mon = data[index][4];
+    tmp.tm_year = data[index][5];
+    tmp.tm_wday = data[index][6];
+    tmp.tm_yday = data[index][7];
+    tmp.tm_isdst = data[index][8];
+    return tmp;
+  }
 }; // namespace __gnu_test
