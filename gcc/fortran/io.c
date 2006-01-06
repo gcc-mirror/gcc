@@ -154,6 +154,20 @@ unget_char (void)
   use_last_char = 1;
 }
 
+/* Eat up the spaces and return a character. */
+
+static char
+next_char_not_space(void)
+{
+  char c;
+  do
+    {
+      c = next_char (0);
+    }
+  while (gfc_is_whitespace (c));
+  return c;
+}
+
 static int value = 0;
 
 /* Simple lexical analyzer for getting the next token in a FORMAT
@@ -174,19 +188,15 @@ format_lex (void)
       return token;
     }
 
-  do
-    {
-      c = next_char (0);
-    }
-  while (gfc_is_whitespace (c));
-
+  c = next_char_not_space ();
+  
   negative_flag = 0;
   switch (c)
     {
     case '-':
       negative_flag = 1;
     case '+':
-      c = next_char (0);
+      c = next_char_not_space ();
       if (!ISDIGIT (c))
 	{
 	  token = FMT_UNKNOWN;
@@ -197,7 +207,7 @@ format_lex (void)
 
       do
 	{
-	  c = next_char (0);
+	  c = next_char_not_space ();
           if(ISDIGIT (c))
             value = 10 * value + c - '0';
 	}
@@ -227,13 +237,13 @@ format_lex (void)
 
       do
 	{
-	  c = next_char (0);
+	  c = next_char_not_space ();
 	  if (c != '0')
 	    zflag = 0;
           if (ISDIGIT (c))
             value = 10 * value + c - '0';
 	}
-      while (ISDIGIT (c) || gfc_is_whitespace(c));
+      while (ISDIGIT (c));
 
       unget_char ();
       token = zflag ? FMT_ZERO : FMT_POSINT;
@@ -260,7 +270,7 @@ format_lex (void)
       break;
 
     case 'T':
-      c = next_char (0);
+      c = next_char_not_space ();
       if (c != 'L' && c != 'R')
 	unget_char ();
 
@@ -280,7 +290,7 @@ format_lex (void)
       break;
 
     case 'S':
-      c = next_char (0);
+      c = next_char_not_space ();
       if (c != 'P' && c != 'S')
 	unget_char ();
 
@@ -288,7 +298,7 @@ format_lex (void)
       break;
 
     case 'B':
-      c = next_char (0);
+      c = next_char_not_space ();
       if (c == 'N' || c == 'Z')
 	token = FMT_BLANK;
       else
@@ -350,7 +360,7 @@ format_lex (void)
       break;
 
     case 'E':
-      c = next_char (0);
+      c = next_char_not_space ();
       if (c == 'N' || c == 'S')
 	token = FMT_EXT;
       else
