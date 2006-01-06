@@ -1,6 +1,6 @@
 // Multiset implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -167,7 +167,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       template <class _InputIterator>
         multiset(_InputIterator __first, _InputIterator __last)
 	: _M_t(_Compare(), allocator_type())
-        { _M_t.insert_equal(__first, __last); }
+        { _M_t._M_insert_equal(__first, __last); }
 
       /**
        *  @brief  Builds a %multiset from a range.
@@ -185,7 +185,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 		 const _Compare& __comp,
 		 const allocator_type& __a = allocator_type())
 	: _M_t(__comp, __a)
-        { _M_t.insert_equal(__first, __last); }
+        { _M_t._M_insert_equal(__first, __last); }
 
       /**
        *  @brief  %Multiset copy constructor.
@@ -306,7 +306,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
        */
       iterator
       insert(const value_type& __x)
-      { return _M_t.insert_equal(__x); }
+      { return _M_t._M_insert_equal(__x); }
 
       /**
        *  @brief Inserts an element into the %multiset.
@@ -330,7 +330,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
        */
       iterator
       insert(iterator __position, const value_type& __x)
-      { return _M_t.insert_equal(__position, __x); }
+      { return _M_t._M_insert_equal(__position, __x); }
 
       /**
        *  @brief A template function that attemps to insert a range of elements.
@@ -343,7 +343,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       template <class _InputIterator>
         void
         insert(_InputIterator __first, _InputIterator __last)
-        { _M_t.insert_equal(__first, __last); }
+        { _M_t._M_insert_equal(__first, __last); }
 
       /**
        *  @brief Erases an element from a %multiset.

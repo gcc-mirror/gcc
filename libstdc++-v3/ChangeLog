@@ -1,5 +1,15 @@
 2006-01-06  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_tree.h (_Rb_tree<>::insert_unique): Rename
+	to _M_insert_unique.
+	(_Rb_tree<>::insert_equal): Rename to _M_insert_equal.
+	* include/bits/stl_map.h (class map<>): Update callers.
+	* include/bits/stl_set.h (class set<>): Likewise.
+	* include/bits/stl_multimap.h (class multimap<>): Likewise.
+	* include/bits/stl_multiset.h (class multiset<>): Likewise.
+
+2006-01-06  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_bvector.h (vector<bool>::erase(iterator,
 	iterator)): Just use _M_erase_at_end.
 
