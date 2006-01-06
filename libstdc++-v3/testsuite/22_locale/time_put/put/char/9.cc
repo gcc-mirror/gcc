@@ -40,7 +40,7 @@ void test09()
   const locale loc_c = locale::classic();
   const string x(50, 'x'); // have to have allocated string!
   string res;
-  const tm time_sanity = __gnu_test::test_tm(1);
+  const tm time_sanity = __gnu_test::test_tm(0, 0, 12, 26, 5, 97, 2, 0, 0);
   const char* date = "%X, %A, the second of %B, %Y";
 
   ostringstream oss; 

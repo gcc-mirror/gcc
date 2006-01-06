@@ -38,7 +38,7 @@ void test03()
   const locale loc_c = locale::classic();
 
   // Create "C" time objects
-  const tm time_sanity = __gnu_test::test_tm(1);
+  const tm time_sanity = __gnu_test::test_tm(0, 0, 12, 26, 5, 97, 2, 0, 0);
   tm tm1;
 
   istringstream iss; 

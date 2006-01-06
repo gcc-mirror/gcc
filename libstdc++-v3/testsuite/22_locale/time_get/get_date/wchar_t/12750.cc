@@ -47,8 +47,8 @@ void test01()
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
-  const tm time_bday01 = __gnu_test::test_tm(2);
-  const tm time_bday02 = __gnu_test::test_tm(3);
+  const tm time_bday01 = __gnu_test::test_tm(0, 0, 12, 2, 9, 103, 4, 274, -1);
+  const tm time_bday02 = __gnu_test::test_tm(0, 0, 12, 26, 9, 103, 0, 298, -1);
 
   // inspection of named locales, is_IS
   iss.imbue(loc_is);

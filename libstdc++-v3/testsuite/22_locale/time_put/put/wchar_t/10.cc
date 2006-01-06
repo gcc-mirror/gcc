@@ -40,7 +40,7 @@ void test10()
   const locale loc_c = locale::classic();
   const wstring x(50, 'x'); // have to have allocated wstring!
   wstring res;
-  const tm time_sanity = __gnu_test::test_tm(1);
+  const tm time_sanity = __gnu_test::test_tm(0, 0, 12, 26, 5, 97, 2, 0, 0);
 
   wostringstream oss; 
   oss.imbue(locale(loc_c, new time_put_type));

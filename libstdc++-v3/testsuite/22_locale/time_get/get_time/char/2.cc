@@ -39,7 +39,7 @@ void test02()
   VERIFY( loc_hk != loc_c );
 
   const string empty;
-  const tm time_bday = __gnu_test::test_tm(0);
+  const tm time_bday = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
 
   // create an ostream-derived object, cache the time_get facet
   iterator_type end;
