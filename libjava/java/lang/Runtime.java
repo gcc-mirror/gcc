@@ -1,5 +1,5 @@
 /* Runtime.java -- access to the VM process
-   Copyright (C) 1998, 2002, 2003, 2004, 2005 Free Software Foundation
+   Copyright (C) 1998, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -146,6 +146,56 @@ public class Runtime
     SecurityManager sm = SecurityManager.current; // Be thread-safe!
     if (sm != null)
       sm.checkExit(status);
+
+    if (runShutdownHooks())
+      halt(status);
+
+    // Someone else already called runShutdownHooks().
+    // Make sure we are not/no longer in the shutdownHooks set.
+    // And wait till the thread that is calling runShutdownHooks() finishes.
+    synchronized (libpath)
+      {
+        if (shutdownHooks != null)
+          {
+            shutdownHooks.remove(Thread.currentThread());
+            // Interrupt the exit sequence thread, in case it was waiting
+            // inside a join on our thread.
+            exitSequence.interrupt();
+            // Shutdown hooks are still running, so we clear status to
+	    // make sure we don't halt.
+	    status = 0;
+          }
+      }
+
+    // If exit() is called again after the shutdown hooks have run, but
+    // while finalization for exit is going on and the status is non-zero
+    // we halt immediately.
+    if (status != 0)
+      halt(status);
+
+    while (true)
+      try
+        {
+          exitSequence.join();
+        }
+      catch (InterruptedException e)
+        {
+          // Ignore, we've suspended indefinitely to let all shutdown
+          // hooks complete, and to let any non-zero exits through, because
+          // this is a duplicate call to exit(0).
+        }
+  }
+
+  /**
+   * On first invocation, run all the shutdown hooks and return true.
+   * Any subsequent invocations will simply return false.
+   * Note that it is package accessible so that VMRuntime can call it
+   * when VM exit is not triggered by a call to Runtime.exit().
+   * 
+   * @return was the current thread the first one to call this method?
+   */
+  boolean runShutdownHooks()
+  {
     boolean first = false;
     synchronized (libpath) // Synch on libpath, not this, to avoid deadlock.
       {
@@ -177,7 +227,7 @@ public class Runtime
             // itself from the set, then waits indefinitely on the
             // exitSequence thread. Once the set is empty, set it to null to
             // signal all finalizer threads that halt may be called.
-            while (! shutdownHooks.isEmpty())
+            while (true)
               {
                 Thread[] hooks;
                 synchronized (libpath)
@@ -185,19 +235,27 @@ public class Runtime
                     hooks = new Thread[shutdownHooks.size()];
                     shutdownHooks.toArray(hooks);
                   }
-                for (int i = hooks.length; --i >= 0; )
-                  if (! hooks[i].isAlive())
-                    synchronized (libpath)
+                if (hooks.length == 0)
+                  break;
+                for (int i = 0; i < hooks.length; i++)
+                  {
+                    try
                       {
-                        shutdownHooks.remove(hooks[i]);
+                        synchronized (libpath)
+                          {
+                            if (!shutdownHooks.contains(hooks[i]))
+                              continue;
+                          }
+                        hooks[i].join();
+                        synchronized (libpath)
+                          {
+                            shutdownHooks.remove(hooks[i]);
+                          }
                       }
-                try
-                  {
-                    Thread.sleep(1); // Give other threads a chance.
-                  }
-                catch (InterruptedException e)
-                  {
-                    // Ignore, the next loop just starts sooner.
+                    catch (InterruptedException x)
+                      {
+                        // continue waiting on the next thread
+                      }
                   }
               }
             synchronized (libpath)
@@ -205,34 +263,11 @@ public class Runtime
                 shutdownHooks = null;
               }
           }
-        // XXX Right now, it is the VM that knows whether runFinalizersOnExit
-        // is true; so the VM must look at exitSequence to decide whether
-        // this should be run on every object.
-        runFinalization();
+	// Run finalization on all finalizable objects (even if they are
+	// still reachable).
+        runFinalizationForExit();
       }
-    else
-      synchronized (libpath)
-        {
-          if (shutdownHooks != null)
-            {
-              shutdownHooks.remove(Thread.currentThread());
-              status = 0; // Change status to enter indefinite wait.
-            }
-        }
-    
-    if (first || status > 0)
-      halt(status);
-    while (true)
-      try
-        {
-          exitSequence.join();
-        }
-      catch (InterruptedException e)
-        {
-          // Ignore, we've suspended indefinitely to let all shutdown
-          // hooks complete, and to let any non-zero exits through, because
-          // this is a duplicate call to exit(0).
-        }
+    return first;
   }
 
   /**
@@ -666,6 +701,11 @@ public class Runtime
    * initialization.
    */
   private static native void init ();
+
+  /**
+   * Run finalizers when exiting.
+   */
+  private native void runFinalizationForExit();
 
   /**
    * Map a system-independent "short name" to the full file name, and append

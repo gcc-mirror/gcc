@@ -1168,7 +1168,6 @@ gnu_gcj_io_header_files = $(patsubst %.java,%.h,$(gnu_gcj_io_source_files))
 gnu_gcj_runtime_source_files = \
 gnu/gcj/runtime/BootClassLoader.java \
 gnu/gcj/runtime/ExtensionClassLoader.java \
-gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/HelperClassLoader.java \
 gnu/gcj/runtime/JNIWeakRef.java \

@@ -1,6 +1,6 @@
 // natRuntime.cc - Implementation of native side of Runtime class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -21,7 +21,6 @@ details.  */
 #include <java/lang/Runtime.h>
 #include <java/lang/UnknownError.h>
 #include <java/lang/UnsatisfiedLinkError.h>
-#include <gnu/gcj/runtime/FileDeleter.h>
 #include <gnu/gcj/runtime/FinalizerThread.h>
 #include <java/io/File.h>
 #include <java/util/TimeZone.h>
@@ -91,17 +90,18 @@ _Jv_FindSymbolInExecutable (const char *)
 
 
 void
+java::lang::Runtime::runFinalizationForExit ()
+{
+  if (finalizeOnExit)
+    _Jv_RunAllFinalizers ();
+}
+
+void
 java::lang::Runtime::exitInternal (jint status)
 {
   // Make status right for Unix.  This is perhaps strange.
   if (status < 0 || status > 255)
     status = 255;
-
-  if (finalizeOnExit)
-    _Jv_RunAllFinalizers ();
-
-  // Delete all files registered with File.deleteOnExit()
-  gnu::gcj::runtime::FileDeleter::deleteOnExitNow ();
 
   ::exit (status);
 }
