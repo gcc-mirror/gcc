@@ -2,6 +2,13 @@
 @setfilename gcj.info
 @settitle Guide to GNU gcj
 
+@c Merge the standard indexes into a single one.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
 @include gcc-common.texi
 
 @c Note: When reading this manual you'll find lots of strange
@@ -124,6 +131,7 @@ files and object files, and it can read both Java source code and
 * About CNI::           Description of the Compiled Native Interface
 * System properties::   Modifying runtime behavior of the libgcj library
 * Resources::		Where to look for more information
+* Index::               Index.
 @end menu
 
 
@@ -1426,7 +1434,8 @@ alternative to the standard JNI (Java Native Interface).
 @menu
 * Basic concepts::              Introduction to using CNI@.
 * Packages::                    How packages are mapped to C++.
-* Primitive types::             Handling Java types in C++.
+* Primitive types::             Handling primitive Java types in C++.
+* Reference types::             Handling Java reference types in C++.
 * Interfaces::                  How Java interfaces map to C++.
 * Objects and Classes::         C++ and Java classes.
 * Class Initialization::        How objects are initialized.
@@ -1623,7 +1632,7 @@ to avoid disappointment.
 @subsection Reference types associated with primitive types
 
 In Java each primitive type has an associated reference type, 
-e.g.: @code{boolean} has an associated @code{java.lang.Boolean} class.
+e.g.: @code{boolean} has an associated @code{java.lang.Boolean.TYPE} class.
 In order to make working with such classes easier GCJ provides the macro
 @code{JvPrimClass}:
 
@@ -1635,6 +1644,41 @@ JvPrimClass(void) @result{} java.lang.Void.TYPE
 @end example
 
 @end deffn
+
+
+@node Reference types
+@section Reference types
+
+A Java reference type is treated as a class in C++.  Classes and
+interfaces are handled this way.  A Java reference is translated to a
+C++ pointer, so for instance a Java @code{java.lang.String} becomes,
+in C++, @code{java::lang::String *}.
+
+CNI provides a few built-in typedefs for the most common classes:
+@multitable @columnfractions .30 .25 .60
+@item @strong{Java type} @tab @strong{C++ typename} @tab @strong{Description}
+@item @code{java.lang.Object} @tab @code{jobject} @tab Object type
+@item @code{java.lang.String} @tab @code{jstring} @tab String type
+@item @code{java.lang.Class} @tab @code{jclass} @tab Class type
+@end multitable
+@cindex jobject
+@cindex jstring
+@cindex jclass
+
+Every Java class or interface has a corresponding @code{Class}
+instance.  These can be accessed in CNI via the static @code{class$}
+field of a class.  The @code{class$} field is of type @code{Class}
+(and not @code{Class *}), so you will typically take the address of
+it.
+@cindex class$
+
+Here is how you can refer to the class of @code{String}, which in
+Java would be written @code{String.class}:
+
+@example
+using namespace java::lang;
+doSomething (&String::class$);
+@end example
 
 
 @node Interfaces
@@ -1896,9 +1940,16 @@ The name of this function may change in the future.
 
 
 @deftypefun jobjectArray JvNewObjectArray (jsize @var{length}, jclass @var{klass}, jobject @var{init})
-Here @code{klass} is the type of elements of the array and
+This creates a new array whose elements have reference type.
+@code{klass} is the type of elements of the array and
 @code{init} is the initial value put into every slot in the array.
 @end deftypefun
+
+@example
+using namespace java::lang;
+JArray<String *> *array
+  = (JArray<String *> *) JvNewObjectArray(length, &String::class$, NULL);
+@end example
 
 
 @subsection Creating arrays
@@ -2760,5 +2811,11 @@ Some @code{libgcj} testing is done using the Mauve test suite.  This is
 a free software Java class library test suite which is being written
 because the JCK is not free.  See
 @uref{http://sources.redhat.com/mauve/} for more information.
+
+
+@node Index
+@unnumbered Index
+
+@printindex cp
 
 @bye
