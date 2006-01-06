@@ -40,7 +40,7 @@ void test02()
   VERIFY( loc_hk != loc_c );
   VERIFY( loc_hk != loc_de );
 
-  const tm time_bday = __gnu_test::test_tm(0);
+  const tm time_bday = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
 
   const wstring empty;
 

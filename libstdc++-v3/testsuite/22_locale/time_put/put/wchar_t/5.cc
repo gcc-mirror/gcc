@@ -33,7 +33,7 @@ void test05()
   bool test __attribute__((unused)) = true;
 
   // create "C" time objects
-  const tm time1 = __gnu_test::test_tm(0);
+  const tm time1 = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
   const wchar_t* date = L"%A, the second of %B";
   const wchar_t* date_ex = L"%Ex";
 

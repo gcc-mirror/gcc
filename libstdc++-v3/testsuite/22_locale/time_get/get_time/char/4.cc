@@ -46,7 +46,7 @@ void test01()
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
-  const tm time_bday = __gnu_test::test_tm(4);
+  const tm time_bday = __gnu_test::test_tm(60, 0, 12, 4, 3, 71, 0, 93, 0);
 
   iss.str("12:00:60 ");
   iterator_type is_it01(iss);

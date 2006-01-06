@@ -387,7 +387,8 @@ namespace __gnu_test
   };
 
   // For use in 22_locale/time_get and time_put.
-  tm test_tm(unsigned);
+  tm test_tm(int sec, int min, int hour, int mday, int mon,
+	     int year, int wday, int yday, int isdst);
 
 } // namespace __gnu_test
 

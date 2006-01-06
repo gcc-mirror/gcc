@@ -38,7 +38,7 @@ void test01()
   locale loc_c = locale::classic();
 
   // create "C" time objects
-  const tm time_bday = __gnu_test::test_tm(0);
+  const tm time_bday = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
 
   // iter_type 
   // get_monthname(iter_type, iter_type, ios_base&, 
