@@ -1,5 +1,17 @@
 2006-01-05  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natThread.cc (finish_): Don't clear 'group'.
+	* sources.am, Makefile.in: Rebuilt.
+	* java/lang/Runtime.java (exit): Merged with Classpath.
+	(runShutdownHooks): New method from Classpath.
+	* java/io/File.java (deleteOnExit): Use DeleteFileHelper, not
+	FileDeleter.
+	* gnu/gcj/runtime/FileDeleter.java: Removed.
+	* java/lang/natRuntime.cc (runFinalizationForExit): New method.
+	(exitInternal): Don't run finalizers or delete files.
+
+2006-01-05  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/natPosixProcess.cc (reap): Ignore unknown children.
 
 2006-01-04  Krister Walfridsson  <cato@df.lth.se>

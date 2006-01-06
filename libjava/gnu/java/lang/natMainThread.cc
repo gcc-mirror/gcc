@@ -1,6 +1,6 @@
 // natMainThread.cc - Implementation of MainThread native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -15,8 +15,11 @@ details.  */
 
 #include <gcj/cni.h>
 #include <jvm.h>
+#include <java-threads.h>
 
 #include <gnu/java/lang/MainThread.h>
+#include <java/lang/Runtime.h>
+#include <java/lang/ThreadGroup.h>
 
 typedef void main_func (jobject);
 
@@ -45,4 +48,15 @@ gnu::java::lang::MainThread::call_main (void)
 
   main_func *real_main = (main_func *) meth->ncode;
   (*real_main) (args);
+
+  // Note that we do thread cleanup here.  We have to do this here and
+  // not in _Jv_RunMain; if we do if after the main thread has exited,
+  // our ThreadGroup will be null, and if Runtime.exit tries to create
+  // a new Thread (which it does when running shutdown hooks), it will
+  // eventually NPE due to this.
+  _Jv_ThreadWait ();
+
+  int status = (int) ::java::lang::ThreadGroup::had_uncaught_exception;
+  ::java::lang::Runtime *runtime = ::java::lang::Runtime::getRuntime ();
+  runtime->exit (status);
 }
