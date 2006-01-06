@@ -1,4 +1,17 @@
+<<<<<<< .mine
+2006-01-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25598
+	* io/file_pos.c (unformatted_backspace): Assure the new file position
+	to seek is not less than zero.
+	(st_backspace): Set unit bytes_left to zero.
+	* io/transfer.c (next_record_r): Fix line lengths, no functional change.
+	a null value (default). Revert patch of 25419 on 2005-12-28.  
+
+2005-12-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+=======
 2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
+>>>>>>> .r109401
 
         PR target/25259
         * configure.ac: Use GCC_HEADER_STDINT.
