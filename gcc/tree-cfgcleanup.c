@@ -117,7 +117,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
   else
     taken_edge = single_succ_edge (bb);
 
-  bsi_remove (&bsi);
+  bsi_remove (&bsi, true);
   taken_edge->flags = EDGE_FALLTHRU;
 
   /* We removed some paths from the cfg.  */
@@ -207,7 +207,7 @@ cleanup_control_flow (void)
 
 	  /* Remove the GOTO_EXPR as it is not needed.  The CFG has all the
 	     relevant information we need.  */
-	  bsi_remove (&bsi);
+	  bsi_remove (&bsi, true);
 	  retval = true;
 	}
 
@@ -433,7 +433,7 @@ remove_forwarder_block (basic_block bb, basic_block **worklist)
 	{
 	  label = bsi_stmt (bsi);
 	  gcc_assert (TREE_CODE (label) == LABEL_EXPR);
-	  bsi_remove (&bsi);
+	  bsi_remove (&bsi, false);
 	  bsi_insert_before (&bsi_to, label, BSI_CONTINUE_LINKING);
 	}
     }

@@ -209,6 +209,12 @@ execute_free_cfg_annotations (void)
 
   /* And get rid of annotations we no longer need.  */
   delete_tree_cfg_annotations ();
+
+#ifdef ENABLE_CHECKING
+  /* Once the statement annotations have been removed, we can verify
+     the integrity of statements in the EH throw table.  */
+  verify_eh_throw_table_statements ();
+#endif
 }
 
 struct tree_opt_pass pass_free_cfg_annotations =

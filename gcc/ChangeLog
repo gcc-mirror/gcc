@@ -1,3 +1,50 @@
+2005-01-06  Jeff Law  <law@redhat.com>
+
+	PR ada/24994
+	* tree-cfg.c (bsi_replace): Rename final argument from
+	PRESERVE_EH_INFO to UPDATE_EH_INFO.  Fix typo in last
+	change (stmt -> orig_stmt).
+	* tree-eh.c (verify_eh_throw_stmt_node): New function.
+	(bsi_remove): Add new argument.  Remove EH information
+	if requested.
+	(verify_eh_throw_table_statements): New function.
+	(bsi_remove): Add new argument REMOVE_EH_INFO.  All callers
+	updated.
+	* tree-optimize.c (execute_free_cfg_annotations): Verify
+	the EH throw statement table after removing annotations.
+	* except.h (verify_eh_throw_table_statements): Prototype.
+	* tree-flow.h (bsi_remove): Update prototype.
+	* tree-vrp.c (remove_range_assertions): Add new argument to
+	bsi_remove call.
+	* tree-ssa-loop-im.c (move_computations_stmt): Likewise.
+	* tree-complex.c (expand_complex_div_wide): Likewise.
+	* tree-ssa-threadupdate.c (remove_ctrl_stmt_and_useless_edges): Likewise
+	* tree-tailcall.c (eliminate_tailcall): Likewise.
+	* tree-ssa-dse.c (dse_optimize_stmt): Likewise.
+	* tree-ssa-loop-ivopts.c (remove_statement): Likewise.
+	* tree-nrv.c (tree_nrv): Likewise.
+	* tree-vectorizer.c (slpeel_make_loop_iterate_ntimes): Likewise.
+	* tree-if-conv.c (tree_if_convert_cond_expr): Likewise.
+	(combine_blocks): Likewise.
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable): Likewise.
+	* tree-cfgcleanup.c (cleanup_ctrl_expr_graph): Likewise.
+	(cleanup_control_flow): Likewise.
+	(remove_forwarder_block): Likewise.
+	* tree-ssa-pre.c (remove_dead_inserted_code): Likewise.
+	* tree-sra.c (sra_replace): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Likewise.
+	(forward_propagate_single_use_vars): Likewise.
+	* tree-ssa-dce.c (remove_dead_stmt): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+	* tree-vect-transform.c (vect_transform_loop): Likewise.
+	* tree-outof-ssa.c (rewrite_trees): Likewise.
+	* tree-cfg.c (make_goto_expr_edges): Likewise.
+	(cleanup_dead_labels): Likewise.
+	(tree_merge_blocks, remove_bb, disband_implicit_edges): Likewise.
+	(bsi_move_before, bsi_move_after): Likewise.
+	(bsi_move_to_bb_end, try_redirect_by_replacing_jump): Likewise
+	(tree_redirect_edge_and_branch, tree_split_block): Likewise.
+
 2006-01-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/25528

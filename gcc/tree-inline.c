@@ -2067,7 +2067,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   else
     {
       tree stmt = bsi_stmt (stmt_bsi);
-      bsi_remove (&stmt_bsi);
+      bsi_remove (&stmt_bsi, false);
       bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
     }
   stmt_bsi = bsi_start (return_block);
@@ -2182,7 +2182,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   else
     /* We're modifying a TSI owned by gimple_expand_calls_inline();
        tsi_delink() will leave the iterator in a sane state.  */
-    bsi_remove (&stmt_bsi);
+    bsi_remove (&stmt_bsi, true);
 
   bsi_next (&bsi);
   if (bsi_end_p (bsi))

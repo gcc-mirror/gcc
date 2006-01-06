@@ -173,3 +173,7 @@ struct throw_stmt_node GTY(())
 
 extern struct htab *get_eh_throw_stmt_table (struct function *);
 extern void set_eh_throw_stmt_table (struct function *, struct htab *);
+
+#ifdef ENABLE_CHECKING
+extern void verify_eh_throw_table_statements (void);
+#endif

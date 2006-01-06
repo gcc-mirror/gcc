@@ -351,7 +351,7 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	      SET_USE (use_p, USE_FROM_PTR (var2));
 	    }
 	  /* Remove the dead store.  */
-	  bsi_remove (&bsi);
+	  bsi_remove (&bsi, true);
 
 	  /* And release any SSA_NAMEs set in this statement back to the
 	     SSA_NAME manager.  */

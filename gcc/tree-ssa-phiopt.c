@@ -351,7 +351,7 @@ replace_phi_edge_with_variable (basic_block cond_block,
 
   /* Eliminate the COND_EXPR at the end of COND_BLOCK.  */
   bsi = bsi_last (cond_block);
-  bsi_remove (&bsi);
+  bsi_remove (&bsi, true);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,

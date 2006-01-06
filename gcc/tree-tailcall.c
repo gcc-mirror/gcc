@@ -735,7 +735,7 @@ eliminate_tail_call (struct tailcall *t)
       if (TREE_CODE (t) == RETURN_EXPR)
 	break;
 
-      bsi_remove (&bsi);
+      bsi_remove (&bsi, true);
       release_defs (t);
     }
 
@@ -825,7 +825,7 @@ eliminate_tail_call (struct tailcall *t)
       SSA_NAME_DEF_STMT (rslt) = build_empty_stmt ();
     }
 
-  bsi_remove (&t->call_bsi);
+  bsi_remove (&t->call_bsi, true);
   release_defs (call);
 }
 

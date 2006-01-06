@@ -2944,7 +2944,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 	      stmt_ann_t ann = stmt_ann (stmt);
 	      free (stmt_info);
 	      set_stmt_info ((tree_ann_t)ann, NULL);
-	      bsi_remove (&si);
+	      bsi_remove (&si, true);
 	      continue;
 	    }
 

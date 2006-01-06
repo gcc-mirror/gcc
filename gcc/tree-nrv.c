@@ -200,7 +200,7 @@ tree_nrv (void)
 	  if (TREE_CODE (*tp) == MODIFY_EXPR
 	      && TREE_OPERAND (*tp, 0) == result
 	      && TREE_OPERAND (*tp, 1) == found)
-	    bsi_remove (&bsi);
+	    bsi_remove (&bsi, true);
 	  else
 	    {
 	      walk_tree (tp, finalize_nrv_r, &data, 0);

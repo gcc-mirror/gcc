@@ -180,7 +180,7 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
       && (TREE_CODE (bsi_stmt (bsi)) == COND_EXPR
 	  || TREE_CODE (bsi_stmt (bsi)) == GOTO_EXPR
 	  || TREE_CODE (bsi_stmt (bsi)) == SWITCH_EXPR))
-    bsi_remove (&bsi);
+    bsi_remove (&bsi, true);
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {

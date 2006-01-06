@@ -1940,7 +1940,7 @@ rewrite_trees (var_map map, tree *values)
 
 	  /* Remove any stmts marked for removal.  */
 	  if (remove)
-	    bsi_remove (&si);
+	    bsi_remove (&si, true);
 	  else
 	    bsi_next (&si);
 	}
