@@ -1,6 +1,6 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -151,6 +151,7 @@ gfc_match_small_literal_int (int *value, int *cnt)
 
   gfc_gobble_whitespace ();
   c = gfc_next_char ();
+  *cnt = 0;
 
   if (!ISDIGIT (c))
     {

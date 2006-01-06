@@ -1,6 +1,6 @@
 /* Main parser.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, 
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -334,6 +334,10 @@ next_free (void)
 	  do
 	    c = gfc_next_char ();
 	  while (ISDIGIT(c));
+
+	  if (!gfc_is_whitespace (c))
+	    gfc_error_now ("Non-numeric character in statement label at %C");
+
 	}
       else
 	{
