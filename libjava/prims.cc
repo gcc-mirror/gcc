@@ -1,6 +1,6 @@
 // prims.cc - Code for core of runtime environment.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -1387,10 +1387,10 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
 
   _Jv_AttachCurrentThread (main_thread);
   _Jv_ThreadRun (main_thread);
-  _Jv_ThreadWait ();
 
-  int status = (int) java::lang::ThreadGroup::had_uncaught_exception;
-  runtime->exit (status);
+  // If we got here then something went wrong, as MainThread is not
+  // supposed to terminate.
+  ::exit (1);
 }
 
 void
