@@ -1,3 +1,12 @@
+2006-01-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (mark_new_vars_to_rename): Create stmt
+	annotation, if necessary.
+	* tree-ssa-pre.c (create_expression_by_pieces): Remove
+	redundant calls to update_stmt.
+	* tree-ssa-forwprop.c (tidy_after_forward_propagate_addr):
+	Likewise.
+
 2006-01-05  Richard Henderson  <rth@redhat.com>
 
 	* c-parser.c (c_parser_objc_methodprotolist): Handle CPP_PRAGMA.

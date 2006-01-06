@@ -2150,8 +2150,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	  vn_add (forcedname, val);
 	  bitmap_value_replace_in_set (NEW_SETS (block), forcedname);
 	  bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
-	  update_stmt (stmt);
-	  mark_new_vars_to_rename (tsi_stmt (tsi));
+	  mark_new_vars_to_rename (stmt);
 	}
       tsi = tsi_last (stmts);
       tsi_link_after (&tsi, forced_stmts, TSI_CONTINUE_LINKING);
@@ -2179,7 +2178,6 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
   tsi = tsi_last (stmts);
   tsi_link_after (&tsi, newexpr, TSI_CONTINUE_LINKING);
   VEC_safe_push (tree, heap, inserted_exprs, newexpr);
-  update_stmt (newexpr);
   mark_new_vars_to_rename (newexpr);
 
   /* Add a value handle to the temporary.
