@@ -1,5 +1,13 @@
 2006-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/25598
+	* io/file_pos.c (unformatted_backspace): Assure the new file position
+	to seek is not less than zero.
+	(st_backspace): Set unit bytes_left to zero.
+	* io/transfer.c (next_record_r): Fix line lengths, no functional change.
+
+2006-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/24268
 	* io.c (next_char_not_space): New function that returns the next
 	character that is not white space.
