@@ -3568,6 +3568,24 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 {
   tree field;
   int count = 0;
+  
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      fieldoff_s *real_part, *img_part;
+      real_part = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
+      real_part->type = TREE_TYPE (type);
+      real_part->size = TYPE_SIZE (TREE_TYPE (type));
+      real_part->offset = offset;
+      real_part->decl = NULL_TREE;
+      
+      img_part = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
+      img_part->type = TREE_TYPE (type);
+      img_part->size = TYPE_SIZE (TREE_TYPE (type));
+      img_part->offset = offset + TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (type)));
+      img_part->decl = NULL_TREE;
+      
+      return 2;
+    }
 
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL)

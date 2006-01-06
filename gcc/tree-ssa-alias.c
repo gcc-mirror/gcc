@@ -2694,6 +2694,8 @@ find_used_portions (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
   switch (TREE_CODE (*tp))
     {
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
     case COMPONENT_REF:
       {
 	HOST_WIDE_INT bitsize;

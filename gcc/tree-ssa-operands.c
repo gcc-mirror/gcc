@@ -734,9 +734,7 @@ parse_ssa_operands (tree stmt)
 
 	if (TREE_CODE (lhs) != ARRAY_REF
 	    && TREE_CODE (lhs) != ARRAY_RANGE_REF
-	    && TREE_CODE (lhs) != BIT_FIELD_REF
-	    && TREE_CODE (lhs) != REALPART_EXPR
-	    && TREE_CODE (lhs) != IMAGPART_EXPR)
+	    && TREE_CODE (lhs) != BIT_FIELD_REF)
 	  lhs_flags |= opf_kill_def;
 
         get_expr_operands (stmt, &TREE_OPERAND (stmt, 0), lhs_flags);
@@ -1065,6 +1063,10 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case STRUCT_FIELD_TAG:
     case TYPE_MEMORY_TAG:
     case NAME_MEMORY_TAG:
+
+     add_stmt_operand (expr_p, s_ann, flags);
+     return;
+
     case VAR_DECL:
     case PARM_DECL:
     case RESULT_DECL:
