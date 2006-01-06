@@ -303,8 +303,8 @@ Boston, MA 02110-1301, USA.  */
    be in a new format, or the fallback routine might be changed; if
    you want to explicitly link against the static version of those
    routines, because you know you don't need to unwind through system
-   libraries, you need to explicitly say -static-libgcc.  
-   
+   libraries, you need to explicitly say -static-libgcc.
+
    If it is linked against, it has to be before -lgcc, because it may
    need symbols from -lgcc.  */
 #undef REAL_LIBGCC_SPEC
@@ -317,7 +317,7 @@ Boston, MA 02110-1301, USA.  */
       :%:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
        %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_s.10.5)	   \
        -lgcc}"
-			 
+
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 
 #undef  STARTFILE_SPEC
@@ -435,6 +435,9 @@ Boston, MA 02110-1301, USA.  */
 /* Emit a label for the FDE corresponding to DECL.  EMPTY means
    emit a label for an empty FDE. */
 #define TARGET_ASM_EMIT_UNWIND_LABEL darwin_emit_unwind_label
+
+/* Emit a label to separate the exception table.  */
+#define TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL darwin_emit_except_table_label
 
 /* Our profiling scheme doesn't LP labels and counter words.  */
 

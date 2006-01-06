@@ -134,7 +134,7 @@ struct eh_region GTY(())
 
   /* Each region does exactly one thing.  */
   enum eh_region_type
-  { 
+  {
     ERT_UNKNOWN = 0,
     ERT_CLEANUP,
     ERT_TRY,
@@ -251,7 +251,6 @@ struct eh_status GTY(())
 
   htab_t GTY((param_is (struct throw_stmt_node))) throw_stmt_table;
 };
-
 
 static int t2r_eq (const void *, const void *);
 static hashval_t t2r_hash (const void *);
@@ -442,7 +441,7 @@ init_eh_for_function (void)
   cfun->eh = ggc_alloc_cleared (sizeof (struct eh_status));
 }
 
-/* Routines to generate the exception tree somewhat directly.  
+/* Routines to generate the exception tree somewhat directly.
    These are used from tree-eh.c when processing exception related
    nodes during tree optimization.  */
 
@@ -738,7 +737,7 @@ remove_unreachable_regions (rtx insns)
 	    default:
 	      break;
 	    }
-	      
+
 	  if (kill_it)
 	    remove_eh_handler (r);
 	}
@@ -864,11 +863,11 @@ duplicate_eh_region_1 (struct eh_region *o)
   struct eh_region *n = ggc_alloc_cleared (sizeof (struct eh_region));
 
   *n = *o;
-  
+
   n->region_number = o->region_number + cfun->eh->last_region_number;
   VEC_replace (eh_region, cfun->eh->region_array, n->region_number, n);
   gcc_assert (!o->aka);
-  
+
   return n;
 }
 
@@ -877,7 +876,7 @@ duplicate_eh_region_2 (struct eh_region *o, struct eh_region **n_array,
 		       struct eh_region *prev_try)
 {
   struct eh_region *n = n_array[o->region_number];
-  
+
   switch (n->type)
     {
     case ERT_TRY:
@@ -886,7 +885,7 @@ duplicate_eh_region_2 (struct eh_region *o, struct eh_region **n_array,
       if (o->u.try.last_catch)
         n->u.try.last_catch = n_array[o->u.try.last_catch->region_number];
       break;
-      
+
     case ERT_CATCH:
       if (o->u.catch.next_catch)
 	n->u.catch.next_catch = n_array[o->u.catch.next_catch->region_number];
@@ -900,11 +899,11 @@ duplicate_eh_region_2 (struct eh_region *o, struct eh_region **n_array,
       else
         n->u.cleanup.prev_try = prev_try;
       break;
-      
+
     default:
       break;
     }
-  
+
   if (o->outer)
     n->outer = n_array[o->outer->region_number];
   if (o->inner)
@@ -922,10 +921,10 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
   int ifun_last_region_number = ifun->eh->last_region_number;
   struct eh_region **n_array, *root, *cur, *prev_try;
   int i;
-  
+
   if (ifun_last_region_number == 0 || !ifun->eh->region_tree)
     return 0;
-  
+
   n_array = xcalloc (ifun_last_region_number + 1, sizeof (*n_array));
   VEC_safe_grow (eh_region, gc, cfun->eh->region_array,
 		 cfun->eh->last_region_number + 1 + ifun_last_region_number);
@@ -936,7 +935,7 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
   for (i = cfun->eh->last_region_number + 1;
        i < cfun->eh->last_region_number + 1 + ifun_last_region_number; i++)
     VEC_replace (eh_region, cfun->eh->region_array, i, 0);
-    
+
   /* Search for the containing ERT_TRY region to fix up
      the prev_try short-cuts for ERT_CLEANUP regions.  */
   prev_try = NULL;
@@ -967,7 +966,7 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
 	continue;
       duplicate_eh_region_2 (cur, n_array, prev_try);
     }
-  
+
   root = n_array[ifun->eh->region_tree->region_number];
   gcc_assert (root->outer == NULL);
   if (outer_region > 0)
@@ -1000,12 +999,12 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
       else
         cfun->eh->region_tree = root;
     }
-  
+
   free (n_array);
-  
+
   i = cfun->eh->last_region_number;
   cfun->eh->last_region_number = i + ifun_last_region_number;
-  
+
   return i;
 }
 
@@ -1268,7 +1267,7 @@ emit_to_new_bb_before (rtx seq, rtx insn)
   edge_iterator ei;
 
   /* If there happens to be a fallthru edge (possibly created by cleanup_cfg
-     call), we don't want it to go into newly created landing pad or other EH 
+     call), we don't want it to go into newly created landing pad or other EH
      construct.  */
   for (ei = ei_start (BLOCK_FOR_INSN (insn)->preds); (e = ei_safe_edge (ei)); )
     if (e->flags & EDGE_FALLTHRU)
@@ -1339,7 +1338,7 @@ build_post_landing_pads (void)
 			emit_cmp_and_jump_insns
 			  (cfun->eh->filter,
 			   GEN_INT (tree_low_cst (TREE_VALUE (flt_node), 0)),
-			   EQ, NULL_RTX, 
+			   EQ, NULL_RTX,
 			   targetm.eh_return_filter_mode (), 0, c->label);
 
 			tp_node = TREE_CHAIN (tp_node);
@@ -1372,7 +1371,7 @@ build_post_landing_pads (void)
 
 	  emit_cmp_and_jump_insns (cfun->eh->filter,
 				   GEN_INT (region->u.allowed.filter),
-				   EQ, NULL_RTX, 
+				   EQ, NULL_RTX,
 				   targetm.eh_return_filter_mode (), 0, region->label);
 
 	  /* We delay the generation of the _Unwind_Resume until we generate
@@ -1552,7 +1551,7 @@ dw2_build_landing_pads (void)
       emit_move_insn (cfun->eh->exc_ptr,
 		      gen_rtx_REG (ptr_mode, EH_RETURN_DATA_REGNO (0)));
       emit_move_insn (cfun->eh->filter,
-		      gen_rtx_REG (targetm.eh_return_filter_mode (), 
+		      gen_rtx_REG (targetm.eh_return_filter_mode (),
 				   EH_RETURN_DATA_REGNO (1)));
 
       seq = get_insns ();
@@ -2451,7 +2450,7 @@ reachable_next_level (struct eh_region *region, tree type_thrown,
       /* Here we end our search, since no exceptions may propagate.
 	 If we've touched down at some landing pad previous, then the
 	 explicit function call we generated may be used.  Otherwise
-	 the call is made by the runtime. 
+	 the call is made by the runtime.
 
          Before inlining, do not perform this optimization.  We may
 	 inline a subroutine that contains handlers, and that will
@@ -3095,7 +3094,7 @@ collect_one_action_chain (htab_t ar_hash, struct eh_region *region)
 	 Add a cleanup action to the chain to catch these.  */
       else if (next <= 0)
 	next = add_action_record (ar_hash, 0, 0);
-      
+
       return add_action_record (ar_hash, region->u.allowed.filter, next);
 
     case ERT_MUST_NOT_THROW:
@@ -3539,6 +3538,9 @@ output_function_exception_table (void)
   switch_to_exception_section ();
 #endif
 
+  /* If the target wants a label to begin the table, emit it here.  */
+  targetm.asm_out.except_table_label (asm_out_file);
+
   have_tt_data = (VEC_length (tree, cfun->eh->ttype_data) > 0
 		  || VARRAY_ACTIVE_SIZE (cfun->eh->ehspec_data) > 0);
 
@@ -3706,7 +3708,7 @@ get_eh_throw_stmt_table (struct function *fun)
 }
 
 /* Dump EH information to OUT.  */
-void 
+void
 dump_eh_tree (FILE *out, struct function *fun)
 {
   struct eh_region *i;
@@ -3752,7 +3754,7 @@ dump_eh_tree (FILE *out, struct function *fun)
 
 /* Verify some basic invariants on EH datastructures.  Could be extended to
    catch more.  */
-void 
+void
 verify_eh_tree (struct function *fun)
 {
   struct eh_region *i, *outer = NULL;
@@ -3868,8 +3870,8 @@ rest_of_handle_eh (void)
 struct tree_opt_pass pass_rtl_eh =
 {
   "eh",                                 /* name */
-  gate_handle_eh,                       /* gate */   
-  rest_of_handle_eh,			/* execute */       
+  gate_handle_eh,                       /* gate */
+  rest_of_handle_eh,			/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */

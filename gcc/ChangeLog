@@ -1,3 +1,18 @@
+2006-01-06  Eric Christopher  <echristo@apple.com>
+
+	* doc/tm.texi (TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL): Document.
+	(TARGET_UNWIND_EMIT): Fix spelling.
+	* target.h (gcc_target): Add except_table_label.
+	* except.c (output_function_exception_table): Use.
+	* varasm.c (default_emit_except_table_label): New.
+	* target-def.h (TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL): New default
+	define.
+	(asm_out): Add here.
+	* output.h (default_emit_except_table_label): Prototype.
+	* config/darwin-protos.h (darwin_emit_except_table_label): Ditto.
+	* config/darwin.c (darwin_emit_except_table_label): Define.
+	* config/darwin.h (TARGET_ASM_EMIT_EXCEPT_TABLE): Ditto.
+
 2005-01-06  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/18527
@@ -379,4 +394,3 @@
 	* config/rs6000/sync.md (sync_compare_and_swap{hi,qi}): New.
 	(sync_compare_and_swapqhi_internal): New.
 	* config/rs6000/rs6000-protos.h: Declare.
-
