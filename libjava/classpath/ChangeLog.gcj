@@ -1,3 +1,9 @@
+2006-01-06  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/23499:
+	* lib/Makefile.in: Rebuilt.
+	* lib/Makefile.am (glibj_DATA): Commented out.
+
 2005-12-01  Anthony Green  <green@redhat.com>
 
 	PR bootstrap/25207

@@ -40,7 +40,9 @@ JAVAH = $(USER_JAVAH) -jni -classpath .:$(USER_CLASSLIB)
 
 if INSTALL_GLIBJ_ZIP
 
-glibj_DATA = glibj.zip
+## GCJ LOCAL: Comment this out so we don't make an empty
+## '$(glibjdir)' in the install tree.
+## glibj_DATA = glibj.zip
 
 endif # INSTALL_GLIBJ_ZIP
 
