@@ -1,5 +1,5 @@
 /* String.java -- immutable character sequences; the object of string literals
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -455,6 +455,40 @@ public final class String implements Serializable, Comparable, CharSequence
   public native char charAt(int index);
 
   /**
+   * Get the code point at the specified index.  This is like #charAt(int),
+   * but if the character is the start of a surrogate pair, and the
+   * following character completes the pair, then the corresponding
+   * supplementary code point is returned.
+   * @param index the index of the codepoint to get, starting at 0
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
+   * @since 1.5
+   */
+  public synchronized int codePointAt(int index)
+  {
+    // Use the CharSequence overload as we get better range checking
+    // this way.
+    return Character.codePointAt(this, index);
+  }
+
+  /**
+   * Get the code point before the specified index.  This is like
+   * #codePointAt(int), but checks the characters at <code>index-1</code> and
+   * <code>index-2</code> to see if they form a supplementary code point.
+   * @param index the index just past the codepoint to get, starting at 0
+   * @return the codepoint at the specified index
+   * @throws IndexOutOfBoundsException if index is negative or &gt;= length()
+   *         (while unspecified, this is a StringIndexOutOfBoundsException)
+   * @since 1.5
+   */
+  public synchronized int codePointBefore(int index)
+  {
+    // Use the CharSequence overload as we get better range checking
+    // this way.
+    return Character.codePointBefore(this, index);
+  }
+
+  /**
    * Copies characters from this String starting at a specified start index,
    * ending at a specified stop index, to a character array starting at
    * a specified destination begin index.
@@ -564,6 +598,18 @@ public final class String implements Serializable, Comparable, CharSequence
    * @since 1.4
    */
   public native boolean contentEquals(StringBuffer buffer);
+
+  /**
+   * Compares the given CharSequence to this String. This is true if
+   * the CharSequence has the same content as this String at this
+   * moment.
+   *
+   * @param seq the CharSequence to compare to
+   * @return true if CharSequence has the same character sequence
+   * @throws NullPointerException if the given CharSequence is null
+   * @since 1.5
+   */
+  public native boolean contentEquals(CharSequence seq);
 
   /**
    * Compares a String to this String, ignoring case. This does not handle
@@ -1258,6 +1304,88 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return the interned String
    */
   public native String intern();
+
+  /**
+   * Return the number of code points between two indices in the
+   * <code>String</code>.  An unpaired surrogate counts as a
+   * code point for this purpose.  Characters outside the indicated
+   * range are not examined, even if the range ends in the middle of a
+   * surrogate pair.
+   *
+   * @param start the starting index
+   * @param end one past the ending index
+   * @return the number of code points
+   * @since 1.5
+   */
+  public synchronized int codePointCount(int start, int end)
+  {
+    if (start < 0 || end >= count || start > end)
+      throw new StringIndexOutOfBoundsException();
+
+    int count = 0;
+    while (start < end)
+      {
+	char base = charAt(start);
+	if (base < Character.MIN_HIGH_SURROGATE
+	    || base > Character.MAX_HIGH_SURROGATE
+	    || start == end
+	    || start == count
+	    || charAt(start + 1) < Character.MIN_LOW_SURROGATE
+	    || charAt(start + 1) > Character.MAX_LOW_SURROGATE)
+	  {
+	    // Nothing.
+	  }
+	else
+	  {
+	    // Surrogate pair.
+	    ++start;
+	  }
+	++start;
+	++count;
+      }
+    return count;
+  }
+
+  /**
+   * Returns true iff this String contains the sequence of Characters
+   * described in s.
+   * @param s the CharSequence
+   * @return true iff this String contains s
+   *
+   * @since 1.5
+   */
+  public boolean contains (CharSequence s)
+  {
+    return this.indexOf(s.toString()) != -1;
+  }
+
+  /**
+   * Returns a string that is this string with all instances of the sequence
+   * represented by <code>target</code> replaced by the sequence in 
+   * <code>replacement</code>.
+   * @param target the sequence to be replaced
+   * @param replacement the sequence used as the replacement
+   * @return the string constructed as above
+   */
+  public String replace (CharSequence target, CharSequence replacement)
+  {
+    String targetString = target.toString();
+    String replaceString = replacement.toString();
+    int targetLength = target.length();
+    int replaceLength = replacement.length();
+    
+    int startPos = this.indexOf(targetString);
+    StringBuilder result = new StringBuilder(this);    
+    while (startPos != -1)
+      {
+        // Replace the target with the replacement
+        result.replace(startPos, startPos + targetLength, replaceString);
+
+        // Search for a new occurrence of the target
+        startPos = result.indexOf(targetString, startPos + replaceLength);
+      }
+    return result.toString();
+  }
 
 
   private native void init(char[] chars, int offset, int count,

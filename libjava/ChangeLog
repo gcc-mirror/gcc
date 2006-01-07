@@ -1,3 +1,17 @@
+2006-01-06  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Character.java (SIZE, MAX_CACHE, charCache,
+	MIN_SURROGATE, MAX_SURROGATE): New fields from Classpath.
+	(MIN_HIGH_SURROGATE, MAX_HIGH_SURROGATE, MIN_LOW_SURROGATE,
+	MAX_LOW_SURROGATE): Javadoc fixes.
+	(valueOf, reverseBytes, isHighSurrogate, isLowSurrogate,
+	isSurrogatePair, toCodePoint, codePointAt, codePointBefore): New
+	methods from Classpath.
+	* java/lang/String.java (codePointAt, codePointBefore,
+	codePointCount, contains, replace): New methods from Classpath.
+	(contentEquals): Declare.
+	* java/lang/natString.cc (contentEquals): New method.
+
 2005-12-26  Anthony Green  <green@redhat.com>
 
 	* gnu/java/nio/SocketChannelImpl.java (read): Compute the right amount
