@@ -1,3 +1,9 @@
+2006-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcj/24940
+	* shlibpath.m4: Replace $SED with sed.
+	* configure: Rebuilt.
+
 2006-01-06  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Character.java (SIZE, MAX_CACHE, charCache,
