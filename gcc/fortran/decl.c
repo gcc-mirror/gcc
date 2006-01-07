@@ -2548,7 +2548,12 @@ gfc_match_function_decl (void)
 
   m = gfc_match_formal_arglist (sym, 0, 0);
   if (m == MATCH_NO)
-    gfc_error ("Expected formal argument list in function definition at %C");
+    {
+      gfc_error ("Expected formal argument list in function "
+                "definition at %C");
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
   else if (m == MATCH_ERROR)
     goto cleanup;
 

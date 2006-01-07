@@ -38,22 +38,22 @@ function f() result(r)
 end function f
 
 interface
-   function c
+   function c ()
      complex, pointer :: c
    end function c
 end interface
 interface
-   function d
+   function d()
      complex, pointer :: d
    end function d
 end interface
 interface
-   function e result(r)
+   function e () result(r)
      complex, pointer :: r
    end function e
 end interface
 interface
-   function f result(r)
+   function f () result(r)
      complex, pointer :: r
    end function f
 end interface

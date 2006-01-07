@@ -19,7 +19,7 @@ program save_1
   end do
 end program save_1
 
-integer function foo1
+integer function foo1 ()
   integer j
   save
   save ! { dg-warning "Blanket SAVE" }
@@ -28,7 +28,7 @@ integer function foo1
   foo1 = j
 end function foo1
 
-integer function foo2
+integer function foo2 ()
   integer j
   save j
   save j ! { dg-warning "Duplicate SAVE" }
@@ -37,7 +37,7 @@ integer function foo2
   foo2 = j
 end function foo2
 
-integer function foo3
+integer function foo3 ()
   integer j ! { dg-warning "Duplicate SAVE" }
   save
   save j ! { dg-warning "SAVE statement" }
@@ -46,7 +46,7 @@ integer function foo3
   foo3 = j
 end function foo3
 
-integer function foo4
+integer function foo4 ()
   integer j ! { dg-warning "Duplicate SAVE" }
   save j
   save

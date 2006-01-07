@@ -13,7 +13,7 @@ program main
 
   call indirect (100)
 contains
-  function f1
+  function f1 ()
     character (len = 30) :: f1
     f1 = ''
   end function f1
@@ -24,7 +24,7 @@ contains
     f2 = ''
   end function f2
 
-  function f3
+  function f3 ()
     character (len = 30), pointer :: f3
     f3 => string
   end function f3

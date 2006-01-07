@@ -17,12 +17,12 @@ end function d
 
 subroutine test_without_result
 interface
-   function c
+   function c ()
      complex :: c(5)
    end function c
 end interface
 interface
-   function d
+   function d ()
      complex :: d(5)
    end function d
 end interface
@@ -35,12 +35,12 @@ end subroutine test_without_result
 
 subroutine test_with_result
 interface
-   function c result(r)
+   function c () result(r)
      complex :: r(5)
    end function c
 end interface
 interface
-   function d result(r)
+   function d () result(r)
      complex :: r(5)
    end function d
 end interface
