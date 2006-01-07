@@ -1,7 +1,7 @@
 /* A test for # of iterations analysis (signed counter cannot wrap) and final
    value replacement.  */
 
-/* { dg-options "-O2 -fdump-tree-vars" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 int foo(void);
 
@@ -19,9 +19,9 @@ int bla(void)
 }
 
 /* Since the loop is removed, there should be no addition.  */
-/* { dg-final { scan-tree-dump-times "\\+" 0 "vars" } } */
-/* { dg-final { scan-tree-dump-times "n \\* n" 1 "vars" } } */
+/* { dg-final { scan-tree-dump-times "\\+" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "n \\* n" 1 "optimized" } } */
 
 /* The if from the loop header copying remains in the code.  */
-/* { dg-final { scan-tree-dump-times "if " 1 "vars" } } */
-/* { dg-final { cleanup-tree-dump "vars" } } */
+/* { dg-final { scan-tree-dump-times "if " 1 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
