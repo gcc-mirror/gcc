@@ -3380,7 +3380,7 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
   gcc_assert (isym);
 
   if (isym->elemental)
-    return gfc_walk_elemental_function_args (ss, expr, GFC_SS_SCALAR);
+    return gfc_walk_elemental_function_args (ss, expr->value.function.actual, GFC_SS_SCALAR);
 
   if (expr->rank == 0)
     return ss;
