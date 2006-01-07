@@ -4718,8 +4718,8 @@ iterative_hash_expr (tree t, hashval_t val)
 
       if (class == tcc_declaration)
 	{
-	  /* Otherwise, we can just compare decls by pointer.  */
-	  val = iterative_hash_pointer (t, val);
+	  /* DECL's have a unique ID */
+	  val = iterative_hash_host_wide_int (DECL_UID (t), val);
 	}
       else
 	{
