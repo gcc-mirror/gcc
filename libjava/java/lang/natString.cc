@@ -1,6 +1,6 @@
 // natString.cc - Implementation of java.lang.String native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -15,6 +15,7 @@ details.  */
 
 #include <gcj/cni.h>
 #include <java/lang/Character.h>
+#include <java/lang/CharSequence.h>
 #include <java/lang/String.h>
 #include <java/lang/IndexOutOfBoundsException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
@@ -560,6 +561,18 @@ java::lang::String::contentEquals(java::lang::StringBuffer* buffer)
   jchar *yptr = elements(buffer->value);
   while (--i >= 0)
     if (*xptr++ != *yptr++)
+      return false;
+  return true;
+}
+
+jboolean
+java::lang::String::contentEquals(java::lang::CharSequence *seq)
+{
+  if (seq->length() != count)
+    return false;
+  jchar *value = JvGetStringChars(this);
+  for (int i = 0; i < count; ++i)
+    if (value[i] != seq->charAt(i))
       return false;
   return true;
 }
