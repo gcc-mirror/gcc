@@ -1,3 +1,12 @@
+2005-01-07  Ian Lance Taylor  <ian@airs.com>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	PR rtl-optimization/25662
+	* optabs.c (simplify_expand_binop): Use simplify_binary_operation
+	for constant operands instead of simplify_gen_binary.
+	* simplify-rtx.c (simplify_gen_binary): Swap commutative operands
+	after trying simplify_binary_operation
+
 2006-01-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree.c (iterative_hash_expr): Hash decls based on UID.

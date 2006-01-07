@@ -427,9 +427,14 @@ simplify_expand_binop (enum machine_mode mode, optab binoptab,
 		       enum optab_methods methods)
 {
   if (CONSTANT_P (op0) && CONSTANT_P (op1))
-    return simplify_gen_binary (binoptab->code, mode, op0, op1);
-  else
-    return expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods);
+    {
+      rtx x = simplify_binary_operation (binoptab->code, mode, op0, op1);
+
+      if (x)
+	return x;
+    }
+
+  return expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods);
 }
 
 /* Like simplify_expand_binop, but always put the result in TARGET.
