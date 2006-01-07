@@ -17,7 +17,7 @@ contains
     end do
   end subroutine test
 
-  function f1
+  function f1 ()
     integer, dimension (n) :: f1
     integer :: i
     forall (i = 1:n) f1 (i) = i * 100

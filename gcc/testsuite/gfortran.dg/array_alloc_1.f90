@@ -13,7 +13,7 @@ contains
     end do
   end subroutine test
 
-  function f
+  function f ()
     integer, dimension (10) :: f
     integer :: i
     forall (i = 1:10) f (i) = i * 100

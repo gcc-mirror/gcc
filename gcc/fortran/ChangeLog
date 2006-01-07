@@ -1,3 +1,8 @@
+2005-01-07  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* decl.c (gfc_match_function_decl): Correctly error out in case of
+	omitted function argument list.
+
 2006-01-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/22146
