@@ -1,3 +1,21 @@
+2006-01-08  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/22102 (insert as close to hint as possible)
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_insert_lower,
+	_M_insert_equal_lower): New.
+	(_M_insert_equal(iterator, const _Val&),
+	_M_insert_equal(const_iterator, const _Val&)): Use the above.
+	* docs/html/ext/howto.html: Add an entry for DR 233.
+	* testsuite/23_containers/multiset/modifiers/insert/22102.cc: New.
+	* testsuite/23_containers/multimap/modifiers/insert/22102.cc: New.
+
+	* testsuite/23_containers/set/insert/: Move...
+	* testsuite/23_containers/set/modifiers/insert/: ...here.
+	* testsuite/23_containers/map/insert/: Move...
+	* testsuite/23_containers/map/modifiers/insert/: ...here.
+	* testsuite/23_containers/multiset/insert/: Move...
+	* testsuite/23_containers/multiset/modifiers/insert/: ...here.
+
 2006-01-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_tree.h (_Rb_tree<>::insert_unique): Rename
