@@ -1,3 +1,10 @@
+2006-01-08  Ian Lance Taylor  <ian@airs.com>
+            David Edelsohn  <edelsohn@gnu.org>
+
+        PR rtl-optimization/25662
+        * optabs.c (simplify_expand_binop): Use simplify_binary_operation
+        for constant operands instead of simplify_gen_binary.
+
 2006-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/pmm_malloc.h (posix_memalign): If __cplusplus,
