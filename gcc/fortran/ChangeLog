@@ -1,3 +1,11 @@
+2006-01-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/24268
+	* io.c (next_char_not_space): New function that returns the next
+	character that is not white space.
+	(format_lex): Use the new function to skip whitespace within
+	a format string.
+
 2006-01-06 Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/25101
