@@ -1,3 +1,9 @@
+2005-01-08  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25093
+	* resolve.c (resolve_fntype): Check that PUBLIC functions
+	aren't of PRIVATE type.
+
 2005-01-07  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* decl.c (gfc_match_function_decl): Correctly error out in case of
