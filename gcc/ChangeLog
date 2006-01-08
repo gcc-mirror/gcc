@@ -43,7 +43,7 @@
 	* config/sh/predicates.md (arith_operand): Use EXTRA_CONSTRAINT_Css
 	instead of EXTRA_CONSTRAINT_C16.
 
-2005-01-07  Ian Lance Taylor  <ian@airs.com>
+2006-01-07  Ian Lance Taylor  <ian@airs.com>
 	    David Edelsohn  <edelsohn@gnu.org>
 
 	PR rtl-optimization/25662
