@@ -1645,8 +1645,10 @@ next_record_r (st_parameter_dt *dtp)
   switch (current_mode (dtp))
     {
     case UNFORMATTED_SEQUENTIAL:
-      dtp->u.p.current_unit->bytes_left += sizeof (gfc_offset);	/* Skip over tail */
 
+      /* Skip over tail */
+      dtp->u.p.current_unit->bytes_left += sizeof (gfc_offset);
+      
       /* Fall through...  */
 
     case FORMATTED_DIRECT:
@@ -1656,7 +1658,8 @@ next_record_r (st_parameter_dt *dtp)
 
       if (is_seekable (dtp->u.p.current_unit->s))
 	{
-	  new = file_position (dtp->u.p.current_unit->s) + dtp->u.p.current_unit->bytes_left;
+	  new = file_position (dtp->u.p.current_unit->s)
+		+ dtp->u.p.current_unit->bytes_left;
 
 	  /* Direct access files do not generate END conditions,
 	     only I/O errors.  */
