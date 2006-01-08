@@ -393,7 +393,7 @@ struct constraint_expr
 typedef struct constraint_expr ce_s;
 DEF_VEC_O(ce_s);
 DEF_VEC_ALLOC_O(ce_s, heap);
-static void get_constraint_for (tree, VEC(ce_s, heap) **, bool *);
+static void get_constraint_for (tree, VEC(ce_s, heap) **);
 static void do_deref (VEC (ce_s, heap) **);
 
 /* Our set constraints are made up of two constraint expressions, one
@@ -2343,8 +2343,7 @@ offset_overlaps_with_access (const unsigned HOST_WIDE_INT fieldpos,
 /* Given a COMPONENT_REF T, return the constraint_expr for it.  */
 
 static void
-get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results, 
-				  bool *anyoffset)
+get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
 {
   tree orig_t = t;
   HOST_WIDE_INT bitsize = -1;
@@ -2372,7 +2371,7 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
     }
  
   t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize);
-  get_constraint_for (t, results, anyoffset);
+  get_constraint_for (t, results);
   result = VEC_last (ce_s, *results);
 
   gcc_assert (beforelength + 1 == VEC_length (ce_s, *results));
@@ -2386,12 +2385,6 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
       && bitsize == bitmaxsize)
     {
       result->offset = bitpos;
-    }
-  /* FIXME: Handle the DEREF case.  */
-  else if (anyoffset && result->type != DEREF)
-    {
-      result->offset = 0;
-      *anyoffset = true;
     }
   else
     {
@@ -2470,7 +2463,7 @@ do_deref (VEC (ce_s, heap) **constraints)
 /* Given a tree T, return the constraint expression for it.  */
 
 static void
-get_constraint_for (tree t, VEC (ce_s, heap) **results, bool *anyoffset)
+get_constraint_for (tree t, VEC (ce_s, heap) **results)
 {
   struct constraint_expr temp;
 
@@ -2512,7 +2505,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results, bool *anyoffset)
 	      struct constraint_expr *c;
 	      unsigned int i;
 
-	      get_constraint_for (TREE_OPERAND (t, 0), results, anyoffset);
+	      get_constraint_for (TREE_OPERAND (t, 0), results);
 	      for (i = 0; VEC_iterate (ce_s, *results, i, c); i++)
 		{
 		  if (c->type == DEREF)
@@ -2569,14 +2562,14 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results, bool *anyoffset)
 	  {
 	  case INDIRECT_REF:
 	    {
-	      get_constraint_for (TREE_OPERAND (t, 0), results, anyoffset);
+	      get_constraint_for (TREE_OPERAND (t, 0), results);
 	      do_deref (results);
 	      return;
 	    }
 	  case ARRAY_REF:
 	  case ARRAY_RANGE_REF:
 	  case COMPONENT_REF:
-	    get_constraint_for_component_ref (t, results, anyoffset);
+	    get_constraint_for_component_ref (t, results);
 	    return;
 	  default:
 	    {
@@ -2603,7 +2596,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results, bool *anyoffset)
 	      if (!(POINTER_TYPE_P (TREE_TYPE (t))
 		    && ! POINTER_TYPE_P (TREE_TYPE (op))))
 		{
-		  get_constraint_for (op, results, anyoffset);
+		  get_constraint_for (op, results);
 		  return;
 		}
 
@@ -2625,7 +2618,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results, bool *anyoffset)
 	  {
 	  case PHI_NODE:	   
 	    {
-	      get_constraint_for (PHI_RESULT (t), results, anyoffset);
+	      get_constraint_for (PHI_RESULT (t), results);
 	      return;
 	    }
 	    break;
@@ -2823,8 +2816,8 @@ do_structure_copy (tree lhsop, tree rhsop)
   unsigned HOST_WIDE_INT lhssize;
   unsigned HOST_WIDE_INT rhssize;
 
-  get_constraint_for (lhsop, &lhsc, NULL);
-  get_constraint_for (rhsop, &rhsc, NULL);
+  get_constraint_for (lhsop, &lhsc);
+  get_constraint_for (rhsop, &rhsc);
   gcc_assert (VEC_length (ce_s, lhsc) == 1);
   gcc_assert (VEC_length (ce_s, rhsc) == 1);
   lhs = *(VEC_last (ce_s, lhsc));
@@ -3167,7 +3160,7 @@ handle_ptr_arith (VEC (ce_s, heap) *lhsc, tree expr)
   op0 = TREE_OPERAND (expr, 0);
   op1 = TREE_OPERAND (expr, 1);
 
-  get_constraint_for (op0, &temp, NULL);
+  get_constraint_for (op0, &temp);
   if (POINTER_TYPE_P (TREE_TYPE (op0))
       && TREE_CODE (TREE_TYPE (TREE_TYPE (op0))) == RECORD_TYPE
       && TREE_CODE (op1) == INTEGER_CST)
@@ -3231,10 +3224,10 @@ find_func_aliases (tree origt)
 	  
 	  /* For a phi node, assign all the arguments to
 	     the result.  */
-	  get_constraint_for (PHI_RESULT (t), &lhsc, NULL);
+	  get_constraint_for (PHI_RESULT (t), &lhsc);
 	  for (i = 0; i < PHI_NUM_ARGS (t); i++)
 	    { 
-	      get_constraint_for (PHI_ARG_DEF (t, i), &rhsc, NULL);
+	      get_constraint_for (PHI_ARG_DEF (t, i), &rhsc);
 	      for (j = 0; VEC_iterate (ce_s, lhsc, j, c); j++)
 		{
 		  struct constraint_expr *c2;
@@ -3307,7 +3300,7 @@ find_func_aliases (tree origt)
 	  struct constraint_expr lhs ;
 	  struct constraint_expr *rhsp;
 
-	  get_constraint_for (arg, &rhsc, NULL);
+	  get_constraint_for (arg, &rhsc);
 	  if (TREE_CODE (decl) != FUNCTION_DECL)
 	    {
 	      lhs.type = DEREF;
@@ -3335,7 +3328,7 @@ find_func_aliases (tree origt)
 	  struct constraint_expr *lhsp;
 	  unsigned int j = 0;
 	  
-	  get_constraint_for (lhsop, &lhsc, NULL);
+	  get_constraint_for (lhsop, &lhsc);
 	  if (TREE_CODE (decl) != FUNCTION_DECL)
 	    {
 	      rhs.type = DEREF;
@@ -3372,7 +3365,7 @@ find_func_aliases (tree origt)
 	      || AGGREGATE_TYPE_P (TREE_TYPE (lhsop))
 	      || TREE_CODE (rhsop) == CALL_EXPR)
 	    {
-	      get_constraint_for (lhsop, &lhsc, NULL);
+	      get_constraint_for (lhsop, &lhsc);
 	      switch (TREE_CODE_CLASS (TREE_CODE (rhsop)))
 		{
 		  /* RHS that consist of unary operations,
@@ -3386,7 +3379,6 @@ find_func_aliases (tree origt)
 		  case tcc_unary:
 		      {
 			unsigned int j;
-			bool need_anyoffset = false;
 			tree strippedrhs = rhsop;
 			tree rhstype;
 
@@ -3395,7 +3387,7 @@ find_func_aliases (tree origt)
 			STRIP_NOPS (strippedrhs);
 			rhstype = TREE_TYPE (strippedrhs);
 			
-			get_constraint_for (rhsop, &rhsc, &need_anyoffset);
+			get_constraint_for (rhsop, &rhsc);
 			if (TREE_CODE (strippedrhs) == ADDR_EXPR
 			    && AGGREGATE_TYPE_P (TREE_TYPE (rhstype)))
 			  {
@@ -3449,7 +3441,7 @@ find_func_aliases (tree origt)
 			unsigned int j;
 
 			gcc_assert (VEC_length (ce_s, rhsc) == 0);
-			get_constraint_for (op, &rhsc, NULL);
+			get_constraint_for (op, &rhsc);
 			for (j = 0; VEC_iterate (ce_s, lhsc, j, c); j++)
 			  {
 			    struct constraint_expr *c2;

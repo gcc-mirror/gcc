@@ -1,3 +1,15 @@
+2006-01-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (get_constraint_for): Remove
+	anyoffset argument.
+	(get_constraint_for_component_ref): Likewise.
+	(do_deref): Likewise.
+	(get_constraint_for): Likewise.
+	(do_structure_copy): Likewise.
+	(handle_ptr_arith): Likewise.
+	(find_func_aliases): Likewise.  Remove unused need_anyoffset
+	variable.
+
 2006-01-08  J"orn Rennecke  <joern.rennecke@st.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
