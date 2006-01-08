@@ -1,3 +1,36 @@
+2006-01-08  J"orn Rennecke  <joern.rennecke@st.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (CONST_OK_FOR_K16): Define.
+	(CONST_OK_FOR_K): Add CONST_OK_FOR_K16 case.
+	(EXTRA_CONSTRAINT_C16): Remove.
+	(EXTRA_CONSTRAINT_Css, EXTRA_CONSTRAINT_Csu): Define.
+	(EXTRA_CONSTRAINT_C): Remove EXTRA_CONSTRAINT_C16 case and add
+	EXTRA_CONSTRAINT_Css and EXTRA_CONSTRAINT_Csu cases.
+	* config/sh/sh.c (print_operand): Handle unsigned 16-bit symbolic
+	constants of SHmedia.  Handle nested constant expressions of
+	SHmedia correctly.
+	(andcosts): Fix the costs for SHmedia constants.
+	(sh_rtx_costs): Take account of outer_code for SHmedia constants.
+	* config/sh/sh.md (*movsi_media): Use Css constraint instead of C16.
+	(*movsi_media_nofpu, *movqi_media, *movhi_media): Likewise.
+	(*movdi_media, *movdi_media_nofpu, movv8qi_i, movv2hi_i): Likewise.
+	(movv4hi_i, movv2si_i):	Likewise.
+	(movsi_const): Adjust the second operand of ior so to match with
+	the Csu constraint.
+	(movdi_const, movdi_const_32bit): Likewise.
+	(movdi_const_16bit+1): Don't sign-extend LOW.
+	(movdi_const_16bit+2): Likewise.  Remove the zero_extend and truncate
+	step.
+	(*double_shori): Fix the split condition.  Use GEN_INT instead
+	of get_int_mode calls.  Mask lower 16-bit of the argument of
+	the last GEN_INT.
+	(sym2GOTPLT): Remove.
+	(symGOTPLT2reg): Replace gen_sym2GOTPLT with gen_rtx_CONST and
+	gen_rtx_UNSPEC.
+	* config/sh/predicates.md (arith_operand): Use EXTRA_CONSTRAINT_Css
+	instead of EXTRA_CONSTRAINT_C16.
+
 2005-01-07  Ian Lance Taylor  <ian@airs.com>
 	    David Edelsohn  <edelsohn@gnu.org>
 

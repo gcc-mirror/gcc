@@ -1,5 +1,5 @@
 ;; Predicate definitions for Renesas / SuperH SH.
-;; Copyright (C) 2005 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -111,7 +111,7 @@
 	 same register from literal constants into a set and an add,
 	 when the difference is too wide for an add.  */
       if (GET_CODE (op) == CONST_INT
-	  || EXTRA_CONSTRAINT_C16 (op))
+	  || EXTRA_CONSTRAINT_Css (op))
 	return 1;
       else if (GET_CODE (op) == TRUNCATE
 	       && ! system_reg_operand (XEXP (op, 0), VOIDmode)

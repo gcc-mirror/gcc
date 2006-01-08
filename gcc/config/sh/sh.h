@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -1493,7 +1493,8 @@ extern enum reg_class reg_class_from_letter[];
     Bsc: SCRATCH - for the scratch register in movsi_ie in the
 	 fldi0 / fldi0 cases
    C: Constants other than only CONST_INT (constraint len == 3)
-    C16: 16 bit constant, literal or symbolic
+    Css: signed 16 bit constant, literal or symbolic
+    Csu: unsigned 16 bit constant, literal or symbolic
     Csy: label or symbol
     Cpg: non-explicit constants that can be directly loaded into a general
 	 purpose register in PIC code.  like 's' except we don't allow
@@ -1527,7 +1528,8 @@ extern enum reg_class reg_class_from_letter[];
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 	I08: arithmetic operand -127..128, as used in add, sub, etc
-	I16: arithmetic operand -32768..32767, as used in SHmedia movi and shori
+	I16: arithmetic operand -32768..32767, as used in SHmedia movi
+	K16: arithmetic operand 0..65535, as used in SHmedia shori
 	P27: shift operand 1,2,8 or 16
 	K08: logical operand 0..255, as used in and, or, etc.
 	M: constant 1
@@ -1564,8 +1566,11 @@ extern enum reg_class reg_class_from_letter[];
 
 #define CONST_OK_FOR_K08(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 255)
+#define CONST_OK_FOR_K16(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
+				 && ((HOST_WIDE_INT)(VALUE)) <= 65535)
 #define CONST_OK_FOR_K(VALUE, STR) \
   ((STR)[1] == '0' && (STR)[2] == '8' ? CONST_OK_FOR_K08 (VALUE) \
+   : (STR)[1] == '1' && (STR)[2] == '6' ? CONST_OK_FOR_K16 (VALUE)	\
    : 0)
 #define CONST_OK_FOR_P27(VALUE) \
   ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
@@ -2312,10 +2317,25 @@ struct sh_args {
   ((STR)[1] == 's' && (STR)[2] == 'c' ? EXTRA_CONSTRAINT_Bsc (OP) \
    : 0)
 
-/* The `C16' constraint is a 16-bit constant, literal or symbolic.  */
-#define EXTRA_CONSTRAINT_C16(OP) \
+/* The `Css' constraint is a signed 16-bit constant, literal or symbolic.  */
+#define EXTRA_CONSTRAINT_Css(OP) \
   (GET_CODE (OP) == CONST \
    && GET_CODE (XEXP ((OP), 0)) == SIGN_EXTEND \
+   && (GET_MODE (XEXP ((OP), 0)) == DImode \
+       || GET_MODE (XEXP ((OP), 0)) == SImode) \
+   && GET_CODE (XEXP (XEXP ((OP), 0), 0)) == TRUNCATE \
+   && GET_MODE (XEXP (XEXP ((OP), 0), 0)) == HImode \
+   && (MOVI_SHORI_BASE_OPERAND_P (XEXP (XEXP (XEXP ((OP), 0), 0), 0)) \
+       || (GET_CODE (XEXP (XEXP (XEXP ((OP), 0), 0), 0)) == ASHIFTRT \
+	   && (MOVI_SHORI_BASE_OPERAND_P \
+	       (XEXP (XEXP (XEXP (XEXP ((OP), 0), 0), 0), 0))) \
+	   && GET_CODE (XEXP (XEXP (XEXP (XEXP ((OP), 0), 0), 0), \
+			      1)) == CONST_INT)))
+
+/* The `Csu' constraint is an unsigned 16-bit constant, literal or symbolic.  */
+#define EXTRA_CONSTRAINT_Csu(OP) \
+  (GET_CODE (OP) == CONST \
+   && GET_CODE (XEXP ((OP), 0)) == ZERO_EXTEND \
    && (GET_MODE (XEXP ((OP), 0)) == DImode \
        || GET_MODE (XEXP ((OP), 0)) == SImode) \
    && GET_CODE (XEXP (XEXP ((OP), 0), 0)) == TRUNCATE \
@@ -2413,7 +2433,8 @@ struct sh_args {
         && (! PIC_ADDR_P (OP) || PIC_OFFSET_P (OP)) \
         && GET_CODE (OP) != LABEL_REF)))
 #define EXTRA_CONSTRAINT_C(OP, STR) \
-  ((STR)[1] == '1' && (STR)[2] == '6' ? EXTRA_CONSTRAINT_C16 (OP) \
+  ((STR)[1] == 's' && (STR)[2] == 's' ? EXTRA_CONSTRAINT_Css (OP) \
+   : (STR)[1] == 's' && (STR)[2] == 'u' ? EXTRA_CONSTRAINT_Csu (OP) \
    : (STR)[1] == 's' && (STR)[2] == 'y' ? EXTRA_CONSTRAINT_Csy (OP) \
    : (STR)[1] == 'p' && (STR)[2] == 'g' ? EXTRA_CONSTRAINT_Cpg (OP) \
    : 0)
