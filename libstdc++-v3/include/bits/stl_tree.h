@@ -548,6 +548,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       iterator
       _M_insert(_Base_ptr __x, _Base_ptr __y, const value_type& __v);
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 233. Insertion hints in associative containers.
+      iterator
+      _M_insert_lower(_Base_ptr __x, _Base_ptr __y, const value_type& __v);
+
       const_iterator
       _M_insert(_Const_Base_ptr __x, _Const_Base_ptr __y,
 		const value_type& __v);
@@ -656,6 +661,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       iterator
       _M_insert_equal(const value_type& __x);
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 233. Insertion hints in associative containers.
+      iterator
+      _M_insert_equal_lower(const value_type& __x);
 
       iterator
       _M_insert_unique(iterator __position, const value_type& __x);
@@ -835,6 +845,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
+    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
+    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+    _M_insert_lower(_Base_ptr __x, _Base_ptr __p, const _Val& __v)
+    {
+      bool __insert_left = (__x != 0 || __p == _M_end()
+			    || !_M_impl._M_key_compare(_S_key(__p),
+						       _KeyOfValue()(__v)));
+
+      _Link_type __z = _M_create_node(__v);
+
+      _Rb_tree_insert_and_rebalance(__insert_left, __z, __p,  
+				    this->_M_impl._M_header);
+      ++_M_impl._M_node_count;
+      return iterator(__z);
+    }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+           typename _Compare, typename _Alloc>
     typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::const_iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     _M_insert(_Const_Base_ptr __x, _Const_Base_ptr __p, const _Val& __v)
@@ -867,6 +895,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	        _S_left(__x) : _S_right(__x);
 	}
       return _M_insert(__x, __y, __v);
+    }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+           typename _Compare, typename _Alloc>
+    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
+    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+    _M_insert_equal_lower(const _Val& __v)
+    {
+      _Link_type __x = _M_begin();
+      _Link_type __y = _M_end();
+      while (__x != 0)
+	{
+	  __y = __x;
+	  __x = !_M_impl._M_key_compare(_S_key(__x), _KeyOfValue()(__v)) ?
+	        _S_left(__x) : _S_right(__x);
+	}
+      return _M_insert_lower(__x, __y, __v);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -1110,7 +1155,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		return _M_insert(__after._M_node, __after._M_node, __v);
 	    }
 	  else
-	    return _M_insert_equal(__v);
+	    return _M_insert_equal_lower(__v);
 	}
     }
 
@@ -1164,7 +1209,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		return _M_insert(__after._M_node, __after._M_node, __v);
 	    }
 	  else
-	    return const_iterator(_M_insert_equal(__v));
+	    return const_iterator(_M_insert_equal_lower(__v));
 	}
     }
 
