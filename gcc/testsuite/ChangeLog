@@ -1,3 +1,12 @@
+2006-01-09  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/12456
+	* gfortran.dg/single_char_string.f90: New test.
+
+2006-01-09  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* gfortran.dg/ichar2.f90: New test.
+
 2005-01-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25598

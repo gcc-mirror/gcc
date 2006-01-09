@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -2267,13 +2267,17 @@ gfc_conv_intrinsic_strcmp (gfc_se * se, gfc_expr * expr, int op)
 {
   tree type;
   tree args;
+  tree arg2;
 
   args = gfc_conv_intrinsic_function_args (se, expr);
-  /* Build a call for the comparison.  */
-  se->expr = gfc_build_function_call (gfor_fndecl_compare_string, args);
+  arg2 = TREE_CHAIN (TREE_CHAIN (args));
 
+  se->expr = gfc_build_compare_string (TREE_VALUE (args),
+		TREE_VALUE (TREE_CHAIN (args)), TREE_VALUE (arg2),
+		TREE_VALUE (TREE_CHAIN (arg2)));
+ 
   type = gfc_typenode_for_spec (&expr->ts);
-  se->expr = build2 (op, type, se->expr,
+  se->expr = fold_build2 (op, type, se->expr,
 		     build_int_cst (TREE_TYPE (se->expr), 0));
 }
 

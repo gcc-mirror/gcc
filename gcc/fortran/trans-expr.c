@@ -1,5 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -902,7 +902,6 @@ gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
   se->string_length = len;
 }
 
-
 /* Translates an op expression. Common (binary) cases are handled by this
    function, others are passed on. Recursion is used in either case.
    We use the fact that (op1.ts == op2.ts) (except for the power
@@ -1044,23 +1043,15 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   gfc_conv_expr (&rse, expr->value.op.op2);
   gfc_add_block_to_block (&se->pre, &rse.pre);
 
-  /* For string comparisons we generate a library call, and compare the return
-     value with 0.  */
   if (checkstring)
     {
       gfc_conv_string_parameter (&lse);
       gfc_conv_string_parameter (&rse);
-      tmp = NULL_TREE;
-      tmp = gfc_chainon_list (tmp, lse.string_length);
-      tmp = gfc_chainon_list (tmp, lse.expr);
-      tmp = gfc_chainon_list (tmp, rse.string_length);
-      tmp = gfc_chainon_list (tmp, rse.expr);
 
-      /* Build a call for the comparison.  */
-      lse.expr = gfc_build_function_call (gfor_fndecl_compare_string, tmp);
-      gfc_add_block_to_block (&lse.post, &rse.post);
-
+      lse.expr = gfc_build_compare_string (lse.string_length, lse.expr,
+ 					   rse.string_length, rse.expr);
       rse.expr = integer_zero_node;
+      gfc_add_block_to_block (&lse.post, &rse.post);
     }
 
   type = gfc_typenode_for_spec (&expr->ts);
@@ -1079,6 +1070,63 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   gfc_add_block_to_block (&se->post, &lse.post);
 }
 
+/* If a string's length is one, we convert it to a single character.  */
+
+static tree
+gfc_to_single_character (tree len, tree str)
+{
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (str)));
+
+  if (INTEGER_CST_P (len) && TREE_INT_CST_LOW (len) == 1
+    && TREE_INT_CST_HIGH (len) == 0)
+    {
+      str = fold_convert (pchar_type_node, str);
+      return build_fold_indirect_ref (str);
+    }
+
+  return NULL_TREE;
+}
+
+/* Compare two strings. If they are all single characters, the result is the
+   subtraction of them. Otherwise, we build a library call.  */
+
+tree
+gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2)
+{
+  tree sc1;
+  tree sc2;
+  tree type;
+  tree tmp;
+
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (str1)));
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (str2)));
+
+  type = gfc_get_int_type (gfc_default_integer_kind);
+
+  sc1 = gfc_to_single_character (len1, str1);
+  sc2 = gfc_to_single_character (len2, str2);
+
+  /* Deal with single character specially.  */
+  if (sc1 != NULL_TREE && sc2 != NULL_TREE)
+    {
+      sc1 = fold_convert (type, sc1);
+      sc2 = fold_convert (type, sc2);
+      tmp = fold_build2 (MINUS_EXPR, type, sc1, sc2);
+    }
+   else
+    {
+      tmp = NULL_TREE;
+      tmp = gfc_chainon_list (tmp, len1);
+      tmp = gfc_chainon_list (tmp, str1);
+      tmp = gfc_chainon_list (tmp, len2);
+      tmp = gfc_chainon_list (tmp, str2);
+
+      /* Build a call for the comparison.  */
+      tmp = build_function_call_expr (gfor_fndecl_compare_string, tmp);
+    }
+
+  return tmp;
+}
 
 static void
 gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
@@ -1819,6 +1867,17 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
 		       tree slen, tree src)
 {
   tree tmp;
+  tree dsc;
+  tree ssc;
+
+  /* Deal with single character specially.  */
+  dsc = gfc_to_single_character (dlen, dest);
+  ssc = gfc_to_single_character (slen, src);
+  if (dsc != NULL_TREE && ssc != NULL_TREE)
+    {
+      gfc_add_modify_expr (block, dsc, ssc);
+      return;
+    }
 
   tmp = NULL_TREE;
   tmp = gfc_chainon_list (tmp, dlen);

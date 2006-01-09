@@ -1,6 +1,6 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
+   Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -662,7 +662,7 @@ gfc_simplify_char (gfc_expr * e, gfc_expr * k)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (gfc_extract_int (e, &c) != NULL || c < 0 || c > 255)
+  if (gfc_extract_int (e, &c) != NULL || c < 0 || c > UCHAR_MAX)
     {
       gfc_error ("Bad character in CHAR function at %L", &e->where);
       return &gfc_bad_expr;
@@ -1370,9 +1370,9 @@ gfc_simplify_ichar (gfc_expr * e)
       return &gfc_bad_expr;
     }
 
-  index = (int) e->value.character.string[0];
+  index = (unsigned char) e->value.character.string[0];
 
-  if (index < CHAR_MIN || index > CHAR_MAX)
+  if (index < 0 || index > UCHAR_MAX)
     {
       gfc_error ("Argument of ICHAR at %L out of range of this processor",
 		 &e->where);

@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -267,6 +267,9 @@ void gfc_make_safe_expr (gfc_se * se);
 
 /* Makes sure se is suitable for passing as a function string parameter.  */
 void gfc_conv_string_parameter (gfc_se * se);
+
+/* Compare two strings.  */
+tree gfc_build_compare_string (tree, tree, tree, tree);
 
 /* Add an item to the end of TREE_LIST.  */
 tree gfc_chainon_list (tree, tree);
