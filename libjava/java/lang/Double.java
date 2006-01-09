@@ -1,5 +1,5 @@
 /* Double.java -- object wrapper for double
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package java.lang;
 
-import gnu.classpath.Configuration;
 
 /**
  * Instances of class <code>Double</code> represent primitive
@@ -89,6 +88,12 @@ public final class Double extends Number implements Comparable
   public static final double NaN = 0.0 / 0.0;
 
   /**
+   * The number of bits needed to represent a <code>double</code>.
+   * @since 1.5
+   */
+  public static final int SIZE = 64;
+
+  /**
    * The primitive type <code>double</code> is represented by this
    * <code>Class</code> object.
    * @since 1.1
@@ -101,18 +106,6 @@ public final class Double extends Number implements Comparable
    * @serial the wrapped double
    */
   private final double value;
-
-  /**
-   * Load native routines necessary for this class.
-   */
-  static
-  {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-	System.loadLibrary("javalang");
-	initIDs();
-      }
-  }
 
   /**
    * Create a <code>Double</code> from the primitive <code>double</code>
@@ -177,6 +170,22 @@ public final class Double extends Number implements Comparable
   public static String toString(double d)
   {
     return toString(d, false);
+  }
+
+  /**
+   * Returns a <code>Double</code> object wrapping the value.
+   * In contrast to the <code>Double</code> constructor, this method
+   * may cache some values.  It is used by boxing conversion.
+   *
+   * @param val the value to wrap
+   * @return the <code>Double</code>
+   * 
+   * @since 1.5
+   */
+  public static Double valueOf(double val)
+  {
+    // We don't actually cache, but we could.
+    return new Double(val);
   }
 
   /**
@@ -534,10 +543,4 @@ public final class Double extends Number implements Comparable
    */
   // Package visible for use by Float.
   static native String toString(double d, boolean isFloat);
-
-  /**
-   * Initialize JNI cache.  This method is called only by the
-   * static initializer when using JNI.
-   */
-  private static native void initIDs();
 }

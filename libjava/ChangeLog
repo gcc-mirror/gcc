@@ -1,3 +1,22 @@
+2006-01-08  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/StringBuilder.java (appendCodePoint): New method.
+	(insert): New overloads.
+	* java/lang/StringBuffer.java (StringBuffer): New constructor.
+	(charAt): Remerged javadoc.
+	(codePointAt, codePointBefore): New methods.
+	(appendCodePoint): New method.
+	(append): New overloads.
+	(insert): Likewise.
+	(trimToSize, codePointCount, offsetByCodePoints): New methods.
+	* java/lang/Float.java (SIZE): New field.
+	(valueOf): New method.
+	* java/lang/natDouble.cc (initIDs): Removed.
+	* java/lang/Double.java (static initializer): Removed.
+	(SIZE): New field.
+	(valueOf): New method.
+	(initIDs): Removed.
+
 2006-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcj/24940
