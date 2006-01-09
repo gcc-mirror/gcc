@@ -1,3 +1,7 @@
+2006-01-09  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* gfortran.dg/ichar_2.f90: New test.
+
 2005-01-08  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25093

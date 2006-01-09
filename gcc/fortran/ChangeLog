@@ -1,3 +1,10 @@
+2006-01-09  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* simplify.c (gfc_simplify_char): Use UCHAR_MAX instead of literal
+	constant.
+	(gfc_simplify_ichar): Get the result from unsinged char and in the
+	range 0 to UCHAR_MAX instead of CHAR_MIN to CHAR_MAX.
+
 2005-01-08  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25093
