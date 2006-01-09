@@ -1,6 +1,6 @@
 // natDouble.cc - Implementation of java.lang.Double native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -210,10 +210,4 @@ java::lang::Double::parseDouble(jstring str)
 	return val;
     }
   throw new NumberFormatException(str);
-}
-
-void
-java::lang::Double::initIDs()
-{
-  // Not used in libgcj
 }
