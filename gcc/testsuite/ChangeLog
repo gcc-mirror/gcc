@@ -1,3 +1,10 @@
+2006-01-09  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/25125
+	* gcc.dg/vect/vect-7.c, gcc.dg/vect/vect-reduc-2char.c,
+	gcc.dg/vect/vect-reduc-2short.c: XFAIL.
+	* gcc.c-torture/execute/pr25125.c: New.
+
 2006-01-09  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/12456

@@ -608,7 +608,17 @@ convert_to_integer (tree type, tree expr)
 				|| ex_form == RSHIFT_EXPR
 				|| ex_form == LROTATE_EXPR
 				|| ex_form == RROTATE_EXPR))
-			|| ex_form == LSHIFT_EXPR)
+			|| ex_form == LSHIFT_EXPR
+			/* If we have !flag_wrapv, and either ARG0 or
+			   ARG1 is of a signed type, we have to do
+			   PLUS_EXPR or MINUS_EXPR in an unsigned
+			   type.  Otherwise, we would introduce
+			   signed-overflow undefinedness.  */
+			|| (!flag_wrapv
+			    && (ex_form == PLUS_EXPR
+				|| ex_form == MINUS_EXPR)
+			    && (!TYPE_UNSIGNED (TREE_TYPE (arg0))
+				|| !TYPE_UNSIGNED (TREE_TYPE (arg1)))))
 		      typex = lang_hooks.types.unsigned_type (typex);
 		    else
 		      typex = lang_hooks.types.signed_type (typex);
