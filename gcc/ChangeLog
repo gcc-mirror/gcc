@@ -1,3 +1,8 @@
+2006-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/i386/sse.md (*vec_extractv2di_1_sse2): New.
+	(*vec_extractv2di_1_sse): New.
+
 2006-01-09  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/rs6000.h (GO_IF_LEGITIMATE_ADDRESS): Typo fix.
