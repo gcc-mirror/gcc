@@ -1,4 +1,14 @@
-2005-01-09  Jeff Law  <law@redhat.com>
+2006-01-09  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/sh/predicates.md (binary_float_operator,
+	binary_logical_operator, commutative_float_operator,
+	equality_comparison_operator, greater_comparison_operator,
+	less_comparison_operator, logical_operator,
+	noncommutative_float_operator, shift_operator,
+	symbol_ref_operand, unary_float_operator): Remove redundant
+	conditionals.
+
+2006-01-09  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (simplify_cond_and_lookup_avail_expr): Remove
 	code to propagate the RHS of a cast into COND_EXPR_COND.  Remove
@@ -94,7 +104,7 @@
 	* config/darwin.c (darwin_emit_except_table_label): Define.
 	* config/darwin.h (TARGET_ASM_EMIT_EXCEPT_TABLE): Ditto.
 
-2005-01-06  Zdenek Dvorak <dvorakz@suse.cz>
+2006-01-06  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/18527
 	* tree-ssa-loop-niter.c (number_of_iterations_cond,
@@ -114,7 +124,7 @@
 	* tree-ssa-loop-ivopts.c (determine_biv_step, find_givs_in_stmt_scev,
 	find_givs_in_stmt): Changed due to simple_iv change.
 
-2005-01-06  Jeff Law  <law@redhat.com>
+2006-01-06  Jeff Law  <law@redhat.com>
 
 	PR ada/24994
 	* tree-cfg.c (bsi_replace): Rename final argument from
@@ -302,7 +312,7 @@
 	(c_parser_new): Merge into ...
 	(c_parse_file): ... here.  Call c_parser_pragma_pch_preprocess.
 
-2005-01-04  Jeff Law  <law@redhat.com>
+2006-01-04  Jeff Law  <law@redhat.com>
 
 	PR ada/24994
 	* tree-cfg.c (bsi_replace): Remove the original statement
