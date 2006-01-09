@@ -1,3 +1,8 @@
+2006-01-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/Wpadded.c: Gate alignment warning on ! default_packed.
+	Fix typo in comment.
+
 2006-01-09  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* gfortran.dg/single_char_string.f90: New test.
