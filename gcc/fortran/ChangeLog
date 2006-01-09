@@ -1,3 +1,9 @@
+2006-01-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR fortran/21977
+	* trans-decl.c (gfc_generate_function_code): Move the NULLing of
+	current_fake_result_decl down to below generate_local_vars.
+
 2005-01-09  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25093
