@@ -207,41 +207,14 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "binary_float_operator"
-  (match_code "plus,minus,mult,div")
-{
-  if (GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case PLUS:
-    case MINUS:
-    case MULT:
-    case DIV:
-      return 1;
-    default:
-      break;
-    }
-  return 0;
-})
+  (and (match_code "plus,minus,mult,div")
+       (match_test "GET_MODE (op) == mode")))
 
 ;; TODO: Add a comment here.
 
 (define_predicate "binary_logical_operator"
-  (match_code "and,ior,xor")
-{
-  if (GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case IOR:
-    case AND:
-    case XOR:
-      return 1;
-    default:
-      break;
-    }
-  return 0;
-})
+  (and (match_code "and,ior,xor")
+       (match_test "GET_MODE (op) == mode")))
 
 ;; TODO: Add a comment here.
 
@@ -290,29 +263,13 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "commutative_float_operator"
-  (match_code "plus,mult")
-{
-  if (GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case PLUS:
-    case MULT:
-      return 1;
-    default:
-      break;
-    }
-  return 0;
-})
+  (and (match_code "plus,mult")
+       (match_test "GET_MODE (op) == mode")))
 
 ;; TODO: Add a comment here.
 
 (define_predicate "equality_comparison_operator"
-  (match_code "eq,ne")
-{
-  return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && (GET_CODE (op) == EQ || GET_CODE (op) == NE));
-})
+  (match_code "eq,ne"))
 
 ;; TODO: Add a comment here.
 
@@ -494,21 +451,7 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "greater_comparison_operator"
-  (match_code "gt,ge,gtu,geu")
-{
-  if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case GT:
-    case GE:
-    case GTU:
-    case GEU:
-      return 1;
-    default:
-      return 0;
-    }
-})
+  (match_code "gt,ge,gtu,geu"))
 
 ;; TODO: Add a comment here.
 
@@ -541,21 +484,7 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "less_comparison_operator"
-  (match_code "lt,le,ltu,leu")
-{
-  if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case LT:
-    case LE:
-    case LTU:
-    case LEU:
-      return 1;
-    default:
-      return 0;
-    }
-})
+  (match_code "lt,le,ltu,leu"))
 
 ;; Returns 1 if OP is a valid source operand for a logical operation.
 
@@ -586,20 +515,7 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "logical_operator"
-  (match_code "and,ior,xor")
-{
-  if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case AND:
-    case IOR:
-    case XOR:
-      return 1;
-    default:
-      return 0;
-    }
-})
+  (match_code "and,ior,xor"))
 
 ;; Like arith_reg_operand, but for register source operands of narrow
 ;; logical SHMEDIA operations: forbid subregs of DImode / TImode regs.
@@ -639,20 +555,8 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "noncommutative_float_operator"
-  (match_code "minus,div")
-{
-  if (GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case MINUS:
-    case DIV:
-      return 1;
-    default:
-      break;
-    }
-  return 0;
-})
+  (and (match_code "minus,div")
+       (match_test "GET_MODE (op) == mode")))
 
 ;; TODO: Add a comment here.
 
@@ -783,28 +687,12 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "shift_operator"
-  (match_code "ashift,ashiftrt,lshiftrt")
-{
-  if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case ASHIFT:
-    case ASHIFTRT:
-    case LSHIFTRT:
-      return 1;
-    default:
-      return 0;
-    }
-})
+  (match_code "ashift,ashiftrt,lshiftrt"))
 
 ;; TODO: Add a comment here.
 
 (define_predicate "symbol_ref_operand"
-  (match_code "symbol_ref")
-{
-  return (GET_CODE (op) == SYMBOL_REF);
-})
+  (match_code "symbol_ref"))
 
 ;; Same as target_reg_operand, except that label_refs and symbol_refs
 ;; are accepted before reload.
@@ -884,21 +772,8 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "unary_float_operator"
-  (match_code "abs,neg,sqrt")
-{
-  if (GET_MODE (op) != mode)
-    return 0;
-  switch (GET_CODE (op))
-    {
-    case ABS:
-    case NEG:
-    case SQRT:
-      return 1;
-    default:
-      break;
-    }
-  return 0;
-})
+  (and (match_code "abs,neg,sqrt")
+       (match_test "GET_MODE (op) == mode")))
 
 ;; Return 1 if OP is a valid source operand for xor.
 
