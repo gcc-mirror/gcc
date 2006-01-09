@@ -1,3 +1,17 @@
+2005-01-09  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (simplify_cond_and_lookup_avail_expr): Remove
+	code to propagate the RHS of a cast into COND_EXPR_COND.  Remove
+	now unused arguments.  Callers updated.
+	(eliminate_redundant_computations): Remove now unused arguments,
+	callers updated.
+	(local_fold): Remove, no longer used.
+	(find_equivalent_equality_comparison): Removed from tree-ssa-dom.c
+	and moved to...
+	* tree-ssa-forwprop.c (find_equivalent_equality_comparison): Here.
+	(simplify_cond): New function.
+	(forward_propagate_into_cond): Call simplify_cond.
+
 2006-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/sse.md (*vec_extractv2di_1_sse2): New.

@@ -36,7 +36,8 @@ Boston, MA 02110-1301, USA.  */
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
-   form of tree combination.
+   form of tree combination.   It is hoped all of this can disappear
+   when we have a generalized tree combiner.
 
    Note carefully that after propagation the resulting statement
    must still be a proper gimple statement.  Right now we simply
@@ -142,6 +143,9 @@ Boston, MA 02110-1301, USA.  */
 
      ptr2 = &x[index];
 
+  We also propagate casts into SWITCH_EXPR and COND_EXPR conditions to
+  allow us to remove the cast and {NOT_EXPR,NEG_EXPR} into a subsequent
+  {NOT_EXPR,NEG_EXPR}.
 
    This will (of course) be extended as other needs arise.  */
 
@@ -398,6 +402,129 @@ forward_propagate_into_cond_1 (tree cond, tree *test_var_p)
   return new_cond;
 }
 
+/* COND is a condition of the form:
+
+     x == const or x != const
+
+   Look back to x's defining statement and see if x is defined as
+
+     x = (type) y;
+
+   If const is unchanged if we convert it to type, then we can build
+   the equivalent expression:
+
+
+      y == const or y != const
+
+   Which may allow further optimizations.
+
+   Return the equivalent comparison or NULL if no such equivalent comparison
+   was found.  */
+
+static tree
+find_equivalent_equality_comparison (tree cond)
+{
+  tree op0 = TREE_OPERAND (cond, 0);
+  tree op1 = TREE_OPERAND (cond, 1);
+  tree def_stmt = SSA_NAME_DEF_STMT (op0);
+
+  while (def_stmt
+	 && TREE_CODE (def_stmt) == MODIFY_EXPR
+	 && TREE_CODE (TREE_OPERAND (def_stmt, 1)) == SSA_NAME)
+    def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (def_stmt, 1));
+
+  /* OP0 might have been a parameter, so first make sure it
+     was defined by a MODIFY_EXPR.  */
+  if (def_stmt && TREE_CODE (def_stmt) == MODIFY_EXPR)
+    {
+      tree def_rhs = TREE_OPERAND (def_stmt, 1);
+
+      /* If either operand to the comparison is a pointer to
+	 a function, then we can not apply this optimization
+	 as some targets require function pointers to be
+	 canonicalized and in this case this optimization would
+	 eliminate a necessary canonicalization.  */
+      if ((POINTER_TYPE_P (TREE_TYPE (op0))
+	   && TREE_CODE (TREE_TYPE (TREE_TYPE (op0))) == FUNCTION_TYPE)
+	  || (POINTER_TYPE_P (TREE_TYPE (op1))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (op1))) == FUNCTION_TYPE))
+	return NULL;
+	      
+      /* Now make sure the RHS of the MODIFY_EXPR is a typecast.  */
+      if ((TREE_CODE (def_rhs) == NOP_EXPR
+	   || TREE_CODE (def_rhs) == CONVERT_EXPR)
+	  && TREE_CODE (TREE_OPERAND (def_rhs, 0)) == SSA_NAME)
+	{
+	  tree def_rhs_inner = TREE_OPERAND (def_rhs, 0);
+	  tree def_rhs_inner_type = TREE_TYPE (def_rhs_inner);
+	  tree new;
+
+	  if (TYPE_PRECISION (def_rhs_inner_type)
+	      > TYPE_PRECISION (TREE_TYPE (def_rhs)))
+	    return NULL;
+
+	  /* If the inner type of the conversion is a pointer to
+	     a function, then we can not apply this optimization
+	     as some targets require function pointers to be
+	     canonicalized.  This optimization would result in
+	     canonicalization of the pointer when it was not originally
+	     needed/intended.  */
+	  if (POINTER_TYPE_P (def_rhs_inner_type)
+	      && TREE_CODE (TREE_TYPE (def_rhs_inner_type)) == FUNCTION_TYPE)
+	    return NULL;
+
+	  /* What we want to prove is that if we convert OP1 to
+	     the type of the object inside the NOP_EXPR that the
+	     result is still equivalent to SRC. 
+
+	     If that is true, the build and return new equivalent
+	     condition which uses the source of the typecast and the
+	     new constant (which has only changed its type).  */
+	  new = fold_build1 (TREE_CODE (def_rhs), def_rhs_inner_type, op1);
+	  STRIP_USELESS_TYPE_CONVERSION (new);
+	  if (is_gimple_val (new) && tree_int_cst_equal (new, op1))
+	    return build2 (TREE_CODE (cond), TREE_TYPE (cond),
+			   def_rhs_inner, new);
+	}
+    }
+  return NULL;
+}
+
+/* STMT is a COND_EXPR
+
+   This routine attempts to find equivalent forms of the condition
+   which we may be able to optimize better.  */
+
+static void
+simplify_cond (tree stmt)
+{
+  tree cond = COND_EXPR_COND (stmt);
+
+  if (COMPARISON_CLASS_P (cond))
+    {
+      tree op0 = TREE_OPERAND (cond, 0);
+      tree op1 = TREE_OPERAND (cond, 1);
+
+      if (TREE_CODE (op0) == SSA_NAME && is_gimple_min_invariant (op1))
+	{
+	  /* First see if we have test of an SSA_NAME against a constant
+	     where the SSA_NAME is defined by an earlier typecast which
+	     is irrelevant when performing tests against the given
+	     constant.  */
+	  if (TREE_CODE (cond) == EQ_EXPR || TREE_CODE (cond) == NE_EXPR)
+	    {
+	      tree new_cond = find_equivalent_equality_comparison (cond);
+
+	      if (new_cond)
+		{
+		  COND_EXPR_COND (stmt) = new_cond;
+		  update_stmt (stmt);
+		}
+	    }
+	}
+    }
+}
+
 /* Forward propagate a single-use variable into COND_EXPR as many
    times as possible.  */
 
@@ -436,6 +563,13 @@ forward_propagate_into_cond (tree cond_expr)
 	  bsi_remove (&bsi, true);
 	}
     }
+
+  /* There are further simplifications that can be performed
+     on COND_EXPRs.  Specifically, when comparing an SSA_NAME
+     against a constant where the SSA_NAME is the result of a
+     conversion.  Perhaps this should be folded into the rest
+     of the COND_EXPR simplification code.  */
+  simplify_cond (cond_expr);
 }
 
 /* We've just substituted an ADDR_EXPR into stmt.  Update all the 
