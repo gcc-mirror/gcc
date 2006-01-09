@@ -1,5 +1,10 @@
 2006-01-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	fortran/24936
+	* gfortran.dg/forall_3.f90: New test.
+
+2006-01-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR fortran/21977
 	* gfortran.dg/nesting_2.f90: New test.
 	* gfortran.dg/nesting_3.f90: New test.
