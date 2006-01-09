@@ -1,3 +1,8 @@
+2006-01-08  Chris Burdess  <dog@gnu.org>
+
+	* java/lang/Character.java (toChars,toCodePoint): Correct these
+	  methods to use algorithms from Unicode specification.
+
 2006-01-08  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/StringBuilder.java (appendCodePoint): New method.
