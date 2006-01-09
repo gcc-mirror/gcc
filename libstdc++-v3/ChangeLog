@@ -1,3 +1,9 @@
+2006-01-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/25658
+	* testsuite/23_containers/deque/cons/assign/1.cc: Divide
+	sizes by 10.
+
 2006-01-08  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/22102 (insert as close to hint as possible)

@@ -1,6 +1,6 @@
 // 2005-12-12  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,15 +28,15 @@ void test01()
   bool test __attribute__((unused)) = true;
   using namespace std;
 
-  int data3[10000];
-  fill(data3, data3 + 10000, 3);
+  int data3[1000];
+  fill(data3, data3 + 1000, 3);
 
-  int data5[10000];
-  fill(data5, data5 + 10000, 5);
+  int data5[1000];
+  fill(data5, data5 + 1000, 5);
 
-  for (deque<int>::size_type i = 0; i < 10000; ++i)
+  for (deque<int>::size_type i = 0; i < 1000; ++i)
     {
-      deque<int> d(rand() % 5000, 1);
+      deque<int> d(rand() % 500, 1);
       d.assign(i, i % 2 ? 3 : 5);
 
       VERIFY( d.size() == i );
