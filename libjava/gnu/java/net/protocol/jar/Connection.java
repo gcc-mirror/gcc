@@ -41,9 +41,10 @@ package gnu.java.net.protocol.jar;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -156,8 +157,6 @@ public final class Connection extends JarURLConnection
         
 	if (entry != null)
 	  return jarfile.getInputStream (entry);
-	else
-	  return null;
       }
     else
       {
@@ -182,7 +181,10 @@ public final class Connection extends JarURLConnection
 	  }
       }
 
-    return null;
+    throw new FileNotFoundException("No entry for \"" + getEntryName()
+				    + "\" in \""
+				    + getJarFileURL()
+				    + "\"");
   }
 
   public synchronized JarFile getJarFile() throws IOException

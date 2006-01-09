@@ -1,3 +1,9 @@
+2006-01-09  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/21637:
+	* gnu/java/net/protocol/jar/Connection.java (getInputStream):
+	Throw FileNotFoundException if jar entry not found.
+
 2006-01-08  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/StringBuilder.java (appendCodePoint): New method.
