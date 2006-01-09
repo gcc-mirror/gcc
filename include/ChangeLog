@@ -1,3 +1,7 @@
+2006-01-09  Bob Wilson  <bob.wilson@acm.org>
+
+	* xtensa-config.h (XCHAL_HAVE_MUL32_HIGH): Define.
+
 2005-12-30  Bob Wilson  <bob.wilson@acm.org>
 
 	* xtensa-config.h (XCHAL_HAVE_WIDE_BRANCHES): New.

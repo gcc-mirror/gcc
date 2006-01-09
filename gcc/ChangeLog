@@ -1,3 +1,11 @@
+2006-01-09  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/ieee754-df.S: New file.
+	* config/xtensa/ieee754-sf.S: New file.
+	* config/xtensa/t-xtensa (LIB2FUNCS_EXTRA): Remove fp-bit.c & dp-bit.c.
+	(LIB1ASMFUNCS): Add SFmode and DFmode floating-point functions.
+	* config/xtensa/lib1funcs.asm: Include ieee754-df.S and ieee754-sf.S.
+
 2006-01-09  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/sh/predicates.md (binary_float_operator,
