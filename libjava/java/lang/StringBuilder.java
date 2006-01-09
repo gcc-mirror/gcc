@@ -1,5 +1,5 @@
 /* StringBuilder.java -- Unsynchronized growable strings
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -464,6 +464,25 @@ public final class StringBuilder
   }
 
   /**
+   * Append the code point to this <code>StringBuilder</code>.
+   * This is like #append(char), but will append two characters
+   * if a supplementary code point is given.
+   *
+   * @param code the code point to append
+   * @return this <code>StringBuilder</code>
+   * @see Character#toChars(int, char[], int)
+   * @since 1.5
+   */
+  public synchronized StringBuilder appendCodePoint(int code)
+  {
+    int len = Character.charCount(code);
+    ensureCapacity(count + len);
+    Character.toChars(code, value, count);
+    count += len;
+    return this;
+  }
+
+  /**
    * Append the <code>String</code> value of the argument to this
    * <code>StringBuilder</code>. Uses <code>String.valueOf()</code> to convert
    * to <code>String</code>.
@@ -700,6 +719,52 @@ public final class StringBuilder
     ensureCapacity(count + len);
     System.arraycopy(value, offset, value, offset + len, count - offset);
     str.getChars(0, len, value, offset);
+    count += len;
+    return this;
+  }
+
+  /**
+   * Insert the <code>CharSequence</code> argument into this
+   * <code>StringBuilder</code>.  If the sequence is null, the String
+   * "null" is used instead.
+   *
+   * @param offset the place to insert in this buffer
+   * @param sequence the <code>CharSequence</code> to insert
+   * @return this <code>StringBuilder</code>
+   * @throws IndexOutOfBoundsException if offset is out of bounds
+   */
+  public synchronized StringBuilder insert(int offset, CharSequence sequence)
+  {
+    if (sequence == null)
+      sequence = "null";
+    return insert(offset, sequence, 0, sequence.length());
+  }
+
+  /**
+   * Insert a subsequence of the <code>CharSequence</code> argument into this
+   * <code>StringBuilder</code>.  If the sequence is null, the String
+   * "null" is used instead.
+   *
+   * @param offset the place to insert in this buffer
+   * @param sequence the <code>CharSequence</code> to insert
+   * @param start the starting index of the subsequence
+   * @param end one past the ending index of the subsequence
+   * @return this <code>StringBuilder</code>
+   * @throws IndexOutOfBoundsException if offset, start,
+   * or end are out of bounds
+   */
+  public synchronized StringBuilder insert(int offset, CharSequence sequence,
+                      int start, int end)
+  {
+    if (sequence == null)
+      sequence = "null";
+    if (start < 0 || end < 0 || start > end || end > sequence.length())
+      throw new IndexOutOfBoundsException();
+    int len = end - start;
+    ensureCapacity(count + len);
+    System.arraycopy(value, offset, value, offset + len, count - offset);
+    for (int i = start; i < end; ++i)
+      value[offset++] = sequence.charAt(i);
     count += len;
     return this;
   }
