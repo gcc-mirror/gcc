@@ -1,6 +1,6 @@
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,7 @@ void test09()
   const locale loc_c = locale::classic();
   const wstring x(50, L'x'); // have to have allocated wstring!
   wstring res;
-  const tm time_sanity = { 0, 0, 12, 26, 5, 97, 2 };
+  const tm time_sanity = __gnu_test::test_tm(0, 0, 12, 26, 5, 97, 2, 0, 0);
   const wchar_t* date = L"%X, %A, the second of %B, %Y";
 
   wostringstream oss; 

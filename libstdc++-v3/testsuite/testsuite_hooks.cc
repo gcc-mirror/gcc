@@ -2,7 +2,7 @@
 
 // Utility subroutines for the C++ library testsuite. 
 //
-// Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -301,5 +301,23 @@ namespace __gnu_test
     if (semop(sem_set_, op, 1) == -1)
       std::__throw_runtime_error("could not wait for semaphore");
 #endif    
+  }
+
+  // For use in 22_locale/time_get and time_put.
+  tm
+  test_tm(int sec, int min, int hour, int mday, int mon,
+	  int year, int wday, int yday, int isdst)
+  {
+    static tm tmp;
+    tmp.tm_sec = sec;
+    tmp.tm_min = min;
+    tmp.tm_hour = hour;
+    tmp.tm_mday = mday;
+    tmp.tm_mon = mon;
+    tmp.tm_year = year;
+    tmp.tm_wday = wday;
+    tmp.tm_yday = yday;
+    tmp.tm_isdst = isdst;
+    return tmp;
   }
 }; // namespace __gnu_test

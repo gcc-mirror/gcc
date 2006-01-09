@@ -2,7 +2,7 @@
 
 // 2003-10-27 Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2003, 2005 Free Software Foundation
+// Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,8 +47,8 @@ void test01()
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
-  const tm time_bday01 = { 0, 0, 12, 2, 9, 103, 4, 274, -1 };
-  const tm time_bday02 = { 0, 0, 12, 26, 9, 103, 0, 298, -1 };
+  const tm time_bday01 = __gnu_test::test_tm(0, 0, 12, 2, 9, 103, 4, 274, -1);
+  const tm time_bday02 = __gnu_test::test_tm(0, 0, 12, 26, 9, 103, 0, 298, -1);
 
   // inspection of named locales, is_IS
   iss.imbue(loc_is);

@@ -2,7 +2,7 @@
 
 // 2001-09-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2005, 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,7 @@ void test02()
   VERIFY( loc_hk != loc_c );
   VERIFY( loc_hk != loc_de );
 
-  const tm time_bday = { 0, 0, 12, 4, 3, 71, 0, 93, 0 };
+  const tm time_bday = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
 
   const string empty;
 

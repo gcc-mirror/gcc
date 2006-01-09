@@ -1,6 +1,6 @@
 // 2004-08-29  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,7 +46,7 @@ void test01()
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
-  const tm time_bday = { 60, 0, 12, 4, 3, 71, 0, 93, 0 };
+  const tm time_bday = __gnu_test::test_tm(60, 0, 12, 4, 3, 71, 0, 93, 0);
 
   iss.str("12:00:60 ");
   iterator_type is_it01(iss);
