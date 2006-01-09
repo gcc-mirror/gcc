@@ -1,5 +1,11 @@
 2006-01-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	fortran/24936
+	* trans-stmt.c (gfc_trans_pointer_assign_need_temp): Use fold_convert
+	to avoid type mismatch.
+
+2006-01-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR fortran/21977
 	* trans-decl.c (gfc_generate_function_code): Move the NULLing of
 	current_fake_result_decl down to below generate_local_vars.
