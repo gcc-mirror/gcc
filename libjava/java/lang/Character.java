@@ -2320,11 +2320,11 @@ public final class Character implements Serializable, Comparable
       {
         // Write second char first to cause IndexOutOfBoundsException
         // immediately.
-        dst[dstIndex + 1] = (char) ((codePoint & 0x3ff)
-                                    + (int) MIN_LOW_SURROGATE );
-        dst[dstIndex] = (char) ((codePoint >> 10) + (int) MIN_HIGH_SURROGATE);
+        final int cp2 = codePoint - 0x10000;
+        dst[dstIndex + 1] = (char) ((cp2 % 0x400) + (int) MIN_LOW_SURROGATE);
+        dst[dstIndex] = (char) ((cp2 / 0x400) + (int) MIN_HIGH_SURROGATE);
         result = 2;
-    }
+      }
     else
       {
         dst[dstIndex] = (char) codePoint;
@@ -2433,7 +2433,8 @@ public final class Character implements Serializable, Comparable
    */
   public static int toCodePoint(char high, char low)
   {
-    return ((high - MIN_HIGH_SURROGATE) << 10) + (low - MIN_LOW_SURROGATE);
+    return ((high - MIN_HIGH_SURROGATE) * 0x400) +
+      (low - MIN_LOW_SURROGATE) + 0x10000;
   }
 
   /**
