@@ -2267,13 +2267,17 @@ gfc_conv_intrinsic_strcmp (gfc_se * se, gfc_expr * expr, int op)
 {
   tree type;
   tree args;
+  tree arg2;
 
   args = gfc_conv_intrinsic_function_args (se, expr);
-  /* Build a call for the comparison.  */
-  se->expr = build_function_call_expr (gfor_fndecl_compare_string, args);
+  arg2 = TREE_CHAIN (TREE_CHAIN (args));
+
+  se->expr = gfc_build_compare_string (TREE_VALUE (args),
+		TREE_VALUE (TREE_CHAIN (args)), TREE_VALUE (arg2),
+		TREE_VALUE (TREE_CHAIN (arg2)));
 
   type = gfc_typenode_for_spec (&expr->ts);
-  se->expr = build2 (op, type, se->expr,
+  se->expr = fold_build2 (op, type, se->expr,
 		     build_int_cst (TREE_TYPE (se->expr), 0));
 }
 
