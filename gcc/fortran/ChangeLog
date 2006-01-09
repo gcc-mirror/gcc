@@ -1,3 +1,9 @@
+2005-01-09  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25093
+	* resolve.c (resolve_fntype): Check that PUBLIC functions
+	aren't of PRIVATE type.
+
 2006-01-09  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/12456

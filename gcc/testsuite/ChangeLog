@@ -1,3 +1,8 @@
+2005-01-09  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25093
+	* gfortran.dg/private_type_4.f90: New.
+
 2006-01-09  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/25125

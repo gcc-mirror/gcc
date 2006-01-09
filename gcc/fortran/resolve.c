@@ -5463,6 +5463,15 @@ resolve_fntype (gfc_namespace * ns)
       sym->attr.untyped = 1;
     }
 
+  if (sym->ts.type == BT_DERIVED && !sym->ts.derived->attr.use_assoc
+      && !gfc_check_access (sym->ts.derived->attr.access,
+                            sym->ts.derived->ns->default_access)
+      && gfc_check_access (sym->attr.access, sym->ns->default_access))
+    {
+      gfc_error ("PUBLIC function '%s' at %L cannot be of PRIVATE type '%s'",
+                 sym->name, &sym->declared_at, sym->ts.derived->name);
+    }
+
   if (ns->entries)
     for (el = ns->entries->next; el; el = el->next)
       {
