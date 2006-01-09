@@ -1,3 +1,7 @@
+2006-01-09  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000.h (GO_IF_LEGITIMATE_ADDRESS): Typo fix.
+
 2006-01-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (get_constraint_for): Remove

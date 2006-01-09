@@ -1740,7 +1740,7 @@ typedef struct rs6000_args
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.
 
-   On the RS/6000, there are four valid address: a SYMBOL_REF that
+   On the RS/6000, there are four valid addresses: a SYMBOL_REF that
    refers to a constant pool entry of an address (or the sum of it
    plus a constant), a short (16-bit signed) constant plus a register,
    the sum of two registers, or a register indirect, possibly with an
