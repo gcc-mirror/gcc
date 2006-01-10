@@ -1,3 +1,8 @@
+2006-01-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Never override with anything constraint.
+
 2006-01-10  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/i386.c (ix86_data_alignment): Don't force alignment to

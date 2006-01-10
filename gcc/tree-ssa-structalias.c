@@ -2373,25 +2373,14 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
   t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize);
   get_constraint_for (t, results);
   result = VEC_last (ce_s, *results);
+  result->offset = bitpos;
 
   gcc_assert (beforelength + 1 == VEC_length (ce_s, *results));
 
   /* This can also happen due to weird offsetof type macros.  */
   if (TREE_CODE (t) != ADDR_EXPR && result->type == ADDRESSOF)
     result->type = SCALAR;
-  
-  /* If we know where this goes, then yay. Otherwise, booo. */
-  if (bitmaxsize != -1
-      && bitsize == bitmaxsize)
-    {
-      result->offset = bitpos;
-    }
-  else
-    {
-      result->var = anything_id;
-      result->offset = 0;      
-    }
-
+ 
   if (result->type == SCALAR)
     {
       /* In languages like C, you can access one past the end of an
@@ -2409,7 +2398,7 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
 	  for (curr = get_varinfo (result->var); curr; curr = curr->next)
 	    {
 	      if (offset_overlaps_with_access (curr->offset, curr->size,
-					       result->offset, bitsize))
+					       result->offset, bitmaxsize))
 		{
 		  result->var = curr->id;
 		  break;
