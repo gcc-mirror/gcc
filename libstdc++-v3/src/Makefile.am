@@ -144,7 +144,8 @@ sources = \
 	concept-inst.cc \
 	fstream-inst.cc \
 	ext-inst.cc \
-	io-inst.cc \
+	ios-inst.cc \
+	iostream-inst.cc \
 	istream-inst.cc \
 	istream.cc \
 	locale-inst.cc \
