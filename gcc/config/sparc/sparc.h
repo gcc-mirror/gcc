@@ -884,6 +884,11 @@ extern int sparc_mode_class[];
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((hard_regno_mode_classes[REGNO] & sparc_mode_class[MODE]) != 0)
 
+/* Value is 1 if it is OK to rename a hard register FROM to another hard
+   register TO.  We cannot rename %g1 as it may be used before the save
+   register window instruction in the prologue.  */
+#define HARD_REGNO_RENAME_OK(FROM, TO) ((FROM) != 1)
+
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,

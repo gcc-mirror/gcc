@@ -1,3 +1,8 @@
+2006-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/25367
+	* config/sparc/sparc.h (HARD_REGNO_RENAME_OK): New macro.
+
 2006-01-10  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/netware.h (TARGET_SUBTARGET_DEFAULT): Include
