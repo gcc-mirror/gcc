@@ -1,3 +1,11 @@
+2006-01-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/complex: New file, hosts the additions to header
+	<complex> described in TR1, Chapter 8 [tr.c99].
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* testsuite/tr1/8_c_compatibility/complex/functions.cc: New.
+
 2006-01-09  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/25658
