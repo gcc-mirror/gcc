@@ -13363,12 +13363,15 @@ ix86_constant_alignment (tree exp, int align)
 int
 ix86_data_alignment (tree type, int align)
 {
+  int max_align = optimize_size ? BITS_PER_WORD : 256;
+
   if (AGGREGATE_TYPE_P (type)
-       && TYPE_SIZE (type)
-       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-       && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 256
-	   || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 256)
-    return 256;
+      && TYPE_SIZE (type)
+      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+      && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align
+	  || TREE_INT_CST_HIGH (TYPE_SIZE (type)))
+      && align < max_align)
+    align = max_align;
 
   /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
      to 16byte boundary.  */
