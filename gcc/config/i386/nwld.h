@@ -31,7 +31,8 @@ Boston, MA 02110-1301, USA.  */
 #define LINKER_NAME "nwld"
 
 #undef  LINK_SPEC
-#define LINK_SPEC "--format nlm %{static:%{!nostdlib:%{!nodefaultlib:%eStatic linking is not supported.\n}}}"
+#define LINK_SPEC "--format:NLM --extensions:GNU" \
+	" %{static:%{!nostdlib:%{!nodefaultlib:%eStatic linking is not supported.\n}}}"
 
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "%L %G"

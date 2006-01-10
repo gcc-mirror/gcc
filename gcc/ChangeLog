@@ -1,3 +1,11 @@
+2006-01-10  Jan Beulich  <jbeulich@novell.com>
+
+	* config/i386/netware.h (TARGET_SUBTARGET_DEFAULT): Include
+	MASK_ALIGN_DOUBLE.
+	* config/i386/nwld.h (LINK_SPEC): Add --extensions:GNU option.
+	* config/i386/t-nwld (SHLIB_LINK): Insert spaces between expr
+	arguments.
+
 2006-01-10  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/predicates.md (easy_fp_constant): Discount decimal

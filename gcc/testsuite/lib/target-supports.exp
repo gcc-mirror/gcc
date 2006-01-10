@@ -131,7 +131,7 @@ proc check_visibility_available { what_kind } {
     global target_triplet
 
     # On NetWare, support makes no sense.
-    if { [string match "*-*-netware*" $target_triplet] } {
+    if { [istarget *-*-netware*] } {
         return 0
     }
 
@@ -276,6 +276,11 @@ proc check_profiling_available { test_what } {
     # See: http://gcc.gnu.org/ml/gcc/2002-10/msg00169.html
     if { [istarget mips*-*-irix*]
     && ([lindex $test_what 1] == "-p" || [lindex $test_what 1] == "-pg") } {
+	return 0
+    }
+
+    # At present, there is no profiling support on NetWare.
+    if { [istarget *-*-netware*] } {
 	return 0
     }
 
