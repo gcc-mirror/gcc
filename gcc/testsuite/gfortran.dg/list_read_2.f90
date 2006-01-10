@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! PR16805
 ! Test list directed reads from character substrings
-! The IO library was reporting an error rather the end-or-fecord when it
+! The IO library was reporting an error rather the end-of-record when it
 ! got to the end of an internal file record.
 program list_read_2
   implicit none
