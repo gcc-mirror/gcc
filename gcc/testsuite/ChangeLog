@@ -1,3 +1,7 @@
+2006-01-10  Bernhard Fischer  <rep.nop@aon.at>
+
+	* gfortran.dg/list_read_2.f90: Fix typo in description.
+
 2006-01-10  Jan Beulich  <jbeulich@novell.com>
 
 	* lib/target-supports.exp (check_visibility_available): Simplify test
