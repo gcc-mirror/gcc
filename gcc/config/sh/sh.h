@@ -2103,7 +2103,9 @@ struct sh_args {
    && ((MODE) == BLKmode || (MODE) == TImode || (MODE) == CDImode \
        || (MODE) == DCmode) \
    && ((CUM).arg_count[(int) SH_ARG_INT]			\
-       + (int_size_in_bytes (TYPE) + 7) / 8) > NPARM_REGS (SImode))
+       + (((MODE) == BLKmode ? int_size_in_bytes (TYPE)		\
+			     : GET_MODE_SIZE (MODE))		\
+	  + 7) / 8) > NPARM_REGS (SImode))
 
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments.  */
