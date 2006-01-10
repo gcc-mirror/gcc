@@ -1,3 +1,15 @@
+2006-01-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* include/bits/valarray_after.h (_Expr<>::operator[](slice)):
+	Don't assume the closure implements general indexing, as a matter
+	of fact, most of them don't.
+	(_Expr<>::operator[](const gslice&)): Likewise.
+	(_Expr<>::operator[](const valarray<bool>&)): Likewise.
+	(_Expr<>::operator[](const valarray<size_t>&)): Likewise.
+	(_Expr<>::shift): Fix thinko.
+	(_Expr<>::cshift): Likewise.
+	(_Expr<>::apply): Likewise.
+
 2006-01-10  Benjamin Kosnik  <bkoz@redhat.com>
             Ulrich Drepper  <drepper@redhat.com>
 
@@ -14,18 +26,18 @@
 	* configure: Regenerate.
 	* config.h.in: Same.
 
-2006-01-09  Benjamin Kosnik  <bkoz@redhat.com>	
+2006-01-09  Benjamin Kosnik  <bkoz@redhat.com>
 
-       PR libstdc++/25472
-        * include/c_std/std_cstdlib.h: Fix for freestanding.
+	PR libstdc++/25472
+	* include/c_std/std_cstdlib.h: Fix for freestanding.
 
 2006-01-09  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * src/io-inst.cc: Separate instantiations into...
-        * src/ios-inst.cc: .. this.
-        * src/iostream-inst.cc: ... and this.
-        * src/Makefile.am (sources): Update.
-        * src/Makefile.in: Regenerate.
+	* src/io-inst.cc: Separate instantiations into...
+	* src/ios-inst.cc: .. this.
+	* src/iostream-inst.cc: ... and this.
+	* src/Makefile.am (sources): Update.
+	* src/Makefile.in: Regenerate.
 
 2006-01-08  Paolo Carlini  <pcarlini@suse.de>
 	
@@ -60,7 +72,7 @@
 	* testsuite/22_locale/time_get/get_monthname/wchar_t/1.cc: Likewise.
 	* testsuite/22_locale/time_get/get_monthname/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_monthname/char/1.cc: Likewise.
- 	* testsuite/22_locale/time_get/get_monthname/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/1.cc: Likewise.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/3.cc: Likewise.
