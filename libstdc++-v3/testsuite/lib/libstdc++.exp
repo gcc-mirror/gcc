@@ -266,14 +266,32 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
             # created or not.  If it was, dg.exp will try to run it.
             remote_file build delete $output_file;
         }
-        default {
+	default {
             perror "$do_what: not a valid dg-do keyword"
             return ""
         }
     }
+
     set options ""
     if { $extra_tool_flags != "" } {
-        lappend options "additional_flags=$extra_tool_flags"
+	verbose -log "extra_tool_flags are:"
+	verbose -log $extra_tool_flags
+	if { [string first "-x c" $extra_tool_flags ] != -1 } {
+	    # Short-circut a bunch of complicated goo here for the
+	    # special case of compiling a test file as a "C" file, not
+	    # as C++: just use target_compile, instead of the usual
+	    # gimmicks.
+	    verbose -log "compiling and executing as C, not C++"
+            set compile_type "executable"
+            set output_file "./[file rootname [file tail $prog]].exe"
+            remote_file build delete $output_file;
+	    lappend options "additional_flags=$extra_tool_flags"
+	    set comp_output [target_compile "$prog" "$output_file" "$compile_type" $options];
+	    set comp_output [ prune_g++_output $comp_output ];
+	    return [list $comp_output $output_file]
+        } else {
+	    lappend options "additional_flags=$extra_tool_flags"
+	}
     }
 
     # There is a libstdc++_compile made for us by default (via the tool-
@@ -608,8 +626,7 @@ proc check_v3_target_debug_mode { } {
 	set et_debug_mode 0
 
 	# Set up, compile, and execute a C++ test program that depends
-	# on correct ordering of static object destructors. This is
-	# indicative of the presence and use of __cxa_atexit.
+	# on debug mode working.
 	set src debug_mode[pid].cc
 	set exe debug_mode[pid].exe
 

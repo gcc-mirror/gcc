@@ -1,5 +1,5 @@
 // -*- C++ -*- Manage the thread-local exception globals.
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -27,101 +27,127 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-
+#include <bits/c++config.h>
 #include <exception>
 #include <cstdlib>
+#include "cxxabi.h"
 #include "unwind-cxx.h"
-#include "bits/c++config.h"
 #include "bits/gthr.h"
 
 using namespace __cxxabiv1;
 
+#if _GLIBCXX_HAVE_TLS
+
+namespace __gnu_internal
+{
+  using namespace abi;
+  using namespace std;
+
+  __cxa_eh_globals*
+  get_global() throw()
+  {
+    static __thread __cxa_eh_globals global;
+    return &global;
+  }
+}
+
+extern "C" __cxa_eh_globals*
+__cxxabiv1::__cxa_get_globals_fast() throw()
+{ return __gnu_internal::get_global(); }
+
+extern "C" __cxa_eh_globals*
+__cxxabiv1::__cxa_get_globals() throw()
+{ return __gnu_internal::get_global(); }
+
+
+#else
 
 // Single-threaded fallback buffer.
-static __cxa_eh_globals globals_static;
+static __cxa_eh_globals eh_globals;
 
 #if __GTHREADS
-static __gthread_key_t globals_key;
-static int use_thread_key = -1;
 
 static void
-get_globals_dtor (void *ptr)
+eh_globals_dtor(void* ptr)
 {
   if (ptr)
     {
-      __cxa_exception *exn, *next;
-      exn = ((__cxa_eh_globals *) ptr)->caughtExceptions;
+      __cxa_eh_globals* g = reinterpret_cast<__cxa_eh_globals*>(ptr);
+      __cxa_exception* exn = g->caughtExceptions;
+      __cxa_exception* next;
       while (exn)
 	{
 	  next = exn->nextException;
-	  _Unwind_DeleteException (&exn->unwindHeader);
+	  _Unwind_DeleteException(&exn->unwindHeader);
 	  exn = next;
 	}
-      std::free (ptr);
+      std::free(ptr);
     }
 }
 
-static void
-get_globals_init ()
+struct __eh_globals_init
 {
-  use_thread_key =
-    (__gthread_key_create (&globals_key, get_globals_dtor) == 0);
-}
+  __gthread_key_t  	_M_key;
+  bool 			_M_init;
 
-static void
-get_globals_init_once ()
-{
-  static __gthread_once_t once = __GTHREAD_ONCE_INIT;
-  if (__gthread_once (&once, get_globals_init) != 0
-      || use_thread_key < 0)
-    use_thread_key = 0;
-}
-#endif
+  __eh_globals_init() : _M_init(false)
+  { 
+    if (__gthread_active_p())
+      _M_init = __gthread_key_create(&_M_key, eh_globals_dtor) == 0; 
+  }
 
-extern "C" __cxa_eh_globals *
-__cxxabiv1::__cxa_get_globals_fast () throw()
+  ~__eh_globals_init()
+  {
+    if (_M_init)
+      __gthread_key_delete(_M_key);
+  }
+};
+
+static __eh_globals_init init;
+
+extern "C" __cxa_eh_globals*
+__cxxabiv1::__cxa_get_globals_fast() throw()
 {
-#if __GTHREADS
-  if (use_thread_key)
-    return (__cxa_eh_globals *) __gthread_getspecific (globals_key);
+  __cxa_eh_globals* g;
+  if (init._M_init)
+    g = static_cast<__cxa_eh_globals*>(__gthread_getspecific(init._M_key));
   else
-    return &globals_static;
-#else
-  return &globals_static;
-#endif
-}
-
-extern "C" __cxa_eh_globals *
-__cxxabiv1::__cxa_get_globals () throw()
-{
-#if __GTHREADS
-  __cxa_eh_globals *g;
-
-  if (use_thread_key == 0)
-    return &globals_static;
-
-  if (use_thread_key < 0)
-    {
-      get_globals_init_once ();
-
-      // Make sure use_thread_key got initialized.
-      if (use_thread_key == 0)
-	return &globals_static;
-    }
-
-  g = (__cxa_eh_globals *) __gthread_getspecific (globals_key);
-  if (! g)
-    {
-      if ((g = (__cxa_eh_globals *)
-	   std::malloc (sizeof (__cxa_eh_globals))) == 0
-	  || __gthread_setspecific (globals_key, (void *) g) != 0)
-        std::terminate ();
-      g->caughtExceptions = 0;
-      g->uncaughtExceptions = 0;
-    }
-
+    g = &eh_globals;
   return g;
-#else
-  return &globals_static;
-#endif
 }
+
+extern "C" __cxa_eh_globals*
+__cxxabiv1::__cxa_get_globals() throw()
+{
+  __cxa_eh_globals* g;
+  if (init._M_init)
+    {
+      g = static_cast<__cxa_eh_globals*>(__gthread_getspecific(init._M_key));
+      if (!g)
+	{
+	  void* v = std::malloc(sizeof(__cxa_eh_globals));
+	  if (v == 0 || __gthread_setspecific(init._M_key, v) != 0)
+	    std::terminate();
+	  g = static_cast<__cxa_eh_globals*>(v);
+	  g->caughtExceptions = 0;
+	  g->uncaughtExceptions = 0;
+	}
+    }
+  else
+    g = &eh_globals;
+  return g;
+}
+
+#else
+
+extern "C" __cxa_eh_globals*
+__cxxabiv1::__cxa_get_globals_fast() throw()
+{ return &eh_globals; }
+
+extern "C" __cxa_eh_globals*
+__cxxabiv1::__cxa_get_globals() throw()
+{ return &eh_globals; }
+
+#endif
+
+#endif

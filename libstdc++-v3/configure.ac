@@ -157,6 +157,9 @@ if $GLIBCXX_IS_NATIVE; then
   # For LFS support.
   GLIBCXX_CHECK_LFS
 
+  # For TLS support.
+  GCC_CHECK_TLS
+
   AC_LC_MESSAGES
 
   AC_TRY_COMPILE(
