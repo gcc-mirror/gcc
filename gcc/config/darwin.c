@@ -773,6 +773,8 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 						   PIC_OFFSET_TABLE_REGNUM)));
 #endif
 
+	      if (reload_in_progress)
+		regs_ever_live[REGNO (pic)] = 1;
 	      pic_ref = gen_rtx_PLUS (Pmode, pic,
 				      gen_pic_offset (XEXP (orig, 0),
 						      pic_base));
@@ -842,6 +844,8 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 		  emit_insn (gen_rtx_USE (VOIDmode,
 					  pic_offset_table_rtx));
 #endif
+		  if (reload_in_progress)
+		    regs_ever_live[REGNO (pic)] = 1;
 		  pic_ref = gen_rtx_PLUS (Pmode,
 					  pic,
 					  gen_pic_offset (orig, pic_base));

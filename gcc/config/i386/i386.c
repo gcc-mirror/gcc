@@ -1589,9 +1589,8 @@ override_options (void)
      The default of 128 bits is for Pentium III's SSE __m128, but we
      don't want additional code to keep the stack aligned when
      optimizing for code size.  */
-  ix86_preferred_stack_boundary = (optimize_size
-				   ? TARGET_64BIT ? 128 : 32
-				   : 128);
+  ix86_preferred_stack_boundary = ((TARGET_64BIT || TARGET_MACHO || !optimize_size)
+				   ? 128 : 32);
   if (ix86_preferred_stack_boundary_string)
     {
       i = atoi (ix86_preferred_stack_boundary_string);
@@ -4431,7 +4430,7 @@ ix86_setup_frame_addresses (void)
   cfun->machine->accesses_prev_frame = 1;
 }
 
-#if defined(HAVE_GAS_HIDDEN) && (SUPPORTS_ONE_ONLY - 0)
+#if (defined(HAVE_GAS_HIDDEN) && (SUPPORTS_ONE_ONLY - 0)) || TARGET_MACHO
 # define USE_HIDDEN_LINKONCE 1
 #else
 # define USE_HIDDEN_LINKONCE 0
@@ -4470,6 +4469,19 @@ ix86_file_end (void)
 
       get_pc_thunk_name (name, regno);
 
+#if TARGET_MACHO
+      if (TARGET_MACHO)
+	{
+	  switch_to_section (darwin_sections[text_coal_section]);
+	  fputs ("\t.weak_definition\t", asm_out_file);
+	  assemble_name (asm_out_file, name);
+	  fputs ("\n\t.private_extern\t", asm_out_file);
+	  assemble_name (asm_out_file, name);
+	  fputs ("\n", asm_out_file);
+	  ASM_OUTPUT_LABEL (asm_out_file, name);
+	}
+      else
+#endif
       if (USE_HIDDEN_LINKONCE)
 	{
 	  tree decl;
@@ -4508,7 +4520,7 @@ ix86_file_end (void)
 /* Emit code for the SET_GOT patterns.  */
 
 const char *
-output_set_got (rtx dest)
+output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
 {
   rtx xops[3];
 
@@ -4517,7 +4529,7 @@ output_set_got (rtx dest)
 
   if (! TARGET_DEEP_BRANCH_PREDICTION || !flag_pic)
     {
-      xops[2] = gen_rtx_LABEL_REF (Pmode, gen_label_rtx ());
+      xops[2] = gen_rtx_LABEL_REF (Pmode, label ? label : gen_label_rtx ());
 
       if (!flag_pic)
 	output_asm_insn ("mov{l}\t{%2, %0|%0, %2}", xops);
@@ -4525,10 +4537,12 @@ output_set_got (rtx dest)
 	output_asm_insn ("call\t%a2", xops);
 
 #if TARGET_MACHO
-      /* Output the "canonical" label name ("Lxx$pb") here too.  This
-         is what will be referred to by the Mach-O PIC subsystem.  */
-      ASM_OUTPUT_LABEL (asm_out_file, machopic_function_base_name ());
+      /* Output the Mach-O "canonical" label name ("Lxx$pb") here too.  This
+         is what will be referenced by the Mach-O PIC subsystem.  */
+      if (!label)
+	ASM_OUTPUT_LABEL (asm_out_file, machopic_function_base_name ());
 #endif
+
       (*targetm.asm_out.internal_label) (asm_out_file, "L",
 				 CODE_LABEL_NUMBER (XEXP (xops[2], 0)));
 
@@ -4544,11 +4558,20 @@ output_set_got (rtx dest)
       xops[2] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
       xops[2] = gen_rtx_MEM (QImode, xops[2]);
       output_asm_insn ("call\t%X2", xops);
+      /* Output the Mach-O "canonical" label name ("Lxx$pb") here too.  This
+         is what will be referenced by the Mach-O PIC subsystem.  */
+#if TARGET_MACHO
+      if (!label)
+	ASM_OUTPUT_LABEL (asm_out_file, machopic_function_base_name ());
+#endif
     }
+
+  if (TARGET_MACHO)
+    return "";
 
   if (!flag_pic || TARGET_DEEP_BRANCH_PREDICTION)
     output_asm_insn ("add{l}\t{%1, %0|%0, %1}", xops);
-  else if (!TARGET_MACHO)
+  else
     output_asm_insn ("add{l}\t{%1+[.-%a2], %0|%0, %1+(.-%a2)}", xops);
 
   return "";
@@ -16708,6 +16731,13 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
   fprintf (file, "\t.long %s\n", binder_name);
 }
+
+void
+darwin_x86_file_end (void)
+{
+  darwin_file_end ();
+  ix86_file_end ();
+}
 #endif /* TARGET_MACHO */
 
 /* Order the registers for register allocator.  */
@@ -16996,7 +17026,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 #endif /* TARGET_MACHO */
 	{
 	  tmp = gen_rtx_REG (SImode, 2 /* ECX */);
-	  output_set_got (tmp);
+	  output_set_got (tmp, NULL_RTX);
 
 	  xops[1] = tmp;
 	  output_asm_insn ("mov{l}\t{%0@GOT(%1), %1|%1, %0@GOT[%1]}", xops);

@@ -1,3 +1,20 @@
+2006-01-10  Stuart Hastings  <stuart@apple.com>
+
+	* gcc/config/i386/i386.md (set_got): Update.
+	(set_got_labelled): New.  (UNSPEC_LD_MPIC): New.
+	(builtin_setjmp_receiver): Mach-O support.
+	* gcc/config/i386/darwin.h (TARGET_ASM_FILE_END) Define.
+	(GOT_SYMBOL_NAME): Define.
+	(FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN): New.
+	(TARGET_DEEP_BRANCH_PREDICTION): Remove.
+	* gcc/config/i386/i386.c (override_options): Revise for Darwin.
+	(USE_HIDDEN_LINKONCE): Enable for Mach-O.  (ix86_file_end): Mach-O
+	support.  (darwin_x86_file_end): New.  (output_set_got): Add label
+	parameter, revise for Mach-O.  (x86_output_mi_thunk): Likewise.
+	* gcc/config/i386/i386-protos.h (output_set_got): Likewise.
+	* gcc/config/darwin.c (machopic_legitimize_pic_address): Update
+	regs_ever_live[].
+
 2006-01-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (SH5_WOULD_BE_PARTIAL_NREGS): Use GET_MODE_SIZE

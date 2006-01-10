@@ -37,6 +37,9 @@ Boston, MA 02110-1301, USA.  */
     }                                           \
   while (0)
 
+#undef FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
+#define FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN (0)
+
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
 
@@ -69,6 +72,10 @@ Boston, MA 02110-1301, USA.  */
 
 #define SHIFT_DOUBLE_OMITS_COUNT 0
 
+extern void darwin_x86_file_end (void);
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END darwin_x86_file_end
+
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
 /* String containing the assembler's comment-starter.  */
@@ -80,15 +87,13 @@ Boston, MA 02110-1301, USA.  */
 
 #define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_128BIT_LONG_DOUBLE | MASK_ALIGN_DOUBLE)
 
-/* TARGET_DEEP_BRANCH_PREDICTION is incompatible with Mach-O PIC.  */
-
-#undef TARGET_DEEP_BRANCH_PREDICTION
-#define TARGET_DEEP_BRANCH_PREDICTION   0
-
 /* For now, disable dynamic-no-pic.  We'll need to go through i386.c
    with a fine-tooth comb looking for refs to flag_pic!  */
 #define MASK_MACHO_DYNAMIC_NO_PIC 0
 #define TARGET_DYNAMIC_NO_PIC	  (target_flags & MASK_MACHO_DYNAMIC_NO_PIC)
+
+#undef GOT_SYMBOL_NAME
+#define GOT_SYMBOL_NAME (machopic_function_base_name ())
 
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
