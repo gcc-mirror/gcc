@@ -1,3 +1,9 @@
+2006-01-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/25718
+	* config/cris/cris.md ("uminsi3"): Don't use 8- or 16-bit sizes
+	for a negative bound.
+
 2006-01-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (get_constraint_for_component_ref):
