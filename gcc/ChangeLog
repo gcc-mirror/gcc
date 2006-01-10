@@ -1,3 +1,24 @@
+2006-01-10  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/predicates.md (easy_fp_constant): Discount decimal
+	float modes.
+	* config/rs6000/rs6000.c (rs6000_scalar_mode_supported_p): New.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Define.
+	(USE_FP_FOR_ARG): Reject decimal float modes.
+	(function_arg_advance): Likewise.
+	(output_toc): Handle emitting TDmode, DDmode and SDmode constants.
+	(rs6000_handle_altivec_attribute): Do not permit decimal floating
+	point types in AltiVec vectors.
+	(rs6000_function_value): Use GP_ARG_RETURN for decimal floats.
+	(rs6000_libcall_value): Likewise.
+
+2006-01-10  Ben Elliston  <bje@au.ibm.com>
+
+	* expr.c (emit_move_change_mode): Always adjust addresses, not
+	just during reload.  Copy replacements only during reload.
+	(emit_move_insn_1): Move MODE_DECIMAL_FLOAT modes by invoking
+	emit_move_via_integer.
+
 2006-01-09  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/ieee754-df.S: New file.
@@ -34,6 +55,12 @@
 
 	* config/i386/sse.md (*vec_extractv2di_1_sse2): New.
 	(*vec_extractv2di_1_sse): New.
+
+2006-01-09  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/tm.texi (Data Output): Add REAL_VALUE_TO_TARGET_DECIMAL32,
+	REAL_VALUE_TO_TARGET_DECIMAL64 and REAL_VALUE_TO_TARGET_DECIMAL64
+	macros.
 
 2006-01-09  Ben Elliston  <bje@au.ibm.com>
 
