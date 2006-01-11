@@ -1,3 +1,8 @@
+2006-01-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/25734
+	* gcc.dg/tree-ssa/pr25734.c: New testcase.
+
 2006-01-10  Bernhard Fischer  <rep.nop@aon.at>
 
 	PR fortran/25486
