@@ -367,7 +367,7 @@ struct control_flow_graph GTY(())
   basic_block x_exit_block_ptr;
 
   /* Index by basic block number, get basic block struct info.  */
-  varray_type x_basic_block_info;
+  VEC(basic_block,gc) *x_basic_block_info;
 
   /* Number of basic blocks in this flow graph.  */
   int x_n_basic_blocks;
@@ -399,7 +399,7 @@ struct control_flow_graph GTY(())
 #define label_to_block_map_for_function(FN)  ((FN)->cfg->x_label_to_block_map)
 
 #define BASIC_BLOCK_FOR_FUNCTION(FN,N) \
-  (VARRAY_BB (basic_block_info_for_function(FN), (N)))
+  (VEC_index (basic_block, basic_block_info_for_function(FN), (N)))
 
 /* Defines for textual backward source compatibility.  */
 #define ENTRY_BLOCK_PTR		(cfun->cfg->x_entry_block_ptr)
@@ -411,7 +411,8 @@ struct control_flow_graph GTY(())
 #define label_to_block_map	(cfun->cfg->x_label_to_block_map)
 #define profile_status		(cfun->cfg->x_profile_status)
 
-#define BASIC_BLOCK(N)		(VARRAY_BB (basic_block_info, (N)))
+#define BASIC_BLOCK(N)		(VEC_index (basic_block, basic_block_info, (N)))
+#define SET_BASIC_BLOCK(N,BB)	(VEC_replace (basic_block, basic_block_info, (N), (BB)))
 
 /* TRUE if we should re-run loop discovery after threading jumps, FALSE
    otherwise.  */

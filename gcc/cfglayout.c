@@ -814,7 +814,7 @@ fixup_reorder_chain (void)
   for (; bb; prev_bb = bb, bb = bb->aux, index ++)
     {
       bb->index = index;
-      BASIC_BLOCK (index) = bb;
+      SET_BASIC_BLOCK (index, bb);
 
       bb->prev_bb = prev_bb;
       prev_bb->next_bb = bb;
