@@ -1,3 +1,8 @@
+2006-01-11  Ben Elliston  <bje@au.ibm.com>
+
+	* config/i386/i386.c (ix86_return_in_memory): Fix comment: this
+	function returns true in the positive case.
+
 2006-01-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/20754
