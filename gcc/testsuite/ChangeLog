@@ -1,3 +1,8 @@
+2005-01-11  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR c++/25632
+	* g++.dg/other/pr25632.C: New test.
+
 2006-01-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25730
