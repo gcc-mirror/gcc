@@ -1,3 +1,17 @@
+2006-01-11  Ian Lance Taylor <ian@airs.com>
+
+	* combine.c (struct undo): Remove is_int.  Enumify types of undos.
+	Allow undoing set of machine mode.
+	(do_SUBST): Use enums instead of is_int.
+	(do_SUBST_MODE): New function.
+	(SUBST_MODE): New macro.
+	(try_combine): Use SUBST_MODE/PUT_MODE instead of generating a new
+	reg and trying to replace reg_regno_rtx with a new register.
+	(undo_all): Use new enums, handle undoing a PUT_MODE change.
+	(simplify_set): Use SUBST_MODE.
+	(distribute_notes): Remove code that tried to update reg notes
+	for regno_reg_rtx changes.
+
 2006-01-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/23109
