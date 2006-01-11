@@ -46,6 +46,7 @@ enum TYPE
   TYPE_CUINT,
   TYPE_FLOAT,
   TYPE_CFLOAT,
+  TYPE_DEC_FLOAT,
   TYPE_SENUM,
   TYPE_UENUM,
   TYPE_PTR,
@@ -82,7 +83,14 @@ struct types base_types[] = {
 { "float", TYPE_FLOAT, 0, 0 },
 { "double", TYPE_FLOAT, 0, 0 },
 { "long double", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "_Decimal32", TYPE_DEC_FLOAT, 0, 0 },
+{ "_Decimal64", TYPE_DEC_FLOAT, 0, 0 },
+{ "_Decimal128", TYPE_DEC_FLOAT, 0, 0 },
+#define NTYPES1 21
+#else
 #define NTYPES1 18
+#endif
 { "Tchar", TYPE_UINT, 127, 'C' },
 { "Tschar", TYPE_INT, 127, 'C' },
 { "Tuchar", TYPE_UINT, 255, 'C' },
@@ -103,6 +111,11 @@ struct types base_types[] = {
 { "Tfloat", TYPE_FLOAT, 0, 0 },
 { "Tdouble", TYPE_FLOAT, 0, 0 },
 { "Tldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "TDecimal32", TYPE_DEC_FLOAT, 0, 0 },
+{ "TDecimal64", TYPE_DEC_FLOAT, 0, 0 },
+{ "TDecimal128", TYPE_DEC_FLOAT, 0, 0 },
+#endif
 { "enum E0", TYPE_UENUM, 0, ' ' },
 { "enum E1", TYPE_UENUM, 1, ' ' },
 { "enum E2", TYPE_SENUM, 3, ' ' },
@@ -214,6 +227,11 @@ struct types attrib_types[] = {
 { "Talfloat", TYPE_FLOAT, 0, 0 },
 { "Taldouble", TYPE_FLOAT, 0, 0 },
 { "Talldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "TalDecimal32", TYPE_DEC_FLOAT, 0, 0 },
+{ "TalDecimal64", TYPE_DEC_FLOAT, 0, 0 },
+{ "TalDecimal128", TYPE_DEC_FLOAT, 0, 0 },
+#endif
 { "TalE0", TYPE_UENUM, 0, ' ' },
 { "TalE1", TYPE_UENUM, 1, ' ' },
 { "TalE2", TYPE_SENUM, 3, ' ' },
@@ -242,6 +260,11 @@ struct types attrib_types[] = {
 { "Tal1float", TYPE_FLOAT, 0, 0 },
 { "Tal1double", TYPE_FLOAT, 0, 0 },
 { "Tal1ldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "Tal1Decimal32", TYPE_DEC_FLOAT, 0, 0},
+{ "Tal1Decimal64", TYPE_DEC_FLOAT, 0, 0},
+{ "Tal1Decimal128", TYPE_DEC_FLOAT, 0, 0},
+#endif
 { "Tal1E0", TYPE_UENUM, 0, ' ' },
 { "Tal1E1", TYPE_UENUM, 1, ' ' },
 { "Tal1E2", TYPE_SENUM, 3, ' ' },
@@ -270,6 +293,11 @@ struct types attrib_types[] = {
 { "Tal2float", TYPE_FLOAT, 0, 0 },
 { "Tal2double", TYPE_FLOAT, 0, 0 },
 { "Tal2ldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "Tal2Decimal32", TYPE_DEC_FLOAT, 0, 0 },
+{ "Tal2Decimal64", TYPE_DEC_FLOAT, 0, 0 },
+{ "Tal2Decimal128", TYPE_DEC_FLOAT, 0, 0 },
+#endif
 { "Tal2E0", TYPE_UENUM, 0, ' ' },
 { "Tal2E1", TYPE_UENUM, 1, ' ' },
 { "Tal2E2", TYPE_SENUM, 3, ' ' },
@@ -298,6 +326,11 @@ struct types attrib_types[] = {
 { "Tal4float", TYPE_FLOAT, 0, 0 },
 { "Tal4double", TYPE_FLOAT, 0, 0 },
 { "Tal4ldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "Tal4Decimal32", TYPE_DEC_FLOAT, 0, 0 },
+{ "Tal4Decimal64", TYPE_DEC_FLOAT, 0, 0 },
+{ "Tal4Decimal128", TYPE_DEC_FLOAT, 0, 0 },
+#endif
 { "Tal4E0", TYPE_UENUM, 0, ' ' },
 { "Tal4E1", TYPE_UENUM, 1, ' ' },
 { "Tal4E2", TYPE_SENUM, 3, ' ' },
@@ -326,6 +359,11 @@ struct types attrib_types[] = {
 { "Tal8float", TYPE_FLOAT, 0, 0 },
 { "Tal8double", TYPE_FLOAT, 0, 0 },
 { "Tal8ldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "Tal8Decimal32", TYPE_DEC_FLOAT, 0, 0 },
+{ "Tal8Decimal64", TYPE_DEC_FLOAT, 0, 0 },
+{ "Tal8Decimal128", TYPE_DEC_FLOAT, 0, 0 },
+#endif
 { "Tal8E0", TYPE_UENUM, 0, ' ' },
 { "Tal8E1", TYPE_UENUM, 1, ' ' },
 { "Tal8E2", TYPE_SENUM, 3, ' ' },
@@ -354,6 +392,11 @@ struct types attrib_types[] = {
 { "Tal16float", TYPE_FLOAT, 0, 0 },
 { "Tal16double", TYPE_FLOAT, 0, 0 },
 { "Tal16ldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "Tal16Decimal32", TYPE_DEC_FLOAT, 0, 0 },
+{ "Tal16Decimal64", TYPE_DEC_FLOAT, 0, 0 },
+{ "Tal16Decimal128", TYPE_DEC_FLOAT, 0, 0 },
+#endif
 { "Tal16E0", TYPE_UENUM, 0, ' ' },
 { "Tal16E1", TYPE_UENUM, 1, ' ' },
 { "Tal16E2", TYPE_SENUM, 3, ' ' },
@@ -472,6 +515,11 @@ struct types attrib_array_types[] = {
 { "Talx1float", TYPE_FLOAT, 0, 0 },
 { "Talx1double", TYPE_FLOAT, 0, 0 },
 { "Talx1ldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "Talx1Decimal32", TYPE_DEC_FLOAT, 0 ,0 },
+{ "Talx1Decimal64", TYPE_DEC_FLOAT, 0 ,0 },
+{ "Talx1Decimal128", TYPE_DEC_FLOAT, 0 ,0 },
+#endif
 { "Talx1E0", TYPE_UENUM, 0, ' ' },
 { "Talx1E1", TYPE_UENUM, 1, ' ' },
 { "Talx1E2", TYPE_SENUM, 3, ' ' },
@@ -496,6 +544,11 @@ struct types attrib_array_types[] = {
 { "Talx2float", TYPE_FLOAT, 0, 0 },
 { "Talx2double", TYPE_FLOAT, 0, 0 },
 { "Talx2ldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "Talx2Decimal32", TYPE_DEC_FLOAT, 0 , 0 },
+{ "Talx2Decimal64", TYPE_DEC_FLOAT, 0 , 0 },
+{ "Talx2Decimal128", TYPE_DEC_FLOAT, 0 , 0 },
+#endif
 { "Talx2E0", TYPE_UENUM, 0, ' ' },
 { "Talx2E1", TYPE_UENUM, 1, ' ' },
 { "Talx2E2", TYPE_SENUM, 3, ' ' },
@@ -518,6 +571,11 @@ struct types attrib_array_types[] = {
 { "Talx4float", TYPE_FLOAT, 0, 0 },
 { "Talx4double", TYPE_FLOAT, 0, 0 },
 { "Talx4ldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "Talx4Decimal32", TYPE_DEC_FLOAT, 0 , 0 },
+{ "Talx4Decimal64", TYPE_DEC_FLOAT, 0 , 0 },
+{ "Talx4Decimal128", TYPE_DEC_FLOAT, 0 , 0 },
+#endif
 { "Talx4E0", TYPE_UENUM, 0, ' ' },
 { "Talx4E1", TYPE_UENUM, 1, ' ' },
 { "Talx4E2", TYPE_SENUM, 3, ' ' },
@@ -536,7 +594,11 @@ struct types attrib_array_types[] = {
 { "Taly8cptr", TYPE_PTR, 0, 0 },
 { "Taly8iptr", TYPE_PTR, 0, 0 },
 { "Talx8double", TYPE_FLOAT, 0, 0 },
-{ "Talx8ldouble", TYPE_FLOAT, 0, 0 }
+{ "Talx8ldouble", TYPE_FLOAT, 0, 0 },
+#ifndef SKIP_DECIMAL_FLOAT
+{ "Talx8Decimal64", TYPE_DEC_FLOAT, 0, 0 },
+{ "Talx8Decimal128", TYPE_DEC_FLOAT, 0, 0 }
+#endif
 #define NAATYPES2 (sizeof (attrib_array_types) / sizeof (attrib_array_types[0]))
 };
 struct types complex_attrib_array_types[] = {
@@ -950,6 +1012,11 @@ output_FNB (char mode, struct entry *e)
 {
   unsigned long long int l1, l2, m;
   int signs = 0;
+#ifndef SKIP_DECIMAL_FLOAT
+  int suffix = 0;
+  char DEC_SUFFIX[3][3]={"DF","DD","DL"};
+#endif
+  
   const char *p, *q;
 
   if (e->type->type == TYPE_OTHER)
@@ -991,6 +1058,29 @@ output_FNB (char mode, struct entry *e)
       fprintf (outfile, "%s%f,%s%f", (signs & 1) ? "-" : "",
 	       ((double) l1) / 64, (signs & 2) ? "-" : "", ((double) l2) / 64);
       break;
+#ifndef SKIP_DECIMAL_FLOAT
+    case TYPE_DEC_FLOAT:
+      l1 &= 0xffffff;
+      l2 &= 0xffffff;
+      signs = generate_random () & 3;
+      
+      /* Get the suffix of Decimal Floting Points per 
+	 e->type->name.  Distinguish these three DFP types by
+         e->type->name.  */
+      if (strstr(e->type->name, "Decimal32")) suffix=0;
+      else if (strstr(e->type->name, "Decimal64")) suffix=1;
+      else if (strstr(e->type->name, "Decimal128")) suffix=2;
+      else
+	abort ();
+
+      /* Formatted input/output specifiers for DFP types have not been
+         implemented in GLIBC.  %f here used in fprintf is just to 
+         dump the numbers to outfile.  */
+      fprintf (outfile, "%s%f%s,%s%f%s", 
+	       (signs & 1) ? "-" : "", ((double) l1) / 64, DEC_SUFFIX[suffix], 
+	       (signs & 2) ? "-" : "", ((double) l2) / 64, DEC_SUFFIX[suffix]);
+      break;
+#endif
     case TYPE_CINT:
       signs = generate_random () & 3;
       l1 &= e->type->maxval;

@@ -1,3 +1,68 @@
+2006-01-12  Janis Johnson <janis187@us.ibm.com>
+	    Yao Qi  <qiyaoltc@cn.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+	    Jon Grimm  <jgrimm2@us.ibm.com>
+
+	* gcc.dg/nodfp-1.c: New test.
+	* gcc.dg/compat/scalar-return-dfp_x.c: Likewise.
+	* gcc.dg/compat/scalar-return-dfp_x.c: Likewise.
+	* gcc.dg/compat/scalar-return-dfp_main.c: Likewise.
+	* gcc.dg/compat/scalar-by-value-dfp_main.c: Likewise.
+	* gcc.dg/compat/scalar-by-value-dfp_x.c: Likewise.
+	* gcc.dg/compat/scalar-return-dfp_y.c: Likewise.
+	* gcc.dg/compat/scalar-by-value-dfp_y.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-float.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-dfp.c: Likewise.
+	* gcc.dg/format/dfp-scanf-1.c: Likewise.
+	* gcc.dg/format/dfp-printf-1.c: Likewise.
+	* gcc.dg/compat/struct-layout-1.exp: Use c-compat.exp.
+	(compat_setup_dfp): New.
+	* gcc.dg/compat/compat.exp: Use it.
+	(compat-use-alt-compiler, compat-use-tst-compiler): Move to new file.
+	Make some variables global, prepend "compat_" to their names.
+	* gcc.dg/compat/struct-layout-1.h: Conditional DFP support.
+	* gcc.dg/compat/struct-layout-1_generate.c: Ditto.
+	* gcc.misc-tests/dectest.exp: New test driver for decTest.
+	* lib/compat.exp (compat_skip_list): Make global, rename.
+	* lib/c-compat.exp: New file.
+	* lib/target-supports.exp (check_effective_target_dfp): New.
+
+	* gcc.dg/dfp/dec-eval-method.c, gcc.dg/dfp/func-array.c,
+	gcc.dg/dfp/convert-dfp-fold.c, gcc.dg/dfp/struct-union.c,
+	gcc.dg/dfp/compare-rel.h, gcc.dg/dfp/convert-dfp-round.c,
+	gcc.dg/dfp/func-struct.c, gcc.dg/dfp/constants-c99.c,
+	gcc.dg/dfp/compare-eq-d32.c, gcc.dg/dfp/func-vararg-mixed.c,
+	gcc.dg/dfp/compare-rel-d128.c, gcc.dg/dfp/operator-comma.c,
+	gcc.dg/dfp/decfloat-constants.c, gcc.dg/dfp/operator-bitwise.c,
+	gcc.dg/dfp/func-mixed.c, gcc.dg/dfp/compare-eq-dfp.c,
+	gcc.dg/dfp/operator-assignment.c, gcc.dg/dfp/dfp-round.h,
+	gcc.dg/dfp/modes.c, gcc.dg/dfp/keywords-c99.c, gcc.dg/dfp/nan-1.c,
+	gcc.dg/dfp/loop-index.c, gcc.dg/dfp/compare-eq-d64.c,
+	gcc.dg/dfp/convert-bfp.c, gcc.dg/dfp/usual-arith-conv-const.c,
+	gcc.dg/dfp/convert-dfp.c, gcc.dg/dfp/compare-rel-const.c,
+	gcc.dg/dfp/convert-int-fold.c, gcc.dg/dfp/keywords-pedantic.c,
+	gcc.dg/dfp/compare-rel-d32.c, gcc.dg/dfp/call-by-value.c,
+	gcc.dg/dfp/constants-hex.c, gcc.dg/dfp/func-scalar.c,
+	gcc.dg/dfp/keywords-ignored-c99.c, gcc.dg/dfp/snan.c,
+	gcc.dg/dfp/usual-arith-conv.c, gcc.dg/dfp/constants-pedantic.c,
+	gcc.dg/dfp/operator-logical.c, gcc.dg/dfp/compare-eq-d128.c,
+	gcc.dg/dfp/convert-bfp-fold.c, gcc.dg/dfp/ctypes.c,
+	gcc.dg/dfp/convert-int.c, gcc.dg/dfp/keywords-c89.c,
+	gcc.dg/dfp/constants.c, gcc.dg/dfp/compare-rel-dfp.c,
+	gcc.dg/dfp/compare-eq-const.c, gcc.dg/dfp/cast-bad.c,
+	gcc.dg/dfp/operator-arith-fold.c, gcc.dg/dfp/union-init.c,
+	gcc.dg/dfp/struct-layout-1.c,
+	gcc.dg/dfp/compare-eq.hgcc.dg/dfp/convert-int-saturate.c,
+	gcc.dg/dfp/compare-rel-d64.c, gcc.dg/dfp/func-vararg-size0.c,
+	gcc.dg/dfp/Wconversion-2.c, gcc.dg/dfp/nan-2.c,
+	gcc.dg/dfp/operator-cond.c, gcc.dg/dfp/composite-type.c,
+	gcc.dg/dfp/func-vararg-dfp.c,
+	gcc.dg/dfp/dfp.expgcc.dg/dfp/keywords-reserved.c,
+	gcc.dg/dfp/convert-complex.c, gcc.dg/dfp/Wbad-function-cast-1.c,
+	gcc.dg/dfp/operator-unary.c, gcc.dg/dfp/altivec-types.c,
+	gcc.dg/dfp/cast.c, gcc.dg/dfp/typespec.c,
+	gcc.dg/dfp/wtr-conversion-1.c: New tests.
+	
 2006-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/25734
