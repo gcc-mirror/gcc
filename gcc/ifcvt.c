@@ -3135,7 +3135,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   if (new_bb)
     {
       new_bb->index = then_bb_index;
-      BASIC_BLOCK (then_bb_index) = new_bb;
+      SET_BASIC_BLOCK (then_bb_index, new_bb);
       /* Since the fallthru edge was redirected from test_bb to new_bb,
          we need to ensure that new_bb is in the same partition as
          test bb (you can not fall through across section boundaries).  */

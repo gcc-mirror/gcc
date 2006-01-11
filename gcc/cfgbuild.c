@@ -542,9 +542,12 @@ find_basic_blocks (rtx f)
      instructions at all until close to the end of compilation when we
      actually lay them out.  */
 
-  VARRAY_BB_INIT (basic_block_info, n_basic_blocks, "basic_block_info");
-  BASIC_BLOCK (ENTRY_BLOCK) = ENTRY_BLOCK_PTR;
-  BASIC_BLOCK (EXIT_BLOCK) = EXIT_BLOCK_PTR;
+  basic_block_info = VEC_alloc (basic_block, gc, n_basic_blocks);
+  VEC_safe_grow (basic_block, gc, basic_block_info, n_basic_blocks);
+  memset (VEC_address (basic_block, basic_block_info), 0,
+	  sizeof (basic_block) * n_basic_blocks);
+  SET_BASIC_BLOCK (ENTRY_BLOCK, ENTRY_BLOCK_PTR);
+  SET_BASIC_BLOCK (EXIT_BLOCK, EXIT_BLOCK_PTR);
 
   find_basic_blocks_1 (f);
 

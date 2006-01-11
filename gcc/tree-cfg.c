@@ -131,7 +131,10 @@ init_empty_tree_cfg (void)
   profile_status = PROFILE_ABSENT;
   n_basic_blocks = NUM_FIXED_BLOCKS;
   last_basic_block = NUM_FIXED_BLOCKS;
-  VARRAY_BB_INIT (basic_block_info, initial_cfg_capacity, "basic_block_info");
+  basic_block_info = VEC_alloc (basic_block, gc, initial_cfg_capacity);
+  VEC_safe_grow (basic_block, gc, basic_block_info, initial_cfg_capacity);
+  memset (VEC_address (basic_block, basic_block_info), 0,
+	  sizeof (basic_block) * initial_cfg_capacity);
 
   /* Build a mapping of labels to their associated blocks.  */
   label_to_block_map = VEC_alloc (basic_block, gc, initial_cfg_capacity);
@@ -139,8 +142,8 @@ init_empty_tree_cfg (void)
   memset (VEC_address (basic_block, label_to_block_map),
 	  0, sizeof (basic_block) * initial_cfg_capacity);
 
-  BASIC_BLOCK (ENTRY_BLOCK) = ENTRY_BLOCK_PTR;
-  BASIC_BLOCK (EXIT_BLOCK) = EXIT_BLOCK_PTR;
+  SET_BASIC_BLOCK (ENTRY_BLOCK, ENTRY_BLOCK_PTR);
+  SET_BASIC_BLOCK (EXIT_BLOCK, EXIT_BLOCK_PTR);
   ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
   EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
 }
@@ -178,7 +181,15 @@ build_tree_cfg (tree *tp)
     create_empty_bb (ENTRY_BLOCK_PTR);
 
   /* Adjust the size of the array.  */
-  VARRAY_GROW (basic_block_info, n_basic_blocks);
+  if (VEC_length (basic_block, basic_block_info) < (size_t) n_basic_blocks)
+    {
+      size_t old_size = VEC_length (basic_block, basic_block_info);
+      basic_block *p;
+      VEC_safe_grow (basic_block, gc, basic_block_info, n_basic_blocks);
+      p = VEC_address (basic_block, basic_block_info);
+      memset (&p[old_size], 0,
+	      sizeof (basic_block) * (n_basic_blocks - old_size));
+    }
 
   /* To speed up statement iterator walks, we first purge dead labels.  */
   cleanup_dead_labels ();
@@ -382,14 +393,18 @@ create_bb (void *h, void *e, basic_block after)
   link_block (bb, after);
 
   /* Grow the basic block array if needed.  */
-  if ((size_t) last_basic_block == VARRAY_SIZE (basic_block_info))
+  if ((size_t) last_basic_block == VEC_length (basic_block, basic_block_info))
     {
+      size_t old_size = VEC_length (basic_block, basic_block_info);
       size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
-      VARRAY_GROW (basic_block_info, new_size);
+      basic_block *p;
+      VEC_safe_grow (basic_block, gc, basic_block_info, new_size);
+      p = VEC_address (basic_block, basic_block_info);
+      memset (&p[old_size], 0, sizeof (basic_block) * (new_size - old_size));
     }
 
   /* Add the newly created block to the array.  */
-  BASIC_BLOCK (last_basic_block) = bb;
+  SET_BASIC_BLOCK (last_basic_block, bb);
 
   n_basic_blocks++;
   last_basic_block++;
