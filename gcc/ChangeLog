@@ -1,3 +1,10 @@
+2006-01-11  Bernhard Fischer  <rep.nop@aon.at>
+
+	PR fortran/25486
+	* scanner.c (load_line): use maxlen to determine the line-length used
+	for padding lines in fixed form.
+
+
 2006-01-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/23109
