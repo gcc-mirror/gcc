@@ -640,7 +640,6 @@ const int x86_memory_mismatch_stall = m_ATHLON_K8 | m_PENT4 | m_NOCONA;
 const int x86_accumulate_outgoing_args = m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO;
 const int x86_prologue_using_move = m_ATHLON_K8 | m_PPRO;
 const int x86_epilogue_using_move = m_ATHLON_K8 | m_PPRO;
-const int x86_decompose_lea = m_PENT4 | m_NOCONA;
 const int x86_shift1 = ~m_486;
 const int x86_arch_always_fancy_math_387 = m_PENT | m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
 const int x86_sse_partial_reg_dependency = m_PENT4 | m_NOCONA | m_PPRO;
@@ -16446,7 +16445,6 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
 	      return false;
 	    }
 	  if ((value == 2 || value == 3)
-	      && !TARGET_DECOMPOSE_LEA
 	      && ix86_cost->lea <= ix86_cost->shift_const)
 	    {
 	      *total = ix86_cost->lea;

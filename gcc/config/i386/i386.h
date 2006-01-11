@@ -209,7 +209,6 @@ extern int x86_prefetch_sse;
 #define TARGET_MEMORY_MISMATCH_STALL (x86_memory_mismatch_stall & TUNEMASK)
 #define TARGET_PROLOGUE_USING_MOVE (x86_prologue_using_move & TUNEMASK)
 #define TARGET_EPILOGUE_USING_MOVE (x86_epilogue_using_move & TUNEMASK)
-#define TARGET_DECOMPOSE_LEA (x86_decompose_lea & TUNEMASK)
 #define TARGET_PREFETCH_SSE (x86_prefetch_sse)
 #define TARGET_SHIFT1 (x86_shift1 & TUNEMASK)
 #define TARGET_USE_FFREEP (x86_use_ffreep & TUNEMASK)
