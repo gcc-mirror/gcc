@@ -792,7 +792,7 @@ df_compact_blocks (struct df *df)
   i = NUM_FIXED_BLOCKS;
   FOR_EACH_BB (bb) 
     {
-      BASIC_BLOCK (i) = bb;
+      SET_BASIC_BLOCK (i, bb);
       bb->index = i;
       i++;
     }
@@ -800,7 +800,7 @@ df_compact_blocks (struct df *df)
   gcc_assert (i == n_basic_blocks);
 
   for (; i < last_basic_block; i++)
-    BASIC_BLOCK (i) = NULL;
+    SET_BASIC_BLOCK (i, NULL);
 }
 
 
@@ -830,7 +830,7 @@ df_bb_replace (struct df *df, int old_index, basic_block new_block)
 	}
     }
 
-  BASIC_BLOCK (old_index) = new_block;
+  SET_BASIC_BLOCK (old_index, new_block);
   new_block->index = old_index;
 }
 
