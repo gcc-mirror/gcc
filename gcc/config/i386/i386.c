@@ -14567,10 +14567,13 @@ ix86_init_mmx_sse_builtins (void)
       (*lang_hooks.types.register_builtin_type) (float80_type, "__float80");
     }
 
-  float128_type = make_node (REAL_TYPE);
-  TYPE_PRECISION (float128_type) = 128;
-  layout_type (float128_type);
-  (*lang_hooks.types.register_builtin_type) (float128_type, "__float128");
+  if (TARGET_64BIT)
+    {
+      float128_type = make_node (REAL_TYPE);
+      TYPE_PRECISION (float128_type) = 128;
+      layout_type (float128_type);
+      (*lang_hooks.types.register_builtin_type) (float128_type, "__float128");
+    }
 
   /* Add all builtins that are more or less simple operations on two
      operands.  */
