@@ -1,3 +1,9 @@
+2006-01-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/25386
+	* tree.c (lvalue_p_1): Any part of a COMPONENT_REF affects
+	packedness.
+
 2005-01-04  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR c++/25632
