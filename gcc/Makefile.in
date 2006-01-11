@@ -761,7 +761,7 @@ IPA_UTILS_H = ipa-utils.h $(TREE_H) $(CGRAPH_H)
 IPA_REFERENCE_H = ipa-reference.h bitmap.h $(TREE_H)  
 IPA_TYPE_ESCAPE_H = ipa-type-escape.h $(TREE_H)  
 CGRAPH_H = cgraph.h $(TREE_H)
-DF_H = df.h bitmap.h sbitmap.h $(BASIC_BLOCK_H)
+DF_H = df.h bitmap.h $(BASIC_BLOCK_H) alloc-pool.h
 DDG_H = ddg.h sbitmap.h $(DF_H)
 GCC_H = gcc.h version.h
 GGC_H = ggc.h gtype-desc.h
@@ -973,7 +973,8 @@ OBJS-common = \
  cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o loop-unroll.o	   \
  cfgrtl.o combine.o conflict.o convert.o coverage.o cse.o cselib.o 	   \
  dbxout.o ddg.o tree-ssa-loop-ch.o loop-invariant.o tree-ssa-loop-im.o	   \
- debug.o df.o dfp.o diagnostic.o dojump.o dominance.o loop-doloop.o	   \
+ debug.o df-core.o df-problems.o odf.o df-scan.o dfp.o diagnostic.o dojump.o     \
+ dominance.o loop-doloop.o	   					   \
  dwarf2asm.o dwarf2out.o emit-rtl.o except.o explow.o loop-iv.o		   \
  expmed.o expr.o final.o flow.o fold-const.o function.o gcse.o		   \
  genrtl.o ggc-common.o global.o graph.o gtype-desc.o			   \
@@ -2301,9 +2302,22 @@ tree-vect-generic.o : tree-vect-generic.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
     $(FLAGS_H) $(OPTABS_H) $(RTL_H) $(MACHMODE_H) $(EXPR_H) \
     langhooks.h $(FLAGS_H) $(DIAGNOSTIC_H) gt-tree-vect-generic.h $(GGC_H) \
     coretypes.h insn-codes.h
-df.o : df.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-   insn-config.h $(RECOG_H) function.h $(REGS_H) alloc-pool.h hard-reg-set.h \
-   $(BASIC_BLOCK_H) $(DF_H) bitmap.h sbitmap.h $(TM_P_H)
+df-core.o : df-core.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
+   insn-config.h $(RECOG_H) $(FUNCTION_H) $(REGS_H) alloc-pool.h \
+   hard-reg-set.h $(BASIC_BLOCK_H) $(DF_H) bitmap.h sbitmap.h \
+   $(TM_P_H) $(FLAGS_H) output.h tree-pass.h
+df-problems.o : df-problems.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(RTL_H) insn-config.h $(RECOG_H) $(FUNCTION_H) $(REGS_H) alloc-pool.h \
+   hard-reg-set.h $(BASIC_BLOCK_H) $(DF_H) bitmap.h sbitmap.h $(TM_P_H) \
+   $(FLAGS_H) output.h
+odf.o : odf.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
+   insn-config.h $(RECOG_H) $(FUNCTION_H) $(REGS_H) alloc-pool.h hard-reg-set.h \
+   $(BASIC_BLOCK_H) $(DF_H) bitmap.h sbitmap.h $(TM_P_H) $(FLAGS_H) \
+   output.h
+df-scan.o : df-scan.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
+   insn-config.h $(RECOG_H) $(FUNCTION_H) $(REGS_H) alloc-pool.h hard-reg-set.h \
+   $(BASIC_BLOCK_H) $(DF_H) bitmap.h sbitmap.h $(TM_P_H) $(FLAGS_H) \
+   output.h
 var-tracking.o : var-tracking.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(TREE_H) hard-reg-set.h insn-config.h reload.h $(FLAGS_H) \
    $(BASIC_BLOCK_H) output.h sbitmap.h alloc-pool.h $(FIBHEAP_H) $(HASHTAB_H) \
