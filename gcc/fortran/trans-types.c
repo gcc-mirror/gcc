@@ -1418,12 +1418,16 @@ copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to)
      a derived type, we need a copy of its component declarations.
      This is done by recursing into gfc_get_derived_type and
      ensures that the component's component declarations have
-     been built.  */
+     been built.  If it is a character, we need the character 
+     length, as well.  */
   for (; to_cm; to_cm = to_cm->next, from_cm = from_cm->next)
     {
       to_cm->backend_decl = from_cm->backend_decl;
       if (from_cm->ts.type == BT_DERIVED)
 	gfc_get_derived_type (to_cm->ts.derived);
+
+      else if (from_cm->ts.type == BT_CHARACTER)
+	to_cm->ts.cl->backend_decl = from_cm->ts.cl->backend_decl;
     }
 
   return 1;
