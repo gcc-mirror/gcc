@@ -624,7 +624,7 @@
 ;; TODO: Add a comment here.
 
 (define_predicate "sh_rep_vec"
-  (match_code "const_vector")
+  (match_code "const_vector,parallel")
 {
   int i;
   rtx x, y;
