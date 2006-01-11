@@ -1,5 +1,11 @@
 2006-01-11  Jan Hubicka  <jh@suse.cz>
 
+	* i386.h (TARGET_DECOMPOSE_LEA): Kill.
+	* i386.c (x86_decompose_lea): Kill.
+	(ix86_rtx_costs): Kill.
+
+2006-01-11  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_insert_node_to_hashtable): New function.
 	* cgraph.h (cgraph_node): Add inline_decl.
 	(cgraph_insert_node_to_hashtable): Declare.
