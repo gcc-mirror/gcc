@@ -1,3 +1,7 @@
+2006-01-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/ext/packed3.C: Add expected packed error.
+
 2006-01-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/25706

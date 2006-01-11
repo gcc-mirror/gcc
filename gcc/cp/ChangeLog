@@ -1,3 +1,8 @@
+2006-01-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.c (lvalue_p_1): Any part of a COMPONENT_REF affects
+	packedness.
+
 2006-01-06  Gabriel Dos Reis  <gdr@integrablesolutions.net>
 
 	* parser.c (cp_parser_primary_expression): Document the grammar
