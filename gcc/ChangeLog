@@ -1,3 +1,7 @@
+2005-01-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+   * df-scan.c (df_hard_reg_init) Moved declaration of i outside ifdef.
+
 2006-01-11  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (threaded_edges): New VEC to
@@ -47,6 +51,10 @@
 	* tree-cfg.c (init_empty_tree_cfg, build_tree_cfg, create_bb):
 	Likewise.
 
+2005-01-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* df-scan.c (df_hard_reg_init) Moved declaration of i outside ifdef.
+	
 2005-01-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* Makefile.in Removed rotted odf.c entry.
