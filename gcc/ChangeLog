@@ -229,6 +229,9 @@
 	invariant_expr_equal_p, find_defs, check_dependencies,
 	find_invariant_insn, find_invariants_to_move, move_invariant_reg,
 	free_inv_motion_data, move_loop_invariants): Ditto.
+	* Makefile.in (df.c, df-scan.c df-problems.c df-core.c): 
+	Update dependencies.
+	(odf.c): Added defective entry that was deleted later in day.
 	* sched-deps.c (sched_analyze_1): Ditto.
 
 2006-01-11  Zdenek Dvorak <dvorakz@suse.cz>
