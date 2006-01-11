@@ -1,3 +1,8 @@
+2006-01-11  Kazu Hirata  <kazu@codesourcery.com>
+
+	* df-core.c (df_compact_blocks, df_bb_replace): Use
+	SET_BASIC_BLOCK instead of BASIC_BLOCK.
+
 2006-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/25734
