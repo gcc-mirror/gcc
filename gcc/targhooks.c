@@ -148,6 +148,14 @@ default_shift_truncation_mask (enum machine_mode mode)
   return SHIFT_COUNT_TRUNCATED ? GET_MODE_BITSIZE (mode) - 1 : 0;
 }
 
+/* The default implementation of TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.  */
+
+unsigned int
+default_min_divisions_for_recip_mul (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return have_insn_for (DIV, mode) ? 3 : 2;
+}
+
 /* Generic hook that takes a CUMULATIVE_ARGS pointer and returns true.  */
 
 bool

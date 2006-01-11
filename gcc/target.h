@@ -440,6 +440,11 @@ struct gcc_target
      return the mask that they apply.  Return 0 otherwise.  */
   unsigned HOST_WIDE_INT (* shift_truncation_mask) (enum machine_mode mode);
 
+  /* Return the number of divisions in the given MODE that should be present,
+     so that it is profitable to turn the division into a multiplication by
+     the reciprocal.  */
+  unsigned int (* min_divisions_for_recip_mul) (enum machine_mode mode);
+
   /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
   bool (* valid_pointer_mode) (enum machine_mode mode);
 
