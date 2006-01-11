@@ -686,7 +686,6 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
       TREE_OPERAND (lhs, 0) = unshare_expr (TREE_OPERAND (stmt, 1));
       fold_stmt_inplace (use_stmt);
       tidy_after_forward_propagate_addr (use_stmt);
-      return true;
     }
 
   /* Trivial case.  The use statement could be a trivial copy.  We
@@ -696,7 +695,7 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
      we can catch some cascading effects, ie the single use is
      in a copy, and the copy is used later by a single INDIRECT_REF
      for example.  */
-  if (TREE_CODE (lhs) == SSA_NAME && TREE_OPERAND (use_stmt, 1) == name)
+  else if (TREE_CODE (lhs) == SSA_NAME && TREE_OPERAND (use_stmt, 1) == name)
     {
       TREE_OPERAND (use_stmt, 1) = unshare_expr (TREE_OPERAND (stmt, 1));
       tidy_after_forward_propagate_addr (use_stmt);
