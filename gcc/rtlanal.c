@@ -1,6 +1,7 @@
-/* Analyze RTL for C-Compiler
+/* Analyze RTL for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
+   Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1655,6 +1656,8 @@ rtx
 find_reg_note (rtx insn, enum reg_note kind, rtx datum)
 {
   rtx link;
+
+  gcc_assert (insn);
 
   /* Ignore anything that is not an INSN, JUMP_INSN or CALL_INSN.  */
   if (! INSN_P (insn))
