@@ -541,14 +541,15 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
   reg_classes_intersect_p ((CLASS), FP_REGS)
 
 /* On the PA it is not possible to directly move data between
-   GENERAL_REGS and FP_REGS.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)		\
-  (MAYBE_FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)	\
-   || MAYBE_FP_REG_CLASS_P (CLASS2) != FP_REG_CLASS_P (CLASS1))
-
-/* Return the stack location to use for secondary memory needed reloads.  */
-#define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
-  gen_rtx_MEM (MODE, gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (-16)))
+   GENERAL_REGS and FP_REGS.  On the 32-bit port, we use the
+   location at SP-16.  We don't expose this location in the RTL to
+   avoid scheduling related problems.  For example, the store and
+   load could be separated by a call to a pure or const function
+   which has no frame and uses SP-16.  */
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
+  (TARGET_64BIT								\
+   && (MAYBE_FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)		\
+       || MAYBE_FP_REG_CLASS_P (CLASS2) != FP_REG_CLASS_P (CLASS1)))
 
 
 /* Stack layout; function entry, exit and calling.  */
