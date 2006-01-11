@@ -10,14 +10,19 @@ float e(float a, float b, float c, float d, float e, float f)
     }
 
   /* The PHI nodes for these divisions should be combined.  */
+  d = d / a;
   e = e / a;
   f = f / a;
   
   a = a / c;
   b = b / c;
 
-  return a + b + e + f;
+  /* This should not be left as a multiplication.  */
+  c = 1 / c;
+
+  return a + b + c + d + e + f;
 }
 
 /* { dg-final { scan-tree-dump-times " / " 2 "recip" } } */
+/* { dg-final { scan-tree-dump-times " \\* " 5 "recip" } } */
 /* { dg-final { cleanup-tree-dump "recip" } } */

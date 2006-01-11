@@ -33,6 +33,7 @@ extern bool default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 extern enum machine_mode default_eh_return_filter_mode (void);
 extern unsigned HOST_WIDE_INT default_shift_truncation_mask
   (enum machine_mode);
+extern unsigned int default_min_divisions_for_recip_mul (enum machine_mode);
 
 extern tree default_stack_protect_guard (void);
 extern tree default_external_stack_protect_fail (void);

@@ -1,3 +1,29 @@
+2006-01-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/23109
+	PR tree-optimization/23948
+	PR tree-optimization/24123
+
+	* Makefile.in (tree-ssa-math-opts.o): Adjust dependencies.
+        * tree-cfg.c (single_noncomplex_succ): New.
+        * tree-flow.h (single_noncomplex_succ): Declare it.
+        * tree-ssa-math-opts.c (enum place_reciprocal): Remove.
+        * tree-ssa-math-opts.c (enum place_reciprocal): Remove.
+        (struct occurrence, occ_head, occ_pool, is_divide_by, compute_merit,
+	insert_bb, register_division_in, insert_reciprocals,
+	replace_reciprocal, free_bb): New.
+        (execute_cse_reciprocals_1): Rewritten.
+        (execute_cse_reciprocals): Adjust calls to execute_cse_reciprocals_1.
+        Do not commit any edge insertion.  Always compute dominators and
+        create the allocation pool.
+        * target-def.h (TARGET_MIN_DIVISIONS_FOR_RECIP_MUL): New.
+	* target.h (struct gcc_target): Add min_divistions_for_recip_mul.
+	* targhooks.c (default_min_divistions_for_recip_mul): New.
+	* targhooks.h (default_min_divistions_for_recip_mul): New prototype.
+        * passes.c (init_optimization_passes): Run recip after tree loop
+        optimizations.
+        * doc/tm.texi (Misc): Document TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.
+
 2005-01-11  Danny Berlin <dberlin@dberlin.org>
             Kenneth Zadeck <zadeck@naturalbridge.com>
 
@@ -151,31 +177,31 @@
 2006-01-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/20754
-	* pa.md: Create separate 32 and 64-bit move patterns for SI, DI, SF
-	and DF modes.  Add alternatives to copy between general and floating
-	point registers to the 32-bit patterns.
-	* pa-64.h (SECONDARY_MEMORY_NEEDED_RTX): Delete undefine.
-	* pa.h (SECONDARY_MEMORY_NEEDED_RTX): Delete define.
+	* config/pa/pa.md: Create separate 32 and 64-bit move patterns
+	for SI, DI, SF and DF modes.  Add alternatives to copy between
+	general and floating point registers to the 32-bit patterns.
+	* config/pa/pa-64.h (SECONDARY_MEMORY_NEEDED_RTX): Delete undefine.
+	* config/pa/pa.h (SECONDARY_MEMORY_NEEDED_RTX): Delete define.
 	(SECONDARY_MEMORY_NEEDED): Secondary memory is only needed when
 	generating 64-bit code.
-	* pa.c (output_move_double): Handle copies between general and
-	floating registers.
+	* config/pa/pa.c (output_move_double): Handle copies between general
+	and floating registers.
 
 2006-01-10  Stuart Hastings  <stuart@apple.com>
 
-	* gcc/config/i386/i386.md (set_got): Update.
+	* config/i386/i386.md (set_got): Update.
 	(set_got_labelled): New.  (UNSPEC_LD_MPIC): New.
 	(builtin_setjmp_receiver): Mach-O support.
-	* gcc/config/i386/darwin.h (TARGET_ASM_FILE_END) Define.
+	* config/i386/darwin.h (TARGET_ASM_FILE_END) Define.
 	(GOT_SYMBOL_NAME): Define.
 	(FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN): New.
 	(TARGET_DEEP_BRANCH_PREDICTION): Remove.
-	* gcc/config/i386/i386.c (override_options): Revise for Darwin.
+	* config/i386/i386.c (override_options): Revise for Darwin.
 	(USE_HIDDEN_LINKONCE): Enable for Mach-O.  (ix86_file_end): Mach-O
 	support.  (darwin_x86_file_end): New.  (output_set_got): Add label
 	parameter, revise for Mach-O.  (x86_output_mi_thunk): Likewise.
-	* gcc/config/i386/i386-protos.h (output_set_got): Likewise.
-	* gcc/config/darwin.c (machopic_legitimize_pic_address): Update
+	* config/i386/i386-protos.h (output_set_got): Likewise.
+	* config/darwin.c (machopic_legitimize_pic_address): Update
 	regs_ever_live[].
 
 2006-01-10  Kaz Kojima  <kkojima@gcc.gnu.org>
@@ -604,7 +630,7 @@
 
 2006-01-03  Adrian Straetling  <straetling@de.ibm.com>
 
-	* gcc/builtins.c (get_builtin_sync_mem): New function.
+	* builtins.c (get_builtin_sync_mem): New function.
 	(expand_builtin_sync_operation, expand_builtin_compare_and_swap,
 	expand_builtin_lock_test_and_set, expand_builtin_lock_release):
 	Call get_builtin_sync_mem to generate mem rtx.
