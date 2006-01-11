@@ -809,11 +809,13 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
 
   /* Pad lines to the selected line length in fixed form.  */
   if (gfc_current_form == FORM_FIXED
-      && gfc_option.fixed_line_length > 0
+      && gfc_option.fixed_line_length != 0
       && !preprocessor_flag
       && c != EOF)
-    while (i++ < gfc_option.fixed_line_length)
-      *buffer++ = ' ';
+    {
+      while (i++ < maxlen)
+	*buffer++ = ' ';
+    }
 
   *buffer = '\0';
   *pbuflen = buflen;
