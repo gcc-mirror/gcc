@@ -1,3 +1,11 @@
+2006-01-10  Bernhard Fischer  <rep.nop@aon.at>
+
+	PR fortran/25486
+	* gfortran.dg/literal_character_constant_1_x.F: New test.
+	* gfortran.dg/literal_character_constant_1_y.F: Ditto.
+	* gfortran.dg/literal_character_constant_1_z.F: Ditto.
+	* gfortran.dg/literal_character_constant_1.inc: Helper for new tests.
+
 2006-01-11  Paolo Bonzini  <bonzini@gnu.org>
         
         PR tree-optimization/23109
