@@ -204,6 +204,11 @@ typedef _Complex unsigned long long int Tcullong;
 typedef float Tfloat;
 typedef double Tdouble;
 typedef long double Tldouble;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 TDecimal32;
+typedef _Decimal64 TDecimal64;
+typedef _Decimal128 TDecimal128;
+#endif
 typedef _Complex float Tcfloat;
 typedef _Complex double Tcdouble;
 typedef _Complex long double Tcldouble;
@@ -248,6 +253,11 @@ typedef _Complex unsigned long long int Talcullong atal;
 typedef float Talfloat atal;
 typedef double Taldouble atal;
 typedef long double Talldouble atal;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 TalDecimal32 atal;
+typedef _Decimal64 TalDecimal64 atal;
+typedef _Decimal128 TalDecimal128 atal;
+#endif
 typedef _Complex float Talcfloat atal;
 typedef _Complex double Talcdouble atal;
 typedef _Complex long double Talcldouble atal;
@@ -292,6 +302,11 @@ typedef _Complex unsigned long long int Tal1cullong atal1;
 typedef float Tal1float atal1;
 typedef double Tal1double atal1;
 typedef long double Tal1ldouble atal1;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 Tal1Decimal32 atal1;
+typedef _Decimal64 Tal1Decimal64 atal1;
+typedef _Decimal128 Tal1Decimal128 atal1;
+#endif
 typedef _Complex float Tal1cfloat atal1;
 typedef _Complex double Tal1cdouble atal1;
 typedef _Complex long double Tal1cldouble atal1;
@@ -336,6 +351,11 @@ typedef _Complex unsigned long long int Tal2cullong atal2;
 typedef float Tal2float atal2;
 typedef double Tal2double atal2;
 typedef long double Tal2ldouble atal2;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 Tal2Decimal32 atal2;
+typedef _Decimal64 Tal2Decimal64 atal2;
+typedef _Decimal128 Tal2Decimal128 atal2;
+#endif
 typedef _Complex float Tal2cfloat atal2;
 typedef _Complex double Tal2cdouble atal2;
 typedef _Complex long double Tal2cldouble atal2;
@@ -380,6 +400,11 @@ typedef _Complex unsigned long long int Tal4cullong atal4;
 typedef float Tal4float atal4;
 typedef double Tal4double atal4;
 typedef long double Tal4ldouble atal4;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 Tal4Decimal32 atal4;
+typedef _Decimal64 Tal4Decimal64 atal4;
+typedef _Decimal128 Tal4Decimal128 atal4;
+#endif
 typedef _Complex float Tal4cfloat atal4;
 typedef _Complex double Tal4cdouble atal4;
 typedef _Complex long double Tal4cldouble atal4;
@@ -424,6 +449,11 @@ typedef _Complex unsigned long long int Tal8cullong atal8;
 typedef float Tal8float atal8;
 typedef double Tal8double atal8;
 typedef long double Tal8ldouble atal8;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 Tal8Decimal32 atal8;
+typedef _Decimal64 Tal8Decimal64 atal8;
+typedef _Decimal128 Tal8Decimal128 atal8;
+#endif
 typedef _Complex float Tal8cfloat atal8;
 typedef _Complex double Tal8cdouble atal8;
 typedef _Complex long double Tal8cldouble atal8;
@@ -468,6 +498,11 @@ typedef _Complex unsigned long long int Tal16cullong atal16;
 typedef float Tal16float atal16;
 typedef double Tal16double atal16;
 typedef long double Tal16ldouble atal16;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 Tal16Decimal32 atal16;
+typedef _Decimal64 Tal16Decimal64 atal16;
+typedef _Decimal128 Tal16Decimal128 atal16;
+#endif
 typedef _Complex float Tal16cfloat atal16;
 typedef _Complex double Tal16cdouble atal16;
 typedef _Complex long double Tal16cldouble atal16;
@@ -512,6 +547,11 @@ typedef _Complex unsigned long long int Talx1cullong atalx1;
 typedef float Talx1float atalx1;
 typedef double Talx1double atalx1;
 typedef long double Talx1ldouble atalx1;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 Talx1Decimal32 atalx1;
+typedef _Decimal64 Talx1Decimal64 atalx1;
+typedef _Decimal128 Talx1Decimal128 atalx1;
+#endif
 typedef _Complex float Talx1cfloat atalx1;
 typedef _Complex double Talx1cdouble atalx1;
 typedef _Complex long double Talx1cldouble atalx1;
@@ -553,6 +593,11 @@ typedef _Complex unsigned long long int Talx2cullong atalx2;
 typedef float Talx2float atalx2;
 typedef double Talx2double atalx2;
 typedef long double Talx2ldouble atalx2;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 Talx2Decimal32 atalx2;
+typedef _Decimal64 Talx2Decimal64 atalx2;
+typedef _Decimal128 Talx2Decimal128 atalx2;
+#endif
 typedef _Complex float Talx2cfloat atalx2;
 typedef _Complex double Talx2cdouble atalx2;
 typedef _Complex long double Talx2cldouble atalx2;
@@ -588,6 +633,11 @@ typedef _Complex unsigned long long int Talx4cullong atalx4;
 typedef float Talx4float atalx4;
 typedef double Talx4double atalx4;
 typedef long double Talx4ldouble atalx4;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal32 Talx4Decimal32 atalx4;
+typedef _Decimal64 Talx4Decimal64 atalx4;
+typedef _Decimal128 Talx4Decimal128 atalx4;
+#endif
 typedef _Complex float Talx4cfloat atalx4;
 typedef _Complex double Talx4cdouble atalx4;
 typedef _Complex long double Talx4cldouble atalx4;
@@ -618,6 +668,10 @@ typedef _Complex unsigned long long int Talx8cullong atalx8;
 #endif
 typedef double Talx8double atalx8;
 typedef long double Talx8ldouble atalx8;
+#ifndef SKIP_DECIMAL_FLOAT
+typedef _Decimal64 Talx8Decimal64 atalx8;
+typedef _Decimal128 Talx8Decimal128 atalx8;
+#endif
 typedef _Complex float Talx8cfloat atalx8;
 typedef _Complex double Talx8cdouble atalx8;
 typedef _Complex long double Talx8cldouble atalx8;

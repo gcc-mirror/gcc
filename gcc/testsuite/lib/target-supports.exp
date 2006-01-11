@@ -1055,6 +1055,25 @@ proc check_effective_target_lp64 { } {
     return $et_lp64_saved
 }
 
+# Return 1 if the target supports Decimal Floating Point, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_dfp { } {
+    global et_dfp_saved
+
+    if [info exists et_dfp_saved] {
+	verbose "check_effective_target_dfp: using cached result" 2
+    } else {
+	verbose "check_effective_target_dfp: compiling source" 2
+	set et_dfp_saved [string match "" [get_compiler_messages dfp object {
+	    _Decimal32 x; _Decimal64 y; _Decimal128 z;
+	}]]
+    }
+    verbose "check_effective_target_dfp: returning $et_dfp_saved" 2
+    return $et_dfp_saved
+}
+
 # Return 1 if the target needs a command line argument to enable a SIMD
 # instruction set.
 #

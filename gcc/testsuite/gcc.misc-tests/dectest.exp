@@ -1,0 +1,531 @@
+# Copyright 2005 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# DejaGnu test driver around Mike Cowlishaw's testsuite for decimal
+# decimal arithmetic ("dectest").  See:
+#    <http://www2.hursley.ibm.com/decimal/dectest.html>.
+#
+# Contributed by Ben Elliston <bje@au.ibm.com>.
+
+set TORTURE_OPTIONS [list {} -O1 -O2 -O3 -msoft-float]
+
+# On x86 and x86-64 systems, -Os makes the stack alignment too small,
+# leading to segmentation faults when executing SSE instructions.
+# Force the alignment of the stack to 2^4 (16) bytes.
+
+if {[istarget i?86-*-linux-gnu] || [istarget x86_64-*-linux-gnu]} {
+    lappend TORTURE_OPTIONS {-Os -mpreferred-stack-boundary=4}
+} else {
+    lappend TORTURE_OPTIONS {-Os}
+}
+
+proc target-specific-flags {} {
+  set result "-frounding-math "
+  return $result
+}
+  
+# Load support procs (borrow these from c-torture).
+load_lib c-torture.exp
+load_lib target-supports.exp
+
+# Skip these tests for targets that don't support this extension.
+if { ![check_effective_target_dfp] } {
+    return
+}
+
+# The list format is [coefficient, max-exponent, min-exponent].
+set properties(_Decimal32) [list 7 96 -95]
+set properties(_Decimal64) [list 16 384 -383]
+set properties(_Decimal128) [list 34 6144 -6143]
+
+# Operations implemented by the compiler.
+set operators(add) {+}
+set operators(compare) {==}
+set operators(divide) {/}
+set operators(multiply) {*}
+set operators(subtract) {-}
+set operators(minus) {-}
+set operators(plus) {+}
+set operators(apply) {}
+
+# Operations imlemented by the library.
+set libfuncs(abs) fabsl
+set libfuncs(squareroot) sqrtl
+set libfuncs(max) fmaxl
+set libfuncs(min) fminl
+set libfuncs(quantize) quantize
+set libfuncs(samequantum) samequantum
+set libfuncs(power) powl
+set libfuncs(toSci) unknown
+set libfuncs(tosci) unknown
+set libfuncs(toEng) unknown
+set libfuncs(toeng) unknown
+set libfuncs(divideint) unknown
+set libfuncs(rescale) unknown
+set libfuncs(remainder) unknown
+set libfuncs(remaindernear) unknown
+set libfuncs(normalize) unknown
+set libfuncs(tointegral) unknown
+set libfuncs(trim) unknown
+
+# Run all of the tests listed in TESTCASES by invoking df-run-test on
+# each.  Skip tests that not included by the user invoking runtest
+# with the foo.exp=test.c syntax.
+
+proc dfp-run-tests { testcases } {
+    global runtests
+    foreach test $testcases {
+	# If we're only testing specific files and this isn't one of
+	# them, skip it.
+	if ![runtest_file_p $runtests $test] continue
+	dfp-run-test $test
+    }
+}
+
+# Run a single test case named by TESTCASE.
+# Called for each test by dfp-run-tests.
+
+proc dfp-run-test { testcase } {
+    set fd [open $testcase r]
+    while {[gets $fd line] != -1} {
+	switch -regexp -- $line {
+	    {^[ \t]*--.*$} {
+		# Ignore comments.
+	    }
+	    {^[ \t]*$} {
+		# Ignore blank lines.
+	    }
+	    {^[ \t]*[^:]*:[^:]*} {
+		regsub -- {[ \t]*--.*$} $line {} line
+		process-directive $line
+	    }
+	    default {
+		process-test-case $testcase $line
+	    }
+	}
+    }
+    close $fd
+}
+
+# Return the appropriate constant from <fenv.h> for MODE.
+
+proc c-rounding-mode { mode } { 
+    switch [string tolower $mode] {
+	"floor"		{ return 0 } # FE_DEC_DOWNWARD
+	"half_even"	{ return 1 } # FE_DEC_TONEARESTFROMZERO
+	"half_up"	{ return 2 } # FE_DEC_TONEAREST
+	"down"		{ return 3 } # FE_DEC_TOWARDZERO
+	"ceiling"	{ return 4 } # FE_DEC_UPWARD
+    }
+    error "unsupported rounding mode ($mode)"
+}
+
+# Return a string of C code that forms the preamble to perform the
+# test named ID.
+
+proc c-test-preamble { id } {
+    append result "/* Machine generated test case for $id */\n"
+    append result "\n"
+    append result "\#include <assert.h>\n"
+    append result "\#include <fenv.h>\n"
+    append result "\#include <math.h>\n"
+    append result "\n"
+    append result "int main ()\n"
+    append result "\{"
+    return $result
+}
+
+# Return a string of C code that forms the postable to the test named ID.
+
+proc c-test-postamble { id } {
+    return "\}"
+}
+
+# Generate a C unary expression that applies OPERATION to OP.
+
+proc c-unary-expression {operation op} {
+    global operators
+    global libfuncs
+    if [catch {set result "$operators($operation) $op"}] {
+	# If operation isn't in the operators or libfuncs arrays,
+	# we'll throw an error.  That's what we want.
+	# FIXME: append d32, etc. here.
+	set result "$libfuncs($operation) ($op)"
+    }
+    return $result
+}
+
+# Generate a C binary expression that applies OPERATION to OP1 and OP2.
+
+proc c-binary-expression {operation op1 op2} {
+    global operators
+    global libfuncs
+    if [catch {set result "$op1 $operators($operation) $op2"}] {
+	# If operation isn't in the operators or libfuncs arrays,
+	# we'll throw an error.  That's what we want.
+	set result "$libfuncs($operation) ($op1, $op2)"
+    }
+    return $result
+}
+
+# Return the most appropriate C type (_Decimal32, etc) for this test.
+
+proc c-decimal-type { } {
+    global directives
+    if [catch {set precision $directives(precision)}] {
+	set precision "_Decimal128"
+    }  
+    if { $precision == 7 } {
+	set result "_Decimal32"
+    } elseif {$precision == 16} {
+	set result "_Decimal64"
+    } elseif {$precision == 34} {
+	set result "_Decimal128"
+    } else {
+	error "Unsupported precision"
+    }
+    return $result
+}
+
+# Return the size of the most appropriate C type, in bytes.
+
+proc c-sizeof-decimal-type { } {
+    switch [c-decimal-type] {
+	"_Decimal32"    { return 4 }
+	"_Decimal64"    { return 8 }
+	"_Decimal128"   { return 16 }
+    }
+    error "Unsupported precision"
+}
+
+# Return the right literal suffix for CTYPE.
+
+proc c-type-suffix { ctype } {
+    switch $ctype {
+        "_Decimal32"   { return "df" }
+        "_Decimal64"   { return "dd" }
+        "_Decimal128"  { return "dl" }
+        "float"        { return "f" }
+	"long double"  { return "l" }
+    }
+    return ""
+}
+
+proc nan-p { operand } {
+    if {[string match "NaN*" $operand] || [string match "-NaN*" $operand]} {
+	return 1
+    } else {
+	return 0
+    }
+}
+
+proc infinity-p { operand } {
+    if {[string match "Inf*" $operand] || [string match "-Inf*" $operand]} {
+	return 1
+    } else {
+	return 0
+    }
+}
+
+proc isnan-builtin-name { } {
+    set bits [expr [c-sizeof-decimal-type] * 8]
+    return "__builtin_isnand$bits"
+}
+
+proc isinf-builtin-name { } {
+    set bits [expr [c-sizeof-decimal-type] * 8]
+    return "__builtin_isinfd$bits"
+}
+
+# Return a string that declares a C union containing the decimal type
+# and an unsigned char array of the right size.
+
+proc c-union-decl { } {
+    append result "  union {\n"
+    append result "    [c-decimal-type] d;\n"
+    append result "    unsigned char bytes\[[c-sizeof-decimal-type]\];\n"
+    append result "  } u;"
+    return $result
+}
+
+proc transform-hex-constant {value} {
+    regsub \# $value {} value
+    regsub -all (\.\.) $value {0x\1, } bytes
+    return [list $bytes]
+}
+
+# Create a C program file (named using ID) containing a test for a
+# binary OPERATION on OP1 and OP2 that expects RESULT and CONDITIONS.
+
+proc make-c-test {testcase id operation result conditions op1 {op2 "NONE"}} {
+    global directives
+    set filename ${id}.c
+    set outfd [open $filename w]
+
+    puts $outfd [c-test-preamble $id]
+    puts $outfd [c-union-decl]
+    if {[string compare $result ?] != 0} {
+	if {[string index $result 0] == "\#"} {
+	    puts $outfd "  static unsigned char compare\[[c-sizeof-decimal-type]\] = [transform-hex-constant $result];"
+	}
+    }
+    if {[string compare $op2 NONE] == 0} {
+	if {[string index $op1 0] == "\#"} {
+	    puts $outfd "  static unsigned char fill\[[c-sizeof-decimal-type]\] = [transform-hex-constant $op1];"
+	}
+    }
+
+    puts $outfd ""
+    puts $outfd "  /*  FIXME: Set rounding mode with fesetround() once in libc.  */"
+    puts $outfd "  __dfp_set_round ([c-rounding-mode $directives(rounding)]);"
+    puts $outfd ""
+
+    # Build the expression to be tested.
+    if {[string compare $op2 NONE] == 0} {
+	if {[string index $op1 0] == "\#"} {
+	    puts $outfd "  memcpy (u.bytes, fill, [c-sizeof-decimal-type]);"
+	} else {
+	    puts $outfd "  u.d = [c-unary-expression $operation [c-operand $op1]];"
+	}
+    } else {
+	puts $outfd "  u.d = [c-binary-expression $operation [c-operand $op1] [c-operand $op2]];"
+    }
+
+    # Test the result.
+    if {[string compare $result ?] != 0} {
+	# Not an undefined result ..
+	if {[string index $result 0] == "\#"} {
+	    # Handle hex comparisons.
+	    puts $outfd "  return memcmp (u.bytes, compare, [c-sizeof-decimal-type]);"
+	} elseif {[nan-p $result]} {
+	    puts $outfd "  return ![isnan-builtin-name] (u.d);"
+	} elseif {[infinity-p $result]} {
+	    puts $outfd "  return ![isinf-builtin-name] (u.d);"
+	} else {
+	    # Ordinary values.
+	    puts $outfd "  return !(u.d == [c-operand $result]);"
+	}
+    } else {
+	puts $outfd "  return 0;"
+    }
+
+    puts $outfd [c-test-postamble $id]
+    close $outfd
+    return $filename
+}
+
+# Is the test supported for this target?
+
+proc supported-p { id op } {
+    global directives
+    global libfuncs
+
+    # Ops that are unsupported.  Many of these tests fail because they
+    # do not tolerate the C front-end rounding the value of floating
+    # point literals to suit the type of the constant.  Otherwise, by
+    # treating the `apply' operator like C assignment, some of them do
+    # pass.
+    switch -- $op {
+	apply		{ return 0 }
+    }
+
+    # Ditto for the following miscellaneous tests.
+    switch $id {
+	addx1130	{ return 0 }
+	addx1131	{ return 0 }
+	addx1132	{ return 0 }
+	addx1133	{ return 0 }
+	addx1134	{ return 0 }
+	addx1135	{ return 0 }
+	addx1136	{ return 0 }
+	addx1138	{ return 0 }
+	addx1139	{ return 0 }
+	addx1140	{ return 0 }
+	addx1141	{ return 0 }
+	addx1142	{ return 0 }
+	addx1151	{ return 0 }
+	addx1152	{ return 0 }
+	addx1153	{ return 0 }
+	addx1154	{ return 0 }
+	addx1160	{ return 0 }
+	addx690		{ return 0 }
+	mulx263		{ return 0 }
+	subx947		{ return 0 }
+    }
+
+    if [info exist libfuncs($op)] {
+	# No library support for now.
+	return 0
+    }
+    if [catch {c-rounding-mode $directives(rounding)}] {
+	# Unsupported rounding mode.
+	return 0
+    }
+    if [catch {c-decimal-type}] {
+	# Unsupported precision.
+	return 0
+    }
+    return 1
+}
+
+# Break LINE into a list of tokens.  Be sensitive to quoting.
+# There has to be a better way to do this :-|
+
+proc tokenize { line } {
+    set quoting 0
+    set tokens [list]
+
+    foreach char [split $line {}] {
+	if {!$quoting} {
+	    if { [info exists token] && $char == " " } {
+		if {[string compare "$token" "--"] == 0} {
+		    # Only comments remain.
+		    return $tokens
+		}
+		lappend tokens $token
+		unset token
+	    } else {
+		if {![info exists token] && $char == "'" } {
+		    set quoting 1
+		} else {
+		    if { $char != " " } {
+			append token $char
+		    }
+		}
+	    }
+	} else {
+	    # Quoting.
+	    if { $char == "'" } {
+		set quoting 0
+		if [info exists token] {
+		    lappend tokens $token
+		    unset token
+		} else {
+		    lappend tokens {}
+		}
+	    } else {
+		append token $char
+	    }
+	}
+    }
+    # Flush any residual token.
+    if {[info exists token] && [string compare $token "--"]} {
+	lappend tokens $token
+    }
+    return $tokens
+}
+
+# Process a directive in LINE.
+
+proc process-directive { line } {
+    global directives
+    set keyword [string tolower [string trim [lindex [split $line :] 0]]]
+    set value [string tolower [string trim [lindex [split $line :] 1]]]
+    set directives($keyword) $value
+}
+
+# Produce a C99-valid floating point literal.
+
+proc c-operand {operand} {
+    set bits [expr 8 * [c-sizeof-decimal-type]]
+
+    switch -glob -- $operand {
+	"Inf*"		{ return "__builtin_infd${bits} ()" }
+	"-Inf*"		{ return "- __builtin_infd${bits} ()" }
+    	"NaN*"		{ return "__builtin_nand${bits} (\"\")" }
+	"-NaN*"		{ return "- __builtin_nand${bits} (\"\")" }
+	"sNaN*"		{ return "__builtin_nand${bits} (\"\")" }
+	"-sNaN*"	{ return "- __builtin_nand${bits} (\"\")" }
+    }
+
+    if {[string first . $operand] < 0 && \
+	    [string first E $operand] < 0 && \
+	    [string first e $operand] < 0} {
+	append operand .
+    }
+    set suffix [c-type-suffix [c-decimal-type]]
+    return [append operand $suffix]
+}
+
+# Process an arithmetic test in LINE from TESTCASE.
+
+proc process-test-case { testcase line } {
+    set testfile [file tail $testcase]
+
+    # Compress multiple spaces down to one.
+    regsub -all {  *} $line { } line
+
+    set args [tokenize $line]
+    if {[llength $args] < 5} {
+	error "Skipping invalid test: $line"
+	return
+    }
+    
+    set id [string trim [lindex $args 0]]
+    set operation [string trim [lindex $args 1]]
+    set operand1 [string trim [lindex $args 2]]
+    
+    if { [string compare [lindex $args 3] -> ] == 0 } {
+	# Unary operation.
+	set operand2 NONE
+	set result_index 4
+	set cond_index 5
+    } else {
+	# Binary operation.
+	set operand2 [string trim [lindex $args 3]]
+	if { [string compare [lindex $args 4] -> ] != 0 } {
+	    warning "Skipping invalid test: $line"
+	    return
+	}
+	set result_index 5
+	set cond_index 6
+    }
+
+    set result [string trim [lindex $args $result_index]]
+    set conditions [list]
+    for { set i $cond_index } { $i < [llength $args] } { incr i } {
+	lappend conditions [string tolower [lindex $args $i]]
+    }
+    
+    # If this test is unsupported, say so.
+    if ![supported-p $id $operation] {
+	unsupported "$testfile ($id)"
+	return
+    }
+
+    if {[string compare $operand1 \#] == 0 || \
+	    [string compare $operand2 \#] == 0} {
+	unsupported "$testfile ($id), null reference"
+ 	return
+    }
+
+    # Construct a C program and then compile/execute it on the target.
+    # Grab some stuff from the c-torture.exp test driver for this.
+
+    set cprog [make-c-test $testfile $id $operation $result $conditions $operand1 $operand2]
+    c-torture-execute $cprog [target-specific-flags]
+}
+
+### Script mainline:
+
+if [catch {set testdir $env(DECTEST)}] {
+    # If $DECTEST is unset, skip this test driver altogether.
+    return
+}
+
+note "Using tests in $testdir"
+dfp-run-tests [lsort [glob -nocomplain $testdir/*.decTest]]
+unset testdir

@@ -35,49 +35,26 @@ if $tracelevel then {
 }
 
 global GCC_UNDER_TEST
+global compat_save_gcc_under_test
+global compat_use_alt
+global compat_same_alt
+global compat_have_dfp
 
 # Load procedures from common libraries. 
 load_lib standard.exp
 load_lib gcc.exp
 
-#
-# compat-use-alt-compiler -- make the alternate compiler the default
-# 
-proc compat-use-alt-compiler { } {
-    global GCC_UNDER_TEST ALT_CC_UNDER_TEST
-    global same_alt
-
-    # We don't need to do this if the alternate compiler is actually
-    # the same as the compiler under test.
-    if { $same_alt == 0 } then {
-	set GCC_UNDER_TEST $ALT_CC_UNDER_TEST
-    }
-}
-
-#
-# compat-use-tst-compiler -- make compiler under test the default
-#
-proc compat-use-tst-compiler { } {
-    global GCC_UNDER_TEST save_gcc_under_test
-    global same_alt
-
-    # We don't need to do this if the alternate compiler is actually
-    # the same as the compiler under test.
-
-    if { $same_alt == 0 } then {
-	set GCC_UNDER_TEST $save_gcc_under_test
-    }
-}
+# Load the language-dependent compabibility support procedures.
+load_lib c-compat.exp
 
 # Load the language-independent compabibility support procedures.
-# This must be done after the compat-use-*-compiler definitions.
 load_lib compat.exp
 
 gcc_init
 
 # Save variables for the C compiler under test, which each test will
 # change a couple of times.  This must be done after calling gcc-init.
-set save_gcc_under_test $GCC_UNDER_TEST
+set compat_save_gcc_under_test $GCC_UNDER_TEST
 
 # Define an identifier for use with this suite to avoid name conflicts
 # with other compat tests running at the same time.
@@ -87,13 +64,22 @@ set sid "c_compat"
 # variable is defined but is set to "same", that means we use the same
 # compiler twice, which is meaningful if the two parts of COMPAT_OPTIONS
 # are different.
-set use_alt 0
-set same_alt 0
+set compat_use_alt 0
+set compat_same_alt 0
+
 if [info exists ALT_CC_UNDER_TEST] then {
-    set use_alt 1
+    set compat_use_alt 1
     if [string match "same" $ALT_CC_UNDER_TEST] then {
-	set same_alt 1
+	set compat_same_alt 1
     }
+}
+
+compat_setup_dfp
+
+if { $compat_have_dfp == 0 } {
+    set skip_dfp "-DSKIP_DECIMAL_FLOAT"
+} else {
+    set skip_dfp ""
 }
 
 set tstobjdir "$tmpdir/gcc.dg-struct-layout-1"
@@ -102,7 +88,7 @@ set generator "$tmpdir/gcc.dg-struct-layout-1_generate"
 set generator_src "$srcdir/$subdir/struct-layout-1_generate.c"
 set generator_src "$generator_src $srcdir/$subdir/generate-random.c"
 set generator_src "$generator_src $srcdir/$subdir/generate-random_r.c"
-set generator_cmd "-o $generator $generator_src"
+set generator_cmd "-o $generator $skip_dfp $generator_src"
 
 set status [remote_exec host "$HOSTCC $HOSTCFLAGS $generator_cmd"]
 set status [lindex $status 0]
@@ -123,7 +109,7 @@ if { $status == 0 } then {
 		continue
 	    }
 
-	    compat-execute $src $sid $use_alt
+	    compat-execute $src $sid $compat_use_alt
 	}
     } else {
 	warning "Could not execute gcc.dg/compat/struct-layout-1 generator"

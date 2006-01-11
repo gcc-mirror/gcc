@@ -1,0 +1,110 @@
+#   Copyright (C) 2002, 2003, 2005, 02005 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+# Please email any bugs, comments, and/or additions to this file to:
+# gcc-patches@gcc.gnu.org
+
+# Globals.
+
+global compat_use_alt
+global compat_same_alt
+global compat_have_dfp
+global compat_skip_list
+
+# This file defines procs for determining features supported by both C
+# compilers for compatibility tests.
+
+load_lib target-supports.exp
+
+#
+# compat-use-alt-compiler -- make the alternate compiler the default
+# 
+proc compat-use-alt-compiler { } {
+    global GCC_UNDER_TEST ALT_CC_UNDER_TEST
+    global compat_same_alt
+
+    # We don't need to do this if the alternate compiler is actually
+    # the same as the compiler under test.
+    if { $compat_same_alt == 0 } then {
+	set GCC_UNDER_TEST $ALT_CC_UNDER_TEST
+    }
+}
+
+#
+# compat-use-tst-compiler -- make compiler under test the default
+#
+proc compat-use-tst-compiler { } {
+    global GCC_UNDER_TEST compat_save_gcc_under_test
+    global compat_same_alt
+
+    # We don't need to do this if the alternate compiler is actually
+    # the same as the compiler under test.
+
+    if { $compat_same_alt == 0 } then {
+	set GCC_UNDER_TEST $compat_save_gcc_under_test
+    }
+}
+
+# Find out whether both compilers support decimal float types.
+proc compat_setup_dfp { } {
+    global compat_use_alt
+    global compat_same_alt
+    global compat_have_dfp
+
+    verbose "compat_setup_dfp: $compat_use_alt $compat_same_alt" 2
+    set compat_have_dfp 1
+    # If there is an alternate compiler, does it support decimal float types?
+    if { $compat_use_alt == 1 && $compat_same_alt == 0 } {
+	compat-use-alt-compiler
+	set compat_have_dfp [check_dfp]
+	compat-use-tst-compiler
+	verbose "compat_have_dfp for alt compiler: $compat_have_dfp" 2
+    }
+    # Does the compiler under test support it?
+    if { $compat_have_dfp == 1 } {
+	set compat_have_dfp [check_dfp]
+	verbose "compat_have_dfp for tst compiler: $compat_have_dfp" 2
+    }
+
+    # If decimal float is not supported, add it to the skip list, which
+    # affects code in the header files.
+    if { $compat_have_dfp == 0 } {
+	global compat_skip_list
+	lappend compat_skip_list "DECIMAL_FLOAT"
+    }
+}
+
+# Return 1 if the compiler supports decimal float types, 0 otherwise.
+#
+# Don't use check_effective_target since this will differ depending
+# on the compiler, not the target.
+#
+proc check_dfp { } {
+    set result [string match "" [get_compiler_messages dfp2 object {
+	_Decimal32 x; _Decimal64 y; _Decimal128 z;
+    }]]
+    return $result
+}
+
+# If either compiler does not support decimal float types, skip this test.
+
+proc dg-require-compat-dfp { args } {
+    global compat_have_dfp
+    if { $compat_have_dfp == 0 } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
