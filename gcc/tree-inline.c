@@ -111,9 +111,7 @@ typedef struct inline_data
   tree callee;
   /* FUNCTION_DECL for function being inlined into.  */
   tree caller;
-  /* struct function for function being inlined.  Usually this is the same
-     as DECL_STRUCT_FUNCTION (callee), but can be different if saved_cfg
-     and saved_eh are in use.  */
+  /* struct function for function being inlined.  */
   struct function *callee_cfun;
   /* The VAR_DECL for the return value.  */
   tree retvar;
@@ -125,10 +123,11 @@ typedef struct inline_data
      distinguish between those two situations.  This flag is true if
      we are cloning, rather than inlining.  */
   bool cloning_p;
-  /* Similarly for saving function body.  */
-  bool saving_p;
   /* Versioning function is slightly different from inlining. */
   bool versioning_p;
+  /* If set, the call_stmt of edges in clones of caller functions will
+     be updated.  */
+  bool update_clones_p;
   /* Callgraph node of function we are inlining into.  */
   struct cgraph_node *node;
   /* Callgraph node of currently inlined function.  */
@@ -750,46 +749,33 @@ copy_bb (inline_data *id, basic_block bb, int frequency_scale, int count_scale)
 	     callgraph edges and update or duplicate them.  */
 	  if (call && (decl = get_callee_fndecl (call)))
 	    {
-	      if (id->saving_p)
-		{
-		  struct cgraph_node *node;
-		  struct cgraph_edge *edge;
-
-		  /* We're saving a copy of the body, so we'll update the
-		     callgraph nodes in place.  Note that we avoid
-		     altering the original callgraph node; we begin with
-		     the first clone.  */
-		  for (node = id->node->next_clone;
-		       node;
-		       node = node->next_clone)
-		    {
-		      edge = cgraph_edge (node, orig_stmt);
-		      gcc_assert (edge);
-		      edge->call_stmt = stmt;
-		    }
-		}
-	      else
+	      if (!id->versioning_p)
 		{
 		  struct cgraph_edge *edge;
 
 		  /* We're cloning or inlining this body; duplicate the
 		     associate callgraph nodes.  */
-		  if (!id->versioning_p)
-		    {
-		      edge = cgraph_edge (id->current_node, orig_stmt);
-		      if (edge)
-			cgraph_clone_edge (edge, id->node, stmt,
-					   REG_BR_PROB_BASE, 1, true);
-		    }
+		  edge = cgraph_edge (id->current_node, orig_stmt);
+		  if (edge)
+		    cgraph_clone_edge (edge, id->node, stmt,
+				       REG_BR_PROB_BASE, 1, true);
 		}
-	      if (id->versioning_p)
+	      else
 		{
 		  /* Update the call_expr on the edges from the new version
 		     to its callees. */
 		  struct cgraph_edge *edge;
 		  edge = cgraph_edge (id->node, orig_stmt);
 		  if (edge)
-		    edge->call_stmt = stmt;
+		    {
+		      edge->call_stmt = stmt;
+		      if (id->update_clones_p)
+			{
+			  struct cgraph_node *n;
+			  for (n = id->node->next_clone; n; n = n->next_clone)
+		            cgraph_edge (n, orig_stmt)->call_stmt = stmt;
+			}
+		     }
 		}
 	    }
 	  /* If you think we can abort here, you are wrong.
@@ -917,7 +903,7 @@ copy_cfg_body (inline_data * id, gcov_type count, int frequency,
     (struct function *) ggc_alloc_cleared (sizeof (struct function));
   basic_block bb;
   tree new_fndecl = NULL;
-  bool saving_or_cloning;
+  bool versioning_or_cloning;
   int count_scale, frequency_scale;
 
   if (ENTRY_BLOCK_PTR_FOR_FUNCTION (callee_cfun)->count)
@@ -942,24 +928,14 @@ copy_cfg_body (inline_data * id, gcov_type count, int frequency,
 
   *cfun_to_copy = *DECL_STRUCT_FUNCTION (callee_fndecl);
 
-  /* If there is a saved_cfg+saved_args lurking in the
-     struct function, a copy of the callee body was saved there, and
-     the 'struct cgraph edge' nodes have been fudged to point into the
-     saved body.  Accordingly, we want to copy that saved body so the
-     callgraph edges will be recognized and cloned properly.  */
-  if (cfun_to_copy->saved_cfg)
-    {
-      cfun_to_copy->cfg = cfun_to_copy->saved_cfg;
-      cfun_to_copy->eh = cfun_to_copy->saved_eh;
-    }
   id->callee_cfun = cfun_to_copy;
 
   /* If saving or cloning a function body, create new basic_block_info
      and label_to_block_maps.  Otherwise, we're duplicating a function
      body for inlining; insert our new blocks and labels into the
      existing varrays.  */
-  saving_or_cloning = (id->saving_p || id->cloning_p || id->versioning_p);
-  if (saving_or_cloning)
+  versioning_or_cloning = (id->cloning_p || id->versioning_p);
+  if (versioning_or_cloning)
     {
       new_cfun =
 	(struct function *) ggc_alloc_cleared (sizeof (struct function));
@@ -995,7 +971,7 @@ copy_cfg_body (inline_data * id, gcov_type count, int frequency,
   /* Duplicate any exception-handling regions.  */
   if (cfun->eh)
     {
-      if (saving_or_cloning)
+      if (versioning_or_cloning)
         init_eh_for_function ();
       id->eh_region_offset = duplicate_eh_regions (cfun_to_copy,
 		     				   remap_decl_1,
@@ -1011,7 +987,7 @@ copy_cfg_body (inline_data * id, gcov_type count, int frequency,
   FOR_ALL_BB_FN (bb, cfun_to_copy)
     bb->aux = NULL;
 
-  if (saving_or_cloning)
+  if (versioning_or_cloning)
     pop_cfun ();
 
   return new_fndecl;
@@ -1183,8 +1159,6 @@ initialize_inlined_parameters (inline_data *id, tree args, tree static_chain,
 
   /* Figure out what the parameters are.  */
   parms = DECL_ARGUMENTS (fn);
-  if (fn == current_function_decl)
-    parms = cfun->saved_args;
 
   /* Loop through the parameter declarations, replacing each with an
      equivalent VAR_DECL, appropriately initialized.  */
@@ -1204,8 +1178,7 @@ initialize_inlined_parameters (inline_data *id, tree args, tree static_chain,
 
   /* Initialize the static chain.  */
   p = DECL_STRUCT_FUNCTION (fn)->static_chain_decl;
-  if (fn == current_function_decl)
-    p = DECL_STRUCT_FUNCTION (fn)->saved_static_chain_decl;
+  gcc_assert (fn != current_function_decl);
   if (p)
     {
       /* No static chain?  Seems like a bug in tree-nested.c.  */
@@ -2039,6 +2012,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 	}
       goto egress;
     }
+  fn = cg_edge->callee->decl;
 
 #ifdef ENABLE_CHECKING
   if (cg_edge->callee->decl != id->node->decl)
@@ -2095,9 +2069,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   /* Record the function we are about to inline.  */
   id->callee = fn;
 
-  if (DECL_STRUCT_FUNCTION (fn)->saved_blocks)
-    add_lexical_block (id->block, remap_blocks (DECL_STRUCT_FUNCTION (fn)->saved_blocks, id));
-  else if (DECL_INITIAL (fn))
+  if (DECL_INITIAL (fn))
     add_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));
 
   /* Return statements in the function body will be replaced by jumps
@@ -2155,8 +2127,6 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 
   /* Add local vars in this inlined callee to caller.  */
   t_step = id->callee_cfun->unexpanded_var_list;
-  if (id->callee_cfun->saved_unexpanded_var_list)
-    t_step = id->callee_cfun->saved_unexpanded_var_list;
   for (; t_step; t_step = TREE_CHAIN (t_step))
     {
       var = TREE_VALUE (t_step);
@@ -2329,86 +2299,6 @@ clone_body (tree clone, tree fn, void *arg_map)
 
   /* Actually copy the body.  */
   append_to_statement_list_force (copy_generic_body (&id), &DECL_SAVED_TREE (clone));
-}
-
-/* Save duplicate body in FN.  MAP is used to pass around splay tree
-   used to update arguments in restore_body.  */
-
-/* Make and return duplicate of body in FN.  Put copies of DECL_ARGUMENTS
-   in *arg_copy and of the static chain, if any, in *sc_copy.  */
-
-void
-save_body (tree fn, tree *arg_copy, tree *sc_copy)
-{
-  inline_data id;
-  tree newdecl, *parg;
-  basic_block fn_entry_block;
-  tree t_step;
-
-  memset (&id, 0, sizeof (id));
-  id.callee = fn;
-  id.callee_cfun = DECL_STRUCT_FUNCTION (fn);
-  id.caller = fn;
-  id.node = cgraph_node (fn);
-  id.saving_p = true;
-  id.decl_map = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
-  *arg_copy = DECL_ARGUMENTS (fn);
-
-  for (parg = arg_copy; *parg; parg = &TREE_CHAIN (*parg))
-    {
-      tree new = copy_node (*parg);
-
-      lang_hooks.dup_lang_specific_decl (new);
-      DECL_ABSTRACT_ORIGIN (new) = DECL_ORIGIN (*parg);
-      insert_decl_map (&id, *parg, new);
-      TREE_CHAIN (new) = TREE_CHAIN (*parg);
-      *parg = new;
-    }
-
-  *sc_copy = DECL_STRUCT_FUNCTION (fn)->static_chain_decl;
-  if (*sc_copy)
-    {
-      tree new = copy_node (*sc_copy);
-
-      lang_hooks.dup_lang_specific_decl (new);
-      DECL_ABSTRACT_ORIGIN (new) = DECL_ORIGIN (*sc_copy);
-      insert_decl_map (&id, *sc_copy, new);
-      TREE_CHAIN (new) = TREE_CHAIN (*sc_copy);
-      *sc_copy = new;
-    }
-
-  /* We're not inside any EH region.  */
-  id.eh_region = -1;
-
-  insert_decl_map (&id, DECL_RESULT (fn), DECL_RESULT (fn));
-
-  DECL_STRUCT_FUNCTION (fn)->saved_blocks
-    = remap_blocks (DECL_INITIAL (fn), &id);
-  for (t_step = id.callee_cfun->unexpanded_var_list;
-       t_step;
-       t_step = TREE_CHAIN (t_step))
-    {
-      tree var = TREE_VALUE (t_step);
-      if (TREE_STATIC (var) && !TREE_ASM_WRITTEN (var))
-	cfun->saved_unexpanded_var_list
-	  = tree_cons (NULL_TREE, var, cfun->saved_unexpanded_var_list);
-      else 
-	cfun->saved_unexpanded_var_list
-	  = tree_cons (NULL_TREE, remap_decl (var, &id),
-		       cfun->saved_unexpanded_var_list);
-    }
-
-  /* Actually copy the body, including a new (struct function *) and CFG.
-     EH info is also duplicated so its labels point into the copied
-     CFG, not the original.  */
-  fn_entry_block = ENTRY_BLOCK_PTR_FOR_FUNCTION (DECL_STRUCT_FUNCTION (fn));
-  newdecl = copy_body (&id, fn_entry_block->count, fn_entry_block->frequency,
-		       NULL, NULL);
-  DECL_STRUCT_FUNCTION (fn)->saved_cfg = DECL_STRUCT_FUNCTION (newdecl)->cfg;
-  DECL_STRUCT_FUNCTION (fn)->saved_eh = DECL_STRUCT_FUNCTION (newdecl)->eh;
-
-  /* Clean up.  */
-  splay_tree_delete (id.decl_map);
 }
 
 /* Passed to walk_tree.  Copies the node pointed to, if appropriate.  */
@@ -2807,9 +2697,11 @@ tree_versionable_function_p (tree fndecl)
    respectively.  In case we want to replace a DECL 
    tree with another tree while duplicating the function's 
    body, TREE_MAP represents the mapping between these 
-   trees.  */
+   trees. If UPDATE_CLONES is set, the call_stmt fields
+   of edges of clones of the function will be updated.  */
 void
-tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map)
+tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
+			  bool update_clones)
 {
   struct cgraph_node *old_version_node;
   struct cgraph_node *new_version_node;
@@ -2835,8 +2727,9 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map)
   DECL_ABSTRACT_ORIGIN (new_decl) = DECL_ORIGIN (old_decl);
 
   /* Generate a new name for the new version. */
-  DECL_NAME (new_decl) =
-    create_tmp_var_name (NULL);
+  if (!update_clones)
+    DECL_NAME (new_decl) =
+      create_tmp_var_name (NULL);
   /* Create a new SYMBOL_REF rtx for the new name. */
   if (DECL_RTL (old_decl) != NULL)
     {
@@ -2856,6 +2749,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map)
   id.current_node = cgraph_node (old_decl);
   
   id.versioning_p = true;
+  id.update_clones_p = update_clones;
   id.decl_map = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
   id.caller = new_decl;
   id.callee = old_decl;
@@ -2982,7 +2876,7 @@ replace_ref_tree (inline_data * id, tree * tp)
 static inline bool
 inlining_p (inline_data * id)
 {
-  return (!id->saving_p && !id->cloning_p && !id->versioning_p);
+  return (!id->cloning_p && !id->versioning_p);
 }
 
 /* Duplicate a type, fields and all.  */

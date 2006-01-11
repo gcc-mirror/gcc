@@ -35,7 +35,7 @@ void push_cfun (struct function *new_cfun);
 void pop_cfun (void);
 int estimate_num_insns (tree expr);
 bool tree_versionable_function_p (tree);
-void tree_function_versioning (tree, tree, varray_type);
+void tree_function_versioning (tree, tree, varray_type, bool);
 
 /* Copy a declaration when one function is substituted inline into
    another.  It is used also for versioning.  */
