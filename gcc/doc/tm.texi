@@ -8787,6 +8787,15 @@ point number to a signed fixed point number also convert validly to an
 unsigned one.
 @end defmac
 
+@deftypefn {Target Hook} int TARGET_MIN_DIVISIONS_FOR_RECIP_MUL (enum machine_mode @var{mode})
+When @option{-ffast-math} is in effect, GCC tries to optimize
+divisions by the same divisor, by turning them into multiplications by
+the reciprocal.  This target hook specifies the minimum number of divisions
+that should be there for GCC to perform the optimization for a variable
+of mode @var{mode}.  The default implementation returns 3 if the machine
+has an instruction for the division, and 2 if it does not.
+@end deftypefn
+
 @defmac MOVE_MAX
 The maximum number of bytes that a single instruction can move quickly
 between memory and registers or between two memory locations.

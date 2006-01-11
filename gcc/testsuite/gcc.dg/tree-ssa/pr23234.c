@@ -9,6 +9,7 @@ double
 f1 (double a, double b, double c)
 {
   double y0;
+  double y1;
 
   if (a == 0.0)
     {
@@ -16,7 +17,8 @@ f1 (double a, double b, double c)
       return y0;
     }
   y0 = c / b;
-  return y0;
+  y1 = a / b;
+  return y0 * y1;
 }
 
 /* Labels may end up in the middle of a block.  Also bad.  */
@@ -24,6 +26,7 @@ double
 f2 (double a, double b, double c)
 {
   double y0;
+  double y1;
 
 a_label:
 another_label:
@@ -33,7 +36,8 @@ another_label:
       return y0;
     }
   y0 = c / b;
-  return y0;
+  y1 = a / b;
+  return y0 * y1;
 }
 
 /* Uses must still be dominated by their defs.  */
@@ -41,6 +45,7 @@ double
 f3 (double a, double b, double c)
 {
   double y0;
+  double y1;
 
   y0 = -c / b;
   if (a == 0.0)
@@ -48,5 +53,6 @@ f3 (double a, double b, double c)
       return y0;
     }
   y0 = c / b;
-  return y0;
+  y1 = a / b;
+  return y0 * y1;
 }

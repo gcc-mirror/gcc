@@ -1,3 +1,16 @@
+2006-01-11  Paolo Bonzini  <bonzini@gnu.org>
+        
+        PR tree-optimization/23109
+        PR tree-optimization/23948
+        PR tree-optimization/24123
+
+        * gcc.dg/tree-ssa/recip-3.c, gcc.dg/tree-ssa/recip-4.c,
+        gcc.dg/tree-ssa/recip-5.c, gcc.dg/tree-ssa/recip-6.c,
+        gcc.dg/tree-ssa/recip-7.c, gcc.dg/tree-ssa/pr23109.c,
+        g++.dg/tree-ssa/pr23948.C: New testcases.
+        * gcc.dg/tree-ssa/recip-2.c, gcc.dg/tree-ssa/pr23234.c: Provide
+	three divisions in order to do the optimization.
+
 2006-01-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25730

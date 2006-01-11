@@ -1383,6 +1383,30 @@ tree_merge_blocks (basic_block a, basic_block b)
 }
 
 
+/* Return the one of two successors of BB that is not reachable by a
+   reached by a complex edge, if there is one.  Else, return BB.  We use
+   this in optimizations that use post-dominators for their heuristics,
+   to catch the cases in C++ where function calls are involved.  */
+    
+basic_block
+single_noncomplex_succ (basic_block bb)  
+{
+  edge e0, e1;
+  if (EDGE_COUNT (bb->succs) != 2)
+    return bb;
+   
+  e0 = EDGE_SUCC (bb, 0);
+  e1 = EDGE_SUCC (bb, 1);
+  if (e0->flags & EDGE_COMPLEX)
+    return e1->dest;
+  if (e1->flags & EDGE_COMPLEX)
+    return e0->dest;
+   
+  return bb;
+}       
+        
+
+
 /* Walk the function tree removing unnecessary statements.
 
      * Empty statement nodes are removed
