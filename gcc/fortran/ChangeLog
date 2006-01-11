@@ -1,3 +1,7 @@
+2006-01-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* parse.c (next_fixed): Remove superfluous string concatenation.
+
 2006-01-11  Bernhard Fischer  <rep.nop@aon.at>
 
 	PR fortran/25486

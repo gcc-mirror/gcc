@@ -464,7 +464,7 @@ next_fixed (void)
 
 blank_line:
   if (digit_flag)
-    gfc_warning ("Statement label in blank line will be " "ignored at %C");
+    gfc_warning ("Statement label in blank line will be ignored at %C");
   gfc_advance_line ();
   return ST_NONE;
 }
