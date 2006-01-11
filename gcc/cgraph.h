@@ -161,6 +161,11 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   bool externally_visible;
   /* Set for aliases once they got through assemble_alias.  */
   bool alias;
+
+  /* In non-unit-at-a-time mode the function body of inline candidates is saved
+     into clone before compiling so the function in original form can be
+     inlined later.  This pointer points to the clone.  */
+  tree inline_decl;
 };
 
 struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller")))
@@ -225,6 +230,7 @@ extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
 void dump_cgraph_node (FILE *, struct cgraph_node *);
+void cgraph_insert_node_to_hashtable (struct cgraph_node *node);
 void dump_varpool (FILE *);
 void dump_cgraph_varpool_node (FILE *, struct cgraph_varpool_node *);
 void cgraph_remove_edge (struct cgraph_edge *);
@@ -281,6 +287,7 @@ void cgraph_reset_static_var_maps (void);
 void init_cgraph (void);
 struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
                                                 varray_type, varray_type);
+struct cgraph_node *save_inline_function_body (struct cgraph_node *);
 
 /* In ipa.c  */
 bool cgraph_remove_unreachable_nodes (bool, FILE *);

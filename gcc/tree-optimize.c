@@ -348,11 +348,18 @@ void
 tree_rest_of_compilation (tree fndecl)
 {
   location_t saved_loc;
-  struct cgraph_node *saved_node = NULL, *node;
+  struct cgraph_node *node;
 
   timevar_push (TV_EXPAND);
 
   gcc_assert (!flag_unit_at_a_time || cgraph_global_info_ready);
+
+  node = cgraph_node (fndecl);
+
+  /* We might need the body of this function so that we can expand
+     it inline somewhere else.  */
+  if (cgraph_preserve_function_body_p (fndecl))
+    save_inline_function_body (node);
 
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
@@ -366,26 +373,6 @@ tree_rest_of_compilation (tree fndecl)
      not safe to try to expand expressions involving them.  */
   cfun->x_dont_save_pending_sizes_p = 1;
   cfun->after_inlining = true;
-
-  node = cgraph_node (fndecl);
-
-  /* We might need the body of this function so that we can expand
-     it inline somewhere else.  This means not lowering some constructs
-     such as exception handling.  */
-  if (cgraph_preserve_function_body_p (fndecl))
-    {
-      if (!flag_unit_at_a_time)
-	{
-	  struct cgraph_edge *e;
-
-	  saved_node = cgraph_clone_node (node, node->count, 1, false);
-	  for (e = saved_node->callees; e; e = e->next_callee)
-	    if (!e->inline_failed)
-	      cgraph_clone_inlined_nodes (e, true, false);
-	}
-      cfun->saved_static_chain_decl = cfun->static_chain_decl;
-      save_body (fndecl, &cfun->saved_args, &cfun->saved_static_chain_decl);
-    }
 
   if (flag_inline_trees)
     {
@@ -429,40 +416,7 @@ tree_rest_of_compilation (tree fndecl)
   /* Release the default bitmap obstack.  */
   bitmap_obstack_release (NULL);
   
-  /* Restore original body if still needed.  */
-  if (cfun->saved_cfg)
-    {
-      DECL_ARGUMENTS (fndecl) = cfun->saved_args;
-      cfun->cfg = cfun->saved_cfg;
-      cfun->eh = cfun->saved_eh;
-      DECL_INITIAL (fndecl) = cfun->saved_blocks;
-      cfun->unexpanded_var_list = cfun->saved_unexpanded_var_list;
-      cfun->saved_cfg = NULL;
-      cfun->saved_eh = NULL;
-      cfun->saved_args = NULL_TREE;
-      cfun->saved_blocks = NULL_TREE;
-      cfun->saved_unexpanded_var_list = NULL_TREE;
-      cfun->static_chain_decl = cfun->saved_static_chain_decl;
-      cfun->saved_static_chain_decl = NULL;
-      /* When not in unit-at-a-time mode, we must preserve out of line copy
-	 representing node before inlining.  Restore original outgoing edges
-	 using clone we created earlier.  */
-      if (!flag_unit_at_a_time)
-	{
-	  struct cgraph_edge *e;
-
-	  node = cgraph_node (current_function_decl);
-	  cgraph_node_remove_callees (node);
-	  node->callees = saved_node->callees;
-	  saved_node->callees = NULL;
-	  update_inlined_to_pointers (node, node);
-	  for (e = node->callees; e; e = e->next_callee)
-	    e->caller = node;
-	  cgraph_remove_node (saved_node);
-	}
-    }
-  else
-    DECL_SAVED_TREE (fndecl) = NULL;
+  DECL_SAVED_TREE (fndecl) = NULL;
   cfun = 0;
 
   /* If requested, warn about function definitions where the function will

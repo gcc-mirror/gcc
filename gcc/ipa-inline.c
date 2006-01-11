@@ -158,6 +158,9 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original)
   int old_insns = 0, new_insns = 0;
   struct cgraph_node *to = NULL, *what;
 
+  if (e->callee->inline_decl)
+    cgraph_redirect_edge_callee (e, cgraph_node (e->callee->inline_decl));
+
   gcc_assert (e->inline_failed);
   e->inline_failed = NULL;
 
@@ -283,21 +286,25 @@ cgraph_check_inline_limits (struct cgraph_node *to, struct cgraph_node *what,
 bool
 cgraph_default_inline_p (struct cgraph_node *n, const char **reason)
 {
-  if (!DECL_INLINE (n->decl))
+  tree decl = n->decl;
+
+  if (n->inline_decl)
+    decl = n->inline_decl;
+  if (!DECL_INLINE (decl))
     {
       if (reason)
 	*reason = N_("function not inlinable");
       return false;
     }
 
-  if (!DECL_SAVED_TREE (n->decl))
+  if (!DECL_STRUCT_FUNCTION (decl)->cfg)
     {
       if (reason)
 	*reason = N_("function body not available");
       return false;
     }
 
-  if (DECL_DECLARED_INLINE_P (n->decl))
+  if (DECL_DECLARED_INLINE_P (decl))
     {
       if (n->global.insns >= MAX_INLINE_INSNS_SINGLE)
 	{
@@ -1046,7 +1053,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
         && !cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed)
 	/* ??? It is possible that renaming variable removed the function body
 	   in duplicate_decls. See gcc.c-torture/compile/20011119-2.c  */
-	&& DECL_SAVED_TREE (e->callee->decl))
+	&& (DECL_SAVED_TREE (e->callee->decl) || e->callee->inline_decl))
       {
         if (dump_file && early)
 	  {
@@ -1069,7 +1076,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 	      || (cgraph_estimate_size_after_inlining (1, e->caller, node)
 	          <= e->caller->global.insns))
 	  && cgraph_check_inline_limits (node, e->callee, &e->inline_failed)
-	  && DECL_SAVED_TREE (e->callee->decl))
+	  && (DECL_SAVED_TREE (e->callee->decl) || e->callee->inline_decl))
 	{
 	  if (cgraph_default_inline_p (e->callee, &failed_reason))
 	    {

@@ -214,6 +214,19 @@ cgraph_node (tree decl)
   return node;
 }
 
+/* Insert already constructed node into hashtable.  */
+
+void
+cgraph_insert_node_to_hashtable (struct cgraph_node *node)
+{
+  struct cgraph_node **slot;
+
+  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, node, INSERT);
+
+  gcc_assert (!*slot);
+  *slot = node;
+}
+
 /* Compare ASMNAME with the DECL_ASSEMBLER_NAME of DECL.  */
 
 static bool

@@ -748,7 +748,8 @@ verify_cgraph_node (struct cgraph_node *node)
 			    debug_generic_stmt (stmt);
 			    error_found = true;
 			  }
-			if (e->callee->decl != cgraph_node (decl)->decl)
+			if (e->callee->decl != cgraph_node (decl)->decl
+			    && e->inline_failed)
 			  {
 			    error ("edge points to wrong declaration:");
 			    debug_tree (e->callee->decl);
@@ -1202,9 +1203,6 @@ bool
 cgraph_preserve_function_body_p (tree decl)
 {
   struct cgraph_node *node;
-  /* Keep the body; we're going to dump it.  */
-  if (dump_enabled_p (TDI_tree_all))
-    return true;
   if (!cgraph_global_info_ready)
     return (DECL_INLINE (decl) && !flag_really_no_inline);
   /* Look if there is any clone around.  */
@@ -1504,7 +1502,7 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
 				     redirect_callers);
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (old_decl, new_decl, tree_map);
+  tree_function_versioning (old_decl, new_decl, tree_map, false);
   /* Update the call_expr on the edges to call the new version node. */
   update_call_expr (new_version_node);
 
@@ -1521,3 +1519,57 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
   new_version_node->lowered = true;
   return new_version_node;
 }
+
+/* Produce separate function body for inline clones so the offline copy can be
+   modified without affecting them.  */
+struct cgraph_node *
+save_inline_function_body (struct cgraph_node *node)
+{
+  struct cgraph_node *first_clone;
+
+  gcc_assert (node == cgraph_node (node->decl));
+
+  cgraph_lower_function (node);
+
+  /* In non-unit-at-a-time we construct full fledged clone we never output to
+     assembly file.  This clone is pointed out by inline_decl of orginal function
+     and inlining infrastructure knows how to deal with this.  */
+  if (!flag_unit_at_a_time)
+    {
+      struct cgraph_edge *e;
+
+      first_clone = cgraph_clone_node (node, node->count, 0, false);
+      first_clone->needed = 0;
+      first_clone->reachable = 1;
+      /* Recursively clone all bodies.  */
+      for (e = first_clone->callees; e; e = e->next_callee)
+	if (!e->inline_failed)
+	  cgraph_clone_inlined_nodes (e, true, false);
+    }
+  else
+    first_clone = node->next_clone;
+
+  first_clone->decl = copy_node (node->decl);
+  node->next_clone = NULL;
+  if (!flag_unit_at_a_time)
+    node->inline_decl = first_clone->decl;
+  first_clone->prev_clone = NULL;
+  cgraph_insert_node_to_hashtable (first_clone);
+  gcc_assert (first_clone == cgraph_node (first_clone->decl));
+
+  /* Copy the OLD_VERSION_NODE function tree to the new version.  */
+  tree_function_versioning (node->decl, first_clone->decl, NULL, true);
+
+  DECL_EXTERNAL (first_clone->decl) = 0;
+  DECL_ONE_ONLY (first_clone->decl) = 0;
+  TREE_PUBLIC (first_clone->decl) = 0;
+  DECL_COMDAT (first_clone->decl) = 0;
+
+  for (node = first_clone->next_clone; node; node = node->next_clone)
+    node->decl = first_clone->decl;
+#ifdef ENABLE_CHECKING
+  verify_cgraph_node (first_clone);
+#endif
+  return first_clone;
+}
+

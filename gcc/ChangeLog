@@ -1,3 +1,31 @@
+2006-01-11  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_insert_node_to_hashtable): New function.
+	* cgraph.h (cgraph_node): Add inline_decl.
+	(cgraph_insert_node_to_hashtable): Declare.
+	(save_inline_function_body): Declare.
+	* cgraphunit.c (verify_cgraph_node): Inline edges might point to inline
+	clones.
+	(cgraph_preserve_function_body_p): Do not presrve when dump is enabled.
+	(cgraph_function_versioning): Update call of tree_function_versioning.
+	(save_inline_function_body): New function.
+	* function.h (struct function): Kill saved_eh, saved_cfg, saved_args,
+	saved_static_chain_decl, saved_blocks and saved-unexpanded_var_list.
+	* ipa-inline.c (cgraph_mark_inline_edge): Look for inline clones.
+	(cgraph_default_inline_p): Likewise.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	* tree-inline.c (inline_data): Kill saving_p add update_clones_p.
+	(copy_bb): Kill saving; do updating of clones.
+	(copy_cfg_body): Kill saving.
+	(initialize_inlined-parameters): Likewise.
+	(expand_call_inline): Likewise.
+	(save_body): Kill.
+	(tree_function_versioning): New parameter "update_clones".
+	(inlining_p): Kill saving.
+	* tree-inline.h (tree_function_versioning): Update prototype.
+	* tree-optimize.c (tree_rest_of_compilation): Use clonning instead of
+	saving.
+
 2006-01-11  Ian Lance Taylor <ian@airs.com>
 
 	* combine.c (struct undo): Remove is_int.  Enumify types of undos.
