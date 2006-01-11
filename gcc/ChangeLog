@@ -1,5 +1,10 @@
 2006-01-11  Jan Hubicka  <jh@suse.cz>
 
+	PR target/25042
+	* i386.c (ix86_init_mmx_sse_builtins): Do not delcare float128
+
+2006-01-11  Jan Hubicka  <jh@suse.cz>
+
 	* i386.h (TARGET_DECOMPOSE_LEA): Kill.
 	* i386.c (x86_decompose_lea): Kill.
 	(ix86_rtx_costs): Kill.
