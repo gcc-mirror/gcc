@@ -1,3 +1,8 @@
+2006-01-12  Yao Qi  <qiyaoltc@cn.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/dfp/inf-1.c: New test.
+
 2006-01-12  Janis Johnson <janis187@us.ibm.com>
 	    Yao Qi  <qiyaoltc@cn.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
