@@ -1,5 +1,5 @@
 /* DDG - Data Dependence Graph implementation.
-   Copyright (C) 2004, 2005
+   Copyright (C) 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Ayal Zaks and Mustafa Hagog <zaks,mustafa@il.ibm.com>
 
@@ -222,10 +222,10 @@ create_ddg_dep_no_link (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to,
    for all its uses in the next iteration, and an output dependence to the
    first def of the next iteration.  */
 static void
-add_deps_for_def (ddg_ptr g, struct df *df, struct ref *rd)
+add_deps_for_def (ddg_ptr g, struct df *df, struct df_ref *rd)
 {
   int regno = DF_REF_REGNO (rd);
-  struct bb_info *bb_info = DF_BB_INFO (df, g->bb);
+  struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (df, g->bb);
   struct df_link *r_use;
   int use_before_def = false;
   rtx def_insn = DF_REF_INSN (rd);
@@ -235,7 +235,7 @@ add_deps_for_def (ddg_ptr g, struct df *df, struct ref *rd)
      that is upwards exposed in RD's block.  */
   for (r_use = DF_REF_CHAIN (rd); r_use != NULL; r_use = r_use->next)
     {
-      if (bitmap_bit_p (bb_info->ru_gen, r_use->ref->id))
+      if (bitmap_bit_p (bb_info->gen, r_use->ref->id))
 	{
 	  rtx use_insn = DF_REF_INSN (r_use->ref);
 	  ddg_node_ptr dest_node = get_node_of_insn (g, use_insn);
@@ -257,7 +257,7 @@ add_deps_for_def (ddg_ptr g, struct df *df, struct ref *rd)
      there is a use between the two defs.  */
   if (! use_before_def)
     {
-      struct ref *def = df_bb_regno_first_def_find (df, g->bb, regno);
+      struct df_ref *def = df_bb_regno_first_def_find (df, g->bb, regno);
       int i;
       ddg_node_ptr dest_node;
 
@@ -266,7 +266,7 @@ add_deps_for_def (ddg_ptr g, struct df *df, struct ref *rd)
 
       /* Check if there are uses after RD.  */
       for (i = src_node->cuid + 1; i < g->num_nodes; i++)
-	 if (df_reg_used (df, g->nodes[i].insn, rd->reg))
+	 if (df_find_use (df, g->nodes[i].insn, rd->reg))
 	   return;
 
       dest_node = get_node_of_insn (g, def->insn);
@@ -278,16 +278,16 @@ add_deps_for_def (ddg_ptr g, struct df *df, struct ref *rd)
    (nearest BLOCK_BEGIN) def of the next iteration, unless USE is followed
    by a def in the block.  */
 static void
-add_deps_for_use (ddg_ptr g, struct df *df, struct ref *use)
+add_deps_for_use (ddg_ptr g, struct df *df, struct df_ref *use)
 {
   int i;
   int regno = DF_REF_REGNO (use);
-  struct ref *first_def = df_bb_regno_first_def_find (df, g->bb, regno);
+  struct df_ref *first_def = df_bb_regno_first_def_find (df, g->bb, regno);
   ddg_node_ptr use_node;
   ddg_node_ptr def_node;
-  struct bb_info *bb_info;
+  struct df_rd_bb_info *bb_info;
 
-  bb_info = DF_BB_INFO (df, g->bb);
+  bb_info = DF_RD_BB_INFO (df, g->bb);
 
   if (!first_def)
     return;
@@ -304,7 +304,7 @@ add_deps_for_use (ddg_ptr g, struct df *df, struct ref *use)
   /* We must not add ANTI dep when there is an intra-loop TRUE dep in
      the opposite direction. If the first_def reaches the USE then there is
      such a dep.  */
-  if (! bitmap_bit_p (bb_info->rd_gen, first_def->id))
+  if (! bitmap_bit_p (bb_info->gen, first_def->id))
     create_ddg_dep_no_link (g, use_node, def_node, ANTI_DEP, REG_DEP, 1);
 }
 
@@ -313,25 +313,28 @@ static void
 build_inter_loop_deps (ddg_ptr g, struct df *df)
 {
   unsigned rd_num, u_num;
-  struct bb_info *bb_info;
+  struct df_rd_bb_info *rd_bb_info;
+  struct df_ru_bb_info *ru_bb_info;
   bitmap_iterator bi;
 
-  bb_info = DF_BB_INFO (df, g->bb);
+  rd_bb_info = DF_RD_BB_INFO (df, g->bb);
 
   /* Find inter-loop output and true deps by connecting downward exposed defs
      to the first def of the BB and to upwards exposed uses.  */
-  EXECUTE_IF_SET_IN_BITMAP (bb_info->rd_gen, 0, rd_num, bi)
+  EXECUTE_IF_SET_IN_BITMAP (rd_bb_info->gen, 0, rd_num, bi)
     {
-      struct ref *rd = df->defs[rd_num];
+      struct df_ref *rd = DF_DEFS_GET (df, rd_num);
 
       add_deps_for_def (g, df, rd);
     }
 
+  ru_bb_info = DF_RU_BB_INFO (df, g->bb);
+
   /* Find inter-loop anti deps.  We are interested in uses of the block that
      appear below all defs; this implies that these uses are killed.  */
-  EXECUTE_IF_SET_IN_BITMAP (bb_info->ru_kill, 0, u_num, bi)
+  EXECUTE_IF_SET_IN_BITMAP (ru_bb_info->kill, 0, u_num, bi)
     {
-      struct ref *use = df->uses[u_num];
+      struct df_ref *use = DF_USES_GET (df, u_num);
 
       /* We are interested in uses of this BB.  */
       if (BLOCK_FOR_INSN (use->insn) == g->bb)
