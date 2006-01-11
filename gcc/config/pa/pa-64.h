@@ -70,10 +70,6 @@ Boston, MA 02110-1301, USA.  */
    relocs which appear in stabs.  */
 #undef DBX_DEBUGGING_INFO
 
-/* We want the compiler to select a suitable secondary memory location.
-   ?!? This may not work reliably.  Keep an eye out for problems.  */
-#undef SECONDARY_MEMORY_NEEDED_RTX
-
 /* ?!? This needs to be made compile-time selectable.
 
    The PA64 runtime model has arguments that grow to higher addresses
