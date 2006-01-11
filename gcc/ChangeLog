@@ -1,3 +1,11 @@
+2006-01-11  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-operands.c (get_expr_operands): Record addressable
+	variables directly.  Do not call add_stmt_operands for CONST_DECLs
+	and ARRAY_DECLs.
+	(get_indirect_ref_operands): Remove handling of *(&a + offset) case.
+	(add_stmt_operands): Handle only objects satisfying SSA_VAR_P.
+
 2006-01-11  Ben Elliston  <bje@au.ibm.com>
 
 	* config/i386/i386.c (ix86_return_in_memory): Fix comment: this

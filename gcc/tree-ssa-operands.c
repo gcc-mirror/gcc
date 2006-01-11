@@ -1038,12 +1038,11 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
   switch (code)
     {
     case ADDR_EXPR:
-      /* We could have the address of a component, array member,
-	 etc which has interesting variable references.  */
       /* Taking the address of a variable does not represent a
 	 reference to it, but the fact that the stmt takes its address will be
 	 of interest to some passes (e.g. alias resolution).  */
-      add_stmt_operand (expr_p, s_ann, 0);
+      add_to_addressable_set (TREE_OPERAND (expr, 0),
+			      &s_ann->addresses_taken);
 
       /* If the address is invariant, there may be no interesting variable
 	 references inside.  */
@@ -1070,7 +1069,6 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case VAR_DECL:
     case PARM_DECL:
     case RESULT_DECL:
-    case CONST_DECL:
       {
 	subvar_t svars;
 	
@@ -1110,13 +1108,8 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	 is the VAR_DECL for the array.  */
 
       /* Add the virtual variable for the ARRAY_REF to VDEFS or VUSES
-	 according to the value of IS_DEF.  Recurse if the LHS of the
-	 ARRAY_REF node is not a regular variable.  */
-      if (SSA_VAR_P (TREE_OPERAND (expr, 0)))
-	add_stmt_operand (expr_p, s_ann, flags);
-      else
-	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
-
+	 according to the value of IS_DEF.  */
+      get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 3), opf_none);
@@ -1259,6 +1252,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case EXC_PTR_EXPR:
     case FILTER_EXPR:
     case LABEL_DECL:
+    case CONST_DECL:
       /* Expressions that make no memory references.  */
       return;
 
@@ -1441,26 +1435,6 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags)
 	s_ann->has_volatile_ops = true;
       return;
     }
-
-  /* Everything else *should* have been folded elsewhere, but users
-     are smarter than we in finding ways to write invalid code.  We
-     cannot just assert here.  If we were absolutely certain that we
-     do handle all valid cases, then we could just do nothing here.
-     That seems optimistic, so attempt to do something logical... */
-  else if ((TREE_CODE (ptr) == PLUS_EXPR || TREE_CODE (ptr) == MINUS_EXPR)
-	   && TREE_CODE (TREE_OPERAND (ptr, 0)) == ADDR_EXPR
-	   && TREE_CODE (TREE_OPERAND (ptr, 1)) == INTEGER_CST)
-    {
-      /* Make sure we know the object is addressable.  */
-      pptr = &TREE_OPERAND (ptr, 0);
-      add_stmt_operand (pptr, s_ann, 0);
-
-      /* Mark the object itself with a VUSE.  */
-      pptr = &TREE_OPERAND (*pptr, 0);
-      get_expr_operands (stmt, pptr, flags);
-      return;
-    }
-
   /* Ok, this isn't even is_gimple_min_invariant.  Something's broke.  */
   else
     gcc_unreachable ();
@@ -1577,26 +1551,12 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
   var_ann_t v_ann;
 
   var = *var_p;
-  STRIP_NOPS (var);
+  gcc_assert (SSA_VAR_P (var));
 
-  /* If the operand is an ADDR_EXPR, add its operand to the list of
-     variables that have had their address taken in this statement.  */
-  if (TREE_CODE (var) == ADDR_EXPR && s_ann)
-    {
-      add_to_addressable_set (TREE_OPERAND (var, 0), &s_ann->addresses_taken);
-      return;
-    }
-
-  /* If the original variable is not a scalar, it will be added to the list
-     of virtual operands.  In that case, use its base symbol as the virtual
-     variable representing it.  */
   is_real_op = is_gimple_reg (var);
-  if (!is_real_op && !DECL_P (var))
-    var = get_virtual_var (var);
-
-  /* If VAR is not a variable that we care to optimize, do nothing.  */
-  if (var == NULL_TREE || !SSA_VAR_P (var))
-    return;
+  /* If this is a real operand, the operand is either ssa name or decl.
+     Virtual operands may only be decls.  */
+  gcc_assert (is_real_op || DECL_P (var));
 
   sym = (TREE_CODE (var) == SSA_NAME ? SSA_NAME_VAR (var) : var);
   v_ann = var_ann (sym);
