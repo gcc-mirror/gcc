@@ -1686,8 +1686,8 @@
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
   if (which_alternative == 4)
-    return "%x5%e6.%m6 [%4=%3%S2],%0";
-  return "%x5%e6.%m6 [%4=%2%S3],%0";
+    return "%x5%E6.%m6 [%4=%3%S2],%0";
+  return "%x5%E6.%m6 [%4=%2%S3],%0";
 })
 
 (define_insn "*extop<mode>si_side"
@@ -1715,8 +1715,8 @@
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
   if (which_alternative == 4)
-    return "%x5%e6<m> [%4=%3%S2],%0";
-  return "%x5%e6<m> [%4=%2%S3],%0";
+    return "%x5%E6<m> [%4=%3%S2],%0";
+  return "%x5%E6<m> [%4=%2%S3],%0";
 })
 
 
@@ -1766,7 +1766,7 @@
    && cris_side_effect_mode_ok (MULT, operands, 5, 4, 2, 3, 0)"
   "@
    #
-   %x7%e6<m> [%5=%4+%2%T3],%0")
+   %x7%E6<m> [%5=%4+%2%T3],%0")
 
 ;; [rx=ry+i]
 ;; FIXME: GCC should widen.
@@ -1823,8 +1823,8 @@
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
   if (which_alternative == 4)
-    return \"%x6%e5.%m5 [%4=%3%S2],%0\";
-  return "%x6%e5<m> [%4=%2%S3],%0";
+    return \"%x6%E5.%m5 [%4=%3%S2],%0\";
+  return "%x6%E5<m> [%4=%2%S3],%0";
 })
 
 ;; Extend versions (zero/sign) of normal add/sub (no side-effects).
@@ -1843,10 +1843,10 @@
   "GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
    && (operands[1] != frame_pointer_rtx || GET_CODE (operands[3]) != PLUS)"
   "@
-   %x3%e4.%m4 %2,%0
-   %x3%e4.%m4 %2,%0
-   %x3%e4.%m4 %2,%0
-   %x3%e4.%m4 %2,%1,%0"
+   %x3%E4.%m4 %2,%0
+   %x3%E4.%m4 %2,%0
+   %x3%E4.%m4 %2,%0
+   %x3%E4.%m4 %2,%1,%0"
   [(set_attr "slottable" "yes,yes,no,no")
    (set_attr "cc" "clobber")])
 
@@ -1864,10 +1864,10 @@
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= UNITS_PER_WORD
    && (operands[1] != frame_pointer_rtx || GET_CODE (operands[3]) != PLUS)"
   "@
-   %x3%e4<m> %2,%0
-   %x3%e4<m> %2,%0
-   %x3%e4<m> %2,%0
-   %x3%e4<m> %2,%1,%0"
+   %x3%E4<m> %2,%0
+   %x3%E4<m> %2,%0
+   %x3%E4<m> %2,%0
+   %x3%E4<m> %2,%1,%0"
   [(set_attr "slottable" "yes,yes,no,no")])
 
 
@@ -1903,10 +1903,10 @@
   "(GET_CODE (operands[4]) != UMIN || GET_CODE (operands[3]) == ZERO_EXTEND)
    && operands[1] != frame_pointer_rtx"
   "@
-   %x4%e3<m> %2,%0
-   %x4%e3<m> %2,%0
-   %x4%e3<m> %2,%0
-   %x4%e3<m> %2,%1,%0"
+   %x4%E3<m> %2,%0
+   %x4%E3<m> %2,%0
+   %x4%E3<m> %2,%0
+   %x4%E3<m> %2,%1,%0"
   [(set_attr "slottable" "yes,yes,no,no")])
 
 ;; This is the special case when we use what corresponds to the
