@@ -1,6 +1,11 @@
+2006-01-11  Ben Elliston  <bje@au.ibm.com>
+
+	* rtlanal.c (find_reg_note): Assert insn is not null.
+
 2005-01-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-   * df-scan.c (df_hard_reg_init) Moved declaration of i outside ifdef.
+	* df-scan.c (df_hard_reg_init): Move declaration of i outside
+	ifdef.
 
 2006-01-11  Jeff Law  <law@redhat.com>
 
