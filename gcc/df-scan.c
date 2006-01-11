@@ -1752,8 +1752,8 @@ static bool initialized = false;
 void 
 df_hard_reg_init (void)
 {
-#ifdef ELIMINABLE_REGS
   int i;
+#ifdef ELIMINABLE_REGS
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
   /* After reload, some ports add certain bits to regs_ever_live so
