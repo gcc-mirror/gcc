@@ -3571,7 +3571,7 @@ ix86_function_value (tree valtype, tree fntype_or_decl,
     }
 }
 
-/* Return false iff type is returned in memory.  */
+/* Return true iff type is returned in memory.  */
 int
 ix86_return_in_memory (tree type)
 {
