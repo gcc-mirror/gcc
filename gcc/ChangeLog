@@ -1,3 +1,16 @@
+2006-01-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/20754
+	* pa.md: Create separate 32 and 64-bit move patterns for SI, DI, SF
+	and DF modes.  Add alternatives to copy between general and floating
+	point registers to the 32-bit patterns.
+	* pa-64.h (SECONDARY_MEMORY_NEEDED_RTX): Delete undefine.
+	* pa.h (SECONDARY_MEMORY_NEEDED_RTX): Delete define.
+	(SECONDARY_MEMORY_NEEDED): Secondary memory is only needed when
+	generating 64-bit code.
+	* pa.c (output_move_double): Handle copies between general and
+	floating registers.
+
 2006-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/25367
