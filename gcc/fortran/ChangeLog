@@ -1,3 +1,9 @@
+2005-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25730
+	* trans-types.c (copy_dt_decls_ifequal): Copy backend decl for
+	character lengths.
+
 2006-01-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	fortran/24936
