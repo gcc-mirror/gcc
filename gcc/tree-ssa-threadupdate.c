@@ -147,6 +147,14 @@ struct local_info
   bool jumps_threaded;
 };
 
+/* Passes which use the jump threading code register jump threading
+   opportunities as they are discovered.  We keep the registered
+   jump threading opportunities in this vector as edge pairs
+   (original_edge, target_edge).  */
+DEF_VEC_ALLOC_P(edge,heap);
+static VEC(edge,heap) *threaded_edges;
+
+
 /* Jump threading statistics.  */
 
 struct thread_stats_d
@@ -802,18 +810,37 @@ thread_block (basic_block bb)
   return local_info.jumps_threaded;
 }
 
-/* Walk through all blocks and thread incoming edges to the block's
-   destinations as requested.  This is the only entry point into this
-   file.
+/* Walk through the registered jump threads and convert them into a
+   form convienent for this pass.
 
-   Blocks which have one or more incoming edges have INCOMING_EDGE_THREADED
-   set in the block's annotation.
+   Any block which has incoming edges threaded to outgoing edges
+   will have its entry in THREADED_BLOCK set.
 
-   Each edge that should be threaded has the new destination edge stored in
-   the original edge's AUX field.
+   Any threaded edge will have its new outgoing edge stored in the
+   original edge's AUX field.
 
-   This routine (or one of its callees) will clear INCOMING_EDGE_THREADED
-   in the block annotations and the AUX field in the edges.
+   This form avoids the need to walk all the edges in the CFG to
+   discover blocks which need processing and avoids unnecessary
+   hash table lookups to map from threaded edge to new target.  */
+
+static void
+mark_threaded_blocks (bitmap threaded_blocks)
+{
+  unsigned int i;
+
+  for (i = 0; i < VEC_length (edge, threaded_edges); i += 2)
+    {
+      edge e = VEC_index (edge, threaded_edges, i);
+      edge e2 = VEC_index (edge, threaded_edges, i + 1);
+
+      e->aux = e2;
+      bitmap_set_bit (threaded_blocks, e->dest->index);
+    }
+}
+
+
+/* Walk through all blocks and thread incoming edges to the appropriate
+   outgoing edge for each edge pair recorded in THREADED_EDGES.
 
    It is the caller's responsibility to fix the dominance information
    and rewrite duplicated SSA_NAMEs back into SSA form.
@@ -821,14 +848,21 @@ thread_block (basic_block bb)
    Returns true if one or more edges were threaded, false otherwise.  */
 
 bool
-thread_through_all_blocks (bitmap threaded_blocks)
+thread_through_all_blocks (void)
 {
   bool retval = false;
   unsigned int i;
   bitmap_iterator bi;
+  bitmap threaded_blocks;
 
+  if (threaded_edges == NULL)
+    return false;
+
+  threaded_blocks = BITMAP_ALLOC (NULL);
   rediscover_loops_after_threading = false;
   memset (&thread_stats, 0, sizeof (thread_stats));
+
+  mark_threaded_blocks (threaded_blocks);
 
   EXECUTE_IF_SET_IN_BITMAP (threaded_blocks, 0, i, bi)
     {
@@ -842,5 +876,27 @@ thread_through_all_blocks (bitmap threaded_blocks)
     fprintf (dump_file, "\nJumps threaded: %lu\n",
 	     thread_stats.num_threaded_edges);
 
+  BITMAP_FREE (threaded_blocks);
+  threaded_blocks = NULL;
+  VEC_free (edge, heap, threaded_edges);
+  threaded_edges = NULL;
   return retval;
+}
+
+/* Register a jump threading opportunity.  We queue up all the jump
+   threading opportunities discovered by a pass and update the CFG
+   and SSA form all at once.
+
+   E is the edge we can thread, E2 is the new target edge.  ie, we
+   are effectively recording that E->dest can be changed to E2->dest
+   after fixing the SSA graph.  */
+
+void
+register_jump_thread (edge e, edge e2)
+{
+  if (threaded_edges == NULL)
+    threaded_edges = VEC_alloc (edge, heap, 10);
+
+  VEC_safe_push (edge, heap, threaded_edges, e);
+  VEC_safe_push (edge, heap, threaded_edges, e2);
 }

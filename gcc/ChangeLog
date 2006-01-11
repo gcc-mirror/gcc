@@ -1,3 +1,24 @@
+2006-01-11  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (threaded_edges): New VEC to
+	hold edge pairs.
+	(mark_threaded_blocks, register_jump_thread): New functions.
+	(thread_through_all_blocks): Remove unwanted argument.  No
+	longer rely on e->aux to communicate thread target info.
+	Call mark_threaded_blocks.  Release the threaded_blocks
+	bitmap and threaded_edges vector when complete.
+	* tree-ssa-dom.c (struct edge_info): Remove redirection_target field.
+	(threaded_blocks): Remove.
+	(tree_ssa_dominator_optimize): Remove initialization and
+	finalization of threaded_blocks.  Simplify call to
+	thread_through_all_blocks.
+	(thread_across_edge): Call register_jump_thread rather than
+	storing thread information into e->aux.
+	(free_all_edge_infos): Simplify now that e->aux is no longer
+	used to communicate with thread_through_all_blocks.
+	* tree-flow.h (thread_through_all_blocks): Update prototype.
+	(register_jump_thread): Prototype.
+	
 2006-01-11  Kazu Hirata  <kazu@codesourcery.com>
 
 	* df-core.c (df_compact_blocks, df_bb_replace): Use
