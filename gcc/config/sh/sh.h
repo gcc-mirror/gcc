@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004 Free Software Foundation, Inc.
+   2003, 2004, 2006 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -1345,30 +1345,11 @@ extern enum reg_class reg_class_from_letter[];
    unused CONST_INT constraint letters: LO
    unused EXTRA_CONSTRAINT letters: D T U Y */
 
-#if 1 /* check that the transition went well.  */
-#define CONSTRAINT_LEN(C,STR) \
-  (((C) == 'L' || (C) == 'O' || (C) == 'D' || (C) == 'T' || (C) == 'U' \
-    || (C) == 'Y' \
-    || ((C) == 'I' \
-        && (((STR)[1] != '0' && (STR)[1] != '1') \
-	    || (STR)[2] < '0' || (STR)[2] > '9')) \
-    || ((C) == 'B' && ((STR)[1] != 's' || (STR)[2] != 'c')) \
-    || ((C) == 'J' && ((STR)[1] != '1' || (STR)[2] != '6')) \
-    || ((C) == 'K' && ((STR)[1] != '0' || (STR)[2] != '8')) \
-    || ((C) == 'P' && ((STR)[1] != '2' || (STR)[2] != '7'))) \
-   ? -1 \
-   : ((C) == 'A' || (C) == 'B' || (C) == 'C' \
-      || (C) == 'I' || (C) == 'J' || (C) == 'K' || (C) == 'P' \
-      || (C) == 'R' || (C) == 'S') \
-   ? 3 \
-   : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
-#else
 #define CONSTRAINT_LEN(C,STR) \
   (((C) == 'A' || (C) == 'B' || (C) == 'C' \
     || (C) == 'I' || (C) == 'J' || (C) == 'K' || (C) == 'P' \
     || (C) == 'R' || (C) == 'S') \
    ? 3 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
-#endif
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.

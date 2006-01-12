@@ -1,3 +1,8 @@
+2006-01-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/25613
+	* config/sh/sh.h (CONSTRAINT_LEN): Use unchecking version.	
+
 2005-12-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/25213
