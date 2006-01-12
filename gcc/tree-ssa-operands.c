@@ -1778,14 +1778,25 @@ add_call_clobber_ops (tree stmt, tree callee)
   EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, u, bi)
     {
       tree var = referenced_var (u);
+      unsigned int uid = u;
+
       if (unmodifiable_var_p (var))
 	add_stmt_operand (&var, &empty_ann, opf_none);
       else
 	{
-	  bool not_read
-	    = not_read_b ? bitmap_bit_p (not_read_b, u) : false;
-	  bool not_written
-	    = not_written_b ? bitmap_bit_p (not_written_b, u) : false;
+	  bool not_read;
+	  bool not_written;
+	  
+	  /* Not read and not written are computed on regular vars, not
+	     subvars, so look at the parent var if this is an SFT. */
+	  
+	  if (TREE_CODE (var) == STRUCT_FIELD_TAG)
+	    uid = DECL_UID (SFT_PARENT_VAR (var));
+
+	  not_read = 
+	    not_read_b ? bitmap_bit_p (not_read_b, uid) : false;
+	  not_written = 
+	    not_written_b ? bitmap_bit_p (not_written_b, uid) : false;
 
 	  if (not_written)
 	    {
