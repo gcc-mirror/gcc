@@ -1,3 +1,8 @@
+2006-01-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4: Use -Wl,-z,relro if possible.
+	* configure: Regenerate.
+
 2006-01-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/complex: New file, hosts the additions to header

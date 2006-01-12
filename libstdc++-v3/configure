@@ -8279,6 +8279,21 @@ fi
 echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
+  fi
+
   # Set linker optimization flags.
   if test x"$with_gnu_ld" = x"yes"; then
     OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
@@ -53103,6 +53118,21 @@ fi
 echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
+  fi
+
   # Set linker optimization flags.
   if test x"$with_gnu_ld" = x"yes"; then
     OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
@@ -74420,6 +74450,21 @@ fi
 echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
+  fi
+
   # Set linker optimization flags.
   if test x"$with_gnu_ld" = x"yes"; then
     OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
@@ -75900,6 +75945,21 @@ fi
 echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
+  fi
+
   # Set linker optimization flags.
   if test x"$with_gnu_ld" = x"yes"; then
     OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
@@ -77254,6 +77314,21 @@ fi
     fi
     echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
 echo "${ECHO_T}$ac_sectionLDflags" >&6
+  fi
+
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
   fi
 
   # Set linker optimization flags.
@@ -79399,6 +79474,21 @@ fi
 echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
+  fi
+
   # Set linker optimization flags.
   if test x"$with_gnu_ld" = x"yes"; then
     OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
@@ -80706,6 +80796,21 @@ fi
     fi
     echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
 echo "${ECHO_T}$ac_sectionLDflags" >&6
+  fi
+
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
   fi
 
   # Set linker optimization flags.
@@ -82064,6 +82169,21 @@ fi
     fi
     echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
 echo "${ECHO_T}$ac_sectionLDflags" >&6
+  fi
+
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
   fi
 
   # Set linker optimization flags.
@@ -83802,6 +83922,21 @@ fi
     fi
     echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
 echo "${ECHO_T}$ac_sectionLDflags" >&6
+  fi
+
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
   fi
 
   # Set linker optimization flags.
@@ -85873,6 +86008,21 @@ fi
     fi
     echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
 echo "${ECHO_T}$ac_sectionLDflags" >&6
+  fi
+
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
   fi
 
   # Set linker optimization flags.
