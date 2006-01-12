@@ -1,3 +1,10 @@
+2006-01-11  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-operands.c (add_call_clobber_ops): Use SFT_PARENT_VAR
+	to try to avoid clobbering pieces of structures when we know
+	something about the whole structure.
+	* tree-ssa-alias.c (create_sft): Set SFT_PARENT_VAR
+
 2006-01-13  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/rtl.texi (Insns): Remove statement that libcalls cannot

@@ -2536,6 +2536,7 @@ create_sft (tree var, tree field)
   ann = get_var_ann (subvar);
   ann->type_mem_tag = NULL;  	
   add_referenced_tmp_var (subvar);
+  SFT_PARENT_VAR (subvar) = var;
 
   return subvar;
 }
