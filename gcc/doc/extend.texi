@@ -9864,7 +9864,7 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
 * Bound member functions:: You can extract a function pointer to the
                         method denoted by a @samp{->*} or @samp{.*} expression.
 * C++ Attributes::      Variable, function, and type attributes for C++ only.
-* Strong Using::      Strong using-directives for namespace composition.
+* Namespace Association:: Strong using-directives for namespace association.
 * Java Exceptions::     Tweaking exception handling to work with Java.
 * Deprecated Features:: Things will disappear from g++.
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
@@ -10402,28 +10402,32 @@ interface table mechanism, instead of regular virtual table dispatch.
 
 @end table
 
-See also @xref{Strong Using}.
+See also @xref{Namespace Association}.
 
-@node Strong Using
-@section Strong Using
+@node Namespace Association
+@section Namespace Association
 
 @strong{Caution:} The semantics of this extension are not fully
 defined.  Users should refrain from using this extension as its
 semantics may change subtly over time.  It is possible that this
-extension wil be removed in future versions of G++.
+extension will be removed in future versions of G++.
 
 A using-directive with @code{__attribute ((strong))} is stronger
 than a normal using-directive in two ways:
 
 @itemize @bullet
 @item
-Templates from the used namespace can be specialized as though they were members of the using namespace.
+Templates from the used namespace can be specialized and explicitly
+instantiated as though they were members of the using namespace.
 
 @item
 The using namespace is considered an associated namespace of all
 templates in the used namespace for purposes of argument-dependent
 name lookup.
 @end itemize
+
+The used namespace must be nested within the using namespace so that
+normal unqualified lookup works properly.
 
 This is useful for composing a namespace transparently from
 implementation namespaces.  For example:
