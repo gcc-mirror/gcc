@@ -115,8 +115,9 @@
 	(mem:QHSI (match_operand:HPSI 4 "register_operand" "")))]
   "REGNO (operands[0]) == REGNO (operands[1])
    && REGNO (operands[0]) == REGNO (operands[4])
-   && dead_or_set_p (peep2_next_insn (1), operands[4])
-   && ! reg_mentioned_p (operands[0], operands[3])"
+   && (rtx_equal_p (operands[0], operands[3])
+       || (dead_or_set_p (peep2_next_insn (1), operands[4])
+          && ! reg_mentioned_p (operands[0], operands[3])))"
   [(set (match_dup 3)
 	(mem:QHSI (plus:HPSI (match_dup 1)
 			     (match_dup 2))))]

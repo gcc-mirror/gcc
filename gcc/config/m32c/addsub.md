@@ -36,11 +36,11 @@
 
 (define_insn "addhi3"
   [(set (match_operand:HI 0 "nonimmediate_operand"
-	 	  "=SdRhi,SdRhi,??Rmm,??Rmm, SdRhi,??Rmm, Rhi, !Rsp")
+	 	  "=SdRhi,SdRhi,??Rmm,??Rmm, SdRhi,??Rmm, Rhi, Raw, Raw, !Rsp")
 	(plus:HI (match_operand:HI 1 "general_operand"
-		  "%0,0,0,0, 0,0, Raw, 0")
+		  "%0,0,0,0, 0,0, Raw, Rfb, Rfb, 0")
 		 (match_operand:HI 2 "general_operand"
-		  "IU2sSdRhi,?Rmm,IU2sSdRhi,?Rmm, IM2,IM2, IS2IU2, i")))]
+		  "IU2sSdRhi,?Rmm,IU2sSdRhi,?Rmm, IM2,IM2, IS2IU2, I00, IS1, i")))]
   ""
   "@
    add.w\t%2,%0
@@ -50,8 +50,10 @@
    sub.w\t%m2,%0
    sub.w\t%m2,%0
    mova\t%d2[%1],%0
+   stc\t%1,%0
+   mova\t%D2[%1],%0
    add.w\t%2,%0"
-  [(set_attr "flags" "oszc,oszc,oszc,oszc,oszc,oszc,oszc,oszc")]
+  [(set_attr "flags" "oszc,oszc,oszc,oszc,oszc,oszc,oszc,oszc,oszc,oszc")]
   )
 
 (define_insn "addpsi3"
