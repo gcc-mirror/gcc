@@ -1280,7 +1280,7 @@ find_dying_inputs (struct equiv_info *info)
       int nregs = (regno >= FIRST_PSEUDO_REGISTER
 		   ? 1 : hard_regno_nregs[regno][GET_MODE (x)]);
 
-      for (info->local_rvalue[i] = false; nregs >= 0; regno++, --nregs)
+      for (info->local_rvalue[i] = false; nregs > 0; regno++, --nregs)
 	if (REGNO_REG_SET_P (info->x_local_live, regno))
 	  {
 	    info->dying_inputs++;
