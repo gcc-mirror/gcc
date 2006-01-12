@@ -1,3 +1,7 @@
+2006-01-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/i386/darwin.h (SUBTARGET_ENCODE_SECTION_INFO): Define.
+
 2006-01-11  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/sh/predicates.md (sh_rep_vec): Add parallel to

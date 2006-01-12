@@ -111,6 +111,8 @@ extern void darwin_x86_file_end (void);
 #define ASM_LONG "\t.long\t"
 /* Darwin as doesn't do ".quad".  */
 
+#define SUBTARGET_ENCODE_SECTION_INFO  darwin_encode_section_info
+
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
  do { if ((LOG) != 0)			\
