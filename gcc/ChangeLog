@@ -1,3 +1,8 @@
+2006-01-13  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/rtl.texi (Insns): Remove statement that libcalls cannot
+	return in memory, as this is no limitation is no longer present.
+
 2006-01-12  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/addsub.md (addhi3): Add two more alternatives, for
@@ -10,7 +15,8 @@
 	DTORS_SECTION_ASM_OP, INIT_ARRAY_SECTION_ASM_OP,
 	FINI_ARRAY_SECTION_ASM_OP): Define.
 
-	* config/m32c/m32c.c (m32c_legitimize_address): Remove temporary variable.
+	* config/m32c/m32c.c (m32c_legitimize_address): Remove temporary
+	variable.
 	(m32c_legitimize_reload_address): New logic to reload FB to An.
 	(m32c_output_reg_push): Add newline.
 	(m32c_output_reg_pop): Likewise.
