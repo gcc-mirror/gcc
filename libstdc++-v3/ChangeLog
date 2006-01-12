@@ -1,3 +1,9 @@
+2006-01-12  Jan Beulich  <jbeulich@novell.com>
+
+	* crossconfig.m4: Add AC_DEFINE-s for HAVE_HYPOT, HAVE_ISINF, and
+	HAVE_ISNAN for *-*-netware*.
+	* configure: Refresh.
+
 2006-01-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* include/bits/valarray_after.h (_Expr<>::operator[](slice)):
