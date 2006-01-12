@@ -575,6 +575,15 @@ typedef struct m32c_cumulative_args
 #define DATA_SECTION_ASM_OP ".data"
 #define BSS_SECTION_ASM_OP ".bss"
 
+#define CTOR_LIST_BEGIN
+#define CTOR_LIST_END
+#define DTOR_LIST_BEGIN
+#define DTOR_LIST_END
+#define CTORS_SECTION_ASM_OP "\t.section\t.init_array,\"aw\",%init_array"
+#define DTORS_SECTION_ASM_OP "\t.section\t.fini_array,\"aw\",%fini_array"
+#define INIT_ARRAY_SECTION_ASM_OP "\t.section\t.init_array,\"aw\",%init_array"
+#define FINI_ARRAY_SECTION_ASM_OP "\t.section\t.fini_array,\"aw\",%fini_array"
+
 /* The Overall Framework of an Assembler File */
 
 #define ASM_COMMENT_START ";"

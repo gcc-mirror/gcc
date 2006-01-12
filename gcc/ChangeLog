@@ -1,3 +1,20 @@
+2006-01-12  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/addsub.md (addhi3): Add two more alternatives, for
+	mova with fb, and for fb+0 -> An.
+
+	* config/m32c/mov.md (peephole2): Fix enabling logic.
+
+	* config/m32c/m32c.h (CTOR_LIST_BEGIN, CTOR_LIST_END,
+	DTOR_LIST_BEGIN, DTOR_LIST_END, CTORS_SECTION_ASM_OP,
+	DTORS_SECTION_ASM_OP, INIT_ARRAY_SECTION_ASM_OP,
+	FINI_ARRAY_SECTION_ASM_OP): Define.
+
+	* config/m32c/m32c.c (m32c_legitimize_address): Remove temporary variable.
+	(m32c_legitimize_reload_address): New logic to reload FB to An.
+	(m32c_output_reg_push): Add newline.
+	(m32c_output_reg_pop): Likewise.
+
 2006-01-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* struct-equiv.c (find_dying_inputs): Fix off-by-one bug.

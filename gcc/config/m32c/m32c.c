@@ -1822,6 +1822,31 @@ m32c_reg_ok_for_base_p (rtx x, int strict)
     }
 }
 
+/* We have three choices for choosing fb->aN offsets.  If we choose -128,
+   we need one MOVA -128[fb],aN opcode and 16 bit aN displacements,
+   like this:
+       EB 4B FF    mova    -128[$fb],$a0
+       D8 0C FF FF mov.w:Q #0,-1[$a0]
+
+   Alternately, we subtract the frame size, and hopefully use 8 bit aN
+   displacements:
+       7B F4       stc $fb,$a0
+       77 54 00 01 sub #256,$a0
+       D8 08 01    mov.w:Q #0,1[$a0]
+
+   If we don't offset (i.e. offset by zero), we end up with:
+       7B F4       stc $fb,$a0
+       D8 0C 00 FF mov.w:Q #0,-256[$a0]
+
+   We have to subtract *something* so that we have a PLUS rtx to mark
+   that we've done this reload.  The -128 offset will never result in
+   an 8 bit aN offset, and the payoff for the second case is five
+   loads *if* those loads are within 256 bytes of the other end of the
+   frame, so the third case seems best.  Note that we subtract the
+   zero, but detect that in the addhi3 pattern.  */
+
+#define BIG_FB_ADJ 0
+
 /* Implements LEGITIMIZE_ADDRESS.  The only address we really have to
    worry about is frame base offsets, as $fb has a limited
    displacement range.  We deal with this by attempting to reload $fb
@@ -1846,10 +1871,9 @@ m32c_legitimize_address (rtx * x ATTRIBUTE_UNUSED,
 	  || INTVAL (XEXP (*x, 1)) > (128 - GET_MODE_SIZE (mode))))
     {
       /* reload FB to A_REGS */
-      rtx foo;
       rtx temp = gen_reg_rtx (Pmode);
       *x = copy_rtx (*x);
-      foo = emit_insn (gen_rtx_SET (VOIDmode, temp, XEXP (*x, 0)));
+      emit_insn (gen_rtx_SET (VOIDmode, temp, XEXP (*x, 0)));
       XEXP (*x, 0) = temp;
       return 1;
     }
@@ -1875,7 +1899,47 @@ m32c_legitimize_reload_address (rtx * x,
      *also* still trying to reload the whole address, and we'd run out
      of address registers.  So we let gcc do the naive (but safe)
      reload instead, when the above function doesn't handle it for
-     us.  */
+     us.
+
+     The code below is a second attempt at the above.  */
+
+  if (GET_CODE (*x) == PLUS
+      && GET_CODE (XEXP (*x, 0)) == REG
+      && REGNO (XEXP (*x, 0)) == FB_REGNO
+      && GET_CODE (XEXP (*x, 1)) == CONST_INT
+      && (INTVAL (XEXP (*x, 1)) < -128
+	  || INTVAL (XEXP (*x, 1)) > (128 - GET_MODE_SIZE (mode))))
+    {
+      rtx sum;
+      int offset = INTVAL (XEXP (*x, 1));
+      int adjustment = -BIG_FB_ADJ;
+
+      sum = gen_rtx_PLUS (Pmode, XEXP (*x, 0),
+			  GEN_INT (adjustment));
+      *x = gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - adjustment));
+      if (type == RELOAD_OTHER)
+	type = RELOAD_FOR_OTHER_ADDRESS;
+      push_reload (sum, NULL_RTX, &XEXP (*x, 0), NULL,
+		   A_REGS, Pmode, VOIDmode, 0, 0, opnum,
+		   type);
+      return 1;
+    }
+
+  if (GET_CODE (*x) == PLUS
+      && GET_CODE (XEXP (*x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (*x, 0), 0)) == REG
+      && REGNO (XEXP (XEXP (*x, 0), 0)) == FB_REGNO
+      && GET_CODE (XEXP (XEXP (*x, 0), 1)) == CONST_INT
+      && GET_CODE (XEXP (*x, 1)) == CONST_INT
+      )
+    {
+      if (type == RELOAD_OTHER)
+	type = RELOAD_FOR_OTHER_ADDRESS;
+      push_reload (XEXP (*x, 0), NULL_RTX, &XEXP (*x, 0), NULL,
+		   A_REGS, Pmode, VOIDmode, 0, 0, opnum,
+		   type);
+      return 1;
+    }
 
   return 0;
 }
@@ -2386,7 +2450,7 @@ m32c_output_reg_push (FILE * s, int regno)
   if (regno == FLG_REGNO)
     fprintf (s, "\tpushc\tflg\n");
   else
-    fprintf (s, "\tpush.%c\t%s",
+    fprintf (s, "\tpush.%c\t%s\n",
 	     " bwll"[reg_push_size (regno)], reg_names[regno]);
 }
 
@@ -2397,7 +2461,7 @@ m32c_output_reg_pop (FILE * s, int regno)
   if (regno == FLG_REGNO)
     fprintf (s, "\tpopc\tflg\n");
   else
-    fprintf (s, "\tpop.%c\t%s",
+    fprintf (s, "\tpop.%c\t%s\n",
 	     " bwll"[reg_push_size (regno)], reg_names[regno]);
 }
 
