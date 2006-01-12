@@ -1,3 +1,10 @@
+2006-01-12  Roger Sayle  <roger@eyesopen.com>
+
+	* intrinsics/c99_functions.c: Add function prototypes to avoid
+	warnings from -Wstrict-prototypes -Wmissing-prototypes.  On Tru64
+	work around a brain-dead libm by redirecting calls to cabs{,f,l}
+	to a local __gfc_cabs{,f,l}.
+
 2006-01-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac: Remove check for sys/mman.h.
