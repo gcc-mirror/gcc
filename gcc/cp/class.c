@@ -1159,7 +1159,7 @@ handle_using_decl (tree using_decl, tree t)
 	old_value = NULL_TREE;
     }
 
-  cp_emit_debug_info_for_using (decl, current_class_type);
+  cp_emit_debug_info_for_using (decl, USING_DECL_SCOPE (using_decl));
 
   if (is_overloaded_fn (decl))
     flist = decl;
