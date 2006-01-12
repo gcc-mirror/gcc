@@ -53,6 +53,7 @@ proc verify-lines { testcase file } {
 	    }
 	}
     }
+    close $fd
     return $failed
 }
 
