@@ -83223,6 +83223,18 @@ echo $ECHO_N "checking for enabled iconv specializations... $ECHO_C" >&6
   echo "$as_me:$LINENO: result: $enable_iconv" >&5
 echo "${ECHO_T}$enable_iconv" >&6
 
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_HYPOT 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ISINF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_ISNAN 1
+_ACEOF
+
 
     # For showmanyc_helper().
 
