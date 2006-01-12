@@ -1,3 +1,7 @@
+2006-01-12  Ben Elliston  <bje@au.ibm.com>
+
+	* update_version_svn (ADD_BRANCHES): Remove dfp-branch.
+
 2005-12-16  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* update_web_docs_svn: Remove unnecessary files from source tree.
