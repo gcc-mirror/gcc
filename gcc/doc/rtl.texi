@@ -2991,14 +2991,7 @@ TARGET_PASS_BY_REFERENCE}) are stored.  If the argument is
 caller-copied (@pxref{Register Arguments, TARGET_CALLEE_COPIES}),
 the stack slot will be mentioned in @code{CLOBBER} and @code{USE}
 entries; if it's callee-copied, only a @code{USE} will appear, and the
-@code{MEM} may point to addresses that are not stack slots.  These
-@code{MEM}s are used only in libcalls, because, unlike regular function
-calls, @code{CONST_CALL}s (which libcalls generally are, @pxref{Flags,
-CONST_CALL_P}) aren't assumed to read and write all memory, so flow
-would consider the stores dead and remove them.  Note that, since a
-libcall must never return values in memory (@pxref{Aggregate Return,
-RETURN_IN_MEMORY}), there will never be a @code{CLOBBER} for a memory
-address holding a return value.
+@code{MEM} may point to addresses that are not stack slots.
 
 @code{CLOBBER}ed registers in this list augment registers specified in
 @code{CALL_USED_REGISTERS} (@pxref{Register Basics}).
