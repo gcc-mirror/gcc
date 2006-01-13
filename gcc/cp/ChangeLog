@@ -1,3 +1,8 @@
+2006-01-13  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (set_decl_namespace): Use CP_DECL_CONTEXT.
+	* pt.c (check_explicit_specialization): Likewise.
+
 2006-01-12  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/24660

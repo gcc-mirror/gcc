@@ -2878,7 +2878,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
   if (!is_overloaded_fn (old))
     goto complain;
   fn = OVL_CURRENT (old);
-  if (!is_associated_namespace (scope, DECL_CONTEXT (fn)))
+  if (!is_associated_namespace (scope, CP_DECL_CONTEXT (fn)))
     goto complain;
   /* A template can be explicitly specialized in any namespace.  */
   if (processing_explicit_instantiation)

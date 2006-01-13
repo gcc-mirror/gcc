@@ -1911,8 +1911,10 @@ check_explicit_specialization (tree declarator,
 	      else
 		{
 		  tree fn = OVL_CURRENT (fns);
-		  if (!is_associated_namespace (current_namespace, DECL_CONTEXT (fn)))
-		    error ("%qD is not declared in %qD", decl, current_namespace);
+		  if (!is_associated_namespace (current_namespace,
+						CP_DECL_CONTEXT (fn)))
+		    error ("%qD is not declared in %qD",
+			   decl, current_namespace);
 		}
 	    }
 
