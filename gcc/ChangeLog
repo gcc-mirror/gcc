@@ -1,3 +1,10 @@
+2006-01-13  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (expand_builtin_sincos): New function.
+	(expand_builtin_mathfn_3): Remove dead code, sin and cos
+	do not set errno.
+	(expand_builtin): Expand sincos using expand_builtin_sincos.
+
 2006-01-12  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/shift.md: Rewrite: Allow arbitrary operands for
