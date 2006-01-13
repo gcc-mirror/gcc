@@ -901,6 +901,10 @@ m32c_const_ok_for_constraint_p (HOST_WIDE_INT value,
     {
       return (-16 <= value && value && value <= 16);
     }
+  if (memcmp (str, "In6", 3) == 0)
+    {
+      return (-32 <= value && value && value <= 32);
+    }
   if (memcmp (str, "IM2", 3) == 0)
     {
       return (-65536 <= value && value && value <= -1);
@@ -1505,7 +1509,7 @@ m32c_function_arg_regno_p (int r)
    for some opcodes in R8C/M16C and for reset vectors and such.  */
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE m32c_valid_pointer_mode
-bool
+static bool
 m32c_valid_pointer_mode (enum machine_mode mode)
 {
   if (mode == HImode
@@ -2834,27 +2838,63 @@ m32c_split_move (rtx * operands, enum machine_mode mode, int split_all)
   return rv;
 }
 
+typedef rtx (*shift_gen_func)(rtx, rtx, rtx);
+
+static shift_gen_func
+shift_gen_func_for (int mode, int code)
+{
+#define GFF(m,c,f) if (mode == m && code == c) return f
+  GFF(QImode,  ASHIFT,   gen_ashlqi3_i);
+  GFF(QImode,  ASHIFTRT, gen_ashrqi3_i);
+  GFF(QImode,  LSHIFTRT, gen_lshrqi3_i);
+  GFF(HImode,  ASHIFT,   gen_ashlhi3_i);
+  GFF(HImode,  ASHIFTRT, gen_ashrhi3_i);
+  GFF(HImode,  LSHIFTRT, gen_lshrhi3_i);
+  GFF(PSImode, ASHIFT,   gen_ashlpsi3_i);
+  GFF(PSImode, ASHIFTRT, gen_ashrpsi3_i);
+  GFF(PSImode, LSHIFTRT, gen_lshrpsi3_i);
+  GFF(SImode,  ASHIFT,   TARGET_A16 ? gen_ashlsi3_16 : gen_ashlsi3_24);
+  GFF(SImode,  ASHIFTRT, TARGET_A16 ? gen_ashrsi3_16 : gen_ashrsi3_24);
+  GFF(SImode,  LSHIFTRT, TARGET_A16 ? gen_lshrsi3_16 : gen_lshrsi3_24);
+#undef GFF
+}
+
 /* The m32c only has one shift, but it takes a signed count.  GCC
    doesn't want this, so we fake it by negating any shift count when
    we're pretending to shift the other way.  */
 int
-m32c_prepare_shift (rtx * operands, int scale, int bits)
+m32c_prepare_shift (rtx * operands, int scale, int shift_code)
 {
+  enum machine_mode mode = GET_MODE (operands[0]);
+  shift_gen_func func = shift_gen_func_for (mode, shift_code);
   rtx temp;
-  if (GET_CODE (operands[2]) == CONST_INT
-      && INTVAL (operands[2]) <= (1 << (bits - 1))
-      && INTVAL (operands[2]) >= -(1 << (bits - 1)))
+
+  if (GET_CODE (operands[2]) == CONST_INT)
     {
-      operands[2] = GEN_INT (scale * INTVAL (operands[2]));
-      return 0;
+      int maxc = TARGET_A24 && (mode == PSImode || mode == SImode) ? 32 : 8;
+      int count = INTVAL (operands[2]) * scale;
+
+      while (count > maxc)
+	{
+	  temp = gen_reg_rtx (mode);
+	  emit_insn (func (temp, operands[1], GEN_INT (maxc)));
+	  operands[1] = temp;
+	  count -= maxc;
+	}
+      while (count < -maxc)
+	{
+	  temp = gen_reg_rtx (mode);
+	  emit_insn (func (temp, operands[1], GEN_INT (-maxc)));
+	  operands[1] = temp;
+	  count += maxc;
+	}
+      emit_insn (func (operands[0], operands[1], GEN_INT (count)));
+      return 1;
     }
   if (scale < 0)
     {
       temp = gen_reg_rtx (QImode);
-      if (GET_CODE (operands[2]) == CONST_INT)
-	temp = GEN_INT (-INTVAL (operands[2]));
-      else
-	emit_move_insn (temp, gen_rtx_NEG (QImode, operands[2]));
+      emit_move_insn (temp, gen_rtx_NEG (QImode, operands[2]));
     }
   else
     temp = operands[2];

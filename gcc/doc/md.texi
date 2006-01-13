@@ -2323,8 +2323,8 @@ Used to match function return values.
 @item In5
 -16 @dots{} -1 or 1 @dots{} 16
 
-@item In4
--8 @dots{} -1 or 1 @dots{} 8
+@item In6
+-32 @dots{} -1 or 1 @dots{} 32
 
 @item IM2
 -65536 @dots{} -1
