@@ -1473,21 +1473,25 @@ gfc_get_component_attr (symbol_attribute * attr, gfc_component * c)
    occurs.  */
 
 void
-gfc_free_st_label (gfc_st_label * l)
+gfc_free_st_label (gfc_st_label * label)
 {
 
-  if (l == NULL)
+  if (label == NULL)
     return;
 
-  if (l->prev)
-    (l->prev->next = l->next);
+  if (label->prev)
+    label->prev->next = label->next;
 
-  if (l->next)
-    (l->next->prev = l->prev);
+  if (label->next)
+    label->next->prev = label->prev;
 
-  if (l->format != NULL)
-    gfc_free_expr (l->format);
-  gfc_free (l);
+  if (gfc_current_ns->st_labels == label)
+    gfc_current_ns->st_labels = label->next;
+
+  if (label->format != NULL)
+    gfc_free_expr (label->format);
+
+  gfc_free (label);
 }
 
 /* Free a whole list of gfc_st_label structures.  */
