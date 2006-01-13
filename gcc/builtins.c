@@ -95,6 +95,7 @@ static void expand_errno_check (tree, rtx);
 static rtx expand_builtin_mathfn (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
+static rtx expand_builtin_sincos (tree);
 static rtx expand_builtin_int_roundingfn (tree, rtx, rtx);
 static rtx expand_builtin_args_info (tree);
 static rtx expand_builtin_next_arg (void);
@@ -2064,7 +2065,6 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
   tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode mode;
-  bool errno_set = false;
   tree arg, narg;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
@@ -2083,9 +2083,6 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 
   /* Make a suitable register to place result in.  */
   mode = TYPE_MODE (TREE_TYPE (exp));
-
-  if (! flag_errno_math || ! HONOR_NANS (mode))
-    errno_set = false;
 
   /* Check if sincos insn is available, otherwise fallback
      to sin or cos insn.  */
@@ -2147,9 +2144,6 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 
       if (target != 0)
 	{
-	  if (errno_set)
-	    expand_errno_check (exp, target);
-
 	  /* Output the entire sequence.  */
 	  insns = get_insns ();
 	  end_sequence ();
@@ -2166,6 +2160,55 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
   target = expand_call (exp, target, target == const0_rtx);
 
   return target;
+}
+
+/* Expand a call to the builtin sincos math function.
+   Return 0 if a normal call should be emitted rather than expanding the
+   function in-line.  EXP is the expression that is a call to the builtin
+   function.  */
+
+static rtx
+expand_builtin_sincos (tree exp)
+{
+  rtx op0, op1, op2, target1, target2;
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum machine_mode mode;
+  tree arg, sinp, cosp;
+  int result;
+
+  if (!validate_arglist (arglist, REAL_TYPE,
+			 POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+  sinp = TREE_VALUE (TREE_CHAIN (arglist));
+  cosp = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* Make a suitable register to place result in.  */
+  mode = TYPE_MODE (TREE_TYPE (arg));
+
+  /* Check if sincos insn is available, otherwise emit the call.  */
+  if (sincos_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  target1 = gen_reg_rtx (mode);
+  target2 = gen_reg_rtx (mode);
+
+  op0 = expand_expr (arg, NULL_RTX, VOIDmode, 0);
+  op1 = expand_expr (build_fold_indirect_ref (sinp), NULL_RTX, VOIDmode, 0);
+  op2 = expand_expr (build_fold_indirect_ref (cosp), NULL_RTX, VOIDmode, 0);
+
+  /* Compute into target1 and target2.
+     Set TARGET to wherever the result comes back.  */
+  result = expand_twoval_unop (sincos_optab, op0, target2, target1, 0);
+  gcc_assert (result);
+
+  /* Move target1 and target2 to the memory locations indicated
+     by op1 and op2.  */
+  emit_move_insn (op1, target1);
+  emit_move_insn (op2, target2);
+
+  return const0_rtx;
 }
 
 /* Expand a call to one of the builtin rounding functions (lfloor).
@@ -5645,6 +5688,14 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       if (! flag_unsafe_math_optimizations)
 	break;
       target = expand_builtin_mathfn_3 (exp, target, subtarget);
+      if (target)
+	return target;
+      break;
+
+    CASE_FLT_FN (BUILT_IN_SINCOS):
+      if (! flag_unsafe_math_optimizations)
+	break;
+      target = expand_builtin_sincos (exp);
       if (target)
 	return target;
       break;

@@ -1,3 +1,7 @@
+2006-01-13  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.target/i386/387-9.c: New testcase.
+
 2006-01-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/24824
