@@ -2768,6 +2768,9 @@ insert_extra_phis (basic_block block, basic_block dom)
 	      tree val = get_value_handle (name);
 	      tree temp;
 
+	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+		continue;
+
 	      if (!mergephitemp
 		  || TREE_TYPE (name) != TREE_TYPE (mergephitemp))
 		{
