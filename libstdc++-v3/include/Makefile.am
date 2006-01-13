@@ -483,6 +483,7 @@ tr1_headers = \
 	${tr1_srcdir}/bind_repeat.h \
 	${tr1_srcdir}/bind_iterate.h \
 	${tr1_srcdir}/boost_shared_ptr.h \
+	${tr1_srcdir}/common.h \
 	${tr1_srcdir}/complex \
 	${tr1_srcdir}/functional \
 	${tr1_srcdir}/functional_iterate.h \

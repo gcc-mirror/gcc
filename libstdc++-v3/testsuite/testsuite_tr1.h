@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing utilities for the tr1 testsuite.
 //
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -164,6 +164,13 @@ namespace __gnu_test
     int foo_v()  volatile       { return 3; }
     int foo_cv() const volatile { return 4; }
   };
+
+  // For use in 8_c_compatibility.
+  template<typename R, typename T>
+    typename std::__enable_if<bool, std::tr1::is_same<R, T>::value>::__type
+    check_ret_type(T)
+    { return true; }
+
 } // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H
