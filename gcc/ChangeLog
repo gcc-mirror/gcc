@@ -1,3 +1,10 @@
+2006-01-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/24365
+	* tree-inline.c (declare_return_variable): If the return variable
+	was marked as a non gimple complex, set the return slot variable
+	to be a non gimple comple variable.
+
 2006-01-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/23109
