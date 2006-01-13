@@ -35,6 +35,7 @@
 #define _TR1_COMPLEX 1
 
 #include "../complex"
+#include <tr1/common.h>
 
 // namespace std::tr1
 namespace std
@@ -51,7 +52,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   template<typename _Tp> std::complex<_Tp> atanh(const std::complex<_Tp>&);
   template<typename _Tp> std::complex<_Tp> fabs(const std::complex<_Tp>&);
 
-  /// @brief acos(__z) [8.1.2]
+  /// @brief acos(__z) [8.1.2].
   //  Effects:  Behaves the same as C99 function cacos, defined
   //            in subclause 7.3.5.1.
   template<typename _Tp>
@@ -87,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     { return __complex_acos(__z); }
 #endif
 
-  /// @brief asin(__z) [8.1.3]
+  /// @brief asin(__z) [8.1.3].
   //  Effects:  Behaves the same as C99 function casin, defined
   //            in subclause 7.3.5.2.
   template<typename _Tp>
@@ -123,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     { return __complex_asin(__z); }
 #endif
   
-  /// @brief atan(__z) [8.1.4]
+  /// @brief atan(__z) [8.1.4].
   //  Effects:  Behaves the same as C99 function catan, defined
   //            in subclause 7.3.5.3.
   template<typename _Tp>
@@ -167,7 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     { return __complex_atan(__z); }
 #endif
 
-  /// @brief acosh(__z) [8.1.5]
+  /// @brief acosh(__z) [8.1.5].
   //  Effects:  Behaves the same as C99 function cacosh, defined
   //            in subclause 7.3.6.1.
   template<typename _Tp>
@@ -206,7 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     { return __complex_acosh(__z); }
 #endif
 
-  /// @brief asinh(__z) [8.1.6]
+  /// @brief asinh(__z) [8.1.6].
   //  Effects:  Behaves the same as C99 function casin, defined
   //            in subclause 7.3.6.2.
   template<typename _Tp>
@@ -245,7 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     { return __complex_asinh(__z); }
 #endif
 
-  /// @brief atanh(__z) [8.1.7]
+  /// @brief atanh(__z) [8.1.7].
   //  Effects:  Behaves the same as C99 function catanh, defined
   //            in subclause 7.3.6.3.
   template<typename _Tp>
@@ -289,13 +290,104 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     { return __complex_atanh(__z); }
 #endif
 
-  /// @brief fabs(__z) [8.1.8]
+  /// @brief fabs(__z) [8.1.8].
   //  Effects:  Behaves the same as C99 function cabs, defined
   //            in subclause 7.3.8.1.
   template<typename _Tp>
     inline std::complex<_Tp>
     fabs(const std::complex<_Tp>& __z)
     { return std::abs(__z); }
+
+
+  /// @brief Additional overloads [8.1.9].
+  //
+
+  // See common.h for the primary template.
+  template<typename _Tp, typename _Up>
+    struct __promote_2<std::complex<_Tp>, _Up>
+    {
+    public:
+      typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
+    };
+
+  template<typename _Tp, typename _Up>
+    struct __promote_2<_Tp, std::complex<_Up> >
+    {
+    public:
+      typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
+    };
+  
+  template<typename _Tp, typename _Up>
+    struct __promote_2<std::complex<_Tp>, std::complex<_Up> >
+    {
+    public:
+      typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
+    };
+
+
+  template<typename _Tp>
+    inline typename __promote<_Tp>::__type
+    arg(_Tp __x)
+    {
+      typedef typename __promote<_Tp>::__type __type;
+      return std::arg(std::complex<__type>(__x));
+    }
+
+  template<typename _Tp>
+    inline std::complex<typename __promote<_Tp>::__type>
+    conj(_Tp __x)
+    { return __x; }
+
+  template<typename _Tp>
+    inline typename __promote<_Tp>::__type
+    imag(_Tp)
+    { return _Tp(); }
+
+  template<typename _Tp>
+    inline typename __promote<_Tp>::__type
+    norm(_Tp __x)
+    {
+      typedef typename __promote<_Tp>::__type __type;
+      return __type(__x) * __type(__x);
+    }
+
+  template<typename _Tp, typename _Up>
+    inline std::complex<typename __promote_2<_Tp, _Up>::__type>
+    polar(const _Tp& __rho, const _Up& __theta)
+    {
+      typedef typename __promote_2<_Tp, _Up>::__type __type;
+      return std::polar(__type(__rho), __type(__theta));
+    }
+  
+  template<typename _Tp, typename _Up>
+    inline std::complex<typename __promote_2<_Tp, _Up>::__type>
+    pow(const std::complex<_Tp>& __x, const _Up& __y)
+    {
+      typedef typename __promote_2<_Tp, _Up>::__type __type;
+      return std::pow(std::complex<__type>(__x), __type(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    inline std::complex<typename __promote_2<_Tp, _Up>::__type>
+    pow(const _Tp& __x, const std::complex<_Up>& __y)
+    {
+      typedef typename __promote_2<_Tp, _Up>::__type __type;
+      return std::pow(__type(__x), std::complex<__type>(__y));
+    }
+
+  template<typename _Tp, typename _Up>
+    inline std::complex<typename __promote_2<_Tp, _Up>::__type>
+    pow(const std::complex<_Tp>& __x, const std::complex<_Up>& __y)
+    {
+      typedef typename __promote_2<_Tp, _Up>::__type __type;
+      return std::pow(std::complex<__type>(__x),
+		      std::complex<__type>(__y));
+    }
+
+  template<typename _Tp>
+    inline typename __promote<_Tp>::__type
+    real(_Tp __x)
+    { return __x; }
 
 _GLIBCXX_END_NAMESPACE
 }

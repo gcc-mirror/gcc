@@ -1,3 +1,16 @@
+2006-01-13  Paolo Carlini  <pcarlini@suse.de>
+	    Howard Hinnant  <hhinnant@apple.com>
+
+	* include/tr1/complex (arg, conj, imag, norm, polar, pow, real):
+	Add, implementing TR1, 8.1.9.
+	(__promote_2): New.
+	* include/tr1/common.h: New, provides __promote, __promote_2.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* testsuite/testsuite_tr1.h (check_ret_type): New.
+	* testsuite/tr1/8_c_compatibility/complex/overloads_int.cc: New.
+	* testsuite/tr1/8_c_compatibility/complex/overloads_float.cc: New.
+
 2006-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4(GLIBCXX_CHECK_LINKER_FEATURES): Enable
