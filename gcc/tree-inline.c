@@ -1233,6 +1233,10 @@ declare_return_variable (inline_data *id, tree return_slot_addr,
 	var = return_slot_addr;
       else
 	var = build_fold_indirect_ref (return_slot_addr);
+      if (TREE_CODE (TREE_TYPE (result)) == COMPLEX_TYPE
+	  && !DECL_COMPLEX_GIMPLE_REG_P (result)
+	  && DECL_P (var))
+	DECL_COMPLEX_GIMPLE_REG_P (var) = 0;
       use = NULL;
       goto done;
     }
