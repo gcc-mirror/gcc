@@ -9301,7 +9301,7 @@ install-data-local:
 	done
 	-@rm -f tmp-ilist
 	$(mkinstalldirs) $(DESTDIR)$(secdir)
-	@for f in classpath.security libgcj.security; do \
+	@for f in libgcj.security; do \
 	  echo " $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f"; \
 	  $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f; \
 	done
