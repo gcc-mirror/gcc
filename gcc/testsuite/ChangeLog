@@ -1,3 +1,7 @@
+2006-01-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.c-torture/compile/pr25310.c: Disable test on 16-bit targets.
+
 2006-01-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/24365
