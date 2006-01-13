@@ -18,6 +18,7 @@ Usage:
 		    --install-cxx
 		    --cxxflags
 		    --cxxpchflags
+		    --cxxldflags
 EOF
 }
 
@@ -48,13 +49,17 @@ case ${query} in
       ;;
     --cxxflags)
       CXXFLAGS_save="-g -O2 -D_GLIBCXX_ASSERT"
-      CXXFLAGS_config='@SECTION_FLAGS@ @SECTION_LDFLAGS@ -fmessage-length=0 
+      CXXFLAGS_config='@SECTION_FLAGS@ -fmessage-length=0 
  		      @EXTRA_CXX_FLAGS@ -DLOCALEDIR="@glibcxx_localedir@" '
       echo ${CXXFLAGS_save} ${CXXFLAGS_config}
       ;;
     --cxxpchflags)
       PCHFLAGS="@glibcxx_PCHFLAGS@"
       echo ${PCHFLAGS}
+      ;;
+    --cxxldflags)
+      SECTIONLDFLAGS="@SECTION_LDFLAGS@"
+      echo ${SECTIONLDFLAGS}
       ;;
     *)
       print_usage

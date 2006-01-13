@@ -1,3 +1,13 @@
+2006-01-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4(GLIBCXX_CHECK_LINKER_FEATURES): Enable
+	--gc-sections in more cases.	
+	* configure: Regenerate.
+	* scripts/testsuite_flags.in: Remove SECTION_LDFLAGS.
+	* scripts/testsuite_flags.in (cxxldflags): New.
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Add cxxldflags.
+	(libstdc++_init ): Same.
+		
 2006-01-12  Jan Beulich  <jbeulich@novell.com>
 
 	* crossconfig.m4: Add AC_DEFINE-s for HAVE_HYPOT, HAVE_ISINF, and
@@ -6,7 +16,8 @@
 
 2006-01-11  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* acinclude.m4: Use -Wl,-z,relro if possible.
+	* acinclude.m4(GLIBCXX_CHECK_LINKER_FEATURES): Use -Wl,-z,relro if
+	possible.  
 	* configure: Regenerate.
 
 2006-01-10  Paolo Carlini  <pcarlini@suse.de>

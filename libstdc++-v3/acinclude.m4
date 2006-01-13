@@ -230,7 +230,7 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
          $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -240,14 +240,9 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
-    AC_TRY_RUN([
+    AC_TRY_COMPILE([
      int main(void)
      {
        try { throw 1; }
@@ -268,7 +263,7 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     AC_MSG_CHECKING([for ld that supports -Wl,-z,relro])
