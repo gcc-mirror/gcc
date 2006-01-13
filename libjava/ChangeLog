@@ -1,5 +1,10 @@
 2006-01-13  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/regexp/MessagesBundle_fr.properties: Removed.
+	* gnu/regexp/MessagesBundle.properties: Removed.
+
+2006-01-13  Tom Tromey  <tromey@redhat.com>
+
 	* java/security/classpath.security: Removed.
 	* Makefile.in: Rebuilt.
 	* Makefile.am (install-data-local): Don't install
