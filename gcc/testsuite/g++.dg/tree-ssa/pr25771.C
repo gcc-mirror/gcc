@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 int  ggggg();
 struct string {
   static int _S_empty_rep_storage[];
