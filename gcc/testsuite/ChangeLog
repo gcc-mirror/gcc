@@ -1,3 +1,8 @@
+2006-01-13  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.c-torture/execute/20060110-1.c: New test.
+	* gcc.c-torture/execute/20060110-2.c: New test.
+
 2006-01-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.c-torture/compile/pr25310.c: Disable test on 16-bit targets.
