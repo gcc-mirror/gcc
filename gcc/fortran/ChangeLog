@@ -1,3 +1,10 @@
+2006-01-13  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/25756
+	* symbol.c (gfc_free_st_label): Give variable meaningful name. Remove
+	unneeded parenthesis. Fix-up the head of the list (2 lines gleaned
+	from g95).
+
 2006-01-13  Diego Novillo  <dnovillo@redhat.com>
 
 	* trans.c (gfc_add_expr_to_block): Do not fold tcc_statement
