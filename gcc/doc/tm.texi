@@ -6541,15 +6541,19 @@ of @code{ASM_OUTPUT_DOUBLE} and the like:
 @defmac REAL_VALUE_TO_TARGET_SINGLE (@var{x}, @var{l})
 @defmacx REAL_VALUE_TO_TARGET_DOUBLE (@var{x}, @var{l})
 @defmacx REAL_VALUE_TO_TARGET_LONG_DOUBLE (@var{x}, @var{l})
-These translate @var{x}, of type @code{REAL_VALUE_TYPE}, to the target's
-floating point representation, and store its bit pattern in the variable
-@var{l}.  For @code{REAL_VALUE_TO_TARGET_SINGLE}, this variable should
-be a simple @code{long int}.  For the others, it should be an array of
-@code{long int}.  The number of elements in this array is determined by
-the size of the desired target floating point data type: 32 bits of it
-go in each @code{long int} array element.  Each array element holds 32
-bits of the result, even if @code{long int} is wider than 32 bits on the
-host machine.
+@defmacx REAL_VALUE_TO_TARGET_DECIMAL32 (@var{x}, @var{l})
+@defmacx REAL_VALUE_TO_TARGET_DECIMAL64 (@var{x}, @var{l})
+@defmacx REAL_VALUE_TO_TARGET_DECIMAL128 (@var{x}, @var{l})
+These translate @var{x}, of type @code{REAL_VALUE_TYPE}, to the
+target's floating point representation, and store its bit pattern in
+the variable @var{l}.  For @code{REAL_VALUE_TO_TARGET_SINGLE} and
+@code{REAL_VALUE_TO_TARGET_DECIMAL32}, this variable should be a
+simple @code{long int}.  For the others, it should be an array of
+@code{long int}.  The number of elements in this array is determined
+by the size of the desired target floating point data type: 32 bits of
+it go in each @code{long int} array element.  Each array element holds
+32 bits of the result, even if @code{long int} is wider than 32 bits
+on the host machine.
 
 The array element values are designed so that you can print them out
 using @code{fprintf} in the order they should appear in the target
