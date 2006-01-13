@@ -1,3 +1,17 @@
+2006-01-13  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* combine.c (struct reg_stat): Add new fields truncation_label and
+	truncated_to_mode.
+	(record_value_for_reg): Reset truncated_to_mode.
+	(record_truncated_value): New function.
+	(check_promoted_subreg): Call it.  Rename to check_conversions.
+	(combine_instructions): Rename check_promoted_subreg to
+	check_conversions.
+	(reg_truncated_to_mode): New function.
+	(make_extraction): Use it.  Check TRULY_NOOP_TRUNCATION.
+	(gen_lowpart_or_truncate): New function.
+	(force_to_mode): Use it instead of gen_lowpart.
+
 2006-01-13  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-alias.c (add_type_alias): Fix typo.  Test whether
