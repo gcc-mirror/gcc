@@ -8208,7 +8208,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -8218,18 +8218,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -8243,29 +8235,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -8280,7 +8287,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
@@ -53047,7 +53054,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -53057,18 +53064,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -53082,29 +53081,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -53119,7 +53133,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
@@ -74379,7 +74393,7 @@ done
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -74389,18 +74403,10 @@ done
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -74414,29 +74420,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -74451,7 +74472,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
@@ -75874,7 +75895,7 @@ done
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -75884,18 +75905,10 @@ done
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -75909,29 +75922,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -75946,7 +75974,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
@@ -77245,7 +77273,7 @@ done
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -77255,18 +77283,10 @@ done
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -77280,29 +77300,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -77317,7 +77352,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
@@ -79403,7 +79438,7 @@ done
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -79413,18 +79448,10 @@ done
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -79438,29 +79465,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -79475,7 +79517,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
@@ -80727,7 +80769,7 @@ done
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -80737,18 +80779,10 @@ done
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -80762,29 +80796,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -80799,7 +80848,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
@@ -82100,7 +82149,7 @@ done
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -82110,18 +82159,10 @@ done
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -82135,29 +82176,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -82172,7 +82228,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
@@ -83865,7 +83921,7 @@ echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -83875,18 +83931,10 @@ echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -83900,29 +83948,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -83937,7 +84000,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
@@ -85951,7 +86014,7 @@ done
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
 
   # Set --gc-sections.
-  if test "$with_gnu_ld" = "notbroken"; then
+  if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -85961,18 +86024,10 @@ done
     CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # XXX This test is broken at the moment, as symbols required for linking
-    # are now in libsupc++ (not built yet).  In addition, this test has
-    # cored on solaris in the past.  In addition, --gc-sections doesn't
-    # really work at the moment (keeps on discarding used sections, first
-    # .eh_frame and now some of the glibc sections for iconv).
-    # Bzzzzt.  Thanks for playing, maybe next time.
+    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    if test "$cross_compiling" = yes; then
-  ac_sectionLDflags=yes
-else
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -85986,29 +86041,44 @@ cat >>conftest.$ac_ext <<_ACEOF
        return 0;
      }
 
+int
+main ()
+{
+ac_sectionLDflags=yes
+  ;
+  return 0;
+}
 _ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=yes
+  ac_sectionLDflags=no
 else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
+  echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-( exit $ac_status )
-ac_sectionLDflags=no
+ac_sectionLDflags=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
@@ -86023,7 +86093,7 @@ echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
-  # Note this is only for shared objects
+  # Note this is only for shared objects.
   ac_ld_relro=no
   if test x"$with_gnu_ld" = x"yes"; then
     echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5

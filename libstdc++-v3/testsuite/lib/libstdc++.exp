@@ -82,7 +82,7 @@ proc libstdc++_init { testfile } {
     global env
     global v3-sharedlib 
     global srcdir blddir objdir tool_root_dir
-    global cxx cxxflags
+    global cxx cxxflags cxxldflags
     global includes
     global gluefile wrap_flags
     global ld_library_path
@@ -179,17 +179,20 @@ proc libstdc++_init { testfile } {
         }
       set cxx [transform "g++"]
       set cxxflags "-ggdb3"
+      set cxxldflags ""
       set includes "-I./"
     } else {
         # If we find a testsuite_flags file, we're testing in the build dir.
         if { [file exists $flags_file] } {
             set cxx [exec sh $flags_file --build-cxx]
             set cxxflags [exec sh $flags_file --cxxflags]
+            set cxxldflags [exec sh $flags_file --cxxldflags]
             set includes [exec sh $flags_file --build-includes]
         } else {
             set cxx [transform "g++"]
-            set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0" 
             set includes "-I${srcdir}"
+            set cxxldflags ""
+            set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0" 
 	    # Guess at the location of the installed locale files.
 	    # (It would be nice if "gcc --print-file-name" could find
 	    # message files, but it cannot.)
@@ -321,6 +324,7 @@ proc v3_target_compile { source dest type options } {
     global wrap_flags
     global cxx
     global cxxflags
+    global cxxldflags
     global includes
     global blddir
     global v3-test_objs
@@ -340,6 +344,7 @@ proc v3_target_compile { source dest type options } {
     if { $type == "executable" } {
 	# Link the support objects into executables.
 	set cxx_final [concat $cxx_final ${v3-test_objs}]
+        set cxx_final [concat $cxx_final $cxxldflags]
     } else {
 	if { $type == "sharedlib" } {
 	    # Don't link in anything.
