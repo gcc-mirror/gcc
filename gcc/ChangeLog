@@ -1,3 +1,9 @@
+2006-01-13  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/25771
+	* tree-ssa-pre.c (insert_extra_phis): Don't insert merges of abnormal
+	SSA_NAMES.
+
 2006-01-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/24365

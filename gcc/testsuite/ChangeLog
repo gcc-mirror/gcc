@@ -1,3 +1,8 @@
+2006-01-13 Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/25771
+	* g++.dg/tree-ssa/pr25771.C: New test
+
 2006-01-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/24365
