@@ -1,3 +1,18 @@
+2006-01-12  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/shift.md: Rewrite: Allow arbitrary operands for
+	shift counts, separate SI shifts for m32c vs m16c, pass shift type
+	so that constant shifts can be split.
+	* config/m32c/m32c.c (m32c_const_ok_for_constraint_p): Add In6.
+	(m32c_valid_pointer_mode): Make static.
+	(shift_gen_func_for): New.
+	(m32c_prepare_shift): Use it.  Split large const shifts into
+	multiple shifts.
+	* config/m32c/predicates.md (shiftcount_operand): Allow more
+	general operands.
+	(longshiftcount_operand): New.
+	* doc/md.texi (Machine Constraints): Document In6.
+
 2006-01-13  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/tm.texi (Data Output): Add REAL_VALUE_TO_TARGET_DECIMAL32,

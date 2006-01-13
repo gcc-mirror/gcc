@@ -145,9 +145,13 @@
 ; TRUE if we can shift by this amount.  Constant shift counts have a
 ; limited range.
 (define_predicate "shiftcount_operand"
-  (ior (match_operand 0 "m32c_pseudo" "")
+  (ior (match_operand 0 "mra_operand" "")
        (and (match_operand 2 "const_int_operand" "")
 	    (match_test "-8 <= INTVAL (op) && INTVAL (op) && INTVAL (op) <= 8"))))
+(define_predicate "longshiftcount_operand"
+  (ior (match_operand 0 "mra_operand" "")
+       (and (match_operand 2 "const_int_operand" "")
+	    (match_test "-32 <= INTVAL (op) && INTVAL (op) && INTVAL (op) <= 32"))))
 
 ; TRUE for r0..r3, a0..a1, or sp.
 (define_predicate "mra_or_sp_operand"
