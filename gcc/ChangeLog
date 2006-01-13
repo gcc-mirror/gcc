@@ -1,4 +1,10 @@
-2006-01-11  Daniel Berlin  <dberlin@dberlin.org>
+2006-01-13  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/tm.texi (Data Output): Add REAL_VALUE_TO_TARGET_DECIMAL32,
+	REAL_VALUE_TO_TARGET_DECIMAL64 and REAL_VALUE_TO_TARGET_DECIMAL128
+	documentation.
+
+2006-01-12  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-operands.c (add_call_clobber_ops): Use SFT_PARENT_VAR
 	to try to avoid clobbering pieces of structures when we know
