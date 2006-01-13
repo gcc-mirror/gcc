@@ -2307,7 +2307,7 @@ add_type_alias (tree ptr, tree var)
 found_tag:
   /* If VAR is not already PTR's type tag, add it to the may-alias set
      for PTR's type tag.  */
-  gcc_assert (!MTAG_P (var_ann (var)->type_mem_tag));
+  gcc_assert (!MTAG_P (var));
   tag = ann->type_mem_tag;
 
   /* If VAR has subvars, add the subvars to the tag instead of the

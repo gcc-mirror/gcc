@@ -1,3 +1,8 @@
+2006-01-13  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-alias.c (add_type_alias): Fix typo.  Test whether
+	VAR is a tag, not its type tag.
+
 2006-01-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/sse.md (*vec_extractv2di_1_sse2): Reorder
