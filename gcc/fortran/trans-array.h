@@ -48,11 +48,14 @@ void gfc_trans_static_array_pointer (gfc_symbol *);
 
 /* Generate scalarization information for an expression.  */
 gfc_ss *gfc_walk_expr (gfc_expr *);
-/* Walk the arguments of an intrinsic function.  */
-gfc_ss *gfc_walk_elemental_function_args (gfc_ss *, gfc_expr *, gfc_ss_type);
+/* Walk the arguments of an elemental function.  */
+gfc_ss *gfc_walk_elemental_function_args (gfc_ss *, gfc_actual_arglist *,
+					  gfc_ss_type);
 /* Walk an intrinsic function.  */
 gfc_ss *gfc_walk_intrinsic_function (gfc_ss *, gfc_expr *,
 				     gfc_intrinsic_sym *);
+/* Reverse the order of an SS chain.  */
+gfc_ss *gfc_reverse_ss (gfc_ss *);
 
 /* Free the SS associated with a loop.  */
 void gfc_cleanup_loop (gfc_loopinfo *);

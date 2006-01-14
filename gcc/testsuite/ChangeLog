@@ -1,3 +1,19 @@
+2006-01-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22146
+	* gfortran.dg/elemental_subroutine_1.f90: New test.
+	* gfortran.dg/elemental_subroutine_2.f90: New test.
+
+	PR fortran/25029
+	PR fortran/21256
+	* gfortran.dg/assumed_size_refs_1.f90: New test.
+
+	PR fortran/20868
+	PR fortran/20870
+	* gfortran.dg/assumed_size_refs_2.f90: New test.
+	* gfortran.dg/initialization_1.f90: Change warning message.
+	* gfortran.dg/pr15140.f90: Add bound to assumed size reference.
+
 2006-01-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.c-torture/compile/pr25310.c: Disable test on 16-bit targets.

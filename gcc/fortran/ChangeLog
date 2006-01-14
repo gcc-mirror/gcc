@@ -1,3 +1,32 @@
+2006-01-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22146
+	* trans-array.c (gfc_reverse_ss): Remove static attribute.
+	(gfc_walk_elemental_function_args): Replace gfc_expr * argument for
+	the function call with the corresponding gfc_actual_arglist*.  Change
+	code accordingly.
+	(gfc_walk_function_expr): Call to gfc_walk_elemental_function_args
+	now requires the actual argument list instead of the expression for
+	the function call.
+	* trans-array.h: Modify the prototype for gfc_walk_elemental_function_args
+	and provide a prototype for gfc_reverse_ss.
+	* trans-stmt.h (gfc_trans_call): Add the scalarization code for the case
+	where an elemental subroutine has array valued actual arguments.
+
+	PR fortran/25029
+	PR fortran/21256
+	PR fortran/20868
+	PR fortran/20870
+	* resolve.c (check_assumed_size_reference): New function to check for upper
+	bound in assumed size array references.
+	(resolve_assumed_size_actual): New function to do a very restricted scan
+	of actual argument expressions of those procedures for which incomplete
+	assumed size array references are not allowed.
+	(resolve_function, resolve_call): Switch off assumed size checking of
+	actual arguments, except for elemental procedures and intrinsic
+	inquiry functions, in some circumstances.
+	(resolve_variable): Call check_assumed_size_reference.
+
 2006-01-11  Bernhard Fischer  <rep.nop@aon.at>
 
 	PR fortran/25486
