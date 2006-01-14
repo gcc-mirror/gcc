@@ -1230,6 +1230,8 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
      the operands is VR_VARYING or symbolic range.  TODO, we may be
      able to derive anti-ranges in some cases.  */
   if (code != BIT_AND_EXPR
+      && code != TRUTH_AND_EXPR
+      && code != TRUTH_OR_EXPR
       && (vr0.type == VR_VARYING
 	  || vr1.type == VR_VARYING
 	  || vr0.type != vr1.type
@@ -1277,9 +1279,47 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
       || code == TRUTH_OR_EXPR
       || code == TRUTH_XOR_EXPR)
     {
-      /* Boolean expressions cannot be folded with int_const_binop.  */
-      min = fold_binary (code, TREE_TYPE (expr), vr0.min, vr1.min);
-      max = fold_binary (code, TREE_TYPE (expr), vr0.max, vr1.max);
+      /* If one of the operands is zero, we know that the whole
+	 expression evaluates zero.  */
+      if (code == TRUTH_AND_EXPR
+	  && ((vr0.type == VR_RANGE
+	       && integer_zerop (vr0.min)
+	       && integer_zerop (vr0.max))
+	      || (vr1.type == VR_RANGE
+		  && integer_zerop (vr1.min)
+		  && integer_zerop (vr1.max))))
+	{
+	  type = VR_RANGE;
+	  min = max = build_int_cst (TREE_TYPE (expr), 0);
+	}
+      /* If one of the operands is one, we know that the whole
+	 expression evaluates one.  */
+      else if (code == TRUTH_OR_EXPR
+	       && ((vr0.type == VR_RANGE
+		    && integer_onep (vr0.min)
+		    && integer_onep (vr0.max))
+		   || (vr1.type == VR_RANGE
+		       && integer_onep (vr1.min)
+		       && integer_onep (vr1.max))))
+	{
+	  type = VR_RANGE;
+	  min = max = build_int_cst (TREE_TYPE (expr), 1);
+	}
+      else if (vr0.type != VR_VARYING
+	       && vr1.type != VR_VARYING
+	       && vr0.type == vr1.type
+	       && !symbolic_range_p (&vr0)
+	       && !symbolic_range_p (&vr1))
+	{
+	  /* Boolean expressions cannot be folded with int_const_binop.  */
+	  min = fold_binary (code, TREE_TYPE (expr), vr0.min, vr1.min);
+	  max = fold_binary (code, TREE_TYPE (expr), vr0.max, vr1.max);
+	}
+      else
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
     }
   else if (code == PLUS_EXPR
 	   || code == MIN_EXPR
