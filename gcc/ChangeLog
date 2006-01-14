@@ -1,3 +1,8 @@
+2006-01-13  Ian Lance Taylor  <ian@airs.com>
+
+	* reload1.c (do_output_reload): Add assertion rejecting a
+	CALL_INSN.
+
 2006-01-13  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (struct reg_stat): Add new fields truncation_label and

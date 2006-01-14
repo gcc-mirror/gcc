@@ -7140,7 +7140,7 @@ do_output_reload (struct insn_chain *chain, struct reload *rl, int j)
     return;
 
   /* If is a JUMP_INSN, we can't support output reloads yet.  */
-  gcc_assert (!JUMP_P (insn));
+  gcc_assert (NONJUMP_INSN_P (insn));
 
   emit_output_reload_insns (chain, rld + j, j);
 }
