@@ -1,3 +1,8 @@
+2005-01-14  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/pr19210-1.c: Update outcome.  Add new test loop.
+	* gcc.dg/tree-ssa/pr19210-2.c: Ditto.
+
 2006-01-14  Steven Bosscher  <stevenb.gcc@gmail.com>
 	Richard Guenther  <rguenther@suse.de>
 

@@ -6809,6 +6809,8 @@ tree_fold_gcd (tree a, tree b)
 tree
 unsigned_type_for (tree type)
 {
+  if (POINTER_TYPE_P (type))
+    return size_type_node;
   return lang_hooks.types.unsigned_type (type);
 }
 
