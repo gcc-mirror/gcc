@@ -6012,6 +6012,21 @@ tree_class_check_failed (const tree node, const enum tree_code_class cl,
      TREE_CODE_CLASS_STRING (TREE_CODE_CLASS (TREE_CODE (node))),
      tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
 }
+
+/* Similar to tree_check_failed, except that we check that a tree does
+   not have the specified code, given in CL.  */
+
+void
+tree_not_class_check_failed (const tree node, const enum tree_code_class cl,
+			     const char *file, int line, const char *function)
+{
+  internal_error
+    ("tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d",
+     TREE_CODE_CLASS_STRING (cl),
+     TREE_CODE_CLASS_STRING (TREE_CODE_CLASS (TREE_CODE (node))),
+     tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
+}
+
 #undef DEFTREESTRUCT
 #define DEFTREESTRUCT(VAL, NAME) NAME,
 
