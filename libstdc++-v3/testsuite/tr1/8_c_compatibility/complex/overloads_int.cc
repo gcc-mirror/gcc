@@ -67,13 +67,19 @@ void test01()
   check_ret_type<cmplx_d_type>(pow(cmplx_f_type(f1, f1), u1));
   check_ret_type<cmplx_d_type>(pow(cmplx_f_type(f1, f1), l1));
   check_ret_type<cmplx_d_type>(pow(cmplx_d_type(d1, d1), i1));
-  VERIFY( pow(cmplx_d_type(d1, d1), i1) == pow(cmplx_d_type(d1, d1), d1) );
+
+  // See above comment.
+  // VERIFY( pow(cmplx_d_type(d1, d1), i1) == pow(cmplx_d_type(d1, d1), d1) );
+  VERIFY( pow(cmplx_d_type(d1, d1), u1) == pow(cmplx_d_type(d1, d1), d1) );
+  VERIFY( pow(cmplx_d_type(d1, d1), l1) == pow(cmplx_d_type(d1, d1), d1) );
 
   check_ret_type<cmplx_d_type>(pow(i1, cmplx_f_type(f1, f1)));
   check_ret_type<cmplx_d_type>(pow(u1, cmplx_f_type(f1, f1)));
   check_ret_type<cmplx_d_type>(pow(l1, cmplx_f_type(f1, f1)));
   check_ret_type<cmplx_d_type>(pow(i1, cmplx_d_type(d1, d1)));
   VERIFY( pow(i1, cmplx_d_type(d1, d1)) == pow(d1, cmplx_d_type(d1, d1)) );
+  VERIFY( pow(u1, cmplx_d_type(d1, d1)) == pow(d1, cmplx_d_type(d1, d1)) );
+  VERIFY( pow(l1, cmplx_d_type(d1, d1)) == pow(d1, cmplx_d_type(d1, d1)) );
 
   check_ret_type<double>(real(i1));
   VERIFY( real(i1) == real(d1) );

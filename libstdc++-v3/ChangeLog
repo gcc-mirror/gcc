@@ -1,3 +1,9 @@
+2006-01-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/tr1/8_c_compatibility/complex/overloads_int.cc:
+	Fix wrong test (don't pick by mistake the (const complex<>&, int)
+	overload); add some.
+
 2006-01-13  Paolo Carlini  <pcarlini@suse.de>
 	    Howard Hinnant  <hhinnant@apple.com>
 
