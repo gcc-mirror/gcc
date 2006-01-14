@@ -1,3 +1,10 @@
+2006-01-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/25485
+	* tree-vrp.c (extract_range_from_binary_expr): Handle cases
+	where one of the operands of TRUTH_AND_EXPR and TRUTH_OR_EXPR
+	is known to be false and true, respectively.
+
 2006-01-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/22548
