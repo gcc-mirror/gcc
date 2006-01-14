@@ -1,3 +1,10 @@
+2006-01-14  Steven Bosscher  <stevenb.gcc@gmail.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/24257
+	* gcse.c (find_moveable_store): Only consider a store movable
+	when the SET_SRC of the insn can be assigned to a register.
+
 2006-01-14  Ian Lance Taylor  <ian@airs.com>
 
 	* tree.c (tree_not_class_check_failed): New function.
