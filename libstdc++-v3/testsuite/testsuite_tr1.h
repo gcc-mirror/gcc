@@ -31,6 +31,8 @@
 #ifndef _GLIBCXX_TESTSUITE_TR1_H
 #define _GLIBCXX_TESTSUITE_TR1_H
 
+#include <bits/cpp_type_traits.h>
+
 namespace __gnu_test
 {
   // For tr1/type_traits.
@@ -167,7 +169,7 @@ namespace __gnu_test
 
   // For use in 8_c_compatibility.
   template<typename R, typename T>
-    typename std::__enable_if<bool, std::tr1::is_same<R, T>::value>::__type
+    typename std::__enable_if<bool, std::__are_same<R, T>::__value>::__type
     check_ret_type(T)
     { return true; }
 
