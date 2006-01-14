@@ -1,3 +1,26 @@
+2006-01-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/22548
+	PR tree-optimization/22555
+	PR tree-optimization/22501
+	* Makefile.in (tree-ssa-structalias.o): Depend on $(PARAMS_H).
+	* params.def (salias-max-array-elements): New parameter.
+	* params.h (SALIAS_MAX_ARRAY_ELEMENTS): Define.
+	* doc/invoke.texi (salias-max-array-elements): Document.
+	* tree-flow-inline.h (var_can_have_subvars): We also handle
+	arrays now.
+	* tree-ssa-alias.c (find_used_portions): Handle ARRAY_REF like
+	COMPONENT_REF.
+	* tree-ssa-structalias.c (params.h): Include.
+	(push_fields_onto_fieldstack): Handle ARRAY_TYPE.
+	(find_func_aliases): Handle multiple constraints from ARRAY_REF.
+	(get_constraint_for): For ADDR_EXPR operating on something
+	containing an ARRAY_REF, add all subvars to the solution.
+	(handle_ptr_arith): Handle ARRAY_TYPE like RECORD_TYPE types.
+	* tree-ssa-operands.c (parse_ssa_operands): Handle ARRAY_REF
+	for creating MUST_DEFs.
+	(get_expr_operands): Treat ARRAY_REF like COMPONENT_REF wrt subvars.
+
 2006-01-14  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-ssa-loop-niter.c (number_of_iterations_cond): Split into several

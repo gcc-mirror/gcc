@@ -5744,6 +5744,10 @@ The maximum number of fields in a variable without direct
 structure accesses for which structure aliasing will consider trying 
 to track each field.  The default is 5
 
+@item salias-max-array-elements
+The maximum number of elements an array can have and its elements
+still be tracked individually by structure aliasing. The default is 4
+
 @item sra-max-structure-size
 The maximum structure size, in bytes, at which the scalar replacement
 of aggregates (SRA) optimization will perform block copies.  The

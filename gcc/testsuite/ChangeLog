@@ -1,3 +1,18 @@
+2006-01-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/22548
+	PR tree-optimization/22555
+	PR tree-optimization/22501
+	* gcc.dg/tree-ssa/alias-4.c: New testcase.
+	* gcc.dg/tree-ssa/alias-5.c: Likewise.
+	* gcc.dg/tree-ssa/alias-6.c: Likewise.
+	* gcc.dg/tree-ssa/alias-7.c: Likewise.
+	* gcc.dg/tree-ssa/alias-8.c: Likewise.
+	* gcc.dg/tree-ssa/alias-9.c: Likewise.
+	* gcc.dg/tree-ssa/alias-10.c: Likewise.
+	* gcc.dg/tree-ssa/alias-11.c: Likewise.
+	* gcc.dg/tree-ssa/alias-12.c: Likewise.
+
 2005-01-14  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/pr19210-1.c: Update outcome.  Add new test loop.
