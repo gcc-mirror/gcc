@@ -2698,6 +2698,7 @@ find_used_portions (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case COMPONENT_REF:
+    case ARRAY_REF:
       {
 	HOST_WIDE_INT bitsize;
 	HOST_WIDE_INT bitmaxsize;

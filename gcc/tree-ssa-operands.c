@@ -732,8 +732,7 @@ parse_ssa_operands (tree stmt)
 	if (TREE_CODE (lhs) == VIEW_CONVERT_EXPR)
 	  lhs = TREE_OPERAND (lhs, 0);
 
-	if (TREE_CODE (lhs) != ARRAY_REF
-	    && TREE_CODE (lhs) != ARRAY_RANGE_REF
+	if (TREE_CODE (lhs) != ARRAY_RANGE_REF
 	    && TREE_CODE (lhs) != BIT_FIELD_REF)
 	  lhs_flags |= opf_kill_def;
 
@@ -1101,7 +1100,6 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       get_tmr_operands (stmt, expr, flags);
       return;
 
-    case ARRAY_REF:
     case ARRAY_RANGE_REF:
       /* Treat array references as references to the virtual variable
 	 representing the array.  The virtual variable for an ARRAY_REF
@@ -1115,6 +1113,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       get_expr_operands (stmt, &TREE_OPERAND (expr, 3), opf_none);
       return;
 
+    case ARRAY_REF:
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -1162,6 +1161,12 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	      s_ann->has_volatile_ops = true; 
 	    get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
 	  }
+	else if (code == ARRAY_REF)
+	  {
+            get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none);
+            get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
+            get_expr_operands (stmt, &TREE_OPERAND (expr, 3), opf_none);
+	  }
 	return;
       }
     case WITH_SIZE_EXPR:
@@ -1192,8 +1197,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	op = TREE_OPERAND (expr, 0);
 	if (TREE_CODE (op) == WITH_SIZE_EXPR)
 	  op = TREE_OPERAND (expr, 0);
-	if (TREE_CODE (op) == ARRAY_REF
-	    || TREE_CODE (op) == ARRAY_RANGE_REF
+	if (TREE_CODE (op) == ARRAY_RANGE_REF
 	    || TREE_CODE (op) == REALPART_EXPR
 	    || TREE_CODE (op) == IMAGPART_EXPR)
 	  subflags = opf_is_def;

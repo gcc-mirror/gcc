@@ -48,6 +48,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "timevar.h"
 #include "alloc-pool.h"
 #include "splay-tree.h"
+#include "params.h"
 #include "tree-ssa-structalias.h"
 #include "cgraph.h"
 
@@ -2493,8 +2494,30 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 	    {
 	      struct constraint_expr *c;
 	      unsigned int i;
+	      tree exp = TREE_OPERAND (t, 0);
 
-	      get_constraint_for (TREE_OPERAND (t, 0), results);
+	      get_constraint_for (exp, results);
+	      /* Make sure we capture constraints to all elements
+		 of an array.  */
+	      if ((handled_component_p (exp)
+		   && ref_contains_array_ref (exp))
+		  || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+		{
+		  struct constraint_expr *origrhs;
+		  varinfo_t origvar;
+		  struct constraint_expr tmp;
+
+		  gcc_assert (VEC_length (ce_s, *results) == 1);
+		  origrhs = VEC_last (ce_s, *results);
+		  tmp = *origrhs;
+		  VEC_pop (ce_s, *results);
+		  origvar = get_varinfo (origrhs->var);
+		  for (; origvar; origvar = origvar->next)
+		    {
+		      tmp.var = origvar->id;
+		      VEC_safe_push (ce_s, heap, *results, &tmp);
+		    }
+		}
 	      for (i = 0; VEC_iterate (ce_s, *results, i, c); i++)
 		{
 		  if (c->type == DEREF)
@@ -3151,7 +3174,6 @@ handle_ptr_arith (VEC (ce_s, heap) *lhsc, tree expr)
 
   get_constraint_for (op0, &temp);
   if (POINTER_TYPE_P (TREE_TYPE (op0))
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (op0))) == RECORD_TYPE
       && TREE_CODE (op1) == INTEGER_CST)
     {
       rhsoffset = TREE_INT_CST_LOW (op1) * BITS_PER_UNIT;
@@ -3378,7 +3400,8 @@ find_func_aliases (tree origt)
 			
 			get_constraint_for (rhsop, &rhsc);
 			if (TREE_CODE (strippedrhs) == ADDR_EXPR
-			    && AGGREGATE_TYPE_P (TREE_TYPE (rhstype)))
+			    && AGGREGATE_TYPE_P (TREE_TYPE (rhstype))
+			    && VEC_length (ce_s, rhsc) == 1)
 			  {
 			    struct constraint_expr *origrhs;
 			    varinfo_t origvar;
@@ -3566,6 +3589,63 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
       img_part->decl = NULL_TREE;
       
       return 2;
+    }
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree sz = TYPE_SIZE (type);
+      tree elsz = TYPE_SIZE (TREE_TYPE (type));
+      HOST_WIDE_INT nr;
+      int i;
+
+      if (! sz
+	  || ! host_integerp (sz, 1)
+	  || TREE_INT_CST_LOW (sz) == 0
+	  || ! elsz
+	  || ! host_integerp (elsz, 1)
+	  || TREE_INT_CST_LOW (elsz) == 0)
+	return 0;
+
+      nr = TREE_INT_CST_LOW (sz) / TREE_INT_CST_LOW (elsz);
+      if (nr > SALIAS_MAX_ARRAY_ELEMENTS)
+	return 0;
+
+      for (i = 0; i < nr; ++i)
+	{
+	  bool push = false;
+	  int pushed = 0;
+	
+	  if (has_union 
+	      && (TREE_CODE (TREE_TYPE (type)) == QUAL_UNION_TYPE
+		  || TREE_CODE (TREE_TYPE (type)) == UNION_TYPE))
+	    *has_union = true;
+	
+	  if (!AGGREGATE_TYPE_P (TREE_TYPE (type))) /* var_can_have_subvars */
+	    push = true;
+	  else if (!(pushed = push_fields_onto_fieldstack
+		     (TREE_TYPE (type), fieldstack,
+		      offset + i * TREE_INT_CST_LOW (elsz), has_union)))
+	    /* Empty structures may have actual size, like in C++. So
+	       see if we didn't push any subfields and the size is
+	       nonzero, push the field onto the stack */
+	    push = true;
+
+	  if (push)
+	    {
+	      fieldoff_s *pair;
+
+	      pair = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
+	      pair->type = TREE_TYPE (type);
+	      pair->size = elsz;
+	      pair->decl = NULL_TREE;
+	      pair->offset = offset + i * TREE_INT_CST_LOW (elsz);
+	      count++;
+	    }
+	  else
+	    count += pushed;
+	}
+
+      return count;
     }
 
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
