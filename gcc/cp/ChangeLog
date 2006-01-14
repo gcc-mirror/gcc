@@ -1,5 +1,7 @@
 2006-01-13  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (check_explicit_specialization): Use CP_DECL_CONTEXT even more.
+
 	* name-lookup.c (set_decl_namespace): Use CP_DECL_CONTEXT.
 	* pt.c (check_explicit_specialization): Likewise.
 
