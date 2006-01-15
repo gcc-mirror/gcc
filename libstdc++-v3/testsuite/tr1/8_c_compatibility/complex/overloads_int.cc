@@ -37,53 +37,59 @@ void test01()
   const unsigned  u1 = 1;
   const long      l1 = 1;
   const double    f1 = 1.0f;
-  const double    d0 = 0.0;
   const double    d1 = 1.0;
     
   check_ret_type<double>(arg(i1));
-  VERIFY( arg(i1) == arg(d1) );
-  VERIFY( arg(i1) == arg(cmplx_d_type(d1, d0)) );
+  VERIFY( arg(i1) == arg(double(i1)) );
+  VERIFY( arg(i1) == arg(cmplx_d_type(double(i1))) );
 
   check_ret_type<cmplx_d_type>(conj(i1));
-  VERIFY( conj(i1) == conj(d1) );
-  VERIFY( conj(i1) == conj(cmplx_d_type(d1, d0)) );
+  VERIFY( conj(i1) == conj(double(i1)) );
+  VERIFY( conj(i1) == conj(cmplx_d_type(double(i1))) );
 
   check_ret_type<double>(imag(i1));
-  VERIFY( imag(i1) == imag(d1) );
-  VERIFY( imag(i1) == imag(cmplx_d_type(d1, d0)) );
+  VERIFY( imag(i1) == imag(double(i1)) );
+  VERIFY( imag(i1) == imag(cmplx_d_type(double(i1))) );
 
   check_ret_type<double>(norm(i1));
-  VERIFY( norm(i1) == norm(d1) );
-  VERIFY( norm(i1) == norm(cmplx_d_type(d1, d0)) );
+  VERIFY( norm(i1) == norm(double(i1)) );
+  // std::norm<const complex<>&) is mathematically equivalent to just
+  // this for a real, but the general algorithm goes through std::abs
+  // and a multiplication.
+  VERIFY( norm(i1) == double(i1) * double(i1) );
 
   check_ret_type<cmplx_d_type>(polar(i1, i1));
-  VERIFY( polar(i1, i1) == polar(d1, d1) );
-
-  // NB: According to the letter of 8.1.9/3 the return type
-  //     should be a cmplx_d_type, but the existing overload
-  //     std::pow(const complex<>&, int) wins.
+  VERIFY( polar(i1, i1) == polar(double(i1), double(i1)) );
+  // NB: According to the letter of 8.1.9/3 the return type should be a
+  // cmplx_d_type, but the existing std::pow(const complex<>&, int) wins.
   check_ret_type<cmplx_f_type>(pow(cmplx_f_type(f1, f1), i1));
 
   check_ret_type<cmplx_d_type>(pow(cmplx_f_type(f1, f1), u1));
   check_ret_type<cmplx_d_type>(pow(cmplx_f_type(f1, f1), l1));
   check_ret_type<cmplx_d_type>(pow(cmplx_d_type(d1, d1), i1));
 
-  // See above comment.
-  // VERIFY( pow(cmplx_d_type(d1, d1), i1) == pow(cmplx_d_type(d1, d1), d1) );
-  VERIFY( pow(cmplx_d_type(d1, d1), u1) == pow(cmplx_d_type(d1, d1), d1) );
-  VERIFY( pow(cmplx_d_type(d1, d1), l1) == pow(cmplx_d_type(d1, d1), d1) );
+  // See last comment.
+  // VERIFY( pow(cmplx_d_type(d1, d1), i1)
+  //         == pow(cmplx_d_type(d1, d1), double(i1)) );
+  VERIFY( pow(cmplx_d_type(d1, d1), u1)
+	  == pow(cmplx_d_type(d1, d1), double(u1)) );
+  VERIFY( pow(cmplx_d_type(d1, d1), l1)
+	  == pow(cmplx_d_type(d1, d1), double(l1)) );
 
   check_ret_type<cmplx_d_type>(pow(i1, cmplx_f_type(f1, f1)));
   check_ret_type<cmplx_d_type>(pow(u1, cmplx_f_type(f1, f1)));
   check_ret_type<cmplx_d_type>(pow(l1, cmplx_f_type(f1, f1)));
   check_ret_type<cmplx_d_type>(pow(i1, cmplx_d_type(d1, d1)));
-  VERIFY( pow(i1, cmplx_d_type(d1, d1)) == pow(d1, cmplx_d_type(d1, d1)) );
-  VERIFY( pow(u1, cmplx_d_type(d1, d1)) == pow(d1, cmplx_d_type(d1, d1)) );
-  VERIFY( pow(l1, cmplx_d_type(d1, d1)) == pow(d1, cmplx_d_type(d1, d1)) );
+  VERIFY( pow(i1, cmplx_d_type(d1, d1))
+	  == pow(double(i1), cmplx_d_type(d1, d1)) );
+  VERIFY( pow(u1, cmplx_d_type(d1, d1))
+	  == pow(double(u1), cmplx_d_type(d1, d1)) );
+  VERIFY( pow(l1, cmplx_d_type(d1, d1))
+	  == pow(double(l1), cmplx_d_type(d1, d1)) );
 
   check_ret_type<double>(real(i1));
-  VERIFY( real(i1) == real(d1) );
-  VERIFY( real(i1) == real(cmplx_d_type(d1, d1)) );
+  VERIFY( real(i1) == real(double(i1)) );
+  VERIFY( real(i1) == real(cmplx_d_type(double(i1))) );
 }
 
 int main()

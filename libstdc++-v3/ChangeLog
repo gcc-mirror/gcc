@@ -1,3 +1,8 @@
+2006-01-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/tr1/8_c_compatibility/complex/overloads_int.cc:
+	Fix norm test, use casts everywhere.
+
 2006-01-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/testsuite_tr1.h: Add missing include; use std::__are_same.
