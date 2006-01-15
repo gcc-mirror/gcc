@@ -1,3 +1,10 @@
+2006-01-15  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cselib.c (hash_table): Rename to cselib_hash_table.
+	(cselib_clear_table, discard_useless_values,
+	remove_useless_values, cselib_lookup_mem, cselib_lookup,
+	cselib_init, cselib_finish): Adjust uses of hash_table.
+
 2006-01-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/25485
