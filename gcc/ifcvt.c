@@ -2016,6 +2016,52 @@ noce_get_condition (rtx jump, rtx *earliest)
 				 NULL_RTX, false, true);
 }
 
+/* Initialize for a simple IF-THEN or IF-THEN-ELSE block.  We will not
+   be using conditional execution.  Set some fields of IF_INFO based
+   on CE_INFO: test_bb, cond, jump, cond_earliest.  Return TRUE if
+   things look OK.  */
+
+static int
+noce_init_if_info (struct ce_if_block *ce_info, struct noce_if_info *if_info)
+{
+  basic_block test_bb = ce_info->test_bb;
+  rtx cond, jump;
+
+  /* If test is comprised of && or || elements, don't handle it unless
+     it is the special case of && elements without an ELSE block.  */
+  if (ce_info->num_multiple_test_blocks)
+    {
+      if (ce_info->else_bb || !ce_info->and_and_p)
+	return FALSE;
+
+      ce_info->test_bb = test_bb = ce_info->last_test_bb;
+      ce_info->num_multiple_test_blocks = 0;
+      ce_info->num_and_and_blocks = 0;
+      ce_info->num_or_or_blocks = 0;
+    }
+
+  /* If this is not a standard conditional jump, we can't parse it.  */
+  jump = BB_END (test_bb);
+  cond = noce_get_condition (jump, &if_info->cond_earliest);
+  if (!cond)
+    return FALSE;
+
+  /* If the conditional jump is more than just a conditional
+     jump, then we can not do if-conversion on this block.  */
+  if (! onlyjump_p (jump))
+    return FALSE;
+
+  /* We must be comparing objects whose modes imply the size.  */
+  if (GET_MODE (XEXP (cond, 0)) == BLKmode)
+    return FALSE;
+
+  if_info->test_bb = test_bb;
+  if_info->cond = cond;
+  if_info->jump = jump;
+
+  return TRUE;
+}
+
 /* Return true if OP is ok for if-then-else processing.  */
 
 static int
@@ -2111,33 +2157,11 @@ noce_process_if_block (struct ce_if_block * ce_info)
 
      ??? For future expansion, look for multiple X in such patterns.  */
 
-  /* If test is comprised of && or || elements, don't handle it unless it is
-     the special case of && elements without an ELSE block.  */
-  if (ce_info->num_multiple_test_blocks)
-    {
-      if (else_bb || ! ce_info->and_and_p)
-	return FALSE;
-
-      ce_info->test_bb = test_bb = ce_info->last_test_bb;
-      ce_info->num_multiple_test_blocks = 0;
-      ce_info->num_and_and_blocks = 0;
-      ce_info->num_or_or_blocks = 0;
-    }
-
-  /* If this is not a standard conditional jump, we can't parse it.  */
-  jump = BB_END (test_bb);
-  cond = noce_get_condition (jump, &if_info.cond_earliest);
-  if (! cond)
+  if (!noce_init_if_info (ce_info, &if_info))
     return FALSE;
 
-  /* If the conditional jump is more than just a conditional
-     jump, then we can not do if-conversion on this block.  */
-  if (! onlyjump_p (jump))
-    return FALSE;
-
-  /* We must be comparing objects whose modes imply the size.  */
-  if (GET_MODE (XEXP (cond, 0)) == BLKmode)
-    return FALSE;
+  cond = if_info.cond;
+  jump = if_info.jump;
 
   /* Look for one of the potential sets.  */
   insn_a = first_active_insn (then_bb);
@@ -2216,9 +2240,6 @@ noce_process_if_block (struct ce_if_block * ce_info)
     return FALSE;
 
   /* Set up the info block for our subroutines.  */
-  if_info.test_bb = test_bb;
-  if_info.cond = cond;
-  if_info.jump = jump;
   if_info.insn_a = insn_a;
   if_info.insn_b = insn_b;
   if_info.x = x;
@@ -2340,6 +2361,235 @@ noce_process_if_block (struct ce_if_block * ce_info)
 
   return TRUE;
 }
+
+/* Check whether a block is suitable for conditional move conversion.
+   Every insn must be a simple set of a register to a constant or a
+   register.  For each assignment, store the value in the array VALS,
+   indexed by register number.  COND is the condition we will
+   test.  */
+
+static int
+check_cond_move_block (basic_block bb, rtx *vals, rtx cond)
+{
+  rtx insn;
+
+  FOR_BB_INSNS (bb, insn)
+    {
+      rtx set, dest, src;
+
+      if (!INSN_P (insn) || JUMP_P (insn))
+	continue;
+      set = single_set (insn);
+      if (!set)
+	return FALSE;
+
+      dest = SET_DEST (set);
+      src = SET_SRC (set);
+      if (!REG_P (dest)
+	  || (SMALL_REGISTER_CLASSES && HARD_REGISTER_P (dest)))
+	return false;
+
+      if (!CONSTANT_P (src) && !register_operand (src, VOIDmode))
+	return FALSE;
+
+      if (side_effects_p (src) || side_effects_p (dest))
+	return FALSE;
+
+      if (may_trap_p (src) || may_trap_p (dest))
+	return FALSE;
+
+      /* Don't try to handle this if the destination register was
+	 modified earlier in the block.  */
+      if (vals[REGNO (dest)] != NULL)
+	return FALSE;
+
+      /* Don't try to handle this if the condition uses the
+	 destination register.  */
+      if (reg_overlap_mentioned_p (dest, cond))
+	return FALSE;
+
+      vals[REGNO (dest)] = src;
+
+      /* Don't try to handle this if the source register is modified
+	 later in the block.  */
+      if (!CONSTANT_P (src)
+	  && modified_between_p (src, insn, NEXT_INSN (BB_END (bb))))
+	return FALSE;
+    }
+
+  return TRUE;
+}
+
+/* Given a simple IF-THEN or IF-THEN-ELSE block, attempt to convert it
+   using only conditional moves.  Return TRUE if we were successful at
+   converting the block.  */
+
+static int
+cond_move_process_if_block (struct ce_if_block *ce_info)
+{
+  basic_block then_bb = ce_info->then_bb;
+  basic_block else_bb = ce_info->else_bb;
+  struct noce_if_info if_info;
+  rtx jump, cond, insn, seq, cond_arg0, cond_arg1, loc_insn;
+  int max_reg, size, c, i;
+  rtx *then_vals;
+  rtx *else_vals;
+  enum rtx_code code;
+
+  if (!HAVE_conditional_move || no_new_pseudos)
+    return FALSE;
+
+  memset (&if_info, 0, sizeof if_info);
+
+  if (!noce_init_if_info (ce_info, &if_info))
+    return FALSE;
+
+  cond = if_info.cond;
+  jump = if_info.jump;
+
+  /* Build a mapping for each block to the value used for each
+     register.  */
+  max_reg = max_reg_num ();
+  size = (max_reg + 1) * sizeof (rtx);
+  then_vals = (rtx *) alloca (size);
+  else_vals = (rtx *) alloca (size);
+  memset (then_vals, 0, size);
+  memset (else_vals, 0, size);
+
+  /* Make sure the blocks are suitable.  */
+  if (!check_cond_move_block (then_bb, then_vals, cond)
+      || (else_bb && !check_cond_move_block (else_bb, else_vals, cond)))
+    return FALSE;
+
+  /* Make sure the blocks can be used together.  If the same register
+     is set in both blocks, and is not set to a constant in both
+     cases, then both blocks must set it to the same register.  We
+     have already verified that if it is set to a register, that the
+     source register does not change after the assignment.  Also count
+     the number of registers set in only one of the blocks.  */
+  c = 0;
+  for (i = 0; i <= max_reg; ++i)
+    {
+      if (!then_vals[i] && !else_vals[i])
+	continue;
+
+      if (!then_vals[i] || !else_vals[i])
+	++c;
+      else
+	{
+	  if (!CONSTANT_P (then_vals[i])
+	      && !CONSTANT_P (else_vals[i])
+	      && !rtx_equal_p (then_vals[i], else_vals[i]))
+	    return FALSE;
+	}
+    }
+
+  /* Make sure it is reasonable to convert this block.  What matters
+     is the number of assignments currently made in only one of the
+     branches, since if we convert we are going to always execute
+     them.  */
+  if (c > MAX_CONDITIONAL_EXECUTE)
+    return FALSE;
+
+  /* Emit the conditional moves.  First do the then block, then do
+     anything left in the else blocks.  */
+
+  code = GET_CODE (cond);
+  cond_arg0 = XEXP (cond, 0);
+  cond_arg1 = XEXP (cond, 1);
+
+  start_sequence ();
+
+  FOR_BB_INSNS (then_bb, insn)
+    {
+      rtx set, target, dest, t, e;
+      unsigned int regno;
+
+      if (!INSN_P (insn) || JUMP_P (insn))
+	continue;
+      set = single_set (insn);
+      gcc_assert (set && REG_P (SET_DEST (set)));
+
+      dest = SET_DEST (set);
+      regno = REGNO (dest);
+      t = then_vals[regno];
+      e = else_vals[regno];
+      gcc_assert (t);
+      if (!e)
+	e = dest;
+      target = noce_emit_cmove (&if_info, dest, code, cond_arg0, cond_arg1,
+				t, e);
+      if (!target)
+	{
+	  end_sequence ();
+	  return FALSE;
+	}
+
+      if (target != dest)
+	noce_emit_move_insn (dest, target);
+    }
+
+  if (else_bb)
+    {
+      FOR_BB_INSNS (else_bb, insn)
+	{
+	  rtx set, target, dest;
+	  unsigned int regno;
+
+	  if (!INSN_P (insn) || JUMP_P (insn))
+	    continue;
+	  set = single_set (insn);
+	  gcc_assert (set && REG_P (SET_DEST (set)));
+
+	  dest = SET_DEST (set);
+	  regno = REGNO (dest);
+
+	  /* If this register was set in the then block, we already
+	     handled this case above.  */
+	  if (then_vals[regno])
+	    continue;
+	  gcc_assert (else_vals[regno]);
+
+	  target = noce_emit_cmove (&if_info, dest, code, cond_arg0, cond_arg1,
+				    dest, else_vals[regno]);
+	  if (!target)
+	    {
+	      end_sequence ();
+	      return FALSE;
+	    }
+
+	  if (target != dest)
+	    noce_emit_move_insn (dest, target);
+	}
+    }
+
+  seq = end_ifcvt_sequence (&if_info);
+  if (!seq)
+    return FALSE;
+
+  loc_insn = first_active_insn (then_bb);
+  if (!loc_insn)
+    {
+      loc_insn = first_active_insn (else_bb);
+      gcc_assert (loc_insn);
+    }
+  emit_insn_before_setloc (seq, jump, INSN_LOCATOR (loc_insn));
+
+  FOR_BB_INSNS (then_bb, insn)
+    if (INSN_P (insn) && !JUMP_P (insn))
+      delete_insn (insn);
+  if (else_bb)
+    {
+      FOR_BB_INSNS (else_bb, insn)
+	if (INSN_P (insn) && !JUMP_P (insn))
+	  delete_insn (insn);
+    }
+  delete_insn (jump);
+
+  merge_if_block (ce_info);
+
+  return TRUE;
+}
 
 /* Attempt to convert an IF-THEN or IF-THEN-ELSE block into
    straight line code.  Return true if successful.  */
@@ -2349,6 +2599,10 @@ process_if_block (struct ce_if_block * ce_info)
 {
   if (! reload_completed
       && noce_process_if_block (ce_info))
+    return TRUE;
+
+  if (HAVE_conditional_move
+      && cond_move_process_if_block (ce_info))
     return TRUE;
 
   if (HAVE_conditional_execution && reload_completed)
