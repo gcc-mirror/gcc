@@ -1,3 +1,9 @@
+2006-01-14  Anthony Green  <green@redhat.com>
+
+        * java/net/ServerSocket.java (accept): Remove bogus
+        security check.
+	(implAccept): Add FIXME comment.
+
 2005-12-27  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/java/nio/SelectorImpl.java: Added import.
