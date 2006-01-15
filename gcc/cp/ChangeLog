@@ -1,3 +1,9 @@
+2006-01-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25663
+	* parser.c (cp_parser_direct_declarator): Use cp_parser_error
+	instead of error.
+
 2006-01-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24782
