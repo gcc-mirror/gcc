@@ -11505,7 +11505,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 			 here because we do not have enough
 			 information about its original syntactic
 			 form.  */
-		      error ("invalid declarator");
+		      cp_parser_error (parser, "invalid declarator");
 		      declarator = cp_error_declarator;
 		      break;
 		    }
