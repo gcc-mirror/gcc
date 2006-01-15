@@ -1,3 +1,12 @@
+2006-01-14  Ian Lance Taylor  <ian@airs.com>
+
+	* ifcvt.c (noce_init_if_info): New static function, broken out of
+	noce_process_if_block.
+	(noce_process_if_block): Call noce_init_if_info.
+	(check_cond_move_block): New static function.
+	(cond_move_process_if_block): New static function.
+	(process_if_block): Call cond_move_process_if_block.
+
 2006-01-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cselib.c (hash_table): Rename to cselib_hash_table.
