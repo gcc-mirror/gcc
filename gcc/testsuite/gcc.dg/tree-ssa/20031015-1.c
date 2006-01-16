@@ -13,8 +13,6 @@ main(void)
   return 0;
 }
 
-/* The V_MUST_DEF comes from the initial assignment; the V_MAY_DEF
-   comes from the asm.  */
-/* { dg-final { scan-tree-dump-times "V_MUST_DEF" 1 "alias1" } } */
-/* { dg-final { scan-tree-dump-times "V_MAY_DEF" 1 "alias1" } } */
+/* The V_*_DEF comes from the initial assignment and the asm.  */
+/* { dg-final { scan-tree-dump-times "_DEF" 2 "alias1" } } */
 /* { dg-final { cleanup-tree-dump "alias1" } } */

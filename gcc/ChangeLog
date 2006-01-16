@@ -1,3 +1,12 @@
+2006-01-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (struct used_part): Add write_only field.
+	(get_or_create_used_part_for): Initialize it to true.
+	(create_overlap_variables_for): Don't create structure variables
+	for structures that only are written to.
+	(find_used_portions): Handle MODIFY_EXPR to track whether a
+	structure is only written to.
+
 2006-01-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* bb-reorder.c (partition_hot_cold_basic_blocks): Make it
