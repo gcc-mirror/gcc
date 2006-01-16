@@ -1,3 +1,10 @@
+2006-01-16  Steven Bosscher  <stevenb.gcc@gmail.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/24257
+	* gcse.c (find_moveable_store): Only consider a store movable
+	when the SET_SRC of the insn can be assigned to a register.
+
 2006-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25168

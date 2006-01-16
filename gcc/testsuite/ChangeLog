@@ -1,3 +1,9 @@
+2006-01-16  Steven Bosscher  <stevenb.gcc@gmail.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/24257
+	* gcc.dg/torture/pr24257.c: New testcase.
+
 2006-01-15  Andreas Jaeger  <aj@suse.de>
 
 	* g++.dg/abi/mangle25.C: Only run on 64-bit systems since 32-bit

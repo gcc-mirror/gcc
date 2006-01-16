@@ -5647,6 +5647,14 @@ find_moveable_store (rtx insn, int *regs_set_before, int *regs_set_after)
   if (find_reg_note (insn, REG_EH_REGION, NULL_RTX))
     return;
 
+  /* Make sure that the SET_SRC of this store insns can be assigned to
+     a register, or we will fail later on in replace_store_insn, which
+     assumes that we can do this.  But sometimes the target machine has
+     oddities like MEM read-modify-write instruction.  See for example
+     PR24257.  */
+  if (!can_assign_to_reg_p (SET_SRC (set)))
+    return;
+
   ptr = ldst_entry (dest);
   if (!ptr->pattern_regs)
     ptr->pattern_regs = extract_mentioned_regs (dest);
