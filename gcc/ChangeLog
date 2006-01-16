@@ -3,6 +3,22 @@
 	* config/m68k/m68k.c (output_move_const_into_data_reg):
 	Output correct mnemonic for mvz and mvs.
 
+2006-01-16  Gabor Loki <loki@gcc.gnu.org>
+
+	* rtl-factoring.c : Add sequence abstraction algorithm.
+	* cfgcleanup.c (outgoing_edges_match): Extra checks.
+	(try_crossjump_to_edge): Avoid deleting preserve label when redirecting
+	ABNORMAL edges.
+	(block_has_preserve_label): New function.
+	* common.opt: Register new pass.
+	* Makefile.in: Ditto.
+	* passes.c: Ditto.
+	* timevar.def: Ditto.
+	* tree-pass.h: Ditto.
+	* emit-rtl.c (make_jump_insn_raw): Remove forward decl.
+	* rtl.h (make_jump_insn_raw): Add forward decl.
+	* doc/invoke.texi: Add documentation for -frtl-abstract-sequences.
+
 2006-01-16  Eric Botcazou  <ebotcazou@adacore.com>
             Roger Sayle  <roger@eyesopen.com> 
 
