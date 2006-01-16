@@ -137,7 +137,7 @@ proc gfortran_init { args } {
 	    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
 		set GFORTRAN_UNDER_TEST [transform gfortran]
 	    } else {
-		set GFORTRAN_UNDER_TEST [findfile $base_dir/../gfortran "$base_dir/../gfortran -B$base_dir/../" [findfile $base_dir/gfortran "$base_dir/gfortran -B$base_dir/" [transform gfortran]]]
+		set GFORTRAN_UNDER_TEST [findfile $base_dir/../../gfortran "$base_dir/../../gfortran -B$base_dir/../../" [findfile $base_dir/gfortran "$base_dir/gfortran -B$base_dir/" [transform gfortran]]]
 	    }
 	}
     }

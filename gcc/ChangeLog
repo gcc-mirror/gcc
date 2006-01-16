@@ -1,3 +1,10 @@
+2006-01-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/25741
+	* Makefile.in (check-%): Depend on site.exp instead of
+	$(TESTSUITEDIR)/site.exp. Run "runtest" in separate language
+	directories.
+
 2006-01-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* global.c (global_alloc): Make it static.
