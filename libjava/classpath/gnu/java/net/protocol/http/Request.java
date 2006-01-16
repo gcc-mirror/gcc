@@ -528,6 +528,9 @@ public class Request
             throw new ProtocolException("Unsupported Content-Encoding: " +
                                         contentCoding);
           }
+	// Remove the Content-Encoding header because the content is
+	// no longer compressed.
+	responseHeaders.remove("Content-Encoding");
       }
     return in;
   }

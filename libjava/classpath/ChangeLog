@@ -1,3 +1,10 @@
+2006-01-16  Anthony Green  <green@redhat.com>
+
+	PR classpath/25803
+	* gnu/java/net/protocol/http/Request.java
+	  (createResponseBodyStream): Remove Content-Encoding for
+	  compressed streams.
+
 2006-01-14  Anthony Green  <green@redhat.com>
 
         * java/net/ServerSocket.java (accept): Remove bogus
