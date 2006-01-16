@@ -12,10 +12,11 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
 
 # DejaGnu test driver around Mike Cowlishaw's testsuite for decimal
-# decimal arithmetic ("dectest").  See:
+# decimal arithmetic ("decTest").  See:
 #    <http://www2.hursley.ibm.com/decimal/dectest.html>.
 #
 # Contributed by Ben Elliston <bje@au.ibm.com>.
