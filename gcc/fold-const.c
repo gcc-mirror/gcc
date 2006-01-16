@@ -7198,7 +7198,7 @@ fold_minmax (enum tree_code code, tree type, tree op0, tree op1)
   else if (code == MAX_EXPR)
     compl_code = MIN_EXPR;
   else
-    gcc_assert (FALSE);
+    gcc_unreachable ();
 
   /* MIN (MAX (a, b), b) == b.  */
   if (TREE_CODE (op0) == compl_code
