@@ -1,3 +1,8 @@
+2006-01-16  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/dfp/dfp.exp: Correct FSF address. 
+	* gcc.misc-tests/dectest.exp: Ditto.
+
 2006-01-15  Ian Lance Taylor  <ian@airs.com>
 
 	PR testsuite/25796
