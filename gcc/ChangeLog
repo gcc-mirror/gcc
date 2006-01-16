@@ -1,3 +1,8 @@
+2006-01-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* global.c (global_alloc): Make it static.
+	* rtl.h: Remove the prototype for global_alloc.
+
 2006-01-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (struct used_part): Add write_only field.

@@ -2043,7 +2043,6 @@ extern void gcse_after_reload_main (rtx);
 
 /* In global.c */
 extern void mark_elimination (int, int);
-extern int global_alloc (FILE *);
 extern void dump_global_regs (FILE *);
 #ifdef HARD_CONST
 /* Yes, this ifdef is silly, but HARD_REG_SET is not always defined.  */
