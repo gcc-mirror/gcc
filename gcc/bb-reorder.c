@@ -2161,7 +2161,7 @@ struct tree_opt_pass pass_duplicate_computed_gotos =
    (through registers) requires that this optimization be performed
    before register allocation.  */
 
-void
+static void
 partition_hot_cold_basic_blocks (void)
 {
   basic_block cur_bb;
