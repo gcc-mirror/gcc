@@ -1662,9 +1662,9 @@ output_move_const_into_data_reg (rtx *operands)
   switch (const_method (operands[1]))
     {
     case MVZ:
-      return "mvsw %1,%0";
-    case MVS:
       return "mvzw %1,%0";
+    case MVS:
+      return "mvsw %1,%0";
     case MOVQ:
       return "moveq %1,%0";
     case NOTB:
