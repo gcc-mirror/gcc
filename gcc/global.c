@@ -332,7 +332,7 @@ static void make_accurate_live_analysis (void);
    Return value is nonzero if reload failed
    and we must not do any more for this function.  */
 
-int
+static int
 global_alloc (FILE *file)
 {
   int retval;
