@@ -308,8 +308,6 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
   tree tmp;
   tree args;
 
-  cond = fold (cond);
-
   if (integer_zerop (cond))
     return;
 

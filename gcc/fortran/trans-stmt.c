@@ -162,7 +162,8 @@ gfc_trans_goto (gfc_code * code)
   assign_error =
     gfc_build_cstring_const ("Assigned label is not a target label");
   tmp = GFC_DECL_STRING_LEN (se.expr);
-  tmp = build2 (NE_EXPR, boolean_type_node, tmp, integer_minus_one_node);
+  tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp,
+		     build_int_cst (TREE_TYPE (tmp), -1));
   gfc_trans_runtime_check (tmp, assign_error, &se.pre);
 
   assigned_goto = GFC_DECL_ASSIGN_ADDR (se.expr);
