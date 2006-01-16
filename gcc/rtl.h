@@ -1971,7 +1971,6 @@ extern bool validate_subreg (enum machine_mode, enum machine_mode,
 			     rtx, unsigned int);
 
 /* In combine.c */
-extern int combine_instructions (rtx, unsigned int);
 extern unsigned int extended_count (rtx, enum machine_mode, int);
 extern rtx remove_death (unsigned int, rtx);
 extern void dump_combine_stats (FILE *);
