@@ -1,3 +1,9 @@
+2006-01-16  Ben Elliston  <bje@au.ibm.com>
+
+	* config/i386/winnt-stubs.c: Update FSF address.
+	* config/xtensa/ieee754-df.S: Ditto.
+	* config/xtensa/ieee754-sf.S: Ditto.
+
 2006-01-14  Ian Lance Taylor  <ian@airs.com>
 
 	* ifcvt.c (noce_init_if_info): New static function, broken out of
