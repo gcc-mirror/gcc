@@ -359,10 +359,6 @@ gfc_add_expr_to_block (stmtblock_t * block, tree expr)
   if (expr == NULL_TREE || IS_EMPTY_STMT (expr))
     return;
 
-  if (TREE_CODE (expr) != STATEMENT_LIST
-      && TREE_CODE_CLASS (TREE_CODE (expr)) != tcc_statement)
-    expr = fold (expr);
-
   if (block->head)
     {
       if (TREE_CODE (block->head) != STATEMENT_LIST)

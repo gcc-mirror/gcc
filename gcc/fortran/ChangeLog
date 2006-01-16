@@ -1,5 +1,19 @@
 2006-01-16  Richard Guenther  <rguenther@suse.de>
 
+	* trans-stmt.c (gfc_trans_if_1): Use fold_buildN and build_int_cst.
+	(gfc_trans_arithmetic_if): Likewise.
+	(gfc_trans_simple_do): Likewise.
+	(gfc_trans_do): Likewise.
+	(gfc_trans_do_while): Likewise.
+	(gfc_trans_logical_select): Likewise.
+	(gfc_trans_forall_loop): Likewise.
+	(generate_loop_for_temp_to_lhs): Likewise.
+	(generate_loop_for_rhs_to_temp): Likewise.
+	(gfc_trans_allocate): Likewise.
+	* trans.c (gfc_add_expr_to_block): Do not fold expr again.
+
+2006-01-16  Richard Guenther  <rguenther@suse.de>
+
 	* trans-expr.c (gfc_conv_function_call): Use fold_build2.
 	* trans-stmt.c (gfc_trans_goto): Likewise.  Use build_int_cst.
 	* trans.c (gfc_trans_runtime_check): Don't fold the condition
