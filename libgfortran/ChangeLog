@@ -1,3 +1,10 @@
+2006-01-16  Roger Sayle  <roger@eyesopen.com>
+
+	* configure.ac (CFLAGS): Update to include -std=gnu99 so that
+	the configure tests will be run with the same environment as
+	used to compile the libgfortran source code.
+	* configure: Regenerate.
+
 2006-01-12  Roger Sayle  <roger@eyesopen.com>
 
 	* intrinsics/c99_functions.c: Add function prototypes to avoid
