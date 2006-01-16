@@ -1,5 +1,5 @@
 /* Handle the constant pool of the Java(TM) Virtual Machine.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -481,7 +481,12 @@ build_constants_constructor (void)
       case CONSTANT_Fieldref:
       case CONSTANT_NameAndType:
 	{
-	  jword temp = outgoing_cpool->data[i].w;
+	  unsigned HOST_WIDE_INT temp = outgoing_cpool->data[i].w;
+
+	  /* Make sure that on a 64-bit big-endian machine this 32-bit
+	     jint appears in the first word.  */
+	  if (BYTES_BIG_ENDIAN && BITS_PER_WORD > 32)
+	    temp <<= BITS_PER_WORD - 32;
 
 	  tags_list
 	    = tree_cons (NULL_TREE, 
