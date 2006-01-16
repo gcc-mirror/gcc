@@ -1,3 +1,10 @@
+2006-01-16  Richard Guenther  <rguenther@suse.de>
+
+	* trans-expr.c (gfc_conv_function_call): Use fold_build2.
+	* trans-stmt.c (gfc_trans_goto): Likewise.  Use build_int_cst.
+	* trans.c (gfc_trans_runtime_check): Don't fold the condition
+	again.
+
 2006-01-13  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/25756

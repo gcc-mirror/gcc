@@ -1830,7 +1830,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		  /* Check the data pointer hasn't been modified.  This would
 		     happen in a function returning a pointer.  */
 		  tmp = gfc_conv_descriptor_data_get (info->descriptor);
-		  tmp = build2 (NE_EXPR, boolean_type_node, tmp, info->data);
+		  tmp = fold_build2 (NE_EXPR, boolean_type_node,
+				     tmp, info->data);
 		  gfc_trans_runtime_check (tmp, gfc_strconst_fault, &se->pre);
 		}
 	      se->expr = info->descriptor;
