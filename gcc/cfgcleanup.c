@@ -1589,9 +1589,41 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
       return false;
   }
 
-  /* We don't need to match the rest of edges as above checks should be enough
-     to ensure that they are equivalent.  */
+  /* The same checks as in try_crossjump_to_edge. It is required for RTL
+     version of sequence abstraction.  */
+  FOR_EACH_EDGE (e1, ei, bb2->succs)
+    {
+      edge e2;
+      edge_iterator ei;
+      basic_block d1 = e1->dest;
+
+      if (FORWARDER_BLOCK_P (d1))
+        d1 = EDGE_SUCC (d1, 0)->dest;
+
+      FOR_EACH_EDGE (e2, ei, bb1->succs)
+        {
+          basic_block d2 = e2->dest;
+          if (FORWARDER_BLOCK_P (d2))
+            d2 = EDGE_SUCC (d2, 0)->dest;
+          if (d1 == d2)
+            break;
+        }
+
+      if (!e2)
+        return false;
+    }
+
   return true;
+}
+
+/* Returns true if BB basic block has a preserve label.  */
+
+static bool
+block_has_preserve_label (basic_block bb)
+{
+  return (bb
+          && block_label (bb)
+          && LABEL_PRESERVE_P (block_label (bb)));
 }
 
 /* E1 and E2 are edges with the same destination block.  Search their
@@ -1667,6 +1699,11 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
      block removed).  */
   if ((nmatch < PARAM_VALUE (PARAM_MIN_CROSSJUMP_INSNS))
       && (newpos1 != BB_HEAD (src1)))
+    return false;
+
+  /* Avoid deleting preseve label when redirecting ABNORMAL edeges.  */
+  if (block_has_preserve_label (e1->dest)
+      && (e1->flags & EDGE_ABNORMAL))
     return false;
 
   /* Here we know that the insns in the end of SRC1 which are common with SRC2

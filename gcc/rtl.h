@@ -1462,6 +1462,7 @@ extern rtx emit_note (int);
 extern rtx emit_note_copy (rtx);
 extern rtx emit_line_note (location_t);
 extern rtx make_insn_raw (rtx);
+extern rtx make_jump_insn_raw (rtx);
 extern void add_function_usage_to (rtx, rtx);
 extern rtx last_call_insn (void);
 extern rtx previous_insn (rtx);

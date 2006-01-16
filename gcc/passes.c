@@ -667,6 +667,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_postreload_cse);
   NEXT_PASS (pass_gcse2);
   NEXT_PASS (pass_flow2);
+  NEXT_PASS (pass_rtl_seqabstr);
   NEXT_PASS (pass_stack_adjustments);
   NEXT_PASS (pass_peephole2);
   NEXT_PASS (pass_if_after_reload);
