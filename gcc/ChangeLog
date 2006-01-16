@@ -1,3 +1,12 @@
+2006-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+            Roger Sayle  <roger@eyesopen.com> 
+
+	* fold-const.c (fold_minmax): New static function.
+	(fold_binary) <MIN_EXPR>: Call it.
+	<MAX_EXPR>: Likewise.
+	* stor-layout.c (place_field): Use DECL_SIZE consistently
+	in the computation of the new record size.
+
 2006-01-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cse.c (cse_condition_code_reg): Make it static.

@@ -7184,6 +7184,49 @@ fold_unary (enum tree_code code, tree type, tree op0)
 }
 
 /* Fold a binary expression of code CODE and type TYPE with operands
+   OP0 and OP1, containing either a MIN-MAX or a MAX-MIN combination.
+   Return the folded expression if folding is successful.  Otherwise,
+   return NULL_TREE.  */
+
+static tree
+fold_minmax (enum tree_code code, tree type, tree op0, tree op1)
+{
+  enum tree_code compl_code;
+
+  if (code == MIN_EXPR)
+    compl_code = MAX_EXPR;
+  else if (code == MAX_EXPR)
+    compl_code = MIN_EXPR;
+  else
+    gcc_assert (FALSE);
+
+  /* MIN (MAX (a, b), b) == b.  */
+  if (TREE_CODE (op0) == compl_code
+      && operand_equal_p (TREE_OPERAND (op0, 1), op1, 0))
+    return omit_one_operand (type, op1, TREE_OPERAND (op0, 0));
+
+  /* MIN (MAX (b, a), b) == b.  */
+  if (TREE_CODE (op0) == compl_code
+      && operand_equal_p (TREE_OPERAND (op0, 0), op1, 0)
+      && reorder_operands_p (TREE_OPERAND (op0, 1), op1))
+    return omit_one_operand (type, op1, TREE_OPERAND (op0, 1));
+
+  /* MIN (a, MAX (a, b)) == a.  */
+  if (TREE_CODE (op1) == compl_code
+      && operand_equal_p (op0, TREE_OPERAND (op1, 0), 0)
+      && reorder_operands_p (op0, TREE_OPERAND (op1, 1)))
+    return omit_one_operand (type, op0, TREE_OPERAND (op1, 1));
+
+  /* MIN (a, MAX (b, a)) == a.  */
+  if (TREE_CODE (op1) == compl_code
+      && operand_equal_p (op0, TREE_OPERAND (op1, 1), 0)
+      && reorder_operands_p (op0, TREE_OPERAND (op1, 0)))
+    return omit_one_operand (type, op0, TREE_OPERAND (op1, 0));
+
+  return NULL_TREE;
+}
+
+/* Fold a binary expression of code CODE and type TYPE with operands
    OP0 and OP1.  Return the folded expression if folding is
    successful.  Otherwise, return NULL_TREE.  */
 
@@ -8721,6 +8764,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (INTEGRAL_TYPE_P (type)
 	  && operand_equal_p (arg1, TYPE_MIN_VALUE (type), OEP_ONLY_CONST))
 	return omit_one_operand (type, arg1, arg0);
+      tem = fold_minmax (MIN_EXPR, type, arg0, arg1);
+      if (tem)
+	return tem;
       goto associate;
 
     case MAX_EXPR:
@@ -8730,6 +8776,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && TYPE_MAX_VALUE (type)
 	  && operand_equal_p (arg1, TYPE_MAX_VALUE (type), OEP_ONLY_CONST))
 	return omit_one_operand (type, arg1, arg0);
+      tem = fold_minmax (MAX_EXPR, type, arg0, arg1);
+      if (tem)
+	return tem;
       goto associate;
 
     case TRUTH_ANDIF_EXPR:
