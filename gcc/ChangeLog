@@ -3,6 +3,9 @@
 	* cse.c (cse_condition_code_reg): Make it static.
 	* rtl.h: Remove the prototype for cse_condition_code_reg.
 
+	* combine.c (combine_instructions): Make it static.
+	* rtl.h: Remove the prototype for combine_instructions.
+
 2006-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25168

@@ -685,7 +685,7 @@ combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat)
 
    Return nonzero if the combiner has turned an indirect jump
    instruction into a direct jump.  */
-int
+static int
 combine_instructions (rtx f, unsigned int nregs)
 {
   rtx insn, next;
