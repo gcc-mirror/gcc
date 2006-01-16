@@ -1,3 +1,10 @@
+2006-01-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR testsuite/25767
+	* lib/g++.exp (g++_init): Check for *-*-darwin* instead of
+	powerpc-*-darwin*.
+	* lib/obj-c++.exp (obj-c++_init): Likewise.
+
 2006-01-16  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/20031015-1.c: Adjust testcase.

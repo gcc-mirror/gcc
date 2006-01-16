@@ -247,7 +247,7 @@ proc g++_init { args } {
     # error-message parsing machinery.
     lappend ALWAYS_CXXFLAGS "additional_flags=-fmessage-length=0"
 
-    if { [string match "powerpc-*-darwin*" $target_triplet] } {
+    if { [string match "*-*-darwin*" $target_triplet] } {
 	lappend ALWAYS_CXXFLAGS "ldflags=-multiply_defined suppress"
        }
 
