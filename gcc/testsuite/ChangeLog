@@ -1,3 +1,8 @@
+2006-01-15  Andreas Jaeger  <aj@suse.de>
+
+	* g++.dg/abi/mangle25.C: Only run on 64-bit systems since 32-bit
+	x86 does not have __float128.
+
 2006-01-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25663
