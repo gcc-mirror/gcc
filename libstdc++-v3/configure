@@ -8211,41 +8211,40 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -8259,31 +8258,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
@@ -53057,41 +53058,40 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -53105,31 +53105,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
@@ -74396,41 +74398,40 @@ done
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -74444,31 +74445,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
@@ -75898,41 +75901,40 @@ done
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -75946,31 +75948,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
@@ -77276,41 +77280,40 @@ done
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -77324,31 +77327,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
@@ -79441,41 +79446,40 @@ done
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -79489,31 +79493,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
@@ -80772,41 +80778,40 @@ done
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -80820,31 +80825,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
@@ -82152,41 +82159,40 @@ done
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -82200,31 +82206,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
@@ -83924,41 +83932,40 @@ echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -83972,31 +83979,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.
@@ -86017,41 +86026,40 @@ done
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
 echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
-    cat >conftest.$ac_ext <<_ACEOF
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
+ int one(void) { return 1; }
+     int two(void) { return 2; }
 
 int
 main ()
 {
-ac_sectionLDflags=yes
+ two();
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -86065,31 +86073,33 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_sectionLDflags=no
+  ac_gcsections=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_sectionLDflags=yes
+ac_gcsections=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    echo "$as_me:$LINENO: result: $ac_sectionLDflags" >&5
-echo "${ECHO_T}$ac_sectionLDflags" >&6
   fi
 
   # Set -z,relro.

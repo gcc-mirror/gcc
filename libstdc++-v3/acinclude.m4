@@ -233,33 +233,28 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
   if test x"$with_gnu_ld" = x"yes"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
-    # All these tests are for C++; save the language and the compiler flags.
-    # Need to do this so that g++ won't try to link in libstdc++
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
-    # Note: It's supposed to work now, so ease off until proven wrong...
     AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
-    AC_TRY_COMPILE([
-     int main(void)
-     {
-       try { throw 1; }
-       catch (...) { };
-       return 0;
-     }
-    ], [ac_sectionLDflags=yes],[ac_sectionLDflags=no], [ac_sectionLDflags=yes])
+    AC_TRY_LINK([ int one(void) { return 1; }
+     int two(void) { return 2; }
+	], [ two(); ] , [ac_gcsections=yes], [ac_gcsections=no])
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    AC_MSG_RESULT($ac_gcsections)
+
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
       # this is the suspicious part
       CFLAGS=''
     fi
-    if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
-    fi
-    AC_MSG_RESULT($ac_sectionLDflags)
   fi
 
   # Set -z,relro.
