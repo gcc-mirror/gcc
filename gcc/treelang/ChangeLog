@@ -1,3 +1,7 @@
+2006-01-16  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+
+	* spec.c (lang_specific_spec_functions): remove
+
 2005-12-28  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (treelang.distdir): Remove.

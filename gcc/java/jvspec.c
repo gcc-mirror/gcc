@@ -635,9 +635,3 @@ lang_specific_pre_link (void)
     }
   return err;
 }
-
-/* Table of language-specific spec functions.  */ 
-const struct spec_function lang_specific_spec_functions[] =
-{
-  { 0, 0 }
-};
