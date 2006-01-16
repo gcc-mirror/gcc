@@ -7676,7 +7676,7 @@ cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
 /* If we have a fixed condition code register (or two), walk through
    the instructions and try to eliminate duplicate assignments.  */
 
-void
+static void
 cse_condition_code_reg (void)
 {
   unsigned int cc_regno_1;

@@ -1890,7 +1890,6 @@ extern int rtx_to_tree_code (enum rtx_code);
 /* In cse.c */
 extern int delete_trivially_dead_insns (rtx, int);
 extern int cse_main (rtx, int, FILE *);
-extern void cse_condition_code_reg (void);
 extern int exp_equiv_p (rtx, rtx, int, bool);
 extern unsigned hash_rtx (rtx x, enum machine_mode, int *, int *, bool);
 
