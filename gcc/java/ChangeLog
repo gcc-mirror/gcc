@@ -2,7 +2,7 @@
 
 	PR java/25535
 	* constants.c (build_constants_constructor): move initializer into
-	first halfword on a 6-bit big-endian machine.
+	first halfword on a 64-bit big-endian machine.
 
 2006-01-06  Tom Tromey  <tromey@redhat.com>
 
