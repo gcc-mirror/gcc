@@ -1,3 +1,7 @@
+2006-01-16  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+
+	* g++spec.c (lang_specific_spec_functions): remove
+
 2006-01-15  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (check_initializer): Fix thinko.

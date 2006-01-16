@@ -1,3 +1,10 @@
+2006-01-16  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+
+	* cppspec.c (lang_specific_spec_functions): remove
+	* gcc.c (lookup_spec_function): use static_spec_functions directelly
+	* gcc.h (lang_specific_spec_functions): remove
+	* gccspec.c (lang_specific_spec_functions): remove
+
 2005-01-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (record_value_for_reg): Invalidate registers

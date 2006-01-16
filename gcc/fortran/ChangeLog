@@ -1,3 +1,7 @@
+2006-01-16  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+
+	* gfortranspec.c (lang_specific_spec_functions): remove
+
 2006-01-16  Richard Guenther  <rguenther@suse.de>
 
 	* trans-stmt.c (gfc_trans_if_1): Use fold_buildN and build_int_cst.

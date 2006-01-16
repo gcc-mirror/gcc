@@ -25,8 +25,6 @@ Boston, MA 02110-1301, USA.  */
 #include "coretypes.h"
 #include "tm.h"
 
-const struct spec_function lang_specific_spec_functions[] = {{0,0}};
-
 void
 lang_specific_driver (int *in_argc, const char *const **in_argv,
 		      int *in_added_libraries ATTRIBUTE_UNUSED)

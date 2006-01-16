@@ -5353,20 +5353,11 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 static const struct spec_function *
 lookup_spec_function (const char *name)
 {
-  static const struct spec_function * const spec_function_tables[] =
-  {
-    static_spec_functions,
-    lang_specific_spec_functions,
-  };
   const struct spec_function *sf;
-  unsigned int i;
 
-  for (i = 0; i < ARRAY_SIZE (spec_function_tables); i++)
-    {
-      for (sf = spec_function_tables[i]; sf->name != NULL; sf++)
-	if (strcmp (sf->name, name) == 0)
-	  return sf;
-    }
+  for (sf = static_spec_functions; sf->name != NULL; sf++)
+    if (strcmp (sf->name, name) == 0)
+      return sf;
 
   return NULL;
 }
