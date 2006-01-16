@@ -1222,8 +1222,8 @@ place_field (record_layout_info rli, tree field)
      is printed in finish_struct.  */
   if (DECL_SIZE (field) == 0)
     /* Do nothing.  */;
-  else if (TREE_CODE (DECL_SIZE_UNIT (field)) != INTEGER_CST
-	   || TREE_CONSTANT_OVERFLOW (DECL_SIZE_UNIT (field)))
+  else if (TREE_CODE (DECL_SIZE (field)) != INTEGER_CST
+	   || TREE_CONSTANT_OVERFLOW (DECL_SIZE (field)))
     {
       rli->offset
 	= size_binop (PLUS_EXPR, rli->offset,
