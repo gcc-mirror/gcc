@@ -1,3 +1,8 @@
+2006-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr): Cope with
+	vrp_int_const_binop returning non-constant nodes.
+
 2006-01-16  Paul Brook  <paul@codesourcery.com>
 
 	* config/m68k/m68k.c (output_move_const_into_data_reg):

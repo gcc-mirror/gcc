@@ -1412,12 +1412,13 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
       max = val[0];
       for (i = 1; i < 4; i++)
 	{
-	  if (TREE_OVERFLOW (min) || TREE_OVERFLOW (max))
+	  if (!is_gimple_min_invariant (min) || TREE_OVERFLOW (min)
+	      || !is_gimple_min_invariant (max) || TREE_OVERFLOW (max))
 	    break;
 
 	  if (val[i])
 	    {
-	      if (TREE_OVERFLOW (val[i]))
+	      if (!is_gimple_min_invariant (val[i]) || TREE_OVERFLOW (val[i]))
 		{
 		  /* If we found an overflowed value, set MIN and MAX
 		     to it so that we set the resulting range to
@@ -1484,7 +1485,8 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 
   /* If either MIN or MAX overflowed, then set the resulting range to
      VARYING.  */
-  if (TREE_OVERFLOW (min) || TREE_OVERFLOW (max))
+  if (!is_gimple_min_invariant (min) || TREE_OVERFLOW (min)
+      || !is_gimple_min_invariant (max) || TREE_OVERFLOW (max))
     {
       set_value_range_to_varying (vr);
       return;
