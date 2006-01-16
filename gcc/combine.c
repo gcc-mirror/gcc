@@ -10927,7 +10927,7 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
   for (i = regno; i < endregno; i++)
     {
       reg_stat[i].last_set_label = label_tick;
-      if (value && reg_stat[i].last_set_table_tick == label_tick)
+      if (!insn || (value && reg_stat[i].last_set_table_tick == label_tick))
 	reg_stat[i].last_set_invalid = 1;
       else
 	reg_stat[i].last_set_invalid = 0;
@@ -10975,6 +10975,13 @@ record_dead_and_set_regs_1 (rtx dest, rtx setter, void *data)
 
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
+
+  if (!record_dead_insn)
+    {
+      if (REG_P (dest))
+	record_value_for_reg (dest, NULL_RTX, NULL_RTX);
+      return;
+    }
 
   if (REG_P (dest))
     {
@@ -11049,15 +11056,14 @@ record_dead_and_set_regs (rtx insn)
 
       last_call_cuid = mem_last_set = INSN_CUID (insn);
 
-      /* Don't bother recording what this insn does.  It might set the
-	 return value register, but we can't combine into a call
-	 pattern anyway, so there's no point trying (and it may cause
-	 a crash, if e.g. we wind up asking for last_set_value of a
-	 SUBREG of the return value register).  */
-      return;
+      /* We can't combine into a call pattern.  Remember, though, that
+	 the return value register is set at this CUID.  We could
+	 still replace a register with the return value from the
+	 wrong subroutine call!  */
+      note_stores (PATTERN (insn), record_dead_and_set_regs_1, NULL_RTX);
     }
-
-  note_stores (PATTERN (insn), record_dead_and_set_regs_1, insn);
+  else
+    note_stores (PATTERN (insn), record_dead_and_set_regs_1, insn);
 }
 
 /* If a SUBREG has the promoted bit set, it is in fact a property of the
