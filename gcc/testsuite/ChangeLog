@@ -1,3 +1,9 @@
+2006-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+        PR testsuite/25777
+        * ada/acats/run_acats (LD_LIBRARY_PATH): Add BASE
+        to LD_LIBRARY_PATH.
+
 2006-01-16  Steven Bosscher  <stevenb.gcc@gmail.com>
 	Richard Guenther  <rguenther@suse.de>
 
