@@ -1,3 +1,0 @@
-+++Struct longdouble-size_t:
-size=32,align=16,offset-longdouble=0,offset-size_t=16,
-align-longdouble=16,align-size_t=4

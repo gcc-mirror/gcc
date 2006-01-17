@@ -1,4 +1,0 @@
-++Class with char inhereting class with longdouble:
-size=36,align=12
-offset-longdouble=0,offset-char=24,
-align-longdouble=16,align-char=1
