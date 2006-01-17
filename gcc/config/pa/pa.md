@@ -2307,9 +2307,9 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "move_dest_operand"
-			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,r,f")
+			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,!r,!f")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,f,r"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,!f,!r"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && !TARGET_SOFT_FLOAT
@@ -3869,9 +3869,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
-			  "=f,*r,Q,?o,?Q,f,*r,*r,r,f")
+			  "=f,*r,Q,?o,?Q,f,*r,*r,!r,!f")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,*rG,f,*r,*r,RQ,o,RQ,f,r"))]
+			  "fG,*rG,f,*r,*r,RQ,o,RQ,!f,!r"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !(GET_CODE (operands[1]) == CONST_DOUBLE
@@ -4043,9 +4043,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
-			  "=r,?o,?Q,r,r,r,f")
+			  "=r,?o,?Q,r,r,!r,!f")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "rG,r,r,o,RQ,f,r"))]
+			  "rG,r,r,o,RQ,!f,!r"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !TARGET_64BIT
@@ -4185,9 +4185,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "move_dest_operand"
-			  "=r,o,Q,r,r,r,*f,*f,T,r,f")
+			  "=r,o,Q,r,r,r,*f,*f,T,!r,!f")
 	(match_operand:DI 1 "general_operand"
-			  "rM,r,r,o*R,Q,i,*fM,RT,*f,f,r"))]
+			  "rM,r,r,o*R,Q,i,*fM,RT,*f,!f,!r"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && !TARGET_64BIT
@@ -4414,9 +4414,9 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
-			  "=f,!*r,f,*r,Q,Q,r,f")
+			  "=f,!*r,f,*r,Q,Q,!r,!f")
 	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,!*rG,RQ,RQ,f,*rG,f,r"))]
+			  "fG,!*rG,RQ,RQ,f,*rG,!f,!r"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
    && !TARGET_SOFT_FLOAT
