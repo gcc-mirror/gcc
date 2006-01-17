@@ -807,6 +807,34 @@ verify_cgraph (void)
     verify_cgraph_node (node);
 }
 
+/* Output one variable, if necessary.  Return whether we output it.  */
+static bool
+cgraph_varpool_assemble_decl (struct cgraph_varpool_node *node)
+{
+  tree decl = node->decl;
+
+  if (!TREE_ASM_WRITTEN (decl)
+      && !node->alias
+      && !DECL_EXTERNAL (decl)
+      && (TREE_CODE (decl) != VAR_DECL || !DECL_HAS_VALUE_EXPR_P (decl)))
+    {
+      assemble_variable (decl, 0, 1, 0);
+      /* Local static variables are never seen by check_global_declarations
+	 so we need to output debug info by hand.  */
+      if (DECL_CONTEXT (decl) 
+	  && (TREE_CODE (DECL_CONTEXT (decl)) == BLOCK
+	      || TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
+	  && errorcount == 0 && sorrycount == 0)
+	{
+	  timevar_push (TV_SYMOUT);
+	  (*debug_hooks->global_decl) (decl);
+	  timevar_pop (TV_SYMOUT);
+	}
+      return true;
+    }
+
+  return false;
+}
 
 /* Output all variables enqueued to be assembled.  */
 bool
@@ -824,29 +852,29 @@ cgraph_varpool_assemble_pending_decls (void)
 
   while (cgraph_varpool_nodes_queue)
     {
-      tree decl = cgraph_varpool_nodes_queue->decl;
       struct cgraph_varpool_node *node = cgraph_varpool_nodes_queue;
 
       cgraph_varpool_nodes_queue = cgraph_varpool_nodes_queue->next_needed;
-      if (!TREE_ASM_WRITTEN (decl) && !node->alias && !DECL_EXTERNAL (decl))
-	{
-	  assemble_variable (decl, 0, 1, 0);
-	  /* Local static variables are never seen by check_global_declarations
-	     so we need to output debug info by hand.  */
-	  if (DECL_CONTEXT (decl) 
-	      && (TREE_CODE (DECL_CONTEXT (decl)) == BLOCK
-	          || TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
-	      && errorcount == 0 && sorrycount == 0)
-	    {
-	      timevar_push (TV_SYMOUT);
-	      (*debug_hooks->global_decl) (decl);
-	      timevar_pop (TV_SYMOUT);
-	    }
-	  changed = true;
-	}
+      if (cgraph_varpool_assemble_decl (node))
+	changed = true;
       node->next_needed = NULL;
     }
   return changed;
+}
+
+/* Output all asm statements we have stored up to be output.  */
+
+static void
+cgraph_output_pending_asms (void)
+{
+  struct cgraph_asm_node *can;
+
+  if (errorcount || sorrycount)
+    return;
+
+  for (can = cgraph_asm_nodes; can; can = can->next)
+    assemble_asm (can->asm_str);
+  cgraph_asm_nodes = NULL;
 }
 
 /* Analyze the function scheduled to be output.  */
@@ -892,6 +920,7 @@ cgraph_finalize_compilation_unit (void)
 
   if (!flag_unit_at_a_time)
     {
+      cgraph_output_pending_asms ();
       cgraph_assemble_pending_functions ();
       return;
     }
@@ -1125,6 +1154,97 @@ cgraph_expand_all_functions (void)
   free (order);
 }
 
+/* This is used to sort the node types by the cgraph order number.  */
+
+struct cgraph_order_sort
+{
+  enum { ORDER_UNDEFINED = 0, ORDER_FUNCTION, ORDER_VAR, ORDER_ASM } kind;
+  union
+  {
+    struct cgraph_node *f;
+    struct cgraph_varpool_node *v;
+    struct cgraph_asm_node *a;
+  } u;
+};
+
+/* Output all functions, variables, and asm statements in the order
+   according to their order fields, which is the order in which they
+   appeared in the file.  This implements -fno-toplevel-reorder.  In
+   this mode we may output functions and variables which don't really
+   need to be output.  */
+
+static void
+cgraph_output_in_order (void)
+{
+  int max;
+  size_t size;
+  struct cgraph_order_sort *nodes;
+  int i;
+  struct cgraph_node *pf;
+  struct cgraph_varpool_node *pv;
+  struct cgraph_asm_node *pa;
+
+  max = cgraph_order;
+  size = max * sizeof (struct cgraph_order_sort);
+  nodes = (struct cgraph_order_sort *) alloca (size);
+  memset (nodes, 0, size);
+
+  cgraph_varpool_analyze_pending_decls ();
+
+  for (pf = cgraph_nodes; pf; pf = pf->next)
+    {
+      if (pf->output)
+	{
+	  i = pf->order;
+	  gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
+	  nodes[i].kind = ORDER_FUNCTION;
+	  nodes[i].u.f = pf;
+	}
+    }
+
+  for (pv = cgraph_varpool_nodes_queue; pv; pv = pv->next_needed)
+    {
+      i = pv->order;
+      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
+      nodes[i].kind = ORDER_VAR;
+      nodes[i].u.v = pv;
+    }
+
+  for (pa = cgraph_asm_nodes; pa; pa = pa->next)
+    {
+      i = pa->order;
+      gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
+      nodes[i].kind = ORDER_ASM;
+      nodes[i].u.a = pa;
+    }
+  cgraph_asm_nodes = NULL;
+
+  for (i = 0; i < max; ++i)
+    {
+      switch (nodes[i].kind)
+	{
+	case ORDER_FUNCTION:
+	  nodes[i].u.f->output = 0;
+	  cgraph_expand_function (nodes[i].u.f);
+	  break;
+
+	case ORDER_VAR:
+	  cgraph_varpool_assemble_decl (nodes[i].u.v);
+	  break;
+
+	case ORDER_ASM:
+	  assemble_asm (nodes[i].u.a->asm_str);
+	  break;
+
+	case ORDER_UNDEFINED:
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+}
+
 /* Mark visibility of all functions.
    
    A local function is one whose calls can occur only in the current
@@ -1232,6 +1352,7 @@ cgraph_optimize (void)
 #endif
   if (!flag_unit_at_a_time)
     {
+      cgraph_output_pending_asms ();
       cgraph_varpool_assemble_pending_decls ();
       return;
     }
@@ -1271,12 +1392,20 @@ cgraph_optimize (void)
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif
-  
-  cgraph_mark_functions_to_output ();
-  cgraph_expand_all_functions ();
-  cgraph_varpool_remove_unreferenced_decls ();
 
-  cgraph_varpool_assemble_pending_decls ();
+  cgraph_mark_functions_to_output ();
+
+  if (!flag_toplevel_reorder)
+    cgraph_output_in_order ();
+  else
+    {
+      cgraph_output_pending_asms ();
+
+      cgraph_expand_all_functions ();
+      cgraph_varpool_remove_unreferenced_decls ();
+
+      cgraph_varpool_assemble_pending_decls ();
+    }
 
   if (cgraph_dump_file)
     {

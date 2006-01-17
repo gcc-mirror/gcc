@@ -36,6 +36,7 @@
 #include "toplev.h"
 #include "output.h"
 #include "target.h"
+#include "cgraph.h"
 #include "c-common.h"
 
 
@@ -10741,7 +10742,7 @@ cp_parser_asm_definition (cp_parser* parser)
 	}
     }
   else
-    assemble_asm (string);
+    cgraph_add_asm_node (string);
 }
 
 /* Declarators [gram.dcl.decl] */

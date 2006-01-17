@@ -319,7 +319,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations  -funsafe-loop-optimizations  -ffinite-math-only @gol
--fno-trapping-math  -fno-zero-initialized-in-bss @gol
+-fno-toplevel-reorder -fno-trapping-math  -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
 -fprofile-generate -fprofile-use @gol
@@ -5336,14 +5336,16 @@ Enabled at levels @option{-O2}, @option{-O3}.
 Parse the whole compilation unit before starting to produce code.
 This allows some extra optimizations to take place but consumes
 more memory (in general).  There are some compatibility issues
-with @emph{unit-at-at-time} mode:
+with @emph{unit-at-a-time} mode:
 @itemize @bullet
 @item
 enabling @emph{unit-at-a-time} mode may change the order
 in which functions, variables, and top-level @code{asm} statements
 are emitted, and will likely break code relying on some particular
 ordering.  The majority of such top-level @code{asm} statements,
-though, can be replaced by @code{section} attributes.
+though, can be replaced by @code{section} attributes.  The
+@option{fno-toplevel-reorder} option may be used to keep the ordering
+used in the input file, at the cost of some optimizations.
 
 @item
 @emph{unit-at-a-time} mode removes unreferenced static variables
@@ -5364,6 +5366,14 @@ As a temporary workaround, @option{-fno-unit-at-a-time} can be used,
 but this scheme may not be supported by future releases of GCC@.
 
 Enabled at levels @option{-O2}, @option{-O3}.
+
+@item -fno-toplevel-reorder
+Do not reorder top-level functions, variables, and @code{asm}
+statements.  Output them in the same order that they appear in the
+input file.  When this option is used, unreferenced static variables
+will not be removed.  This option is intended to support existing code
+which relies on a particular ordering.  For new code, it is better to
+use attributes.
 
 @item -fweb
 @opindex fweb

@@ -868,6 +868,10 @@ ftls-model=
 Common Joined RejectNegative
 -ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]	Set the default thread-local storage code generation model
 
+ftoplevel-reorder
+Common Report Var(flag_toplevel_reorder) Init(1)
+Reorder top level functions, variables, and asms
+
 ftracer
 Common Report Var(flag_tracer)
 Perform superblock formation via tail duplication
