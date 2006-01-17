@@ -1,4 +1,0 @@
-+++Struct longlong inside struct starting with short:
-size=16,align=8
-offset-short=0,offset-sss-longlong=8,
-align-short=2,align-sss-longlong=8
