@@ -1,3 +1,33 @@
+2006-01-16  Richard Henderson  <rth@redhat.com>
+
+	Merge from gomp branch:
+	* Makefile.in (TREE_INLINE_H): New.  Use it as needed.
+	* tree-inline.h (struct copy_body_data): Move from tree-inline.c
+	and rename from struct inline_data.  Rename callee* to dst*; 
+	caller* to src*; add copy_decl hook, transform_call_graph_edges,
+	transform_new_cfg, transform_return_to_modify, and
+	transform_lang_insert_block flags; remove cloning_p, versioning_p,
+	update_clones_p.
+	(copy_body_r, insert_decl_map, remap_decl, remap_type): Declare.
+	(copy_decl_for_dup): Remove.
+	* tree-inline.c (struct inline_data): Move to header.
+	(insert_decl_map): Export.
+	(remap_decl): Update for member name changes.  Use copy_decl hook.
+	Allow for replacement to be a non-decl.  Remove dead code.
+	(remap_type_1): Check for existing mapping.
+	(remap_type): Export.
+	(remap_decls): Update for member name changes.
+	(remap_block, copy_bb, copy_cfg_body, copy_generic_body): Likewise.
+	(copy_body, setup_one_parameter, declare_return_variable): Likewise.
+	(expand_call_inline, optimize_inline_calls, clone_body): Likewise.
+	(copy_tree_r, mark_local_for_remap_r, unsave_expr_now): Likewise.
+	(tree_function_versioning, build_duplicate_type): Likewise.
+	(copy_body_r): Likewise.  Export.
+	(copy_decl_for_dup): Split into ...
+	(copy_decl_for_dup_finish, copy_decl_to_var,
+	copy_decl_no_change, copy_decl_maybe_to_var): ... these.
+	(replace_ref_tree, inlining_p): Remove.
+
 2006-01-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* ifcvt.c (if_convert): Make it static.
