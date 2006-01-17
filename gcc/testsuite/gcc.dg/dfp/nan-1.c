@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-std=gnu99" } */
 
 /* N1150 4: Characteristics of decimal floating types (not explicit)

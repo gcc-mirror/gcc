@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "" } */
 
 /* FIXME: this test needs to be conditional to systems with POSIX signals.  */

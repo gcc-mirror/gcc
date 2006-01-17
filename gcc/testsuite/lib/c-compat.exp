@@ -1,4 +1,4 @@
-#   Copyright (C) 2002, 2003, 2005, 02005 Free Software Foundation, Inc.
+#   Copyright (C) 2002, 2003, 2005, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,13 +69,13 @@ proc compat_setup_dfp { } {
     # If there is an alternate compiler, does it support decimal float types?
     if { $compat_use_alt == 1 && $compat_same_alt == 0 } {
 	compat-use-alt-compiler
-	set compat_have_dfp [check_dfp]
+	set compat_have_dfp [check_effective_target_dfprt_nocache]
 	compat-use-tst-compiler
 	verbose "compat_have_dfp for alt compiler: $compat_have_dfp" 2
     }
     # Does the compiler under test support it?
     if { $compat_have_dfp == 1 } {
-	set compat_have_dfp [check_dfp]
+	set compat_have_dfp [check_effective_target_dfprt_nocache]
 	verbose "compat_have_dfp for tst compiler: $compat_have_dfp" 2
     }
 
@@ -85,18 +85,6 @@ proc compat_setup_dfp { } {
 	global compat_skip_list
 	lappend compat_skip_list "DECIMAL_FLOAT"
     }
-}
-
-# Return 1 if the compiler supports decimal float types, 0 otherwise.
-#
-# Don't use check_effective_target since this will differ depending
-# on the compiler, not the target.
-#
-proc check_dfp { } {
-    set result [string match "" [get_compiler_messages dfp2 object {
-	_Decimal32 x; _Decimal64 y; _Decimal128 z;
-    }]]
-    return $result
 }
 
 # If either compiler does not support decimal float types, skip this test.

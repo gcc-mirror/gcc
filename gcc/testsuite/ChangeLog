@@ -1,3 +1,27 @@
+2006-01-16  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_dfp_nocache,
+	check_effective_target_dfprt_nocache): New.
+	(check_effective_target_dfp): Use check_effective_target_dfp_nocache.
+	(check_effective_target_dfprt): New.
+	* lib/c-compat.exp (check_dfp): Remove.
+	(compat_dfp_setup): Use check_effective_target_dfprt_nocache.
+	* gcc.dg/dfp/dfp.exp: Compile, execute, or skip tests based on
+	level of support for decimal float.
+	* gcc.dg/dfp/call-by-value.c, cast.c, compare-eq-const.c,
+	compare-eq-d128.c, compare-eq-d32.c, compare-eq-d64.c,
+	compare-eq-dfp.c, compare-rel-const.c, compare-rel-d128.c,
+	compare-rel-d32.c, compare-rel-d64.c, compare-rel-dfp.c,
+	convert-bfp.c, convert-bfp-fold.c, convert-complex.c, convert-dfp.c,
+	convert-dfp-fold.c, convert-dfp-round.c, convert-int-fold.c,
+	convert-int-saturate.c, func-array.c, func-mixed.c, func-scalar.c,
+	func-struct.c, func-vararg-dfp.c, func-vararg-mixed.c,
+	func-vararg-size0.c, inf-1.c, loop-index.c, nan-1.c, nan-2.c,
+	operator-arith-fold.c, operator-assignment.c, operator-comma.c,
+	operator-cond.c, operator-logical.c, operator-unary.c, snan.c,
+	struct-layout-1.c, union-init.c, usual-arith-conv.c: Remove dg-do
+	directives.
+
 2006-01-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/25741

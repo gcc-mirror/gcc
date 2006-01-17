@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-std=gnu99" } */
 
 /* C99 6.5.9 Equality operators.

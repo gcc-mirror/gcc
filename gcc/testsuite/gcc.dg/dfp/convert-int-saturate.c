@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-std=gnu99" } */
 
 /* N1150 5.1 Conversion between decimal floating integer.

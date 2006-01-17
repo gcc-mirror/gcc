@@ -1,4 +1,5 @@
-#   Copyright (C) 1999, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006
+#   Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -1055,7 +1056,54 @@ proc check_effective_target_lp64 { } {
     return $et_lp64_saved
 }
 
-# Return 1 if the target supports Decimal Floating Point, 0 otherwise.
+# Return 1 if the target supports compiling decimal floating point,
+# 0 otherwise.
+
+proc check_effective_target_dfp_nocache { } {
+    verbose "check_effective_target_dfp_nocache: compiling source" 2
+    set ret [string match "" [get_compiler_messages dfp object {
+        _Decimal32 x; _Decimal64 y; _Decimal128 z;
+    }]]
+    verbose "check_effective_target_dfp_nocache: returning $ret" 2
+    return $ret
+}
+
+proc check_effective_target_dfprt_nocache { } {
+    global tool
+
+    set ret 0
+
+    verbose "check_effective_target_dfprt_nocache: compiling source" 2
+    # Set up, compile, and execute a test program containing decimal
+    # float operations.
+    set src dfprt[pid].c
+    set exe dfprt[pid].x
+
+    set f [open $src "w"]
+    puts $f "_Decimal32 x = 1.2df; _Decimal64 y = 2.3dd; _Decimal128 z;"
+    puts $f "int main () { z = x + y; return 0; }"
+    close $f
+
+    verbose "check_effective_target_dfprt_nocache: compiling testfile $src" 2
+    set lines [${tool}_target_compile $src $exe executable ""]
+    file delete $src
+
+    if [string match "" $lines] then {
+	# No error message, compilation succeeded.
+	set result [${tool}_load "./$exe" "" ""]
+	set status [lindex $result 0]
+	remote_file build delete $exe
+	verbose "check_effective_target_dfprt_nocache: testfile status is <$status>" 2
+	if { $status == "pass" } then {
+	    set ret 1
+	}
+    }
+    return $ret
+    verbose "check_effective_target_dfprt_nocache: returning $ret" 2
+}
+
+# Return 1 if the target supports compiling Decimal Floating Point,
+# 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
 
@@ -1065,13 +1113,28 @@ proc check_effective_target_dfp { } {
     if [info exists et_dfp_saved] {
 	verbose "check_effective_target_dfp: using cached result" 2
     } else {
-	verbose "check_effective_target_dfp: compiling source" 2
-	set et_dfp_saved [string match "" [get_compiler_messages dfp object {
-	    _Decimal32 x; _Decimal64 y; _Decimal128 z;
-	}]]
+	set et_dfp_saved [check_effective_target_dfp_nocache]
     }
     verbose "check_effective_target_dfp: returning $et_dfp_saved" 2
     return $et_dfp_saved
+}
+
+# Return 1 if the target supports linking and executing Decimal Floating
+# Point, # 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_dfprt { } {
+    global et_dfprt_saved
+    global tool
+
+    if [info exists et_dfprt_saved] {
+	verbose "check_effective_target_dfprt: using cached result" 2
+    } else {
+	set et_dfprt_saved [check_effective_target_dfprt_nocache]
+    }
+    verbose "check_effective_target_dfprt: returning $et_dfprt_saved" 2
+    return $et_dfprt_saved
 }
 
 # Return 1 if the target needs a command line argument to enable a SIMD

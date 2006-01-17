@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-std=gnu99 -O0" } */
 
 /* N1150 5.2 Conversions among decimal floating types and between
