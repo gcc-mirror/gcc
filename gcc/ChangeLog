@@ -1,3 +1,10 @@
+2006-01-18  Ben Elliston  <bje@au.ibm.com>	
+
+	* expr.c (emit_move_change_mode): Always adjust addresses, not
+	just during reload.  Copy replacements only during reload.
+	(emit_move_insn_1): Move MODE_DECIMAL_FLOAT modes by invoking
+	emit_move_via_integer.
+
 2006-01-17  Shantonu Sen  <ssen@opendarwin.org>
 
 	* Makefile.in (check-%, check-consistency): Use $${srcdir}
