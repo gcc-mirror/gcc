@@ -1,3 +1,7 @@
+2006-01-16  Ian Lance Taylor  <ian@airs.com>
+
+	* consistency.vlad: Remove entire directory, 1652 files.
+
 2006-01-16  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_dfp_nocache,

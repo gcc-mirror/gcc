@@ -1,5 +1,0 @@
-++++Array of char in struct starting with longdouble:
-size=32,align=16
-offset-longdouble=0,offset-arrayof-char=16,
-align-longdouble=16,align-arrayof-char=1
-offset-char-a[5]=21,align-char-a[5]=1

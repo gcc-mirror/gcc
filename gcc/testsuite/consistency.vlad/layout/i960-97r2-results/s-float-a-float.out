@@ -1,5 +1,0 @@
-++++Array of float in struct starting with float:
-size=44,align=4
-offset-float=0,offset-arrayof-float=4,
-align-float=4,align-arrayof-float=4
-offset-float-a[5]=24,align-float-a[5]=4
