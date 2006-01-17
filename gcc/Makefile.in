@@ -4008,10 +4008,10 @@ $(lang_checks): check-% : site.exp
 	rm -f tmp-site.exp; \
 	sed '/set tmpdir/ s|testsuite|$(TESTSUITEDIR)/$*|' \
 		< ../../site.exp > tmp-site.exp; \
-	$(SHELL) $(srcdir)/../move-if-change tmp-site.exp site.exp; \
+	$(SHELL) $${srcdir}/../move-if-change tmp-site.exp site.exp; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
-	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
+	   TCL_LIBRARY=`cd .. ; cd $${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
 	    export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool $* $(RUNTESTFLAGS))
 
@@ -4021,7 +4021,7 @@ check-consistency: testsuite/site.exp
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
-	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
+	   TCL_LIBRARY=`cd .. ; cd $${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
 	   export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool consistency $(RUNTESTFLAGS)
 
