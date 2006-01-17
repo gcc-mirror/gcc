@@ -319,7 +319,6 @@ extern tree namespace_binding (tree, tree);
 extern void set_namespace_binding (tree, tree, tree);
 extern bool hidden_name_p (tree);
 extern tree remove_hidden_names (tree);
-extern tree lookup_namespace_name (tree, tree);
 extern tree lookup_qualified_name (tree, tree, bool, bool);
 extern tree lookup_name_nonclass (tree);
 extern tree lookup_function_nonclass (tree, tree, bool);
