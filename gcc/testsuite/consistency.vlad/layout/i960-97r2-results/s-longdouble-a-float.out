@@ -1,5 +1,0 @@
-++++Array of float in struct starting with longdouble:
-size=64,align=16
-offset-longdouble=0,offset-arrayof-float=16,
-align-longdouble=16,align-arrayof-float=4
-offset-float-a[5]=36,align-float-a[5]=4

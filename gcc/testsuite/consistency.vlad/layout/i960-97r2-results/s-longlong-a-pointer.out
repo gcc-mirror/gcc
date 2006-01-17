@@ -1,5 +1,0 @@
-++++Array of pointer in struct starting with longlong:
-size=48,align=8
-offset-longlong=0,offset-arrayof-pointer=8,
-align-longlong=8,align-arrayof-pointer=4
-offset-pointer-a[5]=28,align-pointer-a[5]=4

@@ -1,4 +1,0 @@
-+++Struct pointer inside struct starting with float:
-size=8,align=4
-offset-float=0,offset-sss-pointer=4,
-align-float=4,align-sss-pointer=4

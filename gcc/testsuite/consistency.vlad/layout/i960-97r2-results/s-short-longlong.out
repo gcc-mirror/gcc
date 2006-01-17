@@ -1,3 +1,0 @@
-+++Struct short-longlong:
-size=16,align=8,offset-short=0,offset-longlong=8,
-align-short=2,align-longlong=8

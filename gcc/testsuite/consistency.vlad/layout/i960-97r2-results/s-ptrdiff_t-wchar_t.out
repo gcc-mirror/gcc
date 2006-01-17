@@ -1,3 +1,0 @@
-+++Struct ptrdiff_t-wchar_t:
-size=8,align=4,offset-ptrdiff_t=0,offset-wchar_t=4,
-align-ptrdiff_t=4,align-wchar_t=4
