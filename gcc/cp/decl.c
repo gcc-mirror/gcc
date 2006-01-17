@@ -6344,6 +6344,7 @@ compute_array_index_type (tree name, tree size)
 	       name);
       else
 	error ("size of array is not an integral constant-expression");
+      size = integer_one_node;
     }
   else if (pedantic)
     {

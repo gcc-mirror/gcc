@@ -1,3 +1,9 @@
+2006-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/25682
+	* c-typeck.c (build_unary_op): Fold offsetof-like expressions
+	even when the pointer is not NULL.
+
 2006-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: Disparage copies between general and floating-point registers
