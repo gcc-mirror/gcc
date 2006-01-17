@@ -3,6 +3,9 @@
 	* ifcvt.c (if_convert): Make it static.
 	* rtl.h: Remove the prototype for if_convert.
 
+	* local-alloc.c (local_alloc): Make it static.
+	* rtl.h: Remove the prototype for local_alloc.
+
 2006-01-16  DJ Delorie  <dj@redhat.com>
 
 	* reload.c (reg_overlap_mentioned_for_reload_p): Handle subregs of
