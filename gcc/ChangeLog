@@ -1,3 +1,26 @@
+2006-01-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/592
+	PR middle-end/11135
+	* arm.h (struct machine_function): Add pic_reg.
+	* arm.c (arm_pic_register): Make unsigned.
+	(arm_override_options): Only set arm_pic_register if
+	TARGET_SINGLE_PIC_BASE.
+	(use_return_insn): Only test for a pic register if it is fixed.
+	(arm_compute_save_reg0_reg12_mask): Likewise.
+	(thumb_compute_save_reg_mask): Likewise.
+	(legitimate_pic_operand): Factor out some known invariants.
+	(legitimize_pic_address): If we don't have a fixed pic register,
+	then set up a pseudo in the function entry sequence.  Handle the
+	pic base being in a pseudo.
+	(arm_load_pic_register): Handle the pic register being in a pseudo.
+	(arm_expand_prologue): Only set up the pic register if it is fixed.
+	(thumb_expand_prologue): Likewise.
+	* arm.md (pic_load_addr_based): Handle the pic base being a pseudo.
+	(pic_load_addr_based_insn): Likewise.
+	(builtin_setjmp_receiver): Don't restore the pic base if it isn't
+	fixed.
+
 2006-01-18  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Reject
