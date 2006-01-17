@@ -1,6 +1,6 @@
 ;;- Machine description for ARM for GNU compiler
 ;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000,
-;;  2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+;;  2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -4448,7 +4448,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(unspec:SI [(match_operand 1 "" "") (match_dup 2)] UNSPEC_PIC_SYM))]
   "TARGET_ARM && flag_pic"
-  "operands[2] = pic_offset_table_rtx;"
+  "operands[2] = cfun->machine->pic_reg;"
 )
 
 (define_insn "*pic_load_addr_based_insn"
@@ -4456,7 +4456,7 @@
 	(unspec:SI [(match_operand 1 "" "")
 		    (match_operand 2 "s_register_operand" "r")]
 		   UNSPEC_PIC_SYM))]
-  "TARGET_EITHER && flag_pic && operands[2] == pic_offset_table_rtx"
+  "TARGET_EITHER && flag_pic && operands[2] == cfun->machine->pic_reg"
   "*
 #ifdef AOF_ASSEMBLER
   operands[1] = aof_pic_entry (operands[1]);
@@ -4547,7 +4547,8 @@
 {
   /* r3 is clobbered by set/longjmp, so we can use it as a scratch
      register.  */
-  arm_load_pic_register (3);
+  if (arm_pic_register != INVALID_REGNUM)
+    arm_load_pic_register (1UL << 3);
   DONE;
 }")
 
