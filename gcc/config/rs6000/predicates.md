@@ -620,11 +620,11 @@
 
 ;; Return 1 if the operand is a general non-special register or memory operand.
 (define_predicate "reg_or_mem_operand"
-  (if_then_else (match_code "mem")
      (ior (match_operand 0 "memory_operand")
-	  (ior (match_test "macho_lo_sum_memory_operand (op, mode)")
-	       (match_operand 0 "volatile_mem_operand")))
-     (match_operand 0 "gpc_reg_operand")))
+	  (ior (and (match_code "mem")
+		    (match_test "macho_lo_sum_memory_operand (op, mode)"))
+	       (ior (match_operand 0 "volatile_mem_operand")
+		    (match_operand 0 "gpc_reg_operand")))))
 
 ;; Return 1 if the operand is either an easy FP constant or memory or reg.
 (define_predicate "reg_or_none500mem_operand"

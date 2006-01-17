@@ -1,3 +1,8 @@
+2006-01-18  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/predicates.md (reg_or_mem_operand): Pair up
+	match_code "mem" with match_test "macho_lo_sum_memory_operand".
+
 2006-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/25682
@@ -161,9 +166,9 @@
 	* config/m68k/m68k.c (output_move_const_into_data_reg):
 	Output correct mnemonic for mvz and mvs.
 
-2006-01-16  Gabor Loki <loki@gcc.gnu.org>
+2006-01-16  Gabor Loki  <loki@gcc.gnu.org>
 
-	* rtl-factoring.c : Add sequence abstraction algorithm.
+	* rtl-factoring.c: Add sequence abstraction algorithm.
 	* cfgcleanup.c (outgoing_edges_match): Extra checks.
 	(try_crossjump_to_edge): Avoid deleting preserve label when redirecting
 	ABNORMAL edges.
