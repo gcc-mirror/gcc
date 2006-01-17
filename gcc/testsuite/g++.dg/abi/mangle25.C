@@ -4,7 +4,7 @@
 // ia64-hpux where "long double" is "e" and __float128 is synonymous with
 // "long double".
 // Origin: Joseph Myers <joseph@codesourcery.com>
-// { dg-do compile { target { ia64-*-* || { { i?86-*-* x86_64-*-*} && lp64 } } }
+// { dg-do compile { target { ia64-*-* || { { i?86-*-* x86_64-*-*} && lp64 } } } }
 // { dg-options "" } */
 // { dg-final { scan-assembler "_Z1fg" { target i?86-*-* x86_64-*-* } } } */
 // { dg-final { scan-assembler "_Z1fg" { target { ia64-*-* && { ! "ia64-*-hpux*" } } } } } */
