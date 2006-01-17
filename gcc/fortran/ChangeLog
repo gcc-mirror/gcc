@@ -1,6 +1,6 @@
-2006-01-16  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2006-01-16  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
-	* gfortranspec.c (lang_specific_spec_functions): remove
+	* gfortranspec.c (lang_specific_spec_functions): Remove.
 
 2006-01-16  Richard Guenther  <rguenther@suse.de>
 
