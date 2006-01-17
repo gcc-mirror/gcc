@@ -64,8 +64,6 @@ secdir = $(libdir)/security
 ## Where to install default logging property file.
 propdir = $(libdir)
 
-## Where the standard .db file is found.
-dbexecdir = $(libdir)/gcj-$(gcc_version)
 ## Name of the default .db.
 db_name = classmap.db
 ## Compiler specific component of the .db file

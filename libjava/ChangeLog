@@ -1,3 +1,10 @@
+2006-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (dbexecdir): New substituted var.
+	* configure: Rebuilt.
+	* Makefile.am (dbexecdir): Remove.
+	* Makefile.in: Rebuilt.
+
 2006-01-13  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/regexp/MessagesBundle_fr.properties: Removed.
