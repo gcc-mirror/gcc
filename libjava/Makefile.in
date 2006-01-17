@@ -626,6 +626,7 @@ target_vendor = @target_vendor@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
+dbexecdir = @dbexecdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
@@ -654,7 +655,6 @@ jar_DATA = libgcj-$(gcc_version).jar
 @JAVA_HOME_SET_TRUE@BOOT_CLASS_PATH_DIR = $(JAVA_HOME)/lib/rt.jar
 secdir = $(libdir)/security
 propdir = $(libdir)
-dbexecdir = $(libdir)/gcj-$(gcc_version)
 db_name = classmap.db
 db_pathtail = gcj-$(gcc_version)/$(db_name)
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
