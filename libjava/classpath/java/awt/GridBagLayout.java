@@ -341,11 +341,14 @@ public class GridBagLayout
       GridBagLayoutInfo info = getLayoutInfo (parent, PREFERREDSIZE);
       if (info.cols == 0 && info.rows == 0)
         return;
-      layoutInfo = info;
 
       // DEBUG
-      //dumpLayoutInfo (layoutInfo);
-    
+      //dumpLayoutInfo (info);
+
+      // Calling setBounds on these components causes this layout to
+      // be invalidated, clearing the layout information cache,
+      // layoutInfo.  So we wait until after this for loop to set
+      // layoutInfo.
       for(int i = 0; i < components.length; i++)
 	{
           Component component = components [i];
@@ -357,11 +360,11 @@ public class GridBagLayout
           GridBagConstraints constraints =
               lookupInternalConstraints(component);
 
-          int cellx = sumIntArray(layoutInfo.colWidths, constraints.gridx);
-          int celly = sumIntArray(layoutInfo.rowHeights, constraints.gridy);
-          int cellw = sumIntArray(layoutInfo.colWidths,
+          int cellx = sumIntArray(info.colWidths, constraints.gridx);
+          int celly = sumIntArray(info.rowHeights, constraints.gridy);
+          int cellw = sumIntArray(info.colWidths,
                                   constraints.gridx + constraints.gridwidth) - cellx;
-          int cellh = sumIntArray(layoutInfo.rowHeights,
+          int cellh = sumIntArray(info.rowHeights,
                                   constraints.gridy + constraints.gridheight) - celly;
 
           Insets insets = constraints.insets;
@@ -438,11 +441,14 @@ public class GridBagLayout
               break;
 	    }
 
-          component.setBounds(layoutInfo.pos_x + x, layoutInfo.pos_y + y, dim.width, dim.height);
+          component.setBounds(info.pos_x + x, info.pos_y + y, dim.width, dim.height);
 	}
 
       // DEBUG
-      //dumpLayoutInfo (layoutInfo);
+      //dumpLayoutInfo (info);
+
+      // Cache layout information.
+      layoutInfo = getLayoutInfo (parent, PREFERREDSIZE);
     }
 
     /**

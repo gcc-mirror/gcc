@@ -40,6 +40,8 @@ package gnu.CORBA.Poa;
 
 import gnu.CORBA.ByteArrayComparator;
 
+import org.omg.CORBA.portable.Delegate;
+import org.omg.CORBA.portable.ObjectImpl;
 import org.omg.PortableServer.Servant;
 
 import java.util.Iterator;
@@ -66,7 +68,7 @@ public class AOM
     /**
      * Create an initialised instance.
      */
-    Obj(org.omg.CORBA.Object _object, byte[] _key, Servant _servant, gnuPOA _poa)
+    Obj(gnuServantObject _object, byte[] _key, Servant _servant, gnuPOA _poa)
     {
       object = _object;
       key = _key;
@@ -77,7 +79,7 @@ public class AOM
     /**
      * The object.
      */
-    public final org.omg.CORBA.Object object;
+    public final gnuServantObject object;
 
     /**
      * The servant, serving the given object.
@@ -158,14 +160,13 @@ public class AOM
   Map objects = new TreeMap(new ByteArrayComparator());
 
   /**
-   * Get the record of the stored object. If the object is mapped
-   * several times under the different keys, one of the mappings
-   * is used.
-   *
+   * Get the record of the stored object. If the object is mapped several times
+   * under the different keys, one of the mappings is used.
+   * 
    * @param object the stored object
-   *
-   * @return the record about the stored object, null if
-   * this object is not stored here.
+   * 
+   * @return the record about the stored object, null if this object is not
+   * stored here.
    */
   public Obj findObject(org.omg.CORBA.Object stored_object)
   {
@@ -173,9 +174,33 @@ public class AOM
       return null;
 
     Map.Entry item;
-    Iterator iter = objects.entrySet().iterator();
+    Iterator iter;
     Obj ref;
 
+    if (stored_object instanceof ObjectImpl)
+      {
+        // If the delegate is available, search by delegate.
+        Delegate d = ((ObjectImpl) stored_object)._get_delegate();
+        Delegate d2;
+
+        if (d != null)
+          {
+            iter = objects.entrySet().iterator();
+            while (iter.hasNext())
+              {
+                item = (Map.Entry) iter.next();
+                ref = (Obj) item.getValue();
+                d2 = ref.object._get_delegate();
+
+                if (d == d2 || (d2 != null && d2.equals(d)))
+                  return ref;
+              }
+          }
+      }
+
+    // For other objects (or if not possible to get the delegate),
+    // search by .equals
+    iter = objects.entrySet().iterator();
     while (iter.hasNext())
       {
         item = (Map.Entry) iter.next();
@@ -187,12 +212,11 @@ public class AOM
   }
 
   /**
-   * Find the reference info for the given servant.
-   * If the servant is mapped to several objects, this
-   * returns the first found occurence.
-   *
+   * Find the reference info for the given servant. If the servant is mapped to
+   * several objects, this returns the first found occurence.
+   * 
    * @param servant a servant to find.
-   *
+   * 
    * @return the servant/object/POA binding or null if no such found.
    */
   public Obj findServant(Servant servant)
@@ -257,7 +281,7 @@ public class AOM
    *
    * @return the newly created object record.
    */
-  public Obj add(org.omg.CORBA.Object object, Servant servant, gnuPOA poa)
+  public Obj add(gnuServantObject object, Servant servant, gnuPOA poa)
   {
     return add(generateObjectKey(object), object, servant, poa);
   }
@@ -270,7 +294,7 @@ public class AOM
    * @param servant a servant, serving the given object.
    * @param poa the POA, where the object is connected.
    */
-  public Obj add(byte[] key, org.omg.CORBA.Object object, Servant servant,
+  public Obj add(byte[] key, gnuServantObject object, Servant servant,
                  gnuPOA poa
                 )
   {

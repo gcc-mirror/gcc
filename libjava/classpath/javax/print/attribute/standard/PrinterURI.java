@@ -1,5 +1,5 @@
 /* PrinterURI.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,18 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.URISyntax;
 
 /**
+ * The <code>PrinterURI</code> attribute provides the URI of a printer. 
+ * <p>
+ * The URI identifies the printer against all the other print services 
+ * available. This attribute is used to direct a print service request 
+ * to this specific printer.
+ * </p> 
+ * <p>
+ * <b>IPP Compatibility:</b> PrinterURI is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PrinterURI extends URISyntax
   implements PrintServiceAttribute
@@ -53,16 +64,35 @@ public final class PrinterURI extends URISyntax
 
   /**
    * Constructs a <code>PrinterURI</code> object.
+   * 
+   * @param uri the URI of the print service.
+   * @throws NullPointerException if the given uri is null.
    */
   public PrinterURI(URI uri)
   {
     super(uri);
   }
+  
+  /**
+   * Tests if the given object is equal to this object.
+   *
+   * @param obj the object to test
+   *
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
+   */
+  public boolean equals(Object obj)
+  {
+    if(! (obj instanceof PrinterURI))
+      return false;
+
+    return super.equals(obj);
+  }
 
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrinterURI</code> itself
+   * @return The class <code>PrinterURI</code> itself.
    */
   public Class getCategory()
   {
@@ -70,9 +100,9 @@ public final class PrinterURI extends URISyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "printer-uri"
+   * @return The name "printer-uri".
    */
   public String getName()
   {

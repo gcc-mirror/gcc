@@ -300,11 +300,11 @@ public abstract class LookAndFeel
   /**
    * Returns a string that displays and identifies this object's properties.
    *
-   * @return the string "LookAndFeel"
+   * @return string containing the description and class name.
    */
   public String toString()
   {
-    return "LookAndFeel";
+    return getDescription() + " " + getClass().getName();
   }
 
   /**

@@ -38,9 +38,15 @@ exception statement from your version. */
 
 package javax.crypto;
 
+import gnu.classpath.Configuration;
+import gnu.classpath.debug.Component;
+import gnu.classpath.debug.SystemLogger;
+
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import java.util.logging.Logger;
 
 /**
  * This is an {@link java.io.InputStream} that filters its data
@@ -56,10 +62,12 @@ public class CipherInputStream extends FilterInputStream
   // Constants and variables.
   // ------------------------------------------------------------------------
 
+  private static final Logger logger = SystemLogger.SYSTEM;
+
   /**
    * The underlying {@link Cipher} instance.
    */
-  private Cipher cipher;
+  private final Cipher cipher;
 
   /**
    * Data that has been transformed but not read.
@@ -72,32 +80,15 @@ public class CipherInputStream extends FilterInputStream
   private int outOffset;
 
   /**
-   * The number of valid bytes in the {@link #outBuffer}.
-   */
-  private int outLength;
-
-  /**
-   * Byte buffer that is filled with raw data from the underlying input
-   * stream.
-   */
-  private byte[][] inBuffer;
-
-  /**
-   * The amount of bytes in inBuffer[0] that may be input to the cipher.
-   */
-  private int inLength;
-
-  /**
    * We set this when the cipher block size is 1, meaning that we can
    * transform any amount of data.
    */
-  private boolean isStream;
+  private final boolean isStream;
 
-  private static final int VIRGIN = 0;  // I am born.
-  private static final int LIVING = 1;  // I am nailed to the hull.
-  private static final int DYING  = 2;  // I am eaten by sharks.
-  private static final int DEAD   = 3;
-  private int state;
+  /**
+   * Whether or not we've reached the end of the stream.
+   */
+  private boolean eof;
 
   // Constructors.
   // ------------------------------------------------------------------------
@@ -110,18 +101,14 @@ public class CipherInputStream extends FilterInputStream
    */
   public CipherInputStream(InputStream in, Cipher cipher)
   {
-    this(in);
+    super (in);
     this.cipher = cipher;
-    if (!(isStream = cipher.getBlockSize() == 1))
-      {
-        inBuffer = new byte[2][];
-        inBuffer[0] = new byte[cipher.getBlockSize()];
-        inBuffer[1] = new byte[cipher.getBlockSize()];
-        inLength = 0;
-        outBuffer = new byte[cipher.getBlockSize()];
-        outOffset = outLength = 0;
-        state = VIRGIN;
-      }
+    isStream = cipher.getBlockSize () == 1;
+    eof = false;
+    if (Configuration.DEBUG)
+      logger.log (Component.CRYPTO, "I am born; cipher: {0}, stream? {1}",
+                  new Object[] { cipher.getAlgorithm (),
+                                 Boolean.valueOf (isStream) });
   }
 
   /**
@@ -133,7 +120,7 @@ public class CipherInputStream extends FilterInputStream
    */
   protected CipherInputStream(InputStream in)
   {
-    super(in);
+    this (in, new NullCipher ());
   }
 
   // Instance methods overriding java.io.FilterInputStream.
@@ -141,8 +128,8 @@ public class CipherInputStream extends FilterInputStream
 
   /**
    * Returns the number of bytes available without blocking. The value
-   * returned by this method is never greater than the underlying
-   * cipher's block size.
+   * returned is the number of bytes that have been processed by the
+   * cipher, and which are currently buffered by this class.
    *
    * @return The number of bytes immediately available.
    * @throws java.io.IOException If an I/O exception occurs.
@@ -151,7 +138,9 @@ public class CipherInputStream extends FilterInputStream
   {
     if (isStream)
       return super.available();
-    return outLength - outOffset;
+    if (outBuffer == null || outOffset >= outBuffer.length)
+      nextBlock ();
+    return outBuffer.length - outOffset;
   }
 
   /**
@@ -160,7 +149,7 @@ public class CipherInputStream extends FilterInputStream
    *
    * @throws java.io.IOException If an I/O exception occurs.
    */
-  public void close() throws IOException
+  public synchronized void close() throws IOException
   {
     super.close();
   }
@@ -172,7 +161,7 @@ public class CipherInputStream extends FilterInputStream
    * @return The byte read, or -1 if there are no more bytes.
    * @throws java.io.IOExcpetion If an I/O exception occurs.
    */
-  public int read() throws IOException
+  public synchronized int read() throws IOException
   {
     if (isStream)
       {
@@ -191,10 +180,14 @@ public class CipherInputStream extends FilterInputStream
           }
         return buf[0] & 0xFF;
       }
-    if (state == DEAD) return -1;
-    if (available() == 0) nextBlock();
-    if (state == DEAD) return -1;
-    return outBuffer[outOffset++] & 0xFF;
+
+    if (outBuffer == null || outOffset == outBuffer.length)
+      {
+        if (eof)
+          return -1;
+        nextBlock ();
+      }
+    return outBuffer [outOffset++] & 0xFF;
   }
 
   /**
@@ -207,18 +200,29 @@ public class CipherInputStream extends FilterInputStream
    * @return The number of bytes read, or -1 on the end-of-file.
    * @throws java.io.IOException If an I/O exception occurs.
    */
-  public int read(byte[] buf, int off, int len) throws IOException
+  public synchronized int read(byte[] buf, int off, int len)
+    throws IOException
   {
+    // CipherInputStream has this wierd implementation where if
+    // the buffer is null, this call is the same as `skip'.
+    if (buf == null)
+      return (int) skip (len);
+
     if (isStream)
       {
         len = super.read(buf, off, len);
-        try
+        if (len > 0)
           {
-            cipher.update(buf, off, len, buf, off);
-          }
-        catch (ShortBufferException shouldNotHappen)
-          {
-            throw new IOException(shouldNotHappen.getMessage());
+            try
+              {
+                cipher.update(buf, off, len, buf, off);
+              }
+            catch (ShortBufferException shouldNotHappen)
+              {
+                IOException ioe = new IOException ("Short buffer for stream cipher -- this should not happen");
+                ioe.initCause (shouldNotHappen);
+                throw ioe;
+              }
           }
         return len;
       }
@@ -226,17 +230,20 @@ public class CipherInputStream extends FilterInputStream
     int count = 0;
     while (count < len)
       {
-        if (available() == 0)
-          nextBlock();
-        if (state == DEAD)
+        if (outBuffer == null || outOffset >= outBuffer.length)
           {
-            if (count > 0) return count;
-            else return -1;
+            if (eof)
+              {
+                if (count == 0)
+                  count = -1;
+                break;
+              }
+            nextBlock();
           }
-        int l = Math.min(available(), len - count);
-        System.arraycopy(outBuffer, outOffset, buf, count+off, l);
+        int l = Math.min (outBuffer.length - outOffset, len - count);
+        System.arraycopy (outBuffer, outOffset, buf, count+off, l);
         count += l;
-        outOffset = outLength = 0;
+        outOffset += l;
       }
     return count;
   }
@@ -269,10 +276,10 @@ public class CipherInputStream extends FilterInputStream
         return super.skip(bytes);
       }
     long ret = 0;
-    if (bytes > 0 && available() > 0)
+    if (bytes > 0 && outBuffer != null && outOffset >= outBuffer.length)
       {
-        ret = available();
-        outOffset = outLength = 0;
+        ret = outBuffer.length - outOffset;
+        outOffset = outBuffer.length;
       }
     return ret;
   }
@@ -309,75 +316,53 @@ public class CipherInputStream extends FilterInputStream
   // Own methods.
   // -------------------------------------------------------------------------
 
+  // FIXME: I don't fully understand how this class is supposed to work.
+
   private void nextBlock() throws IOException
   {
-    byte[] temp = inBuffer[0];
-    inBuffer[0] = inBuffer[1];
-    inBuffer[1] = temp;
-    int count = 0;
-    boolean eof = false;
-
-    if (state == VIRGIN || state == LIVING)
-      {
-        do
-          {
-            int l = in.read(inBuffer[1], count, inBuffer[1].length - count);
-            if (l == -1)
-              {
-                eof = true;
-                break;
-              }
-            count += l;
-          }
-        while (count < inBuffer[1].length);
-      }
+    byte[] buf = new byte[cipher.getBlockSize ()];
+    if (Configuration.DEBUG)
+      logger.log (Component.CRYPTO, "getting a new data block");
 
     try
       {
-        switch (state)
+        outBuffer = null;
+        outOffset = 0;
+        while (outBuffer == null)
           {
-          case VIRGIN:
-            state = LIVING;
-            nextBlock();
-            break;
-          case LIVING:
-            if (eof)
+            int l = in.read (buf);
+            if (Configuration.DEBUG)
+              logger.log (Component.CRYPTO, "we read {0} bytes",
+                          Integer.valueOf (l));
+            if (l == -1)
               {
-                if (count > 0)
-                  {
-                    outOffset = cipher.update(inBuffer[0], 0, inLength, outBuffer, 0);
-                    state = DYING;
-                  }
-                else
-                  {
-                    outOffset = cipher.doFinal(inBuffer[0], 0, inLength, outBuffer, 0);
-                    state = DEAD;
-                  }
+                outBuffer = cipher.doFinal ();
+                eof = true;
+                return;
               }
-            else
-              {
-                outOffset = cipher.update(inBuffer[0], 0, inLength, outBuffer, 0);
-              }
-            break;
-          case DYING:
-            outOffset = cipher.doFinal(inBuffer[0], 0, inLength, outBuffer, 0);
-            state = DEAD;
-            break;
-          case DEAD:
+
+            outOffset = 0;
+            outBuffer = cipher.update (buf, 0, l);
           }
-      }
-    catch (ShortBufferException sbe)
-      {
-        throw new IOException(sbe.toString());
       }
     catch (BadPaddingException bpe)
       {
-        throw new IOException(bpe.toString());
+        IOException ioe = new IOException ("bad padding");
+        ioe.initCause (bpe);
+        throw ioe;
       }
     catch (IllegalBlockSizeException ibse)
       {
-        throw new IOException(ibse.toString());
+        IOException ioe = new IOException ("illegal block size");
+        ioe.initCause (ibse);
+        throw ioe;
       }
-    inLength = count;
+    finally
+      {
+        if (Configuration.DEBUG)
+          logger.log (Component.CRYPTO,
+                      "decrypted {0} bytes for reading",
+                      Integer.valueOf (outBuffer.length));
+      }
   }
 }

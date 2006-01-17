@@ -1,5 +1,5 @@
-/* PrinterMoreInfoManufacturer.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+/* PrinterResolution.java --
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,14 @@ import javax.print.attribute.ResolutionSyntax;
 
 
 /**
+ * The <code>PrinterResolution</code> printing attribute specifies a 
+ * resolution supported by a print service or to be used by a print job. 
+ * <p>
+ * <b>IPP Compatibility:</b> PrinterResolution is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PrinterResolution extends ResolutionSyntax
   implements DocAttribute, PrintJobAttribute, PrintRequestAttribute
@@ -52,18 +59,41 @@ public final class PrinterResolution extends ResolutionSyntax
   private static final long serialVersionUID = 13090306561090558L;
 
   /**
-   * Constructs a <code>PrinterResolution</code> object.
+   * Creates a <code>PrinterResolution</code> object with the given cross
+   * feed and feed resolutions.
+   *
+   * @param crossFeedResolution the cross feed resolution
+   * @param feedResolution the feed resolution
+   * @param units the unit to use (e.g. {@link #DPCM} or {@link #DPI})
+   *
+   * @exception IllegalArgumentException if either parameter is &lt; 1
    */
   public PrinterResolution(int crossFeedResolution, int feedResolution,
                            int units)
   {
     super(crossFeedResolution, feedResolution, units);
   }
+  
+  /**
+   * Tests if the given object is equal to this object.
+   *
+   * @param obj the object to test
+   *
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
+   */
+  public boolean equals(Object obj)
+  {
+    if(! (obj instanceof PrinterResolution))
+      return false;
+    
+    return super.equals(obj);
+  }
 
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrinterResolution</code> itself
+   * @return The class <code>PrinterResolution</code> itself.
    */
   public Class getCategory()
   {
@@ -73,7 +103,7 @@ public final class PrinterResolution extends ResolutionSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "printer-resolution".
    */
   public String getName()
   {

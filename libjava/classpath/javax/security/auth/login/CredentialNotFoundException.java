@@ -1,5 +1,6 @@
-/* javaio.h - Declaration for common java.io native functions
-   Copyright (C) 1998, 2004 Free Software Foundation, Inc.
+/* CredentialNotFoundException.java -- exception thrown when credentials
+   expire
+   Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -36,23 +37,29 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-#ifndef JAVAIO_H_INCLUDED
-#define JAVAIO_H_INCLUDED
+package javax.security.auth.login;
 
-#include <stddef.h>
-
-/*
- * Function Prototypes
+/**
+ * An exception that indicates that a credential was not found.
+ * @since 1.5
  */
+public class CredentialNotFoundException extends CredentialException
+{
+  private static final long serialVersionUID = -7779934467214319475L;
 
-extern jlong _javaio_get_file_length(JNIEnv *, jint);
-extern jlong _javaio_skip_bytes(JNIEnv *, jint, jlong);
-extern jint _javaio_open(JNIEnv *, jstring, int);
-extern jint _javaio_open_read(JNIEnv *, jstring);
-extern jint _javaio_open_readwrite(JNIEnv *, jstring);
-extern void _javaio_close(JNIEnv *, jint fd);
-extern jint _javaio_read(JNIEnv *, jint, jarray, jint, jint);
-extern jint _javaio_write(JNIEnv *, jint, jarray, jint, jint);
+  /**
+   * Create a new exception.
+   */
+  public CredentialNotFoundException()
+  {
+  }
 
-#endif /* JAVAIO_H_INCLUDED */
-
+  /**
+   * Create a new exception with the given detail message.
+   * @param message the detail message
+   */
+  public CredentialNotFoundException(String message)
+  {
+    super(message);
+  }
+}

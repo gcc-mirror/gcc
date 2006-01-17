@@ -1,5 +1,5 @@
 /* TransformerImpl.java -- 
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004,2005,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -128,8 +128,6 @@ class TransformerImpl
       {
         // Suppress mutation events
         ((DomDocument) doc).setBuilding(true);
-        // TODO find a better/more generic way of doing this than
-        // casting
       }
     // Get the result tree
     Node parent = null, nextSibling = null;
@@ -147,8 +145,6 @@ class TransformerImpl
             DomDocument drdoc = (DomDocument) rdoc;
             drdoc.setBuilding(true);
             drdoc.setCheckWellformedness(false);
-            // TODO find a better/more generic way of doing this than
-            // casting
           }
       }
     boolean created = false;
@@ -184,9 +180,7 @@ class TransformerImpl
           {
             // Done transforming, reset document
             if (doc instanceof DomDocument)
-              {
-                ((DomDocument) doc).setBuilding(false);
-              }
+              ((DomDocument) doc).setBuilding(false);
             throw e;
           }
       }
@@ -214,17 +208,11 @@ class TransformerImpl
               }
             Document sourceDoc = context.getOwnerDocument();
             if (sourceDoc != resultDoc)
-              {
-                clone = resultDoc.adoptNode(clone);
-              }
+              clone = resultDoc.adoptNode(clone);
             if (nextSibling != null)
-              {
-                parent.insertBefore(clone, nextSibling);
-              }
+              parent.insertBefore(clone, nextSibling);
             else
-              {
-                parent.appendChild(clone);
-              }
+              parent.appendChild(clone);
           }
         else
           {
@@ -256,15 +244,18 @@ class TransformerImpl
         DomDocument resultDoc = (DomDocument) parent;
         Node root = resultDoc.getDocumentElement();
         // Add doctype if specified
-        if ((publicId != null || systemId != null) &&
-            root != null)
+        if (publicId != null || systemId != null)
           {
-            // We must know the name of the root element to
-            // create the document type
-            resultDoc.appendChild(new DomDoctype(resultDoc,
-                                                 root.getNodeName(),
-                                                 publicId,
-                                                 systemId));
+            if (root != null)
+              {
+                // We must know the name of the root element to
+                // create the document type
+                DocumentType doctype = new DomDoctype(resultDoc,
+                                                      root.getNodeName(),
+                                                      publicId,
+                                                      systemId);
+                resultDoc.insertBefore(doctype, root);
+              }
           }
         resultDoc.setBuilding(false);
         resultDoc.setCheckWellformedness(true);
@@ -279,43 +270,25 @@ class TransformerImpl
               (Document) parent :
               parent.getOwnerDocument();
             DOMImplementation impl = resultDoc.getImplementation();
-            DocumentType doctype =
-              impl.createDocumentType(resultDoc.getNodeName(),
-                                      publicId,
-                                      systemId);
-            // Try to insert doctype before first element
-            Node ctx = parent.getFirstChild();
-            for (; ctx != null &&
-                 ctx.getNodeType() != Node.ELEMENT_NODE;
-                 ctx = ctx.getNextSibling())
+            Node root = resultDoc.getDocumentElement();
+            if (root != null)
               {
-              }
-            if (ctx != null)
-              {
-                parent.insertBefore(doctype, ctx);
-              }
-            else
-              {
-                parent.appendChild(doctype);
+                DocumentType doctype =
+                  impl.createDocumentType(root.getNodeName(),
+                                          publicId,
+                                          systemId);
+                resultDoc.insertBefore(doctype, root);
               }
           }
       }
     if (version != null)
-      {
-        parent.setUserData("version", version, stylesheet);
-      }
+      parent.setUserData("version", version, stylesheet);
     if (omitXmlDeclaration)
-      {
-        parent.setUserData("omit-xml-declaration", "yes", stylesheet);
-      }
+      parent.setUserData("omit-xml-declaration", "yes", stylesheet);
     if (standalone)
-      {
-        parent.setUserData("standalone", "yes", stylesheet);
-      }
+      parent.setUserData("standalone", "yes", stylesheet);
     if (mediaType != null)
-      {
-        parent.setUserData("media-type", mediaType, stylesheet);
-      }
+      parent.setUserData("media-type", mediaType, stylesheet);
     if (cdataSectionElements != null)
       {
         List list = new LinkedList();
@@ -390,13 +363,9 @@ class TransformerImpl
         if (ex != null)
           {
             if (errorListener != null)
-              {
-                errorListener.error(new TransformerException(ex));
-              }
+              errorListener.error(new TransformerException(ex));
             else
-              {
-                ex.printStackTrace(System.err);
-              }
+              ex.printStackTrace(System.err);
           }
       }
     else if (outputTarget instanceof SAXResult)
@@ -407,22 +376,16 @@ class TransformerImpl
             ContentHandler ch = sr.getHandler();
             LexicalHandler lh = sr.getLexicalHandler();
             if (lh == null && ch instanceof LexicalHandler)
-              {
-                lh = (LexicalHandler) ch;
-              }
+              lh = (LexicalHandler) ch;
             SAXSerializer serializer = new SAXSerializer();
             serializer.serialize(parent, ch, lh);
           }
         catch (SAXException e)
           {
             if (errorListener != null)
-              {
-                errorListener.error(new TransformerException(e));
-              }
+              errorListener.error(new TransformerException(e));
             else
-              {
-                e.printStackTrace(System.err);
-              }
+              e.printStackTrace(System.err);
           }
       }
   }
@@ -430,7 +393,7 @@ class TransformerImpl
   /**
    * Strip whitespace from the source tree.
    */
-  void strip(Node node)
+  boolean strip(Node node)
     throws TransformerConfigurationException
   {
     short nt = node.getNodeType();
@@ -438,44 +401,101 @@ class TransformerImpl
       {
         // Replace entity reference with its content
         Node parent = node.getParentNode();
+        Node nextSibling = node.getNextSibling();
         Node child = node.getFirstChild();
-        if (child != null)
-          {
-            strip(child);
-          }
         while (child != null)
           {
             Node next = child.getNextSibling();
             node.removeChild(child);
-            parent.insertBefore(child, node);
+            if (nextSibling != null)
+              parent.insertBefore(child, nextSibling);
+            else
+              parent.appendChild(child);
             child = next;
           }
-        parent.removeChild(node);
+        return true;
       }
     if (nt == Node.TEXT_NODE || nt == Node.CDATA_SECTION_NODE)
       {
-        if (!stylesheet.isPreserved((Text) node))
+        // Denormalize text into whitespace and non-whitespace nodes
+        String text = node.getNodeValue();
+        String[] tokens = tokenizeWhitespace(text);
+        if (tokens.length > 1)
           {
-            node.getParentNode().removeChild(node);
-          }
-        else
-          {
-            String text = node.getNodeValue();
-            String stripped = text.trim();
-            if (!text.equals(stripped))
+            node.setNodeValue(tokens[0]);
+            Node parent = node.getParentNode();
+            Node nextSibling = node.getNextSibling();
+            Document doc = node.getOwnerDocument();
+            for (int i = 1; i < tokens.length; i++)
               {
-                node.setNodeValue(stripped);
+                Node newChild = (nt == Node.CDATA_SECTION_NODE) ?
+                  doc.createCDATASection(tokens[i]) :
+                  doc.createTextNode(tokens[i]);
+                if (nextSibling != null)
+                  parent.insertBefore(newChild, nextSibling);
+                else
+                  parent.appendChild(newChild);
               }
           }
+        return !stylesheet.isPreserved((Text) node, true);
       }
     else
       {
-        for (Node child = node.getFirstChild(); child != null;
-             child = child.getNextSibling())
+        Node child = node.getFirstChild();
+        while (child != null)
           {
-            strip(child);
+            boolean remove = strip(child);
+            Node next = child.getNextSibling();
+            if (remove)
+              node.removeChild(child);
+            child = next;
           }
       }
+    return false;
+  }
+
+  /**
+   * Tokenize the specified text into contiguous whitespace-only and
+   * non-whitespace chunks.
+   */
+  private static String[] tokenizeWhitespace(String text)
+  {
+    int len = text.length();
+    int start = 0, end = len - 1;
+    // Find index of text start
+    for (int i = 0; i < len; i++)
+      {
+        char c = text.charAt(i);
+        boolean whitespace = (c == ' ' || c == '\n' || c == '\t' || c == '\r');
+        if (whitespace)
+          start++;
+        else
+          break;
+      }
+    if (start == end) // all whitespace
+      return new String[] { text };
+    // Find index of text end
+    for (int i = end; i > start; i--)
+      {
+        char c = text.charAt(i);
+        boolean whitespace = (c == ' ' || c == '\n' || c == '\t' || c == '\r');
+        if (whitespace)
+          end--;
+        else
+          break;
+      }
+    if (start == 0 && end == len - 1) // all non-whitespace
+      return new String[] { text };
+    // whitespace, then text, then whitespace
+    String[] ret = (start > 0 && end < len - 1) ?
+      new String[3] : new String[2];
+    int i = 0;
+    if (start > 0)
+      ret[i++] = text.substring(0, start);
+    ret[i++] = text.substring(start, end + 1);
+    if (end < len - 1)
+      ret[i++] = text.substring(end + 1);
+    return ret;
   }
 
   /**
@@ -487,6 +507,7 @@ class TransformerImpl
     throws IOException
   {
     OutputStream out = null;
+    boolean created = false;
     try
       {
         out = sr.getOutputStream();
@@ -494,9 +515,7 @@ class TransformerImpl
           {
             Writer writer = sr.getWriter();
             if (writer != null)
-              {
-                out = new WriterOutputStream(writer);
-              }
+              out = new WriterOutputStream(writer);
           }
         if (out == null)
           {
@@ -523,6 +542,7 @@ class TransformerImpl
                 URL url = new URL(systemId);
                 out = new FileOutputStream(url.getPath());
               }
+            created = true;
           }
         out = new BufferedOutputStream(out);
         StreamSerializer serializer =
@@ -539,10 +559,8 @@ class TransformerImpl
       {
         try
           {
-            if (out != null)
-              {
-                out.close();
-              }
+            if (out != null && created)
+              out.close();
           }
         catch (IOException e)
           {
@@ -564,17 +582,13 @@ class TransformerImpl
   public void setParameter(String name, Object value)
   {
     if (stylesheet != null)
-      {
-        stylesheet.bindings.set(new QName(null, name), value, Bindings.PARAM);
-      }
+      stylesheet.bindings.set(new QName(null, name), value, Bindings.PARAM);
   }
 
   public Object getParameter(String name)
   {
     if (stylesheet != null)
-      {
-        return stylesheet.bindings.get(new QName(null, name), null, 1, 1);
-      }
+      return stylesheet.bindings.get(new QName(null, name), null, 1, 1);
     return null;
   }
 
@@ -601,13 +615,9 @@ class TransformerImpl
     throws IllegalArgumentException
   {
     if (oformat == null)
-      {
-        outputProperties.clear();
-      }
+      outputProperties.clear();
     else
-      {
-        outputProperties.putAll(oformat);
-      }
+      outputProperties.putAll(oformat);
   }
 
   public Properties getOutputProperties()
@@ -689,9 +699,7 @@ class TransformerImpl
                 StringBuffer buf = new StringBuffer();
                 buf.append('\n');
                 for (int i = 0; i < offset + 1; i++)
-                  {
-                    buf.append(INDENT_WHITESPACE);
-                  }
+                  buf.append(INDENT_WHITESPACE);
                 String ws = buf.toString();
                 for (Iterator i = children.iterator(); i.hasNext(); )
                   {
@@ -703,9 +711,7 @@ class TransformerImpl
                 buf.append('\n');
                 ws = buf.toString();
                 for (int i = 0; i < offset; i++)
-                  {
-                    buf.append(INDENT_WHITESPACE);
-                  }
+                  buf.append(INDENT_WHITESPACE);
                 node.appendChild(doc.createTextNode(ws));
               }
           }
@@ -749,9 +755,7 @@ class TransformerImpl
     while (ctx != null)
       {
         if (ctx.hasChildNodes())
-          {
-            convertCdataSectionElements(doc, ctx, list);
-          }
+          convertCdataSectionElements(doc, ctx, list);
         ctx = ctx.getNextSibling();
       }
   }
@@ -761,9 +765,7 @@ class TransformerImpl
     String ln1 = qname.getLocalPart();
     String ln2 = node.getLocalName();
     if (ln2 == null)
-      {
-        return ln1.equals(node.getNodeName());
-      }
+      return ln1.equals(node.getNodeName());
     else
       {
         String uri1 = qname.getNamespaceURI();

@@ -1,5 +1,5 @@
 /* DateTimeAtCompleted.java -- 
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,14 @@ import javax.print.attribute.DateTimeSyntax;
 import javax.print.attribute.PrintJobAttribute;
 
 /**
+ * The <code>DateTimeAtCompleted</code> attribute specifies the date and 
+ * the time at which a print job completed (or was canceled or aborted).
+ * <p>
+ * <b>IPP Compatibility:</b> DateTimeAtCompleted is an IPP 1.1 attribute.
+ * </p>
+ * @see javax.print.attribute.standard.DateTimeAtCreation
+ * @see javax.print.attribute.standard.DateTimeAtProcessing
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class DateTimeAtCompleted extends DateTimeSyntax
@@ -64,11 +72,12 @@ public final class DateTimeAtCompleted extends DateTimeSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -81,7 +90,7 @@ public final class DateTimeAtCompleted extends DateTimeSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>DateTimeAtCompleted</code> itself
+   * @return The class <code>DateTimeAtCompleted</code> itself.
    */
   public Class getCategory()
   {
@@ -89,9 +98,9 @@ public final class DateTimeAtCompleted extends DateTimeSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "date-time-at-completed"
+   * @return The name "date-time-at-completed".
    */
   public String getName()
   {

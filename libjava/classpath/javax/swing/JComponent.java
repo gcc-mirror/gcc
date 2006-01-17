@@ -45,7 +45,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -621,7 +620,6 @@ public abstract class JComponent extends Container implements Serializable
   public JComponent()
   {
     super();
-    super.setLayout(new FlowLayout());
     setDropTarget(new DropTarget());
     defaultLocale = Locale.getDefault();
     debugGraphicsOptions = DebugGraphics.NONE_OPTION;
@@ -801,14 +799,23 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Return all registered listeners of a particular type.
+   * Returns all registered {@link EventListener}s of the given 
+   * <code>listenerType</code>.
    *
-   * @param listenerType The type of listener to return
-   *
-   * @return All listeners in the {@link #listenerList} which 
-   * are of the specified type
-   *
+   * @param listenerType the class of listeners to filter (<code>null</code> 
+   *                     not permitted).
+   *                     
+   * @return An array of registered listeners.
+   * 
+   * @throws ClassCastException if <code>listenerType</code> does not implement
+   *                            the {@link EventListener} interface.
+   * @throws NullPointerException if <code>listenerType</code> is 
+   *                              <code>null</code>.
+   *                            
+   * @see #getAncestorListeners()
    * @see #listenerList
+   * 
+   * @since 1.3
    */
   public EventListener[] getListeners(Class listenerType)
   {
@@ -1287,7 +1294,7 @@ public abstract class JComponent extends Container implements Serializable
   {
     Dimension prefSize = null;
     if (preferredSize != null)
-      prefSize = preferredSize;
+      prefSize = new Dimension(preferredSize);
 
     else if (ui != null)
       {
@@ -1298,12 +1305,7 @@ public abstract class JComponent extends Container implements Serializable
 
     if (prefSize == null)
       prefSize = super.getPreferredSize();
-    // make sure that prefSize is not smaller than minSize
-    if (minimumSize != null && prefSize != null
-        && (minimumSize.width > prefSize.width
-            || minimumSize.height > prefSize.height))
-        prefSize = new Dimension(Math.max(minimumSize.width, prefSize.width),
-                                 Math.max(minimumSize.height, prefSize.height));
+
     return prefSize;
   }
 
@@ -2530,7 +2532,10 @@ public abstract class JComponent extends Container implements Serializable
   public void setMaximumSize(Dimension max)
   {
     Dimension oldMaximumSize = maximumSize;
-    maximumSize = new Dimension(max);
+    if (max != null) 
+      maximumSize = new Dimension(max);
+    else
+      maximumSize = null;
     firePropertyChange("maximumSize", oldMaximumSize, maximumSize);
   }
 
@@ -2544,7 +2549,10 @@ public abstract class JComponent extends Container implements Serializable
   public void setMinimumSize(Dimension min)
   {
     Dimension oldMinimumSize = minimumSize;
-    minimumSize = new Dimension(min);
+    if (min != null)
+      minimumSize = new Dimension(min);
+    else
+      minimumSize = null;
     firePropertyChange("minimumSize", oldMinimumSize, minimumSize);
   }
 
@@ -2558,7 +2566,10 @@ public abstract class JComponent extends Container implements Serializable
   public void setPreferredSize(Dimension pref)
   {
     Dimension oldPreferredSize = preferredSize;
-    preferredSize = new Dimension(pref);
+    if (pref != null)
+      preferredSize = new Dimension(pref);
+    else
+      preferredSize = null;
     firePropertyChange("preferredSize", oldPreferredSize, preferredSize);
   }
 
@@ -2722,7 +2733,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   public void updateUI()
   {
-    System.out.println("update UI not overwritten in class: " + this);
+    // Nothing to do here.
   }
 
   public static Locale getDefaultLocale()
@@ -3253,7 +3264,7 @@ public abstract class JComponent extends Container implements Serializable
         Rectangle target = SwingUtilities.convertRectangle(found,
                                                            currentClip,
                                                            newParent);
-        if (target.contains(parRect) || target.intersects(parRect))
+        if (! target.intersection(parRect).equals(target))
           {
             found = newParent;
             currentClip = target;
@@ -3269,10 +3280,12 @@ public abstract class JComponent extends Container implements Serializable
         boolean skip = true;
         for (int i = children.length - 1; i >= 0; i--)
           {
+            boolean nextSkip = skip;
             if (children[i] == parent)
-              skip = false;
+              nextSkip = false;
             if (skip)
               continue;
+            skip = nextSkip;
             Component c = children[i];
             Rectangle compBounds = c.getBounds();
             // If the component completely overlaps the clip in question, we

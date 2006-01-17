@@ -1,3 +1,8 @@
+<newsitem date="25/26 Feb 2006">
+<createlink name="GNU Classpath and friends meeting during Fosdem 2006"
+            url="events/fosdem06.html">
+</newsitem>
+
 <newsitem date="02 Nov 2005">
 <createlink name="GNU Classpath 0.19"
             url="announce/20051102.html">

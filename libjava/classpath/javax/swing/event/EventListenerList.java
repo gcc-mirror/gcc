@@ -228,7 +228,7 @@ public class EventListenerList
     count = getListenerCount(c);
     result = (EventListener[]) Array.newInstance(c, count);
     f = 0;
-    for (int i = 0; i < listenerList.length; i += 2)
+    for (int i = listenerList.length - 2; i >= 0; i -= 2)
       if (listenerList[i] == c)
         result[f++] = (EventListener) listenerList[i + 1];
     

@@ -1,5 +1,5 @@
 /* SheetCollate.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,16 +44,49 @@ import javax.print.attribute.PrintRequestAttribute;
 
 
 /**
+ * The <code>SheetCollate</code> printing attribute specifies 
+ * whether or not the sheets of each copy in a print job have to be
+ * in sequence.
+ * <p>
+ * The attribute only makes sense if multiple copies are specified through
+ * the <code>Copies</code> printing attribute. If <code>UNCOLLATED</code>
+ * is specified every page of a print job is printed for all requested
+ * copies before the next page is processed. <code>COLLATED</code> means
+ * that for every copy requested the pages have to be printed in sequence.
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> SheetCollate is not an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class SheetCollate extends EnumSyntax
   implements DocAttribute, PrintRequestAttribute, PrintJobAttribute
 {
   private static final long serialVersionUID = 7080587914259873003L;
 
+  /**
+   * The sheets of the different copies are uncollated.
+   */
   public static final SheetCollate UNCOLLATED = new SheetCollate(0);
+  
+  /**
+   * The sheets of the different copies are collated.
+   */
   public static final SheetCollate COLLATED = new SheetCollate(1);
 
+
+  private static final String[] stringTable = { "uncollated", "collated" };
+  
+  private static final SheetCollate[] enumValueTable = { UNCOLLATED, 
+                                                         COLLATED };  
+  
+  /**
+   * Creates a <code>SheetCollate</code> object.
+   *
+   * @param value the enum value.
+   */
   protected SheetCollate(int value)
   {
     super(value);
@@ -62,7 +95,7 @@ public final class SheetCollate extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>SheetCollate</code> itself
+   * @return The class <code>SheetCollate</code> itself.
    */
   public Class getCategory()
   {
@@ -70,12 +103,33 @@ public final class SheetCollate extends EnumSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "sheet-collate"
+   * @return The name "sheet-collate".
    */
   public String getName()
   {
     return "sheet-collate";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
   }
 }

@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
-timestamp='2005-07-08'
+timestamp='2005-12-06'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -171,6 +171,10 @@ case $os in
 	-hiux*)
 		os=-hiuxwe2
 		;;
+	-sco6)
+		os=-sco5v6
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
+		;;
 	-sco5)
 		os=-sco3.2v5
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
@@ -184,6 +188,10 @@ case $os in
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
 		;;
 	-sco3.2v[4-9]*)
+		# Don't forget version if it is 3.2v4 or newer.
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
+		;;
+	-sco5v6*)
 		# Don't forget version if it is 3.2v4 or newer.
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
 		;;
@@ -257,7 +265,7 @@ case $basic_machine in
 	| mipsisa64sr71k | mipsisa64sr71kel \
 	| mipstx39 | mipstx39el \
 	| mn10200 | mn10300 \
-	| ms1 \
+	| mt \
 	| msp430 \
 	| ns16k | ns32k \
 	| or32 \
@@ -287,6 +295,9 @@ case $basic_machine in
 	m88110 | m680[12346]0 | m683?2 | m68360 | m5200 | v70 | w65 | z8k)
 		;;
 
+        ms1)
+	    basic_machine=mt-unknown
+	    ;;
 	# We use `pc' rather than `unknown'
 	# because (1) that's what they normally are, and
 	# (2) the word "unknown" tends to confuse beginning users.
@@ -336,7 +347,7 @@ case $basic_machine in
 	| mipsisa64sr71k-* | mipsisa64sr71kel-* \
 	| mipstx39-* | mipstx39el-* \
 	| mmix-* \
-	| ms1-* \
+	| mt-* \
 	| msp430-* \
 	| none-* | np1-* | ns16k-* | ns32k-* \
 	| orion-* \
@@ -695,6 +706,9 @@ case $basic_machine in
 	msdos)
 		basic_machine=i386-pc
 		os=-msdos
+		;;
+	ms1-*)
+	        basic_machine=`echo $basic_machine | sed -e 's/ms1-/mt-/'`
 		;;
 	mvs)
 		basic_machine=i370-ibm

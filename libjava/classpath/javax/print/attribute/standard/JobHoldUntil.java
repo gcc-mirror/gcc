@@ -1,5 +1,5 @@
 /* JobHoldUntil.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,19 @@ import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.PrintRequestAttribute;
 
 /**
+ * The <code>JobHoldUntil</code> attribute specifies the date
+ * and the time at which a print job must become a candidate
+ * for printing. 
+ * <p>
+ * <b>IPP Compatibility:</b> JobHoldUntil is an IPP 1.1 attribute.
+ * However the attribute in IPP is based on keywords of named
+ * time periods like day-time or evening. It will depend on the
+ * concrete implementation of a print service how a mapping of the 
+ * detailed provided date and time of this attribute to the named
+ * keyword or an alternate extension attribute will be done. E.g.
+ * CUPS supports also a HH:MM format as extension to the keywords.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class JobHoldUntil extends DateTimeSyntax
@@ -65,11 +78,12 @@ public final class JobHoldUntil extends DateTimeSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -82,7 +96,7 @@ public final class JobHoldUntil extends DateTimeSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>JobHoldUntil</code> itself
+   * @return The class <code>JobHoldUntil</code> itself.
    */
   public Class getCategory()
   {
@@ -90,9 +104,9 @@ public final class JobHoldUntil extends DateTimeSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "job-hold-until"
+   * @return The name "job-hold-until".
    */
   public String getName()
   {

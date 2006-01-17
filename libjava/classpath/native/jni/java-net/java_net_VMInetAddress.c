@@ -1,5 +1,5 @@
 /* VMInetAddress.c - Native methods for InetAddress class
-   Copyright (C) 1998, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,6 @@ exception statement from your version. */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #include <jni.h>
 #include <jcl.h>
@@ -68,9 +67,6 @@ Java_java_net_VMInetAddress_getLocalHostname (JNIEnv * env,
   char hostname[256];
   int result;
   jstring retval;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
 #ifndef WITHOUT_NETWORK
   TARGET_NATIVE_NETWORK_GET_HOSTNAME (hostname, sizeof (hostname), result);
@@ -99,9 +95,6 @@ Java_java_net_VMInetAddress_lookupInaddrAny (JNIEnv * env,
 {
   jarray IParray;
   jbyte *octets;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   /* Allocate an array for the IP address */
   IParray = (*env)->NewByteArray (env, 4);
@@ -149,9 +142,6 @@ Java_java_net_VMInetAddress_getHostByAddr (JNIEnv * env,
   char hostname[255];
   int result;
   jstring retval;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   /* Grab the byte[] array with the IP out of the input data */
   len = (*env)->GetArrayLength (env, arr);
@@ -214,9 +204,6 @@ Java_java_net_VMInetAddress_getHostByName (JNIEnv * env,
   jbyte *octets;
   jarray ret_octets;
   int max_addresses;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   /* Grab the hostname string */
   hostname = (*env)->GetStringUTFChars (env, host, 0);

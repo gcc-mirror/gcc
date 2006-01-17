@@ -655,21 +655,6 @@ final public class SAXDriver
     attributesList.clear();
   }
 
-  void xmlDecl(String version,
-               String encoding,
-               boolean standalone,
-               String inputEncoding)
-    throws SAXException
-  {
-    if (contentHandler instanceof ContentHandler2)
-      {
-        ((ContentHandler2) contentHandler).xmlDecl(version,
-                                                   encoding,
-                                                   standalone,
-                                                   inputEncoding);
-      }
-  }
-
   void skippedEntity(String name)
     throws SAXException
   {

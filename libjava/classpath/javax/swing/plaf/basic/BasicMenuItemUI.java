@@ -206,7 +206,10 @@ public class BasicMenuItemUI extends MenuItemUI
             map.remove((KeyStroke)e.getOldValue());
           else
             map = new ComponentInputMapUIResource(menuItem);
-          map.put((KeyStroke)e.getNewValue(), "doClick");
+
+          KeyStroke accelerator = (KeyStroke) e.getNewValue();
+          if (accelerator != null)
+            map.put(accelerator, "doClick");
         }
     }
   }
@@ -485,7 +488,9 @@ public class BasicMenuItemUI extends MenuItemUI
     InputMap focusedWindowMap = SwingUtilities.getUIInputMap(menuItem, JComponent.WHEN_IN_FOCUSED_WINDOW);
     if (focusedWindowMap == null)
       focusedWindowMap = new ComponentInputMapUIResource(menuItem);
-    focusedWindowMap.put(menuItem.getAccelerator(), "doClick");
+    KeyStroke accelerator = menuItem.getAccelerator();
+    if (accelerator != null)
+      focusedWindowMap.put(accelerator, "doClick");
     SwingUtilities.replaceUIInputMap(menuItem, JComponent.WHEN_IN_FOCUSED_WINDOW, focusedWindowMap);
     
     ActionMap UIActionMap = SwingUtilities.getUIActionMap(menuItem);
@@ -555,17 +560,16 @@ public class BasicMenuItemUI extends MenuItemUI
     // Menu item is considered to be highlighted when it is selected.
     // But we don't want to paint the background of JCheckBoxMenuItems
     ButtonModel mod = menuItem.getModel();
-    if ((menuItem.isSelected() && checkIcon == null) || (mod != null && 
-        mod.isArmed())
-        && (menuItem.getParent() instanceof MenuElement))
+    if (menuItem.isContentAreaFilled())
       {
-        if (menuItem.isContentAreaFilled())
-          {
-            g.setColor(selectionBackground);
-            g.fillRect(0, 0, menuItem.getWidth(), menuItem.getHeight());
-          }
-      }
-
+        if ((menuItem.isSelected() && checkIcon == null) || (mod != null && 
+            mod.isArmed())
+            && (menuItem.getParent() instanceof MenuElement))
+          g.setColor(selectionBackground);
+        else
+          g.setColor(bgColor);
+        g.fillRect(0, 0, menuItem.getWidth(), menuItem.getHeight());
+      } 
   }
 
   /**
@@ -608,7 +612,7 @@ public class BasicMenuItemUI extends MenuItemUI
     FontMetrics fm = g.getFontMetrics(f);
     SwingUtilities.calculateInnerArea(m, br);
     SwingUtilities.calculateInsetArea(br, m.getInsets(), vr);
-    paintBackground(g, m, m.getBackground());
+    paintBackground(g, m, background);
 
     /*
      * MenuItems insets are equal to menuItems margin, space between text and

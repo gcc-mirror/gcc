@@ -1,5 +1,5 @@
 /* MessageDigest.java --- The message digest interface.
-   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -167,6 +167,9 @@ public abstract class MessageDigest extends MessageDigestSpi
   public static MessageDigest getInstance(String algorithm, String provider)
     throws NoSuchAlgorithmException, NoSuchProviderException
   {
+    if (provider != null)
+      provider = provider.trim();
+
     if (provider == null || provider.length() == 0)
       throw new IllegalArgumentException("Illegal provider");
 

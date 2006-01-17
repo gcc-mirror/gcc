@@ -203,9 +203,22 @@ public class JTextField extends JTextComponent
    */
   protected Document createDefaultModel()
   {
-    PlainDocument doc = new PlainDocument();
+    return new PlainDocument();
+  }
+
+  /**
+   * Sets the document to be used for this JTextField.
+   *
+   * This sets the document property <code>filterNewlines</code> to
+   * <code>true</code> and then calls the super behaviour to setup a view and
+   * revalidate the text field.
+   *
+   * @param doc the document to set
+   */
+  public void setDocument(Document doc)
+  {
     doc.putProperty("filterNewlines", Boolean.TRUE);
-    return doc;
+    super.setDocument(doc);
   }
 
   /**

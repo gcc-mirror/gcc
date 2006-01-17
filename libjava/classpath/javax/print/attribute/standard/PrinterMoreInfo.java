@@ -1,5 +1,5 @@
 /* PrinterMoreInfo.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,18 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.URISyntax;
 
 /**
+ * The <code>PrinterMoreInfo</code> attribute provides a URI that can be used
+ * to obtain more information about the printer.
+ * <p>
+ * The URI may for example contain a reference to a HTML page with information.
+ * The information is normally intended for end users.
+ * </p> 
+ * <p>
+ * <b>IPP Compatibility:</b> PrinterMoreInfo is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PrinterMoreInfo extends URISyntax
   implements PrintServiceAttribute
@@ -53,16 +64,35 @@ public final class PrinterMoreInfo extends URISyntax
 
   /**
    * Constructs a <code>PrinterMoreInfo</code> object.
+   * 
+   * @param uri the URI of the information.
+   * @throws NullPointerException if the given uri is null.
    */
   public PrinterMoreInfo(URI uri)
   {
     super(uri);
   }
+  
+  /**
+   * Tests if the given object is equal to this object.
+   *
+   * @param obj the object to test
+   *
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
+   */
+  public boolean equals(Object obj)
+  {
+    if(! (obj instanceof PrinterMoreInfo))
+      return false;
+
+    return super.equals(obj);
+  }
 
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrinterMoreInfo</code> itself
+   * @return The class <code>PrinterMoreInfo</code> itself.
    */
   public Class getCategory()
   {
@@ -72,7 +102,7 @@ public final class PrinterMoreInfo extends URISyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "printer-more-info".
    */
   public String getName()
   {

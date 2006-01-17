@@ -115,7 +115,7 @@ public abstract class SAXParserFactory
           }
       }
     while (className == null && count < 3);
-    return new gnu.xml.aelfred2.JAXPFactory();
+    return new gnu.xml.stream.SAXParserFactory();
   }
 
   private static String getFactoryClassName(ClassLoader loader, int attempt)

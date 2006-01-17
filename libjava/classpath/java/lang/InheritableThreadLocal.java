@@ -1,5 +1,5 @@
 /* InheritableThreadLocal -- a ThreadLocal which inherits values across threads
-   Copyright (C) 2000, 2001, 2002, 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,8 +37,9 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.java.util.WeakIdentityHashMap;
+
 import java.util.Iterator;
-import java.util.WeakHashMap;
 
 /**
  * A ThreadLocal whose value is inherited by child Threads. The value of the
@@ -98,15 +99,15 @@ public class InheritableThreadLocal extends ThreadLocal
         Iterator keys = parentThread.locals.keySet().iterator();
         while (keys.hasNext())
           {
-            Key key = (Key)keys.next();
-            if (key.get() instanceof InheritableThreadLocal)
+            Object key = keys.next();
+            if (key instanceof InheritableThreadLocal)
               {
-                InheritableThreadLocal local = (InheritableThreadLocal)key.get();
+                InheritableThreadLocal local = (InheritableThreadLocal)key;
                 Object parentValue = parentThread.locals.get(key);
                 Object childValue = local.childValue(parentValue == NULL
                                                      ? null : parentValue);
                 if (childThread.locals == null)
-                    childThread.locals = new WeakHashMap();
+                    childThread.locals = new WeakIdentityHashMap();
                 childThread.locals.put(key, (childValue == null
                                              ? NULL : childValue));
               }

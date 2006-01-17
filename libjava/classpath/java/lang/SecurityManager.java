@@ -41,9 +41,6 @@ package java.lang;
 import gnu.classpath.VMStackWalker;
 
 import java.awt.AWTPermission;
-import java.awt.Frame;
-import java.awt.Toolkit;
-import java.awt.Window;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -424,7 +421,7 @@ public class SecurityManager
   public void checkAccess(Thread thread)
   {
     if (thread.getThreadGroup() != null 
-	&& thread.getThreadGroup().getParent() != null)
+	&& thread.getThreadGroup().getParent() == null)
       checkPermission(new RuntimePermission("modifyThread"));
   }
 
@@ -457,7 +454,7 @@ public class SecurityManager
    */
   public void checkAccess(ThreadGroup g)
   {
-    if (g.getParent() != null)
+    if (g.getParent() == null)
       checkPermission(new RuntimePermission("modifyThreadGroup"));
   }
 
@@ -837,7 +834,7 @@ public class SecurityManager
    * @param window the window to create
    * @return true if there is permission to show the window without warning
    * @throws NullPointerException if window is null
-   * @see Window#Window(Frame)
+   * @see java.awt.Window#Window(java.awt.Frame)
    */
   public boolean checkTopLevelWindow(Object window)
   {
@@ -862,7 +859,7 @@ public class SecurityManager
    * an exception.
    *
    * @throws SecurityException if permission is denied
-   * @see Toolkit#getPrintJob(Frame, String, Properties)
+   * @see java.awt.Toolkit#getPrintJob(java.awt.Frame, String, Properties)
    * @since 1.1
    */
   public void checkPrintJobAccess()
@@ -878,7 +875,7 @@ public class SecurityManager
    * rather than throwing an exception.
    *
    * @throws SecurityException if permission is denied
-   * @see Toolkit#getSystemClipboard()
+   * @see java.awt.Toolkit#getSystemClipboard()
    * @since 1.1
    */
   public void checkSystemClipboardAccess()
@@ -894,7 +891,7 @@ public class SecurityManager
    * rather than throwing an exception.
    *
    * @throws SecurityException if permission is denied
-   * @see Toolkit#getSystemEventQueue()
+   * @see java.awt.Toolkit#getSystemEventQueue()
    * @since 1.1
    */
   public void checkAwtEventQueueAccess()

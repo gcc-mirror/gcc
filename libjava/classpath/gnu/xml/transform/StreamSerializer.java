@@ -1,5 +1,5 @@
 /* StreamSerializer.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,6 +49,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import javax.xml.XMLConstants;
 import org.w3c.dom.Attr;
@@ -149,16 +151,25 @@ public class StreamSerializer
     HTML_BOOLEAN_ATTRIBUTES.put("script", set);
   }
 
+  // HTML namespace URIs
+  static final HashSet HTML_URIS = new HashSet();
+  static {
+    HTML_URIS.add("http://www.w3.org/1999/xhtml");
+  }
+
   protected final String encoding;
   final Charset charset;
   final CharsetEncoder encoder;
   final int mode;
-  final Map namespaces;
+  final LinkedList namespaces;
   protected String eol;
   Collection cdataSectionElements = Collections.EMPTY_SET;
 
   protected boolean discardDefaultContent;
   protected boolean xmlDeclaration = true;
+  
+  // has a META element with the encoding been added?
+  private boolean htmlEncoded;
 
   public StreamSerializer()
   {
@@ -174,14 +185,12 @@ public class StreamSerializer
   {
     this.mode = mode;
     if (encoding == null)
-      {
-        encoding = "UTF-8";
-      }
+      encoding = (mode == Stylesheet.OUTPUT_HTML) ? "ISO-8859-1" : "UTF-8";
     this.encoding = encoding.intern();
     charset = Charset.forName(this.encoding);
     encoder = charset.newEncoder();
     this.eol = (eol != null) ? eol : System.getProperty("line.separator");
-    namespaces = new HashMap();
+    namespaces = new LinkedList();
   }
 
   void setCdataSectionElements(Collection c)
@@ -212,18 +221,14 @@ public class StreamSerializer
     throws IOException
   {
     if (out == null)
-      {
-        throw new NullPointerException("no output stream");
-      }
+      throw new NullPointerException("no output stream");
+    htmlEncoded = false;
     String value, prefix;
     Node children;
     String uri = node.getNamespaceURI();
-    boolean defined = false;
     short nt = node.getNodeType();
     if (convertToCdata && nt == Node.TEXT_NODE)
-      {
-        nt = Node.CDATA_SECTION_NODE;
-      }
+      nt = Node.CDATA_SECTION_NODE;
     switch (nt)
       {
       case Node.ATTRIBUTE_NODE:
@@ -233,27 +238,28 @@ public class StreamSerializer
             (prefix != null && prefix.startsWith("xmlns:")))
           {
             String nsuri = node.getNodeValue();
-            if (isDefined(nsuri))
-              {
-                break;
-              }
+            if (isDefined(nsuri, prefix))
+              break;
             String name = node.getLocalName();
             if (name == null)
               {
+                // Namespace-unaware
                 name = node.getNodeName();
+                int ci = name.indexOf(':');
+                if (ci != -1)
+                  name = name.substring(ci + 1);
               }
             define(nsuri, name);
           }
-        else if (uri != null && !isDefined(uri))
+        else if (uri != null && !isDefined(uri, prefix))
           {
             prefix = define(uri, prefix);
             String nsname = (prefix == null) ? "xmlns" : "xmlns:" + prefix;
             out.write(SPACE);
             out.write(encodeText(nsname));
             out.write(EQ);
-            String nsvalue = "'" + encode(uri, true, true) + "'";
+            String nsvalue = "\"" + encode(uri, true, true) + "\"";
             out.write(nsvalue.getBytes(encoding));
-            defined = true;
           }
         out.write(SPACE);
         String a_nodeName = node.getNodeName();
@@ -262,27 +268,26 @@ public class StreamSerializer
         if (mode == Stylesheet.OUTPUT_HTML &&
             a_nodeName.equals(a_nodeValue) &&
             isHTMLBoolean((Attr) node, a_nodeName))
-          {
-            break;
-          }
+          break;
         out.write(EQ);
-        value = "'" + encode(a_nodeValue, true, true) + "'";
+        value = "\"" + encode(a_nodeValue, true, true) + "\"";
         out.write(encodeText(value));
         break;
       case Node.ELEMENT_NODE:
+        pushNamespaceContext();
         value = node.getNodeName();
         out.write(BRA);
         out.write(encodeText(value));
-        if (uri != null && !isDefined(uri))
+        prefix = node.getPrefix();
+        if (uri != null && !isDefined(uri, prefix))
           {
-            prefix = define(uri, node.getPrefix());
+            prefix = define(uri, prefix);
             String nsname = (prefix == null) ? "xmlns" : "xmlns:" + prefix;
             out.write(SPACE);
             out.write(encodeText(nsname));
             out.write(EQ);
-            String nsvalue = "'" + encode(uri, true, true) + "'";
+            String nsvalue = "\"" + encode(uri, true, true) + "\"";
             out.write(encodeText(nsvalue));
-            defined = true;
           }
         NamedNodeMap attrs = node.getAttributes();
         if (attrs != null)
@@ -296,9 +301,7 @@ public class StreamSerializer
                     // NOOP
                   }
                 else
-                  {
-                    serialize(attr, out, false);
-                  }
+                  serialize(attr, out, false);
               }
           }
         convertToCdata = cdataSectionElements.contains(value);
@@ -317,27 +320,35 @@ public class StreamSerializer
             out.write(encodeText(value));
             out.write(KET);
           }
+        popNamespaceContext();
         break;
       case Node.TEXT_NODE:
         value = node.getNodeValue();
         if (!"yes".equals(node.getUserData("disable-output-escaping")))
-          {
-            value = encode(value, false, false);
-          }
+          value = encode(value, false, false);
         out.write(encodeText(value));
         break;
       case Node.CDATA_SECTION_NODE:
-        value = "<![CDATA[" + node.getNodeValue() + "]]>";
-        out.write(encodeText(value));
+        value = node.getNodeValue();
+        // Where any instanceof of ]]> occur, split into multiple CDATA
+        // sections
+        int bbk = value.indexOf("]]>");
+        while (bbk != -1)
+          {
+            String head = value.substring(0, bbk + 2);
+            out.write(encodeText("<![CDATA[" + head + "]]>"));
+            value = value.substring(bbk + 2);
+            bbk = value.indexOf("]]>");
+          }
+        // Write final tail value
+        out.write(encodeText("<![CDATA[" + value + "]]>"));
         break;
       case Node.COMMENT_NODE:
         value = "<!--" + node.getNodeValue() + "-->";
         out.write(encodeText(value));
         Node cp = node.getParentNode();
         if (cp != null && cp.getNodeType() == Node.DOCUMENT_NODE)
-          {
-            out.write(encodeText(eol));
-          }
+          out.write(encodeText(eol));
         break;
       case Node.DOCUMENT_NODE:
       case Node.DOCUMENT_FRAGMENT_NODE:
@@ -355,29 +366,23 @@ public class StreamSerializer
                   (Document) node : null;
                 String version = (doc != null) ? doc.getXmlVersion() : null;
                 if (version == null)
-                  {
-                    version = (String) node.getUserData("version");
-                  }
+                  version = (String) node.getUserData("version");
                 if (version == null)
-                  {
-                    version = "1.0";
-                  }
+                  version = "1.0";
                 out.write(BRA);
                 out.write(0x3f);
-                out.write("xml version='".getBytes("US-ASCII"));
+                out.write("xml version=\"".getBytes("US-ASCII"));
                 out.write(version.getBytes("US-ASCII"));
-                out.write(APOS);
+                out.write(0x22);
                 if (!("UTF-8".equalsIgnoreCase(encoding)))
                   {
-                    out.write(" encoding='".getBytes("US-ASCII"));
+                    out.write(" encoding=\"".getBytes("US-ASCII"));
                     out.write(encoding.getBytes("US-ASCII"));
-                    out.write(APOS);
+                    out.write(0x22);
                   }
                 if ((doc != null && doc.getXmlStandalone()) ||
                     "yes".equals(node.getUserData("standalone")))
-                  {
-                    out.write(" standalone='yes'".getBytes("US-ASCII"));
-                  }
+                  out.write(" standalone=\"yes\"".getBytes("US-ASCII"));
                 out.write(0x3f);
                 out.write(KET);
                 out.write(encodeText(eol));
@@ -387,12 +392,10 @@ public class StreamSerializer
           }
         else if (mode == Stylesheet.OUTPUT_HTML)
           {
-            // Ensure that encoding is accessible
+            // Ensure that encoding is accessible if head element is present
             String mediaType = (String) node.getUserData("media-type");
             if (mediaType == null)
-              {
-                mediaType = "text/html";
-              }
+              mediaType = "text/html";
             String contentType = mediaType + "; charset=" +
               ((encoding.indexOf(' ') != -1) ?
                 "\"" + encoding + "\"" :
@@ -403,133 +406,87 @@ public class StreamSerializer
             for (Node ctx = node.getFirstChild(); ctx != null;
                  ctx = ctx.getNextSibling())
               {
-                if (ctx.getNodeType() == Node.ELEMENT_NODE)
+                if (ctx.getNodeType() == Node.ELEMENT_NODE &&
+                    isHTMLElement(ctx, "html"))
                   {
                     html = ctx;
                     break;
                   }
               }
-            if (html == null)
+            if (html != null)
               {
-                html = doc.createElement("html");
-                node.appendChild(html);
-              }
-            Node head = null;
-            for (Node ctx = html.getFirstChild(); ctx != null;
-                 ctx = ctx.getNextSibling())
-              {
-                if (ctx.getNodeType() == Node.ELEMENT_NODE)
+                Node head = null;
+                for (Node ctx = html.getFirstChild(); ctx != null;
+                     ctx = ctx.getNextSibling())
                   {
-                    String name = ctx.getLocalName();
-                    if (name == null)
-                      {
-                        name = ctx.getNodeName();
-                      }
-                    if ("head".equalsIgnoreCase(name))
+                    if (isHTMLElement(ctx, "head"))
                       {
                         head = ctx;
                         break;
                       }
                   }
-              }
-            if (head == null)
-              {
-                head = doc.createElement("head");
-                Node c1 = null;
-                for (Node ctx = html.getFirstChild(); ctx != null;
-                     ctx = ctx.getNextSibling())
+                if (head != null)
                   {
-                    if (ctx.getNodeType() == Node.ELEMENT_NODE)
+                    Node meta = null;
+                    Node metaContent = null;
+                    for (Node ctx = head.getFirstChild(); ctx != null;
+                         ctx = ctx.getNextSibling())
                       {
-                        c1 = ctx;
-                        break;
-                      }
-                  }
-                if (c1 != null)
-                  {
-                    html.insertBefore(head, c1);
-                  }
-                else
-                  {
-                    html.appendChild(head);
-                  }
-              }
-            Node meta = null;
-            Node metaContent = null;
-            for (Node ctx = head.getFirstChild(); ctx != null;
-                 ctx = ctx.getNextSibling())
-              {
-                if (ctx.getNodeType() == Node.ELEMENT_NODE)
-                  {
-                    String name = ctx.getLocalName();
-                    if (name == null)
-                      {
-                        name = ctx.getNodeName();
-                      }
-                    if ("meta".equalsIgnoreCase(name))
-                      {
-                        NamedNodeMap metaAttrs = ctx.getAttributes();
-                        int len = metaAttrs.getLength();
-                        String httpEquiv = null;
-                        Node content = null;
-                        for (int i = 0; i < len; i++)
+                        if (isHTMLElement(ctx, "meta"))
                           {
-                            Node attr = metaAttrs.item(i);
-                            String attrName = attr.getNodeName();
-                            if ("http-equiv".equalsIgnoreCase(attrName))
+                            NamedNodeMap metaAttrs = ctx.getAttributes();
+                            int len = metaAttrs.getLength();
+                            String httpEquiv = null;
+                            Node content = null;
+                            for (int i = 0; i < len; i++)
                               {
-                                httpEquiv = attr.getNodeValue();
+                                Node attr = metaAttrs.item(i);
+                                String attrName = attr.getNodeName();
+                                if ("http-equiv".equalsIgnoreCase(attrName))
+                                  httpEquiv = attr.getNodeValue();
+                                else if ("content".equalsIgnoreCase(attrName))
+                                  content = attr;
                               }
-                            else if ("content".equalsIgnoreCase(attrName))
+                            if ("Content-Type".equalsIgnoreCase(httpEquiv))
                               {
-                                content = attr;
+                                meta = ctx;
+                                metaContent = content;
+                                break;
                               }
                           }
-                        if ("Content-Type".equalsIgnoreCase(httpEquiv))
-                          {
-                            meta = ctx;
-                            metaContent = content;
-                            break;
-                          }
                       }
+                    if (meta == null)
+                      {
+                        meta = doc.createElement("meta");
+                        // Insert first
+                        Node first = head.getFirstChild();
+                        if (first == null)
+                          head.appendChild(meta);
+                        else
+                          head.insertBefore(meta, first);
+                        Node metaHttpEquiv = doc.createAttribute("http-equiv");
+                        meta.getAttributes().setNamedItem(metaHttpEquiv);
+                        metaHttpEquiv.setNodeValue("Content-Type");
+                      }
+                    if (metaContent == null)
+                      {
+                        metaContent = doc.createAttribute("content");
+                        meta.getAttributes().setNamedItem(metaContent);
+                      }
+                    metaContent.setNodeValue(contentType);
+                    htmlEncoded = true;
                   }
               }
-            if (meta == null)
-              {
-                meta = doc.createElement("meta");
-                // Insert first
-                Node first = head.getFirstChild();
-                if (first == null)
-                  {
-                    head.appendChild(meta);
-                  }
-                else
-                  {
-                    head.insertBefore(meta, first);
-                  }
-                Node metaHttpEquiv = doc.createAttribute("http-equiv");
-                meta.getAttributes().setNamedItem(metaHttpEquiv);
-                metaHttpEquiv.setNodeValue("Content-Type");
-              }
-            if (metaContent == null)
-              {
-                metaContent = doc.createAttribute("content");
-                meta.getAttributes().setNamedItem(metaContent);
-              }
-            metaContent.setNodeValue(contentType);
-            // phew
           }
         children = node.getFirstChild();
         if (children != null)
-          {
-            serialize(children, out, convertToCdata);
-          }
+          serialize(children, out, convertToCdata);
         break;
       case Node.DOCUMENT_TYPE_NODE:
         DocumentType doctype = (DocumentType) node;
         out.write(BRA);
         out.write(BANG);
-	out.write(encodeText("DOCTYPE "));
+        out.write(encodeText("DOCTYPE "));
         value = doctype.getNodeName();
         out.write(encodeText(value));
         String publicId = doctype.getPublicId();
@@ -569,41 +526,73 @@ public class StreamSerializer
             out.write(encodeText(eol));
           }
         break;
-      }
-    if (defined)
-      {
-        undefine(uri);
+      default:
+        System.err.println("Unhandled node type: "+nt);
       }
   }
 
-  boolean isDefined(String uri)
+  boolean isHTMLElement(Node node, String name)
   {
-    return XMLConstants.XML_NS_URI.equals(uri) ||
-      XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(uri) ||
-      namespaces.containsKey(uri);
+    if (node.getNodeType() != Node.ELEMENT_NODE)
+      return false;
+    String localName = node.getLocalName();
+    if (localName == null)
+      localName = node.getNodeName();
+    if (!name.equalsIgnoreCase(localName))
+      return false;
+    String uri = node.getNamespaceURI();
+    return (uri == null || HTML_URIS.contains(uri));
+  }
+
+  boolean isDefined(String uri, String prefix)
+  {
+    if (XMLConstants.XML_NS_URI.equals(uri))
+      return "xml".equals(prefix);
+    if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(uri))
+      return "xmlns".equals(prefix);
+    if (prefix == null)
+      prefix = "";
+    for (Iterator i = namespaces.iterator(); i.hasNext(); )
+      {
+        Map ctx = (Map) i.next();
+        String val = (String) ctx.get(uri);
+        if (val != null && val.equals(prefix))
+          return true;
+      }
+    return false;
+  }
+
+  void pushNamespaceContext()
+  {
+    namespaces.addFirst(new HashMap());
   }
 
   String define(String uri, String prefix)
   {
-    while (namespaces.containsValue(prefix))
+    if (namespaces.isEmpty())
+      return prefix;
+    HashMap ctx = (HashMap) namespaces.getFirst();
+    while (ctx.containsValue(prefix))
       {
         // Fabricate new prefix
         prefix = prefix + "_";
       }
-    namespaces.put(uri, prefix);
+    ctx.put(uri, prefix);
     return prefix;
   }
 
-  void undefine(String uri)
+  void popNamespaceContext()
   {
-    namespaces.remove(uri);
+    namespaces.removeFirst();
   }
 
   final byte[] encodeText(String text)
     throws IOException
   {
     encoder.reset();
-    if (!encoder.canEncode(text))
+    boolean htmlNeedingEncoding =
+      (mode == Stylesheet.OUTPUT_HTML && !htmlEncoded);
+    if (!encoder.canEncode(text) || htmlNeedingEncoding)
       {
         // Check each character
         StringBuffer buf = new StringBuffer();
@@ -611,11 +600,7 @@ public class StreamSerializer
         for (int i = 0; i < len; i++)
           {
             char c = text.charAt(i);
-            if (encoder.canEncode(c))
-              {
-                buf.append(c);
-              }
-            else
+            if (!encoder.canEncode(c))
               {
                 // Replace with character entity reference
                 String hex = Integer.toHexString((int) c);
@@ -623,6 +608,20 @@ public class StreamSerializer
                 buf.append(hex);
                 buf.append(';');
               }
+            else if (htmlNeedingEncoding)
+              {
+                String entityName = getHTMLCharacterEntity(c);
+                if (entityName != null)
+                  {
+                    buf.append('&');
+                    buf.append(entityName);
+                    buf.append(';');
+                  }
+                else
+                  buf.append(c);
+              }
+            else
+              buf.append(c);
           }
         text = buf.toString();
       }
@@ -656,17 +655,13 @@ public class StreamSerializer
         if (c == '<')
           {
             if (buf == null)
-              {
-                buf = new StringBuffer(text.substring(0, i));
-              }
+              buf = new StringBuffer(text.substring(0, i));
             buf.append("&lt;");
           }
         else if (c == '>')
           {
             if (buf == null)
-              {
-                buf = new StringBuffer(text.substring(0, i));
-              }
+              buf = new StringBuffer(text.substring(0, i));
             buf.append("&gt;");
           }
         else if (c == '&')
@@ -675,25 +670,19 @@ public class StreamSerializer
                 text.charAt(i + 1) == '{')
               {
                 if (buf != null)
-                  {
-                    buf.append(c);
-                  }
+                  buf.append(c);
               }
             else
               {
                 if (buf == null)
-                  {
-                    buf = new StringBuffer(text.substring(0, i));
-                  }
+                  buf = new StringBuffer(text.substring(0, i));
                 buf.append("&amp;");
               }
           }
         else if (c == '\'' && inAttr)
           {
             if (buf == null)
-              {
-                buf = new StringBuffer(text.substring(0, i));
-              }
+              buf = new StringBuffer(text.substring(0, i));
             if (mode == Stylesheet.OUTPUT_HTML)
               // HTML does not define &apos;, use character entity ref
               buf.append("&#x27;");
@@ -703,9 +692,7 @@ public class StreamSerializer
         else if (c == '"' && inAttr)
           {
             if (buf == null)
-              {
-                buf = new StringBuffer(text.substring(0, i));
-              }
+              buf = new StringBuffer(text.substring(0, i));
             buf.append("&quot;");
           }
         else if (encodeCtl)
@@ -713,23 +700,17 @@ public class StreamSerializer
             if (c < 0x20)
               {
                 if (buf == null)
-                  {
-                    buf = new StringBuffer(text.substring(0, i));
-                  }
+                  buf = new StringBuffer(text.substring(0, i));
                 buf.append('&');
                 buf.append('#');
                 buf.append((int) c);
                 buf.append(';');
               }
             else if (buf != null)
-              {
-                buf.append(c);
-              }
+              buf.append(c);
           }
         else if (buf != null)
-          {
-            buf.append(c);
-          }
+          buf.append(c);
       }
     return (buf == null) ? text : buf.toString();
   }
@@ -761,6 +742,111 @@ public class StreamSerializer
     Collection attributes =
       (Collection) HTML_BOOLEAN_ATTRIBUTES.get(elementName);
     return (attributes != null && attributes.contains(attrName));
+  }
+
+  static String getHTMLCharacterEntity(char c)
+  {
+    // Hardcode these here to avoid loading the HTML DTD
+    switch (c)
+      {
+      case 160: return "nbsp";
+      case 161: return "iexcl";
+      case 162: return "cent";
+      case 163: return "pound";
+      case 164: return "curren";
+      case 165: return "yen";
+      case 166: return "brvbar";
+      case 167: return "sect";
+      case 168: return "uml";
+      case 169: return "copy";
+      case 170: return "ordf";
+      case 171: return "laquo";
+      case 172: return "not";
+      case 173: return "shy";
+      case 174: return "reg";
+      case 175: return "macr";
+      case 176: return "deg";
+      case 177: return "plusmn";
+      case 178: return "sup2";
+      case 179: return "sup3";
+      case 180: return "acute";
+      case 181: return "micro";
+      case 182: return "para";
+      case 183: return "middot";
+      case 184: return "cedil";
+      case 185: return "sup1";
+      case 186: return "ordm";
+      case 187: return "raquo";
+      case 188: return "frac14";
+      case 189: return "frac12";
+      case 190: return "frac34";
+      case 191: return "iquest";
+      case 192: return "Agrave";
+      case 193: return "Aacute";
+      case 194: return "Acirc";
+      case 195: return "Atilde";
+      case 196: return "Auml";
+      case 197: return "Aring";
+      case 198: return "AElig";
+      case 199: return "Ccedil";
+      case 200: return "Egrave";
+      case 201: return "Eacute";
+      case 202: return "Ecirc";
+      case 203: return "Euml";
+      case 204: return "Igrave";
+      case 205: return "Iacute";
+      case 206: return "Icirc";
+      case 207: return "Iuml";
+      case 208: return "ETH";
+      case 209: return "Ntilde";
+      case 210: return "Ograve";
+      case 211: return "Oacute";
+      case 212: return "Ocirc";
+      case 213: return "Otilde";
+      case 214: return "Ouml";
+      case 215: return "times";
+      case 216: return "Oslash";
+      case 217: return "Ugrave";
+      case 218: return "Uacute";
+      case 219: return "Ucirc";
+      case 220: return "Uuml";
+      case 221: return "Yacute";
+      case 222: return "THORN";
+      case 223: return "szlig";
+      case 224: return "agrave";
+      case 225: return "aacute";
+      case 226: return "acirc";
+      case 227: return "atilde";
+      case 228: return "auml";
+      case 229: return "aring";
+      case 230: return "aelig";
+      case 231: return "ccedil";
+      case 232: return "egrave";
+      case 233: return "eacute";
+      case 234: return "ecirc";
+      case 235: return "euml";
+      case 236: return "igrave";
+      case 237: return "iacute";
+      case 238: return "icirc";
+      case 239: return "iuml";
+      case 240: return "eth";
+      case 241: return "ntilde";
+      case 242: return "ograve";
+      case 243: return "oacute";
+      case 244: return "ocirc";
+      case 245: return "otilde";
+      case 246: return "ouml";
+      case 247: return "divide";
+      case 248: return "oslash";
+      case 249: return "ugrave";
+      case 250: return "uacute";
+      case 251: return "ucirc";
+      case 252: return "uuml";
+      case 253: return "yacute";
+      case 254: return "thorn";
+      case 255: return "yuml";
+      default: return null;
+      }
   }
 
 }

@@ -1,5 +1,5 @@
 /* PrinterMoreInfoManufacturer.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,22 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.URISyntax;
 
 /**
+ * The <code>PrinterMoreInfoManufacturer</code> attribute provides a URI that 
+ * can be used to obtain more information about the printer device type and
+ * its manufacturer.
+ * <p>
+ * The URI may for example contain a reference to a website of the 
+ * manufacturer, containing informations and links to the latest firmware, 
+ * printer drivers, manual etc. The information is normally intended for 
+ * end users.
+ * </p> 
+ * <p>
+ * <b>IPP Compatibility:</b> PrinterMoreInfoManufacturer is an IPP 1.1 
+ * attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PrinterMoreInfoManufacturer extends URISyntax
   implements PrintServiceAttribute
@@ -53,16 +68,35 @@ public final class PrinterMoreInfoManufacturer extends URISyntax
 
   /**
    * Constructs a <code>PrinterMoreInfoManufacturer</code> object.
+   * 
+   * @param uri the URI of the information..
+   * @throws NullPointerException if the given uri is null.
    */
   public PrinterMoreInfoManufacturer(URI uri)
   {
     super(uri);
   }
+  
+  /**
+   * Tests if the given object is equal to this object.
+   *
+   * @param obj the object to test
+   *
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
+   */
+  public boolean equals(Object obj)
+  {
+    if(! (obj instanceof PrinterMoreInfoManufacturer))
+      return false;
+
+    return super.equals(obj);
+  }
 
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrinterMoreInfoManufacturer</code> itself
+   * @return The class <code>PrinterMoreInfoManufacturer</code> itself.
    */
   public Class getCategory()
   {
@@ -72,7 +106,7 @@ public final class PrinterMoreInfoManufacturer extends URISyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "printer-more-info-manufacturer".
    */
   public String getName()
   {

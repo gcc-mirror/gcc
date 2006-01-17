@@ -185,7 +185,6 @@ public class PlainView extends View implements TabExpander
     
     JTextComponent textComponent = (JTextComponent) getContainer();
 
-    g.setFont(textComponent.getFont());
     selectedColor = textComponent.getSelectedTextColor();
     unselectedColor = textComponent.getForeground();
     disabledColor = textComponent.getDisabledTextColor();
@@ -513,7 +512,8 @@ public class PlainView extends View implements TabExpander
     else
       {
         Rectangle repaintRec = rec0.union(rec1);
-        host.repaint();
+        host.repaint(repaintRec.x, repaintRec.y, repaintRec.width,
+                     repaintRec.height);
       }    
   }
 
@@ -529,36 +529,6 @@ public class PlainView extends View implements TabExpander
     if (lineBuffer == null)
       lineBuffer = new Segment();
     return lineBuffer;
-  }
-
-  /**
-   * Returns the document position that is (visually) nearest to the given
-   * document position <code>pos</code> in the given direction <code>d</code>.
-   *
-   * @param c the text component
-   * @param pos the document position
-   * @param b the bias for <code>pos</code>
-   * @param d the direction, must be either {@link SwingConstants#NORTH},
-   *        {@link SwingConstants#SOUTH}, {@link SwingConstants#WEST} or
-   *        {@link SwingConstants#EAST}
-   * @param biasRet an array of {@link Position.Bias} that can hold at least
-   *        one element, which is filled with the bias of the return position
-   *        on method exit
-   *
-   * @return the document position that is (visually) nearest to the given
-   *         document position <code>pos</code> in the given direction
-   *         <code>d</code>
-   *
-   * @throws BadLocationException if <code>pos</code> is not a valid offset in
-   *         the document model
-   */
-  public int getNextVisualPositionFrom(JTextComponent c, int pos,
-                                       Position.Bias b, int d,
-                                       Position.Bias[] biasRet)
-    throws BadLocationException
-  {
-    // TODO: Implement this properly.
-    throw new AssertionError("Not implemented yet.");
   }
 }
 

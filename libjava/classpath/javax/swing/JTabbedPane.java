@@ -497,7 +497,7 @@ public class JTabbedPane extends JComponent implements Serializable,
      */
     public int getMnemonic()
     {
-      return (int) mnemonicKey;
+      return mnemonicKey;
     }
 
     /**
@@ -592,9 +592,11 @@ public class JTabbedPane extends JComponent implements Serializable,
 
   /**
    * Creates a new JTabbedPane object using wrap tab layout  and the given
-   * tabPlacement.
+   * <code>tabPlacement</code>, where <code>tabPlacement</code> can be one
+   * of the following values: {@link #TOP}, {@link #BOTTOM}, {@link #LEFT} or
+   * {@link #RIGHT}.
    *
-   * @param tabPlacement Where the tabs will be placed.
+   * @param tabPlacement where the tabs will be placed
    */
   public JTabbedPane(int tabPlacement)
   {
@@ -602,11 +604,14 @@ public class JTabbedPane extends JComponent implements Serializable,
   }
 
   /**
-   * Creates a new JTabbedPane object with the given tabPlacement and
-   * tabLayoutPolicy.
+   * Creates a new JTabbedPane object with the given <code>tabPlacement</code>
+   * and <code>tabLayoutPolicy</code>. The <code>tabPlacement</code> can be one
+   * of the following values: {@link #TOP}, {@link #BOTTOM}, {@link #LEFT} or
+   * {@link #RIGHT}. The <code>tabLayoutPolicy</code> can be either
+   * {@link #SCROLL_TAB_LAYOUT} or {@link #WRAP_TAB_LAYOUT}.
    *
-   * @param tabPlacement Where the tabs will be placed.
-   * @param tabLayoutPolicy The way tabs will be placed.
+   * @param tabPlacement where the tabs will be placed
+   * @param tabLayoutPolicy the way tabs will be placed
    *
    * @throws IllegalArgumentException If tabLayoutPolicy or tabPlacement are
    *         not valid.
@@ -913,7 +918,7 @@ public class JTabbedPane extends JComponent implements Serializable,
     if (getSelectedIndex() == -1)
       setSelectedIndex(0);
 
-    layout();
+    revalidate();
     repaint();
   }
 

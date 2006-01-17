@@ -47,6 +47,7 @@ import java.awt.image.ImageConsumer;
 import java.awt.image.ImageProducer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
@@ -102,6 +103,11 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
                                                      0x00ff0000, 
                                                      0x0000ff00, 
                                                      0x000000ff);
+  public GdkPixbufDecoder (DataInput datainput)
+  {
+    super (datainput);
+  }
+
   public GdkPixbufDecoder (InputStream in)
   {
     super (in);
@@ -630,7 +636,14 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
                          boolean ignoreMetadata)
     {
       super.setInput(input, seekForwardOnly, ignoreMetadata);
-      dec = new GdkPixbufDecoder((InputStream) getInput());
+      Object get = getInput();
+      if (get instanceof InputStream)
+        dec = new GdkPixbufDecoder((InputStream) get);
+      else if (get instanceof DataInput)
+        dec = new GdkPixbufDecoder((DataInput) get);
+      else
+	throw new IllegalArgumentException("input object not supported: "
+					   + get);
     }
 
     public BufferedImage read(int imageIndex, ImageReadParam param)

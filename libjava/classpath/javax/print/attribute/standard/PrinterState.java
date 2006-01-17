@@ -1,5 +1,5 @@
 /* PrinterState.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,20 +42,61 @@ import javax.print.attribute.PrintServiceAttribute;
 
 
 /**
+ * The <code>PrinterState</code> printing attribute reports
+ * the current state of the printer device.
+ * <p>
+ * The {@link javax.print.attribute.standard.PrinterStateReasons}
+ * attribute provides further detailed information about
+ * the given printer state. Detailed information about the printer
+ * state and printer state reasons attributes can be found in the 
+ * RFC 2911.
+ * </p> 
+ * <p>
+ * <b>IPP Compatibility:</b> PrinterState is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class PrinterState extends EnumSyntax
   implements PrintServiceAttribute
 {
   private static final long serialVersionUID = -649578618346507718L;
 
+  /**
+   * The state is unknown currently.
+   */
   public static final PrinterState UNKNOWN = new PrinterState(0);
-  public static final PrinterState IDLE = new PrinterState(1);
-  public static final PrinterState PROCESSING = new PrinterState(2);
-  public static final PrinterState STOPPED = new PrinterState(3);
+  
+  /**
+   * The printer device is in idle state. New jobs can start
+   * processing without waiting.
+   */
+  public static final PrinterState IDLE = new PrinterState(3);
+  
+  /**
+   * The printer device is in processing state.
+   */
+  public static final PrinterState PROCESSING = new PrinterState(4);
+  
+  /**
+   * The printer device has stopped. No jobs can be processed and
+   * normally manual intervention is needed.
+   */
+  public static final PrinterState STOPPED = new PrinterState(5);
 
+  private static final String[] stringTable = { "unknown", null, null, 
+                                                "idle", "processing", 
+                                                "stopped" };
+  
+  private static final PrinterState[] enumValueTable = { UNKNOWN, null, null,
+                                                         IDLE, PROCESSING, 
+                                                         STOPPED };
+  
   /**
    * Constructs a <code>PrinterState</code> object.
+   * 
+   * @param value the enum value.
    */
   protected PrinterState(int value)
   {
@@ -65,7 +106,7 @@ public final class PrinterState extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrinterState</code> itself
+   * @return The class <code>PrinterState</code> itself.
    */
   public Class getCategory()
   {
@@ -75,10 +116,31 @@ public final class PrinterState extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "printer-state".
    */
   public String getName()
   {
     return "printer-state";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
   }
 }

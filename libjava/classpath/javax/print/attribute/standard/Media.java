@@ -1,5 +1,5 @@
 /* Media.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,27 @@ import javax.print.attribute.PrintRequestAttribute;
 
 
 /**
+ * The <code>Media</code> printing attribute specifies which
+ * type of media should be used for printing.
+ * <p>
+ * The media to be used can be specified in three ways represented
+ * by the media subclasses {@link javax.print.attribute.standard.MediaTray},
+ * {@link javax.print.attribute.standard.MediaName} and 
+ * {@link javax.print.attribute.standard.MediaSizeName}:
+ * <ul>
+ * <li>Selection by paper source - selection of printer tray to be used.</li>
+ * <li>Selection by name - e.g. A4 paper.</li>
+ * <li>Selection by standard sizes - e.g. ISO A5, JIS B4.</li>
+ * </ul>
+ * Each of the sublcasses represents the IPP attribute <code>media</code>
+ * and provides predefined values to be used.
+ * </p> 
+ * <p>
+ * <b>IPP Compatibility:</b> Media is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public abstract class Media extends EnumSyntax
   implements DocAttribute, PrintRequestAttribute, PrintJobAttribute
@@ -53,16 +73,37 @@ public abstract class Media extends EnumSyntax
 
   /**
    * Constructs a <code>Media</code> object.
+   * 
+   * @param value the enum value.
    */
   protected Media(int value)
   {
     super(value);
   }
+    
+  /**
+   * Tests if the given object is equal to this object.
+   * The objects are considered equal if both are of the same
+   * Media subclass, not null and the values are equal.
+   *
+   * @param obj the object to test
+   *
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
+   */
+  public boolean equals(Object obj)
+  {
+    if (obj == null)
+      return false;
+    
+    return (obj.getClass() == this.getClass()
+            && ((Media) obj).getValue() == this.getValue());
+  }
 
   /**
    * Returns category of this class.
    *
-   * @return the class <code>Media</code> itself
+   * @return The class <code>Media</code> itself.
    */
   public Class getCategory()
   {
@@ -72,7 +113,7 @@ public abstract class Media extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "media".
    */
   public String getName()
   {

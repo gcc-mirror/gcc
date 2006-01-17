@@ -80,9 +80,9 @@
  *	down depends on the machine and the number being converted.
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <java-assert.h>
 #include "mprec.h"
 
 /* reent.c knows this value */
@@ -97,12 +97,14 @@ _DEFUN (Balloc, (ptr, k), struct _Jv_reent *ptr _AND int k)
   int i = 0;
   int j = 1;
 
-  JvAssert ((1 << k) < MAX_BIGNUM_WDS);
+  /* FIXME - assert disabled because of PR classpath/23863
+   * assert ((1 << k) < MAX_BIGNUM_WDS);
+   */
 
   while ((ptr->_allocation_map & j) && i < MAX_BIGNUMS)
     i++, j <<= 1;
 
-  JvAssert (i < MAX_BIGNUMS);
+  assert (i < MAX_BIGNUMS);
 
   if (i >= MAX_BIGNUMS) 
     return NULL;
@@ -124,7 +126,7 @@ _DEFUN (Bfree, (ptr, v), struct _Jv_reent *ptr _AND _Jv_Bigint * v)
 
   i = v - ptr->_freelist;
 
-  JvAssert (i >= 0 && i < MAX_BIGNUMS);
+  assert (i >= 0 && i < MAX_BIGNUMS);
 
   if (i >= 0 && i < MAX_BIGNUMS)
     ptr->_allocation_map &= ~ (1 << i);

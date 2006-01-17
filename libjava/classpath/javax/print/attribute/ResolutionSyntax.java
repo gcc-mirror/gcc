@@ -1,5 +1,5 @@
 /* ResolutionSyntax.java -- 
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,42 @@ package javax.print.attribute;
 import java.io.Serializable;
 
 /**
- * @author Michael Koch
+ * <code>ResolutionSyntax</code> is the abstract base class of all attribute 
+ * classes which provide a resolution as value (e.g. printer resolution).
+ * <p>
+ * A <code>ResolutionSyntax</code> instance consists of two integer values
+ * describing the resolution in feed and cross feed direction. The units of 
+ * the given values is determined by two defined constants:
+ * <ul>
+ * <li>DPCM - dots per centimeter</li>
+ * <li>DPI - dots per inch</li>
+ * </ul>
+ * </p>
+ * <p>
+ * A resolutions attribute is constructed by two values for the resolution and
+ * one of the two constants defining the actual units of the given values.
+ * </p>
+ * <p>
+ * There are different methods provided to return the resolution values in 
+ * either of the both units and to compare if a resolution is less than or
+ * equal to a given other resolution attribute.
+ * </p>
+ * <p>
+ * <b>Internal storage:</b><br>
+ * The resolutions are stored internally as dots per 100 inches (dphi). The 
+ * values of the provided constants for dots per inch (value 100) and dots
+ * per centimeter (value 254) are used as conversion factors to the internal
+ * storage units. To get the internal dphi values a multiplication of a given
+ * resolution value with its units constant value is needed. Retrieving the 
+ * resolution for specific units is done by dividing the internal stored 
+ * value through the units constant value. Clients are therefore able to 
+ * provide their own resolution units by supplying other conversion factors.
+ * Subclasses of <code>ResolutionSyntax</code> have access to the internal
+ * resolution values through the protected methods 
+ * {@link #getCrossFeedResolutionDphi()} and {@link #getFeedResolutionDphi()}.
+ * </p>
+ * 
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class ResolutionSyntax
   implements Cloneable, Serializable
@@ -65,7 +100,7 @@ public abstract class ResolutionSyntax
    *
    * @param crossFeedResolution the cross feed resolution
    * @param feedResolution the feed resolution
-   * @param units the unit to use
+   * @param units the unit to use (e.g. {@link #DPCM} or {@link #DPI})
    *
    * @exception IllegalArgumentException if preconditions fail
    */
@@ -82,11 +117,12 @@ public abstract class ResolutionSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -100,24 +136,25 @@ public abstract class ResolutionSyntax
   }
 
   /**
-   * Returns the cross feed resolution in units.
+   * Returns the cross feed resolution for the given units.
    *
-   * @return the resolution
+   * @param units the unit to use (e.g. {@link #DPCM} or {@link #DPI})
+   * @return The resolution for the given units.
    *
-   * @exception IllegalArgumentException if units < 1
+   * @exception IllegalArgumentException if units &lt; 1
    */
   public int getCrossFeedResolution(int units)
   {
     if (units < 1)
       throw new IllegalArgumentException("units may not be less then 1");
 
-    return (crossFeedResolution + units) / units;
+    return crossFeedResolution / units;
   }
 
   /**
-   * Returns the raw cross feed resolution in units.
+   * Returns the raw cross feed resolution in dots per 100 inches.
    *
-   * @return the raw resolution
+   * @return The raw resolution.
    */
   protected int getCrossFeedResolutionDphi()
   {
@@ -125,24 +162,25 @@ public abstract class ResolutionSyntax
   }
 
   /**
-   * Returns the feed resolution in units.
+   * Returns the feed resolution for the given units.
    *
-   * @return the resolution
+   * @param units the unit to use (e.g. {@link #DPCM} or {@link #DPI})
+   * @return The resolution for the given units.
    *
-   * @exception IllegalArgumentException if units < 1
+   * @exception IllegalArgumentException if units &lt; 1
    */
   public int getFeedResolution(int units)
   {
     if (units < 1)
       throw new IllegalArgumentException("units may not be less then 1");
 
-    return (crossFeedResolution + units) / units;
+    return feedResolution / units;
   }
 
   /**
-   * Returns the raw feed resolution in units.
+   * Returns the raw feed resolution in dots per 100 inches.
    *
-   * @return the raw resolution
+   * @return The raw resolution.
    */
   protected int getFeedResolutionDphi()
   {
@@ -155,7 +193,7 @@ public abstract class ResolutionSyntax
    *
    * @param units the units to use
    *
-   * @return the array with the resolutions
+   * @return The array with the resolutions.
    */
   public int[] getResolution(int units)
   {
@@ -168,7 +206,7 @@ public abstract class ResolutionSyntax
   /**
    * Returns the hashcode for this object.
    *
-   * @return the hashcode
+   * @return The hashcode.
    */
   public int hashCode()
   {
@@ -176,11 +214,13 @@ public abstract class ResolutionSyntax
   }
 
   /**
-   * Checks of other is a lower or equal resolution.
+   * Checks if the given resolution attribute is a lower or equal 
+   * to this resolution object.
    *
    * @param other the resolution to check against
    *
-   * @return true if other describes a lower or equal resolution
+   * @return <code>true</code> if other resolution attribute describes
+   * a lower or equal resolution, <code>false</code> otherwise.
    */
   public boolean lessThanOrEquals(ResolutionSyntax other)
   {
@@ -193,8 +233,12 @@ public abstract class ResolutionSyntax
 
   /**
    * Returns the string representation for this object.
-   *
-   * @return the string representation
+   * <p>
+   * The returned string is in the form "CxF dphi" with C standing
+   * for the cross feed and F for the feed direction resolution.
+   * Units used are dots per 100 inches (dphi).
+   * </p>
+   * @return The string representation.
    */
   public String toString()
   {
@@ -203,14 +247,23 @@ public abstract class ResolutionSyntax
 
   /**
    * Returns the string representation for this object.
-   *
+   * <p>
+   * The returned string is in the form "CxF U" with C standing
+   * for the cross feed and F for the feed direction resolution.
+   * U denotes the units name if one is supplied.
+   * </p>
+   * 
    * @param units the units to use
-   * @param unitsName the name of the units
+   * @param unitsName the name of the units. If <code>null</code>
+   * it is ommitted from the string representation.
    *
-   * @return the string representation
+   * @return The string representation.
    */
   public String toString(int units, String unitsName)
   {
+    if (unitsName == null)
+      return getCrossFeedResolution(units) + "x" + getFeedResolution(units);
+    
     return ("" + getCrossFeedResolution(units)
             + "x" + getFeedResolution(units)
             + " " + unitsName);

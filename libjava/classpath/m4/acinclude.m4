@@ -135,9 +135,18 @@ AC_DEFUN([CLASSPATH_CHECK_JIKES],
 
     JIKESENCODING=
     if test -n "`$JIKES --help 2>&1 | grep encoding`"; then
-       JIKESENCODING='-encoding UTF-8'
+      JIKESENCODING='-encoding UTF-8'
     fi
     AC_SUBST(JIKESENCODING)
+
+    JIKESWARNINGS="+Pno-switchcheck"
+    if test "x$JIKES_VERSION_MAJOR" = x"1" ; then
+      if ! test "x$JIKES_VERSION_MINOR" = x"19"; then
+        JIKESWARNINGS="$JIKESWARNINGS +Pno-shadow"
+      fi
+    fi
+    AC_SUBST(JIKESWARNINGS)
+
   fi
 ])
 

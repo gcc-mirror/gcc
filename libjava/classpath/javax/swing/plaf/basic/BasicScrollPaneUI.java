@@ -505,7 +505,8 @@ public class BasicScrollPaneUI extends ScrollPaneUI
     JViewport oldViewport = (JViewport) ev.getOldValue();
     oldViewport.removeChangeListener(viewportChangeListener);
     JViewport newViewport = (JViewport) ev.getNewValue();
-    oldViewport.addChangeListener(viewportChangeListener);
+    newViewport.addChangeListener(viewportChangeListener);
+    syncScrollPaneWithViewport();
   }
 }
 

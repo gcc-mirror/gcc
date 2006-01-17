@@ -1,5 +1,5 @@
 /* PrinterMakeAndModel.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,12 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
+ * The <code>PrinterMakeAndModel</code> printing attribute provides the name
+ * of the maker and the model of the printer.
+ * <p>
+ * <b>IPP Compatibility:</b> PrinterMakeAndModel is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class PrinterMakeAndModel extends TextSyntax
@@ -55,9 +61,10 @@ public final class PrinterMakeAndModel extends TextSyntax
    * Creates a <code>PrinterMakeAndModel</code> object.
    *
    * @param makeAndModel the make and model string
-   * @param locale the locale of the make and model, null means default locale
+   * @param locale the locale to use, if <code>null</code> the default
+   * locale is used.
    *
-   * @exception NullPointerException if makeAndModel is null
+   * @exception NullPointerException if makeAndModel is <code>null</code>.
    */
   public PrinterMakeAndModel(String makeAndModel, Locale locale)
   {
@@ -65,11 +72,12 @@ public final class PrinterMakeAndModel extends TextSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -82,7 +90,7 @@ public final class PrinterMakeAndModel extends TextSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrinterMakeAndModel</code> itself
+   * @return The class <code>PrinterMakeAndModel</code> itself.
    */
   public Class getCategory()
   {
@@ -90,9 +98,9 @@ public final class PrinterMakeAndModel extends TextSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "printer-make-and-model"
+   * @return The name "printer-make-and-model".
    */
   public String getName()
   {

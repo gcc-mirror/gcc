@@ -230,6 +230,8 @@ public class InputStreamReader extends Reader
    * Creates an InputStreamReader that uses a decoder of the given
    * charset to decode the bytes in the InputStream into
    * characters.
+   * 
+   * @since 1.5
    */
   public InputStreamReader(InputStream in, Charset charset) {
     this.in = in;
@@ -244,6 +246,8 @@ public class InputStreamReader extends Reader
   /**
    * Creates an InputStreamReader that uses the given charset decoder
    * to decode the bytes in the InputStream into characters.
+   * 
+   * @since 1.5
    */
   public InputStreamReader(InputStream in, CharsetDecoder decoder) {
     this.in = in;

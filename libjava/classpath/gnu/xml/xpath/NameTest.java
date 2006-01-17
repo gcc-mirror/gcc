@@ -1,5 +1,5 @@
 /* NameTest.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -91,29 +91,32 @@ public final class NameTest
         return false;
       }
     if (any)
-      {
-        return true;
-      }
+      return true;
     String uri = qName.getNamespaceURI();
     String nodeUri = node.getNamespaceURI();
-    String nodeLocalName = node.getLocalName();
-    if (nodeLocalName != null && !equal(uri, nodeUri))
-      {
-        return false;
-      }
+    if (!equal(uri, nodeUri))
+      return false;
     if (anyLocalName)
-      {
-        return true;
-      }
+      return true;
     String localName = qName.getLocalPart();
-    if (nodeLocalName != null)
-      {
-        nodeLocalName = node.getNodeName();
-      }
+    String nodeLocalName = getLocalName(node);
     return (localName.equals(nodeLocalName));
   }
 
-  final boolean equal(String s1, String s2)
+  static String getLocalName(Node node)
+  {
+    String localName = node.getLocalName();
+    if (localName == null)
+      {
+        localName = node.getNodeName();
+        int ci = localName.indexOf(':');
+        if (ci != -1)
+          localName = localName.substring(ci + 1);
+      }
+    return localName;
+  }
+
+  static boolean equal(String s1, String s2)
   {
     return (((s1 == null || s1.length() == 0) &&
              (s2 == null || s2.length() == 0)) ||
@@ -133,9 +136,7 @@ public final class NameTest
   public String toString ()
   {
     if (any)
-      {
-        return "*";
-      }
+      return "*";
     return qName.toString();
   }
   

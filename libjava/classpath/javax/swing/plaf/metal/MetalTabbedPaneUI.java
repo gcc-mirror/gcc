@@ -38,11 +38,14 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
+import java.awt.Rectangle;
 
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
@@ -100,6 +103,29 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     }
   }
 
+  /**
+   * The minimum tab width.
+   */
+  protected int minTabWidth;
+
+  /**
+   * The color for the selected tab.
+   */
+  protected Color selectColor;
+
+  /**
+   * The color for a highlighted selected tab.
+   */
+  protected Color selectHighlight;
+
+  /**
+   * The background color used for the tab area.
+   */
+  protected Color tabAreaBackground;
+
+  /** The graphics to draw the highlight below the tab. */
+  private Graphics hg;
+  
   /**
    * Constructs a new instance of MetalTabbedPaneUI.
    */
@@ -175,6 +201,16 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   protected void paintTopTabBorder(int tabIndex, Graphics g, int x, int y,
       int w, int h, int btm, int rght, boolean isSelected)
   {
+    int currentRun = getRunForTab(tabPane.getTabCount(), tabIndex);
+    if (shouldFillGap(currentRun, tabIndex, x, y))
+      {
+        g.translate(x, y);
+        g.setColor(getColorForGap(currentRun, x, y));
+        g.fillRect(1, 0, 5, 3);
+        g.fillRect(1, 3, 2, 2);
+        g.translate(-x, -y);
+      }
+    
     if (isSelected)
     {
       g.setColor(MetalLookAndFeel.getControlHighlight());
@@ -267,6 +303,16 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
   protected void paintBottomTabBorder(int tabIndex, Graphics g, int x, int y,
       int w, int h, int btm, int rght, boolean isSelected)
   {
+    int currentRun = getRunForTab(tabPane.getTabCount(), tabIndex);
+    if (shouldFillGap(currentRun, tabIndex, x, y))
+      {
+        g.translate(x, y);
+        g.setColor(getColorForGap(currentRun, x, y));
+        g.fillRect(1, h - 5, 3, 5);
+        g.fillRect(4, h - 2, 2, 2);
+        g.translate(-x, -y);
+      }
+    
     if (isSelected)
     {
       g.setColor(MetalLookAndFeel.getControlHighlight());
@@ -297,9 +343,16 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       int tabIndex, int x, int y, int w, int h, boolean isSelected)
   {
     if (isSelected)
-      g.setColor(MetalLookAndFeel.getControl());
+      g.setColor(UIManager.getColor("TabbedPane.selected"));
     else
-      g.setColor(MetalLookAndFeel.getControlShadow());
+      {
+        // This is only present in the OceanTheme, so we must check if it
+        // is actually there
+        Color background = UIManager.getColor("TabbedPane.unselectedBackground");
+        if (background == null)
+          background = UIManager.getColor("TabbedPane.background");
+        g.setColor(background);
+      }
     int[] px, py;
     if (tabPlacement == TOP) 
       {
@@ -324,6 +377,8 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     else 
       throw new AssertionError("Unrecognised 'tabPlacement' argument.");
     g.fillPolygon(px, py, 5);
+    hg = g;
+    paintHighlightBelowTab();
   }
   
   /**
@@ -342,5 +397,94 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     // (which is drawn at the very top for tabPlacement == TOP)
     return run < this.runCount - 1;
   }
+
+  /**
+   * Installs the defaults for this UI. This method calls super.installDefaults
+   * and then loads the Metal specific defaults for TabbedPane.
+   */
+  protected void installDefaults()
+  {
+    super.installDefaults();
+    selectColor = UIManager.getColor("TabbedPane.selected");
+    selectHighlight = UIManager.getColor("TabbedPane.selectHighlight");
+    tabAreaBackground = UIManager.getColor("TabbedPane.tabAreaBackground");
+    minTabWidth = 0;
+  }
   
+  /**
+   * Returns the color for the gap.
+   * 
+   * @param currentRun - The current run to return the color for
+   * @param x - The x position of the current run
+   * @param y - The y position of the current run
+   * 
+   * @return the color for the gap in the current run.
+   */
+  protected Color getColorForGap(int currentRun, int x, int y)
+  {
+    int index = tabForCoordinate(tabPane, x, y);
+    int selected = tabPane.getSelectedIndex();
+    if (selected == index)
+      return selectColor;
+    return tabAreaBackground;
+  }
+  
+  /**
+   * Returns true if the gap should be filled in.
+   * 
+   * @param currentRun - The current run
+   * @param tabIndex - The current tab
+   * @param x - The x position of the tab
+   * @param y - The y position of the tab
+   * 
+   * @return true if the gap at the current run should be filled 
+   */
+  protected boolean shouldFillGap(int currentRun, int tabIndex, int x, int y)
+  {
+    // As far as I can tell, the gap is never filled in.
+    return false;
+  }
+  
+  /**
+   * Paints the highlight below the tab, if there is one.
+   */
+  protected void paintHighlightBelowTab()
+  {
+    int selected = tabPane.getSelectedIndex();
+    int tabPlacement = tabPane.getTabPlacement();
+    Rectangle bounds = getTabBounds(tabPane, selected);
+    
+    hg.setColor(selectColor);
+    int x = bounds.x;
+    int y = bounds.y;
+    int w = bounds.width;
+    int h = bounds.height;
+
+    if (tabPlacement == TOP) 
+        hg.fillRect(x, y + h - 2, w, 30);
+    else if (tabPlacement == LEFT)
+        hg.fillRect(x + w - 1, y, 20, h);
+    else if (tabPlacement == BOTTOM)
+        hg.fillRect(x, y - h + 2, w, 30);
+    else if (tabPlacement == RIGHT)
+        hg.fillRect(x - 18, y, 20, h);
+    else 
+      throw new AssertionError("Unrecognised 'tabPlacement' argument.");
+    hg = null;
+  }
+  
+  /**
+   * Returns true if we should rotate the tab runs. 
+   * 
+   * @param tabPlacement - The current tab placement.
+   * @param selectedRun - The selected run.
+   * 
+   * @return true if the tab runs should be rotated.
+   */
+  protected boolean shouldRotateTabRuns(int tabPlacement,
+                                        int selectedRun)
+  {
+    // false because tab runs are not rotated in the MetalLookAndFeel
+    return false;
+  }
 }

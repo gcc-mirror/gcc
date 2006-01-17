@@ -1,3 +1,12 @@
+2006-01-16  Mark Wielaard  <mark@klomp.org>
+
+	Imported GNU Classpath 0.20
+	* Makefile.am (AM_CPPFLAGS): Add classpath/include.
+	* java/nio/charset/spi/CharsetProvider.java: New override file.
+	* java/security/Security.java: Likewise.
+	* sources.am: Regenerated.
+	* Makefile.in: Likewise.
+
 2006-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (dbexecdir): New substituted var.

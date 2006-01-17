@@ -1,5 +1,5 @@
 /* QName.java - An XML qualified name.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004,2005,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,16 +67,17 @@ public class QName implements Serializable
   public QName(String namespaceURI, String localPart, String prefix)
   {
     if (namespaceURI == null)
-      {
-        namespaceURI = XMLConstants.NULL_NS_URI;
-      }
+      namespaceURI = XMLConstants.NULL_NS_URI;
     if (localPart == null)
-      {
-        throw new IllegalArgumentException();
-      }
+      throw new IllegalArgumentException();
     if (prefix == null)
+      prefix = XMLConstants.DEFAULT_NS_PREFIX;
+    else
       {
-        prefix = XMLConstants.DEFAULT_NS_PREFIX;
+        if (XMLConstants.XML_NS_PREFIX.equals(prefix))
+          namespaceURI = XMLConstants.XML_NS_URI;
+        else if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix))
+          namespaceURI = XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
       }
     this.namespaceURI = namespaceURI;
     this.localPart = localPart;
@@ -151,9 +152,7 @@ public class QName implements Serializable
     if (start != -1)
       {
         if (end < start)
-          {
-            throw new IllegalArgumentException(qNameAsString);
-          }
+          throw new IllegalArgumentException(qNameAsString);
         namespaceUri = qNameAsString.substring(start + 1, end);
         qNameAsString = qNameAsString.substring(end + 1);
       }

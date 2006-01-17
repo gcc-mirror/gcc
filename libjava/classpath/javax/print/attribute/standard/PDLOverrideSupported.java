@@ -1,5 +1,5 @@
 /* PDLOverrideSupported.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,20 +42,44 @@ import javax.print.attribute.PrintServiceAttribute;
 
 
 /**
+ * The <code>PDLOverrideSupported</code> printing attribute specifies
+ * if a print services is capable of attempting to override document data
+ * instructions with IPP attributesc.
+ * <p>
+ * <b>IPP Compatibility:</b> PDLOverrideSupported is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class PDLOverrideSupported extends EnumSyntax
   implements PrintServiceAttribute
 {
   private static final long serialVersionUID = -4393264467928463934L;
 
+  /**
+   * Indicates that the print service is not capable of
+   * attempting to override document data instructions.
+   */
   public static final PDLOverrideSupported NOT_ATTEMPTED =
     new PDLOverrideSupported(0);
+  
+  /**
+   * Indicates that the print service is capable of
+   * attempting to override document data instructions.
+   */
   public static final PDLOverrideSupported ATTEMPTED =
-    new PDLOverrideSupported(0);
+    new PDLOverrideSupported(1);
+  
+  private static final String[] stringTable = { "not-attempted", "attempted" };
+  
+  private static final PDLOverrideSupported[] enumValueTable = { NOT_ATTEMPTED,
+                                                                 ATTEMPTED};
 
   /**
    * Constructs a <code>PDLOverrideSupported</code> object.
+   * 
+   * @param value the enum value
    */
   protected PDLOverrideSupported(int value)
   {
@@ -65,7 +89,7 @@ public class PDLOverrideSupported extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PDLOverrideSupported</code> itself
+   * @return The class  <code>PDLOverrideSupported</code> itself.
    */
   public Class getCategory()
   {
@@ -75,10 +99,31 @@ public class PDLOverrideSupported extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "pdl-override-supported".
    */
   public String getName()
   {
     return "pdl-override-supported";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
   }
 }

@@ -173,6 +173,81 @@ public final class Double extends Number implements Comparable
   }
 
   /**
+   * Convert a double value to a hexadecimal string.  This converts as
+   * follows:
+   * <ul>
+   * <li> A NaN value is converted to the string "NaN".
+   * <li> Positive infinity is converted to the string "Infinity".
+   * <li> Negative infinity is converted to the string "-Infinity".
+   * <li> For all other values, the first character of the result is '-'
+   * if the value is negative.  This is followed by '0x1.' if the
+   * value is normal, and '0x0.' if the value is denormal.  This is
+   * then followed by a (lower-case) hexadecimal representation of the
+   * mantissa, with leading zeros as required for denormal values.
+   * The next character is a 'p', and this is followed by a decimal
+   * representation of the unbiased exponent.
+   * </ul>
+   * @param d the double value
+   * @return the hexadecimal string representation
+   * @since 1.5
+   */
+  public static String toHexString(double d)
+  {
+    if (isNaN(d))
+      return "NaN";
+    if (isInfinite(d))
+      return d < 0 ? "-Infinity" : "Infinity";
+
+    long bits = doubleToLongBits(d);
+    StringBuilder result = new StringBuilder();
+    
+    if (bits < 0)
+      result.append('-');
+    result.append("0x");
+
+    final int mantissaBits = 52;
+    final int exponentBits = 11;
+    long mantMask = (1L << mantissaBits) - 1;
+    long mantissa = bits & mantMask;
+    long expMask = (1L << exponentBits) - 1;
+    long exponent = (bits >>> mantissaBits) & expMask;
+
+    result.append(exponent == 0 ? '0' : '1');
+    result.append('.');
+    result.append(Long.toHexString(mantissa));
+    if (exponent == 0 && mantissa != 0)
+      {
+        // Treat denormal specially by inserting '0's to make
+        // the length come out right.  The constants here are
+        // to account for things like the '0x'.
+        int offset = 4 + ((bits < 0) ? 1 : 0);
+        // The silly +3 is here to keep the code the same between
+        // the Float and Double cases.  In Float the value is
+        // not a multiple of 4.
+        int desiredLength = offset + (mantissaBits + 3) / 4;
+        while (result.length() < desiredLength)
+          result.insert(offset, '0');
+      }
+    result.append('p');
+    if (exponent == 0 && mantissa == 0)
+      {
+        // Zero, so do nothing special.
+      }
+    else
+      {
+        // Apply bias.
+        boolean denormal = exponent == 0;
+        exponent -= (1 << (exponentBits - 1)) - 1;
+        // Handle denormal.
+        if (denormal)
+          ++exponent;
+      }
+
+    result.append(Long.toString(exponent));
+    return result.toString();
+  }
+
+  /**
    * Returns a <code>Double</code> object wrapping the value.
    * In contrast to the <code>Double</code> constructor, this method
    * may cache some values.  It is used by boxing conversion.

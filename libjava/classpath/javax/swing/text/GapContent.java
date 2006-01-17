@@ -64,6 +64,7 @@ import javax.swing.undo.UndoableEdit;
 public class GapContent
     implements AbstractDocument.Content, Serializable
 {
+  
   /**
    * A {@link Position} implementation for <code>GapContent</code>.
    */
@@ -100,15 +101,15 @@ public class GapContent
     public int compareTo(Object o)
     {
       if (o instanceof Integer)
-      {
-        int otherMark = ((Integer) o).intValue();
-        return mark - otherMark;
-      }
+        {
+          int otherMark = ((Integer) o).intValue();
+          return mark - otherMark;
+        }
       else
-      {
-        GapContentPosition other = (GapContentPosition) o;
-        return mark - other.mark;
-      }
+        {
+          GapContentPosition other = (GapContentPosition) o;
+          return mark - other.mark;
+        }
     }
 
     /**
@@ -122,7 +123,6 @@ public class GapContent
       assert mark <= gapStart || mark >= gapEnd : "mark: " + mark
                                                + ", gapStart: " + gapStart
                                                + ", gapEnd: " + gapEnd;
-
       if (mark <= gapStart)
         return mark;
       else
@@ -130,11 +130,11 @@ public class GapContent
     }
   }
 
-  class UndoInsertString extends AbstractUndoableEdit
+  class InsertUndo extends AbstractUndoableEdit
   {
     public int where, length;
     String text;
-    public UndoInsertString(int start, int len)
+    public InsertUndo(int start, int len)
     {
       where = start;
       length = len;
@@ -316,7 +316,7 @@ public class GapContent
 
     replace(where, 0, str.toCharArray(), strLen);
 
-    return new UndoInsertString(where, strLen);
+    return new InsertUndo(where, strLen);
   }
 
   /**
@@ -449,7 +449,7 @@ public class GapContent
     // We store the actual array index in the GapContentPosition. The real
     // offset is then calculated in the GapContentPosition.
     int mark = offset;
-    if (offset > gapStart)
+    if (offset >= gapStart)
       mark += gapEnd - gapStart;
     GapContentPosition pos = new GapContentPosition(mark);
 
@@ -584,8 +584,9 @@ public class GapContent
   {
     if (gapStart != position)
       shiftGap(position);
+      
     // Remove content
-    if (rmSize > 0)
+    if (rmSize > 0) 
       shiftGapEndUp(gapEnd + rmSize);
 
     // If gap is too small, enlarge the gap.
@@ -644,6 +645,13 @@ public class GapContent
                                           new GapContentPosition(offset));
     if (index1 < 0)
       index1 = -(index1 + 1);
+
+    // Search the first index with the specified offset. The binarySearch does
+    // not necessarily find the first one.
+    while (index1 > 0
+        && ((GapContentPosition) positions.get(index1 - 1)).mark == offset)
+      index1--;
+
     for (ListIterator i = positions.listIterator(index1); i.hasNext();)
       {
         GapContentPosition p = (GapContentPosition) i.next();
@@ -672,6 +680,13 @@ public class GapContent
                                           new GapContentPosition(offset));
     if (index1 < 0)
       index1 = -(index1 + 1);
+
+    // Search the first index with the specified offset. The binarySearch does
+    // not necessarily find the first one.
+    while (index1 > 0
+        && ((GapContentPosition) positions.get(index1 - 1)).mark == offset)
+      index1--;
+
     for (ListIterator i = positions.listIterator(index1); i.hasNext();)
       {
         GapContentPosition p = (GapContentPosition) i.next();
@@ -700,6 +715,12 @@ public class GapContent
                                           new GapContentPosition(offset));
     if (index1 < 0)
       index1 = -(index1 + 1);
+
+    // Search the first index with the specified offset. The binarySearch does
+    // not necessarily find the first one.
+    while (index1 > 0
+        && ((GapContentPosition) positions.get(index1 - 1)).mark == offset)
+      index1--;
     for (ListIterator i = positions.listIterator(index1); i.hasNext();)
       {
         GapContentPosition p = (GapContentPosition) i.next();

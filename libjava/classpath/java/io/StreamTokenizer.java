@@ -550,6 +550,12 @@ public class StreamTokenizer
   /**
    * This method sets the numeric attribute on the characters '0' - '9' and
    * the characters '.' and '-'.
+   * When this method is used, the result of giving other attributes
+   * (whitespace, quote, or comment) to the numeric characters may
+   * vary depending on the implementation. For example, if
+   * parseNumbers() and then whitespaceChars('1', '1') are called,
+   * this implementation reads "121" as 2, while some other implementation
+   * will read it as 21.
    */
   public void parseNumbers()
   {

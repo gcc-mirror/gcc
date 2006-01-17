@@ -1,5 +1,5 @@
 /* PrinterIsAcceptingJobs.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,20 +42,46 @@ import javax.print.attribute.PrintServiceAttribute;
 
 
 /**
+ * The <code>PrinterIsAcceptingJobs</code> printing attribute signals 
+ * if a print services is currently accepting jobs.
+ * <p>
+ * <b>IPP Compatibility:</b> PrinterIsAcceptingJobs is an IPP 1.1 attribute.
+ * The IPP specification treats PrinterIsAcceptingJobs as boolean type which 
+ * is not available in the Java Print Service API. The IPP boolean value "true" 
+ * corresponds to <code>ACCEPTING_JOBS</code> and "false" 
+ * to <code>NOT_ACCEPTING_JOBS</code>.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class PrinterIsAcceptingJobs extends EnumSyntax
   implements PrintServiceAttribute
 {
   private static final long serialVersionUID = -5052010680537678061L;
 
+  /**
+   * The printer is not accepting jobs currently.
+   */
   public static final PrinterIsAcceptingJobs NOT_ACCEPTING_JOBS =
     new PrinterIsAcceptingJobs(0);
+  
+  /**
+   * The printer is accepting jobs.
+   */
   public static final PrinterIsAcceptingJobs ACCEPTING_JOBS =
     new PrinterIsAcceptingJobs(1);
 
+  private static final String[] stringTable = { "not-accepting-jobs", 
+                                                "accepting-jobs" };
+  
+  private static final PrinterIsAcceptingJobs[] enumValueTable = 
+    { NOT_ACCEPTING_JOBS, ACCEPTING_JOBS };
+  
   /**
    * Constructs a <code>PrinterIsAcceptingJobs</code> object.
+   * 
+   * @param value the enum value.
    */
   protected PrinterIsAcceptingJobs(int value)
   {
@@ -65,7 +91,7 @@ public class PrinterIsAcceptingJobs extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrinterIsAcceptingJobs</code> itself
+   * @return The class <code>PrinterIsAcceptingJobs</code> itself.
    */
   public Class getCategory()
   {
@@ -75,10 +101,31 @@ public class PrinterIsAcceptingJobs extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "printer-is-accepting-jobs".
    */
   public String getName()
   {
     return "printer-is-accepting-jobs";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
   }
 }

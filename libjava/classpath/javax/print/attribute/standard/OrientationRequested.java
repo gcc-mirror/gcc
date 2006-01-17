@@ -1,5 +1,5 @@
 /* OrientationRequested.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,25 +44,64 @@ import javax.print.attribute.PrintRequestAttribute;
 
 
 /**
+ * The <code>OrientationRequested</code> printing attribute specifies
+ * the desired orientation of the print data on the media sheet.
+ * <p>
+ * The effect of this attribute may depend on the document format as
+ * some document formats (e.g. postscript) contains the orientation
+ * inside the print data. However for other formats like e.g. plain
+ * text this attribute will have an effect on the orientation.
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> OrientationRequested is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class OrientationRequested extends EnumSyntax
   implements DocAttribute, PrintRequestAttribute, PrintJobAttribute
 {
   private static final long serialVersionUID = -4447437289862822276L;
 
+  /** 
+   * Orientation as portrait. 
+   */
   public static final OrientationRequested PORTRAIT =
-    new OrientationRequested(0);
-  public static final OrientationRequested LANDSCAPE =
-    new OrientationRequested(1);
-  public static final OrientationRequested REVERSE_LANDSCAPE =
-    new OrientationRequested(2);
-  public static final OrientationRequested REVERSE_PORTRAIT =
     new OrientationRequested(3);
+  
+  /** 
+   * Orientation as landscape. 
+   */
+  public static final OrientationRequested LANDSCAPE =
+    new OrientationRequested(4);
+  
+  /** 
+   * Orientation as reversed landscape. 
+   */
+  public static final OrientationRequested REVERSE_LANDSCAPE =
+    new OrientationRequested(5);
+  
+  /** 
+   * Orientation as reversed portrait. 
+   */
+  public static final OrientationRequested REVERSE_PORTRAIT =
+    new OrientationRequested(6);
+  
 
-    /**
-     * Constructs a <code>OrientationRequested</code> object.
-     */
+  private static final String[] stringTable = { "portrait", "landscape",
+                                                "reverse-landscape",
+                                                "reverse-portrait" };
+  
+  private static final OrientationRequested[] 
+      enumValueTable = { PORTRAIT, LANDSCAPE, 
+                         REVERSE_LANDSCAPE, REVERSE_PORTRAIT };
+
+  /**
+   * Constructs a <code>OrientationRequested</code> object.
+   * 
+   * @param value the value
+   */
   protected OrientationRequested(int value)
   {
     super(value);
@@ -71,7 +110,7 @@ public final class OrientationRequested extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>OrientationRequested</code> itself
+   * @return The class <code>OrientationRequested</code> itself.
    */
   public Class getCategory()
   {
@@ -81,10 +120,41 @@ public final class OrientationRequested extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "orientation-requested".
    */
   public String getName()
   {
     return "orientation-requested";
   }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
+  }
+  
+  /**
+   * Returns the lowest used value by the enumerations of this class.
+   * .
+   * @return The lowest value used.
+   */
+  protected int getOffset()
+  {
+    return 3;
+  }  
 }

@@ -1,5 +1,5 @@
 /* JobMediaSheetsCompleted.java -- 
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,18 @@ import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintJobAttribute;
 
 /**
+ * The <code>JobMediaSheetsCompleted</code> printing attribute reports
+ * the number of media sheets already processed. 
+ * <p>
+ * This attribute belongs to a group of job progress attributes which are 
+ * reporting on the progress of a print job.
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> JobMediaSheetsCompleted is an IPP 1.1 attribute.
+ * </p>
+ * @see javax.print.attribute.standard.JobImpressionsCompleted
+ * @see javax.print.attribute.standard.JobKOctetsProcessed
+ * 
  * @author Michael Koch
  */
 public final class JobMediaSheetsCompleted extends IntegerSyntax
@@ -51,9 +63,9 @@ public final class JobMediaSheetsCompleted extends IntegerSyntax
   /**
    * Creates a <code>JobMediaSheetsCompleted</code> object.
    *
-   * @param value the number of completed media sheets for a print job
+   * @param value the number of completed media sheets
    *
-   * @exception IllegalArgumentException if value < 0
+   * @exception IllegalArgumentException if value &lt; 0
    */
   public JobMediaSheetsCompleted(int value)
   {
@@ -64,11 +76,12 @@ public final class JobMediaSheetsCompleted extends IntegerSyntax
   }
   
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -81,7 +94,7 @@ public final class JobMediaSheetsCompleted extends IntegerSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>JobMediaSheetsCompleted</code> itself
+   * @return The class <code>JobMediaSheetsCompleted</code> itself.
    */
   public Class getCategory()
   {
@@ -89,9 +102,9 @@ public final class JobMediaSheetsCompleted extends IntegerSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "job-media-sheets-completed"
+   * @return The name "job-media-sheets-completed".
    */
   public String getName()
   {

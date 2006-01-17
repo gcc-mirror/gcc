@@ -1,5 +1,5 @@
 /* FileChannelImpl.java -- 
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -301,8 +301,10 @@ public final class FileChannelImpl extends FileChannel
     else if (mode == MapMode.READ_WRITE || mode == MapMode.PRIVATE)
       {
 	nmode = mode == MapMode.READ_WRITE ? '+' : 'c';
-	if ((this.mode & (READ|WRITE)) != (READ|WRITE))
+	if ((this.mode & WRITE) != WRITE)
 	  throw new NonWritableChannelException();
+	if ((this.mode & READ) != READ)
+	  throw new NonReadableChannelException();
       }
     else
       throw new IllegalArgumentException ("mode: " + mode);

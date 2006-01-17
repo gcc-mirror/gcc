@@ -121,6 +121,8 @@ public abstract class Charset implements Comparable
    *
    * This may be set by the user or VM with the file.encoding
    * property.
+   * 
+   * @since 1.5
    */
   public static Charset defaultCharset()
   {

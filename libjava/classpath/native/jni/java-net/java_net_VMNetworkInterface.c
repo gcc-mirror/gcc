@@ -1,5 +1,5 @@
 /* VMNetworkInterface.c - Native methods for NetworkInterface class
-   Copyright (C) 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,6 @@ exception statement from your version. */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #include <jni.h>
 #include <jcl.h>

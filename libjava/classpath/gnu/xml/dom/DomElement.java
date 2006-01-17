@@ -519,5 +519,38 @@ public class DomElement
     Attr attr = (Attr) attrs.getNamedItemNS(namespaceURI, localName);
     setIdAttributeNode(attr, isId);
   }
+
+  public boolean isEqualNode(Node arg)
+  {
+    if (!super.isEqualNode(arg))
+      return false;
+    getAttributes();
+    NamedNodeMap argAttrs = arg.getAttributes();
+    int len = argAttrs.getLength();
+    if (argAttrs == null || (len != attributes.length))
+      return false;
+    for (int i = 0; i < len; i++)
+      {
+        Node argCtx = argAttrs.item(i);
+        // Don't compare namespace nodes
+        if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI
+            .equals(argCtx.getNamespaceURI()))
+          continue;
+        // Find corresponding attribute node
+        DomNode ctx = attributes.first;
+        for (; ctx != null; ctx = ctx.next)
+          {
+            if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI
+                .equals(ctx.getNamespaceURI()))
+              continue;
+            if (!ctx.isEqualNode(argCtx))
+              continue;
+            break;
+          }
+        if (ctx == null)
+          return false; // not found
+      }
+    return true;
+  }
   
 }

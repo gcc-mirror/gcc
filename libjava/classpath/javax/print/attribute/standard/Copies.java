@@ -1,5 +1,5 @@
 /* Copies.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -33,7 +33,7 @@ module.  An independent module is a module which is not derived from
 or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
-exception statement from your version. */
+exception statement from your version.  */
 
 package javax.print.attribute.standard;
 
@@ -42,7 +42,19 @@ import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.PrintRequestAttribute;
 
 /**
- * @author Michael Koch
+ * The <code>Copies</code> printing attribute specifies the number
+ * of copies to be printed.
+ * <p>
+ * <b>Note:</b> The effect of this attribute on jobs with multiple documents 
+ * is controlled by the job attribute 
+ * {@link javax.print.attribute.standard.MultipleDocumentHandling}.
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> Copies is an IPP 1.1 attribute.
+ * </p>
+ * @see javax.print.attribute.standard.MultipleDocumentHandling
+ * 
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public final class Copies extends IntegerSyntax
   implements PrintJobAttribute, PrintRequestAttribute
@@ -54,7 +66,7 @@ public final class Copies extends IntegerSyntax
    *
    * @param value the number of copies
    *
-   * @exception IllegalArgumentException if value < 1
+   * @exception IllegalArgumentException if value &lt; 1
    */
   public Copies(int value)
   {
@@ -65,11 +77,12 @@ public final class Copies extends IntegerSyntax
   }
   
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -82,7 +95,7 @@ public final class Copies extends IntegerSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>Copies</code> itself
+   * @return The class <code>Copies</code> itself.
    */
   public Class getCategory()
   {
@@ -90,9 +103,9 @@ public final class Copies extends IntegerSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "copies"
+   * @return The name "copies".
    */
   public String getName()
   {

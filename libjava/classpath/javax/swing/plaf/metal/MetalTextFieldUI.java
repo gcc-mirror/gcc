@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.beans.PropertyChangeEvent;
+
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.plaf.ComponentUI;
@@ -66,5 +68,15 @@ public class MetalTextFieldUI extends BasicTextFieldUI
   public static ComponentUI createUI(JComponent component)
   {
     return new MetalTextFieldUI();
+  }
+  
+  /**
+   * This method gets called when a bound property is changed on the associated
+   * JTextComponent. This is a hook which UI implementations may change to 
+   * reflect how the UI displays bound properties of JTextComponent subclasses.
+   */
+  public void propertyChange(PropertyChangeEvent evt)
+  {
+    super.propertyChange(evt);
   }
 }

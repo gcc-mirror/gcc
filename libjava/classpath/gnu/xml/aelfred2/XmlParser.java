@@ -841,9 +841,6 @@ final class XmlParser
       {
         inputEncoding = encodingName;
       }
-    handler.xmlDecl(version, encodingName, docIsStandalone,
-                    inputEncoding);
-    
     return encodingName;
   }
 

@@ -226,6 +226,7 @@ become operable.
 * java.lang.VMRuntime::
 * java.lang.VMString::
 * java.lang.VMThread::
+* java.lang.VMInstrumentationImpl::
 @end menu
 
 @node java.lang.VMClass, java.lang.VMObject ,java.lang,java.lang
@@ -607,7 +608,7 @@ A new mapping is created for each new string being @code{intern}ed.
 A VM may implement this differently by implementing this method,
 which is @code{static} and the only one in @code{VMString}.
 
-@node java.lang.VMThread,, java.lang.VMString, java.lang
+@node java.lang.VMThread,java.lang.VMInstrumentationImpl, java.lang.VMString, java.lang
 @subsection @code{java.lang.VMThread}
 
 @code{VMThread} provides the link between Java's threads and the platform
@@ -682,6 +683,45 @@ frames in the thread.  This depends on the deprecated method @code{suspend()}
 having returned true, and is thus deprecated as a result.
 @end itemize
 @end itemize
+
+@node java.lang.VMInstrumentationImpl,, java.lang.VMThread, java.lang
+@subsection @code{java.lang.VMInstrumentationImpl}
+
+The @code{java.lang.VMInstrumentationImpl} and
+@code{java.lang.InstrumentationImpl} provides an implementation of the
+@code{java.lang.instrument.Instrument} interface. This interface is for java
+1.5 and is only in the generics branch.
+A @code{InstrumentationImpl} object should be given to any agent
+given in the command line (see the @code{java.lang.instrument} package
+documentation). A VM has to implement the static native methods of the
+@code{VMInstrumentationImpl} class.
+
+@itemize @bullet
+@item @code{isRedefineClassesSupported()} -- Returns true if the JVM supports
+class redefinition.
+@item @code{redefineClasses()} -- Gives a set of classes with new bytecodes.
+The VM must redefine the classes by reading the new bytecodes.
+@item @code{getAllLoadedClass()} -- Returns an array of all loaded classes.
+@item @code{getInitiatedClass()} -- Returns an array of all classes loaded
+by a specific class loader.
+@item @code{getObjectSize()} -- Gives the size of an object.
+@end itemize
+
+When agents are defined, the VM has to call transformers of the
+@code{InstrumentImpl} object each time a class is loaded, eg a call to
+@code{VMClassLoader.defineClass}. The @code{InstrumentationImpl} class defines
+a method that has to be called before reading a class file in the VM.
+
+@itemize @bullet
+@item @code{callTransformers} -- Calls each transformer registered to
+the @code{InstrumentationImpl} object and returns a new bytecode file.
+@end itemize
+
+No default implementation is provided in gnu classpath for the
+@code{VMInstrumentationImpl} methods. A default implementation will perhaps
+be written, but it might break the @code{ClassLoader/VMClassLoader} interface
+for calling the @code{InstrumentationImpl.callTransformers} when a class byte
+code is defined with @code{ClassLoader.defineClass}.
 
 @node gnu.classpath, java.util, java.lang, Classpath Hooks
 @section @code{gnu.classpath}

@@ -40,7 +40,6 @@ package javax.swing.plaf.metal;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Insets;
 
 import javax.swing.LookAndFeel;
 import javax.swing.UIDefaults;
@@ -55,7 +54,17 @@ import javax.swing.plaf.basic.BasicLookAndFeel;
 
 /**
  * A custom look and feel that is designed to look similar across different
- * operating systems.
+ * operating systems.  To install this look and feel, add the following code 
+ * (or something similar) near the start of your application:</p>
+ * <pre>
+ * try
+ * {
+ * &nbsp;&nbsp;UIManager.setLookAndFeel(new MetalLookAndFeel());
+ * }
+ * catch (UnsupportedLookAndFeelException e)
+ * {
+ * &nbsp;&nbsp;e.printStackTrace();
+ * }</pre>
  */
 public class MetalLookAndFeel extends BasicLookAndFeel
 {	   
@@ -72,8 +81,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public MetalLookAndFeel()
   {
-    if (theme == null)
-      createDefaultTheme();
+    createDefaultTheme();
   }
 
   /**
@@ -81,7 +89,8 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   protected void createDefaultTheme()
   {
-    setCurrentTheme(new DefaultMetalTheme());
+    if (theme == null)
+      setCurrentTheme(new DefaultMetalTheme());
   }
 
   /**
@@ -115,7 +124,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public String getDescription()
   {
-    return "Metal look and feel";
+    return "The Java(tm) Look and Feel";
   }
 
   /**
@@ -125,7 +134,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public String getID()
   {
-    return "MetalLookAndFeel";
+    return "Metal";
   }
 
   /**
@@ -135,7 +144,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public String getName()
   {
-    return "MetalLookAndFeel";
+    return "Metal";
   }
 
   public UIDefaults getDefaults()
@@ -145,7 +154,8 @@ public class MetalLookAndFeel extends BasicLookAndFeel
         LAF_defaults = super.getDefaults();
 
         // add custom theme entries to the table
-        theme.addCustomEntriesToTable(LAF_defaults);
+        if (theme != null)
+          theme.addCustomEntriesToTable(LAF_defaults);
       }
     
     // Returns the default values for this look and feel. 
@@ -159,7 +169,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getAcceleratorForeground()
   {
-    return theme.getAcceleratorForeground();
+    if (theme != null)
+      return theme.getAcceleratorForeground();
+    return null;
   }
 
   /**
@@ -170,7 +182,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getAcceleratorSelectedForeground()
   {
-    return theme.getAcceleratorSelectedForeground();
+    if (theme != null)
+      return theme.getAcceleratorSelectedForeground();
+    return null;
   }
 
   /**
@@ -180,7 +194,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getBlack()
   {
-    return theme.getBlack();
+    if (theme != null)
+      return theme.getBlack();
+    return null;
   }
 
   /**
@@ -190,7 +206,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getControl()
   {
-    return theme.getControl();
+    if (theme != null)
+      return theme.getControl();
+    return null;
   }
 
   /**
@@ -201,7 +219,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getControlDarkShadow()
   {
-    return theme.getControlDarkShadow();
+    if (theme != null)
+      return theme.getControlDarkShadow();
+    return null;
   }
 
   /**
@@ -211,7 +231,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getControlDisabled()
   {
-    return theme.getControlDisabled();
+    if (theme != null)
+      return theme.getControlDisabled();
+    return null;
   }
 
   /**
@@ -222,7 +244,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getControlHighlight()
   {
-    return theme.getControlHighlight();
+    if (theme != null)
+      return theme.getControlHighlight();
+    return null;
   }
 
   /**
@@ -233,7 +257,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getControlInfo()
   {
-    return theme.getControlInfo();
+    if (theme != null)
+      return theme.getControlInfo();
+    return null;
   }
 
   /**
@@ -244,7 +270,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getControlShadow()
   {
-    return theme.getControlShadow();
+    if (theme != null)
+      return theme.getControlShadow();
+    return null;
   }
 
   /**
@@ -254,7 +282,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getControlTextColor()
   {
-    return theme.getControlTextColor();
+    if (theme != null)
+      return theme.getControlTextColor();
+    return null;
   }
 
   /**
@@ -264,7 +294,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static FontUIResource getControlTextFont()
   {
-    return theme.getControlTextFont();
+    if (theme != null)
+      return theme.getControlTextFont();
+    return null;
   }
 
   /**
@@ -275,7 +307,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getDesktopColor()
   {
-    return theme.getDesktopColor();
+    if (theme != null)
+      return theme.getDesktopColor();
+    return null;
   }
 
   /**
@@ -286,7 +320,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getFocusColor()
   {
-    return theme.getFocusColor();
+    if (theme != null)
+      return theme.getFocusColor();
+    return null;
   }
 
   /**
@@ -297,7 +333,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getHighlightedTextColor()
   {
-    return theme.getHighlightedTextColor();
+    if (theme != null)
+      return theme.getHighlightedTextColor();
+    return null;
   }
 
   /**
@@ -308,7 +346,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getInactiveControlTextColor()
   {
-    return theme.getInactiveControlTextColor();
+    if (theme != null)
+      return theme.getInactiveControlTextColor();
+    return null;
   }
 
   /**
@@ -319,7 +359,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getInactiveSystemTextColor()
   {
-    return theme.getInactiveSystemTextColor();
+    if (theme != null)
+      return theme.getInactiveSystemTextColor();
+    return null;
   }
 
   /**
@@ -331,7 +373,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getMenuBackground()
   {
-    return theme.getMenuBackground();
+    if (theme != null)
+      return theme.getMenuBackground();
+    return null;
   }
 
   /**
@@ -344,7 +388,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getMenuDisabledForeground()
   {
-    return theme.getMenuDisabledForeground();
+    if (theme != null)
+      return theme.getMenuDisabledForeground();
+    return null;
   }
 
   /**
@@ -357,7 +403,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getMenuForeground()
   {
-    return theme.getMenuForeground();
+    if (theme != null)
+      return theme.getMenuForeground();
+    return null;
   }
 
   /**
@@ -370,7 +418,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getMenuSelectedBackground()
   {
-    return theme.getMenuSelectedBackground();
+    if (theme != null)
+      return theme.getMenuSelectedBackground();
+    return null;
   }
 
   /**
@@ -383,7 +433,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getMenuSelectedForeground()
   {
-    return theme.getMenuSelectedForeground();
+    if (theme != null)
+      return theme.getMenuSelectedForeground();
+    return null;
   }
 
   /**
@@ -393,7 +445,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static FontUIResource getMenuTextFont()
   {
-    return theme.getMenuTextFont();
+    if (theme != null)
+      return theme.getMenuTextFont();
+    return null;
   }
 
   /**
@@ -403,7 +457,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getPrimaryControl()
   {
-    return theme.getPrimaryControl();
+    if (theme != null)
+      return theme.getPrimaryControl();
+    return null;
   }
 
   /**
@@ -414,7 +470,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getPrimaryControlDarkShadow()
   {
-    return theme.getPrimaryControlDarkShadow();
+    if (theme != null)
+      return theme.getPrimaryControlDarkShadow();
+    return null;
   }
 
   /**
@@ -425,7 +483,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getPrimaryControlHighlight()
   {
-    return theme.getPrimaryControlHighlight();
+    if (theme != null)
+      return theme.getPrimaryControlHighlight();
+    return null;
   }
 
   /**
@@ -436,7 +496,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getPrimaryControlInfo()
   {
-    return theme.getPrimaryControlInfo();
+    if (theme != null)
+      return theme.getPrimaryControlInfo();
+    return null;
   }
 
   /**
@@ -447,7 +509,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getPrimaryControlShadow()
   {
-    return theme.getPrimaryControlShadow();
+    if (theme != null)
+      return theme.getPrimaryControlShadow();
+    return null;
   }
 
   /**
@@ -457,7 +521,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getSeparatorBackground()
   {
-    return theme.getSeparatorBackground();
+    if (theme != null)
+      return theme.getSeparatorBackground();
+    return null;
   }
 
   /**
@@ -467,7 +533,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getSeparatorForeground()
   {
-    return theme.getSeparatorForeground();
+    if (theme != null)
+      return theme.getSeparatorForeground();
+    return null;
   }
 
   /**
@@ -477,7 +545,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static FontUIResource getSubTextFont()
   {
-    return theme.getSubTextFont();
+    if (theme != null)
+      return theme.getSubTextFont();
+    return null;
   }
 
   /**
@@ -487,7 +557,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getSystemTextColor()
   {
-    return theme.getSystemTextColor();
+    if (theme != null)
+      return theme.getSystemTextColor();
+    return null;
   }
 
   /**
@@ -497,7 +569,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static FontUIResource getSystemTextFont()
   {
-    return theme.getSystemTextFont();
+    if (theme != null)
+      return theme.getSystemTextFont();
+    return null;
   }
 
   /**
@@ -507,7 +581,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getTextHighlightColor()
   {
-    return theme.getTextHighlightColor();
+    if (theme != null)
+      return theme.getTextHighlightColor();
+    return null;
   }
 
   /**
@@ -517,7 +593,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getUserTextColor()
   {
-    return theme.getUserTextColor();
+    if (theme != null)
+      return theme.getUserTextColor();
+    return null;
   }
 
   /**
@@ -527,7 +605,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static FontUIResource getUserTextFont()
   {
-    return theme.getUserTextFont();
+    if (theme != null)
+      return theme.getUserTextFont();
+    return null;
   }
 
   /**
@@ -537,7 +617,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getWhite()
   {
-    return theme.getWhite();
+    if (theme != null)
+      return theme.getWhite();
+    return null;
   }
 
   /**
@@ -547,7 +629,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getWindowBackground()
   {
-    return theme.getWindowBackground();
+    if (theme != null)
+      return theme.getWindowBackground();
+    return null;
   }
 
   /**
@@ -557,7 +641,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getWindowTitleBackground()
   {
-    return theme.getWindowTitleBackground();
+    if (theme != null)
+      return theme.getWindowTitleBackground();
+    return null;
   }
 
   /**
@@ -569,7 +655,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static FontUIResource getWindowTitleFont()
   {
-    return theme.getWindowTitleFont();
+    if (theme != null)
+      return theme.getWindowTitleFont();
+    return null;
   }
 
   /**
@@ -579,7 +667,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getWindowTitleForeground()
   {
-    return theme.getWindowTitleForeground();
+    if (theme != null)
+      return theme.getWindowTitleForeground();
+    return null;
   }
 
   /**
@@ -590,7 +680,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getWindowTitleInactiveBackground()
   {
-    return theme.getWindowTitleInactiveBackground();
+    if (theme != null)
+      return theme.getWindowTitleInactiveBackground();
+    return null;
   }
 
   /**
@@ -601,7 +693,9 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    */
   public static ColorUIResource getWindowTitleInactiveForeground()
   {
-    return theme.getWindowTitleInactiveForeground();
+    if (theme != null)
+      return theme.getWindowTitleInactiveForeground();
+    return null;
   }
 
   /**
@@ -691,6 +785,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "CheckBoxUI", "javax.swing.plaf.metal.MetalCheckBoxUI",
       "ComboBoxUI", "javax.swing.plaf.metal.MetalComboBoxUI",
       "DesktopIconUI", "javax.swing.plaf.metal.MetalDesktopIconUI",
+      "FileChooserUI", "javax.swing.plaf.metal.MetalFileChooserUI",
       "InternalFrameUI", "javax.swing.plaf.metal.MetalInternalFrameUI",
       "LabelUI", "javax.swing.plaf.metal.MetalLabelUI",
       "MenuBarUI", "javax.swing.plaf.metal.MetalMenuBarUI",
@@ -841,7 +936,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 
       "EditorPane.background", getWindowBackground(),
       "EditorPane.caretForeground", getUserTextColor(),
-      "EditorPane.font", new FontUIResource("Dialog", Font.PLAIN, 12),
+      "EditorPane.font", new FontUIResource("Dialog", Font.BOLD, 12),
       "EditorPane.foreground",  getUserTextColor(),
       "EditorPane.inactiveForeground",  getInactiveSystemTextColor(),
       "EditorPane.selectionBackground", getTextHighlightColor(),
@@ -858,6 +953,19 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "FormattedTextField.selectionBackground", getTextHighlightColor(),
       "FormattedTextField.selectionForeground", getHighlightedTextColor(),
 
+      "FileChooser.upFolderIcon", 
+          MetalIconFactory.getFileChooserUpFolderIcon(),
+      "FileChooser.listViewIcon", 
+          MetalIconFactory.getFileChooserListViewIcon(),
+      "FileChooser.newFolderIcon", 
+          MetalIconFactory.getFileChooserNewFolderIcon(),
+      "FileChooser.homeFolderIcon", 
+          MetalIconFactory.getFileChooserHomeFolderIcon(),
+      "FileChooser.detailsViewIcon", 
+          MetalIconFactory.getFileChooserDetailViewIcon(),
+      "FileChooser.fileNameLabelMnemonic", new Integer(78),
+      "FileChooser.filesOfTypeLabelMnemonic",new Integer(84),
+      "FileChooser.lookInLabelMnemonic", new Integer(73),
       "FileView.computerIcon", MetalIconFactory.getTreeComputerIcon(),
       "FileView.directoryIcon", MetalIconFactory.getTreeFolderIcon(),
       "FileView.fileIcon", MetalIconFactory.getTreeLeafIcon(),
@@ -875,15 +983,20 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "InternalFrame.icon", MetalIconFactory.getInternalFrameDefaultMenuIcon(),
       "InternalFrame.closeIcon", 
         MetalIconFactory.getInternalFrameCloseIcon(16),
+      "InternalFrame.closeSound", "sounds/FrameClose.wav",
       "InternalFrame.inactiveTitleBackground", getWindowTitleInactiveBackground(),
       "InternalFrame.inactiveTitleForeground", getWindowTitleInactiveForeground(),
       "InternalFrame.maximizeIcon", 
         MetalIconFactory.getInternalFrameMaximizeIcon(16),
+      "InternalFrame.maximizeSound", "sounds/FrameMaximize.wav",
       "InternalFrame.iconifyIcon", 
         MetalIconFactory.getInternalFrameMinimizeIcon(16),
+      "InternalFrame.minimizeSound", "sounds/FrameMinimize.wav",
       "InternalFrame.paletteBorder", new MetalBorders.PaletteBorder(),
       "InternalFrame.paletteCloseIcon", new MetalIconFactory.PaletteCloseIcon(),
       "InternalFrame.paletteTitleHeight", new Integer(11),
+      "InternalFrame.restoreDownSound", "sounds/FrameRestoreDown.wav",
+      "InternalFrame.restoreUpSound", "sounds/FrameRestoreUp.wav",
 
       "Label.background", getControl(),
       "Label.disabledForeground", getInactiveSystemTextColor(),
@@ -902,14 +1015,18 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "Menu.acceleratorFont", new FontUIResource("Dialog", Font.PLAIN, 10),
       "Menu.acceleratorForeground", getAcceleratorForeground(),
       "Menu.acceleratorSelectionForeground", getAcceleratorSelectedForeground(),
+      "Menu.arrowIcon", MetalIconFactory.getMenuArrowIcon(),
       "Menu.background", getMenuBackground(),
       "Menu.border", new MetalBorders.MenuItemBorder(),
       "Menu.borderPainted", Boolean.TRUE,
+      "MenuItem.commandSound", "sounds/MenuItemCommand.wav",
       "Menu.disabledForeground", getMenuDisabledForeground(),
       "Menu.font", getControlTextFont(),
       "Menu.foreground", getMenuForeground(),
       "Menu.selectionBackground", getMenuSelectedBackground(),
       "Menu.selectionForeground", getMenuSelectedForeground(),
+      "Menu.submenuPopupOffsetX", new Integer(-4),
+      "Menu.submenuPopupOffsetY", new Integer(-3),
 
       "MenuBar.background", getMenuBackground(),
       "MenuBar.border", new MetalBorders.MenuBarBorder(),
@@ -918,11 +1035,14 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "MenuBar.highlight", getControlHighlight(),
       "MenuBar.shadow", getControlShadow(),
 
+      "MenuItem.acceleratorDelimiter", "-",
       "MenuItem.acceleratorFont", new FontUIResource("Dialog", Font.PLAIN, 10),
       "MenuItem.acceleratorForeground", getAcceleratorForeground(),
       "MenuItem.acceleratorSelectionForeground", getAcceleratorSelectedForeground(),
+      "MenuItem.arrowIcon", MetalIconFactory.getMenuItemArrowIcon(),
       "MenuItem.background", getMenuBackground(),
       "MenuItem.border", new MetalBorders.MenuItemBorder(),
+      "MenuItem.borderPainted", Boolean.TRUE,
       "MenuItem.disabledForeground", getMenuDisabledForeground(),
       "MenuItem.font", getControlTextFont(),
       "MenuItem.foreground", getMenuForeground(),
@@ -930,6 +1050,10 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "MenuItem.selectionForeground", getMenuSelectedForeground(),
 
       "OptionPane.background", getControl(),
+      "OptionPane.errorSound", "sounds/OptionPaneError.wav",
+      "OptionPane.informationSound", "sounds/OptionPaneInformation.wav",
+      "OptionPane.questionSound", "sounds/OptionPaneQuestion.wav",
+      "OptionPane.warningSound", "sounds/OptionPaneWarning.wav",
       "OptionPane.errorDialog.border.background", new ColorUIResource(153, 51, 51), 
       "OptionPane.errorDialog.titlePane.background", new ColorUIResource(255, 153, 153),
       "OptionPane.errorDialog.titlePane.foreground", new ColorUIResource(51, 0, 0),
@@ -953,6 +1077,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       new BorderUIResource(MetalBorders.getTextFieldBorder()),
       "PasswordField.caretForeground", getUserTextColor(),
       "PasswordField.foreground", getUserTextColor(),
+      "PasswordField.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "PasswordField.inactiveBackground", getControl(),
       "PasswordField.inactiveForeground", getInactiveSystemTextColor(),
       "PasswordField.selectionBackground", getTextHighlightColor(),
@@ -962,6 +1087,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "PopupMenu.border", new MetalBorders.PopupMenuBorder(),
       "PopupMenu.font", new FontUIResource("Dialog", Font.BOLD, 12),
       "PopupMenu.foreground", getMenuForeground(),
+      "PopupMenu.popupSound", "sounds/PopupMenuPopup.wav",
 
       "ProgressBar.background", getControl(),
       "ProgressBar.border", new BorderUIResource.LineBorderUIResource(getControlDarkShadow(), 1),
@@ -997,6 +1123,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "RadioButtonMenuItem.borderPainted", Boolean.TRUE,
       "RadioButtonMenuItem.checkIcon", 
         MetalIconFactory.getRadioButtonMenuItemIcon(),
+      "RadioButtonMenuItem.commandSound", "sounds/MenuItemCommand.wav",
       "RadioButtonMenuItem.disabledForeground", getMenuDisabledForeground(),
       "RadioButtonMenuItem.font", MetalLookAndFeel.getControlTextFont(),
       "RadioButtonMenuItem.foreground", getMenuForeground(),
@@ -1006,6 +1133,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "RadioButtonMenuItem.selectionForeground", 
         MetalLookAndFeel.getMenuSelectedForeground(),
 
+      "ScrollBar.allowsAbsolutePositioning", Boolean.TRUE,
       "ScrollBar.background", getControl(),
       "ScrollBar.darkShadow", getControlDarkShadow(),
       "ScrollBar.foreground", getControl(),
@@ -1041,6 +1169,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "Slider.verticalThumbIcon", 
       MetalIconFactory.getVerticalSliderThumbIcon(),
 
+      "Spinner.arrowButtonInsets", new InsetsUIResource(0, 0, 0, 0),
       "Spinner.background", getControl(),
       "Spinner.font", new FontUIResource("Dialog", Font.BOLD, 12),
       "Spinner.foreground", getControl(),
@@ -1048,6 +1177,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "SplitPane.background", getControl(),
       "SplitPane.darkShadow", getControlDarkShadow(),
       "SplitPane.dividerFocusColor", getPrimaryControl(),
+      "SplitPane.dividerSize", new Integer(10),
       "SplitPane.highlight", getControlHighlight(),
       "SplitPane.shadow", getControlShadow(),
 
@@ -1150,6 +1280,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "ToolTip.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "ToolTip.foreground", getPrimaryControlInfo(),
       "ToolTip.foregroundInactive", getControlDarkShadow(),
+      "ToolTip.hideAccelerator", Boolean.FALSE,
 
       "Tree.background", getWindowBackground(),
       "Tree.closedIcon", MetalIconFactory.getTreeFolderIcon(),

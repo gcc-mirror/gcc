@@ -116,7 +116,7 @@ public class DefaultTreeSelectionModel
 	 */
 	public DefaultTreeSelectionModel()
 	{
-		setSelectionMode(SINGLE_TREE_SELECTION);
+		setSelectionMode(DISCONTIGUOUS_TREE_SELECTION);
 		listenerList = new EventListenerList();
 	}
 

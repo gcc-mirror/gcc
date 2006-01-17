@@ -121,6 +121,7 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append
       gtk_combo_box_append_text (GTK_COMBO_BOX (ptr), label);
 
       (*env)->ReleaseStringUTFChars (env, item, label);
+      (*env)->DeleteLocalRef(env, item);
     }
 
   gdk_threads_leave ();

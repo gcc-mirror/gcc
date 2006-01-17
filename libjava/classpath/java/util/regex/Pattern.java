@@ -103,8 +103,11 @@ public final class Pattern implements Serializable
       }
     catch (REException e)
       {
-	throw new PatternSyntaxException(e.getMessage(),
+	PatternSyntaxException pse;
+	pse = new PatternSyntaxException(e.getMessage(),
 					 regex, e.getPosition());
+	pse.initCause(e);
+	throw pse;
       }
   }
  

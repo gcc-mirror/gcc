@@ -17,6 +17,8 @@ xmlj_util.c \
 xmlj_util.h \
 xmlj_xpath.c
 
+libxmlj_la_LIBADD = $(top_builddir)/native/jni/classpath/jcl.lo
+
 AM_LDFLAGS = @CLASSPATH_MODULE@ @XML_LIBS@ @XSLT_LIBS@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 

@@ -1070,14 +1070,16 @@ public class JList extends JComponent implements Accessible, Scrollable
     layoutOrientation = VERTICAL;
     opaque = true;
     valueIsAdjusting = false;
-    visibleRowCount = 8;
+    visibleRowCount = 7;
 
     cellRenderer = new DefaultListCellRenderer();
     listListener = new ListListener();
 
     setModel(new DefaultListModel());
     setSelectionModel(createSelectionModel());
-
+    setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    setLayout(null);
+    
     updateUI();
   }
 
@@ -1255,14 +1257,17 @@ public class JList extends JComponent implements Accessible, Scrollable
    *
    * @param a A number in the half-open range <code>[0, x)</code> where
    * <code>x = getModel.getSize()</code>, indicating the index of an
-   * element in the list to select.
+   * element in the list to select. When &lt; 0 the selection is cleared.
    *
    * @see #setSelectionMode
    * @see #selectionModel
    */
   public void setSelectedIndex(int a)
   {
-    selectionModel.setSelectionInterval(a, a);
+    if (a < 0)
+      selectionModel.clearSelection();
+    else
+      selectionModel.setSelectionInterval(a, a);
   }
 
   /**

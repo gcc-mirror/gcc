@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.WeakHashMap;
 
 /**
  * <p>The repaint manager holds a set of dirty regions, invalid components,
@@ -68,7 +69,7 @@ public class RepaintManager
   /**
    * The current repaint managers, indexed by their ThreadGroups.
    */
-  static HashMap currentRepaintManagers;
+  static WeakHashMap currentRepaintManagers;
   
   /**
    * <p>A helper class which is placed into the system event queue at
@@ -286,7 +287,7 @@ public class RepaintManager
   public static RepaintManager currentManager(Component component)
   {
     if (currentRepaintManagers == null)
-      currentRepaintManagers = new HashMap();
+      currentRepaintManagers = new WeakHashMap();
     ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
     RepaintManager currentManager =
       (RepaintManager) currentRepaintManagers.get(threadGroup);
@@ -330,7 +331,7 @@ public class RepaintManager
   public static void setCurrentManager(RepaintManager manager)
   {
     if (currentRepaintManagers == null)
-      currentRepaintManagers = new HashMap();
+      currentRepaintManagers = new WeakHashMap();
 
     ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
     currentRepaintManagers.put(threadGroup, manager);
@@ -533,7 +534,14 @@ public class RepaintManager
     }
     for (Iterator i = workInvalidComponents.iterator(); i.hasNext(); )
       {
-        JComponent comp = (JComponent) i.next();
+        Component comp = (Component) i.next();
+        // Find validate root.
+        while ((!(comp instanceof JComponent)
+               || !((JComponent) comp).isValidateRoot())
+               && comp.getParent() != null)
+          comp = comp.getParent();
+
+        // Validate the validate root.
         if (! (comp.isVisible() && comp.isShowing()))
           continue;
         comp.validate();

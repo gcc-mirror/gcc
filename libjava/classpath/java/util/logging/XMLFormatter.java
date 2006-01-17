@@ -194,7 +194,7 @@ public class XMLFormatter
     
     
     appendTag(buf, 1, "date", iso8601.format(new Date(millis)));
-    appendTag(buf, 1, "millis", record.getMillis());
+    appendTag(buf, 1, "millis", millis);
     appendTag(buf, 1, "sequence", record.getSequenceNumber());
     appendTag(buf, 1, "logger", record.getLoggerName());
 

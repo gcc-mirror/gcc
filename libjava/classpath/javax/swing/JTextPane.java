@@ -40,6 +40,7 @@ package javax.swing;
 
 import java.awt.Component;
 
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -151,38 +152,34 @@ public class JTextPane
   {
     Caret caret = getCaret();
     StyledDocument doc = getStyledDocument();
+    AttributeSet a = getInputAttributes().copyAttributes();
+    if (doc == null)
+      return;
 
     int dot = caret.getDot();
     int mark = caret.getMark();
 
-    // If content is empty delete selection.
-    if (content == null)
-      {
-	caret.setDot(dot);
-	return;
-      }
+    int p0 = Math.min (dot, mark);
+    int p1 = Math.max (dot, mark);
 
     try
       {
-	int start = getSelectionStart();
-	int end = getSelectionEnd();
-	int contentLength = content.length();
-
-	// Remove selected text.
-	if (dot != mark)
-	  doc.remove(start, end - start);
-
-	// Insert new text.
-	doc.insertString(start, content, null);
-	// Set attributes for inserted text
-	doc.setCharacterAttributes(start, contentLength, getInputAttributes(),
-				   true);
-
+        if (doc instanceof AbstractDocument)
+          ((AbstractDocument)doc).replace(p0, p1 - p0, content, a);
+        else
+          {
+            // Remove selected text.
+            if (dot != mark)
+              doc.remove(p0, p1 - p0);
+            // Insert new text.
+            if (content != null && content.length() > 0)
+              doc.insertString(p0, content, a);
+          }
       }
     catch (BadLocationException e)
       {
-	throw new AssertionError
-	  ("No BadLocationException should be thrown here");
+        throw new AssertionError
+          ("No BadLocationException should be thrown here");      
       }
   }
 

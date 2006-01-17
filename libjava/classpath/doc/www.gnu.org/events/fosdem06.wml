@@ -1,0 +1,191 @@
+#!wml --include=..
+
+#include "include/layout.wml"
+
+<set-var last-modified-author="mjw">
+<subject "GNU Classpath and friends @ Fosdem 2006">
+
+<box>
+<boxitem>
+<h2>GNU Classpath and friends meeting during Fosdem 2006</h2>
+
+<i>Fosdem, Saturday/Sunday 25/26 February 2006, Brussels, Belgium</i>
+<p>
+The various free software library, runtimes, compiler and tool
+projects around GNU Classpath will meet in Brussel to discuss what has
+happened in the last year in the Free Software community and what the
+next year will bring us during Fosdem.
+<p>
+The 6th edition of FOSDEM (Free and Opensource Software Developers'
+European Meeting) will take place on February 25+26 2006 in Brussels
+(Belgium), at the Solbosch Campus of the ULB (Free University of
+Brussels). FOSDEM is a free and non-commercial event for the community
+and organized by the community.
+See <a href="http://www.fosdem.org/">http://www.fosdem.org/</a>.
+</boxitem>
+
+<boxitem>
+  <h3>Saturday from 13:00 to 17:00 - "End-User talks"</h3>
+
+  <p>
+    Presentations that show what cool stuff can be done with the Free
+    Stack right now.
+  </p>
+
+    <p>
+    <b>Putting the 'Free' into JFreeChart</b>
+    <i>Dave Gilbert, JFreeChart Project Leader</i>
+      <p>
+	A review of the efforts to make JFreeChart work with GNU
+	Classpath-based runtimes, including a brief history, a demonstration
+	of the current state (using the java bindings for Cairo), and an
+	overview of the work that remains to be done.
+      </p>
+    </p>
+
+    <p>
+    <b>Using Eclipse for GNU Classpath development</b>
+    <i>Tom Tromey</i>
+      <p>
+	Learn how to setup a fully working development environment based
+	on GNU Classpath in Eclipse that can be used to bootstrap the full
+	free toolchain (and can be used to run Eclipse itself) in just 10
+	minutes.
+      </p>
+    </p>
+
+    <p>
+    <b>Eclipse RCP and GCJ/GIJ</b>
+    <i>Wayne Beaton</i>
+      <p>
+	Eclipse Rich Client Platform (RCP) is a runtime platform for
+	delivering your Java applications on multiple platforms. RCP is far
+	more than just a windowing toolkit; it is rich client "middleware"
+	that provides a comprehensive framework for building and deploying
+	applications that are modular, extensible, and updatable. The kinds
+	of applications you can build with Eclipse RCP are limited only by
+	your imagination. During this talk, we will discuss how the Eclipse
+	RCP can be used in conjunction with the Eclipse Eco-system and
+	GCJ/GIJ to build high quality applications.
+      </p>
+    </p>
+
+<p>
+</boxitem>
+
+<boxitem>
+  <h3>Sunday from 09:00 to 13:00 - "Developer talks"</h3>
+
+  <p>
+    Presentations of (core) libraries and runtimes that are in progress,
+    made a lot of progress in the last year and are in active development.
+  </p>
+
+    <p>
+    <b>Free Swing, past, present and future</b>
+    <i>Roman Kennke</i>
+      <p>
+	An overview of that state of Free Swing one year ago, what has been
+	done in the meantime, what still must be done and which applications
+	work now.
+      </p>
+    </p>
+
+    <p>
+    <b>The Free CORBA comes</b>
+    <i>Dr Audrius Meskauskas</i>
+      <p>
+    If the Free world does not want to step back in the battle, we need
+    a complete set of the Free tools for advanced communication over
+    the network. For our CORBA implementation we needed:
+    <p>
+    <ol>
+    <li> Free. No classes with restricted license.
+    <li> Fully workable, interoperable and pass tests, recognized by
+       the CORBA user community as serious (we needed to find a well
+       known Free testing suite).
+    <li> Properly commented, being ready for the long life in the Free
+       world.
+    <li> No pressure to use the outdated approaches.
+       CORBA 3.0.3 and jdk 1.5.
+    </ol>
+    <p>
+    To reach these goals, we have chosen for implementing a clean room
+    implementation, using the published standard specifications only.
+    During the recent year of the GNU Classpath development, this goal
+    is in large degree achieved. The important directions of future
+    development could be providing features that are outside the scope
+    of the both CORBA standard and Sun API, but included in the near all
+    proprietary implementations (SSH, HTTP and other bridges, get rid of
+    rmic code generator for RMI/IIOP, fault tolerant behavior, reduced
+    the footprint and others).
+      </p>
+    </p>
+
+    <p>
+      <b>The JamVM runtime</b>
+      <i>Robert Lougher</i>
+      <p>
+	An overview of the JamVM virtual machine, with comparisons to other
+	GNU Classpath runtimes, and a section on the VM interface.
+      </p>
+    </p>
+
+    <p>
+    <b>Integrating Vmgen-based interpreters</b>
+    <i>Christian Thalinger</i>
+      <p>
+	Vmgen is a tool for writing efficient interpreters. The Cacao
+	runtime recently added a Vmgen based interpreter in addition to
+	the JIT engine.
+      </p>
+    </p>
+
+<p>
+<boxitem>
+
+<boxitem>
+  <h3>Sunday from 14:00 to 17:30 - "The Future"</h3>
+
+   <p>
+     Interactive technical hacker discussions on how to integrate
+     the projects more and move forward in the next year.
+   </p>
+
+    <p>
+    <b>State of the world, beyond japi</b>
+    <i>Mark Wielaard, GNU Classpath Maintainer</i>
+      <p>
+	After a short overview of the various free stacks, libraries,
+	compilers, tools and runtimes this session is mostly open discussion
+	about what work remains to be done and how to integrate the various
+	efforts better. Ideas for work items welcome.
+      </p>
+    </p>
+
+<p>
+</boxitem>
+
+<boxitem>
+<b>Additional Resources:</b>
+<ul>
+<li><createlink name="Free But Shackled - The Java Trap"
+	url="http://www.gnu.org/philosophy/java-trap.html">
+	(by Richard Stallman)
+</li>
+<li><createlink name="Escaping the Java Trap: A practical road map to the Free Software and Open Source alternatives"
+	url="http://developer.classpath.org/support/">
+</li>
+</ul>
+<p>
+</boxitem>
+
+<boxitem>
+<b>Official links:</b>
+<ul>
+<li><createlink name="FOSDEM Homepage"
+	url="http://www.fosdem.org/">
+</li>
+</ul>
+</boxitem>
+</box>

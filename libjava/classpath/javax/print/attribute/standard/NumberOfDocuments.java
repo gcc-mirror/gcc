@@ -1,5 +1,5 @@
 /* NumberOfDocuments.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,12 @@ import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintJobAttribute;
 
 /**
+ * The <code>NumberOfDocuments</code> printing attribute specifies 
+ * the number of documents in a job.
+ * <p>
+ * <b>IPP Compatibility:</b> NumberOfDocuments is an IPP 1.1 attribute.
+ * </p>
+ *
  * @author Michael Koch
  */
 public final class NumberOfDocuments extends IntegerSyntax
@@ -53,7 +59,7 @@ public final class NumberOfDocuments extends IntegerSyntax
    *
    * @param value the number of documents
    *
-   * @exception IllegalArgumentException if value < 0
+   * @exception IllegalArgumentException if value &lt; 0
    */
   public NumberOfDocuments(int value)
   {
@@ -64,11 +70,12 @@ public final class NumberOfDocuments extends IntegerSyntax
   }
   
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -81,7 +88,7 @@ public final class NumberOfDocuments extends IntegerSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>NumberOfDocuments</code> itself
+   * @return The class <code>NumberOfDocuments</code> itself.
    */
   public Class getCategory()
   {
@@ -89,9 +96,9 @@ public final class NumberOfDocuments extends IntegerSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "number-of-documents"
+   * @return The name "number-of-documents".
    */
   public String getName()
   {

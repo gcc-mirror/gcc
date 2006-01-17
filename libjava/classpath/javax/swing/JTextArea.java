@@ -217,7 +217,11 @@ public class JTextArea extends JTextComponent
   public JTextArea(Document doc, String text, int rows, int columns)
   {
     setDocument(doc == null ? createDefaultModel() : doc);
-    setText(text);
+    // Only explicitly setText() when there is actual text since
+    // setText() might be overridden and not expected to be called
+    // from the constructor (as in JEdit).
+    if (text != null)
+      setText(text);
     setRows(rows);
     setColumns(columns);
   }

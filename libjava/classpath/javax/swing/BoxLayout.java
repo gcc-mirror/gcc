@@ -335,8 +335,15 @@ public class BoxLayout implements LayoutManager2, Serializable
 
         checkTotalRequirements();
         Insets i = container.getInsets();
-        return new Dimension(xTotal.maximum + i.left + i.right,
-                             yTotal.maximum + i.top + i.bottom);
+        int xDim = xTotal.maximum + i.left + i.right;
+        int yDim = yTotal.maximum + i.top + i.bottom;
+        
+        // Check for overflow
+        if (xDim < xTotal.maximum)
+          xDim = Integer.MAX_VALUE;
+        if (yDim < yTotal.maximum)
+          yDim = Integer.MAX_VALUE;
+        return new Dimension(xDim, yDim);
       }
   }
 

@@ -415,7 +415,7 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
    */
   public Dimension maximumLayoutSize(Container target)
   {
-    return calcSize(target, MAX);
+    return new Dimension (Integer.MAX_VALUE, Integer.MAX_VALUE);
   }
 
   /**

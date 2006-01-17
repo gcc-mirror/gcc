@@ -63,6 +63,8 @@ import java.util.Vector;
 
 public class ObjectStreamClass implements Serializable
 {
+  static final ObjectStreamField[] INVALID_FIELDS = new ObjectStreamField[0];
+
   /**
    * Returns the <code>ObjectStreamClass</code> for <code>cl</code>.
    * If <code>cl</code> is null, or is not <code>Serializable</code>,
@@ -70,6 +72,11 @@ public class ObjectStreamClass implements Serializable
    * later calls to this method with the same class will return the
    * same <code>ObjectStreamClass</code> object and no recalculation
    * will be done.
+   *
+   * Warning: If this class contains an invalid serialPersistentField arrays
+   * lookup will not throw anything. However {@link #getFields()} will return
+   * an empty array and {@link java.io.ObjectOutputStream#writeObject} will throw an 
+   * {@link java.io.InvalidClassException}.
    *
    * @see java.io.Serializable
    */
@@ -148,6 +155,8 @@ public class ObjectStreamClass implements Serializable
    * Returns the serializable (non-static and non-transient) Fields
    * of the class represented by this ObjectStreamClass.  The Fields
    * are sorted by name.
+   * If fields were obtained using serialPersistentFields and this array
+   * is faulty then the returned array of this method will be empty.
    *
    * @return the fields.
    */
@@ -608,6 +617,28 @@ outer:
 	    fields = getSerialPersistentFields(cl);
 	    if (fields != null)
 	      {
+		ObjectStreamField[] fieldsName = new ObjectStreamField[fields.length];
+		System.arraycopy(fields, 0, fieldsName, 0, fields.length);
+
+		Arrays.sort (fieldsName, new Comparator() {
+			public int compare(Object o1, Object o2)
+			{
+			  ObjectStreamField f1 = (ObjectStreamField)o1;
+			  ObjectStreamField f2 = (ObjectStreamField)o2;
+			    
+			  return f1.getName().compareTo(f2.getName());
+			}
+		    });
+		
+		for (int i=1; i < fields.length; i++)
+		  {
+		    if (fieldsName[i-1].getName().equals(fieldsName[i].getName()))
+			{
+			    fields = INVALID_FIELDS;
+			    return;
+			}
+		  }
+
 		Arrays.sort (fields);
 		// Retrieve field reference.
 		for (int i=0; i < fields.length; i++)

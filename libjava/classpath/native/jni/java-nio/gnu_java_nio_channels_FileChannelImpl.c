@@ -1,5 +1,5 @@
 /* gnu_java_nio_channels_FileChannelImpl.c -
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -538,11 +538,27 @@ Java_gnu_java_nio_channels_FileChannelImpl_mapImpl (JNIEnv *env, jobject obj,
       return NULL;
     }
 
-  prot = PROT_READ;
-  if (mode == '+')
-    prot |= PROT_WRITE;
-  flags = (mode == 'c' ? MAP_PRIVATE : MAP_SHARED);
   fd = get_native_fd (env, obj);
+
+  prot = PROT_READ;
+  if (mode == '+' || mode == 'c')
+    {
+      /* When writing we need to make sure the file is big enough,
+         otherwise the result of mmap is undefined. */
+      jlong filesize;
+      filesize = Java_gnu_java_nio_channels_FileChannelImpl_size(env, obj);
+      if (filesize == -1)
+	return NULL;
+      if (position + size > filesize)
+	if (ftruncate(fd, position + size) == -1)
+	  {
+	    JCL_ThrowException (env, IO_EXCEPTION, strerror (errno));
+	    return NULL;
+	  }
+      prot |= PROT_WRITE;
+    }
+
+  flags = (mode == 'c' ? MAP_PRIVATE : MAP_SHARED);
   p = mmap (NULL, (size_t) ALIGN_UP (size, pagesize), prot, flags,
 	    fd, ALIGN_DOWN (position, pagesize));
   if (p == MAP_FAILED)

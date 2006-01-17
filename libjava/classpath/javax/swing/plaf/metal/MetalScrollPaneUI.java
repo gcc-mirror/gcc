@@ -38,7 +38,10 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.beans.PropertyChangeListener;
+
 import javax.swing.JComponent;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollPaneUI;
@@ -67,5 +70,90 @@ public class MetalScrollPaneUI
   public static ComponentUI createUI(JComponent component)
   {
     return new MetalScrollPaneUI();
+  }
+  
+  /**
+   * Configures the specified component appropriate for the look and feel. 
+   * This method is invoked when the ComponentUI instance is being installed 
+   * as the UI delegate on the specified component. This method should 
+   * completely configure the component for the look and feel, 
+   * including the following:
+   * 1. Install any default property values for color, fonts, borders,
+   * icons, opacity, etc. on the component. Whenever possible, property
+   * values initialized by the client program should not be overridden.
+   * 2. Install a LayoutManager on the component if necessary.
+   * 3. Create/add any required sub-components to the component.
+   * 4. Create/install event listeners on the component.
+   * 5. Create/install a PropertyChangeListener on the component in order
+   * to detect and respond to component property changes appropriately.
+   * 6. Install keyboard UI (mnemonics, traversal, etc.) on the component.
+   * 7. Initialize any appropriate instance data. 
+   * 
+   * @param c - the component to install the ui on
+   */
+  public void installUI(JComponent c)
+  {
+    super.installUI(c);
+    JScrollBar hsb = scrollpane.getHorizontalScrollBar();
+    hsb.putClientProperty(MetalScrollBarUI.FREE_STANDING_PROP, Boolean.FALSE);
+    JScrollBar vsb = scrollpane.getVerticalScrollBar();
+    vsb.putClientProperty(MetalScrollBarUI.FREE_STANDING_PROP, Boolean.FALSE);
+  }
+
+  /**
+   * Reverses configuration which was done on the specified component 
+   * during installUI. This method is invoked when this UIComponent 
+   * instance is being removed as the UI delegate for the specified 
+   * component. This method should undo the configuration performed in 
+   * installUI, being careful to leave the JComponent instance in a 
+   * clean state (no extraneous listeners, look-and-feel-specific property
+   *  objects, etc.). This should include the following:
+   *  1. Remove any UI-set borders from the component.
+   *  2. Remove any UI-set layout managers on the component.
+   *  3. Remove any UI-added sub-components from the component.
+   *  4. Remove any UI-added event/property listeners from the component.
+   *  5. Remove any UI-installed keyboard UI from the component.
+   *  6. Nullify any allocated instance data objects to allow for GC. 
+   *  
+   *  @param c - the component to uninstall the ui on
+   */
+  public void uninstallUI(JComponent c)
+  {
+    JScrollBar hsb = scrollpane.getHorizontalScrollBar();
+    hsb.putClientProperty(MetalScrollBarUI.FREE_STANDING_PROP, null);
+    JScrollBar vsb = scrollpane.getVerticalScrollBar();
+    vsb.putClientProperty(MetalScrollBarUI.FREE_STANDING_PROP, null);
+    super.uninstallUI(c);
+  }
+
+  /**
+   * Installs listeners on scrollPane
+   * 
+   * @param scrollPane - the component to install the listeners on
+   */
+  public void installListeners(JScrollPane scrollPane)
+  {
+    super.installListeners(scrollPane);
+  }
+  
+  /**
+   * Uninstalls listeners on scrollPane
+   * 
+   * @param scrollPane - the component to uninstall the listeners on
+   */
+  public void uninstallListeners(JScrollPane scrollPane)
+  {
+    super.uninstallListeners(scrollPane);
+  }
+
+  /**
+   * TODO
+   * 
+   * @return TODO
+   */
+  protected PropertyChangeListener createScrollBarSwapListener()
+  {
+    // FIXME: Anything else to do here?
+    return super.createPropertyChangeListener();
   }
 }

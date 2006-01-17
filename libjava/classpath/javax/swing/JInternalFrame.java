@@ -1628,7 +1628,6 @@ public class JInternalFrame extends JComponent implements Accessible,
   {
     if (! isVisible())
       {
-	moveToFront();
 	super.show();
 
 	JDesktopPane pane = getDesktopPane();

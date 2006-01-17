@@ -1,5 +1,5 @@
 /* JobImpressionsSupported.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,15 @@ import javax.print.attribute.SupportedValuesAttribute;
 
 
 /**
+ * The <code>JobImpressionsSupported</code> printing attribute specifies the 
+ * supported range of values for the 
+ * {@link javax.print.attribute.standard.JobImpressions} attribute.
+ * <p>
+ * <b>IPP Compatibility:</b> JobImpressionsSupported is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class JobImpressionsSupported extends SetOfIntegerSyntax
   implements SupportedValuesAttribute
@@ -50,17 +58,43 @@ public final class JobImpressionsSupported extends SetOfIntegerSyntax
   private static final long serialVersionUID = -4887354803843173692L;
 
   /**
-   * Constructs a <code>JobImpressionsSupported</code> object.
+   * Constructs a <code>JobImpressionsSupported</code> object with the 
+   * given range of supported job impressions values.
+   *
+   * @param lowerBound the lower bound value
+   * @param upperBound the upper bound value
+   *
+   * @exception IllegalArgumentException if lowerBound &lt;= upperbound
+   * and lowerBound &lt; 1
    */
   public JobImpressionsSupported(int lowerBound, int upperBound)
   {
     super(lowerBound, upperBound);
+    
+    if (lowerBound < 1)
+      throw new IllegalArgumentException("lowerBound may not be less than 1");
+  }
+  
+  /**
+   * Tests if the given object is equal to this object.
+   *
+   * @param obj the object to test
+   *
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
+   */
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof JobImpressionsSupported))
+      return false;
+   
+    return super.equals(obj);
   }
 
   /**
    * Returns category of this class.
    *
-   * @return the class <code>JobImpressionsSupported</code> itself
+   * @return The class <code>JobImpressionsSupported</code> itself.
    */
   public Class getCategory()
   {
@@ -70,7 +104,7 @@ public final class JobImpressionsSupported extends SetOfIntegerSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "job-impressions-supported".
    */
   public String getName()
   {

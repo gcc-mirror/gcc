@@ -1,5 +1,5 @@
 /* DefaultCaret.java --
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -430,18 +430,45 @@ public class DefaultCaret extends Rectangle
    */
   public void focusGained(FocusEvent event)
   {
-    setVisible(true);
+    setVisible(true);    
+    updateTimerStatus();
   }
 
   /**
    * Sets the caret to <code>invisible</code>.
-   *
+   * 
    * @param event the <code>FocusEvent</code>
    */
   public void focusLost(FocusEvent event)
   {
     if (event.isTemporary() == false)
-      setVisible(false);
+      {
+        setVisible(false);
+        // Stop the blinker, if running.
+        if (blinkTimer != null && blinkTimer.isRunning())
+          blinkTimer.stop();
+      }
+  }
+  
+  /**
+   * Install (if not present) and start the timer, if the caret must blink. The
+   * caret does not blink if it is invisible, or the component is disabled or
+   * not editable.
+   */
+  private void updateTimerStatus()
+  {
+    if (textComponent.isEnabled() && textComponent.isEditable())
+      {
+        if (blinkTimer == null)
+          initBlinkTimer();
+        if (!blinkTimer.isRunning())
+          blinkTimer.start();
+      }
+    else
+      {
+        if (blinkTimer != null)
+          blinkTimer.stop();
+      }
   }
 
   /**
@@ -641,8 +668,10 @@ public class DefaultCaret extends Rectangle
       }
     catch (BadLocationException e)
       {
-        assert false : "Unexpected bad caret location: " + dot;
-        return;
+        AssertionError ae;
+	ae = new AssertionError("Unexpected bad caret location: " + dot);
+	ae.initCause(e);
+        throw ae;
       }
 
     if (rect == null)
@@ -802,9 +831,12 @@ public class DefaultCaret extends Rectangle
   public void setDot(int dot)
   {
     if (dot >= 0)
-      {
+      {        
+        Document doc = textComponent.getDocument();
+        if (doc != null)
+          this.dot = Math.min(dot, doc.getLength());
+        this.dot = Math.max(this.dot, 0);
         this.mark = dot;
-        this.dot = dot;
         handleHighlight();
         adjustVisibility(this);
         appear();
@@ -833,13 +865,17 @@ public class DefaultCaret extends Rectangle
         visible = true;
 
         Rectangle area = null;
+	int dot = getDot();
         try
           {
-            area = getComponent().modelToView(getDot());
+            area = getComponent().modelToView(dot);
           }
-        catch (BadLocationException ex)
+        catch (BadLocationException e)
           {
-            assert false : "Unexpected bad caret location: " + getDot();
+	    AssertionError ae;
+	    ae = new AssertionError("Unexpected bad caret location: " + dot);
+	    ae.initCause(e);
+	    throw ae;
           }
         if (area != null)
           damage(area);
@@ -870,26 +906,19 @@ public class DefaultCaret extends Rectangle
     if (v != visible)
       {
         visible = v;
-        if (visible)
-          if (textComponent.isEnabled() && textComponent.isEditable())
-            {
-              if (blinkTimer == null)
-                initBlinkTimer();
-              blinkTimer.start();
-            }
-        else
-          {
-            if (blinkTimer != null)
-              blinkTimer.stop();
-          }
+        updateTimerStatus();
         Rectangle area = null;
+	int dot = getDot();
         try
           {            
-            area = getComponent().modelToView(getDot());
+            area = getComponent().modelToView(dot);
           }
-        catch (BadLocationException ex)
+        catch (BadLocationException e)
           {
-            assert false: "Unexpected bad caret location: " + getDot();
+	    AssertionError ae;
+	    ae = new AssertionError("Unexpected bad caret location: " + dot);
+	    ae.initCause(e);
+	    throw ae;
           }
         if (area != null)
           damage(area);

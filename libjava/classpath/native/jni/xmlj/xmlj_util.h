@@ -1,5 +1,5 @@
 /* xmlj_util.h -
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,6 @@ exception statement from your version. */
 
 #ifndef XMLJ_UTIL_H
 #define XMLJ_UTIL_H
-
-#if defined __64BIT__ || defined __LP64 || defined _LP64 || defined __LP64__ || defined _ADDR64
-#  define XMLJ_64BIT_POINTER 1
-#endif 
 
 #include <jni.h>
 #include <libxml/xmlstring.h>

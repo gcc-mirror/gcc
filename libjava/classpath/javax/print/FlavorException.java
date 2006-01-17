@@ -1,5 +1,5 @@
 /* FlavorException.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,16 @@ exception statement from your version. */
 package javax.print;
 
 /**
+ * <code>FlavorException</code> specifies a method a specific
+ * subclass of {@link javax.print.PrintException} may implement to
+ * provide further information of printing errors if unsupported
+ * document flavors are involved.
+ * <p>
+ * There exists no <code>PrintException</code> class implementing this 
+ * interface. Providing this extension in <code>PrintException</code> 
+ * subclasses is left to the concrete print service implementation.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface FlavorException
@@ -46,7 +56,7 @@ public interface FlavorException
   /**
    * Returns the unsupported document flavors.
    * 
-   * @return the unsupported document flavors
+   * @return The unsupported document flavors.
    */
   DocFlavor[] getUnsupportedFlavors();
 }

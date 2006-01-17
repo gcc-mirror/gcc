@@ -260,6 +260,7 @@ public class DomLSParser
     eventSink.coalescing = coalescing;
     // get and configure reader
     XMLReader reader = getXMLReader();
+    eventSink.reader = reader;
     try
       {
         reader.setContentHandler(eventSink);

@@ -541,6 +541,9 @@ public abstract class AbstractDocument implements Document, Serializable
     
     writeLock();
     UndoableEdit undo = content.insertString(offset, text);
+    if (undo != null)
+      event.addEdit(undo);
+
     insertUpdate(event, attributes);
     writeUnlock();
 
@@ -1326,7 +1329,14 @@ public abstract class AbstractDocument implements Document, Serializable
      */
     public Object getAttribute(Object key)
     {
-      return attributes.getAttribute(key);
+      Object result = attributes.getAttribute(key);
+      if (result == null && element_parent != null)
+        {
+          AttributeSet parentSet = element_parent.getAttributes();
+          if (parentSet != null)
+            result = parentSet.getAttribute(key);
+        }
+      return result;
     }
 
     /**
@@ -1809,6 +1819,12 @@ public abstract class AbstractDocument implements Document, Serializable
     Hashtable changes;
 
     /**
+     * Indicates if this event has been modified or not. This is used to
+     * determine if this event is thrown.
+     */
+    boolean modified;
+
+    /**
      * Creates a new <code>DefaultDocumentEvent</code>.
      *
      * @param offset the starting offset of the change
@@ -1822,6 +1838,7 @@ public abstract class AbstractDocument implements Document, Serializable
       this.length = length;
       this.type = type;
       changes = new Hashtable();
+      modified = false;
     }
 
     /**
@@ -1836,6 +1853,7 @@ public abstract class AbstractDocument implements Document, Serializable
       // XXX - Fully qualify ElementChange to work around gcj bug #2499.
       if (edit instanceof DocumentEvent.ElementChange)
         {
+          modified = true;
           DocumentEvent.ElementChange elEdit =
             (DocumentEvent.ElementChange) edit;
           changes.put(elEdit.getElement(), elEdit);
@@ -1895,6 +1913,15 @@ public abstract class AbstractDocument implements Document, Serializable
     {
       // XXX - Fully qualify ElementChange to work around gcj bug #2499.
       return (DocumentEvent.ElementChange) changes.get(elem);
+    }
+    
+    /**
+     * Returns a String description of the change event.  This returns the
+     * toString method of the Vector of edits.
+     */
+    public String toString()
+    {
+      return edits.toString();
     }
   }
   

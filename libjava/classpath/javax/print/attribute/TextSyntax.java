@@ -1,5 +1,5 @@
 /* TextSyntax.java -- 
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,14 @@ import java.io.Serializable;
 import java.util.Locale;
 
 /**
- * @author Michael Koch
+ * <code>TextSyntax</code> is the abstract base class of all attribute 
+ * classes which provide a string as value (e.g. the location of the printer).
+ * <p>
+ * A <code>TextSyntax</code> instance consists of a string value and a
+ * locale which indicates the language of the locale of the string.
+ * </p>
+ *
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class TextSyntax implements Cloneable, Serializable
 {
@@ -55,23 +62,24 @@ public abstract class TextSyntax implements Cloneable, Serializable
    * and locale.
    *
    * @param value the value for this syntax
-   * @param locale the locale to use
+   * @param locale the locale to use, if <code>null</code> the default
+   * locale is used.
    *
-   * @exception NullPointerException if value and/or locale is null
+   * @exception NullPointerException if value is null
    */
   protected TextSyntax(String value, Locale locale)
   {
-    if (value == null || locale == null)
-      throw new NullPointerException("value and/or locale may not be null");
-
+    if (value == null)
+      throw new NullPointerException("value may not be null");
+    
     this.value = value;
-    this.locale = locale;
+    this.locale = (locale == null ? Locale.getDefault() : locale);
   }
 
   /**
    * Returns the value of this syntax object.
    *
-   * @return the value
+   * @return The value.
    */
   public String getValue()
   {
@@ -81,7 +89,7 @@ public abstract class TextSyntax implements Cloneable, Serializable
   /**
    * Returns the locale of this syntax object.
    *
-   * @return the locale
+   * @return The locale.
    */
   public Locale getLocale()
   {
@@ -91,7 +99,7 @@ public abstract class TextSyntax implements Cloneable, Serializable
   /**
    * Returns the hashcode for this object.
    *
-   * @return the hashcode
+   * @return The hashcode.
    */
   public int hashCode()
   {
@@ -99,7 +107,7 @@ public abstract class TextSyntax implements Cloneable, Serializable
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
@@ -117,7 +125,10 @@ public abstract class TextSyntax implements Cloneable, Serializable
   }
 
   /**
-   * Returns a string representing the object.
+   * Returns a string representing the object. The returned
+   * string is the underlying text value of this object.
+   * 
+   * @return The string representation.
    */
   public String toString()
   {

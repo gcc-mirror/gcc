@@ -1,5 +1,5 @@
 /* JobStateReasons.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,12 +38,23 @@ exception statement from your version. */
 
 package javax.print.attribute.standard;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import javax.print.attribute.PrintJobAttribute;
 
 /**
+ * The <code>JobStateReasons</code> attribute provides the set of 
+ * additional informations available about the current state of a print job. 
+ * <p>
+ * <b>IPP Compatibility:</b> JobStateReasons is an IPP 1.1 attribute.
+ * </p>
+ * @see javax.print.attribute.standard.JobState
+ * @see javax.print.attribute.standard.JobStateReason
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class JobStateReasons extends HashSet
   implements PrintJobAttribute
@@ -51,9 +62,82 @@ public final class JobStateReasons extends HashSet
   private static final long serialVersionUID = 8849088261264331812L;
 
   /**
+   * Constructs an empty <code>JobStateReasons</code> attribute.
+   */  
+  public JobStateReasons()
+  {
+    super();
+  }
+
+  /**
+   * Constructs an empty <code>JobStateReasons</code> attribute
+   * with the given initial capacity and load factor.
+   * 
+   * @param initialCapacity the intial capacity.
+   * @param loadFactor the load factor of the underlying HashSet.
+   * 
+   * @throws IllegalArgumentException if initialCapacity &lt; 0
+   * @throws IllegalArgumentException if initialCapacity or loadFactor &lt; 0
+   */
+  public JobStateReasons(int initialCapacity, float loadFactor)
+  {
+    super(initialCapacity, loadFactor);
+  }
+
+  /**
+   * Constructs an empty <code>JobStateReasons</code> attribute
+   * with the given initial capacity and the default load factor.
+   * 
+   * @param initialCapacity the intial capacity.
+   * 
+   * @throws IllegalArgumentException if initialCapacity &lt; 0
+   */
+  public JobStateReasons(int initialCapacity)
+  {
+    super(initialCapacity);
+  }
+
+  /**
+   * Constructs a <code>JobStateReasons</code> attribute
+   * with the content of the given collection.
+   * 
+   * @param collection the collection for the initial values.
+   * 
+   * @throws NullPointerException if collection or any value is 
+   * <code>null</code>.
+   * @throws ClassCastException if values of collection are not of type 
+   * <code>JobStateReason</code>.
+   */
+  public JobStateReasons(Collection collection)
+  {
+    super(collection.size(), 0.75f);
+    Iterator it = collection.iterator();
+    while (it.hasNext())
+      add(it.next());
+  }
+
+  /**
+   * Adds the given job state reason object to the set.
+   * 
+   * @param o the reason of type <code>JobStateReason</code>.
+   * @return <code>true</code> if set changed, <code>false</code> otherwise.
+   * 
+   * @throws NullPointerException if given object is <code>null</code>.
+   * @throws ClassCastException if given object is not an instance of
+   * <code>JobStateReason</code>.
+   */
+  public boolean add(Object o)
+  {
+    if (o == null)
+      throw new NullPointerException("reason is null");  
+    
+    return add((JobStateReason) o);
+  }
+  
+  /**
    * Returns category of this class.
    *
-   * @return the class <code>ColorSupported</code> itself
+   * @return The class <code>JobStateReasons</code> itself.
    */
   public Class getCategory()
   {
@@ -63,7 +147,7 @@ public final class JobStateReasons extends HashSet
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "job-state-reasons".
    */
   public String getName()
   {

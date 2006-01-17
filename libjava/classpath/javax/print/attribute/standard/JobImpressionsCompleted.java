@@ -1,5 +1,5 @@
 /* JobImpressionsCompleted.java -- 
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,23 @@ import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintJobAttribute;
 
 /**
+ * The <code>JobImpressionsCompleted</code> printing attribute reports
+ * the number of impressions already processed.
+ * <p>
+ * An impression is specified by the IPP specification as the image imposed 
+ * onto a single media sheet. This attribute will not include a multiplication 
+ * factor from the number of copies.
+ * </p>
+ * <p>
+ * This attribute belongs to a group of job progress attributes which are 
+ * reporting on the progress of a print job.
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> JobImpressionsCompleted is an IPP 1.1 attribute.
+ * </p>
+ * @see javax.print.attribute.standard.JobMediaSheetsCompleted
+ * @see javax.print.attribute.standard.JobKOctetsProcessed
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class JobImpressionsCompleted extends IntegerSyntax
@@ -53,7 +70,7 @@ public final class JobImpressionsCompleted extends IntegerSyntax
    *
    * @param value the number of completed impressions
    *
-   * @exception IllegalArgumentException if value < 0
+   * @exception IllegalArgumentException if value &lt; 0
    */
   public JobImpressionsCompleted(int value)
   {
@@ -64,11 +81,12 @@ public final class JobImpressionsCompleted extends IntegerSyntax
   }
   
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -81,7 +99,7 @@ public final class JobImpressionsCompleted extends IntegerSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>JobImpressionsCompleted</code> itself
+   * @return The class <code>JobImpressionsCompleted</code> itself.
    */
   public Class getCategory()
   {
@@ -89,12 +107,12 @@ public final class JobImpressionsCompleted extends IntegerSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "job-impressions-completed"
+   * @return The name "job-impressions-completed".
    */
   public String getName()
   {
-    return "job-impressions";
+    return "job-impressions-completed";
   }
 }

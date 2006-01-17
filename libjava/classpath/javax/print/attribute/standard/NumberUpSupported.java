@@ -1,5 +1,5 @@
 /* NumberUpSupported.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,15 @@ import javax.print.attribute.SupportedValuesAttribute;
 
 
 /**
+ * The <code>NumberUpSupported</code> printing attribute specifies the 
+ * supported value or range of values for the 
+ * {@link javax.print.attribute.standard.NumberUp} attribute.
+ * <p>
+ * <b>IPP Compatibility:</b> NumberUpSupported is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class NumberUpSupported extends SetOfIntegerSyntax
   implements SupportedValuesAttribute
@@ -50,33 +58,75 @@ public final class NumberUpSupported extends SetOfIntegerSyntax
   private static final long serialVersionUID = -1041573395759141805L;
 
   /**
-   * Constructs a <code>NumberUp</code> object.
+   * Constructs a <code>NumberUpSupported</code> object.
+   *
+   * @param member the only one value supported for number up.
+   *
+   * @exception IllegalArgumentException if member is &lt; 1
    */
   public NumberUpSupported(int member)
   {
     super(member);
+    
+    if (member < 1)
+      throw new IllegalArgumentException("member may not be less than 1");
   }
 
   /**
-   * Constructs a <code>NumberUp</code> object.
+   * Constructs a <code>NumberUpSupported</code> object.
+   *
+   * @param members the members supported for number up.
+   *
+   * @exception IllegalArgumentException if any element is invalid
+   * @exception NullPointerException if members is <code>null</code> or any 
+   * element of members is <code>null</code>.
    */
   public NumberUpSupported(int[][] members)
   {
     super(members);
+    
+    if (members == null)
+      throw new NullPointerException("members may not be null");
   }
 
   /**
-   * Constructs a <code>NumberUp</code> object.
+   * Constructs a <code>NumberUpSupported</code> object with the
+   * given range for supported number up values.
+   *
+   * @param lowerBound the lower bound value
+   * @param upperBound the upper bound value
+   *
+   * @exception IllegalArgumentException if lowerBound &lt;= upperbound
+   * and lowerBound &lt; 1
    */
   public NumberUpSupported(int lowerBound, int upperBound)
   {
     super(lowerBound, upperBound);
+    
+    if (lowerBound < 1)
+      throw new IllegalArgumentException("lowerBound may not be less than 1");
+  }
+  
+  /**
+   * Tests if the given object is equal to this object.
+   *
+   * @param obj the object to test
+   *
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
+   */
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof NumberUpSupported))
+      return false;
+   
+    return super.equals(obj);
   }
 
   /**
    * Returns category of this class.
    *
-   * @return the class <code>NumberUpSupported</code> itself
+   * @return The class <code>NumberUpSupported</code> itself.
    */
   public Class getCategory()
   {
@@ -86,7 +136,7 @@ public final class NumberUpSupported extends SetOfIntegerSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "number-up-supported".
    */
   public String getName()
   {

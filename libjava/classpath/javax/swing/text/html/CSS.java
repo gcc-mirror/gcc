@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package javax.swing.text.html;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 /**
@@ -46,7 +47,7 @@ import java.util.HashMap;
  *
  * @author Roman Kennke (kennke@aicas.com)
  */
-public class CSS
+public class CSS implements Serializable
 {
   /**
    * Returns an array of all CSS attributes.

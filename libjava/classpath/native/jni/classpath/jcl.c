@@ -43,7 +43,9 @@ exception statement from your version. */
 #include <jcl.h>
 
 #ifndef __GNUC__
-#define __attribute__(x)	/* nothing */
+  #ifndef __attribute__
+    #define __attribute__(x)	/* nothing */
+  #endif
 #endif
 
 JNIEXPORT void JNICALL

@@ -1,11 +1,12 @@
 ## GCJ LOCAL: headers are installed specially.
 ##include_HEADERS = jni.h jni_md.h jawt.h jawt_md.h
 
-DISTCLEANFILES = jni_md.h
+DISTCLEANFILES = jni_md.h config-int.h
 
 ARG_JNI_JAVAH = -jni
 ARG_CLASSPATH_JAVAH = -bootclasspath
 JAVAH = $(USER_JAVAH) $(ARG_JNI_JAVAH) $(ARG_CLASSPATH_JAVAH) ../lib:$(USER_CLASSLIB)
+CLASSDIR = lib
 
 SOUND_H_FILES = \
 $(top_srcdir)/include/gnu_javax_sound_midi_alsa_AlsaPortDevice.h \
@@ -143,25 +144,25 @@ if CREATE_JNI_HEADERS
 
 all-local: $(H_FILES)
 
-$(top_srcdir)/include/gnu_xml_libxmlj_dom_%.h: $(top_builddir)/lib/gnu/xml/libxmlj/dom/%.class
+$(top_srcdir)/include/gnu_xml_libxmlj_dom_%.h: $(top_builddir)/$(CLASSDIR)/gnu/xml/libxmlj/dom/%.class
 	$(JAVAH) -o $@ gnu.xml.libxmlj.dom.$*
 
-$(top_srcdir)/include/gnu_xml_libxmlj_sax_%.h: $(top_builddir)/lib/gnu/xml/libxmlj/sax/%.class
+$(top_srcdir)/include/gnu_xml_libxmlj_sax_%.h: $(top_builddir)/$(CLASSDIR)/gnu/xml/libxmlj/sax/%.class
 	$(JAVAH) -o $@ gnu.xml.libxmlj.sax.$*
 
-$(top_srcdir)/include/gnu_xml_libxmlj_transform_%.h: $(top_builddir)/lib/gnu/xml/libxmlj/transform/%.class
+$(top_srcdir)/include/gnu_xml_libxmlj_transform_%.h: $(top_builddir)/$(CLASSDIR)/gnu/xml/libxmlj/transform/%.class
 	$(JAVAH) -o $@ gnu.xml.libxmlj.transform.$*
 
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_%.h: $(top_builddir)/lib/gnu/java/awt/peer/gtk/%.class
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_%.h: $(top_builddir)/$(CLASSDIR)/gnu/java/awt/peer/gtk/%.class
 	$(JAVAH) -o $@ gnu.java.awt.peer.gtk.$*
 
-$(top_srcdir)/include/gnu_java_awt_peer_qt_%.h: $(top_builddir)/lib/gnu/java/awt/peer/qt/%.class
+$(top_srcdir)/include/gnu_java_awt_peer_qt_%.h: $(top_builddir)/$(CLASSDIR)/gnu/java/awt/peer/qt/%.class
 	$(JAVAH) -o $@ gnu.java.awt.peer.qt.$*
 
-$(top_srcdir)/include/gnu_javax_sound_midi_alsa_%.h: $(top_builddir)/lib/gnu/javax/sound/midi/alsa/%.class
+$(top_srcdir)/include/gnu_javax_sound_midi_alsa_%.h: $(top_builddir)/$(CLASSDIR)/gnu/javax/sound/midi/alsa/%.class
 	$(JAVAH) -o $@ gnu.javax.sound.midi.alsa.$*
 
-$(top_srcdir)/include/gnu_javax_sound_midi_dssi_%.h: $(top_builddir)/lib/gnu/javax/sound/midi/dssi/%.class
+$(top_srcdir)/include/gnu_javax_sound_midi_dssi_%.h: $(top_builddir)/$(CLASSDIR)/gnu/javax/sound/midi/dssi/%.class
 	$(JAVAH) -o $@ gnu.javax.sound.midi.dssi.$*
 
 $(top_srcdir)/include/gnu_java_net_PlainDatagramSocketImpl.h: $(top_srcdir)/gnu/java/net/PlainDatagramSocketImpl.java

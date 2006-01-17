@@ -42,10 +42,11 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
-	$(top_srcdir)/m4/acinclude.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/acinclude.m4 \
+	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -59,9 +60,10 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(securitydir)"
+am__installdirs = "$(DESTDIR)$(loggingdir)" "$(DESTDIR)$(securitydir)"
+loggingDATA_INSTALL = $(INSTALL_DATA)
 securityDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(security_DATA)
+DATA = $(logging_DATA) $(security_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
@@ -150,6 +152,7 @@ JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
 JIKES = @JIKES@
 JIKESENCODING = @JIKESENCODING@
+JIKESWARNINGS = @JIKESWARNINGS@
 KJC = @KJC@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
@@ -254,8 +257,10 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 vm_classes = @vm_classes@
+logging_DATA = java/util/logging/logging.properties
+loggingdir = $(prefix)/lib
 security_DATA = java/security/classpath.security
-securitydir = $(libdir)/security
+securitydir = $(prefix)/lib/security
 all: all-am
 
 .SUFFIXES:
@@ -298,6 +303,23 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+install-loggingDATA: $(logging_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(loggingdir)" || $(mkdir_p) "$(DESTDIR)$(loggingdir)"
+	@list='$(logging_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(loggingDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(loggingdir)/$$f'"; \
+	  $(loggingDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(loggingdir)/$$f"; \
+	done
+
+uninstall-loggingDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(logging_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(loggingdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(loggingdir)/$$f"; \
+	done
 install-securityDATA: $(security_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(securitydir)" || $(mkdir_p) "$(DESTDIR)$(securitydir)"
@@ -353,7 +375,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(securitydir)"; do \
+	for dir in "$(DESTDIR)$(loggingdir)" "$(DESTDIR)$(securitydir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-am
@@ -398,7 +420,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-securityDATA
+install-data-am: install-loggingDATA install-securityDATA
 
 install-exec-am:
 
@@ -424,18 +446,19 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-securityDATA
+uninstall-am: uninstall-info-am uninstall-loggingDATA \
+	uninstall-securityDATA
 
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
 	distclean distclean-generic distclean-libtool distdir dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-man install-securityDATA \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	uninstall uninstall-am uninstall-info-am \
-	uninstall-securityDATA
+	install-info install-info-am install-loggingDATA install-man \
+	install-securityDATA install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am uninstall uninstall-am \
+	uninstall-info-am uninstall-loggingDATA uninstall-securityDATA
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

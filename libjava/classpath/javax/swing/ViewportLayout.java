@@ -143,32 +143,32 @@ public class ViewportLayout implements LayoutManager, Serializable
     Dimension viewMinimum = view.getMinimumSize();
     Point portLowerRight = new Point(portBounds.x + portBounds.width,
                                      portBounds.y + portBounds.height);
-        
+
     // vertical implementation of the above rules
+    if ((! (view instanceof Scrollable) && viewPref.height < portBounds.height
+         || (view instanceof Scrollable
+            && ((Scrollable) view).getScrollableTracksViewportHeight())))
+      viewPref.height = portBounds.height;
+
     if (portBounds.height >= viewMinimum.height)
-      {
-        portBounds.y = 0;
-        if ( !(view instanceof Scrollable) || ((Scrollable)view).getScrollableTracksViewportHeight())
-          viewPref.height = portBounds.height;
-      }
+      portBounds.y = 0;
     else
       {
-        viewPref.height = viewMinimum.height;
         int overextension = portLowerRight.y - viewPref.height;
         if (overextension > 0)
             portBounds.y -= overextension;
       }
 
     // horizontal implementation of the above rules
+    if ((! (view instanceof Scrollable) && viewPref.width < portBounds.width
+         || (view instanceof Scrollable
+         && ((Scrollable) view).getScrollableTracksViewportWidth())))
+      viewPref.width = portBounds.width;
+
     if (portBounds.width >= viewMinimum.width)
-      {
-        portBounds.x = 0;
-        if ( !(view instanceof Scrollable) || ((Scrollable)view).getScrollableTracksViewportWidth())
-          viewPref.width = portBounds.width;
-      }
+      portBounds.x = 0;
     else
       {
-        viewPref.width = viewMinimum.width;
         int overextension = portLowerRight.x - viewPref.width;
         if (overextension > 0)
             portBounds.x -= overextension;

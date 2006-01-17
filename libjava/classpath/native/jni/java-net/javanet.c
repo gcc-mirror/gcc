@@ -1,5 +1,5 @@
 /* javanet.c - Common internal functions for the java.net package
-   Copyright (C) 1998, 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,6 @@ exception statement from your version. */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #include <jni.h>
 #include <jcl.h>
@@ -77,9 +76,6 @@ _javanet_set_int_field (JNIEnv * env, jobject obj,
   jclass cls;
   jfieldID fid;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   cls = (*env)->FindClass (env, class);
   if (cls == NULL)
     return;
@@ -106,9 +102,6 @@ _javanet_get_int_field (JNIEnv * env, jobject obj, const char *field)
   jfieldID fid;
   int fd;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   DBG ("_javanet_get_int_field(): Entered _javanet_get_int_field\n");
 
   cls = (*env)->GetObjectClass (env, obj);
@@ -133,20 +126,20 @@ _javanet_get_int_field (JNIEnv * env, jobject obj, const char *field)
  * need to include it.
  */
 static void
-_javanet_create_localfd (JNIEnv * env, jobject this)
+_javanet_create_localfd (JNIEnv * env, jobject this, jboolean stream)
 {
   jclass this_cls, fd_cls;
   jfieldID fid;
   jmethodID mid;
   jobject fd_obj;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   DBG ("_javanet_create_localfd(): Entered _javanet_create_localfd\n");
 
   /* Look up the fd field */
-  this_cls = (*env)->FindClass (env, "java/net/SocketImpl");
+  if (stream)
+    this_cls = (*env)->FindClass(env, "java/net/SocketImpl");
+  else
+    this_cls = (*env)->FindClass(env, "java/net/DatagramSocketImpl");
   if (this_cls == NULL)
     return;
 
@@ -194,9 +187,6 @@ _javanet_create_boolean (JNIEnv * env, jboolean val)
   jmethodID mid;
   jobject obj;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   cls = (*env)->FindClass (env, "java/lang/Boolean");
   if (cls == NULL)
     return NULL;
@@ -223,9 +213,6 @@ _javanet_create_integer (JNIEnv * env, jint val)
   jclass cls;
   jmethodID mid;
   jobject obj;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   cls = (*env)->FindClass (env, "java/lang/Integer");
   if (cls == NULL)
@@ -257,9 +244,6 @@ _javanet_create_inetaddress (JNIEnv * env, int netaddr)
   jmethodID mid;
   jstring ip_str;
   jobject ia;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   /* Build a string IP address */
   TARGET_NATIVE_NETWORK_INT_TO_IPADDRESS_BYTES (netaddr,
@@ -315,9 +299,6 @@ _javanet_set_remhost_addr (JNIEnv * env, jobject this, jobject ia)
   jclass this_cls;
   jfieldID fid;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   /* Set the variable in the object */
   this_cls = (*env)->FindClass (env, "java/net/SocketImpl");
   if (this_cls == NULL)
@@ -342,9 +323,6 @@ static void
 _javanet_set_remhost (JNIEnv * env, jobject this, int netaddr)
 {
   jobject ia;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   DBG ("_javanet_set_remhost(): Entered _javanet_set_remhost\n");
 
@@ -371,9 +349,6 @@ _javanet_get_netaddr (JNIEnv * env, jobject addr)
   jarray arr = 0;
   jbyte *octets;
   int netaddr, len;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   DBG ("_javanet_get_netaddr(): Entered _javanet_get_netaddr\n");
 
@@ -440,9 +415,6 @@ _javanet_create (JNIEnv * env, jobject this, jboolean stream)
 #ifndef WITHOUT_NETWORK
   int fd;
   int result;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   if (stream)
     {
@@ -514,9 +486,6 @@ _javanet_close (JNIEnv * env, jobject this, int stream)
   int result;
   int error = 0;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   fd = _javanet_get_int_field (env, this, "native_fd");
   if (fd == -1)
     return;
@@ -552,16 +521,14 @@ _javanet_close (JNIEnv * env, jobject this, int stream)
  * Connects to the specified destination.
  */
 void
-_javanet_connect (JNIEnv * env, jobject this, jobject addr, jint port)
+_javanet_connect (JNIEnv * env, jobject this, jobject addr, jint port,
+		  jboolean stream)
 {
 #ifndef WITHOUT_NETWORK
   int netaddr, fd;
   int result;
   int local_address, local_port;
   int remote_address, remote_port;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   DBG ("_javanet_connect(): Entered _javanet_connect\n");
 
@@ -613,7 +580,7 @@ _javanet_connect (JNIEnv * env, jobject this, jobject addr, jint port)
       return;
     }
 
-  _javanet_create_localfd (env, this);
+  _javanet_create_localfd (env, this, stream);
   if ((*env)->ExceptionOccurred (env))
     {
       /* We don't care whether this succeeds. close() will cleanup later. */
@@ -622,8 +589,13 @@ _javanet_connect (JNIEnv * env, jobject this, jobject addr, jint port)
     }
   DBG ("_javanet_connect(): Created fd\n");
 
-  _javanet_set_int_field (env, this, "java/net/SocketImpl", "localport",
-			  local_port);
+  if (stream)
+    _javanet_set_int_field (env, this, "java/net/SocketImpl", "localport",
+			    local_port);
+  else
+    _javanet_set_int_field (env, this, "java/net/DatagramSocketImpl",
+			    "localPort", local_port);
+
   if ((*env)->ExceptionOccurred (env))
     {
       /* We don't care whether this succeeds. close() will cleanup later. */
@@ -643,31 +615,36 @@ _javanet_connect (JNIEnv * env, jobject this, jobject addr, jint port)
       return;
     }
 
-  if (remote_address == netaddr)
+  if (stream)
     {
-      _javanet_set_remhost_addr (env, this, addr);
-    }
-  else
-    {
-      _javanet_set_remhost (env, this, remote_address);
-    }
-  if ((*env)->ExceptionOccurred (env))
-    {
-      /* We don't care whether this succeeds. close() will cleanup later. */
-      TARGET_NATIVE_NETWORK_SOCKET_CLOSE (fd, result);
-      return;
-    }
-  DBG ("_javanet_connect(): Set the remote host\n");
+      if (remote_address == netaddr)
+	{
+	  _javanet_set_remhost_addr (env, this, addr);
+	}
+      else
+	{
+	  _javanet_set_remhost (env, this, remote_address);
+	}
+      if ((*env)->ExceptionOccurred (env))
+	{
+	  /* We don't care whether this succeeds. close() will cleanup later.
+	   */
+	  TARGET_NATIVE_NETWORK_SOCKET_CLOSE (fd, result);
+	  return;
+	}
+      DBG ("_javanet_connect(): Set the remote host\n");
 
-  _javanet_set_int_field (env, this, "java/net/SocketImpl", "port",
-			  remote_port);
-  if ((*env)->ExceptionOccurred (env))
-    {
-      /* We don't care whether this succeeds. close() will cleanup later. */
-      TARGET_NATIVE_NETWORK_SOCKET_CLOSE (fd, result);
-      return;
+      _javanet_set_int_field (env, this, "java/net/SocketImpl", "port",
+			      remote_port);
+      if ((*env)->ExceptionOccurred (env))
+	{
+	  /* We don't care whether this succeeds. close() will cleanup later.
+	   */
+	  TARGET_NATIVE_NETWORK_SOCKET_CLOSE (fd, result);
+	  return;
+	}
+      DBG ("_javanet_connect(): Set the remote port\n");
     }
-  DBG ("_javanet_connect(): Set the remote port\n");
 #else /* not WITHOUT_NETWORK */
 #endif /* not WITHOUT_NETWORK */
 }
@@ -692,9 +669,6 @@ _javanet_bind (JNIEnv * env, jobject this, jobject addr, jint port,
   int tmpaddr;
   int result;
   int local_address, local_port;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   DBG ("_javanet_bind(): Entering native bind()\n");
 
@@ -797,9 +771,6 @@ _javanet_listen (JNIEnv * env, jobject this, jint queuelen)
   int fd;
   int result;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   /* Get the real file descriptor */
   fd = _javanet_get_int_field (env, this, "native_fd");
   if (fd == -1)
@@ -835,9 +806,6 @@ _javanet_accept (JNIEnv * env, jobject this, jobject impl)
   int result;
   int local_address, local_port;
   int remote_address, remote_port;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   /* Get the real file descriptor */
   fd = _javanet_get_int_field (env, this, "native_fd");
@@ -897,7 +865,7 @@ _javanet_accept (JNIEnv * env, jobject this, jobject impl)
       return;
     }
 
-  _javanet_create_localfd (env, impl);
+  _javanet_create_localfd (env, impl, 1);
   if ((*env)->ExceptionOccurred (env))
     {
       /* We don't care whether this succeeds. close() will cleanup later. */
@@ -971,9 +939,6 @@ _javanet_recvfrom (JNIEnv * env, jobject this, jarray buf, int offset,
   int from_address, from_port;
   int received_bytes;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   DBG ("_javanet_recvfrom(): Entered _javanet_recvfrom\n");
 
   /* Get the real file descriptor */
@@ -1040,6 +1005,11 @@ _javanet_recvfrom (JNIEnv * env, jobject this, jarray buf, int offset,
 	(*port) = from_port;
     }
 
+  /* zero bytes received means recv() noticed the other side orderly
+     closing the connection. */
+  if (received_bytes == 0)
+    received_bytes = -1;
+
   return (received_bytes);
 #else /* not WITHOUT_NETWORK */
 #endif /* not WITHOUT_NETWORK */
@@ -1064,9 +1034,6 @@ _javanet_sendto (JNIEnv * env, jobject this, jarray buf, int offset, int len,
   int fd;
   jbyte *p;
   int bytes_sent;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   /* Get the real file descriptor */
   fd = _javanet_get_int_field (env, this, "native_fd");
@@ -1137,9 +1104,6 @@ _javanet_set_option (JNIEnv * env, jobject this, jint option_id, jobject val)
   jmethodID mid;
   int address;
   int result;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   /* Get the real file descriptor */
   fd = _javanet_get_int_field (env, this, "native_fd");
@@ -1355,9 +1319,6 @@ _javanet_get_option (JNIEnv * env, jobject this, jint option_id)
   int address;
   int result;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   /* Get the real file descriptor */
   fd = _javanet_get_int_field (env, this, "native_fd");
   if (fd == -1)
@@ -1531,9 +1492,6 @@ _javanet_shutdownInput (JNIEnv * env, jobject this)
 {
   int fd;
 
-  assert (env != NULL);
-  assert ((*env) != NULL);
-
   /* Get the real file descriptor. */
   fd = _javanet_get_int_field (env, this, "native_fd");
   if (fd == -1)
@@ -1546,7 +1504,8 @@ _javanet_shutdownInput (JNIEnv * env, jobject this)
   /* Shutdown input stream of socket. */
   if (shutdown (fd, SHUT_RD) == -1)
     {
-      JCL_ThrowException (env, SOCKET_EXCEPTION, strerror (errno));
+      JCL_ThrowException (env, SOCKET_EXCEPTION,
+			  TARGET_NATIVE_LAST_ERROR_STRING());
       return;
     }
 }
@@ -1555,9 +1514,6 @@ void
 _javanet_shutdownOutput (JNIEnv * env, jobject this)
 {
   int fd;
-
-  assert (env != NULL);
-  assert ((*env) != NULL);
 
   /* Get the real file descriptor. */
   fd = _javanet_get_int_field (env, this, "native_fd");
@@ -1571,7 +1527,8 @@ _javanet_shutdownOutput (JNIEnv * env, jobject this)
   /* Shutdown output stream of socket. */
   if (shutdown (fd, SHUT_WR) == -1)
     {
-      JCL_ThrowException (env, SOCKET_EXCEPTION, strerror (errno));
+      JCL_ThrowException (env, SOCKET_EXCEPTION,
+			  TARGET_NATIVE_LAST_ERROR_STRING());
       return;
     }
 }

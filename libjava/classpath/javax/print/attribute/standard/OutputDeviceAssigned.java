@@ -1,5 +1,5 @@
 /* OutputDeviceAssigned.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,18 @@ import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
+ * The <code>OutputDeviceAssigned</code> printing attribute specifies the
+ * output printer device assigned by a print service to a print job. 
+ * <p>
+ * This may be empty if a print service is embedded in a printer, e.g. is the
+ * output device. However there exist print services with several physical 
+ * output devices (e.g. CUPS classes) where this attribute provides the actual
+ * output device.
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> OutputDeviceAssigned is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class OutputDeviceAssigned extends TextSyntax
@@ -54,9 +66,11 @@ public final class OutputDeviceAssigned extends TextSyntax
   /**
    * Creates a <code>OutputDeviceAssigned</code> object.
    *
-   * @param deviceName the user name
+   * @param deviceName the name of the device.
+   * @param locale the locale to use, if <code>null</code> the default
+   * locale is used.
    *
-   * @exception NullPointerException if deviceName is null
+   * @exception NullPointerException if deviceName is <code>null</code>.
    */
   public OutputDeviceAssigned(String deviceName, Locale locale)
   {
@@ -64,11 +78,12 @@ public final class OutputDeviceAssigned extends TextSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -81,7 +96,7 @@ public final class OutputDeviceAssigned extends TextSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>OutputDeviceAssigned</code> itself
+   * @return The class <code>OutputDeviceAssigned</code> itself.
    */
   public Class getCategory()
   {
@@ -89,9 +104,9 @@ public final class OutputDeviceAssigned extends TextSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "output-device-assigned"
+   * @return The name "output-device-assigned".
    */
   public String getName()
   {

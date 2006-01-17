@@ -1,5 +1,5 @@
 /* TransferHandler.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,6 +43,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
+import java.awt.Toolkit;
 import java.io.Serializable;
 
 public class TransferHandler implements Serializable
@@ -53,6 +54,7 @@ public class TransferHandler implements Serializable
 
     public TransferAction(String command)
     {
+      super(command);
       this.command = command;
     }
     
@@ -61,6 +63,13 @@ public class TransferHandler implements Serializable
       JComponent component = (JComponent) event.getSource();
       TransferHandler transferHandler = component.getTransferHandler();
       Clipboard clipboard = getClipboard(component);
+
+      if (clipboard == null)
+	{
+	  // Access denied!
+	  Toolkit.getDefaultToolkit().beep();
+	  return;
+	}
 
       if (command.equals(COMMAND_COPY))
 	transferHandler.exportToClipboard(component, clipboard, COPY);
@@ -76,37 +85,22 @@ public class TransferHandler implements Serializable
     }
   
     /**
-     * Get the system cliboard. If not available, create and return the VM-local
-     * clipboard.
+     * Get the system cliboard or null if the caller isn't allowed to
+     * access the system clipboard.
      * 
      * @param component a component, used to get the toolkit.
      * @return the clipboard
      */
     private static Clipboard getClipboard(JComponent component)
     {
-      // Avoid throwing exception if the system clipboard access failed
-      // in the past.
-      if (clipboard != null)
-        return clipboard;
-      else
-        {
-          try
-            {
-              SecurityManager sm = System.getSecurityManager();
-              if (sm != null)
-                sm.checkSystemClipboardAccess();
-
-              // We may access system clipboard.
-              return component.getToolkit().getSystemClipboard();
-            }
-          catch (Exception e)
-            {
-              // We may not access system clipboard.
-              // Create VM-local clipboard if none exists yet.
-              clipboard = new Clipboard("Clipboard");
-              return clipboard;
-            }
-        }
+      try
+	{
+	  return component.getToolkit().getSystemClipboard();
+	}
+      catch (SecurityException se)
+	{
+	  return null;
+	}
     }
   }
   
@@ -124,12 +118,6 @@ public class TransferHandler implements Serializable
   private static Action copyAction = new TransferAction(COMMAND_COPY);
   private static Action cutAction = new TransferAction(COMMAND_CUT);
   private static Action pasteAction = new TransferAction(COMMAND_PASTE);
-  
-  /**
-   * Clipboard if system clipboard may not be used.
-   * Package-private to avoid an accessor method.
-   */
-  static Clipboard clipboard;
   
   private int sourceActions;
   private Icon visualRepresentation;

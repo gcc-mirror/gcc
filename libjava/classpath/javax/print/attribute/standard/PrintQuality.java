@@ -1,5 +1,5 @@
 /* PrintQuality.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,19 +44,43 @@ import javax.print.attribute.PrintRequestAttribute;
 
 
 /**
+ * The <code>PrintQuality</code> printing attribute specifies the
+ * print quality that should be used by the print services for a job.
+ * <p>
+ * <b>IPP Compatibility:</b> PrintQuality is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class PrintQuality extends EnumSyntax
   implements DocAttribute, PrintJobAttribute, PrintRequestAttribute
 {
   private static final long serialVersionUID = -3072341285225858365L;
 
-  public static final PrintQuality DRAFT = new PrintQuality(0);
-  public static final PrintQuality NORMAL = new PrintQuality(1);
-  public static final PrintQuality HIGH = new PrintQuality(2);
+  /** 
+   * Draft quality of the printer. 
+   */
+  public static final PrintQuality DRAFT = new PrintQuality(3);
+  
+  /** 
+   * Normal quality of the printer. 
+   */
+  public static final PrintQuality NORMAL = new PrintQuality(4);
+  
+  /** 
+   * High quality of the printer. 
+   */
+  public static final PrintQuality HIGH = new PrintQuality(5);
 
+  private static final String[] stringTable = { "draft", "normal", "high" };
+  
+  private static final PrintQuality[] enumValueTable = { DRAFT, NORMAL, HIGH };
+  
   /**
    * Constructs a <code>PrintQuality</code> object.
+   * 
+   * @param value the value of the enum
    */
   protected PrintQuality(int value)
   {
@@ -66,7 +90,7 @@ public class PrintQuality extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrintQuality</code> itself
+   * @return The class <code>PrintQuality</code> itself.
    */
   public Class getCategory()
   {
@@ -74,12 +98,43 @@ public class PrintQuality extends EnumSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "print-quality"
+   * @return The name "print-quality".
    */
   public String getName()
   {
     return "print-quality";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
+  }  
+
+  /**
+   * Returns the lowest used value by the enumerations of this class.
+   * .
+   * @return The lowest value used.
+   */
+  protected int getOffset()
+  {
+    return 3;
   }
 }

@@ -78,6 +78,11 @@ public class Bindings
    */
   final LinkedList withParameters;
 
+  /**
+   * Only search globals.
+   */
+  boolean global;
+
   Bindings(Stylesheet stylesheet)
   {
     this.stylesheet = stylesheet;
@@ -136,6 +141,12 @@ public class Bindings
 
   public boolean containsKey(QName name, int type)
   {
+    if (global)
+      {
+        Map ctx1 = (Map) variables.getLast();
+        Map ctx2 = (Map) parameters.getLast();
+        return (ctx1.containsKey(name) || ctx2.containsKey(name));
+      }
     Iterator i = null;
     switch (type)
       {
@@ -165,6 +176,17 @@ public class Bindings
 
   public Object get(QName name, Node context, int pos, int len)
   {
+    if (global)
+      {
+        Map ctx = (Map) variables.getLast();
+        Object ret = ctx.get(name);
+        if (ret == null)
+          {
+            ctx = (Map) parameters.getLast();
+            ret = ctx.get(name);
+          }
+        return ret;
+      }
     //System.err.println("bindings.get: "+name);
     //System.err.println("\t"+toString());
     Object ret = null;

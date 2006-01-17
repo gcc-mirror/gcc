@@ -41,6 +41,7 @@ package javax.swing.text;
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.Shape;
 
 import javax.swing.JPasswordField;
@@ -211,7 +212,10 @@ public class PasswordView
   /**
    * Provides a mapping from the document model coordinate space to the
    * coordinate space of the view mapped to it.
-   * 
+   *
+   * This method is overridden to provide a correct mapping with respect to the
+   * echo char and not to the real content.
+   *
    * @param pos - the position to convert >= 0
    * @param a - the allocated region to render into
    * @param b - typesafe enumeration to indicate bias to a position in the model.
@@ -222,7 +226,35 @@ public class PasswordView
   public Shape modelToView(int pos, Shape a, Position.Bias b)
     throws BadLocationException
   {
-    return super.modelToView(pos, a, b);
+    Shape newAlloc = adjustAllocation(a);
+
+    // Ensure metrics are up-to-date.
+    updateMetrics();
+    
+    // Get rectangle of the line containing position.
+    int lineIndex = getElement().getElementIndex(pos);
+    Rectangle rect = lineToRect(newAlloc, lineIndex);
+
+    // Get the rectangle for position.
+    Element line = getElement().getElement(lineIndex);
+    int lineStart = line.getStartOffset();
+    Segment segment = getLineBuffer();
+    segment.array = new char[pos - lineStart];
+    char echoChar = getEchoChar();
+    for (int i = 0; i < segment.array.length; ++i)
+      segment.array[i] = echoChar;
+    segment.offset = 0;
+    segment.count = segment.array.length;
+
+    int xoffset = Utilities.getTabbedTextWidth(segment, metrics, rect.x,
+                           this, lineStart);
+
+    // Calc the real rectangle.
+    rect.x += xoffset;
+    rect.width = 1;
+    rect.height = metrics.getHeight();
+
+    return rect;
   }
 
   /**
@@ -239,6 +271,8 @@ public class PasswordView
    */
   public int viewToModel(float fx, float fy, Shape a, Position.Bias[] bias)
   {
+    // FIXME: This only provides a view->model mapping for the real text
+    // content and does not respect the echo char.
     return super.viewToModel(fx, fy, a, bias);
   }
 }

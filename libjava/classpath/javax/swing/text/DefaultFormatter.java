@@ -400,6 +400,8 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
   public String valueToString(Object value)
     throws ParseException
   {
+    if (value == null)
+      return "";
     return value.toString();
   }
 

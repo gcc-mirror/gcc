@@ -152,6 +152,7 @@ LIBFFIINCS = @LIBFFIINCS@
 AM_CPPFLAGS = -I$(top_srcdir) \
 	-Iinclude -I$(top_srcdir)/include \
 	-I$(top_srcdir)/classpath/include \
+	-Iclasspath/include \
 	-I$(top_srcdir)/classpath/native/fdlibm \
 	$(GCINCS) $(THREADINCS) $(INCLTDL) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)

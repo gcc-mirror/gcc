@@ -78,31 +78,20 @@ final class SubstringFunction
     Object val1 = arg1.evaluate(context, pos, len);
     Object val2 = arg2.evaluate(context, pos, len);
     String s = _string(context, val1);
-    int p = (val2 instanceof Double) ?
-      ((Double) val2).intValue() :
-        (int) Math.round(_number(context, val2));
-    p--;
+    int p = Expr.intValue(val2) - 1;
     if (p < 0)
-      {
-        p = 0;
-      }
+      p = 0;
 
     int l = s.length() - p;
     if (l <= 0)
-      {
-        return "";
-      }
+      return "";
 
     if (arg3 != null)
       {
         Object val3 = arg3.evaluate(context, pos, len);
-        int v3 = (val3 instanceof Double) ?
-          ((Double) val3).intValue() :
-            (int) Math.round(_number(context, val3));
+        int v3 = Expr.intValue(val3);
         if (v3 < l) 
-          {
-            l = v3;
-          }
+          l = v3;
       }
 
     return s.substring(p, p + l);

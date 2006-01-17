@@ -1,5 +1,6 @@
 /* Security.java --- Java base security class implementation
-   Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +42,7 @@ package java.security;
 import gnu.classpath.SystemProperties;
 
 import gnu.classpath.Configuration;
+import gnu.classpath.VMStackWalker;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -354,6 +356,14 @@ public final class Security
    */
   public static Provider getProvider(String name)
   {
+    if (name == null)
+      return null;
+    else
+      {
+        name = name.trim();
+        if (name.length() == 0)
+          return null;
+      }
     Provider p;
     int max = providers.size ();
     for (int i = 0; i < max; i++)
@@ -383,8 +393,11 @@ public final class Security
    */
   public static String getProperty(String key)
   {
+    // XXX To prevent infinite recursion when the SecurityManager calls us,
+    // don't do a security check if the caller is trusted (by virtue of having
+    // been loaded by the bootstrap class loader).
     SecurityManager sm = System.getSecurityManager();
-    if (sm != null)
+    if (sm != null && VMStackWalker.getCallingClassLoader() != null)
       sm.checkSecurityAccess("getProperty." + key);
 
     return secprops.getProperty(key);
@@ -399,20 +412,23 @@ public final class Security
    * </p>
    *
    * @param key the name of the property to be set.
-   * @param datnum the value of the property to be set.
+   * @param datum the value of the property to be set.
    * @throws SecurityException if a security manager exists and its
    * {@link SecurityManager#checkPermission(Permission)} method denies access
    * to set the specified security property value.
    * @see #getProperty(String)
    * @see SecurityPermission
    */
-  public static void setProperty(String key, String datnum)
+  public static void setProperty(String key, String datum)
   {
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkSecurityAccess("setProperty." + key);
 
-    secprops.put(key, datnum);
+    if (datum == null)
+      secprops.remove(key);
+    else
+      secprops.put(key, datum);
   }
 
   /**

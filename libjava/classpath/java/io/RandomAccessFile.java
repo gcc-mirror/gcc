@@ -124,7 +124,10 @@ public class RandomAccessFile implements DataOutput, DataInput
 
     ch = FileChannelImpl.create(file, fdmode);
     fd = new FileDescriptor(ch);
-    out = new DataOutputStream (new FileOutputStream (fd));
+    if ((fdmode & FileChannelImpl.WRITE) != 0)
+      out = new DataOutputStream (new FileOutputStream (fd));
+    else
+      out = null;
     in = new DataInputStream (new FileInputStream (fd));
   }
 
@@ -766,6 +769,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public void write (int oneByte) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.write(oneByte);
   }
 
@@ -777,6 +783,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public void write (byte[] buffer) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.write(buffer);
   }
 
@@ -792,6 +801,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public void write (byte[] buffer, int offset, int len) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.write (buffer, offset, len);
   }
 
@@ -806,6 +818,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeBoolean (boolean val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeBoolean(val);
   }
 
@@ -820,6 +835,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeByte (int val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeByte(val);
   }
 
@@ -834,6 +852,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeShort (int val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeShort(val);
   }
 
@@ -848,6 +869,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeChar (int val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeChar(val);
   }
 
@@ -861,6 +885,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeInt (int val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeInt(val);
   }
 
@@ -874,6 +901,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeLong (long val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeLong(val);
   }
 
@@ -893,6 +923,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeFloat (float val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeFloat(val);
   }
 
@@ -913,6 +946,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeDouble (double val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeDouble(val);
   }
 
@@ -927,6 +963,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeBytes (String val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeBytes(val);
   }
   
@@ -941,6 +980,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeChars (String val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeChars(val);
   }
   
@@ -975,6 +1017,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final void writeUTF (String val) throws IOException
   {
+    if (out == null)
+      throw new IOException("Bad file descriptor");
+
     out.writeUTF(val);
   }
   
