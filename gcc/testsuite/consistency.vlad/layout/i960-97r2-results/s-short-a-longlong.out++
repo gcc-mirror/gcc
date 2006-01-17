@@ -1,5 +1,0 @@
-++++Array of longlong in struct starting with short:
-size=88,align=8
-offset-short=0,offset-arrayof-longlong=8,
-align-short=2,align-arrayof-longlong=8
-offset-longlong-a[5]=48,align-longlong-a[5]=8
