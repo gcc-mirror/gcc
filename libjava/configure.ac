@@ -1239,6 +1239,14 @@ AC_SUBST(toolexecdir)
 AC_SUBST(toolexecmainlibdir)
 AC_SUBST(toolexeclibdir)
 
+# Determine where the standard .db file is found.
+multi_os_directory=`$CC -print-multi-os-directory`
+case $multi_os_directory in
+  .) dbexecdir='$(libdir)/gcj-$(gcc_version)' ;; # Avoid /.
+  *) dbexecdir='$(libdir)/'$multi_os_directory'/gcj-$(gcc_version)' ;;
+esac
+AC_SUBST(dbexecdir)
+
 # Determine gcj version number.
 gcjversion=`$GCJ -v 2>&1 | sed -n 's/^.*version \([[^ ]]*\).*$/\1/p'`
 GCJVERSION=$gcjversion
