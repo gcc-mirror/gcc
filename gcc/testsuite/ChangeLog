@@ -1,5 +1,10 @@
 2006-01-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c (switchfiles):
+	xfail txxx where xxx >= 25.
+
+2006-01-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR testsuite/25764
 	* gcc.dg/const-compare.c: Restrict compiling to powerpc*-*-darwin*.
 

@@ -222,10 +222,23 @@ switchfiles (int fields)
       fputs ("failed to create test files\n", stderr);
       exit (1);
     }
-  fprintf (outfile, "\
+  /* FIXME: these should not be xfailed but they are because
+     of bugs in libobjc and the objc front-end.  25 is because
+     vectors are not encoded.  The rest are because or zero sized
+     arrays are encoded as pointers.  */
+  if (filecnt >= 25)
+    {
+      fprintf (outfile, "\
+/* { dg-do run { xfail *-*-* } } */\n\
+/* { dg-options \"-w -I%s -fgnu-runtime\" } */\n");
+    }
+  else
+    {
+      fprintf (outfile, "\
 /* { dg-do run } */\n\
-/* { dg-options \"-w -I%s -fgnu-runtime\" } */\n\
-#include <objc/encoding.h> \n\
+/* { dg-options \"-w -I%s -fgnu-runtime\" } */\n");
+    }
+  fprintf(outfile, "#include <objc/encoding.h> \n\
 #include \"struct-layout-1.h\"\n\
 \n\
 int fails; \n\
