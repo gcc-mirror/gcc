@@ -6329,6 +6329,8 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
   /* If either argument is a constant, then modifying X can not affect IN.  */
   if (CONSTANT_P (x) || CONSTANT_P (in))
     return 0;
+  else if (GET_CODE (x) == SUBREG && GET_CODE (SUBREG_REG (x)) == MEM)
+    return refers_to_mem_for_reload_p (in);
   else if (GET_CODE (x) == SUBREG)
     {
       regno = REGNO (SUBREG_REG (x));
