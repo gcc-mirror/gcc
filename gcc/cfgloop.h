@@ -460,6 +460,4 @@ extern void record_estimate (struct loop *, tree, tree, tree);
 /* Flags passed to loop_optimize.  */
 #define LOOP_PREFETCH 1
 
-extern void loop_optimize (rtx, FILE *, int);
-
 #endif /* GCC_CFGLOOP_H */

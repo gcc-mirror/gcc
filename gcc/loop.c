@@ -803,7 +803,7 @@ compute_luids (rtx start, rtx end, int prev_luid)
    and DUMPFILE is a stream for output of a trace of actions taken
    (or 0 if none should be output).  */
 
-void
+static void
 loop_optimize (rtx f, FILE *dumpfile, int flags)
 {
   rtx insn;
