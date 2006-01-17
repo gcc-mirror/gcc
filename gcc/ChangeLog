@@ -1,3 +1,38 @@
+2006-01-16  Ian Lance Taylor  <ian@airs.com>
+
+	* common.opt (ftoplevel-reorder): New option.
+	* cgraph.c (cgraph_asm_nodes): New global variable.
+	(cgraph_asm_last_node): New static variable.
+	(cgraph_order): New global variable.
+	(cgraph_create_node): Set new order field.
+	(cgraph_varpool_node): Likewise.
+	(decide_is_variable_needed): Return true if not
+	flag_toplevel_reorder.
+	(cgraph_add_asm_node): New function.
+	* cgraph.h (struct cgraph_node): Add order field.
+	(struct cgraph_varpool_node): Add order field.
+	(struct cgraph_asm_node): Define.
+	(cgraph_asm_nodes, cgraph_order): Declare.
+	(cgraph_add_asm_node): Declare.
+	* cgraphunit.c (cgraph_varpool_assemble_decl): New static
+	function.
+	(cgraph_varpool_assemble_pending_decls): Call it.
+	(cgraph_output_pending_asms): New static function.
+	(cgraph_finalize_compilation_unit): Call it.
+	(struct cgraph_order_sort): Define.
+	(cgraph_output_in_order): New static function.
+	(cgraph_optimize): Call cgraph_output_pending_asms.  Add code for
+	!flag_toplevel_reorder case.
+	* c-parser.c: Include "cgraph.h".
+	(c_parser_asm_definition): Call cgraph_add_asm_node rather than
+	assemble_asm.
+	* Makefile.in (CRTSTUFF_CFLAGS): Use -fno-toplevel-reorder rather
+	than -fno-unit-at-a-time.
+	* doc/invoke.texi (Option Summary): Mention
+	-fno-toplevel-reorder.
+	(Optimize Options): Document -fno-toplevel-reorder.  Mention it in
+	-funit-at-a-time documentation.
+
 2006-01-17  Hans-Peter Nilsson  <hp@axis.com>
 	    Kazu Hirata  <kazu@codesourcery.com>
 
