@@ -1,5 +1,8 @@
 2006-01-18  Ben Elliston  <bje@au.ibm.com>
 
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Reject
+	decimal float modes for all floating point registers.
+
 	* config/rs6000/predicates.md (reg_or_mem_operand): Pair up
 	match_code "mem" with match_test "macho_lo_sum_memory_operand".
 
