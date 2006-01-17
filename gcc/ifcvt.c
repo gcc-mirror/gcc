@@ -3786,7 +3786,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
 /* Main entry point for all if-conversion.  */
 
-void
+static void
 if_convert (int x_life_data_ok)
 {
   basic_block bb;

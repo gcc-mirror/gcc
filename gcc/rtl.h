@@ -2156,9 +2156,6 @@ extern GTY(()) rtx stack_limit_rtx;
 extern void regrename_optimize (void);
 extern void copyprop_hardreg_forward (void);
 
-/* In ifcvt.c */
-extern void if_convert (int);
-
 /* In predict.c */
 extern void invert_br_probabilities (rtx);
 extern bool expensive_function_p (int);
