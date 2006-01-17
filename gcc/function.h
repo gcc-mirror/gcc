@@ -22,6 +22,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef GCC_FUNCTION_H
 #define GCC_FUNCTION_H
 
+#include "tree.h"
+
 struct var_refs_queue GTY(())
 {
   rtx modified;
