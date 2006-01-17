@@ -1,6 +1,6 @@
-2006-01-16  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2006-01-16  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
-	* jvspec.c (lang_specific_spec_functions): remove
+	* jvspec.c (lang_specific_spec_functions): Remove.
 
 2006-01-06  Tom Tromey  <tromey@redhat.com>
 
