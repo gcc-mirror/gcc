@@ -1,4 +1,5 @@
 2006-01-17  Hans-Peter Nilsson  <hp@axis.com>
+	    Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in (FUNCTION_H, LAMBDA_H): Use $(TREE_H), not tree.h.
 
