@@ -6,6 +6,10 @@
 	* local-alloc.c (local_alloc): Make it static.
 	* rtl.h: Remove the prototype for local_alloc.
 
+	* loop.c (loop_optimize): Make it static.
+	* cfgloop.h: Remove the prototype for loop_optimize.
+	* rtl.h: Likewise.
+
 2006-01-16  DJ Delorie  <dj@redhat.com>
 
 	* reload.c (reg_overlap_mentioned_for_reload_p): Handle subregs of

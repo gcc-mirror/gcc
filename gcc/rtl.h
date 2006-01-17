@@ -2000,7 +2000,6 @@ extern void print_inline_rtx (FILE *, rtx, int);
 
 /* In loop.c */
 extern void init_loop (void);
-extern void loop_optimize (rtx, FILE *, int);
 
 /* In bt-load.c */
 extern void branch_target_load_optimize (bool);
