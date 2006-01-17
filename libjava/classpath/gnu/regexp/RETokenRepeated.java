@@ -108,6 +108,7 @@ final class RETokenRepeated extends REToken {
 	REMatch doables;
 	REMatch doablesLast;
 	REMatch recurrent;
+	int lastIndex = mymatch.index;
 
 	do {
 	    // Check for stingy match for each possibility.
@@ -151,6 +152,15 @@ final class RETokenRepeated extends REToken {
 	    ++numRepeats;
 	    
 	    positions.addElement(newMatch);
+
+	    // doables.index == lastIndex means an empty string
+	    // was the longest that matched this token.
+	    // We break here, otherwise we will fall into an endless loop.
+	    if (doables.index == lastIndex) {
+		if (numRepeats < min) numRepeats = min;
+		break;
+	    }		
+	    lastIndex = doables.index;
 	} while (numRepeats < max);
 	
 	// If there aren't enough repeats, then fail
@@ -165,7 +175,16 @@ final class RETokenRepeated extends REToken {
 	REMatch allResultsLast = null;
 
 	REMatch results = null;
-	while (--posIndex >= min) {
+	int indexCount = posIndex - min;
+	if (indexCount <= 0) {
+	    // This case occurs when we exited the previous do loop before
+	    // numRepeats >= min because an empty string matched the token.
+	    // In this case, an empty string can match as many times as
+	    // desired.
+	    indexCount = 1;
+	}
+	while (indexCount-- > 0) {
+	    --posIndex;
 	    newMatch = (REMatch) positions.elementAt(posIndex);
 	    results = matchRest(input, newMatch);
 	    if (results != null) {

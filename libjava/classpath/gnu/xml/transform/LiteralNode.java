@@ -1,5 +1,5 @@
 /* LiteralNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -77,38 +77,28 @@ final class LiteralNode
             elementExcludeResultPrefixes = new HashSet();
             StringTokenizer st = new StringTokenizer(attr.getNodeValue());
             while (st.hasMoreTokens())
-              {
-                elementExcludeResultPrefixes.add(st.nextToken());
-              }
+              elementExcludeResultPrefixes.add(st.nextToken());
           }
         else
-          {
-            elementExcludeResultPrefixes = Collections.EMPTY_SET;
-          }
+          elementExcludeResultPrefixes = Collections.EMPTY_SET;
       }
     else
-      {
-        elementExcludeResultPrefixes = null;
-      }
+      elementExcludeResultPrefixes = null;
   }
 
   TemplateNode clone(Stylesheet stylesheet)
   {
     TemplateNode ret = new LiteralNode(source);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
   void doApply(Stylesheet stylesheet, QName mode,
-             Node context, int pos, int len,
-             Node parent, Node nextSibling)
+               Node context, int pos, int len,
+               Node parent, Node nextSibling)
     throws TransformerException
   {
     Node result = null;
@@ -127,17 +117,13 @@ final class LiteralNode
           {
             String prefix = source.getPrefix();
             if (prefix == null)
-              {
-                prefix = "#default";
-              }
+              prefix = "#default";
             String resultPrefix =
               (String) stylesheet.namespaceAliases.get(prefix);
             if (resultPrefix != null)
               {
                 if ("#default".equals(resultPrefix))
-                  {
-                    resultPrefix = null;
-                  }
+                  resultPrefix = null;
                 String uri = source.lookupNamespaceURI(resultPrefix);
                 String name = source.getNodeName();
                 // Create a new element node in the result document
@@ -189,33 +175,23 @@ final class LiteralNode
             result = result2;
           }
         if (nextSibling != null)
-          {
-            parent.insertBefore(result, nextSibling);
-          }
+          parent.insertBefore(result, nextSibling);
         else
-          {
-            parent.appendChild(result);
-          }
+          parent.appendChild(result);
         if (nodeType == Node.ELEMENT_NODE)
-          {
-            stylesheet.addNamespaceNodes(source, result, doc,
-                                         elementExcludeResultPrefixes);
-          }
+          stylesheet.addNamespaceNodes(source, result, doc,
+                                       elementExcludeResultPrefixes);
         // children
         if (children != null)
-          {
-            children.apply(stylesheet, mode,
-                           context, pos, len,
-                           result, null);
-          }
+          children.apply(stylesheet, mode,
+                         context, pos, len,
+                         result, null);
       }
     // next sibling
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
 
   public String toString()

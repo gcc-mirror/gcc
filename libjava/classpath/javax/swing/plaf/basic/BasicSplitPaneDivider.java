@@ -376,6 +376,11 @@ public class BasicSplitPaneDivider extends Container
 	dividerSize = getSize();
 	border.paintBorder(this, g, 0, 0, dividerSize.width, dividerSize.height);
       }
+    if (splitPane.isOneTouchExpandable())
+      {
+        ((BasicArrowButton) rightButton).paint(g);
+        ((BasicArrowButton) leftButton).paint(g);
+      }
   }
 
   /**
@@ -583,7 +588,7 @@ public class BasicSplitPaneDivider extends Container
     public void mouseReleased(MouseEvent e)
     {
       if (isDragging)
-	dragger.completeDrag(e);
+        dragger.completeDrag(e);
       isDragging = false;
     }
 
@@ -596,7 +601,7 @@ public class BasicSplitPaneDivider extends Container
     public void mouseDragged(MouseEvent e)
     {
       if (dragger != null)
-	dragger.continueDrag(e);
+        dragger.continueDrag(e);
     }
 
     /**

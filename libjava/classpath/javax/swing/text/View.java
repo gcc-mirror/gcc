@@ -447,9 +447,11 @@ public abstract class View implements SwingConstants
   protected void updateLayout(DocumentEvent.ElementChange ec,
                               DocumentEvent ev, Shape shape)
   {
-    Rectangle b = shape.getBounds();
-    if (ec != null)
-      preferenceChanged(this, true, true);
+    if (ec != null && shape != null)
+      preferenceChanged(null, true, true);
+    Container c = getContainer();
+    if (c != null)
+      c.repaint();
   }
 
   /**
@@ -599,9 +601,9 @@ public abstract class View implements SwingConstants
    * Returns the document position that is (visually) nearest to the given
    * document position <code>pos</code> in the given direction <code>d</code>.
    *
-   * @param c the text component
    * @param pos the document position
    * @param b the bias for <code>pos</code>
+   * @param a the allocation for this view
    * @param d the direction, must be either {@link SwingConstants#NORTH},
    *        {@link SwingConstants#SOUTH}, {@link SwingConstants#WEST} or
    *        {@link SwingConstants#EAST}
@@ -615,9 +617,31 @@ public abstract class View implements SwingConstants
    *
    * @throws BadLocationException if <code>pos</code> is not a valid offset in
    *         the document model
+   * @throws IllegalArgumentException if <code>d</code> is not a valid direction
    */
-  public abstract int getNextVisualPositionFrom(JTextComponent c, int pos,
-                                                Position.Bias b, int d,
-                                                Position.Bias[] biasRet)
-    throws BadLocationException;
+  public int getNextVisualPositionFrom(int pos, Position.Bias b,
+                                       Shape a, int d,
+                                       Position.Bias[] biasRet)
+    throws BadLocationException
+  {
+    int ret = pos;
+    switch (d)
+    {
+      case WEST:
+        ret = pos - 1;
+        break;
+      case EAST:
+        ret = pos + 1;
+        break;
+      case NORTH:
+        // TODO: Implement this
+        break;
+      case SOUTH:
+        // TODO: Implement this
+        break;
+      default:
+        throw new IllegalArgumentException("Illegal value for d");
+    }
+    return ret;
+  }
 }

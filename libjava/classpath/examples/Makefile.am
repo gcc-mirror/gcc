@@ -53,25 +53,25 @@ install-data-local:
 	for file in $(ALL_EXAMPLE_FILES); do \
 	  f=`echo $$file | cut -c$$srcdir_cnt-`; \
 	  fdir=`dirname $$f`; \
-	  if test ! -d $(DESTDIR)/$(pkgdatadir)/examples/$$fdir; then \
-	    echo "$(mkinstalldirs) $(DESTDIR)/$(pkgdatadir)/examples/$$fdir"; \
-	    $(mkinstalldirs) $(DESTDIR)/$(pkgdatadir)/examples/$$fdir; \
+	  if test ! -d $(DESTDIR)$(pkgdatadir)/examples/$$fdir; then \
+	    echo "$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/examples/$$fdir"; \
+	    $(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/examples/$$fdir; \
 	  fi; \
-	  echo "$(INSTALL_DATA) $$file $(DESTDIR)/$(pkgdatadir)/examples/$$f"; \
-	  $(INSTALL_DATA) $$file $(DESTDIR)/$(pkgdatadir)/examples/$$f; \
+	  echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdatadir)/examples/$$f"; \
+	  $(INSTALL_DATA) $$file $(DESTDIR)$(pkgdatadir)/examples/$$f; \
 	done
-	echo "$(INSTALL_DATA) Makefile.jawt $(DESTDIR)/$(pkgdatadir)/examples/"
-	$(INSTALL_DATA) Makefile.jawt $(DESTDIR)/$(pkgdatadir)/examples/
+	echo "$(INSTALL_DATA) Makefile.jawt $(DESTDIR)$(pkgdatadir)/examples/"
+	$(INSTALL_DATA) Makefile.jawt $(DESTDIR)$(pkgdatadir)/examples/
 
 uninstall-local:
 	srcdir_cnt=`echo $(srcdir) | wc -c`; \
 	for file in $(ALL_EXAMPLE_FILES); do \
 	  f=`echo $$file | cut -c$$srcdir_cnt-`; \
-	  echo "rm -f $(DESTDIR)/$(pkgdatadir)/examples/$$f"; \
-	  rm -f $(DESTDIR)/$(pkgdatadir)/examples/$$f; \
+	  echo "rm -f $(DESTDIR)$(pkgdatadir)/examples/$$f"; \
+	  rm -f $(DESTDIR)$(pkgdatadir)/examples/$$f; \
 	done
-	echo "rm -f $(DESTDIR)/$(pkgdatadir)/examples/Makefile.jawt"
-	rm -f $(DESTDIR)/$(pkgdatadir)/examples/Makefile.jawt
+	echo "rm -f $(DESTDIR)$(pkgdatadir)/examples/Makefile.jawt"
+	rm -f $(DESTDIR)$(pkgdatadir)/examples/Makefile.jawt
 
 # Make sure everything is included in the distribution.
 EXTRA_DIST = README Makefile.jawt.in

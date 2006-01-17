@@ -40,6 +40,8 @@ package gnu.java.awt.image;
 import java.awt.image.ImageConsumer;
 import java.awt.image.ImageProducer;
 import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +57,7 @@ public abstract class ImageDecoder implements ImageProducer
   int offset;
   int length;
   InputStream input;
+  DataInput datainput;
 
   static
   {
@@ -77,6 +80,11 @@ public abstract class ImageDecoder implements ImageProducer
   public ImageDecoder (InputStream is)
   {
     this.input = is;
+  }
+
+  public ImageDecoder (DataInput datainput)
+  {
+    this.datainput = datainput;
   }
 
   public ImageDecoder (byte[] imagedata, int imageoffset, int imagelength)
@@ -119,6 +127,8 @@ public abstract class ImageDecoder implements ImageProducer
               {
                 if (url != null)
                   input = url.openStream();
+		else if (datainput != null)
+		  input = new DataInputStreamWrapper(datainput);
                 else
                   {
                     if (filename != null)
@@ -153,4 +163,26 @@ public abstract class ImageDecoder implements ImageProducer
   }
 
   public abstract void produce (Vector v, InputStream is) throws IOException;
+
+  private static class DataInputStreamWrapper extends InputStream
+  {
+    private final DataInput datainput;
+
+    DataInputStreamWrapper(DataInput datainput)
+    {
+      this.datainput = datainput;
+    }
+
+    public int read() throws IOException
+    {
+      try
+	{
+	  return datainput.readByte() & 0xFF;
+	}
+      catch (EOFException eofe)
+	{
+	  return -1;
+	}
+    }
+  }
 }

@@ -43,7 +43,7 @@ import java.io.Serializable;
 /**
  * Raised when the transaction or Activity is resumed in a different context
  * than from which it was suspended. It is also raised when the invocation is
- * not incompatible with the Activity’s current state.
+ * not incompatible with the Activity's current state.
  *
  * @since 1.5
  *

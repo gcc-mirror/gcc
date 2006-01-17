@@ -238,6 +238,10 @@ public class OceanTheme extends DefaultMetalTheme
       {new Double(0.3), new Double(0.0), new ColorUIResource(221, 232, 243),
        new ColorUIResource(Color.WHITE), new ColorUIResource(184, 207, 229)}));
 
+    
     defaults.put("Button.rollover", Boolean.TRUE);
+
+    defaults.put("TabbedPane.selected", new ColorUIResource(200, 221, 242));
+    defaults.put("TabbedPane.unselectedBackground", SECONDARY3);
   }
 }

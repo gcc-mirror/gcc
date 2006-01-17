@@ -1,5 +1,5 @@
 /* ColorSupported.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,20 @@ import javax.print.attribute.PrintServiceAttribute;
 
 
 /**
+ * The <code>ColorSupported</code> printing attribute specifies if a 
+ * printing device is capable of color printing.
+ * <p>
+ * This attributes just tells if a printer device supports color printing
+ * but does not specify how a specific print job is printed. Therefore the
+ * attribute {@link javax.print.attribute.standard.Chromaticity} exists.
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> ColorSupported is an IPP 1.1 attribute. The IPP
+ * specification treats ColorSupported as a boolean type which is not available
+ * in the Java Print Service API. The IPP boolean value true corresponds
+ * to <code>SUPPORTED</code> and "false" to <code>NOT_SUPPORTED</code>.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class ColorSupported extends EnumSyntax
@@ -49,13 +63,20 @@ public final class ColorSupported extends EnumSyntax
 {
   private static final long serialVersionUID = -2700555589688535545L;
 
+  /** The printer does not support printing in color. */
   public static final ColorSupported NOT_SUPPORTED = new ColorSupported(0);
+  
+  /** The printer supports printing in color. */
   public static final ColorSupported SUPPORTED = new ColorSupported(1);
 
+  private static final String[] stringTable = { "not-supported", "supported" };
+  private static final ColorSupported[] enumValueTable = { NOT_SUPPORTED,
+                                                          SUPPORTED };
+  
   /**
    * Constructs a <code>ColorSupported</code> object.
    * 
-   * @param value the value
+   * @param value the enum value
    */
   protected ColorSupported(int value)
   {
@@ -65,7 +86,7 @@ public final class ColorSupported extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>ColorSupported</code> itself
+   * @return The class <code>ColorSupported</code> itself.
    */
   public Class getCategory()
   {
@@ -75,10 +96,31 @@ public final class ColorSupported extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "color-supported".
    */
   public String getName()
   {
     return "color-supported";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
   }
 }

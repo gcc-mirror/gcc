@@ -1,5 +1,5 @@
 /* PrintException.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,20 @@ exception statement from your version. */
 package javax.print;
 
 /**
+ * <code>PrintException</code> is used to report exceptions during the
+ * usage of a print service implementation.
+ * <p>
+ * This base class only provides the possibility to report a message as 
+ * exception. A concrete print service implementation may provide 
+ * specialised subclasses implementing one or more of the following
+ * exception interfaces:<br>
+ * <ul>
+ * <li>{@link javax.print.AttributeException}</li>
+ * <li>{@link javax.print.FlavorException}</li>
+ * <li>{@link javax.print.URIException}</li>
+ * </ul>
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public class PrintException extends Exception

@@ -282,6 +282,8 @@ public class XMLStreamWriterImpl
   public void writeEndElement()
     throws XMLStreamException
   {
+    if (elements.isEmpty())
+      throw new IllegalStateException("no matching start element");
     try
       {
         endStartElement();

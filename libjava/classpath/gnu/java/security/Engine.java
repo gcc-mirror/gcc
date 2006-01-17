@@ -1,5 +1,5 @@
 /* Engine -- generic getInstance method.
-   Copyright (C) 2003  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -130,7 +130,14 @@ public final class Engine
                                    Provider provider, Object[] initArgs)
     throws InvocationTargetException, NoSuchAlgorithmException
   {
-    if (service == null || algorithm == null
+    if (service != null)
+      service = service.trim();
+
+    if (algorithm != null)
+      algorithm = algorithm.trim();
+
+    if (service == null || service.length() == 0
+        || algorithm == null || algorithm.length() == 0
         || provider == null || initArgs == null)
       throw new IllegalArgumentException();
 

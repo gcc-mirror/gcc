@@ -1,5 +1,5 @@
 /* Expr.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -233,9 +233,11 @@ public abstract class Expr
    */
   public static String _local_name(Node context, Collection nodeSet)
   {
-    Node node = (nodeSet == null || nodeSet.size() == 0) ? context :
-      firstNode(nodeSet);
-    return node.getLocalName();
+    if (nodeSet == null || nodeSet.isEmpty())
+      return "";
+    Node node = firstNode(nodeSet);
+    String ret = node.getLocalName();
+    return (ret == null) ? "" : ret;
   }
 
   /**
@@ -248,9 +250,11 @@ public abstract class Expr
    */
   public static String _namespace_uri(Node context, Collection nodeSet)
   {
-    Node node = (nodeSet == null || nodeSet.size() == 0) ? context :
-      firstNode(nodeSet);
-    return node.getNamespaceURI();
+    if (nodeSet == null || nodeSet.isEmpty())
+      return "";
+    Node node = firstNode(nodeSet);
+    String ret = node.getNamespaceURI();
+    return (ret == null) ? "" : ret;
   }
   
   /**
@@ -271,17 +275,18 @@ public abstract class Expr
    */
   public static String _name(Node context, Collection nodeSet)
   {
-    Node node = (nodeSet == null || nodeSet.size() == 0) ? context :
-      firstNode(nodeSet);
+    if (nodeSet == null || nodeSet.isEmpty())
+      return "";
+    Node node = firstNode(nodeSet);
+    String ret = null;
     switch (node.getNodeType())
       {
       case Node.ATTRIBUTE_NODE:
       case Node.ELEMENT_NODE:
       case Node.PROCESSING_INSTRUCTION_NODE:
-        return node.getNodeName();
-      default:
-        return "";
+        ret = node.getNodeName();
       }
+    return (ret == null) ? "" : ret;
   }
 
   /**
@@ -371,7 +376,10 @@ public abstract class Expr
       }
     if (object instanceof Double)
       {
-        return ((Double) object).doubleValue() != 0.0;
+        Double value = (Double) object;
+        if (value.isNaN())
+          return false;
+        return value.doubleValue() != 0.0;
       }
     if (object instanceof String)
       {
@@ -471,6 +479,17 @@ public abstract class Expr
       default:
         return "";
       }
+  }
+
+  static int intValue(Object val)
+  {
+    if (val instanceof Double)
+      {
+        Double d = (Double) val;
+        return d.isNaN() ? 0 : d.intValue();
+      }
+    else
+      return (int) Math.ceil(_number(null, val));
   }
 
 }

@@ -419,7 +419,7 @@ else
     hardcode_direct=no
     hardcode_automatic=yes
     hardcode_shlibpath_var=unsupported
-    whole_archive_flag_spec='-all_load $convenience'
+    whole_archive_flag_spec=''
     link_all_deplibs=yes
     ;;
 

@@ -1060,7 +1060,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
       isDragging = true;
 
       if (dragWindow != null)
-	dragWindow.setOffset(new Point(e.getX(), e.getY()));
+	dragWindow.setOffset(new Point(cachedBounds.width/2, cachedBounds.height/2));
 
       dragTo(e.getPoint(), origin);
     }

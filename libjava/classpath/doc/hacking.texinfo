@@ -83,6 +83,11 @@ Programming Standards
 
 Working on the code, Working with others
 
+* Branches::                    
+* Writing ChangeLogs::          
+
+Working with branches
+
 * Writing ChangeLogs::          
 
 Programming Goals
@@ -493,7 +498,7 @@ The following lists how code is formatted (and some other code
 conventions):
 
 
-@itemize
+@itemize @bullet
 
 @item
 Java source files in GNU Classpath are encoded using UTF-8.  However,
@@ -689,7 +694,7 @@ fail to compile the offending source code.
 
 Some things are the same as in the normal GNU Coding Standards:
 
-@itemize
+@itemize @bullet
 
 @item
 Unnecessary braces can be removed, one line after an if, for, while as
@@ -807,10 +812,70 @@ followed to be the most productive they can be (given the above
 constraints).
 
 @menu
+* Branches::                    
 * Writing ChangeLogs::          
 @end menu
 
-@node Writing ChangeLogs,  , Hacking Code, Hacking Code
+@node Branches, Writing ChangeLogs, Hacking Code, Hacking Code
+@comment node-name, next, previous, up
+@section Working with branches
+
+Sometimes it is necessary to create branch of the source for doing new
+work that is disruptive to the other hackers, or that needs new
+language or libraries not yet (easily) available.
+
+After discussing the need for a branch on the main mailinglist with
+the other hackers explaining the need of a branch and suggestion of
+the particular branch rules (what will be done on the branch, who will
+work on it, will there be different commit guidelines then for the
+mainline trunk and when is the branch estimated to be finished and
+merged back into the trunk) every GNU Classpath hacker with commit
+access should feel free to create a branch. There are however a couple
+of rules that every branch should follow:
+
+@itemize @bullet
+
+@item All branches ought to be documented in the developer wiki at
+@uref{http://developer.classpath.org/mediation/ClasspathBranches}, so
+we can know which are live, who owns them, and when they die.
+
+@item Some rules can be changed on a branch.  In particular the branch
+maintainer can change the review requirements, and the requirement of
+keeping things building, testing, etc, can also be lifted.  (These
+should be documented along with the branch name and owner if they
+differ from the trunk.)
+
+@item Requirements for patch email to classpath-patches and for paperwork
+@strong{cannot} be lifted. See @ref{Requirements}.
+
+@item A branch should not be seen as ``private'' or
+``may be completely broken''. It should be as much as possible
+something that you work on with a team (and if there is no team - yet
+- then there is nothing as bad as having a completely broken build to
+get others to help out). There can of course be occasional breakage, but
+it should be planned and explained. And you can certainly have a rule
+like ``please ask me before committing to this branch''.
+
+@item Merges from the trunk to a branch are at the discretion of the
+branch maintainer.
+
+@item A merge from a branch to the trunk is treated like any other patch.
+In particular, it has to go through review, it must satisfy all the
+trunk requirements (build, regression test, documentation).
+
+@item There may be additional timing requirements on merging a branch to
+the trunk depending on the release schedule, etc.  For instance we may
+not want to do a branch merge just before a release.
+
+@end itemize
+
+If any of these rules are unclear please discuss on the list first.
+
+@menu
+* Writing ChangeLogs::          
+@end menu
+
+@node Writing ChangeLogs,  , Branches, Hacking Code
 @comment node-name, next, previous, up
 @section Documenting what changed when with ChangeLog entries
 
@@ -828,7 +893,7 @@ A good ChangeLog entry guideline can be found in the Guile Manual at
 Here are some example to explain what should or shouldn't be in a
 ChangeLog entry (and the corresponding commit message):
 
-@itemize
+@itemize @bullet
 
 @item
 The first line of a ChangeLog entry should be:

@@ -42,7 +42,7 @@ package javax.security.auth.login;
  * An exception that signals an attempt to login with a credential that
  * has expired.
  */
-public class CredentialExpiredException extends LoginException
+public class CredentialExpiredException extends CredentialException
 {
 
   // Constant.

@@ -39,7 +39,6 @@ package javax.swing.plaf.basic;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -104,7 +103,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
     Rectangle ir = new Rectangle();
     Rectangle tr = new Rectangle();
     Insets insets = lab.getInsets();
-    FontMetrics fm = lab.getToolkit().getFontMetrics(lab.getFont());
+    FontMetrics fm = lab.getFontMetrics(lab.getFont());
     layoutCL(lab, fm, lab.getText(), lab.getIcon(), vr, ir, tr);
     Rectangle cr = tr.union(ir);
     return new Dimension(insets.left + cr.width + insets.right, insets.top
@@ -150,17 +149,11 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
   {
     JLabel b = (JLabel) c;
 
-    Font saved_font = g.getFont();
-
     Rectangle tr = new Rectangle();
     Rectangle ir = new Rectangle();
     Rectangle vr = new Rectangle();
 
-    Font f = c.getFont();
-
-    g.setFont(f);
-    FontMetrics fm = g.getFontMetrics(f);
-
+    FontMetrics fm = g.getFontMetrics();
     vr = SwingUtilities.calculateInnerArea(c, vr);
 
     if (vr.width < 0)
@@ -182,8 +175,6 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
       else
         paintDisabledText(b, g, text, tr.x, tr.y + fm.getAscent());
     }
-
-    g.setFont(saved_font);
   }
 
   /**

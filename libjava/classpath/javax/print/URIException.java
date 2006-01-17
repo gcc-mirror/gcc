@@ -1,5 +1,5 @@
 /* URIException.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,25 +41,48 @@ package javax.print;
 import java.net.URI;
 
 /**
+ * <code>URIException</code> specifies methods a specific subclass of 
+ * {@link javax.print.PrintException} may implement to provide further 
+ * informations of printing errors if URI problems are involved.
+ * <p>
+ * There exists no <code>PrintException</code> class implementing this 
+ * interface. Providing this extension in <code>PrintException</code> 
+ * subclasses is left to the concrete print service implementation. 
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface URIException
 {
+  /**
+   * Indicates that the provided <code>URI</code> is not accessible.
+   */
   int URIInaccessible = 1;
+  
+  /**
+   * Indicates any other problem which is not defined by
+   * the other reason constants.
+   */
   int URIOtherProblem = -1;
+  
+  /**
+   * Indicates that the print service does not support a specific
+   * uri scheme (for example the ftp scheme).
+   */
   int URISchemeNotSupported = 2;
   
   /**
-   * Returns the reason for this exception.
+   * Returns the reason for this exception as
+   * predefined constants in this interface.
    * 
-   * @return the reason
+   * @return The reason.
    */
   int getReason();
   
   /**
-   * Returns the unsupported <code>URI</code> for this exception.
+   * Returns the unsupported <code>URI</code> which caused this exception.
    * 
-   * @return the unsupported <code>URI</code>.
+   * @return The unsupported <code>URI</code>.
    */
   URI getUnsupportedURI();
 }

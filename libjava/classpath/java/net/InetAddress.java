@@ -43,7 +43,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.StringTokenizer;
 
 /**
@@ -66,22 +65,6 @@ public class InetAddress implements Serializable
   private static final long serialVersionUID = 3286316764910316507L;
 
   /**
-   * The default DNS hash table size,
-   * Use a prime number happy with hash table.
-   */
-  private static final int DEFAULT_CACHE_SIZE = 89;
-
-  /**
-   * The default caching period in minutes.
-   */
-  private static final int DEFAULT_CACHE_PERIOD = 4 * 60;
-
-  /**
-   * Percentage of cache entries to purge when the table gets full.
-   */
-  private static final int DEFAULT_CACHE_PURGE_PCT = 30;
-
-  /**
    * The special IP address INADDR_ANY.
    */
   private static InetAddress inaddr_any;
@@ -96,50 +79,8 @@ public class InetAddress implements Serializable
    */
   static InetAddress LOCALHOST;
 
-  /**
-   * The size of the cache.
-   */
-  private static int cache_size = 0;
-
-  /**
-   * The length of time we will continue to read the address from cache
-   * before forcing another lookup.
-   */
-  private static int cache_period = 0;
-
-  /**
-   * What percentage of the cache we will purge if it gets full.
-   */
-  private static int cache_purge_pct = 0;
-
-  /**
-   * HashMap to use as DNS lookup cache.
-   * Use HashMap because all accesses to cache are already synchronized.
-   */
-  private static HashMap cache;
-
   static
   {
-    // Look for properties that override default caching behavior
-    cache_size =
-      Integer.getInteger("gnu.java.net.dns_cache_size", DEFAULT_CACHE_SIZE)
-             .intValue();
-    cache_period =
-      Integer.getInteger("gnu.java.net.dns_cache_period",
-                         DEFAULT_CACHE_PERIOD * 60 * 1000).intValue();
-
-    cache_purge_pct =
-      Integer.getInteger("gnu.java.net.dns_cache_purge_pct",
-                         DEFAULT_CACHE_PURGE_PCT).intValue();
-
-    // Fallback to  defaults if necessary
-    if ((cache_purge_pct < 1) || (cache_purge_pct > 100))
-      cache_purge_pct = DEFAULT_CACHE_PURGE_PCT;
-
-    // Create the cache
-    if (cache_size != 0)
-      cache = new HashMap(cache_size);
-
     // precompute the ANY_IF address
     try
       {
@@ -174,11 +115,6 @@ public class InetAddress implements Serializable
   String hostName;
 
   /**
-   * The time this address was looked up.
-   */
-  transient long lookup_time;
-
-  /**
    * The field 'family' seems to be the AF_ value.
    * FIXME: Much of the code in the other java.net classes does not make
    * use of this family field.  A better implementation would be to make
@@ -200,8 +136,6 @@ public class InetAddress implements Serializable
     addr = (null == ipaddr) ? null : (byte[]) ipaddr.clone();
     hostName = hostname;
     
-    lookup_time = System.currentTimeMillis();
-
     family = 2; /* AF_INET */
   }
 
@@ -649,19 +583,16 @@ public class InetAddress implements Serializable
 
     InetAddress[] addresses;
 
+    if (hostname != null)
+      hostname = hostname.trim();
+
     // Default to current host if necessary
-    if (hostname == null)
+    if (hostname == null || hostname.equals(""))
       {
 	addresses = new InetAddress[1];
 	addresses[0] = LOCALHOST;
 	return addresses;
       }
-
-    // Check the cache for this host before doing a lookup
-    addresses = checkCacheFor(hostname);
-
-    if (addresses != null)
-      return addresses;
 
     // Not in cache, try the lookup
     byte[][] iplist = VMInetAddress.getHostByName(hostname);
@@ -679,68 +610,7 @@ public class InetAddress implements Serializable
 	addresses[i] = new Inet4Address(iplist[i], hostname);
       }
 
-    addToCache(hostname, addresses);
     return addresses;
-  }
-
-  /**
-   * This method checks the DNS cache to see if we have looked this hostname
-   * up before. If so, we return the cached addresses unless it has been in the
-   * cache too long.
-   *
-   * @param hostname The hostname to check for
-   *
-   * @return The InetAddress for this hostname or null if not available
-   */
-  private static synchronized InetAddress[] checkCacheFor(String hostname)
-  {
-    InetAddress[] addresses = null;
-
-    if (cache_size == 0)
-      return null;
-
-    Object obj = cache.get(hostname);
-    if (obj == null)
-      return null;
-
-    if (obj instanceof InetAddress[])
-      addresses = (InetAddress[]) obj;
-
-    if (addresses == null)
-      return null;
-
-    if (cache_period != -1)
-      if ((System.currentTimeMillis() - addresses[0].lookup_time) > cache_period)
-        {
-	  cache.remove(hostname);
-	  return null;
-        }
-
-    return addresses;
-  }
-
-  /**
-   * This method adds an InetAddress object to our DNS cache.  Note that
-   * if the cache is full, then we run a purge to get rid of old entries.
-   * This will cause a performance hit, thus applications using lots of
-   * lookups should set the cache size to be very large.
-   *
-   * @param hostname The hostname to cache this address under
-   * @param obj The InetAddress or InetAddress array to store
-   */
-  private static synchronized void addToCache(String hostname, Object obj)
-  {
-    if (cache_size == 0)
-      return;
-
-    // Check to see if hash table is full
-    if (cache_size != -1)
-      if (cache.size() == cache_size)
-        {
-	  // FIXME Add code to purge later.
-        }
-
-    cache.put(hostname, obj);
   }
 
   /**
@@ -757,6 +627,7 @@ public class InetAddress implements Serializable
       {
 	byte[] tmp = VMInetAddress.lookupInaddrAny();
 	inaddr_any = new Inet4Address(tmp, null);
+	inaddr_any.hostName = inaddr_any.getHostName();
       }
 
     return inaddr_any;

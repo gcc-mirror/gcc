@@ -273,7 +273,8 @@ public final class String implements Serializable, Comparable, CharSequence
       throw new StringIndexOutOfBoundsException("offset: " + offset);
     if (count < 0)
       throw new StringIndexOutOfBoundsException("count: " + count);
-    if (offset + count < 0 || offset + count > ascii.length)
+    // equivalent to: offset + count < 0 || offset + count > ascii.length
+    if (ascii.length - offset < count)
       throw new StringIndexOutOfBoundsException("offset + count: "
 						+ (offset + count));
     value = new char[count];
@@ -338,7 +339,8 @@ public final class String implements Serializable, Comparable, CharSequence
       throw new StringIndexOutOfBoundsException("offset: " + offset);
     if (count < 0)
       throw new StringIndexOutOfBoundsException("count: " + count);
-    if (offset + count < 0 || offset + count > data.length)
+    // equivalent to: offset + count < 0 || offset + count > data.length
+    if (data.length - offset < count)
       throw new StringIndexOutOfBoundsException("offset + count: "
 						+ (offset + count));
     try 
@@ -418,7 +420,8 @@ public final class String implements Serializable, Comparable, CharSequence
       throw new StringIndexOutOfBoundsException("offset: " + offset);
     if (count < 0)
       throw new StringIndexOutOfBoundsException("count: " + count);
-    if (offset + count < 0 || offset + count > data.length)
+    // equivalent to: offset + count < 0 || offset + count > data.length
+    if (data.length - offset < count)
       throw new StringIndexOutOfBoundsException("offset + count: "
 						+ (offset + count));
     int o, c;
@@ -533,7 +536,8 @@ public final class String implements Serializable, Comparable, CharSequence
       throw new StringIndexOutOfBoundsException("offset: " + offset);
     if (count < 0)
       throw new StringIndexOutOfBoundsException("count: " + count);
-    if (offset + count < 0 || offset + count > data.length)
+    // equivalent to: offset + count < 0 || offset + count > data.length
+    if (data.length - offset < count)
       throw new StringIndexOutOfBoundsException("offset + count: "
 						+ (offset + count));
     if (dont_copy)
@@ -1761,7 +1765,7 @@ public final class String implements Serializable, Comparable, CharSequence
 
   /**
    * Return the number of code points between two indices in the
-   * <code>StringBuffer</code>.  An unpaired surrogate counts as a
+   * <code>String</code>.  An unpaired surrogate counts as a
    * code point for this purpose.  Characters outside the indicated
    * range are not examined, even if the range ends in the middle of a
    * surrogate pair.
@@ -1879,6 +1883,8 @@ public final class String implements Serializable, Comparable, CharSequence
    * described in s.
    * @param s the CharSequence
    * @return true iff this String contains s
+   * 
+   * @since 1.5
    */
   public boolean contains (CharSequence s)
   {

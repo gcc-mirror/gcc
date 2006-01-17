@@ -1,9 +1,46 @@
-New in release 0.20
+New in release 0.20 (Jan 13, 2006)
+
+* New StAX pull parser and SAX-over-StAX driver. Lots of DOM, SAX/StAX,
+  XPath and XSLT improvements.  Support for XInclude and XML Base added.
+  Conformance is now regularly tested against various test-suites at
+  http://builder.classpath.org/xml/ See also doc/README.jaxp.
+
+* Full beans XMLEncoder implementation.
+
+* javax.sound.sampled implementation.
+
+* javax.print.attribute and javax.print.event implementated.
+
+* Lots of new datatransfer, print swing and swing.text work and optimization.
+
+* Additional 1.5 support. Including new (separate) generic branch release.
+
+* SecurityManager cleanups and start of review of all Permission checks
+  (includes adding lots of new checks to the Mauve test-suite).
+
+* Buildable on cygwin.
+
+* Fully buildable as "in-workspace" library-plus-vm inside (native) Eclipse
+  see http://developer.classpath.org/mediation/ClasspathHackingWithEclipse
+
+* Full example that shows a real world CORBA and Free Swing implementation.
+  See examples/gnu/classpath/examples/CORBA/swing/README.html
+
+* A list of bug fixes can be found at:
+http://gcc.gnu.org/bugzilla/buglist.cgi?product=classpath&target_milestone=0.20
 
 Runtime interface changes:
 
 * New method VMStackWalker.getClassLoader() was added to avoid an infinite
   loop between getCallingClassLoader() and Class.getClassLoader().
+
+* The included fdlibm implementation has seen several cleanups to handle
+  new architectures and namespacing issues (in particular for ppc, darwin
+  and non-C99 compilers). Please double check any arithmetic test against
+  new platforms/runtimes.
+
+* The gnu.java.net.Plain[Datagram]Socket implementations have been
+  turned into VM reference classes with JNI/Posix implementations.
 
 New in release 0.19 (Nov 2, 2005)
 

@@ -876,7 +876,37 @@ classpath/gnu/java/beans/editors/NativeFloatEditor.java \
 classpath/gnu/java/beans/editors/NativeIntEditor.java \
 classpath/gnu/java/beans/editors/NativeLongEditor.java \
 classpath/gnu/java/beans/editors/NativeShortEditor.java \
-classpath/gnu/java/beans/editors/StringEditor.java
+classpath/gnu/java/beans/editors/StringEditor.java \
+classpath/gnu/java/beans/encoder/ArrayPersistenceDelegate.java \
+classpath/gnu/java/beans/encoder/ClassPersistenceDelegate.java \
+classpath/gnu/java/beans/encoder/CollectionPersistenceDelegate.java \
+classpath/gnu/java/beans/encoder/Context.java \
+classpath/gnu/java/beans/encoder/GenericScannerState.java \
+classpath/gnu/java/beans/encoder/IgnoringScannerState.java \
+classpath/gnu/java/beans/encoder/MapPersistenceDelegate.java \
+classpath/gnu/java/beans/encoder/ObjectId.java \
+classpath/gnu/java/beans/encoder/PrimitivePersistenceDelegate.java \
+classpath/gnu/java/beans/encoder/ReportingScannerState.java \
+classpath/gnu/java/beans/encoder/Root.java \
+classpath/gnu/java/beans/encoder/ScanEngine.java \
+classpath/gnu/java/beans/encoder/ScannerState.java \
+classpath/gnu/java/beans/encoder/StAXWriter.java \
+classpath/gnu/java/beans/encoder/Writer.java \
+classpath/gnu/java/beans/encoder/elements/ArrayInstantiation.java \
+classpath/gnu/java/beans/encoder/elements/Array_Get.java \
+classpath/gnu/java/beans/encoder/elements/Array_Set.java \
+classpath/gnu/java/beans/encoder/elements/ClassResolution.java \
+classpath/gnu/java/beans/encoder/elements/Element.java \
+classpath/gnu/java/beans/encoder/elements/List_Get.java \
+classpath/gnu/java/beans/encoder/elements/List_Set.java \
+classpath/gnu/java/beans/encoder/elements/MethodInvocation.java \
+classpath/gnu/java/beans/encoder/elements/NullObject.java \
+classpath/gnu/java/beans/encoder/elements/ObjectInstantiation.java \
+classpath/gnu/java/beans/encoder/elements/ObjectReference.java \
+classpath/gnu/java/beans/encoder/elements/PrimitiveInstantiation.java \
+classpath/gnu/java/beans/encoder/elements/StaticFieldAccess.java \
+classpath/gnu/java/beans/encoder/elements/StaticMethodInvocation.java \
+classpath/gnu/java/beans/encoder/elements/StringReference.java
 
 gnu-java-beans.lo: $(gnu_java_beans_source_files)
 	@find classpath/lib/gnu/java/beans -name '*.class' > gnu-java-beans.list
@@ -1707,7 +1737,8 @@ gnu/java/text.list: $(gnu_java_text_source_files)
 
 gnu_java_util_source_files = \
 classpath/gnu/java/util/DoubleEnumeration.java \
-classpath/gnu/java/util/EmptyEnumeration.java
+classpath/gnu/java/util/EmptyEnumeration.java \
+classpath/gnu/java/util/WeakIdentityHashMap.java
 
 gnu_java_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_util_source_files)))
 
@@ -1945,7 +1976,6 @@ gnu/regexp.list: $(gnu_regexp_source_files)
 
 
 gnu_xml_source_files = \
-classpath/gnu/xml/aelfred2/ContentHandler2.java \
 classpath/gnu/xml/aelfred2/JAXPFactory.java \
 classpath/gnu/xml/aelfred2/SAXDriver.java \
 classpath/gnu/xml/aelfred2/XmlParser.java \
@@ -2106,6 +2136,8 @@ classpath/gnu/xml/pipeline/WellFormednessFilter.java \
 classpath/gnu/xml/pipeline/XIncludeFilter.java \
 classpath/gnu/xml/pipeline/XsltFilter.java \
 classpath/gnu/xml/stream/AttributeImpl.java \
+classpath/gnu/xml/stream/BufferedReader.java \
+classpath/gnu/xml/stream/CRLFReader.java \
 classpath/gnu/xml/stream/CharactersImpl.java \
 classpath/gnu/xml/stream/CommentImpl.java \
 classpath/gnu/xml/stream/DTDImpl.java \
@@ -2120,9 +2152,13 @@ classpath/gnu/xml/stream/LocationImpl.java \
 classpath/gnu/xml/stream/NamespaceImpl.java \
 classpath/gnu/xml/stream/NotationDeclarationImpl.java \
 classpath/gnu/xml/stream/ProcessingInstructionImpl.java \
+classpath/gnu/xml/stream/SAXParser.java \
+classpath/gnu/xml/stream/SAXParserFactory.java \
 classpath/gnu/xml/stream/StartDocumentImpl.java \
 classpath/gnu/xml/stream/StartElementImpl.java \
 classpath/gnu/xml/stream/StartEntityImpl.java \
+classpath/gnu/xml/stream/UnicodeReader.java \
+classpath/gnu/xml/stream/XIncludeFilter.java \
 classpath/gnu/xml/stream/XMLEventAllocatorImpl.java \
 classpath/gnu/xml/stream/XMLEventFactoryImpl.java \
 classpath/gnu/xml/stream/XMLEventImpl.java \
@@ -2130,6 +2166,7 @@ classpath/gnu/xml/stream/XMLEventReaderImpl.java \
 classpath/gnu/xml/stream/XMLEventWriterImpl.java \
 classpath/gnu/xml/stream/XMLInputFactoryImpl.java \
 classpath/gnu/xml/stream/XMLOutputFactoryImpl.java \
+classpath/gnu/xml/stream/XMLParser.java \
 classpath/gnu/xml/stream/XMLStreamReaderImpl.java \
 classpath/gnu/xml/stream/XMLStreamWriterImpl.java \
 classpath/gnu/xml/transform/AbstractNumberNode.java \
@@ -2158,6 +2195,7 @@ classpath/gnu/xml/transform/Key.java \
 classpath/gnu/xml/transform/KeyFunction.java \
 classpath/gnu/xml/transform/LiteralNode.java \
 classpath/gnu/xml/transform/MessageNode.java \
+classpath/gnu/xml/transform/NamespaceProxy.java \
 classpath/gnu/xml/transform/NodeNumberNode.java \
 classpath/gnu/xml/transform/NumberNode.java \
 classpath/gnu/xml/transform/OtherwiseNode.java \
@@ -2166,6 +2204,7 @@ classpath/gnu/xml/transform/ProcessingInstructionNode.java \
 classpath/gnu/xml/transform/SAXSerializer.java \
 classpath/gnu/xml/transform/SortKey.java \
 classpath/gnu/xml/transform/StreamSerializer.java \
+classpath/gnu/xml/transform/StrippingInstruction.java \
 classpath/gnu/xml/transform/Stylesheet.java \
 classpath/gnu/xml/transform/SystemPropertyFunction.java \
 classpath/gnu/xml/transform/Template.java \
@@ -2811,17 +2850,21 @@ classpath/java/beans/BeanDescriptor.java \
 classpath/java/beans/BeanInfo.java \
 classpath/java/beans/Beans.java \
 classpath/java/beans/Customizer.java \
+classpath/java/beans/DefaultPersistenceDelegate.java \
 classpath/java/beans/DesignMode.java \
+classpath/java/beans/Encoder.java \
 classpath/java/beans/EventHandler.java \
 classpath/java/beans/EventSetDescriptor.java \
 classpath/java/beans/ExceptionListener.java \
 classpath/java/beans/Expression.java \
 classpath/java/beans/FeatureDescriptor.java \
+classpath/java/beans/IndexedPropertyChangeEvent.java \
 classpath/java/beans/IndexedPropertyDescriptor.java \
 classpath/java/beans/IntrospectionException.java \
 classpath/java/beans/Introspector.java \
 classpath/java/beans/MethodDescriptor.java \
 classpath/java/beans/ParameterDescriptor.java \
+classpath/java/beans/PersistenceDelegate.java \
 classpath/java/beans/PropertyChangeEvent.java \
 classpath/java/beans/PropertyChangeListener.java \
 classpath/java/beans/PropertyChangeListenerProxy.java \
@@ -2837,7 +2880,8 @@ classpath/java/beans/VetoableChangeListener.java \
 classpath/java/beans/VetoableChangeListenerProxy.java \
 classpath/java/beans/VetoableChangeSupport.java \
 classpath/java/beans/Visibility.java \
-classpath/java/beans/XMLDecoder.java
+classpath/java/beans/XMLDecoder.java \
+classpath/java/beans/XMLEncoder.java
 
 java_beans_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_beans_source_files)))
 
@@ -3372,9 +3416,9 @@ java/nio/charset.list: $(java_nio_charset_source_files)
 
 
 java_nio_charset_spi_source_files = \
-classpath/java/nio/charset/spi/CharsetProvider.java
+java/nio/charset/spi/CharsetProvider.java
 
-java_nio_charset_spi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_charset_spi_source_files)))
+java_nio_charset_spi_header_files = $(patsubst %.java,%.h,$(java_nio_charset_spi_source_files))
 
 java/nio/charset/spi.list: $(java_nio_charset_spi_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -3588,7 +3632,7 @@ classpath/java/security/PublicKey.java \
 classpath/java/security/SecureClassLoader.java \
 classpath/java/security/SecureRandom.java \
 classpath/java/security/SecureRandomSpi.java \
-classpath/java/security/Security.java \
+java/security/Security.java \
 classpath/java/security/SecurityPermission.java \
 classpath/java/security/Signature.java \
 classpath/java/security/SignatureException.java \
@@ -3797,6 +3841,7 @@ classpath/java/text/Annotation.java \
 classpath/java/text/AttributedCharacterIterator.java \
 classpath/java/text/AttributedString.java \
 classpath/java/text/AttributedStringIterator.java \
+classpath/java/text/Bidi.java \
 classpath/java/text/BreakIterator.java \
 classpath/java/text/CharacterIterator.java \
 classpath/java/text/ChoiceFormat.java \
@@ -4209,6 +4254,22 @@ javax-imageio.lo: $(javax_imageio_source_files)
 	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-imageio.lo @javax-imageio.list
 	@rm -f javax-imageio.list
 
+javax_management_source_files = \
+classpath/javax/management/Attribute.java
+
+javax_management_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_management_source_files)))
+
+javax/management.list: $(javax_management_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(javax_management_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > javax/management.list
+
+-include javax/management.deps
+
+
 javax_naming_source_files = \
 classpath/javax/naming/AuthenticationException.java \
 classpath/javax/naming/AuthenticationNotSupportedException.java \
@@ -4540,9 +4601,11 @@ classpath/javax/print/attribute/standard/JobState.java \
 classpath/javax/print/attribute/standard/JobStateReason.java \
 classpath/javax/print/attribute/standard/JobStateReasons.java \
 classpath/javax/print/attribute/standard/Media.java \
+classpath/javax/print/attribute/standard/MediaName.java \
 classpath/javax/print/attribute/standard/MediaPrintableArea.java \
 classpath/javax/print/attribute/standard/MediaSize.java \
 classpath/javax/print/attribute/standard/MediaSizeName.java \
+classpath/javax/print/attribute/standard/MediaTray.java \
 classpath/javax/print/attribute/standard/MultipleDocumentHandling.java \
 classpath/javax/print/attribute/standard/NumberOfDocuments.java \
 classpath/javax/print/attribute/standard/NumberOfInterveningJobs.java \
@@ -4679,10 +4742,15 @@ javax/security/auth/callback.list: $(javax_security_auth_callback_source_files)
 
 
 javax_security_auth_login_source_files = \
+classpath/javax/security/auth/login/AccountException.java \
 classpath/javax/security/auth/login/AccountExpiredException.java \
+classpath/javax/security/auth/login/AccountLockedException.java \
+classpath/javax/security/auth/login/AccountNotFoundException.java \
 classpath/javax/security/auth/login/AppConfigurationEntry.java \
 classpath/javax/security/auth/login/Configuration.java \
+classpath/javax/security/auth/login/CredentialException.java \
 classpath/javax/security/auth/login/CredentialExpiredException.java \
+classpath/javax/security/auth/login/CredentialNotFoundException.java \
 classpath/javax/security/auth/login/FailedLoginException.java \
 classpath/javax/security/auth/login/LoginContext.java \
 classpath/javax/security/auth/login/LoginException.java \
@@ -5263,6 +5331,7 @@ classpath/javax/swing/plaf/basic/BasicEditorPaneUI.java \
 classpath/javax/swing/plaf/basic/BasicFileChooserUI.java \
 classpath/javax/swing/plaf/basic/BasicFormattedTextFieldUI.java \
 classpath/javax/swing/plaf/basic/BasicGraphicsUtils.java \
+classpath/javax/swing/plaf/basic/BasicHTML.java \
 classpath/javax/swing/plaf/basic/BasicIconFactory.java \
 classpath/javax/swing/plaf/basic/BasicInternalFrameTitlePane.java \
 classpath/javax/swing/plaf/basic/BasicInternalFrameUI.java \
@@ -5455,6 +5524,7 @@ classpath/javax/swing/text/DateFormatter.java \
 classpath/javax/swing/text/DefaultCaret.java \
 classpath/javax/swing/text/DefaultEditorKit.java \
 classpath/javax/swing/text/DefaultFormatter.java \
+classpath/javax/swing/text/DefaultFormatterFactory.java \
 classpath/javax/swing/text/DefaultHighlighter.java \
 classpath/javax/swing/text/DefaultStyledDocument.java \
 classpath/javax/swing/text/DefaultTextUI.java \
@@ -5475,8 +5545,10 @@ classpath/javax/swing/text/Keymap.java \
 classpath/javax/swing/text/LabelView.java \
 classpath/javax/swing/text/LayeredHighlighter.java \
 classpath/javax/swing/text/LayoutQueue.java \
+classpath/javax/swing/text/MaskFormatter.java \
 classpath/javax/swing/text/MutableAttributeSet.java \
 classpath/javax/swing/text/NavigationFilter.java \
+classpath/javax/swing/text/NumberFormatter.java \
 classpath/javax/swing/text/ParagraphView.java \
 classpath/javax/swing/text/PasswordView.java \
 classpath/javax/swing/text/PlainDocument.java \
@@ -5494,6 +5566,7 @@ classpath/javax/swing/text/TabExpander.java \
 classpath/javax/swing/text/TabSet.java \
 classpath/javax/swing/text/TabStop.java \
 classpath/javax/swing/text/TabableView.java \
+classpath/javax/swing/text/TableView.java \
 classpath/javax/swing/text/TextAction.java \
 classpath/javax/swing/text/Utilities.java \
 classpath/javax/swing/text/View.java \
@@ -5514,11 +5587,14 @@ javax/swing/text.list: $(javax_swing_text_source_files)
 
 
 javax_swing_text_html_source_files = \
+classpath/javax/swing/text/html/BlockView.java \
 classpath/javax/swing/text/html/CSS.java \
+classpath/javax/swing/text/html/CSSParser.java \
 classpath/javax/swing/text/html/HTML.java \
 classpath/javax/swing/text/html/HTMLDocument.java \
 classpath/javax/swing/text/html/HTMLEditorKit.java \
-classpath/javax/swing/text/html/HTMLFrameHyperlinkEvent.java
+classpath/javax/swing/text/html/HTMLFrameHyperlinkEvent.java \
+classpath/javax/swing/text/html/StyleSheet.java
 
 javax_swing_text_html_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_text_html_source_files)))
 
@@ -6650,6 +6726,7 @@ all_packages_source_files = \
   javax/crypto.list \
   javax/crypto/interfaces.list \
   javax/crypto/spec.list \
+  javax/management.list \
   javax/naming.list \
   javax/naming/directory.list \
   javax/naming/event.list \
@@ -6803,6 +6880,7 @@ ordinary_header_files = \
   $(javax_crypto_header_files) \
   $(javax_crypto_interfaces_header_files) \
   $(javax_crypto_spec_header_files) \
+  $(javax_management_header_files) \
   $(javax_naming_header_files) \
   $(javax_naming_directory_header_files) \
   $(javax_naming_event_header_files) \

@@ -47,15 +47,10 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.ext.DefaultHandler2;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -743,173 +738,64 @@ label   = Name:\\u0020</pre>
       throw new NullPointerException("Null input stream supplied.");
     try
       {
-	SAXParserFactory factory = SAXParserFactory.newInstance();
-	factory.setValidating(false); /* Don't use the URI */
-	XMLReader parser = factory.newSAXParser().getXMLReader();
-	PropertiesHandler handler = new PropertiesHandler();
-	parser.setContentHandler(handler);
-	parser.setProperty("http://xml.org/sax/properties/lexical-handler",
-			   handler);
-	parser.parse(new InputSource(in));
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+        // Don't resolve external entity references
+        factory.setProperty("javax.xml.stream.isSupportingExternalEntities",
+                            Boolean.FALSE);
+        XMLStreamReader reader = factory.createXMLStreamReader(in);
+        String name, key = null;
+        StringBuffer buf = null;
+        while (reader.hasNext())
+          {
+            switch (reader.next())
+              {
+              case XMLStreamConstants.START_ELEMENT:
+                name = reader.getLocalName();
+                if (buf == null && "entry".equals(name))
+                  {
+                    key = reader.getAttributeValue(null, "key");
+                    if (key == null)
+                      {
+                        String msg = "missing 'key' attribute";
+                        throw new InvalidPropertiesFormatException(msg);
+                      }
+                    buf = new StringBuffer();
+                  }
+                else if (!"properties".equals(name) && !"comment".equals(name))
+                  {
+                    String msg = "unexpected element name '" + name + "'";
+                    throw new InvalidPropertiesFormatException(msg);
+                  }
+                break;
+              case XMLStreamConstants.END_ELEMENT:
+                name = reader.getLocalName();
+                if (buf != null && "entry".equals(name))
+                  {
+                    put(key, buf.toString());
+                    buf = null;
+                  }
+                else if (!"properties".equals(name) && !"comment".equals(name))
+                  {
+                    String msg = "unexpected element name '" + name + "'";
+                    throw new InvalidPropertiesFormatException(msg);
+                  }
+                break;
+              case XMLStreamConstants.CHARACTERS:
+              case XMLStreamConstants.SPACE:
+              case XMLStreamConstants.CDATA:
+                if (buf != null)
+                  buf.append(reader.getText());
+                break;
+              }
+          }
+        reader.close();
       }
-    catch (SAXException e)
+    catch (XMLStreamException e)
       {
 	throw (InvalidPropertiesFormatException)
 	  new InvalidPropertiesFormatException("Error in parsing XML.").
 	  initCause(e);
       }
-    catch (ParserConfigurationException e)
-      {
-	throw (IOException)
-	  new IOException("An XML parser could not be found.").
-	  initCause(e);
-      }
   }
-
-  /**
-   * This class deals with the parsing of XML using 
-   * <a href="http://java.sun.com/dtd/properties.dtd">
-   * http://java.sun.com/dtd/properties.dtd</a>.
-   *   
-   * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
-   * @since 1.5
-   */
-  private class PropertiesHandler
-    extends DefaultHandler2
-  {
-    
-    /**
-     * The current key.
-     */
-    private String key;
-    
-    /**
-     * The current value.
-     */
-    private String value;
-
-    /**
-     * A flag to check whether a valid DTD declaration has been seen.
-     */
-    private boolean dtdDeclSeen;
-
-    /**
-     * Constructs a new Properties handler.
-     */
-    public PropertiesHandler()
-    {
-      key = null;
-      value = null;
-      dtdDeclSeen = false;
-    }
-
-    /**
-     * <p>
-     * Captures the start of the DTD declarations, if they exist.
-     * A valid properties file must declare the following doctype:
-     * </p>
-     * <p>
-     * <code>!DOCTYPE properties SYSTEM
-     * "http://java.sun.com/dtd/properties.dtd"</code>
-     * </p>
-     * 
-     * @param name the name of the document type.
-     * @param publicId the public identifier that was declared, or
-     *                 null if there wasn't one.
-     * @param systemId the system identifier that was declared, or
-     *                 null if there wasn't one.
-     * @throws SAXException if some error occurs in parsing.
-     */
-    public void startDTD(String name, String publicId, String systemId)
-      throws SAXException
-    {
-      if (name.equals("properties") &&
-	  publicId == null &&
-	  systemId.equals("http://java.sun.com/dtd/properties.dtd"))
-	{
-	  dtdDeclSeen = true;
-	}
-      else
-	throw new SAXException("Invalid DTD declaration: " + name);
-    }
-
-    /**
-     * Captures the start of an XML element.
-     *
-     * @param uri the namespace URI.
-     * @param localName the local name of the element inside the namespace.
-     * @param qName the local name qualified with the namespace URI.
-     * @param attributes the attributes of this element.
-     * @throws SAXException if some error occurs in parsing.
-     */
-    public void startElement(String uri, String localName,
-			     String qName, Attributes attributes)
-      throws SAXException
-    {
-      if (qName.equals("entry"))
-	{
-	  int index = attributes.getIndex("key");
-	  if (index != -1)
-	    key = attributes.getValue(index);
-	}
-      else if (qName.equals("comment") || qName.equals("properties"))
-	{
-	  /* Ignore it */
-	}
-      else
-	throw new SAXException("Invalid tag: " + qName);
-    }
-    
-    /**
-     * Captures characters within an XML element.
-     *
-     * @param ch the array of characters.
-     * @param start the start index of the characters to use.
-     * @param length the number of characters to use from the start index on.
-     * @throws SAXException if some error occurs in parsing.
-     */
-    public void characters(char[] ch, int start, int length)
-      throws SAXException
-    {
-      if (key != null)
-	value = new String(ch,start,length);
-    }
-    
-    /**
-     * Captures the end of an XML element.
-     *
-     * @param uri the namespace URI.
-     * @param localName the local name of the element inside the namespace.
-     * @param qName the local name qualified with the namespace URI.
-     * @throws SAXException if some error occurs in parsing.
-     */
-    public void endElement(String uri, String localName,
-			   String qName)
-      throws SAXException
-    {
-      if (qName.equals("entry"))
-	{
-	  if (value == null)
-	    value = "";
-	  setProperty(key, value);
-	  key = null;
-	  value = null;
-	}
-    }
-
-    /**
-     * Captures the end of the XML document.  If a DTD declaration has
-     * not been seen, the document is erroneous and an exception is thrown.
-     *
-     * @throws SAXException if the correct DTD declaration didn't appear.
-     */
-    public void endDocument()
-      throws SAXException
-    {
-      if (!dtdDeclSeen)
-	throw new SAXException("No appropriate DTD declaration was seen.");
-    }
-
-  } // class PropertiesHandler
 
 } // class Properties

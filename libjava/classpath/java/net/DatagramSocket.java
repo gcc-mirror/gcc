@@ -176,7 +176,12 @@ public class DatagramSocket
   {
     String propVal = SystemProperties.getProperty("impl.prefix");
     if (propVal == null || propVal.equals(""))
-      impl = new PlainDatagramSocketImpl();
+      {
+        if (factory != null)
+          impl = factory.createDatagramSocketImpl();
+        else
+          impl = new PlainDatagramSocketImpl();
+      }
     else
       try
         {

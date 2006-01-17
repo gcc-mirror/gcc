@@ -1313,6 +1313,31 @@ public class DomDocument
     return config;
   }
 
+  public boolean isEqualNode(Node arg)
+  {
+    if (!super.isEqualNode(arg))
+      return false;
+    Document d = (Document) arg;
+    String dversion = d.getXmlVersion();
+    if (dversion == null || !dversion.equals(version))
+      return false;
+    boolean dstandalone = d.getXmlStandalone();
+    if (dstandalone != standalone)
+      return false;
+    String dencoding = d.getXmlEncoding();
+    if (dencoding == null || dencoding.equalsIgnoreCase("UTF-8"))
+      {
+        if (encoding != null && !encoding.equalsIgnoreCase("UTF-8"))
+          return false;
+      }
+    else
+      {
+        if (!dencoding.equals(encoding))
+          return false;
+      }
+    return true;
+  }
+
   public void normalizeDocument()
   {
     boolean save = building;

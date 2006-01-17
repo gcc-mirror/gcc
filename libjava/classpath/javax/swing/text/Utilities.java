@@ -45,6 +45,7 @@ import java.awt.Rectangle;
 import java.text.BreakIterator;
 
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * A set of utilities to deal with text. This is used by several other classes
@@ -573,10 +574,11 @@ public class Utilities
     View rootView = c.getUI().getRootView(c);
     Rectangle r = c.modelToView(offset);
     int offs = c.viewToModel(new Point(x, r.y));
-    int pos = rootView.getNextVisualPositionFrom(c, offs,
-                                                 Position.Bias.Forward,
-                                                 SwingConstants.NORTH,
-                                                 new Position.Bias[1]);
+    int pos = rootView.getNextVisualPositionFrom(offs,
+                                    Position.Bias.Forward,
+                                    SwingUtilities.calculateInnerArea(c, null),
+                                    SwingConstants.NORTH,
+                                    new Position.Bias[1]);
     return pos;
   }
 
@@ -599,10 +601,11 @@ public class Utilities
     View rootView = c.getUI().getRootView(c);
     Rectangle r = c.modelToView(offset);
     int offs = c.viewToModel(new Point(x, r.y));
-    int pos = rootView.getNextVisualPositionFrom(c, offs,
-                                                 Position.Bias.Forward,
-                                                 SwingConstants.SOUTH,
-                                                 new Position.Bias[1]);
+    int pos = rootView.getNextVisualPositionFrom(offs,
+                                    Position.Bias.Forward,
+                                    SwingUtilities.calculateInnerArea(c, null),
+                                    SwingConstants.SOUTH,
+                                    new Position.Bias[1]);
     return pos;
   }
 }

@@ -82,14 +82,10 @@ final class ElementNode
         elementExcludeResultPrefixes = new HashSet();
         StringTokenizer st = new StringTokenizer(attr.getNodeValue());
         while (st.hasMoreTokens())
-          {
-            elementExcludeResultPrefixes.add(st.nextToken());
-          }
+          elementExcludeResultPrefixes.add(st.nextToken());
       }
     else
-      {
-        elementExcludeResultPrefixes = Collections.EMPTY_SET;
-      }
+      elementExcludeResultPrefixes = Collections.EMPTY_SET;
   }
 
   TemplateNode clone(Stylesheet stylesheet)
@@ -99,19 +95,15 @@ final class ElementNode
                                        namespace.clone(stylesheet),
                                        uas, source);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
   void doApply(Stylesheet stylesheet, QName mode,
-             Node context, int pos, int len,
-             Node parent, Node nextSibling)
+               Node context, int pos, int len,
+               Node parent, Node nextSibling)
     throws TransformerException
   {
     Document doc = (parent instanceof Document) ? (Document) parent :
@@ -137,96 +129,70 @@ final class ElementNode
         // Use XPath string-value of fragment
         namespaceValue = Expr.stringValue(fragment);
         if (namespaceValue.length() == 0)
+          namespaceValue = null;
+      }
+    else
+      {    
+        String prefix = getPrefix(nameValue);
+        if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix))
           {
-            namespaceValue = null;
+            int ci = nameValue.indexOf(':');
+            nameValue = nameValue.substring(ci + 1);
+          }
+        else
+          {
+            // Namespace aliasing
+            if (prefix == null)
+              prefix = "#default";
+            String resultPrefix =
+              (String) stylesheet.namespaceAliases.get(prefix);
+            if (resultPrefix != null)
+              {
+                if ("#default".equals(resultPrefix))
+                  resultPrefix = null;
+                namespaceValue = source.lookupNamespaceURI(resultPrefix);
+              }
+            if (prefix == "#default")
+              prefix = null;
+            // Look up ordinary namespace for this prefix
+            if (namespaceValue == null)
+              {
+                if (XMLConstants.XML_NS_PREFIX.equals(prefix))
+                  namespaceValue = XMLConstants.XML_NS_URI;
+                else
+                  {
+                    // Resolve namespace for this prefix
+                    namespaceValue = source.lookupNamespaceURI(prefix);
+                  }
+              }
           }
       }
     
-    String prefix = getPrefix(nameValue);
-    if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix))
-      {
-        int ci = nameValue.indexOf(':');
-        nameValue = nameValue.substring(ci + 1);
-      }
-    else
-      {
-        // Namespace aliasing
-        if (prefix == null)
-          {
-            prefix = "#default";
-          }
-        String resultPrefix =
-          (String) stylesheet.namespaceAliases.get(prefix);
-        if (resultPrefix != null)
-          {
-            if ("#default".equals(resultPrefix))
-              {
-                resultPrefix = null;
-              }
-            namespaceValue = source.lookupNamespaceURI(resultPrefix);
-          }
-        if (prefix == "#default")
-          {
-            prefix = null;
-          }
-        // Look up ordinary namespace for this prefix
-        if (namespaceValue == null)
-          {
-            if (XMLConstants.XML_NS_PREFIX.equals(prefix))
-              {
-                namespaceValue = XMLConstants.XML_NS_URI;
-              }
-            else
-              {
-                // Resolve namespace for this prefix
-                namespaceValue = source.lookupNamespaceURI(prefix);
-              }
-          }
-        /*if (prefix == null)
-          {
-            // Resolve prefix for this namespace
-            prefix = parent.lookupPrefix(namespaceValue);
-            if (prefix != null)
-              {
-                nameValue = prefix + ":" + nameValue;
-              }
-          }*/
-      }
     // Create element
     Element element = (namespaceValue != null) ?
       doc.createElementNS(namespaceValue, nameValue) :
-          doc.createElement(nameValue);
+      doc.createElement(nameValue);
     if (nextSibling != null)
-      {
-        parent.insertBefore(element, nextSibling);
-      }
+      parent.insertBefore(element, nextSibling);
     else
-      {
-        parent.appendChild(element);
-      }
+      parent.appendChild(element);
     stylesheet.addNamespaceNodes(source, element, doc,
                                  elementExcludeResultPrefixes);
     if (uas != null)
       {
         StringTokenizer st = new StringTokenizer(uas, " ");
         while (st.hasMoreTokens())
-          {
-            addAttributeSet(stylesheet, mode, context, pos, len,
-                            element, null, st.nextToken());
-          }
+          addAttributeSet(stylesheet, mode, context, pos, len,
+                          element, null, st.nextToken());
       }
     if (children != null)
-      {
-        children.apply(stylesheet, mode,
-                       context, pos, len,
-                       element, null);
-      }
+      children.apply(stylesheet, mode,
+                     context, pos, len,
+                     element, null);
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
 
   final String getPrefix(String name)
@@ -240,41 +206,33 @@ final class ElementNode
                        Node parent, Node nextSibling, String attributeSet)
     throws TransformerException
   {
+    stylesheet.bindings.global = true;
     for (Iterator i = stylesheet.attributeSets.iterator(); i.hasNext(); )
       {
         AttributeSet as = (AttributeSet) i.next();
         if (!as.name.equals(attributeSet))
-          {
-            continue;
-          }
+          continue;
         if (as.uas != null)
           {
             StringTokenizer st = new StringTokenizer(as.uas, " ");
             while (st.hasMoreTokens())
-              {
-                addAttributeSet(stylesheet, mode, context, pos, len,
-                                parent, nextSibling, st.nextToken());
-              }
+              addAttributeSet(stylesheet, mode, context, pos, len,
+                              parent, nextSibling, st.nextToken());
           }
         if (as.children != null)
-          {
-            as.children.apply(stylesheet, mode,
-                              context, pos, len,
-                              parent, nextSibling);
-          }
+          as.children.apply(stylesheet, mode,
+                            context, pos, len,
+                            parent, nextSibling);
       }
+    stylesheet.bindings.global = false;
   }
 
   public boolean references(QName var)
   {
     if (name != null && name.references(var))
-      {
-        return true;
-      }
+      return true;
     if (namespace != null && namespace.references(var))
-      {
-        return true;
-      }
+      return true;
     return super.references(var);
   }
   
@@ -283,6 +241,11 @@ final class ElementNode
     StringBuffer buf = new StringBuffer(getClass().getName());
     buf.append('[');
     buf.append("name=");
+    if (namespace != null)
+      {
+        buf.append(",namespace=");
+        buf.append(namespace);
+      }
     buf.append(name);
     if (uas != null)
       {

@@ -38,12 +38,16 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Point;
 import java.awt.event.ContainerListener;
+import java.awt.event.MouseEvent;
+
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.border.Border;
+import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicToolBarUI;
 
@@ -158,5 +162,67 @@ public class MetalToolBarUI extends BasicToolBarUI
   {
     return MetalBorders.getToolbarButtonBorder();   
   }
-
+  
+  /**
+   * Sets the offset for the window used for dragging the toolbar.
+   * It is set as long as the window is not null (it has been installed).
+   */
+  protected void setDragOffset(Point p)
+  {
+    if (dragWindow != null)
+      dragWindow.setOffset(p);
+  }
+  
+  /** 
+   * Creates and returns an instance of MetalDockingListener.
+   * 
+   * @return an instance of MetalDockingListener.
+   */
+  protected MouseInputListener createDockingListener()
+  {
+    return new MetalDockingListener(toolBar);
+  }
+  
+  /**
+   * This is the MouseHandler class that allows the user to drag the JToolBar
+   * in and out of the parent and dock it if it can.
+   */
+  protected class MetalDockingListener extends BasicToolBarUI.DockingListener
+  {    
+    /**
+     * Creates a new DockingListener object.
+     *
+     * @param t The JToolBar this DockingListener is being used for.
+     */
+    public MetalDockingListener(JToolBar t)
+    {
+      super(t);
+    }
+    
+    /**
+     * This method is called when the mouse is pressed in the JToolBar. If the
+     * press doesn't occur in a place where it causes the JToolBar to be
+     * dragged, it returns. Otherwise, it starts a drag session.
+     *
+     * @param e The MouseEvent.
+     */
+    public void mousePressed(MouseEvent e)
+    {
+      super.mousePressed(e);
+      setDragOffset(new Point(e.getX(), e.getY()));
+    }
+    
+    /**
+     * This method is called when the mouse is dragged. It delegates the drag
+     * painting to the dragTo method.
+     *
+     * @param e The MouseEvent.
+     */
+    public void mouseDragged(MouseEvent e)
+    {
+      // Does not do anything differently than dragging 
+      // BasicToolBarUI.DockingListener
+      super.mouseDragged(e);
+    }
+  }
 }

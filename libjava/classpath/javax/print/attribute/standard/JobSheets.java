@@ -1,5 +1,5 @@
 /* JobSheets.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,18 +43,40 @@ import javax.print.attribute.PrintRequestAttribute;
 
 
 /**
+ * The <code>JobSheets</code> printing attribute specifies if a
+ * job start/end sheets should be printed. 
+ * <p>
+ * <b>IPP Compatibility:</b> JobSheets is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class JobSheets extends EnumSyntax
   implements PrintJobAttribute, PrintRequestAttribute
 {
   private static final long serialVersionUID = -4735258056132519759L;
 
+  /**
+   * No job sheet is printed. 
+   */
   public static final JobSheets NONE = new JobSheets(0);
+  
+  /**
+   * The standard job sheet is printed. The sheet and if it 
+   * is printed only as start sheet or also as end sheet is
+   * site specific.
+   */
   public static final JobSheets STANDARD = new JobSheets(1);
 
+  private static final String[] stringTable = { "none", "standard" };
+  
+  private static final JobSheets[] enumValueTable = { NONE, STANDARD };
+  
   /**
    * Constructs a <code>JobSheets</code> object.
+   * 
+   * @param value the enum value.
    */
   protected JobSheets(int value)
   {
@@ -64,7 +86,7 @@ public class JobSheets extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>JobSheets</code> itself
+   * @return The class <code>JobSheets</code> itself.
    */
   public Class getCategory()
   {
@@ -74,10 +96,31 @@ public class JobSheets extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "job-sheets".
    */
   public String getName()
   {
     return "job-sheets";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
   }
 }

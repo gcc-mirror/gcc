@@ -1,3 +1,13 @@
+2006-01-16  Mark Wielaard  <mark@klomp.org>
+
+	* native/fdlibm/namespace.h: Empty for gcj.
+
+2006-01-14  Anthony Green  <green@redhat.com>
+
+	* java/net/ServerSocket.java (accept): Remove bogus
+	security check.
+	(implAccept): Add FIXME comment.
+
 2006-01-06  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/23499:

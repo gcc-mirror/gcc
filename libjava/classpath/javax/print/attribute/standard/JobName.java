@@ -1,5 +1,5 @@
 /* JobName.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,12 @@ import javax.print.attribute.PrintRequestAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
+ * The <code>JobName</code> printing attribute provides the name of a 
+ * print job for identification.
+ * <p>
+ * <b>IPP Compatibility:</b> JobName is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class JobName extends TextSyntax
@@ -55,9 +61,11 @@ public final class JobName extends TextSyntax
   /**
    * Creates a <code>JobName</code> object.
    *
-   * @param jobName the job name
+   * @param jobName the job name.
+   * @param locale the locale to use, if <code>null</code> the default
+   * locale is used.
    *
-   * @exception NullPointerException if jobName is null
+   * @exception NullPointerException if jobName is <code>null</code>.
    */
   public JobName(String jobName, Locale locale)
   {
@@ -65,11 +73,12 @@ public final class JobName extends TextSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -82,7 +91,7 @@ public final class JobName extends TextSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>JobName</code> itself
+   * @return The class <code>JobName</code> itself.
    */
   public Class getCategory()
   {
@@ -90,9 +99,9 @@ public final class JobName extends TextSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "job-name"
+   * @return The name "job-name".
    */
   public String getName()
   {

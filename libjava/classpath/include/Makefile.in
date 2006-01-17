@@ -42,10 +42,11 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
-	$(top_srcdir)/m4/acinclude.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/acinclude.m4 \
+	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -141,6 +142,7 @@ JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
 JIKES = @JIKES@
 JIKESENCODING = @JIKESENCODING@
+JIKESWARNINGS = @JIKESWARNINGS@
 KJC = @KJC@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
@@ -245,10 +247,11 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 vm_classes = @vm_classes@
-DISTCLEANFILES = jni_md.h
+DISTCLEANFILES = jni_md.h config-int.h
 ARG_JNI_JAVAH = -jni
 ARG_CLASSPATH_JAVAH = -bootclasspath
 JAVAH = $(USER_JAVAH) $(ARG_JNI_JAVAH) $(ARG_CLASSPATH_JAVAH) ../lib:$(USER_CLASSLIB)
+CLASSDIR = lib
 SOUND_H_FILES = \
 $(top_srcdir)/include/gnu_javax_sound_midi_alsa_AlsaPortDevice.h \
 $(top_srcdir)/include/gnu_javax_sound_midi_alsa_AlsaMidiSequencerDevice.h \
@@ -565,25 +568,25 @@ uninstall-am: uninstall-info-am
 
 @CREATE_JNI_HEADERS_TRUE@all-local: $(H_FILES)
 
-@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_xml_libxmlj_dom_%.h: $(top_builddir)/lib/gnu/xml/libxmlj/dom/%.class
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_xml_libxmlj_dom_%.h: $(top_builddir)/$(CLASSDIR)/gnu/xml/libxmlj/dom/%.class
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.xml.libxmlj.dom.$*
 
-@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_xml_libxmlj_sax_%.h: $(top_builddir)/lib/gnu/xml/libxmlj/sax/%.class
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_xml_libxmlj_sax_%.h: $(top_builddir)/$(CLASSDIR)/gnu/xml/libxmlj/sax/%.class
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.xml.libxmlj.sax.$*
 
-@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_xml_libxmlj_transform_%.h: $(top_builddir)/lib/gnu/xml/libxmlj/transform/%.class
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_xml_libxmlj_transform_%.h: $(top_builddir)/$(CLASSDIR)/gnu/xml/libxmlj/transform/%.class
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.xml.libxmlj.transform.$*
 
-@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_awt_peer_gtk_%.h: $(top_builddir)/lib/gnu/java/awt/peer/gtk/%.class
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_awt_peer_gtk_%.h: $(top_builddir)/$(CLASSDIR)/gnu/java/awt/peer/gtk/%.class
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.awt.peer.gtk.$*
 
-@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_awt_peer_qt_%.h: $(top_builddir)/lib/gnu/java/awt/peer/qt/%.class
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_awt_peer_qt_%.h: $(top_builddir)/$(CLASSDIR)/gnu/java/awt/peer/qt/%.class
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.awt.peer.qt.$*
 
-@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_javax_sound_midi_alsa_%.h: $(top_builddir)/lib/gnu/javax/sound/midi/alsa/%.class
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_javax_sound_midi_alsa_%.h: $(top_builddir)/$(CLASSDIR)/gnu/javax/sound/midi/alsa/%.class
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.javax.sound.midi.alsa.$*
 
-@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_javax_sound_midi_dssi_%.h: $(top_builddir)/lib/gnu/javax/sound/midi/dssi/%.class
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_javax_sound_midi_dssi_%.h: $(top_builddir)/$(CLASSDIR)/gnu/javax/sound/midi/dssi/%.class
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.javax.sound.midi.dssi.$*
 
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_net_PlainDatagramSocketImpl.h: $(top_srcdir)/gnu/java/net/PlainDatagramSocketImpl.java

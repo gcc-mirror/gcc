@@ -1,5 +1,5 @@
 /* JobState.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,24 +42,90 @@ import javax.print.attribute.PrintJobAttribute;
 
 
 /**
+ * The <code>JobState</code> printing attribute reports
+ * the current state of a job.
+ * <p>
+ * The {@link javax.print.attribute.standard.JobStateReasons}
+ * attribute provides further detailed information about
+ * the given job state. Detailed information about the job
+ * state and job state reasons can be found in the RFC 2911.
+ * </p> 
+ * <p>
+ * <b>IPP Compatibility:</b> JobState is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class JobState extends EnumSyntax
   implements PrintJobAttribute
 {
   private static final long serialVersionUID = 400465010094018920L;
 
+  /**
+   * The job state is currently unknown.
+   */
   public static final JobState UNKNOWN = new JobState(0);
-  public static final JobState PENDING = new JobState(1);
-  public static final JobState PENDING_HELD = new JobState(2);
-  public static final JobState PROCESSING = new JobState(3);
-  public static final JobState PROCESSING_STOPPED = new JobState(4);
-  public static final JobState CANCELED = new JobState(5);
-  public static final JobState ABORTED = new JobState(6);
-  public static final JobState COMPLETED = new JobState(7);
+  
+  /**
+   * The job is pending processing.
+   */
+  public static final JobState PENDING = new JobState(3);
+  
+  /**
+   * The job is currently not a candidate for printing because
+   * of reasons reported by the job-state-reasons attribute. If
+   * the reasons are no longer present it will return to the
+   * pending state.
+   */
+  public static final JobState PENDING_HELD = new JobState(4);
+  
+  /**
+   * The job is currently processed.
+   */
+  public static final JobState PROCESSING = new JobState(5);
+  
+  /**
+   * The job's processing has stopped. The job-state-reasons
+   * attribute may indicate the reason(s). The job will return
+   * to the processing state if the reasons are no longer present.
+   */
+  public static final JobState PROCESSING_STOPPED = new JobState(6);
+  
+  /**
+   * The job has been canceled by the client.
+   */
+  public static final JobState CANCELED = new JobState(7);
+  
+  /**
+   * The job has been aborted by the system.
+   */
+  public static final JobState ABORTED = new JobState(8);
+  
+  /**
+   * The job has completed successfully.
+   */
+  public static final JobState COMPLETED = new JobState(9);
 
+
+  private static final String[] stringTable = { "unknown", null, null, 
+                                                "pending", "pending-held",
+                                                "processing", 
+                                                "processing-stopped",
+                                                "canceled", "aborted", 
+                                                "completed"};
+  
+  private static final JobState[] enumValueTable = { UNKNOWN, null, null,
+                                                     PENDING, PENDING_HELD,
+                                                     PROCESSING,
+                                                     PROCESSING_STOPPED,
+                                                     CANCELED, ABORTED,
+                                                     COMPLETED };
+  
   /**
    * Constructs a <code>JobState</code> object.
+   * 
+   * @param value the enum value.
    */
   protected JobState(int value)
   {
@@ -69,7 +135,7 @@ public class JobState extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>JobState</code> itself
+   * @return The class <code>JobState</code> itself.
    */
   public Class getCategory()
   {
@@ -79,10 +145,31 @@ public class JobState extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "job-state".
    */
   public String getName()
   {
     return "job-state";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
   }
 }

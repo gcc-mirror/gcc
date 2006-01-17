@@ -77,6 +77,9 @@ public class XMLInputFactoryImpl
   protected boolean replacingEntityReferences = true;
   protected boolean externalEntities = true;
   protected boolean supportDTD = true;
+  protected boolean xIncludeAware = false;
+  protected boolean baseAware = true;
+  protected boolean stringInterning = true;
 
   public XMLInputFactoryImpl()
   {
@@ -86,11 +89,28 @@ public class XMLInputFactoryImpl
   public XMLStreamReader createXMLStreamReader(Reader reader)
     throws XMLStreamException
   {
+    /*
     return new XMLStreamReaderImpl(reader, null, null,
                                    resolver, reporter,
                                    validating, namespaceAware,
                                    coalescing, replacingEntityReferences,
                                    externalEntities, supportDTD);
+                                   */
+    XMLParser ret = new XMLParser(reader, null,
+                                  validating,
+                                  namespaceAware,
+                                  coalescing,
+                                  replacingEntityReferences,
+                                  externalEntities,
+                                  supportDTD,
+                                  baseAware,
+                                  stringInterning,
+                                  reporter,
+                                  resolver);
+    if (xIncludeAware)
+      return new XIncludeFilter(ret, null, namespaceAware, validating,
+                                replacingEntityReferences);
+    return ret;
   }
   
   public XMLStreamReader createXMLStreamReader(Source source)
@@ -98,21 +118,51 @@ public class XMLInputFactoryImpl
   {
     String systemId = source.getSystemId();
     InputStream in = getInputStream(source);
-    return new XMLStreamReaderImpl(in, null, systemId,
+    /*return new XMLStreamReaderImpl(in, null, systemId,
                                    resolver, reporter,
                                    validating, namespaceAware,
                                    coalescing, replacingEntityReferences,
-                                   externalEntities, supportDTD);
+                                   externalEntities, supportDTD);*/
+    XMLParser ret = new XMLParser(in, systemId,
+                                  validating,
+                                  namespaceAware,
+                                  coalescing,
+                                  replacingEntityReferences,
+                                  externalEntities,
+                                  supportDTD,
+                                  baseAware,
+                                  stringInterning,
+                                  reporter,
+                                  resolver);
+    if (xIncludeAware)
+      return new XIncludeFilter(ret, systemId, namespaceAware, validating,
+                                replacingEntityReferences);
+    return ret;
   }
   
   public XMLStreamReader createXMLStreamReader(InputStream in)
     throws XMLStreamException
   {
-    return new XMLStreamReaderImpl(in, null, null,
+    /*return new XMLStreamReaderImpl(in, null, null,
                                    resolver, reporter,
                                    validating, namespaceAware,
                                    coalescing, replacingEntityReferences,
-                                   externalEntities, supportDTD);
+                                   externalEntities, supportDTD);*/
+    XMLParser ret = new XMLParser(in, null,
+                                  validating,
+                                  namespaceAware,
+                                  coalescing,
+                                  replacingEntityReferences,
+                                  externalEntities,
+                                  supportDTD,
+                                  baseAware,
+                                  stringInterning,
+                                  reporter,
+                                  resolver);
+    if (xIncludeAware)
+      return new XIncludeFilter(ret, null, namespaceAware, validating,
+                                replacingEntityReferences);
+    return ret;
   }
   
   public XMLStreamReader createXMLStreamReader(InputStream in, String encoding)
@@ -210,6 +260,12 @@ public class XMLInputFactoryImpl
       resolver = (XMLResolver) value;
     else if (name.equals(ALLOCATOR))
       allocator = (XMLEventAllocator) value;
+    else if (name.equals("gnu.xml.stream.stringInterning"))
+      stringInterning = ((Boolean) value).booleanValue();
+    else if (name.equals("gnu.xml.stream.baseAware"))
+      baseAware = ((Boolean) value).booleanValue();
+    else if (name.equals("gnu.xml.stream.xIncludeAware"))
+      xIncludeAware = ((Boolean) value).booleanValue();
     else
       throw new IllegalArgumentException(name);
   }
@@ -235,6 +291,12 @@ public class XMLInputFactoryImpl
       return resolver;
     if (name.equals(ALLOCATOR))
       return allocator;
+    if (name.equals("gnu.xml.stream.stringInterning"))
+      return stringInterning ? Boolean.TRUE : Boolean.FALSE;
+    if (name.equals("gnu.xml.stream.baseAware"))
+      return baseAware ? Boolean.TRUE : Boolean.FALSE;
+    if (name.equals("gnu.xml.stream.xIncludeAware"))
+      return xIncludeAware ? Boolean.TRUE : Boolean.FALSE;
     throw new IllegalArgumentException(name);
   }
 
@@ -248,7 +310,10 @@ public class XMLInputFactoryImpl
       name.equals(SUPPORT_DTD) ||
       name.equals(REPORTER) ||
       name.equals(RESOLVER) ||
-      name.equals(ALLOCATOR);
+      name.equals(ALLOCATOR) ||
+      name.equals("gnu.xml.stream.stringInterning") ||
+      name.equals("gnu.xml.stream.baseAware") ||
+      name.equals("gnu.xml.stream.xIncludeAware");
   }
   
   public void setEventAllocator(XMLEventAllocator allocator)

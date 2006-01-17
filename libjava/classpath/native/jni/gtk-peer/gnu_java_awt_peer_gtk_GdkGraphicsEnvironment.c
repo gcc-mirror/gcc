@@ -71,6 +71,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_nativeGetFontFamilies
       const char *name_tmp =  pango_font_family_get_name (families[idx]);
       jstring name = (*env)->NewStringUTF (env, name_tmp);
       (*env)->SetObjectArrayElement (env, family_name, idx, name);
+      (*env)->DeleteLocalRef(env, name);
     }
   g_free (families);
 

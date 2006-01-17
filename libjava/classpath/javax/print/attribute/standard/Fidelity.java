@@ -1,5 +1,5 @@
 /* Fidelity.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -33,7 +33,8 @@ module.  An independent module is a module which is not derived from
 or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
-exception statement from your version. */
+exception statement from your version.  */
+
 
 package javax.print.attribute.standard;
 
@@ -43,15 +44,53 @@ import javax.print.attribute.PrintRequestAttribute;
 
 
 /**
+ * The <code>Fidelity</code> attribute specifies how a print job is handled
+ * if the supplied attributes are not fully supported.
+ * <p>
+ * There may be conflicts between the client requested attributes and the
+ * attributes supported by the printer object. Such situations are controlled
+ * through the client by providing this attribute to indicate the wanted
+ * conflict handling mechanism:
+ * <ul>
+ * <li>{@link #FIDELITY_TRUE}: Reject the job since the job can not be 
+ * processed exactly as specified by the attributes of the client.</li>
+ * <li>{@link #FIDELITY_FALSE}: The Printer may make any changes necessary 
+ * to proceed with processing the Job as good as possible.</li>
+ * </ul>
+ * </p> 
+ * <p>
+ * <b>IPP Compatibility:</b> Fidelity is an IPP 1.1 attribute. The IPP name
+ * is "ipp-attribute-fidelity". The IPP specification treats Fidelity as a 
+ * boolean type which is not available in the Java Print Service API. The IPP
+ * boolean value "true" corresponds to <code>FIDELITY_TRUE</code> and "false" 
+ * to <code>FIDELITY_FALSE</code>.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class Fidelity extends EnumSyntax
   implements PrintJobAttribute, PrintRequestAttribute
 {
   private static final long serialVersionUID = 6320827847329172308L;
 
+  /** 
+   * Requests that the job is printed exactly as specified, 
+   * or rejected otherwise.
+   */
   public static final Fidelity FIDELITY_TRUE = new Fidelity(0);
+  
+  /** 
+   * Requests that the job is printed as exactly as reasonable. This means
+   * that the print service may choose to substitute the default value 
+   * associated with that attribute, or use some other supported value that 
+   * is similar to the unsupported requested value. 
+   */
   public static final Fidelity FIDELITY_FALSE = new Fidelity(1);
+  
+  private static final String[] stringTable = { "true", "false" };
+  private static final Fidelity[] enumValueTable = { FIDELITY_TRUE,
+                                                     FIDELITY_FALSE };
 
   /**
    * Constructs a <code>Fidelity</code> object.
@@ -66,7 +105,7 @@ public final class Fidelity extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>Fidelity</code> itself
+   * @return The class <code>Fidelity</code> itself.
    */
   public Class getCategory()
   {
@@ -76,10 +115,31 @@ public final class Fidelity extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "ipp-attribute-fidelity".
    */
   public String getName()
   {
-    return "fidelity";
+    return "ipp-attribute-fidelity";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
   }
 }

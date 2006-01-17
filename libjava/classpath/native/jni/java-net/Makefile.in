@@ -44,10 +44,11 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
-	$(top_srcdir)/m4/acinclude.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/acinclude.m4 \
+	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -66,8 +67,8 @@ libjavanet_la_DEPENDENCIES =  \
 	$(top_builddir)/native/jni/classpath/jcl.lo
 am_libjavanet_la_OBJECTS = javanet.lo java_net_VMInetAddress.lo \
 	java_net_VMNetworkInterface.lo \
-	gnu_java_net_PlainDatagramSocketImpl.lo \
-	gnu_java_net_PlainSocketImpl.lo
+	gnu_java_net_VMPlainDatagramSocketImpl.lo \
+	gnu_java_net_VMPlainSocketImpl.lo
 libjavanet_la_OBJECTS = $(am_libjavanet_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -172,6 +173,7 @@ JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
 JIKES = @JIKES@
 JIKESENCODING = @JIKESENCODING@
+JIKESWARNINGS = @JIKESWARNINGS@
 KJC = @KJC@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
@@ -281,8 +283,8 @@ libjavanet_la_SOURCES = javanet.c \
 			javanet.h \
 			java_net_VMInetAddress.c \
 			java_net_VMNetworkInterface.c \
-			gnu_java_net_PlainDatagramSocketImpl.c \
-                        gnu_java_net_PlainSocketImpl.c
+			gnu_java_net_VMPlainDatagramSocketImpl.c \
+                        gnu_java_net_VMPlainSocketImpl.c
 
 libjavanet_la_LIBADD = $(top_builddir)/native/jni/classpath/jcl.lo
 AM_LDFLAGS = @CLASSPATH_MODULE@
@@ -357,8 +359,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_net_PlainDatagramSocketImpl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_net_PlainSocketImpl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_net_VMPlainDatagramSocketImpl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_net_VMPlainSocketImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_net_VMInetAddress.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_net_VMNetworkInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/javanet.Plo@am__quote@

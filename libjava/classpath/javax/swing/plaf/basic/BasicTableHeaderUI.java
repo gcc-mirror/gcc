@@ -139,6 +139,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
   public void installUI(JComponent c)
   {
     header = (JTableHeader) c;
+    rendererPane = new CellRendererPane();
     installDefaults();
     installKeyboardActions();
     installListeners();
@@ -194,18 +195,15 @@ public class BasicTableHeaderUI extends TableHeaderUI
                                                                 false, // isSelected
                                                                 false, // isFocused
                                                                 -1, i);
+            // FIXME: The following settings should be performed in
+            // rend.getTableCellRendererComponent().
             comp.setFont(header.getFont());
             comp.setBackground(header.getBackground());
             comp.setForeground(header.getForeground());
             if (comp instanceof JComponent)
               ((JComponent)comp).setBorder(cellBorder);
-            gfx.translate(bounds.x, bounds.y);
-            gfx.setClip(0, 0, bounds.width, bounds.height);
-            comp.setSize(bounds.width, bounds.height);
-            comp.setLocation(0,0);
-            comp.paint(gfx);
-            gfx.translate(-bounds.x, -bounds.y);
-            gfx.setClip(oldClip);
+            rendererPane.paintComponent(gfx, comp, header, bounds.x, bounds.y,
+                                        bounds.width, bounds.height);
           }
       }
 

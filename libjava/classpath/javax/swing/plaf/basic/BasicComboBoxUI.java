@@ -190,10 +190,19 @@ public class BasicComboBoxUI extends ComboBoxUI
    */
   Dimension displaySize;
 
-  // FIXME: This fields aren't used anywhere at this moment.
-  protected Dimension cachedMinimumSize;
+  // FIXME: This field isn't used anywhere at this moment.
   protected CellRendererPane currentValuePane;
-  protected boolean isMinimumSizeDirty;
+
+  /**
+   * The current minimum size if isMinimumSizeDirty is false.
+   * Setup by getMinimumSize() and invalidated by the various listeners.
+   */
+  protected Dimension cachedMinimumSize;
+
+  /**
+   * Indicates whether or not the cachedMinimumSize field is valid or not.
+   */
+  protected boolean isMinimumSizeDirty = true;
 
   /**
    * Creates a new <code>BasicComboBoxUI</code> object.
@@ -285,8 +294,7 @@ public class BasicComboBoxUI extends ComboBoxUI
     comboBox.addPropertyChangeListener(propertyChangeListener);
 
     focusListener = createFocusListener();
-    comboBox.addFocusListener(focusListener);
-    listBox.addFocusListener(focusListener);
+    editor.addFocusListener(focusListener);
 
     itemListener = createItemListener();
     comboBox.addItemListener(itemListener);
@@ -563,6 +571,7 @@ public class BasicComboBoxUI extends ComboBoxUI
   {
     arrowButton.setEnabled(comboBox.isEnabled());
     arrowButton.setFont(comboBox.getFont());
+    arrowButton.setFocusable(false);
   }
 
   /**
@@ -615,12 +624,14 @@ public class BasicComboBoxUI extends ComboBoxUI
   public void setPopupVisible(JComboBox c, boolean v)
   {
     if (v)
-      {
-        popup.show();
-        popup.getList().requestFocus();
-      }
+      popup.show();
     else
       popup.hide();
+
+    if (comboBox.isEditable())
+      editor.requestFocus();
+    else
+      comboBox.requestFocus();
   }
 
   /**
@@ -668,7 +679,7 @@ public class BasicComboBoxUI extends ComboBoxUI
 
   /**
    * Returns the minimum size for this {@link JComboBox} for this
-   * look and feel.
+   * look and feel. Also makes sure cachedMinimimSize is setup correctly.
    *
    * @param c The {@link JComponent} to find the minimum size for.
    *
@@ -676,10 +687,15 @@ public class BasicComboBoxUI extends ComboBoxUI
    */
   public Dimension getMinimumSize(JComponent c)
   {
-    Dimension d = getDisplaySize();
-    int arrowButtonWidth = d.height;
-    Dimension result = new Dimension(d.width + arrowButtonWidth, d.height);
-    return result;
+    if (isMinimumSizeDirty)
+      {
+	Dimension d = getDisplaySize();
+	int arrowButtonWidth = d.height;
+	cachedMinimumSize = new Dimension(d.width + arrowButtonWidth,
+					  d.height);
+	isMinimumSizeDirty = false;
+      }
+    return new Dimension(cachedMinimumSize);
   }
 
   /** The value returned by the getMaximumSize() method. */
@@ -1062,6 +1078,9 @@ public class BasicComboBoxUI extends ComboBoxUI
      */
     public void focusGained(FocusEvent e)
     {
+      // Lets assume every change invalidates the minimumsize.
+      isMinimumSizeDirty = true;
+
       hasFocus = true;
       comboBox.repaint();
     }
@@ -1074,6 +1093,9 @@ public class BasicComboBoxUI extends ComboBoxUI
      */
     public void focusLost(FocusEvent e)
     {
+      // Lets assume every change invalidates the minimumsize.
+      isMinimumSizeDirty = true;
+
       hasFocus = false;
       setPopupVisible(comboBox, false);
       comboBox.repaint();
@@ -1102,6 +1124,9 @@ public class BasicComboBoxUI extends ComboBoxUI
      */
     public void itemStateChanged(ItemEvent e)
     {
+      // Lets assume every change invalidates the minimumsize.
+      isMinimumSizeDirty = true;
+
       if (e.getStateChange() == ItemEvent.SELECTED && comboBox.isEditable())
         comboBox.getEditor().setItem(e.getItem());
       comboBox.repaint();
@@ -1149,6 +1174,9 @@ public class BasicComboBoxUI extends ComboBoxUI
     public void contentsChanged(ListDataEvent e)
     {
       // if the item is selected or deselected
+
+      // Lets assume every change invalidates the minimumsize.
+      isMinimumSizeDirty = true;
     }
 
     /**
@@ -1158,6 +1186,9 @@ public class BasicComboBoxUI extends ComboBoxUI
      */
     public void intervalAdded(ListDataEvent e)
     {
+      // Lets assume every change invalidates the minimumsize.
+      isMinimumSizeDirty = true;
+
       ComboBoxModel model = comboBox.getModel();
       ListCellRenderer renderer = comboBox.getRenderer();
 
@@ -1179,6 +1210,9 @@ public class BasicComboBoxUI extends ComboBoxUI
      */
     public void intervalRemoved(ListDataEvent e)
     {
+      // Lets assume every change invalidates the minimumsize.
+      isMinimumSizeDirty = true;
+
       // recalculate display size of the JComboBox.
       displaySize = getDisplaySize();
       comboBox.repaint();
@@ -1206,6 +1240,9 @@ public class BasicComboBoxUI extends ComboBoxUI
      */
     public void propertyChange(PropertyChangeEvent e)
     {
+      // Lets assume every change invalidates the minimumsize.
+      isMinimumSizeDirty = true;
+
       if (e.getPropertyName().equals("enabled"))
         {
 	  arrowButton.setEnabled(comboBox.isEnabled());

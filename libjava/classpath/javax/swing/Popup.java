@@ -41,6 +41,7 @@ package javax.swing;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Point;
+import java.awt.Rectangle;
 
 
 /**
@@ -291,7 +292,9 @@ public class Popup
      */
     public void hide()
     {
+      Rectangle bounds = panel.getBounds();
       layeredPane.remove(panel);
+      layeredPane.repaint(bounds.x, bounds.y, bounds.width, bounds.height);
     }
   }
 }

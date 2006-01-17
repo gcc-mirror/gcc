@@ -113,6 +113,46 @@ public class PlainDocument extends AbstractDocument
     int elementIndex = rootElement.getElementIndex(offset);
     Element firstElement = rootElement.getElement(elementIndex);
     
+    // If we're inserting immediately after a newline we have to fix the 
+    // Element structure.
+    if (offset > 0)
+      {
+        try
+        {
+          String s = getText(offset - 1, 1);
+          if (s.equals("\n"))
+            {
+              int newEl2EndOffset = end;
+              boolean replaceNext = false;
+              if (rootElement.getElementCount() > elementIndex + 1)
+                {
+                  replaceNext = true;
+                  newEl2EndOffset = 
+                    rootElement.getElement(elementIndex + 1).getEndOffset();
+                }
+              Element newEl1 = 
+                createLeafElement(rootElement, firstElement.getAttributes(), 
+                                  firstElement.getStartOffset(), offset);
+              Element newEl2 = 
+                createLeafElement (rootElement, firstElement.getAttributes(), 
+                                   offset, newEl2EndOffset);
+              if (replaceNext)
+                rootElement.replace(elementIndex, 2, new Element[] { newEl1, newEl2 });
+              else
+                rootElement.replace(elementIndex, 1, new Element[] { newEl1, newEl2 });
+              firstElement = newEl2;
+              elementIndex ++;
+            }
+        }
+        catch (BadLocationException ble)
+        {          
+          // This shouldn't happen.
+          AssertionError ae = new AssertionError();
+          ae.initCause(ble);
+          throw ae;
+        }        
+      }
+
     // added and removed are Element arrays used to add an ElementEdit
     // to the DocumentEvent if there were entire lines added or removed.
     Element[] removed = new Element[1];

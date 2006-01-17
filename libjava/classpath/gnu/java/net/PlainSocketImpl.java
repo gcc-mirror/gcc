@@ -39,17 +39,13 @@ exception statement from your version. */
 
 package gnu.java.net;
 
-import gnu.classpath.Configuration;
-
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketImpl;
-import java.net.SocketOptions;
 
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -69,14 +65,6 @@ import java.net.SocketOptions;
  */
 public final class PlainSocketImpl extends SocketImpl
 {
-  // Static initializer to load native library.
-  static
-    {
-      if (Configuration.INIT_LOAD_LIBRARY)
-        {
-          System.loadLibrary("javanet");
-        }
-    }
 
   /**
    * The OS file handle representing the socket.
@@ -125,10 +113,11 @@ public final class PlainSocketImpl extends SocketImpl
   }
  
   /**
-   * Default do nothing constructor
+   * Default do nothing constructor.
    */
   public PlainSocketImpl()
   {
+    // Nothing to do here.
   }
   
   protected void finalize() throws Throwable
@@ -142,6 +131,7 @@ public final class PlainSocketImpl extends SocketImpl
 	    }
 	  catch (IOException ex)
 	    {
+          // Nothing we can do about it.
 	    }
       }
     super.finalize();
@@ -158,121 +148,111 @@ public final class PlainSocketImpl extends SocketImpl
    * Integer.  The option_id parameter is one of the defined constants in
    * this interface.
    *
-   * @param option_id The identifier of the option
-   * @param val The value to set the option to
+   * @param optionId The identifier of the option
+   * @param value The value to set the option to
    *
-   * @exception SocketException If an error occurs
+   * @throws SocketException if an error occurs
    */
-  public native void setOption(int optID, Object value) throws SocketException;
+  public void setOption(int optionId, Object value) throws SocketException
+  {
+    VMPlainSocketImpl.setOption(this, optionId, value);
+  }
 
   /**
    * Returns the current setting of the specified option.  The Object returned
    * will be an Integer for options that have integer values.  The option_id
    * is one of the defined constants in this interface.
    *
-   * @param option_id The option identifier
+   * @param optionId the option identifier
    *
-   * @return The current value of the option
+   * @return the current value of the option
    *
-   * @exception SocketException If an error occurs
+   * @throws SocketException if an error occurs
    */
-  public native Object getOption(int optID) throws SocketException;
+  public Object getOption(int optionId) throws SocketException
+  {
+    return VMPlainSocketImpl.getOption(this, optionId);
+  }
 
-  /**
-   * Flushes the input stream and closes it. If you read from the input stream
-   * after calling this method a <code>IOException</code> will be thrown.
-   * 
-   * @throws IOException if an error occurs
-   */
-  public native void shutdownInput() throws IOException;
+  public void shutdownInput() throws IOException
+  {
+    VMPlainSocketImpl.shutdownInput(this);
+  }
 
-  /**
-   * Flushes the output stream and closes it. If you write to the output stream
-   * after calling this method a <code>IOException</code> will be thrown.
-   * 
-   * @throws IOException if an error occurs
-   */
-  public native void shutdownOutput() throws IOException;
+  public void shutdownOutput() throws IOException
+  {
+    VMPlainSocketImpl.shutdownOutput(this);
+  }
 
   /**
    * Creates a new socket that is not bound to any local address/port and
-   * is not connected to any remote address/port.  This will be created as
-   * a stream socket if the stream parameter is true, or a datagram socket
-   * if the stream parameter is false.
+   * is not connected to any remote address/port.  The stream parameter will be
+   * ignored since PlainSocketImpl always is a stream socket. Datagram sockets
+   * are handled by PlainDatagramSocketImpl.
    *
-   * @param stream true for a stream socket, false for a datagram socket
+   * @param stream <code>true</code> for stream sockets, <code>false</code> for
+   *        datagram sockets
    */
-  protected synchronized native void create(boolean stream) throws IOException;
+  protected synchronized void create(boolean stream) throws IOException
+  {
+    VMPlainSocketImpl.create(this);
+  }
 
   /**
    * Connects to the remote hostname and port specified as arguments.
    *
-   * @param hostname The remote hostname to connect to
-   * @param port The remote port to connect to
+   * @param hostname the remote hostname to connect to
+   * @param port the remote port to connect to
    *
-   * @exception IOException If an error occurs
+   * @throws IOException If an error occurs
    */
-  protected synchronized void connect(String host, int port) throws IOException
+  protected synchronized void connect(String hostname, int port)
+    throws IOException
   {
-    connect(InetAddress.getByName(host), port);
+    connect(InetAddress.getByName(hostname), port);
   }
 
   /**
    * Connects to the remote address and port specified as arguments.
    *
-   * @param addr The remote address to connect to
-   * @param port The remote port to connect to
+   * @param addr the remote address to connect to
+   * @param port the remote port to connect to
    *
-   * @exception IOException If an error occurs
+   * @throws IOException If an error occurs
    */
-  protected native void connect(InetAddress addr, int port) throws IOException;
+  protected void connect(InetAddress addr, int port) throws IOException
+  {
+    VMPlainSocketImpl.connect(this, addr, port);
+  }
 
   /**
    * Connects to the remote socket address with a specified timeout.
    *
-   * @param timeout The timeout to use for this connect, 0 means infinite.
+   * @param address the remote address to connect to
+   * @param timeout the timeout to use for this connect, 0 means infinite.
    *
-   * @exception IOException If an error occurs
+   * @throws IOException If an error occurs
    */
-  protected synchronized void connect(SocketAddress address, int timeout) throws IOException
+  protected synchronized void connect(SocketAddress address, int timeout)
+    throws IOException
   {
-    InetSocketAddress sockAddr = (InetSocketAddress) address;
-    InetAddress addr = sockAddr.getAddress();
-
-    if (addr == null)
-      throw new IllegalArgumentException("address is unresolved: " + sockAddr);
-
-    int port = sockAddr.getPort();
-    
-    if (timeout < 0)
-      throw new IllegalArgumentException("negative timeout");
-
-    Object oldTimeoutObj = null;
-    
-    try
-      {
- 	oldTimeoutObj = this.getOption (SocketOptions.SO_TIMEOUT);
- 	this.setOption (SocketOptions.SO_TIMEOUT, new Integer (timeout));
- 	connect (addr, port);
-      }
-    finally
-      {
-	if (oldTimeoutObj != null)
-	  this.setOption (SocketOptions.SO_TIMEOUT, oldTimeoutObj);
-      }
+    VMPlainSocketImpl.connect(this, address, timeout);
   }
 
   /**
    * Binds to the specified port on the specified addr.  Note that this addr
    * must represent a local IP address.  **** How bind to INADDR_ANY? ****
    *
-   * @param addr The address to bind to
-   * @param port The port number to bind to
+   * @param addr the address to bind to
+   * @param port the port number to bind to
    *
-   * @exception IOException If an error occurs
+   * @throws IOException if an error occurs
    */
-  protected synchronized native void bind(InetAddress addr, int port)
-    throws IOException;
+  protected synchronized void bind(InetAddress addr, int port)
+    throws IOException
+  {
+    VMPlainSocketImpl.bind(this, addr, port);
+  }
 
   /**
    * Starts listening for connections on a socket. The queuelen parameter
@@ -282,10 +262,13 @@ public final class PlainSocketImpl extends SocketImpl
    *
    * @param queuelen The length of the pending connection queue
    * 
-   * @exception IOException If an error occurs
+   * @throws IOException If an error occurs
    */
-  protected synchronized native void listen(int queuelen)
-    throws IOException;
+  protected synchronized void listen(int queuelen)
+    throws IOException
+  {
+    VMPlainSocketImpl.listen(this, queuelen);
+  }
 
   /**
    * Accepts a new connection on this socket and returns in in the 
@@ -293,33 +276,44 @@ public final class PlainSocketImpl extends SocketImpl
    *
    * @param impl The SocketImpl object to accept this connection.
    */
-  protected synchronized native void accept(SocketImpl impl)
-    throws IOException;
+  protected synchronized void accept(SocketImpl impl)
+    throws IOException
+  {
+    VMPlainSocketImpl.accept(this, impl);
+  }
 
   /**
    * Returns the number of bytes that the caller can read from this socket
    * without blocking. 
    *
-   * @return The number of readable bytes before blocking
+   * @return the number of readable bytes before blocking
    *
-   * @exception IOException If an error occurs
+   * @throws IOException if an error occurs
    */
-  protected native int available() throws IOException;
+  protected int available() throws IOException
+  {
+    return VMPlainSocketImpl.available(this);
+  }
 
   /**
    * Closes the socket.  This will cause any InputStream or OutputStream
    * objects for this Socket to be closed as well.
+   *
    * <p>
    * Note that if the SO_LINGER option is set on this socket, then the
    * operation could block.
+   * </p>
    *
-   * @exception IOException If an error occurs
+   * @throws IOException if an error occurs
    */
-  protected native void close() throws IOException;
+  protected void close() throws IOException
+  {
+    VMPlainSocketImpl.close(this);
+  }
 
   public void sendUrgentData(int data)
   {
-    throw new InternalError ("PlainSocketImpl::sendUrgentData not implemented");
+    VMPlainSocketImpl.sendUrgendData(this, data);
   }
 
   /**
@@ -327,22 +321,53 @@ public final class PlainSocketImpl extends SocketImpl
    * the connection.  Reads up to len bytes of data into the buffer
    * buf starting at offset bytes into the buffer.
    *
-   * @return The actual number of bytes read or -1 if end of stream.
+   * @return the actual number of bytes read or -1 if end of stream.
    *
-   * @exception IOException If an error occurs
+   * @throws IOException if an error occurs
    */
-  protected native int read(byte[] buf, int offset, int len)
-    throws IOException;
+  protected int read(byte[] buf, int offset, int len)
+    throws IOException
+  {
+    return VMPlainSocketImpl.read(this, buf, offset, len);
+  }
+
+  /**
+   * Internal method used by SocketInputStream for reading data from
+   * the connection.  Reads and returns one byte of data.
+   *
+   * @return the read byte
+   *
+   * @throws IOException if an error occurs
+   */
+  protected int read()
+    throws IOException
+  {
+    return VMPlainSocketImpl.read(this);
+  }
 
   /**
    * Internal method used by SocketOuputStream for writing data to
    * the connection.  Writes up to len bytes of data from the buffer
    * buf starting at offset bytes into the buffer.
    *
-   * @exception IOException If an error occurs
+   * @throws IOException If an error occurs
    */
-  protected native void write(byte[] buf, int offset, int len)
-    throws IOException;
+  protected void write(byte[] buf, int offset, int len)
+    throws IOException
+  {
+    VMPlainSocketImpl.write(this, buf, offset, len);
+  }
+
+  /**
+   * Internal method used by SocketOuputStream for writing data to
+   * the connection.  Writes up one byte to the socket.
+   *
+   * @throws IOException If an error occurs
+   */
+  protected void write(int data) throws IOException
+  {
+    VMPlainSocketImpl.write(this, data);
+  }
 
   /**
    * Returns an InputStream object for reading from this socket.  This will
@@ -356,7 +381,7 @@ public final class PlainSocketImpl extends SocketImpl
   {
     if (in == null)
       in = new SocketInputStream();
-    
+
     return in;
   }
 
@@ -372,7 +397,7 @@ public final class PlainSocketImpl extends SocketImpl
   {
     if (out == null)
       out = new SocketOutputStream();
-    
+
     return out;
   }
 
@@ -380,7 +405,7 @@ public final class PlainSocketImpl extends SocketImpl
    * This class contains an implementation of <code>InputStream</code> for 
    * sockets.  It in an internal only class used by <code>PlainSocketImpl</code>.
    *
-   * @author Nic Ferrier (nferrier@tapsellferrier.co.uk)
+   * @author Nic Ferrier <nferrier@tapsellferrier.co.uk>
    */
   final class SocketInputStream
     extends InputStream
@@ -412,13 +437,7 @@ public final class PlainSocketImpl extends SocketImpl
      */
     public int read() throws IOException
     {
-      byte buf[] = new byte [1];
-      int bytes_read = read(buf, 0, 1);
- 
-      if (bytes_read == -1)
-        return -1;
-
-      return buf[0] & 0xFF;
+      return PlainSocketImpl.this.read();
     }
 
     /**
@@ -450,7 +469,7 @@ public final class PlainSocketImpl extends SocketImpl
    * <code>getOutputStream method</code>.  It expects only to  be used in that
    * context.
    *
-   * @author Nic Ferrier (nferrier@tapsellferrier.co.uk)
+   * @author Nic Ferrier  <nferrier@tapsellferrier.co.uk>
    */
   final class SocketOutputStream
     extends OutputStream
@@ -476,8 +495,7 @@ public final class PlainSocketImpl extends SocketImpl
      */
     public void write(int b) throws IOException
     {
-      byte buf[] = { (byte) b };
-      write(buf, 0, 1);
+      PlainSocketImpl.this.write(b);
     }
 
     /**

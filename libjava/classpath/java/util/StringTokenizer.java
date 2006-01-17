@@ -132,8 +132,7 @@ public class StringTokenizer implements Enumeration
   {
     len = str.length();
     this.str = str;
-    // The toString() hack causes the NullPointerException.
-    this.delim = delim.toString();
+    this.delim = delim;
     this.retDelims = returnDelims;
     this.pos = 0;
   }

@@ -1,4 +1,4 @@
-/* java.beans.Statement
+/* Statement.java
    Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,32 +42,26 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import java.util.HashMap;
-import java.util.WeakHashMap;
-
 /**
- * class Statement
- *
- * A Statement captures the execution of an object method.  It stores
+ * <p>A Statement captures the execution of an object method.  It stores
  * the object, the method to call, and the arguments to the method and
  * provides the ability to execute the method on the object, using the
- * provided arguments.
+ * provided arguments.</p>
  *
+ * @author Jerry Quinn (jlquinn@optonline.net)
+ * @author Robert Schuster (robertschuster@fsfe.org)
  * @since 1.4
  */
 public class Statement
 {
-  /** Nested map for the relation between a class, its instances and their
-    * names.
-    */
-  private static HashMap classMaps = new HashMap();
-
   private Object target;
   private String methodName;
   private Object[] arguments;
 
-  // One or the other of these will get a value after execute is
-  // called once, but not both.
+  /**
+   * One or the other of these will get a value after execute is
+   * called once, but not both.
+   */
   private transient Method method;
   private transient Constructor ctor;
 
@@ -87,76 +81,44 @@ public class Statement
     this.target = target;
     this.methodName = methodName;
     this.arguments = (arguments != null) ? arguments : new Object[0];
-    storeTargetName(target);
-  }
-
-  /** Creates a name for the target instance or does nothing if the object's
-   * name is already known. This makes sure that there *is* a name for every
-   * target instance.
-   */
-  private static synchronized void storeTargetName(Object obj)
-  {
-    Class klass = obj.getClass();
-    WeakHashMap names = (WeakHashMap) classMaps.get(klass);
-
-    if ( names == null )
-    {
-      names = new WeakHashMap();
-
-      names.put(obj,
-        ( klass == String.class ? ("\"" + obj + "\"") :
-        (klass.getName() + names.size()) ));
-
-      classMaps.put(klass, names);
-
-      return;
-    }
-
-    String targetName = (String) names.get(obj);
-    if ( targetName == null )
-    {
-      names.put(obj,
-        ( klass == String.class ? ("\"" + obj + "\"") :
-        (klass.getName() + names.size()) ));
-    }
-
-    // Nothing to do. The given object was already stored.
   }
 
   /**
    * Execute the statement.
    *
-   * Finds the specified method in the target object and calls it with
-   * the arguments given in the constructor.
+   * <p>Finds the specified method in the target object and calls it with
+   * the arguments given in the constructor.</p>
    *
-   * The most specific method according to the JLS(15.11) is used when
-   * there are multiple methods with the same name.
+   * <p>The most specific method according to the JLS(15.11) is used when
+   * there are multiple methods with the same name.</p>
    *
-   * Execute performs some special handling for methods and
+   * <p>Execute performs some special handling for methods and
    * parameters:
+   * <ul>
+   * <li>Static methods can be executed by providing the class as a
+   * target.</li>
    *
-   * Static methods can be executed by providing the class as a
-   * target.
-   *
-   * The method name new is reserved to call the constructor 
+   * <li>The method name new is reserved to call the constructor 
    * new() will construct an object and return it.  Not useful unless
-   * an expression :-)
+   * an expression :-)</li>
    *
-   * If the target is an array, get and set as defined in
+   * <li>If the target is an array, get and set as defined in
    * java.util.List are recognized as valid methods and mapped to the
-   * methods of the same name in java.lang.reflect.Array.
+   * methods of the same name in java.lang.reflect.Array.</li>
    *
-   * The native datatype wrappers Boolean, Byte, Character, Double,
+   * <li>The native datatype wrappers Boolean, Byte, Character, Double,
    * Float, Integer, Long, and Short will map to methods that have
    * native datatypes as parameters, in the same way as Method.invoke.
    * However, these wrappers also select methods that actually take
-   * the wrapper type as an argument.
+   * the wrapper type as an argument.</li>
+   * </ul>
+   * </p>
    *
-   * The Sun spec doesn't deal with overloading between int and
+   * <p>The Sun spec doesn't deal with overloading between int and
    * Integer carefully.  If there are two methods, one that takes an
    * Integer and the other taking an int, the method chosen is not
    * specified, and can depend on the order in which the methods are
-   * declared in the source file.
+   * declared in the source file.</p>
    *
    * @throws Exception if an exception occurs while locating or
    * 		       invoking the method.
@@ -178,8 +140,10 @@ public class Statement
       Integer.TYPE, Long.TYPE, Short.TYPE
     };
 
-  // Given a wrapper class, return the native class for it.  For
-  // example, if c is Integer, Integer.TYPE is returned.
+  /** Given a wrapper class, return the native class for it.
+   * <p>For example, if <code>c</code> is <code>Integer</code>, 
+   * <code>Integer.TYPE</code> is returned.</p>
+   */
   private Class unwrap(Class c)
   {
     for (int i = 0; i < wrappers.length; i++)
@@ -188,13 +152,22 @@ public class Statement
     return null;
   }
 
-  // Return true if all args can be assigned to params, false
-  // otherwise.  Arrays are guaranteed to be the same length.
+  /** Returns <code>true</code> if all args can be assigned to
+   * <code>params</code>, <code>false</code> otherwise.
+   *
+   * <p>Arrays are guaranteed to be the same length.</p>
+   */
   private boolean compatible(Class[] params, Class[] args)
   {
     for (int i = 0; i < params.length; i++)
       {
-	// Treat Integer like int if appropriate
+    // Argument types are derived from argument values. If one of them was
+    // null then we cannot deduce its type. However null can be assigned to
+    // any type.
+    if (args[i] == null)
+      continue;
+    
+    // Treat Integer like int if appropriate
 	Class nativeType = unwrap(args[i]);
 	if (nativeType != null && params[i].isPrimitive()
 	    && params[i].isAssignableFrom(nativeType))
@@ -208,14 +181,15 @@ public class Statement
   }
 
   /**
-   * Return true if the method arguments in first are more specific
-   * than the method arguments in second, i.e. all args in first can
-   * be assigned to those in second.
+   * Returns <code>true</code> if the method arguments in first are
+   * more specific than the method arguments in second, i.e. all
+   * arguments in <code>first</code> can be assigned to those in
+   * <code>second</code>.
    *
-   * A method is more specific if all parameters can also be fed to
+   * <p>A method is more specific if all parameters can also be fed to
    * the less specific method, because, e.g. the less specific method
    * accepts a base class of the equivalent argument for the more
-   * specific one.
+   * specific one.</p>
    *
    * @param first a <code>Class[]</code> value
    * @param second a <code>Class[]</code> value
@@ -238,8 +212,11 @@ public class Statement
 	? (Class) target : target.getClass();
     Object args[] = (arguments == null) ? new Object[0] : arguments;
     Class argTypes[] = new Class[args.length];
+    
+    // Retrieve type or use null if the argument is null. The null argument
+    // type is later used in compatible().
     for (int i = 0; i < args.length; i++)
-      argTypes[i] = args[i].getClass();
+      argTypes[i] = (args[i] != null) ? args[i].getClass() : null;
 
     if (target.getClass().isArray())
       {
@@ -333,7 +310,29 @@ public class Statement
       }
     if (method == null)
       throw new NoSuchMethodException("No matching method for statement " + toString());
+
+    // If we were calling Class.forName(String) we intercept and call the
+    // forName-variant that allows a ClassLoader argument. We take the
+    // system classloader (aka application classloader) here to make sure
+    // that application defined classes can be resolved. If we would not
+    // do that the Class.forName implementation would use the class loader
+    // of java.beans.Statement which is <null> and cannot resolve application
+    // defined classes.
+    if (method.equals(
+           Class.class.getMethod("forName", new Class[] { String.class })))
+      return Class.forName(
+               (String) args[0], true, ClassLoader.getSystemClassLoader());
+
+    try {
     return method.invoke(target, args);
+    } catch(IllegalArgumentException iae){
+      System.err.println("method: " + method);
+      
+      for(int i=0;i<args.length;i++){
+        System.err.println("args[" + i + "]: " + args[i]);
+      }
+      throw iae;
+    }
   }
 
   
@@ -352,9 +351,13 @@ public class Statement
   {
     StringBuffer result = new StringBuffer(); 
 
-    Class klass = target.getClass();
+    String targetName = target.getClass().getName();
+    if ( targetName.startsWith("java"))
+      {
+        targetName = targetName.substring(targetName.lastIndexOf('.') + 1);
+      }
 
-    result.append( ((WeakHashMap) classMaps.get(klass)).get(target));
+    result.append(targetName);
     result.append(".");
     result.append(methodName);
     result.append("(");
@@ -363,11 +366,15 @@ public class Statement
     for (int i = 0; i < arguments.length; i++)
       {
         result.append(sep);
-        result.append(arguments[i].getClass().getName());
+        result.append(
+          ( arguments[i] == null ) ? "null" : 
+            ( arguments[i] instanceof String ) ? "\"" + arguments[i] + "\"" :
+            arguments[i].getClass().getName());
         sep = ", ";
       }
     result.append(")");
 
     return result.toString();
   }
+  
 }

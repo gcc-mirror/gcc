@@ -1,5 +1,5 @@
 /* Size2DSyntax.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,21 +40,62 @@ package javax.print.attribute;
 import java.io.Serializable;
 
 /**
- * @author Michael Koch
+ * <code>Size2DSyntax</code> is the abstract base class of all attribute 
+ * classes which provide a two dimensional size as value (e.g. the size of
+ * a media like Letter or A4).
+ * <p>
+ * A <code>Size2DSyntax</code> instance consists of two integer values
+ * describing the size in the x and y dimension. The units of 
+ * the given values is determined by two defined constants:
+ * <ul>
+ * <li>INCH - defines an inch</li>
+ * <li>MM - defines a millimeter</li>
+ * </ul>
+ * </p>
+ * <p>
+ * A size 2D attribute is constructed by two values for the size of the x and
+ * y dimension and the actual units of the given values as defined by the 
+ * constants.
+ * </p>
+ * <p>
+ * There are different methods provided to return the size values for the
+ * dimensions in either of the two predefined units or with a given client
+ * supplied units conversion factor.
+ * </p>
+ * <p>
+ * <b>Internal storage:</b><br>
+ * The size of the x,y dimensions are stored internally in micrometers. The 
+ * values of the provided constants for inch (value 25400) and millimeters
+ * (value 1000) are used as conversion factors to the internal storage units.
+ * To get the internal micrometers values a multiplication of a given
+ * size value with its units constant value is done. Retrieving the size value
+ * for specific units is done by dividing the internal stored value by the 
+ * units constant value. Clients are therefore able to provide their own 
+ * size units by supplying other conversion factors.
+ * Subclasses of <code>Size2DSyntax</code> have access to the internal
+ * size values through the protected methods 
+ * {@link #getXMicrometers()} and {@link #getYMicrometers()}.
+ * </p>
+ *
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class Size2DSyntax implements Cloneable, Serializable
 {
   /**
-   * Constant for units of dots per mircometer to describe an inch.
+   * Constant for the units of inches.
+   * The actual value is the conversion factor to micrometers.
    */
   public static final int INCH = 25400;
 
   /**
-   * Constant for units of dots per mircometer to describe a centimeter.
+   * Constant for the units of millimeters.
+   * The actual value is the conversion factor to micrometers.
    */
   public static final int MM = 1000;
 
+  /** x size in micrometers. */
   private int x;
+  /** y size in micrometers. */
   private int y;
 
   /**
@@ -64,7 +105,7 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
    * @param y the size in y direction
    * @param units the units to use for the sizes
    *
-   * @exception IllegalArgumentException if preconditions fail
+   * @exception IllegalArgumentException if x or y &lt; 0 or units &lt; 1
    */
   protected Size2DSyntax(float x, float y, int units)
   {
@@ -85,7 +126,7 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
    * @param y the size in y direction
    * @param units the units to use for the sizes
    *
-   * @exception IllegalArgumentException if preconditions fail
+   * @exception IllegalArgumentException if x or y &lt; 0 or units &lt; 1
    */
   protected Size2DSyntax(int x, int y, int units)
   {
@@ -100,11 +141,11 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @returns true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -118,15 +159,15 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
   }
 
   /**
-   * Return the size described in this object as a two field array.
+   * Returns the size described in this object as a two field array.
    * Index 0 contains the size in x direction, index 1 the size in
    * y direction.
    *
    * @param units the units to use
    *
-   * @return the array that describes the size
+   * @return The array with the size dimensions.
    *
-   * @exception IllegalArgumentException if units < 1
+   * @exception IllegalArgumentException if units &lt; 1
    */
   public float[] getSize(int units)
   {
@@ -137,13 +178,13 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
   }
 
   /**
-   * Return the size in x direction.
+   * Returns the size in x direction.
    *
    * @param units the units to use
    *
-   * @return the size value
+   * @return The size in x direction.
    *
-   * @exception IllegalArgumentException if units < 1
+   * @exception IllegalArgumentException if units &lt; 1
    */
   public float getX(int units)
   {
@@ -155,8 +196,9 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
 
   /**
    * Returns the size in x direction in mircometers.
+   * To be used by sublcasses that need access to the internal storage value.
    *
-   * @return the size value
+   * @return The size in x direction in micrometers.
    */
   protected int getXMicrometers()
   {
@@ -168,9 +210,9 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
    *
    * @param units the units to use
    *
-   * @return the size value
+   * @return The size in y direction.
    *
-   * @exception IllegalArgumentException if units < 1
+   * @exception IllegalArgumentException if units &lt; 1
    */
   public float getY(int units)
   {
@@ -182,8 +224,9 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
   
   /**
    * Returns the size in y direction in mircometers.
+   * To be used by sublcasses that need access to the internal storage value.
    *
-   * @return the size value
+   * @return The size in y direction in micrometers.
    */
   protected int getYMicrometers()
   {
@@ -193,7 +236,7 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
   /**
    * Returns the hashcode for this object.
    *
-   * @return the hashcode
+   * @return The hashcode.
    */
   public int hashCode()
   {
@@ -202,24 +245,39 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
 
   /**
    * Returns the string representation for this object.
-   *
-   * @return the string representation
+   * <p>
+   * The returned string is in the form "XxY um" with X standing
+   * for size in x and Y for the size in y direction. The used 
+   * micrometers units is indicated by the appended "um" notation.
+   * </p>
+   * 
+   * @return The string representation in micrometers.
    */
   public String toString()
   {
-    return toString(1, "um");
+    return getXMicrometers() + "x" + getYMicrometers() + " um";
   }
 
   /**
    * Returns the string representation for this object.
-   *
+   * <p>
+   * The returned string is in the form "XxY U" with X standing
+   * for size in x and Y for the size in y direction. U denotes 
+   * the units name if one is supplied. The values are given as
+   * floating point values.
+   * </p>
+   * 
    * @param units the units to use
-   * @param unitsName the name of the units
+   * @param unitsName the name of the units. If <code>null</code>
+   * it is ommitted from the string representation.
    *
-   * @return the string representation
+   * @return The string representation.
    */
   public String toString(int units, String unitsName)
   {
-    return "" + getX(units) + "x" + getY(units) + " " + unitsName;
+    if (unitsName == null)
+      return getX(units) + "x" + getY(units);
+    
+    return getX(units) + "x" + getY(units) + " " + unitsName;
   }
 }

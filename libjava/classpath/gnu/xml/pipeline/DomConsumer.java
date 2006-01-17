@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package gnu.xml.pipeline;
 
-import gnu.xml.aelfred2.ContentHandler2;
 import gnu.xml.util.DomParser;
 
 import org.xml.sax.Attributes;
@@ -330,7 +329,7 @@ public class DomConsumer implements EventConsumer
      * accepted illegal input data). </p>
      */
     public static class Handler
-	implements ContentHandler2, LexicalHandler,
+	implements ContentHandler, LexicalHandler,
 	    DTDHandler, DeclHandler
     {
 	protected DomConsumer		consumer;
@@ -429,20 +428,6 @@ public class DomConsumer implements EventConsumer
 		}
 	    top = document;
 	}
-
-        // ContentHandler2
-        public void xmlDecl(String version,
-                            String encoding,
-                            boolean standalone,
-                            String inputEncoding)
-          throws SAXException
-        {
-          if (document != null)
-            {
-              document.setXmlVersion(version);
-              document.setXmlStandalone(standalone);
-            }
-        }
 
 	// SAX1
 	public void endDocument ()

@@ -1,5 +1,5 @@
 /* NodeTypeTest.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ package gnu.xml.xpath;
 
 import javax.xml.namespace.QName;
 import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 /**
  * Tests whether a node is of a given type.
@@ -83,17 +84,20 @@ public final class NodeTypeTest
       case Node.TEXT_NODE:
       case Node.CDATA_SECTION_NODE:
       case Node.COMMENT_NODE:
+        if (type > 0)
+          {
+            if (nodeType != type)
+              return false;
+          }
+        return true;
       case Node.PROCESSING_INSTRUCTION_NODE:
         if (type > 0)
           {
             if (nodeType != type)
-              {
-                return false;
-              }
-            if (data != null && !data.equals(node.getNodeValue()))
-              {
-                return false;
-              }
+              return false;
+            if (data != null &&
+                !data.equals(((ProcessingInstruction) node).getTarget()))
+              return false;
           }
         return true;
       default:

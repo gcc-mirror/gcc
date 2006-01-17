@@ -291,6 +291,10 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getTextMetrics
   const char *cstr = NULL;
   jdouble *native_metrics = NULL;  
   PangoRectangle log;
+  PangoRectangle log2;
+  int line_count = 0;
+  int i = 0;
+  int width = 0;
 
   gdk_threads_enter();
 
@@ -299,9 +303,17 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getTextMetrics
 
   cstr = (*env)->GetStringUTFChars (env, str, NULL);
   g_assert(cstr != NULL);
-
+  
   pango_layout_set_text (pfont->layout, cstr, -1);
   pango_layout_get_extents (pfont->layout, NULL, &log);
+  
+  line_count = pango_layout_get_line_count (pfont->layout);
+  for (i = 0; i < line_count; i++)
+   {
+     pango_layout_line_get_extents (pango_layout_get_line (pfont->layout, i), 
+       NULL, &log2);
+     width += log2.width;
+   }
 
   (*env)->ReleaseStringUTFChars (env, str, cstr);  
   pango_layout_set_text (pfont->layout, "", -1);
@@ -315,11 +327,11 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getTextMetrics
   native_metrics[TEXT_METRICS_Y_BEARING] 
     = PANGO_PIXELS( ((double)log.y) );
 
-  native_metrics[TEXT_METRICS_WIDTH] 
-    = PANGO_PIXELS( ((double)log.width) );
-
   native_metrics[TEXT_METRICS_HEIGHT] 
     = PANGO_PIXELS( ((double)log.height) );
+
+  native_metrics[TEXT_METRICS_WIDTH]
+    = PANGO_PIXELS( ((double)width) );
 
   native_metrics[TEXT_METRICS_X_ADVANCE] 
     = PANGO_PIXELS( ((double) (log.x + log.width)) );

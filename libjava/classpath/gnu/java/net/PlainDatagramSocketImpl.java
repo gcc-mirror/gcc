@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.java.net;
 
-import gnu.classpath.Configuration;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocketImpl;
@@ -64,20 +62,7 @@ import java.net.SocketException;
  */
 public final class PlainDatagramSocketImpl extends DatagramSocketImpl
 {
-  // Static initializer to load native library
-  static
-  {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-        System.loadLibrary("javanet");
-      }
-  }
-  
-  /**
-   * Option id for the IP_TTL (time to live) value.
-   */
-  private static final int IP_TTL = 0x1E61; // 7777
-
+   
   /**
    * This is the actual underlying file descriptor
    */
@@ -98,6 +83,7 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    */
   public PlainDatagramSocketImpl()
   {
+    // Nothing to do here.
   }
 
   protected void finalize() throws Throwable
@@ -123,15 +109,48 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    *
    * @exception SocketException If an error occurs
    */
-  protected synchronized native void bind(int port, InetAddress addr)
-    throws SocketException;
+  protected  synchronized void bind(int port, InetAddress addr)
+    throws SocketException
+    {
+      VMPlainDatagramSocketImpl.bind(this, port, addr);
+    }
 
   /**
    * Creates a new datagram socket
    *
    * @exception SocketException If an error occurs
    */
-  protected synchronized native void create() throws SocketException;
+  protected  synchronized void create() throws SocketException
+  {
+    VMPlainDatagramSocketImpl.create(this);
+  }
+
+  /**
+   * Connects to the remote address and port specified as arguments.
+   *
+   * @param addr The remote address to connect to
+   * @param port The remote port to connect to
+   *
+   * @exception SocketException If an error occurs
+   */
+  protected void connect(InetAddress addr, int port) throws SocketException
+  {
+    VMPlainDatagramSocketImpl.connect(this, addr, port);
+  }
+
+  /**
+   * Disconnects the socket.
+   *
+   * @since 1.4
+   */
+  protected void disconnect()
+  {
+    synchronized (this)
+      {
+	if (native_fd != -1)
+	  close();
+      }
+  }
 
   /**
    * Sets the Time to Live value for the socket
@@ -142,7 +161,7 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    */
   protected synchronized void setTimeToLive(int ttl) throws IOException
   {
-    setOption(IP_TTL, new Integer(ttl));
+    setOption(VMPlainDatagramSocketImpl.IP_TTL, new Integer(ttl));
   }
 
   /**
@@ -154,7 +173,7 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    */
   protected synchronized int getTimeToLive() throws IOException
   {
-    Object obj = getOption(IP_TTL);
+    Object obj = getOption(VMPlainDatagramSocketImpl.IP_TTL);
 
     if (! (obj instanceof Integer))
       throw new IOException("Internal Error");
@@ -162,20 +181,6 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
     return ((Integer) obj).intValue();
   }
 
-  /**
-   * Sends a packet of data to a remote host
-   *
-   * @param addr The address to send to
-   * @param port The port to send to 
-   * @param buf The buffer to send
-   * @param offset The offset of the data in the buffer to send
-   * @param len The length of the data to send
-   *
-   * @exception IOException If an error occurs
-   */
-  private native void sendto (InetAddress addr, int port,
-                              byte[] buf, int offset, int len)
-    throws IOException;
 
   /**
    * Sends a packet of data to a remote host
@@ -186,12 +191,13 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    */
   protected void send(DatagramPacket packet) throws IOException
   {
-    synchronized(SEND_LOCK)
+    if (native_fd != -1)
       {
-      sendto(packet.getAddress(), packet.getPort(), packet.getData(), 
-             packet.getOffset(), packet.getLength());
-      }
-    
+        synchronized(SEND_LOCK)
+          {
+            VMPlainDatagramSocketImpl.send(this, packet);
+          }
+      }    
   }
 
   /**
@@ -206,18 +212,10 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
   {
       synchronized(RECEIVE_LOCK)
         {
-        receive0(packet);		
+          VMPlainDatagramSocketImpl.receive(this, packet);	
         }
   }
 
-  /**
-   * Native call to receive a UDP packet from the network
-   * 
-   * @param packet The packet to fill in with the data received
-   *
-   * @exception IOException IOException If an error occurs
-   */
-  private native void receive0(DatagramPacket packet) throws IOException;
 
   /**
    * Sets the value of an option on the socket
@@ -227,8 +225,11 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    *
    * @exception SocketException If an error occurs
    */
-  public synchronized native void setOption(int option_id, Object val)
-    throws SocketException;
+  public synchronized void setOption(int option_id, Object val)
+    throws SocketException
+    {
+      VMPlainDatagramSocketImpl.setOption(this, option_id, val);
+    }
 
   /**
    * Retrieves the value of an option on the socket
@@ -239,13 +240,19 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    *
    * @exception SocketException If an error occurs
    */
-  public synchronized native Object getOption(int option_id)
-    throws SocketException;
+  public synchronized Object getOption(int option_id)
+    throws SocketException
+    {
+      return VMPlainDatagramSocketImpl.getOption(this, option_id);
+    }
 
   /**
    * Closes the socket
    */
-  protected synchronized native void close();
+  protected synchronized void close()
+  {
+    VMPlainDatagramSocketImpl.close(this);
+  }
 
   /**
    * Gets the Time to Live value for the socket
@@ -282,7 +289,10 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    *
    * @exception IOException If an error occurs
    */
-  protected synchronized native void join(InetAddress addr) throws IOException;
+  protected synchronized void join(InetAddress addr) throws IOException
+  {
+    VMPlainDatagramSocketImpl.join(this,addr);
+  }
 
   /**
    * Leaves a multicast group
@@ -291,7 +301,10 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    *
    * @exception IOException If an error occurs
    */
-  protected synchronized native void leave(InetAddress addr) throws IOException;
+  protected synchronized void leave(InetAddress addr) throws IOException
+  {
+    VMPlainDatagramSocketImpl.leave(this, addr);
+  }
 
   /**
    * What does this method really do?
@@ -308,14 +321,14 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
   }
 
   public void joinGroup(SocketAddress address, NetworkInterface netIf)
+    throws IOException
   {
-    throw new InternalError
-      ("PlainDatagramSocketImpl::joinGroup is not implemented");
+    VMPlainDatagramSocketImpl.joinGroup(this, address, netIf);
   }
 
   public void leaveGroup(SocketAddress address, NetworkInterface netIf)
+    throws IOException
   {
-    throw new InternalError
-      ("PlainDatagramSocketImpl::leaveGroup is not implemented");
+    VMPlainDatagramSocketImpl.leaveGroup(this, address, netIf);
   }
 }

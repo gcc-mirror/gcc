@@ -1395,4 +1395,30 @@ public class SwingUtilities
     else
       return null;
   }
+
+  /**
+   * Processes key bindings for the component that is associated with the 
+   * key event. Note that this method does not make sense for
+   * JComponent-derived components, except when
+   * {@link JComponent#processKeyEvent(KeyEvent)} is overridden and super is
+   * not called.
+   *
+   * This method searches through the component hierarchy of the component's
+   * top-level container to find a <code>JComponent</code> that has a binding
+   * for the key event in the WHEN_IN_FOCUSED_WINDOW scope.
+   *
+   * @param ev the key event
+   *
+   * @return <code>true</code> if a binding has been found and processed,
+   *         <code>false</code> otherwise
+   *
+   * @since 1.4
+   */
+  public static boolean processKeyBindings(KeyEvent ev)
+  {
+    Component c = ev.getComponent();
+    KeyStroke s = KeyStroke.getKeyStrokeForEvent(ev);
+    KeyboardManager km = KeyboardManager.getManager();
+    return km.processKeyStroke(c, s, ev);
+  }
 }

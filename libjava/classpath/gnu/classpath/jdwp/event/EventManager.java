@@ -41,6 +41,7 @@ package gnu.classpath.jdwp.event;
 
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.InvalidEventTypeException;
+import gnu.classpath.jdwp.exception.JdwpException;
 
 import java.util.Collection;
 import java.util.Hashtable;
@@ -133,7 +134,7 @@ public class EventManager
 					EventRequest.EVENT_VM_DEATH,
 					EventRequest.SUSPEND_NONE));
       }
-    catch (InvalidEventTypeException e)
+    catch (JdwpException e)
       {
 	// This can't happen
       }
@@ -187,9 +188,10 @@ public class EventManager
    *
    * @param request  the request to monitor
    * @throws InvalidEventTypeException for invalid event kind
+   * @throws JdwpException for other errors involving request
    */
   public void requestEvent (EventRequest request)
-    throws InvalidEventTypeException
+    throws JdwpException
   {
     // Add request to request list
     Hashtable requests;
@@ -212,8 +214,10 @@ public class EventManager
    * @param  kind  the event kind
    * @param  id    the ID of the request to delete
    * @throws IllegalArgumentException for invalid event kind
+   * @throws JdwpException for other errors deleting request
    */
   public void deleteRequest (byte kind, int id)
+    throws JdwpException
   {
     Hashtable requests;
     requests = (Hashtable) _requests.get (new Byte (kind));
@@ -237,8 +241,10 @@ public class EventManager
    *
    * @param  kind  the event kind
    * @throws IllegalArgumentException for invalid event kind
+   * @throws JdwpException for error clearing events
    */
   public void clearRequests (byte kind)
+    throws JdwpException
   {
     Hashtable requests = (Hashtable) _requests.get (new Byte (kind));
     if (requests == null)

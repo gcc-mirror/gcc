@@ -397,6 +397,58 @@ public class PropertyChangeSupport implements Serializable
   }
 
   /**
+   * Fire an indexed property change event.  This will only fire
+   * an event if the old and new values are not equal and not null. 
+   * @param name the name of the property which changed
+   * @param index the index of the property which changed
+   * @param oldValue the old value of the property
+   * @param newValue the new value of the property
+   * @since 1.5
+   */
+  public void fireIndexedPropertyChange(String name, int index,
+                                        Object oldValue, Object newValue)
+  {
+    // Argument checking is done in firePropertyChange(PropertyChangeEvent) .
+    firePropertyChange(new IndexedPropertyChangeEvent(source, name,
+                                                      oldValue, newValue,
+                                                      index));
+  }
+
+  /**
+   * Fire an indexed property change event.  This will only fire
+   * an event if the old and new values are not equal.
+   * @param name the name of the property which changed
+   * @param index the index of the property which changed
+   * @param oldValue the old value of the property
+   * @param newValue the new value of the property
+   * @since 1.5
+   */
+  public void fireIndexedPropertyChange(String name, int index,
+                                        int oldValue, int newValue)
+  {
+    if (oldValue != newValue)
+      fireIndexedPropertyChange(name, index, Integer.valueOf(oldValue),
+                                Integer.valueOf(newValue));
+  }
+
+  /**
+   * Fire an indexed property change event.  This will only fire
+   * an event if the old and new values are not equal.
+   * @param name the name of the property which changed
+   * @param index the index of the property which changed
+   * @param oldValue the old value of the property
+   * @param newValue the new value of the property
+   * @since 1.5
+   */
+  public void fireIndexedPropertyChange(String name, int index,
+                                        boolean oldValue, boolean newValue)
+  {
+    if (oldValue != newValue)
+      fireIndexedPropertyChange(name, index, Boolean.valueOf(oldValue),
+                                Boolean.valueOf(newValue));
+  }
+
+  /**
    * Tell whether the specified property is being listened on or not. This
    * will only return <code>true</code> if there are listeners on all
    * properties or if there is a listener specifically on this property.

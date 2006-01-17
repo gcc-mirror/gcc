@@ -99,7 +99,7 @@ static GdkPoint *translate_points (JNIEnv *env, jintArray xpoints,
 static void realize_cb (GtkWidget *widget, jobject jgraphics);
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GdkGraphics_copyState
+Java_gnu_java_awt_peer_gtk_GdkGraphics_nativeCopyState
   (JNIEnv *env, jobject obj, jobject old)
 {
   struct graphics *g = NULL;
@@ -236,7 +236,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_connectSignals
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GdkGraphics_dispose
+Java_gnu_java_awt_peer_gtk_GdkGraphics_nativeDispose
   (JNIEnv *env, jobject obj)
 {
   struct graphics *g = NULL;
@@ -291,6 +291,11 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_drawString
   struct peerfont *pfont = NULL;
   struct graphics *g = NULL;
   const char *cstr = NULL;
+  const char *sTmp = NULL;
+  char *tmp = NULL;
+  char *p = NULL;
+  int count = 0;
+  int charSize = 0;
   int baseline_y = 0;
   PangoLayoutIter *iter = NULL;
 
@@ -303,9 +308,29 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_drawString
   g_assert (pfont != NULL);
 
   cstr = (*env)->GetStringUTFChars (env, str, NULL);
+  g_assert (cstr != NULL);  
+  
+  charSize = sizeof(char);
+  p = malloc((strlen(cstr) + 1) * charSize);
+  g_assert (p != NULL);  
+
+  tmp = p;
+  sTmp = cstr;
+  for (; *sTmp != '\0'; sTmp++)
+    if (((unsigned char) *sTmp) >= ' ')
+      {
+        *p = *sTmp;
+        count++;
+        p++;
+      }
+  *p = '\0';
+
+  p = realloc(tmp, (count + 1) * charSize);
+  g_assert (p != NULL);
+  pango_layout_set_text (pfont->layout, p, -1);
+  free(p);
 
   pango_layout_set_font_description (pfont->layout, pfont->desc);
-  pango_layout_set_text (pfont->layout, cstr, -1);
   iter = pango_layout_get_iter (pfont->layout);
 
   baseline_y = pango_layout_iter_get_baseline (iter);
@@ -317,7 +342,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphics_drawString
 
   pango_layout_iter_free (iter);
   pango_layout_set_text (pfont->layout, "", -1);
-
+  
   gdk_flush ();
 
   (*env)->ReleaseStringUTFChars (env, str, cstr);

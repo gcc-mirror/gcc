@@ -1,5 +1,5 @@
 /* URL.java -- Uniform Resource Locator Class
-   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.net.URLParseError;
 
 import java.io.IOException;
@@ -198,7 +199,7 @@ public final class URL implements Serializable
 
   static
     {
-      String s = System.getProperty("gnu.java.net.nocache_protocol_handlers");
+      String s = SystemProperties.getProperty("gnu.java.net.nocache_protocol_handlers");
 
       if (s == null)
 	cache_handlers = true;
@@ -342,7 +343,7 @@ public final class URL implements Serializable
    */
   public URL(URL context, String spec) throws MalformedURLException
   {
-    this(context, spec, (URLStreamHandler) null);
+    this(context, spec, (context == null) ? (URLStreamHandler)null : context.ph);
   }
 
   /**
@@ -867,7 +868,7 @@ public final class URL implements Serializable
 	// Except in very unusual environments the JDK specified one shouldn't
 	// ever be needed (or available).
 	String ph_search_path =
-	  System.getProperty("java.protocol.handler.pkgs");
+	  SystemProperties.getProperty("java.protocol.handler.pkgs");
 
 	// Tack our default package on at the ends.
 	if (ph_search_path != null)

@@ -82,7 +82,17 @@ public class LoginContext
                        final CallbackHandler cbHandler)
     throws LoginException
   {
-    Configuration config = Configuration.getConfig();
+    this (name, subject, cbHandler, null);
+  }
+
+  /** @since 1.5 */
+  public LoginContext (final String name, final Subject subject,
+                       final CallbackHandler cbHandler,
+                       Configuration config)
+    throws LoginException
+  {
+    if (config == null)
+      config = Configuration.getConfig();
     AppConfigurationEntry[] entries = config.getAppConfigurationEntry (name);
     if (entries == null)
       entries = config.getAppConfigurationEntry (OTHER);

@@ -362,9 +362,8 @@ public class StyleContext
 	
     public boolean isEqual(AttributeSet attr)
     {
-      return attr != null 
-        && attr.containsAttributes(this)
-        && this.containsAttributes(attr);
+      return getAttributeCount() == attr.getAttributeCount()
+             && this.containsAttributes(attr);
     }
 	
     public String toString()

@@ -47,6 +47,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.rmi.ConnectException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.ObjID;
@@ -195,7 +196,7 @@ public RemoteCall newCall(RemoteObject obj, Operation[] op, int opnum, long hash
 		conn = manager.getConnection();
 	}
 	catch (IOException e1) {
-		throw new RemoteException("connection failed to host: " + manager.serverName, e1);
+		throw new ConnectException("connection failed to host: " + manager.serverName, e1);
 	}
 
     //obj: useless?

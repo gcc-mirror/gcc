@@ -1,5 +1,5 @@
 /* Compression.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,16 @@ import javax.print.attribute.EnumSyntax;
 
 
 /**
+ * The <code>Compression</code> printing attribute specifies if and how the
+ * supplied print data is compressed.
+ * <p>
+ * If this attribute is ommitted from the attributes set of the print
+ * data it is assumed that no compression is done.
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> Compression is an IPP 1.1 attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public class Compression extends EnumSyntax
@@ -49,15 +59,27 @@ public class Compression extends EnumSyntax
 {
   private static final long serialVersionUID = -5716748913324997674L;
 
+  /** The print data is not compressed. */
   public static final Compression NONE = new Compression(0);
+  
+  /** The print data is ZIP compressed. */
   public static final Compression DEFLATE = new Compression(1);
+  
+  /** The print data is GNU Zip compressed. */
   public static final Compression GZIP = new Compression(2);
+  
+  /** The print data is UNIX compressed. */
   public static final Compression COMPRESS = new Compression(3);
+  
+  private static final String[] stringTable = { "none", "deflate", 
+                                                "gzip", "compress" };
+  private static final Compression[] enumValueTable = { NONE, DEFLATE, 
+                                                        GZIP, COMPRESS };
 
   /**
    * Constructs a <code>Compression</code> object.
    * 
-   * @param value that value
+   * @param value the enum value
    */
   protected Compression(int value)
   {
@@ -67,7 +89,7 @@ public class Compression extends EnumSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>Compression</code> itself
+   * @return The class <code>Compression</code> itself.
    */
   public Class getCategory()
   {
@@ -77,10 +99,31 @@ public class Compression extends EnumSyntax
   /**
    * Returns the name of this attribute.
    *
-   * @return the name
+   * @return The name "compression".
    */
   public String getName()
   {
     return "compression";
+  }
+  
+  /**
+   * Returns a table with the enumeration values represented as strings
+   * for this object.
+   *
+   * @return The enumeration values as strings.
+   */
+  protected String[] getStringTable()
+  {
+    return stringTable;
+  }
+
+  /**
+   * Returns a table with the enumeration values for this object.
+   *
+   * @return The enumeration values.
+   */
+  protected EnumSyntax[] getEnumValueTable()
+  {
+    return enumValueTable;
   }
 }

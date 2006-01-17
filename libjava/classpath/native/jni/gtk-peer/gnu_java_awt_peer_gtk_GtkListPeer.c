@@ -239,6 +239,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_append
                           COLUMN_STRING, text,
                           -1);
       (*env)->ReleaseStringUTFChars (env, item, text);
+      (*env)->DeleteLocalRef(env, item);
     }
 
   gdk_threads_leave ();

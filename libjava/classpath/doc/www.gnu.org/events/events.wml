@@ -9,17 +9,20 @@
 <boxitem>
 <strong>Upcoming Events:</strong><br>
 <ul>
-<li>[1-5 Aug 2005] <a href="http://conferences.oreillynet.com/os2005/">OSCON</a>, Portland, Oregon - USA
-<ul>
-<li><a href="http://conferences.oreillynet.com/cs/os2005/view/e_sess/6730">The State of Free JVMs</a>
-Tom Tromey</li>
-</ul>
+<li>[25+26 Feb. 2006] FOSDEM'06 in Brussels, Belgium. [<createlink name="GNU Classpath and friends" url="events/fosdem06.html">]</li>
 </ul>
 </boxitem>
 
 <boxitem>
 <strong>Past Events:</strong><br>
 <ul>
+
+<li>
+[1-5 Aug 2005] <a href="http://conferences.oreillynet.com/os2005/">OSCON</a>, Portland, Oregon - USA
+<ul>
+<li><a href="http://conferences.oreillynet.com/cs/os2005/view/e_sess/6730">The State of Free JVMs</a>
+Tom Tromey</li>
+</ul>
 
 <li>
 [29-31 May 2005] <a href="http://2005.guadec.org/">Guadec</a>, Stuttgart - Germany

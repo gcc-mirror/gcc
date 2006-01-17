@@ -42,6 +42,7 @@ package gnu.classpath.jdwp;
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.event.EventManager;
 import gnu.classpath.jdwp.event.EventRequest;
+import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.processor.PacketProcessor;
 import gnu.classpath.jdwp.transport.ITransport;
@@ -206,7 +207,20 @@ public class Jdwp
 	EventManager em = EventManager.getDefault ();
 	EventRequest request = em.getEventRequest (event);
 	if (request != null)
-	  sendEvent (request, event);
+	  {
+	    try
+	      {
+		System.out.println ("Jdwp.notify: sending event " + event);
+		sendEvent (request, event);
+		jdwp._enforceSuspendPolicy (request.getSuspendPolicy ());
+	      }
+	    catch (Exception e)
+	      {
+		/* Really not much we can do. For now, just print out
+		   a warning to the user. */
+		System.out.println ("Jdwp.notify: caught exception: " + e);
+	      }
+	  }
       }
   }
   
@@ -217,32 +231,25 @@ public class Jdwp
    *
    * @param  request  the debugger request for the event
    * @param  event    the event to send
+   * @throws IOException if a communications failure occurs
    */
   public static void sendEvent (EventRequest request, Event event)
+      throws IOException
   {
     Jdwp jdwp = getDefault ();
     if (jdwp != null)
       {
-	try
+	// !! May need to implement send queue?
+	synchronized (jdwp._connection)
 	  {
-	    // !! May need to implement send queue?
-	    synchronized (jdwp._connection)
-	      {
-		jdwp._connection.sendEvent (request, event);
-	      }
-	    
-	    // Follow suspend policy
-	    jdwp._enforceSuspendPolicy (request.getSuspendPolicy ());
-	  }
-	catch (IOException ie)
-	  {
-	    System.out.println ("Jdwp.notify: caught exception: " + ie);
+	    jdwp._connection.sendEvent (request, event);
 	  }
       }
   }
 
   // Helper function to enforce suspend policies on event notification
   private void _enforceSuspendPolicy (byte suspendPolicy)
+    throws JdwpException
   {
     switch (suspendPolicy)
       {

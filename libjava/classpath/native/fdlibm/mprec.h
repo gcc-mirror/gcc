@@ -30,13 +30,10 @@
 #define __CLASSPATH_MPREC_H__
 
 #include <config.h>
+#include "config-int.h"
 #include "ieeefp.h"
-
-#if defined HAVE_STDINT_H
-#include <stdint.h>
-#elif defined HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
+/* CLASSPATH LOCAL */
+#include "namespace.h"
 
 #if defined HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -48,24 +45,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-/* ISO C99 int type declarations */
-
-#if !defined HAVE_INT32_DEFINED && defined HAVE_BSD_INT32_DEFINED
-typedef u_int32_t uint32_t;
-#endif
-
-#if !defined HAVE_BSD_INT32_DEFINED && !defined HAVE_INT32_DEFINED
-/* FIXME this could have problems with systems that don't define SI to be 4 */
-typedef int int32_t __attribute__((mode(SI)));
-
-/* This is a blatant hack: on Solaris 2.5, pthread.h defines uint32_t
-   in pthread.h, which we sometimes include.  We protect our
-   definition the same way Solaris 2.5 does, to avoid redefining it.  */
-#  ifndef _UINT32_T
-typedef unsigned int uint32_t __attribute__((mode(SI)));
-#  endif
 #endif
 
   /* These typedefs are true for the targets running Java. */
@@ -84,6 +63,7 @@ typedef unsigned int uint32_t __attribute__((mode(SI)));
 
 #ifdef DEBUG
 #include "stdio.h"
+#include <stdlib.h>
 #define Bug(x) {fprintf(stderr, "%s\n", x); exit(1);}
 #endif
 

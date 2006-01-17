@@ -1,5 +1,5 @@
 /* TransformerFactoryImpl.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,7 +37,11 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -73,7 +77,7 @@ public class TransformerFactoryImpl
 {
 
   final XPathFactory xpathFactory;
-	final XSLURIResolver resolver;
+  final XSLURIResolver resolver;
   ErrorListener userListener;
   URIResolver userResolver;
 
@@ -340,6 +344,47 @@ public class TransformerFactoryImpl
   public ErrorListener getErrorListener()
   {
     return userListener;
+  }
+
+  /**
+   * Syntax: TransformerFactoryImpl [<stylesheet> [<input> [<output>]]]
+   */
+  public static void main(String[] args)
+    throws Exception
+  {
+    InputStream stylesheet = null, in = null;
+    OutputStream out = null;
+    try
+      {
+        if (args.length > 0)
+          {
+            stylesheet = new FileInputStream(args[0]);
+            if (args.length > 1)
+              {
+                in = new FileInputStream(args[1]);
+                if (args.length > 2)
+                  out = new FileOutputStream(args[2]);
+              }
+          }
+        if (in == null)
+          in = System.in;
+        if (out == null)
+          out = System.out;
+        TransformerFactory f = new TransformerFactoryImpl();
+        Transformer t = (stylesheet != null) ?
+          f.newTransformer(new StreamSource(stylesheet)) :
+          f.newTransformer();
+        t.transform(new StreamSource(in), new StreamResult(out));
+      }
+    finally
+      {
+        if (stylesheet != null)
+          stylesheet.close();
+        if (in != null && in instanceof FileInputStream)
+          in.close();
+        if (out != null && out instanceof FileOutputStream)
+          out.close();
+      }
   }
   
 }

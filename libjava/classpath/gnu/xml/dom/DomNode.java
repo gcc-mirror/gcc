@@ -38,6 +38,7 @@ exception statement from your version. */
 package gnu.xml.dom;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -149,7 +150,7 @@ public abstract class DomNode
   boolean readonly;
 
   // event registrations
-  private ListenerRecord[] listeners;
+  private HashSet listeners;
   private int nListeners;
 
   // DOM Level 3 userData dictionary.
@@ -167,19 +168,6 @@ public abstract class DomNode
    */
   public void compact()
   {
-    if (listeners != null && listeners.length != nListeners)
-      {
-        if (nListeners == 0)
-          {
-            listeners = null;
-          }
-        else
-          {
-            ListenerRecord[] l = new ListenerRecord[nListeners];
-            System.arraycopy(listeners, 0, l, 0, nListeners);
-            listeners = l;
-          }
-      }
   }
 
   /**
@@ -201,6 +189,7 @@ public abstract class DomNode
           }
       }
     this.owner = owner;
+    this.listeners = new HashSet();
   }
   
 
@@ -369,6 +358,16 @@ public abstract class DomNode
           case PROCESSING_INSTRUCTION_NODE:
           case CDATA_SECTION_NODE:
           case ENTITY_REFERENCE_NODE:
+            return;
+          }
+        break;
+      case DOCUMENT_TYPE_NODE:
+        if (!owner.building)
+          break;
+        switch (childNodeType)
+          {
+          case COMMENT_NODE:
+          case PROCESSING_INSTRUCTION_NODE:
             return;
           }
         break;
@@ -960,12 +959,6 @@ public abstract class DomNode
    */
   public void trimToSize()
   {
-    if (listeners != null && listeners.length != nListeners)
-      {
-        ListenerRecord[] newKids = new ListenerRecord[length];
-        System.arraycopy(listeners, 0, newKids, 0, nListeners);
-        listeners = newKids;
-      }
   }
 
   /**
@@ -1175,7 +1168,7 @@ public abstract class DomNode
         node.next = null;
         
         node.readonly = false;
-        node.listeners = null;
+        node.listeners = new HashSet();
         node.nListeners = 0;
         return node;
 
@@ -1264,16 +1257,17 @@ public abstract class DomNode
       elementName = name;
       matchAnyURI = "*".equals(uri);
       matchAnyName = "*".equals(name);
-      
+
       DomNode.this.addEventListener("DOMNodeInserted", this, true);
       DomNode.this.addEventListener("DOMNodeRemoved", this, true);
     }
 
     void detach()
     {
-      current.detach();
+      if (current != null)
+        current.detach();
       current = null;
-      
+
       DomNode.this.removeEventListener("DOMNodeInserted", this, true);
       DomNode.this.removeEventListener("DOMNodeRemoved", this, true);
     }
@@ -1336,6 +1330,8 @@ public abstract class DomNode
           return;
         }
       
+      if (current != null)
+	current.detach();
       current = null;
     }
 
@@ -1354,6 +1350,7 @@ public abstract class DomNode
           lastIndex--;
         }
         Node ret = current.previousNode ();
+	current.detach();
         current = null;
         return ret;
       } 
@@ -1361,9 +1358,11 @@ public abstract class DomNode
       // somewhere after last node
       while (++lastIndex != index)
         current.nextNode ();
-        Node ret = current.nextNode ();
-        current = null;
-        return ret;
+
+      Node ret = current.nextNode ();
+      current.detach();
+      current = null;
+      return ret;
     }
     
     public int getLength()
@@ -1375,7 +1374,7 @@ public abstract class DomNode
         {
           retval++;
         }
-      current = null;
+      iter.detach();
       return retval;
     }
     
@@ -1403,13 +1402,18 @@ public abstract class DomNode
       this.useCapture = useCapture;
     }
 
-    boolean equals(ListenerRecord rec)
+    public boolean equals(Object o)
     {
+      ListenerRecord rec = (ListenerRecord)o;
       return listener == rec.listener
         && useCapture == rec.useCapture
         && type == rec.type;
     }
     
+    public int hashCode()
+    {
+	return listener.hashCode() ^ type.hashCode();
+    }
   }
 
   /**
@@ -1464,30 +1468,12 @@ public abstract class DomNode
                                      EventListener listener,
                                      boolean useCapture)
   {
-    if (listeners == null)
-      {
-        listeners = new ListenerRecord[1];
-      }
-    else if (nListeners == listeners.length)
-      {
-        ListenerRecord[] newListeners =
-          new ListenerRecord[listeners.length + NKIDS_DELTA];
-        System.arraycopy(listeners, 0, newListeners, 0, nListeners);
-        listeners = newListeners;
-      }
-
     // prune duplicates
     ListenerRecord record;
 
     record = new ListenerRecord(type, listener, useCapture);
-    for (int i = 0; i < nListeners; i++)
-      {
-        if (record.equals(listeners[i]))
-          {
-            return;
-          }
-      }
-    listeners [nListeners++] = record;
+    listeners.add(record);
+    nListeners = listeners.size();
   }
 
   // XXX this exception should be discarded from DOM
@@ -1672,11 +1658,14 @@ public abstract class DomNode
                           ListenerRecord[] notificationSet)
   {
     int count = 0;
+    Iterator iter;
+
+    iter = current.listeners.iterator();
 
     // do any of this set of listeners get notified?
-    for (int i = 0; i < current.nListeners; i++)
+    while (iter.hasNext())
       {
-        ListenerRecord rec = current.listeners[i];
+        ListenerRecord rec = (ListenerRecord)iter.next();
 
         if (rec.useCapture != capture)
           {
@@ -1697,6 +1686,7 @@ public abstract class DomNode
           }
         notificationSet[count++] = rec;
       }
+    iter = null;
 
     // Notify just those listeners
     e.currentNode = current; 
@@ -1704,18 +1694,21 @@ public abstract class DomNode
       {
         try
           {
+	    iter = current.listeners.iterator();
             // Late in the DOM CR process (3rd or 4th CR?) the
             // removeEventListener spec became asymmetric with respect
             // to addEventListener ... effect is now immediate.
-            for (int j = 0; j < current.nListeners; j++)
+	    while (iter.hasNext())
               {
-                if (current.listeners[j].equals(notificationSet[i]))
+		ListenerRecord rec = (ListenerRecord)iter.next();
+
+                if (rec.equals(notificationSet[i]))
                   {
                     notificationSet[i].listener.handleEvent(e);
                     break;
                   }
               }
-            
+            iter = null;
           }
         catch (Exception x)
           {
@@ -1733,36 +1726,8 @@ public abstract class DomNode
                                         EventListener listener,
                                         boolean useCapture)
   {
-    for (int i = 0; i < nListeners; i++)
-      {
-        if (listeners[i].listener != listener)
-          {
-            continue;
-          }
-        if (listeners[i].useCapture != useCapture)
-          {
-            continue;
-          }
-        if (!listeners[i].type.equals(type))
-          {
-            continue;
-          }
-
-        if (nListeners == 1)
-          {
-            listeners = null;
-            nListeners = 0;
-          }
-        else
-          {
-            for (int j = i + 1; j < nListeners; j++)
-              {
-                listeners[i++] = listeners[j++];
-              }
-            listeners[--nListeners] = null;
-          }
-        break;
-      }
+    listeners.remove(new ListenerRecord(type, listener, useCapture));
+    nListeners = listeners.size();
     // no exceptions reported
   }
 
@@ -1779,10 +1744,15 @@ public abstract class DomNode
     readonly = false;
     for (DomNode ctx = first; ctx != null; ctx = ctx.next)
       {
+        boolean saved2 = ctx.readonly;
+        ctx.readonly = false;
         switch (ctx.nodeType)
           {
           case TEXT_NODE:
-            while (ctx.next != null && ctx.next.nodeType == TEXT_NODE)
+          case CDATA_SECTION_NODE:
+            while (ctx.next != null &&
+                   (ctx.next.nodeType == TEXT_NODE ||
+                    ctx.next.nodeType == CDATA_SECTION_NODE))
               {
                 Text text = (Text) ctx;
                 text.appendData(ctx.next.getNodeValue());
@@ -1794,7 +1764,11 @@ public abstract class DomNode
             int len = attrs.getLength();
             for (int i = 0; i < len; i++)
               {
-                attrs.item(i).normalize();
+                DomNode attr = (DomNode) attrs.item(i);
+                boolean saved3 = attr.readonly;
+                attr.readonly = false;
+                attr.normalize();
+                attr.readonly = saved3;
               }
             // Fall through
           case DOCUMENT_NODE:
@@ -1804,6 +1778,7 @@ public abstract class DomNode
             ctx.normalize();
             break;
           }
+        ctx.readonly = saved2;
       }
     readonly = saved;
   }
@@ -2017,39 +1992,56 @@ public abstract class DomNode
   public boolean isEqualNode(Node arg)
   {
     if (this == arg)
-      {
-        return true;
-      }
+      return true;
     if (arg == null)
+      return false;
+    if (nodeType != arg.getNodeType())
+      return false;
+    switch (nodeType)
       {
-        return false;
-      }
-    if (nodeType != arg.getNodeType() ||
-        !equal(getNodeName(), arg.getNodeName()) ||
-        !equal(getLocalName(), arg.getLocalName()) ||
-        !equal(getNamespaceURI(), arg.getNamespaceURI()) ||
-        !equal(getPrefix(), arg.getPrefix()) ||
-        !equal(getNodeValue(), arg.getNodeValue()))
-      {
-        return false;
+      case ELEMENT_NODE:
+      case ATTRIBUTE_NODE:
+        if (!equal(getLocalName(), arg.getLocalName()) ||
+            !equal(getNamespaceURI(), arg.getNamespaceURI()))
+          return false;
+        break;
+      case PROCESSING_INSTRUCTION_NODE:
+        if (!equal(getNodeName(), arg.getNodeName()) ||
+            !equal(getNodeValue(), arg.getNodeValue()))
+          return false;
+        break;
+      case COMMENT_NODE:
+      case TEXT_NODE:
+      case CDATA_SECTION_NODE:
+        if (!equal(getNodeValue(), arg.getNodeValue()))
+          return false;
+        break;
       }
     // Children
     Node argCtx = arg.getFirstChild();
     getFirstChild(); // because of DomAttr lazy children
-    for (DomNode ctx = first; ctx != null; ctx = ctx.next)
+    DomNode ctx = first;
+    for (; ctx != null && argCtx != null; ctx = ctx.next)
       {
-        if (!ctx.isEqualNode(argCtx))
+        if (nodeType == DOCUMENT_NODE)
           {
-            return false;
+            // Ignore whitespace outside document element
+            while (ctx != null && ctx.nodeType == TEXT_NODE)
+              ctx = ctx.next;
+            while (argCtx != null && ctx.getNodeType() == TEXT_NODE)
+              argCtx = argCtx.getNextSibling();
+            if (ctx == null && argCtx != null)
+              return false;
+            else if (argCtx == null && ctx != null)
+              return false;
           }
+        if (!ctx.isEqualNode(argCtx))
+          return false;
         argCtx = argCtx.getNextSibling();
       }
-    if (argCtx != null)
-      {
-        return false;
-      }
+    if (ctx != null || argCtx != null)
+      return false;
     
-    // TODO Attr NamedNodeMap
     // TODO DocumentType
     return true;
   }
@@ -2183,6 +2175,15 @@ public abstract class DomNode
       default:
         return "UNKNOWN";
       }
+  }
+
+  public void list(java.io.PrintStream out, int indent)
+  {
+    for (int i = 0; i < indent; i++)
+      out.print(" ");
+    out.println(toString());
+    for (DomNode ctx = first; ctx != null; ctx = ctx.next)
+      ctx.list(out, indent + 1);
   }
 
 }

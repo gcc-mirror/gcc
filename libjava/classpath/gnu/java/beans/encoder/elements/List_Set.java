@@ -1,5 +1,5 @@
-/* ContentHandler2.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+/* List_Set.java
+   Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,31 +35,22 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package gnu.xml.aelfred2;
 
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
+package gnu.java.beans.encoder.elements;
 
-/**
- * Extension to the SAX ContentHandler interface to report parsing events
- * and parameters required by DOM Level 3 but not supported by SAX.
+import gnu.java.beans.encoder.Writer;
+
+/** Generates an XML element denoting the setting of a list's element.
+ * 
+ * @author Robert Schuster (robertschuster@fsfe.org)
  *
- * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
-public interface ContentHandler2
-  extends ContentHandler
+public class List_Set extends Element
 {
 
-  /**
-   * Reports the XML declaration.
-   * @param version the value of the version attribute in the XML
-   * declaration
-   * @param encoding the encoding specified in the XML declaration, if any
-   * @param standalone the standalone attribute from the XML declaration
-   * @param inputEncoding the encoding of the XML input
-   */
-  void xmlDecl(String version, String encoding, boolean standalone,
-               String inputEncoding)
-    throws SAXException;
+  public void writeStart(Writer writer)
+  {
+    writer.write("object", "set");
+  }
   
 }

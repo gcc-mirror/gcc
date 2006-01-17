@@ -93,8 +93,8 @@ Java_java_nio_VMDirectByteBuffer_get__Lgnu_classpath_Pointer_2I_3BII
    jobject address, jint index, jbyteArray dst, jint dst_offset, jint dst_len)
 {
   jbyte *src = (jbyte *) JCL_GetRawData (env, address) + index;
-  jbyte *_dst = (*env)->GetByteArrayElements (env, dst, NULL) + dst_offset;
-  memcpy (_dst, src, dst_len);
+  jbyte *_dst = (*env)->GetByteArrayElements (env, dst, NULL);
+  memcpy (_dst + dst_offset, src, dst_len);
   (*env)->ReleaseByteArrayElements (env, dst, _dst, 0);
 }
 
@@ -103,10 +103,10 @@ Java_java_nio_VMDirectByteBuffer_put__Lgnu_classpath_Pointer_2I_3BII
   (JNIEnv *env, jclass clazz __attribute__ ((__unused__)),
    jobject address, jint index, jbyteArray src, jint src_offset, jint src_len)
 {
-  jbyte *_src = (*env)->GetByteArrayElements (env, src, NULL) + src_offset;
-  jbyte *dst = (jbyte *)JCL_GetRawData (env, address) + index;
+  jbyte *_src = (*env)->GetByteArrayElements (env, src, NULL);
+  jbyte *dst = (jbyte *)JCL_GetRawData (env, address);
+  memcpy (dst + index, _src + src_offset, src_len);
   (*env)->ReleaseByteArrayElements (env, src, _src, 0);
-  memcpy (dst, _src, src_len);
 }
 
 JNIEXPORT void JNICALL

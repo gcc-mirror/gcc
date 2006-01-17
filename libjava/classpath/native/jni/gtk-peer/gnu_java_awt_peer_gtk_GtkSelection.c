@@ -130,6 +130,7 @@ clipboard_targets_received (GtkClipboard *clipboard
 			break;
 		      (*env)->SetObjectArrayElement (env, strings, i++,
 						     string);
+		      (*env)->DeleteLocalRef (env, string);
 		    }
 		}
 	    }
@@ -201,6 +202,10 @@ clipboard_text_received (GtkClipboard *clipboard
                           textAvailableID,
                           string);
   (*env)->DeleteGlobalRef (env, selection_obj);
+
+  if (string != NULL)
+    (*env)->DeleteLocalRef (env, string);
+
 }
 
 JNIEXPORT void JNICALL
@@ -324,6 +329,7 @@ clipboard_uris_received (GtkClipboard *clipboard
 	      if (string == NULL)
 		break;
 	      (*env)->SetObjectArrayElement (env, strings, i, string);
+	      (*env)->DeleteLocalRef (env, string);
 	    }
 	}
       g_strfreev (uris);

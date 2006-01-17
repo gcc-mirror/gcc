@@ -1,5 +1,5 @@
 /* SetOfIntegerSyntax.java -- 
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,55 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 /**
- * @author Michael Koch
+ * <code>SetOfIntegerSyntax</code> is the abstract base class of all attribute 
+ * classes which provide a set of non-negative integers as value (e.g. the
+ * page ranges to print) represented as single values or ranges of values.
+ * <p>
+ * A <code>SetOfIntegerSyntax</code> instance consists of an integer array of
+ * ranges. Ranges may have the same lower and upper bound representing a single
+ * integer value. Ranges with a lower bound greater than the upper bound are 
+ * null ranges and discarded. Ranges may overlap in their values. In no case 
+ * negative integers are allowed.
+ * </p>
+ * <p>
+ * There are several constructors available:
+ * <ul>
+ * <li><code>SetOfIntegerSyntax(int member)</code><br>
+ * Constructor for an instance with only one integer value.
+ * </li><br>
+ * <li><code>SetOfIntegerSyntax(int lowerBound, int upperBound)</code><br>
+ * Constructor for an instance with one range of integer values.
+ * </li><br>
+ * <li><code>SetOfIntegerSyntax(int[][] members)</code><br>
+ * Flexible constructor for an instance with several single integer values 
+ * and/or several ranges of integer values. The allowed array form is an 
+ * array of integer arrays of length one or two. Examples are: 
+ * <code>int[0][]</code> for empty set of integers, <code>int[][] {{1}}</code>
+ * , <code>int[][] {{1,5}}</code>, <code>int[][] {{1,5},{7,9}}</code>,
+ * <code>int[][] {{3,7},{19}}</code>.
+ * </li><br>
+ * <li><code>SetOfIntegerSyntax(String s)</code><br>
+ * Flexible constructor for an instance with several single integer values 
+ * and/or several ranges of integer values. The allowed String instance have
+ * to be a String with comma separated ranges of integer values or single 
+ * values. Ranges are represented by two integer with a hypen (-) or colon (:)
+ * between the lower and upper bound value. Whitespace characters are ignored.
+ * Examples are: <code>""</code> for an empty set of integers, 
+ * <code>"1"</code>, <code>"1-5"</code>, <code>"1-5,7-9"</code>, 
+ * <code>"3-7,19"</code> and <code>"1:2,4"</code>.
+ * </li>
+ * </ul>
+ * </p>
+ * <p>
+ * <b>Internal storage:</b><br>
+ * The set of integers are stored internally in a normalized array form.
+ * In the normalized array form the set of integer ranges are represented
+ * in as few ranges as possible and overlapping ranges are merged. The ranges 
+ * are always represented as an integer array of length two with ranges 
+ * stored in {lower bound, upper bound} form. The ranges are stored in 
+ * ascending order, without any null ranges.
+ * </p>
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class SetOfIntegerSyntax
   implements Cloneable, Serializable
@@ -96,7 +144,7 @@ public abstract class SetOfIntegerSyntax
    *
    * @param member the member value
    *
-   * @exception IllegalArgumentException if member is < 0
+   * @exception IllegalArgumentException if member is &lt; 0
    */
   protected SetOfIntegerSyntax(int member)
   {
@@ -109,7 +157,8 @@ public abstract class SetOfIntegerSyntax
   /**
    * Creates a <code>SetOfIntegerSyntax</code> object.
    *
-   * @param members the members to use in this set
+   * @param members the members to use in this set. If
+   * <code>null</code> an empty set is created.
    *
    * @exception IllegalArgumentException if any element is invalid
    * @exception NullPointerException if any element of members is null
@@ -176,55 +225,68 @@ public abstract class SetOfIntegerSyntax
     return readAny;
   }
 
+  /**
+   * Creates a <code>SetOfIntegerSyntax</code> object.
+   *
+   * @param s the members to use in this set in string form. If
+   * <code>null</code> an empty set is created.
+   *
+   * @exception IllegalArgumentException if any element is invalid
+   */
   protected SetOfIntegerSyntax(String s)
   {
-    ArrayList vals = new ArrayList();
-
-    StringCharacterIterator it = new StringCharacterIterator(s);
-
-    while (true)
-      {
-        // Skip whitespace.
-        if (skipWhitespace(it))
-          break;
-
-        // Parse integer.
-        int index = it.getIndex();
-        if (! skipNumber(it))
-          throw new IllegalArgumentException();
-        int[] item = new int[2];
-        item[0] = Integer.parseInt(s.substring(index, it.getIndex()));
-
-        if (! skipWhitespace(it))
+    if (s == null)
+      this.members = normalize(new int[0][], 0);
+    else
+      {      
+        ArrayList vals = new ArrayList();
+        
+        StringCharacterIterator it = new StringCharacterIterator(s);
+        
+        while (true)
           {
-            char c = it.current();
-            if (c == ':' || c == '-')
+            // Skip whitespace.
+            if (skipWhitespace(it))
+              break;
+            
+            // Parse integer.
+            int index = it.getIndex();
+            if (! skipNumber(it))
+              throw new IllegalArgumentException();
+            int[] item = new int[2];
+            item[0] = Integer.parseInt(s.substring(index, it.getIndex()));
+            
+            if (! skipWhitespace(it))
               {
-                it.next();
-                if (skipWhitespace(it))
-                  throw new IllegalArgumentException();
-                index = it.getIndex();
-                if (! skipNumber(it))
-                  throw new IllegalArgumentException();
-                item[1] = Integer.parseInt(s.substring(index, it.getIndex()));
+                char c = it.current();
+                if (c == ':' || c == '-')
+                  {
+                  it.next();
+                  if (skipWhitespace(it))
+                    throw new IllegalArgumentException();
+                  index = it.getIndex();
+                  if (! skipNumber(it))
+                    throw new IllegalArgumentException();
+                  item[1] = Integer.parseInt(s.substring(index, it.getIndex()));
+                  }
+                else
+                  item[1] = item[0];
               }
             else
               item[1] = item[0];
+            
+            if (item[0] <= item[1]) 
+              vals.add(item);
+            
+            if (skipWhitespace(it))
+              break;
+            if (it.current() != ',')
+              throw new IllegalArgumentException();
+            it.next();
           }
-        else
-          item[1] = item[0];
-
-        if (item[0] <= item[1]) 
-          vals.add(item);
         
-        if (skipWhitespace(it))
-          break;
-        if (it.current() != ',')
-          throw new IllegalArgumentException();
-        it.next();
+        members = normalize((int[][]) vals.toArray(new int[0][]), vals.size());
       }
-
-    members = normalize((int[][]) vals.toArray(new int[0][]), vals.size());
   }
 
   /**
@@ -248,7 +310,7 @@ public abstract class SetOfIntegerSyntax
   }
 
   /**
-   * Checks if this set contains value.
+   * Checks if this set contains the given value.
    *
    * @param value the value to test for
    *
@@ -269,7 +331,7 @@ public abstract class SetOfIntegerSyntax
   }
 
   /**
-   * Checks if this set contains value.
+   * Checks if this set contains the given value.
    *
    * @param value the value to test for
    *
@@ -281,7 +343,7 @@ public abstract class SetOfIntegerSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
@@ -306,7 +368,7 @@ public abstract class SetOfIntegerSyntax
   /**
    * Returns an array describing the members included in this set.
    *
-   * @return the array with the members
+   * @return The members in normalized array form.
    */
   public int[][] getMembers()
   {
@@ -316,7 +378,7 @@ public abstract class SetOfIntegerSyntax
   /**
    * Returns the hashcode for this object.
    *
-   * @return the hashcode
+   * @return The hashcode.
    */
   public int hashCode()
   {
@@ -331,7 +393,8 @@ public abstract class SetOfIntegerSyntax
    *
    * @param x an integer value
    *
-   * @return the next value
+   * @return The next smallest integer value, or <code>-1</code> if there 
+   * is no greater integer in the set.
    */
   public int next(int x)
   {
@@ -349,8 +412,10 @@ public abstract class SetOfIntegerSyntax
 
   /**
    * Returns the string representation for this object.
+   * The value is a zero length string for an empty set, or a comma seperated
+   * list of ranges and single values in the form <code>"1-2,5-7,10"</code>.
    *
-   * @return the string representation
+   * @return The string representation.
    */
   public String toString()
   {

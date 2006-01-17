@@ -1,5 +1,5 @@
 /* ValueOfNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -69,26 +69,18 @@ final class ValueOfNode
     TemplateNode ret = new ValueOfNode(select.clone(stylesheet),
                                        disableOutputEscaping);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
   void doApply(Stylesheet stylesheet, QName mode,
-             Node context, int pos, int len,
-             Node parent, Node nextSibling)
+               Node context, int pos, int len,
+               Node parent, Node nextSibling)
     throws TransformerException
   {
     Object ret = select.evaluate(context, pos, len);
-    /*if (stylesheet.debug)
-      {
-        System.err.println("value-of: " + select + " -> " + ret);
-      }*/
     String value;
     if (ret instanceof Collection)
       {
@@ -100,47 +92,35 @@ final class ValueOfNode
           }
         value = buf.toString();
       }
+    else if (ret == null)
+      value = "";
     else
-      {
-        value = Expr._string(context, ret);
-      }
+      value = Expr._string(context, ret);
     if (stylesheet.debug)
-      {
-        System.err.println("value-of: "+context+" "+ select + " -> "+ value);
-      }
+      System.err.println("value-of: "+context+" "+ select + " -> "+ value);
     if (value != null && value.length() > 0)
       {
         Document doc = (parent instanceof Document) ?
           (Document) parent : parent.getOwnerDocument();
         Text textNode = doc.createTextNode(value);
         if (disableOutputEscaping)
-          {
-            textNode.setUserData("disable-output-escaping", "yes", stylesheet);
-          }
+          textNode.setUserData("disable-output-escaping", "yes", stylesheet);
         if (nextSibling != null)
-          {
-            parent.insertBefore(textNode, nextSibling);
-          }
+          parent.insertBefore(textNode, nextSibling);
         else
-          {
-            parent.appendChild(textNode);
-          }
+          parent.appendChild(textNode);
       }
     // value-of doesn't process children
     if (next != null)
-      {
-        next.apply(stylesheet, mode,
-                   context, pos, len,
-                   parent, nextSibling);
-      }
+      next.apply(stylesheet, mode,
+                 context, pos, len,
+                 parent, nextSibling);
   }
 
   public boolean references(QName var)
   {
     if (select != null && select.references(var))
-      {
-        return true;
-      }
+      return true;
     return super.references(var);
   }
   
@@ -151,9 +131,7 @@ final class ValueOfNode
     buf.append("select=");
     buf.append(select);
     if (disableOutputEscaping)
-      {
-        buf.append(",disableOutputEscaping");
-      }
+      buf.append(",disableOutputEscaping");
     buf.append(']');
     return buf.toString();
   }

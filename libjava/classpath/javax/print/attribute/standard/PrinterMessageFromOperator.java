@@ -1,5 +1,5 @@
 /* PrinterMessageFromOperator.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,15 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
+ * The <code>PrinterMessageFromOperator</code> printing attribute provides 
+ * a message from an operator or a system administrator related to the 
+ * printer. This may include informations about the status of the printer
+ * or expected downtimes, etc.
+ * <p>
+ * <b>IPP Compatibility:</b> PrinterMessageFromOperator is an IPP 1.1 
+ * attribute.
+ * </p>
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class PrinterMessageFromOperator extends TextSyntax
@@ -55,9 +64,10 @@ public final class PrinterMessageFromOperator extends TextSyntax
    * Creates a <code>PrinterMessageFromOperator</code> object.
    *
    * @param message the message
-   * @param locale the locale of the message, null means default locale
+   * @param locale the locale to use, if <code>null</code> the default
+   * locale is used.
    *
-   * @exception NullPointerException if message is null
+   * @exception NullPointerException if message is <code>null</code>.
    */
   public PrinterMessageFromOperator(String message, Locale locale)
   {
@@ -65,11 +75,12 @@ public final class PrinterMessageFromOperator extends TextSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -82,7 +93,7 @@ public final class PrinterMessageFromOperator extends TextSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrinterMessageFromOperator</code> itself
+   * @return The class <code>PrinterMessageFromOperator</code> itself.
    */
   public Class getCategory()
   {
@@ -90,9 +101,9 @@ public final class PrinterMessageFromOperator extends TextSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "printer-message-from-operator"
+   * @return The name "printer-message-from-operator".
    */
   public String getName()
   {

@@ -176,7 +176,7 @@ public class MetalRadioButtonUI
   protected void paintFocus(Graphics g, Rectangle t, Dimension d)
   {
     g.setColor(focusColor);
-    g.drawRect(t.x - 1, t.y + 2, t.width + 2, t.height - 4);
+    g.drawRect(t.x - 1, t.y - 1, t.width + 2, t.height + 2);
   }
   
 }

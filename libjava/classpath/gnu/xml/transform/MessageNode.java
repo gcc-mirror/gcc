@@ -1,5 +1,5 @@
 /* MessageNode.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.xml.transform;
 
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 import org.w3c.dom.Document;
@@ -53,6 +54,8 @@ final class MessageNode
   extends TemplateNode
 {
 
+  static final Logger logger = Logger.getLogger("gnu.xml.transform");
+
   final boolean terminate;
 
   MessageNode(boolean terminate)
@@ -64,13 +67,9 @@ final class MessageNode
   {
     TemplateNode ret = new MessageNode(terminate);
     if (children != null)
-      {
-        ret.children = children.clone(stylesheet);
-      }
+      ret.children = children.clone(stylesheet);
     if (next != null)
-      {
-        ret.next = next.clone(stylesheet);
-      }
+      ret.next = next.clone(stylesheet);
     return ret;
   }
 
@@ -86,16 +85,12 @@ final class MessageNode
         DocumentFragment fragment = doc.createDocumentFragment();
         children.apply(stylesheet, mode, context, pos, len, fragment, null);
         String message = Expr.stringValue(fragment);
-        System.err.println(message);
+        logger.info(message);
         if (terminate)
-          {
-            stylesheet.terminated = true;
-          }
+          stylesheet.terminated = true;
       }
     if (next != null && !terminate)
-      {
-        next.apply(stylesheet, mode, context, pos, len, parent, nextSibling);
-      }
+      next.apply(stylesheet, mode, context, pos, len, parent, nextSibling);
   }
   
 }

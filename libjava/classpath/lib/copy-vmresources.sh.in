@@ -9,11 +9,11 @@ destResDir=`pwd`
 for p in ${vmdirs}; do
 	if test -d $p/META-INF; then
 		(cd $p/META-INF; 
-		 dirs=`find -name "CVS" -prune -o -type d -print`;
+		 dirs=`find . -name "CVS" -prune -o -type d -print`;
 		 for u in ${dirs}; do
 			 mkdir -p ${destMetaDir}/${u};
 		 done;
-		 files=`find -name "CVS" -prune -o -type f -print`;
+		 files=`find . -name "CVS" -prune -o -type f -print`;
 		 for u in ${files}; do
 			 cp ${u} ${destMetaDir}/${u};
 		 done
@@ -21,7 +21,7 @@ for p in ${vmdirs}; do
 	fi;
 
 	(cd ${p};
-	  resfiles=`find ${p} -name "*.properties"`
+	  resfiles=`find . -name "*.properties"`
 	  resdirs=
 	  for i in ${resfiles}; do 
 		  a=`basename ${i}`; 

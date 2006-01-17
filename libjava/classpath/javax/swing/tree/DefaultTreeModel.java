@@ -148,12 +148,6 @@ public class DefaultTreeModel
    */
   public void setRoot(TreeNode root)
   {
-    // Sanity Check
-    if (root == null)
-      {
-        throw new IllegalArgumentException("null root");
-      }
-    // Set new root
     this.root = root;
   }
 

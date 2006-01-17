@@ -301,22 +301,6 @@ public class Consumer extends DomConsumer
             doc.setBuilding(true);
 	}
 
-        /**
-         * Required by DOM Level 3 to report document parameters
-         */
-        public void xmlDecl(String version,
-                            String encoding,
-                            boolean standalone,
-                            String inputEncoding)
-          throws SAXException
-        {
-          super.xmlDecl(version, encoding, standalone, inputEncoding);
-
-          DomDocument doc = (DomDocument) getDocument();
-          doc.setXmlEncoding(encoding);
-          doc.setInputEncoding(inputEncoding);
-        }
-
 	public void endDocument ()
 	throws SAXException
 	{

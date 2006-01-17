@@ -43,10 +43,11 @@ DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
-	$(top_srcdir)/m4/acinclude.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/acinclude.m4 \
+	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -151,6 +152,7 @@ JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
 JIKES = @JIKES@
 JIKESENCODING = @JIKESENCODING@
+JIKESWARNINGS = @JIKESWARNINGS@
 KJC = @KJC@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
@@ -491,25 +493,25 @@ install-data-local:
 	for file in $(ALL_EXAMPLE_FILES); do \
 	  f=`echo $$file | cut -c$$srcdir_cnt-`; \
 	  fdir=`dirname $$f`; \
-	  if test ! -d $(DESTDIR)/$(pkgdatadir)/examples/$$fdir; then \
-	    echo "$(mkinstalldirs) $(DESTDIR)/$(pkgdatadir)/examples/$$fdir"; \
-	    $(mkinstalldirs) $(DESTDIR)/$(pkgdatadir)/examples/$$fdir; \
+	  if test ! -d $(DESTDIR)$(pkgdatadir)/examples/$$fdir; then \
+	    echo "$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/examples/$$fdir"; \
+	    $(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/examples/$$fdir; \
 	  fi; \
-	  echo "$(INSTALL_DATA) $$file $(DESTDIR)/$(pkgdatadir)/examples/$$f"; \
-	  $(INSTALL_DATA) $$file $(DESTDIR)/$(pkgdatadir)/examples/$$f; \
+	  echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdatadir)/examples/$$f"; \
+	  $(INSTALL_DATA) $$file $(DESTDIR)$(pkgdatadir)/examples/$$f; \
 	done
-	echo "$(INSTALL_DATA) Makefile.jawt $(DESTDIR)/$(pkgdatadir)/examples/"
-	$(INSTALL_DATA) Makefile.jawt $(DESTDIR)/$(pkgdatadir)/examples/
+	echo "$(INSTALL_DATA) Makefile.jawt $(DESTDIR)$(pkgdatadir)/examples/"
+	$(INSTALL_DATA) Makefile.jawt $(DESTDIR)$(pkgdatadir)/examples/
 
 uninstall-local:
 	srcdir_cnt=`echo $(srcdir) | wc -c`; \
 	for file in $(ALL_EXAMPLE_FILES); do \
 	  f=`echo $$file | cut -c$$srcdir_cnt-`; \
-	  echo "rm -f $(DESTDIR)/$(pkgdatadir)/examples/$$f"; \
-	  rm -f $(DESTDIR)/$(pkgdatadir)/examples/$$f; \
+	  echo "rm -f $(DESTDIR)$(pkgdatadir)/examples/$$f"; \
+	  rm -f $(DESTDIR)$(pkgdatadir)/examples/$$f; \
 	done
-	echo "rm -f $(DESTDIR)/$(pkgdatadir)/examples/Makefile.jawt"
-	rm -f $(DESTDIR)/$(pkgdatadir)/examples/Makefile.jawt
+	echo "rm -f $(DESTDIR)$(pkgdatadir)/examples/Makefile.jawt"
+	rm -f $(DESTDIR)$(pkgdatadir)/examples/Makefile.jawt
 dist-hook:
 	srcdir_cnt=`echo $(srcdir) | wc -c`; \
 	for file in $(ALL_EXAMPLE_FILES); do \

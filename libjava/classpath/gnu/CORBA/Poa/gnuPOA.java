@@ -1052,12 +1052,12 @@ public class gnuPOA
 
   /**
    * Returns the servant that is serving this object.
-   *
-   * @return if the RETAIN policy applies and the object is in the Active
-   * Object Map, the method returns the servant, associated with this object.
+   * 
+   * @return if the RETAIN policy applies and the object is in the Active Object
+   * Map, the method returns the servant, associated with this object.
    * Otherwise, if the USE_DEFAULT_SERVANT policy applies, the method returns
    * the default servant (if one was set).
-   *
+   * 
    * @throws ObjectNotActive if none of the conditions above are satisfied.
    * @throws WrongAdapter if the object reference was not created with this POA.
    * @throws WrongPolicy. This method requires either RETAIN or
@@ -1065,14 +1065,26 @@ public class gnuPOA
    * apply to this POA.
    */
   public Servant reference_to_servant(org.omg.CORBA.Object the_Object)
-                               throws ObjectNotActive, WrongPolicy,
-                                      WrongAdapter
+    throws ObjectNotActive, WrongPolicy, WrongAdapter
   {
     if (applies(ServantRetentionPolicyValue.RETAIN))
       {
         AOM.Obj ref = aom.findObject(the_Object);
         if (ref == null)
-          throw new WrongAdapter();
+          {
+            String object;
+            if (the_Object == null)
+              object = "null passed"; 
+            else if (the_Object instanceof gnuServantObject)
+              {
+                gnuServantObject gs = (gnuServantObject) the_Object;
+                object = "Wrong owner POA " + gs.poa.the_name();
+              }
+            else
+              object = "Unknown " + the_Object.getClass().getName();
+
+            throw new WrongAdapter(object + " for '" + the_name() + "'");
+          }
         else if (ref.isDeactiveted() || ref.servant == null)
           {
             if (default_servant != null)
@@ -1092,32 +1104,30 @@ public class gnuPOA
   }
 
   /**
-  * Returns the id of the object, served by the given servant
-  * (assuming that the servant serves only one object).
-  * The id is found in one of the following ways.
-  * <ul>
-  * <li>If the POA has both the RETAIN and the UNIQUE_ID policy and
-  * the specified servant is active, the method return the Object Id associated
-  * with that servant.
-  * </li><li>
-  * If the POA has both the RETAIN and the IMPLICIT_ACTIVATION policy and
-  * either the POA has the MULTIPLE_ID policy or the specified servant is
-  * inactive, the method activates the servant using a POA-generated Object Id
-  * and the Interface Id associated with the servant, and returns that
-  * Object Id.
-  * </li>
-  * <li>If the POA has the USE_DEFAULT_SERVANT policy, the servant specified
-  * is the default servant, and the method is being invoked in the context of
-  * executing a request on the default servant, the method returns the
-  * ObjectId associated with the current invocation.
-  * </li>
-  * </ul>
-  * @throws ServantNotActive in all cases, not listed in the list above.
-  * @throws WrongPolicy The method requres USE_DEFAULT_SERVANT policy or
-  * a combination of the RETAIN policy and either the UNIQUE_ID or
-  * IMPLICIT_ACTIVATION policies and throws the WrongPolicy if these conditions
-  * are not satisfied.
-  */
+   * Returns the id of the object, served by the given servant (assuming that
+   * the servant serves only one object). The id is found in one of the
+   * following ways.
+   * <ul>
+   * <li>If the POA has both the RETAIN and the UNIQUE_ID policy and the
+   * specified servant is active, the method return the Object Id associated
+   * with that servant. </li>
+   * <li> If the POA has both the RETAIN and the IMPLICIT_ACTIVATION policy and
+   * either the POA has the MULTIPLE_ID policy or the specified servant is
+   * inactive, the method activates the servant using a POA-generated Object Id
+   * and the Interface Id associated with the servant, and returns that Object
+   * Id. </li>
+   * <li>If the POA has the USE_DEFAULT_SERVANT policy, the servant specified
+   * is the default servant, and the method is being invoked in the context of
+   * executing a request on the default servant, the method returns the ObjectId
+   * associated with the current invocation. </li>
+   * </ul>
+   * 
+   * @throws ServantNotActive in all cases, not listed in the list above.
+   * @throws WrongPolicy The method requres USE_DEFAULT_SERVANT policy or a
+   * combination of the RETAIN policy and either the UNIQUE_ID or
+   * IMPLICIT_ACTIVATION policies and throws the WrongPolicy if these conditions
+   * are not satisfied.
+   */
   public byte[] servant_to_id(Servant the_Servant)
                        throws ServantNotActive, WrongPolicy
   {

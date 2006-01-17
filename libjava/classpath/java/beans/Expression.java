@@ -35,16 +35,19 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.beans;
 
 /**
- * class Expression
- *
- * An Expression captures the execution of an object method that
- * returns a value.  It stores an object, the method to call, and the
- * arguments to pass to the method.
- *
+ * <p>An Expression captures the execution of an object method
+ * that returns a value.</p>
+ * 
+ * <p>It stores an object, the method to call, and the arguments to pass to
+ * the method.</p>
+ * 
+ * <p>While this class can generally be used to describe method calls it is
+ * part of the XML serialization API.</p> 
+ * 
+ * @author Robert Schuster (robertschuster@fsfe.org)
  * @since 1.4
  */
 public class Expression extends Statement
@@ -53,38 +56,40 @@ public class Expression extends Statement
   // yet;
   private static final Object UNSET = new Object();
 
-  // The value to return.  This is equal to unset until getValue is called.
+  // The value to return. This is equal to unset until getValue is called.
   private Object value;
-   
 
   /**
-   * Constructor
-   *
-   * Constructs an Expression representing the invocation of
-   * object.methodName(arg[0], arg[1], ...);  However, it will never
-   * be executed.  Instead, value will always be returned.
-   *
-   * @param value The value to return.
-   * @param target The object to invoke the method on.
-   * @param methodName The object method to invoke.
-   * @param arguments An array of arguments to pass to the method.
+   * Constructor Constructs an Expression representing the invocation of
+   * object.methodName(arg[0], arg[1], ...); However, it will never be executed.
+   * Instead, value will always be returned.
+   * 
+   * @param value
+   *          The value to return.
+   * @param target
+   *          The object to invoke the method on.
+   * @param methodName
+   *          The object method to invoke.
+   * @param arguments
+   *          An array of arguments to pass to the method.
    */
   public Expression(Object value, Object target, String methodName,
-		    Object[] arguments)
+                    Object[] arguments)
   {
     super(target, methodName, arguments);
     this.value = value;
   }
 
   /**
-   * Constructor
-   *
-   * Constructs an Expression representing the invocation of
+   * Constructor Constructs an Expression representing the invocation of
    * object.methodName(arg[0], arg[1], ...);
-   *
-   * @param target The object to invoke the method on.
-   * @param methodName The object method to invoke.
-   * @param arguments An array of arguments to pass to the method.
+   * 
+   * @param target
+   *          The object to invoke the method on.
+   * @param methodName
+   *          The object method to invoke.
+   * @param arguments
+   *          An array of arguments to pass to the method.
    */
   public Expression(Object target, String methodName, Object[] arguments)
   {
@@ -93,15 +98,14 @@ public class Expression extends Statement
   }
 
   /**
-   * Return the result of executing the method.
-   *
-   * If the cached value has not yet been set, the method is
-   * executed in the same way as Statement.execute(), except that
-   * the value is cached, and then returned.  If the value has been
+   * Return the result of executing the method. If the cached value has not yet
+   * been set, the method is executed in the same way as Statement.execute(),
+   * except that the value is cached, and then returned. If the value has been
    * set, it is returned without executing the method again.
-   *
+   * 
    * @return the result of executing the method.
-   * @exception Exception if an error occurs
+   * @exception Exception
+   *              if an error occurs
    */
   public Object getValue() throws Exception
   {
@@ -112,14 +116,15 @@ public class Expression extends Statement
 
   /**
    * Set the cached value to be returned by getValue()
-   *
-   * @param value the value to cache and return.
+   * 
+   * @param value
+   *          the value to cache and return.
    */
   public void setValue(Object value)
   {
     this.value = value;
   }
-    
+
   /**
    * Return a string representation of this expression.
    */
@@ -127,7 +132,7 @@ public class Expression extends Statement
   {
     String result = super.toString();
     if (value != UNSET)
-      return value.getClass().getName() + " " + result;
+      return value.getClass().getName() + "=" + result;
     return result;
   }
 }

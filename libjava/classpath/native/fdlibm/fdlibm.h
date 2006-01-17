@@ -24,6 +24,8 @@
 
 /* GCJ LOCAL: Include files.  */
 #include "ieeefp.h"
+/* CLASSPATH LOCAL: */
+#include "namespace.h"
 
 #include "mprec.h"
 
@@ -93,7 +95,11 @@ extern double erf __P((double));
 extern double erfc __P((double));
 extern double gamma __P((double));
 extern double hypot __P((double, double));
-extern int isnan __P((double));
+
+#if !defined(isnan) && !defined(HAVE_ISNAN)
+#define isnan(x) ((x) != (x))
+#endif
+
 extern int finite __P((double));
 extern double j0 __P((double));
 extern double j1 __P((double));

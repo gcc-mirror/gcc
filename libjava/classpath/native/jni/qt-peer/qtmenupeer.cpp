@@ -125,6 +125,7 @@ public:
 
     jclass menuCls = env->GetObjectClass( menuPeer );
     jmethodID mid = env->GetMethodID(menuCls, "add", "(J)V");
+    env->DeleteLocalRef(menuCls);
     env->CallVoidMethod( menuPeer, mid, (jlong)newAction );
 
     env->DeleteGlobalRef( menuPeer );

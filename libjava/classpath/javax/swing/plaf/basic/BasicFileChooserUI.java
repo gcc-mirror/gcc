@@ -37,19 +37,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -62,23 +51,16 @@ import java.util.Hashtable;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -87,6 +69,7 @@ import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.FileChooserUI;
+import javax.swing.plaf.metal.MetalIconFactory;
 
 
 /**
@@ -144,7 +127,7 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     protected ApproveSelectionAction()
     {
-      // Nothing to do here.
+      super("approveSelection");
     }
 
     /**
@@ -154,17 +137,22 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     public void actionPerformed(ActionEvent e)
     {
-      Object obj = new String(parentPath + entry.getText());
+      Object obj = null;
+      if (parentPath != null)
+        obj = new String(parentPath + getFileName());
+      else
+        obj = filechooser.getSelectedFile();
       if (obj != null)
         {
-          File f = filechooser.getFileSystemView().createFileObject(
-                                                                    obj.toString());
-          if (filechooser.isTraversable(f)
-              && filechooser.isDirectorySelectionEnabled())
-            filechooser.setCurrentDirectory(f);
+          File f = filechooser.getFileSystemView().createFileObject(obj.toString());
+          File currSelected = filechooser.getSelectedFile();
+          if (filechooser.isTraversable(f))
+            {
+              filechooser.setCurrentDirectory(currSelected);
+              filechooser.rescanCurrentDirectory();
+            }
           else
             {
-              filechooser.setSelectedFile(f);
               filechooser.approveSelection();
               closeDialog();
             }
@@ -307,7 +295,7 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     protected CancelSelectionAction()
     {
-      // Nothing to do here.
+      super(null);
     }
 
     /**
@@ -317,6 +305,8 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     public void actionPerformed(ActionEvent e)
     {
+      filechooser.setSelectedFile(null);
+      filechooser.setSelectedFiles(null);
       filechooser.cancelSelection();
       closeDialog();
     }
@@ -335,7 +325,7 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     protected ChangeToParentDirectoryAction()
     {
-      // Nothing to do here.
+      super("Go Up");
     }
 
     /**
@@ -358,8 +348,6 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   protected class DoubleClickListener extends MouseAdapter
   {
-    /** A timer. */
-    private Timer timer = null;
 
     /** DOCUMENT ME! */
     private Object lastSelected = null;
@@ -375,8 +363,6 @@ public class BasicFileChooserUI extends FileChooserUI
     public DoubleClickListener(JList list)
     {
       this.list = list;
-      timer = new Timer(1000, null);
-      timer.setRepeats(false);
       lastSelected = list.getSelectedValue();
       setDirectorySelected(false);
     }
@@ -388,14 +374,14 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     public void mouseClicked(MouseEvent e)
     {
-      if (list.getSelectedValue() == null)
+      Object p = list.getSelectedValue();
+      if (p == null)
         return;
       FileSystemView fsv = filechooser.getFileSystemView();
-      if (timer.isRunning()
-          && list.getSelectedValue().toString().equals(lastSelected.toString()))
+      if (e.getClickCount() >= 2 && lastSelected != null &&
+          p.toString().equals(lastSelected.toString()))
         {
           File f = fsv.createFileObject(lastSelected.toString());
-          timer.stop();
           if (filechooser.isTraversable(f))
             {
               filechooser.setCurrentDirectory(f);
@@ -410,8 +396,19 @@ public class BasicFileChooserUI extends FileChooserUI
         }
       else
         {
-          String path = list.getSelectedValue().toString();
+          String path = p.toString();
           File f = fsv.createFileObject(path);
+          filechooser.setSelectedFile(f);
+          
+          if (filechooser.isMultiSelectionEnabled())
+            {
+              int[] inds = list.getSelectedIndices();
+              File[] allFiles = new File[inds.length];
+              for (int i = 0; i < inds.length; i++)
+                allFiles[i] = (File) list.getModel().getElementAt(inds[i]);
+              filechooser.setSelectedFiles(allFiles);
+            }
+          
           if (filechooser.isTraversable(f))
             {
               setDirectorySelected(true);
@@ -424,8 +421,11 @@ public class BasicFileChooserUI extends FileChooserUI
             }
           lastSelected = path;
           parentPath = path.substring(0, path.lastIndexOf("/") + 1);
-          entry.setText(path.substring(path.lastIndexOf("/") + 1));
-          timer.restart();
+          if (f.isFile())
+            setFileName(path.substring(path.lastIndexOf("/") + 1));
+          else if (filechooser.getFileSelectionMode() == 
+            JFileChooser.DIRECTORIES_ONLY)
+            setFileName(path);
         }
     }
 
@@ -453,7 +453,7 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     protected GoHomeAction()
     {
-      // Nothing to do here.
+      super("Go Home");
     }
 
     /**
@@ -483,7 +483,7 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     protected NewFolderAction()
     {
-      // Nothing to do here.
+      super("New Folder");
     }
 
     /**
@@ -529,7 +529,8 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     public void valueChanged(ListSelectionEvent e)
     {
-      Object f = filelist.getSelectedValue();
+      JList list = (JList) e.getSource();
+      Object f = list.getSelectedValue();
       if (f == null)
 	return;
       File file = filechooser.getFileSystemView().createFileObject(f.toString());
@@ -552,7 +553,7 @@ public class BasicFileChooserUI extends FileChooserUI
      */
     protected UpdateAction()
     {
-      // Nothing to do here.
+      super(null);
     }
 
     /**
@@ -576,91 +577,13 @@ public class BasicFileChooserUI extends FileChooserUI
   protected String cancelButtonToolTipText;
 
   /** An icon representing a computer. */
-  protected Icon computerIcon = new Icon()
-    {
-      public int getIconHeight()
-      {
-	return ICON_SIZE;
-      }
-
-      public int getIconWidth()
-      {
-	return ICON_SIZE;
-      }
-
-      public void paintIcon(Component c, Graphics g, int x, int y)
-      {
-        // FIXME: is this not implemented, or is the icon intentionally blank?
-      }
-    };
+  protected Icon computerIcon;
 
   /** An icon for the "details view" button. */
-  protected Icon detailsViewIcon = new Icon()
-    {
-      public int getIconHeight()
-      {
-	return ICON_SIZE;
-      }
-
-      public int getIconWidth()
-      {
-	return ICON_SIZE;
-      }
-
-      public void paintIcon(Component c, Graphics g, int x, int y)
-      {
-	Color saved = g.getColor();
-	g.translate(x, y);
-
-	g.setColor(Color.GRAY);
-	g.drawRect(1, 1, 15, 20);
-	g.drawLine(17, 6, 23, 6);
-	g.drawLine(17, 12, 23, 12);
-	g.drawLine(17, 18, 23, 18);
-
-	g.setColor(saved);
-	g.translate(-x, -y);
-      }
-    };
+  protected Icon detailsViewIcon;
 
   /** An icon representing a directory. */
-  protected Icon directoryIcon = new Icon()
-    {
-      public int getIconHeight()
-      {
-	return ICON_SIZE;
-      }
-
-      public int getIconWidth()
-      {
-	return ICON_SIZE;
-      }
-
-      public void paintIcon(Component c, Graphics g, int x, int y)
-      {
-	Color saved = g.getColor();
-	g.translate(x, y);
-
-	Point ap = new Point(3, 7);
-	Point bp = new Point(3, 21);
-	Point cp = new Point(21, 21);
-	Point dp = new Point(21, 12);
-	Point ep = new Point(16, 12);
-	Point fp = new Point(13, 7);
-
-	Polygon dir = new Polygon(new int[] { ap.x, bp.x, cp.x, dp.x, ep.x, fp.x },
-	                          new int[] { ap.y, bp.y, cp.y, dp.y, ep.y, fp.y },
-	                          6);
-
-	g.setColor(new Color(153, 204, 255));
-	g.fillPolygon(dir);
-	g.setColor(Color.BLACK);
-	g.drawPolygon(dir);
-
-	g.translate(-x, -y);
-	g.setColor(saved);
-      }
-    };
+  protected Icon directoryIcon;
 
   /** The localised Mnemonic for the open button. */
   protected int directoryOpenButtonMnemonic;
@@ -672,82 +595,13 @@ public class BasicFileChooserUI extends FileChooserUI
   protected String directoryOpenButtonToolTipText;
 
   /** An icon representing a file. */
-  protected Icon fileIcon = new Icon()
-    {
-      public int getIconHeight()
-      {
-	return ICON_SIZE;
-      }
-
-      public int getIconWidth()
-      {
-	return ICON_SIZE;
-      }
-
-      public void paintIcon(Component c, Graphics g, int x, int y)
-      {
-	Color saved = g.getColor();
-	g.translate(x, y);
-
-	Point a = new Point(5, 4);
-	Point b = new Point(5, 20);
-	Point d = new Point(19, 20);
-	Point e = new Point(19, 7);
-	Point f = new Point(16, 4);
-
-	Polygon p = new Polygon(new int[] { a.x, b.x, d.x, e.x, f.x, },
-	                        new int[] { a.y, b.y, d.y, e.y, f.y }, 5);
-
-	g.setColor(Color.WHITE);
-	g.fillPolygon(p);
-	g.setColor(Color.BLACK);
-	g.drawPolygon(p);
-
-	g.drawLine(16, 4, 14, 6);
-	g.drawLine(14, 6, 19, 7);
-
-	g.setColor(saved);
-	g.translate(-x, -y);
-      }
-    };
+  protected Icon fileIcon;
 
   /** An icon representing a floppy drive. */
-  protected Icon floppyDriveIcon = new Icon()
-    {
-      public int getIconHeight()
-      {
-	return ICON_SIZE;
-      }
-
-      public int getIconWidth()
-      {
-	return ICON_SIZE;
-      }
-
-      public void paintIcon(Component c, Graphics g, int x, int y)
-      {
-        // FIXME: is this not implemented, or is the icon intentionally blank?
-      }
-    };
+  protected Icon floppyDriveIcon;
 
   /** An icon representing a hard drive. */
-  protected Icon hardDriveIcon = new Icon()
-    {
-      public int getIconHeight()
-      {
-	return ICON_SIZE;
-      }
-
-      public int getIconWidth()
-      {
-	return ICON_SIZE;
-      }
-
-      public void paintIcon(Component c, Graphics g, int x, int y)
-      {
-        // FIXME: is this not implemented, or is the icon intentionally blank?
-      }
-    };
+  protected Icon hardDriveIcon;
 
   /** The localised mnemonic for the "help" button. */
   protected int helpButtonMnemonic;
@@ -759,86 +613,10 @@ public class BasicFileChooserUI extends FileChooserUI
   protected String helpButtonToolTipText;
 
   /** An icon representing the user's home folder. */
-  protected Icon homeFolderIcon = new Icon()
-    {
-      public int getIconHeight()
-      {
-	return ICON_SIZE;
-      }
-
-      public int getIconWidth()
-      {
-	return ICON_SIZE;
-      }
-
-      public void paintIcon(Component c, Graphics g, int x, int y)
-      {
-	Color saved = g.getColor();
-	g.translate(x, y);
-
-	Point a = new Point(12, 3);
-	Point b = new Point(4, 10);
-	Point d = new Point(20, 10);
-
-	Polygon p = new Polygon(new int[] { a.x, b.x, d.x },
-	                        new int[] { a.y, b.y, d.y }, 3);
-
-	g.setColor(new Color(104, 51, 0));
-	g.fillPolygon(p);
-	g.setColor(Color.BLACK);
-	g.drawPolygon(p);
-
-	g.setColor(Color.WHITE);
-	g.fillRect(8, 10, 8, 10);
-	g.setColor(Color.BLACK);
-	g.drawRect(8, 10, 8, 10);
-
-	g.setColor(saved);
-	g.translate(-x, -y);
-      }
-    };
+  protected Icon homeFolderIcon;
 
   /** An icon for the "list view" button. */
-  protected Icon listViewIcon = new Icon()
-    {
-      public int getIconHeight()
-      {
-	return ICON_SIZE;
-      }
-
-      public int getIconWidth()
-      {
-	return ICON_SIZE;
-      }
-
-      // Not needed. Only simplifies things until we get real icons.
-      private void paintPartial(Graphics g, int x, int y)
-      {
-	Color saved = g.getColor();
-	g.translate(x, y);
-
-	g.setColor(Color.GRAY);
-	g.drawRect(1, 1, 7, 10);
-	g.drawLine(8, 6, 11, 6);
-
-	g.setColor(saved);
-	g.translate(-x, -y);
-      }
-
-      public void paintIcon(Component c, Graphics g, int x, int y)
-      {
-	Color saved = g.getColor();
-	g.translate(x, y);
-
-	paintPartial(g, 0, 0);
-	paintPartial(g, 12, 0);
-	paintPartial(g, 0, 12);
-	paintPartial(g, 12, 12);
-
-	g.setColor(saved);
-	g.translate(-x, -y);
-      }
-    };
+  protected Icon listViewIcon;
 
   /** An icon for the "new folder" button. */
   protected Icon newFolderIcon = directoryIcon;
@@ -871,64 +649,12 @@ public class BasicFileChooserUI extends FileChooserUI
   protected String updateButtonToolTipText;
 
   /** An icon for the "up folder" button. */
-  protected Icon upFolderIcon = new Icon()
-    {
-      public int getIconHeight()
-      {
-	return ICON_SIZE;
-      }
-
-      public int getIconWidth()
-      {
-	return ICON_SIZE;
-      }
-
-      public void paintIcon(Component comp, Graphics g, int x, int y)
-      {
-	Color saved = g.getColor();
-	g.translate(x, y);
-
-	Point a = new Point(3, 7);
-	Point b = new Point(3, 21);
-	Point c = new Point(21, 21);
-	Point d = new Point(21, 12);
-	Point e = new Point(16, 12);
-	Point f = new Point(13, 7);
-
-	Polygon dir = new Polygon(new int[] { a.x, b.x, c.x, d.x, e.x, f.x },
-	                          new int[] { a.y, b.y, c.y, d.y, e.y, f.y }, 6);
-
-	g.setColor(new Color(153, 204, 255));
-	g.fillPolygon(dir);
-	g.setColor(Color.BLACK);
-	g.drawPolygon(dir);
-
-	a = new Point(12, 15);
-	b = new Point(9, 18);
-	c = new Point(15, 18);
-
-	Polygon arrow = new Polygon(new int[] { a.x, b.x, c.x },
-	                            new int[] { a.y, b.y, c.y }, 3);
-
-	g.fillPolygon(arrow);
-
-	g.drawLine(12, 15, 12, 22);
-
-	g.translate(-x, -y);
-	g.setColor(saved);
-      }
-    };
+  protected Icon upFolderIcon;
 
   // -- begin private, but package local since used in inner classes --
 
   /** The file chooser component represented by this UI delegate. */
   JFileChooser filechooser;
-
-  /** The file list. */
-  JList filelist;
-
-  /** The combo box used to display/select file filters. */
-  JComboBox filters;
 
   /** The model for the directory list. */
   BasicDirectoryModel model;
@@ -939,32 +665,11 @@ public class BasicFileChooserUI extends FileChooserUI
   /** The default file view. */
   FileView fv = new BasicFileView();
 
-  /** The icon size. */
-  static final int ICON_SIZE = 24;
-
-  /** A combo box for display/selection of parent directories. */
-  JComboBox parents;
-
-  /** The current file name. */
-  String filename;
-
   /** The accept (open/save) button. */
   JButton accept;
 
-  /** The cancel button. */
-  JButton cancel;
-
-  /** The button to move up to the parent directory. */
-  JButton upFolderButton;
-
-  /** The button to create a new directory. */
-  JButton newFolderButton;
-
-  /** The button to move to the user's home directory. */
-  JButton homeFolderButton;
-
   /** An optional accessory panel. */
-  JPanel accessoryPanel;
+  JPanel accessoryPanel = new JPanel();
 
   /** A property change listener. */
   PropertyChangeListener propertyChangeListener;
@@ -997,47 +702,43 @@ public class BasicFileChooserUI extends FileChooserUI
   /** Current parent path */
   String parentPath;
   
+  /**
+   * The action for the 'approve' button.
+   * @see #getApproveSelectionAction()
+   */
+  private ApproveSelectionAction approveSelectionAction;
+  
+  /**
+   * The action for the 'cancel' button.
+   * @see #getCancelSelectionAction()
+   */
+  private CancelSelectionAction cancelSelectionAction;
+  
+  /**
+   * The action for the 'go home' control button.
+   * @see #getGoHomeAction()
+   */
+  private GoHomeAction goHomeAction;
+  
+  /**
+   * The action for the 'up folder' control button.
+   * @see #getChangeToParentDirectoryAction()
+   */
+  private ChangeToParentDirectoryAction changeToParentDirectoryAction;
+  
+  /**
+   * The action for the 'new folder' control button.
+   * @see #getNewFolderAction()
+   */
+  private NewFolderAction newFolderAction;
+  
+  /**
+   * The action for ???.  // FIXME: what is this?
+   * @see #getUpdateAction()
+   */
+  private UpdateAction updateAction;
+  
   // -- end private --
-  private class ListLabelRenderer extends JLabel implements ListCellRenderer
-  {
-    /** DOCUMENT ME! */
-    final Color selected = new Color(153, 204, 255);
-
-    /**
-     * Creates a new ListLabelRenderer object.
-     */
-    public ListLabelRenderer()
-    {
-      super();
-      setOpaque(true);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param list DOCUMENT ME!
-     * @param value DOCUMENT ME!
-     * @param index DOCUMENT ME!
-     * @param isSelected DOCUMENT ME!
-     * @param cellHasFocus DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public Component getListCellRendererComponent(JList list, Object value,
-                                                  int index,
-                                                  boolean isSelected,
-                                                  boolean cellHasFocus)
-    {
-      setHorizontalAlignment(SwingConstants.LEFT);
-      File file = (File) value;
-      setText(filechooser.getName(file));
-      setIcon(filechooser.getIcon(file));
-      setBackground(isSelected ? selected : Color.WHITE);
-      setForeground(Color.BLACK);
-
-      return this;
-    }
-  }
 
   /**
    * Closes the dialog.
@@ -1056,7 +757,6 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   public BasicFileChooserUI(JFileChooser b)
   {
-    this.filechooser = b;
   }
 
   /**
@@ -1081,6 +781,7 @@ public class BasicFileChooserUI extends FileChooserUI
     if (c instanceof JFileChooser)
       {
         JFileChooser fc = (JFileChooser) c;
+        this.filechooser = fc;
         fc.resetChoosableFileFilters();
         createModel();
         clearIconCache();
@@ -1130,78 +831,7 @@ public class BasicFileChooserUI extends FileChooserUI
     if (parentFiles.size() == 0)
       return;
 
-    if (parents.getItemCount() > 0)
-      parents.removeAllItems();
-    for (int i = parentFiles.size() - 1; i >= 0; i--)
-      parents.addItem(parentFiles.get(i));
-    parents.setSelectedIndex(parentFiles.size() - 1);
-    parents.revalidate();
-    parents.repaint();
-  }
-
-  /**
-   * DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
-   */
-  private ItemListener createBoxListener()
-  {
-    return new ItemListener()
-      {
-	public void itemStateChanged(ItemEvent e)
-	{
-	  if (parents.getItemCount() - 1 == parents.getSelectedIndex())
-	    return;
-	  StringBuffer dir = new StringBuffer();
-	  for (int i = 0; i <= parents.getSelectedIndex(); i++)
-	    {
-	      dir.append(parents.getItemAt(i));
-	      dir.append(File.separatorChar);
-	    }
-	  filechooser.setCurrentDirectory(filechooser.getFileSystemView()
-	                                             .createFileObject(dir
-	                                                               .toString()));
-	}
-      };
-  }
-
-  /**
-   * DOCUMENT ME!
-   *
-   * @return DOCUMENT ME!
-   */
-  private ItemListener createFilterListener()
-  {
-    return new ItemListener()
-      {
-	public void itemStateChanged(ItemEvent e)
-	{
-	  int index = filters.getSelectedIndex();
-	  if (index == -1)
-	    return;
-	  filechooser.setFileFilter(filechooser.getChoosableFileFilters()[index]);
-	}
-      };
-  }
-
-  void filterEntries()
-  {
-    FileFilter[] list = filechooser.getChoosableFileFilters();
-    if (filters.getItemCount() > 0)
-      filters.removeAllItems();
-
-    int index = -1;
-    String selected = filechooser.getFileFilter().getDescription();
-    for (int i = 0; i < list.length; i++)
-      {
-	if (selected.equals(list[i].getDescription()))
-	  index = i;
-	filters.addItem(list[i].getDescription());
-      }
-    filters.setSelectedIndex(index);
-    filters.revalidate();
-    filters.repaint();
-  }
+  }  
 
   /**
    * Creates and install the subcomponents for the file chooser.
@@ -1210,121 +840,6 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   public void installComponents(JFileChooser fc)
   {
-    JLabel look = new JLabel("Look In:");
-
-    parents = new JComboBox();
-    parents.setRenderer(new BasicComboBoxRenderer());
-    boxEntries();
-    look.setLabelFor(parents);
-    JPanel parentsPanel = new JPanel();
-    parentsPanel.add(look);
-    parentsPanel.add(parents);
-    JPanel buttonPanel = new JPanel();
-
-    upFolderButton = new JButton();
-    upFolderButton.setIcon(upFolderIcon);
-    buttonPanel.add(upFolderButton);
-
-    homeFolderButton = new JButton();
-    homeFolderButton = new JButton(homeFolderIcon);
-    buttonPanel.add(homeFolderButton);
-
-    newFolderButton = new JButton();
-    newFolderButton.setIcon(newFolderIcon);
-    buttonPanel.add(newFolderButton);
-
-    ButtonGroup toggles = new ButtonGroup();
-    JToggleButton listViewButton = new JToggleButton();
-    listViewButton.setIcon(listViewIcon);
-    toggles.add(listViewButton);
-    buttonPanel.add(listViewButton);
-
-    JToggleButton detailsViewButton = new JToggleButton();
-    detailsViewButton.setIcon(detailsViewIcon);
-    toggles.add(detailsViewButton);
-    buttonPanel.add(detailsViewButton);
-
-    JPanel topPanel = new JPanel();
-    parentsPanel.add(buttonPanel);
-    topPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
-    topPanel.add(parentsPanel);
-
-    accessoryPanel = new JPanel();
-    if (filechooser.getAccessory() != null)
-      accessoryPanel.add(filechooser.getAccessory(), BorderLayout.CENTER);
-
-    filelist = new JList(model);
-    filelist.setVisibleRowCount(6);
-    JScrollPane scrollp = new JScrollPane(filelist);
-    scrollp.setPreferredSize(new Dimension(400, 175));
-    filelist.setBackground(Color.WHITE);
-
-    filelist.setLayoutOrientation(JList.VERTICAL_WRAP);
-    filelist.setCellRenderer(new ListLabelRenderer());
-
-    GridBagConstraints c = new GridBagConstraints();
-    c.gridx = 0;
-    c.gridy = 0;
-    c.fill = GridBagConstraints.BOTH;
-    c.weightx = 1;
-    c.weighty = 1;
-
-    JPanel centrePanel = new JPanel();
-    centrePanel.setLayout(new GridBagLayout());
-    centrePanel.add(scrollp, c);
-
-    c.gridx = 1;
-    centrePanel.add(accessoryPanel, c);
-
-    JLabel fileNameLabel = new JLabel("File Name:");
-    JLabel fileTypesLabel = new JLabel("Files of Type:");
-
-    entry = new JTextField();
-    filters = new JComboBox();
-    filterEntries();
-
-    fileNameLabel.setLabelFor(entry);
-    fileNameLabel.setHorizontalTextPosition(SwingConstants.LEFT);
-    fileTypesLabel.setLabelFor(filters);
-    fileTypesLabel.setHorizontalTextPosition(SwingConstants.LEFT);
-
-    closePanel = new JPanel();
-    accept = getApproveButton(filechooser);
-    cancel = new JButton(cancelButtonText);
-    cancel.setMnemonic(cancelButtonMnemonic);
-    cancel.setToolTipText(cancelButtonToolTipText);
-    closePanel.add(accept);
-    closePanel.add(cancel);
-
-    c.anchor = GridBagConstraints.WEST;
-    c.weighty = 0;
-    c.weightx = 0;
-    c.gridx = 0;
-
-    bottomPanel = new JPanel();
-    bottomPanel.setLayout(new GridBagLayout());
-    bottomPanel.add(fileNameLabel, c);
-
-    c.gridy = 1;
-    bottomPanel.add(fileTypesLabel, c);
-    c.gridx = 1;
-    c.gridy = 0;
-    c.weightx = 1;
-    c.weighty = 1;
-    bottomPanel.add(entry, c);
-
-    c.gridy = 1;
-    bottomPanel.add(filters, c);
-
-    c.fill = GridBagConstraints.NONE;
-    c.gridy = 2;
-    c.anchor = GridBagConstraints.EAST;
-    bottomPanel.add(closePanel, c);
-
-    filechooser.setLayout(new BorderLayout());
-    filechooser.add(topPanel, BorderLayout.NORTH);
-    filechooser.add(centrePanel, BorderLayout.CENTER);
-    filechooser.add(bottomPanel, BorderLayout.SOUTH);
   }
 
   /**
@@ -1334,15 +849,6 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   public void uninstallComponents(JFileChooser fc)
   {
-    parents = null;
-
-    accept = null;
-    cancel = null;
-    upFolderButton = null;
-    homeFolderButton = null;
-    newFolderButton = null;
-
-    filelist = null;
   }
 
   /**
@@ -1354,17 +860,6 @@ public class BasicFileChooserUI extends FileChooserUI
   {
     propertyChangeListener = createPropertyChangeListener(filechooser);
     filechooser.addPropertyChangeListener(propertyChangeListener);
-
-    //parents.addItemListener(createBoxListener());
-    accept.addActionListener(getApproveSelectionAction());
-    cancel.addActionListener(getCancelSelectionAction());
-    upFolderButton.addActionListener(getChangeToParentDirectoryAction());
-    homeFolderButton.addActionListener(getGoHomeAction());
-    newFolderButton.addActionListener(getNewFolderAction());
-    filters.addItemListener(createFilterListener());
-
-    filelist.addMouseListener(createDoubleClickListener(filechooser, filelist));
-    filelist.addListSelectionListener(createListSelectionListener(filechooser));
   }
 
   /**
@@ -1401,24 +896,42 @@ public class BasicFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Installs the icons for this UI delegate (NOT YET IMPLEMENTED).
+   * Installs the icons for this UI delegate.
    *
-   * @param fc  the file chooser.
+   * @param fc  the file chooser (ignored).
    */
   protected void installIcons(JFileChooser fc)
   {
-    // FIXME: Implement.
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    computerIcon = MetalIconFactory.getTreeComputerIcon();
+    detailsViewIcon = defaults.getIcon("FileChooser.detailsViewIcon");
+    directoryIcon = new MetalIconFactory.TreeFolderIcon();
+    fileIcon = new MetalIconFactory.TreeLeafIcon();
+    floppyDriveIcon = MetalIconFactory.getTreeFloppyDriveIcon();
+    hardDriveIcon = MetalIconFactory.getTreeHardDriveIcon();
+    homeFolderIcon = defaults.getIcon("FileChooser.homeFolderIcon");
+    listViewIcon = defaults.getIcon("FileChooser.listViewIcon");
+    newFolderIcon = defaults.getIcon("FileChooser.newFolderIcon");
+    upFolderIcon = defaults.getIcon("FileChooser.upFolderIcon");
   }
 
   /**
-   * Uninstalls the icons previously added by this UI delegate (NOT YET
-   * IMPLEMENTED).
+   * Uninstalls the icons previously added by this UI delegate.
    *
    * @param fc  the file chooser.
    */
   protected void uninstallIcons(JFileChooser fc)
   {
-    // FIXME: Implement.
+    computerIcon = null;
+    detailsViewIcon = null;
+    directoryIcon = null;
+    fileIcon = null;
+    floppyDriveIcon = null;
+    hardDriveIcon = null;
+    homeFolderIcon = null;
+    listViewIcon = null;
+    newFolderIcon = null;
+    upFolderIcon = null;
   }
 
   /**
@@ -1428,25 +941,36 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   protected void installStrings(JFileChooser fc)
   {
-    acceptAllFileFilterText = UIManager.getString("FileChooser.acceptAllFileFilterText");
-    cancelButtonMnemonic = UIManager.getInt("FileChooser.cancelButtonMnemonic");
-    cancelButtonText = UIManager.getString("FileChooser.cancelButtonText");
-    cancelButtonToolTipText = UIManager.getString("FileChooser.cancelButtonToolTipText");
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
-    dirDescText = UIManager.getString("FileChooser.directoryDescriptionText");
-    fileDescText = UIManager.getString("FileChooser.fileDescriptionText");
+    dirDescText = defaults.getString("FileChooser.directoryDescriptionText");
+    fileDescText = defaults.getString("FileChooser.fileDescriptionText");
 
-    helpButtonMnemonic = UIManager.getInt("FileChooser.helpButtonMnemonic");
-    helpButtonText = UIManager.getString("FileChooser.helpButtonText");
-    helpButtonToolTipText = UIManager.getString("FileChooser.helpButtonToolTipText");
+    acceptAllFileFilterText = defaults.getString("FileChooser.acceptAllFileFilterText");
+    cancelButtonText = "Cancel";
+    cancelButtonToolTipText = "Abort file chooser dialog";
+    cancelButtonMnemonic = new Integer((String) UIManager.get("FileChooser.cancelButtonMnemonic")).intValue();
 
-    openButtonMnemonic = UIManager.getInt("FileChooser.openButtonMnemonic");
-    openButtonText = UIManager.getString("FileChooser.openButtonText");
-    openButtonToolTipText = UIManager.getString("FileChooser.openButtonToolTipText");
+    directoryOpenButtonText = "Open";
+    directoryOpenButtonToolTipText = "Open selected directory";
+    directoryOpenButtonMnemonic 
+        = new Integer((String) UIManager.get("FileChooser.directoryOpenButtonMnemonic")).intValue();
+    
+    helpButtonText = "Help";
+    helpButtonToolTipText = "FileChooser help";
+    helpButtonMnemonic = new Integer((String) UIManager.get("FileChooser.helpButtonMnemonic")).intValue();
 
-    saveButtonMnemonic = UIManager.getInt("FileChooser.saveButtonMnemonic");
-    saveButtonText = UIManager.getString("FileChooser.saveButtonText");
-    saveButtonToolTipText = UIManager.getString("FileChooser.saveButtonToolTipText");
+    openButtonText = "Open";
+    openButtonToolTipText = "Open selected file";
+    openButtonMnemonic = new Integer((String) UIManager.get("FileChooser.openButtonMnemonic")).intValue();
+
+    saveButtonText = "Save";
+    saveButtonToolTipText = "Save selected file";
+    saveButtonMnemonic = new Integer((String) UIManager.get("FileChooser.saveButtonMnemonic")).intValue();
+  
+    updateButtonText = "Update";
+    updateButtonToolTipText = "Update directory listing";
+    updateButtonMnemonic = new Integer((String) UIManager.get("FileChooser.updateButtonMnemonic")).intValue();
   }
 
   /**
@@ -1457,24 +981,26 @@ public class BasicFileChooserUI extends FileChooserUI
   protected void uninstallStrings(JFileChooser fc)
   {
     acceptAllFileFilterText = null;
-    cancelButtonMnemonic = 0;
-    cancelButtonText = null;
-    cancelButtonToolTipText = null;
-
     dirDescText = null;
     fileDescText = null;
 
-    helpButtonMnemonic = 0;
+    cancelButtonText = null;
+    cancelButtonToolTipText = null;
+
+    directoryOpenButtonText = null;
+    directoryOpenButtonToolTipText = null;
+
     helpButtonText = null;
     helpButtonToolTipText = null;
 
-    openButtonMnemonic = 0;
     openButtonText = null;
     openButtonToolTipText = null;
 
-    saveButtonMnemonic = 0;
     saveButtonText = null;
     saveButtonToolTipText = null;
+    
+    updateButtonText = null;
+    updateButtonToolTipText = null;
   }
 
   /**
@@ -1509,110 +1035,6 @@ public class BasicFileChooserUI extends FileChooserUI
     {
       public void propertyChange(PropertyChangeEvent e)
       {
-        // FIXME: Multiple file selection waiting on JList multiple selection
-        // bug.
-        if (e.getPropertyName().equals(
-                                       JFileChooser.SELECTED_FILE_CHANGED_PROPERTY))
-          {
-            if (filechooser.getSelectedFile() == null)
-              setFileName(null);
-            else
-              setFileName(filechooser.getSelectedFile().toString());
-            int index = -1;
-            File file = filechooser.getSelectedFile();
-            for (index = 0; index < model.getSize(); index++)
-              if (((File) model.getElementAt(index)).equals(file))
-                break;
-            if (index == -1)
-              return;
-            filelist.setSelectedIndex(index);
-            filelist.ensureIndexIsVisible(index);
-            filelist.revalidate();
-            filelist.repaint();
-          }
-        else if (e.getPropertyName().equals(
-                                            JFileChooser.DIRECTORY_CHANGED_PROPERTY))
-          {
-            filelist.clearSelection();
-            filelist.revalidate();
-            filelist.repaint();
-            setDirectorySelected(false);
-            setDirectory(filechooser.getCurrentDirectory());
-            boxEntries();
-          }
-        else if (e.getPropertyName().equals(
-                                            JFileChooser.CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY)
-                 || e.getPropertyName().equals(
-                                               JFileChooser.FILE_FILTER_CHANGED_PROPERTY))
-          filterEntries();
-        else if (e.getPropertyName().equals(
-                                            JFileChooser.DIALOG_TYPE_CHANGED_PROPERTY)
-                 || e.getPropertyName().equals(
-                                               JFileChooser.DIALOG_TITLE_CHANGED_PROPERTY))
-          {
-            Window owner = SwingUtilities.windowForComponent(filechooser);
-            if (owner instanceof JDialog)
-              ((JDialog) owner).setTitle(getDialogTitle(filechooser));
-            accept.setText(getApproveButtonText(filechooser));
-            accept.setToolTipText(getApproveButtonToolTipText(filechooser));
-            accept.setMnemonic(getApproveButtonMnemonic(filechooser));
-          }
-        else if (e.getPropertyName().equals(
-                                            JFileChooser.APPROVE_BUTTON_TEXT_CHANGED_PROPERTY))
-          accept.setText(getApproveButtonText(filechooser));
-        else if (e.getPropertyName().equals(
-                                            JFileChooser.APPROVE_BUTTON_TOOL_TIP_TEXT_CHANGED_PROPERTY))
-          accept.setToolTipText(getApproveButtonToolTipText(filechooser));
-        else if (e.getPropertyName().equals(
-                                            JFileChooser.APPROVE_BUTTON_MNEMONIC_CHANGED_PROPERTY))
-          accept.setMnemonic(getApproveButtonMnemonic(filechooser));
-        else if (e.getPropertyName().equals(
-                                            JFileChooser.CONTROL_BUTTONS_ARE_SHOWN_CHANGED_PROPERTY))
-          {
-            if (filechooser.getControlButtonsAreShown())
-              {
-                GridBagConstraints c = new GridBagConstraints();
-                c.gridy = 1;
-                bottomPanel.add(filters, c);
-
-                c.fill = GridBagConstraints.BOTH;
-                c.gridy = 2;
-                c.anchor = GridBagConstraints.EAST;
-                bottomPanel.add(closePanel, c);
-                bottomPanel.revalidate();
-                bottomPanel.repaint();
-                bottomPanel.doLayout();
-              }
-            else
-              bottomPanel.remove(closePanel);
-          }
-        else if (e.getPropertyName().equals(
-                                            JFileChooser.ACCEPT_ALL_FILE_FILTER_USED_CHANGED_PROPERTY))
-          {
-            if (filechooser.isAcceptAllFileFilterUsed())
-              filechooser.addChoosableFileFilter(getAcceptAllFileFilter(filechooser));
-            else
-              filechooser.removeChoosableFileFilter(getAcceptAllFileFilter(filechooser));
-          }
-        else if (e.getPropertyName().equals(
-                                            JFileChooser.ACCESSORY_CHANGED_PROPERTY))
-          {
-            JComponent old = (JComponent) e.getOldValue();
-            if (old != null)
-              getAccessoryPanel().remove(old);
-            JComponent newval = (JComponent) e.getNewValue();
-            if (newval != null)
-              getAccessoryPanel().add(newval);
-          }
-        if (e.getPropertyName().equals(JFileChooser.DIRECTORY_CHANGED_PROPERTY)
-            || e.getPropertyName().equals(
-                                          JFileChooser.FILE_FILTER_CHANGED_PROPERTY)
-            || e.getPropertyName().equals(
-                                          JFileChooser.FILE_HIDING_CHANGED_PROPERTY))
-          rescanCurrentDirectory(filechooser);
-
-        filechooser.revalidate();
-        filechooser.repaint();
       }
     };
   }
@@ -1624,7 +1046,9 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   public String getFileName()
   {
-    return filename;
+    // FIXME: I'm thinking that this method just provides access to the
+    // text value in the JTextField component...but not sure yet
+    return null;  //filename;
   }
 
   /**
@@ -1649,7 +1073,9 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   public void setFileName(String filename)
   {
-    this.filename = filename;
+    // FIXME:  it might be the case that this method provides an access 
+    // point for the JTextField (or whatever) a subclass is using...
+    //this.filename = filename;
   }
 
   /**
@@ -1672,7 +1098,6 @@ public class BasicFileChooserUI extends FileChooserUI
   public void rescanCurrentDirectory(JFileChooser fc)
   {
     getModel().validateFileCache();
-    filelist.revalidate();
   }
 
   /**
@@ -1708,17 +1133,14 @@ public class BasicFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Creates and returns an approve (open or save) button for the dialog.
+   * Returns the approve (open or save) button for the dialog.
    *
    * @param fc  the file chooser.
    *
    * @return The button.
    */
-  public JButton getApproveButton(JFileChooser fc)
+  protected JButton getApproveButton(JFileChooser fc)
   {
-    accept = new JButton(getApproveButtonText(fc));
-    accept.setMnemonic(getApproveButtonMnemonic(fc));
-    accept.setToolTipText(getApproveButtonToolTipText(fc));
     return accept;
   }
 
@@ -1830,9 +1252,8 @@ public class BasicFileChooserUI extends FileChooserUI
   }
 
   /**
-   * Returns the file view for the file chooser.  This returns either the
-   * file view that has been explicitly set for the {@link JFileChooser}, or
-   * a default file view.
+   * Returns the default file view (NOT the file view from the file chooser,
+   * if there is one).
    *
    * @param fc  the file chooser component.
    *
@@ -1856,24 +1277,10 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   public String getDialogTitle(JFileChooser fc)
   {
-    String ret = fc.getDialogTitle();
-    if (ret != null)
-      return ret;
-    switch (fc.getDialogType())
-      {
-      case JFileChooser.OPEN_DIALOG:
-	ret = openButtonText;
-	break;
-      case JFileChooser.SAVE_DIALOG:
-	ret = saveButtonText;
-	break;
-      default:
-	ret = fc.getApproveButtonText();
-	break;
-      }
-    if (ret == null)
-      ret = openButtonText;
-    return ret;
+    String result = fc.getDialogTitle();
+    if (result == null)
+      result = getApproveButtonText(fc);
+    return result;
   }
 
   /**
@@ -1906,23 +1313,28 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   public String getApproveButtonText(JFileChooser fc)
   {
-    if (fc.getApproveButtonText() != null)
-      return fc.getApproveButtonText();
-    else if (fc.getDialogType() == JFileChooser.SAVE_DIALOG)
-      return saveButtonText;
-    else
-      return openButtonText;
+    String result = fc.getApproveButtonText();
+    if (result == null)
+      {
+        if (fc.getDialogType() == JFileChooser.SAVE_DIALOG)
+          result = saveButtonText;
+        else
+          result = openButtonText;
+      }
+    return result;
   }
 
   /**
    * Creates and returns a new action that will be used with the "new folder" 
    * button.
    *
-   * @return A new instance of {@link GoHomeAction}.
+   * @return A new instance of {@link NewFolderAction}.
    */
   public Action getNewFolderAction()
   {
-    return new NewFolderAction();
+    if (newFolderAction == null)
+      newFolderAction = new NewFolderAction();
+    return newFolderAction;
   }
 
   /**
@@ -1933,49 +1345,56 @@ public class BasicFileChooserUI extends FileChooserUI
    */
   public Action getGoHomeAction()
   {
-    return new GoHomeAction();
+    if (goHomeAction == null)
+      goHomeAction = new GoHomeAction();
+    return goHomeAction;
   }
 
   /**
-   * Creates and returns a new action that will be used with the "up folder" 
-   * button.
+   * Returns the action that handles events for the "up folder" control button.
    *
-   * @return A new instance of {@link ChangeToParentDirectoryAction}.
+   * @return An instance of {@link ChangeToParentDirectoryAction}.
    */
   public Action getChangeToParentDirectoryAction()
   {
-    return new ChangeToParentDirectoryAction();
+    if (changeToParentDirectoryAction == null)
+      changeToParentDirectoryAction = new ChangeToParentDirectoryAction();
+    return changeToParentDirectoryAction;
   }
 
   /**
-   * Creates and returns a new action that will be used with the "approve" 
-   * button.
+   * Returns the action that handles events for the "approve" button.
    *
-   * @return A new instance of {@link ApproveSelectionAction}.
+   * @return An instance of {@link ApproveSelectionAction}.
    */
   public Action getApproveSelectionAction()
   {
-    return new ApproveSelectionAction();
+    if (approveSelectionAction == null)
+      approveSelectionAction = new ApproveSelectionAction();
+    return approveSelectionAction;
   }
 
   /**
-   * Creates and returns a new action that will be used with the "cancel" 
-   * button.
+   * Returns the action that handles events for the "cancel" button.
    *
-   * @return A new instance of {@link CancelSelectionAction}.
+   * @return An instance of {@link CancelSelectionAction}.
    */
   public Action getCancelSelectionAction()
   {
-    return new CancelSelectionAction();
+    if (cancelSelectionAction == null)
+      cancelSelectionAction = new CancelSelectionAction();
+    return cancelSelectionAction;
   }
 
   /**
-   * Creates and returns a new instance of {@link UpdateAction}.
+   * Returns the update action (an instance of {@link UpdateAction}).
    *
    * @return An action. 
    */
   public Action getUpdateAction()
   {
-    return new UpdateAction();
+    if (updateAction == null)
+      updateAction = new UpdateAction();
+    return updateAction;
   }
 }

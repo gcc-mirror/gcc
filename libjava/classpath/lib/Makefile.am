@@ -19,17 +19,17 @@ if FOUND_GCJ
 JAVAC = exit 1
 else
 if FOUND_JIKES
-JAVAC = $(JIKES) +Pno-shadow +Pno-switchcheck +F $(JIKESENCODING) -bootclasspath '' -extdirs '' -sourcepath '' --classpath $(compile_classpath) -d . @classes
+JAVAC = $(JIKES) $(JIKESWARNINGS) +F $(JIKESENCODING) -bootclasspath '' -extdirs '' -sourcepath '' --classpath $(compile_classpath) -d . @classes
 else
 if FOUND_KJC
 ## FIXME: from what I can tell, kjc does not support a -encoding option.
 JAVAC = $(KJC) -classpath .:$(USER_CLASSLIB) -d . @classes
 else
 if FOUND_GCJX
-JAVAC = $(GCJX) -encoding UTF-8 -classpath .:$(USER_CLASSLIB) -d . @classes
+JAVAC = $(GCJX) -g -encoding UTF-8 -classpath .:$(USER_CLASSLIB) -d . @classes
 else
 if FOUND_ECJ
-JAVAC = $(ECJ) -source 1.4 -encoding UTF-8 -warn:-deprecation,serial,typeHiding,unchecked,unused,varargsCast -proceedOnError -bootclasspath '' -classpath $(compile_classpath) -d . @classes
+JAVAC = $(ECJ) -source 1.4 -encoding UTF-8 -warn:-deprecation,serial,unused -proceedOnError -bootclasspath '' -classpath $(compile_classpath) -d . @classes
 endif # FOUND_ECJ
 endif # FOUND_GCJX
 endif # FOUND_KJC
@@ -155,10 +155,10 @@ clean-local:
 
 dist-hook:
 	mkdir -p $(distdir)
-	cp -dfR $(top_srcdir)/gnu $(top_srcdir)/java $(top_srcdir)/javax $(top_srcdir)/org $(top_srcdir)/vm $(top_srcdir)/resource $(top_distdir)
+	cp -pdfR $(top_srcdir)/gnu $(top_srcdir)/java $(top_srcdir)/javax $(top_srcdir)/org $(top_srcdir)/vm $(top_srcdir)/resource $(distdir)/..
 # Delete not wanted files.
-	$(FIND) $(top_distdir)/gnu $(top_distdir)/java $(top_distdir)/javax $(top_distdir)/org $(top_distdir)/vm $(top_distdir)/resource -name CVS -print | xargs rm -fr
-	$(FIND) $(top_distdir)/gnu $(top_distdir)/java $(top_distdir)/javax $(top_distdir)/org $(top_distdir)/vm $(top_distdir)/resource -name .cvsignore -print | xargs rm -f
-	$(FIND) $(top_distdir)/gnu $(top_distdir)/java $(top_distdir)/javax $(top_distdir)/org $(top_distdir)/vm -name class-dependencies.conf -print | xargs rm -f
-	rm -f $(top_distdir)/gnu/classpath/Configuration.java
-	rm -f $(top_distdir)/java/util/LocaleData.java
+	$(FIND) $(distdir)/../gnu $(distdir)/../java $(distdir)/../javax $(distdir)/../org $(distdir)/../vm $(distdir)/../resource -name CVS -print | xargs rm -fr
+	$(FIND) $(distdir)/../gnu $(distdir)/../java $(distdir)/../javax $(distdir)/../org $(distdir)/../vm $(distdir)/../resource -name .cvsignore -print | xargs rm -f
+	$(FIND) $(distdir)/../gnu $(distdir)/../java $(distdir)/../javax $(distdir)/../org $(distdir)/../vm -name class-dependencies.conf -print | xargs rm -f
+	rm -f $(distdir)/../gnu/classpath/Configuration.java
+	rm -f $(distdir)/../java/util/LocaleData.java

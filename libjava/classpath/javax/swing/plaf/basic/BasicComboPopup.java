@@ -442,6 +442,7 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
   {
     list.setModel(comboBox.getModel());
     list.setVisibleRowCount(comboBox.getMaximumRowCount());
+    list.setFocusable(false);
     installListListeners();
   }
 

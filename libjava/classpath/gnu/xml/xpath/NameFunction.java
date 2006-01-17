@@ -1,5 +1,5 @@
 /* NameFunction.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 package gnu.xml.xpath;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Node;
@@ -78,7 +79,8 @@ final class NameFunction
 
   public Object evaluate(Node context, int pos, int len)
   {
-    Object val = (arg == null) ? null : arg.evaluate(context, pos, len);
+    Object val = (arg == null) ? Collections.singleton(context) :
+        arg.evaluate(context, pos, len);
     return _name(context, (Collection) val);
   }
 

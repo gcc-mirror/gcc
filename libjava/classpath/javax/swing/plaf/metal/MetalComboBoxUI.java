@@ -313,4 +313,40 @@ public class MetalComboBoxUI extends BasicComboBoxUI
           d.height + insetsH + 1);
   }
   
+  /**
+   * Configures the editor for this combo box.
+   */
+  public void configureEditor()
+  {
+    ComboBoxEditor cbe = comboBox.getEditor();
+    if (cbe != null)
+      {
+        cbe.getEditorComponent().setFont(comboBox.getFont());
+        cbe.setItem(comboBox.getSelectedItem());
+        cbe.addActionListener(comboBox);
+      }
+  }
+  
+  /**
+   * Unconfigures the editor for this combo box.
+   */
+  public void unconfigureEditor()
+  {
+    ComboBoxEditor cbe = comboBox.getEditor();
+    if (cbe != null)
+      {
+        cbe.getEditorComponent().setFont(null);
+        cbe.setItem(null);
+        cbe.removeActionListener(comboBox);
+      }
+  }
+  
+  /** 
+   * Lays out the ComboBox
+   */
+  public void layoutComboBox(Container parent,
+                             MetalComboBoxUI.MetalComboBoxLayoutManager manager)
+  {
+    manager.layoutContainer(parent);
+  }
 }

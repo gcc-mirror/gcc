@@ -41,7 +41,6 @@ package javax.swing.plaf;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
@@ -185,12 +184,12 @@ public abstract class ComponentUI
   public void update(Graphics g, JComponent c)
   {
     if (c.isOpaque())
-    {
-      Color oldColor = g.getColor();
-      g.setColor(c.getBackground());
-      g.fillRect(0, 0, c.getWidth(), c.getHeight());
-      g.setColor(oldColor);
-    }
+      {
+        Color oldColor = g.getColor();
+        g.setColor(c.getBackground());
+        g.fillRect(0, 0, c.getWidth(), c.getHeight());
+        g.setColor(oldColor);
+      }
     paint(g, c);
   }
    

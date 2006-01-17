@@ -123,9 +123,8 @@
 #define __IEEE_LITTLE_ENDIAN
 #endif
 
-#if defined (__PPC__) || defined (__ppc__) || defined (__ppc64__)
-#if (defined(_BIG_ENDIAN) && _BIG_ENDIAN) || (defined(_AIX) && _AIX) \
-    || defined (__APPLE__)
+#if defined (__PPC__) || defined (__ppc__) || defined (__powerpc__) || defined (__ppc64__)
+#if (defined(_BIG_ENDIAN) && _BIG_ENDIAN) || (defined(_AIX) && _AIX) || defined (__BIG_ENDIAN__)|| defined (__APPLE__)
 #define __IEEE_BIG_ENDIAN
 #else
 #if (defined(_LITTLE_ENDIAN) && _LITTLE_ENDIAN) || (defined(__sun__) && __sun__) || (defined(__WIN32__) && __WIN32__)

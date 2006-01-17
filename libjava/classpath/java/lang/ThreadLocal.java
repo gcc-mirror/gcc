@@ -1,5 +1,5 @@
 /* ThreadLocal -- a variable with a unique value per thread
-   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -96,21 +96,6 @@ public class ThreadLocal
   static final Object NULL = new Object();
 
   /**
-   * Serves as a key for the Thread.locals WeakHashMap.
-   * We can't use "this", because a subclass may override equals/hashCode
-   * and we need to use object identity for the map.
-   */
-  final Key key = new Key();
-
-  class Key
-  {
-    ThreadLocal get()
-    {
-      return ThreadLocal.this;
-    }
-  }
-
-  /**
    * Creates a ThreadLocal object without associating any value to it yet.
    */
   public ThreadLocal()
@@ -143,11 +128,11 @@ public class ThreadLocal
     Map map = Thread.getThreadLocals();
     // Note that we don't have to synchronize, as only this thread will
     // ever modify the map.
-    Object value = map.get(key);
+    Object value = map.get(this);
     if (value == null)
       {
         value = initialValue();
-        map.put(key, value == null ? NULL : value);
+        map.put(this, value == null ? NULL : value);
       }
     return value == NULL ? null : value;
   }
@@ -165,6 +150,6 @@ public class ThreadLocal
     Map map = Thread.getThreadLocals();
     // Note that we don't have to synchronize, as only this thread will
     // ever modify the map.
-    map.put(key, value == null ? NULL : value);
+    map.put(this, value == null ? NULL : value);
   }
 }

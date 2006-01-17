@@ -50,8 +50,6 @@ exception statement from your version. */
 #endif
 #include "target_native_math_int.h"
 
-#include "javaio.h"
-
 #include "java_io_VMFile.h"
 
 /*************************************************************************/

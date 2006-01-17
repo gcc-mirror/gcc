@@ -1,5 +1,5 @@
 /* PrinterName.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,14 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.TextSyntax;
 
 /**
+ * The <code>PrinterName</code> printing attribute provides the name of a 
+ * print service. The name may but must not be related to parts of the
+ * printer URI.
+ * <p>
+ * <b>IPP Compatibility:</b> PrinterName is an IPP 1.1 attribute.
+ * </p>
+ * @see javax.print.attribute.standard.PrinterURI
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class PrinterName extends TextSyntax
@@ -55,9 +63,10 @@ public final class PrinterName extends TextSyntax
    * Creates a <code>PrinterName</code> object.
    *
    * @param printerName the printer name
-   * @param locale the locale of the name, null means default locale
+   * @param locale the locale to use, if <code>null</code> the default
+   * locale is used.
    *
-   * @exception NullPointerException if printerName is null
+   * @exception NullPointerException if printerName is <code>null</code>.
    */
   public PrinterName(String printerName, Locale locale)
   {
@@ -65,11 +74,12 @@ public final class PrinterName extends TextSyntax
   }
 
   /**
-   * Tests of obj is equal to this object.
+   * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return true if both objects are equal, false otherwise.
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -82,7 +92,7 @@ public final class PrinterName extends TextSyntax
   /**
    * Returns category of this class.
    *
-   * @return the class <code>PrinterName</code> itself
+   * @return The class <code>PrinterName</code> itself.
    */
   public Class getCategory()
   {
@@ -90,9 +100,9 @@ public final class PrinterName extends TextSyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "printer-name"
+   * @return The name "printer-name".
    */
   public String getName()
   {

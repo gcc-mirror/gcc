@@ -49,7 +49,7 @@ import java.io.Serializable;
  * @author Mark Wielaard (mark@klomp.org)
  * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.4
- * @status updated to 1.4
+ * @status updated to 1.5
  */
 public final class StackTraceElement implements Serializable
 {
@@ -109,6 +109,26 @@ public final class StackTraceElement implements Serializable
     this.declaringClass = className;
     this.methodName = methodName;
     this.isNative = isNative;
+  }
+
+  /**
+   * Create a new StackTraceElement representing a given source location.
+   *
+   * @param className the fully qualified name of the class
+   * @param methodName the name of the method
+   * @param fileName the name of the file, null if unknown
+   * @param lineNumber the line in the file, negative if unknown, or -2
+   * if this method is native
+   * 
+   * @since 1.5
+   */
+  public StackTraceElement(String className, String methodName, String fileName,
+                           int lineNumber)
+  {
+    this(fileName, lineNumber, className, methodName, lineNumber == -2);
+    // The public constructor doesn't allow certain values to be null.
+    if (className == null || methodName == null)
+      throw new NullPointerException("invalid argument to constructor");
   }
 
   /**

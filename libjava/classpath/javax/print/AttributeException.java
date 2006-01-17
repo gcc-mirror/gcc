@@ -1,5 +1,5 @@
-/* CancelablePrintJob.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+/* AttributeException.java --
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,23 +41,36 @@ package javax.print;
 import javax.print.attribute.Attribute;
 
 /**
+ * <code>AttributeException</code> specifies two methods a specific
+ * subclass of {@link javax.print.PrintException} may implement to
+ * provide further information of printing errors if unsupported
+ * attribute classes or values of attributes are involved.
+ * <p>
+ * There exists no <code>PrintException</code> class implementing this 
+ * interface. Providing these extensions in <code>PrintException</code> 
+ * subclasses is left to the concrete print service implementation. 
+ * </p> 
+ * 
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface AttributeException
 {
   /**
    * Returns the unsupported printing attribute classes for a print service
-   * that does not support them.
+   * that does not support the attribute category at all. The returned 
+   * class instances are sublcasses of the base interface {@link Attribute}.
    * 
-   * @return array of unsupported attribute classes, or null
+   * @return The unsupported attribute classes, or <code>null</code> if there
+   * are no such attribute classes.
    */
   Class[] getUnsupportedAttributes();
   
   /**
-   * Returns the unsupported values of printing attributes for a print service
-   * that does not support them.
+   * Returns the unsupported attribute values of printing attributes a specific
+   * print service does support but not the particular provided value.
    *   
-   * @return array of unsupperted attribute values, or null
+   * @return The unsupported attribute values, or <code>null</code> if there
+   * are no such attributes values.
    */
   Attribute[] getUnsupportedValues();
 }

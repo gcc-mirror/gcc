@@ -17,7 +17,7 @@ PACKAGES
 . gnu.xml.xpath.* ... JAXP XPath implementation
 . gnu.xml.transform.* ... JAXP XSL transformer implementation
 . gnu.xml.pipeline.* ... SAX2 event pipeline support
-. gnu.xml.stream.* ... StAX pull parser implementation
+. gnu.xml.stream.* ... StAX pull parser and SAX-over-StAX driver
 . gnu.xml.util.* ... various XML utility classes
 . gnu.xml.libxmlj.dom.* ... libxmlj DOM Level 3 Core and XPath
 . gnu.xml.libxmlj.sax.* ... libxmlj SAX parser
@@ -138,6 +138,9 @@ To enable the various GNU JAXP factories, set the following system properties
    -Djavax.xml.stream.XMLEventFactory=gnu.xml.stream.XMLEventFactoryImpl
    -Djavax.xml.stream.XMLInputFactory=gnu.xml.stream.XMLInputFactoryImpl
    -Djavax.xml.stream.XMLOutputFactory=gnu.xml.stream.XMLOutputFactoryImpl
+
+  GNU SAX-over-StAX:
+   -Djavax.xml.parsers.SAXParserFactory=gnu.xml.stream.SAXParserFactory
 
   libxmlj SAX:
    -Djavax.xml.parsers.SAXParserFactory=gnu.xml.libxmlj.sax.GnomeSAXParserFactory

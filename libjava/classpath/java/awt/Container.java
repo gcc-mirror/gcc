@@ -449,9 +449,6 @@ public class Container extends Component
                                                    ContainerEvent.COMPONENT_REMOVED,
                                                    r);
             getToolkit().getSystemEventQueue().postEvent(ce);
-
-            // Repaint this container.
-            repaint();
           }
       }
   }
@@ -896,13 +893,21 @@ public class Container extends Component
   }
 
   /**
-   * Returns an array of all the objects currently registered as FooListeners
-   * upon this Container. FooListeners are registered using the addFooListener
-   * method.
+   * Returns all registered {@link EventListener}s of the given 
+   * <code>listenerType</code>.
    *
-   * @exception ClassCastException If listenerType doesn't specify a class or
-   * interface that implements @see java.util.EventListener.
-   *
+   * @param listenerType the class of listeners to filter (<code>null</code> 
+   *                     not permitted).
+   *                     
+   * @return An array of registered listeners.
+   * 
+   * @throws ClassCastException if <code>listenerType</code> does not implement
+   *                            the {@link EventListener} interface.
+   * @throws NullPointerException if <code>listenerType</code> is 
+   *                              <code>null</code>.
+   *                            
+   * @see #getContainerListeners()
+   * 
    * @since 1.3
    */
   public EventListener[] getListeners(Class listenerType)
@@ -1094,7 +1099,7 @@ public class Container extends Component
       {
         if (!contains(x, y))
           return null;
-
+          
         for (int i = 0; i < ncomponents; ++i)
           {
             // Ignore invisible children...
@@ -1117,7 +1122,8 @@ public class Container extends Component
           }
 
         //don't return transparent components with no MouseListeners
-        if (this.getMouseListeners().length == 0)
+        if (getMouseListeners().length == 0
+            && getMouseMotionListeners().length == 0)
           return null;
         return this;
       }
@@ -1625,30 +1631,19 @@ public class Container extends Component
                           Component comp)
   {
     Rectangle bounds = comp.getBounds();
-    Rectangle oldClip = gfx.getClipBounds();
-    if (oldClip == null)
-      oldClip = bounds;
 
-    Rectangle clip = oldClip.intersection(bounds);
+    if(!gfx.hitClip(bounds.x,bounds.y, bounds.width, bounds.height))
+      return;
 
-    if (clip.isEmpty()) return;
-
-    boolean clipped = false;
-    boolean translated = false;
+    Graphics g2 = gfx.create(bounds.x, bounds.y, bounds.width,
+                             bounds.height);
     try
       {
-        gfx.setClip(clip.x, clip.y, clip.width, clip.height);
-        clipped = true;
-        gfx.translate(bounds.x, bounds.y);
-        translated = true;
-        visitor.visit(comp, gfx);
+        visitor.visit(comp, g2);
       }
     finally
       {
-        if (translated)
-          gfx.translate (-bounds.x, -bounds.y);
-        if (clipped)
-          gfx.setClip (oldClip.x, oldClip.y, oldClip.width, oldClip.height);
+        g2.dispose();
       }
   }
 
@@ -2148,12 +2143,18 @@ class LightweightDispatcher implements Serializable
         break;
       }
 
-    if (me.getID() == MouseEvent.MOUSE_PRESSED && modifiers > 0
+    if (me.getID() == MouseEvent.MOUSE_RELEASED
+        || me.getID() == MouseEvent.MOUSE_PRESSED && modifiers > 0
         || me.getID() == MouseEvent.MOUSE_DRAGGED)
       {
         // If any of the following events occur while a button is held down,
         // they should be dispatched to the same component to which the
         // original MOUSE_PRESSED event was dispatched:
+        //   - MOUSE_RELEASED: This is important for correct dragging
+        //     behaviour, otherwise the release goes to an arbitrary component
+        //     outside of the dragged component. OTOH, if there is no mouse
+        //     drag while the mouse is pressed, the component under the mouse
+        //     is the same as the previously pressed component anyway.
         //   - MOUSE_PRESSED: another button pressed while the first is held
         //     down
         //   - MOUSE_DRAGGED

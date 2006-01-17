@@ -213,6 +213,8 @@ public class OutputStreamWriter extends Writer
    *
    * @param out The <code>OutputStream</code> to write to
    * @param cs The <code>Charset</code> of the encoding to use
+   * 
+   * @since 1.5
    */
   public OutputStreamWriter(OutputStream out, Charset cs)
   {
@@ -230,6 +232,8 @@ public class OutputStreamWriter extends Writer
    *
    * @param out The <code>OutputStream</code> to write to
    * @param enc The <code>CharsetEncoder</code> to encode the output with
+   * 
+   * @since 1.5
    */
   public OutputStreamWriter(OutputStream out, CharsetEncoder enc)
   {

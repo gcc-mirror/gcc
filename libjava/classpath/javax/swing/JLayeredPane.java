@@ -436,7 +436,12 @@ public class JLayeredPane extends JComponent implements Accessible
       // should have found it
       throw new IllegalArgumentException();
 
-    super.swapComponents (curr, targ);
+    if (curr == 0)
+      super.swapComponents(curr, targ);
+    else
+      while (curr > 0)
+        super.swapComponents (curr, --curr);
+    
     revalidate();
     repaint();
   }

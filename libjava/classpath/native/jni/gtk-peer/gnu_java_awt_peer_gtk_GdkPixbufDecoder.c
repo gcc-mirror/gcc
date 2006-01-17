@@ -270,6 +270,8 @@ query_formats (JNIEnv *env, jclass clazz)
 	  (*env)->DeleteLocalRef(env, string);
 	  ++ch;
 	}
+
+      (*env)->DeleteLocalRef(env, jformat);
     }
   
   g_slist_free(formats);  
@@ -376,6 +378,7 @@ save_to_stream(const gchar *buf,
   (*(ssr->env))->ReleaseByteArrayElements ((ssr->env), jbuf, cbuf, 0);
   (*(ssr->env))->CallVoidMethod ((ssr->env), *(ssr->stream), 
 				 dataOutputWriteID, jbuf);  
+  (*(ssr->env))->DeleteLocalRef((ssr->env), jbuf);
 
   gdk_threads_enter ();
 

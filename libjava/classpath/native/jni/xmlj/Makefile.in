@@ -44,17 +44,18 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
-	$(top_srcdir)/m4/acinclude.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/acinclude.m4 \
+	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libxmlj_la_LIBADD =
+libxmlj_la_DEPENDENCIES = $(top_builddir)/native/jni/classpath/jcl.lo
 am_libxmlj_la_OBJECTS = xmlj_dom.lo xmlj_error.lo xmlj_io.lo \
 	xmlj_node.lo xmlj_sax.lo xmlj_transform.lo xmlj_util.lo \
 	xmlj_xpath.lo
@@ -162,6 +163,7 @@ JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
 JIKES = @JIKES@
 JIKESENCODING = @JIKESENCODING@
+JIKESWARNINGS = @JIKESWARNINGS@
 KJC = @KJC@
 LDFLAGS = @LDFLAGS@
 LIBDEBUG = @LIBDEBUG@
@@ -283,6 +285,7 @@ xmlj_util.c \
 xmlj_util.h \
 xmlj_xpath.c
 
+libxmlj_la_LIBADD = $(top_builddir)/native/jni/classpath/jcl.lo
 AM_LDFLAGS = @CLASSPATH_MODULE@ @XML_LIBS@ @XSLT_LIBS@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 

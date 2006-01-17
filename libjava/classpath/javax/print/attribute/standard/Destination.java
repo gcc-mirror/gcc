@@ -45,7 +45,27 @@ import javax.print.attribute.PrintRequestAttribute;
 import javax.print.attribute.URISyntax;
 
 /**
+ * The <code>Destination</code> attribute provides a URI for an alternate
+ * destination of the printing output.
+ * <p>
+ * As not an IPP attribute many print services will not support this 
+ * attribute and only provide the printer device as a destination.
+ * An alternate output destination would be a file on the local harddisk
+ * given as a file scheme URI.
+ * </p>
+ * <p> 
+ * If a print service does not support the destination attributes URI it 
+ * will throw a PrintException. This exception may further implement the
+ * interface {@link javax.print.URIException}. 
+ * </p>
+ * <p>
+ * <b>IPP Compatibility:</b> Destination is not an IPP 1.1 attribute.
+ * </p>
+ * @see javax.print.PrintException
+ * @see javax.print.URIException
+ * 
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public final class Destination extends URISyntax
   implements PrintJobAttribute, PrintRequestAttribute
@@ -54,16 +74,35 @@ public final class Destination extends URISyntax
 
   /**
    * Constructs a <code>Destination</code> object.
+   * 
+   * @param uri the URI of the output destination.
+   * @throws NullPointerException if the given uri is null.
    */
   public Destination(URI uri)
   {
     super(uri);
   }
+  
+  /**
+   * Tests if the given object is equal to this object.
+   *
+   * @param obj the object to test
+   *
+   * @return <code>true</code> if both objects are equal, 
+   * <code>false</code> otherwise.
+   */
+  public boolean equals(Object obj)
+  {
+    if(! (obj instanceof Destination))
+      return false;
+
+    return super.equals(obj);
+  }
 
   /**
    * Returns category of this class.
    *
-   * @return the class <code>Destination</code> itself
+   * @return The class <code>Destination</code> itself.
    */
   public Class getCategory()
   {
@@ -71,12 +110,12 @@ public final class Destination extends URISyntax
   }
 
   /**
-   * Returns name of this class.
+   * Returns the name of this attribute.
    *
-   * @return the string "printer-uri"
+   * @return The name "spool-data-destination"
    */
   public String getName()
   {
-    return "destination";
+    return "spool-data-destination";
   }
 }

@@ -1,0 +1,378 @@
+/* default.css --
+   Copyright (C) 2005 Free Software Foundation, Inc.
+
+This file is part of GNU Classpath.
+
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA.
+
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. */
+
+nobr {
+  white-space: nowrap;
+}
+
+ol {
+  margin-right: 50px;
+  margin-top: 10px;
+  margin-left: 50px;
+  margin-bottom: 10px;
+  list-style-type: decimal;
+}
+
+u {
+  text-decoration: underline;
+}
+
+s {
+  text-decoration: line-through;
+}
+
+p {
+  margin-top: 15px;
+}
+
+dd p {
+  margin-left: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+ol li p {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+
+address {
+  font-style: italic;
+  color: blue;
+}
+
+i {
+  font-style: italic;
+}
+
+h6 {
+  margin-top: 10px;
+  font-size: xx-small;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+h5 {  
+  margin-top: 10px;
+  font-size: x-small;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+h4 {  
+  margin-top: 10px;
+  font-size: small;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+h3 {  
+  margin-top: 10px;
+  font-size: medium;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+dir li p {  
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+h2 {  
+  margin-top: 10px;
+  font-size: large;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+b { 
+  font-weight: bold;
+}
+
+h1 {  
+  margin-top: 10px;
+  font-size: x-large;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+caption {  
+  text-align: center;
+  caption-side: top;
+}
+
+a {  
+  text-decoration: underline;
+  color: blue;
+}
+
+ul li ul li ul li {  
+  margin-left: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+menu {  
+  margin-right: 40px;
+  margin-top: 10px;
+  margin-left: 40px;
+  margin-bottom: 10px;
+}
+
+menu li p {  
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+sup {  
+  vertical-align: super;
+}
+
+body {
+  margin-right: 0px;  
+  margin-left: 0px;
+  font-family: Serif;
+  font-size: 14pt;
+  font-weight: normal;
+  color: black;
+}
+
+ul li ul li ul {  
+  margin-right: 25px;
+  margin-left: 25px;
+  list-style-type: square;
+}
+
+blockquote {
+  margin-right: 35px;
+  margin-left: 35px; 
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+samp {  
+  font-family: Monospaced;
+  font-size: small;
+}
+
+cite {  
+  font-style: italic;
+}
+
+sub {  
+  vertical-align: sub;
+}
+
+em {  
+  font-style: italic;
+}
+
+ul li p { 
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+ul li ul li {
+  margin-right: 0px;
+  margin-left: 0px;  
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+var {
+  font-style: italic;
+  font-weight: bold;
+}
+
+table {  
+  border-color: Gray;
+  border-style: outset;
+}
+
+dfn {  
+  font-style: italic;
+}
+
+menu li {
+  margin-right: 0px;
+  margin-left: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+strong { 
+  font-weight: bold;
+}
+
+ul {
+  margin-right: 50px;
+  margin-top: 10px;
+  margin-left: 50px;
+  margin-bottom: 10px;
+  list-style-type: disc;
+}
+
+center { 
+  text-align: center;
+}
+
+ul li ul {  
+  margin-right: 25px;
+  margin-left: 25px;
+  list-style-type: circle;
+}
+
+kbd {
+  font-family: Monospaced;
+  font-size: small;
+}
+
+dir li {
+  margin-right: 0px;
+  margin-left: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+ul li menu {
+  margin-right: 25px;
+  margin-left: 25px;
+  list-style-type: circle;
+}
+
+dt {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+ol li {
+  margin-right: 0px;
+  margin-left: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+li p {  
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+default {  
+}
+
+strike {  
+  text-decoration: line-through;
+}
+
+dl {
+  margin-left: 0px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+tt {
+  font-family: Monospaced;
+}
+
+ul li {
+  margin-right: 0px;
+  margin-left: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+dir { 
+  margin-right: 40px;
+  margin-top: 10px;
+  margin-left: 40px;
+  margin-bottom: 10px;
+}
+
+tr {  
+  text-align: left;
+}
+
+pre p { 
+  margin-top: 0px;
+}
+
+dd {  
+  margin-right: 40px;
+  margin-top: 0px;
+  margin-left: 40px;
+  margin-bottom: 0px;
+}
+
+th {
+  padding-bottom: 3px;
+  text-align: center;
+  padding-top: 3px;
+  padding-right: 3px;
+  padding-left: 3px;
+  font-weight: bold;
+  border-color: Gray;
+  border-style: inset;
+}
+
+pre {  
+  margin-top: 5px;
+  font-family: Monospaced;
+  margin-bottom: 5px;
+}
+
+td {
+  padding-bottom: 3px;
+  padding-top: 3px;
+  padding-right: 3px;
+  padding-left: 3px;
+  border-color: Gray;
+  border-style: inset;
+}
+
+code {
+  font-family: Monospaced;
+  font-size: small;
+}
+
+small {  
+  font-size: x-small;
+}
+
+big { 
+  font-size: x-large;
+}

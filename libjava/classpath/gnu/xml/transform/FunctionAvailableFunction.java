@@ -147,11 +147,16 @@ class FunctionAvailableFunction
     uri = nsctx.getNamespaceURI(prefix);
     if (uri == null)
       {
-        return xsltFunctions.contains(localName) ||
-          xpathFunctions.contains(localName) ?
+        return (xpathFunctions.contains(localName)  ||
+                xsltFunctions.contains(localName)) ?
           Boolean.TRUE : Boolean.FALSE;
-        // TODO extension functions
       }
+    else if (Stylesheet.XSL_NS.equals(uri))
+      {
+        return xsltFunctions.contains(localName) ?
+          Boolean.TRUE : Boolean.FALSE;
+      }
+    // TODO extension functions
     return Boolean.FALSE;
   }
   
@@ -159,16 +164,12 @@ class FunctionAvailableFunction
   {
     NamespaceContext n = nsctx;
     if (context instanceof NamespaceContext)
-      {
-        n = (NamespaceContext) context;
-      }
+      n = (NamespaceContext) context;
     FunctionAvailableFunction f = new FunctionAvailableFunction(n);
     int len = args.size();
     List args2 = new ArrayList(len);
     for (int i = 0; i < len; i++)
-      {
-        args2.add(((Expr) args.get(i)).clone(context));
-      }
+      args2.add(((Expr) args.get(i)).clone(context));
     f.setArguments(args2);
     return f;
   }
@@ -178,11 +179,14 @@ class FunctionAvailableFunction
     for (Iterator i = args.iterator(); i.hasNext(); )
       {
         if (((Expr) i.next()).references(var))
-          {
-            return true;
-          }
+          return true;
       }
     return false;
+  }
+
+  public String toString()
+  {
+    return "function-available(" + args.get(0) + ")";
   }
 
 }

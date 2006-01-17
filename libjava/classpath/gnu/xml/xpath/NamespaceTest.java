@@ -81,28 +81,22 @@ public final class NamespaceTest
         if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(uri) ||
             XMLConstants.XMLNS_ATTRIBUTE.equals(node.getPrefix()) ||
             XMLConstants.XMLNS_ATTRIBUTE.equals(node.getNodeName()))
-          {
-            break;
-          }
+          break;
         // Fall through
       default:
         // Only process namespace attributes
         return false;
       }
     if (any)
-      {
-        return true;
-      }
+      return true;
+    String uri = qName.getNamespaceURI();
+    String nodeUri = node.getNamespaceURI();
+    if (!NameTest.equal(uri, nodeUri))
+      return false;
     if (anyLocalName)
-      {
-        return true;
-      }
+      return true;
     String localName = qName.getLocalPart();
-    String nodeLocalName = node.getLocalName();
-    if (nodeLocalName == null)
-      {
-        nodeLocalName = node.getNodeName();
-      }
+    String nodeLocalName = NameTest.getLocalName(node);
     return (localName.equals(nodeLocalName));
   }
 
@@ -119,9 +113,7 @@ public final class NamespaceTest
   public String toString ()
   {
     if (any)
-      {
-        return "*";
-      }
+      return "*";
     return qName.toString();
   }
   

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo "/* Warning ! This is a generated file. Use build_mathnamespace to regenerate it */"
+while read fun;do
+	echo "#define ${fun} ClasspathMath_${fun}"
+done

@@ -46,6 +46,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager;
+import java.awt.LayoutManager2;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
@@ -1164,9 +1165,6 @@ public class BasicInternalFrameUI extends InternalFrameUI
       {
         frame = (JInternalFrame) c;
 
-        internalFrameLayout = createLayoutManager();
-        frame.setLayout(internalFrameLayout);
-
         ((JComponent) frame.getRootPane().getGlassPane()).setOpaque(false);
         frame.getRootPane().getGlassPane().setVisible(true);
 
@@ -1192,7 +1190,6 @@ public class BasicInternalFrameUI extends InternalFrameUI
     uninstallListeners();
     uninstallDefaults();
 
-    frame.setLayout(null);
     ((JComponent) frame.getRootPane().getGlassPane()).setOpaque(true);
     frame.getRootPane().getGlassPane().setVisible(false);
 
@@ -1204,6 +1201,8 @@ public class BasicInternalFrameUI extends InternalFrameUI
    */
   protected void installDefaults()
     {
+      internalFrameLayout = createLayoutManager();
+      frame.setLayout(internalFrameLayout);
       LookAndFeel.installBorder(frame, "InternalFrame.border");
       frame.setFrameIcon(UIManager.getIcon("InternalFrame.icon"));
       // InternalFrames are invisible by default.
@@ -1256,6 +1255,8 @@ public class BasicInternalFrameUI extends InternalFrameUI
   protected void uninstallDefaults()
   {
     frame.setBorder(null);
+    frame.setLayout(null);
+    internalFrameLayout = null;
   }
 
   /**
@@ -1329,7 +1330,13 @@ public class BasicInternalFrameUI extends InternalFrameUI
    */
   public Dimension getPreferredSize(JComponent x)
   {
-    return internalFrameLayout.preferredLayoutSize(x);
+    Dimension pref = null;
+    LayoutManager layout = frame.getLayout();
+    if (frame == x && layout != null)
+      pref = layout.preferredLayoutSize(frame);
+    else
+      pref = new Dimension(100, 100);
+    return pref;
   }
 
   /**
@@ -1341,7 +1348,13 @@ public class BasicInternalFrameUI extends InternalFrameUI
    */
   public Dimension getMinimumSize(JComponent x)
   {
-    return internalFrameLayout.minimumLayoutSize(x);
+    Dimension min = null;
+    LayoutManager layout = frame.getLayout();
+    if (frame == x && layout != null)
+      min = layout.minimumLayoutSize(frame);
+    else
+      min = new Dimension(0, 0);
+    return min;
   }
 
   /**
@@ -1353,7 +1366,13 @@ public class BasicInternalFrameUI extends InternalFrameUI
    */
   public Dimension getMaximumSize(JComponent x)
   {
-    return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+    Dimension max = null;
+    LayoutManager layout = frame.getLayout();
+    if (frame == x && layout != null && layout instanceof LayoutManager2)
+      max = ((LayoutManager2) layout).maximumLayoutSize(frame);
+    else
+      max = new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+    return max;
   }
 
   /**

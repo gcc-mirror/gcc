@@ -927,7 +927,47 @@ public class JTable
       // TODO Auto-generated method stub
       return null;
     }
-      
+
+    /**
+     * Returns the accessible row at the specified index.
+     *
+     * @param index the index for which to query the row
+     *
+     * @return the row number at the specified table index
+     */
+    public int getAccessibleRowAtIndex(int index)
+    {
+      // TODO: Back this up by a Mauve test and update API docs accordingly.
+      return index / getColumnCount();
+    }
+
+    /**
+     * Returns the accessible column at the specified index.
+     *
+     * @param index the index for which to query the column
+     *
+     * @return the column number at the specified table index
+     */
+    public int getAccessibleColumnAtIndex(int index)
+    {
+      // TODO: Back this up by a Mauve test and update API docs accordingly.
+      return index % getColumnCount();
+    }
+
+    /**
+     * Returns the accessible child index at the specified column and row.
+     *
+     * @param row the row
+     * @param column the column
+     *
+     * @return the index of the accessible child at the specified row and
+     *         column
+     */
+    public int getAccessibleIndexAt(int row, int column)
+    {
+      // TODO: Back this up by a Mauve test and update API docs accordingly.
+      return row * getColumnCount() + column;
+    }
   }
   /**
    * Handles property changes from the <code>TableColumn</code>s of this
@@ -949,10 +989,13 @@ public class JTable
       if (ev.getPropertyName().equals("preferredWidth"))
         {
           JTableHeader header = getTableHeader();
-          TableColumn col = (TableColumn) ev.getSource();
-          header.setResizingColumn(col);
-          doLayout();
-          header.setResizingColumn(null);
+	  if (header != null)
+	    {
+	      TableColumn col = (TableColumn) ev.getSource();
+	      header.setResizingColumn(col);
+	      doLayout();
+	      header.setResizingColumn(null);
+	    }
         }
     }
   }
@@ -1461,6 +1504,12 @@ public class JTable
     new TableColumnPropertyChangeHandler();
 
   /**
+   * Whether cell editors should receive keyboard focus when the table is
+   * activated.
+   */
+  private boolean surrendersFocusOnKeystroke = false;
+
+  /**
    * Creates a new <code>JTable</code> instance.
    */
   public JTable ()
@@ -1763,7 +1812,7 @@ public class JTable
     if ((event.getFirstRow() ==TableModelEvent.HEADER_ROW)
         && autoCreateColumnsFromModel)
 
-        createDefaultColumnsFromModel();
+      createDefaultColumnsFromModel();
 
     // If the structure changes, we need to revalidate, since that might
     // affect the size parameters of the JTable. Otherwise we only need
@@ -1796,7 +1845,6 @@ public class JTable
   {
     if (point != null)
       {
-        int x0 = getLocation().x;
         int ncols = getColumnCount();
         Dimension gap = getIntercellSpacing();
         TableColumnModel cols = getColumnModel();
@@ -1826,7 +1874,6 @@ public class JTable
   {
     if (point != null)
       {
-        int y0 = getLocation().y;
         int nrows = getRowCount();
         int height = getRowHeight();
         int y = point.y;
@@ -1984,16 +2031,13 @@ public class JTable
       }
   }
 
-
-
   public TableCellRenderer getCellRenderer(int row, int column)
   {
     TableCellRenderer renderer =
       columnModel.getColumn(column).getCellRenderer();
-    
     if (renderer == null)
-      renderer = getDefaultRenderer(dataModel.getColumnClass(column));
-    
+      renderer = getDefaultRenderer(getColumnClass(column));
+
     return renderer;
   }
 
@@ -2039,19 +2083,29 @@ public class JTable
                                    int row,
                                    int column)
   {
-    boolean rsa = getRowSelectionAllowed();
-    boolean csa = getColumnSelectionAllowed();
-    boolean rs = rsa ? getSelectionModel().isSelectedIndex(row) : false;
-    boolean cs = csa ? columnModel.getSelectionModel().isSelectedIndex(column) : false;
-    boolean isSelected = ((rsa && csa && rs && cs) 
-                          || (rsa && !csa && rs) 
-                          || (!rsa && csa && cs));
-    
+
+    boolean rowSelAllowed = getRowSelectionAllowed();
+    boolean colSelAllowed = getColumnSelectionAllowed();
+    boolean isSel = false;
+    if (rowSelAllowed && colSelAllowed || !rowSelAllowed && !colSelAllowed)
+      isSel = isCellSelected(row, column);
+    else
+      isSel = isRowSelected(row) && getRowSelectionAllowed()
+           || isColumnSelected(column) && getColumnSelectionAllowed();
+
+    // Determine the focused cell. The focused cell is the cell at the
+    // leadSelectionIndices of the row and column selection model.
+    ListSelectionModel rowSel = getSelectionModel();
+    ListSelectionModel colSel = getColumnModel().getSelectionModel();
+    boolean hasFocus = hasFocus() && isEnabled()
+                       && rowSel.getLeadSelectionIndex() == row
+                       && colSel.getLeadSelectionIndex() == column;
+
     return renderer.getTableCellRendererComponent(this,
                                                   dataModel.getValueAt(row, 
 						                       convertColumnIndexToModel(column)),
-                                                  isSelected,
-                                                  false, // hasFocus
+                                                  isSel,
+                                                  hasFocus,
                                                   row, column);
   }
 
@@ -2217,7 +2271,6 @@ public class JTable
     int lo = lsm.getMinSelectionIndex();
     int hi = lsm.getMaxSelectionIndex();
     int j = 0;
-    java.util.ArrayList ls = new java.util.ArrayList();
     if (lo != -1 && hi != -1)
       {
         switch (lsm.getSelectionMode())
@@ -2973,7 +3026,7 @@ public class JTable
 
   public Class getColumnClass(int column)
   {
-    return dataModel.getColumnClass(column);
+    return getModel().getColumnClass(column);
   }
   
   public String getColumnName(int column)
@@ -3273,5 +3326,38 @@ public class JTable
   {
     revalidate();
     repaint();
+  }
+
+  /**
+   * Sets whether cell editors of this table should receive keyboard focus
+   * when the editor is activated by a keystroke. The default setting is
+   * <code>false</code> which means that the table should keep the keyboard
+   * focus until the cell is selected by a mouse click.
+   *
+   * @param value the value to set
+   *
+   * @since 1.4
+   */
+  public void setSurrendersFocusOnKeystroke(boolean value)
+  {
+    // TODO: Implement functionality of this property (in UI impl).
+    surrendersFocusOnKeystroke = value;
+  }
+
+  /**
+   * Returns whether cell editors of this table should receive keyboard focus
+   * when the editor is activated by a keystroke. The default setting is
+   * <code>false</code> which means that the table should keep the keyboard
+   * focus until the cell is selected by a mouse click.
+   *
+   * @return whether cell editors of this table should receive keyboard focus
+   *         when the editor is activated by a keystroke
+   *
+   * @since 1.4
+   */
+  public boolean getSurrendersFocusOnKeystroke()
+  {
+    // TODO: Implement functionality of this property (in UI impl).
+    return surrendersFocusOnKeystroke;
   }
 }

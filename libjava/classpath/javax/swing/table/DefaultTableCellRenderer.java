@@ -181,7 +181,6 @@ public class DefaultTableCellRenderer extends JLabel
     else
       setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-    setEnabled(table.isEnabled());
     setFont(table.getFont());
 
     // If the current background is equal to the table's background, then we

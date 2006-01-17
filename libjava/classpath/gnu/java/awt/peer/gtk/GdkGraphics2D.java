@@ -180,11 +180,14 @@ public class GdkGraphics2D extends Graphics2D
     else
       fg = new Color(g.fg.getRGB());
 
-    if (g.bg.getAlpha() != -1)
-      bg = new Color(g.bg.getRed(), g.bg.getGreen(), g.bg.getBlue(),
-                     g.bg.getAlpha());
-    else
-      bg = new Color(g.bg.getRGB());
+    if (g.bg != null)
+      {
+        if (g.bg.getAlpha() != -1)
+          bg = new Color(g.bg.getRed(), g.bg.getGreen(), g.bg.getBlue(),
+                         g.bg.getAlpha());
+        else
+          bg = new Color(g.bg.getRGB());
+      }
 
     if (g.clip == null)
       clip = null;
@@ -1088,6 +1091,8 @@ public class GdkGraphics2D extends Graphics2D
 
   public void setBackground(Color c)
   {
+    if (c == null)
+      c = Color.WHITE;
     bg = c;
   }
 

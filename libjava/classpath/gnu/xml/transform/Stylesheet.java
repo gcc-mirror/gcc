@@ -1,5 +1,5 @@
 /* Stylesheet.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -88,6 +88,8 @@ class Stylesheet
 {
 
   static final String XSL_NS = "http://www.w3.org/1999/XSL/Transform";
+  private static final NameTest STYLESHEET_PRESERVE_TEXT =
+    new NameTest(new QName(XSL_NS, "text"), false, false);
   
   static final int OUTPUT_XML = 0;
   static final int OUTPUT_HTML = 1;
@@ -208,6 +210,7 @@ class Stylesheet
     preserveSpace = new LinkedHashSet();
     outputCdataSectionElements = new LinkedHashSet();
     xpath = (XPathImpl) factory.xpathFactory.newXPath();
+    xpath.setNamespaceContext(this);
     if (parent == null)
       {
         bindings = new Bindings(this);
@@ -218,7 +221,6 @@ class Stylesheet
         keys = new LinkedList();
         decimalFormats = new LinkedHashMap();
         initDefaultDecimalFormat();
-        xpath.setNamespaceContext(this);
         xpath.setXPathFunctionResolver(this);
       }
     else
@@ -241,7 +243,6 @@ class Stylesheet
         templates = root.templates;
         keys = root.keys;
         decimalFormats = root.decimalFormats;
-        xpath.setNamespaceContext(root);
         xpath.setXPathFunctionResolver(root);
       }
     xpath.setXPathVariableResolver(bindings);
@@ -276,9 +277,7 @@ class Stylesheet
   {
     Stylesheet stylesheet = this;
     while (stylesheet.parent != null)
-      {
-        stylesheet = stylesheet.parent;
-      }
+      stylesheet = stylesheet.parent;
     return stylesheet;
   }
   
@@ -408,9 +407,7 @@ class Stylesheet
     throws TransformerException
   {
     if (debug)
-      {
-        System.err.println("getTemplate: mode="+mode+" context="+context);
-      }
+      System.err.println("getTemplate: mode="+mode+" context="+context);
     Set candidates = new TreeSet();
     for (Iterator j = templates.iterator(); j.hasNext(); )
       {
@@ -425,15 +422,11 @@ class Stylesheet
                 throw new TransformerException(msg);
               }
             if (!currentTemplate.imports(t))
-              {
-                isMatch = false;
-              }
+              isMatch = false;
           }
         //System.err.println("\t"+context+" "+t+"="+isMatch);
         if (isMatch)
-          {
-            candidates.add(t);
-          }
+          candidates.add(t);
       }
     //System.err.println("\tcandidates="+candidates);
     if (candidates.isEmpty())
@@ -441,9 +434,7 @@ class Stylesheet
         // Apply built-in template
         // Current template is unchanged
         if (debug)
-          {
-            System.err.println("\tbuiltInTemplate context="+context);
-          }
+          System.err.println("\tbuiltInTemplate context="+context);
         switch (context.getNodeType())
           {
           case Node.ELEMENT_NODE:
@@ -453,6 +444,7 @@ class Stylesheet
           case Node.COMMENT_NODE:
             return builtInNodeTemplate;
           case Node.TEXT_NODE:
+          case Node.CDATA_SECTION_NODE:
           case Node.ATTRIBUTE_NODE:
             return builtInTextTemplate;
           default:
@@ -465,9 +457,7 @@ class Stylesheet
         // Set current template
         currentTemplate = t;
         if (debug)
-          {
-            System.err.println("\ttemplate="+t+" context="+context);
-          }
+          System.err.println("\ttemplate="+t+" context="+context);
         return t.node;
       }
   }
@@ -475,25 +465,17 @@ class Stylesheet
   TemplateNode getTemplate(QName mode, QName name)
     throws TransformerException
   {
-    //System.err.println("getTemplate: mode="+mode+" name="+name);
     Set candidates = new TreeSet();
     for (Iterator j = templates.iterator(); j.hasNext(); )
       {
         Template t = (Template) j.next();
         boolean isMatch = t.matches(name);
-        //System.err.println("\t"+name+" "+t+"="+isMatch);
         if (isMatch)
-          {
-            candidates.add(t);
-          }
+          candidates.add(t);
       }
     if (candidates.isEmpty())
-      {
-        return null;
-        //throw new TransformerException("template '" + name + "' not found");
-      }
+      return null;
     Template t = (Template) candidates.iterator().next();
-    //System.err.println("\ttemplate="+t+" context="+context);
     return t.node;
   }
 
@@ -538,42 +520,30 @@ class Stylesheet
     output = node;
     String method = getAttribute(attrs, "method");
     if ("xml".equals(method) || method == null)
-      {
-        outputMethod = OUTPUT_XML;
-      }
+      outputMethod = OUTPUT_XML;
     else if ("html".equals(method))
-      {
-        outputMethod = OUTPUT_HTML;
-      }
+      outputMethod = OUTPUT_HTML;
     else if ("text".equals(method))
-      {
-        outputMethod = OUTPUT_TEXT;
-      }
+      outputMethod = OUTPUT_TEXT;
     else
       {
         String msg = "unsupported output method: " + method;
         DOMSourceLocator l = new DOMSourceLocator(node);
         throw new TransformerConfigurationException(msg, l);
       }
-    outputPublicId = getAttribute(attrs, "public-id");
-    outputSystemId = getAttribute(attrs, "system-id");
+    outputPublicId = getAttribute(attrs, "doctype-public");
+    outputSystemId = getAttribute(attrs, "doctype-system");
     outputEncoding = getAttribute(attrs, "encoding");
     String indent = getAttribute(attrs, "indent");
     if (indent != null)
-      {
-        outputIndent = "yes".equals(indent);
-      }
+      outputIndent = "yes".equals(indent);
     outputVersion = getAttribute(attrs, "version");
     String omitXmlDecl = getAttribute(attrs, "omit-xml-declaration");
     if (omitXmlDecl != null)
-      {
-        outputOmitXmlDeclaration = "yes".equals(omitXmlDecl);
-      }
+      outputOmitXmlDeclaration = "yes".equals(omitXmlDecl);
     String standalone = getAttribute(attrs, "standalone");
     if (standalone != null)
-      {
-        outputStandalone = "yes".equals(standalone);
-      }
+      outputStandalone = "yes".equals(standalone);
     outputMediaType = getAttribute(attrs, "media-type");
     String cdataSectionElements =
       getAttribute(attrs, "cdata-section-elements");
@@ -581,9 +551,7 @@ class Stylesheet
       {
         StringTokenizer st = new StringTokenizer(cdataSectionElements, " ");
         while (st.hasMoreTokens())
-          {
-            outputCdataSectionElements.add(st.nextToken());
-          }
+          outputCdataSectionElements.add(st.nextToken());
       }
   }
 
@@ -728,9 +696,7 @@ class Stylesheet
                 parse(node.getFirstChild(), false);
               }
             else if ("template".equals(name))
-              {
-                templates.add(parseTemplate(node, attrs));
-              }
+              templates.add(parseTemplate(node, attrs));
             else if ("param".equals(name) ||
                      "variable".equals(name))
               {
@@ -779,9 +745,7 @@ class Stylesheet
                 factory.newStylesheet(source, precedence + delta, this);
               }
             else if ("output".equals(name))
-              {
-                parseOutput(node, attrs);
-              }
+              parseOutput(node, attrs);
             else if ("preserve-space".equals(name))
               {
                 String elements =
@@ -790,7 +754,9 @@ class Stylesheet
                                                          " \t\n\r");
                 while (st.hasMoreTokens())
                   {
-                    preserveSpace.add(parseNameTest(st.nextToken()));
+                    NameTest element = parseNameTest(st.nextToken());
+                    preserveSpace.add(new StrippingInstruction(element,
+                                                               precedence));
                   }
               }
             else if ("strip-space".equals(name))
@@ -801,25 +767,19 @@ class Stylesheet
                                                          " \t\n\r");
                 while (st.hasMoreTokens())
                   {
-                    stripSpace.add(parseNameTest(st.nextToken()));
+                    NameTest element = parseNameTest(st.nextToken());
+                    stripSpace.add(new StrippingInstruction(element, 
+                                                            precedence));
                   }
               }
             else if ("key".equals(name))
-              {
-                parseKey(node, attrs);
-              }
+              parseKey(node, attrs);
             else if ("decimal-format".equals(name))
-              {
-                parseDecimalFormat(node, attrs);
-              }
+              parseDecimalFormat(node, attrs);
             else if ("namespace-alias".equals(name))
-              {
-                parseNamespaceAlias(node, attrs);
-              }
+              parseNamespaceAlias(node, attrs);
             else if ("attribute-set".equals(name))
-              {
-                parseAttributeSet(node, attrs);
-              }
+              parseAttributeSet(node, attrs);
           }
         else if (root)
           {
@@ -867,12 +827,10 @@ class Stylesheet
   final NameTest parseNameTest(String token)
   {
     if ("*".equals(token))
-      {
-        return new NameTest(null, true, true);
-      }
+      return new NameTest(null, true, true);
     else if (token.endsWith(":*"))
       {
-        QName qName = getQName(token.substring(0, token.length() - 2));
+        QName qName = getQName(token);
         return new NameTest(qName, true, false);
       }
     else
@@ -984,7 +942,13 @@ class Stylesheet
     return ret;
   }
 
-  boolean isPreserved(Text text)
+  /**
+   * Whitespace stripping.
+   * @param text the text node
+   * @param source true if a source node, false if a stylesheet text node
+   * @see http://www.w3.org/TR/xslt#strip
+   */
+  boolean isPreserved(Text text, boolean source)
     throws TransformerConfigurationException
   {
     // Check characters in text
@@ -996,39 +960,73 @@ class Stylesheet
           {
             char c = value.charAt(i);
             if (c != 0x20 && c != 0x09 && c != 0x0a && c != 0x0d)
-              {
-                return true;
-              }
+              return true;
           }
       }
     // Check parent node
     Node ctx = text.getParentNode();
-    if (!preserveSpace.isEmpty())
+    if (source)
       {
-        for (Iterator i = preserveSpace.iterator(); i.hasNext(); )
+        // Source document text node
+        boolean preserve = true;
+        float psPriority = 0.0f, ssPriority = 0.0f;
+        if (!stripSpace.isEmpty())
           {
-            NameTest preserveTest = (NameTest) i.next();
-            if (preserveTest.matches(ctx, 1, 1))
+            // Conflict resolution
+            StrippingInstruction ssi = null, psi = null;
+            for (Iterator i = stripSpace.iterator(); i.hasNext(); )
               {
-                boolean override = false;
-                if (!stripSpace.isEmpty())
+                StrippingInstruction si = (StrippingInstruction) i.next();
+                if (si.element.matches(ctx, 1, 1))
                   {
-                    for (Iterator j = stripSpace.iterator(); j.hasNext(); )
+                    if (ssi != null)
                       {
-                        NameTest stripTest = (NameTest) j.next();
-                        if (stripTest.matches(ctx, 1, 1))
-                          {
-                            override = true;
-                            break;
-                          }
+                        if (si.precedence < ssi.precedence)
+                          continue;
+                        float p = si.getPriority();
+                        if (p < ssPriority)
+                          continue;
                       }
-                  }
-                if (!override)
-                  {
-                    return true;
+                    ssi = si;
                   }
               }
+            for (Iterator i = preserveSpace.iterator(); i.hasNext(); )
+              {
+                StrippingInstruction si = (StrippingInstruction) i.next();
+                if (si.element.matches(ctx, 1, 1))
+                  {
+                    if (psi != null)
+                      {
+                        if (si.precedence < psi.precedence)
+                          continue;
+                        float p = si.getPriority();
+                        if (p < psPriority)
+                          continue;
+                      }
+                    psi = si;
+                  }
+              }
+            if (ssi != null)
+              {
+                if (psi != null)
+                  {
+                    if (psi.precedence < ssi.precedence)
+                      preserve = false;
+                    else if (psPriority < ssPriority)
+                      preserve = false;
+                  }
+                else
+                  preserve = false;
+              }
           }
+        if (preserve)
+          return true;
+      }
+    else
+      {
+        // Stylesheet text node
+        if (STYLESHEET_PRESERVE_TEXT.matches(ctx, 1, 1))
+          return true;
       }
     // Check whether any ancestor specified xml:space
     while (ctx != null)
@@ -1038,23 +1036,13 @@ class Stylesheet
             Element element = (Element) ctx;
             String xmlSpace = element.getAttribute("xml:space");
             if ("default".equals(xmlSpace))
-              {
-                break;
-              }
+              break;
             else if ("preserve".equals(xmlSpace))
-              {
-                return true;
-              }
+              return true;
             else if (xmlSpace.length() > 0)
               {
                 String msg = "Illegal value for xml:space: " + xmlSpace;
                 throw new TransformerConfigurationException(msg);
-              }
-            else if ("text".equals(ctx.getLocalName()) &&
-                     XSL_NS.equals(ctx.getNamespaceURI()))
-              {
-                // xsl:text implies xml:space='preserve'
-                return true;
               }
           }
         ctx = ctx.getParentNode();
@@ -1071,45 +1059,27 @@ class Stylesheet
         if ("document".equals(localName) && (arity == 1 || arity == 2))
           {
             if (current == null)
-              {
                 throw new RuntimeException("current is null");
-              }
             return new DocumentFunction(getRootStylesheet(), current);
           }
         else if ("key".equals(localName) && (arity == 2))
-          {
-            return new KeyFunction(getRootStylesheet());
-          }
+          return new KeyFunction(getRootStylesheet());
         else if ("format-number".equals(localName) &&
                  (arity == 2 || arity == 3))
-          {
-            return new FormatNumberFunction(getRootStylesheet());
-          }
+          return new FormatNumberFunction(getRootStylesheet());
         else if ("current".equals(localName) && (arity == 0))
-          {
-            return new CurrentFunction(getRootStylesheet());
-          }
+          return new CurrentFunction(getRootStylesheet());
         else if ("unparsed-entity-uri".equals(localName) && (arity == 1))
-          {
-            return new UnparsedEntityUriFunction();
-          }
+          return new UnparsedEntityUriFunction();
         else if ("generate-id".equals(localName) &&
                  (arity == 1 || arity == 0))
-          {
-            return new GenerateIdFunction();
-          }
+          return new GenerateIdFunction();
         else if ("system-property".equals(localName) && (arity == 1))
-          {
-            return new SystemPropertyFunction();
-          }
+          return new SystemPropertyFunction();
         else if ("element-available".equals(localName) && (arity == 1))
-          {
-            return new ElementAvailableFunction(this);
-          }
+          return new ElementAvailableFunction(new NamespaceProxy(current));
         else if ("function-available".equals(localName) && (arity == 1))
-          {
-            return new FunctionAvailableFunction(this);
-          }
+          return new FunctionAvailableFunction(new NamespaceProxy(current));
       }
     return null;
   }
@@ -1127,9 +1097,7 @@ class Stylesheet
     QName mode = (m == null) ? null : getQName(m);
     String s = getAttribute(attrs, "select");
     if (s == null)
-      {
-        s = "child::node()";
-      }
+      s = "child::node()";
     Node children = node.getFirstChild();
     List sortKeys = parseSortKeys(children);
     List withParams = parseWithParams(children);
@@ -1411,13 +1379,9 @@ class Stylesheet
         if (tnode != null)
           {
             if (first == null)
-              {
-                first = tnode;
-              }
+              first = tnode;
             if (previous != null)
-              {
-                previous.next = tnode;
-              }
+              previous.next = tnode;
             previous = tnode;
           }
         node = next;
@@ -1438,25 +1402,15 @@ class Stylesheet
           {
             String name = node.getLocalName();
             if ("apply-templates".equals(name))
-              {
-                return parseApplyTemplates(node);
-              }
+              return parseApplyTemplates(node);
             else if ("call-template".equals(name))
-              {
-                return parseCallTemplate(node);
-              }
+              return parseCallTemplate(node);
             else if ("value-of".equals(name))
-              {
-                return parseValueOf(node);
-              }
+              return parseValueOf(node);
             else if ("for-each".equals(name))
-              {
-                return parseForEach(node);
-              }
+              return parseForEach(node);
             else if ("if".equals(name))
-              {
-                return parseIf(node);
-              }
+              return parseIf(node);
             else if ("choose".equals(name))
               {
                 Node children = node.getFirstChild();
@@ -1465,9 +1419,7 @@ class Stylesheet
                 return ret;
               }
             else if ("when".equals(name))
-              {
-                return parseWhen(node);
-              }
+              return parseWhen(node);
             else if ("otherwise".equals(name))
               {
                 Node children = node.getFirstChild();
@@ -1476,25 +1428,15 @@ class Stylesheet
                 return ret;
               }
             else if ("element".equals(name))
-              {
-                return parseElement(node);
-              }
+              return parseElement(node);
             else if ("attribute".equals(name))
-              {
-                return parseAttribute(node);
-              }
+              return parseAttribute(node);
             else if ("text".equals(name))
-              {
-                return parseText(node);
-              }
+              return parseText(node);
             else if ("copy".equals(name))
-              {
-                return parseCopy(node);
-              }
+              return parseCopy(node);
             else if ("processing-instruction".equals(name))
-              {
-                return parseProcessingInstruction(node);
-              }
+              return parseProcessingInstruction(node);
             else if ("comment".equals(name))
               {
                 Node children = node.getFirstChild();
@@ -1503,9 +1445,7 @@ class Stylesheet
                 return ret;
               }
             else if ("number".equals(name))
-              {
-                return parseNumber(node);
-              }
+              return parseNumber(node);
             else if ("param".equals(name) ||
                      "variable".equals(name))
               {
@@ -1538,13 +1478,9 @@ class Stylesheet
                 return ret;
               }
             else if ("copy-of".equals(name))
-              {
-                return parseCopyOf(node);
-              }
+              return parseCopyOf(node);
             else if ("message".equals(name))
-              {
-                return parseMessage(node);
-              }
+              return parseMessage(node);
             else if ("apply-imports".equals(name))
               {
                 Node children = node.getFirstChild();
@@ -1562,22 +1498,30 @@ class Stylesheet
         String prefix = node.getPrefix();
         if (extensionElementPrefixes.contains(prefix))
           {
-            // Pass over extension elements
+            // Check for xsl:fallback
+            for (Node ctx = node.getFirstChild(); ctx != null;
+                 ctx = ctx.getNextSibling())
+              {
+                String ctxUri = ctx.getNamespaceURI();
+                if (XSL_NS.equals(ctxUri) &&
+                    "fallback".equals(ctx.getLocalName()))
+                  {
+                    ctx = ctx.getFirstChild();
+                    return (ctx == null) ? null : parse(ctx);
+                  }
+              }
+            // Otherwise pass over extension element
             return null;
           }
         switch (node.getNodeType())
           {
           case Node.TEXT_NODE:
+          case Node.CDATA_SECTION_NODE:
             // Determine whether to strip whitespace
             Text text = (Text) node;
-            if (!isPreserved(text))
+            if (!isPreserved(text, false))
               {
                 // Strip
-                /*String data = text.getData().trim();
-                if (data.length() > 0)
-                  {
-                    text.setData(data);
-                  } // else */
                 text.getParentNode().removeChild(text);
                 return null;
               }
@@ -1623,9 +1567,7 @@ class Stylesheet
                     String aname = attr.getNodeName();
                     if (Stylesheet.XSL_NS.equals(ans) &&
                         "use-attribute-sets".equals(attr.getLocalName()))
-                      {
-                        continue;
-                      }
+                      continue;
                     String value = attr.getNodeValue();
                     TemplateNode grandchild =
                       parseAttributeValueTemplate(value, node);
@@ -1640,8 +1582,9 @@ class Stylesheet
                   }
                 String ename = node.getNodeName();
                 TemplateNode n = parseAttributeValueTemplate(ename, node);
-                TemplateNode ns = (namespaceUri == null) ? null :
-                  parseAttributeValueTemplate(namespaceUri, node);
+                //TemplateNode ns = (namespaceUri == null) ? null :
+                //  parseAttributeValueTemplate(namespaceUri, node);
+                TemplateNode ns = null;
                 ElementNode ret = new ElementNode(n, ns, useAttributeSets,
                                                   node);
                 ret.children = child;
@@ -1676,9 +1619,7 @@ class Stylesheet
             NamedNodeMap attrs = node.getAttributes();
             String s = getAttribute(attrs, "select");
             if (s == null)
-              {
-                s = ".";
-              }
+              s = ".";
             Expr select = (Expr) xpath.compile(s);
             String l = getAttribute(attrs, "lang");
             TemplateNode lang = (l == null) ? null :
@@ -1728,9 +1669,7 @@ class Stylesheet
                 ret.add(new WithParam(name, expr));
               }
             else
-              {
-                ret.add(new WithParam(name, content));
-              }
+              ret.add(new WithParam(name, content));
           }
         node = node.getNextSibling();
       }
@@ -1757,27 +1696,19 @@ class Stylesheet
               {
                 String prefix = attr.getLocalName();
                 if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix))
-                  {
-                    prefix = "#default";
-                  }
+                  prefix = "#default";
                 String ns = attr.getNodeValue();
                 // Should the namespace be excluded?
                 if (XSL_NS.equals(ns) ||
                     extensionElementPrefixes.contains(prefix) ||
                     elementExcludeResultPrefixes.contains(prefix) ||
                     excludeResultPrefixes.contains(prefix))
-                  {
-                    continue;
-                  }
+                  continue;
                 // Is the namespace already defined on the target?
                 if (prefix == "#default")
-                  {
-                    prefix = null;
-                  }
+                  prefix = null;
                 if (target.lookupNamespaceURI(prefix) != null)
-                  {
-                    continue;
-                  }
+                  continue;
                 attr = attr.cloneNode(true);
                 attr = doc.adoptNode(attr);
                 target.getAttributes().setNamedItemNS(attr);
@@ -1786,23 +1717,17 @@ class Stylesheet
       }
     Node parent = source.getParentNode();
     if (parent != null)
-      {
-        addNamespaceNodes(parent, target, doc, elementExcludeResultPrefixes);
-      }
+      addNamespaceNodes(parent, target, doc, elementExcludeResultPrefixes);
   }
 
   static final String getAttribute(NamedNodeMap attrs, String name)
   {
     Node attr = attrs.getNamedItem(name);
     if (attr == null)
-      {
-        return null;
-      }
+      return null;
     String ret = attr.getNodeValue();
     if (ret.length() == 0)
-      {
-        return null;
-      }
+      return null;
     return ret;
   }
 
