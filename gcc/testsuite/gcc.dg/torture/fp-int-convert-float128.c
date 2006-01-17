@@ -1,9 +1,8 @@
 /* Test floating-point conversions.  __float128 type.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
-/* { dg-do run { target i?86-*-* x86_64-*-* ia64-*-* } } */
+/* { dg-do run { target { ia64-*-* || { { i?86-*-* x86_64-*-*} && lp64 } } } */
 /* { dg-xfail-if "" { i?86-*-* x86_64-*-* } { "*" } { "" } } */
 /* { dg-options "" } */
-/* { dg-options "-mmmx" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 #include "fp-int-convert.h"
 

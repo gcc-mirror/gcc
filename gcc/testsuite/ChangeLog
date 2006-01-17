@@ -1,3 +1,11 @@
+2006-01-17  Andreas Jaeger  <aj@suse.de>
+	    Janis Johnson <janis187@us.ibm.com>
+
+	* g++.dg/abi/mangle25.C: Run always on ia64 but only on x86/x86-64
+	in 64-bit.
+	* gcc.dg/torture/fp-int-convert-float128-timode.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-float128.c: Likewise.
+
 2006-01-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c (switchfiles):
