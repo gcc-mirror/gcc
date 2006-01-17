@@ -25,6 +25,19 @@ if { ![check_effective_target_dfp] } {
     return;
 }
 
+# If the decimal float is supported in the compiler but not yet in the
+# runtime, treat all tests as compile-only.
+global dg-do-what-default
+set save-dg-do-what-default ${dg-do-what-default}
+if { ![check_effective_target_dfprt] } {
+    verbose "dfp.exp: runtime support for decimal float does not exist" 2
+    set dg-do-what-default compile
+} else {
+    verbose "dfp.exp: runtime support for decimal float exists, use it" 2
+    set dg-do-what-default run
+}
+verbose "dfp.exp: dg-do-what-default is ${dg-do-what-default}" 2
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
@@ -40,3 +53,6 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
 
 # All done.
 dg-finish
+
+set dg-do-what-default ${save-dg-do-what-default}
+verbose "dfp.exp: dg-do-what-default is ${dg-do-what-default}" 2

@@ -1,4 +1,3 @@
-/* { dg-do compile } */
 /* { dg-options "-std=gnu99 -O" } */
 
 /* C99 6.5.5: Multiplicative operators.

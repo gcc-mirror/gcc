@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-std=gnu99" } */
 
 /* C99 6.9.1(9) Function definitions; parameter has automatic storage.

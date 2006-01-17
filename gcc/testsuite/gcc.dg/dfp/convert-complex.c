@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-O3" } */
 
 /* N1150 5.3 Conversions between decimal floating and complex.
