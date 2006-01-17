@@ -1,3 +1,9 @@
+2006-01-17  Andreas Jaeger  <aj@suse.de>
+	    Janis Johnson <janis187@us.ibm.com>
+
+	* g++.dg/abi/mangle25.C: Run always on ia64 but only on x86/x86-64
+	in 64-bit.
+
 2006-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/25682
