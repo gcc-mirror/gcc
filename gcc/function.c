@@ -1657,7 +1657,7 @@ instantiate_decls (tree fndecl)
 /* Pass through the INSNS of function FNDECL and convert virtual register
    references to hard register references.  */
 
-void
+static void
 instantiate_virtual_regs (void)
 {
   rtx insn;

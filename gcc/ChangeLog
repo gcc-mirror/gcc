@@ -8,6 +8,10 @@
 	* rtl.h: Remove the prototype for
 	initialize_uninitialized_subregs.
 
+	* function.c (instantiate_virtual_regs): Make it static.
+	* function.h: Remove the prototype for
+	instantiate_virtual_regs.
+
 2006-01-17  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (COSTS_N_BYTES): New macro.
