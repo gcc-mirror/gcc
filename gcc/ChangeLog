@@ -1,3 +1,17 @@
+2006-01-18  Paul Brook  <paul@codesourcery.com>
+
+	Merge from csl-arm-branch.
+	2005-03-14  Julian Brown  <julian@codesourcery.com>
+	* config/arm/lib1funcs.asm (ashldi3): Don't define on SymbianOS.
+	(aeabi_llsl): Likewise.
+	(ashrdi3): Likewise.
+	(aeabi_lasr): Likewise.
+	(lshrdi3): Likewise.
+	(aeabi_llsr): Likewise. 
+	2005-03-10  Julian Brown  <julian@codesourcery.com>
+	* config.gcc: Disable shared libgcc for SymbianOS.
+	* config/arm/t-symbian (LIB2ADDEH): Include config/arm/pr-support.c.
+
 2006-01-18  DJ Delorie  <dj@redhat.com>
 
 	* c-pragma.c (handle_pragma_diagnostic): New.

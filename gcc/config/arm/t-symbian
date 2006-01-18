@@ -14,7 +14,7 @@ LIB1ASMFUNCS += \
 
 # Include the gcc personality routine
 UNWIND_H = $(srcdir)/config/arm/unwind-arm.h
-LIB2ADDEH = $(srcdir)/unwind-c.c
+LIB2ADDEH = $(srcdir)/unwind-c.c $(srcdir)/config/arm/pr-support.c
 LIB2ADDEHDEP = $(UNWIND_H)
 
 # Create a multilib for processors with VFP floating-point, and a
