@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-
+// { dg-options "-Wconversion" }
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 24 Feb 2000 <nathan@codesourcery.com>
 
@@ -37,21 +37,20 @@ void fn ()
 
   int k1 = 3.5;     // { dg-warning "" } double to int
   int k2 = 3.5f;    // { dg-warning "" } float to int
-  
+
   j1 = 3.5;         // { dg-warning "" } double to int
   j2 = 3.5f;        // { dg-warning "" } float to int
-  
+
   foo (3.5);        // { dg-warning "" } double to int
   foo (3.5f);       // { dg-warning "" } float to int
-  
+
   wibble (3.5);     // { dg-warning "" } double to int
   wibble (3.5f);    // { dg-warning "" } float to int
   wibble (1, 3.5);  // { dg-warning "" } double to int
   wibble (1, 3.5f); // { dg-warning "" } float to int
   wibble (3.5, 1);  // { dg-warning "" } double to int
   wibble (3.5f, 1); // { dg-warning "" } float to int
-  
+
   punk ();          // { dg-warning "" } double to int
   rock (1);         // { dg-warning "" } double to int
 }
-

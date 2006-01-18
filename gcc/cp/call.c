@@ -1204,7 +1204,7 @@ reference_binding (tree rto, tree rfrom, tree expr, int flags)
   if (related_p && !at_least_as_qualified_p (to, from))
     return NULL;
 
-  conv = implicit_conversion (to, from, expr, /*c_cast_p=*/false, 
+  conv = implicit_conversion (to, from, expr, /*c_cast_p=*/false,
 			      flags);
   if (!conv)
     return NULL;
@@ -1393,7 +1393,7 @@ add_function_candidate (struct z_candidate **candidates,
 	      parmtype = build_pointer_type (parmtype);
 	    }
 
-	  t = implicit_conversion (parmtype, argtype, arg, 
+	  t = implicit_conversion (parmtype, argtype, arg,
 				   /*c_cast_p=*/false, flags);
 	}
       else
@@ -1472,7 +1472,7 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
       else if (parmnode == void_list_node)
 	break;
       else if (parmnode)
-	t = implicit_conversion (TREE_VALUE (parmnode), argtype, arg, 
+	t = implicit_conversion (TREE_VALUE (parmnode), argtype, arg,
 				 /*c_cast_p=*/false, flags);
       else
 	{
@@ -1527,7 +1527,7 @@ build_builtin_candidate (struct z_candidate **candidates, tree fnname,
       if (! args[i])
 	break;
 
-      t = implicit_conversion (types[i], argtypes[i], args[i], 
+      t = implicit_conversion (types[i], argtypes[i], args[i],
 			       /*c_cast_p=*/false, flags);
       if (! t)
 	{
@@ -1545,7 +1545,7 @@ build_builtin_candidate (struct z_candidate **candidates, tree fnname,
     {
       convs[2] = convs[1];
       convs[1] = convs[0];
-      t = implicit_conversion (boolean_type_node, argtypes[2], args[2], 
+      t = implicit_conversion (boolean_type_node, argtypes[2], args[2],
 			       /*c_cast_p=*/false, flags);
       if (t)
 	convs[0] = t;
@@ -2605,7 +2605,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 	      conversion *ics
 		= implicit_conversion (totype,
 				       TREE_TYPE (TREE_TYPE (cand->fn)),
-				       0, 
+				       0,
 				       /*c_cast_p=*/false, convflags);
 
 	      cand->second_conv = ics;
@@ -4201,10 +4201,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       if (ARITHMETIC_TYPE_P (t) && expr == null_node)
 	{
 	  if (fn)
-	    warning (0, "passing NULL to non-pointer argument %P of %qD",
+	    warning (OPT_Wconversion, "passing NULL to non-pointer argument %P of %qD",
 		     argnum, fn);
 	  else
-	    warning (0, "converting to non-pointer type %qT from NULL", t);
+	    warning (OPT_Wconversion, "converting to non-pointer type %qT from NULL", t);
 	}
 
       /* Warn about assigning a floating-point type to an integer type.  */
@@ -4212,10 +4212,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  && TREE_CODE (t) == INTEGER_TYPE)
 	{
 	  if (fn)
-	    warning (0, "passing %qT for argument %P to %qD",
+	    warning (OPT_Wconversion, "passing %qT for argument %P to %qD",
 		     TREE_TYPE (expr), argnum, fn);
 	  else
-	    warning (0, "converting to %qT from %qT", t, TREE_TYPE (expr));
+	    warning (OPT_Wconversion, "converting to %qT from %qT", t, TREE_TYPE (expr));
 	}
     }
 
@@ -5273,7 +5273,7 @@ build_new_method_call (tree instance, tree fns, tree args,
   orig_fns = fns;
   orig_args = args;
 
-  /* Dismantle the baselink to collect all the information we need.  */  
+  /* Dismantle the baselink to collect all the information we need.  */
   if (!conversion_path)
     conversion_path = BASELINK_BINFO (fns);
   access_binfo = BASELINK_ACCESS_BINFO (fns);
@@ -6302,7 +6302,7 @@ can_convert_arg (tree to, tree from, tree arg, int flags)
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
 
-  t  = implicit_conversion (to, from, arg, /*c_cast_p=*/false, 
+  t  = implicit_conversion (to, from, arg, /*c_cast_p=*/false,
 			    flags);
   ok_p = (t && !t->bad_p);
 
