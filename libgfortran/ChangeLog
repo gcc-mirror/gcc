@@ -1,3 +1,9 @@
+2006-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25631
+	* io/transfer.c (formatted_transfer_scalar): Adjust pending_spaces and
+	skips so that TL works correctly when no bytes_used yet.  
+
 2006-01-16  Roger Sayle  <roger@eyesopen.com>
 
 	* intrinsics/c99_functions.c: Add function prototypes to avoid
