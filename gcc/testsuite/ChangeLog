@@ -1,3 +1,10 @@
+2006-01-18  DJ Delorie  <dj@redhat.com>
+
+	* gcc.dg/Werror-1.c, gcc.dg/Werror-2.c, gcc.dg/Werror-3.c,
+	gcc.dg/Werror-4.c, gcc.dg/Werror-5.c, gcc.dg/Werror-6.c,
+	gcc.dg/Werror-7.c, gcc.dg/Werror-8.c, gcc.dg/Werror-9.c,
+	gcc.dg/Werror-10.c, gcc.dg/Werror-11.c, gcc.dg/Werror-12: New.
+
 2006-01-18  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/execute/930529-1.x: Use -fwrapv as test depends
