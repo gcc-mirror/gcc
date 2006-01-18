@@ -1,3 +1,8 @@
+2006-01-18  Philippe De Muyter  <phdm@macqel.be>
+
+	* config/m68k/m68k.md (*addsi3_5200): Allow addq/subq to memory
+	operands.
+
 2006-01-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* rtlanal.c (global_reg_mentioned_p_1,
