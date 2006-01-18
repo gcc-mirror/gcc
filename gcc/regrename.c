@@ -184,7 +184,7 @@ merge_overlapping_regs (basic_block b, HARD_REG_SET *pset,
 
 /* Perform register renaming on the current function.  */
 
-void
+static void
 regrename_optimize (void)
 {
   int tick[FIRST_PSEUDO_REGISTER];
@@ -1787,7 +1787,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
 /* Main entry point for the forward copy propagation optimization.  */
 
-void
+static void
 copyprop_hardreg_forward (void)
 {
   struct value_data *all_vd;
