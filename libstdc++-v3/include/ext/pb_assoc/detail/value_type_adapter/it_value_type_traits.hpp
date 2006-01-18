@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -94,16 +94,13 @@ struct it_value_type_traits_
     value_type>::other::const_pointer
   const_pointer;
 
-  typedef
-  typename Allocator_::template rebind<
-    int* >::other::value_type
-  buf_t;
-
   struct value_type_holder
   {
-    buf_t m_a_key_buf[sizeof(key_ref_pair) / sizeof(buf_t) + 1];
+    typename std::tr1::aligned_storage<sizeof(key_ref_pair),
+      std::tr1::alignment_of<key_ref_pair>::value>::type  m_a_key_buf;
 
-    buf_t m_a_value_buf[sizeof(value_type) / sizeof(buf_t) + 1];
+    typename std::tr1::aligned_storage<sizeof(value_type),
+      std::tr1::alignment_of<value_type>::value>::type  m_a_value_buf;
   };
 
   typedef
@@ -114,7 +111,7 @@ struct it_value_type_traits_
   inline static pointer
   recast(value_type_hoder_valerence r_holder)
   {
-    return reinterpret_cast<pointer>(r_holder.m_a_value_buf);
+    return reinterpret_cast<pointer>(&r_holder.m_a_value_buf);
   }
 
   inline static void
@@ -125,7 +122,7 @@ struct it_value_type_traits_
       void* >::other::value_type
       void_pointer;
 
-    void_pointer p_target = r_holder.m_a_key_buf;
+    void_pointer p_target = &r_holder.m_a_key_buf;
 
     new (p_target) key_ref_pair(r_bk, r_val.first);
 
@@ -135,9 +132,9 @@ struct it_value_type_traits_
       key_ref_pair_pointer;
 
     key_ref_pair_pointer p_key =
-      reinterpret_cast<key_ref_pair_pointer>(r_holder.m_a_key_buf);
+      reinterpret_cast<key_ref_pair_pointer>(&r_holder.m_a_key_buf);
 
-    p_target = r_holder.m_a_value_buf;
+    p_target = &r_holder.m_a_value_buf;
 
     new (p_target) value_type(*p_key, r_val.second);
   }
@@ -185,16 +182,13 @@ struct it_value_type_traits_<
     value_type>::other::const_pointer
   const_pointer;
 
-  typedef
-  typename Allocator_::template rebind<
-    int* >::other::value_type
-  buf_t;
-
   struct value_type_holder
   {
-    buf_t m_a_key_buf[sizeof(key_ref_pair) / sizeof(buf_t) + 1];
+    typename std::tr1::aligned_storage<sizeof(key_ref_pair),
+      std::tr1::alignment_of<key_ref_pair>::value>::type  m_a_key_buf;
 
-    buf_t m_a_value_buf[sizeof(value_type) / sizeof(buf_t) + 1];
+    typename std::tr1::aligned_storage<sizeof(value_type),
+      std::tr1::alignment_of<value_type>::value>::type  m_a_value_buf;
   };
 
   typedef
@@ -205,7 +199,7 @@ struct it_value_type_traits_<
   inline static pointer
   recast(value_type_hoder_valerence r_holder)
   {
-    return reinterpret_cast<pointer>(r_holder.m_a_value_buf);
+    return reinterpret_cast<pointer>(&r_holder.m_a_value_buf);
   }
 
   inline static void
@@ -216,7 +210,7 @@ struct it_value_type_traits_<
       void* >::other::value_type
       void_pointer;
 
-    void_pointer p_target = r_holder.m_a_value_buf;
+    void_pointer p_target = &r_holder.m_a_value_buf;
 
     new (p_target) key_ref_pair(r_bk, r_val.first);
   }
