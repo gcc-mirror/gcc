@@ -1318,7 +1318,7 @@ delete_redundant_insns (void)
 /* Main entry point of the GCSE after reload - clean some redundant loads
    due to spilling.  */
 
-void
+static void
 gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
 {
 

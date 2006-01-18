@@ -2035,9 +2035,6 @@ extern void expand_dec (rtx, rtx);
 extern bool can_copy_p (enum machine_mode);
 extern rtx fis_get_condition (rtx);
 
-/* In postreload-gcse.c */
-extern void gcse_after_reload_main (rtx);
-
 /* In global.c */
 extern void mark_elimination (int, int);
 extern void dump_global_regs (FILE *);
