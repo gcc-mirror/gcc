@@ -63,19 +63,6 @@ ENTRY(ffi_closure_SYSV)
 	# so use it to look up in a table
 	# so we know how to deal with each type
 
-	# Extract the size of the return type for small structures.
-	# Then calculate (4 - size) and multiply the result by 8.
-	# This gives the value needed for the shift operation below.
-	# This part is only needed for FFI_SYSV and small structures.
-	addi	%r5,%r3,-(FFI_SYSV_TYPE_SMALL_STRUCT)
-	cmpwi	cr0,%r5,4
-	ble	cr0,.Lnext
-	addi	%r5,%r5,-4
-.Lnext:
-	addi	%r5,%r5,-4
-	neg	%r5,%r5
-	slwi	%r5,%r5,3
-
 	# look up the proper starting point in table
 	# by using return type as offset
 	addi %r6,%r1,112   # get pointer to results area
@@ -207,66 +194,66 @@ ENTRY(ffi_closure_SYSV)
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 1. One byte struct.
 .Lret_type15:
 # fall through.
-	nop
-	nop
+	lbz %r3,0(%r6)
+	b .Lfinish
 	nop
 	nop
 
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 2. Two byte struct.
 .Lret_type16:
 # fall through.
-	nop
-	nop
+	lhz %r3,0(%r6)
+	b .Lfinish
 	nop
 	nop
 
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 3. Three byte struct.
 .Lret_type17:
 # fall through.
-	nop
-	nop
-	nop
+	lwz %r3,0(%r6)
+	srwi %r3,%r3,8
+	b .Lfinish
 	nop
 
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 4. Four byte struct.
 .Lret_type18:
 # this one handles the structs from above too.
 	lwz %r3,0(%r6)
-	srw %r3,%r3,%r5
 	b .Lfinish
+	nop
 	nop
 
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 5. Five byte struct.
 .Lret_type19:
 # fall through.
-	nop
-	nop
-	nop
-	nop
+	lwz %r3,0(%r6)
+	lwz %r4,4(%r6)
+	li %r5,24
+	b .Lstruct567
 
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 6. Six byte struct.
 .Lret_type20:
 # fall through.
-	nop
-	nop
-	nop
-	nop
+	lwz %r3,0(%r6)
+	lwz %r4,4(%r6)
+	li %r5,16
+	b .Lstruct567
 
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 7. Seven byte struct.
 .Lret_type21:
 # fall through.
-	nop
-	nop
-	nop
-	nop
+	lwz %r3,0(%r6)
+	lwz %r4,4(%r6)
+	li %r5,8
+	b .Lstruct567
 
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 8. Eight byte struct.
 .Lret_type22:
 # this one handles the above unhandled structs.
 	lwz %r3,0(%r6)
 	lwz %r4,4(%r6)
-	bl __lshrdi3	# libgcc function to shift r3/r4, shift value in r5.
 	b .Lfinish
+	nop
 
 # case done
 .Lfinish:
@@ -275,6 +262,14 @@ ENTRY(ffi_closure_SYSV)
 	mtlr %r0
 	addi %r1,%r1,144
 	blr
+
+.Lstruct567:
+	subfic %r0,%r5,32
+	srw %r4,%r4,%r5
+	slw %r0,%r3,%r0
+	srw %r3,%r3,%r5
+	or %r4,%r0,%r4
+	b .Lfinish
 END(ffi_closure_SYSV)
 
 	.section	".eh_frame",EH_FRAME_FLAGS,@progbits

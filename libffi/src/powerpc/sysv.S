@@ -140,8 +140,14 @@ L(smst_one_register):
 	b	L(done_return_value)
 L(smst_two_register):
 	rlwinm  %r5,%r31,5+23,32-5,31 /* Extract the value to shift.  */
-	bl	__ashldi3  /* libgcc function to shift r3/r4,
-			      shift value in r5.  */
+	cmpwi	%r5,0
+	subfic	%r9,%r5,32
+	slw	%r29,%r3,%r5
+	srw	%r9,%r4,%r9
+	beq-	L(smst_8byte)
+	or	%r3,%r9,%r29
+	slw	%r4,%r4,%r5
+L(smst_8byte):
 	stw	%r3,0(%r30)
 	stw	%r4,4(%r30)
 	b	L(done_return_value)
