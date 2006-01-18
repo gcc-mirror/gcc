@@ -1,5 +1,18 @@
 2006-01-18  Ben Elliston  <bje@au.ibm.com>	
 
+	* Makefile.in (D32PBIT_FUNCS): New.
+	(D64PBIT_FUNCS, D128PBIT_FUNCS): Likewise.
+	(libgcc.mk): Set D32PBIT, D64PBIT, D128PBIT, D32PBIT_FUNCS,
+	D64PBIT_FUNCS and D128PBIT_FUNCS.
+	(LIBGCC_DEPS): Include $(D32PBIT), $(D64PBIT), $(D128PBIT).
+	* mklibgcc.in Bring in the DFP support code if D32PBIT, D64PBIT or
+	D128PBIT are set.
+	(decnumber_dep): Define.
+	* doc/libgcc.texi (Decimal float library routines): New node.
+	* config/dfp-bit.h, config/dfp-bit.c: New files.
+
+2006-01-18  Ben Elliston  <bje@au.ibm.com>	
+
 	* expr.c (emit_move_change_mode): Always adjust addresses, not
 	just during reload.  Copy replacements only during reload.
 	(emit_move_insn_1): Move MODE_DECIMAL_FLOAT modes by invoking

@@ -1055,6 +1055,29 @@ TPBIT_FUNCS = _pack_tf _unpack_tf _addsub_tf _mul_tf _div_tf \
     _lt_tf _le_tf _unord_tf _si_to_tf _tf_to_si _negate_tf _make_tf \
     _tf_to_df _tf_to_sf _thenan_tf _tf_to_usi _usi_to_tf
 
+D32PBIT_FUNCS = _addsub_sd _div_sd _mul_sd _plus_sd _minus_sd \
+	_eq_sd _ne_sd _lt_sd _gt_sd _le_sd _ge_sd \
+	_sd_to_si _sd_to_di _sd_to_usi _sd_to_udi \
+	_si_to_sd _di_to_sd _usi_to_sd _udi_to_sd \
+	_sd_to_sf _sd_to_df _sd_to_xf _sf_to_sd _df_to_sd _xf_to_sd \
+	_sd_to_dd _sd_to_td _unord_sd _conv_sd
+
+D64PBIT_FUNCS = _addsub_dd _div_dd _mul_dd _plus_dd _minus_dd \
+	_eq_dd _ne_dd _lt_dd _gt_dd _le_dd _ge_dd \
+	_dd_to_si _dd_to_di _dd_to_usi _dd_to_udi \
+	_si_to_dd _di_to_dd _usi_to_dd _udi_to_dd \
+	_dd_to_sf _dd_to_df _dd_to_xf \
+	_sf_to_dd _df_to_dd _xf_to_dd \
+	_dd_to_sd _dd_to_td _unord_dd _conv_dd
+
+D128PBIT_FUNCS = _addsub_td _div_td _mul_td _plus_td _minus_td \
+	_eq_td _ne_td _lt_td _gt_td _le_td _ge_td \
+	_td_to_si _td_to_di _td_to_usi _td_to_udi \
+	_si_to_td _di_to_td _usi_to_td _udi_to_td \
+	_td_to_sf _td_to_df _td_to_xf \
+	_sf_to_td _df_to_td _xf_to_td \
+	_td_to_sd _td_to_dd _unord_td _conv_td
+
 # These might cause a divide overflow trap and so are compiled with
 # unwinder info.
 LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
@@ -1393,6 +1416,12 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) specs \
 	DPBIT_FUNCS='$(DPBIT_FUNCS)' \
 	TPBIT='$(TPBIT)' \
 	TPBIT_FUNCS='$(TPBIT_FUNCS)' \
+	D32PBIT='$(D32PBIT)' \
+	D32PBIT_FUNCS='$(D32PBIT_FUNCS)' \
+	D64PBIT='$(D64PBIT)' \
+	D64PBIT_FUNCS='$(D64PBIT_FUNCS)' \
+	D128PBIT='$(D128PBIT)' \
+	D128PBIT_FUNCS='$(D128PBIT_FUNCS)' \
 	MULTILIBS=`$(GCC_FOR_TARGET) --print-multi-lib` \
 	EXTRA_MULTILIB_PARTS='$(EXTRA_MULTILIB_PARTS)' \
 	SHLIB_LINK='$(SHLIB_LINK)' \
@@ -1415,6 +1444,7 @@ LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
 	libgcc.mk $(srcdir)/libgcc2.c $(srcdir)/libgcov.c $(TCONFIG_H) \
 	$(MACHMODE_H) longlong.h gbl-ctors.h config.status $(srcdir)/libgcc2.h \
 	tsystem.h $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
+	$(D32PBIT) $(D64PBIT) $(D128PBIT) \
 	$(LIB2ADD_ST) $(LIB2ADDEH) $(LIB2ADDEHDEP) $(EXTRA_PARTS) \
 	$(srcdir)/config/$(LIB1ASMSRC) \
 	$(srcdir)/gcov-io.h $(srcdir)/gcov-io.c gcov-iov.h
