@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist transfer functions contributed by Paul Thomas
 
@@ -1219,11 +1219,17 @@ us_read (st_parameter_dt *dtp)
   int n;
   gfc_offset i;
 
+  if (dtp->u.p.current_unit->endfile == AT_ENDFILE)
+    return;
+
   n = sizeof (gfc_offset);
   p = salloc_r (dtp->u.p.current_unit->s, &n);
 
   if (n == 0)
-    return;  /* end of file */
+    {
+      dtp->u.p.current_unit->endfile = AT_ENDFILE;
+      return;  /* end of file */
+    }
 
   if (p == NULL || n != sizeof (gfc_offset))
     {
