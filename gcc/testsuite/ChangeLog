@@ -1,3 +1,18 @@
+2006-01-18  Paul Thomas  <pault@gcc.gnu.org>
+	    Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/20869
+	* gfortran.dg/intrinsic_external_1.f90: New test.
+
+	PR fortran/20875.
+	* gfortran.dg/elemental_pointer_1.f90: New test.
+
+	PR fortran/25024
+	* gfortran.dg/external_procedures_1.f90: New test.
+
+	PR fortran/25785
+	gfortran.dg/assumed_present.f90: New test.
+
 2006-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/parse/lookup5.C: New test.

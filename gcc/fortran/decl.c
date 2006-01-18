@@ -3154,6 +3154,12 @@ attr_decl1 (void)
 	goto cleanup;
     }
 
+  if (gfc_add_attribute (&sym->attr, &var_locus) == FAILURE)
+    {
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
   if ((current_attr.external || current_attr.intrinsic)
       && sym->attr.flavor != FL_PROCEDURE
       && gfc_add_flavor (&sym->attr, FL_PROCEDURE, sym->name, NULL) == FAILURE)
@@ -3361,7 +3367,7 @@ gfc_match_external (void)
 {
 
   gfc_clear_attr (&current_attr);
-  gfc_add_external (&current_attr, NULL);
+  current_attr.external = 1;
 
   return attr_decl ();
 }
@@ -3378,7 +3384,7 @@ gfc_match_intent (void)
     return MATCH_ERROR;
 
   gfc_clear_attr (&current_attr);
-  gfc_add_intent (&current_attr, intent, NULL);	/* Can't fail */
+  current_attr.intent = intent;
 
   return attr_decl ();
 }
@@ -3389,7 +3395,7 @@ gfc_match_intrinsic (void)
 {
 
   gfc_clear_attr (&current_attr);
-  gfc_add_intrinsic (&current_attr, NULL);
+  current_attr.intrinsic = 1;
 
   return attr_decl ();
 }
@@ -3400,7 +3406,7 @@ gfc_match_optional (void)
 {
 
   gfc_clear_attr (&current_attr);
-  gfc_add_optional (&current_attr, NULL);
+  current_attr.optional = 1;
 
   return attr_decl ();
 }
@@ -3423,7 +3429,7 @@ gfc_match_pointer (void)
   else
     {
       gfc_clear_attr (&current_attr);
-      gfc_add_pointer (&current_attr, NULL);
+      current_attr.pointer = 1;
     
       return attr_decl ();
     }
@@ -3435,7 +3441,7 @@ gfc_match_allocatable (void)
 {
 
   gfc_clear_attr (&current_attr);
-  gfc_add_allocatable (&current_attr, NULL);
+  current_attr.allocatable = 1;
 
   return attr_decl ();
 }
@@ -3446,7 +3452,7 @@ gfc_match_dimension (void)
 {
 
   gfc_clear_attr (&current_attr);
-  gfc_add_dimension (&current_attr, NULL, NULL);
+  current_attr.dimension = 1;
 
   return attr_decl ();
 }
@@ -3457,7 +3463,7 @@ gfc_match_target (void)
 {
 
   gfc_clear_attr (&current_attr);
-  gfc_add_target (&current_attr, NULL);
+  current_attr.target = 1;
 
   return attr_decl ();
 }
