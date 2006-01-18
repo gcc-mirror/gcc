@@ -1,3 +1,7 @@
+2006-01-18  DJ Delorie  <dj@redhat.com>
+
+	* md5.h: Include ansidecl.h
+
 2006-01-09  Bob Wilson  <bob.wilson@acm.org>
 
 	* xtensa-config.h (XCHAL_HAVE_MUL32_HIGH): Define.

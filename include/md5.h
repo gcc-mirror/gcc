@@ -27,6 +27,8 @@
 # include <limits.h>
 #endif
 
+#include "ansidecl.h"
+
 /* The following contortions are an attempt to use the C preprocessor
    to determine an unsigned integral type that is 32 bits wide.  An
    alternative approach is to use autoconf's AC_CHECK_SIZEOF macro, but
