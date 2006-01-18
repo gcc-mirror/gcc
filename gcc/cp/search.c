@@ -2355,7 +2355,7 @@ lookup_conversions_r (tree binfo,
     {
       parent_tpl_convs = tree_cons (binfo, my_tpl_convs, parent_tpl_convs);
       if (virtual_depth)
-	TREE_STATIC (parent_convs) = 1;
+	TREE_STATIC (parent_tpl_convs) = 1;
     }
 
   child_convs = other_convs;
