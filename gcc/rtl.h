@@ -1577,7 +1577,6 @@ extern int rtx_varies_p (rtx, int);
 extern int rtx_addr_varies_p (rtx, int);
 extern HOST_WIDE_INT get_integer_term (rtx);
 extern rtx get_related_value (rtx);
-extern int global_reg_mentioned_p (rtx);
 extern int reg_mentioned_p (rtx, rtx);
 extern int count_occurrences (rtx, rtx, int);
 extern int reg_referenced_p (rtx, rtx);
