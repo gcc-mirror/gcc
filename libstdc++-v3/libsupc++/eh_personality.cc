@@ -1,5 +1,5 @@
 // -*- C++ -*- The GNU C++ exception personality routine.
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -386,7 +386,7 @@ PERSONALITY_FUNCTION (int version,
       break;
 
     default:
-      abort();
+      std::abort();
     }
   actions |= state & _US_FORCE_UNWIND;
 
