@@ -3023,7 +3023,7 @@ convert_regs (FILE *file)
    code duplication created when the converter inserts pop insns on
    the edges.  */
 
-bool
+static bool
 reg_to_stack (FILE *file)
 {
   basic_block bb;
