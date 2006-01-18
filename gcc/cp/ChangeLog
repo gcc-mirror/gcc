@@ -1,3 +1,8 @@
+2006-01-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree.c (find_tree_t, find_tree): Remove.
+	* cp-tree.h: Remove the prototype for find_tree.
+
 2006-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* search.c (lookup_conversions_r): Fix a pasto.
