@@ -1,3 +1,0 @@
-# Bump the version number of the shared libgcc library
-
-SHLIB_SOVERSION = 2
