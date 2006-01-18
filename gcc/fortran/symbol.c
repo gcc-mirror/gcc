@@ -311,11 +311,20 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (pointer, target);
   conf (pointer, external);
   conf (pointer, intrinsic);
+  conf (pointer, elemental);
+
   conf (target, external);
   conf (target, intrinsic);
   conf (external, dimension);   /* See Fortran 95's R504.  */
 
   conf (external, intrinsic);
+    
+  if (attr->if_source || attr->contained)
+    {
+      conf (external, subroutine);
+      conf (external, function);
+    }
+
   conf (allocatable, pointer);
   conf (allocatable, dummy);	/* TODO: Allowed in Fortran 200x.  */
   conf (allocatable, function);	/* TODO: Allowed in Fortran 200x.  */
@@ -583,6 +592,16 @@ duplicate_attr (const char *attr, locus * where)
   gfc_error ("Duplicate %s attribute specified at %L", attr, where);
 }
 
+
+try
+gfc_add_attribute (symbol_attribute * attr, locus * where)
+{
+
+  if (check_used (attr, NULL, where) || check_done (attr, where))
+    return FAILURE;
+
+  return check_conflict (attr, NULL, where);
+}
 
 try
 gfc_add_allocatable (symbol_attribute * attr, locus * where)
