@@ -1,3 +1,7 @@
+2006-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/parse/lookup5.C: New test.
+
 2006-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25631
