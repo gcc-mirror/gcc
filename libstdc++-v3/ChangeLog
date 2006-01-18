@@ -1,3 +1,7 @@
+2006-01-18  Paul Brook  <paul@codesourcery.com>
+
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Use std::abort.
+
 2006-01-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/allocator.h: Include <bits/cpp_type_traits.h>.
