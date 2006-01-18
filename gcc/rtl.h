@@ -2171,9 +2171,6 @@ extern void simplify_using_condition (rtx, rtx *, struct bitmap_head_def *);
 
 /* In ra.c.  */
 extern void reg_alloc (void);
-
-/* In modulo-sched.c.  */
-extern void sms_schedule (FILE *);
 
 struct rtl_hooks
 {

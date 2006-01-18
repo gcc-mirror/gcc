@@ -4,6 +4,9 @@
 	* basic-block.h: Remove the prototype for
 	optimize_mode_switching.
 
+	* modulo-sched.c (sms_schedule): Make it static.
+	* rtl.h: Remove the prototype for sms_schedule.
+
 2006-01-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/alpha/alpha.c (alpha_split_tfmode_pair): Rename into
