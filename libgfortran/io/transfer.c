@@ -868,7 +868,21 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	case FMT_TL:
 	case FMT_T:
 	  if (f->format == FMT_TL)
-	    pos = bytes_used - f->u.n;
+	    {
+
+	      /* Handle the special case when no bytes have been used yet.
+	         Cannot go below zero. */
+	      if (bytes_used == 0)
+		{
+		  dtp->u.p.pending_spaces -= f->u.n;
+		  dtp->u.p.pending_spaces = dtp->u.p.pending_spaces < 0 ? 0
+					    : dtp->u.p.pending_spaces;
+		  dtp->u.p.skips -= f->u.n;
+		  dtp->u.p.skips = dtp->u.p.skips < 0 ? 0 : dtp->u.p.skips;
+		}
+
+	      pos = bytes_used - f->u.n;
+	    }
 	  else /* FMT_T */
 	    {
 	      consume_data_flag = 0;
