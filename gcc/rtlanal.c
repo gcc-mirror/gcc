@@ -39,7 +39,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "function.h"
 
 /* Forward declarations */
-static int global_reg_mentioned_p_1 (rtx *, void *);
 static void set_of_1 (rtx, rtx, void *);
 static bool covers_regno_p (rtx, unsigned int);
 static bool covers_regno_no_parallel_p (rtx, unsigned int);
@@ -474,78 +473,6 @@ get_related_value (rtx x)
 	   && GET_CODE (XEXP (x, 1)) == CONST_INT)
     return XEXP (x, 0);
   return 0;
-}
-
-/* A subroutine of global_reg_mentioned_p, returns 1 if *LOC mentions
-   a global register.  */
-
-static int
-global_reg_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
-{
-  int regno;
-  rtx x = *loc;
-
-  if (! x)
-    return 0;
-
-  switch (GET_CODE (x))
-    {
-    case SUBREG:
-      if (REG_P (SUBREG_REG (x)))
-	{
-	  if (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
-	      && global_regs[subreg_regno (x)])
-	    return 1;
-	  return 0;
-	}
-      break;
-
-    case REG:
-      regno = REGNO (x);
-      if (regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
-	return 1;
-      return 0;
-
-    case SCRATCH:
-    case PC:
-    case CC0:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST:
-    case LABEL_REF:
-      return 0;
-
-    case CALL:
-      /* A non-constant call might use a global register.  */
-      return 1;
-
-    default:
-      break;
-    }
-
-  return 0;
-}
-
-/* Returns nonzero if X mentions a global register.  */
-
-int
-global_reg_mentioned_p (rtx x)
-{
-  if (INSN_P (x))
-    {
-      if (CALL_P (x))
-	{
-	  if (! CONST_OR_PURE_CALL_P (x))
-	    return 1;
-	  x = CALL_INSN_FUNCTION_USAGE (x);
-	  if (x == 0)
-	    return 0;
-	}
-      else
-	x = PATTERN (x);
-    }
-
-  return for_each_rtx (&x, global_reg_mentioned_p_1, NULL);
 }
 
 /* Return the number of places FIND appears within X.  If COUNT_DEST is
