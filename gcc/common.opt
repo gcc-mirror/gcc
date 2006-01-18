@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -80,6 +80,10 @@ Warn when an optimization pass is disabled
 Werror
 Common Var(warnings_are_errors)
 Treat all warnings as errors
+
+Werror=
+Common Joined
+Treat specified warning as error
 
 Wextra
 Common

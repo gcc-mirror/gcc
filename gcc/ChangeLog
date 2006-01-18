@@ -1,3 +1,22 @@
+2006-01-18  DJ Delorie  <dj@redhat.com>
+
+	* c-pragma.c (handle_pragma_diagnostic): New.
+	(init_pragma): Register it.
+	* doc/extend.texi: Document it.
+
+	* diagnostic.def: Add DK_UNSPECIFIED and DK_IGNORED.
+	* diagnostic.h (diagnostic_classify_diagnostic): Declare.
+	(diagnostic_context): Add classify_diagnostic[].
+	* diagnostic.c (diagnostic_count_diagnostic): Don't count warnings
+	as errors if they're overridden to DK_WARNING.
+	(diagnostic_initialize): Initialize classify_diagnostic[].
+	(diagnostic_set_kind_override): New.
+	(diagnostic_report_diagnostic): Check for kind changes.
+	* opts.c (common_handle_option): Take lang_mask.  Update callers.
+	Handle OPT_Werror_.
+	* common.opt (Werror=): New.
+	* doc/invoke.texi: Document -Werror=*
+
 2006-01-18  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (test_for_singularity): Correct test for new
@@ -640,7 +659,7 @@
 	* basic-block.h: Remove the prototype for
 	partition_hot_cold_basic_blocks.
 
-2006-01-16  Rafael Å√Åvila de EspÅ√Å≠ndola <rafael.espindola@gmail.com>
+2006-01-16  Rafael ÅÅ√Åvila de EspÅÅ√ÅÅ≠ndola <rafael.espindola@gmail.com>
 
 	* cppspec.c (lang_specific_spec_functions): remove
 	* gcc.c (lookup_spec_function): use static_spec_functions directelly

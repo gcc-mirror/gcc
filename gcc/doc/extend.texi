@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000,
-@c 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -9290,6 +9290,7 @@ for further explanation.
 * Symbol-Renaming Pragmas::
 * Structure-Packing Pragmas::
 * Weak Pragmas::
+* Diagnostic Pragmas::
 @end menu
 
 @node ARM Pragmas
@@ -9528,6 +9529,51 @@ either its first use or its definition.  It is not an error for
 This pragma declares @var{symbol1} to be a weak alias of @var{symbol2}.
 It is an error if @var{symbol2} is not defined in the current
 translation unit.
+@end table
+
+@node Diagnostic Pragmas
+@subsection Diagnostic Pragmas
+
+GCC allows the user to selectively enable or disable certain types of
+diagnostics, and change the kind of the diagnostic.  For example, a
+project's policy might require that all sources compile with
+@option{-Werror} but certain files might have exceptions allowing
+specific types of warnings.  Or, a project might selectively enable
+diagnostics and treat them as errors depending on which preprocessor
+macros are defined.
+
+@table @code
+@item #pragma GCC diagnostic @var{kind} @var{option}
+@cindex pragma, diagnostic
+
+Modifies the disposition of a diagnostic.  Note that not all
+diagnostics are modifyiable; at the moment only warnings (normally
+controlled by @samp{-W...}) can be controlled, and not all of them.
+Use @option{-fdiagnostics-show-option} to determine which diagnostics
+are controllable and which option controls them.
+
+@var{kind} is @samp{error} to treat this diagnostic as an error,
+@samp{warning} to treat it like a warning (even if @option{-Werror} is
+in effect), or @samp{ignored} if the diagnostic is to be ignored.
+@var{option} is a double quoted string which matches the command line
+option.
+
+@example
+#pragma GCC diagnostic warning "-Wformat"
+#pragma GCC diagnostic error "-Walways-true"
+#pragma GCC diagnostic ignored "-Walways-true"
+@end example
+
+Note that these pragmas override any command line options.  Also,
+while it is syntactically valid to put these pragmas anywhere in your
+sources, the only supported location for them is before any data or
+functions are defined.  Doing otherwise may result in unpredictable
+results depending on how the optimizer manages your sources.  If the
+same option is listed multiple times, the last one specified is the
+one that is in effect.  This pragma is not intended to be a general
+purpose replacement for command line options, but for implementing
+strict control over project policies.
+
 @end table
 
 @node Unnamed Fields

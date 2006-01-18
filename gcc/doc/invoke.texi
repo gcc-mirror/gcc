@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-@c 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -226,7 +226,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wc++-compat -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  -Wno-endif-labels @gol
--Werror  -Werror-implicit-function-declaration @gol
+-Werror  -Werror-* -Werror-implicit-function-declaration @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-y2k @gol
@@ -3410,6 +3410,22 @@ This option is only supported for C and Objective-C@.
 @item -Werror
 @opindex Werror
 Make all warnings into errors.
+
+@item -Werror=
+@opindex Werror=
+Make the specified warning into an errors.  The specifier for a
+warning is appended, for example @option{-Werror=switch} turns the
+warnings controlled by @option{-Wswitch} into errors.  This switch
+takes a negative form, to be used to negate @option{-Werror} for
+specific warnings, for example @option{-Wno-error=switch} makes
+@option{-Wswitch} warnings not be errors, even when @option{-Werror}
+is in effect.  You can use the @option{-fdiagnostics-show-option}
+option to have each controllable warning amended with the option which
+controls it, to determine what to use with this option.
+
+Note that specifying @option{-Werror=}@var{foo} automatically implies
+@option{-W}@var{foo}.  However, @option{-Wno-error=}@var{foo} does not
+imply anything.
 
 @item -Wstack-protector
 @opindex Wstack-protector

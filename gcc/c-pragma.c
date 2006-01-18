@@ -1,6 +1,6 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+   2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,7 +36,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tm_p.h"
 #include "vec.h"
 #include "target.h"
-
+#include "diagnostic.h"
+#include "opts.h"
 
 #define GCC_BAD(gmsgid) \
   do { warning (OPT_Wpragmas, gmsgid); return; } while (0)
@@ -668,6 +669,53 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
 
 #endif
 
+static void
+handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
+{
+  const char *kind_string, *option_string;
+  unsigned int option_index;
+  enum cpp_ttype token;
+  diagnostic_t kind;
+  tree x;
+
+  if (cfun)
+    {
+      error ("#pragma GCC diagnostic not allowed inside functions");
+      return;
+    }
+
+  token = pragma_lex (&x);
+  if (token != CPP_NAME)
+    GCC_BAD ("missing [error|warning|ignored] after %<#pragma GCC diagnostic%>");
+  kind_string = IDENTIFIER_POINTER (x);
+  if (strcmp (kind_string, "error") == 0)
+    kind = DK_ERROR;
+  else if (strcmp (kind_string, "warning") == 0)
+    kind = DK_WARNING;
+  else if (strcmp (kind_string, "ignored") == 0)
+    kind = DK_IGNORED;
+  else
+    GCC_BAD ("expected [error|warning|ignored] after %<#pragma GCC diagnostic%>");
+
+  token = pragma_lex (&x);
+  if (token != CPP_STRING)
+    GCC_BAD ("missing option after %<#pragma GCC diagnostic%> kind");
+  option_string = TREE_STRING_POINTER (x);
+  for (option_index = 0; option_index < cl_options_count; option_index++)
+    if (strcmp (cl_options[option_index].opt_text, option_string) == 0)
+      {
+	/* This overrides -Werror, for example.  */
+	diagnostic_classify_diagnostic (global_dc, option_index, kind);
+	/* This makes sure the option is enabled, like -Wfoo would do.  */
+	if (cl_options[option_index].var_type == CLVC_BOOLEAN
+	    && cl_options[option_index].flag_var
+	    && kind != DK_IGNORED)
+	    *(int *) cl_options[option_index].flag_var = 1;
+	return;
+      }
+  GCC_BAD ("unknown option after %<#pragma GCC diagnostic%> kind");
+}
+
 /* A vector of registered pragma callbacks.  */
 
 DEF_VEC_O (pragma_handler);
@@ -766,6 +814,8 @@ init_pragma (void)
 #ifdef HANDLE_PRAGMA_VISIBILITY
   c_register_pragma ("GCC", "visibility", handle_pragma_visibility);
 #endif
+
+  c_register_pragma ("GCC", "diagnostic", handle_pragma_diagnostic);
 
   c_register_pragma (0, "redefine_extname", handle_pragma_redefine_extname);
   c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);
