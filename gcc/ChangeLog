@@ -1,3 +1,8 @@
+2006-01-18  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.md (shift spliter): Fix a a typo in the splitter
+	for shifts where the source and destination registers are different.
+
 2006-01-18  Paul Brook  <paul@codesourcery.com>
 
 	Merge from csl-arm-branch.
