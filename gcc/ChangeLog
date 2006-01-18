@@ -1,3 +1,12 @@
+2006-01-18  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (test_for_singularity): Correct test for new
+	min limit.  Use operand_equal_p rather than pointer equality
+	for testing if new min/max values are equal.
+
+	* tree-ssa-propagate.c (substitute_and_fold): Delay simplifications
+	using range information until after propagation and folding.
+
 2006-01-18  Richard Henderson  <rth@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>

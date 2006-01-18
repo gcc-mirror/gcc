@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -3970,7 +3970,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
       if (cond_code == GT_EXPR)
 	{
 	  tree one = build_int_cst (TREE_TYPE (op0), 1);
-	  max = fold_build2 (PLUS_EXPR, TREE_TYPE (op0), max, one);
+	  min = fold_build2 (PLUS_EXPR, TREE_TYPE (op0), min, one);
 	}
     }
 
@@ -3987,10 +3987,10 @@ test_for_singularity (enum tree_code cond_code, tree op0,
       else
 	max = vr->max;
 
-      /* If the new min/max values have converged to a
-	 single value, then there is only one value which
-	 can satisfy the condition, return that value.  */
-      if (min == max && is_gimple_min_invariant (min))
+      /* If the new min/max values have converged to a single value,
+	 then there is only one value which can satisfy the condition,
+	 return that value.  */
+      if (operand_equal_p (min, max, 0) && is_gimple_min_invariant (min))
 	return min;
     }
   return NULL;
