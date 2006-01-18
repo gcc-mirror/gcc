@@ -846,10 +846,11 @@ hppa*-*-linux* | parisc*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	tmake_file="${tmake_file} pa/t-linux"
-	# if not configured with --enable-sjlj-exceptions, bump the
-	# libgcc version number
-	if test x$sjlj != x1; then
-	    tmake_file="$tmake_file pa/t-slibgcc-elf-ver"
+	# Set the libgcc version number
+	if test x$sjlj = x1; then
+	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
+	else
+	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
 	;;
 # port not yet contributed.
@@ -900,8 +901,11 @@ hppa[12]*-*-hpux10*)
 	    tmake_file="${tmake_file} pa/t-dce-thr"
 	    ;;
 	esac
-	if test x$sjlj != x1; then
-	    tmake_file="$tmake_file pa/t-slibgcc-elf-ver"
+	# Set the libgcc version number
+	if test x$sjlj = x1; then
+	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
+	else
+	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
 	use_collect2=yes
 	use_fixproto=yes
@@ -935,8 +939,11 @@ hppa*64*-*-hpux11*)
 		       pa/pa-hpux1010.opt pa/pa64-hpux.opt"
 	need_64bit_hwint=yes
 	tmake_file="pa/t-pa64 pa/t-pa-hpux pa/t-hpux-shlib"
-	if test x$sjlj != x1; then
-	    tmake_file="$tmake_file pa/t-slibgcc-elf-ver"
+	# Set the libgcc version number
+	if test x$sjlj = x1; then
+	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
+	else
+	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 	case x${enable_threads} in
@@ -961,8 +968,11 @@ hppa[12]*-*-hpux11*)
 		;;
 	esac
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
-	if test x$sjlj != x1; then
-	    tmake_file="$tmake_file pa/t-slibgcc-elf-ver"
+	# Set the libgcc version number
+	if test x$sjlj = x1; then
+	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
+	else
+	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
 	case x${enable_threads} in
 	xyes | xposix )

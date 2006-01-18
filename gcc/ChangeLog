@@ -1,3 +1,19 @@
+2006-01-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/25731
+	* config.gcc (hppa*-*-linux*, hppa[12]*-*-hpux10*, hppa*64*-*-hpux11*,
+	hppa[12]*-*-hpux11*): Override default shared libgcc version for both
+	sjlj and dwarf2 exception handling.
+	* pa/t-hpux-shlib (SHLIB_SOVERSION): New make variable.
+	Rework to allow overriding SHLIB_EXT and SHLIB_SOVERSION.
+	* pa/pa.c (function_value): Treat complex and vector types as
+	aggregates.
+	(function_arg): Likewise.  Only pass scalar floats in the floating
+	point argument registers.
+	* pa/t-slibgcc-dwarf-ver: New file.
+	* pa/t-slibgcc-sjlj-ver: New file.
+	* pa/t-slibgcc-elf-ver: Delete file.
+
 2006-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/25682
