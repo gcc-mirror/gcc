@@ -2138,10 +2138,6 @@ extern int stack_regs_mentioned (rtx insn);
 /* In toplev.c */
 extern GTY(()) rtx stack_limit_rtx;
 
-/* In regrename.c */
-extern void regrename_optimize (void);
-extern void copyprop_hardreg_forward (void);
-
 /* In predict.c */
 extern void invert_br_probabilities (rtx);
 extern bool expensive_function_p (int);

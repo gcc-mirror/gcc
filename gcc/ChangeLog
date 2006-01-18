@@ -13,6 +13,11 @@
 	* reg-stack.c (reg_to_stack): Make it static.
 	* rtl.h: Remove the prototype for reg_to_stack.
 
+	* regrename.c (regrename_optimize, copyprop_hardreg_forward):
+	Make them static.
+	* rtl.h: Remove the prototypes for regrename_optimize and
+	copyprop_hardreg_forward.
+
 2006-01-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/alpha/alpha.c (alpha_split_tfmode_pair): Rename into
