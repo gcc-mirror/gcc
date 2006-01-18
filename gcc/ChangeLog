@@ -1,3 +1,17 @@
+2006-01-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/alpha/alpha.c (alpha_split_tfmode_pair): Rename into
+	alpha_split_tmode_pair.  Add 'mode' and 'fixup_overlap' arguments.
+	Test against the appropriate null constant for the mode.
+	If 'fixup_overlap' is true, swap the operands if they overlap.
+	(alpha_split_tfmode_frobsign): Adjust call to alpha_split_tfmode_pair.
+	* config/alpha/alpha-protos.h (alpha_split_tfmode_pair): Rename into
+	alpha_split_tmode_pair and adjust for above change.
+	* config/alpha/alpha.md (movtf_internal): Adjust call to
+	alpha_split_tfmode_pair and rely on it to swap the operands.
+	(movti_internal): New insn and post-reload splitter.
+	(movti): New expander.
+
 2006-01-18  Philippe De Muyter  <phdm@macqel.be>
 
 	* config/m68k/m68k.md (*addsi3_5200): Allow addq/subq to memory
