@@ -934,7 +934,7 @@ build_loops_structure (FILE *dumpfile)
 
 /* Main entry point, perform SMS scheduling on the loops of the function
    that consist of single basic blocks.  */
-void
+static void
 sms_schedule (FILE *dump_file)
 {
   static int passes = 0;
