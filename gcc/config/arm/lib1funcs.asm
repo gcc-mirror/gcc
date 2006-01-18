@@ -1020,6 +1020,9 @@ LSYM(Lover12):
 #define ah	r1
 #endif
 
+/* Prevent __aeabi double-word shifts from being produced on SymbianOS.  */
+#ifndef __symbian__
+
 #ifdef L_lshrdi3
 
 	FUNC_START lshrdi3
@@ -1120,6 +1123,8 @@ LSYM(Lover12):
 	FUNC_END ashldi3
 
 #endif
+
+#endif /* __symbian__ */
 
 /* ------------------------------------------------------------------------ */
 /* These next two sections are here despite the fact that they contain Thumb 
