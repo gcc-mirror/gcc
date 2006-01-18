@@ -3580,9 +3580,12 @@ resolve_branch (gfc_st_label * label, gfc_code * code)
 
   if (found == NULL)
     {
-      /* still nothing, so illegal.  */
-      gfc_error_now ("Label at %L is not in the same block as the "
-		     "GOTO statement at %L", &lp->where, &code->loc);
+      /* The label is not in an enclosing block, so illegal.  This was
+	 allowed in Fortran 66, so we allow it as extension.  We also 
+	 forego further checks if we run into this.  */
+      gfc_notify_std (GFC_STD_LEGACY,
+		      "Label at %L is not in the same block as the "
+		      "GOTO statement at %L", &lp->where, &code->loc);
       return;
     }
 
@@ -5217,38 +5220,33 @@ gfc_elemental (gfc_symbol * sym)
 /* Warn about unused labels.  */
 
 static void
-warn_unused_label (gfc_namespace * ns)
+warn_unused_label (gfc_st_label * label)
 {
-  gfc_st_label *l;
-
-  l = ns->st_labels;
-  if (l == NULL)
+  if (label == NULL)
     return;
 
-  while (l->next)
-    l = l->next;
+  warn_unused_label (label->left);
 
-  for (; l; l = l->prev)
+  if (label->defined == ST_LABEL_UNKNOWN)
+    return;
+
+  switch (label->referenced)
     {
-      if (l->defined == ST_LABEL_UNKNOWN)
-	continue;
+    case ST_LABEL_UNKNOWN:
+      gfc_warning ("Label %d at %L defined but not used", label->value,
+		   &label->where);
+      break;
 
-      switch (l->referenced)
-	{
-	case ST_LABEL_UNKNOWN:
-	  gfc_warning ("Label %d at %L defined but not used", l->value,
-		       &l->where);
-	  break;
+    case ST_LABEL_BAD_TARGET:
+      gfc_warning ("Label %d at %L defined but cannot be used",
+		   label->value, &label->where);
+      break;
 
-	case ST_LABEL_BAD_TARGET:
-	  gfc_warning ("Label %d at %L defined but cannot be used", l->value,
-		       &l->where);
-	  break;
-
-	default:
-	  break;
-	}
+    default:
+      break;
     }
+
+  warn_unused_label (label->right);
 }
 
 
@@ -5713,7 +5711,7 @@ gfc_resolve (gfc_namespace * ns)
 
   /* Warn about unused labels.  */
   if (gfc_option.warn_unused_labels)
-    warn_unused_label (ns);
+    warn_unused_label (ns->st_labels);
 
   gfc_current_ns = old_ns;
 }

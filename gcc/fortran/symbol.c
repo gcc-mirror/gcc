@@ -1,6 +1,6 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, 
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
+   Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1487,25 +1487,30 @@ gfc_get_component_attr (symbol_attribute * attr, gfc_component * c)
 
 /******************** Statement label management ********************/
 
-/* Free a single gfc_st_label structure, making sure the list is not
+/* Comparison function for statement labels, used for managing the
+   binary tree.  */
+
+static int
+compare_st_labels (void * a1, void * b1)
+{
+  int a = ((gfc_st_label *)a1)->value;
+  int b = ((gfc_st_label *)b1)->value;
+
+  return (b - a);
+}
+
+
+/* Free a single gfc_st_label structure, making sure the tree is not
    messed up.  This function is called only when some parse error
    occurs.  */
 
 void
 gfc_free_st_label (gfc_st_label * label)
 {
-
   if (label == NULL)
     return;
 
-  if (label->prev)
-    label->prev->next = label->next;
-
-  if (label->next)
-    label->next->prev = label->prev;
-
-  if (gfc_current_ns->st_labels == label)
-    gfc_current_ns->st_labels = label->next;
+  gfc_delete_bbt (&gfc_current_ns->st_labels, label, compare_st_labels);
 
   if (label->format != NULL)
     gfc_free_expr (label->format);
@@ -1513,20 +1518,20 @@ gfc_free_st_label (gfc_st_label * label)
   gfc_free (label);
 }
 
-/* Free a whole list of gfc_st_label structures.  */
+/* Free a whole tree of gfc_st_label structures.  */
 
 static void
-free_st_labels (gfc_st_label * l1)
+free_st_labels (gfc_st_label * label)
 {
-  gfc_st_label *l2;
+  if (label == NULL)
+    return;
 
-  for (; l1; l1 = l2)
-    {
-      l2 = l1->next;
-      if (l1->format != NULL)
-	gfc_free_expr (l1->format);
-      gfc_free (l1);
-    }
+  free_st_labels (label->left);
+  free_st_labels (label->right);
+  
+  if (label->format != NULL)
+    gfc_free_expr (label->format);
+  gfc_free (label);
 }
 
 
@@ -1539,11 +1544,17 @@ gfc_get_st_label (int labelno)
   gfc_st_label *lp;
 
   /* First see if the label is already in this namespace.  */
-  for (lp = gfc_current_ns->st_labels; lp; lp = lp->next)
-    if (lp->value == labelno)
-      break;
-  if (lp != NULL)
-    return lp;
+  lp = gfc_current_ns->st_labels;
+  while (lp)
+    {
+      if (lp->value == labelno)
+	return lp;
+
+      if (lp->value < labelno)
+	lp = lp->left;
+      else
+	lp = lp->right;
+    }
 
   lp = gfc_getmem (sizeof (gfc_st_label));
 
@@ -1551,11 +1562,7 @@ gfc_get_st_label (int labelno)
   lp->defined = ST_LABEL_UNKNOWN;
   lp->referenced = ST_LABEL_UNKNOWN;
 
-  lp->prev = NULL;
-  lp->next = gfc_current_ns->st_labels;
-  if (gfc_current_ns->st_labels)
-    gfc_current_ns->st_labels->prev = lp;
-  gfc_current_ns->st_labels = lp;
+  gfc_insert_bbt (&gfc_current_ns->st_labels, lp, compare_st_labels);
 
   return lp;
 }
