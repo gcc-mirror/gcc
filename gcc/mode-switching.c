@@ -382,7 +382,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 /* Find all insns that need a particular mode setting, and insert the
    necessary mode switches.  Return true if we did work.  */
 
-int
+static int
 optimize_mode_switching (FILE *file)
 {
   rtx insn;

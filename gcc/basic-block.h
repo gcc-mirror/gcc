@@ -872,7 +872,6 @@ extern struct edge_list *pre_edge_rev_lcm (FILE *, int, sbitmap *,
 					   sbitmap *, sbitmap **,
 					   sbitmap **);
 extern void compute_available (sbitmap *, sbitmap *, sbitmap *, sbitmap *);
-extern int optimize_mode_switching (FILE *);
 
 /* In predict.c */
 extern void estimate_probability (struct loops *);
