@@ -1,3 +1,11 @@
+2006-01-17  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.c (COSTS_N_BYTES): New macro.
+	(size_cost): Encode costs in bytes so that a reg-reg addition is
+	equivalent to COSTS_N_INSNS(1).
+	(override_options): Use the size_cost.branch_cost as the default
+	ix86_branch_cost when optimizing for size.
+
 2006-01-18  Ben Elliston  <bje@au.ibm.com>	
 
 	* Makefile.in (D32PBIT_FUNCS): New.

@@ -63,25 +63,28 @@ Boston, MA 02110-1301, USA.  */
    : 4)
 
 /* Processor costs (relative to an add) */
+/* We assume COSTS_N_INSNS is defined as (N)*4 and an addition is 2 bytes.  */
+#define COSTS_N_BYTES(N) ((N) * 2)
+
 static const
 struct processor_costs size_cost = {	/* costs for tunning for size */
-  COSTS_N_INSNS (2),			/* cost of an add instruction */
-  COSTS_N_INSNS (3),			/* cost of a lea instruction */
-  COSTS_N_INSNS (2),			/* variable shift costs */
-  COSTS_N_INSNS (3),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (3),			/*                               HI */
-   COSTS_N_INSNS (3),			/*                               SI */
-   COSTS_N_INSNS (3),			/*                               DI */
-   COSTS_N_INSNS (5)},			/*                               other */
+  COSTS_N_BYTES (2),			/* cost of an add instruction */
+  COSTS_N_BYTES (3),			/* cost of a lea instruction */
+  COSTS_N_BYTES (2),			/* variable shift costs */
+  COSTS_N_BYTES (3),			/* constant shift costs */
+  {COSTS_N_BYTES (3),			/* cost of starting multiply for QI */
+   COSTS_N_BYTES (3),			/*                               HI */
+   COSTS_N_BYTES (3),			/*                               SI */
+   COSTS_N_BYTES (3),			/*                               DI */
+   COSTS_N_BYTES (5)},			/*                            other */
   0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (3),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (3),			/*                          HI */
-   COSTS_N_INSNS (3),			/*                          SI */
-   COSTS_N_INSNS (3),			/*                          DI */
-   COSTS_N_INSNS (5)},			/*                          other */
-  COSTS_N_INSNS (3),			/* cost of movsx */
-  COSTS_N_INSNS (3),			/* cost of movzx */
+  {COSTS_N_BYTES (3),			/* cost of a divide/mod for QI */
+   COSTS_N_BYTES (3),			/*                          HI */
+   COSTS_N_BYTES (3),			/*                          SI */
+   COSTS_N_BYTES (3),			/*                          DI */
+   COSTS_N_BYTES (5)},			/*                       other */
+  COSTS_N_BYTES (3),			/* cost of movsx */
+  COSTS_N_BYTES (3),			/* cost of movzx */
   0,					/* "large" insn */
   2,					/* MOVE_RATIO */
   2,					/* cost for loading QImode using movzbl */
@@ -106,13 +109,13 @@ struct processor_costs size_cost = {	/* costs for tunning for size */
   3,					/* MMX or SSE register to integer */
   0,					/* size of prefetch block */
   0,					/* number of parallel prefetches */
-  1,					/* Branch cost */
-  COSTS_N_INSNS (2),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (2),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (2),			/* cost of FSQRT instruction.  */
+  2,					/* Branch cost */
+  COSTS_N_BYTES (2),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_BYTES (2),			/* cost of FMUL instruction.  */
+  COSTS_N_BYTES (2),			/* cost of FDIV instruction.  */
+  COSTS_N_BYTES (2),			/* cost of FABS instruction.  */
+  COSTS_N_BYTES (2),			/* cost of FCHS instruction.  */
+  COSTS_N_BYTES (2),			/* cost of FSQRT instruction.  */
 };
 
 /* Processor costs (relative to an add) */
@@ -1601,7 +1604,7 @@ override_options (void)
     }
 
   /* Validate -mbranch-cost= value, or provide default.  */
-  ix86_branch_cost = processor_target_table[ix86_tune].cost->branch_cost;
+  ix86_branch_cost = ix86_cost->branch_cost;
   if (ix86_branch_cost_string)
     {
       i = atoi (ix86_branch_cost_string);
