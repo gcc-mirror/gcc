@@ -52,6 +52,8 @@
 // Define the base class to std::allocator.
 #include <bits/c++allocator.h>
 
+#include <bits/cpp_type_traits.h> // for __is_empty
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Tp>
