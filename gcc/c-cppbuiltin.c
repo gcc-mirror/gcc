@@ -544,6 +544,9 @@ c_cpp_builtins (cpp_reader *pfile)
   else if (flag_stack_protect == 1)
     cpp_define (pfile, "__SSP__=1");
 
+  if (flag_openmp)
+    cpp_define (pfile, "_OPENMP=200505");
+
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
 # define preprocessing_asm_p() (cpp_get_options (pfile)->lang == CLK_ASM)

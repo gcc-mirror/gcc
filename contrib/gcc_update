@@ -112,6 +112,10 @@ libjava/libltdl/config-h.in: libjava/libltdl/configure.ac libjava/libltdl/acloca
 libcpp/aclocal.m4: libcpp/configure.ac
 libcpp/Makefile.in: libcpp/configure.ac libcpp/aclocal.m4
 libcpp/configure: libcpp/configure.ac libcpp/aclocal.m4
+libgomp/aclocal.m4: libgomp/configure.ac libgomp/acinclude.m4
+libgomp/Makefile.in: libgomp/Makefile.am libgomp/aclocal.m4
+libgomp/configure: libgomp/configure.ac libgomp/aclocal.m4
+libgomp/config.h.in: libgomp/configure.ac libgomp/aclocal.m4
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.in config/acx.m4

@@ -352,6 +352,7 @@ static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
 static const char *replace_outfile_spec_function (int, const char **);
 static const char *version_compare_spec_function (int, const char **);
+static const char *include_spec_function (int, const char **);
 
 /* The Specs Language
 
@@ -698,7 +699,8 @@ proper position among the other output files.  */
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %(linker) %l " LINK_PIE_SPEC "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
-    %{static:} %{L*} %(mfwrap) %(link_libgcc) %o %(mflib)\
+    %{static:} %{L*} %(mfwrap) %{fopenmp:%:include(libgomp.spec)%(link_gomp)}\
+    %(link_libgcc) %o %(mflib)\
     %{fprofile-arcs|fprofile-generate|coverage:-lgcov}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
@@ -737,6 +739,7 @@ static const char *link_spec = LINK_SPEC;
 static const char *lib_spec = LIB_SPEC;
 static const char *mfwrap_spec = MFWRAP_SPEC;
 static const char *mflib_spec = MFLIB_SPEC;
+static const char *link_gomp_spec = "";
 static const char *libgcc_spec = LIBGCC_SPEC;
 static const char *endfile_spec = ENDFILE_SPEC;
 static const char *startfile_spec = STARTFILE_SPEC;
@@ -835,7 +838,15 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 #define DRIVER_SELF_SPECS ""
 #endif
 
-static const char *const driver_self_specs[] = { DRIVER_SELF_SPECS };
+/* Adding -fopenmp should imply pthreads.  This is particularly important
+   for targets that use different start files and suchlike.  */
+#ifndef GOMP_SELF_SPECS
+#define GOMP_SELF_SPECS "%{fopenmp: -pthread}"
+#endif
+
+static const char *const driver_self_specs[] = {
+  DRIVER_SELF_SPECS, GOMP_SELF_SPECS
+};
 
 #ifndef OPTION_DEFAULT_SPECS
 #define OPTION_DEFAULT_SPECS { "", "" }
@@ -1534,6 +1545,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("lib",			&lib_spec),
   INIT_STATIC_SPEC ("mfwrap",			&mfwrap_spec),
   INIT_STATIC_SPEC ("mflib",			&mflib_spec),
+  INIT_STATIC_SPEC ("link_gomp",		&link_gomp_spec),
   INIT_STATIC_SPEC ("libgcc",			&libgcc_spec),
   INIT_STATIC_SPEC ("startfile",		&startfile_spec),
   INIT_STATIC_SPEC ("switches_need_spaces",	&switches_need_spaces),
@@ -1581,6 +1593,7 @@ static const struct spec_function static_spec_functions[] =
   { "if-exists-else",		if_exists_else_spec_function },
   { "replace-outfile",		replace_outfile_spec_function },
   { "version-compare",		version_compare_spec_function },
+  { "include",			include_spec_function },
   { 0, 0 }
 };
 
@@ -3281,11 +3294,11 @@ process_command (int argc, const char **argv)
     }
 
   /* If there is a -V or -b option (or both), process it now, before
-     trying to interpret the rest of the command line. 
+     trying to interpret the rest of the command line.
      Use heuristic that all configuration names must have at least
      one dash '-'. This allows us to pass options starting with -b.  */
   if (argc > 1 && argv[1][0] == '-'
-      && (argv[1][1] == 'V' || 
+      && (argv[1][1] == 'V' ||
 	 ((argv[1][1] == 'b') && (NULL != strchr(argv[1] + 2,'-')))))
     {
       const char *new_version = DEFAULT_TARGET_VERSION;
@@ -5518,10 +5531,10 @@ input_suffix_matches (const char *atom, const char *end_atom)
 	  && input_suffix[end_atom - atom] == '\0');
 }
 
-/* Inline subroutine of handle_braces.  Returns true if a switch
+/* Subroutine of handle_braces.  Returns true if a switch
    matching the atom bracketed by ATOM and END_ATOM appeared on the
    command line.  */
-static inline bool
+static bool
 switch_matches (const char *atom, const char *end_atom, int starred)
 {
   int i;
@@ -6458,7 +6471,7 @@ main (int argc, char **argv)
   if (combine_flag)
     combine_inputs = true;
   else
-    combine_inputs = false;  
+    combine_inputs = false;
 
   for (i = 0; (int) i < n_infiles; i++)
     {
@@ -6489,7 +6502,7 @@ main (int argc, char **argv)
       infiles[i].compiled = false;
       infiles[i].preprocessed = false;
     }
-    
+
   if (!combine_inputs && have_c && have_o && lang_n_infiles > 1)
    fatal ("cannot specify -o with -c or -S with multiple files");
 
@@ -7779,4 +7792,23 @@ version_compare_spec_function (int argc, const char **argv)
     return NULL;
 
   return argv[nargs + 2];
+}
+
+/* %:include builtin spec function.  This differs from %include in that it
+   can be nested inside a spec, and thus be conditionalized.  It takes
+   one argument, the filename, and looks for it in the startfile path.
+   The result is always NULL, i.e. an empty expansion.  */
+
+static const char *
+include_spec_function (int argc, const char **argv)
+{
+  char *file;
+
+  if (argc != 1)
+    abort ();
+
+  file = find_a_file (&startfile_prefixes, argv[0], R_OK, 0);
+  read_specs (file ? file : argv[0], FALSE);
+
+  return NULL;
 }

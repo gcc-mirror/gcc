@@ -506,6 +506,10 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 		   (void *) DECL_STRUCT_FUNCTION (node));
 	}
 
+      if ((TREE_CODE (node) == VAR_DECL || TREE_CODE (node) == PARM_DECL)
+	  && DECL_HAS_VALUE_EXPR_P (node))
+	print_node (file, "value-expr", DECL_VALUE_EXPR (node), indent + 4);
+
       /* Print the decl chain only if decl is at second level.  */
       if (indent == 4)
 	print_node (file, "chain", TREE_CHAIN (node), indent + 4);

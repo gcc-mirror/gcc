@@ -834,4 +834,10 @@ void add_framework_path (char *);
 
 #define WINT_TYPE "int"
 
+/* Every program on darwin links against libSystem which contains the pthread
+   routines, so there's no need to explicitly call out when doing threaded
+   work.  */
+#undef GOMP_SELF_SPECS
+#define GOMP_SELF_SPECS ""
+
 #endif /* CONFIG_DARWIN_H */

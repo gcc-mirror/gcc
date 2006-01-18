@@ -356,7 +356,7 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that prorgams built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/.libs:
@@ -369,6 +369,10 @@ TARGET_LIB_PATH_libmudflap = $$r/$(TARGET_SUBDIR)/libmudflap/.libs:
 @if target-libssp
 TARGET_LIB_PATH_libssp = $$r/$(TARGET_SUBDIR)/libssp/.libs:
 @endif target-libssp
+
+@if target-libgomp
+TARGET_LIB_PATH_libgomp = $$r/$(TARGET_SUBDIR)/libgomp/.libs:
+@endif target-libgomp
 
 
 
@@ -633,7 +637,8 @@ configure-target:  \
     maybe-configure-target-boehm-gc \
     maybe-configure-target-qthreads \
     maybe-configure-target-rda \
-    maybe-configure-target-libada
+    maybe-configure-target-libada \
+    maybe-configure-target-libgomp
 
 # The target built for a native non-bootstrap build.
 .PHONY: all
@@ -752,7 +757,8 @@ all-target:  \
     maybe-all-target-boehm-gc \
     maybe-all-target-qthreads \
     maybe-all-target-rda \
-    maybe-all-target-libada
+    maybe-all-target-libada \
+    maybe-all-target-libgomp
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
 # ``make X'' in all subdirectories (because, in general, there is a
@@ -859,7 +865,8 @@ info-target:  \
     maybe-info-target-boehm-gc \
     maybe-info-target-qthreads \
     maybe-info-target-rda \
-    maybe-info-target-libada
+    maybe-info-target-libada \
+    maybe-info-target-libgomp
 
 .PHONY: do-dvi
 do-dvi:
@@ -961,7 +968,8 @@ dvi-target:  \
     maybe-dvi-target-boehm-gc \
     maybe-dvi-target-qthreads \
     maybe-dvi-target-rda \
-    maybe-dvi-target-libada
+    maybe-dvi-target-libada \
+    maybe-dvi-target-libgomp
 
 .PHONY: do-html
 do-html:
@@ -1063,7 +1071,8 @@ html-target:  \
     maybe-html-target-boehm-gc \
     maybe-html-target-qthreads \
     maybe-html-target-rda \
-    maybe-html-target-libada
+    maybe-html-target-libada \
+    maybe-html-target-libgomp
 
 .PHONY: do-TAGS
 do-TAGS:
@@ -1165,7 +1174,8 @@ TAGS-target:  \
     maybe-TAGS-target-boehm-gc \
     maybe-TAGS-target-qthreads \
     maybe-TAGS-target-rda \
-    maybe-TAGS-target-libada
+    maybe-TAGS-target-libada \
+    maybe-TAGS-target-libgomp
 
 .PHONY: do-install-info
 do-install-info:
@@ -1267,7 +1277,8 @@ install-info-target:  \
     maybe-install-info-target-boehm-gc \
     maybe-install-info-target-qthreads \
     maybe-install-info-target-rda \
-    maybe-install-info-target-libada
+    maybe-install-info-target-libada \
+    maybe-install-info-target-libgomp
 
 .PHONY: do-installcheck
 do-installcheck:
@@ -1369,7 +1380,8 @@ installcheck-target:  \
     maybe-installcheck-target-boehm-gc \
     maybe-installcheck-target-qthreads \
     maybe-installcheck-target-rda \
-    maybe-installcheck-target-libada
+    maybe-installcheck-target-libada \
+    maybe-installcheck-target-libgomp
 
 .PHONY: do-mostlyclean
 do-mostlyclean:
@@ -1471,7 +1483,8 @@ mostlyclean-target:  \
     maybe-mostlyclean-target-boehm-gc \
     maybe-mostlyclean-target-qthreads \
     maybe-mostlyclean-target-rda \
-    maybe-mostlyclean-target-libada
+    maybe-mostlyclean-target-libada \
+    maybe-mostlyclean-target-libgomp
 
 .PHONY: do-clean
 do-clean:
@@ -1573,7 +1586,8 @@ clean-target:  \
     maybe-clean-target-boehm-gc \
     maybe-clean-target-qthreads \
     maybe-clean-target-rda \
-    maybe-clean-target-libada
+    maybe-clean-target-libada \
+    maybe-clean-target-libgomp
 
 .PHONY: do-distclean
 do-distclean:
@@ -1675,7 +1689,8 @@ distclean-target:  \
     maybe-distclean-target-boehm-gc \
     maybe-distclean-target-qthreads \
     maybe-distclean-target-rda \
-    maybe-distclean-target-libada
+    maybe-distclean-target-libada \
+    maybe-distclean-target-libgomp
 
 .PHONY: do-maintainer-clean
 do-maintainer-clean:
@@ -1777,7 +1792,8 @@ maintainer-clean-target:  \
     maybe-maintainer-clean-target-boehm-gc \
     maybe-maintainer-clean-target-qthreads \
     maybe-maintainer-clean-target-rda \
-    maybe-maintainer-clean-target-libada
+    maybe-maintainer-clean-target-libada \
+    maybe-maintainer-clean-target-libgomp
 
 
 # Here are the targets which correspond to the do-X targets.
@@ -1932,7 +1948,8 @@ check-target:  \
     maybe-check-target-boehm-gc \
     maybe-check-target-qthreads \
     maybe-check-target-rda \
-    maybe-check-target-libada
+    maybe-check-target-libada \
+    maybe-check-target-libgomp
 
 do-check:
 	@: $(MAKE); $(unstage)
@@ -2131,7 +2148,8 @@ install-target:  \
     maybe-install-target-boehm-gc \
     maybe-install-target-qthreads \
     maybe-install-target-rda \
-    maybe-install-target-libada
+    maybe-install-target-libada \
+    maybe-install-target-libgomp
 
 uninstall:
 	@echo "the uninstall target is not supported in this tree"
@@ -35545,6 +35563,362 @@ maintainer-clean-target-libada:
 
 
 
+
+
+.PHONY: configure-target-libgomp maybe-configure-target-libgomp
+maybe-configure-target-libgomp:
+@if target-libgomp
+maybe-configure-target-libgomp: configure-target-libgomp
+configure-target-libgomp:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libgomp..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp ; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgomp/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgomp/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgomp/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	fi
+	@test ! -f $(TARGET_SUBDIR)/libgomp/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo Configuring in $(TARGET_SUBDIR)/libgomp; \
+	cd "$(TARGET_SUBDIR)/libgomp" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libgomp"; \
+	libsrcdir="$$s/libgomp"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  || exit 1
+@endif target-libgomp
+
+
+
+
+
+.PHONY: all-target-libgomp maybe-all-target-libgomp
+maybe-all-target-libgomp:
+@if target-libgomp
+TARGET-target-libgomp=all
+maybe-all-target-libgomp: all-target-libgomp
+all-target-libgomp: configure-target-libgomp
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libgomp))
+@endif target-libgomp
+
+
+
+
+
+.PHONY: check-target-libgomp maybe-check-target-libgomp
+maybe-check-target-libgomp:
+@if target-libgomp
+maybe-check-target-libgomp: check-target-libgomp
+
+check-target-libgomp:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libgomp
+
+.PHONY: install-target-libgomp maybe-install-target-libgomp
+maybe-install-target-libgomp:
+@if target-libgomp
+maybe-install-target-libgomp: install-target-libgomp
+
+install-target-libgomp: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libgomp
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-target-libgomp info-target-libgomp
+maybe-info-target-libgomp:
+@if target-libgomp
+maybe-info-target-libgomp: info-target-libgomp
+
+info-target-libgomp: \
+    configure-target-libgomp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           info) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-dvi-target-libgomp dvi-target-libgomp
+maybe-dvi-target-libgomp:
+@if target-libgomp
+maybe-dvi-target-libgomp: dvi-target-libgomp
+
+dvi-target-libgomp: \
+    configure-target-libgomp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-html-target-libgomp html-target-libgomp
+maybe-html-target-libgomp:
+@if target-libgomp
+maybe-html-target-libgomp: html-target-libgomp
+
+html-target-libgomp: \
+    configure-target-libgomp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           html) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-TAGS-target-libgomp TAGS-target-libgomp
+maybe-TAGS-target-libgomp:
+@if target-libgomp
+maybe-TAGS-target-libgomp: TAGS-target-libgomp
+
+TAGS-target-libgomp: \
+    configure-target-libgomp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-install-info-target-libgomp install-info-target-libgomp
+maybe-install-info-target-libgomp:
+@if target-libgomp
+maybe-install-info-target-libgomp: install-info-target-libgomp
+
+install-info-target-libgomp: \
+    configure-target-libgomp \
+    info-target-libgomp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-installcheck-target-libgomp installcheck-target-libgomp
+maybe-installcheck-target-libgomp:
+@if target-libgomp
+maybe-installcheck-target-libgomp: installcheck-target-libgomp
+
+installcheck-target-libgomp: \
+    configure-target-libgomp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-mostlyclean-target-libgomp mostlyclean-target-libgomp
+maybe-mostlyclean-target-libgomp:
+@if target-libgomp
+maybe-mostlyclean-target-libgomp: mostlyclean-target-libgomp
+
+mostlyclean-target-libgomp: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-clean-target-libgomp clean-target-libgomp
+maybe-clean-target-libgomp:
+@if target-libgomp
+maybe-clean-target-libgomp: clean-target-libgomp
+
+clean-target-libgomp: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-distclean-target-libgomp distclean-target-libgomp
+maybe-distclean-target-libgomp:
+@if target-libgomp
+maybe-distclean-target-libgomp: distclean-target-libgomp
+
+distclean-target-libgomp: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-maintainer-clean-target-libgomp maintainer-clean-target-libgomp
+maybe-maintainer-clean-target-libgomp:
+@if target-libgomp
+maybe-maintainer-clean-target-libgomp: maintainer-clean-target-libgomp
+
+maintainer-clean-target-libgomp: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libgomp
+
+
+
 # ----------
 # GCC module
 # ----------
@@ -37053,6 +37427,8 @@ configure-target-qthreads: maybe-all-gcc
 configure-target-rda: maybe-all-gcc
 
 configure-target-libada: maybe-all-gcc
+
+configure-target-libgomp: maybe-all-gcc
 
 
 

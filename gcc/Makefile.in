@@ -737,7 +737,7 @@ RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H) reg-notes.def insn-notes.def \
   input.h real.h statistics.h
 RTL_H = $(RTL_BASE_H) genrtl.h
 PARAMS_H = params.h params.def
-BUILTINS_DEF = builtins.def sync-builtins.def
+BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def
 TREE_H = tree.h tree.def $(MACHMODE_H) tree-check.h $(BUILTINS_DEF) \
           input.h statistics.h vec.h treestruct.def
 BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h varray.h $(PARTITION_H) \
@@ -948,7 +948,7 @@ C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-convert.o c-aux-info.o c-common.o c-opts.o c-format.o c-semantics.o \
   c-incpath.o cppdefault.o c-ppoutput.o c-cppbuiltin.o prefix.o \
   c-objc-common.o c-dump.o c-pch.o c-parser.o $(C_TARGET_OBJS) \
-  c-gimplify.o tree-mudflap.o c-pretty-print.o
+  c-gimplify.o tree-mudflap.o c-pretty-print.o c-omp.o
 
 # Language-specific object files for C.
 C_OBJS = c-lang.o stub-objc.o $(C_AND_OBJC_OBJS)
@@ -963,7 +963,7 @@ OBJS-common = \
  tree-ssa-pre.o tree-ssa-live.o tree-ssa-operands.o tree-ssa-alias.o       \
  tree-ssa-phiopt.o tree-ssa-forwprop.o tree-nested.o tree-ssa-dse.o	   \
  tree-ssa-dom.o domwalk.o tree-tailcall.o gimple-low.o tree-iterator.o	   \
- tree-phinodes.o tree-ssanames.o tree-sra.o tree-complex.o		   \
+ omp-low.o tree-phinodes.o tree-ssanames.o tree-sra.o tree-complex.o	   \
  tree-vect-generic.o tree-ssa-loop.o tree-ssa-loop-niter.o		   \
  tree-ssa-loop-manip.o tree-ssa-threadupdate.o				   \
  tree-vectorizer.o tree-vect-analyze.o tree-vect-transform.o		   \
@@ -1671,6 +1671,9 @@ c-pch.o : c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(CPPLIB_H) $(TREE_H) \
 	  -DHOST_MACHINE=\"$(host)\" -DTARGET_MACHINE=\"$(target)\" \
 	  $< $(OUTPUT_OPTION)
 
+c-omp.o : c-omp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+	$(FUNCTION_H) $(C_COMMON_H) toplev.h $(TREE_GIMPLE_H)
+
 # Language-independent files.
 
 DRIVER_DEFINES = \
@@ -2034,12 +2037,16 @@ gimplify.o : gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
    $(DIAGNOSTIC_H) $(TREE_GIMPLE_H) $(TREE_INLINE_H) $(VARRAY_H) langhooks.h \
    $(LANGHOOKS_DEF_H) $(TREE_FLOW_H) $(CGRAPH_H) $(TIMEVAR_H) $(TM_H) \
    coretypes.h except.h $(FLAGS_H) $(RTL_H) $(FUNCTION_H) $(EXPR_H) output.h \
-   $(GGC_H) gt-gimplify.h $(HASHTAB_H) real.h $(TARGET_H) toplev.h
+   $(GGC_H) gt-gimplify.h $(HASHTAB_H) real.h $(TARGET_H) toplev.h $(OPTABS_H)
 gimple-low.o : gimple-low.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
    $(DIAGNOSTIC_H) $(TREE_GIMPLE_H) $(TREE_INLINE_H) $(VARRAY_H) langhooks.h \
    $(LANGHOOKS_DEF_H) $(TREE_FLOW_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
    except.h $(FLAGS_H) $(RTL_H) $(FUNCTION_H) $(EXPR_H) tree-pass.h \
    $(HASHTAB_H) toplev.h
+omp-low.o : omp-low.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+   $(RTL_H) $(TREE_GIMPLE_H) $(TREE_INLINE_H) langhooks.h $(DIAGNOSTIC_H) \
+   $(TREE_FLOW_H) $(TIMEVAR_H) $(FLAGS_H) $(EXPR_H) toplev.h tree-pass.h \
+   $(GGC_H)
 tree-browser.o : tree-browser.c tree-browser.def $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(HASHTAB_H) \
    $(TM_H) coretypes.h
@@ -2859,7 +2866,7 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
   $(srcdir)/ipa-reference.c $(srcdir)/tree-ssa-structalias.h \
   $(srcdir)/tree-ssa-structalias.c \
-  $(srcdir)/c-pragma.h \
+  $(srcdir)/c-pragma.h $(srcdir)/omp-low.c \
   $(srcdir)/targhooks.c $(out_file) \
   @all_gtfiles@
 
@@ -2893,7 +2900,7 @@ gt-tree-ssanames.h gt-tree-iterator.h gt-gimplify.h \
 gt-tree-phinodes.h gt-tree-nested.h \
 gt-tree-ssa-operands.h gt-tree-ssa-propagate.h \
 gt-tree-ssa-structalias.h \
-gt-stringpool.h gt-targhooks.h : s-gtype ; @true
+gt-stringpool.h gt-targhooks.h gt-omp-low.h : s-gtype ; @true
 
 define echo_quoted_to_gtyp
  echo "\"$(gtyp)\", " >> tmp-gtyp.h

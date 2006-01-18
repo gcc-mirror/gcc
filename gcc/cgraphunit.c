@@ -171,7 +171,6 @@ static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
 static void cgraph_expand_function (struct cgraph_node *);
 static tree record_reference (tree *, int *, void *);
-static void cgraph_analyze_function (struct cgraph_node *node);
 
 /* Records tree nodes seen in record_reference.  Simply using
    walk_tree_without_duplicates doesn't guarantee each node is visited
@@ -410,6 +409,29 @@ cgraph_reset_node (struct cgraph_node *node)
     }
 }
 
+static void
+cgraph_lower_function (struct cgraph_node *node)
+{
+  if (node->lowered)
+    return;
+  tree_lowering_passes (node->decl);
+  node->lowered = true;
+}
+
+static void
+cgraph_finalize_pending_functions (void)
+{
+  struct cgraph_node *next, *node = cgraph_analyze_queue;
+
+  cgraph_analyze_queue = NULL;
+  for (; node ; node = next)
+    {
+      next = node->next_needed;
+      node->next_needed = NULL;
+      cgraph_finalize_function (node->decl, true);
+    }
+}
+
 /* DECL has been parsed.  Take it, queue it, compile it at the whim of the
    logic in effect.  If NESTED is true, then our caller cannot stand to have
    the garbage collector run at the moment.  We would need to either create
@@ -436,6 +458,7 @@ cgraph_finalize_function (tree decl, bool nested)
   if (!flag_unit_at_a_time)
     {
       cgraph_analyze_function (node);
+      cgraph_finalize_pending_functions ();
       cgraph_decide_inlining_incrementally (node, false);
     }
 
@@ -463,15 +486,6 @@ cgraph_finalize_function (tree decl, bool nested)
   /* Possibly warn about unused parameters.  */
   if (warn_unused_parameter)
     do_warn_unused_parameter (decl);
-}
-
-void
-cgraph_lower_function (struct cgraph_node *node)
-{
-  if (node->lowered)
-    return;
-  tree_lowering_passes (node->decl);
-  node->lowered = true;
 }
 
 /* Walk tree and record all calls.  Called via walk_tree.  */
@@ -878,7 +892,7 @@ cgraph_output_pending_asms (void)
 }
 
 /* Analyze the function scheduled to be output.  */
-static void
+void
 cgraph_analyze_function (struct cgraph_node *node)
 {
   tree decl = node->decl;
@@ -968,6 +982,7 @@ cgraph_finalize_compilation_unit (void)
       gcc_assert (DECL_SAVED_TREE (decl));
 
       cgraph_analyze_function (node);
+      cgraph_finalize_pending_functions ();
 
       for (edge = node->callees; edge; edge = edge->next_callee)
 	if (!edge->callee->reachable)

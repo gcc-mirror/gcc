@@ -550,3 +550,31 @@ lhd_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED,
 {
   return expr;
 }
+
+/* Return sharing kind if OpenMP sharing attribute of DECL is
+   predetermined, OMP_CLAUSE_DEFAULT_UNSPECIFIED otherwise.  */
+
+enum omp_clause_default_kind
+lhd_omp_predetermined_sharing (tree decl ATTRIBUTE_UNUSED)
+{
+  if (DECL_ARTIFICIAL (decl))
+    return OMP_CLAUSE_DEFAULT_SHARED;
+  return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
+}
+
+/* Generate code to copy SRC to DST.  */
+
+tree
+lhd_omp_assignment (tree clause ATTRIBUTE_UNUSED, tree dst, tree src)
+{
+  return build2 (MODIFY_EXPR, void_type_node, dst, src);
+}
+
+/* Register language specific type size variables as potentially OpenMP
+   firstprivate variables.  */
+
+void
+lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *c ATTRIBUTE_UNUSED,
+				   tree t ATTRIBUTE_UNUSED)
+{
+}

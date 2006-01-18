@@ -953,6 +953,116 @@ DEFTREECODE (REALIGN_LOAD_EXPR, "realign_load", tcc_expression, 3)
 
 DEFTREECODE (TARGET_MEM_REF, "target_mem_ref", tcc_reference, 7)
 
+/* The ordering of the codes between OMP_PARALLEL and OMP_CRITICAL is
+   exposed to TREE_RANGE_CHECK.  */
+/* OpenMP - #pragma omp parallel [clause1 ... clauseN]
+   Operand 0: OMP_PARALLEL_BODY: Code to be executed by all threads.
+   Operand 1: OMP_PARALLEL_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_PARALLEL, "omp_parallel", tcc_statement, 2)
+
+/* OpenMP - #pragma omp for [clause1 ... clauseN]
+   Operand 0: OMP_FOR_BODY: Loop body.
+   Operand 1: OMP_FOR_CLAUSES: List of clauses.
+   Operand 2: OMP_FOR_INIT: Initialization code of the form
+                             	VAR = N1.
+   Operand 3: OMP_FOR_COND: Loop conditional expression of the form
+                             	VAR { <, >, <=, >= } N2.
+   Operand 4: OMP_FOR_INCR: Loop index increment of the form
+			     	VAR { +=, -= } INCR.
+   Operand 5: OMP_FOR_PRE_BODY: Filled by the gimplifier with things
+	from INIT, COND, and INCR that are technically part of the
+	OMP_FOR structured block, but are evaluated before the loop
+	body begins.
+
+   VAR must be a signed integer variable, which is implicitly thread
+   private.  N1, N2 and INCR are required to be loop invariant integer
+   expressions that are evaluated without any synchronization.
+   The evaluation order, frequency of evaluation and side-effects are
+   unspecified by the standard.  */
+DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 6)
+
+/* OpenMP - #pragma omp sections [clause1 ... clauseN]
+   Operand 0: OMP_SECTIONS_BODY: Sections body.
+   Operand 1: OMP_SECTIONS_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_SECTIONS, "omp_sections", tcc_statement, 2)
+
+/* OpenMP - #pragma omp single
+   Operand 0: OMP_SINGLE_BODY: Single section body.
+   Operand 1: OMP_SINGLE_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_SINGLE, "omp_single", tcc_statement, 2)
+
+/* OpenMP - #pragma omp section
+   Operand 0: OMP_SECTION_BODY: Section body.  */
+DEFTREECODE (OMP_SECTION, "omp_section", tcc_statement, 1)
+
+/* OpenMP - #pragma omp master
+   Operand 0: OMP_MASTER_BODY: Master section body.  */
+DEFTREECODE (OMP_MASTER, "omp_master", tcc_statement, 1)
+
+/* OpenMP - #pragma omp ordered
+   Operand 0: OMP_ORDERED_BODY: Master section body.  */
+DEFTREECODE (OMP_ORDERED, "omp_ordered", tcc_statement, 1)
+
+/* OpenMP - #pragma omp critical [name]
+   Operand 0: OMP_CRITICAL_BODY: Critical section body.
+   Operand 1: OMP_CRITICAL_NAME: Identifier for critical section.  */
+DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 2)
+
+/* OpenMP - #pragma omp atomic
+   Operand 0: The address at which the atomic operation is to be performed.
+	This address should be stabilized with save_expr.
+   Operand 1: The expression to evaluate.  When the old value of the object
+	at the address is used in the expression, it should appear as if
+	build_fold_indirect_ref of the address.  */
+DEFTREECODE (OMP_ATOMIC, "omp_atomic", tcc_statement, 2)
+
+/* The ordering of the codes between OMP_CLAUSE_PRIVATE and
+   OMP_CLAUSE_DEFAULT is exposed to TREE_RANGE_CHECK.  */
+/* OpenMP clause: private (variable_list).  */
+DEFTREECODE (OMP_CLAUSE_PRIVATE, "private", tcc_expression, 1)
+
+/* OpenMP clause: shared (variable_list).  */
+DEFTREECODE (OMP_CLAUSE_SHARED, "shared", tcc_expression, 1)
+
+/* OpenMP clause: firstprivate (variable_list).  */
+DEFTREECODE (OMP_CLAUSE_FIRSTPRIVATE, "firstprivate", tcc_expression, 1)
+
+/* OpenMP clause: lastprivate (variable_list).  */
+DEFTREECODE (OMP_CLAUSE_LASTPRIVATE, "lastprivate", tcc_expression, 1)
+
+/* OpenMP clause: reduction (operator:variable_list).
+   OMP_CLAUSE_REDUCTION_CODE: The tree_code of the operator.
+   Operand 1: OMP_CLAUSE_REDUCTION_INIT: Stmt-list to initialize the var.
+   Operand 2: OMP_CLAUSE_REDUCTION_MERGE:
+     Stmt-list to merge private var into the shared one.
+   Operand 3: OMP_CLAUSE_REDUCTION_PLACEHOLDER:
+     A dummy VAR_DECL placeholder used in OMP_CLAUSE_REDUCTION_MERGE.  */
+DEFTREECODE (OMP_CLAUSE_REDUCTION, "reduction", tcc_expression, 4)
+
+/* OpenMP clause: copyin (variable_list).  */
+DEFTREECODE (OMP_CLAUSE_COPYIN, "copyin", tcc_expression, 1)
+
+/* OpenMP clause: copyprivate (variable_list).  */
+DEFTREECODE (OMP_CLAUSE_COPYPRIVATE, "copyprivate", tcc_expression, 1)
+
+/* OpenMP clause: if (scalar-expression).  */
+DEFTREECODE (OMP_CLAUSE_IF, "if", tcc_expression, 1)
+
+/* OpenMP clause: num_threads (integer-expression).  */
+DEFTREECODE (OMP_CLAUSE_NUM_THREADS, "num_threads", tcc_expression, 1)
+
+/* OpenMP clause: schedule.  */
+DEFTREECODE (OMP_CLAUSE_SCHEDULE, "schedule", tcc_expression, 1)
+
+/* OpenMP clause: nowait.  */
+DEFTREECODE (OMP_CLAUSE_NOWAIT, "nowait", tcc_expression, 0)
+
+/* OpenMP clause: ordered.  */
+DEFTREECODE (OMP_CLAUSE_ORDERED, "ordered", tcc_expression, 0)
+
+/* OpenMP clause: default.  */
+DEFTREECODE (OMP_CLAUSE_DEFAULT, "default", tcc_expression, 0)
+
 /* Reduction operations. 
    Operations that take a vector of elements and "reduce" it to a scalar
    result (e.g. summing the elements of the vector, finding the minimum over

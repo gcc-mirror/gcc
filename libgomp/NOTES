@@ -1,0 +1,279 @@
+Notes on the external ABI presented by libgomp.  This ought to get
+transformed into proper documentation at some point.
+
+Implementing MASTER construct
+
+	if (omp_get_thread_num () == 0)
+	  block
+
+	Alternately, we generate two copies of the parallel subfunction
+	and only include this in the version run by the master thread.
+	Surely that's not worthwhile though...
+
+Implementing CRITICAL construct
+
+	Without a specified name,
+
+	void GOMP_critical_start (void);
+	void GOMP_critical_end (void);
+
+	so that we don't get COPY relocations from libgomp to the main
+	application.
+
+	With a specified name, use omp_set_lock and omp_unset_lock with
+	name being transformed into a variable declared like
+
+		omp_lock_t gomp_critical_user_<name>
+			__attribute__((common))
+
+	Ideally the ABI would specify that all zero is a valid unlocked
+	state, and so we wouldn't actually need to initialize this at
+	startup.
+
+Implementing ATOMIC construct
+
+	The target should implement the __sync builtins.
+
+	Failing that we could add
+
+	void GOMP_atomic_enter (void)
+	void GOMP_atomic_exit (void)
+
+	which reuses the regular lock code, but with yet another lock
+	object private to the library.
+
+Implementing FLUSH construct
+
+	Expands to the __sync_synchronize builtin.
+
+Implementing BARRIER construct
+
+	void GOMP_barrier (void)
+
+Implementing THREADPRIVATE construct
+
+	In _most_ cases we can map this directly to __thread.  Except
+	that OMP allows constructors for C++ objects.  We can either
+	refuse to support this (how often is it used?) or we can 
+	implement something akin to .ctors.
+
+	Even more ideally, this ctor feature is handled by extensions
+	to the main pthreads library.  Failing that, we can have a set
+	of entry points to register ctor functions to be called.
+
+Implementing PRIVATE clause
+
+	In association with a PARALLEL, or within the lexical extent
+	of a PARALLEL block, the variable becomes a local variable in
+	the parallel subfunction.
+
+	In association with FOR or SECTIONS blocks, create a new
+	automatic variable within the current function.  This preserves
+	the semantic of new variable creation.
+
+Implementing FIRSTPRIVATE, LASTPRIVATE, COPYIN, COPYPRIVATE clauses
+
+	Seems simple enough for PARALLEL blocks.  Create a private 
+	struct for communicating between parent and subfunction.
+	In the parent, copy in values for scalar and "small" structs;
+	copy in addresses for others TREE_ADDRESSABLE types.  In the 
+	subfunction, copy the value into the local variable.
+
+	Not clear at all what to do with bare FOR or SECTION blocks.
+	The only thing I can figure is that we do something like
+
+
+		#pragma omp for firstprivate(x) lastprivate(y)
+		for (int i = 0; i < n; ++i)
+		  body;
+
+		=>
+
+		{
+		  int x = x, y;
+
+		  // for stuff
+
+		  if (i == n)
+		    y = y;
+		}
+
+	where the "x=x" and "y=y" assignments actually have different
+	uids for the two variables, i.e. not something you could write
+	directly in C.  Presumably this only makes sense if the "outer"
+	x and y are global variables.
+
+	COPYPRIVATE would work the same way, except the structure 
+	broadcast would have to happen via SINGLE machinery instead.
+
+Implementing REDUCTION clause
+
+	The private struct mentioned above should have a pointer to
+	an array of the type of the variable, indexed by the thread's
+	team_id.  The thread stores its final value into the array,
+	and after the barrier the master thread iterates over the
+	array to collect the values.
+
+Implementing PARALLEL construct
+
+	#pragma omp parallel
+	{
+	  body;
+	}
+
+	=>
+
+	void subfunction (void *data)
+	{
+	  use data;
+	  body;
+	}
+
+	setup data;
+	GOMP_parallel_start (subfunction, &data, num_threads);
+	subfunction (&data);
+	GOMP_parallel_end ();
+
+  void GOMP_parallel_start (void (*fn)(void *), void *data,
+			    unsigned num_threads)
+
+	The FN argument is the subfunction to be run in parallel.
+
+	The DATA argument is a pointer to a structure used to 
+	communicate data in and out of the subfunction, as discussed
+	above wrt FIRSTPRIVATE et al.
+
+	The NUM_THREADS argument is 1 if an IF clause is present
+	and false, or the value of the NUM_THREADS clause, if
+	present, or 0.
+
+	The function needs to create the appropriate number of
+	threads and/or launch them from the dock.  It needs to
+	create the team structure and assign team ids.
+
+  void GOMP_parallel_end (void)
+
+	Tears down the team and return us to the previous
+	omp_in_parallel() state.
+
+Implementing FOR construct
+
+	#pragma omp parallel for
+	for (i = lb; i <= ub; i++)
+	  body;
+
+	=>
+
+	void subfunction (void *data)
+	{
+	  long _s0, _e0;
+	  while (GOMP_loop_static_next (&_s0, &_e0))
+	    {
+	      long _e1 = _e0, i;
+	      for (i = _s0; i < _e1; i++)
+		body;
+	    }
+	  GOMP_loop_end_nowait ();
+	}
+
+	GOMP_parallel_loop_static (subfunction, NULL, 0, lb, ub+1, 1, 0);
+	subfunction (NULL);
+	GOMP_parallel_end ();
+
+	#pragma omp for schedule(runtime)
+	for (i = 0; i < n; i++)
+	  body;
+
+	=>
+
+	{
+	  long i, _s0, _e0;
+	  if (GOMP_loop_runtime_start (0, n, 1, &_s0, &_e0))
+	    do {
+	      long _e1 = _e0;
+	      for (i = _s0, i < _e0; i++)
+	        body;
+	    } while (GOMP_loop_runtime_next (&_s0, _&e0));
+	  GOMP_loop_end ();
+	}
+
+	Note that while it looks like there is trickyness to propagating
+	a non-constant STEP, there isn't really.  We're explicitly allowed
+	to evaluate it as many times as we want, and any variables involved
+	should automatically be handled as PRIVATE or SHARED like any other
+	variables.  So the expression should remain evaluable in the 
+	subfunction.  We can also pull it into a local variable if we like,
+	but since its supposed to remain unchanged, we can also not if we like.
+
+	If we have SCHEDULE(STATIC), and no ORDERED, then we ought to be
+	able to get away with no work-sharing context at all, since we can
+	simply perform the arithmetic directly in each thread to divide up
+	the iterations.  Which would mean that we wouldn't need to call any
+	of these routines.
+
+	There are separate routines for handling loops with an ORDERED
+	clause.  Bookkeeping for that is non-trivial...
+
+Implementing ORDERED construct
+
+	void GOMP_ordered_start (void)
+	void GOMP_ordered_end (void)
+
+Implementing SECTIONS construct
+
+	#pragma omp sections
+	{
+	  #pragma omp section
+	  stmt1;
+	  #pragma omp section
+	  stmt2;
+	  #pragma omp section
+	  stmt3;
+	}
+
+	=>
+	
+	for (i = GOMP_sections_start (3); i != 0; i = GOMP_sections_next ())
+	  switch (i)
+	    {
+	    case 1:
+	      stmt1;
+	      break;
+	    case 2:
+	      stmt2;
+	      break;
+	    case 3:
+	      stmt3;
+	      break;
+	    }
+	GOMP_barrier ();
+
+Implementing SINGLE construct
+
+	#pragma omp single
+	{
+	  body;
+	}
+
+	=>
+
+	if (GOMP_single_start ())
+	  body;
+	GOMP_barrier ();
+
+
+	#pragma omp single copyprivate(x)
+	body;
+
+	=>
+
+	datap = GOMP_single_copy_start ();
+	if (datap == NULL)
+	  {
+	    body;
+	    data.x = x;
+	    GOMP_single_copy_end (&data);
+	  }
+	else
+	  x = datap->x;
+	GOMP_barrier ();

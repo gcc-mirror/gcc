@@ -23,7 +23,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* Before including this file, you should define a macro:
 
      DEF_BUILTIN (ENUM, NAME, CLASS, TYPE, LIBTYPE, BOTH_P,
-                  FALLBACK_P, NONANSI_P, ATTRS, IMPLICIT)
+                  FALLBACK_P, NONANSI_P, ATTRS, IMPLICIT, COND)
 
    This macro will be called once for each builtin function.  The
    ENUM will be of type `enum built_in_function', and will indicate
@@ -61,8 +61,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    define it's meaning.  When user uses floorf we may assume that the
    floorf has the meaning we expect, but we can't produce floorf by
    simplifying floor((double)float) since the runtime need not implement
-   it.  */
-   
+   it.
+
+   The builtins is registered only if COND is true.  */
+
 /* A GCC builtin (like __builtin_saveregs) is provided by the
    compiler, but does not correspond to a function in the standard
    library.  */
@@ -132,6 +134,13 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define DEF_BUILTIN_STUB(ENUM, NAME) \
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, 0, 0, false, false, \
 	       false, 0, false, false)
+
+/* Builtin used by the implementation of GNU OpenMP.  None of these are
+   actually implemented in the compiler; they're all in libgomp.  */
+#undef DEF_GOMP_BUILTIN
+#define DEF_GOMP_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
+               false, true, true, ATTRS, false, flag_openmp)
 
 /* Define an attribute list for math functions that are normally
    "impure" because some of them may write into global memory for
@@ -711,3 +720,6 @@ DEF_BUILTIN_STUB (BUILT_IN_PROFILE_FUNC_EXIT, "profile_func_exit")
 
 /* Synchronization Primitives.  */
 #include "sync-builtins.def"
+
+/* OpenMP builtins.  */
+#include "omp-builtins.def"

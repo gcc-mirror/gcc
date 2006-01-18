@@ -2945,6 +2945,34 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 }
 
 tree
+build5_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
+	     tree arg2, tree arg3, tree arg4 MEM_STAT_DECL)
+{
+  bool constant, read_only, side_effects, invariant;
+  tree t;
+
+  gcc_assert (TREE_CODE_LENGTH (code) == 5);
+
+  t = make_node_stat (code PASS_MEM_STAT);
+  TREE_TYPE (t) = tt;
+
+  side_effects = TREE_SIDE_EFFECTS (t);
+
+  PROCESS_ARG(0);
+  PROCESS_ARG(1);
+  PROCESS_ARG(2);
+  PROCESS_ARG(3);
+  PROCESS_ARG(4);
+
+  TREE_SIDE_EFFECTS (t) = side_effects;
+  TREE_THIS_VOLATILE (t)
+    = (TREE_CODE_CLASS (code) == tcc_reference
+       && arg0 && TREE_THIS_VOLATILE (arg0));
+
+  return t;
+}
+
+tree
 build7_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 	     tree arg2, tree arg3, tree arg4, tree arg5,
 	     tree arg6 MEM_STAT_DECL)
@@ -6032,6 +6060,41 @@ tree_class_check_failed (const tree node, const enum tree_code_class cl,
      tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
 }
 
+/* Similar to tree_check_failed, except that instead of specifying a
+   dozen codes, use the knowledge that they're all sequential.  */
+
+void
+tree_range_check_failed (const tree node, const char *file, int line,
+			 const char *function, enum tree_code c1,
+			 enum tree_code c2)
+{
+  char *buffer;
+  unsigned length = 0;
+  enum tree_code c;
+
+  for (c = c1; c <= c2; ++c)
+    length += 4 + strlen (tree_code_name[c]);
+
+  length += strlen ("expected ");
+  buffer = alloca (length);
+  length = 0;
+
+  for (c = c1; c <= c2; ++c)
+    {
+      const char *prefix = length ? " or " : "expected ";
+
+      strcpy (buffer + length, prefix);
+      length += strlen (prefix);
+      strcpy (buffer + length, tree_code_name[c]);
+      length += strlen (tree_code_name[c]);
+    }
+
+  internal_error ("tree check: %s, have %s in %s, at %s:%d",
+		  buffer, tree_code_name[TREE_CODE (node)],
+		  function, trim_filename (file), line);
+}
+
+
 /* Similar to tree_check_failed, except that we check that a tree does
    not have the specified code, given in CL.  */
 
@@ -7145,9 +7208,11 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
      interesting below this point in the tree.  */
   if (!walk_subtrees)
     {
+      /* But we still need to check our siblings.  */
       if (code == TREE_LIST)
-	/* But we still need to check our siblings.  */
 	WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
+      else if (code >= OMP_CLAUSE_PRIVATE && code <= OMP_CLAUSE_DEFAULT)
+	WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
       else
 	return NULL_TREE;
     }
@@ -7157,190 +7222,199 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
   if (result || ! walk_subtrees)
     return result;
 
-  /* If this is a DECL_EXPR, walk into various fields of the type that it's
-     defining.  We only want to walk into these fields of a type in this
-     case.  Note that decls get walked as part of the processing of a
-     BIND_EXPR.
-
-     ??? Precisely which fields of types that we are supposed to walk in
-     this case vs. the normal case aren't well defined.  */
-  if (code == DECL_EXPR
-      && TREE_CODE (DECL_EXPR_DECL (*tp)) == TYPE_DECL
-      && TREE_CODE (TREE_TYPE (DECL_EXPR_DECL (*tp))) != ERROR_MARK)
+  switch (code)
     {
-      tree *type_p = &TREE_TYPE (DECL_EXPR_DECL (*tp));
+    case ERROR_MARK:
+    case IDENTIFIER_NODE:
+    case INTEGER_CST:
+    case REAL_CST:
+    case VECTOR_CST:
+    case STRING_CST:
+    case BLOCK:
+    case PLACEHOLDER_EXPR:
+    case SSA_NAME:
+    case FIELD_DECL:
+    case RESULT_DECL:
+      /* None of these have subtrees other than those already walked
+	 above.  */
+      break;
 
-      /* Call the function for the type.  See if it returns anything or
-	 doesn't want us to continue.  If we are to continue, walk both
-	 the normal fields and those for the declaration case.  */
-      result = (*func) (type_p, &walk_subtrees, data);
-      if (result || !walk_subtrees)
-	return NULL_TREE;
+    case TREE_LIST:
+      WALK_SUBTREE (TREE_VALUE (*tp));
+      WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
+      break;
 
-      result = walk_type_fields (*type_p, func, data, pset);
-      if (result)
-	return result;
+    case TREE_VEC:
+      {
+	int len = TREE_VEC_LENGTH (*tp);
 
-      WALK_SUBTREE (TYPE_SIZE (*type_p));
-      WALK_SUBTREE (TYPE_SIZE_UNIT (*type_p));
+	if (len == 0)
+	  break;
 
-      /* If this is a record type, also walk the fields.  */
-      if (TREE_CODE (*type_p) == RECORD_TYPE
-	  || TREE_CODE (*type_p) == UNION_TYPE
-	  || TREE_CODE (*type_p) == QUAL_UNION_TYPE)
+	/* Walk all elements but the first.  */
+	while (--len)
+	  WALK_SUBTREE (TREE_VEC_ELT (*tp, len));
+
+	/* Now walk the first one as a tail call.  */
+	WALK_SUBTREE_TAIL (TREE_VEC_ELT (*tp, 0));
+      }
+
+    case COMPLEX_CST:
+      WALK_SUBTREE (TREE_REALPART (*tp));
+      WALK_SUBTREE_TAIL (TREE_IMAGPART (*tp));
+
+    case CONSTRUCTOR:
+      {
+	unsigned HOST_WIDE_INT idx;
+	constructor_elt *ce;
+
+	for (idx = 0;
+	     VEC_iterate(constructor_elt, CONSTRUCTOR_ELTS (*tp), idx, ce);
+	     idx++)
+	  WALK_SUBTREE (ce->value);
+      }
+      break;
+
+    case SAVE_EXPR:
+      WALK_SUBTREE_TAIL (TREE_OPERAND (*tp, 0));
+
+    case BIND_EXPR:
+      {
+	tree decl;
+	for (decl = BIND_EXPR_VARS (*tp); decl; decl = TREE_CHAIN (decl))
+	  {
+	    /* Walk the DECL_INITIAL and DECL_SIZE.  We don't want to walk
+	       into declarations that are just mentioned, rather than
+	       declared; they don't really belong to this part of the tree.
+	       And, we can see cycles: the initializer for a declaration
+	       can refer to the declaration itself.  */
+	    WALK_SUBTREE (DECL_INITIAL (decl));
+	    WALK_SUBTREE (DECL_SIZE (decl));
+	    WALK_SUBTREE (DECL_SIZE_UNIT (decl));
+	  }
+	WALK_SUBTREE_TAIL (BIND_EXPR_BODY (*tp));
+      }
+
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator i;
+	for (i = tsi_start (*tp); !tsi_end_p (i); tsi_next (&i))
+	  WALK_SUBTREE (*tsi_stmt_ptr (i));
+      }
+      break;
+
+    case OMP_CLAUSE_PRIVATE:
+    case OMP_CLAUSE_SHARED:
+    case OMP_CLAUSE_FIRSTPRIVATE:
+    case OMP_CLAUSE_LASTPRIVATE:
+    case OMP_CLAUSE_COPYIN:
+    case OMP_CLAUSE_COPYPRIVATE:
+    case OMP_CLAUSE_IF:
+    case OMP_CLAUSE_NUM_THREADS:
+    case OMP_CLAUSE_SCHEDULE:
+      WALK_SUBTREE (TREE_OPERAND (*tp, 0));
+      /* FALLTHRU */
+
+    case OMP_CLAUSE_NOWAIT:
+    case OMP_CLAUSE_ORDERED:
+    case OMP_CLAUSE_DEFAULT:
+      WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
+
+    case OMP_CLAUSE_REDUCTION:
+      {
+	int i;
+	for (i = 0; i < 4; i++)
+	  WALK_SUBTREE (TREE_OPERAND (*tp, i));
+	WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
+      }
+
+    case TARGET_EXPR:
+      {
+	int i, len;
+
+	/* TARGET_EXPRs are peculiar: operands 1 and 3 can be the same.
+	   But, we only want to walk once.  */
+	len = (TREE_OPERAND (*tp, 3) == TREE_OPERAND (*tp, 1)) ? 2 : 3;
+	for (i = 0; i < len; ++i)
+	  WALK_SUBTREE (TREE_OPERAND (*tp, i));
+	WALK_SUBTREE_TAIL (TREE_OPERAND (*tp, len));
+      }
+
+    case DECL_EXPR:
+      /* Walk into various fields of the type that it's defining.  We only
+	 want to walk into these fields of a type in this case.  Note that
+	 decls get walked as part of the processing of a BIND_EXPR.
+
+	 ??? Precisely which fields of types that we are supposed to walk in
+	 this case vs. the normal case aren't well defined.  */
+      if (TREE_CODE (DECL_EXPR_DECL (*tp)) == TYPE_DECL
+	  && TREE_CODE (TREE_TYPE (DECL_EXPR_DECL (*tp))) != ERROR_MARK)
 	{
-	  tree field;
+	  tree *type_p = &TREE_TYPE (DECL_EXPR_DECL (*tp));
 
-	  for (field = TYPE_FIELDS (*type_p); field;
-	       field = TREE_CHAIN (field))
+	  /* Call the function for the type.  See if it returns anything or
+	     doesn't want us to continue.  If we are to continue, walk both
+	     the normal fields and those for the declaration case.  */
+	  result = (*func) (type_p, &walk_subtrees, data);
+	  if (result || !walk_subtrees)
+	    return NULL_TREE;
+
+	  result = walk_type_fields (*type_p, func, data, pset);
+	  if (result)
+	    return result;
+
+	  /* If this is a record type, also walk the fields.  */
+	  if (TREE_CODE (*type_p) == RECORD_TYPE
+	      || TREE_CODE (*type_p) == UNION_TYPE
+	      || TREE_CODE (*type_p) == QUAL_UNION_TYPE)
 	    {
-	      /* We'd like to look at the type of the field, but we can easily
-		 get infinite recursion.  So assume it's pointed to elsewhere
-		 in the tree.  Also, ignore things that aren't fields.  */
-	      if (TREE_CODE (field) != FIELD_DECL)
-		continue;
+	      tree field;
 
-	      WALK_SUBTREE (DECL_FIELD_OFFSET (field));
-	      WALK_SUBTREE (DECL_SIZE (field));
-	      WALK_SUBTREE (DECL_SIZE_UNIT (field));
-	      if (TREE_CODE (*type_p) == QUAL_UNION_TYPE)
-		WALK_SUBTREE (DECL_QUALIFIER (field));
+	      for (field = TYPE_FIELDS (*type_p); field;
+		   field = TREE_CHAIN (field))
+		{
+		  /* We'd like to look at the type of the field, but we can
+		     easily get infinite recursion.  So assume it's pointed
+		     to elsewhere in the tree.  Also, ignore things that
+		     aren't fields.  */
+		  if (TREE_CODE (field) != FIELD_DECL)
+		    continue;
+
+		  WALK_SUBTREE (DECL_FIELD_OFFSET (field));
+		  WALK_SUBTREE (DECL_SIZE (field));
+		  WALK_SUBTREE (DECL_SIZE_UNIT (field));
+		  if (TREE_CODE (*type_p) == QUAL_UNION_TYPE)
+		    WALK_SUBTREE (DECL_QUALIFIER (field));
+		}
+	    }
+
+	  WALK_SUBTREE (TYPE_SIZE (*type_p));
+	  WALK_SUBTREE_TAIL (TYPE_SIZE_UNIT (*type_p));
+	}
+      /* FALLTHRU */
+
+    default:
+      if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
+	{
+	  int i, len;
+
+	  /* Walk over all the sub-trees of this operand.  */
+	  len = TREE_CODE_LENGTH (code);
+
+	  /* Go through the subtrees.  We need to do this in forward order so
+	     that the scope of a FOR_EXPR is handled properly.  */
+	  if (len)
+	    {
+	      for (i = 0; i < len - 1; ++i)
+		WALK_SUBTREE (TREE_OPERAND (*tp, i));
+	      WALK_SUBTREE_TAIL (TREE_OPERAND (*tp, len - 1));
 	    }
 	}
-    }
 
-  else if (code != SAVE_EXPR
-	   && code != BIND_EXPR
-	   && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
-    {
-      int i, len;
-
-      /* Walk over all the sub-trees of this operand.  */
-      len = TREE_CODE_LENGTH (code);
-      /* TARGET_EXPRs are peculiar: operands 1 and 3 can be the same.
-	 But, we only want to walk once.  */
-      if (code == TARGET_EXPR
-	  && TREE_OPERAND (*tp, 3) == TREE_OPERAND (*tp, 1))
-	--len;
-
-      /* Go through the subtrees.  We need to do this in forward order so
-         that the scope of a FOR_EXPR is handled properly.  */
-#ifdef DEBUG_WALK_TREE
-      for (i = 0; i < len; ++i)
-	WALK_SUBTREE (TREE_OPERAND (*tp, i));
-#else
-      for (i = 0; i < len - 1; ++i)
-	WALK_SUBTREE (TREE_OPERAND (*tp, i));
-
-      if (len)
-	{
-	  /* The common case is that we may tail recurse here.  */
-	  if (code != BIND_EXPR
-	      && !TREE_CHAIN (*tp))
-	    WALK_SUBTREE_TAIL (TREE_OPERAND (*tp, len - 1));
-	  else
-	    WALK_SUBTREE (TREE_OPERAND (*tp, len - 1));
-	}
-#endif
-    }
-
-  /* If this is a type, walk the needed fields in the type.  */
-  else if (TYPE_P (*tp))
-    {
-      result = walk_type_fields (*tp, func, data, pset);
-      if (result)
-	return result;
-    }
-  else
-    {
-      /* Not one of the easy cases.  We must explicitly go through the
-	 children.  */
-      switch (code)
-	{
-	case ERROR_MARK:
-	case IDENTIFIER_NODE:
-	case INTEGER_CST:
-	case REAL_CST:
-	case VECTOR_CST:
-	case STRING_CST:
-	case BLOCK:
-	case PLACEHOLDER_EXPR:
-	case SSA_NAME:
-	case FIELD_DECL:
-	case RESULT_DECL:
-	  /* None of these have subtrees other than those already walked
-	     above.  */
-	  break;
-
-	case TREE_LIST:
-	  WALK_SUBTREE (TREE_VALUE (*tp));
-	  WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
-	  break;
-
-	case TREE_VEC:
-	  {
-	    int len = TREE_VEC_LENGTH (*tp);
-
-	    if (len == 0)
-	      break;
-
-	    /* Walk all elements but the first.  */
-	    while (--len)
-	      WALK_SUBTREE (TREE_VEC_ELT (*tp, len));
-
-	    /* Now walk the first one as a tail call.  */
-	    WALK_SUBTREE_TAIL (TREE_VEC_ELT (*tp, 0));
-	  }
-
-	case COMPLEX_CST:
-	  WALK_SUBTREE (TREE_REALPART (*tp));
-	  WALK_SUBTREE_TAIL (TREE_IMAGPART (*tp));
-
-	case CONSTRUCTOR:
-	  {
-	    unsigned HOST_WIDE_INT idx;
-	    constructor_elt *ce;
-
-	    for (idx = 0;
-		 VEC_iterate(constructor_elt, CONSTRUCTOR_ELTS (*tp), idx, ce);
-		 idx++)
-	      WALK_SUBTREE (ce->value);
-	  }
-	  break;
-
-	case SAVE_EXPR:
-	  WALK_SUBTREE_TAIL (TREE_OPERAND (*tp, 0));
-
-	case BIND_EXPR:
-	  {
-	    tree decl;
-	    for (decl = BIND_EXPR_VARS (*tp); decl; decl = TREE_CHAIN (decl))
-	      {
-		/* Walk the DECL_INITIAL and DECL_SIZE.  We don't want to walk
-		   into declarations that are just mentioned, rather than
-		   declared; they don't really belong to this part of the tree.
-		   And, we can see cycles: the initializer for a declaration
-		   can refer to the declaration itself.  */
-		WALK_SUBTREE (DECL_INITIAL (decl));
-		WALK_SUBTREE (DECL_SIZE (decl));
-		WALK_SUBTREE (DECL_SIZE_UNIT (decl));
-	      }
-	    WALK_SUBTREE_TAIL (BIND_EXPR_BODY (*tp));
-	  }
-
-	case STATEMENT_LIST:
-	  {
-	    tree_stmt_iterator i;
-	    for (i = tsi_start (*tp); !tsi_end_p (i); tsi_next (&i))
-	      WALK_SUBTREE (*tsi_stmt_ptr (i));
-	  }
-	  break;
-
-	default:
-	  /* ??? This could be a language-defined node.  We really should make
-	     a hook for it, but right now just ignore it.  */
-	  break;
-	}
+      /* If this is a type, walk the needed fields in the type.  */
+      else if (TYPE_P (*tp))
+	return walk_type_fields (*tp, func, data, pset);
+      break;
     }
 
   /* We didn't find what we were looking for.  */
@@ -7362,6 +7436,32 @@ walk_tree_without_duplicates (tree *tp, walk_tree_fn func, void *data)
   result = walk_tree (tp, func, data, pset);
   pointer_set_destroy (pset);
   return result;
+}
+
+
+/* Return true if STMT is an empty statement or contains nothing but
+   empty statements.  */
+
+bool
+empty_body_p (tree stmt)
+{
+  tree_stmt_iterator i;
+  tree body;
+
+  if (IS_EMPTY_STMT (stmt))
+    return true;
+  else if (TREE_CODE (stmt) == BIND_EXPR)
+    body = BIND_EXPR_BODY (stmt);
+  else if (TREE_CODE (stmt) == STATEMENT_LIST)
+    body = stmt;
+  else
+    return false;
+
+  for (i = tsi_start (body); !tsi_end_p (i); tsi_next (&i))
+    if (!empty_body_p (tsi_stmt (i)))
+      return false;
+
+  return true;
 }
 
 #include "gt-tree.h"

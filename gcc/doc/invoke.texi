@@ -765,7 +765,7 @@ See S/390 and zSeries Options.
 -fargument-noalias-global  -fleading-underscore @gol
 -ftls-model=@var{model} @gol
 -ftrapv  -fwrapv  -fbounds-check @gol
--fvisibility}
+-fvisibility  -fopenmp}
 @end table
 
 @menu
@@ -4700,6 +4700,15 @@ instrumentation should ignore pointer reads.  This produces less
 instrumentation (and therefore faster execution) and still provides
 some protection against outright memory corrupting writes, but allows
 erroneously read data to propagate within a program.
+
+@item -fopenmp
+@opindex fopenmp
+@cindex openmp parallel
+Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
+@code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
+compiler generates parallel code according to the OpenMP Application
+Program Interface v2.5.  To generate the final exectuable, the runtime
+library @code{libgomp} must be linked in using @option{-lgomp}.
 
 @item -fstrength-reduce
 @opindex fstrength-reduce

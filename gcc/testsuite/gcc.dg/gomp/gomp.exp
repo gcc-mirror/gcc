@@ -1,0 +1,14 @@
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [find $srcdir/$subdir *.c]] \
+	"" "-fopenmp"
+
+# All done.
+dg-finish

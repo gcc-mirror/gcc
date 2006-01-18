@@ -1,3 +1,13 @@
+2006-01-18  Richard Henderson  <rth@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* libgomp: New directory.
+	* Makefile.def: Add target_module libgomp.
+	* Makefile.in: Regenerate.
+	* configure.in (target_libraries): Add target-libgomp.
+	* configure: Regenerate.
+
 2006-01-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.tpl (clean-stage[+id+]-[+prefix+][+module+]): Remove
@@ -17,10 +27,10 @@
 	(EXTRA_HOST_FLAGS): Add it.
 	(EXTRA_GCC_FLAGS): Remove flags already specified in flags_to_pass.
 
-        * Makefile.tpl (stage[+id+]-start, stage[+id+]-end): Do not try
-        to use symbolic links between directories.  Avoid race conditions
-        or make them harmless.
-        * configure.in: Do not try to use symbolic links between directories.
+	* Makefile.tpl (stage[+id+]-start, stage[+id+]-end): Do not try
+	to use symbolic links between directories.  Avoid race conditions
+	or make them harmless.
+	* configure.in: Do not try to use symbolic links between directories.
 
 	* Makefile.def (LEAN): Pass.
 	* Makefile.tpl (LEAN): Define.
@@ -33,8 +43,8 @@
 	([+bootstrap-target+]-lean): New.
 	* configure.in: Remove lean bootstrap support from here.
 
-        * Makefile.in: Regenerate.
-        * configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
 
 2006-01-04  Ben Elliston  <bje@au.ibm.com>
 

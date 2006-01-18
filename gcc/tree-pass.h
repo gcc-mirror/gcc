@@ -68,6 +68,8 @@ enum tree_dump_index
 #define TDF_STMTADDR	(1 << 12)	/* Address of stmt.  */
 
 #define TDF_GRAPH	(1 << 13)	/* a graph dump is being emitted */
+#define TDF_CHAIN	(1 << 14)	/* Follow TREE_CHAIN when
+					   dumping *_DECLs.  */
 
 extern char *get_dump_file_name (enum tree_dump_index);
 extern int dump_enabled_p (enum tree_dump_index);
@@ -149,6 +151,7 @@ struct dump_file_info
 #define PROP_no_crit_edges      (1 << 7)
 #define PROP_rtl		(1 << 8)
 #define PROP_alias		(1 << 9)
+#define PROP_gimple_lomp	(1 << 10)	/* lowered OpenMP directives */
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh)
@@ -259,6 +262,7 @@ extern struct tree_opt_pass pass_lower_complex_O0;
 extern struct tree_opt_pass pass_lower_complex;
 extern struct tree_opt_pass pass_lower_vector;
 extern struct tree_opt_pass pass_lower_vector_ssa;
+extern struct tree_opt_pass pass_lower_omp;
 extern struct tree_opt_pass pass_object_sizes;
 extern struct tree_opt_pass pass_fold_builtins;
 extern struct tree_opt_pass pass_stdarg;

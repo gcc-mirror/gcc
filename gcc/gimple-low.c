@@ -69,12 +69,11 @@ lower_function_body (void)
 
   gcc_assert (TREE_CODE (bind) == BIND_EXPR);
 
+  memset (&data, 0, sizeof (data));
   data.block = DECL_INITIAL (current_function_decl);
   BLOCK_SUBBLOCKS (data.block) = NULL_TREE;
   BLOCK_CHAIN (data.block) = NULL_TREE;
   TREE_ASM_WRITTEN (data.block) = 1;
-
-  data.return_statements = NULL_TREE;
 
   *body_p = alloc_stmt_list ();
   i = tsi_start (*body_p);
@@ -196,11 +195,6 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
       break;
 
     default:
-#ifdef ENABLE_CHECKING
-      print_node_brief (stderr, "", stmt, 0);
-      internal_error ("unexpected node");
-#endif
-    case COMPOUND_EXPR:
       gcc_unreachable ();
     }
 
