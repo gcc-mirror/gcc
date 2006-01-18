@@ -1,3 +1,27 @@
+2006-01-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20869
+	PR fortran/20875
+	PR fortran/25024
+	* symbol.c (check_conflict): Add pointer valued elemental
+	functions and internal procedures with the external attribute
+	to the list of conflicts.
+	(gfc_add_attribute): New catch-all function to perform the
+	checking of symbol attributes for attribute declaration
+	statements.
+	* decl.c (attr_decl1): Call gfc_add_attribute for each of -
+	(gfc_match_external, gfc_match_intent, gfc_match_intrinsic,
+	gfc_match_pointer, gfc_match_dimension, gfc_match_target):
+	Remove spurious calls to checks in symbol.c.  Set the
+	attribute directly and use the call to attr_decl() for
+	checking.
+	* gfortran.h:  Add prototype for gfc_add_attribute.
+
+	PR fortran/25785
+	* resolve.c (resolve_function): Exclude PRESENT from assumed size
+	argument checking. Replace strcmp's with comparisons with generic
+	codes.
+
 2006-01-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/22146

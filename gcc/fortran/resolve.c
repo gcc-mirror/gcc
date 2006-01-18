@@ -1212,16 +1212,17 @@ resolve_function (gfc_expr * expr)
     }
 
   else if (expr->value.function.actual != NULL
-      && expr->value.function.isym != NULL
-      && strcmp (expr->value.function.isym->name, "lbound"))
+	     && expr->value.function.isym != NULL
+	     && expr->value.function.isym->generic_id != GFC_ISYM_LBOUND
+	     && expr->value.function.isym->generic_id != GFC_ISYM_PRESENT)
     {
       /* Array instrinsics must also have the last upper bound of an
 	 asumed size array argument.  UBOUND and SIZE have to be
 	 excluded from the check if the second argument is anything
 	 than a constant.  */
       int inquiry;
-      inquiry = strcmp (expr->value.function.isym->name, "ubound") == 0
-		  || strcmp (expr->value.function.isym->name, "size") == 0;
+      inquiry = expr->value.function.isym->generic_id == GFC_ISYM_UBOUND
+		  || expr->value.function.isym->generic_id == GFC_ISYM_SIZE;
 	    
       for (arg = expr->value.function.actual; arg; arg = arg->next)
 	{
