@@ -1,5 +1,6 @@
 // -*- C++ -*- Manage the thread-local exception globals.
-// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -33,6 +34,16 @@
 #include "cxxabi.h"
 #include "unwind-cxx.h"
 #include "bits/gthr.h"
+
+#if _GLIBCXX_HOSTED
+using std::free;
+using std::malloc;
+#else
+// In a freestanding environment, these functions may not be
+// available -- but for now, we assume that they are.
+extern "C" void *malloc (std::size_t);
+extern "C" void free(void *);
+#endif
 
 using namespace __cxxabiv1;
 
@@ -81,7 +92,7 @@ eh_globals_dtor(void* ptr)
 	  _Unwind_DeleteException(&exn->unwindHeader);
 	  exn = next;
 	}
-      std::free(ptr);
+      free(ptr);
     }
 }
 
@@ -125,7 +136,7 @@ __cxxabiv1::__cxa_get_globals() throw()
       g = static_cast<__cxa_eh_globals*>(__gthread_getspecific(init._M_key));
       if (!g)
 	{
-	  void* v = std::malloc(sizeof(__cxa_eh_globals));
+	  void* v = malloc(sizeof(__cxa_eh_globals));
 	  if (v == 0 || __gthread_setspecific(init._M_key, v) != 0)
 	    std::terminate();
 	  g = static_cast<__cxa_eh_globals*>(v);

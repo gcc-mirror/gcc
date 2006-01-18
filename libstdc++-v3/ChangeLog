@@ -1,3 +1,20 @@
+2006-01-18  Perry Smith  <pedz@easesoftware.net>
+
+	PR libstdc++/25823
+	PR libstdc++/25824
+	* libsupc++/eh_alloc.cc: Fix return type of memset declaration.
+	* libsupc++/eh_globals.cc: If !_GLIBCXX_HOSTED declare malloc and free.
+
+2006-01-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/pb_assoc/detail/value_type_adapter/
+	value_type_adapter.hpp: Include <tr1/type_traits>.
+	* include/ext/pb_assoc/detail/value_type_adapter/
+	it_value_type_traits.hpp (it_value_type_traits_<>::value_type_holder):
+	Use tr1::aligned_storage and tr1::alignment_of.
+	(it_value_type_traits_<>::buf_t): Remove.
+	(it_value_type_traits_<>::make_valid, recast): Adjust.
+
 2006-01-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/25797

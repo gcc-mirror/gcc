@@ -1,5 +1,6 @@
 // -*- C++ -*- Allocate exception objects.
-// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -49,7 +50,7 @@ using std::memcpy;
 // -- but for now, we assume that they are.
 extern "C" void *malloc (std::size_t);
 extern "C" void free(void *);
-extern "C" int memset (void *, int, std::size_t);
+extern "C" void *memset (void *, int, std::size_t);
 #endif
 
 using namespace __cxxabiv1;
