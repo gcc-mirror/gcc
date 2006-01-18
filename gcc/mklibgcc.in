@@ -28,6 +28,12 @@
 # DPBIT_FUNCS
 # TPBIT
 # TPBIT_FUNCS
+# D32PBIT
+# D32PBIT_FUNCS
+# D64PBIT
+# D64PBIT_FUNCS
+# D128PBIT
+# D128PBIT_FUNCS
 # LIBGCC
 # MULTILIBS
 # EXTRA_MULTILIB_PARTS
@@ -95,6 +101,12 @@ libgcov_c_dep='stmp-dirs $(srcdir)/libgcov.c $(srcdir)/gcov-io.h $(srcdir)/gcov-
 
 # Dependencies for fp-bit.c
 fpbit_c_dep='stmp-dirs config.status tsystem.h'
+
+# Dependencies for decnumber and friends.  This is an overzealous set,
+# but at least we can be sure to recompile if anything gets modified.
+decnumber_dep='stmp-dirs $(srcdir)/../libdecnumber/decContext.h $(srcdir)/../libdecnumber/decNumber.h
+	$(srcdir)/../libdecnumber/decNumberLocal.h $(srcdir)/../libdecnumber/decimal32.h $(srcdir)/../libdecnumber/decimal64.h
+	$(srcdir)/../libdecnumber/decimal128.h $(srcdir)/../libdecnumber/decDPD.h $(srcdir)/../libdecnumber/decUtility.h'
 
 # Flag whether we need eh_dummy.c
 need_eh_dummy=
@@ -348,6 +360,49 @@ for ml in $MULTILIBS; do
 	  done
       fi
   done
+
+  if [ "@enable_decimal_float@" = "yes" -a -z "$libgcc_so" ]; then
+    # Bring in the DFP support code if D32PBIT, D64PBIT or D128PBIT are set.
+    if [ -n "$D32PBIT" -o -n "$D64PBIT" -o -n "$D128PBIT" ] ; then
+      dec_filenames="decContext decNumber decRound decLibrary decUtility"
+    fi
+
+    # Only bring in decimal*.c files for types we support.
+    if [ -n "$D32PBIT" ] ; then
+      dec_filenames="$dec_filenames decimal32"
+    fi
+    if [ -n "$D64PBIT" ] ; then
+      dec_filenames="$dec_filenames decimal64"
+    fi
+    if [ -n "$D128PBIT" ] ; then
+      dec_filenames="$dec_filenames decimal128"
+    fi
+
+    for name in $dec_filenames ; do
+      out="libgcc/${dir}/${name}${objext}"
+      echo $out: "\$(srcdir)/../libdecnumber/${name}.c" $decnumber_dep
+      echo "	$gcc_compile" $flags -c "\$(srcdir)/../libdecnumber/${name}.c" -o $out
+      echo $libgcc_a: $out
+    done
+
+    # For individual functions, loop over each variable by name.
+    for dpbit_var in D32PBIT D64PBIT D128PBIT ; do
+      dpfuncs_var="${dpbit_var}_FUNCS"
+      eval dpbit=\$$dpbit_var
+      eval dpfuncs=\$$dpfuncs_var
+
+      if [ "$dpbit" ]; then
+        for name in $dpfuncs; do
+          out="libgcc/${dir}/${name}${objext}"
+	  echo $out: $dpbit $fpbit_c_dep
+	  echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
+	    -c $dpbit -o $out
+
+	  echo $libgcc_a: $out
+        done
+      fi
+    done
+  fi
 
   for file in $LIB2ADD; do
     name=`echo $file | sed -e 's/[.][cS]$//' -e 's/[.]asm$//'`

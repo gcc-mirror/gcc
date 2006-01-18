@@ -39,6 +39,7 @@ and @code{@w{unsigned int}} correspond to @code{SImode}; @code{long} and
 @menu
 * Integer library routines::
 * Soft float library routines::
+* Decimal float library routines::
 * Exception handling routines::
 * Miscellaneous routines::
 @end menu
@@ -483,6 +484,205 @@ These functions return the product of @math{@var{a} + i@var{b}} and
 These functions return the quotient of @math{@var{a} + i@var{b}} and
 @math{@var{c} + i@var{d}} (i.e., @math{(@var{a} + i@var{b}) / (@var{c}
 + i@var{d})}), following the rules of C99 Annex G@.
+@end deftypefn
+
+@node Decimal float library routines
+@section Routines for decimal floating point emulation
+@cindex decimal float library
+@cindex IEEE-754R
+
+The software decimal floating point library implements IEEE 754R
+decimal floating point arithmetic and is only activated on selected
+targets.
+
+@subsection Arithmetic functions
+
+@deftypefn {Runtime Function} _Decimal32 __addsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __adddd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __addtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return the sum of @var{a} and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __subsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __subdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __subtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return the difference between @var{b} and @var{a};
+that is, @w{@math{@var{a} - @var{b}}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __mulsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __muldd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __multd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return the product of @var{a} and @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __divsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __divdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __divtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return the quotient of @var{a} and @var{b}; that is,
+@w{@math{@var{a} / @var{b}}}.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __negsd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __negdd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __negtd2 (_Decimal128 @var{a})
+These functions return the negation of @var{a}.  They simply flip the
+sign bit, so they can produce negative zero and negative NaN@.
+@end deftypefn
+
+@subsection Conversion functions
+
+@c DFP/DFP conversions
+@deftypefn {Runtime Function} _Decimal64 __extendsddd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __extendsdtd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __extendddtd2 (_Decimal64 @var{a})
+@c DFP/binary FP conversions
+@deftypefnx {Runtime Function} _Decimal32 __extendsfsd (float @var{a})
+@deftypefnx {Runtime Function} double __extendsddf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {long double} __extendsdxf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __extendsfdd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __extenddfdd (double @var{a})
+@deftypefnx {Runtime Function} {long double} __extendddxf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __extendsftd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __extenddftd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __extendxftd ({long double} @var{a})
+These functions extend @var{a} to the wider mode of their return type.
+@end deftypefn
+
+@c DFP/DFP conversions
+@deftypefn {Runtime Function} _Decimal32 __truncddsd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __trunctdsd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __trunctddd2 (_Decimal128 @var{a})
+@c DFP/binary FP conversions
+@deftypefnx {Runtime Function} float __truncsdsf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __truncdfsd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __truncxfsd ({long double} @var{a})
+@deftypefnx {Runtime Function} float __truncddsf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} double __truncdddf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __truncxfdd ({long double} @var{a})
+@deftypefnx {Runtime Function} float __trunctdsf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} double __trunctddf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {long double} __trunctdxf (_Decimal128 @var{a})
+These functions truncate @var{a} to the narrower mode of their return
+type.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __fixsdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} int __fixddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} int __fixtdsi (_Decimal128 @var{a})
+These functions convert @var{a} to a signed integer.
+@end deftypefn
+
+@deftypefn {Runtime Function} long __fixsddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} long __fixdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} long __fixtddi (_Decimal128 @var{a})
+These functions convert @var{a} to a signed long.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned int} __fixunssdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fixunsddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fixunstdsi (_Decimal128 @var{a})
+These functions convert @var{a} to an unsigned integer.  Negative values all become zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} {unsigned long} __fixunssddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fixunsdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __fixunstddi (_Decimal128 @var{a})
+These functions convert @var{a} to an unsigned long.  Negative values
+all become zero.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __floatsisd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __floatsidd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __floatsitd (int @var{i})
+These functions convert @var{i}, a signed integer, to decimal floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __floatdisd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __floatdidd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __floatditd (long @var{i})
+These functions convert @var{i}, a signed long, to decimal floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __floatunssisd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __floatunssidd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __floatunssitd (unsigned int @var{i})
+These functions convert @var{i}, an unsigned integer, to decimal floating point.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __floatunsdisd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __floatunsdidd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __floatunsditd (unsigned long @var{i})
+These functions convert @var{i}, an unsigned long, to decimal floating point.
+@end deftypefn
+
+@subsection Comparison functions
+
+@deftypefn {Runtime Function} int __unordsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __unorddd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __unordtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a nonzero value if either argument is NaN, otherwise 0.
+@end deftypefn
+
+There is also a complete group of higher level functions which
+correspond directly to comparison operators.  They implement the ISO C
+semantics for floating-point comparisons, taking NaN into account.
+Pay careful attention to the return values defined for each set.
+Under the hood, all of these routines are implemented as
+
+@smallexample
+  if (__unord@var{X}d2 (a, b))
+    return @var{E};
+  return __cmp@var{X}d2 (a, b);
+@end smallexample
+
+@noindent
+where @var{E} is a constant chosen to give the proper behavior for
+NaN@.  Thus, the meaning of the return value is different for each set.
+Do not rely on this implementation; only the semantics documented
+below are guaranteed.
+
+@deftypefn {Runtime Function} int __eqsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __eqdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __eqtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return zero if neither argument is NaN, and @var{a} and
+@var{b} are equal.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __nesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __nedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __netd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a nonzero value if either argument is NaN, or
+if @var{a} and @var{b} are unequal.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __gesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __gedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __getd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a value greater than or equal to zero if
+neither argument is NaN, and @var{a} is greater than or equal to
+@var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __ltsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __ltdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __lttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a value less than zero if neither argument is
+NaN, and @var{a} is strictly less than @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __lesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __ledd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __letd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a value less than or equal to zero if neither
+argument is NaN, and @var{a} is less than or equal to @var{b}.
+@end deftypefn
+
+@deftypefn {Runtime Function} int __gtsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __gtdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __gttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+These functions return a value greater than zero if neither argument
+is NaN, and @var{a} is strictly greater than @var{b}.
 @end deftypefn
 
 @node Exception handling routines
