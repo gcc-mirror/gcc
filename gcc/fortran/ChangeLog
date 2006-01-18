@@ -40,7 +40,7 @@
 	argument checking. Replace strcmp's with comparisons with generic
 	codes.
 
-2006-01-16  Rafael Ávila de Espíndol  <rafael.espindola@gmail.com>
+2006-01-16  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* gfortranspec.c (lang_specific_spec_functions): Remove.
 
