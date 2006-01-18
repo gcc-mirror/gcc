@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,6 +51,7 @@
 #include <ext/pb_assoc/detail/type_utils.hpp>
 #include <utility>
 #include <algorithm>
+#include <tr1/type_traits>  // for aligned_storage/alignment_of
 
 namespace pb_assoc
 {
