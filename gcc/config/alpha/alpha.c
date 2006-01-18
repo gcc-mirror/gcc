@@ -3198,12 +3198,17 @@ alpha_emit_xfloating_cvt (enum rtx_code orig_code, rtx operands[])
 					       operands[1]));
 }
 
-/* Split a TFmode OP[1] into DImode OP[2,3] and likewise for
-   OP[0] into OP[0,1].  Naturally, output operand ordering is
-   little-endian.  */
-
+/* Split a TImode or TFmode move from OP[1] to OP[0] into a pair of
+   DImode moves from OP[2,3] to OP[0,1].  If FIXUP_OVERLAP is true,
+   guarantee that the sequence
+     set (OP[0] OP[2])
+     set (OP[1] OP[3])
+   is valid.  Naturally, output operand ordering is little-endian.
+   This is used by *movtf_internal and *movti_internal.  */
+  
 void
-alpha_split_tfmode_pair (rtx operands[4])
+alpha_split_tmode_pair (rtx operands[4], enum machine_mode mode,
+			bool fixup_overlap)
 {
   switch (GET_CODE (operands[1]))
     {
@@ -3217,8 +3222,9 @@ alpha_split_tfmode_pair (rtx operands[4])
       operands[2] = adjust_address (operands[1], DImode, 0);
       break;
 
+    case CONST_INT:
     case CONST_DOUBLE:
-      gcc_assert (operands[1] == CONST0_RTX (TFmode));
+      gcc_assert (operands[1] == CONST0_RTX (mode));
       operands[2] = operands[3] = const0_rtx;
       break;
 
@@ -3241,6 +3247,13 @@ alpha_split_tfmode_pair (rtx operands[4])
     default:
       gcc_unreachable ();
     }
+
+  if (fixup_overlap && reg_overlap_mentioned_p (operands[0], operands[3]))
+    {
+      rtx tmp;
+      tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
+      tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
+    }
 }
 
 /* Implement negtf2 or abstf2.  Op0 is destination, op1 is source,
@@ -3254,7 +3267,7 @@ alpha_split_tfmode_frobsign (rtx operands[3], rtx (*operation) (rtx, rtx, rtx))
   rtx scratch;
   int move;
 
-  alpha_split_tfmode_pair (operands);
+  alpha_split_tmode_pair (operands, TFmode, false);
 
   /* Detect three flavors of operand overlap.  */
   move = 1;

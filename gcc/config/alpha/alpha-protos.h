@@ -64,7 +64,7 @@ extern bool alpha_expand_mov_nobwx (enum machine_mode, rtx *);
 extern void alpha_expand_movmisalign (enum machine_mode, rtx *);
 extern void alpha_emit_floatuns (rtx[]);
 extern rtx alpha_emit_conditional_move (rtx, enum machine_mode);
-extern void alpha_split_tfmode_pair (rtx[]);
+extern void alpha_split_tmode_pair (rtx[], enum machine_mode, bool);
 extern void alpha_split_tfmode_frobsign (rtx[], rtx (*)(rtx, rtx, rtx));
 extern void alpha_expand_unaligned_load (rtx, rtx, HOST_WIDE_INT,
 					 HOST_WIDE_INT, int);
