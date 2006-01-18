@@ -2158,9 +2158,6 @@ extern rtx compare_and_jump_seq (rtx, rtx, enum rtx_code, rtx, int, rtx);
 /* In loop-iv.c  */
 extern rtx canon_condition (rtx);
 extern void simplify_using_condition (rtx, rtx *, struct bitmap_head_def *);
-
-/* In ra.c.  */
-extern void reg_alloc (void);
 
 struct rtl_hooks
 {

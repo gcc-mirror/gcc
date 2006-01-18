@@ -1,3 +1,7 @@
+2006-01-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* rtl.h: Remove the prototype for reg_alloc.
+
 2006-01-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25731
