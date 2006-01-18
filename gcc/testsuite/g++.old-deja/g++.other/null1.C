@@ -1,4 +1,5 @@
 // { dg-do link  }
+// { dg-options "-Wconversion" }
 
 #include <cstddef>
 

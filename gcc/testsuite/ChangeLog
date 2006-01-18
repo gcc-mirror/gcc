@@ -1,3 +1,11 @@
+2006-01-17  Eric Christopher  <echristo@apple.com>
+
+	* g++.old-deja/g++.warn/impint.C: Add -Wconversion.
+	* g++.old-deja/g++.warn/impint2.C: Ditto.
+	* g++.old-deja/g++.other/null1.C: Ditto.
+	* g++.dg/warn/conv2.C: Ditto.
+	* g++.dg/warn/conv4.C: New file.
+
 2006-01-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/abi/mangle25.C: Fix dg-do line, add a closing brace.
@@ -90,7 +98,7 @@
 
 2006-01-16  Ben Elliston  <bje@au.ibm.com>
 
-	* gcc.dg/dfp/dfp.exp: Correct FSF address. 
+	* gcc.dg/dfp/dfp.exp: Correct FSF address.
 	* gcc.misc-tests/dectest.exp: Ditto.
 
 2006-01-15  Ian Lance Taylor  <ian@airs.com>
@@ -250,7 +258,7 @@
 	gcc.dg/dfp/operator-unary.c, gcc.dg/dfp/altivec-types.c,
 	gcc.dg/dfp/cast.c, gcc.dg/dfp/typespec.c,
 	gcc.dg/dfp/wtr-conversion-1.c: New tests.
-	
+
 2006-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/25734
@@ -275,7 +283,7 @@
 	* gcc.dg/torture/pr25706-1.c: New test.
 
 2006-01-11  Paolo Bonzini  <bonzini@gnu.org>
-        
+
         PR tree-optimization/23109
         PR tree-optimization/23948
         PR tree-optimization/24123
@@ -630,7 +638,7 @@
 2005-12-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.dg/rtti/tinfo1.C: Scan for ".global" also.
-	
+
 	PR testsuite/25442
 	* gcc.dg/ipa/ipa-1.c, gcc.dg/ipa/ipa-2.c, gcc.dg/ipa/ipa-3.c,
 	gcc.dg/ipa/ipa-4.c, gcc.dg/ipa/ipa-5.c: Skip if -fpic/-fPIC.
