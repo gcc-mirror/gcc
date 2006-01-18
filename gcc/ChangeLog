@@ -1,3 +1,9 @@
+2005-01-19  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/23282
+	* tree-chrec.c (chrec_fold_multiply_poly_poly): Associate chrecs
+	correctly.
+
 2006-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: Disparage copies between general and floating-point registers

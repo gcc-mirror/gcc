@@ -1,12 +1,17 @@
+2005-01-19  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/23282
+	* gcc.c-torture/execute/pr23282.c: New test.
+
 2006-01-16  Ian Lance Taylor  <ian@airs.com>
 
 	* consistency.vlad: Remove entire directory, 1652 files.
 
 2006-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-        PR testsuite/25777
-        * ada/acats/run_acats (LD_LIBRARY_PATH): Add BASE
-        to LD_LIBRARY_PATH.
+	PR testsuite/25777
+	* ada/acats/run_acats (LD_LIBRARY_PATH): Add BASE
+	to LD_LIBRARY_PATH.
 
 2006-01-14  Mark Mitchell  <mark@codesourcery.com>
 
