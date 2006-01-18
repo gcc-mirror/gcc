@@ -31,4 +31,5 @@ int main()
 /* { dg-final { scan-tree-dump-not "reciptmp" "lim" } } */
 /* { dg-final { scan-tree-dump-not "reciptmp" "recip" } } */
 /* { dg-final { cleanup-tree-dump "recip" } } */
+/* { dg-final { cleanup-tree-dump "lim" } } */
 

@@ -1,3 +1,13 @@
+2006-01-18  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/execute/930529-1.x: Use -fwrapv as test depends
+	on wrapping on overflow semantics.
+
+	* gcc.dg/tree-ssa/pr23109.c: Remove the .lim file too.
+
+	* gcc.gc/tree-ssa/vrp23.c: New test.
+	* gcc.gc/tree-ssa/vrp24.c: New test.
+
 2006-01-18  Richard Henderson  <rth@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
