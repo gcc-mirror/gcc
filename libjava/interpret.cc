@@ -1,6 +1,6 @@
 // interpret.cc - Code for the interpreter
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -792,6 +792,8 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
 }
 #endif /* DIRECT_THREADED */
 
+/* Run the given method.
+   When args is NULL, don't run anything -- just compile it. */
 void
 _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 {
@@ -811,19 +813,6 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
   _Jv_word *sp = stack;
 
   _Jv_word locals[meth->max_locals];
-
-  /* Go straight at it!  the ffi raw format matches the internal
-     stack representation exactly.  At least, that's the idea.
-  */
-  memcpy ((void*) locals, (void*) args, meth->args_raw_size);
-
-  _Jv_word *pool_data = meth->defining_class->constants.data;
-
-  /* These three are temporaries for common code used by several
-     instructions.  */
-  void (*fun)();
-  _Jv_ResolvedMethod* rmeth;
-  int tmpval;
 
 #define INSN_LABEL(op) &&insn_##op
 
@@ -1070,6 +1059,11 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 	meth->compile (insn_target);
       _Jv_MutexUnlock (&compile_mutex);
     }
+
+  // If we're only compiling, stop here
+  if (args == NULL)
+    return;
+
   pc = (insn_slot *) meth->prepared;
 
 #else
@@ -1101,6 +1095,19 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 #endif /* DIRECT_THREADED */
 
 #define TAKE_GOTO pc = GOTO_VAL ()
+
+  /* Go straight at it!  the ffi raw format matches the internal
+     stack representation exactly.  At least, that's the idea.
+  */
+  memcpy ((void*) locals, (void*) args, meth->args_raw_size);
+
+  _Jv_word *pool_data = meth->defining_class->constants.data;
+
+  /* These three are temporaries for common code used by several
+     instructions.  */
+  void (*fun)();
+  _Jv_ResolvedMethod* rmeth;
+  int tmpval;
 
   try
     {
@@ -3865,5 +3872,14 @@ _Jv_InterpreterEngine::do_post_miranda_hook (jclass klass)
       iclass->interpreted_methods[i]->self = &klass->methods[i];
     }
 }
+
+#ifdef DIRECT_THREADED
+void
+_Jv_CompileMethod (_Jv_InterpMethod* method)
+{
+  if (method->prepared == NULL)
+    _Jv_InterpMethod::run (NULL, NULL, method);
+}
+#endif // DIRECT_THREADED
 
 #endif // INTERPRETER

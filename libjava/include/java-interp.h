@@ -1,6 +1,6 @@
 // java-interp.h - Header file for the bytecode interpreter.  -*- c++ -*-
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -44,6 +44,7 @@ void * _Jv_AllocMethodInvocation (jsize size);
 int  _Jv_count_arguments (_Jv_Utf8Const *signature,
 			  jboolean staticp = true);
 void _Jv_VerifyMethod (_Jv_InterpMethod *method);
+void _Jv_CompileMethod (_Jv_InterpMethod* method);
 
 /* the interpreter is written in C++, primarily because it makes it easy for
  * the entire thing to be "friend" with class Class. */
@@ -184,6 +185,10 @@ class _Jv_InterpMethod : public _Jv_MethodBase
  public:
   static void dump_object(jobject o);
 
+#ifdef DIRECT_THREADED
+  friend void _Jv_CompileMethod (_Jv_InterpMethod*);
+#endif
+  
   friend class _Jv_ClassReader;
   friend class _Jv_BytecodeVerifier;
   friend class _Jv_StackTrace;
