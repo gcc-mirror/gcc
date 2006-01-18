@@ -1,6 +1,6 @@
 /* Deal with I/O statements & related stuff.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
+   Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -28,8 +28,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "parse.h"
 
 gfc_st_label format_asterisk =
-  { -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL, 0,
-    {NULL, NULL}, NULL, NULL};
+  {0, NULL, NULL, -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL,
+   0, {NULL, NULL}};
 
 typedef struct
 {

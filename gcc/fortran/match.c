@@ -1,6 +1,6 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
-   Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
+   Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -138,7 +138,8 @@ gfc_match_eos (void)
 
 /* Match a literal integer on the input, setting the value on
    MATCH_YES.  Literal ints occur in kind-parameters as well as
-   old-style character length specifications.  */
+   old-style character length specifications.  If cnt is non-NULL it
+   will be set to the number of digits.  */
 
 match
 gfc_match_small_literal_int (int *value, int *cnt)
@@ -151,7 +152,8 @@ gfc_match_small_literal_int (int *value, int *cnt)
 
   gfc_gobble_whitespace ();
   c = gfc_next_char ();
-  *cnt = 0;
+  if (cnt)
+    *cnt = 0;
 
   if (!ISDIGIT (c))
     {
@@ -183,7 +185,8 @@ gfc_match_small_literal_int (int *value, int *cnt)
   gfc_current_locus = old_loc;
 
   *value = i;
-  *cnt = j;
+  if (cnt)
+    *cnt = j;
   return MATCH_YES;
 }
 

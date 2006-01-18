@@ -1,3 +1,21 @@
+2006-01-18  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/18540
+	PR fortran/18937
+	* gfortran.h (BBT_HEADER): Move definition up.
+	(gfc_st_label): Add BBT_HEADER, remove 'prev' and 'next'.
+	* io.c (format_asterisk): Adapt initializer.
+	* resolve.c (resolve_branch): Allow FORTRAN 66 cross-block GOTOs
+	as extension.
+	* symbol.c (compare_st_labels): New function.
+	(gfc_free_st_label, free_st_labels, gfc_get_st_label): Convert to
+	using balanced binary tree.
+	* decl.c (match_char_length, gfc_match_old_kind_spec): Do away
+	with 'cnt'.
+	(warn_unused_label): Adapt to binary tree.
+	* match.c (gfc_match_small_literal_int): Only set cnt if non-NULL.
+	* primary.c (match_kind_param): Do away with cnt.
+
 2006-01-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20869
@@ -22,7 +40,7 @@
 	argument checking. Replace strcmp's with comparisons with generic
 	codes.
 
-2006-01-16  Rafael √Åvila de Esp√≠ndola  <rafael.espindola@gmail.com>
+2006-01-16  Rafael Å¡vila de EspÅÌndol  <rafael.espindola@gmail.com>
 
 	* gfortranspec.c (lang_specific_spec_functions): Remove.
 
@@ -59,7 +77,7 @@
 	* trans.c (gfc_add_expr_to_block): Do not fold tcc_statement
 	nodes.
 
-2006-01-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-01-11  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* parse.c (next_fixed): Remove superfluous string concatenation.
 
