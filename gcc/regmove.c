@@ -1037,7 +1037,7 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset, FILE *regmove_dump_file)
    REGMOVE_DUMP_FILE is a stream for output of a trace of actions taken
    (or 0 if none should be output).  */
 
-void
+static void
 regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
 {
   int old_max_uid = get_max_uid ();
@@ -2113,7 +2113,7 @@ static int record_stack_memrefs (rtx *, void *);
 
 /* Main entry point for stack adjustment combination.  */
 
-void
+static void
 combine_stack_adjustments (void)
 {
   basic_block bb;

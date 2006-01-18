@@ -12,6 +12,11 @@
 	* function.h: Remove the prototype for
 	instantiate_virtual_regs.
 
+	* regmove.c (regmove_optimize, combine_stack_adjustments):
+	Make them static.
+	* rtl.h: Remove the prototypes for regmove_optimize and
+	combine_stack_adjustments.
+
 2006-01-17  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (COSTS_N_BYTES): New macro.

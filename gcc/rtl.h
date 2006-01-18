@@ -2069,10 +2069,6 @@ extern void cannot_change_mode_set_regs (HARD_REG_SET *,
 extern bool invalid_mode_change_p (unsigned int, enum reg_class,
 				   enum machine_mode);
 
-/* In regmove.c */
-extern void regmove_optimize (rtx, int, FILE *);
-extern void combine_stack_adjustments (void);
-
 /* In reorg.c */
 extern void dbr_schedule (rtx, FILE *);
 
