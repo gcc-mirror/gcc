@@ -1,5 +1,5 @@
 /* Various declarations for language-independent diagnostics subroutines.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
@@ -72,6 +72,13 @@ struct diagnostic_context
   
   /* True if it has been requested that warnings be treated as errors.  */
   bool warning_as_error_requested;
+
+  /* For each option index that can be passed to warning() et all
+     (OPT_* from options.h), this array may contain a new kind that
+     the diagnostic should be changed to before reporting, or
+     DK_UNSPECIFIED to leave it as the reported kind, or DK_IGNORED to
+     not report it at all.  N_OPTS is from <options.h>.  */
+  char classify_diagnostic[N_OPTS];
 
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */
@@ -179,6 +186,11 @@ extern diagnostic_context *global_dc;
 extern void diagnostic_initialize (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *);
 extern void diagnostic_report_current_function (diagnostic_context *);
+
+/* Force diagnostics controlled by OPTIDX to be kind KIND.  */
+extern diagnostic_t diagnostic_classify_diagnostic (diagnostic_context *,
+						    int /* optidx */,
+						    diagnostic_t /* kind */);
 extern void diagnostic_report_diagnostic (diagnostic_context *,
 					  diagnostic_info *);
 #ifdef ATTRIBUTE_GCC_DIAG

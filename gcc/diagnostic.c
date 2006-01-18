@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler Collection
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
@@ -61,6 +61,7 @@ static void real_abort (void) ATTRIBUTE_NORETURN;
 /* A diagnostic_context surrogate for stderr.  */
 static diagnostic_context global_diagnostic_context;
 diagnostic_context *global_dc = &global_diagnostic_context;
+
 
 /* Return a malloc'd string containing MSG formatted a la printf.  The
    caller is responsible for freeing the memory.  */
@@ -102,6 +103,8 @@ diagnostic_initialize (diagnostic_context *context)
   memset (context->diagnostic_count, 0, sizeof context->diagnostic_count);
   context->issue_warnings_are_errors_message = true;
   context->warning_as_error_requested = false;
+  memset (context->classify_diagnostic, DK_UNSPECIFIED,
+	  sizeof context->classify_diagnostic);
   context->show_option_requested = false;
   context->abort_on_error = false;
   context->internal_error = NULL;
@@ -202,7 +205,12 @@ diagnostic_count_diagnostic (diagnostic_context *context,
       if (!diagnostic_report_warnings_p ())
         return false;
 
-      if (!context->warning_as_error_requested)
+      /* -Werror can reclassify warnings as errors, but
+	 classify_diagnostic can reclassify it back to a warning.  The
+	 second part of this test detects that case.  */
+      if (!context->warning_as_error_requested
+	  || (context->classify_diagnostic[diagnostic->option_index]
+	      == DK_WARNING))
         {
           ++diagnostic_kind_count (context, DK_WARNING);
           break;
@@ -324,6 +332,26 @@ default_diagnostic_finalizer (diagnostic_context *context,
   pp_destroy_prefix (context->printer);
 }
 
+/* Interface to specify diagnostic kind overrides.  Returns the
+   previous setting, or DK_UNSPECIFIED if the parameters are out of
+   range.  */
+diagnostic_t
+diagnostic_classify_diagnostic (diagnostic_context *context,
+				int option_index,
+				diagnostic_t new_kind)
+{
+  diagnostic_t old_kind;
+
+  if (option_index <= 0
+      || option_index >= N_OPTS
+      || new_kind >= DK_LAST_DIAGNOSTIC_KIND)
+    return DK_UNSPECIFIED;
+
+  old_kind = context->classify_diagnostic[option_index];
+  context->classify_diagnostic[option_index] = new_kind;
+  return old_kind;
+}
+
 /* Report a diagnostic message (an error or a warning) as specified by
    DC.  This function is *the* subroutine in terms of which front-ends
    should implement their specific diagnostic handling modules.  The
@@ -345,9 +373,21 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	error_recursion (context);
     }
 
-  if (diagnostic->option_index
-      && ! option_enabled (diagnostic->option_index))
-    return;
+  if (diagnostic->option_index)
+    {
+      /* This tests if the user provided the appropriate -Wfoo or
+	 -Wno-foo option.  */
+      if (! option_enabled (diagnostic->option_index))
+	return;
+      /* This tests if the user provided the appropriate -Werror=foo
+	 option.  */
+      if (context->classify_diagnostic[diagnostic->option_index] != DK_UNSPECIFIED)
+	diagnostic->kind = context->classify_diagnostic[diagnostic->option_index];
+      /* This allows for future extenions, like temporarily disabling
+	 warnings for ranges of source code.  */
+      if (diagnostic->kind == DK_IGNORED)
+	return;
+    }
 
   context->lock++;
 
