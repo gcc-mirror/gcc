@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.1-b20051125\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-11-20 16:33+0000\n"
-"PO-Revision-Date: 2005-12-31 00:08+0800\n"
+"PO-Revision-Date: 2006-01-14 23:48+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
 "MIME-Version: 1.0\n"
@@ -4053,9 +4053,9 @@ msgid "Pointer initialization requires a NULL at %C"
 msgstr "%C 处的指针初始化需要 NULL"
 
 #: fortran/decl.c:1188
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initialization of pointer at %C is not allowed in a PURE procedure"
-msgstr "DATA 语句不允许出现在 %C 处的 PURE 过程中"
+msgstr "%C 处对指针的初始化不允许出现在 PURE 过程中"
 
 #: fortran/decl.c:1204
 #, no-c-format
@@ -4068,9 +4068,9 @@ msgid "Expected an initialization expression at %C"
 msgstr "%C 处需要一个初始化表达式"
 
 #: fortran/decl.c:1219
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initialization of variable at %C is not allowed in a PURE procedure"
-msgstr "DATA 语句不允许出现在 %C 处的 PURE 过程中"
+msgstr "%C 处对变量的初始化不允许出现在 PURE 过程中"
 
 #: fortran/decl.c:1241
 #, no-c-format
@@ -5685,22 +5685,22 @@ msgstr ""
 #: fortran/interface.c:605
 #, no-c-format
 msgid "First argument of defined assignment at %L must be INTENT(IN) or INTENT(INOUT)"
-msgstr "%L 定义赋值的第一个参数必须是 INTENT(IN) 或 INTENT(INOUT)"
+msgstr "%L 处定义赋值的第一个参数必须是 INTENT(IN) 或 INTENT(INOUT)"
 
 #: fortran/interface.c:609
 #, no-c-format
 msgid "Second argument of defined assignment at %L must be INTENT(IN)"
-msgstr "%L 定义赋值的第二个参数必须是 INTENT(IN)"
+msgstr "%L 处定义赋值的第二个参数必须是 INTENT(IN)"
 
 #: fortran/interface.c:615
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "First argument of operator interface at %L must be INTENT(IN)"
-msgstr "%L 定义赋值的第一个参数必须是 INTENT(IN) 或 INTENT(INOUT)"
+msgstr "%L 处运算符接口的第一个参数必须是 INTENT(IN)"
 
 #: fortran/interface.c:619
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Second argument of operator interface at %L must be INTENT(IN)"
-msgstr "%L 定义赋值的第二个参数必须是 INTENT(IN)"
+msgstr "%L 处运算符接口的第二个参数必须是 INTENT(IN)"
 
 #: fortran/interface.c:626
 #, no-c-format
@@ -5715,7 +5715,7 @@ msgstr ""
 #: fortran/interface.c:880
 #, no-c-format
 msgid "Procedure '%s' in %s at %L is neither function nor subroutine"
-msgstr ""
+msgstr "过程‘%s’(在 %s 中，位于 %L) 既不是函数也不是子进程"
 
 #: fortran/interface.c:934
 #, no-c-format
@@ -5840,7 +5840,7 @@ msgstr ""
 #: fortran/intrinsic.c:3159
 #, no-c-format
 msgid "Intrinsic '%s' at %L is not included in the selected standard"
-msgstr ""
+msgstr "内建函数‘%s’(于 %L 处)不为所选择的标准所包含"
 
 #: fortran/intrinsic.c:3262
 #, no-c-format
@@ -6004,19 +6004,19 @@ msgid "Fortran 2003: IOMSG tag at %L"
 msgstr "Fortran 2003：%L 处的 IOMSG 标记"
 
 #: fortran/io.c:1214
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "OPEN statement not allowed in PURE procedure at %C"
-msgstr "DATA 语句不允许出现在 %C 处的 PURE 过程中"
+msgstr "OPEN 语句不允许出现在 %C 处的 PURE 过程中"
 
 #: fortran/io.c:1322
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "CLOSE statement not allowed in PURE procedure at %C"
-msgstr "DATA 语句不允许出现在 %C 处的 PURE 过程中"
+msgstr "CLOSE 语句不允许出现在 %C 处的 PURE 过程中"
 
 #: fortran/io.c:1448 fortran/match.c:1441
 #, fuzzy, no-c-format
 msgid "%s statement not allowed in PURE procedure at %C"
-msgstr "DATA 语句不允许出现在 %C 处的 PURE 过程中"
+msgstr "OPEN 语句不允许出现在 %C 处的 PURE 过程中"
 
 #: fortran/io.c:1508
 #, no-c-format
@@ -6182,12 +6182,12 @@ msgstr ""
 #: fortran/io.c:2395
 #, fuzzy, no-c-format
 msgid "PRINT statement at %C not allowed within PURE procedure"
-msgstr "DATA 语句不允许出现在 %C 处的 PURE 过程中"
+msgstr "OPEN 语句不允许出现在 %C 处的 PURE 过程中"
 
 #: fortran/io.c:2534 fortran/io.c:2582
 #, fuzzy, no-c-format
 msgid "INQUIRE statement not allowed in PURE procedure at %C"
-msgstr "DATA 语句不允许出现在 %C 处的 PURE 过程中"
+msgstr "OPEN 语句不允许出现在 %C 处的 PURE 过程中"
 
 #: fortran/io.c:2558
 #, no-c-format
@@ -6202,7 +6202,7 @@ msgstr ""
 #: fortran/io.c:2575
 #, no-c-format
 msgid "INQUIRE statement at %L requires either FILE or UNIT specifier"
-msgstr ""
+msgstr "%L 处的 INQUIRE 语句需要 FILE 或 UNIT 限定符"
 
 #: fortran/match.c:175
 #, no-c-format
@@ -6402,7 +6402,7 @@ msgstr ""
 #: fortran/match.c:2219
 #, no-c-format
 msgid "Syntax error in common block name at %C"
-msgstr ""
+msgstr "%C 处公共块名语法错误"
 
 #: fortran/match.c:2284
 #, no-c-format
@@ -6698,7 +6698,7 @@ msgstr "gfortran：只允许使用一个 -M 选项\n"
 #: fortran/options.c:296
 #, c-format
 msgid "gfortran: Directory required after -M\n"
-msgstr ""
+msgstr "gfortran：-M 后需要给出目录\n"
 
 #: fortran/options.c:336
 #, no-c-format
@@ -6708,7 +6708,7 @@ msgstr "-ffpe-trap 的参数无效：%s"
 #: fortran/options.c:468
 #, no-c-format
 msgid "Fixed line length must be at least seven."
-msgstr ""
+msgstr "固定格式的行长至少为七。"
 
 #: fortran/options.c:474
 #, no-c-format
@@ -7063,7 +7063,7 @@ msgstr "%C 处 16 进制常量中有非法字符"
 #: fortran/primary.c:407
 #, no-c-format
 msgid "Integer too big for integer kind %i at %C"
-msgstr ""
+msgstr "整数对其种别 %i 来说太大，于 %C 处"
 
 #: fortran/primary.c:508
 #, no-c-format
@@ -7313,7 +7313,7 @@ msgstr "符号‘%s’(位于 %L)有歧义"
 #: fortran/resolve.c:859
 #, no-c-format
 msgid "Generic function '%s' at %L is not an intrinsic function"
-msgstr ""
+msgstr "通用函数‘%s’(于 %L 处)不是一个内建函数"
 
 #: fortran/resolve.c:869
 #, no-c-format
@@ -7358,7 +7358,7 @@ msgstr ""
 #: fortran/resolve.c:1219
 #, no-c-format
 msgid "Generic subroutine '%s' at %L is not an intrinsic subroutine"
-msgstr ""
+msgstr "通用子进程‘%s’(于 %L 处)不是一个内建子进程"
 
 #: fortran/resolve.c:1228
 #, no-c-format
@@ -9458,7 +9458,7 @@ msgstr "在固定格式中忽略第一列的‘D’"
 
 #: fortran/lang.opt:98
 msgid "Treat lines with 'D' in column one as comments"
-msgstr ""
+msgstr "将第一列为‘D’的行视作注释"
 
 #: fortran/lang.opt:102
 msgid "Allow dollar signs in entity names"
@@ -9494,7 +9494,7 @@ msgstr "当名字已经包含一个下划线时添加第二个下划线"
 
 #: fortran/lang.opt:134
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
-msgstr ""
+msgstr "不允许使用隐式类型，除非显式地使用了 IMPLICIT 语句"
 
 #: fortran/lang.opt:138
 msgid "Allow arbitrary character line width in fixed mode"
@@ -9699,7 +9699,7 @@ msgstr "设定分支的代价"
 
 #: config/frv/frv.opt:47
 msgid "Enable conditional execution other than moves/scc"
-msgstr ""
+msgstr "启用条件执行而非 moves/scc"
 
 #: config/frv/frv.opt:51
 msgid "Change the maximum length of conditionally-executed sequences"
@@ -13409,7 +13409,7 @@ msgstr "为取样表达式的值插入相关代码"
 
 #: common.opt:682
 msgid "Make compile reproducible using <string>"
-msgstr ""
+msgstr "使用 <字符串> 作用随机数种子以使编译结果可以复现"
 
 #: common.opt:686
 msgid "Return small aggregates in registers"
@@ -18038,9 +18038,9 @@ msgid "too many outgoing branch edges from bb %i"
 msgstr ""
 
 #: cfgrtl.c:2040
-#, gcc-internal-format
+#, fuzzy, gcc-internal-format
 msgid "fallthru edge after unconditional jump %i"
-msgstr ""
+msgstr "非条件跳转 %i 之后的分支边数不对"
 
 #: cfgrtl.c:2051
 #, gcc-internal-format
@@ -18365,7 +18365,7 @@ msgstr "内部一致性错误"
 #: emit-rtl.c:3334
 #, gcc-internal-format
 msgid "ICE: emit_insn used where emit_jump_insn needed:\n"
-msgstr ""
+msgstr "ICE：需要 emit_jump_insn 时使用了 emit_insn used where：\n"
 
 #: errors.c:133 java/jv-scan.c:289
 #, gcc-internal-format
@@ -18440,7 +18440,7 @@ msgstr "比较结果始终为 %d"
 #: fold-const.c:5084
 #, gcc-internal-format
 msgid "%<or%> of unmatched not-equal tests is always 1"
-msgstr ""
+msgstr "对两个不匹配的不等比较取 %<or%> 的结果总为 1"
 
 #: fold-const.c:5089
 #, gcc-internal-format
@@ -18970,7 +18970,7 @@ msgstr "输出操作数约束缺少 %<=%>"
 #: stmt.c:332
 #, gcc-internal-format
 msgid "output constraint %qc for operand %d is not at the beginning"
-msgstr ""
+msgstr "输出约束 %qc(对操作数 %d)没有出现在开头"
 
 #: stmt.c:355
 #, gcc-internal-format
@@ -20435,12 +20435,12 @@ msgstr ""
 #: config/arm/arm.c:1144
 #, gcc-internal-format
 msgid "iwmmxt abi requires an iwmmxt capable cpu"
-msgstr ""
+msgstr "iwmmxt abi 需要相应 CPU 的支持"
 
 #: config/arm/arm.c:1154
 #, gcc-internal-format
 msgid "invalid floating point emulation option: -mfpe=%s"
-msgstr ""
+msgstr "无效的浮点仿真选项：-mfpe=%s"
 
 #: config/arm/arm.c:1171
 #, gcc-internal-format
@@ -24609,7 +24609,7 @@ msgstr "在 %q#D 的模板声明中使用 %<virtual%> 无效"
 #: cp/decl2.c:496 cp/pt.c:3020
 #, gcc-internal-format
 msgid "template declaration of %q#D"
-msgstr "%q#D 的模板声明"
+msgstr "%q#D 声明为模板"
 
 #: cp/decl2.c:545
 #, gcc-internal-format
@@ -25738,7 +25738,7 @@ msgstr "特例化模板有 C 链接"
 #: cp/parser.c:9419 cp/parser.c:15322
 #, gcc-internal-format
 msgid "template declaration of %qs"
-msgstr "%qs 的模板声明"
+msgstr "%qs 声明为模板"
 
 #: cp/parser.c:9892
 #, gcc-internal-format
