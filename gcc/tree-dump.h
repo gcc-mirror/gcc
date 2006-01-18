@@ -91,6 +91,7 @@ extern void queue_and_dump_index (dump_info_p, const char *, tree, int);
 extern void queue_and_dump_type (dump_info_p, tree);
 extern void dump_function (enum tree_dump_index, tree);
 extern void dump_function_to_file (tree, FILE *, int);
+extern void debug_function (tree, int);
 extern int dump_flag (dump_info_p, int, tree);
 
 extern unsigned int dump_register (const char *, const char *, const char *, 

@@ -76,7 +76,6 @@ static const char *c_getstr (tree);
 static rtx c_readstr (const char *, enum machine_mode);
 static int target_char_cast (tree, char *);
 static rtx get_memory_rtx (tree, tree);
-static tree build_string_literal (int, const char *);
 static int apply_args_size (void);
 static int apply_result_size (void);
 #if defined (HAVE_untyped_call) || defined (HAVE_untyped_return)
@@ -4785,7 +4784,7 @@ expand_builtin_copysign (tree arglist, rtx target, rtx subtarget)
 
 /* Create a new constant string literal and return a char* pointer to it.
    The STRING_CST value is the LEN characters at STR.  */
-static tree
+tree
 build_string_literal (int len, const char *str)
 {
   tree t, elem, index, type;

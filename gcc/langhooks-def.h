@@ -88,6 +88,11 @@ extern tree lhd_callgraph_analyze_expr (tree *, int *, tree);
 
 /* Declarations for tree gimplification hooks.  */
 extern int lhd_gimplify_expr (tree *, tree *, tree *);
+extern enum omp_clause_default_kind lhd_omp_predetermined_sharing (tree);
+extern tree lhd_omp_assignment (tree, tree, tree);
+struct gimplify_omp_ctx;
+extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
+					       tree);
 
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
@@ -213,6 +218,8 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_TYPE_PROMOTES_TO lhd_type_promotes_to
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE lhd_register_builtin_type
 #define LANG_HOOKS_TYPE_MAX_SIZE	lhd_return_null_tree
+#define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \
+  lhd_omp_firstprivatize_type_sizes
 #define LANG_HOOKS_HASH_TYPES		true
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
@@ -226,6 +233,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_REGISTER_BUILTIN_TYPE, \
   LANG_HOOKS_INCOMPLETE_TYPE_ERROR, \
   LANG_HOOKS_TYPE_MAX_SIZE, \
+  LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES, \
   LANG_HOOKS_HASH_TYPES \
 }
 
@@ -239,6 +247,14 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE NULL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL	lhd_decl_ok_for_sibcall
 #define LANG_HOOKS_COMDAT_GROUP lhd_comdat_group
+#define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE hook_bool_tree_false
+#define LANG_HOOKS_OMP_PREDETERMINED_SHARING lhd_omp_predetermined_sharing
+#define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR hook_bool_tree_bool_false
+#define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE hook_bool_tree_bool_false
+#define LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR hook_tree_tree_tree_null
+#define LANG_HOOKS_OMP_CLAUSE_COPY_CTOR lhd_omp_assignment
+#define LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP lhd_omp_assignment
+#define LANG_HOOKS_OMP_CLAUSE_DTOR hook_tree_tree_tree_null
 
 #define LANG_HOOKS_DECLS { \
   LANG_HOOKS_GLOBAL_BINDINGS_P, \
@@ -249,7 +265,15 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_WRITE_GLOBALS, \
   LANG_HOOKS_PREPARE_ASSEMBLE_VARIABLE, \
   LANG_HOOKS_DECL_OK_FOR_SIBCALL, \
-  LANG_HOOKS_COMDAT_GROUP \
+  LANG_HOOKS_COMDAT_GROUP, \
+  LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE, \
+  LANG_HOOKS_OMP_PREDETERMINED_SHARING, \
+  LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR, \
+  LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE, \
+  LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR, \
+  LANG_HOOKS_OMP_CLAUSE_COPY_CTOR, \
+  LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP, \
+  LANG_HOOKS_OMP_CLAUSE_DTOR \
 }
 
 /* The whole thing.  The structure is defined in langhooks.h.  */

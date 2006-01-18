@@ -330,8 +330,9 @@ expr_last (tree expr)
   return expr;
 }
 
-/* If EXPR is a single statement, naked or in a STATEMENT_LIST, then
-   return it.  Otherwise return NULL.  */
+/* If EXPR is a single statement return it.  If EXPR is a
+   STATEMENT_LIST containing exactly one statement S, return S.
+   Otherwise, return NULL.  */
 
 tree 
 expr_only (tree expr)

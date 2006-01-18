@@ -296,6 +296,10 @@ extern tree push_stmt_list (void);
 extern tree pop_stmt_list (tree);
 extern tree add_stmt (tree);
 extern void push_cleanup (tree, tree, bool);
+extern tree pushdecl_top_level (tree);
+extern tree pushdecl (tree);
+extern tree build_modify_expr (tree, enum tree_code, tree);
+extern tree build_indirect_ref (tree, const char *);
 
 extern int c_expand_decl (tree);
 
@@ -933,6 +937,21 @@ extern void preprocess_file (cpp_reader *);
 extern void pp_file_change (const struct line_map *);
 extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
+
+/* In c-omp.c  */
+extern tree c_finish_omp_master (tree);
+extern tree c_finish_omp_critical (tree, tree);
+extern tree c_finish_omp_ordered (tree);
+extern void c_finish_omp_barrier (void);
+extern void c_finish_omp_atomic (enum tree_code, tree, tree);
+extern void c_finish_omp_flush (void);
+extern tree c_finish_omp_for (location_t, tree, tree, tree, tree, tree, tree);
+extern void c_split_parallel_clauses (tree, tree *, tree *);
+extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
+
+/* Not in c-omp.c; provided by the front end.  */
+extern bool c_omp_sharing_predetermined (tree);
+extern tree c_omp_remap_decl (tree, bool);
 
 /* In order for the format checking to accept the C frontend
    diagnostic framework extensions, you must include this file before

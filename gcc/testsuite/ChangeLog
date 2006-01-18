@@ -1,3 +1,11 @@
+2006-01-18  Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Diego Novillo  <dnovillo@redhat.com>
+	    Uros Bizjak  <uros@kss-loka.si>
+
+	* testsuite/gcc.dg/gomp: New directory.
+
 2006-01-18  Paul Thomas  <pault@gcc.gnu.org>
 	    Steven G. Kargl  <kargls@comcast.net>
 

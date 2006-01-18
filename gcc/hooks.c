@@ -186,6 +186,12 @@ hook_bool_tree_tree_false (tree a ATTRIBUTE_UNUSED, tree b ATTRIBUTE_UNUSED)
 }
 
 bool
+hook_bool_tree_bool_false (tree a ATTRIBUTE_UNUSED, bool b ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
+bool
 hook_bool_rtx_false (rtx a ATTRIBUTE_UNUSED)
 {
   return false;
@@ -252,6 +258,12 @@ hook_constcharptr_tree_null (tree t ATTRIBUTE_UNUSED)
 tree
 hook_tree_tree_tree_bool_null (tree t0 ATTRIBUTE_UNUSED, tree t1 ATTRIBUTE_UNUSED,
 			       bool ignore ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
+
+tree
+hook_tree_tree_tree_null (tree t0 ATTRIBUTE_UNUSED, tree t1 ATTRIBUTE_UNUSED)
 {
   return NULL;
 }

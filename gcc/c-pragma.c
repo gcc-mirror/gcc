@@ -724,6 +724,32 @@ c_invoke_pragma_handler (unsigned int id)
 void
 init_pragma (void)
 {
+  if (flag_openmp && !flag_preprocess_only)
+    {
+      struct omp_pragma_def { const char *name; unsigned int id; };
+      static const struct omp_pragma_def omp_pragmas[] = {
+	{ "atomic", PRAGMA_OMP_ATOMIC },
+	{ "barrier", PRAGMA_OMP_BARRIER },
+	{ "critical", PRAGMA_OMP_CRITICAL },
+	{ "flush", PRAGMA_OMP_FLUSH },
+	{ "for", PRAGMA_OMP_FOR },
+	{ "master", PRAGMA_OMP_MASTER },
+	{ "ordered", PRAGMA_OMP_ORDERED },
+	{ "parallel", PRAGMA_OMP_PARALLEL },
+	{ "section", PRAGMA_OMP_SECTION },
+	{ "sections", PRAGMA_OMP_SECTIONS },
+	{ "single", PRAGMA_OMP_SINGLE },
+	{ "threadprivate", PRAGMA_OMP_THREADPRIVATE }
+      };
+
+      const int n_omp_pragmas = sizeof (omp_pragmas) / sizeof (*omp_pragmas);
+      int i;
+
+      for (i = 0; i < n_omp_pragmas; ++i)
+	cpp_register_deferred_pragma (parse_in, "omp", omp_pragmas[i].name,
+				      omp_pragmas[i].id, true, true);
+    }
+
   cpp_register_deferred_pragma (parse_in, "GCC", "pch_preprocess",
 				PRAGMA_GCC_PCH_PREPROCESS, false, false);
 

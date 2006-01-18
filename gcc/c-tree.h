@@ -129,6 +129,10 @@ struct lang_type GTY(())
 #define C_DECL_UNDEFINABLE_VM(EXP)	\
   DECL_LANG_FLAG_5 (LABEL_DECL_CHECK (EXP))
 
+/* Record whether a variable has been declared threadprivate by
+   #pragma omp threadprivate.  */
+#define C_DECL_THREADPRIVATE_P(DECL) DECL_LANG_FLAG_3 (VAR_DECL_CHECK (DECL))
+
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
    (but this is presently difficult because some of them need FILE*).  */
@@ -431,7 +435,6 @@ extern int global_bindings_p (void);
 extern void push_scope (void);
 extern tree pop_scope (void);
 extern void insert_block (tree);
-extern tree pushdecl (tree);
 extern void c_expand_body (tree);
 
 extern void c_init_decl_processing (void);
@@ -441,7 +444,7 @@ extern int quals_from_declspecs (const struct c_declspecs *);
 extern struct c_declarator *build_array_declarator (tree, struct c_declspecs *,
 						    bool, bool);
 extern tree build_enumerator (tree, tree);
-extern void check_for_loop_decls (void);
+extern tree check_for_loop_decls (void);
 extern void mark_forward_parm_decls (void);
 extern void declare_parm_level (void);
 extern void undeclared_variable (tree, location_t);
@@ -461,7 +464,6 @@ extern void pending_xref_error (void);
 extern void c_push_function_context (struct function *);
 extern void c_pop_function_context (struct function *);
 extern void push_parm_decl (const struct c_parm *);
-extern tree pushdecl_top_level (tree);
 extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
 							struct c_declarator *,
 							bool);
@@ -529,7 +531,6 @@ extern tree default_conversion (tree);
 extern struct c_expr default_function_array_conversion (struct c_expr);
 extern tree composite_type (tree, tree);
 extern tree build_component_ref (tree, tree);
-extern tree build_indirect_ref (tree, const char *);
 extern tree build_array_ref (tree, tree);
 extern tree build_external_ref (tree, int, location_t);
 extern void pop_maybe_used (bool);
@@ -542,7 +543,6 @@ extern tree build_conditional_expr (tree, tree, tree);
 extern tree build_compound_expr (tree, tree);
 extern tree c_cast_expr (struct c_type_name *, tree);
 extern tree build_c_cast (tree, tree);
-extern tree build_modify_expr (tree, enum tree_code, tree);
 extern void store_init_value (tree, tree);
 extern void error_init (const char *);
 extern void pedwarn_init (const char *);
@@ -577,6 +577,9 @@ extern tree c_finish_goto_ptr (tree);
 extern void c_begin_vm_scope (unsigned int);
 extern void c_end_vm_scope (unsigned int);
 extern tree c_expr_to_decl (tree, bool *, bool *, bool *);
+extern tree c_begin_omp_parallel (void);
+extern tree c_finish_omp_parallel (tree, tree);
+extern tree c_finish_omp_clauses (tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

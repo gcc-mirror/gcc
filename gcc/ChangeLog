@@ -1,3 +1,353 @@
+2006-01-18  Richard Henderson  <rth@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* omp-low.c: New file.
+	* c-omp.c: New file.
+
+2006-01-18  Richard Henderson  <rth@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* doc/invoke.texi: Document -fopenmp.
+	* tree-dump.h (debug_function): Declare.
+	* hooks.c (hook_bool_tree_bool_false): New function.
+	(hook_tree_tree_null): Remove.
+	(hook_tree_tree_tree_null): New.
+	* hooks.h: Update to match.
+	* tree-pretty-print.c (debug_tree_chain): New.
+	(print_generic_expr): Handle TDF_CHAIN.
+	(dump_generic_node): Handle BLOCK.
+	Do not abort with incomplete SWITCH_EXPRs.
+	Do not dump body of an OpenMP directive if TDF_SLIM is given.
+	<case OMP_PARALLEL, OMP_FOR, OMP_SECTIONS>: Don't
+	print space after directive name.
+	<OMP_FOR>: Handle printing OMP_FOR_PRE_BODY.
+	Handle OMP_MASTER and OMP_ORDERED.
+	Handle printing of OMP_BODY just in one place, goto
+	dump_omp_body in the rest of OMP_* nodes that have
+	OMP_BODY.
+	Don't handle clause nodes here.  Update omp statements to
+	use dump_omp_clauses.
+	Handle OMP_SINGLE, OMP_SECTIONS, OMP_SECTION,
+	OMP_CLAUSE_ORDERED, OMP_CLAUSE_SCHEDULE, OMP_ATOMIC,
+	OMP_CRITICAL, OMP_CLAUSE_NOWAIT, GOMP_CLAUSE_IF,
+	GOMP_CLAUSE_NUM_THREADS, GOMP_FOR, GOMP_CLAUSE_SHARED,
+	GOMP_CLAUSE_FIRSTPRIVATE, GOMP_CLAUSE_LASTPRIVATE,
+	GOMP_CLAUSE_COPYIN and GOMP_CLAUSE_COPYPRIVATE.
+	Adjust output for GOMP_PARALLEL.
+	(dump_omp_clauses): New.
+	(print_declaration): Dump DECL_VALUE_EXPR.
+	(op_symbol_1): Split out of op_symbol.
+	(dumping_stmts): Remove.  Update all users.
+	* cgraph.c (cgraph_analyze_queue): New.
+	(cgraph_add_new_function): New.
+	* cgraph.h (cgraph_analyze_queue): Declare.
+	(cgraph_add_new_function): Declare.
+	(cgraph_lower_function): Remove.
+	* tree.c (walk_tree): Walk OMP_CLAUSE_CHAIN of OMP_CLAUSE_*
+	nodes.  Use switch for all nodes, handle most of IS_EXPR_CODE_CLASS
+	and TYPE_P nodes in its default clause.
+	(empty_body_p): New.
+	(tree_range_check_failed): New.
+	(build5_stat): New.
+	* tree.h (OMP_CLAUSE_REDUCTION_INIT,
+	OMP_CLAUSE_REDUCTION_MERGE,
+	OMP_CLAUSE_REDUCTION_PLACEHOLDER,
+	OMP_CLAUSE_PRIVATE_DEBUG,
+	OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE, OMP_FOR_PRE_BODY,
+	OMP_MASTER_BODY, OMP_ORDERED_BODY OMP_BODY,
+	OMP_CLAUSES, OMP_CLAUSE_DECL, OMP_CLAUSE_DEFAULT_KIND,
+	OMP_CLAUSE_CHAIN, OMP_CLAUSE_OUTER_DECL,
+	OMP_CLAUSE_INNER_DECL, OMP_CLAUSE_NUM_THREADS_EXPR,
+	OMP_CLAUSE_IF_EXPR, OMP_CLAUSE_SCHEDULE_CHUNK_EXPR,
+	OMP_CLAUSE_SCHEDULE_CHUNK_SIZE. OMP_PARALLEL_VAR_INIT,
+	OMP_PARALLEL_VAR_REDUC, OMP_FOR_VAR_INIT,
+	OMP_FOR_VAR_LAST, OMP_FOR_VAR_REDUC,
+	OMP_SECTIONS_VAR_INIT, OMP_SECTIONS_VAR_LAST,
+	OMP_SECTIONS_VAR_REDUC, OMP_CLAUSE_REDUCTION_CODE
+	OMP_SINGLE_CLAUSES, OMP_SINGLE_BODY,
+	OMP_CLAUSE_SCHEDULE_CHUNK_SIZE, OMP_SECTION_BODY,
+	OMP_CRITICAL_NAME, OMP_CRITICAL_BODY): New.
+	(TREE_RANGE_CHECK): New.
+	(empty_body_p): Declare.
+	(enum omp_clause_default_kind): New.
+	(build_string_literal): Declare.
+	(enum omp_clause_schedule_kind, OMP_CLAUSE_SCHEDULE_KIND): New.
+	(build5_stat, build5): Declare.
+	* tree-pass.h (TDF_CHAIN): Define.
+	* tree-pass.h (PROP_gimple_lomp): Define.
+	(pass_lower_omp): Declare.
+	* diagnostic.h (debug_tree_chain): Declare.
+	* builtins.c (get_builtin_sync_mode): Use 0 as last argument to
+	mode_for_size.
+	(expand_builtin): Handle sync BUILT_IN_*_16 builtins.
+	* builtins.c (build_string_literal): Make extern.
+	* gcc.c (include_spec_function): New.
+	(static_spec_functions): Add it.
+	(main): Move load of libgomp.spec ...
+	(LINK_COMMAND_SPEC): ... here.
+	(link_gomp_spec): New.
+	(static_specs): Include it.
+	(LINK_COMMAND_SPEC): Add link_gomp.
+	(GOMP_SELF_SPECS): New.
+	(driver_self_specs): Include it.
+	(switch_matches): Don't mark inline.
+	(main): Load libgomp.spec.
+	* tree-gimple.c (is_gimple_stmt): True for OMP_MASTER,
+	OMP_ORDERED, OMP_CRITICAL, OMP_SECTIONS, OMP_SECTION,
+	and OMP_SINGLE, OMP_FOR and OMP_PARALLEL.
+	* tree-gimple.h (enum omp_parallel): Declare.
+	(determine_parallel_type): Declare.
+	(omp_firstprivatize_variable): Declare.
+	(omp_reduction_init): Declare.
+	(diagnose_omp_structured_block_errors): Declare.
+	(struct walk_stmt_info): Add want_return_expr.
+	(struct walk_stmt_info): Add want_bind_expr, want_locations.
+	(find_omp_clause): Declare.
+	(insert_field_into_struct): Declare.
+	(struct walk_stmt_info): Move from tree-nested.c
+	(walk_stmts): Declare.
+	* c-cppbuiltin.c (c_cpp_builtins): If -fopenmp, #define _OPENMP
+	to 200505.
+	* cgraphunit.c (cgraph_lower_function): Make static.
+	(cgraph_finalize_pending_functions): New.
+	(cgraph_finalize_function): Call it.
+	(cgraph_finalize_compilation_unit): Likewise.
+	* builtin-types.def (BT_I16, BT_FN_I16_VPTR_I16,
+	BT_FN_BOOL_VPTR_I16_I16, BT_FN_I16_VPTR_I16_I16): Add.
+	(BT_FN_UINT_UINT): New.
+	(DEF_FUNCTION_TYPE_6, DEF_FUNCTION_TYPE_7,
+	DEF_FUNCTION_TYPE_VAR_4): Document.
+	(BT_PTR_LONG, BT_PTR_PTR, BT_FN_BOOL, BT_FN_INT,
+	BT_FN_VOID_PTRPTR, BT_PTR_FN_VOID_PTR,
+	BT_FN_BOOL_LONGPTR_LONGPTR, BT_FN_VOID_OMPFN_PTR_UINT,
+	BT_FN_VOID_OMPFN_PTR_UINT_UINT,
+	BT_FN_BOOL_LONG_LONG_LONG_LONGPTR_LONGPTR,
+	BT_FN_BOOL_LONG_LONG_LONG_LONG_LONGPTR_LONGPTR,
+	BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG,
+	BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG_LONG): New.
+	* builtins.def: Update DEF_BUILTIN comment to include COND argument.
+	Move all DEF_SYNC_BUILTIN () and DEF_GOMP_BUILTIN () builtins
+	into separate files.
+	(DEF_GOMP_BUILTIN): New.
+	(BUILT_IN_OMP_GET_THREAD_NUM, BUILT_IN_GOMP_BARRIER,
+	BUILT_IN_GOMP_CRITICAL_START, BUILT_IN_GOMP_CRITICAL_END,
+	BUILT_IN_GOMP_CRITICAL_NAME_START, BUILT_IN_GOMP_CRITICAL_NAME_END,
+	BUILT_IN_GOMP_LOOP_STATIC_START, BUILT_IN_GOMP_LOOP_DYNAMIC_START,
+	BUILT_IN_GOMP_LOOP_GUIDED_START, BUILT_IN_GOMP_LOOP_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ORDERED_STATIC_START,
+	BUILT_IN_GOMP_LOOP_ORDERED_DYNAMIC_START,
+	BUILT_IN_GOMP_LOOP_ORDERED_GUIDED_START,
+	BUILT_IN_GOMP_LOOP_ORDERED_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_STATIC_NEXT, BUILT_IN_GOMP_LOOP_DYNAMIC_NEXT,
+	BUILT_IN_GOMP_LOOP_GUIDED_NEXT, BUILT_IN_GOMP_LOOP_RUNTIME_NEXT,
+	BUILT_IN_GOMP_LOOP_ORDERED_STATIC_NEXT,
+	BUILT_IN_GOMP_LOOP_ORDERED_DYNAMIC_NEXT,
+	BUILT_IN_GOMP_LOOP_ORDERED_GUIDED_NEXT,
+	BUILT_IN_GOMP_LOOP_ORDERED_RUNTIME_NEXT,
+	BUILT_IN_GOMP_PARALLEL_LOOP_STATIC_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_DYNAMIC_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_GUIDED_START,
+	BUILT_IN_GOMP_PARALLEL_LOOP_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_END, BUILT_IN_GOMP_LOOP_END_NOWAIT,
+	BUILT_IN_GOMP_ORDERED_START, BUILT_IN_GOMP_ORDERED_END,
+	BUILT_IN_GOMP_PARALLEL_START, BUILT_IN_GOMP_PARALLEL_END,
+	BUILT_IN_GOMP_SECTIONS_START, BUILT_IN_GOMP_SECTIONS_NEXT,
+	BUILT_IN_GOMP_PARALLEL_SECTIONS_START, BUILT_IN_GOMP_SECTIONS_END,
+	BUILT_IN_GOMP_SECTIONS_END_NOWAIT, BUILT_IN_GOMP_SINGLE_START,
+	BUILT_IN_GOMP_SINGLE_COPY_START, BUILT_IN_GOMP_SINGLE_COPY_END): New.
+	* sync-builtins.def: New file, moved from builtins.def.
+	* omp-builtins.def: New file, moved from builtins.def.
+	* c-objc-common.h (LANG_HOOKS_OMP_PREDETERMINED_SHARING): Redefine.
+	* gimple-low.c (lower_function_body): Clear data.
+	(lower_stmt): Do not handle COMPOUND_EXPR.
+	Remove call to print_node_brief.
+	* c-tree.h (c_finish_omp_clauses): New prototype.
+	(C_DECL_THREADPRIVATE_P): Define.
+	(lookup_name_no_remap, c_omp_remap_private): Remove
+	(c_begin_omp_parallel, c_finish_omp_parallel): Update.
+	(check_for_loop_decls): Update decl.
+	(lookup_name_no_remap, c_omp_remap_private): Declare.
+	(build_indirect_ref, build_modify_expr, pushdecl,
+	pushdecl_top_level): Move to c-common.h.
+	* dwarf2out.c (loc_descriptor_from_tree_1): Don't set unsignedp
+	before the switch, but just in the 2 places that need it.
+	* c-decl.c (diagnose_mismatched_decls): Do not check for
+	mismatched thread-local attributes when OLDDECL is marked
+	threadprivate and NEWDECL has no thread-local attributes.
+	(merge_decls): Merge C_DECL_THREADPRIVATE_P.
+	(c_gimple_diagnostics_recursively): Rename from
+	c_warn_unused_result_recursively.  Invoke
+	diagnose_omp_structured_block_errors.
+	(check_for_loop_decls): Return a singular decl found.
+	* langhooks.c (lhd_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_SHARED for DECL_ARTIFICIAL decls.
+	(lhd_omp_firstprivatize_type_sizes): New.
+	(lhd_omp_assignment): New.
+	(lhd_omp_predetermined_sharing): New.
+	* langhooks.h (struct gimplify_omp_ctx): Forward declare.
+	(struct lang_hooks_for_types): Add
+	omp_firstprivatize_type_sizes, omp_privatize_by_reference,
+	omp_predetermined_sharing, omp_disregard_value_expr,
+	omp_private_debug_clause, omp_clause_default_ctor,
+	omp_clause_copy_ctor, omp_clause_assign_op, omp_clause_dtor.
+	(c_finish_omp_clauses): New.
+	(c_finish_bc_stmt): Diagnose break within omp for.
+	(c_begin_omp_parallel, c_finish_omp_parallel): New.
+	(build_unary_op): Return error_mark after reporting
+	a readonly_error.
+	(build_modify_expr): Likewise.
+	* gimplify.c: Include optabs.h and pointer-set.h.
+	(enum gimplify_omp_var_data): Declare.
+	(struct gimplify_omp_ctx): Declare.
+	(struct gimplify_ctx): Add fields prev_context, combined_pre_p
+	and combined_ctxp.
+	(gimplify_ctxp, gimplify_omp_ctxp): New local variables.
+	(push_gimplify_context, pop_gimplify_context): Allow nesting.
+	(splay_tree_compare_decl_uid): New.
+	(new_omp_context): New.
+	(delete_omp_context): New.
+	(gimple_add_tmp_var): Call omp_add_variable.
+	(gimplify_bind_expr): Likewise.
+	(gimplify_var_or_parm_decl): If omp_notice_variable returned
+	true, disregard DECL_VALUE_EXPR on the decl if any.
+	(gimplify_expr_in_ctx): New.
+	(omp_firstprivatize_variable, omp_firstprivatize_type_sizes
+	omp_add_variable, omp_notice_variable, omp_is_private
+	gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses_1
+	gimplify_adjust_omp_clauses, gimplify_omp_parallel
+	gimplify_omp_for, gimplify_omp_workshare, goa_lhs_expr_p
+	gimplify_omp_atomic_fetch_op, goa_stabilize_expr
+	gimplify_omp_atomic_pipeline, gimplify_omp_atomic_mutex
+	gimplify_omp_atomic): New.
+	(gimplify_expr): Handle OMP_PARALLEL, OMP_FOR, OMP_SECTIONS,
+	OMP_SINGLE, OMP_SECTION, OMP_MASTER, OMP_ORDERED,
+	OMP_CRITICAL and OMP_ATOMIC.
+	(gimplify_body): Verify gimplify_ctxp is empty after gimplification.
+	* c-pragma.h (enum pragma_kind): Add
+	PRAGMA_OMP_ATOMIC, PRAGMA_OMP_BARRIER,
+	PRAGMA_OMP_CRITICAL, PRAGMA_OMP_FLUSH, PRAGMA_OMP_FOR,
+	PRAGMA_OMP_MASTER, PRAGMA_OMP_ORDERED,
+	PRAGMA_OMP_PARALLEL, PRAGMA_OMP_PARALLEL_FOR,
+	PRAGMA_OMP_PARALLEL_SECTIONS, PRAGMA_OMP_SECTION,
+	PRAGMA_OMP_SECTIONS, PRAGMA_OMP_SINGLE,
+	PRAGMA_OMP_THREADPRIVATE.
+	* tree.def (OMP_PARALLEL, OMP_FOR, OMP_SECTIONS,
+	OMP_SINGLE, OMP_SECTION, OMP_MASTER, OMP_ORDERED,
+	OMP_CRITICAL, OMP_ATOMIC, OMP_CLAUSE_PRIVATE,
+	OMP_CLAUSE_SHARED, OMP_CLAUSE_FIRSTPRIVATE,
+	OMP_CLAUSE_LASTPRIVATE, OMP_CLAUSE_REDUCTION,
+	OMP_CLAUSE_COPYIN, OMP_CLAUSE_COPYPRIVATE,
+	OMP_CLAUSE_IF, OMP_CLAUSE_NUM_THREADS,
+	OMP_CLAUSE_SCHEDULE, OMP_CLAUSE_NOWAIT,
+	OMP_CLAUSE_ORDERED, OMP_CLAUSE_DEFAULT): Define.
+	* print-tree.c (print_node): Dump DECL_VALUE_EXPR.
+	* tree-ssa-dce.c (find_control_dependence): Do not assume that
+	ENTRY_BLOCK_PTR->next_bb == single_succ (ENTRY_BLOCK_PTR).
+	* tree-nested.c (convert_call_expr): Call walk_body on OMP_BODY for
+	OpenMP directives.
+	(struct nesting_info): Add field_map,
+	suppress_expansion, debug_var_chain.
+	(create_nesting_tree): Initialize them.
+	(lookup_field_for_decl): Use field_map.
+	(get_nonlocal_debug_decl, get_local_debug_decl): New.
+	(convert_local_omp_clauses): New.
+	(finalize_nesting_tree_1): Add debug_var_chain to toplevel block.
+	(walk_body): Split out of walk_function.
+	(convert_nonlocal_omp_clauses, convert_local_omp_clauses): New.
+	(convert_nonlocal_reference): Handle omp statements.
+	(convert_local_reference): Likewise.
+	(unnest_nesting_tree_1): Split out of finalize_nesting_tree_1.
+	(unnest_nesting_tree): New.
+	(lower_nested_functions): Call it.
+	(insert_field_into_struct): Make extern.
+	(struct walk_stmt_info): Move to tree-gimple.h.
+	(walk_stmts): Make extern.
+	* omp-builtins.def: New file.
+	* tree-iterator.c (expr_only): Clarify comment.
+	* c-common.h (pushdecl_top_level, pushdecl,
+	build_modify_expr, build_indirect_ref,
+	c_finish_omp_master, c_finish_omp_critical,
+	c_finish_omp_ordered, c_finish_omp_barrier,
+	c_finish_omp_atomic, c_finish_omp_flush,
+	c_finish_omp_for, c_split_parallel_clauses,
+	omp_clause_default_kind, c_omp_sharing_predetermined,
+	c_omp_remap_decl): Declare.
+	* Makefile.in (BUILTINS_DEF): Add omp-builtins.def.
+	(OBJS-common): Add omp-low.o.
+	(c-omp.o, omp-low.o): Add.
+	(gimplify.o): Add dependency on $(OPTABS_H).
+	(GTFILES): Add omp-low.c.
+	(gt-stringpool.h): Add.
+	* tree-cfg.c (set_bb_for_stmt): Do not update the
+	block-to-labels map if we are currently expanding to RTL.
+	(tree_node_can_be_shared): Remove unnecessary CONSTANT_CLASS_P
+	checks.
+	Handle IDENTIFIER_NODE.
+	(tree_verify_flow_info): Do not ICE when emitting error
+	messages about invalid labels.
+	(dump_function_to_file): Reset CFUN before emitting the body
+	of the function.
+	(debug_function): New.
+	* passes.c (init_optimization_passes): Schedule
+	pass_lower_omp.
+	* langhooks-def.h (lhd_omp_predetermined_sharing,
+	lhd_omp_assignment, lhd_omp_firstprivatize_type_sizes):
+	Declare.
+	(LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Use it.
+	(LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE,
+	LANG_HOOKS_OMP_PREDETERMINED_SHARING,
+	LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR,
+	LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE,
+	LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR,
+	LANG_HOOKS_OMP_CLAUSE_COPY_CTOR,
+	LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP,
+	LANG_HOOKS_OMP_CLAUSE_DTOR): Define.
+	(LANG_HOOK_DECLS): Use them.
+
+2006-01-18  Dmitry Kurochkin <dmitry.kurochkin@gmail.com>
+	    Richard Henderson  <rth@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* c-parser.c (pragma_omp_clause): Define.
+	(c_parser_declaration_or_fndef): Document OpenMP syntax.
+	(c_parser_compound_statement): Likewise.
+	(c_parser_statement): Likewise.
+	(c_parser_pragma): Handle omp pragmas.
+	(OMP_FOR_CLAUSE_MASK, OMP_SECTIONS_CLAUSE_MASK,
+	OMP_PARALLEL_CLAUSE_MASK, OMP_SINGLE_CLAUSE_MASK): Define.
+	(c_parser_omp_clause_name, check_no_duplicate_clause,
+	c_parser_omp_variable_list,
+	c_parser_omp_var_list_parens, c_parser_omp_clause_copyin,
+	c_parser_omp_clause_copyprivate,
+	c_parser_omp_clause_default,
+	c_parser_omp_clause_firstprivate, c_parser_omp_clause_if,
+	c_parser_omp_clause_lastprivate,
+	c_parser_omp_clause_nowait,
+	c_parser_omp_clause_num_threads,
+	c_parser_omp_clause_ordered, c_parser_omp_clause_private,
+	c_parser_omp_clause_reduction,
+	c_parser_omp_clause_schedule, c_parser_omp_clause_shared,
+	c_parser_omp_all_clauses, c_parser_omp_structured_block,
+	c_parser_omp_atomic, c_parser_omp_barrier,
+	c_parser_omp_critical, c_parser_omp_flush,
+	c_parser_omp_for_loop, c_parser_omp_for,
+	c_parser_omp_master, c_parser_omp_ordered,
+	c_parser_omp_sections_scope, c_parser_omp_sections,
+	c_parser_omp_parallel, c_parser_omp_single,
+	c_parser_omp_construct, c_parser_omp_threadprivate): New.
+	* c-pragma.c (init_pragma): Do omp pragma registration here.
+	* c.opt (fopenmp): New flag.
+
+2006-01-18  Eric Christopher  <echristo@apple.com>
+
+	* gcc.c (GOMP_SELF_SPECS): Bracket in #ifndef/#endif.
+	* config/darwin.h (GOMP_SELF_SPECS): Define.
+
 2006-01-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* rtl.h: Remove the prototype for reg_alloc.

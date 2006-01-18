@@ -203,5 +203,6 @@ extern void print_generic_decl (FILE *, tree, int);
 
 extern void debug_generic_expr (tree);
 extern void debug_generic_stmt (tree);
+extern void debug_tree_chain (tree);
 extern void debug_c_tree (tree);
 #endif /* ! GCC_DIAGNOSTIC_H */

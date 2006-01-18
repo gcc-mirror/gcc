@@ -2746,9 +2746,12 @@ set_bb_for_stmt (tree t, basic_block bb)
       stmt_ann_t ann = get_stmt_ann (t);
       ann->bb = bb;
 
-      /* If the statement is a label, add the label to block-to-labels map
-	 so that we can speed up edge creation for GOTO_EXPRs.  */
-      if (TREE_CODE (t) == LABEL_EXPR)
+      /* If the statement is a label, add the label to block-to-labels
+	 map so that we can speed up edge creation for GOTO_EXPRs.
+	 Note that LABEL_TO_BLOCK_MAP may not exist if we are
+	 currently expanding into RTL (in which case, this mapping is
+	 unnecessary, anyway).  */
+      if (TREE_CODE (t) == LABEL_EXPR && !currently_expanding_to_rtl)
 	{
 	  int uid;
 
@@ -3475,25 +3478,20 @@ static bool
 tree_node_can_be_shared (tree t)
 {
   if (IS_TYPE_OR_DECL_P (t)
-      /* We check for constants explicitly since they are not considered
-	 gimple invariants if they overflowed.  */
-      || CONSTANT_CLASS_P (t)
       || is_gimple_min_invariant (t)
       || TREE_CODE (t) == SSA_NAME
-      || t == error_mark_node)
+      || t == error_mark_node
+      || TREE_CODE (t) == IDENTIFIER_NODE)
     return true;
 
   if (TREE_CODE (t) == CASE_LABEL_EXPR)
     return true;
 
   while (((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
-	  /* We check for constants explicitly since they are not considered
-	     gimple invariants if they overflowed.  */
-	  && (CONSTANT_CLASS_P (TREE_OPERAND (t, 1))
-	      || is_gimple_min_invariant (TREE_OPERAND (t, 1))))
-	 || (TREE_CODE (t) == COMPONENT_REF
-	     || TREE_CODE (t) == REALPART_EXPR
-	     || TREE_CODE (t) == IMAGPART_EXPR))
+	   && is_gimple_min_invariant (TREE_OPERAND (t, 1)))
+	 || TREE_CODE (t) == COMPONENT_REF
+	 || TREE_CODE (t) == REALPART_EXPR
+	 || TREE_CODE (t) == IMAGPART_EXPR)
     t = TREE_OPERAND (t, 0);
 
   if (DECL_P (t))
@@ -3670,27 +3668,29 @@ tree_verify_flow_info (void)
 
 	  if (prev_stmt && DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
 	    {
-	      error ("nonlocal label %s is not first "
-		     "in a sequence of labels in bb %d",
-		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
-		     bb->index);
+	      error ("nonlocal label ");
+	      print_generic_expr (stderr, LABEL_EXPR_LABEL (stmt), 0);
+	      fprintf (stderr, " is not first in a sequence of labels in bb %d",
+		       bb->index);
 	      err = 1;
 	    }
 
 	  if (label_to_block (LABEL_EXPR_LABEL (stmt)) != bb)
 	    {
-	      error ("label %s to block does not match in bb %d",
-		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
-		     bb->index);
+	      error ("label ");
+	      print_generic_expr (stderr, LABEL_EXPR_LABEL (stmt), 0);
+	      fprintf (stderr, " to block does not match in bb %d",
+		       bb->index);
 	      err = 1;
 	    }
 
 	  if (decl_function_context (LABEL_EXPR_LABEL (stmt))
 	      != current_function_decl)
 	    {
-	      error ("label %s has incorrect context in bb %d",
-		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
-		     bb->index);
+	      error ("label ");
+	      print_generic_expr (stderr, LABEL_EXPR_LABEL (stmt), 0);
+	      fprintf (stderr, " has incorrect context in bb %d",
+		       bb->index);
 	      err = 1;
 	    }
 	}
@@ -3712,12 +3712,13 @@ tree_verify_flow_info (void)
 
 	  if (TREE_CODE (stmt) == LABEL_EXPR)
 	    {
-	      error ("label %s in the middle of basic block %d",
-		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
-		     bb->index);
+	      error ("label ");
+	      print_generic_expr (stderr, LABEL_EXPR_LABEL (stmt), 0);
+	      fprintf (stderr, " in the middle of basic block %d", bb->index);
 	      err = 1;
 	    }
 	}
+
       bsi = bsi_last (bb);
       if (bsi_end_p (bsi))
 	continue;
@@ -3854,7 +3855,7 @@ tree_verify_flow_info (void)
 		  }
 		if (! tree_int_cst_lt (CASE_LOW (prev), CASE_LOW (c)))
 		  {
-		    error ("case labels not sorted:");
+		    error ("case labels not sorted: ");
 		    print_generic_expr (stderr, prev, 0);
 		    fprintf (stderr," is greater than ");
 		    print_generic_expr (stderr, c, 0);
@@ -4503,7 +4504,8 @@ dump_function_to_file (tree fn, FILE *file, int flags)
   bool ignore_topmost_bind = false, any_var = false;
   basic_block bb;
   tree chain;
-
+  struct function *saved_cfun;
+  
   fprintf (file, "%s (", lang_hooks.decl_printable_name (fn, 2));
 
   arg = DECL_ARGUMENTS (fn);
@@ -4523,6 +4525,10 @@ dump_function_to_file (tree fn, FILE *file, int flags)
       dump_node (fn, TDF_SLIM | flags, file);
       return;
     }
+
+  /* Switch CFUN to point to FN.  */
+  saved_cfun = cfun;
+  cfun = DECL_STRUCT_FUNCTION (fn);
 
   /* When GIMPLE is lowered, the variables are no longer available in
      BIND_EXPRs, so display them separately.  */
@@ -4565,7 +4571,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
       /* Make a tree based dump.  */
       chain = DECL_SAVED_TREE (fn);
 
-      if (TREE_CODE (chain) == BIND_EXPR)
+      if (chain && TREE_CODE (chain) == BIND_EXPR)
 	{
 	  if (ignore_topmost_bind)
 	    {
@@ -4591,6 +4597,18 @@ dump_function_to_file (tree fn, FILE *file, int flags)
     }
 
   fprintf (file, "\n\n");
+
+  /* Restore CFUN.  */
+  cfun = saved_cfun;
+}
+
+
+/* Dump FUNCTION_DECL FN to stderr using FLAGS (see TDF_* in tree.h)  */
+
+void
+debug_function (tree fn, int flags)
+{
+  dump_function_to_file (fn, stderr, flags);
 }
 
 

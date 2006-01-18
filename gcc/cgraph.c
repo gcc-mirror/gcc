@@ -113,6 +113,9 @@ struct cgraph_node *cgraph_nodes;
 /* Queue of cgraph nodes scheduled to be lowered.  */
 struct cgraph_node *cgraph_nodes_queue;
 
+/* Queue of cgraph nodes scheduled to be analyzed.  */
+struct cgraph_node *cgraph_analyze_queue;
+
 /* Number of nodes in existence.  */
 int cgraph_n_nodes;
 
@@ -1089,6 +1092,22 @@ cgraph_variable_initializer_availability (struct cgraph_varpool_node *node)
   if (!(*targetm.binds_local_p) (node->decl) && !DECL_COMDAT (node->decl))
     return AVAIL_OVERWRITABLE;
   return AVAIL_AVAILABLE;
+}
+
+
+/* Add the function FNDECL to the call graph.  This assumes that the
+   body of FNDECL is in GENERIC form and ready to be processed by
+   cgraph_finalize_function.  */
+
+void
+cgraph_add_new_function (tree fndecl)
+{
+  /* We're called while lowering another function.  We can't do anything
+     at this time without recursing.  Which would cause a GC at an 
+     inappropriate time.  */
+  struct cgraph_node *n = cgraph_node (fndecl);
+  n->next_needed = cgraph_analyze_queue;
+  cgraph_analyze_queue = n;
 }
 
 #include "gt-cgraph.h"

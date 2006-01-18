@@ -182,7 +182,7 @@ find_control_dependence (struct edge_list *el, int edge_index)
   gcc_assert (INDEX_EDGE_PRED_BB (el, edge_index) != EXIT_BLOCK_PTR);
 
   if (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR)
-    ending_block = ENTRY_BLOCK_PTR->next_bb;
+    ending_block = single_succ (ENTRY_BLOCK_PTR);
   else
     ending_block = find_pdom (INDEX_EDGE_PRED_BB (el, edge_index));
 
