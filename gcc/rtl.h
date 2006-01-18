@@ -2022,7 +2022,6 @@ extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 
 /* In flow.c */
 extern void recompute_reg_usage (void);
-extern int initialize_uninitialized_subregs (void);
 extern void delete_dead_jumptables (void);
 extern void print_rtl_with_bb (FILE *, rtx);
 extern void dump_flow_info (FILE *);
