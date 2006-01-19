@@ -1,3 +1,15 @@
+2006-01-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (try_combine): Do not worry about MEMs wrapped by USEs.
+	(expand_compound_operation, expand_field_assignment): Fail if the
+	bit lengths of an extract operation are out of range.
+	(make_extraction): Compute wanted_inner_mode based on the position
+	and length of the extraction.  Make it extraction_mode for non-constant
+	positions, and do not modify offset in that case.  When generating a
+	new MEM, use a mode that can hold the extraction while keeping correct
+	alignment.  Remove code that supported MEMs wrapped by USEs.
+	(simplify_shift_const_1, force_to_mode) <case USE>: Remove.
+
 2006-01-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("Y", "y"): New mode attribute.
