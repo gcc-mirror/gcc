@@ -3748,6 +3748,8 @@ extern tree cp_fold_obj_type_ref		(tree, tree);
 extern void set_linkage_according_to_type	(tree, tree);
 extern void determine_key_method		(tree);
 extern void check_for_override			(tree, tree);
+extern void push_class_stack                    (void);
+extern void pop_class_stack                     (void);
 
 /* in cvt.c */
 extern tree convert_to_reference		(tree, tree, int, int, tree);

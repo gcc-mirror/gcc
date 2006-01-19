@@ -4938,6 +4938,7 @@ push_to_top_level (void)
   current_lang_base = VEC_alloc (tree, gc, 10);
   current_lang_name = lang_name_cplusplus;
   current_namespace = global_namespace;
+  push_class_stack ();
   skip_evaluation = 0;
   timevar_pop (TV_NAME_LOOKUP);
 }
@@ -4953,6 +4954,7 @@ pop_from_top_level (void)
   /* Clear out class-level bindings cache.  */
   if (previous_class_level)
     invalidate_class_lookup_cache ();
+  pop_class_stack ();
 
   current_lang_base = 0;
 
