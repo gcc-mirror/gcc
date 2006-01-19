@@ -1,3 +1,7 @@
+2006-01-19  Richard Sandiford  <richard@codesourcery.com>
+
+	* c-decl.c (add_flexible_array_elts_to_size): Simplify vector accesses.
+
 2006-01-19  Jan Hubicka  <jh@suse.cz>
 
 	* tree-vect-patterns.c (vect_pattern_recog_1): Prevent parse error.
