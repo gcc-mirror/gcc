@@ -3784,6 +3784,7 @@ check_bitfield_type_and_width (tree *type, tree *width, const char *orig_name)
 
   type_mv = TYPE_MAIN_VARIANT (*type);
   if (pedantic
+      && !in_system_header
       && type_mv != integer_type_node
       && type_mv != unsigned_type_node
       && type_mv != boolean_type_node)
