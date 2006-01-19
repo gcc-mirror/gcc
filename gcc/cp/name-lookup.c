@@ -602,6 +602,9 @@ pushdecl_maybe_friend (tree x, bool is_friend)
     {
       int different_binding_level = 0;
 
+      if (TREE_CODE (x) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (x))
+       check_default_args (x);
+
       if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
 	name = TREE_OPERAND (name, 0);
 
@@ -710,8 +713,6 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		{
 		  if (TREE_CODE (t) == TYPE_DECL)
 		    SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (t));
-		  else if (TREE_CODE (t) == FUNCTION_DECL)
-		    check_default_args (t);
 
 		  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 		}
@@ -993,9 +994,6 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		}
 	    }
 	}
-
-      if (TREE_CODE (x) == FUNCTION_DECL)
-	check_default_args (x);
 
       if (TREE_CODE (x) == VAR_DECL)
 	maybe_register_incomplete_var (x);

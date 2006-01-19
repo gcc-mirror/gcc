@@ -15833,6 +15833,9 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       cp_parser_pop_lexer (parser);
     }
 
+  /* Make sure no default arg is missing.  */
+  check_default_args (fn);
+
   /* Restore the state of local_variables_forbidden_p.  */
   parser->local_variables_forbidden_p = saved_local_variables_forbidden_p;
 
