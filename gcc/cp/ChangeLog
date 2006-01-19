@@ -1,3 +1,17 @@
+2006-01-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25836
+	* cp-tree.h (push_class_stack): New function.
+	(pop_class_stack): Likewise.
+	* class.c (class_stack_node): Add hidden field.
+	(pushclass): Clear it.
+	(push_class_stack): New function.
+	(pop_class_stack): Likewise.
+	(currently_open_class): Ignore hidden classes.
+	(currently_open_derived_class): Likewise.
+	* name-lookup.c (push_to_top_level): Call push_class_stack.
+	(pop_from_top_level): Call pop_class_stack.
+
 2006-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* search.c (lookup_conversions_r): Fix a pasto.
