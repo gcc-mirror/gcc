@@ -1,5 +1,6 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 
+   Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1168,6 +1169,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
       /* Binary arithmetic and logic expressions.  */
+    case WIDEN_SUM_EXPR:
+    case WIDEN_MULT_EXPR:
     case MULT_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -1686,6 +1689,16 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, " > ");
       break;
 
+    case DOT_PROD_EXPR:
+      pp_string (buffer, " DOT_PROD_EXPR < ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, " , ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (buffer, " , ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 2), spc, flags, false);
+      pp_string (buffer, " > ");
+      break;
+
     case OMP_PARALLEL:
       pp_string (buffer, "#pragma omp parallel");
       dump_omp_clauses (buffer, OMP_PARALLEL_CLAUSES (node), spc, flags);
@@ -2105,10 +2118,13 @@ op_prio (tree op)
     case RROTATE_EXPR:
       return 11;
 
+    case WIDEN_SUM_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
       return 12;
 
+    case WIDEN_MULT_EXPR:
+    case DOT_PROD_EXPR:
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
@@ -2262,6 +2278,12 @@ op_symbol_1 (enum tree_code code)
 
     case REDUC_PLUS_EXPR:
       return "r+";
+
+    case WIDEN_SUM_EXPR:
+      return "w+";
+
+    case WIDEN_MULT_EXPR:
+      return "w*";
 
     case NEGATE_EXPR:
     case MINUS_EXPR:

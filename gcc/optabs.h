@@ -1,5 +1,6 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -241,6 +242,14 @@ enum optab_index
   OTI_reduc_splus,
   OTI_reduc_uplus,
 
+  /* Summation, with result machine mode one or more wider than args.  */
+  OTI_ssum_widen,
+  OTI_usum_widen,
+
+  /* Dot product, with result machine mode one or more wider than args.  */
+  OTI_sdot_prod,
+  OTI_udot_prod,
+
   /* Set specified field of vector operand.  */
   OTI_vec_set,
   /* Extract specified field of vector operand.  */
@@ -367,6 +376,11 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define reduc_umin_optab (optab_table[OTI_reduc_umin])
 #define reduc_splus_optab (optab_table[OTI_reduc_splus])
 #define reduc_uplus_optab (optab_table[OTI_reduc_uplus])
+                                                                                
+#define ssum_widen_optab (optab_table[OTI_ssum_widen])
+#define usum_widen_optab (optab_table[OTI_usum_widen])
+#define sdot_prod_optab (optab_table[OTI_sdot_prod])
+#define udot_prod_optab (optab_table[OTI_udot_prod])
 
 #define vec_set_optab (optab_table[OTI_vec_set])
 #define vec_extract_optab (optab_table[OTI_vec_extract])
@@ -494,6 +508,9 @@ extern enum insn_code sync_lock_test_and_set[NUM_MACHINE_MODES];
 extern enum insn_code sync_lock_release[NUM_MACHINE_MODES];
 
 /* Define functions given in optabs.c.  */
+
+extern rtx expand_widen_pattern_expr (tree exp, rtx op0, rtx op1, rtx wide_op,
+                                      rtx target, int unsignedp);
 
 extern rtx expand_ternary_op (enum machine_mode mode, optab ternary_optab,
 			      rtx op0, rtx op1, rtx op2, rtx target,

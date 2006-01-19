@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3098,6 +3098,25 @@ and the scalar result is stored in the least significant bits of operand 0
 Compute the sum of the unsigned elements of a vector. The vector is operand 1,
 and the scalar result is stored in the least significant bits of operand 0
 (also a vector). The output and input vector should have the same modes.
+
+@cindex @code{sdot_prod@var{m}} instruction pattern
+@item @samp{sdot_prod@var{m}}
+@cindex @code{udot_prod@var{m}} instruction pattern
+@item @samp{udot_prod@var{m}}
+Compute the sum of the products of two signed/unsigned elements. 
+Operand 1 and operand 2 are of the same mode. Their product, which is of a 
+wider mode, is computed and added to operand 3. Operand 3 is of a mode equal or 
+wider than the mode of the product. The result is placed in operand 0, which
+is of the same mode as operand 3. 
+
+@cindex @code{ssum_widen@var{m3}} instruction pattern
+@item @samp{ssum_widen@var{m3}}
+@cindex @code{usum_widen@var{m3}} instruction pattern
+@item @samp{usum_widen@var{m3}}
+Operands 0 and 2 are of the same mode, which is wider than the mode of 
+operand 1. Add operand 1 to operand 2 and place the widened result in
+operand 0. (This is used express accumulation of elements into an accumulator
+of a wider mode.)
 
 @cindex @code{vec_shl_@var{m}} instruction pattern
 @cindex @code{vec_shr_@var{m}} instruction pattern

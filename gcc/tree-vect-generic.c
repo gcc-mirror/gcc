@@ -1,5 +1,5 @@
 /* Lower vector operations to scalar operations.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
    
@@ -410,6 +410,11 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
   
   gcc_assert (code != CONVERT_EXPR);
   op = optab_for_tree_code (code, type);
+
+  /* For widening vector operations, the relevant type is of the arguments,
+     not the widened result.  */
+  if (code == WIDEN_SUM_EXPR)
+    type = TREE_TYPE (TREE_OPERAND (rhs, 0));
 
   /* Optabs will try converting a negation into a subtraction, so
      look for it as well.  TODO: negation of floating-point vectors

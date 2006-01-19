@@ -294,6 +294,12 @@ optab_for_tree_code (enum tree_code code, tree type)
     case REALIGN_LOAD_EXPR:
       return vec_realign_load_optab;
 
+    case WIDEN_SUM_EXPR:
+      return TYPE_UNSIGNED (type) ? usum_widen_optab : ssum_widen_optab;
+
+    case DOT_PROD_EXPR:
+      return TYPE_UNSIGNED (type) ? udot_prod_optab : sdot_prod_optab;
+
     case REDUC_MAX_EXPR:
       return TYPE_UNSIGNED (type) ? reduc_umax_optab : reduc_smax_optab;
 
@@ -336,6 +342,154 @@ optab_for_tree_code (enum tree_code code, tree type)
     }
 }
 
+
+/* Expand vector widening operations.
+
+   There are two different classes of operations handled here:
+   1) Operations whose result is wider than all the arguments to the operation.
+      Examples: VEC_UNPACK_HI/LO_EXPR, VEC_WIDEN_MULT_HI/LO_EXPR
+      In this case OP0 and optionally OP1 would be initialized,
+      but WIDE_OP wouldn't (not relevant for this case).
+   2) Operations whose result is of the same size as the last argument to the
+      operation, but wider than all the other arguments to the operation.
+      Examples: WIDEN_SUM_EXPR, VEC_DOT_PROD_EXPR.
+      In the case WIDE_OP, OP0 and optionally OP1 would be initialized.
+
+   E.g, when called to expand the following operations, this is how
+   the arguments will be initialized:
+                                nops    OP0     OP1     WIDE_OP
+   widening-sum                 2       oprnd0  -       oprnd1          
+   widening-dot-product         3       oprnd0  oprnd1  oprnd2
+   widening-mult                2       oprnd0  oprnd1  -
+   type-promotion (vec-unpack)  1       oprnd0  -       -  */
+
+rtx
+expand_widen_pattern_expr (tree exp, rtx op0, rtx op1, rtx wide_op, rtx target,
+                           int unsignedp)
+{   
+  tree oprnd0, oprnd1, oprnd2;
+  enum machine_mode wmode = 0, tmode0, tmode1 = 0;
+  optab widen_pattern_optab;
+  int icode; 
+  enum machine_mode xmode0, xmode1 = 0, wxmode = 0;
+  rtx temp;
+  rtx pat;
+  rtx xop0, xop1, wxop;
+  int nops = TREE_CODE_LENGTH (TREE_CODE (exp));
+
+  oprnd0 = TREE_OPERAND (exp, 0);
+  tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
+  widen_pattern_optab =
+        optab_for_tree_code (TREE_CODE (exp), TREE_TYPE (oprnd0));
+  icode = (int) widen_pattern_optab->handlers[(int) tmode0].insn_code;
+  gcc_assert (icode != CODE_FOR_nothing);
+  xmode0 = insn_data[icode].operand[1].mode;
+
+  if (nops >= 2)
+    {
+      oprnd1 = TREE_OPERAND (exp, 1);
+      tmode1 = TYPE_MODE (TREE_TYPE (oprnd1));
+      xmode1 = insn_data[icode].operand[2].mode;
+    }
+
+  /* The last operand is of a wider mode than the rest of the operands.  */
+  if (nops == 2)
+    {
+      wmode = tmode1;
+      wxmode = xmode1;
+    }
+  else if (nops == 3)
+    {
+      gcc_assert (tmode1 == tmode0);
+      gcc_assert (op1);
+      oprnd2 = TREE_OPERAND (exp, 2);
+      wmode = TYPE_MODE (TREE_TYPE (oprnd2));
+      wxmode = insn_data[icode].operand[3].mode;
+    }
+
+  if (!wide_op)
+    wmode = wxmode = insn_data[icode].operand[0].mode;
+
+  if (!target
+      || ! (*insn_data[icode].operand[0].predicate) (target, wmode))
+    temp = gen_reg_rtx (wmode);
+  else
+    temp = target;
+
+  xop0 = op0;
+  xop1 = op1;
+  wxop = wide_op;
+
+  /* In case the insn wants input operands in modes different from
+     those of the actual operands, convert the operands.  It would
+     seem that we don't need to convert CONST_INTs, but we do, so
+     that they're properly zero-extended, sign-extended or truncated
+     for their mode.  */
+
+  if (GET_MODE (op0) != xmode0 && xmode0 != VOIDmode)
+    xop0 = convert_modes (xmode0,
+                          GET_MODE (op0) != VOIDmode
+                          ? GET_MODE (op0)
+                          : tmode0,
+                          xop0, unsignedp);
+
+  if (op1)
+    if (GET_MODE (op1) != xmode1 && xmode1 != VOIDmode)
+      xop1 = convert_modes (xmode1,
+                            GET_MODE (op1) != VOIDmode
+                            ? GET_MODE (op1)
+                            : tmode1,
+                            xop1, unsignedp);
+
+  if (wide_op)
+    if (GET_MODE (wide_op) != wxmode && wxmode != VOIDmode)
+      wxop = convert_modes (wxmode,
+                            GET_MODE (wide_op) != VOIDmode
+                            ? GET_MODE (wide_op)
+                            : wmode,
+                            wxop, unsignedp);
+
+  /* Now, if insn's predicates don't allow our operands, put them into
+     pseudo regs.  */
+
+  if (! (*insn_data[icode].operand[1].predicate) (xop0, xmode0)
+      && xmode0 != VOIDmode)
+    xop0 = copy_to_mode_reg (xmode0, xop0);
+
+  if (op1)
+    {
+      if (! (*insn_data[icode].operand[2].predicate) (xop1, xmode1)
+          && xmode1 != VOIDmode)
+        xop1 = copy_to_mode_reg (xmode1, xop1);
+
+      if (wide_op)
+        {
+          if (! (*insn_data[icode].operand[3].predicate) (wxop, wxmode)
+              && wxmode != VOIDmode)
+            wxop = copy_to_mode_reg (wxmode, wxop);
+
+          pat = GEN_FCN (icode) (temp, xop0, xop1, wxop);
+        }
+      else
+        pat = GEN_FCN (icode) (temp, xop0, xop1);
+    }
+  else
+    {
+      if (wide_op)
+        {
+          if (! (*insn_data[icode].operand[2].predicate) (wxop, wxmode)
+              && wxmode != VOIDmode)
+            wxop = copy_to_mode_reg (wxmode, wxop);
+
+          pat = GEN_FCN (icode) (temp, xop0, wxop);
+        }
+      else
+        pat = GEN_FCN (icode) (temp, xop0);
+    }
+
+  emit_insn (pat);
+  return temp;
+}
 
 /* Generate code to perform an operation specified by TERNARY_OPTAB
    on operands OP0, OP1 and OP2, with result having machine-mode MODE.
@@ -5138,6 +5292,11 @@ init_optabs (void)
   reduc_umin_optab = init_optab (UNKNOWN);
   reduc_splus_optab = init_optab (UNKNOWN);
   reduc_uplus_optab = init_optab (UNKNOWN);
+
+  ssum_widen_optab = init_optab (UNKNOWN);
+  usum_widen_optab = init_optab (UNKNOWN);
+  sdot_prod_optab = init_optab (UNKNOWN); 
+  udot_prod_optab = init_optab (UNKNOWN);
 
   vec_extract_optab = init_optab (UNKNOWN);
   vec_set_optab = init_optab (UNKNOWN);

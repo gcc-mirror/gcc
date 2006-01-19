@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    tree codes used in GCC.
-   Copyright (C) 1987, 1988, 1993, 1995, 1997, 1998, 2000, 2001, 2004, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1995, 1997, 1998, 2000, 2001, 2004, 2005, 
+   2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1072,6 +1072,33 @@ DEFTREECODE (OMP_CLAUSE_DEFAULT, "default", tcc_expression, 0)
 DEFTREECODE (REDUC_MAX_EXPR, "reduc_max_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_MIN_EXPR, "reduc_min_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_PLUS_EXPR, "reduc_plus_expr", tcc_unary, 1)
+
+/* Widenning dot-product.
+   The first two arguments are of type t1.
+   The third argument and the result are of type t2, such that t2 is at least
+   twice the size of t1. DOT_PROD_EXPR(arg1,arg2,arg3) is equivalent to:
+   	tmp = WIDEN_MULT_EXPR(arg1, arg2);
+   	arg3 = PLUS_EXPR (tmp, arg3);
+   or: 
+	tmp = WIDEN_MULT_EXPR(arg1, arg2);
+        arg3 = WIDEN_SUM_EXPR (tmp, arg3);		 */
+DEFTREECODE (DOT_PROD_EXPR, "dot_prod_expr", tcc_expression, 3)
+
+/* Widenning summation.
+   The first argument is of type t1.
+   The second argument is of type t2, such that t2 is at least twice
+   the size of t1. The type of the entire expression is also t2.
+   WIDEN_SUM_EXPR is equivalent to first widening (promoting)
+   the first argument from type t1 to type t2, and then summing it
+   with the second argument.  */
+DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
+   
+/* Widenning multiplication. 
+   The two arguments are of type t1.
+   The result is of type t2, such that t2 is at least twice
+   the size of t1. WIDEN_MULT_EXPR is equivalent to first widening (promoting)
+   the arguments from type t1 to type t2, and then multiplying them.  */
+DEFTREECODE (WIDEN_MULT_EXPR, "widen_mult_expr", tcc_binary, 2)
 
 /* Whole vector left/right shift in bits.
    Operand 0 is a vector to be shifted.

@@ -1,5 +1,5 @@
 ;; AltiVec patterns.
-;; Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+;; Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 ;; Contributed by Aldy Hernandez (aldy@quesejoda.com)
 
 ;; This file is part of GCC.
@@ -2147,6 +2147,77 @@
   emit_insn (gen_altivec_vspltis<VI_char> (vzero, const0_rtx));
   emit_insn (gen_sub<mode>3 (operands[0], vzero, operands[1])); 
   
+  DONE;
+}")
+
+(define_expand "udot_prod<mode>"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (plus:V4SI (match_operand:V4SI 3 "register_operand" "v")
+                   (unspec:V4SI [(match_operand:VIshort 1 "register_operand" "v")  
+                                 (match_operand:VIshort 2 "register_operand" "v")] 
+                                UNSPEC_VMSUMU)))]
+  "TARGET_ALTIVEC"
+  "
+{  
+  emit_insn (gen_altivec_vmsumu<VI_char>m (operands[0], operands[1], operands[2], operands[3]));
+  DONE;
+}")
+   
+(define_expand "sdot_prodv8hi"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (plus:V4SI (match_operand:V4SI 3 "register_operand" "v")
+                   (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")
+                                 (match_operand:V8HI 2 "register_operand" "v")]
+                                UNSPEC_VMSUMSHM)))]
+  "TARGET_ALTIVEC"
+  "
+{
+  emit_insn (gen_altivec_vmsumshm (operands[0], operands[1], operands[2], operands[3]));
+  DONE;
+}")
+
+(define_expand "widen_usum<mode>3"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (plus:V4SI (match_operand:V4SI 2 "register_operand" "v")
+                   (unspec:V4SI [(match_operand:VIshort 1 "register_operand" "v")]
+                                UNSPEC_VMSUMU)))]
+  "TARGET_ALTIVEC"
+  "
+{
+  rtx vones = gen_reg_rtx (GET_MODE (operands[1]));
+
+  emit_insn (gen_altivec_vspltis<VI_char> (vones, const1_rtx));
+  emit_insn (gen_altivec_vmsumu<VI_char>m (operands[0], operands[1], vones, operands[2]));
+  DONE;
+}")
+
+(define_expand "widen_ssumv16qi3"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (plus:V4SI (match_operand:V4SI 2 "register_operand" "v")
+                   (unspec:V4SI [(match_operand:V16QI 1 "register_operand" "v")]
+                                UNSPEC_VMSUMM)))]
+  "TARGET_ALTIVEC"
+  "
+{
+  rtx vones = gen_reg_rtx (V16QImode);
+
+  emit_insn (gen_altivec_vspltisb (vones, const1_rtx));
+  emit_insn (gen_altivec_vmsummbm (operands[0], operands[1], vones, operands[2]));
+  DONE;
+}")
+
+(define_expand "widen_ssumv8hi3"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (plus:V4SI (match_operand:V4SI 2 "register_operand" "v")
+                   (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")]
+                                UNSPEC_VMSUMSHM)))]
+  "TARGET_ALTIVEC"
+  "
+{
+  rtx vones = gen_reg_rtx (V8HImode);
+
+  emit_insn (gen_altivec_vspltish (vones, const1_rtx));
+  emit_insn (gen_altivec_vmsumshm (operands[0], operands[1], vones, operands[2]));
   DONE;
 }")
 

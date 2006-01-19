@@ -1,5 +1,5 @@
 /* Analysis Utilities for Loop Vectorization.
-   Copyright (C) 2003,2004,2005 Free Software Foundation, Inc.
+   Copyright (C) 2003,2004,2005,2006 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -142,35 +142,46 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
               return false;
             }
 
-          if (STMT_VINFO_DATA_REF (stmt_info))
-            scalar_type = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
-          else if (TREE_CODE (stmt) == MODIFY_EXPR)
-            scalar_type = TREE_TYPE (TREE_OPERAND (stmt, 0));
-          else
-            scalar_type = TREE_TYPE (stmt);
+	  if (STMT_VINFO_VECTYPE (stmt_info))
+	    {
+	      vectype = STMT_VINFO_VECTYPE (stmt_info);
+	      scalar_type = TREE_TYPE (vectype);
+	    }
+	  else
+	    {
+	      if (STMT_VINFO_DATA_REF (stmt_info))
+		scalar_type = 
+			TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
+	      else if (TREE_CODE (stmt) == MODIFY_EXPR)
+		scalar_type = TREE_TYPE (TREE_OPERAND (stmt, 0));
+	      else
+		scalar_type = TREE_TYPE (stmt);
 
-          if (vect_print_dump_info (REPORT_DETAILS))
-            {
-              fprintf (vect_dump, "get vectype for scalar type:  ");
-              print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		{
+		  fprintf (vect_dump, "get vectype for scalar type:  ");
+		  print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+		}
+
+	      vectype = get_vectype_for_scalar_type (scalar_type);
+	      if (!vectype)
+		{
+		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+		    {
+		      fprintf (vect_dump, 
+			       "not vectorized: unsupported data-type ");
+		      print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+		    }
+		  return false;
+		}
+	      STMT_VINFO_VECTYPE (stmt_info) = vectype;
             }
 
-          vectype = get_vectype_for_scalar_type (scalar_type);
-          if (!vectype)
-            {
-              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-                {
-                  fprintf (vect_dump, "not vectorized: unsupported data-type ");
-                  print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
-                }
-              return false;
-            }
           if (vect_print_dump_info (REPORT_DETAILS))
             {
               fprintf (vect_dump, "vectype: ");
               print_generic_expr (vect_dump, vectype, TDF_SLIM);
             }
-          STMT_VINFO_VECTYPE (stmt_info) = vectype;
 
           nunits = TYPE_VECTOR_SUBPARTS (vectype);
           if (vect_print_dump_info (REPORT_DETAILS))
@@ -1439,6 +1450,24 @@ vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt,
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "mark relevant %d, live %d.",relevant_p, live_p);
 
+  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+    {
+      tree pattern_stmt;
+
+      /* This is the last stmt in a sequence that was detected as a 
+         pattern that can potentially be vectorized.  Don't mark the stmt
+         as relevant/live because it's not going to vectorized.
+         Instead mark the pattern-stmt that replaces it.  */
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "last stmt in pattern. don't mark relevant/live.");
+      pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+      stmt_info = vinfo_for_stmt (pattern_stmt);
+      gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == stmt);
+      save_relevant_p = STMT_VINFO_RELEVANT_P (stmt_info);
+      save_live_p = STMT_VINFO_LIVE_P (stmt_info);
+      stmt = pattern_stmt;
+    }
+
   STMT_VINFO_LIVE_P (stmt_info) |= live_p;
   STMT_VINFO_RELEVANT_P (stmt_info) |= relevant_p;
 
@@ -2001,6 +2030,8 @@ vect_analyze_loop (struct loop *loop)
      Cross-iteration cycles caused by virtual phis are analyzed separately.  */
 
   vect_analyze_scalar_cycles (loop_vinfo);
+
+  vect_pattern_recog (loop_vinfo);
 
   /* Data-flow analysis to detect stmts that do not need to be vectorized.  */
 
