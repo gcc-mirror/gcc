@@ -1,3 +1,8 @@
+2006-01-19  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_prepare_shift): Add code to deal with
+	the 16 bit shift limit of the m16c.
+
 2006-01-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/22099

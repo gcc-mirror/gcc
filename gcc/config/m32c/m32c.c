@@ -2891,13 +2891,73 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
       emit_insn (func (operands[0], operands[1], GEN_INT (count)));
       return 1;
     }
+
+  temp = gen_reg_rtx (QImode);
   if (scale < 0)
-    {
-      temp = gen_reg_rtx (QImode);
-      emit_move_insn (temp, gen_rtx_NEG (QImode, operands[2]));
-    }
+    /* The pattern has a NEG that corresponds to this. */
+    emit_move_insn (temp, gen_rtx_NEG (QImode, operands[2]));
+  else if (TARGET_A16 && mode == SImode)
+    /* We do this because the code below may modify this, we don't
+       want to modify the origin of this value.  */
+    emit_move_insn (temp, operands[2]);
   else
+    /* We'll only use it for the shift, no point emitting a move.  */
     temp = operands[2];
+    
+
+  if (TARGET_A16 && mode == SImode)
+    {
+      /* The m16c has a limit of -16..16 for SI shifts, even when the
+	 shift count is in a register.  Since there are so many targets
+	 of these shifts, it's better to expand the RTL here than to
+	 call a helper function.
+
+	 The resulting code looks something like this:
+
+		cmp.b	r1h,-16
+		jge.b	1f
+		shl.l	-16,dest
+		add.b	r1h,16
+	1f:	cmp.b	r1h,16
+		jle.b	1f
+		shl.l	16,dest
+		sub.b	r1h,16
+	1f:	shl.l	r1h,dest
+
+	 We take advantage of the fact that "negative" shifts are
+	 undefined to skip one of the comparisons.  */
+
+      rtx count;
+      rtx label, lref, insn;
+
+      count = temp;
+      label = gen_label_rtx ();
+      lref = gen_rtx_LABEL_REF (VOIDmode, label);
+      LABEL_NUSES (label) ++;
+
+      if (shift_code == ASHIFT)
+	{
+	  /* This is a left shift.  We only need check positive counts.  */
+	  emit_jump_insn (gen_cbranchqi4 (gen_rtx_LE (VOIDmode, 0, 0),
+					  count, GEN_INT (16), label));
+	  emit_insn (func (operands[1], operands[1], GEN_INT (8)));
+	  emit_insn (func (operands[1], operands[1], GEN_INT (8)));
+	  insn = emit_insn (gen_addqi3 (count, count, GEN_INT (-16)));
+	  emit_label_after (label, insn);
+	}
+      else
+	{
+	  /* This is a right shift.  We only need check negative counts.  */
+	  emit_jump_insn (gen_cbranchqi4 (gen_rtx_GE (VOIDmode, 0, 0),
+					  count, GEN_INT (-16), label));
+	  emit_insn (func (operands[1], operands[1], GEN_INT (-8)));
+	  emit_insn (func (operands[1], operands[1], GEN_INT (-8)));
+	  insn = emit_insn (gen_addqi3 (count, count, GEN_INT (16)));
+	  emit_label_after (label, insn);
+	}
+
+    }
+
   operands[2] = temp;
   return 0;
 }
