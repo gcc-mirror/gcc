@@ -1,3 +1,7 @@
+2006-01-18  Eric Christopher  <echristo@apple.com>
+
+	* g++.dg/eh/table.C: New.
+
 2006-01-18  DJ Delorie  <dj@redhat.com>
 
 	* gcc.dg/Werror-1.c, gcc.dg/Werror-2.c, gcc.dg/Werror-3.c,
