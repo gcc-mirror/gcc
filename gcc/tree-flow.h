@@ -92,6 +92,9 @@ struct ptr_info_def GTY(())
      pointer will be represented by this memory tag, instead of the type
      tag computed by TBAA.  */
   tree name_mem_tag;
+
+  /* Mask of reasons this pointer's value escapes the function  */
+  unsigned int escape_mask;
 };
 
 
@@ -213,6 +216,10 @@ struct var_ann_d GTY(())
   /* If this variable is a structure, this fields holds a list of
      symbols representing each of the fields of the structure.  */
   subvar_t subvars;
+
+  /* Mask of values saying the reasons why this variable has escaped
+     the function.  */
+  unsigned int escape_mask;
 };
 
 struct function_ann_d GTY(())
@@ -751,9 +758,27 @@ enum move_pos
   };
 extern enum move_pos movement_possibility (tree);
 
+/* The reasons a variable may escape a function.  */
+enum escape_type 
+  {
+    NO_ESCAPE = 0, /* Doesn't escape.  */
+    ESCAPE_STORED_IN_GLOBAL = 1 << 1,
+    ESCAPE_TO_ASM = 1 << 2,  /* Passed by address to an assembly
+				statement.  */
+    ESCAPE_TO_CALL = 1 << 3,  /* Escapes to a function call.  */
+    ESCAPE_BAD_CAST = 1 << 4, /* Cast from pointer to integer */
+    ESCAPE_TO_RETURN = 1 << 5, /* Returned from function.  */
+    ESCAPE_TO_PURE_CONST = 1 << 6, /* Escapes to a pure or constant
+				      function call.  */
+    ESCAPE_IS_GLOBAL = 1 << 7,  /* Is a global variable.  */
+    ESCAPE_IS_PARM = 1 << 8, /* Is an incoming function parameter.  */
+    ESCAPE_UNKNOWN = 1 << 9 /* We believe it escapes for some reason
+			       not enumerated above.  */
+  };
+
 /* In tree-flow-inline.h  */
 static inline bool is_call_clobbered (tree);
-static inline void mark_call_clobbered (tree);
+static inline void mark_call_clobbered (tree, unsigned int);
 static inline void set_is_used (tree);
 static inline bool unmodifiable_var_p (tree);
 

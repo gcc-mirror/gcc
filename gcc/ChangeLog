@@ -1,3 +1,56 @@
+2006-01-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-operands.h (ssa_call_clobbered_cache_valid): Remove.
+	(ssa_ro_call_cache_valid): Ditto.
+	* tree-ssa-alias.c (sort_tags_by_id): New function.
+	(init_transitive_clobber_worklist): Ditto.
+	(add_to_worklist): Ditto.
+	(mark_aliases_call_clobbered): Ditto.
+	(compute_tag_properties): Ditto.
+	(set_initial_properties): Ditto.
+	(compute_call_clobbered): Ditto.
+	(compute_may_aliases):	Call compute_call_clobbered and grouping.
+	(compute_flow_sensitive_aliasing): Remove clobbering related code.
+	(compute_flow_insensitive_aliasing): Grouping now happens in our
+	caller.
+	(setup_pointers_and_addressables): Remove clobbering related code.
+	(add_may_alias): Ditto.
+	(replace_may_alias): Ditto.
+	(get_nmt_for): Ditto.
+	(create_global_var): 
+	(is_escape_site): Return an escape_type enumeration.
+	* tree-flow-inline.h (is_call_clobbered):  Global var does not
+	imply call clobbered.
+	(mark_call_clobbered): Take a reason for marking this. Remove
+	marking of globalness, and cache invalidation.
+	(clear_call_clobbered): Remove cache invalidation code.
+	* tree-dfa.c (dump_variable): If details is on, dump the reason
+	for escaping.
+	* tree-outof-ssa.c (create_temp): Copy escape mask from original
+	variable. 
+	* tree-flow.h (struct ptr_info_def): Add escape mask member.
+	(struct var_ann_d): Ditto.
+	(enum escape_type): New.
+	(mark_call_clobbered): Adjust prototype.
+	* tree-ssa-structalias.c (update_alias_info): Unmodifiable vars
+	are never call clobbered. 
+	Record reasons for escaping.
+	* tree-ssa-structalias.h (is_escape_site): Update prototype.
+	* tree-ssa-operands.c (ssa_call_clobbered_cache_valid): Remove.
+	(ssa_ro_call_cache_valid): Ditto.
+	(clobbered_v_may_defs): Ditto.
+	(clobbered_vuses): Ditto.
+	(ro_call_vuses): Ditto.
+	(clobber_stats): New.
+	(init_ssa_operands): Zero out clobber stats.
+	(fini_ssa_operands): Print out clobber stats.
+	(get_call_expr_operands): Pass callee fndecl to
+	add_call_read_ops).
+	(add_call_clobber_ops): Remove use of cache.
+	Add use of PURE_CONST information.
+	(add_call_read_ops): Remove use of cache.
+	Add use of static not_read information.
+	
 2006-01-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	Introduce TLS descriptors for i386 and x86_64.

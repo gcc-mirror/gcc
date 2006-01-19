@@ -1,3 +1,7 @@
+2006-01-18  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc.dg/tree-ssa/pr24287.c: New test
+
 2006-01-18  Eric Christopher  <echristo@apple.com>
 
 	* g++.dg/eh/table.C: New.
