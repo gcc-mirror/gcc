@@ -1,3 +1,8 @@
+2006-01-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c (switchfiles):
+	Fix fprintf's by adding srcdir or removing it.
+
 2006-01-19  Diego Novillo  <dnovillo@redhat.com>
 
 	* testsuite/gcc.dg/gomp/for-13.c: Use -fdump-tree-ompexp.
