@@ -135,6 +135,287 @@ bitmap addressable_vars;
    having to keep track of too many V_MAY_DEF expressions at call sites.  */
 tree global_var;
 
+DEF_VEC_I(int);
+DEF_VEC_ALLOC_I(int,heap);
+
+/* qsort comparison function to sort type/name tags by DECL_UID.  */
+
+static int
+sort_tags_by_id (const void *pa, const void *pb)
+{
+  tree a = *(tree *)pa;
+  tree b = *(tree *)pb;
+ 
+  return DECL_UID (a) - DECL_UID (b);
+}
+
+/* Initialize WORKLIST to contain those memory tags that are marked call
+   clobbered.  Initialized WORKLIST2 to contain the reasons these
+   memory tags escaped.  */
+
+static void
+init_transitive_clobber_worklist (VEC (tree, heap) **worklist,
+				  VEC (int, heap) **worklist2)
+{
+  referenced_var_iterator rvi;
+  tree curr;
+
+  FOR_EACH_REFERENCED_VAR (curr, rvi)
+    {
+      if (MTAG_P (curr) && is_call_clobbered (curr))
+	{
+	  VEC_safe_push (tree, heap, *worklist, curr);
+	  VEC_safe_push (int, heap, *worklist2, var_ann (curr)->escape_mask);
+	}
+    }
+}
+
+/* Add ALIAS to WORKLIST (and the reason for escaping REASON to WORKLIST2) if
+   ALIAS is not already marked call clobbered, and is a memory
+   tag.  */
+
+static void
+add_to_worklist (tree alias, VEC (tree, heap) **worklist,
+		 VEC (int, heap) **worklist2,
+		 int reason)
+{
+  if (MTAG_P (alias) && !is_call_clobbered (alias))
+    {
+      VEC_safe_push (tree, heap, *worklist, alias);
+      VEC_safe_push (int, heap, *worklist2, reason);
+    }
+}
+
+/* Mark aliases of TAG as call clobbered, and place any tags on the
+   alias list that were not already call clobbered on WORKLIST.  */
+
+static void
+mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
+			     VEC (int, heap) **worklist2)
+{
+  unsigned int i;
+  VEC (tree, gc) *ma;
+  tree entry;
+  var_ann_t ta = var_ann (tag);
+
+  if (!MTAG_P (tag))
+    return;
+  ma = may_aliases (tag);
+  if (!ma)
+    return;
+
+  for (i = 0; VEC_iterate (tree, ma, i, entry); i++)
+    {
+      if (!unmodifiable_var_p (entry))
+	{
+	  add_to_worklist (entry, worklist, worklist2, ta->escape_mask);
+	  mark_call_clobbered (entry, ta->escape_mask);
+	}
+    }
+}
+
+/* Tags containing global vars need to be marked as global.
+   Tags containing call clobbered vars need to be marked as call
+   clobbered. */
+
+static void
+compute_tag_properties (void)
+{
+  referenced_var_iterator rvi;
+  tree tag;
+  bool changed = true;
+  VEC (tree, heap) *taglist = NULL;
+
+  FOR_EACH_REFERENCED_VAR (tag, rvi)
+    {
+      if (!MTAG_P (tag) || TREE_CODE (tag) == STRUCT_FIELD_TAG)
+	continue;
+      VEC_safe_push (tree, heap, taglist, tag);
+    }
+
+  /* We sort the taglist by DECL_UID, for two reasons.
+     1. To get a sequential ordering to make the bitmap accesses
+     faster.
+     2. Because of the way we compute aliases, it's more likely that
+     an earlier tag is included in a later tag, and this will reduce
+     the number of iterations.
+
+     If we had a real tag graph, we would just topo-order it and be
+     done with it.  */
+  qsort (VEC_address (tree, taglist),
+	 VEC_length (tree, taglist),
+	 sizeof (tree),
+	 sort_tags_by_id);
+
+  /* Go through each tag not marked as global, and if it aliases
+     global vars, mark it global. 
+     
+     If the tag contains call clobbered vars, mark it call
+     clobbered.  
+
+     This loop iterates because tags may appear in the may-aliases
+     list of other tags when we group.  */
+
+  while (changed)
+    {
+      unsigned int k;
+
+      changed = false;      
+      for (k = 0; VEC_iterate (tree, taglist, k, tag); k++)
+	{
+	  VEC (tree, gc) *ma;
+	  unsigned int i;
+	  tree entry;
+	  bool tagcc = is_call_clobbered (tag);
+	  bool tagglobal = MTAG_GLOBAL (tag);
+	  
+	  if (tagcc && tagglobal)
+	    continue;
+	  
+	  ma = may_aliases (tag);
+	  if (!ma)
+	    continue;
+
+	  for (i = 0; VEC_iterate (tree, ma, i, entry); i++)
+	    {
+	      /* Call clobbered entries cause the tag to be marked
+		 call clobbered.  */
+	      if (!tagcc && is_call_clobbered (entry))
+		{
+		  mark_call_clobbered (tag, var_ann (entry)->escape_mask);
+		  tagcc = true;
+		  changed = true;
+		}
+
+	      /* Global vars cause the tag to be marked global.  */
+	      if (!tagglobal && is_global_var (entry))
+		{
+		  MTAG_GLOBAL (tag) = true;
+		  changed = true;
+		  tagglobal = true;
+		}
+
+	      /* Early exit once both global and cc are set, since the
+		 loop can't do any more than that.  */
+	      if (tagcc && tagglobal)
+		break;
+	    }
+	}
+    }
+  VEC_free (tree, heap, taglist);
+}
+
+/* Set up the initial variable clobbers and globalness.
+   When this function completes, only tags whose aliases need to be
+   clobbered will be set clobbered.  Tags clobbered because they   
+   contain call clobbered vars are handled in compute_tag_properties.  */
+
+static void
+set_initial_properties (struct alias_info *ai)
+{
+  unsigned int i;
+  referenced_var_iterator rvi;
+  tree var;
+
+  FOR_EACH_REFERENCED_VAR (var, rvi)
+    {
+      if (is_global_var (var) 
+	  && (!var_can_have_subvars (var)
+	      || get_subvars_for_var (var) == NULL))
+	{
+	  if (!unmodifiable_var_p (var))
+	    mark_call_clobbered (var, ESCAPE_IS_GLOBAL);
+	}
+      else if (TREE_CODE (var) == PARM_DECL
+	       && default_def (var)
+	       && POINTER_TYPE_P (TREE_TYPE (var)))
+	{
+	  tree def = default_def (var);
+	  get_ptr_info (def)->value_escapes_p = 1;
+	  get_ptr_info (def)->escape_mask |= ESCAPE_IS_PARM;	  
+	}
+    }
+
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
+    {
+      tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+      var_ann_t v_ann = var_ann (SSA_NAME_VAR (ptr));
+      
+      if (pi->value_escapes_p)
+	{
+	  /* If PTR escapes then its associated memory tags and
+	     pointed-to variables are call-clobbered.  */
+	  if (pi->name_mem_tag)
+	    mark_call_clobbered (pi->name_mem_tag, pi->escape_mask);
+
+	  if (v_ann->type_mem_tag)
+	    mark_call_clobbered (v_ann->type_mem_tag, pi->escape_mask);
+
+	  if (pi->pt_vars)
+	    {
+	      bitmap_iterator bi;
+	      unsigned int j;	      
+	      EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
+		if (!unmodifiable_var_p (referenced_var (j)))
+		  mark_call_clobbered (referenced_var (j), pi->escape_mask);
+	    }
+	}
+      /* If the name tag is call clobbered, so is the type tag
+	 associated with the base VAR_DECL.  */
+      if (pi->name_mem_tag
+	  && v_ann->type_mem_tag
+	  && is_call_clobbered (pi->name_mem_tag))
+	mark_call_clobbered (v_ann->type_mem_tag, pi->escape_mask);
+
+      /* Name tags and type tags that we don't know where they point
+	 to, might point to global memory, and thus, are clobbered.
+
+         FIXME:  This is not quite right.  They should only be
+         clobbered if value_escapes_p is true, regardless of whether
+         they point to global memory or not.
+         So removing this code and fixing all the bugs would be nice.
+         It is the cause of a bunch of clobbering.  */
+      if ((pi->pt_global_mem || pi->pt_anything) 
+	  && pi->is_dereferenced && pi->name_mem_tag)
+	{
+	  mark_call_clobbered (pi->name_mem_tag, ESCAPE_IS_GLOBAL);
+	  MTAG_GLOBAL (pi->name_mem_tag) = true;
+	}
+      
+      if ((pi->pt_global_mem || pi->pt_anything) 
+	  && pi->is_dereferenced && v_ann->type_mem_tag)
+	{
+	  mark_call_clobbered (v_ann->type_mem_tag, ESCAPE_IS_GLOBAL);
+	  MTAG_GLOBAL (v_ann->type_mem_tag) = true;
+	}
+    }
+}
+
+/* Compute which variables need to be marked call clobbered because
+   their tag is call clobbered, and which tags need to be marked
+   global because they contain global variables.  */
+
+static void
+compute_call_clobbered (struct alias_info *ai)
+{
+  VEC (tree, heap) *worklist = NULL;
+  VEC(int,heap) *worklist2 = NULL;
+  
+  set_initial_properties (ai);
+  init_transitive_clobber_worklist (&worklist, &worklist2);
+  while (VEC_length (tree, worklist) != 0)
+    {
+      tree curr = VEC_pop (tree, worklist);
+      int reason = VEC_pop (int, worklist2);
+      
+      mark_call_clobbered (curr, reason);
+      mark_aliases_call_clobbered (curr, &worklist, &worklist2);
+    }
+  VEC_free (tree, heap, worklist);
+  VEC_free (int, heap, worklist2);
+  compute_tag_properties ();
+}
 
 /* Compute may-alias information for every variable referenced in function
    FNDECL.
@@ -276,6 +557,13 @@ compute_may_aliases (void)
   /* Compute type-based flow-insensitive aliasing for all the type
      memory tags.  */
   compute_flow_insensitive_aliasing (ai);
+
+  /* Determine if we need to enable alias grouping.  */
+  if (ai->total_alias_vops >= MAX_ALIASED_VOPS)
+    group_aliases (ai);
+
+  /* Compute call clobbering information.  */
+  compute_call_clobbered (ai);
 
   /* If the program has too many call-clobbered variables and/or function
      calls, create .GLOBAL_VAR and use it to model call-clobbering
@@ -703,20 +991,6 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
       var_ann_t v_ann = var_ann (SSA_NAME_VAR (ptr));
       bitmap_iterator bi;
 
-      if (pi->value_escapes_p || pi->pt_anything)
-	{
-	  /* If PTR escapes or may point to anything, then its associated
-	     memory tags and pointed-to variables are call-clobbered.  */
-	  if (pi->name_mem_tag)
-	    mark_call_clobbered (pi->name_mem_tag);
-
-	  if (v_ann->type_mem_tag)
-	    mark_call_clobbered (v_ann->type_mem_tag);
-
-	  if (pi->pt_vars)
-	    EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
-	      mark_call_clobbered (referenced_var (j));
-	}
 
       /* Set up aliasing information for PTR's name memory tag (if it has
 	 one).  Note that only pointers that have been dereferenced will
@@ -727,13 +1001,6 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
 	    add_may_alias (pi->name_mem_tag, referenced_var (j));
 	    add_may_alias (v_ann->type_mem_tag, referenced_var (j));
 	  }
-
-      /* If the name tag is call clobbered, so is the type tag
-	 associated with the base VAR_DECL.  */
-      if (pi->name_mem_tag
-	  && v_ann->type_mem_tag
-	  && is_call_clobbered (pi->name_mem_tag))
-	mark_call_clobbered (v_ann->type_mem_tag);
     }
 }
 
@@ -897,10 +1164,6 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
     fprintf (dump_file, "\n%s: Total number of aliased vops: %ld\n",
 	     get_name (current_function_decl),
 	     ai->total_alias_vops);
-
-  /* Determine if we need to enable alias grouping.  */
-  if (ai->total_alias_vops >= MAX_ALIASED_VOPS)
-    group_aliases (ai);
 }
 
 
@@ -1308,12 +1571,6 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	      if (bitmap_bit_p (ai->dereferenced_ptrs_store, DECL_UID (var)))
 		bitmap_set_bit (ai->written_vars, DECL_UID (tag));
 
-	      /* If pointer VAR is a global variable or a PARM_DECL,
-		 then its memory tag should be considered a global
-		 variable.  */
-	      if (TREE_CODE (var) == PARM_DECL || is_global_var (var))
-		mark_call_clobbered (tag);
-
 	      /* All the dereferences of pointer VAR count as
 		 references of TAG.  Since TAG can be associated with
 		 several pointers, add the dereferences of VAR to the
@@ -1598,16 +1855,6 @@ add_may_alias (tree var, tree alias)
     if (alias == al)
       return;
 
-  /* If VAR is a call-clobbered variable, so is its new ALIAS.
-     FIXME, call-clobbering should only depend on whether an address
-     escapes.  It should be independent of aliasing.  */
-  if (is_call_clobbered (var))
-    mark_call_clobbered (alias);
-
-  /* Likewise.  If ALIAS is call-clobbered, so is VAR.  */
-  else if (is_call_clobbered (alias))
-    mark_call_clobbered (var);
-
   VEC_safe_push (tree, gc, v_ann->may_aliases, alias);
   a_ann->is_alias_tag = 1;
 }
@@ -1620,16 +1867,6 @@ replace_may_alias (tree var, size_t i, tree new_alias)
 {
   var_ann_t v_ann = var_ann (var);
   VEC_replace (tree, v_ann->may_aliases, i, new_alias);
-
-  /* If VAR is a call-clobbered variable, so is NEW_ALIAS.
-     FIXME, call-clobbering should only depend on whether an address
-     escapes.  It should be independent of aliasing.  */
-  if (is_call_clobbered (var))
-    mark_call_clobbered (new_alias);
-
-  /* Likewise.  If NEW_ALIAS is call-clobbered, so is VAR.  */
-  else if (is_call_clobbered (new_alias))
-    mark_call_clobbered (var);
 }
 
 
@@ -1663,9 +1900,12 @@ set_pt_anything (tree ptr)
 	3- STMT is an assignment to a non-local variable, or
 	4- STMT is a return statement.
 
-   AI points to the alias information collected so far.  */
+   AI points to the alias information collected so far.  
 
-bool
+   Return the type of escape site found, if we found one, or NO_ESCAPE
+   if none.  */
+
+enum escape_type
 is_escape_site (tree stmt, struct alias_info *ai)
 {
   tree call = get_call_expr_in (stmt);
@@ -1674,12 +1914,15 @@ is_escape_site (tree stmt, struct alias_info *ai)
       ai->num_calls_found++;
 
       if (!TREE_SIDE_EFFECTS (call))
-	ai->num_pure_const_calls_found++;
+	{
+	  ai->num_pure_const_calls_found++;
+	  return ESCAPE_TO_PURE_CONST;
+	}
 
-      return true;
+      return ESCAPE_TO_CALL;
     }
   else if (TREE_CODE (stmt) == ASM_EXPR)
-    return true;
+    return ESCAPE_TO_ASM;
   else if (TREE_CODE (stmt) == MODIFY_EXPR)
     {
       tree lhs = TREE_OPERAND (stmt, 0);
@@ -1691,7 +1934,7 @@ is_escape_site (tree stmt, struct alias_info *ai)
       /* If we couldn't recognize the LHS of the assignment, assume that it
 	 is a non-local store.  */
       if (lhs == NULL_TREE)
-	return true;
+	return ESCAPE_UNKNOWN;
 
       /* If the RHS is a conversion between a pointer and an integer, the
 	 pointer escapes since we can't track the integer.  */
@@ -1701,12 +1944,12 @@ is_escape_site (tree stmt, struct alias_info *ai)
 	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND
 					(TREE_OPERAND (stmt, 1), 0)))
 	  && !POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 1))))
-	return true;
+	return ESCAPE_BAD_CAST;
 
       /* If the LHS is an SSA name, it can't possibly represent a non-local
 	 memory store.  */
       if (TREE_CODE (lhs) == SSA_NAME)
-	return false;
+	return NO_ESCAPE;
 
       /* FIXME: LHS is not an SSA_NAME.  Even if it's an assignment to a
 	 local variables we cannot be sure if it will escape, because we
@@ -1717,12 +1960,12 @@ is_escape_site (tree stmt, struct alias_info *ai)
 	 Midkiff, ``Escape analysis for java,'' in Proceedings of the
 	 Conference on Object-Oriented Programming Systems, Languages, and
 	 Applications (OOPSLA), pp. 1-19, 1999.  */
-      return true;
+      return ESCAPE_STORED_IN_GLOBAL;
     }
   else if (TREE_CODE (stmt) == RETURN_EXPR)
-    return true;
+    return ESCAPE_TO_RETURN;
 
-  return false;
+  return NO_ESCAPE;
 }
 
 /* Create a new memory tag of type TYPE.
@@ -1793,13 +2036,6 @@ get_nmt_for (tree ptr)
 
   if (tag == NULL_TREE)
     tag = create_memory_tag (TREE_TYPE (TREE_TYPE (ptr)), false);
-
-  /* If PTR is a PARM_DECL, it points to a global variable or malloc,
-     then its name tag should be considered a global variable.  */
-  if (TREE_CODE (SSA_NAME_VAR (ptr)) == PARM_DECL
-      || pi->pt_global_mem)
-    mark_call_clobbered (tag);
-
   return tag;
 }
 
@@ -1896,6 +2132,8 @@ create_global_var (void)
   TREE_THIS_VOLATILE (global_var) = 0;
   TREE_ADDRESSABLE (global_var) = 0;
 
+  create_var_ann (global_var);
+  mark_call_clobbered (global_var, ESCAPE_UNKNOWN);
   add_referenced_tmp_var (global_var);
   mark_sym_for_renaming (global_var);
 }

@@ -177,7 +177,7 @@ create_temp (tree t)
      inherit from our original variable.  */
   var_ann (tmp)->type_mem_tag = var_ann (t)->type_mem_tag;
   if (is_call_clobbered (t))
-    mark_call_clobbered (tmp);
+    mark_call_clobbered (tmp, var_ann (t)->escape_mask);
 
   return tmp;
 }

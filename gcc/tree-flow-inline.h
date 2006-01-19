@@ -843,34 +843,26 @@ loop_containing_stmt (tree stmt)
 static inline bool
 is_call_clobbered (tree var)
 {
-  return is_global_var (var)
-    || bitmap_bit_p (call_clobbered_vars, DECL_UID (var));
+  return bitmap_bit_p (call_clobbered_vars, DECL_UID (var));
 }
 
 /* Mark variable VAR as being clobbered by function calls.  */
 static inline void
-mark_call_clobbered (tree var)
+mark_call_clobbered (tree var, unsigned int escape_type)
 {
-  /* If VAR is a memory tag, then we need to consider it a global
-     variable.  This is because the pointer that VAR represents has
-     been found to point to either an arbitrary location or to a known
-     location in global memory.  */
-  if (MTAG_P (var) && TREE_CODE (var) != STRUCT_FIELD_TAG)
-    MTAG_GLOBAL (var) = 1;
+  var_ann (var)->escape_mask |= escape_type;
   bitmap_set_bit (call_clobbered_vars, DECL_UID (var));
-  ssa_call_clobbered_cache_valid = false;
-  ssa_ro_call_cache_valid = false;
 }
 
 /* Clear the call-clobbered attribute from variable VAR.  */
 static inline void
 clear_call_clobbered (tree var)
 {
+  var_ann_t ann = var_ann (var);
+  ann->escape_mask = 0;
   if (MTAG_P (var) && TREE_CODE (var) != STRUCT_FIELD_TAG)
     MTAG_GLOBAL (var) = 0;
   bitmap_clear_bit (call_clobbered_vars, DECL_UID (var));
-  ssa_call_clobbered_cache_valid = false;
-  ssa_ro_call_cache_valid = false;
 }
 
 /* Mark variable VAR as being non-addressable.  */
@@ -879,8 +871,6 @@ mark_non_addressable (tree var)
 {
   bitmap_clear_bit (call_clobbered_vars, DECL_UID (var));
   TREE_ADDRESSABLE (var) = 0;
-  ssa_call_clobbered_cache_valid = false;
-  ssa_ro_call_cache_valid = false;
 }
 
 /* Return the common annotation for T.  Return NULL if the annotation

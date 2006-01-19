@@ -2953,7 +2953,7 @@ update_alias_info (tree stmt, struct alias_info *ai)
   bitmap addr_taken;
   use_operand_p use_p;
   ssa_op_iter iter;
-  bool stmt_escapes_p = is_escape_site (stmt, ai);
+  enum escape_type stmt_escape_type = is_escape_site (stmt, ai);
   tree op;
 
   /* Mark all the variables whose address are taken by the statement.  */
@@ -2964,13 +2964,17 @@ update_alias_info (tree stmt, struct alias_info *ai)
 
       /* If STMT is an escape point, all the addresses taken by it are
 	 call-clobbered.  */
-      if (stmt_escapes_p)
+      if (stmt_escape_type != NO_ESCAPE)
 	{
 	  bitmap_iterator bi;
 	  unsigned i;
 
 	  EXECUTE_IF_SET_IN_BITMAP (addr_taken, 0, i, bi)
-	    mark_call_clobbered (referenced_var (i));
+	    {
+	      tree rvar = referenced_var (i);
+	      if (!unmodifiable_var_p (rvar))
+		mark_call_clobbered (rvar, stmt_escape_type);
+	    }
 	}
     }
 
@@ -3094,13 +3098,14 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	    bitmap_set_bit (ai->dereferenced_ptrs_load, DECL_UID (var));
 	}
 
-      if (stmt_escapes_p && num_derefs < num_uses)
+      if (stmt_escape_type != NO_ESCAPE && num_derefs < num_uses)
 	{
 	  /* If STMT is an escape point and STMT contains at
 	     least one direct use of OP, then the value of OP
 	     escapes and so the pointed-to variables need to
 	     be marked call-clobbered.  */
 	  pi->value_escapes_p = 1;
+	  pi->escape_mask |= stmt_escape_type;
 
 	  /* If the statement makes a function call, assume
 	     that pointer OP will be dereferenced in a store
