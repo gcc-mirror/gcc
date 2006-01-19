@@ -2896,9 +2896,6 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != STRICT_LOW_PART
 	   && ! use_crosses_set_p (SET_SRC (XVECEXP (newpat, 0, 1)),
 				   INSN_CUID (i2))
-	   /* Don't pass sets with (USE (MEM ...)) dests to the following.  */
-	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != USE
-	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 0))) != USE
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 1)),
 				  XVECEXP (newpat, 0, 0))
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 0)),
@@ -5643,11 +5640,8 @@ expand_compound_operation (rtx x)
       len = INTVAL (XEXP (x, 1));
       pos = INTVAL (XEXP (x, 2));
 
-      /* If this goes outside the object being extracted, replace the object
-	 with a (use (mem ...)) construct that only combine understands
-	 and is used only for this purpose.  */
-      if (len + pos > GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))))
-	SUBST (XEXP (x, 0), gen_rtx_USE (GET_MODE (x), XEXP (x, 0)));
+      /* This should stay within the object being extracted, fail.  */
+      gcc_assert (len + pos <= GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))));
 
       if (BITS_BIG_ENDIAN)
 	pos = GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) - len - pos;
@@ -5805,11 +5799,10 @@ expand_field_assignment (rtx x)
 	  len = INTVAL (XEXP (SET_DEST (x), 1));
 	  pos = XEXP (SET_DEST (x), 2);
 
-	  /* If the position is constant and spans the width of INNER,
-	     surround INNER  with a USE to indicate this.  */
-	  if (GET_CODE (pos) == CONST_INT
-	      && INTVAL (pos) + len > GET_MODE_BITSIZE (GET_MODE (inner)))
-	    inner = gen_rtx_USE (GET_MODE (SET_DEST (x)), inner);
+	  /* A constant position should stay within the width of INNER.  */
+	  if (GET_CODE (pos) == CONST_INT)
+	    gcc_assert (INTVAL (pos) + len
+			<= GET_MODE_BITSIZE (GET_MODE (inner)));
 
 	  if (BITS_BIG_ENDIAN)
 	    {
@@ -5907,13 +5900,6 @@ expand_field_assignment (rtx x)
    it is an RTX that represents a variable starting position; otherwise,
    POS is the (constant) starting bit position (counted from the LSB).
 
-   INNER may be a USE.  This will occur when we started with a bitfield
-   that went outside the boundary of the object in memory, which is
-   allowed on most machines.  To isolate this case, we produce a USE
-   whose mode is wide enough and surround the MEM with it.  The only
-   code that understands the USE is this routine.  If it is not removed,
-   it will cause the resulting insn not to match.
-
    UNSIGNEDP is nonzero for an unsigned reference and zero for a
    signed reference.
 
@@ -5940,23 +5926,16 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      ignore the POS lowest bits, etc.  */
   enum machine_mode is_mode = GET_MODE (inner);
   enum machine_mode inner_mode;
-  enum machine_mode wanted_inner_mode = byte_mode;
+  enum machine_mode wanted_inner_mode;
   enum machine_mode wanted_inner_reg_mode = word_mode;
   enum machine_mode pos_mode = word_mode;
   enum machine_mode extraction_mode = word_mode;
   enum machine_mode tmode = mode_for_size (len, MODE_INT, 1);
-  int spans_byte = 0;
   rtx new = 0;
   rtx orig_pos_rtx = pos_rtx;
   HOST_WIDE_INT orig_pos;
 
-  /* Get some information about INNER and get the innermost object.  */
-  if (GET_CODE (inner) == USE)
-    /* (use:SI (mem:QI foo)) stands for (mem:SI foo).  */
-    /* We don't need to adjust the position because we set up the USE
-       to pretend that it was a full-word object.  */
-    spans_byte = 1, inner = XEXP (inner, 0);
-  else if (GET_CODE (inner) == SUBREG && subreg_lowpart_p (inner))
+  if (GET_CODE (inner) == SUBREG && subreg_lowpart_p (inner))
     {
       /* If going from (subreg:SI (mem:QI ...)) to (mem:QI ...),
 	 consider just the QI as the memory to extract from.
@@ -5995,14 +5974,9 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      appropriate STRICT_LOW_PART operation available.
 
      For MEM, we can avoid an extract if the field starts on an appropriate
-     boundary and we can change the mode of the memory reference.  However,
-     we cannot directly access the MEM if we have a USE and the underlying
-     MEM is not TMODE.  This combination means that MEM was being used in a
-     context where bits outside its mode were being referenced; that is only
-     valid in bit-field insns.  */
+     boundary and we can change the mode of the memory reference.  */
 
   if (tmode != BLKmode
-      && ! (spans_byte && inner_mode != tmode)
       && ((pos_rtx == 0 && (pos % BITS_PER_WORD) == 0
 	   && !MEM_P (inner)
 	   && (inner_mode == tmode
@@ -6133,15 +6107,14 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      don't do anything with zero-extending field extracts starting at
      the low-order bit since they are simple AND operations.  */
   if (pos_rtx == 0 && pos == 0 && ! in_dest
-      && ! in_compare && ! spans_byte && unsignedp)
+      && ! in_compare && unsignedp)
     return 0;
 
-  /* Unless we are allowed to span bytes or INNER is not MEM, reject this if
-     we would be spanning bytes or if the position is not a constant and the
-     length is not 1.  In all other cases, we would only be going outside
-     our object in cases when an original shift would have been
-     undefined.  */
-  if (! spans_byte && MEM_P (inner)
+  /* Unless INNER is not MEM, reject this if we would be spanning bytes or
+     if the position is not a constant and the length is not 1.  In all
+     other cases, we would only be going outside our object in cases when
+     an original shift would have been undefined.  */
+  if (MEM_P (inner)
       && ((pos_rtx == 0 && pos + len > GET_MODE_BITSIZE (is_mode))
 	  || (pos_rtx != 0 && len != 1)))
     return 0;
@@ -6181,15 +6154,31 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       && GET_MODE_SIZE (pos_mode) < GET_MODE_SIZE (GET_MODE (pos_rtx)))
     pos_mode = GET_MODE (pos_rtx);
 
-  /* If this is not from memory, the desired mode is wanted_inner_reg_mode;
-     if we have to change the mode of memory and cannot, the desired mode is
-     EXTRACTION_MODE.  */
+  /* If this is not from memory, the desired mode is the preferred mode
+     for an extraction pattern's first input operand, or word_mode if there
+     is none.  */
   if (!MEM_P (inner))
     wanted_inner_mode = wanted_inner_reg_mode;
-  else if (inner_mode != wanted_inner_mode
-	   && (mode_dependent_address_p (XEXP (inner, 0))
-	       || MEM_VOLATILE_P (inner)))
-    wanted_inner_mode = extraction_mode;
+  else
+    {
+      /* Be careful not to go beyond the extracted object and maintain the
+	 natural alignment of the memory.  */ 
+      wanted_inner_mode = smallest_mode_for_size (len, MODE_INT);
+      while (pos % GET_MODE_BITSIZE (wanted_inner_mode) + len
+	     > GET_MODE_BITSIZE (wanted_inner_mode))
+	{
+	  wanted_inner_mode = GET_MODE_WIDER_MODE (wanted_inner_mode);
+	  gcc_assert (wanted_inner_mode != VOIDmode);
+	}
+
+      /* If we have to change the mode of memory and cannot, the desired mode
+	 is EXTRACTION_MODE.  */
+      if (inner_mode != wanted_inner_mode
+	  && (mode_dependent_address_p (XEXP (inner, 0))
+	      || MEM_VOLATILE_P (inner)
+	      || pos_rtx))
+	wanted_inner_mode = extraction_mode;
+    }
 
   orig_pos = pos;
 
@@ -6215,15 +6204,16 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	 Note that it can only be less than 0 if !MEM_P (inner).  */
     }
 
-  /* If INNER has a wider mode, make it smaller.  If this is a constant
-     extract, try to adjust the byte to point to the byte containing
+  /* If INNER has a wider mode, and this is a constant extraction, try to
+     make it smaller and adjust the byte to point to the byte containing
      the value.  */
   if (wanted_inner_mode != VOIDmode
+      && inner_mode != wanted_inner_mode
+      && ! pos_rtx
       && GET_MODE_SIZE (wanted_inner_mode) < GET_MODE_SIZE (is_mode)
-      && ((MEM_P (inner)
-	   && (inner_mode == wanted_inner_mode
-	       || (! mode_dependent_address_p (XEXP (inner, 0))
-		   && ! MEM_VOLATILE_P (inner))))))
+      && MEM_P (inner)
+      && ! mode_dependent_address_p (XEXP (inner, 0))
+      && ! MEM_VOLATILE_P (inner))
     {
       int offset = 0;
 
@@ -6234,28 +6224,20 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       /* If bytes are big endian and we had a paradoxical SUBREG, we must
 	 adjust OFFSET to compensate.  */
       if (BYTES_BIG_ENDIAN
-	  && ! spans_byte
 	  && GET_MODE_SIZE (inner_mode) < GET_MODE_SIZE (is_mode))
 	offset -= GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (inner_mode);
 
-      /* If this is a constant position, we can move to the desired byte.
-	 Be careful not to go beyond the original object and maintain the
-	 natural alignment of the memory.  */ 
-      if (pos_rtx == 0)
-	{
-	  enum machine_mode bfmode = smallest_mode_for_size (len, MODE_INT);
-	  offset += (pos / GET_MODE_BITSIZE (bfmode)) * GET_MODE_SIZE (bfmode);
-	  pos %= GET_MODE_BITSIZE (bfmode);
-	}
+      /* We can now move to the desired byte.  */
+      offset += (pos / GET_MODE_BITSIZE (wanted_inner_mode))
+		* GET_MODE_SIZE (wanted_inner_mode);
+      pos %= GET_MODE_BITSIZE (wanted_inner_mode);
 
       if (BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN
-	  && ! spans_byte
 	  && is_mode != wanted_inner_mode)
 	offset = (GET_MODE_SIZE (is_mode)
 		  - GET_MODE_SIZE (wanted_inner_mode) - offset);
 
-      if (offset != 0 || inner_mode != wanted_inner_mode)
-	inner = adjust_address_nv (inner, wanted_inner_mode, offset);
+      inner = adjust_address_nv (inner, wanted_inner_mode, offset);
     }
 
   /* If INNER is not memory, we can always get it into the proper mode.  If we
@@ -6885,15 +6867,6 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
       /* If X is a (clobber (const_int)), return it since we know we are
 	 generating something that won't match.  */
       return x;
-
-    case USE:
-      /* X is a (use (mem ..)) that was made from a bit-field extraction that
-	 spanned the boundary of the MEM.  If we are now masking so it is
-	 within that boundary, we don't need the USE any more.  */
-      if (! BITS_BIG_ENDIAN
-	  && (mask & ~GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
-	return force_to_mode (XEXP (x, 0), mode, mask, next_select);
-      break;
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
@@ -8680,33 +8653,6 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	      new = adjust_address_nv (varop, tmode,
 				       BYTES_BIG_ENDIAN ? 0
 				       : count / BITS_PER_UNIT);
-
-	      varop = gen_rtx_fmt_e (code == ASHIFTRT ? SIGN_EXTEND
-				     : ZERO_EXTEND, mode, new);
-	      count = 0;
-	      continue;
-	    }
-	  break;
-
-	case USE:
-	  /* Similar to the case above, except that we can only do this if
-	     the resulting mode is the same as that of the underlying
-	     MEM and adjust the address depending on the *bits* endianness
-	     because of the way that bit-field extract insns are defined.  */
-	  if ((code == ASHIFTRT || code == LSHIFTRT)
-	      && (tmode = mode_for_size (GET_MODE_BITSIZE (mode) - count,
-					 MODE_INT, 1)) != BLKmode
-	      && tmode == GET_MODE (XEXP (varop, 0)))
-	    {
-	      if (BITS_BIG_ENDIAN)
-		new = XEXP (varop, 0);
-	      else
-		{
-		  new = copy_rtx (XEXP (varop, 0));
-		  SUBST (XEXP (new, 0),
-			 plus_constant (XEXP (new, 0),
-					count / BITS_PER_UNIT));
-		}
 
 	      varop = gen_rtx_fmt_e (code == ASHIFTRT ? SIGN_EXTEND
 				     : ZERO_EXTEND, mode, new);
