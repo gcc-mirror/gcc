@@ -1,3 +1,9 @@
+2006-01-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/25171
+	* c-decl.c (check_bitfield_type_and_width): Don't issue pedwarn "type
+	of bit-field" when in system header.
+
 2006-01-19  Richard Sandiford  <richard@codesourcery.com>
 
 	PR c/25805
