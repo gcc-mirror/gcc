@@ -1,6 +1,6 @@
 // Reference-counted versatile string base -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -585,7 +585,8 @@ namespace __gnu_cxx
       __rcs._M_data(__tmp);
       
       // NB: Implement Option 3 of DR 431 (see N1599).
-      _M_dataplus._M_alloc_swap(__rcs._M_dataplus);
+      std::__alloc_swap<allocator_type>::_S_do_it(_M_get_allocator(),
+						  __rcs._M_get_allocator());
     } 
 
   template<typename _CharT, typename _Traits, typename _Alloc>

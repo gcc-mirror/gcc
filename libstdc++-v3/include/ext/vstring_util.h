@@ -1,6 +1,6 @@
 // Versatile string utility -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -83,37 +83,13 @@ namespace __gnu_cxx
         __const_rc_iterator;
 
       // NB:  When the allocator is empty, deriving from it saves space 
-      // (http://www.cantrip.org/emptyopt.html).  We do that anyway for
-      // consistency.
-      template<typename _Alloc1, bool = std::__is_empty<_Alloc1>::__value>
+      // (http://www.cantrip.org/emptyopt.html).
+      template<typename _Alloc1>
         struct _Alloc_hider
 	: public _Alloc1
 	{
 	  _Alloc_hider(const _Alloc1& __a, _CharT* __ptr)
 	  : _Alloc1(__a), _M_p(__ptr) { }
-
-	  void
-	  _M_alloc_swap(_Alloc_hider& __ah)
-	  {
-	    // Implement Option 3 of DR 431 (see N1599).
-	    // Precondition: swappable allocators.
-	    _Alloc1& __this = static_cast<_Alloc1&>(*this);
-	    _Alloc1& __that = static_cast<_Alloc1&>(__ah);
-	    if (__this != __that)
-	      swap(__this, __that);
-	  }
-
-	  _CharT*  _M_p; // The actual data.
-	};
-
-      template<typename _Alloc1>
-        struct _Alloc_hider<_Alloc1, true>
-	: public _Alloc1
-	{
-	  _Alloc_hider(const _Alloc1& __a, _CharT* __ptr)
-	  : _Alloc1(__a), _M_p(__ptr) { }
-
-	  void _M_alloc_swap(_Alloc_hider&) { }
 
 	  _CharT*  _M_p; // The actual data.
 	};
@@ -195,5 +171,25 @@ namespace __gnu_cxx
       { _S_copy(__p, __k1, __k2 - __k1); }
     };
 } // namespace __gnu_cxx
+
+namespace std
+{
+  // To implement Option 3 of DR 431 (vstring only in 4_1-branch).
+  template<typename _Alloc, bool = std::__is_empty<_Alloc>::__value>
+    struct __alloc_swap
+    { static void _S_do_it(_Alloc&, _Alloc&) { } };
+
+  template<typename _Alloc>
+    struct __alloc_swap<_Alloc, false>
+    {
+      static void
+      _S_do_it(_Alloc& __one, _Alloc& __two)
+      {
+	// Precondition: swappable allocators.
+	if (__one != __two)
+	  swap(__one, __two);
+      }
+    };
+}
 
 #endif /* _VSTRING_UTIL_H */

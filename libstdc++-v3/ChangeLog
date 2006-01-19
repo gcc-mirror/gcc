@@ -1,3 +1,17 @@
+2006-01-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_dataplus):
+	Use _CharT_alloc_type as base class.
+	(_M_get_allocator, _M_swap, _M_create, _M_destroy): Adjust.
+	* include/ext/vstring.h (get_allocator): Tidy.
+
+	* include/ext/vstring_util.h (struct __alloc_swap<>): Add, swaps
+	allocators, optimized to nothing in case they are empty.
+	(__vstring_utility<>::_Alloc_hider): Clean-up.
+	* include/ext/rc_string_base.h (__rc_string_base<>::_M_swap): Call
+	__alloc_swap<>::_S_do_it.
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_swap): Same.
+
 2006-01-18  Paul Brook  <paul@codesourcery.com>
 
 	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Use std::abort.
