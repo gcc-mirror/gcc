@@ -1,3 +1,9 @@
+2006-01-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/25854
+	* pt.c (maybe_process_partial_specialization): Return early on
+	error_mark_node.
+
 2005-12-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/20552
