@@ -1,3 +1,9 @@
+2006-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* btest-gcc.sh: gcc.sum has moved to gcc/testsuite/gcc/gcc.sum.
+	g++.sum has moved to gcc/testsuite/g++/g++.sum.
+	objc.sum has moved to gcc/testsuite/objc/objc.sum.
+
 2005-12-20  Geoffrey Keating  <geoffk@apple.com>
 
 	* btest-gcc.sh: Support -j option.
