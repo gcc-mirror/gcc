@@ -237,13 +237,24 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
     AC_TRY_LINK([ int one(void) { return 1; }
      int two(void) { return 2; }
 	], [ two(); ] , [ac_gcsections=yes], [ac_gcsections=no])
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi

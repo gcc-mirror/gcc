@@ -8215,7 +8215,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -8273,6 +8273,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
@@ -53062,7 +53073,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -53120,6 +53131,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
@@ -74402,7 +74424,7 @@ done
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -74460,6 +74482,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
@@ -75905,7 +75938,7 @@ done
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -75963,6 +75996,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
@@ -77284,7 +77328,7 @@ done
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -77342,6 +77386,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
@@ -79450,7 +79505,7 @@ done
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -79508,6 +79563,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
@@ -80782,7 +80848,7 @@ done
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -80840,6 +80906,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
@@ -82163,7 +82240,7 @@ done
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -82221,6 +82298,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
@@ -83936,7 +84024,7 @@ echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -83994,6 +84082,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
@@ -86030,7 +86129,7 @@ done
     # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Werror -Wl,--gc-sections'
+    CFLAGS='-x c++ -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
@@ -86088,6 +86187,17 @@ ac_gcsections=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
     if test "$ac_gcsections" = "yes"; then
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
