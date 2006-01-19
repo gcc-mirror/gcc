@@ -1,3 +1,9 @@
+2006-01-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/16829
+	* g++.dg/other/default2.C: New test.
+	* g++.dg/other/default3.C: New test.
+
 2006-01-19  Richard Sandiford  <richard@codesourcery.com>
 
 	PR c/25805

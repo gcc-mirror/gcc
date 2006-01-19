@@ -1,3 +1,15 @@
+2006-01-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/16829
+	* decl.c (start_preparsed_function): Check default arguments
+	unconditionally.
+	* name-lookup.c (pushdecl_maybe_friend): Check default arguments
+	of all functions and function templates.
+	* parser.c (cp_parser_late_parsing_default_args): Check default
+	arguments.
+	* decl2.c (check_default_args): Set missing default arguments to
+	error_mark_node.
+
 2006-01-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25836
