@@ -1,3 +1,43 @@
+2006-01-19  Jan Hubicka  <jh@suse.cz>
+            H.J. Lu  <hongjiu.lu@intel.com>
+	    Evandro Menezes <evandro.menezes@amd.com>
+
+	* invoke.texi (generic): Document
+	(i686) Update.
+	* config.gcc: Make x86_64-* and i686-* default to generic tunning.
+	* i386.h (TARGET_GENERIC32, TARGET_GENERIC64, TARGET_GENERIC,
+	TARGET_USE_INCDEC, TARGET_PAD_RETURNS): New macros.
+	(x86_use_incdec, x86_pad_returns): New variables
+	(TARGET_CPU_DEFAULT_generic): New constant
+	(TARGET_CPU_DEFAULT_NAMES): Add generic.
+	(enum processor_type): Add generic32 and generic64.
+	* i386.md (cpu attribute): Add generic32/generic64
+	(movhi splitter): Behave sanely when both partial_reg_dependency and
+	partial_reg_stall are set.
+	(K8 splitters): Enable for generic as well.
+	* predicates.md (incdec_operand): Use TARGET_INCDEC
+	(aligned_operand): Avoid memory mismatch stalls.
+	* athlon.md: Enable for generic64, new patterns for 128bit moves.
+	* ppro.md: Enable for generic32
+	* i386.c (generic64_cost, generic32_cost): New.
+	(m_GENERIC32, m_GENERIC64, m_GENERIC): New macros.
+	(x86_use_leave): Enable for generic64.  (x86_use_sahf,
+	x86_ext_80387_constants): Enable for generic32.  (x86_push_memory,
+	x86_movx, x86_unroll_strlen, x86_deep_branch, x86_use_simode_fiop,
+	x86_use_cltd, x86_promote_QImode, x86_sub_esp_4, x86_sub_esp_8,
+	x86_add_esp_4, x86_add_esp_8, x86_integer_DFmode_moves,
+	x86_partial_reg_dependency, x86_memory_mismatch_stall,
+	x86_accumulate_outgoing_args, x86_prologue_using_move,
+	x86_epilogue_using_move, x86_arch_always_fancy_math_387,
+	x86_sse_partial_reg_dependency, x86_four_jump_limit, x86_schedule):
+	Enable for generic.
+	(x86_use_incdec, x86_pad_returns): New.
+	(override_options): Add generic32 and generic64, translate "generic"
+	to generic32/generic64 and "i686" to "generic32", refuse
+	"generic32"/"generic64" as arch target.
+	(ix86_issue_rate, ix86_adjust_cost): Handle generic as athlon.
+	(ix86_reorg): Honor PAD_RETURNS.
+
 2006-01-19  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-pretty-print.c (dump_generic_node): Handle
