@@ -1,3 +1,7 @@
+2006-01-19  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/pr25805.c: Fix misapplied patch.
+
 2006-01-19  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* lib/target-suports.exp (check_effective_target_vect_sdot_qi): New.
