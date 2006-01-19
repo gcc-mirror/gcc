@@ -286,7 +286,7 @@ check_operand (ipa_reference_local_vars_info_t local,
 {
   if (!t) return;
 
-  if ((TREE_CODE (t) == VAR_DECL)
+  if ((TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == FUNCTION_DECL)
       && (has_proper_scope_for_analysis (t))) 
     {
       if (checking_write)
@@ -343,7 +343,7 @@ look_for_address_of (tree t)
   if (TREE_CODE (t) == ADDR_EXPR)
     {
       tree x = get_base_var (t);
-      if (TREE_CODE (x) == VAR_DECL) 
+      if (TREE_CODE (x) == VAR_DECL || TREE_CODE (x) == FUNCTION_DECL) 
 	if (has_proper_scope_for_analysis (x))
 	  bitmap_set_bit (module_statics_escape, DECL_UID (x));
     }
@@ -741,6 +741,7 @@ merge_callee_local_info (struct cgraph_node *target,
 static void 
 ipa_init (void) 
 {
+  struct cgraph_node *node;
   memory_identifier_string = build_string(7, "memory");
 
   reference_vars_to_consider =
@@ -750,6 +751,10 @@ ipa_init (void)
   module_statics_escape = BITMAP_ALLOC (&ipa_obstack);
   module_statics_written = BITMAP_ALLOC (&ipa_obstack);
   all_module_statics = BITMAP_ALLOC (&ipa_obstack);
+
+  /* This will add NODE->DECL to the splay trees.  */
+  for (node = cgraph_nodes; node; node = node->next)
+    has_proper_scope_for_analysis (node->decl);
 
   /* There are some shared nodes, in particular the initializers on
      static declarations.  We do not need to scan them more than once
@@ -963,6 +968,11 @@ static_execute (void)
     EXECUTE_IF_SET_IN_BITMAP (module_statics_readonly, 0, index, bi)
       {
 	tree var = get_static_decl (index);
+
+	/* Readonly on a function decl is very different from the
+	   variable.  */
+	if (TREE_CODE (var) == FUNCTION_DECL)
+	  continue;
 
 	/* Ignore variables in named sections - changing TREE_READONLY
 	   changes the section flags, potentially causing conflicts with
