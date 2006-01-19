@@ -4752,6 +4752,9 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
 #if TARGET_MACHO
       if (!label)
 	ASM_OUTPUT_LABEL (asm_out_file, machopic_function_base_name ());
+      else
+        targetm.asm_out.internal_label (asm_out_file, "L",
+					   CODE_LABEL_NUMBER (label));
 #endif
     }
 

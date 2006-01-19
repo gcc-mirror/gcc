@@ -1,3 +1,10 @@
+2006-01-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/22099
+	* config/i386/i386.md (builtin_setjmp_receiver): Don't emit the label.
+	* config/i386/i386.c (output_set_got): Output the label if we have one
+	for the TARGET_DEEP_BRANCH_PREDICTION case.
+
 2006-01-19  Jan Hubicka  <jh@suse.cz>
             H.J. Lu  <hongjiu.lu@intel.com>
 	    Evandro Menezes <evandro.menezes@amd.com>
