@@ -20,6 +20,7 @@ autogen definitions fixincl;
 FIXINC_DEBUG = yes;
 #endif
 
+
 /*
  *  On Mac OS 10.3.9, the 'long double' functions are available in
  *  libSystem, but are not prototyped in math.h.
@@ -33,7 +34,11 @@ fix = {
 /* This file prototypes the long double functions available on Mac OS
    10.3.9.  */
 #ifndef __MATH__
+# undef __APPLE_CC__
+# define __APPLE_CC__  1345
 # include_next <architecture/ppc/math.h>
+# undef __APPLE_CC__
+# define __APPLE_CC__ 1
 # ifndef __LIBMLDBL_COMPAT
 #  ifdef __LONG_DOUBLE_128__
 #   define __LIBMLDBL_COMPAT(sym) __asm("_" #sym "$LDBL128")
@@ -1041,6 +1046,21 @@ fix = {
                 "                         and it ends here. */\n"
 		"extern double	cabs(struct __cabs_s);";
 };
+
+/*
+ * Fixup Darwin's broken check for __builtin_nanf.
+ */ 
+    
+fix = {
+    hackname  = broken_nan;
+    files     = "architecture/ppc/math.h";
+    files     = "architecture/i386/math.h";
+    select    = "#if defined(__APPLE_CC__) && (__APPLE_CC__ >= 1345)";
+    bypass    = "powl";
+    c_fix     = format; 
+    c_fix_arg = "#if 1";
+    test_text = "#if defined(__APPLE_CC__) && (__APPLE_CC__ >= 1345)";
+}; 
 
 
 /*
