@@ -230,13 +230,13 @@ switchfiles (int fields)
     {
       fprintf (outfile, "\
 /* { dg-do run { xfail *-*-* } } */\n\
-/* { dg-options \"-w -I%s -fgnu-runtime\" } */\n");
+/* { dg-options \"-w -I%s -fgnu-runtime\" } */\n", srcdir);
     }
   else
     {
       fprintf (outfile, "\
 /* { dg-do run } */\n\
-/* { dg-options \"-w -I%s -fgnu-runtime\" } */\n");
+/* { dg-options \"-w -I%s -fgnu-runtime\" } */\n", srcdir);
     }
   fprintf(outfile, "#include <objc/encoding.h> \n\
 #include \"struct-layout-1.h\"\n\
@@ -274,7 +274,7 @@ int main (void)\n\
       abort ();\n\
     }\n\
   exit (0);\n\
-}\n", srcdir, filecnt, filecnt);
+}\n", filecnt, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_test.h", filecnt);
   outfile = fopen (destbuf, "w");
