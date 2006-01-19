@@ -1,3 +1,14 @@
+2006-01-19  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortranspec.c: Update copyright years.
+	* trans.c: Likewise.
+	* trans-array.c: Likewise.
+	* trans-array.h: Likewise.
+	* trans-decl.c: Likewise.
+	* trans-stmt.c: Likewise.
+	* trans-stmt.h: Likewise.
+	* trans-types.c: Likewise.
+
 2006-01-18  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18540
