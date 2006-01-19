@@ -1,3 +1,25 @@
+2006-01-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("Y", "y"): New mode attribute.
+	("*cmpdi_ccs", "*cmpsi_ccs", "*adddi3_imm_cc", "*adddi3_carry1_cc", 
+	"*adddi3_carry1_cconly", "*adddi3_carry2_cc", "*adddi3_carry2_cconly",
+	"*adddi3_cc", "*adddi3_cconly", "*adddi3_cconly2", "*adddi3_64", 
+	"*addsi3_imm_cc", "*addsi3_carry1_cc", 
+	"*addsi3_carry1_cconly", "*addsi3_carry2_cc", "*addsi3_carr2_cconly",
+	"*addsi3_cc", "*addsi3_cconly", "*addsi3_cconly2",
+	"*subdi3_borrow_cc", "*subdi3_borrow_cconly", "*subdi3_cc", 
+	"*subdi3_cc2", "*subdi3_cconly", "*subdi3_cconly2", "*subdi3_64",
+	"*subsi3_borrow_cc", "*subsi3_borrow_cconly", "*subsi3_cc",
+	"*subsi3_cc2", "*subsi3_cconly", "*subsi3_cconly", "*subsi3_cconly2",
+	"addsi3", "subsi3"): Insn patterns removed.
+	("*add<mode>3_carry1_cc", "*add<mode>3_carry1_cconly",
+	"*add<mode>3_carry2_cc", "*add<mode>3_carry2_cconly", "*add<mode>3_cc",
+	"*add<mode>3_cconly", "*add<mode>3_cconly2", "*add<mode>3_imm_cc",
+	"*sub<mode>3_borrow_cc", "*sub<mode>3_borrow_cconly",
+	"*sub<mode>3_cc", "*sub<mode>3_cc2", "*sub<mode>3_cconly", 
+	"*sub<mode>3_cconly2"): New insn patterns.
+	("addsi3", "subsi3"): New expanders.
+
 2006-01-19  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* Makefile.in (tree-vect-patterns.o): Add rule for new file.
