@@ -93,11 +93,7 @@ extern const struct processor_costs *ix86_cost;
 /* configure can arrange to make this 2, to force a 486.  */
 
 #ifndef TARGET_CPU_DEFAULT
-#ifdef TARGET_64BIT_DEFAULT
-#define TARGET_CPU_DEFAULT TARGET_CPU_DEFAULT_k8
-#else
-#define TARGET_CPU_DEFAULT 0
-#endif
+#define TARGET_CPU_DEFAULT TARGET_CPU_DEFAULT_generic
 #endif
 
 #ifndef TARGET_FPMATH_DEFAULT
@@ -140,6 +136,9 @@ extern const struct processor_costs *ix86_cost;
 #define TARGET_K8 (ix86_tune == PROCESSOR_K8)
 #define TARGET_ATHLON_K8 (TARGET_K8 || TARGET_ATHLON)
 #define TARGET_NOCONA (ix86_tune == PROCESSOR_NOCONA)
+#define TARGET_GENERIC32 (ix86_tune == PROCESSOR_GENERIC32)
+#define TARGET_GENERIC64 (ix86_tune == PROCESSOR_GENERIC64)
+#define TARGET_GENERIC (TARGET_GENERIC32 || TARGET_GENERIC64)
 
 #define TUNEMASK (1 << ix86_tune)
 extern const int x86_use_leave, x86_push_memory, x86_zero_extend_with_and;
@@ -163,6 +162,8 @@ extern const int x86_use_ffreep;
 extern const int x86_inter_unit_moves, x86_schedule;
 extern const int x86_use_bt;
 extern const int x86_cmpxchg, x86_cmpxchg8b, x86_cmpxchg16b, x86_xadd;
+extern const int x86_use_incdec;
+extern const int x86_pad_returns;
 extern int x86_prefetch_sse;
 
 #define TARGET_USE_LEAVE (x86_use_leave & TUNEMASK)
@@ -217,6 +218,8 @@ extern int x86_prefetch_sse;
 #define TARGET_FOUR_JUMP_LIMIT (x86_four_jump_limit & TUNEMASK)
 #define TARGET_SCHEDULE (x86_schedule & TUNEMASK)
 #define TARGET_USE_BT (x86_use_bt & TUNEMASK)
+#define TARGET_USE_INCDEC (x86_use_incdec & TUNEMASK)
+#define TARGET_PAD_RETURNS (x86_pad_returns & TUNEMASK)
 
 #define ASSEMBLER_DIALECT (ix86_asm_dialect)
 
@@ -464,12 +467,14 @@ extern int x86_prefetch_sse;
 #define TARGET_CPU_DEFAULT_pentium_m 14
 #define TARGET_CPU_DEFAULT_prescott 15
 #define TARGET_CPU_DEFAULT_nocona 16
+#define TARGET_CPU_DEFAULT_generic 17
 
 #define TARGET_CPU_DEFAULT_NAMES {"i386", "i486", "pentium", "pentium-mmx",\
 				  "pentiumpro", "pentium2", "pentium3", \
 				  "pentium4", "k6", "k6-2", "k6-3",\
 				  "athlon", "athlon-4", "k8", \
-				  "pentium-m", "prescott", "nocona"}
+				  "pentium-m", "prescott", "nocona", \
+				  "generic"}
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
@@ -2119,6 +2124,8 @@ enum processor_type
   PROCESSOR_PENTIUM4,
   PROCESSOR_K8,
   PROCESSOR_NOCONA,
+  PROCESSOR_GENERIC32,
+  PROCESSOR_GENERIC64,
   PROCESSOR_max
 };
 
