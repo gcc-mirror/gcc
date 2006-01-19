@@ -540,6 +540,8 @@ extern void fold_cond_expr_cond (void);
 extern void replace_uses_by (tree, tree);
 extern void start_recording_case_labels (void);
 extern void end_recording_case_labels (void);
+extern basic_block move_sese_region_to_fn (struct function *, basic_block,
+				           basic_block);
 
 /* In tree-cfgcleanup.c  */
 extern bool cleanup_tree_cfg (void);
@@ -580,8 +582,9 @@ extern void remove_phi_node (tree, tree);
 extern tree phi_reverse (tree);
 
 /* In gimple-low.c  */
+extern void record_vars_into (tree, tree);
 extern void record_vars (tree);
-extern bool block_may_fallthru (tree block);
+extern bool block_may_fallthru (tree);
 
 /* In tree-ssa-alias.c  */
 extern void dump_may_aliases_for (FILE *, tree);
@@ -886,6 +889,7 @@ tree create_mem_ref (block_stmt_iterator *, tree,
 rtx addr_for_mem_ref (struct mem_address *, bool);
 void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);
+
 /* This structure is simply used during pushing fields onto the fieldstack
    to track the offset of the field, since bitpos_of_field gives it relative
    to its immediate containing type, and we want it relative to the ultimate

@@ -1,3 +1,157 @@
+2006-01-19  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-pretty-print.c (dump_generic_node): Handle
+	OMP_PARALLEL_FN, OMP_PARALLEL_DATA_ARG and OMP_RETURN_EXPR.
+	* cgraph.c (cgraph_expand_queue): Rename from
+	cgraph_analyze_queue.  Update all users.
+	* cgraphunit.c (cgraph_assemble_pending_functions): Process
+	cgraph_expand_queue.
+	(cgraph_expand_all_functions): Likewise.
+	(cgraph_finalize_pending_functions): Remove.  Update callers.
+
+	* tree.h (OMP_DIRECTIVE_P): Define.
+	(OMP_PARALLEL_FN): Define.
+	(OMP_PARALLEL_DATA_ARG): Define.
+	(OMP_SECTIONS_SECTIONS): Define.
+	* tree-pass.h (pass_expand_omp): Declare.
+	* omp-low.c (struct omp_region): Declare.
+	(struct omp_context): Remove fields 'parallel_type',
+	'parallel_start_ix' and 'parallel_start_additional_args'.
+	Update all users.
+	(struct omp_for_data): Rename from struct expand_omp_for_data.
+	(omp_regions): New static variable.
+	(root_omp_region): New static variable.
+	(find_omp_clause): Make static.
+	(is_in_combined_parallel_ctx): Remove.
+	(is_combined_parallel): New.
+	(extract_omp_for_data): Move earlier in the file.
+	(workshare_safe_to_combine_p): New.
+	(get_ws_args_for): New.
+	(determine_parallel_type): Move earlier in the file.
+	(omp_copy_decl_2): Do not set DECL_CONTEXT of new local to the
+	child function.
+	(omp_copy_decl): Likewise.
+	(create_omp_child_function): Likewise.
+	(lookup_omp_region): New.
+	(dump_omp_region): New.
+	(debug_omp_region): New.
+	(debug_all_omp_regions): New.
+	(new_omp_region): New.
+	(scan_omp_parallel): If parallel_nesting_level > 1, the
+	directive is nested within another parallel directive.
+	Set OMP_PARALLEL_FN.
+	(scan_omp_for): Do not try to handle combined parallel+for
+	cases.
+	Remove FIXME comment.
+	(scan_omp_nested): Remove.
+	(scan_omp_1): Do not call scan_omp_nested when
+	parallel_nesting_level is > 1.
+	Do not change the DECL_CONTEXT of local variables found.
+	(lookup_decl_in_outer_ctx): New.
+	(lower_rec_input_clauses): Rename from expand_rec_input_clauses.
+	(lower_lastprivate_clauses): Rename from expand_lastprivate_clauses.
+	(lower_reduction_clauses): Rename from expand_reduction_clauses.
+	(lower_copyprivate_clauses): Rename from expand_copyprivate_clauses.
+	If CTX is nested, lookup VAR in the outer context when
+	building copy assignment.
+	(lower_send_clauses): Rename from expand_send_clauses.
+	If CTX is nested, lookup VAR in the outer context when
+	building copy assignments.
+	(lower_send_shared_vars): Rename from expand_send_shared_vars.
+	If CTX is nested, lookup VAR in the outer context when
+	building copy assignments.
+	(expand_parallel_call): Rename from build_parallel_call.
+	Handle combined parallel+workshare cases.
+	Re-implement to emit code into the CFG.
+	(list2chain): New.
+	(expand_omp_parallel): Re-implement to emit code into the CFG.
+	Call move_sese_region_to_fn to outline the sub-graph
+	containing the parallel region.
+	(expand_omp_for_1): Remove.
+	(expand_omp_for_generic): Re-implement to emit code into the
+	CFG.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_for): Likewise.
+	(expand_omp_sections): Likewise.
+	(remove_exit_barriers): New.
+	(expand_omp_synch): New.
+	(expand_omp): New.
+	(build_omp_regions_1): New.
+	(build_omp_regions): New.
+	(execute_expand_omp): New.
+	(gate_expand_omp): New.
+	(pass_expand_omp): Define.
+	(lower_omp_sections): Rename from expand_omp_sections.
+	Set OMP_SECTIONS_SECTIONS.
+	(lower_omp_single_simple): Rename from expand_omp_single_simple.
+	(lower_omp_single_copy): Rename from expand_omp_single_copy.
+	(lower_omp_single): Rename from expand_omp_simple.
+	(lower_omp_master): Rename from expand_omp_master.
+	(lower_omp_ordered): Rename from expand_omp_ordered.
+	(lower_omp_critical): Rename from expand_omp_critical.
+	(lower_omp_for_lastprivate): Rename from expand_omp_for_lastprivate.
+	(lower_omp_for): Re-implement.
+	(lower_omp_parallel): Re-implement.
+	(lower_regimplify): Rename from expand_regimplify.
+	(lower_omp_1): Rename from expand_omp_1.
+	If there are syntax errors in the program, replace every
+	OpenMP directive with NOP.
+	Call lower_omp_* instead of expand_omp_*.
+	(lower_omp): Rename from expand_omp.
+
+	* tree-gimple.c (is_gimple_stmt): Handle OMP_RETURN_EXPR.
+	* tree-gimple.h (enum omp_parallel_type): Remove.
+	(gimple_boolify): Declare extern.
+	(find_omp_clause, determine_parallel_type): Remove.
+
+	* gimple-low.c (lower_omp_directive): New.
+	(lower_stmt): Call it.
+	(record_vars_into): Move from ...
+	(record_vars): ... here.
+	Call record_vars_into with current_function_decl.
+
+	* gimplify.c (struct gimplify_ctx): Remove fields
+	combined_pre_p and combined_ctxp.  Update users.
+	(get_formal_tmp_var): Add documentation.
+	(gimple_boolify): Make extern.
+	(gimplify_expr_in_ctx): Remove.  Update callers.
+	(gimplify_omp_parallel): Do not assume that OMP_PARALLEL_BODY
+	will always be a BIND_EXPR.
+	(gimplify_expr): Handle OMP_RETURN_EXPR.
+	* tree.def (BLOCK): Remove documentation about BLOCK_TYPE_TAGS.
+	(OMP_PARALLEL): Add 3 operands.
+	(OMP_SECTIONS): Add 1 operand.
+	(OMP_RETURN_EXPR): Define.
+
+	* tree-inline.c (estimate_num_insns_1): Handle OpenMP directives.
+	(copy_tree_r): Restore TREE_CHAIN in OMP_CLAUSE_*.
+	* tree-iterator.c (alloc_stmt_list): Assert that we are not
+	creating a circular free list.
+	(free_stmt_list): Assert that we are not freeing stmt_list_cache.
+
+	* tree-flow.h (move_sese_region_to_fn): Declare.
+	(record_vars_into): Declare.
+	* tree-cfg.c (make_omp_sections_edges): New.
+	(make_exit_edges): Handle OMP_PARALLEL, OMP_FOR, OMP_SINGLE,
+	OMP_MASTER, OMP_ORDERED, OMP_CRITICAL, OMP_RETURN_EXPR,
+	OMP_SECTIONS and OMP_SECTION.
+	(is_ctrl_altering_stmt): Return true for OMP_DIRECTIVE_P.
+	(set_bb_for_stmt): Undo change to check currently_expanding_to_rtl.
+	(verify_stmt): Do not handle OMP_DIRECTIVE_P.
+	(gather_blocks_in_sese_region): New.
+	(struct move_stmt_d): Declare.
+	(move_stmt_r): New.
+	(move_block_to_fn): New.
+	(move_sese_region_to_fn): New.
+
+	* passes.c (init_optimization_passes): Schedule
+	pass_expand_omp after pass_init_datastructures.
+
+	* tree-ssa-operands.c (get_expr_operands): Handle
+	OMP_PARALLEL, OMP_SECTIONS, OMP_FOR, OMP_RETURN_EXPR,
+	OMP_SINGLE, OMP_MASTER, OMP_ORDERED, OMP_CRITICAL.
+
 2006-01-19  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (extract_range_from_assert): Refine the result range

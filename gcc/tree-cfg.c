@@ -486,6 +486,37 @@ make_edges (void)
 }
 
 
+/* Link an OMP_SECTIONS block to all the OMP_SECTION blocks in its body.  */
+
+static void
+make_omp_sections_edges (basic_block bb)
+{
+  basic_block exit_bb;
+  size_t i, n;
+  tree vec, stmt;
+
+  stmt = last_stmt (bb);
+  vec = OMP_SECTIONS_SECTIONS (stmt);
+  n = TREE_VEC_LENGTH (vec);
+  exit_bb = bb_for_stmt (TREE_VEC_ELT (vec, n - 1));
+
+  for (i = 0; i < n - 1; i += 2)
+    {
+      basic_block start_bb = bb_for_stmt (TREE_VEC_ELT (vec, i));
+      basic_block end_bb = bb_for_stmt (TREE_VEC_ELT (vec, i + 1));
+      make_edge (bb, start_bb, EDGE_ABNORMAL);
+      make_edge (end_bb, exit_bb, EDGE_FALLTHRU);
+    }
+
+  /* Once the CFG has been built, the vector of sections is no longer
+     useful.  The region can be easily obtained with build_omp_regions.
+     Furthermore, this sharing of tree expressions is not allowed by the
+     statement verifier.  */
+  OMP_SECTIONS_SECTIONS (stmt) = NULL_TREE;
+}
+
+
+
 /* Create edges for control statement at basic block BB.  */
 
 static void
@@ -578,6 +609,27 @@ make_exit_edges (basic_block bb)
 	make_goto_expr_edges (bb);
 
       make_eh_edges (last);
+      make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
+      break;
+
+    case OMP_PARALLEL:
+    case OMP_FOR:
+    case OMP_SINGLE:
+    case OMP_MASTER:
+    case OMP_ORDERED:
+    case OMP_CRITICAL:
+      make_edge (bb, bb->next_bb, EDGE_ABNORMAL);
+
+    case OMP_RETURN_EXPR:
+      if (EDGE_COUNT (bb->succs) == 0)
+	make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
+      break;
+
+    case OMP_SECTIONS:
+      make_omp_sections_edges (bb);
+      break;
+
+    case OMP_SECTION:
       make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
       break;
 
@@ -2503,6 +2555,10 @@ is_ctrl_altering_stmt (tree t)
 	return true;
     }
 
+  /* OpenMP directives alter control flow.  */
+  if (flag_openmp && OMP_DIRECTIVE_P (t))
+    return true;
+
   /* If a statement can throw, it alters control flow.  */
   return tree_can_throw_internal (t);
 }
@@ -2746,12 +2802,9 @@ set_bb_for_stmt (tree t, basic_block bb)
       stmt_ann_t ann = get_stmt_ann (t);
       ann->bb = bb;
 
-      /* If the statement is a label, add the label to block-to-labels
-	 map so that we can speed up edge creation for GOTO_EXPRs.
-	 Note that LABEL_TO_BLOCK_MAP may not exist if we are
-	 currently expanding into RTL (in which case, this mapping is
-	 unnecessary, anyway).  */
-      if (TREE_CODE (t) == LABEL_EXPR && !currently_expanding_to_rtl)
+      /* If the statement is a label, add the label to block-to-labels map
+        so that we can speed up edge creation for GOTO_EXPRs.  */
+      if (TREE_CODE (t) == LABEL_EXPR)
 	{
 	  int uid;
 
@@ -3431,6 +3484,17 @@ static bool
 verify_stmt (tree stmt, bool last_in_block)
 {
   tree addr;
+
+  if (OMP_DIRECTIVE_P (stmt))
+    {
+      /* OpenMP directives are validated by the FE and never operated
+	 on by the optimizers.  Furthermore, OMP_FOR may contain
+	 non-gimple expressions when the main index variable has had
+	 its address taken.  This does not affect the loop itself
+	 because the header of an OMP_FOR is merely used to determine
+	 how to setup the parallel iteration.  */
+      return false;
+    }
 
   if (!is_gimple_stmt (stmt))
     {
@@ -4492,6 +4556,329 @@ tree_duplicate_sese_region (edge entry, edge exit,
 
   free_original_copy_tables ();
   return true;
+}
+
+/*
+DEF_VEC_P(basic_block);
+DEF_VEC_ALLOC_P(basic_block,heap);
+*/
+
+/* Add all the blocks dominated by ENTRY to the array BBS_P.  Stop
+   adding blocks when the dominator traversal reaches EXIT.  This
+   function silently assumes that ENTRY strictly dominates EXIT.  */
+
+static void
+gather_blocks_in_sese_region (basic_block entry, basic_block exit,
+			      VEC(basic_block,heap) **bbs_p)
+{
+  basic_block son;
+
+  for (son = first_dom_son (CDI_DOMINATORS, entry);
+       son;
+       son = next_dom_son (CDI_DOMINATORS, son))
+    {
+      VEC_safe_push (basic_block, heap, *bbs_p, son);
+      if (son != exit)
+	gather_blocks_in_sese_region (son, exit, bbs_p);
+    }
+}
+
+
+struct move_stmt_d
+{
+  tree block;
+  tree from_context;
+  tree to_context;
+  bitmap vars_to_remove;
+  bool remap_decls_p;
+};
+
+/* Helper for move_block_to_fn.  Set TREE_BLOCK in every expression
+   contained in *TP and change the DECL_CONTEXT of every local
+   variable referenced in *TP.  */
+
+static tree
+move_stmt_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
+{
+  struct move_stmt_d *p = (struct move_stmt_d *) data;
+
+  if (p->block && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (*tp))))
+    TREE_BLOCK (*tp) = p->block;
+
+  if (OMP_DIRECTIVE_P (*tp))
+    {
+      /* Do not remap variables inside OMP directives.  Variables
+	 referenced in clauses and directive header belong to the
+	 parent function and should not be moved into the child
+	 function.  */
+      p->remap_decls_p = false;
+    }
+
+  if (p->remap_decls_p
+      && DECL_P (*tp)
+      && DECL_CONTEXT (*tp) == p->from_context)
+    {
+      DECL_CONTEXT (*tp) = p->to_context;
+
+      if (TREE_CODE (*tp) == VAR_DECL)
+	{
+	  struct function *f = DECL_STRUCT_FUNCTION (p->to_context);
+	  f->unexpanded_var_list = tree_cons (0, *tp, f->unexpanded_var_list);
+
+	  /* Mark *TP to be removed from the original function,
+	     otherwise it will be given a DECL_RTL when the original
+	     function is expanded.  */
+	  bitmap_set_bit (p->vars_to_remove, DECL_UID (*tp));
+	}
+    }
+
+  return NULL_TREE;
+}
+
+
+/* Move basic block BB from function CFUN to function DEST_FN.  The
+   block is moved out of the original linked list and placed after
+   block AFTER in the new list.  Also, the block is removed from the
+   original array of blocks and placed in DEST_FN's array of blocks.
+   If UPDATE_EDGE_COUNT_P is true, the edge counts on both CFGs is
+   updated to reflect the moved edges.
+   
+   On exit, local variables that need to be removed from
+   CFUN->UNEXPANDED_VAR_LIST will have been added to VARS_TO_REMOVE.  */
+
+static void
+move_block_to_fn (struct function *dest_cfun, basic_block bb,
+		  basic_block after, bool update_edge_count_p,
+		  bitmap vars_to_remove)
+{
+  struct control_flow_graph *cfg;
+  edge_iterator ei;
+  edge e;
+  block_stmt_iterator si;
+  struct move_stmt_d d;
+  unsigned sz;
+
+  /* Link BB to the new linked list.  */
+  move_block_after (bb, after);
+
+  /* Update the edge count in the corresponding flowgraphs.  */
+  if (update_edge_count_p)
+    FOR_EACH_EDGE (e, ei, bb->succs)
+      {
+	cfun->cfg->x_n_edges--;
+	dest_cfun->cfg->x_n_edges++;
+      }
+
+  /* Remove BB from the original basic block array.  */
+  VEC_replace (basic_block, cfun->cfg->x_basic_block_info, bb->index, NULL);
+  cfun->cfg->x_n_basic_blocks--;
+
+  /* Grow DEST_CFUN's basic block array if needed.  */
+  cfg = dest_cfun->cfg;
+  cfg->x_n_basic_blocks++;
+  if (bb->index > cfg->x_last_basic_block)
+    cfg->x_last_basic_block = bb->index;
+
+  sz = VEC_length (basic_block, cfg->x_basic_block_info);
+  if ((unsigned) cfg->x_last_basic_block >= sz)
+    {
+      sz = cfg->x_last_basic_block + (cfg->x_last_basic_block + 3) / 4;
+      VEC_safe_grow (basic_block, gc, cfg->x_basic_block_info, sz);
+    }
+
+  VEC_replace (basic_block, cfg->x_basic_block_info,
+               cfg->x_last_basic_block, bb);
+
+  /* The statements in BB need to be associated with a new TREE_BLOCK.
+     Labels need to be associated with a new label-to-block map.  */
+  memset (&d, 0, sizeof (d));
+  d.vars_to_remove = vars_to_remove;
+
+  for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+    {
+      tree stmt = bsi_stmt (si);
+
+      d.from_context = cfun->decl;
+      d.to_context = dest_cfun->decl;
+      d.remap_decls_p = true;
+      if (TREE_BLOCK (stmt))
+	d.block = DECL_INITIAL (dest_cfun->decl);
+
+      walk_tree (&stmt, move_stmt_r, &d, NULL);
+
+      if (TREE_CODE (stmt) == LABEL_EXPR)
+	{
+	  unsigned old_len;
+	  tree label = LABEL_EXPR_LABEL (stmt);
+	  int uid = LABEL_DECL_UID (label);
+
+	  gcc_assert (uid > -1);
+
+	  old_len = VEC_length (basic_block, cfg->x_label_to_block_map);
+	  if (old_len <= (unsigned) uid)
+	    {
+	      basic_block *addr;
+	      unsigned new_len = 3 * uid / 2;
+	      VEC_safe_grow (basic_block, gc, cfg->x_label_to_block_map,
+			     new_len);
+	      addr = VEC_address (basic_block, cfg->x_label_to_block_map);
+	      memset (&addr[old_len], 0,
+		      sizeof (basic_block) * (new_len - old_len));
+	    }
+
+	  VEC_replace (basic_block, cfg->x_label_to_block_map, uid, bb);
+	  VEC_replace (basic_block, cfun->cfg->x_label_to_block_map, uid, NULL);
+
+	  gcc_assert (DECL_CONTEXT (label) == dest_cfun->decl);
+
+	  if (uid >= dest_cfun->last_label_uid)
+	    dest_cfun->last_label_uid = uid + 1;
+	}
+    }
+}
+
+
+/* Move a single-entry, single-exit region delimited by ENTRY_BB and
+   EXIT_BB to function DEST_CFUN.  The whole region is replaced by a
+   single basic block in the original CFG and the new basic block is
+   returned.  DEST_CFUN must not have a CFG yet.
+
+   Note that the region need not be a pure SESE region.  Blocks inside
+   the region may contain calls to abort/exit.  The only restriction
+   is that ENTRY_BB should be the only entry point and it must
+   dominate EXIT_BB.
+
+   All local variables referenced in the region are assumed to be in
+   the corresponding BLOCK_VARS and unexpanded variable lists
+   associated with DEST_CFUN.  */
+
+basic_block
+move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
+		        basic_block exit_bb)
+{
+  VEC(basic_block,heap) *bbs;
+  basic_block after, bb, *entry_pred, *exit_succ;
+  struct function *saved_cfun;
+  int *entry_flag, *exit_flag;
+  unsigned i, num_entry_edges, num_exit_edges;
+  edge e;
+  edge_iterator ei;
+  bitmap vars_to_remove;
+
+  saved_cfun = cfun;
+
+  /* Collect all the blocks in the region.  Manually add ENTRY_BB
+     because it won't be added by dfs_enumerate_from.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* If ENTRY does not strictly dominate EXIT, this cannot be an SESE
+     region.  */
+  gcc_assert (entry_bb != exit_bb
+              && dominated_by_p (CDI_DOMINATORS, exit_bb, entry_bb));
+
+  bbs = NULL;
+  VEC_safe_push (basic_block, heap, bbs, entry_bb);
+  gather_blocks_in_sese_region (entry_bb, exit_bb, &bbs);
+
+  /* Detach ENTRY_BB and EXIT_BB from CFUN->CFG.  We need to remember
+     the predecessor edges to ENTRY_BB and the successor edges to
+     EXIT_BB so that we can re-attach them to the new basic block that
+     will replace the region.  */
+  num_entry_edges = EDGE_COUNT (entry_bb->preds);
+  entry_pred = (basic_block *) xcalloc (num_entry_edges, sizeof (basic_block));
+  entry_flag = (int *) xcalloc (num_entry_edges, sizeof (int));
+  i = 0;
+  for (ei = ei_start (entry_bb->preds); (e = ei_safe_edge (ei)) != NULL;)
+    {
+      entry_flag[i] = e->flags;
+      entry_pred[i++] = e->src;
+      remove_edge (e);
+    }
+
+  num_exit_edges = EDGE_COUNT (exit_bb->succs);
+  exit_succ = (basic_block *) xcalloc (num_exit_edges, sizeof (basic_block));
+  exit_flag = (int *) xcalloc (num_exit_edges, sizeof (int));
+  i = 0;
+  for (ei = ei_start (exit_bb->succs); (e = ei_safe_edge (ei)) != NULL;)
+    {
+      exit_flag[i] = e->flags;
+      exit_succ[i++] = e->dest;
+      remove_edge (e);
+    }
+
+  /* Switch context to the child function to initialize DEST_FN's CFG.  */
+  gcc_assert (dest_cfun->cfg == NULL);
+  cfun = dest_cfun;
+  init_empty_tree_cfg ();
+  cfun = saved_cfun;
+
+  /* Move blocks from BBS into DEST_CFUN.  */
+  gcc_assert (VEC_length (basic_block, bbs) >= 2);
+  after = dest_cfun->cfg->x_entry_block_ptr;
+  vars_to_remove = BITMAP_ALLOC (NULL);
+  for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+    {
+      /* No need to update edge counts on the last block.  It has
+	 already been updated earlier when we detached the region from
+	 the original CFG.  */
+      move_block_to_fn (dest_cfun, bb, after, bb != exit_bb, vars_to_remove);
+      after = bb;
+    }
+
+  /* Remove the variables marked in VARS_TO_REMOVE from
+     CFUN->UNEXPANDED_VAR_LIST.  Otherwise, they will be given a
+     DECL_RTL in the context of CFUN.  */
+  if (!bitmap_empty_p (vars_to_remove))
+    {
+      tree *p;
+
+      for (p = &cfun->unexpanded_var_list; *p; )
+	{
+	  tree var = TREE_VALUE (*p);
+	  if (bitmap_bit_p (vars_to_remove, DECL_UID (var)))
+	    {
+	      *p = TREE_CHAIN (*p);
+	      continue;
+	    }
+
+	  p = &TREE_CHAIN (*p);
+	}
+    }
+
+  BITMAP_FREE (vars_to_remove);
+
+  /* Rewire the entry and exit blocks.  The successor to the entry
+     block turns into the successor of DEST_FN's ENTRY_BLOCK_PTR in
+     the child function.  Similarly, the predecessor of DEST_FN's
+     EXIT_BLOCK_PTR turns into the predecessor of EXIT_BLOCK_PTR.  We
+     need to switch CFUN between DEST_CFUN and SAVED_CFUN so that the
+     various CFG manipulation function get to the right CFG.
+
+     FIXME, this is silly.  The CFG ought to become a parameter to
+     these helpers.  */
+  cfun = dest_cfun;
+  make_edge (ENTRY_BLOCK_PTR, entry_bb, EDGE_FALLTHRU);
+  make_edge (exit_bb,  EXIT_BLOCK_PTR, 0);
+  cfun = saved_cfun;
+
+  /* Back in the original function, the SESE region has disappeared,
+     create a new basic block in its place.  */
+  bb = create_empty_bb (entry_pred[0]);
+  for (i = 0; i < num_entry_edges; i++)
+    make_edge (entry_pred[i], bb, entry_flag[i]);
+
+  for (i = 0; i < num_exit_edges; i++)
+    make_edge (bb, exit_succ[i], exit_flag[i]);
+
+  free (exit_flag);
+  free (entry_flag);
+  free (entry_pred);
+  free (exit_succ);
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
+  VEC_free (basic_block, heap, bbs);
+
+  return bb;
 }
 
 

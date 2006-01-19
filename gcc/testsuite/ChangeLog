@@ -1,3 +1,20 @@
+2006-01-19  Diego Novillo  <dnovillo@redhat.com>
+
+	* testsuite/gcc.dg/gomp/for-13.c: Use -fdump-tree-ompexp.
+	* testsuite/gcc.dg/gomp/critical-1.c: Likewise.
+	* testsuite/gcc.dg/gomp/critical-3.c: Likewise.
+	* testsuite/gcc.dg/gomp/empty.c: Likewise.
+	* testsuite/gcc.dg/gomp/ordered-1.c: Likewise.
+	* testsuite/gcc.dg/gomp/for-4.c: Likewise.
+	* testsuite/gcc.dg/gomp/for-6.c: Likewise.
+	* testsuite/gcc.dg/gomp/master-3.c: Likewise.
+	* testsuite/gcc.dg/gomp/for-8.c: Likewise.
+	* testsuite/gcc.dg/gomp/for-10.c: Likewise.
+	* testsuite/gcc.dg/gomp/for-18.c: Likewise.
+	* testsuite/gcc.dg/gomp/for-5.c: Likewise.
+	* testsuite/gcc.dg/gomp/for-7.c: Likewise.
+	* testsuite/gcc.dg/gomp/for-9.c: Likewise.
+
 2006-01-18  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/vrp25.c: New test.

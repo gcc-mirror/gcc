@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fopenmp -fdump-tree-omplower" }
+// { dg-options "-fopenmp -fdump-tree-ompexp" }
 
 void bar(void);
 void foo(void)
@@ -8,4 +8,4 @@ void foo(void)
     bar();
 }
 
-// { dg-final { scan-tree-dump-times "\\&\\.gomp_critical_user_xyzzy" 2 "omplower" } }
+// { dg-final { scan-tree-dump-times "\\&\\.gomp_critical_user_xyzzy" 2 "ompexp" } }

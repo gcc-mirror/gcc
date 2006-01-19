@@ -113,8 +113,10 @@ struct cgraph_node *cgraph_nodes;
 /* Queue of cgraph nodes scheduled to be lowered.  */
 struct cgraph_node *cgraph_nodes_queue;
 
-/* Queue of cgraph nodes scheduled to be analyzed.  */
-struct cgraph_node *cgraph_analyze_queue;
+/* Queue of cgraph nodes scheduled to be expanded.  This is a
+   secondary queue used during optimization to accomodate passes that
+   may generate new functions that need to be optimized and expanded.  */
+struct cgraph_node *cgraph_expand_queue;
 
 /* Number of nodes in existence.  */
 int cgraph_n_nodes;
@@ -1095,19 +1097,23 @@ cgraph_variable_initializer_availability (struct cgraph_varpool_node *node)
 }
 
 
-/* Add the function FNDECL to the call graph.  This assumes that the
-   body of FNDECL is in GENERIC form and ready to be processed by
-   cgraph_finalize_function.  */
+/* Add the function FNDECL to the call graph.  FNDECL is assumed to be
+   in low GIMPLE form and ready to be processed by cgraph_finalize_function.
+
+   When operating in unit-at-a-time, a new callgraph node is added to
+   CGRAPH_EXPAND_QUEUE, which is processed after all the original
+   functions in the call graph .
+
+   When not in unit-at-a-time, the new callgraph node is added to
+   CGRAPH_NODES_QUEUE for cgraph_assemble_pending_functions to
+   process.  */
 
 void
 cgraph_add_new_function (tree fndecl)
 {
-  /* We're called while lowering another function.  We can't do anything
-     at this time without recursing.  Which would cause a GC at an 
-     inappropriate time.  */
   struct cgraph_node *n = cgraph_node (fndecl);
-  n->next_needed = cgraph_analyze_queue;
-  cgraph_analyze_queue = n;
+  n->next_needed = cgraph_expand_queue;
+  cgraph_expand_queue = n;
 }
 
 #include "gt-cgraph.h"

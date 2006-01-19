@@ -166,6 +166,19 @@ extern const enum tree_code_class tree_code_type[];
 
 #define EXPR_P(NODE) IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (NODE)))
 
+/* Returns nonzero iff NODE is an OpenMP directive.  */
+
+#define OMP_DIRECTIVE_P(NODE)				\
+    (TREE_CODE (NODE) == OMP_PARALLEL			\
+     || TREE_CODE (NODE) == OMP_SECTIONS		\
+     || TREE_CODE (NODE) == OMP_SECTION			\
+     || TREE_CODE (NODE) == OMP_FOR			\
+     || TREE_CODE (NODE) == OMP_RETURN_EXPR		\
+     || TREE_CODE (NODE) == OMP_SINGLE			\
+     || TREE_CODE (NODE) == OMP_MASTER			\
+     || TREE_CODE (NODE) == OMP_ORDERED			\
+     || TREE_CODE (NODE) == OMP_CRITICAL)
+
 /* Number of argument-words in each kind of tree-node.  */
 
 extern const unsigned char tree_code_length[];
@@ -1424,6 +1437,8 @@ struct tree_constructor GTY(())
 
 #define OMP_PARALLEL_BODY(NODE)    TREE_OPERAND (OMP_PARALLEL_CHECK (NODE), 0)
 #define OMP_PARALLEL_CLAUSES(NODE) TREE_OPERAND (OMP_PARALLEL_CHECK (NODE), 1)
+#define OMP_PARALLEL_FN(NODE) TREE_OPERAND (OMP_PARALLEL_CHECK (NODE), 2)
+#define OMP_PARALLEL_DATA_ARG(NODE) TREE_OPERAND (OMP_PARALLEL_CHECK (NODE), 3)
 
 #define OMP_FOR_BODY(NODE)	   TREE_OPERAND (OMP_FOR_CHECK (NODE), 0)
 #define OMP_FOR_CLAUSES(NODE)	   TREE_OPERAND (OMP_FOR_CHECK (NODE), 1)
@@ -1434,6 +1449,7 @@ struct tree_constructor GTY(())
 
 #define OMP_SECTIONS_BODY(NODE)    TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 0)
 #define OMP_SECTIONS_CLAUSES(NODE) TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 1)
+#define OMP_SECTIONS_SECTIONS(NODE) TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 2)
 
 #define OMP_SECTION_BODY(NODE)	   TREE_OPERAND (OMP_SECTION_CHECK (NODE), 0)
 

@@ -151,6 +151,32 @@ lower_stmt_body (tree expr, struct lower_data *data)
     lower_stmt (&tsi, data);
 }
 
+
+/* Lower the OpenMP directive statement pointed by TSI.  DATA is
+   passed through the recursion.  */
+
+static void
+lower_omp_directive (tree_stmt_iterator *tsi, struct lower_data *data)
+{
+  tree clause, stmt;
+  
+  stmt = tsi_stmt (*tsi);
+
+  clause = (TREE_CODE (stmt) >= OMP_PARALLEL && TREE_CODE (stmt) <= OMP_SINGLE)
+	   ? OMP_CLAUSES (stmt)
+	   : NULL_TREE;
+
+  for (; clause; clause = OMP_CLAUSE_CHAIN (clause))
+    TREE_BLOCK (clause) = TREE_BLOCK (stmt);
+
+  lower_stmt_body (OMP_BODY (stmt), data);
+  tsi_link_before (tsi, stmt, TSI_SAME_STMT);
+  tsi_link_before (tsi, OMP_BODY (stmt), TSI_SAME_STMT);
+  OMP_BODY (stmt) = NULL_TREE;
+  tsi_delink (tsi);
+}
+
+
 /* Lowers statement TSI.  DATA is passed through the recursion.  */
 
 static void
@@ -192,7 +218,19 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
     case GOTO_EXPR:
     case LABEL_EXPR:
     case SWITCH_EXPR:
+    case OMP_RETURN_EXPR:
       break;
+
+    case OMP_PARALLEL:
+    case OMP_FOR:
+    case OMP_SECTIONS:
+    case OMP_SECTION:
+    case OMP_SINGLE:
+    case OMP_MASTER:
+    case OMP_ORDERED:
+    case OMP_CRITICAL:
+      lower_omp_directive (tsi, data);
+      return;
 
     default:
       gcc_unreachable ();
@@ -503,11 +541,16 @@ lower_return_expr (tree_stmt_iterator *tsi, struct lower_data *data)
 }
 
 
-/* Record the variables in VARS.  */
+/* Record the variables in VARS into function FN.  */
 
 void
-record_vars (tree vars)
+record_vars_into (tree vars, tree fn)
 {
+  struct function *saved_cfun = cfun;
+
+  if (fn != current_function_decl)
+    cfun = DECL_STRUCT_FUNCTION (fn);
+
   for (; vars; vars = TREE_CHAIN (vars))
     {
       tree var = vars;
@@ -516,6 +559,7 @@ record_vars (tree vars)
          we don't need to care about.  */
       if (TREE_CODE (var) != VAR_DECL)
 	continue;
+
       /* Nothing to do in this case.  */
       if (DECL_EXTERNAL (var))
 	continue;
@@ -524,6 +568,18 @@ record_vars (tree vars)
       cfun->unexpanded_var_list = tree_cons (NULL_TREE, var,
 					     cfun->unexpanded_var_list);
     }
+
+  if (fn != current_function_decl)
+    cfun = saved_cfun;
+}
+
+
+/* Record the variables in VARS into current_function_decl.  */
+
+void
+record_vars (tree vars)
+{
+  record_vars_into (vars, current_function_decl);
 }
 
 
