@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -466,6 +466,15 @@
 (define_predicate "tls_symbolic_operand"
   (and (match_code "symbol_ref")
        (match_test "SYMBOL_REF_TLS_MODEL (op) != 0")))
+
+(define_predicate "tls_modbase_operand"
+  (and (match_code "symbol_ref")
+       (match_test "op == ix86_tls_module_base ()")))
+
+(define_predicate "tp_or_register_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "unspec")
+	    (match_test "XINT (op, 1) == UNSPEC_TP"))))
 
 ;; Test for a pc-relative call operand
 (define_predicate "constant_call_address_operand"

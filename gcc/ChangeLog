@@ -1,3 +1,33 @@
+2006-01-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	Introduce TLS descriptors for i386 and x86_64.
+	* config/i386/i386.h (TARGET_GNU2_TLS): New macro.
+	(TARGET_ANY_GNU_TLS): New macro.
+	(enum tls_dialect): Added TLS_DIALECT_GNU2.
+	(struct machine_function): Add tls_descriptor_call_expanded_p.
+	(ix86_tls_descriptor_calls_expande_in_cfun): New macro.
+	(ix86_current_function_calls_tls_descriptor): Likewise.
+	* config/i386/i386.c (ix86_tls_dialect): Fix typo in comment.
+	(override_options): Introduce gnu2 tls dialect.
+	(ix86_frame_pointer_required): Functions containing TLSCALLs are
+	not leaves.
+	(ix86_select_alt_pic_regnum, ix86_compute_frame_layout):
+	Likewise.
+	(legitimize_tls_address): Adjust logic for GNU2 TLS.
+	(ix86_init_machine_status): Initialize new field.
+	(ix86_tls_get_addr): Use TARGET_ANY_GNU_TLS.
+	(ix86_tls_module_base): New.
+	* config/i386/i386-protos.h (ix86_tls_module_base): Declare it.
+	* config/i386/i386.md (UNSPEC_TLSDESC): New constant.
+	(tls_global_dynamic_32, tls_global_dynamic_64): Handle GNU2 TLS.
+	(tls_local_dynamic_base_32, tls_local_dynamic_base_64): Likewise.
+	(tls_dynamic_gnu2_32, *tls_dynamic_lea_32): New patterns.
+	(*tls_dynamic_call_32, *tls_dynamic_gnu2_combine_32): Likewise.
+	(tls_dynamic_gnu2_64, *tls_dynamic_lea_64): Likewise.
+	(*tls_dynamic_call_64, *tls_dynamic_gnu2_combine_64): Likewise.
+	* config/i386/predicates.md (tls_modbase_operand): New.
+	(tp_or_register_operand): New.
+
 2006-01-18  Daniel Berlin  <dberlin@dberlin.org>
 
 	* ipa-reference.c (check_operand):  Allow FUNCTION_DECL.
