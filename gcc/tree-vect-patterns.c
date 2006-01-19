@@ -459,7 +459,7 @@ vect_recog_widen_sum_pattern (tree last_stmt, tree *type_in, tree *type_out)
 
 static void
 vect_pattern_recog_1 (
-	tree (* vect_recog_func_ptr) (tree, tree *, tree *),
+	tree (* vect_recog_func) (tree, tree *, tree *),
 	block_stmt_iterator si)
 {
   tree stmt = bsi_stmt (si);
@@ -474,7 +474,7 @@ vect_pattern_recog_1 (
   tree var, var_name;
   stmt_ann_t ann;
 
-  pattern_expr = (* vect_recog_func_ptr) (stmt, &type_in, &type_out);
+  pattern_expr = (* vect_recog_func) (stmt, &type_in, &type_out);
   if (!pattern_expr) 
     return; 
  

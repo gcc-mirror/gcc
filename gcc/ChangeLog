@@ -1,3 +1,7 @@
+2006-01-19  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vect-patterns.c (vect_pattern_recog_1): Prevent parse error.
+
 2006-01-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (try_combine): Do not worry about MEMs wrapped by USEs.
