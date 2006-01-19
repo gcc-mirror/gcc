@@ -1,3 +1,8 @@
+2006-01-18  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_AttachCurrentThread): Return environment if it
+	already exists.
+
 2006-01-18  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-interp.h (_Jv_CompileMethod): Add declaration.
