@@ -1,3 +1,10 @@
+2006-01-18  Daniel Berlin  <dberlin@dberlin.org>
+
+	* ipa-reference.c (check_operand):  Allow FUNCTION_DECL.
+	(look_for_address_of): Ditto.
+	(ipa_init): Walk the function decls.
+	(static_execute): Don't set readonly on FUNCTION_DECL's.
+
 2006-01-18  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.md (shift spliter): Fix a a typo in the splitter
