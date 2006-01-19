@@ -3189,7 +3189,7 @@ check_default_args (tree x)
 	{
 	  cp_error_at ("default argument missing for parameter %P of %q+#D",
 		       i, x);
-	  break;
+	  TREE_PURPOSE (arg) = error_mark_node;
 	}
     }
 }
