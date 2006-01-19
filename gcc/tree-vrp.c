@@ -1048,6 +1048,96 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
       if (compare_values (var_vr->min, vr_p->min) == 0
 	  && compare_values (var_vr->max, vr_p->max) == 0)
 	set_value_range_to_varying (vr_p);
+      else
+	{
+	  tree min, max, anti_min, anti_max, real_min, real_max;
+
+	  /* We want to compute the logical AND of the two ranges;
+	     there are three cases to consider.
+
+
+	     1. The VR_ANTI_RANGE range is competely within the 
+		VR_RANGE and the endpoints of the ranges are
+		different.  In that case the resulting range
+		should be the VR_ANTI_RANGE.
+
+	     2. The VR_ANTI_RANGE is completely disjoint from
+		the VR_RANGE.  In this case the resulting range
+		should be the VR_RANGE.
+
+	     3. There is some overlap between the VR_ANTI_RANGE
+		and the VR_RANGE.
+
+		3a. If the high limit of the VR_ANTI_RANGE resides
+		    within the VR_RANGE, then the result is a new
+		    VR_RANGE starting at the high limit of the
+		    the VR_ANTI_RANGE + 1 and extending to the
+		    high limit of the original VR_RANGE.
+
+		3b. If the low limit of the VR_ANTI_RANGE resides
+		    within the VR_RANGE, then the result is a new
+		    VR_RANGE starting at the low limit of the original
+		    VR_RANGE and extending to the low limit of the
+		    VR_ANTI_RANGE - 1.  */
+	  if (vr_p->type == VR_ANTI_RANGE)
+	    {
+	      anti_min = vr_p->min;
+	      anti_max = vr_p->max;
+	      real_min = var_vr->min;
+	      real_max = var_vr->max;
+	    }
+	  else
+	    {
+	      anti_min = var_vr->min;
+	      anti_max = var_vr->max;
+	      real_min = vr_p->min;
+	      real_max = vr_p->max;
+	    }
+
+
+	  /* Case 1, VR_ANTI_RANGE completely within VR_RANGE,
+	     not including any endpoints.  */
+	  if (compare_values (anti_max, real_max) == -1
+	      && compare_values (anti_min, real_min) == 1)
+	    {
+	      set_value_range (vr_p, VR_ANTI_RANGE, anti_min,
+			       anti_max, vr_p->equiv);
+	    }
+	  /* Case 2, VR_ANTI_RANGE completely disjoint from
+	     VR_RANGE.  */
+	  else if (compare_values (anti_min, real_max) == 1
+		   || compare_values (anti_max, real_min) == -1)
+	    {
+	      set_value_range (vr_p, VR_RANGE, real_min,
+			       real_max, vr_p->equiv);
+	    }
+	  /* Case 3a, the anti-range extends into the low
+	     part of the real range.  Thus creating a new
+	     low for the real reange.  */
+	  else if ((compare_values (anti_max, real_min) == 1
+		    || compare_values (anti_max, real_min) == 0)
+		   && compare_values (anti_max, real_max) == -1)
+	    {
+	      min = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
+				 anti_max,
+				 build_int_cst (TREE_TYPE (var_vr->min), 1));
+	      max = real_max;
+	      set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
+	    }
+	  /* Case 3b, the anti-range extends into the high
+	     part of the real range.  Thus creating a new
+	     higher for the real reange.  */
+	  else if (compare_values (anti_min, real_min) == 1
+		   && (compare_values (anti_min, real_max) == -1
+		       || compare_values (anti_min, real_max) == 0))
+	    {
+	      max = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
+				 anti_min,
+				 build_int_cst (TREE_TYPE (var_vr->min), 1));
+	      min = real_min;
+	      set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
+	    }
+	}
     }
 
   /* Remove names from the equivalence set that have ranges
