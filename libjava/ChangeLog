@@ -1,3 +1,8 @@
+2006-01-18  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_AttachCurrentThread): Return environment if it
+	already exists.
+
 2006-01-17  Tom Tromey  <tromey@redhat.com>
 
 	PR classpath/20198:
