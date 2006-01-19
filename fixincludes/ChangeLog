@@ -1,3 +1,11 @@
+2006-01-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/15642
+	* inclhack.def (AAB_darwin7_9_long_double_funcs [replace]): Define
+	__APPLE_CC_ as 1345.
+	(broken_nan): New.
+	* fixincl.x: Regenerate.
+
 2005-11-24  Bruce Korb  <bkorb@gnu.org>
 
 	* fixincl.c(write_replacement) "here strings" in AutoGen often/generally
