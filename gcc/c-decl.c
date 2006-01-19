@@ -3054,6 +3054,35 @@ set_array_declarator_inner (struct c_declarator *decl,
     error ("static or type qualifiers in abstract declarator");
   return decl;
 }
+
+/* INIT is a constructor that forms DECL's initializer.  If the final
+   element initializes a flexible array field, add the size of that
+   initializer to DECL's size.  */
+
+static void
+add_flexible_array_elts_to_size (tree decl, tree init)
+{
+  unsigned int size;
+  tree elt, type;
+
+  size = VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init));
+  if (size == 0)
+    return;
+
+  elt = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (init), size - 1)->value;
+  type = TREE_TYPE (elt);
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_SIZE (type) == NULL_TREE
+      && TYPE_DOMAIN (type) != NULL_TREE
+      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE)
+    {
+      complete_array_type (&type, elt, false);
+      DECL_SIZE (decl)
+	= size_binop (PLUS_EXPR, DECL_SIZE (decl), TYPE_SIZE (type));
+      DECL_SIZE_UNIT (decl)
+	= size_binop (PLUS_EXPR, DECL_SIZE_UNIT (decl), TYPE_SIZE_UNIT (type));
+    }
+}
 
 /* Decode a "typename", such as "int **", returning a ..._TYPE node.  */
 
@@ -3353,6 +3382,9 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
+      if (init && TREE_CODE (init) == CONSTRUCTOR)
+	add_flexible_array_elts_to_size (decl, init);
+
       if (DECL_SIZE (decl) == 0 && TREE_TYPE (decl) != error_mark_node
 	  && COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	layout_decl (decl, 0);

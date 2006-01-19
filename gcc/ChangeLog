@@ -1,3 +1,9 @@
+2006-01-19  Richard Sandiford  <richard@codesourcery.com>
+
+	PR c/25805
+	* c-decl.c (add_flexible_array_elts_to_size): New function.
+	(finish_decl): Use it.
+
 2006-01-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/25731
