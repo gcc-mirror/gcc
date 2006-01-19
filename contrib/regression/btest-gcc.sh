@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #  Test GCC.
-#  Copyright (C) 1999, 2000, 2001, 2002, 2005  Free Software Foundation, Inc.
+#  Copyright (C) 1999, 2000, 2001, 2002, 2005, 2006  Free Software Foundation, Inc.
 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -114,9 +114,9 @@ H_REAL_TARGET=`$SOURCE/config.sub $H_TARGET || exit 1`
 
 # TESTLOGS is the list of dejagnu .sum files that the tester should
 # look at.
-TESTLOGS="gcc/testsuite/gcc.sum
-gcc/testsuite/g++.sum
-gcc/testsuite/objc.sum"
+TESTLOGS="gcc/testsuite/gcc/gcc.sum
+gcc/testsuite/g++/g++.sum
+gcc/testsuite/objc/objc.sum"
 
 # Build.
 echo build > $RESULT
