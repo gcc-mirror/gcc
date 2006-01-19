@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -225,6 +225,8 @@ extern int x86_prefetch_sse;
 			     && (ix86_fpmath & FPMATH_387))
 
 #define TARGET_GNU_TLS (ix86_tls_dialect == TLS_DIALECT_GNU)
+#define TARGET_GNU2_TLS (ix86_tls_dialect == TLS_DIALECT_GNU2)
+#define TARGET_ANY_GNU_TLS (TARGET_GNU_TLS || TARGET_GNU2_TLS)
 #define TARGET_SUN_TLS (ix86_tls_dialect == TLS_DIALECT_SUN)
 
 #define TARGET_CMPXCHG (x86_cmpxchg & (1 << ix86_arch))
@@ -2134,6 +2136,7 @@ extern enum fpmath_unit ix86_fpmath;
 enum tls_dialect
 {
   TLS_DIALECT_GNU,
+  TLS_DIALECT_GNU2,
   TLS_DIALECT_SUN
 };
 
@@ -2275,11 +2278,30 @@ struct machine_function GTY(())
   /* Number of saved registers USE_FAST_PROLOGUE_EPILOGUE has been computed
      for.  */
   int use_fast_prologue_epilogue_nregs;
+  /* If true, the current function needs the default PIC register, not
+     an alternate register (on x86) and must not use the red zone (on
+     x86_64), even if it's a leaf function.  We don't want the
+     function to be regarded as non-leaf because TLS calls need not
+     affect register allocation.  This flag is set when a TLS call
+     instruction is expanded within a function, and never reset, even
+     if all such instructions are optimized away.  Use the
+     ix86_current_function_calls_tls_descriptor macro for a better
+     approximation.  */
+  int tls_descriptor_call_expanded_p;
 };
 
 #define ix86_stack_locals (cfun->machine->stack_locals)
 #define ix86_save_varrargs_registers (cfun->machine->save_varrargs_registers)
 #define ix86_optimize_mode_switching (cfun->machine->optimize_mode_switching)
+#define ix86_tls_descriptor_calls_expanded_in_cfun \
+  (cfun->machine->tls_descriptor_call_expanded_p)
+/* Since tls_descriptor_call_expanded is not cleared, even if all TLS
+   calls are optimized away, we try to detect cases in which it was
+   optimized away.  Since such instructions (use (reg REG_SP)), we can
+   verify whether there's any such instruction live by testing that
+   REG_SP is live.  */
+#define ix86_current_function_calls_tls_descriptor \
+  (ix86_tls_descriptor_calls_expanded_in_cfun && regs_ever_live[SP_REG])
 
 /* Control behavior of x86_file_start.  */
 #define X86_FILE_START_VERSION_DIRECTIVE false

@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -876,7 +876,7 @@ struct ix86_frame
 enum cmodel ix86_cmodel;
 /* Asm dialect.  */
 enum asm_dialect ix86_asm_dialect = ASM_ATT;
-/* TLS dialext.  */
+/* TLS dialects.  */
 enum tls_dialect ix86_tls_dialect = TLS_DIALECT_GNU;
 
 /* Which unit we are generating floating point math for.  */
@@ -1626,6 +1626,8 @@ override_options (void)
     {
       if (strcmp (ix86_tls_dialect_string, "gnu") == 0)
 	ix86_tls_dialect = TLS_DIALECT_GNU;
+      else if (strcmp (ix86_tls_dialect_string, "gnu2") == 0)
+	ix86_tls_dialect = TLS_DIALECT_GNU2;
       else if (strcmp (ix86_tls_dialect_string, "sun") == 0)
 	ix86_tls_dialect = TLS_DIALECT_SUN;
       else
@@ -4415,7 +4417,8 @@ ix86_frame_pointer_required (void)
      the frame pointer by default.  Turn it back on now if we've not
      got a leaf function.  */
   if (TARGET_OMIT_LEAF_FRAME_POINTER
-      && (!current_function_is_leaf))
+      && (!current_function_is_leaf
+	  || ix86_current_function_calls_tls_descriptor))
     return 1;
 
   if (current_function_profile)
@@ -4597,7 +4600,8 @@ gen_push (rtx arg)
 static unsigned int
 ix86_select_alt_pic_regnum (void)
 {
-  if (current_function_is_leaf && !current_function_profile)
+  if (current_function_is_leaf && !current_function_profile
+      && !ix86_current_function_calls_tls_descriptor)
     {
       int i;
       for (i = 2; i >= 0; --i)
@@ -4788,7 +4792,8 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
      expander assumes that last current_function_outgoing_args_size
      of stack frame are unused.  */
   if (ACCUMULATE_OUTGOING_ARGS
-      && (!current_function_is_leaf || current_function_calls_alloca))
+      && (!current_function_is_leaf || current_function_calls_alloca
+	  || ix86_current_function_calls_tls_descriptor))
     {
       offset += current_function_outgoing_args_size;
       frame->outgoing_arguments_size = current_function_outgoing_args_size;
@@ -4798,7 +4803,8 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 
   /* Align stack boundary.  Only needed if we're calling another function
      or using alloca.  */
-  if (!current_function_is_leaf || current_function_calls_alloca)
+  if (!current_function_is_leaf || current_function_calls_alloca
+      || ix86_current_function_calls_tls_descriptor)
     frame->padding2 = ((offset + preferred_alignment - 1)
 		       & -preferred_alignment) - offset;
   else
@@ -4819,7 +4825,8 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
     frame->save_regs_using_mov = false;
 
   if (TARGET_RED_ZONE && current_function_sp_is_unchanging
-      && current_function_is_leaf)
+      && current_function_is_leaf
+      && !ix86_current_function_calls_tls_descriptor)
     {
       frame->red_zone_size = frame->to_allocate;
       if (frame->save_regs_using_mov)
@@ -6351,14 +6358,16 @@ get_thread_pointer (int to_reg)
 static rtx
 legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 {
-  rtx dest, base, off, pic;
+  rtx dest, base, off, pic, tp;
   int type;
 
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
       dest = gen_reg_rtx (Pmode);
-      if (TARGET_64BIT)
+      tp = TARGET_GNU2_TLS ? get_thread_pointer (1) : 0;
+
+      if (TARGET_64BIT && ! TARGET_GNU2_TLS)
 	{
 	  rtx rax = gen_rtx_REG (Pmode, 0), insns;
 
@@ -6369,13 +6378,24 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 
 	  emit_libcall_block (insns, dest, rax, x);
 	}
+      else if (TARGET_64BIT && TARGET_GNU2_TLS)
+	emit_insn (gen_tls_global_dynamic_64 (dest, x));
       else
 	emit_insn (gen_tls_global_dynamic_32 (dest, x));
+
+      if (TARGET_GNU2_TLS)
+	{
+	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, dest));
+
+	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
+	}
       break;
 
     case TLS_MODEL_LOCAL_DYNAMIC:
       base = gen_reg_rtx (Pmode);
-      if (TARGET_64BIT)
+      tp = TARGET_GNU2_TLS ? get_thread_pointer (1) : 0;
+
+      if (TARGET_64BIT && ! TARGET_GNU2_TLS)
 	{
 	  rtx rax = gen_rtx_REG (Pmode, 0), insns, note;
 
@@ -6388,13 +6408,25 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 	  note = gen_rtx_EXPR_LIST (VOIDmode, ix86_tls_get_addr (), note);
 	  emit_libcall_block (insns, base, rax, note);
 	}
+      else if (TARGET_64BIT && TARGET_GNU2_TLS)
+	emit_insn (gen_tls_local_dynamic_base_64 (base));
       else
 	emit_insn (gen_tls_local_dynamic_base_32 (base));
+
+      if (TARGET_GNU2_TLS)
+	{
+	  rtx x = ix86_tls_module_base ();
+
+	  base = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, base));
+
+	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
+	}
 
       off = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), UNSPEC_DTPOFF);
       off = gen_rtx_CONST (Pmode, off);
 
-      return gen_rtx_PLUS (Pmode, base, off);
+      dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, base, off));
+      break;
 
     case TLS_MODEL_INITIAL_EXEC:
       if (TARGET_64BIT)
@@ -6407,9 +6439,9 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 	  if (reload_in_progress)
 	    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 	  pic = pic_offset_table_rtx;
-	  type = TARGET_GNU_TLS ? UNSPEC_GOTNTPOFF : UNSPEC_GOTTPOFF;
+	  type = TARGET_ANY_GNU_TLS ? UNSPEC_GOTNTPOFF : UNSPEC_GOTTPOFF;
 	}
-      else if (!TARGET_GNU_TLS)
+      else if (!TARGET_ANY_GNU_TLS)
 	{
 	  pic = gen_reg_rtx (Pmode);
 	  emit_insn (gen_set_got (pic));
@@ -6428,7 +6460,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
       off = gen_const_mem (Pmode, off);
       set_mem_alias_set (off, ix86_GOT_alias_set ());
 
-      if (TARGET_64BIT || TARGET_GNU_TLS)
+      if (TARGET_64BIT || TARGET_ANY_GNU_TLS)
 	{
           base = get_thread_pointer (for_mov || !TARGET_TLS_DIRECT_SEG_REFS);
 	  off = force_reg (Pmode, off);
@@ -6444,11 +6476,11 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 
     case TLS_MODEL_LOCAL_EXEC:
       off = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x),
-			    (TARGET_64BIT || TARGET_GNU_TLS)
+			    (TARGET_64BIT || TARGET_ANY_GNU_TLS)
 			    ? UNSPEC_NTPOFF : UNSPEC_TPOFF);
       off = gen_rtx_CONST (Pmode, off);
 
-      if (TARGET_64BIT || TARGET_GNU_TLS)
+      if (TARGET_64BIT || TARGET_ANY_GNU_TLS)
 	{
 	  base = get_thread_pointer (for_mov || !TARGET_TLS_DIRECT_SEG_REFS);
 	  return gen_rtx_PLUS (Pmode, base, off);
@@ -12900,6 +12932,7 @@ ix86_init_machine_status (void)
 
   f = ggc_alloc_cleared (sizeof (struct machine_function));
   f->use_fast_prologue_epilogue_nregs = -1;
+  f->tls_descriptor_call_expanded_p = 0;
 
   return f;
 }
@@ -12942,12 +12975,31 @@ ix86_tls_get_addr (void)
   if (!ix86_tls_symbol)
     {
       ix86_tls_symbol = gen_rtx_SYMBOL_REF (Pmode,
-					    (TARGET_GNU_TLS && !TARGET_64BIT)
+					    (TARGET_ANY_GNU_TLS
+					     && !TARGET_64BIT)
 					    ? "___tls_get_addr"
 					    : "__tls_get_addr");
     }
 
   return ix86_tls_symbol;
+}
+
+/* Construct the SYMBOL_REF for the _TLS_MODULE_BASE_ symbol.  */
+
+static GTY(()) rtx ix86_tls_module_base_symbol;
+rtx
+ix86_tls_module_base (void)
+{
+
+  if (!ix86_tls_module_base_symbol)
+    {
+      ix86_tls_module_base_symbol = gen_rtx_SYMBOL_REF (Pmode,
+							"_TLS_MODULE_BASE_");
+      SYMBOL_REF_FLAGS (ix86_tls_module_base_symbol)
+	|= TLS_MODEL_GLOBAL_DYNAMIC << SYMBOL_FLAG_TLS_SHIFT;
+    }
+
+  return ix86_tls_module_base_symbol;
 }
 
 /* Calculate the length of the memory address in the instruction
