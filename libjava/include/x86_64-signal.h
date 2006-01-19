@@ -50,6 +50,7 @@ while (0)
 #define RESTORE2(name, syscall)			\
 asm						\
   (						\
+   ".text\n"					\
    ".byte 0  # Yes, this really is necessary\n" \
    ".align 16\n"				\
    "__" #name ":\n"				\
