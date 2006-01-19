@@ -187,7 +187,7 @@ dnl safe (like an empty string).
 dnl
 dnl Defines:
 dnl  SECTION_LDFLAGS='-Wl,--gc-sections' if possible
-dnl  OPT_LDFLAGS='-Wl,-O1' if possible
+dnl  OPT_LDFLAGS='-Wl,-O1' and '-z,relro' if possible
 dnl  LD (as a side effect of testing)
 dnl Sets:
 dnl  with_gnu_ld
@@ -265,6 +265,19 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
       SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
     fi
     AC_MSG_RESULT($ac_sectionLDflags)
+  fi
+
+  # Set -z,relro.
+  # Note this is only for shared objects
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    AC_MSG_CHECKING([for ld that supports -Wl,-z,relro])
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    AC_MSG_RESULT($ac_ld_relro)
   fi
 
   # Set linker optimization flags.
