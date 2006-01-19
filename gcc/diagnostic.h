@@ -24,6 +24,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define GCC_DIAGNOSTIC_H
 
 #include "pretty-print.h"
+#include "options.h"
 
 /* Constants used to discriminate diagnostics.  */
 typedef enum

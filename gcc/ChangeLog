@@ -1,3 +1,10 @@
+2006-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* diagnostic.h: Include options.h.
+	* config/rs6000/x-darwin (host-ppc-darwin.o): Correct the
+	dependancies for diagnostic.h.
+	* Makefile.in (DIAGNOSTIC_H): Add options.h.
+
 2006-01-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-operands.h (ssa_call_clobbered_cache_valid): Remove.
