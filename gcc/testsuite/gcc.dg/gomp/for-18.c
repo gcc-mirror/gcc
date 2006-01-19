@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fopenmp -fdump-tree-omplower" } */
+/* { dg-options "-O -fopenmp -fdump-tree-ompexp" } */
 
 void
 foo (int *a, int i)
@@ -37,6 +37,6 @@ bar (int *a, int i)
     a[j] = 4;
 }
 
-/* { dg-final { scan-tree-dump-times "GOMP_parallel_loop_dynamic_start" 4 "omplower" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "GOMP_parallel_loop_guided_start" 4 "omplower" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "omplower" } } */
+/* { dg-final { scan-tree-dump-times "GOMP_parallel_loop_dynamic_start" 4 "ompexp" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "GOMP_parallel_loop_guided_start" 4 "ompexp" { xfail *-*-* } } } */
+/* { dg-final { cleanup-tree-dump "ompexp" } } */

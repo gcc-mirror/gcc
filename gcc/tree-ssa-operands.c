@@ -1288,6 +1288,14 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case FILTER_EXPR:
     case LABEL_DECL:
     case CONST_DECL:
+    case OMP_PARALLEL:
+    case OMP_SECTIONS:
+    case OMP_FOR:
+    case OMP_RETURN_EXPR:
+    case OMP_SINGLE:
+    case OMP_MASTER:
+    case OMP_ORDERED:
+    case OMP_CRITICAL:
       /* Expressions that make no memory references.  */
       return;
 

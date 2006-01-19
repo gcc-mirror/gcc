@@ -92,16 +92,6 @@ struct gimplify_ctx
   int conditions;
   bool save_stack;
   bool into_ssa;
-
-  /* When gimplifying combined omp parallel directives (omp parallel
-     loop and omp parallel sections), any prefix code needed to setup
-     the associated worksharing construct needs to be emitted in the
-     pre-queue of its parent parallel, otherwise the lowering process
-     will move that code to the child function.  Similarly, we need to
-     move up to the gimplification context of the parent parallel
-     directive so temporaries are declared in the right context.  */
-  tree *combined_pre_p;
-  struct gimplify_ctx *combined_ctxp;
 };
 
 static struct gimplify_ctx *gimplify_ctxp;
@@ -633,6 +623,10 @@ internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
 
   return t;
 }
+
+/* Returns a formal temporary variable initialized with VAL.  PRE_P
+   points to a statement list where side-effects needed to compute VAL
+   should be stored.  */
 
 tree
 get_formal_tmp_var (tree val, tree *pre_p)
@@ -2297,7 +2291,7 @@ shortcut_cond_expr (tree expr)
 
 /* EXPR is used in a boolean context; make sure it has BOOLEAN_TYPE.  */
 
-static tree
+tree
 gimple_boolify (tree expr)
 {
   tree type = TREE_TYPE (expr);
@@ -4131,29 +4125,6 @@ gimplify_to_stmt_list (tree *stmt_p)
     }
 }
 
-/* Gimplify *EXPR_P as if it had been used inside the gimplification
-   context CTX_P.  The other arguments are as in gimplify_expr.  */
-
-static enum gimplify_status
-gimplify_expr_in_ctx (tree *expr_p, tree *pre_p, tree *post_p, 
-		      bool (* gimple_test_f) (tree), fallback_t fallback,
-		      struct gimplify_ctx *ctx_p,
-		      struct gimplify_omp_ctx *omp_ctx_p)
-{
-  enum gimplify_status ret;
-  struct gimplify_ctx *prev_ctxp;
-  struct gimplify_omp_ctx *prev_omp_ctxp;
-  
-  prev_ctxp = gimplify_ctxp;
-  gimplify_ctxp = ctx_p;
-  prev_omp_ctxp = gimplify_omp_ctxp;
-  gimplify_omp_ctxp = omp_ctx_p;
-  ret = gimplify_expr (expr_p, pre_p, post_p, gimple_test_f, fallback);
-  gimplify_ctxp = prev_ctxp;
-  gimplify_omp_ctxp = prev_omp_ctxp;
-
-  return ret;
-}
 
 /* Add FIRSTPRIVATE entries for DECL in the OpenMP the surrounding parallels
    to CTX.  If entries already exist, force them to be some flavor of private.
@@ -4531,19 +4502,6 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p, bool in_parallel)
 	  break;
 
 	case OMP_CLAUSE_SCHEDULE:
-	  if (gimplify_ctxp->combined_pre_p)
-	    {
-	      gcc_assert (gimplify_omp_ctxp == outer_ctx);
-	      gs = gimplify_expr_in_ctx (&OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (c),
-					 gimplify_ctxp->combined_pre_p, NULL,
-					 is_gimple_val, fb_rvalue,
-					 gimplify_ctxp->combined_ctxp,
-					 outer_ctx->outer_context);
-	      if (gs == GS_ERROR)
-		remove = true;
-	      break;
-	    }
-	  /* FALLTHRU */
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	  gs = gimplify_expr (&TREE_OPERAND (c, 0), pre_p, NULL,
@@ -4708,17 +4666,12 @@ gimplify_omp_parallel (tree *expr_p, tree *pre_p)
 
   push_gimplify_context ();
 
-  if (determine_parallel_type (expr) == IS_COMBINED_PARALLEL)
-    {
-      gimplify_ctxp->combined_pre_p = pre_p;
-      gimplify_ctxp->combined_ctxp = gimplify_ctxp->prev_context;
-    }
-
   gimplify_stmt (&OMP_PARALLEL_BODY (expr));
-  pop_gimplify_context (OMP_PARALLEL_BODY (expr));
 
-  gimplify_ctxp->combined_pre_p = NULL;
-  gimplify_ctxp->combined_ctxp = NULL;
+  if (TREE_CODE (OMP_PARALLEL_BODY (expr)) == BIND_EXPR)
+    pop_gimplify_context (OMP_PARALLEL_BODY (expr));
+  else
+    pop_gimplify_context (NULL_TREE);
 
   gimplify_adjust_omp_clauses (&OMP_PARALLEL_CLAUSES (expr));
 
@@ -4732,12 +4685,8 @@ gimplify_omp_for (tree *expr_p, tree *pre_p)
 {
   tree for_stmt, decl, t;
   enum gimplify_status ret = 0;
-  struct gimplify_omp_ctx *outer_combined_omp_ctxp = NULL;
 
   for_stmt = *expr_p;
-
-  if (gimplify_ctxp->combined_pre_p)
-    outer_combined_omp_ctxp = gimplify_omp_ctxp->outer_context;
 
   gimplify_scan_omp_clauses (&OMP_FOR_CLAUSES (for_stmt), pre_p, false);
 
@@ -4754,33 +4703,15 @@ gimplify_omp_for (tree *expr_p, tree *pre_p)
   else
     omp_add_variable (gimplify_omp_ctxp, decl, GOVD_PRIVATE | GOVD_SEEN);
 
-  /* Gimplify inside our parent's context if this is part of a combined
-     parallel+workshare directive.  */
-  if (gimplify_ctxp->combined_pre_p)
-    ret |= gimplify_expr_in_ctx (&TREE_OPERAND (t, 1),
-				 gimplify_ctxp->combined_pre_p, NULL,
-				 is_gimple_val, fb_rvalue,
-				 gimplify_ctxp->combined_ctxp,
-				 outer_combined_omp_ctxp);
-  else
-    ret |= gimplify_expr (&TREE_OPERAND (t, 1), &OMP_FOR_PRE_BODY (for_stmt),
-			  NULL, is_gimple_val, fb_rvalue);
+  ret |= gimplify_expr (&TREE_OPERAND (t, 1), &OMP_FOR_PRE_BODY (for_stmt),
+			NULL, is_gimple_val, fb_rvalue);
 
   t = OMP_FOR_COND (for_stmt);
   gcc_assert (COMPARISON_CLASS_P (t));
   gcc_assert (TREE_OPERAND (t, 0) == decl);
 
-  /* Gimplify inside our parent's context if this is part of a combined
-     parallel+workshare directive.  */
-  if (gimplify_ctxp->combined_pre_p)
-    ret |= gimplify_expr_in_ctx (&TREE_OPERAND (t, 1),
-				 gimplify_ctxp->combined_pre_p, NULL,
-				 is_gimple_val, fb_rvalue,
-				 gimplify_ctxp->combined_ctxp,
-				 outer_combined_omp_ctxp);
-  else
-    ret |= gimplify_expr (&TREE_OPERAND (t, 1), &OMP_FOR_PRE_BODY (for_stmt),
-			  NULL, is_gimple_val, fb_rvalue);
+  ret |= gimplify_expr (&TREE_OPERAND (t, 1), &OMP_FOR_PRE_BODY (for_stmt),
+			NULL, is_gimple_val, fb_rvalue);
 
   t = OMP_FOR_INCR (for_stmt);
   switch (TREE_CODE (t))
@@ -4818,18 +4749,8 @@ gimplify_omp_for (tree *expr_p, tree *pre_p)
 	  gcc_unreachable ();
 	}
 
-      /* Gimplify inside our parent's context if this is part of a
-	 combined parallel+workshare directive.  */
-      if (gimplify_ctxp->combined_pre_p)
-	ret |= gimplify_expr_in_ctx (&TREE_OPERAND (t, 1),
-				     gimplify_ctxp->combined_pre_p, NULL,
-				     is_gimple_val, fb_rvalue,
-				     gimplify_ctxp->combined_ctxp,
-				     outer_combined_omp_ctxp);
-      else
-	ret |= gimplify_expr (&TREE_OPERAND (t, 1),
-			      &OMP_FOR_PRE_BODY (for_stmt), NULL,
-			      is_gimple_val, fb_rvalue);
+      ret |= gimplify_expr (&TREE_OPERAND (t, 1), &OMP_FOR_PRE_BODY (for_stmt),
+			    NULL, is_gimple_val, fb_rvalue);
       break;
 
     default:
@@ -5620,6 +5541,10 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	case OMP_ATOMIC:
 	  ret = gimplify_omp_atomic (expr_p, pre_p);
+	  break;
+
+	case OMP_RETURN_EXPR:
+	  ret = GS_ALL_DONE;
 	  break;
 
 	default:

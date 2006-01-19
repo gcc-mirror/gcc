@@ -65,7 +65,6 @@ DEFTREECODE (TREE_VEC, "tree_vec", tcc_exceptional, 0)
      For a block which represents the outermost scope of a function, it
      points to the FUNCTION_DECL node.
    BLOCK_VARS points to a chain of decl nodes.
-   BLOCK_TYPE_TAGS points to a chain of types which have their own names.
    BLOCK_CHAIN points to the next BLOCK at the same level.
    BLOCK_ABSTRACT_ORIGIN points to the original (abstract) tree node which
    this block is an instance of, or else is NULL to indicate that this
@@ -957,8 +956,15 @@ DEFTREECODE (TARGET_MEM_REF, "target_mem_ref", tcc_reference, 7)
    exposed to TREE_RANGE_CHECK.  */
 /* OpenMP - #pragma omp parallel [clause1 ... clauseN]
    Operand 0: OMP_PARALLEL_BODY: Code to be executed by all threads.
-   Operand 1: OMP_PARALLEL_CLAUSES: List of clauses.  */
-DEFTREECODE (OMP_PARALLEL, "omp_parallel", tcc_statement, 2)
+   Operand 1: OMP_PARALLEL_CLAUSES: List of clauses.
+   Operand 2: OMP_PARALLEL_FN: FUNCTION_DECL used when outlining the
+	      body of the parallel region.  Only valid after
+	      pass_lower_omp.
+   Operand 3: OMP_PARALLEL_DATA_ARG: Local variable in the parent
+	      function containing data to be shared with the child
+	      function.  */
+
+DEFTREECODE (OMP_PARALLEL, "omp_parallel", tcc_statement, 4)
 
 /* OpenMP - #pragma omp for [clause1 ... clauseN]
    Operand 0: OMP_FOR_BODY: Loop body.
@@ -983,8 +989,11 @@ DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 6)
 
 /* OpenMP - #pragma omp sections [clause1 ... clauseN]
    Operand 0: OMP_SECTIONS_BODY: Sections body.
-   Operand 1: OMP_SECTIONS_CLAUSES: List of clauses.  */
-DEFTREECODE (OMP_SECTIONS, "omp_sections", tcc_statement, 2)
+   Operand 1: OMP_SECTIONS_CLAUSES: List of clauses.
+   Operand 2: OMP_SECTIONS_SECTIONS: Vector of the different sections
+	      in the body.  Only valid after lowering and destroyed
+	      after the CFG has been built.  */
+DEFTREECODE (OMP_SECTIONS, "omp_sections", tcc_statement, 3)
 
 /* OpenMP - #pragma omp single
    Operand 0: OMP_SINGLE_BODY: Single section body.
@@ -1062,6 +1071,9 @@ DEFTREECODE (OMP_CLAUSE_ORDERED, "ordered", tcc_expression, 0)
 
 /* OpenMP clause: default.  */
 DEFTREECODE (OMP_CLAUSE_DEFAULT, "default", tcc_expression, 0)
+
+/* Return from an OpenMP directive.  */
+DEFTREECODE (OMP_RETURN_EXPR, "omp_return", tcc_statement, 0)
 
 /* Reduction operations. 
    Operations that take a vector of elements and "reduce" it to a scalar

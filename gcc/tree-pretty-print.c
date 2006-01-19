@@ -1702,6 +1702,21 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case OMP_PARALLEL:
       pp_string (buffer, "#pragma omp parallel");
       dump_omp_clauses (buffer, OMP_PARALLEL_CLAUSES (node), spc, flags);
+      if (OMP_PARALLEL_FN (node))
+	{
+	  pp_string (buffer, " [child fn: ");
+	  dump_generic_node (buffer, OMP_PARALLEL_FN (node), spc, flags, false);
+
+	  pp_string (buffer, " (");
+
+	  if (OMP_PARALLEL_DATA_ARG (node))
+	    dump_generic_node (buffer, OMP_PARALLEL_DATA_ARG (node), spc, flags,
+		               false);
+	  else
+	    pp_string (buffer, "???");
+
+	  pp_string (buffer, ")]");
+	}
 
     dump_omp_body:
       if (!(flags & TDF_SLIM) && OMP_BODY (node))
@@ -1802,6 +1817,11 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "#pragma omp single");
       dump_omp_clauses (buffer, OMP_SINGLE_CLAUSES (node), spc, flags);
       goto dump_omp_body;
+
+    case OMP_RETURN_EXPR:
+      pp_string (buffer, "OMP_RETURN");
+      is_expr = false;
+      break;
 
     case REDUC_MAX_EXPR:
       pp_string (buffer, " REDUC_MAX_EXPR < ");

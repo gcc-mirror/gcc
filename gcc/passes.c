@@ -481,6 +481,7 @@ init_optimization_passes (void)
   p = &all_passes;
   NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_init_datastructures);
+  NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_all_optimizations);
   NEXT_PASS (pass_warn_function_noreturn);
   NEXT_PASS (pass_mudflap_2);

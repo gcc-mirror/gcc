@@ -40,6 +40,7 @@ alloc_stmt_list (void)
   if (list)
     {
       stmt_list_cache = TREE_CHAIN (list);
+      gcc_assert (stmt_list_cache != list);
       memset (list, 0, sizeof(struct tree_common));
       TREE_SET_CODE (list, STATEMENT_LIST);
     }
@@ -54,6 +55,9 @@ free_stmt_list (tree t)
 {
   gcc_assert (!STATEMENT_LIST_HEAD (t));
   gcc_assert (!STATEMENT_LIST_TAIL (t));
+  /* If this triggers, it's a sign that the same list is being freed
+     twice.  */
+  gcc_assert (t != stmt_list_cache || stmt_list_cache == NULL);
   TREE_CHAIN (t) = stmt_list_cache;
   stmt_list_cache = t;
 }
