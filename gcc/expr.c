@@ -8553,6 +8553,31 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
         return temp;
       }
 
+    case DOT_PROD_EXPR:
+      {
+	tree oprnd0 = TREE_OPERAND (exp, 0);
+	tree oprnd1 = TREE_OPERAND (exp, 1);
+	tree oprnd2 = TREE_OPERAND (exp, 2);
+	rtx op2;
+
+	expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, 0);
+	op2 = expand_expr (oprnd2, NULL_RTX, VOIDmode, 0);
+	target = expand_widen_pattern_expr (exp, op0, op1, op2, 
+					    target, unsignedp);
+	return target;
+      }
+
+    case WIDEN_SUM_EXPR:
+      {
+        tree oprnd0 = TREE_OPERAND (exp, 0);
+        tree oprnd1 = TREE_OPERAND (exp, 1);
+                                                                               
+        expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, 0);
+        target = expand_widen_pattern_expr (exp, op0, NULL_RTX, op1,
+                                            target, unsignedp);
+        return target;
+      }
+
     case REDUC_MAX_EXPR:
     case REDUC_MIN_EXPR:
     case REDUC_PLUS_EXPR:

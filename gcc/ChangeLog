@@ -1,3 +1,71 @@
+2006-01-19  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* Makefile.in (tree-vect-patterns.o): Add rule for new file.
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Use
+	existing STMT_VINFO_VECTYPE if available.
+	(vect_mark_relevant): Add special handling for stmts that are
+	marked as STMT_VINFO_IN_PATTERN_P.
+	(vect_analyze_loop): Call vect_pattern_recog.
+	* tree-vectorizer.c (new_stmt_vec_info): Initialize new fields.
+	* tree-vectorizer.h (in_pattern_p, related_stmt): New fields in
+	stmt_info.
+	(STMT_VINFO_IN_PATTERN_P, STMT_VINFO_RELATED_STMT): New macros.
+	(vect_recog_func_ptr): New function-pointer type.
+	* tree-vect-patterns.c: New file.
+	(vect_recog_widen_sum_pattern, vect_recog_widen_mult_pattern):
+	(vect_recog_dot_prod_pattern, vect_pattern_recog):
+	(vect_pattern_recog_1): New functions.
+	(vect_pattern_recog_funcs): New array of function pointers.
+
+	* tree-vectorizer.h (ternary_op): New enum value.
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Added
+	declaration. Revised documentation. Removed redundant dump prints.
+	Removed redundant argument. Added support for reduction patterns.
+	(vectorizable_reduction): Added support for reduction patterns.
+	(vect_transform_stmt): Added support for patterns.
+
+	* expr.c (expand_expr_real_1): Added case for DOT_PROD_EXPR.
+	* genopinit.c (udot_prod_optab, sdot_prod_optab): Initialize.
+	* optabs.c (optab_for_tree_code): Added case for DOT_PROD_EXPR.
+	(expand_widen_pattern_expr): New function.
+	(init_optabs): Initialize new optabs udot_prod_optab,
+	sdot_prod_optab.
+	* optabs.h (OTI_sdot_prod, OTI_udot_prod): New.
+	(sdot_prod_optab, udot_prod_optab): Define new optabs.
+	(expand_widen_pattern_expr): New function declaration.
+	* tree.def (DOT_PROD_EXPR, WIDEN_SUM_EXPR, WIDEN_MULT_EXPR): New
+	tree-codes.
+	* tree-inline.c (estimate_num_insns_1): Added cases for new
+	tree-codes DOT_PROD_EXPR, WIDEN_SUM_EXPR, WIDEN_MULT_EXPR.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	(op_prio): Likewise.
+	(op_symbol): Added cases for WIDEN_SUM_EXPR, WIDEN_MULT_EXPR.
+	* tree-ssa-operands.c (get_expr_operands): Added case for
+	DOT_PROD_EXPR.
+	* tree-vect-patterns.c (widened_name_p): New function.
+	(vect_recog_dot_prod_pattern): Added function implementation.
+	* tree-vect-transform.c (get_initial_def_for_reduction): Added
+	cases for DOT_PROD_EXPR, WIDEN_SUM_EXPR.
+	* config/rs6000/altivec.md (udot_prod<mode>, sdot_prodv8hi): New.
+	* config/i386/sse.md (sdot_prodv8hi, udot_prodv4si): New.
+
+	* expr.c (expand_expr_real_1): Added case for WIDEN_SUM_EXPR.
+	* genopinit.c (widen_ssum_optab, widen_usum_optab): Initialize.
+	* optabs.c (optab_for_tree_code): Added case for WIDEN_SUM_EXPR.
+	(init_optabs): Initialize new optabs widen_ssum_optab,
+	widen_usum_optab.
+	* optabs.h (OTI_widen_ssum, OTI_widen_usum): New.
+	(widen_ssum_optab, widen_usum_optab): Define new optabs.
+	* tree-vect-generic.c: (expand_vector_operations_1): Check type of
+	use instead of type of def.
+	* tree-vect-patterns.c (vect_recog_widen_sum_pattern): Added
+	function implementation.
+	* config/rs6000/altivec.md (widen_usum<mode>, widen_ssumv16qi,
+	widen_ssumv8hi): New.
+
+	* doc/tm.texi (ssum_widen, usum_widen, sdot_prod, udot_prod): New
+	patterns.
+
 2006-01-19  Richard Sandiford  <richard@codesourcery.com>
 
 	PR c/25805

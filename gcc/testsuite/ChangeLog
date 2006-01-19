@@ -1,3 +1,22 @@
+2006-01-19  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* lib/target-suports.exp (check_effective_target_vect_sdot_qi): New.
+	(check_effective_target_vect_udot_qi): New.
+	(check_effective_target_vect_sdot_hi): New.
+	(check_effective_target_vect_udot_hi): New.
+	* gcc.dg/vect/vect.exp: Use dump-details, and compile testcases
+	prefixed with "wrapv-" with -fwrapv.
+	* gcc.dg/vect/wrapv-vect-reduc-dot-s8.c: New.
+	* gcc.dg/vect/vect-reduc-dot-u8.c: New.
+	* gcc.dg/vect/vect-reduc-dot-u16.c: New.
+	* gcc.dg/vect/vect-reduc-dot-s8.c: New.
+	* gcc.dg/vect/vect-reduc-dot-s16.c: New.
+
+	* lib/target-suports.exp (check_effective_target_vect_widen_sum): New.
+	* gcc.dg/vect/vect-reduc-pattern-1.c: New.
+	* gcc.dg/vect/vect-reduc-pattern-2.c: New.
+	* gcc.dg/vect/wrapv-vect-reduc-pattern-2.c: New.
+
 2006-01-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/16829

@@ -1,5 +1,5 @@
 /* SSA operands management for trees.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1273,6 +1273,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	return;
       }
 
+    case DOT_PROD_EXPR:
     case REALIGN_LOAD_EXPR:
       {
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);

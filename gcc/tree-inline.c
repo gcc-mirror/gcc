@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -1728,6 +1728,10 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case REDUC_MAX_EXPR:
     case REDUC_MIN_EXPR:
     case REDUC_PLUS_EXPR:
+    case WIDEN_SUM_EXPR:
+    case DOT_PROD_EXPR: 
+
+    case WIDEN_MULT_EXPR:
 
     case RESX_EXPR:
       *count += 1;

@@ -1364,6 +1364,112 @@ proc check_effective_target_vect_no_bitwise { } {
     return $et_vect_no_bitwise_saved
 }
 
+# Return 1 if the target plus current options supports a vector
+# widening summation, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+                                                                                                
+proc check_effective_target_vect_widen_sum { } {
+    global et_vect_widen_sum
+                                                                                                
+    if [info exists et_vect_widen_sum_saved] {
+        verbose "check_effective_target_vect_widen_sum: using cached result" 2
+    } else {
+        set et_vect_widen_sum_saved 0
+        if { [istarget powerpc*-*-*]
+	     || [istarget ia64-*-*] } {
+            set et_vect_widen_sum_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_widen_sum: returning $et_vect_widen_sum_saved" 2
+    return $et_vect_widen_sum_saved
+}
+
+# Return 1 if the target plus current options supports a vector
+# dot-product of signed chars, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_sdot_qi { } {
+    global et_vect_sdot_qi
+
+    if [info exists et_vect_sdot_qi_saved] {
+        verbose "check_effective_target_vect_sdot_qi: using cached result" 2
+    } else {
+        set et_vect_sdot_qi_saved 0
+        if { [istarget ia64-*-*] } {
+            set et_vect_sdot_qi_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_sdot_qi: returning $et_vect_sdot_qi_saved" 2
+    return $et_vect_sdot_qi_saved
+}
+
+# Return 1 if the target plus current options supports a vector
+# dot-product of unsigned chars, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_udot_qi { } {
+    global et_vect_udot_qi
+
+    if [info exists et_vect_udot_qi_saved] {
+        verbose "check_effective_target_vect_udot_qi: using cached result" 2
+    } else {
+        set et_vect_udot_qi_saved 0
+        if { [istarget powerpc*-*-*]
+             || [istarget ia64-*-*] } {
+            set et_vect_udot_qi_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_udot_qi: returning $et_vect_udot_qi_saved" 2
+    return $et_vect_udot_qi_saved
+}
+
+# Return 1 if the target plus current options supports a vector
+# dot-product of signed shorts, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_sdot_hi { } {
+    global et_vect_sdot_hi
+
+    if [info exists et_vect_sdot_hi_saved] {
+        verbose "check_effective_target_vect_sdot_hi: using cached result" 2
+    } else {
+        set et_vect_sdot_hi_saved 0
+        if { [istarget powerpc*-*-*] 
+	     || [istarget i?86-*-*]
+             || [istarget x86_64-*-*]
+             || [istarget ia64-*-*] } {
+            set et_vect_sdot_hi_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_sdot_hi: returning $et_vect_sdot_hi_saved" 2
+    return $et_vect_sdot_hi_saved
+}
+
+# Return 1 if the target plus current options supports a vector
+# dot-product of unsigned shorts, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_udot_hi { } {
+    global et_vect_udot_hi
+
+    if [info exists et_vect_udot_hi_saved] {
+        verbose "check_effective_target_vect_udot_hi: using cached result" 2
+    } else {
+        set et_vect_udot_hi_saved 0
+        if { [istarget powerpc*-*-*] } {
+            set et_vect_udot_hi_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_udot_hi: returning $et_vect_udot_hi_saved" 2
+    return $et_vect_udot_hi_saved
+}
+
+
 # Return 1 if the target plus current options does not support a vector
 # alignment mechanism, 0 otherwise.
 #
