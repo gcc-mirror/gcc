@@ -1,6 +1,6 @@
 /* Compiler driver program that can handle many languages.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation,
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
    Inc.
 
 This file is part of GCC.
@@ -441,8 +441,8 @@ or with constant text in a single argument.
 	SUFFIX characters following %O as they would following, for
 	example, `.o'.
  %I	Substitute any of -iprefix (made from GCC_EXEC_PREFIX), -isysroot
-	(made from TARGET_SYSTEM_ROOT), and -isystem (made from COMPILER_PATH
-	and -B options) as necessary.
+	(made from TARGET_SYSTEM_ROOT), -isystem (made from COMPILER_PATH
+	and -B options) and -imultilib as necessary.
  %s     current argument is the name of a library or startup file of some sort.
         Search for that file in a standard list of directories
 	and substitute the full name found.
@@ -3535,7 +3535,7 @@ process_command (int argc, const char **argv)
 	{
 	  /* translate_options () has turned --version into -fversion.  */
 	  printf (_("%s (GCC) %s\n"), programname, version_string);
-	  printf ("Copyright %s 2005 Free Software Foundation, Inc.\n",
+	  printf ("Copyright %s 2006 Free Software Foundation, Inc.\n",
 		  _("(C)"));
 	  fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
@@ -4946,6 +4946,15 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	  case 'I':
 	    {
 	      struct spec_path_info info;
+
+	      if (multilib_dir)
+		{
+		  do_spec_1 ("-imultilib", 1, NULL);
+		  /* Make this a separate argument.  */
+		  do_spec_1 (" ", 0, NULL);
+		  do_spec_1 (multilib_dir, 1, NULL);
+		  do_spec_1 (" ", 0, NULL);
+		}
 
 	      if (gcc_exec_prefix)
 		{

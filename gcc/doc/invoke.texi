@@ -9,8 +9,8 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -358,7 +358,7 @@ Objective-C and Objective-C++ Dialects}.
 -include @var{file}  -imacros @var{file} @gol
 -iprefix @var{file}  -iwithprefix @var{dir} @gol
 -iwithprefixbefore @var{dir}  -isystem @var{dir} @gol
--isysroot @var{dir} @gol
+-imultilib @var{dir} -isysroot @var{dir} @gol
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  @gol
 -P  -fworking-directory  -remap @gol
 -trigraphs  -undef  -U@var{macro}  -Wp,@var{option} @gol
@@ -6862,9 +6862,9 @@ C@.
 
 @item %I
 Substitute any of @option{-iprefix} (made from @env{GCC_EXEC_PREFIX}),
-@option{-isysroot} (made from @env{TARGET_SYSTEM_ROOT}), and
+@option{-isysroot} (made from @env{TARGET_SYSTEM_ROOT}),
 @option{-isystem} (made from @env{COMPILER_PATH} and @option{-B} options)
-as necessary.
+and @option{-imultilib} as necessary.
 
 @item %s
 Current argument is the name of a library or startup file of some sort.
