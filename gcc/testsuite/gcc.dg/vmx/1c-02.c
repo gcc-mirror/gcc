@@ -27,8 +27,8 @@ union { char b; vector pixel a; } p16u;
 
 static void test()
 {
-  check((int)&u8.a - (int)&u8 == 16, "u8.a");
-  check((int)&u8.e - (int)&u8 == 32, "u8.e");
+  check((long)&u8.a - (long)&u8 == 16, "u8.a");
+  check((long)&u8.e - (long)&u8 == 32, "u8.e");
   check(sizeof(u8) == 48, "sizeof(u8)");
   check(sizeof(u8u) == 16, "sizeof(u8u)");
 }

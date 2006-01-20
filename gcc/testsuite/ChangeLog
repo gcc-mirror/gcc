@@ -1,3 +1,9 @@
+2006-01-21  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.dg/vmx/1b-01.c: Warning fix.
+	* gcc.dg/vmx/1c-02.c: Likewise.
+	* gcc.dg/vmx/gcc-bug-4.c: Likewise.
+
 2006-01-20  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/24962
