@@ -1,3 +1,7 @@
+2006-01-21  Ben Elliston  <bje@au.ibm.com>
+
+	* varasm.c (assemble_real): Initialise data array.
+
 2006-01-20  Paul Brook  <paul@codesourcery.com>
 
 	Merge from csl-arm-branch.

@@ -2094,7 +2094,7 @@ assemble_integer (rtx x, unsigned int size, unsigned int align, int force)
 void
 assemble_real (REAL_VALUE_TYPE d, enum machine_mode mode, unsigned int align)
 {
-  long data[4];
+  long data[4] = {0, 0, 0, 0};
   int i;
   int bitsize, nelts, nunits, units_per;
 
