@@ -254,7 +254,7 @@ public class HTTPURLConnection
               }
           }
         
-        if (response.getCodeClass() == 3 && getInstanceFollowRedirects())
+        if (isRedirect(response) && getInstanceFollowRedirects())
           {
 	    // Read the response body, if there is one.  If the
 	    // redirect points us back at the same server, we will use
@@ -358,6 +358,12 @@ public class HTTPURLConnection
       }
     while (retry);
     connected = true;
+  }
+
+  private static boolean isRedirect(Response response)
+  {
+    int sc = response.getCode();
+    return (sc != 304 && (sc / 100) == 3);
   }
 
   /**

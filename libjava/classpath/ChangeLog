@@ -1,3 +1,8 @@
+2006-01-20  Chris Burdess  <dog@gnu.org>
+
+	* gnu/java/net/protocol/http/HTTPURLConnection.java: Don't follow
+	  redirects on 304.
+
 2006-01-20  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/java/net/protocol/http/HTTPURLConnection.java (connect):
