@@ -1,3 +1,9 @@
+2006-01-20  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.target/powerpc/rs6000-ldouble-1.c: Tweak powerpc linux
+	target test.
+	* gcc.target/powerpc/rs6000-ldouble-2.c: Likewise.
+
 2006-01-19  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/lea.c: Test pentiumpro, not i686.
