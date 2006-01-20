@@ -1,3 +1,13 @@
+2006-01-19  Paolo Carlini  <pcarlini@suse.de>
+
+	Implement list::splice (and merge) bits of N1599
+	* include/bits/stl_list.h (list<>::_M_check_equal_allocators): New.
+	(list<>::splice(iterator, list&), splice(iterator, list&, iterator),
+	splice(iterator, list&, iterator, iterator)): Use it.
+	* include/bits/stl_list.h (list<>::merge(list&), merge(list&,
+	_StrictWeakOrdering)): Likewise.
+	* testsuite/23_containers/list/operators/5.cc: New.
+
 2006-01-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libstdc++/25797
