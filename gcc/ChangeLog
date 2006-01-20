@@ -1,3 +1,22 @@
+2006-01-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR libstdc++/25524
+	* cppdefault.h (struct default_include): Add multilib flag.
+	* cppdefault.c (cpp_include_defaults): Set it.
+	* c.opt (-imultilib): New option.
+	* c-opts.c (imultilib): New.
+	(c_common_handle_option): Handle -imultilib.
+	(c_common_post_options): Likewise.
+	* c-incpath.c (add_standard_paths, register_include_chains):
+	Likewise.
+	* c-incpath.h (register_include_chains): Add extra parameter.
+	* gcc.c (do_spec_1): Generate -imultilib option.
+	(The Specs Language): Update %I description.
+	(process_command): Update copyright notice.
+	* doc/cppopts.texi (-imultilib): Document.
+	* doc/invoke.texi (-imultilib): Include in option summary.
+	(%I): Update specs documentation.
+
 2006-01-20  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* loop-iv.c (iv_analysis_loop_init): Use df in more conservative way.

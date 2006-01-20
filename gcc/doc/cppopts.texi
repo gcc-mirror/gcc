@@ -1,4 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 @c Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
@@ -482,6 +482,11 @@ would; @option{-iwithprefix} puts it where @option{-idirafter} would.
 @opindex isysroot
 This option is like the @option{--sysroot} option, but applies only to
 header files.  See the @option{--sysroot} option for more information.
+
+@item -imultilib @var{dir}
+@opindex imultilib
+Use @var{dir} as a subdirectory of the directory containing
+target-specific C++ headers.
 
 @item -isystem @var{dir}
 @opindex isystem

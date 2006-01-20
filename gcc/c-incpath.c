@@ -1,6 +1,7 @@
 /* Set up combined include path chain for the preprocessor.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
    Broken out of cppinit.c and cppfiles.c and rewritten Mar 2003.
 
@@ -45,8 +46,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 # define INO_T_COPY(DEST, SRC) (DEST) = (SRC)
 #endif
 
+static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
+
 static void add_env_var_paths (const char *, int);
-static void add_standard_paths (const char *, const char *, int);
+static void add_standard_paths (const char *, const char *, const char *, int);
 static void free_path (struct cpp_dir *, int);
 static void merge_include_chains (cpp_reader *, int);
 static struct cpp_dir *remove_duplicates (cpp_reader *, struct cpp_dir *,
@@ -120,7 +123,8 @@ add_env_var_paths (const char *env_var, int chain)
 
 /* Append the standard include chain defined in cppdefault.c.  */
 static void
-add_standard_paths (const char *sysroot, const char *iprefix, int cxx_stdinc)
+add_standard_paths (const char *sysroot, const char *iprefix,
+		    const char *imultilib, int cxx_stdinc)
 {
   const struct default_include *p;
   size_t len;
@@ -142,6 +146,8 @@ add_standard_paths (const char *sysroot, const char *iprefix, int cxx_stdinc)
 	      if (!strncmp (p->fname, cpp_GCC_INCLUDE_DIR, len))
 		{
 		  char *str = concat (iprefix, p->fname + len, NULL);
+		  if (p->multilib && imultilib)
+		    str = concat (str, dir_separator_str, imultilib, NULL);
 		  add_path (str, SYSTEM, p->cxx_aware, false);
 		}
 	    }
@@ -159,6 +165,9 @@ add_standard_paths (const char *sysroot, const char *iprefix, int cxx_stdinc)
 	    str = concat (sysroot, p->fname, NULL);
 	  else
 	    str = update_path (p->fname, p->component);
+
+	  if (p->multilib && imultilib)
+	    str = concat (str, dir_separator_str, imultilib, NULL);
 
 	  add_path (str, SYSTEM, p->cxx_aware, false);
 	}
@@ -357,8 +366,8 @@ add_path (char *path, int chain, int cxx_aware, bool user_supplied_p)
    removal, and registration with cpplib.  */
 void
 register_include_chains (cpp_reader *pfile, const char *sysroot,
-			 const char *iprefix, int stdinc, int cxx_stdinc,
-			 int verbose)
+			 const char *iprefix, const char *imultilib,
+			 int stdinc, int cxx_stdinc, int verbose)
 {
   static const char *const lang_env_vars[] =
     { "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH",
@@ -380,7 +389,7 @@ register_include_chains (cpp_reader *pfile, const char *sysroot,
 
   /* Finally chain on the standard directories.  */
   if (stdinc)
-    add_standard_paths (sysroot, iprefix, cxx_stdinc);
+    add_standard_paths (sysroot, iprefix, imultilib, cxx_stdinc);
 
   target_c_incpath.extra_includes (sysroot, iprefix, stdinc);
 
