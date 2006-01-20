@@ -18,34 +18,35 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
-/* This is just a very simplistic analysis of induction variables of the loop.
-   The major use is for determining the number of iterations of a loop for
-   loop unrolling, doloop optimization and branch prediction.  For this we
-   are only interested in bivs and a fairly limited set of givs that are
-   needed in the exit condition.  We also only compute the iv information on
-   demand.
+/* This is a simple analysis of induction variables of the loop.  The major use
+   is for determining the number of iterations of a loop for loop unrolling,
+   doloop optimization and branch prediction.  The iv information is computed
+   on demand.
 
-   The interesting registers are determined.  A register is interesting if
+   Induction variable is analyzed by walking the use-def chains.  When a biv
+   is found, it is cached in the bivs hash table.  When register is proved
+   to be a giv, its description is stored to DF_REF_DATA of the def reference.
 
-   -- it is set only in the blocks that dominate the latch of the current loop
-   -- all its sets are simple -- i.e. in the form we understand
+   The analysis works always with one loop -- you must call
+   iv_analysis_loop_init (loop) for it.  All the other functions then work with
+   this loop.   When you need to work with another loop, just call
+   iv_analysis_loop_init for it.  When you no longer need iv analysis, call
+   iv_analysis_done () to clean up the memory.
 
-   We also number the insns sequentially in each basic block.  For a use of the
-   interesting reg, it is now easy to find a reaching definition (there may be
-   only one).
-
-   Induction variable is then simply analyzed by walking the use-def
-   chains.
-   
-   Usage:
-
-   iv_analysis_loop_init (loop);
-   insn = iv_get_reaching_def (where, reg);
-   if (iv_analyze (insn, reg, &iv))
-     {
-       ...
-     }
-   iv_analysis_done (); */
+   The available functions are:
+ 
+   iv_analyze (insn, reg, iv): Stores the description of the induction variable
+     corresponding to the use of register REG in INSN to IV.  Returns true if
+     REG is an induction variable in INSN. false otherwise.
+     If use of REG is not found in INSN, following insns are scanned (so that
+     we may call this function on insn returned by get_condition).
+   iv_analyze_result (insn, def, iv):  Stores to IV the description of the iv
+     corresponding to DEF, which is a register defined in INSN.
+   iv_analyze_expr (insn, rhs, mode, iv):  Stores to IV the description of iv
+     corresponding to expression EXPR evaluated at INSN.  All registers used bu
+     EXPR must also be used in INSN.
+   iv_current_loop_df (): Returns the dataflow object for the current loop used
+     by iv analysis.  */
 
 #include "config.h"
 #include "system.h"
@@ -60,40 +61,61 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "intl.h"
 #include "output.h"
 #include "toplev.h"
+#include "df.h"
+#include "hashtab.h"
 
-/* The insn information.  */
+/* Possible return values of iv_get_reaching_def.  */
 
-struct insn_info
+enum iv_grd_result
 {
-  /* Id of the insn.  */
-  unsigned luid;
+  /* More than one reaching def, or reaching def that does not
+     dominate the use.  */
+  GRD_INVALID,
 
-  /* The previous definition of the register defined by the single
-     set in the insn.  */
-  rtx prev_def;
+  /* The use is trivial invariant of the loop, i.e. is not changed
+     inside the loop.  */
+  GRD_INVARIANT,
 
-  /* The description of the iv.  */
-  struct rtx_iv iv;
+  /* The use is reached by initial value and a value from the
+     previous iteration.  */
+  GRD_MAYBE_BIV,
+
+  /* The use has single dominating def.  */
+  GRD_SINGLE_DOM
 };
 
-static struct insn_info *insn_info;
+/* Information about a biv.  */
 
-/* The last definition of register.  */
+struct biv_entry
+{
+  unsigned regno;	/* The register of the biv.  */
+  struct rtx_iv iv;	/* Value of the biv.  */
+};
 
-static rtx *last_def;
+/* Induction variable stored at the reference.  */
+#define DF_REF_IV(REF) ((struct rtx_iv *) DF_REF_DATA (REF))
+#define DF_REF_IV_SET(REF, IV) DF_REF_DATA (REF) = (IV)
 
-/* The bivs.  */
+/* The current loop.  */
 
-static struct rtx_iv *bivs;
+static struct loop *current_loop;
 
-/* Maximal insn number for that there is place in insn_info array.  */
+/* Dataflow information for the current loop.  */
 
-static unsigned max_insn_no;
+static struct df *df = NULL;
 
-/* Maximal register number for that there is place in bivs and last_def
-   arrays.  */
+/* Bivs of the current loop.  */
 
-static unsigned max_reg_no;
+static htab_t bivs;
+
+/* Return the dataflow object for the current loop.  */
+struct df *
+iv_current_loop_df (void)
+{
+  return df;
+}
+
+static bool iv_analyze_op (rtx, rtx, struct rtx_iv *);
 
 /* Dumps information about IV to FILE.  */
 
@@ -139,23 +161,6 @@ dump_iv_info (FILE *file, struct rtx_iv *iv)
     fprintf (file, " (first special)");
 }
 
-/* Assigns luids to insns in basic block BB.  */
-
-static void
-assign_luids (basic_block bb)
-{
-  unsigned i = 0, uid;
-  rtx insn;
-
-  FOR_BB_INSNS (bb, insn)
-    {
-      uid = INSN_UID (insn);
-      insn_info[uid].luid = i++;
-      insn_info[uid].prev_def = NULL_RTX;
-      insn_info[uid].iv.analysed = false;
-    }
-}
-
 /* Generates a subreg to get the least significant part of EXPR (in mode
    INNER_MODE) to OUTER_MODE.  */
 
@@ -191,131 +196,45 @@ simple_reg_p (rtx reg)
   if (GET_MODE_CLASS (GET_MODE (reg)) != MODE_INT)
     return false;
 
-  if (last_def[r] == const0_rtx)
-    return false;
-
   return true;
 }
 
-/* Checks whether assignment LHS = RHS is simple enough for us to process.  */
-
-static bool
-simple_set_p (rtx lhs, rtx rhs)
-{
-  rtx op0, op1;
-
-  if (!REG_P (lhs)
-      || !simple_reg_p (lhs))
-    return false;
-
-  if (CONSTANT_P (rhs))
-    return true;
-
-  switch (GET_CODE (rhs))
-    {
-    case SUBREG:
-    case REG:
-      return simple_reg_p (rhs);
-
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-    case NEG:
-      return simple_reg_p (XEXP (rhs, 0));
-
-    case PLUS:
-    case MINUS:
-    case MULT:
-    case ASHIFT:
-      op0 = XEXP (rhs, 0);
-      op1 = XEXP (rhs, 1);
-
-      if (!simple_reg_p (op0)
-	  && !CONSTANT_P (op0))
-	return false;
-
-      if (!simple_reg_p (op1)
-	  && !CONSTANT_P (op1))
-	return false;
-
-      if (GET_CODE (rhs) == MULT
-	  && !CONSTANT_P (op0)
-	  && !CONSTANT_P (op1))
-	return false;
-
-      if (GET_CODE (rhs) == ASHIFT
-	  && CONSTANT_P (op0))
-	return false;
-
-      return true;
-
-    default:
-      return false;
-    }
-}
-
-/* Mark single SET in INSN.  */
-
-static rtx
-mark_single_set (rtx insn, rtx set)
-{
-  rtx def = SET_DEST (set), src;
-  unsigned regno, uid;
-
-  src = find_reg_equal_equiv_note (insn);
-  if (src)
-    src = XEXP (src, 0);
-  else
-    src = SET_SRC (set);
-
-  if (!simple_set_p (SET_DEST (set), src))
-    return NULL_RTX;
-
-  regno = REGNO (def);
-  uid = INSN_UID (insn);
-
-  bivs[regno].analysed = false;
-  insn_info[uid].prev_def = last_def[regno];
-  last_def[regno] = insn;
-
-  return def;
-}
-
-/* Invalidate register REG unless it is equal to EXCEPT.  */
+/* Clears the information about ivs stored in df.  */
 
 static void
-kill_sets (rtx reg, rtx by ATTRIBUTE_UNUSED, void *except)
+clear_iv_info (void)
 {
-  if (GET_CODE (reg) == SUBREG)
-    reg = SUBREG_REG (reg);
-  if (!REG_P (reg))
-    return;
-  if (reg == except)
-    return;
+  unsigned i, n_defs = DF_DEFS_SIZE (df);
+  struct rtx_iv *iv;
+  struct df_ref *def;
 
-  last_def[REGNO (reg)] = const0_rtx;
-}
-
-/* Marks sets in basic block BB.  If DOM is true, BB dominates the loop
-   latch.  */
-
-static void
-mark_sets (basic_block bb, bool dom)
-{
-  rtx insn, set, def;
-
-  FOR_BB_INSNS (bb, insn)
+  for (i = 0; i < n_defs; i++)
     {
-      if (!INSN_P (insn))
+      def = DF_DEFS_GET (df, i);
+      iv = DF_REF_IV (def);
+      if (!iv)
 	continue;
-
-      if (dom
-	  && (set = single_set (insn)))
-	def = mark_single_set (insn, set);
-      else
-	def = NULL_RTX;
-
-      note_stores (PATTERN (insn), kill_sets, def);
+      free (iv);
+      DF_REF_IV_SET (def, NULL);
     }
+
+  htab_empty (bivs);
+}
+
+/* Returns hash value for biv B.  */
+
+static hashval_t
+biv_hash (const void *b)
+{
+  return ((const struct biv_entry *) b)->regno;
+}
+
+/* Compares biv B and register R.  */
+
+static int
+biv_eq (const void *b, const void *r)
+{
+  return ((const struct biv_entry *) b)->regno == REGNO ((rtx) r);
 }
 
 /* Prepare the data for an induction variable analysis of a LOOP.  */
@@ -323,97 +242,116 @@ mark_sets (basic_block bb, bool dom)
 void
 iv_analysis_loop_init (struct loop *loop)
 {
-  basic_block *body = get_loop_body_in_dom_order (loop);
-  unsigned b;
+  basic_block *body = get_loop_body_in_dom_order (loop), bb;
+  bitmap blocks = BITMAP_ALLOC (NULL);
+  unsigned i;
+  bool first_time = (df == NULL);
 
-  if ((unsigned) get_max_uid () >= max_insn_no)
+  current_loop = loop;
+
+  /* Clear the information from the analysis of the previous loop.  */
+  if (first_time)
     {
-      /* Add some reserve for insns and registers produced in optimizations.  */
-      max_insn_no = get_max_uid () + 100;
-      if (insn_info)
-	free (insn_info);
-      insn_info = xmalloc (max_insn_no * sizeof (struct insn_info));
+      df = df_init (DF_HARD_REGS | DF_EQUIV_NOTES);
+      df_chain_add_problem (df, DF_UD_CHAIN);
+      bivs = htab_create (10, biv_hash, biv_eq, free);
     }
+  else
+    clear_iv_info ();
 
-  if ((unsigned) max_reg_num () >= max_reg_no)
+  for (i = 0; i < loop->num_nodes; i++)
     {
-      max_reg_no = max_reg_num () + 100;
-      if (last_def)
-	free (last_def);
-      last_def = xmalloc (max_reg_no * sizeof (rtx));
-      if (bivs)
-	free (bivs);
-      bivs = xmalloc (max_reg_no * sizeof (struct rtx_iv));
+      bb = body[i];
+      bitmap_set_bit (blocks, bb->index);
     }
-
-  memset (last_def, 0, max_reg_num () * sizeof (rtx));
-
-  for (b = 0; b < loop->num_nodes; b++)
-    {
-      assign_luids (body[b]);
-      mark_sets (body[b], just_once_each_iteration_p (loop, body[b]));
-    }
-
+  df_set_blocks (df, blocks);
+  df_analyze (df); 
+  BITMAP_FREE (blocks);
   free (body);
 }
 
-/* Gets definition of REG reaching the INSN.  If REG is not simple, const0_rtx
-   is returned.  If INSN is before the first def in the loop, NULL_RTX is
-   returned.  */
+/* Finds the definition of REG that dominates loop latch and stores
+   it to DEF.  Returns false if there is not a single definition
+   dominating the latch.  If REG has no definition in loop, DEF
+   is set to NULL and true is returned.  */
 
-rtx
-iv_get_reaching_def (rtx insn, rtx reg)
+static bool
+latch_dominating_def (rtx reg, struct df_ref **def)
 {
-  unsigned regno, luid, auid;
-  rtx ainsn;
-  basic_block bb, abb;
+  struct df_ref *single_rd = NULL, *adef;
+  unsigned regno = REGNO (reg);
+  struct df_reg_info *reg_info = DF_REG_DEF_GET (df, regno);
+  struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (df, current_loop->latch);
 
+  for (adef = reg_info->reg_chain; adef; adef = adef->next_reg)
+    {
+      if (!bitmap_bit_p (bb_info->out, DF_REF_ID (adef)))
+	continue;
+
+      /* More than one reaching definition.  */
+      if (single_rd)
+	return false;
+
+      if (!just_once_each_iteration_p (current_loop, DF_REF_BB (adef)))
+	return false;
+
+      single_rd = adef;
+    }
+
+  *def = single_rd;
+  return true;
+}
+
+/* Gets definition of REG reaching its use in INSN and stores it to DEF.  */
+
+static enum iv_grd_result
+iv_get_reaching_def (rtx insn, rtx reg, struct df_ref **def)
+{
+  struct df_ref *use, *adef;
+  basic_block def_bb, use_bb;
+  rtx def_insn;
+  bool dom_p;
+  
+  *def = NULL;
+  if (!simple_reg_p (reg))
+    return GRD_INVALID;
   if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+  gcc_assert (REG_P (reg));
+
+  use = df_find_use (df, insn, reg);
+  gcc_assert (use != NULL);
+
+  if (!DF_REF_CHAIN (use))
+    return GRD_INVARIANT;
+
+  /* More than one reaching def.  */
+  if (DF_REF_CHAIN (use)->next)
+    return GRD_INVALID;
+
+  adef = DF_REF_CHAIN (use)->ref;
+  def_insn = DF_REF_INSN (adef);
+  def_bb = DF_REF_BB (adef);
+  use_bb = BLOCK_FOR_INSN (insn);
+
+  if (use_bb == def_bb)
+    dom_p = (DF_INSN_LUID (df, def_insn) < DF_INSN_LUID (df, insn));
+  else
+    dom_p = dominated_by_p (CDI_DOMINATORS, use_bb, def_bb);
+
+  if (dom_p)
     {
-      if (!subreg_lowpart_p (reg))
-	return const0_rtx;
-      reg = SUBREG_REG (reg);
-    }
-  if (!REG_P (reg))
-    return NULL_RTX;
-
-  regno = REGNO (reg);
-  if (!last_def[regno]
-      || last_def[regno] == const0_rtx)
-    return last_def[regno];
-
-  bb = BLOCK_FOR_INSN (insn);
-  luid = insn_info[INSN_UID (insn)].luid;
-
-  ainsn = last_def[regno];
-  while (1)
-    {
-      abb = BLOCK_FOR_INSN (ainsn);
-
-      if (dominated_by_p (CDI_DOMINATORS, bb, abb))
-	break;
-
-      auid = INSN_UID (ainsn);
-      ainsn = insn_info[auid].prev_def;
-
-      if (!ainsn)
-	return NULL_RTX;
+      *def = adef;
+      return GRD_SINGLE_DOM;
     }
 
-  while (1)
-    {
-      abb = BLOCK_FOR_INSN (ainsn);
-      if (abb != bb)
-	return ainsn;
+  /* The definition does not dominate the use.  This is still OK if
+     this may be a use of a biv, i.e. if the def_bb dominates loop
+     latch.  */
+  if (just_once_each_iteration_p (current_loop, def_bb))
+    return GRD_MAYBE_BIV;
 
-      auid = INSN_UID (ainsn);
-      if (luid > insn_info[auid].luid)
-	return ainsn;
-
-      ainsn = insn_info[auid].prev_def;
-      if (!ainsn)
-	return NULL_RTX;
-    }
+  return GRD_INVALID;
 }
 
 /* Sets IV to invariant CST in MODE.  Always returns true (just for
@@ -425,7 +363,6 @@ iv_constant (struct rtx_iv *iv, rtx cst, enum machine_mode mode)
   if (mode == VOIDmode)
     mode = GET_MODE (cst);
 
-  iv->analysed = true;
   iv->mode = mode;
   iv->base = cst;
   iv->step = const0_rtx;
@@ -653,20 +590,26 @@ iv_shift (struct rtx_iv *iv, rtx mby)
 }
 
 /* The recursive part of get_biv_step.  Gets the value of the single value
-   defined in INSN wrto initial value of REG inside loop, in shape described
+   defined by DEF wrto initial value of REG inside loop, in shape described
    at get_biv_step.  */
 
 static bool
-get_biv_step_1 (rtx insn, rtx reg,
+get_biv_step_1 (struct df_ref *def, rtx reg,
 		rtx *inner_step, enum machine_mode *inner_mode,
 		enum rtx_code *extend, enum machine_mode outer_mode,
 		rtx *outer_step)
 {
   rtx set, rhs, op0 = NULL_RTX, op1 = NULL_RTX;
-  rtx next, nextr, def_insn, tmp;
+  rtx next, nextr, tmp;
   enum rtx_code code;
+  rtx insn = DF_REF_INSN (def);
+  struct df_ref *next_def;
+  enum iv_grd_result res;
 
   set = single_set (insn);
+  if (!set)
+    return false;
+
   rhs = find_reg_equal_equiv_note (insn);
   if (rhs)
     rhs = XEXP (rhs, 0);
@@ -742,11 +685,12 @@ get_biv_step_1 (rtx insn, rtx reg,
   else
     nextr = next;
 
-  def_insn = iv_get_reaching_def (insn, nextr);
-  if (def_insn == const0_rtx)
+  res = iv_get_reaching_def (insn, nextr, &next_def);
+
+  if (res == GRD_INVALID || res == GRD_INVARIANT)
     return false;
 
-  if (!def_insn)
+  if (res == GRD_MAYBE_BIV)
     {
       if (!rtx_equal_p (nextr, reg))
 	return false;
@@ -756,7 +700,7 @@ get_biv_step_1 (rtx insn, rtx reg,
       *inner_mode = outer_mode;
       *outer_step = const0_rtx;
     }
-  else if (!get_biv_step_1 (def_insn, reg,
+  else if (!get_biv_step_1 (next_def, reg,
 			    inner_step, inner_mode, extend, outer_mode,
 			    outer_step))
     return false;
@@ -803,7 +747,7 @@ get_biv_step_1 (rtx insn, rtx reg,
       break;
 
     default:
-      gcc_unreachable ();
+      return false;
     }
 
   return true;
@@ -813,16 +757,17 @@ get_biv_step_1 (rtx insn, rtx reg,
 
    OUTER_STEP + EXTEND_{OUTER_MODE} (SUBREG_{INNER_MODE} (REG + INNER_STEP))
 
-   If the operation cannot be described in this shape, return false.  */
+   If the operation cannot be described in this shape, return false.
+   LAST_DEF is the definition of REG that dominates loop latch.  */
 
 static bool
-get_biv_step (rtx reg, rtx *inner_step, enum machine_mode *inner_mode,
-	      enum rtx_code *extend, enum machine_mode *outer_mode,
-	      rtx *outer_step)
+get_biv_step (struct df_ref *last_def, rtx reg, rtx *inner_step,
+	      enum machine_mode *inner_mode, enum rtx_code *extend,
+	      enum machine_mode *outer_mode, rtx *outer_step)
 {
   *outer_mode = GET_MODE (reg);
 
-  if (!get_biv_step_1 (last_def[REGNO (reg)], reg,
+  if (!get_biv_step_1 (last_def, reg,
 		       inner_step, inner_mode, extend, *outer_mode,
 		       outer_step))
     return false;
@@ -833,16 +778,54 @@ get_biv_step (rtx reg, rtx *inner_step, enum machine_mode *inner_mode,
   return true;
 }
 
+/* Records information that DEF is induction variable IV.  */
+
+static void
+record_iv (struct df_ref *def, struct rtx_iv *iv)
+{
+  struct rtx_iv *recorded_iv = xmalloc (sizeof (struct rtx_iv));
+
+  *recorded_iv = *iv;
+  DF_REF_IV_SET (def, recorded_iv);
+}
+
+/* If DEF was already analyzed for bivness, store the description of the biv to
+   IV and return true.  Otherwise return false.  */
+
+static bool
+analyzed_for_bivness_p (rtx def, struct rtx_iv *iv)
+{
+  struct biv_entry *biv = htab_find_with_hash (bivs, def, REGNO (def));
+
+  if (!biv)
+    return false;
+
+  *iv = biv->iv;
+  return true;
+}
+
+static void
+record_biv (rtx def, struct rtx_iv *iv)
+{
+  struct biv_entry *biv = xmalloc (sizeof (struct biv_entry));
+  void **slot = htab_find_slot_with_hash (bivs, def, REGNO (def), INSERT);
+
+  biv->regno = REGNO (def);
+  biv->iv = *iv;
+  gcc_assert (!*slot);
+  *slot = biv;
+}
+
 /* Determines whether DEF is a biv and if so, stores its description
    to *IV.  */
 
 static bool
 iv_analyze_biv (rtx def, struct rtx_iv *iv)
 {
-  unsigned regno;
   rtx inner_step, outer_step;
   enum machine_mode inner_mode, outer_mode;
   enum rtx_code extend;
+  struct df_ref *last_def;
 
   if (dump_file)
     {
@@ -859,31 +842,24 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
       return iv_constant (iv, def, VOIDmode);
     }
 
-  regno = REGNO (def);
-  if (last_def[regno] == const0_rtx)
+  if (!latch_dominating_def (def, &last_def))
     {
       if (dump_file)
 	fprintf (dump_file, "  not simple.\n");
       return false;
     }
 
-  if (last_def[regno] && bivs[regno].analysed)
+  if (!last_def)
+    return iv_constant (iv, def, VOIDmode);
+
+  if (analyzed_for_bivness_p (def, iv))
     {
       if (dump_file)
 	fprintf (dump_file, "  already analysed.\n");
-
-      *iv = bivs[regno];
       return iv->base != NULL_RTX;
     }
 
-  if (!last_def[regno])
-    {
-      iv_constant (iv, def, VOIDmode);
-      goto end;
-    }
-
-  iv->analysed = true;
-  if (!get_biv_step (def, &inner_step, &inner_mode, &extend,
+  if (!get_biv_step (last_def, def, &inner_step, &inner_mode, &extend,
 		     &outer_mode, &outer_step))
     {
       iv->base = NULL_RTX;
@@ -913,7 +889,183 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
       fprintf (dump_file, "\n");
     }
 
-  bivs[regno] = *iv;
+  record_biv (def, iv);
+  return iv->base != NULL_RTX;
+}
+
+/* Analyzes expression RHS used at INSN and stores the result to *IV. 
+   The mode of the induction variable is MODE.  */
+
+bool
+iv_analyze_expr (rtx insn, rtx rhs, enum machine_mode mode, struct rtx_iv *iv)
+{
+  rtx mby = NULL_RTX, tmp;
+  rtx op0 = NULL_RTX, op1 = NULL_RTX;
+  struct rtx_iv iv0, iv1;
+  enum rtx_code code = GET_CODE (rhs);
+  enum machine_mode omode = mode;
+
+  iv->mode = VOIDmode;
+  iv->base = NULL_RTX;
+  iv->step = NULL_RTX;
+
+  gcc_assert (GET_MODE (rhs) == mode || GET_MODE (rhs) == VOIDmode);
+
+  if (CONSTANT_P (rhs)
+      || REG_P (rhs)
+      || code == SUBREG)
+    {
+      if (!iv_analyze_op (insn, rhs, iv))
+	return false;
+	
+      if (iv->mode == VOIDmode)
+	{
+	  iv->mode = mode;
+	  iv->extend_mode = mode;
+	}
+
+      return true;
+    }
+
+  switch (code)
+    {
+    case REG:
+      op0 = rhs;
+      break;
+
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+    case NEG:
+      op0 = XEXP (rhs, 0);
+      omode = GET_MODE (op0);
+      break;
+
+    case PLUS:
+    case MINUS:
+      op0 = XEXP (rhs, 0);
+      op1 = XEXP (rhs, 1);
+      break;
+
+    case MULT:
+      op0 = XEXP (rhs, 0);
+      mby = XEXP (rhs, 1);
+      if (!CONSTANT_P (mby))
+	{
+	  tmp = op0;
+	  op0 = mby;
+	  mby = tmp;
+	}
+      if (!CONSTANT_P (mby))
+	return false;
+      break;
+
+    case ASHIFT:
+      op0 = XEXP (rhs, 0);
+      mby = XEXP (rhs, 1);
+      if (!CONSTANT_P (mby))
+	return false;
+      break;
+
+    default:
+      return false;
+    }
+
+  if (op0
+      && !iv_analyze_expr (insn, op0, omode, &iv0))
+    return false;
+
+  if (op1
+      && !iv_analyze_expr (insn, op1, omode, &iv1))
+    return false;
+
+  switch (code)
+    {
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+      if (!iv_extend (&iv0, code, mode))
+	return false;
+      break;
+
+    case NEG:
+      if (!iv_neg (&iv0))
+	return false;
+      break;
+
+    case PLUS:
+    case MINUS:
+      if (!iv_add (&iv0, &iv1, code))
+	return false;
+      break;
+
+    case MULT:
+      if (!iv_mult (&iv0, mby))
+	return false;
+      break;
+
+    case ASHIFT:
+      if (!iv_shift (&iv0, mby))
+	return false;
+      break;
+
+    default:
+      break;
+    }
+
+  *iv = iv0;
+  return iv->base != NULL_RTX;
+}
+
+/* Analyzes iv DEF and stores the result to *IV.  */
+
+static bool
+iv_analyze_def (struct df_ref *def, struct rtx_iv *iv)
+{
+  rtx insn = DF_REF_INSN (def);
+  rtx reg = DF_REF_REG (def);
+  rtx set, rhs;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Analysing def of ");
+      print_rtl (dump_file, reg);
+      fprintf (dump_file, " in insn ");
+      print_rtl_single (dump_file, insn);
+    }
+
+  if (DF_REF_IV (def))
+    {
+      if (dump_file)
+	fprintf (dump_file, "  already analysed.\n");
+      *iv = *DF_REF_IV (def);
+      return iv->base != NULL_RTX;
+    }
+
+  iv->mode = VOIDmode;
+  iv->base = NULL_RTX;
+  iv->step = NULL_RTX;
+
+  set = single_set (insn);
+  if (!set || SET_DEST (set) != reg)
+    return false;
+
+  rhs = find_reg_equal_equiv_note (insn);
+  if (rhs)
+    rhs = XEXP (rhs, 0);
+  else
+    rhs = SET_SRC (set);
+
+  iv_analyze_expr (insn, rhs, GET_MODE (reg), iv);
+  record_iv (def, iv);
+
+  if (dump_file)
+    {
+      print_rtl (dump_file, reg);
+      fprintf (dump_file, " in insn ");
+      print_rtl_single (dump_file, insn);
+      fprintf (dump_file, "  is ");
+      dump_iv_info (dump_file, iv);
+      fprintf (dump_file, "\n");
+    }
 
   return iv->base != NULL_RTX;
 }
@@ -923,19 +1075,20 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
 static bool
 iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
 {
-  rtx def_insn;
-  unsigned regno;
-  bool inv = CONSTANT_P (op);
+  struct df_ref *def = NULL;
+  enum iv_grd_result res;
 
   if (dump_file)
     {
-      fprintf (dump_file, "Analyzing operand ");
+      fprintf (dump_file, "Analysing operand ");
       print_rtl (dump_file, op);
       fprintf (dump_file, " of insn ");
       print_rtl_single (dump_file, insn);
     }
 
-  if (GET_CODE (op) == SUBREG)
+  if (CONSTANT_P (op))
+    res = GRD_INVARIANT;
+  else if (GET_CODE (op) == SUBREG)
     {
       if (!subreg_lowpart_p (op))
 	return false;
@@ -945,13 +1098,10 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
 
       return iv_subreg (iv, GET_MODE (op));
     }
-
-  if (!inv)
+  else
     {
-      regno = REGNO (op);
-      if (!last_def[regno])
-	inv = true;
-      else if (last_def[regno] == const0_rtx)
+      res = iv_get_reaching_def (insn, op, &def);
+      if (res == GRD_INVALID)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "  not simple.\n");
@@ -959,7 +1109,7 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
 	}
     }
 
-  if (inv)
+  if (res == GRD_INVARIANT)
     {
       iv_constant (iv, op, VOIDmode);
 
@@ -972,208 +1122,52 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
       return true;
     }
 
-  def_insn = iv_get_reaching_def (insn, op);
-  if (def_insn == const0_rtx)
-    {
-      if (dump_file)
-	fprintf (dump_file, "  not simple.\n");
-      return false;
-    }
+  if (res == GRD_MAYBE_BIV)
+    return iv_analyze_biv (op, iv);
 
-  return iv_analyze (def_insn, op, iv);
+  return iv_analyze_def (def, iv);
 }
 
-/* Analyzes iv DEF defined in INSN and stores the result to *IV.  */
+/* Analyzes value VAL at INSN and stores the result to *IV.  */
 
 bool
-iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
+iv_analyze (rtx insn, rtx val, struct rtx_iv *iv)
 {
-  unsigned uid;
-  rtx set, rhs, mby = NULL_RTX, tmp;
-  rtx op0 = NULL_RTX, op1 = NULL_RTX;
-  struct rtx_iv iv0, iv1;
-  enum machine_mode amode;
-  enum rtx_code code;
+  rtx reg;
 
-  if (insn == const0_rtx)
-    return false;
-
-  if (GET_CODE (def) == SUBREG)
+  /* We must find the insn in that val is used, so that we get to UD chains.
+     Since the function is sometimes called on result of get_condition,
+     this does not necessarily have to be directly INSN; scan also the
+     following insns.  */
+  if (simple_reg_p (val))
     {
-      if (!subreg_lowpart_p (def))
-	return false;
+      if (GET_CODE (val) == SUBREG)
+	reg = SUBREG_REG (val);
+      else
+	reg = val;
 
-      if (!iv_analyze (insn, SUBREG_REG (def), iv))
-	return false;
-
-      return iv_subreg (iv, GET_MODE (def));
+      while (!df_find_use (df, insn, reg))
+	insn = NEXT_INSN (insn);
     }
 
-  if (!insn)
-    return iv_analyze_biv (def, iv);
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "Analyzing def of ");
-      print_rtl (dump_file, def);
-      fprintf (dump_file, " in insn ");
-      print_rtl_single (dump_file, insn);
-    }
-
-  uid = INSN_UID (insn);
-  if (insn_info[uid].iv.analysed)
-    {
-      if (dump_file)
-	fprintf (dump_file, "  already analysed.\n");
-      *iv = insn_info[uid].iv;
-      return iv->base != NULL_RTX;
-    }
-
-  iv->mode = VOIDmode;
-  iv->base = NULL_RTX;
-  iv->step = NULL_RTX;
-
-  set = single_set (insn);
-  rhs = find_reg_equal_equiv_note (insn);
-  if (rhs)
-    rhs = XEXP (rhs, 0);
-  else
-    rhs = SET_SRC (set);
-  code = GET_CODE (rhs);
-
-  if (CONSTANT_P (rhs))
-    {
-      op0 = rhs;
-      amode = GET_MODE (def);
-    }
-  else
-    {
-      switch (code)
-	{
-	case SUBREG:
-	  if (!subreg_lowpart_p (rhs))
-	    goto end;
-	  op0 = rhs;
-	  break;
-	  
-	case REG:
-	  op0 = rhs;
-	  break;
-
-	case SIGN_EXTEND:
-	case ZERO_EXTEND:
-	case NEG:
-	  op0 = XEXP (rhs, 0);
-	  break;
-
-	case PLUS:
-	case MINUS:
-	  op0 = XEXP (rhs, 0);
-	  op1 = XEXP (rhs, 1);
-	  break;
-
-	case MULT:
-	  op0 = XEXP (rhs, 0);
-	  mby = XEXP (rhs, 1);
-	  if (!CONSTANT_P (mby))
-	    {
-	      gcc_assert (CONSTANT_P (op0));
-	      tmp = op0;
-	      op0 = mby;
-	      mby = tmp;
-	    }
-	  break;
-
-	case ASHIFT:
-	  gcc_assert (!CONSTANT_P (XEXP (rhs, 0)));
-	  op0 = XEXP (rhs, 0);
-	  mby = XEXP (rhs, 1);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      amode = GET_MODE (rhs);
-    }
-
-  if (op0)
-    {
-      if (!iv_analyze_op (insn, op0, &iv0))
-	goto end;
-	
-      if (iv0.mode == VOIDmode)
-	{
-	  iv0.mode = amode;
-	  iv0.extend_mode = amode;
-	}
-    }
-
-  if (op1)
-    {
-      if (!iv_analyze_op (insn, op1, &iv1))
-	goto end;
-
-      if (iv1.mode == VOIDmode)
-	{
-	  iv1.mode = amode;
-	  iv1.extend_mode = amode;
-	}
-    }
-
-  switch (code)
-    {
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-      if (!iv_extend (&iv0, code, amode))
-	goto end;
-      break;
-
-    case NEG:
-      if (!iv_neg (&iv0))
-	goto end;
-      break;
-
-    case PLUS:
-    case MINUS:
-      if (!iv_add (&iv0, &iv1, code))
-	goto end;
-      break;
-
-    case MULT:
-      if (!iv_mult (&iv0, mby))
-	goto end;
-      break;
-
-    case ASHIFT:
-      if (!iv_shift (&iv0, mby))
-	goto end;
-      break;
-
-    default:
-      break;
-    }
-
-  *iv = iv0;
-
- end:
-  iv->analysed = true;
-  insn_info[uid].iv = *iv;
-
-  if (dump_file)
-    {
-      print_rtl (dump_file, def);
-      fprintf (dump_file, " in insn ");
-      print_rtl_single (dump_file, insn);
-      fprintf (dump_file, "  is ");
-      dump_iv_info (dump_file, iv);
-      fprintf (dump_file, "\n");
-    }
-
-  return iv->base != NULL_RTX;
+  return iv_analyze_op (insn, val, iv);
 }
 
-/* Checks whether definition of register REG in INSN a basic induction
+/* Analyzes definition of DEF in INSN and stores the result to IV.  */
+
+bool
+iv_analyze_result (rtx insn, rtx def, struct rtx_iv *iv)
+{
+  struct df_ref *adef;
+
+  adef = df_find_def (df, insn, def);
+  if (!adef)
+    return false;
+
+  return iv_analyze_def (adef, iv);
+}
+
+/* Checks whether definition of register REG in INSN is a basic induction
    variable.  IV analysis must have been initialized (via a call to
    iv_analysis_loop_init) for this function to produce a result.  */
 
@@ -1181,14 +1175,22 @@ bool
 biv_p (rtx insn, rtx reg)
 {
   struct rtx_iv iv;
+  struct df_ref *def, *last_def;
 
-  if (!REG_P (reg))
+  if (!simple_reg_p (reg))
     return false;
 
-  if (last_def[REGNO (reg)] != insn)
+  def = df_find_def (df, insn, reg);
+  gcc_assert (def != NULL);
+  if (!latch_dominating_def (reg, &last_def))
+    return false;
+  if (last_def != def)
     return false;
 
-  return iv_analyze_biv (reg, &iv);
+  if (!iv_analyze_biv (reg, &iv))
+    return false;
+
+  return iv.step != const0_rtx;
 }
 
 /* Calculates value of IV at ITERATION-th iteration.  */
@@ -1230,21 +1232,12 @@ get_iv_value (struct rtx_iv *iv, rtx iteration)
 void
 iv_analysis_done (void)
 {
-  max_insn_no = 0;
-  max_reg_no = 0;
-  if (insn_info)
+  if (df)
     {
-      free (insn_info);
-      insn_info = NULL;
-    }
-  if (last_def)
-    {
-      free (last_def);
-      last_def = NULL;
-    }
-  if (bivs)
-    {
-      free (bivs);
+      clear_iv_info ();
+      df_finish (df);
+      df = NULL;
+      htab_delete (bivs);
       bivs = NULL;
     }
 }
@@ -1996,7 +1989,7 @@ static void
 iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 			 struct niter_desc *desc)
 {
-  rtx op0, op1, delta, step, bound, may_xform, def_insn, tmp, tmp0, tmp1;
+  rtx op0, op1, delta, step, bound, may_xform, tmp, tmp0, tmp1;
   struct rtx_iv iv0, iv1, tmp_iv;
   rtx assumption, may_not_xform;
   enum rtx_code cond;
@@ -2038,15 +2031,13 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
     goto fail;
 
   op0 = XEXP (condition, 0);
-  def_insn = iv_get_reaching_def (insn, op0);
-  if (!iv_analyze (def_insn, op0, &iv0))
+  if (!iv_analyze (insn, op0, &iv0))
     goto fail;
   if (iv0.extend_mode == VOIDmode)
     iv0.mode = iv0.extend_mode = mode;
   
   op1 = XEXP (condition, 1);
-  def_insn = iv_get_reaching_def (insn, op1);
-  if (!iv_analyze (def_insn, op1, &iv1))
+  if (!iv_analyze (insn, op1, &iv1))
     goto fail;
   if (iv1.extend_mode == VOIDmode)
     iv1.mode = iv1.extend_mode = mode;

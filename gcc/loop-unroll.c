@@ -33,7 +33,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "expr.h"
 #include "hashtab.h"
 #include "recog.h"    
-#include "varray.h"                        
 
 /* This pass performs loop unrolling and peeling.  We only perform these
    optimizations on innermost loops (with single exception) because
@@ -1670,7 +1669,7 @@ analyze_iv_to_split_insn (rtx insn)
   if (!biv_p (insn, dest))
     return NULL;
 
-  ok = iv_analyze (insn, dest, &iv);
+  ok = iv_analyze_result (insn, dest, &iv);
   gcc_assert (ok);
 
   if (iv.step == const0_rtx

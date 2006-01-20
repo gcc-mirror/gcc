@@ -2721,7 +2721,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 
       target = gen_reg_rtx (outmode);
       emit_libcall_block (insns, target, value,
-			  gen_rtx_fmt_e (unoptab->code, mode, op0));
+			  gen_rtx_fmt_e (unoptab->code, outmode, op0));
 
       return target;
     }
