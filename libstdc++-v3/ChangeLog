@@ -1,3 +1,9 @@
+2006-01-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Verbose ld version
+	reporting.  Disable --gc-sections for old binutils, by version.
+	* configure: Regenerate.
+
 2006-01-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR libstdc++/25524
