@@ -3553,6 +3553,9 @@ initializer_constant_valid_p (tree value, tree endtype)
 	     || TREE_CODE (dest_type) == OFFSET_TYPE)
 	    && INTEGRAL_TYPE_P (src_type))
 	  {
+	    if (TREE_CODE (src) == INTEGER_CST
+		&& TYPE_PRECISION (dest_type) >= TYPE_PRECISION (src_type))
+	      return null_pointer_node;
 	    if (integer_zerop (src))
 	      return null_pointer_node;
 	    else if (TYPE_PRECISION (dest_type) <= TYPE_PRECISION (src_type))
@@ -3732,6 +3735,11 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	 way.  */
       if (TREE_CODE (exp) == ADDR_EXPR)
 	exp = build1 (ADDR_EXPR, saved_type, TREE_OPERAND (exp, 0));
+      /* Likewise for constant ints.  */
+      else if (TREE_CODE (exp) == INTEGER_CST)
+	exp = build_int_cst_wide (saved_type, TREE_INT_CST_LOW (exp),
+				  TREE_INT_CST_HIGH (exp));
+      
     }
 
   /* Eliminate any conversions since we'll be outputting the underlying
