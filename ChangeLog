@@ -1,3 +1,7 @@
+2006-01-20  Diego Novillo  <dnovillo@redhat.com>
+
+	* configure: Regenerate.
+
 2006-01-18  Richard Henderson  <rth@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 	    Diego Novillo  <dnovillo@redhat.com>
