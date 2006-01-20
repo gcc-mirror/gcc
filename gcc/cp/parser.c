@@ -6827,8 +6827,17 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser)
 {
   tree statement;
 
+  /* Mark if () ; with a special NOP_EXPR.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+    {
+      cp_lexer_consume_token (parser->lexer);
+      statement = add_stmt (build_empty_stmt ());
+    }
+  /* if a compound is opened, we simply parse the statement directly.  */
+  else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+    statement = cp_parser_compound_statement (parser, NULL, false);
   /* If the token is not a `{', then we must take special action.  */
-  if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
+  else
     {
       /* Create a compound-statement.  */
       statement = begin_compound_stmt (0);
@@ -6837,9 +6846,6 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser)
       /* Finish the dummy compound-statement.  */
       finish_compound_stmt (statement);
     }
-  /* Otherwise, we simply parse the statement directly.  */
-  else
-    statement = cp_parser_compound_statement (parser, NULL, false);
 
   /* Return the statement.  */
   return statement;

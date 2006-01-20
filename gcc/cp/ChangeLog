@@ -1,3 +1,10 @@
+2006-01-20  Dirk Mueller  <dmueller@suse.com>
+
+        PR c++/5520
+        * semantics.c (finish_if_stmt): Call empty_body_warning.
+        * parser.c (cp_parser_implicitly_scoped_statement):
+        Mark empty statement with an empty stmt.
+
 2006-01-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22136

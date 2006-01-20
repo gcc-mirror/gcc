@@ -7186,36 +7186,7 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
 		  &if_locus);
     }
 
-  /* Diagnose ";" via the special empty statement node that we create.  */
-  if (extra_warnings)
-    {
-      tree *inner_then = &then_block, *inner_else = &else_block;
-
-      if (TREE_CODE (*inner_then) == STATEMENT_LIST
-	  && STATEMENT_LIST_TAIL (*inner_then))
-	inner_then = &STATEMENT_LIST_TAIL (*inner_then)->stmt;
-      if (*inner_else && TREE_CODE (*inner_else) == STATEMENT_LIST
-	  && STATEMENT_LIST_TAIL (*inner_else))
-	inner_else = &STATEMENT_LIST_TAIL (*inner_else)->stmt;
-
-      if (TREE_CODE (*inner_then) == NOP_EXPR && !TREE_TYPE (*inner_then))
-	{
-	  if (!*inner_else)
-	    warning (0, "%Hempty body in an if-statement",
-		     EXPR_LOCUS (*inner_then));
-
-	  *inner_then = alloc_stmt_list ();
-	}
-      if (*inner_else
-	  && TREE_CODE (*inner_else) == NOP_EXPR
-	  && !TREE_TYPE (*inner_else))
-	{
-	  warning (0, "%Hempty body in an else-statement",
-		   EXPR_LOCUS (*inner_else));
-
-	  *inner_else = alloc_stmt_list ();
-	}
-    }
+  empty_body_warning (then_block, else_block);
 
   stmt = build3 (COND_EXPR, void_type_node, cond, then_block, else_block);
   SET_EXPR_LOCATION (stmt, if_locus);

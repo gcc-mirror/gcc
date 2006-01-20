@@ -1,3 +1,14 @@
+2006-01-20  Dirk Mueller  <dmueller@suse.com>
+
+        PR c++/5520
+        * c-parser.c (c_parser_if_body): Use build_empty_stmt()
+        instead of a special NOP marker.
+        * c-typeck.c (c_finish_if_stmt): Remove obsoleted special
+        NOP marker handling.
+        * c-common.h (empty_body_warning): Add forward declaration.
+        * c-common.c (empty_body_warning): Add (from c_finish_if_stmt).
+        Now uses IS_EMPTY_STMT() instead of special NOP markers.
+
 2005-01-20  Paul Brook  <paul@codesourcery.com>
 
 	* Makefile.in (lang_checks): Keep going if mkdir fails.
