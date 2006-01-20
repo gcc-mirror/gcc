@@ -616,13 +616,19 @@ df_ru_confluence_n (struct dataflow *dflow, edge e)
       struct df *df = dflow->df;
       bitmap_iterator bi;
       unsigned int regno;
-      bitmap_ior_and_compl_into (op1, op2, dense_invalidated);
+      bitmap tmp = BITMAP_ALLOC (NULL);
+
+      bitmap_copy (tmp, op2);
+      bitmap_and_compl_into (tmp, dense_invalidated);
+
       EXECUTE_IF_SET_IN_BITMAP (sparse_invalidated, 0, regno, bi)
 	{
- 	  bitmap_clear_range (op1, 
+ 	  bitmap_clear_range (tmp, 
  			      DF_REG_USE_GET (df, regno)->begin, 
  			      DF_REG_USE_GET (df, regno)->n_refs);
 	}
+      bitmap_ior_into (op1, tmp);
+      BITMAP_FREE (tmp);
     }
   else
     bitmap_ior_into (op1, op2);
@@ -659,7 +665,7 @@ df_ru_transfer_function (struct dataflow *dflow, int bb_index)
 	}
       bitmap_and_compl_into (tmp, kill);
       bitmap_ior_into (tmp, gen);
-      changed = !bitmap_equal_p (tmp, out);
+      changed = !bitmap_equal_p (tmp, in);
       if (changed)
 	{
 	  BITMAP_FREE (out);
@@ -1097,13 +1103,19 @@ df_rd_confluence_n (struct dataflow *dflow, edge e)
       struct df *df = dflow->df;
       bitmap_iterator bi;
       unsigned int regno;
-      bitmap_ior_and_compl_into (op1, op2, dense_invalidated);
+      bitmap tmp = BITMAP_ALLOC (NULL);
+
+      bitmap_copy (tmp, op2);
+      bitmap_and_compl_into (tmp, dense_invalidated);
+
       EXECUTE_IF_SET_IN_BITMAP (sparse_invalidated, 0, regno, bi)
  	{
- 	  bitmap_clear_range (op1, 
+ 	  bitmap_clear_range (tmp, 
  			      DF_REG_DEF_GET (df, regno)->begin, 
  			      DF_REG_DEF_GET (df, regno)->n_refs);
 	}
+      bitmap_ior_into (op1, tmp);
+      BITMAP_FREE (tmp);
     }
   else
     bitmap_ior_into (op1, op2);
