@@ -497,12 +497,7 @@ cp_lexer_next_token_is_not (cp_lexer* lexer, enum cpp_ttype type)
 static inline bool
 cp_lexer_next_token_is_keyword (cp_lexer* lexer, enum rid keyword)
 {
-  cp_token *token;
-
-  /* Peek at the next token.  */
-  token = cp_lexer_peek_token (lexer);
-  /* Check to see if it is the indicated keyword.  */
-  return token->keyword == keyword;
+  return cp_lexer_peek_token (lexer)->keyword == keyword;
 }
 
 /* Return a pointer to the Nth token in the token stream.  If N is 1,
@@ -756,9 +751,6 @@ cp_token_cache_new (cp_token *first, cp_token *last)
 
 
 /* Decl-specifiers.  */
-
-static void clear_decl_specs
-  (cp_decl_specifier_seq *);
 
 /* Set *DECL_SPECS to represent an empty decl-specifier-seq.  */
 
@@ -1351,9 +1343,6 @@ typedef struct cp_parser GTY(())
      current declaration.  */
   unsigned num_template_parameter_lists;
 } cp_parser;
-
-/* The type of a function that parses some kind of expression.  */
-typedef tree (*cp_parser_expression_fn) (cp_parser *);
 
 /* Prototypes.  */
 
