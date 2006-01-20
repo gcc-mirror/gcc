@@ -136,7 +136,7 @@ AC_SUBST(libtool_VERSION)
 # Check header files.
 AC_STDC_HEADERS
 AC_HEADER_TIME
-AC_CHECK_HEADERS(unistd.h semaphore.h sys/time.h)
+AC_CHECK_HEADERS(alloca.h unistd.h semaphore.h sys/time.h)
 AC_CHECK_HEADER([pthread.h],[],
   [AC_MSG_ERROR([Pthreads are required to build libgomp])])
 
