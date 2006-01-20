@@ -1,3 +1,10 @@
+2006-01-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22136
+	* g++.dg/template/using10.C: New test.
+	* g++.dg/temlpate/using11.C: Likewise.
+	* g++.dg/inherit/using5.C: Tweak error messages.
+
 2006-01-20  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.target/powerpc/rs6000-ldouble-1.c: Tweak powerpc linux
