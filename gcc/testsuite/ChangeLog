@@ -1,3 +1,10 @@
+2006-01-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22136
+	* g++.dg/template/using10.C: New test.
+	* g++.dg/temlpate/using11.C: Likewise.
+	* g++.dg/inherit/using5.C: Tweak error messages.
+
 2006-01-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/25854

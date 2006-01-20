@@ -1,3 +1,9 @@
+2006-01-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22136
+	* name-lookup.c (do_class_using_decl): Don't try to look up base
+	classes in templates with dependent base types.
+
 2006-01-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/25854
