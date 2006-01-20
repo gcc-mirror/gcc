@@ -1,3 +1,7 @@
+2006-01-20  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* loop-iv.c (iv_analysis_loop_init): Use df in more conservative way.
+
 2006-01-20  Richard Sandiford  <richard@codesourcery.com>
 
 	* stmt.c (case_bit_test_cmp): Stabilize the sort using code
