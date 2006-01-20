@@ -148,7 +148,9 @@
 (define_insn "*arm_movdi_vfp"
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r,m,w,r,w,w, Uv")
 	(match_operand:DI 1 "di_operand"              "rIK,mi,r,r,w,w,Uvi,w"))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
+   && (   register_operand (operands[0], DImode)
+       || register_operand (operands[1], DImode))"
   "*
   switch (which_alternative)
     {
@@ -207,7 +209,9 @@
 (define_insn "*movdf_vfp"
   [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,r,r, m,w  ,Uv,w,r")
 	(match_operand:DF 1 "soft_df_operand"		   " r,w,mF,r,UvF,w, w,r"))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
+   && (   register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode))"
   "*
   {
     switch (which_alternative)
