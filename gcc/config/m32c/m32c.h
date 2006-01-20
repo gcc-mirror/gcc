@@ -218,6 +218,13 @@ machine_function;
 #endif
 #define PC_REGNUM PC_REGNO
 
+/* Order of Allocation of Registers */
+
+#define REG_ALLOC_ORDER { \
+	0, 1, 2, 3, 4, 5, /* r0..r3, a0, a1 */ \
+	12, 13, 14, 15, 16, 17, 18, /* mem0..mem7 */  \
+	6, 7, 8, 9, 10, 11 /* sb, fb, sp, pc, flg, ap */ }
+
 /* How Values Fit in Registers */
 
 #define HARD_REGNO_NREGS(R,M) m32c_hard_regno_nregs (R, M)
