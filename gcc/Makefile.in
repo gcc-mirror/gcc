@@ -4037,12 +4037,12 @@ $(lang_checks_parallel): site.exp
 TESTSUITEDIR = testsuite
 
 $(TESTSUITEDIR)/site.exp: site.exp
-	test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
+	-test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
 	-rm -f $@
 	sed '/set tmpdir/ s|testsuite|$(TESTSUITEDIR)|' < site.exp > $@
 
 $(lang_checks): check-% : site.exp
-	test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
+	-test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
 	test -d $(TESTSUITEDIR)/$* || mkdir $(TESTSUITEDIR)/$*
 	-(rootme=`${PWD_COMMAND}`; export rootme; \
 	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
