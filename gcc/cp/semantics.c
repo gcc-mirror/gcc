@@ -670,6 +670,7 @@ finish_if_stmt (tree if_stmt)
   TREE_CHAIN (if_stmt) = NULL;
   add_stmt (do_poplevel (scope));
   finish_stmt ();
+  empty_body_warning (THEN_CLAUSE (if_stmt), ELSE_CLAUSE (if_stmt));
 }
 
 /* Begin a while-statement.  Returns a newly created WHILE_STMT if
