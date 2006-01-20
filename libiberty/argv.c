@@ -328,8 +328,12 @@ expandargv (argcp, argvp)
       const char *filename;
       /* The response file.  */
       FILE *f;
-      /* The number of characters in the response file.  */
+      /* An upper bound on the number of characters in the response
+	 file.  */
       long pos;
+      /* The number of characters in the response file, when actually
+	 read.  */
+      size_t len;
       /* A dynamically allocated buffer used to hold options read from a
 	 response file.  */
       char *buffer;
@@ -337,7 +341,7 @@ expandargv (argcp, argvp)
 	 response file.  */
       char **file_argv;
       /* The number of options read from the response file, if any.  */
-     size_t file_argc;
+      size_t file_argc;
       /* We are only interested in options of the form "@file".  */
       filename = (*argvp)[i];
       if (filename[0] != '@')
@@ -354,10 +358,15 @@ expandargv (argcp, argvp)
       if (fseek (f, 0L, SEEK_SET) == -1)
 	goto error;
       buffer = (char *) xmalloc (pos * sizeof (char) + 1);
-      if (fread (buffer, sizeof (char), pos, f) != (size_t) pos)
+      len = fread (buffer, sizeof (char), pos, f);
+      if (len != (size_t) pos
+	  /* On Windows, fread may return a value smaller than POS,
+	     due to CR/LF->CR translation when reading text files.
+	     That does not in-and-of itself indicate failure.  */
+	  && ferror (f))
 	goto error;
       /* Add a NUL terminator.  */
-      buffer[pos] = '\0';
+      buffer[len] = '\0';
       /* Parse the string.  */
       file_argv = buildargv (buffer);
       /* If *ARGVP is not already dynamically allocated, copy it.  */

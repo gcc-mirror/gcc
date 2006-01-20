@@ -1,3 +1,10 @@
+2006-01-20  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* testsuite/Makefile.in: Add test-expandargv test.
+	* testsuite/test-expandargv.c: New test.
+	* argv.c (expandargv): Check for errors with ferror,
+	rather than just by looking at return value from fread.
+
 2005-12-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* floatformat.c (floatformat_i387_ext_is_valid): Use explicit cast
