@@ -1,3 +1,12 @@
+2006-01-20  Richard Guenther  <rguenther@suse.de>
+	Steven Bosscher <stevenb.gcc@gmail.com>
+
+	PR rtl-optimization/24626
+	* gcc.dg/torture/pr24626-1.c: New testcase.
+	* gcc.dg/torture/pr24626-2.c: Likewise.
+	* gcc.dg/torture/pr24626-3.c: Likewise.
+	* gcc.dg/torture/pr24626-4.c: Likewise.
+
 2006-01-20  Dirk Mueller  <dmueller@suse.com>
 
         PR c++/5520
