@@ -508,7 +508,10 @@ private
       lock : lock_array;
    end record;
    pragma Convention (C, atomic_lock_t);
-   for atomic_lock_t'Alignment use 16;
+   --  ??? Alignment should be 16 but this is larger than BIGGEST_ALIGNMENT.
+   --  This causes an erroneous pointer value to sometimes be passed to free
+   --  during deallocation.  See PR ada/24533 for more details.
+   for atomic_lock_t'Alignment use 8;
 
    type struct_pthread_fast_lock is record
       spinlock : atomic_lock_t;
