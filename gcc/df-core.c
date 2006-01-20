@@ -354,7 +354,30 @@ df_set_blocks (struct df *df, bitmap blocks)
 {
   if (blocks)
     {
-      if (!df->blocks_to_analyze)
+      if (df->blocks_to_analyze)
+	{
+	  int p;
+	  bitmap diff = BITMAP_ALLOC (NULL);
+	  bitmap_and_compl (diff, df->blocks_to_analyze, blocks);
+	  for (p = 0; p < df->num_problems_defined; p++)
+	    {
+	      struct dataflow *dflow = df->problems_in_order[p];
+	      if (*dflow->problem->free_bb_fun)
+		{
+		  bitmap_iterator bi;
+		  unsigned int bb_index;
+		  
+		  EXECUTE_IF_SET_IN_BITMAP (diff, 0, bb_index, bi)
+		    {
+		      basic_block bb = BASIC_BLOCK (bb_index);
+		      (*dflow->problem->free_bb_fun) (dflow, bb, diff);
+		    }
+		}
+	    }
+
+	  BITMAP_FREE (diff);
+	}
+      else
 	df->blocks_to_analyze = BITMAP_ALLOC (NULL);
       bitmap_copy (df->blocks_to_analyze, blocks);
     }
@@ -781,8 +804,10 @@ df_compact_blocks (struct df *df)
 	     These are from orphaned blocks.  */
 	  for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
 	    {
-	      if (problem_temps[i])
-		(*dflow->problem->free_bb_fun) (dflow, problem_temps[i]);
+	      basic_block bb = BASIC_BLOCK (i); 
+	      if (problem_temps[i] && bb)
+		(*dflow->problem->free_bb_fun) 
+		  (dflow, bb, problem_temps[i]);
 	    }
 	}
     }
