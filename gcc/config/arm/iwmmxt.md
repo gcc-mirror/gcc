@@ -66,7 +66,9 @@
 (define_insn "*iwmmxt_arm_movdi"
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, m,y,y,yr,y,yrUy")
 	(match_operand:DI 1 "di_operand"              "rIK,mi,r,y,yr,y,yrUy,y"))]
-  "TARGET_REALLY_IWMMXT"
+  "TARGET_REALLY_IWMMXT
+   && (   register_operand (operands[0], DImode)
+       || register_operand (operands[1], DImode))"
   "*
 {
   switch (which_alternative)
