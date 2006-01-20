@@ -3404,7 +3404,7 @@ FOO_1.0 {
 };
 EOF
 save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -shared -Wl,--version-script,./conftest.map"
+LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
