@@ -1,5 +1,11 @@
 2006-01-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* parser.c (cp_lexer_next_token_is_keyword): Simplify.
+
+	* parser.c (clear_decl_specs): Remove prototype.
+
+	* parser.c (cp_parser_expression_fn): Remove.
+
 	* call.c (add_builtin_candidates): Remove superfluous return.
 	* name-lookup.c (do_toplevel_using_decl): Likewise.
 	* parser.c (cp_parser_type_specifier_seq): Likewise.
