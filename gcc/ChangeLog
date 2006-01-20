@@ -1,3 +1,10 @@
+2006-01-20  Alan Modra  <amodra@bigpond.net.au>
+
+	* libgcc2.c (__floatdisf, __floatdidf): Don't use IBM Extended
+	Double TFmode.
+	(__floatundisf, __floatundidf): Likewise.
+	* libgcc2.h (IS_IBM_EXTENDED): Define.
+
 2006-01-19  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.h (REG_ALLOC_ORDER): Define.

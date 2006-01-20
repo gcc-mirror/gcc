@@ -117,6 +117,14 @@ extern short int __get_eh_table_version (struct exception_descriptor *);
 #endif
 #endif
 
+/* FIXME: This #ifdef probably should be removed, ie. enable the test
+   for mips too.  */
+#ifdef __powerpc__
+#define IS_IBM_EXTENDED(SIZE) (SIZE == 106)
+#else
+#define IS_IBM_EXTENDED(SIZE) 0
+#endif
+
 #ifndef MIN_UNITS_PER_WORD
 #define MIN_UNITS_PER_WORD UNITS_PER_WORD
 #endif
