@@ -1413,7 +1413,9 @@ arm_compute_func_type (void)
      register values that will never be needed again.  This optimization
      was added to speed up context switching in a kernel application.  */
   if (optimize > 0
-      && TREE_NOTHROW (current_function_decl)
+      && (TREE_NOTHROW (current_function_decl)
+          || !(flag_unwind_tables
+               || (flag_exceptions && !USING_SJLJ_EXCEPTIONS)))
       && TREE_THIS_VOLATILE (current_function_decl))
     type |= ARM_FT_VOLATILE;
 

@@ -1,3 +1,8 @@
+2006-01-19  Paul Brook  <paul@codesourcery.com>
+
+	* gcc/config/arm/arm.c (arm_compute_func_type): Treat all functions
+	as nothrow when unwinding tables are disabled.
+
 2006-01-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/25171
