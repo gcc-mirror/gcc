@@ -1,3 +1,8 @@
+2006-01-20  Richard Sandiford  <richard@codesourcery.com>
+
+	* stmt.c (case_bit_test_cmp): Stabilize the sort using code
+	label numbers.
+
 2006-01-20  Richard Guenther  <rguenther@suse.de>
 	Steven Bosscher <stevenb.gcc@gmail.com>
 
