@@ -11893,8 +11893,6 @@ cp_parser_type_specifier_seq (cp_parser* parser,
       if (is_condition && !is_cv_qualifier)
 	flags |= CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES;
     }
-
-  return;
 }
 
 /* Parse a parameter-declaration-clause.
@@ -15766,7 +15764,6 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
 		       TREE_PURPOSE (parser->unparsed_functions_queues));
 	break;
       }
-  return;
 }
 
 /* FN is a FUNCTION_DECL which may contains a parameter with an

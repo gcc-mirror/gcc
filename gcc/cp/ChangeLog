@@ -1,3 +1,10 @@
+2006-01-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* call.c (add_builtin_candidates): Remove superfluous return.
+	* name-lookup.c (do_toplevel_using_decl): Likewise.
+	* parser.c (cp_parser_type_specifier_seq): Likewise.
+	(cp_parser_save_default_args): Likewise.
+
 2006-01-20  Dirk Mueller  <dmueller@suse.com>
 
         PR c++/5520

@@ -3241,7 +3241,6 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
     binding->value = newval;
   if (newtype)
     binding->type = newtype;
-  return;
 }
 
 /* Process a using-directive.  */

@@ -2161,8 +2161,6 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	  (candidates, code, code2, fnname, TREE_VALUE (types[0]),
 	   NULL_TREE, args, argtypes, flags);
     }
-
-  return;
 }
 
 
