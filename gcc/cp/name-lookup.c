@@ -2722,32 +2722,25 @@ push_class_level_binding (tree name, tree x)
 tree
 do_class_using_decl (tree scope, tree name)
 {
-  tree value, decl, binfo;
-  base_kind b_kind;
-  bool dependent_p;
+  /* The USING_DECL returned by this function.  */
+  tree value;
+  /* The declaration (or declarations) name by this using
+     declaration.  NULL if we are in a template and cannot figure out
+     what has been named.  */
+  tree decl;
+  /* True if SCOPE is a dependent type.  */
+  bool scope_dependent_p;
+  /* True if SCOPE::NAME is dependent.  */
+  bool name_dependent_p;
+  /* True if any of the bases of CURRENT_CLASS_TYPE are dependent.  */
+  bool bases_dependent_p;
+  tree binfo;
+  tree base_binfo;
+  int i;
 
   if (!scope || !TYPE_P (scope))
     {
       error ("using-declaration for non-member at class scope");
-      return NULL_TREE;
-    }
-
-  /* Make sure the scope is a base.  */
-  dependent_p = dependent_type_p (scope);
-  if (!dependent_p)
-    binfo = lookup_base (current_class_type, scope, ba_any, &b_kind);
-  else
-    {
-      binfo = NULL;
-      if (same_type_p (current_class_type, scope))
-	b_kind = bk_same_type;
-      else
-	b_kind = bk_proper_base;
-    }
-
-  if (b_kind < bk_proper_base)
-    {
-      error_not_base_type (scope, current_class_type);
       return NULL_TREE;
     }
 
@@ -2769,32 +2762,64 @@ do_class_using_decl (tree scope, tree name)
       return NULL_TREE;
     }
 
-  if (!dependent_p
-      && IDENTIFIER_OPNAME_P (name) && dependent_type_p (TREE_TYPE (name)))
-    dependent_p = 1;
+  scope_dependent_p = dependent_type_p (scope);
+  name_dependent_p = (scope_dependent_p 
+		      || (IDENTIFIER_OPNAME_P (name)
+			  && dependent_type_p (TREE_TYPE (name))));
 
-  /* See if there are any members of the base. */
-  if (!dependent_p)
-    {
-      decl = lookup_member (binfo, name, 0, false);
-
-      if (!decl)
+  bases_dependent_p = false;
+  if (processing_template_decl)
+    for (binfo = TYPE_BINFO (current_class_type), i = 0;
+	 BINFO_BASE_ITERATE (binfo, i, base_binfo); 
+	 i++)
+      if (dependent_type_p (TREE_TYPE (base_binfo)))
 	{
-	  error ("no members matching %<%T::%D%> in %q#T", scope, name, scope);
+	  bases_dependent_p = true;
+	  break;
+	}
+
+  decl = NULL_TREE;
+
+  /* From [namespace.udecl]:
+
+       A using-declaration used as a member-declaration shall refer to a
+       member of a base class of the class being defined.  
+     
+     In general, we cannot check this constraint in a template because
+     we do not know the entire set of base classes of the current
+     class type.  However, if all of the base classes are
+     non-dependent, then we can avoid delaying the check until
+     instantiation.  */
+  if (!scope_dependent_p && !bases_dependent_p)
+    {
+      base_kind b_kind;
+      tree binfo;
+      binfo = lookup_base (current_class_type, scope, ba_any, &b_kind);
+      if (b_kind < bk_proper_base)
+	{
+	  error_not_base_type (scope, current_class_type);
 	  return NULL_TREE;
 	}
 
-      if (BASELINK_P (decl))
-	/* Ignore base type this came from.  */
-	decl = BASELINK_FUNCTIONS (decl);
+      if (!name_dependent_p)
+	{
+	  decl = lookup_member (binfo, name, 0, false);
+	  if (!decl)
+	    {
+	      error ("no members matching %<%T::%D%> in %q#T", scope, name, 
+		     scope);
+	      return NULL_TREE;
+	    }
+	  /* The binfo from which the functions came does not matter.  */
+	  if (BASELINK_P (decl))
+	    decl = BASELINK_FUNCTIONS (decl);
+	}
    }
-  else
-    decl = NULL_TREE;
 
   value = build_lang_decl (USING_DECL, name, NULL_TREE);
   USING_DECL_DECLS (value) = decl;
   USING_DECL_SCOPE (value) = scope;
-  DECL_DEPENDENT_P (value) = dependent_p;
+  DECL_DEPENDENT_P (value) = !decl;
 
   return value;
 }
