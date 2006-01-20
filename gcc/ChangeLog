@@ -4,7 +4,7 @@
 	* df-problems.c (df_ru_confluence_n, df_rd_confluence_n):
 	Corrected confluence operator to remove bits from op2 before oring
 	with op1 rather than removing bits from op1.
-        * (df_ru_transfer_function): Corrected test on wrong bitmap which
+        (df_ru_transfer_function): Corrected test on wrong bitmap which
 	caused infinite loop.  Both of these problems were introduced in
 	the dataflow rewrite.
 
