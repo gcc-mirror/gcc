@@ -352,9 +352,6 @@ struct rtx_iv
   /* The mode the variable iterates in.  */
   enum machine_mode mode;
 
-  /* Whether we have already filled the remaining fields.  */
-  unsigned analysed : 1;
-
   /* Whether the first iteration needs to be handled specially.  */
   unsigned first_special : 1;
 };
@@ -404,12 +401,14 @@ struct niter_desc
 };
 
 extern void iv_analysis_loop_init (struct loop *);
-extern rtx iv_get_reaching_def (rtx, rtx);
 extern bool iv_analyze (rtx, rtx, struct rtx_iv *);
+extern bool iv_analyze_result (rtx, rtx, struct rtx_iv *);
+extern bool iv_analyze_expr (rtx, rtx, enum machine_mode, struct rtx_iv *);
 extern rtx get_iv_value (struct rtx_iv *, rtx);
 extern bool biv_p (rtx, rtx);
 extern void find_simple_exit (struct loop *, struct niter_desc *);
 extern void iv_analysis_done (void);
+extern struct df *iv_current_loop_df (void);
 
 extern struct niter_desc *get_simple_loop_desc (struct loop *loop);
 extern void free_simple_loop_desc (struct loop *loop);

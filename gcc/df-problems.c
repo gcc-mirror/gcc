@@ -369,12 +369,12 @@ df_ru_alloc (struct dataflow *dflow, bitmap blocks_to_rescan)
 	    }
 	}
       
-      if (problem_data->use_sites_size > reg_size)
+      if (problem_data->use_sites_size < reg_size)
 	{
 	  problem_data->use_sites 
-	    = xrealloc (problem_data->use_sites, reg_size *sizeof (bitmap));
-	  memset (problem_data->use_sites, 0,
-		  (reg_size - problem_data->use_sites_size) *sizeof (bitmap));
+	    = xrealloc (problem_data->use_sites, reg_size * sizeof (bitmap));
+	  memset (problem_data->use_sites + problem_data->use_sites_size, 0,
+		  (reg_size - problem_data->use_sites_size) * sizeof (bitmap));
 	  problem_data->use_sites_size = reg_size;
 	}
 
@@ -876,11 +876,11 @@ df_rd_alloc (struct dataflow *dflow, bitmap blocks_to_rescan)
 	    }
 	}
       
-      if (problem_data->def_sites_size > reg_size)
+      if (problem_data->def_sites_size < reg_size)
 	{
 	  problem_data->def_sites 
 	    = xrealloc (problem_data->def_sites, reg_size *sizeof (bitmap));
-	  memset (problem_data->def_sites, 0,
+	  memset (problem_data->def_sites + problem_data->def_sites_size, 0,
 		  (reg_size - problem_data->def_sites_size) *sizeof (bitmap));
 	  problem_data->def_sites_size = reg_size;
 	}

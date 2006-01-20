@@ -1,3 +1,41 @@
+2006-01-20  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* loop-iv.c: Include df.h and hashtab.h.
+	(enum iv_grd_result): New enum.
+	(DF_REF_IV, DF_REF_IV_SET): New macros.
+	(struct biv_entry): New.
+	(df, bivs): New global variables.
+	(struct insn_info, insn_info, last_def, bivs, max_insn_no, max_reg_no,
+	assign_luids, mark_sets, kill_sets, mark_single_set, simple_set_p):
+	Removed.
+	(clear_iv_info, latch_dominating_def, record_iv, iv_analyze_expr,
+	iv_analyze_result, iv_analyze_def, biv_hash, biv_eq,
+	analyzed_for_bivness_p, record_biv): New functions.
+	(iv_analysis_loop_init, iv_get_reaching_def, simple_reg_p,
+	get_biv_step_1, get_biv_step, iv_analyze_biv, iv_analyze_op,
+	iv_analyze, biv_p, iv_analysis_done): Work with df representation of
+	UD chains.
+	(iv_constant, iv_subreg, iv_extend, iv_mult, iv_shift): Do not set
+	analysed.
+	(iv_number_of_iterations): Use new interface to iv analysis.
+	* loop-unroll.c: Do not include varray.h.
+	(analyze_iv_to_split_insn): Use new interface to iv
+	analysis.
+	* loop-unswitch.c (may_unswitch_on): Ditto.
+	* df.c (df_bitmaps_free): Only work for bbs for that structures are
+	allocated.
+	(df_bb_modify): Realloc tables to the new index.
+	(df_find_use): New function.
+	* df.h (df_find_use): Declare.
+	* optabs.c (expand_unop): Make the mode of the REG_EQUAL node be
+	outmode.
+	* cfgloop.h (struct rtx_iv): Remove analysed field.
+	(iv_get_reaching_def): Removed.
+	(iv_analyze_result, iv_analyze_expr, iv_current_loop_df): Declare.
+	* Makefile.in (loop-unroll.o): Remove VARRAY_H dependency.
+	(loop-iv.o): Add df.h and hashtab.h dependency.
+	* df-problems.c (df_ru_alloc, df_rd_alloc): Fix memory reallocation.
+
 2006-01-20  Alan Modra  <amodra@bigpond.net.au>
 
 	* libgcc2.c (__floatdisf, __floatdidf): Don't use IBM Extended
