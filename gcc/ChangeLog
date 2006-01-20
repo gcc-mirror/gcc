@@ -1,3 +1,9 @@
+2006-01-19  DJ Delorie  <dj@redhat.com>
+
+	* reload1.c (find_reload_regs): Note the details of reload
+	failures in the dump file.
+	(spill_failure): Likewise.
+
 2006-01-20  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* loop-iv.c: Include df.h and hashtab.h.
