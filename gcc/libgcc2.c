@@ -1371,7 +1371,14 @@ __floatunditf (UDWtype u)
 #if (defined(L_floatdisf) && LIBGCC2_HAS_SF_MODE)	\
      || (defined(L_floatdidf) && LIBGCC2_HAS_DF_MODE)
 #define DI_SIZE (W_TYPE_SIZE * 2)
-#define F_MODE_OK(SIZE) (SIZE < DI_SIZE && SIZE > (DI_SIZE - SIZE + FSSIZE))
+#define F_MODE_OK(SIZE) \
+  (SIZE < DI_SIZE							\
+   && SIZE > (DI_SIZE - SIZE + FSSIZE)					\
+   /* Don't use IBM Extended Double TFmode for TI->SF calculations.	\
+      The conversion from long double to float suffers from double	\
+      rounding, because we convert via double.  In any case, the	\
+      fallback code is faster.  */					\
+   && !IS_IBM_EXTENDED (SIZE))
 #if defined(L_floatdisf)
 #define FUNC __floatdisf
 #define FSTYPE SFtype
@@ -1476,7 +1483,14 @@ FUNC (DWtype u)
 #if (defined(L_floatundisf) && LIBGCC2_HAS_SF_MODE)	\
      || (defined(L_floatundidf) && LIBGCC2_HAS_DF_MODE)
 #define DI_SIZE (W_TYPE_SIZE * 2)
-#define F_MODE_OK(SIZE) (SIZE < DI_SIZE && SIZE > (DI_SIZE - SIZE + FSSIZE))
+#define F_MODE_OK(SIZE) \
+  (SIZE < DI_SIZE							\
+   && SIZE > (DI_SIZE - SIZE + FSSIZE)					\
+   /* Don't use IBM Extended Double TFmode for TI->SF calculations.	\
+      The conversion from long double to float suffers from double	\
+      rounding, because we convert via double.  In any case, the	\
+      fallback code is faster.  */					\
+   && !IS_IBM_EXTENDED (SIZE))
 #if defined(L_floatundisf)
 #define FUNC __floatundisf
 #define FSTYPE SFtype
