@@ -1134,7 +1134,7 @@ no)
     ;;
 "")
     case "${target}" in
-    *-*-linux*-gnu | *-*-gnu* | *-*-k*bsd*-gnu)
+    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
         # Enable libmudflap by default in GNU and friends.
 	;;
     *-*-freebsd*)
@@ -1157,7 +1157,7 @@ no)
 "")
     # Enable libgomp by default on hosted POSIX systems.
     case "${target}" in
-    *-*-linux*-gnu | *-*-gnu* | *-*-k*bsd*-gnu)
+    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
 	;;
     *-*-netbsd* | *-*-freebsd* | *-*-openbsd*)
 	;;
