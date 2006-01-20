@@ -69,7 +69,7 @@ typedef void (*df_alloc_function) (struct dataflow *, bitmap);
 
 /* Free the basic block info.  Called from the block reordering code
    to get rid of the blocks that have been squished down.   */
-typedef void (*df_free_bb_function) (struct dataflow *, void *);
+typedef void (*df_free_bb_function) (struct dataflow *, basic_block, void *);
 
 /* Local compute function.  */
 typedef void (*df_local_compute_function) (struct dataflow *, bitmap, bitmap);
@@ -569,6 +569,7 @@ extern void df_reg_chain_create (struct df_reg_info *, struct df_ref *);
 extern struct df_ref *df_reg_chain_unlink (struct dataflow *, struct df_ref *);
 extern void df_ref_remove (struct df *, struct df_ref *);
 extern void df_insn_refs_delete (struct dataflow *, rtx);
+extern void df_bb_refs_delete (struct dataflow *, int);
 extern void df_refs_delete (struct dataflow *, bitmap);
 extern void df_reorganize_refs (struct df_ref_info *);
 extern void df_set_state (int);
