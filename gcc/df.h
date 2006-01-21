@@ -67,6 +67,14 @@ enum df_flow_dir
 /* Allocate the problem specific data.  */
 typedef void (*df_alloc_function) (struct dataflow *, bitmap);
 
+/* This function is called if the problem has global data that needs
+   to be cleared when ever the set of blocks changes.  The bitmap
+   contains the set of blocks that may require special attention.
+   This call is only made if some of the blocks are going to change.
+   If everything is to be deleted, the wholesale deletion mechanisms
+   apply. */
+typedef void (*df_reset_function) (struct dataflow *, bitmap);
+
 /* Free the basic block info.  Called from the block reordering code
    to get rid of the blocks that have been squished down.   */
 typedef void (*df_free_bb_function) (struct dataflow *, basic_block, void *);
@@ -108,6 +116,7 @@ struct df_problem {
   unsigned int id;                        
   enum df_flow_dir dir;			/* Dataflow direction.  */
   df_alloc_function alloc_fun;
+  df_reset_function reset_fun;
   df_free_bb_function free_bb_fun;
   df_local_compute_function local_compute_fun;
   df_init_function init_fun;
@@ -216,7 +225,7 @@ struct df_ref
   basic_block bb;               /* Basic block containing the instruction. */
   rtx insn;			/* Insn containing ref.  NB: THIS MAY BE NULL.  */
   rtx *loc;			/* The location of the reg.  */
-  struct df_link *chain;	/* Head of def-use, use-def or bi chain.  */
+  struct df_link *chain;	/* Head of def-use, use-def.  */
   unsigned int id;		/* Location in table.  */
   enum df_ref_type type;	/* Type of ref.  */
   enum df_ref_flags flags;	/* Various flags.  */

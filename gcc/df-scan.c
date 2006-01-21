@@ -304,6 +304,7 @@ static struct df_problem problem_SCAN =
   DF_SCAN,                    /* Problem id.  */
   DF_NONE,                    /* Direction.  */
   df_scan_alloc,              /* Allocate the problem specific data.  */
+  NULL,                       /* Reset global information.  */
   df_scan_free_bb_info,       /* Free basic block info.  */
   NULL,                       /* Local compute function.  */
   NULL,                       /* Init the solution specific data.  */
@@ -426,6 +427,8 @@ df_rescan_blocks (struct df *df, bitmap blocks)
 
   if (blocks)
     {
+      int i;
+
       /* Need to assure that there are space in all of the tables.  */
       unsigned int insn_num = get_max_uid () + 1;
       insn_num += insn_num / 4;
@@ -442,6 +445,24 @@ df_rescan_blocks (struct df *df, bitmap blocks)
       bitmap_copy (local_blocks_to_scan, blocks);
       df->def_info.add_refs_inline = true;
       df->use_info.add_refs_inline = true;
+
+      for (i = df->num_problems_defined; i; i--)
+	{
+	  bitmap blocks_to_reset = NULL;
+	  if (*dflow->problem->reset_fun)
+	    {
+	      if (!blocks_to_reset)
+		{
+		  blocks_to_reset = BITMAP_ALLOC (NULL);
+		  bitmap_copy (blocks_to_reset, local_blocks_to_scan);
+		  if (df->blocks_to_scan)
+		    bitmap_ior_into (blocks_to_reset, df->blocks_to_scan);
+		}
+	      (*dflow->problem->reset_fun) (dflow, blocks_to_reset);
+	    }
+	  if (blocks_to_reset)
+	    BITMAP_FREE (blocks_to_reset);
+	}
 
       df_refs_delete (dflow, local_blocks_to_scan);
 
@@ -727,10 +748,13 @@ df_insn_refs_delete (struct dataflow *dflow, rtx insn)
 {
   struct df *df = dflow->df;
   unsigned int uid = INSN_UID (insn);
-  struct df_insn_info *insn_info = DF_INSN_UID_GET (df, uid);
+  struct df_insn_info *insn_info = NULL;
   struct df_ref *ref;
   struct df_scan_problem_data *problem_data =
     (struct df_scan_problem_data *) dflow->problem_data;
+
+  if (uid < df->insns_size)
+    insn_info = DF_INSN_UID_GET (df, uid);
 
   if (insn_info)
     {
@@ -769,7 +793,7 @@ df_bb_refs_delete (struct dataflow *dflow, int bb_index)
 	}
     }
   
-  /* Get rid of any artifical uses.  */
+  /* Get rid of any artifical uses or defs.  */
   if (bb_info)
     {
       def = bb_info->artificial_defs;
