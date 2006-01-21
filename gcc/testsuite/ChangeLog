@@ -1,3 +1,20 @@
+2005-01-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25124
+	PR fortran/25625
+	* gfortran.dg/internal_references_1.f90: New test.
+	  PR fortran/20881
+	PR fortran/23308
+	PR fortran/25538
+	PR fortran/25710
+	* gfortran.dg/global_references_1.f90: New test.
+	* gfortran.dg/g77/19990905-1.f: Restore the error that
+	there is a clash between the common block name and
+	the name of a subroutine reference.
+
+	PR fortran/PR24276
+	* gfortran.dg/aliasing_dummy_1.f90: New test.
+
 2006-01-21  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/vmx/1b-01.c: Warning fix.

@@ -603,17 +603,38 @@ get_proc_name (const char *name, gfc_symbol ** result)
   int rc;
 
   if (gfc_current_ns->parent == NULL)
-    return gfc_get_symbol (name, NULL, result);
+    rc = gfc_get_symbol (name, NULL, result);
+  else
+    rc = gfc_get_symbol (name, gfc_current_ns->parent, result);
 
-  rc = gfc_get_symbol (name, gfc_current_ns->parent, result);
-  if (*result == NULL)
+  sym = *result;
+
+  if (sym && !sym->new && gfc_current_state () != COMP_INTERFACE)
+    {
+      /* Trap another encompassed procedure with the same name.  */
+      if (sym->attr.flavor != 0
+	    && sym->attr.proc != 0
+	    && (sym->attr.subroutine || sym->attr.function))
+	gfc_error_now ("Procedure '%s' at %C is already defined at %L",
+		       name, &sym->declared_at);
+
+      /* Trap declarations of attributes in encompassing scope.  The
+	 signature for this is that ts.kind is set.  Legitimate
+	 references only set ts.type.  */
+      if (sym->ts.kind != 0
+	    && sym->attr.proc == 0
+	    && gfc_current_ns->parent != NULL
+	    && sym->attr.access == 0)
+	gfc_error_now ("Procedure '%s' at %C has an explicit interface"
+		       " and must not have attributes declared at %L",
+		       name, &sym->declared_at);
+    }
+
+  if (gfc_current_ns->parent == NULL || *result == NULL)
     return rc;
-
-  /* ??? Deal with ENTRY problem */
 
   st = gfc_new_symtree (&gfc_current_ns->sym_root, name);
 
-  sym = *result;
   st->n.sym = sym;
   sym->refs++;
 
@@ -2606,6 +2627,29 @@ cleanup:
   return m;
 }
 
+/* This is mostly a copy of parse.c(add_global_procedure) but modified to pass the
+   name of the entry, rather than the gfc_current_block name, and to return false
+   upon finding an existing global entry.  */
+
+static bool
+add_global_entry (const char * name, int sub)
+{
+  gfc_gsymbol *s;
+
+  s = gfc_get_gsymbol(name);
+
+  if (s->defined
+	|| (s->type != GSYM_UNKNOWN && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
+    global_used(s, NULL);
+  else
+    {
+      s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
+      s->where = gfc_current_locus;
+      s->defined = 1;
+      return true;
+    }
+  return false;
+}
 
 /* Match an ENTRY statement.  */
 
@@ -2697,6 +2741,9 @@ gfc_match_entry (void)
   if (state == COMP_SUBROUTINE)
     {
       /* An entry in a subroutine.  */
+      if (!add_global_entry (name, 1))
+	return MATCH_ERROR;
+
       m = gfc_match_formal_arglist (entry, 0, 1);
       if (m != MATCH_YES)
 	return MATCH_ERROR;
@@ -2716,6 +2763,9 @@ gfc_match_entry (void)
             ENTRY f() RESULT (r)
          can't be written as
             ENTRY f RESULT (r).  */
+      if (!add_global_entry (name, 0))
+	return MATCH_ERROR;
+
       old_loc = gfc_current_locus;
       if (gfc_match_eos () == MATCH_YES)
 	{
