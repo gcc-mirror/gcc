@@ -1,3 +1,9 @@
+2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.c (process_command), gcov.c (print_version), gcov-dump.c
+	(print_version), mips-tdump.c (main), mips-tfile.c (main): Update
+	copyright notice dates.
+
 2006-01-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/25613

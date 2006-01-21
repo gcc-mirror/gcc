@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the Fortran front-end.
-   Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -347,7 +347,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
 	case OPTION_version:
 	  printf ("GNU Fortran (GCC) %s\n", version_string);
-	  printf ("Copyright %s 2004 Free Software Foundation, Inc.\n",
+	  printf ("Copyright %s 2006 Free Software Foundation, Inc.\n",
 		  _("(C)"));
 	  printf ("\n");
 	  printf (_("\

@@ -1,7 +1,7 @@
 /* Program to dump out a Java(TM) .class file.
    Functionally similar to Sun's javap.
 
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -896,7 +896,7 @@ static void
 version (void)
 {
   printf ("jcf-dump (GCC) %s\n\n", version_string);
-  printf ("Copyright (C) 2002 Free Software Foundation, Inc.\n");
+  printf ("Copyright (C) 2006 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
   printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
   exit (0);

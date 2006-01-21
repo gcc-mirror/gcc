@@ -1,3 +1,7 @@
+2006-01-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* g77spec.c (lang_specific_driver): Update copyright notice date.
+
 2005-12-27  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR/25494

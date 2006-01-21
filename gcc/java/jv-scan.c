@@ -1,5 +1,5 @@
 /* Main for jv-scan
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2006
    Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
@@ -122,7 +122,7 @@ static void
 version (void)
 {
   printf ("jv-scan (GCC) %s\n\n", version_string);
-  printf ("Copyright (C) 2002 Free Software Foundation, Inc.\n");
+  printf ("Copyright (C) 2006 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
   printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
   exit (0);
