@@ -250,6 +250,10 @@ extern void *gomp_malloc (size_t) __attribute__((malloc));
 extern void *gomp_malloc_cleared (size_t) __attribute__((malloc));
 extern void *gomp_realloc (void *, size_t);
 
+/* Avoid conflicting prototypes of alloca() in system headers by using
+   GCC's builtin alloca().  */
+#define gomp_alloca(x)  __builtin_alloca(x)
+
 /* error.c */
 
 extern void gomp_error (const char *, ...)
