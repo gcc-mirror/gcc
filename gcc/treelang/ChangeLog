@@ -1,3 +1,7 @@
+2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* spec.c (lang_specific_driver): Update copyright notice date.
+
 2005-11-06  James A. Morrison  <phython@gcc.gnu.org>
 	Backport:
 	2005-08-06  James A. Morrison  <phython@gcc.gnu.org>
