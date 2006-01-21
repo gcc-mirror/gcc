@@ -345,7 +345,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
 	case OPTION_version:
 	  printf ("GNU Fortran 95 (GCC) %s\n", version_string);
-	  printf ("Copyright %s 2005 Free Software Foundation, Inc.\n\n",
+	  printf ("Copyright %s 2006 Free Software Foundation, Inc.\n\n",
 	          _("(C)"));
 	  printf (_("GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute copies of GNU Fortran\n\
