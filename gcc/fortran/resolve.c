@@ -885,6 +885,36 @@ find_noncopying_intrinsics (gfc_symbol * fnsym, gfc_actual_arglist * actual)
       ap->expr->inline_noncopying_intrinsic = 1;
 }
 
+/* This function does the checking of references to global procedures
+   as defined in sections 18.1 and 14.1, respectively, of the Fortran
+   77 and 95 standards.  It checks for a gsymbol for the name, making
+   one if it does not already exist.  If it already exists, then the
+   reference being resolved must correspond to the type of gsymbol.
+   Otherwise, the new symbol is equipped with the attributes of the 
+   reference.  The corresponding code that is called in creating
+   global entities is parse.c.  */
+
+static void
+resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
+{
+  gfc_gsymbol * gsym;
+  uint type;
+
+  type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
+
+  gsym = gfc_get_gsymbol (sym->name);
+
+  if ((gsym->type != GSYM_UNKNOWN && gsym->type != type))
+    global_used (gsym, where);
+
+  if (gsym->type == GSYM_UNKNOWN)
+    {
+      gsym->type = type;
+      gsym->where = *where;
+    }
+
+  gsym->used = 1;
+}
 
 /************* Function resolution *************/
 
@@ -1156,6 +1186,14 @@ resolve_function (gfc_expr * expr)
   const char *name;
   try t;
   int temp;
+
+  /* If the procedure is not internal or module, it must be external and
+     should be checked for usage.  */
+  if (expr->symtree && expr->symtree->n.sym
+	&& !expr->symtree->n.sym->attr.dummy
+	&& !expr->symtree->n.sym->attr.contained
+	&& !expr->symtree->n.sym->attr.use_assoc)
+    resolve_global_procedure (expr->symtree->n.sym, &expr->where, 0);
 
   /* Switch off assumed size checking and do this again for certain kinds
      of procedure, once the procedure itself is resolved.  */
@@ -1510,6 +1548,14 @@ static try
 resolve_call (gfc_code * c)
 {
   try t;
+
+  /* If the procedure is not internal or module, it must be external and
+     should be checked for usage.  */
+  if (c->symtree && c->symtree->n.sym
+	&& !c->symtree->n.sym->attr.dummy
+	&& !c->symtree->n.sym->attr.contained
+	&& !c->symtree->n.sym->attr.use_assoc)
+    resolve_global_procedure (c->symtree->n.sym, &c->loc, 1);
 
   /* Switch off assumed size checking and do this again for certain kinds
      of procedure, once the procedure itself is resolved.  */
@@ -4805,6 +4851,18 @@ resolve_symbol (gfc_symbol * sym)
 	}
       break;
 
+    case FL_PROCEDURE:
+      /* An external symbol may not have an intializer because it is taken to be
+	 a procedure.  */
+      if (sym->attr.external && sym->value)
+	{
+	  gfc_error ("External object '%s' at %L may not have an initializer",
+		     sym->name, &sym->declared_at);
+	  return;
+	}
+
+      break;
+
     case FL_DERIVED:
       /* Add derived type to the derived type list.  */
       {
@@ -4817,14 +4875,6 @@ resolve_symbol (gfc_symbol * sym)
       break;
 
     default:
-
-      /* An external symbol falls through to here if it is not referenced.  */
-      if (sym->attr.external && sym->value)
-	{
-	  gfc_error ("External object '%s' at %L may not have an initializer",
-		     sym->name, &sym->declared_at);
-	  return;
-	}
 
       break;
     }

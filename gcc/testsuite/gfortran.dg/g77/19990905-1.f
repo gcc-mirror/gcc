@@ -12,8 +12,8 @@ c  Invalid declaration of or reference to symbol `foo' at (2) [initially seen at
 * =foo7.f in Burley's g77 test suite.
       subroutine x
       real a(n)
-      common /foo/n
+      common /foo/n  ! { dg-error "is already being used as a COMMON" }
       continue
       entry y(a)
-      call foo(a(1))
+      call foo(a(1)) ! { dg-error "is already being used as a COMMON" }
       end
