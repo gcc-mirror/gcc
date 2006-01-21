@@ -1,3 +1,9 @@
+2006-01-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25697
+	* io/transfer.c (us_read): Detect end of file condition from previous
+	operations and bail out (no need to pre-position).
+
 2006-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25631
