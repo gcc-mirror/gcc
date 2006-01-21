@@ -1,9 +1,13 @@
 2006-01-21  Matthias Klose  <doko@debian.org>
 
+	* java/lang/mprec.h: Fix typo in previous patch.
+
+2006-01-21  Matthias Klose  <doko@debian.org>
+
 	Backport:
 	2005-09-15  Tom Tromey  <tromey@redhat.com>
 	Workaround for PR classpath/23863:
-	* native/fdlibm/mprec.h (MAX_BIGNUM_WDS): Define as 128 on
+	* java/lang/mprec.h (MAX_BIGNUM_WDS): Define as 128 on
 	non-Pack_32 platforms.
 
 2006-01-19  H.J. Lu  <hongjiu.lu@intel.com>
