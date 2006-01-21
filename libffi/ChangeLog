@@ -1,3 +1,8 @@
+2006-01-21  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.ac: Enable libffi for sparc64-*-freebsd*.
+	* configure: Rebuilt.
+
 2006-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/powerpc/sysv.S (smst_two_register): Don't call __ashldi3,
