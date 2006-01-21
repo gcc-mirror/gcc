@@ -1,7 +1,7 @@
 /* Program to write C++-suitable header files from a Java(TM) .class
    file.  This is similar to SUN's javah.
 
-Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2403,7 +2403,7 @@ static void
 version (void)
 {
   printf (TOOLNAME " (GCC) %s\n\n", version_string);
-  printf ("Copyright %s 2004 Free Software Foundation, Inc.\n", _("(C)"));
+  printf ("Copyright %s 2006 Free Software Foundation, Inc.\n", _("(C)"));
   printf (_("This is free software; see the source for copying conditions.  There is NO\n"
 	    "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
   exit (0);
