@@ -1,3 +1,17 @@
+2005-01-21  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* df-scan.c (problem_SCAN): Added NULL reset function.
+	(df_scan_reset_blocks): Added code to call reset block function
+	(df_bb_refs_delete) Fixed comment.
+	(df_insn_refs_delete): Made tolerant of deleting non existent info
+	for dataflow problems that need to be reset.
+	* df-core.c (df_set_blocks): Ditto.
+	* df.h (struct df_problem): Added reset_fun.
+	* df-problems.c (problem_RU, problem_RD, problem_LR, problem_UR,
+	problem_UREC, problem_CHAIN, problem_RI): Initialized reset_fun field.
+	(df_chain_insn_reset, df_chain_bb_reset, df_chain_reset): New
+	functions to clear out all references to def-use or use-def chains.
+
 2006-01-21  Ben Elliston  <bje@au.ibm.com>
 
 	* varasm.c (assemble_real): Initialise data array.

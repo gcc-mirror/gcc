@@ -777,6 +777,7 @@ static struct df_problem problem_RU =
   DF_RU,                      /* Problem id.  */
   DF_BACKWARD,                /* Direction.  */
   df_ru_alloc,                /* Allocate the problem specific data.  */
+  NULL,                       /* Reset global information.  */
   df_ru_free_bb_info,         /* Free basic block info.  */
   df_ru_local_compute,        /* Local compute function.  */
   df_ru_init_solution,        /* Init the solution specific data.  */
@@ -1269,6 +1270,7 @@ static struct df_problem problem_RD =
   DF_RD,                      /* Problem id.  */
   DF_FORWARD,                 /* Direction.  */
   df_rd_alloc,                /* Allocate the problem specific data.  */
+  NULL,                       /* Reset global information.  */
   df_rd_free_bb_info,         /* Free basic block info.  */
   df_rd_local_compute,        /* Local compute function.  */
   df_rd_init_solution,        /* Init the solution specific data.  */
@@ -1655,6 +1657,7 @@ static struct df_problem problem_LR =
   DF_LR,                      /* Problem id.  */
   DF_BACKWARD,                /* Direction.  */
   df_lr_alloc,                /* Allocate the problem specific data.  */
+  NULL,                       /* Reset global information.  */
   df_lr_free_bb_info,         /* Free basic block info.  */
   df_lr_local_compute,        /* Local compute function.  */
   df_lr_init,                 /* Init the solution specific data.  */
@@ -1991,6 +1994,7 @@ static struct df_problem problem_UR =
   DF_UR,                      /* Problem id.  */
   DF_FORWARD,                 /* Direction.  */
   df_ur_alloc,                /* Allocate the problem specific data.  */
+  NULL,                       /* Reset global information.  */
   df_ur_free_bb_info,         /* Free basic block info.  */
   df_ur_local_compute,        /* Local compute function.  */
   df_ur_init,                 /* Init the solution specific data.  */
@@ -2615,6 +2619,7 @@ static struct df_problem problem_UREC =
   DF_UREC,                    /* Problem id.  */
   DF_FORWARD,                 /* Direction.  */
   df_urec_alloc,              /* Allocate the problem specific data.  */
+  NULL,                       /* Reset global information.  */
   df_urec_free_bb_info,       /* Free basic block info.  */
   df_urec_local_compute,      /* Local compute function.  */
   df_urec_init,               /* Init the solution specific data.  */
@@ -2699,6 +2704,114 @@ df_chain_alloc (struct dataflow *dflow,
 	  DF_REF_CHAIN (ref) = NULL;
 	}
     }
+}
+
+
+/* Reset all def_use and use_def chains in INSN.  */
+
+static void 
+df_chain_insn_reset (struct dataflow *dflow, rtx insn)
+{
+  struct df *df = dflow->df;
+  struct df_chain_problem_data *problem_data =
+    (struct df_chain_problem_data *) dflow->problem_data;
+  unsigned int uid = INSN_UID (insn);
+  struct df_insn_info *insn_info = NULL;
+  struct df_ref *ref;
+
+  if (uid < df->insns_size)
+    insn_info = DF_INSN_UID_GET (df, uid);
+
+  if (insn_info)
+    {
+      if (problem_data->flags & DF_DU_CHAIN)
+	{
+	  ref = insn_info->defs;
+	  while (ref)
+	    {
+	      ref->chain = NULL;
+	      ref = ref->next_ref;
+	    }
+	}
+
+      if (problem_data->flags & DF_UD_CHAIN)
+	{
+	  ref = insn_info->uses;
+	  while (ref) 
+	    {
+	      ref->chain = NULL;
+	      ref = ref->next_ref;
+	    }
+	}
+    }
+}
+
+
+/* Reset all def_use and use_def chains in basic block.  */
+
+static void 
+df_chain_bb_reset (struct dataflow *dflow, unsigned int bb_index)
+{
+  struct df *df = dflow->df; 
+  struct df_chain_problem_data *problem_data =
+    (struct df_chain_problem_data *) dflow->problem_data;
+  rtx insn;
+  basic_block bb = BASIC_BLOCK (bb_index);
+
+  /* Some one deleted the basic block out from under us.  */
+  if (!bb)
+    return;
+
+  FOR_BB_INSNS (bb, insn)
+    {
+      if (INSN_P (insn))
+	{
+	  /* Record defs within INSN.  */
+	  df_chain_insn_reset (dflow, insn);
+	}
+    }
+  
+  /* Get rid of any chains in artifical uses or defs.  */
+  if (problem_data->flags & DF_DU_CHAIN)
+    {
+      struct df_ref *def;
+      def = df_get_artificial_defs (df, bb_index);
+      while (def)
+	{
+	  def->chain = NULL;
+	  def = def->next_ref;
+	}
+    }
+
+  if (problem_data->flags & DF_UD_CHAIN)
+    {
+      struct df_ref *use;
+      use = df_get_artificial_uses (df, bb_index);
+      while (use)
+	{
+	  use->chain = NULL;
+	  use = use->next_ref;
+	}
+    }
+}
+
+
+/* Reset all of the chains when the set of basic blocks changes.  */
+
+
+static void
+df_chain_reset (struct dataflow *dflow, bitmap blocks_to_clear)
+{
+  bitmap_iterator bi;
+  unsigned int bb_index;
+  
+  EXECUTE_IF_SET_IN_BITMAP (blocks_to_clear, 0, bb_index, bi)
+    {
+      df_chain_bb_reset (dflow, bb_index);
+    }
+
+  free_alloc_pool (dflow->block_pool);
+  dflow->block_pool = NULL;
 }
 
 
@@ -2917,6 +3030,7 @@ static struct df_problem problem_CHAIN =
   DF_CHAIN,                   /* Problem id.  */
   DF_NONE,                    /* Direction.  */
   df_chain_alloc,             /* Allocate the problem specific data.  */
+  df_chain_reset,             /* Reset global information.  */
   NULL,                       /* Free basic block info.  */
   NULL,                       /* Local compute function.  */
   NULL,                       /* Init the solution specific data.  */
@@ -3092,6 +3206,7 @@ static struct df_problem problem_RI =
   DF_RI,                      /* Problem id.  */
   DF_NONE,                    /* Direction.  */
   df_ri_alloc,                /* Allocate the problem specific data.  */
+  NULL,                       /* Reset global information.  */
   NULL,                       /* Free basic block info.  */
   df_ri_compute,              /* Local compute function.  */
   NULL,                       /* Init the solution specific data.  */
