@@ -1,5 +1,5 @@
 /* X509Certificate.java -- X.509 certificate.
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -661,10 +661,7 @@ public class X509Certificate extends java.security.cert.X509Certificate
     der.skip(spki.getLength());
     logger.log (Component.X509, "read subjectPublicKey == {0}", subjectKey);
 
-    if (version > 1)
-      {
-        val = der.read();
-      }
+    val = der.read();
     if (version >= 2 && val.getTagClass() != DER.UNIVERSAL && val.getTag() == 1)
       {
         byte[] b = (byte[]) val.getValue();
