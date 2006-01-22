@@ -1,3 +1,39 @@
+2006-01-22  Paul Brook  <paul@codesourcery.com>
+	Peter Barada  <peter@the-baradas.com>
+
+	* config/m68k/m68k.md: Add Coldfire FPU support.
+	Define FP mode macro and associated attributes.
+	Use it for float mode patterns.
+	* config/m68k/linux.h (FUNCTION_VALUE): Use m68k_function_value.
+	(LIBCALL_VALUE): Use m68k_libcall_value.
+	* config/m68k/m68k-protos.h (m68k_libcall_value): Add prototype.
+	(m68k_function_value): Ditto.
+	(emit_move_sequence): Ditto.
+	* config/m68k/m68kemb.h (LIBCALL_VALUE): Use m68k_libcall_value.
+	* config/m68k/m68k-none.h (ASM_SPEC): Add mcfv4e.
+	* config/m68k/t-m68kelf (MULTILIB_OPTIONS): Add mcfv4e.
+	(MULTILIB_EXCEPTIONS): Ditto.
+	* config/m68k/m68k.opt: Add mcfv4e.
+	* config/m68k/m68k.c (m68k_handle_option): Handle OPT_mcfv4e.
+	(m68k_compute_frame_layout): Include space for ColdFire FPU regs.
+	(m68k_output_function_prologue): Save ColdFire FPU registers.
+	(m68k_output_function_epilogue): Restore ColdFire FPU registers.
+	(force_mode, fp_reg_operand, emit_move_sequence): New functions.
+	(m68k_regno_mode_ok): Don't allow types larget than 8 bytes in
+	ColdFire FPU registers.
+	(m68k_libcall_value, m68k_function_value): New functions.
+	* config/m68k/netbsd-elf.h (FUNCTION_VALUE): Use m68k_function_value.
+	(LIBCALL_VALUE): Use m68k_libcall_value.
+	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Define __mcfv4e__.
+	(MASK_COLDFIRE): Add MASK_CFV4E.
+	(TARGET_COLDFIRE_FPU, TARGET_HARD_FLOAT, TARGET_FP_REG_SIZE): New.
+	(MODES_TIEABLE_P): Use TARGET_HARD_FLOAT.
+	(REG_CLASS_FROM_LETTER, PREFERRED_RELOAD_CLASS): Ditto.
+	(GO_IF_COLDFIRE_FPU_LEGITIMATE_ADDRESS): Define.
+	(GO_IF_LEGITIMATE_ADDRESS): Use it.
+	(LEGITIMIZE_ADDRESS): Handle ColdFire FPU addresses.
+	* doc/invoke.tex: Document -mcfv4e on m68k.
+
 2006-01-22  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* doc/contribute.texi: Change CVS to SVN and update the corresponding

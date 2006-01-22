@@ -1,6 +1,6 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -224,11 +224,7 @@ Boston, MA 02110-1301, USA.  */
 
 #undef FUNCTION_VALUE
 #define FUNCTION_VALUE(VALTYPE, FUNC)					\
-  (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881			\
-   ? gen_rtx_REG (TYPE_MODE (VALTYPE), 16)				\
-   : (POINTER_TYPE_P (VALTYPE)						\
-      ? gen_rtx_REG (TYPE_MODE (VALTYPE), 8)				\
-      : gen_rtx_REG (TYPE_MODE (VALTYPE), 0)))
+  m68k_function_value (VALTYPE, FUNC)
 
 /* For compatibility with the large body of existing code which does
    not always properly declare external functions returning pointer
@@ -251,10 +247,7 @@ do {									\
 
 #undef LIBCALL_VALUE
 #define LIBCALL_VALUE(MODE)						\
-  ((((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)		\
-    && TARGET_68881)							\
-   ? gen_rtx_REG ((MODE), 16)						\
-   : gen_rtx_REG ((MODE), 0))
+  m68k_libcall_value (MODE)
 
 /* For m68k SVR4, structures are returned using the reentrant
    technique.  */

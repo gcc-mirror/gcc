@@ -240,6 +240,11 @@ m68k_handle_option (size_t code, const char *arg, int value)
       target_flags |= MASK_CFV4 | MASK_CF_HWDIV;
       return true;
 
+    case OPT_mcfv4e:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      target_flags |= MASK_CFV4 | MASK_CF_HWDIV | MASK_CFV4E;
+      return true;
+
     case OPT_m68000:
     case OPT_mc68000:
       target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
@@ -411,7 +416,7 @@ m68k_compute_frame_layout (void)
 
   current_frame.foffset = 0;
   mask = rmask = saved = 0;
-  if (TARGET_68881 /* || TARGET_CFV4E */)
+  if (TARGET_HARD_FLOAT)
     {
       for (regno = 16; regno < 24; regno++)
 	if (m68k_save_reg (regno, interrupt_handler))
@@ -420,7 +425,7 @@ m68k_compute_frame_layout (void)
 	    rmask |= 1 << (23 - regno);
 	    saved++;
 	  }
-      current_frame.foffset = saved * 12 /* (TARGET_CFV4E ? 8 : 12) */;
+      current_frame.foffset = saved * TARGET_FP_REG_SIZE;
       current_frame.offset += current_frame.foffset;
     }
   current_frame.fpu_no = saved;
@@ -535,8 +540,13 @@ m68k_output_function_prologue (FILE *stream,
 
   /* On ColdFire add register save into initial stack frame setup, if possible.  */
   fsize_with_regs = current_frame.size;
-  if (TARGET_COLDFIRE && current_frame.reg_no > 2)
-    fsize_with_regs += current_frame.reg_no * 4;
+  if (TARGET_COLDFIRE)
+    {
+      if (current_frame.reg_no > 2)
+	fsize_with_regs += current_frame.reg_no * 4;
+      if (current_frame.fpu_no)
+	fsize_with_regs += current_frame.fpu_no * 8;
+    }
 
   if (frame_pointer_needed)
     {
@@ -616,22 +626,46 @@ m68k_output_function_prologue (FILE *stream,
 
   if (current_frame.fpu_mask)
     {
-      asm_fprintf (stream, (MOTOROLA
-			    ? "\tfmovm %I0x%x,-(%Rsp)\n"
-			    : "\tfmovem %I0x%x,%Rsp@-\n"),
-		   current_frame.fpu_mask);
+      if (TARGET_68881)
+	{
+	  asm_fprintf (stream, (MOTOROLA
+				? "\tfmovm %I0x%x,-(%Rsp)\n"
+				: "\tfmovem %I0x%x,%Rsp@-\n"),
+		       current_frame.fpu_mask);
+	}
+      else
+	{
+	  int offset;
+
+	  /* stack already has registers in it.  Find the offset from
+	     the bottom of stack to where the FP registers go */
+	  if (current_frame.reg_no <= 2)
+	    offset = 0;
+	  else
+	    offset = current_frame.reg_no * 4;
+	  if (offset)
+	    asm_fprintf (stream,
+			 "\tfmovem %I0x%x,%d(%Rsp)\n",
+			 current_frame.fpu_rev_mask,
+			 offset);
+	  else
+	    asm_fprintf (stream,
+			 "\tfmovem %I0x%x,(%Rsp)\n",
+			 current_frame.fpu_rev_mask);
+	}
 
       if (dwarf2out_do_frame ())
 	{
 	  char *l = (char *) dwarf2out_cfi_label ();
 	  int n_regs, regno;
 
-	  cfa_offset += current_frame.fpu_no * 12;
+	  cfa_offset += current_frame.fpu_no * TARGET_FP_REG_SIZE;
 	  if (! frame_pointer_needed)
 	    dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
 	  for (regno = 16, n_regs = 0; regno < 24; regno++)
 	    if (current_frame.fpu_mask & (1 << (regno - 16)))
-	      dwarf2out_reg_save (l, regno, -cfa_offset + n_regs++ * 12);
+	      dwarf2out_reg_save (l, regno, -cfa_offset
+				  + n_regs++ * TARGET_FP_REG_SIZE);
 	}
     }
 
@@ -799,8 +833,13 @@ m68k_output_function_epilogue (FILE *stream,
      after restoring registers. When the frame pointer isn't used,
      we can merge movem adjustment into frame unlinking
      made immediately after it.  */
-  if (TARGET_COLDFIRE && restore_from_sp && (current_frame.reg_no > 2))
-    fsize_with_regs += current_frame.reg_no * 4;
+  if (TARGET_COLDFIRE && restore_from_sp)
+    {
+      if (current_frame.reg_no > 2)
+	fsize_with_regs += current_frame.reg_no * 4;
+      if (current_frame.fpu_no)
+	fsize_with_regs += current_frame.fpu_no * 8;
+    }
 
   if (current_frame.offset + fsize >= 0x8000
       && ! restore_from_sp
@@ -936,7 +975,21 @@ m68k_output_function_epilogue (FILE *stream,
     {
       if (big)
 	{
-	  if (MOTOROLA)
+	  if (TARGET_COLDFIRE)
+	    {
+	      if (current_frame.reg_no)
+		asm_fprintf (stream, MOTOROLA ?
+			     "\tfmovem.d %d(%Ra1),%I0x%x\n" :
+			     "\tfmovmd (%d,%Ra1),%I0x%x\n",
+			     current_frame.reg_no * 4,
+			     current_frame.fpu_rev_mask);
+	      else
+		asm_fprintf (stream, MOTOROLA ?
+			     "\tfmovem.d (%Ra1),%I0x%x\n" :
+			     "\tfmovmd (%Ra1),%I0x%x\n",
+			     current_frame.fpu_rev_mask);
+	    }
+	  else if (MOTOROLA)
 	    asm_fprintf (stream, "\tfmovm -%wd(%s,%Ra1.l),%I0x%x\n",
 		         current_frame.foffset + fsize,
 		         M68K_REGNAME (FRAME_POINTER_REGNUM),
@@ -949,16 +1002,34 @@ m68k_output_function_epilogue (FILE *stream,
 	}
       else if (restore_from_sp)
 	{
-	  if (MOTOROLA)
-	    asm_fprintf (stream, "\tfmovm (%Rsp)+,%I0x%x\n",
-			 current_frame.fpu_rev_mask);
-	  else
-	    asm_fprintf (stream, "\tfmovem %Rsp@+,%I0x%x\n",
-			 current_frame.fpu_rev_mask);
+	  if (TARGET_COLDFIRE)
+	    {
+	      int offset;
+
+	      /* stack already has registers in it.  Find the offset from
+		 the bottom of stack to where the FP registers go */
+	      if (current_frame.reg_no <= 2)
+		offset = 0;
+	      else
+		offset = current_frame.reg_no * 4;
+	      if (offset)
+		 asm_fprintf (stream,
+			     "\tfmovem %Rsp@(%wd), %I0x%x\n",
+			     offset, current_frame.fpu_rev_mask);
+	      else
+		 asm_fprintf (stream,
+			     "\tfmovem %Rsp@, %I0x%x\n",
+			     current_frame.fpu_rev_mask);
+	    }
+	   else
+		  asm_fprintf (stream, MOTOROLA ?
+			       "\tfmovm (%Rsp)+,%I0x%x\n" :
+			       "\tfmovem %Rsp@+,%I0x%x\n",
+			       current_frame.fpu_rev_mask);
 	}
       else
 	{
-	  if (MOTOROLA)
+	  if (MOTOROLA && !TARGET_COLDFIRE)
 	    asm_fprintf (stream, "\tfmovm -%wd(%s),%I0x%x\n",
 			 current_frame.foffset + fsize,
 			 M68K_REGNAME (FRAME_POINTER_REGNUM),
@@ -2242,6 +2313,192 @@ output_move_double (rtx *operands)
   return "";
 }
 
+
+/* Ensure mode of ORIG, a REG rtx, is MODE.  Returns either ORIG or a
+   new rtx with the correct mode.  */
+
+static rtx
+force_mode (enum machine_mode mode, rtx orig)
+{
+  if (mode == GET_MODE (orig))
+    return orig;
+
+  if (REGNO (orig) >= FIRST_PSEUDO_REGISTER)
+    abort ();
+
+  return gen_rtx_REG (mode, REGNO (orig));
+}
+
+static int
+fp_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return reg_renumber && FP_REG_P (op);
+}
+
+/* Emit insns to move operands[1] into operands[0].
+
+   Return 1 if we have written out everything that needs to be done to
+   do the move.  Otherwise, return 0 and the caller will emit the move
+   normally.
+
+   Note SCRATCH_REG may not be in the proper mode depending on how it
+   will be used.  This routine is resposible for creating a new copy
+   of SCRATCH_REG in the proper mode.  */
+
+int
+emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
+{
+  register rtx operand0 = operands[0];
+  register rtx operand1 = operands[1];
+  register rtx tem;
+
+  if (scratch_reg
+      && reload_in_progress && GET_CODE (operand0) == REG
+      && REGNO (operand0) >= FIRST_PSEUDO_REGISTER)
+    operand0 = reg_equiv_mem[REGNO (operand0)];
+  else if (scratch_reg
+	   && reload_in_progress && GET_CODE (operand0) == SUBREG
+	   && GET_CODE (SUBREG_REG (operand0)) == REG
+	   && REGNO (SUBREG_REG (operand0)) >= FIRST_PSEUDO_REGISTER)
+    {
+     /* We must not alter SUBREG_BYTE (operand0) since that would confuse
+	the code which tracks sets/uses for delete_output_reload.  */
+      rtx temp = gen_rtx_SUBREG (GET_MODE (operand0),
+				 reg_equiv_mem [REGNO (SUBREG_REG (operand0))],
+				 SUBREG_BYTE (operand0));
+      operand0 = alter_subreg (&temp);
+    }
+
+  if (scratch_reg
+      && reload_in_progress && GET_CODE (operand1) == REG
+      && REGNO (operand1) >= FIRST_PSEUDO_REGISTER)
+    operand1 = reg_equiv_mem[REGNO (operand1)];
+  else if (scratch_reg
+	   && reload_in_progress && GET_CODE (operand1) == SUBREG
+	   && GET_CODE (SUBREG_REG (operand1)) == REG
+	   && REGNO (SUBREG_REG (operand1)) >= FIRST_PSEUDO_REGISTER)
+    {
+     /* We must not alter SUBREG_BYTE (operand0) since that would confuse
+	the code which tracks sets/uses for delete_output_reload.  */
+      rtx temp = gen_rtx_SUBREG (GET_MODE (operand1),
+				 reg_equiv_mem [REGNO (SUBREG_REG (operand1))],
+				 SUBREG_BYTE (operand1));
+      operand1 = alter_subreg (&temp);
+    }
+
+  if (scratch_reg && reload_in_progress && GET_CODE (operand0) == MEM
+      && ((tem = find_replacement (&XEXP (operand0, 0)))
+	  != XEXP (operand0, 0)))
+    operand0 = gen_rtx_MEM (GET_MODE (operand0), tem);
+  if (scratch_reg && reload_in_progress && GET_CODE (operand1) == MEM
+      && ((tem = find_replacement (&XEXP (operand1, 0)))
+	  != XEXP (operand1, 0)))
+    operand1 = gen_rtx_MEM (GET_MODE (operand1), tem);
+
+  /* Handle secondary reloads for loads/stores of FP registers where
+     the address is symbolic by using the scratch register */
+  if (fp_reg_operand (operand0, mode)
+      && ((GET_CODE (operand1) == MEM
+	   && ! memory_address_p (DFmode, XEXP (operand1, 0)))
+	  || ((GET_CODE (operand1) == SUBREG
+	       && GET_CODE (XEXP (operand1, 0)) == MEM
+	       && !memory_address_p (DFmode, XEXP (XEXP (operand1, 0), 0)))))
+      && scratch_reg)
+    {
+      if (GET_CODE (operand1) == SUBREG)
+	operand1 = XEXP (operand1, 0);
+
+      /* SCRATCH_REG will hold an address.  We want
+	 it in SImode regardless of what mode it was originally given
+	 to us.  */
+      scratch_reg = force_mode (SImode, scratch_reg);
+
+      /* D might not fit in 14 bits either; for such cases load D into
+	 scratch reg.  */
+      if (!memory_address_p (Pmode, XEXP (operand1, 0)))
+	{
+	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));
+	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand1, 0)),
+						       Pmode,
+						       XEXP (XEXP (operand1, 0), 0),
+						       scratch_reg));
+	}
+      else
+	emit_move_insn (scratch_reg, XEXP (operand1, 0));
+      emit_insn (gen_rtx_SET (VOIDmode, operand0,
+			      gen_rtx_MEM (mode, scratch_reg)));
+      return 1;
+    }
+  else if (fp_reg_operand (operand1, mode)
+	   && ((GET_CODE (operand0) == MEM
+		&& ! memory_address_p (DFmode, XEXP (operand0, 0)))
+	       || ((GET_CODE (operand0) == SUBREG)
+		   && GET_CODE (XEXP (operand0, 0)) == MEM
+		   && !memory_address_p (DFmode, XEXP (XEXP (operand0, 0), 0))))
+	   && scratch_reg)
+    {
+      if (GET_CODE (operand0) == SUBREG)
+	operand0 = XEXP (operand0, 0);
+
+      /* SCRATCH_REG will hold an address and maybe the actual data.  We want
+	 it in SIMODE regardless of what mode it was originally given
+	 to us.  */
+      scratch_reg = force_mode (SImode, scratch_reg);
+
+      /* D might not fit in 14 bits either; for such cases load D into
+	 scratch reg.  */
+      if (!memory_address_p (Pmode, XEXP (operand0, 0)))
+	{
+	  emit_move_insn (scratch_reg, XEXP (XEXP (operand0, 0), 1));
+	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand0,
+								        0)),
+						       Pmode,
+						       XEXP (XEXP (operand0, 0),
+								   0),
+						       scratch_reg));
+	}
+      else
+	emit_move_insn (scratch_reg, XEXP (operand0, 0));
+      emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_MEM (mode, scratch_reg),
+			      operand1));
+      return 1;
+    }
+  /* Handle secondary reloads for loads of FP registers from constant
+     expressions by forcing the constant into memory.
+
+     use scratch_reg to hold the address of the memory location.
+
+     The proper fix is to change PREFERRED_RELOAD_CLASS to return
+     NO_REGS when presented with a const_int and an register class
+     containing only FP registers.  Doing so unfortunately creates
+     more problems than it solves.   Fix this for 2.5.  */
+  else if (fp_reg_operand (operand0, mode)
+	   && CONSTANT_P (operand1)
+	   && scratch_reg)
+    {
+      rtx xoperands[2];
+
+      /* SCRATCH_REG will hold an address and maybe the actual data.  We want
+	 it in SIMODE regardless of what mode it was originally given
+	 to us.  */
+      scratch_reg = force_mode (SImode, scratch_reg);
+
+      /* Force the constant into memory and put the address of the
+	 memory location into scratch_reg.  */
+      xoperands[0] = scratch_reg;
+      xoperands[1] = XEXP (force_const_mem (mode, operand1), 0);
+      emit_insn (gen_rtx_SET (mode, scratch_reg, xoperands[1]));
+
+      /* Now load the destination register.  */
+      emit_insn (gen_rtx_SET (mode, operand0,
+			      gen_rtx_MEM (mode, scratch_reg)));
+      return 1;
+    }
+
+  /* Now have insn-emit do whatever it normally does.  */
+  return 0;
+}
+
 /* Return a REG that occurs in ADDR with coefficient 1.
    ADDR can be effectively incremented by incrementing REG.  */
 
@@ -3381,8 +3638,54 @@ m68k_regno_mode_ok (int regno, enum machine_mode mode)
 	 smaller.  */
       if ((GET_MODE_CLASS (mode) == MODE_FLOAT
 	   || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
-	  && GET_MODE_UNIT_SIZE (mode) <= 12)
+	  && GET_MODE_UNIT_SIZE (mode) <= TARGET_FP_REG_SIZE)
 	return true;
     }
   return false;
+}
+
+/* Return floating point values in a 68881 register.  This makes 68881 code
+   a little bit faster.  It also makes -msoft-float code incompatible with
+   hard-float code, so people have to be careful not to mix the two.
+   For ColdFire it was decided the ABI incopmatibility is undesirable.
+   If there is need for a hard-float ABI it is probably worth doing it
+   properly and also passing function arguments in FP registers.  */
+rtx
+m68k_libcall_value (enum machine_mode mode)
+{
+  switch (mode) {
+  case SFmode:
+  case DFmode:
+  case XFmode:
+    if (TARGET_68881)
+      return gen_rtx_REG (mode, 16);
+    break;
+  default:
+    break;
+  }
+  return gen_rtx_REG (mode, 0);
+}
+
+rtx
+m68k_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
+{
+  enum machine_mode mode;
+
+  mode = TYPE_MODE (valtype);
+  switch (mode) {
+  case SFmode:
+  case DFmode:
+  case XFmode:
+    if (TARGET_68881)
+      return gen_rtx_REG (mode, 16);
+    break;
+  default:
+    break;
+  }
+
+  /* If the function returns a pointer, push that into %a0 */
+  if (POINTER_TYPE_P (valtype))
+    return gen_rtx_REG (mode, 8);
+  else
+    return gen_rtx_REG (mode, 0);
 }
