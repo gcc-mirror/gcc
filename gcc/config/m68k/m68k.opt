@@ -1,6 +1,6 @@
 ; Options for the Motorola 68000 port of the compiler.
 
-; Copyright (C) 2005 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -38,6 +38,10 @@ Generate code for a 5307
 m5407
 Target RejectNegative Mask(CFV4)
 Generate code for a 5407
+
+mcfv4e
+Target RejectNegative Mask(CFV4E)
+Generate code for a ColdFire v4e
 
 m68000
 Target RejectNegative

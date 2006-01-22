@@ -565,7 +565,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{M680x0 Options}
 @gccoptlist{-m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
--m68060  -mcpu32  -m5200  -m68881  -mbitfield  -mc68000  -mc68020   @gol
+-m68060  -mcpu32  -m5200  -mcfv4e -m68881  -mbitfield  @gol
+-mc68000  -mc68020   @gol
 -mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel @gol
 -malign-int  -mstrict-align  -msep-data  -mno-sep-data @gol
 -mshared-library-id=n  -mid-shared-library  -mno-id-shared-library}
@@ -9906,6 +9907,10 @@ when the compiler is configured for 520X-based systems.
 Use this option for microcontroller with a 5200 core, including
 the MCF5202, MCF5203, MCF5204 and MCF5202.
 
+@item -mcfv4e
+@opindex mcfv4e
+Generate output for a ColdFire V4e family cpu (e.g.@: 547x/548x).
+This includes use of hardware floating point instructions.
 
 @item -m68020-40
 @opindex m68020-40
