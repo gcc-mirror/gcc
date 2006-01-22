@@ -1736,8 +1736,8 @@ public static member functions.
 @item -Wnon-virtual-dtor @r{(C++ only)}
 @opindex Wnon-virtual-dtor
 Warn when a class appears to be polymorphic, thereby requiring a virtual
-destructor, yet it declares a non-virtual one.
-This warning is enabled by @option{-Wall}.
+destructor, yet it declares a non-virtual one.  This warning is also
+enabled if -Weffc++ is specified.
 
 @item -Wreorder @r{(C++ only)}
 @opindex Wreorder

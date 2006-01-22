@@ -409,7 +409,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       else
 	{
 	  /* C++-specific warnings.  */
-	  warn_nonvdtor = value;
 	  warn_reorder = value;
 	  warn_nontemplate_friend = value;
 	}
@@ -537,6 +536,12 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	flag_const_strings = value;
       else
 	warn_write_strings = value;
+      break;
+
+    case OPT_Weffc__:
+      warn_ecpp = value;
+      if (value)
+        warn_nonvdtor = true;
       break;
 
     case OPT_ansi:
