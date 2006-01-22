@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2004, 2006 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -7,8 +7,8 @@
 @chapter Contributing to GCC Development
 
 If you would like to help pretest GCC releases to assure they work well,
-current development sources are available by CVS (see
-@uref{http://gcc.gnu.org/cvs.html}).  Source and binary snapshots are
+current development sources are available by SVN (see
+@uref{http://gcc.gnu.org/svn.html}).  Source and binary snapshots are
 also available for FTP; see @uref{http://gcc.gnu.org/snapshots.html}.
 
 If you would like to work on improvements to GCC, please read the
