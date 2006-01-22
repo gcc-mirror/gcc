@@ -699,8 +699,7 @@ build_dynamic_cast (tree type, tree expr)
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
 
-  /* Use of dynamic_cast when -fno-rtti is a disaster waiting to happen.
-     See PR C++/10891.  Reject.  */
+  /* Use of dynamic_cast when -fno-rtti is prohibited.  */
   if (!flag_rtti)
     {
       error ("%<dynamic_cast%> not permitted with -fno-rtti");

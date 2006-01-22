@@ -1,5 +1,9 @@
 2006-01-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* rtti.c (build_dynamic_cast): Fix comment.
+
+2006-01-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	PR c++/10891
 	* rtti.c (build_dynamic_cast): Reject dynamic_cast use if
 	-fno-rtti. 
