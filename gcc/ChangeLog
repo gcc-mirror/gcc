@@ -1,3 +1,11 @@
+2006-01-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/16190
+	* c-opts.c (c_common_handle_option): Don't include
+	-Wnon-virtual-dtor in -Wall; enable if -Weffc++.
+	* doc/invoke.texi (C++ Dialect Options): Document that
+	-Wnon-virtual-dtor is no longer included in -Wall.
+
 2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcov.c (print_version), gcov-dump.c (print_version),
