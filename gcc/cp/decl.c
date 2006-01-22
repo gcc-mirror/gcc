@@ -10628,18 +10628,23 @@ begin_destructor_body (void)
 {
   tree compound_stmt;
 
-  compound_stmt = begin_compound_stmt (0);
-
-  /* Make all virtual function table pointers in non-virtual base
-     classes point to CURRENT_CLASS_TYPE's virtual function
-     tables.  */
-  initialize_vtbl_ptrs (current_class_ptr);
-
-  finish_compound_stmt (compound_stmt);
-
-  /* And insert cleanups for our bases and members so that they
-     will be properly destroyed if we throw.  */
-  push_base_cleanups ();
+  /* If the CURRENT_CLASS_TYPE is incomplete, we will have already
+     issued an error message.  We still want to try to process the
+     body of the function, but initialize_vtbl_ptrs will crash if
+     TYPE_BINFO is NULL.  */
+  if (COMPLETE_TYPE_P (current_class_type))
+    {
+      compound_stmt = begin_compound_stmt (0);
+      /* Make all virtual function table pointers in non-virtual base
+	 classes point to CURRENT_CLASS_TYPE's virtual function
+	 tables.  */
+      initialize_vtbl_ptrs (current_class_ptr);
+      finish_compound_stmt (compound_stmt);
+      
+      /* And insert cleanups for our bases and members so that they
+	 will be properly destroyed if we throw.  */
+      push_base_cleanups ();
+    }
 }
 
 /* At the end of every destructor we generate code to delete the object if
