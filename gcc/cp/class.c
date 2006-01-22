@@ -289,13 +289,23 @@ build_base_path (enum tree_code code,
 
   offset = BINFO_OFFSET (binfo);
   fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
+  target_type = code == PLUS_EXPR ? BINFO_TYPE (binfo) : BINFO_TYPE (d_binfo);
 
   /* Do we need to look in the vtable for the real offset?  */
   virtual_access = (v_binfo && fixed_type_p <= 0);
 
   /* Do we need to check for a null pointer?  */
-  if (want_pointer && !nonnull && (virtual_access || !integer_zerop (offset)))
-    null_test = error_mark_node;
+  if (want_pointer && !nonnull)
+    {
+      /* If we know the conversion will not actually change the value
+	 of EXPR, then we can avoid testing the expression for NULL.
+	 We have to avoid generating a COMPONENT_REF for a base class
+	 field, because other parts of the compiler know that such
+	 expressions are always non-NULL.  */
+      if (!virtual_access && integer_zerop (offset))
+	return build_nop (build_pointer_type (target_type), expr);
+      null_test = error_mark_node;
+    }
 
   /* Protect against multiple evaluation if necessary.  */
   if (TREE_SIDE_EFFECTS (expr) && (null_test || virtual_access))
@@ -375,8 +385,6 @@ build_base_path (enum tree_code code,
       else
 	offset = v_offset;
     }
-
-  target_type = code == PLUS_EXPR ? BINFO_TYPE (binfo) : BINFO_TYPE (d_binfo);
 
   target_type = cp_build_qualified_type
     (target_type, cp_type_quals (TREE_TYPE (TREE_TYPE (expr))));

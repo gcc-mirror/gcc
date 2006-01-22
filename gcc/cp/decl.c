@@ -10627,6 +10627,13 @@ begin_destructor_body (void)
   tree if_stmt;
   tree compound_stmt;
 
+  /* If the CURRENT_CLASS_TYPE is incomplete, we will have already
+     issued an error message.  We still want to try to process the
+     body of the function, but initialize_vtbl_ptrs will crash if
+     TYPE_BINFO is NULL.  */
+  if (!COMPLETE_TYPE_P (current_class_type))
+    return;
+
   /* If the dtor is empty, and we know there is not any possible
      way we could use any vtable entries, before they are possibly
      set by a base class dtor, we don't have to setup the vtables,
