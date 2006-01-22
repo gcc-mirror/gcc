@@ -1,3 +1,7 @@
+2006-01-22  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix.h (STACK_BOUNDARY): Define.
+
 2006-01-22  Paul Brook  <paul@codesourcery.com>
 	Peter Barada  <peter@the-baradas.com>
 
@@ -1352,7 +1356,7 @@
 	* basic-block.h: Remove the prototype for
 	partition_hot_cold_basic_blocks.
 
-2006-01-16  Rafael ÅÅ√Åvila de EspÅÅ√ÅÅ≠ndola <rafael.espindola@gmail.com>
+2006-01-16  Rafael √vila de Esp√≠ndola <rafael.espindola@gmail.com>
 
 	* cppspec.c (lang_specific_spec_functions): remove
 	* gcc.c (lookup_spec_function): use static_spec_functions directelly
