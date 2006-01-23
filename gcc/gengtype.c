@@ -143,10 +143,10 @@ resolve_typedef (const char *s, struct fileloc *pos)
   return create_scalar_type ("char", 4);
 }
 
-/* Create a new structure with tag NAME (or a union iff ISUNION is nonzero),
-   at POS with fields FIELDS and options O.  */
+/* Create and return a new structure with tag NAME (or a union iff
+   ISUNION is nonzero), at POS with fields FIELDS and options O.  */
 
-void
+type_p
 new_structure (const char *name, int isunion, struct fileloc *pos,
 	       pair_p fields, options_p o)
 {
@@ -214,6 +214,8 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
   s->u.s.bitmap = bitmap;
   if (s->u.s.lang_struct)
     s->u.s.lang_struct->u.s.bitmap |= bitmap;
+
+  return s;
 }
 
 /* Return the previously-defined structure with tag NAME (or a union
@@ -305,11 +307,14 @@ create_array (type_p t, const char *len)
   return v;
 }
 
-/* Return an options structure with name NAME and info INFO.  */
+/* Return an options structure with name NAME and info INFO.  NEXT is the
+   next option in the chain.  */
+
 options_p
-create_option (const char *name, void *info)
+create_option (options_p next, const char *name, const void *info)
 {
   options_p o = XNEW (struct options);
+  o->next = next;
   o->name = name;
   o->info = (const char*) info;
   return o;
@@ -329,6 +334,24 @@ note_variable (const char *s, type_p t, options_p o, struct fileloc *pos)
   n->opt = o;
   n->next = variables;
   variables = n;
+}
+
+/* Create a fake field with the given type and name.  NEXT is the next
+   field in the chain.  */
+
+static pair_p
+create_field (pair_p next, type_p type, const char *name)
+{
+  pair_p field;
+
+  field = XNEW (struct pair);
+  field->next = next;
+  field->type = type;
+  field->name = name;
+  field->opt = NULL;
+  field->line.file = __FILE__;
+  field->line.line = __LINE__;
+  return field;
 }
 
 /* We don't care how long a CONST_DOUBLE is.  */
@@ -440,10 +463,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
       return &string_type;
     }
 
-  nodot = XNEW (struct options);
-  nodot->next = NULL;
-  nodot->name = "dot";
-  nodot->info = "";
+  nodot = create_option (NULL, "dot", "");
 
   rtx_tp = create_pointer (find_structure ("rtx_def", 0));
   rtvec_tp = create_pointer (find_structure ("rtvec_def", 0));
@@ -460,61 +480,46 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 
     for (c = 0; c <= NOTE_INSN_MAX; c++)
       {
-	pair_p old_note_flds = note_flds;
-
-	note_flds = XNEW (struct pair);
-	note_flds->line.file = __FILE__;
-	note_flds->line.line = __LINE__;
-	note_flds->opt = XNEW (struct options);
-	note_flds->opt->next = nodot;
-	note_flds->opt->name = "tag";
-	note_flds->opt->info = note_insn_name[c];
-	note_flds->next = old_note_flds;
-
 	switch (c)
 	  {
-	    /* NOTE_INSN_MAX is used as the default field for line
-	       number notes.  */
 	  case NOTE_INSN_MAX:
-	    note_flds->opt->name = "default";
-	    note_flds->name = "rt_str";
-	    note_flds->type = &string_type;
+	    note_flds = create_field (note_flds, &string_type, "rt_str");
 	    break;
 
 	  case NOTE_INSN_BLOCK_BEG:
 	  case NOTE_INSN_BLOCK_END:
-	    note_flds->name = "rt_tree";
-	    note_flds->type = tree_tp;
+	    note_flds = create_field (note_flds, tree_tp, "rt_tree");
 	    break;
 
 	  case NOTE_INSN_EXPECTED_VALUE:
 	  case NOTE_INSN_VAR_LOCATION:
-	    note_flds->name = "rt_rtx";
-	    note_flds->type = rtx_tp;
+	    note_flds = create_field (note_flds, rtx_tp, "rt_rtx");
 	    break;
 
 	  default:
-	    note_flds->name = "rt_int";
-	    note_flds->type = scalar_tp;
+	    note_flds = create_field (note_flds, scalar_tp, "rt_int");
 	    break;
 	  }
+	/* NOTE_INSN_MAX is used as the default field for line
+	   number notes.  */
+	if (c == NOTE_INSN_MAX)
+	  note_flds->opt = create_option (nodot, "default", "");
+	else
+	  note_flds->opt = create_option (nodot, "tag", note_insn_name[c]);
       }
-    new_structure ("rtx_def_note_subunion", 1, &lexer_line, note_flds, NULL);
+    note_union_tp = new_structure ("rtx_def_note_subunion", 1,
+				   &lexer_line, note_flds, NULL);
   }
-
-  note_union_tp = find_structure ("rtx_def_note_subunion", 1);
-
   for (i = 0; i < NUM_RTX_CODE; i++)
     {
-      pair_p old_flds = flds;
       pair_p subfields = NULL;
       size_t aindex, nmindex;
       const char *sname;
+      type_p substruct;
       char *ftag;
 
       for (aindex = 0; aindex < strlen (rtx_format[i]); aindex++)
 	{
-	  pair_p old_subf = subfields;
 	  type_p t;
 	  const char *subname;
 
@@ -614,43 +619,28 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      break;
 	    }
 
-	  subfields = XNEW (struct pair);
-	  subfields->next = old_subf;
-	  subfields->type = t;
-	  subfields->name = xasprintf (".fld[%lu].%s", (unsigned long)aindex,
-				       subname);
-	  subfields->line.file = __FILE__;
-	  subfields->line.line = __LINE__;
+	  subfields = create_field (subfields, t,
+				    xasprintf (".fld[%lu].%s",
+					       (unsigned long) aindex,
+					       subname));
+	  subfields->opt = nodot;
 	  if (t == note_union_tp)
-	    {
-	      subfields->opt = XNEW (struct options);
-	      subfields->opt->next = nodot;
-	      subfields->opt->name = "desc";
-	      subfields->opt->info = "NOTE_LINE_NUMBER (&%0)";
-	    }
-	  else
-	    subfields->opt = nodot;
+	    subfields->opt = create_option (subfields->opt, "desc",
+					    "NOTE_LINE_NUMBER (&%0)");
 	}
 
-      flds = XNEW (struct pair);
-      flds->next = old_flds;
-      flds->name = "";
       sname = xasprintf ("rtx_def_%s", rtx_name[i]);
-      new_structure (sname, 0, &lexer_line, subfields, NULL);
-      flds->type = find_structure (sname, 0);
-      flds->line.file = __FILE__;
-      flds->line.line = __LINE__;
-      flds->opt = XNEW (struct options);
-      flds->opt->next = nodot;
-      flds->opt->name = "tag";
+      substruct = new_structure (sname, 0, &lexer_line, subfields, NULL);
+
       ftag = xstrdup (rtx_name[i]);
       for (nmindex = 0; nmindex < strlen (ftag); nmindex++)
 	ftag[nmindex] = TOUPPER (ftag[nmindex]);
-      flds->opt->info = ftag;
+
+      flds = create_field (flds, substruct, "");
+      flds->opt = create_option (nodot, "tag", ftag);
     }
 
-  new_structure ("rtx_def_subunion", 1, &lexer_line, flds, nodot);
-  return find_structure ("rtx_def_subunion", 1);
+  return new_structure ("rtx_def_subunion", 1, &lexer_line, flds, nodot);
 }
 
 /* Handle `special("tree_exp")'.  This is a special case for
@@ -672,31 +662,14 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
       return &string_type;
     }
 
-  nodot = XNEW (struct options);
-  nodot->next = NULL;
-  nodot->name = "dot";
-  nodot->info = "";
+  nodot = create_option (NULL, "dot", "");
 
-  flds = XNEW (struct pair);
-  flds->next = NULL;
-  flds->name = "";
-  flds->type = t;
-  flds->line.file = __FILE__;
-  flds->line.line = __LINE__;
-  flds->opt = XNEW (struct options);
-  flds->opt->next = nodot;
-  flds->opt->name = "length";
-  flds->opt->info = "TREE_CODE_LENGTH (TREE_CODE ((tree) &%0))";
-  {
-    options_p oldopt = flds->opt;
-    flds->opt = XNEW (struct options);
-    flds->opt->next = oldopt;
-    flds->opt->name = "default";
-    flds->opt->info = "";
-  }
+  flds = create_field (NULL, t, "");
+  flds->opt = create_option (nodot, "length",
+			     "TREE_CODE_LENGTH (TREE_CODE ((tree) &%0))");
+  flds->opt = create_option (flds->opt, "default", "");
 
-  new_structure ("tree_exp_subunion", 1, &lexer_line, flds, nodot);
-  return find_structure ("tree_exp_subunion", 1);
+  return new_structure ("tree_exp_subunion", 1, &lexer_line, flds, nodot);
 }
 
 /* Perform any special processing on a type T, about to become the type
@@ -841,8 +814,7 @@ note_yacc_type (options_p o, pair_p fields, pair_p typeinfo,
 	p_p = &p->next;
     }
 
-  new_structure ("yy_union", 1, pos, typeinfo, o);
-  do_typedef ("YYSTYPE", find_structure ("yy_union", 1), pos);
+  do_typedef ("YYSTYPE", new_structure ("yy_union", 1, pos, typeinfo, o), pos);
 }
 
 static void process_gc_options (options_p, enum gc_used_enum,
