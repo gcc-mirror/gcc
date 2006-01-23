@@ -1419,7 +1419,8 @@ lv_adjust_loop_entry_edge (basic_block first_head,
   lv_add_condition_to_bb (first_head, second_head, new_head,
 			  cond_expr);
 
-  e1 = make_edge (new_head, first_head, EDGE_TRUE_VALUE);
+  /* Don't set EDGE_TRUE_VALUE in RTL mode, as it's invalid there.  */
+  e1 = make_edge (new_head, first_head, ir_type () ? EDGE_TRUE_VALUE : 0);
   set_immediate_dominator (CDI_DOMINATORS, first_head, new_head);
   set_immediate_dominator (CDI_DOMINATORS, second_head, new_head);
 

@@ -2046,9 +2046,10 @@ rtl_verify_flow_info_1 (void)
 	  err = 1;
 	}
       if (n_branch != 1 && any_condjump_p (BB_END (bb))
-	  && JUMP_LABEL (BB_END (bb)) == BB_HEAD (fallthru->dest))
+	  && JUMP_LABEL (BB_END (bb)) != BB_HEAD (fallthru->dest))
 	{
-	  error ("wrong amount of branch edges after conditional jump %i", bb->index);
+	  error ("wrong amount of branch edges after conditional jump %i",
+		 bb->index);
 	  err = 1;
 	}
       if (n_call && !CALL_P (BB_END (bb)))

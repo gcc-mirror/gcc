@@ -1,3 +1,14 @@
+2006-01-23  Richard Guenther  <rguenther@suse.de>
+	Steven Bosscher <stevenb.gcc@gmail.com>
+
+	PR rtl-optimization/24626
+	* cfgloopmanip.c (lv_adjust_loop_entry_edge): Don't set
+	EDGE_TRUE_VALUE if in RTL mode.
+
+	Revert
+	2005-03-30 Mostafa Hagog <mustafa@il.ibm.com>
+	* cfgrtl.c (rtl_verify_flow_info_1): Fix.
+
 2006-01-23  Steven Bosscher  <stevenb.gcc@gmail.com>
 	Jan Hubicka  <jh@suse.cz>
 	Richard Guenther  <rguenther@suse.de>
