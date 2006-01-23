@@ -10295,6 +10295,26 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	  && TREE_CODE (TREE_OPERAND (op0, 0)) == FUNCTION_DECL
 	  && DECL_BUILT_IN (TREE_OPERAND (op0, 0)))
 	return fold_builtin (TREE_OPERAND (op0, 0), op1, false);
+      /* Check for resolvable OBJ_TYPE_REF.  The only sorts we can resolve
+         here are when we've propagated the address of a decl into the
+         object slot.  */
+      if (TREE_CODE (op0) == OBJ_TYPE_REF
+	  && lang_hooks.fold_obj_type_ref
+	  && TREE_CODE (OBJ_TYPE_REF_OBJECT (op0)) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (OBJ_TYPE_REF_OBJECT (op0), 0)))
+	{
+	  tree t;
+
+	  /* ??? Caution: Broken ADDR_EXPR semantics means that
+             looking at the type of the operand of the addr_expr
+             can yield an array type.  See silly exception in
+             check_pointer_types_r.  */
+
+	  t = TREE_TYPE (TREE_TYPE (OBJ_TYPE_REF_OBJECT (op0)));
+	  t = lang_hooks.fold_obj_type_ref (op0, t);
+	  if (t)
+	   return fold_build3 (code, type, t, op1, op2);
+	}
       return NULL_TREE;
 
     case BIT_FIELD_REF:

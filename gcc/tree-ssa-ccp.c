@@ -2342,38 +2342,6 @@ fold_stmt (tree *stmt_p)
       callee = get_callee_fndecl (rhs);
       if (callee && DECL_BUILT_IN (callee))
 	result = ccp_fold_builtin (stmt, rhs);
-      else
-	{
-	  /* Check for resolvable OBJ_TYPE_REF.  The only sorts we can resolve
-	     here are when we've propagated the address of a decl into the
-	     object slot.  */
-	  /* ??? Should perhaps do this in fold proper.  However, doing it
-	     there requires that we create a new CALL_EXPR, and that requires
-	     copying EH region info to the new node.  Easier to just do it
-	     here where we can just smash the call operand.  */
-	  callee = TREE_OPERAND (rhs, 0);
-	  if (TREE_CODE (callee) == OBJ_TYPE_REF
-	      && lang_hooks.fold_obj_type_ref
-	      && TREE_CODE (OBJ_TYPE_REF_OBJECT (callee)) == ADDR_EXPR
-	      && DECL_P (TREE_OPERAND
-			 (OBJ_TYPE_REF_OBJECT (callee), 0)))
-	    {
-	      tree t;
-
-	      /* ??? Caution: Broken ADDR_EXPR semantics means that
-		 looking at the type of the operand of the addr_expr
-		 can yield an array type.  See silly exception in
-		 check_pointer_types_r.  */
-
-	      t = TREE_TYPE (TREE_TYPE (OBJ_TYPE_REF_OBJECT (callee)));
-	      t = lang_hooks.fold_obj_type_ref (callee, t);
-	      if (t)
-		{
-		  TREE_OPERAND (rhs, 0) = t;
-		  changed = true;
-		}
-	    }
-	}
     }
 
   /* If we couldn't fold the RHS, hand over to the generic fold routines.  */
