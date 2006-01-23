@@ -727,8 +727,13 @@ DEF_RTL_EXPR(MATCH_PAR_DUP, "match_par_dup", "iE", RTX_MATCH)
 
 /* Appears only in define_predicate/define_special_predicate
    expressions.  Evaluates true only if the operand has an RTX code
-   from the set given by the argument (a comma-separated list).  */
-DEF_RTL_EXPR(MATCH_CODE, "match_code", "s", RTX_MATCH)
+   from the set given by the argument (a comma-separated list).  If the
+   second argument is present and nonempty, it is a sequence of digits
+   and/or letters which indicates the subexpression to test, using the
+   same syntax as genextract/genrecog's location strings: 0-9 for
+   XEXP (op, n), a-z for XVECEXP (op, 0, n); each character applies to
+   the result of the one before it.  */
+DEF_RTL_EXPR(MATCH_CODE, "match_code", "ss", RTX_MATCH)
 
 /* Appears only in define_predicate/define_special_predicate
     expressions.  The argument is a C expression to be injected at this

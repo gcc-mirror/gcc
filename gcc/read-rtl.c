@@ -145,6 +145,7 @@ static int find_macro (struct macro_group *, const char *, FILE *);
 static struct mapping *read_mapping (struct macro_group *, htab_t, FILE *);
 static void check_code_macro (struct mapping *, FILE *);
 static rtx read_rtx_1 (FILE *, struct map_value **);
+static rtx read_rtx_variadic (FILE *, struct map_value **, rtx);
 
 /* The mode and code macro structures.  */
 static struct macro_group modes, codes;
@@ -1696,7 +1697,49 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 
   c = read_skip_spaces (infile);
   if (c != ')')
-    fatal_expected_char (infile, ')', c);
+    {
+      /* Syntactic sugar for AND and IOR, allowing Lisp-like
+	 arbitrary number of arguments for them.  */
+      if (c == '(' && (GET_CODE (return_rtx) == AND
+		       || GET_CODE (return_rtx) == IOR))
+	return read_rtx_variadic (infile, mode_maps, return_rtx);
+      else
+	fatal_expected_char (infile, ')', c);
+    }
 
   return return_rtx;
+}
+
+/* Mutually recursive subroutine of read_rtx which reads
+   (thing x1 x2 x3 ...) and produces RTL as if
+   (thing x1 (thing x2 (thing x3 ...)))  had been written.
+   When called, FORM is (thing x1 x2), and the file position
+   is just past the leading parenthesis of x3.  Only works
+   for THINGs which are dyadic expressions, e.g. AND, IOR.  */
+static rtx
+read_rtx_variadic (FILE *infile, struct map_value **mode_maps, rtx form)
+{
+  char c = '(';
+  rtx p = form, q;
+
+  do
+    {
+      ungetc (c, infile);
+
+      q = rtx_alloc (GET_CODE (p));
+      PUT_MODE (q, GET_MODE (p));
+
+      XEXP (q, 0) = XEXP (p, 1);
+      XEXP (q, 1) = read_rtx_1 (infile, mode_maps);
+      
+      XEXP (p, 1) = q;
+      p = q;
+      c = read_skip_spaces (infile);
+    }
+  while (c == '(');
+
+  if (c != ')')
+    fatal_expected_char (infile, ')', c);
+
+  return form;
 }
