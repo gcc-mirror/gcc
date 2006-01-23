@@ -1,5 +1,9 @@
+2006-01-23  Diego Novillo  <dnovillo@redhat.com>
+
+	* omp-low.c: Update documentation.
+
 2006-01-23  Andrew Pinski  <pinskia@physics.uc.edu>
-            Daniel Berlin  <dberlin@dberlin.org>
+	    Daniel Berlin  <dberlin@dberlin.org>
 
 	PR tree-opt/25315
 	PR tree-opt/25857

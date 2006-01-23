@@ -50,14 +50,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    re-gimplifing things when variables have been replaced with complex
    expressions.
 
-   Lowering of a parallel statement results in the contents of the 
-   parallel being moved to a new function, to be invoked by the thread
-   library.  The variable remapping process is complex enough that only
-   one level of parallel statement is handled at one time.  If there are
-   nested parallel statements, those nested statements are handled when
-   the new function is lowered and optimized.  The result is not 100%
-   optimal, but lexically nested parallels effectively only happens in
-   test suites.  */
+   Final code generation is done by pass_expand_omp.  The flowgraph is
+   scanned for parallel regions which are then moved to a new
+   function, to be invoked by the thread library.  */
 
 /* Parallel region information.  Every parallel and workshare
    directive is enclosed between two markers, the OMP_* directive
