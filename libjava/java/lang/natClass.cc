@@ -1,6 +1,6 @@
 // natClass.cc - Implementation of java.lang.Class native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  
    Free Software Foundation
 
    This file is part of libgcj.
@@ -1220,3 +1220,29 @@ _Jv_getInterfaceMethod (jclass search_class, jclass &found_class, int &index,
 
   return false;
 }
+
+#ifdef INTERPRETER
+_Jv_InterpMethod*
+_Jv_FindInterpreterMethod (jclass klass, jmethodID desired_method)
+{
+  using namespace java::lang::reflect;
+
+  _Jv_InterpClass* iclass
+    = reinterpret_cast<_Jv_InterpClass*> (klass->aux_info);
+  _Jv_MethodBase** imethods = _Jv_GetFirstMethod (iclass);
+
+  for (int i = 0; i < JvNumMethods (klass); ++i)
+    {
+      _Jv_MethodBase* imeth = imethods[i];
+      _Jv_ushort accflags = klass->methods[i].accflags;
+      if ((accflags & (Modifier::NATIVE | Modifier::ABSTRACT)) == 0)
+	{
+	  _Jv_InterpMethod* im = reinterpret_cast<_Jv_InterpMethod*> (imeth);
+	  if (im->get_method () == desired_method)
+	    return im;
+	}
+    }
+
+  return NULL;
+}
+#endif

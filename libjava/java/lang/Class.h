@@ -81,6 +81,12 @@ class _Jv_ExecutionEngine;
 class _Jv_CompiledEngine;
 class _Jv_InterpreterEngine;
 
+#ifdef INTERPRETER
+class _Jv_ClassReader;
+class _Jv_InterpClass;
+class _Jv_InterpMethod;
+#endif
+
 struct _Jv_Constants
 {
   jint size;
@@ -217,6 +223,11 @@ jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);
 jint JvNumMethods (jclass);
 jmethodID JvGetFirstMethod (jclass);
 
+#ifdef INTERPRETER
+// Finds a desired interpreter method in the given class or NULL if not found
+_Jv_InterpMethod* _Jv_FindInterpreterMethod (jclass, jmethodID);
+#endif
+
 // Friend classes and functions to implement the ClassLoader
 class java::lang::ClassLoader;
 class java::lang::VMClassLoader;
@@ -256,10 +267,6 @@ void _Jv_CopyClassesToSystemLoader (gnu::gcj::runtime::SystemClassLoader *);
 
 #ifdef INTERPRETER
 void _Jv_InitField (jobject, jclass, int);
-
-class _Jv_ClassReader;
-class _Jv_InterpClass;
-class _Jv_InterpMethod;
 #endif
 
 class _Jv_StackTrace;
@@ -442,6 +449,10 @@ private:
   friend jmethodID (::_Jv_FromReflectedConstructor) (java::lang::reflect::Constructor *);
   friend jint (::JvNumMethods) (jclass);
   friend jmethodID (::JvGetFirstMethod) (jclass);
+#ifdef INTERPRETER
+  friend _Jv_InterpMethod* (::_Jv_FindInterpreterMethod) (jclass klass,
+							  jmethodID desired_method);
+#endif
 
   // Friends classes and functions to implement the ClassLoader
   friend class java::lang::ClassLoader;
