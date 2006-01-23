@@ -286,10 +286,3 @@ main (int argc, char **argv)
 
   return SUCCESS_EXIT_CODE;
 }
-
-/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
-const char *
-get_insn_name (int code ATTRIBUTE_UNUSED)
-{
-  return NULL;
-}

@@ -118,6 +118,7 @@ static void process_define_cond_exec (void);
 static void process_include (rtx, int);
 static char *save_string (const char *, int);
 static void init_predicate_table (void);
+static void record_insn_name (int, const char *);
 
 void
 message_with_line (int lineno, const char *msg, ...)
@@ -1104,6 +1105,10 @@ read_md_rtx (int *lineno, int *seqnr)
 	sequence_num++;
       else if (insn_elision)
 	goto discard;
+
+      /* *seqnr is used here so the name table will match caller's
+	 idea of insn numbering, whether or not elision is active.  */
+      record_insn_name (*seqnr, XSTR (desc, 0));
       break;
 
     case DEFINE_SPLIT:
@@ -1372,4 +1377,51 @@ init_predicate_table (void)
       
       add_predicate (pred);
     }
+}
+
+/* These functions allow linkage with print-rtl.c.  Also, some generators
+   like to annotate their output with insn names.  */
+
+/* Holds an array of names indexed by insn_code_number.  */
+static char **insn_name_ptr = 0;
+static int insn_name_ptr_size = 0;
+
+const char *
+get_insn_name (int code)
+{
+  if (code < insn_name_ptr_size)
+    return insn_name_ptr[code];
+  else
+    return NULL;
+}
+
+static void
+record_insn_name (int code, const char *name)
+{
+  static const char *last_real_name = "insn";
+  static int last_real_code = 0;
+  char *new;
+
+  if (insn_name_ptr_size <= code)
+    {
+      int new_size;
+      new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
+      insn_name_ptr = xrealloc (insn_name_ptr, sizeof(char *) * new_size);
+      memset (insn_name_ptr + insn_name_ptr_size, 0,
+	      sizeof(char *) * (new_size - insn_name_ptr_size));
+      insn_name_ptr_size = new_size;
+    }
+
+  if (!name || name[0] == '\0')
+    {
+      new = xmalloc (strlen (last_real_name) + 10);
+      sprintf (new, "%s+%d", last_real_name, code - last_real_code);
+    }
+  else
+    {
+      last_real_name = new = xstrdup (name);
+      last_real_code = code;
+    }
+
+  insn_name_ptr[code] = new;
 }

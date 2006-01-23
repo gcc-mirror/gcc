@@ -839,11 +839,8 @@ LDEXP_LIB = @LDEXP_LIB@
 BUILD_LIBS = $(BUILD_LIBIBERTY)
 
 BUILD_RTL = build/rtl.o build/read-rtl.o build/ggc-none.o \
-	    build/min-insn-modes.o
-BUILD_SUPPORT = build/gensupport.o
-BUILD_PRINT = build/print-rtl.o
+	    build/min-insn-modes.o build/gensupport.o build/print-rtl.o
 BUILD_ERRORS = build/errors.o
-BUILD_VARRAY = build/varray.o
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -2964,29 +2961,19 @@ build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
-# All these programs have the same additional dependency set.
-genprognormal = attr codes config emit extract flags opinit output peep recog \
-		preds
-$(genprognormal:%=build/gen%$(build_exeext)): $(BUILD_RTL) $(BUILD_SUPPORT) \
-  $(BUILD_PRINT) $(BUILD_ERRORS)
+# All these programs use the MD reader ($(BUILD_RTL)).
+genprogmd = attr attrtab codes conditions config constants emit extract \
+	    flags mddeps opinit output peep preds recog
+$(genprogmd:%=build/gen%$(build_exeext)): $(BUILD_RTL) $(BUILD_ERRORS)
 
-# These don't have the glue to link with print-rtl.o.
-genprognoprint = mddeps constants conditions
-$(genprognoprint:%=build/gen%$(build_exeext)): $(BUILD_RTL) $(BUILD_SUPPORT) \
-  $(BUILD_ERRORS)
-
-
-build/gengenrtl$(build_exeext) : $(BUILD_ERRORS)
-build/genmodes$(build_exeext) : $(BUILD_ERRORS)
-build/genextract$(build_exeext): build/vec.o
-
-# These programs are made from more than one source file.
-# The primary source file comes from the pattern rule above.
-build/genattrtab$(build_exeext) : build/genautomata.o \
-  $(BUILD_RTL) $(BUILD_SUPPORT) $(BUILD_PRINT) $(BUILD_ERRORS) \
-  $(BUILD_VARRAY)
+# These programs need files over and above what they get from the above list.
+build/genextract$(build_exeext) : build/vec.o
+build/genattrtab$(build_exeext) : build/genautomata.o build/varray.o
 build/genattrtab$(build_exeext) : BUILD_LIBS += -lm
 
+# These programs are not linked with the MD reader.
+build/gengenrtl$(build_exeext) : $(BUILD_ERRORS)
+build/genmodes$(build_exeext) : $(BUILD_ERRORS)
 build/gengtype$(build_exeext) : build/gengtype-lex.o \
   build/gengtype-yacc.o $(BUILD_ERRORS)
 
