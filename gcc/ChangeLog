@@ -1,5 +1,9 @@
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
+	* varray.c: Remove GENERATOR_FILE #ifdefs.
+
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
 	* genautomata.c (output_reserved_units_table): Emit nothing if
 	description->query_units_num is zero.  Remove extra blank line.
 	(output_cpu_unit_reservation_p): Short circuit
