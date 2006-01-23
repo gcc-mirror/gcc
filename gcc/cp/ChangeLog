@@ -1,5 +1,20 @@
 2006-01-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* cp-tree.h (do_poplevel): Remove prototype.
+	* semantics.c (do_poplevel): Add prototype.  Make static.
+
+	* cp-tree.h (original_type): Remove prototype.
+	* typeck.c (original_type): Make static.
+
+	* cp-tree.h (declare_global_var): Remove prototype.
+	* decl.c (declare_global_var): Make static.
+
+	* cp-tree.h (implicitly_declare_fn): Remove prototype.
+	* method.c (implicitly_declare_fn): Make static.
+
+	* cp-tree.h (fold_decl_constant_value): Remove prototype.
+	* pt.c (fold_decl_constant_value): Make static.
+
 	* cp-tree.h (build_x_delete): Remove prototype.
 	* init.c (build_vec_delete_1): Call build_op_delete_call directly
 	and not via build_x_delete.

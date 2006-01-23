@@ -57,6 +57,7 @@
    parsing into this file; that will make implementing the new parser
    much easier since it will be able to make use of these routines.  */
 
+static tree do_poplevel (tree);
 static tree maybe_convert_cond (tree);
 static tree simplify_aggr_init_exprs_r (tree *, int *, void *);
 static void emit_associated_thunks (tree);
@@ -427,7 +428,7 @@ anon_aggr_type_p (tree node)
 
 /* Finish a scope.  */
 
-tree
+static tree
 do_poplevel (tree stmt_list)
 {
   tree block = NULL;

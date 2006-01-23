@@ -5138,7 +5138,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
    had been seen.  Used to create compiler-generated global
    variables.  */
 
-tree
+static tree
 declare_global_var (tree name, tree type)
 {
   tree decl;
