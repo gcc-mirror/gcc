@@ -2745,6 +2745,10 @@ insert_extra_phis (basic_block block, basic_block dom)
 
       FOR_EACH_EDGE (e, ei, block->preds)
 	{
+	  /* We cannot handle abnormal incomming edges correctly.  */
+	  if (e->flags & EDGE_ABNORMAL)
+	    return;
+
 	  if (first)
 	    {
 	      bitmap_set_copy (tempset, AVAIL_OUT (e->src));
