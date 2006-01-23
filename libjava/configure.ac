@@ -901,13 +901,8 @@ else
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
    AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h) 
    AC_CHECK_LIB(dl, dladdr, [
-     if test "x${disable_dladdr}" = "xyes"; then
-       #Broken dladdr().
-       true
-     else
-       AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])
-     fi
-   ])
+       AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])])
+
    if test x"$build" = x"$host"; then
      AC_CHECK_FILES(/proc/self/exe, [
        AC_DEFINE(HAVE_PROC_SELF_EXE, 1, [Define if you have /proc/self/exe])])

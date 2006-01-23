@@ -9989,18 +9989,13 @@ echo "$as_me:$LINENO: result: $ac_cv_lib_dl_dladdr" >&5
 echo "${ECHO_T}$ac_cv_lib_dl_dladdr" >&6
 if test $ac_cv_lib_dl_dladdr = yes; then
 
-     if test "x${disable_dladdr}" = "xyes"; then
-       #Broken dladdr().
-       true
-     else
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_DLADDR 1
 _ACEOF
 
-     fi
-
 fi
+
 
    if test x"$build" = x"$host"; then
      echo "$as_me:$LINENO: checking for /proc/self/exe" >&5
