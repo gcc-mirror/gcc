@@ -1,5 +1,29 @@
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
+	* genextract.c: Don't include insn-config.h.  Do include vec.h.
+	Declare vectors of int, char, and locstr.
+	(locstr): New typedef.
+	(struct extraction): Make all array fields into bare pointers.
+	(insn_name_ptr, insn_name_ptr_size): Move down by get_insn_name.
+	(insn_code_number): Delete.
+	(accum_extract): New struct.
+	(VEC_safe_set_locstr, VEC_char_to_string): New functions.
+	(gen_insn): Take insn_code_number as an argument.  Use an
+	accum_extract structure instead of loading data directly into
+	a struct extraction, and having to know how big it might get.
+	(walk_rtx): Operate entirely on an accum_extract structure.
+	(print_path): Avoid unnecessary use of printf.
+	(print_header): New function, split out of main.  Distinguish
+	more carefully between an unrecognizable insn and an insn that
+	has the code number of a define_expand.
+	(main): Pass insn_code_number to gen_insn.  Call print_header
+	only after parsing.  Avoid unnecessary use of printf.
+	* Makefile.in (build/vec.o): New rule.
+	(build/genextract): Depend on build/vec.o.
+	(build/genextract.o): Don't depend on insn-config.h.
+
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
 	* Makefile.in: Consolidate most rules that use $(CC_FOR_BUILD) and/or
 	$(RUN_GEN).  Use pattern rules to factor out as much boilerplate as
 	practical.  Eliminate per-generator-program link rules.
