@@ -1,3 +1,10 @@
+2006-01-23  David Daney  <ddaney@avtrex.com>
+
+	* configure.host (disable_dladdr): Remove variable and its
+	documentation.
+	* configure.ac: Do not test for disable_dladdr.
+	* configure: Regenerate.
+
 2006-01-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libgcj/25840
