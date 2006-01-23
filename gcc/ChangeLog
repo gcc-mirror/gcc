@@ -1,3 +1,11 @@
+2006-01-23  Andrew Pinski  <pinskia@physics.uc.edu>
+            Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-opt/25315
+	PR tree-opt/25857
+	* tree-ssa-pre.c (insert_extra_phis): If an incomming edge is abnormal 
+	return from the function.
+
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
 	* rtl.def (match_code): Add second argument.
