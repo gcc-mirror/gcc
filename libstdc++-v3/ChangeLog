@@ -17,7 +17,7 @@
 	* include/bits/stl_list.h (list<>::_M_check_equal_allocators): New.
 	(list<>::splice(iterator, list&), splice(iterator, list&, iterator),
 	splice(iterator, list&, iterator, iterator)): Use it.
-	* include/bits/stl_list.h (list<>::merge(list&), merge(list&,
+	* include/bits/list.tcc (list<>::merge(list&), merge(list&,
 	_StrictWeakOrdering)): Likewise.
 	* testsuite/23_containers/list/operators/5.cc: New.
 
