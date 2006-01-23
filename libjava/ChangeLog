@@ -4,6 +4,7 @@
 	documentation.
 	* configure.ac: Do not test for disable_dladdr.
 	* configure: Regenerate.
+	* include/config.h.in: Regenerate.
 
 2006-01-18  Tom Tromey  <tromey@redhat.com>
 
