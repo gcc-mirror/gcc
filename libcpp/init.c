@@ -357,8 +357,14 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, traditional))
     n -= 2;
+  else if (! CPP_OPTION (pfile, stdc_0_in_system_headers)
+	   || CPP_OPTION (pfile, std))
+    {
+      n--;
+      _cpp_define_builtin (pfile, "__STDC__ 1");
+    }
 
-  for(b = builtin_array; b < builtin_array + n; b++)
+  for (b = builtin_array; b < builtin_array + n; b++)
     {
       cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
       hp->type = NT_MACRO;

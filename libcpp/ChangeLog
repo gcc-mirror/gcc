@@ -1,3 +1,12 @@
+2006-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/25717
+	* init.c (cpp_init_builtins): If __STDC__ will not change value
+	between system headers and other sources, define it as a normal
+	macro rather than a builtin.
+	* macro.c (_cpp_builtin_macro_text) <case BT_STDC>: Only check
+	cpp_in_system_header condition.
+
 2006-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/25294
