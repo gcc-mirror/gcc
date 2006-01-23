@@ -1,5 +1,12 @@
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
+	* genautomata.c (output_reserved_units_table): Emit nothing if
+	description->query_units_num is zero.  Remove extra blank line.
+	(output_cpu_unit_reservation_p): Short circuit
+	if description->query_units_num is zero.
+
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
 	* genattrtab.c: Don't include genattrtab.h.  Define ATTR_NONE
 	and ATTR_SPECIAL (from genattrtab.h).  Don't define num_dfa_decls
 	nor any of the random handful of variables that used to be necessary
