@@ -414,8 +414,6 @@ static void finish_regexp_representation     (void);
 
 static void output_range_type            (FILE *, long int, long int);
 static int longest_path_length           (state_t);
-static void process_state_longest_path_length (state_t);
-static void output_dfa_max_issue_rate    (void);
 static void output_chip_member_name      (FILE *, automaton_t);
 static void output_temp_chip_member_name (FILE *, automaton_t);
 static void output_translate_vect_name   (FILE *, automaton_t);
@@ -1155,6 +1153,8 @@ struct automaton
      8) elements in one vector element.  So the compression factor can
      be 1 (no compression), 2, 4, 8.  */
   int min_issue_delay_table_compression_factor;
+  /* Total number of locked states in this automaton.  */
+  int locked_states;
 };
 
 /* The following is the element of the list of automata.  */
@@ -7015,47 +7015,6 @@ longest_path_length (state_t state)
   return result;
 }
 
-/* The following variable value is value of the corresponding global
-   variable in the automaton based pipeline interface.  */
-
-static int max_dfa_issue_rate;
-
-/* The following function processes the longest path length staring
-   from STATE to find MAX_DFA_ISSUE_RATE.  */
-
-static void
-process_state_longest_path_length (state_t state)
-{
-  int value;
-
-  value = longest_path_length (state);
-  if (value > max_dfa_issue_rate)
-    max_dfa_issue_rate = value;
-}
-
-/* The following macro value is name of the corresponding global
-   variable in the automaton based pipeline interface.  */
-
-#define MAX_DFA_ISSUE_RATE_VAR_NAME "max_dfa_issue_rate"
-
-/* The following function calculates value of the corresponding
-   global variable and outputs its declaration.  */
-
-static void
-output_dfa_max_issue_rate (void)
-{
-  automaton_t automaton;
-
-  gcc_assert (UNDEFINED_LONGEST_PATH_LENGTH != ON_THE_PATH && ON_THE_PATH < 0);
-  max_dfa_issue_rate = 0;
-  for (automaton = description->first_automaton;
-       automaton != NULL;
-       automaton = automaton->next_automaton)
-    pass_states (automaton, process_state_longest_path_length);
-  fprintf (output_file, "\nint %s = %d;\n",
-	   MAX_DFA_ISSUE_RATE_VAR_NAME, max_dfa_issue_rate);
-}
-
 /* The function outputs all initialization values of VECT.  */
 static void
 output_vect (vla_hwint_t vect)
@@ -7977,12 +7936,6 @@ output_min_issue_delay_table (automaton_t automaton)
   VEC_free (vect_el_t,heap, compressed_min_issue_delay_vect);
 }
 
-#ifndef NDEBUG
-/* Number of states which contains transition only by advancing cpu
-   cycle.  */
-static int locked_states_num;
-#endif
-
 /* Form and output vector representing the locked states of
    AUTOMATON.  */
 static void
@@ -7995,6 +7948,7 @@ output_dead_lock_vect (automaton_t automaton)
   /* Create vect of pointers to states ordered by num of
      transitions from the state (state with the maximum num is the
      first).  */
+  automaton->locked_states = 0;
   output_states_vect = 0;
   pass_states (automaton, add_states_vect_el);
 
@@ -8005,16 +7959,19 @@ output_dead_lock_vect (automaton_t automaton)
       state_t s = VEC_index (state_t, output_states_vect, i);
       arc = first_out_arc (s);
       gcc_assert (arc);
-      VEC_replace (vect_el_t, dead_lock_vect, s->order_state_num,
-		   (next_out_arc (arc) == NULL
-		    && (arc->insn->insn_reserv_decl
-			== DECL_INSN_RESERV (advance_cycle_insn_decl))
-		    ? 1 : 0));
-#ifndef NDEBUG
-      if (VEC_index (vect_el_t,dead_lock_vect, s->order_state_num))
-        locked_states_num++;
-#endif
+      if (next_out_arc (arc) == NULL
+	  && (arc->insn->insn_reserv_decl
+	      == DECL_INSN_RESERV (advance_cycle_insn_decl)))
+	{
+	  VEC_replace (vect_el_t, dead_lock_vect, s->order_state_num, 1);
+	  automaton->locked_states++;
+	}
+      else
+	VEC_replace (vect_el_t, dead_lock_vect, s->order_state_num, 0);
     }
+  if (automaton->locked_states == 0)
+    return;
+
   fprintf (output_file, "/* Vector for locked state flags.  */\n");
   fprintf (output_file, "static const ");
   output_range_type (output_file, 0, 1);
@@ -8085,9 +8042,6 @@ output_tables (void)
 {
   automaton_t automaton;
 
-#ifndef NDEBUG
-  locked_states_num = 0;
-#endif
   initiate_min_issue_delay_pass_states ();
   for (automaton = description->first_automaton;
        automaton != NULL;
@@ -8139,9 +8093,9 @@ output_max_insn_queue_index_def (void)
   for (i = 0; (1 << i) <= max; i++)
     ;
   gcc_assert (i >= 0);
-  fprintf (output_file, "\nint max_insn_queue_index = %d;\n\n", (1 << i) - 1);
+  fprintf (output_file, "\nconst int max_insn_queue_index = %d;\n\n",
+	   (1 << i) - 1);
 }
-
 
 /* The function outputs switch cases for insn reservations using
    function *output_automata_list_code.  */
@@ -8575,19 +8529,20 @@ output_internal_dead_lock_func (void)
 {
   automaton_t automaton;
 
-  fprintf (output_file, "static int\n%s (struct %s *%s)\n",
+  fprintf (output_file, "static int\n%s (struct %s *ARG_UNUSED (%s))\n",
 	   INTERNAL_DEAD_LOCK_FUNC_NAME, CHIP_NAME, CHIP_PARAMETER_NAME);
   fprintf (output_file, "{\n");
   for (automaton = description->first_automaton;
        automaton != NULL;
        automaton = automaton->next_automaton)
-    {
-      fprintf (output_file, "  if (");
-      output_dead_lock_vect_name (output_file, automaton);
-      fprintf (output_file, " [%s->", CHIP_PARAMETER_NAME);
-      output_chip_member_name (output_file, automaton);
-      fprintf (output_file, "])\n    return 1/* TRUE */;\n");
-    }
+    if (automaton->locked_states)
+      {
+	fprintf (output_file, "  if (");
+	output_dead_lock_vect_name (output_file, automaton);
+	fprintf (output_file, " [%s->", CHIP_PARAMETER_NAME);
+	output_chip_member_name (output_file, automaton);
+	fprintf (output_file, "])\n    return 1/* TRUE */;\n");
+      }
   fprintf (output_file, "  return 0/* FALSE */;\n}\n\n");
 }
 
@@ -9314,6 +9269,7 @@ output_statistics (FILE *f)
   int state_alts_comb_vect_els = 0;
   int state_alts_full_vect_els = 0;
   int min_issue_delay_vect_els = 0;
+  int locked_states = 0;
 #endif
 
   for (automaton = description->first_automaton;
@@ -9336,6 +9292,7 @@ output_statistics (FILE *f)
 	}
       fprintf (f, "    %5d all insns      %5d insn equivalence classes\n",
 	       description->insns_num, automaton->insn_equiv_classes_num);
+      fprintf (f, "    %d locked states\n", automaton->locked_states);
 #ifndef NDEBUG
       fprintf
 	(f, "%5ld transition comb vector els, %5ld trans table els: %s\n",
@@ -9363,6 +9320,8 @@ output_statistics (FILE *f)
         += VEC_length (vect_el_t, automaton->state_alts_table->full_vect);
       min_issue_delay_vect_els
 	+= states_num * automaton->insn_equiv_classes_num;
+      locked_states
+	+= automaton->locked_states;
 #endif
     }
 #ifndef NDEBUG
@@ -9376,7 +9335,7 @@ output_statistics (FILE *f)
     (f, "%5d all state alts comb vector els, %5d all state alts table els\n",
      state_alts_comb_vect_els, state_alts_full_vect_els);
   fprintf (f, "%5d all min delay table els\n", min_issue_delay_vect_els);
-  fprintf (f, "%5d locked states num\n", locked_states_num);
+  fprintf (f, "%5d all locked states\n", locked_states);
 #endif
 }
 
@@ -9865,7 +9824,6 @@ write_automata (void)
   output_time = create_ticker ();
   if (progress_flag)
     fprintf (stderr, "Forming and outputting automata tables...");
-  output_dfa_max_issue_rate ();
   output_tables ();
   if (progress_flag)
     {

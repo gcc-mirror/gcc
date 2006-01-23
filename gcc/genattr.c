@@ -174,13 +174,6 @@ main (int argc, char **argv)
       printf ("#define CPU_UNITS_QUERY 0\n");
       printf ("#endif\n\n");
       /* Interface itself: */
-      printf ("extern int max_dfa_issue_rate;\n\n");
-      printf ("/* The following macro value is calculated from the\n");
-      printf ("   automaton based pipeline description and is equal to\n");
-      printf ("   maximal number of all insns described in constructions\n");
-      printf ("   `define_insn_reservation' which can be issued on the\n");
-      printf ("   same processor cycle. */\n");
-      printf ("#define MAX_DFA_ISSUE_RATE max_dfa_issue_rate\n\n");
       printf ("/* Insn latency time defined in define_insn_reservation. */\n");
       printf ("extern int insn_default_latency (rtx);\n\n");
       printf ("/* Return nonzero if there is a bypass for given insn\n");
@@ -198,7 +191,7 @@ main (int argc, char **argv)
       printf ("#endif\n\n");
       printf ("/* Maximal possible number of insns waiting results being\n");
       printf ("   produced by insns whose execution is not finished. */\n");
-      printf ("extern int max_insn_queue_index;\n\n");
+      printf ("extern const int max_insn_queue_index;\n\n");
       printf ("/* Pointer to data describing current state of DFA.  */\n");
       printf ("typedef void *state_t;\n\n");
       printf ("/* Size of the data in bytes.  */\n");
