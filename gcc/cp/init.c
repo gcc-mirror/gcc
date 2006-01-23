@@ -2247,9 +2247,10 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 	}
 
       if (auto_delete_vec == sfk_deleting_destructor)
-	deallocate_expr = build_x_delete (base_tbd,
-					  2 | use_global_delete,
-					  virtual_size);
+	deallocate_expr = build_op_delete_call (VEC_DELETE_EXPR,
+						base_tbd, virtual_size,
+						use_global_delete & 1,
+						NULL_TREE);
     }
 
   body = loop;
@@ -2607,31 +2608,6 @@ build_vec_init (tree base, tree maxindex, tree init,
 
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
   return stmt_expr;
-}
-
-/* Free up storage of type TYPE, at address ADDR.
-
-   TYPE is a POINTER_TYPE and can be ptr_type_node for no special type
-   of pointer.
-
-   VIRTUAL_SIZE is the amount of storage that was allocated, and is
-   used as the second argument to operator delete.  It can include
-   things like padding and magic size cookies.  It has virtual in it,
-   because if you have a base pointer and you delete through a virtual
-   destructor, it should be the size of the dynamic object, not the
-   static object, see Free Store 12.5 ISO C++.
-
-   This does not call any destructors.  */
-
-tree
-build_x_delete (tree addr, int which_delete, tree virtual_size)
-{
-  int use_global_delete = which_delete & 1;
-  int use_vec_delete = !!(which_delete & 2);
-  enum tree_code code = use_vec_delete ? VEC_DELETE_EXPR : DELETE_EXPR;
-
-  return build_op_delete_call (code, addr, virtual_size, use_global_delete,
-			       NULL_TREE);
 }
 
 /* Call the DTOR_KIND destructor for EXP.  FLAGS are as for

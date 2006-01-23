@@ -1,5 +1,10 @@
 2006-01-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* cp-tree.h (build_x_delete): Remove prototype.
+	* init.c (build_vec_delete_1): Call build_op_delete_call directly
+	and not via build_x_delete.
+	(build_x_delete): Remove.
+
 	* cp-tree.h (get_vtt_name): Remove prototype.
 	* class.c (get_vtt_name): Remove.
 	(build_vtt): Call mangle_vtt_for_type instead of get_vtt_name.
