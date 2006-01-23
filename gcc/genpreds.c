@@ -492,10 +492,3 @@ main (int argc, char **argv)
 
   return SUCCESS_EXIT_CODE;
 }
-
-/* Dummy for debugging purposes.  */
-const char *
-get_insn_name (int code ATTRIBUTE_UNUSED)
-{
-  return 0;
-}

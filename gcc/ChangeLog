@@ -1,5 +1,20 @@
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
+	* gensupport.c: Define get_insn_name and record_insn_name here.
+	(read_md_rtx): Call record_insn_name as appropriate.
+	* genattr.c, genattrtab.c, gencodes.c, genconfig.c, genemit.c
+	* genextract.c, genflags.c, genopinit.c, genoutput.c, genpeep.c
+	* genpreds.c, genrecog.c: Don't define get_insn_name nor
+	record_insn_name.
+	* Makefile.in (BUILD_SUPPORT, BUILD_PRINT): Fold into BUILD_RTL.
+	(BUILD_VARRAY): Delete.
+	(genprognormal): Rename genprogmd.  Fold in all programs from
+	genprognoprint; also attrtab.
+	(build/genattrtab): Just mention genautomata.o and varray.o.
+	Reorganize a bit, add comments to make the categories clearer.
+
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
 	* genconditions.c (condition_table, add_condition): Delete.
 	(write_conditions): Don't emit n_insn_conditions nor
 	insn_elision_unavailable.  Issue the gcc version #ifdef here,

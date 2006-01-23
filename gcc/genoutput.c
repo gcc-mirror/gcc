@@ -192,28 +192,6 @@ static void gen_split (rtx, int);
 static void check_constraint_len (void);
 static int constraint_len (const char *, int);
 
-const char *
-get_insn_name (int index)
-{
-  static char buf[100];
-
-  struct data *i, *last_named = NULL;
-  for (i = idata; i ; i = i->next)
-    {
-      if (i->index_number == index)
-	return i->name;
-      if (i->name)
-	last_named = i;
-    }
-
-  if (last_named)
-    sprintf(buf, "%s+%d", last_named->name, index - last_named->index_number);
-  else
-    sprintf(buf, "insn %d", index);
-
-  return buf;
-}
-
 static void
 output_prologue (void)
 {

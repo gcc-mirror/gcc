@@ -86,7 +86,6 @@ struct accum_extract
 
 /* Forward declarations.  */
 static void walk_rtx (rtx, struct accum_extract *);
-static void record_insn_name (int, const char *);
 
 static void
 gen_insn (rtx insn, int insn_code_number)
@@ -416,10 +415,7 @@ main (int argc, char **argv)
   while ((desc = read_md_rtx (&line_no, &insn_code_number)) != NULL)
     {
        if (GET_CODE (desc) == DEFINE_INSN)
-	{
-	  record_insn_name (insn_code_number, XSTR (desc, 0));
-	  gen_insn (desc, insn_code_number);
-	}
+	 gen_insn (desc, insn_code_number);
 
       else if (GET_CODE (desc) == DEFINE_PEEPHOLE)
 	{
@@ -492,50 +488,4 @@ main (int argc, char **argv)
   puts ("    }\n}");
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-}
-
-/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
-
-/* Holds an array of names indexed by insn_code_number.  */
-static char **insn_name_ptr = 0;
-static int insn_name_ptr_size = 0;
-
-const char *
-get_insn_name (int code ATTRIBUTE_UNUSED)
-{
-  if (code < insn_name_ptr_size)
-    return insn_name_ptr[code];
-  else
-    return NULL;
-}
-
-static void
-record_insn_name (int code, const char *name)
-{
-  static const char *last_real_name = "insn";
-  static int last_real_code = 0;
-  char *new;
-
-  if (insn_name_ptr_size <= code)
-    {
-      int new_size;
-      new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
-      insn_name_ptr = xrealloc (insn_name_ptr, sizeof(char *) * new_size);
-      memset (insn_name_ptr + insn_name_ptr_size, 0,
-	      sizeof(char *) * (new_size - insn_name_ptr_size));
-      insn_name_ptr_size = new_size;
-    }
-
-  if (!name || name[0] == '\0')
-    {
-      new = xmalloc (strlen (last_real_name) + 10);
-      sprintf (new, "%s+%d", last_real_name, code - last_real_code);
-    }
-  else
-    {
-      last_real_name = new = xstrdup (name);
-      last_real_code = code;
-    }
-
-  insn_name_ptr[code] = new;
 }
