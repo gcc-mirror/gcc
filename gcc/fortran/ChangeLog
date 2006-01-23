@@ -1,3 +1,13 @@
+2005-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Fix regression in testing of admissability of attributes.
+	* symbol.c (gfc_add_attribute): If the current_attr has non-zero
+	intent, do not do the check for a dummy being used.
+	* decl.c (attr_decl1): Add current_attr.intent as the third argument
+	in the call to gfc_add_attribute.
+	* gfortran.h: Add the third argument to the prototype for
+	gfc_add_attribute.
+
 2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gfortranspec.c (lang_specific_driver): Update copyright notice

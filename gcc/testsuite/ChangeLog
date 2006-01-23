@@ -1,3 +1,8 @@
+2005-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	Fix regression in testing of admissability of attributes.
+	* gfortran.dg/intent_used_1.f90: New test.
+
 2006-01-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25895
