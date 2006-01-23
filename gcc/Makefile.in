@@ -2876,6 +2876,8 @@ build/rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)	\
   $(RTL_H) real.h $(GGC_H) errors.h
 build/varray.o: varray.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)	\
   $(VARRAY_H) $(RTL_BASE_H) $(GGC_H) $(TREE_H) bitmap.h errors.h
+build/vec.o : vec.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) coretypes.h vec.h \
+   $(GGC_H) toplev.h
 build/insn-conditions.o : insn-conditions.c $(CONFIG_H) $(SYSTEM_H)	\
   $(GTM_H) $(RTL_H) $(TM_P_H) $(REGS_H) $(FUNCTION_H) $(RECOG_H) real.h	\
   output.h $(FLAGS_H) hard-reg-set.h $(RESOURCE_H) toplev.h reload.h	\
@@ -2904,7 +2906,7 @@ build/genconstants.o : genconstants.c $(RTL_BASE_H) $(BCONFIG_H)	\
 build/genemit.o : genemit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h gensupport.h
 build/genextract.o : genextract.c $(RTL_BASE_H) $(BCONFIG_H)		\
-  $(SYSTEM_H) coretypes.h $(GTM_H) insn-config.h errors.h gensupport.h
+  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
 build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H)	\
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
 build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
@@ -2952,6 +2954,7 @@ build/genpreds$(build_exeext) : $(BUILD_PRINT)
 
 build/gengenrtl$(build_exeext) : $(BUILD_ERRORS)
 build/genmodes$(build_exeext) : $(BUILD_ERRORS)
+build/genextract$(build_exeext): build/vec.o
 
 # These programs are made from more than one source file.
 # The primary source file comes from the pattern rule above.
