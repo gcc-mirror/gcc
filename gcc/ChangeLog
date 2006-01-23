@@ -1,3 +1,17 @@
+2006-01-23  Richard Sandiford  <richard@codesourcery.com>
+
+	* gengtype.c (new_structure): Return the structure.
+	(create_option): Add an extra "next" argument.
+	(create_field): New function.
+	(adjust_field_rtx_def): Use create_option and create_field.
+	Remove a now-unnecessary call to find_structure.
+	(adjust_field_tree_def): Likewise.
+	(note_yacc_type): Remove an unnecessary call to find_structure.
+	* gengtype.h (new_structure): Return the structure.
+	(create_option): Add an extra argument.
+	* gengtype-yacc.y (type): Remove unnecessary calls to find_structure.
+	(option): Adjust calls to create_option.
+
 2006-01-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix.h (STACK_BOUNDARY): Define.
