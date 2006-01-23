@@ -1,5 +1,24 @@
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
+	* genautomata.c (process_state_longest_path, max_dfa_issue_rate)
+	(output_dfa_max_issue_rate, locked_states_num): Delete.
+	(struct automaton): Add locked_states field.
+	(output_dead_lock_vect): Save number of locked states in
+	automaton->locked_states.  If it is zero, don't print anything.
+	(output_max_insn_queue_index_def): Define max_insn_queue_index const.
+	(output_internal_dead_lock_func): Only test the dead_lock_vect
+	for automata that have locked states.
+	(output_statistics): Always print the number of locked states for
+	each automaton.  Calculate total number of locked states here.
+	(write_automata): Don't call output_dfa_max_issue_rate.
+	* genattrtab.c: Define length_unit_log as a const variable.
+	* genattr.c: Don't emit MAX_DFA_ISSUE_RATE.  Declare
+	max_insn_queue_index const.
+	* final.c (length_unit_log): Declare const.
+	* doc/tm.texi: Remove all references to MAX_DFA_ISSUE_RATE.
+
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
 	* genautomata.c:  Include vec.h, not varray.h.
 	Delete vla_ptr_t, all of the VLA_PTR_ macros, and all of the
 	VLA_HWINT_ macros.  Change vla_hwint_t to a typedef for

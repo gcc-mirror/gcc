@@ -138,7 +138,7 @@ static const char *last_filename;
 /* Whether to force emission of a line note before the next insn.  */
 static bool force_source_line = false;
   
-extern int length_unit_log; /* This is defined in insn-attrtab.c.  */
+extern const int length_unit_log; /* This is defined in insn-attrtab.c.  */
 
 /* Nonzero while outputting an `asm' with operands.
    This means that inconsistencies are the user's fault, so don't die.
