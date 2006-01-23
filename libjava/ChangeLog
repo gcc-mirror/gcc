@@ -1,3 +1,10 @@
+2006-01-23  Tom Tromey  <tromey@redhat.com>
+
+	* java/sql/Date.java (toString): Not deprecated.
+	(valueOf): Likewise.
+	* java/sql/Time.java (valueOf): Not deprecated.
+	(toString): Likewise.
+
 2006-01-21  Matthias Klose  <doko@debian.org>
 
 	* java/lang/mprec.h: Fix typo in previous patch.
