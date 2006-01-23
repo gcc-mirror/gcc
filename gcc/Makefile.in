@@ -1367,6 +1367,8 @@ $(SPECS): xgcc$(exeext)
 gcc-cross: xgcc$(exeext)
 	cp xgcc$(exeext) gcc-cross$(exeext)
 
+dummy-checksum.o : dummy-checksum.c
+
 cc1-dummy$(exeext): $(C_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) dummy-checksum.o \
 	  $(BACKEND) $(LIBS)
@@ -1707,27 +1709,6 @@ gccspec.o: gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H)
   -c $(srcdir)/gccspec.c $(OUTPUT_OPTION))
 
 cppspec.o: cppspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H)
-
-build/genchecksum$(build_exeext) : build/genchecksum.o $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/genchecksum.o $(BUILD_LIBS)
-
-build/genchecksum.o : genchecksum.c $(BCONFIG_H) $(SYSTEM_H) $(MD5_H)
-
-dummy-checksum.o : dummy-checksum.c
-
-tree-check.h: s-check ; @true
-s-check : build/gencheck$(build_exeext)
-	$(RUN_GEN) build/gencheck$(build_exeext) > tmp-check.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-check.h tree-check.h
-	$(STAMP) s-check
-
-build/gencheck$(build_exeext) : build/gencheck.o $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/gencheck.o $(BUILD_LIBS)
-
-build/gencheck.o : gencheck.c gencheck.h tree.def $(BCONFIG_H) $(SYSTEM_H) \
-	coretypes.h $(GTM_H) $(lang_tree_files)
 
 gencheck.h : s-gencheck ; @true
 s-gencheck : Makefile
@@ -2657,188 +2638,121 @@ s-mddeps: $(md_file) $(MD_INCLUDES) build/genmddeps$(build_exeext)
 	$(SHELL) $(srcdir)/../move-if-change tmp-mddeps mddeps.mk
 	$(STAMP) s-mddeps
 
-# The following pair of rules has this effect:
-# genconfig is run only if the md has changed since genconfig was last run;
-# but the file insn-config.h is touched only when its contents actually change.
-
-# Each of the other insn-* files is handled by a similar pair of rules.
-
-# This causes an anomaly in the results of make -n
-# because insn-* is older than s-*
-# and thus make -n thinks that insn-* will be updated
-# and force recompilation of things that depend on it.
-# We use move-if-change precisely to avoid such recompilation.
-# But there is no way to teach make -n that it will be avoided.
-
-# Each of the insn-*.[ch] rules has a semicolon at the end,
-# for otherwise the system Make on SunOS 4.1 never tries
-# to recompile insn-*.o.  To avoid problems and extra noise from
-# versions of make which don't like empty commands (nothing after the
-# trailing `;'), we call true for each.
-
-insn-config.h: s-config ; @true
-s-config : $(MD_DEPS) build/genconfig$(build_exeext)
-	$(RUN_GEN) build/genconfig$(build_exeext) $(md_file) > tmp-config.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-config.h insn-config.h
-	$(STAMP) s-config
-
-insn-conditions.c: s-conditions ; @true
-s-conditions : $(MD_DEPS) build/genconditions$(build_exeext)
-	$(RUN_GEN) build/genconditions$(build_exeext) $(md_file) > tmp-conditions.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-conditions.c insn-conditions.c
-	$(STAMP) s-conditions
-
-build/insn-conditions.o : insn-conditions.c $(CONFIG_H) $(SYSTEM_H) \
-  $(GTM_H) $(RTL_H) $(TM_P_H) $(REGS_H) $(FUNCTION_H) $(RECOG_H) real.h output.h \
-  $(FLAGS_H) hard-reg-set.h $(RESOURCE_H) toplev.h reload.h gensupport.h \
-  insn-constants.h coretypes.h
-
-build/dummy-conditions.o : dummy-conditions.c
-
-insn-flags.h: s-flags ; @true
-s-flags : $(MD_DEPS) build/genflags$(build_exeext)
-	$(RUN_GEN) build/genflags$(build_exeext) $(md_file) > tmp-flags.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-flags.h insn-flags.h
-	$(STAMP) s-flags
-
-insn-codes.h: s-codes ; @true
-s-codes : $(MD_DEPS) build/gencodes$(build_exeext)
-	$(RUN_GEN) build/gencodes$(build_exeext) $(md_file) > tmp-codes.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-codes.h insn-codes.h
-	$(STAMP) s-codes
-
-insn-constants.h: s-constants ; @true
-s-constants : $(MD_DEPS) build/genconstants$(build_exeext)
-	$(RUN_GEN) build/genconstants$(build_exeext) $(md_file) > tmp-constants.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-constants.h insn-constants.h
-	$(STAMP) s-constants
-
-insn-emit.o : insn-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) $(EXPR_H) real.h output.h insn-config.h $(OPTABS_H) reload.h \
-  $(RECOG_H) toplev.h $(FUNCTION_H) $(FLAGS_H) hard-reg-set.h $(RESOURCE_H) \
-  $(TM_P_H) $(BASIC_BLOCK_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-emit.c \
-	  $(OUTPUT_OPTION)
-
-insn-emit.c: s-emit ; @true
-s-emit : $(MD_DEPS) build/genemit$(build_exeext)
-	$(RUN_GEN) build/genemit$(build_exeext) $(md_file) > tmp-emit.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-emit.c insn-emit.c
-	$(STAMP) s-emit
-
-insn-recog.o : insn-recog.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) insn-config.h $(RECOG_H) real.h output.h $(FLAGS_H)  $(FUNCTION_H) \
-  hard-reg-set.h $(RESOURCE_H) $(TM_P_H) toplev.h reload.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-recog.c \
-	  $(OUTPUT_OPTION)
-
-insn-recog.c: s-recog ; @true
-s-recog : $(MD_DEPS) build/genrecog$(build_exeext)
-	$(RUN_GEN) build/genrecog$(build_exeext) $(md_file) > tmp-recog.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-recog.c insn-recog.c
-	$(STAMP) s-recog
-
-insn-opinit.o : insn-opinit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) insn-config.h $(FLAGS_H) $(RECOG_H) $(EXPR_H) $(OPTABS_H) reload.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-opinit.c \
-	  $(OUTPUT_OPTION)
-
-insn-opinit.c: s-opinit ; @true
-s-opinit : $(MD_DEPS) build/genopinit$(build_exeext)
-	$(RUN_GEN) build/genopinit$(build_exeext) $(md_file) > tmp-opinit.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-opinit.c insn-opinit.c
-	$(STAMP) s-opinit
-
-insn-extract.o : insn-extract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) toplev.h insn-config.h $(RECOG_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-extract.c \
-	  $(OUTPUT_OPTION)
-
-insn-extract.c: s-extract ; @true
-s-extract : $(MD_DEPS) build/genextract$(build_exeext)
-	$(RUN_GEN) build/genextract$(build_exeext) $(md_file) > tmp-extract.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-extract.c insn-extract.c
-	$(STAMP) s-extract
-
-insn-peep.o : insn-peep.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) $(REGS_H) output.h real.h insn-config.h $(RECOG_H) except.h \
-  $(FUNCTION_H) $(TM_P_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-peep.c \
-	  $(OUTPUT_OPTION)
-
-insn-peep.c: s-peep ; @true
-s-peep : $(MD_DEPS) build/genpeep$(build_exeext)
-	$(RUN_GEN) build/genpeep$(build_exeext) $(md_file) > tmp-peep.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-peep.c insn-peep.c
-	$(STAMP) s-peep
-
-insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) $(REGS_H) real.h output.h $(INSN_ATTR_H) insn-config.h toplev.h \
-  $(RECOG_H) $(TM_P_H) $(FLAGS_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-attrtab.c \
-	  $(OUTPUT_OPTION)
-
-insn-attr.h: s-attr ; @true
-s-attr : $(MD_DEPS) build/genattr$(build_exeext)
-	$(RUN_GEN) build/genattr$(build_exeext) $(md_file) > tmp-attr.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-attr.h insn-attr.h
-	$(STAMP) s-attr
-
-insn-attrtab.c: s-attrtab ; @true
-s-attrtab : $(MD_DEPS) build/genattrtab$(build_exeext)
-	$(RUN_GEN) build/genattrtab$(build_exeext) $(md_file) > tmp-attrtab.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-attrtab.c insn-attrtab.c
-	$(STAMP) s-attrtab
-
-insn-output.o : insn-output.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) $(GGC_H) $(REGS_H) real.h conditions.h hard-reg-set.h \
-  insn-config.h $(INSN_ATTR_H) $(EXPR_H) output.h $(RECOG_H) $(FUNCTION_H) \
-  toplev.h $(FLAGS_H) insn-codes.h $(TM_P_H) $(TARGET_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-output.c \
-	  $(OUTPUT_OPTION)
-
-insn-output.c: s-output ; @true
-s-output : $(MD_DEPS) build/genoutput$(build_exeext)
-	$(RUN_GEN) build/genoutput$(build_exeext) $(md_file) > tmp-output.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-output.c insn-output.c
-	$(STAMP) s-output
-
-genrtl.o : genrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
+# Header dependencies for generated source files.
+genrtl.o : genrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)	$(RTL_H)\
   $(GGC_H)
-genrtl.c genrtl.h : s-genrtl; @true
+insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(TM_H) $(RTL_H) $(REGS_H) real.h output.h $(INSN_ATTR_H)		\
+  insn-config.h toplev.h $(RECOG_H) $(TM_P_H) $(FLAGS_H)
+insn-emit.o : insn-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)	\
+  $(RTL_H) $(EXPR_H) real.h output.h insn-config.h $(OPTABS_H)		\
+  reload.h $(RECOG_H) toplev.h $(FUNCTION_H) $(FLAGS_H) hard-reg-set.h	\
+  $(RESOURCE_H) $(TM_P_H) $(BASIC_BLOCK_H)
+insn-extract.o : insn-extract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(TM_H) $(RTL_H) toplev.h insn-config.h $(RECOG_H)
+insn-modes.o : insn-modes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	$(TM_H) \
+  $(MACHMODE_H) real.h
+insn-opinit.o : insn-opinit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(TM_H) $(RTL_H) insn-config.h $(FLAGS_H) $(RECOG_H) $(EXPR_H)	\
+  $(OPTABS_H) reload.h
+insn-output.o : insn-output.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(TM_H) $(RTL_H) $(GGC_H) $(REGS_H) real.h conditions.h		\
+  hard-reg-set.h insn-config.h $(INSN_ATTR_H) $(EXPR_H) output.h	\
+  $(RECOG_H) $(FUNCTION_H) toplev.h $(FLAGS_H) insn-codes.h $(TM_P_H)	\
+  $(TARGET_H)
+insn-peep.o : insn-peep.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)	\
+  $(RTL_H) $(REGS_H) output.h real.h insn-config.h $(RECOG_H) except.h	\
+  $(FUNCTION_H) $(TM_P_H)
+insn-preds.o : insn-preds.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
+  $(TM_H) $(RTL_H) $(TREE_H) insn-config.h $(RECOG_H) real.h output.h	\
+  $(FLAGS_H) $(FUNCTION_H) hard-reg-set.h $(RESOURCE_H) $(TM_P_H)		\
+  toplev.h reload.h $(REGS_H)
+insn-recog.o : insn-recog.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
+  $(TM_H) $(RTL_H) insn-config.h $(RECOG_H) real.h output.h $(FLAGS_H)	\
+  $(FUNCTION_H) hard-reg-set.h $(RESOURCE_H) $(TM_P_H) toplev.h reload.h
+
+# For each of the files generated by running a generator program over
+# the machine description, the following pair of static pattern rules
+# runs the generator program only if the machine description has changed,
+# but touches the target file only when its contents actually change.
+# The "; @true" construct forces Make to recheck the timestamp on the
+# target file.
+
+simple_generated_h = insn-attr.h insn-codes.h insn-config.h	\
+		     insn-constants.h insn-flags.h 
+
+simple_generated_c = insn-attrtab.c insn-conditions.c insn-emit.c \
+		     insn-extract.c insn-opinit.c insn-output.c \
+		     insn-peep.c insn-recog.c
+
+$(simple_generated_h): insn-%.h: s-%; @true
+
+$(simple_generated_h:insn-%.h=s-%): s-%: $(MD_DEPS) build/gen%$(build_exeext)
+	$(RUN_GEN) build/gen$*$(build_exeext) $(md_file) > tmp-$*.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-$*.h insn-$*.h
+	$(STAMP) s-$*
+
+$(simple_generated_c): insn-%.c: s-%; @true
+$(simple_generated_c:insn-%.c=s-%): s-%: $(MD_DEPS) build/gen%$(build_exeext)
+	$(RUN_GEN) build/gen$*$(build_exeext) $(md_file) > tmp-$*.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-$*.c insn-$*.c
+	$(STAMP) s-$*
+
+# gencheck doesn't read the machine description, and the file produced
+# doesn't use the insn-* convention.
+tree-check.h: s-check ; @true
+s-check : build/gencheck$(build_exeext)
+	$(RUN_GEN) build/gencheck$(build_exeext) > tmp-check.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-check.h tree-check.h
+	$(STAMP) s-check
+
+# These files are generated by running the same generator more than
+# once with different options, so they have custom rules.  The
+# stampfile idiom is the same.
+genrtl.c: s-genrtl; @true
+genrtl.h: s-genrtl-h; @true
+
 s-genrtl: build/gengenrtl$(build_exeext)
-	$(RUN_GEN) build/gengenrtl$(build_exeext) -h > tmp-genrtl.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-genrtl.h genrtl.h
 	$(RUN_GEN) build/gengenrtl$(build_exeext) > tmp-genrtl.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-genrtl.c genrtl.c
 	$(STAMP) s-genrtl
 
-insn-modes.o : insn-modes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	       $(MACHMODE_H) real.h
-min-insn-modes.c insn-modes.c insn-modes.h : s-modes ; @true
+s-genrtl-h: build/gengenrtl$(build_exeext)
+	$(RUN_GEN) build/gengenrtl$(build_exeext) -h > tmp-genrtl.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-genrtl.h genrtl.h
+	$(STAMP) s-genrtl-h
+
+insn-modes.c: s-modes; @true
+insn-modes.h: s-modes-h; @true
+min-insn-modes.c: s-modes-m; @true
 
 s-modes: build/genmodes$(build_exeext)
-	$(RUN_GEN) build/genmodes$(build_exeext) -h > tmp-modes.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-modes.h insn-modes.h
-	$(RUN_GEN) build/genmodes$(build_exeext) -m > tmp-min-modes.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-min-modes.c min-insn-modes.c
 	$(RUN_GEN) build/genmodes$(build_exeext) > tmp-modes.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-modes.c insn-modes.c
 	$(STAMP) s-modes
 
-insn-preds.c tm-preds.h: s-preds; @true
+s-modes-h: build/genmodes$(build_exeext)
+	$(RUN_GEN) build/genmodes$(build_exeext) -h > tmp-modes.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-modes.h insn-modes.h
+	$(STAMP) s-modes-h
+
+s-modes-m: build/genmodes$(build_exeext)
+	$(RUN_GEN) build/genmodes$(build_exeext) -m > tmp-min-modes.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-min-modes.c min-insn-modes.c
+	$(STAMP) s-modes-m
+
+insn-preds.c: s-preds; @true
+tm-preds.h: s-preds-h; @true
 
 s-preds: $(MD_DEPS) build/genpreds$(build_exeext)
-	$(RUN_GEN) build/genpreds$(build_exeext) -h $(md_file) > tmp-preds.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-preds.h tm-preds.h
 	$(RUN_GEN) build/genpreds$(build_exeext) $(md_file) > tmp-preds.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-preds.c insn-preds.c
 	$(STAMP) s-preds
 
-insn-preds.o : insn-preds.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) $(TREE_H) insn-config.h $(RECOG_H) real.h output.h $(FLAGS_H) \
-  $(FUNCTION_H) hard-reg-set.h $(RESOURCE_H) $(TM_P_H) toplev.h reload.h \
-  $(REGS_H)
+s-preds-h: $(MD_DEPS) build/genpreds$(build_exeext)
+	$(RUN_GEN) build/genpreds$(build_exeext) -h $(md_file) > tmp-preds.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-preds.h tm-preds.h
+	$(STAMP) s-preds-h
 
 GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(CPP_ID_DATA_H) $(host_xm_file_list) \
@@ -2938,177 +2852,126 @@ s-gtype: build/gengtype$(build_exeext) $(GTFILES)
 	$(STAMP) s-gtype
 
 #
+# How to compile object files to run on the build machine.
+
+build/%.o :  # dependencies provided by explicit rule later
+	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -o $@ $<
+
+# Header dependencies for the programs that generate source code.
+# These are library modules...
+build/dummy-conditions.o : dummy-conditions.c
+build/errors.o : errors.c $(BCONFIG_H) $(SYSTEM_H) errors.h
+build/gensupport.o: gensupport.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(GTM_H) $(RTL_BASE_H) $(OBSTACK_H) errors.h $(HASHTAB_H)		\
+  gensupport.h
+build/ggc-none.o : ggc-none.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h 	\
+  $(GGC_H)
+build/min-insn-modes.o : min-insn-modes.c $(BCONFIG_H) $(SYSTEM_H)	\
+  $(MACHMODE_H)
+build/print-rtl.o: print-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(GTM_H) $(RTL_BASE_H)
+build/read-rtl.o: read-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(GTM_H) $(RTL_BASE_H) $(OBSTACK_H) $(HASHTAB_H)
+build/rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)	\
+  $(RTL_H) real.h $(GGC_H) errors.h
+build/varray.o: varray.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)	\
+  $(VARRAY_H) $(RTL_BASE_H) $(GGC_H) $(TREE_H) bitmap.h errors.h
+build/insn-conditions.o : insn-conditions.c $(CONFIG_H) $(SYSTEM_H)	\
+  $(GTM_H) $(RTL_H) $(TM_P_H) $(REGS_H) $(FUNCTION_H) $(RECOG_H) real.h	\
+  output.h $(FLAGS_H) hard-reg-set.h $(RESOURCE_H) toplev.h reload.h	\
+  gensupport.h insn-constants.h coretypes.h
+
+# ...these are the programs themselves.
+build/genattr.o : genattr.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h gensupport.h
+build/genattrtab.o : genattrtab.c $(RTL_BASE_H) $(OBSTACK_H)		\
+  $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(GGC_H)	\
+  gensupport.h genattrtab.h
+build/genautomata.o : genautomata.c $(RTL_BASE_H) $(OBSTACK_H)		\
+  $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(VARRAY_H)	\
+  genattrtab.h $(HASHTAB_H)
+build/gencheck.o : gencheck.c gencheck.h tree.def $(BCONFIG_H) $(GTM_H)	\
+	$(SYSTEM_H) coretypes.h $(lang_tree_files)
+build/genchecksum.o : genchecksum.c $(BCONFIG_H) $(SYSTEM_H) $(MD5_H)
+build/gencodes.o : gencodes.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h gensupport.h
+build/genconditions.o : genconditions.c $(RTL_BASE_H) $(BCONFIG_H)	\
+  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h
+build/genconfig.o : genconfig.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h gensupport.h
+build/genconstants.o : genconstants.c $(RTL_BASE_H) $(BCONFIG_H)	\
+  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h
+build/genemit.o : genemit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h gensupport.h
+build/genextract.o : genextract.c $(RTL_BASE_H) $(BCONFIG_H)		\
+  $(SYSTEM_H) coretypes.h $(GTM_H) insn-config.h errors.h gensupport.h
+build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H)	\
+  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
+build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
+build/gengtype-lex.o : gengtype-lex.c gengtype.h gengtype-yacc.h	\
+  $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) vec.h
+build/gengtype-yacc.o : gengtype-yacc.c gengtype.h $(BCONFIG_H)		\
+  $(SYSTEM_H) coretypes.h $(GTM_H)
+build/gengtype.o : gengtype.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(GTM_H) gengtype.h gtyp-gen.h rtl.def insn-notes.def errors.h
+build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(GTM_H) $(RTL_BASE_H) errors.h gensupport.h
+build/genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h		\
+  $(HASHTAB_H) machmode.def $(extra_modes_file)
+build/genopinit.o : genopinit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h gensupport.h
+build/genoutput.o : genoutput.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h gensupport.h
+build/genpeep.o : genpeep.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h gensupport.h
+build/genpreds.o : genpreds.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h gensupport.h $(OBSTACK_H)
+build/genrecog.o : genrecog.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h gensupport.h
+
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(CC_FOR_BUILD), and associated libraries,
 # since they need to run on this machine
 # even if GCC is being compiled to run on some other machine.
 
-# $(CONFIG_H) is omitted from the deps of the gen*.o
-# because these programs don't really depend on anything
-# about the target machine.  They do depend on config.h itself,
-# since that describes the host machine.
-
-# The names of programs that run on the "build" machine.
-genprognames=genconfig genflags gencodes genemit genopinit genrecog \
-	     genextract genpeep genattr genoutput
-
-# The names of the executable files for those programs.
-genprogs=$(genprognames:%=build/%$(build_exeext))
-
-# Object files used in those programs.
-genobjnames=$(genprognames:%=%.o) read-rtl.o gensupport.o genattrtab.o \
-        genautomata.o gengenrtl.o genmodes.o genpreds.o gengtype.o \
-	genconstants.o gen-protos.o scan.o fix-header.o scan-decls.o \
-	gencheck.o dummy-conditions.o genconditions.o errors.o ggc-none.o \
-	min-insn-modes.o rtl.o print-rtl.o varray.o gcov-iov.o \
-	insn-conditions.o gengtype-lex.o gengtype-yacc.o genmddeps.o \
-	genchecksum.o
-
-genobjs=$(genobjnames:%=build/%)
-
-$(genprogs): %$(build_exeext): %.o  $(BUILD_RTL) $(BUILD_SUPPORT) \
-			       $(BUILD_PRINT) $(BUILD_ERRORS) \
-	                       $(BUILD_LIBDEPS)
+# As a general rule...
+build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-		$< $(BUILD_RTL) $(BUILD_SUPPORT) $(BUILD_PRINT) \
-		$(BUILD_ERRORS) $(BUILD_LIBS)
+	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
-$(genobjs): %.o :  # dependencies provided by explicit rule later
-	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -o $@ $<
+# All these programs have the same additional dependency set.
+genprognormal = attr codes config emit extract flags opinit output peep recog
+$(genprognormal:%=build/gen%$(build_exeext)): $(BUILD_RTL) $(BUILD_SUPPORT) \
+  $(BUILD_PRINT) $(BUILD_ERRORS)
 
-build/read-rtl.o: read-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
-  $(RTL_BASE_H) $(OBSTACK_H) $(HASHTAB_H)
+# And all of these, but it's a different set.
+genprogearly = mddeps constants conditions preds
+$(genprogearly:%=build/gen%$(build_exeext)): $(BUILD_RTL) $(BUILD_ERRORS) \
+  $(BUILD_EARLY_SUPPORT)
+build/genpreds$(build_exeext) : $(BUILD_PRINT)
 
-build/gensupport.o: gensupport.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(GTM_H) $(RTL_BASE_H) $(OBSTACK_H) errors.h $(HASHTAB_H) gensupport.h
+build/gengenrtl$(build_exeext) : $(BUILD_ERRORS)
+build/genmodes$(build_exeext) : $(BUILD_ERRORS)
 
-build/genconfig.o : genconfig.c $(RTL_BASE_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
-
-build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
-
-build/gencodes.o : gencodes.c $(RTL_BASE_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
-
-build/genmddeps$(build_exeext) : build/genmddeps.o $(BUILD_RTL) \
-  $(BUILD_EARLY_SUPPORT) $(BUILD_ERRORS) $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/genmddeps.o $(BUILD_EARLY_SUPPORT) $(BUILD_RTL) \
-	 $(BUILD_ERRORS) $(BUILD_LIBS)
-
-build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(GTM_H) $(RTL_BASE_H) errors.h gensupport.h
-
-build/genconstants$(build_exeext) : build/genconstants.o $(BUILD_RTL) \
-  $(BUILD_EARLY_SUPPORT) $(BUILD_ERRORS) $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/genconstants.o $(BUILD_EARLY_SUPPORT) $(BUILD_RTL) \
-	 $(BUILD_ERRORS) $(BUILD_LIBS)
-
-build/genconstants.o : genconstants.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(GTM_H) errors.h
-
-build/genemit.o : genemit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(GTM_H) errors.h gensupport.h
-
-build/genopinit.o : genopinit.c $(RTL_BASE_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
-
-build/genrecog.o : genrecog.c $(RTL_BASE_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
-
-build/genextract.o : genextract.c $(RTL_BASE_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) insn-config.h errors.h gensupport.h
-
-build/genpeep.o : genpeep.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(GTM_H) errors.h gensupport.h
-
-build/genattr.o : genattr.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(GTM_H) errors.h gensupport.h
-
-build/genattrtab$(build_exeext) : build/genattrtab.o build/genautomata.o \
+# These programs are made from more than one source file.
+# The primary source file comes from the pattern rule above.
+build/genattrtab$(build_exeext) : build/genautomata.o \
   $(BUILD_RTL) $(BUILD_SUPPORT) $(BUILD_PRINT) $(BUILD_ERRORS) \
-  $(BUILD_VARRAY) $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/genattrtab.o build/genautomata.o \
-	 $(BUILD_RTL) $(BUILD_SUPPORT) $(BUILD_PRINT) $(BUILD_ERRORS) \
-	 $(BUILD_VARRAY) $(BUILD_LIBS) -lm
+  $(BUILD_VARRAY)
+build/genattrtab$(build_exeext) : BUILD_LIBS += -lm
 
-build/genattrtab.o : genattrtab.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(GGC_H) gensupport.h genattrtab.h
+build/gengtype$(build_exeext) : build/gengtype-lex.o \
+  build/gengtype-yacc.o $(BUILD_ERRORS)
 
-build/genautomata.o : genautomata.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(VARRAY_H) genattrtab.h \
-  $(HASHTAB_H)
-
-build/genoutput.o : genoutput.c $(RTL_BASE_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
-
-build/gengenrtl$(build_exeext) : build/gengenrtl.o $(BUILD_ERRORS) \
-  $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/gengenrtl.o $(BUILD_ERRORS) $(BUILD_LIBS)
-
-build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
-
-build/genmodes$(build_exeext) : build/genmodes.o $(BUILD_ERRORS) \
-  $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/genmodes.o $(BUILD_ERRORS) $(BUILD_LIBS)
-
-build/genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h $(HASHTAB_H) \
-	     machmode.def $(extra_modes_file)
-
-build/genpreds$(build_exeext) : build/genpreds.o $(BUILD_RTL) \
-  $(BUILD_EARLY_SUPPORT) $(BUILD_PRINT) $(BUILD_ERRORS) $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/genpreds.o $(BUILD_RTL) $(BUILD_EARLY_SUPPORT) $(BUILD_PRINT) \
-	 $(BUILD_ERRORS) $(BUILD_LIBS)
-
-build/genpreds.o : genpreds.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(GTM_H) errors.h gensupport.h $(OBSTACK_H)
-
-build/gengtype$(build_exeext) : build/gengtype.o build/gengtype-lex.o \
-  build/gengtype-yacc.o $(BUILD_LIBDEPS) $(BUILD_ERRORS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/gengtype.o build/gengtype-lex.o build/gengtype-yacc.o \
-	 $(BUILD_ERRORS) $(BUILD_LIBS)
-
-build/gengtype.o : gengtype.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
-  gengtype.h gtyp-gen.h rtl.def insn-notes.def errors.h
-
-build/gengtype-lex.o : gengtype-lex.c gengtype.h gengtype-yacc.h \
-  $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) vec.h
-
-build/gengtype-yacc.o : gengtype-yacc.c gengtype.h $(BCONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(GTM_H)
-
+# Generated source files for gengtype.
 gengtype-lex.c : gengtype-lex.l
 	-$(FLEX) $(FLEXFLAGS) -o$@ $<
-
-gengtype-yacc.c gengtype-yacc.h: gengtype-yacc.y
-	-$(BISON) $(BISONFLAGS) -d -o gengtype-yacc.c $<
-
-build/genconditions$(build_exeext) : build/genconditions.o \
-  $(BUILD_EARLY_SUPPORT) $(BUILD_RTL) $(BUILD_ERRORS) $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/genconditions.o $(BUILD_EARLY_SUPPORT) $(BUILD_RTL) \
-	 $(BUILD_ERRORS) $(BUILD_LIBS)
-
-build/genconditions.o : genconditions.c $(RTL_BASE_H) $(BCONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h
-
-build/errors.o : errors.c $(BCONFIG_H) $(SYSTEM_H) errors.h
-build/ggc-none.o : ggc-none.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H)
-build/min-insn-modes.o : min-insn-modes.c $(BCONFIG_H) $(SYSTEM_H) \
-  $(MACHMODE_H)
-build/rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) $(RTL_H) \
-  real.h $(GGC_H) errors.h
-build/print-rtl.o: print-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
-  $(RTL_BASE_H)
-build/varray.o: varray.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) \
-  $(VARRAY_H) $(RTL_BASE_H) $(GGC_H) $(TREE_H) bitmap.h errors.h
+# This is a pattern rule solely so that Make knows it need not run the
+# command twice.  The modifier to $@ ensures that Bison is asked to
+# produce a .c file, whether or not Make decides it needs the .h file
+# first.
+gengtype-y%.c gengtype-y%.h: gengtype-y%.y
+	-$(BISON) $(BISONFLAGS) -d -o $(@:.h=.c) $<
 
 #
 # Remake internationalization support.
@@ -3208,7 +3071,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 # gcov-iov.c is run on the build machine to generate gcov-iov.h from version.c
 build/gcov-iov.o: gcov-iov.c $(BCONFIG_H) coretypes.h $(GTM_H) \
   $(SYSTEM_H) coretypes.h $(TM_H)
- 
+
 build/gcov-iov$(build_exeext): build/gcov-iov.o
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) build/gcov-iov.o -o $@
 

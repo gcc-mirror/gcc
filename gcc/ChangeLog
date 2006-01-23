@@ -1,3 +1,9 @@
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
+	* Makefile.in: Consolidate most rules that use $(CC_FOR_BUILD) and/or
+	$(RUN_GEN).  Use pattern rules to factor out as much boilerplate as
+	practical.  Eliminate per-generator-program link rules.
+
 2006-01-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/24437
@@ -169,14 +175,14 @@
 
 2006-01-20  Dirk Mueller  <dmueller@suse.com>
 
-        PR c++/5520
-        * c-parser.c (c_parser_if_body): Use build_empty_stmt()
-        instead of a special NOP marker.
-        * c-typeck.c (c_finish_if_stmt): Remove obsoleted special
-        NOP marker handling.
-        * c-common.h (empty_body_warning): Add forward declaration.
-        * c-common.c (empty_body_warning): Add (from c_finish_if_stmt).
-        Now uses IS_EMPTY_STMT() instead of special NOP markers.
+	PR c++/5520
+	* c-parser.c (c_parser_if_body): Use build_empty_stmt()
+	instead of a special NOP marker.
+	* c-typeck.c (c_finish_if_stmt): Remove obsoleted special
+	NOP marker handling.
+	* c-common.h (empty_body_warning): Add forward declaration.
+	* c-common.c (empty_body_warning): Add (from c_finish_if_stmt).
+	Now uses IS_EMPTY_STMT() instead of special NOP markers.
 
 2005-01-20  Paul Brook  <paul@codesourcery.com>
 
@@ -211,11 +217,11 @@
 
 2005-01-19  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	PR rtl-optimization/25799 
+	PR rtl-optimization/25799
 	* df-problems.c (df_ru_confluence_n, df_rd_confluence_n):
 	Corrected confluence operator to remove bits from op2 before oring
 	with op1 rather than removing bits from op1.
-        (df_ru_transfer_function): Corrected test on wrong bitmap which
+	(df_ru_transfer_function): Corrected test on wrong bitmap which
 	caused infinite loop.  Both of these problems were introduced in
 	the dataflow rewrite.
 
@@ -298,7 +304,7 @@
 	for the TARGET_DEEP_BRANCH_PREDICTION case.
 
 2006-01-19  Jan Hubicka  <jh@suse.cz>
-            H.J. Lu  <hongjiu.lu@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
 	    Evandro Menezes <evandro.menezes@amd.com>
 
 	* invoke.texi (generic): Document
@@ -495,7 +501,7 @@
 
 	* tree-vrp.c (extract_range_from_assert): Refine the result range
 	if the variable referenced by the ASSERT_EXPR has a range and
-	either the tentative result range or the previous range is a 
+	either the tentative result range or the previous range is a
 	VR_ANTI_RANGE.
 
 2006-01-19  Richard Sandiford  <richard@codesourcery.com>
@@ -521,13 +527,13 @@
 2006-01-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("Y", "y"): New mode attribute.
-	("*cmpdi_ccs", "*cmpsi_ccs", "*adddi3_imm_cc", "*adddi3_carry1_cc", 
+	("*cmpdi_ccs", "*cmpsi_ccs", "*adddi3_imm_cc", "*adddi3_carry1_cc",
 	"*adddi3_carry1_cconly", "*adddi3_carry2_cc", "*adddi3_carry2_cconly",
-	"*adddi3_cc", "*adddi3_cconly", "*adddi3_cconly2", "*adddi3_64", 
-	"*addsi3_imm_cc", "*addsi3_carry1_cc", 
+	"*adddi3_cc", "*adddi3_cconly", "*adddi3_cconly2", "*adddi3_64",
+	"*addsi3_imm_cc", "*addsi3_carry1_cc",
 	"*addsi3_carry1_cconly", "*addsi3_carry2_cc", "*addsi3_carr2_cconly",
 	"*addsi3_cc", "*addsi3_cconly", "*addsi3_cconly2",
-	"*subdi3_borrow_cc", "*subdi3_borrow_cconly", "*subdi3_cc", 
+	"*subdi3_borrow_cc", "*subdi3_borrow_cconly", "*subdi3_cc",
 	"*subdi3_cc2", "*subdi3_cconly", "*subdi3_cconly2", "*subdi3_64",
 	"*subsi3_borrow_cc", "*subsi3_borrow_cconly", "*subsi3_cc",
 	"*subsi3_cc2", "*subsi3_cconly", "*subsi3_cconly", "*subsi3_cconly2",
@@ -536,7 +542,7 @@
 	"*add<mode>3_carry2_cc", "*add<mode>3_carry2_cconly", "*add<mode>3_cc",
 	"*add<mode>3_cconly", "*add<mode>3_cconly2", "*add<mode>3_imm_cc",
 	"*sub<mode>3_borrow_cc", "*sub<mode>3_borrow_cconly",
-	"*sub<mode>3_cc", "*sub<mode>3_cc2", "*sub<mode>3_cconly", 
+	"*sub<mode>3_cc", "*sub<mode>3_cc2", "*sub<mode>3_cconly",
 	"*sub<mode>3_cconly2"): New insn patterns.
 	("addsi3", "subsi3"): New expanders.
 
@@ -640,7 +646,7 @@
 	(add_may_alias): Ditto.
 	(replace_may_alias): Ditto.
 	(get_nmt_for): Ditto.
-	(create_global_var): 
+	(create_global_var):
 	(is_escape_site): Return an escape_type enumeration.
 	* tree-flow-inline.h (is_call_clobbered):  Global var does not
 	imply call clobbered.
@@ -650,13 +656,13 @@
 	* tree-dfa.c (dump_variable): If details is on, dump the reason
 	for escaping.
 	* tree-outof-ssa.c (create_temp): Copy escape mask from original
-	variable. 
+	variable.
 	* tree-flow.h (struct ptr_info_def): Add escape mask member.
 	(struct var_ann_d): Ditto.
 	(enum escape_type): New.
 	(mark_call_clobbered): Adjust prototype.
 	* tree-ssa-structalias.c (update_alias_info): Unmodifiable vars
-	are never call clobbered. 
+	are never call clobbered.
 	Record reasons for escaping.
 	* tree-ssa-structalias.h (is_escape_site): Update prototype.
 	* tree-ssa-operands.c (ssa_call_clobbered_cache_valid): Remove.
@@ -673,7 +679,7 @@
 	Add use of PURE_CONST information.
 	(add_call_read_ops): Remove use of cache.
 	Add use of static not_read information.
-	
+
 2006-01-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	Introduce TLS descriptors for i386 and x86_64.
@@ -725,7 +731,7 @@
 	(ashrdi3): Likewise.
 	(aeabi_lasr): Likewise.
 	(lshrdi3): Likewise.
-	(aeabi_llsr): Likewise. 
+	(aeabi_llsr): Likewise.
 	2005-03-10  Julian Brown  <julian@codesourcery.com>
 	* config.gcc: Disable shared libgcc for SymbianOS.
 	* config/arm/t-symbian (LIB2ADDEH): Include config/arm/pr-support.c.
@@ -1199,7 +1205,7 @@
 	(override_options): Use the size_cost.branch_cost as the default
 	ix86_branch_cost when optimizing for size.
 
-2006-01-18  Ben Elliston  <bje@au.ibm.com>	
+2006-01-18  Ben Elliston  <bje@au.ibm.com>
 
 	* Makefile.in (D32PBIT_FUNCS): New.
 	(D64PBIT_FUNCS, D128PBIT_FUNCS): Likewise.
@@ -1212,7 +1218,7 @@
 	* doc/libgcc.texi (Decimal float library routines): New node.
 	* config/dfp-bit.h, config/dfp-bit.c: New files.
 
-2006-01-18  Ben Elliston  <bje@au.ibm.com>	
+2006-01-18  Ben Elliston  <bje@au.ibm.com>
 
 	* expr.c (emit_move_change_mode): Always adjust addresses, not
 	just during reload.  Copy replacements only during reload.
@@ -1316,7 +1322,7 @@
 	Merge from gomp branch:
 	* Makefile.in (TREE_INLINE_H): New.  Use it as needed.
 	* tree-inline.h (struct copy_body_data): Move from tree-inline.c
-	and rename from struct inline_data.  Rename callee* to dst*; 
+	and rename from struct inline_data.  Rename callee* to dst*;
 	caller* to src*; add copy_decl hook, transform_call_graph_edges,
 	transform_new_cfg, transform_return_to_modify, and
 	transform_lang_insert_block flags; remove cloning_p, versioning_p,
@@ -1435,7 +1441,7 @@
 	* doc/invoke.texi: Add documentation for -frtl-abstract-sequences.
 
 2006-01-16  Eric Botcazou  <ebotcazou@adacore.com>
-            Roger Sayle  <roger@eyesopen.com> 
+	    Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_minmax): New static function.
 	(fold_binary) <MIN_EXPR>: Call it.
@@ -1677,7 +1683,7 @@
 	used to communicate with thread_through_all_blocks.
 	* tree-flow.h (thread_through_all_blocks): Update prototype.
 	(register_jump_thread): Prototype.
-	
+
 2006-01-11  Kazu Hirata  <kazu@codesourcery.com>
 
 	* df-core.c (df_compact_blocks, df_bb_replace): Use
@@ -1709,7 +1715,7 @@
 2005-01-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* Makefile.in: Removed rotted odf.c entry.
-	
+
 2006-01-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/25706
@@ -1783,27 +1789,27 @@
 	PR tree-optimization/24123
 
 	* Makefile.in (tree-ssa-math-opts.o): Adjust dependencies.
-        * tree-cfg.c (single_noncomplex_succ): New.
-        * tree-flow.h (single_noncomplex_succ): Declare it.
-        * tree-ssa-math-opts.c (enum place_reciprocal): Remove.
-        * tree-ssa-math-opts.c (enum place_reciprocal): Remove.
-        (struct occurrence, occ_head, occ_pool, is_divide_by, compute_merit,
+	* tree-cfg.c (single_noncomplex_succ): New.
+	* tree-flow.h (single_noncomplex_succ): Declare it.
+	* tree-ssa-math-opts.c (enum place_reciprocal): Remove.
+	* tree-ssa-math-opts.c (enum place_reciprocal): Remove.
+	(struct occurrence, occ_head, occ_pool, is_divide_by, compute_merit,
 	insert_bb, register_division_in, insert_reciprocals,
 	replace_reciprocal, free_bb): New.
-        (execute_cse_reciprocals_1): Rewritten.
-        (execute_cse_reciprocals): Adjust calls to execute_cse_reciprocals_1.
-        Do not commit any edge insertion.  Always compute dominators and
-        create the allocation pool.
-        * target-def.h (TARGET_MIN_DIVISIONS_FOR_RECIP_MUL): New.
+	(execute_cse_reciprocals_1): Rewritten.
+	(execute_cse_reciprocals): Adjust calls to execute_cse_reciprocals_1.
+	Do not commit any edge insertion.  Always compute dominators and
+	create the allocation pool.
+	* target-def.h (TARGET_MIN_DIVISIONS_FOR_RECIP_MUL): New.
 	* target.h (struct gcc_target): Add min_divistions_for_recip_mul.
 	* targhooks.c (default_min_divistions_for_recip_mul): New.
 	* targhooks.h (default_min_divistions_for_recip_mul): New prototype.
-        * passes.c (init_optimization_passes): Run recip after tree loop
-        optimizations.
-        * doc/tm.texi (Misc): Document TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.
+	* passes.c (init_optimization_passes): Run recip after tree loop
+	optimizations.
+	* doc/tm.texi (Misc): Document TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.
 
 2005-01-11  Danny Berlin <dberlin@dberlin.org>
-            Kenneth Zadeck <zadeck@naturalbridge.com>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* df.h (DF_SCAN, DF_RU, DF_RD, DF_LR, DF_UR, DF_UREC, DF_CHAIN,
 	DF_RI, DF_LAST_PROBLEM_PLUS1, DF_DU_CHAIN, DF_UD_CHAIN,
@@ -1859,7 +1865,7 @@
 	df_ref_remove, df_insn_refs_delete, df_refs_delete,
 	df_reorganize_refs, df_set_state, df_hard_reg_init,
 	df_read_modify_subreg_p) New public functions.
-        * df-core.c: The core dataflow solver and glue routines for rtl
+	* df-core.c: The core dataflow solver and glue routines for rtl
 	dataflow.
 	(df_init, df_add_problem, df_set_blocks, df_finish,
 	df_hybrid_search_forward, df_hybrid_search_backward,
@@ -1927,17 +1933,17 @@
 	df_ri_compute, df_ri_free, df_ri_dump, df_ri_add_problem,
 	df_reg_lifetime): New functions.
 	* df.c: Deleted file.
-        * ddg.c (create_ddg_dep_no_link, build_inter_loop_deps): Made code
+	* ddg.c (create_ddg_dep_no_link, build_inter_loop_deps): Made code
 	consistent with new df api.
-        * modulo-sched.c (sms_schedule, rest_of_handle_sms,
-        rest_of_handle_sms): Ditto.
-        * web.c (unionfind_union, union_defs, entry_register, web_main):
+	* modulo-sched.c (sms_schedule, rest_of_handle_sms,
+	rest_of_handle_sms): Ditto.
+	* web.c (unionfind_union, union_defs, entry_register, web_main):
 	Ditto.
 	* loop_invariant.c (invariant_for_use, hash_invariant_expr_1,
 	invariant_expr_equal_p, find_defs, check_dependencies,
 	find_invariant_insn, find_invariants_to_move, move_invariant_reg,
 	free_inv_motion_data, move_loop_invariants): Ditto.
-	* Makefile.in (df.c, df-scan.c df-problems.c df-core.c): 
+	* Makefile.in (df.c, df-scan.c df-problems.c df-core.c):
 	Update dependencies.
 	(odf.c): Added defective entry that was deleted later in day.
 	* sched-deps.c (sched_analyze_1): Ditto.
@@ -2399,8 +2405,8 @@
 	    Richard Henderson  <rth@redhat.com>
 
 	Merge from gomp-branch:
-        * varasm.c (assemble_variable): Handle thread-local COMMON data.
-        * defaults.h (ASM_OUTPUT_TLS_COMMON): Define.
+	* varasm.c (assemble_variable): Handle thread-local COMMON data.
+	* defaults.h (ASM_OUTPUT_TLS_COMMON): Define.
 
 2006-01-03  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -2496,7 +2502,7 @@
 	Don't clear have_location_lists.
 
 2006-01-02  Eric Botcazou  <ebotcazou@adacore.com>
-            Jan Hubicka  <jh@suse.cz>
+	    Jan Hubicka  <jh@suse.cz>
 
 	* cfglayout.c (fixup_reorder_chain): Remove kludge for the
 	case of conditional jump jumping to the next instruction.
@@ -2510,8 +2516,8 @@
 
 2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR target/25259
-        * Makefile.in (DECNUMINC): Include libdecnumber's build directory.
+	PR target/25259
+	* Makefile.in (DECNUMINC): Include libdecnumber's build directory.
 
 2006-01-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
