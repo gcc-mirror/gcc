@@ -1,5 +1,18 @@
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
+	* genautomata.c:  Include vec.h, not varray.h.
+	Delete vla_ptr_t, all of the VLA_PTR_ macros, and all of the
+	VLA_HWINT_ macros.  Change vla_hwint_t to a typedef for
+	VEC(vect_el_t,heap) *.  Convert all uses of VLA_* macros to
+	VEC_* macros operating on appropriately typed vectors, or to
+	malloced arrays when the size is known in advance.  Const-ify
+	many char* variables and function arguments.  No functional changes.
+	* Makefile.in (build/varray.o): Delete rule.
+	(build/genattrtab): Depend on build/vec.o instead of build/varray.o.
+	(build/genautomata.o): Depend on vec.h instead of $(VARRAY_H).
+
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
 	* gensupport.c: Define get_insn_name and record_insn_name here.
 	(read_md_rtx): Call record_insn_name as appropriate.
 	* genattr.c, genattrtab.c, gencodes.c, genconfig.c, genemit.c
