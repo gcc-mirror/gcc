@@ -1,3 +1,12 @@
+2006-01-23  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* config/posix/proc.c: Conditional include of sys/loadavg.h for
+	Solaris.
+	* configure.ac: Add check for loadavg.h.
+	(link_gomp): Adjust comment.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2006-01-21  Steve Ellcey  <sje@cup.hp.com>
 
 	PR libgomp/25877
