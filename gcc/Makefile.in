@@ -981,7 +981,7 @@ OBJS-common = \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o mode-switching.o modulo-sched.o optabs.o options.o opts.o	   \
  params.o postreload.o postreload-gcse.o predict.o			   \
- insn-preds.o pointer-set.o 					   	   \
+ insn-preds.o insn-automata.o pointer-set.o 			   	   \
  print-rtl.o print-tree.o profile.o value-prof.o var-tracking.o		   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
@@ -2639,6 +2639,8 @@ genrtl.o : genrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)	$(RTL_H)\
 insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
   $(TM_H) $(RTL_H) $(REGS_H) real.h output.h $(INSN_ATTR_H)		\
   insn-config.h toplev.h $(RECOG_H) $(TM_P_H) $(FLAGS_H)
+insn-automata.o : insn-automata.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
+  $(TM_H) $(RTL_H) $(INSN_ATTR_H)
 insn-emit.o : insn-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)	\
   $(RTL_H) $(EXPR_H) real.h output.h insn-config.h $(OPTABS_H)		\
   reload.h $(RECOG_H) toplev.h $(FUNCTION_H) $(FLAGS_H) hard-reg-set.h	\
@@ -2675,9 +2677,9 @@ insn-recog.o : insn-recog.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
 
 simple_generated_h = insn-attr.h insn-codes.h insn-config.h insn-flags.h 
 
-simple_generated_c = insn-attrtab.c insn-emit.c insn-extract.c	\
-		     insn-opinit.c insn-output.c insn-peep.c	\
-		     insn-recog.c
+simple_generated_c = insn-attrtab.c insn-automata.c insn-emit.c \
+		     insn-extract.c insn-opinit.c insn-output.c \
+		     insn-peep.c insn-recog.c
 
 $(simple_generated_h): insn-%.h: s-%; @true
 
@@ -2906,10 +2908,10 @@ build/genattr.o : genattr.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h gensupport.h
 build/genattrtab.o : genattrtab.c $(RTL_BASE_H) $(OBSTACK_H)		\
   $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(GGC_H)	\
-  gensupport.h genattrtab.h
+  gensupport.h
 build/genautomata.o : genautomata.c $(RTL_BASE_H) $(OBSTACK_H)		\
   $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) errors.h vec.h		\
-  genattrtab.h $(HASHTAB_H)
+  $(HASHTAB_H) gensupport.h
 build/gencheck.o : gencheck.c gencheck.h tree.def $(BCONFIG_H) $(GTM_H)	\
 	$(SYSTEM_H) coretypes.h $(lang_tree_files)
 build/genchecksum.o : genchecksum.c $(BCONFIG_H) $(SYSTEM_H) $(MD5_H)
@@ -2960,14 +2962,15 @@ build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
 # All these programs use the MD reader ($(BUILD_RTL)).
-genprogmd = attr attrtab codes conditions config constants emit extract \
-	    flags mddeps opinit output peep preds recog
+genprogmd = attr attrtab automata codes conditions config constants emit \
+	    extract flags mddeps opinit output peep preds recog
 $(genprogmd:%=build/gen%$(build_exeext)): $(BUILD_RTL) $(BUILD_ERRORS)
 
 # These programs need files over and above what they get from the above list.
 build/genextract$(build_exeext) : build/vec.o
-build/genattrtab$(build_exeext) : build/genautomata.o build/vec.o
-build/genattrtab$(build_exeext) : BUILD_LIBS += -lm
+
+build/genautomata$(build_exeext) : build/vec.o
+build/genautomata$(build_exeext) : BUILD_LIBS += -lm
 
 # These programs are not linked with the MD reader.
 build/gengenrtl$(build_exeext) : $(BUILD_ERRORS)

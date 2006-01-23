@@ -174,6 +174,8 @@ main (int argc, char **argv)
       printf ("#define CPU_UNITS_QUERY 0\n");
       printf ("#endif\n\n");
       /* Interface itself: */
+      printf ("/* Internal insn code number used by automata.  */\n");
+      printf ("extern int internal_dfa_insn_code (rtx);\n\n");
       printf ("/* Insn latency time defined in define_insn_reservation. */\n");
       printf ("extern int insn_default_latency (rtx);\n\n");
       printf ("/* Return nonzero if there is a bypass for given insn\n");
