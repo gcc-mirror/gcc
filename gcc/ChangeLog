@@ -1,5 +1,21 @@
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
+	* rtl.def (match_code): Add second argument.
+	* genpreds.c (write_extract_subexp): New function.
+	(write_match_code): Add path argument.  Use write_extract_subexp.
+	(write_predicate_expr): Pass path to write_match_code.
+	(mark_mode_tests): MATCH_CODE applied to a subexpression does
+	not perform a mode test.
+	* genrecog.c (compute_predicate_codes): MATCH_CODE applied to
+	a subexpression does not constrain the top-level code set.
+	* read-rtl.c (read_rtx_variadic): New function.
+	(read_rtx_1): Use it; allow AND and IOR to be variadic.
+	* doc/md.texi: Document new notation.
+	* config/i386/predicates.md (cmpsi_operand_1): Fold into ...
+	(cmpsi_operand): ... here, using new notation.
+
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
 	* varray.c: Remove GENERATOR_FILE #ifdefs.
 
 2006-01-22  Zack Weinberg  <zackw@panix.com>

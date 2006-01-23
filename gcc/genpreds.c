@@ -148,11 +148,11 @@ write_predicate_subfunction (struct pred_data *p)
 
 /* Given an RTL expression EXP, find all subexpressions which we may
    assume to perform mode tests.  Normal MATCH_OPERAND does;
-   MATCH_CODE does if and only if it accepts CONST_INT or
-   CONST_DOUBLE; and we have to assume that MATCH_TEST does not.
-   These combine in almost-boolean fashion - the only exception is
-   that (not X) must be assumed not to perform a mode test, whether or
-   not X does.
+   MATCH_CODE does if it applies to the whole expression and accepts
+   CONST_INT or CONST_DOUBLE; and we have to assume that MATCH_TEST
+   does not.  These combine in almost-boolean fashion - the only
+   exception is that (not X) must be assumed not to perform a mode
+   test, whether or not X does.
 
    The mark is the RTL /v flag, which is true for subexpressions which
    do *not* perform mode tests.
@@ -174,8 +174,9 @@ mark_mode_tests (rtx exp)
       break;
 
     case MATCH_CODE:
-      if (!strstr (XSTR (exp, 0), "const_int")
-	  && !strstr (XSTR (exp, 0), "const_double"))
+      if (XSTR (exp, 1)[0] != '\0'
+	  || (!strstr (XSTR (exp, 0), "const_int")
+	      && !strstr (XSTR (exp, 0), "const_double")))
 	NO_MODE_TEST (exp) = 1;
       break;
 
@@ -305,17 +306,56 @@ add_mode_tests (struct pred_data *p)
   *pos = and_exp;
 }
 
+/* PATH is a string describing a path from the root of an RTL
+   expression to an inner subexpression to be tested.  Output
+   code which computes the subexpression from the variable
+   holding the root of the expression.  */
+static void
+write_extract_subexp (const char *path)
+{
+  int len = strlen (path);
+  int i;
+
+  /* We first write out the operations (XEXP or XVECEXP) in reverse
+     order, then write "op", then the indices in forward order.  */
+  for (i = len - 1; i >= 0; i--)
+    {
+      if (ISLOWER (path[i]))
+	fputs ("XVECEXP (", stdout);
+      else if (ISDIGIT (path[i]))
+	fputs ("XEXP (", stdout);
+      else
+	{
+	  error ("bad character in path string '%s'", path);
+	  return;
+	}
+    }
+
+  fputs ("op", stdout);
+
+  for (i = 0; i < len; i++)
+    {
+      if (ISLOWER (path[i]))
+	printf (", 0, %d)", path[i] - 'a');
+      else if (ISDIGIT (path[i]))
+	printf (", %d)", path[i] - '0');
+      else
+	gcc_unreachable ();
+    }
+}
 
 /* CODES is a list of RTX codes.  Write out an expression which
    determines whether the operand has one of those codes.  */
 static void
-write_match_code (const char *codes)
+write_match_code (const char *path, const char *codes)
 {
   const char *code;
 
   while ((code = scan_comma_elt (&codes)) != 0)
     {
-      fputs ("GET_CODE (op) == ", stdout);
+      fputs ("GET_CODE (", stdout);
+      write_extract_subexp (path);
+      fputs (") == ", stdout);
       while (code < codes)
 	{
 	  putchar (TOUPPER (*code));
@@ -374,7 +414,7 @@ write_predicate_expr (const char *name, rtx exp)
       break;
 
     case MATCH_CODE:
-      write_match_code (XSTR (exp, 0));
+      write_match_code (XSTR (exp, 1), XSTR (exp, 0));
       break;
 
     case MATCH_TEST:

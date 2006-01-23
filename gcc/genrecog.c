@@ -270,7 +270,15 @@ compute_predicate_codes (rtx exp, char codes[NUM_RTX_CODE])
       break;
 
     case MATCH_CODE:
-      /* MATCH_CODE allows a specified list of codes.  */
+      /* MATCH_CODE allows a specified list of codes.  However, if it
+	 does not apply to the top level of the expression, it does not
+	 constrain the set of codes for the top level.  */
+      if (XSTR (exp, 1)[0] != '\0')
+	{
+	  memset (codes, Y, NUM_RTX_CODE);
+	  break;
+	}
+
       memset (codes, N, NUM_RTX_CODE);
       {
 	const char *next_code = XSTR (exp, 0);

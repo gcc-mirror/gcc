@@ -898,9 +898,27 @@ limitations in @command{genrecog}, you can only refer to generic
 predicates and predicates that have already been defined.
 
 @item MATCH_CODE
-This expression has one operand, a string constant containing a
-comma-separated list of RTX code names (in lower case).  It evaluates
-to true if @var{op} has any of the listed codes.
+This expression evaluates to true if @var{op} or a specified
+subexpression of @var{op} has one of a given list of RTX codes.
+
+The first operand of this expression is a string constant containing a
+comma-separated list of RTX code names (in lower case).  These are the
+codes for which the @code{MATCH_CODE} will be true.
+
+The second operand is a string constant which indicates what
+subexpression of @var{op} to examine.  If it is absent or the empty
+string, @var{op} itself is examined.  Otherwise, the string constant
+must be a sequence of digits and/or lowercase letters.  Each character
+indicates a subexpression to extract from the current expression; for
+the first character this is @var{op}, for the second and subsequent
+characters it is the result of the previous character.  A digit
+@var{n} extracts @samp{@w{XEXP (@var{e}, @var{n})}}; a letter @var{l}
+extracts @samp{@w{XVECEXP (@var{e}, 0, @var{n})}} where @var{n} is the
+alphabetic ordinal of @var{l} (0 for `a', 1 for 'b', and so on).  The
+@code{MATCH_CODE} then examines the RTX code of the subexpression
+extracted by the complete string.  It is not possible to extract
+components of an @code{rtvec} that is not at position 0 within its RTX
+object.
 
 @item MATCH_TEST
 This expression has one operand, a string constant containing a C
@@ -915,7 +933,10 @@ evaluates to true if the C expression evaluates to a nonzero value.
 @itemx IF_THEN_ELSE
 The basic @samp{MATCH_} expressions can be combined using these
 logical operators, which have the semantics of the C operators
-@samp{&&}, @samp{||}, @samp{!}, and @samp{@w{? :}} respectively.
+@samp{&&}, @samp{||}, @samp{!}, and @samp{@w{? :}} respectively.  As
+in Common Lisp, you may give an @code{AND} or @code{IOR} expression an
+arbitrary number of arguments; this has exactly the same effect as
+writing a chain of two-argument @code{AND} or @code{IOR} expressions.
 @end table
 
 @item
