@@ -21,17 +21,11 @@
 #
 # Contributed by Ben Elliston <bje@au.ibm.com>.
 
-set TORTURE_OPTIONS [list {} -O1 -O2 -O3 -msoft-float]
+set TORTURE_OPTIONS [list {} -O1 -O2 -O3 -Os -msoft-float]
 
 # On x86 and x86-64 systems, -Os makes the stack alignment too small,
 # leading to segmentation faults when executing SSE instructions.
 # Force the alignment of the stack to 2^4 (16) bytes.
-
-if {[istarget i?86-*-linux-gnu] || [istarget x86_64-*-linux-gnu]} {
-    lappend TORTURE_OPTIONS {-Os -mpreferred-stack-boundary=4}
-} else {
-    lappend TORTURE_OPTIONS {-Os}
-}
 
 proc target-specific-flags {} {
   set result "-frounding-math "
