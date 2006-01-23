@@ -1,5 +1,5 @@
 /* Virtual array support.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006
    Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
@@ -20,22 +20,11 @@
    the Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.  */
 
-/* This file is compiled twice: once for the generator programs
-   once for the compiler.  */
-#ifdef GENERATOR_FILE
-#include "bconfig.h"
-#else
 #include "config.h"
-#endif
-
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#ifdef GENERATOR_FILE
-# include "errors.h"
-#else
-# include "toplev.h"
-#endif
+#include "toplev.h"
 #include "varray.h"
 #include "ggc.h"
 #include "hashtab.h"
