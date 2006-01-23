@@ -640,15 +640,6 @@ get_vtable_name (tree type)
   return mangle_vtbl_for_type (type);
 }
 
-/* Return an IDENTIFIER_NODE for the name of the virtual table table
-   for TYPE.  */
-
-tree
-get_vtt_name (tree type)
-{
-  return mangle_vtt_for_type (type);
-}
-
 /* DECL is an entity associated with TYPE, like a virtual table or an
    implicitly generated constructor.  Determine whether or not DECL
    should have external or internal linkage at the object file
@@ -6725,7 +6716,7 @@ build_vtt (tree t)
   type = build_cplus_array_type (const_ptr_type_node, type);
 
   /* Now, build the VTT object itself.  */
-  vtt = build_vtable (t, get_vtt_name (t), type);
+  vtt = build_vtable (t, mangle_vtt_for_type (t), type);
   initialize_artificial_var (vtt, inits);
   /* Add the VTT to the vtables list.  */
   TREE_CHAIN (vtt) = TREE_CHAIN (CLASSTYPE_VTABLES (t));
