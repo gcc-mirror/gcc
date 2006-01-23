@@ -901,93 +901,148 @@ int
 init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
 {
   FILE *input_file;
-  int i, lineno;
-  size_t ix;
+  int c, i, lineno;
   char *lastsl;
   rtx desc;
+  bool no_more_options;
+  bool already_read_stdin;
 
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
 
+  /* First we loop over all the options.  */
   for (i = 1; i < argc; i++)
     {
       if (argv[i][0] != '-')
+	continue;
+      
+      c = argv[i][1];
+      switch (c)
 	{
-	  if (in_fname)
-	    fatal ("too many input files");
+	case 'I':		/* Add directory to path for includes.  */
+	  {
+	    struct file_name_list *dirtmp;
 
-	  in_fname = argv[i];
-	}
-      else
-	{
-	  int c = argv[i][1];
-	  switch (c)
-	    {
-	    case 'I':		/* Add directory to path for includes.  */
-	      {
-		struct file_name_list *dirtmp;
+	    dirtmp = XNEW (struct file_name_list);
+	    dirtmp->next = 0;	/* New one goes on the end */
+	    if (first_dir_md_include == 0)
+	      first_dir_md_include = dirtmp;
+	    else
+	      last_dir_md_include->next = dirtmp;
+	    last_dir_md_include = dirtmp;	/* Tail follows the last one */
+	    if (argv[i][1] == 'I' && argv[i][2] != 0)
+	      dirtmp->fname = argv[i] + 2;
+	    else if (i + 1 == argc)
+	      fatal ("directory name missing after -I option");
+	    else
+	      dirtmp->fname = argv[++i];
+	    if (strlen (dirtmp->fname) > max_include_len)
+	      max_include_len = strlen (dirtmp->fname);
+	  }
+	  break;
 
-		dirtmp = XNEW (struct file_name_list);
-		dirtmp->next = 0;	/* New one goes on the end */
-		if (first_dir_md_include == 0)
-		  first_dir_md_include = dirtmp;
-		else
-		  last_dir_md_include->next = dirtmp;
-		last_dir_md_include = dirtmp;	/* Tail follows the last one */
-		if (argv[i][1] == 'I' && argv[i][2] != 0)
-		  dirtmp->fname = argv[i] + 2;
-		else if (i + 1 == argc)
-		  fatal ("directory name missing after -I option");
-		else
-		  dirtmp->fname = argv[++i];
-		if (strlen (dirtmp->fname) > max_include_len)
-		  max_include_len = strlen (dirtmp->fname);
-	      }
-	      break;
-	    default:
-	      /* The program may have provided a callback so it can
-		 accept its own options.  */
-	      if (parse_opt && parse_opt (argv[i]))
-		break;
+	case '\0':
+	  /* An argument consisting of exactly one dash is a request to
+	     read stdin.  This will be handled in the second loop.  */
+	  continue;
 
-	      fatal ("invalid option `%s'", argv[i]);
-	    }
+	case '-':
+	  /* An argument consisting of just two dashes causes option
+	     parsing to cease.  */
+	  if (argv[i][2] == '\0')
+	    goto stop_parsing_options;
+
+	default:
+	  /* The program may have provided a callback so it can
+	     accept its own options.  */
+	  if (parse_opt && parse_opt (argv[i]))
+	    break;
+
+	  fatal ("invalid option `%s'", argv[i]);
 	}
     }
 
-  if (!in_fname)
-    fatal ("no input file name");
+ stop_parsing_options:
 
-  lastsl = strrchr (in_fname, '/');
-  if (lastsl != NULL)
-    base_dir = save_string (in_fname, lastsl - in_fname + 1 );
-
-  read_rtx_filename = in_fname;
-  input_file = fopen (in_fname, "r");
-  if (input_file == 0)
-    {
-      perror (in_fname);
-      return FATAL_EXIT_CODE;
-    }
-
-  /* Initialize the table of insn conditions.  */
-  condition_table = htab_create (n_insn_conditions,
-				 hash_c_test, cmp_c_test, NULL);
-
-  for (ix = 0; ix < n_insn_conditions; ix++)
-    *(htab_find_slot (condition_table, &insn_conditions[ix], INSERT))
-      = (void *) &insn_conditions[ix];
-
+  /* Prepare to read input.  */
+  condition_table = htab_create (500, hash_c_test, cmp_c_test, NULL);
   init_predicate_table ();
-
   obstack_init (rtl_obstack);
   errors = 0;
   sequence_num = 0;
+  no_more_options = false;
+  already_read_stdin = false;
 
-  /* Read the entire file.  */
-  while (read_rtx (input_file, &desc, &lineno))
-    process_rtx (desc, lineno);
-  fclose (input_file);
+
+  /* Now loop over all input files.  */
+  for (i = 1; i < argc; i++)
+    {
+      if (argv[i][0] == '-')
+	{
+	  if (argv[i][1] == '\0')
+	    {
+	      /* Read stdin.  */
+	      if (already_read_stdin)
+		fatal ("cannot read standard input twice");
+	      
+	      base_dir = NULL;
+	      read_rtx_filename = in_fname = "<stdin>";
+	      read_rtx_lineno = 1;
+	      input_file = stdin;
+	      already_read_stdin = true;
+
+	      while (read_rtx (input_file, &desc, &lineno))
+		process_rtx (desc, lineno);
+	      fclose (input_file);
+	      continue;
+	    }
+	  else if (argv[i][1] == '-' && argv[i][2] == '\0')
+	    {
+	      /* No further arguments are to be treated as options.  */
+	      no_more_options = true;
+	      continue;
+	    }
+	  else if (!no_more_options)
+	    continue;
+	}
+
+      /* If we get here we are looking at a non-option argument, i.e.
+	 a file to be processed.  */
+
+      in_fname = argv[i];
+      lastsl = strrchr (in_fname, '/');
+      if (lastsl != NULL)
+	base_dir = save_string (in_fname, lastsl - in_fname + 1 );
+      else
+	base_dir = NULL;
+
+      read_rtx_filename = in_fname;
+      read_rtx_lineno = 1;
+      input_file = fopen (in_fname, "r");
+      if (input_file == 0)
+	{
+	  perror (in_fname);
+	  return FATAL_EXIT_CODE;
+	}
+
+      while (read_rtx (input_file, &desc, &lineno))
+	process_rtx (desc, lineno);
+      fclose (input_file);
+    }
+
+  /* If we get to this point without having seen any files to process,
+     read standard input now.  */
+  if (!in_fname)
+    {
+      base_dir = NULL;
+      read_rtx_filename = in_fname = "<stdin>";
+      read_rtx_lineno = 1;
+      input_file = stdin;
+
+      while (read_rtx (input_file, &desc, &lineno))
+	process_rtx (desc, lineno);
+      fclose (input_file);
+    }
 
   /* Process define_cond_exec patterns.  */
   if (define_cond_exec_queue != NULL)
@@ -1119,15 +1174,40 @@ maybe_eval_c_test (const char *expr)
   if (expr[0] == 0)
     return 1;
 
-  if (insn_elision_unavailable)
-    return -1;
-
   dummy.expr = expr;
   test = (const struct c_test *)htab_find (condition_table, &dummy);
-  gcc_assert (test);
-
+  if (!test)
+    return -1;
   return test->value;
 }
+
+/* Record the C test expression EXPR in the condition_table, with
+   value VAL.  Duplicates clobber previous entries.  */
+
+void
+add_c_test (const char *expr, int value)
+{
+  struct c_test *test;
+
+  if (expr[0] == 0)
+    return;
+
+  test = XNEW (struct c_test);
+  test->expr = expr;
+  test->value = value;
+
+  *(htab_find_slot (condition_table, test, INSERT)) = test;
+}
+
+/* For every C test, call CALLBACK with two arguments: a pointer to
+   the condition structure and INFO.  Stops when CALLBACK returns zero.  */
+void
+traverse_c_tests (htab_trav callback, void *info)
+{
+  if (condition_table)
+    htab_traverse (condition_table, callback, info);
+}
+
 
 /* Given a string, return the number of comma-separated elements in it.
    Return 0 for the null string.  */
