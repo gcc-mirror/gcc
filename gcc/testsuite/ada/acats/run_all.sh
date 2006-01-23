@@ -215,6 +215,10 @@ for chapter in $chapters; do
       if [ $? -eq 0 ]; then
          extraflags="$extraflags -gnatE"
       fi
+      grep $i $testdir/stackcheck.lst > /dev/null 2>&1
+      if [ $? -eq 0 ]; then
+         extraflags="$extraflags -fstack-check"
+      fi
       test=$dir/tests/$chapter/$i
       mkdir $test && cd $test >> $dir/acats.log 2>&1
 

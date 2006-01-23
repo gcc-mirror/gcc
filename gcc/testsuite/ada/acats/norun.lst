@@ -1,6 +1,10 @@
 c380004
+c52103x
+c52104x
+c52104y
 cdd2a03
 templat
 # Tests must be sorted in alphabetical order
 # c380004: should be front-end compile time error, PR ada/18817
+# c52103x, c52104x, c52104y: -fstack-check doesn't work in 4.x, PR ada/20548
 # cdd2a03: new Ada ruling not supported yet, PR ada/19323

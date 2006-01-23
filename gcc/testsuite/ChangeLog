@@ -1,3 +1,10 @@
+2006-01-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/20548
+	* ada/acats/norun.lst: Add c52103x, c52104x and c52104y.
+	* ada/acats/stackcheck.lst: New file, add c52103x, c52104x and c52104y.
+	* ada/acats/run_all.sh: Pass -fstack-check for tests in stackcheck.lst.
+
 2006-01-23  Richard Guenther  <rguenther@suse.de>
 	Steven Bosscher <stevenb.gcc@gmail.com>
 
