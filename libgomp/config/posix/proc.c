@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -34,6 +34,11 @@
 #include "libgomp.h"
 #include <unistd.h>
 #include <stdlib.h>
+#ifdef HAVE_GETLOADAVG
+# ifdef HAVE_SYS_LOADAVG_H
+#  include <sys/loadavg.h>
+# endif
+#endif
 
 
 /* At startup, determine the default number of threads.  It would seem

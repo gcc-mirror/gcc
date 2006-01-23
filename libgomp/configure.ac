@@ -136,7 +136,7 @@ AC_SUBST(libtool_VERSION)
 # Check header files.
 AC_STDC_HEADERS
 AC_HEADER_TIME
-AC_CHECK_HEADERS(unistd.h semaphore.h sys/time.h)
+AC_CHECK_HEADERS(unistd.h semaphore.h sys/loadavg.h sys/time.h)
 AC_CHECK_HEADER([pthread.h],[],
   [AC_MSG_ERROR([Pthreads are required to build libgomp])])
 
@@ -204,7 +204,7 @@ else
 fi
 
 # Set up the set of libraries that we need to link against for libgomp.
-# Note that the GOMP_DRIVER_SPEC in gcc.c will force -pthread for -fopenmp,
+# Note that the GOMP_SELF_SPEC in gcc.c will force -pthread for -fopenmp,
 # which will force linkage against -lpthread (or equivalent for the system).
 # That's not 100% ideal, but about the best we can do easily.
 if test $enable_shared = yes; then
