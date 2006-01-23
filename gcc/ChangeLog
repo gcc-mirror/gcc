@@ -1,5 +1,57 @@
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
+	* genattrtab.c: Don't include genattrtab.h.  Define ATTR_NONE
+	and ATTR_SPECIAL (from genattrtab.h).  Don't define num_dfa_decls
+	nor any of the random handful of variables that used to be necessary
+	when this program was linked with rtlanal.o.  Prune set of forward
+	function declarations.
+	(struct attr_desc): Remove static_p field.
+	(hash_obstack, temp_obstack, attr_hash_table, attr_printf)
+	(check_attr_test, make_internal_attr, make_numeric_value): Make static.
+	(attr_string): Do not read the character one past the length of
+	the string.
+	(write_attr_get, find_attr, make_internal_attr): Don't touch static_p.
+	(struct insn_reserv, all_insn_reservs, last_insn_reserv_p)
+	(n_insn_reservs, gen_insn_reserv, struct bypass_list, all_bypasses)
+	(n_bypasses, gen_bypass_1, gen_bypass, process_bypasses)
+	(make_automaton_attrs): New.
+	(main): Do not call into genautomata.  Call local gen_bypass
+	and gen_insn_reserv as appropriate.  Call make_automaton_attrs.
+	Remove special case for insn_alts.
+	* genautomata.c: Include gensupport.h; not genattrtab.h nor
+	varray.h (leftover from previous change).  Prune set of forward
+	function declarations.  Remove state_alts fields from all
+	structures.  Remove state_alts_table from struct automaton.
+	Make everything except main static.  Do not maintain num_dfa_decls.
+	Do not maintain state_alts fields of various structures.
+	(process_decls): Don't validate condexp for dm_insn_reserv decls.
+	(add_arc): Remove state_alts argument.  All callers updated.
+	(output_reserved_units_table): Emit #ifdef here...
+	(output_tables): ...not here.  Don't generate state_alts tables.
+	(expand_automata): Don't generate attributes.
+	(write_automata): Don't generate state_alts functions.
+	(main): New function.
+	(it_is_empty_reserv_sets, output_state_alts_full_vect_name)
+	(output_state_alts_comb_vect_name, output_state_alts_check_vect_name)
+	(AUTOMATON_STATE_ALTS_MACRO_NAME, INTERNAL_STATE_ALTS_FUNC_NAME)
+	(STATE_ALTS_FUNC_NAME, INSN_DEFAULT_LATENCY_FUNC_NAME)
+	(BYPASS_P_FUNC_NAME, output_state_alts_table)
+	(output_automata_list_state_alts_code, output_internal_state_alts_func)
+	(output_state_alts_func, make_insn_alts_attr, make_bypass_attr)
+	(make_internal_dfa_insn_code_attr, make_default_insn_latency_attr):
+	Delete.
+	* genattr.c: Declare internal_dfa_insn_code in insn-attr.h.
+	* genattrtab.h: Delete file.
+	* Makefile.in (OBJS-common): Add insn-automata.o.
+	(insn-automata.o): New rule.
+	(simple_generated_c): Add insn-automata.c.
+	(build/genattrtab.o, build/genautomata.o): Update dependencies.
+	(genprogmd): Add automata.
+	(build/genattrtab): Needs no extra objects nor libraries.
+	(build/genautomata): Needs build/vec.o and -lm.
+
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
 	* genautomata.c (process_state_longest_path, max_dfa_issue_rate)
 	(output_dfa_max_issue_rate, locked_states_num): Delete.
 	(struct automaton): Add locked_states field.
