@@ -1,3 +1,10 @@
+2006-01-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/24437
+	* tree-ssa-ccp.c (fold_stmt): Move folding of OBJ_TYPE_REF
+	with a call expr to ...
+	* fold-const.c (fold_ternary) <case CALL_EXPR>: Here.
+
 2006-01-23  Richard Guenther  <rguenther@suse.de>
 
 	* cfgloopmanip.c (lv_adjust_loop_entry_edge): Add comment
