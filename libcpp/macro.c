@@ -169,16 +169,12 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 	 However, if (a) we are in a system header, (b) the option
 	 stdc_0_in_system_headers is true (set by target config), and
 	 (c) we are not in strictly conforming mode, then it has the
-	 value 0.  */
+	 value 0.  (b) and (c) are already checked in cpp_init_builtins.  */
     case BT_STDC:
-      {
-	if (cpp_in_system_header (pfile)
-	    && CPP_OPTION (pfile, stdc_0_in_system_headers)
-	    && !CPP_OPTION (pfile,std))
-	  number = 0;
-	else
-	  number = 1;
-      }
+      if (cpp_in_system_header (pfile))
+	number = 0;
+      else
+	number = 1;
       break;
 
     case BT_DATE:
