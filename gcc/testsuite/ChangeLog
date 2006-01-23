@@ -1,3 +1,11 @@
+2006-01-23  Steven Bosscher  <stevenb.gcc@gmail.com>
+	Jan Hubicka  <jh@suse.cz>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/25654
+	* gcc.dg/torture/pr25654.c: New testcase.
+	* gcc.target/i386/pr25654.c: Likewise.
+
 2006-01-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25895

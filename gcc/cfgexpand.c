@@ -272,11 +272,39 @@ stack_var_conflict_p (size_t x, size_t y)
   gcc_assert (index < stack_vars_conflict_alloc);
   return stack_vars_conflict[index];
 }
-  
+ 
+/* Returns true if TYPE is or contains a union type.  */
+
+static bool
+aggregate_contains_union_type (tree type)
+{
+  tree field;
+
+  if (TREE_CODE (type) == UNION_TYPE
+      || TREE_CODE (type) == QUAL_UNION_TYPE)
+    return true;
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return aggregate_contains_union_type (TREE_TYPE (type));
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return false;
+
+  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    if (TREE_CODE (field) == FIELD_DECL)
+      if (aggregate_contains_union_type (TREE_TYPE (field)))
+	return true;
+
+  return false;
+}
+
 /* A subroutine of expand_used_vars.  If two variables X and Y have alias
    sets that do not conflict, then do add a conflict for these variables
-   in the interference graph.  We also have to mind MEM_IN_STRUCT_P and
-   MEM_SCALAR_P.  */
+   in the interference graph.  We also need to make sure to add conflicts
+   for union containing structures.  Else RTL alias analysis comes along
+   and due to type based aliasing rules decides that for two overlapping
+   union temporaries { short s; int i; } accesses to the same mem through
+   different types may not alias and happily reorders stores across
+   life-time boundaries of the temporaries (See PR25654).
+   We also have to mind MEM_IN_STRUCT_P and MEM_SCALAR_P.  */
 
 static void
 add_alias_set_conflicts (void)
@@ -287,12 +315,23 @@ add_alias_set_conflicts (void)
     {
       tree type_i = TREE_TYPE (stack_vars[i].decl);
       bool aggr_i = AGGREGATE_TYPE_P (type_i);
+      bool contains_union;
 
+      contains_union = aggregate_contains_union_type (type_i);
       for (j = 0; j < i; ++j)
 	{
 	  tree type_j = TREE_TYPE (stack_vars[j].decl);
 	  bool aggr_j = AGGREGATE_TYPE_P (type_j);
-	  if (aggr_i != aggr_j || !objects_must_conflict_p (type_i, type_j))
+	  if (aggr_i != aggr_j
+	      /* Either the objects conflict by means of type based
+		 aliasing rules, or we need to add a conflict.  */
+	      || !objects_must_conflict_p (type_i, type_j)
+	      /* In case the types do not conflict ensure that access
+		 to elements will conflict.  In case of unions we have
+		 to be careful as type based aliasing rules may say
+		 access to the same memory does not conflict.  So play
+		 safe and add a conflict in this case.  */
+	      || contains_union)
 	    add_stack_var_conflict (i, j);
 	}
     }
