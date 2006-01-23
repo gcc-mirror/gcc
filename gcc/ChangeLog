@@ -1,3 +1,12 @@
+2006-01-23  Steven Bosscher  <stevenb.gcc@gmail.com>
+	Jan Hubicka  <jh@suse.cz>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/25654
+	* cfgexpand.c (aggregate_contains_union_type): New function.
+	(add_alias_set_conflicts): Call it.  Make sure to add conflicts
+	for structure variables that contain a union type.
+
 2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.c (process_command), gcov.c (print_version), gcov-dump.c
