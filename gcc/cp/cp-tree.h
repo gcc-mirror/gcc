@@ -3848,7 +3848,6 @@ extern tree force_target_expr			(tree, tree);
 extern tree build_target_expr_with_type		(tree, tree);
 extern int local_variable_p			(tree);
 extern int nonstatic_local_decl_p		(tree);
-extern tree declare_global_var			(tree, tree);
 extern tree register_dtor_fn			(tree);
 extern tmpl_spec_kind current_tmpl_spec_kind	(int);
 extern tree cp_fname_init			(const char *, tree *);
@@ -3983,8 +3982,6 @@ extern tree make_thunk				(tree, bool, tree, tree);
 extern void finish_thunk			(tree);
 extern void use_thunk				(tree, bool);
 extern void synthesize_method			(tree);
-extern tree implicitly_declare_fn		(special_function_kind,
-						 tree, bool);
 extern tree lazily_declare_fn			(special_function_kind,
 						 tree);
 extern tree skip_artificial_parms_for		(tree, tree);
@@ -4063,7 +4060,6 @@ extern tree build_non_dependent_expr		(tree);
 extern tree build_non_dependent_args		(tree);
 extern bool reregister_specialization		(tree, tree, tree);
 extern tree fold_non_dependent_expr		(tree);
-extern tree fold_decl_constant_value		(tree);
 
 /* in repo.c */
 extern void init_repo				(void);
@@ -4134,7 +4130,6 @@ extern void perform_deferred_access_checks	(void);
 extern void perform_or_defer_access_check	(tree, tree);
 extern int stmts_are_full_exprs_p		(void);
 extern void init_cp_semantics			(void);
-extern tree do_poplevel				(tree);
 extern void add_decl_expr			(tree);
 extern tree finish_expr_stmt			(tree);
 extern tree begin_if_stmt			(void);
@@ -4304,7 +4299,6 @@ extern tree require_complete_type		(tree);
 extern tree complete_type			(tree);
 extern tree complete_type_or_else		(tree, tree);
 extern int type_unknown_p			(tree);
-extern tree original_type			(tree);
 extern bool comp_except_specs			(tree, tree, bool);
 extern bool comptypes				(tree, tree, int);
 extern bool compparms				(tree, tree);

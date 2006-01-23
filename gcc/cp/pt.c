@@ -3357,7 +3357,7 @@ fold_non_dependent_expr (tree expr)
    initializers can maintain a syntactic rather than semantic form
    (even if they are non-dependent, for access-checking purposes).  */
 
-tree
+static tree
 fold_decl_constant_value (tree expr)
 {
   tree const_expr = expr;

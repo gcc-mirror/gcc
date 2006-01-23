@@ -224,7 +224,7 @@ commonparms (tree p1, tree p2)
 
 /* Given a type, perhaps copied for a typedef,
    find the "original" version of it.  */
-tree
+static tree
 original_type (tree t)
 {
   while (TYPE_NAME (t) != NULL_TREE)
