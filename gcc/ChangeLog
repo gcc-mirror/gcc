@@ -1,5 +1,42 @@
 2006-01-22  Zack Weinberg  <zackw@panix.com>
 
+	* genconditions.c (condition_table, add_condition): Delete.
+	(write_conditions): Don't emit n_insn_conditions nor
+	insn_elision_unavailable.  Issue the gcc version #ifdef here,
+	inside the table, with no #else clause ...
+	(write_header): ...not here.
+	(write_writer): New function.
+	(main): Don't initialize condition_table.  Use add_c_test.
+	Call write_writer.
+	* gensupport.c (init_md_reader_args_cb): Handle multiple input
+	files on the command line.
+	(maybe_eval_c_test): Don't check insn_elision_unavailable.
+	Return -1 if there is no entry in the table, don't abort.
+	(add_c_test, traverse_c_tests): New functions.
+	* gensupport.h (insn_elision_unavailable, insn_conditions)
+	(n_insn_conditions): Delete declarations.
+	(add_c_test, traverse_c_tests): Declare.
+	* read-rtl.c: Include gensupport.h.
+	(read_conditions): New function.
+	(read_rtx): If read_rtx_1 returns 0, treat as EOF.
+	(read_rtx_1): If we get EOF when we were looking for an initial
+	open paren, return 0.  Call read_conditions when appropriate.
+	* Makefile.in: Kill BUILD_EARLY_SUPPORT and all references to
+	dummy-conditions.o.  Eliminate references to insn-conditions.o,
+	or change them to build/gencondmd.o, as appropriate.  Remove
+	insn-constants.h from $(simple_generated_h) and insn-conditions.c
+	from $(simple_generated_c).  For all files remaining in those
+	two lists, add insn-conditions.md to the generator command line.
+	Give insn-constants.h/s-constants their own rules.  Add rules
+	for build/gencondmd.c, s-conditions, insn-conditions.md, s-condmd.
+	(build/read-rtl.o): Depend on gensupport.h.
+	(genprognormal): Include preds.
+	(genprogearly): Rename genprognoprint; only difference is now that
+	they don't link with $(BUILD_PRINT).
+	* dummy-conditions.c: Delete.
+
+2006-01-22  Zack Weinberg  <zackw@panix.com>
+
 	* genextract.c: Don't include insn-config.h.  Do include vec.h.
 	Declare vectors of int, char, and locstr.
 	(locstr): New typedef.
