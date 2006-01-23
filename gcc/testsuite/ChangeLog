@@ -1,3 +1,10 @@
+2006-01-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/25891
+	* lib/target-supports.exp (check_effective_target_fopenmp): New proc.
+	* gcc.dg/gomp/gomp.exp: Return without testing anything if
+	check_effective_target_fopenmp returns 0.
+
 2006-01-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/20548

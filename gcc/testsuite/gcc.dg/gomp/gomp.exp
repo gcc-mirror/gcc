@@ -3,6 +3,10 @@
 # Load support procs.
 load_lib gcc-dg.exp
 
+if ![check_effective_target_fopenmp] {
+  return
+}
+
 # Initialize `dg'.
 dg-init
 
