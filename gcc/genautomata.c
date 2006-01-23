@@ -7533,6 +7533,9 @@ output_reserved_units_table (automaton_t automaton)
   size_t n;
   int i;
 
+  if (description->query_units_num == 0)
+    return;
+
   /* Create vect of pointers to states.  */
   output_states_vect = 0;
   pass_states (automaton, add_states_vect_el);
@@ -7568,8 +7571,7 @@ output_reserved_units_table (automaton_t automaton)
   output_reserved_units_table_name (output_file, automaton);
   fprintf (output_file, "[] = {\n");
   output_vect (reserved_units_table);
-  fprintf (output_file, "};\n");
-  fprintf (output_file, "\n#endif /* #if %s */\n\n",
+  fprintf (output_file, "};\n#endif /* #if %s */\n\n",
 	   CPU_UNITS_QUERY_MACRO_NAME);
 
   VEC_free (state_t,heap, output_states_vect);
@@ -8316,19 +8318,20 @@ output_cpu_unit_reservation_p (void)
   fprintf (output_file, "{\n  gcc_assert (%s >= 0 && %s < %d);\n",
 	   CPU_CODE_PARAMETER_NAME, CPU_CODE_PARAMETER_NAME,
 	   description->query_units_num);
-  for (automaton = description->first_automaton;
-       automaton != NULL;
-       automaton = automaton->next_automaton)
-    {
-      fprintf (output_file, "  if ((");
-      output_reserved_units_table_name (output_file, automaton);
-      fprintf (output_file, " [((struct %s *) %s)->", CHIP_NAME, STATE_NAME);
-      output_chip_member_name (output_file, automaton);
-      fprintf (output_file, " * %d + %s / 8] >> (%s %% 8)) & 1)\n",
-	       (description->query_units_num + 7) / 8,
-	       CPU_CODE_PARAMETER_NAME, CPU_CODE_PARAMETER_NAME);
-      fprintf (output_file, "    return 1;\n");
-    }
+  if (description->query_units_num > 0)
+    for (automaton = description->first_automaton;
+	 automaton != NULL;
+	 automaton = automaton->next_automaton)
+      {
+	fprintf (output_file, "  if ((");
+	output_reserved_units_table_name (output_file, automaton);
+	fprintf (output_file, " [((struct %s *) %s)->", CHIP_NAME, STATE_NAME);
+	output_chip_member_name (output_file, automaton);
+	fprintf (output_file, " * %d + %s / 8] >> (%s %% 8)) & 1)\n",
+		 (description->query_units_num + 7) / 8,
+		 CPU_CODE_PARAMETER_NAME, CPU_CODE_PARAMETER_NAME);
+	fprintf (output_file, "    return 1;\n");
+      }
   fprintf (output_file, "  return 0;\n}\n\n");
 }
 
