@@ -1,3 +1,8 @@
+2006-01-23  Richard Guenther  <rguenther@suse.de>
+
+	* configure.ac: Use -fPIC for symbol versioning test.
+	* configure: Regenerate.
+
 2005-08-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* ALL: Update FSF address.

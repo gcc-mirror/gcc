@@ -75,7 +75,7 @@ FOO_1.0 {
 };
 EOF
 save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -shared -Wl,--version-script,./conftest.map"
+LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
 AC_TRY_LINK([int foo;],[],[ssp_use_symver=yes],[ssp_use_symver=no])
 LDFLAGS="$save_LDFLAGS"
 AC_MSG_RESULT($ssp_use_symver)
