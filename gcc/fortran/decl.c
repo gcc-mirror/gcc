@@ -611,10 +611,14 @@ get_proc_name (const char *name, gfc_symbol ** result)
 
   if (sym && !sym->new && gfc_current_state () != COMP_INTERFACE)
     {
-      /* Trap another encompassed procedure with the same name.  */
+      /* Trap another encompassed procedure with the same name.  All
+	 these conditions are necessary to avoid picking up an entry
+	 whose name clashes with that of the encompassing procedure;
+	 this is handled using gsymbols to register unique,globally
+	 accessible names.  */
       if (sym->attr.flavor != 0
 	    && sym->attr.proc != 0
-	    && (sym->attr.subroutine || sym->attr.function))
+	    && sym->formal)
 	gfc_error_now ("Procedure '%s' at %C is already defined at %L",
 		       name, &sym->declared_at);
 
@@ -3202,7 +3206,7 @@ attr_decl1 (void)
 	goto cleanup;
     }
 
-  if (gfc_add_attribute (&sym->attr, &var_locus) == FAILURE)
+  if (gfc_add_attribute (&sym->attr, &var_locus, current_attr.intent) == FAILURE)
     {
       m = MATCH_ERROR;
       goto cleanup;

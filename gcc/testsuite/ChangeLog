@@ -1,3 +1,11 @@
+2005-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25901
+	* gfortran.dg/internal references_2.f90: New test.
+
+	Fix regression in testing of admissability of attributes.
+	* gfortran.dg/intent_used_1.f90: New test.
+
 2006-01-23  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.misc-tests/dectest.exp (TORTURE_OPTIONS): Include -Os.
