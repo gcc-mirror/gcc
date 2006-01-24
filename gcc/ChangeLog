@@ -1,3 +1,9 @@
+2006-01-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/25860
+	* tree-ssa-pre.c (phi_translate): Return NULL
+	for AGGREGATE_TYPE's.
+
 2006-01-24  Zack Weinberg  <zackw@panix.com>
 
 	* genautomata.c (process_state_for_insn_equiv_partition):
