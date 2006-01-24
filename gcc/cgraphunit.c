@@ -1244,7 +1244,6 @@ cgraph_output_in_order (void)
       nodes[i].kind = ORDER_ASM;
       nodes[i].u.a = pa;
     }
-  cgraph_asm_nodes = NULL;
 
   for (i = 0; i < max; ++i)
     {
@@ -1270,6 +1269,8 @@ cgraph_output_in_order (void)
 	  gcc_unreachable ();
 	}
     }
+
+  cgraph_asm_nodes = NULL;
 }
 
 /* Mark visibility of all functions.
