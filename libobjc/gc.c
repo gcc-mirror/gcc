@@ -397,30 +397,34 @@ class_ivar_set_gcinvisible (Class class, const char *ivarname,
       if (*type == _C_GCINVISIBLE)
 	{
 	  char *new_type;
+	  size_t len;
 
 	  if (gc_invisible || ! __objc_ivar_pointer (type))
 	    return;	/* The type of the variable already matches the
 			   requested gc_invisible type */
 
-	  /* The variable is gc_invisible and we have to reverse it */
-	  new_type = objc_atomic_malloc (strlen (ivar->ivar_type));
-	  strncpy (new_type, ivar->ivar_type,
-		   (size_t)(type - ivar->ivar_type));
+	  /* The variable is gc_invisible so we make it gc visible.  */
+	  new_type = objc_atomic_malloc (strlen(ivar->ivar_type));
+	  len = (type - ivar->ivar_type);
+	  memcpy (new_type, ivar->ivar_type, len);
+	  new_type[len] = 0;
 	  strcat (new_type, type + 1);
 	  ivar->ivar_type = new_type;
 	}
       else
 	{
 	  char *new_type;
+	  size_t len;
 
 	  if (! gc_invisible || ! __objc_ivar_pointer (type))
 	    return;	/* The type of the variable already matches the
 			   requested gc_invisible type */
 
-	  /* The variable is gc visible and we have to make it gc_invisible */
-	  new_type = objc_malloc (strlen (ivar->ivar_type) + 2);
-	  strncpy (new_type, ivar->ivar_type,
-		   (size_t)(type - ivar->ivar_type));
+	  /* The variable is gc visible so we make it gc_invisible.  */
+	  new_type = objc_malloc (strlen(ivar->ivar_type) + 2);
+	  len = (type - ivar->ivar_type);
+	  memcpy (new_type, ivar->ivar_type, len);
+	  new_type[len] = 0;
 	  strcat (new_type, "!");
 	  strcat (new_type, type);
 	  ivar->ivar_type = new_type;
