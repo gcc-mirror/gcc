@@ -1,3 +1,11 @@
+2005-01-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR libgomp/25259
+	* configure.ac: Use GCC_HEADER_STDINT.
+	* libgomp.h: Include gstdint.h.
+	* libgomp_f.h.in: Don't include stdint.h or inttypes.h.
+	* configure, Makefile.in, testsuite/Makefile.in, aclocal.m4: Rebuild.
+
 2006-01-24  Richard Henderson  <rth@redhat.com>
 
 	PR libgomp/25942

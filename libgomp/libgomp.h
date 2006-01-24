@@ -38,6 +38,7 @@
 #define LIBGOMP_H 1
 
 #include "config.h"
+#include "gstdint.h"
 
 #include <pthread.h>
 #include <stdbool.h>

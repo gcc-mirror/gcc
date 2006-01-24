@@ -32,12 +32,6 @@
 #define LIBGOMP_F_H 1
 
 #include "libgomp.h"
-#if HAVE_STDINT_H
-#include <stdint.h>
-#endif
-#if HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
 
 #if (OMP_LOCK_SIZE == OMP_LOCK_KIND) \
     && (OMP_LOCK_ALIGN <= OMP_LOCK_SIZE)

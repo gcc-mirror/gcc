@@ -916,4 +916,5 @@ AC_SUBST([am__untar])
 
 m4_include([../config/depstand.m4])
 m4_include([../config/lead-dot.m4])
+m4_include([../config/stdint.m4])
 m4_include([acinclude.m4])
