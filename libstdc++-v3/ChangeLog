@@ -1,3 +1,13 @@
+2006-01-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/25649
+	* include/std/std_istream.h (operator>>(short&), operator>>(int&)):
+	Move out of line...
+	* include/bits/istream.tcc: ... here.
+	* include/std/std_ostream.h (operator<<(short), operator<<(int)):
+	Move out of line...
+	* include/bits/ostream.tcc: ... here.
+
 2006-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* docs/html/faq/index.html ([5.2]): Mention TR1 and point to
