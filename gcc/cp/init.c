@@ -1393,9 +1393,10 @@ build_offset_ref (tree type, tree name, bool address_p)
 
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
+      name = TREE_OPERAND (name, 0);
       if (! check_dtor_name (type, name))
 	error ("qualified type %qT does not match destructor name %<~%T%>",
-		  type, TREE_OPERAND (name, 0));
+	       type, name);
       name = dtor_identifier;
     }
 
