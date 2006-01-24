@@ -1,3 +1,7 @@
+2006-01-25  Ben Elliston  <bje@au.ibm.com>
+
+	* dfp.c (dfp_byte_swap): Use uint32_t and not unsigned long.
+
 2006-01-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/25860
@@ -1634,10 +1638,10 @@
 
 2006-01-16  Rafael √vila de Esp√≠ndola <rafael.espindola@gmail.com>
 
-	* cppspec.c (lang_specific_spec_functions): remove
-	* gcc.c (lookup_spec_function): use static_spec_functions directelly
-	* gcc.h (lang_specific_spec_functions): remove
-	* gccspec.c (lang_specific_spec_functions): remove
+	* cppspec.c (lang_specific_spec_functions): Remove.
+	* gcc.c (lookup_spec_function): Use static_spec_functions directly.
+	* gcc.h (lang_specific_spec_functions): Remove.
+	* gccspec.c (lang_specific_spec_functions): Remove.
 
 2005-01-16  Paolo Bonzini  <bonzini@gnu.org>
 
