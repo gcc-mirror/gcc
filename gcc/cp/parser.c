@@ -3434,6 +3434,15 @@ cp_parser_unqualified_id (cp_parser* parser,
 	else if (type_decl == error_mark_node)
 	  return error_mark_node;
 
+	/* Check that destructor name and scope match.  */
+	if (declarator_p && scope && !check_dtor_name (scope, type_decl))
+	  {
+	    if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
+	      error ("declaration of %<~%T%> as member of %qT",
+		     type_decl, scope);
+	    return error_mark_node;
+	  }
+
 	/* [class.dtor]
 
 	   A typedef-name that names a class shall not be used as the
