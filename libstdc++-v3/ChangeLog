@@ -1,3 +1,10 @@
+2006-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* docs/html/faq/index.html ([5.2]): Mention TR1 and point to
+	paragraph [5.5], describing it.
+	([5.5]): New.
+	* docs/html/ext/tr1.html: New.
+
 2006-01-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Verbose ld version

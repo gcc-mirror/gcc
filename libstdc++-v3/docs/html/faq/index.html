@@ -113,7 +113,7 @@
          <li><a href="#5_2">What's next after libstdc++-v3?</a> </li>
          <li><a href="#5_3">What about the STL from SGI?</a> </li>
          <li><a href="#5_4">Extensions and Backward Compatibility</a> </li>
-         <li><a href="#5_5">[removed]</a> </li>
+         <li><a href="#5_5">Does libstdc++ support TR1?</a> </li>
          <li><a href="#5_6">Is libstdc++-v3 thread-safe?</a> </li>
          <li><a href="#5_7">How do I get a copy of the ISO C++ Standard?</a> </li>
          <li><a href="#5_8">What's an ABI and why is it so messy?</a> </li>
@@ -868,7 +868,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       <li><p>The ISO Committee will meet periodically to review Defect Reports
          in the C++ Standard.  Undoubtedly some of these will result in
          changes to the Standard, which will be reflected in patches to
-         libstdc++.  Some of that is already happening, see 4.2.  Some of
+         libstdc++.  Some of that is already happening, see <a href="#4_3">4.3</a>.  Some of
          those changes are being predicted by the library maintainers, and
          we add code to the library based on what the current proposed
          resolution specifies.  Those additions are listed in
@@ -890,6 +890,13 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          (For example, the &quot;long long&quot; type from C99.)
          Bugfixes and rewrites (to improve or fix thread safety, for
          instance) will of course be a continuing task.
+      </p></li>
+      <li><p>There is an effort underway to add significant extensions to
+         the standard library specification.  The latest version of this effort is
+         described in
+         <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">
+         The C++ Library Technical Report 1</a>.
+         See <a href="#5_5">5.5</a>.
       </p></li>
       </ol>
       <p><a href="http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html">This
@@ -930,6 +937,13 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          e.g., <code>&lt;sys/stat.h&gt;</code>, <code>&lt;X11/Xlib.h&gt;</code>.
       </p>
 
+      <p>At this time most of the features of the SGI STL extension have been
+         replaced by standardized libraries.
+         In particular, the unordered_map and unordered_set containers of TR1
+         are suitable replacement for the non-standard hash_map and hash_set
+         containers in the SGI STL.  See <a href="#5_5">5.5</a> for more details.
+      </p>
+
       <p>The extensions are no longer in the global or <code>std</code>
          namespaces, instead they are declared in the <code>__gnu_cxx</code>
          namespace. For maximum portability, consider defining a namespace
@@ -966,9 +980,66 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       </p>
 
 <hr />
-   <h2><a name="5_5">5.5 [removed]</a></h2>
-      <p>This question has become moot and has been removed.  The stub
-         is here to preserve numbering (and hence links/bookmarks).
+   <h2><a name="5_5">5.5 Does libstdc++ support TR1?</a></h2>
+
+      <p>The C++ Standard Library Technical Report adds many new features to the library.
+         The latest version of this effort is described in
+         <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">
+         Technical Report 1</a>.
+      </p>
+
+      <p>libstdc++ strives to implement all of TR1.
+         The libstdc++ implementation status of the TR1 draft is listed in
+         <a href="../ext/tr1.html">this page</a>.
+      </p>
+
+      <p>Briefly, the features of TR1 and the current status are:
+      </p>
+
+      <p><strong>Unordered containers - Complete -</strong>
+         The unordered_set, unordered_map, unordered_multiset, and unordered_multimap containers
+         are hashed versions of the map, set, multimap, and multiset containers respectively.
+         These classes are suitable replacements for the SGI STL hash_map and hash_set extensions.
+      </p>
+
+      <p><strong>Reference-counted smart pointers - Complete -</strong>
+         The shared_ptr and weak_ptr allow several object to know about a pointer and whether it is valid.
+         When the last reference to the pointer is destroyed the pointer is freed.
+      </p>
+
+      <p><strong>Type traits - Complete -</strong>
+         The type_traits class gives templates the ability to probe information about the input type
+         and enable type-dependent logic to be performed without the need of template specializations.
+      </p>
+
+      <p><strong>Fixed-size arrays - Complete -</strong>
+         The array class implements small fixed-sized arrays with container semantics.
+      </p>
+
+      <p><strong>Tuples - Complete -</strong>
+         The tuple class implements small heterogeneous arrays.  This is an enhanced pair.
+         In fact, the standard pair is enhanced with a tuple interface.
+      </p>
+
+      <p><strong>A regular expression engine</strong>
+         This library provides for regular expression objects with traversal of
+         text with return of subexpressions.
+      </p>
+
+      <p><strong>A random number engine</strong>
+         This library contains randow number generators with several different choices
+         of distribution.
+      </p>
+
+      <p><strong>Special functions - Under construction - </strong>
+         Twenty-three mathematical functions familiar to physicists and engineers are included:
+         cylindrical and spherical Bessel and Neumann functions, hypergeometric functions,
+         Laguerre polynomials, Legendre functions, elliptic integrals, exponential integrals
+         and the Riemann zeta function all for your computing pleasure.
+      </p>
+
+      <p><strong>C99 compatibility - Under construction - </strong>
+         There are many features designed to minimize the divergence of the C and the C++ languages.
       </p>
 
 <hr />
