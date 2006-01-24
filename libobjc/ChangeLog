@@ -1,5 +1,11 @@
 2006-01-24  David Ayers  <d.ayers@inode.at>
 
+	PR libobjc/9751
+	* gc.c (class_ivar_set_gcinvisible): Replace strncpy with memcpy
+	and insure the new strings are '\0' termintated.
+
+2006-01-24  David Ayers  <d.ayers@inode.at>
+
 	PR libobjc/13946
 	* configure.ac: Add include directives for --enable-objc-gc.
 	* Makefile.in: Ditto.
