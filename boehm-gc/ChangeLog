@@ -1,3 +1,8 @@
+2006-01-24  David Ayers  <d.ayers@inode.at>
+
+	PR libobjc/13946
+	* include/gc.h: Fix prototype declarations for bootstrap.
+
 2005-11-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* include/private/gc_priv.h: Increase MAX_ROOT_SETS to 1024.
