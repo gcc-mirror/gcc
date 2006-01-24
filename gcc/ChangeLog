@@ -1,3 +1,10 @@
+2006-01-24  Zack Weinberg  <zackw@panix.com>
+
+	* genautomata.c (process_state_for_insn_equiv_partition):
+	Use xcalloc for insn_arcs_array.
+	* vec.h (DEF_VEC_ALLOC_FUNC_I): New set of templates.
+	(DEF_VEC_ALLOC_I): Use it, not DEF_VEC_ALLOC_FUNC_P.
+
 2006-01-24  Richard Henderson  <rth@redhat.com>
 
 	* genextract.c (VEC_safe_set_locstr): Take VEC by reference;

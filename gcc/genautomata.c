@@ -6162,7 +6162,7 @@ static void
 process_state_for_insn_equiv_partition (state_t state)
 {
   arc_t arc;
-  arc_t *insn_arcs_array = xmalloc (description->insns_num * sizeof(arc_t));
+  arc_t *insn_arcs_array = xcalloc (description->insns_num, sizeof(arc_t));
 
   /* Process insns of the arcs.  */
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
