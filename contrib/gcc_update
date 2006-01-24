@@ -114,6 +114,7 @@ libcpp/Makefile.in: libcpp/configure.ac libcpp/aclocal.m4
 libcpp/configure: libcpp/configure.ac libcpp/aclocal.m4
 libgomp/aclocal.m4: libgomp/configure.ac libgomp/acinclude.m4
 libgomp/Makefile.in: libgomp/Makefile.am libgomp/aclocal.m4
+libgomp/testsuite/Makefile.in: libgomp/Makefile.am libgomp/aclocal.m4
 libgomp/configure: libgomp/configure.ac libgomp/aclocal.m4
 libgomp/config.h.in: libgomp/configure.ac libgomp/aclocal.m4
 # Top level
