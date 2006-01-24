@@ -1,3 +1,9 @@
+2006-01-24  Archit Shah  <ashah@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* prims.cc (next_property_value): Never return NULL.
+	(process_gcj_properties): Copy 'props' before using it.
+
 2006-01-23  David Daney  <ddaney@avtrex.com>
 
 	* configure.host (disable_dladdr): Remove variable and its
