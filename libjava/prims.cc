@@ -857,10 +857,6 @@ next_property_value (char *s, size_t *length)
   while (isspace (*s))
     s++;
 
-  // If we've reached the end, return NULL.
-  if (*s == 0)
-    return NULL;
-
   // Determine the length of the property value.
   while (s[l] != 0
 	 && ! isspace (s[l])
@@ -883,12 +879,17 @@ static void
 process_gcj_properties ()
 {
   char *props = getenv("GCJ_PROPERTIES");
-  char *p = props;
-  size_t length;
-  size_t property_count = 0;
 
   if (NULL == props)
     return;
+
+  // Later on we will write \0s into this string.  It is simplest to
+  // just duplicate it here.
+  props = strdup (props);
+
+  char *p = props;
+  size_t length;
+  size_t property_count = 0;
 
   // Whip through props quickly in order to count the number of
   // property values.
