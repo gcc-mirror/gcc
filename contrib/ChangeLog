@@ -1,3 +1,8 @@
+2006-01-24  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc_update (files_and_dependencies): Handle
+	libgomp/testsuite/Makefile.in.
+
 2006-01-18  Richard Henderson  <rth@redhat.com>
 	    Diego Novillo  <dnovillo@redhat.com>
 
