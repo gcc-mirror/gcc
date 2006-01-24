@@ -1,3 +1,7 @@
+2006-01-24  Dirk Mueller  <dmueller@suse.de>
+	
+	* typeck.c (build_binary_op): Use OPT_Wfloat_equal in warning().
+
 2006-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/25552
