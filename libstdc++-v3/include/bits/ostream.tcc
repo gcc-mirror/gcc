@@ -1,6 +1,6 @@
 // ostream classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -119,6 +119,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  }
 	return *this;
       }
+
+  template<typename _CharT, typename _Traits>
+    basic_ostream<_CharT, _Traits>&
+    basic_ostream<_CharT, _Traits>::
+    operator<<(short __n)
+    {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 117. basic_ostream uses nonexistent num_put member functions.
+      const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
+      if (__fmt == ios_base::oct || __fmt == ios_base::hex)
+	return _M_insert(static_cast<long>(static_cast<unsigned short>(__n)));
+      else
+	return _M_insert(static_cast<long>(__n));
+    }
+
+  template<typename _CharT, typename _Traits>
+    basic_ostream<_CharT, _Traits>&
+    basic_ostream<_CharT, _Traits>::
+    operator<<(int __n)
+    {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 117. basic_ostream uses nonexistent num_put member functions.
+      const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
+      if (__fmt == ios_base::oct || __fmt == ios_base::hex)
+	return _M_insert(static_cast<long>(static_cast<unsigned int>(__n)));
+      else
+	return _M_insert(static_cast<long>(__n));
+    }
   
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&

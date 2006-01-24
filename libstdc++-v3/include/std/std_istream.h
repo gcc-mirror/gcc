@@ -1,6 +1,6 @@
 // Input streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -170,45 +170,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return _M_extract(__n); }
       
       __istream_type& 
-      operator>>(short& __n)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 118. basic_istream uses nonexistent num_get member functions.
-	long __l;
-	_M_extract(__l);
-	if (!this->fail())
-	  {
-	    if (numeric_limits<short>::min() <= __l
-		&& __l <= numeric_limits<short>::max())
-	      __n = __l;
-	    else
-	      this->setstate(ios_base::failbit);
-	  }
-	return *this;
-      }
+      operator>>(short& __n);
       
       __istream_type& 
       operator>>(unsigned short& __n)
       { return _M_extract(__n); }
 
       __istream_type& 
-      operator>>(int& __n)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 118. basic_istream uses nonexistent num_get member functions.
-	long __l;
-	_M_extract(__l);
-	if (!this->fail())
-	  {
-	    if (numeric_limits<int>::min() <= __l
-		&& __l <= numeric_limits<int>::max())
-	      __n = __l;
-	    else
-	      this->setstate(ios_base::failbit);
-	  }
-	return *this;
-      }
-     
+      operator>>(int& __n);
+    
       __istream_type& 
       operator>>(unsigned int& __n)
       { return _M_extract(__n); }
