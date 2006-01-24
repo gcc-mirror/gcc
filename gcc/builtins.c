@@ -1,6 +1,6 @@
 /* Expand builtin functions.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5406,6 +5406,7 @@ get_builtin_sync_mem (tree loc, enum machine_mode mode)
   mem = validize_mem (gen_rtx_MEM (mode, addr));
 
   set_mem_align (mem, get_pointer_alignment (loc, BIGGEST_ALIGNMENT));
+  set_mem_alias_set (mem, ALIAS_SET_MEMORY_BARRIER);
   MEM_VOLATILE_P (mem) = 1;
 
   return mem;
