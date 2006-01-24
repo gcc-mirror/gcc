@@ -1,3 +1,10 @@
+2006-01-24  Richard Henderson  <rth@redehat.com>
+
+	* alias.h (ALIAS_SET_MEMORY_BARRIER): New.
+	* alias.c (true_dependence): Respect it.
+	(canon_true_dependence, write_dependence_p): Likewise.
+	* builtins.c (get_builtin_sync_mem): Set it.
+
 2006-01-25  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* loop-iv.c (iv_analysis_loop_init): Use df analysis in a more
