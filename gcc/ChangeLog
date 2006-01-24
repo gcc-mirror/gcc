@@ -1,3 +1,8 @@
+2006-01-23  Adam Nemet  <anemet@caviumnetworks.com>
+
+        * fix-header.c (read_scan_file): Add new parameter imultilib when
+	calling register_include_chains.
+
 2006-01-23  Diego Novillo  <dnovillo@redhat.com>
 
 	* omp-low.c: Update documentation.
