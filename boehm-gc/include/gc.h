@@ -152,7 +152,7 @@ GC_API int GC_java_finalization;
 			/* ordered finalization.  Default value is	*/
 			/* determined by JAVA_FINALIZATION macro.	*/
 
-GC_API void (* GC_finalizer_notifier)();
+GC_API void (* GC_finalizer_notifier) GC_PROTO((void));
 			/* Invoked by the collector when there are 	*/
 			/* objects to be finalized.  Invoked at most	*/
 			/* once per GC cycle.  Never invoked unless 	*/
@@ -918,7 +918,7 @@ GC_API void (*GC_is_visible_print_proc)
 GC_PTR GC_malloc_many(size_t lb);
 #define GC_NEXT(p) (*(GC_PTR *)(p)) 	/* Retrieve the next element	*/
 					/* in returned list.		*/
-extern void GC_thr_init();	/* Needed for Solaris/X86	*/
+extern void GC_thr_init GC_PROTO((void));/* Needed for Solaris/X86	*/
 
 #endif /* THREADS && !SRC_M3 */
 
