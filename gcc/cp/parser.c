@@ -14929,6 +14929,9 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       parser->local_variables_forbidden_p = saved_local_variables_forbidden_p;
     }
 
+  /* Make sure no default arg is missing.  */
+  check_default_args (fn);
+
   /* Restore the queue.  */
   parser->unparsed_functions_queues 
     = TREE_CHAIN (parser->unparsed_functions_queues);
