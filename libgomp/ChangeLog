@@ -1,3 +1,9 @@
+2006-01-24  Richard Henderson  <rth@redhat.com>
+
+	PR libgomp/25942
+	* configure.ac: Add AM_MAINTAINER_MODE.
+	* Makefile.in, aclocal.m4, configure, testsuite/Makefile.in: Rebuild.
+
 2006-01-24  Diego Novillo  <dnovillo@redhat.com>
 
 	* Makefile.in: Regenerate.
