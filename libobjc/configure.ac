@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 #   Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2003, 2004
-#   Free Software Foundation, Inc.
+#   2005, 2006 Free Software Foundation, Inc.
 #   Originally contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GCC.
@@ -73,11 +73,18 @@ AC_ARG_ENABLE(objc-gc,
 [  --enable-objc-gc       enable the use of Boehm's garbage collector with
                           the GNU Objective-C runtime.],
 [case $enable_objc_gc in
-  no) OBJC_BOEHM_GC='' ;;
-  *) OBJC_BOEHM_GC=libobjc_gc.la ;;
+  no)
+    OBJC_BOEHM_GC=''
+    OBJC_BOEHM_GC_INCLUDES=''
+    ;;
+  *)
+    OBJC_BOEHM_GC=libobjc_gc.la
+    OBJC_BOEHM_GC_INCLUDES='-I$(top_srcdir)/../boehm-gc/include -I../boehm-gc/include'
+    ;;
 esac],
-[OBJC_BOEHM_GC=''])
+[OBJC_BOEHM_GC=''; OBJC_BOEHM_GC_INCLUDES=''])
 AC_SUBST(OBJC_BOEHM_GC)
+AC_SUBST(OBJC_BOEHM_GC_INCLUDES)
 
 # -----------
 # Directories

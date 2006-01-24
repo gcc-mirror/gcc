@@ -1,5 +1,5 @@
 /* Basic data types for Objective C.
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Ovidiu Predescu.
 
 This file is part of GCC.
@@ -250,7 +250,7 @@ __objc_class_structure_encoding (Class class, char **type, int *size,
   if (! class)
     {
       strcat (*type, "{");
-      *current++;
+      (*current)++;
       return;
     }
 
