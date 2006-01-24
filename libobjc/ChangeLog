@@ -1,3 +1,13 @@
+2006-01-24  David Ayers  <d.ayers@inode.at>
+
+	PR libobjc/13946
+	* configure.ac: Add include directives for --enable-objc-gc.
+	* Makefile.in: Ditto.
+	* configure: Regenerate.
+
+	* gc.c (__objc_class_structure_encoding): Increment the used bytes
+	instead of the local pointer to them.
+
 2005-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/25360
