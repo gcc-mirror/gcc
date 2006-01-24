@@ -197,15 +197,12 @@ static bool magic_varargs_p (tree);
 static tree build_temp (tree, tree, int, void (**)(const char *, ...));
 static void check_constructor_callable (tree, tree);
 
-/* Returns nonzero iff the destructor name specified in NAME
-   (a BIT_NOT_EXPR) matches BASETYPE.  The operand of NAME can take many
-   forms...  */
+/* Returns nonzero iff the destructor name specified in NAME matches BASETYPE.
+   NAME can take many forms...  */
 
 bool
 check_dtor_name (tree basetype, tree name)
 {
-  name = TREE_OPERAND (name, 0);
-
   /* Just accept something we've already complained about.  */
   if (name == error_mark_node)
     return true;
@@ -236,9 +233,9 @@ check_dtor_name (tree basetype, tree name)
       return false;
     }
 
-  if (name && TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (name))
-    return true;
-  return false;
+  if (!name)
+    return false;
+  return same_type_p (TYPE_MAIN_VARIANT (basetype), TYPE_MAIN_VARIANT (name));
 }
 
 /* We want the address of a function or method.  We avoid creating a
