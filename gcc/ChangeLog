@@ -1,3 +1,10 @@
+2006-01-23  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR rtl-optimization/25890
+        PR rtl-optimization/25905
+        * combine.c (expand_compound_operation, expand_field_assignment):
+        Fail if the bitfield's final position is out of bounds.
+
 2006-01-24  Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/25930
