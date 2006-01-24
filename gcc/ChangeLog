@@ -1,3 +1,8 @@
+2006-01-24  Richard Henderson  <rth@redhat.com>
+
+	* genextract.c (VEC_safe_set_locstr): Take VEC by reference;
+	update all callers.
+
 2006-01-23  Paolo Bonzini  <bonzini@gnu.org>
 
         PR rtl-optimization/25890
