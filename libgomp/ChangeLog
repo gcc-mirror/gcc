@@ -1,3 +1,9 @@
+2006-01-24  Diego Novillo  <dnovillo@redhat.com>
+
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2006-01-23  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* config/posix/proc.c: Conditional include of sys/loadavg.h for
