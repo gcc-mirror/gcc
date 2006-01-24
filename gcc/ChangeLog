@@ -1,3 +1,9 @@
+2006-01-24  Ian Lance Taylor  <ian@airs.com>
+
+	PR middle-end/25930
+	* cgraphunit.c (cgraph_output_in_order): Don't clear
+	cgraph_asm_nodes until after asm strings have been output.
+
 2006-01-23  Adam Nemet  <anemet@caviumnetworks.com>
 
         * fix-header.c (read_scan_file): Add new parameter imultilib when
