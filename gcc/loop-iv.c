@@ -250,11 +250,14 @@ iv_analysis_loop_init (struct loop *loop)
   current_loop = loop;
 
   /* Clear the information from the analysis of the previous loop.  */
-  if (!first_time)
-    iv_analysis_done ();
-  df = df_init (DF_HARD_REGS | DF_EQUIV_NOTES);
-  df_chain_add_problem (df, DF_UD_CHAIN);
-  bivs = htab_create (10, biv_hash, biv_eq, free);
+  if (first_time)
+    {
+      df = df_init (DF_HARD_REGS | DF_EQUIV_NOTES);
+      df_chain_add_problem (df, DF_UD_CHAIN);
+      bivs = htab_create (10, biv_hash, biv_eq, free);
+    }
+  else
+    clear_iv_info ();
 
   for (i = 0; i < loop->num_nodes; i++)
     {

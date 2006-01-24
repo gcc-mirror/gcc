@@ -1,3 +1,8 @@
+2006-01-25  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* loop-iv.c (iv_analysis_loop_init): Use df analysis in a more
+	efficient way.
+
 2006-01-24  DJ Delorie  <dj@redhat.com>
 
 	* expmed.c (store_bit_field): Don't arbitrarily deny using insv
