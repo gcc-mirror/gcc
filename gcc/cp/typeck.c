@@ -1828,7 +1828,7 @@ lookup_destructor (tree object, tree scope, tree dtor_name)
   tree dtor_type = TREE_OPERAND (dtor_name, 0);
   tree expr;
 
-  if (scope && !check_dtor_name (scope, dtor_name))
+  if (scope && !check_dtor_name (scope, dtor_type))
     {
       error ("qualified type %qT does not match destructor name ~%qT",
 	     scope, dtor_type);
