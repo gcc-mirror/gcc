@@ -5640,8 +5640,9 @@ expand_compound_operation (rtx x)
       len = INTVAL (XEXP (x, 1));
       pos = INTVAL (XEXP (x, 2));
 
-      /* This should stay within the object being extracted, fail.  */
-      gcc_assert (len + pos <= GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))));
+      /* This should stay within the object being extracted, fail otherwise.  */
+      if (len + pos > GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))))
+	return x;
 
       if (BITS_BIG_ENDIAN)
 	pos = GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) - len - pos;
@@ -5800,9 +5801,9 @@ expand_field_assignment (rtx x)
 	  pos = XEXP (SET_DEST (x), 2);
 
 	  /* A constant position should stay within the width of INNER.  */
-	  if (GET_CODE (pos) == CONST_INT)
-	    gcc_assert (INTVAL (pos) + len
-			<= GET_MODE_BITSIZE (GET_MODE (inner)));
+	  if (GET_CODE (pos) == CONST_INT
+	      && INTVAL (pos) + len > GET_MODE_BITSIZE (GET_MODE (inner)))
+	    break;
 
 	  if (BITS_BIG_ENDIAN)
 	    {
