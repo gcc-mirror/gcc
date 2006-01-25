@@ -1,3 +1,7 @@
+2006-01-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/predicates.md (sh_register_operand): Accept CONST_DOUBLE.
+
 2006-01-24  David Daney  <ddaney@avtrex.com>
 
 	PR java/25816

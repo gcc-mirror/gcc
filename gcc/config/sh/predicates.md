@@ -614,7 +614,7 @@
 ;; the constant zero like a general register.
 
 (define_predicate "sh_register_operand"
-  (match_code "reg,subreg,const_int")
+  (match_code "reg,subreg,const_int,const_double")
 {
   if (op == CONST0_RTX (mode) && TARGET_SHMEDIA)
     return 1;
