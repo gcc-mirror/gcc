@@ -229,7 +229,7 @@ i386_pe_mark_dllexport (tree decl)
   idp = get_identifier (newname);
 
   symref = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
-  SYMBOL_REF_DECL (symref) = decl;
+  SYMBOL_REF_DATA (symref) = decl;
   XEXP (DECL_RTL (decl), 0) = symref;
 }
 
@@ -274,7 +274,7 @@ i386_pe_mark_dllimport (tree decl)
   idp = get_identifier (newname);
 
   symref = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
-  SYMBOL_REF_DECL (symref) = decl;
+  SYMBOL_REF_DATA (symref) = decl;
   newrtl = gen_rtx_MEM (Pmode,symref);
   XEXP (DECL_RTL (decl), 0) = newrtl;
 

@@ -455,6 +455,16 @@ that is, some sort of constant.  In this case, the @code{symbol_ref}
 is an entry in the per-file constant pool; again, there is no associated
 front end symbol table entry.
 
+@findex SYMBOL_REF_CONSTANT
+@item SYMBOL_REF_CONSTANT (@var{x})
+If @samp{CONSTANT_POOL_ADDRESS_P (@var{x})} is true, this is the constant
+pool entry for @var{x}.  It is null otherwise.
+
+@findex SYMBOL_REF_DATA
+@item SYMBOL_REF_DATA (@var{x})
+A @samp{void *} pointer used to store @code{SYMBOL_REF_DECL} or
+@code{SYMBOL_REF_CONSTANT}.
+
 @findex SYMBOL_REF_FLAGS
 @item SYMBOL_REF_FLAGS (@var{x})
 In a @code{symbol_ref}, this is used to communicate various predicates

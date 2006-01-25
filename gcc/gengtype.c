@@ -454,7 +454,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
   options_p nodot;
   int i;
   type_p rtx_tp, rtvec_tp, tree_tp, mem_attrs_tp, note_union_tp, scalar_tp;
-  type_p bitmap_tp, basic_block_tp, reg_attrs_tp;
+  type_p bitmap_tp, basic_block_tp, reg_attrs_tp, constant_tp, symbol_union_tp;
 
   if (t->kind != TYPE_UNION)
     {
@@ -472,6 +472,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
   reg_attrs_tp = create_pointer (find_structure ("reg_attrs", 0));
   bitmap_tp = create_pointer (find_structure ("bitmap_element_def", 0));
   basic_block_tp = create_pointer (find_structure ("basic_block_def", 0));
+  constant_tp = create_pointer (find_structure ("constant_descriptor_rtx", 0));
   scalar_tp = create_scalar_type ("rtunion scalar", 14);
 
   {
@@ -509,6 +510,19 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
       }
     note_union_tp = new_structure ("rtx_def_note_subunion", 1,
 				   &lexer_line, note_flds, NULL);
+  }
+  /* Create a type to represent the various forms of SYMBOL_REF_DATA.  */
+  {
+    pair_p sym_flds;
+
+    sym_flds = create_field (NULL, tree_tp, "rt_tree");
+    sym_flds->opt = create_option (nodot, "default", "");
+
+    sym_flds = create_field (sym_flds, constant_tp, "rt_constant");
+    sym_flds->opt = create_option (nodot, "tag", "1");
+
+    symbol_union_tp = new_structure ("rtx_def_symbol_subunion", 1,
+				     &lexer_line, sym_flds, NULL);
   }
   for (i = 0; i < NUM_RTX_CODE; i++)
     {
@@ -562,7 +576,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      else if (i == SYMBOL_REF && aindex == 1)
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == SYMBOL_REF && aindex == 2)
-		t = tree_tp, subname = "rt_tree";
+		t = symbol_union_tp, subname = "";
 	      else if (i == BARRIER && aindex >= 3)
 		t = scalar_tp, subname = "rt_int";
 	      else
@@ -627,6 +641,9 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	  if (t == note_union_tp)
 	    subfields->opt = create_option (subfields->opt, "desc",
 					    "NOTE_LINE_NUMBER (&%0)");
+	  if (t == symbol_union_tp)
+	    subfields->opt = create_option (subfields->opt, "desc",
+					    "CONSTANT_POOL_ADDRESS_P (&%0)");
 	}
 
       sname = xasprintf ("rtx_def_%s", rtx_name[i]);
