@@ -691,6 +691,15 @@
    functions to be present. */
 #undef _GLIBCXX_USE_C99_COMPLEX
 
+/* Define if C99 functions in <complex.h> should be used in <tr1/complex>.
+   Using compiler builtins for these functions requires corresponding C99
+   library functions to be present. */
+#undef _GLIBCXX_USE_C99_COMPLEX_TR1
+
+/* Define if C99 functions in <ctype.h> should be imported in <tr1/cctype> in
+   namespace std::tr1. */
+#undef _GLIBCXX_USE_C99_CTYPE_TR1
+
 /* Define if C99 functions or macros in <math.h> should be imported in <cmath>
    in namespace std. */
 #undef _GLIBCXX_USE_C99_MATH

@@ -1048,6 +1048,71 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 
 
 dnl
+dnl Check for ISO/IEC 9899:1999 "C99" support to ISO/IEC DTR 19768 "TR1"
+dnl facilities in Chapter 8, "C compatibility".
+dnl
+AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  # Check for the existence of <complex.h> complex math functions used
+  # by tr1/complex.
+  AC_CHECK_HEADERS(complex.h, ac_has_complex_h=yes, ac_has_complex_h=no)
+  ac_c99_complex_tr1=no;
+  if test x"$ac_has_complex_h" = x"yes"; then
+    AC_MSG_CHECKING([for ISO C99 support to TR1 in <complex.h>])
+    AC_TRY_COMPILE([#include <complex.h>],
+	           [typedef __complex__ float float_type; float_type tmpf;
+	            cacosf(tmpf);
+	            casinf(tmpf);
+	            catanf(tmpf);
+	            cacoshf(tmpf);
+	            casinhf(tmpf);
+	            catanhf(tmpf);
+		    typedef __complex__ double double_type; double_type tmpd;
+	            cacos(tmpd);
+	            casin(tmpd);
+	            catan(tmpd);
+	            cacosh(tmpd);
+	            casinh(tmpd);
+	            catanh(tmpd);
+		    typedef __complex__ long double ld_type; ld_type tmpld;
+	            cacosl(tmpld);
+	            casinl(tmpld);
+	            catanl(tmpld);
+	            cacoshl(tmpld);
+	            casinhl(tmpld);
+	            catanhl(tmpld);
+		   ],[ac_c99_complex_tr1=yes], [ac_c99_complex_tr1=no])
+  fi
+  AC_MSG_RESULT($ac_c99_complex_tr1)
+  if test x"$ac_c99_complex_tr1" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C99_COMPLEX_TR1, 1,
+              [Define if C99 functions in <complex.h> should be used in
+              <tr1/complex>. Using compiler builtins for these functions
+	      requires corresponding C99 library functions to be present.])
+  fi
+
+  # Check for the existence of <ctype.h> functions.
+  AC_MSG_CHECKING([for ISO C99 support to TR1 in <ctype.h>])
+  AC_CACHE_VAL(ac_c99_ctype_tr1, [
+  AC_TRY_COMPILE([#include <ctype.h>],
+	         [isblank(0);
+		 ],[ac_c99_ctype_tr1=yes], [ac_c99_ctype_tr1=no])
+  ])
+  AC_MSG_RESULT($ac_c99_ctype_tr1)
+  if test x"$ac_c99_ctype_tr1" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C99_CTYPE_TR1, 1,
+              [Define if C99 functions in <ctype.h> should be imported in
+	      <tr1/cctype> in namespace std::tr1.])
+  fi
+
+  AC_LANG_RESTORE
+])
+
+
+dnl
 dnl Check for what type of C headers to use.
 dnl
 dnl --enable-cheaders= [does stuff].
