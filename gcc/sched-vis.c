@@ -25,18 +25,13 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
 #include "rtl.h"
-#include "tm_p.h"
-#include "regs.h"
+#include "obstack.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
-#include "insn-attr.h"
 #include "real.h"
 #include "sched-int.h"
-#include "target.h"
-
-#ifdef INSN_SCHEDULING
+#include "tree-pass.h"
 
 static char *safe_concat (char *, char *, const char *);
 static void print_exp (char *, rtx, int);
@@ -478,6 +473,15 @@ print_value (char *buf, rtx x, int verbose)
 	  sprintf (t, "r%d", REGNO (x));
 	  cur = safe_concat (buf, cur, t);
 	}
+      if (verbose
+#ifdef INSN_SCHEDULING
+	  && !current_sched_info
+#endif
+	 )
+	{
+	  sprintf (t, ":%s", GET_MODE_NAME (GET_MODE (x)));
+	  cur = safe_concat (buf, cur, t);
+	}
       break;
     case SUBREG:
       print_value (t, SUBREG_REG (x), verbose);
@@ -629,19 +633,23 @@ print_insn (char *buf, rtx x, int verbose)
     {
     case INSN:
       print_pattern (t, PATTERN (x), verbose);
-      if (verbose)
+#ifdef INSN_SCHEDULING
+      if (verbose && current_sched_info)
 	sprintf (buf, "%s: %s", (*current_sched_info->print_insn) (x, 1),
 		 t);
       else
-	sprintf (buf, "%-4d %s", INSN_UID (x), t);
+#endif
+	sprintf (buf, " %4d %s", INSN_UID (x), t);
       break;
     case JUMP_INSN:
       print_pattern (t, PATTERN (x), verbose);
-      if (verbose)
+#ifdef INSN_SCHEDULING
+      if (verbose && current_sched_info)
 	sprintf (buf, "%s: jump %s", (*current_sched_info->print_insn) (x, 1),
 		 t);
       else
-	sprintf (buf, "%-4d %s", INSN_UID (x), t);
+#endif
+	sprintf (buf, " %4d %s", INSN_UID (x), t);
       break;
     case CALL_INSN:
       x = PATTERN (insn);
@@ -652,38 +660,94 @@ print_insn (char *buf, rtx x, int verbose)
 	}
       else
 	strcpy (t, "call <...>");
-      if (verbose)
+#ifdef INSN_SCHEDULING
+      if (verbose && current_sched_info)
 	sprintf (buf, "%s: %s", (*current_sched_info->print_insn) (x, 1), t);
       else
-	sprintf (buf, "%-4d %s", INSN_UID (insn), t);
+#endif
+	sprintf (buf, " %4d %s", INSN_UID (insn), t);
       break;
     case CODE_LABEL:
       sprintf (buf, "L%d:", INSN_UID (x));
       break;
     case BARRIER:
-      sprintf (buf, "i% 4d: barrier", INSN_UID (x));
+      sprintf (buf, "i%4d: barrier", INSN_UID (x));
       break;
     case NOTE:
       if (NOTE_LINE_NUMBER (x) > 0)
 	{
 	  expanded_location xloc;
 	  NOTE_EXPANDED_LOCATION (xloc, x);
-	  sprintf (buf, "%4d note \"%s\" %d", INSN_UID (x),
+	  sprintf (buf, " %4d note \"%s\" %d", INSN_UID (x),
 		   xloc.file, xloc.line);
 	}
       else
-	sprintf (buf, "%4d %s", INSN_UID (x),
+	sprintf (buf, " %4d %s", INSN_UID (x),
 		 GET_NOTE_INSN_NAME (NOTE_LINE_NUMBER (x)));
       break;
     default:
-      if (verbose)
-	{
-	  sprintf (buf, "Not an INSN at all\n");
-	  debug_rtx (x);
-	}
-      else
-	sprintf (buf, "i%-4d  <What?>", INSN_UID (x));
+      sprintf (buf, "i%4d  <What %s?>", INSN_UID (x),
+	       GET_RTX_NAME (GET_CODE (x)));
     }
 }				/* print_insn */
 
-#endif
+
+/* Emit a slim dump of X (an insn) to the file F, including any register
+   note attached to the instruction.  */
+void
+dump_insn_slim (FILE *f, rtx x)
+{
+  char t[BUF_LEN + 32];
+  rtx note;
+
+  print_insn (t, x, 1);
+  fputs (t, f);
+  putc ('\n', f);
+  if (INSN_P (x) && REG_NOTES (x))
+    for (note = REG_NOTES (x); note; note = XEXP (note, 1))
+      {
+        print_value (t, XEXP (note, 0), 1);
+	fprintf (f, "      %s: %s\n",
+		 GET_REG_NOTE_NAME (REG_NOTE_KIND (note)), t);
+      }
+}
+
+/* Emit a slim dump of X (an insn) to stderr.  */
+void
+debug_insn_slim (rtx x)
+{
+  dump_insn_slim (stderr, x);
+}
+
+/* Provide a slim dump the instruction chain starting at FIRST to F, honoring
+   the dump flags given in FLAGS.  Currently, TDF_BLOCKS and TDF_DETAILS
+   include more information on the basic blocks.  */
+void
+print_rtl_slim_with_bb (FILE *f, rtx first, int flags)
+{
+  basic_block current_bb = NULL;
+  rtx insn;
+
+  for (insn = first; NULL != insn; insn = NEXT_INSN (insn))
+    {
+      if ((flags & TDF_BLOCKS)
+	  && (INSN_P (insn) || GET_CODE (insn) == NOTE)
+	  && BLOCK_FOR_INSN (insn)
+	  && !current_bb)
+	{
+	  current_bb = BLOCK_FOR_INSN (insn);
+	  dump_bb_info (current_bb, true, false, flags, ";; ", f);
+	}
+
+      dump_insn_slim (f, insn);
+
+      if ((flags & TDF_BLOCKS)
+	  && current_bb
+	  && insn == BB_END (current_bb))
+	{
+	  dump_bb_info (current_bb, false, true, flags, ";; ", f);
+	  current_bb = NULL;
+	}
+    }
+}
+
