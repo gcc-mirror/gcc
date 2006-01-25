@@ -102,6 +102,9 @@
 	* io.c (format_asterisk): Adapt initializer.
 	* resolve.c (resolve_branch): Allow FORTRAN 66 cross-block GOTOs
 	as extension.
+	(warn_unused_label): Take gfc_st_label label as argument, adapt to
+	new data structure.
+	(gfc_resolve): Adapt call to warn_unused_label.
 	* symbol.c (compare_st_labels): New function.
 	(gfc_free_st_label, free_st_labels, gfc_get_st_label): Convert to
 	using balanced binary tree.
