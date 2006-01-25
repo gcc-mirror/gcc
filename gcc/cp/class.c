@@ -167,6 +167,7 @@ static tree dfs_find_final_overrider_pre (tree, void *);
 static tree dfs_find_final_overrider_post (tree, void *);
 static tree find_final_overrider (tree, tree, tree);
 static int make_new_vtable (tree, tree);
+static tree get_primary_binfo (tree);
 static int maybe_indent_hierarchy (FILE *, int, int);
 static tree dump_class_hierarchy_r (FILE *, int, tree, tree, int);
 static void dump_class_hierarchy (tree);
@@ -6362,18 +6363,16 @@ get_vtbl_decl_for_binfo (tree binfo)
    BINFO in the complete object.  Check BINFO_PRIMARY_P or
    BINFO_LOST_PRIMARY_P to be sure.  */
 
-tree
+static tree
 get_primary_binfo (tree binfo)
 {
   tree primary_base;
-  tree result;
 
   primary_base = CLASSTYPE_PRIMARY_BINFO (BINFO_TYPE (binfo));
   if (!primary_base)
     return NULL_TREE;
 
-  result = copied_binfo (primary_base, binfo);
-  return result;
+  return copied_binfo (primary_base, binfo);
 }
 
 /* If INDENTED_P is zero, indent to INDENT. Return nonzero.  */

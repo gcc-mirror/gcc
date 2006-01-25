@@ -1,3 +1,20 @@
+2006-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* cp-tree.h (get_primary_binfo): Remove prototype.
+	(push_using_decl): Likewise.
+	(current_template_args): Likewise.
+	(more_specialized_class): Likewise.
+	(mark_class_instantiated): Likewise.
+	(default_conversion): Likewise.
+	(pfn_from_ptrmemfunc): Likewise.
+	* class.c (get_primary_binfo): Add prototype, make static, simplify.
+	* name-lookup.c (push_using_decl): Make static.
+	* pt.c (current_template_args): Likewise.
+	(more_specialized_class): Likewise.
+	(mark_class_instantiated): Likewise.
+	* typeck.c (default_conversion): Make static.
+	(pfn_from_ptrmemfunc): Add prototype, make static.
+
 2006-01-24  Dirk Mueller  <dmueller@suse.de>
 	
 	* typeck.c (build_binary_op): Use OPT_Wfloat_equal in warning().
