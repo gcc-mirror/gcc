@@ -1,3 +1,7 @@
+2006-01-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* flow.c (delete_noop_moves): Add missing EOL to dump message.
+
 2006-01-25  Richard Sandiford  <richard@codesourcery.com>
 
 	* genattrtab.c (gen_bypass): Allow bypasses to contain whitespace.

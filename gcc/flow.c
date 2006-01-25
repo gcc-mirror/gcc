@@ -814,8 +814,10 @@ delete_noop_moves (void)
 	    }
 	}
     }
+
   if (nnoops && dump_file)
-    fprintf (dump_file, "deleted %i noop moves", nnoops);
+    fprintf (dump_file, "deleted %i noop moves\n", nnoops);
+
   return nnoops;
 }
 
