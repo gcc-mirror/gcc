@@ -1,5 +1,6 @@
-! { dg-do compile }
-! PR 23675: Character function of module variable length
+! { dg-do link }
+! PR 23675: Character function of module-variable length
+! PR 25716: Implicit kind conversions in in expressions written to *.mod-files.
 module cutils
 
     implicit none
@@ -11,7 +12,8 @@ module cutils
     end type t
 
     integer :: m1 = 25, m2 = 25, m3 = 25, m4 = 25, m5 = 25
-    integer :: n1 = 3, n2 = 3, n3 = 3, n4 = 3, n5 = 3, n6 = 3, n7 = 3, n8 = 3, n9 = 3
+    integer :: n5 = 3, n7 = 3, n9 = 3
+    integer(1) :: n1 = 3, n2 = 3, n3 = 3, n4 = 3, n6 = 3, n8 = 3
     character(10) :: s = "abcdefghij"
     integer :: x(4) = (/ 30, 40, 50, 60 /)
     type(t) :: tt1(5), tt2(5)
