@@ -83,6 +83,7 @@ CONFIG_HEADER = $(top_builddir)/include/gc_config.h \
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+@POWERPC_DARWIN_TRUE@am__objects_1 = powerpc_darwin_mach_dep.lo
 am_libgcjgc_la_OBJECTS = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
 	headers.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
@@ -90,17 +91,17 @@ am_libgcjgc_la_OBJECTS = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	real_malloc.lo reclaim.lo solaris_pthreads.lo \
 	solaris_threads.lo specific.lo stubborn.lo typd_mlc.lo \
 	backgraph.lo win32_threads.lo pthread_support.lo \
-	pthread_stop_world.lo darwin_stop_world.lo
+	pthread_stop_world.lo darwin_stop_world.lo $(am__objects_1)
 libgcjgc_la_OBJECTS = $(am_libgcjgc_la_OBJECTS)
-am__objects_1 = allchblk.lo alloc.lo blacklst.lo checksums.lo \
+am__objects_2 = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
 	headers.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
 	new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
 	real_malloc.lo reclaim.lo solaris_pthreads.lo \
 	solaris_threads.lo specific.lo stubborn.lo typd_mlc.lo \
 	backgraph.lo win32_threads.lo pthread_support.lo \
-	pthread_stop_world.lo darwin_stop_world.lo
-am_libgcjgc_convenience_la_OBJECTS = $(am__objects_1)
+	pthread_stop_world.lo darwin_stop_world.lo $(am__objects_1)
+am_libgcjgc_convenience_la_OBJECTS = $(am__objects_2)
 libgcjgc_convenience_la_OBJECTS =  \
 	$(am_libgcjgc_convenience_la_OBJECTS)
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -113,6 +114,9 @@ am__depfiles_maybe =
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
+CCASCOMPILE = $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
+LTCCASCOMPILE = $(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) \
+	$(CCASFLAGS)
 SOURCES = $(libgcjgc_la_SOURCES) $(libgcjgc_convenience_la_SOURCES) \
 	$(gctest_SOURCES)
 MULTISRCTOP = 
@@ -255,8 +259,8 @@ AUTOMAKE_OPTIONS = cygnus subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = include
 noinst_LTLIBRARIES = libgcjgc.la libgcjgc_convenience.la
-@POWERPC_DARWIN_FALSE@asm_libgc_sources = 
-@POWERPC_DARWIN_TRUE@asm_libgc_sources = powerpc_darwin_mach_dep.s
+@POWERPC_DARWIN_FALSE@asm_libgcjgc_sources = 
+@POWERPC_DARWIN_TRUE@asm_libgcjgc_sources = powerpc_darwin_mach_dep.s
 libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
 dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
 malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
@@ -415,6 +419,12 @@ distclean-compile:
 
 .c.lo:
 	$(LTCOMPILE) -c -o $@ $<
+
+.s.o:
+	$(CCASCOMPILE) -c $<
+
+.s.obj:
+	$(CCASCOMPILE) -c `$(CYGPATH_W) '$<'`
 
 mostlyclean-libtool:
 	-rm -f *.lo
