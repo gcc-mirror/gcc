@@ -845,7 +845,7 @@ make_decl_rtl (tree decl)
 
   x = gen_rtx_SYMBOL_REF (Pmode, name);
   SYMBOL_REF_WEAK (x) = DECL_WEAK (decl);
-  SYMBOL_REF_DECL (x) = decl;
+  SYMBOL_REF_DATA (x) = decl;
 
   x = gen_rtx_MEM (DECL_MODE (decl), x);
   if (TREE_CODE (decl) != FUNCTION_DECL)
@@ -2573,7 +2573,7 @@ build_constant_desc (tree exp)
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
   symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
   SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
-  SYMBOL_REF_DECL (symbol) = desc->value;
+  SYMBOL_REF_DATA (symbol) = desc->value;
   TREE_CONSTANT_POOL_ADDRESS_P (symbol) = 1;
 
   rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), symbol);
@@ -2751,7 +2751,6 @@ struct rtx_constant_pool GTY(())
      constant addresses are restricted so that such constants must be stored
      in memory.  */
   htab_t GTY((param_is (struct constant_descriptor_rtx))) const_rtx_htab;
-  htab_t GTY((param_is (struct constant_descriptor_rtx))) const_rtx_sym_htab;
 
   /* Current offset in constant pool (does not include any
      machine-specific header).  */
@@ -2790,23 +2789,6 @@ const_desc_rtx_eq (const void *a, const void *b)
   if (x->mode != y->mode)
     return 0;
   return rtx_equal_p (x->constant, y->constant);
-}
-
-/* Hash and compare functions for const_rtx_sym_htab.  */
-
-static hashval_t
-const_desc_rtx_sym_hash (const void *ptr)
-{
-  const struct constant_descriptor_rtx *desc = ptr;
-  return htab_hash_string (XSTR (desc->sym, 0));
-}
-
-static int
-const_desc_rtx_sym_eq (const void *a, const void *b)
-{
-  const struct constant_descriptor_rtx *x = a;
-  const struct constant_descriptor_rtx *y = b;
-  return XSTR (x->sym, 0) == XSTR (y->sym, 0);
 }
 
 /* This is the worker function for const_rtx_hash, called via for_each_rtx.  */
@@ -2912,8 +2894,6 @@ init_varasm_status (struct function *f)
 
   pool->const_rtx_htab = htab_create_ggc (31, const_desc_rtx_hash,
 					  const_desc_rtx_eq, NULL);
-  pool->const_rtx_sym_htab = htab_create_ggc (31, const_desc_rtx_sym_hash,
-					      const_desc_rtx_sym_eq, NULL);
   pool->first = pool->last = NULL;
   pool->offset = 0;
 }
@@ -2998,13 +2978,9 @@ force_const_mem (enum machine_mode mode, rtx x)
      the constants pool.  */
   desc->sym = symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
   SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
+  SYMBOL_REF_DATA (symbol) = desc;
   CONSTANT_POOL_ADDRESS_P (symbol) = 1;
   current_function_uses_const_pool = 1;
-
-  /* Insert the descriptor into the symbol cross-reference table too.  */
-  slot = htab_find_slot (pool->const_rtx_sym_htab, desc, INSERT);
-  gcc_assert (!*slot);
-  *slot = desc;
 
   /* Construct the MEM.  */
   desc->mem = def = gen_const_mem (mode, symbol);
@@ -3019,23 +2995,12 @@ force_const_mem (enum machine_mode mode, rtx x)
   return copy_rtx (def);
 }
 
-/* Given a SYMBOL_REF with CONSTANT_POOL_ADDRESS_P true, return a pointer to
-   the corresponding constant_descriptor_rtx structure.  */
-
-static struct constant_descriptor_rtx *
-find_pool_constant (struct rtx_constant_pool *pool, rtx sym)
-{
-  struct constant_descriptor_rtx tmp;
-  tmp.sym = sym;
-  return htab_find (pool->const_rtx_sym_htab, &tmp);
-}
-
 /* Given a constant pool SYMBOL_REF, return the corresponding constant.  */
 
 rtx
 get_pool_constant (rtx addr)
 {
-  return find_pool_constant (cfun->varasm->pool, addr)->constant;
+  return SYMBOL_REF_CONSTANT (addr)->constant;
 }
 
 /* Given a constant pool SYMBOL_REF, return the corresponding constant
@@ -3046,17 +3011,9 @@ get_pool_constant_mark (rtx addr, bool *pmarked)
 {
   struct constant_descriptor_rtx *desc;
 
-  desc = find_pool_constant (cfun->varasm->pool, addr);
+  desc = SYMBOL_REF_CONSTANT (addr);
   *pmarked = (desc->mark != 0);
   return desc->constant;
-}
-
-/* Likewise, but for the constant pool of a specific function.  */
-
-rtx
-get_pool_constant_for_function (struct function *f, rtx addr)
-{
-  return find_pool_constant (f->varasm->pool, addr)->constant;
 }
 
 /* Similar, return the mode.  */
@@ -3064,7 +3021,7 @@ get_pool_constant_for_function (struct function *f, rtx addr)
 enum machine_mode
 get_pool_mode (rtx addr)
 {
-  return find_pool_constant (cfun->varasm->pool, addr)->mode;
+  return SYMBOL_REF_CONSTANT (addr)->mode;
 }
 
 /* Return the size of the constant pool.  */
@@ -3208,7 +3165,7 @@ mark_constant (rtx *current_rtx, void *data)
 
   if (CONSTANT_POOL_ADDRESS_P (x))
     {
-      struct constant_descriptor_rtx *desc = find_pool_constant (pool, x);
+      struct constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
       if (desc->mark == 0)
 	{
 	  desc->mark = 1;
