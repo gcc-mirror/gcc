@@ -1,3 +1,9 @@
+2005-01-25  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25716
+	* gfortran.dg/char_result_11.f90: Make it sensitive to PR
+	25716 on 32-bit systems too.
+
 2006-01-25  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR testsuite/25590
