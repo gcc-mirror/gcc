@@ -1,3 +1,12 @@
+2006-01-25  Peter O'Gorman  <peter@pogma.com>
+
+	PR bootstrap/25859
+	* Makefile.in (GCC_LINK): Remove quotes.
+	(tools targets): Link with either $(GNATLINK) --GCC="$(GCC_LINK)"
+	or $(GCC_LINK).
+
+	(powerpc-darwin): Pass -shared-libgcc when building shared library.
+
 2006-01-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR ada/24533
