@@ -1423,7 +1423,7 @@ decay_conversion (tree exp)
   return exp;
 }
 
-static tree
+tree
 default_conversion (tree exp)
 {
   exp = decay_conversion (exp);

@@ -1,5 +1,15 @@
 2006-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	Revert:
+	* cp-tree.h (do_poplevel): Remove prototype.
+	* semantics.c (do_poplevel): Add prototype.  Make static.
+
+	Revert:
+	* cp-tree.h (default_conversion): Remove prototype.
+	* typeck.c (default_conversion): Make static.
+
+2006-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* cp-tree.h (get_primary_binfo): Remove prototype.
 	(push_using_decl): Likewise.
 	(current_template_args): Likewise.
