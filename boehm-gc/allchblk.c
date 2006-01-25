@@ -285,8 +285,8 @@ int n;
 	GET_HDR(hhdr -> hb_prev, phdr);
 	phdr -> hb_next = hhdr -> hb_next;
     }
+    FREE_ASSERT(GC_free_bytes[index] >= hhdr -> hb_sz);
     INCR_FREE_BYTES(index, - (signed_word)(hhdr -> hb_sz));
-    FREE_ASSERT(GC_free_bytes[index] >= 0);
     if (0 != hhdr -> hb_next) {
 	hdr * nhdr;
 	GC_ASSERT(!IS_FORWARDING_ADDR_OR_NIL(NHDR(hhdr)));

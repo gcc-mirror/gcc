@@ -1367,6 +1367,10 @@ void check_heap_stats()
     	max_heap_sz = 11000000;
     }
 #   endif
+#   ifndef ALIGN_DOUBLE
+        /* We end up needing more small object pages. */
+        max_heap_sz += 2000000;
+#   endif
 #   ifdef GC_DEBUG
 	max_heap_sz *= 2;
 #       ifdef SAVE_CALL_CHAIN

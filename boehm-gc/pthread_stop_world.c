@@ -1,13 +1,17 @@
 #include "private/pthread_support.h"
 
 #if defined(GC_PTHREADS) && !defined(GC_SOLARIS_THREADS) \
-     && !defined(GC_IRIX_THREADS) && !defined(GC_WIN32_THREADS) \
-     && !defined(GC_DARWIN_THREADS) && !defined(GC_AIX_THREADS)
+     && !defined(GC_WIN32_THREADS) && !defined(GC_DARWIN_THREADS)
 
 #include <signal.h>
 #include <semaphore.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/time.h>
+#ifndef HPUX
+# include <sys/select.h>
+  /* Doesn't exist on HP/UX 11.11. */
+#endif
 
 #if DEBUG_THREADS
 
@@ -67,7 +71,22 @@ void GC_remove_allowed_signals(sigset_t *set)
 
 static sigset_t suspend_handler_mask;
 
-word GC_stop_count;	/* Incremented at the beginning of GC_stop_world. */
+volatile sig_atomic_t GC_stop_count;
+			/* Incremented at the beginning of GC_stop_world. */
+
+volatile sig_atomic_t GC_world_is_stopped = FALSE;
+			/* FALSE ==> it is safe for threads to restart, i.e. */
+			/* they will see another suspend signal before they  */
+			/* are expected to stop (unless they have voluntarily */
+			/* stopped).					     */
+
+void GC_brief_async_signal_safe_sleep()
+{
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1000 * TIME_LIMIT / 2;
+    select(0, 0, 0, 0, &tv);
+}
 
 #ifdef GC_OSF1_THREADS
   GC_bool GC_retry_signals = TRUE;
@@ -108,7 +127,9 @@ extern void GC_with_callee_saves_pushed();
 
 void GC_suspend_handler(int sig)
 {
+  int old_errno = errno;
   GC_with_callee_saves_pushed(GC_suspend_handler_inner, (ptr_t)(word)sig);
+  errno = old_errno;
 }
 
 #else
@@ -116,7 +137,9 @@ void GC_suspend_handler(int sig)
 /* in the signal handler frame.						*/
 void GC_suspend_handler(int sig)
 {
+  int old_errno = errno;
   GC_suspend_handler_inner((ptr_t)(word)sig);
+  errno = old_errno;
 }
 #endif
 
@@ -172,16 +195,26 @@ void GC_suspend_handler_inner(ptr_t sig_arg)
     /* this thread a SIG_THR_RESTART signal.			*/
     /* SIG_THR_RESTART should be masked at this point.  Thus there	*/
     /* is no race.						*/
-    do {
-	    me->stop_info.signal = 0;
-	    sigsuspend(&suspend_handler_mask);        /* Wait for signal */
-    } while (me->stop_info.signal != SIG_THR_RESTART);
+    /* We do not continue until we receive a SIG_THR_RESTART,	*/
+    /* but we do not take that as authoritative.  (We may be	*/
+    /* accidentally restarted by one of the user signals we 	*/
+    /* don't block.)  After we receive the signal, we use a 	*/
+    /* primitive and expensive mechanism to wait until it's	*/
+    /* really safe to proceed.  Under normal circumstances,	*/
+    /* this code should not be executed.			*/
+    sigsuspend(&suspend_handler_mask);        /* Wait for signal */
+    while (GC_world_is_stopped && GC_stop_count == my_stop_count) {
+        GC_brief_async_signal_safe_sleep();
+#       if DEBUG_THREADS
+	  GC_err_printf0("Sleeping in signal handler");
+#       endif
+    }
     /* If the RESTART signal gets lost, we can still lose.  That should be  */
     /* less likely than losing the SUSPEND signal, since we don't do much   */
     /* between the sem_post and sigsuspend.	   			    */
-    /* We'd need more handshaking to work around that, since we don't want  */
-    /* to accidentally leave a RESTART signal pending, thus causing us to   */
-    /* continue prematurely in a future round.				    */ 
+    /* We'd need more handshaking to work around that.			    */
+    /* Simply dropping the sigsuspend call should be safe, but is unlikely  */
+    /* to be efficient.							    */
 
 #if DEBUG_THREADS
     GC_printf1("Continuing 0x%lx\n", my_thread);
@@ -191,20 +224,11 @@ void GC_suspend_handler_inner(ptr_t sig_arg)
 void GC_restart_handler(int sig)
 {
     pthread_t my_thread = pthread_self();
-    GC_thread me;
 
     if (sig != SIG_THR_RESTART) ABORT("Bad signal in suspend_handler");
 
-    /* Let the GC_suspend_handler() know that we got a SIG_THR_RESTART. */
-    /* The lookup here is safe, since I'm doing this on behalf  */
-    /* of a thread which holds the allocation lock in order	*/
-    /* to stop the world.  Thus concurrent modification of the	*/
-    /* data structure is impossible.				*/
-    me = GC_lookup_thread(my_thread);
-    me->stop_info.signal = SIG_THR_RESTART;
-
     /*
-    ** Note: even if we didn't do anything useful here,
+    ** Note: even if we don't do anything useful here,
     ** it would still be necessary to have a signal handler,
     ** rather than ignoring the signals, otherwise
     ** the signals will not be delivered at all, and
@@ -357,6 +381,7 @@ void GC_stop_world()
       /* We should have previously waited for it to become zero. */
 #   endif /* PARALLEL_MARK */
     ++GC_stop_count;
+    GC_world_is_stopped = TRUE;
     n_live_threads = GC_suspend_all();
 
       if (GC_retry_signals) {
@@ -390,10 +415,10 @@ void GC_stop_world()
       }
     for (i = 0; i < n_live_threads; i++) {
 	  while (0 != (code = sem_wait(&GC_suspend_ack_sem))) {
-	    if (errno != EINTR) {
-	      GC_err_printf1("Sem_wait returned %ld\n", (unsigned long)code);
-	      ABORT("sem_wait for handler failed");
-	    }
+	      if (errno != EINTR) {
+	         GC_err_printf1("Sem_wait returned %ld\n", (unsigned long)code);
+	         ABORT("sem_wait for handler failed");
+	      }
 	  }
     }
 #   ifdef PARALLEL_MARK
@@ -419,6 +444,7 @@ void GC_start_world()
       GC_printf0("World starting\n");
 #   endif
 
+    GC_world_is_stopped = FALSE;
     for (i = 0; i < THREAD_TABLE_SZ; i++) {
       for (p = GC_threads[i]; p != 0; p = p -> next) {
         if (p -> id != my_thread) {
@@ -428,8 +454,7 @@ void GC_start_world()
 	    #if DEBUG_THREADS
 	      GC_printf1("Sending restart signal to 0x%lx\n", p -> id);
 	    #endif
-        
-        result = pthread_kill(p -> id, SIG_THR_RESTART);
+            result = pthread_kill(p -> id, SIG_THR_RESTART);
 	    switch(result) {
                 case ESRCH:
                     /* Not really there anymore.  Possible? */

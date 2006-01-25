@@ -1,3 +1,7 @@
+2006-01-24  Bryce McKinlay  <mckinlay@redhat.com>
+
+	Import Boehm GC version 6.6.
+
 2006-01-24  David Ayers  <d.ayers@inode.at>
 
 	PR libobjc/13946

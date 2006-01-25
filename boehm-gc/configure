@@ -1767,7 +1767,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=gc
- VERSION=6.3
+ VERSION=6.6
 
 
 # Some tools Automake needs.

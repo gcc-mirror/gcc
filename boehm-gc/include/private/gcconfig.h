@@ -55,7 +55,7 @@
 # endif
 
 /* And one for FreeBSD: */
-# if defined(__FreeBSD__)
+# if defined(__FreeBSD__) && !defined(FREEBSD)
 #    define FREEBSD
 # endif
 
@@ -95,6 +95,10 @@
 # endif
 # if defined(NETBSD) && (defined(__arm32__) || defined(__arm__))
 #    define ARM32
+#    define mach_type_known
+# endif
+# if defined(NETBSD) && defined(__sh__)
+#    define SH
 #    define mach_type_known
 # endif
 # if defined(vax)
@@ -167,7 +171,7 @@
 #   define mach_type_known
 # endif
 # if defined(sparc) && defined(unix) && !defined(sun) && !defined(linux) \
-     && !defined(__OpenBSD__) && !(__NetBSD__)
+     && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__FreeBSD__)
 #   define SPARC
 #   define DRSNX
 #   define mach_type_known
@@ -198,14 +202,16 @@
 # if defined(_PA_RISC1_0) || defined(_PA_RISC1_1) || defined(_PA_RISC2_0) \
      || defined(hppa) || defined(__hppa__)
 #   define HP_PA
-#   ifndef LINUX
+#   if !defined(LINUX) && !defined(HPUX)
 #     define HPUX
 #   endif
 #   define mach_type_known
 # endif
 # if defined(__ia64) && defined(_HPUX_SOURCE)
 #   define IA64
-#   define HPUX
+#   ifndef HPUX
+#     define HPUX
+#   endif
 #   define mach_type_known
 # endif
 # if defined(__BEOS__) && defined(_X86_)
@@ -235,7 +241,8 @@
 #    endif
 #    define mach_type_known
 # endif
-# if defined(LINUX) && (defined(powerpc) || defined(__powerpc__) || defined(powerpc64) || defined(__powerpc64__))
+# if defined(LINUX) && (defined(powerpc) || defined(__powerpc__) || \
+		        defined(powerpc64) || defined(__powerpc64__))
 #    define POWERPC
 #    define mach_type_known
 # endif
@@ -293,11 +300,11 @@
 #    define DARWIN
 #    define POWERPC
 #    define mach_type_known
-# endif
-# if defined(__APPLE__) && defined(__MACH__) && defined(__i386__)
-#    define DARWIN
-#    define I386
+# else
+#    if defined(__i386__)
+#      define I386
      --> Not really supported, but at least we recognize it.
+#    endif
 # endif
 # if defined(NeXT) && defined(mc68000)
 #   define M68K
@@ -326,6 +333,10 @@
 #    define X86_64
 #    define mach_type_known
 # endif
+# if defined(FREEBSD) && defined(__sparc__)
+#    define SPARC
+#    define mach_type_known
+#endif
 # if defined(bsdi) && (defined(i386) || defined(__i386__))
 #    define I386
 #    define BSDI
@@ -486,6 +497,9 @@
 		    /*		   POWERPC    ==> IBM/Apple PowerPC	*/
 		    /*			(MACOS(<=9),DARWIN(incl.MACOSX),*/
 		    /*			 LINUX, NETBSD, NOSYS variants)	*/
+		    /*			Handles 32 and 64-bit variants.	*/
+		    /* 			AIX should be handled here, but	*/
+		    /*			that's called an RS6000.	*/
 		    /*		   CRIS       ==> Axis Etrax		*/
 		    /*		   M32R	      ==> Renesas M32R		*/
 
@@ -493,12 +507,12 @@
 /*
  * For each architecture and OS, the following need to be defined:
  *
- * CPP_WORD_SZ is a simple integer constant representing the word size.
+ * CPP_WORDSZ is a simple integer constant representing the word size.
  * in bits.  We assume byte addressibility, where a byte has 8 bits.
- * We also assume CPP_WORD_SZ is either 32 or 64.
+ * We also assume CPP_WORDSZ is either 32 or 64.
  * (We care about the length of pointers, not hardware
  * bus widths.  Thus a 64 bit processor with a C compiler that uses
- * 32 bit pointers should use CPP_WORD_SZ of 32, not 64. Default is 32.)
+ * 32 bit pointers should use CPP_WORDSZ of 32, not 64. Default is 32.)
  *
  * MACH_TYPE is a string representation of the machine type.
  * OS_TYPE is analogous for the OS.
@@ -615,7 +629,8 @@
  */
 # if defined(__GNUC__) && ((__GNUC__ >= 3) || \
 			   (__GNUC__ == 2 && __GNUC_MINOR__ >= 8)) \
-		       && !defined(__INTEL_COMPILER)
+		       && !defined(__INTEL_COMPILER) \
+ 		       && !defined(__PATHCC__)
 #   define HAVE_BUILTIN_UNWIND_INIT
 # endif
 
@@ -740,7 +755,7 @@
 #   endif
 # endif
 
-# ifdef POWERPC
+# if defined(POWERPC)
 #   define MACH_TYPE "POWERPC"
 #   ifdef MACOS
 #     define ALIGNMENT 2  /* Still necessary?  Could it be 4?	*/
@@ -753,10 +768,12 @@
 #     define DATAEND  /* not needed */
 #   endif
 #   ifdef LINUX
-#     if (defined (powerpc64) || defined(__powerpc64__))
+#     if defined(__powerpc64__)
 #       define ALIGNMENT 8
 #       define CPP_WORDSZ 64
-#       define HBLKSIZE 4096
+#       ifndef HBLKSIZE
+#         define HBLKSIZE 4096
+#       endif
 #     else
 #       define ALIGNMENT 4
 #     endif
@@ -770,7 +787,7 @@
 #     define DATAEND (_end)
 #   endif
 #   ifdef DARWIN
-#     if (defined (__ppc64__))
+#     ifdef __ppc64__
 #       define ALIGNMENT 8
 #       define CPP_WORDSZ 64
 #     else
@@ -787,8 +804,10 @@
 #     define USE_MMAP_ANON
 #     define USE_ASM_PUSH_REGS
       /* This is potentially buggy. It needs more testing. See the comments in
-         os_dep.c */
-#     define MPROTECT_VDB
+         os_dep.c.  It relies on threads to track writes. */
+#     ifdef GC_DARWIN_THREADS
+/* #       define MPROTECT_VDB -- diabled for now.  May work for some apps. */
+#     endif
 #     include <unistd.h>
 #     define GETPAGESIZE() getpagesize()
 #     if defined(USE_PPC_PREFETCH) && defined(__GNUC__)
@@ -975,6 +994,23 @@
 #	define DATASTART ((ptr_t)(etext))
 #     endif
 #   endif
+#   ifdef FREEBSD
+#	define OS_TYPE "FREEBSD"
+#	define SIG_SUSPEND SIGUSR1
+#	define SIG_THR_RESTART SIGUSR2
+#	define FREEBSD_STACKBOTTOM
+#	ifdef __ELF__
+#	    define DYNAMIC_LOADING
+#	endif
+	extern char etext[];
+	extern char edata[];
+	extern char end[];
+#	define NEED_FIND_LIMIT
+#	define DATASTART ((ptr_t)(&etext))
+#	define DATAEND (GC_find_limit (DATASTART, TRUE))
+#	define DATASTART2 ((ptr_t)(&edata))
+#	define DATAEND2 ((ptr_t)(&end))
+#   endif
 # endif
 
 # ifdef I386
@@ -1158,26 +1194,8 @@
 #   endif
 #   ifdef CYGWIN32
 #       define OS_TYPE "CYGWIN32"
-          extern int _data_start__[];
-          extern int _data_end__[];
-          extern int _bss_start__[];
-          extern int _bss_end__[];
-  	/* For binutils 2.9.1, we have			*/
-  	/*	DATASTART   = _data_start__		*/
-  	/*	DATAEND	    = _bss_end__		*/
-  	/* whereas for some earlier versions it was	*/
-  	/*	DATASTART   = _bss_start__		*/
-  	/*	DATAEND	    = _data_end__		*/
-  	/* To get it right for both, we take the	*/
-  	/* minumum/maximum of the two.			*/
-#     ifndef MAX
-#   	define MAX(x,y) ((x) > (y) ? (x) : (y))
-#     endif
-#     ifndef MIN
-#   	define MIN(x,y) ((x) < (y) ? (x) : (y))
-#     endif
-#       define DATASTART ((ptr_t) MIN(_data_start__, _bss_start__))
-#       define DATAEND	 ((ptr_t) MAX(_data_end__, _bss_end__))
+#       define DATASTART ((ptr_t)GC_DATASTART)  /* From gc.h */
+#       define DATAEND	 ((ptr_t)GC_DATAEND)
 #	undef STACK_GRAN
 #       define STACK_GRAN 0x10000
 #       define HEURISTIC1
@@ -1421,6 +1439,8 @@
 #     define CPP_WORDSZ 32
 #     define STACKBOTTOM ((ptr_t)((ulong)&errno))
 #   endif
+#   define USE_MMAP
+#   define USE_MMAP_ANON
  /* From AIX linker man page:
  _text Specifies the first location of the program.
  _etext Specifies the first location after the program.
@@ -1728,7 +1748,7 @@
 #   define USE_GENERIC_PUSH_REGS
 #   ifdef UTS4
 #       define OS_TYPE "UTS4"
-       extern int etext[];
+	extern int etext[];
 	extern int _etext[];
 	extern int _end[];
 	extern ptr_t GC_SysVGetDataStart();
@@ -1742,18 +1762,20 @@
 #   define MACH_TYPE "S390"
 #   define USE_GENERIC_PUSH_REGS
 #   ifndef __s390x__
-#   define ALIGNMENT 4
-#   define CPP_WORDSZ 32
+#     define ALIGNMENT 4
+#     define CPP_WORDSZ 32
 #   else
-#   define ALIGNMENT 8
-#   define CPP_WORDSZ 64
-#   define HBLKSIZE 4096
+#     define ALIGNMENT 8
+#     define CPP_WORDSZ 64
+#   endif
+#   ifndef HBLKSIZE
+#     define HBLKSIZE 4096
 #   endif
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
 #       define LINUX_STACKBOTTOM
 #       define DYNAMIC_LOADING
-       extern int __data_start[];
+	extern int __data_start[];
 #       define DATASTART ((ptr_t)(__data_start))
     extern int _end[];
 #   define DATAEND (_end)
@@ -1858,6 +1880,13 @@
 #     define SEARCH_FOR_DATA_START
       extern int _end[];
 #     define DATAEND (_end)
+#   endif
+#   ifdef NETBSD
+#      define OS_TYPE "NETBSD"
+#      define HEURISTIC2
+#      define DATASTART GC_data_start
+#       define USE_GENERIC_PUSH_REGS
+#      define DYNAMIC_LOADING
 #   endif
 # endif
  
@@ -2107,7 +2136,8 @@
 #   define THREADS
 # endif
 
-# if defined(HP_PA) || defined(M88K) || defined(POWERPC) && !defined(DARWIN) \
+# if defined(HP_PA) || defined(M88K) \
+             || defined(POWERPC) && !defined(DARWIN) \
 	     || defined(LINT) || defined(MSWINCE) || defined(ARM32) || defined(CRIS) \
 	     || (defined(I386) && defined(__LCC__))
 	/* Use setjmp based hack to mark from callee-save registers.    */
@@ -2249,7 +2279,7 @@
 #	    else
 #	      if defined(AMIGA) && defined(GC_AMIGA_FASTALLOC)
 			extern void *GC_amiga_get_mem(size_t size);
-#			define GET_MEM(bytes) HBLKPTR((size_t) \
+#		define GET_MEM(bytes) HBLKPTR((size_t) \
 			  GC_amiga_get_mem((size_t)bytes + GC_page_size) \
 			  + GC_page_size-1)
 #	      else
@@ -2264,5 +2294,11 @@
 # endif
 
 #endif /* GC_PRIVATE_H */
+
+#if defined(_AIX) && !defined(__GNUC__) && !defined(__STDC__)
+  /* IBMs xlc compiler doesn't appear to follow the convention of	*/
+  /* defining  __STDC__ to be zero in extended mode.			*/
+#   define __STDC__ 0
+#endif
 
 # endif /* GCCONFIG_H */

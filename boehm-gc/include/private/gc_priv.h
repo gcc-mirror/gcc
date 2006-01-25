@@ -262,17 +262,6 @@ typedef char * ptr_t;	/* A generic pointer to which we can add	*/
 /*                               */
 /*********************************/
 
-#ifdef SAVE_CALL_CHAIN
-
-/* Fill in the pc and argument information for up to NFRAMES of my	*/
-/* callers.  Ignore my frame and my callers frame.			*/
-struct callinfo;
-void GC_save_callers GC_PROTO((struct callinfo info[NFRAMES]));
-  
-void GC_print_callers GC_PROTO((struct callinfo info[NFRAMES]));
-
-#endif
-
 #ifdef NEED_CALLINFO
     struct callinfo {
 	word ci_pc;  	/* Caller, not callee, pc	*/
@@ -284,6 +273,16 @@ void GC_print_callers GC_PROTO((struct callinfo info[NFRAMES]));
 	    word ci_dummy;
 #	endif
     };
+#endif
+
+#ifdef SAVE_CALL_CHAIN
+
+/* Fill in the pc and argument information for up to NFRAMES of my	*/
+/* callers.  Ignore my frame and my callers frame.			*/
+void GC_save_callers GC_PROTO((struct callinfo info[NFRAMES]));
+  
+void GC_print_callers GC_PROTO((struct callinfo info[NFRAMES]));
+
 #endif
 
 

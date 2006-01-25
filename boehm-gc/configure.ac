@@ -36,7 +36,7 @@ ACX_NONCANONICAL_TARGET
 mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"
 AC_SUBST(mkinstalldirs)
 
-AM_INIT_AUTOMAKE(gc, 6.3, no-define)
+AM_INIT_AUTOMAKE(gc, 6.6, no-define)
 
 # The autoconf 2.5x version of the no-executables hack.
 GCC_NO_EXECUTABLES
