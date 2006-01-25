@@ -1,5 +1,8 @@
 2006-01-25  Andreas Tobler  <a.tobler@schweiz.ch>
 
+	* darwin_stop_world.c: Change inline asm instruction to ld as ldz
+	is wrong.
+
 	* Makefile.am (asm_libgcjgc_sources): Rename to asm_libgcjgc_sources.
 	* Makefile.in: Regenerate.
 

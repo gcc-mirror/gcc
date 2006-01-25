@@ -38,7 +38,7 @@ unsigned long FindTopOfStack(unsigned int stack_start) {
 #   if CPP_WORDSZ == 32
       __asm__ volatile("lwz	%0,0(r1)" : "=r" (frame));
 #   else
-      __asm__ volatile("ldz	%0,0(r1)" : "=r" (frame));
+      __asm__ volatile("ld	%0,0(r1)" : "=r" (frame));
 #   endif
 # endif
   } else {
