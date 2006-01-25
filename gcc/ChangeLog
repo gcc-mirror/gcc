@@ -1,3 +1,37 @@
+2006-01-25  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/rtl.texi (SYMBOL_REF_CONSTANT, SYMBOL_REF_DATA): Document.
+	* gengtype.c (adjust_field_rtx_def): Garbage-collect field 2 of
+	a SYMBOL_REF as either a tree or a constant_descriptor_rtx,
+	depending on the value of CONSTANT_POOL_ADDRESS_P.
+	* optabs.c (init_one_libfunc): Nullify SYMBOL_REF_DATA rather than
+	SYMBOL_REF_DECL.
+	* varasm.c (make_decl_rtl, build_constant_desc): Set SYMBOL_REF_DATA
+	rather than SYMBOL_REF_DECL.
+	(rtx_constant_pool): Remove const_rtx_sym_htab.
+	(const_desc_rtx_sym_hash, const_desc_rtx_sym_eq): Delete.
+	(init_varasm_status): Don't initialize const_rtx_sym_htab.
+	(force_const_mem): Point SYMBOL_REF_DATA to the constant pool entry.
+	Remove handling of const_rtx_sym_htab.
+	(find_pool_constant): Delete.
+	(get_pool_constant, get_pool_constant_mark): Use SYMBOL_REF_CONSTANT
+	rather than find_pool_constant.
+	(get_pool_constant_for_function): Delete.
+	(get_pool_mode, mark_constant): Use SYMBOL_REF_CONSTANT rather than
+	find_pool_constant. 
+	* rtl.h (rtunion_def): Add rt_constant and rt_ptr fields.
+	(X0CONSTANT, X0PTR, SYMBOL_REF_DATA): New macros.
+	(SYMBOL_REF_DECL): Return NULL if CONSTANT_POOL_ADDRESS_P.
+	(SYMBOL_REF_CONSTANT): New macro.
+	(get_pool_constant_for_function): Delete.
+	* config/i386/winnt.c (i386_pe_mark_dllexport): Set SYMBOL_REF_DATA
+	rather than SYMBOL_REF_DECL.
+	(i386_pe_mark_dllimport): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Copy SYMBOL_REF_DATA
+	rather than SYMBOL_REF_DECL.
+	* config/darwin.c (machopic_indirect_data_reference): Likewise.
+	(machopic_indirect_call_target): Likewise.
+
 2006-01-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* flow.c (delete_noop_moves): Add missing EOL to dump message.
