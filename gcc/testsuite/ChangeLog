@@ -1,3 +1,8 @@
+2006-01-25  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR testsuite/25590
+	* gcc.dg/tree-ssa/gen-vect-11.c: Add -fwrapv.
+
 2006-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/25552
