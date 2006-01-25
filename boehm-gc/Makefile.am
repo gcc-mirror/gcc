@@ -12,9 +12,9 @@ SUBDIRS = include
 noinst_LTLIBRARIES = libgcjgc.la libgcjgc_convenience.la
 
 if POWERPC_DARWIN
-asm_libgc_sources = powerpc_darwin_mach_dep.s
+asm_libgcjgc_sources = powerpc_darwin_mach_dep.s
 else
-asm_libgc_sources = 
+asm_libgcjgc_sources = 
 endif
 
 libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
