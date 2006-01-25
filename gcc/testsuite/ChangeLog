@@ -1,3 +1,8 @@
+2006-01-25  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/18540
+	* gfortran.dg/goto_1.f: New.
+
 2006-01-25  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR testsuite/25590

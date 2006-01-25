@@ -3552,9 +3552,12 @@ resolve_branch (gfc_st_label * label, gfc_code * code)
 
   if (found == NULL)
     {
-      /* still nothing, so illegal.  */
-      gfc_error_now ("Label at %L is not in the same block as the "
-		     "GOTO statement at %L", &lp->where, &code->loc);
+      /* The label is not in an enclosing block, so illegal.  This was
+	 allowed in Fortran 66, so we allow it as extension.  We also
+	 forego further checks if we run into this.  */
+      gfc_notify_std (GFC_STD_LEGACY,
+		      "Label at %L is not in the same block as the "
+		      "GOTO statement at %L", &lp->where, &code->loc);
       return;
     }
 
