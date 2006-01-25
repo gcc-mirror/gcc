@@ -46,6 +46,8 @@ DIST_COMMON = $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../missing $(srcdir)/../mkinstalldirs \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in $(srcdir)/libgomp.spec.in \
+	$(srcdir)/libgomp_f.h.in $(srcdir)/omp.h.in \
+	$(srcdir)/omp_lib.f90.in $(srcdir)/omp_lib.h.in \
 	$(top_srcdir)/configure ChangeLog
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -59,7 +61,8 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = libgomp.spec
+CONFIG_CLEAN_FILES = omp.h omp_lib.h omp_lib.f90 libgomp_f.h \
+	libgomp.spec
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -161,6 +164,12 @@ MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 OBJEXT = @OBJEXT@
+OMP_LOCK_ALIGN = @OMP_LOCK_ALIGN@
+OMP_LOCK_KIND = @OMP_LOCK_KIND@
+OMP_LOCK_SIZE = @OMP_LOCK_SIZE@
+OMP_NEST_LOCK_ALIGN = @OMP_NEST_LOCK_ALIGN@
+OMP_NEST_LOCK_KIND = @OMP_NEST_LOCK_KIND@
+OMP_NEST_LOCK_SIZE = @OMP_NEST_LOCK_SIZE@
 OPT_LDFLAGS = @OPT_LDFLAGS@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -308,6 +317,14 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
+omp.h: $(top_builddir)/config.status $(srcdir)/omp.h.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+omp_lib.h: $(top_builddir)/config.status $(srcdir)/omp_lib.h.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+omp_lib.f90: $(top_builddir)/config.status $(srcdir)/omp_lib.f90.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+libgomp_f.h: $(top_builddir)/config.status $(srcdir)/libgomp_f.h.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 libgomp.spec: $(top_builddir)/config.status $(srcdir)/libgomp.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
@@ -839,17 +856,6 @@ uninstall-info: uninstall-info-recursive
 	uninstall-toolexeclibLTLIBRARIES
 
 
-omp.h: omp.h.in mkomp_h.pl
-	$(PERL) -w $(srcdir)/mkomp_h.pl "$(COMPILE)" $(srcdir)/omp.h.in omp.h
-omp_lib.h: omp_lib.h.in mkomp_h.pl
-	$(PERL) -w $(srcdir)/mkomp_h.pl "$(COMPILE)" $(srcdir)/omp_lib.h.in \
-	omp_lib.h
-omp_lib.f90: omp_lib.f90.in mkomp_h.pl
-	$(PERL) -w $(srcdir)/mkomp_h.pl "$(COMPILE)" $(srcdir)/omp_lib.f90.in \
-	omp_lib.f90
-libgomp_f.h: libgomp_f.h.in mkomp_h.pl
-	$(PERL) -w $(srcdir)/mkomp_h.pl "$(COMPILE)" $(srcdir)/libgomp_f.h.in \
-	libgomp_f.h
 omp_lib_kinds.mod: omp_lib.mod
 	:
 omp_lib.mod: omp_lib.f90

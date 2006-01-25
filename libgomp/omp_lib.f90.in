@@ -28,8 +28,8 @@
       module omp_lib_kinds
         integer, parameter :: omp_integer_kind = 4
         integer, parameter :: omp_logical_kind = 4
-        integer, parameter :: omp_lock_kind = OMP_LOCK_KIND
-        integer, parameter :: omp_nest_lock_kind = OMP_NEST_LOCK_KIND
+        integer, parameter :: omp_lock_kind = @OMP_LOCK_KIND@
+        integer, parameter :: omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@
       end module
 
       module omp_lib
