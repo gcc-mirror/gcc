@@ -1,3 +1,10 @@
+2006-01-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+	
+	* docs/html/faq/index.html ([5.2]): Mention TR1 and point to
+	paragraph [5.5], describing it.
+	([5.5]): New.
+	* docs/html/ext/tr1.html: New.
+
 2006-01-20  Perry Smith  <pedz@easesoftware.net>
 
 	PR libstdc++/25823

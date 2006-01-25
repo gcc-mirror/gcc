@@ -64,7 +64,7 @@
          2. [50]What's next after libstdc++-v3?
          3. [51]What about the STL from SGI?
          4. [52]Extensions and Backward Compatibility
-         5. [53][removed]
+         5. [53]Does libstdc++ support TR1?
          6. [54]Is libstdc++-v3 thread-safe?
          7. [55]How do I get a copy of the ISO C++ Standard?
          8. [56]What's an ABI and why is it so messy?
@@ -591,14 +591,15 @@ shared object file: No such file or directory
    the [90]proposed LWG resolution in DR #22 is to leave the flags
    unchanged. You must insert a call to fs.clear() between the calls to
    close() and open(), and then everything will work like we all expect
-   it to work.
+   it to work. Update: for GCC 4.0 we implemented the resolution of
+   [91]DR #409 and open() now calls clear() on success!
 
    rel_ops Another is the rel_ops namespace and the template comparison
    operator functions contained therein. If they become visible in the
    same namespace as other comparison functions (e.g., 'using' them and
    the <iterator> header), then you will suddenly be faced with huge
    numbers of ambiguity errors. This was discussed on the -v3 list;
-   Nathan Myers [91]sums things up here. The collisions with
+   Nathan Myers [92]sums things up here. The collisions with
    vector/string iterator types have been fixed for 3.1.
 
   The g++-3 headers are not ours
@@ -606,7 +607,7 @@ shared object file: No such file or directory
    If you have found an extremely broken header file which is causing
    problems for you, look carefully before submitting a "high" priority
    bug report (which you probably shouldn't do anyhow; see the last
-   paragraph of the page describing [92]the GCC bug database).
+   paragraph of the page describing [93]the GCC bug database).
 
    If the headers are in ${prefix}/include/g++-3, or if the installed
    library's name looks like libstdc++-2.10.a or libstdc++-libc6-2.10.so,
@@ -631,7 +632,7 @@ type has changed in glibc 2.2.  The patch is at
 http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 
-   Note that 2.95.x shipped with the [93]old v2 library which is no
+   Note that 2.95.x shipped with the [94]old v2 library which is no
    longer maintained. Also note that gcc 2.95.3 fixes this problem, but
    requires a separate patch for libstdc++-v3.
 
@@ -644,7 +645,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    visibility, or you just plain forgot, etc).
 
    More information, including how to optionally enable/disable the
-   checks, is available [94]here.
+   checks, is available [95]here.
 
    dlopen/dlsym If you are using the C++ library across
    dynamically-loaded objects, make certain that you are passing the
@@ -663,11 +664,11 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
    "memory leaks" in containers A few people have reported that the
    standard containers appear to leak memory when tested with memory
-   checkers such as [95]valgrind. The library's default allocators keep
+   checkers such as [96]valgrind. The library's default allocators keep
    free memory in a pool for later reuse, rather than returning it to the
    OS. Although this memory is always reachable by the library and is
    never lost, memory debugging tools can report it as a leak. If you
-   want to test the library for memory leaks please read [96]Tips for
+   want to test the library for memory leaks please read [97]Tips for
    memory leak hunting first.
      _________________________________________________________________
 
@@ -675,16 +676,16 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
    If you have found a bug in the library and you think you have a
    working fix, then send it in! The main GCC site has a page on
-   [97]submitting patches that covers the procedure, but for libstdc++
+   [98]submitting patches that covers the procedure, but for libstdc++
    you should also send the patch to our mailing list in addition to the
-   GCC patches mailing list. The libstdc++ [98]contributors' page also
+   GCC patches mailing list. The libstdc++ [99]contributors' page also
    talks about how to submit patches.
 
    In addition to the description, the patch, and the ChangeLog entry, it
    is a Good Thing if you can additionally create a small test program to
    test for the presence of the bug that your patch fixes. Bugs have a
    way of being reintroduced; if an old bug creeps back in, it will be
-   caught immediately by the [99]testsuite -- but only if such a test
+   caught immediately by the [100]testsuite -- but only if such a test
    exists.
      _________________________________________________________________
 
@@ -715,10 +716,10 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
     1. The ISO Committee will meet periodically to review Defect Reports
        in the C++ Standard. Undoubtedly some of these will result in
        changes to the Standard, which will be reflected in patches to
-       libstdc++. Some of that is already happening, see 4.2. Some of
-       those changes are being predicted by the library maintainers, and
-       we add code to the library based on what the current proposed
-       resolution specifies. Those additions are listed in [100]the
+       libstdc++. Some of that is already happening, see [101]4.3. Some
+       of those changes are being predicted by the library maintainers,
+       and we add code to the library based on what the current proposed
+       resolution specifies. Those additions are listed in [102]the
        extensions page.
     2. Performance tuning. Lots of performance tuning. This too is
        already underway for post-3.0 releases, starting with memory
@@ -733,14 +734,18 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
        they seem to be "standard" enough. (For example, the "long long"
        type from C99.) Bugfixes and rewrites (to improve or fix thread
        safety, for instance) will of course be a continuing task.
+    5. There is an effort underway to add significant extensions to the
+       standard library specification. The latest version of this effort
+       is described in [103]The C++ Library Technical Report 1. See
+       [104]5.5.
 
-   [101]This question about the next libstdc++ prompted some brief but
-   interesting [102]speculation.
+   [105]This question about the next libstdc++ prompted some brief but
+   interesting [106]speculation.
      _________________________________________________________________
 
 5.3 What about the STL from SGI?
 
-   The [103]STL from SGI, version 3.3, was the final merge of the STL
+   The [107]STL from SGI, version 3.3, was the final merge of the STL
    codebase. The code in libstdc++ contains many fixes and changes, and
    the SGI code is no longer under active development. We expect that no
    future merges will take place.
@@ -764,6 +769,12 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    forward-compatible. (The situation is the same as that of other
    headers whose directories are not searched directly, e.g.,
    <sys/stat.h>, <X11/Xlib.h>.
+
+   At this time most of the features of the SGI STL extension have been
+   replaced by standardized libraries. In particular, the unordered_map
+   and unordered_set containers of TR1 are suitable replacement for the
+   non-standard hash_map and hash_set containers in the SGI STL. See
+   [108]5.5 for more details.
 
    The extensions are no longer in the global or std namespaces, instead
    they are declared in the __gnu_cxx namespace. For maximum portability,
@@ -794,13 +805,59 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    namespace as the original template. This means you cannot use a
    namespace alias when declaring an explicit specialization.
 
-   Extensions to the library have [104]their own page.
+   Extensions to the library have [109]their own page.
      _________________________________________________________________
 
-5.5 [removed]
+5.5 Does libstdc++ support TR1?
 
-   This question has become moot and has been removed. The stub is here
-   to preserve numbering (and hence links/bookmarks).
+   The C++ Standard Library Technical Report adds many new features to
+   the library. The latest version of this effort is described in
+   [110]Technical Report 1.
+
+   libstdc++ strives to implement all of TR1. The libstdc++
+   implementation status of the TR1 draft is listed in [111]this page.
+
+   Briefly, the features of TR1 and the current status are:
+
+   Unordered containers - Complete - The unordered_set, unordered_map,
+   unordered_multiset, and unordered_multimap containers are hashed
+   versions of the map, set, multimap, and multiset containers
+   respectively. These classes are suitable replacements for the SGI STL
+   hash_map and hash_set extensions.
+
+   Reference-counted smart pointers - Complete - The shared_ptr and
+   weak_ptr allow several object to know about a pointer and whether it
+   is valid. When the last reference to the pointer is destroyed the
+   pointer is freed.
+
+   Type traits - Complete - The type_traits class gives templates the
+   ability to probe information about the input type and enable
+   type-dependent logic to be performed without the need of template
+   specializations.
+
+   Fixed-size arrays - Complete - The array class implements small
+   fixed-sized arrays with container semantics.
+
+   Tuples - Complete - The tuple class implements small heterogeneous
+   arrays. This is an enhanced pair. In fact, the standard pair is
+   enhanced with a tuple interface.
+
+   A regular expression engine This library provides for regular
+   expression objects with traversal of text with return of
+   subexpressions.
+
+   A random number engine This library contains randow number generators
+   with several different choices of distribution.
+
+   Special functions - Under construction - Twenty-three mathematical
+   functions familiar to physicists and engineers are included:
+   cylindrical and spherical Bessel and Neumann functions, hypergeometric
+   functions, Laguerre polynomials, Legendre functions, elliptic
+   integrals, exponential integrals and the Riemann zeta function all for
+   your computing pleasure.
+
+   C99 compatibility - Under construction - There are many features
+   designed to minimize the divergence of the C and the C++ languages.
      _________________________________________________________________
 
 5.6 Is libstdc++-v3 thread-safe?
@@ -847,8 +904,8 @@ a
    safe, do not assume that two threads may access a shared standard
    library object at the same time.
 
-   See chapters [105]17 (library introduction), [106]23 (containers), and
-   [107]27 (I/O) for more information.
+   See chapters [112]17 (library introduction), [113]23 (containers), and
+   [114]27 (I/O) for more information.
      _________________________________________________________________
 
 5.7 How do I get a copy of the ISO C++ Standard?
@@ -859,11 +916,11 @@ a
    their two-meeting commitment for voting rights, may get a copy of the
    standard from their respective national standards organization. In the
    USA, this national standards organization is ANSI and their website is
-   right [108]here. (And if you've already registered with them, clicking
+   right [115]here. (And if you've already registered with them, clicking
    this link will take you to directly to the place where you can
-   [109]buy the standard on-line.
+   [116]buy the standard on-line.
 
-   Who is your country's member body? Visit the [110]ISO homepage and
+   Who is your country's member body? Visit the [117]ISO homepage and
    find out!
      _________________________________________________________________
 
@@ -924,11 +981,11 @@ a
 
    The copy will take O(n) time and the swap is constant time.
 
-   See [111]Shrink-to-fit strings for a similar solution for strings.
+   See [118]Shrink-to-fit strings for a similar solution for strings.
      _________________________________________________________________
 
-   See [112]license.html for copying conditions. Comments and suggestions
-   are welcome, and may be sent to [113]the libstdc++ mailing list. 
+   See [119]license.html for copying conditions. Comments and suggestions
+   are welcome, and may be sent to [120]the libstdc++ mailing list. 
 
 References
 
@@ -1022,26 +1079,33 @@ References
   88. http://anubis.dkuug.dk/jtc1/sc22/wg21/
   89. ../faq/index.html#5_2
   90. ../ext/howto.html#5
-  91. http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html
-  92. http://gcc.gnu.org/bugs.html
-  93. ../faq/index.html#4_4_interface
-  94. ../19_diagnostics/howto.html#3
-  95. http://developer.kde.org/~sewardj/
-  96. ../debug.html#mem
-  97. http://gcc.gnu.org/contribute.html
-  98. ../17_intro/contribute.html
-  99. ../faq/index.html#2_4
- 100. ../ext/howto.html#5
- 101. http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html
- 102. http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html
- 103. http://www.sgi.com/tech/stl/
- 104. ../ext/howto.html
- 105. ../17_intro/howto.html#3
- 106. ../23_containers/howto.html#3
- 107. ../27_io/howto.html#9
- 108. http://www.ansi.org/
- 109. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%3A2003
- 110. http://www.iso.ch/
- 111. ../21_strings/howto.html#6
- 112. ../17_intro/license.html
- 113. mailto:libstdc++@gcc.gnu.org
+  91. ../ext/howto.html#5
+  92. http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html
+  93. http://gcc.gnu.org/bugs.html
+  94. ../faq/index.html#4_4_interface
+  95. ../19_diagnostics/howto.html#3
+  96. http://developer.kde.org/~sewardj/
+  97. ../debug.html#mem
+  98. http://gcc.gnu.org/contribute.html
+  99. ../17_intro/contribute.html
+ 100. ../faq/index.html#2_4
+ 101. ../faq/index.html#4_3
+ 102. ../ext/howto.html#5
+ 103. http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf
+ 104. ../faq/index.html#5_5
+ 105. http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html
+ 106. http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html
+ 107. http://www.sgi.com/tech/stl/
+ 108. ../faq/index.html#5_5
+ 109. ../ext/howto.html
+ 110. http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf
+ 111. ../ext/tr1.html
+ 112. ../17_intro/howto.html#3
+ 113. ../23_containers/howto.html#3
+ 114. ../27_io/howto.html#9
+ 115. http://www.ansi.org/
+ 116. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%3A2003
+ 117. http://www.iso.ch/
+ 118. ../21_strings/howto.html#6
+ 119. ../17_intro/license.html
+ 120. mailto:libstdc++@gcc.gnu.org
