@@ -285,8 +285,10 @@ options</a></h1>
         'darwin-export'. Both gnu- options require that a recent
         version of the GNU linker be in use. Both darwin options are
         equivalent. With no style given, the configure script will try
-        to guess if the 'gnu' style can be used, and if so, will turn
-        it on.
+        to guess correct defaults for the host system, probe to see if
+        additional requirements are necessary and present for
+        activation, and if so, will turn symbol versioning on. This
+        option can change the library ABI.
      </p>
 
  </dd>

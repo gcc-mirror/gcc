@@ -679,10 +679,10 @@ PERSONALITY_FUNCTION (int version,
   return _URC_INSTALL_CONTEXT;
 }
 
-/* The ARM EABI implementation of __cxa_call_unexpected is in a different
-   file so that the personality routine san be used standalone.  The generic
-   routine sahred datastructures with the PR so it is most convenient to
-   implement it here.  */
+/* The ARM EABI implementation of __cxa_call_unexpected is in a
+   different file so that the personality routine (PR) can be used
+   standalone.  The generic routine shared datastructures with the PR
+   so it is most convenient to implement it here.  */
 #ifndef __ARM_EABI_UNWINDER__
 extern "C" void
 __cxa_call_unexpected (void *exc_obj_in)

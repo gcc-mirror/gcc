@@ -1,3 +1,9 @@
+2006-01-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/configopts.html: Tweak docs.
+
+	* libsupc++/eh_personality.cc: Fix typos.
+
 2006-01-24  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/25649
