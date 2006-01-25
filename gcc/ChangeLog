@@ -1,3 +1,12 @@
+2006-01-24  David Daney  <ddaney@avtrex.com>
+
+	PR java/25816
+	* configure.ac (enable_tls): New enable option.
+	(HAVE_AS_TLS): Don't do assembler check if enable_tls set.
+	* configure: Regenerate.
+	* doc/install.texi (--enable-tls): Document new option.
+	(--disable-tls): Ditto.
+
 2006-01-23  Richard Guenther  <rguenther@suse.de>
 	Steven Bosscher <stevenb.gcc@gmail.com>
 

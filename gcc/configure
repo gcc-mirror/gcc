@@ -882,6 +882,8 @@ Optional Features:
   --enable-__cxa_atexit   enable __cxa_atexit for C++
   --enable-threads        enable thread usage for target GCC
   --enable-threads=LIB    use LIB thread package for target GCC
+  --enable-tls            enable or disable generation of tls code
+                          overriding the assembler check for tls support
   --enable-objc-gc	  enable the use of Boehm's garbage collector with
 			  the GNU Objective-C runtime
   --disable-shared        don't provide a shared libgcc
@@ -6891,6 +6893,23 @@ else
   enable_threads=''
 fi;
 
+# Check whether --enable-tls or --disable-tls was given.
+if test "${enable_tls+set}" = set; then
+  enableval="$enable_tls"
+
+  case $enable_tls in
+    yes | no) ;;
+    *) { { echo "$as_me:$LINENO: error: '$enable_tls' is an invalid value for --enable-tls.
+Valid choices are 'yes' and 'no'." >&5
+echo "$as_me: error: '$enable_tls' is an invalid value for --enable-tls.
+Valid choices are 'yes' and 'no'." >&2;}
+   { (exit 1); exit 1; }; } ;;
+  esac
+
+else
+  enable_tls=''
+fi;
+
 # Check whether --enable-objc-gc or --disable-objc-gc was given.
 if test "${enable_objc_gc+set}" = set; then
   enableval="$enable_objc_gc"
@@ -7473,7 +7492,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7476: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7495: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
@@ -14817,7 +14836,12 @@ foo:	.long	25
       fi
 	;;
 esac
-if test -z "$tls_first_major"; then
+set_have_as_tls=no
+if test "x$enable_tls" = xno ; then
+  : # TLS explicitly disabled.
+elif test "x$enable_tls" = xyes ; then
+  set_have_as_tls=yes # TLS explicitly enabled.
+elif test -z "$tls_first_major"; then
   : # If we don't have a check, assume no support.
 else
   echo "$as_me:$LINENO: checking assembler for thread-local storage support" >&5
@@ -14850,12 +14874,15 @@ fi
 echo "$as_me:$LINENO: result: $gcc_cv_as_tls" >&5
 echo "${ECHO_T}$gcc_cv_as_tls" >&6
 if test $gcc_cv_as_tls = yes; then
+  set_have_as_tls=yes
+fi
+fi
+if test $set_have_as_tls = yes ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_AS_TLS 1
 _ACEOF
 
-fi
 fi
 
 # Target-specific assembler checks.
