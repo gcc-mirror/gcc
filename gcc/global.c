@@ -171,7 +171,7 @@ static int *reg_may_share;
 
 static INT_TYPE *conflicts;
 
-/* Number of ints require to hold max_allocno bits.
+/* Number of ints required to hold max_allocno bits.
    This is the length of a row in `conflicts'.  */
 
 static int allocno_row_words;
@@ -616,7 +616,7 @@ global_alloc (FILE *file)
       free (allocno_order);
     }
 
-  /* Do the reloads now while the allocno data still exist, so that we can
+  /* Do the reloads now while the allocno data still exists, so that we can
      try to assign new hard regs to any pseudo regs that are spilled.  */
 
 #if 0 /* We need to eliminate regs even if there is no rtl code,
@@ -721,7 +721,7 @@ global_conflicts (void)
 	/* Record that each allocno now live conflicts with each hard reg
 	   now live.
 
-	   It is not necessary to mark any conflicts between pseudos as
+	   It is not necessary to mark any conflicts between pseudos at
 	   this point, even for pseudos which are live at the start of
 	   the basic block.
 
@@ -746,9 +746,9 @@ global_conflicts (void)
 
 	/* Pseudos can't go in stack regs at the start of a basic block that
 	   is reached by an abnormal edge. Likewise for call clobbered regs,
-	   because because caller-save, fixup_abnormal_edges, and possibly
-	   the table driven EH machinery are not quite ready to handle such
-	   regs live across such edges.  */
+	   because caller-save, fixup_abnormal_edges and possibly the table
+	   driven EH machinery are not quite ready to handle such regs live
+	   across such edges.  */
 	{
 	  edge e;
 	  edge_iterator ei;
@@ -1514,7 +1514,7 @@ mark_reg_store (rtx reg, rtx setter, void *data ATTRIBUTE_UNUSED)
     }
 }
 
-/* Like mark_reg_set except notice just CLOBBERs; ignore SETs.  */
+/* Like mark_reg_store except notice just CLOBBERs; ignore SETs.  */
 
 static void
 mark_reg_clobber (rtx reg, rtx setter, void *data)
