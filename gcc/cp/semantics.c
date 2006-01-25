@@ -53,7 +53,6 @@
    during template instantiation, which may be regarded as a
    degenerate form of parsing.  */
 
-static tree do_poplevel (tree);
 static tree maybe_convert_cond (tree);
 static tree simplify_aggr_init_exprs_r (tree *, int *, void *);
 static void emit_associated_thunks (tree);
@@ -424,7 +423,7 @@ anon_aggr_type_p (tree node)
 
 /* Finish a scope.  */
 
-static tree
+tree
 do_poplevel (tree stmt_list)
 {
   tree block = NULL;
