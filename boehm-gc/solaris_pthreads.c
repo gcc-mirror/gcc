@@ -16,7 +16,7 @@
  * Modified by Peter C. for Solaris Posix Threads.
  */
 
-#include "private/gc_priv.h"
+# include "private/gc_priv.h"
 
 # if defined(GC_SOLARIS_PTHREADS)
 # include <pthread.h>

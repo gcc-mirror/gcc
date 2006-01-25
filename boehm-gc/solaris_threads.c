@@ -16,7 +16,7 @@
  */
 /* Boehm, September 14, 1994 4:44 pm PDT */
 
-#include "private/gc_priv.h"
+# include "private/gc_priv.h"
 
 # if defined(GC_SOLARIS_THREADS) || defined(GC_SOLARIS_PTHREADS)
 # include "private/solaris_threads.h"
@@ -248,8 +248,8 @@ static void stop_all_lwps()
     for (i = 0; i < max_lwps; i++)
 	last_ids[i] = 0;
     for (;;) {
-    if (syscall(SYS_ioctl, GC_main_proc_fd, PIOCSTATUS, &status) < 0)
-    	ABORT("Main PIOCSTATUS failed");
+        if (syscall(SYS_ioctl, GC_main_proc_fd, PIOCSTATUS, &status) < 0)
+    	    ABORT("Main PIOCSTATUS failed");
     	if (status.pr_nlwp < 1)
     		ABORT("Invalid number of lwps returned by PIOCSTATUS");
     	if (status.pr_nlwp >= max_lwps) {
@@ -262,7 +262,7 @@ static void stop_all_lwps()
         	for (i = 0; i < max_lwps; i++)
 			last_ids[i] = 0;
 		continue;
-    }
+    	}
         if (syscall(SYS_ioctl, GC_main_proc_fd, PIOCLWPIDS, GC_current_ids) < 0)
             ABORT("PIOCLWPIDS failed");
         changed = FALSE;
