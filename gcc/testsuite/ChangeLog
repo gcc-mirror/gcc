@@ -1,7 +1,8 @@
 2006-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25835
-	* gfortran.dg/read_eof_1.f90: Rename from read_eof_1.f90.
+	* gfortran.dg/read_eof.f90: Delete, renamed.
+	* gfortran.dg/read_eof_1.f90: Rename from read_eof.f90.
 	* gfortran.dg/read_eof_2.f90: New test.
 	* gfortran.dg/read_eof_3.f90: New test.
 	
