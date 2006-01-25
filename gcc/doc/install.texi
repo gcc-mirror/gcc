@@ -945,6 +945,18 @@ Microsoft Win32 API thread support.
 Novell Kernel Services thread support.
 @end table
 
+@item --enable-tls
+Specify that the target supports TLS (Thread Local Storage).  Usually
+configure can correctly determine if TLS is supported.  In cases where
+it guesses incorrectly, TLS can be explicitly enabled or disabled with
+@option{--enable-tls} or @option{--disable-tls}.  This can happen if
+the assembler supports TLS but the C library does not, or if the
+assumptions made by the configure test are incorrect.
+
+@item --disable-tls
+Specify that the target does not support TLS.
+This is an alias for @option{--enable-tls=no}.
+
 @item --with-cpu=@var{cpu}
 Specify which cpu variant the compiler should generate code for by default.
 @var{cpu} will be used as the default value of the @option{-mcpu=} switch.
