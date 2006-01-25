@@ -2451,7 +2451,7 @@ end_template_decl (void)
 /* Given a template argument vector containing the template PARMS.
    The innermost PARMS are given first.  */
 
-tree
+static tree
 current_template_args (void)
 {
   tree header;
@@ -10710,7 +10710,7 @@ more_specialized_fn (tree pat1, tree pat2, int len)
    FULL_ARGS is the full set of template arguments that triggers this
    partial ordering.  */
 
-int
+static int
 more_specialized_class (tree pat1, tree pat2, tree full_args)
 {
   tree targs;
@@ -11138,7 +11138,7 @@ do_decl_instantiation (tree decl, tree storage)
 		      /*expl_inst_class_mem_p=*/false);
 }
 
-void
+static void
 mark_class_instantiated (tree t, int extern_p)
 {
   SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);

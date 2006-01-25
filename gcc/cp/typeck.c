@@ -43,6 +43,7 @@ Boston, MA 02110-1301, USA.  */
 #include "convert.h"
 #include "c-common.h"
 
+static tree pfn_from_ptrmemfunc (tree);
 static tree convert_for_assignment (tree, tree, const char *, tree, int);
 static tree cp_pointer_int_sum (enum tree_code, tree, tree);
 static tree rationalize_conditional_expr (enum tree_code, tree);
@@ -1422,7 +1423,7 @@ decay_conversion (tree exp)
   return exp;
 }
 
-tree
+static tree
 default_conversion (tree exp)
 {
   exp = decay_conversion (exp);
@@ -5963,7 +5964,7 @@ expand_ptrmemfunc_cst (tree cst, tree *delta, tree *pfn)
 /* Return an expression for PFN from the pointer-to-member function
    given by T.  */
 
-tree
+static tree
 pfn_from_ptrmemfunc (tree t)
 {
   if (TREE_CODE (t) == PTRMEM_CST)
