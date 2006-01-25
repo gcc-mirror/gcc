@@ -1,3 +1,9 @@
+2006-01-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/25758
+	* config/i386/i386.c (output_pic_addr_const) <case SYMBOL_REF>:
+	Use output_addr_const instead of assemble_name.
+
 2006-01-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (sched-vis.o): Update dependencies.
