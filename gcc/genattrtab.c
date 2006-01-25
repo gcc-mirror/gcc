@@ -4408,7 +4408,10 @@ gen_bypass (rtx def)
     if (*p == ',')
       {
 	gen_bypass_1 (base, p - base);
-	base = p + 1;
+	do
+	  p++;
+	while (ISSPACE (*p));
+	base = p;
       }
   gen_bypass_1 (base, p - base);
 }
