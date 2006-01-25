@@ -748,16 +748,20 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
       if (properties & PROP_trees)
         dump_function_to_file (current_function_decl,
                                dump_file, dump_flags);
-      else if (properties & PROP_cfg)
+      else
 	{
-	  print_rtl_with_bb (dump_file, get_insns ());
+	  if (dump_flags & TDF_SLIM)
+	    print_rtl_slim_with_bb (dump_file, get_insns (), dump_flags);
+	  else if (properties & PROP_cfg)
+	    print_rtl_with_bb (dump_file, get_insns ());
+          else
+	    print_rtl (dump_file, get_insns ());
 
-	  if (graph_dump_format != no_graph
+	  if (properties & PROP_cfg
+	      && graph_dump_format != no_graph
 	      && (dump_flags & TDF_GRAPH))
 	    print_rtl_graph_with_bb (dump_file_name, get_insns ());
 	}
-      else
-        print_rtl (dump_file, get_insns ());
 
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */

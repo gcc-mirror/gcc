@@ -1988,6 +1988,11 @@ extern rtx remove_death (unsigned int, rtx);
 extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);
 
+/* In sched-vis.c.  */
+extern void print_rtl_slim_with_bb (FILE *, rtx, int);
+extern void dump_insn_slim (FILE *f, rtx x);
+extern void debug_insn_slim (rtx x);
+
 /* In sched-rgn.c.  */
 extern void schedule_insns (FILE *);
 

@@ -2362,5 +2362,7 @@ sched_finish (void)
 
   if (targetm.sched.md_finish_global)
       targetm.sched.md_finish_global (sched_dump, sched_verbose);
+
+  current_sched_info = NULL;
 }
 #endif /* INSN_SCHEDULING */

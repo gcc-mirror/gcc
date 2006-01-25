@@ -1,3 +1,22 @@
+2006-01-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (sched-vis.o): Update dependencies.
+	* haifa-sched.c (sched_finish): Clear current_sched_info.
+	* cfg.c (dump_bb_info): New, split from dump_flow_info.
+	(dump_flow_info): Call it.
+	* passes.c (execute_todo): Call print_rtl_slim_with_bb to make
+	a slim RTL dump.
+	* basic-block.h (dump_bb_info): Declare.
+	* tree-dump.c (dump_enable_all): OR the flags of a -fdump-tree-all
+	option, and apply options only for dump files whose TDF_RTL,
+	TDF_TREE, or TDF_IPA bits match.
+	* rtl.h: Declare new functions exported from sched-vis.c.
+	* sched-vis.c: Enable also if scheduling is not used.
+	(print_value): Print the mode of registers if not inside scheduling.
+	(print_insn): Make it work outside the scheduler.  Beautify the output
+	a bit.
+	(dump_insn_slim, debug_insn_slim, print_rtl_slim_with_bb): New.
+
 2006-01-25  Richard Sandiford  <richard@codesourcery.com>
 
 	* doc/rtl.texi (SYMBOL_REF_CONSTANT, SYMBOL_REF_DATA): Document.
