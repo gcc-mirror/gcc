@@ -157,6 +157,9 @@ if $GLIBCXX_IS_NATIVE; then
   # For LFS support.
   GLIBCXX_CHECK_LFS
 
+  # For C99 support to TR1.
+  GLIBCXX_CHECK_C99_TR1
+
   # For TLS support.
   GCC_CHECK_TLS
 

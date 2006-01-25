@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return std::complex<_Tp>(__pi_2 - __t.real(), -__t.imag());
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
   inline __complex__ float
   __complex_acos(__complex__ float __z)
   { return __builtin_cacosf(__z); }
@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return std::complex<_Tp>(__t.imag(), -__t.real());
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
   inline __complex__ float
   __complex_asin(__complex__ float __z)
   { return __builtin_casinf(__z); }
@@ -144,7 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			       _Tp(0.25) * log(__num / __den));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
   inline __complex__ float
   __complex_atan(__complex__ float __z)
   { return __builtin_catanf(__z); }
@@ -183,7 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return std::log(__t + __z);
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
   inline __complex__ float
   __complex_acosh(__complex__ float __z)
   { return __builtin_cacoshf(__z); }
@@ -222,7 +222,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return std::log(__t + __z);
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
   inline __complex__ float
   __complex_asinh(__complex__ float __z)
   { return __builtin_casinhf(__z); }
@@ -266,7 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			       _Tp(0.5) * atan2(_Tp(2.0) * __z.imag(), __x));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX
+#if _GLIBCXX_USE_C99_COMPLEX_TR1
   inline __complex__ float
   __complex_atanh(__complex__ float __z)
   { return __builtin_catanhf(__z); }

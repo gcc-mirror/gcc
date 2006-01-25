@@ -1,3 +1,17 @@
+2006-01-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cctype: New.
+	* include/Makefile.am: Add.
+	* testsuite/tr1/8_c_compatibility/cctype/functions.cc: New.
+	* include/Makefile.in: Regenerate.
+
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): New, check for C99
+	support to TR1, Chapter 8.
+	* configure.ac: Use it.
+	* include/tr1/complex: Adjust.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+
 2006-01-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/configopts.html: Tweak docs.
