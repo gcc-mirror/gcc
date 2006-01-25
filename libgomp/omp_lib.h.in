@@ -26,8 +26,8 @@
 !  General Public License.
 
       integer omp_lock_kind, omp_nest_lock_kind, openmp_version
-      parameter (omp_lock_kind = OMP_LOCK_KIND)
-      parameter (omp_nest_lock_kind = OMP_NEST_LOCK_KIND)
+      parameter (omp_lock_kind = @OMP_LOCK_KIND@)
+      parameter (omp_nest_lock_kind = @OMP_NEST_LOCK_KIND@)
       parameter (openmp_version = 200505)
 
       external omp_init_lock, omp_init_nest_lock
