@@ -131,6 +131,9 @@
 #	 endif
 #      endif
 #    endif /* !LINUX */
+#    if defined(__NetBSD__) && defined(__MIPSEL__)
+#      undef ULTRIX
+#    endif
 #    define mach_type_known
 # endif
 # if defined(DGUX) && (defined(i386) || defined(__i386__))
@@ -294,17 +297,15 @@
 #   define MACOS
 #   define mach_type_known
 # endif
-# if defined(macosx) \
-     || defined(__APPLE__) && defined(__MACH__) && defined(__ppc__) \
-     || defined(__APPLE__) && defined(__MACH__) && defined(__ppc64__)
-#    define DARWIN
+# if defined(macosx) || (defined(__APPLE__) && defined(__MACH__))
+#   define DARWIN
+#   if defined(__ppc__)  || defined(__ppc64__)
 #    define POWERPC
 #    define mach_type_known
-# else
-#    if defined(__i386__)
-#      define I386
+#   elif defined(__i386__)
+#    define I386
      --> Not really supported, but at least we recognize it.
-#    endif
+#   endif
 # endif
 # if defined(NeXT) && defined(mc68000)
 #   define M68K
@@ -666,8 +667,7 @@
 #       define OS_TYPE "LINUX"
 #       define STACKBOTTOM ((ptr_t)0xf0000000)
 #       define USE_GENERIC_PUSH_REGS
-#	     define USE_MMAP
-	      /* We never got around to the assembly version. */
+		/* We never got around to the assembly version. */
 /* #       define MPROTECT_VDB - Reported to not work  9/17/01 */
 #       ifdef __ELF__
 #            define DYNAMIC_LOADING
@@ -1406,8 +1406,8 @@
 #       define DATAEND /* not needed */
 #   endif
 #   if defined(NETBSD)
-#     define OS_TYPE "NETBSD"
 #     define ALIGNMENT 4
+#     define OS_TYPE "NETBSD"
 #     define HEURISTIC2
 #     define USE_GENERIC_PUSH_REGS
 #     ifdef __ELF__
@@ -1587,7 +1587,7 @@
 	/* the text segment immediately follows the stack.		*/
 	/* Hence we give an upper pound.				*/
 	/* This is currently unused, since we disabled HEURISTIC2	*/
-   	extern int __start[];
+    	extern int __start[];
 #   	define HEURISTIC2_LIMIT ((ptr_t)((word)(__start) & ~(getpagesize()-1)))
 #	ifndef GC_OSF1_THREADS
 	  /* Unresolved signal issues with threads.	*/
