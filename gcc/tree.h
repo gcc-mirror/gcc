@@ -827,6 +827,7 @@ extern void omp_clause_range_check_failed (const tree, const char *, int,
 #define PHI_NODE_ELT_CHECK(T, i)	((T)->phi.a[i])
 #define OMP_CLAUSE_ELT_CHECK(T, i)	        ((T)->omp_clause.ops[i])
 #define OMP_CLAUSE_RANGE_CHECK(T, CODE1, CODE2)	(T)
+#define OMP_CLAUSE_SUBCODE_CHECK(T, CODE)	(T)
 
 #endif
 

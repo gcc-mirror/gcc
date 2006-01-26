@@ -1,3 +1,8 @@
+2006-01-26  Shantonu Sen  <ssen@opendarwin.org>
+
+	* tree.h (OMP_CLAUSE_SUBCODE_CHECK): Add definition for
+	--disable-checking.
+
 2006-01-26  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (*clear_upper32): New combiner pattern.
@@ -44,7 +49,7 @@
 	(build_omp_clause): New.
 	(walk_tree): Adjust handling of OMP_CLAUSE_* nodes.
 	* tree.h (enum omp_clause_code): Declare.
-	(OMP_CLAUSE_SUBCODE): Define.
+	(OMP_CLAUSE_SUBCODE_CHECK): Define.
 	(OMP_CLAUSE_RANGE_CHECK): Define.
 	(OMP_CLAUSE_ELT_CHECK): Define.
 	(omp_clause_check_failed): Declare.
