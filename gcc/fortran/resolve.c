@@ -1183,17 +1183,21 @@ static try
 resolve_function (gfc_expr * expr)
 {
   gfc_actual_arglist *arg;
+  gfc_symbol * sym;
   const char *name;
   try t;
   int temp;
 
-  /* If the procedure is not internal or module, it must be external and
-     should be checked for usage.  */
-  if (expr->symtree && expr->symtree->n.sym
-	&& !expr->symtree->n.sym->attr.dummy
-	&& !expr->symtree->n.sym->attr.contained
-	&& !expr->symtree->n.sym->attr.use_assoc)
-    resolve_global_procedure (expr->symtree->n.sym, &expr->where, 0);
+  sym = NULL;
+  if (expr->symtree)
+    sym = expr->symtree->n.sym;
+
+  /* If the procedure is not internal, a statement function or a module
+     procedure,it must be external and should be checked for usage.  */
+  if (sym && !sym->attr.dummy && !sym->attr.contained
+	&& sym->attr.proc != PROC_ST_FUNCTION
+	&& !sym->attr.use_assoc)
+    resolve_global_procedure (sym, &expr->where, 0);
 
   /* Switch off assumed size checking and do this again for certain kinds
      of procedure, once the procedure itself is resolved.  */
@@ -1205,19 +1209,44 @@ resolve_function (gfc_expr * expr)
   /* Resume assumed_size checking. */
   need_full_assumed_size--;
 
+  if (sym && sym->ts.type == BT_CHARACTER
+	  && sym->ts.cl && sym->ts.cl->length == NULL)
+    {
+      if (sym->attr.if_source == IFSRC_IFBODY)
+	{
+	  /* This follows from a slightly odd requirement at 5.1.1.5 in the
+	     standard that allows assumed character length functions to be
+	     declared in interfaces but not used.  Picking up the symbol here,
+	     rather than resolve_symbol, accomplishes that.  */
+	  gfc_error ("Function '%s' can be declared in an interface to "
+		     "return CHARACTER(*) but cannot be used at %L",
+		     sym->name, &expr->where);
+	  return FAILURE;
+	}
+
+      /* Internal procedures are taken care of in resolve_contained_fntype.  */
+      if (!sym->attr.dummy && !sym->attr.contained)
+	{
+	  gfc_error ("Function '%s' is declared CHARACTER(*) and cannot "
+		     "be used at %L since it is not a dummy argument",
+		     sym->name, &expr->where);
+	  return FAILURE;
+	}
+    }
+
 /* See if function is already resolved.  */
 
   if (expr->value.function.name != NULL)
     {
       if (expr->ts.type == BT_UNKNOWN)
-	expr->ts = expr->symtree->n.sym->ts;
+	expr->ts = sym->ts;
       t = SUCCESS;
     }
   else
     {
       /* Apply the rules of section 14.1.2.  */
 
-      switch (procedure_kind (expr->symtree->n.sym))
+      switch (procedure_kind (sym))
 	{
 	case PTYPE_GENERIC:
 	  t = resolve_generic_f (expr);
@@ -4860,6 +4889,46 @@ resolve_symbol (gfc_symbol * sym)
 	  gfc_error ("External object '%s' at %L may not have an initializer",
 		     sym->name, &sym->declared_at);
 	  return;
+	}
+
+      /* 5.1.1.5 of the Standard: A function name declared with an asterisk
+	 char-len-param shall not be array-valued, pointer-valued, recursive
+	 or pure.  ....snip... A character value of * may only be used in the
+	 following ways: (i) Dummy arg of procedure - dummy associates with
+	 actual length; (ii) To declare a named constant; or (iii) External
+	 function - but length must be declared in calling scoping unit.  */
+      if (sym->attr.function
+	    && sym->ts.type == BT_CHARACTER
+	    && sym->ts.cl && sym->ts.cl->length == NULL)
+	{
+	  if ((sym->as && sym->as->rank) || (sym->attr.pointer)
+		 || (sym->attr.recursive) || (sym->attr.pure))
+	    {
+	      if (sym->as && sym->as->rank)
+		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+			   "array-valued", sym->name, &sym->declared_at);
+
+	      if (sym->attr.pointer)
+		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+			   "pointer-valued", sym->name, &sym->declared_at);
+
+	      if (sym->attr.pure)
+		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+			   "pure", sym->name, &sym->declared_at);
+
+	      if (sym->attr.recursive)
+		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+			   "recursive", sym->name, &sym->declared_at);
+
+	      return;
+	    }
+
+	  /* Appendix B.2 of the standard.  Contained functions give an
+	     error anyway.  Fixed-form is likely to be F77/legacy.  */
+	  if (!sym->attr.contained && gfc_current_form != FORM_FIXED)
+	    gfc_notify_std (GFC_STD_F95_OBS, "CHARACTER(*) function "
+			    "'%s' at %L is obsolescent in fortran 95",
+			    sym->name, &sym->declared_at);
 	}
 
       break;
