@@ -1,3 +1,8 @@
+2006-01-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/25961
+	* Makefile.in (insn-automata.o): Add -Wno-error flag.
+
 2006-01-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Expect target tools paths to be passed from the toplevel
