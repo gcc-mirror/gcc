@@ -262,6 +262,66 @@ extern const char * built_in_names[(int) END_BUILTINS];
 extern GTY(()) tree built_in_decls[(int) END_BUILTINS];
 extern GTY(()) tree implicit_built_in_decls[(int) END_BUILTINS];
 
+/* In an OMP_CLAUSE node.  */
+
+/* Number of operands and names for each clause.  */
+extern unsigned const char omp_clause_num_ops[];
+extern const char * const omp_clause_code_name[];
+
+/* Clause codes.  Do not reorder, as this is used to index into the tables
+   omp_clause_num_ops and omp_clause_code_name.  */
+enum omp_clause_code
+{
+  /* Clause zero is special-cased inside the parser
+     (c_parser_omp_variable_list).  */
+  OMP_CLAUSE_ERROR = 0,
+
+  /* OpenMP clause: private (variable_list).  */
+  OMP_CLAUSE_PRIVATE,
+
+  /* OpenMP clause: shared (variable_list).  */
+  OMP_CLAUSE_SHARED,
+
+  /* OpenMP clause: firstprivate (variable_list).  */
+  OMP_CLAUSE_FIRSTPRIVATE,
+
+  /* OpenMP clause: lastprivate (variable_list).  */
+  OMP_CLAUSE_LASTPRIVATE,
+
+  /* OpenMP clause: reduction (operator:variable_list).
+     OMP_CLAUSE_REDUCTION_CODE: The tree_code of the operator.
+     Operand 1: OMP_CLAUSE_REDUCTION_INIT: Stmt-list to initialize the var.
+     Operand 2: OMP_CLAUSE_REDUCTION_MERGE: Stmt-list to merge private var 
+                into the shared one.
+     Operand 3: OMP_CLAUSE_REDUCTION_PLACEHOLDER: A dummy VAR_DECL
+                placeholder used in OMP_CLAUSE_REDUCTION_MERGE.  */
+  OMP_CLAUSE_REDUCTION,
+
+  /* OpenMP clause: copyin (variable_list).  */
+  OMP_CLAUSE_COPYIN,
+
+  /* OpenMP clause: copyprivate (variable_list).  */
+  OMP_CLAUSE_COPYPRIVATE,
+
+  /* OpenMP clause: if (scalar-expression).  */
+  OMP_CLAUSE_IF,
+
+  /* OpenMP clause: num_threads (integer-expression).  */
+  OMP_CLAUSE_NUM_THREADS,
+
+  /* OpenMP clause: schedule.  */
+  OMP_CLAUSE_SCHEDULE,
+
+  /* OpenMP clause: nowait.  */
+  OMP_CLAUSE_NOWAIT,
+
+  /* OpenMP clause: ordered.  */
+  OMP_CLAUSE_ORDERED,
+
+  /* OpenMP clause: default.  */
+  OMP_CLAUSE_DEFAULT
+};
+
 /* The definition of tree nodes fills the next several pages.  */
 
 /* A tree node can represent a data type, a variable, an expression
@@ -598,9 +658,30 @@ enum tree_node_structure_enum {
 
 #define TREE_RANGE_CHECK(T, CODE1, CODE2) __extension__			\
 ({  const tree __t = (T);						\
-    if (TREE_CODE (__t) < (CODE1) && TREE_CODE (__t) > (CODE2))		\
+    if (TREE_CODE (__t) < (CODE1) || TREE_CODE (__t) > (CODE2))		\
       tree_range_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,	\
 			       (CODE1), (CODE2));			\
+    __t; })
+
+#define OMP_CLAUSE_SUBCODE_CHECK(T, CODE) __extension__			\
+({  const tree __t = (T);						\
+    if (TREE_CODE (__t) != OMP_CLAUSE)					\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,  	\
+			 OMP_CLAUSE, 0);				\
+    if (__t->omp_clause.code != (CODE))					\
+      omp_clause_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, 	\
+			       (CODE));					\
+    __t; })
+
+#define OMP_CLAUSE_RANGE_CHECK(T, CODE1, CODE2) __extension__		\
+({  const tree __t = (T);						\
+    if (TREE_CODE (__t) != OMP_CLAUSE)					\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,  	\
+			 OMP_CLAUSE, 0);				\
+    if ((int) __t->omp_clause.code < (int) (CODE1)			\
+        || (int) __t->omp_clause.code > (int) (CODE2))			\
+      omp_clause_range_check_failed (__t, __FILE__, __LINE__,		\
+				     __FUNCTION__, (CODE1), (CODE2));	\
     __t; })
 
 /* These checks have to be special cased.  */
@@ -641,6 +722,17 @@ enum tree_node_structure_enum {
       phi_node_elt_check_failed (__i, __t->phi.num_args,		\
 				 __FILE__, __LINE__, __FUNCTION__);	\
     &__t->phi.a[__i]; }))
+
+#define OMP_CLAUSE_ELT_CHECK(t, i) __extension__			\
+(*({const tree __t = t;							\
+    const int __i = (i);						\
+    if (TREE_CODE (__t) != OMP_CLAUSE)					\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,  	\
+			 OMP_CLAUSE, 0);				\
+    if (__i < 0 || __i >= omp_clause_num_ops [__t->omp_clause.code])	\
+      omp_clause_operand_check_failed (__i, __t, __FILE__, __LINE__,	\
+	                               __FUNCTION__);			\
+    &__t->omp_clause.ops[__i]; }))
 
 /* Special checks for TREE_OPERANDs.  */
 #define TREE_OPERAND_CHECK(T, I) __extension__				\
@@ -700,6 +792,16 @@ extern void phi_node_elt_check_failed (int, int, const char *,
 extern void tree_operand_check_failed (int, enum tree_code,
 				       const char *, int, const char *)
     ATTRIBUTE_NORETURN;
+extern void omp_clause_check_failed (const tree, const char *, int,
+				     const char *, enum omp_clause_code)
+    ATTRIBUTE_NORETURN;
+extern void omp_clause_operand_check_failed (int, tree, const char *,
+				             int, const char *)
+    ATTRIBUTE_NORETURN;
+extern void omp_clause_range_check_failed (const tree, const char *, int,
+			       const char *, enum omp_clause_code,
+			       enum omp_clause_code)
+    ATTRIBUTE_NORETURN;
 
 #else /* not ENABLE_TREE_CHECKING, or not gcc */
 
@@ -723,10 +825,12 @@ extern void tree_operand_check_failed (int, enum tree_code,
 #define TREE_OPERAND_CHECK_CODE(T, CODE, I)	((T)->exp.operands[I])
 #define TREE_RTL_OPERAND_CHECK(T, CODE, I)  (*(rtx *) &((T)->exp.operands[I]))
 #define PHI_NODE_ELT_CHECK(T, i)	((T)->phi.a[i])
+#define OMP_CLAUSE_ELT_CHECK(T, i)	        ((T)->omp_clause.ops[i])
+#define OMP_CLAUSE_RANGE_CHECK(T, CODE1, CODE2)	(T)
 
 #endif
 
-#define TREE_BLOCK(NODE)		((NODE)->exp.block)
+#define TREE_BLOCK(NODE)		(EXPR_CHECK (NODE)->exp.block)
 
 #include "tree-check.h"
 
@@ -1463,38 +1567,38 @@ struct tree_constructor GTY(())
 #define OMP_CRITICAL_BODY(NODE)    TREE_OPERAND (OMP_CRITICAL_CHECK (NODE), 0)
 #define OMP_CRITICAL_NAME(NODE)    TREE_OPERAND (OMP_CRITICAL_CHECK (NODE), 1)
 
-#define OMP_CLAUSE_CHAIN(NODE) \
-  TREE_CHAIN (TREE_RANGE_CHECK (NODE, OMP_CLAUSE_PRIVATE, OMP_CLAUSE_DEFAULT))
-#define OMP_CLAUSE_DECL(NODE) \
-  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OMP_CLAUSE_PRIVATE, \
-				  OMP_CLAUSE_COPYPRIVATE), 0)
+#define OMP_CLAUSE_CHAIN(NODE)     TREE_CHAIN (OMP_CLAUSE_CHECK (NODE))
+#define OMP_CLAUSE_DECL(NODE)      					\
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
+					      OMP_CLAUSE_PRIVATE,	\
+	                                      OMP_CLAUSE_COPYPRIVATE), 0)
 
 /* True on a PRIVATE clause if its decl is kept around for debugging
    information only and its DECL_VALUE_EXPR is supposed to point
    to what it has been remapped to.  */
 #define OMP_CLAUSE_PRIVATE_DEBUG(NODE) \
-  TREE_PUBLIC (OMP_CLAUSE_PRIVATE_CHECK (NODE))
+  TREE_PUBLIC (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PRIVATE))
 
 /* True on a LASTPRIVATE clause if a FIRSTPRIVATE clause for the same
    decl is present in the chain.  */
 #define OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE(NODE) \
-  TREE_PUBLIC (OMP_CLAUSE_LASTPRIVATE_CHECK (NODE))
+  TREE_PUBLIC (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE))
 
 #define OMP_CLAUSE_IF_EXPR(NODE) \
-  TREE_OPERAND (OMP_CLAUSE_IF_CHECK (NODE), 0)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_IF), 0)
 #define OMP_CLAUSE_NUM_THREADS_EXPR(NODE) \
-  TREE_OPERAND (OMP_CLAUSE_NUM_THREADS_CHECK (NODE), 0)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_THREADS),0)
 #define OMP_CLAUSE_SCHEDULE_CHUNK_EXPR(NODE) \
-  TREE_OPERAND (OMP_CLAUSE_SCHEDULE_CHECK (NODE), 0)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SCHEDULE), 0)
 
 #define OMP_CLAUSE_REDUCTION_CODE(NODE)	\
-  (OMP_CLAUSE_REDUCTION_CHECK (NODE)->exp.complexity)
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION)->omp_clause.subcode.reduction_code)
 #define OMP_CLAUSE_REDUCTION_INIT(NODE) \
-  TREE_OPERAND (OMP_CLAUSE_REDUCTION_CHECK (NODE), 1)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 1)
 #define OMP_CLAUSE_REDUCTION_MERGE(NODE) \
-  TREE_OPERAND (OMP_CLAUSE_REDUCTION_CHECK (NODE), 2)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 2)
 #define OMP_CLAUSE_REDUCTION_PLACEHOLDER(NODE) \
-  TREE_OPERAND (OMP_CLAUSE_REDUCTION_CHECK (NODE), 3)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 3)
 
 enum omp_clause_schedule_kind
 {
@@ -1505,7 +1609,7 @@ enum omp_clause_schedule_kind
 };
 
 #define OMP_CLAUSE_SCHEDULE_KIND(NODE) \
-  (OMP_CLAUSE_SCHEDULE_CHECK (NODE)->exp.complexity)
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SCHEDULE)->omp_clause.subcode.schedule_kind)
 
 enum omp_clause_default_kind
 {
@@ -1516,7 +1620,7 @@ enum omp_clause_default_kind
 };
 
 #define OMP_CLAUSE_DEFAULT_KIND(NODE) \
-  (OMP_CLAUSE_DEFAULT_CHECK (NODE)->exp.complexity)
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEFAULT)->omp_clause.subcode.default_kind)
 
 struct tree_exp GTY(())
 {
@@ -1660,6 +1764,30 @@ struct tree_phi_node GTY(())
   /* Arguments of the PHI node.  These are maintained in the same
      order as predecessor edge vector BB->PREDS.  */
   struct phi_arg_d GTY ((length ("((tree)&%h)->phi.num_args"))) a[1];
+};
+
+#define OMP_CLAUSE_CODE(NODE)					\
+	(OMP_CLAUSE_CHECK (NODE))->omp_clause.code
+
+#define OMP_CLAUSE_SET_CODE(NODE, CODE)				\
+	((OMP_CLAUSE_CHECK (NODE))->omp_clause.code = (CODE))
+
+#define OMP_CLAUSE_CODE(NODE)					\
+	(OMP_CLAUSE_CHECK (NODE))->omp_clause.code
+
+#define OMP_CLAUSE_OPERAND(NODE, I)				\
+	OMP_CLAUSE_ELT_CHECK (NODE, I)
+
+struct tree_omp_clause GTY(())
+{
+  struct tree_common common;
+  enum omp_clause_code code;
+  union omp_clause_subcode {
+    enum omp_clause_default_kind  default_kind;
+    enum omp_clause_schedule_kind schedule_kind;
+    enum tree_code                reduction_code;
+  } GTY ((skip)) subcode;
+  tree GTY ((length ("omp_clause_num_ops[TREE_CODE ((tree)&%h)]"))) ops[1];
 };
 
 
@@ -2997,6 +3125,7 @@ union tree_node GTY ((ptr_alias (union lang_tree_node),
   struct tree_value_handle GTY ((tag ("TS_VALUE_HANDLE"))) value_handle;
   struct tree_constructor GTY ((tag ("TS_CONSTRUCTOR"))) constructor;
   struct tree_memory_tag GTY ((tag ("TS_MEMORY_TAG"))) mtag;
+  struct tree_omp_clause GTY ((tag ("TS_OMP_CLAUSE"))) omp_clause;
 };
 
 /* Standard named or nameless data types of the C compiler.  */
@@ -3359,6 +3488,7 @@ extern void annotate_with_file_line (tree, const char *, int);
 extern void annotate_with_locus (tree, location_t);
 #endif
 extern tree build_empty_stmt (void);
+extern tree build_omp_clause (enum omp_clause_code);
 
 /* Construct various nodes representing data types.  */
 
@@ -4341,6 +4471,7 @@ typedef enum
   x_kind,
   lang_decl,
   lang_type,
+  omp_clause_kind,
   all_kinds
 } tree_node_kind;
 

@@ -653,6 +653,14 @@ dequeue_and_dump (dump_info_p di)
       	  dump_child ("labl", TREE_OPERAND (t,2));
         }
       break;
+    case OMP_CLAUSE:
+      {
+	int i;
+	fprintf (di->stream, "%s\n", omp_clause_code_name[OMP_CLAUSE_CODE (t)]);
+	for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (t)]; i++)
+	  dump_child ("op: ", OMP_CLAUSE_OPERAND (t, i));
+      }
+      break;
     default:
       /* There are no additional fields to print.  */
       break;

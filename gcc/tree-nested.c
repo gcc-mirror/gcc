@@ -1034,9 +1034,10 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
       save_suppress = info->suppress_expansion;
       if (convert_nonlocal_omp_clauses (&OMP_PARALLEL_CLAUSES (t), wi))
 	{
-	  tree c;
-	  c = get_chain_decl (info);
-	  c = build1 (OMP_CLAUSE_FIRSTPRIVATE, void_type_node, c);
+	  tree c, decl;
+	  decl = get_chain_decl (info);
+	  c = build_omp_clause (OMP_CLAUSE_FIRSTPRIVATE);
+	  OMP_CLAUSE_DECL (c) = decl;
 	  OMP_CLAUSE_CHAIN (c) = OMP_PARALLEL_CLAUSES (t);
 	  OMP_PARALLEL_CLAUSES (t) = c;
 	}
@@ -1094,7 +1095,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 
   for (clause = *pclauses; clause ; clause = OMP_CLAUSE_CHAIN (clause))
     {
-      switch (TREE_CODE (clause))
+      switch (OMP_CLAUSE_CODE (clause))
 	{
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_FIRSTPRIVATE:
@@ -1119,7 +1120,8 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_NUM_THREADS:
 	  wi->val_only = true;
 	  wi->is_lhs = false;
-	  convert_nonlocal_reference (&TREE_OPERAND (clause, 0), &dummy, wi);
+	  convert_nonlocal_reference (&OMP_CLAUSE_OPERAND (clause, 0), &dummy,
+	                              wi);
 	  break;
 
 	case OMP_CLAUSE_NOWAIT:
@@ -1317,7 +1319,8 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	{
 	  tree c;
 	  (void) get_frame_type (info);
-	  c = build1 (OMP_CLAUSE_SHARED, void_type_node, info->frame_decl);
+	  c = build_omp_clause (OMP_CLAUSE_SHARED);
+	  OMP_CLAUSE_DECL (c) = info->frame_decl;
 	  OMP_CLAUSE_CHAIN (c) = OMP_PARALLEL_CLAUSES (t);
 	  OMP_PARALLEL_CLAUSES (t) = c;
 	}
@@ -1375,7 +1378,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 
   for (clause = *pclauses; clause ; clause = OMP_CLAUSE_CHAIN (clause))
     {
-      switch (TREE_CODE (clause))
+      switch (OMP_CLAUSE_CODE (clause))
 	{
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_FIRSTPRIVATE:
@@ -1406,7 +1409,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_NUM_THREADS:
 	  wi->val_only = true;
 	  wi->is_lhs = false;
-	  convert_local_reference (&TREE_OPERAND (clause, 0), &dummy, wi);
+	  convert_local_reference (&OMP_CLAUSE_OPERAND (clause, 0), &dummy, wi);
 	  break;
 
 	case OMP_CLAUSE_NOWAIT:

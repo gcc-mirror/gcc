@@ -8482,7 +8482,7 @@ c_finish_omp_clauses (tree clauses)
       bool need_complete = false;
       bool need_implicitly_determined = false;
 
-      switch (TREE_CODE (c))
+      switch (OMP_CLAUSE_CODE (c))
 	{
 	case OMP_CLAUSE_SHARED:
 	  name = "shared";

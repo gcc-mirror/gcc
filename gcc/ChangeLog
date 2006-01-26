@@ -1,3 +1,72 @@
+2006-01-25  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree.h (TREE_RANGE_CHECK): Fix range predicate.
+	(TREE_BLOCK): Add call to EXPR_CHECK.
+
+2006-01-25  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 25886
+	* tree-dump.c (dequeue_and_dump): Handle OMP_CLAUSE.
+	* tree-pretty-print.c (dump_omp_clause): Extract from ...
+	(dump_omp_clauses): ... here.
+	(dump_generic_node): Handle OMP_CLAUSE.
+	* tree.c (omp_clause_num_ops): New.
+	(omp_clause_code_name): New.
+	(tree_code_size): Handle OMP_CLAUSE.
+	(tree_size): Likewise.
+	(make_node): Document handling of OMP_CLAUSE.
+	(tree_node_structure): Handle OMP_CLAUSE.
+	(omp_clause_check_failed): New.
+	(omp_clause_range_check_failed): New.
+	(omp_clause_operand_check_failed): New.
+	(build_omp_clause): New.
+	(walk_tree): Adjust handling of OMP_CLAUSE_* nodes.
+	* tree.h (enum omp_clause_code): Declare.
+	(OMP_CLAUSE_SUBCODE): Define.
+	(OMP_CLAUSE_RANGE_CHECK): Define.
+	(OMP_CLAUSE_ELT_CHECK): Define.
+	(omp_clause_check_failed): Declare.
+	(omp_clause_operand_check_failed): Declare.
+	(omp_clause_range_check_failed): Declare.
+	(OMP_CLAUSE_CHAIN): Do not use TREE_RANGE_CHECK.
+	(OMP_CLAUSE_OPERAND): Use OMP_CLAUSE_RANGE_CHECK.
+	(OMP_CLAUSE_PRIVATE_DEBUG): Use OMP_CLAUSE_SUBCODE_CHECK.
+	(OMP_CLAUSE_LASTPRIVATE): Likewise.
+	(OMP_CLAUSE_IF_EXPR): Likewise.
+	(OMP_CLAUSE_NUM_THREADS_EXPR): Likewise.
+	(OMP_CLAUSE_SCHEDULE_CHUNK_EXPR): Likewise.
+	(OMP_CLAUSE_REDUCTION_CODE): Likewise.
+	(OMP_CLAUSE_REDUCTION_INIT): Likewise.
+	(OMP_CLAUSE_REDUCTION_MERGE): Likewise.
+	(OMP_CLAUSE_REDUCTION_PLACEHOLDER): Likewise.
+	Use tree_node.omp_clause.subcode instead of TREE_COMPLEXITY.
+	(OMP_CLAUSE_SCHEDULE_KIND): Likewise.
+	(OMP_CLAUSE_DEFAULT_KIND): Likewise.
+	(OMP_CLAUSE_CODE): Define.
+	(OMP_CLAUSE_SET_CODE): Define.
+	(OMP_CLAUSE_CODE): Define.
+	(OMP_CLAUSE_OPERAND): Define.
+	(struct tree_omp_clause): Declare.
+	(union tree_node): Add field 'omp_clause'.
+	* treestruct.def (TS_OMP_CLAUSE): Define.
+	* tree.def (OMP_CLAUSE_PRIVATE, OMP_CLAUSE_SHARED
+	OMP_CLAUSE_FIRSTPRIVATE, OMP_CLAUSE_LASTPRIVATE,
+	OMP_CLAUSE_REDUCTION, OMP_CLAUSE_COPYIN,
+	OMP_CLAUSE_COPYPRIVATE, OMP_CLAUSE_IF,
+	OMP_CLAUSE_NUM_THREADS, OMP_CLAUSE_SCHEDULE,
+	OMP_CLAUSE_NOWAIT, OMP_CLAUSE_ORDERED, OMP_CLAUSE_DEFAULT): Remove.
+	(OMP_CLAUSE): Define.
+	* print-tree.c (print_node): Handle OMP_CLAUSE.
+	* omp-low.c: Adapt all uses of OMP_CLAUSE_* nodes.
+	* c-typeck.c: Likewise.
+	* gimplify.c: Likewise.
+	* c-omp.c: Likewise.
+	* tree-nested.c: Likewise.
+	* tree-inline.c: Likewise.
+	* c-parser.c: Likewise.
+	* gimple-low.c (lower_omp_directive): Do not set TREE_BLOCK on
+	clauses.
+
 2006-01-25  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/25703

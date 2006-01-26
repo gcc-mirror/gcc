@@ -1607,19 +1607,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case OMP_ORDERED:
     case OMP_CRITICAL:
     case OMP_ATOMIC:
-    case OMP_CLAUSE_PRIVATE:
-    case OMP_CLAUSE_SHARED:
-    case OMP_CLAUSE_FIRSTPRIVATE:
-    case OMP_CLAUSE_LASTPRIVATE:
-    case OMP_CLAUSE_REDUCTION:
-    case OMP_CLAUSE_COPYIN:
-    case OMP_CLAUSE_COPYPRIVATE:
-    case OMP_CLAUSE_IF:
-    case OMP_CLAUSE_NUM_THREADS:
-    case OMP_CLAUSE_SCHEDULE:
-    case OMP_CLAUSE_NOWAIT:
-    case OMP_CLAUSE_ORDERED:
-    case OMP_CLAUSE_DEFAULT:
+    case OMP_CLAUSE:
     case OMP_RETURN_EXPR:
       break;
 
@@ -2310,20 +2298,7 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	 walk_tree to walk into the chain as well.  */
       if (code == PARM_DECL
 	  || code == TREE_LIST
-	  /* OpenMP clauses are linked through TREE_CHAIN.  */
-	  || code == OMP_CLAUSE_PRIVATE
-	  || code == OMP_CLAUSE_SHARED
-	  || code == OMP_CLAUSE_FIRSTPRIVATE
-	  || code == OMP_CLAUSE_LASTPRIVATE
-	  || code == OMP_CLAUSE_REDUCTION
-	  || code == OMP_CLAUSE_COPYIN
-	  || code == OMP_CLAUSE_COPYPRIVATE
-	  || code == OMP_CLAUSE_IF
-	  || code == OMP_CLAUSE_NUM_THREADS
-	  || code == OMP_CLAUSE_SCHEDULE
-	  || code == OMP_CLAUSE_NOWAIT
-	  || code == OMP_CLAUSE_ORDERED
-	  || code == OMP_CLAUSE_DEFAULT)
+	  || code == OMP_CLAUSE)
 	TREE_CHAIN (*tp) = chain;
 
       /* For now, we don't update BLOCKs when we make copies.  So, we

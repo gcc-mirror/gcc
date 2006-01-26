@@ -166,9 +166,6 @@ lower_omp_directive (tree_stmt_iterator *tsi, struct lower_data *data)
 	   ? OMP_CLAUSES (stmt)
 	   : NULL_TREE;
 
-  for (; clause; clause = OMP_CLAUSE_CHAIN (clause))
-    TREE_BLOCK (clause) = TREE_BLOCK (stmt);
-
   lower_stmt_body (OMP_BODY (stmt), data);
   tsi_link_before (tsi, stmt, TSI_SAME_STMT);
   tsi_link_before (tsi, OMP_BODY (stmt), TSI_SAME_STMT);

@@ -1025,52 +1025,8 @@ DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 2)
 	build_fold_indirect_ref of the address.  */
 DEFTREECODE (OMP_ATOMIC, "omp_atomic", tcc_statement, 2)
 
-/* The ordering of the codes between OMP_CLAUSE_PRIVATE and
-   OMP_CLAUSE_DEFAULT is exposed to TREE_RANGE_CHECK.  */
-/* OpenMP clause: private (variable_list).  */
-DEFTREECODE (OMP_CLAUSE_PRIVATE, "private", tcc_expression, 1)
-
-/* OpenMP clause: shared (variable_list).  */
-DEFTREECODE (OMP_CLAUSE_SHARED, "shared", tcc_expression, 1)
-
-/* OpenMP clause: firstprivate (variable_list).  */
-DEFTREECODE (OMP_CLAUSE_FIRSTPRIVATE, "firstprivate", tcc_expression, 1)
-
-/* OpenMP clause: lastprivate (variable_list).  */
-DEFTREECODE (OMP_CLAUSE_LASTPRIVATE, "lastprivate", tcc_expression, 1)
-
-/* OpenMP clause: reduction (operator:variable_list).
-   OMP_CLAUSE_REDUCTION_CODE: The tree_code of the operator.
-   Operand 1: OMP_CLAUSE_REDUCTION_INIT: Stmt-list to initialize the var.
-   Operand 2: OMP_CLAUSE_REDUCTION_MERGE:
-     Stmt-list to merge private var into the shared one.
-   Operand 3: OMP_CLAUSE_REDUCTION_PLACEHOLDER:
-     A dummy VAR_DECL placeholder used in OMP_CLAUSE_REDUCTION_MERGE.  */
-DEFTREECODE (OMP_CLAUSE_REDUCTION, "reduction", tcc_expression, 4)
-
-/* OpenMP clause: copyin (variable_list).  */
-DEFTREECODE (OMP_CLAUSE_COPYIN, "copyin", tcc_expression, 1)
-
-/* OpenMP clause: copyprivate (variable_list).  */
-DEFTREECODE (OMP_CLAUSE_COPYPRIVATE, "copyprivate", tcc_expression, 1)
-
-/* OpenMP clause: if (scalar-expression).  */
-DEFTREECODE (OMP_CLAUSE_IF, "if", tcc_expression, 1)
-
-/* OpenMP clause: num_threads (integer-expression).  */
-DEFTREECODE (OMP_CLAUSE_NUM_THREADS, "num_threads", tcc_expression, 1)
-
-/* OpenMP clause: schedule.  */
-DEFTREECODE (OMP_CLAUSE_SCHEDULE, "schedule", tcc_expression, 1)
-
-/* OpenMP clause: nowait.  */
-DEFTREECODE (OMP_CLAUSE_NOWAIT, "nowait", tcc_expression, 0)
-
-/* OpenMP clause: ordered.  */
-DEFTREECODE (OMP_CLAUSE_ORDERED, "ordered", tcc_expression, 0)
-
-/* OpenMP clause: default.  */
-DEFTREECODE (OMP_CLAUSE_DEFAULT, "default", tcc_expression, 0)
+/* OpenMP clauses.  */
+DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
 
 /* Return from an OpenMP directive.  */
 DEFTREECODE (OMP_RETURN_EXPR, "omp_return", tcc_statement, 0)
