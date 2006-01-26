@@ -1,3 +1,12 @@
+2006-01-26  Laurent GUERBY <laurent@guerby.net>
+
+        PR ada/21317
+        * ada/acats/support/impdef.a: Add One_Long_Second.
+        * ada/acats/tests/c9/c94025.a: Use One_Long_Second.
+        * ada/acats/tests/c9/c94026.a: Likewise.
+        * ada/acats/tests/c9/c97305c.ada: Likewise.
+        * ada/acats/tests/c9/c99004a.ada: Likewise.
+
 2006-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/25552
