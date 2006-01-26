@@ -1059,7 +1059,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	     1. The VR_ANTI_RANGE range is competely within the 
 		VR_RANGE and the endpoints of the ranges are
 		different.  In that case the resulting range
-		should be the VR_ANTI_RANGE.
+		should be whichever range is more precise.
+		Typically that will be the VR_RANGE.
 
 	     2. The VR_ANTI_RANGE is completely disjoint from
 		the VR_RANGE.  In this case the resulting range
@@ -1100,8 +1101,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  if (compare_values (anti_max, real_max) == -1
 	      && compare_values (anti_min, real_min) == 1)
 	    {
-	      set_value_range (vr_p, VR_ANTI_RANGE, anti_min,
-			       anti_max, vr_p->equiv);
+	      set_value_range (vr_p, VR_RANGE, real_min,
+			       real_max, vr_p->equiv);
 	    }
 	  /* Case 2, VR_ANTI_RANGE completely disjoint from
 	     VR_RANGE.  */
@@ -1918,12 +1919,21 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
     {
       /* For VARYING or UNDEFINED ranges, just about anything we get
 	 from scalar evolutions should be better.  */
+      tree min = TYPE_MIN_VALUE (TREE_TYPE (init));
+      tree max = TYPE_MAX_VALUE (TREE_TYPE (init));
+
       if (init_is_max)
-	set_value_range (vr, VR_RANGE, TYPE_MIN_VALUE (TREE_TYPE (init)),
-	                 init, vr->equiv);
+	max = init;
       else
-	set_value_range (vr, VR_RANGE, init, TYPE_MAX_VALUE (TREE_TYPE (init)),
-	                 vr->equiv);
+	min = init;
+
+      /* If we would create an invalid range, then just assume we
+	 know absolutely nothing.  This may be over-conservative,
+	 but it's clearly safe.  */
+      if (compare_values (min, max) == 1)
+	return;
+
+      set_value_range (vr, VR_RANGE, min, max, vr->equiv);
     }
   else if (vr->type == VR_RANGE)
     {
