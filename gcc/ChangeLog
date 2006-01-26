@@ -1,3 +1,8 @@
+2006-01-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/i386/i386.md (extendsfdf2, extendsfxf2, extenddfxf2): Emit
+	constants provided by 80387 instructions in the destination mode.
+
 2006-01-26  Richard Guenther  <rguenther@suse.de>
             Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -19,7 +24,7 @@
 	(adjust_range_with_scev): Reject ranges from SCEV which are out
 	of bounds for the type.
 
-2005-01-26  Daniel Berlin  <dberlin@dberlin.org>
+2006-01-26  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-alias.c (maybe_create_global_var): Change
 	subvar walking to an assertion that we don't have subvar'd variables.
@@ -572,7 +577,7 @@
 	mips-tdump.c (main), mips-tfile.c (main): Update copyright notice
 	dates.
 
-2005-01-21  Kenneth Zadeck <zadeck@naturalbridge.com>
+2006-01-21  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* df-scan.c (problem_SCAN): Added NULL reset function.
 	(df_scan_reset_blocks): Added code to call reset block function
@@ -658,11 +663,11 @@
 	* c-common.c (empty_body_warning): Add (from c_finish_if_stmt).
 	Now uses IS_EMPTY_STMT() instead of special NOP markers.
 
-2005-01-20  Paul Brook  <paul@codesourcery.com>
+2006-01-20  Paul Brook  <paul@codesourcery.com>
 
 	* Makefile.in (lang_checks): Keep going if mkdir fails.
 
-2005-01-19  Kenneth Zadeck <zadeck@naturalbridge.com>
+2006-01-19  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* df-scan.c (df_scan_free_bb_info): Added basic block parameter to
 	be able to clean out basic block when not necessary.
@@ -689,7 +694,7 @@
 	Fixed to properly delete information if df is unused before
 	calling df_finish.
 
-2005-01-19  Kenneth Zadeck <zadeck@naturalbridge.com>
+2006-01-19  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/25799
 	* df-problems.c (df_ru_confluence_n, df_rd_confluence_n):
@@ -1878,7 +1883,7 @@
 	* gcc.h (lang_specific_spec_functions): Remove.
 	* gccspec.c (lang_specific_spec_functions): Remove.
 
-2005-01-16  Paolo Bonzini  <bonzini@gnu.org>
+2006-01-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (record_value_for_reg): Invalidate registers
 	if INSN is null.
@@ -2132,7 +2137,7 @@
 
 	* rtlanal.c (find_reg_note): Assert insn is not null.
 
-2005-01-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+2006-01-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* df-scan.c (df_hard_reg_init): Move declaration of i outside
 	ifdef.
@@ -2186,7 +2191,7 @@
 	* tree-cfg.c (init_empty_tree_cfg, build_tree_cfg, create_bb):
 	Likewise.
 
-2005-01-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+2006-01-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* Makefile.in: Removed rotted odf.c entry.
 
@@ -2282,7 +2287,7 @@
 	optimizations.
 	* doc/tm.texi (Misc): Document TARGET_MIN_DIVISIONS_FOR_RECIP_MUL.
 
-2005-01-11  Danny Berlin <dberlin@dberlin.org>
+2006-01-11  Danny Berlin <dberlin@dberlin.org>
 	    Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* df.h (DF_SCAN, DF_RU, DF_RD, DF_LR, DF_UR, DF_UREC, DF_CHAIN,
