@@ -2,10 +2,10 @@
 
 // { dg-do compile }
 
-namespace foo {
-  template <class T> void f(T, T);
-}
 namespace bar {
+  namespace foo {
+    template <class T> void f(T, T);
+  }
   using namespace foo __attribute__((strong));
   template <class T> void f(T);
 }

@@ -1,3 +1,9 @@
+2006-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/16021
+	* name-lookup.c (parse_using_directive): Require strong using to
+	name a nested namespace.
+
 2006-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Revert:
