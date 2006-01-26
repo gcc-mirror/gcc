@@ -138,6 +138,9 @@ if { $status == 0 } then {
     if [info exists env(RUN_ALL_COMPAT_TESTS) ] then {
 	set generator_args "$generator_args -n 15000"
     }
+    if [check_effective_target_short_enums] then {
+	set generator_args "-e $generator_args"
+    }
     set status [remote_exec host "$generator $generator_args"]
     set status [lindex $status 0]
     if { $status == 0 } then {

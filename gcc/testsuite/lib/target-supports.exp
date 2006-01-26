@@ -1431,3 +1431,42 @@ proc is-effective-target-keyword { arg } {
 	}
     }
 }
+
+# Return 1 if target default to short enums
+
+proc check_effective_target_short_enums { } {
+    global et_short_enums_saved
+    global et_short_enums_target_name
+
+    if { ![info exists et_short_enums_target_name] } {
+	set et_short_enums_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_short_enums_target_name } {
+	verbose "check_effective_target_short_enums: `$et_short_enums_target_name'" 2
+	set et_short_enums_target_name $current_target
+	if [info exists et_short_enums_saved] {
+	    verbose "check_effective_target_short_enums: removing cached result" 2
+	    unset et_short_enums_saved
+	}
+    }
+
+    if [info exists et_short_enums_saved] {
+	verbose "check_effective_target_short_enums: using cached result" 2
+    } else {
+	verbose "check_effective_target_short_enums: compiling source" 2
+
+	# PCC_BITFIELD_TYPE_MATTERS isn't just about unnamed or empty
+	# bitfields, but let's stick to the example code from the docs.
+	set et_short_enums_saved \
+	    [string match "" [get_compiler_messages short_enums assembly {
+	    enum foo { bar };
+	    int s[sizeof (enum foo) == 1 ? 1 : -1];
+	} ]]
+    }
+    verbose "check_effective_target_short_enums: returning $et_short_enums_saved" 2
+    return $et_short_enums_saved
+}
+

@@ -1,3 +1,19 @@
+2006-01-26  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/compat/struct-layout-1.exp: Pass -e to generator program
+	on short-enum targets.
+	* gcc.dg/compat/struct-layout-1_generate.c (short_enums): New
+	variable.
+	(generate_fields): Use short_enums.
+	(main): Set short_enums.  Document -e.
+	* g++.dg/compat/struct-layout-1.exp: Pass -e to generator program
+	on short-enum targets.
+	* g++.dg/compat/struct-layout-1_generate.c (short_enums): New
+	variable.
+	(generate_fields): Use short_enums.
+	(main): Set short_enums.  Document -e.
+	* lib/target-supports.exp (check_effective_target_short_enums): New.
+
 2006-01-25  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18540
