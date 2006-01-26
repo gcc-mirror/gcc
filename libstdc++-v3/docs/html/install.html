@@ -76,7 +76,8 @@
       <dd>If gcc 3.1.0 or later on is being used on linux, an attempt
       will be made to use "C" library functionality necessary for C++
       named locale support.  For gcc 3.2.1 and later, this means that
-      glibc 2.2.5 or later is required.
+      glibc 2.2.5 or later is required and the "C" library de_DE locale
+      information must be installed.
 
       <p>
       The configure option --enable-clocale can be used force a
@@ -112,7 +113,7 @@ zh_TW               BIG5
       <p>Failure to have the underlying "C" library locale
       information installed will mean that C++ named locales for the
       above regions will not work: because of this, the libstdc++
-      testsuite will not pass the named locale tests. If this isn't an
+      testsuite will skip the named locale tests. If this isn't an
       issue, don't worry about it. If named locales are needed, the
       underlying locale information must be installed. Note that
       rebuilding libstdc++ after the "C" locales are installed is not
