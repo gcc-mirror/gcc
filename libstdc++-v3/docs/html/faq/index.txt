@@ -814,8 +814,8 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    the library. The latest version of this effort is described in
    [110]Technical Report 1.
 
-   libstdc++ strives to implement all of TR1. The libstdc++
-   implementation status of the TR1 draft is listed in [111]this page.
+   libstdc++ strives to implement all of TR1. An [111]overview of the
+   implementation status is available.
 
    Briefly, the features of TR1 and the current status are:
 

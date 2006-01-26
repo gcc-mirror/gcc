@@ -1,3 +1,10 @@
+2006-01-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/tr1.html: Add note.
+	* docs/html/faq/index.html: Fix link to tr1.html text; fix
+	formatting.
+	* docs/html/faq/index.txt: Update.
+
 2006-01-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
 	
 	* docs/html/faq/index.html ([5.2]): Mention TR1 and point to

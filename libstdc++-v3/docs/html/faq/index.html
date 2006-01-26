@@ -982,64 +982,73 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 <hr />
    <h2><a name="5_5">5.5 Does libstdc++ support TR1?</a></h2>
 
-      <p>The C++ Standard Library Technical Report adds many new features to the library.
-         The latest version of this effort is described in
-         <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">
+      <p>The C++ Standard Library Technical Report adds many new features to 
+         the library.  The latest version of this effort is described in
+         <a href=
+	 "http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">
          Technical Report 1</a>.
       </p>
 
       <p>libstdc++ strives to implement all of TR1.
-         The libstdc++ implementation status of the TR1 draft is listed in
-         <a href="../ext/tr1.html">this page</a>.
+         An <a href="../ext/tr1.html">overview</a> of the implementation status
+	 is available.
       </p>
 
       <p>Briefly, the features of TR1 and the current status are:
       </p>
 
       <p><strong>Unordered containers - Complete -</strong>
-         The unordered_set, unordered_map, unordered_multiset, and unordered_multimap containers
-         are hashed versions of the map, set, multimap, and multiset containers respectively.
-         These classes are suitable replacements for the SGI STL hash_map and hash_set extensions.
+         The unordered_set, unordered_map, unordered_multiset, and
+	 unordered_multimap containers are hashed versions of the map, set,
+	 multimap, and multiset containers respectively.  These classes are
+	 suitable replacements for the SGI STL hash_map and hash_set
+	 extensions.
       </p>
 
       <p><strong>Reference-counted smart pointers - Complete -</strong>
-         The shared_ptr and weak_ptr allow several object to know about a pointer and whether it is valid.
-         When the last reference to the pointer is destroyed the pointer is freed.
+         The shared_ptr and weak_ptr allow several object to know about a
+	 pointer and whether it is valid.  When the last reference to the
+	 pointer is destroyed the pointer is freed.
       </p>
 
       <p><strong>Type traits - Complete -</strong>
-         The type_traits class gives templates the ability to probe information about the input type
-         and enable type-dependent logic to be performed without the need of template specializations.
+         The type_traits class gives templates the ability to probe
+	 information about the input type and enable type-dependent logic
+	 to be performed without the need of template specializations.
       </p>
 
       <p><strong>Fixed-size arrays - Complete -</strong>
-         The array class implements small fixed-sized arrays with container semantics.
+         The array class implements small fixed-sized arrays with container
+	 semantics.
       </p>
 
       <p><strong>Tuples - Complete -</strong>
-         The tuple class implements small heterogeneous arrays.  This is an enhanced pair.
-         In fact, the standard pair is enhanced with a tuple interface.
+         The tuple class implements small heterogeneous arrays.  This is an
+	 enhanced pair.  In fact, the standard pair is enhanced with a tuple
+	 interface.
       </p>
 
       <p><strong>A regular expression engine</strong>
-         This library provides for regular expression objects with traversal of
-         text with return of subexpressions.
+         This library provides for regular expression objects with traversal
+	 of text with return of subexpressions.
       </p>
 
       <p><strong>A random number engine</strong>
-         This library contains randow number generators with several different choices
-         of distribution.
+         This library contains randow number generators with several different
+	 choices of distribution.
       </p>
 
       <p><strong>Special functions - Under construction - </strong>
-         Twenty-three mathematical functions familiar to physicists and engineers are included:
-         cylindrical and spherical Bessel and Neumann functions, hypergeometric functions,
-         Laguerre polynomials, Legendre functions, elliptic integrals, exponential integrals
-         and the Riemann zeta function all for your computing pleasure.
+         Twenty-three mathematical functions familiar to physicists and
+	 engineers are included:  cylindrical and spherical Bessel and Neumann
+	 functions, hypergeometric functions, Laguerre polynomials, Legendre
+	 functions, elliptic integrals, exponential integrals and the Riemann
+	 zeta function all for your computing pleasure.
       </p>
 
       <p><strong>C99 compatibility - Under construction - </strong>
-         There are many features designed to minimize the divergence of the C and the C++ languages.
+         There are many features designed to minimize the divergence of the C
+	 and the C++ languages.
       </p>
 
 <hr />
