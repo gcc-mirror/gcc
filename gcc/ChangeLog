@@ -1,3 +1,9 @@
+2006-01-25  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/25703
+	* combine.c (try_combine): Handle zero_extract and strict_low_part
+	of non-lowpart SUBREGs for constant reg_subword_p set optimization.
+
 2006-01-25  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* global.c: Fix comment typos.

@@ -1951,40 +1951,38 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       int offset = -1;
       int width = 0;
 
-      if (GET_CODE (dest) == STRICT_LOW_PART)
-	{
-	  width = GET_MODE_BITSIZE (GET_MODE (XEXP (dest, 0)));
-	  offset = 0;
-	}
-      else if (GET_CODE (dest) == ZERO_EXTRACT)
+      if (GET_CODE (dest) == ZERO_EXTRACT)
 	{
 	  if (GET_CODE (XEXP (dest, 1)) == CONST_INT
 	      && GET_CODE (XEXP (dest, 2)) == CONST_INT)
 	    {
 	      width = INTVAL (XEXP (dest, 1));
 	      offset = INTVAL (XEXP (dest, 2));
-
+	      dest = XEXP (dest, 0);
 	      if (BITS_BIG_ENDIAN)
-		offset = GET_MODE_BITSIZE (GET_MODE (XEXP (dest, 0)))
-			 - width - offset;
+		offset = GET_MODE_BITSIZE (GET_MODE (dest)) - width - offset;
 	    }
 	}
-      else if (subreg_lowpart_p (dest))
+      else
 	{
+	  if (GET_CODE (dest) == STRICT_LOW_PART)
+	    dest = XEXP (dest, 0);
 	  width = GET_MODE_BITSIZE (GET_MODE (dest));
 	  offset = 0;
 	}
-      /* ??? Preserve the original logic to handle setting the high word
-	 of double-word pseudos, where inner is half the size of outer
-	 but not the lowpart.  This could be generalized by handling
-	 SUBREG_BYTE, WORDS_BIG_ENDIAN and BYTES_BIG_ENDIAN ourselves.
-	 Unfortunately this logic is tricky to get right and probably
-	 not worth the effort.  */
-      else if (GET_MODE_BITSIZE (GET_MODE (SET_DEST (temp)))
-	       == 2 * GET_MODE_BITSIZE (GET_MODE (dest)))
+
+      if (offset >= 0)
 	{
-	  width = GET_MODE_BITSIZE (GET_MODE (dest));
-	  offset = width;
+	  /* If this is the low part, we're done.  */
+	  if (subreg_lowpart_p (dest))
+	    ;
+	  /* Handle the case where inner is twice the size of outer.  */
+	  else if (GET_MODE_BITSIZE (GET_MODE (SET_DEST (temp)))
+		   == 2 * GET_MODE_BITSIZE (GET_MODE (dest)))
+	    offset += GET_MODE_BITSIZE (GET_MODE (dest));
+	  /* Otherwise give up for now.  */
+	  else
+	    offset = -1;
 	}
 
       if (offset >= 0)
