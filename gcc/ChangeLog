@@ -1,3 +1,12 @@
+2006-01-26  Richard Guenther  <rguenther@suse.de>
+            Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-ssa-structalias.c (intra_create_variable_infos):
+	Create heap variables for incoming parameters if
+	flag_argument_noalias > 1.
+	(find_what_p_points_to): Look through default defs of
+	parameter decls.
+
 2006-01-26  Jeff Law  <law@redhat.com>
 
 	PR ada/25900

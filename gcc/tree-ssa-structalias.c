@@ -4032,7 +4032,8 @@ intra_create_variable_infos (void)
 {
   tree t;
 
-  /* For each incoming argument arg, ARG = &ANYTHING */
+  /* For each incoming argument arg, ARG = &ANYTHING or a dummy variable if
+     flag_argument_noalias > 1. */
   for (t = DECL_ARGUMENTS (current_function_decl); t; t = TREE_CHAIN (t))
     {
       struct constraint_expr lhs;
@@ -4041,11 +4042,43 @@ intra_create_variable_infos (void)
       lhs.offset = 0;
       lhs.type = SCALAR;
       lhs.var  = create_variable_info_for (t, alias_get_name (t));
-      
-      for (p = get_varinfo (lhs.var); p; p = p->next)
-	make_constraint_to_anything (p);
-    }	
 
+      /* With flag_argument_noalias greater than one means that the incomming
+         argument cannot alias anything except for itself so create a HEAP
+         variable.  */
+      if (POINTER_TYPE_P (TREE_TYPE (t))
+	  && flag_argument_noalias > 1)
+	{
+	  varinfo_t vi;
+	  struct constraint_expr rhs;
+	  tree heapvar = heapvar_lookup (t);
+	  unsigned int id;
+	  if (heapvar == NULL_TREE)
+	    {
+	      heapvar = create_tmp_var_raw (TREE_TYPE (TREE_TYPE (t)), "PARM_NOALIAS");
+	      DECL_EXTERNAL (heapvar) = 1;
+	      add_referenced_tmp_var (heapvar);
+	      heapvar_insert (t, heapvar);
+	    }
+	  id = create_variable_info_for (heapvar,
+					 alias_get_name (heapvar));
+	  vi = get_varinfo (id);
+	  vi->is_artificial_var = 1;
+	  vi->is_heap_var = 1;
+	  rhs.var = id;
+	  rhs.type = ADDRESSOF;
+	  rhs.offset = 0;
+          for (p = get_varinfo (lhs.var); p; p = p->next)
+	    {
+	      struct constraint_expr temp = lhs;
+	      temp.var = p->id;
+	      process_constraint (new_constraint (temp, rhs));
+	    }
+	}
+      else      
+	for (p = get_varinfo (lhs.var); p; p = p->next)
+	  make_constraint_to_anything (p);
+    }	
 }
 
 /* Set bits in INTO corresponding to the variable uids in solution set
@@ -4105,11 +4138,19 @@ bool
 find_what_p_points_to (tree p)
 {
   unsigned int id = 0;
+  tree lookup_p = p;
 
   if (!have_alias_info)
     return false;
 
-  if (lookup_id_for_tree (p, &id))
+  /* For parameters, get at the points-to set for the actual parm
+     decl.  */
+  if (TREE_CODE (p) == SSA_NAME 
+      && TREE_CODE (SSA_NAME_VAR (p)) == PARM_DECL 
+      && default_def (SSA_NAME_VAR (p)) == p)
+    lookup_p = SSA_NAME_VAR (p);
+
+  if (lookup_id_for_tree (lookup_p, &id))
     {
       varinfo_t vi = get_varinfo (id);
       
