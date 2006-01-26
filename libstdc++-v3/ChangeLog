@@ -1,5 +1,11 @@
 2006-01-26  Paolo Carlini  <pcarlini@suse.de>
 
+	* docs/html/install.html ([Tools you will need beforehand]):
+	Clarify that the de_DE locale is used by configure; clarify
+	that missing localedata leads to skipped tests, not fails.
+
+2006-01-26  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/cfenv: New.
 	* include/Makefile.am: Add.
 	* testsuite/tr1/8_c_compatibility/cfenv/functions.cc: New.
