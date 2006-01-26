@@ -478,7 +478,7 @@ struct types attrib_array_types[] = {
 #define HASH_SIZE 32749
 static struct entry *hash_table[HASH_SIZE];
 
-static int idx, limidx, output_one;
+static int idx, limidx, output_one, short_enums;
 static const char *destdir;
 static const char *srcdir;
 FILE *outfile;
@@ -1368,10 +1368,14 @@ generate_fields (enum FEATURE features, struct entry *e, struct entry *parent,
 		    abort ();
 		  if (!mi)
 		    mi = 1;
-		  if (mi <= 32)
-		    ma = 32;
-		  else
+		  if (mi > 32)
 		    ma = 64;
+		  else if (mi > 16 || !short_enums)
+		    ma = 32;
+		  else if (mi > 8)
+		    ma = 16;
+		  else
+		    ma = 8;
 		  break;
 		default:
 		  abort ();
@@ -1533,6 +1537,10 @@ main (int argc, char **argv)
 	  output_one = 1;
 	  limidx = atoi (optarg);
 	  break;
+	case 'e':
+	  short_enums = 1;
+	  i--;
+	  break;
 	default:
 	  fprintf (stderr, "unrecognized option %s\n", argv[i]);
 	  goto usage;
@@ -1555,7 +1563,7 @@ main (int argc, char **argv)
     {
     usage:
       fprintf (stderr, "Usage:\n\
-%s [-s srcdir -d destdir] [-n count] [-i idx]\n\
+%s [-e] [-s srcdir -d destdir] [-n count] [-i idx]\n\
 Either -s srcdir -d destdir or -i idx must be used\n", argv[0]);
       return 1;
     }
