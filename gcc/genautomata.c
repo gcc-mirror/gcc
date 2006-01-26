@@ -9255,7 +9255,16 @@ main (int argc, char **argv)
 	"#include \"coretypes.h\"\n"
 	"#include \"tm.h\"\n"
 	"#include \"rtl.h\"\n"
-	"#include \"insn-attr.h\"\n");
+	"#include \"tm_p.h\"\n"
+	"#include \"insn-config.h\"\n"
+	"#include \"recog.h\"\n"
+	"#include \"regs.h\"\n"
+	"#include \"real.h\"\n"
+	"#include \"output.h\"\n"
+	"#include \"insn-attr.h\"\n"
+	"#include \"toplev.h\"\n"
+	"#include \"flags.h\"\n"
+	"#include \"function.h\"\n");
 
   if (VEC_length (decl_t, decls) > 0)
     {
