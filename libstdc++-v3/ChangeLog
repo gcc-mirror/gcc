@@ -1,5 +1,11 @@
 2006-01-26  Paolo Carlini  <pcarlini@suse.de>
 
+	* docs/html/install.html ([Tools you will need beforehand]):
+	Clarify that the de_DE locale is used by configure; clarify
+	that missing localedata leads to skipped tests, not fails.
+
+2006-01-26  Paolo Carlini  <pcarlini@suse.de>
+
 	* docs/html/ext/tr1.html: Add note.
 	* docs/html/faq/index.html: Fix link to tr1.html text; fix
 	formatting.
