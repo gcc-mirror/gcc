@@ -6625,7 +6625,7 @@ check_no_duplicate_clause (tree clauses, enum tree_code code, const char *name)
   tree c;
 
   for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
-    if (TREE_CODE (c) == code)
+    if (OMP_CLAUSE_CODE (c) == code)
       {
 	error ("too many %qs clauses", name);
 	break;
@@ -6644,7 +6644,8 @@ check_no_duplicate_clause (tree clauses, enum tree_code code, const char *name)
    return the list created.  */
 
 static tree
-c_parser_omp_variable_list (c_parser *parser, enum tree_code kind, tree list)
+c_parser_omp_variable_list (c_parser *parser, enum omp_clause_code kind,
+                            tree list)
 {
   if (c_parser_next_token_is_not (parser, CPP_NAME)
       || c_parser_peek_token (parser)->id_kind != C_ID_ID)
@@ -6662,7 +6663,7 @@ c_parser_omp_variable_list (c_parser *parser, enum tree_code kind, tree list)
 	;
       else if (kind != 0)
 	{
-	  tree u = make_node (kind);
+	  tree u = build_omp_clause (kind);
 	  OMP_CLAUSE_DECL (u) = t;
 	  OMP_CLAUSE_CHAIN (u) = list;
 	  list = u;
@@ -6759,7 +6760,7 @@ c_parser_omp_clause_default (c_parser *parser, tree list)
     return list;
 
   check_no_duplicate_clause (list, OMP_CLAUSE_DEFAULT, "default");
-  c = make_node (OMP_CLAUSE_DEFAULT);
+  c = build_omp_clause (OMP_CLAUSE_DEFAULT);
   OMP_CLAUSE_CHAIN (c) = list;
   OMP_CLAUSE_DEFAULT_KIND (c) = kind;
 
@@ -6788,7 +6789,7 @@ c_parser_omp_clause_if (c_parser *parser, tree list)
 
       check_no_duplicate_clause (list, OMP_CLAUSE_IF, "if");
 
-      c = make_node (OMP_CLAUSE_IF);
+      c = build_omp_clause (OMP_CLAUSE_IF);
       OMP_CLAUSE_IF_EXPR (c) = t;
       OMP_CLAUSE_CHAIN (c) = list;
       list = c;
@@ -6818,7 +6819,7 @@ c_parser_omp_clause_nowait (c_parser *parser ATTRIBUTE_UNUSED, tree list)
 
   check_no_duplicate_clause (list, OMP_CLAUSE_NOWAIT, "nowait");
 
-  c = make_node (OMP_CLAUSE_NOWAIT);
+  c = build_omp_clause (OMP_CLAUSE_NOWAIT);
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 }
@@ -6852,7 +6853,7 @@ c_parser_omp_clause_num_threads (c_parser *parser, tree list)
 
       check_no_duplicate_clause (list, OMP_CLAUSE_NUM_THREADS, "num_threads");
 
-      c = make_node (OMP_CLAUSE_NUM_THREADS);
+      c = build_omp_clause (OMP_CLAUSE_NUM_THREADS);
       OMP_CLAUSE_NUM_THREADS_EXPR (c) = t;
       OMP_CLAUSE_CHAIN (c) = list;
       list = c;
@@ -6871,7 +6872,7 @@ c_parser_omp_clause_ordered (c_parser *parser ATTRIBUTE_UNUSED, tree list)
 
   check_no_duplicate_clause (list, OMP_CLAUSE_ORDERED, "ordered");
 
-  c = make_node (OMP_CLAUSE_ORDERED);
+  c = build_omp_clause (OMP_CLAUSE_ORDERED);
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 }
@@ -6963,7 +6964,7 @@ c_parser_omp_clause_schedule (c_parser *parser, tree list)
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return list;
 
-  c = make_node (OMP_CLAUSE_SCHEDULE);
+  c = build_omp_clause (OMP_CLAUSE_SCHEDULE);
 
   if (c_parser_next_token_is (parser, CPP_NAME))
     {

@@ -382,13 +382,13 @@ c_split_parallel_clauses (tree clauses, tree *par_clauses, tree *ws_clauses)
   tree next;
 
   *par_clauses = NULL;
-  *ws_clauses = make_node (OMP_CLAUSE_NOWAIT);
+  *ws_clauses = build_omp_clause (OMP_CLAUSE_NOWAIT);
 
   for (; clauses ; clauses = next)
     {
       next = OMP_CLAUSE_CHAIN (clauses);
 
-      switch (TREE_CODE (clauses))
+      switch (OMP_CLAUSE_CODE (clauses))
 	{
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_SHARED:

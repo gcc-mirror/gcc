@@ -825,6 +825,20 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	    }
 	  break;
 
+	case OMP_CLAUSE:
+	    {
+	      int i;
+	      fprintf (file, " %s",
+		       omp_clause_code_name[OMP_CLAUSE_CODE (node)]);
+	      for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (node)]; i++)
+		{
+		  indent_to (file, indent + 4);
+		  fprintf (file, "op %d:", i);
+		  print_node_brief (file, "", OMP_CLAUSE_OPERAND (node, i), 0);
+		}
+	    }
+	  break;
+
 	default:
 	  if (EXCEPTIONAL_CLASS_P (node))
 	    lang_hooks.print_xnode (file, node, indent);

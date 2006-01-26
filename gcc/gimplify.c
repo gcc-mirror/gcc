@@ -4443,7 +4443,7 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p, bool in_parallel)
       unsigned int flags;
       tree decl;
 
-      switch (TREE_CODE (c))
+      switch (OMP_CLAUSE_CODE (c))
 	{
 	case OMP_CLAUSE_PRIVATE:
 	  flags = GOVD_PRIVATE | GOVD_EXPLICIT;
@@ -4504,7 +4504,7 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p, bool in_parallel)
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
-	  gs = gimplify_expr (&TREE_OPERAND (c, 0), pre_p, NULL,
+	  gs = gimplify_expr (&OMP_CLAUSE_OPERAND (c, 0), pre_p, NULL,
 			      is_gimple_val, fb_rvalue);
 	  if (gs == GS_ERROR)
 	    remove = true;
@@ -4540,7 +4540,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   tree *list_p = (tree *) data;
   tree decl = (tree) n->key;
   unsigned flags = n->value;
-  enum tree_code code;
+  enum omp_clause_code code;
   tree clause;
   bool private_debug;
 
@@ -4572,7 +4572,8 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   else
     gcc_unreachable ();
 
-  clause = build1 (code, void_type_node, decl);
+  clause = build_omp_clause (code);
+  OMP_CLAUSE_DECL (clause) = decl;
   OMP_CLAUSE_CHAIN (clause) = *list_p;
   if (private_debug)
     OMP_CLAUSE_PRIVATE_DEBUG (clause) = 1;
@@ -4592,7 +4593,7 @@ gimplify_adjust_omp_clauses (tree *list_p)
       splay_tree_node n;
       bool remove = false;
 
-      switch (TREE_CODE (c))
+      switch (OMP_CLAUSE_CODE (c))
 	{
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_SHARED:
@@ -4602,14 +4603,14 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	  remove = !(n->value & GOVD_SEEN);
 	  if (! remove)
 	    {
-	      bool shared = TREE_CODE (c) == OMP_CLAUSE_SHARED;
+	      bool shared = OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED;
 	      if ((n->value & GOVD_DEBUG_PRIVATE)
 		  || lang_hooks.decls.omp_private_debug_clause (decl, shared))
 		{
 		  gcc_assert ((n->value & GOVD_DEBUG_PRIVATE) == 0
 			      || ((n->value & GOVD_DATA_SHARE_CLASS)
 				  == GOVD_PRIVATE));
-		  TREE_SET_CODE (c, OMP_CLAUSE_PRIVATE);
+		  OMP_CLAUSE_SET_CODE (c, OMP_CLAUSE_PRIVATE);
 		  OMP_CLAUSE_PRIVATE_DEBUG (c) = 1;
 		}
 	    }
