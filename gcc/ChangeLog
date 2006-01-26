@@ -1,3 +1,16 @@
+2006-01-26  Zack Weinberg  <zackw@panix.com>
+
+	* genconditions.c (write_header): In generated code, #ifdef out
+	all includes and fake declarations, except includes of bconfig.h
+	and system.h, unless GCC_VERSION >= 3001.  Do not include
+	gensupport.h in any case.
+	(write_conditions): Generate a definition of struct c_test.  Add
+	a comment to the generated #endif.
+	(write_one_condition): Escape backslashes in string too.
+	(write_writer): Generated code must escape backslashes and quote
+	marks (but not newlines) in the strings it writes.
+	* Makefile.in (build/gencondmd.o): Update dependencies.
+
 2006-01-26  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/25961
@@ -30,7 +43,7 @@
 	constants provided by 80387 instructions in the destination mode.
 
 2006-01-26  Richard Guenther  <rguenther@suse.de>
-            Andrew Pinski  <pinskia@physics.uc.edu>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/21470
 	partial PR tree-opt/17064
@@ -212,7 +225,7 @@
 	rather than find_pool_constant.
 	(get_pool_constant_for_function): Delete.
 	(get_pool_mode, mark_constant): Use SYMBOL_REF_CONSTANT rather than
-	find_pool_constant. 
+	find_pool_constant.
 	* rtl.h (rtunion_def): Add rt_constant and rt_ptr fields.
 	(X0CONSTANT, X0PTR, SYMBOL_REF_DATA): New macros.
 	(SYMBOL_REF_DECL): Return NULL if CONSTANT_POOL_ADDRESS_P.
@@ -288,10 +301,10 @@
 
 2006-01-23  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR rtl-optimization/25890
-        PR rtl-optimization/25905
-        * combine.c (expand_compound_operation, expand_field_assignment):
-        Fail if the bitfield's final position is out of bounds.
+	PR rtl-optimization/25890
+	PR rtl-optimization/25905
+	* combine.c (expand_compound_operation, expand_field_assignment):
+	Fail if the bitfield's final position is out of bounds.
 
 2006-01-24  Ian Lance Taylor  <ian@airs.com>
 
@@ -301,7 +314,7 @@
 
 2006-01-23  Adam Nemet  <anemet@caviumnetworks.com>
 
-        * fix-header.c (read_scan_file): Add new parameter imultilib when
+	* fix-header.c (read_scan_file): Add new parameter imultilib when
 	calling register_include_chains.
 
 2006-01-23  Diego Novillo  <dnovillo@redhat.com>
@@ -313,7 +326,7 @@
 
 	PR tree-opt/25315
 	PR tree-opt/25857
-	* tree-ssa-pre.c (insert_extra_phis): If an incomming edge is abnormal 
+	* tree-ssa-pre.c (insert_extra_phis): If an incomming edge is abnormal
 	return from the function.
 
 2006-01-22  Zack Weinberg  <zackw@panix.com>
