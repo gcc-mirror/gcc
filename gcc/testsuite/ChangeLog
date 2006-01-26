@@ -1,3 +1,8 @@
+2006-01-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C/25861
+	* gcc.c-torture/compile/pr25861.c: New test.
+	
 2006-01-26  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/compat/struct-layout-1.exp: Pass -e to generator program

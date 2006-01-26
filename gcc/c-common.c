@@ -2456,25 +2456,26 @@ c_common_truthvalue_conversion (tree expr)
 
     case ADDR_EXPR:
       {
-	if (DECL_P (TREE_OPERAND (expr, 0))
-	    && !DECL_WEAK (TREE_OPERAND (expr, 0)))
+ 	tree inner = TREE_OPERAND (expr, 0);
+	if (DECL_P (inner)
+	    && (TREE_CODE (inner) == PARM_DECL || !DECL_WEAK (inner)))
 	  {
 	    /* Common Ada/Pascal programmer's mistake.  We always warn
 	       about this since it is so bad.  */
 	    warning (OPT_Walways_true, "the address of %qD, will always evaluate as %<true%>",
-		     TREE_OPERAND (expr, 0));
+		     inner);
 	    return truthvalue_true_node;
 	  }
 
 	/* If we are taking the address of an external decl, it might be
 	   zero if it is weak, so we cannot optimize.  */
-	if (DECL_P (TREE_OPERAND (expr, 0))
-	    && DECL_EXTERNAL (TREE_OPERAND (expr, 0)))
+	if (DECL_P (inner)
+	    && DECL_EXTERNAL (inner))
 	  break;
 
-	if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0)))
+	if (TREE_SIDE_EFFECTS (inner))
 	  return build2 (COMPOUND_EXPR, truthvalue_type_node,
-			 TREE_OPERAND (expr, 0), truthvalue_true_node);
+			 inner, truthvalue_true_node);
 	else
 	  return truthvalue_true_node;
       }

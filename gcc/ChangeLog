@@ -1,3 +1,9 @@
+2006-01-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C/25861
+	* c-common.c (c_common_truthvalue_conversion) <case ADDR_EXPR>:
+	Use a new variable, inner.  PARM_DECLs are always non-weak.
+
 2006-01-26  Shantonu Sen  <ssen@opendarwin.org>
 
 	* tree.h (OMP_CLAUSE_SUBCODE_CHECK): Add definition for
