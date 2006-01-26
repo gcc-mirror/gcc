@@ -1496,6 +1496,39 @@ if test x"${with_libs}" != x && test x"${with_libs}" != xno ; then
   fi
 fi
 
+# Set with_gnu_as and with_gnu_ld as appropriate.
+#
+# This is done by determining whether or not the appropriate directory
+# is available, and by checking whether or not specific configurations
+# have requested that this magic not happen.
+# 
+# The command line options always override the explicit settings in 
+# configure.in, and the settings in configure.in override this magic.
+#
+# If the default for a toolchain is to use GNU as and ld, and you don't 
+# want to do that, then you should use the --without-gnu-as and
+# --without-gnu-ld options for the configure script.
+
+if test x${use_gnu_as} = x &&
+   echo " ${configdirs} " | grep " gas " > /dev/null 2>&1 ; then
+  with_gnu_as=yes
+  extra_host_args="$extra_host_args --with-gnu-as"
+fi
+
+if test x${use_gnu_ld} = x &&
+   echo " ${configdirs} " | grep " ld " > /dev/null 2>&1 ; then
+  with_gnu_ld=yes
+  extra_host_args="$extra_host_args --with-gnu-ld"
+fi
+
+# If using newlib, add --with-newlib to the extra_host_args so that gcc/configure
+# can detect this case.
+
+if test x${with_newlib} != xno && echo " ${target_configdirs} " | grep " target-newlib " > /dev/null 2>&1 ; then
+  with_newlib=yes
+  extra_host_args="$extra_host_args --with-newlib"
+fi
+
 # Handle ${copy_dirs}
 set fnord ${copy_dirs}
 shift
@@ -1526,6 +1559,55 @@ while test $# != 0 ; do
   fi
   shift; shift
 done
+
+# Determine a target-dependent exec_prefix that the installed
+# gcc will search in.  Keep this list sorted by triplet, with
+# the *-*-osname triplets last.
+md_exec_prefix=
+case "${target}" in
+  alpha*-*-*vms*)
+    md_exec_prefix=/gnu/lib/gcc-lib
+    ;;
+  i[34567]86-pc-msdosdjgpp*)
+    md_exec_prefix=/dev/env/DJDIR/bin
+    ;;
+  i[34567]86-*-sco3.2v5*)
+    if test $with_gnu_as = yes; then
+      md_exec_prefix=/usr/gnu/bin
+    else
+      md_exec_prefix=/usr/ccs/bin/elf
+    fi
+    ;;
+
+  mn10300-*-* | \
+  powerpc-*-chorusos* | \
+  powerpc*-*-eabi* | \
+  powerpc*-*-sysv* | \
+  powerpc*-*-kaos* | \
+  s390x-ibm-tpf*)
+    md_exec_prefix=/usr/ccs/bin
+    ;;
+  sparc64-*-elf*)
+    ;;
+  v850*-*-*)
+    md_exec_prefix=/usr/ccs/bin
+    ;;
+  xtensa-*-elf*)
+    ;;
+
+  *-*-beos* | \
+  *-*-elf* | \
+  *-*-hpux* | \
+  *-*-netware* | \
+  *-*-nto-qnx* | \
+  *-*-rtems* | \
+  *-*-solaris2* | \
+  *-*-sysv[45]* | \
+  *-*-vxworks* | \
+  *-wrs-windiss)
+    md_exec_prefix=/usr/ccs/bin
+    ;;
+esac
 
 extra_arflags_for_target=
 extra_nmflags_for_target=
@@ -1583,39 +1665,6 @@ case "${enable_target_optspace}:${target}" in
     echo "*** bad value \"${enable_target_optspace}\" for --enable-target-optspace flag; ignored" 1>&2
     ;;
 esac
-
-# Set with_gnu_as and with_gnu_ld as appropriate.
-#
-# This is done by determining whether or not the appropriate directory
-# is available, and by checking whether or not specific configurations
-# have requested that this magic not happen.
-# 
-# The command line options always override the explicit settings in 
-# configure.in, and the settings in configure.in override this magic.
-#
-# If the default for a toolchain is to use GNU as and ld, and you don't 
-# want to do that, then you should use the --without-gnu-as and
-# --without-gnu-ld options for the configure script.
-
-if test x${use_gnu_as} = x &&
-   echo " ${configdirs} " | grep " gas " > /dev/null 2>&1 ; then
-  with_gnu_as=yes
-  extra_host_args="$extra_host_args --with-gnu-as"
-fi
-
-if test x${use_gnu_ld} = x &&
-   echo " ${configdirs} " | grep " ld " > /dev/null 2>&1 ; then
-  with_gnu_ld=yes
-  extra_host_args="$extra_host_args --with-gnu-ld"
-fi
-
-# If using newlib, add --with-newlib to the extra_host_args so that gcc/configure
-# can detect this case.
-
-if test x${with_newlib} != xno && echo " ${target_configdirs} " | grep " target-newlib " > /dev/null 2>&1 ; then
-  with_newlib=yes
-  extra_host_args="$extra_host_args --with-newlib"
-fi
 
 # Default to using --with-stabs for certain targets.
 if test x${with_stabs} = x ; then
@@ -2201,21 +2250,34 @@ AC_SUBST(CFLAGS_FOR_BUILD)
 AC_SUBST(CXXFLAGS)
 
 # Target tools.
-NCN_STRICT_CHECK_TARGET_TOOLS(AR_FOR_TARGET, ar)
-NCN_STRICT_CHECK_TARGET_TOOLS(AS_FOR_TARGET, as)
+AC_ARG_WITH([build-time-tools], 
+  [  --with-build-time-tools=path
+                          use given path to find target tools during the build],
+  [case x"$withval" in
+     x/*) ;;
+     *)
+       with_build_time_tools=
+       AC_MSG_WARN([argument to --with-build-time-tools must be an absolute path])
+       ;;
+   esac],
+  [with_build_time_tools=])
+
 NCN_STRICT_CHECK_TARGET_TOOLS(CC_FOR_TARGET, cc gcc)
 NCN_STRICT_CHECK_TARGET_TOOLS(CXX_FOR_TARGET, c++ g++ cxx gxx)
-NCN_STRICT_CHECK_TARGET_TOOLS(DLLTOOL_FOR_TARGET, dlltool)
 NCN_STRICT_CHECK_TARGET_TOOLS(GCC_FOR_TARGET, gcc, ${CC_FOR_TARGET})
 NCN_STRICT_CHECK_TARGET_TOOLS(GCJ_FOR_TARGET, gcj)
 NCN_STRICT_CHECK_TARGET_TOOLS(GFORTRAN_FOR_TARGET, gfortran)
-NCN_STRICT_CHECK_TARGET_TOOLS(LD_FOR_TARGET, ld)
-NCN_STRICT_CHECK_TARGET_TOOLS(LIPO_FOR_TARGET, lipo)
-NCN_STRICT_CHECK_TARGET_TOOLS(NM_FOR_TARGET, nm)
-NCN_STRICT_CHECK_TARGET_TOOLS(OBJDUMP_FOR_TARGET, objdump)
-NCN_STRICT_CHECK_TARGET_TOOLS(RANLIB_FOR_TARGET, ranlib, :)
-NCN_STRICT_CHECK_TARGET_TOOLS(STRIP_FOR_TARGET, strip)
-NCN_STRICT_CHECK_TARGET_TOOLS(WINDRES_FOR_TARGET, windres)
+
+ACX_CHECK_INSTALLED_TARGET_TOOL(AR_FOR_TARGET, ar)
+ACX_CHECK_INSTALLED_TARGET_TOOL(AS_FOR_TARGET, as)
+ACX_CHECK_INSTALLED_TARGET_TOOL(DLLTOOL_FOR_TARGET, dlltool)
+ACX_CHECK_INSTALLED_TARGET_TOOL(LD_FOR_TARGET, ld)
+ACX_CHECK_INSTALLED_TARGET_TOOL(LIPO_FOR_TARGET, lipo)
+ACX_CHECK_INSTALLED_TARGET_TOOL(NM_FOR_TARGET, nm)
+ACX_CHECK_INSTALLED_TARGET_TOOL(OBJDUMP_FOR_TARGET, objdump)
+ACX_CHECK_INSTALLED_TARGET_TOOL(RANLIB_FOR_TARGET, ranlib, :)
+ACX_CHECK_INSTALLED_TARGET_TOOL(STRIP_FOR_TARGET, strip)
+ACX_CHECK_INSTALLED_TARGET_TOOL(WINDRES_FOR_TARGET, windres)
 
 RAW_CXX_FOR_TARGET="$CXX_FOR_TARGET"
 

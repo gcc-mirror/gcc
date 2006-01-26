@@ -1,3 +1,10 @@
+2006-01-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Expect target tools paths to be passed from the toplevel
+	and wrap the detection into AS_SET_VAR_IF.  Extract side-effects out of
+	AS_SET_VAR_IF.
+	* acinclude.m4 (gcc_AC_TOOL_DIRS, gcc_AC_CHECK_TOOL): Remove.
+
 2006-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c/25892
