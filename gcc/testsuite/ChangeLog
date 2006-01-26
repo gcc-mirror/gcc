@@ -1,3 +1,18 @@
+2005-01-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25964
+	* gfortran.dg/global_references_2.f90: New test.
+
+	PR fortran/25084
+	PR fortran/20852
+	PR fortran/25085
+	PR fortran/25086
+	* gfortran.dg/assumed_charlen_function_1.f90: New test.
+	* gfortran.dg/assumed_charlen_function_3.f90: New test.
+
+	PR fortran/25416
+	* gfortran.dg/assumed_charlen_function_2.f90: New test.
+
 2006-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c/25892

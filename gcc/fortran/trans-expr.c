@@ -1224,7 +1224,7 @@ gfc_get_interface_mapping_array (stmtblock_t * block, gfc_symbol * sym,
   type = gfc_typenode_for_spec (&sym->ts);
   type = gfc_get_nodesc_array_type (type, sym->as, packed);
 
-  var = gfc_create_var (type, "parm");
+  var = gfc_create_var (type, "ifm");
   gfc_add_modify_expr (block, var, fold_convert (type, data));
 
   return var;
@@ -1807,8 +1807,10 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
   gfc_init_interface_mapping (&mapping);
   need_interface_mapping = ((sym->ts.type == BT_CHARACTER
-			     && sym->ts.cl->length->expr_type != EXPR_CONSTANT)
-			    || sym->attr.dimension);
+				  && sym->ts.cl->length
+				  && sym->ts.cl->length->expr_type
+						!= EXPR_CONSTANT)
+			      || sym->attr.dimension);
   formal = sym->formal;
   /* Evaluate the arguments.  */
   for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
@@ -1905,19 +1907,30 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   ts = sym->ts;
   if (ts.type == BT_CHARACTER)
     {
-      /* Calculate the length of the returned string.  */
-      gfc_init_se (&parmse, NULL);
-      if (need_interface_mapping)
-	gfc_apply_interface_mapping (&mapping, &parmse, sym->ts.cl->length);
+      if (sym->ts.cl->length == NULL)
+	{
+	  /* Assumed character length results are not allowed by 5.1.1.5 of the
+	     standard and are trapped in resolve.c; except in the case of SPREAD
+	     (and other intrinsics?).  In this case, we take the character length
+	     of the first argument for the result.  */
+	  cl.backend_decl = TREE_VALUE (stringargs);
+	}
       else
-	gfc_conv_expr (&parmse, sym->ts.cl->length);
-      gfc_add_block_to_block (&se->pre, &parmse.pre);
-      gfc_add_block_to_block (&se->post, &parmse.post);
+	{
+	  /* Calculate the length of the returned string.  */
+	  gfc_init_se (&parmse, NULL);
+	  if (need_interface_mapping)
+	    gfc_apply_interface_mapping (&mapping, &parmse, sym->ts.cl->length);
+	  else
+	    gfc_conv_expr (&parmse, sym->ts.cl->length);
+	  gfc_add_block_to_block (&se->pre, &parmse.pre);
+	  gfc_add_block_to_block (&se->post, &parmse.post);
+	  cl.backend_decl = fold_convert (gfc_charlen_type_node, parmse.expr);
+	}
 
       /* Set up a charlen structure for it.  */
       cl.next = NULL;
       cl.length = NULL;
-      cl.backend_decl = fold_convert (gfc_charlen_type_node, parmse.expr);
       ts.cl = &cl;
 
       len = cl.backend_decl;
