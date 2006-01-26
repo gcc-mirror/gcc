@@ -52,9 +52,14 @@ write_header (void)
    machine description file.  */\n\
 \n\
 #include \"bconfig.h\"\n\
-#include \"insn-constants.h\"\n");
+#include \"system.h\"\n");
 
   puts ("\
+/* It is necessary, but not entirely safe, to include the headers below\n\
+   in a generator program.  As a defensive measure, don't do so when the\n\
+   table isn't going to have anything in it.  */\n\
+#if GCC_VERSION >= 3001\n\
+\n\
 /* Do not allow checking to confuse the issue.  */\n\
 #undef ENABLE_CHECKING\n\
 #undef ENABLE_TREE_CHECKING\n\
@@ -64,9 +69,9 @@ write_header (void)
 #undef ENABLE_GC_ALWAYS_COLLECT\n");
 
   puts ("\
-#include \"system.h\"\n\
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\
+#include \"insn-constants.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"function.h\"\n");
@@ -86,8 +91,7 @@ write_header (void)
 #include \"hard-reg-set.h\"\n\
 #include \"resource.h\"\n\
 #include \"toplev.h\"\n\
-#include \"reload.h\"\n\
-#include \"gensupport.h\"\n");
+#include \"reload.h\"\n");
 
   if (saw_eh_return)
     puts ("#define HAVE_eh_return 1");
@@ -97,7 +101,9 @@ write_header (void)
 /* Dummy external declarations.  */\n\
 extern rtx insn;\n\
 extern rtx ins1;\n\
-extern rtx operands[];\n");
+extern rtx operands[];\n\
+\n\
+#endif /* gcc >= 3.0.1 */\n");
 }
 
 /* Write out one entry in the conditions table, using the data pointed
@@ -118,12 +124,14 @@ write_one_condition (void **slot, void * ARG_UNUSED (dummy))
   fputs ("  { \"", stdout);
   for (p = test->expr; *p; p++)
     {
-      if (*p == '\n')
-	fputs ("\\n\\\n", stdout);
-      else if (*p == '"')
-	fputs ("\\\"", stdout);
-      else
-	putchar (*p);
+      switch (*p)
+	{
+	case '\n': fputs ("\\n\\", stdout); break;
+	case '\\':
+	case '\"': putchar ('\\'); break;
+	default: break;
+	}
+      putchar (*p);
     }
 
   printf ("\",\n    __builtin_constant_p ");
@@ -140,20 +148,29 @@ static void
 write_conditions (void)
 {
   puts ("\
+/* Structure definition duplicated from gensupport.h rather than\n\
+   drag in that file and its dependencies.  */\n\
+struct c_test\n\
+{\n\
+  const char *expr;\n\
+  int value;\n\
+};\n");
+
+  puts ("\
 /* This table lists each condition found in the machine description.\n\
    Each condition is mapped to its truth value (0 or 1), or -1 if that\n\
-   cannot be calculated at compile time. */\n\
-\n\
-static const struct c_test insn_conditions[] = {\n			\
-/* If we don't have __builtin_constant_p, or it's not acceptable in array\n\
+   cannot be calculated at compile time.\n\
+   If we don't have __builtin_constant_p, or it's not acceptable in array\n\
    initializers, fall back to assuming that all conditions potentially\n\
    vary at run time.  It works in 3.0.1 and later; 3.0 only when not\n\
    optimizing.  */\n\
-#if GCC_VERSION >= 3001");
+\n\
+static const struct c_test insn_conditions[] = {\n\
+#if GCC_VERSION >= 3001\n");
 
   traverse_c_tests (write_one_condition, 0);
 
-  puts ("#endif\n};\n");
+  puts ("\n#endif /* gcc >= 3.0.1 */\n};\n");
 }
 
 /* Emit code which will convert the C-format table to a
@@ -163,16 +180,31 @@ static const struct c_test insn_conditions[] = {\n			\
 static void
 write_writer (void)
 {
-  puts ("int\nmain(void)\n{\n\
-  unsigned int i;\n\
-\n\
-  puts (\"(define_conditions [\");\n\
-  for (i = 0; i < ARRAY_SIZE (insn_conditions); i++)\n\
-    printf (\"  (%d \\\"%s\\\")\\n\",\n\
-	    insn_conditions[i].value, insn_conditions[i].expr);\n\
-  puts (\"])\");\n\
-  fflush (stdout);\n\
-  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);\n}");
+  puts ("int\n"
+	"main(void)\n"
+	"{\n"
+	"  unsigned int i;\n"
+        "  const char *p;\n"
+        "  puts (\"(define_conditions [\");\n"
+	"  for (i = 0; i < ARRAY_SIZE (insn_conditions); i++)\n"
+	"    {\n"
+	"      printf (\"  (%d \\\"\", insn_conditions[i].value);\n"
+	"      for (p = insn_conditions[i].expr; *p; p++)\n"
+	"        {\n"
+	"          switch (*p)\n"
+	"	     {\n"
+	"	     case '\\\\':\n"
+	"	     case '\\\"': putchar ('\\\\'); break;\n"
+	"	     default: break;\n"
+	"	     }\n"
+	"          putchar (*p);\n"
+	"        }\n"
+        "      puts (\"\\\")\");\n"
+        "    }");
+  puts ("  puts (\"])\");\n"
+        "  fflush (stdout);\n"
+        "return ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;\n"
+	"}");
 }
 
 int
