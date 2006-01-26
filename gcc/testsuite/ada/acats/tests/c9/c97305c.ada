@@ -56,7 +56,7 @@ BEGIN
 
           TASK BODY T IS
           BEGIN
-               DELAY 10.0 * Impdef.One_Second;
+               DELAY 10.0 * Impdef.One_Long_Second;
                ACCEPT E (B : IN OUT BOOLEAN) DO
                     B := IDENT_BOOL (TRUE);
                END E;
@@ -68,7 +68,7 @@ BEGIN
                T.E (RENDEZVOUS_OCCURRED);
                STATEMENTS_AFTER_CALL_EXECUTED := IDENT_BOOL (TRUE);
           OR
-               DELAY DELAY_IN_MINUTES * 60.0 * Impdef.One_Second;
+               DELAY DELAY_IN_MINUTES * 60.0 * Impdef.One_Long_Second;
                FAILED ("TIMED ENTRY CALL NOT ACCEPTED AFTER" &
                        POSITIVE'IMAGE(DELAY_IN_MINUTES) &
                        " MINUTES ELAPSED");
