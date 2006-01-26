@@ -2,10 +2,10 @@
 
 // { dg-do compile }
 
-namespace foo {
-  template <class T> void swap(T, T);
-}
 namespace fool {
+  namespace foo {
+    template <class T> void swap(T, T);
+  }
   using namespace foo __attribute__((strong));
   template <class T> void swap(T);
 }
