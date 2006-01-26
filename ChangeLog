@@ -1,3 +1,10 @@
+2006-01-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.in: Set with_gnu_as, with_gnu_ld, with_newlib earlier.
+	Set md_exec_prefix.  Use ACX_CHECK_INSTALLED_TARGET_TOOL to find
+	the assembler, linker and binutils.
+	* configure: Regenerate.
+
 2006-01-22  Dirk Mueller  <dmueller@suse.de>
 
 	* MAINTAINERS (Write After Approval): Add myself.

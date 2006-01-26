@@ -1,4 +1,14 @@
-2006-02-01  Paolo Bonzini  <bonzini@gnu.org>
+2006-01-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/acx.m4 (NCN_STRICT_CHECK_TARGET_TOOLS): Test
+	$with_build_time_tools.
+	(ACX_PATH_SEP): New.
+	(ACX_TOOL_DIRS): Move here from the gcc directory.
+	(ACX_CHECK_INSTALLED_TARGET_TOOL): New.
+	(GCC_TARGET_TOOL): Do not use a host tool if we found a target tool
+	with a complete path in either $with_build_time_tools or $exec_prefix.
+
+2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
 
         PR target/25259
         * stdint.m4: New.
