@@ -1,5 +1,10 @@
 2006-01-26  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/std/std_bitset.h (bitset<>::_M_copy_to_string):
+	Call the internal _Unchecked_set(size_t) instead of set.
+
+2006-01-26  Paolo Carlini  <pcarlini@suse.de>
+
 	* docs/html/install.html ([Tools you will need beforehand]):
 	Clarify that the de_DE locale is used by configure; clarify
 	that missing localedata leads to skipped tests, not fails.
