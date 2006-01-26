@@ -1098,7 +1098,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   AC_MSG_CHECKING([for ISO C99 support to TR1 in <ctype.h>])
   AC_CACHE_VAL(ac_c99_ctype_tr1, [
   AC_TRY_COMPILE([#include <ctype.h>],
-	         [isblank(0);
+	         [int ch;
+	          isblank(ch);
 		 ],[ac_c99_ctype_tr1=yes], [ac_c99_ctype_tr1=no])
   ])
   AC_MSG_RESULT($ac_c99_ctype_tr1)
@@ -1106,6 +1107,35 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
     AC_DEFINE(_GLIBCXX_USE_C99_CTYPE_TR1, 1,
               [Define if C99 functions in <ctype.h> should be imported in
 	      <tr1/cctype> in namespace std::tr1.])
+  fi
+
+  # Check for the existence of <fenv.h> functions.
+  AC_CHECK_HEADERS(fenv.h, ac_has_fenv_h=yes, ac_has_fenv_h=no)
+  ac_c99_fenv_tr1=no;
+  if test x"$ac_has_fenv_h" = x"yes"; then
+    AC_MSG_CHECKING([for ISO C99 support to TR1 in <fenv.h>])
+    AC_TRY_COMPILE([#include <fenv.h>],
+	           [int except, mode;
+	            fexcept_t* pflag;
+                    fenv_t* penv;
+	            feclearexcept(except);
+                    fegetexceptflag(pflag, except);
+	            feraiseexcept(except);
+	            fesetexceptflag(pflag, except);
+	            fetestexcept(except);
+	            fegetround();
+	            fesetround(mode);
+	            fegetenv(penv);
+	            feholdexcept(penv);
+	            fesetenv(penv);
+	            feupdateenv(penv);
+		   ],[ac_c99_fenv_tr1=yes], [ac_c99_fenv_tr1=no])
+  fi
+  AC_MSG_RESULT($ac_c99_fenv_tr1)
+  if test x"$ac_c99_fenv_tr1" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C99_FENV_TR1, 1,
+              [Define if C99 functions in <fenv.h> should be imported in
+	      <tr1/cfenv> in namespace std::tr1.])
   fi
 
   AC_LANG_RESTORE

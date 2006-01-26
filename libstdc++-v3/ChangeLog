@@ -1,3 +1,21 @@
+2006-01-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cfenv: New.
+	* include/Makefile.am: Add.
+	* testsuite/tr1/8_c_compatibility/cfenv/functions.cc: New.
+	* testsuite/tr1/8_c_compatibility/cfenv/types.cc: Likewise.
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Add <fenv.h> checks.
+	* docs/html/ext/tr1.html: Update; add note.
+	* include/Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.	
+
+	* testsuite/tr1/8_c_compatibility/complex/functions.cc: Tweak.
+	* testsuite/tr1/8_c_compatibility/cctype/functions.cc: Likewise.
+
+	* docs/html/faq/index.html: Fix link to tr1.html text; fix
+	formatting.
+
 2006-01-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cctype: New.
