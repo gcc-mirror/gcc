@@ -1,5 +1,5 @@
 /* ChunkedInputStream.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,9 +55,16 @@ public class ChunkedInputStream
   private static final byte CR = 0x0d;
   private static final byte LF = 0x0a;
 
+  /** Size of the chunk we're reading.  */
   int size;
+  /** Number of bytes we've read in this chunk.  */
   int count;
+  /**
+   * True when we should read meta-information, false when we should
+   * read data.
+   */
   boolean meta;
+  /** True when we've hit EOF.  */
   boolean eof;
   Headers headers;
 
@@ -142,17 +149,22 @@ public class ChunkedInputStream
       }
     else
       {
-        int diff = length - offset;
-        int max = size - count;
-        max = (diff < max) ? diff : max;
-        int len = (max > 0) ? in.read(buffer, offset, max) : 0;
+	int canRead = Math.min(size - count, length);
+	int len = in.read(buffer, offset, canRead);
+	if (len == -1)
+	  {
+	    // This is an error condition but it isn't clear what we
+	    // should do with it.
+	    eof = true;
+	    return -1;
+	  }
         count += len;
         if (count == size)
           {
             // Read CRLF
             int c1 = in.read();
             int c2 = in.read();
-            if (c1 == -1 && c2 == -1)
+            if (c1 == -1 || c2 == -1)
               {
                 // EOF before CRLF: bad, but ignore
                 eof = true;

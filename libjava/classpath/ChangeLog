@@ -1,3 +1,9 @@
+2006-01-25  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/net/protocol/http/ChunkedInputStream.java (read):
+	Fixed calculation of number of bytes to read.
+	(size, count, meta, eof): Document.
+
 2006-01-20  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/java/security/x509/X509Certificate.java (parse):
