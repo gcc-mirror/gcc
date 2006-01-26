@@ -113,7 +113,7 @@ BEGIN
           BEGIN
                ACCEPT E (1);
                ABORT PKG1.T1;
-               DELAY 5.0 * Impdef.One_Second;
+               DELAY 5.0 * Impdef.One_Long_Second;
                D1 := CHECK ("F", F'CALLABLE, FALSE,
                              F'TERMINATED, TRUE, D);
           END MAIN_TASK;
@@ -153,7 +153,7 @@ BEGIN
           BEGIN
                ACCEPT E (1);
                ABORT T2;
-               DELAY 5.0 * Impdef.One_Second;
+               DELAY 5.0 * Impdef.One_Long_Second;
                D2 := CHECK ("T2", T2'CALLABLE, FALSE,
                              T2'TERMINATED, TRUE, D);
           END MAIN_TASK;

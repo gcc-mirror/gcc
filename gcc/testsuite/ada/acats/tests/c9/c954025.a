@@ -53,11 +53,11 @@ with Report;
 with ImpDef;
 procedure C954025 is
   Verbose : constant Boolean := False;
-  Countdown_Amount : constant Duration := 2.0 * Impdef.One_Second;
+  Countdown_Amount : constant Duration := 2.0 * Impdef.One_Long_Second;
   Plenty_Of_Time : constant Duration := 
-         Countdown_Amount + ImpDef.Clear_Ready_Queue + 1.0 * Impdef.One_Second;
+         Countdown_Amount + ImpDef.Clear_Ready_Queue + 1.0 * Impdef.One_Long_Second;
   Not_Enough_Time : constant Duration :=
-         Countdown_Amount - 0.5 * Impdef.One_Second;
+         Countdown_Amount - 0.5 * Impdef.One_Long_Second;
 begin
   Report.Test ("C954025",
                "Check that if the original entry" &

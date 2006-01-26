@@ -58,10 +58,10 @@ with Impdef;
 procedure C954026 is
     Verbose : constant Boolean := False;
     Final_Po_Reached : Boolean := False;
-    Allowed_Time : constant Duration := 2.0 * Impdef.One_Second;
+    Allowed_Time : constant Duration := 2.0 * Impdef.One_Long_Second;
     Plenty_Of_Time : constant Duration :=
-       Allowed_Time + Impdef.Clear_Ready_Queue + 1.0 * Impdef.One_Second;
-    Not_Enough_Time : constant Duration := Allowed_Time - 0.5 * Impdef.One_Second;
+       Allowed_Time + Impdef.Clear_Ready_Queue + 1.0 * Impdef.One_Long_Second;
+    Not_Enough_Time : constant Duration := Allowed_Time - 0.5 * Impdef.One_Long_Second;
 begin
     Report.Test ("C954026",
                  "Check that if the original entry" &
