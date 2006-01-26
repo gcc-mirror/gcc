@@ -1,3 +1,10 @@
+2006-01-25  Jan Hubicka  <jh@suse.cz>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/25703
+	* gcc.target/i386/20060125-1.c: New test case.
+	* gcc.target/i386/20060125-2.c: New test case.
+
 2006-01-25  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18540
