@@ -1688,15 +1688,8 @@ maybe_create_global_var (struct alias_info *ai)
 	 call-clobbered variables.  */
       if (global_var && var != global_var)
 	{
-	  subvar_t svars;
 	  add_may_alias (var, global_var);
-	  if (var_can_have_subvars (var)
-	      && (svars = get_subvars_for_var (var)))
-	    {
-	      subvar_t sv;
-	      for (sv = svars; sv; sv = sv->next)
-		mark_sym_for_renaming (sv->var);
-	    }
+	  gcc_assert (!get_subvars_for_var (var));
 	}
       
       mark_sym_for_renaming (var);
