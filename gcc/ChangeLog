@@ -1,3 +1,20 @@
+2006-01-26 Alexandre Oliva  <aoliva@redhat.com>
+
+	PR other/24829
+	PR target/24831
+	* gthr-dce.h: Do not gthrw-ify pthread_once_init,
+	pthread_key_delete.  From John David Anglin.  gthrw-ify
+	pthread_getunique_np only if it it's not a macro.  Delete
+	UNUSED macro.
+	(__gthread_objc_condition_allocate, __gthread_objc_condition_deallocate,
+	__gthread_objc_condition_wait, __gthread_objc_condition_broadcast,
+	__gthread_objc_condition_signal, __gthread_key_delete): Add
+	"__attribute__ ((__unused__))" to unused arguments.
+	(__gthread_recursive_mutex_init_function): Add missing return.
+	* gthr-dce.h, gthr-tpf.h, gthr-solaris.h, gthr-posix.h,
+	gthr-posix95.h: Use macro-based approach for name redirection
+	on targets missing weakref.
+
 2006-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c/25892
