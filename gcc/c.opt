@@ -420,7 +420,7 @@ C ObjC C++ ObjC++
 Give strings the type \"array of char\"
 
 Wpointer-sign
-C ObjC Var(warn_pointer_sign) Init(1)
+C ObjC Var(warn_pointer_sign) Init(-1)
 Warn when a pointer differs in signedness in an assignment
 
 ansi
