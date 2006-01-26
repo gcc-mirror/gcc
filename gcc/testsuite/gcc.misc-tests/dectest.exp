@@ -1,4 +1,4 @@
-# Copyright 2005 Free Software Foundation, Inc.
+# Copyright 2005, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,10 +22,6 @@
 # Contributed by Ben Elliston <bje@au.ibm.com>.
 
 set TORTURE_OPTIONS [list {} -O1 -O2 -O3 -Os -msoft-float]
-
-# On x86 and x86-64 systems, -Os makes the stack alignment too small,
-# leading to segmentation faults when executing SSE instructions.
-# Force the alignment of the stack to 2^4 (16) bytes.
 
 proc target-specific-flags {} {
   set result "-frounding-math "
