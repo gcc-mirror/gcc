@@ -2473,32 +2473,84 @@
 
 ;; Minimum and maximum insns
 
-(define_insn "smaxsi3"
-  [(set (match_operand:SI          0 "s_register_operand" "=r,r,r")
-	(smax:SI (match_operand:SI 1 "s_register_operand"  "0,r,?r")
-		 (match_operand:SI 2 "arm_rhs_operand"    "rI,0,rI")))
+(define_expand "smaxsi3"
+  [(parallel [
+    (set (match_operand:SI 0 "s_register_operand" "")
+	 (smax:SI (match_operand:SI 1 "s_register_operand" "")
+		  (match_operand:SI 2 "arm_rhs_operand" "")))
+    (clobber (reg:CC CC_REGNUM))])]
+  "TARGET_ARM"
+  "
+  if (operands[2] == const0_rtx)
+    {
+      /* No need for a clobber of the condition code register here.  */
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_SMAX (SImode, operands[1],
+					    operands[2])));
+      DONE;
+    }
+")
+
+(define_insn "*smax_0"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(smax:SI (match_operand:SI 1 "s_register_operand" "r")
+		 (const_int 0)))]
+  "TARGET_ARM"
+  "bic%?\\t%0, %1, %1, asr #31"
+  [(set_attr "predicable" "yes")]
+)
+
+(define_insn "*smax_insn"
+  [(set (match_operand:SI          0 "s_register_operand" "=r,r")
+	(smax:SI (match_operand:SI 1 "s_register_operand"  "%0,?r")
+		 (match_operand:SI 2 "arm_rhs_operand"    "rI,rI")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "@
    cmp\\t%1, %2\;movlt\\t%0, %2
-   cmp\\t%1, %2\;movge\\t%0, %1
    cmp\\t%1, %2\;movge\\t%0, %1\;movlt\\t%0, %2"
   [(set_attr "conds" "clob")
-   (set_attr "length" "8,8,12")]
+   (set_attr "length" "8,12")]
 )
 
-(define_insn "sminsi3"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
-	(smin:SI (match_operand:SI 1 "s_register_operand" "0,r,?r")
-		 (match_operand:SI 2 "arm_rhs_operand" "rI,0,rI")))
+(define_expand "sminsi3"
+  [(parallel [
+    (set (match_operand:SI 0 "s_register_operand" "")
+	 (smin:SI (match_operand:SI 1 "s_register_operand" "")
+		  (match_operand:SI 2 "arm_rhs_operand" "")))
+    (clobber (reg:CC CC_REGNUM))])]
+  "TARGET_ARM"
+  "
+  if (operands[2] == const0_rtx)
+    {
+      /* No need for a clobber of the condition code register here.  */
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_SMIN (SImode, operands[1],
+					    operands[2])));
+      DONE;
+    }
+")
+
+(define_insn "*smin_0"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(smin:SI (match_operand:SI 1 "s_register_operand" "r")
+		 (const_int 0)))]
+  "TARGET_ARM"
+  "and%?\\t%0, %1, %1, asr #31"
+  [(set_attr "predicable" "yes")]
+)
+
+(define_insn "*smin_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(smin:SI (match_operand:SI 1 "s_register_operand" "%0,?r")
+		 (match_operand:SI 2 "arm_rhs_operand" "rI,rI")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "@
    cmp\\t%1, %2\;movge\\t%0, %2
-   cmp\\t%1, %2\;movlt\\t%0, %1
    cmp\\t%1, %2\;movlt\\t%0, %1\;movge\\t%0, %2"
   [(set_attr "conds" "clob")
-   (set_attr "length" "8,8,12")]
+   (set_attr "length" "8,12")]
 )
 
 (define_insn "umaxsi3"
