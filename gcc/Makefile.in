@@ -198,6 +198,7 @@ GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 # These files are to have -Werror bypassed in stage2:
 # These are very hard to completely clean due to target complexities.
 gcc.o-warn = -Wno-error
+insn-automata.o-warn = -Wno-error
 build/gencondmd.o-warn = -Wno-error
 # Bison-1.75 output often yields (harmless) -Wtraditional warnings
 build/gengtype-yacc.o-warn = -Wno-error
