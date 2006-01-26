@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2006-01-25  Paolo Carlini  <pcarlini@suse.de>
+// 2006-01-26  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -20,16 +20,17 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 8.4 Additions to header <cctype>
+// 8.6 Header <cfenv>
 
-#include <tr1/cctype>
+#include <tr1/cfenv>
 
 void test01()
 {
-#if _GLIBCXX_USE_C99_CTYPE_TR1
+#if _GLIBCXX_USE_C99_FENV_TR1
 
-  int ch = 0, r;
-  r = std::tr1::isblank(ch);
-
+  // Check for required typedefs
+  typedef std::tr1::fenv_t    fenv_t_type;
+  typedef std::tr1::fexcept_t fexcept_t_type;
+  
 #endif
 }

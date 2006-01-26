@@ -30,7 +30,14 @@ Draft Technical Report on C++ Library Extensions
 </p>
 
 <p>
-This page describes the TR1 support in mainline GCC CVS, not in any particular release.
+In this implementation the header names are prefixed by
+<code>tr1/</code>, for instance <code>&lt;tr1/functional&gt;</code>,
+<code>&lt;tr1/memory&gt;</code>, and so on.
+</p>
+
+<p>
+This page describes the TR1 support in mainline GCC CVS, not in any particular
+release.
 </p>
 
 <table border="1">
@@ -1796,25 +1803,25 @@ This page describes the TR1 support in mainline GCC CVS, not in any particular r
     <tr>
       <td>8.4</td>
       <td>Additions to header <code>&lt;cctype&gt;</code></td>
+      <td>done</td>
       <td></td>
       <td></td>
-      <td>missing</td>
       <td></td>
     </tr>
     <tr>
       <td>8.4.1</td>
       <td>Synopsis</td>
+      <td>done</td>
       <td></td>
       <td></td>
-      <td>missing</td>
       <td></td>
     </tr>
     <tr>
       <td>8.4.2</td>
       <td>Function <code>isblank</code></td>
+      <td>done</td>
       <td></td>
       <td></td>
-      <td>missing</td>
       <td></td>
     </tr>
     <tr>
@@ -1828,25 +1835,25 @@ This page describes the TR1 support in mainline GCC CVS, not in any particular r
     <tr>
       <td>8.6</td>
       <td>Header <code>&lt;cfenv&gt;</code></td>
+      <td>done</td>
       <td></td>
       <td></td>
-      <td>missing</td>
       <td></td>
     </tr>
     <tr>
       <td>8.6.1</td>
       <td>Synopsis</td>
+      <td>done</td>
       <td></td>
       <td></td>
-      <td>missing</td>
       <td></td>
     </tr>
     <tr>
       <td>8.6.2</td>
       <td>Definitions</td>
+      <td>done</td>
       <td></td>
       <td></td>
-      <td>missing</td>
       <td></td>
     </tr>
     <tr>
@@ -2259,7 +2266,8 @@ This page describes the TR1 support in mainline GCC CVS, not in any particular r
   <li>
     <a name="1"/>
     The shared_ptr implementation uses some code from the
-    <a href="http://www.boost.org/libs/smart_ptr/shared_ptr.htm">Boost shared_ptr</a> library.
+    <a href="http://www.boost.org/libs/smart_ptr/shared_ptr.htm">Boost 
+    shared_ptr</a> library.
   </li>
 
 </ol>

@@ -1,3 +1,5 @@
+// { dg-do compile }
+
 // 2006-01-10  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
@@ -25,19 +27,18 @@
 template<typename T>
   void test01_do()
   {
-    using namespace std::tr1;
     typedef std::complex<T> cmplx_type;
 
     cmplx_type ans;
 
-    ans = acos(cmplx_type(1.0, 1.0));
-    ans = asin(cmplx_type(1.0, 1.0));
-    ans = atan(cmplx_type(1.0, 1.0));
+    ans = std::tr1::acos(cmplx_type(1.0, 1.0));
+    ans = std::tr1::asin(cmplx_type(1.0, 1.0));
+    ans = std::tr1::atan(cmplx_type(1.0, 1.0));
 
-    ans = acosh(cmplx_type(1.0, 1.0));
-    ans = asinh(cmplx_type(1.0, 1.0));
-    ans = atanh(cmplx_type(1.0, 1.0));
-    ans = fabs(cmplx_type(1.0, 1.0));
+    ans = std::tr1::acosh(cmplx_type(1.0, 1.0));
+    ans = std::tr1::asinh(cmplx_type(1.0, 1.0));
+    ans = std::tr1::atanh(cmplx_type(1.0, 1.0));
+    ans = std::tr1::fabs(cmplx_type(1.0, 1.0));
   }
     
 void test01()
@@ -45,10 +46,4 @@ void test01()
   test01_do<float>();
   test01_do<double>();
   test01_do<long double>();
-}
-
-int main()
-{
-  test01();
-  return 0;
 }
