@@ -1,3 +1,8 @@
+2006-01-26  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (maybe_create_global_var): Change
+	subvar walking to an assertion that we don't have subvar'd variables.
+
 2006-01-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C/25861
