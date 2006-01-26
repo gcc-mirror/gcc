@@ -1,3 +1,8 @@
+2006-01-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/24962
+	* gcc.target/ia64/20030811-1.c: Change 'long' to 'long long'.
+
 2006-01-26  Laurent GUERBY <laurent@guerby.net>
 
         PR ada/21317
