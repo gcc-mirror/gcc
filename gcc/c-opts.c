@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -413,6 +413,9 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->warn_comments = value;
       cpp_opts->warn_num_sign_change = value;
       cpp_opts->warn_multichar = value;	/* Was C++ only.  */
+
+      if (warn_pointer_sign == -1)
+	warn_pointer_sign = 1;
       break;
 
     case OPT_Wcomment:
@@ -874,6 +877,8 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_pedantic:
       cpp_opts->pedantic = 1;
       cpp_opts->warn_endif_labels = 1;
+      if (warn_pointer_sign == -1)
+	warn_pointer_sign = 1;
       break;
 
     case OPT_print_objc_runtime_info:
@@ -993,6 +998,11 @@ c_common_post_options (const char **pfilename)
     warn_sign_compare = extra_warnings;
   if (warn_missing_field_initializers == -1)
     warn_missing_field_initializers = extra_warnings;
+
+  /* -Wpointer_sign is disabled by default, but it is enabled if any
+     of -Wall or -pedantic are given.  */
+  if (warn_pointer_sign == -1)
+    warn_pointer_sign = 0;
 
   /* Special format checking options don't work without -Wformat; warn if
      they are used.  */

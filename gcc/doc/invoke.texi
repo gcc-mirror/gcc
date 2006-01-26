@@ -251,7 +251,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
 -Wmissing-prototypes  -Wnested-externs  -Wold-style-definition @gol
 -Wstrict-prototypes  -Wtraditional @gol
--Wdeclaration-after-statement -Wno-pointer-sign}
+-Wdeclaration-after-statement -Wpointer-sign}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
@@ -3385,11 +3385,13 @@ effectively.  Often, the problem is that your code is too big or too
 complex; GCC will refuse to optimize programs when the optimization
 itself is likely to take inordinate amounts of time.
 
-@item -Wno-pointer-sign
+@item -Wpointer-sign
+@opindex Wpointer-sign
 @opindex Wno-pointer-sign
-Don't warn for pointer argument passing or assignment with different signedness.
-Only useful in the negative form since this warning is enabled by default.
-This option is only supported for C and Objective-C@.
+Warn for pointer argument passing or assignment with different signedness.
+This option is only supported for C and Objective-C@.  It is implied by
+@option{-Wall} and by @option{-pedantic}, which can be disabled with
+@option{-Wno-pointer-sign}.
 
 @item -Werror
 @opindex Werror

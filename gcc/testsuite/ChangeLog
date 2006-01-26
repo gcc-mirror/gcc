@@ -1,3 +1,13 @@
+2006-01-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c/25892
+	* gcc.dg/Wpointer-sign.c: New.
+	* gcc.dg/Wpointer-sign-Wall.c: New.
+	* gcc.dg/Wpointer-sign-Wall-no.c: New.
+	* gcc.dg/Wpointer-sign-pedantic.c: New.
+	* gcc.dg/Wpointer-sign-pedantic-no.c: New.
+	* gcc.dg/conv-2.c: Use -Wpointer-sign.
+
 2006-01-26  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/compat/struct-layout-1.exp: Pass -e to generator program
