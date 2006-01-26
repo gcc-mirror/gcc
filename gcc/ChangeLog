@@ -1,6 +1,8 @@
 2006-01-26  Richard Guenther  <rguenther@suse.de>
             Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/21470
+	partial PR tree-opt/17064
 	* tree-ssa-structalias.c (intra_create_variable_infos):
 	Create heap variables for incoming parameters if
 	flag_argument_noalias > 1.
