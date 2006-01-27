@@ -1,0 +1,31 @@
+%ifndef _SOFT_FLOAT
+%ifndef __powerpc64__
+%exclude {
+  __multc3
+  __divtc3
+  __powitf2
+  __fixtfdi
+  __fixunstfdi
+  __floatditf
+}
+
+GCC_4.1.0 {
+  # long double support
+  __multc3
+  __divtc3
+  __powitf2
+  __fixtfdi
+  __fixunstfdi
+  __floatditf
+
+%else
+GCC_3.4.4 {
+%endif
+
+  # long double support
+  __gcc_qadd
+  __gcc_qsub
+  __gcc_qmul
+  __gcc_qdiv
+}
+%endif
