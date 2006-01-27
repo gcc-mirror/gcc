@@ -817,7 +817,7 @@ init_pragma (void)
 
   c_register_pragma ("GCC", "diagnostic", handle_pragma_diagnostic);
 
-  c_register_pragma (0, "redefine_extname", handle_pragma_redefine_extname);
+  c_register_pragma_with_expansion (0, "redefine_extname", handle_pragma_redefine_extname);
   c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);
 
 #ifdef REGISTER_TARGET_PRAGMAS
