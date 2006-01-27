@@ -1,4 +1,5 @@
-/* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -25,7 +26,7 @@
    Public License.  */
 
 /* Implemented from the specification included in the Intel C++ Compiler
-   User Guide and Reference, version 8.0.  */
+   User Guide and Reference, version 9.0.  */
 
 #ifndef _XMMINTRIN_H_INCLUDED
 #define _XMMINTRIN_H_INCLUDED
@@ -491,8 +492,17 @@ _mm_cvt_ss2si (__m128 __A)
 }
 
 #ifdef __x86_64__
-/* Convert the lower SPFP value to a 32-bit integer according to the current
-   rounding mode.  */
+/* Convert the lower SPFP value to a 32-bit integer according to the
+   current rounding mode.  */
+
+/* Intel intrinsic.  */
+static __inline long long __attribute__((__always_inline__))
+_mm_cvtss_si64 (__m128 __A)
+{
+  return __builtin_ia32_cvtss2si64 ((__v4sf) __A);
+}
+
+/* Microsoft intrinsic.  */
 static __inline long long __attribute__((__always_inline__))
 _mm_cvtss_si64x (__m128 __A)
 {
@@ -529,6 +539,15 @@ _mm_cvtt_ss2si (__m128 __A)
 
 #ifdef __x86_64__
 /* Truncate the lower SPFP value to a 32-bit integer.  */
+
+/* Intel intrinsic.  */
+static __inline long long __attribute__((__always_inline__))
+_mm_cvttss_si64 (__m128 __A)
+{
+  return __builtin_ia32_cvttss2si64 ((__v4sf) __A);
+}
+
+/* Microsoft intrinsic.  */
 static __inline long long __attribute__((__always_inline__))
 _mm_cvttss_si64x (__m128 __A)
 {
@@ -565,6 +584,15 @@ _mm_cvt_si2ss (__m128 __A, int __B)
 
 #ifdef __x86_64__
 /* Convert B to a SPFP value and insert it as element zero in A.  */
+
+/* Intel intrinsic.  */
+static __inline __m128 __attribute__((__always_inline__))
+_mm_cvtsi64_ss (__m128 __A, long long __B)
+{
+  return (__m128) __builtin_ia32_cvtsi642ss ((__v4sf) __A, __B);
+}
+
+/* Microsoft intrinsic.  */
 static __inline __m128 __attribute__((__always_inline__))
 _mm_cvtsi64x_ss (__m128 __A, long long __B)
 {
@@ -909,6 +937,12 @@ static __inline void __attribute__((__always_inline__))
 _mm_store_ss (float *__P, __m128 __A)
 {
   *__P = __builtin_ia32_vec_ext_v4sf ((__v4sf)__A, 0);
+}
+
+static __inline float __attribute__((__always_inline__))
+_mm_cvtss_f32 (__m128 __A)
+{
+  return __builtin_ia32_vec_ext_v4sf ((__v4sf)__A, 0);
 }
 
 /* Store four SPFP values.  The address must be 16-byte aligned.  */
