@@ -1,3 +1,18 @@
+2005-01-27  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25716
+	* symbol.c (free_old_symbol): New function.
+	(gfc_commit_symbols): Use it.
+	(gfc_commit_symbol): New function.
+	(gfc_use_derived): Use it.
+	* gfortran.h: Add prototype for gfc_commit_symbol.
+	* intrinsic.c (gfc_find_function): Search in 'conversion'
+	if not found in 'functions'.
+	(gfc_convert_type_warn): Add a symtree to the new
+	expression node, and commit the new symtree->n.sym.
+	* resolve.c (gfc_resolve_index): Make sure typespec is
+	properly initialized.
+
 2005-01-25  Steven Bosscher  <stevenb.gcc@gmail.com>
 	Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 

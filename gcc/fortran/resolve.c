@@ -2014,6 +2014,7 @@ gfc_resolve_index (gfc_expr * index, int check_scalar)
   if (index->ts.kind != gfc_index_integer_kind
       || index->ts.type != BT_INTEGER)
     {
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = gfc_index_integer_kind;
 

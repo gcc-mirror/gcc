@@ -1767,6 +1767,7 @@ int gfc_symbols_could_alias (gfc_symbol *, gfc_symbol *);
 
 void gfc_undo_symbols (void);
 void gfc_commit_symbols (void);
+void gfc_commit_symbol (gfc_symbol * sym);
 void gfc_free_namespace (gfc_namespace *);
 
 void gfc_symbol_init_2 (void);
