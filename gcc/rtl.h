@@ -172,7 +172,6 @@ union rtunion_def
   mem_attrs *rt_mem;
   reg_attrs *rt_reg;
   struct constant_descriptor_rtx *rt_constant;
-  void *rt_ptr;
 };
 typedef union rtunion_def rtunion;
 
@@ -633,7 +632,6 @@ extern void rtl_check_failed_flag (const char *, rtx, const char *,
 #define X0MEMATTR(RTX, N)  (RTL_CHECKC1 (RTX, N, MEM).rt_mem)
 #define X0REGATTR(RTX, N)  (RTL_CHECKC1 (RTX, N, REG).rt_reg)
 #define X0CONSTANT(RTX, N) (RTL_CHECK1 (RTX, N, '0').rt_constant)
-#define X0PTR(RTX, N)      (RTL_CHECK1 (RTX, N, '0').rt_ptr)
 
 /* Access a '0' field with any type.  */
 #define X0ANY(RTX, N)	   RTL_CHECK1 (RTX, N, '0')
@@ -1199,11 +1197,20 @@ do {						\
 
 /* A pointer attached to the SYMBOL_REF; either SYMBOL_REF_DECL or
    SYMBOL_REF_CONSTANT.  */
-#define SYMBOL_REF_DATA(RTX) X0PTR ((RTX), 2)
+#define SYMBOL_REF_DATA(RTX) X0ANY ((RTX), 2)
+
+/* Set RTX's SYMBOL_REF_DECL to DECL.  RTX must not be a constant
+   pool symbol.  */
+#define SET_SYMBOL_REF_DECL(RTX, DECL) \
+  (gcc_assert (!CONSTANT_POOL_ADDRESS_P (RTX)), X0TREE ((RTX), 2) = (DECL))
 
 /* The tree (decl or constant) associated with the symbol, or null.  */
 #define SYMBOL_REF_DECL(RTX) \
   (CONSTANT_POOL_ADDRESS_P (RTX) ? NULL : X0TREE ((RTX), 2))
+
+/* Set RTX's SYMBOL_REF_CONSTANT to C.  RTX must be a constant pool symbol.  */
+#define SET_SYMBOL_REF_CONSTANT(RTX, C) \
+  (gcc_assert (CONSTANT_POOL_ADDRESS_P (RTX)), X0CONSTANT ((RTX), 2) = (C))
 
 /* The rtx constant pool entry for a symbol, or null.  */
 #define SYMBOL_REF_CONSTANT(RTX) \

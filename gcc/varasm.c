@@ -845,7 +845,7 @@ make_decl_rtl (tree decl)
 
   x = gen_rtx_SYMBOL_REF (Pmode, name);
   SYMBOL_REF_WEAK (x) = DECL_WEAK (decl);
-  SYMBOL_REF_DATA (x) = decl;
+  SET_SYMBOL_REF_DECL (x, decl);
 
   x = gen_rtx_MEM (DECL_MODE (decl), x);
   if (TREE_CODE (decl) != FUNCTION_DECL)
@@ -2573,7 +2573,7 @@ build_constant_desc (tree exp)
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
   symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
   SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
-  SYMBOL_REF_DATA (symbol) = desc->value;
+  SET_SYMBOL_REF_DECL (symbol, desc->value);
   TREE_CONSTANT_POOL_ADDRESS_P (symbol) = 1;
 
   rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), symbol);
@@ -2978,8 +2978,8 @@ force_const_mem (enum machine_mode mode, rtx x)
      the constants pool.  */
   desc->sym = symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
   SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
-  SYMBOL_REF_DATA (symbol) = desc;
   CONSTANT_POOL_ADDRESS_P (symbol) = 1;
+  SET_SYMBOL_REF_CONSTANT (symbol, desc);
   current_function_uses_const_pool = 1;
 
   /* Construct the MEM.  */

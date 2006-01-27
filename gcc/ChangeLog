@@ -1,3 +1,17 @@
+2006-01-27  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/rtl.texi (SYMBOL_REF_DATA): Adjust documentation for new
+	opaque type.
+	* optabs.c (init_one_libfunc): Use SET_SYMBOL_REF_DECL.
+	* varasm.c (make_decl_rtl, build_constant_desc): Likewise.
+	(force_const_mem): Use SET_SYMBOL_REF_CONSTANT.
+	* rtl.h (rtunion_def): Remove rt_ptr.
+	(X0PTR): Delete.
+	(SYMBOL_REF_DATA): Use X0ANY instead of X0PTR.
+	(SET_SYMBOL_REF_DECL, SET_SYMBOL_REF_CONSTANT): New macros.
+	* config/i386/winnt.c (i386_pe_mark_dllexport)
+	(i386_pe_mark_dllimport): Use SET_SYMBOL_REF_DECL.
+
 2006-01-27 Gabor Loki <loki@gcc.gnu.org>
 
 	* cfgcleanup.c (try_crossjump_to_edge): Fix comment typo.
