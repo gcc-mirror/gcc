@@ -1,6 +1,6 @@
 /* Contribution to the specs for the GNU Compiler Collection
    from GNU Fortran 95 compiler.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
 
 This file is licensed under the GPL.  */
 
@@ -15,7 +15,7 @@ This file is licensed under the GPL.  */
       %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E: -o %|.f |\n\
     f951 %|.f %{!ffree-form:-ffixed-form} %(cc1_options) %{J*} %{I*}\
-      %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+      -fpreprocessed %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
 {".F90", "@f95-cpp-input", 0, 0, 0},
 {".F95", "@f95-cpp-input", 0, 0, 0},
 {"@f95-cpp-input",
@@ -23,7 +23,7 @@ This file is licensed under the GPL.  */
       %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E: -o %|.f95 |\n\
     f951 %|.f95 %(cc1_options) %{J*} %{I*}\
-      %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+      -fpreprocessed %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
 {".f90", "@f95", 0, 0, 0},
 {".f95", "@f95", 0, 0, 0},
 {"@f95", "%{!E:f951 %i %(cc1_options) %{J*} %{I*}\

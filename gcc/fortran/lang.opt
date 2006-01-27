@@ -173,6 +173,10 @@ frepack-arrays
 Fortran
 Copy array sections into a contiguous block on procedure entry
 
+fpreprocessed
+Fortran
+Treat the input file as preprocessed
+
 qkind=
 Fortran RejectNegative Joined UInteger
 -qkind=<n>	Set the kind for a real with the 'q' exponent to 'n'

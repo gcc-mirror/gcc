@@ -1512,6 +1512,7 @@ typedef struct
   int flag_no_backend;
   int flag_pack_derived;
   int flag_repack_arrays;
+  int flag_preprocessed;
   int flag_f2c;
   int flag_automatic;
   int flag_backslash;
@@ -1592,6 +1593,7 @@ int gfc_peek_char (void);
 void gfc_error_recovery (void);
 void gfc_gobble_whitespace (void);
 try gfc_new_file (void);
+const char * gfc_read_orig_filename (const char *, const char **);
 
 extern gfc_source_form gfc_current_form;
 extern const char *gfc_source_file;

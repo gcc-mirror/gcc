@@ -1,3 +1,25 @@
+2006-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/25324
+	* Make-lang.in (fortran/scanner.o): Depend on toplev.h.
+	* lang.opt (fpreprocessed): New option.
+	* scanner.c: Include toplev.h.
+	(gfc_src_file, gfc_src_preprocessor_lines): New variables.
+	(preprocessor_line): Unescape filename if there were any
+	backslashes.
+	(load_file): If initial and gfc_src_file is not NULL,
+	use it rather than opening the file.  If gfc_src_preprocessor_lines
+	has non-NULL elements, pass it to preprocessor_line.
+	(unescape_filename, gfc_read_orig_filename): New functions.
+	* gfortran.h (gfc_option_t): Add flag_preprocessed.
+	(gfc_read_orig_filename): New prototype.
+	* options.c (gfc_init_options): Clear flag_preprocessed.
+	(gfc_post_options): If flag_preprocessed, call
+	gfc_read_orig_filename.
+	(gfc_handle_option): Handle OPT_fpreprocessed.
+	* lang-specs.h: Pass -fpreprocessed to f951 if preprocessing
+	sources.
+
 2005-01-27  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25716
