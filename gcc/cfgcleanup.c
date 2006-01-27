@@ -1701,7 +1701,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
       && (newpos1 != BB_HEAD (src1)))
     return false;
 
-  /* Avoid deleting preseve label when redirecting ABNORMAL edeges.  */
+  /* Avoid deleting preserve label when redirecting ABNORMAL edeges.  */
   if (block_has_preserve_label (e1->dest)
       && (e1->flags & EDGE_ABNORMAL))
     return false;
