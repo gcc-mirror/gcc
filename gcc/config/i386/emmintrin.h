@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -25,7 +25,7 @@
    Public License.  */
 
 /* Implemented from the specification included in the Intel C++ Compiler
-   User Guide and Reference, version 8.0.  */
+   User Guide and Reference, version 9.0.  */
 
 #ifndef _EMMINTRIN_H_INCLUDED
 #define _EMMINTRIN_H_INCLUDED
@@ -158,6 +158,12 @@ _mm_store_sd (double *__P, __m128d __A)
   *__P = __builtin_ia32_vec_ext_v2df (__A, 0);
 }
 
+static __inline double __attribute__((__always_inline__))
+_mm_cvtsd_f64 (__m128d __A)
+{
+  return __builtin_ia32_vec_ext_v2df (__A, 0);
+}
+
 static __inline void __attribute__((__always_inline__))
 _mm_storel_pd (double *__P, __m128d __A)
 {
@@ -199,6 +205,14 @@ _mm_cvtsi128_si32 (__m128i __A)
 }
 
 #ifdef __x86_64__
+/* Intel intrinsic.  */
+static __inline long long __attribute__((__always_inline__))
+_mm_cvtsi128_si64 (__m128i __A)
+{
+  return __builtin_ia32_vec_ext_v2di ((__v2di)__A, 0);
+}
+
+/* Microsoft intrinsic.  */
 static __inline long long __attribute__((__always_inline__))
 _mm_cvtsi128_si64x (__m128i __A)
 {
@@ -789,6 +803,14 @@ _mm_cvtsd_si32 (__m128d __A)
 }
 
 #ifdef __x86_64__
+/* Intel intrinsic.  */
+static __inline long long __attribute__((__always_inline__))
+_mm_cvtsd_si64 (__m128d __A)
+{
+  return __builtin_ia32_cvtsd2si64 ((__v2df) __A);
+}
+
+/* Microsoft intrinsic.  */
 static __inline long long __attribute__((__always_inline__))
 _mm_cvtsd_si64x (__m128d __A)
 {
@@ -803,6 +825,14 @@ _mm_cvttsd_si32 (__m128d __A)
 }
 
 #ifdef __x86_64__
+/* Intel intrinsic.  */
+static __inline long long __attribute__((__always_inline__))
+_mm_cvttsd_si64 (__m128d __A)
+{
+  return __builtin_ia32_cvttsd2si64 ((__v2df) __A);
+}
+
+/* Microsoft intrinsic.  */
 static __inline long long __attribute__((__always_inline__))
 _mm_cvttsd_si64x (__m128d __A)
 {
@@ -823,6 +853,14 @@ _mm_cvtsi32_sd (__m128d __A, int __B)
 }
 
 #ifdef __x86_64__
+/* Intel intrinsic.  */
+static __inline __m128d __attribute__((__always_inline__))
+_mm_cvtsi64_sd (__m128d __A, long long __B)
+{
+  return (__m128d)__builtin_ia32_cvtsi642sd ((__v2df) __A, __B);
+}
+
+/* Microsoft intrinsic.  */
 static __inline __m128d __attribute__((__always_inline__))
 _mm_cvtsi64x_sd (__m128d __A, long long __B)
 {
@@ -1379,6 +1417,14 @@ _mm_cvtsi32_si128 (int __A)
 }
 
 #ifdef __x86_64__
+/* Intel intrinsic.  */
+static __inline __m128i __attribute__((__always_inline__))
+_mm_cvtsi64_si128 (long long __A)
+{
+  return _mm_set_epi64x (0, __A);
+}
+
+/* Microsoft intrinsic.  */
 static __inline __m128i __attribute__((__always_inline__))
 _mm_cvtsi64x_si128 (long long __A)
 {

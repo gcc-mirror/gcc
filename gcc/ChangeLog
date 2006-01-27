@@ -1,3 +1,21 @@
+2006-01-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/emmintrin.h (_mm_cvtsd_f64): Add missing Intel
+	intrinsic.
+	(_mm_cvtsi128_si64): Likewise.
+	(_mm_cvtsd_si64): Likewise.
+	(_mm_cvttsd_si64): Likewise.
+	(_mm_cvtsi64_sd): Likewise.
+	(_mm_cvtsi64_si128): Likewise.
+	* config/i386/mmintrin.h (_m_from_int64): Likewise.
+	(_mm_cvtsi64_m64): Likewise.
+	(_m_to_int64): Likewise.
+	(_mm_cvtm64_si64): Likewise.
+	* config/i386/xmmintrin.h (_mm_cvtss_si64): Likewise.
+	(_mm_cvttss_si64): Likewise.
+	(_mm_cvtsi64_ss): Likewise.
+	(_mm_cvtss_f32): Likewise.
+
 2006-01-27  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* c-pragma.c (init_pragma) : Call c_register_pragma_with_expansion
