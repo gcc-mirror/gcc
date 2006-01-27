@@ -1,3 +1,7 @@
+2006-01-27  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* gcc.dg/pragma-re-4.c: New test.
+
 2005-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25964

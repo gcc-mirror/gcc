@@ -1,3 +1,8 @@
+2006-01-27  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* c-pragma.c (init_pragma) : Call c_register_pragma_with_expansion
+	for pragma redefine_extname.
+
 2006-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/25864
