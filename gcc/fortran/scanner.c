@@ -45,6 +45,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "gfortran.h"
+#include "toplev.h"
 
 /* Structure for holding module and include file search path.  */
 typedef struct gfc_directorylist
@@ -66,7 +67,9 @@ static gfc_linebuf *line_head, *line_tail;
        
 locus gfc_current_locus;
 const char *gfc_source_file;
-      
+static FILE *gfc_src_file;
+static char *gfc_src_preprocessor_lines[2];
+
 
 /* Main scanner initialization.  */
 
@@ -861,7 +864,7 @@ preprocessor_line (char *c)
   int i, line;
   char *filename;
   gfc_file *f;
-  int escaped;
+  int escaped, unescape;
 
   c++;
   while (*c == ' ' || *c == '\t')
@@ -892,13 +895,17 @@ preprocessor_line (char *c)
   filename = c;
 
   /* Make filename end at quote.  */
+  unescape = 0;
   escaped = false;
   while (*c && ! (! escaped && *c == '"'))
     {
       if (escaped)
         escaped = false;
-      else
-        escaped = *c == '\\';
+      else if (*c == '\\')
+	{
+	  escaped = true;
+	  unescape++;
+	}
       ++c;
     }
 
@@ -908,7 +915,23 @@ preprocessor_line (char *c)
 
   *c++ = '\0';
 
+  /* Undo effects of cpp_quote_string.  */
+  if (unescape)
+    {
+      char *s = filename;
+      char *d = gfc_getmem (c - filename - unescape);
 
+      filename = d;
+      while (*s)
+	{
+	  if (*s == '\\')
+	    *d++ = *++s;
+	  else
+	    *d++ = *s;
+	  s++;
+	}
+      *d = '\0';
+    }
 
   /* Get flags.  */
 
@@ -944,6 +967,8 @@ preprocessor_line (char *c)
 	  gfc_warning_now ("%s:%d: file %s left but not entered",
 			   current_file->filename, current_file->line,
 			   filename);
+	  if (unescape)
+	    gfc_free (filename);
 	  return;
 	}
       current_file = current_file->up;
@@ -961,6 +986,8 @@ preprocessor_line (char *c)
 
   /* Set new line number.  */
   current_file->line = line;
+  if (unescape)
+    gfc_free (filename);
   return;
 
  bad_cpp_line:
@@ -1045,7 +1072,13 @@ load_file (const char *filename, bool initial)
 
   if (initial)
     {
-      input = gfc_open_file (filename);
+      if (gfc_src_file)
+	{
+	  input = gfc_src_file;
+	  gfc_src_file = NULL;
+	}
+      else
+	input = gfc_open_file (filename);
       if (input == NULL)
 	{
 	  gfc_error_now ("Can't open file '%s'", filename);
@@ -1070,6 +1103,19 @@ load_file (const char *filename, bool initial)
   current_file->line = 1;
   line = NULL;
   line_len = 0;
+
+  if (initial && gfc_src_preprocessor_lines[0])
+    {
+      preprocessor_line (gfc_src_preprocessor_lines[0]);
+      gfc_free (gfc_src_preprocessor_lines[0]);
+      gfc_src_preprocessor_lines[0] = NULL;
+      if (gfc_src_preprocessor_lines[1])
+	{
+	  preprocessor_line (gfc_src_preprocessor_lines[1]);
+	  gfc_free (gfc_src_preprocessor_lines[1]);
+	  gfc_src_preprocessor_lines[1] = NULL;
+	}
+    }
 
   for (;;)
     {
@@ -1158,4 +1204,113 @@ gfc_new_file (void)
 #endif
 
   return result;
+}
+
+static char *
+unescape_filename (const char *ptr)
+{
+  const char *p = ptr, *s;
+  char *d, *ret;
+  int escaped, unescape = 0;
+
+  /* Make filename end at quote.  */
+  escaped = false;
+  while (*p && ! (! escaped && *p == '"'))
+    {
+      if (escaped)
+	escaped = false;
+      else if (*p == '\\')
+	{
+	  escaped = true;
+	  unescape++;
+	}
+      ++p;
+    }
+
+  if (! *p || p[1])
+    return NULL;
+
+  /* Undo effects of cpp_quote_string.  */
+  s = ptr;
+  d = gfc_getmem (p + 1 - ptr - unescape);
+  ret = d;
+
+  while (s != p)
+    {
+      if (*s == '\\')
+	*d++ = *++s;
+      else
+	*d++ = *s;
+      s++;
+    }
+  *d = '\0';
+  return ret;
+}
+
+/* For preprocessed files, if the first tokens are of the form # NUM.
+   handle the directives so we know the original file name.  */
+
+const char *
+gfc_read_orig_filename (const char *filename, const char **canon_source_file)
+{
+  int c, len;
+  char *dirname;
+
+  gfc_src_file = gfc_open_file (filename);
+  if (gfc_src_file == NULL)
+    return NULL;
+
+  c = fgetc (gfc_src_file);
+  ungetc (c, gfc_src_file);
+
+  if (c != '#')
+    return NULL;
+
+  len = 0;
+  load_line (gfc_src_file, &gfc_src_preprocessor_lines[0], &len);
+
+  if (strncmp (gfc_src_preprocessor_lines[0], "# 1 \"", 5) != 0)
+    return NULL;
+
+  filename = unescape_filename (gfc_src_preprocessor_lines[0] + 5);
+  if (filename == NULL)
+    return NULL;
+
+  c = fgetc (gfc_src_file);
+  ungetc (c, gfc_src_file);
+
+  if (c != '#')
+    return filename;
+
+  len = 0;
+  load_line (gfc_src_file, &gfc_src_preprocessor_lines[1], &len);
+
+  if (strncmp (gfc_src_preprocessor_lines[1], "# 1 \"", 5) != 0)
+    return filename;
+
+  dirname = unescape_filename (gfc_src_preprocessor_lines[1] + 5);
+  if (dirname == NULL)
+    return filename;
+
+  len = strlen (dirname);
+  if (len < 3 || dirname[len - 1] != '/' || dirname[len - 2] != '/')
+    {
+      gfc_free (dirname);
+      return filename;
+    }
+  dirname[len - 2] = '\0';
+  set_src_pwd (dirname);
+
+  if (! IS_ABSOLUTE_PATH (filename))
+    {
+      char *p = gfc_getmem (len + strlen (filename));
+
+      memcpy (p, dirname, len - 2);
+      p[len - 2] = '/';
+      strcpy (p + len - 1, filename);
+      *canon_source_file = p;
+    }
+
+  gfc_free (dirname);
+  return filename;
 }

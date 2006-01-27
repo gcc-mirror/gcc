@@ -269,6 +269,7 @@ GFORTRAN_TRANS_DEPS = fortran/gfortran.h fortran/intrinsic.h fortran/trans-array
 
 fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   gt-fortran-f95-lang.h gtype-fortran.h cgraph.h $(TARGET_H)
+fortran/scanner.o: toplev.h
 fortran/convert.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h \
