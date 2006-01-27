@@ -4481,6 +4481,15 @@ as the @code{sibcall} md pattern can not fail, or fall over to a
 may vary greatly between different architectures.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_EXTRA_LIVE_ON_ENTRY (bitmap *@var{regs})
+Add any hard registers to @var{regs} that are live on entry to the
+function.  This hook only needs to be defined to provide registers that
+cannot be found by examination of FUNCTION_ARG_REGNO_P, the callee saved
+registers, STATIC_CHAIN_INCOMING_REGNUM, STATIC_CHAIN_REGNUM,
+TARGET_STRUCT_VALUE_RTX, FRAME_POINTER_REGNUM, EH_USES,
+FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM, and the PIC_OFFSET_TABLE_REGNUM.
+@end deftypefn
+
 @node Stack Smashing Protection
 @subsection Stack smashing protection
 @cindex stack smashing protection

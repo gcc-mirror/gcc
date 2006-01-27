@@ -37,6 +37,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #ifndef USED_FOR_TARGET
 
+struct bitmap_head_def;
+typedef struct bitmap_head_def *bitmap;
 struct rtx_def;
 typedef struct rtx_def *rtx;
 struct rtvec_def;

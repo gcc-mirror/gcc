@@ -205,18 +205,23 @@ There are 4 ways to obtain access to refs:
    defs and uses are only there if DF_HARD_REGS was specified when the
    df instance was created.
  
-   Artificial defs and uses occur at the beginning blocks that are the
-   destination of eh edges.  The defs come from the registers
-   specified in EH_RETURN_DATA_REGNO and the uses come from the
-   registers specified in ED_USES.  Logically these defs and uses
-   should really occur along the eh edge, but there is no convienent
-   way to do this.  Artificial edges that occur at the beginning of
-   the block have the DF_REF_AT_TOP flag set.
-   
-   Artificial uses also occur at the end of all blocks.  These arise
-   from the hard registers that are always live, such as the stack
-   register and are put there to keep the code from forgetting about
-   them.
+   Artificial defs and uses occur both at the beginning and ends of blocks.
+
+     For blocks that area at the destination of eh edges, the
+     artificial uses and defs occur at the beginning.  The defs relate
+     to the registers specified in EH_RETURN_DATA_REGNO and the uses
+     relate to the registers specified in ED_USES.  Logically these
+     defs and uses should really occur along the eh edge, but there is
+     no convenient way to do this.  Artificial edges that occur at the
+     beginning of the block have the DF_REF_AT_TOP flag set.
+
+     Artificial uses occur at the end of all blocks.  These arise from
+     the hard registers that are always live, such as the stack
+     register and are put there to keep the code from forgetting about
+     them.
+
+     Artifical defs occur at the end of the entry block.  These arise
+     from registers that are live at entry to the function.
 
 2) All of the uses and defs associated with each pseudo or hard
    register are linked in a bidirectional chain.  These are called

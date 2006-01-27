@@ -56,6 +56,7 @@ Boston, MA 02110-1301, USA.  */
 #include "cfglayout.h"
 #include "sched-int.h"
 #include "tree-gimple.h"
+#include "bitmap.h"
 
 /* True if X is an unspec wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -407,6 +408,7 @@ static rtx mips_expand_builtin_compare (enum mips_builtin_type,
 					rtx, tree);
 static rtx mips_expand_builtin_bposge (enum mips_builtin_type, rtx);
 static void mips_encode_section_info (tree, rtx, int);
+static void mips_extra_live_on_entry (bitmap);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -1159,6 +1161,12 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE mips_attribute_table
+
+#undef TARGET_EXTRA_LIVE_ON_ENTRY
+/* With -mabicalls (which is the default on GNU/Linux),
+   PIC_FUNCTION_ADDR_REGNUM is live on function entry and is to
+   initialize $28, which is PIC_OFFSET_TABLE_REGNUM.  */
+#define TARGET_EXTRA_LIVE_ON_ENTRY mips_extra_live_on_entry
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10764,5 +10772,16 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
       SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LONG_CALL;
     }
 }
+
+/* Implement TARGET_EXTRA_LIVE_ON_ENTRY.  TARGET_ABICALLS makes
+   PIC_FUNCTION_ADDR_REGNUM live on entry to a function.  */
+
+static void
+mips_extra_live_on_entry (bitmap regs)
+{
+  if (!TARGET_ABICALLS)
+    bitmap_set_bit (regs, PIC_FUNCTION_ADDR_REGNUM);
+}
+
 
 #include "gt-mips.h"
