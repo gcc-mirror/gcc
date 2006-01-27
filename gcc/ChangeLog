@@ -1,3 +1,7 @@
+2006-01-27 Gabor Loki <loki@gcc.gnu.org>
+
+	* cfgcleanup.c (try_crossjump_to_edge): Fix comment typo.
+
 2006-01-26 Alexandre Oliva  <aoliva@redhat.com>
 
 	PR other/24829
