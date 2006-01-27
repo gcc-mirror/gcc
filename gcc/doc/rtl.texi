@@ -462,7 +462,7 @@ pool entry for @var{x}.  It is null otherwise.
 
 @findex SYMBOL_REF_DATA
 @item SYMBOL_REF_DATA (@var{x})
-A @samp{void *} pointer used to store @code{SYMBOL_REF_DECL} or
+A field of opaque type used to store @code{SYMBOL_REF_DECL} or
 @code{SYMBOL_REF_CONSTANT}.
 
 @findex SYMBOL_REF_FLAGS
