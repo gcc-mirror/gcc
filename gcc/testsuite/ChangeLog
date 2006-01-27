@@ -1,3 +1,40 @@
+2005-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25124
+	PR fortran/25625
+	* gfortran.dg/internal_references_1.f90: New test.
+
+	PR fortran/25901
+	* gfortran.dg/internal references_2.f90: New test.
+
+	PR fortran/20881
+	PR fortran/23308
+	PR fortran/25538
+	PR fortran/25710
+	* gfortran.dg/global_references_1.f90: New test.
+	* gfortran.dg/g77/19990905-1.f: Restore the error that
+	there is a clash between the common block name and
+	the name of a subroutine reference.
+
+	PR fortran/25964
+	* gfortran.dg/global_references_2.f90: New test.
+
+	PR fortran/24276
+	* gfortran.dg/aliasing_dummy_1.f90: New test.
+
+	PR fortran/25084
+	PR fortran/20852
+	PR fortran/25085
+	PR fortran/25086
+	* gfortran.dg/assumed_charlen_function_1.f90: New test.
+	* gfortran.dg/assumed_charlen_function_3.f90: New test.
+
+	PR fortran/25416
+	* gfortran.dg/assumed_charlen_function_2.f90: New test.
+
+	PR fortran/25964
+	* gfortran.dg/assumed_size_refs_3.f90: New test.
+
 2005-01-27  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25716

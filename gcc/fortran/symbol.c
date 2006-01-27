@@ -592,7 +592,6 @@ duplicate_attr (const char *attr, locus * where)
   gfc_error ("Duplicate %s attribute specified at %L", attr, where);
 }
 
-
 /* Called from decl.c (attr_decl1) to check attributes, when declared separately.  */
 
 try

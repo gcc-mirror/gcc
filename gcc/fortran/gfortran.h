@@ -1961,5 +1961,6 @@ void gfc_show_namespace (gfc_namespace *);
 
 /* parse.c */
 try gfc_parse_file (void);
+void global_used (gfc_gsymbol *, locus *);
 
 #endif /* GCC_GFORTRAN_H  */

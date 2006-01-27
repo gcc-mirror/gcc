@@ -861,6 +861,36 @@ resolve_actual_arglist (gfc_actual_arglist * arg)
   return SUCCESS;
 }
 
+/* This function does the checking of references to global procedures
+   as defined in sections 18.1 and 14.1, respectively, of the Fortran
+   77 and 95 standards.  It checks for a gsymbol for the name, making
+   one if it does not already exist.  If it already exists, then the
+   reference being resolved must correspond to the type of gsymbol.
+   Otherwise, the new symbol is equipped with the attributes of the 
+   reference.  The corresponding code that is called in creating
+   global entities is parse.c.  */
+
+static void
+resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
+{
+  gfc_gsymbol * gsym;
+  uint type;
+
+  type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
+
+  gsym = gfc_get_gsymbol (sym->name);
+
+  if ((gsym->type != GSYM_UNKNOWN && gsym->type != type))
+    global_used (gsym, where);
+
+  if (gsym->type == GSYM_UNKNOWN)
+    {
+      gsym->type = type;
+      gsym->where = *where;
+    }
+
+  gsym->used = 1;
+}
 
 /************* Function resolution *************/
 
@@ -1129,9 +1159,21 @@ static try
 resolve_function (gfc_expr * expr)
 {
   gfc_actual_arglist *arg;
+  gfc_symbol * sym;
   const char *name;
   try t;
   int temp;
+
+  sym = NULL;
+  if (expr->symtree)
+    sym = expr->symtree->n.sym;
+
+  /* If the procedure is not internal, a statement function or a module
+     procedure,it must be external and should be checked for usage.  */
+  if (sym && !sym->attr.dummy && !sym->attr.contained
+	&& sym->attr.proc != PROC_ST_FUNCTION
+	&& !sym->attr.use_assoc)
+    resolve_global_procedure (sym, &expr->where, 0);
 
   /* Switch off assumed size checking and do this again for certain kinds
      of procedure, once the procedure itself is resolved.  */
@@ -1143,19 +1185,44 @@ resolve_function (gfc_expr * expr)
   /* Resume assumed_size checking. */
   need_full_assumed_size--;
 
+  if (sym && sym->ts.type == BT_CHARACTER
+	  && sym->ts.cl && sym->ts.cl->length == NULL)
+    {
+      if (sym->attr.if_source == IFSRC_IFBODY)
+	{
+	  /* This follows from a slightly odd requirement at 5.1.1.5 in the
+	     standard that allows assumed character length functions to be
+	     declared in interfaces but not used.  Picking up the symbol here,
+	     rather than resolve_symbol, accomplishes that.  */
+	  gfc_error ("Function '%s' can be declared in an interface to "
+		     "return CHARACTER(*) but cannot be used at %L",
+		     sym->name, &expr->where);
+	  return FAILURE;
+	}
+
+      /* Internal procedures are taken care of in resolve_contained_fntype.  */
+      if (!sym->attr.dummy && !sym->attr.contained)
+	{
+	  gfc_error ("Function '%s' is declared CHARACTER(*) and cannot "
+		     "be used at %L since it is not a dummy argument",
+		     sym->name, &expr->where);
+	  return FAILURE;
+	}
+    }
+
 /* See if function is already resolved.  */
 
   if (expr->value.function.name != NULL)
     {
       if (expr->ts.type == BT_UNKNOWN)
-	expr->ts = expr->symtree->n.sym->ts;
+	expr->ts = sym->ts;
       t = SUCCESS;
     }
   else
     {
       /* Apply the rules of section 14.1.2.  */
 
-      switch (procedure_kind (expr->symtree->n.sym))
+      switch (procedure_kind (sym))
 	{
 	case PTYPE_GENERIC:
 	  t = resolve_generic_f (expr);
@@ -1214,6 +1281,7 @@ resolve_function (gfc_expr * expr)
   else if (expr->value.function.actual != NULL
 	     && expr->value.function.isym != NULL
 	     && expr->value.function.isym->generic_id != GFC_ISYM_LBOUND
+	     && expr->value.function.isym->generic_id != GFC_ISYM_LOC
 	     && expr->value.function.isym->generic_id != GFC_ISYM_PRESENT)
     {
       /* Array instrinsics must also have the last upper bound of an
@@ -1484,7 +1552,15 @@ static try
 resolve_call (gfc_code * c)
 {
   try t;
-  
+
+  /* If the procedure is not internal or module, it must be external and
+     should be checked for usage.  */
+  if (c->symtree && c->symtree->n.sym
+	&& !c->symtree->n.sym->attr.dummy
+	&& !c->symtree->n.sym->attr.contained
+	&& !c->symtree->n.sym->attr.use_assoc)
+    resolve_global_procedure (c->symtree->n.sym, &c->loc, 1);
+
   /* Switch off assumed size checking and do this again for certain kinds
      of procedure, once the procedure itself is resolved.  */
   need_full_assumed_size++;
@@ -4778,6 +4854,58 @@ resolve_symbol (gfc_symbol * sym)
 	}
       break;
 
+    case FL_PROCEDURE:
+      /* An external symbol may not have an intializer because it is taken to be
+	 a procedure.  */
+      if (sym->attr.external && sym->value)
+	{
+	  gfc_error ("External object '%s' at %L may not have an initializer",
+		     sym->name, &sym->declared_at);
+	  return;
+	}
+
+      /* 5.1.1.5 of the Standard: A function name declared with an asterisk
+	 char-len-param shall not be array-valued, pointer-valued, recursive
+	 or pure.  ....snip... A character value of * may only be used in the
+	 following ways: (i) Dummy arg of procedure - dummy associates with
+	 actual length; (ii) To declare a named constant; or (iii) External
+	 function - but length must be declared in calling scoping unit.  */
+      if (sym->attr.function
+	    && sym->ts.type == BT_CHARACTER
+	    && sym->ts.cl && sym->ts.cl->length == NULL)
+	{
+	  if ((sym->as && sym->as->rank) || (sym->attr.pointer)
+		 || (sym->attr.recursive) || (sym->attr.pure))
+	    {
+	      if (sym->as && sym->as->rank)
+		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+			   "array-valued", sym->name, &sym->declared_at);
+
+	      if (sym->attr.pointer)
+		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+			   "pointer-valued", sym->name, &sym->declared_at);
+
+	      if (sym->attr.pure)
+		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+			   "pure", sym->name, &sym->declared_at);
+
+	      if (sym->attr.recursive)
+		gfc_error ("CHARACTER(*) function '%s' at %L cannot be "
+			   "recursive", sym->name, &sym->declared_at);
+
+	      return;
+	    }
+
+	  /* Appendix B.2 of the standard.  Contained functions give an
+	     error anyway.  Fixed-form is likely to be F77/legacy.  */
+	  if (!sym->attr.contained && gfc_current_form != FORM_FIXED)
+	    gfc_notify_std (GFC_STD_F95_OBS, "CHARACTER(*) function "
+			    "'%s' at %L is obsolescent in fortran 95",
+			    sym->name, &sym->declared_at);
+	}
+
+      break;
+
     case FL_DERIVED:
       /* Add derived type to the derived type list.  */
       {
@@ -4790,14 +4918,6 @@ resolve_symbol (gfc_symbol * sym)
       break;
 
     default:
-
-      /* An external symbol falls through to here if it is not referenced.  */
-      if (sym->attr.external && sym->value)
-	{
-	  gfc_error ("External object '%s' at %L may not have an initializer",
-		     sym->name, &sym->declared_at);
-	  return;
-	}
 
       break;
     }

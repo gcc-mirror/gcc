@@ -1,3 +1,82 @@
+2005-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25964
+	* resolve.c (resolve_function): Exclude statement functions from
+	global reference checking.
+
+	PR fortran/25084
+	PR fortran/20852
+	PR fortran/25085
+	PR fortran/25086
+	* resolve.c (resolve_function): Declare a gfc_symbol to replace the
+	references through the symtree to the symbol associated with the
+	function expresion. Give error on reference to an assumed character
+	length function is defined in an interface or an external function
+	that is not a dummy argument.
+	(resolve_symbol): Give error if an assumed character length function
+	is array-valued, pointer-valued, pure or recursive. Emit warning
+	that character(*) value functions are obsolescent in F95.
+
+	PR fortran/25416
+	* trans-expr.c (gfc_conv_function_call): The above patch to resolve.c
+	prevents any assumed character length function call from getting here
+	except intrinsics such as SPREAD. In this case, ensure that no
+	segfault occurs from referencing non-existent charlen->length->
+	expr_type and provide a backend_decl for the charlen from the charlen
+	of the first actual argument.
+
+	Cure temp name confusion.
+	* trans-expr.c (gfc_get_interface_mapping_array): Change name of
+	temporary from "parm" to "ifm" to avoid clash with temp coming from
+	trans-array.c.
+
+	PR fortran/25124
+	PR fortran/25625
+	* decl.c (get_proc_name): If there is an existing
+	symbol in the encompassing namespace, call errors
+	if it is a procedure of the same name or the kind
+	field is set, indicating a type declaration.
+
+	PR fortran/20881
+	PR fortran/23308
+	PR fortran/25538
+	PR fortran/25710
+	* decl.c (add_global_entry): New function to check
+	for existing global symbol with this name and to
+	create new one if none exists.
+	(gfc_match_entry): Call add_global_entry before
+	matching argument lists for subroutine and function
+	entries.
+	* gfortran.h: Prototype for existing function, global_used.
+	* resolve.c (resolve_global_procedure): New function
+	to check global symbols for procedures.
+	(resolve_call, resolve_function): Calls to this
+	new function for non-contained and non-module
+	procedures.
+	* match.c (match_common): Add check for existing
+	global symbol, creat one if none exists and emit
+	error if there is a clash.
+	* parse.c (global_used): Remove static and use the
+	gsymbol name rather than the new_block name, so that
+	the function can be called from resolve.c.
+	(parse_block_data, parse_module, add_global_procedure):
+	Improve checks for existing gsymbols.  Emit error if
+	already defined or if references were to another type.
+	Set defined flag.
+
+	PR fortran/24276
+	* trans-expr.c (gfc_conv_aliased_arg): New function called by 
+	gfc_conv_function_call that coverts an expression for an aliased
+	component reference to a derived type array into a temporary array
+	of the same type as the component.  The temporary is passed as an
+	actual argument for the procedure call and is copied back to the
+	derived type after the call.
+	(is_aliased_array): New function that detects an array reference
+	that is followed by a component reference.
+	(gfc_conv_function_call): Detect an aliased actual argument with
+	is_aliased_array and convert it to a temporary and back again
+	using gfc_conv_aliased_arg.
+
 2006-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/25324

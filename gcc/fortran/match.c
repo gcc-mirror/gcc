@@ -2247,6 +2247,7 @@ gfc_match_common (void)
   gfc_array_spec *as;
   gfc_equiv * e1, * e2;
   match m;
+  gfc_gsymbol *gsym;
 
   old_blank_common = gfc_current_ns->blank_common.head;
   if (old_blank_common)
@@ -2262,6 +2263,23 @@ gfc_match_common (void)
       m = match_common_name (name);
       if (m == MATCH_ERROR)
 	goto cleanup;
+
+      gsym = gfc_get_gsymbol (name);
+      if (gsym->type != GSYM_UNKNOWN && gsym->type != GSYM_COMMON)
+	{
+	  gfc_error ("Symbol '%s' at %C is already an external symbol that is not COMMON",
+		     sym->name);
+	  goto cleanup;
+	}
+
+      if (gsym->type == GSYM_UNKNOWN)
+	{
+	  gsym->type = GSYM_COMMON;
+	  gsym->where = gfc_current_locus;
+	  gsym->defined = 1;
+	}
+
+      gsym->used = 1;
 
       if (name[0] == '\0')
 	{
