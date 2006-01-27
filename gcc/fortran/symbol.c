@@ -2230,8 +2230,11 @@ gfc_undo_symbols (void)
 }
 
 
-/* Free sym->old_symbol.  sym->old_symbol is mostly a shallow copy of sym; but
-   few components might have been given new values. */
+/* Free sym->old_symbol. sym->old_symbol is mostly a shallow copy of sym; the
+   components of old_symbol that might need deallocation are the "allocatables"
+   that are restored in gfc_undo_symbols(), with two exceptions: namelist and
+   namelist_tail.  In case these differ between old_symbol and sym, it's just
+   because sym->namelist has gotten a few more items.  */
 
 static void
 free_old_symbol (gfc_symbol * sym)
@@ -2244,6 +2247,9 @@ free_old_symbol (gfc_symbol * sym)
 
   if (sym->old_symbol->value != sym->value) 
     gfc_free_expr (sym->old_symbol->value);
+
+  if (sym->old_symbol->formal != sym->formal)
+    gfc_free_formal_arglist (sym->old_symbol->formal);
 
   gfc_free (sym->old_symbol);
   sym->old_symbol = NULL;
