@@ -1,3 +1,8 @@
+2005-01-27  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	* symbol.c (free_old_symbol): Fix confusing comment, and add code
+	  to free old_symbol->formal.
+
 2005-01-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25964
