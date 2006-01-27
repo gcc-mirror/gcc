@@ -1304,6 +1304,7 @@ resolve_function (gfc_expr * expr)
   else if (expr->value.function.actual != NULL
 	     && expr->value.function.isym != NULL
 	     && expr->value.function.isym->generic_id != GFC_ISYM_LBOUND
+	     && expr->value.function.isym->generic_id != GFC_ISYM_LOC
 	     && expr->value.function.isym->generic_id != GFC_ISYM_PRESENT)
     {
       /* Array instrinsics must also have the last upper bound of an
