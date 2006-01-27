@@ -337,6 +337,11 @@ hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
   return 0;
 }
 
+void 
+hook_void_bitmap (bitmap regs ATTRIBUTE_UNUSED)
+{
+}
+
 const char *
 hook_invalid_arg_for_unprototyped_fn (
 	tree typelist ATTRIBUTE_UNUSED,

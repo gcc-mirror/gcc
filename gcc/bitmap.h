@@ -77,8 +77,6 @@ typedef struct bitmap_head_def GTY(()) {
 } bitmap_head;
 
 
-typedef struct bitmap_head_def *bitmap;
-
 /* Global data */
 extern bitmap_element bitmap_zero_bits;	/* Zero bitmap element */
 extern bitmap_obstack bitmap_default_obstack;   /* Default bitmap obstack */

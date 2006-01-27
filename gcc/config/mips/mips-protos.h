@@ -119,6 +119,7 @@ extern bool mips_legitimate_address_p (enum machine_mode, rtx, int);
 extern rtx mips_unspec_address (rtx, enum mips_symbol_type);
 extern bool mips_legitimize_address (rtx *, enum machine_mode);
 extern bool mips_legitimize_move (enum machine_mode, rtx, rtx);
+extern void mips_set_live_on_entry (void *);
 
 extern int m16_uimm3_b (rtx, enum machine_mode);
 extern int m16_simm4_1 (rtx, enum machine_mode);

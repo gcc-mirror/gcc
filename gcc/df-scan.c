@@ -46,6 +46,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "sbitmap.h"
 #include "bitmap.h"
 #include "timevar.h"
+#include "tree.h"
+#include "target.h"
+#include "target-def.h"
 #include "df.h"
 
 #ifndef HAVE_epilogue
@@ -82,8 +85,6 @@ bitmap df_invalidated_by_call = NULL;
 /* Initialize ur_in and ur_out as if all hard registers were partially
    available.  */
 
-bitmap df_all_hard_regs = NULL;
-
 static void df_ref_record (struct dataflow *, rtx, rtx *, 
 			   basic_block, rtx, enum df_ref_type,
 			   enum df_ref_flags, bool record_live);
@@ -99,6 +100,7 @@ static void df_refs_record (struct dataflow *, bitmap);
 static struct df_ref *df_ref_create_structure (struct dataflow *, rtx, rtx *, 
 					       basic_block, rtx, enum df_ref_type, 
 					       enum df_ref_flags);
+static void df_record_entry_block_defs (struct dataflow *);
 static void df_record_exit_block_uses (struct dataflow *);
 static void df_grow_reg_info (struct dataflow *, struct df_ref_info *);
 static void df_grow_ref_info (struct df_ref_info *, unsigned int);
@@ -148,6 +150,7 @@ df_scan_free_internal (struct dataflow *dflow)
   dflow->block_info_size = 0;
 
   BITMAP_FREE (df->hardware_regs_used);
+  BITMAP_FREE (df->entry_block_defs);
   BITMAP_FREE (df->exit_block_uses);
 
   free_alloc_pool (dflow->block_pool);
@@ -252,6 +255,7 @@ df_scan_alloc (struct dataflow *dflow, bitmap blocks_to_rescan)
     }
 
   df->hardware_regs_used = BITMAP_ALLOC (NULL);
+  df->entry_block_defs = BITMAP_ALLOC (NULL);
   df->exit_block_uses = BITMAP_ALLOC (NULL);
 }
 
@@ -284,12 +288,12 @@ df_scan_dump (struct dataflow *dflow ATTRIBUTE_UNUSED, FILE *file ATTRIBUTE_UNUS
   struct df *df = dflow->df;
   int i;
 
-  fprintf (file, "  all hard regs \t");
-  dump_bitmap (file, df_all_hard_regs);
   fprintf (file, "  invalidated by call \t");
   dump_bitmap (file, df_invalidated_by_call);
   fprintf (file, "  hardware regs used \t");
   dump_bitmap (file, df->hardware_regs_used);
+  fprintf (file, "  entry block uses \t");
+  dump_bitmap (file, df->entry_block_defs);
   fprintf (file, "  exit block uses \t");
   dump_bitmap (file, df->exit_block_uses);
   fprintf (file, "  regs ever live \t");
@@ -1247,7 +1251,7 @@ df_uses_record (struct dataflow *dflow, rtx *loc, enum df_ref_type ref_type,
       {
 	rtx dst = SET_DEST (x);
 	gcc_assert (!(flags & DF_REF_IN_NOTE));
-	df_uses_record (dflow, &SET_SRC (x), DF_REF_REG_USE, bb, insn, 0);
+	df_uses_record (dflow, &SET_SRC (x), DF_REF_REG_USE, bb, insn, flags);
 
 	switch (GET_CODE (dst))
 	  {
@@ -1256,7 +1260,7 @@ df_uses_record (struct dataflow *dflow, rtx *loc, enum df_ref_type ref_type,
 		{
 		  df_uses_record (dflow, &SUBREG_REG (dst), 
 				  DF_REF_REG_USE, bb,
-				  insn, DF_REF_READ_WRITE);
+				  insn, flags | DF_REF_READ_WRITE);
 		  break;
 		}
 	      /* Fall through.  */
@@ -1269,7 +1273,7 @@ df_uses_record (struct dataflow *dflow, rtx *loc, enum df_ref_type ref_type,
 	    case MEM:
 	      df_uses_record (dflow, &XEXP (dst, 0),
 			      DF_REF_REG_MEM_STORE,
-			      bb, insn, 0);
+			      bb, insn, flags);
 	      break;
 	    case STRICT_LOW_PART:
 	      {
@@ -1290,9 +1294,9 @@ df_uses_record (struct dataflow *dflow, rtx *loc, enum df_ref_type ref_type,
 			      DF_REF_REG_USE, bb, insn,
 			      DF_REF_READ_WRITE);
 	      df_uses_record (dflow, &XEXP (dst, 1), 
-			      DF_REF_REG_USE, bb, insn, 0);
+			      DF_REF_REG_USE, bb, insn, flags);
 	      df_uses_record (dflow, &XEXP (dst, 2), 
-			      DF_REF_REG_USE, bb, insn, 0);
+			      DF_REF_REG_USE, bb, insn, flags);
 	      dst = XEXP (dst, 0);
 	      break;
 	    default:
@@ -1342,7 +1346,7 @@ df_uses_record (struct dataflow *dflow, rtx *loc, enum df_ref_type ref_type,
 
 	    for (j = 0; j < ASM_OPERANDS_INPUT_LENGTH (x); j++)
 	      df_uses_record (dflow, &ASM_OPERANDS_INPUT (x, j),
-			      DF_REF_REG_USE, bb, insn, 0);
+			      DF_REF_REG_USE, bb, insn, flags);
 	    return;
 	  }
 	break;
@@ -1355,8 +1359,9 @@ df_uses_record (struct dataflow *dflow, rtx *loc, enum df_ref_type ref_type,
     case PRE_MODIFY:
     case POST_MODIFY:
       /* Catch the def of the register being modified.  */
+      flags |= DF_REF_READ_WRITE;
       df_ref_record (dflow, XEXP (x, 0), &XEXP (x, 0), bb, insn, 
-		     DF_REF_REG_DEF, DF_REF_READ_WRITE, true);
+		     DF_REF_REG_DEF, flags, true);
 
       /* ... Fall through to handle uses ...  */
 
@@ -1562,41 +1567,65 @@ df_bb_refs_record (struct dataflow *dflow, basic_block bb)
     {
       unsigned int i;
       /* Mark the registers that will contain data for the handler.  */
-      if (current_function_calls_eh_return)
-	for (i = 0; ; ++i)
-	  {
-	    unsigned regno = EH_RETURN_DATA_REGNO (i);
-	    if (regno == INVALID_REGNUM)
-	      break;
-	    df_ref_record (dflow, regno_reg_rtx[i], &regno_reg_rtx[i], bb, NULL, 
-		           DF_REF_REG_DEF, DF_REF_ARTIFICIAL | DF_REF_AT_TOP, false);
-	  }
+      for (i = 0; ; ++i)
+	{
+	  unsigned regno = EH_RETURN_DATA_REGNO (i);
+	  if (regno == INVALID_REGNUM)
+	    break;
+	  df_ref_record (dflow, regno_reg_rtx[i], &regno_reg_rtx[i], bb, NULL,
+			 DF_REF_REG_DEF, DF_REF_ARTIFICIAL | DF_REF_AT_TOP,
+			 false);
+	}
     }
 #endif
 
-#ifdef EH_USES
-  /*  This code is putting in a artificial ref for the use at the TOP
-      of the block that receives the exception.  It is too cumbersome
-      to actually put the ref on the edge.  We could either model this
-      at the top of the receiver block or the bottom of the sender
-      block.
 
-      The bottom of the sender block is problematic because not all
-      out-edges of the a block are eh-edges.  However, it is true that
-      all edges into a block are either eh-edges or none of them are
-      eh-edges.  Thus, we can model this at the top of the eh-receiver
-      for all of the edges at once. */
   if ((df->flags & DF_HARD_REGS)
       && df_has_eh_preds (bb))
     {
+#ifdef EH_USES
       unsigned int i;
+      /* This code is putting in a artificial ref for the use at the
+	 TOP of the block that receives the exception.  It is too
+	 cumbersome to actually put the ref on the edge.  We could
+	 either model this at the top of the receiver block or the
+	 bottom of the sender block.
+
+         The bottom of the sender block is problematic because not all
+         out-edges of the a block are eh-edges.  However, it is true
+         that all edges into a block are either eh-edges or none of
+         them are eh-edges.  Thus, we can model this at the top of the
+         eh-receiver for all of the edges at once. */
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (EH_USES (i))
 	  df_uses_record (dflow, &regno_reg_rtx[i], 
-				   DF_REF_REG_USE, EXIT_BLOCK_PTR, NULL,
-				   DF_REF_ARTIFICIAL | DF_REF_AT_TOP);
-    }
+			  DF_REF_REG_USE, EXIT_BLOCK_PTR, NULL,
+			  DF_REF_ARTIFICIAL | DF_REF_AT_TOP);
 #endif
+
+      /* The following code (down thru the arg_pointer seting APPEARS
+	 to be necessary because there is nothing that actually
+	 describes what the exception handling code may actually need
+	 to keep alive.  */
+      if (reload_completed)
+	{
+	  if (frame_pointer_needed)
+	    {
+	      df_uses_record (dflow, &regno_reg_rtx[FRAME_POINTER_REGNUM],
+			      DF_REF_REG_USE, bb, NULL, DF_REF_ARTIFICIAL);
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+	      df_uses_record (dflow, &regno_reg_rtx[HARD_FRAME_POINTER_REGNUM],
+			      DF_REF_REG_USE, bb, NULL, DF_REF_ARTIFICIAL);
+#endif
+	    }
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  if (fixed_regs[ARG_POINTER_REGNUM])
+	    df_uses_record (dflow, &regno_reg_rtx[ARG_POINTER_REGNUM],
+			    DF_REF_REG_USE, bb, NULL, 
+			    DF_REF_ARTIFICIAL);
+#endif
+	}
+    }
 
   if ((df->flags & DF_HARD_REGS) 
       && bb->index >= NUM_FIXED_BLOCKS)
@@ -1652,6 +1681,9 @@ df_refs_record (struct dataflow *dflow, bitmap blocks)
 
   if (bitmap_bit_p (blocks, EXIT_BLOCK))
     df_record_exit_block_uses (dflow);
+
+  if (bitmap_bit_p (blocks, ENTRY_BLOCK))
+    df_record_entry_block_defs (dflow);
 }
 
 
@@ -1678,6 +1710,108 @@ df_mark_reg (rtx reg, void *vset)
 	bitmap_set_bit  (set, regno + n);
     }
 }
+
+
+/* Record the (conservative) set of hard registers that are defined on
+   entry to the function.  */
+
+static void
+df_record_entry_block_defs (struct dataflow * dflow)
+{
+  unsigned int i; 
+  bitmap_iterator bi;
+  rtx r;
+  struct df * df = dflow->df;
+
+  bitmap_clear (df->entry_block_defs);
+
+  if (! (df->flags & DF_HARD_REGS))
+    return;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      if (FUNCTION_ARG_REGNO_P (i))
+#ifdef INCOMING_REGNO
+	bitmap_set_bit (df->entry_block_defs, INCOMING_REGNO (i));
+#else
+	bitmap_set_bit (df->entry_block_defs, i);
+#endif
+    }
+      
+  /* Once the prologue has been generated, all of these registers
+     should just show up in the first regular block.  */
+  if (HAVE_prologue && epilogue_completed)
+    {
+      /* Defs for the callee saved registers are inserted so that the
+	 pushes have some defining location.  */
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if ((call_used_regs[i] == 0) && (regs_ever_live[i]))
+	  bitmap_set_bit (df->entry_block_defs, i);
+    }
+  else
+    {
+      if (REG_P (INCOMING_RETURN_ADDR_RTX))
+	bitmap_set_bit (df->entry_block_defs, REGNO (INCOMING_RETURN_ADDR_RTX));
+            
+      /* If STATIC_CHAIN_INCOMING_REGNUM == STATIC_CHAIN_REGNUM
+	 only STATIC_CHAIN_REGNUM is defined.  If they are different,
+	 we only care about the STATIC_CHAIN_INCOMING_REGNUM.  */
+#ifdef STATIC_CHAIN_INCOMING_REGNUM
+      bitmap_set_bit (df->entry_block_defs, STATIC_CHAIN_INCOMING_REGNUM);
+#else 
+#ifdef STATIC_CHAIN_REGNUM
+      bitmap_set_bit (df->entry_block_defs, STATIC_CHAIN_REGNUM);
+#endif
+#endif
+      
+      r = TARGET_STRUCT_VALUE_RTX (current_function_decl, true);
+      if (r && REG_P (r))
+	bitmap_set_bit (df->entry_block_defs, REGNO (r));
+    }
+
+  /* These registers are live everywhere.  */
+  if (!reload_completed)
+    {
+      /* Any reference to any pseudo before reload is a potential
+	 reference of the frame pointer.  */
+      bitmap_set_bit (df->entry_block_defs, FRAME_POINTER_REGNUM);
+
+#ifdef EH_USES
+      /* The ia-64, the only machine that uses this, does not define these 
+	 until after reload.  */
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (EH_USES (i))
+	  {
+	    bitmap_set_bit (df->entry_block_defs, i);
+	  }
+#endif
+      
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      /* Pseudos with argument area equivalences may require
+	 reloading via the argument pointer.  */
+      if (fixed_regs[ARG_POINTER_REGNUM])
+	bitmap_set_bit (df->entry_block_defs, ARG_POINTER_REGNUM);
+#endif
+	  
+#ifdef PIC_OFFSET_TABLE_REGNUM
+      /* Any constant, or pseudo with constant equivalences, may
+	 require reloading from memory using the pic register.  */
+      if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+	  && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
+	bitmap_set_bit (df->entry_block_defs, PIC_OFFSET_TABLE_REGNUM);
+#endif
+    }
+
+  (*targetm.live_on_entry) (df->entry_block_defs);
+
+  EXECUTE_IF_SET_IN_BITMAP (df->entry_block_defs, 0, i, bi)
+    {
+      df_ref_record (dflow, regno_reg_rtx[i], &regno_reg_rtx[i], 
+		     ENTRY_BLOCK_PTR, NULL, 
+		     DF_REF_REG_DEF, DF_REF_ARTIFICIAL , false);
+    }
+}
+
 
 /* Record the set of hard registers that are used in the exit block.  */
 
@@ -1826,11 +1960,6 @@ df_hard_reg_init (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
     if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
       bitmap_set_bit (df_invalidated_by_call, i);
-  
-  df_all_hard_regs = BITMAP_ALLOC (&persistent_obstack);
-  
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    bitmap_set_bit (df_all_hard_regs, i);
   
   initialized = true;
 }

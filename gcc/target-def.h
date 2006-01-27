@@ -185,6 +185,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_ASM_FILE_END hook_void_void
 #endif
 
+#ifndef TARGET_EXTRA_LIVE_ON_ENTRY
+#define TARGET_EXTRA_LIVE_ON_ENTRY hook_void_bitmap
+#endif
+
 #ifndef TARGET_ASM_FILE_START_APP_OFF
 #define TARGET_ASM_FILE_START_APP_OFF false
 #endif
@@ -625,6 +629,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_INVALID_BINARY_OP,			\
   TARGET_SECONDARY_RELOAD,			\
   TARGET_CXX,					\
+  TARGET_EXTRA_LIVE_ON_ENTRY,                    \
   TARGET_UNWIND_TABLES_DEFAULT,			\
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_CTORS_DTORS,			\

@@ -2337,9 +2337,9 @@ df-problems.o : df-problems.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    hard-reg-set.h $(BASIC_BLOCK_H) $(DF_H) bitmap.h sbitmap.h $(TM_P_H) \
    $(FLAGS_H) output.h
 df-scan.o : df-scan.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-   insn-config.h $(RECOG_H) $(FUNCTION_H) $(REGS_H) alloc-pool.h hard-reg-set.h \
-   $(BASIC_BLOCK_H) $(DF_H) bitmap.h sbitmap.h $(TM_P_H) $(FLAGS_H) \
-   output.h
+   insn-config.h $(RECOG_H) $(FUNCTION_H) $(REGS_H) alloc-pool.h \
+   hard-reg-set.h $(BASIC_BLOCK_H) $(DF_H) bitmap.h sbitmap.h $(TM_P_H) \
+   $(FLAGS_H) $(TARGET_H) $(TARGET_DEF_H) $(TREE_H) output.h tree-pass.h 
 var-tracking.o : var-tracking.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(TREE_H) hard-reg-set.h insn-config.h reload.h $(FLAGS_H) \
    $(BASIC_BLOCK_H) output.h sbitmap.h alloc-pool.h $(FIBHEAP_H) $(HASHTAB_H) \

@@ -211,7 +211,12 @@ enum df_ref_flags
     DF_REF_IN_NOTE = 16,
 
     /* This flag is set if this ref is really a clobber, and not a def.  */
-    DF_REF_CLOBBER = 32
+    DF_REF_CLOBBER = 32,
+
+    /* True if ref is dead (i.e. the next ref is a def or clobber or
+       the end of the function.)  This is only valid the RI problem
+       has been set in this df instance.  */
+    DF_REF_DIES_AFTER_THIS_USE = 64
   };
 
 
@@ -223,7 +228,10 @@ struct df_ref
   rtx reg;			/* The register referenced.  */
   unsigned int regno;           /* The register number referenced.  */
   basic_block bb;               /* Basic block containing the instruction. */
-  rtx insn;			/* Insn containing ref.  NB: THIS MAY BE NULL.  */
+
+  /* Insn containing ref. This will be null if this is an artificial
+     reference.  */
+  rtx insn;
   rtx *loc;			/* The location of the reg.  */
   struct df_link *chain;	/* Head of def-use, use-def.  */
   unsigned int id;		/* Location in table.  */
@@ -316,6 +324,7 @@ struct df
   struct df_insn_info **insns;   /* Insn table, indexed by insn UID.  */
   unsigned int insns_size;       /* Size of insn table.  */
   bitmap hardware_regs_used;     /* The set of hardware registers used.  */
+  bitmap entry_block_defs;       /* The set of hardware registers live on entry to the function.  */
   bitmap exit_block_uses;        /* The set of hardware registers used in exit block.  */
 };
 
@@ -421,8 +430,6 @@ extern bitmap df_invalidated_by_call;
 
 /* Initialize ur_in and ur_out as if all hard registers were partially
 available.  */
-
-extern bitmap df_all_hard_regs;
 
 /* The way that registers are processed, especially hard registers,
    changes as the compilation proceeds. These states are passed to

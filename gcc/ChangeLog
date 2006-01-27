@@ -1,3 +1,50 @@
+2006-01-27  Daniel Berlin  <dberlin@dberlin.org>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR rtl-optimization/24762 
+	* doc/tm.texi: Added TARGET_EXTRA_LIVE_ON_ENTRY.
+	* targhooks.c (hook_void_bitmap): New hook prototype.
+	* targhoohs.h (hook_void_bitmap): Ditto.
+	* bitmap.h (bitmap_head_def): Moved to coretypes.h.
+	* coretypes.h (bitmap_head_def): Moved from bitmap.h.
+	* target.h (live_on_entry): New function pointer.
+	* df-scan.c (df_all_hard_regs): Removed.
+	(df_scan_dump, df_hard_reg_init): Removed df_all_hard_regs.
+	(df_scan_free_internal): Added df->entry_block_defs.
+	(df_scan_alloc): Ditto.
+	(df_scan_dump): Ditto.
+	(df_uses_record): Plumbed flag field properly thru calls.
+	Record EH_RETURN_DATA_REGNO in eh blocks unconditionally.
+	This part fixes PR24762.
+	(df_bb_refs_record): Added code to make the frame and arg
+	pointers live in EH blocks.
+	(df_refs_record): Added call to df_record_entry_block_defs.
+	(df_record_entry_block_defs): New function.
+	* df-core.c: Added comments to describe new artifical defs.
+	* df.h (DF_REF_DIES_AFTER_THIS_USE): New flag in enum df_ref_flags.
+	(entry_block_defs): New field in struct df.
+	(df_all_hard_regs): Deleted.
+	* target-def.h: Added TARGET_EXTRA_LIVE_ON_ENTRY.
+	* df-problems.c (df_ru_bb_local_compute_process_def):
+	Added code to handle artifical defs in the entry to a function.
+	(df_ru_bb_local_compute): Ditto.
+	(df_rd_bb_local_compute_process_def):  Ditto.
+	(df_rd_bb_local_compute): Ditto.
+	(df_lr_bb_local_compute): Ditto.
+	(df_ur_bb_local_compute): Ditto.
+	(df_urec_bb_local_compute):  Ditto.
+	(df_chain_create_bb):  Ditto.
+	(df_ur_local_finalize):	Removed entry.
+	(df_urec_init): Ditto.
+	(df_urec_local_finalize): Ditto.
+	(df_ri_bb_compute): Added detection of last use of pseudos.
+	* Makefile.in (df-scan.o): Updated dependencies.
+	* config/mips/mips-protos.h (mips_set_live_on_entry): Added.
+	* config/mips/mips.c (mips_set_live_on_entry): Added.
+	* config/mips/mips.c (TARGET_EXTRA_LIVE_ON_ENTRY): Added value
+	for target hook.
+	* dce.c (marked_insn_p): Added code to handle artifical defs.
+
 2006-01-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/emmintrin.h (_mm_cvtsd_f64): Add missing Intel
