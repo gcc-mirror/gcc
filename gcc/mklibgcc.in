@@ -1,6 +1,7 @@
 #!/bin/sh
 # Construct makefile for libgcc.
-#   Copyright (C) 2000, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+#   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2006
+#   Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 
@@ -332,6 +333,11 @@ for ml in $MULTILIBS; do
 
       if [ "$fpbit" ] ; then
 	  for name in $fpfuncs; do
+	      case "$name" in
+		# _sf_to_tf and _df_to_tf require tp-bit.c
+		# being compiled in.
+		_[sd]f_to_tf) [ -z "$TPBIT" ] && continue;;
+	      esac
 	      if [ "$libgcc_s_so" ]; then
 		  out="libgcc/${dir}/${name}${objext}"
 		  outS="libgcc/${dir}/${name}_s${objext}"

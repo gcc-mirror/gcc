@@ -1,5 +1,5 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 1997, 2000, 2001, 2003, 2004, 2005
+   Copyright (C) 1997, 2000, 2001, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -311,6 +311,8 @@ do {									\
 /* Darwin only runs on PowerPC, so short-circuit POWER patterns.  */
 #undef  TARGET_POWER
 #define TARGET_POWER 0
+#undef  TARGET_IEEEQUAD
+#define TARGET_IEEEQUAD 0
 
 /* Since Darwin doesn't do TOCs, stub this out.  */
 

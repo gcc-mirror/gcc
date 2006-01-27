@@ -253,7 +253,11 @@ GCC_4.0.0 {
   __multc3
 }
 
-%inherit GCC_4.2.0 GCC_4.0.0
+%inherit GCC_4.1.0 GCC_4.0.0
+GCC_4.1.0 {
+}
+
+%inherit GCC_4.2.0 GCC_4.1.0
 GCC_4.2.0 {
   # unsigned-to-floating conversions
   __floatunsisf

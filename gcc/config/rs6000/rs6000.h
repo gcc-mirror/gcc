@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -291,6 +292,7 @@ extern const char *rs6000_traceback_name; /* Type of traceback table.  */
 /* These are separate from target_flags because we've run out of bits
    there.  */
 extern int rs6000_long_double_type_size;
+extern int rs6000_ieeequad;
 extern int rs6000_altivec_abi;
 extern int rs6000_spe_abi;
 extern int rs6000_float_gprs;
@@ -316,6 +318,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #endif
 
 #define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
+#define TARGET_IEEEQUAD rs6000_ieeequad
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 
 #define TARGET_SPE_ABI 0
@@ -1214,8 +1217,8 @@ enum reg_class
 /* Return a class of registers that cannot change FROM mode to TO mode.  */
 
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)			  \
-  (((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN)		  \
-    && GET_MODE_SIZE (FROM) >= 8 && GET_MODE_SIZE (TO) >= 8)		  \
+  (!TARGET_IEEEQUAD							  \
+   && GET_MODE_SIZE (FROM) >= 8 && GET_MODE_SIZE (TO) >= 8		  \
    ? 0									  \
    : GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)				  \
    ? reg_classes_intersect_p (FLOAT_REGS, CLASS)			  \
