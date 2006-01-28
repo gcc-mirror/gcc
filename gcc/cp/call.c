@@ -6029,9 +6029,9 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
 
 	      if (warn)
 		{
-		  warning (0, "passing %qT chooses %qT over %qT",
-			      type, type1, type2);
-		  warning (0, "  in call to %qD", w->fn);
+		  warning (OPT_Wsign_promo, "passing %qT chooses %qT over %qT",
+                           type, type1, type2);
+		  warning (OPT_Wsign_promo, "  in call to %qD", w->fn);
 		}
 	      else
 		add_warning (w, l);
@@ -6088,10 +6088,10 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
 	  tree source = source_type (w->convs[0]);
 	  if (! DECL_CONSTRUCTOR_P (w->fn))
 	    source = TREE_TYPE (source);
-	  warning (0, "choosing %qD over %qD", w->fn, l->fn);
-	  warning (0, "  for conversion from %qT to %qT",
+	  warning (OPT_Wconversion, "choosing %qD over %qD", w->fn, l->fn);
+	  warning (OPT_Wconversion, "  for conversion from %qT to %qT",
 		   source, w->second_conv->type);
-	  warning (0, "  because conversion sequence for the argument is better");
+	  inform ("  because conversion sequence for the argument is better");
 	}
       else
 	add_warning (w, l);
