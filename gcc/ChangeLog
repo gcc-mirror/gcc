@@ -3,6 +3,10 @@
 	* expmed.c (const_mult_add_overflow_p): Remove.
 	* expr.h: Remove the prototype for const_mult_add_overflow_p.
 
+	* recog.c (validate_replace_rtx_subexp): Remove.
+	* recog.h: Remove the prototype for
+	validate_replace_rtx_subexp.
+
 2006-01-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): -msoft-float
