@@ -1,3 +1,14 @@
+2006-01-28  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): -msoft-float
+	and -mlong-double-128 are incompatible.
+	* config/rs6000/aix52.h (SUBTARGET_OVERRIDE_OPTIONS): Same.
+	* config/rs6000/t-aix43 (LIB2FUNCS_EXTRA): Add ppc64-fp.c.
+	(TARGET_LIBGCC2_CFLAGS): Define.
+	* config/rs6000/t-aix52 (LIB2FUNCS_EXTRA): Same.
+	(TARGET_LIBGCC2_CFLAGS): Same.
+	* config/rs6000/ppc64-fp.c: Compile for 64-bit AIX.
+
 2006-01-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR c/19606.
