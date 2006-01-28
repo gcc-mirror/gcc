@@ -319,7 +319,6 @@ extern void slpeel_verify_cfg_after_peeling (struct loop *, struct loop *);
   General Vectorization Utilities
  *************************************************************************/
 /** In tree-vectorizer.c **/
-extern tree vect_strip_conversion (tree);
 extern tree get_vectype_for_scalar_type (tree);
 extern bool vect_is_simple_use (tree, loop_vec_info, tree *, tree *,
 				enum vect_def_type *);
