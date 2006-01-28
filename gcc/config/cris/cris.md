@@ -1,5 +1,5 @@
 ;; GCC machine description for CRIS cpu cores.
-;; Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+;; Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 ;; Free Software Foundation, Inc.
 ;; Contributed by Axis Communications.
 
@@ -3280,7 +3280,10 @@
     || rtx_equal_p (operands[3], operands[2]))"
   [(set (match_dup 3) (plus:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (match_dup 4))]
-  "operands[4] = replace_equiv_address (operands[5], operands[3]);")
+{
+  operands[4] = replace_equiv_address (operands[5], operands[3]);
+  cris_order_for_addsi3 (operands, 1);
+})
 
 ;; move.S1 ry,[rx=rx+rz.S2]
 
@@ -3320,7 +3323,10 @@
     || rtx_equal_p (operands[3], operands[1]))"
   [(set (match_dup 3) (plus:SI (match_dup 0) (match_dup 1)))
    (set (match_dup 5) (match_dup 2))]
-  "operands[5] = replace_equiv_address (operands[6], operands[3]);")
+{
+  operands[5] = replace_equiv_address (operands[6], operands[3]);
+  cris_order_for_addsi3 (operands, 0);
+})
 
 ;; clear.[bwd] [rx=rx+rz.S2]
 
@@ -3357,7 +3363,7 @@
     || rtx_equal_p (operands[2], operands[1]))"
   [(set (match_dup 2) (plus:SI (match_dup 0) (match_dup 1)))
    (set (mem:BWD (match_dup 2)) (const_int 0))]
-  "")
+  "cris_order_for_addsi3 (operands, 0);")
 
 ;; mov(s|u).S1 [rx=rx+rz.S2],ry
 
@@ -3399,7 +3405,10 @@
     || rtx_equal_p (operands[2], operands[3]))"
   [(set (match_dup 3) (plus:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (match_op_dup 4 [(match_dup 5)]))]
-  "operands[5] = replace_equiv_address (XEXP (operands[4], 0), operands[3]);")
+{
+  operands[5] = replace_equiv_address (XEXP (operands[4], 0), operands[3]);
+  cris_order_for_addsi3 (operands, 1);
+})
 
 ;; op.S1 [rx=rx+i],ry
 
@@ -3419,7 +3428,10 @@
     || rtx_equal_p (operands[4], operands[3]))"
   [(set (match_dup 4) (plus:SI (match_dup 2) (match_dup 3)))
    (set (match_dup 0) (match_op_dup 5 [(match_dup 1) (match_dup 6)]))]
-  "operands[6] = replace_equiv_address (XEXP (operands[5], 1), operands[4]);")
+{
+  operands[6] = replace_equiv_address (XEXP (operands[5], 1), operands[4]);
+  cris_order_for_addsi3 (operands, 2);
+})
 
 ;; op.S1 [rx=rx+rz.S2],ry
 
@@ -3487,7 +3499,10 @@
     || rtx_equal_p (operands[4], operands[3]))"
   [(set (match_dup 4) (plus:SI (match_dup 2) (match_dup 3)))
    (set (match_dup 0) (match_op_dup 5 [(match_dup 6) (match_dup 1)]))]
-  "operands[6] = replace_equiv_address (XEXP (operands[5], 0), operands[4]);")
+{
+  operands[6] = replace_equiv_address (XEXP (operands[5], 0), operands[4]);
+  cris_order_for_addsi3 (operands, 2);
+})
 
 ;; op(s|u).S1 [rx=rx+rz.S2],ry
 
@@ -3538,9 +3553,12 @@
     || rtx_equal_p (operands[4], operands[3]))"
   [(set (match_dup 4) (plus:SI (match_dup 2) (match_dup 3)))
    (set (match_dup 0) (match_op_dup 5 [(match_dup 1) (match_dup 7)]))]
-  "operands[7] = gen_rtx_fmt_e (GET_CODE (operands[6]), GET_MODE (operands[6]),
-				replace_equiv_address (XEXP (operands[6], 0),
-						       operands[4]));")
+{
+  operands[7] = gen_rtx_fmt_e (GET_CODE (operands[6]), GET_MODE (operands[6]),
+			       replace_equiv_address (XEXP (operands[6], 0),
+						      operands[4]));
+  cris_order_for_addsi3 (operands, 2);
+})
 
 ;; op(s|u).S1 [rx=rx+rz.S2],ry (swapped, plus or bound)
 
@@ -3589,9 +3607,12 @@
     || rtx_equal_p (operands[4], operands[3]))"
   [(set (match_dup 4) (plus:SI (match_dup 2) (match_dup 3)))
    (set (match_dup 0) (match_op_dup 6 [(match_dup 7) (match_dup 1)]))]
-  "operands[7] = gen_rtx_fmt_e (GET_CODE (operands[5]), GET_MODE (operands[5]),
-				replace_equiv_address (XEXP (operands[5], 0),
-						       operands[4]));")
+{
+  operands[7] = gen_rtx_fmt_e (GET_CODE (operands[5]), GET_MODE (operands[5]),
+			       replace_equiv_address (XEXP (operands[5], 0),
+						      operands[4]));
+  cris_order_for_addsi3 (operands, 2);
+})
 
 ;; Splits for addressing prefixes that have no side-effects, so we can
 ;; fill a delay slot.  Never split if we lose something, though.

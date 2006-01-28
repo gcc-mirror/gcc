@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Axis Communications.
 
@@ -49,6 +49,7 @@ extern int cris_cfun_uses_pic_table (void);
 extern rtx cris_gen_movem_load (rtx, rtx, int);
 extern rtx cris_emit_movem_store (rtx, rtx, int, bool);
 extern void cris_expand_pic_call_address (rtx *);
+extern void cris_order_for_addsi3 (rtx *, int);
 #endif /* RTX_CODE */
 extern void cris_asm_output_label_ref (FILE *, char *);
 extern void cris_target_asm_named_section (const char *, unsigned int, tree);

@@ -1,3 +1,16 @@
+2006-01-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/25947
+	* config/cris/cris.c (cris_order_for_addsi3): New function.
+	* config/cris/cris-protos.h: Prototype it.
+	* config/cris/cris.md (split for "move.S1 [rx=rx+i],ry")
+	(split for "move.S1 ry,[rx=rx+i]", split for "clear.[bwd] [rx=rx+i]")
+	(split for "mov(s|u).S1 [rx=rx+i],ry", split for "op.S1 [rx=rx+i],ry")
+	(split for "op.S1 [rx=rx+i],ry (swapped)")
+	(split for "op(s|u).S1 [rx=rx+i],ry")
+	(split for "op(s|u).S1 [rx=rx+i],ry (swapped, plus or bound)"):
+	Apply cris_order_for_addsi3 when generating addsi3 insns.
+
 2006-01-26 Alexandre Oliva  <aoliva@redhat.com>
 
 	PR other/24829
