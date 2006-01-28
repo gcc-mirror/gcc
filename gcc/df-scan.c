@@ -1750,8 +1750,10 @@ df_record_entry_block_defs (struct dataflow * dflow)
     }
   else
     {
+#ifdef INCOMING_RETURN_ADDR_RTX
       if (REG_P (INCOMING_RETURN_ADDR_RTX))
 	bitmap_set_bit (df->entry_block_defs, REGNO (INCOMING_RETURN_ADDR_RTX));
+#endif
             
       /* If STATIC_CHAIN_INCOMING_REGNUM == STATIC_CHAIN_REGNUM
 	 only STATIC_CHAIN_REGNUM is defined.  If they are different,
