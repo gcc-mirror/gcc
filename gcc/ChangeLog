@@ -1,3 +1,8 @@
+2006-01-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* df-scan.c (df_record_entry_block_defs): Check if
+	INCOMING_RETURN_ADDR_RTX is defined.
+
 2006-01-27  Daniel Berlin  <dberlin@dberlin.org>
 	    Kenneth Zadeck <zadeck@naturalbridge.com>
 
