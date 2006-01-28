@@ -7,6 +7,10 @@
 	* cfgloopmanip.c (split_loop_bb): Remove.
 	* cfgloop.h: Remove the prototype for split_loop_bb.
 
+	* cfgloop.c (flow_loop_outside_edge_p): Remove.
+	* cfgloop.h: Remove the prototype for
+	flow_loop_outside_edge_p.
+
 2006-01-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* df-scan.c (df_record_entry_block_defs): Check if
