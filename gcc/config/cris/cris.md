@@ -2679,11 +2679,16 @@
 {
   if (GET_CODE (operands[2]) == CONST_INT)
     {
-      if (INTVAL (operands[2]) < 256)
-	return "bound.b %2,%0";
+      /* Constant operands are zero-extended, so only 32-bit operands
+	 may be negative.  */
+      if (INTVAL (operands[2]) >= 0)
+	{
+	  if (INTVAL (operands[2]) < 256)
+	    return "bound.b %2,%0";
 
-      if (INTVAL (operands[2]) < 65536)
-	return "bound.w %2,%0";
+	  if (INTVAL (operands[2]) < 65536)
+	    return "bound.w %2,%0";
+	}
     }
   else if (which_alternative == 3)
     return "bound.d %2,%1,%0";

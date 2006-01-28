@@ -1,5 +1,9 @@
 2006-01-28  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/25718
+	* config/cris/cris.md ("uminsi3"): Don't use 8- or 16-bit sizes
+	for a negative bound.
+
 	PR target/25947
 	* config/cris/cris.c (cris_order_for_addsi3): New function.
 	* config/cris/cris-protos.h: Prototype it.
