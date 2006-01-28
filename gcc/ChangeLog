@@ -17,6 +17,9 @@
 	free_partial_schedule, reset_partial_schedule): Make them
 	static.
 
+	* hooks.c (hook_bool_rtx_int_false): Remove.
+	* hooks.h: Remove the prototype for hook_bool_rtx_int_false.
+
 2006-01-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): -msoft-float
