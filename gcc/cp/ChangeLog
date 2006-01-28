@@ -1,3 +1,15 @@
+2006-01-28  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* class.c (check_bases): Likewise.
+	(maybe_warn_about_overly_private_class): Likewise.
+	(check_field_decls): Likewise.
+	(layout_empty_base): Likewise.
+	(layout_virtual_bases): Likewise.
+	(layout_class_type): Likewise.
+
+	* call.c (joust): Pass option code to warning.  Use inform for
+	explanation. 
+
 2006-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25999
