@@ -468,7 +468,7 @@ cris_op_str (rtx x)
       break;
 
     case UMIN:
-      /* Used to control the sign/zero-extend character for the 'e' modifier.
+      /* Used to control the sign/zero-extend character for the 'E' modifier.
 	 BOUND has none.  */
       cris_output_insn_is_bound = 1;
       return "bound";
@@ -872,6 +872,13 @@ cris_print_operand (FILE *file, rtx x, int code)
       break;
 
     case 'e':
+      /* Like 'E', but ignore state set by 'x'.  FIXME: Use code
+	 iterators ("code macros") and attributes in cris.md to avoid
+	 the need for %x and %E (and %e) and state passed between
+	 those modifiers.  */
+      cris_output_insn_is_bound = 0;
+      /* FALL THROUGH.  */
+    case 'E':
       /* Print 's' if operand is SIGN_EXTEND or 'u' if ZERO_EXTEND unless
 	 cris_output_insn_is_bound is nonzero.  */
       if (GET_CODE (operand) != SIGN_EXTEND

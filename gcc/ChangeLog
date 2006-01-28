@@ -1,5 +1,16 @@
 2006-01-28  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/25706
+	* config/cris/cris.md ("*extopqihi_side", "*extop<mode>si_side")
+	("*extop<mode>si_swap_side_biap", "*extop<mode>si_swap_side",
+	("*extopqihi", "*extop<mode>si", "*extop<mode>si_swap"): Use %E
+	output pattern modifier, not %e.
+	* config/cris/cris.c (cris_op_str): Update comment about pattern
+	modifier.
+	(cris_print_operand) <case 'e'>: Clear cris_output_insn_is_bound
+	before falling through into...
+	<case 'E'>: Redefined from old 'e' case.
+
 	PR target/25718
 	* config/cris/cris.md ("uminsi3"): Don't use 8- or 16-bit sizes
 	for a negative bound.
