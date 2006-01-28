@@ -30,10 +30,6 @@ extern rtx get_hard_reg_initial_reg (struct function *, rtx);
 extern void emit_initial_value_sets (void);
 extern void allocate_initial_values (rtx *);
 
-/* Copy a declaration when one function is substituted inline into
-   another.  */
-extern tree copy_decl_for_inlining (tree, tree, tree);
-
 /* Check whether there's any attribute in a function declaration that
    makes the function uninlinable.  Returns false if it finds any,
    true otherwise.  */

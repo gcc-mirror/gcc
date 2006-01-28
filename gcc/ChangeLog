@@ -7,6 +7,12 @@
 	* recog.h: Remove the prototype for
 	validate_replace_rtx_subexp.
 
+	* integrate.h: Remove the prototype for
+	copy_decl_for_inlining.
+	* rtl.h: Remove the prototype for mark_constant_function.
+	* tree-vectorizer.h: Remove the prototype for
+	vect_strip_conversion.
+
 2006-01-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): -msoft-float
