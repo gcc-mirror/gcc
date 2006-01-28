@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V5.2.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -41,6 +41,12 @@ do {									\
     {									\
       target_flags |= MASK_POWERPC64;					\
       warning (0, "-maix64 requires PowerPC64 architecture remain enabled"); \
+    }									\
+  if (TARGET_SOFT_FLOAT && TARGET_LONG_DOUBLE_128)			\
+    {									\
+      rs6000_long_double_type_size = 64;				\
+      if (rs6000_explicit_options.long_double)				\
+	warning (0, "soft-float and long-double-128 are incompatible");	\
     }									\
   if (TARGET_POWERPC64 && ! TARGET_64BIT)				\
     {									\
