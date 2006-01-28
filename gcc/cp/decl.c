@@ -10080,6 +10080,17 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	    DECL_CONTEXT (decl1) = DECL_CONTEXT (DECL_TI_TEMPLATE (decl1));
 	}
       fntype = TREE_TYPE (decl1);
+
+      /* If #pragma weak applies, mark the decl appropriately now.
+	 The pragma only applies to global functions.  Because
+	 determining whether or not the #pragma applies involves
+	 computing the mangled name for the declaration, we cannot
+	 apply the pragma until after we have merged this declaration
+	 with any previous declarations; if the original declaration
+	 has a linkage specification, that specification applies to
+	 the definition as well, and may affect the mangled name.  */
+      if (!DECL_CONTEXT (decl1))
+	maybe_apply_pragma_weak (decl1);
     }
 
   /* Determine the ELF visibility attribute for the function.  We must
@@ -10243,10 +10254,6 @@ start_function (cp_decl_specifier_seq *declspecs,
      cause a syntax error.  */
   if (decl1 == NULL_TREE || TREE_CODE (decl1) != FUNCTION_DECL)
     return 0;
-
-  /* If #pragma weak was used, mark the decl weak now.  */
-  if (global_scope_p (current_binding_level))
-    maybe_apply_pragma_weak (decl1);
 
   if (DECL_MAIN_P (decl1))
     /* main must return int.  grokfndecl should have corrected it
