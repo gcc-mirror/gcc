@@ -1,5 +1,12 @@
 2006-01-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/25999
+	* decl.c (start_preparsed_function): Call maybe_apply_pragma_weak
+	here, not ...
+	(start_function): ... here.
+
+2006-01-28  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/25855
 	* class.c (resolve_address_of_overloaded_function): Adjust use of
 	return value from most_specialized_instantiation.
