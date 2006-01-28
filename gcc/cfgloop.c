@@ -771,15 +771,6 @@ flow_bb_inside_loop_p (const struct loop *loop, const basic_block bb)
   return loop == source_loop || flow_loop_nested_p (loop, source_loop);
 }
 
-/* Return nonzero if edge E enters header of LOOP from outside of LOOP.  */
-
-bool
-flow_loop_outside_edge_p (const struct loop *loop, edge e)
-{
-  gcc_assert (e->dest == loop->header);
-  return !flow_bb_inside_loop_p (loop, e->src);
-}
-
 /* Enumeration predicate for get_loop_body.  */
 static bool
 glb_enum_p (basic_block bb, void *glb_header)
