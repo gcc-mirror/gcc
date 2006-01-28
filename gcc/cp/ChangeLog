@@ -1,5 +1,10 @@
 2006-01-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/25999
+	* decl.c (start_preparsed_function): Call maybe_apply_pragma_weak
+	here, not ...
+	(start_function): ... here.
+
 	PR c++/25855
 	* pt.c (most_speialized_instantiation): When a tie occurs, set the
 	current presumed champion to the next template.

@@ -1,5 +1,8 @@
 2006-01-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/25999
+	* g++.dg/ext/pragmaweak1.C: New test.
+
 	PR c++/25855
 	* g++.dg/template/spec29.C: New test.
 	* g++.dg/template/crash39.C: Tweak error markers.
