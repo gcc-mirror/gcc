@@ -8101,11 +8101,34 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       if (shorten && none_complex)
 	{
 	  int unsigned0, unsigned1;
-	  tree arg0 = get_narrower (op0, &unsigned0);
-	  tree arg1 = get_narrower (op1, &unsigned1);
-	  /* UNS is 1 if the operation to be done is an unsigned one.  */
-	  int uns = TYPE_UNSIGNED (result_type);
+	  tree arg0, arg1;
+	  int uns;
 	  tree type;
+
+	  /* Cast OP0 and OP1 to RESULT_TYPE.  Doing so prevents
+	     excessive narrowing when we call get_narrower below.  For
+	     example, suppose that OP0 is of unsigned int extended
+	     from signed char and that RESULT_TYPE is long long int.
+	     If we explicitly cast OP0 to RESULT_TYPE, OP0 would look
+	     like
+
+	       (long long int) (unsigned int) signed_char
+
+	     which get_narrower would narrow down to
+
+	       (unsigned int) signed char
+
+	     If we do not cast OP0 first, get_narrower would return
+	     signed_char, which is inconsistent with the case of the
+	     explicit cast.  */
+	  op0 = convert (result_type, op0);
+	  op1 = convert (result_type, op1);
+
+	  arg0 = get_narrower (op0, &unsigned0);
+	  arg1 = get_narrower (op1, &unsigned1);
+
+	  /* UNS is 1 if the operation to be done is an unsigned one.  */
+	  uns = TYPE_UNSIGNED (result_type);
 
 	  final_type = result_type;
 

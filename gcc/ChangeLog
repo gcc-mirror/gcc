@@ -1,3 +1,9 @@
+2006-01-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR c/19606.
+	* c-typeck.c (build_binary_op): Perform implicit casts of
+	operands before shortening them.
+
 2006-01-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* df-scan.c (df_record_entry_block_defs): Check if
