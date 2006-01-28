@@ -1,3 +1,8 @@
+2006-01-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* expmed.c (const_mult_add_overflow_p): Remove.
+	* expr.h: Remove the prototype for const_mult_add_overflow_p.
+
 2006-01-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): -msoft-float
