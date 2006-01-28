@@ -119,7 +119,6 @@ extern int peep2_reg_dead_p (int, rtx);
 extern rtx peep2_find_free_register (int, int, const char *,
 				     enum machine_mode, HARD_REG_SET *);
 #endif
-extern void peephole2_optimize (FILE *);
 extern rtx peephole2_insns (rtx, rtx, int *);
 
 extern int store_data_bypass_p (rtx, rtx);

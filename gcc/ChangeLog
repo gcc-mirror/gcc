@@ -14,6 +14,9 @@
 	* emit-rtl.c (init_virtual_regs): Make it static.
 	* function.h: Remove the prototype for init_virtual_regs.
 
+	* recog.c (peephole2_optimize): Make it static.
+	* recog.h: Remove the prototype for peephole2_optimize.
+
 2006-01-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* df-scan.c (df_record_entry_block_defs): Check if
