@@ -1,5 +1,8 @@
 2006-01-28  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/25718
+	* gcc.dg/torture/pr25718-1.c: New test.
+
 	PR target/25947
 	* gcc.dg/torture/pr25947-1.c: New test.
 
