@@ -4889,7 +4889,7 @@ in_sequence_p (void)
 
 /* Put the various virtual registers into REGNO_REG_RTX.  */
 
-void
+static void
 init_virtual_regs (struct emit_status *es)
 {
   rtx *ptr = es->x_regno_reg_rtx;
