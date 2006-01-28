@@ -3033,7 +3033,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 
 /* Perform the peephole2 optimization pass.  */
 
-void
+static void
 peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 {
   rtx insn, prev;
