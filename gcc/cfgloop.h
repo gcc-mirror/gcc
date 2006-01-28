@@ -311,7 +311,6 @@ extern struct loop *loopify (struct loops *, edge, edge,
 struct loop * loop_version (struct loops *, struct loop *, void *,
 			    basic_block *, bool);
 extern bool remove_path (struct loops *, edge);
-extern edge split_loop_bb (basic_block, void *);
 
 /* Induction variable analysis.  */
 
