@@ -52,22 +52,6 @@ static void unloop (struct loops *, struct loop *);
 
 #define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
 
-/* Splits basic block BB after INSN, returns created edge.  Updates loops
-   and dominators.  */
-edge
-split_loop_bb (basic_block bb, void *insn)
-{
-  edge e;
-
-  /* Split the block.  */
-  e = split_block (bb, insn);
-
-  /* Add dest to loop.  */
-  add_bb_to_loop (e->dest, e->src->loop_father);
-
-  return e;
-}
-
 /* Checks whether basic block BB is dominated by DATA.  */
 static bool
 rpe_enum_p (basic_block bb, void *data)
