@@ -1,3 +1,8 @@
+2006-01-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25855
+	* g++.dg/template/spec29.C: New test.
+
 2006-01-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR c/19606.

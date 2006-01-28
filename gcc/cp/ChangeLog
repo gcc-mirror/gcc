@@ -1,3 +1,18 @@
+2006-01-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25855
+	* class.c (resolve_address_of_overloaded_function): Adjust use of
+	return value from most_specialized_instantiation.
+	* pt.c (determine_specialization): Avoid multiple calls to
+	get_bindings.
+	(most_specialized_instantiation): When a tie occurs, set the
+	current presumed champion to the next template.  Return the
+	TREE_LIST node containing the template, rather than the template
+	itself.
+	(most_specialized): Remove.
+	* name-lookup.c (push_overloaded_decl): When duplicate_decls
+	indicates a failed redeclaration, report that to callers.
+
 2006-01-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/16021

@@ -5819,7 +5819,9 @@ resolve_address_of_overloaded_function (tree target_type,
 	  tree match = most_specialized_instantiation (matches);
 
 	  if (match != error_mark_node)
-	    matches = tree_cons (match, NULL_TREE, NULL_TREE);
+	    matches = tree_cons (TREE_PURPOSE (match), 
+				 NULL_TREE, 
+				 NULL_TREE);
 	}
     }
 
