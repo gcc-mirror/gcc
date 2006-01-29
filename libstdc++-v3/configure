@@ -30517,6 +30517,99 @@ _ACEOF
 
   fi
 
+  # Check for the existence of <stdint.h> types.
+  echo "$as_me:$LINENO: checking for ISO C99 support to TR1 in <stdint.h>" >&5
+echo $ECHO_N "checking for ISO C99 support to TR1 in <stdint.h>... $ECHO_C" >&6
+  if test "${ac_c99_stdint_tr1+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <stdint.h>
+int
+main ()
+{
+typedef int8_t          my_int8_t;
+	          typedef int16_t         my_int16_t;
+	          typedef int32_t         my_int32_t;
+	          typedef int64_t         my_int64_t;
+	          typedef int_fast8_t     my_int_fast8_t;
+	          typedef int_fast16_t    my_int_fast16_t;
+	          typedef int_fast32_t    my_int_fast32_t;
+	          typedef int_fast64_t    my_int_fast64_t;
+	          typedef int_least8_t    my_int_least8_t;
+	          typedef int_least16_t   my_int_least16_t;
+	          typedef int_least32_t   my_int_least32_t;
+	          typedef int_least64_t   my_int_least64_t;
+		  typedef intmax_t        my_intmax_t;
+		  typedef intptr_t        my_intptr_t;
+	          typedef uint8_t         my_uint8_t;
+	          typedef uint16_t        my_uint16_t;
+	          typedef uint32_t        my_uint32_t;
+	          typedef uint64_t        my_uint64_t;
+	          typedef uint_fast8_t    my_uint_fast8_t;
+	          typedef uint_fast16_t   my_uint_fast16_t;
+	          typedef uint_fast32_t   my_uint_fast32_t;
+	          typedef uint_fast64_t   my_uint_fast64_t;
+	          typedef uint_least8_t   my_uint_least8_t;
+	          typedef uint_least16_t  my_uint_least16_t;
+	          typedef uint_least32_t  my_uint_least32_t;
+	          typedef uint_least64_t  my_uint_least64_t;
+		  typedef uintmax_t       my_uintmax_t;
+		  typedef uintptr_t       my_uintptr_t;
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_c99_stdint_tr1=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_c99_stdint_tr1=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+  echo "$as_me:$LINENO: result: $ac_c99_stdint_tr1" >&5
+echo "${ECHO_T}$ac_c99_stdint_tr1" >&6
+  if test x"$ac_c99_stdint_tr1" = x"yes"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define _GLIBCXX_USE_C99_STDINT_TR1 1
+_ACEOF
+
+  fi
+
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
