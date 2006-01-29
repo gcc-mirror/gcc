@@ -1,3 +1,7 @@
+2006-01-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* config/mips/mips-protos.h (mips_set_live_on_entry): Deleted.
+
 2006-01-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* expmed.c (const_mult_add_overflow_p): Remove.
