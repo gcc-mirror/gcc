@@ -1,3 +1,13 @@
+2006-01-28  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* combine.c (simplify_comparison <AND>): Check
+	TRULY_NOOP_TRUNCATION before start using a subreg.
+	
+	* config/mips/mips.md (*branch_zero<mode>, 
+	*branch_zero<mode>_inverted, *branch_equality<mode>, 
+	*branch_equality<mode>_inverted, *branch_equality<mode>_mips16): 
+	Remove mode check from comparisons. 
+
 2006-01-28  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* config/mips/mips-protos.h (mips_set_live_on_entry): Deleted.

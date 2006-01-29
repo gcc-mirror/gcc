@@ -4316,9 +4316,9 @@
 (define_insn "*branch_zero<mode>"
   [(set (pc)
 	(if_then_else
-	 (match_operator:GPR 0 "comparison_operator"
-			     [(match_operand:GPR 2 "register_operand" "d")
-			      (const_int 0)])
+	 (match_operator 0 "comparison_operator"
+			 [(match_operand:GPR 2 "register_operand" "d")
+			  (const_int 0)])
 	 (label_ref (match_operand 1 "" ""))
 	 (pc)))]
   "!TARGET_MIPS16"
@@ -4336,9 +4336,9 @@
 (define_insn "*branch_zero<mode>_inverted"
   [(set (pc)
 	(if_then_else
-	 (match_operator:GPR 0 "comparison_operator"
-			     [(match_operand:GPR 2 "register_operand" "d")
-			      (const_int 0)])
+	 (match_operator 0 "comparison_operator"
+			 [(match_operand:GPR 2 "register_operand" "d")
+			  (const_int 0)])
 	 (pc)
 	 (label_ref (match_operand 1 "" ""))))]
   "!TARGET_MIPS16"
@@ -4358,9 +4358,9 @@
 (define_insn "*branch_equality<mode>"
   [(set (pc)
 	(if_then_else
-	 (match_operator:GPR 0 "equality_operator"
-			     [(match_operand:GPR 2 "register_operand" "d")
-			      (match_operand:GPR 3 "register_operand" "d")])
+	 (match_operator 0 "equality_operator"
+			 [(match_operand:GPR 2 "register_operand" "d")
+			  (match_operand:GPR 3 "register_operand" "d")])
 	 (label_ref (match_operand 1 "" ""))
 	 (pc)))]
   "!TARGET_MIPS16"
@@ -4378,9 +4378,9 @@
 (define_insn "*branch_equality<mode>_inverted"
   [(set (pc)
 	(if_then_else
-	 (match_operator:GPR 0 "equality_operator"
-			     [(match_operand:GPR 2 "register_operand" "d")
-			      (match_operand:GPR 3 "register_operand" "d")])
+	 (match_operator 0 "equality_operator"
+			 [(match_operand:GPR 2 "register_operand" "d")
+			  (match_operand:GPR 3 "register_operand" "d")])
 	 (pc)
 	 (label_ref (match_operand 1 "" ""))))]
   "!TARGET_MIPS16"
@@ -4400,9 +4400,9 @@
 (define_insn "*branch_equality<mode>_mips16"
   [(set (pc)
 	(if_then_else
-	 (match_operator:GPR 0 "equality_operator"
-			     [(match_operand:GPR 1 "register_operand" "d,t")
-			      (const_int 0)])
+	 (match_operator 0 "equality_operator"
+			 [(match_operand:GPR 1 "register_operand" "d,t")
+			  (const_int 0)])
 	 (match_operand 2 "pc_or_label_operand" "")
 	 (match_operand 3 "pc_or_label_operand" "")))]
   "TARGET_MIPS16"

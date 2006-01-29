@@ -10295,14 +10295,27 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  /* If this AND operation is really a ZERO_EXTEND from a narrower
 	     mode, the constant fits within that mode, and this is either an
 	     equality or unsigned comparison, try to do this comparison in
-	     the narrower mode.  */
+	     the narrower mode.
+
+	     Note that in:
+
+	     (ne:DI (and:DI (reg:DI 4) (const_int 0xffffffff)) (const_int 0))
+	     -> (ne:DI (reg:SI 4) (const_int 0))
+
+	     unless TRULY_NOOP_TRUNCATION allows it or the register is
+	     known to hold a value of the required mode the
+	     transformation is invalid.  */
 	  if ((equality_comparison_p || unsigned_comparison_p)
 	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	      && (i = exact_log2 ((INTVAL (XEXP (op0, 1))
 				   & GET_MODE_MASK (mode))
 				  + 1)) >= 0
 	      && const_op >> i == 0
-	      && (tmode = mode_for_size (i, MODE_INT, 1)) != BLKmode)
+	      && (tmode = mode_for_size (i, MODE_INT, 1)) != BLKmode
+	      && (TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (tmode),
+					 GET_MODE_BITSIZE (GET_MODE (op0)))
+		  || (REG_P (XEXP (op0, 0))
+		      && reg_truncated_to_mode (tmode, XEXP (op0, 0)))))
 	    {
 	      op0 = gen_lowpart (tmode, XEXP (op0, 0));
 	      continue;
