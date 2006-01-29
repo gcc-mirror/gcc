@@ -4,7 +4,7 @@
 program main
   implicit none
 
-  character (len = 100), target :: string
+  character (len = 30), target :: string
 
   call test (f1 (), 30)
   call test (f2 (50), 50)

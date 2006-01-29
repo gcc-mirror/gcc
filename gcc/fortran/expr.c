@@ -1859,6 +1859,14 @@ gfc_check_assign (gfc_expr * lvalue, gfc_expr * rvalue, int conform)
       return FAILURE;
     }
 
+  if (sym->attr.flavor == FL_PROCEDURE && sym->attr.use_assoc)
+    {
+      gfc_error ("'%s' in the assignment at %L cannot be an l-value "
+		 "since it is a procedure", sym->name, &lvalue->where);
+      return FAILURE;
+    }
+
+
   if (rvalue->rank != 0 && lvalue->rank != rvalue->rank)
     {
       gfc_error ("Incompatible ranks %d and %d in assignment at %L",
@@ -1944,6 +1952,15 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
       return FAILURE;
     }
 
+  if (lvalue->symtree->n.sym->attr.flavor == FL_PROCEDURE
+	&& lvalue->symtree->n.sym->attr.use_assoc)
+    {
+      gfc_error ("'%s' in the pointer assignment at %L cannot be an "
+		 "l-value since it is a procedure",
+		 lvalue->symtree->n.sym->name, &lvalue->where);
+      return FAILURE;
+    }
+
   attr = gfc_variable_attr (lvalue, NULL);
   if (!attr.pointer)
     {
@@ -1976,6 +1993,16 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
   if (lvalue->ts.kind != rvalue->ts.kind)
     {
       gfc_error ("Different kind type parameters in pointer "
+		 "assignment at %L", &lvalue->where);
+      return FAILURE;
+    }
+
+  if (lvalue->ts.type == BT_CHARACTER
+	&& lvalue->ts.cl->length && rvalue->ts.cl->length
+	&& abs (gfc_dep_compare_expr (lvalue->ts.cl->length,
+				      rvalue->ts.cl->length)) == 1)
+    {
+      gfc_error ("Different character lengths in pointer "
 		 "assignment at %L", &lvalue->where);
       return FAILURE;
     }
