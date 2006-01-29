@@ -468,7 +468,7 @@ static conversion *
 alloc_conversion (conversion_kind kind)
 {
   conversion *c;
-  c = conversion_obstack_alloc (sizeof (conversion));
+  c = (conversion *) conversion_obstack_alloc (sizeof (conversion));
   c->kind = kind;
   return c;
 }
@@ -493,7 +493,7 @@ validate_conversion_obstack (void)
 static conversion **
 alloc_conversions (size_t n)
 {
-  return conversion_obstack_alloc (n * sizeof (conversion *));
+  return (conversion **) conversion_obstack_alloc (n * sizeof (conversion *));
 }
 
 static conversion *
@@ -1269,8 +1269,8 @@ add_candidate (struct z_candidate **candidates,
 	       tree access_path, tree conversion_path,
 	       int viable)
 {
-  struct z_candidate *cand
-    = conversion_obstack_alloc (sizeof (struct z_candidate));
+  struct z_candidate *cand = (struct z_candidate *)
+    conversion_obstack_alloc (sizeof (struct z_candidate));
 
   cand->fn = fn;
   cand->args = args;
@@ -2442,7 +2442,7 @@ print_z_candidates (struct z_candidate *candidates)
       /* Indent successive candidates by the width of the translation
 	 of the above string.  */
       size_t len = gcc_gettext_width (str) + 1;
-      char *spaces = alloca (len);
+      char *spaces = (char *) alloca (len);
       memset (spaces, ' ', len-1);
       spaces[len - 1] = '\0';
 
@@ -5931,9 +5931,8 @@ source_type (conversion *t)
 static void
 add_warning (struct z_candidate *winner, struct z_candidate *loser)
 {
-  candidate_warning *cw;
-
-  cw = conversion_obstack_alloc (sizeof (candidate_warning));
+  candidate_warning *cw = (candidate_warning *)
+    conversion_obstack_alloc (sizeof (candidate_warning));
   cw->loser = loser;
   cw->next = winner->warnings;
   winner->warnings = cw;

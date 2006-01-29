@@ -1124,7 +1124,7 @@ create_pseudo_type_info (int tk, const char *real_name, ...)
   va_start (ap, real_name);
 
   /* Generate the pseudo type name.  */
-  pseudo_name = alloca (strlen (real_name) + 30);
+  pseudo_name = (char *) alloca (strlen (real_name) + 30);
   strcpy (pseudo_name, real_name);
   strcat (pseudo_name, "_pseudo");
   if (tk >= TK_FIXED)

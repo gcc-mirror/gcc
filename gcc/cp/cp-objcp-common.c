@@ -214,8 +214,8 @@ decl_shadowed_for_var_lookup (tree from)
   struct tree_map *h, in;
   in.from = from;
 
-  h = htab_find_with_hash (shadowed_var_for_decl, &in, 
-			   htab_hash_pointer (from));
+  h = (struct tree_map *) htab_find_with_hash (shadowed_var_for_decl, &in, 
+                                               htab_hash_pointer (from));
   if (h)
     return h->to;
   return NULL_TREE;
