@@ -30239,7 +30239,8 @@ int
 main ()
 {
 int ch;
-	          isblank(ch);
+	          int ret;
+	          ret = isblank(ch);
 
   ;
   return 0;
@@ -30458,17 +30459,18 @@ main ()
 int except, mode;
 	            fexcept_t* pflag;
                     fenv_t* penv;
-	            feclearexcept(except);
-                    fegetexceptflag(pflag, except);
-	            feraiseexcept(except);
-	            fesetexceptflag(pflag, except);
-	            fetestexcept(except);
-	            fegetround();
-	            fesetround(mode);
-	            fegetenv(penv);
-	            feholdexcept(penv);
-	            fesetenv(penv);
-	            feupdateenv(penv);
+	            int ret;
+	            ret = feclearexcept(except);
+	            ret = fegetexceptflag(pflag, except);
+	            ret = feraiseexcept(except);
+	            ret = fesetexceptflag(pflag, except);
+	            ret = fetestexcept(except);
+	            ret = fegetround();
+	            ret = fesetround(mode);
+	            ret = fegetenv(penv);
+	            ret = feholdexcept(penv);
+	            ret = fesetenv(penv);
+	            ret = feupdateenv(penv);
 
   ;
   return 0;
