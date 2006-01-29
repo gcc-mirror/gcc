@@ -520,7 +520,7 @@ read_integral_parameter (const char *p, const char *pname, const int  defval)
    for floor_log2 and exact_log2; see toplev.h.  That construct, however,
    conflicts with the ISO C++ One Definition Rule.   */
 
-#if !defined (__cplusplus)
+#if GCC_VERSION < 3004 || !defined (__cplusplus)
 
 /* Given X, an unsigned number, return the largest int Y such that 2**Y <= X.
    If X is 0, return -1.  */
@@ -572,7 +572,7 @@ exact_log2 (unsigned HOST_WIDE_INT x)
 #endif
 }
 
-#endif /* !defined (__cplusplus)  */
+#endif /*  GCC_VERSION < 3004 || !defined (__cplusplus)  */
 
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
    into ICE messages, which is much more user friendly.  In case the

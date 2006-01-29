@@ -1,4 +1,8 @@
 2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* toplev.c: Fix thinko.
+
+2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 	    Marcin Dalecki  <martin@dalecki.de>
 
 	* toplev.c (floor_log2, exact_log2): Don't define if __cplusplus.
