@@ -1,3 +1,7 @@
+2006-01-28  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.c-torture/execute/20060127-1.c: New test. 
+
 2006-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25999
