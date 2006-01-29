@@ -488,6 +488,7 @@ tr1_headers = \
 	${tr1_srcdir}/cfenv \
 	${tr1_srcdir}/common.h \
 	${tr1_srcdir}/complex \
+	${tr1_srcdir}/cstdint \
 	${tr1_srcdir}/functional \
 	${tr1_srcdir}/functional_iterate.h \
 	${tr1_srcdir}/hashtable \

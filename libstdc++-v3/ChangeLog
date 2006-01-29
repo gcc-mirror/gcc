@@ -1,5 +1,18 @@
 2006-01-29  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/cstdint: New.
+	* include/Makefile.am: Add.
+	* testsuite/tr1/8_c_compatibility/cstdint/types: New.
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Add <stdint.h> checks.
+	* docs/html/ext/tr1.html: Update.
+	* include/Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
+	* testsuite/tr1/8_c_compatibility/cfenv/types.cc: Cosmetic tweak.
+
+2006-01-29  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/26006
 	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Tighten <ctype.h> and
 	<fenv.h> checks.

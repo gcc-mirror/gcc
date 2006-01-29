@@ -29,8 +29,8 @@ void test01()
 #if _GLIBCXX_USE_C99_FENV_TR1
 
   // Check for required typedefs
-  typedef std::tr1::fenv_t    fenv_t_type;
-  typedef std::tr1::fexcept_t fexcept_t_type;
+  typedef std::tr1::fenv_t    my_fenv_t;
+  typedef std::tr1::fexcept_t my_fexcept_t;
   
 #endif
 }

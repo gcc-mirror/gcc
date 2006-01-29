@@ -711,6 +711,10 @@
    in namespace std. */
 #undef _GLIBCXX_USE_C99_MATH
 
+/* Define if C99 types in <stdint.h> should be imported in <tr1/cstdint> in
+   namespace std::tr1. */
+#undef _GLIBCXX_USE_C99_STDINT_TR1
+
 /* Define if iconv and related functions exist and are usable. */
 #undef _GLIBCXX_USE_ICONV
 
