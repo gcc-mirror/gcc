@@ -1,3 +1,7 @@
+2006-01-29  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* df-core.c (df_set_blocks): Deleted all variable.
+
 2006-01-28  Ian Lance Taylor  <ian@airs.com>
 
 	* cgraphunit.c (cgraph_assemble_pending_functions): Call
