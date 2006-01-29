@@ -85,7 +85,7 @@ extract_string (char **pp)
 
   obstack_1grow (&temporary_obstack, '\0');
   *pp = p;
-  return obstack_finish (&temporary_obstack);
+  return (char *) obstack_finish (&temporary_obstack);
 }
 
 static const char *
@@ -148,7 +148,7 @@ afgets (FILE *stream)
   if (obstack_object_size (&temporary_obstack) == 0)
     return NULL;
   obstack_1grow (&temporary_obstack, '\0');
-  return obstack_finish (&temporary_obstack);
+  return (char *) obstack_finish (&temporary_obstack);
 }
 
 void

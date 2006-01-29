@@ -1,5 +1,11 @@
 2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* Make-lang.in (cp-warn): Include CXX_COMPAT_WARN.
+	* repo.c (extract_string, afgets): Use cast when converting from
+	void *. 
+
+2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* call.c (alloc_conversion): Use cast when converting from void *.
 	(alloc_conversions): Likewise.
 	(add_candidate): Likewise.
