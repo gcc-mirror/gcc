@@ -516,6 +516,12 @@ read_integral_parameter (const char *p, const char *pname, const int  defval)
   return atoi (p);
 }
 
+/* When compiling with a recent enough GCC, we use the GNU C "extern inline"
+   for floor_log2 and exact_log2; see toplev.h.  That construct, however,
+   conflicts with the ISO C++ One Definition Rule.   */
+
+#if !defined (__cplusplus)
+
 /* Given X, an unsigned number, return the largest int Y such that 2**Y <= X.
    If X is 0, return -1.  */
 
@@ -565,6 +571,8 @@ exact_log2 (unsigned HOST_WIDE_INT x)
   return floor_log2 (x);
 #endif
 }
+
+#endif /* !defined (__cplusplus)  */
 
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
    into ICE messages, which is much more user friendly.  In case the
@@ -942,7 +950,7 @@ push_srcloc (const char *file, int line)
 {
   struct file_stack *fs;
 
-  fs = xmalloc (sizeof (struct file_stack));
+  fs = XNEW (struct file_stack);
   fs->location = input_location;
   fs->next = input_file_stack;
 #ifdef USE_MAPPED_LOCATION
@@ -1233,7 +1241,7 @@ init_asm_output (const char *name)
       if (asm_file_name == 0)
 	{
 	  int len = strlen (dump_base_name);
-	  char *dumpname = xmalloc (len + 6);
+	  char *dumpname = XNEWVEC (char, len + 6);
 	  memcpy (dumpname, dump_base_name, len + 1);
 	  strip_off_ending (dumpname, len);
 	  strcat (dumpname, ".s");
@@ -1299,7 +1307,7 @@ default_get_pch_validity (size_t *len)
     if (option_affects_pch_p (i, &state))
       *len += state.size;
 
-  result = r = xmalloc (*len);
+  result = r = XNEWVEC (char, *len);
   r[0] = flag_pic;
   r[1] = flag_pie;
   r += 2;
