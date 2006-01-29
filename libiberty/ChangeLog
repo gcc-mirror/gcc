@@ -1,3 +1,9 @@
+2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* configure.ac: Add -Wc++-compat to ac_libibety_warn_cflags where
+	supported. 
+	* configure: Regenerated.
+
 2006-01-20  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* testsuite/Makefile.in: Add test-expandargv test.

@@ -113,8 +113,24 @@ GCC_NO_EXECUTABLES
 AC_PROG_CC
 AC_PROG_CPP_WERROR
 
+# Warn C++ incompatibilities if supported.
+AC_CACHE_CHECK(
+  [whether ${CC} accepts -Wc++-compat],
+  [ac_cv_prog_cc_w_cxx_compat],
+  [save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wc++-compat"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[]])],
+                    [ac_cv_prog_cc_w_cxx_compat=yes],
+                    [ac_cv_prog_cc_w_cxx_compat=no])
+  CFLAGS="$save_CFLAGS"
+  ])
+
+
 if test x$GCC = xyes; then
   ac_libiberty_warn_cflags='-W -Wall -pedantic -Wwrite-strings -Wstrict-prototypes'
+fi
+if test $ac_cv_prog_cc_w_cxx_compat = yes ; then
+  ac_libiberty_warn_cflags="${ac_libiberty_warn_cflags} -Wc++-compat"
 fi
 AC_SUBST(ac_libiberty_warn_cflags)
 
