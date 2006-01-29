@@ -44,7 +44,6 @@
 	to seek is not less than zero.
 	(st_backspace): Set unit bytes_left to zero.
 	* io/transfer.c (next_record_r): Fix line lengths, no functional change.
-	a null value (default). Revert patch of 25419 on 2005-12-28.  
 
 2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
 
