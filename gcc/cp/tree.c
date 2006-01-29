@@ -756,7 +756,7 @@ hash_tree_cons (tree purpose, tree value, tree chain)
   /* If not, create a new node.  */
   if (!*slot)
     *slot = tree_cons (purpose, value, chain);
-  return *slot;
+  return (tree) *slot;
 }
 
 /* Constructor for hashed lists.  */

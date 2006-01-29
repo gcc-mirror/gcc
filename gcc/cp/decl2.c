@@ -2683,7 +2683,7 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 static int
 generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
 {
-  location_t *locus = data;
+  location_t *locus = (location_t *) data;
   int priority = (int) n->key;
   priority_info pi = (priority_info) n->value;
 

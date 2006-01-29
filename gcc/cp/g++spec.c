@@ -113,7 +113,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   argv = *in_argv;
   added_libraries = *in_added_libraries;
 
-  args = xcalloc (argc, sizeof (int));
+  args = XCNEWVEC (int, argc);
 
   for (i = 1; i < argc; i++)
     {

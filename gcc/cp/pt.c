@@ -899,8 +899,8 @@ retrieve_specialization (tree tmpl, tree args,
 static tree
 retrieve_local_specialization (tree tmpl)
 {
-  tree spec = htab_find_with_hash (local_specializations, tmpl,
-				   htab_hash_pointer (tmpl));
+  tree spec = (tree) htab_find_with_hash (local_specializations, tmpl,
+                                          htab_hash_pointer (tmpl));
   return spec ? TREE_PURPOSE (spec) : NULL_TREE;
 }
 
@@ -2635,10 +2635,10 @@ process_partial_specialization (tree decl)
 
      or some such would have been OK.  */
   tpd.level = TMPL_PARMS_DEPTH (current_template_parms);
-  tpd.parms = alloca (sizeof (int) * ntparms);
+  tpd.parms = (int *) alloca (sizeof (int) * ntparms);
   memset (tpd.parms, 0, sizeof (int) * ntparms);
 
-  tpd.arg_uses_template_parms = alloca (sizeof (int) * nargs);
+  tpd.arg_uses_template_parms = (int *) alloca (sizeof (int) * nargs);
   memset (tpd.arg_uses_template_parms, 0, sizeof (int) * nargs);
   for (i = 0; i < nargs; ++i)
     {
@@ -2709,11 +2709,11 @@ process_partial_specialization (tree decl)
 		{
 		  /* We haven't yet initialized TPD2.  Do so now.  */
 		  tpd2.arg_uses_template_parms
-		    = alloca (sizeof (int) * nargs);
+		    = (int *) alloca (sizeof (int) * nargs);
 		  /* The number of parameters here is the number in the
 		     main template, which, as checked in the assertion
 		     above, is NARGS.  */
-		  tpd2.parms = alloca (sizeof (int) * nargs);
+		  tpd2.parms = (int *) alloca (sizeof (int) * nargs);
 		  tpd2.level =
 		    TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (maintmpl));
 		}
@@ -4123,7 +4123,7 @@ mangle_class_name_for_template (const char* name, tree parms, tree arglist)
     gcc_obstack_init (&scratch_obstack);
   else
     obstack_free (&scratch_obstack, scratch_firstobj);
-  scratch_firstobj = obstack_alloc (&scratch_obstack, 1);
+  scratch_firstobj = (char *) obstack_alloc (&scratch_obstack, 1);
 
 #define ccat(C)	obstack_1grow (&scratch_obstack, (C));
 #define cat(S)	obstack_grow (&scratch_obstack, (S), strlen (S))
@@ -5981,7 +5981,7 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
   int len = TREE_VEC_LENGTH (t);
   int need_new = 0, i;
-  tree *elts = alloca (len * sizeof (tree));
+  tree *elts = (tree *) alloca (len * sizeof (tree));
 
   for (i = 0; i < len; i++)
     {

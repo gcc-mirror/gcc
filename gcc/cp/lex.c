@@ -316,7 +316,7 @@ init_reswords (void)
 	      | D_OBJC
 	      | (flag_no_gnu_keywords ? D_EXT : 0));
 
-  ridpointers = ggc_calloc ((int) RID_MAX, sizeof (tree));
+  ridpointers = GGC_CNEWVEC (tree, (int) RID_MAX);
   for (i = 0; i < ARRAY_SIZE (reswords); i++)
     {
       id = get_identifier (reswords[i].word);

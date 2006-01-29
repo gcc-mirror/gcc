@@ -1,3 +1,32 @@
+2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* call.c (alloc_conversion): Use cast when converting from void *.
+	(alloc_conversions): Likewise.
+	(add_candidate): Likewise.
+	(print_z_candidates): Likewise.
+	(add_warning): Likewise.
+	* pt.c (retrieve_local_specialization): Likewise.
+	(process_partial_specialization): Likewise.
+	(mangle_class_name_for_template): Likewise.
+	(tsubst_template_args): Likewise.
+	* typeck2.c (pat_calc_hash): Likewise.
+	(pat_compare): Likewise.
+	(abstract_virtuals_error): Likewise.
+	* class.c (method_name_cmp): Likewise.
+	(resort_method_name_cmp): Likewise.
+	(get_vfield_name): Likewise.
+	* decl2.c (generate_ctor_and_dtor_functions_for_priority): Likewise.
+	* lex.c (init_reswords): Likewise.
+	* rtti.c (create_pseudo_type_info): Likewise.
+	* search.c (dfs_lookup_base): Likewise.
+	(dfs_dcast_hint_pre): Likewise.
+	(dfs_dcast_hint_post): Likewise.
+	* tree.c (hash_tree_cons): Likewise.
+	* repo.c (extract_string): Likewise.
+	(afgets): Likewise.
+	* cp-objcp-common.c (decl_shadowed_for_var_lookup): Likewise.
+	* g++spec.c (lang_specific_driver): Likewise.
+
 2006-01-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* class.c (check_bases): Likewise.

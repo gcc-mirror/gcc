@@ -1617,8 +1617,8 @@ static struct {
 static int
 method_name_cmp (const void* m1_p, const void* m2_p)
 {
-  const tree *const m1 = m1_p;
-  const tree *const m2 = m2_p;
+  const tree *const m1 = (const tree *) m1_p;
+  const tree *const m2 = (const tree *) m2_p;
 
   if (*m1 == NULL_TREE && *m2 == NULL_TREE)
     return 0;
@@ -1637,8 +1637,8 @@ method_name_cmp (const void* m1_p, const void* m2_p)
 static int
 resort_method_name_cmp (const void* m1_p, const void* m2_p)
 {
-  const tree *const m1 = m1_p;
-  const tree *const m2 = m2_p;
+  const tree *const m1 = (const tree *) m1_p;
+  const tree *const m2 = (const tree *) m2_p;
   if (*m1 == NULL_TREE && *m2 == NULL_TREE)
     return 0;
   if (*m1 == NULL_TREE)
@@ -6194,7 +6194,8 @@ get_vfield_name (tree type)
     }
 
   type = BINFO_TYPE (binfo);
-  buf = alloca (sizeof (VFIELD_NAME_FORMAT) + TYPE_NAME_LENGTH (type) + 2);
+  buf = (char *) alloca (sizeof (VFIELD_NAME_FORMAT)
+                         + TYPE_NAME_LENGTH (type) + 2);
   sprintf (buf, VFIELD_NAME_FORMAT,
 	   IDENTIFIER_POINTER (constructor_name (type)));
   return get_identifier (buf);
