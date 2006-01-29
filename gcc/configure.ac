@@ -301,6 +301,7 @@ AC_CHECK_TYPES([__int64], [AC_CHECK_SIZEOF(__int64)])
 # We want to use -pedantic, but we don't want warnings about
 # * 'long long'
 # * variadic macros
+# * overlong strings
 # So, we only use -pedantic if we can disable those warnings.
 
 AC_CACHE_CHECK(
@@ -325,10 +326,22 @@ AC_CACHE_CHECK(
   CFLAGS="$save_CFLAGS"
   ])
 
+AC_CACHE_CHECK(
+  [whether ${CC} accepts -Wno-overlength-strings],
+  [ac_cv_prog_cc_w_no_overlength_strings],
+  [save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wno-overlength-strings"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[]])],
+                    [ac_cv_prog_cc_w_no_overlength_strings=yes],
+                    [ac_cv_prog_cc_w_no_overlength_strings=no])
+  CFLAGS="$save_CFLAGS"
+  ])
+
 strict1_warn=
 if test $ac_cv_prog_cc_w_no_long_long = yes \
-   && test $ac_cv_prog_cc_w_no_variadic_macros = yes ; then
-  strict1_warn="-pedantic -Wno-long-long -Wno-variadic-macros"
+   && test $ac_cv_prog_cc_w_no_variadic_macros = yes \
+   && test $ac_cv_prog_cc_w_no_overlength_strings = yes ; then
+  strict1_warn="-pedantic -Wno-long-long -Wno-variadic-macros -Wno-overlength-strings"
 fi
 
 # Add -Wold-style-definition if it's accepted

@@ -1,6 +1,14 @@
+2006-01-28  Zack Weinberg  <zackw@panix.com>
+
+	* gcc.dg/Woverlength-strings.c
+	* gcc.dg/Woverlength-strings-pedantic-c89.c
+	* gcc.dg/Woverlength-strings-pedantic-c89-no.c
+	* gcc.dg/Woverlength-strings-pedantic-c99.c
+	* gcc.dg/Woverlength-strings-pedantic-c99-no.c: New tests.
+
 2006-01-28  Adam Nemet  <anemet@caviumnetworks.com>
 
-	* gcc.c-torture/execute/20060127-1.c: New test. 
+	* gcc.c-torture/execute/20060127-1.c: New test.
 
 2006-01-28  Mark Mitchell  <mark@codesourcery.com>
 
@@ -32,12 +40,12 @@
 
 2006-01-26  Laurent GUERBY <laurent@guerby.net>
 
-        PR ada/21317
-        * ada/acats/support/impdef.a: Add One_Long_Second.
-        * ada/acats/tests/c9/c94025.a: Use One_Long_Second.
-        * ada/acats/tests/c9/c94026.a: Likewise.
-        * ada/acats/tests/c9/c97305c.ada: Likewise.
-        * ada/acats/tests/c9/c99004a.ada: Likewise.
+	PR ada/21317
+	* ada/acats/support/impdef.a: Add One_Long_Second.
+	* ada/acats/tests/c9/c94025.a: Use One_Long_Second.
+	* ada/acats/tests/c9/c94026.a: Likewise.
+	* ada/acats/tests/c9/c97305c.ada: Likewise.
+	* ada/acats/tests/c9/c99004a.ada: Likewise.
 
 2005-01-26  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -68,7 +76,7 @@
 
 	PR C/25861
 	* gcc.c-torture/compile/pr25861.c: New test.
-	
+
 2006-01-26  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/compat/struct-layout-1.exp: Pass -e to generator program
@@ -124,7 +132,7 @@
 	* gfortran.dg/read_eof_1.f90: Rename from read_eof.f90.
 	* gfortran.dg/read_eof_2.f90: New test.
 	* gfortran.dg/read_eof_3.f90: New test.
-	
+
 2006-01-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/25860
@@ -231,8 +239,8 @@
 
 2006-01-20  Dirk Mueller  <dmueller@suse.com>
 
-        PR c++/5520
-        * g++.dg/warn/empty-body.C: New.
+	PR c++/5520
+	* g++.dg/warn/empty-body.C: New.
 
 2006-01-19  Mark Mitchell  <mark@codesourcery.com>
 
@@ -482,7 +490,7 @@
 	to LD_LIBRARY_PATH.
 
 2006-01-16  Eric Botcazou  <ebotcazou@adacore.com>
-            Andrew Pinski  <pinskia@physics.uc.edu>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/minmax-1.c: New test.
 
@@ -674,15 +682,15 @@
 
 2006-01-11  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR tree-optimization/23109
-        PR tree-optimization/23948
-        PR tree-optimization/24123
+	PR tree-optimization/23109
+	PR tree-optimization/23948
+	PR tree-optimization/24123
 
-        * gcc.dg/tree-ssa/recip-3.c, gcc.dg/tree-ssa/recip-4.c,
-        gcc.dg/tree-ssa/recip-5.c, gcc.dg/tree-ssa/recip-6.c,
-        gcc.dg/tree-ssa/recip-7.c, gcc.dg/tree-ssa/pr23109.c,
-        g++.dg/tree-ssa/pr23948.C: New testcases.
-        * gcc.dg/tree-ssa/recip-2.c, gcc.dg/tree-ssa/pr23234.c: Provide
+	* gcc.dg/tree-ssa/recip-3.c, gcc.dg/tree-ssa/recip-4.c,
+	gcc.dg/tree-ssa/recip-5.c, gcc.dg/tree-ssa/recip-6.c,
+	gcc.dg/tree-ssa/recip-7.c, gcc.dg/tree-ssa/pr23109.c,
+	g++.dg/tree-ssa/pr23948.C: New testcases.
+	* gcc.dg/tree-ssa/recip-2.c, gcc.dg/tree-ssa/pr23234.c: Provide
 	three divisions in order to do the optimization.
 
 2006-01-11  Zdenek Dvorak <dvorakz@suse.cz>

@@ -177,7 +177,8 @@ LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
 STRICT_WARN = @strict1_warn@
 WERROR_FLAGS = @WERROR@
 STRICT2_WARN = -pedantic -Wno-long-long -Wno-variadic-macros \
-  -Wold-style-definition -Wmissing-format-attribute $(WERROR_FLAGS)
+  -Wno-overlength-strings -Wold-style-definition -Wmissing-format-attribute \
+  $(WERROR_FLAGS)
 
 # This is set by --enable-checking.  The idea is to catch forgotten
 # "extern" tags in header files.
@@ -195,11 +196,8 @@ VALGRIND_DRIVER_DEFINES = @valgrind_path_defines@
 build-warn = $(STRICT_WARN)
 GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 
-# These files are to have -Werror bypassed in stage2:
-# These are very hard to completely clean due to target complexities.
-gcc.o-warn = -Wno-error
-insn-automata.o-warn = -Wno-error
-build/gencondmd.o-warn = -Wno-error
+# These files are to have specific diagnostics suppressed, or are not to
+# be subject to -Werror:
 # Bison-1.75 output often yields (harmless) -Wtraditional warnings
 build/gengtype-yacc.o-warn = -Wno-error
 # flex output may yield harmless "no previous prototype" warnings
