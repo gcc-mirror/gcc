@@ -365,7 +365,6 @@ df_set_blocks (struct df *df, bitmap blocks)
 	{
 	  int p;
 	  bitmap diff = BITMAP_ALLOC (NULL);
-	  bitmap all = BITMAP_ALLOC (NULL);
 	  bitmap_and_compl (diff, df->blocks_to_analyze, blocks);
 	  for (p = df->num_problems_defined - 1; p >= 0 ;p--)
 	    {
@@ -390,7 +389,6 @@ df_set_blocks (struct df *df, bitmap blocks)
 		}
 	    }
 
-	  BITMAP_FREE (all);
 	  BITMAP_FREE (diff);
 	}
       else
