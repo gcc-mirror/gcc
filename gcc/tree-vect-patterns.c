@@ -243,7 +243,8 @@ vect_recog_dot_prod_pattern (tree last_stmt, tree *type_in, tree *type_out)
   gcc_assert (stmt);
   stmt_vinfo = vinfo_for_stmt (stmt);
   gcc_assert (stmt_vinfo);
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_loop_def);
+  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_loop_def)
+    return NULL;
   expr = TREE_OPERAND (stmt, 1);
   if (TREE_CODE (expr) != MULT_EXPR)
     return NULL;

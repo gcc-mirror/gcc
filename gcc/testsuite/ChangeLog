@@ -1,3 +1,8 @@
+2006-01-29  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-opt/25911
+	* gcc.dg/vect/fast-math-vect-pr25911.c: New.
+
 2006-01-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18578
