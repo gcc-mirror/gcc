@@ -1967,4 +1967,7 @@ void gfc_show_namespace (gfc_namespace *);
 try gfc_parse_file (void);
 void global_used (gfc_gsymbol *, locus *);
 
+/* dependency.c */
+int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);
+
 #endif /* GCC_GFORTRAN_H  */

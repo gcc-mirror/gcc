@@ -40,11 +40,12 @@ program main
   end interface
 
   integer :: a
-  character (len = 80), target :: text
+  character (len = 80)  :: text
+  character (len = 70), target :: textt
   character (len = 70), pointer :: textp
 
   a = 42
-  textp => text
+  textp => textt
 
   call test (f1 (text), 80)
   call test (f2 (text, text), 110)
