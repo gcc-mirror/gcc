@@ -1,3 +1,10 @@
+2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+	    Marcin Dalecki  <martin@dalecki.de>
+
+	* toplev.c (floor_log2, exact_log2): Don't define if __cplusplus.
+	(push_srcloc): Use XNEW.
+	(init_asm_output, default_get_pch_validity): Use XNEWVEC.
+
 2006-01-29  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* df-core.c (df_set_blocks): Deleted all variable.
