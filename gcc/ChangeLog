@@ -1,3 +1,8 @@
+2006-01-28  Ian Lance Taylor  <ian@airs.com>
+
+	* cgraphunit.c (cgraph_assemble_pending_functions): Call
+	cgraph_output_pending_asms.
+
 2006-01-28  Zack Weinberg  <zackw@panix.com>
 
 	* c.opt: Add -W(no-)overlength-strings.
