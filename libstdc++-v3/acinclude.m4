@@ -1099,7 +1099,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   AC_CACHE_VAL(ac_c99_ctype_tr1, [
   AC_TRY_COMPILE([#include <ctype.h>],
 	         [int ch;
-	          isblank(ch);
+	          int ret;
+	          ret = isblank(ch);
 		 ],[ac_c99_ctype_tr1=yes], [ac_c99_ctype_tr1=no])
   ])
   AC_MSG_RESULT($ac_c99_ctype_tr1)
@@ -1118,17 +1119,18 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	           [int except, mode;
 	            fexcept_t* pflag;
                     fenv_t* penv;
-	            feclearexcept(except);
-                    fegetexceptflag(pflag, except);
-	            feraiseexcept(except);
-	            fesetexceptflag(pflag, except);
-	            fetestexcept(except);
-	            fegetround();
-	            fesetround(mode);
-	            fegetenv(penv);
-	            feholdexcept(penv);
-	            fesetenv(penv);
-	            feupdateenv(penv);
+	            int ret;
+	            ret = feclearexcept(except);
+	            ret = fegetexceptflag(pflag, except);
+	            ret = feraiseexcept(except);
+	            ret = fesetexceptflag(pflag, except);
+	            ret = fetestexcept(except);
+	            ret = fegetround();
+	            ret = fesetround(mode);
+	            ret = fegetenv(penv);
+	            ret = feholdexcept(penv);
+	            ret = fesetenv(penv);
+	            ret = feupdateenv(penv);
 		   ],[ac_c99_fenv_tr1=yes], [ac_c99_fenv_tr1=no])
   fi
   AC_MSG_RESULT($ac_c99_fenv_tr1)

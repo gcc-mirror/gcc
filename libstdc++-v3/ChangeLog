@@ -1,3 +1,10 @@
+2006-01-29  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/26006
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Tighten <ctype.h> and
+	<fenv.h> checks.
+	* configure: Regenerate.
+
 2006-01-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_bitset.h (bitset<>::_M_copy_to_string):
