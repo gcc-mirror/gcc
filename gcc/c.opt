@@ -311,6 +311,10 @@ Wold-style-definition
 C ObjC Var(warn_old_style_definition)
 Warn if an old-style parameter definition is used
 
+Woverlength-strings
+C ObjC C++ ObjC++ Var(warn_overlength_strings) Init(-1)
+Warn if a string is longer than the maximum portable length specified by the standard
+
 Woverloaded-virtual
 C++ ObjC++ Var(warn_overloaded_virtual)
 Warn about overloaded virtual function names

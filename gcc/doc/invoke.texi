@@ -238,7 +238,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wmain  -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-format-attribute  -Wmissing-include-dirs @gol
 -Wmissing-noreturn @gol
--Wno-multichar  -Wnonnull  -Wpacked  -Wpadded @gol
+-Wno-multichar  -Wnonnull  -Woverlength-strings  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
@@ -3444,6 +3444,21 @@ even when intentional, result in unspecified behavior and are not portable.
 Usually these warnings alert that the programmer intended to use
 @code{strcmp}.  This warning is enabled by @option{-Wall}.
 
+@item -Woverlength-strings
+@opindex Woverlength-strings
+Warn about string constants which are longer than the ``minimum
+maximum'' length specified in the C standard.  Modern compilers
+generally allow string constants which are much longer than the
+standard's minimum limit, but very portable programs should avoid
+using longer strings.
+
+The limit applies @emph{after} string constant concatenation, and does
+not count the trailing NUL@.  In C89, the limit was 509 characters; in
+C99, it was raised to 4095.  C++98 does not specify a normative
+minimum maximum, so we do not diagnose overlength strings in C++@.
+
+This option is implied by @option{-pedantic}, and can be disabled with
+@option{-Wno-overlength-strings}.
 @end table
 
 @node Debugging Options

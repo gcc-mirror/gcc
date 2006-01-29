@@ -52,9 +52,8 @@ write_header (void)
    machine description file.  */\n\
 \n\
 #include \"bconfig.h\"\n\
-#include \"system.h\"\n");
-
-  puts ("\
+#include \"system.h\"\n\
+\n\
 /* It is necessary, but not entirely safe, to include the headers below\n\
    in a generator program.  As a defensive measure, don't do so when the\n\
    table isn't going to have anything in it.  */\n\
@@ -66,23 +65,20 @@ write_header (void)
 #undef ENABLE_RTL_CHECKING\n\
 #undef ENABLE_RTL_FLAG_CHECKING\n\
 #undef ENABLE_GC_CHECKING\n\
-#undef ENABLE_GC_ALWAYS_COLLECT\n");
-
-  puts ("\
+#undef ENABLE_GC_ALWAYS_COLLECT\n\
+\n\
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\
 #include \"insn-constants.h\"\n\
 #include \"rtl.h\"\n\
 #include \"tm_p.h\"\n\
-#include \"function.h\"\n");
-
-  puts ("\
+#include \"function.h\"\n\
+\n\
 /* Fake - insn-config.h doesn't exist yet.  */\n\
 #define MAX_RECOG_OPERANDS 10\n\
 #define MAX_DUP_OPERANDS 10\n\
-#define MAX_INSNS_PER_SPLIT 5\n");
-
-  puts ("\
+#define MAX_INSNS_PER_SPLIT 5\n\
+\n\
 #include \"regs.h\"\n\
 #include \"recog.h\"\n\
 #include \"real.h\"\n\
@@ -134,11 +130,11 @@ write_one_condition (void **slot, void * ARG_UNUSED (dummy))
       putchar (*p);
     }
 
-  printf ("\",\n    __builtin_constant_p ");
+  fputs ("\",\n    __builtin_constant_p ", stdout);
   print_c_condition (test->expr);
-  printf ("\n    ? (int) ");
+  fputs ("\n    ? (int) ", stdout);
   print_c_condition (test->expr);
-  printf ("\n    : -1 },\n");
+  fputs ("\n    : -1 },\n", stdout);
   return 1;
 }
 
@@ -154,9 +150,8 @@ struct c_test\n\
 {\n\
   const char *expr;\n\
   int value;\n\
-};\n");
-
-  puts ("\
+};\n\
+\n\
 /* This table lists each condition found in the machine description.\n\
    Each condition is mapped to its truth value (0 or 1), or -1 if that\n\
    cannot be calculated at compile time.\n\
@@ -200,8 +195,8 @@ write_writer (void)
 	"          putchar (*p);\n"
 	"        }\n"
         "      puts (\"\\\")\");\n"
-        "    }");
-  puts ("  puts (\"])\");\n"
+        "    }\n"
+	"  puts (\"])\");\n"
         "  fflush (stdout);\n"
         "return ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;\n"
 	"}");

@@ -893,6 +893,8 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->warn_endif_labels = 1;
       if (warn_pointer_sign == -1)
 	warn_pointer_sign = 1;
+      if (warn_overlength_strings == -1)
+	warn_overlength_strings = 1;
       break;
 
     case OPT_print_objc_runtime_info:
@@ -1017,6 +1019,12 @@ c_common_post_options (const char **pfilename)
      of -Wall or -pedantic are given.  */
   if (warn_pointer_sign == -1)
     warn_pointer_sign = 0;
+
+  /* -Woverlength-strings is off by default, but is enabled by -pedantic.
+     It is never enabled in C++, as the minimum limit is not normative
+     in that standard.  */
+  if (warn_overlength_strings == -1 || c_dialect_cxx ())
+    warn_overlength_strings = 0;
 
   /* Special format checking options don't work without -Wformat; warn if
      they are used.  */

@@ -1,12 +1,33 @@
+2006-01-28  Zack Weinberg  <zackw@panix.com>
+
+	* c.opt: Add -W(no-)overlength-strings.
+	* doc/invoke.texi: Document it.
+	* c-opts.c (c_common_handle_option): -pedantic implies
+	-Woverlength-strings, if not explicitly disabled already.
+	(c_common_post_options): -Woverlength-strings defaults to off, and
+	is always off for C++.
+	* c-common.c (fix_string_type): Issue warning about strings longer
+	than is portable only if warn_overlength_strings.  Rearrange code
+	a little for clarity.
+	* configure.in: Check for -Wno-overlength-strings as well before
+	enabling -pedantic in stage 1.
+	* Makefile.in (STRICT2_WARN): Add -Wno-overlength-strings.
+	(gcc.o-warn, insn-automata.o-warn, build/gencondmd.o-warn): Delete.
+
+	* genconditions.c (write_header, write_one_condition)
+	(write_conditions, write_writer): Consolidate very long strings
+	that were broken up to fit in C89 portable limit.  Don't use
+	printf when fputs will do.
+
 2006-01-28  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (simplify_comparison <AND>): Check
 	TRULY_NOOP_TRUNCATION before start using a subreg.
-	
-	* config/mips/mips.md (*branch_zero<mode>, 
-	*branch_zero<mode>_inverted, *branch_equality<mode>, 
-	*branch_equality<mode>_inverted, *branch_equality<mode>_mips16): 
-	Remove mode check from comparisons. 
+
+	* config/mips/mips.md (*branch_zero<mode>,
+	*branch_zero<mode>_inverted, *branch_equality<mode>,
+	*branch_equality<mode>_inverted, *branch_equality<mode>_mips16):
+	Remove mode check from comparisons.
 
 2006-01-28  Kenneth Zadeck <zadeck@naturalbridge.com>
 
@@ -72,7 +93,7 @@
 2006-01-27  Daniel Berlin  <dberlin@dberlin.org>
 	    Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	PR rtl-optimization/24762 
+	PR rtl-optimization/24762
 	* doc/tm.texi: Added TARGET_EXTRA_LIVE_ON_ENTRY.
 	* targhooks.c (hook_void_bitmap): New hook prototype.
 	* targhoohs.h (hook_void_bitmap): Ditto.
