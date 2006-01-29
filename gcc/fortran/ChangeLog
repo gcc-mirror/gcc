@@ -1,3 +1,12 @@
+2006-01-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/18578
+	PR fortran/18579
+	PR fortran/20857
+	PR fortran/20885
+	* interface.c (compare_actual_formal): Error for INTENT(OUT or INOUT)
+	if actual argument is not a variable.
+
 2006-01-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/17911
