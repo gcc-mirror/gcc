@@ -98,8 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline void
     __valarray_default_construct(_Tp* __restrict__ __b, _Tp* __restrict__ __e)
     {
-      _Array_default_ctor<_Tp, __is_fundamental<_Tp>::__value>::
-	_S_do_it(__b, __e);
+      _Array_default_ctor<_Tp, __is_pod<_Tp>::__value>::_S_do_it(__b, __e);
     }
 
   // Turn a raw-memory into an array of _Tp filled with __t
@@ -134,8 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __valarray_fill_construct(_Tp* __restrict__ __b, _Tp* __restrict__ __e,
 			      const _Tp __t)
     {
-      _Array_init_ctor<_Tp, __is_fundamental<_Tp>::__value>::
-	_S_do_it(__b, __e, __t);
+      _Array_init_ctor<_Tp, __is_pod<_Tp>::__value>::_S_do_it(__b, __e, __t);
     }
 
   //
@@ -171,8 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			      const _Tp* __restrict__ __e,
 			      _Tp* __restrict__ __o)
     {
-      _Array_copy_ctor<_Tp, __is_fundamental<_Tp>::__value>::
-	_S_do_it(__b, __e, __o);
+      _Array_copy_ctor<_Tp, __is_pod<_Tp>::__value>::_S_do_it(__b, __e, __o);
     }
 
   // copy-construct raw array [__o, *) from strided array __a[<__n : __s>]
@@ -181,7 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __valarray_copy_construct (const _Tp* __restrict__ __a, size_t __n,
 			       size_t __s, _Tp* __restrict__ __o)
     {
-      if (__is_fundamental<_Tp>::__value)
+      if (__is_pod<_Tp>::__value)
 	while (__n--)
 	  {
 	    *__o++ = *__a;
@@ -202,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			       const size_t* __restrict__ __i,
 			       _Tp* __restrict__ __o, size_t __n)
     {
-      if (__is_fundamental<_Tp>::__value)
+      if (__is_pod<_Tp>::__value)
 	while (__n--)
 	  *__o++ = __a[*__i++];
       else
@@ -215,7 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline void
     __valarray_destroy_elements(_Tp* __restrict__ __b, _Tp* __restrict__ __e)
     {
-      if (!__is_fundamental<_Tp>::__value)
+      if (!__is_pod<_Tp>::__value)
 	while (__b != __e)
 	  {
 	    __b->~_Tp();
@@ -279,8 +276,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __valarray_copy(const _Tp* __restrict__ __a, size_t __n,
 		    _Tp* __restrict__ __b)
     {
-      _Array_copier<_Tp, __is_fundamental<_Tp>::__value>::
-	_S_do_it(__a, __n, __b);
+      _Array_copier<_Tp, __is_pod<_Tp>::__value>::_S_do_it(__a, __n, __b);
     }
 
   // Copy strided array __a[<__n : __s>] in plain __b[<__n>]

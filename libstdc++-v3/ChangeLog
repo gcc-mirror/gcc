@@ -1,3 +1,12 @@
+2006-01-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* include/bits/valarray_array.h (__valarray_default_construct):
+	Replace use __is_fundamental with __is_pod.
+	(__valarray_fill_construct): Likewise.
+	(__valarray_copy_construct): Likewise.
+	(__valarray_destroy_elements): Likewise.
+	(__valarray_copy): Likewise.
+
 2006-01-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Do the <inttypes.h>
