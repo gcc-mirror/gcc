@@ -166,6 +166,9 @@ extern int shmedia_cleanup_truncate (rtx *, void *);
 extern int sh_contains_memref_p (rtx);
 extern rtx shmedia_prepare_call_address (rtx fnaddr, int is_sibcall);
 
+extern bool sh_cfun_trap_exit_p (void);
+
+
 #endif /* ! GCC_SH_PROTOS_H */
 
 #ifdef SYMBIAN

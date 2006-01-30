@@ -2899,6 +2899,11 @@ case ${target} in
                 fi
 		;;
 
+	sh[123456ble]*-*-* | sh-*-*)
+		c_target_objs="${c_target_objs} sh-c.o"
+		cxx_target_objs="${cxx_target_objs} sh-c.o"
+		;;
+
 	sparc*-*-*)
 		# Some standard aliases.
 		case x$with_cpu in

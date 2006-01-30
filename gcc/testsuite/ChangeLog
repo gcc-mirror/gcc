@@ -1,3 +1,15 @@
+2006-01-30  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR target/14798:
+	* gcc.dg/pragma-isr.c: Added target sh[1234ble]*-*-*.
+	* gcc.dg/pragma-isr2.c, gcc.dg/pragma-isr-trapa.c: New tests.
+	* gcc.dg/pragma-isr-trapa2.c: Likewise.
+	* gcc.dg/pragma-isr-nosave_low_regs.c: Likewise.
+	* gcc.dg/pragma-isr-trap_exit.c: Likewise.
+	* gcc.dg/attr-isr.c, gcc.dg/attr-isr-trapa.c: Likewise.
+	* gcc.dg/attr-isr-trap_exit.c: Likewise.
+	* gcc.dg/attr-isr-nosave_low_regs.c: Likewise.
+
 2006-01-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18578

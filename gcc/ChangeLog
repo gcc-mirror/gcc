@@ -1,3 +1,42 @@
+2006-01-30  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR target/14798:
+	* sh.c (pragma_interrupt, trap_exit, sp_switch): Remove variable.
+	(pragma_trap, pragma_nosave_low_regs): Likewise.
+	(current_function_anonymous_args): Likewise.
+	(sh_deferred_function_attributes): New variable.
+	(sh_deferred_function_attributes_tail): Likewise.
+	(print_operand): For '@', look up trap_exit attribute.
+	(calc_live_regs): Look up trapa_handler attribute.  For trapa
+	handlers, save/restore fpscr, but don't do any other
+	interrupt-specific saves.
+	Don't save r0..r7 if the nosave_low_regs attribute is in effect.
+	Fix check for partially saved registers to check for SHmedia.
+	(sh_expand_prologue, sh_expand_epilogue): Look up sp_switch attribute.
+	(sh_output_function_epilogue): Don't clear any of the removed
+	variables.
+	(sh_insert_attributes): Don't check pragma_interrupt.
+	Insert deferred attributes.  Check that interrupt attribute is
+	present for other attributes that require its presence.
+	(sh_attribute_table): Add new attributes trapa_handler and
+	nosave_low_regs.
+	(sh_handle_sp_switch_attribute, sh_handle_trap_exit_attribute):
+	Don't check for pragma_interrupt.  Don't store argument.
+	* sh.h (pragma_interrupt, sp_switch): Don't declare.
+	(sh_deferred_function_attributes): Declare.
+	(sh_deferred_function_attributes_tail): Likewise.
+	* sh.md (sp_switch_1): Add operand.  Change generator caller.
+	(sh_pr_interrupt, sh_pr_trapa, sh_pr_nosave_low_regs): Remove.
+	(*return_i): Don't use when trap_exit attribute is in effect.
+	(*return_trapa): New insn pattern.
+	* sh-c.c: New file.
+	* config.gcc (sh[123456ble]*-* | sh-*-*): New trailer stanza,
+	setting c_target_objs and cxx_target_objs.
+	* t-sh: Add rule for sh-c.o.
+
+	* config/sh/sh.c (sh_cfun_trap_exit_p): New function.
+	* sh-protos.h (sh_cfun_trap_exit_p): Declare.
+
 2006-01-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Revert
