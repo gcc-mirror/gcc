@@ -1181,27 +1181,29 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	      <tr1/cstdint> in namespace std::tr1.])
   fi
 
-  # Check for the existence of <inttypes.h> functions.
-  AC_MSG_CHECKING([for ISO C99 support to TR1 in <inttypes.h>])
-  AC_CACHE_VAL(ac_c99_inttypes_tr1, [
-  AC_TRY_COMPILE([#include <inttypes.h>],
-	         [intmax_t i, numer, denom, base;
-	          const char* s;
-	          char** endptr;
-	          intmax_t ret;
-	          uintmax_t uret;
-	          imaxdiv_t dret;
-	          ret = imaxabs(i);
-	          dret = imaxdiv(numer, denom);
-	          ret = strtoimax(s, endptr, base);
-	          uret = strtoumax(s, endptr, base);
-		 ],[ac_c99_inttypes_tr1=yes], [ac_c99_inttypes_tr1=no])
-  ])
+  # Check for the existence of <inttypes.h> functions (NB: doesn't make
+  # sense if the previous check fails, per C99, 7.8/1).
+  ac_c99_inttypes_tr1=no;
+  if test x"$ac_c99_stdint_tr1" = x"yes"; then
+    AC_MSG_CHECKING([for ISO C99 support to TR1 in <inttypes.h>])
+    AC_TRY_COMPILE([#include <inttypes.h>],
+	           [intmax_t i, numer, denom, base;
+	            const char* s;
+	            char** endptr;
+	            intmax_t ret;
+	            uintmax_t uret;
+	            imaxdiv_t dret;
+	            ret = imaxabs(i);
+	            dret = imaxdiv(numer, denom);
+	            ret = strtoimax(s, endptr, base);
+	            uret = strtoumax(s, endptr, base);
+        	   ],[ac_c99_inttypes_tr1=yes], [ac_c99_inttypes_tr1=no])
+  fi
   AC_MSG_RESULT($ac_c99_inttypes_tr1)
   if test x"$ac_c99_inttypes_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_INTTYPES_TR1, 1,
               [Define if C99 functions in <inttypes.h> should be imported in
-	      <tr1/cinttypes> in namespace std::tr1.])
+              <tr1/cinttypes> in namespace std::tr1.])
   fi
 
   AC_LANG_RESTORE
