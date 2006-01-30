@@ -3277,17 +3277,12 @@ extern enum mdep_reorg_phase_e mdep_reorg_phase;
   c_register_pragma (0, "nosave_low_regs", sh_pr_nosave_low_regs);	\
 } while (0)
 
-/* Set when processing a function with pragma interrupt turned on.  */
-
-extern int pragma_interrupt;
+extern tree sh_deferred_function_attributes;
+extern tree *sh_deferred_function_attributes_tail;
 
 /* Set when processing a function with interrupt attribute.  */
 
 extern int current_function_interrupt;
-
-/* Set to an RTX containing the address of the stack to switch to
-   for interrupt functions.  */
-extern struct rtx_def *sp_switch;
 
 
 /* Instructions with unfilled delay slots take up an
