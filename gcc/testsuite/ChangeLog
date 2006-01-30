@@ -1,3 +1,11 @@
+2006-01-30  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/25318
+	* lib/target-supports.exp (check_effective_target_freorder):
+	Check to see if target supports -freorder-blocks-and-partition.
+	* g++.dg/other/pr22003.C: Use "dg-require-effective-target freorder"
+	instead of "dg-require-named-sections".
+
 2006-01-30  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR target/14798:

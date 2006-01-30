@@ -1,8 +1,6 @@
 /* PR rtl-optimization/22003 */
 /* { dg-do compile } */
-/* -freorder-blocks-and-partition is not supported on machines */
-/* that do not support named sections.  */
-/* { dg-require-named-sections "" } */
+/* { dg-require-effective-target freorder } */
 /* { dg-options "-O2 -fno-exceptions -freorder-blocks-and-partition" } */
 
 struct c1

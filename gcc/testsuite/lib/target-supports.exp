@@ -467,6 +467,41 @@ proc check_effective_target_tls_runtime {} {
     return $et_tls_runtime_saved
 }
 
+# Return 1 if compilation with -freorder-blocks-and-partition is error-free
+# for trivial code, 0 otherwise.
+
+proc check_effective_target_freorder {} {
+    global et_freorder_saved
+    global et_freorder_target_name
+
+    if { ![info exists et_freorder_target_name] } {
+	set et_freorder_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_freorder_target_name } {
+	verbose "check_effective_target_freorder: `$et_freorder_target_name'" 2
+	set et_freorder_target_name $current_target
+	if [info exists et_freorder_saved] {
+	    verbose "check_effective_target_freorder: removing cached result" 2
+	    unset et_freorder_saved
+	}
+    }
+
+    if [info exists et_freorder_saved] {
+	verbose "check_effective_target_freorder: using cached result" 2
+    } else {
+	verbose "check_effective_target_freorder: compiling source" 2
+
+	set et_freorder_saved [string match "" [get_compiler_messages freorder object {
+	    void foo (void) { }
+	} "-freorder-blocks-and-partition"]]
+    }
+    verbose "check_effective_target_freorder: returning $et_freorder_saved" 2
+    return $et_freorder_saved
+}
+
 # Return 1 if -fpic and -fPIC are supported, as in no warnings or errors
 # emitted, 0 otherwise.  Whether a shared library can actually be built is
 # out of scope for this test.
