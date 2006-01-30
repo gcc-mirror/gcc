@@ -1,3 +1,8 @@
+2005-01-30  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/24266
+	* gfortran.dg/arrayio_derived_2.f90: New.
+
 2006-01-30  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* gcc.dg/unsigned-long-compare.c: New test.
