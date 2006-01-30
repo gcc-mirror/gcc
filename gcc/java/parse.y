@@ -7571,6 +7571,9 @@ source_start_java_method (tree fndecl)
 	  DECL_FINAL (parm_decl) = 1;
 	}
 
+      if (name == this_identifier_node)
+	DECL_ARTIFICIAL (parm_decl) = 1;
+
       BLOCK_CHAIN_DECL (parm_decl);
     }
   tem = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
