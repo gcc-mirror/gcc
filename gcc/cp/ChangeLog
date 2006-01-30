@@ -1,3 +1,7 @@
+2006-01-31  Ben Elliston  <bje@au.ibm.com>
+
+	* mangle.c: Comment fix.
+
 2006-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* Make-lang.in (cp-warn): Include CXX_COMPAT_WARN.
