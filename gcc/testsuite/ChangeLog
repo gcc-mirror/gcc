@@ -1,3 +1,7 @@
+2006-01-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/gomp/pr25874.c: New test.
+
 2006-01-29  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-opt/25911
