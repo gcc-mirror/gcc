@@ -1012,7 +1012,6 @@ static inline void VEC_OP (T,A,safe_grow)				  \
   VEC_OP (T,A,reserve) (vec_, (int)(*vec_ ? VEC_BASE(*vec_)->num : 0) - size_ \
 			VEC_CHECK_PASS PASS_MEM_STAT);			  \
   VEC_BASE (*vec_)->num = size_;					  \
-  VEC_BASE (*vec_)->num = size_;					  \
 }									  \
 									  \
 static inline T *VEC_OP (T,A,safe_push)					  \
@@ -1095,7 +1094,6 @@ static inline void VEC_OP (T,A,safe_grow)				  \
 						 "grow", T, A);		  \
   VEC_OP (T,A,reserve) (vec_, (int)(*vec_ ? VEC_BASE(*vec_)->num : 0) - size_ \
 			VEC_CHECK_PASS PASS_MEM_STAT);			  \
-  VEC_BASE (*vec_)->num = size_;					  \
   VEC_BASE (*vec_)->num = size_;					  \
 }									  \
 									  \
