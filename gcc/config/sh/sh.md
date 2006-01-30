@@ -8781,10 +8781,20 @@ mov.l\\t1f,r0\\n\\
   "TARGET_SH1 && ! (TARGET_SHCOMPACT
 		    && (current_function_args_info.call_cookie
 			& CALL_COOKIE_RET_TRAMP (1)))
-   && reload_completed"
+   && reload_completed
+   && lookup_attribute (\"trap_exit\",
+			DECL_ATTRIBUTES (current_function_decl)) == NULL_TREE"
   "%@	%#"
   [(set_attr "type" "return")
    (set_attr "needs_delay_slot" "yes")])
+
+;; trapa has no delay slot.
+(define_insn "*return_trapa"
+  [(return)]
+  "TARGET_SH1 && !TARGET_SHCOMPACT
+   && reload_completed"
+  "%@"
+  [(set_attr "type" "return")])
 
 (define_expand "shcompact_return_tramp"
   [(return)]
@@ -11209,15 +11219,12 @@ mov.l\\t1f,r0\\n\\
 
 ;; Switch to a new stack with its address in sp_switch (a SYMBOL_REF).  */
 (define_insn "sp_switch_1"
-  [(const_int 1)]
+  [(const_int 1) (match_operand:SI 0 "symbol_ref_operand" "s")]
   "TARGET_SH1"
   "*
 {
-  rtx xoperands[1];
-
-  xoperands[0] = sp_switch;
-  output_asm_insn (\"mov.l r0,@-r15\;mov.l %0,r0\", xoperands);
-  output_asm_insn (\"mov.l @r0,r0\;mov.l r15,@-r0\", xoperands);
+  output_asm_insn (\"mov.l r0,@-r15\;mov.l %0,r0\", operands);
+  output_asm_insn (\"mov.l @r0,r0\;mov.l r15,@-r0\", operands);
   return \"mov r0,r15\";
 }"
   [(set_attr "length" "10")])

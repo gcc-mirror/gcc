@@ -70,35 +70,8 @@ int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 /* Set to 1 by expand_prologue() when the function is an interrupt handler.  */
 int current_function_interrupt;
 
-/* ??? The pragma interrupt support will not work for SH3.  */
-/* This is set by #pragma interrupt and #pragma trapa, and causes gcc to
-   output code for the next function appropriate for an interrupt handler.  */
-int pragma_interrupt;
-
-/* This is set by the trap_exit attribute for functions.   It specifies
-   a trap number to be used in a trapa instruction at function exit
-   (instead of an rte instruction).  */
-int trap_exit;
-
-/* This is used by the sp_switch attribute for functions.  It specifies
-   a variable holding the address of the stack the interrupt function
-   should switch to/from at entry/exit.  */
-rtx sp_switch;
-
-/* This is set by #pragma trapa, and is similar to the above, except that
-   the compiler doesn't emit code to preserve all registers.  */
-static int pragma_trapa;
-
-/* This is set by #pragma nosave_low_regs.  This is useful on the SH3,
-   which has a separate set of low regs for User and Supervisor modes.
-   This should only be used for the lowest level of interrupts.  Higher levels
-   of interrupts must save the registers in case they themselves are
-   interrupted.  */
-int pragma_nosave_low_regs;
-
-/* This is used for communication between TARGET_SETUP_INCOMING_VARARGS and
-   sh_expand_prologue.  */
-int current_function_anonymous_args;
+tree sh_deferred_function_attributes;
+tree *sh_deferred_function_attributes_tail = &sh_deferred_function_attributes;
 
 /* Global variables for machine-dependent things.  */
 
@@ -696,6 +669,8 @@ print_operand (FILE *stream, rtx x, int code)
 
   switch (code)
     {
+      tree trapa_attr;
+
     case '.':
       if (final_sequence
 	  && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))
@@ -706,8 +681,11 @@ print_operand (FILE *stream, rtx x, int code)
       fprintf (stream, "%s", LOCAL_LABEL_PREFIX);
       break;
     case '@':
-      if (trap_exit)
-	fprintf (stream, "trapa #%d", trap_exit);
+      trapa_attr = lookup_attribute ("trap_exit",
+				      DECL_ATTRIBUTES (current_function_decl));
+      if (trapa_attr)
+	fprintf (stream, "trapa #%ld",
+		 (long) TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (trapa_attr))));
       else if (sh_cfun_interrupt_handler_p ())
 	fprintf (stream, "rte");
       else
@@ -5418,10 +5396,16 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 {
   unsigned int reg;
   int count;
-  int interrupt_handler;
+  tree attrs;
+  bool interrupt_or_trapa_handler, trapa_handler, interrupt_handler;
+  bool nosave_low_regs;
   int pr_live, has_call;
 
-  interrupt_handler = sh_cfun_interrupt_handler_p ();
+  attrs = DECL_ATTRIBUTES (current_function_decl);
+  interrupt_or_trapa_handler = sh_cfun_interrupt_handler_p ();
+  trapa_handler = lookup_attribute ("trapa_handler", attrs) != NULL_TREE;
+  interrupt_handler = interrupt_or_trapa_handler && ! trapa_handler;
+  nosave_low_regs = lookup_attribute ("nosave_low_regs", attrs) != NULL_TREE;
 
   CLEAR_HARD_REG_SET (*live_regs_mask);
   if ((TARGET_SH4 || TARGET_SH2A_DOUBLE) && TARGET_FMOVD && interrupt_handler
@@ -5432,7 +5416,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
     for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
       if (regs_ever_live[reg] && regs_ever_live[reg+1]
 	  && (! call_really_used_regs[reg]
-	      || (interrupt_handler && ! pragma_trapa))
+	      || interrupt_handler)
 	  && ++count > 2)
 	{
 	  target_flags &= ~MASK_FPU_SINGLE;
@@ -5470,14 +5454,15 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
     {
       if (reg == (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG)
 	  ? pr_live
-	  : (interrupt_handler && ! pragma_trapa)
+	  : interrupt_handler
 	  ? (/* Need to save all the regs ever live.  */
 	     (regs_ever_live[reg]
 	      || (call_really_used_regs[reg]
 		  && (! fixed_regs[reg] || reg == MACH_REG || reg == MACL_REG
 		      || reg == PIC_OFFSET_TABLE_REGNUM)
 		  && has_call)
-	      || (has_call && REGISTER_NATURAL_MODE (reg) == SImode
+	      || (TARGET_SHMEDIA && has_call
+		  && REGISTER_NATURAL_MODE (reg) == SImode
 		  && (GENERAL_REGISTER_P (reg) || TARGET_REGISTER_P (reg))))
 	     && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
@@ -5489,7 +5474,9 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	      && flag_pic
 	      && current_function_args_info.call_cookie
 	      && reg == PIC_OFFSET_TABLE_REGNUM)
-	     || (regs_ever_live[reg] && ! call_really_used_regs[reg])
+	     || (regs_ever_live[reg]
+		 && (!call_really_used_regs[reg]
+		     || (trapa_handler && reg == FPSCR_REG && TARGET_FPU_ANY)))
 	     || (current_function_calls_eh_return
 		 && (reg == EH_RETURN_DATA_REGNO (0)
 		     || reg == EH_RETURN_DATA_REGNO (1)
@@ -5521,6 +5508,8 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 		}
 	    }
 	}
+      if (nosave_low_regs && reg == R8_REG)
+	break;
     }
   /* If we have a target register optimization pass after prologue / epilogue
      threading, we need to assume all target registers will be live even if
@@ -5724,6 +5713,8 @@ sh_expand_prologue (void)
   int d_rounding = 0;
   int save_flags = target_flags;
   int pretend_args;
+  tree sp_switch_attr
+    = lookup_attribute ("sp_switch", DECL_ATTRIBUTES (current_function_decl));
 
   current_function_interrupt = sh_cfun_interrupt_handler_p ();
 
@@ -5813,8 +5804,16 @@ sh_expand_prologue (void)
     }
 
   /* If we're supposed to switch stacks at function entry, do so now.  */
-  if (sp_switch)
-    emit_insn (gen_sp_switch_1 ());
+  if (sp_switch_attr)
+    {
+      /* The argument specifies a variable holding the address of the
+	 stack the interrupt function should switch to/from at entry/exit.  */
+      const char *s
+	= ggc_strdup (TREE_STRING_POINTER (TREE_VALUE (sp_switch_attr)));
+      rtx sp_switch = gen_rtx_SYMBOL_REF (Pmode, s);
+
+      emit_insn (gen_sp_switch_1 (sp_switch));
+    }
 
   d = calc_live_regs (&live_regs_mask);
   /* ??? Maybe we could save some switching if we can move a mode switch
@@ -6333,7 +6332,7 @@ sh_expand_epilogue (bool sibcall_p)
 			 EH_RETURN_STACKADJ_RTX));
 
   /* Switch back to the normal stack if necessary.  */
-  if (sp_switch)
+  if (lookup_attribute ("sp_switch", DECL_ATTRIBUTES (current_function_decl)))
     emit_insn (gen_sp_switch_2 ());
 
   /* Tell flow the insn that pops PR isn't dead.  */
@@ -6435,9 +6434,7 @@ static void
 sh_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
 			     HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  trap_exit = pragma_interrupt = pragma_trapa = pragma_nosave_low_regs = 0;
   sh_need_epilogue_known = 0;
-  sp_switch = NULL_RTX;
 }
 
 static rtx
@@ -7446,42 +7443,69 @@ initial_elimination_offset (int from, int to)
     return total_auto_space;
 }
 
-/* Handle machine specific pragmas to be semi-compatible with Renesas
-   compiler.  */
-
-void
-sh_pr_interrupt (struct cpp_reader *pfile ATTRIBUTE_UNUSED)
-{
-  pragma_interrupt = 1;
-}
-
-void
-sh_pr_trapa (struct cpp_reader *pfile ATTRIBUTE_UNUSED)
-{
-  pragma_interrupt = pragma_trapa = 1;
-}
-
-void
-sh_pr_nosave_low_regs (struct cpp_reader *pfile ATTRIBUTE_UNUSED)
-{
-  pragma_nosave_low_regs = 1;
-}
-
-/* Generate 'handle_interrupt' attribute for decls */
-
+/* Insert any deferred function attributes from earlier pragmas.  */
 static void
 sh_insert_attributes (tree node, tree *attributes)
 {
-  if (! pragma_interrupt
-      || TREE_CODE (node) != FUNCTION_DECL)
+  tree attrs;
+
+  if (TREE_CODE (node) != FUNCTION_DECL)
     return;
 
   /* We are only interested in fields.  */
   if (!DECL_P (node))
     return;
 
-  /* Add a 'handle_interrupt' attribute.  */
-  * attributes = tree_cons (get_identifier ("interrupt_handler"), NULL, * attributes);
+  /* Append the attributes to the deferred attributes.  */
+  *sh_deferred_function_attributes_tail = *attributes;
+  attrs = sh_deferred_function_attributes;
+  if (!attrs)
+    return;
+
+  /* Some attributes imply or require the interrupt attribute.  */
+  if (!lookup_attribute ("interrupt_handler", attrs)
+      && !lookup_attribute ("interrupt_handler", DECL_ATTRIBUTES (node)))
+    {
+      /* If we have a trapa_handler, but no interrupt_handler attribute,
+	 insert an interrupt_handler attribute.  */
+      if (lookup_attribute ("trapa_handler", attrs) != NULL_TREE)
+	/* We can't use sh_pr_interrupt here because that's not in the
+	   java frontend.  */
+	attrs
+	  = tree_cons (get_identifier("interrupt_handler"), NULL_TREE, attrs);
+      /* However, for sp_switch, trap_exit and nosave_low_regs, if the
+	 interrupt attribute is missing, we ignore the attribute and warn.  */
+      else if (lookup_attribute ("sp_switch", attrs)
+	       || lookup_attribute ("trap_exit", attrs)
+	       || lookup_attribute ("nosave_low_regs", attrs))
+	{
+	  tree *tail;
+
+	  for (tail = attributes; attrs; attrs = TREE_CHAIN (attrs))
+	    {
+	      if (is_attribute_p ("sp_switch", TREE_PURPOSE (attrs))
+		  || is_attribute_p ("trap_exit", TREE_PURPOSE (attrs))
+		  || is_attribute_p ("nosave_low_regs", TREE_PURPOSE (attrs)))
+		warning (OPT_Wattributes,
+			 "%qs attribute only applies to interrupt functions",
+			 IDENTIFIER_POINTER (TREE_PURPOSE (attrs)));
+	      else
+		{
+		  *tail = tree_cons (TREE_PURPOSE (attrs), NULL_TREE,
+				     NULL_TREE);
+		  tail = &TREE_CHAIN (*tail);
+		}
+	    }
+	  attrs = *attributes;
+	}
+    }
+
+  /* Install the processed list.  */
+  *attributes = attrs;
+
+  /* Clear deferred attributes.  */
+  sh_deferred_function_attributes = NULL_TREE;
+  sh_deferred_function_attributes_tail = &sh_deferred_function_attributes;
 
   return;
 }
@@ -7490,11 +7514,20 @@ sh_insert_attributes (tree node, tree *attributes)
 
    interrupt_handler -- specifies this function is an interrupt handler.
 
+   trapa_handler - like above, but don't save all registers.
+
    sp_switch -- specifies an alternate stack for an interrupt handler
    to run on.
 
    trap_exit -- use a trapa to exit an interrupt function instead of
    an rte instruction.
+
+   nosave_low_regs - don't save r0..r7 in an interrupt handler.
+     This is useful on the SH3 and upwards,
+     which has a separate set of low regs for User and Supervisor modes.
+     This should only be used for the lowest level of interrupts.  Higher levels
+     of interrupts must save the registers in case they themselves are
+     interrupted.
 
    renesas -- use Renesas calling/layout conventions (functions and
    structures).
@@ -7508,6 +7541,8 @@ const struct attribute_spec sh_attribute_table[] =
   { "sp_switch",         1, 1, true,  false, false, sh_handle_sp_switch_attribute },
   { "trap_exit",         1, 1, true,  false, false, sh_handle_trap_exit_attribute },
   { "renesas",           0, 0, false, true, false, sh_handle_renesas_attribute },
+  { "trapa_handler",     0, 0, true,  false, false, sh_handle_interrupt_handler_attribute },
+  { "nosave_low_regs",   0, 0, true,  false, false, sh_handle_interrupt_handler_attribute },
 #ifdef SYMBIAN
   /* Symbian support adds three new attributes:
      dllexport - for exporting a function/variable that will live in a dll
@@ -7557,24 +7592,12 @@ sh_handle_sp_switch_attribute (tree *node, tree name, tree args,
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
-  else if (!pragma_interrupt)
-    {
-      /* The sp_switch attribute only has meaning for interrupt functions.  */
-      warning (OPT_Wattributes, "%qs attribute only applies to "
-	       "interrupt functions", IDENTIFIER_POINTER (name));
-      *no_add_attrs = true;
-    }
   else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
     {
       /* The argument must be a constant string.  */
       warning (OPT_Wattributes, "%qs attribute argument not a string constant",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
-    }
-  else
-    {
-      const char *s = ggc_strdup (TREE_STRING_POINTER (TREE_VALUE (args)));
-      sp_switch = gen_rtx_SYMBOL_REF (VOIDmode, s);
     }
 
   return NULL_TREE;
@@ -7592,23 +7615,14 @@ sh_handle_trap_exit_attribute (tree *node, tree name, tree args,
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
-  else if (!pragma_interrupt)
-    {
-      /* The trap_exit attribute only has meaning for interrupt functions.  */
-      warning (OPT_Wattributes, "%qs attribute only applies to "
-	       "interrupt functions", IDENTIFIER_POINTER (name));
-      *no_add_attrs = true;
-    }
+  /* The argument specifies a trap number to be used in a trapa instruction
+     at function exit (instead of an rte instruction).  */
   else if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
     {
       /* The argument must be a constant integer.  */
       warning (OPT_Wattributes, "%qs attribute argument not an "
 	       "integer constant", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
-    }
-  else
-    {
-      trap_exit = TREE_INT_CST_LOW (TREE_VALUE (args));
     }
 
   return NULL_TREE;
