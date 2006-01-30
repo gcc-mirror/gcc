@@ -599,7 +599,7 @@ set_internal_unit (stmtblock_t * block, tree var, gfc_expr * e)
     }
 
   /* Character array.  */
-  else if (e->symtree && (e->symtree->n.sym->as->rank > 0))
+  else if (e->rank > 0)
     {
       se.ss = gfc_walk_expr (e);
 
