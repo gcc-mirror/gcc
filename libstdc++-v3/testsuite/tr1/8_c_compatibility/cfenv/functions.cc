@@ -32,21 +32,21 @@ void test01()
   std::tr1::fexcept_t* pflag = 0;
   std::tr1::fenv_t* penv = 0;
 
-  int r;
+  int ret;
 
-  r = std::tr1::feclearexcept(except);
-  r = std::tr1::fegetexceptflag(pflag, except);
-  r = std::tr1::feraiseexcept(except);
-  r = std::tr1::fesetexceptflag(pflag, except);
-  r = std::tr1::fetestexcept(except);
+  ret = std::tr1::feclearexcept(except);
+  ret = std::tr1::fegetexceptflag(pflag, except);
+  ret = std::tr1::feraiseexcept(except);
+  ret = std::tr1::fesetexceptflag(pflag, except);
+  ret = std::tr1::fetestexcept(except);
 
-  r = std::tr1::fegetround();
-  r = std::tr1::fesetround(mode);
+  ret = std::tr1::fegetround();
+  ret = std::tr1::fesetround(mode);
 
-  r = std::tr1::fegetenv(penv);
-  r = std::tr1::feholdexcept(penv);
-  r = std::tr1::fesetenv(penv);
-  r = std::tr1::feupdateenv(penv);
+  ret = std::tr1::fegetenv(penv);
+  ret = std::tr1::feholdexcept(penv);
+  ret = std::tr1::fesetenv(penv);
+  ret = std::tr1::feupdateenv(penv);
 
 #endif
 }

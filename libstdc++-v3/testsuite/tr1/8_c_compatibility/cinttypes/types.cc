@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2006-01-26  Paolo Carlini  <pcarlini@suse.de>
+// 2006-01-30  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -20,16 +20,15 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 8.6 Header <cfenv>
+// 8.11 Header <cinttypes>
 
-#include <tr1/cfenv>
+#include <tr1/cinttypes>
 
 void test01()
 {
-#if _GLIBCXX_USE_C99_FENV_TR1
+#if _GLIBCXX_USE_C99_INTTYPES_TR1
 
-  typedef std::tr1::fenv_t     my_fenv_t;
-  typedef std::tr1::fexcept_t  my_fexcept_t;
+  typedef std::tr1::imaxdiv_t  my_imaxdiv_t;
   
 #endif
 }

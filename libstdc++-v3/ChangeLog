@@ -1,3 +1,21 @@
+2006-01-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cinttypes: New.
+	* include/Makefile.am: Add.
+	* testsuite/tr1/8_c_compatibility/cinttypes/functions: New.	
+	* testsuite/tr1/8_c_compatibility/cinttypes/types: Likewise.
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Add <inttypes.h> checks.
+	* docs/html/ext/tr1.html: Update.
+	* include/Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
+	* testsuite/tr1/8_c_compatibility/cfenv/functions.cc: Cosmetic tweak.
+	* testsuite/tr1/8_c_compatibility/cfenv/types.cc: Likewise.
+
+	* testsuite/tr1/8_c_compatibility/cstdint/types.cc: Fix, check in
+	std::tr1.
+
 2006-01-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cstdint: New.

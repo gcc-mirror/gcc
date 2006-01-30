@@ -28,34 +28,34 @@ void test01()
 {
 #if _GLIBCXX_USE_C99_STDINT_TR1
 
-  typedef int8_t          my_int8_t;
-  typedef int16_t         my_int16_t;
-  typedef int32_t         my_int32_t;
-  typedef int64_t         my_int64_t;
-  typedef int_fast8_t     my_int_fast8_t;
-  typedef int_fast16_t    my_int_fast16_t;
-  typedef int_fast32_t    my_int_fast32_t;
-  typedef int_fast64_t    my_int_fast64_t;	
-  typedef int_least8_t    my_int_least8_t;
-  typedef int_least16_t   my_int_least16_t;
-  typedef int_least32_t   my_int_least32_t;
-  typedef int_least64_t   my_int_least64_t;
-  typedef intmax_t        my_intmax_t;
-  typedef intptr_t        my_intptr_t;
-  typedef uint8_t         my_uint8_t;
-  typedef uint16_t        my_uint16_t;
-  typedef uint32_t        my_uint32_t;
-  typedef uint64_t        my_uint64_t;
-  typedef uint_fast8_t    my_uint_fast8_t;
-  typedef uint_fast16_t   my_uint_fast16_t;
-  typedef uint_fast32_t   my_uint_fast32_t;
-  typedef uint_fast64_t   my_uint_fast64_t;	
-  typedef uint_least8_t   my_uint_least8_t;
-  typedef uint_least16_t  my_uint_least16_t;
-  typedef uint_least32_t  my_uint_least32_t;
-  typedef uint_least64_t  my_uint_least64_t;
-  typedef uintmax_t       my_uintmax_t;
-  typedef uintptr_t       my_uintptr_t;
+  typedef std::tr1::int8_t          my_int8_t;
+  typedef std::tr1::int16_t         my_int16_t;
+  typedef std::tr1::int32_t         my_int32_t;
+  typedef std::tr1::int64_t         my_int64_t;
+  typedef std::tr1::int_fast8_t     my_int_fast8_t;
+  typedef std::tr1::int_fast16_t    my_int_fast16_t;
+  typedef std::tr1::int_fast32_t    my_int_fast32_t;
+  typedef std::tr1::int_fast64_t    my_int_fast64_t;	
+  typedef std::tr1::int_least8_t    my_int_least8_t;
+  typedef std::tr1::int_least16_t   my_int_least16_t;
+  typedef std::tr1::int_least32_t   my_int_least32_t;
+  typedef std::tr1::int_least64_t   my_int_least64_t;
+  typedef std::tr1::intmax_t        my_intmax_t;
+  typedef std::tr1::intptr_t        my_intptr_t;
+  typedef std::tr1::uint8_t         my_uint8_t;
+  typedef std::tr1::uint16_t        my_uint16_t;
+  typedef std::tr1::uint32_t        my_uint32_t;
+  typedef std::tr1::uint64_t        my_uint64_t;
+  typedef std::tr1::uint_fast8_t    my_uint_fast8_t;
+  typedef std::tr1::uint_fast16_t   my_uint_fast16_t;
+  typedef std::tr1::uint_fast32_t   my_uint_fast32_t;
+  typedef std::tr1::uint_fast64_t   my_uint_fast64_t;	
+  typedef std::tr1::uint_least8_t   my_uint_least8_t;
+  typedef std::tr1::uint_least16_t  my_uint_least16_t;
+  typedef std::tr1::uint_least32_t  my_uint_least32_t;
+  typedef std::tr1::uint_least64_t  my_uint_least64_t;
+  typedef std::tr1::uintmax_t       my_uintmax_t;
+  typedef std::tr1::uintptr_t       my_uintptr_t;
   
 #endif
 }
