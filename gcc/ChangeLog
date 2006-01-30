@@ -1,3 +1,8 @@
+2006-01-30  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* optabs.c (prepare_cmp_insn): If unbaised and unsigned then bias
+	the comparison routine return.
+
 2006-01-30  Michael Matz  <matz@suse.de>
 
 	* global.c (find_reg): Only evict for global regs.
