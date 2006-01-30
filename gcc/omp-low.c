@@ -2279,13 +2279,16 @@ expand_omp_parallel (struct omp_region *region)
   entry_bb = bb_for_stmt (region->entry);
   exit_bb = bb_for_stmt (region->exit);
 
-  /* Barriers at the end of the function are not necessary and can be
-     removed.  Since the caller will have a barrier of its own, this
-     one is superfluous.  */
-  remove_exit_barrier (region);
-
   if (is_combined_parallel (region))
-    ws_args = region->ws_args;
+    {
+      ws_args = region->ws_args;
+
+      /* For combined parallel+workshare calls, barriers at the end of
+	 the function are not necessary and can be removed.  Since the
+	 caller will have a barrier of its own, the workshare barrier is
+	 superfluous.  */
+      remove_exit_barrier (region);
+    }
   else
     ws_args = NULL_TREE;
 
@@ -3244,6 +3247,13 @@ expand_omp (struct omp_region *region)
 	    gcc_unreachable ();
 	}
 
+      /* Expansion adds and removes basic block, edges, creates
+	 and exposes unreachable regions that need to be cleaned up
+	 before proceeding.  */
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+      cleanup_tree_cfg ();
+
       region = region->next;
     }
 }
@@ -3339,12 +3349,7 @@ execute_expand_omp (void)
       splay_tree_delete (omp_regions);
       root_omp_region = NULL;
       omp_regions = NULL;
-      free_dominance_info (CDI_DOMINATORS);
-      free_dominance_info (CDI_POST_DOMINATORS);
     }
-
-  /* Expansion adds basic blocks that may be merged.  */
-  cleanup_tree_cfg ();
 }
 
 static bool
