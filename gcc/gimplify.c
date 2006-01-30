@@ -4053,6 +4053,15 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
 
   if (init)
     {
+      /* Try to avoid the temporary if possible.  */
+      if (TREE_CODE (init) == INDIRECT_REF
+	  && !TREE_SIDE_EFFECTS (init)
+          && !TARGET_EXPR_CLEANUP (targ))
+        {
+          *expr_p = init;
+          return GS_OK;
+        }
+
       /* TARGET_EXPR temps aren't part of the enclosing block, so add it
 	 to the temps list.  */
       gimple_add_tmp_var (temp);
