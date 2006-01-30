@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2006-01-26  Paolo Carlini  <pcarlini@suse.de>
+// 2006-01-30  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -20,16 +20,39 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 8.6 Header <cfenv>
+// 8.11 Header <cinttypes>
 
-#include <tr1/cfenv>
+#include <tr1/cinttypes>
 
 void test01()
 {
-#if _GLIBCXX_USE_C99_FENV_TR1
+#if _GLIBCXX_USE_C99_INTTYPES_TR1
 
-  typedef std::tr1::fenv_t     my_fenv_t;
-  typedef std::tr1::fexcept_t  my_fexcept_t;
-  
+  std::tr1::intmax_t i = 0, numer = 0, denom = 0, base = 0;
+  const char* s = 0;
+  char** endptr = 0;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  const wchar_t* ws = 0;
+  wchar_t** wendptr = 0;
+#endif  
+
+  std::tr1::intmax_t  ret;
+  std::tr1::uintmax_t uret;
+  std::tr1::imaxdiv_t dret;
+
+  ret = std::tr1::imaxabs(i);
+  ret = std::tr1::abs(i);
+
+  dret = std::tr1::imaxdiv(numer, denom);
+  dret = std::tr1::div(numer, denom);
+
+  ret = std::tr1::strtoimax(s, endptr, base);
+  uret = std::tr1::strtoumax(s, endptr, base);
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  ret = std::tr1::wcstoimax(ws, wendptr, base);
+  uret = std::tr1::wcstoumax(ws, wendptr, base);
+#endif
+
 #endif
 }
