@@ -1,3 +1,22 @@
+2006-01-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/18578
+	PR fortran/18579
+	PR fortran/20857
+	PR fortran/20885
+	* gfortran.dg/intent_out_1.f90: New test.
+
+	PR fortran/17911
+	* gfortran.dg/procedure_lvalue.f90: New test.
+
+	PR fortran/20895
+	PR fortran/25030
+	* gfortran.dg/char_pointer_assign_2.f90: New test.
+	* gfortran.dg/char_result_1.f90: Correct unequal charlen pointer
+	assignment to be consistent with standard.
+	* gfortran.dg/char_result_2.f90: The same.
+	* gfortran.dg/char_result_8.f90: The same.
+
 2006-01-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25835
