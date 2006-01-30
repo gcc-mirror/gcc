@@ -1,7 +1,7 @@
 /* Name mangling for the 3.0 C++ ABI.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
-   Written by Alex Samuel <sameul@codesourcery.com>
+   Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
 
