@@ -1241,7 +1241,8 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
      so we can use it instead.  */
   if (best_reg < 0 && !retrying
       /* Let's not bother with multi-reg allocnos.  */
-      && allocno[num].size == 1)
+      && allocno[num].size == 1
+      && REG_BASIC_BLOCK (allocno[num].reg) == REG_BLOCK_GLOBAL)
     {
       /* Count from the end, to find the least-used ones first.  */
       for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
@@ -1278,9 +1279,9 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
 		 variables so as to avoid excess precision problems that occur
 		 on an i386-unknown-sysv4.2 (unixware) host.  */
 
-	      double tmp1 = ((double) local_reg_freq[regno]
+	      double tmp1 = ((double) local_reg_freq[regno] * local_reg_n_refs[regno]
 			    / local_reg_live_length[regno]);
-	      double tmp2 = ((double) allocno[num].freq
+	      double tmp2 = ((double) allocno[num].freq * allocno[num].n_refs
 			     / allocno[num].live_length);
 
 	      if (tmp1 < tmp2)
@@ -1288,6 +1289,19 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
 		  /* Hard reg REGNO was used less in total by local regs
 		     than it would be used by this one allocno!  */
 		  int k;
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "Regno %d better for global %d, ",
+		      	       regno, allocno[num].reg);
+		      fprintf (dump_file, "fr:%d, ll:%d, nr:%d ",
+			       allocno[num].freq, allocno[num].live_length,
+			       allocno[num].n_refs);
+		      fprintf (dump_file, "(was: fr:%d, ll:%d, nr:%d)\n",
+			       local_reg_freq[regno],
+			       local_reg_live_length[regno],
+			       local_reg_n_refs[regno]);
+		    }
+
 		  for (k = 0; k < max_regno; k++)
 		    if (reg_renumber[k] >= 0)
 		      {
@@ -1296,7 +1310,12 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
 			  = r + hard_regno_nregs[r][PSEUDO_REGNO_MODE (k)];
 
 			if (regno >= r && regno < endregno)
-			  reg_renumber[k] = -1;
+			  {
+			    if (dump_file)
+			      fprintf (dump_file,
+				       "Local Reg %d now on stack\n", k);
+			    reg_renumber[k] = -1;
+			  }
 		      }
 
 		  best_reg = regno;
