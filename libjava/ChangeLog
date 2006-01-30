@@ -1,3 +1,11 @@
+2006-01-30  Keith Seitz  <keiths@redhat.com>
+
+	* include/java-interp.h (insn_index): New declaration.
+	(num_insn_slots): New private variable.
+	(get_line_table): New declaration.
+	* interpret.cc (insn_index): New function.
+	(get_line_table): New function.
+
 2006-01-24  Archit Shah  <ashah@redhat.com>
 	    Tom Tromey  <tromey@redhat.com>
 

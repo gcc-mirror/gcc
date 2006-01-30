@@ -330,6 +330,7 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
       if (! first_pass)
 	{
 	  insns = (insn_slot *) _Jv_AllocBytes (sizeof (insn_slot) * next);
+	  number_insn_slots = next;
 	  next = 0;
 	}
 
@@ -3670,6 +3671,80 @@ _Jv_InterpMethod::ncode ()
 
   self->ncode = (void*)closure;
   return self->ncode;
+}
+
+#ifdef DIRECT_THREADED
+/* Find the index of the given insn in the array of insn slots
+   for this method. Returns -1 if not found. */
+jlong
+_Jv_InterpMethod::insn_index (pc_t pc)
+{
+  jlong left = 0;
+  jlong right = number_insn_slots;
+  insn_slot* slots = reinterpret_cast<insn_slot*> (prepared);
+
+  while (right >= 0)
+    {
+      jlong mid = (left + right) / 2;
+      if (&slots[mid] == pc)
+	return mid;
+
+      if (pc < &slots[mid])
+	right = mid - 1;
+      else
+        left = mid + 1;
+    }
+
+  return -1;
+}
+#endif // DIRECT_THREADED
+
+void
+_Jv_InterpMethod::get_line_table (jlong& start, jlong& end,
+				  jintArray& line_numbers,
+				  jlongArray& code_indices)
+{
+#ifdef DIRECT_THREADED
+  /* For the DIRECT_THREADED case, if the method has not yet been
+   * compiled, the linetable will change to insn slots instead of
+   * bytecode PCs. It is probably easiest, in this case, to simply
+   * compile the method and guarantee that we are using insn
+   * slots.
+   */
+  _Jv_CompileMethod (this);
+
+  if (line_table_len > 0)
+    {
+      start = 0;
+      end = number_insn_slots;
+      line_numbers = JvNewIntArray (line_table_len);
+      code_indices = JvNewLongArray (line_table_len);
+
+      jint* lines = elements (line_numbers);
+      jlong* indices = elements (code_indices);
+      for (int i = 0; i < line_table_len; ++i)
+	{
+	  lines[i] = line_table[i].line;
+	  indices[i] = insn_index (line_table[i].pc);
+	}
+    }
+#else // !DIRECT_THREADED
+  if (line_table_len > 0)
+    {
+      start = 0;
+      end = code_length;
+      line_numbers = JvNewIntArray (line_table_len);
+      code_indices = JvNewLongArray (line_table_len);
+
+      jint* lines = elements (line_numbers);
+      jlong* indices = elements (code_indices);
+      for (int i = 0; i < line_table_len; ++i)
+	{
+	  lines[i] = line_table[i].line;
+	  indices[i] = (jlong) line_table[i].bytecode_pc;
+	}
+    }
+#endif // !DIRECT_THREADED
 }
 
 void *
