@@ -1,5 +1,11 @@
 2006-01-30  Paolo Carlini  <pcarlini@suse.de>
 
+	* acinclude.m4 ([GLIBCXX_CHECK_C99_TR1]): Do the <inttypes.h>
+	checks only if the <stdint.h> checks are successful.
+	* configure: Regenerate.
+
+2006-01-30  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/cinttypes: New.
 	* include/Makefile.am: Add.
 	* testsuite/tr1/8_c_compatibility/cinttypes/functions: New.	

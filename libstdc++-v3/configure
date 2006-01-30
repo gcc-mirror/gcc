@@ -30610,14 +30610,13 @@ _ACEOF
 
   fi
 
-  # Check for the existence of <inttypes.h> functions.
-  echo "$as_me:$LINENO: checking for ISO C99 support to TR1 in <inttypes.h>" >&5
+  # Check for the existence of <inttypes.h> functions (NB: doesn't make
+  # sense if the previous check fails, per C99, 7.8/1).
+  ac_c99_inttypes_tr1=no;
+  if test x"$ac_c99_stdint_tr1" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ISO C99 support to TR1 in <inttypes.h>" >&5
 echo $ECHO_N "checking for ISO C99 support to TR1 in <inttypes.h>... $ECHO_C" >&6
-  if test "${ac_c99_inttypes_tr1+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -30628,15 +30627,15 @@ int
 main ()
 {
 intmax_t i, numer, denom, base;
-	          const char* s;
-	          char** endptr;
-	          intmax_t ret;
-	          uintmax_t uret;
-	          imaxdiv_t dret;
-	          ret = imaxabs(i);
-	          dret = imaxdiv(numer, denom);
-	          ret = strtoimax(s, endptr, base);
-	          uret = strtoumax(s, endptr, base);
+	            const char* s;
+	            char** endptr;
+	            intmax_t ret;
+	            uintmax_t uret;
+	            imaxdiv_t dret;
+	            ret = imaxabs(i);
+	            dret = imaxdiv(numer, denom);
+	            ret = strtoimax(s, endptr, base);
+	            uret = strtoumax(s, endptr, base);
 
   ;
   return 0;
@@ -30672,9 +30671,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ac_c99_inttypes_tr1=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-
-fi
-
+  fi
   echo "$as_me:$LINENO: result: $ac_c99_inttypes_tr1" >&5
 echo "${ECHO_T}$ac_c99_inttypes_tr1" >&6
   if test x"$ac_c99_inttypes_tr1" = x"yes"; then
