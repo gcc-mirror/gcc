@@ -1,3 +1,8 @@
+2006-01-30  Michael Matz  <matz@suse.de>
+
+	* global.c (find_reg): Only evict for global regs.
+	Take n_refs into account and dump more info.
+
 2006-01-30  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR target/14798:
