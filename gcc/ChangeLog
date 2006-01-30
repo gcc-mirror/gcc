@@ -1,5 +1,15 @@
 2006-01-30  J"orn Rennecke <joern.rennecke@st.com>
 
+	Merged from mainline r107469:
+	* caller-save.c: (this_insn_sets): Move into:
+	(save_call_clobbered_regs).
+	(mark_set_regs): Get this_insn_sets from data.
+
+	(save_call_clobbered_regs): Take sets of the return value by
+	sibcalls into account.
+
+2006-01-30  J"orn Rennecke <joern.rennecke@st.com>
+
 	PR target/14798:
 	* sh.c (pragma_interrupt, trap_exit, sp_switch): Remove variable.
 	(pragma_trap, pragma_nosave_low_regs): Likewise.
