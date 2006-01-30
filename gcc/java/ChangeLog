@@ -1,3 +1,8 @@
+2006-01-30  Andrew Haley  <aph@redhat.com>
+
+	PR java/21428
+	* parse.y (source_start_java_method): Mark DECL_ARTIFICIAL("this").
+
 2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* jv-scan.c (version), jcf-dump.c (version), gjavah.c (version):
