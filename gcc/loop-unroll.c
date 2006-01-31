@@ -1167,6 +1167,9 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 	     ";; Unrolled loop %d times, counting # of iterations "
 	     "in runtime, %i insns\n",
 	     max_unroll, num_loop_insns (loop));
+
+  if (dom_bbs)
+    free (dom_bbs);
 }
 
 /* Decide whether to simply peel LOOP and how much.  */

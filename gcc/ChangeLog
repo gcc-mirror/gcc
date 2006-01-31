@@ -1,3 +1,11 @@
+2006-01-31  Uttam Pawar  <uttamp@us.ibm.com>
+
+	PR middle-end/25933
+	* loop-unroll.c (unroll_loop_runtime_iterations): Free
+	dom_bbs pointer.
+	* tree-ssa-live.c (type_var_init): Allocate bitmap after
+	call to tpa_init.
+
 2006-01-31  Marcin Dalecki  <martin@dalecki.de>
 
 	* tree-vrp.c: Use XNEW/XCNEW allocation wrappers.
