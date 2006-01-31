@@ -3528,18 +3528,24 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
       result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST_MAKE_BLOCK,
 					word_mode, 2, x, mode, y, mode);
 
+      /* There are two kinds of comparison routines. Biased routines
+	 return 0/1/2, and unbiased routines return -1/0/1. Other parts
+	 of gcc expect that the comparison operation is equivalent
+	 to the modified comparison. For signed comparisons compare the 
+	 result against 1 in the biased case, and zero in the unbiased
+	 case. For unsigned comparisons always compare against 1 after
+	 biasing the unbiased result by adding 1. This gives us a way to
+	 represent LTU. */
       *px = result;
       *pmode = word_mode;
-      if (TARGET_LIB_INT_CMP_BIASED)
-	/* Integer comparison returns a result that must be compared
-	   against 1, so that even if we do an unsigned compare
-	   afterward, there is still a value that can represent the
-	   result "less than".  */
-	*py = const1_rtx;
-      else
+      *py = const1_rtx;
+
+      if (!TARGET_LIB_INT_CMP_BIASED)
 	{
-	  *py = const0_rtx;
-	  *punsignedp = 1;
+	  if (*punsignedp)
+	    *px = plus_constant (result, 1);  
+	  else
+	    *py = const0_rtx;
 	}
       return;
     }
