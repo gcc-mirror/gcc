@@ -1729,7 +1729,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	    unsigned HOST_WIDE_INT delta;
 	    /* Copy the chain of relocs into a sorted array. */
 	    struct jcf_relocation **relocs
-	      = xmalloc (sw_state.num_cases * sizeof (struct jcf_relocation *));
+	      = XNEWVEC (struct jcf_relocation *, sw_state.num_cases);
 	    /* The relocs arrays is a buffer with a gap.
 	       The assumption is that cases will normally come in "runs". */
 	    int gap_start = 0;
@@ -3473,7 +3473,7 @@ make_class_file_name (tree clas)
       slash = dname + strlen (dname);
     }
 
-  r = xmalloc (slash - dname + strlen (cname) + 2);
+  r = XNEWVEC (char, slash - dname + strlen (cname) + 2);
   strncpy (r, dname, slash - dname);
   r[slash - dname] = sep;
   strcpy (&r[slash - dname + 1], cname);

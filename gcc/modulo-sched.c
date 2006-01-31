@@ -900,7 +900,7 @@ canon_loop (struct loop *loop)
 static struct loops *
 build_loops_structure (FILE *dumpfile)
 {
-  struct loops *loops = xcalloc (1, sizeof (struct loops));
+  struct loops *loops = XCNEW (struct loops);
 
   /* Find the loops.  */
 
@@ -984,7 +984,7 @@ sms_schedule (FILE *dump_file)
 
   /* Allocate memory to hold the DDG array one entry for each loop.
      We use loop->num as index into this array.  */
-  g_arr = xcalloc (loops->num, sizeof (ddg_ptr));
+  g_arr = XCNEWVEC (ddg_ptr, loops->num);
 
 
   /* Build DDGs for all the relevant loops and hold them in G_ARR
@@ -1172,7 +1172,7 @@ sms_schedule (FILE *dump_file)
           fprintf (stats_file, "\n");
         }
 
-      node_order = (int *) xmalloc (sizeof (int) * g->num_nodes);
+      node_order = XNEWVEC (int, g->num_nodes);
 
       mii = 1; /* Need to pass some estimate of mii.  */
       rec_mii = sms_order_nodes (g, mii, node_order);
@@ -2037,8 +2037,7 @@ order_nodes_in_scc (ddg_ptr g, sbitmap nodes_ordered, sbitmap scc,
 static partial_schedule_ptr
 create_partial_schedule (int ii, ddg_ptr g, int history)
 {
-  partial_schedule_ptr ps = (partial_schedule_ptr)
-			     xmalloc (sizeof (struct partial_schedule));
+  partial_schedule_ptr ps = XNEW (struct partial_schedule);
   ps->rows = (ps_insn_ptr *) xcalloc (ii, sizeof (ps_insn_ptr));
   ps->ii = ii;
   ps->history = history;
@@ -2125,7 +2124,7 @@ print_partial_schedule (partial_schedule_ptr ps, FILE *dump)
 static ps_insn_ptr
 create_ps_insn (ddg_node_ptr node, int rest_count, int cycle)
 {
-  ps_insn_ptr ps_i = xmalloc (sizeof (struct ps_insn));
+  ps_insn_ptr ps_i = XNEW (struct ps_insn);
 
   ps_i->node = node;
   ps_i->next_in_row = NULL;

@@ -111,10 +111,10 @@ void dump_graph (FILE *f, struct graph *g)
 static struct graph *
 new_graph (int n_vertices)
 {
-  struct graph *g = xmalloc (sizeof (struct graph));
+  struct graph *g = XNEW (struct graph);
 
   g->n_vertices = n_vertices;
-  g->vertices = xcalloc (n_vertices, sizeof (struct vertex));
+  g->vertices = XCNEWVEC (struct vertex, n_vertices);
 
   return g;
 }
@@ -271,8 +271,8 @@ mark_irreducible_loops (struct loops *loops)
   edge_iterator ei;
   int i, src, dest;
   struct graph *g;
-  int *queue1 = xmalloc ((last_basic_block + loops->num) * sizeof (int));
-  int *queue2 = xmalloc ((last_basic_block + loops->num) * sizeof (int));
+  int *queue1 = XNEWVEC (int, last_basic_block + loops->num);
+  int *queue2 = XNEWVEC (int, last_basic_block + loops->num);
   int nq, depth;
   struct loop *cloop;
 

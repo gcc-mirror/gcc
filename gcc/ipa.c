@@ -36,7 +36,7 @@ cgraph_postorder (struct cgraph_node **order)
   struct cgraph_edge *edge, last;
 
   struct cgraph_node **stack =
-    xcalloc (cgraph_n_nodes, sizeof (struct cgraph_node *));
+    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
 
   /* We have to deal with cycles nicely, so use a depth first traversal
      output algorithm.  Ignore the fact that some functions won't need

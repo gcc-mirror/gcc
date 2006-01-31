@@ -125,7 +125,7 @@ symbol_hash_lookup (const char *string, int create)
   if (*e == NULL)
     {
       struct symbol_hash_entry *v;
-      *e = v = xcalloc (1, sizeof (*v));
+      *e = v = XCNEW (struct symbol_hash_entry);
       v->key = xstrdup (string);
     }
   return *e;
@@ -145,7 +145,7 @@ file_hash_lookup (const char *string)
   if (*e == NULL)
     {
       struct file_hash_entry *v;
-      *e = v = xcalloc (1, sizeof (*v));
+      *e = v = XCNEW (struct file_hash_entry);
       v->key = xstrdup (string);
     }
   return *e;
@@ -167,7 +167,7 @@ demangled_hash_lookup (const char *string, int create)
   if (*e == NULL)
     {
       struct demangled_hash_entry *v;
-      *e = v = xcalloc (1, sizeof (*v));
+      *e = v = XCNEW (struct demangled_hash_entry);
       v->key = xstrdup (string);
     }
   return *e;

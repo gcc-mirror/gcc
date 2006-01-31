@@ -156,7 +156,7 @@ add_class_flag (class_flag_node **rootp, const char *ident, int value)
 
   if (NULL == root)
     {
-      root = xmalloc (sizeof (class_flag_node));
+      root = XNEW (class_flag_node);
       root->ident = "";
       root->value = 0;
       root->sibling = NULL;
@@ -183,7 +183,7 @@ add_class_flag (class_flag_node **rootp, const char *ident, int value)
   else
     {
       /* Insert new node into the tree.  */
-      node = xmalloc (sizeof (class_flag_node));
+      node = XNEW (class_flag_node);
 
       node->ident = xstrdup (ident);
       node->value = value;

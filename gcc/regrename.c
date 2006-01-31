@@ -1797,7 +1797,7 @@ copyprop_hardreg_forward (void)
 
   need_refresh = false;
 
-  all_vd = xmalloc (sizeof (struct value_data) * last_basic_block);
+  all_vd = XNEWVEC (struct value_data, last_basic_block);
 
   visited = sbitmap_alloc (last_basic_block);
   sbitmap_zero (visited);

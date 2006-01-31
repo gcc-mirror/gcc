@@ -467,7 +467,7 @@ write_global_declarations (void)
 
   tree globals = lang_hooks.decls.getdecls ();
   int len = list_length (globals);
-  tree *vec = xmalloc (sizeof (tree) * len);
+  tree *vec = XNEWVEC (tree, len);
   int i;
   tree decl;
 

@@ -224,7 +224,7 @@ alloc_mem (void)
   rtx insn;
 
   /* Find the largest UID and create a mapping from UIDs to CUIDs.  */
-  uid_cuid = xcalloc (get_max_uid () + 1, sizeof (int));
+  uid_cuid = XCNEWVEC (int, get_max_uid () + 1);
   i = 1;
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)

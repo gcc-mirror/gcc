@@ -293,7 +293,7 @@ timevar_push_1 (timevar_id_t timevar)
       unused_stack_instances = unused_stack_instances->next;
     }
   else
-    context = xmalloc (sizeof (struct timevar_stack_def));
+    context = XNEW (struct timevar_stack_def);
 
   /* Fill it in and put it on the stack.  */
   context->timevar = tv;

@@ -512,9 +512,9 @@ find_rgns (void)
      STACK, SP and DFS_NR are only used during the first traversal.  */
 
   /* Allocate and initialize variables for the first traversal.  */
-  max_hdr = xmalloc (last_basic_block * sizeof (int));
-  dfs_nr = xcalloc (last_basic_block, sizeof (int));
-  stack = xmalloc (n_edges * sizeof (edge_iterator));
+  max_hdr = XNEWVEC (int, last_basic_block);
+  dfs_nr = XCNEWVEC (int, last_basic_block);
+  stack = XNEWVEC (edge_iterator, n_edges);
 
   inner = sbitmap_alloc (last_basic_block);
   sbitmap_ones (inner);
@@ -658,7 +658,7 @@ find_rgns (void)
       /* Second traversal:find reducible inner loops and topologically sort
 	 block of each region.  */
 
-      queue = xmalloc (n_basic_blocks * sizeof (int));
+      queue = XNEWVEC (int, n_basic_blocks);
 
       /* Find blocks which are inner loop headers.  We still have non-reducible
 	 loops to consider at this point.  */
@@ -1585,7 +1585,7 @@ init_ready_list (struct ready_list *ready)
   /* Prepare current target block info.  */
   if (current_nr_blocks > 1)
     {
-      candidate_table = xmalloc (current_nr_blocks * sizeof (candidate));
+      candidate_table = XNEWVEC (candidate, current_nr_blocks);
 
       bblst_last = 0;
       /* bblst_table holds split blocks and update blocks for each block after
@@ -1593,10 +1593,10 @@ init_ready_list (struct ready_list *ready)
 	 the TO blocks of region edges, so there can be at most rgn_nr_edges
 	 of them.  */
       bblst_size = (current_nr_blocks - target_bb) * rgn_nr_edges;
-      bblst_table = xmalloc (bblst_size * sizeof (basic_block));
+      bblst_table = XNEWVEC (basic_block, bblst_size);
 
       edgelst_last = 0;
-      edgelst_table = xmalloc (rgn_nr_edges * sizeof (edge));
+      edgelst_table = XNEWVEC (edge, rgn_nr_edges);
 
       compute_trg_info (target_bb);
     }
@@ -2275,7 +2275,7 @@ schedule_region (int rgn)
   init_deps_global ();
 
   /* Initializations for region data dependence analysis.  */
-  bb_deps = xmalloc (sizeof (struct deps) * current_nr_blocks);
+  bb_deps = XNEWVEC (struct deps, current_nr_blocks);
   for (bb = 0; bb < current_nr_blocks; bb++)
     init_deps (bb_deps + bb);
 
@@ -2308,7 +2308,7 @@ schedule_region (int rgn)
   /* Compute interblock info: probabilities, split-edges, dominators, etc.  */
   if (current_nr_blocks > 1)
     {
-      prob = xmalloc ((current_nr_blocks) * sizeof (float));
+      prob = XNEWVEC (float, current_nr_blocks);
 
       dom = sbitmap_vector_alloc (current_nr_blocks, current_nr_blocks);
       sbitmap_vector_zero (dom, current_nr_blocks);
@@ -2323,7 +2323,7 @@ schedule_region (int rgn)
 	    SET_EDGE_TO_BIT (e, rgn_nr_edges++);
 	}
 
-      rgn_edges = xmalloc (rgn_nr_edges * sizeof (edge));
+      rgn_edges = XNEWVEC (edge, rgn_nr_edges);
       rgn_nr_edges = 0;
       FOR_EACH_BB (block)
 	{
@@ -2460,10 +2460,10 @@ init_regions (void)
   int rgn;
 
   nr_regions = 0;
-  rgn_table = xmalloc ((n_basic_blocks) * sizeof (region));
-  rgn_bb_table = xmalloc ((n_basic_blocks) * sizeof (int));
-  block_to_bb = xmalloc ((last_basic_block) * sizeof (int));
-  containing_rgn = xmalloc ((last_basic_block) * sizeof (int));
+  rgn_table = XNEWVEC (region, n_basic_blocks);
+  rgn_bb_table = XNEWVEC (int, n_basic_blocks);
+  block_to_bb = XNEWVEC (int, last_basic_block);
+  containing_rgn = XNEWVEC (int, last_basic_block);
 
   /* Compute regions for scheduling.  */
   if (reload_completed
@@ -2493,7 +2493,7 @@ init_regions (void)
   if (CHECK_DEAD_NOTES)
     {
       blocks = sbitmap_alloc (last_basic_block);
-      deaths_in_region = xmalloc (sizeof (int) * nr_regions);
+      deaths_in_region = XNEWVEC (int, nr_regions);
       /* Remove all death notes from the subroutine.  */
       for (rgn = 0; rgn < nr_regions; rgn++)
 	{

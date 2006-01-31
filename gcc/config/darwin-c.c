@@ -62,7 +62,7 @@ static struct align_stack * field_align_stack = NULL;
 static void
 push_field_alignment (int bit_alignment)
 {
-  align_stack *entry = (align_stack *) xmalloc (sizeof (align_stack));
+  align_stack *entry = XNEW (align_stack);
 
   entry->alignment = maximum_field_alignment;
   entry->prev = field_align_stack;
@@ -194,7 +194,7 @@ add_framework (const char *name, size_t len, cpp_dir *dir)
       frameworks_in_use = xrealloc (frameworks_in_use,
 				    max_frameworks*sizeof(*frameworks_in_use));
     }
-  dir_name = xmalloc (len + 1);
+  dir_name = XNEWVEC (char, len + 1);
   memcpy (dir_name, name, len);
   dir_name[len] = '\0';
   frameworks_in_use[num_frameworks].name = dir_name;
@@ -261,7 +261,7 @@ framework_construct_pathname (const char *fname, cpp_dir *dir)
   if (fast_dir && dir != fast_dir)
     return 0;
 
-  frname = xmalloc (strlen (fname) + dir->len + 2
+  frname = XNEWVEC (char, strlen (fname) + dir->len + 2
 		    + strlen(".framework/") + strlen("PrivateHeaders"));
   strncpy (&frname[0], dir->name, dir->len);
   frname_len = dir->len;
@@ -349,7 +349,7 @@ find_subframework_file (const char *fname, const char *pname)
      into
      sfrname = /System/Library/Frameworks/Foundation.framework/Frameworks/CarbonCore.framework/Headers/OSUtils.h */
 
-  sfrname = (char *) xmalloc (strlen (pname) + strlen (fname) + 2 +
+  sfrname = XNEWVEC (char, strlen (pname) + strlen (fname) + 2 +
 			      strlen ("Frameworks/") + strlen (".framework/")
 			      + strlen ("PrivateHeaders"));
  
@@ -405,7 +405,7 @@ add_system_framework_path (char *path)
   int cxx_aware = 1;
   cpp_dir *p;
 
-  p = xmalloc (sizeof (cpp_dir));
+  p = XNEW (cpp_dir);
   p->next = NULL;
   p->name = path;
   p->sysp = 1 + !cxx_aware;
@@ -423,7 +423,7 @@ add_framework_path (char *path)
 {
   cpp_dir *p;
 
-  p = xmalloc (sizeof (cpp_dir));
+  p = XNEW (cpp_dir);
   p->next = NULL;
   p->name = path;
   p->sysp = 0;

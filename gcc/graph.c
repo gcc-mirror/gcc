@@ -247,9 +247,9 @@ print_rtl_graph_with_bb (const char *base, rtx rtx_first)
     {
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
-      int *start = xmalloc (max_uid * sizeof (int));
-      int *end = xmalloc (max_uid * sizeof (int));
-      enum bb_state *in_bb_p = xmalloc (max_uid * sizeof (enum bb_state));
+      int *start = XNEWVEC (int, max_uid);
+      int *end = XNEWVEC (int, max_uid);
+      enum bb_state *in_bb_p = XNEWVEC (enum bb_state, max_uid);
       basic_block bb;
       int i;
 

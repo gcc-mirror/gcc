@@ -361,7 +361,7 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
   update_ssa (update_flag);
 
   old_num_ssa_names = num_ssa_names;
-  use_blocks = xcalloc (old_num_ssa_names, sizeof (bitmap));
+  use_blocks = XCNEWVEC (bitmap, old_num_ssa_names);
 
   /* Find the uses outside loops.  */
   find_uses_to_rename (changed_bbs, use_blocks, names_to_rename);

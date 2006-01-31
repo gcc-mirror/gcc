@@ -1875,14 +1875,13 @@ schedule_block (int b, int rgn_n_insns)
   /* Allocate the ready list.  */
   ready.veclen = rgn_n_insns + 1 + issue_rate;
   ready.first = ready.veclen - 1;
-  ready.vec = xmalloc (ready.veclen * sizeof (rtx));
+  ready.vec = XNEWVEC (rtx, ready.veclen);
   ready.n_ready = 0;
 
   /* It is used for first cycle multipass scheduling.  */
   temp_state = alloca (dfa_state_size);
-  ready_try = xcalloc ((rgn_n_insns + 1), sizeof (char));
-  choice_stack = xmalloc ((rgn_n_insns + 1)
-			  * sizeof (struct choice_entry));
+  ready_try = XCNEWVEC (char, rgn_n_insns + 1);
+  choice_stack = XNEWVEC (struct choice_entry, rgn_n_insns + 1);
   for (i = 0; i <= rgn_n_insns; i++)
     choice_stack[i].state = xmalloc (dfa_state_size);
 
@@ -2253,7 +2252,7 @@ sched_init (FILE *dump_file)
      pseudos which do not cross calls.  */
   old_max_uid = get_max_uid () + 1;
 
-  h_i_d = xcalloc (old_max_uid, sizeof (*h_i_d));
+  h_i_d = XCNEWVEC (struct haifa_insn_data, old_max_uid);
 
   for (i = 0; i < old_max_uid; i++)
     h_i_d [i].cost = -1;
@@ -2295,7 +2294,7 @@ sched_init (FILE *dump_file)
     {
       rtx line;
 
-      line_note_head = xcalloc (last_basic_block, sizeof (rtx));
+      line_note_head = XCNEWVEC (rtx, last_basic_block);
 
       /* Save-line-note-head:
          Determine the line-number at the start of each basic block.

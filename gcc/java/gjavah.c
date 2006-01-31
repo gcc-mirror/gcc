@@ -600,7 +600,7 @@ cxx_keyword_subst (const unsigned char *str, int length)
 	     are `$'.  */
 	  if (i == length)
 	    {
-	      char *dup = xmalloc (2 + length - min_length + kwl);
+	      char *dup = XNEWVEC (char, 2 + length - min_length + kwl);
 	      strcpy (dup, cxx_keywords[mid]);
 	      for (i = kwl; i < length + 1; ++i)
 		dup[i] = '$';
@@ -719,7 +719,7 @@ get_field_name (JCF *jcf, int name_index, JCF_u2 flags)
 	  return NULL;
 	}
 
-      override = xmalloc (length + 3);
+      override = XNEWVEC (char, length + 3);
       memcpy (override, name, length);
       strcpy (override + length, "__");
     }
@@ -929,13 +929,13 @@ print_method_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
     {
       struct method_name *nn;
 
-      nn = xmalloc (sizeof (struct method_name));
-      nn->name = xmalloc (length);
+      nn = XNEW (struct method_name);
+      nn->name = XNEWVEC (unsigned char, length);
       memcpy (nn->name, str, length);
       nn->length = length;
       nn->next = method_name_list;
       nn->sig_length = JPOOL_UTF_LENGTH (jcf, sig_index);
-      nn->signature = xmalloc (nn->sig_length);
+      nn->signature = XNEWVEC (unsigned char, nn->sig_length);
       nn->is_native = METHOD_IS_NATIVE (flags);
       memcpy (nn->signature, JPOOL_UTF_DATA (jcf, sig_index),
 	      nn->sig_length);
@@ -1240,7 +1240,7 @@ throwable_p (const unsigned char *clname)
 
   for (length = 0; clname[length] != ';' && clname[length] != '\0'; ++length)
     ;
-  current = ALLOC (length + 1);
+  current = XNEWVEC (unsigned char, length + 1);
   for (i = 0; i < length; ++i)
     current[i] = clname[i] == '/' ? '.' : clname[i];
   current[length] = '\0';
@@ -1276,7 +1276,7 @@ throwable_p (const unsigned char *clname)
       jcf_parse_class (&jcf);
 
       tmp = (unsigned char *) super_class_name (&jcf, &super_length);
-      super = ALLOC (super_length + 1);
+      super = XNEWVEC (unsigned char, super_length + 1);
       memcpy (super, tmp, super_length);      
       super[super_length] = '\0';
 
@@ -1836,8 +1836,8 @@ print_include (FILE *out, const unsigned char *utf8, int len)
 	return;
     }
 
-  incl = xmalloc (sizeof (struct include));
-  incl->name = xmalloc (len + 1);
+  incl = XNEW (struct include);
+  incl->name = XNEWVEC (char, len + 1);
   strncpy (incl->name, (const char *) utf8, len);
   incl->name[len] = '\0';
   incl->next = all_includes;
@@ -1922,8 +1922,8 @@ add_namelet (const unsigned char *name, const unsigned char *name_limit,
 
   if (n == NULL)
     {
-      n = xmalloc (sizeof (struct namelet));
-      n->name = xmalloc (p - name + 1);
+      n = XNEW (struct namelet);
+      n->name = XNEWVEC (char, p - name + 1);
       strncpy (n->name, (const char *) name, p - name);
       n->name[p - name] = '\0';
       n->is_class = (p == name_limit);
@@ -2173,7 +2173,7 @@ process_file (JCF *jcf, FILE *out)
 	  if (len > 6 && ! strcmp (&jcf->classname[len - 6], ".class"))
 	    len -= 6;
 	  /* Turn the class name into a file name.  */
-	  name = xmalloc (len + 1);
+	  name = XNEWVEC (char, len + 1);
 	  for (i = 0; i < len; ++i)
 	    name[i] = jcf->classname[i] == '.' ? '/' : jcf->classname[i];
 	  name[i] = '\0';
@@ -2484,25 +2484,25 @@ main (int argc, char** argv)
 
 	case OPT_PREPEND:
 	  if (prepend_count == 0)
-	    prepend_specs = ALLOC (argc * sizeof (char*));
+	    prepend_specs = XNEWVEC (char *, argc);
 	  prepend_specs[prepend_count++] = optarg;
 	  break;
 
 	case OPT_FRIEND:
 	  if (friend_count == 0)
-	    friend_specs = ALLOC (argc * sizeof (char*));
+	    friend_specs = XNEWVEC (char *, argc);
 	  friend_specs[friend_count++] = optarg;
 	  break;
 
 	case OPT_ADD:
 	  if (add_count == 0)
-	    add_specs = ALLOC (argc * sizeof (char*));
+	    add_specs = XNEWVEC (char *, argc);
 	  add_specs[add_count++] = optarg;
 	  break;
 
 	case OPT_APPEND:
 	  if (append_count == 0)
-	    append_specs = ALLOC (argc * sizeof (char*));
+	    append_specs = XNEWVEC (char *, argc);
 	  append_specs[append_count++] = optarg;
 	  break;
 
@@ -2608,7 +2608,7 @@ main (int argc, char** argv)
 	{
 	  int dir_len = strlen (output_directory);
 	  int i, classname_length = strlen (classname);
-	  current_output_file = ALLOC (dir_len + classname_length + 5);
+	  current_output_file = XNEWVEC (char, dir_len + classname_length + 5);
 	  strcpy (current_output_file, output_directory);
 	  if (dir_len > 0 && output_directory[dir_len-1] != '/')
 	    current_output_file[dir_len++] = '/';

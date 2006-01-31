@@ -507,7 +507,7 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
       if (desc->noloop_assumptions)
 	RESET_BIT (wont_exit, 1);
 
-      remove_edges = xcalloc (npeel, sizeof (edge));
+      remove_edges = XCNEWVEC (edge, npeel);
       n_remove_edges = 0;
 
       if (flag_split_ivs_in_unroller)
@@ -692,7 +692,7 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
   wont_exit = sbitmap_alloc (max_unroll + 1);
   sbitmap_ones (wont_exit);
 
-  remove_edges = xcalloc (max_unroll + exit_mod + 1, sizeof (edge));
+  remove_edges = XCNEWVEC (edge, max_unroll + exit_mod + 1);
   n_remove_edges = 0;
   if (flag_split_ivs_in_unroller 
       || flag_variable_expansion_in_unroller)
@@ -964,7 +964,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
     opt_info = analyze_insns_in_loop (loop);
   
   /* Remember blocks whose dominators will have to be updated.  */
-  dom_bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
+  dom_bbs = XCNEWVEC (basic_block, n_basic_blocks);
   n_dom_bbs = 0;
 
   body = get_loop_body (loop);
@@ -1022,7 +1022,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   /* Precondition the loop.  */
   loop_split_edge_with (loop_preheader_edge (loop), init_code);
 
-  remove_edges = xcalloc (max_unroll + n_peel + 1, sizeof (edge));
+  remove_edges = XCNEWVEC (edge, max_unroll + n_peel + 1);
   n_remove_edges = 0;
 
   wont_exit = sbitmap_alloc (max_unroll + 2);
@@ -1613,7 +1613,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
     return NULL;
   
   /* Record the accumulator to expand.  */
-  ves = xmalloc (sizeof (struct var_to_expand));
+  ves = XNEW (struct var_to_expand);
   ves->insn = insn;
   ves->var_expansions = VEC_alloc (rtx, heap, 1);
   ves->reg = copy_rtx (dest);
@@ -1677,7 +1677,7 @@ analyze_iv_to_split_insn (rtx insn)
     return NULL;
 
   /* Record the insn to split.  */
-  ivts = xmalloc (sizeof (struct iv_to_split));
+  ivts = XNEW (struct iv_to_split);
   ivts->insn = insn;
   ivts->base_var = NULL_RTX;
   ivts->step = iv.step;
@@ -1697,7 +1697,7 @@ analyze_insns_in_loop (struct loop *loop)
 {
   basic_block *body, bb;
   unsigned i, num_edges = 0;
-  struct opt_info *opt_info = xcalloc (1, sizeof (struct opt_info));
+  struct opt_info *opt_info = XCNEW (struct opt_info);
   rtx insn;
   struct iv_to_split *ivts = NULL;
   struct var_to_expand *ves = NULL;

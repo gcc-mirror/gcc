@@ -144,8 +144,8 @@ copy_loop_headers (void)
   verify_loop_structure (loops);
 #endif
 
-  bbs = xmalloc (sizeof (basic_block) * n_basic_blocks);
-  copied_bbs = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  bbs = XNEWVEC (basic_block, n_basic_blocks);
+  copied_bbs = XNEWVEC (basic_block, n_basic_blocks);
   bbs_size = n_basic_blocks;
 
   for (i = 1; i < loops->num; i++)

@@ -425,7 +425,7 @@ find_or_insert_inv (htab_t eq, rtx expr, enum machine_mode mode,
   if (entry)
     return entry->inv;
 
-  entry = xmalloc (sizeof (struct invariant_expr_entry));
+  entry = XNEW (struct invariant_expr_entry);
   entry->inv = inv;
   entry->expr = expr;
   entry->mode = mode;
@@ -614,7 +614,7 @@ static struct invariant *
 create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
 		      bool always_executed)
 {
-  struct invariant *inv = xmalloc (sizeof (struct invariant));
+  struct invariant *inv = XNEW (struct invariant);
   rtx set = single_set (insn);
 
   inv->def = def;
@@ -655,7 +655,7 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
 static void
 record_use (struct def *def, rtx *use, rtx insn)
 {
-  struct use *u = xmalloc (sizeof (struct use));
+  struct use *u = XNEW (struct use);
 
   if (GET_CODE (*use) == SUBREG)
     use = &SUBREG_REG (*use);
@@ -762,7 +762,7 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed)
     }
 
   if (simple)
-    def = xcalloc (1, sizeof (struct def));
+    def = XCNEW (struct def);
   else
     def = NULL;
 

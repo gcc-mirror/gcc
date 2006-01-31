@@ -39,7 +39,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 struct loops *
 loop_optimizer_init (FILE *dumpfile)
 {
-  struct loops *loops = xcalloc (1, sizeof (struct loops));
+  struct loops *loops = XCNEW (struct loops);
   edge e;
   edge_iterator ei;
   static bool first_time = true;

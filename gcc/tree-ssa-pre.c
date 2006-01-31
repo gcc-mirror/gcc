@@ -1908,7 +1908,7 @@ compute_rvuse (void)
      RVUSE_IN[BB] = Union of RVUSE_OUT of predecessors.
      RVUSE_OUT[BB] = RVUSE_GEN[BB] U (RVUSE_IN[BB] - RVUSE_KILL[BB])
   */
-  postorder = xmalloc (sizeof (int) * (n_basic_blocks - NUM_FIXED_BLOCKS));
+  postorder = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
   pre_and_rev_post_order_compute (NULL, postorder, false);
 
   changed = true;
@@ -3596,7 +3596,7 @@ execute_pre (bool do_fre)
      computing ANTIC, either, even though it's plenty fast.  */
   if (!do_fre && n_basic_blocks < 4000)
     {
-      vuse_names = xcalloc (num_ssa_names, sizeof (bitmap));
+      vuse_names = XCNEWVEC (bitmap, num_ssa_names);
       compute_rvuse ();
       compute_antic ();
       insert ();

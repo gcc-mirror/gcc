@@ -442,14 +442,14 @@ global_alloc (FILE *file)
   /* Establish mappings from register number to allocation number
      and vice versa.  In the process, count the allocnos.  */
 
-  reg_allocno = xmalloc (max_regno * sizeof (int));
+  reg_allocno = XNEWVEC (int, max_regno);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     reg_allocno[i] = -1;
 
   /* Initialize the shared-hard-reg mapping
      from the list of pairs that may share.  */
-  reg_may_share = xcalloc (max_regno, sizeof (int));
+  reg_may_share = XCNEWVEC (int, max_regno);
   for (x = regs_may_share; x; x = XEXP (XEXP (x, 1), 1))
     {
       int r1 = REGNO (XEXP (x, 0));
@@ -480,7 +480,7 @@ global_alloc (FILE *file)
     else
       reg_allocno[i] = -1;
 
-  allocno = xcalloc (max_allocno, sizeof (struct allocno));
+  allocno = XCNEWVEC (struct allocno, max_allocno);
 
   for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     if (reg_allocno[i] >= 0)
@@ -528,9 +528,9 @@ global_alloc (FILE *file)
   /* We used to use alloca here, but the size of what it would try to
      allocate would occasionally cause it to exceed the stack limit and
      cause unpredictable core dumps.  Some examples were > 2Mb in size.  */
-  conflicts = xcalloc (max_allocno * allocno_row_words, sizeof (INT_TYPE));
+  conflicts = XCNEWVEC (INT_TYPE, max_allocno * allocno_row_words);
 
-  allocnos_live = xmalloc (allocno_row_words * sizeof (INT_TYPE));
+  allocnos_live = XNEWVEC (INT_TYPE, allocno_row_words);
 
   /* If there is work to be done (at least one reg to allocate),
      perform global conflict analysis and allocate the regs.  */
@@ -567,7 +567,7 @@ global_alloc (FILE *file)
 
       /* Determine the order to allocate the remaining pseudo registers.  */
 
-      allocno_order = xmalloc (max_allocno * sizeof (int));
+      allocno_order = XNEWVEC (int, max_allocno);
       for (i = 0; i < (size_t) max_allocno; i++)
 	allocno_order[i] = i;
 
@@ -678,9 +678,9 @@ global_conflicts (void)
   int *block_start_allocnos;
 
   /* Make a vector that mark_reg_{store,clobber} will store in.  */
-  regs_set = xmalloc (max_parallel * sizeof (rtx) * 2);
+  regs_set = XNEWVEC (rtx, max_parallel * 2);
 
-  block_start_allocnos = xmalloc (max_allocno * sizeof (int));
+  block_start_allocnos = XNEWVEC (int, max_allocno);
 
   FOR_EACH_BB (b)
     {
@@ -949,7 +949,7 @@ prune_preferences (void)
 {
   int i;
   int num;
-  int *allocno_to_order = xmalloc (max_allocno * sizeof (int));
+  int *allocno_to_order = XNEWVEC (int, max_allocno);
 
   /* Scan least most important to most important.
      For each allocno, remove from preferences registers that cannot be used,
@@ -2300,7 +2300,7 @@ set_up_bb_rts_numbers (void)
   int i;
   int *rts_order;
   
-  rts_order = xmalloc (sizeof (int) * (n_basic_blocks - NUM_FIXED_BLOCKS));
+  rts_order = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
   post_order_compute (rts_order, false);
   for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
     BB_INFO_BY_INDEX (rts_order [i])->rts_number = i;

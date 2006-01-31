@@ -2926,7 +2926,7 @@ convert_regs_2 (FILE *file, basic_block block)
      is only processed after all its predecessors.  The number of predecessors
      of every block has already been computed.  */ 
 
-  stack = xmalloc (sizeof (*stack) * n_basic_blocks);
+  stack = XNEWVEC (basic_block, n_basic_blocks);
   sp = stack;
 
   *sp++ = block;

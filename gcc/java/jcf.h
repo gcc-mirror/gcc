@@ -165,9 +165,9 @@ typedef struct JCF GTY(()) {
 
 #define JCF_FINISH(JCF) { \
   CPOOL_FINISH(&(JCF)->cpool); \
-  if ((JCF)->buffer) FREE ((JCF)->buffer); \
-  if ((JCF)->filename) FREE ((char *) (JCF)->filename); \
-  if ((JCF)->classname) FREE ((char *) (JCF)->classname); \
+  if ((JCF)->buffer) free ((JCF)->buffer); \
+  if ((JCF)->filename) free ((char *) (JCF)->filename); \
+  if ((JCF)->classname) free ((char *) (JCF)->classname); \
   (JCF)->finished = 1; }
   
 #define CPOOL_INIT(CPOOL) \

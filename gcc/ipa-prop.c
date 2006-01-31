@@ -167,7 +167,7 @@ static inline void
 ipa_method_tree_map_create (struct cgraph_node *mt)
 {
   IPA_NODE_REF (mt)->ipa_param_tree =
-    xcalloc (ipa_method_formal_count (mt), sizeof (tree));
+    XCNEWVEC (tree, ipa_method_formal_count (mt));
 }
 
 /* Create modify structure for MT.  */
@@ -175,7 +175,7 @@ static inline void
 ipa_method_modify_create (struct cgraph_node *mt)
 {
   ((struct ipa_node *) mt->aux)->ipa_mod =
-    xcalloc (ipa_method_formal_count (mt), sizeof (bool));
+    XCNEWVEC (bool, ipa_method_formal_count (mt));
 }
 
 /* Set modify of I-th formal of MT to VAL.  */
@@ -388,7 +388,7 @@ static inline void
 ipa_callsite_param_map_create (struct cgraph_edge *cs)
 {
   IPA_EDGE_REF (cs)->ipa_param_map =
-    xcalloc (ipa_callsite_param_count (cs), sizeof (struct ipa_jump_func));
+    XCNEWVEC (struct ipa_jump_func, ipa_callsite_param_count (cs));
 }
 
 /* Return the call expr tree related to callsite CS.  */

@@ -860,7 +860,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
 					  exit_dest) == loop->header ? 
 		 true : false);
 
-  new_bbs = xmalloc (sizeof (basic_block) * loop->num_nodes);
+  new_bbs = XNEWVEC (basic_block, loop->num_nodes);
 
   copy_bbs (bbs, loop->num_nodes, new_bbs,
 	    &loop->single_exit, 1, &new_loop->single_exit, NULL,

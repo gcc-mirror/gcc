@@ -79,7 +79,7 @@ cvc_insert (unsigned int uid, tree to)
   struct int_tree_map *h;
   void **loc;
 
-  h = xmalloc (sizeof (struct int_tree_map));
+  h = XNEW (struct int_tree_map);
   h->uid = uid;
   h->to = to;
   loc = htab_find_slot_with_hash (complex_variable_components, h,

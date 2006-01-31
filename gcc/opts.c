@@ -232,7 +232,7 @@ write_langs (unsigned int mask)
     if (mask & (1U << n))
       len += strlen (lang_name) + 1;
 
-  result = xmalloc (len);
+  result = XNEWVEC (char, len);
   len = 0;
   for (n = 0; (lang_name = lang_names[n]) != 0; n++)
     if (mask & (1U << n))
@@ -288,7 +288,7 @@ handle_option (const char **argv, unsigned int lang_mask)
       /* Drop the "no-" from negative switches.  */
       size_t len = strlen (opt) - 3;
 
-      dup = xmalloc (len + 1);
+      dup = XNEWVEC (char, len + 1);
       dup[0] = '-';
       dup[1] = opt[1];
       memcpy (dup + 2, opt + 5, len - 2 + 1);
@@ -765,7 +765,7 @@ common_handle_option (size_t scode, const char *arg, int value,
       {
 	char *new_option;
 	int option_index;
-	new_option = (char *) xmalloc (strlen (arg) + 2);
+	new_option = XNEWVEC (char, strlen (arg) + 2);
 	new_option[0] = 'W';
 	strcpy (new_option+1, arg);
 	option_index = find_opt (new_option, lang_mask);

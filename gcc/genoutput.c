@@ -798,7 +798,7 @@ validate_insn_operands (struct data *d)
 static void
 gen_insn (rtx insn, int lineno)
 {
-  struct data *d = xmalloc (sizeof (struct data));
+  struct data *d = XNEW (struct data);
   int i;
 
   d->code_number = next_code_number;
@@ -840,7 +840,7 @@ gen_insn (rtx insn, int lineno)
 static void
 gen_peephole (rtx peep, int lineno)
 {
-  struct data *d = xmalloc (sizeof (struct data));
+  struct data *d = XNEW (struct data);
   int i;
 
   d->code_number = next_code_number;
@@ -879,7 +879,7 @@ gen_peephole (rtx peep, int lineno)
 static void
 gen_expand (rtx insn, int lineno)
 {
-  struct data *d = xmalloc (sizeof (struct data));
+  struct data *d = XNEW (struct data);
   int i;
 
   d->code_number = next_code_number;
@@ -923,7 +923,7 @@ gen_expand (rtx insn, int lineno)
 static void
 gen_split (rtx split, int lineno)
 {
-  struct data *d = xmalloc (sizeof (struct data));
+  struct data *d = XNEW (struct data);
   int i;
 
   d->code_number = next_code_number;
@@ -1034,7 +1034,7 @@ strip_whitespace (const char *s)
   if (s == 0)
     return 0;
 
-  p = q = xmalloc (strlen (s) + 1);
+  p = q = XNEWVEC (char, strlen (s) + 1);
   while ((ch = *s++) != '\0')
     if (! ISSPACE (ch))
       *p++ = ch;

@@ -514,7 +514,7 @@ process_file (const char *file_name)
   for (fn = functions; fn; fn = fn->next)
     solve_flow_graph (fn);
   for (src = sources; src; src = src->next)
-    src->lines = xcalloc (src->num_lines, sizeof (line_t));
+    src->lines = XCNEWVEC (line_t, src->num_lines);
   for (fn = functions; fn; fn = fn->next)
     {
       coverage_t coverage;
@@ -621,7 +621,7 @@ create_file_names (const char *file_name)
       struct stat status;
 
       length += strlen (object_directory) + 2;
-      name = xmalloc (length);
+      name = XNEWVEC (char, length);
       name[0] = 0;
 
       base = !stat (object_directory, &status) && S_ISDIR (status.st_mode);
@@ -631,7 +631,7 @@ create_file_names (const char *file_name)
     }
   else
     {
-      name = xmalloc (length + 1);
+      name = XNEWVEC (char, length + 1);
       name[0] = 0;
       base = 1;
     }
@@ -650,11 +650,11 @@ create_file_names (const char *file_name)
 
   length = strlen (name);
   
-  bbg_file_name = xmalloc (length + strlen (GCOV_NOTE_SUFFIX) + 1);
+  bbg_file_name = XNEWVEC (char, length + strlen (GCOV_NOTE_SUFFIX) + 1);
   strcpy (bbg_file_name, name);
   strcpy (bbg_file_name + length, GCOV_NOTE_SUFFIX);
 
-  da_file_name = xmalloc (length + strlen (GCOV_DATA_SUFFIX) + 1);
+  da_file_name = XNEWVEC (char, length + strlen (GCOV_DATA_SUFFIX) + 1);
   strcpy (da_file_name, name);
   strcpy (da_file_name + length, GCOV_DATA_SUFFIX);
 
@@ -676,7 +676,7 @@ find_source (const char *file_name)
     if (!strcmp (file_name, src->name))
       return src;
 
-  src = xcalloc (1, sizeof (source_t));
+  src = XCNEW (source_t);
   src->name = xstrdup (file_name);
   src->coverage.name = src->name;
   src->index = sources ? sources->index + 1 : 1;
@@ -742,7 +742,7 @@ read_graph_file (void)
 	  src = find_source (gcov_read_string ());
 	  lineno = gcov_read_unsigned ();
 
-	  fn = xcalloc (1, sizeof (function_t));
+	  fn = XCNEW (function_t);
 	  fn->name = function_name;
 	  fn->ident = ident;
 	  fn->checksum = checksum;
@@ -778,7 +778,7 @@ read_graph_file (void)
 	      unsigned ix, num_blocks = GCOV_TAG_BLOCKS_NUM (length);
 	      fn->num_blocks = num_blocks;
 
-	      fn->blocks = xcalloc (fn->num_blocks, sizeof (block_t));
+	      fn->blocks = XCNEWVEC (block_t, fn->num_blocks);
 	      for (ix = 0; ix != num_blocks; ix++)
 		fn->blocks[ix].flags = gcov_read_unsigned ();
 	    }
@@ -799,7 +799,7 @@ read_graph_file (void)
 
 	      if (dest >= fn->num_blocks)
 		goto corrupt;
-	      arc = xcalloc (1, sizeof (arc_t));
+	      arc = XCNEW (arc_t);
 
 	      arc->dst = &fn->blocks[dest];
 	      arc->src = &fn->blocks[src];
@@ -844,7 +844,7 @@ read_graph_file (void)
       else if (fn && tag == GCOV_TAG_LINES)
 	{
 	  unsigned blockno = gcov_read_unsigned ();
-	  unsigned *line_nos = xcalloc (length - 1, sizeof (unsigned));
+	  unsigned *line_nos = XCNEWVEC (unsigned, length - 1);
 
 	  if (blockno >= fn->num_blocks || fn->blocks[blockno].u.line.encoding)
 	    goto corrupt;
@@ -1037,7 +1037,7 @@ read_count_file (void)
 	    goto mismatch;
 
 	  if (!fn->counts)
-	    fn->counts = xcalloc (fn->num_counts, sizeof (gcov_type));
+	    fn->counts = XCNEWVEC (gcov_type, fn->num_counts);
 
 	  for (ix = 0; ix != fn->num_counts; ix++)
 	    fn->counts[ix] += gcov_read_counter ();
@@ -1417,7 +1417,7 @@ static char *
 make_gcov_file_name (const char *input_name, const char *src_name)
 {
   char *cptr;
-  char *name = xmalloc (strlen (src_name) + strlen (input_name) + 10);
+  char *name = XNEWVEC (char, strlen (src_name) + strlen (input_name) + 10);
 
   name[0] = 0;
   if (flag_long_names && strcmp (src_name, input_name))

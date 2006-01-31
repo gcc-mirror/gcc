@@ -1187,7 +1187,7 @@ main (int argc, char **argv)
       exit (FATAL_EXIT_CODE);
     }
   inf_size = sbuf.st_size;
-  inf_buffer = xmalloc (inf_size + 2);
+  inf_buffer = XNEWVEC (char, inf_size + 2);
   inf_ptr = inf_buffer;
 
   to_read = inf_size;

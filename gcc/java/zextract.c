@@ -308,9 +308,8 @@ read_zip_archive (ZipFile *zipf)
     }
   zipf->count = makeword((const uch *) &buffer[TOTAL_ENTRIES_CENTRAL_DIR]);
   zipf->dir_size = makelong((const uch *) &buffer[SIZE_CENTRAL_DIRECTORY]);
-#define ALLOC xmalloc
   /* Allocate 1 more to allow appending '\0' to last filename. */
-  zipf->central_directory = ALLOC (zipf->dir_size+1);
+  zipf->central_directory = XNEWVEC (char, zipf->dir_size + 1);
   if (lseek (zipf->fd, -(zipf->dir_size+ECREC_SIZE+4), SEEK_CUR) < 0)
     return -2;
   if (read (zipf->fd, zipf->central_directory, zipf->dir_size) < 0)

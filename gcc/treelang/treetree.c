@@ -973,7 +973,7 @@ getstmtlist (void)
 static void
 pushlevel (int ignore ATTRIBUTE_UNUSED)
 {
-  struct binding_level *newlevel = xmalloc (sizeof (struct binding_level));
+  struct binding_level *newlevel = XNEW (struct binding_level);
 
   *newlevel = clear_binding_level;
 

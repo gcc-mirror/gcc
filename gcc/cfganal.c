@@ -167,11 +167,11 @@ mark_dfs_back_edges (void)
   bool found = false;
 
   /* Allocate the preorder and postorder number arrays.  */
-  pre = xcalloc (last_basic_block, sizeof (int));
-  post = xcalloc (last_basic_block, sizeof (int));
+  pre = XCNEWVEC (int, last_basic_block);
+  post = XCNEWVEC (int, last_basic_block);
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = xmalloc ((n_basic_blocks + 1) * sizeof (edge_iterator));
+  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
@@ -282,7 +282,7 @@ find_unreachable_blocks (void)
   edge_iterator ei;
   basic_block *tos, *worklist, bb;
 
-  tos = worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  tos = worklist = XNEWVEC (basic_block, n_basic_blocks);
 
   /* Clear all the reachability flags.  */
 
@@ -356,10 +356,10 @@ create_edge_list (void)
       num_edges += EDGE_COUNT (bb->succs);
     }
 
-  elist = xmalloc (sizeof (struct edge_list));
+  elist = XNEW (struct edge_list);
   elist->num_blocks = block_count;
   elist->num_edges = num_edges;
-  elist->index_to_edge = xmalloc (sizeof (edge) * num_edges);
+  elist->index_to_edge = XNEWVEC (edge, num_edges);
 
   num_edges = 0;
 
@@ -660,7 +660,7 @@ post_order_compute (int *post_order, bool include_entry_exit)
     post_order[post_order_num++] = EXIT_BLOCK;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = xmalloc ((n_basic_blocks + 1) * sizeof (edge_iterator));
+  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
@@ -738,7 +738,7 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
   sbitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = xmalloc ((n_basic_blocks + 1) * sizeof (edge_iterator));
+  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
   sp = 0;
 
   if (include_entry_exit)
@@ -862,7 +862,7 @@ static void
 flow_dfs_compute_reverse_init (depth_first_search_ds data)
 {
   /* Allocate stack for back-tracking up CFG.  */
-  data->stack = xmalloc (n_basic_blocks * sizeof (basic_block));
+  data->stack = XNEWVEC (basic_block, n_basic_blocks);
   data->sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
@@ -972,7 +972,7 @@ dfs_enumerate_from (basic_block bb, int reverse,
       v_size = size;
     }
 
-  st = xcalloc (rslt_max, sizeof (basic_block));
+  st = XCNEWVEC (basic_block, rslt_max);
   rslt[tv++] = st[sp++] = bb;
   MARK_VISITED (bb);
   while (sp)

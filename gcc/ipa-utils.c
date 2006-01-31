@@ -161,7 +161,7 @@ ipa_utils_reduced_inorder (struct cgraph_node **order,
   struct cgraph_node *node;
   struct searchc_env env;
   splay_tree_node result;
-  env.stack = xcalloc (cgraph_n_nodes, sizeof (struct cgraph_node *));
+  env.stack = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   env.stack_size = 0;
   env.result = order;
   env.order_pos = 0;

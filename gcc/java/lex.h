@@ -200,7 +200,7 @@ extern void java_destroy_lexer (java_lexer *);
 /* Special ways to report error on numeric literals  */
 #define JAVA_FLOAT_RANGE_ERROR(m)					\
   {									\
-    char *msg = xmalloc (100 + strlen (m));				\
+    char *msg = XNEWVEC (char, 100 + strlen (m));			\
     sprintf (msg, "Floating point literal exceeds range of `%s'", (m));	\
     JAVA_RANGE_ERROR(msg);						\
     free (msg);								\

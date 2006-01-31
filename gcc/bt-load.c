@@ -779,12 +779,12 @@ static void
 build_btr_def_use_webs (fibheap_t all_btr_defs)
 {
   const int max_uid = get_max_uid ();
-  btr_def  *def_array   = xcalloc (max_uid, sizeof (btr_def));
-  btr_user *use_array   = xcalloc (max_uid, sizeof (btr_user));
+  btr_def  *def_array   = XCNEWVEC (btr_def, max_uid);
+  btr_user *use_array   = XCNEWVEC (btr_user, max_uid);
   sbitmap *btr_defset   = sbitmap_vector_alloc (
 			   (last_btr - first_btr) + 1, max_uid);
   sbitmap *bb_gen      = sbitmap_vector_alloc (n_basic_blocks, max_uid);
-  HARD_REG_SET *btrs_written = xcalloc (n_basic_blocks, sizeof (HARD_REG_SET));
+  HARD_REG_SET *btrs_written = XCNEWVEC (HARD_REG_SET, n_basic_blocks);
   sbitmap *bb_kill;
   sbitmap *bb_out;
 
@@ -903,7 +903,7 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
 {
   basic_block *worklist, *tos;
 
-  tos = worklist = xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
+  tos = worklist = XNEWVEC (basic_block, n_basic_blocks + 1);
 
   if (dominated_by_p (CDI_DOMINATORS, new_bb, head_bb))
     {

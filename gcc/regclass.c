@@ -1190,11 +1190,11 @@ regclass (rtx f, int nregs, FILE *dump)
 
   init_recog ();
 
-  costs = xmalloc (nregs * sizeof (struct costs));
+  costs = XNEWVEC (struct costs, nregs);
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 
-  in_inc_dec = xmalloc (nregs);
+  in_inc_dec = XNEWVEC (char, nregs);
 
 #endif /* FORBIDDEN_INC_DEC_CLASSES */
 
@@ -2143,8 +2143,7 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
 	{
 	  VARRAY_REG_INIT (reg_n_info, regno_allocated, "reg_n_info");
 	  renumber = xmalloc (size_renumber);
-	  reg_pref_buffer = xmalloc (regno_allocated
-				     * sizeof (struct reg_pref));
+	  reg_pref_buffer = XNEWVEC (struct reg_pref, regno_allocated);
 	}
       else
 	{
@@ -2155,14 +2154,13 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
 	      free ((char *) renumber);
 	      free ((char *) reg_pref);
 	      renumber = xmalloc (size_renumber);
-	      reg_pref_buffer = xmalloc (regno_allocated
-					 * sizeof (struct reg_pref));
+	      reg_pref_buffer = XNEWVEC (struct reg_pref, regno_allocated);
 	    }
 
 	  else
 	    {
 	      renumber = xrealloc (renumber, size_renumber);
-	      reg_pref_buffer = xrealloc (reg_pref_buffer,
+	      reg_pref_buffer = (struct reg_pref *) xrealloc (reg_pref_buffer,
 					  regno_allocated
 					  * sizeof (struct reg_pref));
 	    }
@@ -2601,7 +2599,7 @@ record_subregs_of_mode (rtx subreg)
   node = *slot;
   if (node == NULL)
     {
-      node = xcalloc (1, sizeof (*node));
+      node = XCNEW (struct subregs_of_mode_node);
       node->block = regno & -8;
       *slot = node;
     }
