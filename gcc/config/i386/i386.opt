@@ -201,6 +201,10 @@ msseregparm
 Target RejectNegative Mask(SSEREGPARM)
 Use SSE register passing conventions for SF and DF mode
 
+msselibm
+Target Mask(SSELIBM)
+Use SSE2 ABI libgcc-math routines if using SSE math
+
 msvr3-shlib
 Target Report Mask(SVR3_SHLIB)
 Uninitialized locals in .bss

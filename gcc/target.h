@@ -369,6 +369,10 @@ struct gcc_target
   rtx (* expand_builtin) (tree exp, rtx target, rtx subtarget,
 			  enum machine_mode mode, int ignore);
 
+  /* Expand a target-specific library builtin.  */
+  rtx (* expand_library_builtin) (tree exp, rtx target, rtx subtarget,
+			  enum machine_mode mode, int ignore);
+
   /* Select a replacement for a target-specific builtin.  This is done
      *before* regular type checking, and so allows the target to implement
      a crude form of function overloading.  The result is a complete
