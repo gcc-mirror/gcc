@@ -1,3 +1,8 @@
+2006-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/s390/s390.c (init_alignment_context): Set
+	ALIAS_SET_MEMORY_BARRIER on the MEM.
+
 2006-01-31  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* optabs.c (prepare_cmp_insn): If unbiased and unsigned then bias
