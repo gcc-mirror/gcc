@@ -2481,7 +2481,7 @@
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_ARM"
   "
-  if (operands[2] == const0_rtx)
+  if (operands[2] == const0_rtx || operands[2] == constm1_rtx)
     {
       /* No need for a clobber of the condition code register here.  */
       emit_insn (gen_rtx_SET (VOIDmode, operands[0],
@@ -2497,6 +2497,15 @@
 		 (const_int 0)))]
   "TARGET_ARM"
   "bic%?\\t%0, %1, %1, asr #31"
+  [(set_attr "predicable" "yes")]
+)
+
+(define_insn "*smax_m1"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(smax:SI (match_operand:SI 1 "s_register_operand" "r")
+		 (const_int -1)))]
+  "TARGET_ARM"
+  "orr%?\\t%0, %1, %1, asr #31"
   [(set_attr "predicable" "yes")]
 )
 
