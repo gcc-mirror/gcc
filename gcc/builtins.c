@@ -1,6 +1,6 @@
 /* Expand builtin functions.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5426,6 +5426,28 @@ get_builtin_sync_mode (int fcode_diff)
   return mode_for_size (BITS_PER_UNIT << fcode_diff, MODE_INT, 0);
 }
 
+/* Expand the memory expression LOC and return the appropriate memory operand
+   for the builtin_sync operations.  */
+
+static rtx
+get_builtin_sync_mem (tree loc, enum machine_mode mode)
+{
+  rtx addr, mem;
+
+  addr = expand_expr (loc, NULL, Pmode, EXPAND_SUM);
+
+  /* Note that we explicitly do not want any alias information for this
+     memory, so that we kill all other live memories.  Otherwise we don't
+     satisfy the full barrier semantics of the intrinsic.  */
+  mem = validize_mem (gen_rtx_MEM (mode, addr));
+
+  set_mem_align (mem, get_pointer_alignment (loc, BIGGEST_ALIGNMENT));
+  set_mem_alias_set (mem, ALIAS_SET_MEMORY_BARRIER);
+  MEM_VOLATILE_P (mem) = 1;
+
+  return mem;
+}
+
 /* Expand the __sync_xxx_and_fetch and __sync_fetch_and_xxx intrinsics.
    ARGLIST is the operands list to the function.  CODE is the rtx code 
    that corresponds to the arithmetic or logical operation from the name;
@@ -5439,19 +5461,13 @@ expand_builtin_sync_operation (enum machine_mode mode, tree arglist,
 			       enum rtx_code code, bool after,
 			       rtx target, bool ignore)
 {
-  rtx addr, val, mem;
+  rtx val, mem;
 
   /* Expand the operands.  */
-  addr = expand_expr (TREE_VALUE (arglist), NULL, Pmode, EXPAND_SUM);
+  mem = get_builtin_sync_mem (TREE_VALUE (arglist), mode);
 
   arglist = TREE_CHAIN (arglist);
   val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
-
-  /* Note that we explicitly do not want any alias information for this
-     memory, so that we kill all other live memories.  Otherwise we don't
-     satisfy the full barrier semantics of the intrinsic.  */
-  mem = validize_mem (gen_rtx_MEM (mode, addr));
-  MEM_VOLATILE_P (mem) = 1;
 
   if (ignore)
     return expand_sync_operation (mem, val, code);
@@ -5468,22 +5484,16 @@ static rtx
 expand_builtin_compare_and_swap (enum machine_mode mode, tree arglist,
 				 bool is_bool, rtx target)
 {
-  rtx addr, old_val, new_val, mem;
+  rtx old_val, new_val, mem;
 
   /* Expand the operands.  */
-  addr = expand_expr (TREE_VALUE (arglist), NULL, Pmode, EXPAND_SUM);
+  mem = get_builtin_sync_mem (TREE_VALUE (arglist), mode);
 
   arglist = TREE_CHAIN (arglist);
   old_val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
 
   arglist = TREE_CHAIN (arglist);
   new_val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
-
-  /* Note that we explicitly do not want any alias information for this
-     memory, so that we kill all other live memories.  Otherwise we don't
-     satisfy the full barrier semantics of the intrinsic.  */
-  mem = validize_mem (gen_rtx_MEM (mode, addr));
-  MEM_VOLATILE_P (mem) = 1;
 
   if (is_bool)
     return expand_bool_compare_and_swap (mem, old_val, new_val, target);
@@ -5501,19 +5511,13 @@ static rtx
 expand_builtin_lock_test_and_set (enum machine_mode mode, tree arglist,
 				  rtx target)
 {
-  rtx addr, val, mem;
+  rtx val, mem;
 
   /* Expand the operands.  */
-  addr = expand_expr (TREE_VALUE (arglist), NULL, Pmode, EXPAND_NORMAL);
+  mem = get_builtin_sync_mem (TREE_VALUE (arglist), mode);
 
   arglist = TREE_CHAIN (arglist);
   val = expand_expr (TREE_VALUE (arglist), NULL, mode, EXPAND_NORMAL);
-
-  /* Note that we explicitly do not want any alias information for this
-     memory, so that we kill all other live memories.  Otherwise we don't
-     satisfy the barrier semantics of the intrinsic.  */
-  mem = validize_mem (gen_rtx_MEM (mode, addr));
-  MEM_VOLATILE_P (mem) = 1;
 
   return expand_sync_lock_test_and_set (mem, val, target);
 }
@@ -5548,17 +5552,11 @@ static void
 expand_builtin_lock_release (enum machine_mode mode, tree arglist)
 {
   enum insn_code icode;
-  rtx addr, mem, insn;
+  rtx mem, insn;
   rtx val = const0_rtx;
 
   /* Expand the operands.  */
-  addr = expand_expr (TREE_VALUE (arglist), NULL, Pmode, EXPAND_NORMAL);
-
-  /* Note that we explicitly do not want any alias information for this
-     memory, so that we kill all other live memories.  Otherwise we don't
-     satisfy the barrier semantics of the intrinsic.  */
-  mem = validize_mem (gen_rtx_MEM (mode, addr));
-  MEM_VOLATILE_P (mem) = 1;
+  mem = get_builtin_sync_mem (TREE_VALUE (arglist), mode);
 
   /* If there is an explicit operation in the md file, use it.  */
   icode = sync_lock_release[mode];

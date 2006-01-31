@@ -1,3 +1,20 @@
+2006-01-31  Richard Guenther  <rguenther@suse.de>
+
+	Backport
+	2006-01-03  Adrian Straetling  <straetling@de.ibm.com>
+
+	* gcc/builtins.c (get_builtin_sync_mem): New function.
+	(expand_builtin_sync_operation, expand_builtin_compare_and_swap,
+	expand_builtin_lock_test_and_set, expand_builtin_lock_release):
+	Call get_builtin_sync_mem to generate mem rtx.
+
+	2006-01-25  Richard Henderson <rth@redhat.com>
+
+	* alias.h (ALIAS_SET_MEMORY_BARRIER): New.
+	* alias.c (true_dependence): Respect it.
+	(canon_true_dependence, write_dependence_p): Likewise.
+	* builtins.c (get_builtin_sync_mem): Set it.
+
 2006-01-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/26018
