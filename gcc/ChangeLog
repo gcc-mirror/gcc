@@ -1,3 +1,7 @@
+2006-01-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc/config/m68k/lb1sf68.asm: Use moveq to load small constants.
+
 2006-01-31  Richard Guenther  <rguenther@suse.de>
 
 	Backport
