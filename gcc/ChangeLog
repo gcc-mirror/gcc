@@ -1,3 +1,12 @@
+2006-01-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/26018
+	* config/s390/s390.c (struct machine_function): New flag
+	decomposed_literal_pool_addresses_ok_p.
+	(s390_reorg): Set it before final stage of literal pool transforms.
+	(s390_decompose_address): Only accept displacements of the form
+	(minus (label_ref ...) (label_ref ...)) if that flag is set.
+
 2006-01-30  J"orn Rennecke <joern.rennecke@st.com>
 
 	Merged from mainline r107469:

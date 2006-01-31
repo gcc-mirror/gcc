@@ -279,6 +279,9 @@ struct machine_function GTY(())
   /* True if we may need to perform branch splitting.  */
   bool split_branches_pending_p;
 
+  /* True during final stage of literal pool processing.  */
+  bool decomposed_literal_pool_addresses_ok_p;
+
   /* Some local-dynamic TLS symbol name.  */
   const char *some_ld_name;
 
@@ -1705,7 +1708,9 @@ s390_decompose_address (rtx addr, struct s390_address *out)
         }
 
       /* Accept chunkified literal pool symbol references.  */
-      else if (GET_CODE (disp) == MINUS
+      else if (cfun && cfun->machine
+	       && cfun->machine->decomposed_literal_pool_addresses_ok_p
+	       && GET_CODE (disp) == MINUS
                && GET_CODE (XEXP (disp, 0)) == LABEL_REF
                && GET_CODE (XEXP (disp, 1)) == LABEL_REF)
         {
@@ -8934,6 +8939,8 @@ s390_reorg (void)
      machine_dependent_reorg might confuse insn length counts.  */
   split_all_insns_noflow ();
 
+  /* From here on decomposed literal pool addresses must be accepted.  */
+  cfun->machine->decomposed_literal_pool_addresses_ok_p = true;
 
   /* Install the main literal pool and the associated base
      register load insns.
