@@ -700,7 +700,7 @@ expand_builtin_setjmp (tree arglist, rtx target)
       || REGNO (target) < FIRST_PSEUDO_REGISTER)
     target = gen_reg_rtx (TYPE_MODE (integer_type_node));
 
-  buf_addr = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
+  buf_addr = expand_normal (TREE_VALUE (arglist));
 
   next_lab = gen_label_rtx ();
   cont_lab = gen_label_rtx ();
@@ -842,9 +842,9 @@ expand_builtin_nonlocal_goto (tree arglist)
   arglist = TREE_CHAIN (arglist);
   t_save_area = TREE_VALUE (arglist);
 
-  r_label = expand_expr (t_label, NULL_RTX, VOIDmode, 0);
+  r_label = expand_normal (t_label);
   r_label = convert_memory_address (Pmode, r_label);
-  r_save_area = expand_expr (t_save_area, NULL_RTX, VOIDmode, 0);
+  r_save_area = expand_normal (t_save_area);
   r_save_area = convert_memory_address (Pmode, r_save_area);
   r_fp = gen_rtx_MEM (Pmode, r_save_area);
   r_sp = gen_rtx_MEM (STACK_SAVEAREA_MODE (SAVE_NONLOCAL),
@@ -975,7 +975,7 @@ expand_builtin_prefetch (tree arglist)
       error ("second argument to %<__builtin_prefetch%> must be a constant");
       arg1 = integer_zero_node;
     }
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  op1 = expand_normal (arg1);
   /* Argument 1 must be either zero or one.  */
   if (INTVAL (op1) != 0 && INTVAL (op1) != 1)
     {
@@ -990,7 +990,7 @@ expand_builtin_prefetch (tree arglist)
       error ("third argument to %<__builtin_prefetch%> must be a constant");
       arg2 = integer_zero_node;
     }
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+  op2 = expand_normal (arg2);
   /* Argument 2 must be 0, 1, 2, or 3.  */
   if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
     {
@@ -2019,8 +2019,8 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   if (! stable)
     exp = build_function_call_expr (fndecl, arglist);
 
-  op0 = expand_expr (arg0, subtarget, VOIDmode, 0);
-  op1 = expand_expr (arg1, 0, VOIDmode, 0);
+  op0 = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
+  op1 = expand_normal (arg1);
 
   start_sequence ();
 
@@ -2193,9 +2193,9 @@ expand_builtin_sincos (tree exp)
   target1 = gen_reg_rtx (mode);
   target2 = gen_reg_rtx (mode);
 
-  op0 = expand_expr (arg, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (build_fold_indirect_ref (sinp), NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (build_fold_indirect_ref (cosp), NULL_RTX, VOIDmode, 0);
+  op0 = expand_normal (arg);
+  op1 = expand_normal (build_fold_indirect_ref (sinp));
+  op2 = expand_normal (build_fold_indirect_ref (cosp));
 
   /* Compute into target1 and target2.
      Set TARGET to wherever the result comes back.  */
@@ -2857,7 +2857,7 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
 
       dest_mem = get_memory_rtx (dest, len);
       set_mem_align (dest_mem, dest_align);
-      len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+      len_rtx = expand_normal (len);
       src_str = c_getstr (src);
 
       /* If SRC is a string constant and block move would be done
@@ -2944,7 +2944,7 @@ expand_builtin_mempcpy (tree arglist, tree type, rtx target, enum machine_mode m
       if (! host_integerp (len, 1))
 	return 0;
 
-      len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+      len_rtx = expand_normal (len);
       src_str = c_getstr (src);
 
       /* If SRC is a string constant and block move would be done
@@ -3215,7 +3215,7 @@ expand_builtin_stpcpy (tree exp, rtx target, enum machine_mode mode)
 
       if (TREE_CODE (len) == INTEGER_CST)
 	{
-	  rtx len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+	  rtx len_rtx = expand_normal (len);
 
 	  if (GET_CODE (len_rtx) == CONST_INT)
 	    {
@@ -3396,7 +3396,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
 	}
 
-      len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+      len_rtx = expand_normal (len);
       dest_mem = get_memory_rtx (dest, len);
 
       if (TREE_CODE (val) != INTEGER_CST)
@@ -3404,7 +3404,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 	  rtx val_rtx;
 
 	  val = fold_build1 (CONVERT_EXPR, unsigned_char_type_node, val);
-	  val_rtx = expand_expr (val, NULL_RTX, VOIDmode, 0);
+	  val_rtx = expand_normal (val);
 
 	  /* Assume that we can memset by pieces if we can store the
 	   * the coefficients by pieces (in the required modes).
@@ -3550,7 +3550,7 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
 
     arg1_rtx = get_memory_rtx (arg1, len);
     arg2_rtx = get_memory_rtx (arg2, len);
-    arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+    arg3_rtx = expand_normal (len);
 
     /* Set MEM_SIZE as appropriate.  */
     if (GET_CODE (arg3_rtx) == CONST_INT)
@@ -3709,7 +3709,7 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
 	    return 0;
 
 	  /* Stabilize the arguments in case gen_cmpstrnsi fails.  */
-	  arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+	  arg3_rtx = expand_normal (len);
 
 	  /* Make a place to write the result of the instruction.  */
 	  result = target;
@@ -3849,7 +3849,7 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
 
     arg1_rtx = get_memory_rtx (arg1, len);
     arg2_rtx = get_memory_rtx (arg2, len);
-    arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+    arg3_rtx = expand_normal (len);
     insn = gen_cmpstrnsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
 			  GEN_INT (MIN (arg1_align, arg2_align)));
     if (insn)
@@ -4516,7 +4516,7 @@ expand_builtin_alloca (tree arglist, rtx target)
     return 0;
 
   /* Compute the argument.  */
-  op0 = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
+  op0 = expand_normal (TREE_VALUE (arglist));
 
   /* Allocate the desired space.  */
   result = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
@@ -4774,10 +4774,10 @@ expand_builtin_copysign (tree arglist, rtx target, rtx subtarget)
     return 0;
 
   arg = TREE_VALUE (arglist);
-  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+  op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
   arg = TREE_VALUE (TREE_CHAIN (arglist));
-  op1 = expand_expr (arg, NULL, VOIDmode, 0);
+  op1 = expand_normal (arg);
 
   return expand_copysign (op0, op1, target);
 }
@@ -5174,9 +5174,9 @@ expand_builtin_init_trampoline (tree arglist)
   arglist = TREE_CHAIN (arglist);
   t_chain = TREE_VALUE (arglist);
 
-  r_tramp = expand_expr (t_tramp, NULL_RTX, VOIDmode, 0);
-  r_func = expand_expr (t_func, NULL_RTX, VOIDmode, 0);
-  r_chain = expand_expr (t_chain, NULL_RTX, VOIDmode, 0);
+  r_tramp = expand_normal (t_tramp);
+  r_func = expand_normal (t_func);
+  r_chain = expand_normal (t_chain);
 
   /* Generate insns to initialize the trampoline.  */
   r_tramp = round_trampoline_addr (r_tramp);
@@ -5200,7 +5200,7 @@ expand_builtin_adjust_trampoline (tree arglist)
   if (!validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
-  tramp = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
+  tramp = expand_normal (TREE_VALUE (arglist));
   tramp = round_trampoline_addr (tramp);
 #ifdef TRAMPOLINE_ADJUST_ADDRESS
   TRAMPOLINE_ADJUST_ADDRESS (tramp);
@@ -5247,7 +5247,7 @@ expand_builtin_signbit (tree exp, rtx target)
     return expand_expr (arg, target, VOIDmode, EXPAND_NORMAL);
   }
 
-  temp = expand_expr (arg, NULL_RTX, VOIDmode, 0);
+  temp = expand_normal (arg);
   if (GET_MODE_SIZE (fmode) <= UNITS_PER_WORD)
     {
       imode = int_mode_for_mode (fmode);
@@ -5726,7 +5726,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	  rtx ops[3];
 
 	  for (t = arglist, i = 0; t; t = TREE_CHAIN (t), i++)
-	    ops[i] = expand_expr (TREE_VALUE (t), NULL_RTX, VOIDmode, 0);
+	    ops[i] = expand_normal (TREE_VALUE (t));
 
 	  return expand_builtin_apply (ops[0], ops[1], ops[2]);
 	}
@@ -5736,8 +5736,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	 memory returned by __builtin_apply.  */
     case BUILT_IN_RETURN:
       if (validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
-	expand_builtin_return (expand_expr (TREE_VALUE (arglist),
-					    NULL_RTX, VOIDmode, 0));
+	expand_builtin_return (expand_normal (TREE_VALUE (arglist)));
       return const0_rtx;
 
     case BUILT_IN_SAVEREGS:
@@ -5970,9 +5969,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       else
 	{
 	  rtx buf_addr = expand_expr (TREE_VALUE (arglist), subtarget,
-				      VOIDmode, 0);
-	  rtx value = expand_expr (TREE_VALUE (TREE_CHAIN (arglist)),
-				   NULL_RTX, VOIDmode, 0);
+				      VOIDmode, EXPAND_NORMAL);
+	  rtx value = expand_normal (TREE_VALUE (TREE_CHAIN (arglist)));
 
 	  if (value != const1_rtx)
 	    {
@@ -5996,7 +5994,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       if (validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
 	{
 	  rtx buf_addr
-	    = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
+	    = expand_normal (TREE_VALUE (arglist));
 
 	  expand_builtin_update_setjmp_buf (buf_addr);
 	  return const0_rtx;

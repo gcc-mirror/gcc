@@ -7885,7 +7885,7 @@ sparc_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       arg_count++;
       mode[arg_count] = insn_data[icode].operand[arg_count].mode;
-      op[arg_count] = expand_expr (arg, NULL_RTX, VOIDmode, 0);
+      op[arg_count] = expand_normal (arg);
 
       if (! (*insn_data[icode].operand[arg_count].predicate) (op[arg_count],
 							      mode[arg_count]))

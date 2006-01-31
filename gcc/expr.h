@@ -158,7 +158,7 @@ do {							\
 /* Convert the implicit sum in a `struct args_size' into an rtx.  */
 #define ARGS_SIZE_RTX(SIZE)					\
 ((SIZE).var == 0 ? GEN_INT ((SIZE).constant)			\
- : expand_expr (ARGS_SIZE_TREE (SIZE), NULL_RTX, VOIDmode, 0))
+ : expand_normal (ARGS_SIZE_TREE (SIZE)))
 
 /* Supply a default definition for FUNCTION_ARG_PADDING:
    usually pad upward, but pad short args downward on
@@ -491,6 +491,12 @@ expand_expr (tree exp, rtx target, enum machine_mode mode,
 	     enum expand_modifier modifier)
 {
   return expand_expr_real (exp, target, mode, modifier, NULL);
+}
+
+static inline rtx
+expand_normal (tree exp)
+{
+  return expand_expr_real (exp, NULL_RTX, VOIDmode, EXPAND_NORMAL, NULL);
 }
 
 extern void expand_var (tree);

@@ -10209,7 +10209,7 @@ mips_prepare_builtin_arg (enum insn_code icode,
   rtx value;
   enum machine_mode mode;
 
-  value = expand_expr (TREE_VALUE (*arglist), NULL_RTX, VOIDmode, 0);
+  value = expand_normal (TREE_VALUE (*arglist));
   mode = insn_data[icode].operand[op].mode;
   if (!insn_data[icode].operand[op].predicate (value, mode))
     {

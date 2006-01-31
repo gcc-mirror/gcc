@@ -3474,7 +3474,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
       struct cgraph_varpool_node *node;
 
       type = lookup_type_for_runtime (type);
-      value = expand_expr (type, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
+      value = expand_normal (type);
 
       /* Let cgraph know that the rtti decl is used.  Not all of the
 	 paths below go through assemble_integer, which would take

@@ -1,3 +1,20 @@
+2006-01-30  Marcin Dalecki  <martin@dalecki.de>
+
+	* expr.h (expand_normal): new inline function.
+	* builtins.c: use it, use EXPAND_NORMAL explicitely.
+	* dojump.c: use it.
+	* dwarf2out.c: use it.
+	* expr.c: use it.
+	* calls.c: use it.
+	* expmed.c: use it.
+	* except.c: use it.
+	* config/sparc/sparc.c: use it.
+	* config/i386/i386.c: use it.
+	* config/rs6000/rs6000.c: use it.
+	* config/arm/arm.c: use it.
+	* config/mips/mips.c: use it.
+	* stmt.c: use it, use EXPAND_NORMAL explicitely.
+
 2006-01-30  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/cygwin.h (GCC_DRIVER_HOST_INITIALIZATION): Cast
