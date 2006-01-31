@@ -1,3 +1,8 @@
+2006-01-31  Richard Guenther  <rguenther@suse.de>
+	Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/install.texi (--disable-libgcc-math): Document.
+
 2006-01-30  Marcin Dalecki  <martin@dalecki.de>
 
 	* expr.h (expand_normal): new inline function.

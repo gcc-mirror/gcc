@@ -1086,6 +1086,10 @@ do a @samp{make -C gcc gnatlib_and_tools}.
 Specify that the run-time libraries for stack smashing protection
 should not be built.
 
+@item --disable-libgcc-math
+Specify that the run-time libraries for arch and gcc specific math
+functions should not be built.
+
 @item --with-dwarf2
 Specify that the compiler should
 use DWARF 2 debugging information as the default.

@@ -1,3 +1,13 @@
+2006-01-31  Richard Guenther  <rguenther@suse.de>
+	Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (target_modules): Add libgcc-math target module.
+	* configure.in (target_libraries): Add libgcc-math target library.
+	(--enable-libgcc-math): New configure switch.
+	* Makefile.in: Re-generate.
+	* configure: Re-generate.
+	* libgcc-math: New toplevel directory.
+
 2006-01-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in: Set with_gnu_as, with_gnu_ld, with_newlib earlier.
