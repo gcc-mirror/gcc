@@ -1,0 +1,20 @@
+2006-01-31  Richard Guenther  <rguenther@suse.de>
+	Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: New file.
+	* Makefile.am: Likewise.
+	* configure: New generated file.
+	* Makefile.in: Likewise.
+	* aclocal.m4: Likewise.
+	* libtool-version: New file.
+	* include/ieee754.h: New file.
+	* include/libc-symbols.h: Likewise.
+	* include/math_private.h: Likewise.
+	* i386/Makefile.am: New file.
+	* i386/Makefile.in: New generated file.
+	* i386/sse2.h: New file.
+	* i386/endian.h: Likewise.
+	* i386/sse2.map: Linker script for SSE2 ABI math intrinsics.
+	* flt-32/: Import from glibc.
+	* dbl-64/: Likewise.
+

@@ -1,0 +1,11 @@
+LIBGCC_MATH_1.0 {
+  global:
+    __libm_sse2_acos; __libm_sse2_asin; __libm_sse2_atan2; __libm_sse2_atan;
+    __libm_sse2_exp; __libm_sse2_log; __libm_sse2_log10; __libm_sse2_log;
+    __libm_sse2_pow; __libm_sse2_cos; __libm_sse2_sin; __libm_sse2_tan;
+    __libm_sse2_acosf; __libm_sse2_asinf; __libm_sse2_atan2f;
+    __libm_sse2_atanf; __libm_sse2_cosf; __libm_sse2_expf; __libm_sse2_log10f;
+    __libm_sse2_logf; __libm_sse2_powf; __libm_sse2_sinf; __libm_sse2_tanf;
+  local:
+    *;
+};
