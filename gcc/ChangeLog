@@ -1,3 +1,8 @@
+2006-01-30  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Remove
+	unreachable code.
+
 2006-01-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/26018

@@ -285,8 +285,7 @@ static void
 mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 {
   stmt_ann_t ann;
-  tree op, def;
-  ssa_op_iter iter;
+  tree op;
 
   /* With non-call exceptions, we have to assume that all statements could
      throw.  If a statement may throw, it is inherently necessary.  */
@@ -372,14 +371,6 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
       return;
     }
 
-  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
-    {
-      if (is_global_var (SSA_NAME_VAR (def)))
-	{
-	  mark_stmt_necessary (stmt, true);
-	  return;
-        }
-    }
   if (is_hidden_global_store (stmt))
     {
       mark_stmt_necessary (stmt, true);
