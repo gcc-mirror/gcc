@@ -204,7 +204,7 @@ void mingw_scan (int, const char * const *, char **);
 #define GCC_DRIVER_HOST_INITIALIZATION \
 do \
 { \
-  mingw_scan(argc, argv, (char **) &spec_machine); \
+  mingw_scan(argc, (const char * const *) argv, (char **) &spec_machine); \
   } \
 while (0)
 #else
@@ -224,7 +224,7 @@ do \
   add_prefix (&startfile_prefixes,\
 	      concat (standard_startfile_prefix, "w32api", NULL),\
 	      "GCC", PREFIX_PRIORITY_LAST, 0, NULL);\
-  mingw_scan(argc, argv, &spec_machine); \
+  mingw_scan(argc, (const char * const *) argv, &spec_machine); \
   } \
 while (0)
 #endif
