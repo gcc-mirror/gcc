@@ -4035,6 +4035,7 @@ init_alignment_context (struct alignment_context *ac, rtx mem,
       /* Generate MEM.  */
       ac->memsi = gen_rtx_MEM (SImode, align);
       MEM_VOLATILE_P (ac->memsi) = MEM_VOLATILE_P (mem);
+      set_mem_alias_set (ac->memsi, ALIAS_SET_MEMORY_BARRIER);
       set_mem_align (ac->memsi, GET_MODE_BITSIZE (SImode));
 
       /* Calculate shiftcount.  */
