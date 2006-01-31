@@ -6481,7 +6481,7 @@ main (int argc, char **argv)
 
   /* Record which files were specified explicitly as link input.  */
 
-  explicit_link_files = XCNEWVEC (bool, n_infiles);
+  explicit_link_files = XCNEWVEC (char, n_infiles);
 
   if (combine_flag)
     combine_inputs = true;
