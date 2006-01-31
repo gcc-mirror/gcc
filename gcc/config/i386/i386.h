@@ -497,6 +497,8 @@ extern int x86_prefetch_sse;
 #define EXTRA_SPECS							\
   { "cc1_cpu",  CC1_CPU_SPEC },						\
   SUBTARGET_EXTRA_SPECS
+
+#define LINK_GCC_MATH_SPEC "%{msselibm:-lgcc-math}"
 
 /* target machine storage layout */
 

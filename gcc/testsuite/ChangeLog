@@ -1,3 +1,11 @@
+2006-01-31  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.target/i386/sselibm-1.c: New testcase.
+	* gcc.target/i386/sselibm-2.c: Likewise.
+	* gcc.target/i386/sselibm-3.c: Likewise.
+	* gcc.target/i386/sselibm-4.c: Likewise.
+	* gcc.target/i386/sselibm-5.c: Likewise.
+
 2005-01-30  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/24266
