@@ -1,3 +1,9 @@
+2005-01-31  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/24266
+	* trans-io.c (set_internal_unit): Check the rank of the
+	expression node itself instead of its symbol.
+
 2006-01-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18578
