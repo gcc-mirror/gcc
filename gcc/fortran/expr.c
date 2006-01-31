@@ -1821,7 +1821,7 @@ gfc_check_conformance (const char *optype_msgid,
 
       if (op1_flag && op2_flag && mpz_cmp (op1_size, op2_size) != 0)
 	{
-	  gfc_error ("%s at %L has different shape on dimension %d (%d/%d)",
+	  gfc_error ("different shape for %s at %L on dimension %d (%d/%d)",
 		     _(optype_msgid), &op1->where, d + 1,
 		     (int) mpz_get_si (op1_size),
 		     (int) mpz_get_si (op2_size));
