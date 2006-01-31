@@ -59,7 +59,7 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
   if (! dominated_by_p (CDI_DOMINATORS, va_arg_bb, va_start_bb))
     return false;
 
-  stack = xmalloc ((n_basic_blocks + 1) * sizeof (edge));
+  stack = XNEWVEC (edge, n_basic_blocks + 1);
   sp = 0;
 
   visited = sbitmap_alloc (last_basic_block);
@@ -125,7 +125,7 @@ va_list_counter_bump (struct stdarg_info *si, tree counter, tree rhs,
     {
       unsigned int i;
 
-      si->offsets = xmalloc (num_ssa_names * sizeof (int));
+      si->offsets = XNEWVEC (int, num_ssa_names);
       for (i = 0; i < num_ssa_names; ++i)
 	si->offsets[i] = -1;
     }

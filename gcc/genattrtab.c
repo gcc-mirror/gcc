@@ -1647,7 +1647,7 @@ simplify_cond (rtx exp, int insn_code, int insn_index)
   rtx defval = XEXP (exp, 1);
   rtx new_defval = XEXP (exp, 1);
   int len = XVECLEN (exp, 0);
-  rtx *tests = xmalloc (len * sizeof (rtx));
+  rtx *tests = XNEWVEC (rtx, len);
   int allsame = 1;
   rtx ret;
 
@@ -2773,13 +2773,12 @@ optimize_attrs (void)
     return;
 
   /* Make 2 extra elements, for "code" values -2 and -1.  */
-  insn_code_values = xcalloc ((insn_code_number + 2),
-			      sizeof (struct attr_value_list *));
+  insn_code_values = XCNEWVEC (struct attr_value_list *, insn_code_number + 2);
 
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;
 
-  iv = ivbuf = xmalloc (num_insn_ents * sizeof (struct attr_value_list));
+  iv = ivbuf = XNEWVEC (struct attr_value_list, num_insn_ents);
 
   for (i = 0; i < MAX_ATTRS_INDEX; i++)
     for (attr = attrs[i]; attr; attr = attr->next)

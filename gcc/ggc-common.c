@@ -468,7 +468,7 @@ gt_pch_save (FILE *f)
       
   ggc_pch_this_base (state.d, mmi.preferred_base);
 
-  state.ptrs = xmalloc (state.count * sizeof (*state.ptrs));
+  state.ptrs = XNEWVEC (struct ptr_data *, state.count);
   state.ptrs_i = 0;
   htab_traverse (saving_htab, call_alloc, &state);
   qsort (state.ptrs, state.count, sizeof (*state.ptrs), compare_ptr_data);
@@ -865,7 +865,7 @@ ggc_record_overhead (size_t allocated, size_t overhead, void *ptr,
 		     const char *name, int line, const char *function)
 {
   struct loc_descriptor *loc = loc_descriptor (name, line, function);
-  struct ptr_hash_entry *p = xmalloc (sizeof (struct ptr_hash_entry));
+  struct ptr_hash_entry *p = XNEW (struct ptr_hash_entry);
   PTR *slot;
 
   p->ptr = ptr;

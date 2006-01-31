@@ -1180,15 +1180,11 @@ build_constraint_graph (void)
   int i = 0;
   constraint_t c;
 
-  graph = xmalloc (sizeof (struct constraint_graph));
-  graph->succs = xcalloc (VEC_length (varinfo_t, varmap) + 1,
-			  sizeof (*graph->succs));
-  graph->preds = xcalloc (VEC_length (varinfo_t, varmap) + 1,
-			  sizeof (*graph->preds));
-  graph->zero_weight_succs = xcalloc (VEC_length (varinfo_t, varmap) + 1,
-			  sizeof (*graph->zero_weight_succs));
-  graph->zero_weight_preds = xcalloc (VEC_length (varinfo_t, varmap) + 1,
-			  sizeof (*graph->zero_weight_preds));
+  graph = XNEW (struct constraint_graph);
+  graph->succs = XCNEWVEC (VEC(constraint_edge_t,heap) *, VEC_length (varinfo_t, varmap) + 1);
+  graph->preds = XCNEWVEC (VEC(constraint_edge_t,heap) *, VEC_length (varinfo_t, varmap) + 1);
+  graph->zero_weight_succs = XCNEWVEC (bitmap, VEC_length (varinfo_t, varmap) + 1);
+  graph->zero_weight_preds = XCNEWVEC (bitmap, VEC_length (varinfo_t, varmap) + 1);
 
   for (i = 0; VEC_iterate (constraint_t, constraints, i, c); i++)
     {
@@ -1466,7 +1462,7 @@ static struct topo_info *
 init_topo_info (void)
 {
   size_t size = VEC_length (varinfo_t, varmap);
-  struct topo_info *ti = xmalloc (sizeof (struct topo_info));
+  struct topo_info *ti = XNEW (struct topo_info);
   ti->visited = sbitmap_alloc (size);
   sbitmap_zero (ti->visited);
   ti->topo_order = VEC_alloc (unsigned, heap, 1);
@@ -1757,7 +1753,7 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
 static struct scc_info *
 init_scc_info (void)
 {
-  struct scc_info *si = xmalloc (sizeof (struct scc_info));
+  struct scc_info *si = XNEW (struct scc_info);
   size_t size = VEC_length (varinfo_t, varmap);
 
   si->current_index = 0;
@@ -1765,7 +1761,7 @@ init_scc_info (void)
   sbitmap_zero (si->visited);
   si->in_component = sbitmap_alloc (size);
   sbitmap_ones (si->in_component);
-  si->visited_index = xcalloc (sizeof (unsigned int), size + 1);
+  si->visited_index = XCNEWVEC (unsigned int, size + 1);
   si->scc_stack = VEC_alloc (unsigned, heap, 1);
   si->unification_queue = VEC_alloc (unsigned, heap, 1);
   return si;
@@ -2141,7 +2137,7 @@ insert_id_for_tree (tree t, int id)
   finder.t = t;
   slot = htab_find_slot (id_for_tree, &finder, INSERT);
   gcc_assert (*slot == NULL);
-  new_pair = xmalloc (sizeof (struct tree_id));
+  new_pair = XNEW (struct tree_id);
   new_pair->t = t;
   new_pair->id = id;
   *slot = (void *)new_pair;

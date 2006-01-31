@@ -50,7 +50,7 @@ static struct bucket **table;
 void
 debug_tree (tree node)
 {
-  table = xcalloc (HASH_SIZE, sizeof (struct bucket *));
+  table = XCNEWVEC (struct bucket *, HASH_SIZE);
   print_node (stderr, "", node, 0);
   free (table);
   table = 0;
@@ -209,7 +209,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       }
 
   /* Add this node to the table.  */
-  b = xmalloc (sizeof (struct bucket));
+  b = XNEW (struct bucket);
   b->node = node;
   b->next = table[hash];
   table[hash] = b;

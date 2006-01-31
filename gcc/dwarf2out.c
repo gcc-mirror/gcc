@@ -405,7 +405,7 @@ expand_builtin_dwarf_sp_column (void)
 static inline char *
 stripattributes (const char *s)
 {
-  char *stripped = xmalloc (strlen (s) + 2);
+  char *stripped = XNEWVEC (char, strlen (s) + 2);
   char *p = stripped;
 
   *p++ = '*';
@@ -6315,7 +6315,7 @@ check_duplicate_cu (dw_die_ref cu, htab_t htable, unsigned int *sym_num)
       return 1;
     }
 
-  entry = xcalloc (1, sizeof (struct cu_hash_table_entry));
+  entry = XCNEW (struct cu_hash_table_entry);
   entry->cu = cu;
   entry->min_comdat_num = *sym_num = last->max_comdat_num;
   entry->next = *slot;

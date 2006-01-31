@@ -310,7 +310,7 @@ static void df_set_bb_info (struct dataflow *, unsigned int, void *);
 struct df *
 df_init (int flags)
 {
-  struct df *df = xcalloc (1, sizeof (struct df));
+  struct df *df = XCNEW (struct df);
   df->flags = flags;
 
   /* This is executed once per compilation to initialize platform
@@ -342,7 +342,7 @@ df_add_problem (struct df *df, struct df_problem *problem)
     return dflow;
 
   /* Make a new one and add it to the end.  */
-  dflow = xcalloc (1, sizeof (struct dataflow));
+  dflow = XCNEW (struct dataflow);
   dflow->df = df;
   dflow->problem = problem;
   df->problems_in_order[df->num_problems_defined++] = dflow;
@@ -731,7 +731,7 @@ df_analyze_problem (struct dataflow *dflow,
 void
 df_analyze (struct df *df)
 {
-  int *postorder = xmalloc (sizeof (int) *last_basic_block);
+  int *postorder = XNEWVEC (int, last_basic_block);
   bitmap current_all_blocks = BITMAP_ALLOC (NULL);
   int n_blocks;
   int i;

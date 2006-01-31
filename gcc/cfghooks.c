@@ -77,8 +77,8 @@ verify_flow_info (void)
   basic_block *last_visited;
 
   timevar_push (TV_CFG_VERIFY);
-  last_visited = xcalloc (last_basic_block, sizeof (basic_block));
-  edge_checksum = xcalloc (last_basic_block, sizeof (size_t));
+  last_visited = XCNEWVEC (basic_block, last_basic_block);
+  edge_checksum = XCNEWVEC (size_t, last_basic_block);
 
   /* Check bb chain & numbers.  */
   last_bb_seen = ENTRY_BLOCK_PTR;

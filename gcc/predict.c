@@ -1270,7 +1270,7 @@ tree_bb_level_predictions (void)
   basic_block bb;
   int *heads;
 
-  heads = xmalloc (sizeof (int) * last_basic_block);
+  heads = XNEWVEC (int, last_basic_block);
   memset (heads, ENTRY_BLOCK, sizeof (int) * last_basic_block);
   heads[ENTRY_BLOCK_PTR->next_bb->index] = last_basic_block;
 

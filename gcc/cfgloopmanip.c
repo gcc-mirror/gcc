@@ -85,7 +85,7 @@ find_path (edge e, basic_block **bbs)
   gcc_assert (EDGE_COUNT (e->dest->preds) <= 1);
 
   /* Find bbs in the path.  */
-  *bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
+  *bbs = XCNEWVEC (basic_block, n_basic_blocks);
   return dfs_enumerate_from (e->dest, 0, rpe_enum_p, *bbs,
 			     n_basic_blocks, e->dest);
 }
@@ -159,7 +159,7 @@ fix_bb_placements (struct loops *loops, basic_block from)
   /* Prevent us from going out of the base_loop.  */
   SET_BIT (in_queue, base_loop->header->index);
 
-  queue = xmalloc ((base_loop->num_nodes + 1) * sizeof (basic_block));
+  queue = XNEWVEC (basic_block, base_loop->num_nodes + 1);
   qtop = queue + base_loop->num_nodes + 1;
   qbeg = queue;
   qend = queue + 1;
@@ -244,7 +244,7 @@ fix_irreducible_loops (basic_block from)
   on_stack = sbitmap_alloc (last_basic_block);
   sbitmap_zero (on_stack);
   SET_BIT (on_stack, from->index);
-  stack = xmalloc (from->loop_father->num_nodes * sizeof (basic_block));
+  stack = XNEWVEC (basic_block, from->loop_father->num_nodes);
   stack[0] = from;
   stack_top = 1;
 
@@ -266,7 +266,7 @@ fix_irreducible_loops (basic_block from)
       else
 	{
 	  num_edges = EDGE_COUNT (bb->succs);
-	  edges = xmalloc (num_edges * sizeof (edge));
+	  edges = XNEWVEC (edge, num_edges);
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    edges[ei.index] = e;
 	}
@@ -331,7 +331,7 @@ remove_path (struct loops *loops, edge e)
   nrem = find_path (e, &rem_bbs);
 
   n_bord_bbs = 0;
-  bord_bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
+  bord_bbs = XCNEWVEC (basic_block, n_basic_blocks);
   seen = sbitmap_alloc (last_basic_block);
   sbitmap_zero (seen);
 
@@ -354,7 +354,7 @@ remove_path (struct loops *loops, edge e)
   from = e->src;
   deleted = loop_delete_branch_edge (e, 1);
   gcc_assert (deleted);
-  dom_bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
+  dom_bbs = XCNEWVEC (basic_block, n_basic_blocks);
 
   /* Cancel loops contained in the path.  */
   for (i = 0; i < nrem; i++)
@@ -423,7 +423,7 @@ add_loop (struct loops *loops, struct loop *loop)
   loop->level = 1;
 
   /* Find its nodes.  */
-  bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
+  bbs = XCNEWVEC (basic_block, n_basic_blocks);
   n = dfs_enumerate_from (loop->latch, 1, alp_enum_p,
 			  bbs, n_basic_blocks, loop->header);
 
@@ -464,7 +464,7 @@ loopify (struct loops *loops, edge latch_edge, edge header_edge,
   basic_block *dom_bbs, *body;
   unsigned n_dom_bbs, i;
   sbitmap seen;
-  struct loop *loop = xcalloc (1, sizeof (struct loop));
+  struct loop *loop = XCNEW (struct loop);
   struct loop *outer = succ_bb->loop_father->outer;
   int freq, prob, tot_prob;
   gcov_type cnt;
@@ -515,7 +515,7 @@ loopify (struct loops *loops, edge latch_edge, edge header_edge,
   scale_loop_frequencies (succ_bb->loop_father, tot_prob - prob, tot_prob);
 
   /* Update dominators of blocks outside of LOOP.  */
-  dom_bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
+  dom_bbs = XCNEWVEC (basic_block, n_basic_blocks);
   n_dom_bbs = 0;
   seen = sbitmap_alloc (last_basic_block);
   sbitmap_zero (seen);
@@ -681,7 +681,7 @@ struct loop *
 duplicate_loop (struct loops *loops, struct loop *loop, struct loop *target)
 {
   struct loop *cloop;
-  cloop = xcalloc (1, sizeof (struct loop));
+  cloop = XCNEW (struct loop);
   place_new_loop (loops, cloop);
 
   /* Initialize copied loop.  */
@@ -867,7 +867,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       free (bbs);
       return false;
     }
-  new_bbs = xmalloc (sizeof (basic_block) * loop->num_nodes);
+  new_bbs = XNEWVEC (basic_block, loop->num_nodes);
 
   /* In case we are doing loop peeling and the loop is in the middle of
      irreducible region, the peeled copies will be inside it too.  */
@@ -894,7 +894,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       prob_pass_wont_exit =
 	      RDIV (REG_BR_PROB_BASE * (freq_le + freq_out_orig), freq_in);
 
-      scale_step = xmalloc (ndupl * sizeof (int));
+      scale_step = XNEWVEC (int, ndupl);
 
 	for (i = 1; i <= ndupl; i++)
 	  scale_step[i - 1] = TEST_BIT (wont_exit, i)
@@ -957,13 +957,13 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
   n_orig_loops = 0;
   for (aloop = loop->inner; aloop; aloop = aloop->next)
     n_orig_loops++;
-  orig_loops = xcalloc (n_orig_loops, sizeof (struct loop *));
+  orig_loops = XCNEWVEC (struct loop *, n_orig_loops);
   for (aloop = loop->inner, i = 0; aloop; aloop = aloop->next, i++)
     orig_loops[i] = aloop;
 
   loop->copy = target;
 
-  first_active = xmalloc (n * sizeof (basic_block));
+  first_active = XNEWVEC (basic_block, n);
   if (is_latch)
     {
       memcpy (first_active, bbs, n * sizeof (basic_block));
@@ -1296,7 +1296,7 @@ create_loop_notes (void)
   free_dominance_info (CDI_DOMINATORS);
   if (loops.num > 1)
     {
-      last = xcalloc (loops.num, sizeof (basic_block));
+      last = XCNEWVEC (basic_block, loops.num);
 
       FOR_EACH_BB (bb)
 	{
@@ -1304,8 +1304,8 @@ create_loop_notes (void)
 	    last[loop->num] = bb;
 	}
 
-      first = xcalloc (loops.num, sizeof (basic_block));
-      stack = xcalloc (loops.num, sizeof (struct loop *));
+      first = XCNEWVEC (basic_block, loops.num);
+      stack = XCNEWVEC (struct loop *, loops.num);
       top = stack;
 
       FOR_EACH_BB (bb)

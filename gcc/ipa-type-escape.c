@@ -200,7 +200,7 @@ compare_type_brand (splay_tree_key sk1, splay_tree_key sk2)
 static tree
 discover_unique_type (tree type)
 {
-  struct type_brand_s * brand = xmalloc (sizeof (struct type_brand_s));
+  struct type_brand_s * brand = XNEW (struct type_brand_s);
   int i = 0;
   splay_tree_node result;
 

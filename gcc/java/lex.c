@@ -162,7 +162,7 @@ java_sprint_unicode (int c)
 java_lexer *
 java_new_lexer (FILE *finput, const char *encoding)
 {
-  java_lexer *lex = xmalloc (sizeof (java_lexer));
+  java_lexer *lex = XNEW (java_lexer);
   int enc_error = 0;
 
   lex->finput = finput;

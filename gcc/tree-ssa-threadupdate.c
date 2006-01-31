@@ -253,7 +253,7 @@ lookup_redirection_data (edge e, edge incoming_edge, enum insert_option insert)
 
  /* Build a hash table element so we can see if E is already
      in the table.  */
-  elt = xmalloc (sizeof (struct redirection_data));
+  elt = XNEW (struct redirection_data);
   elt->outgoing_edge = e;
   elt->dup_block = NULL;
   elt->do_not_duplicate = false;
@@ -274,7 +274,7 @@ lookup_redirection_data (edge e, edge incoming_edge, enum insert_option insert)
   if (*slot == NULL)
     {
       *slot = (void *)elt;
-      elt->incoming_edges = xmalloc (sizeof (struct el));
+      elt->incoming_edges = XNEW (struct el);
       elt->incoming_edges->e = incoming_edge;
       elt->incoming_edges->next = NULL;
       return elt;
@@ -293,7 +293,7 @@ lookup_redirection_data (edge e, edge incoming_edge, enum insert_option insert)
 	 to the list of incoming edges associated with E.  */
       if (insert)
 	{
-          struct el *el = xmalloc (sizeof (struct el));
+          struct el *el = XNEW (struct el);
 	  el->next = elt->incoming_edges;
 	  el->e = incoming_edge;
 	  elt->incoming_edges = el;

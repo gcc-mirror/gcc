@@ -749,8 +749,7 @@ tree_ssa_iv_optimize_init (struct loops *loops, struct ivopts_data *data)
   unsigned i;
 
   data->version_info_size = 2 * num_ssa_names;
-  data->version_info = xcalloc (data->version_info_size,
-				sizeof (struct version_info));
+  data->version_info = XCNEWVEC (struct version_info, data->version_info_size);
   data->relevant = BITMAP_ALLOC (NULL);
   data->important_candidates = BITMAP_ALLOC (NULL);
   data->max_inv_id = 0;
@@ -825,7 +824,7 @@ determine_base_object (tree expr)
 static struct iv *
 alloc_iv (tree base, tree step)
 {
-  struct iv *iv = xcalloc (1, sizeof (struct iv));
+  struct iv *iv = XCNEW (struct iv);
 
   if (step && integer_zerop (step))
     step = NULL_TREE;
@@ -1160,7 +1159,7 @@ static struct iv_use *
 record_use (struct ivopts_data *data, tree *use_p, struct iv *iv,
 	    tree stmt, enum use_type use_type)
 {
-  struct iv_use *use = xcalloc (1, sizeof (struct iv_use));
+  struct iv_use *use = XCNEW (struct iv_use);
 
   use->id = n_iv_uses (data);
   use->type = use_type;
@@ -1246,7 +1245,7 @@ find_interesting_uses_outer_or_nonlin (struct ivopts_data *data, tree op,
     }
   iv->have_use_for = true;
 
-  civ = xmalloc (sizeof (struct iv));
+  civ = XNEW (struct iv);
   *civ = *iv;
 
   stmt = SSA_NAME_DEF_STMT (op);
@@ -1333,7 +1332,7 @@ find_interesting_uses_cond (struct ivopts_data *data, tree stmt, tree *cond_p)
       return;
     }
 
-  civ = xmalloc (sizeof (struct iv));
+  civ = XNEW (struct iv);
   *civ = zero_p (iv0->step) ? *iv1: *iv0;
   record_use (data, cond_p, civ, stmt, USE_COMPARE);
 }
@@ -2032,7 +2031,7 @@ add_candidate_1 (struct ivopts_data *data,
 
   if (i == n_iv_cands (data))
     {
-      cand = xcalloc (1, sizeof (struct iv_cand));
+      cand = XCNEW (struct iv_cand);
       cand->id = i;
 
       if (!base && !step)
@@ -2350,7 +2349,7 @@ alloc_use_cost_map (struct ivopts_data *data)
 	}
 
       use->n_map_members = size;
-      use->cost_map = xcalloc (size, sizeof (struct cost_pair));
+      use->cost_map = XCNEWVEC (struct cost_pair, size);
     }
 }
 
@@ -3231,7 +3230,7 @@ multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode)
   if (*cached)
     return (*cached)->cost;
 
-  *cached = xmalloc (sizeof (struct mbc_entry));
+  *cached = XNEW (struct mbc_entry);
   (*cached)->mode = mode;
   (*cached)->cst = cst;
 
@@ -4670,7 +4669,7 @@ static struct iv_ca_delta *
 iv_ca_delta_add (struct iv_use *use, struct cost_pair *old_cp,
 		 struct cost_pair *new_cp, struct iv_ca_delta *next_change)
 {
-  struct iv_ca_delta *change = xmalloc (sizeof (struct iv_ca_delta));
+  struct iv_ca_delta *change = XNEW (struct iv_ca_delta);
 
   change->use = use;
   change->old_cp = old_cp;
@@ -4793,18 +4792,18 @@ iv_ca_delta_free (struct iv_ca_delta **delta)
 static struct iv_ca *
 iv_ca_new (struct ivopts_data *data)
 {
-  struct iv_ca *nw = xmalloc (sizeof (struct iv_ca));
+  struct iv_ca *nw = XNEW (struct iv_ca);
 
   nw->upto = 0;
   nw->bad_uses = 0;
-  nw->cand_for_use = xcalloc (n_iv_uses (data), sizeof (struct cost_pair *));
-  nw->n_cand_uses = xcalloc (n_iv_cands (data), sizeof (unsigned));
+  nw->cand_for_use = XCNEWVEC (struct cost_pair *, n_iv_uses (data));
+  nw->n_cand_uses = XCNEWVEC (unsigned, n_iv_cands (data));
   nw->cands = BITMAP_ALLOC (NULL);
   nw->n_cands = 0;
   nw->n_regs = 0;
   nw->cand_use_cost = 0;
   nw->cand_cost = 0;
-  nw->n_invariant_uses = xcalloc (data->max_inv_id + 1, sizeof (unsigned));
+  nw->n_invariant_uses = XCNEWVEC (unsigned, data->max_inv_id + 1);
   nw->cost = 0;
 
   return nw;
@@ -5922,8 +5921,7 @@ free_loop_data (struct ivopts_data *data)
     {
       data->version_info_size = 2 * num_ssa_names;
       free (data->version_info);
-      data->version_info = xcalloc (data->version_info_size,
-				    sizeof (struct version_info));
+      data->version_info = XCNEWVEC (struct version_info, data->version_info_size);
     }
 
   data->max_inv_id = 0;

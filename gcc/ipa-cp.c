@@ -352,7 +352,7 @@ static inline void
 ipcp_formal_create (struct cgraph_node *mt)
 {
   IPA_NODE_REF (mt)->ipcp_cval =
-    xcalloc (ipa_method_formal_count (mt), sizeof (struct ipcp_formal));
+    XCNEWVEC (struct ipcp_formal, ipa_method_formal_count (mt));
 }
 
 /* Set cval structure of I-th formal of MT to CVAL.  */
@@ -853,7 +853,7 @@ ipcp_replace_map_create (enum cvalue_type type, tree parm_tree,
   struct ipa_replace_map *replace_map;
   tree const_val;
 
-  replace_map = xcalloc (1, sizeof (struct ipa_replace_map));
+  replace_map = XCNEW (struct ipa_replace_map);
   gcc_assert (ipcp_type_is_const (type));
   if (type == CONST_VALUE_REF )
     {

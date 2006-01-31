@@ -503,7 +503,7 @@ do_SUBST (rtx *into, rtx newval)
   if (undobuf.frees)
     buf = undobuf.frees, undobuf.frees = buf->next;
   else
-    buf = xmalloc (sizeof (struct undo));
+    buf = XNEW (struct undo);
 
   buf->kind = UNDO_RTX;
   buf->where.r = into;
@@ -531,7 +531,7 @@ do_SUBST_INT (int *into, int newval)
   if (undobuf.frees)
     buf = undobuf.frees, undobuf.frees = buf->next;
   else
-    buf = xmalloc (sizeof (struct undo));
+    buf = XNEW (struct undo);
 
   buf->kind = UNDO_INT;
   buf->where.i = into;
@@ -560,7 +560,7 @@ do_SUBST_MODE (rtx *into, enum machine_mode newval)
   if (undobuf.frees)
     buf = undobuf.frees, undobuf.frees = buf->next;
   else
-    buf = xmalloc (sizeof (struct undo));
+    buf = XNEW (struct undo);
 
   buf->kind = UNDO_MODE;
   buf->where.r = into;
@@ -708,7 +708,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
   rtl_hooks = combine_rtl_hooks;
 
-  reg_stat = xcalloc (nregs, sizeof (struct reg_stat));
+  reg_stat = XCNEWVEC (struct reg_stat, nregs);
 
   init_recog_no_volatile ();
 
@@ -718,7 +718,7 @@ combine_instructions (rtx f, unsigned int nregs)
     if (INSN_UID (insn) > i)
       i = INSN_UID (insn);
 
-  uid_cuid = xmalloc ((i + 1) * sizeof (int));
+  uid_cuid = XNEWVEC (int, i + 1);
   max_uid_cuid = i;
 
   nonzero_bits_mode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
@@ -747,7 +747,7 @@ combine_instructions (rtx f, unsigned int nregs)
   sbitmap_zero (refresh_blocks);
 
   /* Allocate array of current insn_rtx_costs.  */
-  uid_insn_cost = xcalloc (max_uid_cuid + 1, sizeof (int));
+  uid_insn_cost = XCNEWVEC (int, max_uid_cuid + 1);
   last_insn_cost = max_uid_cuid;
 
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))

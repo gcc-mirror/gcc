@@ -211,7 +211,7 @@ split_range (struct eh_range *range, int pc)
     }
 
   /* Create a new range.  */
-  h = xmalloc (sizeof (struct eh_range));
+  h = XNEW (struct eh_range);
 
   h->start_pc = pc;
   h->end_pc = range->end_pc;
@@ -289,7 +289,7 @@ add_handler (int start_pc, int end_pc, tree handler, tree type)
     }
 
   /* Create the new range.  */
-  h = xmalloc (sizeof (struct eh_range));
+  h = XNEW (struct eh_range);
   first_child = &h->first_child;
 
   h->start_pc = start_pc;

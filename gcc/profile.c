@@ -693,8 +693,7 @@ compute_value_histograms (histogram_values values)
 
       hist->hvalue.next = ann->histograms;
       ann->histograms = hist;
-      hist->hvalue.counters = 
-	    xmalloc (sizeof (gcov_type) * hist->n_counters);
+      hist->hvalue.counters =  XNEWVEC (gcov_type, hist->n_counters);
       for (j = 0; j < hist->n_counters; j++)
 	hist->hvalue.counters[j] = aact_count[j];
     }

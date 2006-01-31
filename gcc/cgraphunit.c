@@ -1143,8 +1143,7 @@ static void
 cgraph_expand_all_functions (void)
 {
   struct cgraph_node *node;
-  struct cgraph_node **order =
-    xcalloc (cgraph_n_nodes, sizeof (struct cgraph_node *));
+  struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int order_pos = 0, new_order_pos = 0;
   int i;
 

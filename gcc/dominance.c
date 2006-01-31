@@ -132,10 +132,10 @@ static unsigned n_bbs_in_dom_tree[2];
     {								\
       unsigned int i = 1;    /* Catch content == i.  */		\
       if (! (content))						\
-	(var) = xcalloc ((num), sizeof (type));			\
+	(var) = XCNEWVEC (type, num);				\
       else							\
 	{							\
-	  (var) = xmalloc ((num) * sizeof (type));		\
+	  (var) = XNEWVEC (type, (num));			\
 	  for (i = 0; i < num; i++)				\
 	    (var)[i] = (content);				\
 	}							\
@@ -213,7 +213,7 @@ calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb,
   /* Ending block.  */
   basic_block ex_block;
 
-  stack = xmalloc ((n_basic_blocks + 1) * sizeof (edge_iterator));
+  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
   sp = 0;
 
   /* Initialize our border blocks, and the first edge.  */
@@ -722,7 +722,7 @@ get_dominated_by (enum cdi_direction dir, basic_block bb, basic_block **bbs)
   for (ason = son->right, n = 1; ason != son; ason = ason->right)
     n++;
 
-  *bbs = xmalloc (n * sizeof (basic_block));
+  *bbs = XNEWVEC (basic_block, n);
   (*bbs)[0] = son->data;
   for (ason = son->right, n = 1; ason != son; ason = ason->right)
     (*bbs)[n++] = ason->data;

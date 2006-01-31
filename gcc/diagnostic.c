@@ -93,7 +93,7 @@ diagnostic_initialize (diagnostic_context *context)
 {
   /* Allocate a basic pretty-printer.  Clients will replace this a
      much more elaborated pretty-printer if they wish.  */
-  context->printer = xmalloc (sizeof (pretty_printer));
+  context->printer = XNEW (pretty_printer);
   pp_construct (context->printer, NULL, 0);
   /* By default, diagnostics are sent to stderr.  */
   context->printer->buffer->stream = stderr;

@@ -511,7 +511,7 @@ new_decision_test (enum decision_type type, struct decision_test ***pplace)
   struct decision_test **place = *pplace;
   struct decision_test *test;
 
-  test = xmalloc (sizeof (*test));
+  test = XNEW (struct decision_test);
   test->next = *place;
   test->type = type;
   *place = test;

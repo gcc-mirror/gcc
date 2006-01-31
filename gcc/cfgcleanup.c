@@ -484,8 +484,7 @@ try_forward_edges (int mode, basic_block b)
 	      if (t)
 		{
 		  if (!threaded_edges)
-		    threaded_edges = xmalloc (sizeof (*threaded_edges)
-					      * n_basic_blocks);
+		    threaded_edges = XNEWVEC (edge, n_basic_blocks);
 		  else
 		    {
 		      int i;

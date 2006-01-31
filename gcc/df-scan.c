@@ -219,7 +219,7 @@ df_scan_alloc (struct dataflow *dflow, bitmap blocks_to_rescan)
 			 sizeof (struct df_scan_bb_info), 
 			 block_size);
 
-  problem_data = xmalloc (sizeof (struct df_scan_problem_data));
+  problem_data = XNEW (struct df_scan_problem_data);
   dflow->problem_data = problem_data;
 
   problem_data->ref_pool 

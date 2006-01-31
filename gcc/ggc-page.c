@@ -628,7 +628,7 @@ found:
   L2 = LOOKUP_L2 (p);
 
   if (base[L1] == NULL)
-    base[L1] = xcalloc (PAGE_L2_SIZE, sizeof (page_entry *));
+    base[L1] = XCNEWVEC (page_entry *, PAGE_L2_SIZE);
 
   base[L1][L2] = entry;
 }
@@ -1346,7 +1346,7 @@ ggc_free (void *p)
      the data, but instead verify that the data is *actually* not 
      reachable the next time we collect.  */
   {
-    struct free_object *fo = xmalloc (sizeof (struct free_object));
+    struct free_object *fo = XNEW (struct free_object);
     fo->object = p;
     fo->next = G.free_object_list;
     G.free_object_list = fo;
@@ -1472,7 +1472,7 @@ init_ggc (void)
       }
 
     /* We have a good page, might as well hold onto it...  */
-    e = xcalloc (1, sizeof (struct page_entry));
+    e = XCNEW (struct page_entry);
     e->bytes = G.pagesize;
     e->page = p;
     e->next = G.free_pages;
@@ -1518,12 +1518,12 @@ init_ggc (void)
 
   G.depth_in_use = 0;
   G.depth_max = 10;
-  G.depth = xmalloc (G.depth_max * sizeof (unsigned int));
+  G.depth = XNEWVEC (unsigned int, G.depth_max);
 
   G.by_depth_in_use = 0;
   G.by_depth_max = INITIAL_PTE_COUNT;
-  G.by_depth = xmalloc (G.by_depth_max * sizeof (page_entry *));
-  G.save_in_use = xmalloc (G.by_depth_max * sizeof (unsigned long *));
+  G.by_depth = XNEWVEC (page_entry *, G.by_depth_max);
+  G.save_in_use = XNEWVEC (unsigned long *, G.by_depth_max);
 }
 
 /* Start a new GGC zone.  */
@@ -2013,7 +2013,7 @@ struct ggc_pch_data
 struct ggc_pch_data *
 init_ggc_pch (void)
 {
-  return xcalloc (sizeof (struct ggc_pch_data), 1);
+  return XCNEW (struct ggc_pch_data);
 }
 
 void
@@ -2161,8 +2161,8 @@ move_ptes_to_front (int count_old_page_tables, int count_new_page_tables)
   page_entry **new_by_depth;
   unsigned long **new_save_in_use;
 
-  new_by_depth = xmalloc (G.by_depth_max * sizeof (page_entry *));
-  new_save_in_use = xmalloc (G.by_depth_max * sizeof (unsigned long *));
+  new_by_depth = XNEWVEC (page_entry *, G.by_depth_max);
+  new_save_in_use = XNEWVEC (unsigned long *, G.by_depth_max);
 
   memcpy (&new_by_depth[0],
 	  &G.by_depth[count_old_page_tables],

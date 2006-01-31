@@ -7473,7 +7473,7 @@ add_minipool_forward_ref (Mfix *fix)
      any existing entry.  Otherwise, we insert the new fix before
      MAX_MP and, if necessary, adjust the constraints on the other
      entries.  */
-  mp = xmalloc (sizeof (* mp));
+  mp = XNEW (Mnode);
   mp->fix_size = fix->fix_size;
   mp->mode = fix->mode;
   mp->value = fix->value;
@@ -7671,7 +7671,7 @@ add_minipool_backward_ref (Mfix *fix)
     }
 
   /* We need to create a new entry.  */
-  mp = xmalloc (sizeof (* mp));
+  mp = XNEW (Mnode);
   mp->fix_size = fix->fix_size;
   mp->mode = fix->mode;
   mp->value = fix->value;

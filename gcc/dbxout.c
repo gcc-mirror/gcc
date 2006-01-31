@@ -1049,7 +1049,7 @@ dbxout_init (const char *input_file_name)
   next_type_number = 1;
 
 #ifdef DBX_USE_BINCL
-  current_file = xmalloc (sizeof *current_file);
+  current_file = XNEW (struct dbx_file);
   current_file->next = NULL;
   current_file->file_number = 0;
   current_file->next_type_number = 1;
@@ -1158,7 +1158,7 @@ dbxout_start_source_file (unsigned int line ATTRIBUTE_UNUSED,
 			  const char *filename ATTRIBUTE_UNUSED)
 {
 #ifdef DBX_USE_BINCL
-  struct dbx_file *n = xmalloc (sizeof *n);
+  struct dbx_file *n = XNEW (struct dbx_file);
 
   n->next = current_file;
   n->next_type_number = 1;

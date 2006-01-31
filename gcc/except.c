@@ -1121,7 +1121,7 @@ add_ttypes_entry (htab_t ttypes_hash, tree type)
     {
       /* Filter value is a 1 based table index.  */
 
-      n = xmalloc (sizeof (*n));
+      n = XNEW (struct ttypes_filter);
       n->t = type;
       n->filter = VEC_length (tree, cfun->eh->ttype_data) + 1;
       *slot = n;
@@ -1149,7 +1149,7 @@ add_ehspec_entry (htab_t ehspec_hash, htab_t ttypes_hash, tree list)
     {
       /* Filter value is a -1 based byte index into a uleb128 buffer.  */
 
-      n = xmalloc (sizeof (*n));
+      n = XNEW (struct ttypes_filter);
       n->t = list;
       n->filter = -(VARRAY_ACTIVE_SIZE (cfun->eh->ehspec_data) + 1);
       *slot = n;
@@ -1956,8 +1956,7 @@ sjlj_build_landing_pads (void)
 {
   struct sjlj_lp_info *lp_info;
 
-  lp_info = xcalloc (cfun->eh->last_region_number + 1,
-		     sizeof (struct sjlj_lp_info));
+  lp_info = XCNEWVEC (struct sjlj_lp_info, cfun->eh->last_region_number + 1);
 
   if (sjlj_find_directly_reachable_regions (lp_info))
     {

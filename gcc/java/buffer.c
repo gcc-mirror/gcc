@@ -37,7 +37,7 @@ buffer_grow (struct buffer *bufp, int size)
     {
       if (size < 120)
 	size = 120;
-      bufp->data = xmalloc (size);
+      bufp->data = XNEWVEC (unsigned char, size);
       bufp->ptr = bufp->data;
     }
   else

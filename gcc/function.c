@@ -3744,7 +3744,7 @@ get_block_vector (tree block, int *n_blocks_p)
   tree *block_vector;
 
   *n_blocks_p = all_blocks (block, NULL);
-  block_vector = xmalloc (*n_blocks_p * sizeof (tree));
+  block_vector = XNEWVEC (tree, *n_blocks_p);
   all_blocks (block, block_vector);
 
   return block_vector;

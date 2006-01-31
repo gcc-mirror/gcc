@@ -1342,7 +1342,7 @@ darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
   if (! for_eh)
     suffix = ".eh1";
 
-  lab = xmalloc (strlen (prefix)
+  lab = XNEWVEC (char, strlen (prefix)
 		 + base_len + strlen (suffix) + quotes_len + 1);
   lab[0] = '\0';
 

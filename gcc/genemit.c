@@ -341,7 +341,7 @@ gen_insn (rtx insn, int lineno)
       if (i != XVECLEN (insn, 1) - 1)
 	{
 	  struct clobber_pat *p;
-	  struct clobber_ent *link = xmalloc (sizeof (struct clobber_ent));
+	  struct clobber_ent *link = XNEW (struct clobber_ent);
 	  int j;
 
 	  link->code_number = insn_code_number;
@@ -377,7 +377,7 @@ gen_insn (rtx insn, int lineno)
 
 	  if (p == 0)
 	    {
-	      p = xmalloc (sizeof (struct clobber_pat));
+	      p = XNEW (struct clobber_pat);
 
 	      p->insns = 0;
 	      p->pattern = insn;
@@ -599,7 +599,7 @@ gen_split (rtx split)
   max_operand_vec (split, 2);
   operands = MAX (max_opno, MAX (max_dup_opno, max_scratch_opno)) + 1;
   unused = (operands == 0 ? " ATTRIBUTE_UNUSED" : "");
-  used = xcalloc (1, operands);
+  used = XCNEWVEC (char, operands);
 
   /* Output the prototype, function name and argument declarations.  */
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)

@@ -1415,7 +1415,7 @@ init_reassoc (void)
   int i;
   unsigned int rank = 2;
   tree param;
-  int *bbs = xmalloc ((last_basic_block + 1) * sizeof (int));
+  int *bbs = XNEWVEC (int, last_basic_block + 1);
 
   memset (&reassociate_stats, 0, sizeof (reassociate_stats));
 
@@ -1425,7 +1425,7 @@ init_reassoc (void)
   /* Reverse RPO (Reverse Post Order) will give us something where
      deeper loops come later.  */
   pre_and_rev_post_order_compute (NULL, bbs, false);
-  bb_rank = xcalloc (last_basic_block + 1, sizeof (unsigned int));
+  bb_rank = XCNEWVEC (unsigned int, last_basic_block + 1);
   
   operand_rank = htab_create (511, operand_entry_hash,
 			      operand_entry_eq, 0);

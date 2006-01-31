@@ -3405,7 +3405,7 @@ one_cprop_pass (int pass, bool cprop_jumps, bool bypass_jumps)
   local_cprop_pass (cprop_jumps);
 
   /* Determine implicit sets.  */
-  implicit_sets = xcalloc (last_basic_block, sizeof (rtx));
+  implicit_sets = XCNEWVEC (rtx, last_basic_block);
   find_implicit_sets ();
 
   alloc_hash_table (max_cuid, &set_hash_table, 1);
@@ -3936,7 +3936,7 @@ static int
 pre_expr_reaches_here_p (basic_block occr_bb, struct expr *expr, basic_block bb)
 {
   int rval;
-  char *visited = xcalloc (last_basic_block, 1);
+  char *visited = XCNEWVEC (char, last_basic_block);
 
   rval = pre_expr_reaches_here_p_work (occr_bb, expr, bb, visited);
 
@@ -4499,7 +4499,7 @@ pre_gcse (void)
   /* Compute a mapping from expression number (`bitmap_index') to
      hash table entry.  */
 
-  index_map = xcalloc (expr_hash_table.n_elems, sizeof (struct expr *));
+  index_map = XCNEWVEC (struct expr *, expr_hash_table.n_elems);
   for (i = 0; i < expr_hash_table.size; i++)
     for (expr = expr_hash_table.table[i]; expr != NULL; expr = expr->next_same_hash)
       index_map[expr->bitmap_index] = expr;
@@ -4790,7 +4790,7 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb, 
   if (visited == NULL)
     {
       visited_allocated_locally = 1;
-      visited = xcalloc (last_basic_block, 1);
+      visited = XCNEWVEC (char, last_basic_block);
     }
 
   FOR_EACH_EDGE (pred, ei, bb->preds)
@@ -4842,7 +4842,7 @@ hoist_code (void)
   /* Compute a mapping from expression number (`bitmap_index') to
      hash table entry.  */
 
-  index_map = xcalloc (expr_hash_table.n_elems, sizeof (struct expr *));
+  index_map = XCNEWVEC (struct expr *, expr_hash_table.n_elems);
   for (i = 0; i < expr_hash_table.size; i++)
     for (expr = expr_hash_table.table[i]; expr != NULL; expr = expr->next_same_hash)
       index_map[expr->bitmap_index] = expr;
@@ -5071,7 +5071,7 @@ ldst_entry (rtx x)
   if (*slot)
     return (struct ls_expr *)*slot;
 
-  ptr = xmalloc (sizeof (struct ls_expr));
+  ptr = XNEW (struct ls_expr);
 
   ptr->next         = pre_ldst_mems;
   ptr->expr         = NULL;
@@ -5752,8 +5752,8 @@ compute_store_table (void)
   pre_ldst_mems = 0;
   pre_ldst_table = htab_create (13, pre_ldst_expr_hash,
 				pre_ldst_expr_eq, NULL);
-  last_set_in = xcalloc (max_gcse_regno, sizeof (int));
-  already_set = xmalloc (sizeof (int) * max_gcse_regno);
+  last_set_in = XCNEWVEC (int, max_gcse_regno);
+  already_set = XNEWVEC (int, max_gcse_regno);
 
   /* Find all the stores we care about.  */
   FOR_EACH_BB (bb)
@@ -6094,7 +6094,7 @@ build_store_vectors (void)
 
   transp = sbitmap_vector_alloc (last_basic_block, num_stores);
   sbitmap_vector_zero (transp, last_basic_block);
-  regs_set_in_block = xmalloc (sizeof (int) * max_gcse_regno);
+  regs_set_in_block = XNEWVEC (int, max_gcse_regno);
 
   FOR_EACH_BB (bb)
     {
@@ -6242,7 +6242,7 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
   rtx last, insn, note;
   rtx mem = smexpr->pattern;
 
-  stack = xmalloc (sizeof (edge_iterator) * n_basic_blocks);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks);
   sp = 0;
   ei = ei_start (bb->succs);
 

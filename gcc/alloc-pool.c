@@ -228,7 +228,7 @@ pool_alloc (alloc_pool pool)
       alloc_pool_list block_header;
 
       /* Make the block.  */
-      block = xmalloc (pool->block_size);
+      block = XNEWVEC (char, pool->block_size);
       block_header = (alloc_pool_list) block;
       block += align_eight (sizeof (struct alloc_pool_list_def));
 #ifdef GATHER_STATISTICS

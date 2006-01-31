@@ -693,8 +693,7 @@ compute_alignments (void)
 
   max_labelno = max_label_num ();
   min_labelno = get_first_label_num ();
-  label_align = xcalloc (max_labelno - min_labelno + 1,
-			 sizeof (struct label_alignment));
+  label_align = XCNEWVEC (struct label_alignment, max_labelno - min_labelno + 1);
 
   /* If not optimizing or optimizing for size, don't assign any alignments.  */
   if (! optimize || optimize_size)
@@ -817,7 +816,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
   /* Free uid_shuid before reallocating it.  */
   free (uid_shuid);
   
-  uid_shuid = xmalloc (max_uid * sizeof *uid_shuid);
+  uid_shuid = XNEWVEC (int, max_uid);
 
   if (max_labelno != max_label_num ())
     {
@@ -926,20 +925,20 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 #ifdef HAVE_ATTR_length
 
   /* Allocate the rest of the arrays.  */
-  insn_lengths = xmalloc (max_uid * sizeof (*insn_lengths));
+  insn_lengths = XNEWVEC (int, max_uid);
   insn_lengths_max_uid = max_uid;
   /* Syntax errors can lead to labels being outside of the main insn stream.
      Initialize insn_addresses, so that we get reproducible results.  */
   INSN_ADDRESSES_ALLOC (max_uid);
 
-  varying_length = xcalloc (max_uid, sizeof (char));
+  varying_length = XCNEWVEC (char, max_uid);
 
   /* Initialize uid_align.  We scan instructions
      from end to start, and keep in align_tab[n] the last seen insn
      that does an alignment of at least n+1, i.e. the successor
      in the alignment chain for an insn that does / has a known
      alignment of n.  */
-  uid_align = xcalloc (max_uid, sizeof *uid_align);
+  uid_align = XCNEWVEC (rtx, max_uid);
 
   for (i = MAX_CODE_ALIGN; --i >= 0;)
     align_tab[i] = NULL_RTX;

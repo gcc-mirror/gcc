@@ -579,7 +579,7 @@ find_a_file (struct path_prefix *pprefix, const char *name)
   len += strlen (HOST_EXECUTABLE_SUFFIX);
 #endif
 
-  temp = xmalloc (len);
+  temp = XNEWVEC (char, len);
 
   /* Determine the filename to execute (special case for absolute paths).  */
 
@@ -667,7 +667,7 @@ add_prefix (struct path_prefix *pprefix, const char *prefix)
   if (len > pprefix->max_len)
     pprefix->max_len = len;
 
-  pl = xmalloc (sizeof (struct prefix_list));
+  pl = XNEW (struct prefix_list);
   pl->prefix = xstrdup (prefix);
 
   if (*prev)
@@ -694,7 +694,7 @@ static void
 prefix_from_string (const char *p, struct path_prefix *pprefix)
 {
   const char *startp, *endp;
-  char *nstore = xmalloc (strlen (p) + 3);
+  char *nstore = XNEWVEC (char, strlen (p) + 3);
 
   if (debug)
     fprintf (stderr, "Convert string '%s' into prefixes, separator = '%c'\n", p, PATH_SEPARATOR);
@@ -1367,7 +1367,7 @@ main (int argc, char **argv)
       /* Strip now if it was requested on the command line.  */
       if (strip_flag)
 	{
-	  char **real_strip_argv = xcalloc (sizeof (char *), 3);
+	  char **real_strip_argv = XCNEWVEC (char *, 3);
 	  const char ** strip_argv = (const char **) real_strip_argv;
 
 	  strip_argv[0] = strip_file_name;
@@ -1801,7 +1801,7 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 	}
     }
   /* q points to null at end of the string (or . of the .so version) */
-  prefix = xmalloc (q - p + 1);
+  prefix = XNEWVEC (char, q - p + 1);
   strncpy (prefix, p, q - p);
   prefix[q - p] = 0;
   for (r = prefix; *r; r++)

@@ -385,11 +385,10 @@ df_ru_alloc (struct dataflow *dflow, bitmap blocks_to_rescan)
     }
   else 
     {
-      struct df_ru_problem_data *problem_data =
-	xmalloc (sizeof (struct df_ru_problem_data));
+      struct df_ru_problem_data *problem_data = XNEW (struct df_ru_problem_data);
       dflow->problem_data = problem_data;
 
-      problem_data->use_sites = xcalloc (reg_size, sizeof (bitmap));
+      problem_data->use_sites = XCNEWVEC (bitmap, reg_size);
       problem_data->use_sites_size = reg_size;
       problem_data->sparse_invalidated_by_call = BITMAP_ALLOC (NULL);
       problem_data->dense_invalidated_by_call = BITMAP_ALLOC (NULL);
@@ -909,11 +908,10 @@ df_rd_alloc (struct dataflow *dflow, bitmap blocks_to_rescan)
     }
   else 
     {
-      struct df_rd_problem_data *problem_data =
-	xmalloc (sizeof (struct df_rd_problem_data));
+      struct df_rd_problem_data *problem_data = XNEW (struct df_rd_problem_data);
       dflow->problem_data = problem_data;
 
-      problem_data->def_sites = xcalloc (reg_size, sizeof (bitmap));
+      problem_data->def_sites = XCNEWVEC (bitmap, reg_size);
       problem_data->def_sites_size = reg_size;
       problem_data->sparse_invalidated_by_call = BITMAP_ALLOC (NULL);
       problem_data->dense_invalidated_by_call = BITMAP_ALLOC (NULL);
@@ -2130,7 +2128,7 @@ df_urec_alloc (struct dataflow *dflow, bitmap blocks_to_rescan)
 
   if (!dflow->problem_data)
     {
-      problem_data = xmalloc (sizeof (struct df_urec_problem_data));
+      problem_data = XNEW (struct df_urec_problem_data);
       dflow->problem_data = problem_data;
     }
   problem_data->earlyclobbers_found = false;
@@ -3066,7 +3064,7 @@ struct dataflow *
 df_chain_add_problem (struct df *df, int flags)
 {
   struct df_chain_problem_data *problem_data =
-	xmalloc (sizeof (struct df_chain_problem_data));
+	XNEW (struct df_chain_problem_data);
   struct dataflow *dflow = df_add_problem (df, &problem_CHAIN);
 
   dflow->problem_data = problem_data;
@@ -3101,8 +3099,7 @@ df_ri_alloc (struct dataflow *dflow, bitmap blocks_to_rescan ATTRIBUTE_UNUSED)
 
   if (!dflow->problem_data)
     {
-      struct df_ri_problem_data *problem_data =
-	xmalloc (sizeof (struct df_ri_problem_data));
+      struct df_ri_problem_data *problem_data =	XNEW (struct df_ri_problem_data);
       dflow->problem_data = problem_data;
     }
 

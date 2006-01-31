@@ -104,7 +104,7 @@ static struct seginfo *
 new_seginfo (int mode, rtx insn, int bb, HARD_REG_SET regs_live)
 {
   struct seginfo *ptr;
-  ptr = xmalloc (sizeof (struct seginfo));
+  ptr = XNEW (struct seginfo);
   ptr->mode = mode;
   ptr->insn_ptr = insn;
   ptr->bbnum = bb;
@@ -415,7 +415,7 @@ optimize_mode_switching (FILE *file)
 	entry_exit_extra = 3;
 #endif
 	bb_info[n_entities]
-	  = xcalloc (last_basic_block + entry_exit_extra, sizeof **bb_info);
+	  = XCNEWVEC (struct bb_info, last_basic_block);
 	entity_map[n_entities++] = e;
 	if (num_modes[e] > max_num_modes)
 	  max_num_modes = num_modes[e];

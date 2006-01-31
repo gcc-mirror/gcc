@@ -105,7 +105,7 @@ struct method_declarator {
 };
 #define NEW_METHOD_DECLARATOR(D,N,A)					     \
 {									     \
-  (D) = xmalloc (sizeof (struct method_declarator));			     \
+  (D) = XNEW (struct method_declarator);				     \
   (D)->method_name = (N);						     \
   (D)->args = (A);							     \
 }
@@ -498,7 +498,7 @@ formal_parameter:
 		  if (bracket_count)
 		    {
 		      int i;
-		      char *n = xmalloc (bracket_count + 1 + strlen ($$));
+		      char *n = XNEWVEC (char, bracket_count + 1 + strlen ($$));
 		      for (i = 0; i < bracket_count; ++i)
 			n[i] = '[';
 		      strcpy (n + bracket_count, $$);
@@ -512,7 +512,7 @@ formal_parameter:
 		  if (bracket_count)
 		    {
 		      int i;
-		      char *n = xmalloc (bracket_count + 1 + strlen ($2));
+		      char *n = XNEWVEC (char, bracket_count + 1 + strlen ($2));
 		      for (i = 0; i < bracket_count; ++i)
 			n[i] = '[';
 		      strcpy (n + bracket_count, $2);
@@ -1175,10 +1175,10 @@ constant_expression:
 void
 java_push_parser_context (void)
 {
-  struct parser_ctxt *new = xcalloc (1, sizeof (struct parser_ctxt));
+  struct parser_ctxt *tmp = XCNEW (struct parser_ctxt);
 
-  new->next = ctxp;
-  ctxp = new;
+  tmp->next = ctxp;
+  ctxp = tmp;
 }  
 
 static void
@@ -1186,7 +1186,7 @@ push_class_context (const char *name)
 {
   struct class_context *ctx;
 
-  ctx = xmalloc (sizeof (struct class_context));
+  ctx = XNEW (struct class_context);
   ctx->name = (char *) name;
   ctx->next = current_class_context;
   current_class_context = ctx;

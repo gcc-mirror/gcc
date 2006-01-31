@@ -90,7 +90,7 @@ find_spec_file (const char *dir)
   int x;
   struct stat sb;
 
-  spec = xmalloc (strlen (dir) + sizeof (SPEC_FILE)
+  spec = XNEWVEC (char, strlen (dir) + sizeof (SPEC_FILE)
 		  + sizeof ("-specs=") + 4);
   strcpy (spec, "-specs=");
   x = strlen (spec);
@@ -247,7 +247,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   argv = *in_argv;
   added_libraries = *in_added_libraries;
 
-  args = xcalloc (argc, sizeof (int));
+  args = XCNEWVEC (int, argc);
 
   for (i = 1; i < argc; i++)
     {
@@ -490,7 +490,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   
   num_args += shared_libgcc;
 
-  arglist = xmalloc ((num_args + 1) * sizeof (char *));
+  arglist = XNEWVEC (const char *, num_args + 1);
   j = 0;
 
   arglist[j++] = argv[0];

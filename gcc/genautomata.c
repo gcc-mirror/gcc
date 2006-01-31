@@ -3791,7 +3791,7 @@ initiate_states (void)
   int i;
 
   if (description->units_num)
-    units_array = xmalloc (description->units_num * sizeof (unit_decl_t));
+    units_array = XNEWVEC (unit_decl_t, description->units_num);
   else
     units_array = 0;
 
@@ -6162,7 +6162,7 @@ static void
 process_state_for_insn_equiv_partition (state_t state)
 {
   arc_t arc;
-  arc_t *insn_arcs_array = xcalloc (description->insns_num, sizeof(arc_t));
+  arc_t *insn_arcs_array = XCNEWVEC (arc_t, description->insns_num);
 
   /* Process insns of the arcs.  */
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
@@ -6292,7 +6292,7 @@ units_to_automata_heuristic_distr (void)
   if (description->units_num == 0)
     return;
   estimation_bound = estimate_one_automaton_bound ();
-  unit_decls = xmalloc (description->units_num * sizeof (unit_decl_t));
+  unit_decls = XNEWVEC (unit_decl_t, description->units_num);
 
   for (i = 0, j = 0; i < description->decls_num; i++)
     if (description->decls[i]->mode == dm_unit)

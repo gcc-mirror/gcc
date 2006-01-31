@@ -882,7 +882,7 @@ analyze_array (tree stmt, tree ref, bool is_read)
       fprintf (dump_file, ")\n");
     }
   
-  res = xmalloc (sizeof (struct data_reference));
+  res = XNEW (struct data_reference);
   
   DR_STMT (res) = stmt;
   DR_REF (res) = ref;
@@ -1004,7 +1004,7 @@ init_data_ref (tree stmt,
       fprintf (dump_file, ")\n");
     }
   
-  res = xmalloc (sizeof (struct data_reference));
+  res = XNEW (struct data_reference);
   
   DR_STMT (res) = stmt;
   DR_REF (res) = ref;
@@ -1976,7 +1976,7 @@ initialize_data_dependence_relation (struct data_reference *a,
   bool differ_p;
   unsigned int i;  
   
-  res = xmalloc (sizeof (struct data_dependence_relation));
+  res = XNEW (struct data_dependence_relation);
   DDR_A (res) = a;
   DDR_B (res) = b;
 
@@ -2020,7 +2020,7 @@ initialize_data_dependence_relation (struct data_reference *a,
     {
       struct subscript *subscript;
 	  
-      subscript = xmalloc (sizeof (struct subscript));
+      subscript = XNEW (struct subscript);
       SUB_CONFLICTS_IN_A (subscript) = chrec_dont_know;
       SUB_CONFLICTS_IN_B (subscript) = chrec_dont_know;
       SUB_LAST_CONFLICT (subscript) = chrec_dont_know;
@@ -3745,7 +3745,7 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 		  struct data_reference *res;
 
 		insert_dont_know_node:;
-		  res = xmalloc (sizeof (struct data_reference));
+		  res = XNEW (struct data_reference);
 		  DR_STMT (res) = NULL_TREE;
 		  DR_REF (res) = NULL_TREE;
 		  DR_BASE_OBJECT (res) = NULL;

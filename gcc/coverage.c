@@ -262,12 +262,12 @@ read_counts_file (void)
 	  entry = *slot;
 	  if (!entry)
 	    {
-	      *slot = entry = xcalloc (1, sizeof (counts_entry_t));
+	      *slot = entry = XCNEW (counts_entry_t);
 	      entry->ident = elt.ident;
 	      entry->ctr = elt.ctr;
 	      entry->checksum = checksum;
 	      entry->summary.num = n_counts;
-	      entry->counts = xcalloc (n_counts, sizeof (gcov_type));
+	      entry->counts = XCNEWVEC (gcov_type, n_counts);
 	    }
 	  else if (entry->checksum != checksum)
 	    {
@@ -569,7 +569,7 @@ coverage_end_function (void)
     {
       struct function_list *item;
 
-      item = xmalloc (sizeof (struct function_list));
+      item = XNEW (struct function_list);
 
       *functions_tail = item;
       functions_tail = &item->next;
@@ -951,12 +951,12 @@ coverage_init (const char *filename)
   int len = strlen (filename);
 
   /* Name of da file.  */
-  da_file_name = xmalloc (len + strlen (GCOV_DATA_SUFFIX) + 1);
+  da_file_name = XNEWVEC (char, len + strlen (GCOV_DATA_SUFFIX) + 1);
   strcpy (da_file_name, filename);
   strcat (da_file_name, GCOV_DATA_SUFFIX);
 
   /* Name of bbg file.  */
-  bbg_file_name = xmalloc (len + strlen (GCOV_NOTE_SUFFIX) + 1);
+  bbg_file_name = XNEWVEC (char, len + strlen (GCOV_NOTE_SUFFIX) + 1);
   strcpy (bbg_file_name, filename);
   strcat (bbg_file_name, GCOV_NOTE_SUFFIX);
 

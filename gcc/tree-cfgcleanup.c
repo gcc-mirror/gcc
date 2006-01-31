@@ -470,7 +470,7 @@ cleanup_forwarder_blocks (void)
 {
   basic_block bb;
   bool changed = false;
-  basic_block *worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks);
   basic_block *current = worklist;
 
   FOR_EACH_BB (bb)
@@ -711,7 +711,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 static void
 merge_phi_nodes (void)
 {
-  basic_block *worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks);
   basic_block *current = worklist;
   basic_block bb;
 

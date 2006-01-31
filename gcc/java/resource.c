@@ -145,7 +145,7 @@ compile_resource_file (const char *name, const char *filename)
       perror ("Could not figure length of resource file");
       return;
     }
-  buffer = xmalloc (strlen (name) + stat_buf.st_size);
+  buffer = XNEWVEC (char, strlen (name) + stat_buf.st_size);
   strcpy (buffer, name);
   read (fd, buffer + strlen (name), stat_buf.st_size);
   close (fd);

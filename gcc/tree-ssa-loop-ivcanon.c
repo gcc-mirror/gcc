@@ -224,7 +224,7 @@ try_unroll_loop_completely (struct loops *loops ATTRIBUTE_UNUSED,
   if (n_unroll)
     {
       sbitmap wont_exit;
-      edge *edges_to_remove = xmalloc (sizeof (edge *) * n_unroll);
+      edge *edges_to_remove = XNEWVEC (edge, n_unroll);
       unsigned int n_to_remove = 0;
 
       old_cond = COND_EXPR_COND (cond);

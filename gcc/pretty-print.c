@@ -677,7 +677,7 @@ void
 pp_construct (pretty_printer *pp, const char *prefix, int maximum_length)
 {
   memset (pp, 0, sizeof (pretty_printer));
-  pp->buffer = xcalloc (1, sizeof (output_buffer));
+  pp->buffer = XCNEW (output_buffer);
   obstack_init (&pp->buffer->chunk_obstack);
   obstack_init (&pp->buffer->formatted_obstack);
   pp->buffer->obstack = &pp->buffer->formatted_obstack;

@@ -2498,8 +2498,8 @@ init_alias_analysis (void)
       VARRAY_RTX_INIT (reg_base_value, maxreg, "reg_base_value");
     }
 
-  new_reg_base_value = xmalloc (maxreg * sizeof (rtx));
-  reg_seen = xmalloc (maxreg);
+  new_reg_base_value = XNEWVEC (rtx, maxreg);
+  reg_seen = XNEWVEC (char, maxreg);
 
   /* The basic idea is that each pass through this loop will use the
      "constant" information from the previous pass to propagate alias

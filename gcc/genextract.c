@@ -208,7 +208,7 @@ static char *
 VEC_char_to_string (VEC(char,heap) *v)
 {
   size_t n = VEC_length (char, v);
-  char *s = xmalloc (n + 1);
+  char *s = XNEWVEC (char, n + 1);
   memcpy (s, VEC_address (char, v), n);
   s[n] = '\0';
   return s;
@@ -419,7 +419,7 @@ main (int argc, char **argv)
 
       else if (GET_CODE (desc) == DEFINE_PEEPHOLE)
 	{
-	  struct code_ptr *link = xmalloc (sizeof (struct code_ptr));
+	  struct code_ptr *link = XNEW (struct code_ptr);
 
 	  link->insn_code = insn_code_number;
 	  link->next = peepholes;

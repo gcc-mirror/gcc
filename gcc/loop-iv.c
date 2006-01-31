@@ -783,7 +783,7 @@ get_biv_step (struct df_ref *last_def, rtx reg, rtx *inner_step,
 static void
 record_iv (struct df_ref *def, struct rtx_iv *iv)
 {
-  struct rtx_iv *recorded_iv = xmalloc (sizeof (struct rtx_iv));
+  struct rtx_iv *recorded_iv = XNEW (struct rtx_iv);
 
   *recorded_iv = *iv;
   DF_REF_IV_SET (def, recorded_iv);
@@ -807,7 +807,7 @@ analyzed_for_bivness_p (rtx def, struct rtx_iv *iv)
 static void
 record_biv (rtx def, struct rtx_iv *iv)
 {
-  struct biv_entry *biv = xmalloc (sizeof (struct biv_entry));
+  struct biv_entry *biv = XNEW (struct biv_entry);
   void **slot = htab_find_slot_with_hash (bivs, def, REGNO (def), INSERT);
 
   biv->regno = REGNO (def);
@@ -2680,7 +2680,7 @@ get_simple_loop_desc (struct loop *loop)
   if (desc)
     return desc;
 
-  desc = xmalloc (sizeof (struct niter_desc));
+  desc = XNEW (struct niter_desc);
   iv_analysis_loop_init (loop);
   find_simple_exit (loop, desc);
   loop->aux = desc;

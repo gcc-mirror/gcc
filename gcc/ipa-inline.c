@@ -869,7 +869,7 @@ cgraph_decide_inlining (void)
   struct cgraph_node *node;
   int nnodes;
   struct cgraph_node **order =
-    xcalloc (cgraph_n_nodes, sizeof (struct cgraph_node *));
+    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int old_insns = 0;
   int i;
 
@@ -1138,7 +1138,7 @@ cgraph_early_inlining (void)
   struct cgraph_node *node;
   int nnodes;
   struct cgraph_node **order =
-    xcalloc (cgraph_n_nodes, sizeof (struct cgraph_node *));
+    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int i;
 
   if (sorrycount || errorcount)

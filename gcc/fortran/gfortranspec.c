@@ -397,7 +397,7 @@ For more information about these matters, see the file named COPYING\n\n"));
 
           if (argv[i][2] == '\0')
             {
-              p = xmalloc (strlen (argv[i + 1]) + 2);
+              p = XNEWVEC (char, strlen (argv[i + 1]) + 2);
               p[0] = '-';
               p[1] = 'J';
               strcpy (&p[2], argv[i + 1]);
@@ -405,7 +405,7 @@ For more information about these matters, see the file named COPYING\n\n"));
             }
           else
             {
-              p = xmalloc (strlen (argv[i]) + 1);
+              p = XNEWVEC (char, strlen (argv[i]) + 1);
               strcpy (p, argv[i]);
             }
           append_arg (p);

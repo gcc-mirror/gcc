@@ -401,7 +401,7 @@ add_dependency (tree def, struct lim_aux_data *data, struct loop *loop,
       && def_bb->loop_father == loop)
     data->cost += LIM_DATA (def_stmt)->cost;
 
-  dep = xmalloc (sizeof (struct depend));
+  dep = XNEW (struct depend);
   dep->stmt = def_stmt;
   dep->next = data->depends;
   data->depends = dep;
@@ -887,7 +887,7 @@ force_move_till (tree ref, tree *index, void *data)
 static void
 record_mem_ref_loc (struct mem_ref_loc **mem_refs, tree stmt, tree *ref)
 {
-  struct mem_ref_loc *aref = xmalloc (sizeof (struct mem_ref_loc));
+  struct mem_ref_loc *aref = XNEW (struct mem_ref_loc);
 
   aref->stmt = stmt;
   aref->ref = ref;
@@ -1258,7 +1258,7 @@ gather_mem_refs_stmt (struct loop *loop, htab_t mem_refs,
     ref = *slot;
   else
     {
-      ref = xmalloc (sizeof (struct mem_ref));
+      ref = XNEW (struct mem_ref);
       ref->mem = *mem;
       ref->hash = hash;
       ref->locs = NULL;

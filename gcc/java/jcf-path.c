@@ -132,7 +132,7 @@ add_entry (struct entry **entp, const char *filename, int is_system)
   int len;
   struct entry *n;
 
-  n = ALLOC (sizeof (struct entry));
+  n = XNEW (struct entry);
   n->flags = is_system ? FLAG_SYSTEM : 0;
   n->next = NULL;
 

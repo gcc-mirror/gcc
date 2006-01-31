@@ -160,7 +160,7 @@ set_source_filename (JCF *jcf, int index)
 	  /* Length of prefix, not counting final dot. */
 	  int i = dot - class_name;
 	  /* Concatenate current package prefix with new sfname. */
-	  char *buf = xmalloc (i + new_len + 2); /* Space for '.' and '\0'. */
+	  char *buf = XNEWVEC (char, i + new_len + 2); /* Space for '.' and '\0'. */
 	  strcpy (buf + i + 1, sfname);
 	  /* Copy package from class_name, replacing '.' by DIR_SEPARATOR.
 	     Note we start at the end with the final package dot. */
@@ -1084,7 +1084,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       finput = fopen (main_input_filename, "r");
       if (finput == NULL)
 	fatal_error ("can't open %s: %m", input_filename);
-      list = xmalloc(avail);
+      list = XNEWVEC (char, avail);
       next = list;
       for (;;)
 	{
@@ -1351,7 +1351,7 @@ compute_class_name (struct ZipDirectory *zdir)
     }
 
   filename_length -= strlen (".class");
-  class_name = ALLOC (filename_length + 1);
+  class_name = XNEWVEC (char, filename_length + 1);
   memcpy (class_name, class_name_in_zip_dir, filename_length);
   class_name [filename_length] = '\0';
 
@@ -1455,7 +1455,7 @@ parse_zip_file_entries (void)
 	    if (TYPE_SIZE (current_class) != error_mark_node)
 	      {
 		parse_class_file ();
-		FREE (current_jcf->buffer); /* No longer necessary */
+		free (current_jcf->buffer); /* No longer necessary */
 		/* Note: there is a way to free this buffer right after a
 		   class seen in a zip file has been parsed. The idea is the
 		   set its jcf in such a way that buffer will be reallocated
@@ -1468,11 +1468,11 @@ parse_zip_file_entries (void)
 	  {
 	    char *file_name, *class_name_in_zip_dir, *buffer;
 	    JCF *jcf;
-	    file_name = ALLOC (zdir->filename_length + 1);
+	    file_name = XNEWVEC (char, zdir->filename_length + 1);
 	    class_name_in_zip_dir = ZIPDIR_FILENAME (zdir);
 	    strncpy (file_name, class_name_in_zip_dir, zdir->filename_length);
 	    file_name[zdir->filename_length] = '\0';
-	    jcf = ALLOC (sizeof (JCF));
+	    jcf = XNEW (JCF);
 	    JCF_ZERO (jcf);
 	    jcf->read_state  = finput;
 	    jcf->filbuf      = jcf_filbuf_from_stdio;
@@ -1484,7 +1484,7 @@ parse_zip_file_entries (void)
 	    if (read_zip_member (jcf, zdir, localToFile) < 0)
 	      fatal_error ("error while reading %s from zip file", file_name);
 
-	    buffer = ALLOC (zdir->filename_length + 1 +
+	    buffer = XNEWVEC (char, zdir->filename_length + 1 +
 			    (jcf->buffer_end - jcf->buffer));
 	    strcpy (buffer, file_name);
 	    /* This is not a typo: we overwrite the trailing \0 of the
@@ -1495,8 +1495,8 @@ parse_zip_file_entries (void)
 	    compile_resource_data (file_name, buffer,
 				   jcf->buffer_end - jcf->buffer);
 	    JCF_FINISH (jcf);
-	    FREE (jcf);
-	    FREE (buffer);
+	    free (jcf);
+	    free (buffer);
 	  }
 	  break;
 
@@ -1529,7 +1529,7 @@ process_zip_dir (FILE *finput)
 	continue;
 
       class_name = compute_class_name (zdir);
-      file_name  = ALLOC (zdir->filename_length+1);
+      file_name  = XNEWVEC (char, zdir->filename_length+1);
       jcf = ggc_alloc (sizeof (JCF));
       JCF_ZERO (jcf);
 

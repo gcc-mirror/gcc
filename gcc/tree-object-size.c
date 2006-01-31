@@ -386,8 +386,8 @@ compute_builtin_object_size (tree ptr, int object_size_type)
 		 E.g. p = &buf[0]; while (cond) p = p + 4;  */
 	      if (object_size_type & 2)
 		{
-		  osi.depths = xcalloc (num_ssa_names, sizeof (unsigned int));
-		  osi.stack = xmalloc (num_ssa_names * sizeof (unsigned int));
+		  osi.depths = XCNEWVEC (unsigned int, num_ssa_names);
+		  osi.stack = XNEWVEC (unsigned int, num_ssa_names);
 		  osi.tos = osi.stack;
 		  osi.pass = 1;
 		  /* collect_object_sizes_for is changing
@@ -956,8 +956,7 @@ init_object_sizes (void)
 
   for (object_size_type = 0; object_size_type <= 3; object_size_type++)
     {
-      object_sizes[object_size_type]
-	= xmalloc (num_ssa_names * sizeof (HOST_WIDE_INT));
+      object_sizes[object_size_type] = XNEWVEC (unsigned HOST_WIDE_INT, num_ssa_names);
       computed[object_size_type] = BITMAP_ALLOC (NULL);
     }
 

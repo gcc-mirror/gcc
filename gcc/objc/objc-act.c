@@ -9048,7 +9048,7 @@ objc_demangle (const char *mangled)
       (mangled[1] == 'i' || mangled[1] == 'c') &&
       mangled[2] == '_')
     {
-      cp = demangled = xmalloc(strlen(mangled) + 2);
+      cp = demangled = XNEWVEC (char, strlen(mangled) + 2);
       if (mangled[1] == 'i')
 	*cp++ = '-';            /* for instance method */
       else
@@ -9106,7 +9106,7 @@ init_objc (void)
   gcc_obstack_init (&util_obstack);
   util_firstobj = (char *) obstack_finish (&util_obstack);
 
-  errbuf = (char *) xmalloc (1024 * 10);
+  errbuf = XNEWVEC (char, 1024 * 10);
   hash_init ();
   synth_module_prologue ();
 }

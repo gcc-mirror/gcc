@@ -1492,7 +1492,7 @@ init_deps (struct deps *deps)
   int max_reg = (reload_completed ? FIRST_PSEUDO_REGISTER : max_reg_num ());
 
   deps->max_reg = max_reg;
-  deps->reg_last = xcalloc (max_reg, sizeof (struct deps_reg));
+  deps->reg_last = XCNEWVEC (struct deps_reg, max_reg);
   INIT_REG_SET (&deps->reg_last_in_use);
   INIT_REG_SET (&deps->reg_conditional_sets);
 
@@ -1558,11 +1558,11 @@ init_dependency_caches (int luid)
   if (luid / n_basic_blocks > 100 * 5)
     {
       int i;
-      true_dependency_cache = xmalloc (luid * sizeof (bitmap_head));
-      anti_dependency_cache = xmalloc (luid * sizeof (bitmap_head));
-      output_dependency_cache = xmalloc (luid * sizeof (bitmap_head));
+      true_dependency_cache = XNEWVEC (bitmap_head, luid);
+      anti_dependency_cache = XNEWVEC (bitmap_head, luid);
+      output_dependency_cache = XNEWVEC (bitmap_head, luid);
 #ifdef ENABLE_CHECKING
-      forward_dependency_cache = xmalloc (luid * sizeof (bitmap_head));
+      forward_dependency_cache = XNEWVEC (bitmap_head, luid);
 #endif
       for (i = 0; i < luid; i++)
 	{
