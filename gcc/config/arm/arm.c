@@ -12540,8 +12540,8 @@ arm_expand_binop_builtin (enum insn_code icode,
   rtx pat;
   tree arg0 = TREE_VALUE (arglist);
   tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
   enum machine_mode mode1 = insn_data[icode].operand[2].mode;
@@ -12578,7 +12578,7 @@ arm_expand_unop_builtin (enum insn_code icode,
 {
   rtx pat;
   tree arg0 = TREE_VALUE (arglist);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (arg0);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
 
@@ -12651,8 +12651,8 @@ arm_expand_builtin (tree exp,
 
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
       mode1 = insn_data[icode].operand[2].mode;
@@ -12684,9 +12684,9 @@ arm_expand_builtin (tree exp,
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
       mode1 = insn_data[icode].operand[2].mode;
@@ -12715,14 +12715,14 @@ arm_expand_builtin (tree exp,
     case ARM_BUILTIN_SETWCX:
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = force_reg (SImode, expand_expr (arg0, NULL_RTX, VOIDmode, 0));
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = force_reg (SImode, expand_normal (arg0));
+      op1 = expand_normal (arg1);
       emit_insn (gen_iwmmxt_tmcr (op1, op0));
       return 0;
 
     case ARM_BUILTIN_GETWCX:
       arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
       target = gen_reg_rtx (SImode);
       emit_insn (gen_iwmmxt_tmrc (target, op0));
       return target;
@@ -12731,8 +12731,8 @@ arm_expand_builtin (tree exp,
       icode = CODE_FOR_iwmmxt_wshufh;
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
       mode1 = insn_data[icode].operand[1].mode;
       mode2 = insn_data[icode].operand[2].mode;
@@ -12786,9 +12786,9 @@ arm_expand_builtin (tree exp,
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
       mode1 = insn_data[icode].operand[2].mode;

@@ -659,8 +659,7 @@ precompute_register_parameters (int num_actuals, struct arg_data *args,
 	if (args[i].value == 0)
 	  {
 	    push_temp_slots ();
-	    args[i].value = expand_expr (args[i].tree_value, NULL_RTX,
-					 VOIDmode, 0);
+	    args[i].value = expand_normal (args[i].tree_value);
 	    preserve_temp_slots (args[i].value);
 	    pop_temp_slots ();
 	  }
@@ -1250,7 +1249,7 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
       gcc_assert (!TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)));
 
       args[i].initial_value = args[i].value
-	= expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
+	= expand_normal (args[i].tree_value);
 
       mode = TYPE_MODE (TREE_TYPE (args[i].tree_value));
       if (mode != args[i].mode)
@@ -1433,7 +1432,7 @@ rtx_for_function_call (tree fndecl, tree addr)
     /* Generate an rtx (probably a pseudo-register) for the address.  */
     {
       push_temp_slots ();
-      funexp = expand_expr (addr, NULL_RTX, VOIDmode, 0);
+      funexp = expand_normal (addr);
       pop_temp_slots ();	/* FUNEXP can't be BLKmode.  */
     }
   return funexp;
@@ -2545,8 +2544,7 @@ expand_call (tree exp, rtx target, int ignore)
       precompute_register_parameters (num_actuals, args, &reg_parm_seen);
 
       if (TREE_OPERAND (exp, 2))
-	static_chain_value = expand_expr (TREE_OPERAND (exp, 2),
-					  NULL_RTX, VOIDmode, 0);
+	static_chain_value = expand_normal (TREE_OPERAND (exp, 2));
       else
 	static_chain_value = 0;
 

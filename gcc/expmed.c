@@ -2169,7 +2169,7 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
      and shifted in the other direction; but that does not work
      on all machines.  */
 
-  op1 = expand_expr (amount, NULL_RTX, VOIDmode, 0);
+  op1 = expand_normal (amount);
 
   if (SHIFT_COUNT_TRUNCATED)
     {

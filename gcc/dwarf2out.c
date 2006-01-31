@@ -424,7 +424,7 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
 {
   int i;
   enum machine_mode mode = TYPE_MODE (char_type_node);
-  rtx addr = expand_expr (address, NULL_RTX, VOIDmode, 0);
+  rtx addr = expand_normal (address);
   rtx mem = gen_rtx_MEM (BLKmode, addr);
   bool wrote_return_column = false;
 

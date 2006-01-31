@@ -15275,8 +15275,8 @@ ix86_expand_binop_builtin (enum insn_code icode, tree arglist, rtx target)
   rtx pat, xops[3];
   tree arg0 = TREE_VALUE (arglist);
   tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
   enum machine_mode mode1 = insn_data[icode].operand[2].mode;
@@ -15343,8 +15343,8 @@ ix86_expand_store_builtin (enum insn_code icode, tree arglist)
   rtx pat;
   tree arg0 = TREE_VALUE (arglist);
   tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
   enum machine_mode mode0 = insn_data[icode].operand[0].mode;
   enum machine_mode mode1 = insn_data[icode].operand[1].mode;
 
@@ -15368,7 +15368,7 @@ ix86_expand_unop_builtin (enum insn_code icode, tree arglist,
 {
   rtx pat;
   tree arg0 = TREE_VALUE (arglist);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (arg0);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
 
@@ -15403,7 +15403,7 @@ ix86_expand_unop1_builtin (enum insn_code icode, tree arglist, rtx target)
 {
   rtx pat;
   tree arg0 = TREE_VALUE (arglist);
-  rtx op1, op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op1, op0 = expand_normal (arg0);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
 
@@ -15439,8 +15439,8 @@ ix86_expand_sse_compare (const struct builtin_description *d, tree arglist,
   rtx pat;
   tree arg0 = TREE_VALUE (arglist);
   tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
   rtx op2;
   enum machine_mode tmode = insn_data[d->icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[d->icode].operand[1].mode;
@@ -15491,8 +15491,8 @@ ix86_expand_sse_comi (const struct builtin_description *d, tree arglist,
   rtx pat;
   tree arg0 = TREE_VALUE (arglist);
   tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
   rtx op2;
   enum machine_mode mode0 = insn_data[d->icode].operand[0].mode;
   enum machine_mode mode1 = insn_data[d->icode].operand[1].mode;
@@ -15576,7 +15576,7 @@ ix86_expand_vec_init_builtin (tree type, tree arglist, rtx target)
 
   for (i = 0; i < n_elt; ++i, arglist = TREE_CHAIN (arglist))
     {
-      rtx x = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
+      rtx x = expand_normal (TREE_VALUE (arglist));
       RTVEC_ELT (v, i) = gen_lowpart (inner_mode, x);
     }
 
@@ -15604,7 +15604,7 @@ ix86_expand_vec_ext_builtin (tree arglist, rtx target)
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
 
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  op0 = expand_normal (arg0);
   elt = get_element_number (TREE_TYPE (arg0), arg1);
 
   tmode = TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0)));
@@ -15696,9 +15696,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       arg1 = TREE_VALUE (arglist);
       arg2 = TREE_VALUE (TREE_CHAIN (arglist));
       arg0 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
       mode0 = insn_data[icode].operand[0].mode;
       mode1 = insn_data[icode].operand[1].mode;
       mode2 = insn_data[icode].operand[2].mode;
@@ -15741,8 +15741,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	       : CODE_FOR_sse2_loadlpd);
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
       mode1 = insn_data[icode].operand[2].mode;
@@ -15765,8 +15765,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	       : CODE_FOR_sse_storelps);
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
       mode0 = insn_data[icode].operand[0].mode;
       mode1 = insn_data[icode].operand[1].mode;
 
@@ -15785,7 +15785,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return ix86_expand_store_builtin (CODE_FOR_sse_movntdi, arglist);
 
     case IX86_BUILTIN_LDMXCSR:
-      op0 = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (TREE_VALUE (arglist));
       target = assign_386_stack_local (SImode, SLOT_TEMP);
       emit_move_insn (target, op0);
       emit_insn (gen_sse_ldmxcsr (target));
@@ -15804,9 +15804,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
       mode1 = insn_data[icode].operand[2].mode;
@@ -15843,8 +15843,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	       : CODE_FOR_mmx_pshufw);
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
       mode1 = insn_data[icode].operand[1].mode;
       mode2 = insn_data[icode].operand[2].mode;
@@ -15873,8 +15873,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	       : CODE_FOR_sse2_lshrti3);
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
       mode1 = insn_data[icode].operand[1].mode;
       mode2 = insn_data[icode].operand[2].mode;
@@ -15991,7 +15991,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case IX86_BUILTIN_CLFLUSH:
 	arg0 = TREE_VALUE (arglist);
-	op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+	op0 = expand_normal (arg0);
 	icode = CODE_FOR_sse2_clflush;
 	if (! (*insn_data[icode].operand[0].predicate) (op0, Pmode))
 	    op0 = copy_to_mode_reg (Pmode, op0);
@@ -16015,9 +16015,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
       if (!REG_P (op0))
 	op0 = copy_to_mode_reg (SImode, op0);
       if (!REG_P (op1))
@@ -16030,8 +16030,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_MWAIT:
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
       if (!REG_P (op0))
 	op0 = copy_to_mode_reg (SImode, op0);
       if (!REG_P (op1))

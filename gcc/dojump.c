@@ -584,7 +584,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       /* Fall through and generate the normal code.  */
     default:
     normal:
-      temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
+      temp = expand_normal (exp);
       do_pending_stack_adjust ();
 
       if (GET_CODE (temp) == CONST_INT
@@ -636,8 +636,8 @@ static void
 do_jump_by_parts_greater (tree exp, int swap, rtx if_false_label,
 			  rtx if_true_label)
 {
-  rtx op0 = expand_expr (TREE_OPERAND (exp, swap), NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (TREE_OPERAND (exp, !swap), NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (TREE_OPERAND (exp, swap));
+  rtx op1 = expand_normal (TREE_OPERAND (exp, !swap));
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)));
 
@@ -702,8 +702,8 @@ do_jump_by_parts_greater_rtx (enum machine_mode mode, int unsignedp, rtx op0,
 static void
 do_jump_by_parts_equality (tree exp, rtx if_false_label, rtx if_true_label)
 {
-  rtx op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_normal (TREE_OPERAND (exp, 0));
+  rtx op1 = expand_normal (TREE_OPERAND (exp, 1));
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
   int nwords = (GET_MODE_SIZE (mode) / UNITS_PER_WORD);
   int i;
@@ -923,11 +923,11 @@ do_compare_and_jump (tree exp, enum rtx_code signed_code,
   enum rtx_code code;
 
   /* Don't crash if the comparison was erroneous.  */
-  op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
+  op0 = expand_normal (TREE_OPERAND (exp, 0));
   if (TREE_CODE (TREE_OPERAND (exp, 0)) == ERROR_MARK)
     return;
 
-  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
+  op1 = expand_normal (TREE_OPERAND (exp, 1));
   if (TREE_CODE (TREE_OPERAND (exp, 1)) == ERROR_MARK)
     return;
 
