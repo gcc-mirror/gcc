@@ -1078,12 +1078,12 @@ type_var_init (var_map map)
   tree t;
   sbitmap seen;
 
-  seen = sbitmap_alloc (num_partitions);
-  sbitmap_zero (seen);
-
   tv = tpa_init (map);
   if (!tv)
     return NULL;
+
+  seen = sbitmap_alloc (num_partitions);
+  sbitmap_zero (seen);
 
   for (x = num_partitions - 1; x >= 0; x--)
     {
