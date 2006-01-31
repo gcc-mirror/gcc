@@ -1526,6 +1526,16 @@ gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
   if (m != NULL && type_check (m, 2, BT_LOGICAL) == FAILURE)
     return FAILURE;
 
+  if (m != NULL)
+    {
+      char buffer[80];
+      snprintf(buffer, sizeof(buffer), "arguments '%s' and '%s' for intrinsic %s",
+	       gfc_current_intrinsic_arg[0], gfc_current_intrinsic_arg[2],
+	       gfc_current_intrinsic);
+      if (gfc_check_conformance (buffer, a, m) == FAILURE)
+	return FAILURE;
+    }
+
   return SUCCESS;
 }
 
@@ -1548,8 +1558,9 @@ gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
 static try
 check_reduction (gfc_actual_arglist * ap)
 {
-  gfc_expr *m, *d;
+  gfc_expr *a, *m, *d;
 
+  a = ap->expr;
   d = ap->next->expr;
   m = ap->next->next->expr;
 
@@ -1570,6 +1581,16 @@ check_reduction (gfc_actual_arglist * ap)
 
   if (m != NULL && type_check (m, 2, BT_LOGICAL) == FAILURE)
     return FAILURE;
+
+  if (m != NULL)
+    {
+      char buffer[80];
+      snprintf(buffer, sizeof(buffer), "arguments '%s' and '%s' for intrinsic %s",
+	       gfc_current_intrinsic_arg[0], gfc_current_intrinsic_arg[2],
+	       gfc_current_intrinsic);
+      if (gfc_check_conformance (buffer, a, m) == FAILURE)
+	return FAILURE;
+    }
 
   return SUCCESS;
 }

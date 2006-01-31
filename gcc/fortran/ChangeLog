@@ -1,3 +1,12 @@
+2006-01-31  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/26039
+	expr.c (gfc_check_conformance):  Reorder error message
+	to avoid plural.
+	check.c(gfc_check_minloc_maxloc):  Call gfc_check_conformance
+	for checking arguments array and mask.
+	(check_reduction):  Likewise.
+
 2005-01-30  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/24266
