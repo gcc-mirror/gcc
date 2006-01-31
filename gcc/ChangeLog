@@ -1,3 +1,8 @@
+2006-01-31  Nicolas Pitre  <nico@cam.org>
+
+	* arm.md (smaxsi3): Make aware of smax_m1.
+	(smax_m1): New.
+
 2006-01-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc/config/m68k/lb1sf68.asm: Use moveq to load small constants.
