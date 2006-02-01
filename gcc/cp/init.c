@@ -1015,11 +1015,11 @@ expand_member_init (tree name)
       if (!direct_binfo && !virtual_binfo)
 	{
 	  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-	    error ("type `%D' is not a direct or virtual base of `%T'",
-		   name, current_class_type);
+	    error ("type `%T' is not a direct or virtual base of `%T'",
+		   basetype, current_class_type);
 	  else
-	    error ("type `%D' is not a direct base of `%T'",
-		   name, current_class_type);
+	    error ("type `%T' is not a direct base of `%T'",
+		   basetype, current_class_type);
 	  return NULL_TREE;
 	}
 
