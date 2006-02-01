@@ -1,6 +1,16 @@
 2006-02-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:
+	2005-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25369
+	* pt.c (tsubst_copy): Call mark_used on the member referenced by an
+	OFFSET_REF.
+	* decl2.c (mark_used): Accept BASELINKs.
+
+2006-02-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
 	2005-12-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24915

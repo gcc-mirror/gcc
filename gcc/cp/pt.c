@@ -7807,6 +7807,10 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 					  in_decl),
 			     tsubst (TREE_TYPE (t), args, complain, in_decl));
 
+    case OFFSET_REF:
+      mark_used (TREE_OPERAND (t, 1));
+      return t;
+
     default:
       return t;
     }
