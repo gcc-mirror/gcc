@@ -147,7 +147,6 @@ static void set_current_access_from_decl (tree);
 static void check_default_tmpl_args (tree, tree, int, int);
 static tree tsubst_call_declarator_parms (tree, tree, tsubst_flags_t, tree);
 static tree get_template_base (tree, tree, tree, tree);
-static int verify_class_unification (tree, tree, tree);
 static tree try_class_unification (tree, tree, tree, tree);
 static int coerce_template_template_parms (tree, tree, tsubst_flags_t,
 					   tree, tree);
@@ -1463,7 +1462,8 @@ determine_specialization (tree template_id,
 	  if (current_binding_level->kind == sk_template_parms
 	      && !current_binding_level->explicit_spec_p
 	      && (TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (fn))
-		  != TREE_VEC_LENGTH (TREE_VALUE (current_template_parms))))
+		  != TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS 
+				      (current_template_parms))))
 	    continue;
 
 	  /* See whether this function might be a specialization of this
@@ -2760,7 +2760,7 @@ process_partial_specialization (tree decl)
     return decl;
 
   DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)
-    = tree_cons (inner_args, inner_parms,
+    = tree_cons (specargs, inner_parms,
 		 DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
   TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
   return decl;
@@ -5497,34 +5497,34 @@ instantiate_class_template (tree type)
   template = most_general_template (CLASSTYPE_TI_TEMPLATE (type));
   gcc_assert (TREE_CODE (template) == TEMPLATE_DECL);
 
-  /* Figure out which arguments are being used to do the
-     instantiation.  */
-  args = CLASSTYPE_TI_ARGS (type);
-
   /* Determine what specialization of the original template to
      instantiate.  */
-  t = most_specialized_class (template, args);
+  t = most_specialized_class (type, template);
   if (t == error_mark_node)
     {
-      const char *str = "candidates are:";
-      error ("ambiguous class template instantiation for %q#T", type);
-      for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t;
-	   t = TREE_CHAIN (t))
-	{
-	  if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args))
-	    {
-	      error ("%s %+#T", str, TREE_TYPE (t));
-	      str = "               ";
-	    }
-	}
       TYPE_BEING_DEFINED (type) = 1;
       return error_mark_node;
     }
+  else if (t)
+    {
+      /* This TYPE is actually an instantiation of a partial
+	 specialization.  We replace the innermost set of ARGS with
+	 the arguments appropriate for substitution.  For example,
+	 given:
+       
+           template <class T> struct S {};
+	   template <class T> struct S<T*> {};
 
-  if (t)
-    pattern = TREE_TYPE (t);
+	 and supposing that we are instantiating S<int*>, ARGS will
+         presently be {int*} -- but we need {int}.  */
+      pattern = TREE_TYPE (t);
+      args = TREE_PURPOSE (t);
+    }
   else
-    pattern = TREE_TYPE (template);
+    {
+      pattern = TREE_TYPE (template);
+      args = CLASSTYPE_TI_ARGS (type);
+    }
 
   /* If the template we're instantiating is incomplete, then clearly
      there's nothing we can do.  */
@@ -5544,34 +5544,6 @@ instantiate_class_template (tree type)
   push_deferring_access_checks (dk_no_deferred);
 
   push_to_top_level ();
-
-  if (t)
-    {
-      /* This TYPE is actually an instantiation of a partial
-	 specialization.  We replace the innermost set of ARGS with
-	 the arguments appropriate for substitution.  For example,
-	 given:
-
-	   template <class T> struct S {};
-	   template <class T> struct S<T*> {};
-
-	 and supposing that we are instantiating S<int*>, ARGS will
-	 present be {int*} but we need {int}.  */
-      tree inner_args
-	= get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
-			      args);
-
-      /* If there were multiple levels in ARGS, replacing the
-	 innermost level would alter CLASSTYPE_TI_ARGS, which we don't
-	 want, so we make a copy first.  */
-      if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
-	{
-	  args = copy_node (args);
-	  SET_TMPL_ARGS_LEVEL (args, TMPL_ARGS_DEPTH (args), inner_args);
-	}
-      else
-	args = inner_args;
-    }
 
   SET_CLASSTYPE_INTERFACE_UNKNOWN (type);
 
@@ -9770,34 +9742,6 @@ try_one_overload (tree tparms,
   return 1;
 }
 
-/* Verify that nondeduce template argument agrees with the type
-   obtained from argument deduction.  Return nonzero if the
-   verification fails.
-
-   For example:
-
-     struct A { typedef int X; };
-     template <class T, class U> struct C {};
-     template <class T> struct C<T, typename T::X> {};
-
-   Then with the instantiation `C<A, int>', we can deduce that
-   `T' is `A' but unify () does not check whether `typename T::X'
-   is `int'.  This function ensure that they agree.
-
-   TARGS, PARMS are the same as the arguments of unify.
-   ARGS contains template arguments from all levels.  */
-
-static int
-verify_class_unification (tree targs, tree parms, tree args)
-{
-  parms = tsubst (parms, add_outermost_template_args (args, targs),
-		  tf_none, NULL_TREE);
-  if (parms == error_mark_node)
-    return 1;
-
-  return !comp_template_args (parms, INNERMOST_TEMPLATE_ARGS (args));
-}
-
 /* PARM is a template class (perhaps with unbound template
    parameters).  ARG is a fully instantiated type.  If ARG can be
    bound to PARM, return ARG, otherwise return NULL_TREE.  TPARMS and
@@ -9960,9 +9904,18 @@ check_cv_quals_for_unify (int strict, tree arg, tree parm)
   return 1;
 }
 
-/* Takes parameters as for type_unification.  Returns 0 if the
-   type deduction succeeds, 1 otherwise.  The parameter STRICT is a
-   bitwise or of the following flags:
+/* Deduce the value of template parameters.  TPARMS is the (innermost)
+   set of template parameters to a template.  TARGS is the bindings
+   for those template parameters, as determined thus far; TARGS may
+   include template arguments for outer levels of template parameters
+   as well.  PARM is a parameter to a template function, or a
+   subcomponent of that parameter; ARG is the corresponding argument.
+   This function attempts to match PARM with ARG in a manner
+   consistent with the existing assignments in TARGS.  If more values
+   are deduced, then TARGS is updated.
+
+   Returns 0 if the type deduction succeeds, 1 otherwise.  The
+   parameter STRICT is a bitwise or of the following flags:
 
      UNIFY_ALLOW_NONE:
        Require an exact match between PARM and ARG.
@@ -10067,7 +10020,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	return (TREE_CODE (arg) == TREE_CODE (parm)
 		&& same_type_p (parm, arg)) ? 0 : 1;
       idx = TEMPLATE_TYPE_IDX (parm);
-      targ = TREE_VEC_ELT (targs, idx);
+      targ = TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx);
       tparm = TREE_VALUE (TREE_VEC_ELT (tparms, idx));
 
       /* Check for mixed types and values.  */
@@ -10168,7 +10121,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	    return 1;
 	}
 
-      TREE_VEC_ELT (targs, idx) = arg;
+      TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx) = arg;
       return 0;
 
     case TEMPLATE_PARM_INDEX:
@@ -10182,7 +10135,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 		 && cp_tree_equal (parm, arg));
 
       idx = TEMPLATE_PARM_IDX (parm);
-      targ = TREE_VEC_ELT (targs, idx);
+      targ = TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx);
 
       if (targ)
 	return !cp_tree_equal (targ, arg);
@@ -10216,7 +10169,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       else
 	return 1;
 
-      TREE_VEC_ELT (targs, idx) = arg;
+      TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx) = arg;
       return 0;
 
     case PTRMEM_CST:
@@ -10741,33 +10694,44 @@ more_specialized_fn (tree pat1, tree pat2, int len)
   return (better1 > 0) - (better2 > 0);
 }
 
-/* Given two class template specialization list nodes PAT1 and PAT2, return:
+/* Determine which of two partial specializations is more specialized.
+  
+   PAT1 is a TREE_LIST whose TREE_TYPE is the _TYPE node corresponding
+   to the first partial specialization.  The TREE_VALUE is the
+   innermost set of template parameters for the partial
+   specialization.  PAT2 is similar, but for the second template.
 
-   1 if PAT1 is more specialized than PAT2 as described in [temp.class.order].
-   -1 if PAT2 is more specialized than PAT1.
-   0 if neither is more specialized.
+   Return 1 if the first partial specialization is more specialized;
+   -1 if the second is more specialized; 0 if neither is more
+   specialized.
 
-   FULL_ARGS is the full set of template arguments that triggers this
-   partial ordering.  */
+   See [temp.class.order] for information about determining which of
+   two templates is more specialized.  */ 
 
 int
-more_specialized_class (tree pat1, tree pat2, tree full_args)
+more_specialized_class (tree pat1, tree pat2)
 {
   tree targs;
+  tree tmpl1, tmpl2;
   int winner = 0;
+  
+  tmpl1 = TREE_TYPE (pat1);
+  tmpl2 = TREE_TYPE (pat2);
 
   /* Just like what happens for functions, if we are ordering between
      different class template specializations, we may encounter dependent
      types in the arguments, and we need our dependency check functions
      to behave correctly.  */
   ++processing_template_decl;
-  targs = get_class_bindings (TREE_VALUE (pat1), TREE_PURPOSE (pat1),
-			      add_outermost_template_args (full_args, TREE_PURPOSE (pat2)));
+  targs = get_class_bindings (TREE_VALUE (pat1), 
+			      CLASSTYPE_TI_ARGS (tmpl1),
+			      CLASSTYPE_TI_ARGS (tmpl2));
   if (targs)
     --winner;
 
-  targs = get_class_bindings (TREE_VALUE (pat2), TREE_PURPOSE (pat2),
-			      add_outermost_template_args (full_args, TREE_PURPOSE (pat1)));
+  targs = get_class_bindings (TREE_VALUE (pat2), 
+			      CLASSTYPE_TI_ARGS (tmpl2),
+			      CLASSTYPE_TI_ARGS (tmpl1));
   if (targs)
     ++winner;
   --processing_template_decl;
@@ -10842,28 +10806,59 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
      template <class T> struct S<T*, int> {};
 
    Then, suppose we want to get `S<double*, int>'.  The TPARMS will be
-   {T}, the PARMS will be {T*, int} and the ARGS will be {double*,
+   {T}, the SPEC_ARGS will be {T*, int} and the ARGS will be {double*,
    int}.  The resulting vector will be {double}, indicating that `T'
    is bound to `double'.  */
 
 static tree
-get_class_bindings (tree tparms, tree parms, tree args)
+get_class_bindings (tree tparms, tree spec_args, tree args)
 {
   int i, ntparms = TREE_VEC_LENGTH (tparms);
-  tree vec = make_tree_vec (ntparms);
+  tree deduced_args;
+  tree innermost_deduced_args;
 
-  if (unify (tparms, vec, parms, INNERMOST_TEMPLATE_ARGS (args),
+  innermost_deduced_args = make_tree_vec (ntparms);
+  if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
+    {
+      deduced_args = copy_node (args);
+      SET_TMPL_ARGS_LEVEL (deduced_args,
+			   TMPL_ARGS_DEPTH (deduced_args),
+			   innermost_deduced_args);
+    }
+  else
+    deduced_args = innermost_deduced_args; 
+
+  if (unify (tparms, deduced_args, 
+	     INNERMOST_TEMPLATE_ARGS (spec_args), 
+	     INNERMOST_TEMPLATE_ARGS (args), 
 	     UNIFY_ALLOW_NONE))
     return NULL_TREE;
 
   for (i =  0; i < ntparms; ++i)
-    if (! TREE_VEC_ELT (vec, i))
+    if (! TREE_VEC_ELT (innermost_deduced_args, i))
       return NULL_TREE;
 
-  if (verify_class_unification (vec, parms, args))
+  /* Verify that nondeduced template arguments agree with the type
+     obtained from argument deduction.
+     
+     For example:
+
+       struct A { typedef int X; };
+       template <class T, class U> struct C {};
+       template <class T> struct C<T, typename T::X> {};
+
+     Then with the instantiation `C<A, int>', we can deduce that
+     `T' is `A' but unify () does not check whether `typename T::X'
+     is `int'.  */
+  spec_args = tsubst (spec_args, deduced_args, tf_none, NULL_TREE);
+  if (spec_args == error_mark_node
+      /* We only need to check the innermost arguments; the other
+	 arguments will always agree.  */
+      || !comp_template_args (INNERMOST_TEMPLATE_ARGS (spec_args),
+			      INNERMOST_TEMPLATE_ARGS (args)))
     return NULL_TREE;
 
-  return vec;
+  return deduced_args;
 }
 
 /* In INSTANTIATIONS is a list of <INSTANTIATION, TEMPLATE> pairs.
@@ -11014,26 +11009,42 @@ most_general_template (tree decl)
   return decl;
 }
 
-/* Return the most specialized of the class template specializations
-   of TMPL which can produce an instantiation matching ARGS, or
-   error_mark_node if the choice is ambiguous.  */
+/* Return the most specialized of the class template partial
+   specializations of TMPL which can produce TYPE, a specialization of
+   TMPL.  The value returned is actually a TREE_LIST; the TREE_TYPE is
+   a _TYPE node corresponding to the partial specialization, while the
+   TREE_PURPOSE is the set of template arguments that must be
+   substituted into the TREE_TYPE in order to generate TYPE.
+
+   If the choice of partial specialization is ambiguous, a diagnostic
+   is issued, and the error_mark_node is returned.  If there are no
+   partial specializations of TMPL matching TYPE, then NULL_TREE is
+   returned.  */
 
 static tree
-most_specialized_class (tree tmpl, tree args)
+most_specialized_class (tree type, tree tmpl)
 {
   tree list = NULL_TREE;
   tree t;
   tree champ;
   int fate;
+  bool ambiguous_p;
+  tree args;
 
   tmpl = most_general_template (tmpl);
+  args = CLASSTYPE_TI_ARGS (type);
   for (t = DECL_TEMPLATE_SPECIALIZATIONS (tmpl); t; t = TREE_CHAIN (t))
     {
-      tree spec_args
-	= get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args);
+      tree partial_spec_args;
+      tree spec_args;
+
+      partial_spec_args = CLASSTYPE_TI_ARGS (TREE_TYPE (t));
+      spec_args = get_class_bindings (TREE_VALUE (t), 
+				      partial_spec_args, 
+				      args);
       if (spec_args)
 	{
-	  list = tree_cons (TREE_PURPOSE (t), TREE_VALUE (t), list);
+	  list = tree_cons (spec_args, TREE_VALUE (t), list);
 	  TREE_TYPE (list) = TREE_TYPE (t);
 	}
     }
@@ -11041,12 +11052,13 @@ most_specialized_class (tree tmpl, tree args)
   if (! list)
     return NULL_TREE;
 
+  ambiguous_p = false;
   t = list;
   champ = t;
   t = TREE_CHAIN (t);
   for (; t; t = TREE_CHAIN (t))
     {
-      fate = more_specialized_class (champ, t, args);
+      fate = more_specialized_class (champ, t);
       if (fate == 1)
 	;
       else
@@ -11055,17 +11067,36 @@ most_specialized_class (tree tmpl, tree args)
 	    {
 	      t = TREE_CHAIN (t);
 	      if (! t)
-		return error_mark_node;
+		{
+		  ambiguous_p = true;
+		  break;
+		}
 	    }
 	  champ = t;
 	}
     }
 
-  for (t = list; t && t != champ; t = TREE_CHAIN (t))
+  if (!ambiguous_p)
+    for (t = list; t && t != champ; t = TREE_CHAIN (t))
+      {
+	fate = more_specialized_class (champ, t);
+	if (fate != 1)
+	  {
+	    ambiguous_p = true;
+	    break;
+	  }
+      }
+
+  if (ambiguous_p)
     {
-      fate = more_specialized_class (champ, t, args);
-      if (fate != 1)
-	return error_mark_node;
+      const char *str = "candidates are:";
+      error ("ambiguous class template instantiation for %q#T", type);
+      for (t = list; t; t = TREE_CHAIN (t))
+	{
+	  error ("%s %+#T", str, TREE_TYPE (t));
+	  str = "               ";
+	}
+      return error_mark_node;
     }
 
   return champ;

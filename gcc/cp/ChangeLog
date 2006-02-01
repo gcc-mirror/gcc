@@ -1,3 +1,23 @@
+2006-01-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25342
+	* cp-tree.h (DECL_TEMPLATE_SPECIALIZATIONS): Revise
+	documentation.
+	* pt.c (determine_specialization): Use INNERMOST_TEMPLATE_PARMS,
+	not TREE_VALUE.
+	(instantiate_class_template): Simplify.
+	(verify_class_unification): Remove.
+	(unify): Document parameters.  Use INNERMOST_TEMPLATE_ARGS to
+	permit multiple levels of template arguments.
+	(more_specialized_class): Simplify.
+	(get_class_bindings): Pass full arguments to unify.  Fold
+	verify_class_unification into this function.  Return full
+	arguments.
+	(most_specialized_class): Adjust for changes to
+	get_class_bindings.  Issue errors here for ambiguity.  Return the
+	fully deduced arguments for the most specialized class, in
+	addition to the partial specialization.
+
 2006-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/25999

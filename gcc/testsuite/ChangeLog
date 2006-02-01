@@ -1,3 +1,8 @@
+2006-01-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/25342
+	* g++.gd/template/partial4.C: New test.
+
 2006-01-30  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* gcc.dg/unsigned-long-compare.c: New test.
