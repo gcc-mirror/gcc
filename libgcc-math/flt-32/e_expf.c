@@ -53,7 +53,6 @@
 #include <float.h>
 #include <ieee754.h>
 #include <math.h>
-#include <fenv.h>
 #include <inttypes.h>
 #include <math_private.h>
 
@@ -84,12 +83,6 @@ __ieee754_expf (float x)
       double x22, t, result, dx;
       float n, delta;
       union ieee754_double ex2_u;
-      fenv_t oldenv;
-
-      feholdexcept (&oldenv);
-#ifdef FE_TONEAREST
-      fesetround (FE_TONEAREST);
-#endif
 
       /* Calculate n.  */
       n = x * M_1_LN2 + THREEp22;
@@ -119,8 +112,6 @@ __ieee754_expf (float x)
       x22 = (0.5000000496709180453 * dx + 1.0000001192102037084) * dx + delta;
 
       /* Return result.  */
-      fesetenv (&oldenv);
-
       result = x22 * ex2_u.d + ex2_u.d;
       return (float) result;
     }
