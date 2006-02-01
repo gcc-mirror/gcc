@@ -1,3 +1,7 @@
+2006-02-01  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* reload.c (push_secondary_reload): Initialize t_icode.
+
 2006-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): For
