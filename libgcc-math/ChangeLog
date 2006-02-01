@@ -1,3 +1,10 @@
+2006-02-01  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/26055
+	* configure.ac: Disable libgcc-math if we cannot mix
+	declaration of __isinf and math.h inclusion.
+	* configure: Re-generate.
+
 2006-01-31  Richard Guenther  <rguenther@suse.de>
 	Paolo Bonzini  <bonzini@gnu.org>
 

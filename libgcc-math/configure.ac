@@ -124,6 +124,25 @@ else
 fi
 
 
+# Check for target library dependencies
+cannot_build=no
+
+AC_MSG_CHECKING([whether math.h conflicts with defining __isinf])
+AC_TRY_LINK([
+#include "math.h"
+int __isinf (double x)
+{
+}
+], [
+return __isinf (1.0);
+], [
+AC_MSG_RESULT([no])
+], [
+AC_MSG_RESULT([yes])
+cannot_build=yes
+])
+
+
 # Now check which parts we include in the library.
 
 arch_subdirs=
@@ -141,6 +160,9 @@ esac
 AC_SUBST(arch_subdirs)
 AC_SUBST(arch_libraries)
 AC_SUBST(arch_maps)
+if test "$cannot_build" = "yes"; then
+  arch_subdirs=
+fi
 AM_CONDITIONAL(BUILD_LIBGCC_MATH, [test "x$arch_subdirs" != x])
 
 
