@@ -1,4 +1,13 @@
-2006-01-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+2006-02-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+	2005-12-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24915
+	* class.c (add_method): Do not treat templates as identical unless
+	their return types are the same.
+
+2006-02-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:
 	2005-12-19  Mark Mitchell  <mark@codesourcery.com>
