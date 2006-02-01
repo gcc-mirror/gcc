@@ -1,3 +1,9 @@
+2006-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): For
+	-msoft-float -mlong-double-128 only issue a warning, but don't
+	swich to DFmode long double.
+
 2006-02-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	* cse.c (fold_rtx) <case RTX_COMM_COMPARE, RTX_COMPARE>: When arg1

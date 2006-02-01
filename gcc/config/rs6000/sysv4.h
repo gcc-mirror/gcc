@@ -215,12 +215,9 @@ do {									\
       error ("-msecure-plt not supported by your assembler");		\
     }									\
 									\
-  if (TARGET_SOFT_FLOAT && TARGET_LONG_DOUBLE_128)			\
-    {									\
-      rs6000_long_double_type_size = 64;				\
-      if (rs6000_explicit_options.long_double)				\
-	warning (0, "soft-float and long-double-128 are incompatible");	\
-    }									\
+  if (TARGET_SOFT_FLOAT && TARGET_LONG_DOUBLE_128			\
+      && rs6000_explicit_options.long_double)				\
+    warning (0, "-msoft-float and -mlong-double-128 not supported");	\
 									\
   /* Treat -fPIC the same as -mrelocatable.  */				\
   if (flag_pic > 1 && DEFAULT_ABI != ABI_AIX)				\
