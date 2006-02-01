@@ -239,7 +239,7 @@ class _Jv_Linker
 {
 private:
   static _Jv_Field *find_field_helper(jclass, _Jv_Utf8Const *, _Jv_Utf8Const *,
-				      jclass *);
+				      jclass, jclass *);
   static _Jv_Field *find_field(jclass, jclass, jclass *, _Jv_Utf8Const *,
 			       _Jv_Utf8Const *);
   static void prepare_constant_time_tables(jclass);
@@ -271,7 +271,7 @@ public:
   static void print_class_loaded (jclass);
   static void resolve_class_ref (jclass, jclass *);
   static void wait_for_state(jclass, int);
-  static _Jv_word resolve_pool_entry (jclass, int);
+  static _Jv_word resolve_pool_entry (jclass, int, bool =false);
   static void resolve_field (_Jv_Field *, java::lang::ClassLoader *);
   static void verify_type_assertions (jclass);
 };
@@ -463,9 +463,18 @@ extern "C" jobject _Jv_UnwrapJNIweakReference (jobject);
 
 extern jclass _Jv_FindClass (_Jv_Utf8Const *name,
 			     java::lang::ClassLoader *loader);
+
+extern jclass _Jv_FindClassNoException (_Jv_Utf8Const *name,
+			     java::lang::ClassLoader *loader);
+
 extern jclass _Jv_FindClassFromSignature (char *,
 					  java::lang::ClassLoader *loader,
 					  char ** = NULL);
+
+extern jclass _Jv_FindClassFromSignatureNoException (char *,
+					  java::lang::ClassLoader *loader,
+					  char ** = NULL);
+
 extern void _Jv_GetTypesFromSignature (jmethodID method,
 				       jclass declaringClass,
 				       JArray<jclass> **arg_types_out,
@@ -641,6 +650,16 @@ _Jv_IsBinaryCompatibilityABI (jclass c)
   // There isn't really a better test for the ABI type at this point,
   // that will work once the class has been registered.
   return c->otable_syms || c->atable_syms || c->itable_syms;
+}
+
+// Returns whether the given class does not really exists (ie. we have no
+// bytecode) but still allows us to do some very conservative actions.
+// E.g. throwing a NoClassDefFoundError with the name of the missing
+// class.
+extern inline jboolean
+_Jv_IsPhantomClass (jclass c)
+{
+  return c->state == JV_STATE_PHANTOM;
 }
 
 #endif /* __JAVA_JVM_H__ */

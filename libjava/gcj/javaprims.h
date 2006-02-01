@@ -566,6 +566,9 @@ class _Jv_Utf8Const
   friend jboolean _Jv_equalUtf8Consts (const _Jv_Utf8Const*, const _Jv_Utf8Const *);
   friend jboolean _Jv_equal (_Jv_Utf8Const*, jstring, jint);
   friend jboolean _Jv_equaln (_Jv_Utf8Const*, jstring, jint);
+  friend jboolean _Jv_equalUtf8Classnames (const _Jv_Utf8Const*,
+                                             const _Jv_Utf8Const*);
+  friend jboolean _Jv_isPrimitiveOrDerived (const _Jv_Utf8Const*);
   friend _Jv_Utf8Const *_Jv_makeUtf8Const (char*, int);
   friend _Jv_Utf8Const *_Jv_makeUtf8Const (jstring);
   friend jstring _Jv_NewStringUtf8Const (_Jv_Utf8Const*);

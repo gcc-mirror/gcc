@@ -34,6 +34,7 @@ details.  */
 #include <java/lang/NoSuchMethodError.h>
 #include <java/lang/ClassFormatError.h>
 #include <java/lang/IllegalAccessError.h>
+#include <java/lang/InternalError.h>
 #include <java/lang/AbstractMethodError.h>
 #include <java/lang/NoClassDefFoundError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
@@ -100,7 +101,7 @@ _Jv_Linker::resolve_field (_Jv_Field *field, java::lang::ClassLoader *loader)
 // superclasses and interfaces.
 _Jv_Field *
 _Jv_Linker::find_field_helper (jclass search, _Jv_Utf8Const *name,
-			       _Jv_Utf8Const *type_name,
+			       _Jv_Utf8Const *type_name, jclass type,
 			       jclass *declarer)
 {
   while (search)
@@ -112,8 +113,26 @@ _Jv_Linker::find_field_helper (jclass search, _Jv_Utf8Const *name,
 	  if (! _Jv_equalUtf8Consts (field->name, name))
 	    continue;
 
-	  if (! field->isResolved ())
-	    resolve_field (field, search->loader);
+          // Checks for the odd situation where we were able to retrieve the
+          // field's class from signature but the resolution of the field itself
+          // failed which means a different class was resolved.
+          if (type != NULL)
+            {
+              try
+                {
+                  resolve_field (field, search->loader);
+                }
+              catch (java::lang::Throwable *exc)
+                {
+                  java::lang::LinkageError *le = new java::lang::LinkageError
+	            (JvNewStringLatin1 
+                      ("field type mismatch with different loaders"));
+
+                  le->initCause(exc);
+
+                  throw le;
+                }
+            }
 
 	  // Note that we compare type names and not types.  This is
 	  // bizarre, but we do it because we want to find a field
@@ -123,7 +142,10 @@ _Jv_Linker::find_field_helper (jclass search, _Jv_Utf8Const *name,
 	  // pass in the descriptor and check that way, because when
 	  // the field is already resolved there is no easy way to
 	  // find its descriptor again.
-	  if (_Jv_equalUtf8Consts (type_name, field->type->name))
+	  if ( (field->isResolved () ? 
+                _Jv_equalUtf8Classnames (type_name, field->type->name) :
+                _Jv_equalUtf8Classnames (
+                  type_name, (_Jv_Utf8Const *) field->type)) )
 	    {
 	      *declarer = search;
 	      return field;
@@ -134,7 +156,7 @@ _Jv_Linker::find_field_helper (jclass search, _Jv_Utf8Const *name,
       for (int i = 0; i < search->interface_count; ++i)
 	{
 	  _Jv_Field *result = find_field_helper (search->interfaces[i], name,
-						 type_name, declarer);
+						 type_name, type, declarer);
 	  if (result)
 	    return result;
 	}
@@ -175,13 +197,21 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
 {
   // FIXME: this allocates a _Jv_Utf8Const each time.  We should make
   // it cheaper.
-  jclass field_type = _Jv_FindClassFromSignature (field_type_name->chars(),
-						  klass->loader);
-  if (field_type == NULL)
-    throw new java::lang::NoClassDefFoundError(field_name->toString());
+  // Note: This call will resolve the primitive type names ("Z", "B", ...) to
+  // their Java counterparts ("boolean", "byte", ...) if accessed via
+  // field_type->name later.  Using these variants of the type name is in turn
+  // important for the find_field_helper function.  However if the class
+  // resolution failed then we can only use the already given type name.
+  jclass field_type 
+    = _Jv_FindClassFromSignatureNoException (field_type_name->chars(),
+                                             klass->loader);
 
-  _Jv_Field *the_field = find_field_helper (owner, field_name,
-					    field_type->name, found_class);
+  _Jv_Field *the_field
+    = find_field_helper (owner, field_name,
+                         (field_type
+                           ? field_type->name :
+                             field_type_name ),
+                           field_type, found_class);
 
   if (the_field == 0)
     {
@@ -193,6 +223,12 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
       sb->append(JvNewStringLatin1(" was not found."));
       throw new java::lang::NoSuchFieldError (sb->toString());
     }
+
+  // Accept it when the field's class could not be resolved.
+  if (field_type == NULL)
+    // Silently ignore that we were not able to retrieve the type to make it
+    // possible to run code which does not access this field.
+    return the_field;
 
   if (_Jv_CheckAccess (klass, *found_class, the_field->flags))
     {
@@ -221,7 +257,7 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
 }
 
 _Jv_word
-_Jv_Linker::resolve_pool_entry (jclass klass, int index)
+_Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 {
   using namespace java::lang::reflect;
 
@@ -238,13 +274,26 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index)
 
 	jclass found;
 	if (name->first() == '[')
-	  found = _Jv_FindClassFromSignature (name->chars(),
-					      klass->loader);
-	else
-	  found = _Jv_FindClass (name, klass->loader);
+	  found = _Jv_FindClassFromSignatureNoException (name->chars(),
+		                                         klass->loader);
+        else
+	  found = _Jv_FindClassNoException (name, klass->loader);
 
+        // If the class could not be loaded a phantom class is created. Any
+        // function that deals with such a class but cannot do something useful
+        // with it should just throw a NoClassDefFoundError with the class'
+        // name.
 	if (! found)
-	  throw new java::lang::NoClassDefFoundError (name->toString());
+          if (lazy)
+            {
+              found = _Jv_NewClass(name, NULL, NULL);
+              found->state = JV_STATE_PHANTOM;
+              pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
+              pool->data[index].clazz = found;
+              break;
+            }
+          else
+	    throw new java::lang::NoClassDefFoundError (name->toString());
 
 	// Check accessibility, but first strip array types as
 	// _Jv_ClassNameSamePackage can't handle arrays.
@@ -286,7 +335,12 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index)
 	_Jv_loadIndexes (&pool->data[index],
 			 class_index,
 			 name_and_type_index);
-	jclass owner = (resolve_pool_entry (klass, class_index)).clazz;
+	jclass owner = (resolve_pool_entry (klass, class_index, true)).clazz;
+
+        // If a phantom class was resolved our field reference is
+        // unusable because of the missing class.
+        if (owner->state == JV_STATE_PHANTOM)
+          throw new java::lang::NoClassDefFoundError(owner->getName());
 
 	if (owner != klass)
 	  _Jv_InitClass (owner);
@@ -707,10 +761,29 @@ _Jv_GetMethodString (jclass klass, _Jv_Method *meth,
   return buf->toString();
 }
 
-void 
+void
 _Jv_ThrowNoSuchMethodError ()
 {
   throw new java::lang::NoSuchMethodError;
+}
+
+// A function whose invocation is prepared using libffi. It gets called
+// whenever a static method of a missing class is invoked. The data argument
+// holds a reference to a String denoting the missing class.
+// The prepared function call is stored in a class' atable.
+void
+_Jv_ThrowNoClassDefFoundErrorTrampoline(ffi_cif *,
+                                        void *,
+                                        void **,
+                                        void *data)
+{
+  throw new java::lang::NoClassDefFoundError((jstring) data);
+}
+
+void
+_Jv_ThrowNoClassDefFoundError()
+{
+  throw new java::lang::NoClassDefFoundError();
 }
 
 // Throw a NoSuchFieldError.  Called by compiler-generated code when
@@ -722,7 +795,6 @@ _Jv_ThrowNoSuchFieldError (int /* otable_index */)
 {
   throw new java::lang::NoSuchFieldError;
 }
-
 
 // This is put in empty vtable slots.
 void
@@ -1030,21 +1102,65 @@ _Jv_Linker::link_symbol_table (jclass klass)
        (sym = klass->atable_syms[index]).class_name != NULL;
        ++index)
     {
-      jclass target_class = _Jv_FindClass (sym.class_name, klass->loader);
+      jclass target_class =
+        _Jv_FindClassNoException (sym.class_name, klass->loader);
+
       _Jv_Method *meth = NULL;            
       _Jv_Utf8Const *signature = sym.signature;
 
       // ??? Setting this pointer to null will at least get us a
       // NullPointerException
       klass->atable->addresses[index] = NULL;
-      
+
+      // If the target class is missing we prepare a function call
+      // that throws a NoClassDefFoundError and store the address of
+      // that newly prepare method in the atable. The user can run
+      // code in classes where the missing class is part of the
+      // execution environment as long as it is never referenced.
       if (target_class == NULL)
-	throw new java::lang::NoClassDefFoundError 
-	  (_Jv_NewStringUTF (sym.class_name->chars()));
-      
+        {
+          // TODO: The following structs/objects are heap allocated are
+          // unreachable by the garbage collector:
+          // - cif, arg_types
+          // - the Java string inside the if-statement
+
+          ffi_closure *closure =
+            (ffi_closure *) _Jv_Malloc( sizeof( ffi_closure ));
+          ffi_cif *cif = (ffi_cif *) _Jv_Malloc( sizeof( ffi_cif ));
+
+          // Pretends that we want to call a void (*) (void) function via
+          // ffi_call.
+          ffi_type **arg_types = (ffi_type **) _Jv_Malloc( sizeof( ffi_type * ));
+          arg_types[0] = &ffi_type_void;
+
+          // Initializes the cif and the closure. If that worked the closure is
+          // stored as a function pointer in the atable.
+          if ( ffi_prep_cif(cif, FFI_DEFAULT_ABI, 1,
+                            &ffi_type_void, arg_types) == FFI_OK
+               && (ffi_prep_closure 
+                   (closure, cif,
+                   _Jv_ThrowNoClassDefFoundErrorTrampoline,
+                   (void *) _Jv_NewStringUtf8Const(sym.class_name))
+                   == FFI_OK))
+            {
+              klass->atable->addresses[index] = (void *) closure;
+            }
+          else
+            {
+              // If you land here it is possible that your architecture does
+              // not support the Closure API yet. Let's port it!
+              java::lang::StringBuffer *buffer = new java::lang::StringBuffer();
+              buffer->append 
+                (JvNewStringLatin1("Error setting up FFI closure"
+                                   " for static method of missing class: "));
+              buffer->append (_Jv_NewStringUtf8Const(sym.class_name));
+
+              throw new java::lang::InternalError(buffer->toString());
+            }
+        }
       // We're looking for a static field or a static method, and we
       // can tell which is needed by looking at the signature.
-      if (signature->first() == '(' && signature->len() >= 2)
+      else if (signature->first() == '(' && signature->len() >= 2)
 	{
  	  // If the target class does not have a vtable_method_count yet, 
 	  // then we can't tell the offsets for its methods, so we must lay 
@@ -1082,13 +1198,16 @@ _Jv_Linker::link_symbol_table (jclass klass)
 		}
 	    }
 	  else
+            // TODO: Use _Jv_ThrowNoClassDefFoundErrorTrampoline to be able
+            // to print the class name.
 	    klass->atable->addresses[index]
-	      = (void *)_Jv_ThrowNoSuchMethodError;
+		= (void *) _Jv_ThrowNoClassDefFoundError;
 
 	  continue;
 	}
 
-      // Try fields.
+      // Try fields only if the target class exists.
+      if ( target_class != NULL )
       {
 	wait_for_state(target_class, JV_STATE_PREPARED);
 	jclass found_class;
@@ -1453,7 +1572,8 @@ _Jv_Linker::ensure_class_linked (jclass klass)
 	  for (int index = 1; index < pool->size; ++index)
 	    {
 	      if (pool->tags[index] == JV_CONSTANT_Class)
-		resolve_pool_entry (klass, index);
+                // Lazily resolve the entries.
+		resolve_pool_entry (klass, index, true);
 	    }
 	}
 
@@ -1493,8 +1613,13 @@ _Jv_Linker::ensure_class_linked (jclass klass)
 	      int mod = f->getModifiers ();
 	      // If we have a static String field with a non-null initial
 	      // value, we know it points to a Utf8Const.
-	      resolve_field(f, klass->loader);
-	      if (f->getClass () == &java::lang::String::class$
+
+              // Finds out whether we have to initialize a String without the
+              // need to resolve the field.
+              if ((f->isResolved()
+                   ? (f->type == &java::lang::String::class$)
+                   : _Jv_equalUtf8Classnames((_Jv_Utf8Const *) f->type,
+                                             java::lang::String::class$.name))
 		  && (mod & java::lang::reflect::Modifier::STATIC) != 0)
 		{
 		  jstring *strp = (jstring *) f->u.addr;

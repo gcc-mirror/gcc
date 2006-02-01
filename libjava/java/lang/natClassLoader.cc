@@ -266,6 +266,30 @@ _Jv_CopyClassesToSystemLoader (gnu::gcj::runtime::SystemClassLoader *loader)
   system_class_list = SYSTEM_LOADER_INITIALIZED;
 }
 
+// An internal variant of _Jv_FindClass which simply swallows a
+// NoClassDefFoundError or a ClassNotFoundException. This gives the
+// caller a chance to evaluate the situation and behave accordingly.
+jclass
+_Jv_FindClassNoException (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
+{
+  jclass klass;
+
+  try
+    {
+      klass = _Jv_FindClass(name, loader);
+    }
+  catch ( java::lang::NoClassDefFoundError *ncdfe )
+    {
+      return NULL;
+    }
+  catch ( java::lang::ClassNotFoundException *cnfe )
+    {
+      return NULL;
+    }
+
+  return klass;
+}
+
 jclass
 _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 {

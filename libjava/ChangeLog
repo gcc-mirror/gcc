@@ -1,3 +1,39 @@
+2006-02-01  Robert Schuster  <robertschuster@fsfe.org>
+
+	* link.cc:
+	(_Jv_Linker::find_field_helper): Added checks.
+	(_Jv_Linker::find_field): Use exception swallowing class resolution
+	and added early return.
+	(_Jv_ThrowNoClassDefFoundErrorTrampoline): New function.
+	(_Jv_Linker::link_symbol_table):  Use exception swallowing class
+	resolution, added ffi_closure installation routine, use
+	_Jv_ThrowNoClassDefFoundError for missing static method.
+	(_Jv_Linker::ensure_class_linked): Added string check which does
+	not trigger class resolution.
+	* java/lang/natClassLoader.cc:
+	(_Jv_FindClassNoException): New method.
+	* java/lang/Class.h:
+	(_Jv_FindClassNoException): New method declaration.
+	* include/jvm.h:
+	(_Jv_FindClassNoException): New method declaration.
+	(_Jv_FindClassFromSignatureNoException): New method declaration.
+	* prims.cc:
+	(_Jv_FindClassFromSignatureNoException): New method.
+        * gcj/javaprims.h:
+        (_Jv_equalsUtf8Classname): New method declaration.
+        (_Jv_isPrimitiveOrDerived): Dito.
+        * prims.cc:
+	(_Jv_equalsUtf8Classnames): New method.
+        (_Jv_isPrimitiveOrDerived): New method.
+        * verify.cc:
+        (ref_intersection::equals): Use new classname comparison method.
+        (type::compatible): Use new classname comparison method. Added
+        check whether LHS' type is java.lang.Object .
+        (type::resolve): Added new optional debug message and simplified
+        if-expression.
+        (type::to_array): Added codepath that generates an array type
+        without resolving the element type.
+
 2006-01-31  Mark Wielaard  <mark@klomp.org>
  
  	* NEWS: Add 4.1 updates.
