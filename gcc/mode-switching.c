@@ -415,7 +415,7 @@ optimize_mode_switching (FILE *file)
 	entry_exit_extra = 3;
 #endif
 	bb_info[n_entities]
-	  = XCNEWVEC (struct bb_info, last_basic_block);
+	  = XCNEWVEC (struct bb_info, last_basic_block + entry_exit_extra);
 	entity_map[n_entities++] = e;
 	if (num_modes[e] > max_num_modes)
 	  max_num_modes = num_modes[e];
