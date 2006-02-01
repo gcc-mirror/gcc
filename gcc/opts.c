@@ -80,6 +80,11 @@ bool use_gnu_debug_info_extensions;
 /* The default visibility for all symbols (unless overridden) */
 enum symbol_visibility default_visibility = VISIBILITY_DEFAULT;
 
+/* Disable unit-at-a-time for frontends that might be still broken in this
+   respect.  */
+  
+bool no_unit_at_a_time_default;
+
 /* Global visibility options.  */
 struct visibility_flags visibility_options;
 
@@ -538,7 +543,8 @@ decode_options (unsigned int argc, const char **argv)
       flag_tree_copy_prop = 1;
       flag_tree_sink = 1;
       flag_tree_salias = 1;
-      flag_unit_at_a_time = 1;
+      if (!no_unit_at_a_time_default)
+        flag_unit_at_a_time = 1;
 
       if (!optimize_size)
 	{
