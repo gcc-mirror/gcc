@@ -1,3 +1,10 @@
+2006-02-01  Paul Brook  <paul@codesourcery.com>
+
+	* function.c (assign_parm_setup_reg): Use function argument promotion
+	rules.
+	* expr.c (expand_expr_real_1): Use function argument promotion rules
+	for PARM_DECLs.
+
 2006-02-01  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.c (process_command): Change j to 'unsigned int'.
