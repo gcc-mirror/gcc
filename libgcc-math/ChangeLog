@@ -1,5 +1,10 @@
 2006-02-01  Richard Guenther  <rguenther@suse.de>
 
+	PR bootstrap/26059
+	* flt-32/e_expf.c: Remove fenv access.
+
+2006-02-01  Richard Guenther  <rguenther@suse.de>
+
 	PR bootstrap/26055
 	* configure.ac: Disable libgcc-math if we cannot mix
 	declaration of __isinf and math.h inclusion.
