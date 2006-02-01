@@ -668,8 +668,9 @@ java::lang::Class::finalize (void)
 void
 java::lang::Class::initializeClass (void)
 {
-  // Short-circuit to avoid needless locking.
-  if (state == JV_STATE_DONE)
+  // Short-circuit to avoid needless locking (expression includes
+  // JV_STATE_PHANTOM and JV_STATE_DONE).
+  if (state >= JV_STATE_PHANTOM)
     return;
 
   // Step 1.  We introduce a new scope so we can synchronize more

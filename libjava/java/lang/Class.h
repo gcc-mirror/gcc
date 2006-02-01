@@ -69,7 +69,13 @@ enum
 
   JV_STATE_ERROR = 12,
 
-  JV_STATE_DONE = 14		// Must be last.
+  JV_STATE_PHANTOM = 13,	// Bytecode is missing. In many cases we can
+                                // work around that. If not, throw a
+                                // NoClassDefFoundError.
+
+  JV_STATE_DONE = 14,		// Must be last.
+
+
 };
 
 struct _Jv_Field;
@@ -240,6 +246,8 @@ void _Jv_RegisterClassHookDefault (jclass klass);
 void _Jv_RegisterInitiatingLoader (jclass,java::lang::ClassLoader*);
 void _Jv_UnregisterInitiatingLoader (jclass,java::lang::ClassLoader*);
 void _Jv_UnregisterClass (jclass);
+jclass _Jv_FindClassNoException (_Jv_Utf8Const *name,
+		      java::lang::ClassLoader *loader);
 jclass _Jv_FindClass (_Jv_Utf8Const *name,
 		      java::lang::ClassLoader *loader);
 jclass _Jv_FindClassInCache (_Jv_Utf8Const *name);
@@ -262,6 +270,8 @@ jclass _Jv_GetArrayClass (jclass klass, java::lang::ClassLoader *loader);
 
 jboolean _Jv_IsInterpretedClass (jclass);
 jboolean _Jv_IsBinaryCompatibilityABI (jclass);
+
+jboolean _Jv_IsPhantomClass (jclass);
 
 void _Jv_CopyClassesToSystemLoader (gnu::gcj::runtime::SystemClassLoader *);
 
@@ -469,6 +479,8 @@ private:
   friend void ::_Jv_RegisterInitiatingLoader (jclass,java::lang::ClassLoader*);
   friend void ::_Jv_UnregisterInitiatingLoader (jclass,java::lang::ClassLoader*);
   friend void ::_Jv_UnregisterClass (jclass);
+  friend jclass (::_Jv_FindClassNoException) (_Jv_Utf8Const *name,
+				   java::lang::ClassLoader *loader);
   friend jclass (::_Jv_FindClass) (_Jv_Utf8Const *name,
 				   java::lang::ClassLoader *loader);
   friend jclass (::_Jv_FindClassInCache) (_Jv_Utf8Const *name);
@@ -498,6 +510,8 @@ private:
 
   friend jboolean (::_Jv_IsInterpretedClass) (jclass);
   friend jboolean (::_Jv_IsBinaryCompatibilityABI) (jclass);
+
+  friend jboolean (::_Jv_IsPhantomClass) (jclass);
 
 #ifdef INTERPRETER
   friend void ::_Jv_InitField (jobject, jclass, int);

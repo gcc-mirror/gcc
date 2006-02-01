@@ -14,6 +14,8 @@ details.  */
 
 #include <config.h>
 
+#include <string.h>
+
 #include <jvm.h>
 #include <gcj/cni.h>
 #include <java-insns.h>
@@ -324,7 +326,7 @@ private:
     bool equals (ref_intersection *other, _Jv_BytecodeVerifier *verifier)
     {
       if (! is_resolved && ! other->is_resolved
-	  && _Jv_equalUtf8Consts (data.name, other->data.name))
+	  && _Jv_equalUtf8Classnames (data.name, other->data.name))
 	return true;
       if (! is_resolved)
 	resolve (verifier);
@@ -364,11 +366,18 @@ private:
       if (is_resolved)
 	return;
 
+      // This is useful if you want to see which classes have to be resolved
+      // while doing the class verification.
+      debug_print("resolving class: %s\n", data.name->chars());
+
       using namespace java::lang;
       java::lang::ClassLoader *loader
 	= verifier->current_class->getClassLoaderInternal();
-      // We might see either kind of name.  Sigh.
-      if (data.name->first() == 'L' && data.name->limit()[-1] == ';')
+
+      // Due to special handling in to_array() array classes will always
+      // be of the "L ... ;" kind. The separator char ('.' or '/' may vary
+      // however.
+      if (data.name->limit()[-1] == ';')
 	{
 	  data.klass = _Jv_FindClassFromSignature (data.name->chars(), loader);
 	  if (data.klass == NULL)
@@ -397,12 +406,21 @@ private:
 	      // Avoid resolving if possible.
 	      if (! self->is_resolved
 		  && ! other_iter->is_resolved
-		  && _Jv_equalUtf8Consts (self->data.name,
-					  other_iter->data.name))
+		  && _Jv_equalUtf8Classnames (self->data.name,
+		 			      other_iter->data.name))
 		continue;
 
 	      if (! self->is_resolved)
 		self->resolve(verifier);
+
+              // If the LHS of the expression is of type
+              // java.lang.Object, assignment will succeed, no matter
+              // what the type of the RHS is. Using this short-cut we
+              // don't need to resolve the class of the RHS at
+              // verification time.
+              if (self->data.klass == &java::lang::Object::class$)
+                continue;
+
 	      if (! other_iter->is_resolved)
 		other_iter->resolve(verifier);
 
@@ -852,9 +870,70 @@ private:
       if (key != reference_type)
 	verifier->verify_fail ("internal error in type::to_array()");
 
-      jclass k = klass->getclass (verifier);
-      return type (_Jv_GetArrayClass (k, k->getClassLoaderInternal()),
-		   verifier);
+      // In case the class is already resolved we can simply ask the runtime
+      // to give us the array version.
+      // If it is not resolved we prepend "[" to the classname to make the
+      // array usage verification more lazy. In other words: makes new Foo[300]
+      // pass the verifier if Foo.class is missing.
+      if (klass->is_resolved)
+        {
+          jclass k = klass->getclass (verifier);
+
+          return type (_Jv_GetArrayClass (k, k->getClassLoaderInternal()),
+		       verifier);
+        }
+      else
+        {
+          int len = klass->data.name->len();
+
+          // If the classname is given in the Lp1/p2/cn; format we only need
+          // to add a leading '['. The same procedure has to be done for
+          // primitive arrays (ie. provided "[I", the result should be "[[I".
+          // If the classname is given as p1.p2.cn we have to embed it into
+          // "[L" and ';'.
+          if (klass->data.name->limit()[-1] == ';' ||
+               _Jv_isPrimitiveOrDerived(klass->data.name))
+            {
+              // Reserves space for leading '[' and trailing '\0' .
+              char arrayName[len + 2];
+
+              arrayName[0] = '[';
+              strcpy(&arrayName[1], klass->data.name->chars());
+
+#ifdef VERIFY_DEBUG
+              // This is only needed when we want to print the string to the
+              // screen while debugging.
+              arrayName[len + 1] = '\0';
+
+              debug_print("len: %d - old: '%s' - new: '%s'\n", len, klass->data.name->chars(), arrayName);
+#endif
+
+              return type (verifier->make_utf8_const( arrayName, len + 1 ),
+                           verifier);
+            }
+           else
+            {
+              // Reserves space for leading "[L" and trailing ';' and '\0' .
+              char arrayName[len + 4];
+
+              arrayName[0] = '[';
+              arrayName[1] = 'L';
+              strcpy(&arrayName[2], klass->data.name->chars());
+              arrayName[len + 2] = ';';
+
+#ifdef VERIFY_DEBUG
+              // This is only needed when we want to print the string to the
+              // screen while debugging.
+              arrayName[len + 3] = '\0';
+
+              debug_print("len: %d - old: '%s' - new: '%s'\n", len, klass->data.name->chars(), arrayName);
+#endif
+
+              return type (verifier->make_utf8_const( arrayName, len + 3 ),
+                           verifier);
+            }
+        }
+
     }
 
     bool isreference () const
