@@ -3277,7 +3277,7 @@ process_command (int argc, const char **argv)
   int lang_n_infiles = 0;
 #ifdef MODIFY_TARGET_NAME
   int is_modify_target_name;
-  int j;
+  unsigned int j;
 #endif
 
   GET_ENVIRONMENT (gcc_exec_prefix, "GCC_EXEC_PREFIX");
