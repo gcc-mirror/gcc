@@ -3981,6 +3981,57 @@ fold_rtx (rtx x, rtx insn)
 	     comparison.  */
 	  if (const_arg0 == 0 || const_arg1 == 0)
 	    {
+	      if (const_arg1 != NULL)
+		{
+		  rtx cheapest_simplification;
+		  int cheapest_cost;
+		  rtx simp_result;
+		  struct table_elt *p;
+
+		  /* See if we can find an equivalent of folded_arg0
+		     that gets us a cheaper expression, possibly a
+		     constant through simplifications.  */
+		  p = lookup (folded_arg0, SAFE_HASH (folded_arg0, mode_arg0),
+			      mode_arg0);
+		  
+		  if (p != NULL)
+		    {
+		      cheapest_simplification = x;
+		      cheapest_cost = COST (x);
+
+		      for (p = p->first_same_value; p != NULL; p = p->next_same_value)
+			{
+			  int cost;
+
+			  /* If the entry isn't valid, skip it.  */
+			  if (! exp_equiv_p (p->exp, p->exp, 1, false))
+			    continue;
+
+			  /* Try to simplify using this equivalence.  */
+			  simp_result
+			    = simplify_relational_operation (code, mode,
+							     mode_arg0,
+							     p->exp,
+							     const_arg1);
+
+			  if (simp_result == NULL)
+			    continue;
+
+			  cost = COST (simp_result);
+			  if (cost < cheapest_cost)
+			    {
+			      cheapest_cost = cost;
+			      cheapest_simplification = simp_result;
+			    }
+			}
+
+		      /* If we have a cheaper expression now, use that
+			 and try folding it further, from the top.  */
+		      if (cheapest_simplification != x)
+			return fold_rtx (cheapest_simplification, insn);
+		    }
+		}
+
 	      /* Some addresses are known to be nonzero.  We don't know
 		 their sign, but equality comparisons are known.  */
 	      if (const_arg1 == const0_rtx
