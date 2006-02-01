@@ -1,6 +1,7 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation,
+   Inc.
 
 This file is part of GCC.
 
@@ -300,7 +301,7 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
   enum reg_class scratch_class;
   enum machine_mode mode = reload_mode;
   enum insn_code icode = CODE_FOR_nothing;
-  enum insn_code t_icode;
+  enum insn_code t_icode = CODE_FOR_nothing;
   enum reload_type secondary_type;
   int s_reload, t_reload = -1;
   const char *scratch_constraint;
