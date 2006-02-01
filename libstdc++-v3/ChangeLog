@@ -1,3 +1,9 @@
+2006-02-01  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21554
+	* include/tr1/array (array<>::_M_instance): Maximally align.
+	* testsuite/ext/array_allocator/2.cc: Do not xfail for powerpc.
+
 2006-01-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/install.html ([Tools you will need beforehand]):
