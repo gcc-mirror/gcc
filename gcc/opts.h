@@ -63,6 +63,7 @@ struct cl_option_state {
 extern const struct cl_option cl_options[];
 extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
+extern bool no_unit_at_a_time_default;
 
 #define CL_DISABLED		(1 << 21) /* Disabled in this configuration.  */
 #define CL_TARGET		(1 << 22) /* Target-specific option.  */

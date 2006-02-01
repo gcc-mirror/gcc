@@ -1,3 +1,9 @@
+2006-02-01  Jan Hubicka  <jh@suse.cz>
+
+	* opts.c (no_unit_at_a_time_default): New global variable.
+	(decode_options): Use it.
+	* opts.h (no_unit_at_a_time_default): Declare.
+
 2006-02-01  Paul Brook  <paul@codesourcery.com>
 
 	* function.c (assign_parm_setup_reg): Use function argument promotion

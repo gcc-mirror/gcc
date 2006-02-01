@@ -1,3 +1,8 @@
+2006-02-01  Jan Hubicka  <jh@suse.cz>
+
+	* decl.c (end_java_method): Kill hack disabling unit-at-a-time.
+	* lang.c (java_init_options): Set no_unit_at_a_time_default.
+
 2006-01-30  Andrew Haley  <aph@redhat.com>
 
 	PR java/21428

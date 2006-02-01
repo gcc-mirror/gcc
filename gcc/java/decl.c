@@ -2072,7 +2072,6 @@ end_java_method (void)
 		     attach_init_test_initialization_flags, block_body);
     }
 
-  flag_unit_at_a_time = 0;
   finish_method (fndecl);
 
   if (! flag_unit_at_a_time)
