@@ -2078,6 +2078,7 @@ add_branch_dependences (rtx head, rtx tail)
       insn = PREV_INSN (insn);
     }
 
+
   /* Make sure these insns are scheduled last in their block.  */
   insn = last;
   if (insn != 0)

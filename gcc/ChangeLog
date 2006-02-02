@@ -1,3 +1,10 @@
+2006-02-02  Nick Clifton  <nickc@redhat.com>
+
+	PR 24376
+	* sched-rgn.c (add_branch_dependences): For cc0 targets extend
+	the dependencies inside a block back to the very first cc0 setter
+	in the block.
+
 2006-01-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.c (process_command), gcov.c (print_version), gcov-dump.c
