@@ -1,6 +1,6 @@
 /*
   jartool.c - main functions for fastjar utility
-  Copyright (C) 2002, 2004, 2005  Free Software Foundation
+  Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation
   Copyright (C) 1999, 2000, 2001  Bryan Burns
   
   This program is free software; you can redistribute it and/or
@@ -2218,7 +2218,7 @@ void version (void)
 {
   printf("jar (%s) %s\n\n", PACKAGE, VERSION);
   printf("Copyright 1999, 2000, 2001  Bryan Burns\n");
-  printf("Copyright 2002, 2004 Free Software Foundation\n");
+  printf("Copyright 2006 Free Software Foundation\n");
   printf("\
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
