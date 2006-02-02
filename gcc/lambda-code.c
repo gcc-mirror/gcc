@@ -2556,7 +2556,7 @@ perfect_nestify (struct loops *loops,
 			  newname = make_ssa_name (newname, newstmt);
 			  TREE_OPERAND (newstmt, 0) = newname;
 			  SET_USE (use_p, TREE_OPERAND (newstmt, 0));
-			  bsi_insert_after (&tobsi, newstmt, BSI_SAME_STMT);
+			  bsi_insert_before (&tobsi, newstmt, BSI_SAME_STMT);
 			  update_stmt (newstmt);
 			  update_stmt (imm_stmt);
 			} 

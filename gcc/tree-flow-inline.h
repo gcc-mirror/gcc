@@ -734,37 +734,15 @@ bsi_start (basic_block bb)
 }
 
 /* Return a block statement iterator that points to the first non-label
-   block BB.  */
+   statement in block BB.  */
 
 static inline block_stmt_iterator
 bsi_after_labels (basic_block bb)
 {
-  block_stmt_iterator bsi;
-  tree_stmt_iterator next;
+  block_stmt_iterator bsi = bsi_start (bb);
 
-  bsi.bb = bb;
-
-  if (!bb->stmt_list)
-    {
-      gcc_assert (bb->index < NUM_FIXED_BLOCKS);
-      bsi.tsi.ptr = NULL;
-      bsi.tsi.container = NULL;
-      return bsi;
-    }
-
-  bsi.tsi = tsi_start (bb->stmt_list);
-  if (tsi_end_p (bsi.tsi))
-    return bsi;
-
-  next = bsi.tsi;
-  tsi_next (&next);
-
-  while (!tsi_end_p (next)
-	 && TREE_CODE (tsi_stmt (next)) == LABEL_EXPR)
-    {
-      bsi.tsi = next;
-      tsi_next (&next);
-    }
+  while (!bsi_end_p (bsi) && TREE_CODE (bsi_stmt (bsi)) == LABEL_EXPR)
+    bsi_next (&bsi);
 
   return bsi;
 }

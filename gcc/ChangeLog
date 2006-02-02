@@ -1,3 +1,14 @@
+2006-02-02  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-flow-inline.h (bsi_after_labels): Rewrite, return
+	what its name says.
+	* lambda-code.c (perfect_nestify): Use bsi_insert_before on
+	bsi_after_labels iterator.
+	* tree-if-conv.c (find_phi_replacement_condition,
+	replace_phi_with_cond_modify_expr): Likewise.
+	* tree-scalar-evolution.c (scev_const_prop): Likewise.
+	* tree-ssa-loop-ivopts.c (compute_phi_arg_on_exit): Likewise.
+
 2006-02-02  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-inline.c (copy_tree_r): Also copy OMP_CLAUSE nodes.
