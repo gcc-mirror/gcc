@@ -131,7 +131,8 @@ public final class Security
 	    Exception exception = null;
 	    try
 	      {
-		providers.addElement(Class.forName(name).newInstance());
+            ClassLoader sys = ClassLoader.getSystemClassLoader();
+		providers.addElement(Class.forName(name, true, sys).newInstance());
 	      }
 	    catch (ClassNotFoundException x)
 	      {
