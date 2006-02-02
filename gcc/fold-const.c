@@ -10476,7 +10476,7 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 {
   void **slot;
   enum tree_code code;
-  char buf[sizeof (struct tree_function_decl)];
+  struct tree_function_decl buf;
   int i, len;
   
 recursive_label:
@@ -10495,8 +10495,8 @@ recursive_label:
       && DECL_ASSEMBLER_NAME_SET_P (expr))
     {
       /* Allow DECL_ASSEMBLER_NAME to be modified.  */
-      memcpy (buf, expr, tree_size (expr));
-      expr = (tree) buf;
+      memcpy ((char *) &buf, expr, tree_size (expr));
+      expr = (tree) &buf;
       SET_DECL_ASSEMBLER_NAME (expr, NULL);
     }
   else if (TREE_CODE_CLASS (code) == tcc_type
@@ -10505,8 +10505,8 @@ recursive_label:
 	       || TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr)))
     {
       /* Allow these fields to be modified.  */
-      memcpy (buf, expr, tree_size (expr));
-      expr = (tree) buf;
+      memcpy ((char *) &buf, expr, tree_size (expr));
+      expr = (tree) &buf;
       TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr) = 0;
       TYPE_POINTER_TO (expr) = NULL;
       TYPE_REFERENCE_TO (expr) = NULL;
