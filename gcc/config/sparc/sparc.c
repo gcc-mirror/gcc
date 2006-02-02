@@ -3693,7 +3693,10 @@ sparc_output_scratch_registers (FILE *file ATTRIBUTE_UNUSED)
 	  && ! sparc_hard_reg_printed [i])
 	{
 	  sparc_hard_reg_printed [i] = 1;
-	  fprintf (file, "\t.register\t%%g%d, #scratch\n", i);
+	  /* %g7 is used as TLS base register, use #ignore
+	     for it instead of #scratch.  */
+	  fprintf (file, "\t.register\t%%g%d, #%s\n", i,
+		   i == 7 ? "ignore" : "scratch");
 	}
       if (i == 3) i = 5;
     }
