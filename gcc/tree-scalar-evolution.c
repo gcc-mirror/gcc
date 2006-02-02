@@ -2793,8 +2793,11 @@ scev_const_prop (void)
 
 	  ass = build2 (MODIFY_EXPR, void_type_node, rslt, NULL_TREE);
 	  SSA_NAME_DEF_STMT (rslt) = ass;
-	  bsi_insert_after (&bsi, ass, BSI_NEW_STMT);
-	  def = force_gimple_operand_bsi (&bsi, def, false, NULL_TREE);
+	  {
+	    block_stmt_iterator dest = bsi;
+	    bsi_insert_before (&dest, ass, BSI_NEW_STMT);
+	    def = force_gimple_operand_bsi (&dest, def, false, NULL_TREE);
+	  }
 	  TREE_OPERAND (ass, 1) = def;
 	  update_stmt (ass);
 	}
