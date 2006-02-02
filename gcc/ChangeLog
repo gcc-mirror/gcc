@@ -1,3 +1,8 @@
+2006-02-02  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* flow.c (calculate_global_regs_live): Assert that there aren't any
+	EDGE_FAKE edges.
+
 2006-02-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-flow-inline.h (bsi_after_labels): Rewrite, return

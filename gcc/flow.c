@@ -1,6 +1,7 @@
 /* Data flow analysis for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
+   Inc.
 
 This file is part of GCC.
 
@@ -1395,6 +1396,9 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  basic_block pb = e->src;
+
+	  gcc_assert ((e->flags & EDGE_FAKE) == 0);
+
 	  if (pb->aux == NULL)
 	    {
 	      *qtail++ = pb;
