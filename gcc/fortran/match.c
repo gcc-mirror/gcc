@@ -1890,7 +1890,7 @@ syntax:
   gfc_syntax_error (ST_NULLIFY);
 
 cleanup:
-  gfc_free_statements (tail);
+  gfc_free_statements (new_st.next);
   return MATCH_ERROR;
 }
 
@@ -3367,12 +3367,13 @@ static match
 match_forall_header (gfc_forall_iterator ** phead, gfc_expr ** mask)
 {
   gfc_forall_iterator *head, *tail, *new;
+  gfc_expr *msk;
   match m;
 
   gfc_gobble_whitespace ();
 
   head = tail = NULL;
-  *mask = NULL;
+  msk = NULL;
 
   if (gfc_match_char ('(') != MATCH_YES)
     return MATCH_NO;
@@ -3393,6 +3394,7 @@ match_forall_header (gfc_forall_iterator ** phead, gfc_expr ** mask)
       m = match_forall_iterator (&new);
       if (m == MATCH_ERROR)
 	goto cleanup;
+
       if (m == MATCH_YES)
 	{
 	  tail->next = new;
@@ -3402,7 +3404,7 @@ match_forall_header (gfc_forall_iterator ** phead, gfc_expr ** mask)
 
       /* Have to have a mask expression */
 
-      m = gfc_match_expr (mask);
+      m = gfc_match_expr (&msk);
       if (m == MATCH_NO)
 	goto syntax;
       if (m == MATCH_ERROR)
@@ -3415,13 +3417,14 @@ match_forall_header (gfc_forall_iterator ** phead, gfc_expr ** mask)
     goto syntax;
 
   *phead = head;
+  *mask = msk;
   return MATCH_YES;
 
 syntax:
   gfc_syntax_error (ST_FORALL);
 
 cleanup:
-  gfc_free_expr (*mask);
+  gfc_free_expr (msk);
   gfc_free_forall_iterator (head);
 
   return MATCH_ERROR;
