@@ -2278,7 +2278,8 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
       || code == TREE_LIST
       || code == TREE_VEC
-      || code == TYPE_DECL)
+      || code == TYPE_DECL
+      || code == OMP_CLAUSE)
     {
       /* Because the chain gets clobbered when we make a copy, we save it
 	 here.  */
