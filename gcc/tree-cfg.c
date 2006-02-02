@@ -4656,7 +4656,8 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   edge e;
   block_stmt_iterator si;
   struct move_stmt_d d;
-  unsigned sz;
+  unsigned old_len, new_len;
+  basic_block *addr;
 
   /* Link BB to the new linked list.  */
   move_block_after (bb, after);
@@ -4679,11 +4680,13 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   if (bb->index > cfg->x_last_basic_block)
     cfg->x_last_basic_block = bb->index;
 
-  sz = VEC_length (basic_block, cfg->x_basic_block_info);
-  if ((unsigned) cfg->x_last_basic_block >= sz)
+  old_len = VEC_length (basic_block, cfg->x_basic_block_info);
+  if ((unsigned) cfg->x_last_basic_block >= old_len)
     {
-      sz = cfg->x_last_basic_block + (cfg->x_last_basic_block + 3) / 4;
-      VEC_safe_grow (basic_block, gc, cfg->x_basic_block_info, sz);
+      new_len = cfg->x_last_basic_block + (cfg->x_last_basic_block + 3) / 4;
+      VEC_safe_grow (basic_block, gc, cfg->x_basic_block_info, new_len);
+      addr = VEC_address (basic_block, cfg->x_basic_block_info);
+      memset (&addr[old_len], 0, sizeof (basic_block) * (new_len - old_len));
     }
 
   VEC_replace (basic_block, cfg->x_basic_block_info,
@@ -4708,7 +4711,6 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 
       if (TREE_CODE (stmt) == LABEL_EXPR)
 	{
-	  unsigned old_len;
 	  tree label = LABEL_EXPR_LABEL (stmt);
 	  int uid = LABEL_DECL_UID (label);
 
@@ -4717,8 +4719,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	  old_len = VEC_length (basic_block, cfg->x_label_to_block_map);
 	  if (old_len <= (unsigned) uid)
 	    {
-	      basic_block *addr;
-	      unsigned new_len = 3 * uid / 2;
+	      new_len = 3 * uid / 2;
 	      VEC_safe_grow (basic_block, gc, cfg->x_label_to_block_map,
 			     new_len);
 	      addr = VEC_address (basic_block, cfg->x_label_to_block_map);

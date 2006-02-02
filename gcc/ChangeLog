@@ -1,3 +1,9 @@
+2006-02-02  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 25990
+	* tree-cfg.c (move_block_to_fn): Clear out the basic block
+	array after growing it.
+
 2006-02-01  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/24901
