@@ -1,4 +1,4 @@
-// TR1 cctype -*- C++ -*-
+// TR1 inttypes.h -*- C++ -*-
 
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -31,25 +31,15 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_CCTYPE
-#define _TR1_CCTYPE 1
+#ifndef _TR1_INTTYPES_H
+#define _TR1_INTTYPES_H 1
 
-#include <bits/c++config.h>
-#include <cctype>
+#include <tr1/cinttypes>
 
-#if _GLIBCXX_USE_C99_CTYPE_TR1
+#if _GLIBCXX_USE_C99_INTTYPES_TR1
 
-#undef isblank
-
-// namespace std::tr1
-namespace std
-{
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
-
-  using ::isblank;
-
-_GLIBCXX_END_NAMESPACE
-}
+using std::tr1::abs;
+using std::tr1::div;
 
 #endif
 

@@ -1,3 +1,22 @@
+2006-02-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cfloat: New.
+	* include/tr1/climits: Likewise.		
+	* include/tr1/cstdarg: Likewise.
+	* include/tr1/ctype.h: Likewise.
+	* include/tr1/fenv.h: Likewise.
+	* include/tr1/float.h: Likewise.
+	* include/tr1/inttypes.h: Likewise.
+	* include/tr1/limits.h: Likewise.
+	* include/tr1/stdint.h: Likewise.
+	* include/tr1/stdarg.h: Likewise.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* docs/html/ext/tr1.html: Update.
+	* testsuite/tr1/headers.cc: New.
+
+	* include/tr1/cctype: Include <cctype> instead.
+
 2006-01-31  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/21554

@@ -1,4 +1,4 @@
-// TR1 cctype -*- C++ -*-
+// TR1 climits -*- C++ -*-
 
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -31,26 +31,21 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TR1_CCTYPE
-#define _TR1_CCTYPE 1
+#ifndef _TR1_CLIMITS
+#define _TR1_CLIMITS 1
 
-#include <bits/c++config.h>
-#include <cctype>
+#include <climits>
 
-#if _GLIBCXX_USE_C99_CTYPE_TR1
+#ifndef LLONG_MIN
+#define LLONG_MIN -__LONG_LONG_MAX__ - 1
+#endif
 
-#undef isblank
+#ifndef LLONG_MAX
+#define LLONG_MAX __LONG_LONG_MAX__
+#endif
 
-// namespace std::tr1
-namespace std
-{
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
-
-  using ::isblank;
-
-_GLIBCXX_END_NAMESPACE
-}
-
+#ifndef ULLONG_MAX
+#define ULLONG_MAX __LONG_LONG_MAX__ * 2ULL + 1
 #endif
 
 #endif
