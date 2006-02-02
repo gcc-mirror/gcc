@@ -1,5 +1,9 @@
 2006-02-02  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-inline.c (copy_tree_r): Also copy OMP_CLAUSE nodes.
+
+2006-02-02  Diego Novillo  <dnovillo@redhat.com>
+
 	PR 25990
 	* tree-cfg.c (move_block_to_fn): Clear out the basic block
 	array after growing it.
