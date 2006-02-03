@@ -1,15 +1,21 @@
+2006-02-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgomp/25852
+	* testsuite/lib/libgomp-dg.exp (blddir): Set it in
+	libgomp_init.
+
 2005-01-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR libgomp/25884
-        * Makefile.am (omp.h, omp_lib.h, omp_lib.f90, libgomp_f.h): Remove.
-        * configure.ac (PERL): Don't set.
-        (gstdint.h, omp.h, omp_lib.h, omp_lib.f90, libgomp_f.h): Create here.
-        (OMP_LOCK_SIZE, OMP_LOCK_ALIGN, OMP_LOCK_KIND, OMP_NEST_LOCK_SIZE,
-        OMP_NEST_LOCK_ALIGN, OMP_NEST_LOCK_KIND): New substitutions.
-        * omp.h.in: Wrap the new configure substitutions with @ characters.
-        * omp_lib.h.in, omp_lib.f90.in, libgomp_f.h.in: Likewise.
-        * aclocal.m4, configure, Makefile.in: Regenerate.
-        * mkomp_h.pl: Delete.
+	* Makefile.am (omp.h, omp_lib.h, omp_lib.f90, libgomp_f.h): Remove.
+	* configure.ac (PERL): Don't set.
+	(gstdint.h, omp.h, omp_lib.h, omp_lib.f90, libgomp_f.h): Create here.
+	(OMP_LOCK_SIZE, OMP_LOCK_ALIGN, OMP_LOCK_KIND, OMP_NEST_LOCK_SIZE,
+	OMP_NEST_LOCK_ALIGN, OMP_NEST_LOCK_KIND): New substitutions.
+	* omp.h.in: Wrap the new configure substitutions with @ characters.
+	* omp_lib.h.in, omp_lib.f90.in, libgomp_f.h.in: Likewise.
+	* aclocal.m4, configure, Makefile.in: Regenerate.
+	* mkomp_h.pl: Delete.
 
 2005-01-24  Paolo Bonzini  <bonzini@gnu.org>
 
