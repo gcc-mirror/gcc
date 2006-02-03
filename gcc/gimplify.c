@@ -3190,6 +3190,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
   while (ret != GS_UNHANDLED)
     switch (TREE_CODE (*from_p))
       {
+#if 0
       case INDIRECT_REF:
 	{
 	  /* If we have code like 
@@ -3211,6 +3212,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	    ret = GS_UNHANDLED;
 	  break;
 	}
+#endif
 
       case TARGET_EXPR:
 	{
@@ -3272,8 +3274,9 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	    bool use_target;
 
 	    if (TREE_CODE (*to_p) == RESULT_DECL
+		&& DECL_NAME (*to_p) == NULL_TREE
 		&& needs_to_live_in_memory (*to_p))
-	      /* It's always OK to use the return slot directly.  */
+	      /* It's OK to use the return slot directly unless it's an NRV. */
 	      use_target = true;
 	    else if (!is_gimple_non_addressable (*to_p))
 	      /* Don't use the original target if it's already addressable;
