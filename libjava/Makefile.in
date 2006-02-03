@@ -9465,15 +9465,34 @@ write-entries-to-file-check:
 src.zip:
 	-rm -f src.zip
 	here=`pwd`; \
-	( ( cd $(srcdir); \
+	( \
+	  ( cd $(srcdir)/classpath; \
 	  find java gnu javax org -name '*.java' -print | \
+	  while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo $(srcdir)/classpath; \
+	    echo $$file; \
+	  done ); \
+	  ( cd classpath; \
+	    find gnu java -name '*.java' -print | \
+	    while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo `pwd`; \
+	    echo $$file; \
+	  done ); \
+	) | \
+	$(ZIP) -cfM@ $$here/src.zip
+	here=`pwd`; \
+	( \
+	  ( cd $(srcdir); \
+	  find gnu java -name '*.java' -print | \
 	  while read file; do \
 	    echo "x-C" | sed -e 's/^.//'; \
 	    echo $(srcdir); \
 	    echo $$file; \
 	  done ); \
-	  find gnu java -name '*.java' -print) | \
-	$(ZIP) -cfM@ $$here/src.zip
+	) | \
+	$(ZIP) -ufM@ $$here/src.zip
 
 install-src.zip: src.zip
 	$(INSTALL_DATA) src.zip $(DESTDIR)$(sourcesdir)/src-$(gcc_version).zip
