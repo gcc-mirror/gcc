@@ -996,7 +996,7 @@ _Jv_Linker::create_error_method (_Jv_Utf8Const *class_name)
   // Codepath for platforms which do not support (or want) libffi.
   // You have to accept that it is impossible to provide the name
   // of the missing class then.
-  return _Jv_ThrowNoClassDefFoundError;
+  return (void *) _Jv_ThrowNoClassDefFoundError;
 #endif
 }
 
