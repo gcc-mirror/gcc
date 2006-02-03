@@ -1,3 +1,13 @@
+2006-02-02  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.h (TYPE_STRING_FLAG): Document that this field may be used
+	on INTEGER_TYPEs to indicate that it denotes a character type.
+	* tree.c (build_common_tree_nodes): Set TYPE_STRING_FLAG on
+	signed_char_type_node, unsigned_char_type_node and char_type_node.
+	* dwarf2out.c (base_type_die): Treat CHAR_TYPE identically to
+	INTEGER_TYPE.  Use TYPE_STRING_FLAG to decide whether to emit
+	a DW_ATE_[un]signed_char instead of a DW_ATE_[un]signed.
+
 2006-02-02  Zdenek Dvorak <dvorakz@suse.cz>
 	    Daniel Berlin  <dberlin@dberlin.org>
 

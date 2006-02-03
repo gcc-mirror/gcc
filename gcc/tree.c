@@ -6342,7 +6342,9 @@ build_common_tree_nodes (bool signed_char, bool signed_sizetype)
 
   /* Define both `signed char' and `unsigned char'.  */
   signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);
+  TYPE_STRING_FLAG (signed_char_type_node) = 1;
   unsigned_char_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
+  TYPE_STRING_FLAG (unsigned_char_type_node) = 1;
 
   /* Define `char', which is like either `signed char' or `unsigned char'
      but not the same as either.  */
@@ -6350,6 +6352,7 @@ build_common_tree_nodes (bool signed_char, bool signed_sizetype)
     = (signed_char
        ? make_signed_type (CHAR_TYPE_SIZE)
        : make_unsigned_type (CHAR_TYPE_SIZE));
+  TYPE_STRING_FLAG (char_type_node) = 1;
 
   short_integer_type_node = make_signed_type (SHORT_TYPE_SIZE);
   short_unsigned_type_node = make_unsigned_type (SHORT_TYPE_SIZE);
