@@ -1,3 +1,7 @@
+2006-02-03  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/gomp/pr25990.c: Replace with pre-processed version.
+
 2006-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/template/using12.C: New test.
