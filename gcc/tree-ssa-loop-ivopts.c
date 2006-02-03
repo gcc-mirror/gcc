@@ -131,7 +131,6 @@ struct loop_data
 enum use_type
 {
   USE_NONLINEAR_EXPR,	/* Use in a nonlinear expression.  */
-  USE_OUTER,		/* The induction variable is used outside the loop.  */
   USE_ADDRESS,		/* Use in an address.  */
   USE_COMPARE		/* Use is a compare.  */
 };
@@ -429,10 +428,6 @@ dump_use (FILE *file, struct iv_use *use)
     {
     case USE_NONLINEAR_EXPR:
       fprintf (file, "  generic\n");
-      break;
-
-    case USE_OUTER:
-      fprintf (file, "  outside\n");
       break;
 
     case USE_ADDRESS:
@@ -1207,12 +1202,10 @@ record_invariant (struct ivopts_data *data, tree op, bool nonlinear_use)
   bitmap_set_bit (data->relevant, SSA_NAME_VERSION (op));
 }
 
-/* Checks whether the use OP is interesting and if so, records it
-   as TYPE.  */
+/* Checks whether the use OP is interesting and if so, records it.  */
 
 static struct iv_use *
-find_interesting_uses_outer_or_nonlin (struct ivopts_data *data, tree op,
-				       enum use_type type)
+find_interesting_uses_op (struct ivopts_data *data, tree op)
 {
   struct iv *iv;
   struct iv *civ;
@@ -1230,11 +1223,7 @@ find_interesting_uses_outer_or_nonlin (struct ivopts_data *data, tree op,
     {
       use = iv_use (data, iv->use_id);
 
-      gcc_assert (use->type == USE_NONLINEAR_EXPR
-		  || use->type == USE_OUTER);
-
-      if (type == USE_NONLINEAR_EXPR)
-	use->type = USE_NONLINEAR_EXPR;
+      gcc_assert (use->type == USE_NONLINEAR_EXPR);
       return use;
     }
 
@@ -1252,27 +1241,10 @@ find_interesting_uses_outer_or_nonlin (struct ivopts_data *data, tree op,
   gcc_assert (TREE_CODE (stmt) == PHI_NODE
 	      || TREE_CODE (stmt) == MODIFY_EXPR);
 
-  use = record_use (data, NULL, civ, stmt, type);
+  use = record_use (data, NULL, civ, stmt, USE_NONLINEAR_EXPR);
   iv->use_id = use->id;
 
   return use;
-}
-
-/* Checks whether the use OP is interesting and if so, records it.  */
-
-static struct iv_use *
-find_interesting_uses_op (struct ivopts_data *data, tree op)
-{
-  return find_interesting_uses_outer_or_nonlin (data, op, USE_NONLINEAR_EXPR);
-}
-
-/* Records a definition of induction variable OP that is used outside of the
-   loop.  */
-
-static struct iv_use *
-find_interesting_uses_outer (struct ivopts_data *data, tree op)
-{
-  return find_interesting_uses_outer_or_nonlin (data, op, USE_OUTER);
 }
 
 /* Checks whether the condition *COND_P in STMT is interesting
@@ -1720,7 +1692,7 @@ find_interesting_uses_outside (struct ivopts_data *data, edge exit)
   for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
     {
       def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
-      find_interesting_uses_outer (data, def);
+      find_interesting_uses_op (data, def);
     }
 }
 
@@ -2208,23 +2180,6 @@ add_iv_value_candidates (struct ivopts_data *data,
     add_candidate (data, base, iv->step, false, use);
 }
 
-/* Possibly adds pseudocandidate for replacing the final value of USE by
-   a direct computation.  */
-
-static void
-add_iv_outer_candidates (struct ivopts_data *data, struct iv_use *use)
-{
-  struct tree_niter_desc *niter;
-
-  /* We must know where we exit the loop and how many times does it roll.  */
-  niter = niter_for_single_dom_exit (data);
-  if (!niter
-      || !zero_p (niter->may_be_zero))
-    return;
-
-  add_candidate_1 (data, NULL, NULL, false, IP_NORMAL, use, NULL_TREE);
-}
-
 /* Adds candidates based on the uses.  */
 
 static void
@@ -2246,14 +2201,6 @@ add_derived_ivs_candidates (struct ivopts_data *data)
 	case USE_ADDRESS:
 	  /* Just add the ivs based on the value of the iv used here.  */
 	  add_iv_value_candidates (data, use->iv, use);
-	  break;
-
-	case USE_OUTER:
-	  add_iv_value_candidates (data, use->iv, use);
-
-	  /* Additionally, add the pseudocandidate for the possibility to
-	     replace the final value by a direct computation.  */
-	  add_iv_outer_candidates (data, use);
 	  break;
 
 	default:
@@ -4112,95 +4059,6 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   return cost != INFTY;
 }
 
-/* Checks whether it is possible to replace the final value of USE by
-   a direct computation.  If so, the formula is stored to *VALUE.  */
-
-static bool
-may_replace_final_value (struct ivopts_data *data, struct iv_use *use,
-			 tree *value)
-{
-  struct loop *loop = data->current_loop;
-  edge exit;
-  struct tree_niter_desc *niter;
-
-  exit = single_dom_exit (loop);
-  if (!exit)
-    return false;
-
-  gcc_assert (dominated_by_p (CDI_DOMINATORS, exit->src,
-			      bb_for_stmt (use->stmt)));
-
-  niter = niter_for_single_dom_exit (data);
-  if (!niter
-      || !zero_p (niter->may_be_zero))
-    return false;
-
-  *value = iv_value (use->iv, niter->niter);
-
-  return true;
-}
-
-/* Determines cost of replacing final value of USE using CAND.  */
-
-static bool
-determine_use_iv_cost_outer (struct ivopts_data *data,
-			     struct iv_use *use, struct iv_cand *cand)
-{
-  bitmap depends_on;
-  unsigned cost;
-  edge exit;
-  tree value = NULL_TREE;
-  struct loop *loop = data->current_loop;
-
-  /* The simple case first -- if we need to express value of the preserved
-     original biv, the cost is 0.  This also prevents us from counting the
-     cost of increment twice -- once at this use and once in the cost of
-     the candidate.  */
-  if (cand->pos == IP_ORIGINAL
-      && cand->incremented_at == use->stmt)
-    {
-      set_use_iv_cost (data, use, cand, 0, NULL, NULL_TREE);
-      return true;
-    }
-
-  if (!cand->iv)
-    {
-      if (!may_replace_final_value (data, use, &value))
-	{
-	  set_use_iv_cost (data, use, cand, INFTY, NULL, NULL_TREE);
-	  return false;
-	}
-
-      depends_on = NULL;
-      cost = force_var_cost (data, value, &depends_on);
-
-      cost /= AVG_LOOP_NITER (loop);
-
-      set_use_iv_cost (data, use, cand, cost, depends_on, value);
-      return cost != INFTY;
-    }
-
-  exit = single_dom_exit (loop);
-  if (exit)
-    {
-      /* If there is just a single exit, we may use value of the candidate
-	 after we take it to determine the value of use.  */
-      cost = get_computation_cost_at (data, use, cand, false, &depends_on,
-				      last_stmt (exit->src));
-      if (cost != INFTY)
-	cost /= AVG_LOOP_NITER (loop);
-    }
-  else
-    {
-      /* Otherwise we just need to compute the iv.  */
-      cost = get_computation_cost (data, use, cand, false, &depends_on);
-    }
-				   
-  set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE);
-
-  return cost != INFTY;
-}
-
 /* Determines cost of basing replacement of USE on CAND.  Returns false
    if USE cannot be based on CAND.  */
 
@@ -4212,9 +4070,6 @@ determine_use_iv_cost (struct ivopts_data *data,
     {
     case USE_NONLINEAR_EXPR:
       return determine_use_iv_cost_generic (data, use, cand);
-
-    case USE_OUTER:
-      return determine_use_iv_cost_outer (data, use, cand);
 
     case USE_ADDRESS:
       return determine_use_iv_cost_address (data, use, cand);
@@ -5725,76 +5580,6 @@ compute_phi_arg_on_exit (edge exit, tree stmts, tree op)
     }
 }
 
-/* Rewrites the final value of USE (that is only needed outside of the loop)
-   using candidate CAND.  */
-
-static void
-rewrite_use_outer (struct ivopts_data *data,
-		   struct iv_use *use, struct iv_cand *cand)
-{
-  edge exit;
-  tree value, op, stmts, tgt;
-  tree phi;
-
-  switch (TREE_CODE (use->stmt))
-    {
-    case PHI_NODE:
-      tgt = PHI_RESULT (use->stmt);
-      break;
-    case MODIFY_EXPR:
-      tgt = TREE_OPERAND (use->stmt, 0);
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  exit = single_dom_exit (data->current_loop);
-
-  if (exit)
-    {
-      if (!cand->iv)
-	{
-	  struct cost_pair *cp = get_use_iv_cost (data, use, cand);
-	  value = unshare_expr (cp->value);
-	}
-      else
-	value = get_computation_at (data->current_loop,
-				    use, cand, last_stmt (exit->src));
-
-      op = force_gimple_operand (value, &stmts, true, SSA_NAME_VAR (tgt));
-	  
-      /* If we will preserve the iv anyway and we would need to perform
-	 some computation to replace the final value, do nothing.  */
-      if (stmts && name_info (data, tgt)->preserve_biv)
-	return;
-
-      for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
-	{
-	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, exit);
-
-	  if (USE_FROM_PTR (use_p) == tgt)
-	    SET_USE (use_p, op);
-	}
-
-      if (stmts)
-	compute_phi_arg_on_exit (exit, stmts, op);
-
-      /* Enable removal of the statement.  We cannot remove it directly,
-	 since we may still need the aliasing information attached to the
-	 ssa name defined by it.  */
-      name_info (data, tgt)->iv->have_use_for = false;
-      return;
-    }
-
-  /* If the variable is going to be preserved anyway, there is nothing to
-     do.  */
-  if (name_info (data, tgt)->preserve_biv)
-    return;
-
-  /* Otherwise we just need to compute the iv.  */
-  rewrite_use_nonlinear_expr (data, use, cand);
-}
-
 /* Rewrites USE using candidate CAND.  */
 
 static void
@@ -5805,10 +5590,6 @@ rewrite_use (struct ivopts_data *data,
     {
       case USE_NONLINEAR_EXPR:
 	rewrite_use_nonlinear_expr (data, use, cand);
-	break;
-
-      case USE_OUTER:
-	rewrite_use_outer (data, use, cand);
 	break;
 
       case USE_ADDRESS:
