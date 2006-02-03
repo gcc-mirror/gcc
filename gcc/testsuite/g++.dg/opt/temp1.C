@@ -1,6 +1,6 @@
 // PR c++/16405
 // { dg-options "-O2" } 
-// { dg-do run }
+// { dg-do run { xfail *-*-* } }
 
 // There should be exactly one temporary generated for the code in "f"
 // below when optimizing -- for the result of "b + c".  We have no
