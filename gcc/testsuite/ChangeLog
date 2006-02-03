@@ -1,3 +1,8 @@
+2006-01-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/26001
+	* gfortran.dg/data_char_2.f90: New.
+
 2006-02-03  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.target/powerpc/pr25960.c: New test.

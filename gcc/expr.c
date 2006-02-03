@@ -7094,17 +7094,36 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			  break;
 			}
 		  }
-		else if (TREE_CODE (init) == STRING_CST
-			 && 0 > compare_tree_int (index,
-						  TREE_STRING_LENGTH (init)))
+		else if(TREE_CODE (init) == STRING_CST)
 		  {
-		    tree type = TREE_TYPE (TREE_TYPE (init));
-		    enum machine_mode mode = TYPE_MODE (type);
+		    tree index1 = index;
+		    tree low_bound = array_ref_low_bound (exp);
+		    index1 = fold_convert (sizetype, TREE_OPERAND (exp, 1));
+		    
+		    /* Optimize the special-case of a zero lower bound.
+		    
+		       We convert the low_bound to sizetype to avoid some problems
+		       with constant folding.  (E.g. suppose the lower bound is 1,
+		       and its mode is QI.  Without the conversion,l (ARRAY
+		       +(INDEX-(unsigned char)1)) becomes ((ARRAY+(-(unsigned char)1))
+		       +INDEX), which becomes (ARRAY+255+INDEX).  Opps!)  */
+		    
+		    if (! integer_zerop (low_bound))
+		      index1 = size_diffop (index1, fold_convert (sizetype,
+								  low_bound));
+		  
+		    if (0 > compare_tree_int (index1,
+					      TREE_STRING_LENGTH (init)))
+		      {
+			tree type = TREE_TYPE (TREE_TYPE (init));
+			enum machine_mode mode = TYPE_MODE (type);
 
-		    if (GET_MODE_CLASS (mode) == MODE_INT
-			&& GET_MODE_SIZE (mode) == 1)
-		      return gen_int_mode (TREE_STRING_POINTER (init)
-					   [TREE_INT_CST_LOW (index)], mode);
+			if (GET_MODE_CLASS (mode) == MODE_INT
+			    && GET_MODE_SIZE (mode) == 1)
+			  return gen_int_mode (TREE_STRING_POINTER (init)
+					       [TREE_INT_CST_LOW (index1)],
+					       mode);
+		      }
 		  }
 	      }
 	  }
