@@ -1,3 +1,15 @@
+2006-02-03  Jeff Law  <law@redhat.com>
+
+        * lib/gcc-dg.exp (cleanup-rtl-dump): Fix dump file regexp to
+        handle more than 100 dump files.
+        (cleanup-tree-dump, cleanup-ipa-dump): Likewise.
+        * lib/scantree.exp (scan-tree-dump): Likewise.
+        (scan-tree-dump-times, scan-tree-dump-not): Likewise.
+        (scan-tree-dump-dem, scan-tree-dump-dem-not): Likewise.
+        * lib/scanipa.exp (scan-ipa-dump): Likewise.
+        (scan-ipa-dump-times, scan-ipa-dump-not): Likewise.
+        (scan-ipa-dump-dem, scan-ipa-dump-dem-not): Likewise.
+
 2006-02-03  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.dg/gomp/pr25990.c: Replace with pre-processed version.

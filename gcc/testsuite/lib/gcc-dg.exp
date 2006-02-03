@@ -344,21 +344,21 @@ proc cleanup-repo-files { } {
 #
 # SUFFIX is the filename suffix pattern.
 proc cleanup-rtl-dump { suffix } {
-  cleanup-dump "\[0-9\]\[0-9\].$suffix"
+  cleanup-dump "\[0-9\]\*.$suffix"
 }
 
 # Remove a specific tree dump file for the current test.
 #
 # SUFFIX is the tree dump file suffix pattern.
 proc cleanup-tree-dump { suffix } {
-  cleanup-dump "t\[0-9\]\[0-9\].$suffix"
+  cleanup-dump "t\[0-9\]\*.$suffix"
 }
 
 # Remove a specific ipa dump file for the current test.
 #
 # SUFFIX is the ipa dump file suffix pattern.
 proc cleanup-ipa-dump { suffix } {
-  cleanup-dump "i\[0-9\]\[0-9\].$suffix"
+  cleanup-dump "i\[0-9\]\*.$suffix"
 }
 
 # Remove all dump files with the provided suffix.
