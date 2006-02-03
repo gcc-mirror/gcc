@@ -36,9 +36,9 @@ proc scan-tree-dump { args } {
 	return
     }
     if { [llength $args] >= 3 } {
-	scan-dump "tree" [lindex $args 0] "t\[0-9\]\[0-9\].[lindex $args 1]" [lindex $args 2]
+	scan-dump "tree" [lindex $args 0] "t\[0-9\]\*.[lindex $args 1]" [lindex $args 2]
     } else {
-	scan-dump "tree" [lindex $args 0] "t\[0-9\]\[0-9\].[lindex $args 1]"
+	scan-dump "tree" [lindex $args 0] "t\[0-9\]\*.[lindex $args 1]"
     }
 }
 
@@ -59,10 +59,10 @@ proc scan-tree-dump-times { args } {
     }
     if { [llength $args] >= 4 } {
 	scan-dump-times "tree" [lindex $args 0] [lindex $args 1] \
-			"t\[0-9\]\[0-9\].[lindex $args 2]" [lindex $args 3]
+			"t\[0-9\]\*.[lindex $args 2]" [lindex $args 3]
     } else {
 	scan-dump-times "tree" [lindex $args 0] [lindex $args 1] \
-			"t\[0-9\]\[0-9\].[lindex $args 2]"
+			"t\[0-9\]\*.[lindex $args 2]"
     }
 }
 
@@ -83,10 +83,10 @@ proc scan-tree-dump-not { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-not "tree" [lindex $args 0] \
-		      "t\[0-9\]\[0-9\].[lindex $args 1]" [lindex $args 2]
+		      "t\[0-9\]\*.[lindex $args 1]" [lindex $args 2]
     } else {
 	scan-dump-not "tree" [lindex $args 0] \
-		      "t\[0-9\]\[0-9\].[lindex $args 1]"
+		      "t\[0-9\]\*.[lindex $args 1]"
     }
 }
 
@@ -108,10 +108,10 @@ proc scan-tree-dump-dem { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-dem "tree" [lindex $args 0] \
-		      "t\[0-9\]\[0-9\].[lindex $args 1]" [lindex $args 2]
+		      "t\[0-9\]\*.[lindex $args 1]" [lindex $args 2]
     } else {
 	scan-dump-dem "tree" [lindex $args 0] \
-		      "t\[0-9\]\[0-9\].[lindex $args 1]"
+		      "t\[0-9\]\*.[lindex $args 1]"
     }
 }
 
@@ -132,10 +132,10 @@ proc scan-tree-dump-dem-not { args } {
     }
     if { [llength $args] >= 3 } {
 	scan-dump-dem-not "tree" [lindex $args 0] \
-			  "t\[0-9\]\[0-9\].[lindex $args 1]" \
+			  "t\[0-9\]\*.[lindex $args 1]" \
 			  [lindex $args 2]
     } else {
 	scan-dump-dem-not "tree" [lindex $args 0] \
-			  "t\[0-9\]\[0-9\].[lindex $args 1]"
+			  "t\[0-9\]\*.[lindex $args 1]"
     }
 }
